@@ -44,15 +44,15 @@ const wchar_t* utf8towcs(const char* str) {
   return val;
 }
 
-bool InputHasCues(const libwebm::mkvparser::Segment* const segment) {
-  const libwebm::mkvparser::Cues* const cues = segment->GetCues();
+bool InputHasCues(const mkvparser::Segment* const segment) {
+  const mkvparser::Cues* const cues = segment->GetCues();
   if (cues == NULL)
     return false;
 
   while (!cues->DoneParsing())
     cues->LoadCuePoint();
 
-  const libwebm::mkvparser::CuePoint* const cue_point = cues->GetFirst();
+  const mkvparser::CuePoint* const cue_point = cues->GetFirst();
   if (cue_point == NULL)
     return false;
 
@@ -60,11 +60,11 @@ bool InputHasCues(const libwebm::mkvparser::Segment* const segment) {
 }
 
 bool MasteringMetadataValuePresent(double value) {
-  return value != libwebm::mkvparser::MasteringMetadata::kValueNotPresent;
+  return value != mkvparser::MasteringMetadata::kValueNotPresent;
 }
 
 bool ColourValuePresent(long long value) {
-  return value != libwebm::mkvparser::Colour::kValueNotPresent;
+  return value != mkvparser::Colour::kValueNotPresent;
 }
 }  // namespace
 
@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  libwebm::mkvparser::MkvReader reader;
+  mkvparser::MkvReader reader;
 
   if (reader.Open(argv[1])) {
     printf("\n Filename is invalid or error while opening.\n");
@@ -86,12 +86,12 @@ int main(int argc, char* argv[]) {
 
   int maj, min, build, rev;
 
-  libwebm::mkvparser::GetVersion(maj, min, build, rev);
+  mkvparser::GetVersion(maj, min, build, rev);
   printf("\t\t libmkv verison: %d.%d.%d.%d\n", maj, min, build, rev);
 
   long long pos = 0;
 
-  libwebm::mkvparser::EBMLHeader ebmlHeader;
+  mkvparser::EBMLHeader ebmlHeader;
 
   long long ret = ebmlHeader.Parse(&reader, pos);
   if (ret < 0) {
@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
   printf("\t\tDoc Type\t\t: %s\n", ebmlHeader.m_docType);
   printf("\t\tPos\t\t\t: %lld\n", pos);
 
-  typedef libwebm::mkvparser::Segment seg_t;
+  typedef mkvparser::Segment seg_t;
   seg_t* pSegment_;
 
   ret = seg_t::CreateInstance(&reader, pos, pSegment_);
@@ -123,8 +123,7 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  const libwebm::mkvparser::SegmentInfo* const pSegmentInfo =
-      pSegment->GetInfo();
+  const mkvparser::SegmentInfo* const pSegmentInfo = pSegment->GetInfo();
   if (pSegmentInfo == NULL) {
     printf("\n Segment::GetInfo() failed.");
     return -1;
@@ -177,7 +176,7 @@ int main(int argc, char* argv[]) {
   // size of segment payload
   printf("\t\tSize(Segment)\t\t: %lld\n", pSegment->m_size);
 
-  const libwebm::mkvparser::Tracks* pTracks = pSegment->GetTracks();
+  const mkvparser::Tracks* pTracks = pSegment->GetTracks();
 
   unsigned long track_num = 0;
   const unsigned long num_tracks = pTracks->GetTracksCount();
@@ -185,7 +184,7 @@ int main(int argc, char* argv[]) {
   printf("\n\t\t\t   Track Info\n");
 
   while (track_num != num_tracks) {
-    const libwebm::mkvparser::Track* const pTrack =
+    const mkvparser::Track* const pTrack =
         pTracks->GetTrackByIndex(track_num++);
 
     if (pTrack == NULL)
@@ -224,9 +223,9 @@ int main(int argc, char* argv[]) {
       delete[] pCodecName;
     }
 
-    if (trackType == libwebm::mkvparser::Track::kVideo) {
-      const libwebm::mkvparser::VideoTrack* const pVideoTrack =
-          static_cast<const libwebm::mkvparser::VideoTrack*>(pTrack);
+    if (trackType == mkvparser::Track::kVideo) {
+      const mkvparser::VideoTrack* const pVideoTrack =
+          static_cast<const mkvparser::VideoTrack*>(pTrack);
 
       const long long width = pVideoTrack->GetWidth();
       printf("\t\tVideo Width\t\t: %lld\n", width);
@@ -237,7 +236,7 @@ int main(int argc, char* argv[]) {
       const double rate = pVideoTrack->GetFrameRate();
       printf("\t\tVideo Rate\t\t: %f\n", rate);
 
-      const libwebm::mkvparser::Colour* const colour = pVideoTrack->GetColour();
+      const mkvparser::Colour* const colour = pVideoTrack->GetColour();
       if (colour) {
         printf("\t\tVideo Colour:\n");
         if (ColourValuePresent(colour->matrix_coefficients))
@@ -273,7 +272,7 @@ int main(int argc, char* argv[]) {
         if (ColourValuePresent(colour->max_fall))
           printf("\t\t\tMaxFALL: %lld\n", colour->max_fall);
         if (colour->mastering_metadata) {
-          const libwebm::mkvparser::MasteringMetadata* const mm =
+          const mkvparser::MasteringMetadata* const mm =
               colour->mastering_metadata;
           printf("\t\t\tMastering Metadata:\n");
           if (MasteringMetadataValuePresent(mm->luminance_max))
@@ -302,9 +301,9 @@ int main(int argc, char* argv[]) {
       }
     }
 
-    if (trackType == libwebm::mkvparser::Track::kAudio) {
-      const libwebm::mkvparser::AudioTrack* const pAudioTrack =
-          static_cast<const libwebm::mkvparser::AudioTrack*>(pTrack);
+    if (trackType == mkvparser::Track::kAudio) {
+      const mkvparser::AudioTrack* const pAudioTrack =
+          static_cast<const mkvparser::AudioTrack*>(pTrack);
 
       const long long channels = pAudioTrack->GetChannels();
       printf("\t\tAudio Channels\t\t: %lld\n", channels);
@@ -333,7 +332,7 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  const libwebm::mkvparser::Cluster* pCluster = pSegment->GetFirst();
+  const mkvparser::Cluster* pCluster = pSegment->GetFirst();
 
   while ((pCluster != NULL) && !pCluster->EOS()) {
     const long long timeCode = pCluster->GetTimeCode();
@@ -342,7 +341,7 @@ int main(int argc, char* argv[]) {
     const long long time_ns = pCluster->GetTime();
     printf("\t\tCluster Time (ns)\t: %lld\n", time_ns);
 
-    const libwebm::mkvparser::BlockEntry* pBlockEntry;
+    const mkvparser::BlockEntry* pBlockEntry;
 
     long status = pCluster->GetFirst(pBlockEntry);
 
@@ -354,11 +353,10 @@ int main(int argc, char* argv[]) {
     }
 
     while ((pBlockEntry != NULL) && !pBlockEntry->EOS()) {
-      const libwebm::mkvparser::Block* const pBlock = pBlockEntry->GetBlock();
+      const mkvparser::Block* const pBlock = pBlockEntry->GetBlock();
       const long long trackNum = pBlock->GetTrackNumber();
       const unsigned long tn = static_cast<unsigned long>(trackNum);
-      const libwebm::mkvparser::Track* const pTrack =
-          pTracks->GetTrackByNumber(tn);
+      const mkvparser::Track* const pTrack = pTracks->GetTrackByNumber(tn);
 
       if (pTrack == NULL)
         printf("\t\t\tBlock\t\t:UNKNOWN TRACK TYPE\n");
@@ -369,12 +367,11 @@ int main(int argc, char* argv[]) {
         const long long discard_padding = pBlock->GetDiscardPadding();
 
         printf("\t\t\tBlock\t\t:%s,%s,%15lld,%lld\n",
-               (trackType == libwebm::mkvparser::Track::kVideo) ? "V" : "A",
+               (trackType == mkvparser::Track::kVideo) ? "V" : "A",
                pBlock->IsKey() ? "I" : "P", time_ns, discard_padding);
 
         for (int i = 0; i < frameCount; ++i) {
-          const libwebm::mkvparser::Block::Frame& theFrame =
-              pBlock->GetFrame(i);
+          const mkvparser::Block::Frame& theFrame = pBlock->GetFrame(i);
           const long size = theFrame.len;
           const long long offset = theFrame.pos;
           printf("\t\t\t %15ld,%15llx\n", size, offset);
@@ -395,22 +392,21 @@ int main(int argc, char* argv[]) {
 
   if (InputHasCues(pSegment.get())) {
     // Walk them.
-    const libwebm::mkvparser::Cues* const cues = pSegment->GetCues();
-    const libwebm::mkvparser::CuePoint* cue = cues->GetFirst();
+    const mkvparser::Cues* const cues = pSegment->GetCues();
+    const mkvparser::CuePoint* cue = cues->GetFirst();
     int cue_point_num = 1;
 
     printf("\t\tCues\n");
     do {
       for (track_num = 0; track_num < num_tracks; ++track_num) {
-        const libwebm::mkvparser::Track* const track =
+        const mkvparser::Track* const track =
             pTracks->GetTrackByIndex(track_num);
-        const libwebm::mkvparser::CuePoint::TrackPosition* const track_pos =
+        const mkvparser::CuePoint::TrackPosition* const track_pos =
             cue->Find(track);
 
         if (track_pos != NULL) {
           const char track_type =
-              (track->GetType() == libwebm::mkvparser::Track::kVideo) ? 'V' :
-                                                                        'A';
+              (track->GetType() == mkvparser::Track::kVideo) ? 'V' : 'A';
           printf(
               "\t\t\tCue Point %4d Track %3lu(%c) Time %14lld "
               "Block %4lld Pos %8llx\n",
@@ -425,14 +421,14 @@ int main(int argc, char* argv[]) {
     } while (cue != NULL);
   }
 
-  const libwebm::mkvparser::Tags* const tags = pSegment->GetTags();
+  const mkvparser::Tags* const tags = pSegment->GetTags();
   if (tags && tags->GetTagCount() > 0) {
     printf("\t\tTags\n");
     for (int i = 0; i < tags->GetTagCount(); ++i) {
-      const libwebm::mkvparser::Tags::Tag* const tag = tags->GetTag(i);
+      const mkvparser::Tags::Tag* const tag = tags->GetTag(i);
       printf("\t\t\tTag\n");
       for (int j = 0; j < tag->GetSimpleTagCount(); j++) {
-        const libwebm::mkvparser::Tags::SimpleTag* const simple_tag =
+        const mkvparser::Tags::SimpleTag* const simple_tag =
             tag->GetSimpleTag(j);
         printf("\t\t\t\tSimple Tag \"%s\" Value \"%s\"\n",
                simple_tag->GetTagName(), simple_tag->GetTagString());

@@ -10,7 +10,6 @@
 
 #include <stdint.h>
 
-namespace libwebm {
 namespace mkvmuxer {
 class Cluster;
 class Frame;
@@ -80,6 +79,5 @@ void GetVersion(int32_t* major, int32_t* minor, int32_t* build,
 uint64_t MakeUID(unsigned int* seed);
 
 }  // namespace mkvmuxer
-}  // namespace libwebm
 
 #endif  // MKVMUXER_MKVMUXERUTIL_H_

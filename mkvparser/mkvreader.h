@@ -12,7 +12,6 @@
 
 #include "mkvparser/mkvparser.h"
 
-namespace libwebm {
 namespace mkvparser {
 
 class MkvReader : public IMkvReader {
@@ -42,6 +41,5 @@ class MkvReader : public IMkvReader {
 };
 
 }  // namespace mkvparser
-}  // namespace libwebm
 
 #endif  // MKVPARSER_MKVREADER_H_

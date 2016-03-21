@@ -59,7 +59,7 @@ class Webm2PesTests : public ::testing::Test {
  private:
   const libwebm::TempFileDeleter temp_file_name_;
   const std::string input_file_name_ =
-      libwebm::test::GetTestFilePath("bbb_480p_vp9_opus_1second.webm");
+      test::GetTestFilePath("bbb_480p_vp9_opus_1second.webm");
   libwebm::VpxPesParser parser_;
 };
 

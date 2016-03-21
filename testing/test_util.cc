@@ -21,7 +21,6 @@
 
 #include "common/libwebm_util.h"
 
-namespace libwebm {
 namespace test {
 
 std::string GetTestDataDir() {
@@ -39,8 +38,10 @@ bool CompareFiles(const std::string& file1, const std::string& file2) {
   std::uint8_t buf1[kBlockSize] = {0};
   std::uint8_t buf2[kBlockSize] = {0};
 
-  FilePtr f1 = FilePtr(std::fopen(file1.c_str(), "rb"), FILEDeleter());
-  FilePtr f2 = FilePtr(std::fopen(file2.c_str(), "rb"), FILEDeleter());
+  libwebm::FilePtr f1 =
+      libwebm::FilePtr(std::fopen(file1.c_str(), "rb"), libwebm::FILEDeleter());
+  libwebm::FilePtr f2 =
+      libwebm::FilePtr(std::fopen(file2.c_str(), "rb"), libwebm::FILEDeleter());
 
   if (!f1.get() || !f2.get()) {
     // Files cannot match if one or both couldn't be opened.
@@ -60,4 +61,3 @@ bool CompareFiles(const std::string& file1, const std::string& file2) {
 }
 
 }  // namespace test
-}  // namespace libwebm

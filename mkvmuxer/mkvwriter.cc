@@ -12,7 +12,6 @@
 #include <share.h>  // for _SH_DENYWR
 #endif
 
-namespace libwebm {
 namespace mkvmuxer {
 
 MkvWriter::MkvWriter() : file_(NULL), writer_owns_file_(true) {}
@@ -87,4 +86,3 @@ bool MkvWriter::Seekable() const { return true; }
 void MkvWriter::ElementStartNotify(uint64_t, int64_t) {}
 
 }  // namespace mkvmuxer
-}  // namespace libwebm

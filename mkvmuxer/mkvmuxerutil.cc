@@ -29,7 +29,6 @@
 #pragma warning(disable : 4996)
 #endif
 
-namespace libwebm {
 namespace mkvmuxer {
 
 namespace {
@@ -46,18 +45,20 @@ uint64_t WriteBlock(IMkvWriter* writer, const Frame* const frame,
   uint64_t block_additions_payload_size = 0;
   uint64_t block_additions_elem_size = 0;
   if (frame->additional()) {
-    block_additional_elem_size = EbmlElementSize(
-        kMkvBlockAdditional, frame->additional(), frame->additional_length());
-    block_addid_elem_size = EbmlElementSize(kMkvBlockAddID, frame->add_id());
+    block_additional_elem_size =
+        EbmlElementSize(libwebm::kMkvBlockAdditional, frame->additional(),
+                        frame->additional_length());
+    block_addid_elem_size =
+        EbmlElementSize(libwebm::kMkvBlockAddID, frame->add_id());
 
     block_more_payload_size =
         block_addid_elem_size + block_additional_elem_size;
     block_more_elem_size =
-        EbmlMasterElementSize(kMkvBlockMore, block_more_payload_size) +
+        EbmlMasterElementSize(libwebm::kMkvBlockMore, block_more_payload_size) +
         block_more_payload_size;
     block_additions_payload_size = block_more_elem_size;
     block_additions_elem_size =
-        EbmlMasterElementSize(kMkvBlockAdditions,
+        EbmlMasterElementSize(libwebm::kMkvBlockAdditions,
                               block_additions_payload_size) +
         block_additions_payload_size;
   }
@@ -65,7 +66,7 @@ uint64_t WriteBlock(IMkvWriter* writer, const Frame* const frame,
   uint64_t discard_padding_elem_size = 0;
   if (frame->discard_padding() != 0) {
     discard_padding_elem_size =
-        EbmlElementSize(kMkvDiscardPadding, frame->discard_padding());
+        EbmlElementSize(libwebm::kMkvDiscardPadding, frame->discard_padding());
   }
 
   const uint64_t reference_block_timestamp =
@@ -73,28 +74,30 @@ uint64_t WriteBlock(IMkvWriter* writer, const Frame* const frame,
   uint64_t reference_block_elem_size = 0;
   if (!frame->is_key()) {
     reference_block_elem_size =
-        EbmlElementSize(kMkvReferenceBlock, reference_block_timestamp);
+        EbmlElementSize(libwebm::kMkvReferenceBlock, reference_block_timestamp);
   }
 
   const uint64_t duration = frame->duration() / timecode_scale;
   uint64_t block_duration_elem_size = 0;
   if (duration > 0)
-    block_duration_elem_size = EbmlElementSize(kMkvBlockDuration, duration);
+    block_duration_elem_size =
+        EbmlElementSize(libwebm::kMkvBlockDuration, duration);
 
   const uint64_t block_payload_size = 4 + frame->length();
   const uint64_t block_elem_size =
-      EbmlMasterElementSize(kMkvBlock, block_payload_size) + block_payload_size;
+      EbmlMasterElementSize(libwebm::kMkvBlock, block_payload_size) +
+      block_payload_size;
 
   const uint64_t block_group_payload_size =
       block_elem_size + block_additions_elem_size + block_duration_elem_size +
       discard_padding_elem_size + reference_block_elem_size;
 
-  if (!WriteEbmlMasterElement(writer, kMkvBlockGroup,
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvBlockGroup,
                               block_group_payload_size)) {
     return 0;
   }
 
-  if (!WriteEbmlMasterElement(writer, kMkvBlock, block_payload_size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvBlock, block_payload_size))
     return 0;
 
   if (WriteUInt(writer, frame->track_number()))
@@ -111,44 +114,48 @@ uint64_t WriteBlock(IMkvWriter* writer, const Frame* const frame,
     return 0;
 
   if (frame->additional()) {
-    if (!WriteEbmlMasterElement(writer, kMkvBlockAdditions,
+    if (!WriteEbmlMasterElement(writer, libwebm::kMkvBlockAdditions,
                                 block_additions_payload_size)) {
       return 0;
     }
 
-    if (!WriteEbmlMasterElement(writer, kMkvBlockMore, block_more_payload_size))
+    if (!WriteEbmlMasterElement(writer, libwebm::kMkvBlockMore,
+                                block_more_payload_size))
       return 0;
 
-    if (!WriteEbmlElement(writer, kMkvBlockAddID, frame->add_id()))
+    if (!WriteEbmlElement(writer, libwebm::kMkvBlockAddID, frame->add_id()))
       return 0;
 
-    if (!WriteEbmlElement(writer, kMkvBlockAdditional, frame->additional(),
-                          frame->additional_length())) {
+    if (!WriteEbmlElement(writer, libwebm::kMkvBlockAdditional,
+                          frame->additional(), frame->additional_length())) {
       return 0;
     }
   }
 
   if (frame->discard_padding() != 0 &&
-      !WriteEbmlElement(writer, kMkvDiscardPadding, frame->discard_padding())) {
+      !WriteEbmlElement(writer, libwebm::kMkvDiscardPadding,
+                        frame->discard_padding())) {
     return false;
   }
 
   if (!frame->is_key() &&
-      !WriteEbmlElement(writer, kMkvReferenceBlock,
+      !WriteEbmlElement(writer, libwebm::kMkvReferenceBlock,
                         reference_block_timestamp)) {
     return false;
   }
 
-  if (duration > 0 && !WriteEbmlElement(writer, kMkvBlockDuration, duration)) {
+  if (duration > 0 &&
+      !WriteEbmlElement(writer, libwebm::kMkvBlockDuration, duration)) {
     return false;
   }
-  return EbmlMasterElementSize(kMkvBlockGroup, block_group_payload_size) +
+  return EbmlMasterElementSize(libwebm::kMkvBlockGroup,
+                               block_group_payload_size) +
          block_group_payload_size;
 }
 
 uint64_t WriteSimpleBlock(IMkvWriter* writer, const Frame* const frame,
                           int64_t timecode) {
-  if (WriteID(writer, kMkvSimpleBlock))
+  if (WriteID(writer, libwebm::kMkvSimpleBlock))
     return 0;
 
   const int32_t size = static_cast<int32_t>(frame->length()) + 4;
@@ -171,7 +178,7 @@ uint64_t WriteSimpleBlock(IMkvWriter* writer, const Frame* const frame,
   if (writer->Write(frame->frame(), static_cast<uint32_t>(frame->length())))
     return 0;
 
-  return GetUIntSize(kMkvSimpleBlock) + GetCodedUIntSize(size) + 4 +
+  return GetUIntSize(libwebm::kMkvSimpleBlock) + GetCodedUIntSize(size) + 4 +
          frame->length();
 }
 
@@ -557,7 +564,8 @@ uint64_t WriteVoidElement(IMkvWriter* writer, uint64_t size) {
   // Subtract one for the void ID and the coded size.
   uint64_t void_entry_size = size - 1 - GetCodedUIntSize(size - 1);
   uint64_t void_size =
-      EbmlMasterElementSize(kMkvVoid, void_entry_size) + void_entry_size;
+      EbmlMasterElementSize(libwebm::kMkvVoid, void_entry_size) +
+      void_entry_size;
 
   if (void_size != size)
     return 0;
@@ -566,7 +574,7 @@ uint64_t WriteVoidElement(IMkvWriter* writer, uint64_t size) {
   if (payload_position < 0)
     return 0;
 
-  if (WriteID(writer, kMkvVoid))
+  if (WriteID(writer, libwebm::kMkvVoid))
     return 0;
 
   if (WriteUInt(writer, void_entry_size))
@@ -630,4 +638,3 @@ uint64_t MakeUID(unsigned int* seed) {
 }
 
 }  // namespace mkvmuxer
-}  // namespace libwebm

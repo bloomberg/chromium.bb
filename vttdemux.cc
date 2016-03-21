@@ -961,7 +961,7 @@ int main(int argc, const char* argv[]) {
   }
 
   const char* const filename = argv[1];
-  libwebm::mkvparser::MkvReader reader;
+  mkvparser::MkvReader reader;
 
   int e = reader.Open(filename);
 

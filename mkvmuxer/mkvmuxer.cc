@@ -27,7 +27,6 @@
 #pragma warning(disable : 4996)
 #endif
 
-namespace libwebm {
 namespace mkvmuxer {
 
 const float MasteringMetadata::kValueNotPresent = FLT_MAX;
@@ -87,29 +86,29 @@ IMkvWriter::~IMkvWriter() {}
 
 bool WriteEbmlHeader(IMkvWriter* writer, uint64_t doc_type_version) {
   // Level 0
-  uint64_t size = EbmlElementSize(kMkvEBMLVersion, UINT64_C(1));
-  size += EbmlElementSize(kMkvEBMLReadVersion, UINT64_C(1));
-  size += EbmlElementSize(kMkvEBMLMaxIDLength, UINT64_C(4));
-  size += EbmlElementSize(kMkvEBMLMaxSizeLength, UINT64_C(8));
-  size += EbmlElementSize(kMkvDocType, "webm");
-  size += EbmlElementSize(kMkvDocTypeVersion, doc_type_version);
-  size += EbmlElementSize(kMkvDocTypeReadVersion, UINT64_C(2));
+  uint64_t size = EbmlElementSize(libwebm::kMkvEBMLVersion, UINT64_C(1));
+  size += EbmlElementSize(libwebm::kMkvEBMLReadVersion, UINT64_C(1));
+  size += EbmlElementSize(libwebm::kMkvEBMLMaxIDLength, UINT64_C(4));
+  size += EbmlElementSize(libwebm::kMkvEBMLMaxSizeLength, UINT64_C(8));
+  size += EbmlElementSize(libwebm::kMkvDocType, "webm");
+  size += EbmlElementSize(libwebm::kMkvDocTypeVersion, doc_type_version);
+  size += EbmlElementSize(libwebm::kMkvDocTypeReadVersion, UINT64_C(2));
 
-  if (!WriteEbmlMasterElement(writer, kMkvEBML, size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvEBML, size))
     return false;
-  if (!WriteEbmlElement(writer, kMkvEBMLVersion, UINT64_C(1)))
+  if (!WriteEbmlElement(writer, libwebm::kMkvEBMLVersion, UINT64_C(1)))
     return false;
-  if (!WriteEbmlElement(writer, kMkvEBMLReadVersion, UINT64_C(1)))
+  if (!WriteEbmlElement(writer, libwebm::kMkvEBMLReadVersion, UINT64_C(1)))
     return false;
-  if (!WriteEbmlElement(writer, kMkvEBMLMaxIDLength, UINT64_C(4)))
+  if (!WriteEbmlElement(writer, libwebm::kMkvEBMLMaxIDLength, UINT64_C(4)))
     return false;
-  if (!WriteEbmlElement(writer, kMkvEBMLMaxSizeLength, UINT64_C(8)))
+  if (!WriteEbmlElement(writer, libwebm::kMkvEBMLMaxSizeLength, UINT64_C(8)))
     return false;
-  if (!WriteEbmlElement(writer, kMkvDocType, "webm"))
+  if (!WriteEbmlElement(writer, libwebm::kMkvDocType, "webm"))
     return false;
-  if (!WriteEbmlElement(writer, kMkvDocTypeVersion, doc_type_version))
+  if (!WriteEbmlElement(writer, libwebm::kMkvDocTypeVersion, doc_type_version))
     return false;
-  if (!WriteEbmlElement(writer, kMkvDocTypeReadVersion, UINT64_C(2)))
+  if (!WriteEbmlElement(writer, libwebm::kMkvDocTypeReadVersion, UINT64_C(2)))
     return false;
 
   return true;
@@ -267,33 +266,34 @@ bool CuePoint::Write(IMkvWriter* writer) const {
   if (!writer || track_ < 1 || cluster_pos_ < 1)
     return false;
 
-  uint64_t size = EbmlElementSize(kMkvCueClusterPosition, cluster_pos_);
-  size += EbmlElementSize(kMkvCueTrack, track_);
+  uint64_t size =
+      EbmlElementSize(libwebm::kMkvCueClusterPosition, cluster_pos_);
+  size += EbmlElementSize(libwebm::kMkvCueTrack, track_);
   if (output_block_number_ && block_number_ > 1)
-    size += EbmlElementSize(kMkvCueBlockNumber, block_number_);
+    size += EbmlElementSize(libwebm::kMkvCueBlockNumber, block_number_);
   const uint64_t track_pos_size =
-      EbmlMasterElementSize(kMkvCueTrackPositions, size) + size;
+      EbmlMasterElementSize(libwebm::kMkvCueTrackPositions, size) + size;
   const uint64_t payload_size =
-      EbmlElementSize(kMkvCueTime, time_) + track_pos_size;
+      EbmlElementSize(libwebm::kMkvCueTime, time_) + track_pos_size;
 
-  if (!WriteEbmlMasterElement(writer, kMkvCuePoint, payload_size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvCuePoint, payload_size))
     return false;
 
   const int64_t payload_position = writer->Position();
   if (payload_position < 0)
     return false;
 
-  if (!WriteEbmlElement(writer, kMkvCueTime, time_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvCueTime, time_))
     return false;
 
-  if (!WriteEbmlMasterElement(writer, kMkvCueTrackPositions, size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvCueTrackPositions, size))
     return false;
-  if (!WriteEbmlElement(writer, kMkvCueTrack, track_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvCueTrack, track_))
     return false;
-  if (!WriteEbmlElement(writer, kMkvCueClusterPosition, cluster_pos_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvCueClusterPosition, cluster_pos_))
     return false;
   if (output_block_number_ && block_number_ > 1)
-    if (!WriteEbmlElement(writer, kMkvCueBlockNumber, block_number_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvCueBlockNumber, block_number_))
       return false;
 
   const int64_t stop_position = writer->Position();
@@ -307,21 +307,23 @@ bool CuePoint::Write(IMkvWriter* writer) const {
 }
 
 uint64_t CuePoint::PayloadSize() const {
-  uint64_t size = EbmlElementSize(kMkvCueClusterPosition, cluster_pos_);
-  size += EbmlElementSize(kMkvCueTrack, track_);
+  uint64_t size =
+      EbmlElementSize(libwebm::kMkvCueClusterPosition, cluster_pos_);
+  size += EbmlElementSize(libwebm::kMkvCueTrack, track_);
   if (output_block_number_ && block_number_ > 1)
-    size += EbmlElementSize(kMkvCueBlockNumber, block_number_);
+    size += EbmlElementSize(libwebm::kMkvCueBlockNumber, block_number_);
   const uint64_t track_pos_size =
-      EbmlMasterElementSize(kMkvCueTrackPositions, size) + size;
+      EbmlMasterElementSize(libwebm::kMkvCueTrackPositions, size) + size;
   const uint64_t payload_size =
-      EbmlElementSize(kMkvCueTime, time_) + track_pos_size;
+      EbmlElementSize(libwebm::kMkvCueTime, time_) + track_pos_size;
 
   return payload_size;
 }
 
 uint64_t CuePoint::Size() const {
   const uint64_t payload_size = PayloadSize();
-  return EbmlMasterElementSize(kMkvCuePoint, payload_size) + payload_size;
+  return EbmlMasterElementSize(libwebm::kMkvCuePoint, payload_size) +
+         payload_size;
 }
 
 ///////////////////////////////////////////////////////////////
@@ -390,7 +392,7 @@ uint64_t Cues::Size() {
   uint64_t size = 0;
   for (int32_t i = 0; i < cue_entries_size_; ++i)
     size += GetCueByIndex(i)->Size();
-  size += EbmlMasterElementSize(kMkvCues, size);
+  size += EbmlMasterElementSize(libwebm::kMkvCues, size);
   return size;
 }
 
@@ -408,7 +410,7 @@ bool Cues::Write(IMkvWriter* writer) const {
     size += cue->Size();
   }
 
-  if (!WriteEbmlMasterElement(writer, kMkvCues, size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvCues, size))
     return false;
 
   const int64_t payload_position = writer->Position();
@@ -441,21 +443,24 @@ ContentEncAESSettings::ContentEncAESSettings() : cipher_mode_(kCTR) {}
 uint64_t ContentEncAESSettings::Size() const {
   const uint64_t payload = PayloadSize();
   const uint64_t size =
-      EbmlMasterElementSize(kMkvContentEncAESSettings, payload) + payload;
+      EbmlMasterElementSize(libwebm::kMkvContentEncAESSettings, payload) +
+      payload;
   return size;
 }
 
 bool ContentEncAESSettings::Write(IMkvWriter* writer) const {
   const uint64_t payload = PayloadSize();
 
-  if (!WriteEbmlMasterElement(writer, kMkvContentEncAESSettings, payload))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvContentEncAESSettings,
+                              payload))
     return false;
 
   const int64_t payload_position = writer->Position();
   if (payload_position < 0)
     return false;
 
-  if (!WriteEbmlElement(writer, kMkvAESSettingsCipherMode, cipher_mode_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvAESSettingsCipherMode,
+                        cipher_mode_))
     return false;
 
   const int64_t stop_position = writer->Position();
@@ -467,7 +472,8 @@ bool ContentEncAESSettings::Write(IMkvWriter* writer) const {
 }
 
 uint64_t ContentEncAESSettings::PayloadSize() const {
-  uint64_t size = EbmlElementSize(kMkvAESSettingsCipherMode, cipher_mode_);
+  uint64_t size =
+      EbmlElementSize(libwebm::kMkvAESSettingsCipherMode, cipher_mode_);
   return size;
 }
 
@@ -506,7 +512,8 @@ uint64_t ContentEncoding::Size() const {
   const uint64_t encryption_size = EncryptionSize();
   const uint64_t encoding_size = EncodingSize(0, encryption_size);
   const uint64_t encodings_size =
-      EbmlMasterElementSize(kMkvContentEncoding, encoding_size) + encoding_size;
+      EbmlMasterElementSize(libwebm::kMkvContentEncoding, encoding_size) +
+      encoding_size;
 
   return encodings_size;
 }
@@ -515,26 +522,32 @@ bool ContentEncoding::Write(IMkvWriter* writer) const {
   const uint64_t encryption_size = EncryptionSize();
   const uint64_t encoding_size = EncodingSize(0, encryption_size);
   const uint64_t size =
-      EbmlMasterElementSize(kMkvContentEncoding, encoding_size) + encoding_size;
+      EbmlMasterElementSize(libwebm::kMkvContentEncoding, encoding_size) +
+      encoding_size;
 
   const int64_t payload_position = writer->Position();
   if (payload_position < 0)
     return false;
 
-  if (!WriteEbmlMasterElement(writer, kMkvContentEncoding, encoding_size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvContentEncoding,
+                              encoding_size))
     return false;
-  if (!WriteEbmlElement(writer, kMkvContentEncodingOrder, encoding_order_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvContentEncodingOrder,
+                        encoding_order_))
     return false;
-  if (!WriteEbmlElement(writer, kMkvContentEncodingScope, encoding_scope_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvContentEncodingScope,
+                        encoding_scope_))
     return false;
-  if (!WriteEbmlElement(writer, kMkvContentEncodingType, encoding_type_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvContentEncodingType,
+                        encoding_type_))
     return false;
 
-  if (!WriteEbmlMasterElement(writer, kMkvContentEncryption, encryption_size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvContentEncryption,
+                              encryption_size))
     return false;
-  if (!WriteEbmlElement(writer, kMkvContentEncAlgo, enc_algo_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvContentEncAlgo, enc_algo_))
     return false;
-  if (!WriteEbmlElement(writer, kMkvContentEncKeyID, enc_key_id_,
+  if (!WriteEbmlElement(writer, libwebm::kMkvContentEncKeyID, enc_key_id_,
                         enc_key_id_length_))
     return false;
 
@@ -559,12 +572,15 @@ uint64_t ContentEncoding::EncodingSize(uint64_t compresion_size,
 
   if (encryption_size > 0) {
     encoding_size +=
-        EbmlMasterElementSize(kMkvContentEncryption, encryption_size) +
+        EbmlMasterElementSize(libwebm::kMkvContentEncryption, encryption_size) +
         encryption_size;
   }
-  encoding_size += EbmlElementSize(kMkvContentEncodingType, encoding_type_);
-  encoding_size += EbmlElementSize(kMkvContentEncodingScope, encoding_scope_);
-  encoding_size += EbmlElementSize(kMkvContentEncodingOrder, encoding_order_);
+  encoding_size +=
+      EbmlElementSize(libwebm::kMkvContentEncodingType, encoding_type_);
+  encoding_size +=
+      EbmlElementSize(libwebm::kMkvContentEncodingScope, encoding_scope_);
+  encoding_size +=
+      EbmlElementSize(libwebm::kMkvContentEncodingOrder, encoding_order_);
 
   return encoding_size;
 }
@@ -572,9 +588,9 @@ uint64_t ContentEncoding::EncodingSize(uint64_t compresion_size,
 uint64_t ContentEncoding::EncryptionSize() const {
   const uint64_t aes_size = enc_aes_settings_.Size();
 
-  uint64_t encryption_size =
-      EbmlElementSize(kMkvContentEncKeyID, enc_key_id_, enc_key_id_length_);
-  encryption_size += EbmlElementSize(kMkvContentEncAlgo, enc_algo_);
+  uint64_t encryption_size = EbmlElementSize(libwebm::kMkvContentEncKeyID,
+                                             enc_key_id_, enc_key_id_length_);
+  encryption_size += EbmlElementSize(libwebm::kMkvContentEncAlgo, enc_algo_);
 
   return encryption_size + aes_size;
 }
@@ -652,26 +668,27 @@ ContentEncoding* Track::GetContentEncodingByIndex(uint32_t index) const {
 }
 
 uint64_t Track::PayloadSize() const {
-  uint64_t size = EbmlElementSize(kMkvTrackNumber, number_);
-  size += EbmlElementSize(kMkvTrackUID, uid_);
-  size += EbmlElementSize(kMkvTrackType, type_);
+  uint64_t size = EbmlElementSize(libwebm::kMkvTrackNumber, number_);
+  size += EbmlElementSize(libwebm::kMkvTrackUID, uid_);
+  size += EbmlElementSize(libwebm::kMkvTrackType, type_);
   if (codec_id_)
-    size += EbmlElementSize(kMkvCodecID, codec_id_);
+    size += EbmlElementSize(libwebm::kMkvCodecID, codec_id_);
   if (codec_private_)
-    size += EbmlElementSize(kMkvCodecPrivate, codec_private_,
+    size += EbmlElementSize(libwebm::kMkvCodecPrivate, codec_private_,
                             codec_private_length_);
   if (language_)
-    size += EbmlElementSize(kMkvLanguage, language_);
+    size += EbmlElementSize(libwebm::kMkvLanguage, language_);
   if (name_)
-    size += EbmlElementSize(kMkvName, name_);
+    size += EbmlElementSize(libwebm::kMkvName, name_);
   if (max_block_additional_id_)
-    size += EbmlElementSize(kMkvMaxBlockAdditionID, max_block_additional_id_);
+    size += EbmlElementSize(libwebm::kMkvMaxBlockAdditionID,
+                            max_block_additional_id_);
   if (codec_delay_)
-    size += EbmlElementSize(kMkvCodecDelay, codec_delay_);
+    size += EbmlElementSize(libwebm::kMkvCodecDelay, codec_delay_);
   if (seek_pre_roll_)
-    size += EbmlElementSize(kMkvSeekPreRoll, seek_pre_roll_);
+    size += EbmlElementSize(libwebm::kMkvSeekPreRoll, seek_pre_roll_);
   if (default_duration_)
-    size += EbmlElementSize(kMkvDefaultDuration, default_duration_);
+    size += EbmlElementSize(libwebm::kMkvDefaultDuration, default_duration_);
 
   if (content_encoding_entries_size_ > 0) {
     uint64_t content_encodings_size = 0;
@@ -680,9 +697,9 @@ uint64_t Track::PayloadSize() const {
       content_encodings_size += encoding->Size();
     }
 
-    size +=
-        EbmlMasterElementSize(kMkvContentEncodings, content_encodings_size) +
-        content_encodings_size;
+    size += EbmlMasterElementSize(libwebm::kMkvContentEncodings,
+                                  content_encodings_size) +
+            content_encodings_size;
   }
 
   return size;
@@ -690,7 +707,7 @@ uint64_t Track::PayloadSize() const {
 
 uint64_t Track::Size() const {
   uint64_t size = PayloadSize();
-  size += EbmlMasterElementSize(kMkvTrackEntry, size);
+  size += EbmlMasterElementSize(libwebm::kMkvTrackEntry, size);
   return size;
 }
 
@@ -706,73 +723,75 @@ bool Track::Write(IMkvWriter* writer) const {
   // derived classes may write out more data in the Track element.
   const uint64_t payload_size = PayloadSize();
 
-  if (!WriteEbmlMasterElement(writer, kMkvTrackEntry, payload_size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvTrackEntry, payload_size))
     return false;
 
-  uint64_t size = EbmlElementSize(kMkvTrackNumber, number_);
-  size += EbmlElementSize(kMkvTrackUID, uid_);
-  size += EbmlElementSize(kMkvTrackType, type_);
+  uint64_t size = EbmlElementSize(libwebm::kMkvTrackNumber, number_);
+  size += EbmlElementSize(libwebm::kMkvTrackUID, uid_);
+  size += EbmlElementSize(libwebm::kMkvTrackType, type_);
   if (codec_id_)
-    size += EbmlElementSize(kMkvCodecID, codec_id_);
+    size += EbmlElementSize(libwebm::kMkvCodecID, codec_id_);
   if (codec_private_)
-    size += EbmlElementSize(kMkvCodecPrivate, codec_private_,
+    size += EbmlElementSize(libwebm::kMkvCodecPrivate, codec_private_,
                             codec_private_length_);
   if (language_)
-    size += EbmlElementSize(kMkvLanguage, language_);
+    size += EbmlElementSize(libwebm::kMkvLanguage, language_);
   if (name_)
-    size += EbmlElementSize(kMkvName, name_);
+    size += EbmlElementSize(libwebm::kMkvName, name_);
   if (max_block_additional_id_)
-    size += EbmlElementSize(kMkvMaxBlockAdditionID, max_block_additional_id_);
+    size += EbmlElementSize(libwebm::kMkvMaxBlockAdditionID,
+                            max_block_additional_id_);
   if (codec_delay_)
-    size += EbmlElementSize(kMkvCodecDelay, codec_delay_);
+    size += EbmlElementSize(libwebm::kMkvCodecDelay, codec_delay_);
   if (seek_pre_roll_)
-    size += EbmlElementSize(kMkvSeekPreRoll, seek_pre_roll_);
+    size += EbmlElementSize(libwebm::kMkvSeekPreRoll, seek_pre_roll_);
   if (default_duration_)
-    size += EbmlElementSize(kMkvDefaultDuration, default_duration_);
+    size += EbmlElementSize(libwebm::kMkvDefaultDuration, default_duration_);
 
   const int64_t payload_position = writer->Position();
   if (payload_position < 0)
     return false;
 
-  if (!WriteEbmlElement(writer, kMkvTrackNumber, number_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvTrackNumber, number_))
     return false;
-  if (!WriteEbmlElement(writer, kMkvTrackUID, uid_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvTrackUID, uid_))
     return false;
-  if (!WriteEbmlElement(writer, kMkvTrackType, type_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvTrackType, type_))
     return false;
   if (max_block_additional_id_) {
-    if (!WriteEbmlElement(writer, kMkvMaxBlockAdditionID,
+    if (!WriteEbmlElement(writer, libwebm::kMkvMaxBlockAdditionID,
                           max_block_additional_id_)) {
       return false;
     }
   }
   if (codec_delay_) {
-    if (!WriteEbmlElement(writer, kMkvCodecDelay, codec_delay_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvCodecDelay, codec_delay_))
       return false;
   }
   if (seek_pre_roll_) {
-    if (!WriteEbmlElement(writer, kMkvSeekPreRoll, seek_pre_roll_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvSeekPreRoll, seek_pre_roll_))
       return false;
   }
   if (default_duration_) {
-    if (!WriteEbmlElement(writer, kMkvDefaultDuration, default_duration_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvDefaultDuration,
+                          default_duration_))
       return false;
   }
   if (codec_id_) {
-    if (!WriteEbmlElement(writer, kMkvCodecID, codec_id_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvCodecID, codec_id_))
       return false;
   }
   if (codec_private_) {
-    if (!WriteEbmlElement(writer, kMkvCodecPrivate, codec_private_,
+    if (!WriteEbmlElement(writer, libwebm::kMkvCodecPrivate, codec_private_,
                           codec_private_length_))
       return false;
   }
   if (language_) {
-    if (!WriteEbmlElement(writer, kMkvLanguage, language_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvLanguage, language_))
       return false;
   }
   if (name_) {
-    if (!WriteEbmlElement(writer, kMkvName, name_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvName, name_))
       return false;
   }
 
@@ -788,7 +807,7 @@ bool Track::Write(IMkvWriter* writer) const {
       content_encodings_size += encoding->Size();
     }
 
-    if (!WriteEbmlMasterElement(writer, kMkvContentEncodings,
+    if (!WriteEbmlMasterElement(writer, libwebm::kMkvContentEncodings,
                                 content_encodings_size))
       return false;
 
@@ -875,13 +894,13 @@ void Track::set_name(const char* name) {
 //
 // Colour and its child elements
 
-uint64_t PrimaryChromaticity::PrimaryChromaticityPayloadSize(MkvId x_id,
-                                                             MkvId y_id) const {
+uint64_t PrimaryChromaticity::PrimaryChromaticityPayloadSize(
+    libwebm::MkvId x_id, libwebm::MkvId y_id) const {
   return EbmlElementSize(x_id, x) + EbmlElementSize(y_id, y);
 }
 
-bool PrimaryChromaticity::Write(IMkvWriter* writer, MkvId x_id,
-                                MkvId y_id) const {
+bool PrimaryChromaticity::Write(IMkvWriter* writer, libwebm::MkvId x_id,
+                                libwebm::MkvId y_id) const {
   return WriteEbmlElement(writer, x_id, x) && WriteEbmlElement(writer, y_id, y);
 }
 
@@ -889,7 +908,7 @@ uint64_t MasteringMetadata::MasteringMetadataSize() const {
   uint64_t size = PayloadSize();
 
   if (size > 0)
-    size += EbmlMasterElementSize(kMkvMasteringMetadata, size);
+    size += EbmlMasterElementSize(libwebm::kMkvMasteringMetadata, size);
 
   return size;
 }
@@ -901,34 +920,34 @@ bool MasteringMetadata::Write(IMkvWriter* writer) const {
   if (size == 0)
     return true;
 
-  if (!WriteEbmlMasterElement(writer, kMkvMasteringMetadata, size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvMasteringMetadata, size))
     return false;
   if (luminance_max != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvLuminanceMax, luminance_max)) {
+      !WriteEbmlElement(writer, libwebm::kMkvLuminanceMax, luminance_max)) {
     return false;
   }
   if (luminance_min != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvLuminanceMin, luminance_min)) {
+      !WriteEbmlElement(writer, libwebm::kMkvLuminanceMin, luminance_min)) {
     return false;
   }
   if (r_ &&
-      !r_->Write(writer, kMkvPrimaryRChromaticityX,
-                 kMkvPrimaryRChromaticityY)) {
+      !r_->Write(writer, libwebm::kMkvPrimaryRChromaticityX,
+                 libwebm::kMkvPrimaryRChromaticityY)) {
     return false;
   }
   if (g_ &&
-      !g_->Write(writer, kMkvPrimaryGChromaticityX,
-                 kMkvPrimaryGChromaticityY)) {
+      !g_->Write(writer, libwebm::kMkvPrimaryGChromaticityX,
+                 libwebm::kMkvPrimaryGChromaticityY)) {
     return false;
   }
   if (b_ &&
-      !b_->Write(writer, kMkvPrimaryBChromaticityX,
-                 kMkvPrimaryBChromaticityY)) {
+      !b_->Write(writer, libwebm::kMkvPrimaryBChromaticityX,
+                 libwebm::kMkvPrimaryBChromaticityY)) {
     return false;
   }
   if (white_point_ &&
-      !white_point_->Write(writer, kMkvWhitePointChromaticityX,
-                           kMkvWhitePointChromaticityY)) {
+      !white_point_->Write(writer, libwebm::kMkvWhitePointChromaticityX,
+                           libwebm::kMkvWhitePointChromaticityY)) {
     return false;
   }
 
@@ -970,25 +989,26 @@ uint64_t MasteringMetadata::PayloadSize() const {
   uint64_t size = 0;
 
   if (luminance_max != kValueNotPresent)
-    size += EbmlElementSize(kMkvLuminanceMax, luminance_max);
+    size += EbmlElementSize(libwebm::kMkvLuminanceMax, luminance_max);
   if (luminance_min != kValueNotPresent)
-    size += EbmlElementSize(kMkvLuminanceMin, luminance_min);
+    size += EbmlElementSize(libwebm::kMkvLuminanceMin, luminance_min);
 
   if (r_) {
-    size += r_->PrimaryChromaticityPayloadSize(kMkvPrimaryRChromaticityX,
-                                               kMkvPrimaryRChromaticityY);
+    size += r_->PrimaryChromaticityPayloadSize(
+        libwebm::kMkvPrimaryRChromaticityX, libwebm::kMkvPrimaryRChromaticityY);
   }
   if (g_) {
-    size += g_->PrimaryChromaticityPayloadSize(kMkvPrimaryGChromaticityX,
-                                               kMkvPrimaryGChromaticityY);
+    size += g_->PrimaryChromaticityPayloadSize(
+        libwebm::kMkvPrimaryGChromaticityX, libwebm::kMkvPrimaryGChromaticityY);
   }
   if (b_) {
-    size += b_->PrimaryChromaticityPayloadSize(kMkvPrimaryBChromaticityX,
-                                               kMkvPrimaryBChromaticityY);
+    size += b_->PrimaryChromaticityPayloadSize(
+        libwebm::kMkvPrimaryBChromaticityX, libwebm::kMkvPrimaryBChromaticityY);
   }
   if (white_point_) {
     size += white_point_->PrimaryChromaticityPayloadSize(
-        kMkvWhitePointChromaticityX, kMkvWhitePointChromaticityY);
+        libwebm::kMkvWhitePointChromaticityX,
+        libwebm::kMkvWhitePointChromaticityY);
   }
 
   return size;
@@ -998,7 +1018,7 @@ uint64_t Colour::ColourSize() const {
   uint64_t size = PayloadSize();
 
   if (size > 0)
-    size += EbmlMasterElementSize(kMkvColour, size);
+    size += EbmlMasterElementSize(libwebm::kMkvColour, size);
 
   return size;
 }
@@ -1010,63 +1030,69 @@ bool Colour::Write(IMkvWriter* writer) const {
   if (size == 0)
     return true;
 
-  if (!WriteEbmlMasterElement(writer, kMkvColour, size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvColour, size))
     return false;
 
   if (matrix_coefficients != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvMatrixCoefficients, matrix_coefficients)) {
+      !WriteEbmlElement(writer, libwebm::kMkvMatrixCoefficients,
+                        matrix_coefficients)) {
     return false;
   }
   if (bits_per_channel != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvBitsPerChannel, bits_per_channel)) {
+      !WriteEbmlElement(writer, libwebm::kMkvBitsPerChannel,
+                        bits_per_channel)) {
     return false;
   }
   if (chroma_subsampling_horz != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvChromaSubsamplingHorz,
+      !WriteEbmlElement(writer, libwebm::kMkvChromaSubsamplingHorz,
                         chroma_subsampling_horz)) {
     return false;
   }
   if (chroma_subsampling_vert != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvChromaSubsamplingVert,
+      !WriteEbmlElement(writer, libwebm::kMkvChromaSubsamplingVert,
                         chroma_subsampling_vert)) {
     return false;
   }
 
   if (cb_subsampling_horz != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvCbSubsamplingHorz, cb_subsampling_horz)) {
+      !WriteEbmlElement(writer, libwebm::kMkvCbSubsamplingHorz,
+                        cb_subsampling_horz)) {
     return false;
   }
   if (cb_subsampling_vert != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvCbSubsamplingVert, cb_subsampling_vert)) {
+      !WriteEbmlElement(writer, libwebm::kMkvCbSubsamplingVert,
+                        cb_subsampling_vert)) {
     return false;
   }
   if (chroma_siting_horz != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvChromaSitingHorz, chroma_siting_horz)) {
+      !WriteEbmlElement(writer, libwebm::kMkvChromaSitingHorz,
+                        chroma_siting_horz)) {
     return false;
   }
   if (chroma_siting_vert != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvChromaSitingVert, chroma_siting_vert)) {
+      !WriteEbmlElement(writer, libwebm::kMkvChromaSitingVert,
+                        chroma_siting_vert)) {
     return false;
   }
   if (range != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvRange, range)) {
+      !WriteEbmlElement(writer, libwebm::kMkvRange, range)) {
     return false;
   }
   if (transfer_characteristics != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvTransferCharacteristics,
+      !WriteEbmlElement(writer, libwebm::kMkvTransferCharacteristics,
                         transfer_characteristics)) {
     return false;
   }
   if (primaries != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvPrimaries, primaries)) {
+      !WriteEbmlElement(writer, libwebm::kMkvPrimaries, primaries)) {
     return false;
   }
   if (max_cll != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvMaxCLL, max_cll)) {
+      !WriteEbmlElement(writer, libwebm::kMkvMaxCLL, max_cll)) {
     return false;
   }
   if (max_fall != kValueNotPresent &&
-      !WriteEbmlElement(writer, kMkvMaxFALL, max_fall)) {
+      !WriteEbmlElement(writer, libwebm::kMkvMaxFALL, max_fall)) {
     return false;
   }
 
@@ -1099,32 +1125,37 @@ uint64_t Colour::PayloadSize() const {
   uint64_t size = 0;
 
   if (matrix_coefficients != kValueNotPresent)
-    size += EbmlElementSize(kMkvMatrixCoefficients, matrix_coefficients);
-  if (bits_per_channel != kValueNotPresent)
-    size += EbmlElementSize(kMkvBitsPerChannel, bits_per_channel);
-  if (chroma_subsampling_horz != kValueNotPresent)
-    size += EbmlElementSize(kMkvChromaSubsamplingHorz, chroma_subsampling_horz);
-  if (chroma_subsampling_vert != kValueNotPresent)
-    size += EbmlElementSize(kMkvChromaSubsamplingVert, chroma_subsampling_vert);
-  if (cb_subsampling_horz != kValueNotPresent)
-    size += EbmlElementSize(kMkvCbSubsamplingHorz, cb_subsampling_horz);
-  if (cb_subsampling_vert != kValueNotPresent)
-    size += EbmlElementSize(kMkvCbSubsamplingVert, cb_subsampling_vert);
-  if (chroma_siting_horz != kValueNotPresent)
-    size += EbmlElementSize(kMkvChromaSitingHorz, chroma_siting_horz);
-  if (chroma_siting_vert != kValueNotPresent)
-    size += EbmlElementSize(kMkvChromaSitingVert, chroma_siting_vert);
-  if (range != kValueNotPresent)
-    size += EbmlElementSize(kMkvRange, range);
-  if (transfer_characteristics != kValueNotPresent)
     size +=
-        EbmlElementSize(kMkvTransferCharacteristics, transfer_characteristics);
+        EbmlElementSize(libwebm::kMkvMatrixCoefficients, matrix_coefficients);
+  if (bits_per_channel != kValueNotPresent)
+    size += EbmlElementSize(libwebm::kMkvBitsPerChannel, bits_per_channel);
+  if (chroma_subsampling_horz != kValueNotPresent)
+    size += EbmlElementSize(libwebm::kMkvChromaSubsamplingHorz,
+                            chroma_subsampling_horz);
+  if (chroma_subsampling_vert != kValueNotPresent)
+    size += EbmlElementSize(libwebm::kMkvChromaSubsamplingVert,
+                            chroma_subsampling_vert);
+  if (cb_subsampling_horz != kValueNotPresent)
+    size +=
+        EbmlElementSize(libwebm::kMkvCbSubsamplingHorz, cb_subsampling_horz);
+  if (cb_subsampling_vert != kValueNotPresent)
+    size +=
+        EbmlElementSize(libwebm::kMkvCbSubsamplingVert, cb_subsampling_vert);
+  if (chroma_siting_horz != kValueNotPresent)
+    size += EbmlElementSize(libwebm::kMkvChromaSitingHorz, chroma_siting_horz);
+  if (chroma_siting_vert != kValueNotPresent)
+    size += EbmlElementSize(libwebm::kMkvChromaSitingVert, chroma_siting_vert);
+  if (range != kValueNotPresent)
+    size += EbmlElementSize(libwebm::kMkvRange, range);
+  if (transfer_characteristics != kValueNotPresent)
+    size += EbmlElementSize(libwebm::kMkvTransferCharacteristics,
+                            transfer_characteristics);
   if (primaries != kValueNotPresent)
-    size += EbmlElementSize(kMkvPrimaries, primaries);
+    size += EbmlElementSize(libwebm::kMkvPrimaries, primaries);
   if (max_cll != kValueNotPresent)
-    size += EbmlElementSize(kMkvMaxCLL, max_cll);
+    size += EbmlElementSize(libwebm::kMkvMaxCLL, max_cll);
   if (max_fall != kValueNotPresent)
-    size += EbmlElementSize(kMkvMaxFALL, max_fall);
+    size += EbmlElementSize(libwebm::kMkvMaxFALL, max_fall);
 
   if (mastering_metadata_)
     size += mastering_metadata_->MasteringMetadataSize();
@@ -1176,7 +1207,7 @@ uint64_t VideoTrack::PayloadSize() const {
   const uint64_t parent_size = Track::PayloadSize();
 
   uint64_t size = VideoPayloadSize();
-  size += EbmlMasterElementSize(kMkvVideo, size);
+  size += EbmlMasterElementSize(libwebm::kMkvVideo, size);
 
   return parent_size + size;
 }
@@ -1187,51 +1218,51 @@ bool VideoTrack::Write(IMkvWriter* writer) const {
 
   const uint64_t size = VideoPayloadSize();
 
-  if (!WriteEbmlMasterElement(writer, kMkvVideo, size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvVideo, size))
     return false;
 
   const int64_t payload_position = writer->Position();
   if (payload_position < 0)
     return false;
 
-  if (!WriteEbmlElement(writer, kMkvPixelWidth, width_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvPixelWidth, width_))
     return false;
-  if (!WriteEbmlElement(writer, kMkvPixelHeight, height_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvPixelHeight, height_))
     return false;
   if (display_width_ > 0) {
-    if (!WriteEbmlElement(writer, kMkvDisplayWidth, display_width_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvDisplayWidth, display_width_))
       return false;
   }
   if (display_height_ > 0) {
-    if (!WriteEbmlElement(writer, kMkvDisplayHeight, display_height_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvDisplayHeight, display_height_))
       return false;
   }
   if (crop_left_ > 0) {
-    if (!WriteEbmlElement(writer, kMkvPixelCropLeft, crop_left_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvPixelCropLeft, crop_left_))
       return false;
   }
   if (crop_right_ > 0) {
-    if (!WriteEbmlElement(writer, kMkvPixelCropRight, crop_right_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvPixelCropRight, crop_right_))
       return false;
   }
   if (crop_top_ > 0) {
-    if (!WriteEbmlElement(writer, kMkvPixelCropTop, crop_top_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvPixelCropTop, crop_top_))
       return false;
   }
   if (crop_bottom_ > 0) {
-    if (!WriteEbmlElement(writer, kMkvPixelCropBottom, crop_bottom_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvPixelCropBottom, crop_bottom_))
       return false;
   }
   if (stereo_mode_ > kMono) {
-    if (!WriteEbmlElement(writer, kMkvStereoMode, stereo_mode_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvStereoMode, stereo_mode_))
       return false;
   }
   if (alpha_mode_ > kNoAlpha) {
-    if (!WriteEbmlElement(writer, kMkvAlphaMode, alpha_mode_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvAlphaMode, alpha_mode_))
       return false;
   }
   if (frame_rate_ > 0.0) {
-    if (!WriteEbmlElement(writer, kMkvFrameRate,
+    if (!WriteEbmlElement(writer, libwebm::kMkvFrameRate,
                           static_cast<float>(frame_rate_))) {
       return false;
     }
@@ -1278,26 +1309,27 @@ bool VideoTrack::SetColour(const Colour& colour) {
 }
 
 uint64_t VideoTrack::VideoPayloadSize() const {
-  uint64_t size = EbmlElementSize(kMkvPixelWidth, width_);
-  size += EbmlElementSize(kMkvPixelHeight, height_);
+  uint64_t size = EbmlElementSize(libwebm::kMkvPixelWidth, width_);
+  size += EbmlElementSize(libwebm::kMkvPixelHeight, height_);
   if (display_width_ > 0)
-    size += EbmlElementSize(kMkvDisplayWidth, display_width_);
+    size += EbmlElementSize(libwebm::kMkvDisplayWidth, display_width_);
   if (display_height_ > 0)
-    size += EbmlElementSize(kMkvDisplayHeight, display_height_);
+    size += EbmlElementSize(libwebm::kMkvDisplayHeight, display_height_);
   if (crop_left_ > 0)
-    size += EbmlElementSize(kMkvPixelCropLeft, crop_left_);
+    size += EbmlElementSize(libwebm::kMkvPixelCropLeft, crop_left_);
   if (crop_right_ > 0)
-    size += EbmlElementSize(kMkvPixelCropRight, crop_right_);
+    size += EbmlElementSize(libwebm::kMkvPixelCropRight, crop_right_);
   if (crop_top_ > 0)
-    size += EbmlElementSize(kMkvPixelCropTop, crop_top_);
+    size += EbmlElementSize(libwebm::kMkvPixelCropTop, crop_top_);
   if (crop_bottom_ > 0)
-    size += EbmlElementSize(kMkvPixelCropBottom, crop_bottom_);
+    size += EbmlElementSize(libwebm::kMkvPixelCropBottom, crop_bottom_);
   if (stereo_mode_ > kMono)
-    size += EbmlElementSize(kMkvStereoMode, stereo_mode_);
+    size += EbmlElementSize(libwebm::kMkvStereoMode, stereo_mode_);
   if (alpha_mode_ > kNoAlpha)
-    size += EbmlElementSize(kMkvAlphaMode, alpha_mode_);
+    size += EbmlElementSize(libwebm::kMkvAlphaMode, alpha_mode_);
   if (frame_rate_ > 0.0)
-    size += EbmlElementSize(kMkvFrameRate, static_cast<float>(frame_rate_));
+    size += EbmlElementSize(libwebm::kMkvFrameRate,
+                            static_cast<float>(frame_rate_));
   if (colour_)
     size += colour_->ColourSize();
 
@@ -1316,12 +1348,12 @@ AudioTrack::~AudioTrack() {}
 uint64_t AudioTrack::PayloadSize() const {
   const uint64_t parent_size = Track::PayloadSize();
 
-  uint64_t size =
-      EbmlElementSize(kMkvSamplingFrequency, static_cast<float>(sample_rate_));
-  size += EbmlElementSize(kMkvChannels, channels_);
+  uint64_t size = EbmlElementSize(libwebm::kMkvSamplingFrequency,
+                                  static_cast<float>(sample_rate_));
+  size += EbmlElementSize(libwebm::kMkvChannels, channels_);
   if (bit_depth_ > 0)
-    size += EbmlElementSize(kMkvBitDepth, bit_depth_);
-  size += EbmlMasterElementSize(kMkvAudio, size);
+    size += EbmlElementSize(libwebm::kMkvBitDepth, bit_depth_);
+  size += EbmlMasterElementSize(libwebm::kMkvAudio, size);
 
   return parent_size + size;
 }
@@ -1331,26 +1363,26 @@ bool AudioTrack::Write(IMkvWriter* writer) const {
     return false;
 
   // Calculate AudioSettings size.
-  uint64_t size =
-      EbmlElementSize(kMkvSamplingFrequency, static_cast<float>(sample_rate_));
-  size += EbmlElementSize(kMkvChannels, channels_);
+  uint64_t size = EbmlElementSize(libwebm::kMkvSamplingFrequency,
+                                  static_cast<float>(sample_rate_));
+  size += EbmlElementSize(libwebm::kMkvChannels, channels_);
   if (bit_depth_ > 0)
-    size += EbmlElementSize(kMkvBitDepth, bit_depth_);
+    size += EbmlElementSize(libwebm::kMkvBitDepth, bit_depth_);
 
-  if (!WriteEbmlMasterElement(writer, kMkvAudio, size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvAudio, size))
     return false;
 
   const int64_t payload_position = writer->Position();
   if (payload_position < 0)
     return false;
 
-  if (!WriteEbmlElement(writer, kMkvSamplingFrequency,
+  if (!WriteEbmlElement(writer, libwebm::kMkvSamplingFrequency,
                         static_cast<float>(sample_rate_)))
     return false;
-  if (!WriteEbmlElement(writer, kMkvChannels, channels_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvChannels, channels_))
     return false;
   if (bit_depth_ > 0)
-    if (!WriteEbmlElement(writer, kMkvBitDepth, bit_depth_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvBitDepth, bit_depth_))
       return false;
 
   const int64_t stop_position = writer->Position();
@@ -1493,7 +1525,7 @@ bool Tracks::Write(IMkvWriter* writer) const {
     size += track->Size();
   }
 
-  if (!WriteEbmlMasterElement(writer, kMkvTracks, size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvTracks, size))
     return false;
 
   const int64_t payload_position = writer->Position();
@@ -1621,10 +1653,10 @@ bool Chapter::ExpandDisplaysArray() {
 
 uint64_t Chapter::WriteAtom(IMkvWriter* writer) const {
   uint64_t payload_size =
-      EbmlElementSize(kMkvChapterStringUID, id_) +
-      EbmlElementSize(kMkvChapterUID, uid_) +
-      EbmlElementSize(kMkvChapterTimeStart, start_timecode_) +
-      EbmlElementSize(kMkvChapterTimeEnd, end_timecode_);
+      EbmlElementSize(libwebm::kMkvChapterStringUID, id_) +
+      EbmlElementSize(libwebm::kMkvChapterUID, uid_) +
+      EbmlElementSize(libwebm::kMkvChapterTimeStart, start_timecode_) +
+      EbmlElementSize(libwebm::kMkvChapterTimeEnd, end_timecode_);
 
   for (int idx = 0; idx < displays_count_; ++idx) {
     const Display& d = displays_[idx];
@@ -1632,26 +1664,27 @@ uint64_t Chapter::WriteAtom(IMkvWriter* writer) const {
   }
 
   const uint64_t atom_size =
-      EbmlMasterElementSize(kMkvChapterAtom, payload_size) + payload_size;
+      EbmlMasterElementSize(libwebm::kMkvChapterAtom, payload_size) +
+      payload_size;
 
   if (writer == NULL)
     return atom_size;
 
   const int64_t start = writer->Position();
 
-  if (!WriteEbmlMasterElement(writer, kMkvChapterAtom, payload_size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvChapterAtom, payload_size))
     return 0;
 
-  if (!WriteEbmlElement(writer, kMkvChapterStringUID, id_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvChapterStringUID, id_))
     return 0;
 
-  if (!WriteEbmlElement(writer, kMkvChapterUID, uid_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvChapterUID, uid_))
     return 0;
 
-  if (!WriteEbmlElement(writer, kMkvChapterTimeStart, start_timecode_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvChapterTimeStart, start_timecode_))
     return 0;
 
-  if (!WriteEbmlElement(writer, kMkvChapterTimeEnd, end_timecode_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvChapterTimeEnd, end_timecode_))
     return 0;
 
   for (int idx = 0; idx < displays_count_; ++idx) {
@@ -1694,35 +1727,37 @@ bool Chapter::Display::set_country(const char* country) {
 }
 
 uint64_t Chapter::Display::WriteDisplay(IMkvWriter* writer) const {
-  uint64_t payload_size = EbmlElementSize(kMkvChapString, title_);
+  uint64_t payload_size = EbmlElementSize(libwebm::kMkvChapString, title_);
 
   if (language_)
-    payload_size += EbmlElementSize(kMkvChapLanguage, language_);
+    payload_size += EbmlElementSize(libwebm::kMkvChapLanguage, language_);
 
   if (country_)
-    payload_size += EbmlElementSize(kMkvChapCountry, country_);
+    payload_size += EbmlElementSize(libwebm::kMkvChapCountry, country_);
 
   const uint64_t display_size =
-      EbmlMasterElementSize(kMkvChapterDisplay, payload_size) + payload_size;
+      EbmlMasterElementSize(libwebm::kMkvChapterDisplay, payload_size) +
+      payload_size;
 
   if (writer == NULL)
     return display_size;
 
   const int64_t start = writer->Position();
 
-  if (!WriteEbmlMasterElement(writer, kMkvChapterDisplay, payload_size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvChapterDisplay,
+                              payload_size))
     return 0;
 
-  if (!WriteEbmlElement(writer, kMkvChapString, title_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvChapString, title_))
     return 0;
 
   if (language_) {
-    if (!WriteEbmlElement(writer, kMkvChapLanguage, language_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvChapLanguage, language_))
       return 0;
   }
 
   if (country_) {
-    if (!WriteEbmlElement(writer, kMkvChapCountry, country_))
+    if (!WriteEbmlElement(writer, libwebm::kMkvChapCountry, country_))
       return 0;
   }
 
@@ -1768,7 +1803,7 @@ bool Chapters::Write(IMkvWriter* writer) const {
 
   const uint64_t payload_size = WriteEdition(NULL);  // return size only
 
-  if (!WriteEbmlMasterElement(writer, kMkvChapters, payload_size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvChapters, payload_size))
     return false;
 
   const int64_t start = writer->Position();
@@ -1817,14 +1852,15 @@ uint64_t Chapters::WriteEdition(IMkvWriter* writer) const {
   }
 
   const uint64_t edition_size =
-      EbmlMasterElementSize(kMkvEditionEntry, payload_size) + payload_size;
+      EbmlMasterElementSize(libwebm::kMkvEditionEntry, payload_size) +
+      payload_size;
 
   if (writer == NULL)  // return size only
     return edition_size;
 
   const int64_t start = writer->Position();
 
-  if (!WriteEbmlMasterElement(writer, kMkvEditionEntry, payload_size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvEditionEntry, payload_size))
     return 0;  // error
 
   for (int idx = 0; idx < chapters_count_; ++idx) {
@@ -1918,14 +1954,14 @@ uint64_t Tag::Write(IMkvWriter* writer) const {
   }
 
   const uint64_t tag_size =
-      EbmlMasterElementSize(kMkvTag, payload_size) + payload_size;
+      EbmlMasterElementSize(libwebm::kMkvTag, payload_size) + payload_size;
 
   if (writer == NULL)
     return tag_size;
 
   const int64_t start = writer->Position();
 
-  if (!WriteEbmlMasterElement(writer, kMkvTag, payload_size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvTag, payload_size))
     return 0;
 
   for (int idx = 0; idx < simple_tags_count_; ++idx) {
@@ -1964,25 +2000,26 @@ bool Tag::SimpleTag::set_tag_string(const char* tag_string) {
 }
 
 uint64_t Tag::SimpleTag::Write(IMkvWriter* writer) const {
-  uint64_t payload_size = EbmlElementSize(kMkvTagName, tag_name_);
+  uint64_t payload_size = EbmlElementSize(libwebm::kMkvTagName, tag_name_);
 
-  payload_size += EbmlElementSize(kMkvTagString, tag_string_);
+  payload_size += EbmlElementSize(libwebm::kMkvTagString, tag_string_);
 
   const uint64_t simple_tag_size =
-      EbmlMasterElementSize(kMkvSimpleTag, payload_size) + payload_size;
+      EbmlMasterElementSize(libwebm::kMkvSimpleTag, payload_size) +
+      payload_size;
 
   if (writer == NULL)
     return simple_tag_size;
 
   const int64_t start = writer->Position();
 
-  if (!WriteEbmlMasterElement(writer, kMkvSimpleTag, payload_size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvSimpleTag, payload_size))
     return 0;
 
-  if (!WriteEbmlElement(writer, kMkvTagName, tag_name_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvTagName, tag_name_))
     return 0;
 
-  if (!WriteEbmlElement(writer, kMkvTagString, tag_string_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvTagString, tag_string_))
     return 0;
 
   const int64_t stop = writer->Position();
@@ -2029,7 +2066,7 @@ bool Tags::Write(IMkvWriter* writer) const {
     payload_size += tag.Write(NULL);
   }
 
-  if (!WriteEbmlMasterElement(writer, kMkvTags, payload_size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvTags, payload_size))
     return false;
 
   const int64_t start = writer->Position();
@@ -2234,7 +2271,8 @@ bool Cluster::Finalize(bool set_last_frame_duration, uint64_t duration) {
 
 uint64_t Cluster::Size() const {
   const uint64_t element_size =
-      EbmlMasterElementSize(kMkvCluster, 0xFFFFFFFFFFFFFFFFULL) + payload_size_;
+      EbmlMasterElementSize(libwebm::kMkvCluster, 0xFFFFFFFFFFFFFFFFULL) +
+      payload_size_;
   return element_size;
 }
 
@@ -2341,7 +2379,7 @@ bool Cluster::WriteClusterHeader() {
   if (finalized_)
     return false;
 
-  if (WriteID(writer_, kMkvCluster))
+  if (WriteID(writer_, libwebm::kMkvCluster))
     return false;
 
   // Save for later.
@@ -2352,9 +2390,9 @@ bool Cluster::WriteClusterHeader() {
   if (SerializeInt(writer_, kEbmlUnknownValue, 8))
     return false;
 
-  if (!WriteEbmlElement(writer_, kMkvTimecode, timecode()))
+  if (!WriteEbmlElement(writer_, libwebm::kMkvTimecode, timecode()))
     return false;
-  AddPayloadSize(EbmlElementSize(kMkvTimecode, timecode()));
+  AddPayloadSize(EbmlElementSize(libwebm::kMkvTimecode, timecode()));
   header_written_ = true;
 
   return true;
@@ -2384,11 +2422,13 @@ bool SeekHead::Finalize(IMkvWriter* writer) const {
     for (int32_t i = 0; i < kSeekEntryCount; ++i) {
       if (seek_entry_id_[i] != 0) {
         entry_size[i] = EbmlElementSize(
-            kMkvSeekID, static_cast<uint64_t>(seek_entry_id_[i]));
-        entry_size[i] += EbmlElementSize(kMkvSeekPosition, seek_entry_pos_[i]);
+            libwebm::kMkvSeekID, static_cast<uint64_t>(seek_entry_id_[i]));
+        entry_size[i] +=
+            EbmlElementSize(libwebm::kMkvSeekPosition, seek_entry_pos_[i]);
 
         payload_size +=
-            EbmlMasterElementSize(kMkvSeek, entry_size[i]) + entry_size[i];
+            EbmlMasterElementSize(libwebm::kMkvSeek, entry_size[i]) +
+            entry_size[i];
       }
     }
 
@@ -2400,26 +2440,27 @@ bool SeekHead::Finalize(IMkvWriter* writer) const {
     if (writer->Position(start_pos_))
       return false;
 
-    if (!WriteEbmlMasterElement(writer, kMkvSeekHead, payload_size))
+    if (!WriteEbmlMasterElement(writer, libwebm::kMkvSeekHead, payload_size))
       return false;
 
     for (int32_t i = 0; i < kSeekEntryCount; ++i) {
       if (seek_entry_id_[i] != 0) {
-        if (!WriteEbmlMasterElement(writer, kMkvSeek, entry_size[i]))
+        if (!WriteEbmlMasterElement(writer, libwebm::kMkvSeek, entry_size[i]))
           return false;
 
-        if (!WriteEbmlElement(writer, kMkvSeekID,
+        if (!WriteEbmlElement(writer, libwebm::kMkvSeekID,
                               static_cast<uint64_t>(seek_entry_id_[i])))
           return false;
 
-        if (!WriteEbmlElement(writer, kMkvSeekPosition, seek_entry_pos_[i]))
+        if (!WriteEbmlElement(writer, libwebm::kMkvSeekPosition,
+                              seek_entry_pos_[i]))
           return false;
       }
     }
 
     const uint64_t total_entry_size = kSeekEntryCount * MaxEntrySize();
     const uint64_t total_size =
-        EbmlMasterElementSize(kMkvSeekHead, total_entry_size) +
+        EbmlMasterElementSize(libwebm::kMkvSeekHead, total_entry_size) +
         total_entry_size;
     const int64_t size_left = total_size - (writer->Position() - start_pos_);
 
@@ -2436,7 +2477,8 @@ bool SeekHead::Finalize(IMkvWriter* writer) const {
 
 bool SeekHead::Write(IMkvWriter* writer) {
   const uint64_t entry_size = kSeekEntryCount * MaxEntrySize();
-  const uint64_t size = EbmlMasterElementSize(kMkvSeekHead, entry_size);
+  const uint64_t size =
+      EbmlMasterElementSize(libwebm::kMkvSeekHead, entry_size);
 
   start_pos_ = writer->Position();
 
@@ -2480,10 +2522,10 @@ bool SeekHead::SetSeekEntry(int index, uint32_t id, uint64_t position) {
 
 uint64_t SeekHead::MaxEntrySize() const {
   const uint64_t max_entry_payload_size =
-      EbmlElementSize(kMkvSeekID, UINT64_C(0xffffffff)) +
-      EbmlElementSize(kMkvSeekPosition, UINT64_C(0xffffffffffffffff));
+      EbmlElementSize(libwebm::kMkvSeekID, UINT64_C(0xffffffff)) +
+      EbmlElementSize(libwebm::kMkvSeekPosition, UINT64_C(0xffffffffffffffff));
   const uint64_t max_entry_size =
-      EbmlMasterElementSize(kMkvSeek, max_entry_payload_size) +
+      EbmlMasterElementSize(libwebm::kMkvSeek, max_entry_payload_size) +
       max_entry_payload_size;
 
   return max_entry_size;
@@ -2555,7 +2597,7 @@ bool SegmentInfo::Finalize(IMkvWriter* writer) const {
       if (writer->Position(duration_pos_))
         return false;
 
-      if (!WriteEbmlElement(writer, kMkvDuration,
+      if (!WriteEbmlElement(writer, libwebm::kMkvDuration,
                             static_cast<float>(duration_)))
         return false;
 
@@ -2571,38 +2613,40 @@ bool SegmentInfo::Write(IMkvWriter* writer) {
   if (!writer || !muxing_app_ || !writing_app_)
     return false;
 
-  uint64_t size = EbmlElementSize(kMkvTimecodeScale, timecode_scale_);
+  uint64_t size = EbmlElementSize(libwebm::kMkvTimecodeScale, timecode_scale_);
   if (duration_ > 0.0)
-    size += EbmlElementSize(kMkvDuration, static_cast<float>(duration_));
+    size +=
+        EbmlElementSize(libwebm::kMkvDuration, static_cast<float>(duration_));
   if (date_utc_ != LLONG_MIN)
-    size += EbmlDateElementSize(kMkvDateUTC);
-  size += EbmlElementSize(kMkvMuxingApp, muxing_app_);
-  size += EbmlElementSize(kMkvWritingApp, writing_app_);
+    size += EbmlDateElementSize(libwebm::kMkvDateUTC);
+  size += EbmlElementSize(libwebm::kMkvMuxingApp, muxing_app_);
+  size += EbmlElementSize(libwebm::kMkvWritingApp, writing_app_);
 
-  if (!WriteEbmlMasterElement(writer, kMkvInfo, size))
+  if (!WriteEbmlMasterElement(writer, libwebm::kMkvInfo, size))
     return false;
 
   const int64_t payload_position = writer->Position();
   if (payload_position < 0)
     return false;
 
-  if (!WriteEbmlElement(writer, kMkvTimecodeScale, timecode_scale_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvTimecodeScale, timecode_scale_))
     return false;
 
   if (duration_ > 0.0) {
     // Save for later
     duration_pos_ = writer->Position();
 
-    if (!WriteEbmlElement(writer, kMkvDuration, static_cast<float>(duration_)))
+    if (!WriteEbmlElement(writer, libwebm::kMkvDuration,
+                          static_cast<float>(duration_)))
       return false;
   }
 
   if (date_utc_ != LLONG_MIN)
-    WriteEbmlDateElement(writer, kMkvDateUTC, date_utc_);
+    WriteEbmlDateElement(writer, libwebm::kMkvDateUTC, date_utc_);
 
-  if (!WriteEbmlElement(writer, kMkvMuxingApp, muxing_app_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvMuxingApp, muxing_app_))
     return false;
-  if (!WriteEbmlElement(writer, kMkvWritingApp, writing_app_))
+  if (!WriteEbmlElement(writer, libwebm::kMkvWritingApp, writing_app_))
     return false;
 
   const int64_t stop_position = writer->Position();
@@ -2769,14 +2813,14 @@ void Segment::MoveCuesBeforeClusters() {
   int32_t cluster_index = 0;
   int32_t cues_index = 0;
   for (int32_t i = 0; i < SeekHead::kSeekEntryCount; ++i) {
-    if (seek_head_.GetId(i) == kMkvCluster)
+    if (seek_head_.GetId(i) == libwebm::kMkvCluster)
       cluster_index = i;
-    if (seek_head_.GetId(i) == kMkvCues)
+    if (seek_head_.GetId(i) == libwebm::kMkvCues)
       cues_index = i;
   }
-  seek_head_.SetSeekEntry(cues_index, kMkvCues,
+  seek_head_.SetSeekEntry(cues_index, libwebm::kMkvCues,
                           seek_head_.GetPosition(cluster_index));
-  seek_head_.SetSeekEntry(cluster_index, kMkvCluster,
+  seek_head_.SetSeekEntry(cluster_index, libwebm::kMkvCluster,
                           cues_.Size() + seek_head_.GetPosition(cues_index));
 }
 
@@ -2795,7 +2839,7 @@ bool Segment::CopyAndMoveCuesBeforeClusters(mkvparser::IMkvReader* reader,
   if (!writer->Seekable() || chunking_)
     return false;
   const int64_t cluster_offset =
-      cluster_list_[0]->size_position() - GetUIntSize(kMkvCluster);
+      cluster_list_[0]->size_position() - GetUIntSize(libwebm::kMkvCluster);
 
   // Copy the headers.
   if (!ChunkedCopy(reader, writer, 0, cluster_offset))
@@ -2854,7 +2898,7 @@ bool Segment::Finalize() {
       return false;
 
     if (output_cues_)
-      if (!seek_head_.AddSeekEntry(kMkvCues, MaxOffset()))
+      if (!seek_head_.AddSeekEntry(libwebm::kMkvCues, MaxOffset()))
         return false;
 
     if (chunking_) {
@@ -3250,7 +3294,7 @@ bool Segment::WriteSegmentHeader() {
 
   // Write "unknown" (-1) as segment size value. If mode is kFile, Segment
   // will write over duration when the file is finalized.
-  if (WriteID(writer_header_, kMkvSegment))
+  if (WriteID(writer_header_, libwebm::kMkvSegment))
     return false;
 
   // Save for later.
@@ -3274,25 +3318,25 @@ bool Segment::WriteSegmentHeader() {
       return false;
   }
 
-  if (!seek_head_.AddSeekEntry(kMkvInfo, MaxOffset()))
+  if (!seek_head_.AddSeekEntry(libwebm::kMkvInfo, MaxOffset()))
     return false;
   if (!segment_info_.Write(writer_header_))
     return false;
 
-  if (!seek_head_.AddSeekEntry(kMkvTracks, MaxOffset()))
+  if (!seek_head_.AddSeekEntry(libwebm::kMkvTracks, MaxOffset()))
     return false;
   if (!tracks_.Write(writer_header_))
     return false;
 
   if (chapters_.Count() > 0) {
-    if (!seek_head_.AddSeekEntry(kMkvChapters, MaxOffset()))
+    if (!seek_head_.AddSeekEntry(libwebm::kMkvChapters, MaxOffset()))
       return false;
     if (!chapters_.Write(writer_header_))
       return false;
   }
 
   if (tags_.Count() > 0) {
-    if (!seek_head_.AddSeekEntry(kMkvTags, MaxOffset()))
+    if (!seek_head_.AddSeekEntry(libwebm::kMkvTags, MaxOffset()))
       return false;
     if (!tags_.Write(writer_header_))
       return false;
@@ -3497,7 +3541,7 @@ bool Segment::CheckHeaderInfo() {
     if (!WriteSegmentHeader())
       return false;
 
-    if (!seek_head_.AddSeekEntry(kMkvCluster, MaxOffset()))
+    if (!seek_head_.AddSeekEntry(libwebm::kMkvCluster, MaxOffset()))
       return false;
 
     if (output_cues_ && cues_track_ == 0) {
@@ -3717,4 +3761,3 @@ bool Segment::WriteFramesLessThan(uint64_t timestamp) {
 }
 
 }  // namespace mkvmuxer
-}  // namespace libwebm

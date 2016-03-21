@@ -12,14 +12,13 @@
 
 #include "mkvmuxer/mkvmuxer.h"
 
-namespace libwebm {
-
 namespace mkvparser {
 struct Colour;
 struct MasteringMetadata;
 struct PrimaryChromaticity;
 }  // namespace mkvparser
 
+namespace libwebm {
 // Utility types and functions for working with the Colour element and its
 // children. Copiers return true upon success. Presence functions return true
 // when the specified element is present.

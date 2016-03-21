@@ -21,8 +21,6 @@
 // For a description of the WebM elements see
 // http://www.webmproject.org/code/specs/container/.
 
-namespace libwebm {
-
 namespace mkvparser {
 class IMkvReader;
 }  // namespace mkvparser
@@ -354,8 +352,10 @@ struct PrimaryChromaticity {
   PrimaryChromaticity(float x_val, float y_val) : x(x_val), y(y_val) {}
   PrimaryChromaticity() : x(0), y(0) {}
   ~PrimaryChromaticity() {}
-  uint64_t PrimaryChromaticityPayloadSize(MkvId x_id, MkvId y_id) const;
-  bool Write(IMkvWriter* writer, MkvId x_id, MkvId y_id) const;
+  uint64_t PrimaryChromaticityPayloadSize(libwebm::MkvId x_id,
+                                          libwebm::MkvId y_id) const;
+  bool Write(IMkvWriter* writer, libwebm::MkvId x_id,
+             libwebm::MkvId y_id) const;
 
   float x;
   float y;
@@ -1681,6 +1681,5 @@ class Segment {
 };
 
 }  // namespace mkvmuxer
-}  // namespace libwebm
 
 #endif  // MKVMUXER_MKVMUXER_H_

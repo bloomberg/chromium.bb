@@ -30,16 +30,15 @@
 #pragma warning(disable : 4996)
 #endif
 
-using libwebm::mkvmuxer::AudioTrack;
-using libwebm::mkvmuxer::Chapter;
-using libwebm::mkvmuxer::Frame;
-using libwebm::mkvmuxer::MkvWriter;
-using libwebm::mkvmuxer::Segment;
-using libwebm::mkvmuxer::SegmentInfo;
-using libwebm::mkvmuxer::Track;
-using libwebm::mkvmuxer::VideoTrack;
+using mkvmuxer::AudioTrack;
+using mkvmuxer::Chapter;
+using mkvmuxer::Frame;
+using mkvmuxer::MkvWriter;
+using mkvmuxer::Segment;
+using mkvmuxer::SegmentInfo;
+using mkvmuxer::Track;
+using mkvmuxer::VideoTrack;
 
-namespace libwebm {
 namespace test {
 
 // Base class containing boiler plate stuff.
@@ -54,9 +53,10 @@ class MuxerTest : public testing::Test {
   // are fatal, but the ASSERT_* gtest macros cannot be used in a constructor.
   void Init() {
     ASSERT_TRUE(GetTestDataDir().length() > 0);
-    filename_ = GetTempFileName();
+    filename_ = libwebm::GetTempFileName();
     ASSERT_GT(filename_.length(), 0u);
-    temp_file_ = FilePtr(std::fopen(filename_.c_str(), "wb"), FILEDeleter());
+    temp_file_ = libwebm::FilePtr(std::fopen(filename_.c_str(), "wb"),
+                                  libwebm::FILEDeleter());
     ASSERT_TRUE(temp_file_.get() != nullptr);
     writer_.reset(new MkvWriter(temp_file_.get()));
     is_writer_open_ = true;
@@ -112,7 +112,7 @@ class MuxerTest : public testing::Test {
   bool is_writer_open_ = false;
   Segment segment_;
   std::string filename_;
-  FilePtr temp_file_;
+  libwebm::FilePtr temp_file_;
   std::uint8_t dummy_data_[kFrameLength];
 };
 
@@ -473,7 +473,7 @@ TEST_F(MuxerTest, CuesBeforeClusters) {
   mkvparser::MkvReader reader;
   ASSERT_EQ(0, reader.Open(filename_.c_str()));
   MkvWriter cues_writer;
-  std::string cues_filename = GetTempFileName();
+  std::string cues_filename = libwebm::GetTempFileName();
   ASSERT_GT(cues_filename.length(), 0u);
   cues_writer.Open(cues_filename.c_str());
   EXPECT_TRUE(segment_.CopyAndMoveCuesBeforeClusters(&reader, &cues_writer));
@@ -704,7 +704,6 @@ TEST_F(MuxerTest, AccurateClusterDurationTwoTracks) {
 }
 
 }  // namespace test
-}  // namespace libwebm
 
 int main(int argc, char* argv[]) {
   ::testing::InitGoogleTest(&argc, argv);

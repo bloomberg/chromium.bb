@@ -10,7 +10,6 @@
 
 #include <cstddef>
 
-namespace libwebm {
 namespace mkvparser {
 
 const int E_PARSE_FAILED = -1;
@@ -1102,9 +1101,8 @@ class Segment {
 };
 
 }  // namespace mkvparser
-}  // namespace libwebm
 
-inline long libwebm::mkvparser::Segment::LoadCluster() {
+inline long mkvparser::Segment::LoadCluster() {
   long long pos;
   long size;
 

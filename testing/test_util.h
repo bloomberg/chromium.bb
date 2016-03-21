@@ -13,7 +13,6 @@
 #include <cstddef>
 #include <string>
 
-namespace libwebm {
 namespace test {
 
 // constants for muxer and parser tests
@@ -54,6 +53,5 @@ std::string GetTestFilePath(const std::string& name);
 bool CompareFiles(const std::string& file1, const std::string& file2);
 
 }  // namespace test
-}  // namespace libwebm
 
 #endif  // LIBWEBM_TESTING_TEST_UTIL_H_

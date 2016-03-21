@@ -17,8 +17,6 @@
 #include "mkvmuxer/mkvmuxer.h"
 #include "webvtt/vttreader.h"
 
-namespace libwebm {
-
 SampleMuxerMetadata::SampleMuxerMetadata() : segment_(NULL) {}
 
 bool SampleMuxerMetadata::Init(mkvmuxer::Segment* segment) {
@@ -391,5 +389,3 @@ bool SampleMuxerMetadata::SortableCue::Write(mkvmuxer::Segment* segment) const {
   muxer_frame.set_is_key(true);  // All metadata frames are keyframes.
   return segment->AddGenericFrame(&muxer_frame);
 }
-
-}  // namespace libwebm

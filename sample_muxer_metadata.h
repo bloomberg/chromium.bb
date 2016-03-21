@@ -17,8 +17,6 @@
 
 #include "webvtt/webvttparser.h"
 
-namespace libwebm {
-
 namespace mkvmuxer {
 class Chapter;
 class Frame;
@@ -135,7 +133,5 @@ class SampleMuxerMetadata {
   SampleMuxerMetadata(const SampleMuxerMetadata&);
   SampleMuxerMetadata& operator=(const SampleMuxerMetadata&);
 };
-
-}  // namespace libwebm
 
 #endif  // SAMPLE_MUXER_METADATA_H_  // NOLINT
