@@ -917,9 +917,10 @@ void DesktopWindowTreeHostWin::HandleWindowSizeChanged() {
   // changed (can occur on Windows 10 when snapping a window to the side of
   // the screen). In that case do a resize to the current size to reenable
   // swaps.
-  if (compositor())
+  if (compositor()) {
     compositor()->SetScaleAndSize(compositor()->device_scale_factor(),
-                                  compositor()->size());
+                                  GetBounds().size());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

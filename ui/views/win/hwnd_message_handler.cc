@@ -1043,11 +1043,11 @@ void HWNDMessageHandler::PostProcessActivateMessage(
   } else if (background_fullscreen_hack_) {
     // Restore the bounds of the window to fullscreen.
     DCHECK(IsFullscreen());
-    background_fullscreen_hack_ = false;
     MONITORINFO monitor_info = {sizeof(monitor_info)};
     GetMonitorInfo(MonitorFromWindow(hwnd(), MONITOR_DEFAULTTOPRIMARY),
                    &monitor_info);
     SetBoundsInternal(gfx::Rect(monitor_info.rcMonitor), false);
+    background_fullscreen_hack_ = false;
   }
 }
 
