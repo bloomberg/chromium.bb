@@ -113,15 +113,12 @@ private:
     bool consumeColumns(bool important);
 
     enum TrackSizeRestriction { FixedSizeOnly, AllowAll };
-    PassRefPtrWillBeRawPtr<CSSValue> parseGridPosition();
-    bool parseIntegerOrCustomIdentFromGridPosition(RefPtrWillBeRawPtr<CSSPrimitiveValue>& numericValue, RefPtrWillBeRawPtr<CSSCustomIdentValue>& gridLineName);
     bool consumeGridItemPositionShorthand(CSSPropertyID, bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridTemplateColumns(bool important);
     bool parseGridTemplateRowsAndAreasAndColumns(bool important);
     bool parseGridTemplateShorthand(bool important);
     bool parseGridShorthand(bool important);
-    bool parseGridAreaShorthand(bool important);
-    bool parseSingleGridAreaLonghand(RefPtrWillBeRawPtr<CSSValue>&);
+    bool consumeGridAreaShorthand(bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridTrackList();
     bool parseGridTrackRepeatFunction(CSSValueList&, bool& isAutoRepeat);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridTrackSize(CSSParserValueList& inputList, TrackSizeRestriction = AllowAll);

@@ -4213,6 +4213,47 @@ bool CSSPropertyParser::consumeGridItemPositionShorthand(CSSPropertyID shorthand
     return true;
 }
 
+bool CSSPropertyParser::consumeGridAreaShorthand(bool important)
+{
+    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+    ASSERT(gridAreaShorthand().length() == 4);
+    RefPtrWillBeRawPtr<CSSValue> rowStartValue = consumeGridLine(m_range);
+    if (!rowStartValue)
+        return false;
+    RefPtrWillBeRawPtr<CSSValue> columnStartValue = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> rowEndValue = nullptr;
+    RefPtrWillBeRawPtr<CSSValue> columnEndValue = nullptr;
+    if (consumeSlashIncludingWhitespace(m_range)) {
+        columnStartValue = consumeGridLine(m_range);
+        if (!columnStartValue)
+            return false;
+        if (consumeSlashIncludingWhitespace(m_range)) {
+            rowEndValue = consumeGridLine(m_range);
+            if (!rowEndValue)
+                return false;
+            if (consumeSlashIncludingWhitespace(m_range)) {
+                columnEndValue = consumeGridLine(m_range);
+                if (!columnEndValue)
+                    return false;
+            }
+        }
+    }
+    if (!m_range.atEnd())
+        return false;
+    if (!columnStartValue)
+        columnStartValue = rowStartValue->isCustomIdentValue() ? rowStartValue : cssValuePool().createIdentifierValue(CSSValueAuto);
+    if (!rowEndValue)
+        rowEndValue = rowStartValue->isCustomIdentValue() ? rowStartValue : cssValuePool().createIdentifierValue(CSSValueAuto);
+    if (!columnEndValue)
+        columnEndValue = columnStartValue->isCustomIdentValue() ? columnStartValue : cssValuePool().createIdentifierValue(CSSValueAuto);
+
+    addProperty(CSSPropertyGridRowStart, rowStartValue, important);
+    addProperty(CSSPropertyGridColumnStart, columnStartValue, important);
+    addProperty(CSSPropertyGridRowEnd, rowEndValue, important);
+    addProperty(CSSPropertyGridColumnEnd, columnEndValue, important);
+    return true;
+}
+
 bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool important)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -4393,6 +4434,8 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
     case CSSPropertyGridColumn:
     case CSSPropertyGridRow:
         return consumeGridItemPositionShorthand(property, important);
+    case CSSPropertyGridArea:
+        return consumeGridAreaShorthand(important);
     default:
         m_currentShorthand = oldShorthand;
         CSSParserValueList valueList(m_range);

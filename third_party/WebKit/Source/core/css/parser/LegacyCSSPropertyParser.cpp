@@ -297,10 +297,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
 bool CSSPropertyParser::legacyParseShorthand(CSSPropertyID propertyID, bool important)
 {
     switch (propertyID) {
-    case CSSPropertyGridArea:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        return parseGridAreaShorthand(important);
-
     case CSSPropertyGridTemplate:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return parseGridTemplateShorthand(important);
@@ -324,97 +320,6 @@ static inline bool isValidCustomIdentForGridPositions(const CSSParserValue& valu
 {
     // FIXME: we need a more general solution for <custom-ident> in all properties.
     return value.m_unit == CSSParserValue::Identifier && value.id != CSSValueSpan && value.id != CSSValueAuto && !isCSSWideKeyword(value);
-}
-
-// The function parses [ <integer> || <custom-ident> ] in <grid-line> (which can be stand alone or with 'span').
-bool CSSPropertyParser::parseIntegerOrCustomIdentFromGridPosition(RefPtrWillBeRawPtr<CSSPrimitiveValue>& numericValue, RefPtrWillBeRawPtr<CSSCustomIdentValue>& gridLineName)
-{
-    CSSParserValue* value = m_valueList->current();
-    if (validUnit(value, FInteger) && value->fValue) {
-        numericValue = createPrimitiveNumericValue(value);
-        value = m_valueList->next();
-        if (value && isValidCustomIdentForGridPositions(*value)) {
-            gridLineName = createPrimitiveCustomIdentValue(m_valueList->current());
-            m_valueList->next();
-        }
-        return true;
-    }
-
-    if (isValidCustomIdentForGridPositions(*value)) {
-        gridLineName = createPrimitiveCustomIdentValue(m_valueList->current());
-        value = m_valueList->next();
-        if (value && validUnit(value, FInteger) && value->fValue) {
-            numericValue = createPrimitiveNumericValue(value);
-            m_valueList->next();
-        }
-        return true;
-    }
-
-    return false;
-}
-
-PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridPosition()
-{
-    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-
-    CSSParserValue* value = m_valueList->current();
-    if (value->id == CSSValueAuto) {
-        m_valueList->next();
-        return cssValuePool().createIdentifierValue(CSSValueAuto);
-    }
-
-    RefPtrWillBeRawPtr<CSSPrimitiveValue> numericValue = nullptr;
-    RefPtrWillBeRawPtr<CSSCustomIdentValue> gridLineName = nullptr;
-    bool hasSeenSpanKeyword = false;
-
-    if (parseIntegerOrCustomIdentFromGridPosition(numericValue, gridLineName)) {
-        value = m_valueList->current();
-        if (value && value->id == CSSValueSpan) {
-            hasSeenSpanKeyword = true;
-            m_valueList->next();
-        }
-    } else if (value->id == CSSValueSpan) {
-        hasSeenSpanKeyword = true;
-        if (CSSParserValue* nextValue = m_valueList->next()) {
-            if (!isForwardSlashOperator(nextValue) && !parseIntegerOrCustomIdentFromGridPosition(numericValue, gridLineName))
-                return nullptr;
-        }
-    }
-
-    // Check that we have consumed all the value list. For shorthands, the parser will pass
-    // the whole value list (including the opposite position).
-    if (m_valueList->current() && !isForwardSlashOperator(m_valueList->current()))
-        return nullptr;
-
-    // If we didn't parse anything, this is not a valid grid position.
-    if (!hasSeenSpanKeyword && !gridLineName && !numericValue)
-        return nullptr;
-
-    // Negative numbers are not allowed for span (but are for <integer>).
-    if (hasSeenSpanKeyword && numericValue && numericValue->getIntValue() < 0)
-        return nullptr;
-
-    // For the <custom-ident> case.
-    if (gridLineName && !numericValue && !hasSeenSpanKeyword)
-        return CSSCustomIdentValue::create(gridLineName->value());
-
-    RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
-    if (hasSeenSpanKeyword)
-        values->append(cssValuePool().createIdentifierValue(CSSValueSpan));
-    if (numericValue)
-        values->append(numericValue.release());
-    if (gridLineName)
-        values->append(gridLineName.release());
-    ASSERT(values->length());
-    return values.release();
-}
-
-static PassRefPtrWillBeRawPtr<CSSValue> gridMissingGridPositionValue(CSSValue* value)
-{
-    if (value->isCustomIdentValue())
-        return value;
-
-    return cssValuePool().createIdentifierValue(CSSValueAuto);
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridTemplateColumns(bool important)
@@ -596,61 +501,6 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
     addProperty(CSSPropertyGridColumnGap, cssValuePool().createImplicitInitialValue(), important);
     addProperty(CSSPropertyGridRowGap, cssValuePool().createImplicitInitialValue(), important);
 
-    return true;
-}
-
-bool CSSPropertyParser::parseGridAreaShorthand(bool important)
-{
-    ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-
-    ShorthandScope scope(this, CSSPropertyGridArea);
-    const StylePropertyShorthand& shorthand = gridAreaShorthand();
-    ASSERT_UNUSED(shorthand, shorthand.length() == 4);
-
-    RefPtrWillBeRawPtr<CSSValue> rowStartValue = parseGridPosition();
-    if (!rowStartValue)
-        return false;
-
-    RefPtrWillBeRawPtr<CSSValue> columnStartValue = nullptr;
-    if (!parseSingleGridAreaLonghand(columnStartValue))
-        return false;
-
-    RefPtrWillBeRawPtr<CSSValue> rowEndValue = nullptr;
-    if (!parseSingleGridAreaLonghand(rowEndValue))
-        return false;
-
-    RefPtrWillBeRawPtr<CSSValue> columnEndValue = nullptr;
-    if (!parseSingleGridAreaLonghand(columnEndValue))
-        return false;
-
-    if (!columnStartValue)
-        columnStartValue = gridMissingGridPositionValue(rowStartValue.get());
-
-    if (!rowEndValue)
-        rowEndValue = gridMissingGridPositionValue(rowStartValue.get());
-
-    if (!columnEndValue)
-        columnEndValue = gridMissingGridPositionValue(columnStartValue.get());
-
-    addProperty(CSSPropertyGridRowStart, rowStartValue, important);
-    addProperty(CSSPropertyGridColumnStart, columnStartValue, important);
-    addProperty(CSSPropertyGridRowEnd, rowEndValue, important);
-    addProperty(CSSPropertyGridColumnEnd, columnEndValue, important);
-    return true;
-}
-
-bool CSSPropertyParser::parseSingleGridAreaLonghand(RefPtrWillBeRawPtr<CSSValue>& property)
-{
-    if (!m_valueList->current())
-        return true;
-
-    if (!isForwardSlashOperator(m_valueList->current()))
-        return false;
-
-    if (!m_valueList->next())
-        return false;
-
-    property = parseGridPosition();
     return true;
 }
 
