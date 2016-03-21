@@ -21,11 +21,11 @@ class NetworkChangeNotifierLinux::Thread : public base::Thread {
   // Plumbing for NetworkChangeNotifier::GetCurrentConnectionType.
   // Safe to call from any thread.
   NetworkChangeNotifier::ConnectionType GetCurrentConnectionType() {
-    return address_tracker_.GetCurrentConnectionType();
+    return address_tracker_->GetCurrentConnectionType();
   }
 
   const internal::AddressTrackerLinux* address_tracker() const {
-    return &address_tracker_;
+    return address_tracker_.get();
   }
 
  protected:
@@ -38,7 +38,7 @@ class NetworkChangeNotifierLinux::Thread : public base::Thread {
   void OnLinkChanged();
   scoped_ptr<DnsConfigService> dns_config_service_;
   // Used to detect online/offline state and IP address changes.
-  internal::AddressTrackerLinux address_tracker_;
+  scoped_ptr<internal::AddressTrackerLinux> address_tracker_;
   NetworkChangeNotifier::ConnectionType last_type_;
 
   DISALLOW_COPY_AND_ASSIGN(Thread);
@@ -47,28 +47,31 @@ class NetworkChangeNotifierLinux::Thread : public base::Thread {
 NetworkChangeNotifierLinux::Thread::Thread(
     const base::hash_set<std::string>& ignored_interfaces)
     : base::Thread("NetworkChangeNotifier"),
-      address_tracker_(
+      address_tracker_(new internal::AddressTrackerLinux(
           base::Bind(&NetworkChangeNotifierLinux::Thread::OnIPAddressChanged,
                      base::Unretained(this)),
           base::Bind(&NetworkChangeNotifierLinux::Thread::OnLinkChanged,
                      base::Unretained(this)),
           base::Bind(base::DoNothing),
-          ignored_interfaces),
-      last_type_(NetworkChangeNotifier::CONNECTION_NONE) {
-}
+          ignored_interfaces)),
+      last_type_(NetworkChangeNotifier::CONNECTION_NONE) {}
 
 NetworkChangeNotifierLinux::Thread::~Thread() {
   DCHECK(!Thread::IsRunning());
 }
 
 void NetworkChangeNotifierLinux::Thread::Init() {
-  address_tracker_.Init();
+  address_tracker_->Init();
   dns_config_service_ = DnsConfigService::CreateSystemService();
   dns_config_service_->WatchConfig(
       base::Bind(&NetworkChangeNotifier::SetDnsConfig));
 }
 
 void NetworkChangeNotifierLinux::Thread::CleanUp() {
+  // Delete AddressTrackerLinux before MessageLoop gets deleted as
+  // AddressTrackerLinux's FileDescriptorWatcher holds a pointer to the
+  // MessageLoop.
+  address_tracker_.reset();
   dns_config_service_.reset();
 }
 
