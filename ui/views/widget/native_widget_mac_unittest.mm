@@ -489,8 +489,9 @@ TEST_F(NativeWidgetMacTest, SetCursor) {
   EXPECT_NE(arrow, hand);
   EXPECT_NE(arrow, ibeam);
 
-  // At the start of the test, the cursor stack should be empty.
-  EXPECT_FALSE([NSCursor currentCursor]);
+  // Make arrow the current cursor.
+  [arrow set];
+  EXPECT_EQ(arrow, [NSCursor currentCursor]);
 
   // Use an event generator to ask views code to set the cursor. However, note
   // that this does not cause Cocoa to generate tracking rectangle updates.
@@ -498,7 +499,7 @@ TEST_F(NativeWidgetMacTest, SetCursor) {
                                            widget->GetNativeWindow());
 
   // Move the mouse over the first view, then simulate a tracking rectangle
-  // update.
+  // update. Verify that the cursor changed from arrow to hand type.
   event_generator.MoveMouseTo(gfx::Point(50, 50));
   [widget->GetNativeWindow() cursorUpdate:event_in_content];
   EXPECT_EQ(hand, [NSCursor currentCursor]);
