@@ -47,6 +47,7 @@ const unsigned RealtimeAnalyser::InputBufferSize = RealtimeAnalyser::MaxFFTSize 
 RealtimeAnalyser::RealtimeAnalyser()
     : m_inputBuffer(InputBufferSize)
     , m_writeIndex(0)
+    , m_downMixBus(AudioBus::create(1, AudioUtilities::kRenderQuantumFrames))
     , m_fftSize(DefaultFFTSize)
     , m_magnitudeBuffer(DefaultFFTSize / 2)
     , m_smoothingTimeConstant(DefaultSmoothingTimeConstant)
@@ -92,22 +93,13 @@ void RealtimeAnalyser::writeInput(AudioBus* bus, size_t framesToProcess)
         return;
 
     // Perform real-time analysis
-    const float* source = bus->channel(0)->data();
     float* dest = m_inputBuffer.data() + m_writeIndex;
 
-    // The source has already been sanity checked with isBusGood above.
-    memcpy(dest, source, sizeof(float) * framesToProcess);
-
-    // Sum all channels in one if numberOfChannels > 1.
-    unsigned numberOfChannels = bus->numberOfChannels();
-    if (numberOfChannels > 1) {
-        for (unsigned i = 1; i < numberOfChannels; ++i) {
-            source = bus->channel(i)->data();
-            VectorMath::vadd(dest, 1, source, 1, dest, 1, framesToProcess);
-        }
-        const float scale =  1.0 / numberOfChannels;
-        VectorMath::vsmul(dest, 1, &scale, dest, 1, framesToProcess);
-    }
+    // Clear the bus and downmix the input according to the down mixing rules.  Then save the result
+    // in the m_inputBuffer at the appropriate place.
+    m_downMixBus->zero();
+    m_downMixBus->sumFrom(*bus);
+    memcpy(dest, m_downMixBus->channel(0)->data(), framesToProcess * sizeof(*dest));
 
     m_writeIndex += framesToProcess;
     if (m_writeIndex >= InputBufferSize)

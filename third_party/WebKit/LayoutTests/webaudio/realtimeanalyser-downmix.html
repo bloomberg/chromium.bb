@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../resources/js-test.js"></script>
+    <script src="resources/compatibility.js"></script>
+    <script src="resources/audio-testing.js"></script>
+    <script src="resources/fft.js"></script>
+    <script src="resources/realtimeanalyser-testing.js"></script>
+    <title>Test AnalyserNode Downmixing</title>
+  </head>
+
+  <body>
+    <script>
+      description("Test AnalyserNode Downmixing");
+      window.jsTestIsAsync = true;
+
+      var sampleRate = 44100;
+      var renderFrames = 2048;
+
+      var audit = Audit.createTaskRunner();
+
+      var testConfigs = [{
+          channelCount: 1,
+          message: "mono",
+          floatRelError: 6.3283e-8
+        }, {
+          channelCount: 2,
+          message: "stereo",
+          floatRelError: 1.1681e-7
+        }, {
+          channelCount: 4,
+          message: "quad",
+          floatRelError: 4.9793e-7
+        }, {
+          channelCount: 6,
+          message: "5.1",
+          floatRelError: 2.0215e-7
+        }, {
+          channelCount: 3,
+          message: "3-channel",
+          floatRelError: 6.3283e-8
+        }];
+
+      // Create tasks for each entry in testConfigs
+      for (k in testConfigs) {
+        audit.defineTask(testConfigs[k].message, (function (config) {
+          return function(done) {
+            runTest(config).then(done);
+          };
+        })(testConfigs[k]));
+      }
+
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks();
+
+      // Test downmixing of the AnalyserNode time data.  We use the downmixing that automatically
+      // happens in the destination node to generate the reference data which is compared to the
+      // data that the Analyser node has captured.
+      function runTest(options) {
+        // Context MUST have exactly one channel so that we downmix the source to mono to generate
+        // the reference.
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+
+        var channels = options.channelCount || 1;
+        var source = context.createBufferSource();
+
+        // The signals in each channel. Doesn't matter much what is in here, but it's best if the
+        // values aren't linearly increasing so that the average of the values isn't one of the
+        // values (in case the implementation does something silly).  Only need to support up to 6
+        // channels.
+        var bufferValues = [1, 2, 3, 4, 5, 6].map(function (x) {
+          return x * x
+        });;
+        source.buffer = createConstantBuffer(context, renderFrames, bufferValues.slice(0, channels));
+
+        var analyser = context.createAnalyser();
+        analyser.smoothingTimeConstant = 0;
+        analyser.fftSize = 256;
+
+        // Run analyser as an automatic pull node. Do NOT connect to the destination.  We don't want
+        // the output of the analyser to mix in with the source that is also directly connected to
+        // the destination.
+        source.connect(analyser);
+        source.connect(context.destination);
+
+        var timeData = new Float32Array(analyser.fftSize);
+        var freqData = new Float32Array(analyser.frequencyBinCount);
+
+        var suspendFrame = analyser.fftSize;
+        context.suspend(suspendFrame / context.sampleRate).then(function () {
+          analyser.getFloatTimeDomainData(timeData);
+          analyser.getFloatFrequencyData(freqData);
+        }).then(context.resume.bind(context));
+
+        source.start();
+        return context.startRendering().then(function (renderedBuffer) {
+          var success = true;
+
+          // Verify the time domain data is correct.
+          var prefix = "Analyser downmix " + options.message + " to mono"
+          success = Should(prefix + " time data", timeData, {
+              verbose: true
+            })
+            .beEqualToArray(renderedBuffer.getChannelData(0).subarray(0, analyser.fftSize));
+
+          var expectedTimeData = renderedBuffer.getChannelData(0).subarray(0, analyser.fftSize);
+          var fftOrder = Math.floor(Math.log2(analyser.fftSize));
+          var expectedFreqData = computeFFTMagnitude(expectedTimeData, fftOrder).map(linearToDb);
+
+          success = compareFloatFreq(prefix + " freq data", freqData, expectedFreqData, {
+            precision: 6,
+            floatRelError: options.floatRelError,
+          }) && success;
+
+          if (success)
+            testPassed(prefix + " downmixed correctly.\n");
+          else
+            testFailed(prefix + " not downmixed correctly.\n");
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -77,6 +77,9 @@ private:
     AudioFloatArray m_inputBuffer;
     unsigned m_writeIndex;
 
+    // Input audio is downmixed to this bus before copying to m_inputBuffer.
+    RefPtr<AudioBus> m_downMixBus;
+
     size_t m_fftSize;
     OwnPtr<FFTFrame> m_analysisFrame;
     void doFFTAnalysis();
