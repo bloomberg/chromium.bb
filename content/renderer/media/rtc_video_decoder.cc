@@ -20,7 +20,7 @@
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/webrtc/base/bind.h"
-#include "third_party/webrtc/system_wrappers/include/ref_count.h"
+#include "third_party/webrtc/base/refcount.h"
 #include "third_party/webrtc/video_frame.h"
 
 namespace content {
