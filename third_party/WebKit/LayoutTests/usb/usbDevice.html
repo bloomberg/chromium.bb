@@ -140,7 +140,7 @@ usb_test(usb => {
             value: 0x1234,
             index: 0x5678
         }, new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]))),
-        assertRejectsWithNotOpenError(device.clearHalt(1)),
+        assertRejectsWithNotOpenError(device.clearHalt('in', 1)),
         assertRejectsWithNotOpenError(device.transferIn(1, 8)),
         assertRejectsWithNotOpenError(
             device.transferOut(1, new ArrayBuffer(8))),
@@ -210,7 +210,7 @@ usb_test(usb => {
             value: 0x1234,
             index: 0x5678
         }, new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]))),
-        assertRejectsWithNotConfiguredError(device.clearHalt(1)),
+        assertRejectsWithNotConfiguredError(device.clearHalt('in', 1)),
         assertRejectsWithNotConfiguredError(device.transferIn(1, 8)),
         assertRejectsWithNotConfiguredError(
             device.transferOut(1, new ArrayBuffer(8))),
@@ -234,6 +234,26 @@ usb_test(usb => {
       .then(() => device.close());
   });
 }, 'an interface can be claimed and released');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
+    let device = devices[0];
+    const message = 'The interface number provided is not supported by the ' +
+                    'device in its current configuration.';
+    return device.open()
+      .then(() => device.selectConfiguration(1))
+      .then(() => Promise.all([
+          assertRejectsWithError(
+              device.claimInterface(2), 'NotFoundError', message),
+          assertRejectsWithError(
+              device.releaseInterface(2), 'NotFoundError', message),
+      ]))
+      .then(() => device.close());
+  });
+}, 'a non-existent interface cannot be claimed or released');
+
 
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
@@ -390,7 +410,7 @@ usb_test(usb => {
     return device.open()
       .then(() => device.selectConfiguration(1))
       .then(() => device.claimInterface(0))
-      .then(() => device.clearHalt(1))
+      .then(() => device.clearHalt('in', 1))
       .then(() => device.close());
   });
 }, 'can clear a halt condition');
@@ -405,7 +425,7 @@ usb_test(usb => {
       .then(() => device.claimInterface(0))
       .then(() => {
         usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
-        return assertRejectsWithNotFoundError(device.clearHalt(1));
+        return assertRejectsWithNotFoundError(device.clearHalt('in', 1));
       });
   });
 }, 'clearHalt rejects when called on a disconnected device');

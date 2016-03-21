@@ -6193,6 +6193,7 @@ interface USBInTransferResult
 interface USBInterface
     attribute @@toStringTag
     getter alternates
+    getter claimed
     getter interfaceNumber
     method constructor
 interface USBIsochronousInTransferPacket

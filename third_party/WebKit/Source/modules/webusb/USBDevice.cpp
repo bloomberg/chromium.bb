@@ -27,6 +27,8 @@ namespace blink {
 namespace {
 
 const char kDeviceStateChangeInProgress[] = "An operation that changes the device state is in progress.";
+const char kInterfaceNotFound[] = "The interface number provided is not supported by the device in its current configuration.";
+const char kInterfaceStateChangeInProgress[] = "An operation that changes interface state is in progress.";
 const char kOpenRequired[] = "The device must be opened first.";
 
 DOMException* convertControlTransferParameters(
@@ -45,6 +47,8 @@ DOMException* convertControlTransferParameters(
     else
         return DOMException::create(TypeMismatchError, "The control transfer requestType parameter is invalid.");
 
+    // TODO(reillyg): Check for interface and endpoint availability if that is
+    // the control transfer target.
     if (parameters.recipient() == "device")
         webParameters->recipient = WebUSBDevice::RequestRecipient::Device;
     else if (parameters.recipient() == "interface")
@@ -90,8 +94,7 @@ public:
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        if (m_device)
-            m_device->onDeviceOpenedOrClosed(m_desiredState);
+        m_device->onDeviceOpenedOrClosed(m_desiredState);
         m_resolver->resolve();
     }
 
@@ -99,20 +102,19 @@ public:
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        if (m_device)
-            m_device->onDeviceOpenedOrClosed(!m_desiredState);
+        m_device->onDeviceOpenedOrClosed(!m_desiredState);
         m_resolver->reject(USBError::take(m_resolver, e));
     }
 
 private:
-    WeakPersistent<USBDevice> m_device;
+    Persistent<USBDevice> m_device;
     Persistent<ScriptPromiseResolver> m_resolver;
     bool m_desiredState; // true: open, false: closed
 };
 
 class SelectConfigurationPromiseAdapter : public WebCallbacks<void, const WebUSBError&> {
 public:
-    SelectConfigurationPromiseAdapter(USBDevice* device, ScriptPromiseResolver* resolver, int configurationIndex)
+    SelectConfigurationPromiseAdapter(USBDevice* device, ScriptPromiseResolver* resolver, size_t configurationIndex)
         : m_device(device)
         , m_resolver(resolver)
         , m_configurationIndex(configurationIndex)
@@ -123,8 +125,7 @@ public:
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        if (m_device)
-            m_device->onConfigurationSelected(true /* success */, m_configurationIndex);
+        m_device->onConfigurationSelected(true /* success */, m_configurationIndex);
         m_resolver->resolve();
     }
 
@@ -132,15 +133,47 @@ public:
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        if (m_device)
-            m_device->onConfigurationSelected(false /* failure */, m_configurationIndex);
+        m_device->onConfigurationSelected(false /* failure */, m_configurationIndex);
         m_resolver->reject(USBError::take(m_resolver, e));
     }
 
 private:
-    WeakPersistent<USBDevice> m_device;
+    Persistent<USBDevice> m_device;
     Persistent<ScriptPromiseResolver> m_resolver;
-    int m_configurationIndex;
+    size_t m_configurationIndex;
+};
+
+class ClaimInterfacePromiseAdapter : public WebCallbacks<void, const WebUSBError&> {
+public:
+    ClaimInterfacePromiseAdapter(USBDevice* device, ScriptPromiseResolver* resolver, size_t interfaceIndex, bool desiredState)
+        : m_device(device)
+        , m_resolver(resolver)
+        , m_interfaceIndex(interfaceIndex)
+        , m_desiredState(desiredState)
+    {
+    }
+
+    void onSuccess() override
+    {
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_device->onInterfaceClaimedOrUnclaimed(m_desiredState, m_interfaceIndex);
+        m_resolver->resolve();
+    }
+
+    void onError(const WebUSBError& e) override
+    {
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_device->onInterfaceClaimedOrUnclaimed(!m_desiredState, m_interfaceIndex);
+        m_resolver->reject(USBError::take(m_resolver, e));
+    }
+
+private:
+    Persistent<USBDevice> m_device;
+    Persistent<ScriptPromiseResolver> m_resolver;
+    size_t m_interfaceIndex;
+    bool m_desiredState; // true: claimed, false: unclaimed
 };
 
 class InputTransferResult {
@@ -249,8 +282,11 @@ USBDevice::USBDevice(PassOwnPtr<WebUSBDevice> device, ExecutionContext* context)
     , m_device(device)
     , m_opened(false)
     , m_deviceStateChangeInProgress(false)
+    , m_configurationIndex(-1)
 {
-    m_configurationIndex = findConfigurationIndex(info().activeConfiguration);
+    int configurationIndex = findConfigurationIndex(info().activeConfiguration);
+    if (configurationIndex != -1)
+        onConfigurationSelected(true /* success */, configurationIndex);
 }
 
 void USBDevice::onDeviceOpenedOrClosed(bool opened)
@@ -259,11 +295,31 @@ void USBDevice::onDeviceOpenedOrClosed(bool opened)
     m_deviceStateChangeInProgress = false;
 }
 
-void USBDevice::onConfigurationSelected(bool success, int configurationIndex)
+void USBDevice::onConfigurationSelected(bool success, size_t configurationIndex)
 {
-    if (success)
+    if (success) {
         m_configurationIndex = configurationIndex;
+        size_t numInterfaces = info().configurations[m_configurationIndex].interfaces.size();
+        m_claimedInterfaces.clearAll();
+        m_claimedInterfaces.resize(numInterfaces);
+        m_interfaceStateChangeInProgress.clearAll();
+        m_interfaceStateChangeInProgress.resize(numInterfaces);
+    }
     m_deviceStateChangeInProgress = false;
+}
+
+void USBDevice::onInterfaceClaimedOrUnclaimed(bool claimed, size_t interfaceIndex)
+{
+    if (claimed)
+        m_claimedInterfaces.set(interfaceIndex);
+    else
+        m_claimedInterfaces.clear(interfaceIndex);
+    m_interfaceStateChangeInProgress.clear(interfaceIndex);
+}
+
+bool USBDevice::isInterfaceClaimed(size_t configurationIndex, size_t interfaceIndex) const
+{
+    return m_configurationIndex != -1 && static_cast<size_t>(m_configurationIndex) == configurationIndex && m_claimedInterfaces.get(interfaceIndex);
 }
 
 USBConfiguration* USBDevice::configuration() const
@@ -286,13 +342,13 @@ ScriptPromise USBDevice::open(ScriptState* scriptState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (m_deviceStateChangeInProgress) {
-        resolver->reject(DOMException::create(InvalidStateError, kDeviceStateChangeInProgress));
-    } else if (m_opened) {
-        resolver->resolve();
-    } else {
-        m_deviceStateChangeInProgress = true;
-        m_device->open(new OpenClosePromiseAdapter(this, resolver, true /* open */));
+    if (ensureNoDeviceOrInterfaceChangeInProgress(resolver)) {
+        if (m_opened) {
+            resolver->resolve();
+        } else {
+            m_deviceStateChangeInProgress = true;
+            m_device->open(new OpenClosePromiseAdapter(this, resolver, true /* open */));
+        }
     }
     return promise;
 }
@@ -301,13 +357,13 @@ ScriptPromise USBDevice::close(ScriptState* scriptState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (m_deviceStateChangeInProgress) {
-        resolver->reject(DOMException::create(InvalidStateError, kDeviceStateChangeInProgress));
-    } else if (!m_opened) {
-        resolver->resolve();
-    } else {
-        m_deviceStateChangeInProgress = true;
-        m_device->close(new OpenClosePromiseAdapter(this, resolver, false /* closed */));
+    if (ensureNoDeviceOrInterfaceChangeInProgress(resolver)) {
+        if (!m_opened) {
+            resolver->resolve();
+        } else {
+            m_deviceStateChangeInProgress = true;
+            m_device->close(new OpenClosePromiseAdapter(this, resolver, false /* closed */));
+        }
     }
     return promise;
 }
@@ -316,19 +372,19 @@ ScriptPromise USBDevice::selectConfiguration(ScriptState* scriptState, uint8_t c
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (!m_opened) {
-        resolver->reject(DOMException::create(InvalidStateError, kOpenRequired));
-    } else if (m_deviceStateChangeInProgress) {
-        resolver->reject(DOMException::create(InvalidStateError, kDeviceStateChangeInProgress));
-    } else {
-        int configurationIndex = findConfigurationIndex(configurationValue);
-        if (configurationIndex == -1) {
-            resolver->reject(DOMException::create(NotFoundError, "The configuration value provided is not supported by the device."));
-        } else if (m_configurationIndex == configurationIndex) {
-            resolver->resolve();
+    if (ensureNoDeviceOrInterfaceChangeInProgress(resolver)) {
+        if (!m_opened) {
+            resolver->reject(DOMException::create(InvalidStateError, kOpenRequired));
         } else {
-            m_deviceStateChangeInProgress = true;
-            m_device->setConfiguration(configurationValue, new SelectConfigurationPromiseAdapter(this, resolver, configurationIndex));
+            int configurationIndex = findConfigurationIndex(configurationValue);
+            if (configurationIndex == -1) {
+                resolver->reject(DOMException::create(NotFoundError, "The configuration value provided is not supported by the device."));
+            } else if (m_configurationIndex == configurationIndex) {
+                resolver->resolve();
+            } else {
+                m_deviceStateChangeInProgress = true;
+                m_device->setConfiguration(configurationValue, new SelectConfigurationPromiseAdapter(this, resolver, configurationIndex));
+            }
         }
     }
     return promise;
@@ -338,8 +394,19 @@ ScriptPromise USBDevice::claimInterface(ScriptState* scriptState, uint8_t interf
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (ensureDeviceConfigured(resolver))
-        m_device->claimInterface(interfaceNumber, new CallbackPromiseAdapter<void, USBError>(resolver));
+    if (ensureDeviceConfigured(resolver)) {
+        int interfaceIndex = findInterfaceIndex(interfaceNumber);
+        if (interfaceIndex == -1) {
+            resolver->reject(DOMException::create(NotFoundError, kInterfaceNotFound));
+        } else if (m_interfaceStateChangeInProgress.get(interfaceIndex)) {
+            resolver->reject(DOMException::create(InvalidStateError, kInterfaceStateChangeInProgress));
+        } else if (m_claimedInterfaces.get(interfaceIndex)) {
+            resolver->resolve();
+        } else {
+            m_interfaceStateChangeInProgress.set(interfaceIndex);
+            m_device->claimInterface(interfaceNumber, new ClaimInterfacePromiseAdapter(this, resolver, interfaceIndex, true /* claim */));
+        }
+    }
     return promise;
 }
 
@@ -347,8 +414,19 @@ ScriptPromise USBDevice::releaseInterface(ScriptState* scriptState, uint8_t inte
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (ensureDeviceConfigured(resolver))
-        m_device->releaseInterface(interfaceNumber, new CallbackPromiseAdapter<void, USBError>(resolver));
+    if (ensureDeviceConfigured(resolver)) {
+        int interfaceIndex = findInterfaceIndex(interfaceNumber);
+        if (interfaceIndex == -1) {
+            resolver->reject(DOMException::create(NotFoundError, "The interface number provided is not supported by the device in its current configuration."));
+        } else if (m_interfaceStateChangeInProgress.get(interfaceIndex)) {
+            resolver->reject(DOMException::create(InvalidStateError, kInterfaceStateChangeInProgress));
+        } else if (!m_claimedInterfaces.get(interfaceIndex)) {
+            resolver->resolve();
+        } else {
+            m_interfaceStateChangeInProgress.set(interfaceIndex);
+            m_device->releaseInterface(interfaceNumber, new ClaimInterfacePromiseAdapter(this, resolver, interfaceIndex, false /* release */));
+        }
+    }
     return promise;
 }
 
@@ -356,7 +434,7 @@ ScriptPromise USBDevice::setInterface(ScriptState* scriptState, uint8_t interfac
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (ensureDeviceConfigured(resolver))
+    if (ensureInterfaceClaimed(interfaceNumber, resolver))
         m_device->setInterface(interfaceNumber, alternateSetting, new CallbackPromiseAdapter<void, USBError>(resolver));
     return promise;
 }
@@ -408,11 +486,11 @@ ScriptPromise USBDevice::controlTransferOut(ScriptState* scriptState, const USBC
     return promise;
 }
 
-ScriptPromise USBDevice::clearHalt(ScriptState* scriptState, uint8_t endpointNumber)
+ScriptPromise USBDevice::clearHalt(ScriptState* scriptState, String direction, uint8_t endpointNumber)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (ensureDeviceConfigured(resolver))
+    if (ensureEndpointAvailable(direction == "in", endpointNumber, resolver))
         m_device->clearHalt(endpointNumber, new CallbackPromiseAdapter<void, USBError>(resolver));
     return promise;
 }
@@ -421,7 +499,7 @@ ScriptPromise USBDevice::transferIn(ScriptState* scriptState, uint8_t endpointNu
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (ensureDeviceConfigured(resolver))
+    if (ensureEndpointAvailable(true /* in */, endpointNumber, resolver))
         m_device->transfer(WebUSBDevice::TransferDirection::In, endpointNumber, nullptr, length, 0, new CallbackPromiseAdapter<InputTransferResult, USBError>(resolver));
     return promise;
 }
@@ -430,7 +508,7 @@ ScriptPromise USBDevice::transferOut(ScriptState* scriptState, uint8_t endpointN
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (ensureDeviceConfigured(resolver)) {
+    if (ensureEndpointAvailable(false /* out */, endpointNumber, resolver)) {
         BufferSource buffer(data);
         m_device->transfer(WebUSBDevice::TransferDirection::Out, endpointNumber, buffer.data(), buffer.size(), 0, new CallbackPromiseAdapter<OutputTransferResult, USBError>(resolver));
     }
@@ -441,7 +519,7 @@ ScriptPromise USBDevice::isochronousTransferIn(ScriptState* scriptState, uint8_t
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (ensureDeviceConfigured(resolver))
+    if (ensureEndpointAvailable(true /* in */, endpointNumber, resolver))
         m_device->isochronousTransfer(WebUSBDevice::TransferDirection::In, endpointNumber, nullptr, 0, packetLengths, 0, new CallbackPromiseAdapter<IsochronousInputTransferResult, USBError>(resolver));
     return promise;
 }
@@ -450,7 +528,7 @@ ScriptPromise USBDevice::isochronousTransferOut(ScriptState* scriptState, uint8_
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (ensureDeviceConfigured(resolver)) {
+    if (ensureEndpointAvailable(false /* out */, endpointNumber, resolver)) {
         BufferSource buffer(data);
         m_device->isochronousTransfer(WebUSBDevice::TransferDirection::Out, endpointNumber, buffer.data(), buffer.size(), packetLengths, 0, new CallbackPromiseAdapter<IsochronousOutputTransferResult, USBError>(resolver));
     }
@@ -461,12 +539,12 @@ ScriptPromise USBDevice::reset(ScriptState* scriptState)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (!m_opened)
-        resolver->reject(DOMException::create(InvalidStateError, kOpenRequired));
-    else if (m_deviceStateChangeInProgress)
-        resolver->reject(DOMException::create(InvalidStateError, kDeviceStateChangeInProgress));
-    else
-        m_device->reset(new CallbackPromiseAdapter<void, USBError>(resolver));
+    if (ensureNoDeviceOrInterfaceChangeInProgress(resolver)) {
+        if (!m_opened)
+            resolver->reject(DOMException::create(InvalidStateError, kOpenRequired));
+        else
+            m_device->reset(new CallbackPromiseAdapter<void, USBError>(resolver));
+    }
     return promise;
 }
 
@@ -491,6 +569,29 @@ int USBDevice::findConfigurationIndex(uint8_t configurationValue) const
     return -1;
 }
 
+int USBDevice::findInterfaceIndex(uint8_t interfaceNumber) const
+{
+    ASSERT(m_configurationIndex != -1);
+    const auto& interfaces = info().configurations[m_configurationIndex].interfaces;
+    for (size_t i = 0; i < interfaces.size(); ++i) {
+        if (interfaces[i].interfaceNumber == interfaceNumber)
+            return i;
+    }
+    return -1;
+}
+
+bool USBDevice::ensureNoDeviceOrInterfaceChangeInProgress(ScriptPromiseResolver* resolver) const
+{
+    if (m_deviceStateChangeInProgress) {
+        resolver->reject(DOMException::create(InvalidStateError, kDeviceStateChangeInProgress));
+    } else if (anyInterfaceChangeInProgress()) {
+        resolver->reject(DOMException::create(InvalidStateError, kInterfaceStateChangeInProgress));
+    } else {
+        return true;
+    }
+    return false;
+}
+
 bool USBDevice::ensureDeviceConfigured(ScriptPromiseResolver* resolver) const
 {
     if (!m_opened) {
@@ -501,6 +602,39 @@ bool USBDevice::ensureDeviceConfigured(ScriptPromiseResolver* resolver) const
         resolver->reject(DOMException::create(InvalidStateError, "The device must have a configuration selected."));
     } else {
         return true;
+    }
+    return false;
+}
+
+bool USBDevice::ensureInterfaceClaimed(uint8_t interfaceNumber, ScriptPromiseResolver* resolver) const
+{
+    if (!ensureDeviceConfigured(resolver))
+        return false;
+    int interfaceIndex = findInterfaceIndex(interfaceNumber);
+    if (interfaceIndex == -1) {
+        resolver->reject(DOMException::create(NotFoundError, kInterfaceNotFound));
+    } else if (m_interfaceStateChangeInProgress.get(interfaceIndex)) {
+        resolver->reject(DOMException::create(InvalidStateError, kInterfaceStateChangeInProgress));
+    } else if (!m_claimedInterfaces.get(interfaceIndex)) {
+        resolver->reject(DOMException::create(InvalidStateError, "The specified interface has not been claimed."));
+    } else {
+        return true;
+    }
+    return false;
+}
+
+bool USBDevice::ensureEndpointAvailable(bool inTransfer, uint8_t endpointNumber, ScriptPromiseResolver* resolver) const
+{
+    // TODO(reillyg): Check endpoint availability once Blink is tracking which
+    // alternate interfaces are selected.
+    return ensureDeviceConfigured(resolver);
+}
+
+bool USBDevice::anyInterfaceChangeInProgress() const
+{
+    for (size_t i = 0; i < m_interfaceStateChangeInProgress.size(); ++i) {
+        if (m_interfaceStateChangeInProgress.quickGet(i))
+            return true;
     }
     return false;
 }

@@ -14,6 +14,7 @@ namespace blink {
 class ExceptionState;
 class USBAlternateInterface;
 class USBConfiguration;
+class USBDevice;
 
 class USBInterface
     : public GarbageCollected<USBInterface>
@@ -23,17 +24,19 @@ public:
     static USBInterface* create(const USBConfiguration*, size_t interfaceIndex);
     static USBInterface* create(const USBConfiguration*, size_t interfaceNumber, ExceptionState&);
 
-    USBInterface(const USBConfiguration*, size_t interfaceIndex);
+    USBInterface(const USBDevice*, size_t configurationIndex, size_t interfaceIndex);
 
     const WebUSBDeviceInfo::Interface& info() const;
 
     uint8_t interfaceNumber() const;
     HeapVector<Member<USBAlternateInterface>> alternates() const;
+    bool claimed() const;
 
     DECLARE_TRACE();
 
 private:
-    Member<const USBConfiguration> m_configuration;
+    Member<const USBDevice> m_device;
+    const size_t m_configurationIndex;
     const size_t m_interfaceIndex;
 };
 

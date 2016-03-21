@@ -42,6 +42,16 @@ USBConfiguration::USBConfiguration(const USBDevice* device, size_t configuration
     ASSERT(m_configurationIndex < m_device->info().configurations.size());
 }
 
+const USBDevice* USBConfiguration::device() const
+{
+    return m_device;
+}
+
+size_t USBConfiguration::index() const
+{
+    return m_configurationIndex;
+}
+
 const WebUSBDeviceInfo::Configuration& USBConfiguration::info() const
 {
     return m_device->info().configurations[m_configurationIndex];

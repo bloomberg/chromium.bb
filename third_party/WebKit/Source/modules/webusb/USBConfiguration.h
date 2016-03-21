@@ -26,6 +26,8 @@ public:
 
     USBConfiguration(const USBDevice*, size_t configurationIndex);
 
+    const USBDevice* device() const;
+    size_t index() const;
     const WebUSBDeviceInfo::Configuration& info() const;
 
     uint8_t configurationValue() const;

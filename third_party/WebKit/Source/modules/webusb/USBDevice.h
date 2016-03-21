@@ -12,6 +12,7 @@
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/webusb/WebUSBDevice.h"
 #include "public/platform/modules/webusb/WebUSBDeviceInfo.h"
+#include "wtf/BitVector.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -42,7 +43,9 @@ public:
 
     const WebUSBDeviceInfo& info() const { return m_device->info(); }
     void onDeviceOpenedOrClosed(bool);
-    void onConfigurationSelected(bool success, int configurationIndex);
+    void onConfigurationSelected(bool success, size_t configurationIndex);
+    void onInterfaceClaimedOrUnclaimed(bool claimed, size_t interfaceIndex);
+    bool isInterfaceClaimed(size_t configurationIndex, size_t interfaceIndex) const;
 
     // IDL exposed interface:
     String guid() const { return info().guid; }
@@ -73,7 +76,7 @@ public:
     ScriptPromise controlTransferIn(ScriptState*, const USBControlTransferParameters& setup, unsigned length);
     ScriptPromise controlTransferOut(ScriptState*, const USBControlTransferParameters& setup);
     ScriptPromise controlTransferOut(ScriptState*, const USBControlTransferParameters& setup, const ArrayBufferOrArrayBufferView& data);
-    ScriptPromise clearHalt(ScriptState*, uint8_t endpointNumber);
+    ScriptPromise clearHalt(ScriptState*, String direction, uint8_t endpointNumber);
     ScriptPromise transferIn(ScriptState*, uint8_t endpointNumber, unsigned length);
     ScriptPromise transferOut(ScriptState*, uint8_t endpointNumber, const ArrayBufferOrArrayBufferView& data);
     ScriptPromise isochronousTransferIn(ScriptState*, uint8_t endpointNumber, Vector<unsigned> packetLengths);
@@ -86,12 +89,19 @@ public:
 
 private:
     int findConfigurationIndex(uint8_t configurationValue) const;
+    int findInterfaceIndex(uint8_t interfaceNumber) const;
+    bool ensureNoDeviceOrInterfaceChangeInProgress(ScriptPromiseResolver*) const;
     bool ensureDeviceConfigured(ScriptPromiseResolver*) const;
+    bool ensureInterfaceClaimed(uint8_t interfaceNumber, ScriptPromiseResolver*) const;
+    bool ensureEndpointAvailable(bool inTransfer, uint8_t endpointNumber, ScriptPromiseResolver*) const;
+    bool anyInterfaceChangeInProgress() const;
 
     OwnPtr<WebUSBDevice> m_device;
     bool m_opened;
     bool m_deviceStateChangeInProgress;
     int m_configurationIndex;
+    WTF::BitVector m_claimedInterfaces;
+    WTF::BitVector m_interfaceStateChangeInProgress;
 };
 
 } // namespace blink
