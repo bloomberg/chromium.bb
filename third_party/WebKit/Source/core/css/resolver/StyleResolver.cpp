@@ -330,8 +330,10 @@ void StyleResolver::collectFeatures()
     // in the current set of stylesheets. Style sharing code uses this information to reject
     // sharing candidates.
     CSSDefaultStyleSheets& defaultStyleSheets = CSSDefaultStyleSheets::instance();
-    if (defaultStyleSheets.defaultStyle())
+    if (defaultStyleSheets.defaultStyle()) {
         m_features.add(defaultStyleSheets.defaultStyle()->features());
+        m_hasFullscreenUAStyle = defaultStyleSheets.fullscreenStyleSheet();
+    }
 
     if (document().isViewSource())
         m_features.add(defaultStyleSheets.defaultViewSourceStyle()->features());

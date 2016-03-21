@@ -163,6 +163,7 @@ public:
     StyleSharingList& styleSharingList();
 
     bool hasRulesForId(const AtomicString&) const;
+    bool hasFullscreenUAStyle() const { return m_hasFullscreenUAStyle; }
 
     void addToStyleSharingList(Element&);
     void clearStyleSharingList();
@@ -247,6 +248,7 @@ private:
 
     bool m_needCollectFeatures;
     bool m_printMediaType;
+    bool m_hasFullscreenUAStyle = false;
 
     unsigned m_styleSharingDepth;
     WillBeHeapVector<OwnPtrWillBeMember<StyleSharingList>, styleSharingMaxDepth> m_styleSharingLists;

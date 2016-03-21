@@ -28,6 +28,7 @@
 #include "core/dom/StyleEngine.h"
 
 #include "core/HTMLNames.h"
+#include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/FontFaceCache.h"
@@ -754,6 +755,15 @@ void StyleEngine::setHttpDefaultStyle(const String& content)
     setPreferredStylesheetSetNameIfNotSet(content);
     markDocumentDirty();
     resolverChanged(FullStyleUpdate);
+}
+
+void StyleEngine::ensureFullscreenUAStyle()
+{
+    CSSDefaultStyleSheets::instance().ensureDefaultStyleSheetForFullscreen();
+    if (!m_resolver)
+        return;
+    if (!m_resolver->hasFullscreenUAStyle())
+        m_resolver->resetRuleFeatures();
 }
 
 DEFINE_TRACE(StyleEngine)

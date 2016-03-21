@@ -162,6 +162,7 @@ public:
     void removeSheet(StyleSheetContents*);
 
     void collectScopedStyleFeaturesTo(RuleFeatureSet&) const;
+    void ensureFullscreenUAStyle();
 
     void platformColorsChanged();
 

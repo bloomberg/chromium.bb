@@ -39,6 +39,7 @@ public:
     static CSSDefaultStyleSheets& instance();
 
     void ensureDefaultStyleSheetsForElement(const Element&, bool& changedDefaultStyle);
+    void ensureDefaultStyleSheetForFullscreen();
 
     RuleSet* defaultStyle() { return m_defaultStyle.get(); }
     RuleSet* defaultQuirksStyle() { return m_defaultQuirksStyle.get(); }

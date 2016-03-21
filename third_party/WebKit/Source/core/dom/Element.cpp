@@ -3022,7 +3022,7 @@ void Element::setFloatingPointAttribute(const QualifiedName& attributeName, doub
 void Element::setContainsFullScreenElement(bool flag)
 {
     setElementFlag(ContainsFullScreenElement, flag);
-    setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FullScreen));
+    pseudoStateChanged(CSSSelector::PseudoFullScreenAncestor);
 }
 
 static Element* parentCrossingFrameBoundaries(Element* element)

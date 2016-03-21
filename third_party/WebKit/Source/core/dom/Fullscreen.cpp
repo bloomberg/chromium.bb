@@ -31,6 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/StyleChangeReason.h"
+#include "core/dom/StyleEngine.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
@@ -456,8 +457,10 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
 
-    // FIXME: This should not call updateStyleIfNeeded.
-    document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FullScreen));
+    document()->styleEngine().ensureFullscreenUAStyle();
+    m_fullScreenElement->pseudoStateChanged(CSSSelector::PseudoFullScreen);
+
+    // FIXME: This should not call updateLayoutTree.
     document()->updateLayoutTree();
 
     m_fullScreenElement->didBecomeFullscreenElement();
@@ -483,8 +486,8 @@ void Fullscreen::didExitFullScreenForElement(Element*)
     if (m_fullScreenLayoutObject)
         LayoutFullScreenItem(m_fullScreenLayoutObject).unwrapLayoutObject();
 
+    m_fullScreenElement->pseudoStateChanged(CSSSelector::PseudoFullScreen);
     m_fullScreenElement = nullptr;
-    document()->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::FullScreen));
 
     if (document()->frame())
         document()->frame()->eventHandler().scheduleHoverStateUpdate();
