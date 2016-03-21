@@ -21,10 +21,10 @@
 #include "test/util.h"
 #include "vp10/common/common.h"
 #include "vp10/common/filter.h"
-#include "vpx_dsp/vpx_dsp_common.h"
-#include "vpx_dsp/vpx_filter.h"
-#include "vpx_mem/vpx_mem.h"
-#include "vpx_ports/mem.h"
+#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/vpx_filter.h"
+#include "aom_mem/vpx_mem.h"
+#include "aom_ports/mem.h"
 
 namespace {
 

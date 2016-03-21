@@ -11,7 +11,7 @@
 #ifndef VP10_COMMON_QUANT_COMMON_H_
 #define VP10_COMMON_QUANT_COMMON_H_
 
-#include "vpx/vpx_codec.h"
+#include "aom/vpx_codec.h"
 #include "vp10/common/seg_common.h"
 #include "vp10/common/enums.h"
 

@@ -14,7 +14,7 @@
 #include "test/i420_video_source.h"
 #include "test/util.h"
 #include "test/y4m_video_source.h"
-#include "vpx/vpx_codec.h"
+#include "aom/vpx_codec.h"
 
 namespace {
 

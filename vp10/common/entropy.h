@@ -11,8 +11,8 @@
 #ifndef VP10_COMMON_ENTROPY_H_
 #define VP10_COMMON_ENTROPY_H_
 
-#include "vpx/vpx_integer.h"
-#include "vpx_dsp/prob.h"
+#include "aom/vpx_integer.h"
+#include "aom_dsp/prob.h"
 
 #include "vp10/common/common.h"
 #include "vp10/common/enums.h"

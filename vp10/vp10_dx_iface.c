@@ -14,12 +14,12 @@
 #include "./vpx_config.h"
 #include "./vpx_version.h"
 
-#include "vpx/internal/vpx_codec_internal.h"
-#include "vpx/vp8dx.h"
-#include "vpx/vpx_decoder.h"
-#include "vpx_dsp/bitreader_buffer.h"
-#include "vpx_dsp/vpx_dsp_common.h"
-#include "vpx_util/vpx_thread.h"
+#include "aom/internal/vpx_codec_internal.h"
+#include "aom/vp8dx.h"
+#include "aom/vpx_decoder.h"
+#include "aom_dsp/bitreader_buffer.h"
+#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_util/vpx_thread.h"
 
 #include "vp10/common/alloccommon.h"
 #include "vp10/common/frame_buffers.h"

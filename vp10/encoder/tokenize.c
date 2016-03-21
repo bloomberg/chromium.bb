@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "vpx_mem/vpx_mem.h"
+#include "aom_mem/vpx_mem.h"
 
 #include "vp10/common/entropy.h"
 #include "vp10/common/pred_common.h"

@@ -13,7 +13,7 @@
 
 #include "third_party/googletest/src/include/gtest/gtest.h"
 #include "./vpx_config.h"
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 
 // ASM_REGISTER_STATE_CHECK(asm_function)
 //   Minimally validates the environment pre & post function execution. This

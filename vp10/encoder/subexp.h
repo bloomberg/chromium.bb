@@ -15,7 +15,7 @@
 extern "C" {
 #endif
 
-#include "vpx_dsp/prob.h"
+#include "aom_dsp/prob.h"
 
 struct vpx_writer;
 

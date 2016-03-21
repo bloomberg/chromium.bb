@@ -22,7 +22,7 @@
 #include "test/util.h"
 #include "vp10/common/entropy.h"
 #include "vp10/common/loopfilter.h"
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 
 using libvpx_test::ACMRandom;
 

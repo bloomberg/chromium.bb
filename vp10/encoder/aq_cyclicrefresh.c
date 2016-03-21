@@ -15,8 +15,8 @@
 #include "vp10/encoder/aq_cyclicrefresh.h"
 #include "vp10/encoder/ratectrl.h"
 #include "vp10/encoder/segmentation.h"
-#include "vpx_dsp/vpx_dsp_common.h"
-#include "vpx_ports/system_state.h"
+#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_ports/system_state.h"
 
 struct CYCLIC_REFRESH {
   // Percentage of blocks per frame that are targeted as candidates

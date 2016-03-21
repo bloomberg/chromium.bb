@@ -12,7 +12,7 @@
 #define VP10_COMMON_SCALE_H_
 
 #include "vp10/common/mv.h"
-#include "vpx_dsp/vpx_convolve.h"
+#include "aom_dsp/vpx_convolve.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -13,10 +13,10 @@
 
 #include "./vp10_rtcd.h"
 #include "./vpx_dsp_rtcd.h"
-#include "vpx_dsp/txfm_common.h"
-#include "vpx_dsp/x86/fwd_txfm_sse2.h"
-#include "vpx_dsp/x86/txfm_common_sse2.h"
-#include "vpx_ports/mem.h"
+#include "aom_dsp/txfm_common.h"
+#include "aom_dsp/x86/fwd_txfm_sse2.h"
+#include "aom_dsp/x86/txfm_common_sse2.h"
+#include "aom_ports/mem.h"
 
 static INLINE void load_buffer_4x4(const int16_t *input, __m128i *in,
                                    int stride) {

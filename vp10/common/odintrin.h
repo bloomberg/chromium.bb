@@ -2,9 +2,9 @@
 #define VP10_COMMON_ODINTRIN_H_
 
 #include "vp10/common/enums.h"
-#include "vpx/vpx_integer.h"
-#include "vpx_dsp/vpx_dsp_common.h"
-#include "vpx_ports/bitops.h"
+#include "aom/vpx_integer.h"
+#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_ports/bitops.h"
 
 /*Smallest blocks are 4x4*/
 # define OD_LOG_BSIZE0 (2)

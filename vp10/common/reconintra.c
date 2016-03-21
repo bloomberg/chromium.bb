@@ -12,11 +12,11 @@
 #include "./vpx_dsp_rtcd.h"
 
 #if CONFIG_VPX_HIGHBITDEPTH
-#include "vpx_dsp/vpx_dsp_common.h"
+#include "aom_dsp/vpx_dsp_common.h"
 #endif  // CONFIG_VPX_HIGHBITDEPTH
-#include "vpx_mem/vpx_mem.h"
-#include "vpx_ports/mem.h"
-#include "vpx_ports/vpx_once.h"
+#include "aom_mem/vpx_mem.h"
+#include "aom_ports/mem.h"
+#include "aom_ports/vpx_once.h"
 
 #include "vp10/common/reconintra.h"
 #include "vp10/common/onyxc_int.h"

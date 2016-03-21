@@ -13,7 +13,7 @@
 #include "./vpx_scale_rtcd.h"
 #include "./vpx_config.h"
 
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 
 #include "vp10/common/blockd.h"
 #include "vp10/common/reconinter.h"

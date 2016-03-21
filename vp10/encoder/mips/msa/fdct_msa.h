@@ -11,9 +11,9 @@
 #ifndef VP10_ENCODER_MIPS_MSA_VP10_FDCT_MSA_H_
 #define VP10_ENCODER_MIPS_MSA_VP10_FDCT_MSA_H_
 
-#include "vpx_dsp/mips/fwd_txfm_msa.h"
-#include "vpx_dsp/mips/txfm_macros_msa.h"
-#include "vpx_ports/mem.h"
+#include "aom_dsp/mips/fwd_txfm_msa.h"
+#include "aom_dsp/mips/txfm_macros_msa.h"
+#include "aom_ports/mem.h"
 
 #define VPX_ADST8(in0, in1, in2, in3, in4, in5, in6, in7, out0, out1, out2,  \
                   out3, out4, out5, out6, out7)                              \

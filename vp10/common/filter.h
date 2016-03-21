@@ -12,9 +12,9 @@
 #define VP10_COMMON_FILTER_H_
 
 #include "./vpx_config.h"
-#include "vpx/vpx_integer.h"
-#include "vpx_dsp/vpx_filter.h"
-#include "vpx_ports/mem.h"
+#include "aom/vpx_integer.h"
+#include "aom_dsp/vpx_filter.h"
+#include "aom_ports/mem.h"
 
 #ifdef __cplusplus
 extern "C" {

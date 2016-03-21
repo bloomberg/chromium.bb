@@ -13,7 +13,7 @@
 #include <cstring>
 #include "third_party/googletest/src/include/gtest/gtest.h"
 #include "./vpx_config.h"
-#include "vpx/vpx_decoder.h"
+#include "aom/vpx_decoder.h"
 
 namespace libvpx_test {
 

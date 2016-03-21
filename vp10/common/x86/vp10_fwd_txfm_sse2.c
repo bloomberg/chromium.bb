@@ -11,8 +11,8 @@
 #include <emmintrin.h>  // SSE2
 
 #include "./vpx_config.h"
-#include "vpx_dsp/vpx_dsp_common.h"
-#include "vpx_dsp/x86/fwd_txfm_sse2.h"
+#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/x86/fwd_txfm_sse2.h"
 
 void vp10_fdct4x4_1_sse2(const int16_t *input, tran_low_t *output, int stride) {
   __m128i in0, in1;

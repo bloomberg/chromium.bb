@@ -17,7 +17,7 @@
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "vp10/common/blockd.h"
-#include "vpx_mem/vpx_mem.h"
+#include "aom_mem/vpx_mem.h"
 
 typedef void (*SubtractFunc)(int rows, int cols, int16_t *diff_ptr,
                              ptrdiff_t diff_stride, const uint8_t *src_ptr,

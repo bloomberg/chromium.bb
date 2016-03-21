@@ -12,8 +12,8 @@
 
 #include "./vp10_rtcd.h"
 #include "vp10/common/vp10_fwd_txfm.h"
-#include "vpx_dsp/txfm_common.h"
-#include "vpx_dsp/x86/txfm_common_sse2.h"
+#include "aom_dsp/txfm_common.h"
+#include "aom_dsp/x86/txfm_common_sse2.h"
 
 // TODO(jingning) The high bit-depth version needs re-work for performance.
 // The current SSE2 implementation also causes cross reference to the static

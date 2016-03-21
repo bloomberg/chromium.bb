@@ -24,11 +24,11 @@
 #include "vp10/encoder/ratectrl.h"
 #include "vp10/encoder/segmentation.h"
 #include "vp10/encoder/temporal_filter.h"
-#include "vpx_dsp/vpx_dsp_common.h"
-#include "vpx_mem/vpx_mem.h"
-#include "vpx_ports/mem.h"
-#include "vpx_ports/vpx_timer.h"
-#include "vpx_scale/vpx_scale.h"
+#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_mem/vpx_mem.h"
+#include "aom_ports/mem.h"
+#include "aom_ports/vpx_timer.h"
+#include "aom_scale/vpx_scale.h"
 
 static void temporal_filter_predictors_mb_c(
     MACROBLOCKD *xd, uint8_t *y_mb_ptr, uint8_t *u_mb_ptr, uint8_t *v_mb_ptr,

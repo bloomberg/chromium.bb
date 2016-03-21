@@ -20,7 +20,7 @@
 #include <cstdlib>
 #include <string>
 #include "test/acm_random.h"
-#include "vpx/vpx_encoder.h"
+#include "aom/vpx_encoder.h"
 
 namespace libvpx_test {
 

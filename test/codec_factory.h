@@ -11,13 +11,13 @@
 #define TEST_CODEC_FACTORY_H_
 
 #include "./vpx_config.h"
-#include "vpx/vpx_decoder.h"
-#include "vpx/vpx_encoder.h"
+#include "aom/vpx_decoder.h"
+#include "aom/vpx_encoder.h"
 #if CONFIG_VP10_ENCODER
-#include "vpx/vp8cx.h"
+#include "aom/vp8cx.h"
 #endif
 #if CONFIG_VP10_DECODER
-#include "vpx/vp8dx.h"
+#include "aom/vp8dx.h"
 #endif
 
 #include "test/decode_test_driver.h"

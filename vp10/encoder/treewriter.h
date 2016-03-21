@@ -11,7 +11,7 @@
 #ifndef VP10_ENCODER_TREEWRITER_H_
 #define VP10_ENCODER_TREEWRITER_H_
 
-#include "vpx_dsp/bitwriter.h"
+#include "aom_dsp/bitwriter.h"
 
 #ifdef __cplusplus
 extern "C" {

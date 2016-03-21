@@ -9,7 +9,7 @@
  */
 
 #include "./vpx_config.h"
-#include "vpx_mem/vpx_mem.h"
+#include "aom_mem/vpx_mem.h"
 
 #include "vp10/common/alloccommon.h"
 #include "vp10/common/blockd.h"

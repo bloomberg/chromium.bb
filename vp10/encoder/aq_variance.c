@@ -10,7 +10,7 @@
 
 #include <math.h>
 
-#include "vpx_ports/mem.h"
+#include "aom_ports/mem.h"
 
 #include "vp10/encoder/aq_variance.h"
 
@@ -18,7 +18,7 @@
 #include "vp10/encoder/ratectrl.h"
 #include "vp10/encoder/rd.h"
 #include "vp10/encoder/segmentation.h"
-#include "vpx_ports/system_state.h"
+#include "aom_ports/system_state.h"
 
 #define ENERGY_MIN (-4)
 #define ENERGY_MAX (1)

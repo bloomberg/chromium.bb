@@ -13,7 +13,7 @@
 
 #include <emmintrin.h>  // SSE2
 #include "./vpx_config.h"
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 #include "vp10/common/vp10_inv_txfm.h"
 
 // perform 8x8 transpose

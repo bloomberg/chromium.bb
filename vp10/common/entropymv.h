@@ -13,7 +13,7 @@
 
 #include "./vpx_config.h"
 
-#include "vpx_dsp/prob.h"
+#include "aom_dsp/prob.h"
 
 #include "vp10/common/mv.h"
 

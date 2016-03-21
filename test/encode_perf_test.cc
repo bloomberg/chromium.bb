@@ -16,7 +16,7 @@
 #include "test/i420_video_source.h"
 #include "test/util.h"
 #include "test/y4m_video_source.h"
-#include "vpx_ports/vpx_timer.h"
+#include "aom_ports/vpx_timer.h"
 
 namespace {
 

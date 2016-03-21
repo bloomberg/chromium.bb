@@ -14,7 +14,7 @@
 #include "vp10/encoder/speed_features.h"
 #include "vp10/encoder/rdopt.h"
 
-#include "vpx_dsp/vpx_dsp_common.h"
+#include "aom_dsp/vpx_dsp_common.h"
 
 // Mesh search patters for various speed settings
 static MESH_PATTERN best_quality_mesh_pattern[MAX_MESH_STEP] = {

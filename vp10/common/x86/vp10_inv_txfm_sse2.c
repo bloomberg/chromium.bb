@@ -10,7 +10,7 @@
 
 #include "./vp10_rtcd.h"
 #include "vp10/common/x86/vp10_inv_txfm_sse2.h"
-#include "vpx_dsp/x86/txfm_common_sse2.h"
+#include "aom_dsp/x86/txfm_common_sse2.h"
 
 #define RECON_AND_STORE4X4(dest, in_x)                    \
   {                                                       \

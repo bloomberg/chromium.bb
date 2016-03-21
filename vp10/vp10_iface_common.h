@@ -10,7 +10,7 @@
 #ifndef VP10_VP10_IFACE_COMMON_H_
 #define VP10_VP10_IFACE_COMMON_H_
 
-#include "vpx_ports/mem.h"
+#include "aom_ports/mem.h"
 
 static void yuvconfig2image(vpx_image_t *img, const YV12_BUFFER_CONFIG *yv12,
                             void *user_priv) {

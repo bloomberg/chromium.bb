@@ -14,7 +14,7 @@
 #include <stdio.h>
 
 #include "./vpx_config.h"
-#include "vpx/vp8cx.h"
+#include "aom/vp8cx.h"
 
 #include "vp10/common/alloccommon.h"
 #include "vp10/common/entropymode.h"
@@ -35,11 +35,11 @@
 #include "vp10/encoder/tokenize.h"
 
 #if CONFIG_INTERNAL_STATS
-#include "vpx_dsp/ssim.h"
+#include "aom_dsp/ssim.h"
 #endif
-#include "vpx_dsp/variance.h"
-#include "vpx/internal/vpx_codec_internal.h"
-#include "vpx_util/vpx_thread.h"
+#include "aom_dsp/variance.h"
+#include "aom/internal/vpx_codec_internal.h"
+#include "aom_util/vpx_thread.h"
 
 #ifdef __cplusplus
 extern "C" {

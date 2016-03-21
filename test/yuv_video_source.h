@@ -15,7 +15,7 @@
 #include <string>
 
 #include "test/video_source.h"
-#include "vpx/vpx_image.h"
+#include "aom/vpx_image.h"
 
 namespace libvpx_test {
 

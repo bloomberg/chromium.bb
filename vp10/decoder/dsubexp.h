@@ -11,7 +11,7 @@
 #ifndef VP10_DECODER_DSUBEXP_H_
 #define VP10_DECODER_DSUBEXP_H_
 
-#include "vpx_dsp/bitreader.h"
+#include "aom_dsp/bitreader.h"
 
 #ifdef __cplusplus
 extern "C" {

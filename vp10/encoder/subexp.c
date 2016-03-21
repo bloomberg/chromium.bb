@@ -7,7 +7,7 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
-#include "vpx_dsp/bitwriter.h"
+#include "aom_dsp/bitwriter.h"
 
 #include "vp10/common/common.h"
 #include "vp10/common/entropy.h"

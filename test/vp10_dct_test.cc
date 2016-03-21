@@ -16,7 +16,7 @@
 #include "test/acm_random.h"
 #include "test/util.h"
 #include "./vpx_config.h"
-#include "vpx_ports/msvc.h"
+#include "aom_ports/msvc.h"
 
 #undef CONFIG_COEFFICIENT_RANGE_CHECKING
 #define CONFIG_COEFFICIENT_RANGE_CHECKING 1

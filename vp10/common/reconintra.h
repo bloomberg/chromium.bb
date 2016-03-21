@@ -11,7 +11,7 @@
 #ifndef VP10_COMMON_RECONINTRA_H_
 #define VP10_COMMON_RECONINTRA_H_
 
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 #include "vp10/common/blockd.h"
 
 #ifdef __cplusplus

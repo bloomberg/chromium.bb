@@ -11,8 +11,8 @@
 #ifndef VP10_COMMON_SCAN_H_
 #define VP10_COMMON_SCAN_H_
 
-#include "vpx/vpx_integer.h"
-#include "vpx_ports/mem.h"
+#include "aom/vpx_integer.h"
+#include "aom_ports/mem.h"
 
 #include "vp10/common/enums.h"
 #include "vp10/common/blockd.h"

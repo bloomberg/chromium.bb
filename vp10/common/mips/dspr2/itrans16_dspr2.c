@@ -16,9 +16,9 @@
 #include "vp10/common/common.h"
 #include "vp10/common/blockd.h"
 #include "vp10/common/idct.h"
-#include "vpx_dsp/mips/inv_txfm_dspr2.h"
-#include "vpx_dsp/txfm_common.h"
-#include "vpx_ports/mem.h"
+#include "aom_dsp/mips/inv_txfm_dspr2.h"
+#include "aom_dsp/txfm_common.h"
+#include "aom_ports/mem.h"
 
 #if HAVE_DSPR2
 void vp10_iht16x16_256_add_dspr2(const int16_t *input, uint8_t *dest, int pitch,

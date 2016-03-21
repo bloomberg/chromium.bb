@@ -20,7 +20,7 @@
 #include "test/util.h"
 #include "vp10/common/blockd.h"
 #include "vp10/common/pred_common.h"
-#include "vpx_mem/vpx_mem.h"
+#include "aom_mem/vpx_mem.h"
 
 namespace {
 

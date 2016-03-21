@@ -16,9 +16,9 @@
 #include <string.h>
 
 #if CONFIG_VPX_HIGHBITDEPTH
-#include "vpx_dsp/vpx_dsp_common.h"
+#include "aom_dsp/vpx_dsp_common.h"
 #endif  // CONFIG_VPX_HIGHBITDEPTH
-#include "vpx_ports/mem.h"
+#include "aom_ports/mem.h"
 #include "vp10/common/common.h"
 #include "vp10/encoder/resize.h"
 

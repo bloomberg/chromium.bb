@@ -8,9 +8,9 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "vpx_dsp/x86/inv_txfm_sse2.h"
-#include "vpx_dsp/x86/txfm_common_sse2.h"
-#include "vpx_ports/mem.h"
+#include "aom_dsp/x86/inv_txfm_sse2.h"
+#include "aom_dsp/x86/txfm_common_sse2.h"
+#include "aom_ports/mem.h"
 
 void vp10_iht4x4_16_add_sse2(const tran_low_t *input, uint8_t *dest, int stride,
                              int tx_type) {

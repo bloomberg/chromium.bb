@@ -11,8 +11,8 @@
 #ifndef VP10_ENCODER_COST_H_
 #define VP10_ENCODER_COST_H_
 
-#include "vpx_dsp/prob.h"
-#include "vpx/vpx_integer.h"
+#include "aom_dsp/prob.h"
+#include "aom/vpx_integer.h"
 
 #ifdef __cplusplus
 extern "C" {

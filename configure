@@ -544,7 +544,7 @@ EOF
     check_header pthread.h
     check_header unistd.h # for sysconf(3) and friends.
 
-    check_header vpx/vpx_integer.h -I${source_path} && enable_feature vpx_ports
+    check_header aom/vpx_integer.h -I${source_path} && enable_feature vpx_ports
 }
 
 process_toolchain() {
@@ -700,7 +700,7 @@ CONFIGURE_ARGS="$@"
 process "$@"
 print_webm_license ${BUILD_PFX}vpx_config.c "/*" " */"
 cat <<EOF >> ${BUILD_PFX}vpx_config.c
-#include "vpx/vpx_codec.h"
+#include "aom/vpx_codec.h"
 static const char* const cfg = "$CONFIGURE_ARGS";
 const char *vpx_codec_build_config(void) {return cfg;}
 EOF

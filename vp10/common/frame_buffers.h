@@ -11,8 +11,8 @@
 #ifndef VP10_COMMON_FRAME_BUFFERS_H_
 #define VP10_COMMON_FRAME_BUFFERS_H_
 
-#include "vpx/vpx_frame_buffer.h"
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_frame_buffer.h"
+#include "aom/vpx_integer.h"
 
 #ifdef __cplusplus
 extern "C" {

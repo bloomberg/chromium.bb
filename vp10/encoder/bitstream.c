@@ -12,12 +12,12 @@
 #include <stdio.h>
 #include <limits.h>
 
-#include "vpx/vpx_encoder.h"
-#include "vpx_dsp/bitwriter_buffer.h"
-#include "vpx_dsp/vpx_dsp_common.h"
-#include "vpx_mem/vpx_mem.h"
-#include "vpx_ports/mem_ops.h"
-#include "vpx_ports/system_state.h"
+#include "aom/vpx_encoder.h"
+#include "aom_dsp/bitwriter_buffer.h"
+#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_mem/vpx_mem.h"
+#include "aom_ports/mem_ops.h"
+#include "aom_ports/system_state.h"
 
 #if CONFIG_CLPF
 #include "vp10/common/clpf.h"

@@ -11,7 +11,7 @@
 #ifndef VP10_DECODER_DECODEMV_H_
 #define VP10_DECODER_DECODEMV_H_
 
-#include "vpx_dsp/bitreader.h"
+#include "aom_dsp/bitreader.h"
 
 #include "vp10/decoder/decoder.h"
 

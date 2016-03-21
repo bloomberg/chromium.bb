@@ -16,9 +16,9 @@
 #include "./vpx_config.h"
 #include "vp10/common/common.h"
 #include "vp10/common/enums.h"
-#include "vpx_dsp/inv_txfm.h"
-#include "vpx_dsp/txfm_common.h"
-#include "vpx_ports/mem.h"
+#include "aom_dsp/inv_txfm.h"
+#include "aom_dsp/txfm_common.h"
+#include "aom_ports/mem.h"
 
 #ifdef __cplusplus
 extern "C" {

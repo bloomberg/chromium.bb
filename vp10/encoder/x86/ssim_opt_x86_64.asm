@@ -8,7 +8,7 @@
 ;  be found in the AUTHORS file in the root of the source tree.
 ;
 
-%include "vpx_ports/x86_abi_support.asm"
+%include "aom_ports/x86_abi_support.asm"
 
 ; tabulate_ssim - sums sum_s,sum_r,sum_sq_s,sum_sq_r, sum_sxr
 %macro TABULATE_SSIM 0

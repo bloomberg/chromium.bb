@@ -12,8 +12,8 @@
 #define VP10_DECODER_DTHREAD_H_
 
 #include "./vpx_config.h"
-#include "vpx_util/vpx_thread.h"
-#include "vpx/internal/vpx_codec_internal.h"
+#include "aom_util/vpx_thread.h"
+#include "aom/internal/vpx_codec_internal.h"
 
 #ifdef __cplusplus
 extern "C" {

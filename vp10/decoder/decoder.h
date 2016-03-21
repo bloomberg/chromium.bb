@@ -13,10 +13,10 @@
 
 #include "./vpx_config.h"
 
-#include "vpx/vpx_codec.h"
-#include "vpx_dsp/bitreader.h"
-#include "vpx_scale/yv12config.h"
-#include "vpx_util/vpx_thread.h"
+#include "aom/vpx_codec.h"
+#include "aom_dsp/bitreader.h"
+#include "aom_scale/yv12config.h"
+#include "aom_util/vpx_thread.h"
 
 #include "vp10/common/thread_common.h"
 #include "vp10/common/onyxc_int.h"

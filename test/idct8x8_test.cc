@@ -16,7 +16,7 @@
 
 #include "./vpx_dsp_rtcd.h"
 #include "test/acm_random.h"
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 
 using libvpx_test::ACMRandom;
 

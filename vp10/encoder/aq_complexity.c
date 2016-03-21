@@ -16,8 +16,8 @@
 #include "vp10/encoder/encodeframe.h"
 #include "vp10/common/seg_common.h"
 #include "vp10/encoder/segmentation.h"
-#include "vpx_dsp/vpx_dsp_common.h"
-#include "vpx_ports/system_state.h"
+#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_ports/system_state.h"
 
 #define AQ_C_SEGMENTS 5
 #define DEFAULT_AQ2_SEG 3  // Neutral Q segment

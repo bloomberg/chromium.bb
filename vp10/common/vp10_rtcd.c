@@ -10,7 +10,7 @@
 #include "./vpx_config.h"
 #define RTCD_C
 #include "./vp10_rtcd.h"
-#include "vpx_ports/vpx_once.h"
+#include "aom_ports/vpx_once.h"
 
 void vp10_rtcd() {
   // TODO(JBB): Remove this once, by insuring that both the encoder and

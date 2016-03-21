@@ -12,12 +12,12 @@
 #include <string.h>
 
 #include "./vpx_config.h"
-#include "vpx/vpx_encoder.h"
-#include "vpx_ports/vpx_once.h"
-#include "vpx/internal/vpx_codec_internal.h"
+#include "aom/vpx_encoder.h"
+#include "aom_ports/vpx_once.h"
+#include "aom/internal/vpx_codec_internal.h"
 #include "./vpx_version.h"
 #include "vp10/encoder/encoder.h"
-#include "vpx/vp8cx.h"
+#include "aom/vp8cx.h"
 #include "vp10/encoder/firstpass.h"
 #include "vp10/vp10_iface_common.h"
 

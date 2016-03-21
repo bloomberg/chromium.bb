@@ -11,7 +11,7 @@
 #ifndef VP10_COMMON_SEG_COMMON_H_
 #define VP10_COMMON_SEG_COMMON_H_
 
-#include "vpx_dsp/prob.h"
+#include "aom_dsp/prob.h"
 
 #ifdef __cplusplus
 extern "C" {

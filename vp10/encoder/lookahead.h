@@ -11,8 +11,8 @@
 #ifndef VP10_ENCODER_LOOKAHEAD_H_
 #define VP10_ENCODER_LOOKAHEAD_H_
 
-#include "vpx_scale/yv12config.h"
-#include "vpx/vpx_integer.h"
+#include "aom_scale/yv12config.h"
+#include "aom/vpx_integer.h"
 
 #ifdef __cplusplus
 extern "C" {

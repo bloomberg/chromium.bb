@@ -15,7 +15,7 @@
 #include "vp10/common/onyxc_int.h"
 #include "vp10/common/reconinter.h"
 #include "vp10/encoder/encoder.h"
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 
 static double compute_dist(int16_t *x, int xstride, int16_t *y, int ystride,
     int nhb, int nvb, int coeff_shift) {

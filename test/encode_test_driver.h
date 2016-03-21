@@ -17,9 +17,9 @@
 
 #include "./vpx_config.h"
 #if CONFIG_VP10_ENCODER
-#include "vpx/vp8cx.h"
+#include "aom/vp8cx.h"
 #endif
-#include "vpx/vpx_encoder.h"
+#include "aom/vpx_encoder.h"
 
 namespace libvpx_test {
 

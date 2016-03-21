@@ -17,8 +17,8 @@
 
 #include "vp10/common/blockd.h"
 #include "vp10/common/idct.h"
-#include "vpx_dsp/fwd_txfm.h"
-#include "vpx_ports/mem.h"
+#include "aom_dsp/fwd_txfm.h"
+#include "aom_ports/mem.h"
 
 static INLINE void range_check(const tran_low_t *input, const int size,
                                const int bit) {

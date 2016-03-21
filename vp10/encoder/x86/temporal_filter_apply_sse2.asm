@@ -9,7 +9,7 @@
 ;
 
 
-%include "vpx_ports/x86_abi_support.asm"
+%include "aom_ports/x86_abi_support.asm"
 
 ; void vp10_temporal_filter_apply_sse2 | arg
 ;  (unsigned char  *frame1,           |  0

@@ -22,9 +22,9 @@
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "vp10/common/entropy.h"
-#include "vpx/vpx_codec.h"
-#include "vpx/vpx_integer.h"
-#include "vpx_ports/mem.h"
+#include "aom/vpx_codec.h"
+#include "aom/vpx_integer.h"
+#include "aom_ports/mem.h"
 
 using libvpx_test::ACMRandom;
 

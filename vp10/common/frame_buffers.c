@@ -11,7 +11,7 @@
 #include <assert.h>
 
 #include "vp10/common/frame_buffers.h"
-#include "vpx_mem/vpx_mem.h"
+#include "aom_mem/vpx_mem.h"
 
 int vp10_alloc_internal_frame_buffers(InternalFrameBufferList *list) {
   assert(list != NULL);

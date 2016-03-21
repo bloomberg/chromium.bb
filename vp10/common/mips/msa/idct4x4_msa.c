@@ -11,7 +11,7 @@
 #include <assert.h>
 
 #include "vp10/common/enums.h"
-#include "vpx_dsp/mips/inv_txfm_msa.h"
+#include "aom_dsp/mips/inv_txfm_msa.h"
 
 void vp10_iht4x4_16_add_msa(const int16_t *input, uint8_t *dst,
                             int32_t dst_stride, int32_t tx_type) {

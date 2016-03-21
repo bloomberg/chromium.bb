@@ -12,7 +12,7 @@
 #define VP10_ENCODER_MCOMP_H_
 
 #include "vp10/encoder/block.h"
-#include "vpx_dsp/variance.h"
+#include "aom_dsp/variance.h"
 
 #ifdef __cplusplus
 extern "C" {

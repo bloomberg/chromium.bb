@@ -16,12 +16,12 @@
 #include "./vpx_dsp_rtcd.h"
 #include "./vpx_scale_rtcd.h"
 
-#include "vpx_mem/vpx_mem.h"
-#include "vpx_ports/system_state.h"
-#include "vpx_ports/vpx_once.h"
-#include "vpx_ports/vpx_timer.h"
-#include "vpx_scale/vpx_scale.h"
-#include "vpx_util/vpx_thread.h"
+#include "aom_mem/vpx_mem.h"
+#include "aom_ports/system_state.h"
+#include "aom_ports/vpx_once.h"
+#include "aom_ports/vpx_timer.h"
+#include "aom_scale/vpx_scale.h"
+#include "aom_util/vpx_thread.h"
 
 #include "vp10/common/alloccommon.h"
 #include "vp10/common/loopfilter.h"

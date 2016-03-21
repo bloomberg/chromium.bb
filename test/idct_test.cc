@@ -15,7 +15,7 @@
 
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 
 typedef void (*IdctFunc)(int16_t *input, unsigned char *pred_ptr,
                          int pred_stride, unsigned char *dst_ptr,

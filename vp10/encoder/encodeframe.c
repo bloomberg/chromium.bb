@@ -16,10 +16,10 @@
 #include "./vpx_dsp_rtcd.h"
 #include "./vpx_config.h"
 
-#include "vpx_dsp/vpx_dsp_common.h"
-#include "vpx_ports/mem.h"
-#include "vpx_ports/vpx_timer.h"
-#include "vpx_ports/system_state.h"
+#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_ports/mem.h"
+#include "aom_ports/vpx_timer.h"
+#include "aom_ports/system_state.h"
 
 #include "vp10/common/common.h"
 #include "vp10/common/entropy.h"

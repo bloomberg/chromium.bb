@@ -11,8 +11,8 @@
 #ifndef VP10_ENCODER_RATECTRL_H_
 #define VP10_ENCODER_RATECTRL_H_
 
-#include "vpx/vpx_codec.h"
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_codec.h"
+#include "aom/vpx_integer.h"
 
 #include "vp10/common/blockd.h"
 

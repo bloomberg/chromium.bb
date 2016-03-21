@@ -17,8 +17,8 @@
 #include <tmmintrin.h>  // SSSE3
 
 #include "./vp10_rtcd.h"
-#include "vpx_dsp/x86/inv_txfm_sse2.h"
-#include "vpx_dsp/x86/txfm_common_sse2.h"
+#include "aom_dsp/x86/inv_txfm_sse2.h"
+#include "aom_dsp/x86/txfm_common_sse2.h"
 
 void vp10_fdct8x8_quant_ssse3(
     const int16_t* input, int stride, int16_t* coeff_ptr, intptr_t n_coeffs,

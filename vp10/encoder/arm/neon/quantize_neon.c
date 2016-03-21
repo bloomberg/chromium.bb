@@ -12,7 +12,7 @@
 
 #include <math.h>
 
-#include "vpx_mem/vpx_mem.h"
+#include "aom_mem/vpx_mem.h"
 
 #include "vp10/common/quant_common.h"
 #include "vp10/common/seg_common.h"

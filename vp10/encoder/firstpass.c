@@ -15,12 +15,12 @@
 #include "./vpx_dsp_rtcd.h"
 #include "./vpx_scale_rtcd.h"
 
-#include "vpx_dsp/vpx_dsp_common.h"
-#include "vpx_mem/vpx_mem.h"
-#include "vpx_ports/mem.h"
-#include "vpx_ports/system_state.h"
-#include "vpx_scale/vpx_scale.h"
-#include "vpx_scale/yv12config.h"
+#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_mem/vpx_mem.h"
+#include "aom_ports/mem.h"
+#include "aom_ports/system_state.h"
+#include "aom_scale/vpx_scale.h"
+#include "aom_scale/yv12config.h"
 
 #include "vp10/common/entropymv.h"
 #include "vp10/common/quant_common.h"
@@ -36,7 +36,7 @@
 #include "vp10/encoder/mcomp.h"
 #include "vp10/encoder/quantize.h"
 #include "vp10/encoder/rd.h"
-#include "vpx_dsp/variance.h"
+#include "aom_dsp/variance.h"
 
 #define OUTPUT_FPF 0
 #define ARF_STATS_OUTPUT 0

@@ -18,8 +18,8 @@
 #include "test/register_state_check.h"
 #include "test/util.h"
 
-#include "vpx_scale/yv12config.h"
-#include "vpx/vpx_integer.h"
+#include "aom_scale/yv12config.h"
+#include "aom/vpx_integer.h"
 #include "vp10/common/reconinter.h"
 #include "vp10/encoder/context_tree.h"
 #include "vp10/encoder/denoiser.h"

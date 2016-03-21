@@ -13,7 +13,7 @@
 
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 
 namespace libvpx_test {
 

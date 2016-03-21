@@ -12,8 +12,8 @@
 #define VP10_COMMON_ONYXC_INT_H_
 
 #include "./vpx_config.h"
-#include "vpx/internal/vpx_codec_internal.h"
-#include "vpx_util/vpx_thread.h"
+#include "aom/internal/vpx_codec_internal.h"
+#include "aom_util/vpx_thread.h"
 #include "./vp10_rtcd.h"
 #include "vp10/common/alloccommon.h"
 #include "vp10/common/loopfilter.h"

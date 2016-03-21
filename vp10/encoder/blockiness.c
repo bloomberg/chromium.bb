@@ -13,11 +13,11 @@
 #include "./vpx_dsp_rtcd.h"
 #include "vp10/common/common.h"
 #include "vp10/common/filter.h"
-#include "vpx/vpx_integer.h"
-#include "vpx_dsp/vpx_convolve.h"
-#include "vpx_dsp/vpx_filter.h"
-#include "vpx_ports/mem.h"
-#include "vpx_ports/system_state.h"
+#include "aom/vpx_integer.h"
+#include "aom_dsp/vpx_convolve.h"
+#include "aom_dsp/vpx_filter.h"
+#include "aom_ports/mem.h"
+#include "aom_ports/system_state.h"
 
 static int horizontal_filter(const uint8_t *s) {
   return (s[1] - s[-2]) * 2 + (s[-1] - s[0]) * 6;

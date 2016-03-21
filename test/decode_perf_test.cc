@@ -17,7 +17,7 @@
 #include "test/md5_helper.h"
 #include "test/util.h"
 #include "test/webm_video_source.h"
-#include "vpx_ports/vpx_timer.h"
+#include "aom_ports/vpx_timer.h"
 #include "./ivfenc.h"
 #include "./vpx_version.h"
 

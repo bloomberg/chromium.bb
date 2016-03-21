@@ -12,7 +12,7 @@
 #define VP10_COMMON_ENUMS_H_
 
 #include "./vpx_config.h"
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 
 #ifdef __cplusplus
 extern "C" {

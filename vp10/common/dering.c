@@ -12,7 +12,7 @@
 #include <math.h>
 
 #include "./vpx_scale_rtcd.h"
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 #include "vp10/common/dering.h"
 #include "vp10/common/onyxc_int.h"
 #include "vp10/common/reconinter.h"

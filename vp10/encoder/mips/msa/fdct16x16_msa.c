@@ -12,7 +12,7 @@
 
 #include "vp10/common/enums.h"
 #include "vp10/encoder/mips/msa/fdct_msa.h"
-#include "vpx_dsp/mips/fwd_txfm_msa.h"
+#include "aom_dsp/mips/fwd_txfm_msa.h"
 
 static void fadst16_cols_step1_msa(const int16_t *input, int32_t stride,
                                    const int32_t *const0, int16_t *int_buf) {

@@ -16,14 +16,14 @@
 #include "./vpx_scale_rtcd.h"
 #include "./vpx_config.h"
 
-#include "vpx_dsp/bitreader_buffer.h"
-#include "vpx_dsp/bitreader.h"
-#include "vpx_dsp/vpx_dsp_common.h"
-#include "vpx_mem/vpx_mem.h"
-#include "vpx_ports/mem.h"
-#include "vpx_ports/mem_ops.h"
-#include "vpx_scale/vpx_scale.h"
-#include "vpx_util/vpx_thread.h"
+#include "aom_dsp/bitreader_buffer.h"
+#include "aom_dsp/bitreader.h"
+#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_mem/vpx_mem.h"
+#include "aom_ports/mem.h"
+#include "aom_ports/mem_ops.h"
+#include "aom_scale/vpx_scale.h"
+#include "aom_util/vpx_thread.h"
 
 #include "vp10/common/alloccommon.h"
 #if CONFIG_CLPF

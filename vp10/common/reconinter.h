@@ -13,8 +13,8 @@
 
 #include "vp10/common/filter.h"
 #include "vp10/common/onyxc_int.h"
-#include "vpx/vpx_integer.h"
-#include "vpx_dsp/vpx_filter.h"
+#include "aom/vpx_integer.h"
+#include "aom_dsp/vpx_filter.h"
 
 #ifdef __cplusplus
 extern "C" {

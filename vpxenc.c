@@ -23,9 +23,9 @@
 #include "third_party/libyuv/include/libyuv/scale.h"
 #endif
 
-#include "vpx/vpx_encoder.h"
+#include "aom/vpx_encoder.h"
 #if CONFIG_DECODERS
-#include "vpx/vpx_decoder.h"
+#include "aom/vpx_decoder.h"
 #endif
 
 #include "./args.h"
@@ -33,15 +33,15 @@
 #include "./tools_common.h"
 
 #if CONFIG_VP10_ENCODER
-#include "vpx/vp8cx.h"
+#include "aom/vp8cx.h"
 #endif
 #if CONFIG_VP10_DECODER
-#include "vpx/vp8dx.h"
+#include "aom/vp8dx.h"
 #endif
 
-#include "vpx/vpx_integer.h"
-#include "vpx_ports/mem_ops.h"
-#include "vpx_ports/vpx_timer.h"
+#include "aom/vpx_integer.h"
+#include "aom_ports/mem_ops.h"
+#include "aom_ports/vpx_timer.h"
 #include "./rate_hist.h"
 #include "./vpxstats.h"
 #include "./warnings.h"

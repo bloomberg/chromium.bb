@@ -22,8 +22,8 @@
 #include "test/util.h"
 #include "vp10/common/entropy.h"
 #include "vp10/common/scan.h"
-#include "vpx/vpx_codec.h"
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_codec.h"
+#include "aom/vpx_integer.h"
 
 using libvpx_test::ACMRandom;
 

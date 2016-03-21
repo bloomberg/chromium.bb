@@ -34,24 +34,24 @@ endef
 CODEC_SRCS-yes += CHANGELOG
 CODEC_SRCS-yes += libs.mk
 
-include $(SRC_PATH_BARE)/vpx/vpx_codec.mk
-CODEC_SRCS-yes += $(addprefix vpx/,$(call enabled,API_SRCS))
-CODEC_DOC_SRCS += $(addprefix vpx/,$(call enabled,API_DOC_SRCS))
+include $(SRC_PATH_BARE)/aom/vpx_codec.mk
+CODEC_SRCS-yes += $(addprefix aom/,$(call enabled,API_SRCS))
+CODEC_DOC_SRCS += $(addprefix aom/,$(call enabled,API_DOC_SRCS))
 
-include $(SRC_PATH_BARE)/vpx_mem/vpx_mem.mk
-CODEC_SRCS-yes += $(addprefix vpx_mem/,$(call enabled,MEM_SRCS))
+include $(SRC_PATH_BARE)/aom_mem/vpx_mem.mk
+CODEC_SRCS-yes += $(addprefix aom_mem/,$(call enabled,MEM_SRCS))
 
-include $(SRC_PATH_BARE)/vpx_scale/vpx_scale.mk
-CODEC_SRCS-yes += $(addprefix vpx_scale/,$(call enabled,SCALE_SRCS))
+include $(SRC_PATH_BARE)/aom_scale/vpx_scale.mk
+CODEC_SRCS-yes += $(addprefix aom_scale/,$(call enabled,SCALE_SRCS))
 
-include $(SRC_PATH_BARE)/vpx_ports/vpx_ports.mk
-CODEC_SRCS-yes += $(addprefix vpx_ports/,$(call enabled,PORTS_SRCS))
+include $(SRC_PATH_BARE)/aom_ports/vpx_ports.mk
+CODEC_SRCS-yes += $(addprefix aom_ports/,$(call enabled,PORTS_SRCS))
 
-include $(SRC_PATH_BARE)/vpx_dsp/vpx_dsp.mk
-CODEC_SRCS-yes += $(addprefix vpx_dsp/,$(call enabled,DSP_SRCS))
+include $(SRC_PATH_BARE)/aom_dsp/vpx_dsp.mk
+CODEC_SRCS-yes += $(addprefix aom_dsp/,$(call enabled,DSP_SRCS))
 
-include $(SRC_PATH_BARE)/vpx_util/vpx_util.mk
-CODEC_SRCS-yes += $(addprefix vpx_util/,$(call enabled,UTIL_SRCS))
+include $(SRC_PATH_BARE)/aom_util/vpx_util.mk
+CODEC_SRCS-yes += $(addprefix aom_util/,$(call enabled,UTIL_SRCS))
 
 #  VP10 make file
 ifeq ($(CONFIG_VP10),yes)
@@ -64,11 +64,11 @@ ifeq ($(CONFIG_VP10_ENCODER),yes)
   include $(SRC_PATH_BARE)/$(VP10_PREFIX)vp10cx.mk
   CODEC_SRCS-yes += $(addprefix $(VP10_PREFIX),$(call enabled,VP10_CX_SRCS))
   CODEC_EXPORTS-yes += $(addprefix $(VP10_PREFIX),$(VP10_CX_EXPORTS))
-  CODEC_SRCS-yes += $(VP10_PREFIX)vp10cx.mk vpx/vp8.h vpx/vp8cx.h
-  INSTALL-LIBS-yes += include/vpx/vp8.h include/vpx/vp8cx.h
-  INSTALL-LIBS-$(CONFIG_SPATIAL_SVC) += include/vpx/svc_context.h
-  INSTALL_MAPS += include/vpx/% $(SRC_PATH_BARE)/$(VP10_PREFIX)/%
-  CODEC_DOC_SRCS += vpx/vp8.h vpx/vp8cx.h
+  CODEC_SRCS-yes += $(VP10_PREFIX)vp10cx.mk aom/vp8.h aom/vp8cx.h
+  INSTALL-LIBS-yes += include/aom/vp8.h include/aom/vp8cx.h
+  INSTALL-LIBS-$(CONFIG_SPATIAL_SVC) += include/aom/svc_context.h
+  INSTALL_MAPS += include/aom/% $(SRC_PATH_BARE)/$(VP10_PREFIX)/%
+  CODEC_DOC_SRCS += aom/vp8.h aom/vp8cx.h
   CODEC_DOC_SECTIONS += vp10 vp10_encoder
 endif
 
@@ -77,10 +77,10 @@ ifeq ($(CONFIG_VP10_DECODER),yes)
   include $(SRC_PATH_BARE)/$(VP10_PREFIX)vp10dx.mk
   CODEC_SRCS-yes += $(addprefix $(VP10_PREFIX),$(call enabled,VP10_DX_SRCS))
   CODEC_EXPORTS-yes += $(addprefix $(VP10_PREFIX),$(VP10_DX_EXPORTS))
-  CODEC_SRCS-yes += $(VP10_PREFIX)vp10dx.mk vpx/vp8.h vpx/vp8dx.h
-  INSTALL-LIBS-yes += include/vpx/vp8.h include/vpx/vp8dx.h
-  INSTALL_MAPS += include/vpx/% $(SRC_PATH_BARE)/$(VP10_PREFIX)/%
-  CODEC_DOC_SRCS += vpx/vp8.h vpx/vp8dx.h
+  CODEC_SRCS-yes += $(VP10_PREFIX)vp10dx.mk aom/vp8.h aom/vp8dx.h
+  INSTALL-LIBS-yes += include/aom/vp8.h include/aom/vp8dx.h
+  INSTALL_MAPS += include/aom/% $(SRC_PATH_BARE)/$(VP10_PREFIX)/%
+  CODEC_DOC_SRCS += aom/vp8.h aom/vp8dx.h
   CODEC_DOC_SECTIONS += vp10 vp10_decoder
 endif
 
@@ -105,8 +105,8 @@ endif
 
 # The following pairs define a mapping of locations in the distribution
 # tree to locations in the source/build trees.
-INSTALL_MAPS += include/vpx/% $(SRC_PATH_BARE)/vpx/%
-INSTALL_MAPS += include/vpx/% $(SRC_PATH_BARE)/vpx_ports/%
+INSTALL_MAPS += include/aom/% $(SRC_PATH_BARE)/aom/%
+INSTALL_MAPS += include/aom/% $(SRC_PATH_BARE)/aom_ports/%
 INSTALL_MAPS += $(LIBSUBDIR)/%     %
 INSTALL_MAPS += src/%     $(SRC_PATH_BARE)/%
 ifeq ($(CONFIG_MSVS),yes)
@@ -116,25 +116,25 @@ endif
 
 CODEC_SRCS-yes += build/make/version.sh
 CODEC_SRCS-yes += build/make/rtcd.pl
-CODEC_SRCS-yes += vpx_ports/emmintrin_compat.h
-CODEC_SRCS-yes += vpx_ports/mem_ops.h
-CODEC_SRCS-yes += vpx_ports/mem_ops_aligned.h
-CODEC_SRCS-yes += vpx_ports/vpx_once.h
+CODEC_SRCS-yes += aom_ports/emmintrin_compat.h
+CODEC_SRCS-yes += aom_ports/mem_ops.h
+CODEC_SRCS-yes += aom_ports/mem_ops_aligned.h
+CODEC_SRCS-yes += aom_ports/vpx_once.h
 CODEC_SRCS-yes += $(BUILD_PFX)vpx_config.c
 INSTALL-SRCS-no += $(BUILD_PFX)vpx_config.c
 ifeq ($(ARCH_X86)$(ARCH_X86_64),yes)
 INSTALL-SRCS-$(CONFIG_CODEC_SRCS) += third_party/x86inc/x86inc.asm
 endif
-CODEC_EXPORTS-yes += vpx/exports_com
-CODEC_EXPORTS-$(CONFIG_ENCODERS) += vpx/exports_enc
-CODEC_EXPORTS-$(CONFIG_DECODERS) += vpx/exports_dec
+CODEC_EXPORTS-yes += aom/exports_com
+CODEC_EXPORTS-$(CONFIG_ENCODERS) += aom/exports_enc
+CODEC_EXPORTS-$(CONFIG_DECODERS) += aom/exports_dec
 
-INSTALL-LIBS-yes += include/vpx/vpx_codec.h
-INSTALL-LIBS-yes += include/vpx/vpx_frame_buffer.h
-INSTALL-LIBS-yes += include/vpx/vpx_image.h
-INSTALL-LIBS-yes += include/vpx/vpx_integer.h
-INSTALL-LIBS-$(CONFIG_DECODERS) += include/vpx/vpx_decoder.h
-INSTALL-LIBS-$(CONFIG_ENCODERS) += include/vpx/vpx_encoder.h
+INSTALL-LIBS-yes += include/aom/vpx_codec.h
+INSTALL-LIBS-yes += include/aom/vpx_frame_buffer.h
+INSTALL-LIBS-yes += include/aom/vpx_image.h
+INSTALL-LIBS-yes += include/aom/vpx_integer.h
+INSTALL-LIBS-$(CONFIG_DECODERS) += include/aom/vpx_decoder.h
+INSTALL-LIBS-$(CONFIG_ENCODERS) += include/aom/vpx_encoder.h
 ifeq ($(CONFIG_EXTERNAL_BUILD),yes)
 ifeq ($(CONFIG_MSVS),yes)
 INSTALL-LIBS-yes                  += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/$(p)/$(CODEC_LIB).lib)

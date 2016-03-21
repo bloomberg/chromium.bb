@@ -24,12 +24,12 @@
 #include "./args.h"
 #include "./ivfdec.h"
 
-#include "vpx/vpx_decoder.h"
-#include "vpx_ports/mem_ops.h"
-#include "vpx_ports/vpx_timer.h"
+#include "aom/vpx_decoder.h"
+#include "aom_ports/mem_ops.h"
+#include "aom_ports/vpx_timer.h"
 
 #if CONFIG_VP10_DECODER
-#include "vpx/vp8dx.h"
+#include "aom/vp8dx.h"
 #endif
 
 #include "./md5_utils.h"

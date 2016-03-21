@@ -11,7 +11,7 @@
 #ifndef VP10_COMMON_LOOPFILTER_H_
 #define VP10_COMMON_LOOPFILTER_H_
 
-#include "vpx_ports/mem.h"
+#include "aom_ports/mem.h"
 #include "./vpx_config.h"
 
 #include "vp10/common/blockd.h"

@@ -17,7 +17,7 @@
 #include "vp10/encoder/encodemv.h"
 #include "vp10/encoder/subexp.h"
 
-#include "vpx_dsp/vpx_dsp_common.h"
+#include "aom_dsp/vpx_dsp_common.h"
 
 static struct vp10_token mv_joint_encodings[MV_JOINTS];
 static struct vp10_token mv_class_encodings[MV_CLASSES];

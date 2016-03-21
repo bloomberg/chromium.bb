@@ -15,7 +15,7 @@
 #include "vp10/common/entropymv.h"
 #include "vp10/common/filter.h"
 #include "vp10/common/seg_common.h"
-#include "vpx_dsp/vpx_filter.h"
+#include "aom_dsp/vpx_filter.h"
 
 #ifdef __cplusplus
 extern "C" {

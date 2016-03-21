@@ -3,9 +3,9 @@
 
 #include "vp10/common/od_dering.h"
 #include "vp10/common/onyxc_int.h"
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 #include "./vpx_config.h"
-#include "vpx_ports/mem.h"
+#include "aom_ports/mem.h"
 
 #ifdef __cplusplus
 extern "C" {

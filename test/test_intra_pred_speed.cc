@@ -18,9 +18,9 @@
 #include "test/acm_random.h"
 #include "test/clear_system_state.h"
 #include "test/md5_helper.h"
-#include "vpx/vpx_integer.h"
-#include "vpx_ports/mem.h"
-#include "vpx_ports/vpx_timer.h"
+#include "aom/vpx_integer.h"
+#include "aom_ports/mem.h"
+#include "aom_ports/vpx_timer.h"
 
 // -----------------------------------------------------------------------------
 

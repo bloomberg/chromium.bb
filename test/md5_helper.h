@@ -12,7 +12,7 @@
 #define TEST_MD5_HELPER_H_
 
 #include "./md5_utils.h"
-#include "vpx/vpx_decoder.h"
+#include "aom/vpx_decoder.h"
 
 namespace libvpx_test {
 class MD5 {

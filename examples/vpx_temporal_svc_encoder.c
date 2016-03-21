@@ -19,9 +19,9 @@
 #include <string.h>
 
 #include "./vpx_config.h"
-#include "../vpx_ports/vpx_timer.h"
-#include "vpx/vp8cx.h"
-#include "vpx/vpx_encoder.h"
+#include "../aom_ports/vpx_timer.h"
+#include "aom/vp8cx.h"
+#include "aom/vpx_encoder.h"
 
 #include "../tools_common.h"
 #include "../video_writer.h"

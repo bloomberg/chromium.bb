@@ -11,7 +11,7 @@
 #include "./vpx_dsp_rtcd.h"
 #include "vp10/common/filter.h"
 #include "vp10/common/scale.h"
-#include "vpx_dsp/vpx_filter.h"
+#include "aom_dsp/vpx_filter.h"
 
 static INLINE int scaled_x(int val, const struct scale_factors *sf) {
   return (int)((int64_t)val * sf->x_scale_fp >> REF_SCALE_SHIFT);

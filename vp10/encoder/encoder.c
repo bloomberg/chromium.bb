@@ -50,16 +50,16 @@
 #include "./vp10_rtcd.h"
 #include "./vpx_dsp_rtcd.h"
 #include "./vpx_scale_rtcd.h"
-#include "vpx/internal/vpx_psnr.h"
+#include "aom/internal/vpx_psnr.h"
 #if CONFIG_INTERNAL_STATS
-#include "vpx_dsp/ssim.h"
+#include "aom_dsp/ssim.h"
 #endif
-#include "vpx_dsp/vpx_dsp_common.h"
-#include "vpx_dsp/vpx_filter.h"
-#include "vpx_ports/mem.h"
-#include "vpx_ports/system_state.h"
-#include "vpx_ports/vpx_timer.h"
-#include "vpx_scale/vpx_scale.h"
+#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/vpx_filter.h"
+#include "aom_ports/mem.h"
+#include "aom_ports/system_state.h"
+#include "aom_ports/vpx_timer.h"
+#include "aom_scale/vpx_scale.h"
 
 #define AM_SEGMENT_ID_INACTIVE 7
 #define AM_SEGMENT_ID_ACTIVE 0

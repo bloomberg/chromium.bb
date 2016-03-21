@@ -11,7 +11,7 @@
 #ifndef VP10_COMMON_MV_H_
 #define VP10_COMMON_MV_H_
 
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 
 #include "vp10/common/common.h"
 

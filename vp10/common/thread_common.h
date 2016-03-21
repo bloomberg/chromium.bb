@@ -12,7 +12,7 @@
 #define VP10_COMMON_LOOPFILTER_THREAD_H_
 #include "./vpx_config.h"
 #include "vp10/common/loopfilter.h"
-#include "vpx_util/vpx_thread.h"
+#include "aom_util/vpx_thread.h"
 
 #ifdef __cplusplus
 extern "C" {

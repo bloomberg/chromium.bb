@@ -4,7 +4,7 @@ print <<EOF
  * VP10
  */
 
-#include "vpx/vpx_integer.h"
+#include "aom/vpx_integer.h"
 #include "vp10/common/common.h"
 #include "vp10/common/enums.h"
 

@@ -8,8 +8,8 @@
  *  be found in the AUTHORS file in the root of the source tree.
  */
 
-#include "vpx_mem/vpx_mem.h"
-#include "vpx_ports/mem.h"
+#include "aom_mem/vpx_mem.h"
+#include "aom_ports/mem.h"
 
 #include "vp10/common/blockd.h"
 #include "vp10/common/common.h"

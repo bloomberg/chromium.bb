@@ -9,7 +9,7 @@
  */
 
 #include "./vpx_config.h"
-#include "vpx_mem/vpx_mem.h"
+#include "aom_mem/vpx_mem.h"
 #include "vp10/common/reconinter.h"
 #include "vp10/decoder/dthread.h"
 #include "vp10/decoder/decoder.h"

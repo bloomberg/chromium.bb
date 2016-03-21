@@ -15,7 +15,7 @@
 #include "./vpx_dsp_rtcd.h"
 
 #include "vp10/common/blockd.h"
-#include "vpx_dsp/txfm_common.h"
+#include "aom_dsp/txfm_common.h"
 
 void vp10_fdct8x8_quant_neon(
     const int16_t* input, int stride, int16_t* coeff_ptr, intptr_t n_coeffs,

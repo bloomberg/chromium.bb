@@ -12,8 +12,8 @@
 #include "vp10/common/blockd.h"
 #include "vp10/common/onyxc_int.h"
 #include "vp10/common/entropymode.h"
-#include "vpx_mem/vpx_mem.h"
-#include "vpx/vpx_integer.h"
+#include "aom_mem/vpx_mem.h"
+#include "aom/vpx_integer.h"
 
 // Unconstrained Node Tree
 const vpx_tree_index vp10_coef_con_tree[TREE_SIZE(ENTROPY_TOKENS)] = {

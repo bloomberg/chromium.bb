@@ -16,9 +16,9 @@
 
 #include "vp10/decoder/decoder.h"
 
-#include "vpx/svc_context.h"
-#include "vpx/vp8cx.h"
-#include "vpx/vpx_encoder.h"
+#include "aom/svc_context.h"
+#include "aom/vp8cx.h"
+#include "aom/vpx_encoder.h"
 
 namespace {
 

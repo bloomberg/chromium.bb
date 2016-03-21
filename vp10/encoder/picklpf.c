@@ -13,9 +13,9 @@
 
 #include "./vpx_scale_rtcd.h"
 
-#include "vpx_dsp/vpx_dsp_common.h"
-#include "vpx_mem/vpx_mem.h"
-#include "vpx_ports/mem.h"
+#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_mem/vpx_mem.h"
+#include "aom_ports/mem.h"
 
 #include "vp10/common/loopfilter.h"
 #include "vp10/common/onyxc_int.h"
