@@ -49,6 +49,9 @@ class VIEWS_EXPORT BridgedNativeWidget
       public ui::AcceleratedWidgetMacNSView,
       public BridgedNativeWidgetOwner {
  public:
+  // Contains NativeViewHost->gfx::NativeView associations.
+  using AssociatedViews = std::map<const views::View*, NSView*>;
+
   // Ways of changing the visibility of the bridged NSWindow.
   enum WindowVisibilityState {
     HIDE_WINDOW,               // Hides with -[NSWindow orderOut:].
@@ -155,6 +158,12 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   // Creates a ui::Compositor which becomes responsible for drawing the window.
   void CreateLayer(ui::LayerType layer_type, bool translucent);
+
+  // Updates |associated_views_| on NativeViewHost::Attach()/Detach().
+  void SetAssociationForView(const views::View* view, NSView* native_view);
+  void ClearAssociationForView(const views::View* view);
+  // Sorts child NSViews according to NativeViewHosts order in views hierarchy.
+  void ReorderChildViews();
 
   NativeWidgetMac* native_widget_mac() { return native_widget_mac_; }
   BridgedContentView* ns_view() { return bridged_view_; }
@@ -288,6 +297,8 @@ class VIEWS_EXPORT BridgedNativeWidget
   // If true, the window has been made visible or changed shape and the window
   // shadow needs to be invalidated when a frame is received for the new shape.
   bool invalidate_shadow_on_frame_swap_ = false;
+
+  AssociatedViews associated_views_;
 
   DISALLOW_COPY_AND_ASSIGN(BridgedNativeWidget);
 };

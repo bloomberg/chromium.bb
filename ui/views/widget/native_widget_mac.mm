@@ -193,8 +193,10 @@ const ui::Layer* NativeWidgetMac::GetLayer() const {
 }
 
 void NativeWidgetMac::ReorderNativeViews() {
-  if (bridge_)
+  if (bridge_) {
     bridge_->SetRootView(GetWidget()->GetRootView());
+    bridge_->ReorderChildViews();
+  }
 }
 
 void NativeWidgetMac::ViewRemoved(View* view) {

@@ -6,18 +6,16 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#import "ui/views/cocoa/bridged_content_view.h"
+#import "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/controls/native/native_view_host.h"
+#include "ui/views/widget/native_widget_mac.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
 namespace {
 
-// Reparents |native_view| to be a child of the native content view of
-// |new_parent|.
-void ReparentNSView(NSView* native_view, Widget* new_parent) {
+void EnsureNativeViewHasNoChildWidgets(NSView* native_view) {
   DCHECK(native_view);
   // Mac's NativeViewHost has no support for hosting its own child widgets.
   // This check is probably overly restrictive, since the Widget containing the
@@ -29,17 +27,6 @@ void ReparentNSView(NSView* native_view, Widget* new_parent) {
     Widget::GetAllChildWidgets(native_view, &child_widgets);
     CHECK_GE(1u, child_widgets.size());  // 1 (itself) or 0 if detached.
   }
-
-  if (!new_parent) {
-    [native_view removeFromSuperview];
-    return;
-  }
-
-  BridgedContentView* new_superview =
-      base::mac::ObjCCastStrict<BridgedContentView>(
-          new_parent->GetNativeView());
-  DCHECK(new_superview);
-  [new_superview addSubview:native_view];
 }
 
 }  // namespace
@@ -57,7 +44,13 @@ void NativeViewHostMac::AttachNativeView() {
   DCHECK(host_->native_view());
   DCHECK(!native_view_);
   native_view_.reset([host_->native_view() retain]);
-  ReparentNSView(host_->native_view(), host_->GetWidget());
+
+  EnsureNativeViewHasNoChildWidgets(native_view_);
+  BridgedNativeWidget* bridge = NativeWidgetMac::GetBridgeForNativeWindow(
+      host_->GetWidget()->GetNativeWindow());
+  DCHECK(bridge);
+  [bridge->ns_view() addSubview:native_view_];
+  bridge->SetAssociationForView(host_, native_view_);
 }
 
 void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
@@ -70,7 +63,15 @@ void NativeViewHostMac::NativeViewDetaching(bool destroyed) {
   // NativeViewHost::Detach().
   DCHECK(!native_view_ || native_view_ == host_->native_view());
   [host_->native_view() setHidden:YES];
-  ReparentNSView(host_->native_view(), NULL);
+  [host_->native_view() removeFromSuperview];
+
+  EnsureNativeViewHasNoChildWidgets(host_->native_view());
+  BridgedNativeWidget* bridge = NativeWidgetMac::GetBridgeForNativeWindow(
+      host_->GetWidget()->GetNativeWindow());
+  // BridgedNativeWidget can be null when Widget is closing.
+  if (bridge)
+    bridge->ClearAssociationForView(host_);
+
   native_view_.reset();
 }
 

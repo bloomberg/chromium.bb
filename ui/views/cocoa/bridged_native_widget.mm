@@ -83,6 +83,18 @@ CGError CGSSetWindowBackgroundBlurRadius(CGSConnection connection,
 
 namespace {
 
+using RankMap = std::map<NSView*, int>;
+
+// SDK 10.11 contains incompatible changes of sortSubviewsUsingFunction.
+// It takes (__kindof NSView*) as comparator argument.
+// https://llvm.org/bugs/show_bug.cgi?id=25149
+#if !defined(MAC_OS_X_VERSION_10_11) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_11
+using NSViewComparatorValue = id;
+#else
+using NSViewComparatorValue = __kindof NSView*;
+#endif
+
 const CGFloat kMavericksMenuOpacity = 251.0 / 255.0;
 const CGFloat kYosemiteMenuOpacity = 194.0 / 255.0;
 const int kYosemiteMenuBlur = 80;
@@ -261,6 +273,40 @@ scoped_refptr<base::SingleThreadTaskRunner> GetCompositorTaskRunner() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       ui::WindowResizeHelperMac::Get()->task_runner();
   return task_runner ? task_runner : base::ThreadTaskRunnerHandle::Get();
+}
+
+void RankNSViews(views::View* view,
+                 const views::BridgedNativeWidget::AssociatedViews& hosts,
+                 RankMap* rank) {
+  auto it = hosts.find(view);
+  if (it != hosts.end())
+    rank->emplace(it->second, rank->size());
+  for (int i = 0; i < view->child_count(); ++i)
+    RankNSViews(view->child_at(i), hosts, rank);
+}
+
+NSComparisonResult SubviewSorter(NSViewComparatorValue lhs,
+                                 NSViewComparatorValue rhs,
+                                 void* rank_as_void) {
+  DCHECK_NE(lhs, rhs);
+
+  const RankMap* rank = static_cast<const RankMap*>(rank_as_void);
+  auto left_rank = rank->find(lhs);
+  auto right_rank = rank->find(rhs);
+  bool left_found = left_rank != rank->end();
+  bool right_found = right_rank != rank->end();
+
+  // Sort unassociated views above associated views.
+  if (left_found != right_found)
+    return left_found ? NSOrderedAscending : NSOrderedDescending;
+
+  if (left_found) {
+    return left_rank->second < right_rank->second ? NSOrderedAscending
+                                                  : NSOrderedDescending;
+  }
+
+  // If both are unassociated, consider that order is not important
+  return NSOrderedSame;
 }
 
 }  // namespace
@@ -882,6 +928,31 @@ void BridgedNativeWidget::CreateLayer(ui::LayerType layer_type,
   }
 
   UpdateLayerProperties();
+}
+
+void BridgedNativeWidget::SetAssociationForView(const views::View* view,
+                                                NSView* native_view) {
+  DCHECK_EQ(0u, associated_views_.count(view));
+  associated_views_[view] = native_view;
+  native_widget_mac_->GetWidget()->ReorderNativeViews();
+}
+
+void BridgedNativeWidget::ClearAssociationForView(const views::View* view) {
+  auto it = associated_views_.find(view);
+  DCHECK(it != associated_views_.end());
+  associated_views_.erase(it);
+}
+
+void BridgedNativeWidget::ReorderChildViews() {
+  RankMap rank;
+  Widget* widget = native_widget_mac_->GetWidget();
+  RankNSViews(widget->GetRootView(), associated_views_, &rank);
+  // Unassociated NSViews should be ordered above associated ones. The exception
+  // is the UI compositor's superview, which should always be on the very
+  // bottom, so give it an explicit negative rank.
+  if (compositor_superview_)
+    rank[compositor_superview_] = -1;
+  [bridged_view_ sortSubviewsUsingFunction:&SubviewSorter context:&rank];
 }
 
 ////////////////////////////////////////////////////////////////////////////////

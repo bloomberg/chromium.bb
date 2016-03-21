@@ -27,6 +27,7 @@
 #import "ui/views/cocoa/native_widget_mac_nswindow.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/test/native_widget_factory.h"
 #include "ui/views/test/test_widget_observer.h"
@@ -209,6 +210,30 @@ class WidgetChangeObserver : public TestWidgetObserver {
   base::RunLoop* run_loop_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetChangeObserver);
+};
+
+class NativeHostHolder {
+ public:
+  NativeHostHolder()
+      : view_([[NSView alloc] init]), host_(new NativeViewHost()) {
+    host_->set_owned_by_client();
+  }
+
+  void AttachNativeView() {
+    DCHECK(!host_->native_view());
+    host_->Attach(view_.get());
+  }
+
+  void Detach() { host_->Detach(); }
+
+  gfx::NativeView view() const { return view_.get(); }
+  NativeViewHost* host() const { return host_.get(); }
+
+ private:
+  base::scoped_nsobject<NSView> view_;
+  scoped_ptr<NativeViewHost> host_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeHostHolder);
 };
 
 // Test visibility states triggered externally.
@@ -1335,6 +1360,113 @@ TEST_F(NativeWidgetMacTest, ChangeFocusOnChangeFirstResponder) {
   EXPECT_EQ(manager->GetFocusedView(), widget->GetRootView());
 
   widget->CloseNow();
+}
+
+class NativeWidgetMacViewsOrderTest : public WidgetTest {
+ public:
+  NativeWidgetMacViewsOrderTest() {}
+
+ protected:
+  // testing::Test:
+  void SetUp() override {
+    WidgetTest::SetUp();
+
+    widget_ = CreateTopLevelPlatformWidget();
+
+    ASSERT_EQ(1u, [[widget_->GetNativeView() subviews] count]);
+    compositor_view_ = [[widget_->GetNativeView() subviews] firstObject];
+
+    native_host_parent_ = new View();
+    widget_->GetContentsView()->AddChildView(native_host_parent_);
+
+    const int kNativeViewCount = 3;
+    for (int i = 0; i < kNativeViewCount; ++i) {
+      scoped_ptr<NativeHostHolder> holder(new NativeHostHolder());
+      native_host_parent_->AddChildView(holder->host());
+      holder->AttachNativeView();
+      hosts_.push_back(std::move(holder));
+    }
+    EXPECT_EQ(kNativeViewCount, native_host_parent_->child_count());
+    EXPECT_TRUE(([[widget_->GetNativeView() subviews] isEqualToArray:@[
+      compositor_view_, hosts_[0]->view(), hosts_[1]->view(), hosts_[2]->view()
+    ]]));
+  }
+
+  void TearDown() override {
+    widget_->CloseNow();
+    WidgetTest::TearDown();
+  }
+
+  NSView* GetContentNativeView() { return widget_->GetNativeView(); }
+
+  Widget* widget_ = nullptr;
+  View* native_host_parent_ = nullptr;
+  NSView* compositor_view_ = nil;
+  std::vector<scoped_ptr<NativeHostHolder>> hosts_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NativeWidgetMacViewsOrderTest);
+};
+
+// Test that NativeViewHost::Attach()/Detach() method saves the NativeView
+// z-order.
+TEST_F(NativeWidgetMacViewsOrderTest, NativeViewAttached) {
+  hosts_[1]->Detach();
+  EXPECT_TRUE(([[GetContentNativeView() subviews] isEqualToArray:@[
+    compositor_view_, hosts_[0]->view(), hosts_[2]->view()
+  ]]));
+
+  hosts_[1]->AttachNativeView();
+  EXPECT_TRUE(([[GetContentNativeView() subviews] isEqualToArray:@[
+    compositor_view_, hosts_[0]->view(), hosts_[1]->view(),
+    hosts_[2]->view()
+  ]]));
+}
+
+// Tests that NativeViews order changes according to views::View hierarchy.
+TEST_F(NativeWidgetMacViewsOrderTest, ReorderViews) {
+  native_host_parent_->ReorderChildView(hosts_[2]->host(), 1);
+  EXPECT_TRUE(([[GetContentNativeView() subviews] isEqualToArray:@[
+    compositor_view_, hosts_[0]->view(), hosts_[2]->view(),
+    hosts_[1]->view()
+  ]]));
+
+  native_host_parent_->RemoveChildView(hosts_[2]->host());
+  EXPECT_TRUE(([[GetContentNativeView() subviews] isEqualToArray:@[
+    compositor_view_, hosts_[0]->view(), hosts_[1]->view()
+  ]]));
+
+  View* new_parent = new View();
+  native_host_parent_->RemoveChildView(hosts_[1]->host());
+  native_host_parent_->AddChildView(new_parent);
+  new_parent->AddChildView(hosts_[1]->host());
+  new_parent->AddChildView(hosts_[2]->host());
+  EXPECT_TRUE(([[GetContentNativeView() subviews] isEqualToArray:@[
+    compositor_view_, hosts_[0]->view(), hosts_[1]->view(),
+    hosts_[2]->view()
+  ]]));
+
+  native_host_parent_->ReorderChildView(new_parent, 0);
+  EXPECT_TRUE(([[GetContentNativeView() subviews] isEqualToArray:@[
+    compositor_view_, hosts_[1]->view(), hosts_[2]->view(),
+    hosts_[0]->view()
+  ]]));
+}
+
+// Test that unassociated native views stay on top after reordering.
+TEST_F(NativeWidgetMacViewsOrderTest, UnassociatedViewsIsAbove) {
+  base::scoped_nsobject<NSView> child_view([[NSView alloc] init]);
+  [GetContentNativeView() addSubview:child_view];
+  EXPECT_TRUE(([[GetContentNativeView() subviews] isEqualToArray:@[
+    compositor_view_, hosts_[0]->view(), hosts_[1]->view(),
+    hosts_[2]->view(), child_view
+  ]]));
+
+  native_host_parent_->ReorderChildView(hosts_[2]->host(), 1);
+  EXPECT_TRUE(([[GetContentNativeView() subviews] isEqualToArray:@[
+    compositor_view_, hosts_[0]->view(), hosts_[2]->view(),
+    hosts_[1]->view(), child_view
+  ]]));
 }
 
 }  // namespace test
