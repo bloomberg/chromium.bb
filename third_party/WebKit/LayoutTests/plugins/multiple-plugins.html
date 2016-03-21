@@ -1,86 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+</head>
+<body>
+<embed id="plug1" type="application/x-blink-deprecated-test-plugin">
+<embed id="plug2" type="application/x-blink-deprecated-test-plugin">
 <script>
-  function noop(x) {
-  }
+description('Test that we can create two plugins, and independently clean each.');
 
-  function doGC() {
-    if (window.GCController)
-      GCController.collectAll();
-  }
+gc();
 
-  function runtest() {
-    if (window.testRunner)
-      testRunner.dumpAsText();
+var plug1 = document.getElementById("plug1");
+var plug2 = document.getElementById("plug2");
 
-    doGC();
+testObj1 = plug1.testObject;
+testObj2 = plug2.testObject;
 
-    var plug1 = document.getElementById("plug1");
-    var plug2 = document.getElementById("plug2");
-    var output = document.getElementById("output");
-    output.innerHTML = "";
+// Verify we can access each object.
+shouldBeDefined('testObj1.testObject');
+shouldBeDefined('testObj2.testObject');
 
-    var testObj1 = plug1.testObject;
-    var testObj2 = plug2.testObject;
+// Now remove the first plugin
+plug1.parentNode.removeChild(plug1);
 
-    var successCount = 0;
+shouldThrow('testObj1.testObject');
 
-    // Verify we can access each object.
-    if (testObj1.foo == "foo") {
-      successCount++;
-      output.innerHTML += "Got testObj1 property<br>";
-    }
-    if (testObj2.foo == "foo") {
-      successCount++;
-      output.innerHTML += "Got testObj2 property<br>";
-    }
+shouldBeDefined('testObj2.testObject');
 
-    // Now remove the first plugin
-    plug1.parentNode.removeChild(plug1);
+// Now remove the second plugin
+plug2.parentNode.removeChild(plug2);
 
-    try {
-      if (testObj1.foo == "foo") {
-        output.innerHTML = "Accessed nuked object!<br>";
-      }
-    } catch (e) {
-        if (e instanceof ReferenceError)
-            successCount++;
-    }
-
-    try {
-      if (testObj2.foo == "foo") {
-        successCount++;
-        output.innerHTML += "Got testObj2 property<br>";
-      }
-    } catch(e) {
-      output.inerHTML += "Reference error accessing live object: " + e;
-    }
-
-    // Now remove the second plugin
-    plug2.parentNode.removeChild(plug2);
-
-    try {
-      if (testObj2.foo == "foo") {
-        output.innerHTML = "Accessed nuked object!<br>";
-      }
-    } catch (e) {
-        if (e instanceof ReferenceError)
-            successCount++;
-    }
-
-    var success = (successCount == 5);
-    output.innerHTML += (success ? "SUCCESS" : "FAILURE");
-  }
+shouldThrow('testObj2.testObject');
 </script>
-
-<body onload="runtest()">
-
-Test that we can create two plugins, and independently clean each.
-
-Prints "SUCCESS" on success, "FAILURE" on failure.
-
-<embed id="plug1" type="application/x-webkit-test-netscape">
-<embed id="plug2" type="application/x-webkit-test-netscape">
-
-<div id=output>FAILURE</div>
-
 </body>
-
+</html>
