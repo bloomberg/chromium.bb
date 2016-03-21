@@ -92,7 +92,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
 
   // This is going to be too slow.
-  if (height > 100000000 / width)
+  if (width && height > 100000000 / width)
     return 0;
 
   int passes = png_set_interlace_handling(png_ptr);
