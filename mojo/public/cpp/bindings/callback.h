@@ -7,8 +7,9 @@
 
 #include <utility>
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/lib/callback_internal.h"
-#include "mojo/public/cpp/bindings/lib/shared_ptr.h"
 #include "mojo/public/cpp/bindings/lib/template_util.h"
 
 namespace mojo {
@@ -40,7 +41,7 @@ class Callback<void(Args...)> {
 
   // Constructs a callback that will run |runnable|. The callback takes
   // ownership of |runnable|.
-  explicit Callback(Runnable* runnable) : sink_(runnable) {}
+  explicit Callback(Runnable* runnable) : sink_(new RunnableHolder(runnable)) {}
 
   // As above, but can take an object that isn't derived from Runnable, so long
   // as it has a compatible operator() or Run() method. operator() will be
@@ -50,19 +51,19 @@ class Callback<void(Args...)> {
     using sink_type = typename internal::Conditional<
         internal::HasCompatibleCallOperator<Sink, Args...>::value,
         FunctorAdapter<Sink>, RunnableAdapter<Sink>>::type;
-    sink_ = internal::SharedPtr<Runnable>(new sink_type(sink));
+    sink_ = new RunnableHolder(new sink_type(sink));
   }
 
   // As above, but can take a compatible function pointer.
   Callback(void (*function_ptr)(
       typename internal::Callback_ParamTraits<Args>::ForwardType...))
-      : sink_(new FunctionPtrAdapter(function_ptr)) {}
+      : sink_(new RunnableHolder(new FunctionPtrAdapter(function_ptr))) {}
 
   // Executes the callback function.
   void Run(typename internal::Callback_ParamTraits<Args>::ForwardType... args)
       const {
-    if (sink_.get())
-      sink_->Run(std::forward<
+    if (sink_)
+      sink_->runnable->Run(std::forward<
                  typename internal::Callback_ParamTraits<Args>::ForwardType>(
           args)...);
   }
@@ -70,7 +71,7 @@ class Callback<void(Args...)> {
   bool is_null() const { return !sink_.get(); }
 
   // Resets the callback to the "null" state.
-  void reset() { sink_.reset(); }
+  void reset() { sink_ = nullptr; }
 
  private:
   // Adapts a class that has a Run() method but is not derived from Runnable to
@@ -123,7 +124,17 @@ class Callback<void(Args...)> {
     FunctionPtr function_ptr;
   };
 
-  internal::SharedPtr<Runnable> sink_;
+  struct RunnableHolder : public base::RefCountedThreadSafe<RunnableHolder> {
+    explicit RunnableHolder(Runnable* runnable) : runnable(runnable) {}
+
+    scoped_ptr<Runnable> runnable;
+
+   private:
+    friend class base::RefCountedThreadSafe<RunnableHolder>;
+    ~RunnableHolder() {}
+  };
+
+  scoped_refptr<RunnableHolder> sink_;
 };
 
 // A specialization of Callback which takes no parameters.

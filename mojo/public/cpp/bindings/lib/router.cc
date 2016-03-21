@@ -8,9 +8,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 
 namespace mojo {
 namespace internal {
@@ -19,25 +22,38 @@ namespace internal {
 
 namespace {
 
+void DCheckIfInvalid(const base::WeakPtr<Router>& router,
+                   const std::string& message) {
+  bool is_valid = router && !router->encountered_error() && router->is_valid();
+  DCHECK(!is_valid) << message;
+}
+
 class ResponderThunk : public MessageReceiverWithStatus {
  public:
   explicit ResponderThunk(const base::WeakPtr<Router>& router)
-      : router_(router), accept_was_invoked_(false) {}
+      : router_(router), accept_was_invoked_(false),
+        task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
   ~ResponderThunk() override {
     if (!accept_was_invoked_) {
       // The Mojo application handled a message that was expecting a response
       // but did not send a response.
-      if (router_) {
-        // We raise an error to signal the calling application that an error
-        // condition occurred. Without this the calling application would have
-        // no way of knowing it should stop waiting for a response.
-        router_->RaiseError();
+      if (task_runner_->RunsTasksOnCurrentThread()) {
+        if (router_) {
+          // We raise an error to signal the calling application that an error
+          // condition occurred. Without this the calling application would have
+          // no way of knowing it should stop waiting for a response.
+          router_->RaiseError();
+        }
+      } else {
+        task_runner_->PostTask(FROM_HERE,
+                               base::Bind(&Router::RaiseError, router_));
       }
     }
   }
 
   // MessageReceiver implementation:
   bool Accept(Message* message) override {
+    DCHECK(task_runner_->RunsTasksOnCurrentThread());
     accept_was_invoked_ = true;
     DCHECK(message->has_flag(kMessageIsResponse));
 
@@ -51,12 +67,23 @@ class ResponderThunk : public MessageReceiverWithStatus {
 
   // MessageReceiverWithStatus implementation:
   bool IsValid() override {
+    DCHECK(task_runner_->RunsTasksOnCurrentThread());
     return router_ && !router_->encountered_error() && router_->is_valid();
+  }
+
+  void DCheckInvalid(const std::string& message) override {
+    if (task_runner_->RunsTasksOnCurrentThread()) {
+      DCheckIfInvalid(router_, message);
+    } else {
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(&DCheckIfInvalid, router_, message));
+    }
   }
 
  private:
   base::WeakPtr<Router> router_;
   bool accept_was_invoked_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 }  // namespace

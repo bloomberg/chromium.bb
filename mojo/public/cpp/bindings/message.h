@@ -137,6 +137,11 @@ class MessageReceiverWithStatus : public MessageReceiver {
   // Returns |true| if this MessageReceiver is currently bound to a MessagePipe,
   // the pipe has not been closed, and the pipe has not encountered an error.
   virtual bool IsValid() = 0;
+
+  // DCHECKs if this MessageReceiver is currently bound to a MessagePipe, the
+  // pipe has not been closed, and the pipe has not encountered an error.
+  // This function may be called on any thread.
+  virtual void DCheckInvalid(const std::string& message) = 0;
 };
 
 // An alternative to MessageReceiverWithResponder for cases in which it

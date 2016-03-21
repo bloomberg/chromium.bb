@@ -8,9 +8,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/location.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/thread_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 
@@ -21,6 +24,12 @@ namespace internal {
 
 namespace {
 
+void DCheckIfInvalid(const base::WeakPtr<InterfaceEndpointClient>& client,
+                   const std::string& message) {
+  bool is_valid = client && !client->encountered_error();
+  DCHECK(!is_valid) << message;
+}
+
 // When receiving an incoming message which expects a repsonse,
 // InterfaceEndpointClient creates a ResponderThunk object and passes it to the
 // incoming message receiver. When the receiver finishes processing the message,
@@ -29,21 +38,21 @@ class ResponderThunk : public MessageReceiverWithStatus {
  public:
   explicit ResponderThunk(
       const base::WeakPtr<InterfaceEndpointClient>& endpoint_client)
-      : endpoint_client_(endpoint_client), accept_was_invoked_(false) {}
+      : endpoint_client_(endpoint_client), accept_was_invoked_(false),
+        task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
   ~ResponderThunk() override {
     if (!accept_was_invoked_) {
       // The Mojo application handled a message that was expecting a response
       // but did not send a response.
-      if (endpoint_client_) {
-        // We raise an error to signal the calling application that an error
-        // condition occurred. Without this the calling application would have
-        // no way of knowing it should stop waiting for a response.
-        //
-        // We raise the error asynchronously and only if |endpoint_client_| is
-        // still alive when the task is run. That way it won't break the case
-        // where the user abandons the interface endpoint client soon after
-        // he/she abandons the callback.
-        base::MessageLoop::current()->PostTask(
+      if (task_runner_->RunsTasksOnCurrentThread()) {
+        if (endpoint_client_) {
+          // We raise an error to signal the calling application that an error
+          // condition occurred. Without this the calling application would have
+          // no way of knowing it should stop waiting for a response.
+          endpoint_client_->RaiseError();
+        }
+      } else {
+        task_runner_->PostTask(
             FROM_HERE,
             base::Bind(&InterfaceEndpointClient::RaiseError, endpoint_client_));
       }
@@ -52,6 +61,7 @@ class ResponderThunk : public MessageReceiverWithStatus {
 
   // MessageReceiver implementation:
   bool Accept(Message* message) override {
+    DCHECK(task_runner_->RunsTasksOnCurrentThread());
     accept_was_invoked_ = true;
     DCHECK(message->has_flag(kMessageIsResponse));
 
@@ -65,12 +75,23 @@ class ResponderThunk : public MessageReceiverWithStatus {
 
   // MessageReceiverWithStatus implementation:
   bool IsValid() override {
+    DCHECK(task_runner_->RunsTasksOnCurrentThread());
     return endpoint_client_ && !endpoint_client_->encountered_error();
   }
+
+  void DCheckInvalid(const std::string& message) override {
+    if (task_runner_->RunsTasksOnCurrentThread()) {
+      DCheckIfInvalid(endpoint_client_, message);
+    } else {
+      task_runner_->PostTask(
+          FROM_HERE, base::Bind(&DCheckIfInvalid, endpoint_client_, message));
+    }
+ }
 
  private:
   base::WeakPtr<InterfaceEndpointClient> endpoint_client_;
   bool accept_was_invoked_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponderThunk);
 };

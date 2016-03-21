@@ -200,15 +200,18 @@ class {{class_name}}_{{method.name}}_ProxyToResponder
     : public {{class_name}}::{{method.name}}Callback::Runnable {
  public:
   ~{{class_name}}_{{method.name}}_ProxyToResponder() override {
-    // Is the Mojo application destroying the callback without running it
-    // and without first closing the pipe?
-    bool callback_was_dropped = responder_ && responder_->IsValid();
+#if DCHECK_IS_ON()
+    if (responder_) {
+      // Is the Mojo application destroying the callback without running it
+      // and without first closing the pipe?
+      responder_->DCheckInvalid("The callback passed to "
+          "{{class_name}}::{{method.name}}({%- if method.parameters -%}{{pass_params(method.parameters)}}, {% endif -%}callback) "
+          "was never run.");
+    }
+#endif
     // If the Callback was dropped then deleting the responder will close
     // the pipe so the calling application knows to stop waiting for a reply.
     delete responder_;
-    DCHECK(!callback_was_dropped)  << "The callback passed to "
-        "{{class_name}}::{{method.name}}({%- if method.parameters -%}{{pass_params(method.parameters)}}, {% endif -%}callback) "
-        "was never run.";
   }
 
   {{class_name}}_{{method.name}}_ProxyToResponder(
