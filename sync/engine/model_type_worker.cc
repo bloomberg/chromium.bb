@@ -43,6 +43,8 @@ ModelTypeWorker::ModelTypeWorker(
       cryptographer_(std::move(cryptographer)),
       nudge_handler_(nudge_handler),
       weak_ptr_factory_(this) {
+  DCHECK(model_type_processor_);
+
   // Request an initial sync if it hasn't been completed yet.
   if (!data_type_state_.initial_sync_done()) {
     nudge_handler_->NudgeForInitialDownload(type_);
@@ -106,10 +108,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
   UpdateResponseDataList response_datas;
   UpdateResponseDataList pending_updates;
 
-  for (SyncEntityList::const_iterator update_it = applicable_updates.begin();
-       update_it != applicable_updates.end(); ++update_it) {
-    const sync_pb::SyncEntity* update_entity = *update_it;
-
+  for (const sync_pb::SyncEntity* update_entity : applicable_updates) {
     // Skip updates for permanent folders.
     // TODO(stanisc): crbug.com/516866: might need to handle this for
     // hierarchical datatypes.
@@ -134,23 +133,13 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     UpdateResponseData response_data;
     response_data.response_version = update_entity->version();
 
-    WorkerEntityTracker* entity_tracker = nullptr;
-    EntityMap::const_iterator map_it = entities_.find(client_tag_hash);
-    if (map_it == entities_.end()) {
-      scoped_ptr<WorkerEntityTracker> scoped_entity_tracker =
-          WorkerEntityTracker::FromUpdateResponse(response_data);
-      entity_tracker = scoped_entity_tracker.get();
-      entities_.insert(
-          std::make_pair(client_tag_hash, std::move(scoped_entity_tracker)));
-    } else {
-      entity_tracker = map_it->second.get();
-    }
+    WorkerEntityTracker* entity = GetOrCreateEntityTracker(data);
 
+    // Check if specifics are encrypted and try to decrypt if so.
     const sync_pb::EntitySpecifics& specifics = update_entity->specifics();
-
     if (!specifics.has_encrypted()) {
       // No encryption.
-      entity_tracker->ReceiveUpdate(update_entity->version());
+      entity->ReceiveUpdate(update_entity->version());
       data.specifics = specifics;
       response_data.entity = data.PassToPtr();
       response_datas.push_back(response_data);
@@ -158,7 +147,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
                cryptographer_->CanDecrypt(specifics.encrypted())) {
       // Encrypted, but we know the key.
       if (DecryptSpecifics(cryptographer_.get(), specifics, &data.specifics)) {
-        entity_tracker->ReceiveUpdate(update_entity->version());
+        entity->ReceiveUpdate(update_entity->version());
         response_data.entity = data.PassToPtr();
         response_data.encryption_key_name = specifics.encrypted().key_name();
         response_datas.push_back(response_data);
@@ -169,7 +158,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
       // Can't decrypt right now.  Ask the entity tracker to handle it.
       data.specifics = specifics;
       response_data.entity = data.PassToPtr();
-      if (entity_tracker->ReceivePendingUpdate(response_data)) {
+      if (entity->ReceivePendingUpdate(response_data)) {
         // Send to the model thread for safe-keeping across restarts if the
         // tracker decides the update is worth keeping.
         pending_updates.push_back(response_data);
@@ -218,9 +207,12 @@ void ModelTypeWorker::EnqueueForCommit(const CommitRequestDataList& list) {
       << "Asked to commit items before type was initialized.  "
       << "ModelType is: " << ModelTypeToString(type_);
 
-  for (CommitRequestDataList::const_iterator it = list.begin();
-       it != list.end(); ++it) {
-    StorePendingCommit(*it);
+  for (const CommitRequestData& commit : list) {
+    const EntityData& data = commit.entity.value();
+    if (!data.is_deleted()) {
+      DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(data.specifics));
+    }
+    GetOrCreateEntityTracker(data)->RequestCommit(commit);
   }
 
   if (CanCommitItems())
@@ -263,46 +255,21 @@ scoped_ptr<CommitContribution> ModelTypeWorker::GetContribution(
       this));
 }
 
-void ModelTypeWorker::StorePendingCommit(const CommitRequestData& request) {
-  const EntityData& data = request.entity.value();
-  if (!data.is_deleted()) {
-    DCHECK_EQ(type_, syncer::GetModelTypeFromSpecifics(data.specifics));
-  }
-
-  WorkerEntityTracker* entity;
-  EntityMap::const_iterator map_it = entities_.find(data.client_tag_hash);
-  if (map_it == entities_.end()) {
-    scoped_ptr<WorkerEntityTracker> scoped_entity =
-        WorkerEntityTracker::FromCommitRequest(request);
-    entity = scoped_entity.get();
-    entities_.insert(
-        std::make_pair(data.client_tag_hash, std::move(scoped_entity)));
-  } else {
-    entity = map_it->second.get();
-  }
-  entity->RequestCommit(request);
-}
-
 void ModelTypeWorker::OnCommitResponse(
     const CommitResponseDataList& response_list) {
-  for (CommitResponseDataList::const_iterator response_it =
-           response_list.begin();
-       response_it != response_list.end(); ++response_it) {
-    const std::string client_tag_hash = response_it->client_tag_hash;
-    EntityMap::const_iterator map_it = entities_.find(client_tag_hash);
+  for (const CommitResponseData& response : response_list) {
+    WorkerEntityTracker* entity = GetEntityTracker(response.client_tag_hash);
 
     // There's no way we could have committed an entry we know nothing about.
-    if (map_it == entities_.end()) {
+    if (entity == nullptr) {
       NOTREACHED() << "Received commit response for item unknown to us."
                    << " Model type: " << ModelTypeToString(type_)
-                   << " ID: " << response_it->id;
+                   << " ID: " << response.id;
       continue;
     }
 
-    WorkerEntityTracker* entity = map_it->second.get();
-    entity->ReceiveCommitResponse(response_it->id,
-                                  response_it->response_version,
-                                  response_it->sequence_number);
+    entity->ReceiveCommitResponse(response.id, response.response_version,
+                                  response.sequence_number);
   }
 
   // Send the responses back to the model thread.  It needs to know which
@@ -452,6 +419,28 @@ bool ModelTypeWorker::DecryptSpecifics(Cryptographer* cryptographer,
     return false;
   }
   return true;
+}
+
+WorkerEntityTracker* ModelTypeWorker::GetEntityTracker(
+    const std::string& tag_hash) {
+  auto it = entities_.find(tag_hash);
+  return it != entities_.end() ? it->second.get() : nullptr;
+}
+
+WorkerEntityTracker* ModelTypeWorker::CreateEntityTracker(
+    const EntityData& data) {
+  DCHECK(entities_.find(data.client_tag_hash) == entities_.end());
+  scoped_ptr<WorkerEntityTracker> entity =
+      make_scoped_ptr(new WorkerEntityTracker(data.id, data.client_tag_hash));
+  WorkerEntityTracker* entity_ptr = entity.get();
+  entities_[data.client_tag_hash] = std::move(entity);
+  return entity_ptr;
+}
+
+WorkerEntityTracker* ModelTypeWorker::GetOrCreateEntityTracker(
+    const EntityData& data) {
+  WorkerEntityTracker* entity = GetEntityTracker(data.client_tag_hash);
+  return entity ? entity : CreateEntityTracker(data);
 }
 
 }  // namespace syncer_v2

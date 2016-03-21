@@ -14,29 +14,16 @@
 
 namespace syncer_v2 {
 
-scoped_ptr<WorkerEntityTracker> WorkerEntityTracker::FromUpdateResponse(
-    const UpdateResponseData& data) {
-  return make_scoped_ptr(new WorkerEntityTracker(
-      data.entity->id, data.entity->client_tag_hash, 0, data.response_version));
-}
-
-scoped_ptr<WorkerEntityTracker> WorkerEntityTracker::FromCommitRequest(
-    const CommitRequestData& data) {
-  return make_scoped_ptr(new WorkerEntityTracker(
-      data.entity->id, data.entity->client_tag_hash, 0, 0));
-}
-
-WorkerEntityTracker::WorkerEntityTracker(
-    const std::string& id,
-    const std::string& client_tag_hash,
-    int64_t highest_commit_response_version,
-    int64_t highest_gu_response_version)
+WorkerEntityTracker::WorkerEntityTracker(const std::string& id,
+                                         const std::string& client_tag_hash)
     : id_(id),
       client_tag_hash_(client_tag_hash),
-      highest_commit_response_version_(highest_commit_response_version),
-      highest_gu_response_version_(highest_gu_response_version),
+      highest_commit_response_version_(0),
+      highest_gu_response_version_(0),
       sequence_number_(0),
-      base_version_(kUncommittedVersion) {}
+      base_version_(kUncommittedVersion) {
+  DCHECK(!client_tag_hash_.empty());
+}
 
 WorkerEntityTracker::~WorkerEntityTracker() {}
 

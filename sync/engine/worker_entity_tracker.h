@@ -33,15 +33,12 @@ struct UpdateResponseData;
 // update, or both.
 class SYNC_EXPORT WorkerEntityTracker {
  public:
+  // Initializes the entity tracker's main fields. Does not initialize state
+  // related to a pending commit.
+  WorkerEntityTracker(const std::string& id,
+                      const std::string& client_tag_hash);
+
   ~WorkerEntityTracker();
-
-  // Initialize a new entity based on an update response.
-  static scoped_ptr<WorkerEntityTracker> FromUpdateResponse(
-      const UpdateResponseData& data);
-
-  // Initialize a new entity based on a commit request.
-  static scoped_ptr<WorkerEntityTracker> FromCommitRequest(
-      const CommitRequestData& data);
 
   // Returns true if this entity should be commited to the server.
   bool HasPendingCommit() const;
@@ -83,13 +80,6 @@ class SYNC_EXPORT WorkerEntityTracker {
   void ClearPendingUpdate();
 
  private:
-  // Initializes the entity tracker's main fields. Does not initialize state
-  // related to a pending commit.
-  WorkerEntityTracker(const std::string& id,
-                      const std::string& client_tag_hash,
-                      int64_t highest_commit_response_version,
-                      int64_t highest_gu_response_version);
-
   // Checks if the current state indicates a conflict.
   //
   // This can be true only while a call to this object is in progress.

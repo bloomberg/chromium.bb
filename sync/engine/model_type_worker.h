@@ -98,9 +98,6 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
  private:
   using EntityMap = std::map<std::string, scoped_ptr<WorkerEntityTracker>>;
 
-  // Stores a single commit request in this object's internal state.
-  void StorePendingCommit(const CommitRequestData& request);
-
   // Returns true if this type has successfully fetched all available updates
   // from the server at least once.  Our state may or may not be stale, but at
   // least we know that it was valid at some point in the past.
@@ -136,13 +133,22 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
                                const sync_pb::EntitySpecifics& in,
                                sync_pb::EntitySpecifics* out);
 
+  // Returns the entity tracker for the given |tag_hash|, or nullptr.
+  WorkerEntityTracker* GetEntityTracker(const std::string& tag_hash);
+
+  // Creates an entity tracker in the map using the given |data| and returns a
+  // pointer to it. Requires that one doesn't exist for data.client_tag_hash.
+  WorkerEntityTracker* CreateEntityTracker(const EntityData& data);
+
+  // Gets the entity tracker for |data| or creates one if it doesn't exist.
+  WorkerEntityTracker* GetOrCreateEntityTracker(const EntityData& data);
+
   syncer::ModelType type_;
 
   // State that applies to the entire model type.
   sync_pb::DataTypeState data_type_state_;
 
-  // Pointer to the ModelTypeProcessor associated with this worker.
-  // This is NULL when no proxy is connected..
+  // Pointer to the ModelTypeProcessor associated with this worker. Never null.
   scoped_ptr<ModelTypeProcessor> model_type_processor_;
 
   // A private copy of the most recent cryptographer known to sync.
