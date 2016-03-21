@@ -670,8 +670,17 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 #endif  // defined(OS_MACOSX)
 
-  static void RecordCountOfSignedOrWhitelistedDownload() {
-    UMA_HISTOGRAM_COUNTS("SBClientDownload.SignedOrWhitelistedDownload", 1);
+  enum WhitelistType {
+    NO_WHITELIST_MATCH,
+    URL_WHITELIST,
+    SIGNATURE_WHITELIST,
+    WHITELIST_TYPE_MAX
+  };
+
+  static void RecordCountOfWhitelistedDownload(WhitelistType type) {
+    UMA_HISTOGRAM_ENUMERATION("SBClientDownload.CheckWhitelistResult",
+                              type,
+                              WHITELIST_TYPE_MAX);
   }
 
   void CheckWhitelists() {
@@ -686,7 +695,7 @@ class DownloadProtectionService::CheckClientDownloadRequest
     // TODO(asanka): This may acquire a lock on the SB DB on the IO thread.
     if (url.is_valid() && database_manager_->MatchDownloadWhitelistUrl(url)) {
       DVLOG(2) << url << " is on the download whitelist.";
-      RecordCountOfSignedOrWhitelistedDownload();
+      RecordCountOfWhitelistedDownload(URL_WHITELIST);
       // TODO(grt): Continue processing without uploading so that
       // ClientDownloadRequest callbacks can be run even for this type of safe
       // download.
@@ -695,10 +704,10 @@ class DownloadProtectionService::CheckClientDownloadRequest
     }
 
     if (signature_info_.trusted()) {
-      RecordCountOfSignedOrWhitelistedDownload();
       for (int i = 0; i < signature_info_.certificate_chain_size(); ++i) {
         if (CertificateChainIsWhitelisted(
                 signature_info_.certificate_chain(i))) {
+          RecordCountOfWhitelistedDownload(SIGNATURE_WHITELIST);
           // TODO(grt): Continue processing without uploading so that
           // ClientDownloadRequest callbacks can be run even for this type of
           // safe download.
@@ -708,17 +717,19 @@ class DownloadProtectionService::CheckClientDownloadRequest
       }
     }
 
+    RecordCountOfWhitelistedDownload(NO_WHITELIST_MATCH);
+
     if (!pingback_enabled_) {
       PostFinishTask(UNKNOWN, REASON_PING_DISABLED);
       return;
     }
 
-  // The URLFetcher is owned by the UI thread, so post a message to
-  // start the pingback.
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&CheckClientDownloadRequest::GetTabRedirects, this));
+    // The URLFetcher is owned by the UI thread, so post a message to
+    // start the pingback.
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&CheckClientDownloadRequest::GetTabRedirects, this));
   }
 
   void GetTabRedirects() {

@@ -43644,6 +43644,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.CheckWhitelistResult"
+    enum="WhitelistedDownloadType">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    For each download supported by the SafeBrowsing download protection service,
+    records if it matches a certain whitelist (e.g. matches URL whitelist,
+    matches signature whitelist, or does not match any whitelists).
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.DmgFileHasExecutable" enum="Boolean">
   <owner>rsesek@chromium.org</owner>
   <summary>
@@ -43783,6 +43793,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SBClientDownload.SignedOrWhitelistedDownload">
+  <obsolete>
+    Deprecated in Chrome 50. Replaced by
+    SBClientDownload.CheckWhitelistResult.*.
+  </obsolete>
   <owner>mattm@chromium.org</owner>
   <summary>
     Counter which is incremented whenever an executable is downloaded which is
@@ -84637,6 +84651,12 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="WebUsbPermissionRevoked" type="int">
   <int value="0" label="Revoked permission"/>
   <int value="1" label="Revoked ephemeral permission"/>
+</enum>
+
+<enum name="WhitelistedDownloadType" type="int">
+  <int value="0" label="Does not match any whitelists"/>
+  <int value="1" label="URL whitelist"/>
+  <int value="2" label="Signature whitelist"/>
 </enum>
 
 <enum name="WiFiApMode" type="int">
