@@ -990,17 +990,16 @@ void WebMediaPlayerImpl::OnPipelineMetadata(
     video_weblayer_->layer()->SetContentsOpaque(opaque_);
     video_weblayer_->SetContentsOpaqueIsFixed(true);
     client_->setWebLayer(video_weblayer_.get());
-
-    // If there is video and the frame is hidden, then it may be time to suspend
-    // playback.
-    if (delegate_ && delegate_->IsHidden())
-      OnHidden();
   }
 
   // Tell the delegate we can now be safely suspended due to inactivity if a
   // subsequent play event does not occur.
   if (paused_)
     NotifyPlaybackPaused();
+
+  // If the frame is hidden, it may be time to suspend playback.
+  if (delegate_ && delegate_->IsHidden())
+    OnHidden();
 }
 
 void WebMediaPlayerImpl::OnPipelineBufferingStateChanged(
@@ -1071,6 +1070,11 @@ void WebMediaPlayerImpl::OnHidden() {
     return;
 #endif
 
+  // Don't suspend before metadata is available, as we don't know if there is a
+  // video track yet.
+  if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata)
+    return;
+
   // Don't suspend players which only have audio and have not completed
   // playback. The user can still control these players via the MediaSession UI.
   // If the player has never started playback, OnSuspendRequested() will handle
@@ -1097,8 +1101,15 @@ void WebMediaPlayerImpl::OnShown() {
     return;
 #endif
 
-  if (!ended_ && !paused_)
+  // If we do not yet have metadata, the only way we could have been suspended
+  // is by a OnSuspendRequested() with |must_suspend| set. In that case we need
+  // to resume, otherwise playback will be broken.
+  //
+  // Otherwise, resume if we should be playing.
+  if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata ||
+      (!ended_ && !paused_)) {
     pipeline_controller_.Resume();
+  }
 }
 
 void WebMediaPlayerImpl::OnSuspendRequested(bool must_suspend) {
