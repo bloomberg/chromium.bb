@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_SYSTEM_IMPL_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_SYSTEM_IMPL_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "extensions/browser/extension_system.h"
@@ -17,6 +19,7 @@ namespace extensions {
 class ExtensionSystemSharedFactory;
 class NavigationObserver;
 class StateStoreNotificationObserver;
+class UninstallPingSender;
 
 // The ExtensionSystem for ProfileImpl and OffTheRecordProfileImpl.
 // Implementation details: non-shared services are owned by
@@ -116,6 +119,8 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
     // For verifying the contents of extensions read from disk.
     scoped_refptr<ContentVerifier> content_verifier_;
+
+    scoped_ptr<UninstallPingSender> uninstall_ping_sender_;
 
 #if defined(OS_CHROMEOS)
     scoped_ptr<chromeos::DeviceLocalAccountManagementPolicyProvider>

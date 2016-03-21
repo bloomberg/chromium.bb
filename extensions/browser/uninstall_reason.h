@@ -7,6 +7,8 @@
 
 namespace extensions {
 
+// Do not remove/reorder these, as they are used in uninstall ping data and we
+// depend on their values being stable.
 enum UninstallReason {
   UNINSTALL_REASON_FOR_TESTING,         // Used for testing code only
   UNINSTALL_REASON_USER_INITIATED,      // User performed some UI gesture
@@ -24,6 +26,8 @@ enum UninstallReason {
   UNINSTALL_REASON_INTERNAL_MANAGEMENT,  // Internal extensions (see usages)
   UNINSTALL_REASON_REINSTALL,
   UNINSTALL_REASON_COMPONENT_REMOVED,
+
+  UNINSTALL_REASON_MAX,  // Should always be the last value
 };
 
 // The source of an uninstall. Do *NOT* adjust the order of these, as they are

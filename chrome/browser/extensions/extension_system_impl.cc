@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_system_impl.h"
 
+#include <algorithm>
+
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -47,7 +49,9 @@
 #include "extensions/browser/runtime_data.h"
 #include "extensions/browser/service_worker_manager.h"
 #include "extensions/browser/state_store.h"
+#include "extensions/browser/uninstall_ping_sender.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest_url_handlers.h"
 
 #if defined(ENABLE_NOTIFICATIONS)
 #include "chrome/browser/notifications/notifier_state_tracker.h"
@@ -75,6 +79,21 @@ const char kStateDatabaseUMAClientName[] = "State";
 const char kRulesDatabaseUMAClientName[] = "Rules";
 
 namespace extensions {
+
+namespace {
+
+// Helper to serve as an UninstallPingSender::Filter callback.
+UninstallPingSender::FilterResult ShouldSendUninstallPing(
+    const Extension* extension,
+    UninstallReason reason) {
+  if (extension && (extension->from_webstore() ||
+                    ManifestURL::UpdatesFromGallery(extension))) {
+    return UninstallPingSender::SEND_PING;
+  }
+  return UninstallPingSender::DO_NOT_SEND_PING;
+}
+
+}  // namespace
 
 //
 // ExtensionSystemImpl::Shared
@@ -160,6 +179,9 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       profile_->GetPath().AppendASCII(extensions::kInstallDirectoryName),
       ExtensionPrefs::Get(profile_), Blacklist::Get(profile_),
       autoupdate_enabled, extensions_enabled, &ready_));
+
+  uninstall_ping_sender_.reset(new UninstallPingSender(
+      ExtensionRegistry::Get(profile_), base::Bind(&ShouldSendUninstallPing)));
 
   // These services must be registered before the ExtensionService tries to
   // load any extensions.

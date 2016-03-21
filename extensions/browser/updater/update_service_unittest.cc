@@ -18,8 +18,10 @@
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/mock_extension_system.h"
 #include "extensions/browser/test_extensions_browser_client.h"
+#include "extensions/browser/uninstall_ping_sender.h"
 #include "extensions/browser/updater/update_service.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/test_util.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,6 +34,16 @@ class FakeUpdateClient : public update_client::UpdateClient {
   // Returns the data we've gotten from the CrxDataCallback for ids passed to
   // the Update function.
   std::vector<update_client::CrxComponent>* data() { return &data_; }
+
+  // Used for tests that uninstall pings get requested properly.
+  struct UninstallPing {
+    std::string id;
+    Version version;
+    int reason;
+    UninstallPing(const std::string& id, const Version& version, int reason)
+        : id(id), version(version), reason(reason) {}
+  };
+  std::vector<UninstallPing>& uninstall_pings() { return uninstall_pings_; }
 
   // update_client::UpdateClient
   void AddObserver(Observer* observer) override {}
@@ -51,13 +63,19 @@ class FakeUpdateClient : public update_client::UpdateClient {
   void Stop() override {}
   void SendUninstallPing(const std::string& id,
                          const Version& version,
-                         int reason) override {}
+                         int reason) override {
+    uninstall_pings_.emplace_back(id, version, reason);
+  }
 
  protected:
   friend class base::RefCounted<FakeUpdateClient>;
   ~FakeUpdateClient() override {}
 
   std::vector<update_client::CrxComponent> data_;
+  std::vector<UninstallPing> uninstall_pings_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeUpdateClient);
 };
 
 FakeUpdateClient::FakeUpdateClient() {}
@@ -73,6 +91,17 @@ void FakeUpdateClient::Update(const std::vector<std::string>& ids,
 namespace extensions {
 
 namespace {
+
+// A global variable for controlling whether uninstalls should cause uninstall
+// pings to be sent.
+UninstallPingSender::FilterResult g_should_ping =
+    UninstallPingSender::DO_NOT_SEND_PING;
+
+// Helper method to serve as an uninstall ping filter.
+UninstallPingSender::FilterResult ShouldPing(const Extension* extension,
+                                             UninstallReason reason) {
+  return g_should_ping;
+}
 
 // A fake ExtensionSystem that lets us intercept calls to install new
 // versions of an extension.
@@ -248,6 +277,73 @@ TEST_F(UpdateServiceTest, BasicUpdateOperations) {
   ASSERT_EQ(1u, requests->size());
   EXPECT_EQ(requests->at(0).extension_id, extension1->id());
   EXPECT_NE(requests->at(0).temp_dir.value(), new_version_dir.path().value());
+}
+
+TEST_F(UpdateServiceTest, UninstallPings) {
+  UninstallPingSender sender(ExtensionRegistry::Get(browser_context()),
+                             base::Bind(&ShouldPing));
+
+  // Build 3 extensions.
+  scoped_refptr<Extension> extension1 =
+      test_util::BuildExtension(ExtensionBuilder())
+          .SetID(crx_file::id_util::GenerateId("1"))
+          .MergeManifest(DictionaryBuilder().Set("version", "1.2").Build())
+          .Build();
+  scoped_refptr<Extension> extension2 =
+      test_util::BuildExtension(ExtensionBuilder())
+          .SetID(crx_file::id_util::GenerateId("2"))
+          .MergeManifest(DictionaryBuilder().Set("version", "2.3").Build())
+          .Build();
+  scoped_refptr<Extension> extension3 =
+      test_util::BuildExtension(ExtensionBuilder())
+          .SetID(crx_file::id_util::GenerateId("3"))
+          .MergeManifest(DictionaryBuilder().Set("version", "3.4").Build())
+          .Build();
+  EXPECT_TRUE(extension1->id() != extension2->id() &&
+              extension1->id() != extension3->id() &&
+              extension2->id() != extension3->id());
+
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
+
+  // Run tests for each uninstall reason.
+  for (int reason_val = static_cast<int>(UNINSTALL_REASON_FOR_TESTING);
+       reason_val < static_cast<int>(UNINSTALL_REASON_MAX); ++reason_val) {
+    UninstallReason reason = static_cast<UninstallReason>(reason_val);
+
+    // Start with 2 enabled and 1 disabled extensions.
+    EXPECT_TRUE(registry->AddEnabled(extension1)) << reason;
+    EXPECT_TRUE(registry->AddEnabled(extension2)) << reason;
+    EXPECT_TRUE(registry->AddDisabled(extension3)) << reason;
+
+    // Uninstall the first extension, instructing our filter not to send pings,
+    // and verify none were sent.
+    g_should_ping = UninstallPingSender::DO_NOT_SEND_PING;
+    EXPECT_TRUE(registry->RemoveEnabled(extension1->id())) << reason;
+    registry->TriggerOnUninstalled(extension1.get(), reason);
+    EXPECT_TRUE(update_client()->uninstall_pings().empty()) << reason;
+
+    // Uninstall the second and third extensions, instructing the filter to
+    // send pings, and make sure we got the expected data.
+    g_should_ping = UninstallPingSender::SEND_PING;
+    EXPECT_TRUE(registry->RemoveEnabled(extension2->id())) << reason;
+    registry->TriggerOnUninstalled(extension2.get(), reason);
+    EXPECT_TRUE(registry->RemoveDisabled(extension3->id())) << reason;
+    registry->TriggerOnUninstalled(extension3.get(), reason);
+
+    std::vector<FakeUpdateClient::UninstallPing>& pings =
+        update_client()->uninstall_pings();
+    ASSERT_EQ(2u, pings.size()) << reason;
+
+    EXPECT_EQ(extension2->id(), pings[0].id) << reason;
+    EXPECT_EQ(*extension2->version(), pings[0].version) << reason;
+    EXPECT_EQ(reason, pings[0].reason) << reason;
+
+    EXPECT_EQ(extension3->id(), pings[1].id) << reason;
+    EXPECT_EQ(*extension3->version(), pings[1].version) << reason;
+    EXPECT_EQ(reason, pings[1].reason) << reason;
+
+    pings.clear();
+  }
 }
 
 }  // namespace

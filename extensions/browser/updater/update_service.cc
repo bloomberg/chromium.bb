@@ -42,6 +42,12 @@ void UpdateService::Shutdown() {
   context_ = nullptr;
 }
 
+void UpdateService::SendUninstallPing(const std::string& id,
+                                      const Version& version,
+                                      int reason) {
+  update_client_->SendUninstallPing(id, version, reason);
+}
+
 void UpdateService::StartUpdateCheck(std::vector<std::string> extension_ids) {
   if (!update_client_)
     return;
