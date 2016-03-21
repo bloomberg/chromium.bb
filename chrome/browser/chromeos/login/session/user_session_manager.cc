@@ -1758,7 +1758,7 @@ void UserSessionManager::SendUserPodsMetrics() {
 void UserSessionManager::OnOAuth2TokensFetched(UserContext context) {
   if (StartupUtils::IsWebviewSigninEnabled() && TokenHandlesEnabled()) {
     CreateTokenUtilIfMissing();
-    if (token_handle_util_->ShouldObtainHandle(context.GetAccountId())) {
+    if (!token_handle_util_->HasToken(context.GetAccountId())) {
       token_handle_fetcher_.reset(new TokenHandleFetcher(
           token_handle_util_.get(), context.GetAccountId()));
       token_handle_fetcher_->FillForNewUser(
