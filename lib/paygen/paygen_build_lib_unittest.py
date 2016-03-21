@@ -93,11 +93,9 @@ class BasePaygenBuildLibTest(cros_test_lib.MoxTempDirTestCase):
   def _GetPaygenBuildInstance(self, skip_test_payloads=False,
                               disable_tests=False):
     """Helper method to create a standard Paygen instance."""
-    control_dir = None if disable_tests else '/tmp/foo'
-
-    return paygen_build_lib._PaygenBuild(self.foo_build, self.work_dir,
+    return paygen_build_lib._PaygenBuild(self.foo_build, self.tempdir,
                                          config_lib_unittest.MockSiteConfig(),
-                                         control_dir=control_dir,
+                                         disable_tests=disable_tests,
                                          skip_test_payloads=skip_test_payloads)
 
   def _GetBuildTestImage(self, build):
@@ -132,8 +130,6 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
   """Test PaygenBuildLib class."""
 
   def setUp(self):
-    self.work_dir = '/work/foo'
-
     self.prev_image = gspaths.Image(channel='foo-channel',
                                     board='foo-board',
                                     version='1.0.0',
@@ -399,7 +395,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen = paygen_build_lib._PaygenBuild(
         gspaths.Build(channel='stable-channel', board='valid-board',
                       version='1.2.3'),
-        self.work_dir,
+        self.tempdir,
         config_lib_unittest.MockSiteConfig())
 
     self.assertEqual(
@@ -415,7 +411,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen = paygen_build_lib._PaygenBuild(
         gspaths.Build(channel='stable-channel', board='no-fsi-board',
                       version='1.2.3'),
-        self.work_dir,
+        self.tempdir,
         config_lib_unittest.MockSiteConfig())
 
     self.assertEqual(paygen._DiscoverFsiBuildsForDeltas(), [])
@@ -424,7 +420,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen = paygen_build_lib._PaygenBuild(
         gspaths.Build(channel='beta-channel', board='valid-board',
                       version='1.2.3'),
-        self.work_dir,
+        self.tempdir,
         config_lib_unittest.MockSiteConfig())
 
     self.assertEqual(paygen._DiscoverFsiBuildsForDeltas(), [])
@@ -452,7 +448,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen = paygen_build_lib._PaygenBuild(
         gspaths.Build(channel='stable-channel', board='valid-board',
                       version='1.2.3'),
-        self.work_dir,
+        self.tempdir,
         config_lib_unittest.MockSiteConfig())
 
     self.assertEqual(
@@ -467,7 +463,7 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
     paygen = paygen_build_lib._PaygenBuild(
         gspaths.Build(channel='stable-channel', board='x86-alex-he',
                       version='1.2.3'),
-        self.work_dir,
+        self.tempdir,
         config_lib_unittest.MockSiteConfig())
 
     # Search for real FSIs for an older/live board.
@@ -1499,8 +1495,12 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
 
   @unittest.skipIf(not paygen_build_lib.test_control,
                    'Autotest repository needed.')
+  @osutils.TempFileDecorator
   def testEmitControlFile(self):
     """Test that we emit control files correctly."""
+    control_dir = self.tempdir
+    control_file_name = self.tempfile
+
     payload = gspaths.Payload(tgt_image=self.npo_image,
                               src_image=self.basic_image)
 
@@ -1509,13 +1509,10 @@ class PaygenBuildLibTest(BasePaygenBuildLibTest):
                     boards=['foo_board'])
 
     suite_name = 'paygen_foo'
-    control_dir = tempfile.mkdtemp(prefix='control_dir-')
     paygen = paygen_build_lib._PaygenBuild(
-        self.foo_build, self.tempdir, site_config,
-        control_dir=control_dir)
-    with tempfile.NamedTemporaryFile(prefix='control_file-', delete=False) as f:
-      control_file_name = f.name
-      f.write("""
+        self.foo_build, self.tempdir, site_config)
+
+    osutils.WriteFile(control_file_name, """
 AUTHOR = "Chromium OS"
 NAME = "autoupdate_EndToEndTest"
 TIME = "MEDIUM"
@@ -1571,15 +1568,11 @@ DOC = "Faux doc"
 
 ''')
 
-    shutil.rmtree(control_dir)
-    os.remove(control_file_name)
-
   def testAutotestPayloads(self):
     """Test the process of scheduling HWLab tests."""
-    control_dir = '/tmp/control_dir'
     paygen = paygen_build_lib._PaygenBuild(
-        self.foo_build, self.tempdir, config_lib_unittest.MockSiteConfig(),
-        control_dir=control_dir)
+        self.foo_build, self.tempdir, config_lib_unittest.MockSiteConfig())
+    control_dir = paygen._control_dir
     control_dump_dir = os.path.join(control_dir, paygen.CONTROL_FILE_SUBDIR)
     payloads = ['foo', 'bar']
     test_channel = self.foo_build.channel.rpartition('-')[0]
@@ -1806,8 +1799,6 @@ class PaygenBuildLibTest_ImageTypes(BasePaygenBuildLibTest):
   """Test PaygenBuildLib class for mixed image types."""
 
   def setUp(self):
-    self.work_dir = '/work/foo'
-
     self.prev_image = gspaths.Image(channel='foo-channel',
                                     board='foo-board',
                                     version='1.0.0',

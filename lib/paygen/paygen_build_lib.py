@@ -16,7 +16,6 @@ from __future__ import print_function
 import json
 import operator
 import os
-import shutil
 import socket
 import sys
 import tempfile
@@ -400,7 +399,7 @@ class _PaygenBuild(object):
                dry_run=False, ignore_finished=False,
                skip_full_payloads=False, skip_delta_payloads=False,
                skip_test_payloads=False, skip_nontest_payloads=False,
-               control_dir=None, output_dir=None,
+               disable_tests=False, output_dir=None,
                run_parallel=False, run_on_builder=False, au_generator_uri=None,
                skip_duts_check=False):
     """Initializer."""
@@ -413,7 +412,6 @@ class _PaygenBuild(object):
     self._skip_delta_payloads = skip_delta_payloads
     self._skip_test_payloads = skip_test_payloads
     self._skip_nontest_payloads = skip_nontest_payloads
-    self._control_dir = control_dir
     self._output_dir = output_dir
     self._run_parallel = run_parallel
     self._run_on_builder = run_on_builder
@@ -422,6 +420,8 @@ class _PaygenBuild(object):
     self._archive_build_uri = None
     self._au_generator_uri = au_generator_uri
     self._skip_duts_check = skip_duts_check
+    self._control_dir = (None if disable_tests else
+                         _FindControlFileDir(self._work_dir))
 
     # Cached goldeneye data.
     self.cachedFsisJson = {}
@@ -1586,24 +1586,16 @@ def CreatePayloads(build, work_dir, site_config, dry_run=False,
   """
   ValidateBoardConfig(build.board)
 
-  control_dir = None
-  try:
-    if not disable_tests:
-      control_dir = _FindControlFileDir(work_dir)
-
-    _PaygenBuild(build, work_dir, site_config,
-                 dry_run=dry_run,
-                 ignore_finished=ignore_finished,
-                 skip_full_payloads=skip_full_payloads,
-                 skip_delta_payloads=skip_delta_payloads,
-                 skip_test_payloads=skip_test_payloads,
-                 skip_nontest_payloads=skip_nontest_payloads,
-                 control_dir=control_dir, output_dir=output_dir,
-                 run_parallel=run_parallel,
-                 run_on_builder=run_on_builder,
-                 au_generator_uri=au_generator_uri,
-                 skip_duts_check=skip_duts_check).CreatePayloads()
-
-  finally:
-    if control_dir:
-      shutil.rmtree(control_dir)
+  _PaygenBuild(build, work_dir, site_config,
+               dry_run=dry_run,
+               ignore_finished=ignore_finished,
+               skip_full_payloads=skip_full_payloads,
+               skip_delta_payloads=skip_delta_payloads,
+               skip_test_payloads=skip_test_payloads,
+               skip_nontest_payloads=skip_nontest_payloads,
+               disable_tests=disable_tests,
+               output_dir=output_dir,
+               run_parallel=run_parallel,
+               run_on_builder=run_on_builder,
+               au_generator_uri=au_generator_uri,
+               skip_duts_check=skip_duts_check).CreatePayloads()
