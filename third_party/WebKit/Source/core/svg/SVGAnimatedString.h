@@ -31,12 +31,13 @@
 #ifndef SVGAnimatedString_h
 #define SVGAnimatedString_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGString.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace blink {
 
-class SVGAnimatedString : public SVGAnimatedProperty<SVGString> {
+class SVGAnimatedString : public SVGAnimatedProperty<SVGString>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGAnimatedString> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGString> initialValue)

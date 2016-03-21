@@ -31,8 +31,7 @@ G*     * Redistributions in binary form must reproduce the above
 #ifndef SVGAnimatedProperty_h
 #define SVGAnimatedProperty_h
 
-#include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "bindings/core/v8/ScriptWrappable.h"
+#include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
@@ -46,8 +45,7 @@ namespace blink {
 
 class SVGElement;
 
-class SVGAnimatedPropertyBase : public RefCountedWillBeGarbageCollectedFinalized<SVGAnimatedPropertyBase>, public ScriptWrappable {
-    DEFINE_WRAPPERTYPEINFO_NOT_REACHED();
+class SVGAnimatedPropertyBase : public RefCountedWillBeGarbageCollectedFinalized<SVGAnimatedPropertyBase> {
     WTF_MAKE_NONCOPYABLE(SVGAnimatedPropertyBase);
 public:
     virtual ~SVGAnimatedPropertyBase();

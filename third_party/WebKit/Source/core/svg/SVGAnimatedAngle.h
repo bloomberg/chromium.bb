@@ -31,13 +31,14 @@
 #ifndef SVGAnimatedAngle_h
 #define SVGAnimatedAngle_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGAngleTearOff.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class SVGAnimatedAngle final : public SVGAnimatedProperty<SVGAngle> {
+class SVGAnimatedAngle final : public SVGAnimatedProperty<SVGAngle>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGAnimatedAngle> create(SVGElement* contextElement)

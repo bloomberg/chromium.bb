@@ -31,6 +31,7 @@
 #ifndef SVGAnimatedInteger_h
 #define SVGAnimatedInteger_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGInteger.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 #include "platform/heap/Handle.h"
@@ -40,7 +41,7 @@ namespace blink {
 class SVGAnimatedIntegerOptionalInteger;
 
 // SVG Spec: http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedInteger
-class SVGAnimatedInteger : public SVGAnimatedProperty<SVGInteger> {
+class SVGAnimatedInteger : public SVGAnimatedProperty<SVGInteger>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGAnimatedInteger> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGInteger> initialValue)

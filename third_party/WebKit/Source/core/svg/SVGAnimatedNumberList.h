@@ -31,13 +31,14 @@
 #ifndef SVGAnimatedNumberList_h
 #define SVGAnimatedNumberList_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGNumberListTearOff.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace blink {
 
 // SVG Spec: http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedNumberList
-class SVGAnimatedNumberList final : public SVGAnimatedProperty<SVGNumberList> {
+class SVGAnimatedNumberList final : public SVGAnimatedProperty<SVGNumberList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGAnimatedNumberList> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGNumberList> initialValue)

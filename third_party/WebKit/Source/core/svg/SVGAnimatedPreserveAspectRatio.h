@@ -31,12 +31,13 @@
 #ifndef SVGAnimatedPreserveAspectRatio_h
 #define SVGAnimatedPreserveAspectRatio_h
 
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/svg/SVGPreserveAspectRatioTearOff.h"
 #include "core/svg/properties/SVGAnimatedProperty.h"
 
 namespace blink {
 
-class SVGAnimatedPreserveAspectRatio : public SVGAnimatedProperty<SVGPreserveAspectRatio> {
+class SVGAnimatedPreserveAspectRatio : public SVGAnimatedProperty<SVGPreserveAspectRatio>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<SVGAnimatedPreserveAspectRatio> create(SVGElement* contextElement, const QualifiedName& attributeName, PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> initialValue)
