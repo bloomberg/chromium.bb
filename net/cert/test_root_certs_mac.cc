@@ -7,8 +7,6 @@
 #include <Security/Security.h>
 
 #include "base/logging.h"
-#include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "net/cert/x509_certificate.h"
 
 namespace net {
@@ -69,37 +67,10 @@ OSStatus TestRootCerts::FixupSecTrustRef(SecTrustRef trust_ref) const {
   if (IsEmpty())
     return noErr;
 
-  // Despite SecTrustSetAnchorCertificatesOnly existing in OS X 10.6, and
-  // being documented as available, it is not actually implemented. On 10.7+,
-  // however, it always works.
-  if (base::mac::IsOSLionOrLater()) {
-    OSStatus status = SecTrustSetAnchorCertificates(trust_ref,
-                                                    temporary_roots_);
-    if (status)
-      return status;
-    return SecTrustSetAnchorCertificatesOnly(trust_ref, !allow_system_trust_);
-  }
-
-  if (!allow_system_trust_) {
-    // Avoid any copying if system roots are not to be trusted. This acts as
-    // an exclusive list on 10.6, replacing the built-ins.
-    return SecTrustSetAnchorCertificates(trust_ref, temporary_roots_);
-  }
-
-  // Otherwise, both system trust and temporary_roots_ must be trusted.
-  // Emulate the functionality of SecTrustSetAnchorCertificatesOnly by
-  // creating a copy of the system roots and merging with temporary_roots_.
-  CFArrayRef system_roots = NULL;
-  OSStatus status = SecTrustCopyAnchorCertificates(&system_roots);
+  OSStatus status = SecTrustSetAnchorCertificates(trust_ref, temporary_roots_);
   if (status)
     return status;
-
-  base::ScopedCFTypeRef<CFArrayRef> scoped_system_roots(system_roots);
-  base::ScopedCFTypeRef<CFMutableArrayRef> scoped_roots(
-      CFArrayCreateMutableCopy(kCFAllocatorDefault, 0, scoped_system_roots));
-  CFArrayAppendArray(scoped_roots, temporary_roots_,
-                     CFRangeMake(0, CFArrayGetCount(temporary_roots_)));
-  return SecTrustSetAnchorCertificates(trust_ref, scoped_roots);
+  return SecTrustSetAnchorCertificatesOnly(trust_ref, !allow_system_trust_);
 }
 
 void TestRootCerts::SetAllowSystemTrust(bool allow_system_trust) {
