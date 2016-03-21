@@ -407,7 +407,7 @@ void PluginVarTracker::ObjectGettingZeroRef(VarMap::iterator iter) {
     if (found->second.instance == 0) {
       // Instance is destroyed. This means that we'll never get a Deallocate
       // call from the renderer and we should do so now.
-      found->second.ppp_class->Deallocate(found->first);
+      CallWhileUnlocked(found->second.ppp_class->Deallocate, found->first);
       user_data_to_plugin_.erase(found);
     } else {
       // The plugin is releasing its last reference to an object it implements.

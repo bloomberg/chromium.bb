@@ -19,6 +19,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/strings/stringprintf.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/instance_private.h"
@@ -27,20 +28,19 @@
 
 namespace {
 
-class InstanceSO : public pp::deprecated::ScriptableObject {
+class ScriptableBase : public pp::deprecated::ScriptableObject {
  public:
-  explicit InstanceSO(pp::InstancePrivate* instance) : instance_(instance) {
-    methods_.insert(std::make_pair(
-        "testExecuteScript",
-        base::Bind(&InstanceSO::TestExecuteScript, base::Unretained(this))));
-    methods_.insert(std::make_pair(
-        "testGetProperty",
-        base::Bind(&InstanceSO::TestGetProperty, base::Unretained(this))));
-  }
+  explicit ScriptableBase(pp::InstancePrivate* instance)
+      : instance_(instance) {}
+  ~ScriptableBase() override {}
 
   // pp::deprecated::ScriptableObject overrides:
-  bool HasMethod(const pp::Var& name, pp::Var* exception) {
+  bool HasMethod(const pp::Var& name, pp::Var* exception) override {
     return FindMethod(name) != methods_.end();
+  }
+
+  bool HasProperty(const pp::Var& name, pp::Var* exception) override {
+    return FindProperty(name) != properties_.end();
   }
 
   pp::Var Call(const pp::Var& method_name,
@@ -54,10 +54,33 @@ class InstanceSO : public pp::deprecated::ScriptableObject {
     return ScriptableObject::Call(method_name, args, exception);
   }
 
- private:
+  pp::Var GetProperty(const pp::Var& name, pp::Var* exception) override {
+    auto accessor = FindProperty(name);
+    if (accessor != properties_.end()) {
+      pp::Var value;
+      accessor->second.Run(false, &value);
+      return value;
+    }
+    return ScriptableObject::GetProperty(name, exception);
+  }
+
+  void SetProperty(const pp::Var& name,
+                   const pp::Var& value,
+                   pp::Var* exception) override {
+    auto accessor = FindProperty(name);
+    if (accessor != properties_.end())
+      accessor->second.Run(true, const_cast<pp::Var*>(&value));
+    else
+      ScriptableObject::SetProperty(name, value, exception);
+  }
+
+ protected:
   using MethodMap =
       std::map<std::string,
                base::Callback<pp::Var(const std::vector<pp::Var>&, pp::Var*)>>;
+  using PropertyMap =
+      std::map<std::string, base::Callback<void(bool, pp::Var*)>>;
+
 
   MethodMap::iterator FindMethod(const pp::Var& name) {
     if (!name.is_string())
@@ -65,6 +88,59 @@ class InstanceSO : public pp::deprecated::ScriptableObject {
     return methods_.find(name.AsString());
   }
 
+  PropertyMap::iterator FindProperty(const pp::Var& name) {
+    if (!name.is_string())
+      return properties_.end();
+    return properties_.find(name.AsString());
+  }
+
+  pp::InstancePrivate* const instance_;
+  MethodMap methods_;
+  PropertyMap properties_;
+};
+
+class TestObjectSO : public ScriptableBase {
+ public:
+  explicit TestObjectSO(pp::InstancePrivate* instance)
+      : ScriptableBase(instance) {
+    properties_.insert(std::make_pair(
+        "testObject",
+        base::Bind(&TestObjectSO::TestObjectAccessor, base::Unretained(this))));
+  }
+  ~TestObjectSO() override {}
+
+ private:
+  void TestObjectAccessor(bool set, pp::Var* var) {
+    if (set)
+      return;
+    if (test_object_.is_undefined())
+      test_object_ = pp::VarPrivate(instance_, new TestObjectSO(instance_));
+    *var = test_object_;
+  }
+
+  pp::VarPrivate test_object_;
+};
+
+class InstanceSO : public ScriptableBase {
+ public:
+  explicit InstanceSO(pp::InstancePrivate* instance)
+      : ScriptableBase(instance) {
+    methods_.insert(std::make_pair(
+        "testExecuteScript",
+        base::Bind(&InstanceSO::TestExecuteScript, base::Unretained(this))));
+    methods_.insert(std::make_pair(
+        "testGetProperty",
+        base::Bind(&InstanceSO::TestGetProperty, base::Unretained(this))));
+    methods_.insert(std::make_pair(
+        "testPassTestObject",
+        base::Bind(&InstanceSO::TestPassTestObject, base::Unretained(this))));
+    properties_.insert(std::make_pair(
+        "testObject", base::Bind(&InstanceSO::TestObjectAccessor,
+                                 base::Unretained(this))));
+  }
+  ~InstanceSO() override {}
+
+ private:
   // Requires one argument. The argument is passed through as-is to
   // pp::InstancePrivate::ExecuteScript().
   pp::Var TestExecuteScript(const std::vector<pp::Var>& args,
@@ -94,15 +170,36 @@ class InstanceSO : public pp::deprecated::ScriptableObject {
     return object;
   }
 
-  pp::InstancePrivate* const instance_;
-  MethodMap methods_;
+  // Requires 2 or more arguments. The first argument is the name of a function
+  // to invoke, and the second argument is a value to pass to that function.
+  pp::Var TestPassTestObject(const std::vector<pp::Var>& args,
+                             pp::Var* exception) {
+    if (args.size() < 2) {
+      *exception = pp::Var("testPassTestObject requires at least 2 arguments");
+      return pp::Var();
+    }
+    pp::VarPrivate object = instance_->GetWindowObject();
+    return object.Call(args[0], args[1], exception);
+  }
+
+  void TestObjectAccessor(bool set, pp::Var* var) {
+    if (set)
+      return;
+    if (test_object_.is_undefined())
+      test_object_ = pp::VarPrivate(instance_, new TestObjectSO(instance_));
+    *var = test_object_;
+  }
+
+  pp::VarPrivate test_object_;
 };
 
 class BlinkDeprecatedTestInstance : public pp::InstancePrivate {
  public:
   explicit BlinkDeprecatedTestInstance(PP_Instance instance)
       : pp::InstancePrivate(instance) {}
-  ~BlinkDeprecatedTestInstance() override {}
+  ~BlinkDeprecatedTestInstance() override {
+    LogMessage("%s", "Destroying");
+  }
 
   bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
     return true;
@@ -115,6 +212,15 @@ class BlinkDeprecatedTestInstance : public pp::InstancePrivate {
       instance_var_ = pp::VarPrivate(this, instance_so_);
     }
     return instance_var_;
+  }
+
+  void LogMessage(const char* format...) {
+    va_list args;
+    va_start(args, format);
+    LogToConsoleWithSource(PP_LOGLEVEL_LOG,
+                           pp::Var("Blink Deprecated Test Plugin"),
+                           pp::Var(base::StringPrintV(format, args)));
+    va_end(args);
   }
 
  private:

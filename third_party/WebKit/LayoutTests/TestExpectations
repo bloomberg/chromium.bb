@@ -576,7 +576,6 @@ crbug.com/318978 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/instance-available-before-stylesheets-loaded-object.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/instance-available-before-stylesheets-loaded.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/multiple-plugins.html [ Skip ]
-crbug.com/318978 [ Linux ] plugins/nested-plugin-objects.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/no-mime-with-valid-extension.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/open-and-close-window-with-plugin.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/override-node-method.html [ Skip ]
@@ -903,7 +902,6 @@ crbug.com/305346 virtual/pointerevent/fast/events/mouseover-mouseout.html [ Fail
 crbug.com/305346 virtual/trustedeventsdefaultaction/fast/events/mouseover-mouseout.html [ Failure Pass ]
 
 # Disabled until the test plugin is fixed.
-crbug.com/363099 [ Win ] plugins/nested-plugin-objects.html [ Failure ]
 crbug.com/363099 [ Win ] plugins/open-and-close-window-with-plugin.html [ Failure ]
 
 crbug.com/425345 [ Mac ] fast/text/line-break-after-question-mark.html [ Failure ]

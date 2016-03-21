@@ -94,6 +94,12 @@ PP_Var PluginObject::Create(PepperPluginInstanceImpl* instance,
 v8::Local<v8::Value> PluginObject::GetNamedProperty(
     v8::Isolate* isolate,
     const std::string& identifier) {
+  if (!instance_) {
+    std::string error = "Property " + identifier + " does not exist.";
+    isolate->ThrowException(
+        v8::Exception::ReferenceError(gin::StringToV8(isolate, error)));
+    return v8::Local<v8::Value>();
+  }
   ScopedPPVar identifier_var(ScopedPPVar::PassRef(),
                              StringVar::StringToPPVar(identifier));
   return GetPropertyOrMethod(instance_->GetIsolate(), identifier_var.get());
@@ -102,8 +108,12 @@ v8::Local<v8::Value> PluginObject::GetNamedProperty(
 bool PluginObject::SetNamedProperty(v8::Isolate* isolate,
                                     const std::string& identifier,
                                     v8::Local<v8::Value> value) {
-  if (!instance_)
+  if (!instance_) {
+    std::string error = "Property " + identifier + " does not exist.";
+    isolate->ThrowException(
+        v8::Exception::ReferenceError(gin::StringToV8(isolate, error)));
     return false;
+  }
   ScopedPPVar identifier_var(ScopedPPVar::PassRef(),
                              StringVar::StringToPPVar(identifier));
   V8VarConverter var_converter(instance_->pp_instance(),

@@ -1,4 +1,4 @@
-PLUGIN: NPP_Destroy
+CONSOLE MESSAGE: Blink Deprecated Test Plugin: Destroying
 This tests that objects from plugin objects are properly cleaned up.
 
 Example:

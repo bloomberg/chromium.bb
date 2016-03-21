@@ -14,7 +14,6 @@ function runTest()
 
     var successCount = 0;
     var plugin = document.getElementById("testPlugin");
-    plugin.logDestroy = true;
 
     var testObject = plugin.testObject;
     plugin.testPassTestObject("npapiCallback", testObject);
@@ -75,6 +74,6 @@ It is important that both Object1 and Object2 cleanup as a result of
 cleaning up the plugin.
 
 <div id="result">FAILURE</div>
-<embed id="testPlugin" type="application/x-webkit-test-netscape" width="200" height="200"></embed>
+<embed id="testPlugin" type="application/x-blink-deprecated-test-plugin" width="200" height="200"></embed>
 </body>
 </html>
