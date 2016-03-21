@@ -106,7 +106,7 @@ struct drm_backend {
 	uint32_t crtc_allocator;
 	uint32_t connector_allocator;
 	struct wl_listener session_listener;
-	uint32_t format;
+	uint32_t gbm_format;
 
 	/* we need these parameters in order to not fail drmModeAddFB2()
 	 * due to out of bounds dimensions, and then mistakenly set
@@ -169,7 +169,7 @@ struct drm_output {
 	drmModeCrtcPtr original_crtc;
 	struct drm_edid edid;
 	drmModePropertyPtr dpms_prop;
-	uint32_t format;
+	uint32_t gbm_format;
 
 	enum dpms_enum dpms;
 
@@ -177,8 +177,8 @@ struct drm_output {
 	int page_flip_pending;
 	int destroy_pending;
 
-	struct gbm_surface *surface;
-	struct gbm_bo *cursor_bo[2];
+	struct gbm_surface *gbm_surface;
+	struct gbm_bo *gbm_cursor_bo[2];
 	struct weston_plane cursor_plane;
 	struct weston_plane fb_plane;
 	struct weston_view *cursor_view;
@@ -438,7 +438,7 @@ drm_output_release_fb(struct drm_output *output, struct drm_fb *fb)
 		if (fb->is_client_buffer)
 			gbm_bo_destroy(fb->bo);
 		else
-			gbm_surface_release_buffer(output->surface,
+			gbm_surface_release_buffer(output->gbm_surface,
 						   fb->bo);
 	}
 }
@@ -467,7 +467,7 @@ drm_output_check_scanout_format(struct drm_output *output,
 		pixman_region32_fini(&r);
 	}
 
-	if (output->format == format)
+	if (output->gbm_format == format)
 		return format;
 
 	return 0;
@@ -530,16 +530,16 @@ drm_output_render_gl(struct drm_output *output, pixman_region32_t *damage)
 	output->base.compositor->renderer->repaint_output(&output->base,
 							  damage);
 
-	bo = gbm_surface_lock_front_buffer(output->surface);
+	bo = gbm_surface_lock_front_buffer(output->gbm_surface);
 	if (!bo) {
 		weston_log("failed to lock front buffer: %m\n");
 		return;
 	}
 
-	output->next = drm_fb_get_from_bo(bo, b, output->format);
+	output->next = drm_fb_get_from_bo(bo, b, output->gbm_format);
 	if (!output->next) {
 		weston_log("failed to get drm_fb for bo\n");
-		gbm_surface_release_buffer(output->surface, bo);
+		gbm_surface_release_buffer(output->gbm_surface, bo);
 		return;
 	}
 }
@@ -1192,7 +1192,7 @@ drm_output_set_cursor(struct drm_output *output)
 		pixman_region32_fini(&output->cursor_plane.damage);
 		pixman_region32_init(&output->cursor_plane.damage);
 		output->current_cursor ^= 1;
-		bo = output->cursor_bo[output->current_cursor];
+		bo = output->gbm_cursor_bo[output->current_cursor];
 
 		cursor_bo_update(b, bo, ev);
 		handle = gbm_bo_get_handle(bo).s32;
@@ -1344,7 +1344,7 @@ drm_output_destroy(struct weston_output *output_base)
 		drm_output_fini_pixman(output);
 	} else {
 		gl_renderer->output_destroy(output_base);
-		gbm_surface_destroy(output->surface);
+		gbm_surface_destroy(output->gbm_surface);
 	}
 
 	weston_plane_release(&output->fb_plane);
@@ -1445,7 +1445,7 @@ drm_output_switch_mode(struct weston_output *output_base, struct weston_mode *mo
 		}
 	} else {
 		gl_renderer->output_destroy(&output->base);
-		gbm_surface_destroy(output->surface);
+		gbm_surface_destroy(output->gbm_surface);
 
 		if (drm_output_init_egl(output, b) < 0) {
 			weston_log("failed to init output egl state with "
@@ -1577,8 +1577,8 @@ static int
 drm_backend_create_gl_renderer(struct drm_backend *b)
 {
 	EGLint format[3] = {
-		b->format,
-		fallback_format_for(b->format),
+		b->gbm_format,
+		fallback_format_for(b->gbm_format),
 		0,
 	};
 	int n_formats = 2;
@@ -1834,18 +1834,18 @@ static int
 drm_output_init_egl(struct drm_output *output, struct drm_backend *b)
 {
 	EGLint format[2] = {
-		output->format,
-		fallback_format_for(output->format),
+		output->gbm_format,
+		fallback_format_for(output->gbm_format),
 	};
 	int i, flags, n_formats = 1;
 
-	output->surface = gbm_surface_create(b->gbm,
+	output->gbm_surface = gbm_surface_create(b->gbm,
 					     output->base.current_mode->width,
 					     output->base.current_mode->height,
 					     format[0],
 					     GBM_BO_USE_SCANOUT |
 					     GBM_BO_USE_RENDERING);
-	if (!output->surface) {
+	if (!output->gbm_surface) {
 		weston_log("failed to create gbm surface\n");
 		return -1;
 	}
@@ -1853,28 +1853,28 @@ drm_output_init_egl(struct drm_output *output, struct drm_backend *b)
 	if (format[1])
 		n_formats = 2;
 	if (gl_renderer->output_create(&output->base,
-				       (EGLNativeWindowType)output->surface,
-				       output->surface,
+				       (EGLNativeWindowType)output->gbm_surface,
+				       output->gbm_surface,
 				       gl_renderer->opaque_attribs,
 				       format,
 				       n_formats) < 0) {
 		weston_log("failed to create gl renderer output state\n");
-		gbm_surface_destroy(output->surface);
+		gbm_surface_destroy(output->gbm_surface);
 		return -1;
 	}
 
 	flags = GBM_BO_USE_CURSOR | GBM_BO_USE_WRITE;
 
 	for (i = 0; i < 2; i++) {
-		if (output->cursor_bo[i])
+		if (output->gbm_cursor_bo[i])
 			continue;
 
-		output->cursor_bo[i] =
+		output->gbm_cursor_bo[i] =
 			gbm_bo_create(b->gbm, b->cursor_width, b->cursor_height,
 				GBM_FORMAT_ARGB8888, flags);
 	}
 
-	if (output->cursor_bo[0] == NULL || output->cursor_bo[1] == NULL) {
+	if (output->gbm_cursor_bo[0] == NULL || output->gbm_cursor_bo[1] == NULL) {
 		weston_log("cursor buffers unavailable, using gl cursors\n");
 		b->cursors_are_broken = 1;
 	}
@@ -2356,9 +2356,9 @@ create_output_for_connector(struct drm_backend *b,
 	free(s);
 
 	if (get_gbm_format_from_section(section,
-					b->format,
-					&output->format) == -1)
-		output->format = b->format;
+					b->gbm_format,
+					&output->gbm_format) == -1)
+		output->gbm_format = b->gbm_format;
 
 	weston_config_section_get_string(section, "seat", &s, "");
 	setup_output_seat_constraint(b, &output->base, s);
@@ -2973,7 +2973,7 @@ recorder_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t key,
 			      struct drm_output, base.link);
 
 	if (!output->recorder) {
-		if (output->format != GBM_FORMAT_XRGB8888) {
+		if (output->gbm_format != GBM_FORMAT_XRGB8888) {
 			weston_log("failed to start vaapi recorder: "
 				   "output format not supported\n");
 			return;
@@ -3099,7 +3099,7 @@ drm_backend_create(struct weston_compositor *compositor,
 	section = weston_config_get_section(config, "core", NULL, NULL);
 	if (get_gbm_format_from_section(section,
 					GBM_FORMAT_XRGB8888,
-					&b->format) == -1)
+					&b->gbm_format) == -1)
 		goto err_base;
 
 	b->use_pixman = param->use_pixman;
