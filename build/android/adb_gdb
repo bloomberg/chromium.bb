@@ -344,7 +344,7 @@ if [ -z "$PACKAGE_NAME" ]; then
   panic "Please specify a package name on the command line. See --help."
 fi
 
-if [[ -z "$CHROMIUM_OUTPUT_DIR" ]]; then
+if [[ -z "$SYMBOL_DIR" && -z "$CHROMIUM_OUTPUT_DIR" ]]; then
   if [[ -e "build.ninja" ]]; then
     CHROMIUM_OUTPUT_DIR=$PWD
   else
@@ -354,6 +354,36 @@ if [[ -z "$CHROMIUM_OUTPUT_DIR" ]]; then
        Setting working directory to an output directory.
        See --help."
    fi
+fi
+
+# Detect the build type and symbol directory. This is done by finding
+# the most recent sub-directory containing debug shared libraries under
+# $CHROMIUM_OUTPUT_DIR.
+#
+# Out: nothing, but this sets SYMBOL_DIR
+#
+detect_symbol_dir () {
+  # GYP places unstripped libraries under out/lib
+  # GN places them under out/lib.unstripped
+  local PARENT_DIR="$CHROMIUM_OUTPUT_DIR"
+  if [[ ! -e "$PARENT_DIR" ]]; then
+    PARENT_DIR="$CHROMIUM_SRC/$PARENT_DIR"
+  fi
+  SYMBOL_DIR="$PARENT_DIR/lib.unstripped"
+  if [[ -z "$(ls "$SYMBOL_DIR"/lib*.so 2>/dev/null)" ]]; then
+    SYMBOL_DIR="$PARENT_DIR/lib"
+    if [[ -z "$(ls "$SYMBOL_DIR"/lib*.so 2>/dev/null)" ]]; then
+      panic "Could not find any symbols under \
+$PARENT_DIR/lib{.unstripped}. Please build the program first!"
+    fi
+  fi
+  log "Auto-config: --symbol-dir=$SYMBOL_DIR"
+}
+
+if [ -z "$SYMBOL_DIR" ]; then
+  detect_symbol_dir
+elif [[ -z "$(ls "$SYMBOL_DIR"/lib*.so 2>/dev/null)" ]]; then
+  panic "Could not find any symbols under $SYMBOL_DIR"
 fi
 
 if [ -z "$NDK_DIR" ]; then
@@ -436,15 +466,18 @@ adb_shell () {
   return $RET
 }
 
-# Find the target architecture from the target device.
+# Find the target architecture from a local shared library.
 # This returns an NDK-compatible architecture name.
 # out: NDK Architecture name, or empty string.
 get_gyp_target_arch () {
-  local ARCH=$(adb_shell getprop ro.product.cpu.abi)
+  local RANDOM_LIB=$(ls "$SYMBOL_DIR"/lib*.so | head -n1)
+  local SO_DESC=$(file $RANDOM_LIB)
   case $ARCH in
-    mips|x86|x86_64) echo "$ARCH";;
-    arm64*) echo "arm64";;
-    arm*) echo "arm";;
+    *32-bit*ARM,*) echo "arm";;
+    *64-bit*ARM,*) echo "arm64";;
+    *32-bit*Intel,*) echo "x86";;
+    *x86-64,*) echo "x86_64";;
+    *32-bit*MIPS,*) echo "mips";;
     *) echo "";
   esac
 }
@@ -698,34 +731,6 @@ fi
 get_file_timestamp () {
   stat -c %Y "$1" 2>/dev/null
 }
-
-# Detect the build type and symbol directory. This is done by finding
-# the most recent sub-directory containing debug shared libraries under
-# $CHROMIUM_OUTPUT_DIR.
-#
-# Out: nothing, but this sets SYMBOL_DIR
-#
-detect_symbol_dir () {
-  # GYP places unstripped libraries under out/lib
-  # GN places them under out/lib.unstripped
-  local PARENT_DIR="$CHROMIUM_OUTPUT_DIR"
-  if [[ ! -e "$PARENT_DIR" ]]; then
-    PARENT_DIR="$CHROMIUM_SRC/$PARENT_DIR"
-  fi
-  SYMBOL_DIR="$PARENT_DIR/lib.unstripped"
-  if [[ -z "$(ls "$SYMBOL_DIR"/lib*.so 2>/dev/null)" ]]; then
-    SYMBOL_DIR="$PARENT_DIR/lib"
-    if [[ -z "$(ls "$SYMBOL_DIR"/lib*.so 2>/dev/null)" ]]; then
-      panic "Could not find any symbols under \
-$PARENT_DIR/lib{.unstripped}. Please build the program first!"
-    fi
-  fi
-  log "Auto-config: --symbol-dir=$SYMBOL_DIR"
-}
-
-if [ -z "$SYMBOL_DIR" ]; then
-  detect_symbol_dir
-fi
 
 # Allow several concurrent debugging sessions
 TARGET_GDBSERVER=/data/data/$PACKAGE_NAME/gdbserver-adb-gdb-$TMP_ID
