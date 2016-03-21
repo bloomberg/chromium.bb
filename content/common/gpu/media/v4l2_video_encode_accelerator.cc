@@ -19,7 +19,6 @@
 #include "base/trace_event/trace_event.h"
 #include "content/common/gpu/media/shared_memory_region.h"
 #include "content/common/gpu/media/v4l2_video_encode_accelerator.h"
-#include "content/public/common/content_switches.h"
 #include "media/base/bitstream_buffer.h"
 
 #define NOTIFY_ERROR(x)                        \
