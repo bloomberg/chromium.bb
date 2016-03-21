@@ -5,8 +5,8 @@
 // tree. An additional intellectual property rights grant can be found
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
-#ifndef MKVPARSER_HPP
-#define MKVPARSER_HPP
+#ifndef MKVPARSER_MKVPARSER_H_
+#define MKVPARSER_MKVPARSER_H_
 
 #include <cstddef>
 
@@ -1111,4 +1111,4 @@ inline long libwebm::mkvparser::Segment::LoadCluster() {
   return LoadCluster(pos, size);
 }
 
-#endif  // MKVPARSER_HPP
+#endif  // MKVPARSER_MKVPARSER_H_

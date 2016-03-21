@@ -14,10 +14,9 @@
 #include <string>
 #include <vector>
 
-#include "mkvparser/mkvparser.hpp"
-#include "mkvparser/mkvreader.hpp"
-
 #include "common/libwebm_util.h"
+#include "mkvparser/mkvparser.h"
+#include "mkvparser/mkvreader.h"
 
 namespace libwebm {
 

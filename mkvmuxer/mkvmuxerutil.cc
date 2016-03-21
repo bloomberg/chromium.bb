@@ -6,7 +6,7 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#include "mkvmuxer/mkvmuxerutil.hpp"
+#include "mkvmuxer/mkvmuxerutil.h"
 
 #ifdef __ANDROID__
 #include <fcntl.h>
@@ -20,9 +20,9 @@
 #include <ctime>
 #include <new>
 
-#include "common/webmids.hpp"
-#include "mkvmuxer/mkvmuxer.hpp"
-#include "mkvmuxer/mkvwriter.hpp"
+#include "common/webmids.h"
+#include "mkvmuxer/mkvmuxer.h"
+#include "mkvmuxer/mkvwriter.h"
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.

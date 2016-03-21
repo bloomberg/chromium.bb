@@ -6,8 +6,8 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#ifndef MKVMUXER_MKVMUXER_HPP_
-#define MKVMUXER_MKVMUXER_HPP_
+#ifndef MKVMUXER_MKVMUXER_H_
+#define MKVMUXER_MKVMUXER_H_
 
 #include <stdint.h>
 
@@ -15,8 +15,8 @@
 #include <list>
 #include <map>
 
-#include "common/webmids.hpp"
-#include "mkvmuxer/mkvmuxertypes.hpp"
+#include "common/webmids.h"
+#include "mkvmuxer/mkvmuxertypes.h"
 
 // For a description of the WebM elements see
 // http://www.webmproject.org/code/specs/container/.
@@ -1683,4 +1683,4 @@ class Segment {
 }  // namespace mkvmuxer
 }  // namespace libwebm
 
-#endif  // MKVMUXER_MKVMUXER_HPP_
+#endif  // MKVMUXER_MKVMUXER_H_

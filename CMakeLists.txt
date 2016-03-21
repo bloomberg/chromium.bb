@@ -43,23 +43,23 @@ set(CMAKE_CXX_FLAGS "-D__STDC_LIMIT_MACROS ${CMAKE_CXX_FLAGS}")
 # mkvmuxer section.
 # TODO(tomfinegan): move to mkvmuxer/CMakeLists.txt
 add_library(mkvmuxer STATIC
-            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxer.cpp"
-            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxer.hpp"
-            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxertypes.hpp"
-            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxerutil.cpp"
-            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxerutil.hpp"
-            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvwriter.cpp"
-            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvwriter.hpp"
-            "${LIBWEBM_SRC_DIR}/common/webmids.hpp")
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxer.cc"
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxer.h"
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxertypes.h"
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxerutil.cc"
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvmuxerutil.h"
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvwriter.cc"
+            "${LIBWEBM_SRC_DIR}/mkvmuxer/mkvwriter.h"
+            "${LIBWEBM_SRC_DIR}/common/webmids.h")
 
 # mkvparser section.
 # TODO(tomfinegan): move to mkvparser/CMakeLists.txt.
 add_library(mkvparser STATIC
-            "${LIBWEBM_SRC_DIR}/mkvparser/mkvparser.cpp"
-            "${LIBWEBM_SRC_DIR}/mkvparser/mkvparser.hpp"
-            "${LIBWEBM_SRC_DIR}/mkvparser/mkvreader.cpp"
-            "${LIBWEBM_SRC_DIR}/mkvparser/mkvreader.hpp"
-            "${LIBWEBM_SRC_DIR}/common/webmids.hpp")
+            "${LIBWEBM_SRC_DIR}/mkvparser/mkvparser.cc"
+            "${LIBWEBM_SRC_DIR}/mkvparser/mkvparser.h"
+            "${LIBWEBM_SRC_DIR}/mkvparser/mkvreader.cc"
+            "${LIBWEBM_SRC_DIR}/mkvparser/mkvreader.h"
+            "${LIBWEBM_SRC_DIR}/common/webmids.h")
 
 # Libwebm section.
 add_library(webm STATIC
@@ -67,7 +67,7 @@ add_library(webm STATIC
             "${LIBWEBM_SRC_DIR}/common/file_util.h"
             "${LIBWEBM_SRC_DIR}/common/hdr_util.cc"
             "${LIBWEBM_SRC_DIR}/common/hdr_util.h"
-            "${LIBWEBM_SRC_DIR}/common/webmids.hpp")
+            "${LIBWEBM_SRC_DIR}/common/webmids.h")
 target_link_libraries(webm LINK_PUBLIC mkvmuxer mkvparser)
 
 if (WIN32)
@@ -81,12 +81,12 @@ include_directories("${LIBWEBM_SRC_DIR}")
 
 # Sample (mkvparser) section.
 add_executable(sample
-               "${LIBWEBM_SRC_DIR}/sample.cpp")
+               "${LIBWEBM_SRC_DIR}/sample.cc")
 target_link_libraries(sample LINK_PUBLIC webm)
 
 # Sample muxer section.
 add_executable(sample_muxer
-               "${LIBWEBM_SRC_DIR}/sample_muxer.cpp"
+               "${LIBWEBM_SRC_DIR}/sample_muxer.cc"
                "${LIBWEBM_SRC_DIR}/sample_muxer_metadata.cc"
                "${LIBWEBM_SRC_DIR}/sample_muxer_metadata.h"
                "${LIBWEBM_SRC_DIR}/webvtt/vttreader.cc"

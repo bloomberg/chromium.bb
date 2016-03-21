@@ -20,9 +20,9 @@
 
 #include "common/file_util.h"
 #include "common/libwebm_util.h"
-#include "mkvmuxer/mkvmuxer.hpp"
-#include "mkvmuxer/mkvwriter.hpp"
-#include "mkvparser/mkvreader.hpp"
+#include "mkvmuxer/mkvmuxer.h"
+#include "mkvmuxer/mkvwriter.h"
+#include "mkvparser/mkvreader.h"
 #include "testing/test_util.h"
 
 #ifdef _MSC_VER

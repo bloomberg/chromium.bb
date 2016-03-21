@@ -6,8 +6,8 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#ifndef WEBMIDS_HPP
-#define WEBMIDS_HPP
+#ifndef COMMON_WEBMIDS_H_
+#define COMMON_WEBMIDS_H_
 
 namespace libwebm {
 
@@ -181,4 +181,4 @@ enum MkvId {
 
 }  // namespace libwebm
 
-#endif  // WEBMIDS_HPP
+#endif  // COMMON_WEBMIDS_H_

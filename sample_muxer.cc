@@ -19,13 +19,13 @@
 #include "common/hdr_util.h"
 
 // libwebm mkvparser includes
-#include "mkvparser/mkvparser.hpp"
-#include "mkvparser/mkvreader.hpp"
+#include "mkvparser/mkvparser.h"
+#include "mkvparser/mkvreader.h"
 
 // libwebm mkvmuxer includes
-#include "mkvmuxer/mkvmuxer.hpp"
-#include "mkvmuxer/mkvmuxertypes.hpp"
-#include "mkvmuxer/mkvwriter.hpp"
+#include "mkvmuxer/mkvmuxer.h"
+#include "mkvmuxer/mkvmuxertypes.h"
+#include "mkvmuxer/mkvwriter.h"
 
 #include "sample_muxer_metadata.h"
 

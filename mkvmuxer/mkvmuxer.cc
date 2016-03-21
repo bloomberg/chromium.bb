@@ -6,7 +6,7 @@
 // in the file PATENTS.  All contributing project authors may
 // be found in the AUTHORS file in the root of the source tree.
 
-#include "mkvmuxer/mkvmuxer.hpp"
+#include "mkvmuxer/mkvmuxer.h"
 
 #include <cfloat>
 #include <climits>
@@ -17,10 +17,10 @@
 #include <new>
 #include <vector>
 
-#include "common/webmids.hpp"
-#include "mkvmuxer/mkvmuxerutil.hpp"
-#include "mkvmuxer/mkvwriter.hpp"
-#include "mkvparser/mkvparser.hpp"
+#include "common/webmids.h"
+#include "mkvmuxer/mkvmuxerutil.h"
+#include "mkvmuxer/mkvwriter.h"
+#include "mkvparser/mkvparser.h"
 
 #ifdef _MSC_VER
 // Disable MSVC warnings that suggest making code non-portable.

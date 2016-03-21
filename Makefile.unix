@@ -40,16 +40,10 @@ libwebm.a: $(OBJSA)
 libwebm.so: $(OBJSSO)
 	$(CXX) $(CXXFLAGS) -shared $(OBJSSO) -o $(LIBWEBMSO)
 
-%.o: %.cpp
-	$(CXX) -c $(CXXFLAGS) $< -o $@
-
-%_a.o: %.cpp
+%.o: %.cc
 	$(CXX) -c $(CXXFLAGS) $< -o $@
 %_a.o: %.cc
 	$(CXX) -c $(CXXFLAGS) $< -o $@
-
-%_so.o: %.cpp
-	$(CXX) -c $(CXXFLAGS) -fPIC $< -o $@
 %_so.o: %.cc
 	$(CXX) -c $(CXXFLAGS) -fPIC $< -o $@
 

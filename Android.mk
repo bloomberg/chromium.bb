@@ -4,9 +4,9 @@ include $(CLEAR_VARS)
 LOCAL_MODULE:= libwebm
 LOCAL_SRC_FILES:= common/file_util.cc \
                   common/hdr_util.cc \
-                  mkvparser/mkvparser.cpp \
-                  mkvparser/mkvreader.cpp \
-                  mkvmuxer/mkvmuxer.cpp \
-                  mkvmuxer/mkvmuxerutil.cpp \
-                  mkvmuxer/mkvwriter.cpp
+                  mkvparser/mkvparser.cc \
+                  mkvparser/mkvreader.cc \
+                  mkvmuxer/mkvmuxer.cc \
+                  mkvmuxer/mkvmuxerutil.cc \
+                  mkvmuxer/mkvwriter.cc
 include $(BUILD_STATIC_LIBRARY)

@@ -14,7 +14,7 @@
 #include <cstdio>
 #include <string>
 
-#include "mkvmuxer/mkvmuxer.hpp"
+#include "mkvmuxer/mkvmuxer.h"
 #include "webvtt/vttreader.h"
 
 namespace libwebm {
