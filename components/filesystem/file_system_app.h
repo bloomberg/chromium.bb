@@ -42,7 +42,7 @@ class FileSystemApp : public mojo::ShellClient,
 
   mojo::TracingImpl tracing_;
 
-  scoped_ptr<LockTable> lock_table_;
+  scoped_refptr<LockTable> lock_table_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemApp);
 };

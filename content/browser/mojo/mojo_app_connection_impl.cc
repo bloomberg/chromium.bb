@@ -21,19 +21,20 @@ void OnGotInstanceID(mojo::shell::mojom::ConnectResult result,
 
 // static
 scoped_ptr<MojoAppConnection> MojoAppConnection::Create(
+    const std::string& user_id,
     const std::string& name,
     const std::string& requestor_name) {
   return scoped_ptr<MojoAppConnection>(
-      new MojoAppConnectionImpl(name, requestor_name));
+      new MojoAppConnectionImpl(user_id, name, requestor_name));
 }
 
 MojoAppConnectionImpl::MojoAppConnectionImpl(
+    const std::string& user_id,
     const std::string& name,
     const std::string& requestor_name) {
   MojoShellContext::ConnectToApplication(
-      name, requestor_name, mojo::GetProxy(&interfaces_),
-      mojo::shell::mojom::InterfaceProviderPtr(),
-      base::Bind(&OnGotInstanceID));
+      user_id, name, requestor_name, mojo::GetProxy(&interfaces_),
+      mojo::shell::mojom::InterfaceProviderPtr(), base::Bind(&OnGotInstanceID));
 }
 
 MojoAppConnectionImpl::~MojoAppConnectionImpl() {

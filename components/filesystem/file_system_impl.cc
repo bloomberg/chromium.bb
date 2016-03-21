@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "components/filesystem/directory_impl.h"
+#include "components/filesystem/lock_table.h"
 #include "mojo/shell/public/cpp/connection.h"
 #include "url/gurl.h"
 
@@ -23,10 +24,10 @@ namespace filesystem {
 FileSystemImpl::FileSystemImpl(mojo::Connection* connection,
                                mojo::InterfaceRequest<FileSystem> request,
                                base::FilePath persistent_dir,
-                               LockTable* lock_table)
+                               scoped_refptr<LockTable> lock_table)
     : remote_application_name_(connection->GetRemoteIdentity().name()),
       binding_(this, std::move(request)),
-      lock_table_(lock_table),
+      lock_table_(std::move(lock_table)),
       persistent_dir_(persistent_dir) {}
 
 FileSystemImpl::~FileSystemImpl() {

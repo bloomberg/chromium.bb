@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "components/filesystem/file_impl.h"
+#include "components/filesystem/lock_table.h"
 #include "components/filesystem/util.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
@@ -25,11 +26,11 @@ namespace filesystem {
 DirectoryImpl::DirectoryImpl(mojo::InterfaceRequest<Directory> request,
                              base::FilePath directory_path,
                              scoped_ptr<base::ScopedTempDir> temp_dir,
-                             LockTable* lock_table)
+                             scoped_refptr<LockTable> lock_table)
     : binding_(this, std::move(request)),
       directory_path_(directory_path),
       temp_dir_(std::move(temp_dir)),
-      lock_table_(lock_table) {}
+      lock_table_(std::move(lock_table)) {}
 
 DirectoryImpl::~DirectoryImpl() {
 }

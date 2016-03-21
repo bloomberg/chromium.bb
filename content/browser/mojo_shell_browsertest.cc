@@ -7,10 +7,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "content/browser/mojo/mojo_shell_context.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/mojo_app_connection.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/test_mojo_app.h"
 #include "content/public/test/test_mojo_service.mojom.h"
+#include "content/shell/browser/shell.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -24,6 +27,12 @@ class MojoShellTest : public ContentBrowserTest {
     MojoShellContext::SetApplicationsForTest(&test_apps_);
   }
 
+ protected:
+  std::string GetUserId() {
+    return BrowserContext::GetMojoUserIdFor(
+        shell()->web_contents()->GetBrowserContext());
+  }
+
  private:
   static scoped_ptr<mojo::ShellClient> CreateTestApp() {
     return scoped_ptr<mojo::ShellClient>(new TestMojoApp);
@@ -35,8 +44,8 @@ class MojoShellTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(MojoShellTest, TestBrowserConnection) {
-  auto test_app = MojoAppConnection::Create(kInProcessTestMojoAppName,
-                                            kBrowserMojoAppUrl);
+  auto test_app = MojoAppConnection::Create(
+      GetUserId(), kInProcessTestMojoAppName, kBrowserMojoAppUrl);
   TestMojoServicePtr test_service;
   test_app->GetInterface(&test_service);
 
@@ -49,7 +58,7 @@ IN_PROC_BROWSER_TEST_F(MojoShellTest, TestUtilityConnection) {
   // With no loader registered at this URL, the shell should spawn a utility
   // process and connect us to it. content_shell's utility process always hosts
   // a TestMojoApp at |kTestMojoAppUrl|.
-  auto test_app = MojoAppConnection::Create(kTestMojoAppUrl,
+  auto test_app = MojoAppConnection::Create(GetUserId(), kTestMojoAppUrl,
                                             kBrowserMojoAppUrl);
   TestMojoServicePtr test_service;
   test_app->GetInterface(&test_service);

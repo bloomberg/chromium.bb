@@ -408,11 +408,14 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 StoragePartitionImpl* StoragePartitionImpl::Create(
     BrowserContext* context,
     bool in_memory,
-    const base::FilePath& partition_path) {
+    const base::FilePath& relative_partition_path) {
   // Ensure that these methods are called on the UI thread, except for
   // unittests where a UI thread might not have been created.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
          !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
+
+  base::FilePath partition_path =
+      context->GetPath().Append(relative_partition_path);
 
   // All of the clients have to be created and registered with the
   // QuotaManager prior to the QuotaManger being used. We do them
@@ -440,9 +443,11 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                    BrowserThread::GetMessageLoopProxyForThread(
                                        BrowserThread::FILE).get());
 
-  base::FilePath path = in_memory ? base::FilePath() : partition_path;
+  base::FilePath path = in_memory ? base::FilePath() : context->GetPath();
   scoped_refptr<DOMStorageContextWrapper> dom_storage_context =
-      new DOMStorageContextWrapper(path, context->GetSpecialStoragePolicy());
+      new DOMStorageContextWrapper(BrowserContext::GetMojoUserIdFor(context),
+                                   path, relative_partition_path,
+                                   context->GetSpecialStoragePolicy());
 
   // BrowserMainLoop may not be initialized in unit tests. Tests will
   // need to inject their own task runner into the IndexedDBContext.

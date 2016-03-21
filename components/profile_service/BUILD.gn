@@ -10,6 +10,8 @@ source_set("lib") {
     "profile_app.h",
     "profile_service_impl.cc",
     "profile_service_impl.h",
+    "user_id_map.cc",
+    "user_id_map.h",
   ]
 
   deps = [
@@ -21,6 +23,7 @@ source_set("lib") {
     "//components/profile_service/public/interfaces",
     "//mojo/common",
     "//mojo/common:common_base",
+    "//mojo/message_pump",
     "//mojo/platform_handle",
     "//mojo/services/tracing/public/cpp",
     "//mojo/shell/public/cpp",

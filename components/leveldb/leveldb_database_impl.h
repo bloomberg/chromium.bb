@@ -18,7 +18,7 @@ class MojoEnv;
 // The backing to a database object that we pass to our called.
 class LevelDBDatabaseImpl : public LevelDBDatabase {
  public:
-  LevelDBDatabaseImpl(mojo::InterfaceRequest<LevelDBDatabase> request,
+  LevelDBDatabaseImpl(leveldb::LevelDBDatabaseRequest request,
                       scoped_ptr<MojoEnv> environment,
                       scoped_ptr<leveldb::DB> db);
   ~LevelDBDatabaseImpl() override;

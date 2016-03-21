@@ -22,6 +22,8 @@
         'profile_app.h',
         'profile_service_impl.cc',
         'profile_service_impl.h',
+        'user_id_map.cc',
+        'user_id_map.h',
       ],
       'dependencies': [
         'profile_service_bindings',

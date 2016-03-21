@@ -28,9 +28,11 @@ class CONTENT_EXPORT MojoAppConnection {
   virtual ~MojoAppConnection() {}
 
   // Creates a new connection to the application at |name| using
-  // |requestor_name| to identify the requestor upon connection. This may be
-  // called from any thread.
+  // |requestor_name| to identify the requestor and |context|'s mojo userid to
+  // specify a profile specific application instantiation. This may be called
+  // from any thread.
   static scoped_ptr<MojoAppConnection> Create(
+      const std::string& user_id,
       const std::string& name,
       const std::string& requestor_name);
 

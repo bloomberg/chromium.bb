@@ -14,7 +14,10 @@ namespace content {
 // Implementation of the app connection mechanism provided to browser code.
 class MojoAppConnectionImpl : public MojoAppConnection {
  public:
-  MojoAppConnectionImpl(const std::string& name,
+  // Takes a BrowserContext and derives a mojo userid from it for this
+  // connection.
+  MojoAppConnectionImpl(const std::string& user_id,
+                        const std::string& name,
                         const std::string& requestor_name);
   ~MojoAppConnectionImpl() override;
 

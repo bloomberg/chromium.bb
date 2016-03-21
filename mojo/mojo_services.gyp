@@ -76,7 +76,7 @@
     },
     {
       # GN version: //mojo/services/tracing/public/interfaces
-    'target_name': 'tracing_service_bindings_lib',
+      'target_name': 'tracing_service_bindings_lib',
       'type': 'static_library',
       'dependencies': [
         'tracing_service_bindings_mojom',

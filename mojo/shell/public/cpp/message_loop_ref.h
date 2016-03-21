@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_SHELL_PUBLIC_CPP_APPLICATION_RUNNER_REFERENCE_H_
-#define MOJO_SHELL_PUBLIC_CPP_APPLICATION_RUNNER_REFERENCE_H_
+#ifndef MOJO_SHELL_PUBLIC_CPP_MESSAGE_LOOP_REF_H_
+#define MOJO_SHELL_PUBLIC_CPP_MESSAGE_LOOP_REF_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -54,4 +54,4 @@ class MessageLoopRefFactory {
 
 }  // namespace mojo
 
-#endif  // MOJO_SHELL_PUBLIC_CPP_APPLICATION_RUNNER_REFERENCE_H_
+#endif  // MOJO_SHELL_PUBLIC_CPP_MESSAGE_LOOP_REF_H_

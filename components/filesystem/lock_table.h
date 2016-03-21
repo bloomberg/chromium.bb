@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/files/file.h"
+#include "base/memory/ref_counted.h"
 
 namespace filesystem {
 
@@ -16,10 +17,9 @@ class FileImpl;
 // A table of all locks held by this process. We have one global table owned by
 // the app, but accessible by everything just in case two connections from the
 // same origin try to lock the same file.
-class LockTable {
+class LockTable : public base::RefCounted<LockTable> {
  public:
   LockTable();
-  ~LockTable();
 
   // Locks a file.
   base::File::Error LockFile(FileImpl* file);
@@ -33,6 +33,9 @@ class LockTable {
   void RemoveFromLockTable(const base::FilePath& path);
 
  private:
+  friend class base::RefCounted<LockTable>;
+  ~LockTable();
+
   // Open, locked files. We keep track of this so we quickly error when we try
   // to double lock a file.
   std::set<base::FilePath> locked_files_;

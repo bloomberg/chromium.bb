@@ -2,9 +2,10 @@ include_rules = [
   "+components/filesystem",
   "+components/leveldb",
   "+mojo/common",
-  "+mojo/shell",
+  "+mojo/message_pump",
   "+mojo/platform_handle",
   "+mojo/public",
   "+mojo/services/tracing/public/cpp",
+  "+mojo/shell",
   "+mojo/util",
 ]

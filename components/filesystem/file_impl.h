@@ -27,11 +27,11 @@ class FileImpl : public File {
   FileImpl(mojo::InterfaceRequest<File> request,
            const base::FilePath& path,
            uint32_t flags,
-           LockTable* lock_table);
+           scoped_refptr<LockTable> lock_table);
   FileImpl(mojo::InterfaceRequest<File> request,
            const base::FilePath& path,
            base::File file,
-           LockTable* lock_table);
+           scoped_refptr<LockTable> lock_table);
   ~FileImpl() override;
 
   // Returns whether the underlying file handle is valid.
@@ -74,7 +74,7 @@ class FileImpl : public File {
   mojo::StrongBinding<File> binding_;
   base::File file_;
   base::FilePath path_;
-  LockTable* lock_table_;
+  scoped_refptr<LockTable> lock_table_;
 
   DISALLOW_COPY_AND_ASSIGN(FileImpl);
 };

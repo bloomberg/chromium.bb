@@ -120,6 +120,7 @@ source_set("browser") {
     deps += [
       "//cc",
       "//cc/surfaces",
+      "//components/filesystem:lib",
       "//components/leveldb:lib",
       "//components/profile_service:lib",
       "//components/scheduler:common",

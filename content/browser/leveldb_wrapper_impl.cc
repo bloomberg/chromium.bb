@@ -9,46 +9,57 @@
 namespace content {
 
 LevelDBWrapperImpl::LevelDBWrapperImpl(
-    const std::string& prefix, const base::Closure& no_bindings_callback)
-    : prefix_(prefix), no_bindings_callback_(no_bindings_callback) {
+    leveldb::LevelDBDatabase* database,
+    const std::string& prefix,
+    const base::Closure& no_bindings_callback)
+    : prefix_(prefix),
+      no_bindings_callback_(no_bindings_callback),
+      database_(database) {
   bindings_.set_connection_error_handler(base::Bind(
       &LevelDBWrapperImpl::OnConnectionError, base::Unretained(this)));
 }
 
-void LevelDBWrapperImpl::Bind(mojo::InterfaceRequest<LevelDBWrapper> request) {
+void LevelDBWrapperImpl::Bind(LevelDBWrapperRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-LevelDBWrapperImpl::~LevelDBWrapperImpl() {
-}
+LevelDBWrapperImpl::~LevelDBWrapperImpl() {}
 
 void LevelDBWrapperImpl::Put(mojo::Array<uint8_t> key,
                              mojo::Array<uint8_t> value,
                              const mojo::String& source,
                              const PutCallback& callback) {
-  // TODO(jam): call observers before running callback.
+  NOTIMPLEMENTED();
+  callback.Run(leveldb::DatabaseError::NOT_SUPPORTED);
 }
 
 void LevelDBWrapperImpl::Delete(mojo::Array<uint8_t> key,
                                 const mojo::String& source,
                                 const DeleteCallback& callback) {
-  // TODO(jam): call observers before running callback.
+  NOTIMPLEMENTED();
+  callback.Run(leveldb::DatabaseError::NOT_SUPPORTED);
 }
 
 void LevelDBWrapperImpl::DeleteAll(LevelDBObserverPtr observer,
                                    const mojo::String& source,
                                    const DeleteAllCallback& callback) {
   // TODO(jam): store observer and call it when changes occur.
-  // TODO(jam): call observers before running callback.
+  NOTIMPLEMENTED();
+  callback.Run(leveldb::DatabaseError::NOT_SUPPORTED);
 }
 
 void LevelDBWrapperImpl::Get(mojo::Array<uint8_t> key,
                              const GetCallback& callback) {
+  NOTIMPLEMENTED();
+  callback.Run(leveldb::DatabaseError::NOT_SUPPORTED, mojo::Array<uint8_t>());
 }
 
 void LevelDBWrapperImpl::GetAll(LevelDBObserverPtr observer,
                                 const GetAllCallback& callback) {
   // TODO(jam): store observer and call it when changes occur.
+  NOTIMPLEMENTED();
+  callback.Run(leveldb::DatabaseError::NOT_SUPPORTED,
+               mojo::Array<KeyValuePtr>());
 }
 
 void LevelDBWrapperImpl::OnConnectionError() {

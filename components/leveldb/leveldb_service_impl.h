@@ -8,6 +8,7 @@
 #include "base/memory/ref_counted.h"
 #include "components/leveldb/leveldb_file_thread.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace leveldb {
 
@@ -20,7 +21,7 @@ class LevelDBServiceImpl : public LevelDBService {
   // Overridden from LevelDBService:
   void Open(filesystem::DirectoryPtr directory,
             const mojo::String& dbname,
-            mojo::InterfaceRequest<LevelDBDatabase> database,
+            leveldb::LevelDBDatabaseRequest database,
             const OpenCallback& callback) override;
 
  private:

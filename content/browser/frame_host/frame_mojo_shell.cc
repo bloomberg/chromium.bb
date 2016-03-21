@@ -9,8 +9,10 @@
 #include "build/build_config.h"
 #include "content/browser/mojo/mojo_shell_context.h"
 #include "content/common/mojo/service_registry_impl.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
 #include "mojo/common/url_type_converters.h"
@@ -53,14 +55,13 @@ void FrameMojoShell::Connect(
     mojo::shell::mojom::InterfaceProviderPtr /* exposed_services */,
     mojo::shell::mojom::ClientProcessConnectionPtr client_process_connection,
     const mojo::shell::mojom::Connector::ConnectCallback& callback) {
-  // TODO(beng): user_id is dropped on the floor right now. Figure out what to
-  //             do with it.
   mojo::shell::mojom::InterfaceProviderPtr frame_services;
   service_provider_bindings_.AddBinding(GetServiceRegistry(),
                                         GetProxy(&frame_services));
-
+  std::string mojo_user_id = BrowserContext::GetMojoUserIdFor(
+      frame_host_->GetProcess()->GetBrowserContext());
   MojoShellContext::ConnectToApplication(
-      target->name,
+      mojo_user_id, target->name,
       frame_host_->GetSiteInstance()->GetSiteURL().spec(), std::move(services),
       std::move(frame_services), callback);
 }

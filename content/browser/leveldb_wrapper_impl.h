@@ -24,11 +24,12 @@ class LevelDBWrapperImpl : public LevelDBWrapper {
  public:
   // |no_bindings_callback| will be called when this object has no more
   // bindings.
-  LevelDBWrapperImpl(const std::string& prefix,
+  LevelDBWrapperImpl(leveldb::LevelDBDatabase* database,
+                     const std::string& prefix,
                      const base::Closure& no_bindings_callback);
   ~LevelDBWrapperImpl() override;
 
-  void Bind(mojo::InterfaceRequest<LevelDBWrapper> request);
+  void Bind(LevelDBWrapperRequest request);
 
  private:
   // LevelDBWrapperImpl:
@@ -51,6 +52,7 @@ class LevelDBWrapperImpl : public LevelDBWrapper {
   std::string prefix_;
   mojo::BindingSet<LevelDBWrapper> bindings_;
   base::Closure no_bindings_callback_;
+  leveldb::LevelDBDatabase* database_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBWrapperImpl);
 };

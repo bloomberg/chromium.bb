@@ -1168,7 +1168,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   mojo_ipc_support_.reset(new IPC::ScopedIPCSupport(
       BrowserThread::UnsafeGetMessageLoopForThread(BrowserThread::IO)
           ->task_runner()));
-  mojo_shell_context_.reset(new MojoShellContext);
+  mojo_shell_context_.reset(new MojoShellContext(file_thread_->task_runner(),
+                                                 db_thread_->task_runner()));
 #if defined(OS_MACOSX)
   mojo::edk::SetMachPortProvider(MachBroker::GetInstance());
 #endif  // defined(OS_MACOSX)

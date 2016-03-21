@@ -30,7 +30,7 @@ class DirectoryImpl : public Directory {
   DirectoryImpl(mojo::InterfaceRequest<Directory> request,
                 base::FilePath directory_path,
                 scoped_ptr<base::ScopedTempDir> temp_dir,
-                LockTable* lock_table);
+                scoped_refptr<LockTable> lock_table);
   ~DirectoryImpl() override;
 
   void set_connection_error_handler(const mojo::Closure& error_handler) {
@@ -73,7 +73,7 @@ class DirectoryImpl : public Directory {
   mojo::StrongBinding<Directory> binding_;
   base::FilePath directory_path_;
   scoped_ptr<base::ScopedTempDir> temp_dir_;
-  LockTable* lock_table_;
+  scoped_refptr<LockTable> lock_table_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectoryImpl);
 };

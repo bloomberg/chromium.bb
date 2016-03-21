@@ -519,6 +519,8 @@
       'common/mime_registry_messages.h',
       'common/mojo/channel_init.cc',
       'common/mojo/channel_init.h',
+      'common/mojo/current_thread_loader.cc',
+      'common/mojo/current_thread_loader.h',
       'common/mojo/mojo_messages.h',
       'common/mojo/mojo_shell_connection_impl.cc',
       'common/mojo/mojo_shell_connection_impl.h',

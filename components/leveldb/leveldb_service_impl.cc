@@ -15,15 +15,13 @@
 
 namespace leveldb {
 
-LevelDBServiceImpl::LevelDBServiceImpl()
-    : thread_(new LevelDBFileThread) {
-}
+LevelDBServiceImpl::LevelDBServiceImpl() : thread_(new LevelDBFileThread) {}
 
 LevelDBServiceImpl::~LevelDBServiceImpl() {}
 
 void LevelDBServiceImpl::Open(filesystem::DirectoryPtr directory,
                               const mojo::String& dbname,
-                              mojo::InterfaceRequest<LevelDBDatabase> database,
+                              leveldb::LevelDBDatabaseRequest database,
                               const OpenCallback& callback) {
   // This is the place where we open a database.
   leveldb::Options options;

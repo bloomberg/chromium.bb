@@ -52,7 +52,7 @@ bool FileSystemApp::AcceptConnection(mojo::Connection* connection) {
 void FileSystemApp::Create(mojo::Connection* connection,
                            mojo::InterfaceRequest<FileSystem> request) {
   new FileSystemImpl(connection, std::move(request), GetUserDataDir(),
-                     lock_table_.get());
+                     lock_table_);
 }
 
 void FileSystemApp::ShellConnectionLost() {

@@ -36,7 +36,9 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
  public:
   // If |data_path| is empty, nothing will be saved to disk.
   DOMStorageContextWrapper(
+      const std::string& mojo_user_id,
       const base::FilePath& data_path,
+      const base::FilePath& local_partition_path,
       storage::SpecialStoragePolicy* special_storage_policy);
 
   // DOMStorageContext implementation.
@@ -63,9 +65,8 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
   void Flush();
 
   // See StoragePartitionService interface.
-  void OpenLocalStorage(
-      const url::Origin& origin,
-      mojo::InterfaceRequest<LevelDBWrapper> request);
+  void OpenLocalStorage(const url::Origin& origin,
+                        LevelDBWrapperRequest request);
 
  private:
   friend class DOMStorageMessageFilter;  // for access to context()
@@ -75,12 +76,10 @@ class CONTENT_EXPORT DOMStorageContextWrapper :
   ~DOMStorageContextWrapper() override;
   DOMStorageContextImpl* context() const { return context_.get(); }
 
-  void LevelDBWrapperImplHasNoBindings(const url::Origin& origin);
-
-  // Used for mojo-based LocalStorage implementation (behind
-  // --mojo-local-storage for now). Maps between an origin and its prefixed
-  // LevelDB view.
-  std::map<url::Origin, scoped_ptr<LevelDBWrapperImpl>> level_db_wrappers_;
+  // An inner class to keep all mojo-ish details together and not bleed them
+  // through the public interface.
+  class MojoState;
+  scoped_ptr<MojoState> mojo_state_;
 
   scoped_refptr<DOMStorageContextImpl> context_;
 

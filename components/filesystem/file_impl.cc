@@ -34,22 +34,22 @@ const size_t kMaxReadSize = 1 * 1024 * 1024;  // 1 MB.
 FileImpl::FileImpl(mojo::InterfaceRequest<File> request,
                    const base::FilePath& path,
                    uint32_t flags,
-                   LockTable* lock_table)
+                   scoped_refptr<LockTable> lock_table)
     : binding_(this, std::move(request)),
       file_(path, flags),
       path_(path),
-      lock_table_(lock_table) {
+      lock_table_(std::move(lock_table)) {
   DCHECK(file_.IsValid());
 }
 
 FileImpl::FileImpl(mojo::InterfaceRequest<File> request,
                    const base::FilePath& path,
                    base::File file,
-                   LockTable* lock_table)
+                   scoped_refptr<LockTable> lock_table)
     : binding_(this, std::move(request)),
       file_(std::move(file)),
       path_(path),
-      lock_table_(lock_table) {
+      lock_table_(std::move(lock_table)) {
   DCHECK(file_.IsValid());
 }
 

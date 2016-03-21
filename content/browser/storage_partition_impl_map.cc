@@ -396,12 +396,11 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
   if (it != partitions_.end())
     return it->second;
 
-  base::FilePath partition_path =
-      browser_context_->GetPath().Append(
-          GetStoragePartitionPath(partition_domain, partition_name));
-  StoragePartitionImpl* partition =
-      StoragePartitionImpl::Create(browser_context_, in_memory,
-                                   partition_path);
+  base::FilePath relative_partition_path =
+      GetStoragePartitionPath(partition_domain, partition_name);
+
+  StoragePartitionImpl* partition = StoragePartitionImpl::Create(
+      browser_context_, in_memory, relative_partition_path);
   partitions_[partition_config] = partition;
 
   partition->GetQuotaManager()->SetTemporaryStorageEvictionPolicy(

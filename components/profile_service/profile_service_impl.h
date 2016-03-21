@@ -16,24 +16,28 @@ namespace filesystem {
 class LockTable;
 }
 
+namespace mojo {
+class MessageLoopRef;
+}
+
 namespace profile {
 
 // A service which serves directories to callers.
 class ProfileServiceImpl : public ProfileService {
  public:
-  ProfileServiceImpl(mojo::Connection* connection,
-                     mojo::InterfaceRequest<ProfileService> request,
-                     base::FilePath base_profile_dir,
-                     filesystem::LockTable* lock_table);
+  ProfileServiceImpl(const base::FilePath& base_profile_dir,
+                     const scoped_refptr<filesystem::LockTable>& lock_table);
   ~ProfileServiceImpl() override;
 
   // Overridden from ProfileService:
-  void GetDirectory(
-      mojo::InterfaceRequest<filesystem::Directory> request) override;
+  void GetDirectory(filesystem::DirectoryRequest request,
+                    const GetDirectoryCallback& callback) override;
+  void GetSubDirectory(const mojo::String& sub_directory_path,
+                       filesystem::DirectoryRequest request,
+                       const GetSubDirectoryCallback& callback) override;
 
  private:
-  mojo::StrongBinding<ProfileService> binding_;
-  filesystem::LockTable* lock_table_;
+  scoped_refptr<filesystem::LockTable> lock_table_;
   base::FilePath path_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileServiceImpl);

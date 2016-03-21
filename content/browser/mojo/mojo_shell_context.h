@@ -12,6 +12,7 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "mojo/shell/public/interfaces/connector.mojom.h"
 #include "mojo/shell/shell.h"
@@ -33,7 +34,8 @@ class CONTENT_EXPORT MojoShellContext {
   using StaticApplicationMap =
       std::map<std::string, base::Callback<scoped_ptr<mojo::ShellClient>()>>;
 
-  MojoShellContext();
+  MojoShellContext(scoped_refptr<base::SingleThreadTaskRunner> file_thread,
+                   scoped_refptr<base::SingleThreadTaskRunner> db_thread);
   ~MojoShellContext();
 
   // Connects an application at |name| and gets a handle to its exposed
@@ -41,6 +43,7 @@ class CONTENT_EXPORT MojoShellContext {
   // some Mojo application. May be called from any thread. |requestor_name| is
   // given to the target application as the requestor's name upon connection.
   static void ConnectToApplication(
+      const std::string& user_id,
       const std::string& name,
       const std::string& requestor_name,
       mojo::shell::mojom::InterfaceProviderRequest request,
@@ -54,6 +57,7 @@ class CONTENT_EXPORT MojoShellContext {
   friend class Proxy;
 
   void ConnectToApplicationOnOwnThread(
+      const std::string& user_id,
       const std::string& name,
       const std::string& requestor_name,
       mojo::shell::mojom::InterfaceProviderRequest request,

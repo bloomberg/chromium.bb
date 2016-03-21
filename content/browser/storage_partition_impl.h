@@ -131,15 +131,16 @@ class StoragePartitionImpl : public StoragePartition,
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,
                            RemoveLocalStorageForLastWeek);
 
-  // The |partition_path| is the absolute path to the root of this
-  // StoragePartition's on-disk storage.
+  // |relative_partition_path| is the relative path under |profile_path| to the
+  // StoragePartition's on-disk-storage.
   //
-  // If |in_memory| is true, the |partition_path| is (ab)used as a way of
-  // distinguishing different in-memory partitions, but nothing is persisted
+  // If |in_memory| is true, the |relative_partition_path| is (ab)used as a way
+  // of distinguishing different in-memory partitions, but nothing is persisted
   // on to disk.
-  static StoragePartitionImpl* Create(BrowserContext* context,
-                                      bool in_memory,
-                                      const base::FilePath& profile_path);
+  static StoragePartitionImpl* Create(
+      BrowserContext* context,
+      bool in_memory,
+      const base::FilePath& relative_partition_path);
 
   CONTENT_EXPORT StoragePartitionImpl(
       BrowserContext* browser_context,

@@ -29,7 +29,7 @@ class LevelDBApp : public mojo::ShellClient,
 
   // |InterfaceFactory<LevelDBService>| implementation:
   void Create(mojo::Connection* connection,
-              mojo::InterfaceRequest<LevelDBService> request) override;
+              leveldb::LevelDBServiceRequest request) override;
 
   mojo::TracingImpl tracing_;
   scoped_ptr<LevelDBService> service_;

@@ -14,7 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/rand_util.h"
 #include "build/build_config.h"
-#include "components/profile_service/profile_app.h"
+#include "components/profile_service/user_id_map.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -340,7 +340,7 @@ void BrowserContext::Initialize(
   g_used_user_ids.Get().insert(new_id);
   g_context_to_user_id.Get().push_back(std::make_pair(browser_context, new_id));
 
-  profile::ProfileApp::AssociateMojoUserIDWithProfileDir(new_id, path);
+  profile::AssociateMojoUserIDWithProfileDir(new_id, path);
   browser_context->SetUserData(kMojoWasInitialized,
                                new base::SupportsUserData::Data);
 }

@@ -5,6 +5,7 @@
 module profile;
 
 import "components/filesystem/public/interfaces/directory.mojom";
+import "components/filesystem/public/interfaces/types.mojom";
 
 // An encapsulation around the per-profile storage.
 //
@@ -13,5 +14,10 @@ import "components/filesystem/public/interfaces/directory.mojom";
 // it has access to is the User's profile.
 interface ProfileService {
   // Returns the user profile directory.
-  GetDirectory(filesystem.Directory& dir);
+  GetDirectory(filesystem.Directory& dir) => ();
+
+  // Returns a subdirectory under the profile dir. Returns a filesystem error
+  // when we fail to create the subdirectory.
+  GetSubDirectory(string dir_path, filesystem.Directory& dir)
+      => (filesystem.FileError err);
 };
