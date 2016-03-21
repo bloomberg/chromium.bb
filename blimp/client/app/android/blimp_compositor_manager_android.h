@@ -49,7 +49,7 @@ class BlimpCompositorManagerAndroid : public BlimpCompositorManager {
                          RenderWidgetFeature* render_widget_feature);
 
   // BlimpCompositor implementation.
-  void GenerateLayerTreeSettings(cc::LayerTreeSettings* settings);
+  void GenerateLayerTreeSettings(cc::LayerTreeSettings* settings) override;
 
  private:
   // Used to determine tile size for the compositor's rastered tiles. For a
