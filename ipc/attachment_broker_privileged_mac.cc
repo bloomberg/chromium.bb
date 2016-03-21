@@ -174,8 +174,9 @@ bool AttachmentBrokerPrivilegedMac::RouteWireFormatToAnother(
   // Another process is the destination.
   base::ProcessId dest = wire_format.destination_process;
   base::AutoLock auto_lock(*get_lock());
-  Sender* sender = GetSenderWithProcessId(dest);
-  if (!sender) {
+  AttachmentBrokerPrivileged::EndpointRunnerPair pair =
+      GetSenderWithProcessId(dest);
+  if (!pair.first) {
     // Assuming that this message was not sent from a malicious process, the
     // channel endpoint that would have received this message will block
     // forever.
@@ -186,7 +187,8 @@ bool AttachmentBrokerPrivilegedMac::RouteWireFormatToAnother(
   }
 
   LogError(DESTINATION_FOUND);
-  sender->Send(new AttachmentBrokerMsg_MachPortHasBeenDuplicated(wire_format));
+  SendMessageToEndpoint(
+      pair, new AttachmentBrokerMsg_MachPortHasBeenDuplicated(wire_format));
   return true;
 }
 
@@ -229,7 +231,9 @@ void AttachmentBrokerPrivilegedMac::SendPrecursorsForProcess(
 
   if (!to_self) {
     base::AutoLock auto_lock(*get_lock());
-    if (!GetSenderWithProcessId(pid)) {
+    AttachmentBrokerPrivileged::EndpointRunnerPair pair =
+        GetSenderWithProcessId(pid);
+    if (!pair.first) {
       // If there is no sender, then the destination process is no longer
       // running, or never existed to begin with.
       LogError(DESTINATION_NOT_FOUND);
@@ -319,7 +323,9 @@ void AttachmentBrokerPrivilegedMac::ProcessExtractorsForProcess(
 
   {
     base::AutoLock auto_lock(*get_lock());
-    if (!GetSenderWithProcessId(pid)) {
+    AttachmentBrokerPrivileged::EndpointRunnerPair pair =
+        GetSenderWithProcessId(pid);
+    if (!pair.first) {
       // If there is no sender, then the source process is no longer running.
       LogError(ERROR_SOURCE_NOT_FOUND);
       delete it->second;

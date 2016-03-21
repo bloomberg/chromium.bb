@@ -86,8 +86,9 @@ void AttachmentBrokerPrivilegedWin::RouteDuplicatedHandle(
   // Another process is the destination.
   base::ProcessId dest = wire_format.destination_process;
   base::AutoLock auto_lock(*get_lock());
-  Sender* sender = GetSenderWithProcessId(dest);
-  if (!sender) {
+  AttachmentBrokerPrivileged::EndpointRunnerPair pair =
+      GetSenderWithProcessId(dest);
+  if (!pair.first) {
     // Assuming that this message was not sent from a malicious process, the
     // channel endpoint that would have received this message will block
     // forever.
@@ -98,7 +99,8 @@ void AttachmentBrokerPrivilegedWin::RouteDuplicatedHandle(
   }
 
   LogError(DESTINATION_FOUND);
-  sender->Send(new AttachmentBrokerMsg_WinHandleHasBeenDuplicated(wire_format));
+  SendMessageToEndpoint(
+      pair, new AttachmentBrokerMsg_WinHandleHasBeenDuplicated(wire_format));
 }
 
 AttachmentBrokerPrivilegedWin::HandleWireFormat

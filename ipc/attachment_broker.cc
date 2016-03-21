@@ -81,7 +81,9 @@ void AttachmentBroker::RemoveObserver(AttachmentBroker::Observer* observer) {
     observers_.erase(it);
 }
 
-void AttachmentBroker::RegisterCommunicationChannel(Endpoint* endpoint) {
+void AttachmentBroker::RegisterCommunicationChannel(
+    Endpoint* endpoint,
+    scoped_refptr<base::SingleThreadTaskRunner> runner) {
   NOTREACHED();
 }
 

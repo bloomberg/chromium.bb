@@ -427,7 +427,7 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
   pipe_ = std::move(pipe);
 
   IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      channel_.get());
+      channel_.get(), io_task_runner_);
 
   // Report success if the worker process is lauched directly. Otherwise, PID of
   // the client connected to the pipe will be used later. See

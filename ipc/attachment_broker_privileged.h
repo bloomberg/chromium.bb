@@ -5,9 +5,11 @@
 #ifndef IPC_ATTACHMENT_BROKER_PRIVILEGED_H_
 #define IPC_ATTACHMENT_BROKER_PRIVILEGED_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "ipc/attachment_broker.h"
@@ -48,17 +50,26 @@ class IPC_EXPORT AttachmentBrokerPrivileged : public IPC::AttachmentBroker {
   static void CreateBrokerForSingleProcessTests();
 
   // AttachmentBroker overrides.
-  void RegisterCommunicationChannel(Endpoint* endpoint) override;
+  void RegisterCommunicationChannel(
+      Endpoint* endpoint,
+      scoped_refptr<base::SingleThreadTaskRunner> runner) override;
   void DeregisterCommunicationChannel(Endpoint* endpoint) override;
   bool IsPrivilegedBroker() override;
 
  protected:
+  using EndpointRunnerPair =
+      std::pair<Endpoint*, scoped_refptr<base::SingleThreadTaskRunner>>;
+
   // Returns the sender whose peer's process id is |id|.
   // Returns nullptr if no sender is found.
   // The lock returned by get_lock() must already be acquired before calling
   // this method. The return value is only guaranteed to be valid while the lock
   // is held.
-  Sender* GetSenderWithProcessId(base::ProcessId id);
+  EndpointRunnerPair GetSenderWithProcessId(base::ProcessId id);
+
+  // Sends a message to the endpoint, dispatching onto another thread if
+  // necessary.
+  void SendMessageToEndpoint(EndpointRunnerPair pair, Message* message);
 
   // Errors that can be reported by subclasses.
   // These match tools/metrics/histograms.xml.
@@ -105,7 +116,9 @@ class IPC_EXPORT AttachmentBrokerPrivileged : public IPC::AttachmentBroker {
   void LogError(UMAError error);
 
  private:
-  std::vector<Endpoint*> endpoints_;
+  // A vector of Endpoints, and the SingleThreadTaskRunner that should be used
+  // to invoke Send() on each Endpoint.
+  std::vector<EndpointRunnerPair> endpoints_;
   DISALLOW_COPY_AND_ASSIGN(AttachmentBrokerPrivileged);
 };
 

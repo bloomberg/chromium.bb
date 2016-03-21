@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/hash.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/numerics/safe_math.h"
 #include "base/path_service.h"
@@ -136,7 +137,7 @@ std::string ChildProcessHostImpl::CreateChannel() {
     return std::string();
 #if USE_ATTACHMENT_BROKER
   IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      channel_.get());
+      channel_.get(), base::MessageLoopForIO::current()->task_runner());
 #endif
 
   for (size_t i = 0; i < filters_.size(); ++i)

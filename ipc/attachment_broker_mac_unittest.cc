@@ -563,7 +563,7 @@ int CommonPrivilegedProcessMain(OnMessageReceivedCallback callback,
 
   scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
       IPCTestBase::GetChannelName(channel_name), &listener));
-  globals->broker->RegisterCommunicationChannel(channel.get());
+  globals->broker->RegisterCommunicationChannel(channel.get(), nullptr);
   CHECK(channel->Connect());
 
   globals->initial_resident_size = GetResidentSize();

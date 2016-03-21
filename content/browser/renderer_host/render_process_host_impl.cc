@@ -130,6 +130,7 @@
 #include "content/common/view_messages.h"
 #include "content/gpu/gpu_host_messages.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigator_connect_context.h"
 #include "content/public/browser/notification_service.h"
@@ -731,7 +732,8 @@ bool RenderProcessHostImpl::Init() {
   channel_ = CreateChannelProxy(channel_id);
 #if USE_ATTACHMENT_BROKER
   IPC::AttachmentBroker::GetGlobal()->RegisterCommunicationChannel(
-      channel_.get());
+      channel_.get(), content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::IO));
 #endif
 
   // Setup the Mojo channel.

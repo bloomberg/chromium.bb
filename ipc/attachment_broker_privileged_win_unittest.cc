@@ -506,7 +506,7 @@ int CommonPrivilegedProcessMain(OnMessageReceivedCallback callback,
   IPC::AttachmentBrokerPrivilegedWin broker;
   scoped_ptr<IPC::Channel> channel(IPC::Channel::CreateClient(
       IPCTestBase::GetChannelName(channel_name), &listener));
-  broker.RegisterCommunicationChannel(channel.get());
+  broker.RegisterCommunicationChannel(channel.get(), nullptr);
   CHECK(channel->Connect());
 
   while (true) {
