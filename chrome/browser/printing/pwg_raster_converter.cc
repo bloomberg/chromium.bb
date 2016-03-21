@@ -167,7 +167,7 @@ void PwgUtilityProcessHostClient::Convert(
   BrowserThread::PostTaskAndReply(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&FileHandlers::Init, base::Unretained(files_.get()),
-                 make_scoped_refptr(data)),
+                 base::RetainedRef(data)),
       base::Bind(&PwgUtilityProcessHostClient::OnFilesReadyOnUIThread, this));
 }
 

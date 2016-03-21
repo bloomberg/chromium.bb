@@ -211,7 +211,7 @@ TYPED_TEST_P(SequencedTaskRunnerTest, NonNestablePostFromNonNestableTask) {
     Closure task = Bind(
         &internal::SequencedTaskTracker::PostNonNestableTasks,
         this->task_tracker_,
-        task_runner,
+        RetainedRef(task_runner),
         kChildrenPerParent);
     this->task_tracker_->PostWrappedNonNestableTask(task_runner.get(), task);
   }

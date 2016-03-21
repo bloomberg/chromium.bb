@@ -621,13 +621,11 @@ void ServiceWorkerContextClient::postMessageToClient(
   // to overtake those messages.
   scoped_ptr<blink::WebMessagePortChannelArray> channel_array(channels);
   main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SendPostMessageToClientOnMainThread,
-                 sender_,
-                 GetRoutingID(),
-                 base::UTF16ToUTF8(base::StringPiece16(uuid)),
-                 static_cast<base::string16>(message),
-                 base::Passed(&channel_array)));
+      FROM_HERE, base::Bind(&SendPostMessageToClientOnMainThread,
+                            base::RetainedRef(sender_), GetRoutingID(),
+                            base::UTF16ToUTF8(base::StringPiece16(uuid)),
+                            static_cast<base::string16>(message),
+                            base::Passed(&channel_array)));
 }
 
 void ServiceWorkerContextClient::postMessageToCrossOriginClient(
@@ -640,11 +638,10 @@ void ServiceWorkerContextClient::postMessageToCrossOriginClient(
   // to overtake those messages.
   scoped_ptr<blink::WebMessagePortChannelArray> channel_array(channels);
   main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&SendCrossOriginMessageToClientOnMainThread,
-                 sender_, client.clientID,
-                 static_cast<base::string16>(message),
-                 base::Passed(&channel_array)));
+      FROM_HERE, base::Bind(&SendCrossOriginMessageToClientOnMainThread,
+                            base::RetainedRef(sender_), client.clientID,
+                            static_cast<base::string16>(message),
+                            base::Passed(&channel_array)));
 }
 
 void ServiceWorkerContextClient::focus(

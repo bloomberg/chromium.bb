@@ -598,8 +598,9 @@ TEST_F(RendererSchedulerImplTest, TestRentrantTask) {
   int count = 0;
   std::vector<int> run_order;
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(AppendToVectorReentrantTask, default_task_runner_,
-                            &run_order, &count, 5));
+      FROM_HERE, base::Bind(AppendToVectorReentrantTask,
+                            base::RetainedRef(default_task_runner_), &run_order,
+                            &count, 5));
   RunUntilIdle();
 
   EXPECT_THAT(run_order, testing::ElementsAre(0, 1, 2, 3, 4));
@@ -644,8 +645,8 @@ TEST_F(RendererSchedulerImplTest, TestRepostingIdleTask) {
 
   max_idle_task_reposts = 2;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
+      FROM_HERE, base::Bind(&RepostingIdleTestTask,
+                            base::RetainedRef(idle_task_runner_), &run_count));
   EnableIdleTasks();
   RunUntilIdle();
   EXPECT_EQ(1, run_count);
@@ -1427,8 +1428,8 @@ TEST_F(RendererSchedulerImplTest, TestShouldYield) {
 
   default_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PostingYieldingTestTask, scheduler_.get(),
-                            default_task_runner_, false, &should_yield_before,
-                            &should_yield_after));
+                            base::RetainedRef(default_task_runner_), false,
+                            &should_yield_before, &should_yield_after));
   RunUntilIdle();
   // Posting to default runner shouldn't cause yielding.
   EXPECT_FALSE(should_yield_before);
@@ -1436,7 +1437,7 @@ TEST_F(RendererSchedulerImplTest, TestShouldYield) {
 
   default_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PostingYieldingTestTask, scheduler_.get(),
-                            compositor_task_runner_, false,
+                            base::RetainedRef(compositor_task_runner_), false,
                             &should_yield_before, &should_yield_after));
   RunUntilIdle();
   // Posting while not mainthread scrolling shouldn't cause yielding.
@@ -1445,8 +1446,8 @@ TEST_F(RendererSchedulerImplTest, TestShouldYield) {
 
   default_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PostingYieldingTestTask, scheduler_.get(),
-                            compositor_task_runner_, true, &should_yield_before,
-                            &should_yield_after));
+                            base::RetainedRef(compositor_task_runner_), true,
+                            &should_yield_before, &should_yield_after));
   RunUntilIdle();
   // We should be able to switch to compositor priority mid-task.
   EXPECT_FALSE(should_yield_before);
@@ -1831,9 +1832,10 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodRepeating) {
   base::TimeTicks clock_before(clock_->NowTicks());
   base::TimeDelta idle_task_runtime(base::TimeDelta::FromMilliseconds(10));
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingUpdateClockIdleTestTask,
-                            idle_task_runner_, &run_count, clock_.get(),
-                            idle_task_runtime, &actual_deadlines));
+      FROM_HERE,
+      base::Bind(&RepostingUpdateClockIdleTestTask,
+                 base::RetainedRef(idle_task_runner_), &run_count, clock_.get(),
+                 idle_task_runtime, &actual_deadlines));
   scheduler_->BeginFrameNotExpectedSoon();
   RunUntilIdle();
   EXPECT_EQ(3, run_count);
@@ -1849,9 +1851,10 @@ TEST_F(RendererSchedulerImplTest, TestLongIdlePeriodRepeating) {
   // new BeginMainFrame.
   max_idle_task_reposts = 5;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingUpdateClockIdleTestTask,
-                            idle_task_runner_, &run_count, clock_.get(),
-                            idle_task_runtime, &actual_deadlines));
+      FROM_HERE,
+      base::Bind(&RepostingUpdateClockIdleTestTask,
+                 base::RetainedRef(idle_task_runner_), &run_count, clock_.get(),
+                 idle_task_runtime, &actual_deadlines));
   idle_task_runner_->PostIdleTask(
       FROM_HERE, base::Bind(&WillBeginFrameIdleTask,
                             base::Unretained(scheduler_.get()), clock_.get()));
@@ -1980,8 +1983,8 @@ TEST_F(RendererSchedulerImplTest, TestRendererHiddenIdlePeriod) {
 
   max_idle_task_reposts = 2;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
+      FROM_HERE, base::Bind(&RepostingIdleTestTask,
+                            base::RetainedRef(idle_task_runner_), &run_count));
 
   // Renderer should start in visible state.
   RunUntilIdle();
@@ -1998,8 +2001,8 @@ TEST_F(RendererSchedulerImplTest, TestRendererHiddenIdlePeriod) {
   // idle tasks when hidden (plus some slack) - idle period should have ended.
   max_idle_task_reposts = 3;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE,
-      base::Bind(&RepostingIdleTestTask, idle_task_runner_, &run_count));
+      FROM_HERE, base::Bind(&RepostingIdleTestTask,
+                            base::RetainedRef(idle_task_runner_), &run_count));
   clock_->Advance(end_idle_when_hidden_delay() +
                   base::TimeDelta::FromMilliseconds(10));
   RunUntilIdle();

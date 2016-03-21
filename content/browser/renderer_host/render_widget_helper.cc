@@ -123,7 +123,7 @@ void RenderWidgetHelper::CreateNewWindow(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&RenderWidgetHelper::OnCreateWindowOnUI, this, params,
                  *route_id, *main_frame_route_id, *main_frame_widget_route_id,
-                 make_scoped_refptr(session_storage_namespace)));
+                 base::RetainedRef(session_storage_namespace)));
 }
 
 void RenderWidgetHelper::OnCreateWindowOnUI(

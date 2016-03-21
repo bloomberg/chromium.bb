@@ -210,7 +210,8 @@ IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest, ConfirmCacheInformationPlumbed) {
           GetRequestContextForRenderProcess(renderer_id);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&InterceptNetworkTransactions, url_request_context_getter,
+      base::Bind(&InterceptNetworkTransactions,
+                 base::RetainedRef(url_request_context_getter),
                  net::ERR_FAILED));
 
   // An error results in one completed navigation.
@@ -226,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(RenderViewBrowserTest, ConfirmCacheInformationPlumbed) {
   scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&ClearCache, url_request_context_getter,
+      base::Bind(&ClearCache, base::RetainedRef(url_request_context_getter),
                  runner->QuitClosure()));
   runner->Run();
 

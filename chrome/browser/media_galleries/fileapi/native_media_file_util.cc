@@ -135,7 +135,7 @@ void NativeMediaFileUtil::CreateOrOpen(
   CreateSnapshotFile(
       std::move(context), url,
       base::Bind(&NativeMediaFileUtil::CreatedSnapshotFileForCreateOrOpen,
-                 task_runner, file_flags, callback));
+                 base::RetainedRef(task_runner), file_flags, callback));
 }
 
 void NativeMediaFileUtil::EnsureFileExists(

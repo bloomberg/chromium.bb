@@ -72,7 +72,7 @@ void ChromeNetBenchmarkingMessageFilter::OnClearCache(IPC::Message* reply_msg) {
       http_transaction_factory()->GetCache()->GetCurrentBackend();
   if (backend) {
     net::CompletionCallback callback =
-        base::Bind(&ClearCacheCallback, make_scoped_refptr(this), reply_msg);
+        base::Bind(&ClearCacheCallback, base::RetainedRef(this), reply_msg);
     rv = backend->DoomAllEntries(callback);
     if (rv == net::ERR_IO_PENDING) {
       // The callback will send the reply.

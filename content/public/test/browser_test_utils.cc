@@ -781,8 +781,8 @@ std::string GetCookies(BrowserContext* browser_context, const GURL& url) {
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&GetCookiesOnIOThread, url,
-                 make_scoped_refptr(context_getter), &event, &cookies));
+      base::Bind(&GetCookiesOnIOThread, url, base::RetainedRef(context_getter),
+                 &event, &cookies));
   event.Wait();
   return cookies;
 }
@@ -798,7 +798,7 @@ bool SetCookie(BrowserContext* browser_context,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SetCookieOnIOThread, url, value,
-                 make_scoped_refptr(context_getter), &event, &result));
+                 base::RetainedRef(context_getter), &event, &result));
   event.Wait();
   return result;
 }

@@ -515,12 +515,11 @@ void ServiceWorkerProviderHost::SendSetVersionAttributesMessage(
     return;
 
   if (!IsReadyToSendMessages()) {
-    queued_events_.push_back(
-        base::Bind(&ServiceWorkerProviderHost::SendSetVersionAttributesMessage,
-                   AsWeakPtr(), registration_handle_id, changed_mask,
-                   make_scoped_refptr(installing_version),
-                   make_scoped_refptr(waiting_version),
-                   make_scoped_refptr(active_version)));
+    queued_events_.push_back(base::Bind(
+        &ServiceWorkerProviderHost::SendSetVersionAttributesMessage,
+        AsWeakPtr(), registration_handle_id, changed_mask,
+        base::RetainedRef(installing_version),
+        base::RetainedRef(waiting_version), base::RetainedRef(active_version)));
     return;
   }
 

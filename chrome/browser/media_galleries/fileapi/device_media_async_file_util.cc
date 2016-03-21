@@ -223,11 +223,9 @@ void OnSnapshotFileCreatedRunTask(
   }
   delegate->CreateSnapshotFile(
       url.path(),  // device file path
-      snapshot_file_path,
-      base::Bind(&OnDidCreateSnapshotFile,
-                 callback,
-                 make_scoped_refptr(context->task_runner()),
-                 validate_media_files),
+      snapshot_file_path, base::Bind(&OnDidCreateSnapshotFile, callback,
+                                     base::RetainedRef(context->task_runner()),
+                                     validate_media_files),
       base::Bind(&OnCreateSnapshotFileError, callback));
 }
 
@@ -319,7 +317,7 @@ void DeviceMediaAsyncFileUtil::CreateOrOpen(
   CreateSnapshotFile(
       std::move(context), url,
       base::Bind(&NativeMediaFileUtil::CreatedSnapshotFileForCreateOrOpen,
-                 make_scoped_refptr(context->task_runner()), file_flags,
+                 base::RetainedRef(context->task_runner()), file_flags,
                  callback));
 }
 
@@ -366,14 +364,12 @@ void DeviceMediaAsyncFileUtil::GetFileInfo(
     OnGetFileInfoError(callback, base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
-  delegate->GetFileInfo(
-      url.path(),
-      base::Bind(&DeviceMediaAsyncFileUtil::OnDidGetFileInfo,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 make_scoped_refptr(context->task_runner()),
-                 url.path(),
-                 callback),
-      base::Bind(&OnGetFileInfoError, callback));
+  delegate->GetFileInfo(url.path(),
+                        base::Bind(&DeviceMediaAsyncFileUtil::OnDidGetFileInfo,
+                                   weak_ptr_factory_.GetWeakPtr(),
+                                   base::RetainedRef(context->task_runner()),
+                                   url.path(), callback),
+                        base::Bind(&OnGetFileInfoError, callback));
 }
 
 void DeviceMediaAsyncFileUtil::ReadDirectory(
@@ -391,8 +387,7 @@ void DeviceMediaAsyncFileUtil::ReadDirectory(
       url.path(),
       base::Bind(&DeviceMediaAsyncFileUtil::OnDidReadDirectory,
                  weak_ptr_factory_.GetWeakPtr(),
-                 make_scoped_refptr(context->task_runner()),
-                 callback),
+                 base::RetainedRef(context->task_runner()), callback),
       base::Bind(&OnReadDirectoryError, callback));
 }
 

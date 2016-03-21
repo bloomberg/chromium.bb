@@ -87,7 +87,7 @@ void ServiceWorkerRegisterJob::AddCallback(
   }
   RunSoon(base::Bind(callback, promise_resolved_status_,
                      promise_resolved_status_message_,
-                     promise_resolved_registration_));
+                     base::RetainedRef(promise_resolved_registration_)));
 }
 
 void ServiceWorkerRegisterJob::Start() {

@@ -348,8 +348,9 @@ TEST_F(IdleHelperTest, TestRepostingIdleTask) {
 
   max_idle_task_reposts = 2;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingIdleTestTask, idle_task_runner_,
-                            &run_count, &actual_deadline));
+      FROM_HERE,
+      base::Bind(&RepostingIdleTestTask, base::RetainedRef(idle_task_runner_),
+                 &run_count, &actual_deadline));
   idle_helper_->StartIdlePeriod(
       IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->NowTicks(),
       clock_->NowTicks() + base::TimeDelta::FromMilliseconds(10));
@@ -670,9 +671,10 @@ TEST_F(IdleHelperTestWithIdlePeriodObserver, TestLongIdlePeriodRepeating) {
   base::TimeTicks clock_before(clock_->NowTicks());
   base::TimeDelta idle_task_runtime(base::TimeDelta::FromMilliseconds(10));
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingUpdateClockIdleTestTask,
-                            idle_task_runner_, &run_count, clock_.get(),
-                            idle_task_runtime, &actual_deadlines));
+      FROM_HERE,
+      base::Bind(&RepostingUpdateClockIdleTestTask,
+                 base::RetainedRef(idle_task_runner_), &run_count, clock_.get(),
+                 idle_task_runtime, &actual_deadlines));
 
   // Check each idle task runs in their own idle period.
   idle_helper_->EnableLongIdlePeriod();
@@ -688,9 +690,10 @@ TEST_F(IdleHelperTestWithIdlePeriodObserver, TestLongIdlePeriodRepeating) {
 
   max_idle_task_reposts = 5;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingUpdateClockIdleTestTask,
-                            idle_task_runner_, &run_count, clock_.get(),
-                            idle_task_runtime, &actual_deadlines));
+      FROM_HERE,
+      base::Bind(&RepostingUpdateClockIdleTestTask,
+                 base::RetainedRef(idle_task_runner_), &run_count, clock_.get(),
+                 idle_task_runtime, &actual_deadlines));
   idle_task_runner_->PostIdleTask(
       FROM_HERE,
       base::Bind(&EndIdlePeriodIdleTask, base::Unretained(idle_helper_.get())));
@@ -786,9 +789,10 @@ TEST_F(IdleHelperTest, TestLongIdlePeriodImmediatelyRestartsIfMaxDeadline) {
   // they have max deadlines.
   max_idle_task_reposts = 2;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingUpdateClockIdleTestTask,
-                            idle_task_runner_, &run_count, clock_.get(),
-                            idle_task_runtime, &actual_deadlines));
+      FROM_HERE,
+      base::Bind(&RepostingUpdateClockIdleTestTask,
+                 base::RetainedRef(idle_task_runner_), &run_count, clock_.get(),
+                 idle_task_runtime, &actual_deadlines));
 
   idle_helper_->EnableLongIdlePeriod();
   RunUntilIdle();
@@ -816,8 +820,9 @@ TEST_F(IdleHelperTest, TestLongIdlePeriodRestartWaitsIfNotMaxDeadline) {
 
   max_idle_task_reposts = 2;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingIdleTestTask, idle_task_runner_,
-                            &run_count, &actual_deadline));
+      FROM_HERE,
+      base::Bind(&RepostingIdleTestTask, base::RetainedRef(idle_task_runner_),
+                 &run_count, &actual_deadline));
   idle_helper_->EnableLongIdlePeriod();
   RunUntilIdle();
   EXPECT_EQ(1, run_count);
@@ -857,9 +862,10 @@ TEST_F(IdleHelperTest, TestLongIdlePeriodPaused) {
   base::TimeTicks clock_before(clock_->NowTicks());
   base::TimeDelta idle_task_runtime(base::TimeDelta::FromMilliseconds(10));
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingUpdateClockIdleTestTask,
-                            idle_task_runner_, &run_count, clock_.get(),
-                            idle_task_runtime, &actual_deadlines));
+      FROM_HERE,
+      base::Bind(&RepostingUpdateClockIdleTestTask,
+                 base::RetainedRef(idle_task_runner_), &run_count, clock_.get(),
+                 idle_task_runtime, &actual_deadlines));
   RunUntilIdle();
   EXPECT_EQ(2, run_count);
   EXPECT_THAT(
@@ -1003,8 +1009,9 @@ TEST_F(IdleHelperWithQuiescencePeriodTest,
   int run_count = 0;
   max_idle_task_reposts = 1;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingIdleTestTask, idle_task_runner_,
-                            &run_count, &actual_deadline));
+      FROM_HERE,
+      base::Bind(&RepostingIdleTestTask, base::RetainedRef(idle_task_runner_),
+                 &run_count, &actual_deadline));
 
   idle_helper_->EnableLongIdlePeriod();
   RunUntilIdle();
@@ -1024,8 +1031,9 @@ TEST_F(IdleHelperWithQuiescencePeriodTestWithIdlePeriodObserver,
   int run_count = 0;
   max_idle_task_reposts = 1;
   idle_task_runner_->PostIdleTask(
-      FROM_HERE, base::Bind(&RepostingIdleTestTask, idle_task_runner_,
-                            &run_count, &actual_deadline));
+      FROM_HERE,
+      base::Bind(&RepostingIdleTestTask, base::RetainedRef(idle_task_runner_),
+                 &run_count, &actual_deadline));
 
   idle_helper_->EnableLongIdlePeriod();
   RunUntilIdle();

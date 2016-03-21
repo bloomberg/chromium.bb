@@ -674,15 +674,11 @@ void ServiceWorkerContextWrapper::InitInternal(
     storage::SpecialStoragePolicy* special_storage_policy) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(&ServiceWorkerContextWrapper::InitInternal,
-                   this,
-                   user_data_directory,
-                   base::Passed(&database_task_manager),
-                   disk_cache_thread,
-                   make_scoped_refptr(quota_manager_proxy),
-                   make_scoped_refptr(special_storage_policy)));
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ServiceWorkerContextWrapper::InitInternal, this,
+                   user_data_directory, base::Passed(&database_task_manager),
+                   disk_cache_thread, base::RetainedRef(quota_manager_proxy),
+                   base::RetainedRef(special_storage_policy)));
     return;
   }
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/477117 is fixed.

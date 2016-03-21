@@ -1159,11 +1159,13 @@ void RTCPeerConnectionHandler::setLocalDescription(
           weak_factory_.GetWeakPtr(), peer_connection_tracker_,
           PeerConnectionTracker::ACTION_SET_LOCAL_DESCRIPTION));
 
-  signaling_thread()->PostTask(FROM_HERE,
-      base::Bind(&RunClosureWithTrace,
+  signaling_thread()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &RunClosureWithTrace,
           base::Bind(&webrtc::PeerConnectionInterface::SetLocalDescription,
-              native_peer_connection_, set_request,
-              base::Unretained(native_desc)),
+                     native_peer_connection_, base::RetainedRef(set_request),
+                     base::Unretained(native_desc)),
           "SetLocalDescription"));
 }
 
@@ -1210,11 +1212,13 @@ void RTCPeerConnectionHandler::setRemoteDescription(
           base::ThreadTaskRunnerHandle::Get(), request,
           weak_factory_.GetWeakPtr(), peer_connection_tracker_,
           PeerConnectionTracker::ACTION_SET_REMOTE_DESCRIPTION));
-  signaling_thread()->PostTask(FROM_HERE,
-      base::Bind(&RunClosureWithTrace,
+  signaling_thread()->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &RunClosureWithTrace,
           base::Bind(&webrtc::PeerConnectionInterface::SetRemoteDescription,
-              native_peer_connection_, set_request,
-              base::Unretained(native_desc)),
+                     native_peer_connection_, base::RetainedRef(set_request),
+                     base::Unretained(native_desc)),
           "SetRemoteDescription"));
 }
 

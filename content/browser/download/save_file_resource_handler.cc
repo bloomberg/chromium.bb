@@ -85,7 +85,7 @@ bool SaveFileResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&SaveFileManager::UpdateSaveProgress, save_manager_,
-                 save_item_id_, buffer, bytes_read));
+                 save_item_id_, base::RetainedRef(buffer), bytes_read));
   return true;
 }
 

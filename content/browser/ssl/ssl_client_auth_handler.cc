@@ -45,7 +45,7 @@ class ClientCertificateDelegateImpl : public ClientCertificateDelegate {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SSLClientAuthHandler::ContinueWithCertificate, handler_,
-                   make_scoped_refptr(cert)));
+                   base::RetainedRef(cert)));
   }
 
  private:
@@ -178,8 +178,7 @@ void SSLClientAuthHandler::DidGetClientCerts() {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SSLClientAuthHandler::ContinueWithCertificate,
-                   weak_factory_.GetWeakPtr(),
-                   scoped_refptr<net::X509Certificate>()));
+                   weak_factory_.GetWeakPtr(), nullptr));
     return;
   }
 
@@ -198,7 +197,7 @@ void SSLClientAuthHandler::DidGetClientCerts() {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&SelectCertificateOnUIThread, render_process_host_id,
-                 render_frame_host_id, cert_request_info_,
+                 render_frame_host_id, base::RetainedRef(cert_request_info_),
                  weak_factory_.GetWeakPtr()));
 }
 

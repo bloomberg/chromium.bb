@@ -131,9 +131,10 @@ CancelableTaskTracker::TaskId CancelableTaskTracker::NewTrackedTaskId(
 
   // Will always run |untrack_and_delete_flag| on current MessageLoop.
   base::ScopedClosureRunner* untrack_and_delete_flag_runner =
-      new base::ScopedClosureRunner(Bind(&RunOrPostToTaskRunner,
-                                         base::ThreadTaskRunnerHandle::Get(),
-                                         untrack_and_delete_flag));
+      new base::ScopedClosureRunner(
+          Bind(&RunOrPostToTaskRunner,
+               RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+               untrack_and_delete_flag));
 
   *is_canceled_cb =
       Bind(&IsCanceled, flag, base::Owned(untrack_and_delete_flag_runner));

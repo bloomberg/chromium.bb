@@ -209,9 +209,9 @@ TEST_F(TaskQueueManagerTest, NonNestableTaskDoesntExecuteInNestedLoop) {
       std::make_pair(base::Bind(&TestTask, 5, &run_order), true));
 
   runners_[0]->PostTask(
-      FROM_HERE,
-      base::Bind(&PostFromNestedRunloop, message_loop_.get(), runners_[0],
-                 base::Unretained(&tasks_to_post_from_nested_loop)));
+      FROM_HERE, base::Bind(&PostFromNestedRunloop, message_loop_.get(),
+                            base::RetainedRef(runners_[0]),
+                            base::Unretained(&tasks_to_post_from_nested_loop)));
 
   message_loop_->RunUntilIdle();
   // Note we expect task 3 to run last because it's non-nestable.
@@ -617,9 +617,9 @@ TEST_F(TaskQueueManagerTest, PostFromNestedRunloop) {
 
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 0, &run_order));
   runners_[0]->PostTask(
-      FROM_HERE,
-      base::Bind(&PostFromNestedRunloop, message_loop_.get(), runners_[0],
-                 base::Unretained(&tasks_to_post_from_nested_loop)));
+      FROM_HERE, base::Bind(&PostFromNestedRunloop, message_loop_.get(),
+                            base::RetainedRef(runners_[0]),
+                            base::Unretained(&tasks_to_post_from_nested_loop)));
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 2, &run_order));
 
   message_loop_->RunUntilIdle();
@@ -1196,10 +1196,10 @@ TEST_F(TaskQueueManagerTest, QuitWhileNested) {
 
   bool was_nested = true;
   base::RunLoop run_loop;
-  runners_[0]->PostTask(
-      FROM_HERE,
-      base::Bind(&PostAndQuitFromNestedRunloop, base::Unretained(&run_loop),
-                 runners_[0], base::Unretained(&was_nested)));
+  runners_[0]->PostTask(FROM_HERE, base::Bind(&PostAndQuitFromNestedRunloop,
+                                              base::Unretained(&run_loop),
+                                              base::RetainedRef(runners_[0]),
+                                              base::Unretained(&was_nested)));
 
   message_loop_->RunUntilIdle();
   EXPECT_FALSE(was_nested);
@@ -1456,9 +1456,9 @@ TEST_F(TaskQueueManagerTest, UnregisterTaskQueueInNestedLoop) {
                                 base::Unretained(task_queue.get())),
                      true));
   runners_[0]->PostTask(
-      FROM_HERE,
-      base::Bind(&PostFromNestedRunloop, message_loop_.get(), runners_[0],
-                 base::Unretained(&tasks_to_post_from_nested_loop)));
+      FROM_HERE, base::Bind(&PostFromNestedRunloop, message_loop_.get(),
+                            base::RetainedRef(runners_[0]),
+                            base::Unretained(&tasks_to_post_from_nested_loop)));
   message_loop_->RunUntilIdle();
 
   // Add a final call to HasOneRefTask.  This gives the manager a chance to

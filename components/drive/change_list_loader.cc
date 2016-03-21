@@ -544,18 +544,15 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
   loader_controller_->ScheduleRun(base::Bind(
       base::IgnoreResult(
           &base::PostTaskAndReplyWithResult<FileError, FileError>),
-      blocking_task_runner_,
-      FROM_HERE,
+      base::RetainedRef(blocking_task_runner_), FROM_HERE,
       base::Bind(&ChangeListProcessor::Apply,
                  base::Unretained(change_list_processor),
-                 base::Passed(&about_resource),
-                 base::Passed(&change_lists),
+                 base::Passed(&about_resource), base::Passed(&change_lists),
                  is_delta_update),
       base::Bind(&ChangeListLoader::LoadChangeListFromServerAfterUpdate,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Owned(change_list_processor),
-                 should_notify_changed_directories,
-                 base::Time::Now())));
+                 should_notify_changed_directories, base::Time::Now())));
 }
 
 void ChangeListLoader::LoadChangeListFromServerAfterUpdate(

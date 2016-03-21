@@ -140,7 +140,7 @@ void CertificateReportingTest::SetUpMockReporter() {
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(SetMockReporter, safe_browsing_service,
+      base::Bind(SetMockReporter, base::RetainedRef(safe_browsing_service),
                  base::Passed(scoped_ptr<certificate_reporting::ErrorReporter>(
                      reporter_))));
 }

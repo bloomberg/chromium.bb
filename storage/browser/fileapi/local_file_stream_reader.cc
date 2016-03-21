@@ -43,8 +43,8 @@ int LocalFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
   if (stream_impl_)
     return stream_impl_->Read(buf, buf_len, callback);
   return Open(base::Bind(&LocalFileStreamReader::DidOpenForRead,
-                         weak_factory_.GetWeakPtr(),
-                         make_scoped_refptr(buf), buf_len, callback));
+                         weak_factory_.GetWeakPtr(), base::RetainedRef(buf),
+                         buf_len, callback));
 }
 
 int64_t LocalFileStreamReader::GetLength(

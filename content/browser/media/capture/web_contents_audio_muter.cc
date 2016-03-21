@@ -133,11 +133,10 @@ void WebContentsAudioMuter::StartMuting() {
     return;
   is_muting_ = true;
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&AudioMirroringManager::StartMirroring,
                  base::Unretained(AudioMirroringManager::GetInstance()),
-                 destination_));
+                 base::RetainedRef(destination_)));
 }
 
 void WebContentsAudioMuter::StopMuting() {
@@ -146,11 +145,10 @@ void WebContentsAudioMuter::StopMuting() {
     return;
   is_muting_ = false;
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&AudioMirroringManager::StopMirroring,
                  base::Unretained(AudioMirroringManager::GetInstance()),
-                 destination_));
+                 base::RetainedRef(destination_)));
 }
 
 }  // namespace content

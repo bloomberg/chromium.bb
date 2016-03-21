@@ -627,15 +627,10 @@ void MTPDeviceDelegateImplLinux::ReadBytes(
     const ErrorCallback& error_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!device_file_path.empty());
-  base::Closure closure =
-      base::Bind(&MTPDeviceDelegateImplLinux::ReadBytesInternal,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 device_file_path,
-                 buf,
-                 offset,
-                 buf_len,
-                 success_callback,
-                 error_callback);
+  base::Closure closure = base::Bind(
+      &MTPDeviceDelegateImplLinux::ReadBytesInternal,
+      weak_ptr_factory_.GetWeakPtr(), device_file_path, base::RetainedRef(buf),
+      offset, buf_len, success_callback, error_callback);
   EnsureInitAndRunTask(PendingTaskInfo(device_file_path,
                                        content::BrowserThread::IO,
                                        FROM_HERE,

@@ -412,8 +412,7 @@ bool TracingControllerImpl::GetTraceBufferUsage(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&TracingControllerImpl::OnTraceLogStatusReply,
-                 base::Unretained(this), scoped_refptr<TraceMessageFilter>(),
-                 status));
+                 base::Unretained(this), nullptr, status));
 
   // Notify all child processes.
   for (TraceMessageFilterSet::iterator it = trace_message_filters_.begin();
@@ -470,10 +469,11 @@ bool TracingControllerImpl::IsTracing() const {
 void TracingControllerImpl::AddTraceMessageFilter(
     TraceMessageFilter* trace_message_filter) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         base::Bind(&TracingControllerImpl::AddTraceMessageFilter,
                    base::Unretained(this),
-                   make_scoped_refptr(trace_message_filter)));
+                   base::RetainedRef(trace_message_filter)));
     return;
   }
 
@@ -501,10 +501,11 @@ void TracingControllerImpl::AddTraceMessageFilter(
 void TracingControllerImpl::RemoveTraceMessageFilter(
     TraceMessageFilter* trace_message_filter) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
         base::Bind(&TracingControllerImpl::RemoveTraceMessageFilter,
                    base::Unretained(this),
-                   make_scoped_refptr(trace_message_filter)));
+                   base::RetainedRef(trace_message_filter)));
     return;
   }
 
@@ -520,10 +521,11 @@ void TracingControllerImpl::RemoveTraceMessageFilter(
     TraceMessageFilterSet::const_iterator it =
         pending_stop_tracing_filters_.find(trace_message_filter);
     if (it != pending_stop_tracing_filters_.end()) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
           base::Bind(&TracingControllerImpl::OnStopTracingAcked,
                      base::Unretained(this),
-                     make_scoped_refptr(trace_message_filter),
+                     base::RetainedRef(trace_message_filter),
                      std::vector<std::string>()));
     }
   }
@@ -535,7 +537,7 @@ void TracingControllerImpl::RemoveTraceMessageFilter(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&TracingControllerImpl::OnTraceLogStatusReply,
                      base::Unretained(this),
-                     make_scoped_refptr(trace_message_filter),
+                     base::RetainedRef(trace_message_filter),
                      base::trace_event::TraceLogStatus()));
     }
   }
@@ -547,7 +549,7 @@ void TracingControllerImpl::RemoveTraceMessageFilter(
           BrowserThread::UI, FROM_HERE,
           base::Bind(&TracingControllerImpl::OnProcessMemoryDumpResponse,
                      base::Unretained(this),
-                     make_scoped_refptr(trace_message_filter),
+                     base::RetainedRef(trace_message_filter),
                      pending_memory_dump_guid_, false /* success */));
     }
   }
@@ -605,11 +607,11 @@ void TracingControllerImpl::OnStopTracingAcked(
     TraceMessageFilter* trace_message_filter,
     const std::vector<std::string>& known_category_groups) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-        base::Bind(&TracingControllerImpl::OnStopTracingAcked,
-                   base::Unretained(this),
-                   make_scoped_refptr(trace_message_filter),
-                   known_category_groups));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &TracingControllerImpl::OnStopTracingAcked, base::Unretained(this),
+            base::RetainedRef(trace_message_filter), known_category_groups));
     return;
   }
 
@@ -720,7 +722,7 @@ void TracingControllerImpl::OnTraceLogStatusReply(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TracingControllerImpl::OnTraceLogStatusReply,
                    base::Unretained(this),
-                   make_scoped_refptr(trace_message_filter), status));
+                   base::RetainedRef(trace_message_filter), status));
     return;
   }
 
@@ -961,7 +963,7 @@ void TracingControllerImpl::OnProcessMemoryDumpResponse(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TracingControllerImpl::OnProcessMemoryDumpResponse,
                    base::Unretained(this),
-                   make_scoped_refptr(trace_message_filter), dump_guid,
+                   base::RetainedRef(trace_message_filter), dump_guid,
                    success));
     return;
   }

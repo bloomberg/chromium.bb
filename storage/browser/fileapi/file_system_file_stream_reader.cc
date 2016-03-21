@@ -69,10 +69,9 @@ int FileSystemFileStreamReader::Read(
     const net::CompletionCallback& callback) {
   if (local_file_reader_)
     return local_file_reader_->Read(buf, buf_len, callback);
-  return CreateSnapshot(
-      base::Bind(&ReadAdapter, weak_factory_.GetWeakPtr(),
-                 make_scoped_refptr(buf), buf_len, callback),
-      callback);
+  return CreateSnapshot(base::Bind(&ReadAdapter, weak_factory_.GetWeakPtr(),
+                                   base::RetainedRef(buf), buf_len, callback),
+                        callback);
 }
 
 int64_t FileSystemFileStreamReader::GetLength(

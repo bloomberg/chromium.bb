@@ -385,8 +385,8 @@ TEST_F(MAYBE_SyncHttpBridgeTest, Abort) {
   int response_code = 0;
 
   io_thread()->task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&MAYBE_SyncHttpBridgeTest::Abort, http_bridge));
+      FROM_HERE, base::Bind(&MAYBE_SyncHttpBridgeTest::Abort,
+                            base::RetainedRef(http_bridge)));
   bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
   EXPECT_FALSE(success);
   EXPECT_EQ(net::ERR_ABORTED, os_error);

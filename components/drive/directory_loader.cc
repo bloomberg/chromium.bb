@@ -141,17 +141,12 @@ class DirectoryLoader::FeedFetcher {
     loader_->loader_controller_->ScheduleRun(base::Bind(
         base::IgnoreResult(
             &base::PostTaskAndReplyWithResult<FileError, FileError>),
-        loader_->blocking_task_runner_,
-        FROM_HERE,
+        base::RetainedRef(loader_->blocking_task_runner_), FROM_HERE,
         base::Bind(&ChangeListProcessor::RefreshDirectory,
-                   loader_->resource_metadata_,
-                   directory_fetch_info_,
-                   base::Passed(&change_list),
-                   entries),
+                   loader_->resource_metadata_, directory_fetch_info_,
+                   base::Passed(&change_list), entries),
         base::Bind(&FeedFetcher::OnDirectoryRefreshed,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback,
-                   next_url,
+                   weak_ptr_factory_.GetWeakPtr(), callback, next_url,
                    base::Owned(entries))));
   }
 

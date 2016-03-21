@@ -947,7 +947,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
       browser()->profile()->GetRequestContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&InterceptNetworkTransactions, url_request_context_getter,
+      base::Bind(&InterceptNetworkTransactions,
+                 base::RetainedRef(url_request_context_getter),
                  net::ERR_FAILED));
 
   // With no navigation corrections to load, there's only one navigation.
@@ -1228,7 +1229,8 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
       browser()->profile()->GetRequestContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&InterceptNetworkTransactions, url_request_context_getter,
+      base::Bind(&InterceptNetworkTransactions,
+                 base::RetainedRef(url_request_context_getter),
                  net::ERR_CONNECTION_FAILED));
 
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(

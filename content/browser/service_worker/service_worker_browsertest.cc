@@ -83,12 +83,9 @@ void RunOnIOThreadWithDelay(const base::Closure& closure,
                             base::TimeDelta delay) {
   base::RunLoop run_loop;
   BrowserThread::PostDelayedTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&RunAndQuit,
-                 closure,
-                 run_loop.QuitClosure(),
-                 base::ThreadTaskRunnerHandle::Get()),
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&RunAndQuit, closure, run_loop.QuitClosure(),
+                 base::RetainedRef(base::ThreadTaskRunnerHandle::Get())),
       delay);
   run_loop.Run();
 }
@@ -694,9 +691,8 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
       const base::Closure& quit,
       ChromeBlobStorageContext* blob_context,
       FetchResult* result) {
-    return base::Bind(
-        &self::ReceiveFetchResultOnIOThread, this, quit,
-        make_scoped_refptr<ChromeBlobStorageContext>(blob_context), result);
+    return base::Bind(&self::ReceiveFetchResultOnIOThread, this, quit,
+                      base::RetainedRef(blob_context), result);
   }
 
   void StopOnIOThread(const base::Closure& done,

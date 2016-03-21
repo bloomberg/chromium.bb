@@ -570,8 +570,8 @@ TEST_F(ServiceWorkerVersionTest, RepeatedlyObserveStatusChanges) {
 
   // Repeatedly observe status changes (the callback re-registers itself).
   std::vector<ServiceWorkerVersion::Status> statuses;
-  version_->RegisterStatusChangeCallback(
-      base::Bind(&ObserveStatusChanges, version_, &statuses));
+  version_->RegisterStatusChangeCallback(base::Bind(
+      &ObserveStatusChanges, base::RetainedRef(version_), &statuses));
 
   version_->SetStatus(ServiceWorkerVersion::INSTALLING);
   version_->SetStatus(ServiceWorkerVersion::INSTALLED);

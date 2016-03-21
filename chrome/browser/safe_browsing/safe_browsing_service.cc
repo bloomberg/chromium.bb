@@ -582,7 +582,7 @@ void SafeBrowsingService::Start() {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&SafeBrowsingService::StartOnIOThread, this,
-                 url_request_context_getter_));
+                 base::RetainedRef(url_request_context_getter_)));
 }
 
 void SafeBrowsingService::Stop(bool shutdown) {

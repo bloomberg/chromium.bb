@@ -70,10 +70,9 @@ int SandboxFileStreamWriter::Write(
   if (local_file_writer_)
     return WriteInternal(buf, buf_len, callback);
 
-  net::CompletionCallback write_task =
-      base::Bind(&SandboxFileStreamWriter::DidInitializeForWrite,
-                 weak_factory_.GetWeakPtr(),
-                 make_scoped_refptr(buf), buf_len, callback);
+  net::CompletionCallback write_task = base::Bind(
+      &SandboxFileStreamWriter::DidInitializeForWrite,
+      weak_factory_.GetWeakPtr(), base::RetainedRef(buf), buf_len, callback);
   file_system_context_->operation_runner()->CreateSnapshotFile(
       url_, base::Bind(&SandboxFileStreamWriter::DidCreateSnapshotFile,
                        weak_factory_.GetWeakPtr(), write_task));

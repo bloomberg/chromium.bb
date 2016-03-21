@@ -589,21 +589,21 @@ void StoragePartitionImplMap::PostCreateInitialization(
   if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
-                   partition->GetAppCacheService(),
-                   in_memory ? base::FilePath() :
-                       partition->GetPath().Append(kAppCacheDirname),
-                   browser_context_->GetResourceContext(),
-                   make_scoped_refptr(partition->GetURLRequestContext()),
-                   make_scoped_refptr(
-                       browser_context_->GetSpecialStoragePolicy())));
+        base::Bind(
+            &ChromeAppCacheService::InitializeOnIOThread,
+            partition->GetAppCacheService(),
+            in_memory ? base::FilePath()
+                      : partition->GetPath().Append(kAppCacheDirname),
+            browser_context_->GetResourceContext(),
+            base::RetainedRef(partition->GetURLRequestContext()),
+            base::RetainedRef(browser_context_->GetSpecialStoragePolicy())));
 
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&CacheStorageContextImpl::SetBlobParametersForCache,
                    partition->GetCacheStorageContext(),
-                   make_scoped_refptr(partition->GetURLRequestContext()),
-                   make_scoped_refptr(
+                   base::RetainedRef(partition->GetURLRequestContext()),
+                   base::RetainedRef(
                        ChromeBlobStorageContext::GetFor(browser_context_))));
 
     BrowserThread::PostTask(
@@ -611,7 +611,7 @@ void StoragePartitionImplMap::PostCreateInitialization(
         base::Bind(&ServiceWorkerContextWrapper::InitializeResourceContext,
                    partition->GetServiceWorkerContext(),
                    browser_context_->GetResourceContext(),
-                   make_scoped_refptr(partition->GetURLRequestContext())));
+                   base::RetainedRef(partition->GetURLRequestContext())));
 
     // We do not call InitializeURLRequestContext() for media contexts because,
     // other than the HTTP cache, the media contexts share the same backing

@@ -483,7 +483,7 @@ void ChannelProxy::RemoveFilter(MessageFilter* filter) {
 
   context_->ipc_task_runner()->PostTask(
       FROM_HERE, base::Bind(&Context::OnRemoveFilter, context_.get(),
-                            make_scoped_refptr(filter)));
+                            base::RetainedRef(filter)));
 }
 
 void ChannelProxy::ClearIPCTaskRunner() {

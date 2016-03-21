@@ -233,7 +233,8 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&MockClientCertURLRequestJob::NotifyCertificateRequested,
-                   weak_factory_.GetWeakPtr(), cert_request_info));
+                   weak_factory_.GetWeakPtr(),
+                   base::RetainedRef(cert_request_info)));
   }
 
   void ContinueWithCertificate(

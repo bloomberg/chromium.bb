@@ -844,7 +844,7 @@ void ThemeService::BuildFromExtension(const Extension* extension) {
                                    : chrome::kThemePackFilename);
   service->GetFileTaskRunner()->PostTask(
       FROM_HERE,
-      base::Bind(&WritePackToDiskCallback, pack, pack_path));
+      base::Bind(&WritePackToDiskCallback, base::RetainedRef(pack), pack_path));
 
   // Save only the extension path. The packed file which matches the
   // MaterialDesignController::Mode will be loaded via LoadThemePrefs().

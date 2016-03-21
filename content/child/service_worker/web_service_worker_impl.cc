@@ -122,7 +122,8 @@ void WebServiceWorkerImpl::postMessage(
   // to overtake those messages.
   dispatcher->main_thread_task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&SendPostMessageToWorkerOnMainThread, thread_safe_sender_,
+      base::Bind(&SendPostMessageToWorkerOnMainThread,
+                 base::RetainedRef(thread_safe_sender_),
                  handle_ref_->handle_id(), provider_impl->provider_id(),
                  // We cast WebString to string16 before crossing
                  // threads for thread-safety.

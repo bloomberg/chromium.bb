@@ -651,15 +651,17 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
           FROM_HERE,
           base::Bind(&Job::OnNeedsProxyAuthCallback, ptr_factory_.GetWeakPtr(),
                      *proxy_socket->GetConnectResponseInfo(),
-                     proxy_socket->GetAuthController()));
+                     base::RetainedRef(proxy_socket->GetAuthController())));
       return ERR_IO_PENDING;
     }
 
     case ERR_SSL_CLIENT_AUTH_CERT_NEEDED:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE,
-          base::Bind(&Job::OnNeedsClientAuthCallback, ptr_factory_.GetWeakPtr(),
-                     connection_->ssl_error_response_info().cert_request_info));
+          base::Bind(
+              &Job::OnNeedsClientAuthCallback, ptr_factory_.GetWeakPtr(),
+              base::RetainedRef(
+                  connection_->ssl_error_response_info().cert_request_info)));
       return ERR_IO_PENDING;
 
     case ERR_HTTPS_PROXY_TUNNEL_RESPONSE: {

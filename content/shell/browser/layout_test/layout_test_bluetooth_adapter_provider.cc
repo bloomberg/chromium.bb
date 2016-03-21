@@ -468,7 +468,7 @@ LayoutTestBluetoothAdapterProvider::GetDelayedServicesDiscoveryAdapter() {
         device_ptr->AddMockService(std::move(heart_rate));
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::Bind(&NotifyServicesDiscovered,
-                                  make_scoped_refptr(adapter_ptr), device_ptr));
+                                  base::RetainedRef(adapter_ptr), device_ptr));
 
         DCHECK(services.size() == 0);
         return services;
@@ -655,7 +655,7 @@ LayoutTestBluetoothAdapterProvider::GetConnectableDevice(
           [adapter, device_ptr]() {
             base::ThreadTaskRunnerHandle::Get()->PostTask(
                 FROM_HERE, base::Bind(&NotifyServicesDiscovered,
-                                      make_scoped_refptr(adapter), device_ptr));
+                                      base::RetainedRef(adapter), device_ptr));
             return make_scoped_ptr(new NiceMockBluetoothGattConnection(
                 adapter, device_ptr->GetAddress()));
           }));

@@ -167,7 +167,8 @@ class MockClientCertURLRequestJob : public net::URLRequestTestJob {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&MockClientCertURLRequestJob::NotifyCertificateRequested,
-                   weak_factory_.GetWeakPtr(), cert_request_info));
+                   weak_factory_.GetWeakPtr(),
+                   base::RetainedRef(cert_request_info)));
   }
 
   void ContinueWithCertificate(net::X509Certificate* cert,
@@ -532,7 +533,7 @@ void CreateTemporaryError(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(callback, error, base::Passed(scoped_ptr<net::FileStream>()),
-                 scoped_refptr<ShareableFileReference>()));
+                 nullptr));
 }
 
 }  // namespace
@@ -919,8 +920,9 @@ class ResourceLoaderRedirectToFileTest : public ResourceLoaderTest {
       scoped_ptr<net::FileStream> file_stream,
       const CreateTemporaryFileStreamCallback& callback) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, base::File::FILE_OK,
-                              base::Passed(&file_stream), deletable_file_));
+        FROM_HERE,
+        base::Bind(callback, base::File::FILE_OK, base::Passed(&file_stream),
+                   base::RetainedRef(deletable_file_)));
   }
 
   base::FilePath temp_path_;

@@ -70,7 +70,7 @@ bool SSLClientCertificateSelector::Accept() {
         cert.get(), chrome::kCryptoModulePasswordClientAuth,
         cert_request_info()->host_and_port, GetWidget()->GetNativeView(),
         base::Bind(&SSLClientCertificateSelector::Unlocked,
-                   base::Unretained(this), cert));
+                   base::Unretained(this), base::RetainedRef(cert)));
 #else
     Unlocked(cert.get());
 #endif

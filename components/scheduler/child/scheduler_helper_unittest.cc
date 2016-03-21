@@ -112,8 +112,9 @@ TEST_F(SchedulerHelperTest, TestRentrantTask) {
   int count = 0;
   std::vector<int> run_order;
   default_task_runner_->PostTask(
-      FROM_HERE, base::Bind(AppendToVectorReentrantTask, default_task_runner_,
-                            &run_order, &count, 5));
+      FROM_HERE, base::Bind(AppendToVectorReentrantTask,
+                            base::RetainedRef(default_task_runner_), &run_order,
+                            &count, 5));
   RunUntilIdle();
 
   EXPECT_THAT(run_order, testing::ElementsAre(0, 1, 2, 3, 4));

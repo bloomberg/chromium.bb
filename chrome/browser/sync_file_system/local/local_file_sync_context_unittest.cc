@@ -160,7 +160,7 @@ class LocalFileSyncContextTest : public testing::Test {
         file_system_context, change, local_path, url,
         base::Bind(&LocalFileSyncContextTest::DidApplyRemoteChange,
                    base::Unretained(this),
-                   make_scoped_refptr(file_system_context), url));
+                   base::RetainedRef(file_system_context), url));
     base::MessageLoop::current()->Run();
     return status_;
   }

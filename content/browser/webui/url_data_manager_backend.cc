@@ -674,15 +674,14 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
     // message loop before request for data. And correspondingly their
     // replies are put on the IO thread in the same order.
     target_message_loop->task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&GetMimeTypeOnUI, scoped_refptr<URLDataSourceImpl>(source),
-                   path, job->AsWeakPtr()));
+        FROM_HERE, base::Bind(&GetMimeTypeOnUI, base::RetainedRef(source), path,
+                              job->AsWeakPtr()));
 
     // The DataSource wants StartDataRequest to be called on a specific thread,
     // usually the UI thread, for this path.
     target_message_loop->task_runner()->PostTask(
         FROM_HERE, base::Bind(&URLDataManagerBackend::CallStartRequest,
-                              make_scoped_refptr(source), path,
+                              base::RetainedRef(source), path,
                               render_process_id, render_frame_id, request_id));
   }
   return true;

@@ -97,8 +97,8 @@ void MigrateFileSystem(WeakPtr<extensions::AppDataMigrator> migrator,
   // invoke the original callback passed into DoMigrationAndReply.
   old_fs_context->default_file_task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&MigrateOnFileSystemThread, make_scoped_refptr(old_fs_context),
-                 make_scoped_refptr(fs_context), make_scoped_refptr(extension)),
+      base::Bind(&MigrateOnFileSystemThread, base::RetainedRef(old_fs_context),
+                 base::RetainedRef(fs_context), base::RetainedRef(extension)),
       reply);
 }
 
@@ -118,15 +118,15 @@ void MigrateLegacyPartition(WeakPtr<extensions::AppDataMigrator> migrator,
   // the migration flow after the IndexedDB migration.
   base::Closure migrate_fs =
       base::Bind(&MigrateFileSystem, migrator, old_partition, current_partition,
-                 make_scoped_refptr(extension), reply);
+                 base::RetainedRef(extension), reply);
 
   // Perform the IndexedDB migration on the old context's sequenced task
   // runner. After completion, it should call MigrateFileSystem.
   old_indexed_db_context->TaskRunner()->PostTaskAndReply(
-      FROM_HERE, base::Bind(&MigrateOnIndexedDBThread,
-                            make_scoped_refptr(old_indexed_db_context),
-                            make_scoped_refptr(indexed_db_context),
-                            make_scoped_refptr(extension)),
+      FROM_HERE,
+      base::Bind(
+          &MigrateOnIndexedDBThread, base::RetainedRef(old_indexed_db_context),
+          base::RetainedRef(indexed_db_context), base::RetainedRef(extension)),
       migrate_fs);
 }
 

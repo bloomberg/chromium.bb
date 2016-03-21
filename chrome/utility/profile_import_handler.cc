@@ -70,7 +70,7 @@ void ProfileImportHandler::OnImportStart(
   }
   import_thread_->task_runner()->PostTask(
       FROM_HERE, base::Bind(&Importer::StartImport, importer_.get(),
-                            source_profile, items, bridge_));
+                            source_profile, items, base::RetainedRef(bridge_)));
 }
 
 void ProfileImportHandler::OnImportCancel() {

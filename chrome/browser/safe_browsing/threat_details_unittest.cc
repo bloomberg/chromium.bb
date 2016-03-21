@@ -719,7 +719,7 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&FillCache,
-                 make_scoped_refptr(profile()->GetRequestContext())));
+                 base::RetainedRef(profile()->GetRequestContext())));
 
   // The cache collection starts after the IPC from the DOM is fired.
   std::vector<SafeBrowsingHostMsg_ThreatDOMDetails_Node> params;

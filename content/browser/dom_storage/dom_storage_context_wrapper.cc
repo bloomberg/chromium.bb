@@ -253,7 +253,8 @@ void DOMStorageContextWrapper::GetLocalStorageUsage(
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&GetLocalStorageUsageHelper,
-                 base::ThreadTaskRunnerHandle::Get(), context_, callback));
+                 base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+                 base::RetainedRef(context_), callback));
 }
 
 void DOMStorageContextWrapper::GetSessionStorageUsage(
@@ -262,7 +263,8 @@ void DOMStorageContextWrapper::GetSessionStorageUsage(
   context_->task_runner()->PostShutdownBlockingTask(
       FROM_HERE, DOMStorageTaskRunner::PRIMARY_SEQUENCE,
       base::Bind(&GetSessionStorageUsageHelper,
-                 base::ThreadTaskRunnerHandle::Get(), context_, callback));
+                 base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+                 base::RetainedRef(context_), callback));
 }
 
 void DOMStorageContextWrapper::DeleteLocalStorage(const GURL& origin) {

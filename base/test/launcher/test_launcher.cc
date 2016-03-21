@@ -563,11 +563,12 @@ void TestLauncher::LaunchChildGTestProcess(
   bool redirect_stdio = (parallel_jobs_ > 1) || BotModeEnabled();
 
   worker_pool_owner_->pool()->PostWorkerTask(
-      FROM_HERE, Bind(&DoLaunchChildTestProcess, new_command_line, timeout,
-                      options, redirect_stdio, ThreadTaskRunnerHandle::Get(),
-                      Bind(&TestLauncher::OnLaunchTestProcessFinished,
-                           Unretained(this), completed_callback),
-                      launched_callback));
+      FROM_HERE,
+      Bind(&DoLaunchChildTestProcess, new_command_line, timeout, options,
+           redirect_stdio, RetainedRef(ThreadTaskRunnerHandle::Get()),
+           Bind(&TestLauncher::OnLaunchTestProcessFinished, Unretained(this),
+                completed_callback),
+           launched_callback));
 }
 
 void TestLauncher::OnTestFinished(const TestResult& result) {

@@ -162,12 +162,10 @@ BookmarkStorage::~BookmarkStorage() {
 void BookmarkStorage::LoadBookmarks(
     scoped_ptr<BookmarkLoadDetails> details,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-  sequenced_task_runner_->PostTask(FROM_HERE,
-                                   base::Bind(&LoadCallback,
-                                              writer_.path(),
-                                              weak_factory_.GetWeakPtr(),
-                                              base::Passed(&details),
-                                              task_runner));
+  sequenced_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LoadCallback, writer_.path(), weak_factory_.GetWeakPtr(),
+                 base::Passed(&details), base::RetainedRef(task_runner)));
 }
 
 void BookmarkStorage::ScheduleSave() {

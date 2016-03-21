@@ -156,10 +156,9 @@ TEST_F(DeferredSequencedTaskRunnerTest, ObjectDestructionOrder) {
         scoped_refptr<ExecuteTaskOnDestructor> short_lived_object =
             new ExecuteTaskOnDestructor(this, 2 * i);
         runner_->PostTask(
-            FROM_HERE,
-            base::Bind(&DeferredSequencedTaskRunnerTest::DoNothing,
-                       base::Unretained(this),
-                       short_lived_object));
+            FROM_HERE, base::Bind(&DeferredSequencedTaskRunnerTest::DoNothing,
+                                  base::Unretained(this),
+                                  base::RetainedRef(short_lived_object)));
       }
       // |short_lived_object| with id |2 * i| should be destroyed before the
       // task |2 * i + 1| is executed.

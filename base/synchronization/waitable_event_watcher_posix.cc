@@ -145,8 +145,8 @@ bool WaitableEventWatcher::StartWatching(
 
   cancel_flag_ = new Flag;
   callback_ = callback;
-  internal_callback_ =
-      base::Bind(&AsyncCallbackHelper, cancel_flag_, callback_, event);
+  internal_callback_ = base::Bind(
+      &AsyncCallbackHelper, base::RetainedRef(cancel_flag_), callback_, event);
   WaitableEvent::WaitableEventKernel* kernel = event->kernel_.get();
 
   AutoLock locked(kernel->lock_);

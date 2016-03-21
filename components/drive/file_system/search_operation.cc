@@ -145,20 +145,15 @@ void SearchOperation::SearchAfterGetFileList(
   // server to the local metadata.
   // This may race with sync tasks so we should ask LoaderController here.
   std::vector<SearchResultInfo>* result_ptr = result.get();
-  loader_controller_->ScheduleRun(base::Bind(
-      base::IgnoreResult(
-          &base::PostTaskAndReplyWithResult<FileError, FileError>),
-      blocking_task_runner_,
-      FROM_HERE,
-      base::Bind(&ResolveSearchResultOnBlockingPool,
-                 metadata_,
-                 base::Passed(&file_list),
-                 result_ptr),
-      base::Bind(&SearchOperation::SearchAfterResolveSearchResult,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback,
-                 next_url,
-                 base::Passed(&result))));
+  loader_controller_->ScheduleRun(
+      base::Bind(base::IgnoreResult(
+                     &base::PostTaskAndReplyWithResult<FileError, FileError>),
+                 base::RetainedRef(blocking_task_runner_), FROM_HERE,
+                 base::Bind(&ResolveSearchResultOnBlockingPool, metadata_,
+                            base::Passed(&file_list), result_ptr),
+                 base::Bind(&SearchOperation::SearchAfterResolveSearchResult,
+                            weak_ptr_factory_.GetWeakPtr(), callback, next_url,
+                            base::Passed(&result))));
 }
 
 void SearchOperation::SearchAfterResolveSearchResult(

@@ -558,8 +558,8 @@ void TwoWayTest::SetUp() {
   base::WaitableEvent remote_harness_set_up(true, false);
   plugin_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&SetUpRemoteHarness, remote_harness_, handle,
-                            io_thread_.task_runner(), &shutdown_event_,
-                            &remote_harness_set_up));
+                            base::RetainedRef(io_thread_.task_runner()),
+                            &shutdown_event_, &remote_harness_set_up));
   remote_harness_set_up.Wait();
   local_harness_->SetUpHarnessWithChannel(
       handle, io_thread_.task_runner().get(), &shutdown_event_,

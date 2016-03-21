@@ -26,10 +26,9 @@ void DidGetUsageAndQuota(
     int64_t quota) {
   if (!original_task_runner->RunsTasksOnCurrentThread()) {
     original_task_runner->PostTask(
-        FROM_HERE,
-        base::Bind(&DidGetUsageAndQuota,
-                   make_scoped_refptr(original_task_runner),
-                   callback, status, usage, quota));
+        FROM_HERE, base::Bind(&DidGetUsageAndQuota,
+                              base::RetainedRef(original_task_runner), callback,
+                              status, usage, quota));
     return;
   }
 
@@ -134,10 +133,9 @@ void QuotaManagerProxy::GetUsageAndQuota(
     const GetUsageAndQuotaCallback& callback) {
   if (!io_thread_->BelongsToCurrentThread()) {
     io_thread_->PostTask(
-        FROM_HERE,
-        base::Bind(&QuotaManagerProxy::GetUsageAndQuota, this,
-                   make_scoped_refptr(original_task_runner),
-                   origin, type, callback));
+        FROM_HERE, base::Bind(&QuotaManagerProxy::GetUsageAndQuota, this,
+                              base::RetainedRef(original_task_runner), origin,
+                              type, callback));
     return;
   }
   if (!manager_) {
@@ -150,8 +148,8 @@ void QuotaManagerProxy::GetUsageAndQuota(
 
   manager_->GetUsageAndQuota(
       origin, type,
-      base::Bind(&DidGetUsageAndQuota,
-                 make_scoped_refptr(original_task_runner), callback));
+      base::Bind(&DidGetUsageAndQuota, base::RetainedRef(original_task_runner),
+                 callback));
 }
 
 QuotaManager* QuotaManagerProxy::quota_manager() const {

@@ -230,8 +230,9 @@ void ClearChannelIDsOnIOThread(
   net::ChannelIDService* channel_id_service =
       rq_context->GetURLRequestContext()->channel_id_service();
   channel_id_service->GetChannelIDStore()->DeleteAllCreatedBetween(
-      delete_begin, delete_end, base::Bind(&OnClearedChannelIDsOnIOThread,
-                                           std::move(rq_context), callback));
+      delete_begin, delete_end,
+      base::Bind(&OnClearedChannelIDsOnIOThread,
+                 base::RetainedRef(std::move(rq_context)), callback));
 }
 
 }  // namespace
@@ -617,7 +618,7 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
         BrowserThread::PostTask(
             BrowserThread::IO, FROM_HERE,
             base::Bind(&ClearCookiesOnIOThread, delete_begin_, delete_end_,
-                       std::move(sb_context),
+                       base::RetainedRef(std::move(sb_context)),
                        UIThreadTrampoline(
                            base::Bind(&BrowsingDataRemover::OnClearedCookies,
                                       weak_ptr_factory_.GetWeakPtr()))));

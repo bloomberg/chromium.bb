@@ -81,10 +81,9 @@ void DebugDumpSettings(const base::string16& doc_name,
       job_settings, base::JSONWriter::OPTIONS_PRETTY_PRINT, &settings_str);
   scoped_refptr<base::RefCountedMemory> data =
       base::RefCountedString::TakeString(&settings_str);
-  blocking_runner->PostTask(
-      FROM_HERE,
-      base::Bind(
-          &DebugDumpDataTask, doc_name, FILE_PATH_LITERAL(".json"), data));
+  blocking_runner->PostTask(FROM_HERE, base::Bind(&DebugDumpDataTask, doc_name,
+                                                  FILE_PATH_LITERAL(".json"),
+                                                  base::RetainedRef(data)));
 }
 
 }  // namespace
@@ -136,7 +135,8 @@ void PrintedDocument::SetPage(int page_number,
 
   if (!g_debug_dump_info.Get().empty()) {
     immutable_.blocking_runner_->PostTask(
-        FROM_HERE, base::Bind(&DebugDumpPageTask, name(), page));
+        FROM_HERE,
+        base::Bind(&DebugDumpPageTask, name(), base::RetainedRef(page)));
   }
 }
 

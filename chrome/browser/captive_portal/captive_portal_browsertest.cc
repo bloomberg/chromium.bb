@@ -2796,7 +2796,7 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, HstsLogin) {
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::Bind(&AddHstsHost,
-                 make_scoped_refptr(browser()->profile()->GetRequestContext()),
+                 base::RetainedRef(browser()->profile()->GetRequestContext()),
                  http_timeout_url.host()));
 
   SlowLoadBehindCaptivePortal(browser(), true, http_timeout_url, 1, 1);

@@ -274,7 +274,8 @@ base::SupportsUserData* AutofillWebDataService::GetDBUserData() {
 
 void AutofillWebDataService::GetAutofillBackend(
     const base::Callback<void(AutofillWebDataBackend*)>& callback) {
-  db_thread_->PostTask(FROM_HERE, base::Bind(callback, autofill_backend_));
+  db_thread_->PostTask(
+      FROM_HERE, base::Bind(callback, base::RetainedRef(autofill_backend_)));
 }
 
 AutofillWebDataService::~AutofillWebDataService() {

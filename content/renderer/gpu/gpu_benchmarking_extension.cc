@@ -398,7 +398,8 @@ bool BeginSmoothScroll(v8::Isolate* isolate,
   // somehow.
   context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
       std::move(gesture_params),
-      base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
+      base::Bind(&OnSyntheticGestureCompleted,
+                 base::RetainedRef(callback_and_context)));
 
   return true;
 }
@@ -440,7 +441,8 @@ bool BeginSmoothDrag(v8::Isolate* isolate,
   // somehow.
   context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
       std::move(gesture_params),
-      base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
+      base::Bind(&OnSyntheticGestureCompleted,
+                 base::RetainedRef(callback_and_context)));
 
   return true;
 }
@@ -731,7 +733,8 @@ bool GpuBenchmarking::ScrollBounce(gin::Arguments* args) {
   // somehow.
   context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
       std::move(gesture_params),
-      base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
+      base::Bind(&OnSyntheticGestureCompleted,
+                 base::RetainedRef(callback_and_context)));
 
   return true;
 }
@@ -779,7 +782,8 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
   // somehow.
   context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
       std::move(gesture_params),
-      base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
+      base::Bind(&OnSyntheticGestureCompleted,
+                 base::RetainedRef(callback_and_context)));
 
   return true;
 }
@@ -845,7 +849,8 @@ bool GpuBenchmarking::Tap(gin::Arguments* args) {
   // somehow.
   context.render_view_impl()->GetWidget()->QueueSyntheticGesture(
       std::move(gesture_params),
-      base::Bind(&OnSyntheticGestureCompleted, callback_and_context));
+      base::Bind(&OnSyntheticGestureCompleted,
+                 base::RetainedRef(callback_and_context)));
 
   return true;
 }
@@ -881,7 +886,8 @@ int GpuBenchmarking::RunMicroBenchmark(gin::Arguments* args) {
 
   return context.compositor()->ScheduleMicroBenchmark(
       name, std::move(value),
-      base::Bind(&OnMicroBenchmarkCompleted, callback_and_context));
+      base::Bind(&OnMicroBenchmarkCompleted,
+                 base::RetainedRef(callback_and_context)));
 }
 
 bool GpuBenchmarking::SendMessageToMicroBenchmark(

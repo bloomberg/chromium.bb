@@ -161,7 +161,8 @@ BaseSessionService::ScheduleGetLastSessionCommands(
 
   GetCommandsCallback callback_runner =
       base::Bind(&PostOrRunInternalGetCommandsCallback,
-                 base::ThreadTaskRunnerHandle::Get(), run_if_not_canceled);
+                 base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+                 run_if_not_canceled);
 
   RunTaskOnBackendThread(
       FROM_HERE,

@@ -201,9 +201,13 @@ TYPED_TEST_P(TaskRunnerAffinityTest, RunsTasksOnCurrentThread) {
   // the non-task-runner thread.
   for (int i = 0; i < 20; ++i) {
     const Closure& ith_task_runner_task = this->task_tracker_->WrapTask(
-        Bind(&test::ExpectRunsTasksOnCurrentThread, true, task_runner), i);
+        Bind(&test::ExpectRunsTasksOnCurrentThread, true,
+             base::RetainedRef(task_runner)),
+        i);
     const Closure& ith_non_task_runner_task = this->task_tracker_->WrapTask(
-        Bind(&test::ExpectRunsTasksOnCurrentThread, false, task_runner), i);
+        Bind(&test::ExpectRunsTasksOnCurrentThread, false,
+             base::RetainedRef(task_runner)),
+        i);
     for (int j = 0; j < i + 1; ++j) {
       task_runner->PostTask(FROM_HERE, ith_task_runner_task);
       thread.task_runner()->PostTask(FROM_HERE, ith_non_task_runner_task);

@@ -565,10 +565,9 @@ void LoginDialogCallback(const GURL& request_url,
                             request_url.GetOrigin())) {
     // Show a blank interstitial for main-frame, cross origin requests
     // so that the correct URL is shown in the omnibox.
-    base::Closure callback = base::Bind(&ShowLoginPrompt,
-                                        request_url,
-                                        make_scoped_refptr(auth_info),
-                                        make_scoped_refptr(handler));
+    base::Closure callback =
+        base::Bind(&ShowLoginPrompt, request_url, base::RetainedRef(auth_info),
+                   base::RetainedRef(handler));
     // The interstitial delegate is owned by the interstitial that it creates.
     // This cancels any existing interstitial.
     handler->SetInterstitialDelegate(
@@ -589,7 +588,7 @@ LoginHandler* CreateLoginPrompt(net::AuthChallengeInfo* auth_info,
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&LoginDialogCallback, request->url(),
-                 make_scoped_refptr(auth_info), make_scoped_refptr(handler),
+                 base::RetainedRef(auth_info), base::RetainedRef(handler),
                  is_main_frame));
   return handler;
 }

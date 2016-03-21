@@ -138,7 +138,7 @@ void LocalFileSyncService::MaybeInitializeFileSystemContext(
       app_origin, file_system_context,
       base::Bind(&LocalFileSyncService::DidInitializeFileSystemContext,
                  AsWeakPtr(), app_origin,
-                 make_scoped_refptr(file_system_context), callback));
+                 base::RetainedRef(file_system_context), callback));
 }
 
 void LocalFileSyncService::AddChangeObserver(Observer* observer) {
@@ -251,12 +251,9 @@ void LocalFileSyncService::PrepareForProcessRemoteChange(
         content::BrowserContext::GetStoragePartitionForSite(profile_, site_url)
             ->GetFileSystemContext();
     MaybeInitializeFileSystemContext(
-        url.origin(),
-        file_system_context.get(),
+        url.origin(), file_system_context.get(),
         base::Bind(&LocalFileSyncService::DidInitializeForRemoteSync,
-                   AsWeakPtr(),
-                   url,
-                   file_system_context,
+                   AsWeakPtr(), url, base::RetainedRef(file_system_context),
                    callback));
     return;
   }

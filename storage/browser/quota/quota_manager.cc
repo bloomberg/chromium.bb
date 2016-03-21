@@ -1668,7 +1668,8 @@ void QuotaManager::GetLRUOrigin(StorageType type,
   PostTaskAndReplyWithResultForDBThread(
       FROM_HERE, base::Bind(&GetLRUOriginOnDBThread, type,
                             GetEvictionOriginExceptions(std::set<GURL>()),
-                            special_storage_policy_, base::Unretained(url)),
+                            base::RetainedRef(special_storage_policy_),
+                            base::Unretained(url)),
       base::Bind(&QuotaManager::DidGetLRUOrigin, weak_factory_.GetWeakPtr(),
                  base::Owned(url)));
 }

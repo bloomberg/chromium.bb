@@ -76,8 +76,8 @@ void RootDeleteHelper::DidDeleteFileSystem(base::File::Error error) {
   // TODO(kinuko): This should be probably automatically handled in
   // DeleteFileSystem via QuotaUtil::DeleteOriginDataOnFileThread.
   file_system_context_->default_file_task_runner()->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&ResetFileChangeTracker, file_system_context_, url_),
+      FROM_HERE, base::Bind(&ResetFileChangeTracker,
+                            base::RetainedRef(file_system_context_), url_),
       base::Bind(&RootDeleteHelper::DidResetFileChangeTracker,
                  weak_factory_.GetWeakPtr()));
 }

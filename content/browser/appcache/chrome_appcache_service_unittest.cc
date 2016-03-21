@@ -102,14 +102,11 @@ ChromeAppCacheServiceTest::CreateAppCacheServiceImpl(
           browser_context_.GetResourceContext()->GetRequestContext(),
           message_loop_.task_runner().get());
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
+      BrowserThread::IO, FROM_HERE,
       base::Bind(&ChromeAppCacheService::InitializeOnIOThread,
-                 appcache_service.get(),
-                 appcache_path,
+                 appcache_service.get(), appcache_path,
                  browser_context_.GetResourceContext(),
-                 mock_request_context_getter,
-                 mock_policy));
+                 base::RetainedRef(mock_request_context_getter), mock_policy));
   // Steps needed to initialize the storage of AppCache data.
   message_loop_.RunUntilIdle();
   if (init_storage) {

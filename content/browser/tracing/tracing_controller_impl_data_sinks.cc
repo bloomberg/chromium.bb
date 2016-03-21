@@ -34,9 +34,10 @@ class StringTraceDataEndpoint : public TracingController::TraceDataEndpoint {
     scoped_refptr<base::RefCountedString> str =
         base::RefCountedString::TakeString(&tmp);
 
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(completion_callback_,
-                                       base::Passed(std::move(metadata)), str));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(completion_callback_, base::Passed(std::move(metadata)),
+                   base::RetainedRef(str)));
   }
 
  private:

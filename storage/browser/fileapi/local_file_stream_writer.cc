@@ -55,10 +55,10 @@ int LocalFileStreamWriter::Write(net::IOBuffer* buf, int buf_len,
       has_pending_operation_ = false;
     return result;
   }
-  return InitiateOpen(callback,
-                      base::Bind(&LocalFileStreamWriter::ReadyToWrite,
-                                 weak_factory_.GetWeakPtr(),
-                                 make_scoped_refptr(buf), buf_len, callback));
+  return InitiateOpen(
+      callback, base::Bind(&LocalFileStreamWriter::ReadyToWrite,
+                           weak_factory_.GetWeakPtr(), base::RetainedRef(buf),
+                           buf_len, callback));
 }
 
 int LocalFileStreamWriter::Cancel(const net::CompletionCallback& callback) {

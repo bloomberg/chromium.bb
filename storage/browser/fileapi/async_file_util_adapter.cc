@@ -218,9 +218,9 @@ void AsyncFileUtilAdapter::ReadDirectory(
   FileSystemOperationContext* context_ptr = context.release();
   const bool success = context_ptr->task_runner()->PostTask(
       FROM_HERE,
-      Bind(&ReadDirectoryHelper,
-           sync_file_util_.get(), base::Owned(context_ptr), url,
-           base::ThreadTaskRunnerHandle::Get(), callback));
+      Bind(&ReadDirectoryHelper, sync_file_util_.get(),
+           base::Owned(context_ptr), url,
+           base::RetainedRef(base::ThreadTaskRunnerHandle::Get()), callback));
   DCHECK(success);
 }
 

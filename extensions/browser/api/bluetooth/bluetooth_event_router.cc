@@ -100,7 +100,7 @@ void BluetoothEventRouter::StartDiscoverySession(
     GetAdapter(base::Bind(
         &IgnoreAdapterResultAndThen,
         base::Bind(&BluetoothEventRouter::StartDiscoverySessionImpl,
-                   weak_ptr_factory_.GetWeakPtr(), make_scoped_refptr(adapter),
+                   weak_ptr_factory_.GetWeakPtr(), base::RetainedRef(adapter),
                    extension_id, callback, error_callback)));
     return;
   }

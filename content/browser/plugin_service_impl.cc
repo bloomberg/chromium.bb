@@ -603,7 +603,8 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
         ->PostSequencedWorkerTaskWithShutdownBehavior(
             plugin_list_token_, FROM_HERE,
             base::Bind(&PluginServiceImpl::GetPluginsInternal,
-                       base::Unretained(this), target_task_runner, callback),
+                       base::Unretained(this),
+                       base::RetainedRef(target_task_runner), callback),
             base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
     return;
   }
@@ -611,7 +612,8 @@ void PluginServiceImpl::GetPlugins(const GetPluginsCallback& callback) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&PluginServiceImpl::GetPluginsOnIOThread,
-                 base::Unretained(this), target_task_runner, callback));
+                 base::Unretained(this), base::RetainedRef(target_task_runner),
+                 callback));
 #else
   NOTREACHED();
 #endif
@@ -642,7 +644,7 @@ void PluginServiceImpl::GetPluginsOnIOThread(
     plugin_loader_ = new PluginLoaderPosix;
 
   plugin_loader_->GetPlugins(base::Bind(
-      &ForwardCallback, make_scoped_refptr(target_task_runner), callback));
+      &ForwardCallback, base::RetainedRef(target_task_runner), callback));
 }
 #endif
 

@@ -124,8 +124,9 @@ void WallpaperResizer::StartResize() {
   SkBitmap* resized_bitmap = new SkBitmap;
   scoped_refptr<SequencedWorkerPool> worker_pool_refptr(worker_pool_);
   if (!worker_pool_->PostTaskAndReply(
-          FROM_HERE, base::Bind(&Resize, *image_.bitmap(), target_size_,
-                                layout_, resized_bitmap, worker_pool_refptr),
+          FROM_HERE,
+          base::Bind(&Resize, *image_.bitmap(), target_size_, layout_,
+                     resized_bitmap, base::RetainedRef(worker_pool_refptr)),
           base::Bind(&WallpaperResizer::OnResizeFinished,
                      weak_ptr_factory_.GetWeakPtr(),
                      base::Owned(resized_bitmap)))) {

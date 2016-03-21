@@ -275,12 +275,9 @@ ChromeManagementAPIDelegate::GenerateAppForLinkFunctionDelegate(
 
   favicon_service->GetFaviconImageForPageURL(
       launch_url,
-      base::Bind(
-          &ChromeAppForLinkDelegate::OnFaviconForApp,
-          base::Unretained(delegate),
-          scoped_refptr<extensions::ManagementGenerateAppForLinkFunction>(
-              function),
-          context, title, launch_url),
+      base::Bind(&ChromeAppForLinkDelegate::OnFaviconForApp,
+                 base::Unretained(delegate), base::RetainedRef(function),
+                 context, title, launch_url),
       &delegate->cancelable_task_tracker_);
 
   return scoped_ptr<extensions::AppForLinkDelegate>(delegate);

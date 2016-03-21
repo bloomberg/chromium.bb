@@ -420,7 +420,7 @@ class SdchBrowserTest : public InProcessBrowserTest,
     content::BrowserThread::PostTaskAndReply(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&SdchBrowserTest::NukeSdchDictionariesOnIOThread,
-                   url_request_context_getter_),
+                   base::RetainedRef(url_request_context_getter_)),
         run_loop.QuitClosure());
     run_loop.Run();
   }
@@ -449,11 +449,10 @@ class SdchBrowserTest : public InProcessBrowserTest,
     second_browser_->window()->Show();
 
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
+        content::BrowserThread::IO, FROM_HERE,
         base::Bind(&SdchBrowserTest::SubscribeToSdchNotifications,
                    base::Unretained(this),
-                   make_scoped_refptr(
+                   base::RetainedRef(
                        second_browser_->profile()->GetRequestContext())));
 
     return true;
@@ -466,11 +465,10 @@ class SdchBrowserTest : public InProcessBrowserTest,
       return false;
 
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
+        content::BrowserThread::IO, FROM_HERE,
         base::Bind(&SdchBrowserTest::SubscribeToSdchNotifications,
                    base::Unretained(this),
-                   make_scoped_refptr(
+                   base::RetainedRef(
                        incognito_browser_->profile()->GetRequestContext())));
 
     return true;
@@ -609,11 +607,10 @@ class SdchBrowserTest : public InProcessBrowserTest,
     url_request_context_getter_ = browser()->profile()->GetRequestContext();
 
     content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
+        content::BrowserThread::IO, FROM_HERE,
         base::Bind(&SdchBrowserTest::SubscribeToSdchNotifications,
                    base::Unretained(this),
-                   url_request_context_getter_));
+                   base::RetainedRef(url_request_context_getter_)));
   }
 
   void TearDownOnMainThread() override {

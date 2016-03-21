@@ -52,7 +52,8 @@ ChildGpuMemoryBufferManager::AllocateGpuMemoryBuffer(const gfx::Size& size,
 
   scoped_ptr<GpuMemoryBufferImpl> buffer(GpuMemoryBufferImpl::CreateFromHandle(
       handle, size, format, usage,
-      base::Bind(&DeletedGpuMemoryBuffer, sender_, handle.id)));
+      base::Bind(&DeletedGpuMemoryBuffer, base::RetainedRef(sender_),
+                 handle.id)));
   if (!buffer) {
     sender_->Send(new ChildProcessHostMsg_DeletedGpuMemoryBuffer(
         handle.id, gpu::SyncToken()));

@@ -228,23 +228,19 @@ void WebContentsAudioInputStream::Impl::ReportError() {
 void WebContentsAudioInputStream::Impl::StartMirroring() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&AudioMirroringManager::StartMirroring,
-                 base::Unretained(mirroring_manager_),
-                 make_scoped_refptr(this)));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&AudioMirroringManager::StartMirroring,
+                                     base::Unretained(mirroring_manager_),
+                                     base::RetainedRef(this)));
 }
 
 void WebContentsAudioInputStream::Impl::StopMirroring() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&AudioMirroringManager::StopMirroring,
-                 base::Unretained(mirroring_manager_),
-                 make_scoped_refptr(this)));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&AudioMirroringManager::StopMirroring,
+                                     base::Unretained(mirroring_manager_),
+                                     base::RetainedRef(this)));
 }
 
 void WebContentsAudioInputStream::Impl::UnmuteWebContentsAudio() {

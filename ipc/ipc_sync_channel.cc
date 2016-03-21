@@ -80,7 +80,7 @@ class SyncChannel::ReceivedSyncMsgQueue :
     if (!was_task_pending) {
       listener_task_runner_->PostTask(
           FROM_HERE, base::Bind(&ReceivedSyncMsgQueue::DispatchMessagesTask,
-                                this, scoped_refptr<SyncContext>(context)));
+                                this, base::RetainedRef(context)));
     }
   }
 

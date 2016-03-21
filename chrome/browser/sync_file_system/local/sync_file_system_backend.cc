@@ -127,12 +127,8 @@ void SyncFileSystemBackend::ResolveURL(const storage::FileSystemURL& url,
   // It is safe to pass Unretained(this) since |context_| owns it.
   SyncStatusCallback initialize_callback =
       base::Bind(&SyncFileSystemBackend::DidInitializeSyncFileSystemService,
-                 base::Unretained(this),
-                 make_scoped_refptr(context_),
-                 url.origin(),
-                 url.type(),
-                 mode,
-                 callback);
+                 base::Unretained(this), base::RetainedRef(context_),
+                 url.origin(), url.type(), mode, callback);
   InitializeSyncFileSystemService(url.origin(), initialize_callback);
 }
 
@@ -305,7 +301,7 @@ void SyncFileSystemBackend::DidInitializeSyncFileSystemService(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SyncFileSystemBackend::DidInitializeSyncFileSystemService,
-                   base::Unretained(this), make_scoped_refptr(context),
+                   base::Unretained(this), base::RetainedRef(context),
                    origin_url, type, mode, callback, status));
     return;
   }

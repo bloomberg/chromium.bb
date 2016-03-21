@@ -1094,7 +1094,8 @@ void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
     BrowserThread::PostTask(
         BrowserThread::FILE, FROM_HERE,
         base::Bind(&SaveFileManager::UpdateSaveProgress, file_manager_,
-                   save_item->id(), new_data, static_cast<int>(data.size())));
+                   save_item->id(), base::RetainedRef(new_data),
+                   static_cast<int>(data.size())));
   }
 
   // Current frame is completed saving, call finish in file thread.

@@ -173,35 +173,25 @@ void AudioInputRendererHost::OnDestruct() const {
 void AudioInputRendererHost::OnCreated(
     media::AudioInputController* controller) {
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &AudioInputRendererHost::DoCompleteCreation,
-          this,
-          make_scoped_refptr(controller)));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&AudioInputRendererHost::DoCompleteCreation, this,
+                 base::RetainedRef(controller)));
 }
 
 void AudioInputRendererHost::OnRecording(
     media::AudioInputController* controller) {
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &AudioInputRendererHost::DoSendRecordingMessage,
-          this,
-          make_scoped_refptr(controller)));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&AudioInputRendererHost::DoSendRecordingMessage, this,
+                 base::RetainedRef(controller)));
 }
 
 void AudioInputRendererHost::OnError(media::AudioInputController* controller,
     media::AudioInputController::ErrorCode error_code) {
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(
-          &AudioInputRendererHost::DoHandleError,
-          this,
-          make_scoped_refptr(controller),
-          error_code));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&AudioInputRendererHost::DoHandleError, this,
+                 base::RetainedRef(controller), error_code));
 }
 
 void AudioInputRendererHost::OnData(media::AudioInputController* controller,
@@ -211,12 +201,9 @@ void AudioInputRendererHost::OnData(media::AudioInputController* controller,
 
 void AudioInputRendererHost::OnLog(media::AudioInputController* controller,
                                    const std::string& message) {
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&AudioInputRendererHost::DoLog,
-                                     this,
-                                     make_scoped_refptr(controller),
-                                     message));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&AudioInputRendererHost::DoLog, this,
+                                     base::RetainedRef(controller), message));
 }
 
 void AudioInputRendererHost::set_renderer_pid(int32_t renderer_pid) {

@@ -80,7 +80,7 @@ class TracingControllerTestEndpoint
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(done_callback_, base::Passed(std::move(metadata)),
-                   chunk_ptr));
+                   base::RetainedRef(chunk_ptr)));
   }
 
  protected:

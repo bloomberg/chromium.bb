@@ -233,11 +233,9 @@ ServiceWorkerControlleeRequestHandler::DidLookupRegistrationForMainResource(
   if (active_version.get() &&
       active_version->status() == ServiceWorkerVersion::ACTIVATING) {
     provider_host_->SetAllowAssociation(false);
-    registration->active_version()->RegisterStatusChangeCallback(
-        base::Bind(&self::OnVersionStatusChanged,
-                   weak_factory_.GetWeakPtr(),
-                   registration,
-                   active_version));
+    registration->active_version()->RegisterStatusChangeCallback(base::Bind(
+        &self::OnVersionStatusChanged, weak_factory_.GetWeakPtr(),
+        base::RetainedRef(registration), base::RetainedRef(active_version)));
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",
         "ServiceWorkerControlleeRequestHandler::PrepareForMainResource",

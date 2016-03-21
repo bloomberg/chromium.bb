@@ -477,10 +477,9 @@ void SupervisedUserService::URLFilterContext::InitAsyncURLChecker(
     const scoped_refptr<net::URLRequestContextGetter>& context) {
   ui_url_filter_->InitAsyncURLChecker(context.get());
   BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&SupervisedUserURLFilter::InitAsyncURLChecker,
-                 io_url_filter_, context));
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&SupervisedUserURLFilter::InitAsyncURLChecker, io_url_filter_,
+                 base::RetainedRef(context)));
 }
 
 bool SupervisedUserService::URLFilterContext::HasAsyncURLChecker() const {

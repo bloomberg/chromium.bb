@@ -151,11 +151,11 @@ AppSorting* ShellExtensionSystem::app_sorting() {
 void ShellExtensionSystem::RegisterExtensionWithRequestContexts(
     const Extension* extension,
     const base::Closure& callback) {
-  BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
-                                  base::Bind(&InfoMap::AddExtension, info_map(),
-                                             make_scoped_refptr(extension),
-                                             base::Time::Now(), false, false),
-                                  callback);
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&InfoMap::AddExtension, info_map(),
+                 base::RetainedRef(extension), base::Time::Now(), false, false),
+      callback);
 }
 
 void ShellExtensionSystem::UnregisterExtensionWithRequestContexts(

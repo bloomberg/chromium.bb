@@ -212,8 +212,8 @@ void SSLAddCertificate(
   } else {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&ShowSuccessInfoBar,
-                   render_process_id, render_frame_id, cert));
+        base::Bind(&ShowSuccessInfoBar, render_process_id, render_frame_id,
+                   base::RetainedRef(cert)));
   }
 }
 

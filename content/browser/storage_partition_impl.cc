@@ -662,42 +662,30 @@ void StoragePartitionImpl::QuotaManagedDataDeletionHelper::ClearDataOnIOThread(
     // within the user-specified timeframe, and deal with the resulting set in
     // ClearQuotaManagedOriginsOnIOThread().
     quota_manager->GetOriginsModifiedSince(
-        storage::kStorageTypePersistent,
-        begin,
+        storage::kStorageTypePersistent, begin,
         base::Bind(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
-                   base::Unretained(this),
-                   quota_manager,
-                   special_storage_policy,
-                   origin_matcher,
-                   decrement_callback));
+                   base::Unretained(this), base::RetainedRef(quota_manager),
+                   special_storage_policy, origin_matcher, decrement_callback));
   }
 
   // Do the same for temporary quota.
   if (quota_storage_remove_mask & QUOTA_MANAGED_STORAGE_MASK_TEMPORARY) {
     IncrementTaskCountOnIO();
     quota_manager->GetOriginsModifiedSince(
-        storage::kStorageTypeTemporary,
-        begin,
+        storage::kStorageTypeTemporary, begin,
         base::Bind(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
-                   base::Unretained(this),
-                   quota_manager,
-                   special_storage_policy,
-                   origin_matcher,
-                   decrement_callback));
+                   base::Unretained(this), base::RetainedRef(quota_manager),
+                   special_storage_policy, origin_matcher, decrement_callback));
   }
 
   // Do the same for syncable quota.
   if (quota_storage_remove_mask & QUOTA_MANAGED_STORAGE_MASK_SYNCABLE) {
     IncrementTaskCountOnIO();
     quota_manager->GetOriginsModifiedSince(
-        storage::kStorageTypeSyncable,
-        begin,
+        storage::kStorageTypeSyncable, begin,
         base::Bind(&QuotaManagedDataDeletionHelper::ClearOriginsOnIOThread,
-                   base::Unretained(this),
-                   quota_manager,
-                   special_storage_policy,
-                   origin_matcher,
-                   decrement_callback));
+                   base::Unretained(this), base::RetainedRef(quota_manager),
+                   special_storage_policy, origin_matcher, decrement_callback));
   }
 
   DecrementTaskCountOnIO();

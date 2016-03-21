@@ -71,7 +71,7 @@ void CacheStorageDispatcherHost::Init(CacheStorageContextImpl* context) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&CacheStorageDispatcherHost::CreateCacheListener, this,
-                 make_scoped_refptr(context)));
+                 base::RetainedRef(context)));
 }
 
 void CacheStorageDispatcherHost::OnDestruct() const {

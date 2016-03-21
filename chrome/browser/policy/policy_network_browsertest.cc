@@ -37,15 +37,12 @@ void VerifyQuicEnabledStatus(net::URLRequestContextGetter* getter,
 
 void VerifyQuicEnabledStatusInIOThread(bool quic_enabled_expected) {
   base::RunLoop run_loop;
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO,
-        FROM_HERE,
-        base::Bind(
-            VerifyQuicEnabledStatus,
-            make_scoped_refptr(g_browser_process->system_request_context()),
-            quic_enabled_expected,
-            run_loop.QuitClosure()));
-    run_loop.Run();
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(VerifyQuicEnabledStatus,
+                 base::RetainedRef(g_browser_process->system_request_context()),
+                 quic_enabled_expected, run_loop.QuitClosure()));
+  run_loop.Run();
 }
 
 }  // namespace

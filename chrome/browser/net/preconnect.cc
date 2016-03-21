@@ -33,7 +33,7 @@ void PreconnectOnUIThread(
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&PreconnectOnIOThread, url, first_party_for_cookies,
-                 motivation, count, make_scoped_refptr(getter), true));
+                 motivation, count, base::RetainedRef(getter), true));
   return;
 }
 

@@ -793,7 +793,8 @@ void SpeechRecognizerImpl::CloseAudioControllerAsynchronously() {
   // Close has completed (in the audio thread) and automatically destroy it
   // afterwards (upon return from OnAudioClosed).
   audio_controller_->Close(base::Bind(&SpeechRecognizerImpl::OnAudioClosed,
-                                      this, audio_controller_));
+                                      this,
+                                      base::RetainedRef(audio_controller_)));
   audio_controller_ = NULL;  // The controller is still refcounted by Bind.
   audio_log_->OnClosed(0);
 }

@@ -27,18 +27,18 @@ void CertDatabase::RemoveObserver(Observer* observer) {
 
 void CertDatabase::NotifyObserversOfCertAdded(const X509Certificate* cert) {
   observer_list_->Notify(FROM_HERE, &Observer::OnCertAdded,
-                         make_scoped_refptr(cert));
+                         base::RetainedRef(cert));
 }
 
 void CertDatabase::NotifyObserversOfCertRemoved(const X509Certificate* cert) {
   observer_list_->Notify(FROM_HERE, &Observer::OnCertRemoved,
-                         make_scoped_refptr(cert));
+                         base::RetainedRef(cert));
 }
 
 void CertDatabase::NotifyObserversOfCACertChanged(
     const X509Certificate* cert) {
   observer_list_->Notify(FROM_HERE, &Observer::OnCACertChanged,
-                         make_scoped_refptr(cert));
+                         base::RetainedRef(cert));
 }
 
 }  // namespace net
