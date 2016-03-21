@@ -2,22 +2,37 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from benchmarks import startup2
+from core import perf_benchmark
 import page_sets
 
 from telemetry import benchmark
+from telemetry.timeline import tracing_category_filter
+from telemetry.web_perf import timeline_based_measurement
+from telemetry.web_perf.metrics import startup
 
 
-# Disable accessing protected member for startup2._StartupPerfBenchmark. It
-# needs to be protected to not be listed in the list of benchmarks to run, even
-# though its purpose is only to factorise common code between startup
-# benchmarks.
-# pylint: disable=protected-access
+class _StartupPerfBenchmark(perf_benchmark.PerfBenchmark):
+  """Measures time to start Chrome."""
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs([
+        '--enable-stats-collection-bindings'
+    ])
+
+  def CreateTimelineBasedMeasurementOptions(self):
+    startup_category_filter = tracing_category_filter.TracingCategoryFilter(
+        filter_string='startup,blink.user_timing')
+    options = timeline_based_measurement.Options(
+        overhead_level=startup_category_filter)
+    options.SetLegacyTimelineBasedMetrics(
+        [startup.StartupTimelineMetric()])
+    return options
+
 
 @benchmark.Enabled('has tabs')
 @benchmark.Enabled('android')
 @benchmark.Disabled('chromeos', 'linux', 'mac', 'win')
-class StartWithUrlColdTBM(startup2._StartupPerfBenchmark):
+class StartWithUrlColdTBM(_StartupPerfBenchmark):
   """Measures time to start Chrome cold with startup URLs."""
 
   page_set = page_sets.StartupPagesPageSet
@@ -36,7 +51,7 @@ class StartWithUrlColdTBM(startup2._StartupPerfBenchmark):
 @benchmark.Enabled('android')
 @benchmark.Disabled('android-reference')  # crbug.com/588786
 @benchmark.Disabled('chromeos', 'linux', 'mac', 'win')
-class StartWithUrlWarmTBM(startup2._StartupPerfBenchmark):
+class StartWithUrlWarmTBM(_StartupPerfBenchmark):
   """Measures stimetime to start Chrome warm with startup URLs."""
 
   page_set = page_sets.StartupPagesPageSet
