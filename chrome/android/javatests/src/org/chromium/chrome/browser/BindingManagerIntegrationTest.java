@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.PrerenderTestHelper;
 import org.chromium.content.browser.BindingManager;
@@ -554,8 +555,10 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         mBindingManager.assertIsReleaseAllModerateBindingsCalled();
     }
 
+    // Test crashes on tablets. See crbug.com/594407
     @LargeTest
     @Feature({"ProcessManagement"})
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     public void testRestoreSharedRenderer() throws Exception {
         loadUrl(mTestServer.getURL(SHARED_RENDERER_PAGE_PATH));
 
