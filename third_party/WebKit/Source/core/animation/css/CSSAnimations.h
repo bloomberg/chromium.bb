@@ -124,6 +124,8 @@ private:
         Member<Animation> animation;
         const AnimatableValue* from;
         const AnimatableValue* to;
+        RefPtr<AnimatableValue> reversingAdjustedStartValue;
+        double reversingShorteningFactor;
     };
 
     HeapVector<Member<RunningAnimation>> m_runningAnimations;

@@ -146,12 +146,14 @@ public:
         m_updatedCompositorKeyframes.append(animation);
     }
 
-    void startTransition(CSSPropertyID id, const AnimatableValue* from, const AnimatableValue* to, const InertEffect& effect)
+    void startTransition(CSSPropertyID id, const AnimatableValue* from, const AnimatableValue* to, PassRefPtr<AnimatableValue> reversingAdjustedStartValue, double reversingShorteningFactor, const InertEffect& effect)
     {
         NewTransition newTransition;
         newTransition.id = id;
         newTransition.from = from;
         newTransition.to = to;
+        newTransition.reversingAdjustedStartValue = reversingAdjustedStartValue;
+        newTransition.reversingShorteningFactor = reversingShorteningFactor;
         newTransition.effect = &effect;
         m_newTransitions.set(id, newTransition);
     }
@@ -177,6 +179,8 @@ public:
         CSSPropertyID id;
         const AnimatableValue* from;
         const AnimatableValue* to;
+        RefPtr<AnimatableValue> reversingAdjustedStartValue;
+        double reversingShorteningFactor;
         Member<const InertEffect> effect;
     };
     using NewTransitionMap = HeapHashMap<CSSPropertyID, NewTransition>;

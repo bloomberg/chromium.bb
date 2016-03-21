@@ -449,6 +449,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         RunningTransition runningTransition;
         runningTransition.from = newTransition.from;
         runningTransition.to = newTransition.to;
+        runningTransition.reversingAdjustedStartValue = newTransition.reversingAdjustedStartValue;
+        runningTransition.reversingShorteningFactor = newTransition.reversingShorteningFactor;
 
         CSSPropertyID id = newTransition.id;
         const InertEffect* inertAnimation = newTransition.effect.get();
@@ -502,15 +504,20 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const CSSTransitionData& transitionData, size_t transitionIndex, const ComputedStyle& oldStyle, const ComputedStyle& style, const TransitionMap* activeTransitions, CSSAnimationUpdate& update, const Element* element)
 {
     RefPtr<AnimatableValue> to = nullptr;
+    const RunningTransition* interruptedTransition = nullptr;
     if (activeTransitions) {
         TransitionMap::const_iterator activeTransitionIter = activeTransitions->find(id);
         if (activeTransitionIter != activeTransitions->end()) {
+            const RunningTransition* runningTransition = &activeTransitionIter->value;
             to = CSSAnimatableValueFactory::create(id, style);
-            const AnimatableValue* activeTo = activeTransitionIter->value.to;
+            const AnimatableValue* activeTo = runningTransition->to;
             if (to->equals(activeTo))
                 return;
             update.cancelTransition(id);
             ASSERT(!element->elementAnimations() || !element->elementAnimations()->isAnimationStyleChange());
+
+            if (to->equals(runningTransition->reversingAdjustedStartValue.get()))
+                interruptedTransition = runningTransition;
         }
     }
 
@@ -528,6 +535,23 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     Timing timing = transitionData.convertToTiming(transitionIndex);
     if (timing.startDelay + timing.iterationDuration <= 0)
         return;
+
+    AnimatableValue* reversingAdjustedStartValue = from.get();
+    double reversingShorteningFactor = 1;
+    if (interruptedTransition) {
+        const double interruptedTimeFraction = interruptedTransition->animation->effect()->timeFraction();
+        if (!std::isnan(interruptedTimeFraction)) {
+            // const_cast because we need to take a ref later when passing to startTransition.
+            reversingAdjustedStartValue = const_cast<AnimatableValue*>(interruptedTransition->to);
+            reversingShorteningFactor = clampTo(
+                (interruptedTimeFraction * interruptedTransition->reversingShorteningFactor) +
+                (1 - interruptedTransition->reversingShorteningFactor), 0.0, 1.0);
+            timing.iterationDuration *= reversingShorteningFactor;
+            if (timing.startDelay < 0) {
+                timing.startDelay *= reversingShorteningFactor;
+            }
+        }
+    }
 
     AnimatableValueKeyframeVector keyframes;
     double startKeyframeOffset = 0;
@@ -556,7 +580,9 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSPropertyID id, const
     keyframes.append(endKeyframe);
 
     AnimatableValueKeyframeEffectModel* model = AnimatableValueKeyframeEffectModel::create(keyframes);
-    update.startTransition(id, from.get(), to.get(), *InertEffect::create(model, timing, false, 0));
+    update.startTransition(
+        id, from.get(), to.get(), reversingAdjustedStartValue, reversingShorteningFactor,
+        *InertEffect::create(model, timing, false, 0));
     ASSERT(!element->elementAnimations() || !element->elementAnimations()->isAnimationStyleChange());
 }
 
