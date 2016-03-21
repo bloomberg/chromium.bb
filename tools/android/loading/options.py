@@ -118,7 +118,7 @@ class Options(object):
     for arg, default, help_str in self._ARGS:
       # All global options are named.
       arg = '--' + arg
-      self._AddArg(parser, arg, default, help_str=help_str)
+      self._AddArg(container, arg, default, help_str=help_str)
     if extra is not None:
       if type(extra) is not list:
         extra = [extra]

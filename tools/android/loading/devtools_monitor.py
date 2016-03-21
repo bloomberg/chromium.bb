@@ -92,7 +92,8 @@ class DevToolsConnection(object):
       hostname: server hostname.
       port: port number.
     """
-    self._ws = self._Connect(hostname, port)
+    self._http_hostname = hostname
+    self._http_port = port
     self._event_listeners = {}
     self._domain_listeners = {}
     self._scoped_states = {}
@@ -100,6 +101,10 @@ class DevToolsConnection(object):
     self._tearing_down_tracing = False
     self._please_stop = False
     self._hooks = []
+    self._ws = None
+    self._target_descriptor = None
+
+    self._Connect()
 
   def RegisterListener(self, name, listener):
     """Registers a listener for an event.
@@ -247,6 +252,13 @@ class DevToolsConnection(object):
     """Stops the monitoring."""
     self._please_stop = True
 
+  def Close(self):
+    """Cleanly close chrome by closing the only tab."""
+    assert self._ws
+    response = self._HttpRequest('/close/' + self._target_descriptor['id'])
+    assert response == 'Target is closing'
+    self._ws = None
+
   def _Dispatch(self, timeout, kind='Monitoring'):
     self._please_stop = False
     while not self._please_stop:
@@ -313,25 +325,30 @@ class DevToolsConnection(object):
     self._tearing_down_tracing = False
     self.StopMonitoring()
 
-  @classmethod
-  def _GetWebSocketUrl(cls, hostname, port):
-    r = httplib.HTTPConnection(hostname, port)
-    r.request('GET', '/json')
-    response = r.getresponse()
-    if response.status != 200:
-      raise DevToolsConnectionException(
-          'Cannot connect to DevTools, reponse code %d' % response.status)
-    json_response = json.loads(response.read())
-    r.close()
-    websocket_url = json_response[0]['webSocketDebuggerUrl']
-    return websocket_url
+  def _HttpRequest(self, path):
+    assert path[0] == '/'
+    r = httplib.HTTPConnection(self._http_hostname, self._http_port)
+    try:
+      r.request('GET', '/json' + path)
+      response = r.getresponse()
+      if response.status != 200:
+        raise DevToolsConnectionException(
+            'Cannot connect to DevTools, reponse code %d' % response.status)
+      raw_response = response.read()
+    finally:
+      r.close()
+    return raw_response
 
-  @classmethod
-  def _Connect(cls, hostname, port):
-    websocket_url = cls._GetWebSocketUrl(hostname, port)
-    ws = inspector_websocket.InspectorWebsocket()
-    ws.Connect(websocket_url)
-    return ws
+  def _Connect(self):
+    assert not self._ws
+    assert not self._target_descriptor
+    for target_descriptor in json.loads(self._HttpRequest('/list')):
+      if target_descriptor['type'] == 'page':
+        self._target_descriptor = target_descriptor
+        break
+    assert self._target_descriptor['url'] == 'about:blank'
+    self._ws = inspector_websocket.InspectorWebsocket()
+    self._ws.Connect(self._target_descriptor['webSocketDebuggerUrl'])
 
 
 class Listener(object):

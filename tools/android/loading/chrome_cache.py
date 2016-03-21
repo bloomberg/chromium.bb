@@ -38,6 +38,19 @@ OUT_DIRECTORY = os.getenv('CR_OUT_FULL', os.path.join(
 CACHETOOL_BIN_PATH = os.path.join(OUT_DIRECTORY, 'cachetool')
 
 
+def _EnsureCleanCacheDirectory(directory_dest_path):
+  """Ensure that a cache directory is created and clean.
+
+  Args:
+    directory_dest_path: Path of the cache directory to ensure cleanliness.
+  """
+  if os.path.isdir(directory_dest_path):
+    shutil.rmtree(directory_dest_path)
+  elif not os.path.isdir(os.path.dirname(directory_dest_path)):
+    os.makedirs(os.path.dirname(directory_dest_path))
+  assert not os.path.exists(directory_dest_path)
+
+
 def _RemoteCacheDirectory():
   """Returns the path of the cache directory's on the remote device."""
   return '/data/data/{}/cache/Cache'.format(
@@ -182,9 +195,7 @@ def UnzipDirectoryContent(archive_path, directory_dest_path):
     archive_path: Archive's path to unzip.
     directory_dest_path: Directory destination path.
   """
-  if not os.path.exists(directory_dest_path):
-    os.makedirs(directory_dest_path)
-
+  _EnsureCleanCacheDirectory(directory_dest_path)
   with zipfile.ZipFile(archive_path) as zip_input:
     timestamps = None
     for file_archive_name in zip_input.namelist():
@@ -205,6 +216,19 @@ def UnzipDirectoryContent(archive_path, directory_dest_path):
       if not os.path.exists(output_path):
         os.makedirs(output_path)
       os.utime(output_path, (stats['atime'], stats['mtime']))
+
+
+def CopyCacheDirectory(directory_src_path, directory_dest_path):
+  """Copies a cache directory recursively with all the directories'
+  timestamps preserved.
+
+  Args:
+    directory_src_path: Path of the cache directory source.
+    directory_dest_path: Path of the cache directory destination.
+  """
+  assert os.path.isdir(directory_src_path)
+  _EnsureCleanCacheDirectory(directory_dest_path)
+  shutil.copytree(directory_src_path, directory_dest_path)
 
 
 class CacheBackend(object):

@@ -246,6 +246,7 @@ class SandwichRunner(object):
     # TODO(gabadie): Make sandwich working on desktop.
     device = device_utils.DeviceUtils.HealthyDevices()[0]
     self._chrome_ctl = controller.RemoteChromeController(device)
+    self._chrome_ctl.AddChromeArgument('--disable-infobars')
     if self.cache_operation == 'save':
       self._chrome_ctl.SetSlowDeath()
 
@@ -284,8 +285,11 @@ def _ArgumentParser():
   common_job_parser.add_argument('--job', required=True,
                                  help='JSON file with job description.')
 
+  # Plumbing parser to configure OPTIONS.
+  plumbing_parser = OPTIONS.GetParentParser('plumbing options')
+
   # Main parser
-  parser = argparse.ArgumentParser()
+  parser = argparse.ArgumentParser(parents=[plumbing_parser])
   subparsers = parser.add_subparsers(dest='subcommand', help='subcommand line')
 
   # Record WPR subcommand.
@@ -495,11 +499,8 @@ def main(command_line_args):
   logging.basicConfig(level=logging.INFO)
   devil_chromium.Initialize()
 
-  # Don't give the argument yet. All we are interested in for now is accessing
-  # the default values of OPTIONS.
-  OPTIONS.ParseArgs([])
-
   args = _ArgumentParser().parse_args(command_line_args)
+  OPTIONS.SetParsedArgs(args)
 
   if args.subcommand == 'record-wpr':
     return _RecordWprMain(args)

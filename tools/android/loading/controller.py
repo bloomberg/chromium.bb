@@ -45,7 +45,23 @@ class ChromeControllerBase(object):
   """
   def __init__(self):
     self._chrome_args = [
+        # Disable backgound network requests that may pollute WPR archive,
+        # pollute HTTP cache generation, and introduce noise in loading
+        # performance.
+        '--disable-background-networking',
+        '--disable-default-apps',
+        '--no-proxy-server',
+        # TODO(gabadie): Remove once crbug.com/354743 done.
+        '--safebrowsing-disable-auto-update',
+
+        # Disables actions that chrome performs only on first run or each
+        # launches, which can interfere with page load performance, or even
+        # block its execution by waiting for user input.
         '--disable-fre',
+        '--no-default-browser-check',
+        '--no-first-run',
+
+        # Tests & dev-tools related stuff.
         '--enable-test-events',
         '--remote-debugging-port=%d' % OPTIONS.devtools_port,
     ]
@@ -54,6 +70,7 @@ class ChromeControllerBase(object):
     self._emulated_device = None
     self._emulated_network = None
     self._clear_cache = False
+    self._slow_death = False
 
   def AddChromeArgument(self, arg):
     """Add command-line argument to the chrome execution."""
@@ -97,12 +114,63 @@ class ChromeControllerBase(object):
     """Set network emulation.
 
     Args:
-      network_name: (str) Key from emulation.NETWORK_CONDITIONS.
+      network_name: (str) Key from emulation.NETWORK_CONDITIONS or None to
+        disable network emulation.
     """
     if network_name:
       self._emulated_network = emulation.NETWORK_CONDITIONS[network_name]
     else:
       self._emulated_network = None
+
+  def PushBrowserCache(self, cache_path):
+    """Pushes the HTTP chrome cache to the profile directory.
+
+    Caution:
+      The chrome cache backend type differ according to the platform. On
+      desktop, the cache backend type is `blockfile` versus `simple` on Android.
+      This method assumes that your are pushing a cache with the correct backend
+      type, and will NOT verify for you.
+
+    Args:
+      cache_path: The directory's path containing the cache locally.
+    """
+    raise NotImplementedError
+
+  def PullBrowserCache(self):
+    """Pulls the HTTP chrome cache from the profile directory.
+
+    Returns:
+      Temporary directory containing all the browser cache. Caller will need to
+      remove this directory manually.
+    """
+    raise NotImplementedError
+
+  def SetSlowDeath(self, slow_death=True):
+    """Set to pause before final kill of chrome.
+
+    Gives time for caches to write.
+
+    Args:
+      slow_death: (bool) True if you want that which comes to all who live, to
+        be slow.
+    """
+    self._slow_death = slow_death
+
+  @contextlib.contextmanager
+  def OpenWprHost(self, wpr_archive_path, record=False,
+                  network_condition_name=None,
+                  disable_script_injection=False):
+    """Opens a Web Page Replay host context.
+
+    Args:
+      wpr_archive_path: host sided WPR archive's path.
+      record: Enables or disables WPR archive recording.
+      network_condition_name: Network condition name available in
+          emulation.NETWORK_CONDITIONS.
+      disable_script_injection: Disable JavaScript file injections that is
+        fighting against resources name entropy.
+    """
+    raise NotImplementedError
 
   def _StartConnection(self, connection):
     """This should be called after opening an appropriate connection."""
@@ -137,7 +205,6 @@ class RemoteChromeController(ChromeControllerBase):
     assert device is not None, 'Should you be using LocalController instead?'
     self._device = device
     super(RemoteChromeController, self).__init__()
-    self._slow_death = False
 
   @contextlib.contextmanager
   def Open(self):
@@ -170,32 +237,13 @@ class RemoteChromeController(ChromeControllerBase):
     self._device.KillAll(package_info.package, quiet=True)
 
   def PushBrowserCache(self, cache_path):
-    """Push a chrome cache.
-
-    Args:
-      cache_path: The directory's path containing the cache locally.
-    """
+    """Override for chrome cache pushing."""
     chrome_cache.PushBrowserCache(self._device, cache_path)
 
   def PullBrowserCache(self):
-    """Pull a chrome cache.
-
-    Returns:
-      Temporary directory containing all the browser cache. Caller will need to
-      remove this directory manually.
-    """
+    """Override for chrome cache pulling."""
+    assert self._slow_death, 'Must do SetSlowDeath() before opening chrome.'
     return chrome_cache.PullBrowserCache(self._device)
-
-  def SetSlowDeath(self, slow_death=True):
-    """Set to pause before final kill of chrome.
-
-    Gives time for caches to write.
-
-    Args:
-      slow_death: (bool) True if you want that which comes to all who live, to
-        be slow.
-    """
-    self._slow_death = slow_death
 
   @contextlib.contextmanager
   def OpenWprHost(self, wpr_archive_path, record=False,
@@ -203,7 +251,7 @@ class RemoteChromeController(ChromeControllerBase):
                   disable_script_injection=False):
     """Starts a WPR host, overrides Chrome flags until contextmanager exit."""
     assert not self._chrome_wpr_specific_args, 'WPR is already running.'
-    with device_setup.WprHost(self._device, wpr_archive_path,
+    with device_setup.RemoteWprHost(self._device, wpr_archive_path,
         record=record,
         network_condition_name=network_condition_name,
         disable_script_injection=disable_script_injection) as additional_flags:
@@ -213,25 +261,32 @@ class RemoteChromeController(ChromeControllerBase):
 
 
 class LocalChromeController(ChromeControllerBase):
-  """Controller for a local (desktop) chrome instance.
+  """Controller for a local (desktop) chrome instance."""
 
-  TODO(gabadie): implement cache push/pull and declare up in base class.
-  """
   def __init__(self):
     super(LocalChromeController, self).__init__()
     if OPTIONS.no_sandbox:
       self.AddChromeArgument('--no-sandbox')
+    self._profile_dir = OPTIONS.local_profile_dir
+    self._using_temp_profile_dir = self._profile_dir is None
+    if self._using_temp_profile_dir:
+      self._profile_dir = tempfile.mkdtemp(suffix='.profile')
+
+  def __del__(self):
+    if self._using_temp_profile_dir:
+      shutil.rmtree(self._profile_dir)
 
   @contextlib.contextmanager
   def Open(self):
     """Override for connection context."""
-    binary_filename = OPTIONS.local_binary
-    profile_dir = OPTIONS.local_profile_dir
-    using_temp_profile_dir = profile_dir is None
-    flags = self._GetChromeArguments()
-    if using_temp_profile_dir:
-      profile_dir = tempfile.mkdtemp()
-    flags = ['--user-data-dir=%s' % profile_dir] + flags
+    chrome_cmd = [OPTIONS.local_binary]
+    chrome_cmd.extend(self._GetChromeArguments())
+    chrome_cmd.append('--user-data-dir=%s' % self._profile_dir)
+    chrome_cmd.extend(['--enable-logging=stderr', '--v=1'])
+    # Navigates to about:blank for couples of reasons:
+    #   - To find the correct target descriptor at devtool connection;
+    #   - To avoid cache and WPR pollution by the NTP.
+    chrome_cmd.append('about:blank')
     chrome_out = None if OPTIONS.local_noisy else file('/dev/null', 'w')
     environment = os.environ.copy()
     if OPTIONS.headless:
@@ -239,9 +294,10 @@ class LocalChromeController(ChromeControllerBase):
       xvfb_process = subprocess.Popen(
           ['Xvfb', ':99', '-screen', '0', '1600x1200x24'], shell=False,
           stderr=chrome_out)
-    chrome_process = subprocess.Popen(
-        [binary_filename] + flags, shell=False, stderr=chrome_out,
-        env=environment)
+    logging.debug(subprocess.list2cmdline(chrome_cmd))
+    chrome_process = subprocess.Popen(chrome_cmd, shell=False,
+                                      stderr=chrome_out, env=environment)
+    connection = None
     try:
       time.sleep(10)
       process_result = chrome_process.poll()
@@ -252,9 +308,57 @@ class LocalChromeController(ChromeControllerBase):
             OPTIONS.devtools_hostname, OPTIONS.devtools_port)
         self._StartConnection(connection)
         yield connection
+        if self._slow_death:
+          connection.Close()
+          connection = None
+          chrome_process.wait()
     finally:
-      chrome_process.kill()
+      if connection:
+        chrome_process.kill()
       if OPTIONS.headless:
         xvfb_process.kill()
-      if using_temp_profile_dir:
-        shutil.rmtree(profile_dir)
+
+  def PushBrowserCache(self, cache_path):
+    """Override for chrome cache pushing."""
+    self._EnsureProfileDirectory()
+    profile_cache_path = self._GetCacheDirectoryPath()
+    logging.info('Copy cache directory from %s to %s.' % (
+        cache_path, profile_cache_path))
+    chrome_cache.CopyCacheDirectory(cache_path, profile_cache_path)
+
+  def PullBrowserCache(self):
+    """Override for chrome cache pulling."""
+    cache_path = tempfile.mkdtemp()
+    profile_cache_path = self._GetCacheDirectoryPath()
+    logging.info('Copy cache directory from %s to %s.' % (
+        profile_cache_path, cache_path))
+    chrome_cache.CopyCacheDirectory(profile_cache_path, cache_path)
+    return cache_path
+
+  @contextlib.contextmanager
+  def OpenWprHost(self, wpr_archive_path, record=False,
+                  network_condition_name=None,
+                  disable_script_injection=False):
+    """Override for WPR context."""
+    assert not self._chrome_wpr_specific_args, 'WPR is already running.'
+    with device_setup.LocalWprHost(wpr_archive_path,
+        record=record,
+        network_condition_name=network_condition_name,
+        disable_script_injection=disable_script_injection
+        ) as additional_flags:
+      self._chrome_wpr_specific_args = additional_flags
+      yield
+    self._chrome_wpr_specific_args = []
+
+  def _EnsureProfileDirectory(self):
+    if (not os.path.isdir(self._profile_dir) or
+        os.listdir(self._profile_dir) == []):
+      # Launch chrome so that it populates the profile directory.
+      with self.Open():
+        pass
+      print os.listdir(self._profile_dir + '/Default')
+    assert os.path.isdir(self._profile_dir)
+    assert os.path.isdir(os.path.dirname(self._GetCacheDirectoryPath()))
+
+  def _GetCacheDirectoryPath(self):
+    return os.path.join(self._profile_dir, 'Default', 'Cache')

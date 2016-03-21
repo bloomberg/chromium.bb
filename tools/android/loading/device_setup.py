@@ -130,30 +130,11 @@ def _SetUpDevice(device, package_info):
 
 
 @contextlib.contextmanager
-def WprHost(device, wpr_archive_path, record=False,
-            network_condition_name=None,
-            disable_script_injection=False):
-  """Launches web page replay host.
-
-  Args:
-    device: Android device.
-    wpr_archive_path: host sided WPR archive's path.
-    network_condition_name: Network condition name available in
-        chrome_setup.NETWORK_CONDITIONS.
-    record: Enables or disables WPR archive recording.
-
-  Returns:
-    Additional flags list that may be used for chromium to load web page through
-    the running web page replay host.
-  """
-  assert device
-  if wpr_archive_path == None:
-    assert not record, 'WPR cannot record without a specified archive.'
-    assert not network_condition_name, ('WPR cannot emulate network condition' +
-                                        ' without a specified archive.')
-    yield []
-    return
-
+def _WprHost(wpr_archive_path, record=False,
+             network_condition_name=None,
+             disable_script_injection=False,
+             wpr_ca_cert_path=None):
+  assert wpr_archive_path
   wpr_server_args = ['--use_closest_match']
   if record:
     wpr_server_args.append('--record')
@@ -176,40 +157,130 @@ def WprHost(device, wpr_archive_path, record=False,
     # Remove default WPR injected scripts like deterministic.js which
     # overrides Math.random.
     wpr_server_args.extend(['--inject_scripts', ''])
+  if wpr_ca_cert_path:
+    wpr_server_args.extend(['--should_generate_certs',
+                            '--https_root_ca_cert_path=' + wpr_ca_cert_path])
 
+  # Set up WPR server and device forwarder.
+  wpr_server = webpagereplay.ReplayServer(wpr_archive_path,
+      '127.0.0.1', 0, 0, None, wpr_server_args)
+  http_port, https_port = wpr_server.StartServer()[:-1]
+
+  logging.info('WPR server listening on HTTP=%s, HTTPS=%s (options=%s)' % (
+      http_port, https_port, wpr_server_args))
+  try:
+    yield http_port, https_port
+  finally:
+    wpr_server.StopServer()
+
+
+def _VerifySilentWprHost(record, network_condition_name):
+  assert not record, 'WPR cannot record without a specified archive.'
+  assert not network_condition_name, ('WPR cannot emulate network condition' +
+                                      ' without a specified archive.')
+
+
+def _FormatWPRRelatedChromeArgumentFor(http_port, https_port, escape):
+  HOST_RULES='MAP * 127.0.0.1,EXCLUDE localhost'
+  chrome_args = [
+      '--testing-fixed-http-port={}'.format(http_port),
+      '--testing-fixed-https-port={}'.format(https_port)]
+  if escape:
+    chrome_args.append('--host-resolver-rules="{}"'.format(HOST_RULES))
+  else:
+    chrome_args.append('--host-resolver-rules={}'.format(HOST_RULES))
+  return chrome_args
+
+
+@contextlib.contextmanager
+def LocalWprHost(wpr_archive_path, record=False,
+                 network_condition_name=None,
+                 disable_script_injection=False):
+  """Launches web page replay host.
+
+  Args:
+    wpr_archive_path: host sided WPR archive's path.
+    record: Enables or disables WPR archive recording.
+    network_condition_name: Network condition name available in
+        chrome_setup.NETWORK_CONDITIONS.
+    disable_script_injection: Disable JavaScript file injections that is
+      fighting against resources name entropy.
+
+  Returns:
+    Additional flags list that may be used for chromium to load web page through
+    the running web page replay host.
+  """
+  if wpr_archive_path == None:
+    _VerifySilentWprHost(record, network_condition_name)
+    yield []
+    return
+  with _WprHost(
+      wpr_archive_path,
+      record=record,
+      network_condition_name=network_condition_name,
+      disable_script_injection=disable_script_injection
+      ) as (http_port, https_port):
+    chrome_args = _FormatWPRRelatedChromeArgumentFor(http_port, https_port,
+                                                     escape=False)
+    # Certification authority is handled only available on Android.
+    chrome_args.append('--ignore-certificate-errors')
+    yield chrome_args
+
+
+@contextlib.contextmanager
+def RemoteWprHost(device, wpr_archive_path, record=False,
+                  network_condition_name=None,
+                  disable_script_injection=False):
+  """Launches web page replay host.
+
+  Args:
+    device: Android device.
+    wpr_archive_path: host sided WPR archive's path.
+    record: Enables or disables WPR archive recording.
+    network_condition_name: Network condition name available in
+        chrome_setup.NETWORK_CONDITIONS.
+    disable_script_injection: Disable JavaScript file injections that is
+      fighting against resources name entropy.
+
+  Returns:
+    Additional flags list that may be used for chromium to load web page through
+    the running web page replay host.
+  """
+  assert device
+  if wpr_archive_path == None:
+    _VerifySilentWprHost(record, network_condition_name)
+    yield []
+    return
   # Deploy certification authority to the device.
   temp_certificate_dir = tempfile.mkdtemp()
   wpr_ca_cert_path = os.path.join(temp_certificate_dir, 'testca.pem')
   certutils.write_dummy_ca_cert(*certutils.generate_dummy_ca_cert(),
                                 cert_path=wpr_ca_cert_path)
-
   device_cert_util = adb_install_cert.AndroidCertInstaller(
       device.adb.GetDeviceSerial(), None, wpr_ca_cert_path)
   device_cert_util.install_cert(overwrite_cert=True)
-  wpr_server_args.extend(['--should_generate_certs',
-                          '--https_root_ca_cert_path=' + wpr_ca_cert_path])
-
-  # Set up WPR server and device forwarder.
-  wpr_server = webpagereplay.ReplayServer(wpr_archive_path,
-      '127.0.0.1', 0, 0, None, wpr_server_args)
-  ports = wpr_server.StartServer()[:-1]
-  host_http_port = ports[0]
-  host_https_port = ports[1]
-
-  forwarder.Forwarder.Map([(0, host_http_port), (0, host_https_port)], device)
-  device_http_port = forwarder.Forwarder.DevicePortForHostPort(host_http_port)
-  device_https_port = forwarder.Forwarder.DevicePortForHostPort(host_https_port)
-
   try:
-    yield [
-      '--host-resolver-rules="MAP * 127.0.0.1,EXCLUDE localhost"',
-      '--testing-fixed-http-port={}'.format(device_http_port),
-      '--testing-fixed-https-port={}'.format(device_https_port)]
+    # Set up WPR server
+    with _WprHost(
+        wpr_archive_path,
+        record=record,
+        network_condition_name=network_condition_name,
+        disable_script_injection=disable_script_injection,
+        wpr_ca_cert_path=wpr_ca_cert_path
+        ) as (http_port, https_port):
+      # Set up the forwarder.
+      forwarder.Forwarder.Map([(0, http_port), (0, https_port)], device)
+      device_http_port = forwarder.Forwarder.DevicePortForHostPort(http_port)
+      device_https_port = forwarder.Forwarder.DevicePortForHostPort(https_port)
+      try:
+        yield _FormatWPRRelatedChromeArgumentFor(device_http_port,
+                                                 device_https_port,
+                                                 escape=True)
+      finally:
+        # Tear down the forwarder.
+        forwarder.Forwarder.UnmapDevicePort(device_http_port, device)
+        forwarder.Forwarder.UnmapDevicePort(device_https_port, device)
   finally:
-    forwarder.Forwarder.UnmapDevicePort(device_http_port, device)
-    forwarder.Forwarder.UnmapDevicePort(device_https_port, device)
-    wpr_server.StopServer()
-
     # Remove certification authority from the device.
     device_cert_util.remove_cert()
     shutil.rmtree(temp_certificate_dir)
