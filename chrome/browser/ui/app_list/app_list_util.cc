@@ -22,14 +22,6 @@ bool IsAppLauncherEnabled() {
 }
 
 bool ShouldShowAppLauncherPromo() {
-#if defined(OS_WIN)
-  PrefService* local_state = g_browser_process->local_state();
-  // In some tests, the prefs aren't initialised.
-  if (!local_state)
-    return false;
-  return !IsAppLauncherEnabled() &&
-      local_state->GetBoolean(prefs::kShowAppLauncherPromo);
-#else
+  // Never promote. TODO(tapted): Delete this function and supporting code.
   return false;
-#endif
-}  // namespace apps
+}
