@@ -168,10 +168,6 @@ private:
 
     void paintChildren(const PaintInfo&, const LayoutPoint&) const override;
 
-    bool needToStretchChildLogicalHeight(const LayoutBox&) const;
-    LayoutUnit childIntrinsicHeight(const LayoutBox&) const;
-    LayoutUnit childIntrinsicWidth(const LayoutBox&) const;
-    LayoutUnit intrinsicLogicalHeightForChild(const LayoutBox&) const;
     LayoutUnit marginLogicalHeightForChild(const LayoutBox&) const;
     LayoutUnit computeMarginLogicalHeightForChild(const LayoutBox&) const;
     LayoutUnit availableAlignmentSpaceForChildBeforeStretching(LayoutUnit gridAreaBreadthForChild, const LayoutBox&) const;

@@ -685,9 +685,9 @@ LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, Vector<GridTrack>
     SubtreeLayoutScope layoutScope(child);
     LayoutUnit oldOverrideContainingBlockContentLogicalWidth = child.hasOverrideContainingBlockLogicalWidth() ? child.overrideContainingBlockContentLogicalWidth() : LayoutUnit();
     LayoutUnit overrideContainingBlockContentLogicalWidth = gridAreaBreadthForChild(child, ForColumns, columnTracks);
-    if (child.hasRelativeLogicalHeight() || oldOverrideContainingBlockContentLogicalWidth != overrideContainingBlockContentLogicalWidth) {
+    bool shouldClearContainingBlockLogicalHeight = child.hasRelativeLogicalHeight() || child.styleRef().logicalHeight().isIntrinsicOrAuto();
+    if (shouldClearContainingBlockLogicalHeight || oldOverrideContainingBlockContentLogicalWidth != overrideContainingBlockContentLogicalWidth)
         layoutScope.setNeedsLayout(&child, LayoutInvalidationReason::GridChanged);
-    }
 
     bool hasOverrideHeight = child.hasOverrideLogicalContentHeight();
     // We need to clear the stretched height to properly compute logical height during layout.
@@ -697,11 +697,11 @@ LayoutUnit LayoutGrid::logicalHeightForChild(LayoutBox& child, Vector<GridTrack>
     child.setOverrideContainingBlockContentLogicalWidth(overrideContainingBlockContentLogicalWidth);
     // If |child| has a relative logical height, we shouldn't let it override its intrinsic height, which is
     // what we are interested in here. Thus we need to set the override logical height to -1 (no possible resolution).
-    if (child.hasRelativeLogicalHeight())
+    if (shouldClearContainingBlockLogicalHeight)
         child.setOverrideContainingBlockContentLogicalHeight(LayoutUnit(-1));
     child.layoutIfNeeded();
     // If the child was stretched we should use its intrinsic height.
-    return (hasOverrideHeight ? childIntrinsicHeight(child) : child.logicalHeight()) + child.marginLogicalHeight();
+    return child.logicalHeight() + child.marginLogicalHeight();
 }
 
 LayoutUnit LayoutGrid::minSizeForChild(LayoutBox& child, GridTrackSizingDirection direction, Vector<GridTrack>& columnTracks)
@@ -1640,43 +1640,6 @@ static LayoutUnit computeOverflowAlignmentOffset(OverflowAlignment overflow, Lay
 
     ASSERT_NOT_REACHED();
     return LayoutUnit();
-}
-
-static inline LayoutUnit constrainedChildIntrinsicContentLogicalHeight(const LayoutBox& child)
-{
-    LayoutUnit childIntrinsicContentLogicalHeight = child.intrinsicContentLogicalHeight();
-    return child.constrainLogicalHeightByMinMax(childIntrinsicContentLogicalHeight + child.borderAndPaddingLogicalHeight(), childIntrinsicContentLogicalHeight);
-}
-
-// FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
-bool LayoutGrid::needToStretchChildLogicalHeight(const LayoutBox& child) const
-{
-    if (ComputedStyle::resolveAlignment(styleRef(), child.styleRef(), ItemPositionStretch) != ItemPositionStretch)
-        return false;
-
-    return isHorizontalWritingMode() && child.style()->height().isAuto();
-}
-
-// FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
-LayoutUnit LayoutGrid::childIntrinsicHeight(const LayoutBox& child) const
-{
-    if (child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
-        return constrainedChildIntrinsicContentLogicalHeight(child);
-    return child.size().height();
-}
-
-// FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
-LayoutUnit LayoutGrid::childIntrinsicWidth(const LayoutBox& child) const
-{
-    if (!child.isHorizontalWritingMode() && needToStretchChildLogicalHeight(child))
-        return constrainedChildIntrinsicContentLogicalHeight(child);
-    return child.size().width();
-}
-
-// FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
-LayoutUnit LayoutGrid::intrinsicLogicalHeightForChild(const LayoutBox& child) const
-{
-    return isHorizontalWritingMode() ? childIntrinsicHeight(child) : childIntrinsicWidth(child);
 }
 
 // FIXME: This logic is shared by LayoutFlexibleBox, so it should be moved to LayoutBox.
