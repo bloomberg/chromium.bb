@@ -5,6 +5,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 namespace test1 {
@@ -67,12 +68,6 @@ size_t GetRegistryLengthFromHostIncludingPrivate(
   return GetRegistryLength(host, unknown_filter, INCLUDE_PRIVATE_REGISTRIES);
 }
 
-bool CompareDomains(const std::string& url1, const std::string& url2) {
-  GURL g1 = GURL(url1);
-  GURL g2 = GURL(url2);
-  return SameDomainOrHost(g1, g2, EXCLUDE_PRIVATE_REGISTRIES);
-}
-
 }  // namespace
 
 class RegistryControlledDomainTest : public testing::Test {
@@ -80,6 +75,17 @@ class RegistryControlledDomainTest : public testing::Test {
   template <typename Graph>
   void UseDomainData(const Graph& graph) {
     SetFindDomainGraph(graph, sizeof(Graph));
+  }
+
+  bool CompareDomains(const std::string& url1, const std::string& url2) {
+    SCOPED_TRACE(url1 + " " + url2);
+    GURL g1 = GURL(url1);
+    GURL g2 = GURL(url2);
+    url::Origin o1 = url::Origin(g1);
+    url::Origin o2 = url::Origin(g2);
+    EXPECT_EQ(SameDomainOrHost(o1, o2, EXCLUDE_PRIVATE_REGISTRIES),
+              SameDomainOrHost(g1, g2, EXCLUDE_PRIVATE_REGISTRIES));
+    return SameDomainOrHost(g1, g2, EXCLUDE_PRIVATE_REGISTRIES);
   }
 
   void TearDown() override { SetFindDomainGraph(); }

@@ -735,7 +735,7 @@ public:
     const KURL& cookieURL() const { return m_cookieURL; }
     void setCookieURL(const KURL& url) { m_cookieURL = url; }
 
-    const KURL& firstPartyForCookies() const;
+    const KURL firstPartyForCookies() const;
 
     // The following implements the rule from HTML 4 for what valid names are.
     // To get this right for all the XML cases, we probably have to improve this or move it

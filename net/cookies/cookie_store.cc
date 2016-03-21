@@ -55,7 +55,8 @@ void CookieStore::GetAllCookiesForURLAsync(
     const GetCookieListCallback& callback) {
   CookieOptions options;
   options.set_include_httponly();
-  options.set_include_same_site();
+  options.set_same_site_cookie_mode(
+      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
   options.set_do_not_update_access_time();
   GetCookieListWithOptionsAsync(url, options, callback);
 }

@@ -4232,31 +4232,38 @@ String Document::lastModified() const
     return String::format("%02d/%02d/%04d %02d:%02d:%02d", date.month() + 1, date.monthDay(), date.fullYear(), date.hour(), date.minute(), date.second());
 }
 
-const KURL& Document::firstPartyForCookies() const
+const KURL Document::firstPartyForCookies() const
 {
-    if (SchemeRegistry::shouldTreatURLSchemeAsFirstPartyWhenTopLevel(topDocument().url().protocol()))
-        return topDocument().url();
+    // TODO(mkwst): This doesn't correctly handle sandboxed documents; we want to look at their URL,
+    // but we can't because we don't know what it is.
+    KURL topDocumentURL = frame()->tree().top()->isLocalFrame()
+        ? topDocument().url()
+        : KURL(KURL(), frame()->securityContext()->getSecurityOrigin()->toString());
+    if (SchemeRegistry::shouldTreatURLSchemeAsFirstPartyWhenTopLevel(topDocumentURL.protocol()))
+        return topDocumentURL;
 
     // We're intentionally using the URL of each document rather than the document's SecurityOrigin.
     // Sandboxing a document into a unique origin shouldn't effect first-/third-party status for
     // cookies and site data.
-    const OriginAccessEntry& accessEntry = topDocument().accessEntryFromURL();
-    const Document* currentDocument = this;
-    while (currentDocument) {
+    const OriginAccessEntry& accessEntry = frame()->tree().top()->isLocalFrame()
+        ? topDocument().accessEntryFromURL()
+        : OriginAccessEntry(topDocumentURL.protocol(), topDocumentURL.host(), OriginAccessEntry::AllowRegisterableDomains);
+    const Frame* currentFrame = frame();
+    while (currentFrame) {
         // Skip over srcdoc documents, as they are always same-origin with their closest non-srcdoc parent.
-        while (currentDocument->isSrcdocDocument())
-            currentDocument = currentDocument->parentDocument();
-        ASSERT(currentDocument);
+        while (currentFrame->isLocalFrame() && toLocalFrame(currentFrame)->document()->isSrcdocDocument())
+            currentFrame = currentFrame->tree().parent();
+        ASSERT(currentFrame);
 
         // We use 'matchesDomain' here, as it turns out that some folks embed HTTPS login forms
         // into HTTP pages; we should allow this kind of upgrade.
-        if (accessEntry.matchesDomain(*currentDocument->getSecurityOrigin()) == OriginAccessEntry::DoesNotMatchOrigin)
+        if (accessEntry.matchesDomain(*currentFrame->securityContext()->getSecurityOrigin()) == OriginAccessEntry::DoesNotMatchOrigin)
             return SecurityOrigin::urlWithUniqueSecurityOrigin();
 
-        currentDocument = currentDocument->parentDocument();
+        currentFrame = currentFrame->tree().parent();
     }
 
-    return topDocument().url();
+    return topDocumentURL;
 }
 
 static bool isValidNameNonASCII(const LChar* characters, unsigned length)

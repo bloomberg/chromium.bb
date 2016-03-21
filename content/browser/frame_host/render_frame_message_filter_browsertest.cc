@@ -39,7 +39,14 @@ std::string GetCookieFromJS(RenderFrameHost* frame) {
 
 }  // namespace
 
-using RenderFrameMessageFilterBrowserTest = ContentBrowserTest;
+class RenderFrameMessageFilterBrowserTest : public ContentBrowserTest {
+ protected:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
+    ContentBrowserTest::SetUp();
+  }
+};
 
 // Exercises basic cookie operations via javascript, including an http page
 // interacting with secure cookies.
@@ -80,26 +87,26 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, Cookies) {
   // Non-TLS page writes secure cookie.
   EXPECT_TRUE(ExecuteScript(web_contents_http->GetMainFrame(),
                             "document.cookie = 'A=1; secure;';"));
-  EXPECT_EQ("A=1", GetCookieFromJS(web_contents_https->GetMainFrame()));
+  EXPECT_EQ("", GetCookieFromJS(web_contents_https->GetMainFrame()));
   EXPECT_EQ("", GetCookieFromJS(web_contents_http->GetMainFrame()));
 
   // TLS page writes not-secure cookie.
   EXPECT_TRUE(ExecuteScript(web_contents_http->GetMainFrame(),
                             "document.cookie = 'B=2';"));
-  EXPECT_EQ("A=1; B=2", GetCookieFromJS(web_contents_https->GetMainFrame()));
+  EXPECT_EQ("B=2", GetCookieFromJS(web_contents_https->GetMainFrame()));
   EXPECT_EQ("B=2", GetCookieFromJS(web_contents_http->GetMainFrame()));
 
-  // Non-TLS page writes secure cookie.
+  // TLS page writes secure cookie.
   EXPECT_TRUE(ExecuteScript(web_contents_https->GetMainFrame(),
                             "document.cookie = 'C=3;secure;';"));
-  EXPECT_EQ("A=1; B=2; C=3",
+  EXPECT_EQ("B=2; C=3",
             GetCookieFromJS(web_contents_https->GetMainFrame()));
   EXPECT_EQ("B=2", GetCookieFromJS(web_contents_http->GetMainFrame()));
 
   // TLS page writes not-secure cookie.
   EXPECT_TRUE(ExecuteScript(web_contents_https->GetMainFrame(),
                             "document.cookie = 'D=4';"));
-  EXPECT_EQ("A=1; B=2; C=3; D=4",
+  EXPECT_EQ("B=2; C=3; D=4",
             GetCookieFromJS(web_contents_https->GetMainFrame()));
   EXPECT_EQ("B=2; D=4", GetCookieFromJS(web_contents_http->GetMainFrame()));
 }
@@ -111,17 +118,41 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, SameSiteCookies) {
   ASSERT_TRUE(embedded_test_server()->Start());
   SetupCrossSiteRedirector(embedded_test_server());
 
-  // The server sends a SameSite cookie. The RenderFrameMessageFilter should
-  // allow this to be sent to the renderer.
-  GURL url = embedded_test_server()->GetURL("/set-cookie?samesite=1;SameSite");
+  // The server sets five cookies on 'a.com' and on 'b.com', then loads a
+  // page that frames both 'a.com' and 'b.com' under 'a.com'.
+  std::string cookies_to_set =
+      "/set-cookie?normal=1"
+      "&strict=1;SameSite=Strict"
+      "&lax=1;SameSite=Lax"
+      "&strict-http=1;SameSite=Strict;httponly"
+      "&lax-http=1;SameSite=Lax;httponly";
+
+  GURL url = embedded_test_server()->GetURL("a.com", cookies_to_set);
+  NavigateToURL(shell(), url);
+  url = embedded_test_server()->GetURL("b.com", cookies_to_set);
+  NavigateToURL(shell(), url);
+  url = embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a(),b())");
   NavigateToURL(shell(), url);
 
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  EXPECT_EQ("http://127.0.0.1/",
-            web_contents->GetSiteInstance()->GetSiteURL().spec());
+  RenderFrameHost* main_frame = web_contents->GetMainFrame();
+  RenderFrameHost* a_iframe =
+      web_contents->GetFrameTree()->root()->child_at(0)->current_frame_host();
+  RenderFrameHost* b_iframe =
+      web_contents->GetFrameTree()->root()->child_at(1)->current_frame_host();
 
-  EXPECT_EQ("samesite=1", GetCookieFromJS(web_contents->GetMainFrame()));
+  // The top-level frame should get both kinds of same-site cookies.
+  EXPECT_EQ("normal=1; strict=1; lax=1", GetCookieFromJS(main_frame));
+
+  // Same-site cookies will be delievered to the 'a.com' frame, as it is same-
+  // site with its ancestors.
+  EXPECT_EQ("normal=1; strict=1; lax=1", GetCookieFromJS(a_iframe));
+
+  // Same-site cookies should not be delievered to the 'b.com' frame, as it
+  // isn't same-site with its ancestors.
+  EXPECT_EQ("normal=1", GetCookieFromJS(b_iframe));
 }
 
 // The RenderFrameMessageFilter will kill processes when they access the cookies

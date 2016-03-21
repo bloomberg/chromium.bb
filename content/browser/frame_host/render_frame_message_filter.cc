@@ -21,6 +21,7 @@
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
@@ -394,7 +395,18 @@ void RenderFrameMessageFilter::OnGetCookies(int render_frame_id,
   net::URLRequestContext* context = GetRequestContextForURL(url);
 
   net::CookieOptions options;
-  options.set_include_same_site();
+  if (net::registry_controlled_domains::SameDomainOrHost(
+          url, first_party_for_cookies,
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    // TODO(mkwst): This check ought to further distinguish between frames
+    // initiated in a strict or lax same-site context.
+    options.set_same_site_cookie_mode(
+        net::CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  } else {
+    options.set_same_site_cookie_mode(
+        net::CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
+  }
+
   context->cookie_store()->GetCookieListWithOptionsAsync(
       url, options,
       base::Bind(&RenderFrameMessageFilter::CheckPolicyForCookies, this,

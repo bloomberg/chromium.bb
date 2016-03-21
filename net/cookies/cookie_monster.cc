@@ -1044,7 +1044,8 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
 
   CookieOptions options;
   options.set_include_httponly();
-  options.set_include_same_site();
+  options.set_same_site_cookie_mode(
+      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
   if (enforce_strict_secure)
     options.set_enforce_strict_secure();
   return SetCanonicalCookie(std::move(cc), options);
@@ -1198,7 +1199,8 @@ void CookieMonster::DeleteCookie(const GURL& url,
 
   CookieOptions options;
   options.set_include_httponly();
-  options.set_include_same_site();
+  options.set_same_site_cookie_mode(
+      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
   // Get the cookies for this host and its domain(s).
   std::vector<CanonicalCookie*> cookies;
   FindCookiesForHostAndDomain(url, options, &cookies);
@@ -2327,7 +2329,8 @@ void CookieMonster::RunCookieChangedCallbacks(const CanonicalCookie& cookie,
 
   CookieOptions opts;
   opts.set_include_httponly();
-  opts.set_include_same_site();
+  opts.set_same_site_cookie_mode(
+      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
   // Note that the callbacks in hook_map_ are wrapped with RunAsync(), so they
   // are guaranteed to not take long - they just post a RunAsync task back to
   // the appropriate thread's message loop and return.

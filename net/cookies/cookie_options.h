@@ -9,12 +9,19 @@
 
 #include "base/time/time.h"
 #include "net/base/net_export.h"
+#include "net/cookies/cookie_constants.h"
 #include "url/gurl.h"
 
 namespace net {
 
 class NET_EXPORT CookieOptions {
  public:
+  enum class SameSiteCookieMode {
+    INCLUDE_STRICT_AND_LAX,
+    INCLUDE_LAX,
+    DO_NOT_INCLUDE
+  };
+
   // Creates a CookieOptions object which:
   //
   // * Excludes HttpOnly cookies
@@ -25,7 +32,8 @@ class NET_EXPORT CookieOptions {
   // These settings can be altered by calling:
   //
   // * |set_{include,exclude}_httponly()|
-  // * |set_include_same_site()|
+  // * |set_same_site_cookie_mode(
+  //        CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX)|
   // * |set_enforce_prefixes()|
   // * |set_do_not_update_access_time()|
   CookieOptions();
@@ -35,8 +43,12 @@ class NET_EXPORT CookieOptions {
   bool exclude_httponly() const { return exclude_httponly_; }
 
   // Default is to exclude 'same_site' cookies.
-  void set_include_same_site() { include_same_site_ = true; }
-  bool include_same_site() const { return include_same_site_; }
+  void set_same_site_cookie_mode(SameSiteCookieMode mode) {
+    same_site_cookie_mode_ = mode;
+  }
+  SameSiteCookieMode same_site_cookie_mode() const {
+    return same_site_cookie_mode_;
+  }
 
   // TODO(jww): Remove once we decide whether to ship modifying 'secure' cookies
   // only from secure schemes. https://crbug.com/546820
@@ -57,7 +69,7 @@ class NET_EXPORT CookieOptions {
 
  private:
   bool exclude_httponly_;
-  bool include_same_site_;
+  SameSiteCookieMode same_site_cookie_mode_;
   bool enforce_strict_secure_;
   bool update_access_time_;
   base::Time server_time_;

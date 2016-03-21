@@ -52,6 +52,7 @@
 #include "net/base/net_module.h"
 #include "net/base/url_util.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 #include "url/third_party/mozilla/url_parse.h"
 
 namespace net {
@@ -213,6 +214,13 @@ bool SameDomainOrHost(
   return !strncmp(gurl1.possibly_invalid_spec().data() + host1.begin,
                   gurl2.possibly_invalid_spec().data() + host2.begin,
                   host1.len);
+}
+
+bool SameDomainOrHost(const url::Origin& origin1,
+                      const url::Origin& origin2,
+                      PrivateRegistryFilter filter) {
+  return SameDomainOrHost(GURL(origin1.Serialize()), GURL(origin2.Serialize()),
+                          filter);
 }
 
 size_t GetRegistryLength(

@@ -26,6 +26,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
 #include "net/base/network_quality_estimator.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/sdch_manager.h"
 #include "net/base/sdch_net_log_params.h"
 #include "net/base/url_util.h"
@@ -725,19 +726,43 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
     CookieOptions options;
     options.set_include_httponly();
 
-    // TODO(mkwst): If same-site cookies aren't enabled, pretend the request is
-    // same-site regardless, in order to include all cookies. Drop this check
-    // once we decide whether or not we're shipping this feature:
-    // https://crbug.com/459154
+    // Set SameSiteCookieMode according to the rules laid out in
+    // https://tools.ietf.org/html/draft-west-first-party-cookies:
+    //
+    // * Include both "strict" and "lax" same-site cookies if the request's
+    //   |url|, |initiator|, and |first_party_for_cookies| all have the same
+    //   registrable domain.
+    //
+    // * Include only "lax" same-site cookies if the request's |URL| and
+    //   |first_party_for_cookies| have the same registrable domain, _and_ the
+    //   request's |method| is "safe" ("GET" or "HEAD").
+    //
+    //   Note that this will generally be the case only for cross-site requests
+    //   which target a top-level browsing context.
+    //
+    // * Otherwise, do not include same-site cookies.
     url::Origin requested_origin(request_->url());
+    url::Origin site_for_cookies(request_->first_party_for_cookies());
+
     if (!network_delegate() ||
         !network_delegate()->AreExperimentalCookieFeaturesEnabled()) {
-      options.set_include_same_site();
-    } else if (requested_origin.IsSameOriginWith(
-                   url::Origin(request_->first_party_for_cookies())) &&
-               (IsMethodSafe(request_->method()) ||
-                requested_origin.IsSameOriginWith(request_->initiator()))) {
-      options.set_include_same_site();
+      // TODO(mkwst): If same-site cookies aren't enabled, then tag the request
+      // as including both strict and lax same-site cookies. Drop this check
+      // once the feature is no longer behind a flag: https://crbug.com/459154.
+      options.set_same_site_cookie_mode(
+          CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+    } else if (registry_controlled_domains::SameDomainOrHost(
+                   requested_origin, site_for_cookies,
+                   registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+      if (registry_controlled_domains::SameDomainOrHost(
+              requested_origin, request_->initiator(),
+              registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+        options.set_same_site_cookie_mode(
+            CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+      } else if (IsMethodSafe(request_->method())) {
+        options.set_same_site_cookie_mode(
+            CookieOptions::SameSiteCookieMode::INCLUDE_LAX);
+      }
     }
 
     cookie_store->GetCookieListWithOptionsAsync(

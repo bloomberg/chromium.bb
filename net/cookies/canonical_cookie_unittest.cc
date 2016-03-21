@@ -85,7 +85,8 @@ TEST(CanonicalCookieTest, Create) {
 
   // Test creating SameSite cookies.
   CookieOptions same_site_options;
-  same_site_options.set_include_same_site();
+  same_site_options.set_same_site_cookie_mode(
+      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
   cookie = CanonicalCookie::Create(url, "A=2; SameSite=Strict", creation_time,
                                    same_site_options);
   EXPECT_TRUE(cookie.get());
@@ -445,45 +446,40 @@ TEST(CanonicalCookieTest, IncludeForRequestURL) {
 }
 
 TEST(CanonicalCookieTest, IncludeSameSiteForSameSiteURL) {
-  GURL insecure_url("http://example.test");
-  GURL secure_url("https://example.test");
-  GURL secure_url_with_path("https://example.test/foo/bar/index.html");
-  GURL third_party_url("https://not-example.test");
+  GURL url("https://example.test");
   base::Time creation_time = base::Time::Now();
   CookieOptions options;
   scoped_ptr<CanonicalCookie> cookie;
 
-  // Same-site cookies are not included for cross-site requests,
-  // even if other properties match:
-  cookie = CanonicalCookie::Create(secure_url, "A=2; SameSite=Strict",
-                                   creation_time, options);
+  // `SameSite=Strict` cookies are included for a URL only if the options'
+  // SameSiteCookieMode is INCLUDE_STRICT_AND_LAX.
+  cookie = CanonicalCookie::Create(url, "A=2; SameSite=Strict", creation_time,
+                                   options);
   EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
-  EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
-  cookie = CanonicalCookie::Create(secure_url, "A=2; Secure; SameSite=Strict",
-                                   creation_time, options);
-  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
-  EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
-  cookie = CanonicalCookie::Create(secure_url_with_path,
-                                   "A=2; SameSite=Strict; path=/foo/bar",
-                                   creation_time, options);
-  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
-  EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
+  options.set_same_site_cookie_mode(
+      CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
+  EXPECT_FALSE(cookie->IncludeForRequestURL(url, options));
+  options.set_same_site_cookie_mode(
+      CookieOptions::SameSiteCookieMode::INCLUDE_LAX);
+  EXPECT_FALSE(cookie->IncludeForRequestURL(url, options));
+  options.set_same_site_cookie_mode(
+      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  EXPECT_TRUE(cookie->IncludeForRequestURL(url, options));
 
-  // Same-site cookies are included for same-site requests:
-  options.set_include_same_site();
-  cookie = CanonicalCookie::Create(secure_url, "A=2; SameSite=Strict",
-                                   creation_time, options);
-  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
-  EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options));
-  cookie = CanonicalCookie::Create(secure_url, "A=2; Secure; SameSite=Strict",
-                                   creation_time, options);
-  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
-  EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options));
-  cookie = CanonicalCookie::Create(secure_url_with_path,
-                                   "A=2; SameSite=Strict; path=/foo/bar",
-                                   creation_time, options);
-  EXPECT_EQ(CookieSameSite::STRICT_MODE, cookie->SameSite());
-  EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url_with_path, options));
+  // `SameSite=Lax` cookies are included for a URL only if the options'
+  // SameSiteCookieMode is INCLUDE_STRICT_AND_LAX.
+  cookie =
+      CanonicalCookie::Create(url, "A=2; SameSite=Lax", creation_time, options);
+  EXPECT_EQ(CookieSameSite::LAX_MODE, cookie->SameSite());
+  options.set_same_site_cookie_mode(
+      CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE);
+  EXPECT_FALSE(cookie->IncludeForRequestURL(url, options));
+  options.set_same_site_cookie_mode(
+      CookieOptions::SameSiteCookieMode::INCLUDE_LAX);
+  EXPECT_TRUE(cookie->IncludeForRequestURL(url, options));
+  options.set_same_site_cookie_mode(
+      CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
+  EXPECT_TRUE(cookie->IncludeForRequestURL(url, options));
 }
 
 TEST(CanonicalCookieTest, PartialCompare) {

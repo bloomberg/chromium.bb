@@ -422,13 +422,21 @@ bool CanonicalCookie::IncludeForRequestURL(const GURL& url,
   if (!IsOnPath(url.path()))
     return false;
   // Don't include same-site cookies for cross-site requests.
-  //
-  // TODO(mkwst): This currently treats both "strict" and "lax" SameSite cookies
-  // in the same way. https://codereview.chromium.org/1783813002 will eventually
-  // distinguish between them based on attributes of the request.
-  if (SameSite() != CookieSameSite::NO_RESTRICTION &&
-      !options.include_same_site()) {
-    return false;
+  switch (SameSite()) {
+    case CookieSameSite::STRICT_MODE:
+      if (options.same_site_cookie_mode() !=
+          CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX) {
+        return false;
+      }
+      break;
+    case CookieSameSite::LAX_MODE:
+      if (options.same_site_cookie_mode() ==
+          CookieOptions::SameSiteCookieMode::DO_NOT_INCLUDE) {
+        return false;
+      }
+      break;
+    default:
+      break;
   }
 
   return true;
