@@ -16,8 +16,8 @@
 #include "base/strings/string_util.h"
 
 #if defined(USE_AURA)
-#include "ui/aura/window.h"
-#include "ui/aura/window_observer.h"
+#include "ui/aura/window.h"  // nogncheck
+#include "ui/aura/window_observer.h"  // nogncheck
 #endif  // defined(USE_AURA)
 
 namespace  {

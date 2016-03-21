@@ -186,6 +186,7 @@ source_set("common") {
     "//third_party/boringssl",
     "//third_party/icu",
     "//third_party/libjingle",
+    "//third_party/webrtc/base:rtc_base",
     "//ui/accessibility",
     "//ui/base",
     "//ui/base/ime",

@@ -29,6 +29,7 @@ source_set("utility_sources") {
   deps = [
     "//base",
     "//content:export",
+    "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//content/utility",
     "//ipc",

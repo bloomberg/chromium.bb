@@ -63,12 +63,12 @@ component("events_base") {
   defines = [ "EVENTS_BASE_IMPLEMENTATION" ]
 
   deps = [
-    ":dom_keycode_converter",
     "//base/third_party/dynamic_annotations",
     "//skia",
   ]
 
   public_deps = [
+    ":dom_keycode_converter",
     "//base",
     "//ui/events/platform",
     "//ui/gfx",

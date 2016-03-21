@@ -58,10 +58,12 @@ source_set("client_sources") {
 
   all_dependent_configs = [ "//third_party/khronos:khronos_headers" ]
 
-  deps = [
+  public_deps = [
     "//base",
-    "//gpu/command_buffer/common:common_sources",
     "//gpu/command_buffer/common:gles2_utils",
+  ]
+  deps = [
+    "//gpu/command_buffer/common:common_sources",
     "//ui/gfx:memory_buffer",
     "//ui/gfx/geometry",
   ]

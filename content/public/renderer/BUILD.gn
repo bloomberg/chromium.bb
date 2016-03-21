@@ -28,12 +28,19 @@ source_set("renderer_sources") {
   configs += [ "//content:content_implementation" ]
 
   deps = [
+    "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//content/renderer",
+    "//gin",
+    "//media",
+    "//net",
+    "//ppapi/c",
     "//skia",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/libjingle",
     "//third_party/widevine/cdm:version_h",
+    "//ui/base",
+    "//ui/base/ime",
     "//ui/gfx",
     "//v8",
   ]

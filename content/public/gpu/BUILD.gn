@@ -26,5 +26,6 @@ source_set("gpu_sources") {
     "//base",
     "//content:export",
     "//content/gpu:gpu_sources",
+    "//content/public/common:common_sources",
   ]
 }

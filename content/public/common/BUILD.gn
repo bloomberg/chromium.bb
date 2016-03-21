@@ -36,7 +36,13 @@ source_set("content_descriptors") {
   sources = [
     "content_descriptors.h",
   ]
+
+  # The header uses V8_USE_EXTERNAL_STARTUP_DATA.
   public_configs = [ "//v8:external_startup_data" ]
+
+  deps = [
+    "//ipc",
+  ]
 }
 
 # Forces static linking for targets using the static_switches constants, even
@@ -91,13 +97,25 @@ source_set("common_sources") {
     "//url/ipc:url_ipc",
   ]
   deps = [
+    "//ipc",
+    "//ipc/mojo",
+    "//media",
+    "//mojo/common",
     "//net",
+    "//ppapi/c",
     "//skia",
+    "//storage/common",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/icu",
+    "//ui/accessibility",
     "//ui/base",
     "//ui/gfx",
+    "//ui/gfx/ipc",
+    "//ui/surface",
   ]
+
+  # //content/common needs to include public headers.
+  allow_circular_includes_from = [ "//content/common" ]
 
   if (!enable_plugins) {
     sources -= [
@@ -132,6 +150,7 @@ buildflag_header("features") {
 source_set("feature_h264_with_openh264_ffmpeg") {
   deps = [
     ":features",
+    "//base",
   ]
   sources = [
     "feature_h264_with_openh264_ffmpeg.cc",

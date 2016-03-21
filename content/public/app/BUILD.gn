@@ -36,6 +36,10 @@ public_app_shared_deps = [
   "//base:i18n",
   "//content:export",
   "//content/public/common:common_sources",
+  "//content/public/gpu:gpu_sources",
+  "//content/public/plugin:plugin_sources",
+  "//content/public/renderer:renderer_sources",
+  "//content/public/utility:utility_sources",
 ]
 
 if (is_component_build) {

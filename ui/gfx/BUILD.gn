@@ -259,6 +259,14 @@ component("gfx") {
   # This is part of the gfx component in the component build.
   defines = [ "GFX_IMPLEMENTATION" ]
 
+  public_deps = [
+    ":memory_buffer_sources",
+    ":native_widget_types",
+    "//base",
+    "//skia",
+    "//third_party/icu",
+    "//ui/gfx/geometry",
+  ]
   deps = [
     ":gfx_export",
     "//base",
@@ -269,14 +277,6 @@ component("gfx") {
     "//third_party/harfbuzz-ng",
     "//third_party/libpng",
     "//third_party/zlib",
-    "//ui/gfx/geometry",
-  ]
-  public_deps = [
-    ":memory_buffer_sources",
-    ":native_widget_types",
-    "//base",
-    "//skia",
-    "//third_party/icu",
   ]
 
   # Text rendering conditions (complicated so separated out).

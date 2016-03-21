@@ -38,5 +38,6 @@ source_set("child_sources") {
 
   deps = [
     "//content/public/common:common_sources",
+    "//gin",
   ]
 }

@@ -188,13 +188,15 @@ component("browser") {
     "//build/config/compiler:wexit_time_destructors",
   ]
 
+  public_deps = [
+    "//storage/common",
+  ]
   deps = [
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//net",
     "//sql",
-    "//storage/common",
     "//third_party/leveldatabase",
     "//third_party/sqlite",
     "//url",
