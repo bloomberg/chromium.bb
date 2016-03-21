@@ -106,6 +106,9 @@ class NET_EXPORT HttpNetworkSession
     // Enables Brotli Content-Encoding support.
     bool enable_brotli;
 
+    // Enable setting of HTTP/2 dependencies based on priority.
+    bool enable_priority_dependencies;
+
     // Enables QUIC support.
     bool enable_quic;
     // Disable QUIC if a connection times out with open streams.

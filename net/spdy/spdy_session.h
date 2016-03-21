@@ -32,6 +32,7 @@
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
 #include "net/spdy/buffered_spdy_framer.h"
+#include "net/spdy/http2_priority_dependencies.h"
 #include "net/spdy/spdy_buffer.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_header_block.h"
@@ -290,6 +291,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               bool verify_domain_authentication,
               bool enable_sending_initial_data,
               bool enable_ping_based_connection_checking,
+              bool enable_priority_dependencies,
               NextProto default_protocol,
               size_t session_max_recv_window_size,
               size_t stream_max_recv_window_size,
@@ -1001,10 +1003,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   bool check_ping_status_pending() const { return check_ping_status_pending_; }
 
-  // Set whether priority->dependency conversion is enabled
-  // by default for all future SpdySessions.
-  static void SetPriorityDependencyDefaultForTesting(bool enable);
-
   // Whether Do{Read,Write}Loop() is in the call stack. Useful for
   // making sure we don't destroy ourselves prematurely in that case.
   bool in_io_loop_;
@@ -1049,14 +1047,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // them into a separate ActiveStreamMap, and not deliver network events to
   // them?
   ActiveStreamMap active_streams_;
-
-  // Per-priority map from stream id to all active streams.  This map will
-  // contain the same set of streams as |active_streams_|.  It is used for
-  // setting dependencies to match incoming requests RequestPriority.
-  //
-  // |active_streams_by_priority_| does *not* own its SpdyStream objects.
-  std::map<SpdyStreamId, SpdyStream*>
-      active_streams_by_priority_[NUM_PRIORITIES];
 
   UnclaimedPushedStreamContainer unclaimed_pushed_streams_;
 
@@ -1230,9 +1220,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   TimeFunc time_func_;
 
-  // Should priority-based dependency information be sent in stream header
-  // frames.
-  bool send_priority_dependency_;
+  const bool priority_dependencies_enabled_;
+  Http2PriorityDependencies priority_dependency_state_;
 
   // Used for posting asynchronous IO tasks.  We use this even though
   // SpdySession is refcounted because we don't need to keep the SpdySession

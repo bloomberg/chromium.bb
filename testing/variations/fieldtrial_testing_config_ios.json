@@ -56,11 +56,6 @@
             "group_name": "Enabled"
         }
     ],
-    "SpdyEnableDependencies": [
-        {
-            "group_name": "Enable"
-        }
-    ],
     "SyncHttpContentCompression": [
         {
             "group_name": "Enabled"

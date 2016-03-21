@@ -137,6 +137,11 @@ const char kNpnTrialName[] = "NPN";
 const char kNpnTrialEnabledGroupNamePrefix[] = "Enable";
 const char kNpnTrialDisabledGroupNamePrefix[] = "Disable";
 
+// Field trial for priority dependencies.
+const char kSpdyDependenciesFieldTrial[] = "SpdyEnableDependencies";
+const char kSpdyDependenciesFieldTrialEnable[] = "Enable";
+const char kSpdyDepencenciesFieldTrialDisable[] = "Disable";
+
 // Used for the "system" URLRequestContext.
 class SystemURLRequestContext : public net::URLRequestContext {
  public:
@@ -455,6 +460,7 @@ void IOSChromeIOThread::Init() {
   ConfigureAltSvcGlobals(
       base::FieldTrialList::FindFullName(kAltSvcFieldTrialName), globals_);
   ConfigureQuic();
+  ConfigurePriorityDependencies();
   InitializeNetworkOptions();
 
   const version_info::Channel channel = ::GetChannel();
@@ -647,6 +653,9 @@ void IOSChromeIOThread::InitializeNetworkSessionParamsFromGlobals(
 
   globals.enable_npn.CopyToIfSet(&params->enable_npn);
 
+  globals.enable_priority_dependencies.CopyToIfSet(
+      &params->enable_priority_dependencies);
+
   globals.enable_quic.CopyToIfSet(&params->enable_quic);
   globals.enable_quic_for_proxies.CopyToIfSet(&params->enable_quic_for_proxies);
   globals.quic_always_require_handshake_confirmation.CopyToIfSet(
@@ -725,6 +734,16 @@ void IOSChromeIOThread::InitSystemRequestContextOnIOThread() {
 
   globals_->system_request_context.reset(
       ConstructSystemRequestContext(globals_, net_log_));
+}
+
+void IOSChromeIOThread::ConfigurePriorityDependencies() {
+  std::string group =
+      base::FieldTrialList::FindFullName(kSpdyDependenciesFieldTrial);
+  if (group == kSpdyDependenciesFieldTrialEnable) {
+    globals_->enable_priority_dependencies.set(true);
+  } else if (group == kSpdyDepencenciesFieldTrialDisable) {
+    globals_->enable_priority_dependencies.set(false);
+  }
 }
 
 void IOSChromeIOThread::ConfigureQuic() {

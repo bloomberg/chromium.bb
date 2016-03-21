@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/profiler/scoped_tracker.h"
@@ -60,14 +59,6 @@ const int kHungIntervalSeconds = 10;
 
 // Minimum seconds that unclaimed pushed streams will be kept in memory.
 const int kMinPushedStreamLifetimeSeconds = 300;
-
-// Field trial constants
-const char kSpdyDependenciesFieldTrial[] = "SpdyEnableDependencies";
-const char kSpdyDepencenciesFieldTrialEnable[] = "Enable";
-
-// Whether the creation of SPDY dependencies based on priority is
-// enabled by default.
-static bool priority_dependency_enabled_default = false;
 
 scoped_ptr<base::ListValue> SpdyHeaderBlockToListValue(
     const SpdyHeaderBlock& headers,
@@ -689,6 +680,7 @@ SpdySession::SpdySession(
     bool verify_domain_authentication,
     bool enable_sending_initial_data,
     bool enable_ping_based_connection_checking,
+    bool enable_priority_dependencies,
     NextProto default_protocol,
     size_t session_max_recv_window_size,
     size_t stream_max_recv_window_size,
@@ -748,7 +740,7 @@ SpdySession::SpdySession(
       hung_interval_(base::TimeDelta::FromSeconds(kHungIntervalSeconds)),
       proxy_delegate_(proxy_delegate),
       time_func_(time_func),
-      send_priority_dependency_(priority_dependency_enabled_default),
+      priority_dependencies_enabled_(enable_priority_dependencies),
       weak_factory_(this) {
   DCHECK_GE(protocol_, kProtoSPDYMinimumVersion);
   DCHECK_LE(protocol_, kProtoSPDYMaximumVersion);
@@ -758,10 +750,6 @@ SpdySession::SpdySession(
       base::Bind(&NetLogSpdySessionCallback, &host_port_proxy_pair()));
   next_unclaimed_push_stream_sweep_time_ = time_func_() +
       base::TimeDelta::FromSeconds(kMinPushedStreamLifetimeSeconds);
-  if (base::FieldTrialList::FindFullName(kSpdyDependenciesFieldTrial) ==
-      kSpdyDepencenciesFieldTrialEnable) {
-    send_priority_dependency_ = true;
-  }
   // TODO(mbelshe): consider randomization of the stream_hi_water_mark.
 }
 
@@ -1091,11 +1079,6 @@ bool SpdySession::CloseOneIdleConnection() {
   return false;
 }
 
-// static
-void SpdySession::SetPriorityDependencyDefaultForTesting(bool enable) {
-  priority_dependency_enabled_default = enable;
-}
-
 void SpdySession::EnqueueStreamWrite(
     const base::WeakPtr<SpdyStream>& stream,
     SpdyFrameType frame_type,
@@ -1144,38 +1127,13 @@ scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
     headers.set_priority(spdy_priority);
     headers.set_has_priority(true);
 
-    if (send_priority_dependency_) {
-      // Set dependencies to reflect request priority.  A newly created
-      // stream should be dependent on the most recent previously created
-      // stream of the same priority level.  The newly created stream
-      // should also have all streams of a lower priority level dependent
-      // on it, which is guaranteed by setting the exclusive bit.
-      //
-      // Note that this depends on stream ids being allocated in a monotonically
-      // increasing fashion, and on all streams in
-      // active_streams_{,by_priority_} having stream ids set.
-      for (int i = priority; i >= IDLE; --i) {
-        if (active_streams_by_priority_[i].empty())
-          continue;
-
-        auto candidate_it = active_streams_by_priority_[i].rbegin();
-
-        // |active_streams_by_priority_| is updated before the
-        // SYN stream frame is created, so the current streams
-        // id is already on the list.  Skip over it, skipping this
-        // priority level if it's singular.
-        if (candidate_it->second->stream_id() == stream_id)
-          ++candidate_it;
-        if (candidate_it == active_streams_by_priority_[i].rend())
-          continue;
-
-        headers.set_parent_stream_id(candidate_it->second->stream_id());
-        break;
-      }
-
-      // If there are no streams of priority <= the current stream, the
-      // current stream will default to a child of the idle node (0).
-      headers.set_exclusive(true);
+    if (priority_dependencies_enabled_) {
+      SpdyStreamId dependent_stream_id = 0;
+      bool exclusive = false;
+      priority_dependency_state_.OnStreamSynSent(
+          stream_id, spdy_priority, &dependent_stream_id, &exclusive);
+      headers.set_parent_stream_id(dependent_stream_id);
+      headers.set_exclusive(exclusive);
     }
 
     headers.set_fin((flags & CONTROL_FLAG_FIN) != 0);
@@ -1362,8 +1320,8 @@ void SpdySession::CloseActiveStreamIterator(ActiveStreamMap::iterator it,
 
   scoped_ptr<SpdyStream> owned_stream(it->second.stream);
   active_streams_.erase(it);
-  active_streams_by_priority_[owned_stream->priority()].erase(
-      owned_stream->stream_id());
+  if (priority_dependencies_enabled_)
+    priority_dependency_state_.OnStreamDestruction(owned_stream->stream_id());
 
   // TODO(akalin): When SpdyStream was ref-counted (and
   // |unclaimed_pushed_streams_| held scoped_refptr<SpdyStream>), this
@@ -2035,8 +1993,6 @@ void SpdySession::InsertActivatedStream(scoped_ptr<SpdyStream> stream) {
   std::pair<ActiveStreamMap::iterator, bool> result =
       active_streams_.insert(
           std::make_pair(stream_id, ActiveStreamInfo(stream.get())));
-  active_streams_by_priority_[stream->priority()].insert(
-      std::make_pair(stream_id, stream.get()));
   CHECK(result.second);
   ignore_result(stream.release());
 }

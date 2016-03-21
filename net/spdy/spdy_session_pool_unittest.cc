@@ -520,8 +520,8 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   // can ignore issues of how dependencies are set.  We default to
   // setting them (when doing the appropriate protocol) since that's
   // where we're eventually headed for all HTTP/2 connections.
-  SpdyTestUtil spdy_util(GetParam(), true);
-  SpdySession::SetPriorityDependencyDefaultForTesting(true);
+  session_deps_.enable_priority_dependencies = true;
+  SpdyTestUtil spdy_util(GetParam(), /*enable_priority_dependencies*/ true);
 
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING)  // Stall forever.
@@ -630,7 +630,6 @@ TEST_P(SpdySessionPoolTest, IPAddressChanged) {
   EXPECT_TRUE(delegateB.StreamIsClosed());
   EXPECT_EQ(ERR_NETWORK_CHANGED, delegateB.WaitForClose());
 #endif  // defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_IOS)
-  SpdySession::SetPriorityDependencyDefaultForTesting(false);
 }
 
 TEST_P(SpdySessionPoolTest, FindAvailableSession) {

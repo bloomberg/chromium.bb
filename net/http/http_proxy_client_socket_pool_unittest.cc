@@ -86,20 +86,18 @@ class HttpProxyClientSocketPoolTest
                          NULL,
                          session_deps_.ssl_config_service.get(),
                          BoundNetLog().net_log()),
-        session_(CreateNetworkSession()),
         spdy_util_(GetParam().protocol, GetParam().priority_to_dependency),
         pool_(kMaxSockets,
               kMaxSocketsPerGroup,
               &transport_socket_pool_,
               &ssl_socket_pool_,
               NULL) {
-    SpdySession::SetPriorityDependencyDefaultForTesting(
-        GetParam().priority_to_dependency);
+    session_deps_.enable_priority_dependencies =
+        GetParam().priority_to_dependency;
+    session_ = CreateNetworkSession();
   }
 
-  virtual ~HttpProxyClientSocketPoolTest() {
-    SpdySession::SetPriorityDependencyDefaultForTesting(false);
-  }
+  virtual ~HttpProxyClientSocketPoolTest() {}
 
   void AddAuthToCache() {
     const base::string16 kFoo(base::ASCIIToUTF16("foo"));
@@ -219,7 +217,7 @@ class HttpProxyClientSocketPoolTest
   scoped_ptr<CertVerifier> cert_verifier_;
   SSLClientSocketPool ssl_socket_pool_;
 
-  const scoped_ptr<HttpNetworkSession> session_;
+  scoped_ptr<HttpNetworkSession> session_;
 
  protected:
   SpdyTestUtil spdy_util_;

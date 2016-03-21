@@ -296,7 +296,7 @@ class MockTimer : public base::MockTimer {
 class BidirectionalStreamTest : public testing::TestWithParam<bool> {
  public:
   BidirectionalStreamTest()
-      : spdy_util_(kProtoHTTP2, false),
+      : spdy_util_(kProtoHTTP2, true),
         session_deps_(kProtoHTTP2),
         ssl_data_(SSLSocketDataProvider(ASYNC, OK)) {
     ssl_data_.SetNextProto(kProtoHTTP2);

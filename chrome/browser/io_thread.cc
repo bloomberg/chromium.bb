@@ -180,6 +180,11 @@ const char kNpnTrialName[] = "NPN";
 const char kNpnTrialEnabledGroupNamePrefix[] = "Enable";
 const char kNpnTrialDisabledGroupNamePrefix[] = "Disable";
 
+// Field trial for priority dependencies.
+const char kSpdyDependenciesFieldTrial[] = "SpdyEnableDependencies";
+const char kSpdyDependenciesFieldTrialEnable[] = "Enable";
+const char kSpdyDepencenciesFieldTrialDisable[] = "Disable";
+
 #if defined(OS_MACOSX)
 void ObserveKeychainEvents() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -802,6 +807,7 @@ void IOThread::Init() {
           switches::kEnableUserAlternateProtocolPorts)) {
     globals_->enable_user_alternate_protocol_ports = true;
   }
+  ConfigurePriorityDependencies();
   globals_->enable_brotli.set(
       base::FeatureList::IsEnabled(features::kBrotliEncoding));
   globals_->enable_token_binding =
@@ -1102,6 +1108,9 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
 
   globals.enable_brotli.CopyToIfSet(&params->enable_brotli);
 
+  globals.enable_priority_dependencies.CopyToIfSet(
+      &params->enable_priority_dependencies);
+
   globals.enable_quic.CopyToIfSet(&params->enable_quic);
   globals.disable_quic_on_timeout_with_open_streams.CopyToIfSet(
     &params->disable_quic_on_timeout_with_open_streams);
@@ -1206,6 +1215,16 @@ void IOThread::InitSystemRequestContextOnIOThread() {
 
 void IOThread::UpdateDnsClientEnabled() {
   globals()->host_resolver->SetDnsClientEnabled(*dns_client_enabled_);
+}
+
+void IOThread::ConfigurePriorityDependencies() {
+  std::string group =
+      base::FieldTrialList::FindFullName(kSpdyDependenciesFieldTrial);
+  if (group == kSpdyDependenciesFieldTrialEnable) {
+    globals_->enable_priority_dependencies.set(true);
+  } else if (group == kSpdyDepencenciesFieldTrialDisable) {
+    globals_->enable_priority_dependencies.set(false);
+  }
 }
 
 void IOThread::ConfigureQuic(const base::CommandLine& command_line) {

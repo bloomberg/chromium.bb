@@ -69,14 +69,12 @@ class SpdyStreamTest : public ::testing::Test,
   SpdyStreamTest()
       : spdy_util_(GetProtocol(), GetDependenciesFromPriority()),
         session_deps_(GetProtocol()),
-        session_(SpdySessionDependencies::SpdyCreateSession(&session_deps_)),
         offset_(0) {
-    SpdySession::SetPriorityDependencyDefaultForTesting(
-        GetDependenciesFromPriority());
+    session_deps_.enable_priority_dependencies = GetDependenciesFromPriority();
+    session_ = SpdySessionDependencies::SpdyCreateSession(&session_deps_);
   }
 
   ~SpdyStreamTest() {
-    SpdySession::SetPriorityDependencyDefaultForTesting(false);
   }
 
   base::WeakPtr<SpdySession> CreateDefaultSpdySession() {

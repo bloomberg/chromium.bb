@@ -179,14 +179,12 @@ SpdyProxyClientSocketTest::SpdyProxyClientSocketTest()
                                  proxy_,
                                  PRIVACY_MODE_DISABLED) {
   session_deps_.net_log = net_log_.bound().net_log();
-  SpdySession::SetPriorityDependencyDefaultForTesting(
-      GetDependenciesFromPriority());
+  session_deps_.enable_priority_dependencies = GetDependenciesFromPriority();
 }
 
 SpdyProxyClientSocketTest::~SpdyProxyClientSocketTest() {
   EXPECT_TRUE(data_->AllWriteDataConsumed());
   EXPECT_TRUE(data_->AllReadDataConsumed());
-  SpdySession::SetPriorityDependencyDefaultForTesting(false);
 }
 
 void SpdyProxyClientSocketTest::TearDown() {

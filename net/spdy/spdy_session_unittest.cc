@@ -139,8 +139,7 @@ class SpdySessionTest : public PlatformTest,
         key_(test_host_port_pair_,
              ProxyServer::Direct(),
              PRIVACY_MODE_DISABLED) {
-    SpdySession::SetPriorityDependencyDefaultForTesting(
-        GetDependenciesFromPriority());
+    session_deps_.enable_priority_dependencies = GetDependenciesFromPriority();
   }
 
   virtual ~SpdySessionTest() {
@@ -150,7 +149,6 @@ class SpdySessionTest : public PlatformTest,
         HttpNetworkSession::NORMAL_SOCKET_POOL, old_max_pool_sockets_);
     ClientSocketPoolManager::set_max_sockets_per_group(
         HttpNetworkSession::NORMAL_SOCKET_POOL, old_max_group_sockets_);
-    SpdySession::SetPriorityDependencyDefaultForTesting(false);
   }
 
   void SetUp() override {

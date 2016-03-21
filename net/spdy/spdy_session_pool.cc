@@ -36,6 +36,7 @@ SpdySessionPool::SpdySessionPool(
     const base::WeakPtr<HttpServerProperties>& http_server_properties,
     TransportSecurityState* transport_security_state,
     bool enable_ping_based_connection_checking,
+    bool enable_priority_dependencies,
     NextProto default_protocol,
     size_t session_max_recv_window_size,
     size_t stream_max_recv_window_size,
@@ -49,6 +50,7 @@ SpdySessionPool::SpdySessionPool(
       enable_sending_initial_data_(true),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
+      enable_priority_dependencies_(enable_priority_dependencies),
       // TODO(akalin): Force callers to have a valid value of
       // |default_protocol_|.
       default_protocol_((default_protocol == kProtoUnknown) ? kProtoSPDY31
@@ -95,9 +97,10 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
   scoped_ptr<SpdySession> new_session(new SpdySession(
       key, http_server_properties_, transport_security_state_,
       verify_domain_authentication_, enable_sending_initial_data_,
-      enable_ping_based_connection_checking_, default_protocol_,
-      session_max_recv_window_size_, stream_max_recv_window_size_, time_func_,
-      proxy_delegate_, net_log.net_log()));
+      enable_ping_based_connection_checking_, enable_priority_dependencies_,
+      default_protocol_, session_max_recv_window_size_,
+      stream_max_recv_window_size_, time_func_, proxy_delegate_,
+      net_log.net_log()));
 
   new_session->InitializeWithSocket(std::move(connection), this, is_secure,
                                     certificate_error_code);

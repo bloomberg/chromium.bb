@@ -141,6 +141,8 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
 
     Optional<bool> enable_npn;
 
+    Optional<bool> enable_priority_dependencies;
+
     Optional<bool> enable_quic;
     Optional<bool> enable_quic_for_proxies;
     Optional<bool> quic_always_require_handshake_confirmation;
@@ -251,6 +253,10 @@ class IOSChromeIOThread : public web::WebThreadDelegate {
   net::SSLConfigService* GetSSLConfigService();
 
   void ChangedToOnTheRecordOnIOThread();
+
+  // Configure whether we set HTTP/2 dependencies from the
+  // net::RequestPriority.
+  void ConfigurePriorityDependencies();
 
   // Configures QUIC options based on the QUIC field trial group.
   void ConfigureQuic();

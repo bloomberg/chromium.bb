@@ -341,6 +341,7 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
       enable_npn(true),
+      enable_priority_dependencies(true),
       protocol(protocol),
       session_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
@@ -377,6 +378,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_ping(false),
       enable_user_alternate_protocol_ports(false),
       enable_npn(true),
+      enable_priority_dependencies(true),
       protocol(protocol),
       session_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
@@ -424,6 +426,8 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_user_alternate_protocol_ports =
       session_deps->enable_user_alternate_protocol_ports;
   params.enable_npn = session_deps->enable_npn;
+  params.enable_priority_dependencies =
+      session_deps->enable_priority_dependencies;
   params.spdy_default_protocol = session_deps->protocol;
   params.spdy_session_max_recv_window_size =
       session_deps->session_max_recv_window_size;
@@ -1042,8 +1046,13 @@ SpdyFrame* SpdyTestUtil::ConstructSpdySyn(int stream_id,
   // Get the stream id of the next highest priority request
   // (most recent request of the same priority, or last request of
   // an earlier priority).
+  // Note that this is a duplicate of the logic in Http2PriorityDependencies
+  // (slightly transformed as this is based on RequestPriority and that logic
+  // on SpdyPriority, but only slightly transformed) and hence tests using
+  // this function do not effectively test that logic.
+  // That logic is tested by the Http2PriorityDependencies unit tests.
   int parent_stream_id = 0;
-  for (int q = priority; q >= IDLE; --q) {
+  for (int q = priority; q <= HIGHEST; ++q) {
     if (!priority_to_stream_id_list_[q].empty()) {
       parent_stream_id = priority_to_stream_id_list_[q].back();
       break;

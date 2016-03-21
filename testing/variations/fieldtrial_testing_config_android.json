@@ -333,11 +333,6 @@
             "group_name": "Enabled"
         }
     ],
-    "SpdyEnableDependencies": [
-        {
-            "group_name": "Enable"
-        }
-    ],
     "SpeculativeResourcePrefetching": [
         {
             "group_name": "v=1a:Prefetching=Enabled:Predictor=Url"

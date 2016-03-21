@@ -145,11 +145,6 @@
             "group_name": "ExperimentYes"
         }
     ],
-    "SpdyEnableDependencies": [
-        {
-            "group_name": "Enable"
-        }
-    ],
     "StrictSecureCookies": [
         {
             "group_name": "Enabled"

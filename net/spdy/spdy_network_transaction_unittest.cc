@@ -114,6 +114,8 @@ void UpdateSpdySessionDependencies(SpdyNetworkTransactionTestParams test_params,
                            "www.example.org", 443),
         expiration);
   }
+  session_deps->enable_priority_dependencies =
+      test_params.priority_to_dependency;
 }
 
 scoped_ptr<SpdySessionDependencies> CreateSpdySessionDependencies(
@@ -140,8 +142,6 @@ class SpdyNetworkTransactionTest
  protected:
   SpdyNetworkTransactionTest()
       : spdy_util_(GetParam().protocol, GetParam().priority_to_dependency) {
-    SpdySession::SetPriorityDependencyDefaultForTesting(
-        GetParam().priority_to_dependency);
     spdy_util_.set_default_url(GURL(GetDefaultUrl()));
   }
 
@@ -150,7 +150,6 @@ class SpdyNetworkTransactionTest
     // destruction.
     upload_data_stream_.reset();
     base::RunLoop().RunUntilIdle();
-    SpdySession::SetPriorityDependencyDefaultForTesting(false);
   }
 
   void SetUp() override {

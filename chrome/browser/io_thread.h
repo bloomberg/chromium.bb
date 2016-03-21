@@ -215,6 +215,8 @@ class IOThread : public content::BrowserThreadDelegate {
 
     Optional<bool> enable_brotli;
 
+    Optional<bool> enable_priority_dependencies;
+
     Optional<bool> enable_quic;
     Optional<bool> disable_quic_on_timeout_with_open_streams;
     Optional<bool> enable_quic_for_proxies;
@@ -355,6 +357,9 @@ class IOThread : public content::BrowserThreadDelegate {
   void UpdateAndroidAuthNegotiateAccountType();
   void UpdateNegotiateDisableCnameLookup();
   void UpdateNegotiateEnablePort();
+
+  // Configure the use of priority dependencies in SPDY/HTTP2
+  void ConfigurePriorityDependencies();
 
   // Configures QUIC options based on the flags in |command_line| as
   // well as the QUIC field trial group.

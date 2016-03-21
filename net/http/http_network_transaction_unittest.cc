@@ -271,7 +271,6 @@ class HttpNetworkTransactionTest
         HttpNetworkSession::NORMAL_SOCKET_POOL, old_max_pool_sockets_);
     ClientSocketPoolManager::set_max_sockets_per_group(
         HttpNetworkSession::NORMAL_SOCKET_POOL, old_max_group_sockets_);
-    SpdySession::SetPriorityDependencyDefaultForTesting(false);
   }
 
  protected:
@@ -282,8 +281,7 @@ class HttpNetworkTransactionTest
             HttpNetworkSession::NORMAL_SOCKET_POOL)),
         old_max_pool_sockets_(ClientSocketPoolManager::max_sockets_per_pool(
             HttpNetworkSession::NORMAL_SOCKET_POOL)) {
-    SpdySession::SetPriorityDependencyDefaultForTesting(
-        GetDependenciesFromPriority());
+    session_deps_.enable_priority_dependencies = GetDependenciesFromPriority();
   }
 
   struct SimpleGetHelperResult {

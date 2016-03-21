@@ -82,14 +82,11 @@ class SpdyHttpStreamTest : public testing::Test,
   SpdyHttpStreamTest()
       : spdy_util_(GetProtocol(), GetDependenciesFromPriority()),
         session_deps_(GetProtocol()) {
-    SpdySession::SetPriorityDependencyDefaultForTesting(
-        GetDependenciesFromPriority());
+    session_deps_.enable_priority_dependencies = GetDependenciesFromPriority();
     session_deps_.net_log = &net_log_;
   }
 
-  ~SpdyHttpStreamTest() {
-    SpdySession::SetPriorityDependencyDefaultForTesting(false);
-  }
+  ~SpdyHttpStreamTest() {}
 
  protected:
   NextProto GetProtocol() const {
