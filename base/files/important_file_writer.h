@@ -36,7 +36,7 @@ class Thread;
 // temporary file to target filename.
 //
 // If you want to know more about this approach and ext3/ext4 fsync issues, see
-// http://valhenson.livejournal.com/37921.html
+// http://blog.valerieaurora.org/2009/04/16/dont-panic-fsync-ext34-and-your-data/
 class BASE_EXPORT ImportantFileWriter : public NonThreadSafe {
  public:
   // Used by ScheduleSave to lazily provide the data to be saved. Allows us
