@@ -19803,7 +19803,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Media.DetectedAudioCodecHash" enum="FFmpegCodecHashes">
   <owner>jrummell@chromium.org</owner>
-  <summary>Audio codec used in HTML5 media.</summary>
+  <summary>
+    Audio codec used in HTML5 media. Reporting corrected in M51 to include all
+    detected audio codecs, not just those up to and including the first one
+    supported.
+  </summary>
 </histogram>
 
 <histogram name="Media.DetectedContainer" enum="MediaContainers">
@@ -19812,6 +19816,30 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Container used for HTML5 media. Views that include pre-M34 data will
     categorize dash (38) and smooth streaming (39) in the &quot;Other&quot;
     bucket.
+  </summary>
+</histogram>
+
+<histogram name="Media.DetectedTrackCount.Audio">
+  <owner>wolenetz@chromium.org</owner>
+  <summary>
+    Number of detected audio tracks in HTML5 media. Not all may be usable by the
+    player.
+  </summary>
+</histogram>
+
+<histogram name="Media.DetectedTrackCount.Text">
+  <owner>wolenetz@chromium.org</owner>
+  <summary>
+    Number of detected text tracks in HTML5 media. Not all may be usable by the
+    player.
+  </summary>
+</histogram>
+
+<histogram name="Media.DetectedTrackCount.Video">
+  <owner>wolenetz@chromium.org</owner>
+  <summary>
+    Number of detected video tracks in HTML5 media. Not all may be usable by the
+    player.
   </summary>
 </histogram>
 
@@ -19825,7 +19853,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Media.DetectedVideoCodecHash" enum="FFmpegCodecHashes">
   <owner>jrummell@chromium.org</owner>
-  <summary>Video codec used in HTML5 media.</summary>
+  <summary>
+    Video codec used in HTML5 media. Reporting corrected in M51 to include all
+    detected video codecs, not just those up to and including the first one
+    supported.
+  </summary>
 </histogram>
 
 <histogram name="Media.DevicePermissionActions" enum="DevicePermissionActions">

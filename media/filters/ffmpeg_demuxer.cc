@@ -114,6 +114,16 @@ static void UmaHistogramAspectRatio(const char* name, const T& size) {
           kCommonAspectRatios100, arraysize(kCommonAspectRatios100)));
 }
 
+// Record detected track counts by type corresponding to a src= playback.
+// Counts are split into 50 buckets, capped into [0,100] range.
+static void RecordDetectedTrackTypeStats(int audio_count,
+                                         int video_count,
+                                         int text_count) {
+  UMA_HISTOGRAM_COUNTS_100("Media.DetectedTrackCount.Audio", audio_count);
+  UMA_HISTOGRAM_COUNTS_100("Media.DetectedTrackCount.Video", video_count);
+  UMA_HISTOGRAM_COUNTS_100("Media.DetectedTrackCount.Text", text_count);
+}
+
 // Record audio decoder config UMA stats corresponding to a src= playback.
 static void RecordAudioCodecStats(const AudioDecoderConfig& audio_config) {
   UMA_HISTOGRAM_ENUMERATION("Media.AudioCodec", audio_config.codec(),
@@ -1111,19 +1121,30 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
   start_time_ = kInfiniteDuration();
 
   base::TimeDelta max_duration;
+  int detected_audio_track_count = 0;
+  int detected_video_track_count = 0;
+  int detected_text_track_count = 0;
   for (size_t i = 0; i < format_context->nb_streams; ++i) {
     AVStream* stream = format_context->streams[i];
     const AVCodecContext* codec_context = stream->codec;
     const AVMediaType codec_type = codec_context->codec_type;
 
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
-      if (audio_stream)
-        continue;
-
-      // Log the codec detected, whether it is supported or not.
+      // Log the codec detected, whether it is supported or not, and whether or
+      // not we have already detected a supported codec in another stream.
       UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedAudioCodecHash",
                                   HashCodecName(GetCodecName(codec_context)));
+      detected_audio_track_count++;
+
+      if (audio_stream)
+        continue;
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
+      // Log the codec detected, whether it is supported or not, and whether or
+      // not we have already detected a supported codec in another stream.
+      UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedVideoCodecHash",
+                                  HashCodecName(GetCodecName(codec_context)));
+      detected_video_track_count++;
+
       if (video_stream)
         continue;
 
@@ -1148,10 +1169,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
         }
       }
 #endif
-      // Log the codec detected, whether it is supported or not.
-      UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DetectedVideoCodecHash",
-                                  HashCodecName(GetCodecName(codec_context)));
     } else if (codec_type == AVMEDIA_TYPE_SUBTITLE) {
+      detected_text_track_count++;
       if (codec_context->codec_id != AV_CODEC_ID_WEBVTT || !text_enabled_) {
         continue;
       }
@@ -1228,6 +1247,10 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
       fallback_stream_for_seeking_ = StreamSeekInfo(i, start_time);
     }
   }
+
+  RecordDetectedTrackTypeStats(detected_audio_track_count,
+                               detected_video_track_count,
+                               detected_text_track_count);
 
   if (!audio_stream && !video_stream) {
     MEDIA_LOG(ERROR, media_log_) << GetDisplayName()
