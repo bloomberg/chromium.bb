@@ -299,11 +299,6 @@
       'client/touch_input_scaler.h',
     ],
 
-    'remoting_client_standalone_sources': [
-      'client/chromoting_client_runtime.cc',
-      'client/chromoting_client_runtime.h',
-    ],
-
     'remoting_client_plugin_sources': [
       'client/plugin/chromoting_instance.cc',
       'client/plugin/chromoting_instance.h',

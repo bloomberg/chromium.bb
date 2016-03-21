@@ -186,41 +186,42 @@ ChromotingJniRuntime* ChromotingJniRuntime::GetInstance() {
 }
 
 ChromotingJniRuntime::ChromotingJniRuntime() {
-  // Grab or create the threads.
-  // TODO(nicholss) We could runtime this as a constructor argument when jni
-  // runtime is not no longer a singleton.
+  // On Android, the UI thread is managed by Java, so we need to attach and
+  // start a special type of message loop to allow Chromium code to run tasks.
+  ui_loop_.reset(new base::MessageLoopForUI());
+  ui_loop_->Start();
 
-  if (!base::MessageLoop::current()) {
-    VLOG(1) << "Starting main message loop";
-    // On Android, the UI thread is managed by Java, so we need to attach and
-    // start a special type of message loop to allow Chromium code to run tasks.
-    ui_loop_.reset(new base::MessageLoopForUI());
-    ui_loop_->Start();
-  } else {
-    VLOG(1) << "Using existing main message loop";
-    ui_loop_.reset(base::MessageLoopForUI::current());
-  }
+  // TODO(solb) Stop pretending to control the managed UI thread's lifetime.
+  ui_task_runner_ = new AutoThreadTaskRunner(
+      ui_loop_->task_runner(), base::MessageLoop::QuitWhenIdleClosure());
+  network_task_runner_ = AutoThread::CreateWithType("native_net",
+                                                    ui_task_runner_,
+                                                    base::MessageLoop::TYPE_IO);
+  display_task_runner_ = AutoThread::Create("native_disp",
+                                            ui_task_runner_);
 
-  // Pass the main ui loop already attached to be used for creating threads.
-  runtime_ = ChromotingClientRuntime::Create(ui_loop_.get());
+  url_requester_ =
+      new URLRequestContextGetter(network_task_runner_, network_task_runner_);
 }
 
 ChromotingJniRuntime::~ChromotingJniRuntime() {
   // The singleton should only ever be destroyed on the main thread.
-  DCHECK(ui_task_runner()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   // The session must be shut down first, since it depends on our other
   // components' still being alive.
   DisconnectFromHost();
 
   base::WaitableEvent done_event(false, false);
-  network_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ChromotingJniRuntime::DetachFromVmAndSignal,
-                            base::Unretained(this), &done_event));
+  network_task_runner_->PostTask(FROM_HERE, base::Bind(
+      &ChromotingJniRuntime::DetachFromVmAndSignal,
+      base::Unretained(this),
+      &done_event));
   done_event.Wait();
-  display_task_runner()->PostTask(
-      FROM_HERE, base::Bind(&ChromotingJniRuntime::DetachFromVmAndSignal,
-                            base::Unretained(this), &done_event));
+  display_task_runner_->PostTask(FROM_HERE, base::Bind(
+      &ChromotingJniRuntime::DetachFromVmAndSignal,
+      base::Unretained(this),
+      &done_event));
   done_event.Wait();
   base::android::LibraryLoaderExitHook();
   base::android::DetachFromVM();
@@ -235,7 +236,7 @@ void ChromotingJniRuntime::ConnectToHost(const std::string& username,
                                          const std::string& pairing_secret,
                                          const std::string& capabilities,
                                          const std::string& flags) {
-  DCHECK(ui_task_runner()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   DCHECK(!session_.get());
   session_ = new ChromotingJniInstance(this, username, auth_token, host_jid,
                                        host_id, host_pubkey, pairing_id,
@@ -243,7 +244,7 @@ void ChromotingJniRuntime::ConnectToHost(const std::string& username,
 }
 
 void ChromotingJniRuntime::DisconnectFromHost() {
-  DCHECK(ui_task_runner()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   if (session_.get()) {
     session_->Disconnect();
     session_ = nullptr;
@@ -253,14 +254,14 @@ void ChromotingJniRuntime::DisconnectFromHost() {
 void ChromotingJniRuntime::OnConnectionState(
     protocol::ConnectionToHost::State state,
     protocol::ErrorCode error) {
-  DCHECK(ui_task_runner()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_JniInterface_onConnectionState(env, state, error);
 }
 
 void ChromotingJniRuntime::DisplayAuthenticationPrompt(bool pairing_supported) {
-  DCHECK(ui_task_runner()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_JniInterface_displayAuthenticationPrompt(env, pairing_supported);
@@ -269,7 +270,7 @@ void ChromotingJniRuntime::DisplayAuthenticationPrompt(bool pairing_supported) {
 void ChromotingJniRuntime::CommitPairingCredentials(const std::string& host,
                                                     const std::string& id,
                                                     const std::string& secret) {
-  DCHECK(ui_task_runner()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_host = ConvertUTF8ToJavaString(env, host);
@@ -283,7 +284,7 @@ void ChromotingJniRuntime::CommitPairingCredentials(const std::string& host,
 void ChromotingJniRuntime::FetchThirdPartyToken(const std::string& token_url,
                                                 const std::string& client_id,
                                                 const std::string& scope) {
-  DCHECK(ui_task_runner()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, token_url);
@@ -296,7 +297,7 @@ void ChromotingJniRuntime::FetchThirdPartyToken(const std::string& token_url,
 }
 
 void ChromotingJniRuntime::SetCapabilities(const std::string& capabilities) {
-  DCHECK(ui_task_runner()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> j_cap =
@@ -307,7 +308,7 @@ void ChromotingJniRuntime::SetCapabilities(const std::string& capabilities) {
 
 void ChromotingJniRuntime::HandleExtensionMessage(const std::string& type,
                                                   const std::string& message) {
-  DCHECK(ui_task_runner()->BelongsToCurrentThread());
+  DCHECK(ui_task_runner_->BelongsToCurrentThread());
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> j_type = ConvertUTF8ToJavaString(env, type);
@@ -323,7 +324,7 @@ base::android::ScopedJavaLocalRef<jobject> ChromotingJniRuntime::NewBitmap(
 }
 
 void ChromotingJniRuntime::UpdateFrameBitmap(jobject bitmap) {
-  DCHECK(display_task_runner()->BelongsToCurrentThread());
+  DCHECK(display_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_JniInterface_setVideoFrame(env, bitmap);
@@ -331,7 +332,7 @@ void ChromotingJniRuntime::UpdateFrameBitmap(jobject bitmap) {
 
 void ChromotingJniRuntime::UpdateCursorShape(
     const protocol::CursorShapeInfo& cursor_shape) {
-  DCHECK(display_task_runner()->BelongsToCurrentThread());
+  DCHECK(display_task_runner_->BelongsToCurrentThread());
 
   // const_cast<> is safe as long as the Java updateCursorShape() method copies
   // the data out of the buffer without mutating it, and doesn't keep any
@@ -353,7 +354,7 @@ void ChromotingJniRuntime::UpdateCursorShape(
 }
 
 void ChromotingJniRuntime::RedrawCanvas() {
-  DCHECK(display_task_runner()->BelongsToCurrentThread());
+  DCHECK(display_task_runner_->BelongsToCurrentThread());
 
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_JniInterface_redrawGraphicsInternal(env);

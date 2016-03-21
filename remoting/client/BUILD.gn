@@ -32,11 +32,6 @@ source_set("client") {
       "client_status_logger.cc",
       "server_log_entry_client.cc",
     ]
-  } else {
-    sources += rebase_path(
-            remoting_srcs_gypi_values.remoting_client_standalone_sources,
-            ".",
-            "//remoting")
   }
 }
 

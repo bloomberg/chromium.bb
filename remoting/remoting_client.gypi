@@ -20,7 +20,6 @@
       ],
       'sources': [
         '<@(remoting_client_sources)',
-        '<@(remoting_client_standalone_sources)',
       ],
       'conditions': [
         ['buildtype!="Official"', {
