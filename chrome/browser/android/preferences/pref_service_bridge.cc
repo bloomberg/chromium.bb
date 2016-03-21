@@ -552,7 +552,8 @@ static void SetBrowsingDataDeletionTimePeriod(
 
 static void ClearBrowsingData(JNIEnv* env,
                               const JavaParamRef<jobject>& obj,
-                              const JavaParamRef<jintArray>& data_types) {
+                              const JavaParamRef<jintArray>& data_types,
+                              jint time_period) {
   BrowsingDataRemover* browsing_data_remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(GetOriginalProfile());
   // ClearBrowsingDataObserver deletes itself when |browsing_data_remover| is
@@ -590,10 +591,9 @@ static void ClearBrowsingData(JNIEnv* env,
     }
   }
 
-  int period_selected = GetPrefService()->GetInteger(prefs::kDeleteTimePeriod);
   browsing_data_remover->Remove(
       BrowsingDataRemover::Period(
-          static_cast<BrowsingDataRemover::TimePeriod>(period_selected)),
+          static_cast<BrowsingDataRemover::TimePeriod>(time_period)),
       remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
 }
 

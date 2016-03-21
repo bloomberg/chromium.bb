@@ -19,6 +19,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BrowsingDataType;
+import org.chromium.chrome.browser.TimePeriod;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
@@ -202,7 +203,8 @@ public class ConfirmImportSyncDataDialog extends DialogFragment
                     model.removeAllUserBookmarks();
                     model.destroy();
                     PrefServiceBridge.getInstance().clearBrowsingData(
-                            ConfirmImportSyncDataDialog.this, SYNC_DATA_TYPES);
+                            ConfirmImportSyncDataDialog.this,
+                            SYNC_DATA_TYPES, TimePeriod.EVERYTHING);
                 }
             });
         }
