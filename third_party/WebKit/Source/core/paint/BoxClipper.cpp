@@ -48,7 +48,9 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
     if (hasBorderRadius)
         clipRoundedRect = m_box.style()->getRoundedInnerBorderFor(LayoutRect(accumulatedOffset, m_box.size()));
 
-    if (contentsClipBehavior == SkipContentsClipIfPossible) {
+    // Selection does not affect visual overflow, so this optimization is invalid if selection
+    // is present.
+    if (contentsClipBehavior == SkipContentsClipIfPossible && box.getSelectionState() == SelectionNone) {
         LayoutRect contentsVisualOverflow = m_box.contentsVisualOverflowRect();
         if (contentsVisualOverflow.isEmpty())
             return;

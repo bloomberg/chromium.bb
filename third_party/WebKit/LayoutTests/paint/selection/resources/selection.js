@@ -10,3 +10,9 @@ function selectRange(startElement, startIndex, endElement, endIndex) {
   range.setEnd(endElement, endIndex);
   window.getSelection().addRange(range);
 }
+
+function selectNode(element) {
+  var range = document.createRange();
+  range.selectNode(element);
+  window.getSelection().addRange(range);
+}
