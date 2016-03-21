@@ -912,7 +912,7 @@
         ['chromeos==1 or OS=="android" or OS=="ios" or (embedded==1 and chromecast==0)', {
           'pdf_enable_xfa%': 0,
         }, {
-          'pdf_enable_xfa%': 1,
+          'pdf_enable_xfa%': 0, # Reverted pending crbug.com/596373
         }],
 
         ['chromeos==1 or OS=="android" or OS=="ios" or desktop_linux==1', {
