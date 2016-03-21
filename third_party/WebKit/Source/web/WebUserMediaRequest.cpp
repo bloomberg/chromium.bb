@@ -49,6 +49,12 @@ WebUserMediaRequest::WebUserMediaRequest(UserMediaRequest* request)
 {
 }
 
+WebUserMediaRequest WebUserMediaRequest::createForTesting(const WebMediaConstraints& audio, const WebMediaConstraints& video)
+{
+    UserMediaRequest* request = UserMediaRequest::createForTesting(audio, video);
+    return WebUserMediaRequest(request);
+}
+
 void WebUserMediaRequest::reset()
 {
     m_private.reset();
@@ -80,7 +86,9 @@ WebMediaConstraints WebUserMediaRequest::videoConstraints() const
 
 WebSecurityOrigin WebUserMediaRequest::getSecurityOrigin() const
 {
-    ASSERT(!isNull() && m_private->getExecutionContext());
+    ASSERT(!isNull());
+    if (!m_private->getExecutionContext())
+        return WebSecurityOrigin::createFromString("test://test");
     return WebSecurityOrigin(m_private->getExecutionContext()->getSecurityOrigin());
 }
 

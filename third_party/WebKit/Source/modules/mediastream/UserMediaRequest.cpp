@@ -85,6 +85,11 @@ UserMediaRequest* UserMediaRequest::create(ExecutionContext* context, UserMediaC
     return new UserMediaRequest(context, controller, audio, video, successCallback, errorCallback);
 }
 
+UserMediaRequest* UserMediaRequest::createForTesting(const WebMediaConstraints& audio, const WebMediaConstraints& video)
+{
+    return new UserMediaRequest(nullptr, nullptr, audio, video, nullptr, nullptr);
+}
+
 UserMediaRequest::UserMediaRequest(ExecutionContext* context, UserMediaController* controller, WebMediaConstraints audio, WebMediaConstraints video, NavigatorUserMediaSuccessCallback* successCallback, NavigatorUserMediaErrorCallback* errorCallback)
     : ContextLifecycleObserver(context)
     , m_audio(audio)

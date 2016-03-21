@@ -121,7 +121,6 @@ class CONTENT_EXPORT UserMediaClientImpl
       const StreamDeviceInfo& device,
       const MediaStreamSource::SourceStoppedCallback& stop_callback);
 
- private:
   // Class for storing information about a WebKit request to create a
   // MediaStream.
   class UserMediaRequestInfo
@@ -176,6 +175,15 @@ class CONTENT_EXPORT UserMediaClientImpl
   };
   typedef ScopedVector<UserMediaRequestInfo> UserMediaRequests;
 
+ protected:
+  // These methods can be accessed in unit tests.
+  UserMediaRequestInfo* FindUserMediaRequestInfo(int request_id);
+  UserMediaRequestInfo* FindUserMediaRequestInfo(
+      const blink::WebUserMediaRequest& request);
+
+  void DeleteUserMediaRequestInfo(UserMediaRequestInfo* request);
+
+ private:
   typedef std::vector<blink::WebMediaStreamSource> LocalStreamSources;
 
   struct MediaDevicesRequestInfo;
@@ -215,10 +223,6 @@ class CONTENT_EXPORT UserMediaClientImpl
   void FinalizeEnumerateDevices(MediaDevicesRequestInfo* request);
   void FinalizeEnumerateSources(MediaDevicesRequestInfo* request);
 
-  UserMediaRequestInfo* FindUserMediaRequestInfo(int request_id);
-  UserMediaRequestInfo* FindUserMediaRequestInfo(
-      const blink::WebUserMediaRequest& request);
-  void DeleteUserMediaRequestInfo(UserMediaRequestInfo* request);
   void DeleteAllUserMediaRequests();
 
   MediaDevicesRequestInfo* FindMediaDevicesRequestInfo(int request_id);

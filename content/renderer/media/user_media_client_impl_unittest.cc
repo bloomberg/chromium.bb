@@ -14,6 +14,7 @@
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_audio_source.h"
 #include "content/renderer/media/media_stream_track.h"
+#include "content/renderer/media/mock_constraint_factory.h"
 #include "content/renderer/media/mock_media_stream_dispatcher.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
@@ -62,10 +63,14 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
         factory_(dependency_factory),
         video_source_(NULL) {}
 
-  void RequestUserMedia() {
-    blink::WebUserMediaRequest user_media_request;
+  void RequestUserMedia(const blink::WebUserMediaRequest& user_media_request) {
     state_ = REQUEST_NOT_COMPLETE;
     requestUserMedia(user_media_request);
+  }
+
+  void RequestUserMedia() {
+    blink::WebUserMediaRequest user_media_request;
+    RequestUserMedia(user_media_request);
   }
 
   void RequestMediaDevices() {
@@ -143,6 +148,18 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
   RequestState request_state() const { return state_; }
   content::MediaStreamRequestResult error_reason() const { return result_; }
   blink::WebString error_name() const { return result_name_; }
+
+  // Access to the request queue for testing.
+  bool UserMediaRequestHasAutomaticDeviceSelection(int request_id) {
+    auto* request = FindUserMediaRequestInfo(request_id);
+    EXPECT_TRUE(request != nullptr);
+    return request && request->enable_automatic_output_device_selection;
+  }
+
+  void DeleteRequest(int request_id) {
+    auto* request = FindUserMediaRequestInfo(request_id);
+    DeleteUserMediaRequestInfo(request);
+  }
 
  private:
   blink::WebMediaStream last_generated_stream_;
@@ -247,6 +264,19 @@ class UserMediaClientImplTest : public ::testing::Test {
   void FailToCreateNextAudioCapturer() {
     dependency_factory_->FailToCreateNextAudioCapturer();
     blink::WebHeap::collectGarbageForTesting();
+  }
+
+  bool AudioRequestHasAutomaticDeviceSelection(
+      const blink::WebMediaConstraints& audio_constraints) {
+    blink::WebMediaConstraints null_constraints;
+    blink::WebUserMediaRequest request =
+        blink::WebUserMediaRequest::createForTesting(audio_constraints,
+                                                     null_constraints);
+    used_media_impl_->RequestUserMedia(request);
+    bool result = used_media_impl_->UserMediaRequestHasAutomaticDeviceSelection(
+        ms_dispatcher_->audio_input_request_id());
+    used_media_impl_->DeleteRequest(ms_dispatcher_->audio_input_request_id());
+    return result;
   }
 
  protected:
@@ -574,6 +604,37 @@ TEST_F(UserMediaClientImplTest, EnumerateSources) {
   EXPECT_EQ(blink::WebSourceInfo::SourceKindVideo, source->kind());
   EXPECT_FALSE(source->label().isEmpty());
   EXPECT_EQ(blink::WebSourceInfo::VideoFacingModeEnvironment, source->facing());
+}
+
+TEST_F(UserMediaClientImplTest, RenderToAssociatedSinkConstraint) {
+  // For a null UserMediaRequest (no audio requested), we expect false.
+  used_media_impl_->RequestUserMedia();
+  EXPECT_FALSE(used_media_impl_->UserMediaRequestHasAutomaticDeviceSelection(
+      ms_dispatcher_->audio_input_request_id()));
+  used_media_impl_->DeleteRequest(ms_dispatcher_->audio_input_request_id());
+
+  // If audio is requested, but no constraint, it should be true.
+  MockConstraintFactory factory;
+  blink::WebMediaConstraints audio_constraints =
+      factory.CreateWebMediaConstraints();
+  EXPECT_TRUE(AudioRequestHasAutomaticDeviceSelection(
+      factory.CreateWebMediaConstraints()));
+
+  // If the constraint is present, it should dictate the result.
+  factory.Reset();
+  factory.AddAdvanced().renderToAssociatedSink.setExact(true);
+  EXPECT_TRUE(AudioRequestHasAutomaticDeviceSelection(
+      factory.CreateWebMediaConstraints()));
+
+  factory.Reset();
+  factory.AddAdvanced().renderToAssociatedSink.setExact(false);
+  EXPECT_FALSE(AudioRequestHasAutomaticDeviceSelection(
+      factory.CreateWebMediaConstraints()));
+
+  factory.Reset();
+  factory.basic().renderToAssociatedSink.setExact(false);
+  EXPECT_FALSE(AudioRequestHasAutomaticDeviceSelection(
+      factory.CreateWebMediaConstraints()));
 }
 
 }  // namespace content

@@ -200,23 +200,21 @@ void UserMediaClientImpl::requestUserMedia(
       // Check if this input device should be used to select a matching output
       // device for audio rendering.
       enable_automatic_output_device_selection = true;  // On by default.
-      for (const auto& advanced_constraint :
-           user_media_request.audioConstraints().advanced()) {
-        if (advanced_constraint.renderToAssociatedSink.hasExact()) {
-          enable_automatic_output_device_selection =
-              advanced_constraint.renderToAssociatedSink.exact();
-          break;
-        }
-      }
+      GetConstraintValueAsBoolean(
+          user_media_request.audioConstraints(),
+          &blink::WebMediaTrackConstraintSet::renderToAssociatedSink,
+          &enable_automatic_output_device_selection);
     }
     if (user_media_request.video()) {
       controls.video.requested = true;
     }
     CopyBlinkRequestToStreamControls(user_media_request, &controls);
-
     security_origin = blink::WebStringToGURL(
         user_media_request.getSecurityOrigin().toString());
-    DCHECK(render_frame()->GetWebFrame() ==
+    // ownerDocument may be null if we are in a test.
+    // In that case, it's OK to not check frame().
+    DCHECK(user_media_request.ownerDocument().isNull() ||
+           render_frame()->GetWebFrame() ==
                static_cast<blink::WebFrame*>(
                    user_media_request.ownerDocument().frame()));
   }

@@ -77,6 +77,9 @@ public:
     // DEPRECATED
     BLINK_EXPORT void requestFailed(const WebString& description = WebString()) { requestDenied(description); }
 
+    // For testing in content/
+    BLINK_EXPORT static WebUserMediaRequest createForTesting(const WebMediaConstraints& audio, const WebMediaConstraints& video);
+
 #if BLINK_IMPLEMENTATION
     WebUserMediaRequest(UserMediaRequest*);
     operator UserMediaRequest*() const;

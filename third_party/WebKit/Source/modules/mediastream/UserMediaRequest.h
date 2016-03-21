@@ -53,6 +53,7 @@ class MODULES_EXPORT UserMediaRequest final : public GarbageCollectedFinalized<U
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(UserMediaRequest);
 public:
     static UserMediaRequest* create(ExecutionContext*, UserMediaController*, const MediaStreamConstraints& options, NavigatorUserMediaSuccessCallback*, NavigatorUserMediaErrorCallback*, MediaErrorState&);
+    static UserMediaRequest* createForTesting(const WebMediaConstraints& audio, const WebMediaConstraints& video);
     virtual ~UserMediaRequest();
 
     NavigatorUserMediaSuccessCallback* successCallback() const { return m_successCallback.get(); }
