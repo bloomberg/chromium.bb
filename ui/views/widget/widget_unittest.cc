@@ -1399,7 +1399,12 @@ TEST_F(WidgetTest, MAYBE_DesktopNativeWidgetNoPaintAfterCloseTest) {
   EXPECT_FALSE(widget.received_paint_while_hidden());
 }
 
-TEST_F(WidgetTest, DesktopNativeWidgetNoPaintAfterHideTest) {
+#if defined(OS_LINUX)
+#define MAYBE_DesktopNativeWidgetNoPaintAfterHideTest DISABLED_DesktopNativeWidgetNoPaintAfterHideTest
+#else
+#define MAYBE_DesktopNativeWidgetNoPaintAfterHideTest DesktopNativeWidgetNoPaintAfterHideTest
+#endif
+TEST_F(WidgetTest, MAYBE_DesktopNativeWidgetNoPaintAfterHideTest) {
   DesktopAuraTestValidPaintWidget widget;
   widget.InitForTest(CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS));
   RunPendingMessages();
