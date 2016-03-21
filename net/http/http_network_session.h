@@ -149,8 +149,9 @@ class NET_EXPORT HttpNetworkSession
     // Maximum number of server configs that are to be stored in
     // HttpServerProperties, instead of the disk cache.
     size_t quic_max_server_configs_stored_in_properties;
-    // If not empty, QUIC will be used for all connections to this origin.
-    HostPortPair origin_to_force_quic_on;
+    // If not empty, QUIC will be used for all connections to the set of
+    // origins in |origins_to_force_quic_on|.
+    std::set<HostPortPair> origins_to_force_quic_on;
     // Source of time for QUIC connections. Will be owned by QuicStreamFactory.
     QuicClock* quic_clock;
     // Source of entropy for QUIC connections.

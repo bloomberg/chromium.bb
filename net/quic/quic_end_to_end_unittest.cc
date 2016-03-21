@@ -159,8 +159,8 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
 
     // To simplify the test, and avoid the race with the HTTP request, we force
     // QUIC for these requests.
-    params_.origin_to_force_quic_on =
-        HostPortPair::FromString("test.example.com:443");
+    params_.origins_to_force_quic_on.insert(
+        HostPortPair::FromString("test.example.com:443"));
 
     transaction_factory_.reset(new TestTransactionFactory(params_));
   }

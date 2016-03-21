@@ -317,8 +317,13 @@ scoped_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
     connection_options->AppendString("'" + QuicUtils::TagToString(*it) + "'");
   }
   dict->Set("connection_options", std::move(connection_options));
-  dict->SetString("origin_to_force_quic_on",
-                  params_.origin_to_force_quic_on.ToString());
+
+  scoped_ptr<base::ListValue> origins_to_force_quic_on(new base::ListValue);
+  for (const auto& origin : params_.origins_to_force_quic_on) {
+    origins_to_force_quic_on->AppendString("'" + origin.ToString() + "'");
+  }
+  dict->Set("origins_to_force_quic_on", std::move(origins_to_force_quic_on));
+
   dict->SetDouble("load_server_info_timeout_srtt_multiplier",
                   params_.quic_load_server_info_timeout_srtt_multiplier);
   dict->SetBoolean("enable_connection_racing",

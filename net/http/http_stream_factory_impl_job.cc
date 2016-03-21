@@ -899,7 +899,7 @@ int HttpStreamFactoryImpl::Job::DoResolveProxyComplete(int result) {
 
 bool HttpStreamFactoryImpl::Job::ShouldForceQuic() const {
   return session_->params().enable_quic &&
-         session_->params().origin_to_force_quic_on.Equals(server_) &&
+         ContainsKey(session_->params().origins_to_force_quic_on, server_) &&
          proxy_info_.is_direct() && origin_url_.SchemeIs("https");
 }
 

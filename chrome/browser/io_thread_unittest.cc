@@ -603,6 +603,23 @@ TEST_F(IOThreadTest, QuicDelayTcpConnection) {
   EXPECT_TRUE(params.quic_delay_tcp_race);
 }
 
+TEST_F(IOThreadTest, QuicOriginsToForceQuicOn) {
+  command_line_.AppendSwitch("enable-quic");
+  command_line_.AppendSwitchASCII("origin-to-force-quic-on",
+                                  "www.example.com:443, www.example.org:443");
+
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_EQ(2u, params.origins_to_force_quic_on.size());
+  EXPECT_TRUE(
+      ContainsKey(params.origins_to_force_quic_on,
+                  net::HostPortPair::FromString("www.example.com:443")));
+  EXPECT_TRUE(
+      ContainsKey(params.origins_to_force_quic_on,
+                  net::HostPortPair::FromString("www.example.org:443")));
+}
+
 TEST_F(IOThreadTest, QuicWhitelistFromCommandLinet) {
   command_line_.AppendSwitch("enable-quic");
   command_line_.AppendSwitchASCII("quic-host-whitelist",

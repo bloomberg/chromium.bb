@@ -771,7 +771,7 @@ const char kNumPacThreads[]                 = "num-pac-threads";
 // Launches URL in new browser window.
 const char kOpenInNewWindow[]               = "new-window";
 
-// Force use of QUIC for requests to the specified origin.
+// Specifies a comma separated list of host/port pairs to force use of QUIC.
 const char kOriginToForceQuicOn[]           = "origin-to-force-quic-on";
 
 // The time that a new chrome process which is delegating to an already running

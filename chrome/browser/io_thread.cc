@@ -1154,8 +1154,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->quic_migrate_sessions_on_network_change);
   globals.quic_migrate_sessions_early.CopyToIfSet(
       &params->quic_migrate_sessions_early);
-  globals.origin_to_force_quic_on.CopyToIfSet(
-      &params->origin_to_force_quic_on);
+  if (!globals.origins_to_force_quic_on.empty())
+    params->origins_to_force_quic_on = globals.origins_to_force_quic_on;
   params->enable_user_alternate_protocol_ports =
       globals.enable_user_alternate_protocol_ports;
   params->enable_token_binding = globals.enable_token_binding;
@@ -1343,11 +1343,13 @@ void IOThread::ConfigureQuicGlobals(
   }
 
   if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
-    net::HostPortPair quic_origin =
-        net::HostPortPair::FromString(
-            command_line.GetSwitchValueASCII(switches::kOriginToForceQuicOn));
-    if (!quic_origin.IsEmpty()) {
-      globals->origin_to_force_quic_on.set(quic_origin);
+    std::string origins =
+        command_line.GetSwitchValueASCII(switches::kOriginToForceQuicOn);
+    for (const std::string& host_port : base::SplitString(
+             origins, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+      net::HostPortPair quic_origin = net::HostPortPair::FromString(host_port);
+      if (!quic_origin.IsEmpty())
+        globals->origins_to_force_quic_on.insert(quic_origin);
     }
   }
 }

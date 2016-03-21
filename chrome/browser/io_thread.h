@@ -236,7 +236,7 @@ class IOThread : public content::BrowserThreadDelegate {
     net::QuicTagVector quic_connection_options;
     Optional<std::string> quic_user_agent_id;
     Optional<net::QuicVersionVector> quic_supported_versions;
-    Optional<net::HostPortPair> origin_to_force_quic_on;
+    std::set<net::HostPortPair> origins_to_force_quic_on;
     Optional<bool> quic_close_sessions_on_ip_change;
     Optional<int> quic_idle_connection_timeout_seconds;
     Optional<bool> quic_disable_preconnect_if_0rtt;

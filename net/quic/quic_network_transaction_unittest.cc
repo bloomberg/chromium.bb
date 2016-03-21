@@ -621,8 +621,8 @@ INSTANTIATE_TEST_CASE_P(Version,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(QuicNetworkTransactionTest, ForceQuic) {
-  params_.origin_to_force_quic_on =
-      HostPortPair::FromString("mail.example.org:443");
+  params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
 
   MockQuicData mock_quic_data;
   mock_quic_data.AddWrite(
@@ -809,8 +809,8 @@ TEST_P(QuicNetworkTransactionTest, AlternativeServicesDifferentHost) {
 }
 
 TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
-  params_.origin_to_force_quic_on =
-      HostPortPair::FromString("mail.example.org:443");
+  params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
 
   MockQuicData mock_quic_data1;
   mock_quic_data1.AddRead(ASYNC, ERR_SOCKET_NOT_CONNECTED);
@@ -841,8 +841,8 @@ TEST_P(QuicNetworkTransactionTest, ForceQuicWithErrorConnecting) {
 
 TEST_P(QuicNetworkTransactionTest, DoNotForceQuicForHttps) {
   // Attempt to "force" quic on 443, which will not be honored.
-  params_.origin_to_force_quic_on =
-      HostPortPair::FromString("www.google.com:443");
+  params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("www.google.com:443"));
 
   MockRead http_reads[] = {
       MockRead("HTTP/1.1 200 OK\r\n\r\n"), MockRead("hello world"),
@@ -2236,8 +2236,8 @@ TEST_P(QuicNetworkTransactionTest, SecureResourceOverSecureQuic) {
 }
 
 TEST_P(QuicNetworkTransactionTest, QuicUpload) {
-  params_.origin_to_force_quic_on =
-      HostPortPair::FromString("mail.example.org:443");
+  params_.origins_to_force_quic_on.insert(
+      HostPortPair::FromString("mail.example.org:443"));
 
   MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
   MockWrite writes[] = {MockWrite(SYNCHRONOUS, ERR_FAILED, 1)};
