@@ -184,11 +184,11 @@ Polymer({
     /**
      * The header text tooltip. This would be descriptive of the
      * source origin, whether a host name, tab URL, etc.
-     * @type {?string}
+     * @type {string}
      */
     headerTextTooltip: {
       type: String,
-      value: null,
+      value: '',
     },
 
     /**
@@ -1587,7 +1587,7 @@ Polymer({
 
     this.shownCastModeValue_ = castMode.type;
     this.headerText = castMode.description;
-    this.headerTextTooltip = castMode.host;
+    this.headerTextTooltip = castMode.host || '';
     if (castMode.type == media_router.CastModeType.AUTO)
       this.userHasSelectedCastMode_ = false;
   },
