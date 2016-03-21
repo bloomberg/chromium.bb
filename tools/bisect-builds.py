@@ -700,7 +700,7 @@ def RunRevision(context, revision, zip_file, profile, num_runs, command, args):
 # They are present here because this function is passed to Bisect which then
 # calls it with 5 arguments.
 # pylint: disable=W0613
-def AskIsGoodBuild(rev, official_builds, status, stdout, stderr):
+def AskIsGoodBuild(rev, official_builds, exit_status, stdout, stderr):
   """Asks the user whether build |rev| is good or bad."""
   # Loop until we get a response that we can parse.
   while True:
@@ -716,7 +716,7 @@ def AskIsGoodBuild(rev, official_builds, status, stdout, stderr):
       print stderr
 
 
-def IsGoodASANBuild(rev, official_builds, status, stdout, stderr):
+def IsGoodASANBuild(rev, official_builds, exit_status, stdout, stderr):
   """Determine if an ASAN build |rev| is good or bad
 
   Will examine stderr looking for the error message emitted by ASAN. If not
@@ -730,7 +730,17 @@ def IsGoodASANBuild(rev, official_builds, status, stdout, stderr):
     if bad_count > 0:
       print 'Revision %d determined to be bad.' % rev
       return 'b'
-  return AskIsGoodBuild(rev, official_builds, status, stdout, stderr)
+  return AskIsGoodBuild(rev, official_builds, exit_status, stdout, stderr)
+
+
+def DidCommandSucceed(rev, official_builds, exit_status, stdout, stderr):
+  if exit_status:
+    print 'Bad revision: %s' % rev
+    return 'b'
+  else:
+    print 'Good revision: %s' % rev
+    return 'g'
+
 
 class DownloadJob(object):
   """DownloadJob represents a task to download a given Chromium revision."""
@@ -781,13 +791,27 @@ class DownloadJob(object):
       raise
 
 
+def VerifyEndpoint(fetch, context, rev, profile, num_runs, command, try_args,
+                   evaluate, expected_answer):
+  fetch.WaitFor()
+  try:
+    (exit_status, stdout, stderr) = RunRevision(
+        context, rev, fetch.zip_file, profile, num_runs, command, try_args)
+  except Exception, e:
+    print >> sys.stderr, e
+  if (evaluate(rev, context.is_official, exit_status, stdout, stderr) !=
+      expected_answer):
+    print 'Unexpected result at a range boundary! Your range is not correct.'
+    raise SystemExit
+
+
 def Bisect(context,
            num_runs=1,
            command='%p %a',
            try_args=(),
            profile=None,
-           interactive=True,
-           evaluate=AskIsGoodBuild):
+           evaluate=AskIsGoodBuild,
+           verify_range=False):
   """Given known good and known bad revisions, run a binary search on all
   archived revisions to determine the last known good revision.
 
@@ -795,10 +819,10 @@ def Bisect(context,
   @param num_runs Number of times to run each build for asking good/bad.
   @param try_args A tuple of arguments to pass to the test application.
   @param profile The name of the user profile to run with.
-  @param interactive If it is false, use command exit code for good or bad
-                     judgment of the argument build.
   @param evaluate A function which returns 'g' if the argument build is good,
                   'b' if it's bad or 'u' if unknown.
+  @param verify_range If true, tests the first and last revisions in the range
+                      before proceeding with the bisect.
 
   Threading is used to fetch Chromium revisions in the background, speeding up
   the user's experience. For example, suppose the bounds of the search are
@@ -844,9 +868,31 @@ def Bisect(context,
   maxrev = len(revlist) - 1
   pivot = maxrev / 2
   rev = revlist[pivot]
-  zip_file = _GetDownloadPath(rev)
-  fetch = DownloadJob(context, 'initial_fetch', rev, zip_file)
+  fetch = DownloadJob(context, 'initial_fetch', rev, _GetDownloadPath(rev))
   fetch.Start()
+
+  if verify_range:
+    minrev_fetch = DownloadJob(
+        context, 'minrev_fetch', revlist[minrev],
+        _GetDownloadPath(revlist[minrev]))
+    maxrev_fetch = DownloadJob(
+        context, 'maxrev_fetch', revlist[maxrev],
+        _GetDownloadPath(revlist[maxrev]))
+    minrev_fetch.Start()
+    maxrev_fetch.Start()
+    try:
+      VerifyEndpoint(minrev_fetch, context, revlist[minrev], profile, num_runs,
+          command, try_args, evaluate, 'b' if bad_rev < good_rev else 'g')
+      VerifyEndpoint(maxrev_fetch, context, revlist[maxrev], profile, num_runs,
+          command, try_args, evaluate, 'g' if bad_rev < good_rev else 'b')
+    except (KeyboardInterrupt, SystemExit):
+      print 'Cleaning up...'
+      fetch.Stop()
+      sys.exit(0)
+    finally:
+      minrev_fetch.Stop()
+      maxrev_fetch.Stop()
+
   fetch.WaitFor()
 
   # Binary search time!
@@ -880,17 +926,12 @@ def Bisect(context,
       up_fetch.Start()
 
     # Run test on the pivot revision.
-    status = None
+    exit_status = None
     stdout = None
     stderr = None
     try:
-      (status, stdout, stderr) = RunRevision(context,
-                                             rev,
-                                             fetch.zip_file,
-                                             profile,
-                                             num_runs,
-                                             command,
-                                             try_args)
+      (exit_status, stdout, stderr) = RunRevision(
+          context, rev, fetch.zip_file, profile, num_runs, command, try_args)
     except Exception, e:
       print >> sys.stderr, e
 
@@ -898,15 +939,7 @@ def Bisect(context,
     # On that basis, kill one of the background downloads and complete the
     # other, as described in the comments above.
     try:
-      if not interactive:
-        if status:
-          answer = 'b'
-          print 'Bad revision: %s' % rev
-        else:
-          answer = 'g'
-          print 'Good revision: %s' % rev
-      else:
-        answer = evaluate(rev, context.is_official, status, stdout, stderr)
+      answer = evaluate(rev, context.is_official, exit_status, stdout, stderr)
       if ((answer == 'g' and good_rev < bad_rev)
           or (answer == 'b' and bad_rev < good_rev)):
         fetch.Stop()
@@ -954,7 +987,6 @@ def Bisect(context,
             pivot = up_pivot - 1  # Subtracts 1 because revlist was resized.
           else:
             pivot = down_pivot
-          zip_file = fetch.zip_file
 
         if down_fetch and fetch != down_fetch:
           down_fetch.Stop()
@@ -962,9 +994,10 @@ def Bisect(context,
           up_fetch.Stop()
       else:
         assert False, 'Unexpected return value from evaluate(): ' + answer
-    except SystemExit:
+    except (KeyboardInterrupt, SystemExit):
       print 'Cleaning up...'
-      for f in [_GetDownloadPath(revlist[down_pivot]),
+      for f in [_GetDownloadPath(rev),
+                _GetDownloadPath(revlist[down_pivot]),
                 _GetDownloadPath(revlist[up_pivot])]:
         try:
           os.unlink(f)
@@ -1162,6 +1195,12 @@ def main():
                     help='Use a local file in the current directory to cache '
                          'a list of known revisions to speed up the '
                          'initialization of this script.')
+  parser.add_option('--verify-range',
+                    dest='verify_range',
+                    action='store_true',
+                    default=False,
+                    help='Test the first and last revisions in the range ' +
+                         'before proceeding with the bisect.')
 
   (opts, args) = parser.parse_args()
 
@@ -1220,7 +1259,9 @@ def main():
     parser.print_help()
     return 1
 
-  if opts.asan:
+  if opts.not_interactive:
+    evaluator = DidCommandSucceed
+  elif opts.asan:
     evaluator = IsGoodASANBuild
   else:
     evaluator = AskIsGoodBuild
@@ -1232,7 +1273,7 @@ def main():
 
   (min_chromium_rev, max_chromium_rev, context) = Bisect(
       context, opts.times, opts.command, args, opts.profile,
-      not opts.not_interactive, evaluator)
+      evaluator, opts.verify_range)
 
   # Get corresponding blink revisions.
   try:
