@@ -124,7 +124,7 @@ namespace frob {
 
 class FrobinatorImpl : public mojom::Frobinator {
  public:
-  FrobinatorImpl(mojo::InterfaceRequest<mojom::Frobinator> request)
+  FrobinatorImpl(mojom::FrobinatorRequest request)
       : binding_(this, std::move(request)) {}
   ~FrobinatorImpl() override {}
 
@@ -143,13 +143,14 @@ pipe to an implementation of a service. This means it watches that end of the
 pipe for incoming messages; it knows how to decode messages for interface `T`,
 and it dispatches them to methods on the bound `T` implementation.
 
-`mojo::InterfaceRequest<T>` is essentially semantic sugar for a strongly-typed
-message pipe endpoint. A common way to create new message pipes is via the
-`GetProxy` call defined in `interface_request.h`:
+`mojom::FrobinatorRequest` is a generated type alias for
+`mojo::InterfaceRequest<mojom::Frobinator>` and is essentially semantic sugar
+for a strongly-typed message pipe endpoint. A common way to create new message
+pipes is via the `GetProxy` call defined in `interface_request.h`:
 
 ```
 mojom::FrobinatorPtr proxy;
-mojo::InterfaceRequest<mojom::Frobinator> request = mojo::GetProxy(&proxy);
+mojom::FrobinatorRequest request = mojo::GetProxy(&proxy);
 ```
 
 This creates a new message pipe with one end owned by `proxy` and the other end
@@ -265,25 +266,23 @@ We can build a simple browser-side `FrobinatorImpl` service that has access to a
 #include "base/macros.h"
 #include "components/frob/public/interfaces/frobinator.mojom.h"
 #include "content/public/browser/browser_context.h"
-#inlcude "mojo/public/cpp/system/interface_request.h"
-#inlcude "mojo/public/cpp/system/message_pipe.h"
-#inlcude "mojo/public/cpp/system/strong_binding.h"
+#include "mojo/public/cpp/system/interface_request.h"
+#include "mojo/public/cpp/system/strong_binding.h"
 
 namespace frob {
 
 class FrobinatorImpl : public mojom::Frobinator {
  public:
   FrobinatorImpl(content::BrowserContext* context,
-                 mojo::InterfaceRequest<mojom::Frobinator> request)
+                 mojom::FrobinatorRequest request)
       : context_(context), binding_(this, std::move(request)) {}
   ~FrobinatorImpl() override {}
 
   // A factory function to use in conjunction with ServiceRegistry.
   static void Create(content::BrowserContext* context,
-                     mojo::InterfaceRequest<mojom::Frobinator> request) {
+                     mojom::FrobinatorRequest request) {
     // See comment below for why this doesn't leak.
-    new FrobinatorImpl(context,
-                       mojo::MakeRequest<mojom::Frobinator>(std::move(pipe)));
+    new FrobinatorImpl(context, std::move(request));
   }
 
  private:
