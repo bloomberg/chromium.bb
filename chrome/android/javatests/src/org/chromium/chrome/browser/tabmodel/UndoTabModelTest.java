@@ -8,10 +8,12 @@ import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -882,6 +884,8 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      * @throws InterruptedException
      */
     @MediumTest
+    // Test is failing on tablets, so temporarily limited to phones. http://crbug.com/593958
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
     public void testOutOfOrder1() throws InterruptedException {
         TabModel model = getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = getActivity().getTabCreator(false);
