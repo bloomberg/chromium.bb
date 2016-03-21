@@ -65,7 +65,7 @@ void VerifyHashTable(const PLLRoot *root) {
        bucket_index++) {
     int32_t chain_index = root->hash_buckets[bucket_index];
     ASSERT_GE(chain_index, -1);
-    ASSERT_LT(chain_index, root->export_count);
+    ASSERT_LT(chain_index, (int32_t) root->export_count);
 
     if (chain_index != -1) {
       // For each chain marked in hash_buckets[], confirm that it is terminated

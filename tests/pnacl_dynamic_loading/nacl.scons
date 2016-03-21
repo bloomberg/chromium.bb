@@ -22,6 +22,16 @@ if env.Bit('use_sandboxed_translator'):
   Return()
 
 
+def FinalizeAndTranslatePso(dest, opt_result):
+  # Finalize to strip debugging info and to emit PNaCl bitcode.
+  finalized_result = env.Command(
+      dest + '.final.pso', [opt_result],
+      '${PNACLFINALIZE} ${SOURCES} -o ${TARGET}')
+  # Translate to an ELF loadable object.
+  return env.Command(dest + '.so', [finalized_result],
+                     '${TRANSLATE} -pso ${SOURCES} -o ${TARGET}')
+
+
 def MakeAndTranslatePso(dest, bitcode_file, llvm_passes):
   # Run opt to optionally apply PNaCl ABI simplifications to the IR and to
   # run the PNaCl ABI checker.  We are bypassing pnacl-ld for now because
@@ -33,15 +43,7 @@ def MakeAndTranslatePso(dest, bitcode_file, llvm_passes):
       '-verify-pnaclabi-module -verify-pnaclabi-functions '
       '-pnaclabi-allow-debug-metadata '
       '${SOURCES} -o ${TARGET}')
-  # Finalize to strip debugging info and to emit PNaCl bitcode.
-  finalized_result = env.Command(
-      dest + '.final.pso', [opt_result],
-      '${PNACLFINALIZE} ${SOURCES} -o ${TARGET}')
-  # Translate to an ELF loadable object.
-  translated_dso = env.Command(dest + '.so', [finalized_result],
-                               '${TRANSLATE} -pso ${SOURCES} -o ${TARGET}')
-  return translated_dso
-
+  return FinalizeAndTranslatePso(dest, opt_result)
 
 def PsoFromLLVMAssembly(base_name):
   bitcode_file = env.Command(
@@ -52,26 +54,11 @@ def PsoFromLLVMAssembly(base_name):
                              llvm_passes='')
 
 
-LLVM_PASSES = (
-    # The following is a subset of "-pnacl-abi-simplify-preopt".  We don't
-    # want to run the full "-pnacl-abi-simplify-preopt" because it
-    # internalizes symbols that we want to export via "-convert-to-pso".
-    '-nacl-global-cleanup '
-    '-expand-varargs '
-    '-rewrite-pnacl-library-calls '
-    '-rewrite-llvm-intrinsic-calls '
-    '-convert-to-pso '
-    '-pnacl-abi-simplify-postopt')
-
-
 def MakeAndTranslatePll(dest, source_file):
-  return MakeAndTranslatePso(
-      dest, [env.ComponentObject(source_file)],
-      # Skip the pre-opt passes because they add TLS functions.  However,
-      # we still need to run the post-opt passes so that the LLVM IR passes
-      # the PNaCl ABI checker.
-      llvm_passes=LLVM_PASSES)
-
+  nonfinal_pll = env.Command(
+      dest + '.nonfinal.pll', [source_file],
+      '${CC} -shared ${SOURCES} -o ${TARGET}')
+  return FinalizeAndTranslatePso(dest, nonfinal_pll)
 
 # Under SFI NaCl, the loader currently depends on the allocate_code_data()
 # interface provided by the IRT.
@@ -97,7 +84,7 @@ env.AddNodeToTestSuite(
 
 
 # Use of the ConvertToPSO pass requires this toolchain version.
-if env['TOOLCHAIN_FEATURE_VERSION'] < 22:
+if env['TOOLCHAIN_FEATURE_VERSION'] < 23:
   Return()
 
 test_pll = MakeAndTranslatePll('test_pll', 'test_pll.c')
@@ -133,22 +120,18 @@ env.AddNodeToTestSuite(
     'run_pll_loader_test', is_broken=is_broken)
 
 
-libc_obj = env.Command(
+pll_libc = env.Command(
     'libc${OBJSUFFIX}',
     # libnacl should come first so that it can override definitions in libc.
     [env.File('${LIB_DIR}/libnacl.a'),
      env.File('${NACL_SDK_LIB}/libc.a'),
      env.ComponentObject('libc_entry.c')],
-    '${LD} -r --whole-archive ${SOURCES} -o ${TARGET}')
+    '${CC} -shared -Wl,--whole-archive ${SOURCES} -o ${TARGET}')
 
-translated_pll_libc = MakeAndTranslatePso(
-    'translated_pll_libc', libc_obj,
-    llvm_passes=LLVM_PASSES)
-translated_pll_hello_world = MakeAndTranslatePso(
+translated_pll_libc = FinalizeAndTranslatePso('translated_pll_libc', pll_libc)
+translated_pll_hello_world = MakeAndTranslatePll(
     'translated_pll_hello_world',
-    [env.ComponentObject('hello_world${OBJSUFFIX}',
-                         '../hello_world/hello_world.c')],
-    llvm_passes=LLVM_PASSES)
+    '../hello_world/hello_world.c')
 
 # Ideally we would have this ComponentProgram() definition in
 # src/untrusted/pll_loader/nacl.scons instead; see the comment there for

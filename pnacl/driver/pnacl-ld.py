@@ -22,6 +22,7 @@ EXTRA_ENV = {
   'OUTPUT'   : '',
 
   'STATIC'   : '0',
+  'SHARED'   : '0',
   'PIC'      : '0',
   'USE_STDLIB': '1',
   'RELOCATABLE': '0',
@@ -232,6 +233,10 @@ LDPatterns = [
   ( ('(-?-wrap)', '(.+)'), AddToBCLinkFlags),
   ( ('(-?-wrap=.+)'),      AddToBCLinkFlags),
 
+  # "-shared" tells the linker to build a PLL (PNaCl/portable loadable library).
+  # This is implemented by passing "-relocatable" to the bitcode linker.
+  ( '(-shared)',             "env.set('SHARED', '1')"),
+
   # NOTE: For scons tests, the code generation fPIC flag is used with pnacl-ld.
   ( '-fPIC',               "env.set('PIC', '1')"),
 
@@ -291,9 +296,17 @@ def main(argv):
       Log.Fatal('"%s" affects translation. '
                 'To allow, specify --pnacl-allow-native' % flagstr)
 
-  if env.getbool('ALLOW_NATIVE') and not arch_flag_given:
+  if allow_native:
+    if not arch_flag_given:
       Log.Fatal("--pnacl-allow-native given, but translation "
                 "is not happening (missing -arch?)")
+    if env.getbool('SHARED'):
+      Log.Fatal('Native shared libraries are not supported with pnacl-ld.')
+
+  if env.getbool('SHARED'):
+    if env.getbool('RELOCATABLE'):
+      Log.Fatal('-r/-relocatable and -shared may not be passed together.')
+    env.set('RELOCATABLE', '1')
 
   # Overriding the lib target uses native-flavored bitcode libs rather than the
   # portable bitcode libs. It is currently only tested/supported for
@@ -380,7 +393,23 @@ def main(argv):
     # A list of groups of args. Each group should contain a pass to run
     # along with relevant flags that go with that pass.
     opt_args = []
-    if abi_simplify:
+    if env.getbool('SHARED'):
+      pre_simplify_shared = [
+        # The following is a subset of "-pnacl-abi-simplify-preopt".  We don't
+        # want to run the full "-pnacl-abi-simplify-preopt" because it
+        # internalizes symbols that we want to export via "-convert-to-pso".
+        '-nacl-global-cleanup',
+        '-expand-varargs',
+        '-rewrite-pnacl-library-calls',
+        '-rewrite-llvm-intrinsic-calls',
+        '-convert-to-pso',
+      ]
+      opt_args.append(pre_simplify_shared)
+      # Post-opt is required, since '-convert-to-pso' adds metadata which must
+      # be simplified before finalization. Additionally, all functions must be
+      # simplified in the post-opt passes.
+      abi_simplify = True
+    elif abi_simplify:
       pre_simplify = ['-pnacl-abi-simplify-preopt']
       if env.getone('CXX_EH_MODE') == 'sjlj':
         pre_simplify += ['-enable-pnacl-sjlj-eh']
