@@ -21,7 +21,7 @@ description("Verifies that pointercancel events are fired correctly on touch.");
 var eventToPreventDefault = "";
 
 function init() {
-  var eventList = ["pointerdown", "pointerup", "pointermove", "pointercancel",
+  var eventList = ["pointerdown", "pointerup", "pointermove", "pointercancel", "pointerover", "pointerenter", "pointerout", "pointerleave",
                    "touchstart", "touchend", "touchmove", "touchcancel"];
 
   eventList.forEach(function(eventName) {
