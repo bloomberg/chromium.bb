@@ -95,6 +95,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
     private final String mPresentationId;
     private final String mOrigin;
     private final int mTabId;
+    private final boolean mIsIncognito;
     private final int mRequestId;
     private final CastMediaRouteProvider mRouteProvider;
     private final CastListener mCastListener = new CastListener();
@@ -108,7 +109,8 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
      * @param sink The {@link MediaSink} identifying the selected Cast device.
      * @param presentationId The presentation id assigned to the route by {@link ChromeMediaRouter}.
      * @param origin The origin of the frame requesting the route.
-     * @param tabId the id of the tab containing the frame requesting the route.
+     * @param tabId The id of the tab containing the frame requesting the route.
+     * @param isIncognito Whether the route is being requested from an Incognito profile.
      * @param requestId The id of the route creation request for tracking by
      * {@link ChromeMediaRouter}.
      * @param routeProvider The instance of {@link CastMediaRouteProvider} handling the request.
@@ -119,6 +121,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
             String presentationId,
             String origin,
             int tabId,
+            boolean isIncognito,
             int requestId,
             CastMediaRouteProvider routeProvider) {
         assert source != null;
@@ -129,6 +132,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
         mPresentationId = presentationId;
         mOrigin = origin;
         mTabId = tabId;
+        mIsIncognito = isIncognito;
         mRequestId = requestId;
         mRouteProvider = routeProvider;
     }
@@ -151,6 +155,10 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
 
     public int getTabId() {
         return mTabId;
+    }
+
+    public boolean isIncognito() {
+        return mIsIncognito;
     }
 
     public int getNativeRequestId() {
@@ -266,6 +274,7 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
                 mSink.getDevice(),
                 mOrigin,
                 mTabId,
+                mIsIncognito,
                 mSource,
                 mRouteProvider);
         mCastListener.setSession(session);

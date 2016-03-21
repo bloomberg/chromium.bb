@@ -78,7 +78,8 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
      * @param apiClient The Google Play Services client used to create the session.
      * @param sessionId The session identifier to use with the Cast SDK.
      * @param origin The origin of the frame requesting the route.
-     * @param tabId the id of the tab containing the frame requesting the route.
+     * @param tabId The id of the tab containing the frame requesting the route.
+     * @param isIncognito Whether the route is beging requested from an Incognito profile.
      * @param source The {@link MediaSource} corresponding to this session.
      * @param routeProvider The {@link CastMediaRouteProvider} instance managing this session.
      */
@@ -90,6 +91,7 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
             CastDevice castDevice,
             String origin,
             int tabId,
+            boolean isIncognito,
             MediaSource source,
             CastMediaRouteProvider routeProvider) {
         mSessionId = sessionId;
@@ -136,9 +138,7 @@ public class CastSessionImpl implements MediaNotificationListener, CastSession {
                 // TODO(avayvod): the same session might have more than one tab id. Should we track
                 // the last foreground alive tab and update the notification with it?
                 .setTabId(tabId)
-                // TODO(avayvod): pass true here if initiated from the incognito mode.
-                // MediaRouter is disabled for Incognito mode for now, see https://crbug.com/525215
-                .setPrivate(false)
+                .setPrivate(isIncognito)
                 .setIcon(R.drawable.ic_notification_media_route)
                 .setActions(MediaNotificationInfo.ACTION_STOP)
                 .setContentIntent(Tab.createBringTabToFrontIntent(tabId))

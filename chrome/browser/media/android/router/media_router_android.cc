@@ -21,6 +21,7 @@
 #include "chrome/browser/media/router/media_sinks_observer.h"
 #include "chrome/browser/media/router/presentation_session_messages_observer.h"
 #include "chrome/browser/media/router/route_request_result.h"
+#include "content/public/browser/browser_context.h"
 #include "jni/ChromeMediaRouter_jni.h"
 #include "url/gurl.h"
 
@@ -97,6 +98,9 @@ void MediaRouterAndroid::CreateRoute(
   if (tab)
     tab_id = tab->GetAndroidId();
 
+  bool is_incognito = web_contents
+      && web_contents->GetBrowserContext()->IsOffTheRecord();
+
   MediaRouteRequest* request = new MediaRouteRequest(
       MediaSource(source_id),
       presentation_id,
@@ -123,6 +127,7 @@ void MediaRouterAndroid::CreateRoute(
       jpresentation_id.obj(),
       jorigin.obj(),
       tab_id,
+      is_incognito,
       route_request_id);
 }
 

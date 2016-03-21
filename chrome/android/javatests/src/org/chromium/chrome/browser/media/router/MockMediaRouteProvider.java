@@ -105,7 +105,8 @@ public class MockMediaRouteProvider implements MediaRouteProvider {
 
     @Override
     public void createRoute(final String sourceId, final String sinkId, final String presentationId,
-                            final String origin, final int tabId, final int nativeRequestId) {
+                            final String origin, final int tabId, final boolean isIncognito,
+                            final int nativeRequestId) {
         if (mCreateRouteErrorMessage != null) {
             mManager.onRouteRequestError(mCreateRouteErrorMessage, nativeRequestId);
             return;

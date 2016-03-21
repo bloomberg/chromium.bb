@@ -241,7 +241,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
 
     @Override
     public void createRoute(String sourceId, String sinkId, String presentationId, String origin,
-            int tabId, int nativeRequestId) {
+            int tabId, boolean isIncognito, int nativeRequestId) {
         if (mAndroidMediaRouter == null) {
             mManager.onRouteRequestError("Not supported", nativeRequestId);
             return;
@@ -260,7 +260,7 @@ public class CastMediaRouteProvider implements MediaRouteProvider, DiscoveryDele
         }
 
         CreateRouteRequest createRouteRequest = new CreateRouteRequest(
-                source, sink, presentationId, origin, tabId, nativeRequestId, this);
+                source, sink, presentationId, origin, tabId, isIncognito, nativeRequestId, this);
 
         // Since we only have one session, close it before starting a new one.
         if (mSession != null) {

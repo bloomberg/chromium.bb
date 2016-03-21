@@ -27,9 +27,9 @@ public class ChromeMediaRouterRouteTest extends ChromeMediaRouterTestBase {
         assertEquals(mChromeMediaRouter.getRouteIdsToProvidersForTest().size(), 0);
 
         mChromeMediaRouter.createRoute(
-                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, REQUEST_ID1);
+                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, false, REQUEST_ID1);
         verify(mRouteProvider).createRoute(
-                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, REQUEST_ID1);
+                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, false, REQUEST_ID1);
 
         String routeId1 = new MediaRoute(SINK_ID1, SOURCE_ID1, PRESENTATION_ID1).id;
         mChromeMediaRouter.onRouteCreated(
@@ -43,17 +43,17 @@ public class ChromeMediaRouterRouteTest extends ChromeMediaRouterTestBase {
     @Feature({"MediaRouter"})
     public void testCreateTwoRoutes() {
         mChromeMediaRouter.createRoute(
-                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, REQUEST_ID1);
+                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, false, REQUEST_ID1);
 
         String routeId1 = new MediaRoute(SINK_ID1, SOURCE_ID1, PRESENTATION_ID1).id;
         mChromeMediaRouter.onRouteCreated(
                 routeId1, SINK_ID1, REQUEST_ID1, mRouteProvider, true);
 
         mChromeMediaRouter.createRoute(
-                SOURCE_ID2, SINK_ID2, PRESENTATION_ID2, ORIGIN2, TAB_ID2, REQUEST_ID2);
+                SOURCE_ID2, SINK_ID2, PRESENTATION_ID2, ORIGIN2, TAB_ID2, false, REQUEST_ID2);
 
         verify(mRouteProvider).createRoute(
-                SOURCE_ID2, SINK_ID2, PRESENTATION_ID2, ORIGIN2, TAB_ID2, REQUEST_ID2);
+                SOURCE_ID2, SINK_ID2, PRESENTATION_ID2, ORIGIN2, TAB_ID2, false, REQUEST_ID2);
         String routeId2 = new MediaRoute(SINK_ID2, SOURCE_ID2, PRESENTATION_ID2).id;
         mChromeMediaRouter.onRouteCreated(
                 routeId2, SINK_ID2, REQUEST_ID2, mRouteProvider, true);
@@ -66,10 +66,10 @@ public class ChromeMediaRouterRouteTest extends ChromeMediaRouterTestBase {
     @Feature({"MediaRouter"})
     public void testCreateRouteFails() {
         mChromeMediaRouter.createRoute(
-                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, REQUEST_ID1);
+                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, false, REQUEST_ID1);
 
         verify(mRouteProvider).createRoute(
-                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, REQUEST_ID1);
+                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, false, REQUEST_ID1);
         mChromeMediaRouter.onRouteRequestError("ERROR", REQUEST_ID1);
 
         assertEquals(mChromeMediaRouter.getRouteIdsToProvidersForTest().size(), 0);
@@ -79,7 +79,7 @@ public class ChromeMediaRouterRouteTest extends ChromeMediaRouterTestBase {
     @Feature({"MediaRouter"})
     public void testJoinRoute() {
         mChromeMediaRouter.createRoute(
-                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, REQUEST_ID1);
+                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, false, REQUEST_ID1);
 
         String routeId1 = new MediaRoute(SINK_ID1, SOURCE_ID1, PRESENTATION_ID1).id;
         mChromeMediaRouter.onRouteCreated(
@@ -102,7 +102,7 @@ public class ChromeMediaRouterRouteTest extends ChromeMediaRouterTestBase {
     @Feature({"MediaRouter"})
     public void testJoinRouteFails() {
         mChromeMediaRouter.createRoute(
-                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, REQUEST_ID1);
+                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, false, REQUEST_ID1);
 
         String routeId1 = new MediaRoute(SINK_ID1, SOURCE_ID1, PRESENTATION_ID1).id;
         mChromeMediaRouter.onRouteCreated(
@@ -122,7 +122,7 @@ public class ChromeMediaRouterRouteTest extends ChromeMediaRouterTestBase {
     @Feature({"MediaRouter"})
     public void testDetachRoute() {
         mChromeMediaRouter.createRoute(
-                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, REQUEST_ID1);
+                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, false, REQUEST_ID1);
 
         String routeId1 = new MediaRoute(SINK_ID1, SOURCE_ID1, PRESENTATION_ID1).id;
         mChromeMediaRouter.onRouteCreated(
@@ -138,7 +138,7 @@ public class ChromeMediaRouterRouteTest extends ChromeMediaRouterTestBase {
     @Feature({"MediaRouter"})
     public void testCloseRoute() {
         mChromeMediaRouter.createRoute(
-                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, REQUEST_ID1);
+                SOURCE_ID1, SINK_ID1, PRESENTATION_ID1, ORIGIN1, TAB_ID1, false, REQUEST_ID1);
 
         String routeId1 = new MediaRoute(SINK_ID1, SOURCE_ID1, PRESENTATION_ID1).id;
         mChromeMediaRouter.onRouteCreated(

@@ -2853,7 +2853,7 @@ ChromeContentBrowserClient::GetPresentationServiceDelegate(
     return media_router::PresentationServiceDelegateImpl::
         GetOrCreateForWebContents(web_contents);
   }
-#endif
+#endif  // defined(ENABLE_MEDIA_ROUTER)
   return nullptr;
 }
 
