@@ -93,12 +93,11 @@ cr.define('settings_reset_page', function() {
 
 
       /**
-       * @param {function(SettingsResetProfileDialogElemeent):!Element}
-       *     closeButtonFn A function that returns the button to be used for
-       *     closing the dialog.
+       * @param {function(SettingsResetProfileDialogElemeent)}
+       *     closeDialogFn A function to call for closing the dialog.
        * @return {!Promise}
        */
-      function testOpenCloseResetProfileDialog(closeButtonFn) {
+      function testOpenCloseResetProfileDialog(closeDialogFn) {
         var onShowResetProfileDialogCalled = whenChromeSendCalled(
             'onShowResetProfileDialog');
         var onHideResetProfileDialogCalled = whenChromeSendCalled(
@@ -112,7 +111,7 @@ cr.define('settings_reset_page', function() {
               dialog.addEventListener('iron-overlay-closed', resolve);
             });
 
-        MockInteractions.tap(closeButtonFn(dialog));
+        closeDialogFn(dialog);
 
         return Promise.all([
           onShowResetProfileDialogCalled,
@@ -127,10 +126,20 @@ cr.define('settings_reset_page', function() {
         return Promise.all([
           // Test case where the 'cancel' button is clicked.
           testOpenCloseResetProfileDialog(
-              function(dialog) { return dialog.$.cancel;}),
+              function(dialog) {
+                MockInteractions.tap(dialog.$.cancel);
+              }),
           // Test case where the 'close' button is clicked.
           testOpenCloseResetProfileDialog(
-              function(dialog) { return dialog.$.dialog.getCloseButton(); }),
+              function(dialog) {
+                MockInteractions.tap(dialog.$.dialog.getCloseButton());
+              }),
+          // Test case where the 'Esc' key is pressed.
+          testOpenCloseResetProfileDialog(
+              function(dialog) {
+                MockInteractions.pressAndReleaseKeyOn(
+                    dialog, 27 /* 'Esc' key code */);
+              }),
         ]);
       });
 
@@ -196,7 +205,9 @@ cr.define('settings_reset_page', function() {
   }
 
   return {
-    registerBannerTests: registerBannerTests,
-    registerDialogTests: registerDialogTests
+    registerTests: function() {
+      registerBannerTests();
+      registerDialogTests();
+    },
   };
 });

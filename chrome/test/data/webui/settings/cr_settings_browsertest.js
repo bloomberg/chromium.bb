@@ -69,8 +69,7 @@ TEST_F('CrSettingsBrowserTest', 'MAYBE_CrSettingsTest', function() {
 });
 
 TEST_F('CrSettingsBrowserTest', 'ResetPage', function() {
-  settings_reset_page.registerDialogTests();
-  settings_reset_page.registerBannerTests();
+  settings_reset_page.registerTests();
   mocha.run();
 });
 

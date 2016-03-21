@@ -10,7 +10,19 @@ Polymer({
 
   properties: {
     /** @override */
-    modal: {
+    noCancelOnOutsideClick: {
+      type: Boolean,
+      value: true,
+    },
+
+    /** @override */
+    noCancelOnEscKey: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** @override */
+    withBackdrop: {
       type: Boolean,
       value: true,
     },
