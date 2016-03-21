@@ -13,11 +13,33 @@ via a named pipe at --fifo. Sources are served from the tree named at
 
 import argparse
 import cgi
+import json
 import os.path
 import logging
 import re
 import time
 import wsgiref.simple_server
+
+
+_CONTENT_TYPE_FOR_SUFFIX = {
+    'css': 'text/css',
+    'html': 'text/html',
+    'jpg': 'image/jpeg',
+    'js': 'text/javascript',
+    'json': 'application/json',
+    'png': 'image/png',
+    'ttf': 'font/ttf',}
+
+# Name of the JSON file containing per file custom response headers located in
+# the --source_dir.
+# This file should structured like:
+#   {
+#     'mydocument.html': [
+#       ['Cache-Control', 'max-age=3600'],
+#       ['Content-Encoding', 'gzip'],
+#     ]
+#   }
+RESPONSE_HEADERS_PATH = 'RESPONSE_HEADERS.json'
 
 
 class ServerApp(object):
@@ -27,6 +49,11 @@ class ServerApp(object):
   """
   def __init__(self, source_dir):
     self._source_dir = source_dir
+    self._response_headers = {}
+    response_header_path = os.path.join(source_dir, RESPONSE_HEADERS_PATH)
+    if os.path.exists(response_header_path):
+      with open(response_header_path) as response_headers_file:
+        self._response_headers = json.load(response_headers_file)
 
   def __call__(self, environ, start_response):
     """WSGI dispatch.
@@ -54,14 +81,11 @@ class ServerApp(object):
 
     logging.info('responding with %s', filename)
     suffix = path[path.rfind('.') + 1:]
-    start_response('200 OK', [('Content-Type',
-                               {'css': 'text/css',
-                                'html': 'text/html',
-                                'jpg': 'image/jpeg',
-                                'js': 'text/javascript',
-                                'png': 'image/png',
-                                'ttf': 'font/ttf',
-                              }[suffix])])
+    headers = [('Content-Type', _CONTENT_TYPE_FOR_SUFFIX[suffix])]
+    if path in self._response_headers:
+      for header in self._response_headers[path]:
+        headers.append((str(header[0]), str(header[1])))
+    start_response('200 OK', headers)
     return file(filename).read()
 
 
