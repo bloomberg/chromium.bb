@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.sync.ui;
 
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.widget.CheckedTextView;
 import android.widget.ListView;
@@ -65,8 +66,12 @@ public class PassphraseTypeDialogFragmentTest extends ChromeActivityTestCaseBase
                 new TypeOptions(PassphraseType.KEYSTORE_PASSPHRASE, DISABLED, UNCHECKED));
     }
 
-    @SmallTest
-    @Feature({"Sync"})
+    /*
+     * @SmallTest
+     * @Feature({"Sync"})
+     * BUG = crbug.com/588050
+     */
+    @FlakyTest
     public void testFrozenImplicitEncryptionOptions() throws Exception {
         createFragment(PassphraseType.FROZEN_IMPLICIT_PASSPHRASE, true);
         assertPassphraseTypeOptions(

@@ -62,8 +62,12 @@ public class SyncTest extends SyncTestBase {
         SyncTestUtil.verifySyncIsActiveForAccount(mContext, account);
     }
 
-    @LargeTest
-    @Feature({"Sync"})
+    /*
+     * @LargeTest
+     * @Feature({"Sync"})
+     * BUG = crbug.com/588050
+     */
+    @FlakyTest
     public void testRename() throws InterruptedException {
         // The two accounts object that would represent the account rename.
         final Account oldAccount = setUpTestAccountAndSignInToSync();
