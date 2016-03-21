@@ -112,6 +112,8 @@
         'clipboard/clipboard_mac.h',
         'clipboard/clipboard_mac.mm',
         'clipboard/clipboard_types.h',
+        'clipboard/clipboard_util_mac.h',
+        'clipboard/clipboard_util_mac.mm',
         'clipboard/clipboard_util_win.cc',
         'clipboard/clipboard_util_win.h',
         'clipboard/clipboard_win.cc',

@@ -35,6 +35,7 @@
       # are built on iOS.
       'common_sources' : [
         # Note: file list duplicated in GN build.
+        'clipboard/clipboard_util_mac_unittest.mm',
         'ios/cru_context_menu_controller_unittest.mm',
         'l10n/l10n_util_mac_unittest.mm',
         'l10n/l10n_util_unittest.cc',
