@@ -223,6 +223,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      */
     public void openForeignSessionTab(ForeignSession session, ForeignSessionTab tab,
             int windowDisposition) {
+        if (mIsDestroyed) return;
         NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_FOREIGN_SESSION);
         mForeignSessionHelper.openForeignSessionTab(mTab, session, tab, windowDisposition);
     }
@@ -235,6 +236,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      *         be restored into the current tab or a new tab.
      */
     public void openRecentlyClosedTab(RecentlyClosedTab tab, int windowDisposition) {
+        if (mIsDestroyed) return;
         NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
         mRecentlyClosedBridge.openRecentlyClosedTab(mTab, tab, windowDisposition);
     }
@@ -243,6 +245,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * Opens the history page.
      */
     public void openHistoryPage() {
+        if (mIsDestroyed) return;
         mTab.loadUrl(new LoadUrlParams(UrlConstants.HISTORY_URL));
         StartupMetrics.getInstance().recordOpenedHistory();
     }
@@ -287,6 +290,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * @param isCollapsed Whether the currently open tabs list is collapsed.
      */
     public void setCurrentlyOpenTabsCollapsed(boolean isCollapsed) {
+        if (mIsDestroyed) return;
         mNewTabPagePrefs.setCurrentlyOpenTabsCollapsed(isCollapsed);
     }
 
@@ -330,6 +334,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * @param isCollapsed Whether the session is collapsed or expanded.
      */
     public void setForeignSessionCollapsed(ForeignSession session, boolean isCollapsed) {
+        if (mIsDestroyed) return;
         mNewTabPagePrefs.setForeignSessionCollapsed(session, isCollapsed);
     }
 
@@ -350,6 +355,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * @param isCollapsed Whether the recently closed tabs list is collapsed.
      */
     public void setRecentlyClosedTabsCollapsed(boolean isCollapsed) {
+        if (mIsDestroyed) return;
         mNewTabPagePrefs.setRecentlyClosedTabsCollapsed(isCollapsed);
     }
 
@@ -370,6 +376,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * @param session Session to be deleted.
      */
     public void deleteForeignSession(ForeignSession session) {
+        if (mIsDestroyed) return;
         mForeignSessionHelper.deleteForeignSession(session);
     }
 
@@ -377,6 +384,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * Clears the list of recently closed tabs.
      */
     public void clearRecentlyClosedTabs() {
+        if (mIsDestroyed) return;
         mRecentlyClosedBridge.clearRecentlyClosedTabs();
     }
 
@@ -414,6 +422,7 @@ public class RecentTabsManager implements AndroidSyncSettingsObserver, SignInSta
      * @param isCollapsed Whether the sync promo is collapsed.
      */
     public void setSyncPromoCollapsed(boolean isCollapsed) {
+        if (mIsDestroyed) return;
         mNewTabPagePrefs.setSyncPromoCollapsed(isCollapsed);
     }
 
