@@ -252,7 +252,10 @@ TEST(IPAddressTest, ParseCIDRBlock_Invalid) {
                                       "::1/-3",
                                       "a::3/129",
                                       "::1/x",
-                                      "192.168.0.1//11"};
+                                      "192.168.0.1//11",
+                                      "192.168.1.1/+1",
+                                      "192.168.1.1/ +1",
+                                      "192.168.1.1/"};
 
   for (const auto& bad_literal : bad_literals) {
     IPAddress ip_address;
