@@ -799,7 +799,7 @@ void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const S
 void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
 {
     ASSERT(enabled());
-    if (m_scheduledDebuggerStep == StepInto || m_javaScriptPauseScheduled || isPaused())
+    if (m_scheduledDebuggerStep == StepInto || m_javaScriptPauseScheduled || isPaused() || !debugger().breakpointsActivated())
         return;
     m_breakReason = breakReason;
     m_breakAuxData = data;
@@ -1565,7 +1565,7 @@ bool V8DebuggerAgentImpl::canBreakProgram()
 void V8DebuggerAgentImpl::breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
 {
     ASSERT(enabled());
-    if (m_skipAllPauses || !m_pausedContext.IsEmpty() || isCallStackEmptyOrBlackboxed())
+    if (m_skipAllPauses || !m_pausedContext.IsEmpty() || isCallStackEmptyOrBlackboxed() || !debugger().breakpointsActivated())
         return;
     m_breakReason = breakReason;
     m_breakAuxData = data;
