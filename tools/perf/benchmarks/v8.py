@@ -81,7 +81,7 @@ class _InfiniteScrollBenchmark(perf_benchmark.PerfBenchmark):
         '--disable-notifications',
         # This overrides any existing --js-flags, hence we have to include the
         # previous flags as well.
-        '--js-flags="--heap-growing-percent=10 %s"' %
+        '--js-flags=--heap-growing-percent=10 %s' %
           (' '.join(existing_js_flags))
     ])
 
@@ -154,7 +154,7 @@ class V8TodoMVCIgnition(perf_benchmark.PerfBenchmark):
     options.AppendExtraBrowserArgs([
         # This overrides any existing --js-flags, hence we have to include the
         # previous flags as well.
-        '--js-flags="--ignition %s"' % (' '.join(existing_js_flags))
+        '--js-flags=--ignition %s' % (' '.join(existing_js_flags))
     ])
 
   def CreateTimelineBasedMeasurementOptions(self):
