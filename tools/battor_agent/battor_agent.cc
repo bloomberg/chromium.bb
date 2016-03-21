@@ -28,7 +28,7 @@ const uint8_t kReadRetryDelayMilliseconds = 1;
 
 // The amount of time we need to wait after recording a clock sync marker in
 // order to ensure that the sample we synced to doesn't get thrown out.
-const uint8_t kStopTracingClockSyncDelayMilliseconds = 50;
+const uint8_t kStopTracingClockSyncDelayMilliseconds = 100;
 
 // Returns true if the specified vector of bytes decodes to a message that is an
 // ack for the specified control message type.
