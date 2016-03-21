@@ -111,7 +111,7 @@ struct TraceEvent {
   };
 
   TraceEvent();
-  TraceEvent(const TraceEvent& other);
+  TraceEvent(TraceEvent&& other);
   ~TraceEvent();
 
   bool SetFromJSON(const base::Value* event_value) WARN_UNUSED_RESULT;
@@ -119,6 +119,8 @@ struct TraceEvent {
   bool operator< (const TraceEvent& rhs) const {
     return timestamp < rhs.timestamp;
   }
+
+  TraceEvent& operator=(TraceEvent&& rhs);
 
   bool has_other_event() const { return other_event; }
 
@@ -131,11 +133,16 @@ struct TraceEvent {
   bool GetArgAsString(const std::string& name, std::string* arg) const;
   // Return the argument value if it exists and it is a number.
   bool GetArgAsNumber(const std::string& name, double* arg) const;
+  // Return the argument value if it exists.
+  bool GetArgAsValue(const std::string& name,
+                     scoped_ptr<base::Value>* arg) const;
 
   // Check if argument exists and is string.
   bool HasStringArg(const std::string& name) const;
   // Check if argument exists and is number (double, int or bool).
   bool HasNumberArg(const std::string& name) const;
+  // Check if argument exists.
+  bool HasArg(const std::string& name) const;
 
   // Get known existing arguments as specific types.
   // Useful when you have already queried the argument with
@@ -144,6 +151,7 @@ struct TraceEvent {
   double GetKnownArgAsDouble(const std::string& name) const;
   int GetKnownArgAsInt(const std::string& name) const;
   bool GetKnownArgAsBool(const std::string& name) const;
+  scoped_ptr<base::Value> GetKnownArgAsValue(const std::string& name) const;
 
   // Process ID and Thread ID.
   ProcessThreadID thread;
@@ -151,22 +159,17 @@ struct TraceEvent {
   // Time since epoch in microseconds.
   // Stored as double to match its JSON representation.
   double timestamp;
-
   double duration;
-
   char phase;
-
   std::string category;
-
   std::string name;
-
   std::string id;
 
   // All numbers and bool values from TraceEvent args are cast to double.
   // bool becomes 1.0 (true) or 0.0 (false).
   std::map<std::string, double> arg_numbers;
-
   std::map<std::string, std::string> arg_strings;
+  std::map<std::string, scoped_ptr<base::Value>> arg_values;
 
   // The other event associated with this event (or NULL).
   const TraceEvent* other_event;
