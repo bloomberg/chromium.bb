@@ -256,9 +256,7 @@ void ViewportDescription::reportMobilePageStats(const LocalFrame* mainFrame) con
 
 bool ViewportDescription::matchesHeuristicsForGpuRasterization() const
 {
-    return maxWidth == Length(DeviceWidth)
-        && minZoom == 1.0
-        && minZoomIsExplicit;
+    return isSpecifiedByAuthor();
 }
 
 } // namespace blink
