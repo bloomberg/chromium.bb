@@ -21,7 +21,7 @@ if (MSVC OR HAVE_CXX11)
   # std::unique_ptr
   check_cxx_source_compiles("
       #include <memory>
-      int main(int argc, const char* argv[]) {
+      int main() {
         std::unique_ptr<int> ptr;
         (void)ptr;
         return 0;
@@ -33,7 +33,7 @@ if (MSVC OR HAVE_CXX11)
       struct Foo {
         int a = 0;
       };
-      int main(int argc, const char* argv[]) {
+      int main() {
         Foo bar;
         (void)bar;
         return 0;
@@ -46,7 +46,7 @@ if (MSVC OR HAVE_CXX11)
         Foo() = default;
         ~Foo() = default;
       };
-      int main(int argc, const char* argv[]) {
+      int main() {
         Foo bar;
         (void)bar;
         return 0;
@@ -59,7 +59,7 @@ if (MSVC OR HAVE_CXX11)
         Foo() {}
         Foo(const Foo&) = delete;
       };
-      int main(int argc, const char* argv[]) {
+      int main() {
         Foo bar;
         (void)bar;
         return 0;
@@ -68,7 +68,7 @@ if (MSVC OR HAVE_CXX11)
 
   # auto&
   check_cxx_source_compiles("
-      int main(int argc, const char* argv[]) {
+      int main() {
         int a;
         auto& b = a;
         (void)b;
@@ -78,7 +78,7 @@ if (MSVC OR HAVE_CXX11)
 
   # ranged for
   check_cxx_source_compiles("
-      int main(int argc, const char* argv[]) {
+      int main() {
         int a[4];
         for (int& b : a) {
           b = 0;
