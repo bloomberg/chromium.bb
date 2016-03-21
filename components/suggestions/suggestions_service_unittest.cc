@@ -210,16 +210,6 @@ class SuggestionsServiceTest : public testing::Test {
 
   ~SuggestionsServiceTest() override {}
 
-  void SetOAuth2FeatureEnabled(bool enabled) {
-    base::FeatureList::ClearInstanceForTesting();
-    scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    if (enabled) {
-      feature_list->InitializeFromCommandLine(
-          "SuggestionsServiceOAuth2", std::string());
-    }
-    base::FeatureList::SetInstance(std::move(feature_list));
-  }
-
   void SetUp() override {
     request_context_ =
         new net::TestURLRequestContextGetter(io_message_loop_.task_runner());
@@ -413,8 +403,6 @@ TEST_F(SuggestionsServiceTest, FetchSuggestionsDataSyncDisabled) {
 }
 
 TEST_F(SuggestionsServiceTest, FetchSuggestionsDataNoAccessToken) {
-  SetOAuth2FeatureEnabled(true);
-
   token_service_.RevokeCredentials(kAccountId);
 
   scoped_ptr<SuggestionsService> suggestions_service(

@@ -137,10 +137,6 @@ const char kPingURL[] =
 // The default expiry timeout is 168 hours.
 const int64_t kDefaultExpiryUsec = 168 * base::Time::kMicrosecondsPerHour;
 
-const base::Feature kOAuth2AuthenticationFeature {
-  "SuggestionsServiceOAuth2", base::FEATURE_ENABLED_BY_DEFAULT
-};
-
 }  // namespace
 
 // Helper class for fetching OAuth2 access tokens.
@@ -326,11 +322,6 @@ void SuggestionsService::RegisterProfilePrefs(
 }
 
 // static
-bool SuggestionsService::UseOAuth2() {
-  return base::FeatureList::IsEnabled(kOAuth2AuthenticationFeature);
-}
-
-// static
 GURL SuggestionsService::BuildSuggestionsURL() {
   return GURL(base::StringPrintf(kSuggestionsURLFormat,
                                  GetGoogleBaseURL().spec().c_str(),
@@ -395,24 +386,19 @@ void SuggestionsService::IssueRequestIfNoneOngoing(const GURL& url) {
   if (pending_request_.get()) {
     return;
   }
-  if (UseOAuth2()) {
-    // If there is an ongoing token request, also wait for that.
-    if (token_fetcher_->HasPendingRequest()) {
-      return;
-    }
-    token_fetcher_->GetAccessToken(
-        base::Bind(&SuggestionsService::IssueSuggestionsRequest,
-                   base::Unretained(this), url));
-  } else {
-    // No access token required.
-    IssueSuggestionsRequest(url, std::string());
+  // If there is an ongoing token request, also wait for that.
+  if (token_fetcher_->HasPendingRequest()) {
+    return;
   }
+  token_fetcher_->GetAccessToken(
+      base::Bind(&SuggestionsService::IssueSuggestionsRequest,
+                 base::Unretained(this), url));
 }
 
 void SuggestionsService::IssueSuggestionsRequest(
     const GURL& url,
     const std::string& access_token) {
-  if (UseOAuth2() && access_token.empty()) {
+  if (access_token.empty()) {
     UpdateBlacklistDelay(false);
     ScheduleBlacklistUpload();
     return;
@@ -428,10 +414,9 @@ scoped_ptr<net::URLFetcher> SuggestionsService::CreateSuggestionsRequest(
       net::URLFetcher::Create(0, url, net::URLFetcher::GET, this);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       request.get(), data_use_measurement::DataUseUserData::SUGGESTIONS);
-  int load_flags = net::LOAD_DISABLE_CACHE;
-  if (UseOAuth2()) {
-    load_flags |= net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
-  }
+  int load_flags = net::LOAD_DISABLE_CACHE | net::LOAD_DO_NOT_SEND_COOKIES |
+                   net::LOAD_DO_NOT_SAVE_COOKIES;
+
   request->SetLoadFlags(load_flags);
   request->SetRequestContext(url_request_context_);
   // Add Chrome experiment state to the request headers.
@@ -439,7 +424,7 @@ scoped_ptr<net::URLFetcher> SuggestionsService::CreateSuggestionsRequest(
   variations::AppendVariationHeaders(request->GetOriginalURL(), false, false,
                                      &headers);
   request->SetExtraRequestHeaders(headers.ToString());
-  if (UseOAuth2() && !access_token.empty()) {
+  if (!access_token.empty()) {
     request->AddExtraRequestHeader(
         base::StringPrintf(kAuthorizationHeaderFormat, access_token.c_str()));
   }
