@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.51",
+  "version": "8.52",
   "entries": [
     {
       "id": 1,
@@ -1830,6 +1830,19 @@ LONG_STRING_CONST(
       "vendor_id": "0x10de",
       "features": [
         "use_intermediary_for_copy_texture_image"
+      ]
+    },
+    {
+      "id": 153,
+      "cr_bugs": [594016],
+      "description": "Vivante GC1000 with EXT_multisampled_render_to_texture fails glReadPixels",
+      "os": {
+        "type": "linux"
+      },
+      "gl_vendor": "Vivante Corporation",
+      "gl_renderer": "Vivante GC1000",
+      "features": [
+        "disable_multisampled_render_to_texture"
       ]
     }
   ]
