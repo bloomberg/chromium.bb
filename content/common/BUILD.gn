@@ -141,6 +141,7 @@ source_set("common") {
   ]
 
   public_deps = [
+    ":mojo_bindings",
     "//gpu/command_buffer/common",
     "//ipc",
     "//third_party/WebKit/public:blink_headers",
@@ -148,17 +149,41 @@ source_set("common") {
   deps = [
     "//base",
     "//build/util:webkit_version",
+    "//cc",
     "//components/mus/public/interfaces",
     "//components/tracing",
     "//components/tracing:startup_tracing",
+    "//device/bluetooth",
+
+    # TODO: the dependency on gl_in_process_context should be decoupled from
+    # content and moved to android_webview. See crbug.com/365797.
+    "//gpu/blink",
+    "//gpu/command_buffer/client:gl_in_process_context",
+    "//gpu/command_buffer/client:gles2_c_lib",
+    "//gpu/command_buffer/client:gles2_cmd_helper",
+    "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common:gles2_utils",
+    "//gpu/command_buffer/service",
+    "//gpu/ipc/common",
+    "//gpu/skia_bindings",
+    "//ipc",
+    "//ipc/mojo",
+    "//media",
+    "//media:shared_memory_support",
+    "//media/midi",
+    "//mojo/common:common_base",
     "//mojo/converters/network",
+    "//mojo/edk/system",
     "//mojo/shell/public/cpp",
+    "//mojo/shell/public/interfaces",
     "//mojo/shell/runner/common",
     "//net",
+    "//sandbox",
     "//skia",
+    "//storage/common",
     "//third_party/WebKit/public:blink",
+    "//third_party/boringssl",
     "//third_party/icu",
     "//third_party/libjingle",
     "//ui/accessibility",
@@ -168,42 +193,11 @@ source_set("common") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",
+    "//ui/gl",
     "//ui/shell_dialogs",
     "//url",
     "//url/ipc:url_ipc",
   ]
-
-  if (!is_ios) {
-    deps += [
-      "//cc",
-      "//device/bluetooth",
-      "//ipc",
-      "//ipc/mojo",
-
-      # TODO: the dependency on gl_in_process_context should be decoupled from
-      # content and moved to android_webview. See crbug.com/365797.
-      "//gpu/blink",
-      "//gpu/command_buffer/client:gl_in_process_context",
-      "//gpu/command_buffer/client:gles2_c_lib",
-      "//gpu/command_buffer/client:gles2_cmd_helper",
-      "//gpu/command_buffer/client:gles2_implementation",
-      "//gpu/command_buffer/service",
-      "//gpu/ipc/common",
-      "//gpu/skia_bindings",
-      "//media",
-      "//media:shared_memory_support",
-      "//media/midi",
-      "//mojo/common:common_base",
-      "//mojo/edk/system",
-      "//mojo/shell/public/interfaces",
-      "//sandbox",
-      "//storage/common",
-      "//third_party/boringssl",
-      "//ui/gl",
-    ]
-
-    public_deps += [ ":mojo_bindings" ]
-  }
 
   defines = []
   include_dirs = []
@@ -272,11 +266,6 @@ source_set("common") {
     # some unit test binaries won't compile. This only worked in release mode
     # because logging is disabled there.
     deps += [ "//ppapi/proxy:ipc_sources" ]
-  }
-
-  if (is_ios) {
-    sources -= [ "user_agent.cc" ]
-    assert(false, "Need to add lots of conditions here")
   }
 
   if (use_ozone) {

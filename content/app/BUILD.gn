@@ -31,6 +31,8 @@ content_app_deps = [
   "//content/public/common:common_sources",
   "//content/public/common:mojo_bindings",
   "//crypto",
+  "//mojo/shell/public/interfaces",
+  "//mojo/edk/system",
   "//ui/base",
   "//ui/gfx",
   "//ui/gfx/geometry",
@@ -47,19 +49,6 @@ if (is_win) {
     "//skia",
     "//third_party/android_tools:cpu_features",
     "//ui/android",
-  ]
-}
-
-if (is_ios) {
-  content_app_sources -= [
-    "content_main.cc",
-    "mojo/mojo_init.cc",
-    "mojo/mojo_init.h",
-  ]
-} else {
-  content_app_deps += [
-    "//mojo/shell/public/interfaces",
-    "//mojo/edk/system",
   ]
 }
 

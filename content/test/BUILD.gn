@@ -33,11 +33,30 @@ source_set("test_support") {
     "//content/public/app:both",
     "//content/public/browser",
     "//content/public/common",
+    "//third_party/WebKit/public:blink",
   ]
   deps = [
+    ":content_test_mojo_bindings",
+    "//cc",
+    "//cc:test_support",
     "//cc/blink",
+    "//components/scheduler:scheduler",
+    "//components/scheduler:test_support",
+    "//content/browser/speech/proto",
+    "//content/gpu",
+    "//content/public/child",
+    "//content/public/plugin",
+    "//content/public/renderer",
+    "//content/public/utility",
+    "//content/shell:pak",
+    "//ipc:test_support",
+    "//ipc/mojo",
+    "//media",
+    "//mojo/edk/test:test_support",
+    "//mojo/shell/public/cpp:cpp_for_chromium",
     "//net:test_support",
     "//skia",
+    "//storage/browser",
     "//storage/common",
     "//testing/gmock",
     "//testing/gtest",
@@ -46,6 +65,7 @@ source_set("test_support") {
     "//ui/base:test_support",
     "//ui/base:ui_data_pack",
     "//ui/base/ime",
+    "//ui/compositor:test_support",
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/events:gesture_detection",
@@ -54,59 +74,19 @@ source_set("test_support") {
     "//ui/gl",
     "//ui/gl:test_support",
     "//ui/resources",
+    "//ui/surface",
     "//url",
+    "//v8",
   ]
 
-  if (is_ios) {
-    sources = [
-      "public/test/content_test_suite_base.cc",
-      "public/test/mock_notification_observer.cc",
-      "public/test/mock_resource_context.cc",
-      "public/test/test_browser_thread.cc",
-      "public/test/test_content_client_initializer.cc",
-      "public/test/test_notification_tracker.cc",
-      "public/test/test_utils.cc",
-      "public/test/unittest_test_suite.cc",
-      "test/content_test_suite.cc",
-      "test/test_content_browser_client.cc",
-      "test/test_content_client.cc",
-    ]
-  } else {
-    sources =
-        rebase_path(content_tests_gypi_values.test_support_content_sources,
-                    ".",
-                    "//content")
+  sources = rebase_path(content_tests_gypi_values.test_support_content_sources,
+                        ".",
+                        "//content")
 
-    if (is_android) {
-      sources -= [
-        "mock_google_streaming_server.cc",
-        "mock_google_streaming_server.h",
-      ]
-    }
-    public_deps += [ "//third_party/WebKit/public:blink" ]
-    deps += [
-      ":content_test_mojo_bindings",
-      "//cc",
-      "//cc:test_support",
-      "//components/scheduler:scheduler",
-      "//components/scheduler:test_support",
-      "//content/browser/speech/proto",
-      "//content/gpu",
-      "//content/public/child",
-      "//content/public/plugin",
-      "//content/public/renderer",
-      "//content/public/utility",
-      "//content/shell:pak",
-      "//ipc:test_support",
-      "//ipc/mojo",
-      "//media",
-      "//mojo/edk/test:test_support",
-      "//mojo/shell/public/cpp:cpp_for_chromium",
-      "//storage/browser",
-      "//storage/common",
-      "//ui/compositor:test_support",
-      "//ui/surface",
-      "//v8",
+  if (is_android) {
+    sources -= [
+      "mock_google_streaming_server.cc",
+      "mock_google_streaming_server.h",
     ]
   }
 
@@ -119,7 +99,7 @@ source_set("test_support") {
       "//ppapi/shared_impl",
       "//ppapi/shared_impl:test_support",
     ]
-  } else if (!is_ios) {
+  } else {
     sources -= [ "ppapi_unittest.cc" ]
   }
 
@@ -242,6 +222,7 @@ source_set("browsertest_base") {
   public_deps = [
     "//content/public/browser",
     "//content/public/common",
+    "//third_party/WebKit/public:blink",
   ]
   deps = [
     "//base:base",
@@ -255,9 +236,6 @@ source_set("browsertest_base") {
     "//ui/events:gesture_detection",
     "//ui/resources",
   ]
-  if (!is_ios) {
-    public_deps += [ "//third_party/WebKit/public:blink" ]
-  }
 }
 
 mojom("content_test_mojo_bindings") {
@@ -272,43 +250,41 @@ mojom("web_ui_test_mojo_bindings") {
   ]
 }
 
-if (!is_ios) {
-  # GYP version //content/content_tests.gypi:layouttest_support_content
-  static_library("layouttest_support") {
-    testonly = true
-    sources = rebase_path(
-            content_tests_gypi_values.layouttest_support_content_sources,
-            ".",
-            "//content")
+# GYP version //content/content_tests.gypi:layouttest_support_content
+static_library("layouttest_support") {
+  testonly = true
+  sources =
+      rebase_path(content_tests_gypi_values.layouttest_support_content_sources,
+                  ".",
+                  "//content")
 
-    deps = [
-      ":test_support",
-      "//cc",
-      "//cc/blink",
-      "//components/test_runner:test_runner",
-      "//content/public/common",
-      "//mojo/edk/test:test_support",
-      "//skia",
-      "//ui/accessibility:ax_gen",
-      "//v8",
-    ]
-
-    if (is_android) {
-      deps += [ ":jni" ]
-    }
-  }
+  deps = [
+    ":test_support",
+    "//cc",
+    "//cc/blink",
+    "//components/test_runner:test_runner",
+    "//content/public/common",
+    "//mojo/edk/test:test_support",
+    "//skia",
+    "//ui/accessibility:ax_gen",
+    "//v8",
+  ]
 
   if (is_android) {
-    import("//build/config/android/rules.gni")
-
-    generate_jni("jni") {
-      sources = [
-        "../public/test/android/javatests/src/org/chromium/content/browser/test/NestedSystemMessageHandler.java",
-      ]
-      jni_package = "content/public/test"
-    }
+    deps += [ ":jni" ]
   }
-}  # !is_ios
+}
+
+if (is_android) {
+  import("//build/config/android/rules.gni")
+
+  generate_jni("jni") {
+    sources = [
+      "../public/test/android/javatests/src/org/chromium/content/browser/test/NestedSystemMessageHandler.java",
+    ]
+    jni_package = "content/public/test"
+  }
+}
 
 if (is_android) {
   jinja_template("content_browsertests_manifest") {
@@ -596,19 +572,37 @@ test("content_unittests") {
   deps = [
     ":test_support",
     "//base/test:test_support",
+    "//base/third_party/dynamic_annotations",
+    "//cc",
+    "//cc:test_support",
+    "//cc/surfaces",
+    "//content:resources",
     "//content/browser/background_sync:background_sync_proto",
     "//content/browser/cache_storage:cache_storage_proto",
     "//content/browser/notifications:notification_proto",
     "//content/browser/service_worker:service_worker_proto",
     "//content/browser/speech/proto",
     "//content/common:mojo_bindings",
+    "//content/gpu",
     "//content/public/browser",
+    "//content/public/child",
     "//content/public/common",
     "//content/public/common:mojo_bindings",
+    "//content/public/plugin",
+    "//content/public/renderer",
     "//crypto",
     "//device/battery",
     "//device/battery:mojo_bindings",
     "//device/bluetooth",
+    "//gin",
+    "//gpu",
+    "//gpu:test_support",
+    "//ipc:test_support",
+    "//media:shared_memory_support",
+    "//media:test_support",
+    "//media/audio:test_support",
+    "//media/base:test_support",
+    "//media/midi:midi",
     "//mojo/edk/test:test_support",
     "//mojo/public/cpp/bindings",
     "//net:extras",
@@ -616,49 +610,25 @@ test("content_unittests") {
     "//skia",
     "//sql",
     "//sql:test_support",
+    "//storage/browser",
+    "//storage/common",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/WebKit/public:blink",
+    "//third_party/icu",
+    "//third_party/leveldatabase",
+    "//third_party/libjingle",
     "//third_party/re2",
     "//ui/accessibility",
     "//ui/base",
+    "//ui/compositor:test_support",
     "//ui/events/blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",
+    "//ui/gl",
+    "//ui/gl:test_support",
   ]
-
-  if (!is_ios) {
-    deps += [
-      "//base/third_party/dynamic_annotations",
-      "//cc",
-      "//cc:test_support",
-      "//cc/surfaces",
-      "//content:resources",
-      "//content/gpu",
-      "//content/public/browser",
-      "//content/public/child",
-      "//content/public/plugin",
-      "//content/public/renderer",
-      "//gin",
-      "//gpu",
-      "//gpu:test_support",
-      "//ipc:test_support",
-      "//media:shared_memory_support",
-      "//media:test_support",
-      "//media/audio:test_support",
-      "//media/base:test_support",
-      "//media/midi:midi",
-      "//storage/browser",
-      "//storage/common",
-      "//third_party/WebKit/public:blink",
-      "//third_party/icu",
-      "//third_party/leveldatabase",
-      "//third_party/libjingle",
-      "//ui/compositor:test_support",
-      "//ui/gl",
-      "//ui/gl:test_support",
-    ]
-  }
 
   data_deps = [
     "//third_party/mesa:osmesa",
@@ -758,7 +728,7 @@ test("content_unittests") {
 
     defines += [ "APPCACHE_USE_SIMPLE_CACHE" ]
   }
-  if (!is_android && !is_ios) {
+  if (!is_android) {
     deps += [ "//third_party/libvpx" ]
   }
 
