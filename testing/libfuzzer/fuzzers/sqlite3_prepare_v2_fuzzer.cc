@@ -5,15 +5,40 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
+#include <array>
+#include <string>
+#include <vector>
+
 #include "third_party/sqlite/sqlite3.h"
+
+
+static const std::array<uint8_t, 6> kBadKeyword{{'R', 'E', 'G', 'E', 'X', 'P'}};
+
+
+bool checkForBadKeyword(const uint8_t* data, size_t size) {
+  auto it = std::search(
+      data, data + size, kBadKeyword.begin(), kBadKeyword.end(),
+      [](char c1, char c2) { return std::toupper(c1) == std::toupper(c2); });
+
+  if (it != data + size)
+    return true;
+
+  return false;
+}
+
 
 static int Progress(void *not_used_ptr) {
   return 1;
 }
 
+
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (size < 2)
+    return 0;
+
+  if (checkForBadKeyword(data, size))
     return 0;
 
   sqlite3* db;
@@ -33,9 +58,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   selector <<= 1;
 
   sqlite3_stmt* statement = NULL;
-  int result = sqlite3_prepare_v2(db, (const char*)(data + 1),
-                                  static_cast<int>(size) - 1,
-                                  &statement, NULL);
+  int result = sqlite3_prepare_v2(db, reinterpret_cast<const char*>(data + 1),
+                                  static_cast<int>(size - 1), &statement, NULL);
   if (result == SQLITE_OK) {
     // Use selector value to randomize number of iterations.
     for (int i = 0; i < selector; i++) {
