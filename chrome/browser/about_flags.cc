@@ -1720,6 +1720,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-brotli", IDS_FLAGS_ENABLE_BROTLI_NAME,
      IDS_FLAGS_ENABLE_BROTLI_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kBrotliEncoding)},
+    {"enable-webusb", IDS_FLAGS_ENABLE_WEB_USB_NAME,
+     IDS_FLAGS_ENABLE_WEB_USB_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kWebUsb)},
 #if defined(OS_ANDROID)
     {"enable-unified-media-pipeline",
      IDS_FLAGS_ENABLE_UNIFIED_MEDIA_PIPELINE_NAME,

@@ -69,6 +69,10 @@ const base::Feature kUpdateRendererPriorityOnStartup{
 const base::Feature kWebFontsIntervention{"WebFontsIntervention",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether the WebUSB API is enabled:
+// https://wicg.github.io/webusb
+const base::Feature kWebUsb{"WebUSB", base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Use IME's own thread instead of using main UI thread. It also means that
 // we will not use replica editor and do a round trip to renderer to synchronize

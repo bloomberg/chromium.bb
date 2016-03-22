@@ -65,6 +65,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kEnableWebBluetooth))
     WebRuntimeFeatures::enableWebBluetooth(true);
 
+  if (!base::FeatureList::IsEnabled(features::kWebUsb))
+    WebRuntimeFeatures::enableWebUsb(false);
+
   SetRuntimeFeatureDefaultsForPlatform();
 
   if (command_line.HasSwitch(switches::kDisableDatabases))

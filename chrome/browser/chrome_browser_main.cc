@@ -144,6 +144,7 @@
 #include "content/public/browser/power_usage_monitor.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "grit/platform_locale_settings.h"
@@ -1253,9 +1254,11 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 
 #if !defined(OS_ANDROID)
   // WebUSB is an experimental web API. The sites these notifications will link
-  // to will only work if the experiment is enabled.
+  // to will only work if the experiment is enabled and WebUSB feature is
+  // enabled.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
+          switches::kEnableExperimentalWebPlatformFeatures) &&
+      base::FeatureList::IsEnabled(features::kWebUsb)) {
     webusb_browser_client_.reset(new ChromeWebUsbBrowserClient());
     webusb_detector_.reset(
         new webusb::WebUsbDetector(webusb_browser_client_.get()));

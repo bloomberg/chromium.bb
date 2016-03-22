@@ -149,6 +149,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/service_registry.h"
@@ -2800,11 +2801,18 @@ void ChromeContentBrowserClient::RegisterFrameMojoShellServices(
 void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
     content::ServiceRegistry* registry,
     content::RenderFrameHost* render_frame_host) {
-  registry->AddService(base::Bind(&CreateUsbDeviceManager, render_frame_host));
+  // WebUSB is an experimental web API. It will only work if the experiment
+  // is enabled and WebUSB feature is enabled.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures) &&
+      base::FeatureList::IsEnabled(features::kWebUsb)) {
+    registry->AddService(
+        base::Bind(&CreateUsbDeviceManager, render_frame_host));
 #if !defined(OS_ANDROID)
-  registry->AddService(
-      base::Bind(&CreateWebUsbChooserService, render_frame_host));
+    registry->AddService(
+        base::Bind(&CreateWebUsbChooserService, render_frame_host));
 #endif  // !defined(OS_ANDROID)
+  }
 }
 
 void ChromeContentBrowserClient::RegisterInProcessMojoApplications(

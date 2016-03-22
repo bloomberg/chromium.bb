@@ -14564,6 +14564,13 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
     </if>
 
+    <message name="IDS_FLAGS_ENABLE_WEB_USB_NAME" desc="Title for the flag to enable WebUSB.">
+      WebUSB
+    </message>
+    <message name="IDS_FLAGS_ENABLE_WEB_USB_DESCRIPTION" desc="Description for the flag to enable WebUSB.">
+      Enable WebUSB support.
+    </message>
+
     </messages>
   </release>
 </grit>

@@ -46,6 +46,8 @@ public:
 
     BLINK_EXPORT static void enableWebBluetooth(bool);
 
+    BLINK_EXPORT static void enableWebUsb(bool);
+
     BLINK_EXPORT static void enableTestOnlyFeatures(bool);
 
     // Enables a feature by its string identifier from

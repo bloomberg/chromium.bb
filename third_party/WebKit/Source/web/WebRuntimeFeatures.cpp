@@ -45,6 +45,11 @@ void WebRuntimeFeatures::enableWebBluetooth(bool enable)
     RuntimeEnabledFeatures::setWebBluetoothEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableWebUsb(bool enable)
+{
+    RuntimeEnabledFeatures::setWebUSBEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableFeatureFromString(const std::string& name, bool enable)
 {
     RuntimeEnabledFeatures::setFeatureEnabledFromString(name, enable);
