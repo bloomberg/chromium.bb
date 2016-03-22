@@ -156,16 +156,6 @@ class MockRtcVideoCapturer : public WebRtcVideoCapturerAdapter {
   int height_;
 };
 
-MockVideoRenderer::MockVideoRenderer()
-    : num_(0) {}
-
-MockVideoRenderer::~MockVideoRenderer() {}
-
-bool MockVideoRenderer::RenderFrame(const cricket::VideoFrame* frame) {
-  ++num_;
-  return true;
-}
-
 MockAudioSource::MockAudioSource(const cricket::AudioOptions& options,
                                  bool remote)
     : remote_(remote), state_(MediaSourceInterface::kLive) {}

@@ -21,18 +21,6 @@ namespace content {
 class WebAudioCapturerSource;
 typedef std::set<webrtc::ObserverInterface*> ObserverSet;
 
-class MockVideoRenderer : public cricket::VideoRenderer {
- public:
-  MockVideoRenderer();
-  ~MockVideoRenderer() override;
-  bool RenderFrame(const cricket::VideoFrame* frame) override;
-
-  int num() const { return num_; }
-
- private:
-  int num_;
-};
-
 class MockAudioSource : public webrtc::AudioSourceInterface {
  public:
   explicit MockAudioSource(const cricket::AudioOptions& options, bool remote);
