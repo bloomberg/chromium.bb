@@ -112,6 +112,7 @@ content_settings::PatternPair GetPatternsFromScopingType(
     WebsiteSettingsInfo::ScopingType scoping_type,
     const GURL& primary_url,
     const GURL& secondary_url) {
+  DCHECK(!primary_url.is_empty());
   content_settings::PatternPair patterns;
 
   switch (scoping_type) {
@@ -125,6 +126,7 @@ content_settings::PatternPair GetPatternsFromScopingType(
       patterns.second = ContentSettingsPattern::Wildcard();
       break;
     case WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE:
+      DCHECK(!secondary_url.is_empty());
       patterns.first = ContentSettingsPattern::FromURLNoWildcard(primary_url);
       patterns.second =
           ContentSettingsPattern::FromURLNoWildcard(secondary_url);

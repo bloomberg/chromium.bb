@@ -253,6 +253,7 @@ class DownloadRequestLimiterTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_Allow) {
+  NavigateAndCommit(GURL("http://foo.com/bar"));
   LoadCompleted();
 
   // All tabs should initially start at ALLOW_ONE_DOWNLOAD.
@@ -462,6 +463,10 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnReload) {
 #if defined(OS_ANDROID)
 TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_RawWebContents) {
   scoped_ptr<WebContents> web_contents(CreateTestWebContents());
+
+  GURL url("http://foo.com/bar");
+  web_contents->GetController().LoadURL(
+      url, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
 
   // DownloadRequestLimiter won't try to make a permission bubble if there's
   // no permission bubble manager, so don't put one on the test WebContents.
