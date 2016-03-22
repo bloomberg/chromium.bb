@@ -77,7 +77,8 @@ void QuicClientSessionBase::OnPromiseHeadersComplete(
   stream->OnPromiseHeadersComplete(promised_stream_id, frame_len);
 }
 
-void QuicClientSessionBase::HandlePromised(QuicStreamId id,
+void QuicClientSessionBase::HandlePromised(QuicStreamId /* associated_id */,
+                                           QuicStreamId id,
                                            const SpdyHeaderBlock& headers) {
   // Due to pathalogical packet re-ordering, it is possible that
   // frames for the promised stream have already arrived, and the

@@ -262,6 +262,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Returns true if session has one ore more streams marked as non-migratable.
   bool HasNonMigratableStreams() const;
 
+  void HandlePromised(QuicStreamId associated_id,
+                      QuicStreamId promised_id,
+                      const SpdyHeaderBlock& headers) override;
+
  protected:
   // QuicSession methods:
   QuicChromiumClientStream* CreateIncomingDynamicStream(

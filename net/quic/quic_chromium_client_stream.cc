@@ -73,7 +73,7 @@ void QuicChromiumClientStream::OnPromiseHeadersComplete(
   }
   MarkHeadersConsumed(headers_len);
 
-  session_->HandlePromised(promised_id, headers);
+  session_->HandlePromised(id(), promised_id, headers);
 }
 
 void QuicChromiumClientStream::OnDataAvailable() {

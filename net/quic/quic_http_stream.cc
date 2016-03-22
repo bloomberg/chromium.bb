@@ -27,6 +27,20 @@
 
 namespace net {
 
+namespace {
+
+scoped_ptr<base::Value> NetLogQuicPushStreamCallback(
+    QuicStreamId stream_id,
+    const GURL* url,
+    NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetInteger("stream_id", stream_id);
+  dict->SetString("url", url->spec());
+  return std::move(dict);
+}
+
+}  // namespace
+
 QuicHttpStream::QuicHttpStream(
     const base::WeakPtr<QuicChromiumClientSession>& session)
     : next_state_(STATE_NONE),
@@ -100,6 +114,14 @@ void QuicHttpStream::OnRendezvousResult(QuicSpdyStream* stream) {
   if (!callback_.is_null()) {
     if (stream) {
       next_state_ = STATE_OPEN;
+      stream_net_log_.AddEvent(
+          NetLog::TYPE_QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+          base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
+                     &request_info_->url));
+      session_->net_log().AddEvent(
+          NetLog::TYPE_QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+          base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
+                     &request_info_->url));
       DoCallback(OK);
       return;
     }
@@ -131,11 +153,19 @@ int QuicHttpStream::InitializeStream(const HttpRequestInfo* request_info,
   DCHECK(success);
   DCHECK(ssl_info_.cert.get());
 
-  if (session_->push_promise_index()->GetPromised(request_info->url.spec())) {
-    // A PUSH_PROMISE frame for this URL has arrived, next steps of
-    // the rendezvous will happen in |SendRequest()| when the browser
-    // request headers (required for push validation) are available.
+  string url(request_info->url.spec());
+  QuicClientPromisedInfo* promised =
+      session_->push_promise_index()->GetPromised(url);
+  if (promised) {
     found_promise_ = true;
+    stream_net_log_.AddEvent(
+        NetLog::TYPE_QUIC_HTTP_STREAM_PUSH_PROMISE_RENDEZVOUS,
+        base::Bind(&NetLogQuicPushStreamCallback, promised->id(),
+                   &request_info_->url));
+    session_->net_log().AddEvent(
+        NetLog::TYPE_QUIC_HTTP_STREAM_PUSH_PROMISE_RENDEZVOUS,
+        base::Bind(&NetLogQuicPushStreamCallback, promised->id(),
+                   &request_info_->url));
     return OK;
   }
 
@@ -221,10 +251,19 @@ int QuicHttpStream::HandlePromise() {
     case QUIC_SUCCESS:
       next_state_ = STATE_OPEN;
       if (!CancelPromiseIfHasBody()) {
+        stream_net_log_.AddEvent(
+            NetLog::TYPE_QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+            base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
+                       &request_info_->url));
+        session_->net_log().AddEvent(
+            NetLog::TYPE_QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM,
+            base::Bind(&NetLogQuicPushStreamCallback, stream_->id(),
+                       &request_info_->url));
         // Avoid the call to |DoLoop()| below, which would reset
         // next_state_ to STATE_NONE.
         return OK;
       }
+
       break;
     case QUIC_PENDING:
       if (!CancelPromiseIfHasBody()) {

@@ -1783,6 +1783,15 @@ EVENT_TYPE(QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_RECEIVED)
 //   }
 EVENT_TYPE(QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_SENT)
 
+// A QUIC connection received a PUSH_PROMISE frame.  The following
+// parameters are attached:
+//   {
+//     "headers": <The list of header:value pairs>,
+//     "id": <The stream id>,
+//     "promised_stream_id": <The stream id>,
+//   }
+EVENT_TYPE(QUIC_SESSION_PUSH_PROMISE_RECEIVED)
+
 // Session was closed, either remotely or by the peer.
 //   {
 //     "quic_error": <QuicErrorCode which caused the connection to be closed>,
@@ -1805,6 +1814,23 @@ EVENT_TYPE(QUIC_HTTP_STREAM_SEND_REQUEST_HEADERS)
 //     "headers": <The list of header:value pairs>
 //   }
 EVENT_TYPE(QUIC_HTTP_STREAM_READ_RESPONSE_HEADERS)
+
+// A stream request's url matches a received push promise.  The
+// promised stream can be adopted for this request once vary header
+// validation is complete (as part of response header processing).
+//   {
+//     "stream_id":  <The stream id>,
+//     "url":        <The url of the pushed resource>,
+//   }
+EVENT_TYPE(QUIC_HTTP_STREAM_PUSH_PROMISE_RENDEZVOUS)
+
+// Vary validation has succeeded, a http stream is attached to
+// a pushed QUIC stream.
+//   {
+//     "stream_id":  <The stream id>,
+//     "url":        <The url of the pushed resource>,
+//   }
+EVENT_TYPE(QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM)
 
 // Identifies the NetLog::Source() for the QuicSesssion that handled the stream.
 // The event parameters are:

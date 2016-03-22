@@ -63,8 +63,11 @@ class NET_EXPORT_PRIVATE QuicClientSessionBase
 
   // Called by |QuicSpdyClientStream| on receipt of PUSH_PROMISE, does
   // some session level validation and creates the
-  // |QuicClientPromisedInfo| inserting into maps by id and url.
-  void HandlePromised(QuicStreamId id, const SpdyHeaderBlock& headers);
+  // |QuicClientPromisedInfo| inserting into maps by (promised) id and
+  // url.
+  virtual void HandlePromised(QuicStreamId associated_id,
+                              QuicStreamId promised_id,
+                              const SpdyHeaderBlock& headers);
 
   // For cross-origin server push, this should verify the server is
   // authoritative per [RFC2818], Section 3.  Roughly, subjectAltName

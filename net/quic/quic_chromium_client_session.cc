@@ -18,6 +18,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_activity_monitor.h"
+#include "net/http/http_log_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_server_info.h"
@@ -125,6 +126,31 @@ scoped_ptr<base::Value> NetLogQuicClientSessionCallback(
                    server_id->privacy_mode() == PRIVACY_MODE_ENABLED);
   dict->SetBoolean("require_confirmation", require_confirmation);
   dict->SetInteger("cert_verify_flags", cert_verify_flags);
+  return std::move(dict);
+}
+
+scoped_ptr<base::ListValue> SpdyHeaderBlockToListValue(
+    const SpdyHeaderBlock& headers,
+    NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::ListValue> headers_list(new base::ListValue());
+  for (const auto& it : headers) {
+    headers_list->AppendString(
+        it.first.as_string() + ": " +
+        ElideHeaderValueForNetLog(capture_mode, it.first.as_string(),
+                                  it.second.as_string()));
+  }
+  return headers_list;
+}
+
+scoped_ptr<base::Value> NetLogQuicPushPromiseReceivedCallback(
+    const SpdyHeaderBlock* headers,
+    SpdyStreamId stream_id,
+    SpdyStreamId promised_stream_id,
+    NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->Set("headers", SpdyHeaderBlockToListValue(*headers, capture_mode));
+  dict->SetInteger("id", stream_id);
+  dict->SetInteger("promised_stream_id", promised_stream_id);
   return std::move(dict);
 }
 
@@ -1122,6 +1148,15 @@ bool QuicChromiumClientSession::HasNonMigratableStreams() const {
       return true;
   }
   return false;
+}
+
+void QuicChromiumClientSession::HandlePromised(QuicStreamId id,
+                                               QuicStreamId promised_id,
+                                               const SpdyHeaderBlock& headers) {
+  QuicClientSessionBase::HandlePromised(id, promised_id, headers);
+  net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PUSH_PROMISE_RECEIVED,
+                    base::Bind(&NetLogQuicPushPromiseReceivedCallback, &headers,
+                               id, promised_id));
 }
 
 }  // namespace net

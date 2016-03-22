@@ -89,7 +89,7 @@ void QuicSpdyClientStream::OnPromiseHeadersComplete(QuicStreamId promised_id,
   }
   MarkHeadersConsumed(decompressed_headers().length());
 
-  session_->HandlePromised(promised_id, promise_headers);
+  session_->HandlePromised(id(), promised_id, promise_headers);
 }
 
 void QuicSpdyClientStream::OnDataAvailable() {
