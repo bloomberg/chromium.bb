@@ -484,23 +484,50 @@ interface OffscreenCanvas
     setter width
 interface OffscreenCanvasRenderingContext2D
     getter fillStyle
+    getter lineCap
+    getter lineDashOffset
+    getter lineJoin
+    getter lineWidth
+    getter miterLimit
     getter offscreenCanvas
     getter strokeStyle
     method arc
     method arcTo
+    method beginPath
     method bezierCurveTo
     method clearRect
     method closePath
     method constructor
     method ellipse
+    method fill
     method fillRect
+    method getLineDash
     method lineTo
     method moveTo
     method quadraticCurveTo
     method rect
+    method setLineDash
+    method stroke
     method strokeRect
     setter fillStyle
+    setter lineCap
+    setter lineDashOffset
+    setter lineJoin
+    setter lineWidth
+    setter miterLimit
     setter strokeStyle
+interface Path2D
+    method addPath
+    method arc
+    method arcTo
+    method bezierCurveTo
+    method closePath
+    method constructor
+    method ellipse
+    method lineTo
+    method moveTo
+    method quadraticCurveTo
+    method rect
 interface PerformanceObserverEntryList
     method constructor
     method getEntries

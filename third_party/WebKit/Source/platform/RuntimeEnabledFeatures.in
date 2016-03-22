@@ -184,6 +184,10 @@ SlimmingPaintInvalidation
 SlimmingPaintV2
 SlimmingPaintStrictCullRectClipping
 SlimmingPaintUnderInvalidationChecking
+// Used as argument in attribute of stable-release functions/interfaces where
+// a runtime-enabled feature name is required for correct IDL syntax.
+// This is a global flag; do not change its status.
+StableBlinkFeatures status=stable
 StackedCSSPropertyAnimations status=experimental
 StyleSharing status=stable
 StyleMatchedPropertiesCache status=stable

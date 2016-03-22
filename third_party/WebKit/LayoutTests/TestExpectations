@@ -116,6 +116,7 @@ crbug.com/539226 [ Win ] http/tests/xmlhttprequest/open-in-body-onload-sync-to-i
 
 # Expected to fail until OffscreenCanvas can render on the gpu
 crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-strokeRect-in-worker.html [ Failure ]
+crbug.com/593514 virtual/gpu/fast/canvas/OffscreenCanvas-paths-in-worker.html [ Failure ]
 
 crbug.com/417782 [ Linux Win ] virtual/rootlayerscrolls/fast/scrolling/fractional-scroll-offset-fixed-position-non-composited.html [ Failure ]
 crbug.com/492664 [ Linux ] imported/csswg-test/css-writing-modes-3/box-offsets-rel-pos-vlr-005.xht [ Failure ]

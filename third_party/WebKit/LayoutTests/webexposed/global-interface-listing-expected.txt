@@ -4004,22 +4004,37 @@ interface OffscreenCanvas
 interface OffscreenCanvasRenderingContext2D
     attribute @@toStringTag
     getter fillStyle
+    getter lineCap
+    getter lineDashOffset
+    getter lineJoin
+    getter lineWidth
+    getter miterLimit
     getter offscreenCanvas
     getter strokeStyle
     method arc
     method arcTo
+    method beginPath
     method bezierCurveTo
     method clearRect
     method closePath
     method constructor
     method ellipse
+    method fill
     method fillRect
+    method getLineDash
     method lineTo
     method moveTo
     method quadraticCurveTo
     method rect
+    method setLineDash
+    method stroke
     method strokeRect
     setter fillStyle
+    setter lineCap
+    setter lineDashOffset
+    setter lineJoin
+    setter lineWidth
+    setter miterLimit
     setter strokeStyle
 interface Option
     method constructor
