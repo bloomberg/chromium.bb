@@ -85,8 +85,8 @@ public:
 
     CSSRule* parentRule() const { return m_parentIsRule ? m_parentRule : nullptr; }
 
-    // NOTE: Just calls notImplemented().
-    void setCSSText(const String&);
+    // The CSSOM spec states that "setting the cssText attribute must do nothing."
+    void setCSSText(const String&) { }
 
 protected:
     CSSRule(CSSStyleSheet* parent)

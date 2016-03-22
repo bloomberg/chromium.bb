@@ -24,7 +24,6 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
-#include "platform/NotImplemented.h"
 
 namespace blink {
 
@@ -35,11 +34,6 @@ struct SameSizeAsCSSRule : public RefCountedWillBeGarbageCollectedFinalized<Same
 };
 
 static_assert(sizeof(CSSRule) == sizeof(SameSizeAsCSSRule), "CSSRule should stay small");
-
-void CSSRule::setCSSText(const String&)
-{
-    notImplemented();
-}
 
 const CSSParserContext& CSSRule::parserContext() const
 {
