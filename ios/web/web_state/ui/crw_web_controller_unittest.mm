@@ -521,7 +521,7 @@ class CRWWebControllerPageDialogOpenPolicyTest
 // Tests that window.alert dialog is suppressed for DIALOG_POLICY_SUPPRESS.
 TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressAlert) {
   [[web_delegate_mock() expect] webControllerDidSuppressDialog:webController_];
-  [webController_ setPageDialogOpenPolicy:web::DIALOG_POLICY_SUPPRESS];
+  [webController_ setShouldSuppressDialogs:YES];
   EvaluateJavaScriptAsString(@"alert('test')");
 };
 
@@ -542,14 +542,14 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowAlert) {
               completion_handler();
             }];
 
-  [webController_ setPageDialogOpenPolicy:web::DIALOG_POLICY_ALLOW];
+  [webController_ setShouldSuppressDialogs:NO];
   EvaluateJavaScriptAsString(@"alert('test')");
 };
 
 // Tests that window.confirm dialog is suppressed for DIALOG_POLICY_SUPPRESS.
 TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressConfirm) {
   [[web_delegate_mock() expect] webControllerDidSuppressDialog:webController_];
-  [webController_ setPageDialogOpenPolicy:web::DIALOG_POLICY_SUPPRESS];
+  [webController_ setShouldSuppressDialogs:YES];
   EXPECT_NSEQ(@"false", EvaluateJavaScriptAsString(@"confirm('test')"));
 };
 
@@ -572,7 +572,7 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowConfirmWithTrue) {
               callable_block(YES);
             }];
 
-  [webController_ setPageDialogOpenPolicy:web::DIALOG_POLICY_ALLOW];
+  [webController_ setShouldSuppressDialogs:NO];
   EXPECT_NSEQ(@"true", EvaluateJavaScriptAsString(@"confirm('test')"));
 }
 
@@ -595,14 +595,14 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowConfirmWithFalse) {
               callable_block(NO);
             }];
 
-  [webController_ setPageDialogOpenPolicy:web::DIALOG_POLICY_ALLOW];
+  [webController_ setShouldSuppressDialogs:NO];
   EXPECT_NSEQ(@"false", EvaluateJavaScriptAsString(@"confirm('test')"));
 }
 
 // Tests that window.prompt dialog is suppressed for DIALOG_POLICY_SUPPRESS.
 TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressPrompt) {
   [[web_delegate_mock() expect] webControllerDidSuppressDialog:webController_];
-  [webController_ setPageDialogOpenPolicy:web::DIALOG_POLICY_SUPPRESS];
+  [webController_ setShouldSuppressDialogs:YES];
   EXPECT_NSEQ(@"", EvaluateJavaScriptAsString(@"prompt('Yes?', 'No')"));
 }
 
@@ -626,21 +626,21 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowPrompt) {
               callable_block(@"Maybe");
             }];
 
-  [webController_ setPageDialogOpenPolicy:web::DIALOG_POLICY_ALLOW];
+  [webController_ setShouldSuppressDialogs:NO];
   EXPECT_NSEQ(@"Maybe", EvaluateJavaScriptAsString(@"prompt('Yes?', 'No')"));
 }
 
 // Tests that geolocation dialog is suppressed for DIALOG_POLICY_SUPPRESS.
 TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressGeolocation) {
   [[web_delegate_mock() expect] webControllerDidSuppressDialog:webController_];
-  [webController_ setPageDialogOpenPolicy:web::DIALOG_POLICY_SUPPRESS];
+  [webController_ setShouldSuppressDialogs:YES];
   EvaluateJavaScriptAsString(@"navigator.geolocation.getCurrentPosition()");
 }
 
 // Tests that window.open is suppressed for DIALOG_POLICY_SUPPRESS.
 TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressWindowOpen) {
   [[web_delegate_mock() expect] webControllerDidSuppressDialog:webController_];
-  [webController_ setPageDialogOpenPolicy:web::DIALOG_POLICY_SUPPRESS];
+  [webController_ setShouldSuppressDialogs:YES];
   EvaluateJavaScriptAsString(@"window.open('')");
 }
 

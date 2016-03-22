@@ -3188,18 +3188,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (void)setPageDialogOpenPolicy:(web::PageDialogOpenPolicy)policy {
-  switch (policy) {
-    case web::DIALOG_POLICY_ALLOW:
-      self.shouldSuppressDialogs = NO;
-      return;
-    case web::DIALOG_POLICY_SUPPRESS:
-      self.shouldSuppressDialogs = YES;
-      return;
-  }
-  NOTREACHED();
-}
-
 #pragma mark -
 #pragma mark Session Information
 

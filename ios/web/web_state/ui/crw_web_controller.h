@@ -30,15 +30,6 @@ enum LoadPhase {
   PAGE_LOADED = 2
 };
 
-// Policy for web page dialog handling.
-enum PageDialogOpenPolicy {
-  // Default policy. Dialogs are allowed, clients are not notified on display.
-  DIALOG_POLICY_ALLOW = 0,
-  // Dialogs are not allowed, client are notified when dialog did block with
-  // -[WebDelegate webControllerDidSuppressDialog:] delegate method call.
-  DIALOG_POLICY_SUPPRESS
-};
-
 // The accessibility identifier of the top-level container view.
 extern NSString* const kContainerViewID;
 
@@ -239,12 +230,6 @@ class WebStateImpl;
 // Show overlay, don't reload web page. Used when the view will be
 // visible only briefly (e.g., tablet side swipe).
 - (void)setOverlayPreviewMode:(BOOL)overlayPreviewMode;
-
-// Sets policy for web page dialog handling. Controls dialog suppression and
-// notifying the WebDelegate.
-// TODO(crbug.com/595463): remove this method, once embedder uses
-// |setSuppressDialogs|.
-- (void)setPageDialogOpenPolicy:(web::PageDialogOpenPolicy)policy;
 
 // Records the state (scroll position, form values, whatever can be harvested)
 // from the current page into the current session entry.
