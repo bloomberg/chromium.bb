@@ -41,7 +41,7 @@
 #include "url/url_canon.h"
 
 #if defined(USE_GIO)
-#include "library_loaders/libgio.h"
+#include "library_loaders/libgio.h"  // nogncheck
 #endif  // defined(USE_GIO)
 
 namespace net {
