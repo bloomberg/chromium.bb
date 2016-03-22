@@ -51,7 +51,7 @@ class NET_EXPORT_PRIVATE HttpStreamFactoryImpl : public HttpStreamFactory {
       WebSocketHandshakeStreamBase::CreateHelper* create_helper,
       const BoundNetLog& net_log) override;
 
-  HttpStreamRequest* RequestBidirectionalStreamJob(
+  HttpStreamRequest* RequestBidirectionalStreamImpl(
       const HttpRequestInfo& info,
       RequestPriority priority,
       const SSLConfig& server_ssl_config,

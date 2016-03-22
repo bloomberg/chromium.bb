@@ -17,7 +17,7 @@
 #include "net/base/test_data_directory.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/http/bidirectional_stream_job.h"
+#include "net/http/bidirectional_stream_impl.h"
 #include "net/http/bidirectional_stream_request_info.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"
@@ -58,7 +58,7 @@
 
 namespace net {
 
-class BidirectionalStreamJob;
+class BidirectionalStreamImpl;
 
 namespace {
 
@@ -187,13 +187,14 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     used_proxy_info_ = used_proxy_info;
   }
 
-  void OnBidirectionalStreamJobReady(const SSLConfig& used_ssl_config,
-                                     const ProxyInfo& used_proxy_info,
-                                     BidirectionalStreamJob* stream) override {
+  void OnBidirectionalStreamImplReady(
+      const SSLConfig& used_ssl_config,
+      const ProxyInfo& used_proxy_info,
+      BidirectionalStreamImpl* stream) override {
     stream_done_ = true;
     if (waiting_for_stream_)
       base::MessageLoop::current()->QuitWhenIdle();
-    bidirectional_stream_job_.reset(stream);
+    bidirectional_stream_impl_.reset(stream);
     used_ssl_config_ = used_ssl_config;
     used_proxy_info_ = used_proxy_info;
   }
@@ -251,8 +252,8 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
     return static_cast<MockWebSocketHandshakeStream*>(websocket_stream_.get());
   }
 
-  BidirectionalStreamJob* bidirectional_stream_job() {
-    return bidirectional_stream_job_.get();
+  BidirectionalStreamImpl* bidirectional_stream_impl() {
+    return bidirectional_stream_impl_.get();
   }
 
   bool stream_done() const { return stream_done_; }
@@ -263,7 +264,7 @@ class StreamRequestWaiter : public HttpStreamRequest::Delegate {
   bool stream_done_;
   scoped_ptr<HttpStream> stream_;
   scoped_ptr<WebSocketHandshakeStreamBase> websocket_stream_;
-  scoped_ptr<BidirectionalStreamJob> bidirectional_stream_job_;
+  scoped_ptr<BidirectionalStreamImpl> bidirectional_stream_impl_;
   SSLConfig used_ssl_config_;
   ProxyInfo used_proxy_info_;
   int error_status_;
@@ -737,9 +738,9 @@ TEST_P(HttpStreamFactoryTest, UnreachableQuicProxyMarkedAsBad) {
   }
 }
 
-// BidirectionalStreamJob::Delegate to wait until response headers are
+// BidirectionalStreamImpl::Delegate to wait until response headers are
 // received.
-class TestBidirectionalDelegate : public BidirectionalStreamJob::Delegate {
+class TestBidirectionalDelegate : public BidirectionalStreamImpl::Delegate {
  public:
   void WaitUntilDone() { loop_.Run(); }
 
@@ -1456,7 +1457,7 @@ TEST_P(HttpStreamFactoryTest, RequestSpdyHttpStream) {
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
-TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamJob) {
+TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
   SpdySessionDependencies session_deps(GetParam(),
                                        ProxyService::CreateDirect());
 
@@ -1482,14 +1483,14 @@ TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamJob) {
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;
   scoped_ptr<HttpStreamRequest> request(
-      session->http_stream_factory()->RequestBidirectionalStreamJob(
+      session->http_stream_factory()->RequestBidirectionalStreamImpl(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
           BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_FALSE(waiter.websocket_stream());
   ASSERT_FALSE(waiter.stream());
-  ASSERT_TRUE(waiter.bidirectional_stream_job());
+  ASSERT_TRUE(waiter.bidirectional_stream_impl());
   EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetTransportSocketPool(
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSSLSocketPool(
@@ -1588,7 +1589,7 @@ INSTANTIATE_TEST_CASE_P(Version,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
-       RequestBidirectionalStreamJobQuicAlternative) {
+       RequestBidirectionalStreamImplQuicAlternative) {
   GURL url = GURL("https://www.example.org");
 
   MockQuicData mock_quic_data;
@@ -1630,7 +1631,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
 
   StreamRequestWaiter waiter;
   scoped_ptr<HttpStreamRequest> request(
-      session()->http_stream_factory()->RequestBidirectionalStreamJob(
+      session()->http_stream_factory()->RequestBidirectionalStreamImpl(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
           BoundNetLog()));
 
@@ -1638,8 +1639,8 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_FALSE(waiter.websocket_stream());
   ASSERT_FALSE(waiter.stream());
-  ASSERT_TRUE(waiter.bidirectional_stream_job());
-  BidirectionalStreamJob* job = waiter.bidirectional_stream_job();
+  ASSERT_TRUE(waiter.bidirectional_stream_impl());
+  BidirectionalStreamImpl* stream_impl = waiter.bidirectional_stream_impl();
 
   BidirectionalStreamRequestInfo bidi_request_info;
   bidi_request_info.method = "GET";
@@ -1648,12 +1649,12 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   bidi_request_info.priority = LOWEST;
 
   TestBidirectionalDelegate delegate;
-  job->Start(&bidi_request_info, BoundNetLog(), &delegate, nullptr);
+  stream_impl->Start(&bidi_request_info, BoundNetLog(), &delegate, nullptr);
   delegate.WaitUntilDone();
 
   scoped_refptr<IOBuffer> buffer = new net::IOBuffer(1);
-  EXPECT_EQ(OK, job->ReadData(buffer.get(), 1));
-  EXPECT_EQ(kProtoQUIC1SPDY3, job->GetProtocol());
+  EXPECT_EQ(OK, stream_impl->ReadData(buffer.get(), 1));
+  EXPECT_EQ(kProtoQUIC1SPDY3, stream_impl->GetProtocol());
   EXPECT_EQ("200", delegate.response_headers().find(":status")->second);
   EXPECT_EQ(1, GetSocketPoolGroupCount(session()->GetTransportSocketPool(
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
@@ -1669,7 +1670,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
 // Tests that when QUIC is not enabled for bidirectional streaming, HTTP/2 is
 // used instead.
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
-       RequestBidirectionalStreamJobQuicNotEnabled) {
+       RequestBidirectionalStreamImplQuicNotEnabled) {
   GURL url = GURL("https://www.example.org");
 
   // Make the http job fail.
@@ -1695,7 +1696,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
 
   StreamRequestWaiter waiter;
   scoped_ptr<HttpStreamRequest> request(
-      session()->http_stream_factory()->RequestBidirectionalStreamJob(
+      session()->http_stream_factory()->RequestBidirectionalStreamImpl(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
           BoundNetLog()));
 
@@ -1703,7 +1704,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_FALSE(waiter.websocket_stream());
   ASSERT_FALSE(waiter.stream());
-  ASSERT_FALSE(waiter.bidirectional_stream_job());
+  ASSERT_FALSE(waiter.bidirectional_stream_impl());
   // Since the alternative service job is not started, we will get the error
   // from the http job.
   ASSERT_EQ(ERR_CONNECTION_REFUSED, waiter.error_status());
@@ -1712,7 +1713,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
 // Tests that if Http job fails, but Quic job succeeds, we return
 // BidirectionalStreamQuicImpl.
 TEST_P(HttpStreamFactoryBidirectionalQuicTest,
-       RequestBidirectionalStreamJobHttpJobFailsQuicJobSucceeds) {
+       RequestBidirectionalStreamImplHttpJobFailsQuicJobSucceeds) {
   GURL url = GURL("https://www.example.org");
 
   // Set up Quic data.
@@ -1755,7 +1756,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
 
   StreamRequestWaiter waiter;
   scoped_ptr<HttpStreamRequest> request(
-      session()->http_stream_factory()->RequestBidirectionalStreamJob(
+      session()->http_stream_factory()->RequestBidirectionalStreamImpl(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
           BoundNetLog()));
 
@@ -1763,8 +1764,8 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   EXPECT_TRUE(waiter.stream_done());
   EXPECT_FALSE(waiter.websocket_stream());
   ASSERT_FALSE(waiter.stream());
-  ASSERT_TRUE(waiter.bidirectional_stream_job());
-  BidirectionalStreamJob* job = waiter.bidirectional_stream_job();
+  ASSERT_TRUE(waiter.bidirectional_stream_impl());
+  BidirectionalStreamImpl* stream_impl = waiter.bidirectional_stream_impl();
 
   BidirectionalStreamRequestInfo bidi_request_info;
   bidi_request_info.method = "GET";
@@ -1773,13 +1774,13 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   bidi_request_info.priority = LOWEST;
 
   TestBidirectionalDelegate delegate;
-  job->Start(&bidi_request_info, BoundNetLog(), &delegate, nullptr);
+  stream_impl->Start(&bidi_request_info, BoundNetLog(), &delegate, nullptr);
   delegate.WaitUntilDone();
 
   // Make sure the BidirectionalStream negotiated goes through QUIC.
   scoped_refptr<IOBuffer> buffer = new net::IOBuffer(1);
-  EXPECT_EQ(OK, job->ReadData(buffer.get(), 1));
-  EXPECT_EQ(kProtoQUIC1SPDY3, job->GetProtocol());
+  EXPECT_EQ(OK, stream_impl->ReadData(buffer.get(), 1));
+  EXPECT_EQ(kProtoQUIC1SPDY3, stream_impl->GetProtocol());
   EXPECT_EQ("200", delegate.response_headers().find(":status")->second);
   // There is no Http2 socket pool.
   EXPECT_EQ(0, GetSocketPoolGroupCount(session()->GetTransportSocketPool(
@@ -1793,7 +1794,7 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   EXPECT_TRUE(waiter.used_proxy_info().is_direct());
 }
 
-TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamJobFailure) {
+TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamImplFailure) {
   SpdySessionDependencies session_deps(GetParam(),
                                        ProxyService::CreateDirect());
 
@@ -1804,7 +1805,7 @@ TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamJobFailure) {
 
   SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
 
-  // If HTTP/1 is used, BidirectionalStreamJob should not be obtained.
+  // If HTTP/1 is used, BidirectionalStreamImpl should not be obtained.
   ssl_socket_data.SetNextProto(kProtoHTTP11);
   session_deps.socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
 
@@ -1821,7 +1822,7 @@ TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamJobFailure) {
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;
   scoped_ptr<HttpStreamRequest> request(
-      session->http_stream_factory()->RequestBidirectionalStreamJob(
+      session->http_stream_factory()->RequestBidirectionalStreamImpl(
           request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
           BoundNetLog()));
   waiter.WaitForStream();
@@ -1829,7 +1830,7 @@ TEST_P(HttpStreamFactoryTest, RequestBidirectionalStreamJobFailure) {
   ASSERT_EQ(ERR_FAILED, waiter.error_status());
   EXPECT_FALSE(waiter.websocket_stream());
   ASSERT_FALSE(waiter.stream());
-  ASSERT_FALSE(waiter.bidirectional_stream_job());
+  ASSERT_FALSE(waiter.bidirectional_stream_impl());
   EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetTransportSocketPool(
                    HttpNetworkSession::NORMAL_SOCKET_POOL)));
   EXPECT_EQ(1, GetSocketPoolGroupCount(session->GetSSLSocketPool(

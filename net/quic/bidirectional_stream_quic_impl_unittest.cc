@@ -51,7 +51,7 @@ const uint16_t kDefaultServerPort = 80;
 // Size of the buffer to be allocated for each read.
 const size_t kReadBufferSize = 4096;
 
-class TestDelegateBase : public BidirectionalStreamJob::Delegate {
+class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
  public:
   TestDelegateBase(IOBuffer* read_buf, int read_buf_len)
       : TestDelegateBase(read_buf,

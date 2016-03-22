@@ -14634,7 +14634,7 @@ class FakeStreamFactory : public HttpStreamFactory {
     return fake_request;
   }
 
-  HttpStreamRequest* RequestBidirectionalStreamJob(
+  HttpStreamRequest* RequestBidirectionalStreamImpl(
       const HttpRequestInfo& info,
       RequestPriority priority,
       const SSLConfig& server_ssl_config,

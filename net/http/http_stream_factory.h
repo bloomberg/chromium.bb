@@ -33,7 +33,7 @@ namespace net {
 
 class AuthCredentials;
 class BoundNetLog;
-class BidirectionalStreamJob;
+class BidirectionalStreamImpl;
 class HostMappingRules;
 class HostPortPair;
 class HttpAuthController;
@@ -92,10 +92,10 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
         const ProxyInfo& used_proxy_info,
         WebSocketHandshakeStreamBase* stream) = 0;
 
-    virtual void OnBidirectionalStreamJobReady(
+    virtual void OnBidirectionalStreamImplReady(
         const SSLConfig& used_ssl_config,
         const ProxyInfo& used_proxy_info,
-        BidirectionalStreamJob* stream) = 0;
+        BidirectionalStreamImpl* stream) = 0;
 
     // This is the failure to create a stream case.
     // |used_ssl_config| indicates the actual SSL configuration used for this
@@ -231,10 +231,10 @@ class NET_EXPORT HttpStreamFactory {
       WebSocketHandshakeStreamBase::CreateHelper* create_helper,
       const BoundNetLog& net_log) = 0;
 
-  // Request a BidirectionalStreamJob.
-  // Will call delegate->OnBidirectionalStreamJobReady on successful
+  // Request a BidirectionalStreamImpl.
+  // Will call delegate->OnBidirectionalStreamImplReady on successful
   // completion.
-  virtual HttpStreamRequest* RequestBidirectionalStreamJob(
+  virtual HttpStreamRequest* RequestBidirectionalStreamImpl(
       const HttpRequestInfo& info,
       RequestPriority priority,
       const SSLConfig& server_ssl_config,

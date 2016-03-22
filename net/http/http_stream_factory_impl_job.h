@@ -27,7 +27,7 @@
 
 namespace net {
 
-class BidirectionalStreamJob;
+class BidirectionalStreamImpl;
 class ClientSocketHandle;
 class HttpAuthController;
 class HttpNetworkSession;
@@ -208,7 +208,7 @@ class HttpStreamFactoryImpl::Job {
   void ResumeAfterDelay();
 
   void OnStreamReadyCallback();
-  void OnBidirectionalStreamJobReadyCallback();
+  void OnBidirectionalStreamImplReadyCallback();
   void OnWebSocketHandshakeStreamReadyCallback();
   // This callback function is called when a new SPDY session is created.
   void OnNewSpdySessionReadyCallback();
@@ -243,10 +243,10 @@ class HttpStreamFactoryImpl::Job {
   int DoRestartTunnelAuth();
   int DoRestartTunnelAuthComplete(int result);
 
-  // Creates a SpdyHttpStream or a BidirectionalStreamJob from the given values
-  // and sets to |stream_| or |bidirectional_stream_job_| respectively. Does
+  // Creates a SpdyHttpStream or a BidirectionalStreamImpl from the given values
+  // and sets to |stream_| or |bidirectional_stream_impl_| respectively. Does
   // nothing if |stream_factory_| is for WebSockets.
-  int SetSpdyHttpStreamOrBidirectionalStreamJob(
+  int SetSpdyHttpStreamOrBidirectionalStreamImpl(
       base::WeakPtr<SpdySession> session,
       bool direct);
 
@@ -389,7 +389,7 @@ class HttpStreamFactoryImpl::Job {
 
   scoped_ptr<HttpStream> stream_;
   scoped_ptr<WebSocketHandshakeStreamBase> websocket_stream_;
-  scoped_ptr<BidirectionalStreamJob> bidirectional_stream_job_;
+  scoped_ptr<BidirectionalStreamImpl> bidirectional_stream_impl_;
 
   // True if we negotiated NPN.
   bool was_npn_negotiated_;

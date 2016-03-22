@@ -69,14 +69,14 @@ BidirectionalStream::BidirectionalStream(
   http_request_info.method = request_info_->method;
   http_request_info.extra_headers = request_info_->extra_headers;
   stream_request_.reset(
-      session->http_stream_factory()->RequestBidirectionalStreamJob(
+      session->http_stream_factory()->RequestBidirectionalStreamImpl(
           http_request_info, request_info_->priority, server_ssl_config,
           server_ssl_config, this, net_log_));
   // Check that this call cannot fail to set a non-NULL |stream_request_|.
   DCHECK(stream_request_);
-  // Check that HttpStreamFactory does not invoke OnBidirectionalStreamJobReady
+  // Check that HttpStreamFactory does not invoke OnBidirectionalStreamImplReady
   // synchronously.
-  DCHECK(!stream_job_);
+  DCHECK(!stream_impl_);
 }
 
 BidirectionalStream::~BidirectionalStream() {
@@ -84,46 +84,46 @@ BidirectionalStream::~BidirectionalStream() {
 }
 
 int BidirectionalStream::ReadData(IOBuffer* buf, int buf_len) {
-  DCHECK(stream_job_);
+  DCHECK(stream_impl_);
 
-  return stream_job_->ReadData(buf, buf_len);
+  return stream_impl_->ReadData(buf, buf_len);
 }
 
 void BidirectionalStream::SendData(IOBuffer* data,
                                    int length,
                                    bool end_stream) {
-  DCHECK(stream_job_);
+  DCHECK(stream_impl_);
 
-  stream_job_->SendData(data, length, end_stream);
+  stream_impl_->SendData(data, length, end_stream);
 }
 
 void BidirectionalStream::Cancel() {
   stream_request_.reset();
-  if (stream_job_) {
-    stream_job_->Cancel();
-    stream_job_.reset();
+  if (stream_impl_) {
+    stream_impl_->Cancel();
+    stream_impl_.reset();
   }
 }
 
 NextProto BidirectionalStream::GetProtocol() const {
-  if (!stream_job_)
+  if (!stream_impl_)
     return kProtoUnknown;
 
-  return stream_job_->GetProtocol();
+  return stream_impl_->GetProtocol();
 }
 
 int64_t BidirectionalStream::GetTotalReceivedBytes() const {
-  if (!stream_job_)
+  if (!stream_impl_)
     return 0;
 
-  return stream_job_->GetTotalReceivedBytes();
+  return stream_impl_->GetTotalReceivedBytes();
 }
 
 int64_t BidirectionalStream::GetTotalSentBytes() const {
-  if (!stream_job_)
+  if (!stream_impl_)
     return 0;
 
-  return stream_job_->GetTotalSentBytes();
+  return stream_impl_->GetTotalSentBytes();
 }
 
 void BidirectionalStream::OnHeadersSent() {
@@ -167,15 +167,15 @@ void BidirectionalStream::OnStreamReady(const SSLConfig& used_ssl_config,
   NOTREACHED();
 }
 
-void BidirectionalStream::OnBidirectionalStreamJobReady(
+void BidirectionalStream::OnBidirectionalStreamImplReady(
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
-    BidirectionalStreamJob* stream) {
-  DCHECK(!stream_job_);
+    BidirectionalStreamImpl* stream) {
+  DCHECK(!stream_impl_);
 
   stream_request_.reset();
-  stream_job_.reset(stream);
-  stream_job_->Start(request_info_.get(), net_log_, this, std::move(timer_));
+  stream_impl_.reset(stream);
+  stream_impl_->Start(request_info_.get(), net_log_, this, std::move(timer_));
 }
 
 void BidirectionalStream::OnWebSocketHandshakeStreamReady(

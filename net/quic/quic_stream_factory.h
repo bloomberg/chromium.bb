@@ -56,7 +56,7 @@ class QuicServerInfoFactory;
 class QuicStreamFactory;
 class SocketPerformanceWatcherFactory;
 class TransportSecurityState;
-class BidirectionalStreamJob;
+class BidirectionalStreamImpl;
 
 namespace test {
 class QuicStreamFactoryPeer;
@@ -91,7 +91,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
 
   scoped_ptr<QuicHttpStream> CreateStream();
 
-  scoped_ptr<BidirectionalStreamJob> CreateBidirectionalStreamJob();
+  scoped_ptr<BidirectionalStreamImpl> CreateBidirectionalStreamImpl();
 
   // Sets |session_|.
   void SetSession(QuicChromiumClientSession* session);

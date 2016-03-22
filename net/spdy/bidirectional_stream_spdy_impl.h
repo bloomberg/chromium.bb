@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_SPDY_BIDIRECTIONAL_STREAM_SPDY_JOB_H_
-#define NET_SPDY_BIDIRECTIONAL_STREAM_SPDY_JOB_H_
+#ifndef NET_SPDY_BIDIRECTIONAL_STREAM_SPDY_IMPL_H_
+#define NET_SPDY_BIDIRECTIONAL_STREAM_SPDY_IMPL_H_
 
 #include <stdint.h>
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "net/http/bidirectional_stream_job.h"
+#include "net/http/bidirectional_stream_impl.h"
 #include "net/http/bidirectional_stream_request_info.h"
 #include "net/http/http_request_info.h"
 #include "net/spdy/spdy_read_queue.h"
@@ -27,19 +27,19 @@ class BoundNetLog;
 class IOBuffer;
 class SpdyHeaderBlock;
 
-class NET_EXPORT_PRIVATE BidirectionalStreamSpdyJob
-    : public BidirectionalStreamJob,
+class NET_EXPORT_PRIVATE BidirectionalStreamSpdyImpl
+    : public BidirectionalStreamImpl,
       public SpdyStream::Delegate {
  public:
-  explicit BidirectionalStreamSpdyJob(
+  explicit BidirectionalStreamSpdyImpl(
       const base::WeakPtr<SpdySession>& spdy_session);
 
-  ~BidirectionalStreamSpdyJob() override;
+  ~BidirectionalStreamSpdyImpl() override;
 
-  // BidirectionalStreamJob implementation:
+  // BidirectionalStreamImpl implementation:
   void Start(const BidirectionalStreamRequestInfo* request_info,
              const BoundNetLog& net_log,
-             BidirectionalStreamJob::Delegate* delegate,
+             BidirectionalStreamImpl::Delegate* delegate,
              scoped_ptr<base::Timer> timer) override;
   int ReadData(IOBuffer* buf, int buf_len) override;
   void SendData(IOBuffer* data, int length, bool end_stream) override;
@@ -66,7 +66,7 @@ class NET_EXPORT_PRIVATE BidirectionalStreamSpdyJob
 
   const base::WeakPtr<SpdySession> spdy_session_;
   const BidirectionalStreamRequestInfo* request_info_;
-  BidirectionalStreamJob::Delegate* delegate_;
+  BidirectionalStreamImpl::Delegate* delegate_;
   scoped_ptr<base::Timer> timer_;
   SpdyStreamRequest stream_request_;
   base::WeakPtr<SpdyStream> stream_;
@@ -92,11 +92,11 @@ class NET_EXPORT_PRIVATE BidirectionalStreamSpdyJob
   // bytes sent over the network for |stream_| while it was open.
   int64_t closed_stream_sent_bytes_;
 
-  base::WeakPtrFactory<BidirectionalStreamSpdyJob> weak_factory_;
+  base::WeakPtrFactory<BidirectionalStreamSpdyImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(BidirectionalStreamSpdyJob);
+  DISALLOW_COPY_AND_ASSIGN(BidirectionalStreamSpdyImpl);
 };
 
 }  // namespace net
 
-#endif  // NET_SPDY_BIDIRECTIONAL_STREAM_SPDY_JOB_H_
+#endif  // NET_SPDY_BIDIRECTIONAL_STREAM_SPDY_IMPL_H_

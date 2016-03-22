@@ -354,7 +354,7 @@ TEST_F(BidirectionalStreamTest, CreateInsecureStream) {
 }
 
 // Simulates user calling ReadData after END_STREAM has been received in
-// BidirectionalStreamSpdyJob.
+// BidirectionalStreamSpdyImpl.
 TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
   scoped_ptr<SpdyFrame> req(
       spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
@@ -399,7 +399,7 @@ TEST_F(BidirectionalStreamTest, TestReadDataAfterClose) {
 
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   // Create a MockTimer. Retain a raw pointer since the underlying
-  // BidirectionalStreamJob owns it.
+  // BidirectionalStreamImpl owns it.
   MockTimer* timer = new MockTimer();
   scoped_ptr<TestDelegateBase> delegate(new TestDelegateBase(
       read_buffer.get(), kReadBufferSize, make_scoped_ptr(timer)));
@@ -550,7 +550,7 @@ TEST_F(BidirectionalStreamTest, TestInterleaveReadDataAndSendData) {
             delegate->GetTotalReceivedBytes());
 }
 
-// Tests that BidirectionalStreamSpdyJob::OnClose will complete any remaining
+// Tests that BidirectionalStreamSpdyImpl::OnClose will complete any remaining
 // read even if the read queue is empty.
 TEST_F(BidirectionalStreamTest, TestCompleteAsyncRead) {
   scoped_ptr<SpdyFrame> req(

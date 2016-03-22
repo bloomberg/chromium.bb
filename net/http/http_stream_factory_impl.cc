@@ -16,7 +16,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
 #include "net/quic/quic_server_id.h"
-#include "net/spdy/bidirectional_stream_spdy_job.h"
+#include "net/spdy/bidirectional_stream_spdy_impl.h"
 #include "net/spdy/spdy_http_stream.h"
 #include "url/gurl.h"
 
@@ -70,7 +70,7 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestWebSocketHandshakeStream(
                                HttpStreamRequest::HTTP_STREAM, net_log);
 }
 
-HttpStreamRequest* HttpStreamFactoryImpl::RequestBidirectionalStreamJob(
+HttpStreamRequest* HttpStreamFactoryImpl::RequestBidirectionalStreamImpl(
     const HttpRequestInfo& request_info,
     RequestPriority priority,
     const SSLConfig& server_ssl_config,
@@ -320,9 +320,9 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
       NOTREACHED();
     } else if (request->stream_type() ==
                HttpStreamRequest::BIDIRECTIONAL_STREAM) {
-      request->OnBidirectionalStreamJobReady(
+      request->OnBidirectionalStreamImplReady(
           nullptr, used_ssl_config, used_proxy_info,
-          new BidirectionalStreamSpdyJob(spdy_session));
+          new BidirectionalStreamSpdyImpl(spdy_session));
     } else {
       bool use_relative_url = direct || request->url().SchemeIs("https");
       request->OnStreamReady(

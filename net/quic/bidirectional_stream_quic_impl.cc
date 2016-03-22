@@ -45,7 +45,7 @@ BidirectionalStreamQuicImpl::~BidirectionalStreamQuicImpl() {
 void BidirectionalStreamQuicImpl::Start(
     const BidirectionalStreamRequestInfo* request_info,
     const BoundNetLog& net_log,
-    BidirectionalStreamJob::Delegate* delegate,
+    BidirectionalStreamImpl::Delegate* delegate,
     scoped_ptr<base::Timer> /* timer */) {
   DCHECK(!stream_);
 

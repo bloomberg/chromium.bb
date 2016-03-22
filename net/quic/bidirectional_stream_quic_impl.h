@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "net/http/bidirectional_stream_job.h"
+#include "net/http/bidirectional_stream_impl.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_chromium_client_stream.h"
 
@@ -26,7 +26,7 @@ class IOBuffer;
 class SpdyHeaderBlock;
 
 class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
-    : public BidirectionalStreamJob,
+    : public BidirectionalStreamImpl,
       public QuicChromiumClientStream::Delegate,
       public QuicChromiumClientSession::Observer {
  public:
@@ -35,10 +35,10 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
 
   ~BidirectionalStreamQuicImpl() override;
 
-  // BidirectionalStreamJob implementation:
+  // BidirectionalStreamImpl implementation:
   void Start(const BidirectionalStreamRequestInfo* request_info,
              const BoundNetLog& net_log,
-             BidirectionalStreamJob::Delegate* delegate,
+             BidirectionalStreamImpl::Delegate* delegate,
              scoped_ptr<base::Timer> timer) override;
   int ReadData(IOBuffer* buffer, int buffer_len) override;
   void SendData(IOBuffer* data, int length, bool end_stream) override;
@@ -77,7 +77,7 @@ class NET_EXPORT_PRIVATE BidirectionalStreamQuicImpl
   QuicChromiumClientStream* stream_;  // Non-owning.
 
   const BidirectionalStreamRequestInfo* request_info_;
-  BidirectionalStreamJob::Delegate* delegate_;
+  BidirectionalStreamImpl::Delegate* delegate_;
   // Saves the response status if the stream is explicitly closed via OnError
   // or OnClose with an error. Once all buffered data has been returned, this
   // will be used as the final response.

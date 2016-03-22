@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_HTTP_BIDIRECTIONAL_STREAM_JOB_H_
-#define NET_HTTP_BIDIRECTIONAL_STREAM_JOB_H_
+#ifndef NET_HTTP_BIDIRECTIONAL_STREAM_IMPL_H_
+#define NET_HTTP_BIDIRECTIONAL_STREAM_IMPL_H_
 
 #include <stdint.h>
 
@@ -26,41 +26,41 @@ struct BidirectionalStreamRequestInfo;
 // Exposes an interface to do HTTP/2 bidirectional streaming.
 // Note that only one ReadData or SendData should be in flight until the
 // operation completes synchronously or asynchronously.
-// BidirectionalStreamJob once created by HttpStreamFactoryImpl should be owned
+// BidirectionalStreamImpl once created by HttpStreamFactoryImpl should be owned
 // by BidirectionalStream.
-class NET_EXPORT_PRIVATE BidirectionalStreamJob {
+class NET_EXPORT_PRIVATE BidirectionalStreamImpl {
  public:
-  // Delegate to handle BidirectionalStreamJob events.
+  // Delegate to handle BidirectionalStreamImpl events.
   class NET_EXPORT_PRIVATE Delegate {
    public:
     Delegate();
 
     // Called when the request headers have been sent.
-    // The delegate may call BidirectionalStreamJob::ReadData to start reading,
-    // call BidirectionalStreamJob::SendData to send data,
-    // or call BidirectionalStreamJob::Cancel to cancel the stream.
-    // The delegate should not call BidirectionalStreamJob::Cancel
+    // The delegate may call BidirectionalStreamImpl::ReadData to start reading,
+    // call BidirectionalStreamImpl::SendData to send data,
+    // or call BidirectionalStreamImpl::Cancel to cancel the stream.
+    // The delegate should not call BidirectionalStreamImpl::Cancel
     // during this callback.
     virtual void OnHeadersSent() = 0;
 
     // Called when response headers are received.
     // This is called at most once for the lifetime of a stream.
-    // The delegate may call BidirectionalStreamJob::ReadData to start
-    // reading, call BidirectionalStreamJob::SendData to send data,
-    // or call BidirectionalStreamJob::Cancel to cancel the stream.
+    // The delegate may call BidirectionalStreamImpl::ReadData to start
+    // reading, call BidirectionalStreamImpl::SendData to send data,
+    // or call BidirectionalStreamImpl::Cancel to cancel the stream.
     virtual void OnHeadersReceived(const SpdyHeaderBlock& response_headers) = 0;
 
     // Called when read is completed asynchronously. |bytes_read| specifies how
     // much data is available.
-    // The delegate may call BidirectionalStreamJob::ReadData to continue
-    // reading, call BidirectionalStreamJob::SendData to send data,
-    // or call BidirectionalStreamJob::Cancel to cancel the stream.
+    // The delegate may call BidirectionalStreamImpl::ReadData to continue
+    // reading, call BidirectionalStreamImpl::SendData to send data,
+    // or call BidirectionalStreamImpl::Cancel to cancel the stream.
     virtual void OnDataRead(int bytes_read) = 0;
 
     // Called when the entire buffer passed through SendData is sent.
-    // The delegate may call BidirectionalStreamJob::ReadData to continue
-    // reading, or call BidirectionalStreamJob::SendData to send data.
-    // The delegate should not call BidirectionalStreamJob::Cancel
+    // The delegate may call BidirectionalStreamImpl::ReadData to continue
+    // reading, or call BidirectionalStreamImpl::SendData to send data.
+    // The delegate should not call BidirectionalStreamImpl::Cancel
     // during this callback.
     virtual void OnDataSent() = 0;
 
@@ -81,16 +81,16 @@ class NET_EXPORT_PRIVATE BidirectionalStreamJob {
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  BidirectionalStreamJob();
+  BidirectionalStreamImpl();
 
   // |this| should not be destroyed during Delegate::OnHeadersSent or
   // Delegate::OnDataSent.
-  virtual ~BidirectionalStreamJob();
+  virtual ~BidirectionalStreamImpl();
 
-  // Starts the BidirectionalStreamJob and sends request headers.
+  // Starts the BidirectionalStreamImpl and sends request headers.
   virtual void Start(const BidirectionalStreamRequestInfo* request_info,
                      const BoundNetLog& net_log,
-                     BidirectionalStreamJob::Delegate* delegate,
+                     BidirectionalStreamImpl::Delegate* delegate,
                      scoped_ptr<base::Timer> timer) = 0;
 
   // Reads at most |buf_len| bytes into |buf|. Returns the number of bytes read,
@@ -127,9 +127,9 @@ class NET_EXPORT_PRIVATE BidirectionalStreamJob {
   virtual int64_t GetTotalSentBytes() const = 0;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BidirectionalStreamJob);
+  DISALLOW_COPY_AND_ASSIGN(BidirectionalStreamImpl);
 };
 
 }  // namespace net
 
-#endif  // NET_HTTP_BIDIRECTIONAL_STREAM_JOB_H_
+#endif  // NET_HTTP_BIDIRECTIONAL_STREAM_IMPL_H_

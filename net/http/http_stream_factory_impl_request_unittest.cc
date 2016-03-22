@@ -35,10 +35,10 @@ class DoNothingRequestDelegate : public HttpStreamRequest::Delegate {
   void OnStreamReady(const SSLConfig& used_ssl_config,
                      const ProxyInfo& used_proxy_info,
                      HttpStream* stream) override {}
-  void OnBidirectionalStreamJobReady(
+  void OnBidirectionalStreamImplReady(
       const SSLConfig& used_ssl_config,
       const ProxyInfo& used_proxy_info,
-      BidirectionalStreamJob* stream_job) override {}
+      BidirectionalStreamImpl* stream) override {}
 
   void OnWebSocketHandshakeStreamReady(
       const SSLConfig& used_ssl_config,

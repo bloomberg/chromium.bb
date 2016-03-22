@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/spdy/bidirectional_stream_spdy_job.h"
+#include "net/spdy/bidirectional_stream_spdy_impl.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -26,7 +26,7 @@ const int kBufferTimeMs = 1;
 
 }  // namespace
 
-BidirectionalStreamSpdyJob::BidirectionalStreamSpdyJob(
+BidirectionalStreamSpdyImpl::BidirectionalStreamSpdyImpl(
     const base::WeakPtr<SpdySession>& spdy_session)
     : spdy_session_(spdy_session),
       request_info_(nullptr),
@@ -40,17 +40,17 @@ BidirectionalStreamSpdyJob::BidirectionalStreamSpdyJob(
       closed_stream_sent_bytes_(0),
       weak_factory_(this) {}
 
-BidirectionalStreamSpdyJob::~BidirectionalStreamSpdyJob() {
+BidirectionalStreamSpdyImpl::~BidirectionalStreamSpdyImpl() {
   if (stream_) {
     stream_->DetachDelegate();
     DCHECK(!stream_);
   }
 }
 
-void BidirectionalStreamSpdyJob::Start(
+void BidirectionalStreamSpdyImpl::Start(
     const BidirectionalStreamRequestInfo* request_info,
     const BoundNetLog& net_log,
-    BidirectionalStreamJob::Delegate* delegate,
+    BidirectionalStreamImpl::Delegate* delegate,
     scoped_ptr<base::Timer> timer) {
   DCHECK(!stream_);
   DCHECK(timer);
@@ -68,13 +68,13 @@ void BidirectionalStreamSpdyJob::Start(
   int rv = stream_request_.StartRequest(
       SPDY_BIDIRECTIONAL_STREAM, spdy_session_, request_info_->url,
       request_info_->priority, net_log,
-      base::Bind(&BidirectionalStreamSpdyJob::OnStreamInitialized,
+      base::Bind(&BidirectionalStreamSpdyImpl::OnStreamInitialized,
                  weak_factory_.GetWeakPtr()));
   if (rv != ERR_IO_PENDING)
     OnStreamInitialized(rv);
 }
 
-int BidirectionalStreamSpdyJob::ReadData(IOBuffer* buf, int buf_len) {
+int BidirectionalStreamSpdyImpl::ReadData(IOBuffer* buf, int buf_len) {
   if (stream_)
     DCHECK(!stream_->IsIdle());
 
@@ -95,9 +95,9 @@ int BidirectionalStreamSpdyJob::ReadData(IOBuffer* buf, int buf_len) {
   return ERR_IO_PENDING;
 }
 
-void BidirectionalStreamSpdyJob::SendData(IOBuffer* data,
-                                          int length,
-                                          bool end_stream) {
+void BidirectionalStreamSpdyImpl::SendData(IOBuffer* data,
+                                           int length,
+                                           bool end_stream) {
   DCHECK(!stream_closed_);
   DCHECK(stream_);
 
@@ -105,7 +105,7 @@ void BidirectionalStreamSpdyJob::SendData(IOBuffer* data,
                     end_stream ? NO_MORE_DATA_TO_SEND : MORE_DATA_TO_SEND);
 }
 
-void BidirectionalStreamSpdyJob::Cancel() {
+void BidirectionalStreamSpdyImpl::Cancel() {
   if (!stream_)
     return;
   // Cancels the stream and detaches the delegate so it doesn't get called back.
@@ -113,11 +113,11 @@ void BidirectionalStreamSpdyJob::Cancel() {
   DCHECK(!stream_);
 }
 
-NextProto BidirectionalStreamSpdyJob::GetProtocol() const {
+NextProto BidirectionalStreamSpdyImpl::GetProtocol() const {
   return negotiated_protocol_;
 }
 
-int64_t BidirectionalStreamSpdyJob::GetTotalReceivedBytes() const {
+int64_t BidirectionalStreamSpdyImpl::GetTotalReceivedBytes() const {
   if (stream_closed_)
     return closed_stream_received_bytes_;
 
@@ -127,7 +127,7 @@ int64_t BidirectionalStreamSpdyJob::GetTotalReceivedBytes() const {
   return stream_->raw_received_bytes();
 }
 
-int64_t BidirectionalStreamSpdyJob::GetTotalSentBytes() const {
+int64_t BidirectionalStreamSpdyImpl::GetTotalSentBytes() const {
   if (stream_closed_)
     return closed_stream_sent_bytes_;
 
@@ -137,14 +137,14 @@ int64_t BidirectionalStreamSpdyJob::GetTotalSentBytes() const {
   return stream_->raw_sent_bytes();
 }
 
-void BidirectionalStreamSpdyJob::OnRequestHeadersSent() {
+void BidirectionalStreamSpdyImpl::OnRequestHeadersSent() {
   DCHECK(stream_);
 
   negotiated_protocol_ = stream_->GetProtocol();
   delegate_->OnHeadersSent();
 }
 
-SpdyResponseHeadersStatus BidirectionalStreamSpdyJob::OnResponseHeadersUpdated(
+SpdyResponseHeadersStatus BidirectionalStreamSpdyImpl::OnResponseHeadersUpdated(
     const SpdyHeaderBlock& response_headers) {
   DCHECK(stream_);
 
@@ -152,12 +152,13 @@ SpdyResponseHeadersStatus BidirectionalStreamSpdyJob::OnResponseHeadersUpdated(
   return RESPONSE_HEADERS_ARE_COMPLETE;
 }
 
-void BidirectionalStreamSpdyJob::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
+void BidirectionalStreamSpdyImpl::OnDataReceived(
+    scoped_ptr<SpdyBuffer> buffer) {
   DCHECK(stream_);
   DCHECK(!stream_closed_);
 
-  // If |buffer| is null, BidirectionalStreamSpdyJob::OnClose will be invoked by
-  // SpdyStream to indicate the end of stream.
+  // If |buffer| is null, BidirectionalStreamSpdyImpl::OnClose will be invoked
+  // by SpdyStream to indicate the end of stream.
   if (!buffer)
     return;
 
@@ -171,21 +172,21 @@ void BidirectionalStreamSpdyJob::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
   }
 }
 
-void BidirectionalStreamSpdyJob::OnDataSent() {
+void BidirectionalStreamSpdyImpl::OnDataSent() {
   DCHECK(stream_);
   DCHECK(!stream_closed_);
 
   delegate_->OnDataSent();
 }
 
-void BidirectionalStreamSpdyJob::OnTrailers(const SpdyHeaderBlock& trailers) {
+void BidirectionalStreamSpdyImpl::OnTrailers(const SpdyHeaderBlock& trailers) {
   DCHECK(stream_);
   DCHECK(!stream_closed_);
 
   delegate_->OnTrailersReceived(trailers);
 }
 
-void BidirectionalStreamSpdyJob::OnClose(int status) {
+void BidirectionalStreamSpdyImpl::OnClose(int status) {
   DCHECK(stream_);
 
   stream_closed_ = true;
@@ -205,7 +206,7 @@ void BidirectionalStreamSpdyJob::OnClose(int status) {
   DoBufferedRead();
 }
 
-void BidirectionalStreamSpdyJob::SendRequestHeaders() {
+void BidirectionalStreamSpdyImpl::SendRequestHeaders() {
   scoped_ptr<SpdyHeaderBlock> headers(new SpdyHeaderBlock);
   HttpRequestInfo http_request_info;
   http_request_info.url = request_info_->url;
@@ -221,7 +222,7 @@ void BidirectionalStreamSpdyJob::SendRequestHeaders() {
                                   : MORE_DATA_TO_SEND);
 }
 
-void BidirectionalStreamSpdyJob::OnStreamInitialized(int rv) {
+void BidirectionalStreamSpdyImpl::OnStreamInitialized(int rv) {
   DCHECK_NE(ERR_IO_PENDING, rv);
   if (rv == OK) {
     stream_ = stream_request_.ReleaseStream();
@@ -232,7 +233,7 @@ void BidirectionalStreamSpdyJob::OnStreamInitialized(int rv) {
   delegate_->OnFailed(rv);
 }
 
-void BidirectionalStreamSpdyJob::ScheduleBufferedRead() {
+void BidirectionalStreamSpdyImpl::ScheduleBufferedRead() {
   // If there is already a scheduled DoBufferedRead, don't issue
   // another one. Mark that we have received more data and return.
   if (timer_->IsRunning()) {
@@ -242,11 +243,11 @@ void BidirectionalStreamSpdyJob::ScheduleBufferedRead() {
 
   more_read_data_pending_ = false;
   timer_->Start(FROM_HERE, base::TimeDelta::FromMilliseconds(kBufferTimeMs),
-                base::Bind(&BidirectionalStreamSpdyJob::DoBufferedRead,
+                base::Bind(&BidirectionalStreamSpdyImpl::DoBufferedRead,
                            weak_factory_.GetWeakPtr()));
 }
 
-void BidirectionalStreamSpdyJob::DoBufferedRead() {
+void BidirectionalStreamSpdyImpl::DoBufferedRead() {
   DCHECK(!timer_->IsRunning());
   // Check to see that the stream has not errored out.
   DCHECK(stream_ || stream_closed_);
@@ -269,7 +270,7 @@ void BidirectionalStreamSpdyJob::DoBufferedRead() {
   }
 }
 
-bool BidirectionalStreamSpdyJob::ShouldWaitForMoreBufferedData() const {
+bool BidirectionalStreamSpdyImpl::ShouldWaitForMoreBufferedData() const {
   if (stream_closed_)
     return false;
   DCHECK_GT(read_buffer_len_, 0);

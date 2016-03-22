@@ -28,7 +28,7 @@
 #include "net/cert/ct_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/single_request_host_resolver.h"
-#include "net/http/bidirectional_stream_job.h"
+#include "net/http/bidirectional_stream_impl.h"
 #include "net/quic/bidirectional_stream_quic_impl.h"
 #include "net/quic/crypto/channel_id_chromium.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
@@ -557,8 +557,8 @@ scoped_ptr<QuicHttpStream> QuicStreamRequest::CreateStream() {
   return make_scoped_ptr(new QuicHttpStream(session_));
 }
 
-scoped_ptr<BidirectionalStreamJob>
-QuicStreamRequest::CreateBidirectionalStreamJob() {
+scoped_ptr<BidirectionalStreamImpl>
+QuicStreamRequest::CreateBidirectionalStreamImpl() {
   if (!session_)
     return nullptr;
   return make_scoped_ptr(new BidirectionalStreamQuicImpl(session_));

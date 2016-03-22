@@ -19,7 +19,7 @@
 
 namespace net {
 
-class BidirectionalStreamJob;
+class BidirectionalStreamImpl;
 class ClientSocketHandle;
 class HttpStream;
 class SpdySession;
@@ -63,12 +63,12 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
 
   // Called by an attached Job if it sets up a SpdySession.
   // |stream| is null when |stream_type| is HttpStreamRequest::HTTP_STREAM.
-  // |bidirectional_stream_spdy_job| is null when |stream_type| is
+  // |bidirectional_stream_spdy_impl| is null when |stream_type| is
   // HttpStreamRequest::BIDIRECTIONAL_STREAM.
   void OnNewSpdySessionReady(
       Job* job,
       scoped_ptr<HttpStream> stream,
-      scoped_ptr<BidirectionalStreamJob> bidirectional_stream_spdy_job,
+      scoped_ptr<BidirectionalStreamImpl> bidirectional_stream_spdy_impl,
       const base::WeakPtr<SpdySession>& spdy_session,
       bool direct);
 
@@ -88,10 +88,10 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
                      const SSLConfig& used_ssl_config,
                      const ProxyInfo& used_proxy_info,
                      HttpStream* stream);
-  void OnBidirectionalStreamJobReady(Job* job,
-                                     const SSLConfig& used_ssl_config,
-                                     const ProxyInfo& used_proxy_info,
-                                     BidirectionalStreamJob* stream);
+  void OnBidirectionalStreamImplReady(Job* job,
+                                      const SSLConfig& used_ssl_config,
+                                      const ProxyInfo& used_proxy_info,
+                                      BidirectionalStreamImpl* stream);
 
   void OnWebSocketHandshakeStreamReady(Job* job,
                                        const SSLConfig& used_ssl_config,
