@@ -218,11 +218,6 @@ bool AndroidUsbSocket::WasEverUsed() const {
   return true;
 }
 
-bool AndroidUsbSocket::UsingTCPFastOpen() const {
-  NOTIMPLEMENTED();
-  return true;
-}
-
 bool AndroidUsbSocket::WasNpnNegotiated() const {
   NOTIMPLEMENTED();
   return true;

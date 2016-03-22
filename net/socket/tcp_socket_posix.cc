@@ -433,10 +433,6 @@ void TCPSocketPosix::Close() {
   tcp_fastopen_status_ = TCP_FASTOPEN_STATUS_UNKNOWN;
 }
 
-bool TCPSocketPosix::UsingTCPFastOpen() const {
-  return use_tcp_fastopen_;
-}
-
 void TCPSocketPosix::EnableTCPFastOpenIfSupported() {
   if (!IsTCPFastOpenSupported())
     return;
@@ -445,7 +441,7 @@ void TCPSocketPosix::EnableTCPFastOpenIfSupported() {
   // This check conservatively avoids middleboxes that may blackhole
   // TCP FastOpen SYN+Data packets; on such a failure, subsequent sockets
   // should not use TCP FastOpen.
-  if(!g_tcp_fastopen_has_failed)
+  if (!g_tcp_fastopen_has_failed)
     use_tcp_fastopen_ = true;
   else
     tcp_fastopen_status_ = TCP_FASTOPEN_PREVIOUSLY_FAILED;

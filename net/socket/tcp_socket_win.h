@@ -81,9 +81,7 @@ class NET_EXPORT TCPSocketWin : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   void Close();
 
-  // Setter/Getter methods for TCP FastOpen socket option.
-  // NOOPs since TCP FastOpen is not implemented in Windows.
-  bool UsingTCPFastOpen() const { return false; }
+  // NOOP since TCP FastOpen is not implemented in Windows.
   void EnableTCPFastOpenIfSupported() {}
 
   bool IsValid() const { return socket_ != INVALID_SOCKET; }

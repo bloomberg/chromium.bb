@@ -1022,10 +1022,6 @@ bool MockTCPClientSocket::WasEverUsed() const {
   return was_used_to_convey_data_;
 }
 
-bool MockTCPClientSocket::UsingTCPFastOpen() const {
-  return false;
-}
-
 void MockTCPClientSocket::EnableTCPFastOpenIfSupported() {
   EXPECT_FALSE(IsConnected()) << "Can't enable fast open after connect.";
 
@@ -1198,10 +1194,6 @@ bool MockSSLClientSocket::IsConnectedAndIdle() const {
 
 bool MockSSLClientSocket::WasEverUsed() const {
   return transport_->socket()->WasEverUsed();
-}
-
-bool MockSSLClientSocket::UsingTCPFastOpen() const {
-  return transport_->socket()->UsingTCPFastOpen();
 }
 
 int MockSSLClientSocket::GetPeerAddress(IPEndPoint* address) const {

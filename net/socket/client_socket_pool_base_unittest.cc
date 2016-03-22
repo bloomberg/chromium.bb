@@ -175,7 +175,6 @@ class MockClientSocket : public StreamSocket {
   void SetSubresourceSpeculation() override {}
   void SetOmniboxSpeculation() override {}
   bool WasEverUsed() const override { return was_used_to_convey_data_; }
-  bool UsingTCPFastOpen() const override { return false; }
   bool WasNpnNegotiated() const override { return false; }
   NextProto GetNegotiatedProtocol() const override { return kProtoUnknown; }
   bool GetSSLInfo(SSLInfo* ssl_info) override { return false; }

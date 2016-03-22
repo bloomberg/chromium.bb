@@ -629,7 +629,6 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
   bool IsConnectedAndIdle() const override;
   int GetPeerAddress(IPEndPoint* address) const override;
   bool WasEverUsed() const override;
-  bool UsingTCPFastOpen() const override;
   void EnableTCPFastOpenIfSupported() override;
   bool WasNpnNegotiated() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
@@ -693,7 +692,6 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   bool IsConnected() const override;
   bool IsConnectedAndIdle() const override;
   bool WasEverUsed() const override;
-  bool UsingTCPFastOpen() const override;
   int GetPeerAddress(IPEndPoint* address) const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
 

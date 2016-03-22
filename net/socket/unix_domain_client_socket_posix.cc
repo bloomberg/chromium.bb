@@ -131,10 +131,6 @@ bool UnixDomainClientSocket::WasEverUsed() const {
   return true;  // We don't care.
 }
 
-bool UnixDomainClientSocket::UsingTCPFastOpen() const {
-  return false;
-}
-
 bool UnixDomainClientSocket::WasNpnNegotiated() const {
   return false;
 }

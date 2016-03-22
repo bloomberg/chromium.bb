@@ -114,10 +114,6 @@ class NetStreamSocketAdapter : public net::StreamSocket {
     NOTREACHED();
     return true;
   }
-  bool UsingTCPFastOpen() const override {
-    NOTREACHED();
-    return false;
-  }
   void EnableTCPFastOpenIfSupported() override { NOTREACHED(); }
   bool WasNpnNegotiated() const override {
     NOTREACHED();

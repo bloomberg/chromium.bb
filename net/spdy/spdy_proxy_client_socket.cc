@@ -170,10 +170,6 @@ bool SpdyProxyClientSocket::WasEverUsed() const {
   return was_ever_used_ || (spdy_stream_.get() && spdy_stream_->WasEverUsed());
 }
 
-bool SpdyProxyClientSocket::UsingTCPFastOpen() const {
-  return false;
-}
-
 bool SpdyProxyClientSocket::WasNpnNegotiated() const {
   return false;
 }

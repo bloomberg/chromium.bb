@@ -612,11 +612,6 @@ class FakeSpdySessionClientSocket : public MockClientSocket {
     return false;
   }
 
-  bool UsingTCPFastOpen() const override {
-    ADD_FAILURE();
-    return false;
-  }
-
   bool WasNpnNegotiated() const override {
     ADD_FAILURE();
     return false;

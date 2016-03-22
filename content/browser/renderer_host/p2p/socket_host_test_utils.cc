@@ -159,10 +159,6 @@ bool FakeSocket::WasEverUsed() const {
   return true;
 }
 
-bool FakeSocket::UsingTCPFastOpen() const {
-  return false;
-}
-
 bool FakeSocket::WasNpnNegotiated() const {
   return false;
 }

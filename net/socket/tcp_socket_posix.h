@@ -73,8 +73,6 @@ class NET_EXPORT TCPSocketPosix {
 
   void Close();
 
-  // Setter/Getter methods for TCP FastOpen socket option.
-  bool UsingTCPFastOpen() const;
   void EnableTCPFastOpenIfSupported();
 
   bool IsValid() const;

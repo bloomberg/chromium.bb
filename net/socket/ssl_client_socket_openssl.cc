@@ -766,14 +766,6 @@ bool SSLClientSocketOpenSSL::WasEverUsed() const {
   return was_ever_used_;
 }
 
-bool SSLClientSocketOpenSSL::UsingTCPFastOpen() const {
-  if (transport_.get() && transport_->socket())
-    return transport_->socket()->UsingTCPFastOpen();
-
-  NOTREACHED();
-  return false;
-}
-
 bool SSLClientSocketOpenSSL::GetSSLInfo(SSLInfo* ssl_info) {
   ssl_info->Reset();
   if (server_cert_chain_->empty())

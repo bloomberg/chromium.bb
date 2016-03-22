@@ -103,9 +103,6 @@ class WrappedStreamSocket : public StreamSocket {
   }
   void SetOmniboxSpeculation() override { transport_->SetOmniboxSpeculation(); }
   bool WasEverUsed() const override { return transport_->WasEverUsed(); }
-  bool UsingTCPFastOpen() const override {
-    return transport_->UsingTCPFastOpen();
-  }
   bool WasNpnNegotiated() const override {
     return transport_->WasNpnNegotiated();
   }

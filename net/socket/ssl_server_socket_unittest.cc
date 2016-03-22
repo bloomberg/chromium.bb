@@ -257,8 +257,6 @@ class FakeSocket : public StreamSocket {
 
   bool WasEverUsed() const override { return true; }
 
-  bool UsingTCPFastOpen() const override { return false; }
-
   bool WasNpnNegotiated() const override { return false; }
 
   NextProto GetNegotiatedProtocol() const override { return kProtoUnknown; }

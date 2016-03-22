@@ -239,10 +239,6 @@ bool TCPClientSocket::WasEverUsed() const {
   return use_history_.was_used_to_convey_data();
 }
 
-bool TCPClientSocket::UsingTCPFastOpen() const {
-  return socket_->UsingTCPFastOpen();
-}
-
 void TCPClientSocket::EnableTCPFastOpenIfSupported() {
   socket_->EnableTCPFastOpenIfSupported();
 }

@@ -51,7 +51,6 @@ class NET_EXPORT TCPClientSocket : public StreamSocket {
   void SetSubresourceSpeculation() override;
   void SetOmniboxSpeculation() override;
   bool WasEverUsed() const override;
-  bool UsingTCPFastOpen() const override;
   void EnableTCPFastOpenIfSupported() override;
   bool WasNpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;

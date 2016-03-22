@@ -232,12 +232,6 @@ bool HttpProxyClientSocketWrapper::WasEverUsed() const {
   return false;
 }
 
-bool HttpProxyClientSocketWrapper::UsingTCPFastOpen() const {
-  if (transport_socket_)
-    return transport_socket_->UsingTCPFastOpen();
-  return false;
-}
-
 bool HttpProxyClientSocketWrapper::WasNpnNegotiated() const {
   if (transport_socket_)
     return transport_socket_->WasNpnNegotiated();

@@ -174,14 +174,6 @@ bool HttpProxyClientSocket::WasEverUsed() const {
   return false;
 }
 
-bool HttpProxyClientSocket::UsingTCPFastOpen() const {
-  if (transport_.get() && transport_->socket()) {
-    return transport_->socket()->UsingTCPFastOpen();
-  }
-  NOTREACHED();
-  return false;
-}
-
 bool HttpProxyClientSocket::WasNpnNegotiated() const {
   if (transport_.get() && transport_->socket()) {
     return transport_->socket()->WasNpnNegotiated();

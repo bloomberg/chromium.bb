@@ -331,10 +331,6 @@ bool FakeSSLClientSocket::WasEverUsed() const {
   return transport_socket_->WasEverUsed();
 }
 
-bool FakeSSLClientSocket::UsingTCPFastOpen() const {
-  return transport_socket_->UsingTCPFastOpen();
-}
-
 bool FakeSSLClientSocket::WasNpnNegotiated() const {
   return transport_socket_->WasNpnNegotiated();
 }

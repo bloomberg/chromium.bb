@@ -2620,14 +2620,6 @@ bool SSLClientSocketNSS::WasEverUsed() const {
   return core_->WasEverUsed();
 }
 
-bool SSLClientSocketNSS::UsingTCPFastOpen() const {
-  if (transport_.get() && transport_->socket()) {
-    return transport_->socket()->UsingTCPFastOpen();
-  }
-  NOTREACHED();
-  return false;
-}
-
 int SSLClientSocketNSS::Read(IOBuffer* buf, int buf_len,
                              const CompletionCallback& callback) {
   DCHECK(core_.get());

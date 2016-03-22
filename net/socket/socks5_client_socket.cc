@@ -113,14 +113,6 @@ bool SOCKS5ClientSocket::WasEverUsed() const {
   return was_ever_used_;
 }
 
-bool SOCKS5ClientSocket::UsingTCPFastOpen() const {
-  if (transport_.get() && transport_->socket()) {
-    return transport_->socket()->UsingTCPFastOpen();
-  }
-  NOTREACHED();
-  return false;
-}
-
 bool SOCKS5ClientSocket::WasNpnNegotiated() const {
   if (transport_.get() && transport_->socket()) {
     return transport_->socket()->WasNpnNegotiated();

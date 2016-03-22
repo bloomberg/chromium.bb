@@ -89,7 +89,6 @@ class SSLServerSocketOpenSSL : public SSLServerSocket {
   void SetSubresourceSpeculation() override;
   void SetOmniboxSpeculation() override;
   bool WasEverUsed() const override;
-  bool UsingTCPFastOpen() const override;
   bool WasNpnNegotiated() const override;
   NextProto GetNegotiatedProtocol() const override;
   bool GetSSLInfo(SSLInfo* ssl_info) override;
@@ -351,10 +350,6 @@ void SSLServerSocketOpenSSL::SetOmniboxSpeculation() {
 
 bool SSLServerSocketOpenSSL::WasEverUsed() const {
   return transport_socket_->WasEverUsed();
-}
-
-bool SSLServerSocketOpenSSL::UsingTCPFastOpen() const {
-  return transport_socket_->UsingTCPFastOpen();
 }
 
 bool SSLServerSocketOpenSSL::WasNpnNegotiated() const {
