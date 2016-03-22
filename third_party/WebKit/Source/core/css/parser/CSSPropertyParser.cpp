@@ -984,9 +984,6 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeTransitionProperty(CSSParserToken
     const CSSParserToken& token = range.peek();
     if (token.type() != IdentToken)
         return nullptr;
-    // TODO(timloh): This should check isCSSWideKeyword
-    if (token.id() == CSSValueInitial || token.id() == CSSValueInherit)
-        return nullptr;
     if (token.id() == CSSValueNone)
         return consumeIdent(range);
 

@@ -172,6 +172,15 @@ shouldBe("computedStyle.transitionProperty", "'all'");
 shouldBe("style.webkitTransitionProperty", "''");
 shouldBe("computedStyle.webkitTransitionProperty", "'all'");
 
+style.transitionProperty = "initial, width";
+shouldBe("style.transitionProperty", "''");
+style.transitionProperty = "width, inherit";
+shouldBe("style.transitionProperty", "''");
+style.transitionProperty = "left, unset";
+shouldBe("style.transitionProperty", "''");
+style.transitionProperty = "default, top";
+shouldBe("style.transitionProperty", "''");
+
 style.transitionProperty = "";
 
 debug("Valid transition-duration values.");
