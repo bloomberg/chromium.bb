@@ -136,11 +136,11 @@ def MasterConfigToStatuses(db, build_config, start_date, end_date):
       start_date=start_date, end_date=end_date)
 
   # Find slaves.
-  build_statuses = []
+  slave_statuses = []
   for status in master_statuses:
-    build_statuses += db.GetSlaveStatuses(status['id'])
+    slave_statuses += db.GetSlaveStatuses(status['id'])
 
-  build_statuses = FilterBuildStatuses(build_statuses)
+  build_statuses = FilterBuildStatuses(master_statuses + slave_statuses)
 
   # Fill in stage information.
   FillInBuildStatusesWithStages(db, build_statuses)
