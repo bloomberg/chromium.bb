@@ -42,7 +42,7 @@
         # because it won't find the input.
         'ninja_output_dir': 'ninja-localizable_string_tool',
         'ninja_product_dir':
-          '../../../xcodebuild/<(ninja_output_dir)/<(CONFIGURATION_NAME)',
+          '../../../../xcodebuild/<(ninja_output_dir)/<(CONFIGURATION_NAME)',
         # Gyp to rerun
         're_run_targets': [
           'ios/chrome/tools/strings/generate_localizable_strings.gyp',
