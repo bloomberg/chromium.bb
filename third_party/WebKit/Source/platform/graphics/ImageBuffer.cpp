@@ -224,7 +224,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gles
     // The canvas is stored in an inverted position, so the flip semantics are reversed.
     gl->CopyTextureCHROMIUM(sourceTexture, texture, internalFormat, destType, flipY ? GL_FALSE : GL_TRUE, GL_FALSE, premultiplyAlpha ? GL_FALSE : GL_TRUE);
 
-    context->deleteTexture(sourceTexture);
+    gl->DeleteTextures(1, &sourceTexture);
 
     const GLuint64 contextFenceSync = gl->InsertFenceSyncCHROMIUM();
 

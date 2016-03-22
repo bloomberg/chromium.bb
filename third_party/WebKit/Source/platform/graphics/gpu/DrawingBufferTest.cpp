@@ -170,26 +170,33 @@ public:
         memcpy(syncToken, &fenceSync, sizeof(fenceSync));
     }
 
-    uint32_t boundTexture() const { return m_boundTexture; }
-    uint32_t boundTextureTarget() const { return m_boundTextureTarget; }
-    uint32_t mostRecentlyWaitedSyncToken() const { return m_mostRecentlyWaitedSyncToken; }
-    uint32_t currentImageId() const { return m_currentImageId; }
+    void GenTextures(GLsizei n, GLuint* textures) override
+    {
+        static GLuint id = 1;
+        for (GLsizei i = 0; i < n; ++i)
+            textures[i] = id++;
+    }
+
+    GLuint boundTexture() const { return m_boundTexture; }
+    GLuint boundTextureTarget() const { return m_boundTextureTarget; }
+    GLuint mostRecentlyWaitedSyncToken() const { return m_mostRecentlyWaitedSyncToken; }
+    GLuint currentImageId() const { return m_currentImageId; }
     IntSize mostRecentlyProducedSize() const { return m_mostRecentlyProducedSize; }
     bool allowImageChromium() const { return m_allowImageChromium; }
 
     void setAllowImageChromium(bool allow) { m_allowImageChromium = allow; }
 
 private:
-    uint32_t m_boundTexture = 0;
-    uint32_t m_boundTextureTarget = 0;
-    uint32_t m_mostRecentlyWaitedSyncToken = 0;
+    GLuint m_boundTexture = 0;
+    GLuint m_boundTextureTarget = 0;
+    GLuint m_mostRecentlyWaitedSyncToken = 0;
     WGC3Dbyte m_currentMailboxByte = 0;
     IntSize m_mostRecentlyProducedSize;
     bool m_allowImageChromium = true;
-    uint32_t m_currentImageId = 1;
-    HashMap<uint32_t, IntSize> m_textureSizes;
-    HashMap<uint32_t, IntSize> m_imageSizes;
-    HashMap<uint32_t, uint32_t> m_imageToTextureMap;
+    GLuint m_currentImageId = 1;
+    HashMap<GLuint, IntSize> m_textureSizes;
+    HashMap<GLuint, IntSize> m_imageSizes;
+    HashMap<GLuint, GLuint> m_imageToTextureMap;
 };
 
 class WebGraphicsContext3DForTests : public MockWebGraphicsContext3D {
@@ -639,26 +646,33 @@ public:
         }
     }
 
-    uint32_t stencilAttachment() const { return m_stencilAttachment; }
-    uint32_t depthAttachment() const { return m_depthAttachment; }
-    uint32_t depthStencilAttachment() const { return m_depthStencilAttachment; }
+    void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) override
+    {
+        for (GLsizei i = 0; i < n; ++i)
+            renderbuffers[i] = m_nextGenRenderbufferId++;
+    }
+
+    GLuint stencilAttachment() const { return m_stencilAttachment; }
+    GLuint depthAttachment() const { return m_depthAttachment; }
+    GLuint depthStencilAttachment() const { return m_depthStencilAttachment; }
+    size_t numAllocatedRenderBuffer() const { return m_nextGenRenderbufferId - 1; }
 
 private:
-    uint32_t m_depthAttachment = 0;
-    uint32_t m_stencilAttachment = 0;
-    uint32_t m_depthStencilAttachment = 0;
+    GLuint m_nextGenRenderbufferId = 1;
+    GLuint m_depthAttachment = 0;
+    GLuint m_stencilAttachment = 0;
+    GLuint m_depthStencilAttachment = 0;
 };
 
 class DepthStencilTrackingContext : public MockWebGraphicsContext3D {
 public:
     DepthStencilTrackingContext(DepthStencilTrackingGLES2Interface* gl)
-        : m_nextRenderBufferId(1)
-        , m_contextGL(gl)
+        : m_contextGL(gl)
     {
     }
     ~DepthStencilTrackingContext() override {}
 
-    int numAllocatedRenderBuffer() const { return m_nextRenderBufferId - 1; }
+    size_t numAllocatedRenderBuffer() const { return m_contextGL->numAllocatedRenderBuffer(); }
     WebGLId stencilAttachment() const { return m_contextGL->stencilAttachment(); }
     WebGLId depthAttachment() const { return m_contextGL->depthAttachment(); }
     WebGLId depthStencilAttachment() const { return m_contextGL->depthStencilAttachment(); }
@@ -671,15 +685,9 @@ public:
         return WebString();
     }
 
-    WebGLId createRenderbuffer() override
-    {
-        return ++m_nextRenderBufferId;
-    }
-
     gpu::gles2::GLES2Interface* getGLES2Interface() override { return m_contextGL; }
 
 private:
-    WebGLId m_nextRenderBufferId;
     DepthStencilTrackingGLES2Interface* m_contextGL;
 };
 
@@ -692,7 +700,7 @@ struct DepthStencilTestCase {
 
     bool requestStencil;
     bool requestDepth;
-    int expectedRenderBuffers;
+    size_t expectedRenderBuffers;
     const char* const testCaseName;
 };
 

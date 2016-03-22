@@ -101,7 +101,6 @@ void WebGLDrawBuffers::drawBuffersWEBGL(const Vector<GLenum>& buffers)
 // static
 bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* webglContext)
 {
-    WebGraphicsContext3D* context = webglContext->webContext();
     gpu::gles2::GLES2Interface* gl = webglContext->contextGL();
     Extensions3DUtil* extensionsUtil = webglContext->extensionsUtil();
 
@@ -113,7 +112,8 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* web
     if (maxDrawBuffers < 4 || maxColorAttachments < 4)
         return false;
 
-    Platform3DObject fbo = context->createFramebuffer();
+    GLuint fbo;
+    gl->GenFramebuffers(1, &fbo);
     gl->BindFramebuffer(GL_FRAMEBUFFER, fbo);
 
     const unsigned char* buffer = 0; // Chromium doesn't allow init data for depth/stencil tetxures.
@@ -122,15 +122,15 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* web
         || extensionsUtil->supportsExtension("GL_ARB_depth_texture"));
     bool supportsDepthStencil = (extensionsUtil->supportsExtension("GL_EXT_packed_depth_stencil")
         || extensionsUtil->supportsExtension("GL_OES_packed_depth_stencil"));
-    Platform3DObject depthStencil = 0;
+    GLuint depthStencil = 0;
     if (supportsDepthStencil) {
-        depthStencil = context->createTexture();
+        gl->GenTextures(1, &depthStencil);
         gl->BindTexture(GL_TEXTURE_2D, depthStencil);
         gl->TexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_STENCIL_OES, 1, 1, 0, GL_DEPTH_STENCIL_OES, GL_UNSIGNED_INT_24_8_OES, buffer);
     }
-    Platform3DObject depth = 0;
+    GLuint depth = 0;
     if (supportsDepth) {
-        depth = context->createTexture();
+        gl->GenTextures(1, &depth);
         gl->BindTexture(GL_TEXTURE_2D, depth);
         gl->TexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, 1, 1, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, buffer);
     }
@@ -139,7 +139,8 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* web
     bool ok = true;
     GLint maxAllowedBuffers = std::min(maxDrawBuffers, maxColorAttachments);
     for (GLint i = 0; i < maxAllowedBuffers; ++i) {
-        Platform3DObject color = context->createTexture();
+        GLuint color;
+        gl->GenTextures(1, &color);
         colors.append(color);
         gl->BindTexture(GL_TEXTURE_2D, color);
         gl->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
@@ -169,14 +170,13 @@ bool WebGLDrawBuffers::satisfiesWebGLRequirements(WebGLRenderingContextBase* web
     }
 
     webglContext->restoreCurrentFramebuffer();
-    context->deleteFramebuffer(fbo);
+    gl->DeleteFramebuffers(1, &fbo);
     webglContext->restoreCurrentTexture2D();
     if (supportsDepth)
-        context->deleteTexture(depth);
+        gl->DeleteTextures(1, &depth);
     if (supportsDepthStencil)
-        context->deleteTexture(depthStencil);
-    for (size_t i = 0; i < colors.size(); ++i)
-        context->deleteTexture(colors[i]);
+        gl->DeleteTextures(1, &depthStencil);
+    gl->DeleteTextures(colors.size(), colors.data());
     return ok;
 }
 
