@@ -530,6 +530,7 @@ def CreateWithContents(gs_uri, contents, **kwargs):
     Copy(content_file.name, gs_uri, **kwargs)
 
 
+@RetryGSLib
 def Cat(gs_uri, **kwargs):
   """Return the contents of a file at the given GS URI
 

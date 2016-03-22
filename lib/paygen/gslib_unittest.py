@@ -279,9 +279,10 @@ class TestGsLib(cros_test_lib.MoxTestCase):
 
     # Set up the test replay script.
     cmd = [self.gsutil, 'cat', path]
-    utils.RunCommand(
-        cmd, redirect_stdout=True, redirect_stderr=True,
-        return_result=True).AndRaise(utils.CommandFailedException())
+    for _ix in xrange(gslib.RETRY_ATTEMPTS + 1):
+      utils.RunCommand(
+          cmd, redirect_stdout=True, redirect_stderr=True,
+          return_result=True).AndRaise(utils.CommandFailedException())
     self.mox.ReplayAll()
 
     # Run the test verification.
