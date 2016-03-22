@@ -1183,6 +1183,13 @@ void DevToolsWindow::OnLoadCompleted() {
     LoadCompleted();
 }
 
+void DevToolsWindow::ReadyForTest() {
+  if (!ready_for_test_callback_.is_null()) {
+    ready_for_test_callback_.Run();
+    ready_for_test_callback_ = base::Closure();
+  }
+}
+
 void DevToolsWindow::CreateDevToolsBrowser() {
   PrefService* prefs = profile_->GetPrefs();
   if (!prefs->GetDictionary(prefs::kAppWindowPlacement)->HasKey(kDevToolsApp)) {

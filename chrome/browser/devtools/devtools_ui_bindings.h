@@ -58,6 +58,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
 
     virtual void InspectedContentsClosing() = 0;
     virtual void OnLoadCompleted() = 0;
+    virtual void ReadyForTest() = 0;
     virtual InfoBarService* GetInfoBarService() = 0;
     virtual void RenderProcessGone(bool crashed) = 0;
   };
@@ -147,6 +148,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
                      const std::string& value) override;
   void RemovePreference(const std::string& name) override;
   void ClearPreferences() override;
+  void ReadyForTest() override;
 
   // net::URLFetcherDelegate overrides.
   void OnURLFetchComplete(const net::URLFetcher* source) override;

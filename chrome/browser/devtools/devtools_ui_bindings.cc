@@ -199,6 +199,7 @@ class DefaultBindingsDelegate : public DevToolsUIBindings::Delegate {
 
   void InspectedContentsClosing() override;
   void OnLoadCompleted() override {}
+  void ReadyForTest() override {}
   InfoBarService* GetInfoBarService() override;
   void RenderProcessGone(bool crashed) override {}
 
@@ -909,6 +910,10 @@ void DevToolsUIBindings::ClearPreferences() {
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kDevToolsPreferences);
   update.Get()->Clear();
+}
+
+void DevToolsUIBindings::ReadyForTest() {
+  delegate_->ReadyForTest();
 }
 
 void DevToolsUIBindings::DispatchProtocolMessageFromDevToolsFrontend(

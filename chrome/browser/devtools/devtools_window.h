@@ -312,6 +312,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void SetWhitelistedShortcuts(const std::string& message) override;
   void InspectedContentsClosing() override;
   void OnLoadCompleted() override;
+  void ReadyForTest() override;
   InfoBarService* GetInfoBarService() override;
   void RenderProcessGone(bool crashed) override;
 
@@ -342,6 +343,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   bool intercepted_page_beforeunload_;
   base::Closure load_completed_callback_;
   base::Closure close_callback_;
+  base::Closure ready_for_test_callback_;
 
   base::TimeTicks inspect_element_start_time_;
   scoped_ptr<DevToolsEventForwarder> event_forwarder_;

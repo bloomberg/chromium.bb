@@ -5,16 +5,19 @@
 #include "chrome/browser/devtools/devtools_window_testing.h"
 
 #include "base/lazy_instance.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 
 namespace {
+
+const char kHarnessScript[] = "Tests.js";
 
 typedef std::vector<DevToolsWindowTesting*> DevToolsWindowTestings;
 base::LazyInstance<DevToolsWindowTestings>::Leaky g_instances =
@@ -95,8 +98,11 @@ void DevToolsWindowTesting::WindowClosed(DevToolsWindow* window) {
 void DevToolsWindowTesting::WaitForDevToolsWindowLoad(DevToolsWindow* window) {
   scoped_refptr<content::MessageLoopRunner> runner =
       new content::MessageLoopRunner;
-  window->SetLoadCompletedCallback(runner->QuitClosure());
+  window->ready_for_test_callback_ = runner->QuitClosure();
   runner->Run();
+  base::string16 harness = base::UTF8ToUTF16(
+      content::DevToolsFrontendHost::GetFrontendResource(kHarnessScript));
+  window->main_web_contents_->GetMainFrame()->ExecuteJavaScript(harness);
 }
 
 // static

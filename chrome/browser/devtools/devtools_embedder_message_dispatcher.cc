@@ -210,5 +210,7 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                      &Delegate::RemovePreference, delegate);
   d->RegisterHandler("clearPreferences",
                      &Delegate::ClearPreferences, delegate);
+  d->RegisterHandler("readyForTest",
+                     &Delegate::ReadyForTest, delegate);
   return d;
 }

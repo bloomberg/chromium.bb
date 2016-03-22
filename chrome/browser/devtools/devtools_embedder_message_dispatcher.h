@@ -88,6 +88,7 @@ class DevToolsEmbedderMessageDispatcher {
                                  const std::string& browser_id,
                                  const std::string& url) = 0;
     virtual void SendFrontendAPINotification(const std::string& message) = 0;
+    virtual void ReadyForTest() = 0;
   };
 
   using DispatchCallback = Delegate::DispatchCallback;
