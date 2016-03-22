@@ -1267,7 +1267,7 @@ crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
 
 crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ Failure ]
 
-crbug.com/535478 [ Win ] virtual/threaded/inspector/tracing/decode-resize.html [ Pass Failure ]
+crbug.com/596752 virtual/threaded/inspector/tracing/decode-resize.html [ Pass Failure ]
 
 crbug.com/524646 [ Mac10.10 ] fast/dom/shadow/shadowdom-for-button.html [ Failure ]
 
