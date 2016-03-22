@@ -213,6 +213,21 @@ public:
         return toBlockFlow()->lastLineBox();
     }
 
+    InlineFlowBox* firstLineBox()
+    {
+        return toBlockFlow()->firstLineBox();
+    }
+
+    RootInlineBox* firstRootBox() const
+    {
+        return toBlockFlow()->firstRootBox();
+    }
+
+    RootInlineBox* lastRootBox() const
+    {
+        return toBlockFlow()->lastRootBox();
+    }
+
 private:
     LayoutBlockFlow* toBlockFlow() { return toLayoutBlockFlow(layoutObject()); };
     const LayoutBlockFlow* toBlockFlow() const { return toLayoutBlockFlow(layoutObject()); };

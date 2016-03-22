@@ -53,6 +53,8 @@ private:
     void adjustInlineDirectionLineBounds(unsigned expansionOpportunityCount, LayoutUnit& logicalLeft, LayoutUnit& logicalWidth) const override;
 };
 
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyText, isRubyText());
+
 } // namespace blink
 
 #endif // LayoutRubyText_h

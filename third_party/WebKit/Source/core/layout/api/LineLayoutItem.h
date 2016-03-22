@@ -265,6 +265,11 @@ public:
         return m_layoutObject->isAtomicInlineLevel();
     }
 
+    bool isRubyText() const
+    {
+        return m_layoutObject->isRubyText();
+    }
+
     bool isRubyRun() const
     {
         return m_layoutObject->isRubyRun();

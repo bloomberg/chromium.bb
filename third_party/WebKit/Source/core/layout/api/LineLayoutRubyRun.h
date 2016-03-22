@@ -7,6 +7,7 @@
 
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
+#include "core/layout/api/LineLayoutRubyText.h"
 
 namespace blink {
 
@@ -32,9 +33,9 @@ public:
         toRubyRun()->getOverhang(firstLine, startLayoutItem.layoutObject(), endLayoutItem.layoutObject(), startOverhang, endOverhang);
     }
 
-    LayoutRubyText* rubyText() const
+    LineLayoutRubyText rubyText() const
     {
-        return toRubyRun()->rubyText();
+        return LineLayoutRubyText(toRubyRun()->rubyText());
     }
 
     LayoutRubyBase* rubyBase() const

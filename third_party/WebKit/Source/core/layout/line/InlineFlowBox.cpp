@@ -23,12 +23,12 @@
 #include "core/dom/Document.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutRubyBase.h"
-#include "core/layout/LayoutRubyText.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/api/LineLayoutInline.h"
 #include "core/layout/api/LineLayoutListMarker.h"
 #include "core/layout/api/LineLayoutRubyRun.h"
+#include "core/layout/api/LineLayoutRubyText.h"
 #include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/layout/line/RootInlineBox.h"
@@ -1144,18 +1144,18 @@ LayoutUnit InlineFlowBox::computeOverAnnotationAdjustment(LayoutUnit allowedPosi
 
         if (curr->getLineLayoutItem().isAtomicInlineLevel() && curr->getLineLayoutItem().isRubyRun() && curr->getLineLayoutItem().style()->getRubyPosition() == RubyPositionBefore) {
             LineLayoutRubyRun rubyRun = LineLayoutRubyRun(curr->getLineLayoutItem());
-            LayoutRubyText* rubyText = rubyRun.rubyText();
+            LineLayoutRubyText rubyText = rubyRun.rubyText();
             if (!rubyText)
                 continue;
 
             if (!rubyRun.style()->isFlippedLinesWritingMode()) {
-                LayoutUnit topOfFirstRubyTextLine = rubyText->logicalTop() + (rubyText->firstRootBox() ? rubyText->firstRootBox()->lineTop() : LayoutUnit());
+                LayoutUnit topOfFirstRubyTextLine = rubyText.logicalTop() + (rubyText.firstRootBox() ? rubyText.firstRootBox()->lineTop() : LayoutUnit());
                 if (topOfFirstRubyTextLine >= 0)
                     continue;
                 topOfFirstRubyTextLine += curr->logicalTop();
                 result = std::max(result, allowedPosition - topOfFirstRubyTextLine);
             } else {
-                LayoutUnit bottomOfLastRubyTextLine = rubyText->logicalTop() + (rubyText->lastRootBox() ? rubyText->lastRootBox()->lineBottom() : rubyText->logicalHeight());
+                LayoutUnit bottomOfLastRubyTextLine = rubyText.logicalTop() + (rubyText.lastRootBox() ? rubyText.lastRootBox()->lineBottom() : rubyText.logicalHeight());
                 if (bottomOfLastRubyTextLine <= curr->logicalHeight())
                     continue;
                 bottomOfLastRubyTextLine += curr->logicalTop();
@@ -1192,18 +1192,18 @@ LayoutUnit InlineFlowBox::computeUnderAnnotationAdjustment(LayoutUnit allowedPos
 
         if (curr->getLineLayoutItem().isAtomicInlineLevel() && curr->getLineLayoutItem().isRubyRun() && curr->getLineLayoutItem().style()->getRubyPosition() == RubyPositionAfter) {
             LineLayoutRubyRun rubyRun = LineLayoutRubyRun(curr->getLineLayoutItem());
-            LayoutRubyText* rubyText = rubyRun.rubyText();
+            LineLayoutRubyText rubyText = rubyRun.rubyText();
             if (!rubyText)
                 continue;
 
             if (rubyRun.style()->isFlippedLinesWritingMode()) {
-                LayoutUnit topOfFirstRubyTextLine = rubyText->logicalTop() + (rubyText->firstRootBox() ? rubyText->firstRootBox()->lineTop() : LayoutUnit());
+                LayoutUnit topOfFirstRubyTextLine = rubyText.logicalTop() + (rubyText.firstRootBox() ? rubyText.firstRootBox()->lineTop() : LayoutUnit());
                 if (topOfFirstRubyTextLine >= 0)
                     continue;
                 topOfFirstRubyTextLine += curr->logicalTop();
                 result = std::max(result, allowedPosition - topOfFirstRubyTextLine);
             } else {
-                LayoutUnit bottomOfLastRubyTextLine = rubyText->logicalTop() + (rubyText->lastRootBox() ? rubyText->lastRootBox()->lineBottom() : rubyText->logicalHeight());
+                LayoutUnit bottomOfLastRubyTextLine = rubyText.logicalTop() + (rubyText.lastRootBox() ? rubyText.lastRootBox()->lineBottom() : rubyText.logicalHeight());
                 if (bottomOfLastRubyTextLine <= curr->logicalHeight())
                     continue;
                 bottomOfLastRubyTextLine += curr->logicalTop();
