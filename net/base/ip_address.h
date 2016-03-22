@@ -40,9 +40,28 @@ class NET_EXPORT IPAddress {
   // parameter. The input is expected to be in network byte order.
   IPAddress(const uint8_t* address, size_t address_len);
 
-  // Initializes |ip_address_| from the 4 bX bytes. The bytes are expected to be
-  // in network byte order.
+  // Initializes |ip_address_| from the 4 bX bytes to form an IPv4 address.
+  // The bytes are expected to be in network byte order.
   IPAddress(uint8_t b0, uint8_t b1, uint8_t b2, uint8_t b3);
+
+  // Initializes |ip_address_| from the 16 bX bytes to form an IPv6 address.
+  // The bytes are expected to be in network byte order.
+  IPAddress(uint8_t b0,
+            uint8_t b1,
+            uint8_t b2,
+            uint8_t b3,
+            uint8_t b4,
+            uint8_t b5,
+            uint8_t b6,
+            uint8_t b7,
+            uint8_t b8,
+            uint8_t b9,
+            uint8_t b10,
+            uint8_t b11,
+            uint8_t b12,
+            uint8_t b13,
+            uint8_t b14,
+            uint8_t b15);
 
   ~IPAddress();
 

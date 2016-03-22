@@ -192,12 +192,12 @@ WARN_UNUSED_RESULT bool ParseGeneralName(
       // version 4, as specified in [RFC791], the octet string MUST contain
       // exactly four octets.  For IP version 6, as specified in [RFC2460],
       // the octet string MUST contain exactly sixteen octets.
-      if ((value.Length() != kIPv4AddressSize &&
-           value.Length() != kIPv6AddressSize)) {
+      if ((value.Length() != IPAddress::kIPv4AddressSize &&
+           value.Length() != IPAddress::kIPv6AddressSize)) {
         return false;
       }
-      subtrees->ip_addresses.push_back(std::vector<uint8_t>(
-          value.UnsafeData(), value.UnsafeData() + value.Length()));
+      subtrees->ip_addresses.push_back(
+          IPAddress(value.UnsafeData(), value.Length()));
     } else {
       DCHECK_EQ(ip_address_type, IP_ADDRESS_AND_NETMASK);
       // RFC 5280 section 4.2.1.10:
@@ -210,19 +210,18 @@ WARN_UNUSED_RESULT bool ParseGeneralName(
       // constraint for "class C" subnet 192.0.2.0 is represented as the
       // octets C0 00 02 00 FF FF FF 00, representing the CIDR notation
       // 192.0.2.0/24 (mask 255.255.255.0).
-      if (value.Length() != kIPv4AddressSize * 2 &&
-          value.Length() != kIPv6AddressSize * 2) {
+      if (value.Length() != IPAddress::kIPv4AddressSize * 2 &&
+          value.Length() != IPAddress::kIPv6AddressSize * 2) {
         return false;
       }
-      const std::vector<uint8_t> mask(value.UnsafeData() + value.Length() / 2,
-                                      value.UnsafeData() + value.Length());
+      const IPAddress mask(value.UnsafeData() + value.Length() / 2,
+                           value.Length() / 2);
       const unsigned mask_prefix_length = MaskPrefixLength(mask);
-      if (!IsSuffixZero(mask, mask_prefix_length))
+      if (!IsSuffixZero(mask.bytes(), mask_prefix_length))
         return false;
-      subtrees->ip_address_ranges.push_back(std::make_pair(
-          std::vector<uint8_t>(value.UnsafeData(),
-                               value.UnsafeData() + value.Length() / 2),
-          mask_prefix_length));
+      subtrees->ip_address_ranges.push_back(
+          std::make_pair(IPAddress(value.UnsafeData(), value.Length() / 2),
+                         mask_prefix_length));
     }
   } else if (tag == der::ContextSpecificPrimitive(8)) {
     // registeredID                    [8]     OBJECT IDENTIFIER }
@@ -524,9 +523,9 @@ bool NameConstraints::IsPermittedDirectoryName(
   return false;
 }
 
-bool NameConstraints::IsPermittedIP(const IPAddressNumber& ip) const {
+bool NameConstraints::IsPermittedIP(const IPAddress& ip) const {
   for (const auto& excluded_ip : excluded_subtrees_.ip_address_ranges) {
-    if (IPNumberMatchesPrefix(ip, excluded_ip.first, excluded_ip.second))
+    if (IPAddressMatchesPrefix(ip, excluded_ip.first, excluded_ip.second))
       return false;
   }
 
@@ -536,7 +535,7 @@ bool NameConstraints::IsPermittedIP(const IPAddressNumber& ip) const {
     return true;
 
   for (const auto& permitted_ip : permitted_subtrees_.ip_address_ranges) {
-    if (IPNumberMatchesPrefix(ip, permitted_ip.first, permitted_ip.second))
+    if (IPAddressMatchesPrefix(ip, permitted_ip.first, permitted_ip.second))
       return true;
   }
 

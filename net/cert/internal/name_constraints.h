@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 
 namespace net {
 
@@ -59,11 +59,11 @@ struct NET_EXPORT GeneralNames {
 
   // iPAddresses as sequences of octets in network byte order. This will be
   // populated if the GeneralNames represents a Subject Alternative Name.
-  std::vector<std::vector<uint8_t>> ip_addresses;
+  std::vector<IPAddress> ip_addresses;
 
   // iPAddress ranges, as <IP, prefix length> pairs. This will be populated
   // if the GeneralNames represents a Name Constraints.
-  std::vector<std::pair<std::vector<uint8_t>, unsigned>> ip_address_ranges;
+  std::vector<std::pair<IPAddress, unsigned>> ip_address_ranges;
 
   // Which name types were present, as a bitfield of GeneralNameTypes.
   // Includes both the supported and unsupported types (although unsupported
@@ -111,7 +111,7 @@ class NET_EXPORT NameConstraints {
   bool IsPermittedDirectoryName(const der::Input& name_rdn_sequence) const;
 
   // Returns true if the iPAddress |ip| is permitted.
-  bool IsPermittedIP(const IPAddressNumber& ip) const;
+  bool IsPermittedIP(const IPAddress& ip) const;
 
   // Returns a bitfield of GeneralNameTypes of all the types constrained by this
   // NameConstraints. Name types that aren't supported will only be present if

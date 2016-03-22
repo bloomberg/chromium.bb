@@ -4,6 +4,7 @@
 
 #include "net/cert/internal/name_constraints.h"
 
+#include "net/base/ip_address.h"
 #include "net/cert/internal/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -409,142 +410,95 @@ TEST_P(ParseNameConstraints, IPAdresses) {
   ASSERT_TRUE(name_constraints);
 
   // IPv4 tests:
-  {
-    // Not in any permitted range.
-    const uint8_t ip4[] = {192, 169, 0, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    // Within the permitted 192.168.0.0/255.255.0.0 range.
-    const uint8_t ip4[] = {192, 168, 0, 1};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    // Within the permitted 192.168.0.0/255.255.0.0 range, however the
-    // excluded 192.168.5.0/255.255.255.0 takes priority.
-    const uint8_t ip4[] = {192, 168, 5, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    // Within the permitted 192.168.0.0/255.255.0.0 range as well as the
-    // permitted 192.168.5.32/255.255.255.224 range, however the excluded
-    // 192.168.5.0/255.255.255.0 still takes priority.
-    const uint8_t ip4[] = {192, 168, 5, 33};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    // Not in any permitted range. (Just outside the
-    // 192.167.5.32/255.255.255.224 range.)
-    const uint8_t ip4[] = {192, 167, 5, 31};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    // Within the permitted 192.167.5.32/255.255.255.224 range.
-    const uint8_t ip4[] = {192, 167, 5, 32};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    // Within the permitted 192.167.5.32/255.255.255.224 range.
-    const uint8_t ip4[] = {192, 167, 5, 63};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    // Not in any permitted range. (Just outside the
-    // 192.167.5.32/255.255.255.224 range.)
-    const uint8_t ip4[] = {192, 167, 5, 64};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    // Not in any permitted range, and also inside the extraneous excluded
-    // 192.166.5.32/255.255.255.224 range.
-    const uint8_t ip4[] = {192, 166, 5, 32};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
+
+  // Not in any permitted range.
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 169, 0, 1)));
+
+  // Within the permitted 192.168.0.0/255.255.0.0 range.
+  EXPECT_TRUE(name_constraints->IsPermittedIP(IPAddress(192, 168, 0, 1)));
+
+  // Within the permitted 192.168.0.0/255.255.0.0 range, however the
+  // excluded 192.168.5.0/255.255.255.0 takes priority.
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 168, 5, 1)));
+
+  // Within the permitted 192.168.0.0/255.255.0.0 range as well as the
+  // permitted 192.168.5.32/255.255.255.224 range, however the excluded
+  // 192.168.5.0/255.255.255.0 still takes priority.
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 168, 5, 33)));
+
+  // Not in any permitted range. (Just outside the
+  // 192.167.5.32/255.255.255.224 range.)
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 167, 5, 31)));
+
+  // Within the permitted 192.167.5.32/255.255.255.224 range.
+  EXPECT_TRUE(name_constraints->IsPermittedIP(IPAddress(192, 167, 5, 32)));
+
+  // Within the permitted 192.167.5.32/255.255.255.224 range.
+  EXPECT_TRUE(name_constraints->IsPermittedIP(IPAddress(192, 167, 5, 63)));
+
+  // Not in any permitted range. (Just outside the
+  // 192.167.5.32/255.255.255.224 range.)
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 167, 5, 64)));
+
+  // Not in any permitted range, and also inside the extraneous excluded
+  // 192.166.5.32/255.255.255.224 range.
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 166, 5, 32)));
 
   // IPv6 tests:
-  {
-    // Not in any permitted range.
-    const uint8_t ip6[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 0, 0, 0, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip6, ip6 + arraysize(ip6))));
-  }
-  {
-    // Within the permitted
-    // 102:304:506:708:90a:b0c::/ffff:ffff:ffff:ffff:ffff:ffff:: range.
-    const uint8_t ip6[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0, 0, 0, 1};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip6, ip6 + arraysize(ip6))));
-  }
-  {
-    // Within the permitted
-    // 102:304:506:708:90a:b0c::/ffff:ffff:ffff:ffff:ffff:ffff:: range, however
-    // the excluded
-    // 102:304:506:708:90a:b0c:500:0/ffff:ffff:ffff:ffff:ffff:ffff:ff00:0 takes
-    // priority.
-    const uint8_t ip6[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 5, 0, 0, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip6, ip6 + arraysize(ip6))));
-  }
-  {
-    // Within the permitted
-    // 102:304:506:708:90a:b0c::/ffff:ffff:ffff:ffff:ffff:ffff:: range as well
-    // as the permitted
-    // 102:304:506:708:90a:b0c:520:0/ffff:ffff:ffff:ffff:ffff:ffff:ff60:0,
-    // however the excluded
-    // 102:304:506:708:90a:b0c:500:0/ffff:ffff:ffff:ffff:ffff:ffff:ff00:0 takes
-    // priority.
-    const uint8_t ip6[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 5, 33, 0, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip6, ip6 + arraysize(ip6))));
-  }
-  {
-    // Not in any permitted range. (Just outside the
-    // 102:304:506:708:90a:b0b:520:0/ffff:ffff:ffff:ffff:ffff:ffff:ff60:0
-    // range.)
-    const uint8_t ip6[] = {1, 2,  3,  4,  5, 6,  7,   8,
-                           9, 10, 11, 11, 5, 31, 255, 255};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip6, ip6 + arraysize(ip6))));
-  }
-  {
-    // Within the permitted
-    // 102:304:506:708:90a:b0b:520:0/ffff:ffff:ffff:ffff:ffff:ffff:ff60:0 range.
-    const uint8_t ip6[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 5, 32, 0, 0};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip6, ip6 + arraysize(ip6))));
-  }
-  {
-    // Within the permitted
-    // 102:304:506:708:90a:b0b:520:0/ffff:ffff:ffff:ffff:ffff:ffff:ff60:0 range.
-    const uint8_t ip6[] = {1, 2,  3,  4,  5, 6,  7,   8,
-                           9, 10, 11, 11, 5, 63, 255, 255};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip6, ip6 + arraysize(ip6))));
-  }
-  {
-    // Not in any permitted range. (Just outside the
-    // 102:304:506:708:90a:b0b:520:0/ffff:ffff:ffff:ffff:ffff:ffff:ff60:0
-    // range.)
-    const uint8_t ip6[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 5, 64, 0, 0};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip6, ip6 + arraysize(ip6))));
-  }
-  {
-    // Not in any permitted range, and also inside the extraneous excluded
-    // 102:304:506:708:90a:b0a:520:0/ffff:ffff:ffff:ffff:ffff:ffff:ff60:0 range.
-    const uint8_t ip6[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 10, 5, 33, 0, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip6, ip6 + arraysize(ip6))));
-  }
+
+  // Not in any permitted range.
+  EXPECT_FALSE(name_constraints->IsPermittedIP(
+      IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 0, 0, 0, 1)));
+
+  // Within the permitted
+  // 102:304:506:708:90a:b0c::/ffff:ffff:ffff:ffff:ffff:ffff:: range.
+  EXPECT_TRUE(name_constraints->IsPermittedIP(
+      IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 0, 0, 0, 1)));
+
+  // Within the permitted
+  // 102:304:506:708:90a:b0c::/ffff:ffff:ffff:ffff:ffff:ffff:: range, however
+  // the excluded
+  // 102:304:506:708:90a:b0c:500:0/ffff:ffff:ffff:ffff:ffff:ffff:ff00:0 takes
+  // priority.
+  EXPECT_FALSE(name_constraints->IsPermittedIP(
+      IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 5, 0, 0, 1)));
+
+  // Within the permitted
+  // 102:304:506:708:90a:b0c::/ffff:ffff:ffff:ffff:ffff:ffff:: range as well
+  // as the permitted
+  // 102:304:506:708:90a:b0c:520:0/ffff:ffff:ffff:ffff:ffff:ffff:ff60:0,
+  // however the excluded
+  // 102:304:506:708:90a:b0c:500:0/ffff:ffff:ffff:ffff:ffff:ffff:ff00:0 takes
+  // priority.
+  EXPECT_FALSE(name_constraints->IsPermittedIP(
+      IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 5, 33, 0, 1)));
+
+  // Not in any permitted range. (Just outside the
+  // 102:304:506:708:90a:b0b:520:0/ffff:ffff:ffff:ffff:ffff:ffff:ff60:0
+  // range.)
+  EXPECT_FALSE(name_constraints->IsPermittedIP(
+      IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 5, 31, 255, 255)));
+
+  // Within the permitted
+  // 102:304:506:708:90a:b0b:520:0/ffff:ffff:ffff:ffff:ffff:ffff:ff60:0 range.
+  EXPECT_TRUE(name_constraints->IsPermittedIP(
+      IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 5, 32, 0, 0)));
+
+  // Within the permitted
+  // 102:304:506:708:90a:b0b:520:0/ffff:ffff:ffff:ffff:ffff:ffff:ff60:0 range.
+  EXPECT_TRUE(name_constraints->IsPermittedIP(
+      IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 5, 63, 255, 255)));
+
+  // Not in any permitted range. (Just outside the
+  // 102:304:506:708:90a:b0b:520:0/ffff:ffff:ffff:ffff:ffff:ffff:ff60:0
+  // range.)
+  EXPECT_FALSE(name_constraints->IsPermittedIP(
+      IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 11, 5, 64, 0, 0)));
+
+  // Not in any permitted range, and also inside the extraneous excluded
+  // 102:304:506:708:90a:b0a:520:0/ffff:ffff:ffff:ffff:ffff:ffff:ff60:0 range.
+  EXPECT_FALSE(name_constraints->IsPermittedIP(
+      IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 10, 5, 33, 0, 1)));
 
   EXPECT_EQ(GENERAL_NAME_IP_ADDRESS, name_constraints->ConstrainedNameTypes());
 
@@ -572,21 +526,10 @@ TEST_P(ParseNameConstraints, IPAdressesExcludeOnly) {
 
   // Only 192.168.5.0/255.255.255.0 is excluded, and since permitted is empty,
   // any iPAddress outside that is allowed.
-  {
-    const uint8_t ip4[] = {192, 168, 0, 1};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {192, 168, 5, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip6[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 0, 0, 0, 1};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip6, ip6 + arraysize(ip6))));
-  }
+  EXPECT_TRUE(name_constraints->IsPermittedIP(IPAddress(192, 168, 0, 1)));
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 168, 5, 1)));
+  EXPECT_TRUE(name_constraints->IsPermittedIP(
+      IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 0, 0, 0, 1)));
 }
 
 TEST_P(ParseNameConstraints, IPAdressesExcludeAll) {
@@ -600,26 +543,12 @@ TEST_P(ParseNameConstraints, IPAdressesExcludeAll) {
   // 192.168.0.0/255.255.0.0 and
   // 102:304:506:708:90a:b0c::/ffff:ffff:ffff:ffff:ffff:ffff:: are permitted,
   // but since 0.0.0.0/0 and ::/0 are excluded nothing is permitted.
-  {
-    const uint8_t ip4[] = {192, 168, 0, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {1, 1, 1, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip6[] = {2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip6, ip6 + arraysize(ip6))));
-  }
-  {
-    const uint8_t ip6[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 0, 0, 0, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip6, ip6 + arraysize(ip6))));
-  }
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 168, 0, 1)));
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(1, 1, 1, 1)));
+  EXPECT_FALSE(name_constraints->IsPermittedIP(
+      IPAddress(2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1)));
+  EXPECT_FALSE(name_constraints->IsPermittedIP(
+      IPAddress(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 0, 0, 0, 1)));
 }
 
 TEST_P(ParseNameConstraints, IPAdressesNetmaskPermitSingleHost) {
@@ -630,36 +559,12 @@ TEST_P(ParseNameConstraints, IPAdressesNetmaskPermitSingleHost) {
       NameConstraints::CreateFromDer(der::Input(&a), is_critical()));
   ASSERT_TRUE(name_constraints);
 
-  {
-    const uint8_t ip4[] = {0, 0, 0, 0};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {192, 168, 1, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {192, 168, 1, 2};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {192, 168, 1, 3};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {192, 168, 1, 4};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {255, 255, 255, 255};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress::IPv4AllZeros()));
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 168, 1, 1)));
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 168, 1, 2)));
+  EXPECT_TRUE(name_constraints->IsPermittedIP(IPAddress(192, 168, 1, 3)));
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 168, 1, 4)));
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(255, 255, 255, 255)));
 }
 
 TEST_P(ParseNameConstraints, IPAdressesNetmaskPermitPrefixLen31) {
@@ -670,41 +575,13 @@ TEST_P(ParseNameConstraints, IPAdressesNetmaskPermitPrefixLen31) {
       NameConstraints::CreateFromDer(der::Input(&a), is_critical()));
   ASSERT_TRUE(name_constraints);
 
-  {
-    const uint8_t ip4[] = {0, 0, 0, 0};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {192, 168, 1, 1};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {192, 168, 1, 2};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {192, 168, 1, 3};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {192, 168, 1, 4};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {192, 168, 1, 5};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {255, 255, 255, 255};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress::IPv4AllZeros()));
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 168, 1, 1)));
+  EXPECT_TRUE(name_constraints->IsPermittedIP(IPAddress(192, 168, 1, 2)));
+  EXPECT_TRUE(name_constraints->IsPermittedIP(IPAddress(192, 168, 1, 3)));
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 168, 1, 4)));
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(192, 168, 1, 5)));
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress(255, 255, 255, 255)));
 }
 
 TEST_P(ParseNameConstraints, IPAdressesNetmaskPermitPrefixLen1) {
@@ -715,26 +592,12 @@ TEST_P(ParseNameConstraints, IPAdressesNetmaskPermitPrefixLen1) {
       NameConstraints::CreateFromDer(der::Input(&a), is_critical()));
   ASSERT_TRUE(name_constraints);
 
-  {
-    const uint8_t ip4[] = {0, 0, 0, 0};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {0x7F, 0xFF, 0xFF, 0xFF};
-    EXPECT_FALSE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {0x80, 0, 0, 0};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {0xFF, 0xFF, 0xFF, 0xFF};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
+  EXPECT_FALSE(name_constraints->IsPermittedIP(IPAddress::IPv4AllZeros()));
+  EXPECT_FALSE(
+      name_constraints->IsPermittedIP(IPAddress(0x7F, 0xFF, 0xFF, 0xFF)));
+  EXPECT_TRUE(name_constraints->IsPermittedIP(IPAddress(0x80, 0, 0, 0)));
+  EXPECT_TRUE(
+      name_constraints->IsPermittedIP(IPAddress(0xFF, 0xFF, 0xFF, 0xFF)));
 }
 
 TEST_P(ParseNameConstraints, IPAdressesNetmaskPermitAll) {
@@ -745,21 +608,9 @@ TEST_P(ParseNameConstraints, IPAdressesNetmaskPermitAll) {
       NameConstraints::CreateFromDer(der::Input(&a), is_critical()));
   ASSERT_TRUE(name_constraints);
 
-  {
-    const uint8_t ip4[] = {0, 0, 0, 0};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {192, 168, 1, 1};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
-  {
-    const uint8_t ip4[] = {255, 255, 255, 255};
-    EXPECT_TRUE(name_constraints->IsPermittedIP(
-        IPAddressNumber(ip4, ip4 + arraysize(ip4))));
-  }
+  EXPECT_TRUE(name_constraints->IsPermittedIP(IPAddress::IPv4AllZeros()));
+  EXPECT_TRUE(name_constraints->IsPermittedIP(IPAddress(192, 168, 1, 1)));
+  EXPECT_TRUE(name_constraints->IsPermittedIP(IPAddress(255, 255, 255, 255)));
 }
 
 TEST_P(ParseNameConstraints, IPAdressesFailOnInvalidAddr) {

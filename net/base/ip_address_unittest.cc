@@ -24,6 +24,20 @@ std::string DumpIPAddress(const IPAddress& v) {
   return out;
 }
 
+TEST(IPAddressTest, ConstructIPv4) {
+  EXPECT_EQ("127.0.0.1", IPAddress::IPv4Localhost().ToString());
+
+  IPAddress ipv4_ctor(192, 168, 1, 1);
+  EXPECT_EQ("192.168.1.1", ipv4_ctor.ToString());
+}
+
+TEST(IPAddressTest, ConstructIPv6) {
+  EXPECT_EQ("::1", IPAddress::IPv6Localhost().ToString());
+
+  IPAddress ipv6_ctor(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
+  EXPECT_EQ("102:304:506:708:90a:b0c:d0e:f10", ipv6_ctor.ToString());
+}
+
 TEST(IPAddressTest, IsIPVersion) {
   uint8_t addr1[4] = {192, 168, 0, 1};
   IPAddress ip_address1(addr1);
