@@ -167,185 +167,185 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
 
-  void LogToStderr(const std::string& output);
-  void NotifyDone();
-  void WaitUntilDone();
-  void QueueBackNavigation(int how_far_back);
-  void QueueForwardNavigation(int how_far_forward);
-  void QueueReload();
-  void QueueLoadingScript(const std::string& script);
-  void QueueNonLoadingScript(const std::string& script);
-  void QueueLoad(gin::Arguments* args);
-  void QueueLoadHTMLString(gin::Arguments* args);
-  void SetCustomPolicyDelegate(gin::Arguments* args);
-  void WaitForPolicyDelegate();
-  int WindowCount();
-  void SetCloseRemainingWindowsWhenComplete(gin::Arguments* args);
-  void ResetTestHelperControllers();
-  void SetTabKeyCyclesThroughElements(bool tab_key_cycles_through_elements);
-  void ExecCommand(gin::Arguments* args);
-  bool IsCommandEnabled(const std::string& command);
-  bool CallShouldCloseOnWebView();
-  void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
-                                                const std::string& scheme);
-  v8::Local<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(
-      int world_id, const std::string& script);
-  void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
-  void SetIsolatedWorldSecurityOrigin(int world_id,
-                                      v8::Local<v8::Value> origin);
-  void SetIsolatedWorldContentSecurityPolicy(int world_id,
-                                             const std::string& policy);
+  void AddMockSpeechRecognitionResult(const std::string& transcript,
+                                      double confidence);
   void AddOriginAccessWhitelistEntry(const std::string& source_origin,
                                      const std::string& destination_protocol,
                                      const std::string& destination_host,
                                      bool allow_destination_subdomains);
-  void RemoveOriginAccessWhitelistEntry(const std::string& source_origin,
-                                        const std::string& destination_protocol,
-                                        const std::string& destination_host,
-                                        bool allow_destination_subdomains);
-  bool HasCustomPageSizeStyle(int page_index);
-  void ForceRedSelectionColors();
-  void InsertStyleSheet(const std::string& source_code);
-  bool FindString(const std::string& search_text,
-                  const std::vector<std::string>& options_array);
-  std::string SelectionAsMarkup();
-  void SetTextSubpixelPositioning(bool value);
-  void SetPageVisibility(const std::string& new_visibility);
-  void SetTextDirection(const std::string& direction_name);
-  void UseUnfortunateSynchronousResizeMode();
-  bool EnableAutoResizeMode(int min_width,
-                            int min_height,
-                            int max_width,
-                            int max_height);
-  bool DisableAutoResizeMode(int new_width, int new_height);
-  void SetMockDeviceLight(double value);
-  void ResetDeviceLight();
-  void SetMockDeviceMotion(gin::Arguments* args);
-  void SetMockDeviceOrientation(gin::Arguments* args);
-  void SetMockScreenOrientation(const std::string& orientation);
-  void DisableMockScreenOrientation();
-  void DidAcquirePointerLock();
-  void DidNotAcquirePointerLock();
-  void DidLosePointerLock();
-  void SetPointerLockWillFailSynchronously();
-  void SetPointerLockWillRespondAsynchronously();
-  void SetPopupBlockingEnabled(bool block_popups);
-  void SetJavaScriptCanAccessClipboard(bool can_access);
-  void SetXSSAuditorEnabled(bool enabled);
-  void SetAllowUniversalAccessFromFileURLs(bool allow);
-  void SetAllowFileAccessFromFileURLs(bool allow);
-  void OverridePreference(const std::string& key, v8::Local<v8::Value> value);
-  void SetAcceptLanguages(const std::string& accept_languages);
-  void SetPluginsEnabled(bool enabled);
-  bool AnimationScheduled();
-  void DumpEditingCallbacks();
-  void DumpAsMarkup();
-  void DumpAsText();
-  void DumpAsTextWithPixelResults();
-  void DumpChildFrameScrollPositions();
-  void DumpChildFramesAsMarkup();
-  void DumpChildFramesAsText();
-  void DumpIconChanges();
-  void SetAudioData(const gin::ArrayBufferView& view);
-  void DumpFrameLoadCallbacks();
-  void DumpPingLoaderCallbacks();
-  void DumpUserGestureInFrameLoadCallbacks();
-  void DumpTitleChanges();
-  void DumpCreateView();
-  void SetCanOpenWindows();
-  void DumpResourceLoadCallbacks();
-  void DumpResourceRequestCallbacks();
-  void DumpResourceResponseMIMETypes();
-  void SetImagesAllowed(bool allowed);
-  void SetMediaAllowed(bool allowed);
-  void SetScriptsAllowed(bool allowed);
-  void SetStorageAllowed(bool allowed);
-  void SetPluginsAllowed(bool allowed);
-  void SetAllowDisplayOfInsecureContent(bool allowed);
-  void SetAllowRunningOfInsecureContent(bool allowed);
-  void DumpPermissionClientCallbacks();
-  void DumpWindowStatusChanges();
-  void DumpSpellCheckCallbacks();
-  void DumpBackForwardList();
-  void DumpSelectionRect();
-  void SetPrinting();
-  void ClearPrinting();
-  void SetShouldStayOnPageAfterHandlingBeforeUnload(bool value);
-  void SetWillSendRequestClearHeader(const std::string& header);
-  void DumpResourceRequestPriorities();
-  void SetUseMockTheme(bool use);
-  void WaitUntilExternalURLLoad();
-  void DumpDragImage();
-  void DumpNavigationPolicy();
-  void DumpPageImportanceSignals();
-  void ShowWebInspector(gin::Arguments* args);
-  void CloseWebInspector();
-  bool IsChooserShown();
-  void EvaluateInWebInspector(int call_id, const std::string& script);
-  std::string EvaluateInWebInspectorOverlay(const std::string& script);
-  void ClearAllDatabases();
-  void SetDatabaseQuota(int quota);
-  void SetAlwaysAcceptCookies(bool accept);
-  void SetWindowIsKey(bool value);
-  std::string PathToLocalResource(const std::string& path);
-  void SetBackingScaleFactor(double value, v8::Local<v8::Function> callback);
-  void EnableUseZoomForDSF(v8::Local<v8::Function> callback);
-  void SetColorProfile(const std::string& name,
-                       v8::Local<v8::Function> callback);
-  void SetPOSIXLocale(const std::string& locale);
-  void SetMIDIAccessorResult(bool result);
-  void SimulateWebNotificationClick(const std::string& title, int action_index);
-  void SimulateWebNotificationClose(const std::string& title, bool by_user);
-  void AddMockSpeechRecognitionResult(const std::string& transcript,
-                                      double confidence);
-  void SetMockSpeechRecognitionError(const std::string& error,
-                                     const std::string& message);
-  bool WasMockSpeechRecognitionAborted();
-  void AddMockCredentialManagerResponse(const std::string& id,
-                                        const std::string& name,
-                                        const std::string& avatar,
-                                        const std::string& password);
-  void AddMockCredentialManagerError(const std::string& error);
   void AddWebPageOverlay();
-  void RemoveWebPageOverlay();
-  void LayoutAndPaintAsync();
-  void LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback);
-  void GetManifestThen(v8::Local<v8::Function> callback);
   void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
+  void ClearAllDatabases();
+  void ClearGeofencingMockProvider();
+  void ClearPrinting();
+  void CloseWebInspector();
   void CopyImageAtAndCapturePixelsAsyncThen(int x,
                                             int y,
                                             v8::Local<v8::Function> callback);
-  void SetCustomTextOutput(const std::string& output);
-  void SetViewSourceForFrame(const std::string& name, bool enabled);
-  void SetBluetoothMockDataSet(const std::string& dataset_name);
-  void SetBluetoothManualChooser();
-  void GetBluetoothManualChooserEvents(v8::Local<v8::Function> callback);
-  void SendBluetoothManualChooserEvent(const std::string& event,
-                                       const std::string& argument);
-  void SetGeofencingMockProvider(bool service_available);
-  void ClearGeofencingMockProvider();
-  void SetGeofencingMockPosition(double latitude, double longitude);
-  void SetPermission(const std::string& name,
-                     const std::string& value,
-                     const std::string& origin,
-                     const std::string& embedding_origin);
+  void DidAcquirePointerLock();
+  void DidLosePointerLock();
+  void DidNotAcquirePointerLock();
+  void DisableMockScreenOrientation();
   void DispatchBeforeInstallPromptEvent(
       int request_id,
       const std::vector<std::string>& event_platforms,
       v8::Local<v8::Function> callback);
+  void DumpAsMarkup();
+  void DumpAsText();
+  void DumpAsTextWithPixelResults();
+  void DumpBackForwardList();
+  void DumpChildFrameScrollPositions();
+  void DumpChildFramesAsMarkup();
+  void DumpChildFramesAsText();
+  void DumpCreateView();
+  void DumpDragImage();
+  void DumpEditingCallbacks();
+  void DumpFrameLoadCallbacks();
+  void DumpIconChanges();
+  void DumpNavigationPolicy();
+  void DumpPageImportanceSignals();
+  void DumpPermissionClientCallbacks();
+  void DumpPingLoaderCallbacks();
+  void DumpResourceLoadCallbacks();
+  void DumpResourceRequestCallbacks();
+  void DumpResourceRequestPriorities();
+  void DumpResourceResponseMIMETypes();
+  void DumpSelectionRect();
+  void DumpSpellCheckCallbacks();
+  void DumpTitleChanges();
+  void DumpUserGestureInFrameLoadCallbacks();
+  void DumpWindowStatusChanges();
+  void EnableUseZoomForDSF(v8::Local<v8::Function> callback);
+  void EvaluateInWebInspector(int call_id, const std::string& script);
+  void EvaluateScriptInIsolatedWorld(int world_id, const std::string& script);
+  void ExecCommand(gin::Arguments* args);
+  void ForceNextDrawingBufferCreationToFail();
+  void ForceNextWebGLContextCreationToFail();
+  void ForceRedSelectionColors();
+  void GetBluetoothManualChooserEvents(v8::Local<v8::Function> callback);
+  void GetManifestThen(v8::Local<v8::Function> callback);
+  void InsertStyleSheet(const std::string& source_code);
+  void LayoutAndPaintAsync();
+  void LayoutAndPaintAsyncThen(v8::Local<v8::Function> callback);
+  void LogToStderr(const std::string& output);
+  void NotImplemented(const gin::Arguments& args);
+  void NotifyDone();
+  void OverridePreference(const std::string& key, v8::Local<v8::Value> value);
+  void QueueBackNavigation(int how_far_back);
+  void QueueForwardNavigation(int how_far_forward);
+  void QueueLoad(gin::Arguments* args);
+  void QueueLoadHTMLString(gin::Arguments* args);
+  void QueueLoadingScript(const std::string& script);
+  void QueueNonLoadingScript(const std::string& script);
+  void QueueReload();
+  void RemoveOriginAccessWhitelistEntry(const std::string& source_origin,
+                                        const std::string& destination_protocol,
+                                        const std::string& destination_host,
+                                        bool allow_destination_subdomains);
+  void RemoveWebPageOverlay();
+  void ResetDeviceLight();
+  void ResetTestHelperControllers();
   void ResolveBeforeInstallPromptPromise(int request_id,
                                          const std::string& platform);
-
-  std::string PlatformName();
-  std::string TooltipText();
-  int WebHistoryItemCount();
-  bool InterceptPostMessage();
+  void SendBluetoothManualChooserEvent(const std::string& event,
+                                       const std::string& argument);
+  void SetAcceptLanguages(const std::string& accept_languages);
+  void SetAllowDisplayOfInsecureContent(bool allowed);
+  void SetAllowFileAccessFromFileURLs(bool allow);
+  void SetAllowRunningOfInsecureContent(bool allowed);
+  void SetAllowUniversalAccessFromFileURLs(bool allow);
+  void SetAlwaysAcceptCookies(bool accept);
+  void SetAudioData(const gin::ArrayBufferView& view);
+  void SetBackingScaleFactor(double value, v8::Local<v8::Function> callback);
+  void SetBluetoothManualChooser();
+  void SetBluetoothMockDataSet(const std::string& dataset_name);
+  void SetCanOpenWindows();
+  void SetCloseRemainingWindowsWhenComplete(gin::Arguments* args);
+  void SetColorProfile(const std::string& name,
+                       v8::Local<v8::Function> callback);
+  void SetCustomPolicyDelegate(gin::Arguments* args);
+  void SetCustomTextOutput(const std::string& output);
+  void SetDatabaseQuota(int quota);
+  void SetDomainRelaxationForbiddenForURLScheme(bool forbidden,
+                                                const std::string& scheme);
+  void SetGeofencingMockPosition(double latitude, double longitude);
+  void SetGeofencingMockProvider(bool service_available);
+  void SetImagesAllowed(bool allowed);
   void SetInterceptPostMessage(bool value);
+  void SetIsolatedWorldContentSecurityPolicy(int world_id,
+                                             const std::string& policy);
+  void SetIsolatedWorldSecurityOrigin(int world_id,
+                                      v8::Local<v8::Value> origin);
+  void SetJavaScriptCanAccessClipboard(bool can_access);
+  void SetMIDIAccessorResult(bool result);
+  void SetMediaAllowed(bool allowed);
+  void SetMockDeviceLight(double value);
+  void SetMockDeviceMotion(gin::Arguments* args);
+  void SetMockDeviceOrientation(gin::Arguments* args);
+  void SetMockScreenOrientation(const std::string& orientation);
+  void SetMockSpeechRecognitionError(const std::string& error,
+                                     const std::string& message);
+  void SetPOSIXLocale(const std::string& locale);
+  void SetPageVisibility(const std::string& new_visibility);
+  void SetPermission(const std::string& name,
+                     const std::string& value,
+                     const std::string& origin,
+                     const std::string& embedding_origin);
+  void SetPluginsAllowed(bool allowed);
+  void SetPluginsEnabled(bool enabled);
+  void SetPointerLockWillFailSynchronously();
+  void SetPointerLockWillRespondAsynchronously();
+  void SetPopupBlockingEnabled(bool block_popups);
+  void SetPrinting();
+  void SetScriptsAllowed(bool allowed);
+  void SetShouldStayOnPageAfterHandlingBeforeUnload(bool value);
+  void SetStorageAllowed(bool allowed);
+  void SetTabKeyCyclesThroughElements(bool tab_key_cycles_through_elements);
+  void SetTextDirection(const std::string& direction_name);
+  void SetTextSubpixelPositioning(bool value);
+  void SetUseMockTheme(bool use);
+  void SetViewSourceForFrame(const std::string& name, bool enabled);
+  void SetWillSendRequestClearHeader(const std::string& header);
+  void SetWindowIsKey(bool value);
+  void SetXSSAuditorEnabled(bool enabled);
+  void ShowWebInspector(gin::Arguments* args);
+  void SimulateWebNotificationClick(const std::string& title, int action_index);
+  void SimulateWebNotificationClose(const std::string& title, bool by_user);
+  void UseUnfortunateSynchronousResizeMode();
+  void WaitForPolicyDelegate();
+  void WaitUntilDone();
+  void WaitUntilExternalURLLoad();
+  void AddMockCredentialManagerError(const std::string& error);
+  void AddMockCredentialManagerResponse(const std::string& id,
+                                        const std::string& name,
+                                        const std::string& avatar,
+                                        const std::string& password);
+  bool AnimationScheduled();
+  bool CallShouldCloseOnWebView();
+  bool DisableAutoResizeMode(int new_width, int new_height);
+  bool EnableAutoResizeMode(int min_width,
+                            int min_height,
+                            int max_width,
+                            int max_height);
+  std::string EvaluateInWebInspectorOverlay(const std::string& script);
+  v8::Local<v8::Value> EvaluateScriptInIsolatedWorldAndReturnValue(
+      int world_id, const std::string& script);
+  bool FindString(const std::string& search_text,
+                  const std::vector<std::string>& options_array);
+  bool HasCustomPageSizeStyle(int page_index);
+  bool InterceptPostMessage();
+  bool IsChooserShown();
 
-  void NotImplemented(const gin::Arguments& args);
+  bool IsCommandEnabled(const std::string& command);
+  std::string PathToLocalResource(const std::string& path);
+  std::string PlatformName();
+  std::string SelectionAsMarkup();
+  std::string TooltipText();
 
-  void ForceNextWebGLContextCreationToFail();
-  void ForceNextDrawingBufferCreationToFail();
+  bool WasMockSpeechRecognitionAborted();
+
+  int WebHistoryItemCount();
+  int WindowCount();
 
   base::WeakPtr<TestRunner> runner_;
 
@@ -389,288 +389,290 @@ TestRunnerBindings::~TestRunnerBindings() {}
 gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return gin::Wrappable<TestRunnerBindings>::GetObjectTemplateBuilder(isolate)
-      // Methods controlling test execution.
+      .SetMethod("abortModal", &TestRunnerBindings::NotImplemented)
+      .SetMethod("addDisallowedURL", &TestRunnerBindings::NotImplemented)
+      .SetMethod("addMockCredentialManagerError",
+                 &TestRunnerBindings::AddMockCredentialManagerError)
+      .SetMethod("addMockCredentialManagerResponse",
+                 &TestRunnerBindings::AddMockCredentialManagerResponse)
+      .SetMethod("addMockSpeechRecognitionResult",
+                 &TestRunnerBindings::AddMockSpeechRecognitionResult)
+      .SetMethod("addOriginAccessWhitelistEntry",
+                 &TestRunnerBindings::AddOriginAccessWhitelistEntry)
+      .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
+      .SetMethod("animationScheduled", &TestRunnerBindings::AnimationScheduled)
+      .SetMethod("applicationCacheDiskUsageForOrigin",
+                 &TestRunnerBindings::NotImplemented)
+      .SetMethod("callShouldCloseOnWebView",
+                 &TestRunnerBindings::CallShouldCloseOnWebView)
+      .SetMethod("capturePixelsAsyncThen",
+                 &TestRunnerBindings::CapturePixelsAsyncThen)
+      .SetMethod("clearAllApplicationCaches",
+                 &TestRunnerBindings::NotImplemented)
+      .SetMethod("clearAllDatabases", &TestRunnerBindings::ClearAllDatabases)
+      .SetMethod("clearApplicationCacheForOrigin",
+                 &TestRunnerBindings::NotImplemented)
+      .SetMethod("clearBackForwardList", &TestRunnerBindings::NotImplemented)
+      .SetMethod("clearGeofencingMockProvider",
+                 &TestRunnerBindings::ClearGeofencingMockProvider)
+      .SetMethod("clearPrinting", &TestRunnerBindings::ClearPrinting)
+      .SetMethod("closeWebInspector", &TestRunnerBindings::CloseWebInspector)
+      .SetMethod("copyImageAtAndCapturePixelsAsyncThen",
+                 &TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen)
+      .SetMethod("deleteAllLocalStorage", &TestRunnerBindings::NotImplemented)
+      .SetMethod("deleteLocalStorageForOrigin",
+                 &TestRunnerBindings::NotImplemented)
+      .SetMethod("didAcquirePointerLock",
+                 &TestRunnerBindings::DidAcquirePointerLock)
+      .SetMethod("didLosePointerLock", &TestRunnerBindings::DidLosePointerLock)
+      .SetMethod("didNotAcquirePointerLock",
+                 &TestRunnerBindings::DidNotAcquirePointerLock)
+      .SetMethod("disableAutoResizeMode",
+                 &TestRunnerBindings::DisableAutoResizeMode)
+      .SetMethod("disableMockScreenOrientation",
+                 &TestRunnerBindings::DisableMockScreenOrientation)
+      .SetMethod("dispatchBeforeInstallPromptEvent",
+                 &TestRunnerBindings::DispatchBeforeInstallPromptEvent)
+      .SetMethod("dumpAsMarkup", &TestRunnerBindings::DumpAsMarkup)
+      .SetMethod("dumpAsText", &TestRunnerBindings::DumpAsText)
+      .SetMethod("dumpAsTextWithPixelResults",
+                 &TestRunnerBindings::DumpAsTextWithPixelResults)
+      .SetMethod("dumpBackForwardList",
+                 &TestRunnerBindings::DumpBackForwardList)
+      .SetMethod("dumpChildFrameScrollPositions",
+                 &TestRunnerBindings::DumpChildFrameScrollPositions)
+      .SetMethod("dumpChildFramesAsMarkup",
+                 &TestRunnerBindings::DumpChildFramesAsMarkup)
+      .SetMethod("dumpChildFramesAsText",
+                 &TestRunnerBindings::DumpChildFramesAsText)
+      .SetMethod("dumpCreateView", &TestRunnerBindings::DumpCreateView)
+      .SetMethod("dumpDatabaseCallbacks", &TestRunnerBindings::NotImplemented)
+      .SetMethod("dumpDragImage", &TestRunnerBindings::DumpDragImage)
+      .SetMethod("dumpEditingCallbacks",
+                 &TestRunnerBindings::DumpEditingCallbacks)
+      .SetMethod("dumpFrameLoadCallbacks",
+                 &TestRunnerBindings::DumpFrameLoadCallbacks)
+      .SetMethod("dumpIconChanges", &TestRunnerBindings::DumpIconChanges)
+      .SetMethod("dumpNavigationPolicy",
+                 &TestRunnerBindings::DumpNavigationPolicy)
+      .SetMethod("dumpPageImportanceSignals",
+                 &TestRunnerBindings::DumpPageImportanceSignals)
+      .SetMethod("dumpPermissionClientCallbacks",
+                 &TestRunnerBindings::DumpPermissionClientCallbacks)
+      .SetMethod("dumpPingLoaderCallbacks",
+                 &TestRunnerBindings::DumpPingLoaderCallbacks)
+      .SetMethod("dumpResourceLoadCallbacks",
+                 &TestRunnerBindings::DumpResourceLoadCallbacks)
+      .SetMethod("dumpResourceRequestCallbacks",
+                 &TestRunnerBindings::DumpResourceRequestCallbacks)
+      .SetMethod("dumpResourceRequestPriorities",
+                 &TestRunnerBindings::DumpResourceRequestPriorities)
+      .SetMethod("dumpResourceResponseMIMETypes",
+                 &TestRunnerBindings::DumpResourceResponseMIMETypes)
+      .SetMethod("dumpSelectionRect", &TestRunnerBindings::DumpSelectionRect)
+      .SetMethod("dumpSpellCheckCallbacks",
+                 &TestRunnerBindings::DumpSpellCheckCallbacks)
+
+      // Used at fast/dom/assign-to-window-status.html
+      .SetMethod("dumpStatusCallbacks",
+                 &TestRunnerBindings::DumpWindowStatusChanges)
+      .SetMethod("dumpTitleChanges", &TestRunnerBindings::DumpTitleChanges)
+      .SetMethod("dumpUserGestureInFrameLoadCallbacks",
+                 &TestRunnerBindings::DumpUserGestureInFrameLoadCallbacks)
+      .SetMethod("dumpWindowStatusChanges",
+                 &TestRunnerBindings::DumpWindowStatusChanges)
+      .SetMethod("enableAutoResizeMode",
+                 &TestRunnerBindings::EnableAutoResizeMode)
+      .SetMethod("enableUseZoomForDSF",
+                 &TestRunnerBindings::EnableUseZoomForDSF)
+      .SetMethod("evaluateInWebInspector",
+                 &TestRunnerBindings::EvaluateInWebInspector)
+      .SetMethod("evaluateInWebInspectorOverlay",
+                 &TestRunnerBindings::EvaluateInWebInspectorOverlay)
+      .SetMethod("evaluateScriptInIsolatedWorld",
+                 &TestRunnerBindings::EvaluateScriptInIsolatedWorld)
+      .SetMethod(
+          "evaluateScriptInIsolatedWorldAndReturnValue",
+          &TestRunnerBindings::EvaluateScriptInIsolatedWorldAndReturnValue)
+      .SetMethod("execCommand", &TestRunnerBindings::ExecCommand)
+      .SetMethod("findString", &TestRunnerBindings::FindString)
+      .SetMethod("forceNextDrawingBufferCreationToFail",
+                 &TestRunnerBindings::ForceNextDrawingBufferCreationToFail)
+      .SetMethod("forceNextWebGLContextCreationToFail",
+                 &TestRunnerBindings::ForceNextWebGLContextCreationToFail)
+      .SetMethod("forceRedSelectionColors",
+                 &TestRunnerBindings::ForceRedSelectionColors)
+
+      // The Bluetooth functions are specified at
+      // https://webbluetoothcg.github.io/web-bluetooth/tests/.
+      .SetMethod("getBluetoothManualChooserEvents",
+                 &TestRunnerBindings::GetBluetoothManualChooserEvents)
+      .SetMethod("getManifestThen", &TestRunnerBindings::GetManifestThen)
+      .SetMethod("hasCustomPageSizeStyle",
+                 &TestRunnerBindings::HasCustomPageSizeStyle)
+      .SetMethod("insertStyleSheet", &TestRunnerBindings::InsertStyleSheet)
+      .SetProperty("interceptPostMessage",
+                   &TestRunnerBindings::InterceptPostMessage,
+                   &TestRunnerBindings::SetInterceptPostMessage)
+      .SetMethod("isChooserShown", &TestRunnerBindings::IsChooserShown)
+      .SetMethod("isCommandEnabled", &TestRunnerBindings::IsCommandEnabled)
+      .SetMethod("keepWebHistory", &TestRunnerBindings::NotImplemented)
+      .SetMethod("layoutAndPaintAsync",
+                 &TestRunnerBindings::LayoutAndPaintAsync)
+      .SetMethod("layoutAndPaintAsyncThen",
+                 &TestRunnerBindings::LayoutAndPaintAsyncThen)
+      .SetMethod("localStorageDiskUsageForOrigin",
+                 &TestRunnerBindings::NotImplemented)
       .SetMethod("logToStderr", &TestRunnerBindings::LogToStderr)
       .SetMethod("notifyDone", &TestRunnerBindings::NotifyDone)
-      .SetMethod("waitUntilDone", &TestRunnerBindings::WaitUntilDone)
+      .SetMethod("observeStorageTrackerNotifications",
+                 &TestRunnerBindings::NotImplemented)
+      .SetMethod("originsWithLocalStorage", &TestRunnerBindings::NotImplemented)
+      .SetMethod("overridePreference", &TestRunnerBindings::OverridePreference)
+      .SetMethod("pathToLocalResource",
+                 &TestRunnerBindings::PathToLocalResource)
+      .SetProperty("platformName", &TestRunnerBindings::PlatformName)
       .SetMethod("queueBackNavigation",
                  &TestRunnerBindings::QueueBackNavigation)
       .SetMethod("queueForwardNavigation",
                  &TestRunnerBindings::QueueForwardNavigation)
-      .SetMethod("queueReload", &TestRunnerBindings::QueueReload)
-      .SetMethod("queueLoadingScript", &TestRunnerBindings::QueueLoadingScript)
-      .SetMethod("queueNonLoadingScript",
-                 &TestRunnerBindings::QueueNonLoadingScript)
       .SetMethod("queueLoad", &TestRunnerBindings::QueueLoad)
       .SetMethod("queueLoadHTMLString",
                  &TestRunnerBindings::QueueLoadHTMLString)
-      .SetMethod("setCustomPolicyDelegate",
-                 &TestRunnerBindings::SetCustomPolicyDelegate)
-      .SetMethod("waitForPolicyDelegate",
-                 &TestRunnerBindings::WaitForPolicyDelegate)
-      .SetMethod("windowCount", &TestRunnerBindings::WindowCount)
-      .SetMethod("setCloseRemainingWindowsWhenComplete",
-                 &TestRunnerBindings::SetCloseRemainingWindowsWhenComplete)
-      .SetMethod("resetTestHelperControllers",
-                 &TestRunnerBindings::ResetTestHelperControllers)
-      .SetMethod("setTabKeyCyclesThroughElements",
-                 &TestRunnerBindings::SetTabKeyCyclesThroughElements)
-      .SetMethod("execCommand", &TestRunnerBindings::ExecCommand)
-      .SetMethod("isCommandEnabled", &TestRunnerBindings::IsCommandEnabled)
-      .SetMethod("callShouldCloseOnWebView",
-                 &TestRunnerBindings::CallShouldCloseOnWebView)
-      .SetMethod("setDomainRelaxationForbiddenForURLScheme",
-                 &TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme)
-      .SetMethod(
-          "evaluateScriptInIsolatedWorldAndReturnValue",
-          &TestRunnerBindings::EvaluateScriptInIsolatedWorldAndReturnValue)
-      .SetMethod("evaluateScriptInIsolatedWorld",
-                 &TestRunnerBindings::EvaluateScriptInIsolatedWorld)
-      .SetMethod("setIsolatedWorldSecurityOrigin",
-                 &TestRunnerBindings::SetIsolatedWorldSecurityOrigin)
-      .SetMethod("setIsolatedWorldContentSecurityPolicy",
-                 &TestRunnerBindings::SetIsolatedWorldContentSecurityPolicy)
-      .SetMethod("addOriginAccessWhitelistEntry",
-                 &TestRunnerBindings::AddOriginAccessWhitelistEntry)
+      .SetMethod("queueLoadingScript", &TestRunnerBindings::QueueLoadingScript)
+      .SetMethod("queueNonLoadingScript",
+                 &TestRunnerBindings::QueueNonLoadingScript)
+      .SetMethod("queueReload", &TestRunnerBindings::QueueReload)
       .SetMethod("removeOriginAccessWhitelistEntry",
                  &TestRunnerBindings::RemoveOriginAccessWhitelistEntry)
-      .SetMethod("hasCustomPageSizeStyle",
-                 &TestRunnerBindings::HasCustomPageSizeStyle)
-      .SetMethod("forceRedSelectionColors",
-                 &TestRunnerBindings::ForceRedSelectionColors)
-      .SetMethod("insertStyleSheet", &TestRunnerBindings::InsertStyleSheet)
-      .SetMethod("findString", &TestRunnerBindings::FindString)
-      .SetMethod("selectionAsMarkup", &TestRunnerBindings::SelectionAsMarkup)
-      .SetMethod("setTextSubpixelPositioning",
-                 &TestRunnerBindings::SetTextSubpixelPositioning)
-      .SetMethod("setPageVisibility", &TestRunnerBindings::SetPageVisibility)
-      .SetMethod("setTextDirection", &TestRunnerBindings::SetTextDirection)
-      .SetMethod("useUnfortunateSynchronousResizeMode",
-                 &TestRunnerBindings::UseUnfortunateSynchronousResizeMode)
-      .SetMethod("enableAutoResizeMode",
-                 &TestRunnerBindings::EnableAutoResizeMode)
-      .SetMethod("disableAutoResizeMode",
-                 &TestRunnerBindings::DisableAutoResizeMode)
-      .SetMethod("setMockDeviceLight", &TestRunnerBindings::SetMockDeviceLight)
+      .SetMethod("removeWebPageOverlay",
+                 &TestRunnerBindings::RemoveWebPageOverlay)
       .SetMethod("resetDeviceLight", &TestRunnerBindings::ResetDeviceLight)
+      .SetMethod("resetTestHelperControllers",
+                 &TestRunnerBindings::ResetTestHelperControllers)
+      .SetMethod("resolveBeforeInstallPromptPromise",
+                 &TestRunnerBindings::ResolveBeforeInstallPromptPromise)
+      .SetMethod("selectionAsMarkup", &TestRunnerBindings::SelectionAsMarkup)
+
+      // The Bluetooth functions are specified at
+      // https://webbluetoothcg.github.io/web-bluetooth/tests/.
+      .SetMethod("sendBluetoothManualChooserEvent",
+                 &TestRunnerBindings::SendBluetoothManualChooserEvent)
+      .SetMethod("setAcceptLanguages", &TestRunnerBindings::SetAcceptLanguages)
+      .SetMethod("setAllowDisplayOfInsecureContent",
+                 &TestRunnerBindings::SetAllowDisplayOfInsecureContent)
+      .SetMethod("setAllowFileAccessFromFileURLs",
+                 &TestRunnerBindings::SetAllowFileAccessFromFileURLs)
+      .SetMethod("setAllowRunningOfInsecureContent",
+                 &TestRunnerBindings::SetAllowRunningOfInsecureContent)
+      .SetMethod("setAllowUniversalAccessFromFileURLs",
+                 &TestRunnerBindings::SetAllowUniversalAccessFromFileURLs)
+      .SetMethod("setAlwaysAcceptCookies",
+                 &TestRunnerBindings::SetAlwaysAcceptCookies)
+      .SetMethod("setApplicationCacheOriginQuota",
+                 &TestRunnerBindings::NotImplemented)
+      .SetMethod("setAudioData", &TestRunnerBindings::SetAudioData)
+      .SetMethod("setBackingScaleFactor",
+                 &TestRunnerBindings::SetBackingScaleFactor)
+
+      // The Bluetooth functions are specified at
+      // https://webbluetoothcg.github.io/web-bluetooth/tests/.
+      .SetMethod("setBluetoothManualChooser",
+                 &TestRunnerBindings::SetBluetoothManualChooser)
+      .SetMethod("setBluetoothMockDataSet",
+                 &TestRunnerBindings::SetBluetoothMockDataSet)
+      .SetMethod("setCallCloseOnWebViews", &TestRunnerBindings::NotImplemented)
+      .SetMethod("setCanOpenWindows", &TestRunnerBindings::SetCanOpenWindows)
+      .SetMethod("setCloseRemainingWindowsWhenComplete",
+                 &TestRunnerBindings::SetCloseRemainingWindowsWhenComplete)
+      .SetMethod("setColorProfile", &TestRunnerBindings::SetColorProfile)
+      .SetMethod("setCustomPolicyDelegate",
+                 &TestRunnerBindings::SetCustomPolicyDelegate)
+      .SetMethod("setCustomTextOutput",
+                 &TestRunnerBindings::SetCustomTextOutput)
+      .SetMethod("setDatabaseQuota", &TestRunnerBindings::SetDatabaseQuota)
+      .SetMethod("setDomainRelaxationForbiddenForURLScheme",
+                 &TestRunnerBindings::SetDomainRelaxationForbiddenForURLScheme)
+      .SetMethod("setGeofencingMockPosition",
+                 &TestRunnerBindings::SetGeofencingMockPosition)
+      .SetMethod("setGeofencingMockProvider",
+                 &TestRunnerBindings::SetGeofencingMockProvider)
+      .SetMethod("setIconDatabaseEnabled", &TestRunnerBindings::NotImplemented)
+      .SetMethod("setImagesAllowed", &TestRunnerBindings::SetImagesAllowed)
+      .SetMethod("setIsolatedWorldContentSecurityPolicy",
+                 &TestRunnerBindings::SetIsolatedWorldContentSecurityPolicy)
+      .SetMethod("setIsolatedWorldSecurityOrigin",
+                 &TestRunnerBindings::SetIsolatedWorldSecurityOrigin)
+      .SetMethod("setJavaScriptCanAccessClipboard",
+                 &TestRunnerBindings::SetJavaScriptCanAccessClipboard)
+      .SetMethod("setMIDIAccessorResult",
+                 &TestRunnerBindings::SetMIDIAccessorResult)
+      .SetMethod("setMainFrameIsFirstResponder",
+                 &TestRunnerBindings::NotImplemented)
+      .SetMethod("setMediaAllowed", &TestRunnerBindings::SetMediaAllowed)
+      .SetMethod("setMockDeviceLight", &TestRunnerBindings::SetMockDeviceLight)
       .SetMethod("setMockDeviceMotion",
                  &TestRunnerBindings::SetMockDeviceMotion)
       .SetMethod("setMockDeviceOrientation",
                  &TestRunnerBindings::SetMockDeviceOrientation)
       .SetMethod("setMockScreenOrientation",
                  &TestRunnerBindings::SetMockScreenOrientation)
-      .SetMethod("disableMockScreenOrientation",
-                 &TestRunnerBindings::DisableMockScreenOrientation)
-      .SetMethod("didAcquirePointerLock",
-                 &TestRunnerBindings::DidAcquirePointerLock)
-      .SetMethod("didNotAcquirePointerLock",
-                 &TestRunnerBindings::DidNotAcquirePointerLock)
-      .SetMethod("didLosePointerLock", &TestRunnerBindings::DidLosePointerLock)
+      .SetMethod("setMockSpeechRecognitionError",
+                 &TestRunnerBindings::SetMockSpeechRecognitionError)
+      .SetMethod("setPOSIXLocale", &TestRunnerBindings::SetPOSIXLocale)
+      .SetMethod("setPageVisibility", &TestRunnerBindings::SetPageVisibility)
+      .SetMethod("setPermission", &TestRunnerBindings::SetPermission)
+      .SetMethod("setPluginsAllowed", &TestRunnerBindings::SetPluginsAllowed)
+      .SetMethod("setPluginsEnabled", &TestRunnerBindings::SetPluginsEnabled)
       .SetMethod("setPointerLockWillFailSynchronously",
                  &TestRunnerBindings::SetPointerLockWillFailSynchronously)
       .SetMethod("setPointerLockWillRespondAsynchronously",
                  &TestRunnerBindings::SetPointerLockWillRespondAsynchronously)
       .SetMethod("setPopupBlockingEnabled",
                  &TestRunnerBindings::SetPopupBlockingEnabled)
-      .SetMethod("setJavaScriptCanAccessClipboard",
-                 &TestRunnerBindings::SetJavaScriptCanAccessClipboard)
-      .SetMethod("setXSSAuditorEnabled",
-                 &TestRunnerBindings::SetXSSAuditorEnabled)
-      .SetMethod("setAllowUniversalAccessFromFileURLs",
-                 &TestRunnerBindings::SetAllowUniversalAccessFromFileURLs)
-      .SetMethod("setAllowFileAccessFromFileURLs",
-                 &TestRunnerBindings::SetAllowFileAccessFromFileURLs)
-      .SetMethod("overridePreference", &TestRunnerBindings::OverridePreference)
-      .SetMethod("setAcceptLanguages", &TestRunnerBindings::SetAcceptLanguages)
-      .SetMethod("setPluginsEnabled", &TestRunnerBindings::SetPluginsEnabled)
-      .SetMethod("dumpEditingCallbacks",
-                 &TestRunnerBindings::DumpEditingCallbacks)
-      .SetMethod("dumpAsMarkup", &TestRunnerBindings::DumpAsMarkup)
-      .SetMethod("dumpAsText", &TestRunnerBindings::DumpAsText)
-      .SetMethod("dumpAsTextWithPixelResults",
-                 &TestRunnerBindings::DumpAsTextWithPixelResults)
-      .SetMethod("dumpChildFrameScrollPositions",
-                 &TestRunnerBindings::DumpChildFrameScrollPositions)
-      .SetMethod("dumpChildFramesAsText",
-                 &TestRunnerBindings::DumpChildFramesAsText)
-      .SetMethod("dumpChildFramesAsMarkup",
-                 &TestRunnerBindings::DumpChildFramesAsMarkup)
-      .SetMethod("dumpIconChanges", &TestRunnerBindings::DumpIconChanges)
-      .SetMethod("setAudioData", &TestRunnerBindings::SetAudioData)
-      .SetMethod("dumpFrameLoadCallbacks",
-                 &TestRunnerBindings::DumpFrameLoadCallbacks)
-      .SetMethod("dumpPingLoaderCallbacks",
-                 &TestRunnerBindings::DumpPingLoaderCallbacks)
-      .SetMethod("dumpUserGestureInFrameLoadCallbacks",
-                 &TestRunnerBindings::DumpUserGestureInFrameLoadCallbacks)
-      .SetMethod("dumpTitleChanges", &TestRunnerBindings::DumpTitleChanges)
-      .SetMethod("dumpCreateView", &TestRunnerBindings::DumpCreateView)
-      .SetMethod("setCanOpenWindows", &TestRunnerBindings::SetCanOpenWindows)
-      .SetMethod("dumpResourceLoadCallbacks",
-                 &TestRunnerBindings::DumpResourceLoadCallbacks)
-      .SetMethod("dumpResourceRequestCallbacks",
-                 &TestRunnerBindings::DumpResourceRequestCallbacks)
-      .SetMethod("dumpResourceResponseMIMETypes",
-                 &TestRunnerBindings::DumpResourceResponseMIMETypes)
-      .SetMethod("setImagesAllowed", &TestRunnerBindings::SetImagesAllowed)
-      .SetMethod("setMediaAllowed", &TestRunnerBindings::SetMediaAllowed)
-      .SetMethod("setScriptsAllowed", &TestRunnerBindings::SetScriptsAllowed)
-      .SetMethod("setStorageAllowed", &TestRunnerBindings::SetStorageAllowed)
-      .SetMethod("setPluginsAllowed", &TestRunnerBindings::SetPluginsAllowed)
-      .SetMethod("animationScheduled", &TestRunnerBindings::AnimationScheduled)
-      .SetMethod("setAllowDisplayOfInsecureContent",
-                 &TestRunnerBindings::SetAllowDisplayOfInsecureContent)
-      .SetMethod("setAllowRunningOfInsecureContent",
-                 &TestRunnerBindings::SetAllowRunningOfInsecureContent)
-      .SetMethod("dumpPermissionClientCallbacks",
-                 &TestRunnerBindings::DumpPermissionClientCallbacks)
-      .SetMethod("dumpWindowStatusChanges",
-                 &TestRunnerBindings::DumpWindowStatusChanges)
-      .SetMethod("dumpSpellCheckCallbacks",
-                 &TestRunnerBindings::DumpSpellCheckCallbacks)
-      .SetMethod("dumpBackForwardList",
-                 &TestRunnerBindings::DumpBackForwardList)
-      .SetMethod("dumpSelectionRect", &TestRunnerBindings::DumpSelectionRect)
       .SetMethod("setPrinting", &TestRunnerBindings::SetPrinting)
-      .SetMethod("clearPrinting", &TestRunnerBindings::ClearPrinting)
+      .SetMethod("setScriptsAllowed", &TestRunnerBindings::SetScriptsAllowed)
+      .SetMethod("setScrollbarPolicy", &TestRunnerBindings::NotImplemented)
       .SetMethod(
           "setShouldStayOnPageAfterHandlingBeforeUnload",
           &TestRunnerBindings::SetShouldStayOnPageAfterHandlingBeforeUnload)
+      .SetMethod("setStorageAllowed", &TestRunnerBindings::SetStorageAllowed)
+      .SetMethod("setTabKeyCyclesThroughElements",
+                 &TestRunnerBindings::SetTabKeyCyclesThroughElements)
+      .SetMethod("setTextDirection", &TestRunnerBindings::SetTextDirection)
+      .SetMethod("setTextSubpixelPositioning",
+                 &TestRunnerBindings::SetTextSubpixelPositioning)
+      .SetMethod("setUseDashboardCompatibilityMode",
+                 &TestRunnerBindings::NotImplemented)
+      .SetMethod("setUseMockTheme", &TestRunnerBindings::SetUseMockTheme)
+      .SetMethod("setViewSourceForFrame",
+                 &TestRunnerBindings::SetViewSourceForFrame)
       .SetMethod("setWillSendRequestClearHeader",
                  &TestRunnerBindings::SetWillSendRequestClearHeader)
-      .SetMethod("dumpResourceRequestPriorities",
-                 &TestRunnerBindings::DumpResourceRequestPriorities)
-      .SetMethod("setUseMockTheme", &TestRunnerBindings::SetUseMockTheme)
-      .SetMethod("waitUntilExternalURLLoad",
-                 &TestRunnerBindings::WaitUntilExternalURLLoad)
-      .SetMethod("dumpDragImage", &TestRunnerBindings::DumpDragImage)
-      .SetMethod("dumpNavigationPolicy",
-                 &TestRunnerBindings::DumpNavigationPolicy)
-      .SetMethod("dumpPageImportanceSignals",
-                 &TestRunnerBindings::DumpPageImportanceSignals)
-      .SetMethod("showWebInspector", &TestRunnerBindings::ShowWebInspector)
-      .SetMethod("closeWebInspector", &TestRunnerBindings::CloseWebInspector)
-      .SetMethod("isChooserShown", &TestRunnerBindings::IsChooserShown)
-      .SetMethod("evaluateInWebInspector",
-                 &TestRunnerBindings::EvaluateInWebInspector)
-      .SetMethod("evaluateInWebInspectorOverlay",
-                 &TestRunnerBindings::EvaluateInWebInspectorOverlay)
-      .SetMethod("clearAllDatabases", &TestRunnerBindings::ClearAllDatabases)
-      .SetMethod("setDatabaseQuota", &TestRunnerBindings::SetDatabaseQuota)
-      .SetMethod("setAlwaysAcceptCookies",
-                 &TestRunnerBindings::SetAlwaysAcceptCookies)
       .SetMethod("setWindowIsKey", &TestRunnerBindings::SetWindowIsKey)
-      .SetMethod("pathToLocalResource",
-                 &TestRunnerBindings::PathToLocalResource)
-      .SetMethod("setBackingScaleFactor",
-                 &TestRunnerBindings::SetBackingScaleFactor)
-      .SetMethod("enableUseZoomForDSF",
-                 &TestRunnerBindings::EnableUseZoomForDSF)
-      .SetMethod("setColorProfile", &TestRunnerBindings::SetColorProfile)
-      .SetMethod("setPOSIXLocale", &TestRunnerBindings::SetPOSIXLocale)
-      .SetMethod("setMIDIAccessorResult",
-                 &TestRunnerBindings::SetMIDIAccessorResult)
+      .SetMethod("setXSSAuditorEnabled",
+                 &TestRunnerBindings::SetXSSAuditorEnabled)
+      .SetMethod("showWebInspector", &TestRunnerBindings::ShowWebInspector)
       .SetMethod("simulateWebNotificationClick",
                  &TestRunnerBindings::SimulateWebNotificationClick)
       .SetMethod("simulateWebNotificationClose",
                  &TestRunnerBindings::SimulateWebNotificationClose)
-      .SetMethod("addMockSpeechRecognitionResult",
-                 &TestRunnerBindings::AddMockSpeechRecognitionResult)
-      .SetMethod("setMockSpeechRecognitionError",
-                 &TestRunnerBindings::SetMockSpeechRecognitionError)
+      .SetMethod("syncLocalStorage", &TestRunnerBindings::NotImplemented)
+      .SetProperty("tooltipText", &TestRunnerBindings::TooltipText)
+      .SetMethod("useUnfortunateSynchronousResizeMode",
+                 &TestRunnerBindings::UseUnfortunateSynchronousResizeMode)
+      .SetMethod("waitForPolicyDelegate",
+                 &TestRunnerBindings::WaitForPolicyDelegate)
+      .SetMethod("waitUntilDone", &TestRunnerBindings::WaitUntilDone)
+      .SetMethod("waitUntilExternalURLLoad",
+                 &TestRunnerBindings::WaitUntilExternalURLLoad)
       .SetMethod("wasMockSpeechRecognitionAborted",
                  &TestRunnerBindings::WasMockSpeechRecognitionAborted)
-      .SetMethod("addMockCredentialManagerResponse",
-                 &TestRunnerBindings::AddMockCredentialManagerResponse)
-      .SetMethod("addMockCredentialManagerError",
-                 &TestRunnerBindings::AddMockCredentialManagerError)
-      .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
-      .SetMethod("removeWebPageOverlay",
-                 &TestRunnerBindings::RemoveWebPageOverlay)
-      .SetMethod("layoutAndPaintAsync",
-                 &TestRunnerBindings::LayoutAndPaintAsync)
-      .SetMethod("layoutAndPaintAsyncThen",
-                 &TestRunnerBindings::LayoutAndPaintAsyncThen)
-      .SetMethod("getManifestThen", &TestRunnerBindings::GetManifestThen)
-      .SetMethod("capturePixelsAsyncThen",
-                 &TestRunnerBindings::CapturePixelsAsyncThen)
-      .SetMethod("copyImageAtAndCapturePixelsAsyncThen",
-                 &TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen)
-      .SetMethod("setCustomTextOutput",
-                 &TestRunnerBindings::SetCustomTextOutput)
-      .SetMethod("setViewSourceForFrame",
-                 &TestRunnerBindings::SetViewSourceForFrame)
-      // The 4 Bluetooth functions are specified at
-      // https://webbluetoothcg.github.io/web-bluetooth/tests/.
-      .SetMethod("setBluetoothMockDataSet",
-                 &TestRunnerBindings::SetBluetoothMockDataSet)
-      .SetMethod("setBluetoothManualChooser",
-                 &TestRunnerBindings::SetBluetoothManualChooser)
-      .SetMethod("getBluetoothManualChooserEvents",
-                 &TestRunnerBindings::GetBluetoothManualChooserEvents)
-      .SetMethod("sendBluetoothManualChooserEvent",
-                 &TestRunnerBindings::SendBluetoothManualChooserEvent)
-      .SetMethod("forceNextWebGLContextCreationToFail",
-                 &TestRunnerBindings::ForceNextWebGLContextCreationToFail)
-      .SetMethod("forceNextDrawingBufferCreationToFail",
-                 &TestRunnerBindings::ForceNextDrawingBufferCreationToFail)
-      .SetMethod("setGeofencingMockProvider",
-                 &TestRunnerBindings::SetGeofencingMockProvider)
-      .SetMethod("clearGeofencingMockProvider",
-                 &TestRunnerBindings::ClearGeofencingMockProvider)
-      .SetMethod("setGeofencingMockPosition",
-                 &TestRunnerBindings::SetGeofencingMockPosition)
-      .SetMethod("setPermission", &TestRunnerBindings::SetPermission)
-      .SetMethod("dispatchBeforeInstallPromptEvent",
-                 &TestRunnerBindings::DispatchBeforeInstallPromptEvent)
-      .SetMethod("resolveBeforeInstallPromptPromise",
-                 &TestRunnerBindings::ResolveBeforeInstallPromptPromise)
 
-      // Properties.
-      .SetProperty("platformName", &TestRunnerBindings::PlatformName)
-      .SetProperty("tooltipText", &TestRunnerBindings::TooltipText)
       // webHistoryItemCount is used by tests in LayoutTests\http\tests\history
       .SetProperty("webHistoryItemCount",
                    &TestRunnerBindings::WebHistoryItemCount)
-      .SetProperty("interceptPostMessage",
-                   &TestRunnerBindings::InterceptPostMessage,
-                   &TestRunnerBindings::SetInterceptPostMessage)
-
-      // The following are stubs.
-      .SetMethod("dumpDatabaseCallbacks", &TestRunnerBindings::NotImplemented)
-      .SetMethod("setIconDatabaseEnabled", &TestRunnerBindings::NotImplemented)
-      .SetMethod("setScrollbarPolicy", &TestRunnerBindings::NotImplemented)
-      .SetMethod("clearAllApplicationCaches",
-                 &TestRunnerBindings::NotImplemented)
-      .SetMethod("clearApplicationCacheForOrigin",
-                 &TestRunnerBindings::NotImplemented)
-      .SetMethod("clearBackForwardList", &TestRunnerBindings::NotImplemented)
-      .SetMethod("keepWebHistory", &TestRunnerBindings::NotImplemented)
-      .SetMethod("setApplicationCacheOriginQuota",
-                 &TestRunnerBindings::NotImplemented)
-      .SetMethod("setCallCloseOnWebViews", &TestRunnerBindings::NotImplemented)
-      .SetMethod("setMainFrameIsFirstResponder",
-                 &TestRunnerBindings::NotImplemented)
-      .SetMethod("setUseDashboardCompatibilityMode",
-                 &TestRunnerBindings::NotImplemented)
-      .SetMethod("deleteAllLocalStorage", &TestRunnerBindings::NotImplemented)
-      .SetMethod("localStorageDiskUsageForOrigin",
-                 &TestRunnerBindings::NotImplemented)
-      .SetMethod("originsWithLocalStorage", &TestRunnerBindings::NotImplemented)
-      .SetMethod("deleteLocalStorageForOrigin",
-                 &TestRunnerBindings::NotImplemented)
-      .SetMethod("observeStorageTrackerNotifications",
-                 &TestRunnerBindings::NotImplemented)
-      .SetMethod("syncLocalStorage", &TestRunnerBindings::NotImplemented)
-      .SetMethod("addDisallowedURL", &TestRunnerBindings::NotImplemented)
-      .SetMethod("applicationCacheDiskUsageForOrigin",
-                 &TestRunnerBindings::NotImplemented)
-      .SetMethod("abortModal", &TestRunnerBindings::NotImplemented)
-
-      // Aliases.
-      // Used at fast/dom/assign-to-window-status.html
-      .SetMethod("dumpStatusCallbacks",
-                 &TestRunnerBindings::DumpWindowStatusChanges);
+      .SetMethod("windowCount", &TestRunnerBindings::WindowCount);
 }
 
 void TestRunnerBindings::LogToStderr(const std::string& output) {
