@@ -30,6 +30,7 @@ const char kDeviceStateChangeInProgress[] = "An operation that changes the devic
 const char kInterfaceNotFound[] = "The interface number provided is not supported by the device in its current configuration.";
 const char kInterfaceStateChangeInProgress[] = "An operation that changes interface state is in progress.";
 const char kOpenRequired[] = "The device must be opened first.";
+const char kVisibiltyError[] = "Connection is only allowed while the page is visible. This is a temporary measure until we are able to effectively communicate to the user that the page is connected to a device.";
 
 DOMException* convertControlTransferParameters(
     WebUSBDevice::TransferDirection direction,
@@ -94,8 +95,15 @@ public:
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
+
         m_device->onDeviceOpenedOrClosed(m_desiredState);
-        m_resolver->resolve();
+        if (m_device->page()->isPageVisible()) {
+            m_resolver->resolve();
+        } else {
+            m_device->pageVisibilityChanged();
+            m_resolver->reject(DOMException::create(SecurityError, kVisibiltyError));
+            return;
+        }
     }
 
     void onError(const WebUSBError& e) override
@@ -312,6 +320,7 @@ USBDevice* USBDevice::take(ScriptPromiseResolver* resolver, PassOwnPtr<WebUSBDev
 
 USBDevice::USBDevice(PassOwnPtr<WebUSBDevice> device, ExecutionContext* context)
     : ContextLifecycleObserver(context)
+    , PageLifecycleObserver(toDocument(context)->page())
     , m_device(device)
     , m_opened(false)
     , m_deviceStateChangeInProgress(false)
@@ -607,13 +616,24 @@ ScriptPromise USBDevice::reset(ScriptState* scriptState)
 
 void USBDevice::contextDestroyed()
 {
-    if (m_opened)
+    if (m_opened) {
         m_device->close(new WebUSBDeviceCloseCallbacks());
+        m_opened = false;
+    }
+}
+
+void USBDevice::pageVisibilityChanged()
+{
+    if (!page()->isPageVisible() && m_opened) {
+        m_device->close(new WebUSBDeviceCloseCallbacks());
+        m_opened = false;
+    }
 }
 
 DEFINE_TRACE(USBDevice)
 {
     ContextLifecycleObserver::trace(visitor);
+    PageLifecycleObserver::trace(visitor);
 }
 
 int USBDevice::findConfigurationIndex(uint8_t configurationValue) const
@@ -648,29 +668,40 @@ int USBDevice::findAlternateIndex(size_t interfaceIndex, uint8_t alternateSettin
     return -1;
 }
 
+bool USBDevice::ensurePageVisible(ScriptPromiseResolver* resolver) const
+{
+    if (!page()->isPageVisible()) {
+        resolver->reject(DOMException::create(SecurityError, kVisibiltyError));
+        return false;
+    }
+    return true;
+}
+
 bool USBDevice::ensureNoDeviceOrInterfaceChangeInProgress(ScriptPromiseResolver* resolver) const
 {
-    if (m_deviceStateChangeInProgress) {
+    if (!ensurePageVisible(resolver))
+        return false;
+    if (m_deviceStateChangeInProgress)
         resolver->reject(DOMException::create(InvalidStateError, kDeviceStateChangeInProgress));
-    } else if (anyInterfaceChangeInProgress()) {
+    else if (anyInterfaceChangeInProgress())
         resolver->reject(DOMException::create(InvalidStateError, kInterfaceStateChangeInProgress));
-    } else {
+    else
         return true;
-    }
     return false;
 }
 
 bool USBDevice::ensureDeviceConfigured(ScriptPromiseResolver* resolver) const
 {
-    if (!m_opened) {
-        resolver->reject(DOMException::create(InvalidStateError, kOpenRequired));
-    } else if (m_deviceStateChangeInProgress) {
+    if (!ensurePageVisible(resolver))
+        return false;
+    if (m_deviceStateChangeInProgress)
         resolver->reject(DOMException::create(InvalidStateError, kDeviceStateChangeInProgress));
-    } else if (m_configurationIndex == -1) {
+    else if (!m_opened)
+        resolver->reject(DOMException::create(InvalidStateError, kOpenRequired));
+    else if (m_configurationIndex == -1)
         resolver->reject(DOMException::create(InvalidStateError, "The device must have a configuration selected."));
-    } else {
+    else
         return true;
-    }
     return false;
 }
 
@@ -679,15 +710,14 @@ bool USBDevice::ensureInterfaceClaimed(uint8_t interfaceNumber, ScriptPromiseRes
     if (!ensureDeviceConfigured(resolver))
         return false;
     int interfaceIndex = findInterfaceIndex(interfaceNumber);
-    if (interfaceIndex == -1) {
+    if (interfaceIndex == -1)
         resolver->reject(DOMException::create(NotFoundError, kInterfaceNotFound));
-    } else if (m_interfaceStateChangeInProgress.get(interfaceIndex)) {
+    else if (m_interfaceStateChangeInProgress.get(interfaceIndex))
         resolver->reject(DOMException::create(InvalidStateError, kInterfaceStateChangeInProgress));
-    } else if (!m_claimedInterfaces.get(interfaceIndex)) {
+    else if (!m_claimedInterfaces.get(interfaceIndex))
         resolver->reject(DOMException::create(InvalidStateError, "The specified interface has not been claimed."));
-    } else {
+    else
         return true;
-    }
     return false;
 }
 

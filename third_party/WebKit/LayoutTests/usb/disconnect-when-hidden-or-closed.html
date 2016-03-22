@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/fake-devices.js"></script>
+<script src="resources/usb-helpers.js"></script>
+<script>
+'use strict';
+
+const visibilityError =
+    'Connection is only allowed while the page is visible. This is a ' +
+    'temporary measure until we are able to effectively communicate to the ' +
+    'user that the page is connected to a device.';
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  testRunner.setPageVisibility('visible');
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    testRunner.setPageVisibility('hidden');
+    return assertRejectsWithError(
+        device.open(), 'SecurityError', visibilityError).then(() => {
+      assert_false(device.opened);
+    });
+  });
+}, 'device connection is disallowed while the tab is hidden');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  testRunner.setPageVisibility('visible');
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    let promise = assertRejectsWithError(
+        device.open(), 'SecurityError', visibilityError);
+    testRunner.setPageVisibility('hidden');
+    return promise.then(() => {
+      assert_false(device.opened);
+    });
+  });
+}, 'device connection is disallowed when it finishes while the tab is hidden');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  testRunner.setPageVisibility('visible');
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    return device.open().then(() => {
+      testRunner.setPageVisibility('hidden');
+      return assertRejectsWithError(
+          device.selectConfiguration(1), 'SecurityError', visibilityError);
+    }).then(() => {
+      assert_false(device.opened);
+    });
+  });
+}, 'device connection is closed when tab becomes hidden');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  testRunner.setPageVisibility('visible');
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(devices.length, 1);
+    let device = devices[0];
+    return device.open().then(() => {
+      testRunner.setPageVisibility('hidden');
+      return assertRejectsWithError(
+          device.selectConfiguration(0), 'SecurityError', visibilityError);
+    }).then(() => {
+      assert_false(device.opened);
+      testRunner.setPageVisibility('visible');
+      return device.open()
+          .then(() => device.selectConfiguration(1))
+          .then(() => device.close());
+    });
+  });
+}, 'device can be reopened when the page is visible');
+</script>

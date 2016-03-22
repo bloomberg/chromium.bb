@@ -1,5 +1,15 @@
 'use strict';
 
+function assertRejectsWithError(promise, name, message) {
+  return promise.then(() => {
+    assert_unreached('expected promise to reject with ' + name);
+  }, error => {
+    assert_equals(error.name, name);
+    if (message !== undefined)
+      assert_equals(error.message, message);
+  });
+}
+
 // TODO(reillyg): Remove when jyasskin upstreams this to testharness.js:
 // https://crbug.com/509058.
 function callWithKeyDown(functionCalledOnKeyPress) {

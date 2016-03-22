@@ -9,6 +9,8 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/dom/ContextLifecycleObserver.h"
+#include "core/dom/Document.h"
+#include "core/page/PageLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/webusb/WebUSBDevice.h"
 #include "public/platform/modules/webusb/WebUSBDeviceInfo.h"
@@ -25,7 +27,8 @@ class USBControlTransferParameters;
 class USBDevice
     : public GarbageCollectedFinalized<USBDevice>
     , public ContextLifecycleObserver
-    , public ScriptWrappable {
+    , public ScriptWrappable
+    , public PageLifecycleObserver {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(USBDevice);
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -85,7 +88,11 @@ public:
     ScriptPromise isochronousTransferOut(ScriptState*, uint8_t endpointNumber, const ArrayBufferOrArrayBufferView& data, Vector<unsigned> packetLengths);
     ScriptPromise reset(ScriptState*);
 
+    // ContextLifecycleObserver interface.
     void contextDestroyed() override;
+
+    // PageLifecycleObserver interface.
+    void pageVisibilityChanged() override;
 
     DECLARE_TRACE();
 
@@ -93,6 +100,7 @@ private:
     int findConfigurationIndex(uint8_t configurationValue) const;
     int findInterfaceIndex(uint8_t interfaceNumber) const;
     int findAlternateIndex(size_t interfaceIndex, uint8_t alternateSetting) const;
+    bool ensurePageVisible(ScriptPromiseResolver*) const;
     bool ensureNoDeviceOrInterfaceChangeInProgress(ScriptPromiseResolver*) const;
     bool ensureDeviceConfigured(ScriptPromiseResolver*) const;
     bool ensureInterfaceClaimed(uint8_t interfaceNumber, ScriptPromiseResolver*) const;
