@@ -1849,6 +1849,24 @@ bool RenderFrameHostManager::InitRenderFrame(
     }
   }
 
+  // TODO(alexmos): These CHECKs are temporary to track down
+  // https://crbug.com/591478. Verify that the parent routing ID
+  // points to a live RenderFrameProxy when this is not a remote-to-local
+  // navigation (i.e., when there's no |existing_proxy|).
+  if (!existing_proxy && frame_tree_node_->parent()) {
+    RenderFrameProxyHost* parent_proxy = RenderFrameProxyHost::FromID(
+        render_frame_host->GetProcess()->GetID(), parent_routing_id);
+    if (!parent_proxy || !parent_proxy->is_render_frame_proxy_live()) {
+      base::debug::SetCrashKeyValue("initrf_parent_proxy_exists",
+                                    parent_proxy ? "yes" : "no");
+      base::debug::SetCrashKeyValue(
+          "initrf_render_view_is_live",
+          render_frame_host->render_view_host()->IsRenderViewLive() ? "yes"
+                                                                    : "no");
+      base::debug::DumpWithoutCrashing();
+    }
+  }
+
   return delegate_->CreateRenderFrameForRenderManager(
       render_frame_host, proxy_routing_id, opener_routing_id, parent_routing_id,
       previous_sibling_routing_id);
