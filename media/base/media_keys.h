@@ -144,11 +144,11 @@ class MEDIA_EXPORT MediaKeys
   virtual void RemoveSession(const std::string& session_id,
                              scoped_ptr<SimpleCdmPromise> promise) = 0;
 
-  // Returns the CdmContext associated with |this| if Decryptor or CDM ID is
-  // supported. The returned CdmContext is owned by |this|. Caller needs to make
-  // sure it is not used after |this| is destructed.
-  // Returns null if no Decryptor nor CDM ID is supported. Instead the media
-  // player may use the CDM via some platform specific method.
+  // Returns the CdmContext associated with |this|. The returned CdmContext is
+  // owned by |this| and the caller needs to make sure it is not used after
+  // |this| is destructed.
+  // Returns null if CdmContext is not supported. Instead the media player may
+  // use the CDM via some platform specific method.
   // By default this method returns null.
   // TODO(xhwang): Convert all SetCdm() implementations to use CdmContext so
   // that this function should never return nullptr.

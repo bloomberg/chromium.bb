@@ -19,7 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/avda_state_provider.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "media/base/android/media_drm_bridge.h"
+#include "media/base/android/media_drm_bridge_cdm_context.h"
 #include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/base/media_keys.h"
 #include "media/video/video_decode_accelerator.h"
@@ -182,8 +182,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   void DecodeBuffer(const media::BitstreamBuffer& bitstream_buffer);
 
   // This callback is called after CDM obtained a MediaCrypto object.
-  void OnMediaCryptoReady(media::MediaDrmBridge::JavaObjectPtr media_crypto,
-                          bool needs_protected_surface);
+  void OnMediaCryptoReady(
+      media::MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
+      bool needs_protected_surface);
 
   // This callback is called when a new key is added to CDM.
   void OnKeyAdded();
@@ -310,8 +311,10 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // CDM related stuff.
 
-  // Holds a ref-count to the CDM.
-  scoped_refptr<media::MediaKeys> cdm_;
+  // Holds a ref-count to the CDM to avoid using the CDM after it's destroyed.
+  scoped_refptr<media::MediaKeys> cdm_for_reference_holding_only_;
+
+  media::MediaDrmBridgeCdmContext* media_drm_bridge_cdm_context_;
 
   // MediaDrmBridge requires registration/unregistration of the player, this
   // registration id is used for this.
@@ -319,7 +322,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
   // The MediaCrypto object is used in the MediaCodec.configure() in case of
   // an encrypted stream.
-  media::MediaDrmBridge::JavaObjectPtr media_crypto_;
+  media::MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto_;
 
   // Index of the dequeued and filled buffer that we keep trying to enqueue.
   // Such buffer appears in MEDIA_CODEC_NO_KEY processing.

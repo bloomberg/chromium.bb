@@ -1838,6 +1838,8 @@
             'base/android/media_decoder_job.h',
             'base/android/media_drm_bridge.cc',
             'base/android/media_drm_bridge.h',
+            'base/android/media_drm_bridge_cdm_context.cc',
+            'base/android/media_drm_bridge_cdm_context.h',
             'base/android/media_drm_bridge_delegate.cc',
             'base/android/media_drm_bridge_delegate.h',
             'base/android/media_jni_registrar.cc',

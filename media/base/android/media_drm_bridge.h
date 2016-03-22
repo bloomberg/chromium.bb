@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "media/base/android/media_drm_bridge_cdm_context.h"
 #include "media/base/android/provision_fetcher.h"
 #include "media/base/cdm_promise_adapter.h"
 #include "media/base/media_export.h"
@@ -114,6 +115,7 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
                     scoped_ptr<media::SimpleCdmPromise> promise) override;
   void RemoveSession(const std::string& session_id,
                      scoped_ptr<media::SimpleCdmPromise> promise) override;
+  CdmContext* GetCdmContext() override;
   void DeleteOnCorrectThread() const override;
 
   // PlayerTracker implementation. Can be called on any thread.
@@ -325,6 +327,8 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
 
   // Default task runner.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  MediaDrmBridgeCdmContext media_drm_bridge_cdm_context_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<MediaDrmBridge> weak_factory_;

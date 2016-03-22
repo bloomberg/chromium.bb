@@ -37,6 +37,8 @@ source_set("android") {
     "media_decoder_job.h",
     "media_drm_bridge.cc",
     "media_drm_bridge.h",
+    "media_drm_bridge_cdm_context.cc",
+    "media_drm_bridge_cdm_context.h",
     "media_drm_bridge_delegate.cc",
     "media_drm_bridge_delegate.h",
     "media_jni_registrar.cc",

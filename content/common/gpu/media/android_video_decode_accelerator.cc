@@ -38,7 +38,6 @@
 #include "ui/gl/gl_bindings.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-#include "media/base/media_keys.h"
 #include "media/mojo/services/mojo_cdm_service.h"
 #endif
 
@@ -263,6 +262,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       state_(NO_ERROR),
       picturebuffers_requested_(false),
       gl_decoder_(decoder),
+      media_drm_bridge_cdm_context_(nullptr),
       cdm_registration_id_(0),
       pending_input_buf_index_(-1),
       error_sequence_token_(0),
@@ -285,11 +285,11 @@ AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
   g_avda_timer.Pointer()->StopTimer(this);
 
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  if (cdm_) {
-    DCHECK(cdm_registration_id_);
-    static_cast<media::MediaDrmBridge*>(cdm_.get())
-        ->UnregisterPlayer(cdm_registration_id_);
-  }
+  if (!media_drm_bridge_cdm_context_)
+    return;
+
+  DCHECK(cdm_registration_id_);
+  media_drm_bridge_cdm_context_->UnregisterPlayer(cdm_registration_id_);
 #endif  // defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 }
 
@@ -360,21 +360,22 @@ void AndroidVideoDecodeAccelerator::SetCdm(int cdm_id) {
   DVLOG(2) << __FUNCTION__ << ": " << cdm_id;
 
 #if defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  using media::MediaDrmBridge;
-
   DCHECK(client_) << "SetCdm() must be called after Initialize().";
 
-  if (cdm_) {
+  if (media_drm_bridge_cdm_context_) {
     NOTREACHED() << "We do not support resetting CDM.";
     NotifyCdmAttached(false);
     return;
   }
 
-  cdm_ = media::MojoCdmService::LegacyGetCdm(cdm_id);
-  DCHECK(cdm_);
+  // Store the CDM to hold a reference to it.
+  cdm_for_reference_holding_only_ = media::MojoCdmService::LegacyGetCdm(cdm_id);
+  DCHECK(cdm_for_reference_holding_only_);
 
-  // On Android platform the MediaKeys will be its subclass MediaDrmBridge.
-  MediaDrmBridge* drm_bridge = static_cast<MediaDrmBridge*>(cdm_.get());
+  // On Android platform the CdmContext must be a MediaDrmBridgeCdmContext.
+  media_drm_bridge_cdm_context_ = static_cast<media::MediaDrmBridgeCdmContext*>(
+      cdm_for_reference_holding_only_->GetCdmContext());
+  DCHECK(media_drm_bridge_cdm_context_);
 
   // Register CDM callbacks. The callbacks registered will be posted back to
   // this thread via BindToCurrentLoop.
@@ -384,19 +385,18 @@ void AndroidVideoDecodeAccelerator::SetCdm(int cdm_id) {
   // destructed as well. So the |cdm_unset_cb| will never have a chance to be
   // called.
   // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
-  cdm_registration_id_ =
-      drm_bridge->RegisterPlayer(media::BindToCurrentLoop(base::Bind(
-                                     &AndroidVideoDecodeAccelerator::OnKeyAdded,
-                                     weak_this_factory_.GetWeakPtr())),
-                                 base::Bind(&base::DoNothing));
+  cdm_registration_id_ = media_drm_bridge_cdm_context_->RegisterPlayer(
+      media::BindToCurrentLoop(
+          base::Bind(&AndroidVideoDecodeAccelerator::OnKeyAdded,
+                     weak_this_factory_.GetWeakPtr())),
+      base::Bind(&base::DoNothing));
 
-  drm_bridge->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
+  media_drm_bridge_cdm_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
       base::Bind(&AndroidVideoDecodeAccelerator::OnMediaCryptoReady,
                  weak_this_factory_.GetWeakPtr())));
 
   // Postpone NotifyCdmAttached() call till we create the MediaCodec after
   // OnMediaCryptoReady().
-
 #else
 
   NOTIMPLEMENTED();
@@ -1066,12 +1066,14 @@ void AndroidVideoDecodeAccelerator::PostError(
 }
 
 void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
-    media::MediaDrmBridge::JavaObjectPtr media_crypto,
+    media::MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
     bool needs_protected_surface) {
   DVLOG(1) << __FUNCTION__;
 
   if (!media_crypto) {
     LOG(ERROR) << "MediaCrypto is not available, can't play encrypted stream.";
+    cdm_for_reference_holding_only_ = nullptr;
+    media_drm_bridge_cdm_context_ = nullptr;
     NotifyCdmAttached(false);
     return;
   }
