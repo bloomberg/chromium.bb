@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="101438888985615157">Pagriezt ekrānu par 180 grādiem</translation>
+<translation id="1015272884520659144">Definē USB ierīces, kuras ir atļauts atvienot no kodola draiveriem, lai tās izmantotu ar chrome.usb API tieši tīmekļa lietojumprogrammā. Katru ierakstu veido USB pakalpojumu sniedzēja identifikators un produkta identifikators, kas identificē aparatūru.
+
+      Ja šī politika netiek konfigurēta, atvienojami USB ierīču saraksts tiek uzskatīts par tukšu.</translation>
 <translation id="1017967144265860778">Barošanas pārvaldība pieteikšanās ekrānā</translation>
 <translation id="1019101089073227242">Iestata lietotāja datu direktoriju</translation>
 <translation id="1022361784792428773">Paplašinājumu ID numuri, kurus lietotājam nav atļauts instalēt (vai *, lai iestatītu visus)</translation>
@@ -235,6 +238,7 @@
 
       Ja šis iestatījums nav iestatīts, lietotāji var atvērt failu atlases dialoglodziņus, kā ierasts.</translation>
 <translation id="1897365952389968758">Atļaut visām vietnēm izpildīt JavaScript</translation>
+<translation id="193259052151668190">Atvienojamo USB ierīču baltais saraksts</translation>
 <translation id="1933378685401357864">Fona tapetes attēls</translation>
 <translation id="193900697589383153">Sistēmas teknei tiek pievienota atteikšanās poga.
 
@@ -760,6 +764,7 @@
 <translation id="3528000905991875314">Iespējo alternatīvas kļūdu lapas</translation>
 <translation id="3547954654003013442">Starpniekservera iestatījumi</translation>
 <translation id="3570008976476035109">Bloķē spraudņus šajās vietnēs</translation>
+<translation id="3591584750136265240">Pieteikšanās autentifikācijas darbības konfigurēšana</translation>
 <translation id="3627678165642179114">Pareizrakstības pārbaudes tīmekļa pakalpojuma iespējošana vai atspējošana</translation>
 <translation id="3646859102161347133">Ekrāna lupas veida iestatīšana</translation>
 <translation id="3653237928288822292">Noklusējuma meklētājprogrammas ikona</translation>
@@ -898,6 +903,7 @@
           Ja politikai tiek iestatīta vērtība “Sīkfailu saglabāšana sesijas laikā”, sesijas beigās sīkfaili tiek notīrīti. Ņemiet vērā: ja pārlūks <ph name="PRODUCT_NAME" /> darbojas fona režīmā, sesija var netikt aizvērta līdz ar pārlūka pēdējā loga aizvēršanu. Plašāku informāciju par šādas darbības konfigurēšanu skatiet politikā BackgroundModeEnabled.
 
           Ja šī politika nav iestatīta, tiek izmantota politika AllowCookies, un lietotājs var to mainīt.</translation>
+<translation id="4103289232974211388">Pēc lietotāja apstiprinājuma saņemšanas novirzīt uz SAML identitātes nodrošinātāju</translation>
 <translation id="410478022164847452">Tiek norādīts laika periods, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā rodas dīkstāve (ja ierīce darbojas ar maiņstrāvu).
 
           Ja šī politika ir iestatīta, tā norāda laika periodu, kurā lietotājam ir jāveic kāda darbība, pretējā gadījumā rodas operētājsistēmas <ph name="PRODUCT_OS_NAME" /> dīkstāve, ko var konfigurēt atsevišķi.
@@ -1937,6 +1943,11 @@
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultPopupsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
 <translation id="7529144158022474049">Automātiskās atjaunināšanas izkliedes faktors</translation>
+<translation id="7553535237300701827">Ja ir iestatīta šī politika, pieteikšanās autentifikācijas plūsma tiks izpildīta vienā no tālāk norādītajiem veidiem atkarībā no iestatījuma vērtības.
+
+      Ja pieteikšanās būs iestatīta uz GAIA, pieteikšanās tiks veikta, izmantojot parasto GAIA autentifikācijas plūsmu.
+
+      Ja pieteikšanās būs iestatīta uz SAML_INTERSTITIAL, pieteikšanās laikā tiks parādīts ekrāns, kurā lietotājam tiks piedāvāt turpināt autentifikāciju, izmantojot ierīces reģistrācijas domēna SAML identitātes nodrošinātāju, vai atgriezties parastajā GAIA pieteikšanās plūsmā.</translation>
 <translation id="7567380065339179813">Atļauj spraudņus šajās vietnēs</translation>
 <translation id="7593523670408385997">Konfigurē kešatmiņas lielumu, kas tiks izmantots pārlūkā <ph name="PRODUCT_NAME" />, lai kešatmiņā ievietotos failus uzglabātu diskā.
 
@@ -2331,6 +2342,7 @@
 <translation id="8828766846428537606">Konfigurē produkta <ph name="PRODUCT_NAME" /> noklusējuma sākumlapu un neļauj lietotājiem to mainīt.
 
       Lietotāja sākumlapas iestatījumi ir pilnībā nobloķēti tikai tad, ja sākumlapa ir iestatīta kā Jaunas cilnes lapa vai kā URL un ir norādīts sākumlapas URL. Ja nav norādīts sākumlapas URL, lietotājs var iestatīt sākumlapu kā Jaunas cilnes lapu, norādot chrome://newtab.</translation>
+<translation id="8833109046074170275">Autentifikācija, izmantojot noklusējuma GAIA plūsmu</translation>
 <translation id="8838303810937202360">Operētājsistēma <ph name="PRODUCT_OS_NAME" /> ievieto kešatmiņā lietotnes un paplašinājumus, ja tie jāinstalē vairākiem lietotājiem vienā ierīcē, lai katram lietotājam nebūtu jāveic atkārtota lejupielāde.
       Ja šī politika nav konfigurēta vai vērtība ir mazāka par 1 MB, operētājsistēmā <ph name="PRODUCT_OS_NAME" /> tiks izmantots noklusējuma kešatmiņas lielums.</translation>
 <translation id="8858642179038618439">YouTube piespiedu drošības režīms</translation>

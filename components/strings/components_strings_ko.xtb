@@ -94,6 +94,7 @@
 <translation id="201192063813189384">캐시에서 데이터를 읽는 중에 오류가 발생했습니다.</translation>
 <translation id="2025186561304664664">프록시가 자동 설정되도록 지정됩니다.</translation>
 <translation id="2030481566774242610"><ph name="LINK" />을(를) 찾으셨나요?</translation>
+<translation id="2031925387125903299">이 알림은 새로운 사이트를 처음으로 방문할 때 부모님의 승인이 필요하므로 표시되었습니다.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />프록시 및 방화벽 확인<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">우편번호</translation>
 <translation id="2065985942032347596">인증 필요</translation>
@@ -149,6 +150,7 @@
 <translation id="2495083838625180221">JSON 파서</translation>
 <translation id="2495093607237746763">선택하면 이 기기에 카드 사본이 저장되어 Chromium에서 양식을 더 빠르게 입력할 수 있습니다.</translation>
 <translation id="2498091847651709837">새 카드 스캔</translation>
+<translation id="2501278716633472235">뒤로 이동</translation>
 <translation id="2515629240566999685">현재 지역의 신호 확인</translation>
 <translation id="2516305470678292029">대체 UI</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" />에서 잘못된 응답을 전송했습니다.</translation>
@@ -166,10 +168,12 @@
 <translation id="2704283930420550640">값이 형식과 일치하지 않습니다.</translation>
 <translation id="2705137772291741111">사이트의 저장된(캐시된) 사본을 읽을 수 없습니다.</translation>
 <translation id="2709516037105925701">자동완성</translation>
+<translation id="2712173769900027643">권한 요청</translation>
 <translation id="2721148159707890343">요청 성공</translation>
 <translation id="2728127805433021124">서버의 인증서가 안전성이 낮은 서명 알고리즘을 사용하여 서명되어 있습니다.</translation>
 <translation id="2742870351467570537">선택한 항목 삭제</translation>
 <translation id="277499241957683684">기기 기록 없음</translation>
+<translation id="2778107779445548489">부모님이 이 사이트를 차단해 이 알림이 표시되었습니다.</translation>
 <translation id="2784949926578158345">연결이 재설정되었습니다.</translation>
 <translation id="2824775600643448204">주소창 및 검색창</translation>
 <translation id="2826760142808435982">이 연결은 <ph name="CIPHER" />을(를) 사용하여 암호화되고 인증되며 <ph name="KX" />을(를) 키 교환 매커니즘으로 사용합니다.</translation>
@@ -177,6 +181,7 @@
 <translation id="2837049386027881519">TLS 또는 SSL 프로토콜의 이전 버전을 사용하여 다시 연결을 시도했습니다. 일반적으로 서버가 아주 오래된 소프트웨어를 사용 중이며 기타 보안 문제가 있기 때문일 수 있습니다.</translation>
 <translation id="284702764277384724"><ph name="HOST_NAME" />의 서버 인증서가 위조된 것 같습니다.</translation>
 <translation id="2855922900409897335"><ph name="CREDIT_CARD" /> 인증</translation>
+<translation id="2889159643044928134">새로고침 안함</translation>
 <translation id="2896499918916051536">이 플러그인은 지원되지 않습니다.</translation>
 <translation id="2897655920961181107">요청한 포트는 안전하지 않아 차단되었습니다.</translation>
 <translation id="2909946352844186028">네트워크 변경이 감지되었습니다.</translation>
@@ -199,6 +204,7 @@
 <translation id="3005723025932146533">저장된 사본 표시</translation>
 <translation id="3010559122411665027">목록 항목 '<ph name="ENTRY_INDEX" />': <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">잘못된 정책 유형</translation>
+<translation id="3032412215588512954">이 사이트를 새로고침하시겠습니까?</translation>
 <translation id="3037605927509011580">앗, 이런!</translation>
 <translation id="3041612393474885105">인증서 정보</translation>
 <translation id="3093245981617870298">오프라인 상태입니다.</translation>
@@ -230,6 +236,7 @@
 <translation id="3305707030755673451"><ph name="TIME" />에 동기화 암호로 데이터가 암호화되었습니다. 동기화를 시작하려면 입력하세요.</translation>
 <translation id="333371639341676808">이 페이지가 추가적인 대화를 생성하지 않도록 차단합니다.</translation>
 <translation id="3340978935015468852">설정</translation>
+<translation id="3345135638360864351">이 사이트에 대한 액세스 요청을 <ph name="NAME" />님에게 보내지 못했습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="3355823806454867987">프록시 설정 변경...</translation>
 <translation id="3369192424181595722">시계 오류</translation>
 <translation id="3369366829301677151"><ph name="CREDIT_CARD" /> 업데이트 및 확인</translation>
@@ -245,6 +252,8 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">가져오기 간격:</translation>
 <translation id="3462200631372590220">세부정보 숨기기</translation>
+<translation id="3479539252931486093">예기치 않은 문제가 발생했나요? <ph name="BEGIN_LINK" />Google에 알리기<ph name="END_LINK" /></translation>
+<translation id="3498215018399854026">현재 부모님께 연락할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="3516765099410062445">로그인한 기기의 방문 기록을 표시합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">폴더</translation>
 <translation id="3528171143076753409">서버의 인증서를 신뢰할 수 없습니다.</translation>
@@ -267,6 +276,7 @@
 <translation id="3658742229777143148">개정</translation>
 <translation id="3681007416295224113">인증서 정보</translation>
 <translation id="3693415264595406141">비밀번호:</translation>
+<translation id="3700528541715530410">죄송합니다. 이 페이지에 액세스할 수 있는 권한이 없습니다.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">로드 중...</translation>
 <translation id="3712624925041724820">라이선스 만료됨</translation>
@@ -281,8 +291,6 @@
 <translation id="382518646247711829">프록시 서버를 사용하는 경우</translation>
 <translation id="3828924085048779000">암호를 빈 칸으로 두어서는 안 됩니다.</translation>
 <translation id="385051799172605136">뒤로</translation>
-<translation id="3851596405215565524">이미 네트워크 액세스가 허용된 프로그램으로 되어 있는 경우
-    목록에서 삭제한 뒤 다시 추가합니다.</translation>
 <translation id="3858027520442213535">시간과 날짜 업데이트</translation>
 <translation id="3884278016824448484">기기 식별자 충돌</translation>
 <translation id="3885155851504623709">교구</translation>
@@ -313,6 +321,7 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />방화벽 및 바이러스 백신 소프트웨어 설정 확인<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">다운</translation>
 <translation id="4250680216510889253">아니요</translation>
+<translation id="425582637250725228">변경사항이 저장되지 않을 수 있습니다.</translation>
 <translation id="4258748452823770588">잘못된 서명</translation>
 <translation id="4268298190799576220">현재 Chromium에서 카드를 확인할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="4269787794583293679">(사용자 이름 없음)</translation>
@@ -329,6 +338,9 @@
 <translation id="4406896451731180161">검색결과</translation>
 <translation id="4424024547088906515">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 Chrome에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="443673843213245140">프록시 사용은 중지되었지만 명시적 프록시 설정이 지정되어 있습니다.</translation>
+<translation id="4458874409874303848">SafeSites</translation>
+<translation id="4461847750548395463">Google SafeSites가 사용 설정되어 있어 이 알림이 표시되었습니다.</translation>
+<translation id="4491452711366281322">승인되지 않음</translation>
 <translation id="4492190037599258964">'<ph name="SEARCH_STRING" />'에 대한 검색결과</translation>
 <translation id="4506176782989081258">유효성 검사 오류 <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">시스템 관리자에게 문의</translation>
@@ -350,6 +362,7 @@
 <translation id="4764776831041365478"><ph name="URL" />의 웹페이지가 일시적으로 다운되었거나 새 웹 주소로 완전히 이동했을 수 있습니다.</translation>
 <translation id="4771973620359291008">알 수 없는 오류가 발생했습니다.</translation>
 <translation id="477518548916168453">요청을 수행하는 데 필요한 기능을 서버가 지원하지 않습니다.</translation>
+<translation id="4782449893814226250">이 페이지를 방문해도 괜찮은지 부모님께 문의했습니다.</translation>
 <translation id="4800132727771399293">유효기간과 CVC를 확인한 후 다시 시도해 주세요.</translation>
 <translation id="4807049035289105102">현재 <ph name="SITE" />에서 Chrome이 처리할 수 없는 암호화된 자격증명 정보를 전송했기 때문에 방문할 수 없습니다. 네트워크 오류와 공격은 대부분 일시적이므로 잠시 후 페이지가 정상화될 것입니다.</translation>
 <translation id="4813512666221746211">네트워크 오류</translation>
@@ -359,6 +372,7 @@
 <translation id="4880827082731008257">기록 검색</translation>
 <translation id="4923417429809017348">페이지가 알 수 없는 언어에서 <ph name="LANGUAGE_LANGUAGE" />(으)로 번역되었습니다.</translation>
 <translation id="4926049483395192435">지정해야 합니다.</translation>
+<translation id="4930497775425430760">이 메시지는 새로운 사이트를 처음으로 방문할 때 부모님의 승인이 필요하므로 표시되었습니다.</translation>
 <translation id="495170559598752135">작업</translation>
 <translation id="4958444002117714549">펼치기 목록</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" />에서 <ph name="TARGET_LANGUAGE" />로 번역하시겠습니까?</translation>
@@ -417,6 +431,7 @@
 <translation id="560412284261940334">관리가 지원되지 않음</translation>
 <translation id="5610142619324316209">연결 확인</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" />에서 리디렉션한 횟수가 너무 많습니다.</translation>
+<translation id="5622887735448669177">이 사이트에서 나가시겠습니까?</translation>
 <translation id="5629630648637658800">정책 설정 로드 실패</translation>
 <translation id="5631439013527180824">잘못된 기기 관리 토큰</translation>
 <translation id="5650551054760837876">검색결과를 찾지 못했습니다.</translation>
@@ -426,6 +441,7 @@
 <translation id="5785756445106461925">또한 이 페이지에는 안전하지 않은 다른 리소스가 포함되어 있습니다. 이러한 리소스는 전송 중에 다른 사람이 볼 수 있으며 페이지의 모양을 변경하기 위해 공격자가 수정할 수 있습니다.</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" />에 대한 연결이 더 이상 사용되지 않는 암호화 기술을 사용하여 암호화됩니다.</translation>
 <translation id="5813119285467412249">추가 다시 실행(&amp;R)</translation>
+<translation id="5855235287355719921">관리자가 이 사이트를 차단해 이 메시지가 표시되었습니다.</translation>
 <translation id="5857090052475505287">새 폴더</translation>
 <translation id="5869405914158311789">사이트에 연결할 수 없음</translation>
 <translation id="5869522115854928033">저장된 비밀번호</translation>
@@ -449,6 +465,7 @@
 <translation id="6146055958333702838">케이블을 확인하고 사용 중인 라우터, 모뎀 또는 기타 네트워크 기기를
     재부팅하시기 바랍니다.</translation>
 <translation id="614940544461990577">다음을 시도:</translation>
+<translation id="6150607114729249911">이 페이지를 방문해도 괜찮은지 부모님께 확인해야 합니다.</translation>
 <translation id="6151417162996330722">서버 인증서의 유효 기간이 너무 깁니다.</translation>
 <translation id="6154808779448689242">반환된 정책 토큰이 현재 토큰과 일치하지 않음</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
@@ -485,6 +502,7 @@
 <translation id="6550675742724504774">옵션</translation>
 <translation id="6596325263575161958">암호화 옵션</translation>
 <translation id="6610562986279010327">Chrome에서 이 URL을 열 수 없음</translation>
+<translation id="662080504995468778">머무르기</translation>
 <translation id="6626108645084335023">DNS 조사 대기 중입니다.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 검색</translation>
 <translation id="6634865548447745291"><ph name="BEGIN_LINK" />이 인증서가 취소되었기 때문에<ph name="END_LINK" /> 현재 <ph name="SITE" />에 방문할 수 없습니다. 네트워크 오류와 공격은 대부분 일시적이므로 잠시 후 페이지가 작동될 것입니다.</translation>
@@ -538,11 +556,14 @@
 <translation id="7182878459783632708">설정된 정책 없음</translation>
 <translation id="7186367841673660872">이 페이지는<ph name="ORIGINAL_LANGUAGE" />에서<ph name="LANGUAGE_LANGUAGE" />로 번역되었습니다.</translation>
 <translation id="719464814642662924">Visa</translation>
+<translation id="720210938761809882">페이지 차단됨</translation>
 <translation id="7208899522964477531"><ph name="SITE_NAME" />에서 <ph name="SEARCH_TERMS" /> 검색</translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" />에서 보안 기준을 준수하지 않습니다.</translation>
 <translation id="721197778055552897">이 문제에 대해 <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="7219179957768738017"><ph name="SSL_VERSION" /> 연결입니다.</translation>
 <translation id="7225807090967870017">빌드 ID</translation>
+<translation id="7231308970288859235">이 페이지를 방문해도 괜찮은지 부모님께 확인해야 합니다.</translation>
+<translation id="7246609911581847514">이 알림은 새로운 사이트를 처음으로 방문할 때 관리자의 승인이 필요하므로 표시되었습니다.</translation>
 <translation id="725866823122871198">컴퓨터의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되어 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 대한 비공개 연결을 설정할 수 없습니다.</translation>
 <translation id="7265986070661382626">현재 <ph name="SITE" />에서 <ph name="BEGIN_LINK" />인증서 고정을 사용<ph name="END_LINK" />하기 때문에 방문할 수 없습니다. 네트워크 오류와 공격은 대부분 일시적이므로 잠시 후 페이지가 정상화될 것입니다.</translation>
 <translation id="7269802741830436641">이 웹페이지에 리디렉션 순환 오류가 있습니다</translation>
@@ -609,8 +630,10 @@
 <translation id="7825436071901023927">안전하지 않은 포트 <ph name="SITE" /></translation>
 <translation id="785549533363645510">하지만 흔적이 아예 남지 않는 것은 아닙니다. 시크릿 모드로 탐색해도 회사, 인터넷 서비스 제공업체 또는 방문한 웹사이트에 저장된 흔적까지 없앨 수는 없습니다.</translation>
 <translation id="7887683347370398519">CVC를 확인한 후 다시 시도하세요.</translation>
+<translation id="7894616681410591072">이 페이지에 액세스하려면 <ph name="NAME" />님의 승인이 필요합니다.</translation>
 <translation id="790025292736025802"><ph name="URL" />을(를) 찾을 수 없습니다.</translation>
 <translation id="7912024687060120840">폴더:</translation>
+<translation id="7920092496846849526">이 페이지를 방문해도 괜찮은지 부모님께 문의했습니다.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">서버 인증서가 유효하지 않습니다.</translation>
 <translation id="7951415247503192394">(32비트)</translation>
@@ -619,6 +642,7 @@
 <translation id="7977590112176369853">&lt;검색어 입력&gt;</translation>
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" />를 항상 <ph name="TARGET_LANGUAGE" />로 번역</translation>
 <translation id="7995512525968007366">지정되지 않음</translation>
+<translation id="8012647001091218357">현재 부모님께 연락할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="8034522405403831421">이 페이지는 <ph name="SOURCE_LANGUAGE" />로 되어 있습니다. <ph name="TARGET_LANGUAGE" />로 번역하시겠습니까?</translation>
 <translation id="8034955203865359138">기록 항목이 없습니다.</translation>
 <translation id="8088680233425245692">글을 조회하지 못했습니다.</translation>
@@ -631,9 +655,6 @@
 <translation id="8204086856545141093">서버에 대한 요청이 정책에 의해 차단되었습니다.</translation>
 <translation id="8218327578424803826">지정된 위치:</translation>
 <translation id="8225771182978767009">컴퓨터를 설정한 사용자가 이 사이트를 차단했습니다.</translation>
-<translation id="8240446052814166959">프록시 설정을 확인하거나 네트워크 관리자에게 문의하여
-      프록시 서버가 작동하는지 확인하세요.
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="8241707690549784388">찾고 있는 페이지에서 사용자가 입력한 정보를 사용했습니다. 해당 페이지로 돌아가면 기존 작업을 반복할 수 있습니다. 계속하시겠습니까?</translation>
 <translation id="8249320324621329438">마지막으로 가져온 시간:</translation>
 <translation id="8266098793847448402"><ph name="BEGIN_BOLD" />시작<ph name="END_BOLD" />을
@@ -643,6 +664,7 @@
       <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />를
       입력하고
       <ph name="BEGIN_BOLD" />확인<ph name="END_BOLD" />을 클릭하세요.</translation>
+<translation id="8279107132611114222">이 사이트에 대한 사용자의 액세스 요청이 <ph name="NAME" />님에게 전송되었습니다.</translation>
 <translation id="8289355894181816810">잘 모르는 경우 네트워크 관리자에게 문의하시기 바랍니다.</translation>
 <translation id="8293206222192510085">북마크 추가</translation>
 <translation id="8294431847097064396">출처</translation>
@@ -664,6 +686,7 @@
 <translation id="8559762987265718583">기기의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되어 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 대한 비공개 연결을 설정할 수 없습니다.</translation>
 <translation id="856992080682148">이 사이트의 인증서는 2017년 또는 그 이후에 만료되며 인증서 체인에 SHA-1을 사용하여 서명된 인증서가 포함되어 있습니다.</translation>
 <translation id="8571890674111243710">페이지를 <ph name="LANGUAGE" />(으)로 번역 중...</translation>
+<translation id="8591846766485502580">부모님 중 한 명이 이 사이트를 차단해 이 알림이 표시되었습니다.</translation>
 <translation id="859285277496340001">인증서는 취소 여부를 확인하는 매커니즘을 지정하지 않습니다.</translation>
 <translation id="8629916158020966496">엔터프라이즈 등록 인증 확인이 완료될 때까지 인터넷 탐색이 사용 중지됩니다.
     연결 문제를 해결하기 위한 진단 도구는 계속 사용할 수 있습니다.</translation>

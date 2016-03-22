@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="101438888985615157">Otočit obrazovku o 180 stupňů</translation>
+<translation id="1015272884520659144">Definuje seznam zařízení USB, která lze odpojit od ovladače jádra a použít přímo ve webové aplikaci prostřednictvím rozhraní chrome.usb API. Hodnotami jsou páry identifikátorů (dodavatel a produkt), které příslušné hardwarové zařízení popisují.
+
+Pokud tato zásada není nastavena, seznam odpojitelných zařízení USB se považuje za prázdný.</translation>
 <translation id="1017967144265860778">Správa možností napájení na přihlašovací obrazovce</translation>
 <translation id="1019101089073227242">Nastavit adresář uživatelských dat</translation>
 <translation id="1022361784792428773">ID rozšíření, která by uživatelé neměli instalovat (* znamená, že se černá listina týká všech rozšíření)</translation>
@@ -219,6 +222,7 @@ Tyto zásady se použijí pouze v případě, že je nainstalován hostitel Vzd
       
       Pokud toto nastavení neupravíte, uživatelé budou moci otevírat dialogová okna pro výběr souboru obvyklým způsobem.</translation>
 <translation id="1897365952389968758">Povolit všem webům spouštět JavaScript</translation>
+<translation id="193259052151668190">Seznam povolených odpojitelných zařízení USB</translation>
 <translation id="1933378685401357864">Obrázek tapety</translation>
 <translation id="193900697589383153">Přidá na hlavní panel systému tlačítko pro odhlášení.
 
@@ -728,6 +732,7 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
 <translation id="3528000905991875314">Aktivovat alternativní chybové stránky</translation>
 <translation id="3547954654003013442">Nastavení proxy serveru</translation>
 <translation id="3570008976476035109">Blokovat pluginy na těchto stránkách</translation>
+<translation id="3591584750136265240">Konfigurace chování přihlašovacího ověření</translation>
 <translation id="3627678165642179114">Povolit nebo zakázat webovou službu kontroly pravopisu</translation>
 <translation id="3646859102161347133">Nastavení typu lupy</translation>
 <translation id="3653237928288822292">Ikona výchozího poskytovatele vyhledávání</translation>
@@ -866,6 +871,7 @@ Není-li tato zásada nastavena, výchozí frekvence jsou tři minuty. Minimáln
 Pokud je tato zásada nastavena na možnost Uchovat soubory cookie po dobu trvání relace, po ukončení relace budou soubory cookie vymazány. Pokud je prohlížeč <ph name="PRODUCT_NAME" /> spuštěn na pozadí, relace se po zavření okna nemusí ukončit. Další informace o konfiguraci tohoto chování naleznete v podrobnostech o zásadě BackgroundModeEnabled.
 
 Není-li zásada nastavena, bude použita zásada AllowCookies a uživatelé ji budou moci změnit.</translation>
+<translation id="4103289232974211388">Po potvrzení uživatele přesměrovat na poskytovatele identity SAML</translation>
 <translation id="410478022164847452">Udává dobu nečinnosti uživatele, po které bude při napájení ze sítě provedena úsporná akce.
 
           Pokud je tato zásada nastavena, jedná se o dobu, po kterou musí uživatel zůstat v nečinnosti, než systém <ph name="PRODUCT_OS_NAME" /> provede úspornou akci. Tuto akci lze nakonfigurovat samostatně.
@@ -1888,6 +1894,11 @@ Pokud je tato zásada nastavena na hodnotu false, použití protokolu QUIC je za
 
           Pokud zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultPopupsSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
 <translation id="7529144158022474049">Faktor zpoždění automatické aktualizace</translation>
+<translation id="7553535237300701827">Když je tato zásada nastavena, přihlašovací ověření bude v závislosti na hodnotě nastavení probíhat jedním z následujících způsobů:
+
+      V případě nastavení na možnost GAIA proběhne přihlášení běžným ověřovacím procesem GAIA.
+
+      V případě nastavení na možnost SAML_INTERSTITIAL se při přihlášení zobrazí vsunutá obrazovka, na které uživatel bude moci zvolit, zda chce pokračovat v ověření prostřednictvím poskytovatele identity SAML domény, do které je zařízení zaregistrováno, nebo se vrátit k běžnému procesu přihlášení GAIA.</translation>
 <translation id="7567380065339179813">Povolit pluginy na těchto stránkách</translation>
 <translation id="7593523670408385997">Slouží ke konfiguraci velikosti mezipaměti, kterou bude aplikace <ph name="PRODUCT_NAME" /> používat k ukládání souborů do mezipaměti na disku.
 
@@ -2249,6 +2260,7 @@ Hodnota prodloužení musí být 100 % nebo více. Hodnoty, které by prodlevu 
 <translation id="8828766846428537606">Slouží ke konfiguraci výchozí domovské stránky v prohlížeči <ph name="PRODUCT_NAME" /> a brání uživatelům, aby nastavenou domovskou stránku měnili.
 
       Nastavení domovské stránky uživatele jsou zcela uzamčena pouze v případě, že jako domovskou stránku nastavíte buď stránku Nová karta, nebo adresu URL, kterou zadáte. Pokud adresu URL domovské stránky nezadáte, uživatel bude moci domovskou stránku změnit na stránku Nová karta, a to tím, že zadá řetězec „chrome://newtab“.</translation>
+<translation id="8833109046074170275">Ověření prostřednictvím výchozího procesu GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> 
 Pokud tato zásada není nakonfigurována nebo je hodnota nižší než 1 MB, <ph name="PRODUCT_OS_NAME" /> použije výchozí velikost mezipaměti.</translation>
 <translation id="8858642179038618439">Vynutit Bezpečný režim YouTube</translation>

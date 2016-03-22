@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">Chromium OS har ikke gennemført sin indledende konfiguration.</translation>
 <translation id="3748537968684000502">Du får vist en sikker Chromium-side.</translation>
 <translation id="4365115785552740256">Chromium er realiseret ved hjælp af <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" />-open source-projektet og anden <ph name="BEGIN_LINK_OSS" />open source-software<ph name="END_LINK_OSS" />.</translation>
-<translation id="4404275227760602850">Gå til Chromium-menuen &gt; Indstillinger &gt; (Avanceret) Privatliv,
-          og fjern markeringen af "Hent sideressourcer på forhånd".
-          Hvis det ikke løser problemet, bør du markere dette afkrydsningsfelt
-          igen for at forbedre effektiviteten.</translation>
 <translation id="4559775032954821361">Gå til
           Chromium-menuen &gt;
           <ph name="SETTINGS_TITLE" />
@@ -40,7 +36,5 @@
 <translation id="8187289872471304532">Gå til 
           Applikationer &gt; Systemindstillinger &gt; Netværk &gt; Avanceret &gt; Proxyer,
           og fjern markeringen af alle valgte proxyer.</translation>
-<translation id="8610831143142469229">Tillad, at Chromium får adgang til netværket i dine indstillinger for firewall eller
-        antivirus.</translation>
 <translation id="8684913864886094367">Chromium blev ikke afsluttet korrekt.</translation>
 </translationbundle>

@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="101438888985615157">Obróć ekran o 180 stopni</translation>
+<translation id="1015272884520659144">Definiuje listę urządzeń USB, które można odłączać od sterownika jądra i stosować za pomocą interfejsu chrome.usb API bezpośrednio w aplikacji internetowej. W celu wskazania konkretnego urządzenia lista obejmuje pary identyfikatora dostawcy urządzenia USB i identyfikatora produktu.
+
+      Jeśli nie skonfigurujesz tej zasady, lista odłączanych urządzeń USB będzie uważana za pustą.</translation>
 <translation id="1017967144265860778">Zarządzanie energią na ekranie logowania</translation>
 <translation id="1019101089073227242">Ustaw katalog danych użytkownika</translation>
 <translation id="1022361784792428773">Identyfikatory rozszerzeń, których nie może instalować użytkownik (wartość * oznacza wszystkie)</translation>
@@ -204,6 +207,7 @@
 <translation id="186719019195685253">Działanie, jakie ma zostać podjęte po osiągnięciu opóźnienia bezczynności przy zasilaniu prądem zmiennym</translation>
 <translation id="187819629719252111">Umożliwia dostęp do plików lokalnych na komputerze, zezwalając <ph name="PRODUCT_NAME" /> na wyświetlanie okien dialogowych wyboru pliku. Po włączeniu tego ustawienia użytkownicy mogą w normalny sposób otwierać okna dialogowe wyboru pliku. Jeśli wyłączysz ustawienie, w momencie wykonania przez użytkownika czynności powodującej wywołanie okna dialogowego wyboru pliku (np. zaimportowanie zakładek, przesłanie plików, zapisanie linków itp.) zostanie wyświetlony komunikat, a działanie przeglądarki będzie kontynuowane, tak jakby użytkownik kliknął przycisk Anuluj w oknie dialogowym wyboru pliku. Jeśli ustawienie jest nieskonfigurowane, użytkownicy mogą w normalny sposób otwierać okna dialogowe wyboru pliku.</translation>
 <translation id="1897365952389968758">Zezwalaj na wykonywanie kodu JavaScript we wszystkich witrynach</translation>
+<translation id="193259052151668190">Biała lista odłączanych urządzeń USB</translation>
 <translation id="1933378685401357864">Tapeta</translation>
 <translation id="193900697589383153">Dodaje przycisk wylogowania do paska zadań.
 
@@ -682,6 +686,7 @@
 <translation id="3528000905991875314">Włącz alternatywne strony błędów</translation>
 <translation id="3547954654003013442">Ustawienia serwera proxy</translation>
 <translation id="3570008976476035109">Blokuj wtyczki w tych witrynach</translation>
+<translation id="3591584750136265240">Skonfiguruj sposób uwierzytelniania logowania</translation>
 <translation id="3627678165642179114">Włącz lub wyłącz internetową usługę sprawdzania pisowni</translation>
 <translation id="3646859102161347133">Ustaw typ lupy</translation>
 <translation id="3653237928288822292">Ikona domyślnego dostawcy wyszukiwania</translation>
@@ -793,6 +798,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
           Jeśli ta zasada zostanie ustawiona na „Zachowaj pliki cookie na czas trwania sesji”, pliki cookie będą usuwane przy zamknięciu sesji. Pamiętaj, że jeśli <ph name="PRODUCT_NAME" /> działa w tle, nawet po zamknięciu ostatniego okna sesja może pozostać aktywna. Przeczytaj o zasadzie BackgroundModeEnabled, by dowiedzieć się więcej o konfigurowaniu tego działania.
 
           Jeśli ta zasada pozostanie nieskonfigurowana, będzie używane ustawienie AllowCookies, a użytkownik będzie mógł je zmienić.</translation>
+<translation id="4103289232974211388">Przekieruj do dostawcy tożsamości SAML po potwierdzeniu przez użytkownika</translation>
 <translation id="410478022164847452">Określa, po jakim czasie nieaktywności użytkownika podejmowane jest działanie po bezczynności przy zasilaniu z sieci.
 
           Jeśli ta zasada jest ustawiona, określa czas, przez który użytkownik musi pozostać nieaktywny, zanim <ph name="PRODUCT_OS_NAME" /> wykona działanie związane z bezczynnością (można skonfigurować je osobno).
@@ -1697,6 +1703,11 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="7523476810162382273">Wysyłaj pakiety podtrzymujące do serwera zarządzania</translation>
 <translation id="7529100000224450960">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być otwierane wyskakujące okienka. Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultPopupsSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
 <translation id="7529144158022474049">Współczynnik rozkładania automatycznych aktualizacji w czasie</translation>
+<translation id="7553535237300701827">Gdy ta zasada jest ustawiona, proces uwierzytelniania logowania przebiega na jeden z tych sposobów, zależnie od ustawionej wartości:
+
+      Jeśli jest ustawiona wartość GAIA, logowanie będzie przebiegać zgodnie ze zwykłym procesem uwierzytelniania GAIA.
+
+      Jeśli ustawiona wartość to SAML_INTERSTITIAL, podczas logowania wyświetli się pełnoekranowe okno z informacją, że użytkownik może przejść dalej, gdy dokona uwierzytelnienia przez dostawcę tożsamości SAML domeny rejestracji urządzenia lub może powrócić do normalnego procesu logowania GAIA.</translation>
 <translation id="7567380065339179813">Zezwalaj na wtyczki w tych witrynach</translation>
 <translation id="7593523670408385997">Ustala rozmiar pamięci podręcznej, której <ph name="PRODUCT_NAME" /> będzie używać do zapisywania plików pamięci podręcznej na dysku.
 
@@ -2040,6 +2051,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli ta zasada nie jest ustawiona lub jest ustawiona na wartość nieprawdziwą, lokalizacja nie będzie zgłaszana.</translation>
 <translation id="8828766846428537606">Pozwala skonfigurować domyślną stronę startową w przeglądarce <ph name="PRODUCT_NAME" /> i uniemożliwia użytkownikom jej zmianę. Jeśli jako stronę startową ustawisz stronę Nowa karta albo adres URL (wpisany ręcznie), ustawienia strony startowej użytkownika zostaną całkowicie zablokowane. Jeśli adres URL strony startowej nie zostanie określony, użytkownik jako stronę startową będzie mógł ustawić stronę Nowa karta, podając adres „chrome://newtab”.</translation>
+<translation id="8833109046074170275">Uwierzytelnianie przez domyślny proces GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> zapisuje w pamięci podręcznej aplikacje i rozszerzenia instalowane przez różnych użytkowników na jednym urządzeniu, by uniknąć pobierania ich ponownie dla każdego użytkownika.
       Jeśli ta zasada jest nieskonfigurowana albo wartość jest mniejsza niż 1 MB, <ph name="PRODUCT_OS_NAME" /> użyje domyślnego rozmiaru pamięci podręcznej.</translation>
 <translation id="8858642179038618439">Wymuś tryb bezpieczny w YouTube</translation>

@@ -94,6 +94,7 @@
 <translation id="201192063813189384">Eroare la citirea datelor din memoria cache.</translation>
 <translation id="2025186561304664664">Proxy-ul este setat la Configurat automat.</translation>
 <translation id="2030481566774242610">Ați dorit să scrieți <ph name="LINK" />?</translation>
+<translation id="2031925387125903299">Ai primit acest mesaj deoarece este necesar ca părinții să aprobe site-urile noi la prima accesare.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />să verifici proxy-ul și firewallul;<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Cod zip</translation>
 <translation id="2065985942032347596">Autentificare obligatorie</translation>
@@ -149,6 +150,7 @@
 <translation id="2495083838625180221">Analizor JSON</translation>
 <translation id="2495093607237746763">Dacă opțiunea este bifată, Chromium va stoca o copie a cardului pe dispozitiv pentru a completa formularul mai rapid.</translation>
 <translation id="2498091847651709837">Scanează un card nou</translation>
+<translation id="2501278716633472235">Înapoi</translation>
 <translation id="2515629240566999685">să verifici semnalul din zona ta;</translation>
 <translation id="2516305470678292029">Interfețe de utilizare alternative</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> a trimis un răspuns nevalid.</translation>
@@ -166,10 +168,12 @@
 <translation id="2704283930420550640">Valoarea nu se potrivește cu formatul.</translation>
 <translation id="2705137772291741111">Copia salvată (în memoria cache) a acestui site nu a putut fi citită.</translation>
 <translation id="2709516037105925701">Completare automată</translation>
+<translation id="2712173769900027643">Solicită permisiunea</translation>
 <translation id="2721148159707890343">Solicitarea a reușit</translation>
 <translation id="2728127805433021124">Certificatul serverului este semnat utilizând un algoritm de semnătură slab.</translation>
 <translation id="2742870351467570537">Elimină elementele selectate</translation>
 <translation id="277499241957683684">Lipsește o înregistrare pentru gadget</translation>
+<translation id="2778107779445548489">Ai primit acest mesaj deoarece părintele tău a blocat acest site.</translation>
 <translation id="2784949926578158345">Conexiunea a fost resetată.</translation>
 <translation id="2824775600643448204">Bara de adrese și de căutare</translation>
 <translation id="2826760142808435982">Conexiunea este criptată și autentificată utilizând <ph name="CIPHER" /> și folosește <ph name="KX" /> ca mecanism de schimb al cheii.</translation>
@@ -177,6 +181,7 @@
 <translation id="2837049386027881519">A fost necesar să se încerce din nou realizarea conexiunii, utilizând o versiune mai veche a protocolului TSL sau SSL. În mod obișnuit, acest lucru înseamnă că serverul utilizează un software foarte vechi și că poate avea și alte probleme de securitate.</translation>
 <translation id="284702764277384724">Se pare că certificatul de server pentru <ph name="HOST_NAME" /> este un fals.</translation>
 <translation id="2855922900409897335">Confirmă <ph name="CREDIT_CARD" /></translation>
+<translation id="2889159643044928134">Nu reîncărca</translation>
 <translation id="2896499918916051536">Acest plugin nu este acceptat.</translation>
 <translation id="2897655920961181107">Portul solicitat este nesigur și blocat.</translation>
 <translation id="2909946352844186028">A fost detectată o schimbare a rețelei.</translation>
@@ -198,6 +203,7 @@
 <translation id="3005723025932146533">Afișați o copie salvată</translation>
 <translation id="3010559122411665027">Intrarea din listă „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Tip de politică greșit</translation>
+<translation id="3032412215588512954">Dorești să reîncarci acest site?</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
 <translation id="3041612393474885105">Informații despre certificat</translation>
 <translation id="3093245981617870298">Sunteți offline.</translation>
@@ -229,6 +235,7 @@
 <translation id="3305707030755673451">Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TIME" />. Introdu-o pentru a începe sincronizarea.</translation>
 <translation id="333371639341676808">Împiedică această pagină să creeze alte casete de dialog.</translation>
 <translation id="3340978935015468852">setări</translation>
+<translation id="3345135638360864351">Solicitarea de a accesa acest site nu a putut fi trimisă la <ph name="NAME" />. Încearcă din nou.</translation>
 <translation id="3355823806454867987">Modifica setările proxy...</translation>
 <translation id="3369192424181595722">Eroare de ceas</translation>
 <translation id="3369366829301677151">Actualizează și confirmă cardul <ph name="CREDIT_CARD" /></translation>
@@ -244,6 +251,8 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Interval de preluare:</translation>
 <translation id="3462200631372590220">Ascundeți detaliile avansate</translation>
+<translation id="3479539252931486093">A fost o situație neașteptată? <ph name="BEGIN_LINK" />Anunță-ne<ph name="END_LINK" /></translation>
+<translation id="3498215018399854026">Momentan, nu ți-am putut contacta părintele. Încearcă din nou.</translation>
 <translation id="3516765099410062445">Se afișează istoricul din dispozitivele de pe care v-ați conectat. <ph name="BEGIN_LINK" />Aflați mai multe<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Dosar</translation>
 <translation id="3528171143076753409">Certificatul serverului nu este de încredere.</translation>
@@ -266,6 +275,7 @@
 <translation id="3658742229777143148">Versiune</translation>
 <translation id="3681007416295224113">Informații despre certificat</translation>
 <translation id="3693415264595406141">Parolă:</translation>
+<translation id="3700528541715530410">Hopa, se pare că nu aveți permisiunea de a accesa această pagină.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Se încarcă…</translation>
 <translation id="3712624925041724820">Licențe epuizate</translation>
@@ -280,8 +290,6 @@
 <translation id="382518646247711829">Dacă utilizați un server proxy...</translation>
 <translation id="3828924085048779000">Trebuie să fie introdusă expresia de acces.</translation>
 <translation id="385051799172605136">Înapoi</translation>
-<translation id="3851596405215565524">Dacă este deja inclus ca program căruia i se permite să acceseze rețeaua, încearcă
-    să-l elimini din listă și să-l adaugi din nou.</translation>
 <translation id="3858027520442213535">Actualizează data și ora</translation>
 <translation id="3884278016824448484">Identificator de gadget în conflict</translation>
 <translation id="3885155851504623709">Parohie</translation>
@@ -312,6 +320,7 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />să verifici configurarea pentru firewall și antivirus;<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Blocări</translation>
 <translation id="4250680216510889253">Nu</translation>
+<translation id="425582637250725228">Este posibil ca modificările să nu se salveze.</translation>
 <translation id="4258748452823770588">Semnătură greșită</translation>
 <translation id="4268298190799576220">Momentan, Chromium nu a putut să verifice cardul. Încearcă din nou mai târziu.</translation>
 <translation id="4269787794583293679">(Niciun nume de utilizator)</translation>
@@ -328,6 +337,9 @@
 <translation id="4406896451731180161">rezultate ale căutării</translation>
 <translation id="4424024547088906515">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; Chrome nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="443673843213245140">Utilizarea unui proxy este dezactivată, dar o configurare proxy este specificată în mod explicit.</translation>
+<translation id="4458874409874303848">SafeSites</translation>
+<translation id="4461847750548395463">Ai primit acest mesaj deoarece este activat filtrul Google SafeSites.</translation>
+<translation id="4491452711366281322">Neaprobat</translation>
 <translation id="4492190037599258964">Rezultatele căutării pentru „<ph name="SEARCH_STRING" />”</translation>
 <translation id="4506176782989081258">Eroare de validare: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">să contactezi administratorul sistemului;</translation>
@@ -349,6 +361,7 @@
 <translation id="4764776831041365478">Pagina web de la <ph name="URL" /> poate fi temporar nefuncțională sau a fost mutată definitiv la o nouă adresă web.</translation>
 <translation id="4771973620359291008">A apărut o eroare necunoscută.</translation>
 <translation id="477518548916168453">Serverul nu acceptă funcționalitatea necesară pentru a îndeplini solicitarea.</translation>
+<translation id="4782449893814226250">Ai întrebat părinții dacă poți accesa această pagină.</translation>
 <translation id="4800132727771399293">Verifică data de expirare și codul CVC și încearcă din nou</translation>
 <translation id="4807049035289105102">Nu poți accesa acum site-ul <ph name="SITE" />, deoarece acesta a trimis date de conectare într-un format necunoscut, pe care Google Chrome nu le poate procesa. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="4813512666221746211">Eroare de rețea</translation>
@@ -358,6 +371,7 @@
 <translation id="4880827082731008257">Caută în istoric</translation>
 <translation id="4923417429809017348">Această pagină a fost tradusă dintr-o limbă necunoscută în <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Valoarea trebuie specificată.</translation>
+<translation id="4930497775425430760">Ai primit acest mesaj deoarece este necesar ca părintele tău să aprobe site-urile noi la prima accesare.</translation>
 <translation id="495170559598752135">Acțiuni</translation>
 <translation id="4958444002117714549">Extindeți lista</translation>
 <translation id="498957508165411911">Se traduce din <ph name="ORIGINAL_LANGUAGE" /> în <ph name="TARGET_LANGUAGE" />?</translation>
@@ -416,6 +430,7 @@
 <translation id="560412284261940334">Gestionarea nu este acceptată</translation>
 <translation id="5610142619324316209">să verifici conexiunea;</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" /> te-a redirecționat de prea multe ori.</translation>
+<translation id="5622887735448669177">Dorești să părăsești acest site?</translation>
 <translation id="5629630648637658800">Setările pentru politică nu au putut fi încărcate</translation>
 <translation id="5631439013527180824">Indicativ nevalid pentru gestionarea gadgetului</translation>
 <translation id="5650551054760837876">Nu au fost găsite rezultate de căutare.</translation>
@@ -425,6 +440,7 @@
 <translation id="5785756445106461925">În plus, această pagină include alte resurse care nu sunt securizate. Aceste resurse sunt vizibile pentru alți utilizatori în cursul transferului și pot fi modificate de un atacator pentru a schimba aspectul paginii.</translation>
 <translation id="5810442152076338065">Conexiunea la <ph name="DOMAIN" /> este criptată folosind o suită de codificare învechită.</translation>
 <translation id="5813119285467412249">&amp;Repetați adăugarea</translation>
+<translation id="5855235287355719921">Ai primit acest mesaj deoarece administratorul a blocat acest site.</translation>
 <translation id="5857090052475505287">Dosar nou</translation>
 <translation id="5869405914158311789">Acest site nu poate fi accesat</translation>
 <translation id="5869522115854928033">Parole salvate</translation>
@@ -448,6 +464,7 @@
 <translation id="6146055958333702838">Verifică toate cablurile și repornește routerele, modemurile sau alte
     dispozitive de rețea pe care le folosești.</translation>
 <translation id="614940544461990577">Încearcă:</translation>
+<translation id="6150607114729249911">Hopa! Trebuie să-ți întrebi părinții dacă poți accesa această pagină.</translation>
 <translation id="6151417162996330722">Certificatul de server are o perioadă de validitate prea lungă.</translation>
 <translation id="6154808779448689242">Indicativul returnat pentru politică nu corespunde cu indicativul actual</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
@@ -484,6 +501,7 @@
 <translation id="6550675742724504774">Opțiuni</translation>
 <translation id="6596325263575161958">Opțiuni de criptare</translation>
 <translation id="6610562986279010327">Chrome nu poate deschide adresa URL</translation>
+<translation id="662080504995468778">Rămâi pe pagină</translation>
 <translation id="6626108645084335023">Se așteaptă testarea DNS.</translation>
 <translation id="6628463337424475685">Căutare <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">Nu puteți accesa acum site-ul <ph name="SITE" />, deoarece <ph name="BEGIN_LINK" />acest certificat a fost revocat<ph name="END_LINK" />. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
@@ -536,11 +554,14 @@
 <translation id="7182878459783632708">Nu au fost setate politici</translation>
 <translation id="7186367841673660872">Această pagină a fost tradusă din <ph name="ORIGINAL_LANGUAGE" /> în <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
+<translation id="720210938761809882">Pagină blocată</translation>
 <translation id="7208899522964477531">Caută <ph name="SEARCH_TERMS" /> pe <ph name="SITE_NAME" /></translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> nu respectă standardele de securitate.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /> despre această problemă.</translation>
 <translation id="7219179957768738017">Conexiunea utilizează <ph name="SSL_VERSION" />.</translation>
 <translation id="7225807090967870017">Cod versiune</translation>
+<translation id="7231308970288859235">Hopa! Trebuie să-ți întrebi părintele dacă poți accesa această pagină.</translation>
+<translation id="7246609911581847514">Ai primit acest mesaj deoarece este necesar ca administratorul să aprobe site-urile noi la prima accesare.</translation>
 <translation id="725866823122871198">O conexiune privată la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nu poate fi stabilită, deoarece data și ora computerului (<ph name="DATE_AND_TIME" />) sunt incorecte.</translation>
 <translation id="7265986070661382626">Nu puteți accesa acum site-ul <ph name="SITE" />, deoarece acesta <ph name="BEGIN_LINK" />folosește fixarea certificatelor<ph name="END_LINK" />. Erorile de rețea și atacurile sunt de obicei temporare și probabil că această pagină va funcționa mai târziu.</translation>
 <translation id="7269802741830436641">Această pagină web are o buclă de redirecționare</translation>
@@ -607,8 +628,10 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7825436071901023927">Port nesigur <ph name="SITE" /></translation>
 <translation id="785549533363645510">Cu toate acestea, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activitatea de navigare față de angajator, față de furnizorul de servicii de internet sau față de site-urile pe care le accesezi.</translation>
 <translation id="7887683347370398519">Verifică codul CVC și încearcă din nou</translation>
+<translation id="7894616681410591072">Hopa! Este nevoie ca <ph name="NAME" /> să îți acorde permisiunea de a accesa această pagină.</translation>
 <translation id="790025292736025802">Adresa <ph name="URL" /> nu a fost găsită</translation>
 <translation id="7912024687060120840">În dosarul:</translation>
+<translation id="7920092496846849526">Ai întrebat părintele dacă poți accesa această pagină.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Certificatul serverului nu este încă valid.</translation>
 <translation id="7951415247503192394">(32 de biți)</translation>
@@ -617,6 +640,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="7977590112176369853">&lt;introdu interogarea&gt;</translation>
 <translation id="7983301409776629893">Tradu întotdeauna din <ph name="ORIGINAL_LANGUAGE" /> în <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Nespecificată</translation>
+<translation id="8012647001091218357">Momentan, nu ți-am putut contacta părinții. Încearcă din nou.</translation>
 <translation id="8034522405403831421">Această pagină este în <ph name="SOURCE_LANGUAGE" />. Doriți traducere în <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Nu au fost găsite intrări în istoric.</translation>
 <translation id="8088680233425245692">Articolul nu a fost vizualizat.</translation>
@@ -629,9 +653,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8204086856545141093">Solicitările trimise la server au fost blocate de o politică.</translation>
 <translation id="8218327578424803826">Locație atribuită:</translation>
 <translation id="8225771182978767009">Persoana care a configurat computerul a ales să blocheze acest site.</translation>
-<translation id="8240446052814166959">Verifică setările de proxy sau contactează administratorul de rețea,
-      pentru a te asigura că serverul proxy funcționează.
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="8241707690549784388">Pagina pe care o cauți a utilizat informațiile pe care le-ai introdus. Întoarcerea la acea pagină ar putea face ca orice acțiune să fie repetată. Vrei să continui?</translation>
 <translation id="8249320324621329438">Ultima preluare:</translation>
 <translation id="8266098793847448402">Dă clic pe
@@ -642,6 +663,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
       <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
       și dă clic pe
       <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
+<translation id="8279107132611114222">Solicitarea dvs. de a accesa acest site a fost trimisă către <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Dacă nu știți sigur ce înseamnă aceasta, contactați administratorul de rețea.</translation>
 <translation id="8293206222192510085">Adăugați marcaj</translation>
 <translation id="8294431847097064396">Sursă</translation>
@@ -663,6 +685,7 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="8559762987265718583">O conexiune privată la <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nu poate fi stabilită, deoarece data și ora dispozitivului (<ph name="DATE_AND_TIME" />) sunt incorecte.</translation>
 <translation id="856992080682148">Certificatul pentru acest site expiră în 2017 sau mai târziu, iar lanțul de certificate conține un certificat semnat cu SHA-1.</translation>
 <translation id="8571890674111243710">Se traduce pagina în <ph name="LANGUAGE" />...</translation>
+<translation id="8591846766485502580">Ai primit acest mesaj deoarece unul dintre părinții tăi a blocat acest site.</translation>
 <translation id="859285277496340001">Certificatul nu specifică un mecanism pentru a verifica dacă acesta a fost revocat.</translation>
 <translation id="8629916158020966496">Navigarea pe internet este dezactivată până când verificarea înscrierii în sistemul companiei este finalizată.
     Poți folosi în continuare instrumentul de diagnosticare prezentat aici pentru a remedia problemele de conectivitate.</translation>

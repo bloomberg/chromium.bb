@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">Chromium OS hasn’t completed its initial setup.</translation>
 <translation id="3748537968684000502">You are viewing a secure Chromium page.</translation>
 <translation id="4365115785552740256">Chromium is made possible by the <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> open source project and other <ph name="BEGIN_LINK_OSS" />open source software<ph name="END_LINK_OSS" />.</translation>
-<translation id="4404275227760602850">Go to the Chromium menu &gt; Settings &gt; (Advanced) Privacy
-          and disable "Prefetch page resources".
-          If this does not resolve the issue, we recommend re-enabling this option
-          again for improved performance.</translation>
 <translation id="4559775032954821361">Go to
           the Chromium menu &gt;
           <ph name="SETTINGS_TITLE" />
@@ -40,7 +36,5 @@
 <translation id="8187289872471304532">Go to
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
           and deselect any proxies that have been selected.</translation>
-<translation id="8610831143142469229">Allow Chromium to access the network in your firewall or antivirus
-        settings.</translation>
 <translation id="8684913864886094367">Chromium didn't shut down correctly.</translation>
 </translationbundle>

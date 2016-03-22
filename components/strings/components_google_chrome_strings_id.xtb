@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">Perubahan Anda akan berlaku pada peluncuran ulang Google Chrome selanjutnya.</translation>
 <translation id="3444832043240812445">Laman ini hanya menunjukkan informasi tentang kondisi ngadat terkini jika Anda <ph name="BEGIN_LINK" />mengaktifkan pelaporan kondisi ngadat<ph name="END_LINK" />.</translation>
 <translation id="4010643444566880169">Chrome OS belum menyelesaikan penyiapan awal.</translation>
-<translation id="5423788048750135178">Buka menu Chrome &gt; Setelan &gt; (Lanjutan) Privasi
-          dan nonaktifkan "Ambil sumber daya laman lebih dahulu".
-          Jika hal ini tidak menyelesaikan masalah, sebaiknya aktifkan opsi ini
-          lagi untuk kinerja yang ditingkatkan.</translation>
 <translation id="6011049234605203654">Buka
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE" />
@@ -38,8 +34,6 @@
           &gt;
           Setelan LAN
           dan batalkan pilihan "Gunakan server proxy untuk LAN".</translation>
-<translation id="7396375882099008034">Izinkan Chrome untuk mengakses jaringan di setelan firewall atau antivirus
-        Anda.</translation>
 <translation id="8187289872471304532">Buka
           Aplikasi &gt; Preferensi Sistem &gt; Jaringan &gt; Lanjutan &gt; Proxy
           dan hapus centang proxy apa pun yang telah dipilih.</translation>

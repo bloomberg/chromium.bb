@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="101438888985615157">将屏幕旋转 180 度</translation>
+<translation id="1015272884520659144">定义可从其内核驱动程序分离以便直接通过网络应用内的 chrome.usb API 使用的 USB 设备列表。列表中的条目是成对的用于标识特定硬件的 USB 供应商标识符和产品标识符。
+
+      如果此政策未配置，系统会将分离式 USB 设备列表视为空白。</translation>
 <translation id="1017967144265860778">登录屏幕的电源管理设置</translation>
 <translation id="1019101089073227242">设置用户数据目录</translation>
 <translation id="1022361784792428773">应禁止用户安装的扩展程序的 ID（或者用“*”表示禁止安装所有扩展程序）</translation>
@@ -198,6 +201,7 @@
 <translation id="186719019195685253">当闲置延迟时间已过且使用交流电源供电时执行的操作</translation>
 <translation id="187819629719252111">允许 <ph name="PRODUCT_NAME" />显示文件选择对话框，从而允许用户访问计算机上的本地文件。如果您启用了此设置，用户就可以正常地打开文件选择对话框。如果您停用了此设置，那么只要用户执行了会触发文件选择对话框的操作（如导入书签、上传文件、保存链接等），系统就会显示一条讯息，并且假定用户已在该文件选择对话框中点击了“取消”。如果您未设定此设置，用户就可以正常地打开文件选择对话框。</translation>
 <translation id="1897365952389968758">允许所有网站运行 JavaScript</translation>
+<translation id="193259052151668190">分离式 USB 设备白名单</translation>
 <translation id="1933378685401357864">壁纸图片</translation>
 <translation id="193900697589383153">向系统任务栏添加退出按钮。
 
@@ -663,6 +667,7 @@
 <translation id="3528000905991875314">启用备用的错误页面</translation>
 <translation id="3547954654003013442">代理设置</translation>
 <translation id="3570008976476035109">在这些网站上阻止插件</translation>
+<translation id="3591584750136265240">配置登录身份验证行为</translation>
 <translation id="3627678165642179114">启用或停用拼写检查网络服务</translation>
 <translation id="3646859102161347133">设置放大镜类型</translation>
 <translation id="3653237928288822292">默认搜索服务提供商图标</translation>
@@ -770,6 +775,7 @@
           如果此政策设为“在会话期间保留 Cookie”，系统将在会话结束后清除 Cookie。请注意，如果 <ph name="PRODUCT_NAME" /> 以“后台模式”运行，那么在最后一个窗口关闭后，会话可能不会结束。如需关于配置此行为的更多信息，请参见“BackgroundModeEnabled”政策。
 
           如果此政策未设置，系统将使用“AllowCookies”，并且用户可以更改此政策。</translation>
+<translation id="4103289232974211388">用户确认后重定向至 SAML IdP</translation>
 <translation id="410478022164847452">指定在使用交流电源供电时用户停止输入后隔多久才采取闲置操作。
 
           如果设置了此政策，则只要机器处于闲置状态的时间达到此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会采取闲置操作（可单独配置）。
@@ -1677,6 +1683,11 @@
 <translation id="7523476810162382273">将监测信息发送到管理服务器</translation>
 <translation id="7529100000224450960">可让您设置网址格式的列表，这些网址格式用于指定允许打开弹出式窗口的网站。在未设置此政策的情况下，如果设置了“DefaultPopupsSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="7529144158022474049">自动更新分配因素</translation>
+<translation id="7553535237300701827">设置此政策后，登录身份验证流程将采用以下其中一种方式，具体取决于设置的值：
+
+      如果设为 GAIA，将通过常规 GAIA 身份验证流程完成登录。
+
+      如果设为 SAML_INTERSTITIAL，登录过程中将会显示一个插页式屏幕，让用户选择是通过设备注册网域的 SAML IdP 进行身份验证，还是返回到常规 GAIA 登录流程。</translation>
 <translation id="7567380065339179813">在这些网站上允许插件</translation>
 <translation id="7593523670408385997">配置<ph name="PRODUCT_NAME" />将用于在磁盘上存储缓存文件的缓存大小。
 
@@ -2000,6 +2011,7 @@
 
       如果未设置此政策或将其设为 false，系统将不会报告相关位置。</translation>
 <translation id="8828766846428537606">在“<ph name="PRODUCT_NAME" />”中配置默认主页，并禁止用户更改主页。只有将主页设置为新标签页或某个特定的主页网址，才能完全锁定用户的主页设置。如果您没有指定主页网址，那么用户仍然可以通过指定“chrome://newtab”，将主页设置为新标签页。</translation>
+<translation id="8833109046074170275">通过默认的 GAIA 流程进行身份验证</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" />会缓存应用和扩展程序，以便一台设备的多位用户安装，从而避免重复为每位用户下载。
       如果此政策未配置或值小于 1 MB，<ph name="PRODUCT_OS_NAME" />将使用默认缓存大小。</translation>
 <translation id="8858642179038618439">强制启用 YouTube 安全模式</translation>

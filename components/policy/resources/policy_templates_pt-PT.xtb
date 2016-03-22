@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="101438888985615157">Rodar o ecrã 180 graus</translation>
+<translation id="1015272884520659144">Define a lista de dispositivos USB que estão autorizados a ser desligados do respetivo controlador de kernel para serem utilizados diretamente através da API chrome.usb numa aplicação Web. As entradas são pares de identificador de fornecedor de USB e identificador de produto para identificar um hardware específico.
+
+      Se esta política não estiver configurada, a lista de dispositivos USB amovíveis é considerada como estando vazia.</translation>
 <translation id="1017967144265860778">Gestão de energia no ecrã de início de sessão</translation>
 <translation id="1019101089073227242">Definir diretório de dados do utilizador</translation>
 <translation id="1022361784792428773">IDs das extensões que os utilizadores não poderão instalar (ou * para todas)</translation>
@@ -219,6 +222,7 @@
 <translation id="186719019195685253">Ação a executar quando o atraso de inatividade é atingido e estiver a ser utilizada a energia CA</translation>
 <translation id="187819629719252111">Permite aceder a ficheiros locais no computador, ao permitir que o <ph name="PRODUCT_NAME" /> apresente caixas de diálogo de seleção de ficheiros. Se ativar esta definição, os utilizadores poderão abrir caixas de diálogo de seleção de ficheiros normalmente. Se desativar esta definição, sempre que os utilizadores efetuarem uma ação que origine uma caixa de diálogo de seleção de ficheiros (como importar marcadores, carregar ficheiros, guardar links, etc.), aparecerá uma mensagem e assume-se que os utilizadores clicaram em Cancelar na caixa de diálogo. Se esta definição não for definida, os utilizadores poderão abrir as caixas de diálogo de seleção de ficheiros normalmente.</translation>
 <translation id="1897365952389968758">Permitir que todos os sites executem JavaScript</translation>
+<translation id="193259052151668190">Lista de autorizações de dispositivos USB amovíveis</translation>
 <translation id="1933378685401357864">Imagem de fundo</translation>
 <translation id="193900697589383153">Adiciona um botão para terminar sessão ao tabuleiro do sistema.
 
@@ -693,6 +697,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
 <translation id="3547954654003013442">Definições de proxy</translation>
 <translation id="3570008976476035109">Bloquear plug-ins nestes sites</translation>
+<translation id="3591584750136265240">Configurar o comportamento de autenticação de início de sessão</translation>
 <translation id="3627678165642179114">Ativar ou desativar o serviço Web de verificação ortográfica</translation>
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
 <translation id="3653237928288822292">Ícone do fornecedor de pesquisas predefinido</translation>
@@ -802,6 +807,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se esta política estiver definida como "Manter cookies durante toda a sessão", os cookies são apagados quando a sessão for fechada. Tenha em atenção que se o <ph name="PRODUCT_NAME" /> estiver em execução no "modo de segundo plano", a sessão pode não ser fechada quando a última janela for fechada. Consulte a política "BackgroundModeEnabled" para obter mais informações acerca da configuração deste comportamento.
 
           Se esta política não for definida, "AllowCookies" é utilizada e o utilizador pode alterá-la.</translation>
+<translation id="4103289232974211388">Redirecionar para SAML IdP após confirmação do utilizador</translation>
 <translation id="410478022164847452">Especifica o período de tempo sem atividade por parte do utilizador após o qual se realiza a ação de inatividade quando o dispositivo está ligado à eletricidade.
 
           Quando esta política está definida, especifica o período de tempo que o utilizador tem de permanecer inativo antes de o <ph name="PRODUCT_OS_NAME" /> realizar a ação de inatividade, que pode ser configurada separadamente.
@@ -1716,6 +1722,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7523476810162382273">Enviar impulsos de monitorização para o servidor de gestão</translation>
 <translation id="7529100000224450960">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a abrir janelas de pop-up. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultPopupsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="7529144158022474049">Fator de dispersão de atualização automática</translation>
+<translation id="7553535237300701827">Quando esta política é definida, o fluxo de autenticação de início de sessão corresponde a um dos seguintes modos consoante o valor da definição:
+
+      Se definida para GAIA, o início de sessão é efetuado através do fluxo de autenticação GAIA normal.
+
+      Se definida para SAML_INTERSTITIAL, o início de sessão apresenta um ecrã intercalar que pergunta ao utilizador se pretende avançar com a autenticação através do SAML IdP do domínio de inscrição do dispositivo ou retroceder para o fluxo de início de sessão GAIA normal.</translation>
 <translation id="7567380065339179813">Permitir plug-ins nesses sites</translation>
 <translation id="7593523670408385997">Configura o tamanho da cache que o <ph name="PRODUCT_NAME" /> utilizará para armazenar ficheiros em cache no disco.
 
@@ -2061,6 +2072,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se a política não estiver definida, ou estiver definida como falsa, a localização não será comunicada.</translation>
 <translation id="8828766846428537606">Configura a página inicial predefinida no <ph name="PRODUCT_NAME" /> e impede que os utilizadores a alterem. As definições da página inicial dos utilizadores só estão totalmente bloqueadas se definir que a página inicial é a página Novo separador ou um URL e que indique um URL para a página inicial. Se não indicar o URL da página inicial, os utilizadores poderão definir a página Novo separador como a página inicial, especificando "chrome://newtab".</translation>
+<translation id="8833109046074170275">Autenticação através do fluxo GAIA predefinido</translation>
 <translation id="8838303810937202360">O <ph name="PRODUCT_OS_NAME" /> coloca em cache aplicações e extensões para instalação por vários utilizadores de um único dispositivo para evitar voltar a transferi-las para cada utilizador.
       Se esta política não estiver configurada ou o valor for inferior a 1 MB, o <ph name="PRODUCT_OS_NAME" /> utiliza o tamanho de cache predefinido.</translation>
 <translation id="8858642179038618439">Forçar o Modo de segurança do YouTube</translation>

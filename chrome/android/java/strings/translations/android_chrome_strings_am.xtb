@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">በአቅራቢያ ባሉ ነገሮች የተላኩ ድረ-ገጾችን ያግኙ። Chrome በእርስዎ ዙሪያ ካሉ ነገሮች ጋር ተያያዥነት ያላቸውን ድረ-ገጾችን ይሰበስባል፣ ለእርስዎ በጣም አስፈላጊ የሆነውን ለማግኘት ወደ Google አገልግሎት ስም-አልባ አድርጎ ይልካቸዋል፣ ከዚያ ያሳያቸዋል።
 
 አካላዊ ድርን ለመጠቀም ብሉቱዝ እና አካባቢን ማብራት አለብዎት።</translation>
+<translation id="1254090737195733114">ውሂብ ከውጭ ይምጣ?</translation>
 <translation id="1258753120186372309">Google doodle፦ <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">አቁም</translation>
 <translation id="1285320974508926690">ይህን ጣቢያ በጭራሽ አትተርጉም</translation>
@@ -108,6 +109,7 @@
 <translation id="238909021488141516">ይዘቱን በማውረድ ላይ ሳለ ስህተት አጋጥሟል።</translation>
 <translation id="2414886740292270097">ጨለማ</translation>
 <translation id="2433507940547922241">ገጽታ</translation>
+<translation id="2439248520967274840">ወደ <ph name="TO_ACCOUNT" /> እየገቡ ነው። አንዳንድ ነባር የእርስዎ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ከዚህ ቀደም ከ<ph name="FROM_ACCOUNT" /> ጋር ሰምረዋል። በነባር ውሂብዎ ምን ማድረግ ይፈልጋሉ?</translation>
 <translation id="2440823041667407902">የአካባቢ መዳረሻ</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> ገጽ ከመስመር ውጭ ተቀምጧል</translation>
 <translation id="2476578072172137802">የጣቢያ ቅንብሮች</translation>
@@ -147,6 +149,7 @@
 <translation id="2968755619301702150">የእውቅና ማረጋገጫ መመልከቻ</translation>
 <translation id="2996291259634659425">የይለፍ ሐረግ ይፍጠሩ</translation>
 <translation id="2996809686854298943">ዩአርኤል ያስፈልጋል</translation>
+<translation id="3012408695656332380">የዚህ መሣሪያ ውሂብ በ<ph name="TO_ACCOUNT" /> ውሂብ ይተኩት። ወደ <ph name="FROM_ACCOUNT" /> ተመልሰው በመቀየር ነባሩን ውሂብዎ ሰርስረው ማውጣት ይችላሉ፣ ነገር ግን ዘግተው ከወጡበት ጊዜ ጀምሮ የተፈጠረ ውሂብ ይጠፋል።</translation>
 <translation id="3029704984691124060">የይለፍ ሐረጎቹ አይዛመዱም</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />እገዛ ያግኙ<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">ቪዲዮ አስቀምጥ</translation>
@@ -214,7 +217,6 @@
 <translation id="403659016947612156">የአካላዊ ድረ-ገጾች አቅራቢያ ናቸው</translation>
 <translation id="4042870126885713738">አንድ የድር አድራሻ መፍትሔ ካላመጣ ወይም ግንኙነት ሊፈጠር ካልቻለ ጥቆማዎችን አሳይ</translation>
 <translation id="4056223980640387499">ቀይ ቡናማ</translation>
-<translation id="4059119910594077751">ከሙሉ ማያ ገፅ ለመውጣት የተመለስ አዝራሩን ይንኩ።</translation>
 <translation id="4062305924942672200">የህግ መረጃ</translation>
 <translation id="4089831646916293264">ይህ ባህሪ በእርስዎ አገልግሎት አቅራቢ በሚቀርቡ ዋና የውሂብ አገልግሎቶች ላይ ጣልቃ ሊገባ ይችላል።</translation>
 <translation id="4099578267706723511">የአጠቃቀም ስታቲክሶችን እና የብልሽት ሪፖርቶችን ወደ Google በመላክ Chromeን የተሻለ ለማድረግ እገዛ ያድርጉ።</translation>
@@ -350,6 +352,7 @@
 <translation id="5676636989614905379">ቪዲዮውን በ<ph name="SCREEN_NAME" /> ላይ ማጫወት አልተቻለም።</translation>
 <translation id="5677928146339483299">ታግዷል</translation>
 <translation id="5684874026226664614">ውይ። ይህ ገጽ ሊተረጎም አይችልም።</translation>
+<translation id="5708031556037168012">ነባር ውሂብ በመሣሪያዎ ላይ እንዳለ ያቆዩትና ውሂብዉን እስከመጨረሻው ወደ <ph name="TO_ACCOUNT" /> ያስመጡት።</translation>
 <translation id="5712189971979076230">ስንክል በሚያጋጥመዎት ማንኛውም ጊዜ ላይ ስለፋይሎች፣ መተግበሪያዎች እና እየሰሩ ስላሉ አገልግሎቶች ወደ Google መረጃ በመላክ ቅድሚያ ሰጥተን ልንሰራባቸው የሚገቡ ነገሮችን እንድንለይ እና ማሻሻያዎችን እንድናደርግ ያግዙን።
 
 የአጠቃቀም ስታትስቲክስ እንደ ምርጫዎች፣ የአዝራር ጠቅታዎች እና የማህደትውስታ ያሉ መረጃዎችን ያካትታል። የድረ-ገጽ ዩአርኤሎችን ወይም ማንኛውም የግል መረጃን አያካትቱም። የስንክል ሪፖርቶች በስንክሉ ጊዜ ያለውን የስርዓት መረጃ ይይዛሉ፣ እና በብልሽቱ ወቅት ሲደረግ በነበረው ነገር የሚወሰን ሆኖ የድረ-ገጽ ዩአርኤሎችን ወይም የግል መረጃን ሊይዙ ይችላሉ።</translation>
@@ -370,7 +373,6 @@
 <translation id="585027516397408832">ውሂብ ቆጣቢ ነቅቷል</translation>
 <translation id="5860033963881614850">አጥፋ</translation>
 <translation id="5869522115854928033">የተቀመጡ የይለፍ ቃሎች</translation>
-<translation id="588258955323874662">ሙሉ ገጽ ዕይታ</translation>
 <translation id="5899349522111170522">አዲስ ፋይል ይፍጠሩ</translation>
 <translation id="5902828464777634901">ኩኪዎችንም ጨምሮ በዚህ ድር ጣቢያ የተከማቸ ሁሉም አካባቢያዊ ውሂብ ይሰረዛል።</translation>
 <translation id="5911030830365207728">Google ትርጉም</translation>
@@ -577,6 +579,7 @@
 <translation id="8497726226069778601">እዚህ ምንም የሚታይ ነገር የለም... ገና</translation>
 <translation id="8514577642972634246">ማንነት ወደ ማያሳውቅ ሁነታ ይግቡ</translation>
 <translation id="8518901949365209398">ይህ ጣቢያ ደካማ የደህንነት ውቅረት (SHA-1 ፊርማዎች) እየተጠቀም ነው፣ ስለዚህ የእርስዎ ግንኙነት የግል ላይሆን ይችላል።</translation>
+<translation id="8525306231823319788">ሙሉ ማያ ገጽ</translation>
 <translation id="854522910157234410">ይህን ገጽ ክፈት</translation>
 <translation id="8562452229998620586">የተቀመጡ ይለፍ ቃላት እዚህ ይመጣሉ።</translation>
 <translation id="856481929701340285">የዴስክቶፕ ጣቢያን ይጠይቁ</translation>
@@ -608,7 +611,6 @@
 <translation id="8912362522468806198">የGoogle መለያ</translation>
 <translation id="8920114477895755567">የወላጆች ዝርዝሮችን በመጠበቅ ላይ።</translation>
 <translation id="8931159598799892500">Chrome + አካላዊ ድር</translation>
-<translation id="8934455786738644694">ከሙሉ ማያ ገፅ ለመውጣት ከላይ ይጎትቱ እና የተመለስ አዝራሩን ይንኩ።</translation>
 <translation id="8941248009481596111">ወደዚህ ጣቢያ ያልዎት ግንኙነት የግልዎ ነው።</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">ዳሰሳ ሊደረስበት አይችልም፦ <ph name="URL" /></translation>
@@ -627,6 +629,7 @@
 <translation id="9100610230175265781">የይለፍ ሐረግ ያስፈልጋል</translation>
 <translation id="9133515669113036225">የመሣሪያ ምስክርነቶችን ዳግም ያስጀምሩ</translation>
 <translation id="9137013805542155359">የመጀመሪያውን አሳይ</translation>
+<translation id="9141510419986760385">የስምረት መለያዎችን ከ<ph name="FROM_ACCOUNT" /> ወደ <ph name="TO_ACCOUNT" /> እየቀየሩ ነው። በነባሮቹ የእርስዎ ዕልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ሌሎች ቅንብሮች ምን ማድረግ ይችላሉ?</translation>
 <translation id="9151532766011674069">ዕልባት ከመስመር ውጭ ተቀምጧል። ማከማቻው ሊሞላ ነው።</translation>
 <translation id="917685106653909562">በአቅራቢያ ያሉ አካላዊ ድረ-ገጾች</translation>
 <translation id="9187199695613236444">ለሞባይል ተስማሚ እይታ</translation>

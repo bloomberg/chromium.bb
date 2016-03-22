@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">Chromium OS তার প্রাথমিক সেটআপ সম্পূর্ণ করেনি।</translation>
 <translation id="3748537968684000502">আপনি একটি নিরাপদ Chromium পৃষ্ঠা  দেখছেন৷</translation>
 <translation id="4365115785552740256">Chromium  <ph name="BEGIN_LINK_CHROMIUM" /> Chromium<ph name="END_LINK_CHROMIUM" /> ওপেন সোর্স প্রকল্প এবং অন্যান্য <ph name="BEGIN_LINK_OSS" />ওপেন সোর্স সফ্টওয়্যার<ph name="END_LINK_OSS" /> দ্বারা করা সম্ভব হয়েছে৷</translation>
-<translation id="4404275227760602850">Chromium মেনুতে যান &gt; সেটিংস &gt; (উন্নত) গোপনীয়তা
-          এবং "পৃষ্ঠার সংস্থান আনয়ন করা" অক্ষম করুন৷
-          যদি এটি সমস্যাটির সমাধান না করে, তাহলে উন্নত কার্য সম্পাদনার জন্য পুনরায়
-          এই বিকল্পটি নির্বাচন করা আমরা সুপারিশ করি৷</translation>
 <translation id="4559775032954821361">Chromium মেনুতে
           যান &gt;
           <ph name="SETTINGS_TITLE" />
@@ -38,7 +34,5 @@
         যদি এটি সমস্যাটির সমাধান না করে, তাহলে উন্নত কার্য সম্পাদনার জন্য পুনরায় এই বিকল্পটি নির্বাচন করা সুপারিশ আমরা করি৷</translation>
 <translation id="8187289872471304532">Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies এ যান
           এবং নির্বাচিত থাকা যে কোনো প্রক্সি অনির্বাচন করুন৷</translation>
-<translation id="8610831143142469229">আপনার ফায়ারওয়াল বা অ্যান্টিভাইরাস সেটিংসে Chromium কে নেটওয়ার্ক অ্যাক্সেস 
-        করতে মঞ্জুরি দিন৷</translation>
 <translation id="8684913864886094367">Chromium সঠিকভাবে বন্ধ হয়নি৷</translation>
 </translationbundle>

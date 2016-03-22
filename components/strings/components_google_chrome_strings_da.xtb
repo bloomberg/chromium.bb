@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">Dine ændringer træder i kraft, næste gang du åbner Google Chrome.</translation>
 <translation id="3444832043240812445">Denne side viser kun oplysninger om dine seneste nedbrud, hvis du <ph name="BEGIN_LINK" />aktiverer rapportering af nedbrud<ph name="END_LINK" />.</translation>
 <translation id="4010643444566880169">Chrome OS har ikke gennemført sin indledende konfiguration.</translation>
-<translation id="5423788048750135178">Gå til Chrome-menuen &gt; Indstillinger &gt; (Avanceret) Privatliv,
-          og fjern markeringen af "Hent sideressourcer på forhånd".
-          Hvis det ikke løser problemet, bør du markere dette afkrydsningsfelt
-          igen for at forbedre effektiviteten.</translation>
 <translation id="6011049234605203654">Gå til
           Chrome-menuen &gt;
           <ph name="SETTINGS_TITLE" />
@@ -38,8 +34,6 @@
           &gt;
           LAN-indstillinger,
           og fjern markeringen af "Brug en proxyserver til LAN".</translation>
-<translation id="7396375882099008034">Tillad, at Chrome får adgang til netværket i dine indstillinger for firewall eller
-       antivirus.</translation>
 <translation id="8187289872471304532">Gå til 
           Applikationer &gt; Systemindstillinger &gt; Netværk &gt; Avanceret &gt; Proxyer,
           og fjern markeringen af alle valgte proxyer.</translation>

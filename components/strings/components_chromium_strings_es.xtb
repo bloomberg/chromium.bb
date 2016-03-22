@@ -6,7 +6,6 @@
 <translation id="3550966579244642892">No se ha completado la configuración inicial de Chromium OS.</translation>
 <translation id="3748537968684000502">Estás viendo una página de Chromium segura.</translation>
 <translation id="4365115785552740256">Chromium se ha creado gracias al proyecto de software libre <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> y a otro <ph name="BEGIN_LINK_OSS" />software libre<ph name="END_LINK_OSS" />.</translation>
-<translation id="4404275227760602850">Accede al menú de Chromium, selecciona Ajustes, haz clic en Privacidad (Avanzados) e inhabilita la opción de cargar previamente recursos de página. Si esto no soluciona el problema, te recomendamos que vuelvas a habilitar esta opción para mejorar el rendimiento.</translation>
 <translation id="4559775032954821361">Accede al
           menú de Chromium, haz clic en
           <ph name="SETTINGS_TITLE" />
@@ -37,7 +36,5 @@
 <translation id="8187289872471304532">Accede a
           Aplicaciones &gt; Preferencias del Sistema &gt; Red &gt; Avanzado &gt; Proxies
           y desactiva las casillas de verificación de los proxies seleccionados.</translation>
-<translation id="8610831143142469229">Configura tu cortafuegos o tu antivirus para permitir el acceso de
-        Chromium a la red.</translation>
 <translation id="8684913864886094367">Chromium no se ha cerrado correctamente.</translation>
 </translationbundle>

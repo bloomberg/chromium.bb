@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">Gundua kurasa za wavuti zinazotumwa na vifaa vilivyo karibu. Chrome hukusanya kurasa za wavuti zinazohusishwa na vifaa vilivyo karibu nawe, huzituma bila maelezo yanayoweza kukutambulisha kwenye huduma za Google ili kupata kurasa muhimu zaidi kwako, kisha huzionyesha.
 
 Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Mahali.</translation>
+<translation id="1254090737195733114">Ungependa kuleta data?</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Simamisha</translation>
 <translation id="1285320974508926690">Kamwe usitafsiri tovuti hii</translation>
@@ -108,6 +109,7 @@ Unaweza kudhibiti Wavuti kila mahali katika mipangilio ya faragha kwenye Chrome.
 <translation id="238909021488141516">Hitilafu imetokea wakati wa kupakua maudhui.</translation>
 <translation id="2414886740292270097">Giza</translation>
 <translation id="2433507940547922241">Sura</translation>
+<translation id="2439248520967274840">Unaingia katika akaunti ya <ph name="TO_ACCOUNT" />. Baadhi ya alamisho, historia, manenosiri na mipangilio yako mingine iliyopo ilisawazishwa awali kwenye <ph name="FROM_ACCOUNT" />. Ungependa kufanyia nini data yako iliyopo?</translation>
 <translation id="2440823041667407902">Ufikiaji wa eneo</translation>
 <translation id="2470327855284432041">Ukurasa wa <ph name="PAGE_SIZE_STRING" /> umehifadhiwa nje ya mtandao</translation>
 <translation id="2476578072172137802">Mipangilio ya Tovuti</translation>
@@ -147,6 +149,7 @@ Unaweza kudhibiti Wavuti kila mahali katika mipangilio ya faragha kwenye Chrome.
 <translation id="2968755619301702150">Kitazamaji vyeti</translation>
 <translation id="2996291259634659425">Unda kauli ya siri</translation>
 <translation id="2996809686854298943">URL inahitajika</translation>
+<translation id="3012408695656332380">Badilisha data ya kifaa hiki kwa data ya <ph name="TO_ACCOUNT" />. Unaweza kurudisha data yako iliyopo kwa kubadilisha hadi <ph name="FROM_ACCOUNT" />, lakini data inayoundwa baada ya kuondoka kwenye akaunti itapotea.</translation>
 <translation id="3029704984691124060">Kaulisiri hazilingani</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Pata usaidizi<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Hifadhi video</translation>
@@ -214,7 +217,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="403659016947612156">Kurasa wa Wavuti kila Mahali zipo karibu</translation>
 <translation id="4042870126885713738">Onyesha mapendekezo wakati anwani ya wavuti inaposhindwa kutatuliwa au muunganisho ukiwa hauwezi kufanyika</translation>
 <translation id="4056223980640387499">Sepia</translation>
-<translation id="4059119910594077751">Gusa kitufe cha kurudi nyuma ili uondoke kwenye skrini nzima.</translation>
 <translation id="4062305924942672200">Maelezo ya kisheria</translation>
 <translation id="4089831646916293264">Kipengele hiki kinaweza kutatiza ufikiaji wa huduma za data za kulipia unazopata kutoka kwa mtoa huduma wako.</translation>
 <translation id="4099578267706723511">Saidia kuboresha Chrome kwa kutumia Google takwimu za matumizi na ripoti wakati wowote kivinjari hiki kinapoacha kufanya kazi.</translation>
@@ -350,6 +352,7 @@ Fungua Chrome kwenye kompyuta yako, nenda kwenye menyu, na uchague “Ingia kati
 <translation id="5676636989614905379">Haiwezi kucheza video kwenye <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Vilivyozuiwa</translation>
 <translation id="5684874026226664614">Lo!  Ukurasa huu haukuweza kutafsiriwa.</translation>
+<translation id="5708031556037168012">Salia na data iliyopo kwenye kifaa chako na ulete data daima kwenye <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5712189971979076230">Tusaidie kuweka kipaumbele katika vipengele na maboresho tunayopaswa kushughulikia kwa kuitumia Google maelezo kuhusu faili, programu, na huduma zinazofanya kazi unapokumbwa na hitilafu ya kuacha kufanya kazi.
 
         Takwimu za matumizi zinajumuisha maelezo kama vile mapendeleo, mibofyo ya vitufe, na matumizi ya hifadhi. Hazijumuishi URL za ukurasa wa wavuti au maelezo yoyote ya kibinafsi. Ripoti za kuacha kufanya kazi zina maelezo ya mfumo ya wakati wa kuacha kufanya kazi, na zinaweza kuwa na URL za ukurasa wa wavuti au maelezo ya kibinafsi, kutegemea na kilichokuwa kikitendeka wakati wa kuacha kufanya kazi.</translation>
@@ -370,7 +373,6 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 <translation id="585027516397408832">Kiokoa Data kimewashwa</translation>
 <translation id="5860033963881614850">Kimezimwa</translation>
 <translation id="5869522115854928033">Manenosiri yaliyohifadhiwa</translation>
-<translation id="588258955323874662">Skrini nzima</translation>
 <translation id="5899349522111170522">Unda faili mpya</translation>
 <translation id="5902828464777634901">Data zote za ndani zilizohifadhiwa na tovuti hii, ikiwemo vidakuzi, zitafutwa.</translation>
 <translation id="5911030830365207728">Google Tafsiri</translation>
@@ -578,6 +580,7 @@ Hata hivyo, unaonekana. Kuvinjari katika hali fiche hakufichi kuvinjari kwako ku
 <translation id="8497726226069778601">Bado hapana chochote cha kuangalia...</translation>
 <translation id="8514577642972634246">Ingia kwenye hali fiche</translation>
 <translation id="8518901949365209398">Tovuti hii hutumia usanidi dhaifu wa usalama (sahihi za SHA-1), kwa hivyo huenda muunganisho wako usiwe wa faragha.</translation>
+<translation id="8525306231823319788">Skrini nzima</translation>
 <translation id="854522910157234410">Fungua ukurasa huu</translation>
 <translation id="8562452229998620586">Manenosiri yaliyohifadhiwa yataonekana hapa.</translation>
 <translation id="856481929701340285">Omba tovuti ya eneo-kazi</translation>
@@ -609,7 +612,6 @@ Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyop
 <translation id="8912362522468806198">Akaunti ya Google</translation>
 <translation id="8920114477895755567">Tunasubiri maelezo ya wazazi.</translation>
 <translation id="8931159598799892500">Chrome + Wavuti kila mahali</translation>
-<translation id="8934455786738644694">Buruta kutoka juu na uguse kitufe cha kurudi nyuma ili uondoke kwenye skrini nzima.</translation>
 <translation id="8941248009481596111">Muunganisho wako kwenye tovuti hii ni wa faragha.</translation>
 <translation id="8941729603749328384">www.mfano.com</translation>
 <translation id="8959122750345127698">Kudurusu hakufikiki: <ph name="URL" /></translation>
@@ -628,6 +630,7 @@ Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyop
 <translation id="9100610230175265781">Kaulisiri inahitajika</translation>
 <translation id="9133515669113036225">Weka upya kitambulisho cha kifaa</translation>
 <translation id="9137013805542155359">Onyesha asili</translation>
+<translation id="9141510419986760385">Unabadilisha akaunti za kusawazisha kutoka <ph name="FROM_ACCOUNT" /> hadi <ph name="TO_ACCOUNT" />. Je, ungependa kufanyia nini alamisho, historia, manenosiri na mipangilio yako mingine iliyopo?</translation>
 <translation id="9151532766011674069">Alamisho imehifadhiwa nje ya mtandao. Nafasi ya kuhifadhi inakaribia kujaa.</translation>
 <translation id="917685106653909562">Kurasa za Wavuti Kila Mahali zilizo karibu</translation>
 <translation id="9187199695613236444">Mwonekano unaosomeka vizuri kwenye kifaa cha mkononi</translation>

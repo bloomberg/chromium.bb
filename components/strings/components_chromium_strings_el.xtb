@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">Το Chromium OS δεν ολοκλήρωσε την αρχική του ρύθμιση.</translation>
 <translation id="3748537968684000502">Βλέπετε μια ασφαλή σελίδα του Chromium.</translation>
 <translation id="4365115785552740256">Το Chromium υλοποιήθηκε με τη βοήθεια του έργου ανοικτού κώδικα <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> και άλλου <ph name="BEGIN_LINK_OSS" />λογισμικού ανοικτού κώδικα<ph name="END_LINK_OSS" />.</translation>
-<translation id="4404275227760602850">Μεταβείτε στο μενού του Chromium &gt; Ρυθμίσεις &gt; (Για προχωρημένους) Απόρρητο
-          και απενεργοποιήστε την "Πρόωρη λήψη πόρων."
-          Αν δεν επιλυθεί το πρόβλημά σας με αυτόν τον τρόπο, σάς συνιστούμε να ενεργοποιήσετε ξανά αυτή την επιλογή
-          για βελτιωμένες επιδόσεις.</translation>
 <translation id="4559775032954821361">Μεταβείτε
           στο μενού του Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -42,7 +38,5 @@
 <translation id="8187289872471304532">Μεταβείτε στο
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
           και καταργήστε τυχόν διακομιστές μεσολάβησης που έχουν επιλεγεί.</translation>
-<translation id="8610831143142469229">Επιτρέψτε στο Chromium να αποκτήσει πρόσβαση στο δίκτυο στις ρυθμίσεις του
-          τείχους προστασίας ή του λογισμικού προστασίας από ιούς που διαθέτετε.</translation>
 <translation id="8684913864886094367">Το Chromium δεν έκλεισε σωστά.</translation>
 </translationbundle>

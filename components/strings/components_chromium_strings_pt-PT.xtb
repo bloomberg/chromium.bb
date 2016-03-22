@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">O SO Chromium não concluiu a configuração inicial.</translation>
 <translation id="3748537968684000502">Está a visualizar uma página do Chromium segura.</translation>
 <translation id="4365115785552740256">O lançamento do Chromium foi possível devido ao projeto de código aberto do <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> e outro <ph name="BEGIN_LINK_OSS" />software de código aberto<ph name="END_LINK_OSS" />.</translation>
-<translation id="4404275227760602850">Aceda ao menu do Chromium &gt; Definições &gt; Privacidade (avançada)
-          e desative "Registar previamente os recursos da página".
-                    Se esta ação não resolver o problema, recomendamos que reative esta opção
-          novamente para melhorar o desempenho.</translation>
 <translation id="4559775032954821361">Aceda ao
           menu Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -38,6 +34,5 @@
         Se isso não resolver o problema, recomendamos que selecione esta opção
         novamente para um desempenho melhorado.</translation>
 <translation id="8187289872471304532">Aceda a Aplicações &gt; Preferências do Sistema &gt; Rede &gt; Avançadas &gt; Proxies e desmarque todos os proxies selecionados.</translation>
-<translation id="8610831143142469229">Permita que o Chromium aceda à rede nas definições da sua firewall ou antivírus.</translation>
 <translation id="8684913864886094367">O Chromium não foi corretamente encerrado.</translation>
 </translationbundle>

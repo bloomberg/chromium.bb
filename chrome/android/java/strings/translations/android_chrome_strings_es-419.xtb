@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">Descubre las páginas web de los objetos cercanos. Chrome reúne páginas web asociadas con objetos que te rodean, las envía de forma anónima a un servicio de Google a fin de encontrar las que te pueden resultar más útiles y luego las muestra.
 
 Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</translation>
+<translation id="1254090737195733114">¿Importar datos?</translation>
 <translation id="1258753120186372309">Doodle de Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1285320974508926690">Nunca traducir este sitio</translation>
@@ -108,6 +109,7 @@ Puedes controlar la Web física desde la configuración de privacidad de Chrome.
 <translation id="238909021488141516">Se produjo un error al descargar el contenido.</translation>
 <translation id="2414886740292270097">Oscuro</translation>
 <translation id="2433507940547922241">Diseño</translation>
+<translation id="2439248520967274840">Estás accediendo a <ph name="TO_ACCOUNT" />. Algunos de los marcadores, el historial, las contraseñas y otras opciones de configuración existentes se sincronizaron previamente con <ph name="FROM_ACCOUNT" />. ¿Qué deseas hacer con tus datos existentes?</translation>
 <translation id="2440823041667407902">Acceso a la ubicación</translation>
 <translation id="2470327855284432041">La página de <ph name="PAGE_SIZE_STRING" /> se guardó sin conexión</translation>
 <translation id="2476578072172137802">Configuración del sitio</translation>
@@ -147,6 +149,7 @@ Puedes controlar la Web física desde la configuración de privacidad de Chrome.
 <translation id="2968755619301702150">Visualizador de certificados</translation>
 <translation id="2996291259634659425">Crear frase de contraseña</translation>
 <translation id="2996809686854298943">URL obligatoria</translation>
+<translation id="3012408695656332380">Reemplaza los datos de este dispositivo con los de <ph name="TO_ACCOUNT" />. Para recuperar tus datos existentes, cambia de nuevo a <ph name="FROM_ACCOUNT" />. Ten en cuenta que se perderán los datos creados desde que saliste.</translation>
 <translation id="3029704984691124060">Las frases de contraseña no coinciden.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Guardar video</translation>
@@ -214,7 +217,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="403659016947612156">Páginas web físicas cercanas</translation>
 <translation id="4042870126885713738">Mostrar sugerencias cuando no se resuelve una dirección web o cuando no se puede establecer una conexión</translation>
 <translation id="4056223980640387499">Sepia</translation>
-<translation id="4059119910594077751">Toca el botón "Atrás" para salir de la pantalla completa.</translation>
 <translation id="4062305924942672200">Información legal</translation>
 <translation id="4089831646916293264">Esta función puede interferir con el acceso a servicios de datos de alta calidad brindados por el proveedor.</translation>
 <translation id="4099578267706723511">Envía las estadísticas de uso y los informes de fallos a Google para ayudarnos a mejorar Chrome.</translation>
@@ -351,6 +353,7 @@ Abre Chrome en la computadora, accede al menú y selecciona "Acceder a Chrome…
 <translation id="5676636989614905379">No se puede reproducir el video en <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5684874026226664614">No se puede traducir esta página.</translation>
+<translation id="5708031556037168012">Mantiene los datos existentes en tu dispositivo y los importa de forma permanente a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5712189971979076230">Ayúdanos a establecer prioridades entre las características y las mejoras en las que debemos trabajar: envía información a Google acerca de los archivos, las aplicaciones y los servicios en ejecución cuando se produce un bloqueo.
 
 Las estadísticas de uso incluyen información, como las preferencias, los clics en los botones y el uso de memoria. No se incluyen las URL de las páginas web ni ninguna información personal. Los informes de fallos incluyen la información del sistema en el momento del bloqueo y podrían contener URL de páginas web o información personal, según lo que haya ocurrido en el momento del bloqueo.</translation>
@@ -371,7 +374,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="585027516397408832">Extensión Reducir datos habilitada</translation>
 <translation id="5860033963881614850">Desactivado</translation>
 <translation id="5869522115854928033">Contraseñas almacenadas</translation>
-<translation id="588258955323874662">Pantalla completa</translation>
 <translation id="5899349522111170522">Crear un archivo nuevo</translation>
 <translation id="5902828464777634901">Se eliminarán todos los datos almacenados en este sitio web, incluidas las cookies.</translation>
 <translation id="5911030830365207728">Google Traductor</translation>
@@ -579,6 +581,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="8497726226069778601">Aún no hay elementos para ver</translation>
 <translation id="8514577642972634246">Acceder al modo de navegación de incógnito</translation>
 <translation id="8518901949365209398">Este sitio usa una configuración de seguridad vulnerable (firmas SHA-1). Por lo tanto, es posible que la conexión no sea privada.</translation>
+<translation id="8525306231823319788">Pantalla completa</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8562452229998620586">Las contraseñas guardadas aparecerán aquí.</translation>
 <translation id="856481929701340285">Solicitar versión de escritorio</translation>
@@ -610,7 +613,6 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8912362522468806198">Cuenta de Google</translation>
 <translation id="8920114477895755567">Esperando los detalles parentales</translation>
 <translation id="8931159598799892500">Chrome + Web física</translation>
-<translation id="8934455786738644694">Arrastra el dedo desde la parte superior y toca el botón "Atrás" para salir de la pantalla completa.</translation>
 <translation id="8941248009481596111">Tu conexión con este sitio es privada.</translation>
 <translation id="8941729603749328384">www.ejemplo.com</translation>
 <translation id="8959122750345127698">Navegación inaccesible: <ph name="URL" /></translation>
@@ -629,6 +631,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="9100610230175265781">Se necesita una frase de contraseña.</translation>
 <translation id="9133515669113036225">Restablecer credenciales de dispositivo</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
+<translation id="9141510419986760385">Estás cambiando la cuenta de sincronización de <ph name="FROM_ACCOUNT" /> a <ph name="TO_ACCOUNT" />. ¿Qué deseas hacer con los marcadores, el historial, las contraseñas y otras opciones de configuración existentes?</translation>
 <translation id="9151532766011674069">El marcador se guardó sin conexión. El almacenamiento está casi lleno.</translation>
 <translation id="917685106653909562">Páginas web físicas cercanas</translation>
 <translation id="9187199695613236444">Vista optimizada para celulares</translation>

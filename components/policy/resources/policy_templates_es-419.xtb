@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="101438888985615157">Rotar la pantalla 180 grados</translation>
+<translation id="1015272884520659144">Define la lista de dispositivos USB que tienen autorización para separarse del controlador en modo kernel para usarse a través de la API chrome.usb directamente en la aplicación web. Las entradas son pares formados por el identificador del producto y del proveedor USB que permiten determinar un hardware específico.
+
+      Si esta política no se configura, se considera que la lista de dispositivos USB que se pueden separar está vacía.</translation>
 <translation id="1017967144265860778">Administración de energía en la pantalla de acceso</translation>
 <translation id="1019101089073227242">Configurar directorio de datos de usuarios</translation>
 <translation id="1022361784792428773">ID de extensiones que el usuario no debe poder instalar (o * para incluirlas todas).</translation>
@@ -207,6 +210,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="186719019195685253">Acción a realizar si se alcanza la demora de inactividad mientras el dispositivo funciona con alimentación de corriente</translation>
 <translation id="187819629719252111">Permite el acceso a archivos locales en la máquina al permitir que <ph name="PRODUCT_NAME" /> muestre los cuadros de diálogo de selección de archivos. Si se habilita esta configuración, los usuarios podrán abrir los cuadros de diálogo de selección de archivos como de costumbre. Si se inhabilita esta configuración, siempre que el usuario realice una acción que podría provocar un cuadro de diálogo de selección de archivos (como importar marcadores, cargar archivos, guardar enlaces, etc.), se mostrará un mensaje y se asumirá que el usuario ha hecho clic en Cancelar en el cuadro de diálogo de selección de archivos. Si esta opción no se configura, los usuarios podrán abrir cuadros de diálogo de selección de archivos como de costumbre.</translation>
 <translation id="1897365952389968758">Permitir que todos los sitios ejecuten JavaScript</translation>
+<translation id="193259052151668190">Lista blanca de dispositivos USB que se pueden separar</translation>
 <translation id="1933378685401357864">Imagen de fondo de pantalla</translation>
 <translation id="193900697589383153">Permite agregar un botón para cerrar sesión en la bandeja del sistema.
 
@@ -673,6 +677,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3570008976476035109">Bloquear complementos en estos sitios</translation>
+<translation id="3591584750136265240">Configurar el comportamiento de autenticación en el acceso</translation>
 <translation id="3627678165642179114">Habilita o inhabilita el servicio web de revisión ortográfica.</translation>
 <translation id="3646859102161347133">Establece el tipo de lupa.</translation>
 <translation id="3653237928288822292">Ícono del proveedor de búsqueda predeterminado</translation>
@@ -782,6 +787,7 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
           Si esta política se establece en "Guardar las cookies durante la sesión", las cookies se borrarán cuando se cierre la sesión. Se debe tener en cuenta que si <ph name="PRODUCT_NAME" /> se está ejecutando en "modo en segundo plano", es posible que la sesión no se cierre cuando se cierre la última ventana. Para obtener más información sobre cómo configurar este comportamiento, se debe consultar la política "BackgroundModeEnabled". 
 
           Si esta política no se establece, se usará "AllowCookies" y el usuario podrá modificarlo.</translation>
+<translation id="4103289232974211388">Redireccionar al IdP de SAML después de la confirmación del usuario</translation>
 <translation id="410478022164847452">Especifica el período de tiempo sin intervención del usuario después de que se tome la medida de inactividad si se usa alimentación de CA.
 
           Si se establece esta política, se especifica el período de tiempo en que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> tome la medida de inactividad, lo cual se puede configurar por separado.
@@ -1694,6 +1700,11 @@ desactivarlo).</translation>
 <translation id="7523476810162382273">Enviar señales de monitoreo al servidor de administración</translation>
 <translation id="7529100000224450960">Te permite configurar una lista de patrones de URL que especifican los sitios que no están autorizados a abrir ventanas emergentes. Si esta política no se configura, se usará el valor global predeterminado para todos los sitios ya sea de la política "DefaultPopupsSetting", si está configurada, o de otro tipo de configuración personal del usuario.</translation>
 <translation id="7529144158022474049">Actualizar de forma automática el factor de dispersión</translation>
+<translation id="7553535237300701827">Según el valor que se establezca para esta política, el flujo de autenticación de acceso será una de las siguientes opciones:
+
+      Si se establece como GAIA, el acceso se implementará mediante el flujo de autenticación de GAIA normal.
+
+      Si se establece como SAML_INTERSTITIAL, el acceso mostrará una pantalla intersticial que le permitirá al usuario avanzar a la autenticación mediante el IdP de SAML del dominio de inscripción del dispositivo o volver al flujo de acceso de GAIA normal.</translation>
 <translation id="7567380065339179813">Permitir complementos en estos sitios</translation>
 <translation id="7593523670408385997">Configura el tamaño de caché que utilizará <ph name="PRODUCT_NAME" /> para almacenar archivos en caché en el disco.
 
@@ -2023,6 +2034,7 @@ desactivarlo).</translation>
 
      Si no se configura la política, ni se establece como falsa, no se informará la ubicación.</translation>
 <translation id="8828766846428537606">Al configurar la página principal predeterminada en <ph name="PRODUCT_NAME" />, los usuarios no podrán cambiarla. Las configuraciones de la página principal del usuario solo estarán completamente bloqueadas si se selecciona la página principal como la página Nueva pestaña o si se establece como una dirección URL y se especifica la dirección URL de la página principal. Si no se establece la dirección URL de la página principal, el usuario aún podrá configurar la página principal como la página Nueva pestaña al especificar "chrome://newtab".</translation>
+<translation id="8833109046074170275">Autenticación mediante el flujo de GAIA predeterminado</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> almacena en caché las apps y extensiones para que varios usuarios las instalen en un solo dispositivo sin tener que volver a descargarlas.
       Si esta política no está configurada o el valor es menor que 1 MB, <ph name="PRODUCT_OS_NAME" /> usará el tamaño de caché predeterminado.</translation>
 <translation id="8858642179038618439">Forzar el modo de seguridad de YouTube</translation>

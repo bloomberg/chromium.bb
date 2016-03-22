@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">探索附近物件傳送的網頁。Chrome 會收集與您附近物件相關聯的網頁，將這些資訊以匿名方式傳送給 Google 服務，藉此找出並顯示對您最實用的資訊。
 
 您必須開啟藍牙和定位功能，才能使用實體化網路。</translation>
+<translation id="1254090737195733114">要匯入資料嗎？</translation>
 <translation id="1258753120186372309">Google Doodle：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1285320974508926690">一律不翻譯此網站</translation>
@@ -108,6 +109,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="238909021488141516">下載這項內容時發生錯誤。</translation>
 <translation id="2414886740292270097">深色</translation>
 <translation id="2433507940547922241">外觀</translation>
+<translation id="2439248520967274840">您即將登入 <ph name="TO_ACCOUNT" />。先前您已將部分現有的書籤、歷史紀錄、密碼和其他設定同步處理到以下帳戶：<ph name="FROM_ACCOUNT" />。您要如何處理現有的資料？</translation>
 <translation id="2440823041667407902">位置資訊存取權</translation>
 <translation id="2470327855284432041">已離線儲存網頁：<ph name="PAGE_SIZE_STRING" /></translation>
 <translation id="2476578072172137802">網站設定</translation>
@@ -147,6 +149,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="2968755619301702150">憑證檢視器</translation>
 <translation id="2996291259634659425">建立通關密語</translation>
 <translation id="2996809686854298943">必須要有網址</translation>
+<translation id="3012408695656332380">使用 <ph name="TO_ACCOUNT" /> 的資料取代這個裝置的資料。您只要切換回 <ph name="FROM_ACCOUNT" /> 即可重新取得現有的資料，但自您登出後建立的資料則會遺失。</translation>
 <translation id="3029704984691124060">通關密語不符</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />取得說明<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">儲存影片</translation>
@@ -214,7 +217,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="403659016947612156">附近有實體化網路網頁</translation>
 <translation id="4042870126885713738">在無法解析網址或建立連線時顯示建議</translation>
 <translation id="4056223980640387499">深褐色調</translation>
-<translation id="4059119910594077751">輕觸返回按鈕即可結束全螢幕模式。</translation>
 <translation id="4062305924942672200">法律資訊</translation>
 <translation id="4089831646916293264">這項功能可能會讓您無法存取行動通訊業者提供的付費數據服務。</translation>
 <translation id="4099578267706723511">將使用統計資料及當機報告傳送給 Google，助我們一臂之力，讓 Chrome 更臻完美。</translation>
@@ -350,6 +352,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="5676636989614905379">無法透過 <ph name="SCREEN_NAME" /> 播放影片。</translation>
 <translation id="5677928146339483299">已封鎖</translation>
 <translation id="5684874026226664614">糟糕！系統無法翻譯這個網頁的內容。</translation>
+<translation id="5708031556037168012">將現有的資料保留在您的裝置上，並且將資料永久匯入 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="5712189971979076230">發生當機情形時，如果您將當下正在執行的檔案、應用程式和服務的相關資訊傳送給 Google，即可協助我們優先提供重要的功能與改進項目。
 
 使用統計資料包括偏好設定、按鈕點擊次數和記憶體使用量等資訊，不含網頁網址或任何個人資訊。當機報告則包括當機時的系統資訊；而且根據當機時發生的狀況，可能會包含網頁網址和個人資訊。</translation>
@@ -370,7 +373,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="585027516397408832">已啟用 Data Saver</translation>
 <translation id="5860033963881614850">關閉</translation>
 <translation id="5869522115854928033">已儲存的密碼</translation>
-<translation id="588258955323874662">全螢幕</translation>
 <translation id="5899349522111170522">建立新檔案</translation>
 <translation id="5902828464777634901">即將刪除這個網站儲存的所有本機資料 (包括 Cookie 在內)。</translation>
 <translation id="5911030830365207728">Google 翻譯</translation>
@@ -578,6 +580,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="8497726226069778601">目前還沒有任何常用網頁…</translation>
 <translation id="8514577642972634246">進入無痕模式</translation>
 <translation id="8518901949365209398">這個網站使用的安全性設定強度不足 (SHA-1 簽名)，因此您的連線可能不是私人連線。</translation>
+<translation id="8525306231823319788">全螢幕</translation>
 <translation id="854522910157234410">開啟此頁</translation>
 <translation id="8562452229998620586">已儲存的密碼會顯示在這裡。</translation>
 <translation id="856481929701340285">切換為電腦版網站</translation>
@@ -609,7 +612,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="8912362522468806198">Google 帳戶</translation>
 <translation id="8920114477895755567">尚未取得家長詳細資料。</translation>
 <translation id="8931159598799892500">Chrome 和實體化網路</translation>
-<translation id="8934455786738644694">從頂端拖曳並輕觸返回按鈕即可結束全螢幕模式。</translation>
 <translation id="8941248009481596111">您與這個網站建立了私人連線。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">瀏覽的網址無法存取：<ph name="URL" /></translation>
@@ -628,6 +630,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="9100610230175265781">請提供通關密語</translation>
 <translation id="9133515669113036225">重設裝置憑證</translation>
 <translation id="9137013805542155359">顯示原文</translation>
+<translation id="9141510419986760385">您設定同步處理的帳戶即將從 <ph name="FROM_ACCOUNT" /> 改為 <ph name="TO_ACCOUNT" />。您要如何處理目前帳戶中的書籤、歷史紀錄、密碼和其他設定？</translation>
 <translation id="9151532766011674069">已儲存離線書籤。儲存空間即將用盡。</translation>
 <translation id="917685106653909562">附近的實體化網路網頁</translation>
 <translation id="9187199695613236444">適合透過行動裝置瀏覽的檢視模式</translation>

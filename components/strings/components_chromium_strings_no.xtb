@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">Chromium OS har ikke vært gjennom den innledende konfigurasjonen.</translation>
 <translation id="3748537968684000502">Du ser på en sikker Chromium-side.</translation>
 <translation id="4365115785552740256">Chromium er gjort mulig av åpen kilde-prosjektet <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> og annen <ph name="BEGIN_LINK_OSS" />åpen kilde-programvare<ph name="END_LINK_OSS" />.</translation>
-<translation id="4404275227760602850">Gå til Chromium-menyen &gt; Innstillinger &gt; (Avansert) Personvern,
-          og slå av alternativet for henting av sideressurser på forhånd.
-          Hvis ikke dette løser problemet, bør du slå på dette alternativet
-          igjen for å bedre ytelsen.</translation>
 <translation id="4559775032954821361">Gå til
           Chromium-menyen &gt;
           <ph name="SETTINGS_TITLE" />
@@ -38,6 +34,5 @@
         Hvis dette ikke løser problemet, bør du aktivere dette alternativet
         på nytt for bedre ytelse.</translation>
 <translation id="8187289872471304532">Gå til Programmer &gt; Systeminnstillinger &gt; Nettverk &gt; Avansert &gt; Mellomtjenere og fjern avmerkingen for alle valgte mellomtjenere.</translation>
-<translation id="8610831143142469229">Tillat at Chromium bruker nettverket i brannmur- eller antivirusinnstillingene dine.</translation>
 <translation id="8684913864886094367">Chromium ble ikke avsluttet på riktig måte.</translation>
 </translationbundle>

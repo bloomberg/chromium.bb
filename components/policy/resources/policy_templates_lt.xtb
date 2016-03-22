@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="101438888985615157">Pasukti ekraną 180 laipsnių kampu</translation>
+<translation id="1015272884520659144">Apibrėžiamas USB įrenginių, kuriuos leidžiama atjungti nuo branduolio tvarkyklės, kad būtų galima naudoti naudojant chrome.usb API tiesiai žiniatinklio programoje, sąrašas. Įrašai – tai USB paslaugos teikėjo identifikatoriaus ir produkto identifikatoriaus poros, nurodančios konkrečią aparatinę įrangą.
+
+      Jei ši politika nesukonfigūruota, manoma, kad atjungiamų USB įrenginių sąrašas tuščias.</translation>
 <translation id="1017967144265860778">Energijos valdymas prisijungimo ekrane</translation>
 <translation id="1019101089073227242">Nustatyti naudotojo duomenų katalogą</translation>
 <translation id="1022361784792428773">Plėtinių, kurių diegti naudotojams turi būti neleidžiama (arba „*“, jei neleidžiama nė vieno), ID</translation>
@@ -235,6 +238,7 @@
 
       Nenustačius šio nustatymo, failų pasirinkimo dialogo langus naudotojai galės atidaryti kaip įprastai.</translation>
 <translation id="1897365952389968758">Leisti visose svetainėse paleisti „JavaScript“</translation>
+<translation id="193259052151668190">Atjungiamų USB įrenginių baltasis sąrašas</translation>
 <translation id="1933378685401357864">Ekrano fono vaizdas</translation>
 <translation id="193900697589383153">Pridedamas atsijungimo mygtukas sistemos dėkle.
 
@@ -759,6 +763,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="3528000905991875314">Įgalinti kitus klaidų puslapius</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
 <translation id="3570008976476035109">Blokuoti papildinius šiose svetainėse</translation>
+<translation id="3591584750136265240">Konfigūruoti prisijungimo autentifikavimo elgseną</translation>
 <translation id="3627678165642179114">Įgalinti rašybos tikrinimo žiniatinklio paslaugą arba jos neleisti</translation>
 <translation id="3646859102161347133">Nustatyti ekrano didinimo tipą</translation>
 <translation id="3653237928288822292">Numatytojo paieškos teikėjo piktograma</translation>
@@ -899,6 +904,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei ši politika nustatyta į „Palikti slapukus, kol sesija aktyvi“, tada slapukai bus išvalyti uždarius sesiją. Atminkite, kad jei „<ph name="PRODUCT_NAME" />“ veikia foninio atkūrimo režimu, sesijos negalima uždaryti, kai uždaromas paskutinis langas. Daugiau informacijos apie šio veikimo konfigūravimą galite gauti peržiūrėję politiką „BackgroundModeEnabled“.
 
           Jei ši politika nenustatyta, bus naudojama parinktis „AllowCookies“ ir naudotojas galės ją pakeisti.</translation>
+<translation id="4103289232974211388">Patvirtinus naudotoją peradresuoti į „SAML IdP“</translation>
 <translation id="410478022164847452">Nurodoma laiko trukmė be naudotojo įvesties, po kurios neveikos veiksmai atliekami, kai naudojama kintamosios srovės energija.
 
           Kai ši politika nustatyta, ji nurodo laiko trukmę, kurią naudotojas turi neatlikti jokių veiksmų, kad „<ph name="PRODUCT_OS_NAME" />“ imtųsi veiksmų dėl neveikos. Šiuos veiksmus galite sukonfigūruoti atskirai.
@@ -1942,6 +1948,11 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis iššokančiųjų langų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
 <translation id="7529144158022474049">Automatiškai atnaujinamas sklaidos veiksnys</translation>
+<translation id="7553535237300701827">Kai ši politika nustatyta, prisijungimo autentifikavimo eiga priklausys nuo nustatymo vertės:
+
+      Jei vertė nustatyta į GAIA, prisijungimas bus atliekamas naudojant įprastą GAIA autentifikavimo eigą.
+
+      Jei vertė nustatyta į SAML_INTERSTITIAL, prisijungiant bus rodomas tarpinis ekranas, kuriame naudotojui bus siūloma tęsti autentifikavimą per įrenginio registravimo domeno „SAML IdP“ arba grįžti į įprastą GAIA prisijungimo eigą.</translation>
 <translation id="7567380065339179813">Leisti papildinius šiose svetainėse</translation>
 <translation id="7593523670408385997">Konfigūruojamas talpyklos, kurią „<ph name="PRODUCT_NAME" />“ naudos talpyklos failams diske saugoti, dydį.
 
@@ -2333,6 +2344,7 @@ Jei plėtinio nėra sąraše arba sąrašas nenustatytas, kreipiantis į API įv
 <translation id="8828766846428537606">Konfigūruojamas numatytasis pagrindinis „<ph name="PRODUCT_NAME" />“ puslapis, kurio keisti naudotojams neleidžiama.
 
       Naudotojo pagrindinio puslapio nustatymai bus visiškai užrakinti tik tada, jei kaip pagrindinį puslapį pasirinksite naujo skirtuko puslapį arba nustatysite, kad į jį būtų įkeltas URL, ir nurodysite pagrindinio puslapio URL. Jei pagrindinio puslapio URL nenurodysite, naudotojui ir toliau bus leidžiama kaip pagrindinį puslapį nustatyti naujo skirtuko puslapį nurodant „chrome://newtab“.</translation>
+<translation id="8833109046074170275">Autentifikavimas per numatytąją GAIA eigą</translation>
 <translation id="8838303810937202360">„<ph name="PRODUCT_OS_NAME" />“ talpykloje išsaugo programas ir plėtinius, kad juos galėtų įdiegti keli vieno įrenginio naudotojai ir kiekvienam naudotojui nereikėtų jų atsiųsti.
       Jei ši politika nesukonfigūruota arba vertė nustatyta į mažiau nei 1 MB, „<ph name="PRODUCT_OS_NAME" />“ naudos numatytojo dydžio talpyklą.</translation>
 <translation id="8858642179038618439">Priverstinis „YouTube“ saugos režimas</translation>

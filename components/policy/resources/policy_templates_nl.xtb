@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="101438888985615157">Scherm 180 graden draaien</translation>
+<translation id="1015272884520659144">Hiermee wordt de lijst met USB-apparaten gedefinieerd die mogen worden ontkoppeld van hun kernel-driver zodat ze via de chrome.usb-API rechtstreeks kunnen worden gebruikt in een web-app. Items zijn paren van de ID van de USB-leverancier en de ID van het product, zodat specifieke hardware kan worden geïdentificeerd.
+
+      Als dit beleid niet is geconfigureerd, wordt aangenomen dat de lijst met USB-apparaten die kunnen worden ontkoppeld, leeg is.</translation>
 <translation id="1017967144265860778">Energiebeheer op het inlogscherm</translation>
 <translation id="1019101089073227242">Gegevensdirectory voor gebruiker instellen</translation>
 <translation id="1022361784792428773">Id's van extensies die de gebruiker niet mag installeren (of '*' voor alle extensies)</translation>
@@ -226,6 +229,7 @@
 
       Als deze instelling niet wordt ingesteld, kunnen gebruikers zoals gewoonlijk dialoogvensters voor het selecteren van bestanden openen.</translation>
 <translation id="1897365952389968758">Alle sites toestaan JavaScript uit te voeren</translation>
+<translation id="193259052151668190">Witte lijst met USB-apparaten die kunnen worden ontkoppeld</translation>
 <translation id="1933378685401357864">Achtergrondafbeelding</translation>
 <translation id="193900697589383153">Hiermee wordt een afmeldknop aan de systeembalk toegevoegd.
 
@@ -749,6 +753,7 @@
 <translation id="3528000905991875314">Alternatieve foutpagina's inschakelen</translation>
 <translation id="3547954654003013442">Proxyinstellingen</translation>
 <translation id="3570008976476035109">Plug-ins blokkeren op deze sites</translation>
+<translation id="3591584750136265240">Het verificatiegedrag voor inloggen configureren</translation>
 <translation id="3627678165642179114">Webservice voor spellingcontrole in- of uitschakelen</translation>
 <translation id="3646859102161347133">Het type vergrootglas instellen</translation>
 <translation id="3653237928288822292">Pictogram voor standaardzoekprovider</translation>
@@ -889,6 +894,7 @@
           Als dit beleid is ingesteld op 'Cookies bewaren voor de duur van de sessie', worden cookies gewist wanneer de sessie wordt beëindigd. Let op dat als <ph name="PRODUCT_NAME" /> in de achtergrondmodus wordt uitgevoerd, de sessie mogelijk niet wordt beëindigd wanneer het laatste venster wordt gesloten. Zie het beleid BackgroundModeEnabled voor meer informatie over het configureren van dit gedrag.
 
           Als er geen instelling voor dit beleid wordt opgegeven, wordt AllowCookies gebruikt en kan de gebruiker dit wijzigen.</translation>
+<translation id="4103289232974211388">Omleiden naar SAML IdP na bevestiging van de gebruiker</translation>
 <translation id="410478022164847452">Hiermee wordt de tijdsduur zonder input van gebruikers gespecificeerd waarna de vertragingsactie wordt ondernomen wanneer op netstroom wordt gewerkt.
 
           Als dit beleid is ingesteld, specificeert het de tijd die de gebruiker inactief moet blijven voordat de vertragingsactie wordt ondernomen door <ph name="PRODUCT_OS_NAME" />. De vertragingsactie kan afzonderlijk worden geconfigureerd.
@@ -1914,6 +1920,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultPopupsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>
 <translation id="7529144158022474049">Spreidingsfactor voor automatische update</translation>
+<translation id="7553535237300701827">Als dit beleid is ingesteld, wordt de inlogverificatie op een van de volgende manieren uitgevoerd (afhankelijk van de waarde van de instelling):
+
+      Als het beleid is ingesteld op GAIA, wordt het inloggen uitgevoerd volgens de normale GAIA-verificatie.
+
+      Als het beleid is ingesteld op SAML_INTERSTITIAL, wordt er bij het inloggen een interstitial weergegeven waarin de gebruiker kan kiezen of hij wil doorgaan met de verificatie via de SAML IdP van het registratiedomein van het apparaat of wil teruggaan naar de normale manier van inloggen volgens GAIA.</translation>
 <translation id="7567380065339179813">Plug-ins toestaan op deze sites</translation>
 <translation id="7593523670408385997">Configureert de cachegrootte die <ph name="PRODUCT_NAME" /> gebruikt voor het opslaan van gecachte bestanden op de schijf.
 
@@ -2300,6 +2311,7 @@ Als dit beleid niet is ingesteld, wordt geen enkele URL op de zwarte lijst van d
 <translation id="8828766846428537606">Hiermee wordt de standaard startpagina in <ph name="PRODUCT_NAME" /> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
       De instellingen voor de startpagina worden alleen volledig voor de gebruiker vergrendeld als je de pagina 'Nieuw tabblad' als de startpagina selecteert of als je zelf een URL voor de startpagina specificeert. Als je geen URL voor de startpagina opgeeft, kan de gebruiker nog steeds de pagina 'Nieuw tabblad' als startpagina instellen door 'chrome://newtab' op te geven.</translation>
+<translation id="8833109046074170275">Verificatie via GAIA (standaard)</translation>
 <translation id="8838303810937202360">Met <ph name="PRODUCT_OS_NAME" /> worden apps en extensies in het cachegeheugen geplaatst voor de installatie door meerdere gebruikers van een enkel apparaat om te voorkomen dat ze opnieuw worden gedownload voor iedere gebruiker.
       Als dit beleid niet is geconfigureerd of de waarde lager is dan 1 MB, gebruikt <ph name="PRODUCT_OS_NAME" /> het standaardformaat van de cache.</translation>
 <translation id="8858642179038618439">Beperkte modus van YouTube afdwingen</translation>

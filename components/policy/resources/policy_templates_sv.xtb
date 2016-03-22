@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="101438888985615157">Rotera skärmen 180 grader</translation>
+<translation id="1015272884520659144">Definierar vilka USB-enheter som får kopplas bort från sina kärndrivrutiner så att de kan användas direkt i en webbapp med API:et chrome.usb. Posterna i listan består av id-par för USB, leverantörs-id och produkt-id, som tillsammans identifierar maskinvaran.
+
+      Om principen inte har konfigurerats betraktas listan med frånkopplingsbara USB-enheter som tom.</translation>
 <translation id="1017967144265860778">Energibesparing på inloggningssidan</translation>
 <translation id="1019101089073227242">Ange katalog för användardata</translation>
 <translation id="1022361784792428773">Tilläggs-ID:n som användaren inte får installera (eller * om det gäller alla)</translation>
@@ -239,6 +242,7 @@
 
       Om inställningen inte ställs in kan användaren öppna dialogrutor för filval som vanligt.</translation>
 <translation id="1897365952389968758">Tillåt alla webbplatser att köra JavaScript (rekommenderas)</translation>
+<translation id="193259052151668190">Vitlista med frånkopplingsbara USB-enheter</translation>
 <translation id="1933378685401357864">Bakgrundsbild</translation>
 <translation id="193900697589383153">Lägger till en utloggningsknapp i systemfältet.
 
@@ -763,6 +767,7 @@
 <translation id="3528000905991875314">Aktivera alternativa felsidor</translation>
 <translation id="3547954654003013442">Proxyinställningar</translation>
 <translation id="3570008976476035109">Blockera plugin-program för dessa webbplatser</translation>
+<translation id="3591584750136265240">Konfigurera vad som ska göras vid inloggningsautentisering</translation>
 <translation id="3627678165642179114">Aktivera eller inaktivera webbtjänsten för stavningskontroll</translation>
 <translation id="3646859102161347133">Ange typen av skärmförstorare</translation>
 <translation id="3653237928288822292">Ikon för standardsökleverantör</translation>
@@ -903,6 +908,7 @@
           Om principen är inställd på Behåll cookies under hela sessionen kommer cookies att tas bort när sessionen avslutas. Observera att om <ph name="PRODUCT_NAME" /> körs i bakgrundsläge kan det hända att sessionen inte avslutas även om det sista fönstret stängs. Se principen BackgroundModeEnabled för mer information om konfigurering av detta.
 
           Om inget värde anges för principen används AllowCookies och användaren kan ändra inställningen.</translation>
+<translation id="4103289232974211388">Omdirigera till SAML IdP när användaren har bekräftat</translation>
 <translation id="410478022164847452">Anger efter hur lång tid utan åtgärd från användaren som inaktivitetsåtgärden vidtas när enheten är ansluten till elnätet.
 
           När den här policyn är inställd anger den hur länge användaren måste vara inaktiv innan inaktivitetsåtgärden vidtas av <ph name="PRODUCT_OS_NAME" />. Inaktivitetsåtgärden kan ställas in separat.
@@ -1944,6 +1950,11 @@
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPopupsSetting om den har angetts och från användarens personliga konfiguration om den inte har det.</translation>
 <translation id="7529144158022474049">Uppdatera spridningsfaktor automatiskt</translation>
+<translation id="7553535237300701827">När principen är angiven går autentiseringen vid inloggning till på ett av följande sätt beroende på inställningens värde:
+
+      Om principen är inställd på GAIA utförs inloggningen via det vanliga autentiseringsflödet för GAIA.
+
+      Om principen är inställd på SAML_INTERSTITIAL visas en mellansidesskärm när användaren loggar in som frågar om han eller hon vill fortsätta autentiseringen via SAML IdP på enhetens registreringsdomän eller gå tillbaka till det vanliga inloggningsflödet för GAIA.</translation>
 <translation id="7567380065339179813">Tillåt plugin-program på dessa webbplatser</translation>
 <translation id="7593523670408385997">Konfigurerar storleken på cacheminnet där <ph name="PRODUCT_NAME" /> sparar cachade filer på skivan.
 
@@ -2337,6 +2348,7 @@
 <translation id="8828766846428537606">Konfigurerar standardstartsidan i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar den.
 
       Användarnas inställningar för startsidan blir bara helt låsta om du väljer att startsidan ska vara sidan Ny flik eller att den ska vara en webbadress som du anger. Om du inte anger en webbadress för startsidan kan användaren fortfarande ställa in startsidan på sidan Ny flik genom att ange "chrome://newtab".</translation>
+<translation id="8833109046074170275">Autentisering via standardflödet för GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> sparar appar och tillägg i cacheminnet vid installation av flera användare som delar enhet. På detta sätt laddas de inte ned för varje användare enskilt.
       Om policyn inte konfigureras eller om värdet är lägre än 1 MB används den cachestorlek som är standard i <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8858642179038618439">Tvinga fram Säkert läge på YouTube</translation>

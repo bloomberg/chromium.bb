@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">您的變更將於下次重新啟動 Google Chrome 時生效。</translation>
 <translation id="3444832043240812445">如果您<ph name="BEGIN_LINK" />啟用當機報告功能<ph name="END_LINK" />，這個頁面僅會顯示最近的當機資訊。</translation>
 <translation id="4010643444566880169">Chrome 作業系統未完成初始設定。</translation>
-<translation id="5423788048750135178">前往 Chrome 選單 &gt; [設定] &gt; (進階) [隱私權]
-          停用 [預先擷取網頁資源]。
-          如果仍然無法解決問題，建議您重新啟用這個選項，
-          讓 Chrome 的效能更優異。</translation>
 <translation id="6011049234605203654">前往
           Chrome 選單 &gt;
           [<ph name="SETTINGS_TITLE" />]
@@ -38,8 +34,6 @@
           &gt;
           [區域網路設定]
           然後取消勾選 [在您的區域網路使用 Proxy 伺服器] 核取方塊。</translation>
-<translation id="7396375882099008034">允許 Chrome 存取受到防火牆或防毒軟體設定所阻擋的
-        網路。</translation>
 <translation id="8187289872471304532">前往
           [應用程式] &gt; [系統偏好設定] &gt; [網路] &gt; [進階] &gt; [Proxy]
           然後取消勾選所有已選取的 Proxy。</translation>

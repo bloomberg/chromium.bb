@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sw">
 <translation id="101438888985615157">Zungusha skrini kwa digrii 180</translation>
+<translation id="1015272884520659144">Hufafanua orodha ya vifaa vya USB vinavyoruhusiwa kutenganishwa na kiendeshaji chake ili vitumie kwenye API ya chrome.usb moja kwa moja ndani ya programu ya wavuti. Uingizaji ni jozi za Kitambulisho cha Muuzaji wa USB na Kitambulisho cha Bidhaa za kutambua maunzi mahususi.
+
+      Ikiwa sera hii haitasanidiwa, orodha ya vifaa vya USB vinavyoweza kutenganishwa itachukuliwa kuwa tupu.</translation>
 <translation id="1017967144265860778">Udhibiti wa nishati kwenye skrini ya kuingia</translation>
 <translation id="1019101089073227242">Weka saraka ya data ya mtumiaji</translation>
 <translation id="1022361784792428773">Vitambuslisho vya Kiendelezi ambacho mtumiaji anahitaji kuzuiwa kusakinisha (au * kwa zote)</translation>
@@ -229,6 +232,7 @@ itabadilishwa na data ya hoja za utafutaji za kweli.
 
       Ikiwa mpangilio huu haujawekwa, watumiaji wanaweza kufungua kidadisi cha uteuzi faili kama kawaida.</translation>
 <translation id="1897365952389968758">Ruhusu tovuti zote ziendeshe JavaScript</translation>
+<translation id="193259052151668190">Orodha ya vifaa vya USB vilivyoidhinishwa vinavyoweza kutenganishwa</translation>
 <translation id="1933378685401357864">Picha ya mandhari</translation>
 <translation id="193900697589383153">Huongeza kitufe cha kuondoka kwenye chano la mfumo.
 
@@ -744,6 +748,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="3528000905991875314">Wezesha kurasa badala za hitilafu</translation>
 <translation id="3547954654003013442">Mipangilio ya proksi</translation>
 <translation id="3570008976476035109">Zuia programu jalizi katika tovuti hizi</translation>
+<translation id="3591584750136265240">Weka mipangilio ya tabia ya kithibitishaji cha kuingia katika akaunti</translation>
 <translation id="3627678165642179114">Wezesha au lemaza huduma ya wavuti ya ukaguzi tahajia</translation>
 <translation id="3646859102161347133">Weka aina ya kikuza skrini</translation>
 <translation id="3653237928288822292">Ikoni ya mtoaji wa utafutaji chaguo-msingi</translation>
@@ -884,6 +889,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
          Sera hii ikiwekwa 'Weka vidakuzi kwa muda wa kipindi' basi vidakuzi vitafutwa kipindi kikifungwa. Kumbuka kwamba ikiwa <ph name="PRODUCT_NAME" /> inatekeleza katika 'hali ya chini chini', huenda kipindi kisifungwe wakati dirisha la mwisho litakapofungwa. Tafadhali angalia sera ya 'BackgroundModeEnabled' kwa maelezo zaidi kuhusu kusanidi tabia hii.
 
           Sera hii ikiachwa bila kuwekwa, kipengee cha 'AllowCookies' kitatumiwa na mtumiaji ataweza kukibadilisha.</translation>
+<translation id="4103289232974211388">Elekeza kwenye SAML IdP baada ya uthibitishaji wa mtumiaji</translation>
 <translation id="410478022164847452">Hubainisha urefu wa muda bila mchango wa mtumiaji ambao baadaye hatua isiyo na shughuli huchukuliwa inapoendeshwa kwenye nishati ya AC.
 
           Sera hii inapowekwa, hubainisha urefu wa muda ambao lazima mtumiaji asalie bila shughuli kabla ya <ph name="PRODUCT_OS_NAME" /> kuchukua hatua ya kutokuwa na shughuli, kinachoweza kusanidiwa tofauti.
@@ -1907,6 +1913,11 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 
            Ikiwa sera hii itasalia kama haijawekwa thamani yote chaguo-msingi itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultPopupsSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
 <translation id="7529144158022474049">Sasisha kiotomatiki kipengee cha kutawanya</translation>
+<translation id="7553535237300701827">Sera hii ikiwekwa, mtiririko wa uthibitishaji wa kuingia katika akaunti utakuwa katika mojawapo ya njia zifuatazo kulingana na thamani ya mipangilio:
+
+      Ikiwekwa kuwa GAIA, kuingia katika akaunti kutafanyika kupitia mtiririko wa kawaida wa uthibitishaji wa GAIA.
+
+      Ikiwekwa kuwa SAML_INTERSTITIAL, kuingia katika akaunti kutaonyesha skrini ya ukurasa wenye maelezo yanayomwelekeza mtumiaji kuendelea na uthibitishaji kupitia SAML IdP ya kikoa cha usajili wa kifaa, au kurudi kwenye mtiririko wa kawaida wa kuingia katika akaunti wa GAIA.</translation>
 <translation id="7567380065339179813">Ruhusu programu jalizi kwenye tovuti hizi</translation>
 <translation id="7593523670408385997">Husanidi ukubwa wa akiba ambao <ph name="PRODUCT_NAME" /> itatumia kwa ajili ya kuhifadhi faili zilizoakibishwa kwenye diski.
 
@@ -2285,6 +2296,7 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 <translation id="8828766846428537606">Sanidi ukurasa wa mwanzo chaguo-msingi katika <ph name="PRODUCT_NAME" /> na huzuia watumiaji kuubadilisha.
 
       Mipangilio ya ukurasa wa mtumiaji inafungwa kabisa, ukichagua ukurasa wa mwanzo kuwa ukurasa mpya wa kichupo, au uuweke kuwa URL na ubainishe URL ya ukurasa wa mwanzo. Iwapo hutaibainisha URL ya ukurasa wa mwanzo, basi bado mtumiaji anaweza kuweka ukurasa wa mwanzo kwenye ukurasa mpya wa kichupo kwa kubainisha 'chrome://newtab'.</translation>
+<translation id="8833109046074170275">Uthibitishaji kupitia mtiririko chaguo-msingi wa GAIA</translation>
 <translation id="8838303810937202360">Programu na Viendelezi vya akiba za <ph name="PRODUCT_OS_NAME" /> za kusakinishwa na watumiaji wengi kwenye kifaa kimoja ili kuepuka kuzipakua upya kwa kila mtumiaji.
       Ikiwa sera hii haijasanidiwa au thamani ni chini ya MB 1, <ph name="PRODUCT_OS_NAME" /> itatumia ukubwa wa akiba chaguo-msingi.</translation>
 <translation id="8858642179038618439">Lazimisha Hali Salama ya YouTube</translation>

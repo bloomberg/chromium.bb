@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="101438888985615157">將畫面旋轉 180 度</translation>
+<translation id="1015272884520659144">定義可從核心驅動程式卸離 (以便直接在網路應用程式中透過 chrome.usb API 使用) 的 USB 裝置清單。清單中的項目必須是一組 USB 供應商識別碼和產品識別碼，用於識別特定硬體。
+
+      如果未設定這項政策，系統會認定卸離式 USB 裝置清單中沒有任何項目。</translation>
 <translation id="1017967144265860778">位於登入畫面中的電源管理設定</translation>
 <translation id="1019101089073227242">設定使用者資料目錄</translation>
 <translation id="1022361784792428773">使用者應避免安裝的擴充功能 ID (使用星號 (*) 排除所有擴充功能)</translation>
@@ -212,6 +215,7 @@
 <translation id="186719019195685253">使用 AC 電源的情況下，系統在達到閒置延遲時間時所採取的動作</translation>
 <translation id="187819629719252111">允許「<ph name="PRODUCT_NAME" />」顯示檔案選項對話方塊，即可允許本機檔案的存取權。如果您啟用這項設定，使用者就能照常開啟檔案選項對話方塊。如果您停用這項設定，只要使用者執行的動作會開啟檔案選項對話方塊 (例如匯入書籤、上傳檔案、儲存連結等)，螢幕上就會顯示訊息，並假設使用者已按下檔案選項對話方塊上的 [取消]。如果未調整這項設定，使用者就能照常開啟檔案選項對話方塊。</translation>
 <translation id="1897365952389968758">允許所有網站執行 JavaScript</translation>
+<translation id="193259052151668190">卸離式 USB 裝置許可清單</translation>
 <translation id="1933378685401357864">桌布圖片</translation>
 <translation id="193900697589383153">在系統列新增登出按鈕。
 
@@ -683,6 +687,7 @@
 <translation id="3528000905991875314">啟用替代的錯誤網頁</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
 <translation id="3570008976476035109">封鎖這些網站的外掛程式</translation>
+<translation id="3591584750136265240">設定登入驗證行為</translation>
 <translation id="3627678165642179114">啟用或停用拼字檢查網路服務</translation>
 <translation id="3646859102161347133">設定螢幕放大鏡類型</translation>
 <translation id="3653237928288822292">預設搜尋引擎圖示</translation>
@@ -792,6 +797,7 @@
           如果將這項政策設為 [在工作階段期間保留 Cookie]，系統會在工作階段結束時清除 Cookie。請注意，如果 <ph name="PRODUCT_NAME" /> 是在「背景模式」中執行，工作階段可能不會在最後一個視窗關閉時結束。如需深入瞭解如何設定這項行為，請參閱「BackgroundModeEnabled」政策。
 
           如未設定這項政策，系統會使用「AllowCookies」，使用者之後可以自行變更這項設定。</translation>
+<translation id="4103289232974211388">經使用者確認後重新導向 SAML IdP</translation>
 <translation id="410478022164847452">指定時間長度，如果系統在 AC 供電環境下執行且未偵測到使用者輸入行為，就會在這段時間過後採取動作。
 
           如果您設定這項政策，表示使用者必須維持該值所指定的時間長度後，<ph name="PRODUCT_OS_NAME" /> 才會採取閒置動作 (可另行設定)。
@@ -1705,6 +1711,11 @@
 <translation id="7523476810162382273">將監控流量訊號傳送到管理伺服器</translation>
 <translation id="7529100000224450960">允許您設定網址模式清單，指定可以開啟彈出式視窗的網站。如果未設定這項政策，系統會從「DefaultPopupsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="7529144158022474049">自動更新分散係數</translation>
+<translation id="7553535237300701827">設定這項政策後，系統會根據設定值採用下列其中一種登入驗證流程：
+
+      如果設為 GAIA，系統會讓使用者透過標準 GAIA 驗證流程完成登入作業。
+
+      如果設為 SAML_INTERSTITIAL，系統在登入過程中會顯示插頁畫面，讓使用者選擇繼續透過裝置註冊網域的 SAML IdP 進行驗證，或是返回標準 GAIA 登入流程。</translation>
 <translation id="7567380065339179813">允許這些網站的外掛程式</translation>
 <translation id="7593523670408385997">設定快取大小，供 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取檔案時套用。
 
@@ -2038,6 +2049,7 @@
 
       如果未設定這項政策，或將其設定為 False，系統將不會回報位置。</translation>
 <translation id="8828766846428537606">設定 <ph name="PRODUCT_NAME" /> 中的預設首頁並禁止使用者變更這項設定。如果您選取使用者的首頁做為新分頁，或是將使用者的首頁設為網址並指定為首頁網址，系統會完全鎖定使用者的首頁設定。如果您沒有指定首頁網址，那麼使用者只需將網址設為「chrome://newtab」，就能以新分頁做為首頁。</translation>
+<translation id="8833109046074170275">透過預設的 GAIA 流程進行驗證</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> 會快取應用程式和擴充功能，供單一裝置的多位使用者安裝，以免重複為每位使用者下載。
       如果未設定這項政策或設定值低於 1 MB，<ph name="PRODUCT_OS_NAME" /> 會使用預設快取大小。</translation>
 <translation id="8858642179038618439">強制採用 YouTube 安全模式</translation>

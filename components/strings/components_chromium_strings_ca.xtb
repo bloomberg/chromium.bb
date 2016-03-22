@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">Chromium OS no ha completat la configuració inicial.</translation>
 <translation id="3748537968684000502">Esteu visualitzant una pàgina segura de Chromium.</translation>
 <translation id="4365115785552740256">Chromium és possible gràcies al projecte de codi obert de <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> i a d'altres <ph name="BEGIN_LINK_OSS" />programes de codi obert<ph name="END_LINK_OSS" />.</translation>
-<translation id="4404275227760602850">Aneu al Menú de Chromium &gt; Configuració &gt; (Avançada) Privadesa
-          i desmarqueu "Baixa prèviament els recursos de la pàgina".
-          Si el problema no es resol, us recomanem que torneu a activar
-          aquesta opció per obtenir un millor rendiment.</translation>
 <translation id="4559775032954821361">Aneu al
           menú de Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -40,6 +36,5 @@
 <translation id="8187289872471304532">Aneu a
           Aplicacions &gt; Preferències del sistema &gt; Xarxa &gt; Opcions avançades &gt; Servidors intermediaris
           i desmarqueu tots els servidors intermediaris que s'hagin seleccionat.</translation>
-<translation id="8610831143142469229">Configureu el tallafoc o l'antivirus per permetre que Chrome accedeixi a la xarxa.</translation>
 <translation id="8684913864886094367">Chromium no s'ha tancat correctament.</translation>
 </translationbundle>

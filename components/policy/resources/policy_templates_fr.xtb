@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="101438888985615157">Faire pivoter l'écran de 180 degrés</translation>
+<translation id="1015272884520659144">Définit la liste des appareils USB autorisés à être dissociés de leur pilote de noyau afin d'être utilisés directement au sein d'une application mobile via l'API chrome.usb. Les entrées sont des paires composées d'un identifiant de fournisseur USB et d'un identifiant produit associé à du matériel spécifique.
+
+      Si cette règle n'est pas configurée, la liste des appareils USB amovibles est considérée comme étant vide.</translation>
 <translation id="1017967144265860778">Gestion de l'alimentation sur l'écran de connexion</translation>
 <translation id="1019101089073227242">Définir le répertoire de données utilisateur</translation>
 <translation id="1022361784792428773">Identifiants d'extension que l'utilisateur ne doit pas être autorisé à installer (ou * pour tous)</translation>
@@ -236,6 +239,7 @@ Si vous désactivez ce paramètre, chaque fois que l'utilisateur effectue une ac
 
 Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement les boîtes de dialogue de sélection de fichiers.</translation>
 <translation id="1897365952389968758">Autoriser tous les sites à exécuter JavaScript</translation>
+<translation id="193259052151668190">Liste blanche d'appareils USB amovibles</translation>
 <translation id="1933378685401357864">Image de fond d'écran</translation>
 <translation id="193900697589383153">Ajoute un bouton de déconnexion dans la barre d'état système.
 
@@ -762,6 +766,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3528000905991875314">Activer les pages d'erreur alternatives</translation>
 <translation id="3547954654003013442">Paramètres de proxy</translation>
 <translation id="3570008976476035109">Bloquer les plug-ins sur ces sites</translation>
+<translation id="3591584750136265240">Configurer le mode d'authentification lors de la connexion</translation>
 <translation id="3627678165642179114">Activer ou désactiver le service Web de correction orthographique</translation>
 <translation id="3646859102161347133">Définir le type de loupe</translation>
 <translation id="3653237928288822292">Icône du moteur de recherche par défaut</translation>
@@ -902,6 +907,7 @@ Si vous activez cette règle ou si vous ne la configurez pas, les utilisateurs p
           Si la règle est définie sur "Conserver les cookies pendant toute la durée de la session", les cookies seront supprimés à la fermeture de la session. Notez que si <ph name="PRODUCT_NAME" /> s'exécute en arrière-plan, il se peut que la session ne se termine pas à la fermeture de la dernière fenêtre. Veuillez consulter la règle BackgroundModeEnabled pour en savoir plus sur cette configuration.
 
           Si cette règle n'est pas définie, la règle AllowCookies sera activée, et l'utilisateur sera autorisé à la modifier.</translation>
+<translation id="4103289232974211388">Rediriger vers le fournisseur d'identité SAML après confirmation de l'utilisateur</translation>
 <translation id="410478022164847452">Indiquer le délai d'inactivité au terme duquel l'action d'inactivité est appliquée en cas d'utilisation de l'alimentation secteur
 
                       Lorsque cette règle est définie, elle indique la durée pendant laquelle l'utilisateur doit rester inactif avant que <ph name="PRODUCT_OS_NAME" /> applique l'action d'inactivité, configurable séparément.
@@ -1940,6 +1946,11 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 
 Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultPopupsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="7529144158022474049">Facteur de dispersion des mises à jour automatiques</translation>
+<translation id="7553535237300701827">Lorsque cette règle est définie, l'authentification s'effectue de l'une des deux façons suivantes, selon la valeur du paramètre :
+
+      Si la valeur est GAIA, la connexion s'effectue suivant le flux d'authentification GAIA normale.
+
+      Si la valeur est SAML_INTERSTITIAL, un écran interstitiel s'affiche lors de la connexion et invite l'utilisateur à poursuivre l'authentification via le fournisseur d'identité SAML du domaine d'inscription de l'appareil, ou à revenir au flux de connexion GAIA normal.</translation>
 <translation id="7567380065339179813">Autoriser les plug-ins sur ces sites</translation>
 <translation id="7593523670408385997">Cette règle permet de définir la taille du cache utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers en cache sur le disque.
 
@@ -2333,6 +2344,7 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 <translation id="8828766846428537606">Configure la page d'accueil par défaut de <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier cette dernière.
 
       Les paramètres de page d'accueil de l'utilisateur ne sont complètement verrouillés que si vous définissez la page "Nouvel onglet" ou une URL spécifique comme page d'accueil. Si vous ne précisez pas l'URL de la page d'accueil, l'utilisateur est toujours en mesure de définir la page d'accueil sur la page "Nouvel onglet" au moyen de la valeur "chrome://newtab".</translation>
+<translation id="8833109046074170275">Authentification via le flux GAIA par défaut</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> met en cache des applications et des extensions pour permettre leur installation par plusieurs utilisateurs sans avoir à répéter les téléchargements.
       Si cette règle n'est pas configurée ou si la valeur est inférieure à 1 Mo, <ph name="PRODUCT_OS_NAME" /> utilisera la taille de cache par défaut.</translation>
 <translation id="8858642179038618439">Forcer le mode sécurisé de YouTube</translation>

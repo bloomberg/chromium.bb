@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
 <translation id="101438888985615157">Girar a tela em 180 graus</translation>
+<translation id="1015272884520659144">Define a lista de dispositivos USB que estão autorizados a serem removidos do seu driver de kernel para uso pela API chrome.usb diretamente dentro de um aplicativo da Web. As entradas são pares de identificador de fornecedor e identificador do produto USB para identificar um hardware específico.
+
+      Se esta política não é configurada, a lista de dispositivos USB removíveis é considerada como vazia.</translation>
 <translation id="1017967144265860778">Gerenciamento de energia na tela de login</translation>
 <translation id="1019101089073227242">Definir diretório de dados do usuário</translation>
 <translation id="1022361784792428773">IDs de extensão que devem ser impedidos de serem instalados pelo usuário (ou * para todos)</translation>
@@ -200,6 +203,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="186719019195685253">Ação a ser executada quando o tempo de inatividade for atingido durante operação com alimentação CA</translation>
 <translation id="187819629719252111">Permite o acesso a arquivos locais na máquina ao possibilitar que <ph name="PRODUCT_NAME" /> exiba caixas de diálogo de seleção de arquivos. Se ativar esta configuração, os usuários poderão abrir as caixas de diálogo de seleção de arquivos normalmente. Se desativar esta configuração, sempre que o usuário executar uma ação que possa gerar uma caixa de diálogo de seleção de arquivos (como importar favoritos, fazer o upload de arquivos, salvar links etc), uma mensagem será exibida em seu lugar, e será considerado como se o usuário houvesse clicado em "Cancelar" na caixa de diálogo de seleção de arquivos. Se esta configuração não for definida, os usuários poderão abrir caixas de diálogo de seleção de arquivos normalmente.</translation>
 <translation id="1897365952389968758">Permitir que todos os sites executem o JavaScript</translation>
+<translation id="193259052151668190">Lista de permissões de dispositivos USB removíveis</translation>
 <translation id="1933378685401357864">Imagem do plano de fundo</translation>
 <translation id="193900697589383153">Adicionar um botão de logout à bandeja do sistema.
 
@@ -668,6 +672,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3528000905991875314">Ativar páginas de erro alternativas</translation>
 <translation id="3547954654003013442">Configurações de proxy</translation>
 <translation id="3570008976476035109">Bloquear plug-ins nestes sites</translation>
+<translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
 <translation id="3627678165642179114">Ativar ou desativar serviço da web de verificação ortográfica</translation>
 <translation id="3646859102161347133">Definir tipo de lupa</translation>
 <translation id="3653237928288822292">Ícone do provedor de pesquisa padrão</translation>
@@ -777,6 +782,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
           Se esta política é configurada para "Manter cookies enquanto durar a sessão", os cookies são apagados quando a sessão é encerrada. Se o <ph name="PRODUCT_NAME" /> é executado no "modo de segundo plano", é possível que a sessão não seja encerrada quando a última janela é fechada. Consulte a política "BackgroundModeEnabled" para ver mais informações sobre como configurar esse comportamento.
 
           Se esta política não é configurada, "AllowCookies" é usada, e o usuário pode alterá-la.</translation>
+<translation id="4103289232974211388">Redireciona para IdP de SAML após confirmação do usuário</translation>
 <translation id="410478022164847452">Especifica depois de quanto tempo de inatividade do usuário é executada a ação de inatividade no funcionamento com alimentação CA.
 
           Quando esta política está definida, ela especifica por quanto tempo o usuário deve permanecer inativo antes que o <ph name="PRODUCT_OS_NAME" /> execute a ação de inatividade, que pode ser configurada separadamente.
@@ -1680,6 +1686,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7523476810162382273">Enviar batimentos cardíacos monitorados para o servidor de gerenciamento</translation>
 <translation id="7529100000224450960">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir pop-ups. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultPopupsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="7529144158022474049">Fator de dispersão de atualizações automáticas</translation>
+<translation id="7553535237300701827">Quando esta política está definida, o fluxo de autenticação de login acontece em uma das seguintes formas, dependendo do valor da configuração:
+
+      Se configurada como GAIA, o login é feito pelo fluxo normal de autenticação GAIA.
+
+      Se configurada como SAML_INTERSTITIAL, o login exibe uma tela intersticial oferecendo ao usuário a opção de prosseguir com a autenticação por IdP de SAML do domínio de inscrição do dispositivo ou voltar para o fluxo normal de login GAIA.</translation>
 <translation id="7567380065339179813">Permitir plug-ins nestes sites</translation>
 <translation id="7593523670408385997">Configura o tamanho do cache que o <ph name="PRODUCT_NAME" /> usará para armazenar os arquivos em cache no disco.
 
@@ -2021,6 +2032,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
       Se a política não for configurada, ou for configurada como falsa, o local não será informado.</translation>
 <translation id="8828766846428537606">Configura a página inicial padrão no <ph name="PRODUCT_NAME" /> e impede que os usuários a modifiquem. As configurações da página inicial do usuário só serão completamente bloqueadas, se você selecionar a página inicial para que seja a página "Nova guia" ou configurá-la para que seja um URL e especificar um URL da página inicial. Se você não especificar o URL da página inicial, o usuário ainda poderá definir a página inicial para a página "Nova guia" especificando 'chrome://newtab'.</translation>
+<translation id="8833109046074170275">Autenticação por fluxo GAIA padrão</translation>
 <translation id="8838303810937202360">O <ph name="PRODUCT_OS_NAME" /> armazena aplicativos e extensões em cache para a instalação por vários usuários de um único dispositivo a fim de evitar que o download deles seja feito novamente para cada usuário.
       Se esta política não é configurada ou se o valor é inferior a 1 MB, o <ph name="PRODUCT_OS_NAME" /> usa o tamanho de cache padrão.</translation>
 <translation id="8858642179038618439">Forçar modo de segurança do YouTube</translation>

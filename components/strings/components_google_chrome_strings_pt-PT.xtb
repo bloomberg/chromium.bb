@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">As alterações terão efeito da próxima vez que voltar a iniciar o Google Chrome.</translation>
 <translation id="3444832043240812445">Esta página mostra informações sobre falhas recentes apenas se <ph name="BEGIN_LINK" />ativar relatórios de falha<ph name="END_LINK" />.</translation>
 <translation id="4010643444566880169">O SO Chrome não concluiu a configuração inicial.</translation>
-<translation id="5423788048750135178">Aceda ao menu do Chrome &gt; Definições &gt; Privacidade (avançada)
-          e desative "Registar previamente os recursos da página".
-          Se esta ação não resolver o problema, recomendamos que reative esta opção
-          novamente para melhorar o desempenho.</translation>
 <translation id="6011049234605203654">Aceda ao
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE" />
@@ -38,6 +34,5 @@
           &gt;
           Definições de LAN
           e desmarque "Utilizar um servidor proxy para a rede local".</translation>
-<translation id="7396375882099008034">Permita que o Chrome aceda à rede nas definições da sua firewall ou antivírus.</translation>
 <translation id="8187289872471304532">Aceda a Aplicações &gt; Preferências do Sistema &gt; Rede &gt; Avançadas &gt; Proxies e desmarque todos os proxies selecionados.</translation>
 </translationbundle>

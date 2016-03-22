@@ -94,6 +94,7 @@
 <translation id="201192063813189384">Napaka pri branju podatkov iz predpomnilnika</translation>
 <translation id="2025186561304664664">Strežnik proxy je nastavljen na samodejno konfiguriranje.</translation>
 <translation id="2030481566774242610">Ali ste mislili <ph name="LINK" />?</translation>
+<translation id="2031925387125903299">To sporočilo je prikazano, ker morajo starši odobriti nova spletna mesta ob prvem obisku.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />preveriti strežnik proxy in požarni zid<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Poštna številka</translation>
 <translation id="2065985942032347596">Zahtevano je preverjanje pristnosti</translation>
@@ -149,6 +150,7 @@
 <translation id="2495083838625180221">Razčlenjevalnik za JSON</translation>
 <translation id="2495093607237746763">Če je izbrana ta možnost, bo Chromium shranil kopijo kartice v tej napravi za hitrejše izpolnjevanje obrazcev.</translation>
 <translation id="2498091847651709837">Optično branje nove kartice</translation>
+<translation id="2501278716633472235">Nazaj</translation>
 <translation id="2515629240566999685">preveriti signal na svojem območju</translation>
 <translation id="2516305470678292029">Nadomestni uporabniški vmesniki</translation>
 <translation id="255002559098805027">Spletno mesto <ph name="HOST_NAME" /> je poslalo neveljaven odgovor.</translation>
@@ -166,10 +168,12 @@
 <translation id="2704283930420550640">Vrednost se ne ujema z obliko.</translation>
 <translation id="2705137772291741111">Shranjena (predpomnjena) kopija tega spletnega mesta je bila neberljiva.</translation>
 <translation id="2709516037105925701">Samodejno izpolnjevanje</translation>
+<translation id="2712173769900027643">Zahtevaj dovoljenje</translation>
 <translation id="2721148159707890343">Zahteva je uspela</translation>
 <translation id="2728127805433021124">Strežnikovo potrdilo je podpisano s šibkim podpisnim algoritmom.</translation>
 <translation id="2742870351467570537">Odstrani izbrane elemente</translation>
 <translation id="277499241957683684">Manjka zapis o napravi</translation>
+<translation id="2778107779445548489">To sporočilo je prikazano, ker je starš blokiral to spletno mesto.</translation>
 <translation id="2784949926578158345">Povezava je bila obnovljena.</translation>
 <translation id="2824775600643448204">Naslovna in iskalna vrstica</translation>
 <translation id="2826760142808435982">Za šifriranje in preverjanje pristnosti povezave se uporablja <ph name="CIPHER" />, kot mehanizem za izmenjavo ključev pa <ph name="KX" />.</translation>
@@ -177,6 +181,7 @@
 <translation id="2837049386027881519">Potrebna je bila vnovična povezava s starejšo različico protokola TLS ali SSL. To navadno pomeni, da strežnik uporablja zastarelo programsko opremo ali ima druge varnostne težave.</translation>
 <translation id="284702764277384724">Videti je, da je potrdilo strežnika na <ph name="HOST_NAME" /> ponarejeno.</translation>
 <translation id="2855922900409897335">Preverjanje kartice <ph name="CREDIT_CARD" /></translation>
+<translation id="2889159643044928134">Ne naloži znova</translation>
 <translation id="2896499918916051536">Ta vtičnik ni podprt.</translation>
 <translation id="2897655920961181107">Zahtevana vrata niso varna in so blokirana.</translation>
 <translation id="2909946352844186028">Zaznana je bila sprememba omrežja.</translation>
@@ -200,6 +205,7 @@
 <translation id="3005723025932146533">Pokaži shranjeno kopijo</translation>
 <translation id="3010559122411665027">Vnos na sznamu »<ph name="ENTRY_INDEX" />«: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Napačna vrsta pravilnika</translation>
+<translation id="3032412215588512954">Ali želite znova naložiti to spletno mesto?</translation>
 <translation id="3037605927509011580">Ti šment!</translation>
 <translation id="3041612393474885105">Informacije o potrdilu</translation>
 <translation id="3093245981617870298">Povezava ni vzpostavljena.</translation>
@@ -231,6 +237,7 @@
 <translation id="3305707030755673451">Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />. Vnesite ga, če želite začeti sinhronizacijo.</translation>
 <translation id="333371639341676808">Tej strani preprečite, da bi ustvarila dodatna pogovorna okna.</translation>
 <translation id="3340978935015468852">nastavitve</translation>
+<translation id="3345135638360864351">Zahteve za dostop do tega spletnega mesta ni bilo mogoče poslati osebi <ph name="NAME" />. Poskusite znova.</translation>
 <translation id="3355823806454867987">Spremeni nastavitve proxyja ...</translation>
 <translation id="3369192424181595722">Napaka ure</translation>
 <translation id="3369366829301677151">Posodobitev in preverjanje kartice <ph name="CREDIT_CARD" /></translation>
@@ -246,6 +253,8 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Interval prejemanja:</translation>
 <translation id="3462200631372590220">Skrij podrobnosti</translation>
+<translation id="3479539252931486093">Ali tega niste pričakovali? <ph name="BEGIN_LINK" />Sporočite nam<ph name="END_LINK" /></translation>
+<translation id="3498215018399854026">Trenutno ni mogoče vzpostaviti stika s staršem. Poskusi znova pozneje.</translation>
 <translation id="3516765099410062445">Prikaz zgodovine naprav, v katere ste prijavljeni. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Mapa</translation>
 <translation id="3528171143076753409">Potrdilo strežnika ni zaupanja vredno.</translation>
@@ -268,6 +277,7 @@
 <translation id="3658742229777143148">Različica</translation>
 <translation id="3681007416295224113">Informacije o potrdilu</translation>
 <translation id="3693415264595406141">Geslo:</translation>
+<translation id="3700528541715530410">Videti je, da nimate pravice za dostop do te strani.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Nalagam ...</translation>
 <translation id="3712624925041724820">Ni dovolj licenc</translation>
@@ -282,8 +292,6 @@
 <translation id="382518646247711829">Če uporabite namestniški strežnik ...</translation>
 <translation id="3828924085048779000">Prazno geslo ni dovoljeno.</translation>
 <translation id="385051799172605136">Nazaj</translation>
-<translation id="3851596405215565524">Če je že na seznamu programov, ki jim je dovoljen dostop do omrežja, ga poskusite
-    odstraniti s seznama in znova dodati.</translation>
 <translation id="3858027520442213535">Posodobi datum in uro</translation>
 <translation id="3884278016824448484">Identifikator naprave je v sporu</translation>
 <translation id="3885155851504623709">Okrožje</translation>
@@ -314,6 +322,7 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />preveriti požarni zid in konfiguracije protivirusnega programa<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Zrušitve</translation>
 <translation id="4250680216510889253">Ne</translation>
+<translation id="425582637250725228">Spremembe, ki ste jih naredili, morda niso shranjene.</translation>
 <translation id="4258748452823770588">Napačen podpis</translation>
 <translation id="4268298190799576220">Chromium trenutno ni mogel preveriti vaše kartice. Poskusite znova pozneje.</translation>
 <translation id="4269787794583293679">(Ni uporabniškega imena)</translation>
@@ -330,6 +339,9 @@
 <translation id="4406896451731180161">rezultati iskanja</translation>
 <translation id="4424024547088906515">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; Chrome ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="443673843213245140">Uporaba strežnika proxy je onemogočena, vendar je njegova konfiguracija izrecno določena.</translation>
+<translation id="4458874409874303848">SafeSites</translation>
+<translation id="4461847750548395463">To sporočilo je prikazano, ker je omogočena funkcija Google SafeSites.</translation>
+<translation id="4491452711366281322">Ni odobreno</translation>
 <translation id="4492190037599258964">Rezultati iskanja za »<ph name="SEARCH_STRING" />«</translation>
 <translation id="4506176782989081258">Napaka pri preverjanju veljavnosti: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">se obrniti na skrbnika sistema</translation>
@@ -351,6 +363,7 @@
 <translation id="4764776831041365478">Spletna stran na naslovu <ph name="URL" /> morda začasno ne deluje ali pa je trajno premaknjena na novi spletni naslov.</translation>
 <translation id="4771973620359291008">Prišlo je do neznane napake.</translation>
 <translation id="477518548916168453">Strežnik ne podpira funkcije, ki je potrebna za izpolnitev zahteve.</translation>
+<translation id="4782449893814226250">Starše si vprašal, ali smeš obiskati to stran.</translation>
 <translation id="4800132727771399293">Preverite datum poteka in številko CVC ter poskusite znova</translation>
 <translation id="4807049035289105102">Spletnega mesta <ph name="SITE" /> trenutno ne morete obiskati, saj je poslalo šifrirane poverilnice, ki jih Google Chrome ne more obdelati. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="4813512666221746211">Napaka v omrežju</translation>
@@ -360,6 +373,7 @@
 <translation id="4880827082731008257">Zgodovina iskanja</translation>
 <translation id="4923417429809017348">Stran je bila iz neznanega jezika prevedena v jezik »<ph name="LANGUAGE_LANGUAGE" />«</translation>
 <translation id="4926049483395192435">Vrednost mora biti določena.</translation>
+<translation id="4930497775425430760">To sporočilo je prikazano, ker mora starš odobriti nova spletna mesta ob prvem obisku.</translation>
 <translation id="495170559598752135">Dejanja</translation>
 <translation id="4958444002117714549">Razširi seznam</translation>
 <translation id="498957508165411911">Želite prevesti iz jezika <ph name="ORIGINAL_LANGUAGE" /> v jezik <ph name="TARGET_LANGUAGE" />?</translation>
@@ -418,6 +432,7 @@
 <translation id="560412284261940334">Upravljanje ni podprto</translation>
 <translation id="5610142619324316209">preveriti povezavo</translation>
 <translation id="5617949217645503996">Spletno mesto <ph name="HOST_NAME" /> vas je prevečkrat preusmerilo.</translation>
+<translation id="5622887735448669177">Ali želite zapustiti to spletno mesto?</translation>
 <translation id="5629630648637658800">Nastavitev pravilnika ni bilo mogoče naložiti</translation>
 <translation id="5631439013527180824">Neveljaven žeton za upravljanje naprave</translation>
 <translation id="5650551054760837876">Najden ni bil noben rezultat iskanja.</translation>
@@ -427,6 +442,7 @@
 <translation id="5785756445106461925">Poleg tega so na tej strani druga sredstva, ki niso varna. Ta sredstva lahko med prenosom pregledujejo drugi, morebitni napadalec pa jih lahko spremeni, tako da se spremeni videz strani.</translation>
 <translation id="5810442152076338065">Povezava z domeno <ph name="DOMAIN" /> je šifrirana z zastarelo šifrirno zbirko.</translation>
 <translation id="5813119285467412249">&amp;Uveljavi dodajanje</translation>
+<translation id="5855235287355719921">To sporočilo je prikazano, ker je skrbnik blokiral to spletno mesto.</translation>
 <translation id="5857090052475505287">Nova mapa</translation>
 <translation id="5869405914158311789">Tega spletnega mesta ni mogoče doseči</translation>
 <translation id="5869522115854928033">Shranjena gesla</translation>
@@ -450,6 +466,7 @@
 <translation id="6146055958333702838">Preverite kable in znova zaženite usmerjevalnike, modeme ali druge omrežne 
     naprave, ki jih uporabljate.</translation>
 <translation id="614940544461990577">Poskusite:</translation>
+<translation id="6150607114729249911">Ojoj! Vprašaj starše, ali smeš obiskati to stran.</translation>
 <translation id="6151417162996330722">Potrdilo strežnika ima predolgo obdobje veljavnosti.</translation>
 <translation id="6154808779448689242">Vrnjen žeton pravilnika se ne ujema s trenutnim žetonom</translation>
 <translation id="6165508094623778733">Več o tem</translation>
@@ -486,6 +503,7 @@
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6596325263575161958">Možnosti šifriranja</translation>
 <translation id="6610562986279010327">Chrome ne more odpreti tega URL-ja</translation>
+<translation id="662080504995468778">Ostani</translation>
 <translation id="6626108645084335023">Čakanje na preskus DNS-ja.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Iskanje</translation>
 <translation id="6634865548447745291">Spletnega mesta <ph name="SITE" /> trenutno ni mogoče obiskati, saj <ph name="BEGIN_LINK" />je to potrdilo preklicano<ph name="END_LINK" />. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
@@ -539,11 +557,14 @@
 <translation id="7182878459783632708">Ni nastavljenih pravilnikov</translation>
 <translation id="7186367841673660872">Ta stran je bila prevedena iz jezika<ph name="ORIGINAL_LANGUAGE" />v jezik<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
+<translation id="720210938761809882">Stran je blokirana</translation>
 <translation id="7208899522964477531">V iskalniku <ph name="SITE_NAME" /> poišči <ph name="SEARCH_TERMS" /></translation>
 <translation id="7210863904660874423">Spletno mesto <ph name="HOST_NAME" /> ne upošteva varnostnih standardov.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Več o<ph name="END_LINK" /> tej težavi.</translation>
 <translation id="7219179957768738017">Povezava uporablja <ph name="SSL_VERSION" />.</translation>
 <translation id="7225807090967870017">ID delovne različice</translation>
+<translation id="7231308970288859235">Ojoj! Vprašaj starše, ali smeš obiskati to stran.</translation>
+<translation id="7246609911581847514">To sporočilo je prikazano, ker mora skrbnik odobriti nova spletna mesta ob prvem obisku.</translation>
 <translation id="725866823122871198">Zasebne povezave z domeno <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ni mogoče vzpostaviti, ker sta datum in ura (<ph name="DATE_AND_TIME" />) v računalniku nepravilna.</translation>
 <translation id="7265986070661382626">Spletnega mesta <ph name="SITE" /> trenutno ne morete obiskati, ker <ph name="BEGIN_LINK" />uporablja pripenjanje potrdil<ph name="END_LINK" />. Napake omrežja in napadi na omrežje so običajno začasni, zato bo ta stran verjetno delovala pozneje.</translation>
 <translation id="7269802741830436641">Ta spletna stran ima preusmeritveno zanko</translation>
@@ -610,8 +631,10 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="7825436071901023927">Vrata <ph name="SITE" /> niso varna</translation>
 <translation id="785549533363645510">Kljub temu pa niste nevidni. Z uporabo načina brez beleženja zgodovine brskanja ne skrijete pred delodajalcem, ponudnikom internetnih storitev ali spletnimi mesti, ki jih obiščete.</translation>
 <translation id="7887683347370398519">Preverite CVC in poskusite znova</translation>
+<translation id="7894616681410591072">Ojoj! Če želite dostop do te strani, potrebujete dovoljenje te osebe: <ph name="NAME" />.</translation>
 <translation id="790025292736025802"><ph name="URL" /> ni mogoče najti</translation>
 <translation id="7912024687060120840">V mapi:</translation>
+<translation id="7920092496846849526">Starša si vprašal, ali smeš obiskati to stran.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Potrdilo strežnika še ni veljavno.</translation>
 <translation id="7951415247503192394">(32-bitno)</translation>
@@ -620,6 +643,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="7977590112176369853">&lt;vnesite poizvedbo&gt;</translation>
 <translation id="7983301409776629893">Vedno prevedi iz jezika <ph name="ORIGINAL_LANGUAGE" /> v jezik <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Ni navedeno</translation>
+<translation id="8012647001091218357">Trenutno ni mogoče vzpostaviti stika s starši. Poskusi znova pozneje.</translation>
 <translation id="8034522405403831421">Ta stran je v jeziku <ph name="SOURCE_LANGUAGE" />. Jo želite prevesti v jezik <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Ni vnosov v zgodovino.</translation>
 <translation id="8088680233425245692">Članka si ni bilo mogoče ogledati.</translation>
@@ -632,9 +656,6 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8204086856545141093">Zahteve za strežnik je blokiral pravilnik.</translation>
 <translation id="8218327578424803826">Dodeljena lokacija:</translation>
 <translation id="8225771182978767009">Oseba, ki je nastavila ta računalnik, je blokirala to spletno mesto.</translation>
-<translation id="8240446052814166959">Preverite nastavitve strežnika proxy ali se obrnite na skrbnika omrežja in
-      preverite, ali strežnik proxy deluje.
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="8241707690549784388">Stran, ki jo iščete, je uporabila informacije, ki ste jih vnesli. Z vrnitvijo na to stran se bodo morda ponovila vsa vaša dejanja, ki ste jih opravili. Ali želite nadaljevati?</translation>
 <translation id="8249320324621329438">Nazadnje preneseno:</translation>
 <translation id="8266098793847448402">Kliknite
@@ -645,6 +666,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
       <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
       in nato kliknite
       <ph name="BEGIN_BOLD" />V redu<ph name="END_BOLD" />.</translation>
+<translation id="8279107132611114222">Vaša zahteva za dostop do tega mesta je poslana uporabniku <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Če niste prepričani, kaj to pomeni, se obrnite na skrbnika omrežja.</translation>
 <translation id="8293206222192510085">Dodaj zaznamek</translation>
 <translation id="8294431847097064396">Vir</translation>
@@ -666,6 +688,7 @@ Pst! Naslednjič vam lahko pride prav bližnjica <ph name="SHORTCUT_KEY" /> za n
 <translation id="8559762987265718583">Zasebne povezave z domeno <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> ni mogoče vzpostaviti, ker sta datum in ura (<ph name="DATE_AND_TIME" />) v napravi nepravilna.</translation>
 <translation id="856992080682148">Potrdilo za to spletno mesto poteče leta 2017 ali pozneje in veriga potrdil vsebuje potrdilo, podpisano z algoritmom SHA-1.</translation>
 <translation id="8571890674111243710">Prevajanje strani v jezik <ph name="LANGUAGE" /> ...</translation>
+<translation id="8591846766485502580">To sporočilo je prikazano, ker je eden od staršev blokiral to spletno mesto.</translation>
 <translation id="859285277496340001">Potrdilo ne navaja mehanizma za preverjanje tega, ali je bilo preklicano.</translation>
 <translation id="8629916158020966496">Brskanje po internetu je onemogočeno, dokler ni dokončano preverjanje za včlanitev v podjetje.
     Kljub temu lahko uporabite diagnostična orodja, ki so prikazana tukaj, če želite odpraviti težave s povezavo.</translation>

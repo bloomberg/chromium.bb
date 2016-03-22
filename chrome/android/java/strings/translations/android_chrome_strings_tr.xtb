@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">Yakındaki nesneler tarafından gönderilen web sayfalarını keşfedin. Chrome, çevrenizdeki nesnelerle ilişkilendirilen web sayfalarını toplar, sizin için en faydalı olanlarını bulmak üzere bunları anonim bir şekilde Google hizmetine gönderir ve ardından görüntüler.
 
 Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık olması gerekir.</translation>
+<translation id="1254090737195733114">Veriler içe aktarılsın mı?</translation>
 <translation id="1258753120186372309">Google doodle'ı: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Durdur</translation>
 <translation id="1285320974508926690">Bu siteyi hiçbir zaman çevirme</translation>
@@ -108,6 +109,7 @@ Fiziksel Web'i Chrome gizlilik ayarlarından kontrol edebilirsiniz.</translation
 <translation id="238909021488141516">İçerik indirilirken bir hata oluştu.</translation>
 <translation id="2414886740292270097">Koyu</translation>
 <translation id="2433507940547922241">Görünüm</translation>
+<translation id="2439248520967274840"><ph name="TO_ACCOUNT" /> hesabında oturum açıyorsunuz. Mevcut yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızın bir kısmı <ph name="FROM_ACCOUNT" /> hesabı ile önceden senkronize edilmişti. Mevcut verilerinizle ne yapmak istiyorsunuz?</translation>
 <translation id="2440823041667407902">Konum erişimi</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> boyutundaki sayfa çevrimdışına kaydedildi</translation>
 <translation id="2476578072172137802">Site Ayarları</translation>
@@ -147,6 +149,7 @@ Fiziksel Web'i Chrome gizlilik ayarlarından kontrol edebilirsiniz.</translation
 <translation id="2968755619301702150">Sertifika görüntüleyici</translation>
 <translation id="2996291259634659425">Parola oluşturun</translation>
 <translation id="2996809686854298943">URL gerekli</translation>
+<translation id="3012408695656332380">Bu cihazın verilerini <ph name="TO_ACCOUNT" /> hesabının verileriyle değiştirin. Mevcut verilerinizi <ph name="FROM_ACCOUNT" /> hesabına geçerek alabilirsiniz, ancak oturumu kapatmanızdan sonra oluşturulan veriler kaybolur.</translation>
 <translation id="3029704984691124060">Parolalar eşleşmiyor</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Videoyu kaydet</translation>
@@ -214,7 +217,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="403659016947612156">Yakınlarda Fiziksel Web sayfaları var</translation>
 <translation id="4042870126885713738">Bir web adresi çözümlenemezse veya bağlantı yapılamazsa öneriler göster</translation>
 <translation id="4056223980640387499">Sepya Tonu</translation>
-<translation id="4059119910594077751">Tam ekrandan çıkmak için geri düğmesine dokunun.</translation>
 <translation id="4062305924942672200">Yasal bilgiler</translation>
 <translation id="4089831646916293264">Bu özellik, operatörünüz tarafından sağlanan birinci sınıf veri hizmetlerine erişime engel olabilir.</translation>
 <translation id="4099578267706723511">Google'a kullanım istatistikleri ve kilitlenme raporları göndererek Chrome'u iyileştirmeye yardımcı olun.</translation>
@@ -350,6 +352,7 @@ Bunun için bilgisayarınızda Chrome'u açmanız ve menüye gidip "Chrome'da ot
 <translation id="5676636989614905379">Video <ph name="SCREEN_NAME" /> üzerinde oynatılamıyor.</translation>
 <translation id="5677928146339483299">Engellenenler</translation>
 <translation id="5684874026226664614">Hata! Bu sayfa çevrilemedi.</translation>
+<translation id="5708031556037168012">Mevcut verileri cihazınızda tutun ve verileri kalıcı olarak <ph name="TO_ACCOUNT" /> hesabına aktarın.</translation>
 <translation id="5712189971979076230">Bir kilitlenme yaşadığınızda çalışan dosyalarla, uygulamalarla ve hizmetlerle ilgili bilgileri Google'a göndererek, üzerinde çalışmamız gereken özellikler ve iyileştirmelerle ilgili öncelikleri belirlememize yardım edin.
 
 Kullanım istatistikleri; tercihler, tıklanan düğmeler ve bellek kullanımı gibi bilgileri içerir. Web sayfası URL'lerini veya hiçbir kişisel bilgiyi içermez. Kilitlenme raporları, kilitlenme sırasında geçerli olan sistem bilgilerini kapsar ve kilitlenme sırasında olanlara bağlı olarak web sayfası URL'lerini veya kişisel bilgilerinizi içerebilir.</translation>
@@ -370,7 +373,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="585027516397408832">Veri Tasarrufu etkinleştirildi</translation>
 <translation id="5860033963881614850">Kapalı</translation>
 <translation id="5869522115854928033">Kayıtlı şifreler</translation>
-<translation id="588258955323874662">Tam ekran</translation>
 <translation id="5899349522111170522">Yeni dosya oluştur</translation>
 <translation id="5902828464777634901">Çerezler dahil bu web sitesinin depoladığı tüm yerel veriler silinecek.</translation>
 <translation id="5911030830365207728">Google Çeviri</translation>
@@ -578,6 +580,7 @@ Yine de, görünmez değilsiniz. Gizli moda geçmeniz web'de yaptıklarınızı 
 <translation id="8497726226069778601">Burada görülecek bir şey yok… henüz</translation>
 <translation id="8514577642972634246">Gizli moda geç</translation>
 <translation id="8518901949365209398">Bu site düşük bir güvenlik yapılandırması (SHA-1 imzaları) kullandığından bağlantınız gizli olmayabilir.</translation>
+<translation id="8525306231823319788">Tam ekran</translation>
 <translation id="854522910157234410">Şu sayfayı aç:</translation>
 <translation id="8562452229998620586">Kayıtlı şifreleriniz burada görünür.</translation>
 <translation id="856481929701340285">Masaüstü sitesi iste</translation>
@@ -609,7 +612,6 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8912362522468806198">Google Hesabı</translation>
 <translation id="8920114477895755567">Ebeveyn ayrıntıları bekleniyor.</translation>
 <translation id="8931159598799892500">Chrome + Fiziksel Web</translation>
-<translation id="8934455786738644694">Tam ekrandan çıkmak için yukarıdan sürükleyin ve geri düğmesine dokunun.</translation>
 <translation id="8941248009481596111">Bu siteye bağlantınız gizli.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Gezinme işlevine ulaşılamıyor: <ph name="URL" /></translation>
@@ -628,6 +630,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="9100610230175265781">Parola gerekli</translation>
 <translation id="9133515669113036225">Cihazın kimlik bilgilerini sıfırla</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>
+<translation id="9141510419986760385">Senkronizasyon hesapları arasında (<ph name="FROM_ACCOUNT" /> hesabından <ph name="TO_ACCOUNT" /> hesabına) geçiş yapıyorsunuz. Mevcut yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızla ne yapmak istiyorsunuz?</translation>
 <translation id="9151532766011674069">Yer işareti çevrimdışı olarak kaydedildi. Depolama alanı neredeyse dolmak üzere.</translation>
 <translation id="917685106653909562">Yakınlardaki Fiziksel Web sayfaları</translation>
 <translation id="9187199695613236444">Mobil uyumlu görünüm</translation>

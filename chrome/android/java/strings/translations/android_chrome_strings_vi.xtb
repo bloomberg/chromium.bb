@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">Khám phá trang web do các đối tượng lân cận gửi. Chrome tập hợp các trang web được liên kết với các đối tượng xung quanh bạn, chuyển chúng một cách ẩn danh tới dịch vụ của Google để tìm những trang web hữu ích nhất cho bạn, sau đó hiển thị các trang đó.
 
 Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc sống.</translation>
+<translation id="1254090737195733114">Nhập dữ liệu?</translation>
 <translation id="1258753120186372309">Hình tượng trưng của Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Dừng</translation>
 <translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
@@ -108,6 +109,7 @@ Bạn có thể kiểm soát Web trong cuộc sống trong cài đặt bảo m�
 <translation id="238909021488141516">Đã xảy ra lỗi khi tải xuống nội dung.</translation>
 <translation id="2414886740292270097">Tối</translation>
 <translation id="2433507940547922241">Hình thức</translation>
+<translation id="2439248520967274840">Bạn đang đăng nhập vào <ph name="TO_ACCOUNT" />. Một số dấu trang, lịch sử, mật khẩu hiện có và các cài đặt khác đã được đồng bộ hóa với <ph name="FROM_ACCOUNT" /> trước đây. Bạn muốn làm gì với dữ liệu hiện có của mình?</translation>
 <translation id="2440823041667407902">Truy cập vị trí</translation>
 <translation id="2470327855284432041">Trang <ph name="PAGE_SIZE_STRING" /> được lưu ngoại tuyến</translation>
 <translation id="2476578072172137802">Cài đặt trang web</translation>
@@ -147,6 +149,7 @@ Bạn có thể kiểm soát Web trong cuộc sống trong cài đặt bảo m�
 <translation id="2968755619301702150">Trình xem chứng chỉ</translation>
 <translation id="2996291259634659425">Tạo cụm mật khẩu</translation>
 <translation id="2996809686854298943">Cần có URL</translation>
+<translation id="3012408695656332380">Thay thế dữ liệu của thiết bị này bằng dữ liệu của <ph name="TO_ACCOUNT" />. Bạn có thể truy xuất dữ liệu hiện có của mình bằng cách chuyển về <ph name="FROM_ACCOUNT" /> nhưng dữ liệu được tạo từ lúc bạn đăng xuất sẽ bị mất.</translation>
 <translation id="3029704984691124060">Cụm mật khẩu không khớp</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Lưu video</translation>
@@ -214,7 +217,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="403659016947612156">Các trang Web trong cuộc sống ở gần đây</translation>
 <translation id="4042870126885713738">Hiển thị các đề xuất khi địa chỉ web không khắc phục được hoặc kết nối không thể được thực hiện</translation>
 <translation id="4056223980640387499">Màu nâu đỏ</translation>
-<translation id="4059119910594077751">Chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="4062305924942672200">Thông tin pháp lý</translation>
 <translation id="4089831646916293264">Tính năng này có thể ảnh hưởng đến quyền truy cập vào các dịch vụ dữ liệu cao cấp được nhà cung cấp dịch vụ của bạn cung cấp.</translation>
 <translation id="4099578267706723511">Giúp cải thiện Chrome bằng cách gửi số liệu thống kê sử dụng và báo cáo sự cố cho Google.</translation>
@@ -350,6 +352,7 @@ Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu 
 <translation id="5676636989614905379">Không thể phát video trên <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Bị chặn</translation>
 <translation id="5684874026226664614">Rất tiếc. Không thể dịch trang này.</translation>
+<translation id="5708031556037168012">Giữ lại dữ liệu hiện có trên thiết bị của bạn và nhập dữ liệu vĩnh viễn vào <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5712189971979076230">Giúp chúng tôi ưu tiên các tính năng và cải tiến mà chúng tôi nên giải quyết bằng cách gửi cho Google thông tin về các tệp, ứng dụng và dịch vụ đang chạy bất cứ khi nào bạn gặp sự cố.
 
 Số liệu thống kê sử dụng bao gồm thông tin chẳng hạn như tùy chọn, số lần nhấp nút và mức sử dụng bộ nhớ. Số liệu này không bao gồm URL trang web hoặc bất kỳ thông tin cá nhân nào. Báo cáo sự cố chứa thông tin hệ thống tại thời điểm xảy ra sự cố và có thể bao gồm URL của trang web hoặc thông tin cá nhân tùy thuộc vào hiện tượng tại thời điểm xảy ra sự cố.</translation>
@@ -370,7 +373,6 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="585027516397408832">Đã bật Trình tiết kiệm dữ liệu</translation>
 <translation id="5860033963881614850">Tắt</translation>
 <translation id="5869522115854928033">Mật khẩu đã lưu</translation>
-<translation id="588258955323874662">Toàn màn hình</translation>
 <translation id="5899349522111170522">Tạo tệp mới</translation>
 <translation id="5902828464777634901">Tất cả dữ liệu cục bộ được trang web này lưu, bao gồm cookie, sẽ bị xóa.</translation>
 <translation id="5911030830365207728">Google Dịch</translation>
@@ -578,6 +580,7 @@ Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ 
 <translation id="8497726226069778601">Chưa có gì để xem ở đây...</translation>
 <translation id="8514577642972634246">Vào chế độ ẩn danh</translation>
 <translation id="8518901949365209398">Trang web này sử dụng cấu hình bảo mật yếu (chữ ký SHA-1), vì vậy kết nối của bạn có thể không được đảm bảo là riêng tư.</translation>
+<translation id="8525306231823319788">Toàn màn hình</translation>
 <translation id="854522910157234410">Mở trang này</translation>
 <translation id="8562452229998620586">Mật khẩu đã lưu của bạn sẽ xuất hiện tại đây.</translation>
 <translation id="856481929701340285">Yêu cầu trang web cho máy tính</translation>
@@ -609,7 +612,6 @@ Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ 
 <translation id="8912362522468806198">Tài khoản Google</translation>
 <translation id="8920114477895755567">Đang đợi thông tin chi tiết của phụ huynh.</translation>
 <translation id="8931159598799892500">Chrome + Web trong cuộc sống</translation>
-<translation id="8934455786738644694">Kéo từ trên xuống và chạm vào nút quay lại để thoát khỏi chế độ toàn màn hình.</translation>
 <translation id="8941248009481596111">Kết nối của bạn tới trang web này ở chế độ riêng tư.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Không thể tiếp cận điều hướng: <ph name="URL" /></translation>
@@ -628,6 +630,7 @@ Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ 
 <translation id="9100610230175265781">Yêu cầu cụm mật khẩu</translation>
 <translation id="9133515669113036225">Đặt lại thông tin đăng nhập thiết bị</translation>
 <translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
+<translation id="9141510419986760385">Bạn đang chuyển các tài khoản đồng bộ hóa từ <ph name="FROM_ACCOUNT" /> về <ph name="TO_ACCOUNT" />. Bạn muốn làm gì với dấu trang, lịch sử, mật khẩu hiện có và các cài đặt khác?</translation>
 <translation id="9151532766011674069">Đã lưu dấu trang ngoại tuyến. Bộ nhớ sắp đầy.</translation>
 <translation id="917685106653909562">Trang Web trong cuộc sống lân cận</translation>
 <translation id="9187199695613236444">Chế độ xem thân thiện với thiết bị di động</translation>

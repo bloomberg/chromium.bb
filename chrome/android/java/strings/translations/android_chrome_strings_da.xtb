@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">Find websider, som genstande i nærheden sender. Chrome samler websider, der er tilknyttet genstande omkring dig, sender dem anonymt til en Google-tjeneste for at finde dem, der er mest nyttige for dig, og viser dem derefter.
 
 Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translation>
+<translation id="1254090737195733114">Vil du importere data?</translation>
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1285320974508926690">Oversæt aldrig dette website</translation>
@@ -108,6 +109,7 @@ Du kan kontrollere Fysisk web i indstillingerne for beskyttelse af personlige op
 <translation id="238909021488141516">Der opstod en fejl under download af indholdet.</translation>
 <translation id="2414886740292270097">Mørk</translation>
 <translation id="2433507940547922241">Udseende</translation>
+<translation id="2439248520967274840">Du er ved at logge ind på <ph name="TO_ACCOUNT" />. Noget af din historik og nogle af dine eksisterende bogmærker, adgangskoder og andre indstillinger blev tidligere synkroniseret med <ph name="FROM_ACCOUNT" />. Hvad vil du gøre med dine eksisterende data?</translation>
 <translation id="2440823041667407902">Placeringsadgang</translation>
 <translation id="2470327855284432041">Side på <ph name="PAGE_SIZE_STRING" /> blev gemt offline</translation>
 <translation id="2476578072172137802">Indstillinger for websitet</translation>
@@ -147,6 +149,7 @@ Du kan kontrollere Fysisk web i indstillingerne for beskyttelse af personlige op
 <translation id="2968755619301702150">Certifikatfremviser</translation>
 <translation id="2996291259634659425">Opret adgangssætning</translation>
 <translation id="2996809686854298943">En webadresse er påkrævet</translation>
+<translation id="3012408695656332380">Erstat denne enheds data med dataene fra <ph name="TO_ACCOUNT" />. Du kan hente dine eksisterende data ved at skifte tilbage til <ph name="FROM_ACCOUNT" />, men du mister de data, der er oprettet, efter du er logget ud.</translation>
 <translation id="3029704984691124060">Adgangssætningerne stemmer ikke overens</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjælp<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Gem video</translation>
@@ -214,7 +217,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="403659016947612156">Der er Fysisk web-sider i nærheden</translation>
 <translation id="4042870126885713738">Vis forslag, hvis en webadresse ikke bliver fundet, eller hvis der ikke kan oprettes forbindelse</translation>
 <translation id="4056223980640387499">Sepia</translation>
-<translation id="4059119910594077751">Tryk på tilbageknappen for at afslutte fuld skærm.</translation>
 <translation id="4062305924942672200">Juridiske oplysninger</translation>
 <translation id="4089831646916293264">Denne funktion kan forstyrre adgangen til eksklusive datatjenester, der leveres af dit mobilselskab.</translation>
 <translation id="4099578267706723511">Hjælp med at gøre Chrome bedre ved at sende brugsstatistik og nedbrudsrapporter til Google.</translation>
@@ -350,6 +352,7 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind i 
 <translation id="5676636989614905379">Videoen kan ikke afspilles på <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Blokeret</translation>
 <translation id="5684874026226664614">Ups! Denne side kunne ikke oversættes.</translation>
+<translation id="5708031556037168012">Behold eksisterende data på din enhed, og importér dem permanent til <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5712189971979076230">Hjælp os med at prioritere de funktioner og forbedringer, vi bør arbejde på, ved at sende oplysninger til Google om, hvilke filer, applikationer og tjenester, der kører, når du oplever nedbrud.
 
 Brugsstatistik indeholder oplysninger, såsom præferencer, antal klik på en knap og hukommelsesforbrug. De omfatter ikke webadresser eller personlige oplysninger. Nedbrudsrapporter indeholder systemoplysninger på tidspunktet for nedbruddet og kan indeholde webadresser eller personlige oplysninger, afhængigt af hvad der skete på tidspunktet for nedbruddet.</translation>
@@ -370,7 +373,6 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="585027516397408832">Datasparefunktionen er aktiveret</translation>
 <translation id="5860033963881614850">Fra</translation>
 <translation id="5869522115854928033">Gemte adgangskoder</translation>
-<translation id="588258955323874662">Fuld skærm</translation>
 <translation id="5899349522111170522">Opret en ny fil</translation>
 <translation id="5902828464777634901">Alle lokale data, der gemmes af websitet, herunder cookies, slettes</translation>
 <translation id="5911030830365207728">Google Oversæt</translation>
@@ -578,6 +580,7 @@ Husk, at du ikke er usynlig. Inkognitotilstanden skjuler ikke dine søgninger fo
 <translation id="8497726226069778601">Her er ikke noget at se… endnu</translation>
 <translation id="8514577642972634246">Slå inkognitotilstand til</translation>
 <translation id="8518901949365209398">Dette website benytter en svag sikkerhedskonfiguration (SHA-1-signaturer), så din forbindelse er muligvis ikke privat.</translation>
+<translation id="8525306231823319788">Fuld skærm</translation>
 <translation id="854522910157234410">Åbn denne side</translation>
 <translation id="8562452229998620586">Dine gemte adgangskoder vises her.</translation>
 <translation id="856481929701340285">Vis computerversion</translation>
@@ -609,7 +612,6 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Venter på oplysninger om forældre.</translation>
 <translation id="8931159598799892500">Chrome og Fysisk web</translation>
-<translation id="8934455786738644694">Træk fra toppen, og tryk på tilbageknappen igen for at afslutte fuld skærm.</translation>
 <translation id="8941248009481596111">Din forbindelse til dette website er privat.</translation>
 <translation id="8941729603749328384">www.eksempel.com</translation>
 <translation id="8959122750345127698">Navigationen er ikke mulig: <ph name="URL" /></translation>
@@ -628,6 +630,7 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
 <translation id="9133515669113036225">Nulstil loginoplysningerne for enheden</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
+<translation id="9141510419986760385">Du er ved at skifte synkroniseringskonto fra <ph name="FROM_ACCOUNT" /> til <ph name="TO_ACCOUNT" />. Hvad vil du gøre med dine eksisterende bogmærker, din historik, dine adgangskoder og andre indstillinger?</translation>
 <translation id="9151532766011674069">Bogmærket blev gemt offline. Der er næsten ikke mere lagerplads.</translation>
 <translation id="917685106653909562">Fysisk web-sider i nærheden</translation>
 <translation id="9187199695613236444">Mobilvenlig visning</translation>

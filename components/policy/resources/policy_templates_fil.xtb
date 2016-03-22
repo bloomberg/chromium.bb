@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fil">
 <translation id="101438888985615157">I-rotate ang screen nang 180 degrees</translation>
+<translation id="1015272884520659144">Tinutukoy ang listahan ng mga USB device na pinapahintulutang ma-detach mula sa kernel driver ng mga ito upang direktang magamit sa pamamagitan ng chrome.usb API sa loob ng isang web application. Ang mga entry ay mga pares ng Identifier ng USB Vendor at Identifier ng Produkto upang matukoy ang isang partikular na hardware.
+
+      Kung hindi na-configure ang patakarang ito, ituturing na walang laman ang listahan ng mga nade-detach na USB device.</translation>
 <translation id="1017967144265860778">Pamamahala ng power sa screen sa pag-log in</translation>
 <translation id="1019101089073227242">Itakda ang direktoryo ng data ng user</translation>
 <translation id="1022361784792428773">Ang mga ID ng Extension na dapat na iwasan ng user mula sa pag-install (o * para sa lahat)</translation>
@@ -235,6 +238,7 @@
 
       Kung hindi nakatakda ang setting na ito, mabubuksan ng mga user ang mga dialog ng pagpili ng file bilang karaniwan.</translation>
 <translation id="1897365952389968758">Pinapayagang magpatakbo ng JavaScript ang lahat ng mga site</translation>
+<translation id="193259052151668190">Whitelist ng mga nade-detach na USB device</translation>
 <translation id="1933378685401357864">Larawan na wallpaper</translation>
 <translation id="193900697589383153">Nagdaragdag ng button sa pag-logout sa tray ng system.
 
@@ -758,6 +762,7 @@
 <translation id="3528000905991875314">Paganahin ang mga kahaliling pahina ng error</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
 <translation id="3570008976476035109">I-block ang mga plugin sa mga site na ito</translation>
+<translation id="3591584750136265240">I-configure ang gawi sa pagpapatotoo sa pag-log in</translation>
 <translation id="3627678165642179114">Paganahin o huwag paganahin ang spell checking na serbisyo sa web</translation>
 <translation id="3646859102161347133">Itakda ang uri ng magnifier sa screen</translation>
 <translation id="3653237928288822292">Default na icon ng provider ng paghahanap</translation>
@@ -892,6 +897,7 @@
           Kung nakatakda ang patakarang ito sa 'Panatilihin ang cookies sa kabuuan ng session,' iki-clear ang cookies kapag nagsara ang session. Tandaan na kung tumatakbo ang <ph name="PRODUCT_NAME" /> sa 'background mode,' maaaring hindi magsara ang session kapag isinara ang huling window. Pakitingnan ang patakarang 'BackgroundModeEnabled' para sa higit pang impormasyon tungkol sa pagko-configure sa gawing ito.
 
           Kung hindi itatakda ang patakarang ito, gagamitin ang 'AllowCookies' at mababago ito ng user.</translation>
+<translation id="4103289232974211388">I-redirect sa SAML IdP pagkatapos ng kumpirmasyon ng user</translation>
 <translation id="410478022164847452">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay gagawa ng pagkilos kapag idle kapag tumatakbo habang nakasaksak sa kuryente.
 
           Kapag nakatakda ang patakarang ito, tinutukoy nito ang tagal ng oras na dapat manatiling idle ang user bago gawin ng <ph name="PRODUCT_OS_NAME" /> ang pagkilos kapag idle, na maaaring hiwalay na i-configure.
@@ -1926,6 +1932,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakaran ng 'DefaultPopupsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
 <translation id="7529144158022474049">Awtomatikong i-update ang scatter factor</translation>
+<translation id="7553535237300701827">Kapag itinakda ang patakarang ito, ang daloy ng pagpapatotoo sa impormasyon sa pag-log in ay magiging isa sa mga sumusunod na paraan, depende sa value ng setting:
+
+      Kung itatakda sa GAIA, gagawin ang pag-log in sa pamamagitan ng normal na daloy ng pagpapatotoo ng GAIA.
+
+      Kung itatakda sa SAML_INTERSTITIAL, makikita sa log in ang isang interstitial na screen na nag-aalok sa user na magpatuloy sa pagpapatotoo sa pamamagitan ng SAML IdP ng domain ng pag-enroll ng device, o bumalik sa normal na daloy ng pag-log in sa GAIA.</translation>
 <translation id="7567380065339179813">Pinapayagan ang mga plugin sa mga site na ito</translation>
 <translation id="7593523670408385997">Kino-configure ang laki ng cache na gagamitin ng <ph name="PRODUCT_NAME" /> sa pag-iimbak ng mga na-cache na file sa disk.
 
@@ -2314,6 +2325,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung hindi naitakda ang patakaran, o naitakda sa false, hindi ma-uulat ang lokasyon.</translation>
 <translation id="8828766846428537606">I-configure ang default na home page sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user sa pagbabago nito. Ang mga setting ng home page ng user ay lubos na naka-lock down lamang, kung pinili mo ang home page upang maging ang pahina ng bagong tab, o itakda ito upang maging URL at tumukoy ng URL ng home page. Kung hindi mo tutukuyin ang URL ng home page, maitatakda pa rin ung ser ang home page sa pahina ng bagong tab sa pamamagitan ng pagtukoy sa 'chrome://newtab'.</translation>
+<translation id="8833109046074170275">Pagpapatotoo sa pamamagitan ng default na daloy ng GAIA</translation>
 <translation id="8838303810937202360">Nagka-cache ang <ph name="PRODUCT_OS_NAME" /> ng Mga App at Extension para sa pag-install ng maraming user ng iisang device upang maiwasan ang pagda-download muli para sa bawat user.
       Kung hindi naka-configure ang patakaran na ito o ang value ay mas mababa sa 1 MB, gagamitin ng <ph name="PRODUCT_OS_NAME" /> ang default na laki ng cache.</translation>
 <translation id="8858642179038618439">Puwersahin ang YouTube Safety Mode</translation>

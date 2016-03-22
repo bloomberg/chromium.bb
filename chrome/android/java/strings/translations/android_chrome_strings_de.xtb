@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">Entdecken Sie Webseiten, die von Objekten in Ihrer Nähe übermittelt werden. Chrome trägt Webseiten zusammen, die sich auf Objekte in Ihrer Nähe beziehen, und schickt diese anonym an einen Google-Dienst. Die Webseiten, die für Sie besonders nützlich sind, werden Ihnen dann angezeigt.
 
 Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktiviert sein.</translation>
+<translation id="1254090737195733114">Daten importieren?</translation>
 <translation id="1258753120186372309">Google-Doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1285320974508926690">Diese Website nie übersetzen</translation>
@@ -108,6 +109,7 @@ Chrome sucht nach Seiten in Ihrer Nähe, wenn Ihr Gerät entsperrt ist. Diese Se
 <translation id="238909021488141516">Beim Herunterladen des Inhalts ist ein Fehler aufgetreten.</translation>
 <translation id="2414886740292270097">Dunkel</translation>
 <translation id="2433507940547922241">Darstellung</translation>
+<translation id="2439248520967274840">Sie melden sich gerade in <ph name="TO_ACCOUNT" /> an. Einige Ihrer bestehenden Lesezeichen, Ihrer Passwörter, Ihrer anderen Einstellungen sowie ein Teil Ihres Verlaufs wurden zuvor mit <ph name="FROM_ACCOUNT" /> synchronisiert. Was möchten Sie mit den vorhandenen Daten tun?</translation>
 <translation id="2440823041667407902">Standortzugriff</translation>
 <translation id="2470327855284432041">Seite mit <ph name="PAGE_SIZE_STRING" /> offline gespeichert</translation>
 <translation id="2476578072172137802">Website-Einstellungen</translation>
@@ -147,6 +149,7 @@ Chrome sucht nach Seiten in Ihrer Nähe, wenn Ihr Gerät entsperrt ist. Diese Se
 <translation id="2968755619301702150">Zertifikats-Viewer</translation>
 <translation id="2996291259634659425">Passphrase erstellen</translation>
 <translation id="2996809686854298943">URL erforderlich</translation>
+<translation id="3012408695656332380">Die Daten dieses Geräts werden durch die Daten von <ph name="TO_ACCOUNT" /> ersetzt. Wenn Sie Ihre bestehenden Daten abrufen möchten, wechseln Sie zurück zu <ph name="FROM_ACCOUNT" />. Daten, die Sie nach Ihrer Abmeldung erstellt haben, gehen jedoch verloren.</translation>
 <translation id="3029704984691124060">Passphrasen stimmen nicht überein.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Video speichern</translation>
@@ -214,7 +217,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="403659016947612156">Physical Web-Seiten in der Nähe vorhanden</translation>
 <translation id="4042870126885713738">Vorschläge einblenden, wenn eine Webadresse nicht gefunden oder keine Verbindung hergestellt werden kann</translation>
 <translation id="4056223980640387499">Sepia</translation>
-<translation id="4059119910594077751">Zum Beenden des Vollbilds auf die Zurück-Taste tippen.</translation>
 <translation id="4062305924942672200">Rechtliche Hinweise</translation>
 <translation id="4089831646916293264">Diese Funktion beeinträchtigt möglicherweise den Zugang zu Premium-Datendiensten, die von Ihrem Mobilfunkanbieter bereitgestellt werden.</translation>
 <translation id="4099578267706723511">Nutzungsstatistiken und Absturzberichte zur Verbesserung von Chrome an Google senden</translation>
@@ -350,6 +352,7 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5676636989614905379">Wiedergabe des Videos auf <ph name="SCREEN_NAME" /> nicht möglich.</translation>
 <translation id="5677928146339483299">Blockiert</translation>
 <translation id="5684874026226664614">Hoppla! Diese Seite konnte nicht übersetzt werden.</translation>
+<translation id="5708031556037168012">Vorhandene Daten bleiben auf dem Gerät erhalten und Daten werden dauerhaft in <ph name="TO_ACCOUNT" /> importiert.</translation>
 <translation id="5712189971979076230">Helfen Sie uns dabei, den Funktionen und Verbesserungen Priorität einzuräumen, die Ihnen wichtig sind, indem Sie Informationen über die Dateien, Anwendungen und Dienste, die zum Zeitpunkt eines Absturzes ausgeführt wurden, an Google senden.
 
 Nutzungsstatistiken enthalten Informationen wie Einstellungen, Klicks auf Schaltflächen und Speicherauslastung. URLs von Webseiten oder personenbezogene Daten sind darin nicht enthalten. Absturzberichte enthalten Systeminformationen zum Zeitpunkt des Absturzes. Je nachdem, was zu diesem Zeitpunkt gerade geschah, können auch URLs von Webseiten oder personenbezogene Daten erfasst werden.</translation>
@@ -370,7 +373,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="585027516397408832">Datenkomprimierung aktiviert</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
-<translation id="588258955323874662">Vollbild</translation>
 <translation id="5899349522111170522">Neue Datei erstellen</translation>
 <translation id="5902828464777634901">Alle von dieser Website gespeicherten lokalen Daten, einschließlich Cookies, werden gelöscht.</translation>
 <translation id="5911030830365207728">Google Übersetzer</translation>
@@ -578,6 +580,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="8497726226069778601">Noch keine Seiten</translation>
 <translation id="8514577642972634246">Inkognitomodus aktivieren</translation>
 <translation id="8518901949365209398">Diese Website verwendet eine schwache Sicherheitskonfiguration (SHA-1-Signaturen). Daher ist Ihre Verbindung möglicherweise nicht geschützt.</translation>
+<translation id="8525306231823319788">Vollbildmodus</translation>
 <translation id="854522910157234410">Diese Seite öffnen</translation>
 <translation id="8562452229998620586">Gespeicherte Passwörter erscheinen hier.</translation>
 <translation id="856481929701340285">Desktop-Version anfordern</translation>
@@ -609,7 +612,6 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="8912362522468806198">Google-Konto</translation>
 <translation id="8920114477895755567">Warten auf Details zu den Eltern</translation>
 <translation id="8931159598799892500">Chrome + Physical Web</translation>
-<translation id="8934455786738644694">Zum Beenden des Vollbilds von oben ziehen und auf die Zurück-Taste tippen.</translation>
 <translation id="8941248009481596111">Ihre Verbindung zu dieser Website ist privat.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Navigation nicht möglich: <ph name="URL" /> ist nicht erreichbar.</translation>
@@ -628,6 +630,7 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="9100610230175265781">Passphrase erforderlich</translation>
 <translation id="9133515669113036225">Anmeldedaten des Geräts zurücksetzen</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
+<translation id="9141510419986760385">Sie stellen die Kontosynchronisierung von <ph name="FROM_ACCOUNT" /> auf <ph name="TO_ACCOUNT" /> um. Was möchten Sie mit Ihren bestehenden Lesezeichen, Ihrem Verlauf, Ihren Passwörtern und anderen Einstellungen tun?</translation>
 <translation id="9151532766011674069">Lesezeichen offline gespeichert. Der Speicher ist fast voll.</translation>
 <translation id="917685106653909562">Physical Web-Seiten zu Objekten in der Nähe</translation>
 <translation id="9187199695613236444">Für Mobilgeräte optimierte Ansicht</translation>

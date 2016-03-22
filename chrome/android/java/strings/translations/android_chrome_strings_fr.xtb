@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">Découvrez des pages Web envoyées par des objets à proximité. Chrome réunit les pages Web associées aux objets qui vous entourent, les envoie de manière anonyme à un service Google pour déterminer celles qui vous sont les plus utiles, puis les affiche.
 
 Vous devez activer le Bluetooth et les services de localisation pour utiliser le Web physique.</translation>
+<translation id="1254090737195733114">Importer les données ?</translation>
 <translation id="1258753120186372309">Doodle : <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Arrêter</translation>
 <translation id="1285320974508926690">Ne jamais traduire ce site</translation>
@@ -108,6 +109,7 @@ Vous pouvez contrôler le Web physique dans les paramètres de confidentialité 
 <translation id="238909021488141516">Une erreur s'est produite lors du téléchargement du contenu.</translation>
 <translation id="2414886740292270097">Foncé</translation>
 <translation id="2433507940547922241">Apparence</translation>
+<translation id="2439248520967274840">Vous vous connectez au compte <ph name="TO_ACCOUNT" />. Certains de vos favoris, votre historique, vos mots de passe et d'autres paramètres ont déjà été synchronisés avec le compte <ph name="FROM_ACCOUNT" />. Que souhaitez-vous faire de vos données ?</translation>
 <translation id="2440823041667407902">Accès à la position</translation>
 <translation id="2470327855284432041">Page enregistrée pour accès hors connexion (<ph name="PAGE_SIZE_STRING" />)</translation>
 <translation id="2476578072172137802">Paramètres du site</translation>
@@ -147,6 +149,7 @@ Vous pouvez contrôler le Web physique dans les paramètres de confidentialité 
 <translation id="2968755619301702150">Lecteur de certificat</translation>
 <translation id="2996291259634659425">Créer une phrase secrète</translation>
 <translation id="2996809686854298943">Veuillez saisir une URL.</translation>
+<translation id="3012408695656332380">Remplacer les données de cet appareil par celles du compte <ph name="TO_ACCOUNT" />. Notez que vous pouvez récupérer vos données en repassant sur le compte <ph name="FROM_ACCOUNT" />. En revanche, les données créées depuis que vous vous êtes déconnecté seront perdues.</translation>
 <translation id="3029704984691124060">Les phrases secrètes ne correspondent pas.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Enregistrer la vidéo</translation>
@@ -214,7 +217,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="403659016947612156">Pages Web physique à proximité</translation>
 <translation id="4042870126885713738">Afficher d'autres solutions lorsqu'une adresse Web ne peut pas être résolue ou qu'une connexion ne peut pas être établie</translation>
 <translation id="4056223980640387499">Sépia</translation>
-<translation id="4059119910594077751">Appuyez sur le bouton Retour pour quitter le mode plein écran.</translation>
 <translation id="4062305924942672200">Informations légales</translation>
 <translation id="4089831646916293264">Cette fonctionnalité peut perturber l'accès aux services de données premium fournis par votre opérateur.</translation>
 <translation id="4099578267706723511">Envoyez des statistiques d'utilisation et des rapports d'erreur pour améliorer Chrome.</translation>
@@ -351,6 +353,7 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5676636989614905379">Impossible de lire la vidéo sur "<ph name="SCREEN_NAME" />".</translation>
 <translation id="5677928146339483299">Bloqué</translation>
 <translation id="5684874026226664614">Petit problème… Impossible de traduire cette page.</translation>
+<translation id="5708031556037168012">Maintenir les données déjà enregistrées sur votre appareil et importer les données sur le compte <ph name="TO_ACCOUNT" /> de manière permanente.</translation>
 <translation id="5712189971979076230">Aidez-nous à identifier les fonctionnalités et les améliorations sur lesquelles nous devons travailler en priorité en nous envoyant des informations sur les fichiers, les applications et les services en cours d'exécution au moment où vous constatez un plantage.
 
 Les statistiques d'utilisation englobent des informations telles que les préférences, les clics sur les boutons et l'utilisation de la mémoire. Elles n'incluent pas d'URL de pages Web ni d'informations personnelles. Les rapports d'erreur contiennent des informations relatives au système au moment du plantage, et peuvent contenir des URL de pages Web ou des informations personnelles, en fonction des activités en cours lors de l'incident.</translation>
@@ -371,7 +374,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="585027516397408832">Économiseur de données activé</translation>
 <translation id="5860033963881614850">Désactivé</translation>
 <translation id="5869522115854928033">Mots de passe enregistrés</translation>
-<translation id="588258955323874662">Plein écran</translation>
 <translation id="5899349522111170522">Créer un fichier</translation>
 <translation id="5902828464777634901">Toutes les données locales stockées par ce site, y compris les cookies, seront supprimées.</translation>
 <translation id="5911030830365207728">Google Traduction</translation>
@@ -579,6 +581,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="8497726226069778601">Aucune page à afficher pour le moment</translation>
 <translation id="8514577642972634246">Activer le mode navigation privée</translation>
 <translation id="8518901949365209398">Ce site utilise une configuration de sécurité faible (signatures SHA-1). Il est donc possible que votre connexion ne soit pas privée.</translation>
+<translation id="8525306231823319788">Plein écran</translation>
 <translation id="854522910157234410">Ouvrir cette page</translation>
 <translation id="8562452229998620586">Les mots de passe enregistrés s'affichent ici.</translation>
 <translation id="856481929701340285">Voir version ordinateur</translation>
@@ -610,7 +613,6 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="8912362522468806198">Compte Google</translation>
 <translation id="8920114477895755567">En attente des coordonnées des parents…</translation>
 <translation id="8931159598799892500">Chrome et le Web physique</translation>
-<translation id="8934455786738644694">Pour quitter le mode plein écran, faites glisser un doigt du haut vers le bas, puis appuyez sur le bouton Retour.</translation>
 <translation id="8941248009481596111">Votre connexion à ce site est privée.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Impossible d'accéder à <ph name="URL" />.</translation>
@@ -629,6 +631,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="9100610230175265781">Veuillez saisir la phrase secrète.</translation>
 <translation id="9133515669113036225">Réinitialiser les identifiants de l'appareil</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
+<translation id="9141510419986760385">Vous changez de compte synchronisé pour passer de <ph name="FROM_ACCOUNT" /> à <ph name="TO_ACCOUNT" />. Que souhaitez-vous faire des favoris, de l'historique, des mots de passe et des autres paramètres actuels ?</translation>
 <translation id="9151532766011674069">Une copie du favori accessible hors connexion a bien été enregistrée. La mémoire de stockage est presque pleine.</translation>
 <translation id="917685106653909562">Pages Web physique à proximité</translation>
 <translation id="9187199695613236444">Affichage adapté au mobile</translation>

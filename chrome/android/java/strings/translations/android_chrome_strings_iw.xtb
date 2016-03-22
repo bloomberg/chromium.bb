@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">‏תוכל לגלות דפי אינטרנט שנשלחו על ידי אובייקטים בקרבת מקום. Chrome אוסף דפי אינטרנט המשויכים לאובייקטים בסביבה, ושולח אותם בצורה אנונימית לשירות של Google כדי למצוא את הדפים המועילים ביותר עבורך. לאחר מכן הוא מציג אותם.
 
 כדי להשתמש באינטרנט הווירטופיזי, עליך להפעיל את Bluetooth ואת שירותי המיקום.</translation>
+<translation id="1254090737195733114">האם לייבא נתונים?</translation>
 <translation id="1258753120186372309">‏דודל של Google‏: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">הפסק</translation>
 <translation id="1285320974508926690">לעולם אל תתרגם אתר זה</translation>
@@ -108,6 +109,7 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="238909021488141516">אירעה שגיאה בזמן הורדת התוכן.</translation>
 <translation id="2414886740292270097">כהה</translation>
 <translation id="2433507940547922241">מראה</translation>
+<translation id="2439248520967274840">אתה נכנס אל <ph name="TO_ACCOUNT" />. חלק מהסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות סונכרנו בעבר עם <ph name="FROM_ACCOUNT" />. מה ברצונך לעשות עם הנתונים הקיימים?</translation>
 <translation id="2440823041667407902">גישה למיקום</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> הדף נשמר באופן לא מקוון</translation>
 <translation id="2476578072172137802">הגדרות אתר</translation>
@@ -147,6 +149,7 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="2968755619301702150">מציג האישורים</translation>
 <translation id="2996291259634659425">יצירת ביטוי סיסמה</translation>
 <translation id="2996809686854298943">דרושה כתובת אתר</translation>
+<translation id="3012408695656332380">החלף את נתוני המכשיר הזה בנתונים של <ph name="TO_ACCOUNT" />. תוכל לאחזר את הנתונים הקיימים שלך על-ידי מעבר חזרה אל <ph name="FROM_ACCOUNT" />, אך הנתונים שנצברו מאז שיצאת מהחשבון לא יישמרו.</translation>
 <translation id="3029704984691124060">ביטויי הסיסמה אינם תואמים</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">שמור סרטון</translation>
@@ -214,7 +217,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="403659016947612156">דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
 <translation id="4042870126885713738">הצג הצעות כאשר כתובת אינטרנט אינה מזוהה או כשלא ניתן ליצור חיבור</translation>
 <translation id="4056223980640387499">חום-ספיה</translation>
-<translation id="4059119910594077751">כדי לצאת ממסך מלא, גע בלחצן 'הקודם'.</translation>
 <translation id="4062305924942672200">מידע משפטי</translation>
 <translation id="4089831646916293264">התכונה הזו עשויה להפריע לגישה אל שירותי נתונים בתשלום הניתנים על ידי הספק שלך.</translation>
 <translation id="4099578267706723511">‏עזור לשפר את Chrome על ידי שליחה של סטטיסטיקת שימוש ודוחות קריסה אל Google.</translation>
@@ -350,6 +352,7 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="5676636989614905379">לא ניתן להפעיל את הסרטון ב-<ph name="SCREEN_NAME" /></translation>
 <translation id="5677928146339483299">במצב חסום</translation>
 <translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
+<translation id="5708031556037168012">שמור את הנתונים הקיימים במכשיר וייבא לצמיתות את הנתונים אל <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5712189971979076230">‏כדי לעזור לנו לקבוע את סדר העדיפויות לגבי תכונות ושיפורים שעלינו לעבוד עליהם, שלח ל-Google מידע על הקבצים, על האפליקציות ועל השירותים הפועלים בזמן שאתה נתקל בקריסה.
 
 סטטיסטיקות השימוש כוללות מידע כגון העדפות, לחיצות על לחצנים ושימוש בזיכרון. הן אינן כוללות כתובות של דפי אינטרנט או מידע אישי. דוחות קריסה מכילים מידע על המערכת בזמן הקריסה, והם עשויים להכיל כתובות של דפי אינטרנט או מידע אישי, בהתאם למתרחש בזמן הקריסה.</translation>
@@ -370,7 +373,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="585027516397408832">‏חוסך הנתונים (Data Saver) מופעל</translation>
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="5869522115854928033">סיסמאות שמורות</translation>
-<translation id="588258955323874662">מסך מלא</translation>
 <translation id="5899349522111170522">צור קובץ חדש</translation>
 <translation id="5902828464777634901">‏כל הנתונים המקומיים המאוחסנים על ידי האתר הזה יימחקו, כולל קובצי Cookie.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -578,6 +580,7 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="8497726226069778601">אין מה לראות כאן… בינתיים</translation>
 <translation id="8514577642972634246">עבור למצב גלישה בסתר</translation>
 <translation id="8518901949365209398">‏באתר הזה נעשה שימוש בתצורת אבטחה חלשה (חתימות SHA-1), כך שייתכן שהחיבור שלך לא יהיה פרטי.</translation>
+<translation id="8525306231823319788">מסך מלא</translation>
 <translation id="854522910157234410">פתח דף זה</translation>
 <translation id="8562452229998620586">הסיסמאות השמורות יופיעו כאן.</translation>
 <translation id="856481929701340285">בקש אתר לשולחן העבודה</translation>
@@ -607,7 +610,6 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="8912362522468806198">‏חשבון Google</translation>
 <translation id="8920114477895755567">ממתין לפרטי ההורים.</translation>
 <translation id="8931159598799892500">‏Chrome + האינטרנט הווירטופיזי</translation>
-<translation id="8934455786738644694">כדי לצאת ממסך מלא, גרור מלמעלה וגע בלחצן 'הקודם'.</translation>
 <translation id="8941248009481596111">החיבור שלך לאתר זה הוא פרטי.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">הניווט לא אפשרי: <ph name="URL" /></translation>
@@ -626,6 +628,7 @@ Chrome יחפש דפים בקרבת מקום כשהמכשיר אינו נעול.
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9133515669113036225">אפס את פרטי הכניסה של המכשיר</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
+<translation id="9141510419986760385">אתה מחליף חשבונות סינכרון מ-<ph name="FROM_ACCOUNT" /> ל-<ph name="TO_ACCOUNT" />. מה ברצונך לעשות עם הסימניות, ההיסטוריה, הסיסמאות ושאר ההגדרות הקיימות?</translation>
 <translation id="9151532766011674069">הסימניה נשמרה במצב לא מקוון. מיצית כמעט את כל נפח האחסון.</translation>
 <translation id="917685106653909562">דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
 <translation id="9187199695613236444">תצוגה מותאמת למכשירים ניידים</translation>

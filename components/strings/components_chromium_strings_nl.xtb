@@ -6,7 +6,6 @@
 <translation id="3550966579244642892">De eerste configuratie van Chromium OS is niet voltooid.</translation>
 <translation id="3748537968684000502">Je bekijkt een veilige Chromium-pagina.</translation>
 <translation id="4365115785552740256">Chromium wordt mogelijk gemaakt door het <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> open-sourceproject en andere <ph name="BEGIN_LINK_OSS" />open-sourcesoftware<ph name="END_LINK_OSS" />.</translation>
-<translation id="4404275227760602850">Ga naar het Chromium-menu &gt; Instellingen &gt; (Geavanceerd) Privacy en schakel 'Paginabronnen prefetchen' uit. Als het probleem hiermee niet wordt opgelost, raden we je aan deze optie weer in te schakelen voor verbeterde prestaties.</translation>
 <translation id="4559775032954821361">Ga naar
           het menu 'Chromium' &gt;
           <ph name="SETTINGS_TITLE" />
@@ -35,6 +34,5 @@
           Als het probleem aanhoudt, adviseren we deze optie weer aan te
           vinken voor betere prestaties.</translation>
 <translation id="8187289872471304532">Ga naar 'Applicaties &gt; Systeemvoorkeuren &gt; Netwerk &gt; Geavanceerd &gt; Proxy's' en verwijder de vinkjes bij proxyservers die zijn aangevinkt.</translation>
-<translation id="8610831143142469229">Chromium via je firewall- of antivirusinstellingen toestaan het netwerk te gebruiken.</translation>
 <translation id="8684913864886094367">Chromium is niet goed afgesloten.</translation>
 </translationbundle>

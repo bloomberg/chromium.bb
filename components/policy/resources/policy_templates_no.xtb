@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="101438888985615157">Rotér skjermen 180 grader</translation>
+<translation id="1015272884520659144">Definerer listen over USB-enheter som kan kobles fra kjernedriveren, så de kan brukes via chrome.usb API direkte i nettprogrammer. Oppføringene er par av leverandør- og produktkoder som identifiserer spesifikke USB-enheter.
+
+      Hvis denne regelen ikke er spesifisert, anses listen over frakoblingsbare USB-enheter for å være tom.</translation>
 <translation id="1017967144265860778">Strømstyring på påloggingssiden</translation>
 <translation id="1019101089073227242">Angi katalog for brukerdata</translation>
 <translation id="1022361784792428773">Utvidelses-ID-er brukeren skal hindres i å installere (eller * for alle)</translation>
@@ -228,6 +231,7 @@
 
       Hvis denne innstillingen ikke er angitt, kan brukerne åpne filutvalgdialogene som normalt.</translation>
 <translation id="1897365952389968758">Tillat alle nettsteder å kjøre JavaScript</translation>
+<translation id="193259052151668190">Godkjenningsliste for frakoblingsbare USB-enheter</translation>
 <translation id="1933378685401357864">Bakgrunnsbilde</translation>
 <translation id="193900697589383153">Legger til en avlogginsknapp i systemstatusfeltet.
 
@@ -727,6 +731,7 @@
 <translation id="3528000905991875314">Aktiver alternative feilsider</translation>
 <translation id="3547954654003013442">Innstillinger for proxy-tjener</translation>
 <translation id="3570008976476035109">Blokkér programtillegg på disse nettstedene</translation>
+<translation id="3591584750136265240">Konfigurer autentiseringsatferden ved pålogging</translation>
 <translation id="3627678165642179114">Aktiver eller deaktiver nett-tjeneste for stavekontroll</translation>
 <translation id="3646859102161347133">Angi skjermforstørrelsestype</translation>
 <translation id="3653237928288822292">Ikon for standard søkeleverandør</translation>
@@ -849,6 +854,7 @@
           Hvis denne regelen settes til «Behold informasjonskapsler så lenge økten varer», blir informasjonskapslene slettet når økten avsluttes. Vær oppmerksom på at hvis <ph name="PRODUCT_NAME" /> kjører i «bakgrunnsmodus», kan det hende økten ikke avsluttes når det siste vinduet lukkes. Se regelen «BackgroundModeEnabled» for å få mer informasjon om konfigurering av denne atferden.
 
           Hvis denne regelen ikke spesifiseres, brukes «AllowCookies», og brukeren kan endre innstillingen.</translation>
+<translation id="4103289232974211388">Viderekoble til SAML IdP etter at brukeren har bekreftet</translation>
 <translation id="410478022164847452">Angir hvor lenge brukeren kan være inaktiv før inaktivitetshandlingen blir utført når enheten kjører på vekselstrøm.
 
           Når denne innstillingen er konfigurert, angir den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME" /> utfører inaktivitetshandlingen, som kan konfigureres separat.
@@ -1865,6 +1871,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder fra retningslinjen DefaultPopupsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
 <translation id="7529144158022474049">Automatisk oppdatering av spredningsfaktor</translation>
+<translation id="7553535237300701827">Når denne regelen er angitt, blir autentiseringsprosessen ved pålogging ett av de følgende alternativene, avhengig av verdien for innstillingen:
+
+      Hvis den settes til GAIA, gjøres påloggingen via den normale GAIA-autentiseringsprosessen.
+
+      Hvis den settes til SAML_INTERSTITIAL, vises en mellomskjerm under påloggingen der brukeren kan velge å gå videre med autentiseringen via SAML IdP-en for enhetens registreringsdomene eller gå tilbake til den normale GAIA-påloggingsprosessen.</translation>
 <translation id="7567380065339179813">Tillat programtillegg på disse nettstedene</translation>
 <translation id="7593523670408385997">Konfigurerer bufferstørrelsen som <ph name="PRODUCT_NAME" /> bruker for lagring av bufrede filer på disken.
 
@@ -2236,6 +2247,7 @@ programtillegg. Shockwave Flash-programtillegget tilhører for eksempel Adobe Fl
 
       Hvis denne innstillingen ikke er angitt, eller er satt til «false», blir ikke posisjonen rapportert.</translation>
 <translation id="8828766846428537606">Angir standard startside i <ph name="PRODUCT_NAME" /> og forhindrer brukerne i å endre den. Brukerens innstillinger for startside blir kun fullstendig overstyrt dersom du enten angir nettstedet på siden Ny fane som startside, eller angir den til å være en spesifikk nettadresse du velger. Hvis du ikke spesifiserer nettadressen for startsiden, kan brukeren fremdeles angi nettstedet på siden Ny fane som startside ved å spesifisere «chrome://newtab».</translation>
+<translation id="8833109046074170275">Autentisering via den normale GAIA-prosessen</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> bufrer apper og utvidelser som skal installeres av flere brukere på én enkelt enhet, for å unngå å laste dem ned på nytt for hver bruker.
       Hvis denne regelen ikke er konfigurert, eller hvis verdien er lavere enn 1 MB, bruker <ph name="PRODUCT_OS_NAME" /> standardbufferstørrelsen.</translation>
 <translation id="8858642179038618439">Bruk tvungen sikkerhetsmodus i YouTube</translation>

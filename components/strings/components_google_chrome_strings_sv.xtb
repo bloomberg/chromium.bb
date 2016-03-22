@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">Ändringarna börjar gälla nästa gång du startar Google Chrome.</translation>
 <translation id="3444832043240812445">Du måste <ph name="BEGIN_LINK" />aktivera kraschrapportering<ph name="END_LINK" /> för att information om de senaste krascherna ska visas på den här sidan.</translation>
 <translation id="4010643444566880169">Den första konfigureringen av Chrome OS har inte slutförts.</translation>
-<translation id="5423788048750135178">Öppna Chrome-menyn &gt; Inställningar &gt; (Avancerat) Sekretess
-          och inaktivera Förhandshämta sidresurser.
-          Om det inte hjälper rekommenderar vi att du aktiverar alternativet
-          igen vilket ger bättre prestanda.</translation>
 <translation id="6011049234605203654">Öppna
           Chrome-menyn &gt;
           <ph name="SETTINGS_TITLE" />
@@ -38,8 +34,6 @@
           &gt;
           LAN-inställningar
           och avmarkera Använd en proxyserver för nätverket.</translation>
-<translation id="7396375882099008034">Tillåt att Chrome får åtkomst till nätverket i inställningarna för brandväggen eller
-        antivirusprogrammet.</translation>
 <translation id="8187289872471304532">Öppna
           Program &gt; Systeminställningar &gt; Nätverk &gt; Avancerat &gt; Proxyservrar
           och avmarkera alla proxyservrar.</translation>

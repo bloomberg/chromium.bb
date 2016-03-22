@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">发现附近物体发送的网页。Chrome 会收集与您附近物体相关联的网页，并将这些网页以匿名方式发送给 Google 服务，以找到并显示对您而言最实用的网页。
 
 您必须开启蓝牙和位置信息功能才能使用实物网。</translation>
+<translation id="1254090737195733114">要导入数据吗？</translation>
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">停止</translation>
 <translation id="1285320974508926690">一律不翻译此网站</translation>
@@ -108,6 +109,7 @@
 <translation id="238909021488141516">下载该内容时出现错误。</translation>
 <translation id="2414886740292270097">深色调</translation>
 <translation id="2433507940547922241">外观</translation>
+<translation id="2439248520967274840">您正要登录 <ph name="TO_ACCOUNT" />。部分现有书签、历史记录、密码及其他设置之前已同步到 <ph name="FROM_ACCOUNT" />。您希望如何处理现有数据？</translation>
 <translation id="2440823041667407902">位置信息使用权</translation>
 <translation id="2470327855284432041">已离线保存该网页 (<ph name="PAGE_SIZE_STRING" />)</translation>
 <translation id="2476578072172137802">网站设置</translation>
@@ -147,6 +149,7 @@
 <translation id="2968755619301702150">证书查看器</translation>
 <translation id="2996291259634659425">创建密码</translation>
 <translation id="2996809686854298943">必须提供网址</translation>
+<translation id="3012408695656332380">将这台设备的数据替换为 <ph name="TO_ACCOUNT" /> 的数据。您可以切换回 <ph name="FROM_ACCOUNT" /> 来获取现有数据，但自您退出后创建的数据将会丢失。</translation>
 <translation id="3029704984691124060">密码不匹配</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">保存视频</translation>
@@ -214,7 +217,6 @@
 <translation id="403659016947612156">附近有实物网网页</translation>
 <translation id="4042870126885713738">无法解析网址或无法建立连接时显示建议</translation>
 <translation id="4056223980640387499">棕色调</translation>
-<translation id="4059119910594077751">触摸“返回”按钮即可退出全屏模式。</translation>
 <translation id="4062305924942672200">法律信息</translation>
 <translation id="4089831646916293264">此功能可能会导致您无法使用运营商提供的付费数据网络服务。</translation>
 <translation id="4099578267706723511">将使用情况统计信息和崩溃报告发送给 Google，帮助我们完善 Chrome。</translation>
@@ -350,6 +352,7 @@
 <translation id="5676636989614905379">无法在<ph name="SCREEN_NAME" />上播放视频。</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
 <translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
+<translation id="5708031556037168012">将现有数据保留在您的设备上，并将这些数据永久导入到 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="5712189971979076230">将发生崩溃时正在运行的文件、应用和服务的相关信息发送给 Google，协助我们确定应优先推出和改进哪些功能。
 
 使用情况统计信息包含偏好设置、按钮点击次数和内存使用情况之类的信息，但不包含网页网址或任何个人信息。崩溃报告包含发生崩溃时的系统信息，并可能包含网页网址或个人信息，具体取决于发生崩溃时的情况。</translation>
@@ -370,7 +373,6 @@
 <translation id="585027516397408832">流量节省程序已启用</translation>
 <translation id="5860033963881614850">关闭</translation>
 <translation id="5869522115854928033">已保存的密码</translation>
-<translation id="588258955323874662">全屏</translation>
 <translation id="5899349522111170522">创建新文件</translation>
 <translation id="5902828464777634901">该网站存储的所有本地数据（包括 Cookie）都将被删除。</translation>
 <translation id="5911030830365207728">Google 翻译</translation>
@@ -578,6 +580,7 @@
 <translation id="8497726226069778601">目前还未列出任何网页…</translation>
 <translation id="8514577642972634246">进入隐身模式</translation>
 <translation id="8518901949365209398">此网站使用了安全系数较低的安全配置（SHA-1 签名），因此您的连接可能不具有私密性。</translation>
+<translation id="8525306231823319788">全屏</translation>
 <translation id="854522910157234410">打开此网页</translation>
 <translation id="8562452229998620586">已保存的密码将显示在这里。</translation>
 <translation id="856481929701340285">请求切换到桌面版网站</translation>
@@ -609,7 +612,6 @@
 <translation id="8912362522468806198">Google 帐户</translation>
 <translation id="8920114477895755567">正在等待获取家长的详细信息。</translation>
 <translation id="8931159598799892500">Chrome + 实物网</translation>
-<translation id="8934455786738644694">从顶部向下拖动并触摸“返回”按钮，即可退出全屏模式。</translation>
 <translation id="8941248009481596111">您与此网站建立的是私密连接。</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">无法访问 <ph name="URL" /></translation>
@@ -628,6 +630,7 @@
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9133515669113036225">重置设备凭据</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
+<translation id="9141510419986760385">您正要将同步帐户从 <ph name="FROM_ACCOUNT" /> 切换到 <ph name="TO_ACCOUNT" />。您希望如何处理现有书签、历史记录、密码及其他设置？</translation>
 <translation id="9151532766011674069">书签已离线保存，但存储空间即将用尽。</translation>
 <translation id="917685106653909562">附近的“实物网”网页</translation>
 <translation id="9187199695613236444">适合在移动设备上浏览的视图</translation>

@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">Spremembe bodo začele veljati ob naslednjem zagonu Google Chroma.</translation>
 <translation id="3444832043240812445">Ta stran prikazuje informacije o zadnjih zrušitvah, samo če <ph name="BEGIN_LINK" />omogočite poročanje o zrušitvah<ph name="END_LINK" />.</translation>
 <translation id="4010643444566880169">OS Chrome ni dokončal začetne nastavitve.</translation>
-<translation id="5423788048750135178">Odprite Chromov meni &gt; Nastavitve &gt; (Dodatno) Zasebnost
-          in onemogočite »Vnaprej prenesi sredstva strani«.
-          Če s tem ne odpravite težave, priporočamo, da možnost znova
-          omogočite zaradi izboljšanega delovanja.</translation>
 <translation id="6011049234605203654">Odprite
           Chromov meni &gt;
           <ph name="SETTINGS_TITLE" />
@@ -38,8 +34,6 @@
           &gt;
           Nastavitve lokalnega omrežja
           in počistite potrditveno polje »Uporabi namestniški strežnik za lokalno omrežje«.</translation>
-<translation id="7396375882099008034">V nastavitvah požarnega zidu ali protivirusnega programa omogočite Chromu dostop do
-        omrežja.</translation>
 <translation id="8187289872471304532">Odprite
           Aplikacije &gt; Sistemske nastavitve &gt; Omrežje &gt; Dodatno &gt; Namestniški strežniki
           in počistite polja z označenimi namestniškimi strežniki.</translation>

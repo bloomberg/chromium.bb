@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">Yaptığınız değişiklikler Google Chrome'u yeniden başlattığınızda geçerli olacak.</translation>
 <translation id="3444832043240812445"><ph name="BEGIN_LINK" />Kilitlenme bildirmeyi etkinleştirdiyseniz<ph name="END_LINK" />, bu sayfada yalnızca, karşılaştığınız son kilitlenme olayları hakkında bilgiler gösterilir.</translation>
 <translation id="4010643444566880169">Chrome OS ilk kurulumu tamamlayamadı.</translation>
-<translation id="5423788048750135178">Chrome menüsü &gt; Ayarlar &gt; (Gelişmiş) Gizlilik'e gidin
-          ve "Sayfa kaynaklarını ön getir"in işaretini kaldırın.
-          Bu işlem sorunu çözmezse performansın iyileşmesi için bu seçeneği tekrar
-          etkinleştirmenizi öneririz.</translation>
 <translation id="6011049234605203654">Chrome menüsü &gt;
           <ph name="SETTINGS_TITLE" />
           &gt;
@@ -34,8 +30,6 @@
           &gt;
           LAN Ayarları
           öğesine gidin ve "LAN için proxy sunucusu kullan" seçeneğinin işaretini kaldırın.</translation>
-<translation id="7396375882099008034">Güvenlik duvarınızın veya virüsten korunma programınızın ayarlarından, Chrome'un ağa erişmesine
-        izin verin.</translation>
 <translation id="8187289872471304532">Uygulamalar &gt; Sistem Tercihleri &gt; Ağ &gt; Gelişmiş &gt; Proxy'ler
           öğesine gidin ve seçilmiş olabilecek proxy'lerin seçimini kaldırın.</translation>
 </translationbundle>

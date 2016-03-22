@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">Chromium OS chưa hoàn thành thiết lập ban đầu.</translation>
 <translation id="3748537968684000502">Bạn đang xem trang Chromium an toàn.</translation>
 <translation id="4365115785552740256">Chromium trở nên khả thi là nhờ dự án nguồn mở <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> và các <ph name="BEGIN_LINK_OSS" />phần mềm nguồn mở<ph name="END_LINK_OSS" /> khác.</translation>
-<translation id="4404275227760602850">Chuyển đến menu Chromium &gt; Cài đặt &gt; Bảo mật (Nâng cao)
-          và tắt "Tìm nạp trước tài nguyên trang".
-          Nếu cách này không giải quyết được sự cố thì chúng tôi khuyên bạn nên bật lại tùy chọn này
-          để cải thiện hiệu suất.</translation>
 <translation id="4559775032954821361">Đi tới
           menu Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -40,7 +36,5 @@
 <translation id="8187289872471304532">Đi tới
           Ứng dụng&gt; Tùy chọn hệ thống &gt; Mạng &gt; Nâng cao &gt; Proxy
           và bỏ chọn bất kỳ proxy nào đã được chọn.</translation>
-<translation id="8610831143142469229">Cho phép Chrome truy cập mạng trong cài đặt tường lửa hoặc diệt vi-rút 
-        của bạn.</translation>
 <translation id="8684913864886094367">Chromium không tắt đúng cách.</translation>
 </translationbundle>

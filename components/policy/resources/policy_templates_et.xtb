@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="et">
 <translation id="101438888985615157">Ekraani pööramine 180 kraadi</translation>
+<translation id="1015272884520659144">Luuakse loend USB-seadmetest, mis lubatakse eemaldada tuumadraiverist, et neid veebirakenduses otse chrome.usb API kaudu kasutada. Kirjed on USB teenusepakkuja ID-de ja toote ID-de paarid, mille abil konkreetne riistvara tuvastada.
+
+      Kui see reegel jäetakse seadistamata, peetakse eemaldatavate USB-seadmete loendit tühjaks.</translation>
 <translation id="1017967144265860778">Toitehaldus sisselogimiskuval</translation>
 <translation id="1019101089073227242">Kasutaja andmete kataloogi määramine</translation>
 <translation id="1022361784792428773">Laienduste ID-d, mida kasutajatel ei ole lubatud installida (märk * keelab kõik)</translation>
@@ -235,6 +238,7 @@
 
       Kui jätate seade määramata, siis saavad kasutajad failide avamise dialoogiaknad tavapärasel moel avada.</translation>
 <translation id="1897365952389968758">Luba kõikidel saitidel JavaScripti käitamine</translation>
+<translation id="193259052151668190">Eemaldatavate USB-seadmete lubatud üksuste loend</translation>
 <translation id="1933378685401357864">Taustapildi kujutis</translation>
 <translation id="193900697589383153">Lisab väljalogimisnupu süsteemisalve.
 
@@ -749,6 +753,7 @@
 <translation id="3528000905991875314">Luba alternatiivsed vealehed</translation>
 <translation id="3547954654003013442">Puhverserveri seaded</translation>
 <translation id="3570008976476035109">Blokeeri pistikprogrammid nendel saitidel</translation>
+<translation id="3591584750136265240">Sisselogimise autentimise käitumise seadistamine</translation>
 <translation id="3627678165642179114">Õigekirjakontrolli veebiteenuse lubamine või keelamine</translation>
 <translation id="3646859102161347133">Ekraaniluubi tüübi määramine</translation>
 <translation id="3653237928288822292">Vaikeotsingupakkuja ikoon</translation>
@@ -883,6 +888,7 @@
           Kui selle reegli väärtuseks määratakse „Säilita küpsisefailid seansi ajaks”, siis kustutatakse küpsisefailid seansi lõppedes. Pange tähele, et kui teenus <ph name="PRODUCT_NAME" /> töötab „taustarežiimis”, ei pruugi seanss viimase akna sulgemisel lõppeda. Lisateavet sellise toimimise seadistamise kohta leiate reeglist „BackgroundModeEnabled”.
 
           Kui seda reeglit pole määratud, kasutatakse reeglit „AllowCookies” ja kasutaja saab seda muuta.</translation>
+<translation id="4103289232974211388">Pärast kasutaja kinnitust SAML IdP-le ümbersuunamine</translation>
 <translation id="410478022164847452">Määrab aja, pärast mida lülitatakse võrgutoite kasutamisel sisse jõudeolek, kui kasutaja pole midagi sisestanud.
 
           Kui see reegel määratakse, määrab see aja, mille jooksul peab kasutaja olema tegevusetu, enne kui <ph name="PRODUCT_OS_NAME" /> jõudeoleku sisse lülitab (selle saab seadistada eraldi).
@@ -1917,6 +1923,11 @@
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultPopupsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>
 <translation id="7529144158022474049">Hajutusteguri automaatne värskendamine</translation>
+<translation id="7553535237300701827">Kui see reegel on määratud, on sisselogimise autentimisvoog seade väärtusest olenevalt üks järgmistest:
+
+      Kui määratud on GAIA, toimub sisselogimine tavapärase GAIA autentimisvoo kaudu.
+
+      Kui valikuks on määratud SAML_INTERSTITIAL, kuvatakse sisselogimisel vaheekraan, kus kasutajale pakutakse autentimise jätkamist seadme registreerimisdomeeni SAML IdP kaudu või võimalust naasta tavapärasesse GAIA sisselogimisvoogu.</translation>
 <translation id="7567380065339179813">Luba pistikprogrammid nendel saitidel</translation>
 <translation id="7593523670408385997">Seadistab vahemälu mahu, mida <ph name="PRODUCT_NAME" /> kasutab vahemällu salvestatud failide kettale salvestamiseks.
 
@@ -2299,6 +2310,7 @@
 
       Kui jätate eeskirjad määramata või keelate need, siis asukohta ei esitata.</translation>
 <translation id="8828766846428537606">Seadistage rakenduse <ph name="PRODUCT_NAME" /> vaikeavaleht ja takistage kasutajaid seda muutmast. Kasutaja avalehe seaded on täielikult lukustatud vaid juhul, kui valite avaleheks uue vahelehe või seate selle URL-iks ja määrate avalehel URL-i. Kui te ei määra avalehe URL-i, saab kasutaja määrata avaleheks uue vahelehe käsuga chrome://newtab.</translation>
+<translation id="8833109046074170275">GAIA vaikevoo kaudu autentimine</translation>
 <translation id="8838303810937202360">Operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> lisab rakendused ja laiendused mitme kasutaja jaoks installimiseks seadme vahemällu, et vältida iga kasutaja puhul uuesti allalaadimist.
       Kui see reegel on seadistamata või väärtus on väiksem kui 1 MB, kasutab operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> vaikimisi vahemälu mahtu.</translation>
 <translation id="8858642179038618439">YouTube’i ohutu režiimi jõustamine</translation>

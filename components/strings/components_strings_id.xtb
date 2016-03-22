@@ -94,6 +94,7 @@
 <translation id="201192063813189384">Kesalahan membaca data dari cache.</translation>
 <translation id="2025186561304664664">Proxy disetel ke konfigurasi otomatis.</translation>
 <translation id="2030481566774242610">Mungkin maksud Anda <ph name="LINK" />?</translation>
+<translation id="2031925387125903299">Anda melihat pesan ini karena Anda baru pertama kali mengunjungi situs ini dan orang tua harus menyetujuinya terlebih dahulu.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Memeriksa proxy dan firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">Kode pos</translation>
 <translation id="2065985942032347596">Diperlukan Otentikasi</translation>
@@ -149,6 +150,7 @@
 <translation id="2495083838625180221">Pengurai JSON</translation>
 <translation id="2495093607237746763">Jika dicentang, Chromium akan menyimpan salinan kartu Anda di perangkat ini untuk pengisian formulir yang lebih cepat.</translation>
 <translation id="2498091847651709837">Pindai kartu baru</translation>
+<translation id="2501278716633472235">Kembali</translation>
 <translation id="2515629240566999685">Periksa sinyal di area Anda</translation>
 <translation id="2516305470678292029">Alternatif UI</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> mengirimkan tanggapan yang tidak valid.</translation>
@@ -166,10 +168,12 @@
 <translation id="2704283930420550640">Nilai tidak sesuai format.</translation>
 <translation id="2705137772291741111">Salinan tersimpan (dalam cache) situs ini tidak dapat dibaca.</translation>
 <translation id="2709516037105925701">IsiOtomatis</translation>
+<translation id="2712173769900027643">Minta izin</translation>
 <translation id="2721148159707890343">Permintaan berhasil</translation>
 <translation id="2728127805433021124">Sertifikat server ditandai menggunakan algoritme yang lemah.</translation>
 <translation id="2742870351467570537">Hapus item yang dipilih</translation>
 <translation id="277499241957683684">Catatan perangkat hilang</translation>
+<translation id="2778107779445548489">Anda melihat pesan ini karena orang tua memblokir situs ini.</translation>
 <translation id="2784949926578158345">Sambungan disetel ulang.</translation>
 <translation id="2824775600643448204">Bilah penelusuran dan alamat</translation>
 <translation id="2826760142808435982">Sambungan dienkripsi dan diautentikasi menggunakan <ph name="CIPHER" /> dan menggunakan <ph name="KX" /> sebagai mekanisme pertukaran kunci.</translation>
@@ -177,6 +181,7 @@
 <translation id="2837049386027881519">Sambungan harus dicoba lagi menggunakan versi yang lebih lama dari protokol TLS atau SSL. Biasanya, ini artinya server menggunakan perangkat lunak yang amat lawas dan mungkin mengalami masalah keamanan lainnya.</translation>
 <translation id="284702764277384724">Sertifikat server di <ph name="HOST_NAME" /> tampaknya palsu.</translation>
 <translation id="2855922900409897335">Verifikasi <ph name="CREDIT_CARD" /> Anda</translation>
+<translation id="2889159643044928134">Jangan Muat Ulang</translation>
 <translation id="2896499918916051536">Plugin ini tidak didukung.</translation>
 <translation id="2897655920961181107">Port yang diminta tidak aman dan telah diblokir.</translation>
 <translation id="2909946352844186028">Perubahan jaringan terdeteksi.</translation>
@@ -199,6 +204,7 @@
 <translation id="3005723025932146533">Tampilkan salinan yang disimpan</translation>
 <translation id="3010559122411665027">Entri daftar "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Jenis kebijakan salah</translation>
+<translation id="3032412215588512954">Ingin memuat ulang situs ini?</translation>
 <translation id="3037605927509011580">Yah!</translation>
 <translation id="3041612393474885105">Informasi Sertifikat</translation>
 <translation id="3093245981617870298">Anda sedang offline.</translation>
@@ -230,6 +236,7 @@
 <translation id="3305707030755673451">Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME" />. Masukkan frasa sandi untuk memulai sinkronisasi.</translation>
 <translation id="333371639341676808">Cegah dialog lain dari laman ini.</translation>
 <translation id="3340978935015468852">setelan</translation>
+<translation id="3345135638360864351">Permintaan Anda untuk mengakses situs ini tidak dapat dikirimkan ke <ph name="NAME" />. Coba lagi.</translation>
 <translation id="3355823806454867987">Ubah setelan proxy...</translation>
 <translation id="3369192424181595722">Kesalahan jam</translation>
 <translation id="3369366829301677151">Perbarui dan verifikasi <ph name="CREDIT_CARD" /> Anda</translation>
@@ -245,6 +252,8 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Interval pengambilan:</translation>
 <translation id="3462200631372590220">Sembunyikan lanjutan</translation>
+<translation id="3479539252931486093">Apakah hal ini tidak diharapkan? <ph name="BEGIN_LINK" />Beri tahu kami<ph name="END_LINK" /></translation>
+<translation id="3498215018399854026">Orang tua Anda saat ini tidak dapat dihubungi. Coba lagi.</translation>
 <translation id="3516765099410062445">Menampilkan riwayat dari perangkat Anda yang sudah masuk. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3528171143076753409">Sertifikat server tidak dipercaya.</translation>
@@ -267,6 +276,7 @@
 <translation id="3658742229777143148">Revisi</translation>
 <translation id="3681007416295224113">Informasi sertifikat</translation>
 <translation id="3693415264595406141">Sandi:</translation>
+<translation id="3700528541715530410">Ups, sepertinya Anda tidak memiliki izin untuk mengakses laman ini.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Membuka...</translation>
 <translation id="3712624925041724820">Lisensi habis</translation>
@@ -281,8 +291,6 @@
 <translation id="382518646247711829">Jika Anda menggunakan server proxy...</translation>
 <translation id="3828924085048779000">Frasa sandi kosong tidak dibolehkan.</translation>
 <translation id="385051799172605136">Mundur</translation>
-<translation id="3851596405215565524">Jika telah tercantum sebagai program yang diizinkan untuk mengakses jaringan, coba
-    hapus dari daftar, lalu tambahkan lagi.</translation>
 <translation id="3858027520442213535">Perbarui tanggal dan waktu</translation>
 <translation id="3884278016824448484">Pengenal perangkat bertentangan</translation>
 <translation id="3885155851504623709">Parish</translation>
@@ -313,6 +321,7 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Periksa konfigurasi antivirus dan firewall<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Kerusakan</translation>
 <translation id="4250680216510889253">Tidak</translation>
+<translation id="425582637250725228">Perubahan yang Anda lakukan mungkin tidak disimpan.</translation>
 <translation id="4258748452823770588">Tanda tangan salah</translation>
 <translation id="4268298190799576220">Saat ini Chromium tidak dapat memverifikasi kartu. Coba lagi nanti.</translation>
 <translation id="4269787794583293679">(Tidak ada nama pengguna)</translation>
@@ -329,6 +338,9 @@
 <translation id="4406896451731180161">hasil penelusuran</translation>
 <translation id="4424024547088906515">Server ini tidak dapat membuktikan bahwa ini adalah <ph name="DOMAIN" />; sertifikat keamanannya tidak dipercaya oleh Chrome. Hal ini dapat disebabkan oleh kesalahan konfigurasi atau penyerang memotong sambungan Anda.</translation>
 <translation id="443673843213245140">Penggunaan proxy dinonaktifkan tetapi konfigurasi proxy yang eksplisit ditentukan.</translation>
+<translation id="4458874409874303848">SitusAman</translation>
+<translation id="4461847750548395463">Anda melihat pesan ini karena Google SitusAman aktif.</translation>
+<translation id="4491452711366281322">Tidak disetujui</translation>
 <translation id="4492190037599258964">Telusuri hasil untuk '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">Kesalahan validasi: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Hubungi admin sistem</translation>
@@ -350,6 +362,7 @@
 <translation id="4764776831041365478">Laman web di <ph name="URL" /> mungkin sedang tidak aktif untuk sementara atau dipindahkan secara permanen ke alamat web baru.</translation>
 <translation id="4771973620359291008">Terjadi kesalahan yang tidak diketahui.</translation>
 <translation id="477518548916168453">Server tidak mendukung fungsi yang diperlukan untuk memenuhi permintaan.</translation>
+<translation id="4782449893814226250">Anda telah meminta izin kepada orang tua untuk mengunjungi laman ini.</translation>
 <translation id="4800132727771399293">Periksa tanggal masa berlaku habis dan CVC, lalu coba lagi</translation>
 <translation id="4807049035289105102">Saat ini Anda tidak dapat mengunjungi <ph name="SITE" /> karena situs web tersebut mengirim kredensial acak yang tidak dapat diproses oleh Google Chrome. Kesalahan jaringan dan serangan biasanya bersifat sementara, jadi laman ini mungkin akan bekerja nanti.</translation>
 <translation id="4813512666221746211">Kesalahan jaringan</translation>
@@ -359,6 +372,7 @@
 <translation id="4880827082731008257">Telusuri riwayat</translation>
 <translation id="4923417429809017348">Laman ini telah diterjemahkan dari bahasa yang tidak diketahui ke bahasa <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Harus ditentukan.</translation>
+<translation id="4930497775425430760">Anda melihat pesan ini karena Anda baru pertama kali mengunjungi situs ini dan orang tua harus menyetujuinya terlebih dahulu.</translation>
 <translation id="495170559598752135">Tindakan</translation>
 <translation id="4958444002117714549">Luaskan daftar</translation>
 <translation id="498957508165411911">Terjemahkan dari <ph name="ORIGINAL_LANGUAGE" /> ke <ph name="TARGET_LANGUAGE" />?</translation>
@@ -417,6 +431,7 @@
 <translation id="560412284261940334">Pengelolaan tidak didukung</translation>
 <translation id="5610142619324316209">Periksa sambungan</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" /> terlalu sering mengalihkan Anda.</translation>
+<translation id="5622887735448669177">Ingin keluar dari situs ini?</translation>
 <translation id="5629630648637658800">Gagal memuat setelan kebijakan</translation>
 <translation id="5631439013527180824">Token pengelolaan perangkat tidak valid</translation>
 <translation id="5650551054760837876">Tak ada hasil penelusuran yang ditemukan.</translation>
@@ -426,6 +441,7 @@
 <translation id="5785756445106461925">Selain itu, laman ini berisi sumber daya lainnya yang tidak aman. Sumber daya ini dapat dilihat oleh orang lain saat transit dan dapat dimodifikasi oleh penyerang untuk mengubah tampilan perangkat.</translation>
 <translation id="5810442152076338065">Sambungan Anda ke <ph name="DOMAIN" /> dienkripsi menggunakan cipher suite yang sudah usang.</translation>
 <translation id="5813119285467412249">&amp;Ulangi Penambahan</translation>
+<translation id="5855235287355719921">Anda melihat pesan ini karena pengelola memblokir situs ini.</translation>
 <translation id="5857090052475505287">Folder Baru</translation>
 <translation id="5869405914158311789">Situs ini tidak dapat dijangkau</translation>
 <translation id="5869522115854928033">Sandi yang disimpan</translation>
@@ -449,6 +465,7 @@
 <translation id="6146055958333702838">Periksa semua kabel dan boot ulang router, modem, atau perangkat
     jaringan lain yang mungkin Anda gunakan.</translation>
 <translation id="614940544461990577">Coba:</translation>
+<translation id="6150607114729249911">Ups! Anda perlu izin dari orang tua untuk mengunjungi laman ini.</translation>
 <translation id="6151417162996330722">Sertifikat server memiliki masa berlaku yang terlalu panjang.</translation>
 <translation id="6154808779448689242">Token kebijakan yang dikembalikan tidak cocok dengan token saat ini</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
@@ -485,6 +502,7 @@
 <translation id="6550675742724504774">Opsi</translation>
 <translation id="6596325263575161958">Opsi enkripsi</translation>
 <translation id="6610562986279010327">Chrome tidak bisa membuka URL ini</translation>
+<translation id="662080504995468778">Tinggal</translation>
 <translation id="6626108645084335023">Menunggu penyelidikan DNS.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Penelusuran</translation>
 <translation id="6634865548447745291">Saat ini, Anda tidak dapat mengunjungi <ph name="SITE" /> karena <ph name="BEGIN_LINK" />sertifikat ini telah dicabut<ph name="END_LINK" />. Kesalahan jaringan dan serangan biasanya bersifat sementara, jadi laman ini mungkin akan bekerja nanti.</translation>
@@ -538,11 +556,14 @@
 <translation id="7182878459783632708">Tidak ada kebijakan yang disetel</translation>
 <translation id="7186367841673660872">Laman ini telah diterjemahkan dari<ph name="ORIGINAL_LANGUAGE" />ke<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
+<translation id="720210938761809882">Laman yang diblokir</translation>
 <translation id="7208899522964477531">Telusuri <ph name="SEARCH_TERMS" /> dengan <ph name="SITE_NAME" /></translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> tidak mematuhi standar keamanan.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Selengkapnya<ph name="END_LINK" /> tentang masalah ini.</translation>
 <translation id="7219179957768738017">Koneksi menggunakan <ph name="SSL_VERSION" />.</translation>
 <translation id="7225807090967870017">Buat ID</translation>
+<translation id="7231308970288859235">Ups! Anda perlu izin orang tua untuk mengunjungi laman ini.</translation>
+<translation id="7246609911581847514">Anda melihat pesan ini karena Anda baru pertama kali mengunjungi situs ini dan pengelola harus menyetujuinya terlebih dahulu.</translation>
 <translation id="725866823122871198">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) komputer Anda tidak benar.</translation>
 <translation id="7265986070661382626">Anda tidak dapat mengunjungi <ph name="SITE" /> saat ini karena situs web <ph name="BEGIN_LINK" />menggunakan penyematan sertifikat<ph name="END_LINK" />. Kesalahan jaringan dan serangan biasanya bersifat sementara, jadi laman ini mungkin akan bekerja nanti.</translation>
 <translation id="7269802741830436641">Laman web ini memiliki simpul pengalihan</translation>
@@ -609,8 +630,10 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="7825436071901023927">Port <ph name="SITE" /> Tidak Aman</translation>
 <translation id="785549533363645510">Namun, Anda masih dapat terlihat. Masuk ke mode penyamaran tidak menyembunyikan penjelajahan Anda dari atasan, penyedia layanan internet, atau situs web yang Anda kunjungi.</translation>
 <translation id="7887683347370398519">Periksa CVC dan coba lagi</translation>
+<translation id="7894616681410591072">Ups! Anda perlu izin dari <ph name="NAME" /> untuk mengakses laman ini.</translation>
 <translation id="790025292736025802"><ph name="URL" /> tidak ditemukan</translation>
 <translation id="7912024687060120840">Dalam Folder:</translation>
+<translation id="7920092496846849526">Anda telah meminta izin kepada orang tua untuk mengunjungi laman ini.</translation>
 <translation id="7935318582918952113">Penyaring DOM</translation>
 <translation id="7938958445268990899">Sertifikat server belum valid.</translation>
 <translation id="7951415247503192394">(32 bit)</translation>
@@ -619,6 +642,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="7977590112176369853">&lt;masukkan permintaan&gt;</translation>
 <translation id="7983301409776629893">Selalu terjemahkan <ph name="ORIGINAL_LANGUAGE" /> ke <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Tidak Ditentukan</translation>
+<translation id="8012647001091218357">Orang tua Anda saat ini tidak dapat dihubungi. Coba lagi.</translation>
 <translation id="8034522405403831421">Laman ini berbahasa <ph name="SOURCE_LANGUAGE" />. Terjemahkan ke <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Tidak ditemukan entri riwayat.</translation>
 <translation id="8088680233425245692">Gagal melihat artikel.</translation>
@@ -631,9 +655,6 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8204086856545141093">Permintaan ke server telah diblokir oleh kebijakan.</translation>
 <translation id="8218327578424803826">Lokasi yang Ditetapkan:</translation>
 <translation id="8225771182978767009">Orang yang menyiapkan komputer ini telah memilih untuk memblokir situs ini.</translation>
-<translation id="8240446052814166959">Periksa setelan proxy atau hubungi administrator jaringan untuk
-      memastikan bahwa server proxy bekerja.
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="8241707690549784388">Laman yang dicari menggunakan informasi yang Anda masukkan. Kembali ke laman tersebut dapat menyebabkan pengulangan tindakan apa pun yang Anda lakukan. Apakah Anda ingin melanjutkan?</translation>
 <translation id="8249320324621329438">Terakhir diambil:</translation>
 <translation id="8266098793847448402">Klik
@@ -644,6 +665,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
       <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
       lalu klik
       <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
+<translation id="8279107132611114222">Permintaan Anda untuk mengakses situs ini telah dikirim ke <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Hubungi administrator jaringan Anda jika Anda tidak yakin apa maksudnya.</translation>
 <translation id="8293206222192510085">Tambahkan Bookmark</translation>
 <translation id="8294431847097064396">Sumber</translation>
@@ -665,6 +687,7 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="8559762987265718583">Sambungan pribadi ke <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tidak dapat dibuat karena tanggal dan waktu (<ph name="DATE_AND_TIME" />) perangkat tidak benar.</translation>
 <translation id="856992080682148">Sertifikat untuk situs ini berakhir masa berlakunya pada tahun 2017 atau lebih lama, dan rantai sertifikat tersebut berisi sertifikat yang ditandatangani menggunakan SHA-1.</translation>
 <translation id="8571890674111243710">Menerjemahkan laman ke <ph name="LANGUAGE" />...</translation>
+<translation id="8591846766485502580">Anda melihat pesan ini karena salah satu orang tua memblokir situs ini.</translation>
 <translation id="859285277496340001">Sertifikat tidak menetapkan mekanisme untuk memeriksa apakah sertifikat telah ditarik.</translation>
 <translation id="8629916158020966496">Penjelajahan Internet dinonaktifkan sampai pemeriksaan verifikasi pendaftaran perusahaan selesai.
     Anda tetap dapat menggunakan alat diagnosis yang disediakan di sini untuk memecahkan masalah terkait konektivitas.</translation>

@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">Objavte webové stránky odosielané objektmi v okolí. Chrome zhromažďuje webové stránky týkajúce sa objektov okolo vás, odosiela ich anonymne do služby Google, aby tak našiel tie, ktoré sú pre vás najužitočnejšie. Následne ich zobrazí.
 
 Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a sledovanie polohy.</translation>
+<translation id="1254090737195733114">Importovať údaje?</translation>
 <translation id="1258753120186372309">Sviatočné logo Google: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Zastaviť</translation>
 <translation id="1285320974508926690">Nikdy neprekladať tieto webové stránky</translation>
@@ -107,6 +108,7 @@ Predvoľby Fyzického webu môžete ovládať v nastaveniach súkromia Chromu.<
 <translation id="238909021488141516">Pri sťahovaní obsahu sa vyskytla chyba</translation>
 <translation id="2414886740292270097">Tmavý režim</translation>
 <translation id="2433507940547922241">Vzhľad</translation>
+<translation id="2439248520967274840">Prihlasujete sa do účtu <ph name="TO_ACCOUNT" />. Niektoré vaše existujúce záložky, história, heslá a ďalšie nastavenia boli v minulosti synchronizované do účtu <ph name="FROM_ACCOUNT" />. Čo chcete urobiť s týmito existujúcimi údajmi?</translation>
 <translation id="2440823041667407902">Prístup k polohe</translation>
 <translation id="2470327855284432041">Stránka bola uložená offline (<ph name="PAGE_SIZE_STRING" />)</translation>
 <translation id="2476578072172137802">Nastavenia webu</translation>
@@ -146,6 +148,7 @@ Predvoľby Fyzického webu môžete ovládať v nastaveniach súkromia Chromu.<
 <translation id="2968755619301702150">Zobrazovač certifikátov</translation>
 <translation id="2996291259634659425">Vytvorenie prístupovej frázy</translation>
 <translation id="2996809686854298943">Vyžaduje sa webová adresa</translation>
+<translation id="3012408695656332380">Nahraďte údaje tohto zariadenia údajmi z účtu <ph name="TO_ACCOUNT" />. Existujúce údaje môžete získať prepnutím na účet <ph name="FROM_ACCOUNT" />, ale údaje vytvorené po odhlásení stratíte.</translation>
 <translation id="3029704984691124060">Prístupové frázy sa nezhodujú</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Získať pomoc<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Uložiť video</translation>
@@ -213,7 +216,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="403659016947612156">V okolí sú stránky Fyzického webu</translation>
 <translation id="4042870126885713738">Zobrazte návrhy v prípade, že webovú adresu nie je možné vyhľadať alebo nie je možné nadviazať spojenie</translation>
 <translation id="4056223980640387499">Sépia</translation>
-<translation id="4059119910594077751">Ukončite režim celej obrazovky klepnutím na tlačidlo Späť.</translation>
 <translation id="4062305924942672200">Právne informácie</translation>
 <translation id="4089831646916293264">Táto funkcia môže byť v konflikte s prémiovými dátovými službami poskytovanými vaším operátorom.</translation>
 <translation id="4099578267706723511">Odosielanie štatistík používania a prehľadu chýb pomôže Googlu zlepšiť Chrome.</translation>
@@ -349,6 +351,7 @@ Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť Pr
 <translation id="5676636989614905379">Na zariadení <ph name="SCREEN_NAME" /> nie je možné prehrať video</translation>
 <translation id="5677928146339483299">Zablokované</translation>
 <translation id="5684874026226664614">Hops. Túto stránku nebolo možné preložiť.</translation>
+<translation id="5708031556037168012">Ponechajte si existujúce údaje na zariadení a natrvalo importujte údaje do účtu <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5712189971979076230">Pomôžte nám určiť tie funkcie a zlepšenia, na ktorých by sme mali pracovať. Odosielajte Googlu informácie o súboroch, aplikáciách a službách spustených pri zlyhaní.
 
 Štatistiky používania obsahujú informácie, ako sú predvoľby, kliknutia na tlačidlá a využitie pamäte. Nie sú v nich však zahrnuté webové adresy stránok ani osobné informácie. Správy o zlyhaní obsahujú systémové informácie z času, kedy došlo k zlyhaniu. V závislosti od toho, aké aplikácie a služby boli v čase zlyhania spustené, môžu obsahovať webové adresy stránok alebo osobné informácie.</translation>
@@ -369,7 +372,6 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="585027516397408832">Šetrič dát je zapnutý</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
 <translation id="5869522115854928033">Uložené heslá</translation>
-<translation id="588258955323874662">Celá obrazovka</translation>
 <translation id="5899349522111170522">Vytvoriť nový súbor</translation>
 <translation id="5902828464777634901">Všetky miestne údaje uložené týmito stránkami (vrátane súborov cookie) budú odstránené.</translation>
 <translation id="5911030830365207728">Prekladač Google</translation>
@@ -577,6 +579,7 @@ Nezískavate však úplnú neviditeľnosť. Prejdením do režimu inkognito nesk
 <translation id="8497726226069778601">Zatiaľ tu nič nie je…</translation>
 <translation id="8514577642972634246">Spustiť režim inkognito</translation>
 <translation id="8518901949365209398">Tento web používa slabú konfiguráciu zabezpečenia (podpisy SHA-1). Pripojenie preto nemusí byť súkromné.</translation>
+<translation id="8525306231823319788">Celá obrazovka</translation>
 <translation id="854522910157234410">Otvoriť túto stránku</translation>
 <translation id="8562452229998620586">Tu sa zobrazia uložené heslá.</translation>
 <translation id="856481929701340285">Verzia webu pre počítače</translation>
@@ -606,7 +609,6 @@ Nezískavate však úplnú neviditeľnosť. Prejdením do režimu inkognito nesk
 <translation id="8912362522468806198">účtu Google</translation>
 <translation id="8920114477895755567">Čaká sa na podrobnosti o rodičoch.</translation>
 <translation id="8931159598799892500">Chrome + Fyzický web</translation>
-<translation id="8934455786738644694">Režim celej obrazovky ukončíte presunutím myši z hornej časti a klepnutím na tlačidlo Späť.</translation>
 <translation id="8941248009481596111">Vaše pripojenie k týmto stránkam je súkromné.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Navigácia je nedostupná: <ph name="URL" /></translation>
@@ -625,6 +627,7 @@ Nezískavate však úplnú neviditeľnosť. Prejdením do režimu inkognito nesk
 <translation id="9100610230175265781">Vyžaduje sa prístupová fráza</translation>
 <translation id="9133515669113036225">Obnoviť prihlasovacie poverenia zariadenia</translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>
+<translation id="9141510419986760385">Účet na synchronizáciu <ph name="FROM_ACCOUNT" /> prepínate na účet <ph name="TO_ACCOUNT" />. Čo chcete urobiť s vašimi existujúcimi záložkami, históriou, heslami a ďalšími nastaveniami?</translation>
 <translation id="9151532766011674069">Záložka bola uložená offline. Úložisko je takmer plné.</translation>
 <translation id="917685106653909562">Stránky Fyzického webu v okolí</translation>
 <translation id="9187199695613236444">Zobrazenie pre mobil</translation>

@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">Els canvis es faran efectius la propera vegada que reinicieu Google Chrome.</translation>
 <translation id="3444832043240812445">Aquesta pàgina només mostrarà informació sobre els bloqueigs recents si <ph name="BEGIN_LINK" />activeu la creació d'informes de bloqueig<ph name="END_LINK" />.</translation>
 <translation id="4010643444566880169">Chrome OS no ha completat la configuració inicial.</translation>
-<translation id="5423788048750135178">Aneu al menú de Chrome &gt; Configuració &gt; (Avançada) Privadesa
-          i desmarqueu "Baixa prèviament els recursos de la pàgina".
-          Si el problema no es resol, us recomanem que torneu a activar
-          aquesta opció per obtenir un millor rendiment.</translation>
 <translation id="6011049234605203654">Aneu al
           menú de Chrome &gt;
           <ph name="SETTINGS_TITLE" />
@@ -38,7 +34,6 @@
           &gt;
           Configuració de LAN
           i desmarqueu Utilitza un servidor intermediari per a la LAN.</translation>
-<translation id="7396375882099008034">Configureu el tallafoc o l'antivirus per permetre que Chrome accedeixi a la xarxa.</translation>
 <translation id="8187289872471304532">Aneu a
           Aplicacions &gt; Preferències del sistema &gt; Xarxa &gt; Opcions avançades &gt; Servidors intermediaris
           i desmarqueu tots els servidors intermediaris que s'hagin seleccionat.</translation>

@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="101438888985615157">Gira la pantalla 180 graus</translation>
+<translation id="1015272884520659144">Defineix la llista de dispositius USB que està permès separar del programa de control de kernel per tal d'utilitzar-los mitjançant l'API de chrome.usb directament dins d'una aplicació web. Els elements que s'inclouen a la llista són parells identificador del producte i identificador del proveïdor dels USB, que permeten identificar un maquinari concret.
+
+      Si aquesta política no està configurada, la llista de dispositius USB separables es considera buida.</translation>
 <translation id="1017967144265860778">Gestió de l'alimentació a la pantalla d'inici de sessió</translation>
 <translation id="1019101089073227242">Estableix el directori de dades de l'usuari</translation>
 <translation id="1022361784792428773">ID de les extensions que l'usuari no pot instal·lar (o bé * per a totes)</translation>
@@ -211,6 +214,7 @@
 <translation id="186719019195685253">Acció que s'ha d'emprendre quan s'està inactiu mentre s'està connectat al CA</translation>
 <translation id="187819629719252111">Permet que <ph name="PRODUCT_NAME" /> mostri diàlegs de selecció de fitxers per permetre l'accés als fitxers locals de l'equip. Si activeu aquest paràmetre, els usuaris podran obrir els diàlegs de selecció de fitxers de la manera habitual. Si el desactiveu, cada vegada que un usuari dugui a terme una acció que provoqui l'obertura d'un diàleg de selecció de fitxers (com ara la importació d'adreces d'interès, la càrrega de fitxers, el desament d'enllaços, etc.), li apareixerà un missatge que serà com si l'usuari fes clic a Cancel·la al diàleg de selecció de fitxers. Si no definiu aquest paràmetre, els usuaris podran obrir diàlegs de selecció de fitxers de la manera habitual.</translation>
 <translation id="1897365952389968758">Permet que tots els llocs executin JavaScript</translation>
+<translation id="193259052151668190">Llista blanca de dispositius USB separables</translation>
 <translation id="1933378685401357864">Imatge de fons de pantalla</translation>
 <translation id="193900697589383153">Afegeix un botó de tancament de sessió a la safata del sistema.
 
@@ -687,6 +691,7 @@ El valor de la política s'ha d'especificar en mil·lisegons. Els valors s'estab
 <translation id="3528000905991875314">Activa les pàgines d'error alternatives</translation>
 <translation id="3547954654003013442">Configuració del servidor intermediari</translation>
 <translation id="3570008976476035109">Bloqueja els connectors en aquests llocs</translation>
+<translation id="3591584750136265240">Configura el comportament de l'autenticació d'inici de sessió</translation>
 <translation id="3627678165642179114">Activació o desactivació del servei web de correcció ortogràfica</translation>
 <translation id="3646859102161347133">Defineix el tipus de lupa</translation>
 <translation id="3653237928288822292">Icona del proveïdor de cerca predeterminat</translation>
@@ -796,6 +801,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
           Si aquesta política s'estableix en Conserva les galetes mentre duri la sessió, les galetes s'esborraran quan es tanqui la sessió. Tingueu en compte que, si <ph name="PRODUCT_NAME" /> s'executa en mode de segon pla, és possible que la sessió no es tanqui en tancar l'última finestra. Consulteu la política "BackgroundModeEnabled" per obtenir més informació sobre com es configura aquest comportament.
 
           Si aquesta política no s'estableix, s'utilitzarà "AllowCookies" i l'usuari podrà canviar-la.</translation>
+<translation id="4103289232974211388">Redirigeix al proveïdor d'identitat SAML després de la confirmació de l'usuari</translation>
 <translation id="410478022164847452">Indica el temps sense activitat per part de l'usuari després del qual es duu a terme l'acció d'inactivitat quan el dispositiu funciona amb alimentació.
 
           Quan aquesta política es defineix, indica el temps que l'usuari ha de romandre inactiu abans <ph name="PRODUCT_OS_NAME" /> no iniciï l'acció d'inactivitat, que es pot configurar per separat.
@@ -1715,6 +1721,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7523476810162382273">Envia batecs de supervisió al servidor de gestió</translation>
 <translation id="7529100000224450960">Us permet definir una llista de patrons d'URL que especifiquen els llocs en què està permès obrir finestres emergents. Si no es defineix aquesta política, s'utilitzarà el valor global predeterminat per a tots els llocs tant de la política "DefaultPopupsSetting", si es defineix, com d'un altre tipus de configuració personal de l'usuari.</translation>
 <translation id="7529144158022474049">Actualitza automàticament el factor de dispersió</translation>
+<translation id="7553535237300701827">Quan aquesta política està establerta, el flux d'autenticació d'inici de sessió seguirà un d'aquests mètodes en funció del valor establert:
+
+      Si s'estableix en GAIA, l'inici de sessió es fa mitjançant el flux d'autenticació normal de GAIA.
+
+      Si s'estableix en SAML_INTERSTITIAL, es mostra una pantalla intersticial durant l'inici de sessió per oferir a l'usuari continuar l'autenticació mitjançant el proveïdor d'identitat SAML del domini de registre del dispositiu. L'usuari també pot tornar al flux normal d'inici de sessió de GAIA.</translation>
 <translation id="7567380065339179813">Permet els connectors en aquests llocs</translation>
 <translation id="7593523670408385997">Defineix la mida de memòria cau que <ph name="PRODUCT_NAME" /> utilitzarà per emmagatzemar fitxers de la memòria cau al disc.
 
@@ -2069,6 +2080,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 
       Si no definiu la política, o bé si la definiu com a falsa, no s'informarà de la ubicació.</translation>
 <translation id="8828766846428537606">Configura la pàgina d'inici predeterminada a <ph name="PRODUCT_NAME" /> i evita que els usuaris la canviïn. La configuració de la pàgina d'inici dels usuaris només es bloqueja completament si seleccioneu que sigui la pàgina de pestanya nova o si l'establiu perquè sigui un URL que trieu. Si no especifiqueu l'URL de la pàgina d'inici, l'usuari podrà establir la pàgina de pestanya nova com a pàgina d'inici si especifica "chrome://newtab".</translation>
+<translation id="8833109046074170275">Autenticació mitjançant el flux predeterminat de GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> desa les aplicacions i les extensions a la memòria cau perquè diversos usuaris d'un mateix dispositiu les puguin instal·lar. Així, s'evita haver-les de baixar per a cada usuari.
       Si la política no està configurada o el valor és inferior a 1 MB, <ph name="PRODUCT_OS_NAME" /> utilitzarà la mida predeterminada de la memòria cau.</translation>
 <translation id="8858642179038618439">Força el mode de seguretat de YouTube</translation>

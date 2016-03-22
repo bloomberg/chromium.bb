@@ -91,6 +91,7 @@
 <translation id="201192063813189384">Při čtení dat z mezipaměti došlo k chybě.</translation>
 <translation id="2025186561304664664">Proxy server je nastaven na automatickou konfiguraci.</translation>
 <translation id="2030481566774242610">Měli jste na mysli <ph name="LINK" />?</translation>
+<translation id="2031925387125903299">Tato zpráva se zobrazila, protože je potřeba, aby při první návštěvě nového webu povolili přístup rodiče.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Zkontrolovat proxy server a firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">PSČ</translation>
 <translation id="2065985942032347596">Vyžaduje se ověření</translation>
@@ -143,6 +144,7 @@
 <translation id="2495083838625180221">Analyzátor souborů JSON</translation>
 <translation id="2495093607237746763">Pokud je tato možnost zaškrtnuta, prohlížeč Chromium do zařízení uloží kopii karty za účelem rychlejšího vyplňování formulářů.</translation>
 <translation id="2498091847651709837">Naskenovat novou kartu</translation>
+<translation id="2501278716633472235">Zpět</translation>
 <translation id="2515629240566999685">Zkontrolovat, zda máte dostatečně silný signál</translation>
 <translation id="2516305470678292029">Alternativy uživatelského rozhraní</translation>
 <translation id="255002559098805027">Web <ph name="HOST_NAME" /> vrátil neplatnou odpověď.</translation>
@@ -160,10 +162,12 @@
 <translation id="2704283930420550640">Hodnota neodpovídá formátu.</translation>
 <translation id="2705137772291741111">Kopii tohoto webu uloženou v mezipaměti se nepodařilo přečíst.</translation>
 <translation id="2709516037105925701">Automatické vyplňování</translation>
+<translation id="2712173769900027643">Požádat o oprávnění</translation>
 <translation id="2721148159707890343">Požadavek byl úspěšný</translation>
 <translation id="2728127805433021124">Certifikát serveru je podepsán slabým algoritmem.</translation>
 <translation id="2742870351467570537">Odstranit vybrané položky</translation>
 <translation id="277499241957683684">Chybějící záznam zařízení</translation>
+<translation id="2778107779445548489">Tato zpráva se zobrazila, protože rodiče k tomuto webu zablokovali přístup.</translation>
 <translation id="2784949926578158345">Připojení bylo resetováno.</translation>
 <translation id="2824775600643448204">Adresní a vyhledávací řádek</translation>
 <translation id="2826760142808435982">Připojení je šifrováno a ověřeno pomocí šifry <ph name="CIPHER" /> a jako mechanismus výměny klíčů používá <ph name="KX" />.</translation>
@@ -171,6 +175,7 @@
 <translation id="2837049386027881519">Pokus o připojení musel proběhnout znovu pomocí starší verze protokolu TLS nebo SSL. Obvykle to znamená, že server používá zastaralý software a může mít další problémy se zabezpečením.</translation>
 <translation id="284702764277384724">Zdá se, že certifikát serveru webu <ph name="HOST_NAME" /> je podvrh.</translation>
 <translation id="2855922900409897335">Ověření karty <ph name="CREDIT_CARD" /></translation>
+<translation id="2889159643044928134">Nenačítat znovu</translation>
 <translation id="2896499918916051536">Tento plugin není podporován.</translation>
 <translation id="2897655920961181107">Požadovaný port je nebezpečný a byl zablokován.</translation>
 <translation id="2909946352844186028">Byla zjištěna změna sítě.</translation>
@@ -189,6 +194,7 @@
 <translation id="3005723025932146533">Zobrazit uloženou kopii</translation>
 <translation id="3010559122411665027">Položka seznamu „<ph name="ENTRY_INDEX" />“: <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Chybný typ zásady</translation>
+<translation id="3032412215588512954">Chcete tento web načíst znovu?</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
 <translation id="3041612393474885105">Informace o certifikátu</translation>
 <translation id="3093245981617870298">Nejste připojeni k síti.</translation>
@@ -217,6 +223,7 @@
 <translation id="3305707030755673451">Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro synchronizaci. Chcete-li zahájit synchronizaci, zadejte ji.</translation>
 <translation id="333371639341676808">Bránit této stránce ve vytváření dalších dialogových oken.</translation>
 <translation id="3340978935015468852">nastavení</translation>
+<translation id="3345135638360864351">Odeslání žádosti o přístup k tomuto webu uživateli <ph name="NAME" /> se nezdařilo. Zkuste to prosím znovu.</translation>
 <translation id="3355823806454867987">Změna nastavení proxy...</translation>
 <translation id="3369192424181595722">Chyba hodin</translation>
 <translation id="3369366829301677151">Aktualizujte a ověřte svou platební kartu <ph name="CREDIT_CARD" /></translation>
@@ -232,6 +239,8 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Interval načtení:</translation>
 <translation id="3462200631372590220">Skrýt rozšířené</translation>
+<translation id="3479539252931486093">Nebylo toto očekáváno? <ph name="BEGIN_LINK" />Informujte nás<ph name="END_LINK" />.</translation>
+<translation id="3498215018399854026">V tuto chvíli se nám s vaším rodičem nepodařilo spojit. Zkuste to prosím znovu.</translation>
 <translation id="3516765099410062445">Zobrazuje se historie všech přihlášených zařízení. <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Složka</translation>
 <translation id="3528171143076753409">Certifikát serveru není důvěryhodný.</translation>
@@ -254,6 +263,7 @@
 <translation id="3658742229777143148">Verze</translation>
 <translation id="3681007416295224113">Informace o certifikátu</translation>
 <translation id="3693415264595406141">Heslo:</translation>
+<translation id="3700528541715530410">Jejda, zdá se, že k přístupu na tuto stránku nemáte oprávnění.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Načítání...</translation>
 <translation id="3712624925041724820">Byly vyčerpány licence</translation>
@@ -268,7 +278,6 @@
 <translation id="382518646247711829">Pokud používáte proxy server...</translation>
 <translation id="3828924085048779000">Prázdná heslová fráze není povolena.</translation>
 <translation id="385051799172605136">Zpět</translation>
-<translation id="3851596405215565524">Pokud je program v seznamu programů s oprávněním přistupovat k síti již uveden, zkuste jej ze seznamu odebrat a znovu přidat.</translation>
 <translation id="3858027520442213535">Aktualizovat datum a čas</translation>
 <translation id="3884278016824448484">Konfliktní identifikátor zařízení</translation>
 <translation id="3885155851504623709">Okrsek</translation>
@@ -299,6 +308,7 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Zkontrolovat konfiguraci firewallu a antivirového softwaru<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Selhání</translation>
 <translation id="4250680216510889253">Ne</translation>
+<translation id="425582637250725228">Je možné, že provedené změny nebudou uloženy.</translation>
 <translation id="4258748452823770588">Chybný podpis</translation>
 <translation id="4268298190799576220">Prohlížeč Chromium vaši kartu aktuálně nemohl ověřit. Zkuste to znovu později.</translation>
 <translation id="4269787794583293679">(Žádné uživatelské jméno)</translation>
@@ -315,6 +325,9 @@
 <translation id="4406896451731180161">výsledky vyhledávání</translation>
 <translation id="4424024547088906515">Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Chrome jeho bezpečnostnímu certifikátu nedůvěřuje. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník.</translation>
 <translation id="443673843213245140">Využití proxy serveru je zakázáno, je však určena explicitní konfigurace proxy serveru.</translation>
+<translation id="4458874409874303848">SafeSites</translation>
+<translation id="4461847750548395463">Tato zpráva se zobrazila, protože je aktivní filtrování SafeSites od Googlu.</translation>
+<translation id="4491452711366281322">Nebylo schváleno</translation>
 <translation id="4492190037599258964">Výsledky vyhledávání pro výraz „<ph name="SEARCH_STRING" />“</translation>
 <translation id="4506176782989081258">Chyba ověřování: <ph name="VALIDATION_ERROR" />.</translation>
 <translation id="4506599922270137252">Kontaktovat administrátora systému</translation>
@@ -336,6 +349,7 @@
 <translation id="4764776831041365478">Webové stránky na adrese <ph name="URL" /> jsou možná dočasně nedostupné nebo mohly být přemístěny na novou webovou adresu.</translation>
 <translation id="4771973620359291008">Došlo k neznámé chybě.</translation>
 <translation id="477518548916168453">Server nepodporuje funkci potřebnou ke splnění požadavku.</translation>
+<translation id="4782449893814226250">Požádali jste rodiče o povolení návštěvy této stránky.</translation>
 <translation id="4800132727771399293">Zkontrolujte datum vypršení platnosti a kód CVC a zkuste to znovu.</translation>
 <translation id="4807049035289105102">Web <ph name="SITE" /> nyní nemůžete navštívit, protože webové stránky odeslaly zakódované identifikační údaje, které Chrome nedokáže zpracovat. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
 <translation id="4813512666221746211">Chyba sítě</translation>
@@ -345,6 +359,7 @@
 <translation id="4880827082731008257">Hledat v historii</translation>
 <translation id="4923417429809017348">Tato stránka byla přeložena z neznámého jazyka do jazyka <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Musí být uvedeno</translation>
+<translation id="4930497775425430760">Tato zpráva se zobrazila, protože je potřeba, aby při první návštěvě nového webu povolil přístup rodič.</translation>
 <translation id="495170559598752135">Akce</translation>
 <translation id="4958444002117714549">Rozbalit seznam</translation>
 <translation id="498957508165411911">Přeložit z jazyka <ph name="ORIGINAL_LANGUAGE" /> do jazyka <ph name="TARGET_LANGUAGE" />?</translation>
@@ -403,6 +418,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="560412284261940334">Správa není podporována</translation>
 <translation id="5610142619324316209">Zkontrolovat připojení</translation>
 <translation id="5617949217645503996">Web <ph name="HOST_NAME" /> vás přesměroval příliš mnohokrát.</translation>
+<translation id="5622887735448669177">Chcete tento web opustit?</translation>
 <translation id="5629630648637658800">Načítání nastavení zásady se nezdařilo</translation>
 <translation id="5631439013527180824">Neplatný token správy zařízení</translation>
 <translation id="5650551054760837876">Nebyly nalezeny žádné výsledky vyhledávání.</translation>
@@ -412,6 +428,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5785756445106461925">Tato stránka obsahuje ještě další nezabezpečené zdroje. Tyto zdroje budou během přenosu moci zobrazit jiní uživatelé a případní útočníci je mohou upravit a změnit tak vzhled stránky.</translation>
 <translation id="5810442152076338065">Vaše připojení k doméně <ph name="DOMAIN" /> je šifrováno za použití zastaralé šifrovací sady.</translation>
 <translation id="5813119285467412249">&amp;Opakovat přidání</translation>
+<translation id="5855235287355719921">Tato zpráva se zobrazila, protože správce k tomuto webu zablokoval přístup.</translation>
 <translation id="5857090052475505287">Nová složka</translation>
 <translation id="5869405914158311789">Tento web není dostupný</translation>
 <translation id="5869522115854928033">Uložená hesla</translation>
@@ -434,6 +451,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6093795393556121384">Vaše karta je ověřena</translation>
 <translation id="6146055958333702838">Zkontrolujte všechny kabely a restartujte všechny směrovače, modemy a další síťová zařízení, která používáte.</translation>
 <translation id="614940544461990577">Zkuste:</translation>
+<translation id="6150607114729249911">Jejda! K návštěvě této stránky potřebujete souhlas rodičů.</translation>
 <translation id="6151417162996330722">Certifikát serveru má příliš dlouhé období platnosti.</translation>
 <translation id="6154808779448689242">Vrácený token zásad neodpovídá aktuálnímu tokenu</translation>
 <translation id="6165508094623778733">Další informace</translation>
@@ -469,6 +487,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6596325263575161958">Možnosti šifrování</translation>
 <translation id="6610562986279010327">Tuto adresu URL v Chromu nelze otevřít</translation>
+<translation id="662080504995468778">Zůstat</translation>
 <translation id="6626108645084335023">Čeká se na test paměti DNS.</translation>
 <translation id="6628463337424475685">Vyhledávání <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">Web <ph name="SITE" /> nyní nemůžete navštívit, protože <ph name="BEGIN_LINK" />tento certifikát byl zrušen<ph name="END_LINK" />. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
@@ -517,11 +536,14 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7182878459783632708">Nebyly nastaveny žádné zásady</translation>
 <translation id="7186367841673660872">Tato stránka byla přeložena z jazyka<ph name="ORIGINAL_LANGUAGE" />do jazyka<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
+<translation id="720210938761809882">Stránka byla zablokována</translation>
 <translation id="7208899522964477531">Vyhledat <ph name="SEARCH_TERMS" /> na <ph name="SITE_NAME" /></translation>
 <translation id="7210863904660874423">Web <ph name="HOST_NAME" /> nevyhovuje bezpečnostním standardům.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /> o tomto problému.</translation>
 <translation id="7219179957768738017">Připojení používá protokol <ph name="SSL_VERSION" />.</translation>
 <translation id="7225807090967870017">ID sestavení</translation>
+<translation id="7231308970288859235">Jejda! K návštěvě této stránky potřebujete souhlas rodičů.</translation>
+<translation id="7246609911581847514">Tato zpráva se zobrazila, protože je potřeba, aby při první návštěvě nového webu povolil přístup správce.</translation>
 <translation id="725866823122871198">Soukromé připojení k doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nelze navázat, protože máte v počítači nastaveno chybné datum a čas (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7265986070661382626">Web <ph name="SITE" /> nyní nemůžete navštívit, protože <ph name="BEGIN_LINK" />používá připínání certifikátů<ph name="END_LINK" />. Síťové chyby a útoky jsou obvykle dočasné, tato stránka pravděpodobně později bude fungovat.</translation>
 <translation id="7269802741830436641">Tato stránka obsahuje smyčku přesměrování</translation>
@@ -586,8 +608,10 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7825436071901023927">Nebezpečný port <ph name="SITE" /></translation>
 <translation id="785549533363645510">To neznamená, že jste neviditelní. Anonymní režim neskryje vaši aktivitu před vaším zaměstnavatelem, poskytovatelem internetových služeb ani webovými stránkami, které navštívíte.</translation>
 <translation id="7887683347370398519">Zkontrolujte kód CVC a zkuste to znovu</translation>
+<translation id="7894616681410591072">Jejda! Přístup na tuto stránku vyžaduje povolení uživatele <ph name="NAME" />.</translation>
 <translation id="790025292736025802">Adresa <ph name="URL" /> nenalezena</translation>
 <translation id="7912024687060120840">Ve složce:</translation>
+<translation id="7920092496846849526">Zeptali jste se svého rodiče, zda můžete navštívit tuto stránku.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Certifikát serveru ještě není platný.</translation>
 <translation id="7951415247503192394">(32bitový)</translation>
@@ -596,6 +620,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="7977590112176369853">&lt;zadat dotaz&gt;</translation>
 <translation id="7983301409776629893">Vždy překládat z jazyka <ph name="ORIGINAL_LANGUAGE" /> do jazyka <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Není zadáno</translation>
+<translation id="8012647001091218357">V tuto chvíli se nám s vašimi rodiči nepodařilo spojit. Zkuste to prosím znovu.</translation>
 <translation id="8034522405403831421">Stránka je v jazyce <ph name="SOURCE_LANGUAGE" />. Chcete ji přeložit do jazyka <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Nebyly nalezeny žádné historické záznamy.</translation>
 <translation id="8088680233425245692">Zobrazení článku se nezdařilo.</translation>
@@ -608,10 +633,10 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8204086856545141093">Žádosti na tento server byly blokovány zásadou.</translation>
 <translation id="8218327578424803826">Přiřazené místo:</translation>
 <translation id="8225771182978767009">Uživatel, který tento počítač nastavoval, se rozhodl tento web blokovat.</translation>
-<translation id="8240446052814166959">Zkontrolujte nastavení proxy serveru nebo se obraťte na administrátora sítě a ověřte, zda proxy server funguje. <ph name="PLATFORM_TEXT" /></translation>
 <translation id="8241707690549784388">Stránka, kterou hledáte, používala vámi zadané informace. Návrat na tuto stránku by mohl způsobit, že akce, kterou jste provedli, bude opakována. Přejete si pokračovat?</translation>
 <translation id="8249320324621329438">Naposledy načteno:</translation>
 <translation id="8266098793847448402">Klikněte na <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" /> a poté na <ph name="BEGIN_BOLD" />Spustit<ph name="END_BOLD" />. Zadejte příkaz <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" /> a klikněte na <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
+<translation id="8279107132611114222">Váš požadavek na přístup k tomuto webu byl odeslán uživateli <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Pokud nevíte, co dělat, obraťte se na svého správce sítě.</translation>
 <translation id="8293206222192510085">Přidat záložku</translation>
 <translation id="8294431847097064396">Zdroj</translation>
@@ -633,6 +658,7 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="8559762987265718583">Soukromé připojení k doméně <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> nelze navázat, protože máte v zařízení nastaveno chybné datum a čas (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="856992080682148">Certifikát těchto webových stránek vyprší v roce 2017 nebo později a řetězec certifikátů obsahuje certifikát podepsaný pomocí technologie SHA-1.</translation>
 <translation id="8571890674111243710">Překlad stránky do jazyka: <ph name="LANGUAGE" />...</translation>
+<translation id="8591846766485502580">Tato zpráva se zobrazila, protože jeden z vašich rodičů k tomuto webu zablokoval přístup.</translation>
 <translation id="859285277496340001">V certifikátu není uvedeno, jakým způsobem lze zkontrolovat, zda nebyl zrušen.</translation>
 <translation id="8629916158020966496">Dokud nebude dokončena kontrola ověření registrace do podnikové sítě, je procházení internetu zakázáno. Zde poskytnutý diagnostický nástroj na řešení problémů s připojením však lze i přesto použít.</translation>
 <translation id="8647750283161643317">Obnovit u všech experimentů výchozí nastavení</translation>

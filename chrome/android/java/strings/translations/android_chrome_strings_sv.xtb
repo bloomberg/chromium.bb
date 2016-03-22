@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">Upptäck webbsidor som skickats av enheter i närheten. Chrome samlar webbsidor som är kopplade till enheter i din omgivning, skickar de sedan anonymt till en av Googles tjänster och väljer de som är mest användbara för dig och visar dem sedan.
 
 Bluetooth och Plats måste vara aktiverade om du vill använda Physical Web-tjänster.</translation>
+<translation id="1254090737195733114">Vill du importera data?</translation>
 <translation id="1258753120186372309">Googles doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Stopp</translation>
 <translation id="1285320974508926690">Översätt aldrig den här webbplatsen</translation>
@@ -108,6 +109,7 @@ Du kan kontrollera Physical Web i sekretessinställningarna för Chrome.</transl
 <translation id="238909021488141516">Ett fel uppstod när innehållet skulle laddas ned.</translation>
 <translation id="2414886740292270097">Mörk</translation>
 <translation id="2433507940547922241">Utseende</translation>
+<translation id="2439248520967274840">Du håller på att logga in på <ph name="TO_ACCOUNT" />. En del av de befintliga bokmärkena, historiken, lösenorden och andra inställningar har tidigare synkroniserats med <ph name="FROM_ACCOUNT" />. Vad vill du ska hända med befintlig data?</translation>
 <translation id="2440823041667407902">Platsåtkomst</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> sida har sparats offline</translation>
 <translation id="2476578072172137802">Inställningar för webbplatsen</translation>
@@ -147,6 +149,7 @@ Du kan kontrollera Physical Web i sekretessinställningarna för Chrome.</transl
 <translation id="2968755619301702150">Certifikatvisare</translation>
 <translation id="2996291259634659425">Skapa lösenfras</translation>
 <translation id="2996809686854298943">En webbadress måste anges.</translation>
+<translation id="3012408695656332380">Ersätt den här enhetens data med data från <ph name="TO_ACCOUNT" />. Du kan hämta befintlig data genom att byta tillbaka till <ph name="FROM_ACCOUNT" /> men data som har skapats efter att du loggade ut försvinner.</translation>
 <translation id="3029704984691124060">Lösenfraserna matchar inte</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Spara video</translation>
@@ -214,7 +217,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="403659016947612156">Det finns Physical Web-sidor i närheten</translation>
 <translation id="4042870126885713738">Visa förslag när det inte går att öppna en webbadress eller upprätta en anslutning</translation>
 <translation id="4056223980640387499">Sepia</translation>
-<translation id="4059119910594077751">Tryck på bakåtknappen om du vill lämna helskärmsläget.</translation>
 <translation id="4062305924942672200">Juridisk information</translation>
 <translation id="4089831646916293264">Det kan hända att den här funktionen förhindrar åtkomst till premiumdatatjänster från operatören.</translation>
 <translation id="4099578267706723511">Hjälp till att förbättra Chrome genom att skicka användningsstatistik och felrapporter till Google.</translation>
@@ -350,6 +352,7 @@ Du behöver bara öppna Chrome på datorn, öppna menyn och välja Logga in i Ch
 <translation id="5676636989614905379">Det går inte att spela upp video på <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Blockerad</translation>
 <translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
+<translation id="5708031556037168012">Behåll befintlig data på enheten och importera data till <ph name="TO_ACCOUNT" /> permanent.</translation>
 <translation id="5712189971979076230">Hjälp oss att prioritera vilka funktioner och förbättringar vi ska arbeta med genom att skicka information till Google om vilka filer, program och tjänster som körs när en krasch inträffar.
 
 Användningsstatistiken innehåller information som inställningar, knappklick och minnesanvändning. De innehåller inte webbadresser eller personliga uppgifter. Felrapporter innehåller information om systemet vid tidpunkten för kraschen och kan innehålla webbadresser eller personliga uppgifter beroende på vad som hände vid kraschen.</translation>
@@ -370,7 +373,6 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="585027516397408832">Databesparing har aktiverats</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5869522115854928033">Sparade lösenord</translation>
-<translation id="588258955323874662">Helskärm</translation>
 <translation id="5899349522111170522">Skapa ny fil</translation>
 <translation id="5902828464777634901">All data som sparats lokalt av webbplatsen tas bort, inklusive cookies.</translation>
 <translation id="5911030830365207728">Google Översätt</translation>
@@ -578,6 +580,7 @@ Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din intern
 <translation id="8497726226069778601">Det finns inget att se här … än</translation>
 <translation id="8514577642972634246">Starta inkognitoläget</translation>
 <translation id="8518901949365209398">Den här webbplatsen använder en svag säkerhetskonfiguration (signaturer med SHA-1), så anslutningen kanske inte är privat.</translation>
+<translation id="8525306231823319788">Helskärm</translation>
 <translation id="854522910157234410">Öppna sidan</translation>
 <translation id="8562452229998620586">Sparade lösenord visas här.</translation>
 <translation id="856481929701340285">Begär skrivbordsversion</translation>
@@ -609,7 +612,6 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="8912362522468806198">Google-konto</translation>
 <translation id="8920114477895755567">Väntar på föräldrauppgifter.</translation>
 <translation id="8931159598799892500">Chrome + Physical Web</translation>
-<translation id="8934455786738644694">Dra uppifrån och tryck på bakåtknappen om du vill lämna helskärmsläget.</translation>
 <translation id="8941248009481596111">Din anslutning till webbplatsen är privat.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Det går inte att nå webbadressen: <ph name="URL" /></translation>
@@ -628,6 +630,7 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="9100610230175265781">Lösenfras krävs</translation>
 <translation id="9133515669113036225">Återställ användaruppgifter för enheten</translation>
 <translation id="9137013805542155359">Visa original</translation>
+<translation id="9141510419986760385">Du håller på att byta synkroniseringskonto från <ph name="FROM_ACCOUNT" /> till <ph name="TO_ACCOUNT" />. Vad vill du ska hända med bokmärken, historik, lösenord och andra inställningar?</translation>
 <translation id="9151532766011674069">Bokmärket har sparats offline. Lagringsutrymmet är nästan fullt.</translation>
 <translation id="917685106653909562">Physical Web-sidor i närheten</translation>
 <translation id="9187199695613236444">Mobilanpassad vy</translation>

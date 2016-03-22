@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="tr">
 <translation id="101438888985615157">Ekranı 180 derece döndür</translation>
+<translation id="1015272884520659144">chrome.usb API'sı aracılığıyla doğrudan bir web uygulaması içinde kullanılması için çekirdek sürücüsünden çıkarılmasına izin verilen USB cihazlarının listesini tanımlar. Girişler, belirli bir donanımı tanımlamak için kullanılan USB Tedarikçi Tanımlayıcısı ve Ürün Tanımlayıcısı çiftlerinden oluşmaktadır.
+
+      Bu politika yapılandırılmazsa çıkarılabilecek USB cihazları listesi boş olarak değerlendirilir.</translation>
 <translation id="1017967144265860778">Giriş ekranında güç yönetimi</translation>
 <translation id="1019101089073227242">Kullanıcı veri dizinini ayarla</translation>
 <translation id="1022361784792428773">Kullanıcının yüklemesine engel olunacak uzantı kimlikleri (veya tümü için *)</translation>
@@ -240,6 +243,7 @@
 
       Bu ayar belirtilmemişse, kullanıcılar dosya seçme iletişim kutularını normal olarak açabilirler.</translation>
 <translation id="1897365952389968758">Tüm sitelerin JavaScript çalıştırmasına izin ver</translation>
+<translation id="193259052151668190">Çıkarılabilir USB cihazları beyaz listesi</translation>
 <translation id="1933378685401357864">Duvar kağıdı resmi</translation>
 <translation id="193900697589383153">Sistem tepsisine çıkış düğmesi ekler.
 
@@ -762,6 +766,7 @@
 <translation id="3528000905991875314">Alternatif hata sayfalarını etkinleştir</translation>
 <translation id="3547954654003013442">Proxy ayarları</translation>
 <translation id="3570008976476035109">Bu sitelerde eklentileri engelle</translation>
+<translation id="3591584750136265240">Giriş için kimlik doğrulama yöntemini yapılandır</translation>
 <translation id="3627678165642179114">Yazım denetimi Web hizmetini etkinleştir veya devre dışı bırak</translation>
 <translation id="3646859102161347133">Ekran büyüteci türünü ayarla</translation>
 <translation id="3653237928288822292">Varsayılan arama sağlayıcı simgesi</translation>
@@ -896,6 +901,7 @@
           Bu politika, "Oturum süresince çerezleri tut" seçeneğine ayarlanırsa, oturum kapatıldığında çerezler temizlenir. <ph name="PRODUCT_NAME" /> "arka plan modunda" çalışıyorsa, son pencere kapatıldığında oturumun kapatılmayabileceğini unutmayın. Bu çalışma biçimini yapılandırma ile ilgili daha fazla bilgi için lütfen "BackgroundModeEnabled" politikasına bakın.
 
           Bu politika ayarlanmamış halde bırakılırsa "AllowCookies" kullanılır ve kullanıcı bunu değiştirebilir.</translation>
+<translation id="4103289232974211388">Kullanıcı onayından sonra SAML IdP'ye yönlendir</translation>
 <translation id="410478022164847452">AC güçle çalışırken, boşta kalma işleminin uygulanmasından önce kullanıcı girişi olmadan geçecek süreyi belirtir.
 
           Bu politika ayarlandığında, <ph name="PRODUCT_OS_NAME" /> tarafından boşta kalma işleminin (ayrı olarak yapılandırılabilir) uygulanmasından önce kullanıcının boşta kalması gereken süreyi belirtir.
@@ -1928,6 +1934,11 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultPopupsSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
 <translation id="7529144158022474049">Dağılım faktörünü otomatik güncelle</translation>
+<translation id="7553535237300701827">Bu politika ayarlandığında, ayarın değerine bağlı olarak giriş kimlik doğrulama akışında aşağıdaki yollardan biri kullanılır:
+
+      GAIA seçeneğine ayarlanırsa, giriş işlemi normal GAIA kimlik doğrulama akışıyla yapılır.
+
+      SAML_INTERSTITIAL seçeneğine ayarlanırsa, giriş işleminde bir geçiş ekranı görüntülenerek kullanıcıya cihazın kaydolduğu alan adının SAML IdP'sini kullanarak giriş işlemine devam etme veya normal GAIA giriş akışına geri dönme seçeneği sunulur.</translation>
 <translation id="7567380065339179813">Bu sitelerde eklentilere izin ver</translation>
 <translation id="7593523670408385997">Önbelleğe alınan dosyaları diskte depolamak için <ph name="PRODUCT_NAME" /> tarafından kullanılacak önbellek boyutunu yapılandırır.
 
@@ -2309,6 +2320,7 @@ Ayrıca, RemoteAccessHostClientDomain konusuna bakın.</translation>
 
       Bu politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa konum bildirilmez.</translation>
 <translation id="8828766846428537606"><ph name="PRODUCT_NAME" /> varsayılan ana sayfasını yapılandırır ve kullanıcıların ana sayfayı değiştirmelerini önler. Kullanıcının ana sayfa ayarlarının tümüyle kilitlenmesi, yalnızca ana sayfayı yeni sekme sayfası olarak seçmeniz veya URL olarak ayarlayıp ardından bir ana sayfa URL'si belirlemeniz durumunda olur. Ana sayfa URL'sini belirtmezseniz, kullanıcı yine de 'chrome://newtab' şeklinde belirterek ana sayfayı yeni sekme sayfasına ayarlayabilir.</translation>
+<translation id="8833109046074170275">Kimlik doğrulamayı varsayılan GAIA akışıyla yap</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" />, Uygulamaları ve Uzantıları tek bir cihazı kullanan birden fazla kullanıcının yüklemesi için önbelleğe kaydederek her kullanıcı için tekrar indirilmesini önler.
       Bu politika yapılandırılmazsa veya değer 1 MB'tan az olursa, <ph name="PRODUCT_OS_NAME" /> varsayılan önbellek boyutunu kullanır.</translation>
 <translation id="8858642179038618439">YouTube Güvenlik Modunu zorla</translation>

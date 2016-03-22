@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">Your changes will take effect the next time you relaunch Google Chrome.</translation>
 <translation id="3444832043240812445">This page only shows information on your recent crashes if you <ph name="BEGIN_LINK" />enable crash reporting<ph name="END_LINK" />.</translation>
 <translation id="4010643444566880169">Chrome OS hasn’t completed its initial setup.</translation>
-<translation id="5423788048750135178">Go to the Chrome menu &gt; Settings &gt; (Advanced) Privacy
-          and disable "Prefetch page resources".
-          If this does not resolve the issue, we recommend re-enabling this option
-          again for improved performance.</translation>
 <translation id="6011049234605203654">Go to
           the Chrome menu &gt;
           <ph name="SETTINGS_TITLE" />
@@ -38,8 +34,6 @@
           &gt;
           LAN Settings
           and deselect "Use a proxy server for your LAN".</translation>
-<translation id="7396375882099008034">Allow Chrome to access the network in your firewall or antivirus
-        settings.</translation>
 <translation id="8187289872471304532">Go to
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
           and deselect any proxies that have been selected.</translation>

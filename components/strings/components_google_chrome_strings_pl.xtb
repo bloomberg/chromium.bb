@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">Zmiany zaczną obowiązywać po ponownym uruchomieniu Google Chrome.</translation>
 <translation id="3444832043240812445">Ta strona zawiera informacje o ostatnich awariach tylko w przypadku <ph name="BEGIN_LINK" />włączenia funkcji zgłaszania awarii<ph name="END_LINK" />.</translation>
 <translation id="4010643444566880169">Nie ukończono wstępnej konfiguracji systemu operacyjnego Chrome.</translation>
-<translation id="5423788048750135178">Wybierz kolejno menu Chrome &gt; Ustawienia &gt; (Zaawansowane) Prywatność
-          i wyłącz „Wstępnie pobieraj zasoby strony”.
-          Jeśli to nie rozwiąże problemu, zalecamy ponowne włączenie tej opcji,
-          by poprawić wydajność.</translation>
 <translation id="6011049234605203654">Wybierz
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE" />
@@ -38,8 +34,6 @@
           &gt;
           Ustawienia sieci LAN
           i usuń zaznaczenie „Użyj serwera proxy dla sieci LAN”.</translation>
-<translation id="7396375882099008034">Zezwalaj Chrome na korzystanie z sieci w ustawieniach zapory sieciowej
-        lub oprogramowania antywirusowego.</translation>
 <translation id="8187289872471304532">Wybierz
           Aplikacje &gt; Ustawienia systemowe &gt; Sieć &gt; Zaawansowane &gt; Serwery proxy
           i usuń zaznaczenie wszelkich wybranych serwerów proxy.</translation>

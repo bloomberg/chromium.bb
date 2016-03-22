@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">Vaše izmjene stupit će na snagu sljedeći put kada se ponovo pokrene Google Chrome.</translation>
 <translation id="3444832043240812445">Ova stranica prikazuje samo informacije o vašim nedavnim padovima ako <ph name="BEGIN_LINK" />omogućite izvješćivanja o padu<ph name="END_LINK" />.</translation>
 <translation id="4010643444566880169">OS Chrome nije dovršio početno postavljanje.</translation>
-<translation id="5423788048750135178">Otvorite izbornik Chromea &gt; Postavke &gt; (Napredno) Privatnost
-          i onemogućite "Unaprijed dohvati resurse stranice".
-          Ako se time ne riješi poteškoća, preporučujemo da ponovo omogućite tu opciju
-          radi bolje izvedbe.</translation>
 <translation id="6011049234605203654">Idite na
           izbornik Chrome &gt;
           <ph name="SETTINGS_TITLE" />
@@ -37,7 +33,6 @@
           &gt;
           Postavke LAN-a
           pa poništite odabir potvrdnog okvira "Upotrijebi proxy poslužitelj za LAN".</translation>
-<translation id="7396375882099008034">U postavkama vatrozida ili antivirusnog programa omogućite Chromeu da pristupa mreži.</translation>
 <translation id="8187289872471304532">Idite na
           Aplikacije &gt; Postavke sustava &gt; Mreža &gt; Napredno &gt; Proxy poslužitelji
           i poništite odabir proxy poslužitelja.</translation>

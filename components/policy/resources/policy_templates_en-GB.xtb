@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="101438888985615157">Rotate screen by 180 degrees</translation>
+<translation id="1015272884520659144">Defines the list of USB devices that are allowed to be detached from their kernel driver in order to be used through the chrome.usb API directly inside a web application. Entries are pairs of USB Vendor Identifier and Product Identifier to identify a specific hardware. If this policy is not configured, the list of a detachable USB devices is considered as empty.</translation>
 <translation id="1017967144265860778">Power management on the login screen</translation>
 <translation id="1019101089073227242">Set user data directory</translation>
 <translation id="1022361784792428773">Extension IDs the user should be prevented from installing (or * for all)</translation>
@@ -234,6 +235,7 @@
 
       If this setting is not set, users can open file selection dialogues as normal.</translation>
 <translation id="1897365952389968758">Allow all sites to run JavaScript (recommended)</translation>
+<translation id="193259052151668190">Whitelist of USB detachable devices</translation>
 <translation id="1933378685401357864">Wallpaper image</translation>
 <translation id="193900697589383153">Adds a logout button to the system tray.
 
@@ -758,6 +760,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3528000905991875314">Enable alternate error pages</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="3570008976476035109">Block plug-ins on these sites</translation>
+<translation id="3591584750136265240">Configure the login authentication behaviour</translation>
 <translation id="3627678165642179114">Enable or disable spell checking web service</translation>
 <translation id="3646859102161347133">Set screen magnifier type</translation>
 <translation id="3653237928288822292">Default search provider icon</translation>
@@ -899,6 +902,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this policy is set to 'Keep cookies for the duration of the session' then cookies will be cleared when the session closes. Note that if <ph name="PRODUCT_NAME" /> is running in 'background mode', the session may not close when the last window is closed. Please see the 'BackgroundModeEnabled' policy for more information about configuring this behaviour.
 
           If this policy is left not set, 'AllowCookies' will be used and the user will be able to change it.</translation>
+<translation id="4103289232974211388">Redirect to SAML IdP after user confirmation</translation>
 <translation id="410478022164847452">Specifies the length of time without user input after which the idle action is taken when running on AC power.
 
           When this policy is set, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> takes the idle action, which can be configured separately.
@@ -1941,6 +1945,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultPop-upsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
 <translation id="7529144158022474049">Auto update scatter factor</translation>
+<translation id="7553535237300701827">When this policy is set, the login authentication flow will happen in one of the following ways depending on the value of the setting:
+
+      If set to GAIA, login will be done via the normal GAIA authentication flow.
+
+      If set to SAML_INTERSTITIAL, login will show an interstitial screen offering the user the option to go forward with authentication via the SAML IdP of the device's enrolment domain or go back to the normal GAIA login flow.</translation>
 <translation id="7567380065339179813">Allow plug-ins on these sites</translation>
 <translation id="7593523670408385997">Configures the cache size that <ph name="PRODUCT_NAME" /> will use for storing cached files on the disk.
 
@@ -2327,6 +2336,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="8828766846428537606">Configure the default home page in <ph name="PRODUCT_NAME" /> and prevent users from changing it.
 
       The user's home page settings are only completely locked down, if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.</translation>
+<translation id="8833109046074170275">Authentication via the default GAIA flow</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> caches Apps and Extensions for installation by multiple users of a single device to avoid re-downloading them for each user.
       If this policy is not configured or the value is lower than 1 MB, <ph name="PRODUCT_OS_NAME" /> will use the default cache size.</translation>
 <translation id="8858642179038618439">Force YouTube Safety Mode</translation>

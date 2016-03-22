@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">Discover web pages sent by nearby objects. Chrome gathers web pages associated with objects around you, sends them anonymously to a Google service to find the ones most useful to you, then displays them.
 
 You must have Bluetooth and Location turned on in order to use the Physical Web.</translation>
+<translation id="1254090737195733114">Import data?</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
@@ -104,6 +105,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="238909021488141516">An error occurred while downloading the content.</translation>
 <translation id="2414886740292270097">Dark</translation>
 <translation id="2433507940547922241">Appearance</translation>
+<translation id="2439248520967274840">You’re signing in to <ph name="TO_ACCOUNT" />. Some of your existing bookmarks, history, passwords and other settings were previously synced to <ph name="FROM_ACCOUNT" />. What do you want to do with your existing data?</translation>
 <translation id="2440823041667407902">Location access</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> page saved offline</translation>
 <translation id="2476578072172137802">Site Settings</translation>
@@ -143,6 +145,7 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2968755619301702150">Certificate viewer</translation>
 <translation id="2996291259634659425">Create passphrase</translation>
 <translation id="2996809686854298943">URL required</translation>
+<translation id="3012408695656332380">Replace this device’s data with <ph name="TO_ACCOUNT" />’s data. You can retrieve your existing data by switching back to <ph name="FROM_ACCOUNT" />, but data created since you signed out will be lost.</translation>
 <translation id="3029704984691124060">Passphrases do not match</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Get help<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Save video</translation>
@@ -210,7 +213,6 @@ To adjust your search term, long press to select. To refine your search, slide t
 <translation id="403659016947612156">Physical web pages are nearby</translation>
 <translation id="4042870126885713738">Show suggestions when a web address does not resolve or a connection cannot be made</translation>
 <translation id="4056223980640387499">Sepia</translation>
-<translation id="4059119910594077751">Touch the back button to exit full screen.</translation>
 <translation id="4062305924942672200">Legal information</translation>
 <translation id="4089831646916293264">This feature may interfere with access to premium data services provided by your operator.</translation>
 <translation id="4099578267706723511">Help make Chrome better by sending usage statistics and crash reports to Google.</translation>
@@ -346,6 +348,7 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="5676636989614905379">Cannot play video on <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Blocked</translation>
 <translation id="5684874026226664614">Oops. This page could not be translated.</translation>
+<translation id="5708031556037168012">Keep existing data on your device and permanently import the data to <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5712189971979076230">Help us to prioritise the features and improvements that we should work on by sending Google information about the files, applications and services running whenever you experience a crash.
 
         Usage statistics include information such as preferences, button clicks and memory usage. They do not include web page URLs or any personal information. Crash reports contain system information at the time of the crash, and may contain web page URLs or personal information, depending on what was happening at the time of the crash.</translation>
@@ -366,7 +369,6 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="585027516397408832">Data Saver enabled</translation>
 <translation id="5860033963881614850">Off</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
-<translation id="588258955323874662">Full screen</translation>
 <translation id="5899349522111170522">Create new file</translation>
 <translation id="5902828464777634901">All local data stored by this website, including cookies, will be deleted.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -574,6 +576,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8497726226069778601">Nothing to see here… yet</translation>
 <translation id="8514577642972634246">Enter incognito mode</translation>
 <translation id="8518901949365209398">This site uses a weak security configuration (SHA-1 signatures), so your connection may not be private.</translation>
+<translation id="8525306231823319788">Full screen</translation>
 <translation id="854522910157234410">Open this page:</translation>
 <translation id="8562452229998620586">Your saved passwords will appear here.</translation>
 <translation id="856481929701340285">Request desktop site</translation>
@@ -603,7 +606,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="8920114477895755567">Waiting for details of parents.</translation>
 <translation id="8931159598799892500">Chrome + Physical Web</translation>
-<translation id="8934455786738644694">Drag from top and touch the back button to exit full screen.</translation>
 <translation id="8941248009481596111">Your connection to this site is private.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Navigation is unreachable: <ph name="URL" /></translation>
@@ -622,6 +624,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="9100610230175265781">Passphrase required</translation>
 <translation id="9133515669113036225">Reset device credentials</translation>
 <translation id="9137013805542155359">Show original</translation>
+<translation id="9141510419986760385">You’re switching sync accounts from <ph name="FROM_ACCOUNT" /> to <ph name="TO_ACCOUNT" />. What do you want to do with your existing bookmarks, history, passwords and other settings?</translation>
 <translation id="9151532766011674069">Bookmark saved offline. Storage almost full.</translation>
 <translation id="917685106653909562">Physical Web pages nearby</translation>
 <translation id="9187199695613236444">Mobile-friendly view</translation>

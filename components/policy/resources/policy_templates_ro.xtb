@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="101438888985615157">Rotește ecranul la 180 de grade</translation>
+<translation id="1015272884520659144">Definește lista de dispozitive USB care pot fi detașate de driverul kernel pentru a fi folosite prin API-ul chrome.usb direct într-o aplicație web. Pentru a se identifica un anumit hardware, intrările sunt perechi formate din Identificatorul furnizorului USB și Identificatorul produsului USB.
+
+      Dacă această politică nu este configurată, lista de dispozitive USB detașabile este considerată necompletată.</translation>
 <translation id="1017967144265860778">Gestionarea consumului de energie pe ecranul de conectare</translation>
 <translation id="1019101089073227242">Setează directorul pentru datele utilizatorului</translation>
 <translation id="1022361784792428773">ID-urile extensiilor pe care utilizatorul nu are permisiunea să le instaleze (sau * pentru toate)</translation>
@@ -217,6 +220,7 @@
 <translation id="186719019195685253">Acțiunea de urmat după trecerea intervalului de inactivitate dacă se utilizează o sursă de c.a.</translation>
 <translation id="187819629719252111">Permite accesul la fișierele locale de pe computer, permițând <ph name="PRODUCT_NAME" /> să afișeze casete de dialog pentru selectarea fișierelor. Dacă activați această setare, utilizatorii pot deschide casete de dialog pentru selectarea fișierelor ca de obicei. Dacă dezactivați această setare, ori de câte ori utilizatorul efectuează o acțiune care ar determina apariția unei casete de dialog pentru selectarea fișierelor (cum ar fi importarea marcajelor, încărcarea fișierelor, salvarea linkurilor etc.), este afișat un mesaj și se presupune că utilizatorul a făcut clic pe Anulați în caseta de dialog. Dacă această setare nu este setată, utilizatorii pot deschide ca de obicei casetele de dialog pentru selectarea fișierelor.</translation>
 <translation id="1897365952389968758">Permite tuturor site-urilor să ruleze JavaScript</translation>
+<translation id="193259052151668190">Listă albă de dispozitive USB detașabile</translation>
 <translation id="1933378685401357864">Imagine de fundal</translation>
 <translation id="193900697589383153">Adaugă un buton de deconectare în bara de sistem.
 
@@ -693,6 +697,7 @@
 <translation id="3528000905991875314">Activează pagini de eroare alternative</translation>
 <translation id="3547954654003013442">Setări proxy</translation>
 <translation id="3570008976476035109">Blochează pluginurile pe aceste site-uri</translation>
+<translation id="3591584750136265240">Configurează comportamentul de autentificare la conectare</translation>
 <translation id="3627678165642179114">Activați sau dezactivați serviciul web de verificare a ortografiei</translation>
 <translation id="3646859102161347133">Setați tipul lupei pentru ecran</translation>
 <translation id="3653237928288822292">Pictogramă pentru furnizorul de căutare prestabilit</translation>
@@ -808,6 +813,7 @@
           Dacă această politică este setată la „Păstrează cookie-urile pe durata sesiunii”, cookie-urile vor fi șterse la finalizarea sesiunii. Reține că, dacă <ph name="PRODUCT_NAME" /> rulează în „modul fundal”, este posibil ca sesiunea să nu se închidă atunci când ultima fereastră este închisă. Consultă politica „BackgroundModeEnabled” pentru mai multe informații despre configurarea acestui comportament.
 
           Dacă politica nu este configurată, va fi folosită politica „AllowCookies”, iar utilizatorul o va putea schimba.</translation>
+<translation id="4103289232974211388">Redirecționează către furnizorul de identitate SAML după confirmarea utilizatorului</translation>
 <translation id="410478022164847452">Specifică intervalul de timp fără intervenția utilizatorului după care se ia măsura pentru inactivitate la funcționarea pe c.a.
 
           Dacă politica este setată, aceasta specifică intervalul de timp în care utilizatorul trebuie să rămână inactiv înainte ca <ph name="PRODUCT_OS_NAME" /> să ia măsura pentru inactivitate, care poate fi configurată separat.
@@ -1727,6 +1733,11 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7523476810162382273">Trimite semnale de monitorizare serverului de gestionare</translation>
 <translation id="7529100000224450960">Vă permite să setați o listă de modele pentru adresele URL care specifică site-urile ce au permisiunea să deschidă ferestre de tip pop-up. Dacă această politică nu este setată, va fi utilizată valoarea prestabilită la nivel global pentru toate site-urile, fie din politica „DefaultPopupsSetting”, în cazul în care aceasta este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="7529144158022474049">Factor de difuzare pentru actualizări automate</translation>
+<translation id="7553535237300701827">Când această politică este configurată, fluxul de autentificare la conectare va fi unul dintre următoarele, în funcție de valoarea setării:
+
+      dacă valoarea este setată la GAIA, conectarea se va efectua prin fluxul obișnuit de autentificare GAIA;
+
+      dacă valoarea este setată la SAML_INTERSTITIAL, conectarea va afișa un ecran intercalat care îi oferă utilizatorului două opțiuni: să continue autentificarea folosind furnizorul de identitate SAML de pe domeniul de înregistrare al dispozitivului sau să revină la fluxul obișnuit de conectare GAIA.</translation>
 <translation id="7567380065339179813">Permite pluginuri pe aceste site-uri</translation>
 <translation id="7593523670408385997">Configurează dimensiunea memoriei cache pe care <ph name="PRODUCT_NAME" /> o va utiliza pentru a stoca pe disc fișierele salvate în memoria cache.
 
@@ -2080,6 +2091,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8828766846428537606">Configurează pagina de pornire prestabilită din <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să o modifice.
 
       Dacă selectezi ca pagina de pornire să fie pagina Filă nouă sau o adresă URL (și indici o adresă URL pentru aceasta), setările pentru pagina de pornire a utilizatorului sunt în întregime blocate. Dacă nu specifici adresa URL a paginii de pornire, utilizatorul poate seta ca pagină de pornire pagina Filă nouă specificând „chrome://newtab”.</translation>
+<translation id="8833109046074170275">Autentificare prin fluxul GAIA prestabilit</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> salvează în memoria cache aplicațiile și extensiile pentru instalare atunci când mai mulți utilizatori folosesc același dispozitiv, pentru a evita ca fiecare utilizator să le descarce din nou.
       Dacă această politică nu este configurată sau valoarea este mai mică de 1 MB, <ph name="PRODUCT_OS_NAME" /> va folosi dimensiunea prestabilită a memoriei cache.</translation>
 <translation id="8858642179038618439">Forțează Modul sigur pe YouTube</translation>

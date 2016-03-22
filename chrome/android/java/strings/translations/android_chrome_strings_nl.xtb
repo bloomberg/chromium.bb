@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">Ontdek webpagina's die worden verzonden door objecten in de buurt. Chrome verzamelt webpagina's die zijn gekoppeld aan objecten om je heen, stuurt ze anoniem naar een Google-service om de nuttigste pagina's voor jou te vinden en geeft ze aan je weer.
 
 Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken.</translation>
+<translation id="1254090737195733114">Gegevens importeren?</translation>
 <translation id="1258753120186372309">Google-doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1285320974508926690">Deze site nooit vertalen</translation>
@@ -108,6 +109,7 @@ Je kunt het Fysieke web beheren in de privacyinstellingen van Chrome.</translati
 <translation id="238909021488141516">Er is een fout opgetreden tijdens het downloaden van de inhoud.</translation>
 <translation id="2414886740292270097">Donker</translation>
 <translation id="2433507940547922241">Vormgeving</translation>
+<translation id="2439248520967274840">Je logt in op <ph name="TO_ACCOUNT" />. Sommige van je bestaande bladwijzers, geschiedenis, wachtwoorden en andere instellingen zijn eerder gesynchroniseerd met <ph name="FROM_ACCOUNT" />. Wat wil je doen met je bestaande gegevens?</translation>
 <translation id="2440823041667407902">Locatietoegang</translation>
 <translation id="2470327855284432041">Pagina van <ph name="PAGE_SIZE_STRING" /> offline opgeslagen</translation>
 <translation id="2476578072172137802">Site instellingen</translation>
@@ -147,6 +149,7 @@ Je kunt het Fysieke web beheren in de privacyinstellingen van Chrome.</translati
 <translation id="2968755619301702150">Certificaatviewer</translation>
 <translation id="2996291259634659425">Wachtwoordzin maken</translation>
 <translation id="2996809686854298943">URL vereist</translation>
+<translation id="3012408695656332380">De gegevens van dit apparaat vervangen door de gegevens van <ph name="TO_ACCOUNT" />. Je kunt je bestaande gegevens ophalen door terug te schakelen naar <ph name="FROM_ACCOUNT" />, maar gegevens die zijn gemaakt nadat je bent uitgelogd, gaan verloren.</translation>
 <translation id="3029704984691124060">Wachtwoordzinnen komen niet overeen</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Hulp krijgen<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Video opslaan</translation>
@@ -214,7 +217,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="403659016947612156">Er zijn Fysieke webpagina's in de buurt</translation>
 <translation id="4042870126885713738">Suggesties weergeven wanneer een webadres onjuist is of er geen verbinding kan worden gemaakt</translation>
 <translation id="4056223980640387499">Sepia</translation>
-<translation id="4059119910594077751">Tik op de knop Terug om het volledige scherm te sluiten.</translation>
 <translation id="4062305924942672200">Juridische informatie</translation>
 <translation id="4089831646916293264">Deze functie kan problemen veroorzaken met toegang tot premium gegevensservices geleverd door je provider.</translation>
 <translation id="4099578267706723511">Verzend automatisch gebruiksstatistieken en crashmeldingen naar Google.</translation>
@@ -350,6 +352,7 @@ Open Chrome op je computer, ga naar het menu en selecteer 'Inloggen bij Chrome'.
 <translation id="5676636989614905379">Kan video niet afspelen op <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Geblokkeerd</translation>
 <translation id="5684874026226664614">Deze pagina kan niet worden vertaald.</translation>
+<translation id="5708031556037168012">Bestaande gegevens op je apparaat behouden en de gegevens permanent importeren in <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5712189971979076230">Help ons prioriteit aan te geven aan de functies en verbeteringen waaraan we moeten werken door Google informatie te sturen over de bestanden, apps en services die worden uitgevoerd op het moment dat er een crash plaatsvindt.
 
 Gebruiksstatistieken omvatten informatie zoals voorkeuren, klikken op knoppen en geheugengebruik. Ze bevatten geen URL's van webpagina's of persoonlijke gegevens. Crashrapporten bevatten systeeminformatie ten tijde van de crash en kunnen URL's van webpagina's of persoonlijke gegevens bevatten, afhankelijk van wat er gebeurde op het moment van de crash.</translation>
@@ -370,7 +373,6 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="585027516397408832">Databesparing ingeschakeld</translation>
 <translation id="5860033963881614850">Uit</translation>
 <translation id="5869522115854928033">Opgeslagen wachtwoorden</translation>
-<translation id="588258955323874662">Volledig scherm</translation>
 <translation id="5899349522111170522">Nieuw bestand maken</translation>
 <translation id="5902828464777634901">Alle lokale gegevens die zijn opgeslagen door deze website, inclusief cookies, worden verwijderd.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
@@ -578,6 +580,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="8497726226069778601">Hier is nog niets te zien</translation>
 <translation id="8514577642972634246">Incognitomodus starten</translation>
 <translation id="8518901949365209398">Deze site gebruikt een zwakke beveiligingsconfiguratie (SHA-1-handtekeningen), dus je verbinding is mogelijk niet privé.</translation>
+<translation id="8525306231823319788">Volledig scherm</translation>
 <translation id="854522910157234410">Deze pagina openen</translation>
 <translation id="8562452229998620586">Opgeslagen wachtwoorden worden hier weergegeven.</translation>
 <translation id="856481929701340285">Desktopversie opvragen</translation>
@@ -609,7 +612,6 @@ Maak verbinding met internet en speel je gedownloade inhoud af om nieuwe licenti
 <translation id="8912362522468806198">Google-account</translation>
 <translation id="8920114477895755567">Wachten op gegevens van ouders.</translation>
 <translation id="8931159598799892500">Chrome + Fysieke web</translation>
-<translation id="8934455786738644694">Sleep vanaf de bovenkant en tik op de knop Terug om het volledige scherm te sluiten.</translation>
 <translation id="8941248009481596111">Je verbinding met deze site is privé.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Navigatie is onbereikbaar: <ph name="URL" /></translation>
@@ -628,6 +630,7 @@ Maak verbinding met internet en speel je gedownloade inhoud af om nieuwe licenti
 <translation id="9100610230175265781">Wachtwoordzin vereist</translation>
 <translation id="9133515669113036225">Apparaatinloggegevens opnieuw instellen</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
+<translation id="9141510419986760385">Je wijzigt het synchronisatieaccount van <ph name="FROM_ACCOUNT" /> in <ph name="TO_ACCOUNT" />. Wat wil je doen met je bestaande bladwijzers, geschiedenis, wachtwoorden en andere instellingen?</translation>
 <translation id="9151532766011674069">Bladwijzer offline opgeslagen. Opslagruimte bijna vol.</translation>
 <translation id="917685106653909562">Fysieke webpagina's in de buurt</translation>
 <translation id="9187199695613236444">Mobielvriendelijke weergave</translation>

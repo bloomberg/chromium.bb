@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
 <translation id="101438888985615157">Sukanje zaslona za 180 stopinj</translation>
+<translation id="1015272884520659144">Določa seznam naprav USB, za katere je dovoljena prekinitev povezave z gonilnikom jedra zaradi uporabe prek API-ja chrome.usb neposredno v spletni aplikaciji. Vnosi so pari, sestavljeni iz identifikatorja proizvajalca za USB in identifikatorja izdelka, ki omogočajo prepoznavo določene strojne opreme.
+
+      Če ta pravilnik ni nastavljen, se obravnava, da je seznam naprav USB, katerih povezavo je mogoče prekiniti, prazen.</translation>
 <translation id="1017967144265860778">Upravljanje porabe na zaslonu za prijavo</translation>
 <translation id="1019101089073227242">Nastavitev imenika za uporabniške podatke</translation>
 <translation id="1022361784792428773">ID-ji razširitev, katerih namestitev je treba uporabniku preprečiti (ali * za vse)</translation>
@@ -235,6 +238,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
       Če ta možnost ni nastavljena, lahko uporabniki kot običajno odpirajo pogovorna okna za izbiro datotek.</translation>
 <translation id="1897365952389968758">Dovoli izvajanje JavaScripta vsem mestom</translation>
+<translation id="193259052151668190">Seznam dovoljenih naprav USB, katerih povezavo je mogoče prekiniti</translation>
 <translation id="1933378685401357864">Slika za ozadje</translation>
 <translation id="193900697589383153">Doda gumb za odjavo v sistemsko vrstico.
 
@@ -759,6 +763,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3528000905991875314">Omogoči nadomestne strani za napake</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="3570008976476035109">Blokiraj vtičnike na teh mestih</translation>
+<translation id="3591584750136265240">Konfiguriranje preverjanja pristnosti pri prijavi</translation>
 <translation id="3627678165642179114">Omogoči ali onemogoči spletno storitev preverjanja črkovanja</translation>
 <translation id="3646859102161347133">Nastavitev vrste lupe</translation>
 <translation id="3653237928288822292">Privzeta ikona iskalnika</translation>
@@ -899,6 +904,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Če je ta pravilnik nastavljen na »Ohrani piškotke za obdobje trajanja seje«, se ob zaprtju seje piškotki izbrišejo. Če se <ph name="PRODUCT_NAME" /> izvaja v ozadju, se seja ob zaprtju zadnjega okna morda ne bo zaprla. Več informacij o konfiguriranju tega delovanja je na voljo v pravilniku »BackgroundModeEnabled«.
 
           Če ta pravilnik ni nastavljen, se uporabi »AllowCookies« in uporabnik bo lahko to spremenil.</translation>
+<translation id="4103289232974211388">Preusmeritev na SAML IdP po potrditvi uporabnika</translation>
 <translation id="410478022164847452">Določa trajanje uporabnikove nedejavnosti, po preteku katere se izvede dejanje ob nedejavnosti, če se naprava napaja iz električnega omrežja.
 
           Če je pravilnik nastavljen, določa, koliko časa mora biti uporabnik nedejaven, preden <ph name="PRODUCT_OS_NAME" /> izvede dejanje ob nedejavnosti, ki ga je mogoče konfigurirati posebej.
@@ -1942,6 +1948,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultPopupsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="7529144158022474049">Faktor razpršitve samodejnega posodabljanja</translation>
+<translation id="7553535237300701827">Če je ta pravilnik nastavljen, je glede na vrednost nastavitve preverjanje pristnosti pri prijavi takšno:
+
+      Če je nastavljen na GAIA, je prijava izvedena prek običajnega preverjanja pristnosti GAIA.
+
+      Če je nastavljen na SAML_INTERSTITIAL, je pri prijavi prikazan vmesni zaslon, na katerem se lahko uporabnik odloči, ali bo nadaljeval preverjanje pristnosti prek SAML IdP domene za včlanitev naprave ali se bo vrnil na običajno prijavo GAIA.</translation>
 <translation id="7567380065339179813">Dovoli vtičnike na teh mestih</translation>
 <translation id="7593523670408385997">Nastavi velikost predpomnilnika, ki ga bo izdelek <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih datotek na disku.
 
@@ -2331,6 +2342,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8828766846428537606">Nastavi privzeto domačo stran za <ph name="PRODUCT_NAME" /> in prepreči, da bi jo uporabniki spreminjali.
 
       Nastavitve domače strani uporabnika so popolnoma zaklenjene, če nastavite, da je stran z novim zavihkom domača stran oziroma izberete URL za domačo stran. Če ne navedete URL-ja domače strani, bo lahko uporabnik z ukazom »chrome://newtab« še vedno nastavil, da je domača stran stran z novim zavihkom.</translation>
+<translation id="8833109046074170275">Preverjanje pristnosti prek običajne prijave GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> predpomni aplikacije in razširitve za namestitev za več uporabnikov posamezne naprave, tako jih ni treba prenašati znova za posameznega uporabnika.
       Če ta pravilnik ni nastavljen ali je vrednost nižja od 1 MB, bo sistem <ph name="PRODUCT_OS_NAME" /> uporabil privzeto velikost predpomnilnika.</translation>
 <translation id="8858642179038618439">Vsiljenje varnega načina v YouTubu</translation>

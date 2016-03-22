@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="101438888985615157">180도 화면 회전</translation>
+<translation id="1015272884520659144">웹 애플리케이션 내에서 chrome.usb API를 통해 사용하기 위해 커널 드라이버에서 분리될 수 있는 USB 기기 목록을 정의합니다. 항목은 특정 하드웨어를 판별하기 위한 USB 공급업체 식별자 및 제품 식별자의 쌍입니다.
+
+      이 정책이 구성되지 않은 경우 분리 가능한 USB 기기 목록은 빈 것으로 간주됩니다.</translation>
 <translation id="1017967144265860778">로그인 화면의 전원 관리</translation>
 <translation id="1019101089073227242">사용자 데이터 디렉토리 설정</translation>
 <translation id="1022361784792428773">사용자가 설치할 수 없는 확장 프로그램 ID(또는 전체 확장 프로그램의 경우 *)</translation>
@@ -235,6 +238,7 @@
 
       설정하지 않으면 사용자는 정상적으로 파일 선택 대화 상자를 열 수 있습니다.</translation>
 <translation id="1897365952389968758">모든 사이트에서 자바스크립트 실행 허용</translation>
+<translation id="193259052151668190">USB 분리 가능 기기 허용 목록</translation>
 <translation id="1933378685401357864">배경화면 이미지</translation>
 <translation id="193900697589383153">작업 표시줄에 로그아웃 버튼을 추가합니다.
 
@@ -757,6 +761,7 @@
 <translation id="3528000905991875314">대체 오류 페이지 사용</translation>
 <translation id="3547954654003013442">프록시 설정</translation>
 <translation id="3570008976476035109">이 사이트에서 플러그인 차단</translation>
+<translation id="3591584750136265240">로그인 인증 동작 설정</translation>
 <translation id="3627678165642179114">맞춤법 검사 웹 서비스 사용 또는 사용 중지</translation>
 <translation id="3646859102161347133">화면 돋보기 유형 설정</translation>
 <translation id="3653237928288822292">기본 검색 공급자 아이콘</translation>
@@ -891,6 +896,7 @@
           정책이 '세션이 지속되는 동안 쿠키를 유지합니다'로 설정된 경우에는 세션이 종료되면 쿠키가 삭제됩니다. <ph name="PRODUCT_NAME" />이(가) '백그라운드 모드'로 실행 중인 경우 마지막 창이 닫혀도 세션이 종료되지 않을 수 있습니다. 이 동작 설정에 관한 자세한 내용은 'BackgroundModeEnabled' 정책을 참조하세요.
 
           이 정책이 설정되어 있지 않은 경우에는 'AllowCookies'가 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
+<translation id="4103289232974211388">사용자 확인 후 SAML IdP로 리디렉션</translation>
 <translation id="410478022164847452">AC 전원으로 실행할 때 사용자 입력이 없어서 유휴 조치가 취해질 때까지 걸리는 시간을 지정합니다.
 
           이 정책이 설정되어 있으면 <ph name="PRODUCT_OS_NAME" />에서 유휴 조치를 취하기 전에 사용자가 유휴 상태여야 하는 시간이 지정되며, 별도로 설정할 수 있습니다.
@@ -1931,6 +1937,11 @@
 
           이 정책을 설정하지 않은 경우, 'DefaultPopupsSetting' 정책이 설정된 경우엔 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
 <translation id="7529144158022474049">분산 요소 자동 업데이트</translation>
+<translation id="7553535237300701827">이 정책이 설정되면 설정값에 따라 로그인 인증 절차가 다음 방식 중 하나가 됩니다.
+
+      GAIA로 설정된 경우 표준 GAIA 인증 절차에 따라 로그인이 이뤄집니다.
+
+      SAML_INTERSTITIAL로 설정된 경우 사용자에게 기기 등록 도메인의 SAML IdP를 통해 인증을 진행하거나 표준 GAIA 로그인 절차로 돌아가도록 안내하는 로그인 화면이 표시됩니다.</translation>
 <translation id="7567380065339179813">이 사이트에서 플러그인 허용</translation>
 <translation id="7593523670408385997"><ph name="PRODUCT_NAME" />이(가) 캐시된 미디어 파일을 디스크에 저장할 때 사용하는 캐시 크기를 설정합니다.
 
@@ -2312,6 +2323,7 @@
 
       정책이 설정되지 않았거나 잘못 설정되어 있으면 위치가 신고되지 않습니다.</translation>
 <translation id="8828766846428537606"><ph name="PRODUCT_NAME" />PRODUCT_NAME의 기본 홈페이지를 설정하고 사용자가 변경하지 못하게 합니다. 사용자의 홈페이지 설정은 홈페이지를 새 탭 페이지로 지정하거나 URL로 설정하여 홈페이지 URL을 지정하는 경우에만 완전히 잠깁니다. 홈페이지 URL을 지정하지 않아도 사용자는 계속 'chrome://newtab'을 지정하여 홈페이지를 새 탭 페이지로 설정할 수 있습니다.</translation>
+<translation id="8833109046074170275">기본 GAIA 절차에 따라 인증</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" />은(는) 하나의 기기를 같이 사용하는 여러 사용자가 설치하는 앱 및 확장 프로그램을 캐시하여 각 사용자가 다시 다운로드할 필요가 없게 합니다.
       이 정책이 설정되지 않았거나 값이 1MB 미만인 경우 <ph name="PRODUCT_OS_NAME" />에서 기본 캐시 크기를 사용합니다.</translation>
 <translation id="8858642179038618439">YouTube 안전 모드를 강제로 사용합니다.</translation>

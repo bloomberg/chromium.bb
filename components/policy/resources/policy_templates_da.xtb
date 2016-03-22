@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="101438888985615157">Roter skærmen 180 grader</translation>
+<translation id="1015272884520659144">Definerer listen over USB-enheder, der gerne må frigøres fra deres kernedriver, så de kan bruges via chrome.usb API direkte i en webapplikation. Poster er par bestående af et USB-leverandør-id og et produkt-id til identifikation af en bestemt hardware.
+
+      Hvis denne politik ikke konfigureres, regnes listen over USB-enheder, der kan frigøres, som tom.</translation>
 <translation id="1017967144265860778">Strømstyring på loginskærmen</translation>
 <translation id="1019101089073227242">Angiv brugerdatamappe</translation>
 <translation id="1022361784792428773">Udvidelses-id'er, som brugeren skal forhindres i at installere (eller * for alle)</translation>
@@ -212,6 +215,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="186719019195685253">Den handling, der igangsættes ved inaktiv forsinkelse på fast strømforsyning</translation>
 <translation id="187819629719252111">Giver adgang til lokale filer på maskinen ved at lade <ph name="PRODUCT_NAME" /> vise dialogbokse om filvalg. Hvis du aktiverer denne indstilling, kan brugerne åbne dialogbokse om filvalg som normalt. Hvis du deaktiverer denne indstilling, vises der en meddelelse i stedet for en dialogboks om filvalg, hver gang brugeren foretager en handling, der ville have frembragt en dialogboks om filvalg (såsom at importere bogmærker, uploade filer, gemme links osv.), og det antages, at brugeren har trykket på Annuller i dialogboksen om filvalg. Hvis denne indstilling ikke angives, kan brugerne åbne dialogbokse om filvalg som normalt.</translation>
 <translation id="1897365952389968758">Tillad, at alle websites kører JavaScript</translation>
+<translation id="193259052151668190">Hvidliste over USB-enheder, der kan frigøres</translation>
 <translation id="1933378685401357864">Baggrundsbillede</translation>
 <translation id="193900697589383153">Tilføjer en log ud-knap til systembakken.
 
@@ -690,6 +694,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3528000905991875314">Aktiver alternative fejlsider</translation>
 <translation id="3547954654003013442">Proxyindstillinger</translation>
 <translation id="3570008976476035109">Bloker plugins på disse websites</translation>
+<translation id="3591584750136265240">Konfigurer adfærden for logingodkendelse</translation>
 <translation id="3627678165642179114">Aktivér eller deaktiver webtjenesten stavekontrol</translation>
 <translation id="3646859102161347133">Indstil type af lup</translation>
 <translation id="3653237928288822292">Ikon for standardsøgemaskine</translation>
@@ -803,6 +808,7 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
           Hvis denne politik er angivet til "Behold cookies under sessionen", så ryddes cookies, når sessionen afsluttes. Bemærk, at sessionen muligvis ikke afsluttes, når det sidste vindue lukkes, hvis <ph name="PRODUCT_NAME" /> kører i "baggrundstilstand". Se politikken "BackgroundModeEnabled" for at få flere oplysninger om konfiguration af denne adfærd.
 
           Hvis denne politik ikke angives, anvendes "AllowCookies", og brugeren kan ændre dette.</translation>
+<translation id="4103289232974211388">Omdiriger til SAML IdP efter brugerbekræftelse</translation>
 <translation id="410478022164847452">Angiver den tid uden brugerinput, der udløser inaktivitetshandlingen, når strømforsyningen er tilsluttet.
 
           Hvis denne politik indstilles, angives den tid, som brugeren skal være inaktiv, før <ph name="PRODUCT_OS_NAME" /> udløser inaktivitetshandlingen, hvilket kan konfigureres separat.
@@ -1736,6 +1742,11 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7523476810162382273">Send overvågningsimpulser til administrationsserveren</translation>
 <translation id="7529100000224450960">Giver dig mulighed for at oprette en liste over webadressemønstre med websites, der må åbne pop op-vinduer. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultPopupsSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="7529144158022474049">Automatisk opdatering af spredningsfaktor</translation>
+<translation id="7553535237300701827">Når denne politik er indstillet, sker godkendelsesprocessen for login på én af følgende måder afhængigt af værdien for indstillingen:
+
+      Hvis den er indstillet til GAIA, sker login via den normale godkendelsesproces for GAIA.
+
+      Hvis den er indstillet til SAML_INTERSTITIAL, vises der ved login en mellemliggende skærm, som giver brugeren mulighed for enten at fortsætte med godkendelse via SAML IdP for enhedens registreringsdomæne eller gå tilbage til den normale loginproces for GAIA.</translation>
 <translation id="7567380065339179813">Tillad plugins på disse websites</translation>
 <translation id="7593523670408385997">Konfigurerer cachestørrelsen, som <ph name="PRODUCT_NAME" /> vil bruge til at lagre cachelagrede filer på disken.
 
@@ -2092,6 +2103,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Hvis politikken ikke er angivet eller angivet til falsk, rapporteres placeringen ikke.</translation>
 <translation id="8828766846428537606">Konfigurerer standardstartsiden i <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at ændre den. Brugerens startsideindstillinger låses kun helt, hvis du enten vælger, at startsiden skal være siden Ny fane eller indstiller den til at være en webadresse og angiver en webadresse for startsiden. Hvis du ikke angiver webadressen for startsiden, kan brugeren stadig angive siden Ny fane som startside ved at angive "chrome://newtab".</translation>
+<translation id="8833109046074170275">Godkendelse via standardprocessen for GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> cachelagrer apps og udvidelser til installation af flere brugere på den samme enhed for at undgå at downloade dem for hver bruger én gang til.
       Hvis denne politik ikke er konfigureret, eller hvis værdien er lavere end 1 MB, anvender <ph name="PRODUCT_OS_NAME" /> standardstørrelsen for cachen.</translation>
 <translation id="8858642179038618439">Gennemtving Beskyttet tilstand på YouTube</translation>

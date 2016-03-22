@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="101438888985615157">Girar la pantalla 180 grados</translation>
+<translation id="1015272884520659144">Define la lista de dispositivos USB que pueden separarse de su controlador de kernel para utilizarse en la API chrome.usb directamente en una aplicación web. Las entradas son pares del identificador de producto y el identificador de proveedor del USB que permiten reconocer hardware específico.
+
+      Si no se configura esta política, la lista de dispositivos USB que se pueden separar se considera vacía.</translation>
 <translation id="1017967144265860778">Administración de energía en la pantalla de inicio de sesión</translation>
 <translation id="1019101089073227242">Establecer directorio de datos de usuarios</translation>
 <translation id="1022361784792428773">ID de extensiones que el usuario no debe poder instalar (o * para incluirlas todas)</translation>
@@ -235,6 +238,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 
       Si no se establece esta opción, los usuarios podrán abrir cuadros de diálogo de selección de archivos de la forma habitual.</translation>
 <translation id="1897365952389968758">Permitir que todos los sitios ejecuten JavaScript</translation>
+<translation id="193259052151668190">Lista blanca de dispositivos USB que se pueden separar</translation>
 <translation id="1933378685401357864">Imagen de fondo de pantalla</translation>
 <translation id="193900697589383153">Permite añadir un botón para cerrar sesión en la bandeja del sistema.
 
@@ -759,6 +763,7 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 <translation id="3528000905991875314">Habilitar páginas de error alternativas</translation>
 <translation id="3547954654003013442">Configuración de proxy</translation>
 <translation id="3570008976476035109">Bloquear complementos en estos sitios</translation>
+<translation id="3591584750136265240">Configurar el comportamiento de la autenticación de inicio de sesión</translation>
 <translation id="3627678165642179114">Habilitar o inhabilitar el servicio web de corrección ortográfica</translation>
 <translation id="3646859102161347133">Establecer el tipo de aumento de pantalla</translation>
 <translation id="3653237928288822292">Icono del proveedor de búsquedas predeterminadas</translation>
@@ -897,6 +902,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
           Si se ha establecido la opción Guardar las cookies durante la duración de la sesión para esta política, las cookies se borrarán cuando la sesión se cierre. Ten en cuenta que si <ph name="PRODUCT_NAME" /> se está ejecutando en segundo plano, es posible que la sesión no se cierre al cerrar la última ventana. Consulta la política BackgroundModeEnabled para obtener más información sobre la configuración de este comportamiento.
 
           Si no se establece ningún valor para esta política, se utilizará AllowCookies, aunque el usuario podrá cambiarla.</translation>
+<translation id="4103289232974211388">Redirigir al proveedor de identidad SAML después de la confirmación del usuario</translation>
 <translation id="410478022164847452">Permite especificar el tiempo transcurrido hasta que se entra en modo de inactividad (sin que el usuario realice ninguna acción) cuando el dispositivo está conectado a la red.
 
           Cuando se establece esta política, especifica el tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> entre en modo de inactividad, que se puede configurar por separado.
@@ -1928,6 +1934,11 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultPopupsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
 <translation id="7529144158022474049">Actualizar de forma automática el factor de dispersión</translation>
+<translation id="7553535237300701827">El flujo de autenticación de inicio de sesión puede ser de dos formas diferentes, en función del valor que se asigne a esta política:
+
+      Si se le asigna el valor GAIA, el inicio de sesión se hace a través del flujo de autenticación normal de GAIA.
+
+      Si se le asigna el valor SAML_INTERSTITIAL, el inicio de sesión muestra una pantalla intersticial que permite al usuario continuar con la autenticación a través del proveedor de identidad SAML del dominio de registro del dispositivo o volver al flujo de inicio de sesión normal de GAIA.</translation>
 <translation id="7567380065339179813">Permitir complementos en estos sitios</translation>
 <translation id="7593523670408385997">Permite configurar el tamaño de memoria caché que utilizará <ph name="PRODUCT_NAME" /> para guardar archivos almacenados en caché en el disco.
 
@@ -2315,6 +2326,7 @@ En todas las plataformas, salvo en <ph name="PRODUCT_OS_NAME" />, el modo kiosco
 <translation id="8828766846428537606">Permite configurar la página de inicio predeterminada en <ph name="PRODUCT_NAME" /> e impide que los usuarios la cambien.
 
       Para bloquear completamente la configuración de la página de inicio de los usuarios, es necesario establecerla como página Nueva pestaña o definirla como URL y establecerla como URL de página de inicio. Si no especificas la URL de página de inicio, los usuarios podrán establecer la página Nueva pestaña como página de inicio especificando "chrome://newtab".</translation>
+<translation id="8833109046074170275">Autenticación a través del flujo de GAIA predeterminado</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> almacena en la memoria caché las aplicaciones y las extensiones para que las instalen varios usuarios de un mismo dispositivo y evitar que se vuelvan a descargar.
       Si esta política no se configura o si el valor es inferior a 1 MB, <ph name="PRODUCT_OS_NAME" /> utilizará el tamaño de caché predeterminado.</translation>
 <translation id="8858642179038618439">Forzar el modo de seguridad de YouTube</translation>

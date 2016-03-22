@@ -6,7 +6,6 @@
 <translation id="3550966579244642892">Systém Chromium OS nedokončil úvodní nastavení.</translation>
 <translation id="3748537968684000502">Zobrazujete zabezpečenou stránku Chromium.</translation>
 <translation id="4365115785552740256">Chromium staví na projektu s otevřeným zdrojovým kódem <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> a využívá i další <ph name="BEGIN_LINK_OSS" />software s otevřeným zdrojovým kódem<ph name="END_LINK_OSS" />.</translation>
-<translation id="4404275227760602850">Přejděte do nabídky Chromium &gt; Nastavení &gt; (Rozšířené) Ochrana soukromí a zrušte výběr možnosti Předvídání síťových akcí. Pokud to však problém nevyřeší, doporučujeme vám tuto možnost znovu vybrat (za účelem zlepšení výkonu).</translation>
 <translation id="4559775032954821361">Přejděte do
           nabídky Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -30,7 +29,5 @@
 <translation id="8187289872471304532">Přejděte do nabídky
           Aplikace &gt; Nastavení systému &gt; Síť &gt; Rozšířená nastavení &gt; Servery proxy
           a zrušte výběr všech vybraných serverů proxy.</translation>
-<translation id="8610831143142469229">V nastavení firewallu a antivirového programu povolte prohlížeči Chromium
-        přístup k síti.</translation>
 <translation id="8684913864886094367">Aplikace Chromium nebyla řádně ukončena.</translation>
 </translationbundle>

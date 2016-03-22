@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">Systém Chromium OS nedokončil počiatočné nastavenie.</translation>
 <translation id="3748537968684000502">Práve si prezeráte zabezpečenú stránku prehliadača Chromium.</translation>
 <translation id="4365115785552740256">Prehliadač Chromium mohol vzniknúť vďaka projektu s otvoreným zdrojom <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> a ďalšiemu <ph name="BEGIN_LINK_OSS" />softvéru s otvoreným zdrojom<ph name="END_LINK_OSS" /> .</translation>
-<translation id="4404275227760602850">Prejdite do Ponuky Chromium &gt; Nastavenia &gt; (Rozšírené) Ochrana osobných údajov
-          a zakážte možnosť Predbežne vyvolať zdroje stránky.
-          Ak týmto postupom daný problém nevyriešite, odporúčame vám túto možnosť
-          znova povoliť, aby ste získali lepšiu výkonnosť.</translation>
 <translation id="4559775032954821361">Prejdite na
           ponuku Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -40,6 +36,5 @@
 <translation id="8187289872471304532">Prejdite na možnosť
           Aplikácie &gt; Systémové predvoľby &gt; Sieť &gt; Rozšírené nastavenia &gt; Servery proxy
           a zrušte výber všetkých vybratých serverov proxy.</translation>
-<translation id="8610831143142469229">Prehliadaču Chromium povoľte prístup k sieti v nastaveniach brány firewall alebo antivírusového softvéru.</translation>
 <translation id="8684913864886094367">Chromium nebol správne vypnutý.</translation>
 </translationbundle>

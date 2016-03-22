@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="101438888985615157">Xoay màn hình 180 độ</translation>
+<translation id="1015272884520659144">Xác định dang sách thiết bị USB được phép tách khỏi trình điều khiển nhân hệ điều hành để sử dụng thông qua API chrome.usb ngay bên trong ứng dụng web. Mục nhập là các cặp Số nhận dạng nhà cung cấp USB và Số nhận dạng sản phẩm để xác định một phần cứng cụ thể.
+
+      Nếu chính sách này chưa được định cấu hình, danh sách thiết bị USB có thể tách sẽ được coi là trống.</translation>
 <translation id="1017967144265860778">Quản lý nguồn trên màn hình đăng nhập</translation>
 <translation id="1019101089073227242">Thiết lập thư mục dữ liệu người dùng</translation>
 <translation id="1022361784792428773">Các ID tiện ích mà bạn nên ngăn người dùng cài đặt (hoặc * cho tất cả)</translation>
@@ -233,6 +236,7 @@
 <translation id="186719019195685253">Tác vụ sẽ thực hiện khi đạt độ trễ không hoạt động trong khi chạy bằng nguồn AC</translation>
 <translation id="187819629719252111">Cho phép truy cập các tệp cục bộ trên máy bằng cách cho phép <ph name="PRODUCT_NAME" /> hiển thị các hộp thoại chọn tệp. Nếu bạn bật cài đặt này, người dùng có thể mở các hộp thoại chọn tệp như bình thường. Nếu bạn tắt cài đặt này, bất cứ khi nào người dùng thực hiện tác vụ kích hoạt hộp thoại chọn tệp (như nhập dấu trang, tải lên tệp, lưu liên kết, v.v..), một thông báo sẽ được hiển thị thay vào đó và người dùng được coi như đã nhấp Hủy trên hộp thoại chọn tệp. Nếu không thiết lập cài đặt này, người dùng có thể mở hộp thoại chọn tệp như bình thường.</translation>
 <translation id="1897365952389968758">Cho phép tất cả các trang web chạy JavaScript</translation>
+<translation id="193259052151668190">Danh sách cho phép các thiết bị USB có thể tách</translation>
 <translation id="1933378685401357864">Hình nền</translation>
 <translation id="193900697589383153">Thêm một nút đăng xuất vào khay hệ thống.
 
@@ -754,6 +758,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3528000905991875314">Bật các trang lỗi thay thế</translation>
 <translation id="3547954654003013442">Cài đặt proxy</translation>
 <translation id="3570008976476035109">Chặn plugin trên các trang web này</translation>
+<translation id="3591584750136265240">Định cấu hình hành vi xác thực thông tin đăng nhập</translation>
 <translation id="3627678165642179114">Bật hoặc tắt dịch vụ web kiểm tra lỗi chính tả</translation>
 <translation id="3646859102161347133">Đặt loại kính lúp màn hình</translation>
 <translation id="3653237928288822292">Biểu tượng nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
@@ -888,6 +893,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu chính sách này được đặt thành 'Lưu giữ cookie trong thời hạn của phiên' thì cookie sẽ bị xóa khi phiên đóng. Xin lưu ý rằng nếu <ph name="PRODUCT_NAME" /> đang chạy trong 'chế độ nền', phiên có thể không đóng khi cửa sổ cuối cùng đóng. Vui lòng xem chính sách 'BackgroundModeEnabled' để biết thêm thông tin về cách định cấu hình thao tác này.
 
           Nếu chính sách này không được đặt, 'AllowCookies' sẽ được sử dụng và người dùng có thể thay đổi tùy chọn đó.</translation>
+<translation id="4103289232974211388">Chuyển hướng tới SAML IdP sau khi xác nhận người dùng</translation>
 <translation id="410478022164847452">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó hành động không sử dụng được thực hiện khi chạy trên nguồn AC.
 
           Khi được đặt, chính sách này chỉ định khoảng thời gian mà người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> thực hiện hành động không sử dụng mà có thể được định cấu hình riêng biệt.
@@ -1922,6 +1928,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultPopupsSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
 <translation id="7529144158022474049">Yếu tố phân tán tự động cập nhật</translation>
+<translation id="7553535237300701827">Khi bạn đặt chính sách này, luồng xác thực thông tin đăng nhập sẽ thuộc một trong các cách sau tùy thuộc vào giá trị của cài đặt:
+
+      Nếu bạn đặt chính sách thành GAIA, quy trình đăng nhập sẽ được thực hiện qua luồng xác thực GAIA thông thường.
+
+      Nếu bạn đặt chính sách thành SAML_INTERSTITIAL, quy trình đăng nhập sẽ hiển thị màn hình chuyển tiếp đề xuất người dùng tiếp tục xác thực thông qua SAML IdP của miền đăng ký của thiết bị hoặc quay lại luồng đăng nhập GAIA thông thường.</translation>
 <translation id="7567380065339179813">Cho phép plugin trên các trang web này</translation>
 <translation id="7593523670408385997">Định cấu hình kích thước bộ nhớ cache mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ các tệp đã lưu vào bộ nhớ cache trên đĩa.
 
@@ -2294,6 +2305,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chính sách này không được đặt hoặc được đặt thành false, vị trí sẽ không được báo cáo.</translation>
 <translation id="8828766846428537606">Định cấu hình trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cấu hình đó. Cài đặt trang chủ của người dùng chỉ được khóa hoàn toàn nếu bạn chọn trang chủ là trang tab mới hoặc đặt trang chủ là một URL và chỉ định URL trang chủ. Nếu bạn không chỉ định URL trang chủ, người dùng sẽ vẫn có thể đặt trang chủ là trang tab mới bằng cách chỉ định 'chrome://newtab'.</translation>
+<translation id="8833109046074170275">Xác thực thông qua luồng GAIA mặc định</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> lưu các ứng dụng và tiện ích vào bộ nhớ cache để cài đặt bởi nhiều người dùng trên một thiết bị nhằm giúp người dùng không phải tải xuống lại chúng.
       Nếu chính sách này không được định cấu hình hoặc giá trị nhỏ hơn 1 MB, <ph name="PRODUCT_OS_NAME" /> sẽ sử dụng kích thước bộ nhớ cache mặc định.</translation>
 <translation id="8858642179038618439">Bật Chế độ an toàn trên YouTube</translation>

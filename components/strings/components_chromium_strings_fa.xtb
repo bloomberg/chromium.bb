@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">‏راه‌اندازی اولیه سیستم‌عامل Chromium تمام نشده است.</translation>
 <translation id="3748537968684000502">‏شما در حال مشاهده یک صفحه Chromium امن هستید.</translation>
 <translation id="4365115785552740256">‏Chromium با پروژه منبع باز <ph name="BEGIN_LINK_CHROMIUM" />Chromium <ph name="END_LINK_CHROMIUM" /> و سایر <ph name="BEGIN_LINK_OSS" />نرم‌افزار منبع باز<ph name="END_LINK_OSS" /> امکان‌پذیر است.</translation>
-<translation id="4404275227760602850">‏به منوی Chromium &gt; تنظیمات &gt; (پیشرفته) حریم خصوصی
-          بروید و «واکشی منابع صفحه» را غیرفعال کنید.
-          درصورتی‌که با این کار مشکل حل نشد، توصیه می‌کنیم برای عملکرد بهبودیافته،
-         این گزینه را دوباره فعال کنید.</translation>
 <translation id="4559775032954821361">‏به
          منوی Chromium  &gt;
           <ph name="SETTINGS_TITLE" />
@@ -41,6 +37,5 @@
           برنامه‌ها &gt; 
 موارد برگزیده سیستم &gt; شبکه &gt; پیشرفته &gt; پراکسی‌ها
 بروید و علامت تمام پراکسی‌های انتخاب شده را بردارید.</translation>
-<translation id="8610831143142469229">‏در تنظیمات فایروال و ضد ویروس‌تان، به Chromium اجازه دسترسی به شبکه را بدهید.</translation>
 <translation id="8684913864886094367">‏Chromium به درستی خاموش نشده است.</translation>
 </translationbundle>

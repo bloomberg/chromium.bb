@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">Temukan laman web yang dikirim oleh objek di sekitar. Chrome mengumpulkan laman web yang terkait dengan objek di sekitar Anda, mengirimkannya secara anonim ke layanan Google untuk menemukan laman web yang paling bermanfaat untuk Anda, kemudian menampilkan laman web tersebut.
 
 Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</translation>
+<translation id="1254090737195733114">Impor data?</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Berhenti</translation>
 <translation id="1285320974508926690">Jangan pernah terjemahkan situs ini</translation>
@@ -108,6 +109,7 @@ Anda dapat mengontrol Web Fisik dalam setelan privasi Chrome.</translation>
 <translation id="238909021488141516">Terjadi kesalahan saat mengunduh konten.</translation>
 <translation id="2414886740292270097">Gelap</translation>
 <translation id="2433507940547922241">Tampilan</translation>
+<translation id="2439248520967274840">Anda masuk ke <ph name="TO_ACCOUNT" />. Sebagian bookmark, riwayat, sandi, dan setelan lain yang sudah ada sebelumnya disinkronkan ke <ph name="FROM_ACCOUNT" />. Apa yang ingin Anda lakukan dengan data yang sudah ada?</translation>
 <translation id="2440823041667407902">Akses lokasi</translation>
 <translation id="2470327855284432041">Laman sebesar <ph name="PAGE_SIZE_STRING" /> disimpan untuk offline</translation>
 <translation id="2476578072172137802">Setelan Situs</translation>
@@ -147,6 +149,7 @@ Anda dapat mengontrol Web Fisik dalam setelan privasi Chrome.</translation>
 <translation id="2968755619301702150">Penampil sertifikat</translation>
 <translation id="2996291259634659425">Buat frasa sandi</translation>
 <translation id="2996809686854298943">Perlu URL</translation>
+<translation id="3012408695656332380">Ganti data perangkat ini dengan data <ph name="TO_ACCOUNT" />. Anda dapat mengambil data yang sudah ada dengan beralih kembali ke <ph name="FROM_ACCOUNT" />, namun data yang dibuat setelah Anda keluar akan hilang.</translation>
 <translation id="3029704984691124060">Frasa sandi tidak cocok</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Simpan video</translation>
@@ -214,7 +217,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="403659016947612156">Laman Web Fisik ada di sekitar</translation>
 <translation id="4042870126885713738">Tampilkan saran saat alamat web tidak dapat diselesaikan atau sambungan tidak dapat dibuat</translation>
 <translation id="4056223980640387499">Sepia</translation>
-<translation id="4059119910594077751">Sentuh tombol kembali untuk keluar dari mode layar penuh.</translation>
 <translation id="4062305924942672200">Informasi hukum</translation>
 <translation id="4089831646916293264">Fitur ini dapat mengganggu akses ke layanan data premium yang disediakan oleh operator Anda.</translation>
 <translation id="4099578267706723511">Bantu penyempurnaan Chrome dengan mengirimkan statistik penggunaan dan laporan kerusakan ke Google.</translation>
@@ -350,6 +352,7 @@ Cukup buka Chrome di komputer, buka menu, lalu pilih "Masuk ke Chrome…”</tra
 <translation id="5676636989614905379">Tidak dapat memutar video di <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Dicekal</translation>
 <translation id="5684874026226664614">Ups. Laman ini tidak dapat diterjemahkan.</translation>
+<translation id="5708031556037168012">Simpan data yang sudah ada di perangkat dan impor data ke <ph name="TO_ACCOUNT" /> secara permanen.</translation>
 <translation id="5712189971979076230">Bantu kami memprioritaskan fitur dan penyempurnaan yang harus dikerjakan dengan mengirimkan informasi tentang file, aplikasi, dan layanan yang sedang berjalan kepada Google kapan pun aplikasi mogok.
 
 Statistik penggunaan mencakup informasi seperti preferensi, klik tombol, dan penggunaan memori. Statistik ini tidak mencakup URL laman web atau informasi pribadi apa pun. Laporan kerusakan berisi informasi sistem saat terjadi mogok dan dapat berisi URL laman web atau informasi pribadi, tergantung apa yang terjadi saat aplikasi mogok.</translation>
@@ -370,7 +373,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="585027516397408832">Penghemat Data diaktifkan</translation>
 <translation id="5860033963881614850">Nonaktif</translation>
 <translation id="5869522115854928033">Sandi yang disimpan</translation>
-<translation id="588258955323874662">Layar Penuh</translation>
 <translation id="5899349522111170522">Buat file baru</translation>
 <translation id="5902828464777634901">Semua data lokal yang disimpan oleh situs web ini, termasuk cookie, akan dihapus.</translation>
 <translation id="5911030830365207728">Google Terjemahan</translation>
@@ -578,6 +580,7 @@ Namun demikian, bukan berarti Anda tidak terlihat sama sekali. Menggunakan mode 
 <translation id="8497726226069778601">Belum ada yang dapat dilihat di sini…</translation>
 <translation id="8514577642972634246">Masuki mode penyamaran</translation>
 <translation id="8518901949365209398">Situs ini menggunakan konfigurasi keamanan yang lemah (tanda tangan SHA-1), sehingga sambungan Anda mungkin bukan sambungan pribadi.</translation>
+<translation id="8525306231823319788">Layar penuh</translation>
 <translation id="854522910157234410">Buka laman ini</translation>
 <translation id="8562452229998620586">Sandi yang disimpan akan muncul di sini.</translation>
 <translation id="856481929701340285">Minta situs desktop</translation>
@@ -609,7 +612,6 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="8912362522468806198">Akun Google</translation>
 <translation id="8920114477895755567">Menunggu detail orang tua.</translation>
 <translation id="8931159598799892500">Chrome + Web Fisik</translation>
-<translation id="8934455786738644694">Seret dari atas dan sentuh tombol kembali untuk keluar dari mode layar penuh.</translation>
 <translation id="8941248009481596111">Sambungan Anda ke situs ini bersifat pribadi.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Navigasi tidak dapat dijangkau: <ph name="URL" /></translation>
@@ -628,6 +630,7 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="9100610230175265781">Frasa sandi diwajibkan</translation>
 <translation id="9133515669113036225">Menyetel ulang kredensial perangkat</translation>
 <translation id="9137013805542155359">Perlihatkan laman asli</translation>
+<translation id="9141510419986760385">Anda beralih akun sinkronisasi dari <ph name="FROM_ACCOUNT" /> ke <ph name="TO_ACCOUNT" />. Apa yang ingin Anda lakukan dengan bookmark, riwayat, sandi, dan setelan lain yang sudah ada?</translation>
 <translation id="9151532766011674069">Bookmark disimpan secara offline. Penyimpanan hampir penuh.</translation>
 <translation id="917685106653909562">Laman Web fisik di sekitar</translation>
 <translation id="9187199695613236444">Tampilan mobile-friendly</translation>

@@ -19,6 +19,7 @@
 <translation id="1240668123557180468">Atraskite netoliese esančių objektų siunčiamus tinklalapius. „Chrome“ renka tinklalapius, susijusius su netoli jūsų esančiais objektais, anonimiškai siunčia juos „Google“ paslaugai, kad būtų rasti naudingiausi tinklalapiai, ir tada juos pateikia.
 
 Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth“ ir Vietovę.</translation>
+<translation id="1254090737195733114">Importuoti duomenis?</translation>
 <translation id="1258753120186372309">„Google“ papuoštas logotipas: <ph name="DOODLE_DESCRIPTION" /></translation>
 <translation id="1272079795634619415">Sustabdyti</translation>
 <translation id="1285320974508926690">Niekada neversti šios svetainės</translation>
@@ -108,6 +109,7 @@ Fizinį žiniatinklį galite valdyti „Chrome“ privatumo nustatymuose.</trans
 <translation id="238909021488141516">Atsisiunčiant turinį įvyko klaida.</translation>
 <translation id="2414886740292270097">Tamsi</translation>
 <translation id="2433507940547922241">Išvaizda</translation>
+<translation id="2439248520967274840">Prisijungiate prie <ph name="TO_ACCOUNT" />. Kai kurios esamos žymės, istorija, slaptažodžiai ir kiti nustatymai anksčiau buvo sinchronizuoti su <ph name="FROM_ACCOUNT" />. Ką norite daryti su esamais duomenimis?</translation>
 <translation id="2440823041667407902">Prieiga prie vietovės</translation>
 <translation id="2470327855284432041"><ph name="PAGE_SIZE_STRING" /> puslapis išsaugotas naudoti neprisijungus</translation>
 <translation id="2476578072172137802">Svetainės nustatymai</translation>
@@ -147,6 +149,7 @@ Fizinį žiniatinklį galite valdyti „Chrome“ privatumo nustatymuose.</trans
 <translation id="2968755619301702150">Sertifikato peržiūros priemonė</translation>
 <translation id="2996291259634659425">Kurkite slaptafrazę</translation>
 <translation id="2996809686854298943">Reikalingas URL</translation>
+<translation id="3012408695656332380">Šio įrenginio duomenys bus pakeisti paskyros <ph name="TO_ACCOUNT" /> duomenimis. Esamus duomenis galite gauti perjungę atgal į <ph name="FROM_ACCOUNT" />, bet po atsijungimo sukurti duomenys bus prarasti.</translation>
 <translation id="3029704984691124060">Slaptafrazės neatitinka</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Gaukite pagalbos<ph name="END_LINK" /></translation>
 <translation id="3063601790762993062">Išsaugoti vaizdo įrašą</translation>
@@ -214,7 +217,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="403659016947612156">Fiziniai tinklalapiai yra netoliese</translation>
 <translation id="4042870126885713738">Rodyti pasiūlymus, kai žiniatinklio adresas nepasiekiamas arba nepavyksta užmegzti ryšio</translation>
 <translation id="4056223980640387499">Sepija</translation>
-<translation id="4059119910594077751">Palieskite mygtuką „Atgal“, kad išeitumėte iš viso ekrano režimo.</translation>
 <translation id="4062305924942672200">Teisinė informacija</translation>
 <translation id="4089831646916293264">Ši funkcija gali trukdyti pasiekti papildomas operatoriaus teikiamas duomenų paslaugas.</translation>
 <translation id="4099578267706723511">Padėkite tobulinti „Chrome“ siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
@@ -351,6 +353,7 @@ Tiesiog atidarykite „Chrome“ kompiuteryje, eikite į meniu ir pasirinkite �
 <translation id="5676636989614905379">Nepavyko paleisti vaizdo įrašo ekrane „<ph name="SCREEN_NAME" />“.</translation>
 <translation id="5677928146339483299">Užblokuota</translation>
 <translation id="5684874026226664614">Oi, nepavyko išversti šio puslapio.</translation>
+<translation id="5708031556037168012">Esami duomenys bus išlaikyti įrenginyje ir visam laikui importuoti į paskyrą <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5712189971979076230">Padėkite pirmiausia sutelkti dėmesį į funkcijas ir patobulinimus, ties kuriais turėtume padirbėti, į sistemą „Google“ siųsdami informacijos apie failus, programas ir paslaugas, kurios buvo vykdomos per strigtį.
 
 Naudojimo statistika yra įvairi informacija, įskaitant nuostatas, mygtukų paspaudimus ir atminties naudojimą. Tinklalapių URL adresai ar kita asmeninė informacija neįtraukiama. Strigčių ataskaitose pateikiama užstrigusios sistemos informacija ir jose gali būti tinklalapių URL adresų ar asmeninės informacijos, atsižvelgiant į tai, kas vyko per strigtį.</translation>
@@ -371,7 +374,6 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="585027516397408832">Duomenų taupymo priemonė įgalinta</translation>
 <translation id="5860033963881614850">Išjungta</translation>
 <translation id="5869522115854928033">Išsaugoti slaptažodžiai</translation>
-<translation id="588258955323874662">Visas ekranas</translation>
 <translation id="5899349522111170522">Sukurti naują failą</translation>
 <translation id="5902828464777634901">Visi šioje svetainėje saugomi vietiniai duomenys, įskaitant slapukus, bus ištrinti.</translation>
 <translation id="5911030830365207728">„Google“ vertėjas</translation>
@@ -579,6 +581,7 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="8497726226069778601">Čia dar nėra nieko, ką galėtumėte peržiūrėti…</translation>
 <translation id="8514577642972634246">Įjungti inkognito režimą</translation>
 <translation id="8518901949365209398">Šioje svetainėje naudojama nesudėtinga saugos konfigūracija („SHA-1“ parašai), todėl ryšys gali nebūti privatus.</translation>
+<translation id="8525306231823319788">Viso ekrano režimas</translation>
 <translation id="854522910157234410">Atidaryti šį puslapį</translation>
 <translation id="8562452229998620586">Čia bus rodomi išsaugoti slaptažodžiai.</translation>
 <translation id="856481929701340285">Užkl. svet. kompiuteriui</translation>
@@ -610,7 +613,6 @@ Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsi
 <translation id="8912362522468806198">„Google“ paskyra</translation>
 <translation id="8920114477895755567">Laukiama išsamios tėvų informacijos.</translation>
 <translation id="8931159598799892500">„Chrome“ + Fizinis žiniatinklis</translation>
-<translation id="8934455786738644694">Vilkite nuo viršaus ir palieskite mygtuką „Atgal“, kad išeitumėte iš viso ekrano režimo.</translation>
 <translation id="8941248009481596111">Jūsų ryšys su šia svetaine privatus.</translation>
 <translation id="8941729603749328384">www.example.com</translation>
 <translation id="8959122750345127698">Naršymas nepasiekiamas: <ph name="URL" /></translation>
@@ -629,6 +631,7 @@ Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsi
 <translation id="9100610230175265781">Būtina slaptafrazė</translation>
 <translation id="9133515669113036225">Iš naujo nustatyti įrenginio prisijungimo duomenis</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
+<translation id="9141510419986760385">Perjungiate sinchronizavimo paskyras iš <ph name="FROM_ACCOUNT" /> į <ph name="TO_ACCOUNT" />. Ką norite daryti su esamomis žymėmis, istorija, slaptažodžiais ir kitais nustatymais?</translation>
 <translation id="9151532766011674069">Žymė išsaugota naudoti neprisijungus. Saugykla beveik pilna.</translation>
 <translation id="917685106653909562">Fiziniai tinklalapiai netoliese</translation>
 <translation id="9187199695613236444">Mobiliesiems pritaikytas rodinys</translation>

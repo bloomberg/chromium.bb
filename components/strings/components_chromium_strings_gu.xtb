@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">Chromium OS એ તેનું પ્રારંભિક સેટઅપ પૂર્ણ કર્યું નથી.</translation>
 <translation id="3748537968684000502">તને એક સુરક્ષિત Chromium પૃષ્ઠ જોઈ રહ્યાં છો.</translation>
 <translation id="4365115785552740256">Chromium એ <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> ઓપન સ્રોત પ્રોજેક્ટ અને અન્ય <ph name="BEGIN_LINK_OSS" />ઓપન સ્રોત સૉફ્ટવેર<ph name="END_LINK_OSS" /> દ્વારા શક્ય બનાવ્યું છે.</translation>
-<translation id="4404275227760602850">Chromium મેનૂ &gt; સેટિંગ્સ &gt; (વિગતવાર) ગોપનીયતા પર જાઓ
-          અને "પૃષ્ઠ સંસાધનોનું પૂર્વ આનયન કરો" ને અક્ષમ કરો.
-          જો આનાથી સમસ્યા ઉકેલાતી નથી, તો અમે સુધારેલ પ્રદર્શન માટે ફરીથી આ વિકલ્પને
-          ફરીથી-સક્ષમ કરવાની ભલામણ કરીએ છીએ.</translation>
 <translation id="4559775032954821361">Chromium મેનૂ &gt;
           <ph name="SETTINGS_TITLE" />
           &gt;
@@ -36,7 +32,5 @@
         ભલામણ કરીએ છીએ.</translation>
 <translation id="8187289872471304532">એપ્લિકેશનો &gt; સિસ્ટમ પસંદગીઓ &gt; નેટવર્ક &gt; વિગતવાર &gt; પ્રોક્સીઝ
           પર જાઓ અને પસંદ કરવામાં આવેલી કોઈપણ પ્રોક્સીની પસંદગી હટાવો.</translation>
-<translation id="8610831143142469229">Chromium ને તમારી ફાયરવૉલ અથવા એન્ટિવાયરસ સેટિંગ્સમાં નેટવર્ક ઍક્સેસ કરવાની
-        મંજૂરી આપો.</translation>
 <translation id="8684913864886094367">Chromium યોગ્ય રીતે શટ ડાઉન થયું નહોતું.</translation>
 </translationbundle>

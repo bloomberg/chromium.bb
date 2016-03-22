@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">„Chromium“ OS neužbaigė šios pradinės sąrankos.</translation>
 <translation id="3748537968684000502">Žiūrite saugų „Chromium“ puslapį.</translation>
 <translation id="4365115785552740256">„Chromium“ pasiekiama naudojant <ph name="BEGIN_LINK_CHROMIUM" />„Chromium“<ph name="END_LINK_CHROMIUM" /> atvirojo šaltinio projektą ir kitą <ph name="BEGIN_LINK_OSS" />atvirojo šaltinio programinę įrangą<ph name="END_LINK_OSS" />.</translation>
-<translation id="4404275227760602850">Eikite į „Chromium“ meniu &gt; Nustatymai &gt; (Išplėstiniai) Privatumas
-          ir išjunkite parinktį „Iš anksto iškviesti puslapio išteklius“.
-          Jei tai atlikus problema išlieka, rekomenduojame iš naujo įgalinti šią parinktį,
-          kad pagerėtų našumas.</translation>
 <translation id="4559775032954821361">Eikite į 
           „Chromium“ meniu &gt;
           „<ph name="SETTINGS_TITLE" />“
@@ -40,7 +36,5 @@
 <translation id="8187289872471304532">Eikite į
           „Programos“ &gt; „Sistemos nuostatos“ &gt; „Tinklas“ &gt; „Išplėstinis“ &gt; „Tarpiniai serveriai“
           ir panaikinkite visų tarpinių serverių pasirinkimą.</translation>
-<translation id="8610831143142469229">Leiskite „Chromium“ pasiekti tinklą užkardos ar antivirusinės
-        programos nustatymuose.</translation>
 <translation id="8684913864886094367">„Chromium“ netinkamai išsijungė.</translation>
 </translationbundle>

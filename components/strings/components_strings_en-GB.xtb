@@ -94,6 +94,7 @@
 <translation id="201192063813189384">Error reading data from cache.</translation>
 <translation id="2025186561304664664">Proxy is set to auto-configured.</translation>
 <translation id="2030481566774242610">Did you mean <ph name="LINK" />?</translation>
+<translation id="2031925387125903299">You're seeing this message because your parents need to approve new sites on your first visit.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Checking the proxy and the firewall<ph name="END_LINK" /></translation>
 <translation id="2053553514270667976">ZIP code</translation>
 <translation id="2065985942032347596">Authentication Required</translation>
@@ -149,6 +150,7 @@
 <translation id="2495083838625180221">JSON Parser</translation>
 <translation id="2495093607237746763">If ticked, Chromium will store a copy of your card on this device for faster form filling.</translation>
 <translation id="2498091847651709837">Scan new card</translation>
+<translation id="2501278716633472235">Go back</translation>
 <translation id="2515629240566999685">Checking the signal in your area</translation>
 <translation id="2516305470678292029">UI Alternatives</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> sent an invalid response.</translation>
@@ -166,10 +168,12 @@
 <translation id="2704283930420550640">Value doesn't match format.</translation>
 <translation id="2705137772291741111">The saved (cached) copy of this site was unreadable.</translation>
 <translation id="2709516037105925701">Auto-fill</translation>
+<translation id="2712173769900027643">Ask permission</translation>
 <translation id="2721148159707890343">Request succeeded</translation>
 <translation id="2728127805433021124">Server's certificate is signed using a weak signature algorithm.</translation>
 <translation id="2742870351467570537">Remove selected items</translation>
 <translation id="277499241957683684">Missing device record</translation>
+<translation id="2778107779445548489">You're seeing this message because your parent blocked this site.</translation>
 <translation id="2784949926578158345">The connection was reset.</translation>
 <translation id="2824775600643448204">Address and search bar</translation>
 <translation id="2826760142808435982">The connection is encrypted and authenticated using <ph name="CIPHER" /> and uses <ph name="KX" /> as the key exchange mechanism.</translation>
@@ -177,6 +181,7 @@
 <translation id="2837049386027881519">The connection had to be retried using an older version of the TLS or SSL protocol. This typically means that the server is using very old software and may have other security issues.</translation>
 <translation id="284702764277384724">The server certificate at <ph name="HOST_NAME" /> appears to be a forgery.</translation>
 <translation id="2855922900409897335">Verify your <ph name="CREDIT_CARD" /></translation>
+<translation id="2889159643044928134">Don't reload</translation>
 <translation id="2896499918916051536">This plug-in is not supported.</translation>
 <translation id="2897655920961181107">The requested port is unsafe and has been blocked.</translation>
 <translation id="2909946352844186028">A network change was detected.</translation>
@@ -199,6 +204,7 @@
 <translation id="3005723025932146533">Show saved copy</translation>
 <translation id="3010559122411665027">List entry "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Wrong policy type</translation>
+<translation id="3032412215588512954">Do you want to reload this site?</translation>
 <translation id="3037605927509011580">Aw, Snap!</translation>
 <translation id="3041612393474885105">Certificate Information</translation>
 <translation id="3093245981617870298">You are offline</translation>
@@ -230,6 +236,7 @@
 <translation id="3305707030755673451">Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter it to start sync.</translation>
 <translation id="333371639341676808">Prevent this page from creating additional dialogues.</translation>
 <translation id="3340978935015468852">settings</translation>
+<translation id="3345135638360864351">Your request to access this site could not be sent to <ph name="NAME" />. Please try again.</translation>
 <translation id="3355823806454867987">Change proxy settings...</translation>
 <translation id="3369192424181595722">Clock error</translation>
 <translation id="3369366829301677151">Update and verify your <ph name="CREDIT_CARD" /></translation>
@@ -245,6 +252,8 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Fetch interval:</translation>
 <translation id="3462200631372590220">Hide advanced</translation>
+<translation id="3479539252931486093">Was this unexpected? <ph name="BEGIN_LINK" />Let us know<ph name="END_LINK" /></translation>
+<translation id="3498215018399854026">We could not reach your parent at the moment. Please try again.</translation>
 <translation id="3516765099410062445">Showing history from your signed-in devices. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3528171143076753409">Server's certificate is not trusted</translation>
@@ -267,6 +276,7 @@
 <translation id="3658742229777143148">Revision</translation>
 <translation id="3681007416295224113">Certificate information</translation>
 <translation id="3693415264595406141">Password:</translation>
+<translation id="3700528541715530410">Oops, looks like you don't have permission to access this page.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Loading...</translation>
 <translation id="3712624925041724820">Licenses exhausted</translation>
@@ -281,8 +291,6 @@
 <translation id="382518646247711829">If you use a proxy server...</translation>
 <translation id="3828924085048779000">Empty passphrase is not allowed.</translation>
 <translation id="385051799172605136">Back</translation>
-<translation id="3851596405215565524">If it is already listed as a program allowed to access the network. Try
-    removing it from the list and adding it again.</translation>
 <translation id="3858027520442213535">Update date and time</translation>
 <translation id="3884278016824448484">Conflicting device identifier</translation>
 <translation id="3885155851504623709">Parish</translation>
@@ -313,6 +321,7 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Checking firewall and antivirus configurations<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Crashes</translation>
 <translation id="4250680216510889253">No</translation>
+<translation id="425582637250725228">Changes that you made may not be saved.</translation>
 <translation id="4258748452823770588">Bad signature</translation>
 <translation id="4268298190799576220">Chromium was unable to verify your card at this time. Please try again later.</translation>
 <translation id="4269787794583293679">(No username)</translation>
@@ -329,6 +338,9 @@
 <translation id="4406896451731180161">search results</translation>
 <translation id="4424024547088906515">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chrome. This may be caused by a misconfiguration or an attacker intercepting your connection.</translation>
 <translation id="443673843213245140">Use of a proxy is disabled but an explicit proxy configuration is specified.</translation>
+<translation id="4458874409874303848">SafeSites</translation>
+<translation id="4461847750548395463">You're seeing this message because Google SafeSites is enabled.</translation>
+<translation id="4491452711366281322">Not approved</translation>
 <translation id="4492190037599258964">Search results for '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">Validation error: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Contacting the system admin</translation>
@@ -350,6 +362,7 @@
 <translation id="4764776831041365478">The web page at <ph name="URL" /> might be temporarily down or it may have moved permanently to a new web address.</translation>
 <translation id="4771973620359291008">An unknown error has occurred.</translation>
 <translation id="477518548916168453">The server does not support the functionality required to fulfill the request.</translation>
+<translation id="4782449893814226250">You asked your parents if it's OK to visit this page.</translation>
 <translation id="4800132727771399293">Check your expiration date and CVC and try again</translation>
 <translation id="4807049035289105102">You cannot visit <ph name="SITE" /> at the moment because the website sent scrambled credentials that Google Chrome cannot process. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="4813512666221746211">Network error</translation>
@@ -359,6 +372,7 @@
 <translation id="4880827082731008257">Search history</translation>
 <translation id="4923417429809017348">This page has been translated from an unknown language into <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Must be specified.</translation>
+<translation id="4930497775425430760">You're seeing this message because your parent needs to approve new sites on your first visit.</translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4958444002117714549">Expand list</translation>
 <translation id="498957508165411911">Translate from <ph name="ORIGINAL_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" />?</translation>
@@ -417,6 +431,7 @@
 <translation id="560412284261940334">Management not supported</translation>
 <translation id="5610142619324316209">Checking the connection</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" /> redirected you too many times.</translation>
+<translation id="5622887735448669177">Do you want to leave this site?</translation>
 <translation id="5629630648637658800">Failed to load policy settings</translation>
 <translation id="5631439013527180824">Invalid device management token</translation>
 <translation id="5650551054760837876">No search results found.</translation>
@@ -426,6 +441,7 @@
 <translation id="5785756445106461925">Further, this page includes other resources which are not secure. These resources can be viewed by others while in transit, and can be modified by an attacker to change the look of the page.</translation>
 <translation id="5810442152076338065">Your connection to <ph name="DOMAIN" /> is encrypted using an obsolete cipher suite.</translation>
 <translation id="5813119285467412249">&amp;Redo Add</translation>
+<translation id="5855235287355719921">You're seeing this message because your manager blocked this site.</translation>
 <translation id="5857090052475505287">New Folder</translation>
 <translation id="5869405914158311789">This site can’t be reached</translation>
 <translation id="5869522115854928033">Saved passwords</translation>
@@ -449,6 +465,7 @@
 <translation id="6146055958333702838">Check any cables and reboot any routers, modems or other network
     devices you may be using.</translation>
 <translation id="614940544461990577">Try:</translation>
+<translation id="6150607114729249911">Oops! You need to ask your parents if it's OK to visit this page.</translation>
 <translation id="6151417162996330722">The server certificate has a validity period that is too long.</translation>
 <translation id="6154808779448689242">Returned policy token doesn't match current token</translation>
 <translation id="6165508094623778733">Learn more</translation>
@@ -485,6 +502,7 @@
 <translation id="6550675742724504774">Options</translation>
 <translation id="6596325263575161958">Encryption options</translation>
 <translation id="6610562986279010327">Chrome cannot open this URL</translation>
+<translation id="662080504995468778">Stay</translation>
 <translation id="6626108645084335023">Waiting for DNS probe.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>
 <translation id="6634865548447745291">You cannot visit <ph name="SITE" /> at the moment because <ph name="BEGIN_LINK" />this certificate has been revoked<ph name="END_LINK" />. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
@@ -538,11 +556,14 @@
 <translation id="7182878459783632708">No policies set</translation>
 <translation id="7186367841673660872">This page has been translated from<ph name="ORIGINAL_LANGUAGE" />to<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
+<translation id="720210938761809882">Page blocked</translation>
 <translation id="7208899522964477531">Search <ph name="SITE_NAME" /> for <ph name="SEARCH_TERMS" /></translation>
 <translation id="7210863904660874423"><ph name="HOST_NAME" /> doesn't adhere to security standards.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /> about this problem.</translation>
 <translation id="7219179957768738017">The connection uses <ph name="SSL_VERSION" />.</translation>
 <translation id="7225807090967870017">Build ID</translation>
+<translation id="7231308970288859235">Oops! You need to ask your parent if it's OK to visit this page.</translation>
+<translation id="7246609911581847514">You're seeing this message because your manager needs to approve new sites on your first visit.</translation>
 <translation id="725866823122871198">A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your computer's date and time (<ph name="DATE_AND_TIME" />) are incorrect.</translation>
 <translation id="7265986070661382626">You cannot visit <ph name="SITE" /> at the moment because the website <ph name="BEGIN_LINK" />uses certificate pinning<ph name="END_LINK" />. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="7269802741830436641">This web page has a redirect loop</translation>
@@ -609,8 +630,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7825436071901023927">Unsafe Port <ph name="SITE" /></translation>
 <translation id="785549533363645510">However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your Internet service provider or the websites that you visit.</translation>
 <translation id="7887683347370398519">Check your CVC and try again</translation>
+<translation id="7894616681410591072">Oops! You need permission from <ph name="NAME" /> to access this page.</translation>
 <translation id="790025292736025802"><ph name="URL" /> is not found</translation>
 <translation id="7912024687060120840">In Folder:</translation>
+<translation id="7920092496846849526">You asked your parent if it's OK to visit this page.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Server's certificate is not yet valid.</translation>
 <translation id="7951415247503192394">(32-bit)</translation>
@@ -619,6 +642,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7977590112176369853">&lt;enter query&gt;</translation>
 <translation id="7983301409776629893">Always translate <ph name="ORIGINAL_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Not Specified</translation>
+<translation id="8012647001091218357">We could not reach your parents at the moment. Please try again.</translation>
 <translation id="8034522405403831421">This page is in <ph name="SOURCE_LANGUAGE" />. Translate it to <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">No history entries found.</translation>
 <translation id="8088680233425245692">Failed to view article.</translation>
@@ -631,9 +655,6 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8204086856545141093">Requests to the server have been blocked by a policy.</translation>
 <translation id="8218327578424803826">Assigned Location:</translation>
 <translation id="8225771182978767009">The person who set up this computer has chosen to block this site.</translation>
-<translation id="8240446052814166959">Check your proxy settings or contact your network administrator to
-      make sure that the proxy server is working.
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="8241707690549784388">The page that you're looking for used information that you entered. Returning to that page might cause any action that you took to be repeated. Do you want to continue?</translation>
 <translation id="8249320324621329438">Last fetched:</translation>
 <translation id="8266098793847448402">Click
@@ -644,6 +665,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
       <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />,
       and then click
       <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
+<translation id="8279107132611114222">Your request to access this site has been sent to <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Contact your network administrator if you're not sure what this means.</translation>
 <translation id="8293206222192510085">Add Bookmark</translation>
 <translation id="8294431847097064396">Source</translation>
@@ -665,6 +687,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8559762987265718583">A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your device's date and time (<ph name="DATE_AND_TIME" />) are incorrect.</translation>
 <translation id="856992080682148">The certificate for this site expires in 2017 or later, and the certificate chain contains a certificate signed using SHA-1.</translation>
 <translation id="8571890674111243710">Translating page into <ph name="LANGUAGE" />...</translation>
+<translation id="8591846766485502580">You're seeing this message because one of your parents blocked this site.</translation>
 <translation id="859285277496340001">The certificate does not specify a mechanism to check whether it has been revoked.</translation>
 <translation id="8629916158020966496">Browsing the Internet is disabled until the enterprise enrolment verification check has finished.
     You can still use the diagnostic tool presented here to troubleshoot issues with your connectivity.</translation>

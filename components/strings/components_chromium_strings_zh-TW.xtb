@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">Chromium 作業系統未完成初始設定。</translation>
 <translation id="3748537968684000502">您正在瀏覽安全型 Chromium 網頁。</translation>
 <translation id="4365115785552740256">Chromium 的開發有賴 <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> 開放原始碼計劃和其他<ph name="BEGIN_LINK_OSS" />開發原始碼軟體<ph name="END_LINK_OSS" />。</translation>
-<translation id="4404275227760602850">前往 Chromium 選單 &gt; [設定] &gt; (進階) [隱私權]
-          停用 [預先擷取網頁資源]。
-          如果仍然無法解決問題，建議您重新啟用這個選項，
-          讓 Chromium 的效能更優異。</translation>
 <translation id="4559775032954821361">前往
           Chromium 選單 &gt;
           [<ph name="SETTINGS_TITLE" />]
@@ -40,7 +36,5 @@
 <translation id="8187289872471304532">前往
           [應用程式] &gt; [系統偏好設定] &gt; [網路] &gt; [進階] &gt; [Proxy]
           然後取消勾選所有已選取的 Proxy。</translation>
-<translation id="8610831143142469229">允許 Chromium 存取受到防火牆或防毒軟體設定所阻擋的
-        網路。</translation>
 <translation id="8684913864886094367">Chromium 未正確關閉。</translation>
 </translationbundle>

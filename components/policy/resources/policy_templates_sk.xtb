@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="101438888985615157">Otočiť obrazovku o 180 stupňov</translation>
+<translation id="1015272884520659144">Definuje zoznam zariadení USB, ktoré je možné odpojiť od ovládača jadra, aby sa dali použiť prostredníctvom rozhrania chrome.usb API priamo vo webovej aplikácii. Záznamy predstavujú páry identifikátor dodávateľa USB – identifikátor produktu na identifikáciu konkrétneho hardvéru.
+
+      Ak toto pravidlo nie je nakonfigurované, zoznam odpojiteľných zariadení USB sa považuje za prázdny.</translation>
 <translation id="1017967144265860778">Správa možností napájania na prihlasovacej obrazovke</translation>
 <translation id="1019101089073227242">Nastaviť adresár používateľských údajov</translation>
 <translation id="1022361784792428773">ID rozšírení, ktorých inštalácia by mala byť používateľovi zakázaná (alebo hodnota * pre všetky)</translation>
@@ -230,6 +233,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak toto nastavenie nenastavíte, používatelia budú môcť otvárať dialógové okná na výber súboru obvyklým spôsobom.</translation>
 <translation id="1897365952389968758">Povoliť všetkým webovým stránkam spúšťať jazyk JavaScript</translation>
+<translation id="193259052151668190">Zoznam povolených odpojiteľných zariadení USB</translation>
 <translation id="1933378685401357864">Obrázok tapety</translation>
 <translation id="193900697589383153">Pridá do oblasti oznámení tlačidlo odhlásenia.
 
@@ -755,6 +759,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3528000905991875314">Povoliť alternatívne chybové stránky</translation>
 <translation id="3547954654003013442">Nastavenia servera proxy</translation>
 <translation id="3570008976476035109">Blokovať doplnky na týchto stránkach</translation>
+<translation id="3591584750136265240">Konfigurácia správania pri overovaní prihlasovacích údajov</translation>
 <translation id="3627678165642179114">Povoliť alebo zakázať webovú službu kontroly pravopisu</translation>
 <translation id="3646859102161347133">Nastavenie typu lupy obrazovky</translation>
 <translation id="3653237928288822292">Ikona predvoleného poskytovateľa vyhľadávania</translation>
@@ -887,6 +892,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Ak je toto pravidlo nastavené na možnosť Uchovať súbory cookie počas trvania relácie, súbory cookie sa po ukončení relácie vymažú. Upozorňujeme, že ak je prehliadač <ph name="PRODUCT_NAME" /> spustený v režime na pozadí, relácia sa nemusí ukončiť po zavretí posledného okna. Ďalšie informácie o konfigurácii tohto správania nájdete pri pravidle BackgroundModeEnabled.
 
           Ak ponecháte toto pravidlo nenastavené, použije sa pravidlo AllowCookies a používateľ ho bude môcť zmeniť.</translation>
+<translation id="4103289232974211388">Presmerovanie na poskytovateľa identity SAML po potvrdení používateľom</translation>
 <translation id="410478022164847452">Určuje dobu nečinnosti používateľa, po ktorej systém vykoná príslušnú akciu nečinnosti pri používaní napájacieho zdroja.
 
           Ak je toto pravidlo nastavené, určuje dobu nečinnosti používateľa, po ktorej systém <ph name="PRODUCT_OS_NAME" /> vykoná príslušnú akciu, ktorú je možné nakonfigurovať samostatne.
@@ -1920,6 +1926,11 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 
           Ak toto pravidlo ponecháte nenastavené, použije sa v prípade všetkých webových stránok globálna predvolená hodnota buď z pravidla „DefaultPopupsSetting“ (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
 <translation id="7529144158022474049">Rozptylový faktor automatických aktualizácií</translation>
+<translation id="7553535237300701827">Ak nastavíte toto pravidlo, overovanie prihlasovacích údajov bude v závislosti od hodnoty nastavenia prebiehať jedným z nasledujúcich spôsobov:
+
+      Ak ho nastavíte na možnosť GAIA, prihlasovanie bude prebiehať prostredníctvom normálneho overovania totožnosti GAIA.
+
+      Ak ho nastavíte na možnosť SAML_INTERSTITIAL, počas prihlásenia bude mať používateľ k dispozícii intersticiálnu obrazovku umožňujúcu pokračovať s overením totožnosti prostredníctvom poskytovateľa identity SAML z domény registrácie príslušného zariadenia, prípadne sa vrátiť na normálne prihlásenie prostredníctvom štandardu GAIA.</translation>
 <translation id="7567380065339179813">Povoliť doplnky na týchto stránkach</translation>
 <translation id="7593523670408385997">Umožňuje nakonfigurovať veľkosť vyrovnávacej pamäte, ktorú služba <ph name="PRODUCT_NAME" /> použije na ukladanie súborov vo vyrovnávacej pamäti na disk.
 
@@ -2294,6 +2305,7 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 
       Ak toto pravidlo nie je nastavené alebo je nastavené na hodnotu false, poloha sa nahlasovať nebude.</translation>
 <translation id="8828766846428537606">Nakonfiguruje v prehliadači <ph name="PRODUCT_NAME" /> predvolenú domovskú stránku a zabráni ju používateľom zmeniť. Nastavenia domovskej stránky používateľa sú úplne uzamknuté len vtedy, ak nastavíte domovskú stránku na stránku Nová karta alebo na vopred určenú webovú adresu domovskej stránky. Ak túto webovú adresu neurčíte, používateľ bude stále môcť nastaviť domovskú stránku na stránku Nová karta pomocou príkazu „chrome://newtab“.</translation>
+<translation id="8833109046074170275">Overenie totožnosti prostredníctvom predvoleného postupu GAIA</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> ukladá do vyrovnávacej pamäte aplikácie a rozšírenia, ktoré môže nainštalovať viacero používateľov jedného zariadenia. Aplikácie a rozšírenia tak nemusí každý používateľ opätovne sťahovať.
       Ak nie je toto pravidlo nakonfigurované alebo je hodnota nižšia než 1 MB, <ph name="PRODUCT_OS_NAME" /> použije predvolenú veľkosť vyrovnávacej pamäte.</translation>
 <translation id="8858642179038618439">Vynútenie Bezpečnostného režimu v službe YouTube</translation>

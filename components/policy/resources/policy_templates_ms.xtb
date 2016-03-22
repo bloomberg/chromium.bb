@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
 <translation id="101438888985615157">Putar skrin 180 darjah</translation>
+<translation id="1015272884520659144">Menentukan senarai peranti USB yang dibenarkan untuk ditanggalkan daripada pemacu inti peranti tersebut untuk digunakan menerusi API chrome.usb terus dalam aplikasi web. Entri ialah pasangan Pengecam Vendor USB dan Pengecam Produk untuk mengenal pasti perkakasan khusus.
+
+      Jika dasar ini tidak dikonfigurasikan, senarai peranti USB yang boleh ditanggalkan akan dianggap sebagai kosong.</translation>
 <translation id="1017967144265860778">Pengurusan kuasa pada skrin log masuk</translation>
 <translation id="1019101089073227242">Tetapkan direktori data pengguna</translation>
 <translation id="1022361784792428773">ID sambungan pengguna perlu dihalang daripada memasang (atau * untuk semua)</translation>
@@ -239,6 +242,7 @@
 
       Jika tetapan ini tidak ditetapkan, penggguna boleh membuka dialog pemilihan fail seperti biasa.</translation>
 <translation id="1897365952389968758">Benarkan semua tapak untuk menjalankan JavaScript</translation>
+<translation id="193259052151668190">Senarai putih peranti boleh tanggal USB</translation>
 <translation id="1933378685401357864">Imej hias latar</translation>
 <translation id="193900697589383153">Menambahkan butang log keluar pada dulang sistem.
 
@@ -760,6 +764,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="3528000905991875314">Dayakan halaman ralat ganti</translation>
 <translation id="3547954654003013442">Tetapan proksi</translation>
 <translation id="3570008976476035109">Sekat pemalam pada tapak ini</translation>
+<translation id="3591584750136265240">Konfigurasikan gelagat pengesahan log masuk</translation>
 <translation id="3627678165642179114">Dayakan atau lumpuhkan perkhidmatan web penyemakan ejaan</translation>
 <translation id="3646859102161347133">Tetapkan jenis penggadang skrin</translation>
 <translation id="3653237928288822292">Ikon pembekal carian lalai</translation>
@@ -897,6 +902,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Jika dasar ini ditetapkan kepada 'Keep cookies for the duration of the session', maka kuki akan dikosongkan apabila sesi ditutup. Beri perhatian bahawa jika <ph name="PRODUCT_NAME" /> sedang dijalankan dalam 'background mode', sesi itu mungkin tidak ditutup apabila tetingkap terakhir ditutup. Sila lihat dasar 'BackgroundModeEnabled' untuk mendapatkan maklumat lanjut tentang mengkonfigurasi gelagat ini.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'AllowCookies' akan digunakan dan pengguna akan dapat mengubahnya.</translation>
+<translation id="4103289232974211388">Ubah hala ke SAML IdP selepas pengesahan pengguna</translation>
 <translation id="410478022164847452">Menyatakan panjang masa tanpa input pengguna dan tindakan melahu akan dilaksanakan selepas tamat masa tersebut apabila dijalan dengan kuasa AC.
 
           Apabila dasar ini ditetapkan, ia menyatakan panjang masa pengguna melahu sebelum <ph name="PRODUCT_OS_NAME" /> melaksanakan tindakan melahu, yang boleh dikonfigurasi secara berasingan.
@@ -1932,6 +1938,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultPopupsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>
 <translation id="7529144158022474049">Faktor berserak kemas kini automatik</translation>
+<translation id="7553535237300701827">Apabila dasar ini ditetapkan, aliran pengesahan log masuk akan dilakukan dengan satu daripada cara berikut bergantung pada nilai tetapan:
+
+      Jika ditetapkan kepada GAIA, log masuk akan dilakukan melalui aliran pengesahan GAIA yang biasa.
+
+      Jika ditetapkan kepada SAML_INTERSTITIAL, log masuk akan menunjukkan skrin ruang antara yang memberi peluang kepada pengguna supaya meneruskan dengan pengesahan melalui SAML IdP domain pendaftaran peranti atau kembali kepada aliran log masuk GAIA yang biasa.</translation>
 <translation id="7567380065339179813">Benarkan pemalam pada tapak ini</translation>
 <translation id="7593523670408385997">Mengkonfigurasikan saiz cache yang <ph name="PRODUCT_NAME" /> akan gunakan untuk menyimpan fail cache pada cakera.
 
@@ -2326,6 +2337,7 @@ Jika dasar ini dibiarkan tidak ditetapkan mana-mana pemalam yang sepadan dengan 
 <translation id="8828766846428537606">Menkonfigurasi halaman utama lalai dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada mengubahnya.
 
       Tetapan halaman utama pengguna hanya dikunci sepenuhnya, jika anda memilih halaman utama sebagai halaman tab baharu atau pun menetapkannya sebagai URL dan menetapkan URL halaman utama. Jika anda tidak menetapkan URL halaman utama, maka pengguna masih boleh menetapkan halaman utama kepada halaman tab baharu dengan menetapkan 'chrome://newtab'.</translation>
+<translation id="8833109046074170275">Pengesahan melalui aliran GAIA lalai</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> mengcache Apps dan Sambungan untuk pemasangan oleh berbilang pengguna bagi peranti tunggal untuk mengelakkan daripada memuat turun semula untuk setiap pengguna.
      Jika dasar ini tidak dikonfigurasikan atau nilai tersebut lebih rendah daripada 1 MB, <ph name="PRODUCT_OS_NAME" /> akan menggunakan saiz cache lalai.</translation>
 <translation id="8858642179038618439">Paksa Mod Keselamatan YouTube</translation>

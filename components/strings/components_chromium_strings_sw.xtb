@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">Mfumo wa Uendeshaji wa Chromium haujakamilisha kuweka mipangilio ya awali.</translation>
 <translation id="3748537968684000502">Unatazama ukurasa salama wa Chromium.</translation>
 <translation id="4365115785552740256">Chromium imerahisishwa na mradi wa programu huria ya <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> na programu nyingine <ph name="BEGIN_LINK_OSS" />huria<ph name="END_LINK_OSS" />.</translation>
-<translation id="4404275227760602850">Nenda kwenye menyu ya Chromium &gt; Mipangilio &gt; Faragha (Iliyoboreshwa)
-          na uzime "Leta mapema rasilimali za kurasa."
-          Ikiwa hili halitatui tatizo, tunapendekeza uwashe chaguo hili
-          tena kwa utendaji ulioimarishwa.</translation>
 <translation id="4559775032954821361">Nenda kwenye
          menyu ya Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -36,6 +32,5 @@
         Ikiwa hili halitatatua tatizo, tunapendekeza uchague tena chaguo hili kwa utendaji ulioboreshwa.</translation>
 <translation id="8187289872471304532">Nenda kwenye
           Programu &gt; Mapendeleo ya Mfumo &gt; Mtandao &gt; Uboreshaji &gt; Proksi na uondoe tiki kwenye proksi zozote ambazo zimechaguliwa.</translation>
-<translation id="8610831143142469229">Ruhusu Chromium ifikie mtandao kwenye mipangilio yako ya ngome au kingavirusi.</translation>
 <translation id="8684913864886094367">Chromium haikuzimika kwa njia sahihi.</translation>
 </translationbundle>

@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="101438888985615157">Képernyő elforgatása 180 fokkal</translation>
+<translation id="1015272884520659144">Azoknak az USB-eszközöknek a listáját határozza meg, amelyeknek megengedett a kernelmódú illesztőprogramjukról való leválasztása annak érdekében, hogy a chrome.usb API-n keresztül, közvetlenül valamilyen internetes alkalmazásban lehessen használni őket. A bejegyzéseket az adott hardver azonosítására szolgáló, az USB-gyártóazonosítóból és az USB-termékazonosítóból álló párok alkotják.
+
+      Ha a házirend nincs beállítva, akkor a rendszer üresnek tekinti a leválasztható USB-eszközök listáját.</translation>
 <translation id="1017967144265860778">Energiagazdálkodás a bejelentkezési képernyőn</translation>
 <translation id="1019101089073227242">Felhasználói adatok könyvtárának beállítása</translation>
 <translation id="1022361784792428773">Bővítményazonosítók, amelyek felhasználói telepítését meg kell akadályozni (vagy * az összes esetén)</translation>
@@ -212,6 +215,7 @@ Ha a házirend konfigurálatlanul marad, a felhasználó döntheti el, hogy kív
 <translation id="186719019195685253">Végrehajtandó művelet a tétlenségi késleltetés elérésekor hálózati áramforrásról történő üzemelés során</translation>
 <translation id="187819629719252111">Lehetővé teszi a hozzáférést a gépen lévő helyi fájlokhoz azáltal, hogy engedélyezi a(z) <ph name="PRODUCT_NAME" /> számára a fájlkiválasztási párbeszédablakok megjelenítését. Ha engedélyezi ezt a beállítást, a felhasználók a szokásos módon nyithatják meg a fájlkiválasztási párbeszédablakokat. Ha letiltja a beállítást, minden alkalommal, amikor a felhasználó olyan műveletet hajt végre, amely fájlkiválasztási párbeszédablakot hívna elő (például könyvjelzők importálása, fájlok feltöltése, linkek mentése stb.), egy üzenet jelenik meg helyette, a rendszer pedig úgy tekinti, hogy a felhasználó a Mégse gombra kattintott a fájlkiválasztási párbeszédablakban. Ha ez nincs beállítva, a felhasználók a szokásos módon nyithatnak meg fájlkiválasztási párbeszédablakokat.</translation>
 <translation id="1897365952389968758">JavaScript futtatásának engedélyezése minden webhelyen</translation>
+<translation id="193259052151668190">A leválasztható USB-eszközök engedélyezőlistája</translation>
 <translation id="1933378685401357864">Háttérkép</translation>
 <translation id="193900697589383153">Egy kijelentkezésre szolgáló gombot helyez el a tálcán.
 
@@ -684,6 +688,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="3528000905991875314">Alternatív hibaoldalak engedélyezése</translation>
 <translation id="3547954654003013442">Proxybeállítások</translation>
 <translation id="3570008976476035109">Bővítmények tiltása ezeken a webhelyeken</translation>
+<translation id="3591584750136265240">Bejelentkezési hitelesítési viselkedés konfigurálása</translation>
 <translation id="3627678165642179114">Engedélyezi vagy letiltja az internetes helyesírás-ellenőrző szolgáltatást</translation>
 <translation id="3646859102161347133">Nagyító típusának beállítása</translation>
 <translation id="3653237928288822292">Alapértelmezett keresési szolgáltató ikonja</translation>
@@ -793,6 +798,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
           A „Cookie-k megtartása a munkamenet idejére” beállítás esetében a munkamenet befejezése után a cookie-k törlődnek. Felhívjuk figyelmét, hogy ha a <ph name="PRODUCT_NAME" /> „háttérmódban” fut, akkor előfordulhat, hogy a munkamenet nem fejeződik be az utolsó ablak bezárásakor. E viselkedés konfigurálásáról a „BackgroundModeEnabled” házirendnél talál további tájékoztatást.
 
           Ha nem állítja be ezt a házirendet, akkor a böngésző az „AllowCookies” beállítást fogja használni, amelyet a felhasználó módosíthat.</translation>
+<translation id="4103289232974211388">A felhasználó megerősítését követően átirányítás a SAML IdP-hez</translation>
 <translation id="410478022164847452">Meghatározza azt a felhasználói bevitel nélkül eltelt időtartamot, amely után a rendszer tétlen állapotba kerül, ha hálózati áramról működik.
 
           Ha a házirend be van állítva, megadja azt az időtartamot, ameddig a felhasználónak tétlennek kell maradnia, mielőtt a(z) <ph name="PRODUCT_OS_NAME" /> aktiválja a tétlen állapotra vonatkozó műveletet, amely külön konfigurálható.
@@ -1707,6 +1713,11 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 <translation id="7523476810162382273">Ellenőrző szívverések küldése a kezelőszervernek</translation>
 <translation id="7529100000224450960">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nyithatnak meg felugró ablakokat. Ha a házirend beállítatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultPopupsSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="7529144158022474049">Szórási tényező automatikus frissítése</translation>
+<translation id="7553535237300701827">Amikor az irányelv be van állítva, a bejelentkezési hitelesítés folyamata a beállítás értékétől függően a következők egyike szerint alakul:
+
+      Ha GAIA értékre van beállítva, a bejelentkezés a normál GAIA hitelesítési folyamat szerint történik.
+
+      Ha SAML_INTERSTITIAL értékre van beállítva, a bejelentkezés során egy közbeiktatott képernyő jelenik meg, amelyen a felhasználó választhat, hogy az eszköz regisztrációs domainjén érvényes SAML IdP hitelesítés használatával folytatja, vagy visszatér a normál GAIA-bejelentkezési folyamathoz.</translation>
 <translation id="7567380065339179813">Bővítmények engedélyezése ezeken a webhelyeken</translation>
 <translation id="7593523670408385997">Konfigurálja a gyorsítótár méretét, amelyet a(z) <ph name="PRODUCT_NAME" /> arra használ, hogy a gyorsítótárazott fájlokat a merevlemezen tárolja.
 
@@ -2054,6 +2065,7 @@ Ennek a házirendnek a beállítása felülbírálja az alapértelmezett 3 órá
 
       Ha nincs beállítva, vagy ha hamis értékre van állítva ez a házirend, akkor a hely nem lesz jelentve.</translation>
 <translation id="8828766846428537606">Állítsa be a <ph name="PRODUCT_NAME" /> alapértelmezett kezdőoldalát, és akadályozza meg, hogy a felhasználók megváltoztassák azt. A felhasználó kezdőoldala csak akkor lesz teljesen lezárva, ha a kezdőoldalt választja az új lap oldalnak, vagy URL-ként beállítja, és megad egy kezdőoldal URL-t. Ha nem ad meg kezdőoldal URL-t, akkor a felhasználó továbbra is be tudja állítani kezdőoldalnak az új lap oldalt a "chrome://newtab" meghatározásával.</translation>
+<translation id="8833109046074170275">Hitelesítés az alapértelmezett GAIA-folyamaton keresztül</translation>
 <translation id="8838303810937202360">A <ph name="PRODUCT_OS_NAME" /> gyorsítótárba helyezi az egy eszközön több felhasználó által is telepíthető alkalmazásokat és bővítményeket, elkerülve azok ismételt letöltését az egyes felhasználóknál.
       Ha a házirend nincs beállítva, vagy ha az értéke kisebb mint 1 MB, akkor a <ph name="PRODUCT_OS_NAME" /> az alapértelmezett gyorsítótárméretet fogja használni.</translation>
 <translation id="8858642179038618439">A YouTube Biztonságos módjának kényszerítése</translation>

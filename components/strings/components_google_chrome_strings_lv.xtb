@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">Jūsu izmaiņas stāsies spēkā nākamajā reizē, kad atkārtoti palaidīsiet pārlūku Google Chrome.</translation>
 <translation id="3444832043240812445">Šajā lapā tiek parādīta tikai informācija par pēdējā laika avārijām, ja <ph name="BEGIN_LINK" />iespējojat avāriju pārskatu izveidi<ph name="END_LINK" />.</translation>
 <translation id="4010643444566880169">Operētājsistēmā Chrome OS nav izpildīta sākotnējā iestatīšana.</translation>
-<translation id="5423788048750135178">Atveriet Chrome izvēlni &gt; Iestatījumi &gt; (Papildu) Konfidencialitāte
-          un atspējojiet opciju “Sākotnēji iegūt lapu resursus”.
-          Ja problēma netiek novērsta, ieteicams atkārtoti iespējot šo opciju,
-          lai uzlabotu veiktspēju.</translation>
 <translation id="6011049234605203654">Atveriet
           Chrome izvēlni &gt;
           <ph name="SETTINGS_TITLE" />
@@ -38,8 +34,6 @@
           &gt;
           LAN iestatījumi
           un noņemiet atzīmi no izvēles rūtiņas “Use a proxy server for your LAN” (Izmantot starpniekserveri savam LAN).</translation>
-<translation id="7396375882099008034">Atļaušana pārlūkam Chrome piekļūt tīklam jūsu ugunsmūra vai pretvīrusu programmas
-        iestatījumos.</translation>
 <translation id="8187289872471304532">Atveriet izvēlni
           Applications (Lietojumprogrammas) &gt; System Preferences (Sistēmas preferences) &gt; Network (Tīkls) &gt; Advanced (Papildu) &gt; (Proxies) Starpniekserveri
           un noņemiet atzīmes no visiem atzīmētajiem starpniekserveriem.</translation>

@@ -2,6 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fi">
 <translation id="101438888985615157">Kierrä näyttöä 180 astetta.</translation>
+<translation id="1015272884520659144">Määrittää luettelon USB-laitteista, jotka voidaan irrottaa kernel-ajurista, jotta laitetta voi käyttää suoraan chrome.usb API:n kautta verkkosovelluksessa. Tiedot näkyvät USB-toimittajan tunnus- ja tuotetunnuspareina, joilla tunnistetaan tietty laitteisto.
+
+      Jos tätä käytäntöä ei määritetä, USB-laitteiden luettelon katsotaan olevan tyhjä.</translation>
 <translation id="1017967144265860778">Virran hallinta kirjautumisruudulla</translation>
 <translation id="1019101089073227242">Aseta käyttäjätietojen hakemisto</translation>
 <translation id="1022361784792428773">Niiden laajennuksien tunnukset, joita käyttäjä ei saa asentaa (tai * = kaikki).</translation>
@@ -208,6 +211,7 @@
 <translation id="186719019195685253">Toiminto, joka suoritetaan, jos käyttäjä ei tee mitään tietyn ajan kuluessa laitteen ollessa kytkettynä laturiin</translation>
 <translation id="187819629719252111">Myöntää tietokoneen tiedostojen käyttöoikeuden antamalla tuotteelle <ph name="PRODUCT_NAME" /> luvan näyttää tiedostonvalintaikkunoita. Jos otat tämän asetuksen käyttöön, käyttäjät voivat avata tiedostonvalintaikkunoita normaalisti. Jos poistat asetuksen käytöstä, käyttäjälle näytetään viesti ja hänen oletetaan valinneen Peruuta tiedostonvalintaikkunassa aina käyttäjän suorittaessa tiedoston avaamista vaativan toiminnon (kuten käyttäjän tuodessa kirjanmerkkejä, lähettäessä tiedostoja, tallentaessa linkkejä jne.). Jos asetusta ei ole määritetty, käyttäjät voivat avata tiedostonvalintaikkunoita normaalisti.</translation>
 <translation id="1897365952389968758">Anna kaikkien sivustojen käyttää JavaScriptiä (suositus)</translation>
+<translation id="193259052151668190">Sallittujen USB-laitteiden luettelo</translation>
 <translation id="1933378685401357864">Taustakuva</translation>
 <translation id="193900697589383153">Lisää järjestelmäpalkkiin uloskirjautumispainikkeen.
 
@@ -682,6 +686,7 @@ Käytännön arvot tulee määrittää millisekunteina. Arvoja voi valita välil
 <translation id="3528000905991875314">Ota vaihtoehtoiset virhesivut käyttöön</translation>
 <translation id="3547954654003013442">Välityspalvelimen asetukset</translation>
 <translation id="3570008976476035109">Estä laajennukset näissä sivustoissa</translation>
+<translation id="3591584750136265240">Määritä kirjautumistodennuksen käytös.</translation>
 <translation id="3627678165642179114">Ota käyttöön tai poista käytöstä oikoluku-verkkopalvelu</translation>
 <translation id="3646859102161347133">Aseta näytön suurentajan tyyppi</translation>
 <translation id="3653237928288822292">Oletushakupalvelun kuvake</translation>
@@ -791,6 +796,7 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
           Jos tämän käytännön asetus on Säilytä evästeet käyttökerran ajan, evästeet poistetaan käyttökerran päätyttyä. Huom. Jos <ph name="PRODUCT_NAME" /> on käynnissä taustatilassa, käyttökerta ei välttämättä pääty viimeisen ikkunan sulkeutuessa. Katso käytäntö BackgroundModeEnabled, niin saat lisätietoja tämän toiminnallisuuden määrittämisestä.
 
           Jos tätä käytäntöä ei aseteta, sen sijaan käytetään AllowCookies-käytäntöä ja käyttäjä voi muuttaa asetusta.</translation>
+<translation id="4103289232974211388">Uudelleenohjaa SAML IdP:hen käyttäjän todennuksen jälkeen.</translation>
 <translation id="410478022164847452">Määrittää käyttämättömyysajan, jonka kuluttua suoritetaan käyttämättömyystoimenpide, kun laitetta käytetään verkkovirralla.
 
           Kun tämä käytäntö on asetettu, se määrittää käyttämättömyysajan, jonka kuluttua <ph name="PRODUCT_OS_NAME" /> suorittaa käyttämättömyystoimenpiteen, joka voidaan määrittää erikseen.
@@ -1706,6 +1712,11 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7523476810162382273">Lähetä tarkistuspaketteja hallintapalvelimelle</translation>
 <translation id="7529100000224450960">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat avata ponnahdusikkunoita. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultPopupsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="7529144158022474049">Hajontatekijän automaattinen päivitys</translation>
+<translation id="7553535237300701827">Kun tämä käytäntö on määritetty, kirjautumistodennuksen työnkulku riippuu asetuksen arvosta jollain seuraavista tavoista:
+
+      Jos asetus on GAIA, kirjautuminen tehdään normaalin GAIA-todennuksen kautta.
+
+      Jos asetus on SAML_INTERSTITIAL, kirjautumisen yhteydessä näytetään välinäyttö, jossa ehdotetaan käyttäjälle todennusta laitteen käyttöönoton verkkotunnuksen SAML IdP:n kautta tai normaaliin GAIA-kirjautumistyönkulkuun palaamista.</translation>
 <translation id="7567380065339179813">Salli laajennukset näissä sivustoissa</translation>
 <translation id="7593523670408385997">Määrittää sen välimuistin koon, jota <ph name="PRODUCT_NAME" /> käyttää välimuistiin tallennettujen tiedostojen tallentamiseen.
 
@@ -2051,6 +2062,7 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 
       Jos käytäntöä ei ole määritetty, sijaintia ei ilmoiteta.</translation>
 <translation id="8828766846428537606">Määrittää tuotteen <ph name="PRODUCT_NAME" /> oletusetusivun ja estää käyttäjiä muuttamasta sitä. Käyttäjän oma etusivuasetus estetään vain, jos valitset etusivuksi Uusi välilehti -sivun tai tietyn URL-osoitteen. Jos et määritä etusivun URL-osoitetta, käyttäjä voi asettaa etusivuksi Uusi välilehti -sivun kirjoittamalla chrome://newtab.</translation>
+<translation id="8833109046074170275">Todennus oletusarvoisen GAIA-työnkulun kautta</translation>
 <translation id="8838303810937202360"><ph name="PRODUCT_OS_NAME" /> tallentaa sovelluksia ja laajennuksia välimuistiin, jolloin niitä voidaan asentaa saman laitteen eri käyttäjille lataamatta niitä uudelleen käyttäjäkohtaisesti.
       Jos tätä käytäntöä ei määritetä tai jos sen arvo on pienempi kuin 1 Mt, <ph name="PRODUCT_OS_NAME" /> käyttää välimuistin oletuskokoa.</translation>
 <translation id="8858642179038618439">Pakota YouTuben rajoitettu tila käyttöön</translation>

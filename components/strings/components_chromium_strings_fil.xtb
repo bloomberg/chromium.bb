@@ -6,10 +6,6 @@
 <translation id="3550966579244642892">Hindi pa nakukumpleto ng Chromium OS ang paunang setup nito.</translation>
 <translation id="3748537968684000502">Tinitingnan mo ang isang secure na pahina ng Chromium.</translation>
 <translation id="4365115785552740256">Nagiging posible ang Chromium sa pamamagitan ng proyekto sa open source ng <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> at iba pang <ph name="BEGIN_LINK_OSS" />open source na software<ph name="END_LINK_OSS" />.</translation>
-<translation id="4404275227760602850">Pumunta sa menu ng Chromium &gt; Mga Setting &gt; (Advanced) Privacy
-          at i-disable ang "I-prefetch ang mga mapagkukunan ng page."
-          Kung hindi nito malutas ang isyu, inirerekomenda naming muling
-          i-enable ang opsyong ito para sa mas mahusay na pagganap.</translation>
 <translation id="4559775032954821361">Pumunta sa
           menu ng Chromium &gt;
           <ph name="SETTINGS_TITLE" />
@@ -40,7 +36,5 @@
 <translation id="8187289872471304532">Pumunta sa
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies
           at alisin sa pagkakapili ang anumang mga napiling proxy.</translation>
-<translation id="8610831143142469229">Payagan ang Chromium na i-access ang network sa mga setting ng iyong firewall
-        o antivirus.</translation>
 <translation id="8684913864886094367">Hindi nag-shut down nang tama ang Chromium.</translation>
 </translationbundle>

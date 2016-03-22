@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">Thay đổi của bạn sẽ có hiệu lực vào lần tiếp theo bạn chạy lại Google Chrome.</translation>
 <translation id="3444832043240812445">Trang này chỉ hiển thị thông tin về các sự cố gần đây của bạn nếu bạn <ph name="BEGIN_LINK" />bật báo cáo sự cố<ph name="END_LINK" />.</translation>
 <translation id="4010643444566880169">Chrome OS chưa hoàn thành thiết lập ban đầu.</translation>
-<translation id="5423788048750135178">Chuyển đến menu Chrome &gt; Cài đặt &gt; Bảo mật (Nâng cao)
-          và tắt "Tìm nạp trước tài nguyên trang".
-          Nếu cách này không giải quyết được sự cố thì chúng tôi khuyên bạn nên bật lại tùy chọn này
-          để cải thiện hiệu suất.</translation>
 <translation id="6011049234605203654">Đi tới
           menu Chrome &gt;
           <ph name="SETTINGS_TITLE" />
@@ -38,8 +34,6 @@
           &gt;
           Cài đặt mạng LAN
           và bỏ chọn "Sử dụng máy chủ proxy cho mạng LAN của bạn".</translation>
-<translation id="7396375882099008034">Cho phép Chrome truy cập mạng trong cài đặt tường lửa hoặc diệt vi-rút
-        của bạn.</translation>
 <translation id="8187289872471304532">Đi tới
           Ứng dụng&gt; Tùy chọn hệ thống &gt; Mạng &gt; Nâng cao &gt; Proxy
           và bỏ chọn bất kỳ proxy nào đã được chọn.</translation>

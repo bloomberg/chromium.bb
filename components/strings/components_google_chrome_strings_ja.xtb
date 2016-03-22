@@ -8,10 +8,6 @@
 <translation id="3140883423282498090">変更内容は次に Google Chrome を再起動したときに有効になります。</translation>
 <translation id="3444832043240812445"><ph name="BEGIN_LINK" />障害レポートを有効<ph name="END_LINK" />にした場合にのみ、このページに最近の障害情報が表示されます。</translation>
 <translation id="4010643444566880169">Chrome OS は初期設定が完了していません。</translation>
-<translation id="5423788048750135178">Chrome メニュー &gt; [設定] &gt; [（詳細）プライバシー] の順に移動して、
-          [ページリソースのプリフェッチ] を無効にします。
-          上記を行っても問題が解決しない場合は、パフォーマンス向上のため
-          このオプションを再び有効にすることをおすすめします。</translation>
 <translation id="6011049234605203654">このオプションを無効にするには:
           Chrome メニュー &gt;
           <ph name="SETTINGS_TITLE" />
@@ -37,8 +33,6 @@
           &gt;
           [LAN の設定]
           の順に移動して、[LAN にプロキシ サーバーを使用する] チェックボックスをオフにします。</translation>
-<translation id="7396375882099008034">ファイアウォールやウイルス対策の設定で、Chrome からネットワークへのアクセスを
-        許可します。</translation>
 <translation id="8187289872471304532">このオプションを無効にするには:
           [アプリケーション] &gt; [システム環境設定] &gt; [ネットワーク] &gt; [詳細] &gt; [プロキシ] の順に移動して、
           選択されているプロキシの選択を解除します。</translation>

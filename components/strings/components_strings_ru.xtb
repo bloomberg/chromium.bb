@@ -94,6 +94,7 @@
 <translation id="201192063813189384">Ошибка чтения данных из кеша.</translation>
 <translation id="2025186561304664664">Прокси-сервер настраивается автоматически.</translation>
 <translation id="2030481566774242610">Возможно, вы имели в виду <ph name="LINK" />.</translation>
+<translation id="2031925387125903299">Ваши родители должны одобрить новые сайты, чтобы вы могли их посещать.</translation>
 <translation id="2032962459168915086"><ph name="BEGIN_LINK" />Проверьте настройки прокси-сервера и брандмауэра<ph name="END_LINK" />.</translation>
 <translation id="2053553514270667976">Почтовый индекс</translation>
 <translation id="2065985942032347596">Необходима авторизация</translation>
@@ -149,6 +150,7 @@
 <translation id="2495083838625180221">Синтаксический анализатор JSON</translation>
 <translation id="2495093607237746763">Если флажок установлен, Chromium будет хранить на этом устройстве данные карты для быстрого заполнения форм.</translation>
 <translation id="2498091847651709837">Сканировать новую карту</translation>
+<translation id="2501278716633472235">Назад</translation>
 <translation id="2515629240566999685">Проверьте уровень сигнала сети.</translation>
 <translation id="2516305470678292029">Варианты интерфейса</translation>
 <translation id="255002559098805027">Сайт <ph name="HOST_NAME" /> отправил недействительный ответ.</translation>
@@ -166,10 +168,12 @@
 <translation id="2704283930420550640">Значение не соответствует формату.</translation>
 <translation id="2705137772291741111">Невозможно прочитать копию сайта, сохраненную в кеше.</translation>
 <translation id="2709516037105925701">Автозаполнение</translation>
+<translation id="2712173769900027643">Попросить разрешения</translation>
 <translation id="2721148159707890343">Запрос выполнен успешно</translation>
 <translation id="2728127805433021124">Сертификат сервера подписан с использованием ненадежного алгоритма.</translation>
 <translation id="2742870351467570537">Удалить выбранные элементы</translation>
 <translation id="277499241957683684">Устройство не зарегистрировано</translation>
+<translation id="2778107779445548489">Ваш родитель заблокировал этот сайт.</translation>
 <translation id="2784949926578158345">Соединение сброшено.</translation>
 <translation id="2824775600643448204">Адресная строка и строка поиска</translation>
 <translation id="2826760142808435982">Соединение зашифровано и проверено с помощью <ph name="CIPHER" />. В качестве механизма обмена ключами используется <ph name="KX" />.</translation>
@@ -177,6 +181,7 @@
 <translation id="2837049386027881519">Необходимо снова установить соединение, используя более старую версию протокола TLS или SSL. Обычно это говорит о том, что ПО на сервере давно не обновлялось. Возможно возникновение и других проблем с безопасностью.</translation>
 <translation id="284702764277384724">Возможно, сертификат сервера <ph name="HOST_NAME" /> фальсифицирован.</translation>
 <translation id="2855922900409897335">Подтвердите данные карты <ph name="CREDIT_CARD" /></translation>
+<translation id="2889159643044928134">Не обновлять</translation>
 <translation id="2896499918916051536">Плагин не поддерживается.</translation>
 <translation id="2897655920961181107">Запрашиваемый порт оказался опасен и был заблокирован.</translation>
 <translation id="2909946352844186028">Похоже, вы подключились к другой сети.</translation>
@@ -199,6 +204,7 @@
 <translation id="3005723025932146533">Открыть сохраненную копию</translation>
 <translation id="3010559122411665027">Элемент списка "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="3024663005179499861">Неверный тип политики</translation>
+<translation id="3032412215588512954">Обновить эту страницу?</translation>
 <translation id="3037605927509011580">Опаньки...</translation>
 <translation id="3041612393474885105">Данные сертификата</translation>
 <translation id="3093245981617870298">Нет подключения к сети</translation>
@@ -229,6 +235,7 @@
 <translation id="3305707030755673451">Данные были зашифрованы с помощью кодовой фразы <ph name="TIME" />. Введите ее, чтобы начать синхронизацию.</translation>
 <translation id="333371639341676808">Предотвратить создание дополнительных диалоговых окон на этой странице.</translation>
 <translation id="3340978935015468852">настройках</translation>
+<translation id="3345135638360864351">Не удалось отправить пользователю <ph name="NAME" /> запрос на доступ к этому сайту. Повторите попытку.</translation>
 <translation id="3355823806454867987">Изменить настройки прокси-сервера...</translation>
 <translation id="3369192424181595722">Ошибка часов</translation>
 <translation id="3369366829301677151">Обновите данные карты <ph name="CREDIT_CARD" /> и подтвердите ее</translation>
@@ -244,6 +251,8 @@
 <translation id="3450660100078934250">MasterCard</translation>
 <translation id="3452404311384756672">Выберите интервал:</translation>
 <translation id="3462200631372590220">Скрыть подробности</translation>
+<translation id="3479539252931486093">Этот сайт не должен быть заблокирован? <ph name="BEGIN_LINK" />Сообщите нам об этом<ph name="END_LINK" />.</translation>
+<translation id="3498215018399854026">Не удалось связаться с вашими родителями. Повторите попытку.</translation>
 <translation id="3516765099410062445">Отображается история со всех устройств, на которых используется тот же аккаунт. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3528171143076753409">Сертификат сервера не является доверенным.</translation>
@@ -266,6 +275,7 @@
 <translation id="3658742229777143148">Версия</translation>
 <translation id="3681007416295224113">Данные сертификата</translation>
 <translation id="3693415264595406141">Пароль:</translation>
+<translation id="3700528541715530410">Похоже, у вас нет прав для доступа к данной странице.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
 <translation id="370665806235115550">Загрузка...</translation>
 <translation id="3712624925041724820">Недостаточно лицензий</translation>
@@ -280,8 +290,6 @@
 <translation id="382518646247711829">Если вы используете прокси-сервер...</translation>
 <translation id="3828924085048779000">Пустые кодовые фразы запрещены.</translation>
 <translation id="385051799172605136">Назад</translation>
-<translation id="3851596405215565524">Если эта программа внесена в список тех, которым разрешен доступ к сети,
-    удалите ее из списка, а затем добавьте снова.</translation>
 <translation id="3858027520442213535">Обновить дату и время</translation>
 <translation id="3884278016824448484">Конфликт идентификаторов устройств</translation>
 <translation id="3885155851504623709">Округ</translation>
@@ -312,6 +320,7 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Проверьте настройки брандмауэра и антивирусного ПО<ph name="END_LINK" />.</translation>
 <translation id="4220128509585149162">Завершение работы программы</translation>
 <translation id="4250680216510889253">Нет</translation>
+<translation id="425582637250725228">Возможно, внесенные изменения не сохранятся.</translation>
 <translation id="4258748452823770588">Подпись недействительна</translation>
 <translation id="4268298190799576220">Не удалось проверить данные карты. Повторите попытку позже.</translation>
 <translation id="4269787794583293679">(Не указано)</translation>
@@ -328,6 +337,9 @@
 <translation id="4406896451731180161">Результаты поиска</translation>
 <translation id="4424024547088906515">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Chrome не доверяет его сертификату безопасности. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="443673843213245140">Прокси-сервер отключен, но при этом его конфигурация задана явным образом.</translation>
+<translation id="4458874409874303848">Сайт заблокирован</translation>
+<translation id="4461847750548395463">Система безопасного поиска Google заблокировала этот сайт.</translation>
+<translation id="4491452711366281322">Сайт заблокирован</translation>
 <translation id="4492190037599258964">Результаты поиска по запросу "<ph name="SEARCH_STRING" />"</translation>
 <translation id="4506176782989081258">Ошибка проверки: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Обратитесь за помощью к системному администратору.</translation>
@@ -349,6 +361,7 @@
 <translation id="4764776831041365478">Веб-страница по адресу <ph name="URL" />, возможно, временно недоступна или постоянно перемещена по новому адресу.</translation>
 <translation id="4771973620359291008">Произошла неизвестная ошибка.</translation>
 <translation id="477518548916168453">Сервер не поддерживает функции, необходимые для выполнения этого запроса.</translation>
+<translation id="4782449893814226250">Вашим родителям отправлен запрос на просмотр страницы.</translation>
 <translation id="4800132727771399293">Проверьте срок действия и CVC-код, а затем повторите попытку</translation>
 <translation id="4807049035289105102">Перейти на сайт <ph name="SITE" /> невозможно, так как его идентификационные данные зашифрованы, и Google Chrome не может их обработать. Это могло произойти из-за ошибки сети или атаки на сайт. Скорее всего, он заработает через некоторое время.</translation>
 <translation id="4813512666221746211">Ошибка сети</translation>
@@ -358,6 +371,7 @@
 <translation id="4880827082731008257">Искать в истории</translation>
 <translation id="4923417429809017348">Эта страница была автоматически переведена с неизвестного языка на <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Укажите значение.</translation>
+<translation id="4930497775425430760">Ваш родитель должен одобрить новые сайты, чтобы вы могли их посещать.</translation>
 <translation id="495170559598752135">Действия</translation>
 <translation id="4958444002117714549">Развернуть список</translation>
 <translation id="498957508165411911">Выполнить перевод (<ph name="ORIGINAL_LANGUAGE" /> &gt; <ph name="TARGET_LANGUAGE" />)?</translation>
@@ -416,6 +430,7 @@
 <translation id="560412284261940334">Управление устройствами не поддерживается</translation>
 <translation id="5610142619324316209">Проверьте подключение к Интернету.</translation>
 <translation id="5617949217645503996">Сайт <ph name="HOST_NAME" /> выполнил переадресацию слишком много раз.</translation>
+<translation id="5622887735448669177">Покинуть эту страницу?</translation>
 <translation id="5629630648637658800">Не удалось применить настройки политики</translation>
 <translation id="5631439013527180824">Токен устройства недействителен</translation>
 <translation id="5650551054760837876">Ничего не найдено.</translation>
@@ -425,6 +440,7 @@
 <translation id="5785756445106461925">Обратите внимание, что на странице обнаружен небезопасный контент. Возможно, при передаче ресурсы просматриваются третьими лицами, а злоумышленники могут получить доступ к странице и изменить ее поведение или внешний вид.</translation>
 <translation id="5810442152076338065">Соединение с <ph name="DOMAIN" /> зашифровано с помощью устаревших наборов шифров.</translation>
 <translation id="5813119285467412249">&amp;Повторить добавление</translation>
+<translation id="5855235287355719921">Этот сайт заблокирован администратором.</translation>
 <translation id="5857090052475505287">Новая папка</translation>
 <translation id="5869405914158311789">Не удается получить доступ к сайту</translation>
 <translation id="5869522115854928033">Сайты с сохраненными паролями</translation>
@@ -448,6 +464,7 @@
 <translation id="6146055958333702838">Проверьте соединение кабелей, перезагрузите маршрутизаторы, модемы и другие
     сетевые устройства.</translation>
 <translation id="614940544461990577">Попробуйте сделать следующее:</translation>
+<translation id="6150607114729249911">Чтобы просмотреть эту страницу, попросите разрешения у родителей.</translation>
 <translation id="6151417162996330722">Слишком долгий срок действия сертификата, предоставленного сервером.</translation>
 <translation id="6154808779448689242">Возвращенный токен не соответствует имеющемуся</translation>
 <translation id="6165508094623778733">Подробнее...</translation>
@@ -484,6 +501,7 @@
 <translation id="6550675742724504774">Параметры</translation>
 <translation id="6596325263575161958">Параметры шифрования</translation>
 <translation id="6610562986279010327">Не удается открыть URL</translation>
+<translation id="662080504995468778">Остаться</translation>
 <translation id="6626108645084335023">Ожидание зонда DNS.</translation>
 <translation id="6628463337424475685">Поиск <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">Перейти на сайт <ph name="SITE" /> невозможно, так как <ph name="BEGIN_LINK" />его сертификат отозван<ph name="END_LINK" />. Это могло произойти из-за ошибки сети или атаки на сайт. Скорее всего, он заработает через некоторое время.</translation>
@@ -537,11 +555,14 @@
 <translation id="7182878459783632708">Правила не заданы</translation>
 <translation id="7186367841673660872">Эта страница была переведена автоматически<ph name="ORIGINAL_LANGUAGE" />&gt;<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="719464814642662924">Visa</translation>
+<translation id="720210938761809882">Страница заблокирована</translation>
 <translation id="7208899522964477531">Искать на <ph name="SITE_NAME" />  <ph name="SEARCH_TERMS" /></translation>
 <translation id="7210863904660874423">Сайт <ph name="HOST_NAME" /> не соответствует стандартам безопасности.</translation>
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Подробнее <ph name="END_LINK" /> об этой неполадке.</translation>
 <translation id="7219179957768738017">В этом подключении используется протокол <ph name="SSL_VERSION" />.</translation>
 <translation id="7225807090967870017">Идентификатор сборки</translation>
+<translation id="7231308970288859235">Чтобы просмотреть эту страницу, попросите разрешения у родителя.</translation>
+<translation id="7246609911581847514">Ваш администратор должен одобрить новые сайты, чтобы вы могли их посещать.</translation>
 <translation id="725866823122871198">Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="7265986070661382626">Перейти на сайт <ph name="SITE" /> невозможно, так как он использует <ph name="BEGIN_LINK" />закрепление сертификата<ph name="END_LINK" />. Это могло произойти из-за ошибки сети или атаки на сайт. Скорее всего, он заработает через некоторое время.</translation>
 <translation id="7269802741830436641">На этой странице обнаружена циклическая переадресация</translation>
@@ -601,15 +622,17 @@
 <translation id="778579833039460630">Данные не получены</translation>
 <translation id="7791543448312431591">Добавить</translation>
 <translation id="7793809570500803535">Веб-страница по адресу <ph name="SITE" />, возможно, временно недоступна или перемещена на новый адрес.</translation>
-<translation id="7800304661137206267">Для аутентификации сообщений используется <ph name="CIPHER" /> c <ph name="MAC" />, для обмена ключами используется <ph name="KX" />.</translation>
+<translation id="7800304661137206267">Соединение зашифровано с помощью <ph name="CIPHER" />, для аутентификации сообщений используется <ph name="MAC" />, для обмена ключами используется <ph name="KX" />.</translation>
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7805768142964895445">Состояние</translation>
 <translation id="7813600968533626083">Удалить подсказку из Chrome?</translation>
 <translation id="7825436071901023927">Опасный порт <ph name="SITE" /></translation>
 <translation id="785549533363645510">Тем не менее ваши действия будут видны системному администратору и интернет-провайдеру, а также доступны веб-сайтам, которые вы посещаете.</translation>
 <translation id="7887683347370398519">Проверьте CVC-код и повторите попытку</translation>
+<translation id="7894616681410591072">Администратор (<ph name="NAME" />) должен разрешить вам просмотр этой страницы.</translation>
 <translation id="790025292736025802"><ph name="URL" /> не найден</translation>
 <translation id="7912024687060120840">В папке:</translation>
+<translation id="7920092496846849526">Вашим родителям отправлен запрос на просмотр страницы.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7938958445268990899">Сертификат сервера еще не действителен.</translation>
 <translation id="7951415247503192394">(32 бит)</translation>
@@ -618,6 +641,7 @@
 <translation id="7977590112176369853">&lt;введите запрос&gt;</translation>
 <translation id="7983301409776629893">Всегда переводить <ph name="ORIGINAL_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Не указано</translation>
+<translation id="8012647001091218357">Не удалось связаться с вашими родителями. Повторите попытку.</translation>
 <translation id="8034522405403831421">Язык этой страницы: <ph name="SOURCE_LANGUAGE" />. Перевести ее на <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Элементы истории не найдены.</translation>
 <translation id="8088680233425245692">Не удалось показать статью</translation>
@@ -630,9 +654,6 @@
 <translation id="8204086856545141093">Запросы к серверу заблокированы одной из политик.</translation>
 <translation id="8218327578424803826">Назначенное местоположение:</translation>
 <translation id="8225771182978767009">Тот, кто настраивал компьютер, заблокировал этот сайт.</translation>
-<translation id="8240446052814166959">Проверьте настройки прокси-сервера или попросите администратора
-      задать верные параметры.
-      <ph name="PLATFORM_TEXT" /></translation>
 <translation id="8241707690549784388">На странице, которую вы ищете, использовалась введенная вами информация. При возврате на эту страницу может потребоваться повторить выполненные ранее действия. Продолжить?</translation>
 <translation id="8249320324621329438">Время последней загрузки:</translation>
 <translation id="8266098793847448402">Нажмите
@@ -642,6 +663,7 @@
       введите путь <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />
       и нажмите
       <ph name="BEGIN_BOLD" />ОК<ph name="END_BOLD" />.</translation>
+<translation id="8279107132611114222">Ваш запрос на доступ к сайту отправлен пользователю <ph name="NAME" />.</translation>
 <translation id="8289355894181816810">Уточните информацию у администратора сети.</translation>
 <translation id="8293206222192510085">Добавление закладки</translation>
 <translation id="8294431847097064396">Источник</translation>
@@ -663,6 +685,7 @@
 <translation id="8559762987265718583">Не удалось установить защищенное соединение с доменом <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> из-за неверных настроек системных часов и календаря (<ph name="DATE_AND_TIME" />).</translation>
 <translation id="856992080682148">Срок действия сертификата для этого сайта истекает не ранее 2017 года. Кроме того, в цепочке присутствует сертификат с подписью SHA-1.</translation>
 <translation id="8571890674111243710">Перевод страницы на <ph name="LANGUAGE" />...</translation>
+<translation id="8591846766485502580">Один из ваших родителей заблокировал этот сайт.</translation>
 <translation id="859285277496340001">Этот сертификат не определяет механизм проверки отзыва.</translation>
 <translation id="8629916158020966496">Просмотр веб-страниц отключен на время проверки данных для регистрации в корпоративном домене.
     Вы можете воспользоваться доступным инструментом диагностики для устранения неполадок с подключением.</translation>
