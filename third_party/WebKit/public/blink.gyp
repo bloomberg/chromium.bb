@@ -87,6 +87,7 @@
             'variables': {
               'mojom_files': [
                 'platform/modules/bluetooth/web_bluetooth.mojom',
+                'platform/modules/notifications/notification.mojom',
               ],
             },
             'includes': [
