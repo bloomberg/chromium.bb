@@ -20,15 +20,23 @@
     },
 
     'chromium.android': {
-      'Android Cronet ARM64 Builder': 'tbd',
-      'Android Cronet ARM64 Builder (dbg)': 'tbd',
-      'Android Cronet ARMv6 Builder': 'tbd',
-      'Android Cronet Builder': 'tbd',
-      'Android Cronet Builder (dbg)': 'tbd',
-      'Android Cronet Data Reduction Proxy Builder': 'tbd',
-      'Android Cronet MIPS Builder': 'tbd',
-      'Android Cronet x86 Builder': 'tbd',
-      'Android Cronet x86 Builder (dbg)': 'tbd',
+      'Android Cronet ARM64 Builder':
+          'android_cronet_gyp_release_bot_minimal_symbols_arm64',
+      'Android Cronet ARM64 Builder (dbg)':
+          'android_cronet_gyp_debug_static_bot_arm64',
+      'Android Cronet ARMv6 Builder':
+          'android_cronet_gyp_release_bot_minimal_symbols_armv6',
+      'Android Cronet Builder':
+          'android_cronet_gyp_release_bot_minimal_symbols',
+      'Android Cronet Builder (dbg)': 'android_cronet_gyp_debug_static_bot',
+      'Android Cronet Data Reduction Proxy Builder':
+          'android_cronet_data_reduction_proxy_gyp_release_bot_minimal_symbols',
+      'Android Cronet MIPS Builder':
+          'android_cronet_gyp_release_bot_minimal_symbols_mipsel',
+      'Android Cronet x86 Builder':
+          'android_cronet_gyp_release_bot_minimal_symbols_x86',
+      'Android Cronet x86 Builder (dbg)':
+          'android_cronet_gyp_debug_static_bot_x86',
       'Android WebView CTS L-MR1 (dbg)': 'tbd',
       'Android Webview L (dbg)': 'tbd',
       'Android Webview M (dbg)': 'tbd',
@@ -840,6 +848,43 @@
       'android', 'clang', 'asan', 'findbugs', 'gyp', 'debug_trybot',
     ],
 
+    'android_cronet_data_reduction_proxy_gyp_release_bot_minimal_symbols': [
+      'android', 'cronet', 'data_reduction_proxy', 'gyp',
+      'release_bot_minimal_symbols', 'arm'
+    ],
+
+    'android_cronet_gyp_debug_static_bot': [
+      'android', 'cronet', 'gyp', 'debug_static_bot', 'arm'
+    ],
+
+    'android_cronet_gyp_debug_static_bot_arm64': [
+      'android', 'cronet', 'gyp', 'debug_static_bot', 'arm64'
+    ],
+
+    'android_cronet_gyp_debug_static_bot_x86': [
+      'android', 'cronet', 'gyp', 'debug_static_bot', 'x86'
+    ],
+
+    'android_cronet_gyp_release_bot_minimal_symbols': [
+      'android', 'cronet', 'gyp', 'release_bot_minimal_symbols', 'arm'
+    ],
+
+    'android_cronet_gyp_release_bot_minimal_symbols_arm64': [
+      'android', 'cronet', 'gyp', 'release_bot_minimal_symbols', 'arm64'
+    ],
+
+    'android_cronet_gyp_release_bot_minimal_symbols_armv6': [
+      'android', 'cronet', 'gyp', 'release_bot_minimal_symbols', 'armv6'
+    ],
+
+    'android_cronet_gyp_release_bot_minimal_symbols_mipsel': [
+      'android', 'cronet', 'gyp', 'release_bot_minimal_symbols', 'mipsel'
+    ],
+
+    'android_cronet_gyp_release_bot_minimal_symbols_x86': [
+      'android', 'cronet', 'gyp', 'release_bot_minimal_symbols', 'x86'
+    ],
+
     'android_gn_debug_bot': [
       'android', 'gn', 'debug_bot',
     ],
@@ -1376,9 +1421,9 @@
       'gyp_defines': 'target_arch=arm64',
     },
 
-    'arm64': {
-      'gn_args': 'target_cpu="arm64"',
-      'gyp_defines': 'target_arch=arm64',
+    'armv6': {
+      'gn_args': 'arm_version=6',
+      'gyp_defines': 'arm_version=6',
     },
 
     'asan': {
@@ -1425,12 +1470,24 @@
       'gyp_defines': 'clang=1',
     },
 
+    'cronet': {
+      'gn_args': ('disable_file_support=true disable_ftp_support=true '
+                  'enable_websockets=false'),
+      'gyp_defines': ('disable_file_support=1 disable_ftp_support=1 '
+                      'enable_websockets=0'),
+    },
+
     'crosscompile': {
       # This mixin is only needed on GYP bots that are doing cross-compiles
       # but are *not* targetting Android or iOS (where build/gyp_chromium
       # will set the crosscompile variable automatically). It is not need
       # in GN at all.
       'gyp_crosscompile': True,
+    },
+
+    'data_reduction_proxy': {
+      'gn_args': 'enable_data_reduction_proxy_support=true',
+      'gyp_defines': 'enable_data_reduction_proxy_support=1',
     },
 
     'dcheck_always_on': {
