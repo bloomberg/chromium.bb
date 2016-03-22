@@ -29051,9 +29051,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="TokenBinding.StoreEphemerality">
   <owner>nharper@chromium.org</owner>
   <summary>
-    For each request on a connection where Channel ID was sent, this logs
-    whether the Cookie store and the Channel ID store were ephemeral or
-    persistent.
+    For each request to accounts.google.com on a connection where Channel ID was
+    sent, this logs whether the Cookie store and the Channel ID store were
+    ephemeral or persistent.
   </summary>
 </histogram>
 

@@ -66,9 +66,10 @@ bool IsMethodSafe(const std::string& method) {
          method == "TRACE";
 }
 
-void LogChannelIDAndCookieStores(const net::URLRequestContext* context,
+void LogChannelIDAndCookieStores(const GURL& url,
+                                 const net::URLRequestContext* context,
                                  const net::SSLInfo& ssl_info) {
-  if (!ssl_info.channel_id_sent)
+  if (url.host() != "accounts.google.com" || !ssl_info.channel_id_sent)
     return;
   // This enum is used for an UMA histogram - don't reuse or renumber entries.
   enum {
@@ -1016,7 +1017,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
         return;
       }
     }
-    LogChannelIDAndCookieStores(request_->context(),
+    LogChannelIDAndCookieStores(request_->url(), request_->context(),
                                 transaction_->GetResponseInfo()->ssl_info);
 
     SaveCookiesAndNotifyHeadersComplete(OK);
