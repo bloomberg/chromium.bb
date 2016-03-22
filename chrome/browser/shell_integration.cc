@@ -7,12 +7,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/policy/policy_path_parser.h"
 #include "chrome/common/chrome_paths.h"
@@ -46,10 +45,6 @@ bool SetAsDefaultBrowserInteractive() {
   return false;
 }
 
-bool IsSetAsDefaultAsynchronous() {
-  return false;
-}
-
 bool SetAsDefaultProtocolClientInteractive(const std::string& protocol) {
   return false;
 }
@@ -58,11 +53,7 @@ bool SetAsDefaultProtocolClientInteractive(const std::string& protocol) {
 DefaultWebClientSetPermission CanSetAsDefaultProtocolClient() {
   // Allowed as long as the browser can become the operating system default
   // browser.
-  DefaultWebClientSetPermission permission = CanSetAsDefaultBrowser();
-
-  // Set as default asynchronous is only supported for default web browser.
-  return (permission == SET_DEFAULT_ASYNCHRONOUS) ? SET_DEFAULT_INTERACTIVE
-                                                  : permission;
+  return CanSetAsDefaultBrowser();
 }
 
 #if !defined(OS_WIN)
@@ -150,10 +141,6 @@ base::string16 GetAppShortcutsSubdirName() {
 // DefaultWebClientWorker
 //
 
-DefaultWebClientWorker::DefaultWebClientWorker(
-    const DefaultWebClientWorkerCallback& callback)
-    : callback_(callback) {}
-
 void DefaultWebClientWorker::StartCheckIsDefault() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
@@ -161,28 +148,20 @@ void DefaultWebClientWorker::StartCheckIsDefault() {
 }
 
 void DefaultWebClientWorker::StartSetAsDefault() {
-  // Cancel the already running process if another start is requested.
-  if (set_as_default_in_progress_) {
-    if (set_as_default_initialized_) {
-      FinalizeSetAsDefault();
-      set_as_default_initialized_ = false;
-    }
-
-    ReportAttemptResult(AttemptResult::RETRY);
-  }
-
-  set_as_default_in_progress_ = true;
-  set_as_default_initialized_ = InitializeSetAsDefault();
-
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&DefaultWebClientWorker::SetAsDefault, this));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// DefaultWebClientWorker, private:
+// DefaultWebClientWorker, protected:
 
-DefaultWebClientWorker::~DefaultWebClientWorker() {}
+DefaultWebClientWorker::DefaultWebClientWorker(
+    const DefaultWebClientWorkerCallback& callback,
+    const char* worker_name)
+    : callback_(callback), worker_name_(worker_name) {}
+
+DefaultWebClientWorker::~DefaultWebClientWorker() = default;
 
 void DefaultWebClientWorker::OnCheckIsDefaultComplete(
     DefaultWebClientState state) {
@@ -201,46 +180,46 @@ void DefaultWebClientWorker::OnCheckIsDefaultComplete(
 void DefaultWebClientWorker::OnSetAsDefaultAttemptComplete(
     AttemptResult result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // Hold on to a reference because if this was called via the default browser
-  // callback in StartupBrowserCreator, clearing the callback in
-  // FinalizeSetAsDefault() would otherwise remove the last reference and delete
-  // us in the middle of this function.
-  scoped_refptr<DefaultWebClientWorker> scoped_ref(this);
 
-  if (set_as_default_in_progress_) {
-    set_as_default_in_progress_ = false;
+  // Report failures here. Successes are reported in
+  // OnCheckIsDefaultComplete() after checking that the change is verified.
+  check_default_should_report_success_ = result == AttemptResult::SUCCESS;
+  if (!check_default_should_report_success_)
+    ReportAttemptResult(result);
 
-    if (set_as_default_initialized_) {
-      FinalizeSetAsDefault();
-      set_as_default_initialized_ = false;
-    }
+  // Start the default browser check. The default state will be reported to
+  // the caller via the |callback_|.
+  StartCheckIsDefault();
+}
 
-    // Report failures here. Successes are reported in
-    // OnCheckIsDefaultComplete() after checking that the change is verified.
-    check_default_should_report_success_ = result == AttemptResult::SUCCESS;
-    if (!check_default_should_report_success_)
-      ReportAttemptResult(result);
+///////////////////////////////////////////////////////////////////////////////
+// DefaultWebClientWorker, private:
 
-    // Start the default browser check. The default state will be reported to
-    // the caller via the |callback_|.
-    StartCheckIsDefault();
-  }
+void DefaultWebClientWorker::CheckIsDefault() {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DefaultWebClientState state = CheckIsDefaultImpl();
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DefaultBrowserWorker::OnCheckIsDefaultComplete, this, state));
+}
+
+void DefaultWebClientWorker::SetAsDefault() {
+  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  AttemptResult result = SetAsDefaultImpl();
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&DefaultBrowserWorker::OnSetAsDefaultAttemptComplete, this,
+                 result));
 }
 
 void DefaultWebClientWorker::ReportAttemptResult(AttemptResult result) {
   base::LinearHistogram::FactoryGet(
-      base::StringPrintf("%s.SetDefaultResult", GetHistogramPrefix()), 1,
+      base::StringPrintf("%s.SetDefaultResult", worker_name_), 1,
       AttemptResult::NUM_ATTEMPT_RESULT_TYPES,
       AttemptResult::NUM_ATTEMPT_RESULT_TYPES + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(result);
 }
-
-bool DefaultWebClientWorker::InitializeSetAsDefault() {
-  return true;
-}
-
-void DefaultWebClientWorker::FinalizeSetAsDefault() {}
 
 void DefaultWebClientWorker::UpdateUI(DefaultWebClientState state) {
   if (!callback_.is_null()) {
@@ -267,21 +246,18 @@ void DefaultWebClientWorker::UpdateUI(DefaultWebClientState state) {
 
 DefaultBrowserWorker::DefaultBrowserWorker(
     const DefaultWebClientWorkerCallback& callback)
-    : DefaultWebClientWorker(callback) {}
-
-DefaultBrowserWorker::~DefaultBrowserWorker() {}
+    : DefaultWebClientWorker(callback, "DefaultBrowser") {}
 
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultBrowserWorker, private:
 
-void DefaultBrowserWorker::CheckIsDefault() {
-  DefaultWebClientState state = GetDefaultBrowser();
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DefaultBrowserWorker::OnCheckIsDefaultComplete, this, state));
+DefaultBrowserWorker::~DefaultBrowserWorker() = default;
+
+DefaultWebClientState DefaultBrowserWorker::CheckIsDefaultImpl() {
+  return GetDefaultBrowser();
 }
 
-void DefaultBrowserWorker::SetAsDefault() {
+DefaultWebClientWorker::AttemptResult DefaultBrowserWorker::SetAsDefaultImpl() {
   AttemptResult result = AttemptResult::FAILURE;
   switch (CanSetAsDefaultBrowser()) {
     case SET_DEFAULT_NOT_ALLOWED:
@@ -295,36 +271,8 @@ void DefaultBrowserWorker::SetAsDefault() {
       if (interactive_permitted_ && SetAsDefaultBrowserInteractive())
         result = AttemptResult::SUCCESS;
       break;
-    case SET_DEFAULT_ASYNCHRONOUS:
-#if defined(OS_WIN)
-      if (!interactive_permitted_)
-        break;
-      if (GetDefaultBrowser() == IS_DEFAULT) {
-        // Don't start the asynchronous operation since it could result in
-        // losing the default browser status.
-        result = AttemptResult::ALREADY_DEFAULT;
-        break;
-      }
-      // This function will cause OnSetAsDefaultAttemptComplete() to be called
-      // asynchronously via a filter established in InitializeSetAsDefault().
-      if (!SetAsDefaultBrowserAsynchronous()) {
-        result = AttemptResult::LAUNCH_FAILURE;
-        break;
-      }
-      return;
-#else
-      NOTREACHED();
-      break;
-#endif
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DefaultBrowserWorker::OnSetAsDefaultAttemptComplete, this,
-                 result));
-}
-
-const char* DefaultBrowserWorker::GetHistogramPrefix() {
-  return "DefaultBrowser";
+  return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -334,22 +282,23 @@ const char* DefaultBrowserWorker::GetHistogramPrefix() {
 DefaultProtocolClientWorker::DefaultProtocolClientWorker(
     const DefaultWebClientWorkerCallback& callback,
     const std::string& protocol)
-    : DefaultWebClientWorker(callback), protocol_(protocol) {}
+    : DefaultWebClientWorker(callback, "DefaultProtocolClient"),
+      protocol_(protocol) {}
+
+///////////////////////////////////////////////////////////////////////////////
+// DefaultProtocolClientWorker, protected:
+
+DefaultProtocolClientWorker::~DefaultProtocolClientWorker() = default;
 
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultProtocolClientWorker, private:
 
-DefaultProtocolClientWorker::~DefaultProtocolClientWorker() {}
-
-void DefaultProtocolClientWorker::CheckIsDefault() {
-  DefaultWebClientState state = IsDefaultProtocolClient(protocol_);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DefaultProtocolClientWorker::OnCheckIsDefaultComplete, this,
-                 state));
+DefaultWebClientState DefaultProtocolClientWorker::CheckIsDefaultImpl() {
+  return IsDefaultProtocolClient(protocol_);
 }
 
-void DefaultProtocolClientWorker::SetAsDefault() {
+DefaultWebClientWorker::AttemptResult
+DefaultProtocolClientWorker::SetAsDefaultImpl() {
   AttemptResult result = AttemptResult::FAILURE;
   switch (CanSetAsDefaultProtocolClient()) {
     case SET_DEFAULT_NOT_ALLOWED:
@@ -365,18 +314,8 @@ void DefaultProtocolClientWorker::SetAsDefault() {
         result = AttemptResult::SUCCESS;
       }
       break;
-    case SET_DEFAULT_ASYNCHRONOUS:
-      NOTREACHED();
-      break;
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DefaultProtocolClientWorker::OnSetAsDefaultAttemptComplete,
-                 this, result));
-}
-
-const char* DefaultProtocolClientWorker::GetHistogramPrefix() {
-  return "DefaultProtocolClient";
+  return result;
 }
 
 }  // namespace shell_integration

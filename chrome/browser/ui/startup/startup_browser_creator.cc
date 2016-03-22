@@ -115,14 +115,6 @@ using content::ChildProcessSecurityPolicy;
 
 namespace {
 
-#if defined(OS_WIN)
-const wchar_t kSetDefaultBrowserHelpUrl[] =
-    L"https://support.google.com/chrome?p=default_browser";
-
-// Not thread-safe. Always use or modify this callback on the UI thread.
-base::Closure* g_default_browser_callback = nullptr;
-#endif  // defined(OS_WIN)
-
 // Keeps track on which profiles have been launched.
 class ProfileLaunchObserver : public content::NotificationObserver {
  public:
@@ -486,34 +478,6 @@ void StartupBrowserCreator::RegisterLocalStatePrefs(
   registry->RegisterBooleanPref(prefs::kWasRestarted, false);
 }
 
-
-#if defined(OS_WIN)
-// static
-bool StartupBrowserCreator::SetDefaultBrowserCallback(
-    const base::Closure& callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!g_default_browser_callback) {
-    // This won't leak because the worker class invoking this function always
-    // calls ClearDefaultBrowserCallback() in its destructor.
-    g_default_browser_callback = new base::Closure(callback);
-    return true;
-  }
-  return false;
-}
-
-// static
-void StartupBrowserCreator::ClearDefaultBrowserCallback() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  delete g_default_browser_callback;
-  g_default_browser_callback = nullptr;
-}
-
-// static
-const wchar_t* StartupBrowserCreator::GetDefaultBrowserUrl() {
-  return kSetDefaultBrowserHelpUrl;
-}
-#endif  // defined(OS_WIN)
-
 // static
 std::vector<GURL> StartupBrowserCreator::GetURLsFromCommandLine(
     const base::CommandLine& command_line,
@@ -740,19 +704,6 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   }
 
 #if defined(OS_WIN)
-  // Intercept a specific url when setting the default browser asynchronously.
-  // This only happens on Windows 10+.
-  if (g_default_browser_callback) {
-    base::CommandLine::StringType default_browser_url_(
-        kSetDefaultBrowserHelpUrl);
-    for (const auto& arg : command_line.GetArgs()) {
-      if (arg == default_browser_url_) {
-        g_default_browser_callback->Run();
-        return true;
-      }
-    }
-  }
-
   // Log whether this process was a result of an action in the Windows Jumplist.
   if (command_line.HasSwitch(switches::kWinJumplistAction)) {
     jumplist::LogJumplistActionFromSwitchValue(

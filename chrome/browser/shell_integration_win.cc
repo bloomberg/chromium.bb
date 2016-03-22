@@ -17,22 +17,16 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "base/metrics/field_trial.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
-#include "base/process/launch.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/timer/timer.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/policy/policy_path_parser.h"
-#include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -56,17 +50,6 @@ namespace shell_integration {
 namespace {
 
 const wchar_t kAppListAppNameSuffix[] = L"AppList";
-
-const char kAsyncSetAsDefaultExperimentName[] = "AsyncSetAsDefault";
-const char kAsyncSetAsDefaultEnabledGroupName[] = "Enabled";
-// For client in the Enabled group of the AsyncSetAsDefault experiment, if the
-// Windows build number of the user is greater or equal than this value, the
-// default browser choice won't be reset.
-const char kAsyncSetAsDefaultEnabledBuildNumberParamName[] =
-    "ResetOlderThanBuildNumber";
-
-const char kEnableAsyncSetAsDefault[] = "enable-async-set-as-default";
-const char kDisableAsyncSetAsDefault[] = "disable-async-set-as-default";
 
 // Helper function for GetAppId to generates profile id
 // from profile path. "profile_id" is composed of sanitized basenames of
@@ -232,78 +215,7 @@ DefaultWebClientState GetDefaultWebClientStateFromShellUtilDefaultState(
   }
 }
 
-// Resets the default browser choice for the current user.
-void ResetDefaultBrowser() {
-  static const wchar_t* const kUrlAssociationKeyFormats[] = {
-      L"SOFTWARE\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\"
-      L"%ls\\UserChoice",
-      L"SOFTWARE\\Microsoft\\Windows\\Roaming\\OpenWith\\UrlAssociations\\"
-      L"%ls\\UserChoice"};
-  static const wchar_t* const kProtocols[] = {L"http", L"https"};
-
-  for (const wchar_t* format : kUrlAssociationKeyFormats) {
-    for (const wchar_t* protocol : kProtocols) {
-      base::win::RegKey registry_key(
-          HKEY_CURRENT_USER, base::StringPrintf(format, protocol).c_str(),
-          KEY_SET_VALUE);
-      registry_key.DeleteValue(L"Hash");
-    }
-  }
-}
-
-// Returns true if the AsyncSetAsDefault field trial is activated.
-bool IsAsyncSetAsDefaultEnabled() {
-  using base::CommandLine;
-
-  // Note: It's important to query the field trial state first, to ensure that
-  // UMA reports the correct group.
-  const std::string group_name =
-      base::FieldTrialList::FindFullName(kAsyncSetAsDefaultExperimentName);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kDisableAsyncSetAsDefault))
-    return false;
-  if (CommandLine::ForCurrentProcess()->HasSwitch(kEnableAsyncSetAsDefault))
-    return true;
-
-  return base::StartsWith(group_name, kAsyncSetAsDefaultEnabledGroupName,
-                          base::CompareCase::SENSITIVE);
-}
-
-// Returns true if the default browser choice should be reset for the current
-// user. Determined by an experiment parameter.
-bool ShouldResetDefaultBrowser() {
-  // Get the build number where it is no longer needed to reset the default
-  // browser.
-  std::string build_number_value = variations::GetVariationParamValue(
-      kAsyncSetAsDefaultExperimentName,
-      kAsyncSetAsDefaultEnabledBuildNumberParamName);
-  int build_number = 0;
-  // Don't reset the default browser on empty/invalid values.
-  if (!base::StringToInt(build_number_value, &build_number))
-    return false;
-  DCHECK_NE(0, build_number);
-
-  return base::win::OSInfo::GetInstance()->version_number().build <
-         build_number;
-}
-
-bool RegisterBrowser() {
-  base::FilePath chrome_exe;
-  if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
-    NOTREACHED() << "Error getting app exe path";
-    return false;
-  }
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-
-  return ShellUtil::RegisterChromeBrowser(dist, chrome_exe, base::string16(),
-                                          true);
-}
-
 }  // namespace
-
-bool IsSetAsDefaultAsynchronous() {
-  return base::win::GetVersion() >= base::win::VERSION_WIN10 &&
-         IsAsyncSetAsDefaultEnabled();
-}
 
 bool SetAsDefaultBrowser() {
   base::FilePath chrome_exe;
@@ -390,8 +302,6 @@ DefaultWebClientSetPermission CanSetAsDefaultBrowser() {
     return SET_DEFAULT_NOT_ALLOWED;
   if (ShellUtil::CanMakeChromeDefaultUnattended())
     return SET_DEFAULT_UNATTENDED;
-  if (IsSetAsDefaultAsynchronous())
-    return SET_DEFAULT_ASYNCHRONOUS;
   return SET_DEFAULT_INTERACTIVE;
 }
 
@@ -629,79 +539,6 @@ base::FilePath GetStartMenuShortcut(const base::FilePath& chrome_exe) {
   }
 
   return base::FilePath();
-}
-
-bool DefaultBrowserWorker::InitializeSetAsDefault() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (!IsSetAsDefaultAsynchronous())
-    return false;
-
-  // On Windows 10+, there is no official way to prompt the user to set a
-  // default browser. This is the workaround:
-  // 1. Unregister the default browser.
-  // 2. Open "How to make Chrome my default browser" link with openwith.exe.
-  // 3. Windows will prompt the user with "How would you like to open this?".
-  // 4. If Chrome is selected, we intercept the attempt to open the URL and
-  //    instead call OnSetAsDefaultAttemptComplete(), passing true to indicate
-  //    success.
-  // 5. If Chrome is not selected, the url is opened in the selected browser.
-  //    After a certain amount of time, we notify the caller via the |callback_|
-  //    that the process failed.
-
-  if (!StartupBrowserCreator::SetDefaultBrowserCallback(
-          base::Bind(&DefaultBrowserWorker::OnSetAsDefaultAttemptComplete, this,
-                     AttemptResult::SUCCESS))) {
-    // Another worker is currently processing. Note that this will still cause
-    // SetAsDefaultBrowserAsynchronous() to be invoked in SetAsDefault() but
-    // the other worker will happily intercept the attempt.
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&DefaultBrowserWorker::OnSetAsDefaultAttemptComplete, this,
-                   AttemptResult::OTHER_WORKER));
-    return false;
-  }
-
-  // Start the timer.
-  if (!async_timer_)
-    async_timer_.reset(new base::OneShotTimer());
-  std::string value = variations::GetVariationParamValue(
-      kAsyncSetAsDefaultExperimentName, "TimerDuration");
-  int seconds = 0;
-  if (!value.empty())
-    base::StringToInt(value, &seconds);
-  if (!seconds)
-    seconds = 120;  // Default value of 2 minutes.
-  async_timer_->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(seconds),
-      base::Bind(&DefaultBrowserWorker::OnSetAsDefaultAttemptComplete, this,
-                 AttemptResult::FAILURE));
-  return true;
-}
-
-void DefaultBrowserWorker::FinalizeSetAsDefault() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(set_as_default_initialized());
-
-  async_timer_.reset();
-  StartupBrowserCreator::ClearDefaultBrowserCallback();
-}
-
-// static
-bool DefaultBrowserWorker::SetAsDefaultBrowserAsynchronous() {
-  DCHECK(IsSetAsDefaultAsynchronous());
-
-  // Registers chrome.exe as a browser on Windows to make sure it will be shown
-  // in the "How would you like to open this?" prompt.
-  if (!RegisterBrowser())
-    return false;
-
-  if (ShouldResetDefaultBrowser())
-    ResetDefaultBrowser();
-
-  base::CommandLine cmdline(base::FilePath(L"openwith.exe"));
-  cmdline.AppendArgNative(StartupBrowserCreator::GetDefaultBrowserUrl());
-  return base::LaunchProcess(cmdline, base::LaunchOptions()).IsValid();
 }
 
 }  // namespace shell_integration

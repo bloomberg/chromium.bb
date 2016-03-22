@@ -106,36 +106,6 @@ bool IsWindows10OrNewer() {
 #endif
 }
 
-#if defined(OS_WIN)
-// This function is used to verify a callback was successfully invoked.
-void SetTrue(bool* value) {
-  ASSERT_TRUE(value);
-  *value = true;
-}
-
-bool TabStripContainsUrl(TabStripModel* tab_strip, GURL url) {
-  for (int i = 0; i < tab_strip->count(); ++i) {
-    if (tab_strip->GetWebContentsAt(i)->GetURL() == url)
-      return true;
-  }
-  return false;
-}
-
-void ProcessCommandLineAlreadyRunningDefaultProfile(
-    const base::CommandLine& cmdline) {
-  base::FilePath current_dir;
-  ASSERT_TRUE(base::GetCurrentDirectory(&current_dir));
-  base::FilePath user_data_dir =
-      g_browser_process->profile_manager()->user_data_dir();
-  base::FilePath startup_profile_dir =
-      g_browser_process->profile_manager()->GetLastUsedProfileDir(
-          user_data_dir);
-
-  StartupBrowserCreator::ProcessCommandLineAlreadyRunning(cmdline, current_dir,
-                                                          startup_profile_dir);
-}
-#endif  // defined(OS_WIN)
-
 GURL GetSigninPromoURL() {
   return signin::GetPromoURL(
       signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE,
@@ -1177,42 +1147,6 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   histogram_tester.ExpectBucketCount("SessionCrashed.Bubble", 0, 3);
 #endif  // !defined(OS_MACOSX) && !defined(GOOGLE_CHROME_BUILD)
 }
-
-#if defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, DefaultBrowserCallback) {
-  bool callback_called = false;
-
-  // Set the default browser callback.
-  StartupBrowserCreator::SetDefaultBrowserCallback(
-      base::Bind(&SetTrue, &callback_called));
-
-  // Set the command line to open the default browser url.
-  base::CommandLine cmdline(base::CommandLine::NO_PROGRAM);
-  cmdline.AppendArgNative(StartupBrowserCreator::GetDefaultBrowserUrl());
-
-  // Open url.
-  ProcessCommandLineAlreadyRunningDefaultProfile(cmdline);
-
-  // The url should have been intercepted and the callback invoked.
-  GURL default_browser_url =
-      GURL(StartupBrowserCreator::GetDefaultBrowserUrl());
-  EXPECT_FALSE(
-      TabStripContainsUrl(browser()->tab_strip_model(), default_browser_url));
-  EXPECT_TRUE(callback_called);
-
-  // Clear default browser callback.
-  callback_called = false;
-  StartupBrowserCreator::ClearDefaultBrowserCallback();
-
-  // Open url.
-  ProcessCommandLineAlreadyRunningDefaultProfile(cmdline);
-
-  // The url should not have been intercepted and the callback not invoked.
-  EXPECT_TRUE(
-      TabStripContainsUrl(browser()->tab_strip_model(), default_browser_url));
-  EXPECT_FALSE(callback_called);
-}
-#endif  // defined(OS_WIN)
 
 class SupervisedUserBrowserCreatorTest : public InProcessBrowserTest {
  protected:

@@ -21,22 +21,13 @@ class FakeExternalProtocolHandlerWorker
         os_state_(os_state) {}
 
  private:
-  ~FakeExternalProtocolHandlerWorker() override {}
+  ~FakeExternalProtocolHandlerWorker() override = default;
 
-  void CheckIsDefault() override {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&FakeExternalProtocolHandlerWorker::OnCheckIsDefaultComplete,
-                   this, os_state_));
+  shell_integration::DefaultWebClientState CheckIsDefaultImpl() override {
+    return os_state_;
   }
 
-  void SetAsDefault() override {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &FakeExternalProtocolHandlerWorker::OnSetAsDefaultAttemptComplete,
-            this, AttemptResult::SUCCESS));
-  }
+  AttemptResult SetAsDefaultImpl() override { return AttemptResult::SUCCESS; }
 
   shell_integration::DefaultWebClientState os_state_;
 };

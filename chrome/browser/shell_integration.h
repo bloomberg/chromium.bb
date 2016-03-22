@@ -12,14 +12,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "ui/gfx/image/image_family.h"
 #include "url/gurl.h"
 
 namespace base {
 class CommandLine;
-class OneShotTimer;
 }
 
 namespace shell_integration {
@@ -35,10 +33,6 @@ bool SetAsDefaultBrowser();
 // thread. If Chrome is already default browser, no interactive dialog will be
 // shown and this method returns true.
 bool SetAsDefaultBrowserInteractive();
-
-// Returns true if setting the default browser is an asynchronous operation.
-// In practice, this is only true on Windows 10+.
-bool IsSetAsDefaultAsynchronous();
 
 // Sets Chrome as the default client application for the given protocol
 // (only for the current user). Returns false if this operation fails.
@@ -62,9 +56,6 @@ enum DefaultWebClientSetPermission {
   SET_DEFAULT_UNATTENDED,
   // On Windows 8, a browser can be made default only in an interactive flow.
   SET_DEFAULT_INTERACTIVE,
-  // On Windows 10+, the set default browser flow is both interactive and
-  // asynchronous.
-  SET_DEFAULT_ASYNCHRONOUS,
 };
 
 // Returns requirements for making the running browser the user's default.
@@ -196,9 +187,6 @@ using DefaultWebClientWorkerCallback =
 class DefaultWebClientWorker
     : public base::RefCountedThreadSafe<DefaultWebClientWorker> {
  public:
-  explicit DefaultWebClientWorker(
-      const DefaultWebClientWorkerCallback& callback);
-
   // Controls whether the worker can use user interaction to set the default
   // web client. If false, the set-as-default operation will fail on OS where
   // it is required.
@@ -226,7 +214,9 @@ class DefaultWebClientWorker
     SUCCESS = 0,
     // Chrome was already the default web client. This counts as a successful
     // attempt.
-    ALREADY_DEFAULT = 1,
+    // Note: This result is no longer used since the removal of the Win10
+    // default browser experiment.
+    // ALREADY_DEFAULT = 1,
     // Chrome was not set as the default web client.
     FAILURE = 2,
     // The attempt was abandoned because the observer was destroyed.
@@ -235,10 +225,14 @@ class DefaultWebClientWorker
     // ABANDONED = 3,
     // Failed to launch the process to set Chrome as the default web client
     // asynchronously.
-    LAUNCH_FAILURE = 4,
+    // Note: This result is no longer used since the removal of the Win10
+    // default browser experiment.
+    // LAUNCH_FAILURE = 4,
     // Another worker is already in progress to make Chrome the default web
     // client.
-    OTHER_WORKER = 5,
+    // Note: This result is no longer used since the removal of the Win10
+    // default browser experiment.
+    // OTHER_WORKER = 5,
     // The user initiated another attempt while the asynchronous operation was
     // already in progress.
     RETRY = 6,
@@ -248,6 +242,8 @@ class DefaultWebClientWorker
     NUM_ATTEMPT_RESULT_TYPES
   };
 
+  DefaultWebClientWorker(const DefaultWebClientWorkerCallback& callback,
+                         const char* worker_name);
   virtual ~DefaultWebClientWorker();
 
   // Communicates the result via the |callback_|. In contrast to
@@ -261,41 +257,21 @@ class DefaultWebClientWorker
   // after StartSetAsDefault() is invoked.
   void OnSetAsDefaultAttemptComplete(AttemptResult result);
 
-  // Returns true if FinalizeSetAsDefault() will be called.
-  bool set_as_default_initialized() const {
-    return set_as_default_initialized_;
-  }
-
   // When false, the operation to set as default will fail for interactive
   // flows.
   bool interactive_permitted_ = true;
 
-  // Flag that indicates if the set-as-default operation is in progess to
-  // prevent multiple notifications to the |callback_|.
-  bool set_as_default_in_progress_ = false;
-
  private:
   // Checks whether Chrome is the default web client. Always called on the
-  // FILE thread. Subclasses are responsible for calling
-  // OnCheckIsDefaultComplete() on the UI thread.
-  virtual void CheckIsDefault() = 0;
+  // FILE thread.
+  void CheckIsDefault();
 
   // Sets Chrome as the default web client. Always called on the FILE thread.
-  // Subclasses are responsible for calling OnSetAsDefaultAttemptComplete() on
-  // the UI thread.
-  virtual void SetAsDefault() = 0;
+  void SetAsDefault();
 
-  // Returns the prefix used for metrics to differentiate UMA metrics for
-  // setting the default browser and setting the default protocol client.
-  virtual const char* GetHistogramPrefix() = 0;
-
-  // Invoked on the UI thread prior to starting a set-as-default operation.
-  // Returns true if the initialization succeeded and a subsequent call to
-  // FinalizeSetAsDefault() is required.
-  virtual bool InitializeSetAsDefault();
-
-  // Invoked on the UI thread following a set-as-default operation.
-  virtual void FinalizeSetAsDefault();
+  // Implementation of CheckIsDefault() and SetAsDefault() for subclasses.
+  virtual DefaultWebClientState CheckIsDefaultImpl() = 0;
+  virtual AttemptResult SetAsDefaultImpl() = 0;
 
   // Reports the result and duration for one set-as-default attempt.
   void ReportAttemptResult(AttemptResult result);
@@ -307,10 +283,10 @@ class DefaultWebClientWorker
   // Called with the default state after the worker is done.
   DefaultWebClientWorkerCallback callback_;
 
-  // Flag that indicates the return value of InitializeSetAsDefault(). If
-  // true, FinalizeSetAsDefault() will be called to clear what was
-  // initialized.
-  bool set_as_default_initialized_ = false;
+  // Used to differentiate UMA metrics for setting the default browser and
+  // setting the default protocol client. The pointer must be valid for the
+  // lifetime of the worker.
+  const char* worker_name_;
 
   // Wait until Chrome has been confirmed as the default browser before
   // reporting a successful attempt.
@@ -328,30 +304,10 @@ class DefaultBrowserWorker : public DefaultWebClientWorker {
   ~DefaultBrowserWorker() override;
 
   // Check if Chrome is the default browser.
-  void CheckIsDefault() override;
+  DefaultWebClientState CheckIsDefaultImpl() override;
 
   // Set Chrome as the default browser.
-  void SetAsDefault() override;
-
-  // Returns the histogram prefix for DefaultBrowserWorker.
-  const char* GetHistogramPrefix() override;
-
-#if defined(OS_WIN)
-  // On Windows 10+, adds the default browser callback and starts the timer
-  // that determines if the operation was successful or not.
-  bool InitializeSetAsDefault() override;
-
-  // On Windows 10+, removes the default browser callback and stops the timer.
-  void FinalizeSetAsDefault() override;
-
-  // Prompts the user to select the default browser by trying to open the help
-  // page that explains how to set Chrome as the default browser. Returns
-  // false if the process needed to set Chrome default failed to launch.
-  static bool SetAsDefaultBrowserAsynchronous();
-
-  // Used to determine if setting the default browser was unsuccesful.
-  scoped_ptr<base::OneShotTimer> async_timer_;
-#endif  // defined(OS_WIN)
+  AttemptResult SetAsDefaultImpl() override;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultBrowserWorker);
 };
@@ -371,14 +327,11 @@ class DefaultProtocolClientWorker : public DefaultWebClientWorker {
   ~DefaultProtocolClientWorker() override;
 
  private:
-  // Check is Chrome is the default handler for this protocol.
-  void CheckIsDefault() override;
+  // Check if Chrome is the default handler for this protocol.
+  DefaultWebClientState CheckIsDefaultImpl() override;
 
   // Set Chrome as the default handler for this protocol.
-  void SetAsDefault() override;
-
-  // Returns the histogram prefix for DefaultProtocolClientWorker.
-  const char* GetHistogramPrefix() override;
+  AttemptResult SetAsDefaultImpl() override;
 
   std::string protocol_;
 
