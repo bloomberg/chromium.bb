@@ -27,6 +27,9 @@ source_set("syncable_prefs") {
   ]
 
   if (enable_configuration_policy) {
+    # This define is only used for compiling the .cc files in this target.
+    defines = [ "SYNCABLE_PREFS_USE_POLICY" ]
+
     deps += [
       "//components/policy:policy_component_browser",
       "//components/policy:policy_component_common",

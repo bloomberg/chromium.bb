@@ -197,7 +197,7 @@
     }, {  # configuration_policy==0
       # Some of the policy code is always enabled, so that other parts of
       # Chrome can always interface with the PolicyService without having
-      # to #ifdef on ENABLE_CONFIGURATION_POLICY.
+      # to #ifdef.
       'sources': [
         'core/common/external_data_fetcher.cc',
         'core/common/external_data_fetcher.h',

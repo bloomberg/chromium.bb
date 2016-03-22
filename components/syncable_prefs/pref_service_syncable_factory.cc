@@ -11,7 +11,7 @@
 #include "components/prefs/pref_value_store.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
+#if defined(SYNCABLE_PREFS_USE_POLICY)
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/configuration_policy_pref_store.h"
 #include "components/policy/core/common/policy_service.h"  // nogncheck
@@ -26,21 +26,27 @@ PrefServiceSyncableFactory::PrefServiceSyncableFactory() {
 PrefServiceSyncableFactory::~PrefServiceSyncableFactory() {
 }
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
 void PrefServiceSyncableFactory::SetManagedPolicies(
     policy::PolicyService* service,
     policy::BrowserPolicyConnector* connector) {
+#if defined(SYNCABLE_PREFS_USE_POLICY)
   set_managed_prefs(new policy::ConfigurationPolicyPrefStore(
       service, connector->GetHandlerList(), policy::POLICY_LEVEL_MANDATORY));
+#else
+  NOTREACHED();
+#endif
 }
 
 void PrefServiceSyncableFactory::SetRecommendedPolicies(
     policy::PolicyService* service,
     policy::BrowserPolicyConnector* connector) {
+#if defined(SYNCABLE_PREFS_USE_POLICY)
   set_recommended_prefs(new policy::ConfigurationPolicyPrefStore(
       service, connector->GetHandlerList(), policy::POLICY_LEVEL_RECOMMENDED));
-}
+#else
+  NOTREACHED();
 #endif
+}
 
 void PrefServiceSyncableFactory::SetPrefModelAssociatorClient(
     PrefModelAssociatorClient* pref_model_associator_client) {

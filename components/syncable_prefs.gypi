@@ -32,7 +32,10 @@
       ],
       'conditions': [
         ['configuration_policy==1', {
+          # This define is only used for compiling the .cc files in this target.
+          'defines': [ "SYNCABLE_PREFS_USE_POLICY" ],
           'dependencies': [
+            'cloud_policy_code_generate',
             'policy_component_browser',
             'policy_component_common',
           ],

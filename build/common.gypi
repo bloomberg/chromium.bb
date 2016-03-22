@@ -439,8 +439,10 @@
       # Remoting compilation is enabled by default. Set to 0 to disable.
       'remoting%': 1,
 
-      # Configuration policy is enabled by default. Set to 0 to disable.
-      'configuration_policy%': 1,
+      # Configuration policy is enabled by default. Overridden on some
+      # platforms. This can't be disabled manually since code in src/chrome
+      # assumes this is enabled.
+      'configuration_policy': 1,
 
       # Variable safe_browsing is used to control the build time configuration
       # for safe browsing feature. Safe browsing can be compiled in 3 different
@@ -870,7 +872,7 @@
         }],
 
         ['OS=="ios"', {
-          'configuration_policy%': 0,
+          'configuration_policy': 0,
           'disable_ftp_support%': 1,
           'enable_extensions%': 0,
           'cld2_table_size%': 0,
@@ -1211,7 +1213,7 @@
     'enable_media_router%': '<(enable_media_router)',
     'enable_webrtc%': '<(enable_webrtc)',
     'chromium_win_pch%': '<(chromium_win_pch)',
-    'configuration_policy%': '<(configuration_policy)',
+    'configuration_policy': '<(configuration_policy)',
     'safe_browsing%': '<(safe_browsing)',
     'enable_web_speech%': '<(enable_web_speech)',
     'enable_hotwording%': '<(enable_hotwording)',
@@ -2789,9 +2791,6 @@
       }],
       ['enable_browser_cdms==1', {
         'defines': ['ENABLE_BROWSER_CDMS'],
-      }],
-      ['configuration_policy==1', {
-        'defines': ['ENABLE_CONFIGURATION_POLICY'],
       }],
       ['notifications==1', {
         'defines': ['ENABLE_NOTIFICATIONS'],

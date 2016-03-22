@@ -23,14 +23,11 @@ if (is_chromeos) {
     deps = [
       "//base",
       "//components/keyed_service/core",
+      "//components/policy",
       "//components/policy:policy_component_common",
       "//components/policy/proto",
       "//crypto",
     ]
-
-    if (enable_configuration_policy) {
-      deps += [ "//components/policy" ]
-    }
 
     if (use_nss_certs) {
       public_deps = [

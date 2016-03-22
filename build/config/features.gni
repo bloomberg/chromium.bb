@@ -50,8 +50,6 @@ declare_args() {
   # We always build Google Chrome and Chromecast with proprietary codecs.
   proprietary_codecs = is_chrome_branded || is_chromecast
 
-  enable_configuration_policy = !is_ios
-
   enable_captive_portal_detection = !is_android && !is_ios
 
   # Enables use of the session service, which is enabled by default.
@@ -179,3 +177,5 @@ use_gconf = is_linux && !is_chromeos && !is_chromecast && !is_headless
 enable_webvr = is_android
 
 use_gio = is_linux && !is_chromeos && !is_chromecast && !is_headless
+
+enable_configuration_policy = !is_ios

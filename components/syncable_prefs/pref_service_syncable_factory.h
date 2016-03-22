@@ -34,13 +34,12 @@ class PrefServiceSyncableFactory : public PrefServiceFactory {
   PrefServiceSyncableFactory();
   ~PrefServiceSyncableFactory() override;
 
-#if defined(ENABLE_CONFIGURATION_POLICY)
   // Set up policy pref stores using the given policy service and connector.
+  // These will assert when policy is not used.
   void SetManagedPolicies(policy::PolicyService* service,
                           policy::BrowserPolicyConnector* connector);
   void SetRecommendedPolicies(policy::PolicyService* service,
                               policy::BrowserPolicyConnector* connector);
-#endif
 
   void SetPrefModelAssociatorClient(
       PrefModelAssociatorClient* pref_model_associator_client);
