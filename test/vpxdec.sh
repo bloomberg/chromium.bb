@@ -19,7 +19,7 @@ vpxdec_verify_environment() {
   if [ ! -e "${VP8_IVF_FILE}" ] || [ ! -e "${VP9_WEBM_FILE}" ] || \
     [ ! -e "${VP9_FPM_WEBM_FILE}" ] || \
     [ ! -e "${VP9_LT_50_FRAMES_WEBM_FILE}" ] ; then
-    elog "Libvpx test data must exist in LIBVPX_TEST_DATA_PATH."
+    elog "Libvpx test data must exist in LIBAOM_TEST_DATA_PATH."
     return 1
   fi
   if [ -z "$(vpx_tool_path vpxdec)" ]; then
