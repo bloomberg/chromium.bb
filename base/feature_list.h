@@ -84,8 +84,11 @@ class BASE_EXPORT FeatureList {
   // enable or disable, respectively. If a feature appears on both lists, then
   // it will be disabled. If a list entry has the format "FeatureName<TrialName"
   // then this initialization will also associate the feature state override
-  // with the named field trial, if it exists. Must only be invoked during the
-  // initialization phase (before FinalizeInitialization() has been called).
+  // with the named field trial, if it exists. If a feature name is prefixed
+  // with the '*' character, it will be created with OVERRIDE_USE_DEFAULT -
+  // which is useful for associating with a trial while using the default state.
+  // Must only be invoked during the initialization phase (before
+  // FinalizeInitialization() has been called).
   void InitializeFromCommandLine(const std::string& enable_features,
                                  const std::string& disable_features);
 
@@ -126,8 +129,9 @@ class BASE_EXPORT FeatureList {
   // have been overridden - either through command-line or via FieldTrials. For
   // those features that have an associated FieldTrial, the output entry will be
   // of the format "FeatureName<TrialName", where "TrialName" is the name of the
-  // FieldTrial. Must be called only after the instance has been initialized and
-  // registered.
+  // FieldTrial. Features that have overrides with OVERRIDE_USE_DEFAULT will be
+  // added to |enable_overrides| with a '*' character prefix. Must be called
+  // only after the instance has been initialized and registered.
   void GetFeatureOverrides(std::string* enable_overrides,
                            std::string* disable_overrides);
 

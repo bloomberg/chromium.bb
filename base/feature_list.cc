@@ -30,7 +30,7 @@ FeatureList* g_instance = nullptr;
 // are any reserved characters present, returning true if the string is valid.
 // Only called in DCHECKs.
 bool IsValidFeatureOrFieldTrialName(const std::string& name) {
-  return IsStringASCII(name) && name.find_first_of(",<") == std::string::npos;
+  return IsStringASCII(name) && name.find_first_of(",<*") == std::string::npos;
 }
 
 }  // namespace
@@ -99,21 +99,25 @@ void FeatureList::GetFeatureOverrides(std::string* enable_overrides,
   enable_overrides->clear();
   disable_overrides->clear();
 
+  // Note: Since |overrides_| is a std::map, iteration will be in alphabetical
+  // order. This not guaranteed to users of this function, but is useful for
+  // tests to assume the order.
   for (const auto& entry : overrides_) {
     std::string* target_list = nullptr;
     switch (entry.second.overridden_state) {
+      case OVERRIDE_USE_DEFAULT:
       case OVERRIDE_ENABLE_FEATURE:
         target_list = enable_overrides;
         break;
       case OVERRIDE_DISABLE_FEATURE:
         target_list = disable_overrides;
         break;
-      case OVERRIDE_USE_DEFAULT:
-        continue;
     }
 
     if (!target_list->empty())
       target_list->push_back(',');
+    if (entry.second.overridden_state == OVERRIDE_USE_DEFAULT)
+      target_list->push_back('*');
     target_list->append(entry.first);
     if (entry.second.field_trial) {
       target_list->push_back('<');
@@ -214,6 +218,10 @@ void FeatureList::RegisterOverride(StringPiece feature_name,
   if (field_trial) {
     DCHECK(IsValidFeatureOrFieldTrialName(field_trial->trial_name()))
         << field_trial->trial_name();
+  }
+  if (feature_name.starts_with("*")) {
+    feature_name = feature_name.substr(1);
+    overridden_state = OVERRIDE_USE_DEFAULT;
   }
 
   // Note: The semantics of insert() is that it does not overwrite the entry if

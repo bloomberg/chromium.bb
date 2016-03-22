@@ -372,6 +372,26 @@ TEST_F(FeatureListTest, GetFeatureOverrides) {
   EXPECT_EQ("D", SortFeatureListString(disable_features));
 }
 
+TEST_F(FeatureListTest, GetFeatureOverrides_UseDefault) {
+  ClearFeatureListInstance();
+  FieldTrialList field_trial_list(nullptr);
+  scoped_ptr<FeatureList> feature_list(new FeatureList);
+  feature_list->InitializeFromCommandLine("A,X", "D");
+
+  FieldTrial* trial = FieldTrialList::CreateFieldTrial("Trial", "Group");
+  feature_list->RegisterFieldTrialOverride(
+      kFeatureOffByDefaultName, FeatureList::OVERRIDE_USE_DEFAULT, trial);
+
+  RegisterFeatureListInstance(std::move(feature_list));
+
+  std::string enable_features;
+  std::string disable_features;
+  FeatureList::GetInstance()->GetFeatureOverrides(&enable_features,
+                                                  &disable_features);
+  EXPECT_EQ("*OffByDefault<Trial,A,X", SortFeatureListString(enable_features));
+  EXPECT_EQ("D", SortFeatureListString(disable_features));
+}
+
 TEST_F(FeatureListTest, InitializeFromCommandLine_WithFieldTrials) {
   ClearFeatureListInstance();
   FieldTrialList field_trial_list(nullptr);
@@ -383,6 +403,25 @@ TEST_F(FeatureListTest, InitializeFromCommandLine_WithFieldTrials) {
   EXPECT_FALSE(FieldTrialList::IsTrialActive("Trial"));
   EXPECT_TRUE(FeatureList::IsEnabled(kFeatureOffByDefault));
   EXPECT_TRUE(FieldTrialList::IsTrialActive("Trial"));
+}
+
+TEST_F(FeatureListTest, InitializeFromCommandLine_UseDefault) {
+  ClearFeatureListInstance();
+  FieldTrialList field_trial_list(nullptr);
+  FieldTrialList::CreateFieldTrial("T1", "Group");
+  FieldTrialList::CreateFieldTrial("T2", "Group");
+  scoped_ptr<FeatureList> feature_list(new FeatureList);
+  feature_list->InitializeFromCommandLine(
+      "A,*OffByDefault<T1,*OnByDefault<T2,X", "D");
+  RegisterFeatureListInstance(std::move(feature_list));
+
+  EXPECT_FALSE(FieldTrialList::IsTrialActive("T1"));
+  EXPECT_FALSE(FeatureList::IsEnabled(kFeatureOffByDefault));
+  EXPECT_TRUE(FieldTrialList::IsTrialActive("T1"));
+
+  EXPECT_FALSE(FieldTrialList::IsTrialActive("T2"));
+  EXPECT_TRUE(FeatureList::IsEnabled(kFeatureOnByDefault));
+  EXPECT_TRUE(FieldTrialList::IsTrialActive("T2"));
 }
 
 }  // namespace base
