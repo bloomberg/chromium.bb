@@ -134,7 +134,7 @@ bool parseContentType(const String& contentType, ReceiverType& receiver)
     unsigned contentTypeLength = contentType.length();
     skipSpaces(contentType, index);
     if (index >= contentTypeLength)  {
-        WTF_LOG_ERROR("Invalid Content-Type string '%s'", contentType.ascii().data());
+        DLOG(ERROR) << "Invalid Content-Type string '" << contentType << "'";
         return false;
     }
 
@@ -151,13 +151,13 @@ bool parseContentType(const String& contentType, ReceiverType& receiver)
         skipSpaces(contentType, index);
         SubstringRange keyRange = parseParameterPart(contentType, index);
         if (!keyRange.second || index >= contentTypeLength) {
-            WTF_LOG_ERROR("Invalid Content-Type parameter name. (at %i)", index);
+            DLOG(ERROR) << "Invalid Content-Type parameter name. (at " << index << ")";
             return false;
         }
 
         // Should we tolerate spaces here?
         if (contentType[index++] != '=' || index >= contentTypeLength) {
-            WTF_LOG_ERROR("Invalid Content-Type malformed parameter (at %i).", index);
+            DLOG(ERROR) << "Invalid Content-Type malformed parameter (at " << index << ").";
             return false;
         }
 
@@ -165,13 +165,13 @@ bool parseContentType(const String& contentType, ReceiverType& receiver)
         SubstringRange valueRange = parseParameterPart(contentType, index);
 
         if (!valueRange.second) {
-            WTF_LOG_ERROR("Invalid Content-Type, invalid parameter value (at %i, for '%s').", index, substringForRange(contentType, keyRange).stripWhiteSpace().ascii().data());
+            DLOG(ERROR) << "Invalid Content-Type, invalid parameter value (at " << index << ", for '" << substringForRange(contentType, keyRange).stripWhiteSpace() << "').";
             return false;
         }
 
         // Should we tolerate spaces here?
         if (index < contentTypeLength && contentType[index++] != ';') {
-            WTF_LOG_ERROR("Invalid Content-Type, invalid character at the end of key/value parameter (at %i).", index);
+            DLOG(ERROR) << "Invalid Content-Type, invalid character at the end of key/value parameter (at " << index << ").";
             return false;
         }
 

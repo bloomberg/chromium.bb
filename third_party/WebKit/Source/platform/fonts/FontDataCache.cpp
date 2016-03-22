@@ -53,7 +53,7 @@ PassRefPtr<SimpleFontData> FontDataCache::get(const FontPlatformData* platformDa
     // do not have a reproduction for the crash that an empty typeface()
     // causes downstream from here.
     if (!platformData->typeface()) {
-        WTF_LOG_ERROR("Empty typeface() in FontPlatformData when accessing FontDataCache.");
+        DLOG(ERROR) << "Empty typeface() in FontPlatformData when accessing FontDataCache.";
         return nullptr;
     }
 

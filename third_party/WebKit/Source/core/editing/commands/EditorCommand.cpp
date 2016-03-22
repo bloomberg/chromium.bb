@@ -376,7 +376,7 @@ static bool executeDeleteBackward(LocalFrame& frame, Event*, EditorCommandSource
 
 static bool executeDeleteBackwardByDecomposingPreviousCharacter(LocalFrame& frame, Event*, EditorCommandSource, const String&)
 {
-    WTF_LOG_ERROR("DeleteBackwardByDecomposingPreviousCharacter is not implemented, doing DeleteBackward instead");
+    DLOG(ERROR) << "DeleteBackwardByDecomposingPreviousCharacter is not implemented, doing DeleteBackward instead";
     frame.editor().deleteWithDirection(DirectionBackward, CharacterGranularity, false, true);
     return true;
 }

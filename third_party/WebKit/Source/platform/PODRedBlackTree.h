@@ -791,7 +791,7 @@ private:
     void logIfVerbose(const char* output) const
     {
         if (m_verboseDebugging)
-            WTF_LOG_ERROR("%s", output);
+            DLOG(ERROR) << output;
     }
 #endif
 
@@ -808,7 +808,7 @@ private:
             builder.append(ValueToString<T>::string(node->data()));
             builder.append((node->color() == Black) ? " (black)" : " (red)");
         }
-        WTF_LOG_ERROR("%s", builder.toString().ascii().data());
+        DLOG(ERROR) << builder.toString();
         if (node) {
             dumpFromNode(node->left(), indentation + 2);
             dumpFromNode(node->right(), indentation + 2);

@@ -282,7 +282,7 @@ inline bool HarfBuzzShaper::shapeRange(hb_buffer_t* harfBuzzBuffer,
     const FontPlatformData* platformData = &(currentFont->platformData());
     HarfBuzzFace* face = platformData->harfBuzzFace();
     if (!face) {
-        WTF_LOG_ERROR("Could not create HarfBuzzFace from FontPlatformData.");
+        DLOG(ERROR) << "Could not create HarfBuzzFace from FontPlatformData.";
         return false;
     }
 
@@ -325,7 +325,7 @@ bool HarfBuzzShaper::extractShapeResults(hb_buffer_t* harfBuzzBuffer,
     unsigned lastChangePosition = 0;
 
     if (!numGlyphs) {
-        WTF_LOG_ERROR("HarfBuzz returned empty glyph buffer after shaping.");
+        DLOG(ERROR) << "HarfBuzz returned empty glyph buffer after shaping.";
         return false;
     }
 
@@ -565,7 +565,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
                 currentFontRangeSet,
                 segmentRange.script,
                 language))
-                WTF_LOG_ERROR("Shaping range failed.");
+                DLOG(ERROR) << "Shaping range failed.";
 
             if (!extractShapeResults(harfBuzzBuffer.get(),
                 result.get(),
@@ -574,7 +574,7 @@ PassRefPtr<ShapeResult> HarfBuzzShaper::shapeResult()
                 directionAndSmallCapsAdjustedFont,
                 segmentRange.script,
                 !fallbackIterator->hasNext()))
-                WTF_LOG_ERROR("Shape result extraction failed.");
+                DLOG(ERROR) << "Shape result extraction failed.";
 
             hb_buffer_reset(harfBuzzBuffer.get());
         }

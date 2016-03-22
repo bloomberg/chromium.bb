@@ -428,13 +428,13 @@ float SimpleFontData::platformWidthForGlyph(Glyph glyph) const
 bool SimpleFontData::fillGlyphPage(GlyphPage* pageToFill, unsigned offset, unsigned length, UChar* buffer, unsigned bufferLength) const
 {
     if (U16_IS_LEAD(buffer[bufferLength-1])) {
-        WTF_LOG_ERROR("Last UTF-16 code unit is high-surrogate.");
+        DLOG(ERROR) << "Last UTF-16 code unit is high-surrogate.";
         return false;
     }
 
     SkTypeface* typeface = platformData().typeface();
     if (!typeface) {
-        WTF_LOG_ERROR("fillGlyphPage called on an empty Skia typeface.");
+        DLOG(ERROR) << "fillGlyphPage called on an empty Skia typeface.";
         return false;
     }
 

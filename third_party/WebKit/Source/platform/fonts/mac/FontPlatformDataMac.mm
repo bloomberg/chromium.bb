@@ -88,7 +88,7 @@ static PassRefPtr<SkTypeface> loadFromBrowserProcess(NSFont* nsFont, float textS
     uint32_t fontID;
     if (!sandboxSupport->loadFont(nsFont, &loadedCgFont, &fontID)) {
         // TODO crbug.com/461279: Make this appear in the inspector console?
-        WTF_LOG_ERROR("Loading user font \"%s\" from non system location failed. Corrupt or missing font file?", [[nsFont familyName] UTF8String]);
+        DLOG(ERROR) << "Loading user font \"" << [[nsFont familyName] UTF8String] << "\" from non system location failed. Corrupt or missing font file?";
         return nullptr;
     }
     RetainPtr<CGFontRef> cgFont(AdoptCF, loadedCgFont);
@@ -97,7 +97,7 @@ static PassRefPtr<SkTypeface> loadFromBrowserProcess(NSFont* nsFont, float textS
 
     if (!returnFont.get())
         // TODO crbug.com/461279: Make this appear in the inspector console?
-        WTF_LOG_ERROR("Instantiating SkTypeface from user font failed for font family \"%s\".", [[nsFont familyName] UTF8String]);
+        DLOG(ERROR) << "Instantiating SkTypeface from user font failed for font family \"" << [[nsFont familyName] UTF8String] << "\".";
     return returnFont;
 }
 

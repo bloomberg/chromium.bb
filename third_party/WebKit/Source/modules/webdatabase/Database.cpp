@@ -108,7 +108,7 @@ static bool retrieveTextResultFromDatabase(SQLiteDatabase& db, const String& que
     int result = statement.prepare();
 
     if (result != SQLResultOk) {
-        WTF_LOG_ERROR("Error (%i) preparing statement to read text result from database (%s)", result, query.ascii().data());
+        DLOG(ERROR) << "Error (" << result << ") preparing statement to read text result from database (" << query << ")";
         return false;
     }
 
@@ -122,7 +122,7 @@ static bool retrieveTextResultFromDatabase(SQLiteDatabase& db, const String& que
         return true;
     }
 
-    WTF_LOG_ERROR("Error (%i) reading text result from database (%s)", result, query.ascii().data());
+    DLOG(ERROR) << "Error (" << result << ") reading text result from database (" << query << ")";
     return false;
 }
 
@@ -132,7 +132,7 @@ static bool setTextValueInDatabase(SQLiteDatabase& db, const String& query, cons
     int result = statement.prepare();
 
     if (result != SQLResultOk) {
-        WTF_LOG_ERROR("Failed to prepare statement to set value in database (%s)", query.ascii().data());
+        DLOG(ERROR) << "Failed to prepare statement to set value in database (" << query << ")";
         return false;
     }
 
@@ -140,7 +140,7 @@ static bool setTextValueInDatabase(SQLiteDatabase& db, const String& query, cons
 
     result = statement.step();
     if (result != SQLResultDone) {
-        WTF_LOG_ERROR("Failed to step statement to set value in database (%s)", query.ascii().data());
+        DLOG(ERROR) << "Failed to step statement to set value in database (" << query << ")";
         return false;
     }
 
@@ -432,7 +432,7 @@ bool Database::performOpenAndVerify(bool shouldSetVersionInNewDatabase, Database
         return false;
     }
     if (!m_sqliteDatabase.turnOnIncrementalAutoVacuum())
-        WTF_LOG_ERROR("Unable to turn on incremental auto-vacuum (%d %s)", m_sqliteDatabase.lastError(), m_sqliteDatabase.lastErrorMsg());
+        DLOG(ERROR) << "Unable to turn on incremental auto-vacuum (" << m_sqliteDatabase.lastError() << " " << m_sqliteDatabase.lastErrorMsg() << ")";
 
     m_sqliteDatabase.setBusyTimeout(maxSqliteBusyWaitTime);
 
@@ -585,7 +585,7 @@ bool Database::getVersionFromDatabase(String& version, bool shouldCacheVersion)
         if (shouldCacheVersion)
             setCachedVersion(version);
     } else {
-        WTF_LOG_ERROR("Failed to retrieve version from database %s", databaseDebugName().ascii().data());
+        DLOG(ERROR) << "Failed to retrieve version from database " << databaseDebugName();
     }
 
     m_databaseAuthorizer->enable();
@@ -607,7 +607,7 @@ bool Database::setVersionInDatabase(const String& version, bool shouldCacheVersi
         if (shouldCacheVersion)
             setCachedVersion(version);
     } else {
-        WTF_LOG_ERROR("Failed to set version %s in database (%s)", version.ascii().data(), query.ascii().data());
+        DLOG(ERROR) << "Failed to set version " << version << " in database (" << query << ")";
     }
 
     m_databaseAuthorizer->enable();
@@ -854,7 +854,7 @@ Vector<String> Database::performGetTableNames()
 
     SQLiteStatement statement(sqliteDatabase(), "SELECT name FROM sqlite_master WHERE type='table';");
     if (statement.prepare() != SQLResultOk) {
-        WTF_LOG_ERROR("Unable to retrieve list of tables for database %s", databaseDebugName().ascii().data());
+        DLOG(ERROR) << "Unable to retrieve list of tables for database " << databaseDebugName();
         enableAuthorizer();
         return Vector<String>();
     }
@@ -870,7 +870,7 @@ Vector<String> Database::performGetTableNames()
     enableAuthorizer();
 
     if (result != SQLResultDone) {
-        WTF_LOG_ERROR("Error getting tables for database %s", databaseDebugName().ascii().data());
+        DLOG(ERROR) << "Error getting tables for database " << databaseDebugName();
         return Vector<String>();
     }
 

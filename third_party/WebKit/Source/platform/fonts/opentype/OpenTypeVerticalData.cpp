@@ -131,14 +131,14 @@ void OpenTypeVerticalData::loadMetrics(const FontPlatformData& platformData)
         return;
     uint16_t countHmtxEntries = hhea->numberOfHMetrics;
     if (!countHmtxEntries) {
-        WTF_LOG_ERROR("Invalid numberOfHMetrics");
+        DLOG(ERROR) << "Invalid numberOfHMetrics";
         return;
     }
 
     buffer = platformData.openTypeTable(OpenType::HmtxTag);
     const OpenType::HmtxTable* hmtx = OpenType::validateTable<OpenType::HmtxTable>(buffer, countHmtxEntries);
     if (!hmtx) {
-        WTF_LOG_ERROR("hhea exists but hmtx does not (or broken)");
+        DLOG(ERROR) << "hhea exists but hmtx does not (or broken)";
         return;
     }
     m_advanceWidths.resize(countHmtxEntries);
@@ -152,7 +152,7 @@ void OpenTypeVerticalData::loadMetrics(const FontPlatformData& platformData)
         return;
     uint16_t countVmtxEntries = vhea->numOfLongVerMetrics;
     if (!countVmtxEntries) {
-        WTF_LOG_ERROR("Invalid numOfLongVerMetrics");
+        DLOG(ERROR) << "Invalid numOfLongVerMetrics";
         return;
     }
 
@@ -177,7 +177,7 @@ void OpenTypeVerticalData::loadMetrics(const FontPlatformData& platformData)
     buffer = platformData.openTypeTable(OpenType::VmtxTag);
     const OpenType::VmtxTable* vmtx = OpenType::validateTable<OpenType::VmtxTable>(buffer, countVmtxEntries);
     if (!vmtx) {
-        WTF_LOG_ERROR("vhea exists but vmtx does not (or broken)");
+        DLOG(ERROR) << "vhea exists but vmtx does not (or broken)";
         return;
     }
     m_advanceHeights.resize(countVmtxEntries);
@@ -191,7 +191,7 @@ void OpenTypeVerticalData::loadMetrics(const FontPlatformData& platformData)
 
     size_t sizeExtra = buffer->size() - sizeof(OpenType::VmtxTable::Entry) * countVmtxEntries;
     if (sizeExtra % sizeof(OpenType::Int16)) {
-        WTF_LOG_ERROR("vmtx has incorrect tsb count");
+        DLOG(ERROR) << "vmtx has incorrect tsb count";
         return;
     }
     size_t countTopSideBearings = countVmtxEntries + sizeExtra / sizeof(OpenType::Int16);

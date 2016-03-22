@@ -116,7 +116,7 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
 
     LayoutView* layoutView = frameView().layoutView();
     if (!layoutView) {
-        WTF_LOG_ERROR("called FramePainter::paint with nil layoutObject");
+        DLOG(ERROR) << "called FramePainter::paint with nil layoutObject";
         return;
     }
 

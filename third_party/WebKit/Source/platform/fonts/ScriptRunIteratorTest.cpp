@@ -112,7 +112,7 @@ public:
                 return i;
             }
         }
-        WTF_LOG_ERROR("Table does not contain value 0x%x", value);
+        DLOG(ERROR) << "Table does not contain value 0x" << std::hex << value;
         return 0;
     }
 
@@ -182,7 +182,7 @@ public:
                     inSet = false;
                     break;
                 default:
-                    WTF_LOG_ERROR("Illegal mock string set char: '%c'", c);
+                    DLOG(ERROR) << "Illegal mock string set char: '" << c << "'";
                     break;
                 }
                 continue;
@@ -227,7 +227,7 @@ public:
                 code = 0; // unknown
                 break;
             default:
-                WTF_LOG_ERROR("Illegal mock string set char: '%c'", c);
+                DLOG(ERROR) << "Illegal mock string set char: '" << c << "'";
             }
             if (!inSet) {
                 result.append(static_cast<UChar>(kMockCharMin + code));

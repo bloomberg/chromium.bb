@@ -254,14 +254,6 @@ while (0)
 
 #endif
 
-// WTF_LOG_ERROR
-// This is deprecated.  We should use DLOG(ERROR) << ...
-#if ERROR_DISABLED
-#define WTF_LOG_ERROR(...) ((void)0)
-#else
-#define WTF_LOG_ERROR(...) WTFReportError(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, __VA_ARGS__)
-#endif
-
 // WTF_LOG
 // This is deprecated.  Should be replaced with DVLOG(verboselevel), which works
 // only in debug build, or VLOG(verboselevel), which works in release build too.

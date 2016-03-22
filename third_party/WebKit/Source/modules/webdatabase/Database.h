@@ -146,9 +146,7 @@ private:
     void reportVacuumDatabaseResult(int sqliteErrorCode);
     void logErrorMessage(const String&);
     static const char* databaseInfoTableName();
-#if !LOG_DISABLED || !ERROR_DISABLED
     String databaseDebugName() const { return m_contextThreadSecurityOrigin->toString() + "::" + m_name; }
-#endif
 
     RefPtr<SecurityOrigin> m_contextThreadSecurityOrigin;
     RefPtr<SecurityOrigin> m_databaseThreadSecurityOrigin;

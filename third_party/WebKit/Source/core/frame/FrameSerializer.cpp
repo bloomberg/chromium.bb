@@ -392,7 +392,7 @@ bool FrameSerializer::shouldAddURL(const KURL& url)
 void FrameSerializer::addToResources(Resource* resource, PassRefPtr<SharedBuffer> data, const KURL& url)
 {
     if (!data) {
-        WTF_LOG_ERROR("No data for resource %s", url.getString().utf8().data());
+        DLOG(ERROR) << "No data for resource " << url.getString();
         return;
     }
 

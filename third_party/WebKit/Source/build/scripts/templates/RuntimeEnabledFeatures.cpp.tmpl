@@ -56,7 +56,7 @@ void RuntimeEnabledFeatures::setFeatureEnabledFromString(const std::string& name
         return;
     }
     {% endfor %}
-    WTF_LOG_ERROR("RuntimeEnabledFeature not recognized: %s", name.c_str());
+    DLOG(ERROR) << "RuntimeEnabledFeature not recognized: " << name;
 }
 
 {% for feature in standard_features %}

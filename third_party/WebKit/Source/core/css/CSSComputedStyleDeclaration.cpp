@@ -449,7 +449,7 @@ static void logUnimplementedPropertyID(CSSPropertyID propertyID)
     if (!propertyIDSet.add(propertyID).isNewEntry)
         return;
 
-    WTF_LOG_ERROR("WebKit does not yet implement getComputedStyle for '%s'.", getPropertyName(propertyID));
+    DLOG(ERROR) << "Blink does not yet implement getComputedStyle for '" << getPropertyName(propertyID) << "'.";
 }
 
 static bool isLayoutDependent(CSSPropertyID propertyID, const ComputedStyle* style, LayoutObject* layoutObject)

@@ -67,8 +67,7 @@ bool SQLiteDatabase::open(const String& filename)
     m_openError = SQLiteFileSystem::openDatabase(filename, &m_db);
     if (m_openError != SQLITE_OK) {
         m_openErrorMessage = m_db ? sqlite3_errmsg(m_db) : "sqlite_open returned null";
-        WTF_LOG_ERROR("SQLite database failed to load from %s\nCause - %s", filename.ascii().data(),
-            m_openErrorMessage.data());
+        DLOG(ERROR) << "SQLite database failed to load from " << filename << "\nCause - " << m_openErrorMessage.data();
         sqlite3_close(m_db);
         m_db = 0;
         return false;
@@ -77,7 +76,7 @@ bool SQLiteDatabase::open(const String& filename)
     m_openError = sqlite3_extended_result_codes(m_db, 1);
     if (m_openError != SQLITE_OK) {
         m_openErrorMessage = sqlite3_errmsg(m_db);
-        WTF_LOG_ERROR("SQLite database error when enabling extended errors - %s", m_openErrorMessage.data());
+        DLOG(ERROR) << "SQLite database error when enabling extended errors - " <<  m_openErrorMessage.data();
         sqlite3_close(m_db);
         m_db = 0;
         return false;
@@ -89,12 +88,12 @@ bool SQLiteDatabase::open(const String& filename)
         m_openErrorMessage = "sqlite_open returned null";
 
     if (!SQLiteStatement(*this, "PRAGMA temp_store = MEMORY;").executeCommand())
-        WTF_LOG_ERROR("SQLite database could not set temp_store to memory");
+        DLOG(ERROR) << "SQLite database could not set temp_store to memory";
 
     // Foreign keys are not supported by WebDatabase.  Make sure foreign key support is consistent
     // if SQLite has SQLITE_DEFAULT_FOREIGN_KEYS.
     if (!SQLiteStatement(*this, "PRAGMA foreign_keys = OFF;").executeCommand())
-        WTF_LOG_ERROR("SQLite database could not turn off foreign_keys");
+        DLOG(ERROR) << "SQLite database could not turn off foreign_keys";
 
     return isOpen();
 }
@@ -133,11 +132,7 @@ void SQLiteDatabase::setMaximumSize(int64_t size)
     SQLiteStatement statement(*this, "PRAGMA max_page_count = " + String::number(newMaxPageCount));
     statement.prepare();
     if (statement.step() != SQLResultRow)
-#if OS(WIN)
-        WTF_LOG_ERROR("Failed to set maximum size of database to %I64i bytes", static_cast<long long>(size));
-#else
-        WTF_LOG_ERROR("Failed to set maximum size of database to %lli bytes", static_cast<long long>(size));
-#endif
+        DLOG(ERROR) << "Failed to set maximum size of database to " << size << " bytes";
 
     enableAuthorizer(true);
 
@@ -349,8 +344,7 @@ int SQLiteDatabase::authorizerFunction(void* userData, int actionCode, const cha
 void SQLiteDatabase::setAuthorizer(DatabaseAuthorizer* auth)
 {
     if (!m_db) {
-        WTF_LOG_ERROR("Attempt to set an authorizer on a non-open SQL database");
-        ASSERT_NOT_REACHED();
+        NOTREACHED() << "Attempt to set an authorizer on a non-open SQL database";
         return;
     }
 

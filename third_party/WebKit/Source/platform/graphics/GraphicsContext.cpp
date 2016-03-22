@@ -109,7 +109,7 @@ void GraphicsContext::restore()
         return;
 
     if (!m_paintStateIndex && !m_paintState->saveCount()) {
-        WTF_LOG_ERROR("ERROR void GraphicsContext::restore() stack is empty");
+        DLOG(ERROR) << "ERROR void GraphicsContext::restore() stack is empty";
         return;
     }
 

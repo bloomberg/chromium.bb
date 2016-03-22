@@ -35,14 +35,14 @@ void ICUScriptData::getScripts(UChar32 ch, Vector<UScriptCode>& dst) const
         ch, &dst[0], dst.size(), &status);
     if (status == U_BUFFER_OVERFLOW_ERROR) {
         // Allow this, we'll just use what we have.
-        WTF_LOG_ERROR("Exceeded maximum script count of %d for 0x%x", kMaxScriptCount, ch);
+        DLOG(ERROR) << "Exceeded maximum script count of " << kMaxScriptCount << " for 0x" << std::hex << ch;
         count = dst.size();
         status = U_ZERO_ERROR;
     }
     UScriptCode primaryScript = uscript_getScript(ch, &status);
 
     if (U_FAILURE(status)) {
-        WTF_LOG_ERROR("Could not get icu script data: %d for 0x%x", status, ch);
+        DLOG(ERROR) << "Could not get icu script data: " << status << " for 0x" << std::hex << ch;
         dst.clear();
         return;
     }
@@ -318,7 +318,7 @@ void ScriptRunIterator::fixupStack(UScriptCode resolvedScript)
     if (m_bracketsFixupDepth > 0) {
         if (m_bracketsFixupDepth > m_brackets.size()) {
             // Should never happen unless someone breaks the code.
-            WTF_LOG_ERROR("Brackets fixup depth exceeds size of bracket vector.");
+            DLOG(ERROR) << "Brackets fixup depth exceeds size of bracket vector.";
             m_bracketsFixupDepth = m_brackets.size();
         }
         auto it = m_brackets.rbegin();

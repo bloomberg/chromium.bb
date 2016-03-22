@@ -111,7 +111,7 @@ static KeyValueMap retrieveKeyValuePairs(SharedBufferChunkReader* buffer)
         // New key/value, store the previous one if any.
         if (!key.isEmpty()) {
             if (keyValuePairs.find(key) != keyValuePairs.end())
-                WTF_LOG_ERROR("Key duplicate found in MIME header. Key is '%s', previous value replaced.", key.ascii().data());
+                DLOG(ERROR) << "Key duplicate found in MIME header. Key is '" << key << "', previous value replaced.";
             keyValuePairs.add(key, value.toString().stripWhiteSpace());
             key = String();
             value.clear();
@@ -144,7 +144,7 @@ PassRefPtrWillBeRawPtr<MIMEHeader> MIMEHeader::parseHeader(SharedBufferChunkRead
             mimeHeader->m_multipartType = parsedContentType.parameterValueForName("type");
             mimeHeader->m_endOfPartBoundary = parsedContentType.parameterValueForName("boundary");
             if (mimeHeader->m_endOfPartBoundary.isNull()) {
-                WTF_LOG_ERROR("No boundary found in multipart MIME header.");
+                DLOG(ERROR) << "No boundary found in multipart MIME header.";
                 return nullptr;
             }
             mimeHeader->m_endOfPartBoundary.insert("--", 0);
@@ -182,7 +182,7 @@ MIMEHeader::Encoding MIMEHeader::parseContentTransferEncoding(const String& text
         return SevenBit;
     if (encoding == "binary")
         return Binary;
-    WTF_LOG_ERROR("Unknown encoding '%s' found in MIME header.", text.ascii().data());
+    DLOG(ERROR) << "Unknown encoding '" << text << "' found in MIME header.";
     return Unknown;
 }
 
@@ -218,7 +218,7 @@ WillBeHeapVector<RefPtrWillBeMember<ArchiveResource>> MHTMLParser::parseArchive(
 bool MHTMLParser::parseArchiveWithHeader(MIMEHeader* header, WillBeHeapVector<RefPtrWillBeMember<ArchiveResource>>& resources)
 {
     if (!header) {
-        WTF_LOG_ERROR("Failed to parse MHTML part: no header.");
+        DLOG(ERROR) << "Failed to parse MHTML part: no header.";
         return false;
     }
 
@@ -239,13 +239,13 @@ bool MHTMLParser::parseArchiveWithHeader(MIMEHeader* header, WillBeHeapVector<Re
     while (!endOfArchive) {
         RefPtrWillBeRawPtr<MIMEHeader> resourceHeader = MIMEHeader::parseHeader(&m_lineReader);
         if (!resourceHeader) {
-            WTF_LOG_ERROR("Failed to parse MHTML, invalid MIME header.");
+            DLOG(ERROR) << "Failed to parse MHTML, invalid MIME header.";
             return false;
         }
         if (resourceHeader->contentType() == "multipart/alternative") {
             // Ignore IE nesting which makes little sense (IE seems to nest only some of the frames).
             if (!parseArchiveWithHeader(resourceHeader.get(), resources)) {
-                WTF_LOG_ERROR("Failed to parse MHTML subframe.");
+                DLOG(ERROR) << "Failed to parse MHTML subframe.";
                 return false;
             }
             bool endOfPartReached = skipLinesUntilBoundaryFound(m_lineReader, header->endOfPartBoundary());
@@ -255,7 +255,7 @@ bool MHTMLParser::parseArchiveWithHeader(MIMEHeader* header, WillBeHeapVector<Re
 
         RefPtrWillBeRawPtr<ArchiveResource> resource = parseNextPart(*resourceHeader, header->endOfPartBoundary(), header->endOfDocumentBoundary(), endOfArchive);
         if (!resource) {
-            WTF_LOG_ERROR("Failed to parse MHTML part.");
+            DLOG(ERROR) << "Failed to parse MHTML part.";
             return false;
         }
         resources.append(resource);
@@ -278,20 +278,20 @@ PassRefPtrWillBeRawPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHea
     bool endOfPartReached = false;
     if (contentTransferEncoding == MIMEHeader::Binary) {
         if (!checkBoundary) {
-            WTF_LOG_ERROR("Binary contents requires end of part");
+            DLOG(ERROR) << "Binary contents requires end of part";
             return nullptr;
         }
         m_lineReader.setSeparator(endOfPartBoundary.utf8().data());
         Vector<char> part;
         if (!m_lineReader.nextChunk(part)) {
-            WTF_LOG_ERROR("Binary contents requires end of part");
+            DLOG(ERROR) << "Binary contents requires end of part";
             return nullptr;
         }
         content->append(part);
         m_lineReader.setSeparator("\r\n");
         Vector<char> nextChars;
         if (m_lineReader.peek(nextChars, 2) != 2) {
-            WTF_LOG_ERROR("Invalid seperator.");
+            DLOG(ERROR) << "Invalid seperator.";
             return nullptr;
         }
         endOfPartReached = true;
@@ -300,7 +300,7 @@ PassRefPtrWillBeRawPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHea
         if (!endOfArchiveReached) {
             String line = m_lineReader.nextChunkAsUTF8StringWithLatin1Fallback();
             if (!line.isEmpty()) {
-                WTF_LOG_ERROR("No CRLF at end of binary section.");
+                DLOG(ERROR) << "No CRLF at end of binary section.";
                 return nullptr;
             }
         }
@@ -321,7 +321,7 @@ PassRefPtrWillBeRawPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHea
         }
     }
     if (!endOfPartReached && checkBoundary) {
-        WTF_LOG_ERROR("No bounday found for MHTML part.");
+        DLOG(ERROR) << "No bounday found for MHTML part.";
         return nullptr;
     }
 
@@ -329,7 +329,7 @@ PassRefPtrWillBeRawPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHea
     switch (contentTransferEncoding) {
     case MIMEHeader::Base64:
         if (!base64Decode(content->data(), content->size(), data)) {
-            WTF_LOG_ERROR("Invalid base64 content for MHTML part.");
+            DLOG(ERROR) << "Invalid base64 content for MHTML part.";
             return nullptr;
         }
         break;
@@ -342,7 +342,7 @@ PassRefPtrWillBeRawPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHea
         data.append(content->data(), content->size());
         break;
     default:
-        WTF_LOG_ERROR("Invalid encoding for MHTML part.");
+        DLOG(ERROR) << "Invalid encoding for MHTML part.";
         return nullptr;
     }
     RefPtr<SharedBuffer> contentBuffer = SharedBuffer::adoptVector(data);
