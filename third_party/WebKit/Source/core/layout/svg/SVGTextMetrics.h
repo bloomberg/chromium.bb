@@ -55,8 +55,6 @@ public:
     unsigned length() const { return m_length; }
 
 private:
-    SVGTextMetrics(LineLayoutSVGInlineText, const TextRun&);
-
     float m_width;
     float m_height;
     unsigned m_length;

@@ -39,23 +39,6 @@ SVGTextMetrics::SVGTextMetrics(SVGTextMetrics::MetricsType)
 {
 }
 
-SVGTextMetrics::SVGTextMetrics(LineLayoutSVGInlineText textLayoutItem, const TextRun& run)
-{
-    ASSERT(textLayoutItem);
-
-    float scalingFactor = textLayoutItem.scalingFactor();
-    ASSERT(scalingFactor);
-
-    const Font& scaledFont = textLayoutItem.scaledFont();
-
-    // Calculate width/height using the scaled font, divide this result by the scalingFactor afterwards.
-    m_width = scaledFont.width(run) / scalingFactor;
-    m_height = scaledFont.getFontMetrics().floatHeight() / scalingFactor;
-
-    ASSERT(run.length() >= 0);
-    m_length = static_cast<unsigned>(run.length());
-}
-
 TextRun SVGTextMetrics::constructTextRun(LineLayoutSVGInlineText textLayoutItem, unsigned position, unsigned length, TextDirection textDirection)
 {
     const ComputedStyle& style = textLayoutItem.styleRef();
