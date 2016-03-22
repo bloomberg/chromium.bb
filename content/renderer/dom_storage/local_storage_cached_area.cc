@@ -41,7 +41,7 @@ LocalStorageCachedArea::LocalStorageCachedArea(
     const url::Origin& origin,
     StoragePartitionService* storage_partition_service,
     LocalStorageCachedAreas* cached_areas)
-    : loaded_(false), origin_(origin), binding_(this),
+    : origin_(origin), binding_(this),
       cached_areas_(cached_areas) {
   storage_partition_service->OpenLocalStorage(
       origin_, mojo::GetProxy(&leveldb_));
@@ -113,7 +113,6 @@ void LocalStorageCachedArea::Clear(const GURL& page_url,
 
   Reset();
   map_ = new DOMStorageMap(kPerStorageAreaQuota);
-  binding_.Close();
 
   leveldb_->DeleteAll(binding_.CreateInterfacePtrAndBind(),
                       PackSource(page_url, storage_area_id),
@@ -226,10 +225,9 @@ void LocalStorageCachedArea::AllDeleted(const mojo::String& source) {
 }
 
 void LocalStorageCachedArea::EnsureLoaded() {
-  if (loaded_)
+  if (map_)
     return;
 
-  loaded_ = true;
   base::TimeTicks before = base::TimeTicks::Now();
   leveldb::DatabaseError status = leveldb::DatabaseError::OK;
   mojo::Array<content::KeyValuePtr> data;
@@ -293,6 +291,7 @@ void LocalStorageCachedArea::OnClearComplete(leveldb::DatabaseError result) {
 }
 
 void LocalStorageCachedArea::Reset() {
+  binding_.Close();
   map_ = NULL;
   ignore_key_mutations_.clear();
 }

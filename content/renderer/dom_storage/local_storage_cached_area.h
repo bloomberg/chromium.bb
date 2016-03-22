@@ -82,7 +82,6 @@ class LocalStorageCachedArea : public LevelDBObserver,
   // Resets the object back to its newly constructed state.
   void Reset();
 
-  bool loaded_;
   url::Origin origin_;
   scoped_refptr<DOMStorageMap> map_;
   std::map<base::string16, int> ignore_key_mutations_;
