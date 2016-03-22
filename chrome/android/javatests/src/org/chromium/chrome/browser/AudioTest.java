@@ -50,7 +50,7 @@ public class AudioTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     public void testPlayMp3() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         TabTitleObserver titleObserver = new TabTitleObserver(tab, "ready_to_play");
-        loadUrl(mTestServer.getURL("/chrome/test/data/android/media/mp3-play.html"));
+        loadUrl(mTestServer.getURL("/chrome/test/data/android/media/audio-play.html"));
         titleObserver.waitForTitleUpdate(5);
         assertEquals("ready_to_play", tab.getTitle());
 

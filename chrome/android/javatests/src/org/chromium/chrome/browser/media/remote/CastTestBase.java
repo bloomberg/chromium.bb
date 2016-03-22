@@ -93,7 +93,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
     // URLs of the default test page and video.
     protected static final String DEFAULT_VIDEO_PAGE =
             "/chrome/test/data/android/media/simple_video.html";
-    protected static final String DEFAULT_VIDEO = "/chrome/test/data/android/media/test.mp4";
+    protected static final String DEFAULT_VIDEO = "/chrome/test/data/android/media/test.webm";
 
     // Constants used to find the default video and maximise button on the page
     protected static final String VIDEO_ELEMENT = "video";
@@ -112,7 +112,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
     protected static final String TEST_VIDEO_PAGE_2 =
             "/chrome/test/data/android/media/simple_video2.html";
 
-    protected static final String TEST_VIDEO_2 = "/chrome/test/data/android/media/test2.mp4";
+    protected static final String TEST_VIDEO_2 = "/chrome/test/data/android/media/test2.webm";
 
     protected static final String TWO_VIDEO_PAGE =
             "/chrome/test/data/android/media/two_videos.html";
