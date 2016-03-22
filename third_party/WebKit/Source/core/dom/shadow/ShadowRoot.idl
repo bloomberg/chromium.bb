@@ -27,15 +27,9 @@
 // https://w3c.github.io/webcomponents/spec/shadow/#the-shadowroot-interface
 
 interface ShadowRoot : DocumentFragment {
-    Selection? getSelection();
-    // TODO(philipj): The x and y arguments should be of type double.
-    Element? elementFromPoint(long x, long y);
-    sequence<Element> elementsFromPoint(long x, long y);
-    readonly attribute Element? activeElement;
     readonly attribute Element host;
     [ImplementedAs=olderShadowRootForBindings] readonly attribute ShadowRoot? olderShadowRoot;
     [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerHTML;
-    readonly attribute StyleSheetList styleSheets;
     [RuntimeEnabled=ShadowRootDelegatesFocus] readonly attribute boolean delegatesFocus;
 
     // TODO(philipj): The spec does not override cloneNode() on the ShadowRoot
@@ -44,3 +38,5 @@ interface ShadowRoot : DocumentFragment {
     // Node.cloneNode() does not have [RaisesException].
     [RaisesException] Node cloneNode(optional boolean deep = false);
 };
+
+ShadowRoot implements DocumentOrShadowRoot;

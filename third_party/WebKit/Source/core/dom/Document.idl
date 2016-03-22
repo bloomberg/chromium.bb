@@ -121,7 +121,6 @@ interface Document : Node {
 
     // user interaction
     [ImplementedAs=domWindow] readonly attribute Window? defaultView;
-    readonly attribute Element? activeElement;
     boolean hasFocus();
     [CustomElementCallbacks, MeasureAs=DocumentDesignMode] attribute DOMString designMode;
     [CustomElementCallbacks, RaisesException] boolean execCommand(DOMString commandId, optional boolean showUI = false, optional DOMString value = "");
@@ -145,20 +144,11 @@ interface Document : Node {
 
     // CSS Object Model (CSSOM)
     // http://dev.w3.org/csswg/cssom/#extensions-to-the-document-interface
-    [SameObject] readonly attribute StyleSheetList styleSheets;
     attribute DOMString? selectedStylesheetSet;
     readonly attribute DOMString? preferredStylesheetSet;
 
-    // CSSOM View Module
-    // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-document-interface
-    // FIXME: The x and y arguments should be of type double.
-    Element? elementFromPoint(long x, long y);
-    sequence<Element> elementsFromPoint(long x, long y);
     readonly attribute Element? scrollingElement;
 
-    // Selection API
-    // http://w3c.github.io/selection-api/#extensions-to-document-interface
-    Selection? getSelection();
 
     // Pointer Lock
     // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-document-interface
@@ -227,3 +217,4 @@ interface Document : Node {
 Document implements GlobalEventHandlers;
 Document implements ParentNode;
 Document implements NonElementParentNode;
+Document implements DocumentOrShadowRoot;
