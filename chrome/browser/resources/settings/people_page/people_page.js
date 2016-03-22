@@ -201,7 +201,7 @@ Polymer({
 
   /** @private */
   onEasyUnlockTurnOffTap_: function() {
-    // TODO(tommycli): Implement Easy Unlock turn off functionality.
+    this.$$('#easyUnlockTurnOffDialog').open();
   },
 </if>
 

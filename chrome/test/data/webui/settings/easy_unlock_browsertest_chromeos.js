@@ -47,6 +47,9 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
     settings.TestBrowserProxy.call(this, [
       'getEnabledStatus',
       'startTurnOnFlow',
+      'getTurnOffFlowStatus',
+      'startTurnOffFlow',
+      'cancelTurnOffFlow',
     ]);
 
     /** @private {boolean} */
@@ -73,6 +76,22 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
     startTurnOnFlow: function() {
       this.methodCalled('startTurnOnFlow');
     },
+
+    /** @override */
+    getTurnOffFlowStatus: function() {
+      this.methodCalled('getTurnOffFlowStatus');
+      return Promise.resolve('idle');
+    },
+
+    /** @override */
+    startTurnOffFlow: function() {
+      this.methodCalled('startTurnOffFlow');
+    },
+
+    /** @override */
+    cancelTurnOffFlow: function() {
+      this.methodCalled('cancelTurnOffFlow');
+    },
   };
 
   /** @type {?SettingsPeoplePageElement} */
@@ -81,8 +100,11 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
   /** @type {?TestEasyUnlockBrowserProxy} */
   var browserProxy = null;
 
+  /** @type {?CrSettingsPrefs} */
+  var prefs = null;
+
   suite('SettingsEasyUnlock', function() {
-    setup(function() {
+    suiteSetup(function() {
       // These overrides are necessary for this test to function on ChromeOS
       // bots that do not have Bluetooth (don't actually support Easy Unlock).
       loadTimeData.overrideValues({
@@ -93,15 +115,21 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
         easyUnlockLearnMoreURL: '',
         easyUnlockSetupIntro: '',
         easyUnlockSetupButton: '',
-      });
 
-      browserProxy = new TestEasyUnlockBrowserProxy();
-      settings.EasyUnlockBrowserProxyImpl.instance_ = browserProxy;
+        easyUnlockDescription: '',
+        easyUnlockTurnOffTitle: '',
+        easyUnlockTurnOffDescription: '',
+        easyUnlockTurnOffButton: '',
+      });
 
       // Before clearing the body, save a copy of the real prefs so we can
       // cleanly re-create the People page element.
-      var prefs =
-          document.querySelector('cr-settings').$$('settings-prefs').prefs;
+      prefs = document.querySelector('cr-settings').$$('settings-prefs').prefs;
+    });
+
+    setup(function() {
+      browserProxy = new TestEasyUnlockBrowserProxy();
+      settings.EasyUnlockBrowserProxyImpl.instance_ = browserProxy;
 
       PolymerTest.clearBody();
       page = document.createElement('settings-people-page');
@@ -111,11 +139,11 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
         subpage: [],
       };
       page.prefs = prefs;
-
-      document.body.appendChild(page);
     });
 
     test('setup button', function() {
+      document.body.appendChild(page);
+
       return browserProxy.whenCalled('getEnabledStatus').then(function() {
         assertTrue(page.easyUnlockAllowed_);
         expectFalse(page.easyUnlockEnabled_);
@@ -124,9 +152,53 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
 
         var setupButton = page.$$('#easyUnlockSetup');
         assertTrue(!!setupButton);
+        expectFalse(setupButton.hidden);
 
         MockInteractions.tap(setupButton);
         return browserProxy.whenCalled('startTurnOnFlow');
+      });
+    });
+
+    test('turn off dialog', function() {
+      browserProxy.setEnabledStatus(true);
+      document.body.appendChild(page);
+
+      return browserProxy.whenCalled('getEnabledStatus').then(function() {
+        assertTrue(page.easyUnlockAllowed_);
+        expectTrue(page.easyUnlockEnabled_);
+
+        Polymer.dom.flush();
+
+        var turnOffButton = page.$$('#easyUnlockTurnOff');
+        assertTrue(!!turnOffButton);
+        expectFalse(turnOffButton.hidden)
+
+        MockInteractions.tap(turnOffButton);
+        return browserProxy.whenCalled('getTurnOffFlowStatus').then(function() {
+          Polymer.dom.flush();
+
+          var turnOffDialog = page.$$('#easyUnlockTurnOffDialog');
+          assertTrue(!!turnOffDialog);
+
+          var turnOffDialogConfirmButton = turnOffDialog.$$('#turnOff');
+          assertTrue(!!turnOffDialogConfirmButton);
+          expectFalse(turnOffDialogConfirmButton.hidden);
+
+          MockInteractions.tap(turnOffDialogConfirmButton);
+
+          return browserProxy.whenCalled('startTurnOffFlow').then(function() {
+            // To signal successful turnoff, the enabled status is broadcast
+            // as false. At that point, the dialog should close and cancel
+            // any in-progress turnoff flow. The cancellation should be
+            // a no-op assuming the turnoff originated from this tab.
+            cr.webUIListenerCallback('easy-unlock-enabled-status', false);
+            return browserProxy.whenCalled('cancelTurnOffFlow').then(
+                function() {
+                  Polymer.dom.flush();
+                  expectFalse(turnOffDialog.$.dialog.opened);
+                });
+          });
+        });
       });
     });
   });
