@@ -50,7 +50,7 @@ class ServiceTabLauncher {
   ServiceTabLauncher();
   ~ServiceTabLauncher();
 
-  IDMap<TabLaunchedCallback> tab_launched_callbacks_;
+  IDMap<TabLaunchedCallback, IDMapOwnPointer> tab_launched_callbacks_;
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 
