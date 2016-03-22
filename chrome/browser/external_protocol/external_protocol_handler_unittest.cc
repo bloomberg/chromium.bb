@@ -27,7 +27,7 @@ class FakeExternalProtocolHandlerWorker
     return os_state_;
   }
 
-  AttemptResult SetAsDefaultImpl() override { return AttemptResult::SUCCESS; }
+  void SetAsDefaultImpl() override {}
 
   shell_integration::DefaultWebClientState os_state_;
 };

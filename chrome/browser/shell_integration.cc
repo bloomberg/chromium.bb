@@ -144,7 +144,7 @@ base::string16 GetAppShortcutsSubdirName() {
 void DefaultWebClientWorker::StartCheckIsDefault() {
   BrowserThread::PostTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&DefaultWebClientWorker::CheckIsDefault, this));
+      base::Bind(&DefaultWebClientWorker::CheckIsDefault, this, false));
 }
 
 void DefaultWebClientWorker::StartSetAsDefault() {
@@ -164,61 +164,41 @@ DefaultWebClientWorker::DefaultWebClientWorker(
 DefaultWebClientWorker::~DefaultWebClientWorker() = default;
 
 void DefaultWebClientWorker::OnCheckIsDefaultComplete(
-    DefaultWebClientState state) {
+    DefaultWebClientState state,
+    bool is_following_set_as_default) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   UpdateUI(state);
 
-  if (check_default_should_report_success_) {
-    check_default_should_report_success_ = false;
-
-    ReportAttemptResult(state == DefaultWebClientState::IS_DEFAULT
-                            ? AttemptResult::SUCCESS
-                            : AttemptResult::NO_ERRORS_NOT_DEFAULT);
-  }
-}
-
-void DefaultWebClientWorker::OnSetAsDefaultAttemptComplete(
-    AttemptResult result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  // Report failures here. Successes are reported in
-  // OnCheckIsDefaultComplete() after checking that the change is verified.
-  check_default_should_report_success_ = result == AttemptResult::SUCCESS;
-  if (!check_default_should_report_success_)
-    ReportAttemptResult(result);
-
-  // Start the default browser check. The default state will be reported to
-  // the caller via the |callback_|.
-  StartCheckIsDefault();
+  if (is_following_set_as_default)
+    ReportSetDefaultResult(state);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // DefaultWebClientWorker, private:
 
-void DefaultWebClientWorker::CheckIsDefault() {
+void DefaultWebClientWorker::CheckIsDefault(bool is_following_set_as_default) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DefaultWebClientState state = CheckIsDefaultImpl();
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DefaultBrowserWorker::OnCheckIsDefaultComplete, this, state));
+      base::Bind(&DefaultBrowserWorker::OnCheckIsDefaultComplete, this, state,
+                 is_following_set_as_default));
 }
 
 void DefaultWebClientWorker::SetAsDefault() {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  AttemptResult result = SetAsDefaultImpl();
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&DefaultBrowserWorker::OnSetAsDefaultAttemptComplete, this,
-                 result));
+  SetAsDefaultImpl();
+  CheckIsDefault(true);
 }
 
-void DefaultWebClientWorker::ReportAttemptResult(AttemptResult result) {
+void DefaultWebClientWorker::ReportSetDefaultResult(
+    DefaultWebClientState state) {
   base::LinearHistogram::FactoryGet(
-      base::StringPrintf("%s.SetDefaultResult", worker_name_), 1,
-      AttemptResult::NUM_ATTEMPT_RESULT_TYPES,
-      AttemptResult::NUM_ATTEMPT_RESULT_TYPES + 1,
+      base::StringPrintf("%s.SetDefaultResult2", worker_name_), 1,
+      DefaultWebClientState::NUM_DEFAULT_STATES,
+      DefaultWebClientState::NUM_DEFAULT_STATES + 1,
       base::HistogramBase::kUmaTargetedHistogramFlag)
-      ->Add(result);
+      ->Add(state);
 }
 
 void DefaultWebClientWorker::UpdateUI(DefaultWebClientState state) {
@@ -257,22 +237,19 @@ DefaultWebClientState DefaultBrowserWorker::CheckIsDefaultImpl() {
   return GetDefaultBrowser();
 }
 
-DefaultWebClientWorker::AttemptResult DefaultBrowserWorker::SetAsDefaultImpl() {
-  AttemptResult result = AttemptResult::FAILURE;
+void DefaultBrowserWorker::SetAsDefaultImpl() {
   switch (CanSetAsDefaultBrowser()) {
     case SET_DEFAULT_NOT_ALLOWED:
       NOTREACHED();
       break;
     case SET_DEFAULT_UNATTENDED:
-      if (SetAsDefaultBrowser())
-        result = AttemptResult::SUCCESS;
+      SetAsDefaultBrowser();
       break;
     case SET_DEFAULT_INTERACTIVE:
-      if (interactive_permitted_ && SetAsDefaultBrowserInteractive())
-        result = AttemptResult::SUCCESS;
+      if (interactive_permitted_)
+        SetAsDefaultBrowserInteractive();
       break;
   }
-  return result;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -297,25 +274,20 @@ DefaultWebClientState DefaultProtocolClientWorker::CheckIsDefaultImpl() {
   return IsDefaultProtocolClient(protocol_);
 }
 
-DefaultWebClientWorker::AttemptResult
-DefaultProtocolClientWorker::SetAsDefaultImpl() {
-  AttemptResult result = AttemptResult::FAILURE;
+void DefaultProtocolClientWorker::SetAsDefaultImpl() {
   switch (CanSetAsDefaultProtocolClient()) {
     case SET_DEFAULT_NOT_ALLOWED:
       // Not allowed, do nothing.
       break;
     case SET_DEFAULT_UNATTENDED:
-      if (SetAsDefaultProtocolClient(protocol_))
-        result = AttemptResult::SUCCESS;
+      SetAsDefaultProtocolClient(protocol_);
       break;
     case SET_DEFAULT_INTERACTIVE:
-      if (interactive_permitted_ &&
-          SetAsDefaultProtocolClientInteractive(protocol_)) {
-        result = AttemptResult::SUCCESS;
+      if (interactive_permitted_) {
+        SetAsDefaultProtocolClientInteractive(protocol_);
       }
       break;
   }
-  return result;
 }
 
 }  // namespace shell_integration

@@ -207,55 +207,15 @@ class DefaultWebClientWorker
  protected:
   friend class base::RefCountedThreadSafe<DefaultWebClientWorker>;
 
-  // Possible result codes for a set-as-default operation.
-  // Do not modify the ordering as it is important for UMA.
-  enum AttemptResult {
-    // Chrome was set as the default web client.
-    SUCCESS = 0,
-    // Chrome was already the default web client. This counts as a successful
-    // attempt.
-    // Note: This result is no longer used since the removal of the Win10
-    // default browser experiment.
-    // ALREADY_DEFAULT = 1,
-    // Chrome was not set as the default web client.
-    FAILURE = 2,
-    // The attempt was abandoned because the observer was destroyed.
-    // Note: This result is no longer used since the removal of
-    // DefaultWebClientObserver.
-    // ABANDONED = 3,
-    // Failed to launch the process to set Chrome as the default web client
-    // asynchronously.
-    // Note: This result is no longer used since the removal of the Win10
-    // default browser experiment.
-    // LAUNCH_FAILURE = 4,
-    // Another worker is already in progress to make Chrome the default web
-    // client.
-    // Note: This result is no longer used since the removal of the Win10
-    // default browser experiment.
-    // OTHER_WORKER = 5,
-    // The user initiated another attempt while the asynchronous operation was
-    // already in progress.
-    RETRY = 6,
-    // No errors were encountered yet Chrome is still not the default web
-    // client.
-    NO_ERRORS_NOT_DEFAULT = 7,
-    NUM_ATTEMPT_RESULT_TYPES
-  };
-
   DefaultWebClientWorker(const DefaultWebClientWorkerCallback& callback,
                          const char* worker_name);
   virtual ~DefaultWebClientWorker();
 
-  // Communicates the result via the |callback_|. In contrast to
-  // OnSetAsDefaultAttemptComplete(), this should not be called multiple
-  // times.
-  void OnCheckIsDefaultComplete(DefaultWebClientState state);
-
-  // Called when the set as default operation is completed. This then invokes
-  // FinalizeSetAsDefault() and starts the check is default process.
-  // It is safe to call this multiple times. Only the first call is processed
-  // after StartSetAsDefault() is invoked.
-  void OnSetAsDefaultAttemptComplete(AttemptResult result);
+  // Communicates the result via the |callback_|. When
+  // |is_following_set_as_default| is true, |state| will be reported to UMA as
+  // the result of the set-as-default operation.
+  void OnCheckIsDefaultComplete(DefaultWebClientState state,
+                                bool is_following_set_as_default);
 
   // When false, the operation to set as default will fail for interactive
   // flows.
@@ -263,18 +223,19 @@ class DefaultWebClientWorker
 
  private:
   // Checks whether Chrome is the default web client. Always called on the
-  // FILE thread.
-  void CheckIsDefault();
+  // FILE thread. When |is_following_set_as_default| is true, The default state
+  // will be reported to UMA as the result of the set-as-default operation.
+  void CheckIsDefault(bool is_following_set_as_default);
 
   // Sets Chrome as the default web client. Always called on the FILE thread.
   void SetAsDefault();
 
   // Implementation of CheckIsDefault() and SetAsDefault() for subclasses.
   virtual DefaultWebClientState CheckIsDefaultImpl() = 0;
-  virtual AttemptResult SetAsDefaultImpl() = 0;
+  virtual void SetAsDefaultImpl() = 0;
 
-  // Reports the result and duration for one set-as-default attempt.
-  void ReportAttemptResult(AttemptResult result);
+  // Reports the result for the set-as-default operation.
+  void ReportSetDefaultResult(DefaultWebClientState state);
 
   // Updates the UI in our associated view with the current default web
   // client state.
@@ -307,7 +268,7 @@ class DefaultBrowserWorker : public DefaultWebClientWorker {
   DefaultWebClientState CheckIsDefaultImpl() override;
 
   // Set Chrome as the default browser.
-  AttemptResult SetAsDefaultImpl() override;
+  void SetAsDefaultImpl() override;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultBrowserWorker);
 };
@@ -331,7 +292,7 @@ class DefaultProtocolClientWorker : public DefaultWebClientWorker {
   DefaultWebClientState CheckIsDefaultImpl() override;
 
   // Set Chrome as the default handler for this protocol.
-  AttemptResult SetAsDefaultImpl() override;
+  void SetAsDefaultImpl() override;
 
   std::string protocol_;
 

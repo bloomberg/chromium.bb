@@ -7459,6 +7459,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DefaultBrowser.SetDefaultResult"
     enum="SetDefaultAttemptResult">
+  <obsolete>
+    Deprecated 2016/03.
+  </obsolete>
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    The outcome of an attempt to set Chrome as the user's default browser.
+  </summary>
+</histogram>
+
+<histogram name="DefaultBrowser.SetDefaultResult2" enum="DefaultWebClientState">
   <owner>pmonette@chromium.org</owner>
   <summary>
     The outcome of an attempt to set Chrome as the user's default browser.
@@ -7535,6 +7545,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DefaultProtocolClient.SetDefaultResult"
     enum="SetDefaultAttemptResult">
+  <obsolete>
+    Deprecated 2016/03.
+  </obsolete>
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    The outcome of an attempt to set Chrome as the user's default client for a
+    protocol.
+  </summary>
+</histogram>
+
+<histogram name="DefaultProtocolClient.SetDefaultResult2"
+    enum="DefaultWebClientState">
   <owner>pmonette@chromium.org</owner>
   <summary>
     The outcome of an attempt to set Chrome as the user's default client for a
@@ -63140,6 +63162,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="8" label="DSP set to new engine with no previous value in prefs"/>
 </enum>
 
+<enum name="DefaultWebClientState" type="int">
+  <int value="0" label="Not default">Chrome is not the default web client.</int>
+  <int value="1" label="Is default">Chrome is the default web client.</int>
+  <int value="2" label="Unknown default">
+    Chrome is in a unknown default state.
+  </int>
+</enum>
+
 <enum name="DelayBasedEchoQuality" type="int">
   <int value="0" label="Good delays">
     Echo Cancellation quality most likely good.
@@ -80762,6 +80792,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 </enum>
 
 <enum name="SetDefaultAttemptResult" type="int">
+  <obsolete>
+    Deprecated 2016/03. Replaced by DefaultWebClientState.
+  </obsolete>
   <int value="0" label="Success">Chrome was set as the default web client.</int>
   <int value="1" label="Already default">
     Chrome was already the default web client. This counts as a successful

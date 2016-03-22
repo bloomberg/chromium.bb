@@ -154,7 +154,7 @@ class FakeProtocolClientWorker
                           : shell_integration::IS_DEFAULT;
   }
 
-  AttemptResult SetAsDefaultImpl() override { return AttemptResult::SUCCESS; }
+  void SetAsDefaultImpl() override {}
 
  private:
   bool force_failure_;
