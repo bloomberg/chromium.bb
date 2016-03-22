@@ -39,7 +39,8 @@ class ShellSurface : public SurfaceDelegate,
  public:
   ShellSurface(Surface* surface,
                ShellSurface* parent,
-               const gfx::Rect& initial_bounds);
+               const gfx::Rect& initial_bounds,
+               bool activatable);
   explicit ShellSurface(Surface* surface);
   ~ShellSurface() override;
 
@@ -119,6 +120,7 @@ class ShellSurface : public SurfaceDelegate,
 
   // Overridden from views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;
+  void WindowClosing() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
   views::View* GetContentsView() override;
@@ -150,10 +152,14 @@ class ShellSurface : public SurfaceDelegate,
   // Asks the client to configure its surface.
   void Configure();
 
-  scoped_ptr<views::Widget> widget_;
+  // Returns the "visible bounds" for the surface from the user's perspective.
+  gfx::Rect GetVisibleBounds() const;
+
+  views::Widget* widget_;
   Surface* surface_;
   aura::Window* parent_;
   const gfx::Rect initial_bounds_;
+  const bool activatable_;
   base::string16 title_;
   std::string application_id_;
   gfx::Rect geometry_;

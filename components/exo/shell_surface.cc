@@ -19,6 +19,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 DECLARE_WINDOW_PROPERTY_TYPE(std::string*)
@@ -60,32 +61,20 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   // Overridden from aura::WindowTargeter:
   bool EventLocationInsideBounds(aura::Window* window,
                                  const ui::LocatedEvent& event) const override {
-    return PointInsideBounds(window, event.location());
-  }
-
- private:
-  bool PointInsideBounds(const aura::Window* window,
-                         const gfx::Point& point) const {
     Surface* surface = ShellSurface::GetMainSurface(window);
     if (!surface)
       return false;
 
-    gfx::Point local_point = point;
-    if (window->parent()) {
+    gfx::Point local_point = event.location();
+    if (window->parent())
       aura::Window::ConvertPointToTarget(window->parent(), window,
                                          &local_point);
-    }
-
-    // If point is inside a child window then it's also inside the parent.
-    for (const aura::Window* child : window->children()) {
-      if (PointInsideBounds(child, local_point))
-        return true;
-    }
 
     aura::Window::ConvertPointToTarget(window, surface, &local_point);
     return surface->HitTestRect(gfx::Rect(local_point, gfx::Size(1, 1)));
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
 
@@ -113,10 +102,13 @@ DEFINE_LOCAL_WINDOW_PROPERTY_KEY(Surface*, kMainSurfaceKey, nullptr)
 
 ShellSurface::ShellSurface(Surface* surface,
                            ShellSurface* parent,
-                           const gfx::Rect& initial_bounds)
-    : surface_(surface),
+                           const gfx::Rect& initial_bounds,
+                           bool activatable)
+    : widget_(nullptr),
+      surface_(surface),
       parent_(parent ? parent->GetWidget()->GetNativeWindow() : nullptr),
-      initial_bounds_(initial_bounds) {
+      initial_bounds_(initial_bounds),
+      activatable_(activatable) {
   ash::Shell::GetInstance()->activation_client()->AddObserver(this);
   surface_->SetSurfaceDelegate(this);
   surface_->AddSurfaceObserver(this);
@@ -127,7 +119,7 @@ ShellSurface::ShellSurface(Surface* surface,
 }
 
 ShellSurface::ShellSurface(Surface* surface)
-    : ShellSurface(surface, nullptr, gfx::Rect()) {}
+    : ShellSurface(surface, nullptr, gfx::Rect(), true) {}
 
 ShellSurface::~ShellSurface() {
   ash::Shell::GetInstance()->activation_client()->RemoveObserver(this);
@@ -149,11 +141,17 @@ void ShellSurface::SetParent(ShellSurface* parent) {
   TRACE_EVENT1("exo", "ShellSurface::SetParent", "parent",
                parent ? base::UTF16ToASCII(parent->title_) : "null");
 
-  if (parent_)
+  if (parent_) {
     parent_->RemoveObserver(this);
+    if (widget_)
+      wm::RemoveTransientChild(parent_, widget_->GetNativeWindow());
+  }
   parent_ = parent ? parent->GetWidget()->GetNativeWindow() : nullptr;
-  if (parent_)
+  if (parent_) {
     parent_->AddObserver(this);
+    if (widget_)
+      wm::AddTransientChild(parent_, widget_->GetNativeWindow());
+  }
 }
 
 void ShellSurface::Maximize() {
@@ -284,14 +282,11 @@ void ShellSurface::OnSurfaceCommit() {
 
   if (widget_) {
     // Update surface bounds and widget size.
-    gfx::Point origin;
-    views::View::ConvertPointToWidget(this, &origin);
-    // Use |geometry_| if set, otherwise use the visual bounds of the surface.
-    gfx::Rect geometry =
-        geometry_.IsEmpty() ? surface_->GetVisibleBounds() : geometry_;
-    surface_->SetBounds(gfx::Rect(origin - geometry.OffsetFromOrigin(),
-                                  surface_->layer()->size()));
-    widget_->SetSize(geometry.size());
+    gfx::Rect visible_bounds = GetVisibleBounds();
+    surface_->SetBounds(
+        gfx::Rect(gfx::Point() - visible_bounds.OffsetFromOrigin(),
+                  surface_->layer()->size()));
+    widget_->SetSize(visible_bounds.size());
 
     // Show widget if not already visible.
     if (!widget_->IsClosed() && !widget_->IsVisible())
@@ -332,12 +327,17 @@ base::string16 ShellSurface::GetWindowTitle() const {
   return title_;
 }
 
+void ShellSurface::WindowClosing() {
+  SetEnabled(false);
+  widget_ = nullptr;
+}
+
 views::Widget* ShellSurface::GetWidget() {
-  return widget_.get();
+  return widget_;
 }
 
 const views::Widget* ShellSurface::GetWidget() const {
-  return widget_.get();
+  return widget_;
 }
 
 views::View* ShellSurface::GetContentsView() {
@@ -403,6 +403,8 @@ void ShellSurface::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
+  DCHECK(activatable_);
+
   if (!widget_)
     return;
 
@@ -421,26 +423,28 @@ void ShellSurface::CreateShellSurfaceWidget() {
 
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
   params.delegate = this;
   params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.show_state = ui::SHOW_STATE_NORMAL;
-  gfx::Point position(initial_bounds_.origin());
-  if (parent_) {
-    params.child = true;
-    params.parent = parent_;
-    aura::Window::ConvertPointToTarget(GetMainSurface(parent_), parent_,
-                                       &position);
-  } else {
-    params.parent =
-        ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(),
-                                 ash::kShellWindowId_DefaultContainer);
+  params.parent = ash::Shell::GetContainer(
+      ash::Shell::GetPrimaryRootWindow(), ash::kShellWindowId_DefaultContainer);
+  if (!initial_bounds_.IsEmpty()) {
+    gfx::Point position(initial_bounds_.origin());
+    if (parent_) {
+      aura::Window::ConvertPointToTarget(GetMainSurface(parent_), params.parent,
+                                         &position);
+    }
+    params.bounds = gfx::Rect(position + GetVisibleBounds().OffsetFromOrigin(),
+                              initial_bounds_.size());
   }
-  params.bounds = gfx::Rect(position, initial_bounds_.size());
-  widget_.reset(new ShellSurfaceWidget(this));
+  params.activatable = activatable_ ? views::Widget::InitParams::ACTIVATABLE_YES
+                                    : views::Widget::InitParams::ACTIVATABLE_NO;
+
+  // Note: NativeWidget owns this widget.
+  widget_ = new ShellSurfaceWidget(this);
   widget_->Init(params);
-  widget_->GetNativeWindow()->set_owned_by_parent(false);
   widget_->GetNativeWindow()->SetName("ExoShellSurface");
   widget_->GetNativeWindow()->AddChild(surface_);
   widget_->GetNativeWindow()->SetEventTargeter(
@@ -451,9 +455,16 @@ void ShellSurface::CreateShellSurfaceWidget() {
   // Start tracking window state changes.
   ash::wm::GetWindowState(widget_->GetNativeWindow())->AddObserver(this);
 
-  // The position of a top-level shell surface is managed by Ash.
-  ash::wm::GetWindowState(widget_->GetNativeWindow())
-      ->set_window_position_managed(true);
+  // Make shell surface a transient child if |parent_| has been set.
+  if (parent_)
+    wm::AddTransientChild(parent_, widget_->GetNativeWindow());
+
+  // Ash manages the position of a top-level shell surfaces unless
+  // |initial_bounds_| has been set.
+  if (initial_bounds_.IsEmpty()) {
+    ash::wm::GetWindowState(widget_->GetNativeWindow())
+        ->set_window_position_managed(true);
+  }
 }
 
 void ShellSurface::Configure() {
@@ -466,6 +477,11 @@ void ShellSurface::Configure() {
       widget_->GetWindowBoundsInScreen().size(),
       ash::wm::GetWindowState(widget_->GetNativeWindow())->GetStateType(),
       widget_->IsActive());
+}
+
+gfx::Rect ShellSurface::GetVisibleBounds() const {
+  // Use |geometry_| if set, otherwise use the visual bounds of the surface.
+  return geometry_.IsEmpty() ? surface_->GetVisibleBounds() : geometry_;
 }
 
 }  // namespace exo

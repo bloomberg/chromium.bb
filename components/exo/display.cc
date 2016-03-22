@@ -99,7 +99,7 @@ scoped_ptr<ShellSurface> Display::CreateShellSurface(Surface* surface) {
     return nullptr;
   }
 
-  return make_scoped_ptr(new ShellSurface(surface, nullptr, gfx::Rect()));
+  return make_scoped_ptr(new ShellSurface(surface, nullptr, gfx::Rect(), true));
 }
 
 scoped_ptr<ShellSurface> Display::CreatePopupShellSurface(
@@ -119,8 +119,8 @@ scoped_ptr<ShellSurface> Display::CreatePopupShellSurface(
     return nullptr;
   }
 
-  return make_scoped_ptr(
-      new ShellSurface(surface, parent, gfx::Rect(position, gfx::Size(1, 1))));
+  return make_scoped_ptr(new ShellSurface(
+      surface, parent, gfx::Rect(position, gfx::Size(1, 1)), false));
 }
 
 scoped_ptr<SubSurface> Display::CreateSubSurface(Surface* surface,

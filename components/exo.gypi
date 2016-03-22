@@ -23,6 +23,7 @@
         '../ui/gfx/gfx.gyp:gfx_geometry',
         '../ui/gl/gl.gyp:gl',
         '../ui/views/views.gyp:views',
+        '../ui/wm/wm.gyp:wm',
       ],
       'export_dependent_settings': [
         '../ui/views/views.gyp:views',

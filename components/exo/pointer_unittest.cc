@@ -171,7 +171,7 @@ TEST_F(PointerTest, OnPointerMotion) {
 
   scoped_ptr<Surface> child_surface(new Surface);
   scoped_ptr<ShellSurface> child_shell_surface(new ShellSurface(
-      child_surface.get(), shell_surface.get(), gfx::Rect(9, 9, 1, 1)));
+      child_surface.get(), shell_surface.get(), gfx::Rect(9, 9, 1, 1), true));
   gfx::Size child_buffer_size(15, 15);
   scoped_ptr<Buffer> child_buffer(
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size)));

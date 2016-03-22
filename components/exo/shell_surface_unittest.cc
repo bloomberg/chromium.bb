@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 
 namespace exo {
 namespace {
@@ -37,8 +38,9 @@ TEST_F(ShellSurfaceTest, SetParent) {
 
   surface->Attach(buffer.get());
   surface->Commit();
-  EXPECT_EQ(shell_surface->GetWidget()->GetNativeWindow()->parent(),
-            parent_shell_surface->GetWidget()->GetNativeWindow());
+  EXPECT_EQ(
+      parent_shell_surface->GetWidget()->GetNativeWindow(),
+      wm::GetTransientParent(shell_surface->GetWidget()->GetNativeWindow()));
 }
 
 TEST_F(ShellSurfaceTest, Maximize) {

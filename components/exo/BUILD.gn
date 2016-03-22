@@ -45,6 +45,7 @@ source_set("exo") {
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/views",
+    "//ui/wm:wm",
   ]
 }
 
@@ -104,6 +105,7 @@ source_set("unit_tests") {
     "//ui/keyboard",
     "//ui/message_center",
     "//ui/views",
+    "//ui/wm:wm",
   ]
 
   if (use_ozone) {
