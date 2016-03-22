@@ -15,3 +15,6 @@ class GpuRasterizationExpectations(GpuTestExpectations):
     # Failing on Nexus 5 and 6
     self.Fail('GpuRasterization.ConcavePaths',
               ['android', 'qualcomm'], bug=499555)
+
+    # Recently flaky on Mac
+    self.Flaky('GpuRasterization.ConcavePaths', ['mac'], bug=596730)
