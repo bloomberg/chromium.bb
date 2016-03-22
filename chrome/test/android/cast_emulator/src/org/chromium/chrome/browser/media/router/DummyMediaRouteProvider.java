@@ -7,14 +7,17 @@ package org.chromium.chrome.browser.media.router;
 import android.content.Context;
 import android.content.IntentFilter;
 import android.support.v7.media.MediaRouteDescriptor;
+import android.support.v7.media.MediaRouteDiscoveryRequest;
 import android.support.v7.media.MediaRouteProvider;
 import android.support.v7.media.MediaRouteProviderDescriptor;
+import android.support.v7.media.MediaRouteSelector;
 
 import com.google.android.gms.cast.CastMediaControlIntent;
 
 import org.chromium.base.Log;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A dummy MRP that registers some dummy media sinks to the Android support library, so that these
@@ -31,12 +34,27 @@ final class DummyMediaRouteProvider extends MediaRouteProvider {
 
     public DummyMediaRouteProvider(Context context) {
         super(context);
+    }
 
-        publishRoutes();
+    @Override
+    public void onDiscoveryRequestChanged(MediaRouteDiscoveryRequest request) {
+        Log.i(TAG, "discoveryRequestChanged : " + request);
+        if (request != null) {
+            MediaRouteSelector selector = request.getSelector();
+            if (selector != null) {
+                List<String> controlCategories = selector.getControlCategories();
+                if (controlCategories.contains(
+                        CastMediaControlIntent.categoryForCast("CCCCCCCC"))) {
+                    publishRoutes();
+                    return;
+                }
+            }
+        }
+        Log.i(TAG, "discovery request does not match control categories, not publishing routes");
     }
 
     private void publishRoutes() {
-        Log.i(TAG, "Registering DummyMediaRouteProvider");
+        Log.i(TAG, "Publishing routes");
         IntentFilter filter = new IntentFilter();
         filter.addCategory(CastMediaControlIntent.categoryForCast("CCCCCCCC"));
         filter.addDataScheme("http");

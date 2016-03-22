@@ -59,6 +59,7 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
     }
 
     private void publishRoutes() {
+        Log.i(TAG, "publishing routes");
 
         String castId = CastMediaControlIntent.DEFAULT_MEDIA_RECEIVER_APPLICATION_ID;
         try {

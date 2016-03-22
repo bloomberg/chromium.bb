@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.media.remote;
 import android.support.v7.media.MediaRouteProvider;
 import android.support.v7.media.MediaRouteProviderService;
 
+import org.chromium.base.Log;
+
 /**
  * Demonstrates how to register a custom media route provider service
  * using the support library.
@@ -14,8 +16,11 @@ import android.support.v7.media.MediaRouteProviderService;
  * @see TestMediaRouteProvider
  */
 public class TestMediaRouteProviderService extends MediaRouteProviderService {
+    private static final String TAG = "TestMRP";
+
     @Override
     public MediaRouteProvider onCreateMediaRouteProvider() {
+        Log.i(TAG, "creating TestMRP");
         return new TestMediaRouteProvider(this);
     }
 }
