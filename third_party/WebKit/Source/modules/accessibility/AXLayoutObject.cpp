@@ -385,9 +385,6 @@ bool AXLayoutObject::isEditable() const
 // user-modify. Don't move this logic to AXNodeObject.
 bool AXLayoutObject::isRichlyEditable() const
 {
-    if (isARIATextControl())
-        return false;
-
     if (getNode() && getNode()->isContentRichlyEditable())
         return true;
 

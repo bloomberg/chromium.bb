@@ -922,7 +922,7 @@ bool AXNodeObject::isProgressIndicator() const
 
 bool AXNodeObject::isRichlyEditable() const
 {
-    return hasContentEditableAttributeSet() && !isARIATextControl();
+    return hasContentEditableAttributeSet();
 }
 
 bool AXNodeObject::isSlider() const
