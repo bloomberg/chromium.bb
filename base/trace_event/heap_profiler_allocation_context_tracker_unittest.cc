@@ -27,7 +27,9 @@ const char kGingerbread[] = "Gingerbread";
 // in |AllocationContextTracker::GetContextSnapshot|.
 template <size_t N>
 void AssertBacktraceEquals(const StackFrame(&expected_backtrace)[N]) {
-  AllocationContext ctx = AllocationContextTracker::GetContextSnapshot();
+  AllocationContext ctx =
+      AllocationContextTracker::GetInstanceForCurrentThread()
+          ->GetContextSnapshot();
 
   auto actual = std::begin(ctx.backtrace.frames);
   auto actual_bottom = std::end(ctx.backtrace.frames);
@@ -46,7 +48,9 @@ void AssertBacktraceEquals(const StackFrame(&expected_backtrace)[N]) {
 }
 
 void AssertBacktraceEmpty() {
-  AllocationContext ctx = AllocationContextTracker::GetContextSnapshot();
+  AllocationContext ctx =
+      AllocationContextTracker::GetInstanceForCurrentThread()
+          ->GetContextSnapshot();
 
   for (StackFrame frame : ctx.backtrace.frames)
     ASSERT_EQ(nullptr, frame);
@@ -207,7 +211,9 @@ TEST_F(AllocationContextTrackerTest, BacktraceTakesTop) {
 
   {
     TRACE_EVENT0("Testing", kGingerbread);
-    AllocationContext ctx = AllocationContextTracker::GetContextSnapshot();
+    AllocationContext ctx =
+        AllocationContextTracker::GetInstanceForCurrentThread()
+            ->GetContextSnapshot();
 
     // The pseudo stack relies on pointer equality, not deep string comparisons.
     ASSERT_EQ(kCupcake, ctx.backtrace.frames[0]);
@@ -215,7 +221,9 @@ TEST_F(AllocationContextTrackerTest, BacktraceTakesTop) {
   }
 
   {
-    AllocationContext ctx = AllocationContextTracker::GetContextSnapshot();
+    AllocationContext ctx =
+        AllocationContextTracker::GetInstanceForCurrentThread()
+            ->GetContextSnapshot();
     ASSERT_EQ(kCupcake, ctx.backtrace.frames[0]);
     ASSERT_EQ(kFroyo, ctx.backtrace.frames[11]);
   }
