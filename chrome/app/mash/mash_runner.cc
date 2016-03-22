@@ -18,6 +18,7 @@
 #include "content/public/common/content_switches.h"
 #include "mash/quick_launch/quick_launch_application.h"
 #include "mash/session/session.h"
+#include "mash/task_viewer/task_viewer.h"
 #include "mash/wm/window_manager_application.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/shell/background/background_shell.h"
@@ -95,6 +96,8 @@ class DefaultShellClient : public mojo::ShellClient,
       return make_scoped_ptr(
           new resource_provider::ResourceProviderApp("mojo:resource_provider"));
     }
+    if (name == "mojo:task_viewer")
+      return make_scoped_ptr(new mash::task_viewer::TaskViewer);
 #if defined(OS_LINUX)
     if (name == "mojo:font_service")
       return make_scoped_ptr(new font_service::FontServiceApp);

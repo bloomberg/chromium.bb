@@ -18,6 +18,7 @@ source_set("mash") {
     "//content/public/common",
     "//mash/quick_launch:lib",
     "//mash/session:lib",
+    "//mash/task_viewer:lib",
     "//mash/wm:lib",
     "//mojo/shell",
     "//mojo/shell/background:lib",
@@ -47,6 +48,7 @@ mojo_application_manifest("manifest") {
     "//components/resource_provider:manifest",
     "//mash/quick_launch:manifest",
     "//mash/session:manifest",
+    "//mash/task_viewer:manifest",
     "//mash/wm:manifest",
   ]
   packaged_applications = [
@@ -56,6 +58,7 @@ mojo_application_manifest("manifest") {
     "mus",
     "quick_launch",
     "resource_provider",
+    "task_viewer",
   ]
 
   if (is_linux && !is_android) {
