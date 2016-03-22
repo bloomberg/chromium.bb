@@ -386,4 +386,32 @@ TEST(CharacterTest, LineBreakAndQuoteNotEmoji)
     EXPECT_FALSE(Character::isEmojiTextPresentation('"'));
 }
 
+TEST(CharacterTest, Truncation)
+{
+    const UChar32 base = 0x90000;
+    UChar32 testChar = 0;
+
+    testChar = base + spaceCharacter;
+    EXPECT_FALSE(Character::treatAsSpace(testChar));
+    testChar = base + noBreakSpaceCharacter;
+    EXPECT_FALSE(Character::treatAsSpace(testChar));
+
+    testChar = base + zeroWidthNonJoinerCharacter;
+    EXPECT_FALSE(Character::treatAsZeroWidthSpace(testChar));
+    testChar = base + zeroWidthJoinerCharacter;
+    EXPECT_FALSE(Character::treatAsZeroWidthSpace(testChar));
+
+    testChar = base + 0x12;
+    EXPECT_FALSE(Character::treatAsZeroWidthSpaceInComplexScript(testChar));
+    EXPECT_FALSE(Character::treatAsZeroWidthSpaceInComplexScript(testChar));
+    testChar = base + objectReplacementCharacter;
+    EXPECT_FALSE(Character::treatAsZeroWidthSpaceInComplexScript(testChar));
+
+    testChar = base + 0xA;
+    EXPECT_FALSE(Character::isNormalizedCanvasSpaceCharacter(testChar));
+    testChar = base + 0x9;
+    EXPECT_FALSE(Character::isNormalizedCanvasSpaceCharacter(testChar));
+
+}
+
 } // namespace blink

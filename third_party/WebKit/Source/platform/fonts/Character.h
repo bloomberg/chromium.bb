@@ -75,20 +75,20 @@ public:
 
     static bool isUprightInMixedVertical(UChar32 character);
 
-    static bool treatAsSpace(UChar c)
+    static bool treatAsSpace(UChar32 c)
     {
         return c == spaceCharacter
             || c == tabulationCharacter
             || c == newlineCharacter
             || c == noBreakSpaceCharacter;
     }
-    static bool treatAsZeroWidthSpace(UChar c)
+    static bool treatAsZeroWidthSpace(UChar32 c)
     {
         return treatAsZeroWidthSpaceInComplexScript(c)
             || c == zeroWidthNonJoinerCharacter
             || c == zeroWidthJoinerCharacter;
     }
-    static bool treatAsZeroWidthSpaceInComplexScript(UChar c)
+    static bool treatAsZeroWidthSpaceInComplexScript(UChar32 c)
     {
         return c < 0x20 // ASCII Control Characters
             || (c >= 0x7F && c < 0xA0) // ASCII Delete .. No-break spaceCharacter
@@ -119,6 +119,7 @@ public:
 
     static inline UChar normalizeSpaces(UChar character)
     {
+
         if (treatAsSpace(character))
             return spaceCharacter;
 
@@ -128,7 +129,7 @@ public:
         return character;
     }
 
-    static inline bool isNormalizedCanvasSpaceCharacter(UChar c)
+    static inline bool isNormalizedCanvasSpaceCharacter(UChar32 c)
     {
         // According to specification all space characters should be replaced with 0x0020 space character.
         // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#text-preparation-algorithm
