@@ -33,9 +33,9 @@ namespace blink {
 
 namespace {
 
-WGC3Dsync syncObjectOrZero(const WebGLSync* object)
+GLsync syncObjectOrZero(const WebGLSync* object)
 {
-    return object ? object->object() : 0;
+    return object ? object->object() : nullptr;
 }
 
 } // namespace
@@ -253,7 +253,7 @@ void WebGL2RenderingContextBase::blitFramebuffer(GLint srcX0, GLint srcY0, GLint
     if (isContextLost())
         return;
 
-    webContext()->blitFramebufferCHROMIUM(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+    contextGL()->BlitFramebufferCHROMIUM(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
 }
 
 bool WebGL2RenderingContextBase::validateTexFuncLayer(const char* functionName, GLenum texTarget, GLint layer)
@@ -1522,7 +1522,7 @@ void WebGL2RenderingContextBase::vertexAttribIPointer(GLuint index, GLint size, 
     }
 
     m_boundVertexArrayObject->setArrayBufferForAttrib(index, m_boundArrayBuffer);
-    webContext()->vertexAttribIPointer(index, size, type, stride, static_cast<GLintptr>(offset));
+    contextGL()->VertexAttribIPointer(index, size, type, stride, reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
 }
 
 /* Writing to the drawing buffer */
@@ -1575,7 +1575,7 @@ void WebGL2RenderingContextBase::drawRangeElements(GLenum mode, GLuint start, GL
     }
 
     clearIfComposited();
-    webContext()->drawRangeElements(mode, start, end, count, type, static_cast<GLintptr>(offset));
+    contextGL()->DrawRangeElements(mode, start, end, count, type, reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
     markContextChanged(CanvasChanged);
 }
 
@@ -2092,7 +2092,7 @@ GLboolean WebGL2RenderingContextBase::isSync(WebGLSync* sync)
     if (isContextLost() || !sync)
         return 0;
 
-    return webContext()->isSync(sync->object());
+    return contextGL()->IsSync(sync->object());
 }
 
 void WebGL2RenderingContextBase::deleteSync(WebGLSync* sync)
@@ -2111,7 +2111,7 @@ GLenum WebGL2RenderingContextBase::clientWaitSync(WebGLSync* sync, GLbitfield fl
     }
 
     GLuint64 timeout64 = timeout == -1 ? GL_TIMEOUT_IGNORED : static_cast<GLuint64>(timeout);
-    return webContext()->clientWaitSync(syncObjectOrZero(sync), flags, timeout64);
+    return contextGL()->ClientWaitSync(syncObjectOrZero(sync), flags, timeout64);
 }
 
 void WebGL2RenderingContextBase::waitSync(WebGLSync* sync, GLbitfield flags, GLint64 timeout)
@@ -2125,7 +2125,7 @@ void WebGL2RenderingContextBase::waitSync(WebGLSync* sync, GLbitfield flags, GLi
     }
 
     GLuint64 timeout64 = timeout == -1 ? GL_TIMEOUT_IGNORED : static_cast<GLuint64>(timeout);
-    webContext()->waitSync(syncObjectOrZero(sync), flags, timeout64);
+    contextGL()->WaitSync(syncObjectOrZero(sync), flags, timeout64);
 }
 
 ScriptValue WebGL2RenderingContextBase::getSyncParameter(ScriptState* scriptState, WebGLSync* sync, GLenum pname)
@@ -2141,7 +2141,7 @@ ScriptValue WebGL2RenderingContextBase::getSyncParameter(ScriptState* scriptStat
         {
             GLint value = 0;
             GLsizei length = -1;
-            webContext()->getSynciv(syncObjectOrZero(sync), pname, 1, &length, &value);
+            contextGL()->GetSynciv(syncObjectOrZero(sync), pname, 1, &length, &value);
             return WebGLAny(scriptState, static_cast<unsigned>(value));
         }
     default:

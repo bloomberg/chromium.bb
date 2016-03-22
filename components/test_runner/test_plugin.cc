@@ -491,8 +491,8 @@ void TestPlugin::DrawPrimitive() {
   // Bind primitive vertices.
   gl_->BindBuffer(GL_ARRAY_BUFFER, scene_.vbo);
   gl_->EnableVertexAttribArray(scene_.position_location);
-  context_->vertexAttribPointer(
-      scene_.position_location, 3, GL_FLOAT, GL_FALSE, 0, 0);
+  gl_->VertexAttribPointer(scene_.position_location, 3, GL_FLOAT, GL_FALSE, 0,
+                           nullptr);
   gl_->DrawArrays(GL_TRIANGLES, 0, 3);
 }
 

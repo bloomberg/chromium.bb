@@ -45,8 +45,6 @@ public:
 
     virtual void blitFramebufferCHROMIUM(WGC3Dint srcX0, WGC3Dint srcY0, WGC3Dint srcX1, WGC3Dint srcY1, WGC3Dint dstX0, WGC3Dint dstY0, WGC3Dint dstX1, WGC3Dint dstY1, WGC3Dbitfield mask, WGC3Denum filter) { }
 
-    virtual void drawElements(WGC3Denum mode, WGC3Dsizei count, WGC3Denum type, WGC3Dintptr offset) { }
-
     virtual bool getActiveAttrib(WebGLId program, WGC3Duint index, ActiveInfo&) { return false; }
     virtual bool getActiveUniform(WebGLId program, WGC3Duint index, ActiveInfo&) { return false; }
     virtual Attributes getContextAttributes() { return m_attrs; }
@@ -54,11 +52,8 @@ public:
     virtual WebString getShaderInfoLog(WebGLId shader) { return WebString(); }
     virtual WebString getShaderSource(WebGLId shader) { return WebString(); }
     virtual WebString getString(WGC3Denum name) { return WebString(); }
-    virtual WGC3Dsizeiptr getVertexAttribOffset(WGC3Duint index, WGC3Denum pname) { return 0; }
 
     virtual void shaderSource(WebGLId shader, const WGC3Dchar* string) { }
-
-    virtual void vertexAttribPointer(WGC3Duint index, WGC3Dint size, WGC3Denum type, WGC3Dboolean normalized, WGC3Dsizei stride, WGC3Dintptr offset) { }
 
     virtual void genBuffers(WGC3Dsizei count, WebGLId* ids)
     {

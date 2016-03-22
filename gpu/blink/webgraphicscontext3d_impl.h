@@ -37,11 +37,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
 
-  void drawElements(blink::WGC3Denum mode,
-                    blink::WGC3Dsizei count,
-                    blink::WGC3Denum type,
-                    blink::WGC3Dintptr offset) override;
-
   bool getActiveAttrib(blink::WebGLId program,
                        blink::WGC3Duint index,
                        ActiveInfo&) override;
@@ -54,24 +49,8 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   blink::WebString getShaderSource(blink::WebGLId shader) override;
   blink::WebString getString(blink::WGC3Denum name) override;
 
-  void getSynciv(blink::WGC3Dsync sync,
-                 blink::WGC3Denum pname,
-                 blink::WGC3Dsizei bufSize,
-                 blink::WGC3Dsizei *length,
-                 blink::WGC3Dint *params) override;
-
-  blink::WGC3Dsizeiptr getVertexAttribOffset(blink::WGC3Duint index,
-                                             blink::WGC3Denum pname) override;
-
   void shaderSource(blink::WebGLId shader,
                     const blink::WGC3Dchar* string) override;
-
-  void vertexAttribPointer(blink::WGC3Duint index,
-                           blink::WGC3Dint size,
-                           blink::WGC3Denum type,
-                           blink::WGC3Dboolean normalized,
-                           blink::WGC3Dsizei stride,
-                           blink::WGC3Dintptr offset) override;
 
   blink::WebGLId createBuffer() override;
   blink::WebGLId createFramebuffer() override;
@@ -85,16 +64,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
 
   blink::WebString getRequestableExtensionsCHROMIUM() override;
 
-  void blitFramebufferCHROMIUM(blink::WGC3Dint srcX0,
-                               blink::WGC3Dint srcY0,
-                               blink::WGC3Dint srcX1,
-                               blink::WGC3Dint srcY1,
-                               blink::WGC3Dint dstX0,
-                               blink::WGC3Dint dstY0,
-                               blink::WGC3Dint dstX1,
-                               blink::WGC3Dint dstY1,
-                               blink::WGC3Dbitfield mask,
-                               blink::WGC3Denum filter) override;
   blink::WebString getTranslatedShaderSourceANGLE(
       blink::WebGLId shader) override;
 
@@ -142,9 +111,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void clearBufferuiv(blink::WGC3Denum buffer,
                       blink::WGC3Dint drawbuffer,
                       const blink::WGC3Duint* value) override;
-  blink::WGC3Denum clientWaitSync(blink::WGC3Dsync sync,
-                                  blink::WGC3Dbitfield flags,
-                                  blink::WGC3Duint64 timeout) override;
   void compressedTexImage3D(blink::WGC3Denum target,
                             blink::WGC3Dint level,
                             blink::WGC3Denum internalformat,
@@ -182,17 +148,8 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   blink::WebGLId createSampler() override;
   blink::WebGLId createTransformFeedback() override;
   void deleteSampler(blink::WebGLId sampler) override;
-  void deleteSync(blink::WGC3Dsync sync) override;
   void deleteTransformFeedback(blink::WebGLId transformfeedback) override;
-  void drawRangeElements(blink::WGC3Denum mode,
-                         blink::WGC3Duint start,
-                         blink::WGC3Duint end,
-                         blink::WGC3Dsizei count,
-                         blink::WGC3Denum type,
-                         blink::WGC3Dintptr offset) override;
   void endTransformFeedback(void) override;
-  blink::WGC3Dsync fenceSync(blink::WGC3Denum condition,
-                             blink::WGC3Dbitfield flags) override;
   void getActiveUniformBlockName(blink::WGC3Duint program,
                                  blink::WGC3Duint uniformBlockIndex,
                                  blink::WGC3Dsizei bufSize,
@@ -248,7 +205,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                                 blink::WGC3Dsizei width,
                                 blink::WGC3Dsizei height) override;
   blink::WGC3Dboolean isSampler(blink::WebGLId sampler) override;
-  blink::WGC3Dboolean isSync(blink::WGC3Dsync sync) override;
   blink::WGC3Dboolean isTransformFeedback(blink::WGC3Duint id) override;
   void* mapBufferRange(blink::WGC3Denum target,
                        blink::WGC3Dintptr offset,
@@ -278,14 +234,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
       const blink::WGC3Dchar* const* varyings,
       blink::WGC3Denum bufferMode) override;
   blink::WGC3Dboolean unmapBuffer(blink::WGC3Denum target) override;
-  void vertexAttribIPointer(blink::WGC3Duint index,
-                            blink::WGC3Dint size,
-                            blink::WGC3Denum type,
-                            blink::WGC3Dsizei stride,
-                            blink::WGC3Dintptr pointer) override;
-  void waitSync(blink::WGC3Dsync sync,
-                blink::WGC3Dbitfield flags,
-                blink::WGC3Duint64 timeout) override;
 
   // WebGraphicsContext3D implementation.
   ::gpu::gles2::GLES2Interface* getGLES2Interface() override;

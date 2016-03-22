@@ -2137,7 +2137,7 @@ void WebGLRenderingContextBase::drawElements(GLenum mode, GLsizei count, GLenum 
     }
 
     clearIfComposited();
-    webContext()->drawElements(mode, count, type, static_cast<GLintptr>(offset));
+    contextGL()->DrawElements(mode, count, type, reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
     markContextChanged(CanvasChanged);
 }
 
@@ -3323,8 +3323,11 @@ long long WebGLRenderingContextBase::getVertexAttribOffset(GLuint index, GLenum 
 {
     if (isContextLost())
         return 0;
-    GLintptr result = webContext()->getVertexAttribOffset(index, pname);
-    return static_cast<long long>(result);
+    GLvoid* result = nullptr;
+    // NOTE: If pname is ever a value that returns more then 1 element
+    // this will corrupt memory.
+    contextGL()->GetVertexAttribPointerv(index, pname, &result);
+    return static_cast<long long>(reinterpret_cast<intptr_t>(result));
 }
 
 void WebGLRenderingContextBase::hint(GLenum target, GLenum mode)
@@ -4981,7 +4984,7 @@ void WebGLRenderingContextBase::vertexAttribPointer(ScriptState* scriptState, GL
     }
 
     m_boundVertexArrayObject->setArrayBufferForAttrib(index, m_boundArrayBuffer.get());
-    webContext()->vertexAttribPointer(index, size, type, normalized, stride, static_cast<GLintptr>(offset));
+    contextGL()->VertexAttribPointer(index, size, type, normalized, stride, reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
     maybePreserveDefaultVAOObjectWrapper(scriptState);
     preserveObjectWrapper(scriptState, m_boundVertexArrayObject, "arraybuffer", index, m_boundArrayBuffer);
 }

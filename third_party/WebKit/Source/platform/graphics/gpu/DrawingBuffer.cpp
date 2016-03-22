@@ -809,7 +809,7 @@ void DrawingBuffer::commit()
         int width = m_size.width();
         int height = m_size.height();
         // Use NEAREST, because there is no scale performed during the blit.
-        m_context->blitFramebufferCHROMIUM(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        m_gl->BlitFramebufferCHROMIUM(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
         if (m_scissorEnabled)
             m_gl->Enable(GL_SCISSOR_TEST);

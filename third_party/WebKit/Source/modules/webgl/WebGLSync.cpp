@@ -4,6 +4,7 @@
 
 #include "modules/webgl/WebGLSync.h"
 
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGL2RenderingContextBase.h"
 
 namespace blink {
@@ -14,16 +15,16 @@ WebGLSync::~WebGLSync()
     detachAndDeleteObject();
 }
 
-WebGLSync::WebGLSync(WebGL2RenderingContextBase* ctx, WGC3Dsync object, GLenum objectType)
+WebGLSync::WebGLSync(WebGL2RenderingContextBase* ctx, GLsync object, GLenum objectType)
     : WebGLSharedObject(ctx)
     , m_object(object)
     , m_objectType(objectType)
 {
 }
 
-void WebGLSync::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface*)
+void WebGLSync::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
-    context3d->deleteSync(m_object);
+    gl->DeleteSync(m_object);
     m_object = 0;
 }
 

@@ -38,7 +38,6 @@ using blink::WGC3Dint64;
 using blink::WGC3Duint64;
 using blink::WGC3Duint;
 using blink::WebGLId;
-using blink::WGC3Dsync;
 
 namespace gpu_blink {
 
@@ -198,25 +197,6 @@ blink::WebString WebGraphicsContext3DImpl::
       gl_->GetRequestableExtensionsCHROMIUM());
 }
 
-void WebGraphicsContext3DImpl::blitFramebufferCHROMIUM(
-    WGC3Dint srcX0, WGC3Dint srcY0, WGC3Dint srcX1, WGC3Dint srcY1,
-    WGC3Dint dstX0, WGC3Dint dstY0, WGC3Dint dstX1, WGC3Dint dstY1,
-    WGC3Dbitfield mask, WGC3Denum filter) {
-  gl_->BlitFramebufferCHROMIUM(
-      srcX0, srcY0, srcX1, srcY1,
-      dstX0, dstY0, dstX1, dstY1,
-      mask, filter);
-}
-
-void WebGraphicsContext3DImpl::drawElements(WGC3Denum mode,
-                                                         WGC3Dsizei count,
-                                                         WGC3Denum type,
-                                                         WGC3Dintptr offset) {
-  gl_->DrawElements(
-      mode, count, type,
-      reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
-}
-
 bool WebGraphicsContext3DImpl::getActiveAttrib(
     WebGLId program, WGC3Duint index, ActiveInfo& info) {
   GLint max_name_length = -1;
@@ -344,36 +324,10 @@ blink::WebString WebGraphicsContext3DImpl::getString(
       reinterpret_cast<const char*>(gl_->GetString(name)));
 }
 
-void WebGraphicsContext3DImpl::getSynciv(blink::WGC3Dsync sync,
-                                         blink::WGC3Denum pname,
-                                         blink::WGC3Dsizei bufSize,
-                                         blink::WGC3Dsizei *length,
-                                         blink::WGC3Dint *params) {
-  return gl_->GetSynciv(
-      reinterpret_cast<GLsync>(sync), pname, bufSize, length, params);
-}
-
-WGC3Dsizeiptr WebGraphicsContext3DImpl::getVertexAttribOffset(
-    WGC3Duint index, WGC3Denum pname) {
-  GLvoid* value = NULL;
-  // NOTE: If pname is ever a value that returns more then 1 element
-  // this will corrupt memory.
-  gl_->GetVertexAttribPointerv(index, pname, &value);
-  return static_cast<WGC3Dsizeiptr>(reinterpret_cast<intptr_t>(value));
-}
-
 void WebGraphicsContext3DImpl::shaderSource(
     WebGLId shader, const WGC3Dchar* string) {
   GLint length = strlen(string);
   gl_->ShaderSource(shader, 1, &string, &length);
-}
-
-void WebGraphicsContext3DImpl::vertexAttribPointer(
-    WGC3Duint index, WGC3Dint size, WGC3Denum type, WGC3Dboolean normalized,
-    WGC3Dsizei stride, WGC3Dintptr offset) {
-  gl_->VertexAttribPointer(
-      index, size, type, normalized, stride,
-      reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
 }
 
 WebGLId WebGraphicsContext3DImpl::createBuffer() {
@@ -481,11 +435,6 @@ DELEGATE_TO_GL_3(clearBufferiv, ClearBufferiv, WGC3Denum, WGC3Dint,
                  const WGC3Dint *)
 DELEGATE_TO_GL_3(clearBufferuiv, ClearBufferuiv, WGC3Denum, WGC3Dint,
                  const WGC3Duint *)
-WGC3Denum WebGraphicsContext3DImpl::clientWaitSync(WGC3Dsync sync,
-                                                   WGC3Dbitfield flags,
-                                                   WGC3Duint64 timeout) {
-  return gl_->ClientWaitSync(reinterpret_cast<GLsync>(sync), flags, timeout);
-}
 DELEGATE_TO_GL_9(compressedTexImage3D, CompressedTexImage3D, WGC3Denum,
                  WGC3Dint, WGC3Denum, WGC3Dsizei, WGC3Dsizei, WGC3Dsizei,
                  WGC3Dint, WGC3Dsizei, const void *)
@@ -510,23 +459,10 @@ WebGLId WebGraphicsContext3DImpl::createTransformFeedback() {
 void WebGraphicsContext3DImpl::deleteSampler(WebGLId sampler) {
   gl_->DeleteSamplers(1, &sampler);
 }
-void WebGraphicsContext3DImpl::deleteSync(WGC3Dsync sync) {
-  gl_->DeleteSync(reinterpret_cast<GLsync>(sync));
-}
 void WebGraphicsContext3DImpl::deleteTransformFeedback(WebGLId tf) {
   gl_->DeleteTransformFeedbacks(1, &tf);
 }
-void WebGraphicsContext3DImpl::drawRangeElements(
-    WGC3Denum mode, WGC3Duint start, WGC3Duint end, WGC3Dsizei count,
-    WGC3Denum type, WGC3Dintptr offset) {
-  gl_->DrawRangeElements(mode, start, end, count, type,
-      reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
-}
 DELEGATE_TO_GL(endTransformFeedback, EndTransformFeedback)
-WGC3Dsync WebGraphicsContext3DImpl::fenceSync(WGC3Denum condition,
-                                              WGC3Dbitfield flags) {
-  return reinterpret_cast<WGC3Dsync>(gl_->FenceSync(condition, flags));
-}
 DELEGATE_TO_GL_5(getActiveUniformBlockName, GetActiveUniformBlockName,
                  WGC3Duint, WGC3Duint, WGC3Dsizei, WGC3Dsizei *, WGC3Dchar *)
 DELEGATE_TO_GL_4(getActiveUniformBlockiv, GetActiveUniformBlockiv, WGC3Duint,
@@ -556,9 +492,6 @@ DELEGATE_TO_GL_7(invalidateSubFramebuffer, InvalidateSubFramebuffer, WGC3Denum,
                  WGC3Dsizei, const WGC3Denum *, WGC3Dint, WGC3Dint, WGC3Dsizei,
                  WGC3Dsizei)
 DELEGATE_TO_GL_1R(isSampler, IsSampler, WebGLId, WGC3Dboolean)
-WGC3Dboolean WebGraphicsContext3DImpl::isSync(WGC3Dsync sync) {
-  return gl_->IsSync(reinterpret_cast<GLsync>(sync));
-}
 DELEGATE_TO_GL_1R(isTransformFeedback, IsTransformFeedback, WGC3Duint,
                   WGC3Dboolean)
 DELEGATE_TO_GL_4R(mapBufferRange, MapBufferRange, WGC3Denum, WGC3Dintptr,
@@ -579,18 +512,6 @@ DELEGATE_TO_GL_3(samplerParameteriv, SamplerParameteriv, WGC3Duint, WGC3Denum,
 DELEGATE_TO_GL_4(transformFeedbackVaryings, TransformFeedbackVaryings,
                  WGC3Duint, WGC3Dsizei, const WGC3Dchar *const*, WGC3Denum)
 DELEGATE_TO_GL_1R(unmapBuffer, UnmapBuffer, WGC3Denum, WGC3Dboolean);
-void WebGraphicsContext3DImpl::vertexAttribIPointer(
-    WGC3Duint index, WGC3Dint size, WGC3Denum type, WGC3Dsizei stride,
-    WGC3Dintptr offset) {
-  gl_->VertexAttribIPointer(
-      index, size, type, stride,
-      reinterpret_cast<void*>(static_cast<intptr_t>(offset)));
-}
-void WebGraphicsContext3DImpl::waitSync(WGC3Dsync sync,
-                                        WGC3Dbitfield flags,
-                                        WGC3Duint64 timeout) {
-  gl_->WaitSync(reinterpret_cast<GLsync>(sync), flags, timeout);
-}
 
 ::gpu::gles2::GLES2Interface* WebGraphicsContext3DImpl::getGLES2Interface() {
   return gl_;
