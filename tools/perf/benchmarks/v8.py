@@ -226,5 +226,9 @@ class V8Adword(perf_benchmark.PerfBenchmark):
     return 'v8.google'
 
   @classmethod
+  def ShouldDisable(cls, possible_browser):
+    return cls.IsSvelte(possible_browser) # http://crbug.com/596556
+
+  @classmethod
   def ShouldTearDownStateAfterEachStoryRun(cls):
     return True
