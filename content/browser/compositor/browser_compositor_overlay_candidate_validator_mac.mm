@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/command_line.h"
+#include "base/mac/mac_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "ui/base/ui_base_switches.h"
@@ -38,6 +39,12 @@ bool BrowserCompositorOverlayCandidateValidatorMac::AllowCALayerOverlays() {
   if (software_mirror_active_ || ca_layers_disabled_ ||
       overlays_disabled_at_command_line)
     return false;
+
+  // Temporarily disable CALayer overlays on 10.9 because it appears to be
+  // buggy, see http://crbug.com/594343
+  if (base::mac::IsOSMavericks())
+    return false;
+
   return true;
 }
 
