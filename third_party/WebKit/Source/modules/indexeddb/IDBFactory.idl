@@ -29,7 +29,7 @@
     Exposed=(Window,Worker),
     GarbageCollected
 ] interface IDBFactory {
-    [CallWith=ScriptState, ImplementedAs=getDatabaseNames, RaisesException] IDBRequest webkitGetDatabaseNames();
+    [CallWith=ScriptState, ImplementedAs=getDatabaseNames, RaisesException, Measure] IDBRequest webkitGetDatabaseNames();
 
     [CallWith=ScriptState, RaisesException] IDBOpenDBRequest open(DOMString name, [EnforceRange] optional unsigned long long version);
     [CallWith=ScriptState, RaisesException] IDBOpenDBRequest deleteDatabase(DOMString name);
