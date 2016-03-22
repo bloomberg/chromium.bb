@@ -295,6 +295,13 @@ void MessagePortService::HoldMessages(int message_port_id) {
   message_ports_[message_port_id].hold_messages_for_destination = true;
 }
 
+bool MessagePortService::AreMessagesHeld(int message_port_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!message_ports_.count(message_port_id))
+    return false;
+  return message_ports_[message_port_id].hold_messages_for_destination;
+}
+
 void MessagePortService::ClosePort(int message_port_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!message_ports_.count(message_port_id)) {

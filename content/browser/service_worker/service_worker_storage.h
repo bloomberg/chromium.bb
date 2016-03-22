@@ -224,6 +224,7 @@ class CONTENT_EXPORT ServiceWorkerStorage
   void PurgeResources(const ResourceList& resources);
 
  private:
+  friend class ServiceWorkerDispatcherHostTest;
   friend class ServiceWorkerHandleTest;
   friend class ServiceWorkerStorageTest;
   friend class ServiceWorkerResourceStorageTest;

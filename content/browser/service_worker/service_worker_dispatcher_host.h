@@ -88,7 +88,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
  private:
   friend class BrowserThread;
   friend class base::DeleteHelper<ServiceWorkerDispatcherHost>;
+  friend class ServiceWorkerDispatcherHostTest;
   friend class TestingServiceWorkerDispatcherHost;
+
+  using StatusCallback = base::Callback<void(ServiceWorkerStatusCode status)>;
 
   // IPC Message handlers
   void OnRegisterServiceWorker(int thread_id,
@@ -154,22 +157,36 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
 
   void OnTerminateWorker(int handle_id);
 
-  template <typename SourceInfo>
   void DispatchExtendableMessageEvent(
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
       const std::vector<TransferredMessagePort>& sent_message_ports,
+      ServiceWorkerProviderHost* sender_provider_host,
+      const StatusCallback& callback);
+  template <typename SourceInfo>
+  void DispatchExtendableMessageEventInternal(
+      scoped_refptr<ServiceWorkerVersion> worker,
+      const base::string16& message,
+      const url::Origin& source_origin,
+      const std::vector<TransferredMessagePort>& sent_message_ports,
+      const StatusCallback& callback,
       const SourceInfo& source_info);
   void DispatchExtendableMessageEventAfterStartWorker(
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
       const url::Origin& source_origin,
       const std::vector<TransferredMessagePort>& sent_message_ports,
-      const ExtendableMessageEventSource& source);
+      const ExtendableMessageEventSource& source,
+      const StatusCallback& callback);
+  template <typename SourceInfo>
   void DidFailToDispatchExtendableMessageEvent(
       const std::vector<TransferredMessagePort>& sent_message_ports,
+      const SourceInfo& source_info,
+      const StatusCallback& callback,
       ServiceWorkerStatusCode status);
+  void ReleaseSourceInfo(const ServiceWorkerClientInfo& source_info);
+  void ReleaseSourceInfo(const ServiceWorkerObjectInfo& source_info);
 
   ServiceWorkerRegistrationHandle* FindRegistrationHandle(
       int provider_id,

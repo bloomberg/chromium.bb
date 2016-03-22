@@ -67,6 +67,9 @@ class CONTENT_EXPORT MessagePortService {
   // clean up the port.
   void HoldMessages(int message_port_id);
 
+  // Returns true if messages for a message port are on hold.
+  bool AreMessagesHeld(int message_port_id);
+
   // Closes and cleans up the message port.
   void ClosePort(int message_port_id);
 

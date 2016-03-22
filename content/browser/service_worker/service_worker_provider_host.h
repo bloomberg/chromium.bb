@@ -248,6 +248,10 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            Update_ElongatedScript);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWriteToCacheJobTest,
                            Update_EmptyScript);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTest,
+                           DispatchExtendableMessageEvent);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerDispatcherHostTest,
+                           DispatchExtendableMessageEvent_Fail);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            UpdateBefore24Hours);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,

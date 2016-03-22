@@ -54,6 +54,7 @@ class CONTENT_EXPORT ServiceWorkerHandle
   int handle_id() const { return handle_id_; }
   ServiceWorkerVersion* version() { return version_.get(); }
 
+  int ref_count() const { return ref_count_; }
   bool HasNoRefCount() const { return ref_count_ <= 0; }
   void IncrementRefCount();
   void DecrementRefCount();

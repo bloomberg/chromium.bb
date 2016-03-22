@@ -187,6 +187,8 @@ bool EmbeddedWorkerTestHelper::OnMessageToWorker(
   current_embedded_worker_id_ = embedded_worker_id;
   IPC_BEGIN_MESSAGE_MAP(EmbeddedWorkerTestHelper, message)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ActivateEvent, OnActivateEventStub)
+    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ExtendableMessageEvent,
+                        OnExtendableMessageEventStub)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_InstallEvent, OnInstallEventStub)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_FetchEvent, OnFetchEventStub)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_PushEvent, OnPushEventStub)
@@ -205,6 +207,13 @@ void EmbeddedWorkerTestHelper::OnActivateEvent(int embedded_worker_id,
       new ServiceWorkerHostMsg_ActivateEventFinished(
           embedded_worker_id, request_id,
           blink::WebServiceWorkerEventResultCompleted));
+}
+
+void EmbeddedWorkerTestHelper::OnExtendableMessageEvent(int embedded_worker_id,
+                                                        int request_id) {
+  SimulateSend(new ServiceWorkerHostMsg_ExtendableMessageEventFinished(
+      embedded_worker_id, request_id,
+      blink::WebServiceWorkerEventResultCompleted));
 }
 
 void EmbeddedWorkerTestHelper::OnInstallEvent(int embedded_worker_id,
@@ -362,11 +371,18 @@ void EmbeddedWorkerTestHelper::OnMessageToWorkerStub(
 
 void EmbeddedWorkerTestHelper::OnActivateEventStub(int request_id) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&EmbeddedWorkerTestHelper::OnActivateEvent,
-                 weak_factory_.GetWeakPtr(),
-                 current_embedded_worker_id_,
-                 request_id));
+      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnActivateEvent,
+                            weak_factory_.GetWeakPtr(),
+                            current_embedded_worker_id_, request_id));
+}
+
+void EmbeddedWorkerTestHelper::OnExtendableMessageEventStub(
+    int request_id,
+    const ServiceWorkerMsg_ExtendableMessageEvent_Params& params) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnExtendableMessageEvent,
+                            weak_factory_.GetWeakPtr(),
+                            current_embedded_worker_id_, request_id));
 }
 
 void EmbeddedWorkerTestHelper::OnInstallEventStub(int request_id) {

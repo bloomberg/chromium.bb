@@ -700,6 +700,19 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
     return;
   }
 
+  DispatchExtendableMessageEvent(
+      make_scoped_refptr(handle->version()), message, source_origin,
+      sent_message_ports, sender_provider_host,
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+}
+
+void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
+    scoped_refptr<ServiceWorkerVersion> worker,
+    const base::string16& message,
+    const url::Origin& source_origin,
+    const std::vector<TransferredMessagePort>& sent_message_ports,
+    ServiceWorkerProviderHost* sender_provider_host,
+    const StatusCallback& callback) {
   for (const TransferredMessagePort& port : sent_message_ports)
     MessagePortService::GetInstance()->HoldMessages(port.id);
 
@@ -709,20 +722,17 @@ void ServiceWorkerDispatcherHost::OnPostMessageToWorker(
     case SERVICE_WORKER_PROVIDER_FOR_SHARED_WORKER:
       service_worker_client_utils::GetClient(
           sender_provider_host,
-          base::Bind(
-              &ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent<
-                  ServiceWorkerClientInfo>,
-              this, make_scoped_refptr(handle->version()), message,
-              source_origin, sent_message_ports));
+          base::Bind(&ServiceWorkerDispatcherHost::
+                         DispatchExtendableMessageEventInternal<
+                             ServiceWorkerClientInfo>,
+                     this, worker, message, source_origin, sent_message_ports,
+                     callback));
       break;
     case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
-      // TODO(nhiroki): Decrement a reference to ServiceWorkerHandle if starting
-      // worker fails (http://crbug.com/543198).
       RunSoon(base::Bind(
-          &ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent<
+          &ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal<
               ServiceWorkerObjectInfo>,
-          this, make_scoped_refptr(handle->version()), message, source_origin,
-          sent_message_ports,
+          this, worker, message, source_origin, sent_message_ports, callback,
           sender_provider_host->GetOrCreateServiceWorkerHandle(
               sender_provider_host->running_hosted_version())));
       break;
@@ -865,15 +875,16 @@ void ServiceWorkerDispatcherHost::OnSetHostedVersionId(int provider_id,
 }
 
 template <typename SourceInfo>
-void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
+void ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal(
     scoped_refptr<ServiceWorkerVersion> worker,
     const base::string16& message,
     const url::Origin& source_origin,
     const std::vector<TransferredMessagePort>& sent_message_ports,
+    const StatusCallback& callback,
     const SourceInfo& source_info) {
   if (!source_info.IsValid()) {
-    DidFailToDispatchExtendableMessageEvent(sent_message_ports,
-                                            SERVICE_WORKER_ERROR_FAILED);
+    DidFailToDispatchExtendableMessageEvent<SourceInfo>(
+        sent_message_ports, source_info, callback, SERVICE_WORKER_ERROR_FAILED);
     return;
   }
   worker->RunAfterStartWorker(
@@ -881,10 +892,11 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
       base::Bind(&ServiceWorkerDispatcherHost::
                      DispatchExtendableMessageEventAfterStartWorker,
                  this, worker, message, source_origin, sent_message_ports,
-                 ExtendableMessageEventSource(source_info)),
+                 ExtendableMessageEventSource(source_info), callback),
       base::Bind(
-          &ServiceWorkerDispatcherHost::DidFailToDispatchExtendableMessageEvent,
-          this, sent_message_ports));
+          &ServiceWorkerDispatcherHost::DidFailToDispatchExtendableMessageEvent<
+              SourceInfo>,
+          this, sent_message_ports, source_info, callback));
 }
 
 void ServiceWorkerDispatcherHost::
@@ -893,10 +905,10 @@ void ServiceWorkerDispatcherHost::
         const base::string16& message,
         const url::Origin& source_origin,
         const std::vector<TransferredMessagePort>& sent_message_ports,
-        const ExtendableMessageEventSource& source) {
+        const ExtendableMessageEventSource& source,
+        const StatusCallback& callback) {
   int request_id =
-      worker->StartRequest(ServiceWorkerMetrics::EventType::MESSAGE,
-                           base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+      worker->StartRequest(ServiceWorkerMetrics::EventType::MESSAGE, callback);
 
   MessagePortMessageFilter* filter =
       worker->embedded_worker()->message_port_message_filter();
@@ -923,12 +935,33 @@ void ServiceWorkerDispatcherHost::
       request_id, ServiceWorkerMsg_ExtendableMessageEvent(request_id, params));
 }
 
+template <typename SourceInfo>
 void ServiceWorkerDispatcherHost::DidFailToDispatchExtendableMessageEvent(
     const std::vector<TransferredMessagePort>& sent_message_ports,
+    const SourceInfo& source_info,
+    const StatusCallback& callback,
     ServiceWorkerStatusCode status) {
   // Transfering the message ports failed, so destroy the ports.
   for (const TransferredMessagePort& port : sent_message_ports)
     MessagePortService::GetInstance()->ClosePort(port.id);
+  if (source_info.IsValid())
+    ReleaseSourceInfo(source_info);
+  callback.Run(status);
+}
+
+void ServiceWorkerDispatcherHost::ReleaseSourceInfo(
+    const ServiceWorkerClientInfo& source_info) {
+  // ServiceWorkerClientInfo is just a snapshot of the client. There is no need
+  // to do anything for it.
+}
+
+void ServiceWorkerDispatcherHost::ReleaseSourceInfo(
+    const ServiceWorkerObjectInfo& source_info) {
+  ServiceWorkerHandle* handle = handles_.Lookup(source_info.handle_id);
+  DCHECK(handle);
+  handle->DecrementRefCount();
+  if (handle->HasNoRefCount())
+    handles_.Remove(source_info.handle_id);
 }
 
 ServiceWorkerRegistrationHandle*
