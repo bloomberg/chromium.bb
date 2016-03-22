@@ -791,6 +791,18 @@
       ],
     },
     {
+      'target_name': 'content_decoder_tool',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'net',
+      ],
+      'sources': [
+        'tools/content_decoder_tool/content_decoder_tool.cc',
+        'filter/mock_filter_context.cc',
+      ],
+    },
+    {
       'target_name': 'dump_cache',
       'type': 'executable',
       'dependencies': [
