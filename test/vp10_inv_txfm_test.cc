@@ -20,10 +20,10 @@
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
-#include "vp10/common/blockd.h"
-#include "vp10/common/scan.h"
+#include "av1/common/blockd.h"
+#include "av1/common/scan.h"
 #include "aom/vpx_integer.h"
-#include "vp10/common/vp10_inv_txfm.h"
+#include "av1/common/vp10_inv_txfm.h"
 
 using libvpx_test::ACMRandom;
 

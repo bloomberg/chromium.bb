@@ -185,7 +185,7 @@ if [ ${doxy_major:-0} -ge 1 ]; then
 fi
 
 # disable codecs when their source directory does not exist
-[ -d "${source_path}/vp10" ] || disable_feature vp10
+[ -d "${source_path}/av1" ] || disable_feature vp10
 
 # install everything except the sources, by default. sources will have
 # to be enabled when doing dist builds, since that's no longer a common

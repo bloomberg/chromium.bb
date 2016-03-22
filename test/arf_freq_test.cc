@@ -15,7 +15,7 @@
 #include "test/util.h"
 #include "test/y4m_video_source.h"
 #include "test/yuv_video_source.h"
-#include "vp10/encoder/ratectrl.h"
+#include "av1/encoder/ratectrl.h"
 
 namespace {
 

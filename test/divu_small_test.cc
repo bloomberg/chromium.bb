@@ -27,7 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
 #include "test/acm_random.h"
-#include "vp10/common/odintrin.h"
+#include "av1/common/odintrin.h"
 
 using libvpx_test::ACMRandom;
 

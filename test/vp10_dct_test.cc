@@ -20,7 +20,7 @@
 
 #undef CONFIG_COEFFICIENT_RANGE_CHECKING
 #define CONFIG_COEFFICIENT_RANGE_CHECKING 1
-#include "vp10/encoder/dct.c"
+#include "av1/encoder/dct.c"
 
 using libvpx_test::ACMRandom;
 

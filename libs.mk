@@ -55,12 +55,12 @@ CODEC_SRCS-yes += $(addprefix aom_util/,$(call enabled,UTIL_SRCS))
 
 #  VP10 make file
 ifeq ($(CONFIG_VP10),yes)
-  VP10_PREFIX=vp10/
+  VP10_PREFIX=av1/
   include $(SRC_PATH_BARE)/$(VP10_PREFIX)vp10_common.mk
 endif
 
 ifeq ($(CONFIG_VP10_ENCODER),yes)
-  VP10_PREFIX=vp10/
+  VP10_PREFIX=av1/
   include $(SRC_PATH_BARE)/$(VP10_PREFIX)vp10cx.mk
   CODEC_SRCS-yes += $(addprefix $(VP10_PREFIX),$(call enabled,VP10_CX_SRCS))
   CODEC_EXPORTS-yes += $(addprefix $(VP10_PREFIX),$(VP10_CX_EXPORTS))
@@ -73,7 +73,7 @@ ifeq ($(CONFIG_VP10_ENCODER),yes)
 endif
 
 ifeq ($(CONFIG_VP10_DECODER),yes)
-  VP10_PREFIX=vp10/
+  VP10_PREFIX=av1/
   include $(SRC_PATH_BARE)/$(VP10_PREFIX)vp10dx.mk
   CODEC_SRCS-yes += $(addprefix $(VP10_PREFIX),$(call enabled,VP10_DX_SRCS))
   CODEC_EXPORTS-yes += $(addprefix $(VP10_PREFIX),$(VP10_DX_EXPORTS))
@@ -84,7 +84,7 @@ ifeq ($(CONFIG_VP10_DECODER),yes)
   CODEC_DOC_SECTIONS += vp10 vp10_decoder
 endif
 
-VP10_PREFIX=vp10/
+VP10_PREFIX=av1/
 $(BUILD_PFX)$(VP10_PREFIX)%.c.o: CFLAGS += -Wextra
 
 ifeq ($(CONFIG_ENCODERS),yes)

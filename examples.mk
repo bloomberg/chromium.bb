@@ -188,8 +188,8 @@ ifeq ($(HAVE_ALT_TREE_LAYOUT),yes)
     INC_PATH-yes := $(SRC_PATH_BARE)/../include
 else
     LIB_PATH-yes                     += $(if $(BUILD_PFX),$(BUILD_PFX),.)
-    INC_PATH-$(CONFIG_VP10_DECODER)   += $(SRC_PATH_BARE)/vp10
-    INC_PATH-$(CONFIG_VP10_ENCODER)   += $(SRC_PATH_BARE)/vp10
+    INC_PATH-$(CONFIG_VP10_DECODER)   += $(SRC_PATH_BARE)/av1
+    INC_PATH-$(CONFIG_VP10_ENCODER)   += $(SRC_PATH_BARE)/av1
 endif
 INC_PATH-$(CONFIG_LIBYUV) += $(SRC_PATH_BARE)/third_party/libyuv/include
 LIB_PATH := $(call enabled,LIB_PATH)

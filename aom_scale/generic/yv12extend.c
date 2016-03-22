@@ -16,7 +16,7 @@
 #include "aom_ports/mem.h"
 #include "aom_scale/yv12config.h"
 #if CONFIG_VPX_HIGHBITDEPTH
-#include "vp10/common/common.h"
+#include "av1/common/common.h"
 #endif
 
 static void extend_plane(uint8_t *const src, int src_stride, int width,

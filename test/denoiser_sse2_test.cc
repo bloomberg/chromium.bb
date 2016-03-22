@@ -20,9 +20,9 @@
 
 #include "aom_scale/yv12config.h"
 #include "aom/vpx_integer.h"
-#include "vp10/common/reconinter.h"
-#include "vp10/encoder/context_tree.h"
-#include "vp10/encoder/denoiser.h"
+#include "av1/common/reconinter.h"
+#include "av1/encoder/context_tree.h"
+#include "av1/encoder/denoiser.h"
 
 using libvpx_test::ACMRandom;
 

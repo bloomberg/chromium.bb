@@ -20,8 +20,8 @@
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
-#include "vp10/common/entropy.h"
-#include "vp10/common/loopfilter.h"
+#include "av1/common/entropy.h"
+#include "av1/common/loopfilter.h"
 #include "aom/vpx_integer.h"
 
 using libvpx_test::ACMRandom;

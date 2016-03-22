@@ -14,7 +14,7 @@
 #include "test/decode_test_driver.h"
 #include "test/i420_video_source.h"
 
-#include "vp10/decoder/decoder.h"
+#include "av1/decoder/decoder.h"
 
 #include "aom/svc_context.h"
 #include "aom/vp8cx.h"

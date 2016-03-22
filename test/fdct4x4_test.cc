@@ -20,7 +20,7 @@
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
-#include "vp10/common/entropy.h"
+#include "av1/common/entropy.h"
 #include "aom/vpx_codec.h"
 #include "aom/vpx_integer.h"
 #include "aom_ports/mem.h"
