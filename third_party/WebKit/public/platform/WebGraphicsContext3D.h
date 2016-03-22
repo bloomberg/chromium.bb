@@ -159,49 +159,6 @@ public:
     // GL_EXT_debug_marker
     virtual void pushGroupMarkerEXT(const WGC3Dchar* marker) { }
 
-    // OpenGL ES 3.0 functions not represented by pre-existing extensions
-    virtual void beginTransformFeedback(WGC3Denum primitiveMode) { }
-    virtual void bindBufferBase(WGC3Denum target, WGC3Duint index, WebGLId buffer) { }
-    virtual void bindBufferRange(WGC3Denum target, WGC3Duint index, WebGLId buffer, WGC3Dintptr offset, WGC3Dsizeiptr size) { }
-    virtual void bindSampler(WGC3Duint unit, WebGLId sampler) { }
-    virtual void bindTransformFeedback(WGC3Denum target, WebGLId transformfeedback) { }
-    virtual void clearBufferfi(WGC3Denum buffer, WGC3Dint drawbuffer, WGC3Dfloat depth, WGC3Dint stencil) { }
-    virtual void clearBufferfv(WGC3Denum buffer, WGC3Dint drawbuffer, const WGC3Dfloat *value) { }
-    virtual void clearBufferiv(WGC3Denum buffer, WGC3Dint drawbuffer, const WGC3Dint *value) { }
-    virtual void clearBufferuiv(WGC3Denum buffer, WGC3Dint drawbuffer, const WGC3Duint *value) { }
-    virtual void compressedTexImage3D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dsizei depth, WGC3Dint border, WGC3Dsizei imageSize, const void *data) { }
-    virtual void compressedTexSubImage3D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint zoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Dsizei depth, WGC3Denum format, WGC3Dsizei imageSize, const void *data) { }
-    virtual void copyBufferSubData(WGC3Denum readTarget, WGC3Denum writeTarget, WGC3Dintptr readOffset, WGC3Dintptr writeOffset, WGC3Dsizeiptr size) { }
-    virtual void copyTexSubImage3D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint zoffset, WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) { }
-    virtual void endTransformFeedback(void) { }
-    virtual void getActiveUniformBlockName(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dchar *uniformBlockName) { }
-    virtual void getActiveUniformBlockiv(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Denum pname, WGC3Dint *params) { }
-    virtual void getActiveUniformsiv(WebGLId program, WGC3Dsizei uniformCount, const WGC3Duint *uniformIndices, WGC3Denum pname, WGC3Dint *params) { }
-    virtual void getBufferParameteri64v(WGC3Denum target, WGC3Denum pname, WGC3Dint64 *value) { }
-    virtual WGC3Dint getFragDataLocation(WebGLId program, const WGC3Dchar *name) { return -1; }
-    virtual void getInternalformativ(WGC3Denum target, WGC3Denum internalformat, WGC3Denum pname, WGC3Dsizei bufSize, WGC3Dint *params) { }
-    virtual void getSamplerParameterfv(WebGLId sampler, WGC3Denum pname, WGC3Dfloat *params) { }
-    virtual void getSamplerParameteriv(WebGLId sampler, WGC3Denum pname, WGC3Dint *params) { }
-    virtual void getTransformFeedbackVarying(WebGLId program, WGC3Duint index, WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dsizei *size, WGC3Denum *type, WGC3Dchar *name) { }
-    virtual WGC3Duint getUniformBlockIndex(WebGLId program, const WGC3Dchar *uniformBlockName) { return 0xFFFFFFFFu; /* GL_INVALID_INDEX */ }
-    virtual void getUniformIndices(WebGLId program, WGC3Dsizei uniformCount, const WGC3Dchar *const*uniformNames, WGC3Duint *uniformIndices) { }
-    virtual void getUniformuiv(WebGLId program, WGC3Dint location, WGC3Duint *params) { }
-    virtual void invalidateFramebuffer(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum *attachments) { }
-    virtual void invalidateSubFramebuffer(WGC3Denum target, WGC3Dsizei numAttachments, const WGC3Denum *attachments, WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) { }
-    virtual WGC3Dboolean isSampler(WebGLId sampler) { return false; }
-    virtual WGC3Dboolean isTransformFeedback(WebGLId transformfeedback) { return false; }
-    virtual void* mapBufferRange(WGC3Denum target, WGC3Dintptr offset, WGC3Dsizeiptr length, WGC3Dbitfield access) { return 0; }
-    virtual void pauseTransformFeedback(void) { }
-    virtual void programParameteri(WebGLId program, WGC3Denum pname, WGC3Dint value) { }
-    virtual void readBuffer(WGC3Denum src) { }
-    virtual void resumeTransformFeedback(void) { }
-    virtual void samplerParameterf(WebGLId sampler, WGC3Denum pname, WGC3Dfloat param) { }
-    virtual void samplerParameterfv(WebGLId sampler, WGC3Denum pname, const WGC3Dfloat *param) { }
-    virtual void samplerParameteri(WebGLId sampler, WGC3Denum pname, WGC3Dint param) { }
-    virtual void samplerParameteriv(WebGLId sampler, WGC3Denum pname, const WGC3Dint *param) { }
-    virtual void transformFeedbackVaryings(WebGLId program, WGC3Dsizei count, const WGC3Dchar *const*varyings, WGC3Denum bufferMode) { }
-    virtual WGC3Dboolean unmapBuffer(WGC3Denum target) { return false; }
-
     // Prefer getting a GLES2Interface off WebGraphicsContext3DProvider if possible, and avoid using WebGraphicsContext3D at all.
     virtual gpu::gles2::GLES2Interface* getGLES2Interface() = 0;
 };

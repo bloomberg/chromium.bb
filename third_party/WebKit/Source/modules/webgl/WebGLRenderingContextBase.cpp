@@ -4139,7 +4139,7 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionTy
         } else if (functionType == TexSubImage2DByGPU) {
             contextGL()->CopyTexSubImage2D(target, level, xoffset, yoffset, 0, 0, canvas->width(), canvas->height());
         } else if (functionType == TexSubImage3DByGPU) {
-            webContext()->copyTexSubImage3D(target, level, xoffset, yoffset, zoffset, 0, 0, canvas->width(), canvas->height());
+            contextGL()->CopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, 0, 0, canvas->width(), canvas->height());
         }
         contextGL()->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
         restoreCurrentFramebuffer();
