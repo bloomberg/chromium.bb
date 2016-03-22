@@ -692,6 +692,7 @@ def _WritePolicyConstantSource(policies, os, f, riskTags):
           '//  is_deprecated  is_device_policy  id    max_external_data_size\n')
   for policy in policies:
     if policy.is_supported:
+      f.write('  // %s\n' % policy.name)
       f.write('  { %-14s %-16s %3s, %24s,\n'
               '    %s },\n' % (
                   'true,' if policy.is_deprecated else 'false,',
