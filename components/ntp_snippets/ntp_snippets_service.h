@@ -22,6 +22,7 @@
 #include "components/ntp_snippets/ntp_snippets_scheduler.h"
 #include "components/suggestions/suggestions_service.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
@@ -33,15 +34,11 @@ namespace suggestions {
 class SuggestionsProfile;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace ntp_snippets {
 
 class NTPSnippetsServiceObserver;
 
-// Stores and vend fresh content data for the NTP.
+// Stores and vends fresh content data for the NTP.
 class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
  public:
   using NTPSnippetStorage = std::vector<scoped_ptr<NTPSnippet>>;
@@ -54,10 +51,10 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   using ParseJSONCallback = base::Callback<
       void(const std::string&, const SuccessCallback&, const ErrorCallback&)>;
 
-  // |application_language_code| should be a ISO 639-1 compliant string. Aka
+  // |application_language_code| should be a ISO 639-1 compliant string, e.g.
   // 'en' or 'en-US'. Note that this code should only specify the language, not
-  // the locale, so 'en_US' (english language with US locale) and 'en-GB_US'
-  // (British english person in the US) are not language code.
+  // the locale, so 'en_US' (English language with US locale) and 'en-GB_US'
+  // (British English person in the US) are not language codes.
   NTPSnippetsService(PrefService* pref_service,
                      suggestions::SuggestionsService* suggestions_service,
                      scoped_refptr<base::SequencedTaskRunner> file_task_runner,
@@ -67,12 +64,9 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
                      const ParseJSONCallback& parse_json_callback);
   ~NTPSnippetsService() override;
 
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   void Init(bool enabled);
-
-  // Fetches snippets from the server and adds them to the current ones.
-  void FetchSnippets();
 
   // Inherited from KeyedService.
   void Shutdown() override;
@@ -80,12 +74,19 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   // True once the data is loaded in memory and available to loop over.
   bool is_loaded() { return loaded_; }
 
+  // Fetches snippets from the server and adds them to the current ones.
+  void FetchSnippets();
+
+  // Discards the snippet with the given |url|, if it exists. Returns true iff
+  // a snippet was discarded.
+  bool DiscardSnippet(const GURL& url);
+
   // Observer accessors.
   void AddObserver(NTPSnippetsServiceObserver* observer);
   void RemoveObserver(NTPSnippetsServiceObserver* observer);
 
   // Number of snippets available. Can only be called when is_loaded() is true.
-  NTPSnippetStorage::size_type size() {
+  size_t size() const {
     DCHECK(loaded_);
     return snippets_.size();
   }
@@ -93,15 +94,15 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   // The snippets can be iterated upon only via a const_iterator. Recommended
   // way to iterate is as follows:
   //
-  // NTPSnippetsService service; // Assume is set.
+  // NTPSnippetsService* service; // Assume is set.
   //  for (auto& snippet : *service) {
-  //    // Snippet here is a const object.
+  //    // |snippet| here is a const object.
   //  }
-  const_iterator begin() {
+  const_iterator begin() const {
     DCHECK(loaded_);
     return const_iterator(snippets_.begin());
   }
-  const_iterator end() {
+  const_iterator end() const {
     DCHECK(loaded_);
     return const_iterator(snippets_.end());
   }
@@ -126,8 +127,13 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   bool LoadFromListValue(const base::ListValue& list);
 
   // TODO(treib): Investigate a better storage, maybe LevelDB or SQLite?
-  void LoadFromPrefs();
-  void StoreToPrefs();
+  void LoadSnippetsFromPrefs();
+  void StoreSnippetsToPrefs();
+
+  void LoadDiscardedSnippetsFromPrefs();
+  void StoreDiscardedSnippetsToPrefs();
+
+  bool HasDiscardedSnippet(const GURL& url) const;
 
   void RemoveExpiredSnippets();
 
@@ -141,8 +147,12 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
   // The SequencedTaskRunner on which file system operations will be run.
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
-  // All the suggestions.
+  // All current suggestions (i.e. not discarded ones).
   NTPSnippetStorage snippets_;
+
+  // Suggestions that the user discarded. We keep these around until they expire
+  // so we won't re-add them on the next fetch.
+  NTPSnippetStorage discarded_snippets_;
 
   // The ISO 639-1 code of the language used by the application.
   const std::string application_language_code_;
@@ -165,7 +175,7 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
 
   // The subscription to the snippets fetcher.
   scoped_ptr<NTPSnippetsFetcher::SnippetsAvailableCallbackList::Subscription>
-      snippets_fetcher_callback_;
+      snippets_fetcher_subscription_;
 
   // Timer that calls us back when the next snippet expires.
   base::OneShotTimer expiry_timer_;

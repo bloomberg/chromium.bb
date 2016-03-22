@@ -16,7 +16,7 @@
 #include "base/values.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/switches.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 
@@ -78,6 +78,38 @@ std::vector<std::string> GetSuggestionsHosts(
 
 const char kContentInfo[] = "contentInfo";
 
+// Parses snippets from |list| and adds them to |snippets|. Returns true on
+// success, false if anything went wrong.
+bool AddSnippetsFromListValue(const base::ListValue& list,
+                              NTPSnippetsService::NTPSnippetStorage* snippets) {
+  for (const base::Value* const value : list) {
+    const base::DictionaryValue* dict = nullptr;
+    if (!value->GetAsDictionary(&dict))
+      return false;
+
+    const base::DictionaryValue* content = nullptr;
+    if (!dict->GetDictionary(kContentInfo, &content))
+      return false;
+    scoped_ptr<NTPSnippet> snippet = NTPSnippet::CreateFromDictionary(*content);
+    if (!snippet)
+      return false;
+
+    snippets->push_back(std::move(snippet));
+  }
+  return true;
+}
+
+scoped_ptr<base::ListValue> SnippetsToListValue(
+    const NTPSnippetsService::NTPSnippetStorage& snippets) {
+  scoped_ptr<base::ListValue> list(new base::ListValue);
+  for (const auto& snippet : snippets) {
+    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+    dict->Set(kContentInfo, snippet->ToDictionary());
+    list->Append(std::move(dict));
+  }
+  return list;
+}
+
 }  // namespace
 
 NTPSnippetsService::NTPSnippetsService(
@@ -97,16 +129,16 @@ NTPSnippetsService::NTPSnippetsService(
       snippets_fetcher_(std::move(snippets_fetcher)),
       parse_json_callback_(parse_json_callback),
       weak_ptr_factory_(this) {
-  snippets_fetcher_callback_ = snippets_fetcher_->AddCallback(base::Bind(
+  snippets_fetcher_subscription_ = snippets_fetcher_->AddCallback(base::Bind(
       &NTPSnippetsService::OnSnippetsDownloaded, base::Unretained(this)));
 }
 
 NTPSnippetsService::~NTPSnippetsService() {}
 
 // static
-void NTPSnippetsService::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
+void NTPSnippetsService::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(prefs::kSnippets);
+  registry->RegisterListPref(prefs::kDiscardedSnippets);
 }
 
 void NTPSnippetsService::Init(bool enabled) {
@@ -119,7 +151,8 @@ void NTPSnippetsService::Init(bool enabled) {
     }
 
     // Get any existing snippets immediately from prefs.
-    LoadFromPrefs();
+    LoadDiscardedSnippetsFromPrefs();
+    LoadSnippetsFromPrefs();
 
     // If we don't have any snippets yet, start a fetch.
     if (snippets_.empty())
@@ -155,6 +188,20 @@ void NTPSnippetsService::FetchSnippets() {
   snippets_fetcher_->FetchSnippets(hosts);
 }
 
+bool NTPSnippetsService::DiscardSnippet(const GURL& url) {
+  auto it = std::find_if(snippets_.begin(), snippets_.end(),
+                         [&url](const scoped_ptr<NTPSnippet>& snippet) {
+                           return snippet->url() == url;
+                         });
+  if (it == snippets_.end())
+    return false;
+  discarded_snippets_.push_back(std::move(*it));
+  snippets_.erase(it);
+  StoreDiscardedSnippetsToPrefs();
+  StoreSnippetsToPrefs();
+  return true;
+}
+
 void NTPSnippetsService::AddObserver(NTPSnippetsServiceObserver* observer) {
   observers_.AddObserver(observer);
   if (loaded_)
@@ -178,7 +225,7 @@ void NTPSnippetsService::OnSuggestionsChanged(
                      }),
       snippets_.end());
 
-  StoreToPrefs();
+  StoreSnippetsToPrefs();
 
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceLoaded(this));
@@ -219,17 +266,13 @@ bool NTPSnippetsService::LoadFromValue(const base::Value& value) {
 }
 
 bool NTPSnippetsService::LoadFromListValue(const base::ListValue& list) {
-  for (const base::Value* const value : list) {
-    const base::DictionaryValue* dict = nullptr;
-    if (!value->GetAsDictionary(&dict))
-      return false;
-
-    const base::DictionaryValue* content = nullptr;
-    if (!dict->GetDictionary(kContentInfo, &content))
-      return false;
-    scoped_ptr<NTPSnippet> snippet = NTPSnippet::CreateFromDictionary(*content);
-    if (!snippet)
-      return false;
+  NTPSnippetStorage new_snippets;
+  if (!AddSnippetsFromListValue(list, &new_snippets))
+    return false;
+  for (scoped_ptr<NTPSnippet>& snippet : new_snippets) {
+    // If this snippet has previously been discarded, don't add it again.
+    if (HasDiscardedSnippet(snippet->url()))
+      continue;
 
     // If the snippet has no publish/expiry dates, fill in defaults.
     if (snippet->publish_date().is_null())
@@ -245,8 +288,8 @@ bool NTPSnippetsService::LoadFromListValue(const base::ListValue& list) {
     const GURL& url = snippet->url();
     auto it = std::find_if(snippets_.begin(), snippets_.end(),
                            [&url](const scoped_ptr<NTPSnippet>& old_snippet) {
-      return old_snippet->url() == url;
-    });
+                             return old_snippet->url() == url;
+                           });
     if (it != snippets_.end())
       *it = std::move(snippet);
     else
@@ -261,47 +304,68 @@ bool NTPSnippetsService::LoadFromListValue(const base::ListValue& list) {
   return true;
 }
 
-void NTPSnippetsService::LoadFromPrefs() {
-  // |pref_service_| can be null in tests.
-  if (!pref_service_)
-    return;
+void NTPSnippetsService::LoadSnippetsFromPrefs() {
   bool success = LoadFromListValue(*pref_service_->GetList(prefs::kSnippets));
   DCHECK(success) << "Failed to parse snippets from prefs";
 }
 
-void NTPSnippetsService::StoreToPrefs() {
-  // |pref_service_| can be null in tests.
-  if (!pref_service_)
-    return;
-  base::ListValue list;
-  for (const auto& snippet : snippets_) {
-    scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-    dict->Set(kContentInfo, snippet->ToDictionary());
-    list.Append(std::move(dict));
-  }
-  pref_service_->Set(prefs::kSnippets, list);
+void NTPSnippetsService::StoreSnippetsToPrefs() {
+  pref_service_->Set(prefs::kSnippets, *SnippetsToListValue(snippets_));
+}
+
+void NTPSnippetsService::LoadDiscardedSnippetsFromPrefs() {
+  discarded_snippets_.clear();
+  bool success = AddSnippetsFromListValue(
+      *pref_service_->GetList(prefs::kDiscardedSnippets),
+      &discarded_snippets_);
+  DCHECK(success) << "Failed to parse discarded snippets from prefs";
+}
+
+void NTPSnippetsService::StoreDiscardedSnippetsToPrefs() {
+  pref_service_->Set(prefs::kDiscardedSnippets,
+                     *SnippetsToListValue(discarded_snippets_));
+}
+
+bool NTPSnippetsService::HasDiscardedSnippet(const GURL& url) const {
+  auto it = std::find_if(discarded_snippets_.begin(), discarded_snippets_.end(),
+                         [&url](const scoped_ptr<NTPSnippet>& snippet) {
+                           return snippet->url() == url;
+                         });
+  return it != discarded_snippets_.end();
 }
 
 void NTPSnippetsService::RemoveExpiredSnippets() {
   base::Time expiry = base::Time::Now();
+
   snippets_.erase(
       std::remove_if(snippets_.begin(), snippets_.end(),
                      [&expiry](const scoped_ptr<NTPSnippet>& snippet) {
                        return snippet->expiry_date() <= expiry;
                      }),
       snippets_.end());
+  StoreSnippetsToPrefs();
 
-  StoreToPrefs();
+  discarded_snippets_.erase(
+      std::remove_if(discarded_snippets_.begin(), discarded_snippets_.end(),
+                     [&expiry](const scoped_ptr<NTPSnippet>& snippet) {
+                       return snippet->expiry_date() <= expiry;
+                     }),
+                     discarded_snippets_.end());
+  StoreDiscardedSnippetsToPrefs();
 
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceLoaded(this));
 
   // If there are any snippets left, schedule a timer for the next expiry.
-  if (snippets_.empty())
+  if (snippets_.empty() && discarded_snippets_.empty())
     return;
 
   base::Time next_expiry = base::Time::Max();
   for (const auto& snippet : snippets_) {
+    if (snippet->expiry_date() < next_expiry)
+      next_expiry = snippet->expiry_date();
+  }
+  for (const auto& snippet : discarded_snippets_) {
     if (snippet->expiry_date() < next_expiry)
       next_expiry = snippet->expiry_date();
   }

@@ -22,7 +22,6 @@ source_set("ntp_snippets") {
   public_deps = [
     "//base",
     "//components/keyed_service/core",
-    "//components/pref_registry",
     "//components/prefs",
     "//components/signin/core/browser",
     "//components/suggestions",

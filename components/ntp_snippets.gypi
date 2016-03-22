@@ -17,7 +17,6 @@
         '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
         'keyed_service_core',
-        'pref_registry',
         'prefs/prefs.gyp:prefs',
         'signin_core_browser',
         'suggestions',

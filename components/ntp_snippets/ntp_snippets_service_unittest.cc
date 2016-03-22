@@ -12,6 +12,7 @@
 #include "components/ntp_snippets/ntp_snippet.h"
 #include "components/ntp_snippets/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/ntp_snippets_service.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
@@ -108,11 +109,18 @@ class SnippetObserver : public NTPSnippetsServiceObserver {
 class NTPSnippetsServiceTest : public testing::Test {
  public:
   NTPSnippetsServiceTest()
-      : signin_client_(new TestSigninClient(nullptr)),
+      : pref_service_(new TestingPrefServiceSimple()),
+        signin_client_(new TestSigninClient(nullptr)),
         account_tracker_(new AccountTrackerService()) {}
   ~NTPSnippetsServiceTest() override {}
 
   void SetUp() override {
+    NTPSnippetsService::RegisterProfilePrefs(pref_service_->registry());
+
+    CreateSnippetsService();
+  }
+
+  void CreateSnippetsService() {
     scoped_refptr<base::SingleThreadTaskRunner> task_runner(
         base::ThreadTaskRunnerHandle::Get());
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
@@ -123,7 +131,7 @@ class NTPSnippetsServiceTest : public testing::Test {
         new FakeProfileOAuth2TokenService();
 
     service_.reset(new NTPSnippetsService(
-        nullptr, nullptr, task_runner, std::string("fr"), nullptr,
+        pref_service_.get(), nullptr, task_runner, std::string("fr"), nullptr,
         make_scoped_ptr(
             new NTPSnippetsFetcher(task_runner, signin_manager, token_service,
                                    std::move(request_context_getter))),
@@ -145,6 +153,7 @@ class NTPSnippetsServiceTest : public testing::Test {
 
  private:
   base::MessageLoop message_loop_;
+  scoped_ptr<TestingPrefServiceSimple> pref_service_;
   scoped_ptr<TestSigninClient> signin_client_;
   scoped_ptr<AccountTrackerService> account_tracker_;
   scoped_ptr<NTPSnippetsService> service_;
@@ -198,6 +207,35 @@ TEST_F(NTPSnippetsServiceTest, Full) {
         base::Time::FromUTCExploded({2015, 11, 4, 25, 13, 46, 45});
     EXPECT_EQ(then, snippet.publish_date());
   }
+}
+
+TEST_F(NTPSnippetsServiceTest, Discard) {
+  std::string json_str(
+      "{ \"recos\": [ { \"contentInfo\": { \"url\" : \"http://site.com\" }}]}");
+  ASSERT_TRUE(LoadFromJSONString(json_str));
+  ASSERT_TRUE(service()->is_loaded());
+
+  ASSERT_EQ(1u, service()->size());
+
+  // Discarding a non-existent snippet shouldn't do anything.
+  EXPECT_FALSE(service()->DiscardSnippet(GURL("http://othersite.com")));
+  EXPECT_EQ(1u, service()->size());
+
+  // Discard the snippet.
+  EXPECT_TRUE(service()->DiscardSnippet(GURL("http://site.com")));
+  EXPECT_EQ(0u, service()->size());
+
+  // Make sure that fetching the same snippet again does not re-add it.
+  ASSERT_TRUE(LoadFromJSONString(json_str));
+  EXPECT_EQ(0u, service()->size());
+
+  // The snippet should stay discarded even after re-creating the service.
+  CreateSnippetsService();
+  // Init the service, so the prefs get loaded.
+  // TODO(treib): This should happen in CreateSnippetsService.
+  service()->Init(true);
+  ASSERT_TRUE(LoadFromJSONString(json_str));
+  EXPECT_EQ(0u, service()->size());
 }
 
 TEST_F(NTPSnippetsServiceTest, CreationTimestampParseFail) {

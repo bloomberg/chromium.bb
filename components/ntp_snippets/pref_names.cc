@@ -8,6 +8,7 @@ namespace ntp_snippets {
 namespace prefs {
 
 const char kSnippets[] = "ntp_snippets.snippets";
+const char kDiscardedSnippets[] = "ntp_snippets.discarded_snippets";
 
 }  // namespace prefs
 }  // namespace ntp_snippets

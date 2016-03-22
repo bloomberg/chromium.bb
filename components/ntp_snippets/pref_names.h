@@ -9,6 +9,7 @@ namespace ntp_snippets {
 namespace prefs {
 
 extern const char kSnippets[];
+extern const char kDiscardedSnippets[];
 
 }  // namespace prefs
 }  // namespace ntp_snippets
