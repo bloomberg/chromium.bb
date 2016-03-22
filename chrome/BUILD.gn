@@ -313,15 +313,13 @@ if (is_mac || is_win) {
         "//chrome/app/theme:chrome_unscaled_resources",
         "//chrome_elf",
         "//components/crash/content/app",
+        "//components/policy",
         "//content/app/resources",
         "//crypto",
         "//net:net_resources",
         "//third_party/wtl",
         "//ui/views",
       ]
-      if (enable_configuration_policy) {
-        deps += [ "//components/policy" ]
-      }
       if (current_cpu == "x86") {
         # TODO(GYP) bug 512861: Lots of VCLinkerTool stuff on Windows.
         #deps += [ 'chrome_user32_delay_imports' ]  TODO(GYP)
@@ -443,9 +441,7 @@ if (is_mac || is_win) {
         }
       }
 
-      if (enable_configuration_policy) {
-        deps += [ "//chrome/browser/policy:path_parser" ]
-      }
+      deps += [ "//chrome/browser/policy:path_parser" ]
 
       if (enable_plugins && enable_pdf) {
         deps += [ "//pdf" ]

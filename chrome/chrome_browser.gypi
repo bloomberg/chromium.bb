@@ -426,6 +426,46 @@
       'browser/platform_util_internal.h',
       'browser/platform_util_mac.mm',
       'browser/platform_util_win.cc',
+      'browser/policy/chrome_browser_policy_connector.cc',
+      'browser/policy/chrome_browser_policy_connector.h',
+      'browser/policy/cloud/cloud_policy_invalidator.cc',
+      'browser/policy/cloud/cloud_policy_invalidator.h',
+      'browser/policy/cloud/policy_header_service_factory.cc',
+      'browser/policy/cloud/policy_header_service_factory.h',
+      'browser/policy/cloud/remote_commands_invalidator.cc',
+      'browser/policy/cloud/remote_commands_invalidator.h',
+      'browser/policy/cloud/remote_commands_invalidator_impl.cc',
+      'browser/policy/cloud/remote_commands_invalidator_impl.h',
+      'browser/policy/cloud/user_cloud_policy_invalidator.cc',
+      'browser/policy/cloud/user_cloud_policy_invalidator.h',
+      'browser/policy/cloud/user_cloud_policy_invalidator_factory.cc',
+      'browser/policy/cloud/user_cloud_policy_invalidator_factory.h',
+      'browser/policy/configuration_policy_handler_list_factory.cc',
+      'browser/policy/configuration_policy_handler_list_factory.h',
+      'browser/policy/device_management_service_configuration.cc',
+      'browser/policy/device_management_service_configuration.h',
+      'browser/policy/file_selection_dialogs_policy_handler.cc',
+      'browser/policy/file_selection_dialogs_policy_handler.h',
+      'browser/policy/javascript_policy_handler.cc',
+      'browser/policy/javascript_policy_handler.h',
+      'browser/policy/managed_bookmarks_policy_handler.cc',
+      'browser/policy/managed_bookmarks_policy_handler.h',
+      'browser/policy/network_prediction_policy_handler.cc',
+      'browser/policy/network_prediction_policy_handler.h',
+      'browser/policy/policy_helpers.cc',
+      'browser/policy/policy_helpers.h',
+      'browser/policy/profile_policy_connector.cc',
+      'browser/policy/profile_policy_connector.h',
+      'browser/policy/profile_policy_connector_factory.cc',
+      'browser/policy/profile_policy_connector_factory.h',
+      'browser/policy/schema_registry_service.cc',
+      'browser/policy/schema_registry_service.h',
+      'browser/policy/schema_registry_service_factory.cc',
+      'browser/policy/schema_registry_service_factory.h',
+      'browser/sessions/restore_on_startup_policy_handler.cc',
+      'browser/sessions/restore_on_startup_policy_handler.h',
+      'browser/profiles/incognito_mode_policy_handler.cc',
+      'browser/profiles/incognito_mode_policy_handler.h',
       'browser/prerender/prerender_config.cc',
       'browser/prerender/prerender_config.h',
       'browser/prerender/prerender_contents.cc',
@@ -1028,6 +1068,8 @@
     # Everything but Android, iOS, and CrOS.
     'chrome_browser_desktop_sources': [
       'browser/platform_util.cc',
+      'browser/policy/cloud/user_policy_signin_service.cc',
+      'browser/policy/cloud/user_policy_signin_service.h',
       'browser/profiles/avatar_menu_actions_desktop.cc',
       'browser/profiles/avatar_menu_actions_desktop.h',
       'browser/profiles/avatar_menu_desktop.cc',
@@ -1050,6 +1092,12 @@
       'browser/signin/signin_global_error.h',
       'browser/signin/signin_global_error_factory.cc',
       'browser/signin/signin_global_error_factory.h',
+      'browser/sync/sync_global_error.cc',
+      'browser/sync/sync_global_error.h',
+      'browser/sync/sync_global_error_factory.cc',
+      'browser/sync/sync_global_error_factory.h',
+      'browser/upgrade_detector_impl.cc',
+      'browser/upgrade_detector_impl.h',
     ],
     # Miscellaneous files that were brought up on iOS before the decision not
     # to use chrome/ for iOS. These, plus a few of the directory-specific
@@ -1096,6 +1144,8 @@
     'chrome_browser_mobile_sources': [
       'browser/chrome_browser_field_trials_mobile.cc',
       'browser/chrome_browser_field_trials_mobile.h',
+      'browser/policy/cloud/user_policy_signin_service_mobile.cc',
+      'browser/policy/cloud/user_policy_signin_service_mobile.h',
     ],
     # Everything but Android and iOS.
     'chrome_browser_non_mobile_sources': [
@@ -2268,87 +2318,14 @@
       'browser/plugins/plugins_resource_service.cc',
       'browser/plugins/plugins_resource_service.h',
     ],
-    # Files to compile when configuration policy is disabled. Note that the
-    # connector factory is also used when policy is enabled.
-    'chrome_browser_policy_disabled_sources': [
-      'browser/policy/profile_policy_connector.h',
-      'browser/policy/profile_policy_connector_factory.cc',
-      'browser/policy/profile_policy_connector_factory.h',
-      'browser/policy/profile_policy_connector_stub.cc',
-    ],
-    # Files to use when configuration policy is enabled that are also shared
-    # with iOS. Non-iOS policy files are below.
-    'chrome_browser_policy_shared_with_ios_sources': [
-      'browser/policy/cloud/cloud_policy_invalidator.cc',
-      'browser/policy/cloud/cloud_policy_invalidator.h',
-      'browser/policy/cloud/policy_header_service_factory.cc',
-      'browser/policy/cloud/policy_header_service_factory.h',
-      'browser/policy/cloud/user_cloud_policy_invalidator.cc',
-      'browser/policy/cloud/user_cloud_policy_invalidator.h',
-      'browser/policy/cloud/user_cloud_policy_invalidator_factory.cc',
-      'browser/policy/cloud/user_cloud_policy_invalidator_factory.h',
-      'browser/policy/configuration_policy_handler_list_factory.cc',
-      'browser/policy/configuration_policy_handler_list_factory.h',
-      'browser/policy/managed_bookmarks_policy_handler.cc',
-      'browser/policy/managed_bookmarks_policy_handler.h',
-      'browser/policy/policy_helpers.cc',
-      'browser/policy/policy_helpers.h',
-      'browser/policy/profile_policy_connector.cc',
-      'browser/policy/profile_policy_connector.h',
-      'browser/policy/profile_policy_connector_factory.cc',
-      'browser/policy/profile_policy_connector_factory.h',
-      'browser/policy/schema_registry_service.cc',
-      'browser/policy/schema_registry_service.h',
-      'browser/policy/schema_registry_service_factory.cc',
-      'browser/policy/schema_registry_service_factory.h',
-      'browser/profiles/incognito_mode_policy_handler.cc',
-      'browser/profiles/incognito_mode_policy_handler.h',
-    ],
-    # Same as the "policy shared with ios" section above, but these files are
-    # not used on ChromeOS.
-    'chrome_browser_policy_shared_with_ios_not_chromeos_sources': [
+    # Applies to all platforms but ChromeOS.
+    'chrome_browser_non_chromeos_sources': [
       'browser/policy/cloud/user_cloud_policy_manager_factory.cc',
       'browser/policy/cloud/user_cloud_policy_manager_factory.h',
       'browser/policy/cloud/user_policy_signin_service_base.cc',
       'browser/policy/cloud/user_policy_signin_service_base.h',
       'browser/policy/cloud/user_policy_signin_service_factory.cc',
       'browser/policy/cloud/user_policy_signin_service_factory.h',
-    ],
-    # Files to use when configuration policy is enabled that are not shared
-    # with iOS.
-    'chrome_browser_policy_non_ios_sources': [
-      'browser/policy/chrome_browser_policy_connector.cc',
-      'browser/policy/chrome_browser_policy_connector.h',
-      'browser/policy/cloud/remote_commands_invalidator.cc',
-      'browser/policy/cloud/remote_commands_invalidator.h',
-      'browser/policy/cloud/remote_commands_invalidator_impl.cc',
-      'browser/policy/cloud/remote_commands_invalidator_impl.h',
-      'browser/policy/device_management_service_configuration.cc',
-      'browser/policy/device_management_service_configuration.h',
-      'browser/policy/file_selection_dialogs_policy_handler.cc',
-      'browser/policy/file_selection_dialogs_policy_handler.h',
-      'browser/policy/javascript_policy_handler.cc',
-      'browser/policy/javascript_policy_handler.h',
-      'browser/policy/network_prediction_policy_handler.cc',
-      'browser/policy/network_prediction_policy_handler.h',
-      'browser/sessions/restore_on_startup_policy_handler.cc',
-      'browser/sessions/restore_on_startup_policy_handler.h',
-    ],
-    # Policy sources used only on Android and iOS (CrOS not counted).
-    'chrome_browser_policy_mobile_sources': [
-      'browser/policy/cloud/user_policy_signin_service_mobile.cc',
-      'browser/policy/cloud/user_policy_signin_service_mobile.h',
-    ],
-    # Policy sources used only on desktop OS's (CrOS not counted).
-    'chrome_browser_policy_desktop_sources': [
-      'browser/policy/cloud/user_policy_signin_service.cc',
-      'browser/policy/cloud/user_policy_signin_service.h',
-      'browser/sync/sync_global_error.cc',
-      'browser/sync/sync_global_error.h',
-      'browser/sync/sync_global_error_factory.cc',
-      'browser/sync/sync_global_error_factory.h',
-      'browser/upgrade_detector_impl.cc',
-      'browser/upgrade_detector_impl.h',
     ],
     'chrome_browser_predictor_sources': [
       'browser/predictors/autocomplete_action_predictor.cc',
@@ -3166,6 +3143,7 @@
         '../components/components.gyp:browser_sync_common',
         '../components/components.gyp:captive_portal',
         '../components/components.gyp:cloud_devices_common',
+        '../components/components.gyp:cloud_policy_proto',
         '../components/components.gyp:component_metrics_proto',
         '../components/components.gyp:component_updater',
         '../components/components.gyp:content_settings_content_common',
@@ -3196,6 +3174,7 @@
         '../components/components.gyp:os_crypt',
         '../components/components.gyp:password_manager_core_browser',
         '../components/components.gyp:password_manager_core_common',
+        '../components/components.gyp:policy',
         '../components/components.gyp:policy_component',
         '../components/components.gyp:proxy_config',
         '../components/components.gyp:query_parser',
@@ -3451,13 +3430,13 @@
             'browser/net/net_error_diagnostics_dialog_generic.cc',
           ],
         }],
-        ['OS!="android" and OS!="ios" and chromeos==0 and configuration_policy==1', {
+        ['OS!="android" and OS!="ios" and chromeos==0', {
           'sources': [
             'browser/net/disk_cache_dir_policy_handler.cc',
             'browser/net/disk_cache_dir_policy_handler.h',
           ],
         }],
-        ['OS!="android" and OS!="ios" and configuration_policy==1', {
+        ['OS!="android" and OS!="ios"', {
           'sources': [
             'browser/download/download_dir_policy_handler.cc',
             'browser/download/download_dir_policy_handler.h',
@@ -3485,6 +3464,8 @@
             'browser/signin/chrome_signin_status_metrics_provider_delegate.cc',
             'browser/signin/chrome_signin_status_metrics_provider_delegate.h',
           ],
+        }, {  # Non-ChromeOS
+          'sources': [ '<@(chrome_browser_non_chromeos_sources)' ],
         }],
         ['enable_extensions==1', {
           'dependencies': [
@@ -3549,35 +3530,6 @@
           'defines': [
             'DEBUG_DEVTOOLS=1',
           ],
-        }],
-        ['configuration_policy==1', {
-          'sources': [ '<@(chrome_browser_policy_shared_with_ios_sources)' ],
-          'dependencies': [
-            '../components/components.gyp:cloud_policy_proto',
-            '../components/components.gyp:policy',
-          ],
-          'conditions': [
-            ['OS!="ios"', {
-              'sources': [ '<@(chrome_browser_policy_non_ios_sources)' ],
-            }],
-            ['chromeos==0', {
-              'sources': [
-                '<@(chrome_browser_policy_shared_with_ios_not_chromeos_sources)',
-              ],
-            }],
-            ['OS=="win" or OS=="mac" or desktop_linux==1', {
-              'sources': [ '<@(chrome_browser_policy_desktop_sources)' ],
-            }],
-            ['OS=="android" or OS=="ios"', {  # Mobile.
-              'sources': [ '<@(chrome_browser_policy_mobile_sources)' ],
-            }, {  # Non-mobile.
-              'dependencies': [
-                'policy_path_parser',
-              ],
-            }],
-          ],
-        }, {  # configuration_policy==0
-          'sources': [ '<@(chrome_browser_policy_disabled_sources)' ],
         }],
         ['enable_plugins==1', {
           'dependencies': [
@@ -3766,11 +3718,12 @@
         }],
         ['OS=="android" or OS=="ios"', {
           'sources': [ '<@(chrome_browser_mobile_sources)' ],
-        }, {  # OS!="android" and OS!="ios"
+        }, {  # OS!="android" and OS!="ios" (non-Mobile).
           'sources': [ '<@(chrome_browser_non_mobile_sources)' ],
           'dependencies': [
             '../components/components.gyp:feedback_component',
             '../net/net.gyp:net_browser_services',
+            'policy_path_parser',
             'profile_reset_report_proto',
           ]
         }],

@@ -366,6 +366,12 @@
       'browser/ui/webui/omnibox/omnibox_ui_handler.h',
       'browser/ui/webui/password_manager_internals/password_manager_internals_ui.cc',
       'browser/ui/webui/password_manager_internals/password_manager_internals_ui.h',
+      'browser/ui/webui/policy_material_design_ui.cc',
+      'browser/ui/webui/policy_material_design_ui.h',
+      'browser/ui/webui/policy_ui.cc',
+      'browser/ui/webui/policy_ui.h',
+      'browser/ui/webui/policy_ui_handler.cc',
+      'browser/ui/webui/policy_ui_handler.h',
       'browser/ui/webui/predictors/predictors_handler.cc',
       'browser/ui/webui/predictors/predictors_handler.h',
       'browser/ui/webui/predictors/predictors_ui.cc',
@@ -2815,14 +2821,6 @@
       'browser/ui/webui/plugins/plugins_ui.cc',
       'browser/ui/webui/plugins/plugins_ui.h',
     ],
-    'chrome_browser_ui_policy_sources': [
-      'browser/ui/webui/policy_material_design_ui.cc',
-      'browser/ui/webui/policy_material_design_ui.h',
-      'browser/ui/webui/policy_ui.cc',
-      'browser/ui/webui/policy_ui.h',
-      'browser/ui/webui/policy_ui_handler.cc',
-      'browser/ui/webui/policy_ui_handler.h',
-    ],
     'chrome_browser_ui_print_preview_sources': [
       'browser/ui/webui/print_preview/extension_printer_handler.cc',
       'browser/ui/webui/print_preview/extension_printer_handler.h',
@@ -2886,6 +2884,7 @@
         '../components/components.gyp:omnibox_common',
         '../components/components.gyp:onc_component',
         '../components/components.gyp:password_manager_core_browser',
+        '../components/components.gyp:policy',
         '../components/components.gyp:sync_driver',
         '../components/components.gyp:toolbar',
         '../components/components.gyp:ui_zoom',
@@ -2994,12 +2993,6 @@
         ['debug_devtools==1', {
           'defines': [
             'DEBUG_DEVTOOLS=1',
-          ],
-        }],
-        ['configuration_policy==1', {
-          'sources': [ '<@(chrome_browser_ui_policy_sources)' ],
-          'dependencies': [
-            '../components/components.gyp:policy',
           ],
         }],
         ['enable_plugins==1', {

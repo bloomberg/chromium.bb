@@ -60,9 +60,6 @@ android_resources("chrome_java_resources") {
     "//third_party/android_data_chart:android_data_chart_java_resources",
     "//third_party/android_media:android_media_resources",
   ]
-  if (!enable_configuration_policy) {
-    deps -= [ "//components/policy:app_restrictions_resources" ]
-  }
   custom_package = "org.chromium.chrome"
 }
 
