@@ -19,7 +19,7 @@ if (is_nacl) {
       "//gpu/command_buffer/client",
       "//gpu/command_buffer/client:gles2_implementation",
       "//gpu/command_buffer/common",
-      "//gpu/ipc/common",
+      "//gpu/ipc/common:command_buffer_traits",
       "//ipc",
       "//media:shared_memory_support",
       "//native_client/src/shared/gio",

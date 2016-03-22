@@ -137,7 +137,7 @@ test("ppapi_unittests") {
   deps = [
     "//base/test:run_all_unittests",
     "//base/test:test_support",
-    "//gpu/ipc/common",
+    "//gpu/ipc/common:command_buffer_traits",
     "//ipc",
     "//ipc:test_support",
     "//media:shared_memory_support",

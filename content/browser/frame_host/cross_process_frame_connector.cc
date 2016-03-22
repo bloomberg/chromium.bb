@@ -17,7 +17,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/frame_messages.h"
-#include "content/common/gpu/gpu_messages.h"
+#include "gpu/ipc/common/gpu_messages.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace content {

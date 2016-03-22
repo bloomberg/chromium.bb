@@ -8,7 +8,7 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_channel_test_common.h"
-#include "content/common/gpu/gpu_messages.h"
+#include "gpu/ipc/common/gpu_messages.h"
 #include "ipc/ipc_test_sink.h"
 
 namespace content {
@@ -75,7 +75,7 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 0;
-  init_params.stream_priority = GpuStreamPriority::NORMAL;
+  init_params.stream_priority = gpu::GpuStreamPriority::NORMAL;
   init_params.attribs = std::vector<int>();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
@@ -103,7 +103,7 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferDisallowed) {
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 0;
-  init_params.stream_priority = GpuStreamPriority::NORMAL;
+  init_params.stream_priority = gpu::GpuStreamPriority::NORMAL;
   init_params.attribs = std::vector<int>();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
@@ -126,7 +126,7 @@ TEST_F(GpuChannelTest, CreateOffscreenCommandBuffer) {
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = 0;
-  init_params.stream_priority = GpuStreamPriority::NORMAL;
+  init_params.stream_priority = gpu::GpuStreamPriority::NORMAL;
   init_params.attribs = std::vector<int>();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
@@ -151,7 +151,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId1;
-  init_params.stream_priority = GpuStreamPriority::NORMAL;
+  init_params.stream_priority = gpu::GpuStreamPriority::NORMAL;
   init_params.attribs = std::vector<int>();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
@@ -170,7 +170,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
 
   init_params.share_group_id = kRouteId1;
   init_params.stream_id = kStreamId2;
-  init_params.stream_priority = GpuStreamPriority::NORMAL;
+  init_params.stream_priority = gpu::GpuStreamPriority::NORMAL;
   init_params.attribs = std::vector<int>();
   init_params.active_url = GURL();
   init_params.gpu_preference = gfx::PreferIntegratedGpu;
@@ -192,7 +192,7 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   // Create first context.
   int32_t kRouteId1 = 1;
   int32_t kStreamId1 = 1;
-  GpuStreamPriority kStreamPriority1 = GpuStreamPriority::NORMAL;
+  gpu::GpuStreamPriority kStreamPriority1 = gpu::GpuStreamPriority::NORMAL;
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId1;
@@ -216,7 +216,7 @@ TEST_F(GpuChannelTest, StreamLifetime) {
   // Create second context in same share group but different stream.
   int32_t kRouteId2 = 2;
   int32_t kStreamId2 = 2;
-  GpuStreamPriority kStreamPriority2 = GpuStreamPriority::LOW;
+  gpu::GpuStreamPriority kStreamPriority2 = gpu::GpuStreamPriority::LOW;
 
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId2;
@@ -243,7 +243,7 @@ TEST_F(GpuChannelTest, RealTimeStreamsDisallowed) {
   // Create first context.
   int32_t kRouteId = 1;
   int32_t kStreamId = 1;
-  GpuStreamPriority kStreamPriority = GpuStreamPriority::REAL_TIME;
+  gpu::GpuStreamPriority kStreamPriority = gpu::GpuStreamPriority::REAL_TIME;
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId;
@@ -270,7 +270,7 @@ TEST_F(GpuChannelTest, RealTimeStreamsAllowed) {
   // Create first context.
   int32_t kRouteId = 1;
   int32_t kStreamId = 1;
-  GpuStreamPriority kStreamPriority = GpuStreamPriority::REAL_TIME;
+  gpu::GpuStreamPriority kStreamPriority = gpu::GpuStreamPriority::REAL_TIME;
   GPUCreateCommandBufferConfig init_params;
   init_params.share_group_id = MSG_ROUTING_NONE;
   init_params.stream_id = kStreamId;

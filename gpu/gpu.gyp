@@ -595,11 +595,22 @@
           'msvs_disabled_warnings': [4267, ],
         },
         {
+          # GN version: //gpu/ipc/common:command_buffer_traits
+          'target_name': 'command_buffer_traits',
+          'type': 'static_library',
+          'includes': [
+            'command_buffer_traits.gypi',
+          ],
+        },
+        {
           # GN version: //gpu/ipc/common
           'target_name': 'gpu_ipc_common',
           'type': 'static_library',
           'includes': [
             'gpu_ipc_common.gypi',
+          ],
+          'dependencies': [
+            'command_buffer_traits',
           ],
         },
         {
@@ -632,6 +643,7 @@
             'command_buffer_client.gypi',
             'command_buffer_common.gypi',
             'command_buffer_service.gypi',
+            'command_buffer_traits.gypi',
             'gles2_cmd_helper.gypi',
             'gpu_config.gypi',
             'gpu_ipc_common.gypi',
@@ -687,6 +699,14 @@
           ],
         },
         {
+          # GN version: //gpu/ipc/common:command_buffer_traits
+          'target_name': 'command_buffer_traits',
+          'type': 'none',
+          'dependencies': [
+            'gpu',
+          ],
+        },
+        {
           # GN version: //gpu/ipc/common
           'target_name': 'gpu_ipc_common',
           'type': 'none',
@@ -721,12 +741,37 @@
           },
         },
         {
+          'target_name': 'command_buffer_traits_win64',
+          'type': 'static_library',
+          'variables': {
+            'nacl_win64_target': 1,
+          },
+          'includes': [
+            'command_buffer_traits.gypi',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base_win64',
+            '../ipc/ipc.gyp:ipc_win64',
+            'command_buffer_common_win64',
+          ],
+          'defines': [
+            '<@(nacl_win64_defines)',
+            'GPU_IMPLEMENTATION',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+        {
           'target_name': 'gpu_ipc_common_win64',
           'type': 'static_library',
           'variables': {
             'nacl_win64_target': 1,
           },
           'includes': [
+            'command_buffer_traits.gypi',
             'gpu_ipc_common.gypi',
           ],
           'dependencies': [

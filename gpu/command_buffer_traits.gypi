@@ -7,26 +7,17 @@
     '../base/base.gyp:base',
     '../ipc/ipc.gyp:ipc',
     '../third_party/khronos/khronos.gyp:khronos_headers',
-    '../ui/base/ui_base.gyp:ui_base',
-    '../ui/events/events.gyp:events_base',
-    '../ui/events/events.gyp:events_ipc',
-    '../ui/gfx/gfx.gyp:gfx_geometry',
-    '../ui/gfx/ipc/gfx_ipc.gyp:gfx_ipc',
-    '../ui/gl/gl.gyp:gl',
-    '../url/url.gyp:url_lib',
-    '../url/ipc/url_ipc.gyp:url_ipc',
   ],
   'include_dirs': [
     '..',
   ],
   'sources': [
-    "ipc/common/gpu_message_generator.cc",
-    "ipc/common/gpu_message_generator.h",
-    "ipc/common/gpu_messages.h",
-    'ipc/common/gpu_param_traits.cc',
-    'ipc/common/gpu_param_traits.h',
-    'ipc/common/gpu_param_traits_macros.h',
-    "ipc/common/gpu_stream_constants.h",
+    'ipc/common/gpu_command_buffer_traits.cc',
+    'ipc/common/gpu_command_buffer_traits.h',
+    'ipc/common/id_type_traits.h',
+    'ipc/common/memory_stats.cc',
+    'ipc/common/memory_stats.h',
+    'ipc/common/surface_handle.h',
   ],
   'conditions': [
     # This section applies to gpu_ipc_win64, used by the NaCl Win64 helper
@@ -38,5 +29,13 @@
         '../ipc/ipc.gyp:ipc',
       ],
     }],
-	],
+    ['OS=="android"', {
+      'sources': [
+        'ipc/common/android/surface_texture_manager.cc',
+        'ipc/common/android/surface_texture_manager.h',
+        'ipc/common/android/surface_texture_peer.cc',
+        'ipc/common/android/surface_texture_peer.h',
+      ]
+    }]
+  ],
 }

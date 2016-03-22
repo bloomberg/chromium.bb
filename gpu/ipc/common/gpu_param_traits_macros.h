@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_GPU_PARAM_TRAITS_MACROS_H_
-#define CONTENT_COMMON_GPU_GPU_PARAM_TRAITS_MACROS_H_
+#ifndef GPU_IPC_COMMON_GPU_PARAM_TRAITS_MACROS_H_
+#define GPU_IPC_COMMON_GPU_PARAM_TRAITS_MACROS_H_
 
-#include "content/common/content_export.h"
-#include "content/common/gpu/gpu_stream_constants.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/gpu_export.h"
+#include "gpu/ipc/common/gpu_stream_constants.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -18,7 +18,7 @@
 #include "url/ipc/url_param_traits.h"
 
 #undef IPC_MESSAGE_EXPORT
-#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
+#define IPC_MESSAGE_EXPORT GPU_EXPORT
 
 IPC_STRUCT_TRAITS_BEGIN(gpu::VideoDecodeAcceleratorSupportedProfile)
   IPC_STRUCT_TRAITS_MEMBER(profile)
@@ -60,8 +60,7 @@ IPC_STRUCT_TRAITS_BEGIN(gfx::GpuMemoryBufferId)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::GpuPreference, gfx::GpuPreferenceLast)
-IPC_ENUM_TRAITS_MAX_VALUE(content::GpuStreamPriority,
-                          content::GpuStreamPriority::LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(gpu::GpuStreamPriority, gpu::GpuStreamPriority::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::SwapResult, gfx::SwapResult::SWAP_RESULT_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::MemoryAllocation::PriorityCutoff,
                           gpu::MemoryAllocation::CUTOFF_LAST)
@@ -133,4 +132,4 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::MemoryAllocation)
   IPC_STRUCT_TRAITS_MEMBER(priority_cutoff_when_visible)
 IPC_STRUCT_TRAITS_END()
 
-#endif  // CONTENT_COMMON_GPU_GPU_PARAM_TRAITS_MACROS_H_
+#endif  // GPU_IPC_COMMON_GPU_PARAM_TRAITS_MACROS_H_

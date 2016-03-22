@@ -8,9 +8,9 @@
 #include "cc/output/context_provider.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "content/renderer/gpu/stream_texture_host_android.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/ipc/common/gpu_messages.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {

@@ -5,6 +5,7 @@
 #ifndef GPU_IPC_COMMON_SURFACE_HANDLE_H_
 #define GPU_IPC_COMMON_SURFACE_HANDLE_H_
 
+#include "build/build_config.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {

@@ -21,8 +21,8 @@
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
-#include "content/common/gpu/gpu_stream_constants.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/ipc/common/gpu_stream_constants.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"
@@ -77,9 +77,9 @@ class GpuChannelHost : public IPC::Sender,
       base::WaitableEvent* shutdown_event,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
-  static const int32_t kDefaultStreamId = GPU_STREAM_DEFAULT;
-  static const GpuStreamPriority kDefaultStreamPriority =
-      GpuStreamPriority::NORMAL;
+  static const int32_t kDefaultStreamId = gpu::GPU_STREAM_DEFAULT;
+  static const gpu::GpuStreamPriority kDefaultStreamPriority =
+      gpu::GpuStreamPriority::NORMAL;
 
   bool IsLost() const {
     DCHECK(channel_filter_.get());
@@ -113,7 +113,7 @@ class GpuChannelHost : public IPC::Sender,
       const gfx::Size& size,
       CommandBufferProxyImpl* share_group,
       int32_t stream_id,
-      GpuStreamPriority stream_priority,
+      gpu::GpuStreamPriority stream_priority,
       const std::vector<int32_t>& attribs,
       const GURL& active_url,
       gfx::GpuPreference gpu_preference);

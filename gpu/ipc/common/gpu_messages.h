@@ -12,10 +12,6 @@
 
 #include "base/memory/shared_memory.h"
 #include "build/build_config.h"
-#include "content/common/content_export.h"
-#include "content/common/gpu/gpu_memory_uma_stats.h"
-#include "content/common/gpu/gpu_param_traits.h"
-#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -24,7 +20,9 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/gpu_export.h"
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
+#include "gpu/ipc/common/gpu_param_traits.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
@@ -45,7 +43,7 @@
 #endif
 
 #undef IPC_MESSAGE_EXPORT
-#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
+#define IPC_MESSAGE_EXPORT GPU_EXPORT
 
 #define IPC_MESSAGE_START GpuChannelMsgStart
 
@@ -57,7 +55,7 @@ IPC_STRUCT_END()
 IPC_STRUCT_BEGIN(GPUCreateCommandBufferConfig)
   IPC_STRUCT_MEMBER(int32_t, share_group_id)
   IPC_STRUCT_MEMBER(int32_t, stream_id)
-  IPC_STRUCT_MEMBER(content::GpuStreamPriority, stream_priority)
+  IPC_STRUCT_MEMBER(gpu::GpuStreamPriority, stream_priority)
   IPC_STRUCT_MEMBER(std::vector<int>, attribs)
   IPC_STRUCT_MEMBER(GURL, active_url)
   IPC_STRUCT_MEMBER(gfx::GpuPreference, gpu_preference)
@@ -130,8 +128,7 @@ IPC_MESSAGE_ROUTED2(GpuStreamTextureMsg_EstablishPeer,
 
 // Tells the GPU process to set the size of StreamTexture from the given
 // stream Id.
-IPC_MESSAGE_ROUTED1(GpuStreamTextureMsg_SetSize,
-                    gfx::Size /* size */)
+IPC_MESSAGE_ROUTED1(GpuStreamTextureMsg_SetSize, gfx::Size /* size */)
 
 // Tells the service-side instance to start sending frame available
 // notifications.

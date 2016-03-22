@@ -51,7 +51,7 @@ source_set("gpu_sources") {
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//gpu:gpu",
-    "//gpu/ipc/common",
+    "//gpu/ipc/common:command_buffer_traits",
     "//ipc",
     "//mojo/shell/public/interfaces",
     "//skia",

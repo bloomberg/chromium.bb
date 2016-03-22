@@ -4,6 +4,7 @@
 
 #ifndef CONTENT_COMMON_GPU_CHILD_WINDOW_SURFACE_WIN_H_
 #define CONTENT_COMMON_GPU_CHILD_WINDOW_SURFACE_WIN_H_
+
 #include "ui/gl/gl_surface_egl.h"
 
 #include <windows.h>

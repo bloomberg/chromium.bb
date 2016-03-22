@@ -18,8 +18,8 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
-#include "content/common/gpu/gpu_messages.h"
-#include "content/common/gpu/gpu_param_traits_macros.h"
+#include "gpu/ipc/common/gpu_messages.h"
+#include "gpu/ipc/common/gpu_param_traits_macros.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "url/gurl.h"
 
@@ -194,7 +194,7 @@ scoped_ptr<CommandBufferProxyImpl> GpuChannelHost::CreateCommandBuffer(
     const gfx::Size& size,
     CommandBufferProxyImpl* share_group,
     int32_t stream_id,
-    GpuStreamPriority stream_priority,
+    gpu::GpuStreamPriority stream_priority,
     const std::vector<int32_t>& attribs,
     const GURL& active_url,
     gfx::GpuPreference gpu_preference) {

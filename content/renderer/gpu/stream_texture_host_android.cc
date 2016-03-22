@@ -5,8 +5,8 @@
 #include "content/renderer/gpu/stream_texture_host_android.h"
 
 #include "content/common/gpu/client/gpu_channel_host.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "content/renderer/render_thread_impl.h"
+#include "gpu/ipc/common/gpu_messages.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace content {

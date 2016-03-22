@@ -9,7 +9,7 @@
 #include "base/win/wrapped_window_proc.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_channel_manager_delegate.h"
-#include "content/common/gpu/gpu_messages.h"
+#include "gpu/ipc/common/gpu_messages.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/win/hwnd_util.h"

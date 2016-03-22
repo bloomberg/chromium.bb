@@ -23,8 +23,8 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/gpu_memory_manager.h"
-#include "content/common/gpu/gpu_stream_constants.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
+#include "gpu/ipc/common/gpu_stream_constants.h"
 #include "ipc/ipc_sync_channel.h"
 #include "ipc/message_router.h"
 #include "ui/gfx/geometry/size.h"
@@ -198,7 +198,7 @@ class CONTENT_EXPORT GpuChannel
 
   scoped_refptr<GpuChannelMessageQueue> CreateStream(
       int32_t stream_id,
-      GpuStreamPriority stream_priority);
+      gpu::GpuStreamPriority stream_priority);
 
   scoped_refptr<GpuChannelMessageQueue> LookupStream(int32_t stream_id);
 
@@ -360,7 +360,7 @@ class GpuChannelMessageQueue
  public:
   static scoped_refptr<GpuChannelMessageQueue> Create(
       int32_t stream_id,
-      GpuStreamPriority stream_priority,
+      gpu::GpuStreamPriority stream_priority,
       GpuChannel* channel,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const scoped_refptr<gpu::PreemptionFlag>& preempting_flag,
@@ -371,7 +371,7 @@ class GpuChannelMessageQueue
   void DisableIO();
 
   int32_t stream_id() const { return stream_id_; }
-  GpuStreamPriority stream_priority() const { return stream_priority_; }
+  gpu::GpuStreamPriority stream_priority() const { return stream_priority_; }
 
   bool IsScheduled() const;
   void OnRescheduled(bool scheduled);
@@ -420,7 +420,7 @@ class GpuChannelMessageQueue
 
   GpuChannelMessageQueue(
       int32_t stream_id,
-      GpuStreamPriority stream_priority,
+      gpu::GpuStreamPriority stream_priority,
       GpuChannel* channel,
       const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
       const scoped_refptr<gpu::PreemptionFlag>& preempting_flag,
@@ -446,7 +446,7 @@ class GpuChannelMessageQueue
   bool ShouldTransitionToIdle() const;
 
   const int32_t stream_id_;
-  const GpuStreamPriority stream_priority_;
+  const gpu::GpuStreamPriority stream_priority_;
 
   // These can be accessed from both IO and main threads and are protected by
   // |channel_lock_|.

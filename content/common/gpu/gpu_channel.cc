@@ -33,7 +33,6 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_channel_manager_delegate.h"
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
-#include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/command_executor.h"
@@ -41,6 +40,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/valuebuffer_manager.h"
+#include "gpu/ipc/common/gpu_messages.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/message_filter.h"
 #include "ui/gl/gl_context.h"
@@ -75,7 +75,7 @@ const int64_t kStopPreemptThresholdMs = kVsyncIntervalMs;
 
 scoped_refptr<GpuChannelMessageQueue> GpuChannelMessageQueue::Create(
     int32_t stream_id,
-    GpuStreamPriority stream_priority,
+    gpu::GpuStreamPriority stream_priority,
     GpuChannel* channel,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<gpu::PreemptionFlag>& preempting_flag,
@@ -93,7 +93,7 @@ GpuChannelMessageQueue::GetSyncPointOrderData() {
 
 GpuChannelMessageQueue::GpuChannelMessageQueue(
     int32_t stream_id,
-    GpuStreamPriority stream_priority,
+    gpu::GpuStreamPriority stream_priority,
     GpuChannel* channel,
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
     const scoped_refptr<gpu::PreemptionFlag>& preempting_flag,
@@ -614,8 +614,8 @@ GpuChannel::GpuChannel(GpuChannelManager* gpu_channel_manager,
   filter_ = new GpuChannelMessageFilter();
 
   scoped_refptr<GpuChannelMessageQueue> control_queue =
-      CreateStream(GPU_STREAM_DEFAULT, GpuStreamPriority::HIGH);
-  AddRouteToStream(MSG_ROUTING_CONTROL, GPU_STREAM_DEFAULT);
+      CreateStream(gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::HIGH);
+  AddRouteToStream(MSG_ROUTING_CONTROL, gpu::GPU_STREAM_DEFAULT);
 
   subscription_ref_set_->AddObserver(this);
 }
@@ -844,11 +844,11 @@ void GpuChannel::HandleMessageForTesting(const IPC::Message& msg) {
 
 scoped_refptr<GpuChannelMessageQueue> GpuChannel::CreateStream(
     int32_t stream_id,
-    GpuStreamPriority stream_priority) {
+    gpu::GpuStreamPriority stream_priority) {
   DCHECK(streams_.find(stream_id) == streams_.end());
   scoped_refptr<GpuChannelMessageQueue> queue = GpuChannelMessageQueue::Create(
       stream_id, stream_priority, this, io_task_runner_,
-      (stream_id == GPU_STREAM_DEFAULT) ? preempting_flag_ : nullptr,
+      (stream_id == gpu::GPU_STREAM_DEFAULT) ? preempting_flag_ : nullptr,
       preempted_flag_, sync_point_manager_);
   streams_.insert(std::make_pair(stream_id, queue));
   streams_to_num_routes_.insert(std::make_pair(stream_id, 0));
@@ -934,9 +934,9 @@ void GpuChannel::OnCreateCommandBuffer(
     return;
   }
 
-  GpuStreamPriority stream_priority = init_params.stream_priority;
+  gpu::GpuStreamPriority stream_priority = init_params.stream_priority;
   if (!allow_real_time_streams_ &&
-      stream_priority == GpuStreamPriority::REAL_TIME) {
+      stream_priority == gpu::GpuStreamPriority::REAL_TIME) {
     DLOG(ERROR) << "GpuChannel::OnCreateCommandBuffer(): real time stream "
                    "priority not allowed";
     return;
