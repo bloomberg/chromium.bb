@@ -1,8 +1,9 @@
-<!DOCTYPE html>
-<script src="../../resources/js-test.js"></script>
-<div id="container">
-<p>We delay focus until mouse up if the mouse down occurs inside a focusable node that is inside an already focused node. But we shouldn't delay focus unless the mouse down occurs in an already focused node.
-</p>
+<!doctype html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<p>We delay focus until mouse up if the mouse down occurs inside a focusable
+node that is inside an already focused node. But we shouldn't delay focus unless
+the mouse down occurs in an already focused node.</p>
 <p>To run manually,
 <ol>
 <li>Select everything from 'foo' though 'baz'</li>
@@ -12,9 +13,11 @@
 </ol>
 </p>
 <div id="div"><div>foo</div><input type="text" id="field"><div>baz</div></div>
-</div>
+<div id="log"></div>
 <script>
-if (window.testRunner) {
+test(function() {
+    if (window.eventSender)
+        return;
     var field = document.getElementById('field');
     var div = document.getElementById('div');
     var selection = window.getSelection();
@@ -26,8 +29,6 @@ if (window.testRunner) {
     eventSender.mouseMoveTo(x, y);
     eventSender.mouseDown();
 
-    shouldBe('document.activeElement', 'field');
-
-    document.getElementById('container').outerHTML = '';
-}
+    assert_equals(document.activeElement, field, 'activeElement');
+});
 </script>

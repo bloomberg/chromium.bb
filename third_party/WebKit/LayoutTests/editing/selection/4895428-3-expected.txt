@@ -1,5 +1,0 @@
-PASS document.activeElement is field
-PASS successfullyParsed is true
-
-TEST COMPLETE
-
