@@ -523,12 +523,14 @@ void RenderWidgetHostViewAndroid::LockCompositingSurface() {
 }
 
 void RenderWidgetHostViewAndroid::UnlockCompositingSurface() {
-  if (!frame_evictor_->HasFrame() || locks_on_frame_count_ == 0)
+  if (!frame_evictor_->HasFrame()) {
+    DCHECK_EQ(locks_on_frame_count_, 0u);
     return;
+  }
 
   DCHECK(HasValidFrame());
-  frame_evictor_->UnlockFrame();
   locks_on_frame_count_--;
+  frame_evictor_->UnlockFrame();
 
   if (locks_on_frame_count_ == 0) {
     if (last_frame_info_) {
@@ -787,6 +789,7 @@ void RenderWidgetHostViewAndroid::RenderProcessGone(
 }
 
 void RenderWidgetHostViewAndroid::Destroy() {
+  host_->ViewDestroyed();
   RemoveLayers();
   SetContentViewCore(NULL);
 
@@ -1480,9 +1483,10 @@ void RenderWidgetHostViewAndroid::RequestDisallowInterceptTouchEvent() {
 }
 
 void RenderWidgetHostViewAndroid::EvictDelegatedFrame() {
+  DCHECK_EQ(locks_on_frame_count_, 0u);
+  frame_evictor_->DiscardedFrame();
   if (layer_.get())
     DestroyDelegatedContent();
-  frame_evictor_->DiscardedFrame();
 }
 
 bool RenderWidgetHostViewAndroid::HasAcceleratedSurface(
