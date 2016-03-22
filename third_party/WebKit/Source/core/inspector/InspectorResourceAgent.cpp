@@ -86,16 +86,6 @@ static const char cacheDisabled[] = "cacheDisabled";
 static const char userAgentOverride[] = "userAgentOverride";
 static const char monitoringXHR[] = "monitoringXHR";
 static const char blockedURLs[] = "blockedURLs";
-static const char totalBufferSize[] = "totalBufferSize";
-static const char resourceBufferSize[] = "resourceBufferSize";
-}
-
-namespace {
-// 100MB
-static size_t maximumTotalBufferSize = 100 * 1000 * 1000;
-
-// 10MB
-static size_t maximumResourceBufferSize = 10 * 1000 * 1000;
 }
 
 namespace {
@@ -257,11 +247,8 @@ String buildBlockedReason(ResourceRequestBlockedReason reason)
 
 void InspectorResourceAgent::restore()
 {
-    if (m_state->booleanProperty(ResourceAgentState::resourceAgentEnabled, false)) {
-        enable(
-            m_state->numberProperty(ResourceAgentState::totalBufferSize, maximumTotalBufferSize),
-            m_state->numberProperty(ResourceAgentState::resourceBufferSize, maximumResourceBufferSize));
-    }
+    if (m_state->booleanProperty(ResourceAgentState::resourceAgentEnabled, false))
+        enable();
 }
 
 static PassOwnPtr<protocol::Network::ResourceTiming> buildObjectForTiming(const ResourceLoadTiming& timing)
@@ -883,19 +870,16 @@ void InspectorResourceAgent::didReceiveWebSocketFrameError(unsigned long identif
     frontend()->webSocketFrameError(IdentifiersFactory::requestId(identifier), monotonicallyIncreasingTime(), errorMessage);
 }
 
-void InspectorResourceAgent::enable(ErrorString*, const Maybe<int>& totalBufferSize, const Maybe<int>& resourceBufferSize)
+void InspectorResourceAgent::enable(ErrorString*)
 {
-    enable(totalBufferSize.fromMaybe(maximumTotalBufferSize), resourceBufferSize.fromMaybe(maximumResourceBufferSize));
+    enable();
 }
 
-void InspectorResourceAgent::enable(int totalBufferSize, int resourceBufferSize)
+void InspectorResourceAgent::enable()
 {
     if (!frontend())
         return;
-    m_resourcesData->setResourcesDataSizeLimits(totalBufferSize, resourceBufferSize);
     m_state->setBoolean(ResourceAgentState::resourceAgentEnabled, true);
-    m_state->setNumber(ResourceAgentState::totalBufferSize, totalBufferSize);
-    m_state->setNumber(ResourceAgentState::resourceBufferSize, resourceBufferSize);
     m_instrumentingAgents->setInspectorResourceAgent(this);
 }
 
@@ -1121,7 +1105,7 @@ void InspectorResourceAgent::removeFinishedReplayXHRFired(Timer<InspectorResourc
 InspectorResourceAgent::InspectorResourceAgent(InspectedFrames* inspectedFrames)
     : InspectorBaseAgent<InspectorResourceAgent, protocol::Frontend::Network>("Network")
     , m_inspectedFrames(inspectedFrames)
-    , m_resourcesData(NetworkResourcesData::create(maximumTotalBufferSize, maximumResourceBufferSize))
+    , m_resourcesData(NetworkResourcesData::create())
     , m_pendingRequest(nullptr)
     , m_isRecalculatingStyle(false)
     , m_removeFinishedReplayXHRTimer(this, &InspectorResourceAgent::removeFinishedReplayXHRFired)

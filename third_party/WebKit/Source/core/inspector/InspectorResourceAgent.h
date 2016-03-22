@@ -131,7 +131,7 @@ public:
     void didReceiveWebSocketFrameError(unsigned long identifier, const String&);
 
     // Called from frontend
-    void enable(ErrorString*, const Maybe<int>& totalBufferSize, const Maybe<int>& resourceBufferSize) override;
+    void enable(ErrorString*) override;
     void disable(ErrorString*) override;
     void setUserAgentOverride(ErrorString*, const String& userAgent) override;
     void setExtraHTTPHeaders(ErrorString*, PassOwnPtr<protocol::Network::Headers>) override;
@@ -154,7 +154,7 @@ public:
 private:
     explicit InspectorResourceAgent(InspectedFrames*);
 
-    void enable(int totalBufferSize, int resourceBufferSize);
+    void enable();
     void willSendRequestInternal(LocalFrame*, unsigned long identifier, DocumentLoader*, const ResourceRequest&, const ResourceResponse& redirectResponse, const FetchInitiatorInfo&);
     void delayedRemoveReplayXHR(XMLHttpRequest*);
     void removeFinishedReplayXHRFired(Timer<InspectorResourceAgent>*);
