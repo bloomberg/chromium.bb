@@ -33,6 +33,7 @@
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/simple_webmimeregistry_impl.h"
+#include "content/child/storage_util.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_database_observer_impl.h"
 #include "content/child/web_url_loader_impl.h"
@@ -436,9 +437,8 @@ WebIDBFactory* RendererBlinkPlatformImpl::idbFactory() {
 
 blink::WebServiceWorkerCacheStorage* RendererBlinkPlatformImpl::cacheStorage(
     const blink::WebSecurityOrigin& security_origin) {
-  const GURL origin = blink::WebStringToGURL(security_origin.toString());
-  return new WebServiceWorkerCacheStorageImpl(thread_safe_sender_.get(),
-                                              origin);
+  return new WebServiceWorkerCacheStorageImpl(
+      thread_safe_sender_.get(), WebSecurityOriginToGURL(security_origin));
 }
 
 //------------------------------------------------------------------------------

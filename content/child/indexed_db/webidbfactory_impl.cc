@@ -5,8 +5,8 @@
 #include "content/child/indexed_db/webidbfactory_impl.h"
 
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
+#include "content/child/storage_util.h"
 #include "content/child/thread_safe_sender.h"
-#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
@@ -28,7 +28,7 @@ void WebIDBFactoryImpl::getDatabaseNames(WebIDBCallbacks* callbacks,
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
   dispatcher->RequestIDBFactoryGetDatabaseNames(
-      callbacks, blink::WebStringToGURL(origin.toString()));
+      callbacks, WebSecurityOriginToGURL(origin));
 }
 
 void WebIDBFactoryImpl::open(const WebString& name,
@@ -39,9 +39,10 @@ void WebIDBFactoryImpl::open(const WebString& name,
                              const WebSecurityOrigin& origin) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
+
   dispatcher->RequestIDBFactoryOpen(name, version, transaction_id, callbacks,
                                     database_callbacks,
-                                    blink::WebStringToGURL(origin.toString()));
+                                    WebSecurityOriginToGURL(origin));
 }
 
 void WebIDBFactoryImpl::deleteDatabase(const WebString& name,
@@ -49,8 +50,8 @@ void WebIDBFactoryImpl::deleteDatabase(const WebString& name,
                                        const WebSecurityOrigin& origin) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance(thread_safe_sender_.get());
-  dispatcher->RequestIDBFactoryDeleteDatabase(
-      name, callbacks, blink::WebStringToGURL(origin.toString()));
+  dispatcher->RequestIDBFactoryDeleteDatabase(name, callbacks,
+                                              WebSecurityOriginToGURL(origin));
 }
 
 }  // namespace content
