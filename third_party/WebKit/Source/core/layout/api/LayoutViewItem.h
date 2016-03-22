@@ -11,6 +11,8 @@
 
 namespace blink {
 
+class PaintLayerCompositor;
+
 class LayoutViewItem : public LayoutBlockItem {
 public:
     explicit LayoutViewItem(LayoutView* layoutView)
@@ -27,6 +29,11 @@ public:
     explicit LayoutViewItem(std::nullptr_t) : LayoutBlockItem(nullptr) { }
 
     LayoutViewItem() { }
+
+    PaintLayerCompositor* compositor()
+    {
+        return toView()->compositor();
+    }
 
     IntRect documentRect() const
     {
