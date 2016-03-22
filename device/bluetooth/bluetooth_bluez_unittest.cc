@@ -170,6 +170,11 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
 
 class BluetoothBlueZTest : public testing::Test {
  public:
+  static const char kGapUuid[];
+  static const char kGattUuid[];
+  static const char kPnpUuid[];
+  static const char kHeadsetUuid[];
+
   void SetUp() override {
     scoped_ptr<bluez::BluezDBusManagerSetter> dbus_setter =
         bluez::BluezDBusManager::GetSetterForTesting();
@@ -373,6 +378,14 @@ class BluetoothBlueZTest : public testing::Test {
     }
   }
 };
+const char BluetoothBlueZTest::kGapUuid[] =
+    "00001800-0000-1000-8000-00805f9b34fb";
+const char BluetoothBlueZTest::kGattUuid[] =
+    "00001801-0000-1000-8000-00805f9b34fb";
+const char BluetoothBlueZTest::kPnpUuid[] =
+    "00001200-0000-1000-8000-00805f9b34fb";
+const char BluetoothBlueZTest::kHeadsetUuid[] =
+    "00001112-0000-1000-8000-00805f9b34fb";
 
 TEST_F(BluetoothBlueZTest, AlreadyPresent) {
   GetAdapter();
@@ -610,6 +623,28 @@ TEST_F(BluetoothBlueZTest, ChangeAdapterNameWhenNotPresent) {
   EXPECT_EQ(1, error_callback_count_);
 
   EXPECT_EQ("", adapter_->GetName());
+}
+
+TEST_F(BluetoothBlueZTest, GetUUIDs) {
+  std::vector<std::string> adapterUuids;
+  GetAdapter();
+
+  adapterUuids.push_back(kGapUuid);
+  adapterUuids.push_back(kGattUuid);
+  adapterUuids.push_back(kPnpUuid);
+  adapterUuids.push_back(kHeadsetUuid);
+
+  fake_bluetooth_adapter_client_->SetUUIDs(adapterUuids);
+
+  BluetoothAdapter::UUIDList uuids = adapter_->GetUUIDs();
+
+  ASSERT_EQ(4U, uuids.size());
+  // Check that the UUIDs match those from above - in order, GAP, GATT, PnP, and
+  // headset.
+  EXPECT_EQ(uuids[0], BluetoothUUID("1800"));
+  EXPECT_EQ(uuids[1], BluetoothUUID("1801"));
+  EXPECT_EQ(uuids[2], BluetoothUUID("1200"));
+  EXPECT_EQ(uuids[3], BluetoothUUID("1112"));
 }
 
 TEST_F(BluetoothBlueZTest, BecomeDiscoverable) {

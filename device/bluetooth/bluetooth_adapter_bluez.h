@@ -79,6 +79,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   // BluetoothAdapter:
   void Shutdown() override;
+  UUIDList GetUUIDs() const override;
   std::string GetAddress() const override;
   std::string GetName() const override;
   void SetName(const std::string& name,

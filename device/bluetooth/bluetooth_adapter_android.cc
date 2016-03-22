@@ -102,6 +102,11 @@ bool BluetoothAdapterAndroid::IsDiscovering() const {
                                                    j_adapter_.obj());
 }
 
+BluetoothAdapter::UUIDList BluetoothAdapterAndroid::GetUUIDs() const {
+  NOTIMPLEMENTED();
+  return UUIDList();
+}
+
 void BluetoothAdapterAndroid::CreateRfcommService(
     const BluetoothUUID& uuid,
     const ServiceOptions& options,

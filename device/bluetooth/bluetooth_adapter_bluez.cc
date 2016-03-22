@@ -328,6 +328,18 @@ bool BluetoothAdapterBlueZ::IsDiscovering() const {
   return properties->discovering.value();
 }
 
+BluetoothAdapterBlueZ::UUIDList BluetoothAdapterBlueZ::GetUUIDs() const {
+  bluez::BluetoothAdapterClient::Properties* properties =
+      bluez::BluezDBusManager::Get()
+          ->GetBluetoothAdapterClient()
+          ->GetProperties(object_path_);
+  DCHECK(properties);
+
+  std::vector<std::string> uuids = properties->uuids.value();
+
+  return UUIDList(uuids.begin(), uuids.end());
+}
+
 void BluetoothAdapterBlueZ::CreateRfcommService(
     const BluetoothUUID& uuid,
     const ServiceOptions& options,

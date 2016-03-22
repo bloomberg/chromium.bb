@@ -165,6 +165,11 @@ bool BluetoothAdapterMac::IsDiscovering() const {
   return is_discovering;
 }
 
+BluetoothAdapter::UUIDList BluetoothAdapterMac::GetUUIDs() const {
+  NOTIMPLEMENTED();
+  return UUIDList();
+}
+
 void BluetoothAdapterMac::CreateRfcommService(
     const BluetoothUUID& uuid,
     const ServiceOptions& options,

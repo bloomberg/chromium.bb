@@ -269,6 +269,16 @@ void FakeBluetoothAdapterClient::SetSecondVisible(bool visible) {
   }
 }
 
+void FakeBluetoothAdapterClient::SetUUIDs(
+    const std::vector<std::string>& uuids) {
+  properties_->uuids.ReplaceValue(uuids);
+}
+
+void FakeBluetoothAdapterClient::SetSecondUUIDs(
+    const std::vector<std::string>& uuids) {
+  second_properties_->uuids.ReplaceValue(uuids);
+}
+
 void FakeBluetoothAdapterClient::OnPropertyChanged(
     const std::string& property_name) {
   if (property_name == properties_->powered.name() &&

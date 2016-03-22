@@ -158,6 +158,11 @@ void BluetoothAdapterWin::DiscoveryStopped() {
   MaybePostStartDiscoveryTask();
 }
 
+BluetoothAdapter::UUIDList BluetoothAdapterWin::GetUUIDs() const {
+  NOTIMPLEMENTED();
+  return UUIDList();
+}
+
 void BluetoothAdapterWin::CreateRfcommService(
     const BluetoothUUID& uuid,
     const ServiceOptions& options,

@@ -76,6 +76,7 @@ class MockBluetoothAdapter : public BluetoothAdapter {
   MOCK_METHOD1(GetDevice, BluetoothDevice*(const std::string& address));
   MOCK_CONST_METHOD1(GetDevice,
                      const BluetoothDevice*(const std::string& address));
+  MOCK_CONST_METHOD0(GetUUIDs, UUIDList());
   MOCK_METHOD2(AddPairingDelegate,
                void(BluetoothDevice::PairingDelegate* pairing_delegate,
                     enum PairingDelegatePriority priority));

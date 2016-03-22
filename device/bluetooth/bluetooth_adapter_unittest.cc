@@ -70,6 +70,9 @@ class TestBluetoothAdapter : public BluetoothAdapter {
 
   void StartDiscoverySession(const DiscoverySessionCallback& callback,
                              const ErrorCallback& error_callback) override {}
+
+  UUIDList GetUUIDs() const override { return UUIDList(); }
+
   void CreateRfcommService(
       const BluetoothUUID& uuid,
       const ServiceOptions& options,

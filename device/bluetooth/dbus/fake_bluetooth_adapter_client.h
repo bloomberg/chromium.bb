@@ -5,6 +5,7 @@
 #ifndef DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_ADAPTER_CLIENT_H_
 #define DEVICE_BLUETOOTH_DBUS_FAKE_BLUETOOTH_ADAPTER_CLIENT_H_
 
+#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -71,6 +72,10 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAdapterClient
   // Mark the adapter and second adapter as visible or invisible.
   void SetVisible(bool visible);
   void SetSecondVisible(bool visible);
+
+  // Set adapter UUIDs
+  void SetUUIDs(const std::vector<std::string>& uuids);
+  void SetSecondUUIDs(const std::vector<std::string>& uuids);
 
   // Object path, name and addresses of the adapters we emulate.
   static const char kAdapterPath[];

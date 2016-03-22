@@ -59,6 +59,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
                        const base::Closure& callback,
                        const ErrorCallback& error_callback) override;
   bool IsDiscovering() const override;
+  UUIDList GetUUIDs() const override;
   void CreateRfcommService(
       const BluetoothUUID& uuid,
       const ServiceOptions& options,

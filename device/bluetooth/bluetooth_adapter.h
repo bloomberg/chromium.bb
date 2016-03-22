@@ -202,6 +202,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
       DiscoverySessionCallback;
   typedef std::vector<BluetoothDevice*> DeviceList;
   typedef std::vector<const BluetoothDevice*> ConstDeviceList;
+  typedef std::vector<BluetoothUUID> UUIDList;
   typedef base::Callback<void(scoped_refptr<BluetoothSocket>)>
       CreateServiceCallback;
   typedef base::Callback<void(const std::string& message)>
@@ -327,6 +328,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // no such device is known.
   virtual BluetoothDevice* GetDevice(const std::string& address);
   virtual const BluetoothDevice* GetDevice(const std::string& address) const;
+
+  // Returns a list of UUIDs for services registered on this adapter.
+  // This may include UUIDs from standard profiles (e.g. A2DP) as well
+  // as those created by CreateRfcommService and CreateL2capService.
+  virtual UUIDList GetUUIDs() const = 0;
 
   // Possible priorities for AddPairingDelegate(), low is intended for
   // permanent UI and high is intended for interactive UI or applications.
