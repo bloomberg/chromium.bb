@@ -57,6 +57,9 @@ class CONTENT_EXPORT MediaWebContentsObserverAndroid
                    bool is_remote,
                    base::TimeDelta duration);
 
+  void DisconnectMediaSession(RenderFrameHost* render_frame_host,
+                              int delegate_id);
+
 #if defined(VIDEO_HOLE)
   void OnFrameInfoUpdated();
 #endif  // defined(VIDEO_HOLE)

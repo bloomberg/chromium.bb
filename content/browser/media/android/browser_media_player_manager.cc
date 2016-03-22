@@ -648,6 +648,9 @@ scoped_ptr<media::MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(
 #if defined(VIDEO_HOLE)
       ReleaseExternalSurface(player_id);
 #endif
+      MediaWebContentsObserverAndroid::FromWebContents(web_contents_)
+          ->DisconnectMediaSession(render_frame_host_,
+                                   player_id_to_delegate_id_map_[player_id]);
       players_.weak_erase(it);
       players_.push_back(player);
       break;

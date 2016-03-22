@@ -95,6 +95,13 @@ bool MediaWebContentsObserverAndroid::RequestPlay(
       has_audio, is_remote, duration);
 }
 
+void MediaWebContentsObserverAndroid::DisconnectMediaSession(
+    RenderFrameHost* render_frame_host,
+    int delegate_id) {
+  session_controllers_manager()->OnEnd(
+      MediaPlayerId(render_frame_host, delegate_id));
+}
+
 #if defined(VIDEO_HOLE)
 void MediaWebContentsObserverAndroid::OnFrameInfoUpdated() {
   for (auto it = media_player_managers_.begin();
