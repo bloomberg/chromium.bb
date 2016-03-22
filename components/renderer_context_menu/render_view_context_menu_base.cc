@@ -251,7 +251,7 @@ bool RenderViewContextMenuBase::AppendCustomItems() {
 bool RenderViewContextMenuBase::IsCommandIdKnown(
     int id,
     bool* enabled) const {
-  // If this command is is added by one of our observers, we dispatch
+  // If this command is added by one of our observers, we dispatch
   // it to the observer.
   base::ObserverListBase<RenderViewContextMenuObserver>::Iterator it(
       &observers_);
