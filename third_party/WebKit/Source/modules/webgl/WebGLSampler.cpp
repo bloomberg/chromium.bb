@@ -4,7 +4,6 @@
 
 #include "modules/webgl/WebGLSampler.h"
 
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGL2RenderingContextBase.h"
 
 namespace blink {
@@ -23,14 +22,12 @@ WebGLSampler::~WebGLSampler()
 WebGLSampler::WebGLSampler(WebGL2RenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx)
 {
-    GLuint sampler;
-    ctx->contextGL()->GenSamplers(1, &sampler);
-    setObject(sampler);
+    setObject(ctx->webContext()->createSampler());
 }
 
 void WebGLSampler::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
-    gl->DeleteSamplers(1, &m_object);
+    context3d->deleteSampler(m_object);
     m_object = 0;
 }
 

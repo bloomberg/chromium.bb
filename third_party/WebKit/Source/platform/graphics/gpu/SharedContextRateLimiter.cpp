@@ -43,12 +43,12 @@ void SharedContextRateLimiter::tick()
         return;
 
     gpu::gles2::GLES2Interface* gl = m_contextProvider->contextGL();
+
     if (!gl || gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR)
         return;
 
-    m_queries.append(0);
-    if (m_canUseSyncQueries)
-        gl->GenQueriesEXT(1, &m_queries.last());
+    WebGraphicsContext3D* context = m_contextProvider->context3d();
+    m_queries.append(m_canUseSyncQueries ? context->createQueryEXT() : 0);
     if (m_canUseSyncQueries) {
         gl->BeginQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM, m_queries.last());
         gl->EndQueryEXT(GL_COMMANDS_COMPLETED_CHROMIUM);
@@ -57,7 +57,7 @@ void SharedContextRateLimiter::tick()
         if (m_canUseSyncQueries) {
             WGC3Duint result;
             gl->GetQueryObjectuivEXT(m_queries.first(), GL_QUERY_RESULT_EXT, &result);
-            gl->DeleteQueriesEXT(1, &m_queries.first());
+            context->deleteQueryEXT(m_queries.first());
             m_queries.removeFirst();
         } else {
             gl->Finish();
@@ -73,8 +73,9 @@ void SharedContextRateLimiter::reset()
 
     gpu::gles2::GLES2Interface* gl = m_contextProvider->contextGL();
     if (gl && gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
+        WebGraphicsContext3D* context = m_contextProvider->context3d();
         while (m_queries.size() > 0) {
-            gl->DeleteQueriesEXT(1, &m_queries.first());
+            context->deleteQueryEXT(m_queries.first());
             m_queries.removeFirst();
         }
     } else {

@@ -4,7 +4,6 @@
 
 #include "modules/webgl/CHROMIUMValuebuffer.h"
 
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 
 namespace blink {
@@ -24,14 +23,12 @@ CHROMIUMValuebuffer::CHROMIUMValuebuffer(WebGLRenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx)
     , m_hasEverBeenBound(false)
 {
-    GLuint buffer;
-    ctx->contextGL()->GenValuebuffersCHROMIUM(1, &buffer);
-    setObject(buffer);
+    setObject(ctx->webContext()->createValuebufferCHROMIUM());
 }
 
 void CHROMIUMValuebuffer::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
-    gl->DeleteValuebuffersCHROMIUM(1, &m_object);
+    context3d->deleteValuebufferCHROMIUM(m_object);
     m_object = 0;
 }
 

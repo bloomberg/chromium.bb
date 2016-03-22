@@ -32,7 +32,7 @@ WebGLTimerQueryEXT::WebGLTimerQueryEXT(WebGLRenderingContextBase* ctx)
     , m_queryResultAvailable(false)
     , m_queryResult(0)
 {
-    context()->contextGL()->GenQueriesEXT(1, &m_queryId);
+    m_queryId = context()->webContext()->createQueryEXT();
 }
 
 void WebGLTimerQueryEXT::resetCachedResult()
@@ -82,7 +82,7 @@ GLuint64 WebGLTimerQueryEXT::getQueryResult()
 
 void WebGLTimerQueryEXT::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
-    gl->DeleteQueriesEXT(1, &m_queryId);
+    context3d->deleteQueryEXT(m_queryId);
     m_queryId = 0;
 }
 

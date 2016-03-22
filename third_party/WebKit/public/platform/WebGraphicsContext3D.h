@@ -151,13 +151,35 @@ public:
 
     virtual void shaderSource(WebGLId shader, const WGC3Dchar* string) = 0;
 
+    virtual WebGLId createBuffer() = 0;
+    virtual WebGLId createFramebuffer() = 0;
+    virtual WebGLId createRenderbuffer() = 0;
+    virtual WebGLId createTexture() = 0;
+
+    virtual void deleteBuffer(WebGLId) = 0;
+    virtual void deleteFramebuffer(WebGLId) = 0;
+    virtual void deleteRenderbuffer(WebGLId) = 0;
+    virtual void deleteTexture(WebGLId) = 0;
+
     virtual void setContextLostCallback(WebGraphicsContextLostCallback* callback) { }
     virtual void setErrorMessageCallback(WebGraphicsErrorMessageCallback* callback) { }
 
     virtual WebString getTranslatedShaderSourceANGLE(WebGLId shader) = 0;
 
+    // GL_EXT_occlusion_query
+    virtual WebGLId createQueryEXT() { return 0; }
+    virtual void deleteQueryEXT(WebGLId query) { }
+
+    // GL_CHROMIUM_subscribe_uniform
+    virtual WebGLId createValuebufferCHROMIUM() { return 0; }
+    virtual void deleteValuebufferCHROMIUM(WebGLId) { }
+
     // GL_EXT_debug_marker
     virtual void pushGroupMarkerEXT(const WGC3Dchar* marker) { }
+
+    // GL_OES_vertex_array_object
+    virtual WebGLId createVertexArrayOES() { return 0; }
+    virtual void deleteVertexArrayOES(WebGLId array) { }
 
     // OpenGL ES 3.0 functions not represented by pre-existing extensions
     virtual void beginTransformFeedback(WGC3Denum primitiveMode) { }
@@ -173,6 +195,10 @@ public:
     virtual void compressedTexSubImage3D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint zoffset, WGC3Dsizei width, WGC3Dsizei height, WGC3Dsizei depth, WGC3Denum format, WGC3Dsizei imageSize, const void *data) { }
     virtual void copyBufferSubData(WGC3Denum readTarget, WGC3Denum writeTarget, WGC3Dintptr readOffset, WGC3Dintptr writeOffset, WGC3Dsizeiptr size) { }
     virtual void copyTexSubImage3D(WGC3Denum target, WGC3Dint level, WGC3Dint xoffset, WGC3Dint yoffset, WGC3Dint zoffset, WGC3Dint x, WGC3Dint y, WGC3Dsizei width, WGC3Dsizei height) { }
+    virtual WebGLId createSampler() { return 0; }
+    virtual WebGLId createTransformFeedback() { return 0; }
+    virtual void deleteSampler(WebGLId sampler) { }
+    virtual void deleteTransformFeedback(WebGLId transformfeedback) { }
     virtual void endTransformFeedback(void) { }
     virtual void getActiveUniformBlockName(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Dsizei bufSize, WGC3Dsizei *length, WGC3Dchar *uniformBlockName) { }
     virtual void getActiveUniformBlockiv(WebGLId program, WGC3Duint uniformBlockIndex, WGC3Denum pname, WGC3Dint *params) { }

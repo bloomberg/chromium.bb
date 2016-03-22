@@ -4,7 +4,6 @@
 
 #include "modules/webgl/WebGLVertexArrayObjectBase.h"
 
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 
 namespace blink {
@@ -23,7 +22,7 @@ WebGLVertexArrayObjectBase::WebGLVertexArrayObjectBase(WebGLRenderingContextBase
     case VaoTypeDefault:
         break;
     default:
-        context()->contextGL()->GenVertexArraysOES(1, &m_object);
+        m_object = context()->webContext()->createVertexArrayOES();
         break;
     }
 }
@@ -56,7 +55,7 @@ void WebGLVertexArrayObjectBase::deleteObjectImpl(WebGraphicsContext3D* context3
     case VaoTypeDefault:
         break;
     default:
-        gl->DeleteVertexArraysOES(1, &m_object);
+        context3d->deleteVertexArrayOES(m_object);
         m_object = 0;
         break;
     }

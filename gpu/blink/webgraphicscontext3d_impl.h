@@ -52,6 +52,16 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void shaderSource(blink::WebGLId shader,
                     const blink::WGC3Dchar* string) override;
 
+  blink::WebGLId createBuffer() override;
+  blink::WebGLId createFramebuffer() override;
+  blink::WebGLId createRenderbuffer() override;
+  blink::WebGLId createTexture() override;
+
+  void deleteBuffer(blink::WebGLId) override;
+  void deleteFramebuffer(blink::WebGLId) override;
+  void deleteRenderbuffer(blink::WebGLId) override;
+  void deleteTexture(blink::WebGLId) override;
+
   blink::WebString getRequestableExtensionsCHROMIUM() override;
 
   blink::WebString getTranslatedShaderSourceANGLE(
@@ -63,7 +73,17 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void setErrorMessageCallback(
       WebGraphicsContext3D::WebGraphicsErrorMessageCallback* callback) override;
 
+  blink::WebGLId createQueryEXT() override;
+  void deleteQueryEXT(blink::WebGLId query) override;
+
+  blink::WebGLId createValuebufferCHROMIUM() override;
+  void deleteValuebufferCHROMIUM(blink::WebGLId) override;
+
   void pushGroupMarkerEXT(const blink::WGC3Dchar* marker) override;
+
+  // GL_OES_vertex_array_object
+  blink::WebGLId createVertexArrayOES() override;
+  void deleteVertexArrayOES(blink::WebGLId array) override;
 
   // OpenGL ES 3.0 functions not represented by pre-existing extensions
   void beginTransformFeedback(blink::WGC3Denum primitiveMode) override;
@@ -125,6 +145,10 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                          blink::WGC3Dint y,
                          blink::WGC3Dsizei width,
                          blink::WGC3Dsizei height) override;
+  blink::WebGLId createSampler() override;
+  blink::WebGLId createTransformFeedback() override;
+  void deleteSampler(blink::WebGLId sampler) override;
+  void deleteTransformFeedback(blink::WebGLId transformfeedback) override;
   void endTransformFeedback(void) override;
   void getActiveUniformBlockName(blink::WGC3Duint program,
                                  blink::WGC3Duint uniformBlockIndex,

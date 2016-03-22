@@ -55,6 +55,45 @@ public:
 
     virtual void shaderSource(WebGLId shader, const WGC3Dchar* string) { }
 
+    virtual void genBuffers(WGC3Dsizei count, WebGLId* ids)
+    {
+        for (int i = 0; i < count; ++i)
+            ids[i] = 1;
+    }
+    virtual void genFramebuffers(WGC3Dsizei count, WebGLId* ids)
+    {
+        for (int i = 0; i < count; ++i)
+            ids[i] = 1;
+    }
+    virtual void genRenderbuffers(WGC3Dsizei count, WebGLId* ids)
+    {
+        for (int i = 0; i < count; ++i)
+            ids[i] = 1;
+    }
+    virtual void genTextures(WGC3Dsizei count, WebGLId* ids)
+    {
+        for (int i = 0; i < count; ++i)
+            ids[i] = m_nextTextureId++;
+    }
+
+    virtual void deleteBuffers(WGC3Dsizei count, WebGLId* ids) { }
+    virtual void deleteFramebuffers(WGC3Dsizei count, WebGLId* ids) { }
+    virtual void deleteRenderbuffers(WGC3Dsizei count, WebGLId* ids) { }
+    virtual void deleteTextures(WGC3Dsizei count, WebGLId* ids) { }
+
+    virtual WebGLId createBuffer() { return 1; }
+    virtual WebGLId createFramebuffer() { return 1; }
+    virtual WebGLId createRenderbuffer() { return 1; }
+    virtual WebGLId createTexture() { return m_nextTextureId++; }
+
+    virtual void deleteBuffer(WebGLId) { }
+    virtual void deleteFramebuffer(WebGLId) { }
+    virtual void deleteRenderbuffer(WebGLId) { }
+    virtual void deleteTexture(WebGLId) { }
+
+    virtual WebGLId createQueryEXT() { return 1; }
+    virtual void deleteQueryEXT(WebGLId) { }
+
     virtual WebString getTranslatedShaderSourceANGLE(WebGLId) { return WebString(); }
 
     // Don't use this, make a MockGLES2Interface instead.

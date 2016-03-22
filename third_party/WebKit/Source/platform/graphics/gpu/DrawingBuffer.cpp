@@ -276,7 +276,12 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
 
     // No buffer available to recycle, create a new one.
     if (!frontColorBufferMailbox) {
-        frontColorBufferMailbox = createNewMailbox(createTextureAndAllocateMemory(m_size));
+        TextureInfo newTexture = createTextureAndAllocateMemory(m_size);
+        // Bad things happened, abandon ship.
+        if (!newTexture.textureId)
+            return false;
+
+        frontColorBufferMailbox = createNewMailbox(newTexture);
     }
 
     if (m_preserveDrawingBuffer == Discard) {
@@ -434,7 +439,7 @@ void DrawingBuffer::deleteMailbox(const WebExternalTextureMailbox& mailbox)
 
             deleteChromiumImageForTexture(&m_textureMailboxes[i]->textureInfo);
 
-            m_gl->DeleteTextures(1, &m_textureMailboxes[i]->textureInfo.textureId);
+            m_context->deleteTexture(m_textureMailboxes[i]->textureInfo.textureId);
             m_textureMailboxes.remove(i);
             return;
         }
@@ -464,7 +469,7 @@ bool DrawingBuffer::initialize(const IntSize& size)
     }
     m_sampleCount = std::min(4, maxSampleCount);
 
-    m_gl->GenFramebuffers(1, &m_fbo);
+    m_fbo = m_context->createFramebuffer();
 
     m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_fbo);
     createSecondaryBuffers();
@@ -545,7 +550,7 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gl
 
     gl->CopyTextureCHROMIUM(sourceTexture, texture, internalFormat, destType, flipY, unpackPremultiplyAlphaNeeded, unpackUnpremultiplyAlphaNeeded);
 
-    gl->DeleteTextures(1, &sourceTexture);
+    context->deleteTexture(sourceTexture);
 
     const GLuint64 fenceSync = gl->InsertFenceSyncCHROMIUM();
 
@@ -596,20 +601,20 @@ void DrawingBuffer::beginDestruction()
         deleteMailbox(m_recycledMailboxQueue.takeLast());
 
     if (m_multisampleFBO)
-        m_gl->DeleteFramebuffers(1, &m_multisampleFBO);
+        m_context->deleteFramebuffer(m_multisampleFBO);
 
     if (m_fbo)
-        m_gl->DeleteFramebuffers(1, &m_fbo);
+        m_context->deleteFramebuffer(m_fbo);
 
     if (m_multisampleColorBuffer)
-        m_gl->DeleteRenderbuffers(1, &m_multisampleColorBuffer);
+        m_context->deleteRenderbuffer(m_multisampleColorBuffer);
 
     if (m_depthStencilBuffer)
-        m_gl->DeleteRenderbuffers(1, &m_depthStencilBuffer);
+        m_context->deleteRenderbuffer(m_depthStencilBuffer);
 
     if (m_colorBuffer.textureId) {
         deleteChromiumImageForTexture(&m_colorBuffer);
-        m_gl->DeleteTextures(1, &m_colorBuffer.textureId);
+        m_context->deleteTexture(m_colorBuffer.textureId);
     }
 
     setSize(IntSize());
@@ -627,13 +632,16 @@ void DrawingBuffer::beginDestruction()
 
 WebGLId DrawingBuffer::createColorTexture(const TextureParameters& parameters)
 {
-    GLuint offscreenColorTexture;
-    m_gl->GenTextures(1, &offscreenColorTexture);
+    WebGLId offscreenColorTexture = m_context->createTexture();
+    if (!offscreenColorTexture)
+        return 0;
+
     m_gl->BindTexture(parameters.target, offscreenColorTexture);
     m_gl->TexParameteri(parameters.target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     m_gl->TexParameteri(parameters.target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     m_gl->TexParameteri(parameters.target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     m_gl->TexParameteri(parameters.target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
     return offscreenColorTexture;
 }
 
@@ -641,9 +649,9 @@ void DrawingBuffer::createSecondaryBuffers()
 {
     // create a multisample FBO
     if (m_antiAliasingMode == MSAAExplicitResolve) {
-        m_gl->GenFramebuffers(1, &m_multisampleFBO);
+        m_multisampleFBO = m_context->createFramebuffer();
         m_gl->BindFramebuffer(GL_FRAMEBUFFER, m_multisampleFBO);
-        m_gl->GenRenderbuffers(1, &m_multisampleColorBuffer);
+        m_multisampleColorBuffer = m_context->createRenderbuffer();
     }
 }
 
@@ -684,7 +692,7 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size)
         return;
 
     if (!m_depthStencilBuffer)
-        m_gl->GenRenderbuffers(1, &m_depthStencilBuffer);
+        m_depthStencilBuffer = m_context->createRenderbuffer();
     m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_depthStencilBuffer);
     if (m_antiAliasingMode == MSAAImplicitResolve)
         m_gl->RenderbufferStorageMultisampleEXT(GL_RENDERBUFFER, m_sampleCount, GL_DEPTH24_STENCIL8_OES, size.width(), size.height());
@@ -870,9 +878,9 @@ bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, So
 
     WTF::ArrayBufferContents pixels(width * height, 4, WTF::ArrayBufferContents::NotShared, WTF::ArrayBufferContents::DontInitialize);
 
-    GLuint fbo = 0;
+    GLint fbo = 0;
     if (sourceBuffer == FrontBuffer && m_frontColorBuffer.texInfo.textureId) {
-        m_gl->GenFramebuffers(1, &fbo);
+        fbo = m_context->createFramebuffer();
         m_gl->BindFramebuffer(GL_FRAMEBUFFER, fbo);
         m_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_frontColorBuffer.texInfo.parameters.target, m_frontColorBuffer.texInfo.textureId, 0);
     } else {
@@ -884,7 +892,7 @@ bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, So
 
     if (fbo) {
         m_gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_frontColorBuffer.texInfo.parameters.target, 0, 0);
-        m_gl->DeleteFramebuffers(1, &fbo);
+        m_context->deleteFramebuffer(fbo);
     }
 
     restoreFramebufferBindings();
@@ -974,6 +982,11 @@ DrawingBuffer::TextureInfo DrawingBuffer::createTextureAndAllocateMemory(const I
         return createDefaultTextureAndAllocateMemory(size);
 
     WebGLId textureId = createColorTexture(parameters);
+    if (!textureId) {
+        m_gl->DestroyImageCHROMIUM(imageId);
+        return createDefaultTextureAndAllocateMemory(size);
+    }
+
     m_gl->BindTexImage2DCHROMIUM(parameters.target, imageId);
 
     TextureInfo info;

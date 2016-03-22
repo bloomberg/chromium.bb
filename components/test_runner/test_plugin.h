@@ -17,7 +17,6 @@
 #include "third_party/WebKit/public/platform/WebLayer.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
-#include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {
 class WebFrame;
@@ -109,12 +108,12 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
 
   struct Scene {
     Primitive primitive;
-    uint8_t background_color[3];
-    uint8_t primitive_color[3];
+    unsigned background_color[3];
+    unsigned primitive_color[3];
     float opacity;
 
-    GLuint vbo;
-    GLuint program;
+    unsigned vbo;
+    unsigned program;
     int color_location;
     int position_location;
 
@@ -133,7 +132,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
 
   // Functions for parsing plugin parameters.
   Primitive ParsePrimitive(const blink::WebString& string);
-  void ParseColor(const blink::WebString& string, uint8_t color[3]);
+  void ParseColor(const blink::WebString& string, unsigned color[3]);
   float ParseOpacity(const blink::WebString& string);
   bool ParseBoolean(const blink::WebString& string);
 
@@ -144,9 +143,9 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   bool InitProgram();
   bool InitPrimitive();
   void DrawPrimitive();
-  GLuint LoadShader(GLenum type, const std::string& source);
-  GLuint LoadProgram(const std::string& vertex_source,
-                     const std::string& fragment_source);
+  unsigned LoadShader(unsigned type, const std::string& source);
+  unsigned LoadProgram(const std::string& vertex_source,
+                       const std::string& fragment_source);
 
   // Functions for drawing scene in Software.
   void DrawSceneSoftware(void* memory);
@@ -158,11 +157,11 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   blink::WebRect rect_;
   blink::WebGraphicsContext3D* context_;
   gpu::gles2::GLES2Interface* gl_;
-  GLuint color_texture_;
+  unsigned color_texture_;
   cc::TextureMailbox texture_mailbox_;
   scoped_ptr<cc::SharedBitmap> shared_bitmap_;
   bool mailbox_changed_;
-  GLuint framebuffer_;
+  unsigned framebuffer_;
   Scene scene_;
   scoped_refptr<cc::TextureLayer> layer_;
   scoped_ptr<blink::WebLayer> web_layer_;

@@ -258,8 +258,12 @@ Canvas2DLayerBridge::ImageInfo Canvas2DLayerBridge::createIOSurfaceBackedTexture
     if (!imageId)
         return Canvas2DLayerBridge::ImageInfo();
 
-    GLuint textureId;
-    gl->GenTextures(1, &textureId);
+    GLuint textureId= webContext->createTexture();
+    if (!textureId) {
+        gl->DestroyImageCHROMIUM(imageId);
+        return Canvas2DLayerBridge::ImageInfo();
+    }
+
     GLenum target = GC3D_TEXTURE_RECTANGLE_ARB;
     gl->BindTexture(target, textureId);
     gl->TexParameteri(target, GL_TEXTURE_MAG_FILTER, getGLFilter());
@@ -282,7 +286,7 @@ void Canvas2DLayerBridge::deleteCHROMIUMImage(ImageInfo info)
     gl->BindTexture(target, info.m_textureId);
     gl->ReleaseTexImage2DCHROMIUM(target, info.m_imageId);
     gl->DestroyImageCHROMIUM(info.m_imageId);
-    gl->DeleteTextures(1, &info.m_textureId);
+    webContext->deleteTexture(info.m_textureId);
     gl->BindTexture(target, 0);
 
     resetSkiaTextureBinding();

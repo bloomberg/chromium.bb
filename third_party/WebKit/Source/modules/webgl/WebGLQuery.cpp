@@ -31,9 +31,7 @@ WebGLQuery::WebGLQuery(WebGL2RenderingContextBase* ctx)
     , m_queryResultAvailable(false)
     , m_queryResult(0)
 {
-    GLuint query;
-    ctx->contextGL()->GenQueriesEXT(1, &query);
-    setObject(query);
+    setObject(ctx->webContext()->createQueryEXT());
 }
 
 void WebGLQuery::setTarget(GLenum target)
@@ -45,7 +43,7 @@ void WebGLQuery::setTarget(GLenum target)
 
 void WebGLQuery::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
-    gl->DeleteQueriesEXT(1, &m_object);
+    context3d->deleteQueryEXT(m_object);
     m_object = 0;
 }
 

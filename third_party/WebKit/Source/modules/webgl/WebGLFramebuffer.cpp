@@ -201,12 +201,11 @@ WebGLFramebuffer* WebGLFramebuffer::create(WebGLRenderingContextBase* ctx)
 
 WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
     : WebGLContextObject(ctx)
-    , m_object(0)
+    , m_object(ctx->webContext()->createFramebuffer())
     , m_destructionInProgress(false)
     , m_hasEverBeenBound(false)
     , m_readBuffer(GL_COLOR_ATTACHMENT0)
 {
-    ctx->contextGL()->GenFramebuffers(1, &m_object);
 }
 
 WebGLFramebuffer::~WebGLFramebuffer()
@@ -368,7 +367,7 @@ void WebGLFramebuffer::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gl
             attachment.value->onDetached(context3d, gl);
     }
 
-    gl->DeleteFramebuffers(1, &m_object);
+    context3d->deleteFramebuffer(m_object);
     m_object = 0;
 }
 

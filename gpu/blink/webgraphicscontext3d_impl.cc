@@ -330,6 +330,48 @@ void WebGraphicsContext3DImpl::shaderSource(
   gl_->ShaderSource(shader, 1, &string, &length);
 }
 
+WebGLId WebGraphicsContext3DImpl::createBuffer() {
+  GLuint o;
+  gl_->GenBuffers(1, &o);
+  return o;
+}
+
+WebGLId WebGraphicsContext3DImpl::createFramebuffer() {
+  GLuint o = 0;
+  gl_->GenFramebuffers(1, &o);
+  return o;
+}
+
+WebGLId WebGraphicsContext3DImpl::createRenderbuffer() {
+  GLuint o;
+  gl_->GenRenderbuffers(1, &o);
+  return o;
+}
+
+WebGLId WebGraphicsContext3DImpl::createTexture() {
+  GLuint o;
+  gl_->GenTextures(1, &o);
+  return o;
+}
+
+void WebGraphicsContext3DImpl::deleteBuffer(WebGLId buffer) {
+  gl_->DeleteBuffers(1, &buffer);
+}
+
+void WebGraphicsContext3DImpl::deleteFramebuffer(
+    WebGLId framebuffer) {
+  gl_->DeleteFramebuffers(1, &framebuffer);
+}
+
+void WebGraphicsContext3DImpl::deleteRenderbuffer(
+    WebGLId renderbuffer) {
+  gl_->DeleteRenderbuffers(1, &renderbuffer);
+}
+
+void WebGraphicsContext3DImpl::deleteTexture(WebGLId texture) {
+  gl_->DeleteTextures(1, &texture);
+}
+
 void WebGraphicsContext3DImpl::setErrorMessageCallback(
     WebGraphicsContext3D::WebGraphicsErrorMessageCallback* cb) {
   error_message_callback_ = cb;
@@ -340,9 +382,41 @@ void WebGraphicsContext3DImpl::setContextLostCallback(
   context_lost_callback_ = cb;
 }
 
+WebGLId WebGraphicsContext3DImpl::createQueryEXT() {
+  GLuint o;
+  gl_->GenQueriesEXT(1, &o);
+  return o;
+}
+
+void WebGraphicsContext3DImpl::deleteQueryEXT(
+    WebGLId query) {
+  gl_->DeleteQueriesEXT(1, &query);
+}
+
+WebGLId WebGraphicsContext3DImpl::createValuebufferCHROMIUM() {
+  GLuint o;
+  gl_->GenValuebuffersCHROMIUM(1, &o);
+  return o;
+}
+
+void WebGraphicsContext3DImpl::deleteValuebufferCHROMIUM(WebGLId valuebuffer) {
+  gl_->DeleteValuebuffersCHROMIUM(1, &valuebuffer);
+}
+
 void WebGraphicsContext3DImpl::pushGroupMarkerEXT(
     const WGC3Dchar* marker) {
   gl_->PushGroupMarkerEXT(0, marker);
+}
+
+WebGLId WebGraphicsContext3DImpl::createVertexArrayOES() {
+  GLuint array;
+  gl_->GenVertexArraysOES(1, &array);
+  return array;
+}
+
+void WebGraphicsContext3DImpl::deleteVertexArrayOES(
+    WebGLId array) {
+  gl_->DeleteVertexArraysOES(1, &array);
 }
 
 DELEGATE_TO_GL_1(beginTransformFeedback, BeginTransformFeedback, WGC3Denum)
@@ -372,6 +446,22 @@ DELEGATE_TO_GL_5(copyBufferSubData, CopyBufferSubData, WGC3Denum, WGC3Denum,
 DELEGATE_TO_GL_9(copyTexSubImage3D, CopyTexSubImage3D, WGC3Denum, WGC3Dint,
                  WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dint, WGC3Dsizei,
                  WGC3Dsizei)
+WebGLId WebGraphicsContext3DImpl::createSampler() {
+  GLuint sampler;
+  gl_->GenSamplers(1, &sampler);
+  return sampler;
+}
+WebGLId WebGraphicsContext3DImpl::createTransformFeedback() {
+  GLuint tf;
+  gl_->GenTransformFeedbacks(1, &tf);
+  return tf;
+}
+void WebGraphicsContext3DImpl::deleteSampler(WebGLId sampler) {
+  gl_->DeleteSamplers(1, &sampler);
+}
+void WebGraphicsContext3DImpl::deleteTransformFeedback(WebGLId tf) {
+  gl_->DeleteTransformFeedbacks(1, &tf);
+}
 DELEGATE_TO_GL(endTransformFeedback, EndTransformFeedback)
 DELEGATE_TO_GL_5(getActiveUniformBlockName, GetActiveUniformBlockName,
                  WGC3Duint, WGC3Duint, WGC3Dsizei, WGC3Dsizei *, WGC3Dchar *)

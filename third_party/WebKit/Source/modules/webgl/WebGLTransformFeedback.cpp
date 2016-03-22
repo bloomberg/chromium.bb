@@ -4,7 +4,6 @@
 
 #include "modules/webgl/WebGLTransformFeedback.h"
 
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGL2RenderingContextBase.h"
 
 namespace blink {
@@ -27,14 +26,12 @@ WebGLTransformFeedback::WebGLTransformFeedback(WebGL2RenderingContextBase* ctx)
     , m_paused(false)
     , m_program(nullptr)
 {
-    GLuint tf;
-    ctx->contextGL()->GenTransformFeedbacks(1, &tf);
-    setObject(tf);
+    setObject(ctx->webContext()->createTransformFeedback());
 }
 
 void WebGLTransformFeedback::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
-    gl->DeleteTransformFeedbacks(1, &m_object);
+    context3d->deleteTransformFeedback(m_object);
     m_object = 0;
 }
 

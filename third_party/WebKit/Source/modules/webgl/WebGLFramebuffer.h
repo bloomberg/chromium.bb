@@ -64,7 +64,7 @@ public:
 
     static WebGLFramebuffer* create(WebGLRenderingContextBase*);
 
-    GLuint object() const { return m_object; }
+    Platform3DObject object() const { return m_object; }
 
     void setAttachmentForBoundFramebuffer(GLenum target, GLenum attachment, GLenum texTarget, WebGLTexture*, GLint level, GLint layer);
     void setAttachmentForBoundFramebuffer(GLenum target, GLenum attachment, WebGLRenderbuffer*);
@@ -114,7 +114,7 @@ private:
     // Check if a new drawBuffers call should be issued. This is called when we add or remove an attachment.
     void drawBuffersIfNecessary(bool force);
 
-    GLuint m_object;
+    Platform3DObject m_object;
 
     typedef HeapHashMap<GLenum, Member<WebGLAttachment>> AttachmentMap;
 

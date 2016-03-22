@@ -25,7 +25,6 @@
 
 #include "modules/webgl/WebGLBuffer.h"
 
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 
 namespace blink {
@@ -40,9 +39,7 @@ WebGLBuffer::WebGLBuffer(WebGLRenderingContextBase* ctx)
     , m_initialTarget(0)
     , m_size(0)
 {
-    GLuint buffer;
-    ctx->contextGL()->GenBuffers(1, &buffer);
-    setObject(buffer);
+    setObject(ctx->webContext()->createBuffer());
 }
 
 WebGLBuffer::~WebGLBuffer()
@@ -53,7 +50,7 @@ WebGLBuffer::~WebGLBuffer()
 
 void WebGLBuffer::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
 {
-    gl->DeleteBuffers(1, &m_object);
+    context3d->deleteBuffer(m_object);
     m_object = 0;
 }
 
