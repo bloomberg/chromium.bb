@@ -1,0 +1,5 @@
+{
+  "name": "exe:resource_provider_unittests",
+  "display_name": "Resource Provider Unittests",
+  "capabilities": { "*": [ "*" ] }
+}

@@ -24,10 +24,6 @@
 # WARNING: If you add a test make sure the gn target mojo_apptests depends upon
 # it.
 tests = [
-  {
-    'test': 'mojo:resource_provider_apptests',
-    'type': 'gtest_isolated',
-  },
   # TODO(msw|jam): Fix and enable the runner_apptests: http://crbug.com/479316
   #{
   #  'test': 'mojo:runner_apptests',

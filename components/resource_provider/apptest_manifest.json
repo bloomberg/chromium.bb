@@ -1,5 +1,0 @@
-{
-  "name": "mojo:resource_provider_apptests",
-  "display_name": "Resource Provider Apptests",
-  "capabilities": { "*": [ "*" ] }
-}

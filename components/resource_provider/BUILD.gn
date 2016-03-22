@@ -4,6 +4,7 @@
 
 import("//mojo/public/mojo_application.gni")
 import("//mojo/public/mojo_application_manifest.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
 if (is_android) {
@@ -112,26 +113,33 @@ source_set("lib") {
 test("resource_provider_unittests") {
   sources = [
     "file_utils_unittest.cc",
+    "resource_provider_unittest.cc",
   ]
 
   deps = [
     ":lib",
+    ":test_interfaces",
     "//base",
-    "//base/test:test_config",
     "//components/resource_provider/public/interfaces",
-    "//mojo/edk/test:run_all_unittests",
-    "//mojo/platform_handle:for_shared_library",
+    "//mojo/shell/background:main",
+    "//mojo/shell/public/cpp:shell_test_support",
+    "//mojo/shell/public/cpp/test:run_all_shelltests",
     "//testing/gtest",
     "//url",
   ]
+
+  data_deps = [
+    ":test_app",
+    ":unittests_manifest",
+  ]
 }
 
-mojo_native_application("apptests") {
-  output_name = "resource_provider_apptests"
+mojo_native_application("test_app") {
+  output_name = "resource_provider_test_app"
   testonly = true
 
   sources = [
-    "resource_provider_apptest.cc",
+    "resource_provider_test_app.cc",
   ]
 
   resources = [
@@ -140,21 +148,33 @@ mojo_native_application("apptests") {
   ]
 
   deps = [
+    ":test_interfaces",
     "//base",
-    "//base/test:test_config",
     "//components/resource_provider/public/cpp",
     "//components/resource_provider/public/interfaces",
-    "//mojo/common",
-    "//mojo/shell/public/cpp:test_support",
+    "//mojo/shell/public/cpp",
+    "//mojo/shell/public/interfaces",
   ]
 
   data_deps = [
-    ":apptest_manifest",
     ":resource_provider",
+    ":test_manifest",
   ]
 }
 
-mojo_application_manifest("apptest_manifest") {
-  application_name = "resource_provider_apptests"
-  source = "apptest_manifest.json"
+mojo_application_manifest("test_manifest") {
+  application_name = "resource_provider_test_app"
+  source = "test_manifest.json"
+}
+
+mojo_application_manifest("unittests_manifest") {
+  type = "exe"
+  application_name = "resource_provider_unittests"
+  source = "unittests_manifest.json"
+}
+
+mojom("test_interfaces") {
+  sources = [
+    "test.mojom",
+  ]
 }
