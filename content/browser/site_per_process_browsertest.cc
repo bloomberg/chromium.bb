@@ -2845,14 +2845,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             root->child_at(1)->effective_sandbox_flags());
 
   // Navigate the second subframe to a page on bar.com.  This will trigger a
-  // remote-to-local frame swap in bar.com's process.  The target page has
-  // another frame, so use TestFrameNavigationObserver to wait for all frames
-  // to be loaded.
-  TestFrameNavigationObserver frame_observer(root->child_at(1), 2);
+  // remote-to-local frame swap in bar.com's process.
   GURL bar_url(embedded_test_server()->GetURL(
       "bar.com", "/frame_tree/page_with_one_frame.html"));
   NavigateFrameToURL(root->child_at(1), bar_url);
-  frame_observer.Wait();
   EXPECT_EQ(bar_url, root->child_at(1)->current_url());
   ASSERT_EQ(1U, root->child_at(1)->child_count());
 
@@ -4153,7 +4149,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
   TestFrameNavigationObserver commit_observer(root);
   shell()->LoadURL(b_url);
-  commit_observer.Wait();
+  commit_observer.WaitForCommit();
 
   // Since the SwapOut ACK for A->B is dropped, the first page's
   // RenderFrameHost and RenderViewHost should be pending deletion after the
@@ -5612,9 +5608,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SandboxFlagsInheritance) {
   // sandbox flags.
   GURL frame_url(embedded_test_server()->GetURL(
       "b.com", "/cross_site_iframe_factory.html?b(c(d))"));
-  TestFrameNavigationObserver frame_observer(root->child_at(0));
   NavigateFrameToURL(root->child_at(0), frame_url);
-  frame_observer.Wait();
+
   // Wait for subframes to load as well.
   ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
 

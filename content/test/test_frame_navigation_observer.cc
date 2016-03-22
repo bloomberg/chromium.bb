@@ -18,25 +18,13 @@
 namespace content {
 
 TestFrameNavigationObserver::TestFrameNavigationObserver(
-    FrameTreeNode* node,
-    int number_of_navigations)
-    : WebContentsObserver(
-          node->current_frame_host()->delegate()->GetAsWebContents()),
-      frame_tree_node_id_(node->frame_tree_node_id()),
-      navigation_started_(false),
-      navigations_completed_(0),
-      number_of_navigations_(number_of_navigations),
-      message_loop_runner_(new MessageLoopRunner) {
-}
-
-TestFrameNavigationObserver::TestFrameNavigationObserver(
     FrameTreeNode* node)
     : WebContentsObserver(
           node->current_frame_host()->delegate()->GetAsWebContents()),
       frame_tree_node_id_(node->frame_tree_node_id()),
       navigation_started_(false),
-      navigations_completed_(0),
-      number_of_navigations_(1),
+      has_committed_(false),
+      wait_for_commit_(false),
       message_loop_runner_(new MessageLoopRunner) {
 }
 
@@ -44,6 +32,15 @@ TestFrameNavigationObserver::~TestFrameNavigationObserver() {
 }
 
 void TestFrameNavigationObserver::Wait() {
+  wait_for_commit_ = false;
+  message_loop_runner_->Run();
+}
+
+void TestFrameNavigationObserver::WaitForCommit() {
+  if (has_committed_)
+    return;
+
+  wait_for_commit_ = true;
   message_loop_runner_->Run();
 }
 
@@ -54,8 +51,10 @@ void TestFrameNavigationObserver::DidStartProvisionalLoadForFrame(
     bool is_iframe_srcdoc) {
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(render_frame_host);
-  if (rfh->frame_tree_node()->frame_tree_node_id() == frame_tree_node_id_)
+  if (rfh->frame_tree_node()->frame_tree_node_id() == frame_tree_node_id_) {
     navigation_started_ = true;
+    has_committed_ = false;
+  }
 }
 
 void TestFrameNavigationObserver::DidCommitProvisionalLoadForFrame(
@@ -65,11 +64,22 @@ void TestFrameNavigationObserver::DidCommitProvisionalLoadForFrame(
   if (!navigation_started_)
     return;
 
-  ++navigations_completed_;
-  if (navigations_completed_ == number_of_navigations_) {
-    navigation_started_ = false;
+  RenderFrameHostImpl* rfh =
+      static_cast<RenderFrameHostImpl*>(render_frame_host);
+  if (rfh->frame_tree_node()->frame_tree_node_id() != frame_tree_node_id_)
+    return;
+
+  has_committed_ = true;
+  if (wait_for_commit_)
     message_loop_runner_->Quit();
-  }
+}
+
+void TestFrameNavigationObserver::DidStopLoading() {
+  if (!navigation_started_)
+    return;
+
+  navigation_started_ = false;
+  message_loop_runner_->Quit();
 }
 
 }  // namespace content

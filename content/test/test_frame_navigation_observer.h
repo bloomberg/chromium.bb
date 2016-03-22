@@ -23,21 +23,23 @@ class WebContents;
 struct LoadCommittedDetails;
 
 // For content_browsertests, which run on the UI thread, run a second
-// MessageLoop and quit when the navigation in a specific frame completes
-// loading.
+// MessageLoop and quit when the navigation in a specific frame (and all of its
+// subframes) has completed loading.
 class TestFrameNavigationObserver : public WebContentsObserver {
  public:
   // Create and register a new TestFrameNavigationObserver which will track
   // navigations performed in the specified |node| of the frame tree.
-  TestFrameNavigationObserver(FrameTreeNode* node, int number_of_navigations);
-  // As above but waits for one navigation.
   explicit TestFrameNavigationObserver(FrameTreeNode* node);
 
   ~TestFrameNavigationObserver() override;
 
-  // Runs a nested message loop and blocks until the expected number of
-  // navigations are complete.
+  // Runs a nested message loop and blocks until the full load has
+  // completed.
   void Wait();
+
+  // Runs a nested message loop and blocks until the navigation in the
+  // associated FrameTreeNode has committed.
+  void WaitForCommit();
 
  private:
   // WebContentsObserver
@@ -49,6 +51,7 @@ class TestFrameNavigationObserver : public WebContentsObserver {
       RenderFrameHost* render_frame_host,
       const GURL& url,
       ui::PageTransition transition_type) override;
+  void DidStopLoading() override;
 
   // The id of the FrameTreeNode in which navigations are peformed.
   int frame_tree_node_id_;
@@ -56,11 +59,12 @@ class TestFrameNavigationObserver : public WebContentsObserver {
   // If true the navigation has started.
   bool navigation_started_;
 
-  // The number of navigations that have been completed.
-  int navigations_completed_;
+  // If true, the navigation has committed.
+  bool has_committed_;
 
-  // The number of navigations to wait for.
-  int number_of_navigations_;
+  // If true, this object is waiting for commit only, not for the full load
+  // of the document.
+  bool wait_for_commit_;
 
   // The MessageLoopRunner used to spin the message loop.
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
