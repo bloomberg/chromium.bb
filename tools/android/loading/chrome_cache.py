@@ -8,6 +8,7 @@
 from datetime import datetime
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -36,6 +37,13 @@ OUT_DIRECTORY = os.getenv('CR_OUT_FULL', os.path.join(
 
 # Default cachetool binary location.
 CACHETOOL_BIN_PATH = os.path.join(OUT_DIRECTORY, 'cachetool')
+
+# Default content_decoder_tool binary location.
+CONTENT_DECODER_TOOL_BIN_PATH = os.path.join(OUT_DIRECTORY,
+                                             'content_decoder_tool')
+
+# Regex used to parse HTTP headers line by line.
+HEADER_PARSING_REGEX = re.compile(r'^(?P<header>\S+):(?P<value>.*)$')
 
 
 def _EnsureCleanCacheDirectory(directory_dest_path):
@@ -306,6 +314,42 @@ class CacheBackend(object):
     assert process.returncode == 0
     return stdout_data
 
+  def GetDecodedContentForKey(self, key):
+    """Gets a key's decoded content.
+
+    HTTP cache is storing into key's index stream 1 the transport layer resource
+    binary. However, the resources might be encoded using a compression
+    algorithm specified in the Content-Encoding response header. This method
+    takes care of returning decoded binary content of the resource.
+
+    Args:
+      key: The key to access the decoded content.
+
+    Returns:
+      String holding binary content.
+    """
+    response_headers = self.GetStreamForKey(key, 0)
+    content_encoding = None
+    for response_header_line in response_headers.split('\n'):
+      match = HEADER_PARSING_REGEX.match(response_header_line)
+      if not match:
+        continue
+      if match.group('header').lower() == 'content-encoding':
+        content_encoding = match.group('value')
+        break
+    encoded_content = self.GetStreamForKey(key, 1)
+    if content_encoding == None:
+      return encoded_content
+
+    cmd = [CONTENT_DECODER_TOOL_BIN_PATH]
+    cmd.extend([s.strip() for s in content_encoding.split(',')])
+    process = subprocess.Popen(cmd,
+                               stdin=subprocess.PIPE,
+                               stdout=subprocess.PIPE)
+    decoded_content, _ = process.communicate(input=encoded_content)
+    assert process.returncode == 0
+    return decoded_content
+
 
 def ApplyUrlWhitelistToCacheArchive(cache_archive_path,
                                     whitelisted_urls,
@@ -333,18 +377,33 @@ def ApplyUrlWhitelistToCacheArchive(cache_archive_path,
     shutil.rmtree(cache_temp_directory)
 
 
-if __name__ == '__main__':
+def ManualTestMain():
   import argparse
   parser = argparse.ArgumentParser(description='Tests cache back-end.')
-  parser.add_argument('cache_path', type=str)
+  parser.add_argument('cache_archive_path', type=str)
   parser.add_argument('backend_type', type=str, choices=BACKEND_TYPES)
   command_line_args = parser.parse_args()
 
+  cache_path = tempfile.mkdtemp()
+  UnzipDirectoryContent(command_line_args.cache_archive_path, cache_path)
+
   cache_backend = CacheBackend(
-      cache_directory_path=command_line_args.cache_path,
+      cache_directory_path=cache_path,
       cache_backend_type=command_line_args.backend_type)
-  keys = cache_backend.ListKeys()
-  print '{}\'s HTTP response header:'.format(keys[0])
-  print cache_backend.GetStreamForKey(keys[0], 0)
+  keys = sorted(cache_backend.ListKeys())
+  selected_key = None
+  for key in keys:
+    if key.endswith('.js'):
+      selected_key = key
+      break
+  assert selected_key
+  print '{}\'s HTTP response header:'.format(selected_key)
+  print cache_backend.GetStreamForKey(selected_key, 0)
+  print cache_backend.GetDecodedContentForKey(selected_key)
   cache_backend.DeleteKey(keys[1])
   assert keys[1] not in cache_backend.ListKeys()
+  shutil.rmtree(cache_path)
+
+
+if __name__ == '__main__':
+  ManualTestMain()
