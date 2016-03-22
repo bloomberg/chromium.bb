@@ -51,10 +51,12 @@ UI_BASE_EXPORT bool OpenAnyViaShell(const base::string16& full_path,
 UI_BASE_EXPORT bool PreventWindowFromPinning(HWND hwnd);
 
 // Sets the application id, app icon, relaunch command and relaunch display name
-// for the given window.
+// for the given window. |app_icon_index| should be set to 0 if the app icon
+// file only has a single icon.
 UI_BASE_EXPORT void SetAppDetailsForWindow(
     const base::string16& app_id,
-    const base::string16& app_icon,
+    const base::FilePath& app_icon_path,
+    int app_icon_index,
     const base::string16& relaunch_command,
     const base::string16& relaunch_display_name,
     HWND hwnd);
@@ -65,7 +67,8 @@ UI_BASE_EXPORT void SetAppDetailsForWindow(
 UI_BASE_EXPORT void SetAppIdForWindow(const base::string16& app_id, HWND hwnd);
 
 // Sets the application icon for the window specified.
-UI_BASE_EXPORT void SetAppIconForWindow(const base::string16& app_icon,
+UI_BASE_EXPORT void SetAppIconForWindow(const base::FilePath& app_icon_path,
+                                        int app_icon_index,
                                         HWND hwnd);
 
 // Sets the relaunch command and relaunch display name for the window specified.

@@ -74,18 +74,14 @@ int GetAppListIconIndex() {
   return dist->GetIconIndex(BrowserDistribution::SHORTCUT_APP_LAUNCHER);
 }
 
-base::string16 GetAppListIconPath() {
+base::FilePath GetAppListIconPath() {
   base::FilePath icon_path;
   if (!PathService::Get(base::FILE_EXE, &icon_path)) {
     NOTREACHED();
-    return base::string16();
+    return base::FilePath();
   }
 
-  std::stringstream ss;
-  ss << "," << GetAppListIconIndex();
-  base::string16 result = icon_path.value();
-  result.append(base::UTF8ToUTF16(ss.str()));
-  return result;
+  return icon_path;
 }
 
 base::string16 GetAppListShortcutName() {
@@ -236,8 +232,8 @@ void SetWindowAttributes(HWND hwnd) {
   ui::win::SetRelaunchDetailsForWindow(
       relaunch.GetCommandLineString(), app_name, hwnd);
   ::SetWindowText(hwnd, app_name.c_str());
-  base::string16 icon_path = GetAppListIconPath();
-  ui::win::SetAppIconForWindow(icon_path, hwnd);
+  ui::win::SetAppIconForWindow(GetAppListIconPath(), GetAppListIconIndex(),
+                               hwnd);
 }
 
 }  // namespace

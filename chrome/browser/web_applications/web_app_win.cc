@@ -357,7 +357,7 @@ void CreateIconAndSetRelaunchDetails(
   if (!base::PathExists(web_app_path) && !base::CreateDirectory(web_app_path))
     return;
 
-  ui::win::SetAppIconForWindow(icon_file.value(), hwnd);
+  ui::win::SetAppIconForWindow(icon_file, 0, hwnd);
   web_app::internals::CheckAndSaveIcon(icon_file, shortcut_info->favicon, true);
 }
 

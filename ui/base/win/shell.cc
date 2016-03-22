@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/native_library.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
@@ -114,7 +115,8 @@ bool PreventWindowFromPinning(HWND hwnd) {
 // TODO(calamity): investigate moving this out of the UI thread as COM
 // operations may spawn nested message loops which can cause issues.
 void SetAppDetailsForWindow(const base::string16& app_id,
-                            const base::string16& app_icon,
+                            const base::FilePath& app_icon_path,
+                            int app_icon_index,
                             const base::string16& relaunch_command,
                             const base::string16& relaunch_display_name,
                             HWND hwnd) {
@@ -131,9 +133,14 @@ void SetAppDetailsForWindow(const base::string16& app_id,
 
   if (!app_id.empty())
     base::win::SetAppIdForPropertyStore(pps.get(), app_id.c_str());
-  if (!app_icon.empty()) {
+  if (!app_icon_path.empty()) {
+    // Always add the icon index explicitly to prevent bad interaction with the
+    // index notation when file path has commas.
     base::win::SetStringValueForPropertyStore(
-        pps.get(), PKEY_AppUserModel_RelaunchIconResource, app_icon.c_str());
+        pps.get(), PKEY_AppUserModel_RelaunchIconResource,
+        base::StringPrintf(L"%ls,%d", app_icon_path.value().c_str(),
+                           app_icon_index)
+            .c_str());
   }
   if (!relaunch_command.empty()) {
     base::win::SetStringValueForPropertyStore(
@@ -148,29 +155,22 @@ void SetAppDetailsForWindow(const base::string16& app_id,
 }
 
 void SetAppIdForWindow(const base::string16& app_id, HWND hwnd) {
-  SetAppDetailsForWindow(app_id,
-                         base::string16(),
-                         base::string16(),
-                         base::string16(),
-                         hwnd);
+  SetAppDetailsForWindow(app_id, base::FilePath(), 0, base::string16(),
+                         base::string16(), hwnd);
 }
 
-void SetAppIconForWindow(const base::string16& app_icon, HWND hwnd) {
-  SetAppDetailsForWindow(base::string16(),
-                         app_icon,
-                         base::string16(),
-                         base::string16(),
-                         hwnd);
+void SetAppIconForWindow(const base::FilePath& app_icon_path,
+                         int app_icon_index,
+                         HWND hwnd) {
+  SetAppDetailsForWindow(base::string16(), app_icon_path, app_icon_index,
+                         base::string16(), base::string16(), hwnd);
 }
 
 void SetRelaunchDetailsForWindow(const base::string16& relaunch_command,
                                  const base::string16& display_name,
                                  HWND hwnd) {
-  SetAppDetailsForWindow(base::string16(),
-                         base::string16(),
-                         relaunch_command,
-                         display_name,
-                         hwnd);
+  SetAppDetailsForWindow(base::string16(), base::FilePath(), 0,
+                         relaunch_command, display_name, hwnd);
 }
 
 void ClearWindowPropertyStore(HWND hwnd) {
