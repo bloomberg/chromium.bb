@@ -109,9 +109,10 @@ class AudioTrackRecorder::AudioEncoder
   void EncodeAudio(scoped_ptr<media::AudioBus> audio_bus,
                    const base::TimeTicks& capture_time);
 
+  void set_paused(bool paused) { paused_ = paused; }
+
  private:
   friend class base::RefCountedThreadSafe<AudioEncoder>;
-
   ~AudioEncoder() override;
 
   bool is_initialized() const { return !!opus_encoder_; }
@@ -142,6 +143,9 @@ class AudioTrackRecorder::AudioEncoder
   // Buffer for passing AudioBus data to OpusEncoder.
   scoped_ptr<float[]> buffer_;
 
+  // While |paused_|, AudioBuses are not encoded.
+  bool paused_;
+
   OpusEncoder* opus_encoder_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioEncoder);
@@ -152,6 +156,7 @@ AudioTrackRecorder::AudioEncoder::AudioEncoder(
     int32_t bits_per_second)
     : on_encoded_audio_cb_(on_encoded_audio_cb),
       bits_per_second_(bits_per_second),
+      paused_(false),
       opus_encoder_(nullptr) {
   // AudioEncoder is constructed on the thread that ATR lives on, but should
   // operate only on the encoder thread after that. Reset
@@ -241,7 +246,7 @@ void AudioTrackRecorder::AudioEncoder::EncodeAudio(
   DCHECK(!capture_time.is_null());
   DCHECK(converter_);
 
-  if (!is_initialized())
+  if (!is_initialized() || paused_)
     return;
   // TODO(mcasas): Consider using a std::deque<scoped_ptr<AudioBus>> instead of
   // an AudioFifo, to avoid copying data needlessly since we know the sizes of
@@ -278,7 +283,7 @@ double AudioTrackRecorder::AudioEncoder::ProvideInput(
 
 void AudioTrackRecorder::AudioEncoder::DestroyExistingOpusEncoder() {
   // We don't DCHECK that we're on the encoder thread here, as this could be
-  // called from the dtor (main thread) or from OnSetForamt() (render thread);
+  // called from the dtor (main thread) or from OnSetFormat() (encoder thread).
   if (opus_encoder_) {
     opus_encoder_destroy(opus_encoder_);
     opus_encoder_ = nullptr;
@@ -334,6 +339,20 @@ void AudioTrackRecorder::OnData(const media::AudioBus& audio_bus,
   encoder_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&AudioEncoder::EncodeAudio, encoder_,
                             base::Passed(&audio_data), capture_time));
+}
+
+void AudioTrackRecorder::Pause() {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK(encoder_);
+  encoder_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&AudioEncoder::set_paused, encoder_, true));
+}
+
+void AudioTrackRecorder::Resume() {
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  DCHECK(encoder_);
+  encoder_thread_.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&AudioEncoder::set_paused, encoder_, false));
 }
 
 }  // namespace content

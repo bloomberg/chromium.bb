@@ -47,6 +47,9 @@ class CONTENT_EXPORT AudioTrackRecorder
   void OnData(const media::AudioBus& audio_bus,
               base::TimeTicks capture_time) override;
 
+  void Pause();
+  void Resume();
+
  private:
   // Forward declaration of nested class for handling encoding.
   // See the implementation file for details.

@@ -202,6 +202,8 @@ void MediaRecorderHandler::pause() {
   recording_ = false;
   for (const auto& video_recorder : video_recorders_)
     video_recorder->Pause();
+  for (const auto& audio_recorder : audio_recorders_)
+    audio_recorder->Pause();
 }
 
 void MediaRecorderHandler::resume() {
@@ -210,6 +212,8 @@ void MediaRecorderHandler::resume() {
   recording_ = true;
   for (const auto& video_recorder : video_recorders_)
     video_recorder->Resume();
+  for (const auto& audio_recorder : audio_recorders_)
+    audio_recorder->Resume();
 }
 
 void MediaRecorderHandler::OnEncodedVideo(
