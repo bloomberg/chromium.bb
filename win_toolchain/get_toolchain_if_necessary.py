@@ -357,6 +357,27 @@ def InstallUniversalCRTIfNeeded(abs_target_dir):
   return
 
 
+def EnableCrashDumpCollection():
+  """Tell Windows Error Reporting to record crash dumps so that we can diagnose
+  linker crashes and other toolchain failures. Documented at:
+  https://msdn.microsoft.com/en-us/library/windows/desktop/bb787181.aspx
+  """
+  if sys.platform == 'win32' and os.environ.get('CHROME_HEADLESS') == '1':
+    key_name = r'SOFTWARE\Microsoft\Windows\Windows Error Reporting'
+    try:
+      key = winreg.CreateKey(winreg.HKEY_LOCAL_MACHINE, key_name)
+      # Merely creating LocalDumps is sufficient to enable the defaults.
+      winreg.CreateKey(key, "LocalDumps")
+      # Disable the WER UI, as documented here:
+      # https://msdn.microsoft.com/en-us/library/windows/desktop/bb513638.aspx
+      winreg.SetValueEx(key, "DontShowUI", 0, winreg.REG_DWORD, 1)
+    # Trap OSError instead of WindowsError so pylint will succeed on Linux.
+    # Catching errors is important because some build machines are not elevated
+    # and writing to HKLM requires elevation.
+    except OSError:
+      pass
+
+
 def main():
   parser = optparse.OptionParser(description=sys.modules[__name__].__doc__)
   parser.add_option('--output-json', metavar='FILE',
@@ -470,6 +491,8 @@ def main():
   if options.output_json:
     shutil.copyfile(os.path.join(target_dir, '..', 'data.json'),
                     options.output_json)
+
+  EnableCrashDumpCollection()
 
   if os.environ.get('GYP_MSVS_VERSION') == '2015':
     InstallUniversalCRTIfNeeded(abs_toolchain_target_dir)
