@@ -1195,7 +1195,9 @@ Polymer({
   },
 
   /**
-   * Updates |currentView_| if there is a new blocking issue.
+   * Updates |currentView_| if there is a new blocking issue. Clears any
+   * pending route creation properties if the issue corresponds with
+   * |pendingCreatedRouteId_|.
    *
    * @param {?media_router.Issue} issue The new issue.
    * @private
@@ -1205,6 +1207,11 @@ Polymer({
       this.currentView_ = media_router.MediaRouterView.ISSUE;
     else
       this.updateElementPositioning_();
+
+    if (!!this.pendingCreatedRouteId_ && !!issue &&
+        issue.routeId == this.pendingCreatedRouteId_) {
+      this.resetRouteCreationProperties_(false);
+    }
   },
 
   /**
