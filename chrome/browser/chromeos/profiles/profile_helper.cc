@@ -11,13 +11,17 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
+#include "chrome/browser/chromeos/base/file_flusher.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/user_manager/user.h"
@@ -26,6 +30,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "extensions/common/constants.h"
 
 namespace chromeos {
 
@@ -157,7 +162,7 @@ bool ProfileHelper::IsSigninProfile(const Profile* profile) {
 }
 
 // static
-bool ProfileHelper::IsOwnerProfile(Profile* profile) {
+bool ProfileHelper::IsOwnerProfile(const Profile* profile) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kStubCrosSettings)) {
     return true;
@@ -182,6 +187,31 @@ bool ProfileHelper::IsPrimaryProfile(const Profile* profile) {
   if (!user)
     return false;
   return user == user_manager::UserManager::Get()->GetPrimaryUser();
+}
+
+// static
+bool ProfileHelper::IsEphemeralUserProfile(const Profile* profile) {
+  if (!profile)
+    return false;
+
+  // Owner profile is always persistent.
+  if (IsOwnerProfile(profile))
+    return false;
+
+  const user_manager::User* user =
+      ProfileHelper::Get()->GetUserByProfile(profile);
+  if (!user)
+    return false;
+
+  // Guest and public account is ephemeral.
+  const user_manager::UserType user_type = user->GetType();
+  if (user_type == user_manager::USER_TYPE_GUEST ||
+      user_type == user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
+    return true;
+  }
+
+  // Otherwise, users are ephemeral when the policy is enabled.
+  return ChromeUserManager::Get()->AreEphemeralUsersEnabled();
 }
 
 void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {
@@ -429,6 +459,30 @@ void ProfileHelper::SetUserToProfileMappingForTesting(
 std::string ProfileHelper::GetUserIdHashByUserIdForTesting(
     const std::string& user_id) {
   return user_id + kUserIdHashSuffix;
+}
+
+void ProfileHelper::FlushProfile(Profile* profile) {
+  if (!profile_flusher_)
+    profile_flusher_.reset(new FileFlusher);
+
+  // Files/directories that do not need to be flushed.
+  std::vector<base::FilePath> excludes;
+
+  // Preferences file is handled by ImportantFileWriter.
+  excludes.push_back(base::FilePath(chrome::kPreferencesFilename));
+  // Do not flush cache files.
+  excludes.push_back(base::FilePath(chrome::kCacheDirname));
+  excludes.push_back(base::FilePath(chrome::kMediaCacheDirname));
+  excludes.push_back(base::FilePath(FILE_PATH_LITERAL("GPUCache")));
+  // Do not flush user Downloads.
+  excludes.push_back(
+      DownloadPrefs::FromBrowserContext(profile)->DownloadPath());
+  // Let extension system handle extension files.
+  excludes.push_back(base::FilePath(extensions::kInstallDirectoryName));
+  // Do not flush Drive cache.
+  excludes.push_back(base::FilePath(chromeos::kDriveCacheDirname));
+
+  profile_flusher_->RequestFlush(profile->GetPath(), excludes, base::Closure());
 }
 
 }  // namespace chromeos

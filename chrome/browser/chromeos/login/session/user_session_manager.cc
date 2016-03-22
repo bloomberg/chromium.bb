@@ -801,6 +801,11 @@ void UserSessionManager::OnSessionRestoreStateChanged(
     // We need to restart cleanly in this case to make sure OAuth2 RT is
     // actually saved.
     chrome::AttemptRestart();
+  } else {
+    // Schedule another flush after session restore for non-ephemeral profile
+    // if not restarting.
+    if (!ProfileHelper::IsEphemeralUserProfile(user_profile))
+      ProfileHelper::Get()->FlushProfile(user_profile);
   }
 }
 
@@ -1174,6 +1179,10 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
   // If needed, create browser observer to display first run OOBE Goodies page.
   first_run::GoodiesDisplayer::Init();
+
+  // Schedule a flush if profile is not ephemeral.
+  if (!ProfileHelper::IsEphemeralUserProfile(profile))
+    ProfileHelper::Get()->FlushProfile(profile);
 
   // TODO(nkostylev): This pointer should probably never be NULL, but it looks
   // like OnProfileCreated() may be getting called before

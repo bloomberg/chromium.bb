@@ -613,11 +613,17 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just after CreateProfile().
 
-  // Force loading of signin profile if it was not loaded before. It is possible
-  // when we are restoring session or skipping login screen for some other
-  // reason.
-  if (!chromeos::ProfileHelper::IsSigninProfile(profile()))
+  if (chromeos::ProfileHelper::IsSigninProfile(profile())) {
+    // Flush signin profile if it is just created (new device or after recovery)
+    // to ensure it is correctly persisted.
+    if (profile()->IsNewProfile())
+      ProfileHelper::Get()->FlushProfile(profile());
+  } else {
+    // Force loading of signin profile if it was not loaded before. It is
+    // possible when we are restoring session or skipping login screen for some
+    // other reason.
     chromeos::ProfileHelper::GetSigninProfile();
+  }
 
   BootTimesRecorder::Get()->OnChromeProcessStart();
 

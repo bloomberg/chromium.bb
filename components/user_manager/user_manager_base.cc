@@ -256,10 +256,7 @@ void UserManagerBase::SessionStarted() {
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SESSION_STATE_ACTIVE);
 
-  if (IsCurrentUserNew()) {
-    // Make sure that the new user's data is persisted to Local State.
-    GetLocalState()->CommitPendingWrite();
-  }
+  GetLocalState()->CommitPendingWrite();
 }
 
 void UserManagerBase::RemoveUser(const AccountId& account_id,
@@ -368,11 +365,14 @@ void UserManagerBase::SaveUserOAuthStatus(
   if (IsUserNonCryptohomeDataEphemeral(account_id))
     return;
 
-  DictionaryPrefUpdate oauth_status_update(GetLocalState(),
-                                           kUserOAuthTokenStatus);
-  oauth_status_update->SetWithoutPathExpansion(
-      account_id.GetUserEmail(),
-      new base::FundamentalValue(static_cast<int>(oauth_token_status)));
+  {
+    DictionaryPrefUpdate oauth_status_update(GetLocalState(),
+                                             kUserOAuthTokenStatus);
+    oauth_status_update->SetWithoutPathExpansion(
+        account_id.GetUserEmail(),
+        new base::FundamentalValue(static_cast<int>(oauth_token_status)));
+  }
+  GetLocalState()->CommitPendingWrite();
 }
 
 void UserManagerBase::SaveForceOnlineSignin(const AccountId& account_id,
@@ -384,10 +384,13 @@ void UserManagerBase::SaveForceOnlineSignin(const AccountId& account_id,
   if (IsUserNonCryptohomeDataEphemeral(account_id))
     return;
 
-  DictionaryPrefUpdate force_online_update(GetLocalState(),
-                                           kUserForceOnlineSignin);
-  force_online_update->SetBooleanWithoutPathExpansion(account_id.GetUserEmail(),
-                                                      force_online_signin);
+  {
+    DictionaryPrefUpdate force_online_update(GetLocalState(),
+                                             kUserForceOnlineSignin);
+    force_online_update->SetBooleanWithoutPathExpansion(
+        account_id.GetUserEmail(), force_online_signin);
+  }
+  GetLocalState()->CommitPendingWrite();
 }
 
 void UserManagerBase::SaveUserDisplayName(const AccountId& account_id,

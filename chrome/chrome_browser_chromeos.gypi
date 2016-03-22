@@ -81,6 +81,8 @@
         'browser/chromeos/attestation/platform_verification_impl.h',
         'browser/chromeos/background/ash_user_wallpaper_delegate.cc',
         'browser/chromeos/background/ash_user_wallpaper_delegate.h',
+        'browser/chromeos/base/file_flusher.cc',
+        'browser/chromeos/base/file_flusher.h',
         'browser/chromeos/base/locale_util.cc',
         'browser/chromeos/base/locale_util.h',
         'browser/chromeos/bluetooth/bluetooth_pairing_dialog.cc',
