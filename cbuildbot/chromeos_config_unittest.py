@@ -200,9 +200,9 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
     for build_name, config in self.all_configs.iteritems():
       if config['vm_tests'] is None:
         continue
-      for test_type in config['vm_tests']:
+      for vm_test in config['vm_tests']:
         self.assertTrue(
-            test_type in constants.VALID_VM_TEST_TYPES,
+            vm_test.test_type in constants.VALID_VM_TEST_TYPES,
             'Config %s: has unexpected vm test type value.' % build_name)
 
   def testImageTestMustHaveBaseImage(self):
@@ -764,9 +764,10 @@ class OverrideForTrybotTest(GenerateChromeosConfigTestBase):
     mock_options = mock.Mock()
     old = self.all_configs['x86-mario-paladin']
     new = config_lib.OverrideConfigForTrybot(old, mock_options)
-    self.assertEquals(new['vm_tests'], [constants.SMOKE_SUITE_TEST_TYPE,
-                                        constants.SIMPLE_AU_TEST_TYPE,
-                                        constants.CROS_VM_TEST_TYPE])
+    self.assertEquals(new['vm_tests'], [
+        config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+        config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE),
+        config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)])
 
     # Don't override vm tests for arm boards.
     old = self.all_configs['daisy-paladin']

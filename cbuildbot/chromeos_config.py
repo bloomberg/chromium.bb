@@ -373,9 +373,10 @@ def append_useflags(useflags):
   return handler
 
 
-TRADITIONAL_VM_TESTS_SUPPORTED = [constants.SMOKE_SUITE_TEST_TYPE,
-                                  constants.SIMPLE_AU_TEST_TYPE,
-                                  constants.CROS_VM_TEST_TYPE]
+TRADITIONAL_VM_TESTS_SUPPORTED = [
+    config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+    config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE),
+    config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)]
 
 #
 # Define assorted constants describing various sets of boards.
@@ -900,8 +901,8 @@ def GetConfig():
       trybot_list=True,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Chrome-PFQ',
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
-                constants.SIMPLE_AU_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+                config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
   )
 
@@ -923,7 +924,7 @@ def GetConfig():
       chrome_sdk_build_chrome=False,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#TOC-CQ',
 
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
       vm_tests_override=TRADITIONAL_VM_TESTS_SUPPORTED,
   )
 
@@ -1012,7 +1013,7 @@ def GetConfig():
       # Chrome binary, that update_engine can't handle in delta payloads due to
       # memory limits. Remove the following lines once crbug.com/329248 is
       # fixed.
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
       vm_tests_override=None,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-ASAN',
@@ -1024,7 +1025,7 @@ def GetConfig():
       build_type=constants.INCREMENTAL_TYPE,
       uprev=False,
       overlays=constants.PUBLIC_OVERLAYS,
-      vm_tests=[constants.TELEMETRY_SUITE_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.TELEMETRY_SUITE_TEST_TYPE)],
       description='Telemetry Builds',
   )
 
@@ -1039,8 +1040,8 @@ def GetConfig():
       chrome_rev=constants.CHROME_REV_LATEST,
       chrome_sdk=True,
       description='Preflight Chromium Uprev & Build (public)',
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
-                constants.SIMPLE_AU_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+                config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       vm_tests_override=None,
   )
 
@@ -1124,8 +1125,8 @@ def GetConfig():
       manifest_version=True,
       android_rev=constants.ANDROID_REV_LATEST,
       description='Preflight Android Uprev & Build (internal)',
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
-                constants.SIMPLE_AU_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+                config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       vm_tests_override=None,
   )
 
@@ -1541,7 +1542,7 @@ def GetConfig():
       debug_symbols=False,
       prebuilts=False,
       cpe_export=False,
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
       vm_tests_override=None,
       description='Verifies compilation, building an image, and vm/unit tests '
                   'if supported.',
@@ -1830,13 +1831,15 @@ def GetConfig():
       if board not in _paladin_default_vmtest_boards:
         vm_tests = []
         if board in _paladin_simple_vmtest_boards:
-          vm_tests.append(constants.SIMPLE_AU_TEST_TYPE)
+          vm_tests.append(
+              config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE))
         if board in _paladin_cros_vmtest_boards:
-          vm_tests.append(constants.CROS_VM_TEST_TYPE)
+          vm_tests.append(config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE))
         if board in _paladin_devmode_vmtest_boards:
-          vm_tests.append(constants.DEV_MODE_TEST_TYPE)
+          vm_tests.append(config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE))
         if board in _paladin_smoke_vmtest_boards:
-          vm_tests.append(constants.SMOKE_SUITE_TEST_TYPE)
+          vm_tests.append(
+              config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE))
         customizations.update(vm_tests=vm_tests)
 
         if paladin.vm_tests_override is not None:
@@ -1936,7 +1939,7 @@ def GetConfig():
   site_config.Add(
       'lakitu-pre-cq', pre_cq,
       _base_configs['lakitu'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
       run_gce_tests=True,
   )
 
@@ -2024,14 +2027,14 @@ def GetConfig():
   site_config.Add(
       'lakitu-incremental', internal_incremental,
       _base_configs['lakitu'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
       run_gce_tests=True,
   )
 
   site_config.Add(
       'lakitu_next-incremental', internal_incremental,
       _base_configs['lakitu_next'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
       run_gce_tests=True,
   )
 
@@ -2064,9 +2067,9 @@ def GetConfig():
                        'chromeos-dev-installer',
       dev_installer_prebuilts=True,
       git_sync=False,
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
-                constants.DEV_MODE_TEST_TYPE,
-                constants.CROS_VM_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+                config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
+                config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
       hw_tests=HWTestList.SharedPoolCanary(),
       paygen=True,
       signer_tests=True,
@@ -2101,9 +2104,9 @@ def GetConfig():
                        'chromeos-dev-installer',
       dev_installer_prebuilts=True,
       git_sync=False,
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
-                constants.DEV_MODE_TEST_TYPE,
-                constants.CROS_VM_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+                config_lib.VMTestConfig(constants.DEV_MODE_TEST_TYPE),
+                config_lib.VMTestConfig(constants.CROS_VM_TEST_TYPE)],
       hw_tests=HWTestList.SharedPoolCanary(),
       paygen=True,
       signer_tests=True,
@@ -2527,7 +2530,7 @@ def GetConfig():
   site_config.Add(
       'lakitu-release', _release,
       _base_configs['lakitu'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
       run_gce_tests=True,
       sign_types=['base'],
       important=True,
@@ -2536,7 +2539,7 @@ def GetConfig():
   site_config.Add(
       'lakitu_next-release', _release,
       _base_configs['lakitu_next'],
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE],
+      vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE)],
       run_gce_tests=True,
       signer_tests=False,
   )

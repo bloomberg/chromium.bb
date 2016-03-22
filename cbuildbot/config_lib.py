@@ -202,6 +202,14 @@ class BuildConfig(dict):
       new_config['child_configs'] = [
           x.deepcopy() for x in new_config['child_configs']]
 
+    if new_config.get('vm_tests'):
+      new_config['vm_tests'] = [copy.copy(x) for x in new_config['vm_tests']]
+
+    if new_config.get('vm_tests_override'):
+      new_config['vm_tests_override'] = [
+          copy.copy(x) for x in new_config['vm_tests_override']
+      ]
+
     if new_config.get('hw_tests'):
       new_config['hw_tests'] = [copy.copy(x) for x in new_config['hw_tests']]
 
@@ -244,6 +252,24 @@ class BuildConfig(dict):
 
     return new_config
 
+
+class VMTestConfig(object):
+  """Config object for virtual machine tests suites.
+
+  Members:
+    test_type: Test type to be run.
+    timeout: Number of seconds to wait before timing out waiting for
+             results.
+  """
+  DEFAULT_TEST_TIMEOUT = 60 * 60
+
+  def __init__(self, test_type, timeout=DEFAULT_TEST_TIMEOUT):
+    """Constructor -- see members above."""
+    self.test_type = test_type
+    self.timeout = timeout
+
+  def __eq__(self, other):
+    return self.__dict__ == other.__dict__
 
 class HWTestConfig(object):
   """Config object for hardware tests suites.
@@ -530,8 +556,8 @@ def DefaultSettings():
       afdo_use=False,
 
       # A list of the vm_tests to run by default.
-      vm_tests=[constants.SMOKE_SUITE_TEST_TYPE,
-                constants.SIMPLE_AU_TEST_TYPE],
+      vm_tests=[VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
+                VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
 
       # A list of all VM Tests to use if VM Tests are forced on (--vmtest
       # command line or trybot). None means no override.
@@ -1260,6 +1286,8 @@ def LoadConfigFromString(json_string):
   defaults = DefaultSettings()
   defaults.update(config_dict.pop(DEFAULT_BUILD_CONFIG))
 
+  _UpdateConfig(defaults)
+
   templates = config_dict.pop('_templates', None)
 
   site_params = DefaultSiteParameters()
@@ -1313,11 +1341,52 @@ def _DecodeDict(data):
   return rv
 
 
+def _CreateVmTestConfig(jsonString):
+  """Create a VMTestConfig object from a JSON string."""
+  if isinstance(jsonString, VMTestConfig):
+    return jsonString
+  # Each VM Test is dumped as a json string embedded in json.
+  vm_test_config = json.loads(jsonString, object_hook=_DecodeDict)
+  return VMTestConfig(**vm_test_config)
+
+
 def _CreateHwTestConfig(jsonString):
   """Create a HWTestConfig object from a JSON string."""
+  if isinstance(jsonString, HWTestConfig):
+    return jsonString
   # Each HW Test is dumped as a json string embedded in json.
   hw_test_config = json.loads(jsonString, object_hook=_DecodeDict)
   return HWTestConfig(**hw_test_config)
+
+
+def _UpdateConfig(build_dict):
+  """Updates a config dictionary with recreated objects."""
+  # Both VM and HW test configs are serialized as strings (rather than JSON
+  # objects), so we need to turn them into real objects before they can be
+  # consumed.
+  vmtests = build_dict.pop('vm_tests', None)
+  if vmtests is not None:
+    build_dict['vm_tests'] = [_CreateVmTestConfig(vmtest) for vmtest in vmtests]
+
+  vmtests = build_dict.pop('vm_tests_override', None)
+  if vmtests is not None:
+    build_dict['vm_tests_override'] = [
+        _CreateVmTestConfig(vmtest) for vmtest in vmtests
+    ]
+  else:
+    build_dict['vm_tests_override'] = None
+
+  hwtests = build_dict.pop('hw_tests', None)
+  if hwtests is not None:
+    build_dict['hw_tests'] = [_CreateHwTestConfig(hwtest) for hwtest in hwtests]
+
+  hwtests = build_dict.pop('hw_tests_override', None)
+  if hwtests is not None:
+    build_dict['hw_tests_override'] = [
+        _CreateHwTestConfig(hwtest) for hwtest in hwtests
+    ]
+  else:
+    build_dict['hw_tests_override'] = None
 
 
 def _CreateBuildConfig(name, default, build_dict, templates):
@@ -1334,15 +1403,7 @@ def _CreateBuildConfig(name, default, build_dict, templates):
     my_default = default.derive(templates[template])
   result = my_default.derive(**build_dict)
 
-  hwtests = result.pop('hw_tests', None)
-  if hwtests is not None:
-    result['hw_tests'] = [_CreateHwTestConfig(hwtest) for hwtest in hwtests]
-
-  hwtests = result.pop('hw_tests_override', None)
-  if hwtests is not None:
-    result['hw_tests_override'] = [
-        _CreateHwTestConfig(hwtest) for hwtest in hwtests
-    ]
+  _UpdateConfig(result)
 
   if child_configs is not None:
     result['child_configs'] = [

@@ -110,8 +110,8 @@
         "usepkg_toolchain": true,
         "vm_test_runs": 1,
         "vm_tests": [
-            "smoke_suite",
-            "pfq_suite"
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
     },
@@ -205,8 +205,8 @@
             "overlays": "both",
             "uprev": false,
             "vm_tests": [
-                "smoke_suite",
-                "pfq_suite"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": null
         },
@@ -222,7 +222,7 @@
             ],
             "profile": "asan",
             "vm_tests": [
-                "smoke_suite"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": null
         },
@@ -279,9 +279,9 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
-                "smoke_suite",
-                "dev_mode_test",
-                "cros_vm_test"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "chrome-perf": {
@@ -341,8 +341,8 @@
                 "chrome_internal"
             ],
             "vm_tests": [
-                "smoke_suite",
-                "pfq_suite"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": null
         },
@@ -369,8 +369,8 @@
                 "chrome_internal"
             ],
             "vm_tests": [
-                "smoke_suite",
-                "pfq_suite"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": null
         },
@@ -391,8 +391,8 @@
             "overlays": "public",
             "uprev": false,
             "vm_tests": [
-                "smoke_suite",
-                "pfq_suite"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": null
         },
@@ -413,8 +413,8 @@
             "overlays": "public",
             "uprev": false,
             "vm_tests": [
-                "smoke_suite",
-                "pfq_suite"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": null
         },
@@ -606,9 +606,9 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
-                "smoke_suite",
-                "dev_mode_test",
-                "cros_vm_test"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "firmware": {
@@ -809,9 +809,9 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
-                "smoke_suite",
-                "dev_mode_test",
-                "cros_vm_test"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "no-vmtest-pre-cq": {
@@ -874,12 +874,12 @@
             "trybot_list": true,
             "upload_standalone_images": false,
             "vm_tests": [
-                "smoke_suite"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": [
-                "smoke_suite",
-                "pfq_suite",
-                "cros_vm_test"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "payloads": {
@@ -933,7 +933,7 @@
             "trybot_list": true,
             "upload_standalone_images": false,
             "vm_tests": [
-                "smoke_suite"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": null
         },
@@ -957,13 +957,13 @@
                 "chrome_internal"
             ],
             "vm_tests": [
-                "smoke_suite",
-                "pfq_suite"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": [
-                "smoke_suite",
-                "pfq_suite",
-                "cros_vm_test"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "release": {
@@ -1021,9 +1021,9 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
-                "smoke_suite",
-                "dev_mode_test",
-                "cros_vm_test"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "release-afdo-generate": {
@@ -1076,9 +1076,9 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
-                "smoke_suite",
-                "dev_mode_test",
-                "cros_vm_test"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "release-afdo-use": {
@@ -1136,9 +1136,9 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
-                "smoke_suite",
-                "dev_mode_test",
-                "cros_vm_test"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "telemetry": {
@@ -1154,7 +1154,7 @@
             "overlays": "public",
             "uprev": false,
             "vm_tests": [
-                "telemetry_suite"
+                "{\n    \"test_type\": \"telemetry_suite\",\n    \"timeout\": 3600\n}"
             ]
         },
         "test-ap": {
@@ -1228,9 +1228,9 @@
             ],
             "usepkg_build_packages": false,
             "vm_tests": [
-                "smoke_suite",
-                "dev_mode_test",
-                "cros_vm_test"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}",
+                "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
             ]
         },
         "tot-asan-informational": {
@@ -1253,7 +1253,7 @@
             "profile": "asan",
             "uprev": false,
             "vm_tests": [
-                "smoke_suite"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": null
         },
@@ -1293,7 +1293,7 @@
             "unittests": false,
             "upload_standalone_images": false,
             "vm_tests": [
-                "smoke_suite"
+                "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
             ],
             "vm_tests_override": null
         }
@@ -1567,7 +1567,7 @@
         ],
         "description": "Telemetry Builds",
         "vm_tests": [
-            "telemetry_suite"
+            "{\n    \"test_type\": \"telemetry_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "amd64-generic-telemetry": {
@@ -10522,7 +10522,7 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "smoke_suite"
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu-no-vmtest-pre-cq": {
@@ -10606,7 +10606,7 @@
         ],
         "sync_chrome": false,
         "vm_tests": [
-            "smoke_suite"
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu-tot-chrome-pfq-informational": {
@@ -10873,7 +10873,7 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "smoke_suite"
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu_next-no-vmtest-pre-cq": {
@@ -10955,7 +10955,7 @@
         "signer_tests": false,
         "sync_chrome": false,
         "vm_tests": [
-            "smoke_suite"
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "lakitu_next-tot-chrome-pfq-informational": {
@@ -14773,13 +14773,13 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "dev_mode_test"
+            "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": [
-            "smoke_suite",
-            "pfq_suite",
-            "cros_vm_test",
-            "dev_mode_test"
+            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}",
+            "{\n    \"test_type\": \"dev_mode_test\",\n    \"timeout\": 3600\n}"
         ]
     },
     "parrot-payloads": {
@@ -16891,7 +16891,7 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "pfq_suite"
+            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "rambi-payloads": {
@@ -19455,7 +19455,7 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "cros_vm_test"
+            "{\n    \"test_type\": \"cros_vm_test\",\n    \"timeout\": 3600\n}"
         ]
     },
     "stout-payloads": {
@@ -25790,7 +25790,7 @@
         ],
         "description": "Telemetry Builds",
         "vm_tests": [
-            "telemetry_suite"
+            "{\n    \"test_type\": \"telemetry_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "x86-generic-telemetry": {
@@ -25925,7 +25925,7 @@
             "chrome_internal"
         ],
         "vm_tests": [
-            "pfq_suite"
+            "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
     "x86-mario-payloads": {

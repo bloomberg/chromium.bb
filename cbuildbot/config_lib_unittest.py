@@ -48,7 +48,7 @@ def MockSiteConfig():
       prebuilts='public',
       trybot_list=True,
       upload_standalone_images=False,
-      vm_tests=['smoke_suite'],
+      vm_tests=[config_lib.VMTestConfig('smoke_suite')],
   )
 
   return result
@@ -601,6 +601,8 @@ class OverrideForTrybotTest(cros_test_lib.TestCase):
   # TODO(dgarrett): Test other override behaviors.
 
   def setUp(self):
+    self.base_vmtests = [config_lib.VMTestConfig('base')]
+    self.override_vmtests = [config_lib.VMTestConfig('override')]
     self.base_hwtests = [config_lib.HWTestConfig('base')]
     self.override_hwtests = [config_lib.HWTestConfig('override')]
 
@@ -612,18 +614,18 @@ class OverrideForTrybotTest(cros_test_lib.TestCase):
     self.all_configs.Add(
         'no_tests_with_override',
         vm_tests=[],
-        vm_tests_override=['o_a', 'o_b'],
+        vm_tests_override=self.override_vmtests,
         hw_tests_override=self.override_hwtests,
     )
     self.all_configs.Add(
         'tests_without_override',
-        vm_tests=['a', 'b'],
+        vm_tests=self.base_vmtests,
         hw_tests=self.base_hwtests,
     )
     self.all_configs.Add(
         'tests_with_override',
-        vm_tests=['a', 'b'],
-        vm_tests_override=['o_a', 'o_b'],
+        vm_tests=self.base_vmtests,
+        vm_tests_override=self.override_vmtests,
         hw_tests=self.base_hwtests,
         hw_tests_override=self.override_hwtests,
     )
@@ -645,15 +647,15 @@ class OverrideForTrybotTest(cros_test_lib.TestCase):
 
     result = config_lib.OverrideConfigForTrybot(
         self.all_configs['no_tests_with_override'], mock_options)
-    self.assertEqual(result.vm_tests, ['o_a', 'o_b'])
+    self.assertEqual(result.vm_tests, self.override_vmtests)
 
     result = config_lib.OverrideConfigForTrybot(
         self.all_configs['tests_without_override'], mock_options)
-    self.assertEqual(result.vm_tests, ['a', 'b'])
+    self.assertEqual(result.vm_tests, self.base_vmtests)
 
     result = config_lib.OverrideConfigForTrybot(
         self.all_configs['tests_with_override'], mock_options)
-    self.assertEqual(result.vm_tests, ['o_a', 'o_b'])
+    self.assertEqual(result.vm_tests, self.override_vmtests)
 
   def testHwTestOverrideDisabled(self):
     """Verify that hw_tests_override is not used without --hwtest."""

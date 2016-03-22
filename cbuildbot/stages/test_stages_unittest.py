@@ -66,17 +66,23 @@ class VMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testFullTests(self):
     """Tests if full unit and cros_au_test_harness tests are run correctly."""
-    self._run.config['vm_tests'] = [constants.FULL_AU_TEST_TYPE]
+    self._run.config['vm_tests'] = [
+        config_lib.VMTestConfig(constants.FULL_AU_TEST_TYPE)
+    ]
     self.RunStage()
 
   def testQuickTests(self):
     """Tests if quick unit and cros_au_test_harness tests are run correctly."""
-    self._run.config['vm_tests'] = [constants.SIMPLE_AU_TEST_TYPE]
+    self._run.config['vm_tests'] = [
+        config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)
+    ]
     self.RunStage()
 
   def testGceTests(self):
     """Tests if GCE_VM_TEST_TYPE tests are run on GCE."""
-    self._run.config['vm_tests'] = [constants.GCE_VM_TEST_TYPE]
+    self._run.config['vm_tests'] = [
+        config_lib.VMTestConfig(constants.GCE_VM_TEST_TYPE)
+    ]
     gce_tarball = constants.TEST_IMAGE_GCE_TAR
 
     # pylint: disable=unused-argument
