@@ -13,7 +13,9 @@ namespace views {
 // Default sizes for ink drop effects.
 const int kInkDropSize = 24;
 const int kInkDropLargeCornerRadius = 4;
-const int kInkDropSmallCornerRadius = 2;
+
+// static
+const int InkDropHostView::kInkDropSmallCornerRadius = 2;
 
 InkDropHostView::InkDropHostView()
     : ink_drop_size_(kInkDropSize, kInkDropSize) {}

@@ -424,10 +424,10 @@ scoped_ptr<views::InkDropAnimation> LabelButton::CreateInkDropAnimation()
 scoped_ptr<views::InkDropHover> LabelButton::CreateInkDropHover() const {
   if (!ShouldShowInkDropHover())
     return nullptr;
-  return GetText().empty()
-             ? CustomButton::CreateInkDropHover()
-             : make_scoped_ptr(new views::InkDropHover(
-                   size(), 0, GetInkDropCenter(), GetInkDropBaseColor()));
+  return GetText().empty() ? CustomButton::CreateInkDropHover()
+                           : make_scoped_ptr(new views::InkDropHover(
+                                 size(), kInkDropSmallCornerRadius,
+                                 GetInkDropCenter(), GetInkDropBaseColor()));
 }
 
 gfx::Point LabelButton::GetInkDropCenter() const {

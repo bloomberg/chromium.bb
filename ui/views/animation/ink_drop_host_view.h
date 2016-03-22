@@ -31,6 +31,8 @@ class VIEWS_EXPORT InkDropHostView : public views::View, public InkDropHost {
   void set_ink_drop_size(const gfx::Size& size) { ink_drop_size_ = size; }
 
  protected:
+  static const int kInkDropSmallCornerRadius;
+
   // Overrideable methods to allow views to provide minor tweaks to the default
   // ink drop.
   virtual gfx::Point GetInkDropCenter() const;

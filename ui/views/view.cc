@@ -716,7 +716,7 @@ void View::ConvertPointFromScreen(const View* dst, gfx::Point* p) {
   if (!widget)
     return;
   *p -= widget->GetClientAreaBoundsInScreen().OffsetFromOrigin();
-  views::View::ConvertPointFromWidget(dst, p);
+  ConvertPointFromWidget(dst, p);
 }
 
 gfx::Rect View::ConvertRectToParent(const gfx::Rect& rect) const {

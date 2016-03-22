@@ -38,9 +38,12 @@ const int64_t kConfigureDelayMs = 500;
 
 double GetDeviceScaleFactor() {
   float device_scale_factor = 1.0f;
-  if (views::LinuxUI::instance())
+  if (views::LinuxUI::instance()) {
     device_scale_factor =
       views::LinuxUI::instance()->GetDeviceScaleFactor();
+  } else if (gfx::Display::HasForceDeviceScaleFactor()) {
+    device_scale_factor = gfx::Display::GetForcedDeviceScaleFactor();
+  }
   return device_scale_factor;
 }
 

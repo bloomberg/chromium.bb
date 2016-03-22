@@ -46,6 +46,10 @@ class VIEWS_EXPORT Painter {
                                 gfx::Canvas* canvas,
                                 Painter* focus_painter);
 
+  // Creates a painter that draws a RoundRect with a solid color and given
+  // corner radius.
+  static Painter* CreateSolidRoundRectPainter(SkColor color, float radius);
+
   // Creates a painter that draws a gradient between the two colors.
   static Painter* CreateHorizontalGradient(SkColor c1, SkColor c2);
   static Painter* CreateVerticalGradient(SkColor c1, SkColor c2);

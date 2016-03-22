@@ -325,10 +325,8 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       // return GetTextColor(GetButton(), NORMAL);
     case kColorId_CallToActionColor:
       return GetSystemColor(kColorId_LinkEnabled);
-    // TODO(estade): set proper values for these.
-    case kColorId_MdTextButtonEnabledColor:
-    case kColorId_MdTextButtonDisabledColor:
-      return gfx::kPlaceholderColor;
+    case kColorId_TextOnCallToActionColor:
+      return GetTextAAColor(GetLabel(), PRELIGHT);
 
     // Textfield
     case kColorId_TextfieldDefaultColor:
