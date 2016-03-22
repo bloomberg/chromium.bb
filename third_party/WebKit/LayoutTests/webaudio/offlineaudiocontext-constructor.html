@@ -8,21 +8,33 @@
 <script>
 description("Tests the OfflineAudioContext constructor");
 
+var context;      
 // Make sure we don't crash when giving 0 as number of frames.
 shouldThrow("new OfflineAudioContext(1, 0, 44100)");
 // Make sure we don't throw exceptions for supported ranges of sample rates for an OfflineAudioContext.
-shouldNotThrow("new OfflineAudioContext(2, 512, 3000)");
-shouldNotThrow("new OfflineAudioContext(2, 512, 192000)");
-shouldNotThrow("new OfflineAudioContext(2, 512, 8000)");
-shouldNotThrow("new OfflineAudioContext(2, 512, 11025)");
-shouldNotThrow("new OfflineAudioContext(2, 512, 22050)");
-shouldNotThrow("new OfflineAudioContext(2, 512, 44100)");
-shouldNotThrow("new OfflineAudioContext(2, 512, 48000)");
-shouldNotThrow("new OfflineAudioContext(2, 512, 88200)");
-shouldNotThrow("new OfflineAudioContext(2, 512, 96000)");
+shouldNotThrow("context = new OfflineAudioContext(2, 512, 3000)");
+shouldBeEqualToNumber("context.length", 512);      
+shouldNotThrow("context = new OfflineAudioContext(2, 1024, 192000)");
+shouldBeEqualToNumber("context.length", 1024);      
+shouldNotThrow("context = new OfflineAudioContext(2, 2048, 8000)");
+shouldBeEqualToNumber("context.length", 2048);      
+shouldNotThrow("context = new OfflineAudioContext(2, 4096, 11025)");
+shouldBeEqualToNumber("context.length", 4096);      
+shouldNotThrow("context = new OfflineAudioContext(2, 512, 22050)");
+shouldBeEqualToNumber("context.length", 512);      
+shouldNotThrow("context = new OfflineAudioContext(2, 512, 44100)");
+shouldBeEqualToNumber("context.length", 512);      
+shouldNotThrow("context = new OfflineAudioContext(2, 512, 48000)");
+shouldBeEqualToNumber("context.length", 512);      
+shouldNotThrow("context = new OfflineAudioContext(2, 512, 88200)");
+shouldBeEqualToNumber("context.length", 512);
+// Make sure length is read-only.
+shouldNotThrow("context.length = 99");
+shouldBeEqualToNumber("context.length", 512);
+shouldNotThrow("context = new OfflineAudioContext(2, 512, 96000)");
 // Make sure we throw exceptions for non-finite sample rates.
-shouldThrow("new OfflineAudioContext(1, 0, NaN)");
-shouldThrow("new OfflineAudioContext(1, 0, Infinite)");
+shouldThrow("context = new OfflineAudioContext(1, 0, NaN)");
+shouldThrow("context = new OfflineAudioContext(1, 0, Infinite)");
 </script>
 </body>
 </html>

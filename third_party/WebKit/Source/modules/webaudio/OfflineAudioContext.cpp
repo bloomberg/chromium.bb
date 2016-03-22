@@ -37,7 +37,7 @@
 
 namespace blink {
 
-OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState& exceptionState)
+OfflineAudioContext* OfflineAudioContext::create(ExecutionContext* context, unsigned numberOfChannels, unsigned numberOfFrames, float sampleRate, ExceptionState& exceptionState)
 {
     // FIXME: add support for workers.
     if (!context || !context->isDocument()) {

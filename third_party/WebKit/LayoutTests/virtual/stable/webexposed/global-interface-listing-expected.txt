@@ -3464,6 +3464,7 @@ interface OfflineAudioCompletionEvent : Event
     method constructor
 interface OfflineAudioContext : AudioContext
     attribute @@toStringTag
+    getter length
     getter oncomplete
     method constructor
     method resume
@@ -6253,6 +6254,7 @@ interface webkitMediaStream : EventTarget
     setter onremovetrack
 interface webkitOfflineAudioContext : AudioContext
     attribute @@toStringTag
+    getter length
     getter oncomplete
     method constructor
     method resume
