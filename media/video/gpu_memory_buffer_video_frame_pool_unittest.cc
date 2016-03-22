@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/thread_task_runner_handle.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/mock_gpu_video_accelerator_factories.h"
@@ -72,6 +73,8 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
     gles2_.reset(new TestGLES2Interface);
     media_task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner);
     copy_task_runner_ = make_scoped_refptr(new base::TestSimpleTaskRunner);
+    media_task_runner_handle_.reset(
+        new base::ThreadTaskRunnerHandle(media_task_runner_));
     mock_gpu_factories_.reset(
         new MockGpuVideoAcceleratorFactories(gles2_.get()));
     gpu_memory_buffer_pool_.reset(new GpuMemoryBufferVideoFramePool(
@@ -123,6 +126,9 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
   scoped_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
   scoped_refptr<base::TestSimpleTaskRunner> media_task_runner_;
   scoped_refptr<base::TestSimpleTaskRunner> copy_task_runner_;
+  // GpuMemoryBufferVideoFramePool uses BindToCurrentLoop(), which requires
+  // ThreadTaskRunnerHandle initialization.
+  scoped_ptr<base::ThreadTaskRunnerHandle> media_task_runner_handle_;
   scoped_ptr<TestGLES2Interface> gles2_;
 };
 

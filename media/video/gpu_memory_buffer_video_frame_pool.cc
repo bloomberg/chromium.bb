@@ -24,6 +24,7 @@
 #include "base/trace_event/trace_event.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -139,13 +140,9 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
 
   // Callback called when a VideoFrame generated with GetFrameResources is no
   // longer referenced.
-  // This could be called by any thread.
+  // This must be called on the thread where |media_task_runner_| is current.
   void MailboxHoldersReleased(FrameResources* frame_resources,
                               const gpu::SyncToken& sync_token);
-
-  // Return frame resources to the pool. This has to be called on the thread
-  // where |media_task_runner_| is current.
-  void ReturnFrameResources(FrameResources* frame_resources);
 
   // Delete resources. This has to be called on the thread where |task_runner|
   // is current.
@@ -594,8 +591,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
 
   scoped_refptr<VideoFrame> frame;
 
-  auto release_mailbox_callback =
-      base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources);
+  auto release_mailbox_callback = BindToCurrentLoop(
+      base::Bind(&PoolImpl::MailboxHoldersReleased, this, frame_resources));
 
   // Create the VideoFrame backed by native textures.
   gfx::Size visible_size = video_frame->visible_rect().size();
@@ -736,19 +733,12 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::DeleteFrameResources(
   }
 }
 
-// Called when a VideoFrame is no longer references.
+// Called when a VideoFrame is no longer referenced.
+// Put back the resources in the pool.
 void GpuMemoryBufferVideoFramePool::PoolImpl::MailboxHoldersReleased(
     FrameResources* frame_resources,
-    const gpu::SyncToken& sync_token) {
-  // Return the resource on the media thread.
-  media_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&PoolImpl::ReturnFrameResources, this, frame_resources));
-}
-
-// Put back the resources in the pool.
-void GpuMemoryBufferVideoFramePool::PoolImpl::ReturnFrameResources(
-    FrameResources* frame_resources) {
+    const gpu::SyncToken& release_sync_token) {
+  DCHECK(media_task_runner_->BelongsToCurrentThread());
   auto it = std::find(resources_pool_.begin(), resources_pool_.end(),
                       frame_resources);
   DCHECK(it != resources_pool_.end());
