@@ -67,10 +67,10 @@ bool BrowserDriverApplicationDelegate::AcceptConnection(
   return true;
 }
 
-void BrowserDriverApplicationDelegate::ShellConnectionLost() {
+bool BrowserDriverApplicationDelegate::ShellConnectionLost() {
   // Prevent the code in AddAccelerators() from keeping this app alive.
   binding_.set_connection_error_handler(base::Bind(&DoNothing));
-  base::MessageLoop::current()->QuitWhenIdle();
+  return true;
 }
 
 void BrowserDriverApplicationDelegate::OnAccelerator(

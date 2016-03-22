@@ -28,7 +28,6 @@ class QuickLaunchApplication : public mojo::ShellClient {
                   const mojo::Identity& identity,
                   uint32_t id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
-  void ShellConnectionLost() override;
 
   mojo::TracingImpl tracing_;
   scoped_ptr<views::AuraInit> aura_init_;

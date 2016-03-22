@@ -22,7 +22,7 @@ class WindowTypeLauncher : public mojo::ShellClient {
   // mojo::ShellClient:
   void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
                   uint32_t id) override;
-  void ShellConnectionLost() override;
+  bool ShellConnectionLost() override;
 
   scoped_ptr<views::AuraInit> aura_init_;
 

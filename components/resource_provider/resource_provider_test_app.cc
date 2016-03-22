@@ -99,9 +99,6 @@ class TestApp : public mojo::ShellClient,
     connection->AddInterface<mojom::Test>(this);
     return true;
   }
-  void ShellConnectionLost() override {
-    base::MessageLoop::current()->QuitWhenIdle();
-  }
 
   // InterfaceFactory<mojom::Test>:
   void Create(mojo::Connection* connection,

@@ -31,7 +31,7 @@ class BrowserDriverApplicationDelegate : public mojo::ShellClient,
   void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
                   uint32_t id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
-  void ShellConnectionLost() override;
+  bool ShellConnectionLost() override;
 
   // mus::mojom::AcceleratorHandler:
   void OnAccelerator(uint32_t id, mus::mojom::EventPtr event) override;
