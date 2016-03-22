@@ -45958,9 +45958,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     enum="ServiceWorkerEventHandleRatioType">
   <owner>kinuko@chromium.org</owner>
   <summary>
-    Records how many of fetch events are handled compared with the number of
-    events that are fired for a ServiceWorker.  Recorded each time the
-    ServiceWorker is stopped.
+    Records the proportion of (non foreign) fetch events that are handled
+    compared to the number of events that are fired for a ServiceWorker.
+    Recorded each time the ServiceWorker is stopped when at least one event was
+    fired.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.EventHandledRatioType.ForeignFetch"
+    enum="ServiceWorkerEventHandleRatioType">
+  <owner>mek@chromium.org</owner>
+  <summary>
+    Records the proportion of foreign fetch events that are handled compared to
+    the number of events that are fired for a ServiceWorker.  Recorded each time
+    the ServiceWorker is stopped when at least one event was fired.
   </summary>
 </histogram>
 
@@ -45968,8 +45979,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>jeremyarcher@chromium.org</owner>
   <summary>
     The time taken between dispatching a FetchEvent to a Service Worker and
-    receiving a fallback-to-network response. Includes the time for the
-    waitUntil() promise to settle, if any.
+    receiving a fallback-to-network reply. Includes the time for the waitUntil()
+    promise to settle, if any.
   </summary>
 </histogram>
 
@@ -46021,6 +46032,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Execution time of ServiceWorkerGlobalScope.onfetch. Includes the time for
     the respondWith() promise to settle.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.ForeignFetchEvent.Fallback.Time" units="ms">
+  <owner>mek@chromium.org</owner>
+  <summary>
+    The time taken between dispatching a ForeignFetchEvent to a Service Worker
+    and receiving a fallback-to-network reply. Includes the time for the
+    waitUntil() promise to settle, if any.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.ForeignFetchEvent.HasResponse.Time" units="ms">
+  <owner>mek@chromium.org</owner>
+  <summary>
+    The time taken between dispatching a ForeignFetchEvent to a Service Worker
+    and receiving a response. Includes the time for the respondWith() promise to
+    settle.
   </summary>
 </histogram>
 
@@ -80548,6 +80577,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="12" label="FETCH_SHARED_WORKER"/>
   <int value="13" label="FETCH_SUB_RESOURCE"/>
   <int value="14" label="UNKOWN"/>
+  <int value="15" label="FOREIGN_FETCH"/>
 </enum>
 
 <enum name="ServiceWorkerReadResponseResult" type="int">

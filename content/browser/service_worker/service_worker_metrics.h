@@ -74,21 +74,22 @@ class ServiceWorkerMetrics {
 
   // Used for UMA. Append-only.
   enum class EventType {
-    ACTIVATE,
-    INSTALL,
-    FETCH,  // Deprecated, use a more specific FETCH_ type.
-    SYNC,
-    NOTIFICATION_CLICK,
-    PUSH,
-    GEOFENCING,
-    SERVICE_PORT_CONNECT,
-    MESSAGE,
-    NOTIFICATION_CLOSE,
-    FETCH_MAIN_FRAME,
-    FETCH_SUB_FRAME,
-    FETCH_SHARED_WORKER,
-    FETCH_SUB_RESOURCE,
-    UNKNOWN,  // Used when event type is not known.
+    ACTIVATE = 0,
+    INSTALL = 1,
+    DEPRECATED_FETCH = 2,  // Deprecated, use a more specific FETCH_ type.
+    SYNC = 3,
+    NOTIFICATION_CLICK = 4,
+    PUSH = 5,
+    GEOFENCING = 6,
+    SERVICE_PORT_CONNECT = 7,
+    MESSAGE = 8,
+    NOTIFICATION_CLOSE = 9,
+    FETCH_MAIN_FRAME = 10,
+    FETCH_SUB_FRAME = 11,
+    FETCH_SHARED_WORKER = 12,
+    FETCH_SUB_RESOURCE = 13,
+    UNKNOWN = 14,  // Used when event type is not known.
+    FOREIGN_FETCH = 15,
     // Add new events to record here.
     NUM_TYPES
   };

@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -46,6 +47,8 @@ class CONTENT_EXPORT ServiceWorkerFetchDispatcher {
   void DidFinish(int request_id,
                  ServiceWorkerFetchEventResult fetch_result,
                  const ServiceWorkerResponse& response);
+
+  ServiceWorkerMetrics::EventType GetEventType() const;
 
   scoped_refptr<ServiceWorkerVersion> version_;
   base::Closure prepare_callback_;

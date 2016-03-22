@@ -52,8 +52,6 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Activate";
     case EventType::INSTALL:
       return "Install";
-    case EventType::FETCH:
-      return "Fetch";
     case EventType::SYNC:
       return "Sync";
     case EventType::NOTIFICATION_CLICK:
@@ -78,6 +76,9 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Fetch Subresource";
     case EventType::UNKNOWN:
       return "Unknown";
+    case EventType::FOREIGN_FETCH:
+      return "Foreign Fetch";
+    case EventType::DEPRECATED_FETCH:
     case EventType::NUM_TYPES:
       break;
   }
@@ -217,11 +218,24 @@ void ServiceWorkerMetrics::RecordEventHandledRatio(EventType event,
   else if (handled_events == 0)
     type = EVENT_HANDLED_NONE;
 
-  // For now Fetch is the only type that is recorded.
-  if (event != EventType::FETCH)
-    return;
-  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.EventHandledRatioType.Fetch", type,
-                            NUM_EVENT_HANDLED_RATIO_TYPE);
+  // For now Fetch and Foreign Fetch are the only types that are recorded.
+  switch (event) {
+    case EventType::FETCH_MAIN_FRAME:
+    case EventType::FETCH_SUB_FRAME:
+    case EventType::FETCH_SHARED_WORKER:
+    case EventType::FETCH_SUB_RESOURCE:
+      UMA_HISTOGRAM_ENUMERATION("ServiceWorker.EventHandledRatioType.Fetch",
+                                type, NUM_EVENT_HANDLED_RATIO_TYPE);
+      break;
+    case EventType::FOREIGN_FETCH:
+      UMA_HISTOGRAM_ENUMERATION(
+          "ServiceWorker.EventHandledRatioType.ForeignFetch", type,
+          NUM_EVENT_HANDLED_RATIO_TYPE);
+      break;
+    default:
+      // Do nothing.
+      break;
+  }
 }
 
 void ServiceWorkerMetrics::RecordEventTimeout(EventType event) {
@@ -240,7 +254,6 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     case EventType::INSTALL:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.InstallEvent.Time", time);
       break;
-    case EventType::FETCH:
     case EventType::FETCH_MAIN_FRAME:
     case EventType::FETCH_SUB_FRAME:
     case EventType::FETCH_SHARED_WORKER:
@@ -251,6 +264,15 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       } else {
         UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.FetchEvent.Fallback.Time",
                                    time);
+      }
+      break;
+    case EventType::FOREIGN_FETCH:
+      if (was_handled) {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "ServiceWorker.ForeignFetchEvent.HasResponse.Time", time);
+      } else {
+        UMA_HISTOGRAM_MEDIUM_TIMES(
+            "ServiceWorker.ForeignFetchEvent.Fallback.Time", time);
       }
       break;
     case EventType::SYNC:
@@ -278,6 +300,7 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     case EventType::SERVICE_PORT_CONNECT:
       break;
 
+    case EventType::DEPRECATED_FETCH:
     case EventType::UNKNOWN:
     case EventType::NUM_TYPES:
       NOTREACHED() << "Invalid event type";

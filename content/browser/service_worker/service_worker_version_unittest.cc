@@ -498,7 +498,7 @@ TEST_F(ServiceWorkerVersionTest, StartUnregisteredButStillLiveWorker) {
 
   // Dispatch an event on the unregistered and stopped but still live worker.
   status = SERVICE_WORKER_ERROR_FAILED;
-  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
 
   // The worker should be now started again.
   EXPECT_EQ(ServiceWorkerVersion::RUNNING, version_->running_status());
@@ -636,7 +636,7 @@ TEST_F(ServiceWorkerVersionTest, IdleTimeout) {
   // Completing an event resets the idle time.
   version_->idle_time_ -= kOneSecond;
   idle_time = version_->idle_time_;
-  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH);
+  SimulateDispatchEvent(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME);
   EXPECT_LT(idle_time, version_->idle_time_);
 
   // Starting and finishing a request resets the idle time.
@@ -820,13 +820,13 @@ TEST_F(ServiceWorkerVersionTest, RequestTimeout) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
-  version_->StartWorker(ServiceWorkerMetrics::EventType::FETCH,
+  version_->StartWorker(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
                         base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
   base::RunLoop().RunUntilIdle();
 
   // Create a request.
   int request_id =
-      version_->StartRequest(ServiceWorkerMetrics::EventType::FETCH,
+      version_->StartRequest(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
                              CreateReceiverOnCurrentThread(&status));
   base::RunLoop().RunUntilIdle();
 
@@ -903,13 +903,13 @@ TEST_F(ServiceWorkerVersionTest, MixedRequestTimeouts) {
       SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
-  version_->StartWorker(ServiceWorkerMetrics::EventType::FETCH,
+  version_->StartWorker(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
                         base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
   base::RunLoop().RunUntilIdle();
 
   // Create a fetch request that should expire sometime later.
   int fetch_request_id =
-      version_->StartRequest(ServiceWorkerMetrics::EventType::FETCH,
+      version_->StartRequest(ServiceWorkerMetrics::EventType::FETCH_MAIN_FRAME,
                              CreateReceiverOnCurrentThread(&fetch_status));
   // Create a request that should expire Now().
   int sync_request_id = version_->StartRequestWithCustomTimeout(
