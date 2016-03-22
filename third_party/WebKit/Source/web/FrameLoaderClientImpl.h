@@ -182,6 +182,8 @@ public:
 
     void suddenTerminationDisablerChanged(bool present, SuddenTerminationDisablerType) override;
 
+    PassOwnPtrWillBeRawPtr<LinkResource> createServiceWorkerLinkResource(HTMLLinkElement*) override;
+
 private:
     explicit FrameLoaderClientImpl(WebLocalFrameImpl*);
 

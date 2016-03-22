@@ -73,6 +73,10 @@ DOMException* ServiceWorkerError::take(ScriptPromiseResolver*, const WebServiceW
         return createException(AbortError, "The Service Worker operation timed out.", webError.message);
     case WebServiceWorkerError::ErrorTypeUnknown:
         return createException(UnknownError, "An unknown error occurred within Service Worker.", webError.message);
+    case WebServiceWorkerError::ErrorTypeType:
+        // ErrorTypeType should have been handled before reaching this point.
+        ASSERT_NOT_REACHED();
+        return DOMException::create(UnknownError);
     }
     ASSERT_NOT_REACHED();
     return DOMException::create(UnknownError);

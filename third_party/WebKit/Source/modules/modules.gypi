@@ -1477,6 +1477,8 @@
       'serviceworkers/ServiceWorkerContainer.h',
       'serviceworkers/ServiceWorkerContainerClient.cpp',
       'serviceworkers/ServiceWorkerContainerClient.h',
+      'serviceworkers/ServiceWorkerLinkResource.cpp',
+      'serviceworkers/ServiceWorkerLinkResource.h',
       'serviceworkers/ServiceWorkerWindowClient.cpp',
       'serviceworkers/ServiceWorkerWindowClient.h',
       'serviceworkers/ServiceWorkerWindowClientCallback.cpp',

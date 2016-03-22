@@ -41,6 +41,7 @@
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
 #include "wtf/Forward.h"
 
@@ -59,6 +60,8 @@ class MODULES_EXPORT ServiceWorkerContainer final
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(ServiceWorkerContainer);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainer);
 public:
+    using RegistrationCallbacks = WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks;
+
     static ServiceWorkerContainer* create(ExecutionContext*);
     ~ServiceWorkerContainer();
 
@@ -69,6 +72,8 @@ public:
     ServiceWorker* controller() { return m_controller; }
     ScriptPromise ready(ScriptState*);
     WebServiceWorkerProvider* provider() { return m_provider; }
+
+    void registerServiceWorkerImpl(ExecutionContext*, const KURL& scriptURL, const KURL& scope, PassOwnPtr<RegistrationCallbacks>);
 
     ScriptPromise registerServiceWorker(ScriptState*, const String& pattern, const RegistrationOptions&);
     ScriptPromise getRegistration(ScriptState*, const String& documentURL);

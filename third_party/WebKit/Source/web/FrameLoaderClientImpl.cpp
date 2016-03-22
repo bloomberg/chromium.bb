@@ -61,6 +61,7 @@
 #include "modules/mediasession/HTMLMediaElementMediaSession.h"
 #include "modules/mediasession/MediaSession.h"
 #include "modules/serviceworkers/NavigatorServiceWorker.h"
+#include "modules/serviceworkers/ServiceWorkerLinkResource.h"
 #include "modules/storage/DOMWindowStorageController.h"
 #include "modules/vr/NavigatorVRDevice.h"
 #include "platform/Histogram.h"
@@ -1049,6 +1050,11 @@ void FrameLoaderClientImpl::suddenTerminationDisablerChanged(bool present, Sudde
         m_webFrame->client()->suddenTerminationDisablerChanged(
             present, static_cast<WebFrameClient::SuddenTerminationDisablerType>(type));
     }
+}
+
+PassOwnPtrWillBeRawPtr<LinkResource> FrameLoaderClientImpl::createServiceWorkerLinkResource(HTMLLinkElement* owner)
+{
+    return ServiceWorkerLinkResource::create(owner);
 }
 
 } // namespace blink

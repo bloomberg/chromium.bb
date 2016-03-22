@@ -55,6 +55,7 @@ public:
     bool isLinkNext() const { return m_isLinkNext; }
     bool isImport() const { return m_isImport; }
     bool isManifest() const { return m_isManifest; }
+    bool isServiceWorker() const { return m_isServiceWorker; }
 
 private:
     IconType m_iconType;
@@ -68,6 +69,7 @@ private:
     bool m_isLinkNext : 1;
     bool m_isImport : 1;
     bool m_isManifest : 1;
+    bool m_isServiceWorker : 1;
 };
 
 } // namespace blink

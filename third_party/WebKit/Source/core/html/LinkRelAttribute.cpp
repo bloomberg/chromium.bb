@@ -47,6 +47,7 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
     , m_isLinkNext(false)
     , m_isImport(false)
     , m_isManifest(false)
+    , m_isServiceWorker(false)
 {
     if (rel.isEmpty())
         return;
@@ -88,6 +89,8 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
             m_iconType = TouchPrecomposedIcon;
         } else if (equalIgnoringCase(linkType, "manifest")) {
             m_isManifest = true;
+        } else if (equalIgnoringCase(linkType, "serviceworker")) {
+            m_isServiceWorker = true;
         }
         // Adding or removing a value here requires you to update RelList::supportedTokens()
     }

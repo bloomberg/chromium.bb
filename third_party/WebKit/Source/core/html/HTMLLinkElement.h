@@ -143,6 +143,7 @@ public:
     String asValue() const { return m_as; }
     const LinkRelAttribute& relAttribute() const { return m_relAttribute; }
     DOMTokenList& relList() const { return static_cast<DOMTokenList&>(*m_relList); }
+    String scope() const { return m_scope; }
 
     const AtomicString& type() const;
 
@@ -227,6 +228,7 @@ private:
     Vector<IntSize> m_iconSizes;
     RawPtrWillBeMember<RelList> m_relList;
     LinkRelAttribute m_relAttribute;
+    String m_scope;
 
     bool m_createdByParser;
     bool m_isInShadowTree;

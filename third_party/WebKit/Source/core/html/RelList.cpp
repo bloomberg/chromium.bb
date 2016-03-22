@@ -5,6 +5,7 @@
 #include "core/html/RelList.h"
 
 #include "core/dom/Document.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
@@ -67,6 +68,8 @@ static RelList::SupportedTokens& supportedTokens()
         supportedValuesMap.add("manifest");
         supportedValuesMap.add("apple-touch-icon");
         supportedValuesMap.add("apple-touch-icon-precomposed");
+        if (RuntimeEnabledFeatures::linkServiceWorkerEnabled())
+            supportedValuesMap.add("serviceworker");
     }
 
     return supportedValuesMap;

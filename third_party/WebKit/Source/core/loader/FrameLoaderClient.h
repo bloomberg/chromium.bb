@@ -35,6 +35,7 @@
 #include "core/dom/IconURL.h"
 #include "core/fetch/ResourceLoaderOptions.h"
 #include "core/frame/FrameClient.h"
+#include "core/html/LinkResource.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/NavigationPolicy.h"
 #include "platform/heap/Handle.h"
@@ -255,6 +256,7 @@ public:
     };
     virtual void suddenTerminationDisablerChanged(bool present, SuddenTerminationDisablerType) { }
 
+    virtual PassOwnPtrWillBeRawPtr<LinkResource> createServiceWorkerLinkResource(HTMLLinkElement*) { return nullptr; }
 };
 
 } // namespace blink

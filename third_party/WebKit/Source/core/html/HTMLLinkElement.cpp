@@ -193,6 +193,9 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name, const AtomicStri
     } else if (name == mediaAttr) {
         m_media = value.lower();
         process();
+    } else if (name == scopeAttr) {
+        m_scope = value;
+        process();
     } else if (name == disabledAttr) {
         UseCounter::count(document(), UseCounter::HTMLLinkElementDisabled);
         if (LinkStyle* link = linkStyle())
@@ -230,6 +233,9 @@ LinkResource* HTMLLinkElement::linkResourceToProcess()
             m_link = LinkImport::create(this);
         } else if (m_relAttribute.isManifest()) {
             m_link = LinkManifest::create(this);
+        } else if (RuntimeEnabledFeatures::linkServiceWorkerEnabled() && m_relAttribute.isServiceWorker()) {
+            if (document().frame())
+                m_link = document().frame()->loader().client()->createServiceWorkerLinkResource(this);
         } else {
             OwnPtrWillBeRawPtr<LinkStyle> link = LinkStyle::create(this);
             if (fastHasAttribute(disabledAttr)) {

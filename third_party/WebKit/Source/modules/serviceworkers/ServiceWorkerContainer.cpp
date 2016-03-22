@@ -75,7 +75,11 @@ public:
     {
         if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
             return;
-        m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+        if (error.errorType == WebServiceWorkerError::ErrorTypeType) {
+            m_resolver->reject(V8ThrowException::createTypeError(m_resolver->getScriptState()->isolate(), error.message));
+        } else {
+            m_resolver->reject(ServiceWorkerError::take(m_resolver.get(), error));
+        }
     }
 
 private:
@@ -190,6 +194,61 @@ DEFINE_TRACE(ServiceWorkerContainer)
     ContextLifecycleObserver::trace(visitor);
 }
 
+void ServiceWorkerContainer::registerServiceWorkerImpl(ExecutionContext* executionContext, const KURL& rawScriptURL, const KURL& scope, PassOwnPtr<RegistrationCallbacks> callbacks)
+{
+    if (!m_provider) {
+        callbacks->onError(WebServiceWorkerError(WebServiceWorkerError::ErrorTypeState, "Failed to register a ServiceWorker: The document is in an invalid state."));
+        return;
+    }
+
+    RefPtr<SecurityOrigin> documentOrigin = executionContext->getSecurityOrigin();
+    String errorMessage;
+    // Restrict to secure origins: https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged
+    if (!executionContext->isSecureContext(errorMessage)) {
+        callbacks->onError(WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity, errorMessage));
+        return;
+    }
+
+    KURL pageURL = KURL(KURL(), documentOrigin->toString());
+    if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(pageURL.protocol())) {
+        callbacks->onError(WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity, String("Failed to register a ServiceWorker: The URL protocol of the current origin ('" + documentOrigin->toString() + "') is not supported.")));
+        return;
+    }
+
+    KURL scriptURL = rawScriptURL;
+    scriptURL.removeFragmentIdentifier();
+    if (!documentOrigin->canRequest(scriptURL)) {
+        RefPtr<SecurityOrigin> scriptOrigin = SecurityOrigin::create(scriptURL);
+        callbacks->onError(WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity, String("Failed to register a ServiceWorker: The origin of the provided scriptURL ('" + scriptOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "').")));
+        return;
+    }
+    if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(scriptURL.protocol())) {
+        callbacks->onError(WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity, String("Failed to register a ServiceWorker: The URL protocol of the script ('" + scriptURL.getString() + "') is not supported.")));
+        return;
+    }
+
+    KURL patternURL = scope;
+    patternURL.removeFragmentIdentifier();
+
+    if (!documentOrigin->canRequest(patternURL)) {
+        RefPtr<SecurityOrigin> patternOrigin = SecurityOrigin::create(patternURL);
+        callbacks->onError(WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity, String("Failed to register a ServiceWorker: The origin of the provided scope ('" + patternOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "').")));
+        return;
+    }
+    if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(patternURL.protocol())) {
+        callbacks->onError(WebServiceWorkerError(WebServiceWorkerError::ErrorTypeSecurity, String("Failed to register a ServiceWorker: The URL protocol of the scope ('" + patternURL.getString() + "') is not supported.")));
+        return;
+    }
+
+    WebString webErrorMessage;
+    if (!m_provider->validateScopeAndScriptURL(patternURL, scriptURL, &webErrorMessage)) {
+        callbacks->onError(WebServiceWorkerError(WebServiceWorkerError::ErrorTypeType, WebString::fromUTF8("Failed to register a ServiceWorker: " + webErrorMessage.utf8())));
+        return;
+    }
+
+    m_provider->registerServiceWorker(patternURL, scriptURL, callbacks.leakPtr());
+}
+
 ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptState, const String& url, const RegistrationOptions& options)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
@@ -205,56 +264,16 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(ScriptState* scriptS
     if (!executionContext)
         return ScriptPromise();
 
-    RefPtr<SecurityOrigin> documentOrigin = executionContext->getSecurityOrigin();
-    String errorMessage;
-    // Restrict to secure origins: https://w3c.github.io/webappsec/specs/powerfulfeatures/#settings-privileged
-    if (!executionContext->isSecureContext(errorMessage)) {
-        resolver->reject(DOMException::create(SecurityError, errorMessage));
-        return promise;
-    }
-
-    KURL pageURL = KURL(KURL(), documentOrigin->toString());
-    if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(pageURL.protocol())) {
-        resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The URL protocol of the current origin ('" + documentOrigin->toString() + "') is not supported."));
-        return promise;
-    }
-
     KURL scriptURL = enteredExecutionContext(scriptState->isolate())->completeURL(url);
     scriptURL.removeFragmentIdentifier();
-    if (!documentOrigin->canRequest(scriptURL)) {
-        RefPtr<SecurityOrigin> scriptOrigin = SecurityOrigin::create(scriptURL);
-        resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The origin of the provided scriptURL ('" + scriptOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "')."));
-        return promise;
-    }
-    if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(scriptURL.protocol())) {
-        resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The URL protocol of the script ('" + scriptURL.getString() + "') is not supported."));
-        return promise;
-    }
 
     KURL patternURL;
     if (options.scope().isNull())
         patternURL = KURL(scriptURL, "./");
     else
         patternURL = enteredExecutionContext(scriptState->isolate())->completeURL(options.scope());
-    patternURL.removeFragmentIdentifier();
 
-    if (!documentOrigin->canRequest(patternURL)) {
-        RefPtr<SecurityOrigin> patternOrigin = SecurityOrigin::create(patternURL);
-        resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The origin of the provided scope ('" + patternOrigin->toString() + "') does not match the current origin ('" + documentOrigin->toString() + "')."));
-        return promise;
-    }
-    if (!SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(patternURL.protocol())) {
-        resolver->reject(DOMException::create(SecurityError, "Failed to register a ServiceWorker: The URL protocol of the scope ('" + patternURL.getString() + "') is not supported."));
-        return promise;
-    }
-
-    WebString webErrorMessage;
-    if (!m_provider->validateScopeAndScriptURL(patternURL, scriptURL, &webErrorMessage)) {
-        resolver->reject(V8ThrowException::createTypeError(scriptState->isolate(), WebString::fromUTF8("Failed to register a ServiceWorker: " + webErrorMessage.utf8())));
-        return promise;
-    }
-
-    m_provider->registerServiceWorker(patternURL, scriptURL, new RegistrationCallback(resolver));
+    registerServiceWorkerImpl(executionContext, scriptURL, patternURL, adoptPtr(new RegistrationCallback(resolver)));
 
     return promise;
 }

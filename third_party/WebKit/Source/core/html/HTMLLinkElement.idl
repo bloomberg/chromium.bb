@@ -52,4 +52,8 @@ interface HTMLLinkElement : HTMLElement {
     // Subresource Integrity
     // http://w3c.github.io/webappsec/specs/subresourceintegrity/#htmllinkelement-1
     [Reflect] attribute DOMString integrity;
+
+    // Service workers
+    // http://mkruisselbrink.github.io/ServiceWorker/spec/service_worker/#link-element-interface-section
+    [Reflect, RuntimeEnabled=LinkServiceWorker] attribute USVString scope;
 };
