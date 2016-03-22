@@ -672,6 +672,12 @@ public class DocumentModeTest extends DocumentModeTestBase {
         // Wait for the Activity to start up.
         final DocumentActivity newActivity = ActivityUtils.waitForActivity(
                 getInstrumentation(), DocumentActivity.class, viewIntentRunnable);
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return newActivity.getActivityTab() != null;
+            }
+        });
         ChromeTabUtils.waitForTabPageLoaded(newActivity.getActivityTab(), (String) null);
 
         TabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
@@ -693,6 +699,12 @@ public class DocumentModeTest extends DocumentModeTestBase {
         // Wait for the Activity to start up.
         final DocumentActivity newActivity = ActivityUtils.waitForActivity(
                 getInstrumentation(), DocumentActivity.class, viewIntentRunnable);
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return newActivity.getActivityTab() != null;
+            }
+        });
         ChromeTabUtils.waitForTabPageLoaded(newActivity.getActivityTab(), (String) null);
 
         TabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
