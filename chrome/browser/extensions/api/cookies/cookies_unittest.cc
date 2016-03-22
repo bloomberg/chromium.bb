@@ -97,6 +97,7 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   EXPECT_EQ("/", cookie1->path);
   EXPECT_FALSE(cookie1->secure);
   EXPECT_FALSE(cookie1->http_only);
+  EXPECT_EQ(api::cookies::SAME_SITE_STATUS_NO_RESTRICTION, cookie1->same_site);
   EXPECT_TRUE(cookie1->session);
   EXPECT_FALSE(cookie1->expiration_date.get());
   EXPECT_EQ("some cookie store", cookie1->store_id);
@@ -104,12 +105,13 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
   net::CanonicalCookie canonical_cookie2(
       GURL(), "ABC", "DEF", ".foobar.com", "/", base::Time(),
       base::Time::FromDoubleT(10000), base::Time(), false, false,
-      net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
+      net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT);
   scoped_ptr<Cookie> cookie2(
       cookies_helpers::CreateCookie(
           canonical_cookie2, "some cookie store"));
   EXPECT_FALSE(cookie2->host_only);
   EXPECT_FALSE(cookie2->session);
+  EXPECT_EQ(api::cookies::SAME_SITE_STATUS_STRICT, cookie2->same_site);
   ASSERT_TRUE(cookie2->expiration_date.get());
   EXPECT_EQ(10000, *cookie2->expiration_date);
 

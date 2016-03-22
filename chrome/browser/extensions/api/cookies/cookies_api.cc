@@ -381,11 +381,26 @@ void CookiesSetFunction::SetCookieOnIOThread() {
         base::Time::FromDoubleT(*parsed_args_->details.expiration_date);
   }
 
+  net::CookieSameSite same_site = net::CookieSameSite::DEFAULT_MODE;
+  switch (parsed_args_->details.same_site) {
+  case cookies::SAME_SITE_STATUS_NONE:
+  case cookies::SAME_SITE_STATUS_NO_RESTRICTION:
+    same_site = net::CookieSameSite::DEFAULT_MODE;
+    break;
+  case cookies::SAME_SITE_STATUS_LAX:
+    same_site = net::CookieSameSite::LAX_MODE;
+    break;
+  case cookies::SAME_SITE_STATUS_STRICT:
+    same_site = net::CookieSameSite::STRICT_MODE;
+    break;
+  }
+
   bool are_experimental_cookie_features_enabled =
       store_browser_context_->GetURLRequestContext()
           ->network_delegate()
           ->AreExperimentalCookieFeaturesEnabled();
 
+  // clang-format off
   cookie_store->SetCookieWithDetailsAsync(
       url_, parsed_args_->details.name.get() ? *parsed_args_->details.name
                                              : std::string(),
@@ -395,17 +410,18 @@ void CookiesSetFunction::SetCookieOnIOThread() {
                                          : std::string(),
       parsed_args_->details.path.get() ? *parsed_args_->details.path
                                        : std::string(),
-      base::Time(), expiration_time, base::Time(),
+      base::Time(),
+      expiration_time,
+      base::Time(),
       parsed_args_->details.secure.get() ? *parsed_args_->details.secure.get()
                                          : false,
       parsed_args_->details.http_only.get() ? *parsed_args_->details.http_only
                                             : false,
-      // TODO(mkwst): If we decide to ship First-party-only cookies, we'll need
-      // to extend the extension API to support them. For the moment, we'll set
-      // all cookies as non-First-party-only.
-      net::CookieSameSite::DEFAULT_MODE,
-      are_experimental_cookie_features_enabled, net::COOKIE_PRIORITY_DEFAULT,
+      same_site,
+      are_experimental_cookie_features_enabled,
+      net::COOKIE_PRIORITY_DEFAULT,
       base::Bind(&CookiesSetFunction::PullCookie, this));
+  // clang-format on
 }
 
 void CookiesSetFunction::PullCookie(bool set_cookie_result) {

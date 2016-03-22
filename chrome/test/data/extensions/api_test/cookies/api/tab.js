@@ -77,6 +77,9 @@ function removeTestCookies() {
   chrome.cookies.remove(
       {url: TEST_URL4, name: TEST_SECURE_COOKIE.name});
   chrome.cookies.remove({url: TEST_URL, name: 'abcd'});
+  chrome.cookies.remove({url: TEST_URL, name: 'A'});
+  chrome.cookies.remove({url: TEST_URL, name: 'B'});
+  chrome.cookies.remove({url: TEST_URL, name: 'C'});
   chrome.cookies.remove({url: TEST_ODD_URL, name: 'abcd'});
 }
 
@@ -128,6 +131,7 @@ chrome.test.runTests([
             chrome.test.assertEq('/', cookie.path);
             chrome.test.assertEq(false, cookie.secure);
             chrome.test.assertEq(false, cookie.httpOnly);
+            chrome.test.assertEq("no_restriction", cookie.sameSite);
             chrome.test.assertEq(true, cookie.session);
             chrome.test.assertTrue(typeof cookie.expirationDate === 'undefined',
                 'Session cookie should not have expirationDate property.');
@@ -150,6 +154,7 @@ chrome.test.runTests([
             chrome.test.assertEq('/', cookie.path);
             chrome.test.assertEq(false, cookie.secure);
             chrome.test.assertEq(false, cookie.httpOnly);
+            chrome.test.assertEq("no_restriction", cookie.sameSite);
             chrome.test.assertEq(false, cookie.session);
             chrome.test.assertEq(TEST_EXPIRATION_DATE, cookie.expirationDate);
           }));
@@ -177,6 +182,7 @@ chrome.test.runTests([
             chrome.test.assertEq(TEST_PATH, cookie.path);
             chrome.test.assertEq(true, cookie.secure);
             chrome.test.assertEq(true, cookie.httpOnly);
+            chrome.test.assertEq("no_restriction", cookie.sameSite);
             chrome.test.assertEq(true, cookie.session);
           }));
     }));
@@ -236,6 +242,39 @@ chrome.test.runTests([
             chrome.test.assertEq(TEST_ODD_PATH, unescape(cookie.path));
           }));
     }));
+  },
+  function setSameSiteCookies() {
+    removeTestCookies();
+
+    // No same-site restriction
+    chrome.cookies.set(
+      {url: TEST_URL, name: "A", value: "1", sameSite: "no_restriction"},
+      pass(function () {
+        chrome.cookies.get({url: TEST_URL, name: "A"}, pass(function (c) {
+          expectValidCookie(c);
+          chrome.test.assertEq("no_restriction", c.sameSite);
+        }));
+      }));
+
+    // Lax same-site restriction
+    chrome.cookies.set(
+      {url: TEST_URL, name: "B", value: "1", sameSite: "lax"},
+      pass(function () {
+        chrome.cookies.get({url: TEST_URL, name: "B"}, pass(function (c) {
+          expectValidCookie(c);
+          chrome.test.assertEq("lax", c.sameSite);
+        }));
+      }));
+
+    // Strict same-site restriction
+    chrome.cookies.set(
+      {url: TEST_URL, name: "C", value: "1", sameSite: "strict"},
+      pass(function () {
+        chrome.cookies.get({url: TEST_URL, name: "C"}, pass(function (c) {
+          expectValidCookie(c);
+          chrome.test.assertEq("strict", c.sameSite);
+        }));
+      }));
   },
   function setCookiesWithCallbacks() {
     removeTestCookies();

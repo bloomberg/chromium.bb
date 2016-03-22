@@ -83,6 +83,19 @@ scoped_ptr<Cookie> CreateCookie(
       canonical_cookie.Path() : std::string();
   cookie->secure = canonical_cookie.IsSecure();
   cookie->http_only = canonical_cookie.IsHttpOnly();
+
+  switch (canonical_cookie.SameSite()) {
+  case net::CookieSameSite::DEFAULT_MODE:
+    cookie->same_site = api::cookies::SAME_SITE_STATUS_NO_RESTRICTION;
+    break;
+  case net::CookieSameSite::LAX_MODE:
+    cookie->same_site = api::cookies::SAME_SITE_STATUS_LAX;
+    break;
+  case net::CookieSameSite::STRICT_MODE:
+    cookie->same_site = api::cookies::SAME_SITE_STATUS_STRICT;
+    break;
+  }
+
   cookie->session = !canonical_cookie.IsPersistent();
   if (canonical_cookie.IsPersistent()) {
     cookie->expiration_date.reset(

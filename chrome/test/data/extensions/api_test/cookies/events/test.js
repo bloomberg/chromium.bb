@@ -11,6 +11,7 @@ var SET_REMOVE_COOKIE = {
   path: '/',
   secure: false,
   httpOnly: false,
+  sameSite: chrome.cookies.SameSiteStatus.NO_RESTRICTION,
   session: false,
   expirationDate: 12345678900,
   storeId: "0"
@@ -24,6 +25,7 @@ var OVERWRITE_COOKIE_PRE = {
   path: '/',
   secure: false,
   httpOnly: false,
+  sameSite: chrome.cookies.SameSiteStatus.NO_RESTRICTION,
   session: false,
   expirationDate: 12345678900,
   storeId: "0"
@@ -37,6 +39,7 @@ var OVERWRITE_COOKIE_POST = {
   path: '/',
   secure: false,
   httpOnly: false,
+  sameSite: chrome.cookies.SameSiteStatus.NO_RESTRICTION,
   session: false,
   expirationDate: 12345678900,
   storeId: "0"
