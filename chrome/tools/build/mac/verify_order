@@ -23,7 +23,7 @@ fi
 LAST_SYMBOL=${1}
 MACH_O_FILE=${2}
 
-SYMBOLS=$(nm -fgjn -s __TEXT __text "${MACH_O_FILE}")
+SYMBOLS=$(nm -gjn "${MACH_O_FILE}" -s __TEXT __text)
 if [ ${?} -ne 0 ] || [ -z "${SYMBOLS}" ] ; then
   echo "${0}: no symbols in ${MACH_O_FILE}" >& 2
   exit 1
