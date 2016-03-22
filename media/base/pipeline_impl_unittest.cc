@@ -276,6 +276,11 @@ class PipelineImplTest : public ::testing::Test {
 
   void ExpectSuspend() {
     EXPECT_CALL(*renderer_, SetPlaybackRate(0));
+    EXPECT_CALL(*renderer_, Flush(_))
+        .WillOnce(DoAll(
+            SetBufferingState(&buffering_state_cb_, BUFFERING_HAVE_NOTHING),
+            RunClosure<0>()));
+    EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
     EXPECT_CALL(callbacks_, OnSuspend(PIPELINE_OK));
   }
 
@@ -1076,7 +1081,12 @@ class PipelineTeardownTest : public PipelineImplTest {
         base::Bind(&CallbackHelper::OnStop, base::Unretained(&callbacks_));
 
     EXPECT_CALL(*renderer_, SetPlaybackRate(0));
+    EXPECT_CALL(callbacks_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING));
     EXPECT_CALL(callbacks_, OnSuspend(PIPELINE_OK));
+    EXPECT_CALL(*renderer_, Flush(_))
+        .WillOnce(DoAll(
+            SetBufferingState(&buffering_state_cb_, BUFFERING_HAVE_NOTHING),
+            RunClosure<0>()));
     if (state == kResuming) {
       if (stop_or_error == kStop) {
         EXPECT_CALL(*demuxer_, Seek(_, _))

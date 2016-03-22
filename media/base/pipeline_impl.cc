@@ -670,6 +670,11 @@ void PipelineImpl::SuspendTask(const PipelineStatusCB& suspend_cb) {
   if (text_renderer_) {
     fns.Push(base::Bind(&TextRenderer::Pause,
                         base::Unretained(text_renderer_.get())));
+  }
+
+  fns.Push(base::Bind(&Renderer::Flush, base::Unretained(renderer_.get())));
+
+  if (text_renderer_) {
     fns.Push(base::Bind(&TextRenderer::Flush,
                         base::Unretained(text_renderer_.get())));
   }
