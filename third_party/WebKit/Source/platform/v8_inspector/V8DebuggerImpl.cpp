@@ -516,7 +516,7 @@ v8::Local<v8::Object> V8DebuggerImpl::currentCallFrames()
     return wrapper;
 }
 
-PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::callFrameNoScopes(int index)
+PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::callFrame(int index)
 {
     if (!m_isolate->InContext())
         return nullptr;

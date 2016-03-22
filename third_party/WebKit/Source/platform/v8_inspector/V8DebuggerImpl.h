@@ -85,7 +85,7 @@ public:
 
     bool setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString*, Maybe<protocol::Debugger::SetScriptSourceError>*, v8::Global<v8::Object>* newCallFrames, Maybe<bool>* stackChanged);
     v8::Local<v8::Object> currentCallFrames();
-    PassOwnPtr<JavaScriptCallFrame> callFrameNoScopes(int index);
+    PassOwnPtr<JavaScriptCallFrame> callFrame(int index);
     int frameCount();
 
     bool isPaused();

@@ -495,7 +495,7 @@ bool V8DebuggerAgentImpl::isCallStackEmptyOrBlackboxed()
 {
     ASSERT(enabled());
     for (int index = 0; ; ++index) {
-        OwnPtr<JavaScriptCallFrame> frame = debugger().callFrameNoScopes(index);
+        OwnPtr<JavaScriptCallFrame> frame = debugger().callFrame(index);
         if (!frame)
             break;
         if (!isCallFrameWithUnknownScriptOrBlackboxed(frame.get()))
@@ -507,7 +507,7 @@ bool V8DebuggerAgentImpl::isCallStackEmptyOrBlackboxed()
 bool V8DebuggerAgentImpl::isTopCallFrameBlackboxed()
 {
     ASSERT(enabled());
-    return isCallFrameWithUnknownScriptOrBlackboxed(debugger().callFrameNoScopes(0).get());
+    return isCallFrameWithUnknownScriptOrBlackboxed(debugger().callFrame(0).get());
 }
 
 bool V8DebuggerAgentImpl::isCallFrameWithUnknownScriptOrBlackboxed(JavaScriptCallFrame* frame)
@@ -653,7 +653,7 @@ void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString,
 
     v8::TryCatch tryCatch(m_isolate);
 
-    OwnPtr<JavaScriptCallFrame> javaScriptCallFrame = debugger().callFrameNoScopes(remoteId->frameOrdinal());
+    OwnPtr<JavaScriptCallFrame> javaScriptCallFrame = debugger().callFrame(remoteId->frameOrdinal());
     if (!javaScriptCallFrame) {
         *errorString = "Could not find call frame with given id";
         return;
@@ -907,7 +907,7 @@ void V8DebuggerAgentImpl::stepOver(ErrorString* errorString)
     if (!assertPaused(errorString))
         return;
     // StepOver at function return point should fallback to StepInto.
-    OwnPtr<JavaScriptCallFrame> frame = debugger().callFrameNoScopes(0);
+    OwnPtr<JavaScriptCallFrame> frame = debugger().callFrame(0);
     if (frame && frame->isAtReturn()) {
         stepInto(errorString);
         return;
@@ -1010,7 +1010,7 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
         return;
     }
 
-    OwnPtr<JavaScriptCallFrame> javaScriptCallFrame = debugger().callFrameNoScopes(remoteId->frameOrdinal());
+    OwnPtr<JavaScriptCallFrame> javaScriptCallFrame = debugger().callFrame(remoteId->frameOrdinal());
     if (!javaScriptCallFrame) {
         *errorString = "Could not find call frame with given id";
         return;
@@ -1068,7 +1068,7 @@ void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString,
     if (!injectedScript->resolveCallArgument(errorString, newValueArgument.get()).ToLocal(&newValue))
         return;
 
-    OwnPtr<JavaScriptCallFrame> javaScriptCallFrame = debugger().callFrameNoScopes(remoteId->frameOrdinal());
+    OwnPtr<JavaScriptCallFrame> javaScriptCallFrame = debugger().callFrame(remoteId->frameOrdinal());
     if (!javaScriptCallFrame) {
         *errorString = "Could not find call frame with given id";
         return;
