@@ -392,6 +392,7 @@ _arm_internal_release_boards = frozenset([
     'daisy_skate',
     'daisy_spring',
     'elm',
+    'gale',
     'gru',
     'kayle',
     'nyan',
@@ -557,6 +558,7 @@ _internal_boards = _all_release_boards
 # Board can appear in 1 or more of the following sets.
 _brillo_boards = frozenset([
     'arkham',
+    'gale',
     'gizmo',
     'kayle',
     'panther_embedded',
@@ -647,6 +649,7 @@ _waterfall_config_map = {
         'veyron_minnie-cheets-paladin',
 
         # Experimental Canaries (Group)
+        'gale-release-group',
         'glados-release-group',
         'gru-release-group',
         'oak-release-group',
@@ -2919,6 +2922,13 @@ def GetConfig():
       important=False,
   )
 
+  # gale-based boards
+  _AddGroupConfig(
+      'gale', 'gale', (
+      ),
+      important=False,
+  )
+
   # Factory and Firmware releases much inherit from these classes.
   # Modifications for these release builders should go here.
 
@@ -2998,6 +3008,7 @@ def GetConfig():
       'enguarde',
       'expresso',
       'falco',
+      'gale',
       'glimmer',
       'gnawty',
       'jecht',

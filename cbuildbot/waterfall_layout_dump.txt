@@ -41,6 +41,8 @@ expresso-release
 falco-chrome-pfq
 falco-full-compile-paladin
 falco-paladin
+[gale-release-group]
+  gale-release
 gizmo-release
 glados-cheets-android-pfq
 glados-paladin
