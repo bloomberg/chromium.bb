@@ -192,8 +192,8 @@ void PipelineController::Dispatch() {
 
     // Tell |demuxer_| to expect our resume.
     DCHECK(!waiting_for_seek_);
-    demuxer_->StartWaitingForSeek(seek_time_);
     waiting_for_seek_ = true;
+    demuxer_->StartWaitingForSeek(seek_time_);
 
     pending_resume_ = false;
     state_ = State::RESUMING;
@@ -204,7 +204,7 @@ void PipelineController::Dispatch() {
     return;
   }
 
-  // When we have pending operations, abort the current seek.
+  // If we have pending operations, and a seek is ongoing, abort it.
   if ((pending_seek_ || pending_suspend_) && waiting_for_seek_) {
     // If there is no pending seek, return the current seek to pending status.
     if (!pending_seek_) {
