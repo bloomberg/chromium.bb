@@ -47,7 +47,7 @@ public class ChromeSigninUtils {
     public ChromeSigninUtils(Instrumentation instrumentation) {
         mContext = instrumentation.getContext();
         mTargetContext = instrumentation.getTargetContext();
-        mAccountManager = AccountManager.get(mContext);
+        mAccountManager = AccountManager.get(mTargetContext);
         mMockAccountManager = new MockAccountManager(mContext, mTargetContext);
     }
 
