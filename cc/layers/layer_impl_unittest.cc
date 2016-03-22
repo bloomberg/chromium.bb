@@ -153,9 +153,9 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
       PropertyTrees::ResetFlags::ALL_TREES);
 
   root->AddChild(LayerImpl::Create(host_impl.active_tree(), 7));
-  LayerImpl* child = root->children()[0].get();
+  LayerImpl* child = root->children()[0];
   child->AddChild(LayerImpl::Create(host_impl.active_tree(), 8));
-  LayerImpl* grand_child = child->children()[0].get();
+  LayerImpl* grand_child = child->children()[0];
   root->SetScrollClipLayer(root_clip->id());
   host_impl.active_tree()->BuildPropertyTreesForTesting();
 
@@ -516,7 +516,7 @@ class LayerImplScrollTest : public testing::Test {
   }
 
   LayerImpl* layer() {
-    return host_impl_.active_tree()->root_layer()->children()[0].get();
+    return host_impl_.active_tree()->root_layer()->children()[0];
   }
 
   ScrollTree* scroll_tree(LayerImpl* layer_impl) {

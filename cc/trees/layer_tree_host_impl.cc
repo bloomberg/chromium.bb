@@ -1197,17 +1197,17 @@ void LayerTreeHostImpl::BlockNotifyReadyToActivateForTesting(bool block) {
 
 void LayerTreeHostImpl::ResetTreesForTesting() {
   if (active_tree_)
-    active_tree_->DetachLayerTree();
+    active_tree_->ClearLayers();
   active_tree_ =
       LayerTreeImpl::create(this, active_tree()->page_scale_factor(),
                             active_tree()->top_controls_shown_ratio(),
                             active_tree()->elastic_overscroll());
   active_tree_->property_trees()->is_active = true;
   if (pending_tree_)
-    pending_tree_->DetachLayerTree();
+    pending_tree_->ClearLayers();
   pending_tree_ = nullptr;
   if (recycle_tree_)
-    recycle_tree_->DetachLayerTree();
+    recycle_tree_->ClearLayers();
   recycle_tree_ = nullptr;
 }
 
@@ -1957,11 +1957,10 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     pending_tree_->ProcessUIResourceRequestQueue();
 
     if (pending_tree_->needs_full_tree_sync()) {
-      active_tree_->SetRootLayer(
-          TreeSynchronizer::SynchronizeTrees(pending_tree_->root_layer(),
-                                             active_tree_->DetachLayerTree(),
-                                             active_tree_.get()));
+      TreeSynchronizer::SynchronizeTrees(pending_tree_->root_layer(),
+                                         active_tree_.get());
     }
+
     // We need to preserve the damage status of property trees on active tree.
     // We do this by pushing the damage status from active tree property trees
     // to pending tree property trees.

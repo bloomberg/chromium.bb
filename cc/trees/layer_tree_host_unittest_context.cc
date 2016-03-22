@@ -647,7 +647,7 @@ class LayerTreeHostContextTestLostContextSucceedsWithContent
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     FakePictureLayerImpl* picture_impl = static_cast<FakePictureLayerImpl*>(
-        host_impl->active_tree()->root_layer()->children()[0].get());
+        host_impl->active_tree()->root_layer()->children()[0]);
     EXPECT_TRUE(picture_impl->HighResTiling()
                     ->TileAt(0, 0)
                     ->draw_info()
@@ -858,9 +858,9 @@ class LayerTreeHostContextTestLayersNotified : public LayerTreeHostContextTest {
     root_picture = static_cast<FakePictureLayerImpl*>(
         host_impl->active_tree()->root_layer());
     child_picture =
-        static_cast<FakePictureLayerImpl*>(root_picture->children()[0].get());
+        static_cast<FakePictureLayerImpl*>(root_picture->children()[0]);
     grandchild_picture =
-        static_cast<FakePictureLayerImpl*>(child_picture->children()[0].get());
+        static_cast<FakePictureLayerImpl*>(child_picture->children()[0]);
 
     ++num_commits_;
     switch (num_commits_) {

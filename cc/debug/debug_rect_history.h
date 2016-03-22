@@ -8,7 +8,7 @@
 #include <vector>
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/layers/layer_lists.h"
+#include "cc/layers/layer_collections.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {

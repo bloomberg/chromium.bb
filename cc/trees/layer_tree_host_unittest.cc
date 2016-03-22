@@ -1740,7 +1740,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     FakePictureLayerImpl* root =
         static_cast<FakePictureLayerImpl*>(impl->active_tree()->root_layer());
     FakePictureLayerImpl* child = static_cast<FakePictureLayerImpl*>(
-        impl->active_tree()->root_layer()->children()[0].get());
+        impl->active_tree()->root_layer()->children()[0]);
 
     // Positions remain in layout pixels.
     EXPECT_EQ(gfx::PointF(), root->position());
@@ -3130,21 +3130,21 @@ class LayerTreeHostTestImplLayersPushProperties
 
     if (root_impl_ && root_impl_->children().size() > 0) {
       child_impl_ = static_cast<PushPropertiesCountingLayerImpl*>(
-          root_impl_->children()[0].get());
+          root_impl_->children()[0]);
 
       if (child_impl_ && child_impl_->children().size() > 0)
         grandchild_impl_ = static_cast<PushPropertiesCountingLayerImpl*>(
-            child_impl_->children()[0].get());
+            child_impl_->children()[0]);
     }
 
     if (root_impl_ && root_impl_->children().size() > 1) {
       child2_impl_ = static_cast<PushPropertiesCountingLayerImpl*>(
-          root_impl_->children()[1].get());
+          root_impl_->children()[1]);
 
       if (child2_impl_ && child2_impl_->children().size() > 0)
         leaf_always_pushing_layer_impl_ =
             static_cast<PushPropertiesCountingLayerImpl*>(
-                child2_impl_->children()[0].get());
+                child2_impl_->children()[0]);
     }
 
     if (root_impl_)
@@ -3883,8 +3883,8 @@ class LayerTreeHostTestPushHiddenLayer : public LayerTreeHostTest {
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer();
-    LayerImpl* parent = root->children()[0].get();
-    LayerImpl* child = parent->children()[0].get();
+    LayerImpl* parent = root->children()[0];
+    LayerImpl* child = parent->children()[0];
 
     switch (impl->active_tree()->source_frame_number()) {
       case 1:
@@ -3984,10 +3984,8 @@ class LayerTreeHostTestElasticOverscroll : public LayerTreeHostTest {
 
   void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
     num_draws_++;
-    LayerImpl* content_layer_impl = host_impl->active_tree()
-                                        ->InnerViewportScrollLayer()
-                                        ->children()[0]
-                                        .get();
+    LayerImpl* content_layer_impl =
+        host_impl->active_tree()->InnerViewportScrollLayer()->children()[0];
     gfx::Transform expected_draw_transform;
     switch (num_draws_) {
       case 1:

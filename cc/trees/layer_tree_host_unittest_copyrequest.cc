@@ -478,9 +478,9 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
     Renderer* renderer = host_impl->renderer();
 
     LayerImpl* root = host_impl->active_tree()->root_layer();
-    LayerImpl* grand_parent = root->children()[0].get();
-    LayerImpl* parent = grand_parent->children()[0].get();
-    LayerImpl* copy_layer = parent->children()[0].get();
+    LayerImpl* grand_parent = root->children()[0];
+    LayerImpl* parent = grand_parent->children()[0];
+    LayerImpl* copy_layer = parent->children()[0];
 
     // |parent| owns a surface, but it was hidden and not part of the copy
     // request so it should not allocate any resource.
@@ -1191,7 +1191,7 @@ class LayerTreeHostCopyRequestTestMultipleDrawsHiddenCopyRequest
                                    LayerTreeHostImpl::FrameData* frame_data,
                                    DrawResult draw_result) override {
     LayerImpl* root = host_impl->active_tree()->root_layer();
-    LayerImpl* child = root->children()[0].get();
+    LayerImpl* child = root->children()[0];
 
     bool saw_root = false;
     bool saw_child = false;

@@ -6,7 +6,7 @@
 #define CC_TREES_DRAW_PROPERTY_UTILS_H_
 
 #include "cc/base/cc_export.h"
-#include "cc/layers/layer_lists.h"
+#include "cc/layers/layer_collections.h"
 
 namespace gfx {
 class Rect;

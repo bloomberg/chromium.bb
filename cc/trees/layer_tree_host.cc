@@ -371,10 +371,9 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
 
   sync_tree->set_source_frame_number(source_frame_number());
 
-  if (needs_full_tree_sync_) {
-    sync_tree->SetRootLayer(TreeSynchronizer::SynchronizeTrees(
-        root_layer(), sync_tree->DetachLayerTree(), sync_tree));
-  }
+  if (needs_full_tree_sync_)
+    TreeSynchronizer::SynchronizeTrees(root_layer(), sync_tree);
+
   sync_tree->set_needs_full_tree_sync(needs_full_tree_sync_);
   needs_full_tree_sync_ = false;
 

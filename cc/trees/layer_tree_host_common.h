@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "cc/base/cc_export.h"
-#include "cc/layers/layer_lists.h"
+#include "cc/layers/layer_collections.h"
 #include "cc/trees/property_tree.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -142,11 +142,6 @@ class CC_EXPORT LayerTreeHostCommon {
   static LayerType* FindLayerInSubtree(LayerType* root_layer, int layer_id);
 
   static Layer* get_layer_as_raw_ptr(const LayerList& layers, size_t index) {
-    return layers[index].get();
-  }
-
-  static LayerImpl* get_layer_as_raw_ptr(const OwnedLayerImplList& layers,
-                                         size_t index) {
     return layers[index].get();
   }
 

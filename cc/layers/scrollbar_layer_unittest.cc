@@ -151,7 +151,7 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
       layer_tree_host_.get(), std::move(scrollbar), false, false, 0, 0);
   PaintedScrollbarLayerImpl* scrollbar_layer_impl =
       static_cast<PaintedScrollbarLayerImpl*>(
-          layer_impl_tree_root->children()[1].get());
+          layer_impl_tree_root->children()[1]);
   layer_impl_tree_root->layer_tree_impl()->BuildPropertyTreesForTesting();
   ScrollTree& scroll_tree =
       layer_impl_tree_root->layer_tree_impl()->property_trees()->scroll_tree;
@@ -173,7 +173,7 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   layer_impl_tree_root = LayerImplForScrollAreaAndScrollbar(
       layer_tree_host_.get(), std::move(scrollbar), false, false, 0, 0);
   scrollbar_layer_impl = static_cast<PaintedScrollbarLayerImpl*>(
-      layer_impl_tree_root->children()[1].get());
+      layer_impl_tree_root->children()[1]);
   layer_impl_tree_root->layer_tree_impl()->BuildPropertyTreesForTesting();
   scroll_tree =
       layer_impl_tree_root->layer_tree_impl()->property_trees()->scroll_tree;
@@ -218,7 +218,7 @@ TEST_F(ScrollbarLayerTest, ScrollOffsetSynchronization) {
 
   ScrollbarLayerImplBase* cc_scrollbar_layer =
       static_cast<PaintedScrollbarLayerImpl*>(
-          layer_impl_tree_root->children()[1].get());
+          layer_impl_tree_root->children()[1]);
 
   EXPECT_EQ(10.f, cc_scrollbar_layer->current_pos());
   EXPECT_EQ(30, cc_scrollbar_layer->scroll_layer_length() -
@@ -239,7 +239,7 @@ TEST_F(ScrollbarLayerTest, ScrollOffsetSynchronization) {
   EXPECT_EQ(300, cc_scrollbar_layer->scroll_layer_length() -
                      cc_scrollbar_layer->clip_layer_length());
 
-  LayerImpl* scroll_layer_impl = layer_impl_tree_root->children()[0].get();
+  LayerImpl* scroll_layer_impl = layer_impl_tree_root->children()[0];
   scroll_layer_impl->ScrollBy(gfx::Vector2d(12, 34));
 
   EXPECT_EQ(112.f, cc_scrollbar_layer->current_pos());
@@ -252,9 +252,9 @@ TEST_F(ScrollbarLayerTest, ScrollOffsetSynchronization) {
     scrollbar_layer->UpdateInternalContentScale();                           \
     scrollbar_layer->UpdateThumbAndTrackGeometry();                          \
     root_clip_layer_impl = layer_tree_host_->CommitAndCreateLayerImplTree(); \
-    root_layer_impl = root_clip_layer_impl->children()[0].get();             \
+    root_layer_impl = root_clip_layer_impl->children()[0];                   \
     scrollbar_layer_impl = static_cast<PaintedScrollbarLayerImpl*>(          \
-        root_layer_impl->children()[1].get());                               \
+        root_layer_impl->children()[1]);                                     \
   } while (false)
 
 TEST_F(ScrollbarLayerTest, UpdatePropertiesOfScrollBarWhenThumbRemoved) {
@@ -386,7 +386,7 @@ TEST_F(ScrollbarLayerTest, SolidColorDrawQuads) {
       kThumbThickness, kTrackStart);
   ScrollbarLayerImplBase* scrollbar_layer_impl =
       static_cast<SolidColorScrollbarLayerImpl*>(
-          layer_impl_tree_root->children()[1].get());
+          layer_impl_tree_root->children()[1]);
   scrollbar_layer_impl->SetBounds(gfx::Size(kTrackLength, kThumbThickness));
   scrollbar_layer_impl->SetCurrentPos(10.f);
   scrollbar_layer_impl->SetClipLayerLength(200 / 3.f);
@@ -467,10 +467,10 @@ TEST_F(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
 
   LayerImpl* layer_impl_tree_root =
       layer_tree_host_->CommitAndCreateLayerImplTree();
-  LayerImpl* scroll_layer_impl = layer_impl_tree_root->children()[0].get();
+  LayerImpl* scroll_layer_impl = layer_impl_tree_root->children()[0];
 
-  auto* scrollbar_layer_impl = static_cast<ScrollbarLayerImplBase*>(
-      scroll_layer_impl->children()[1].get());
+  auto* scrollbar_layer_impl =
+      static_cast<ScrollbarLayerImplBase*>(scroll_layer_impl->children()[1]);
 
   scroll_layer_impl->ScrollBy(gfx::Vector2dF(4.f, 0.f));
 

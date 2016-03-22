@@ -47,7 +47,7 @@ bool LayerTreesMatch(LayerImpl* const layer_impl,
 
   for (size_t i = 0; i < layer_impl->children().size(); ++i) {
     RETURN_IF_EXPECTATION_FAILS(EXPECT_TRUE(LayerTreesMatch(
-        layer_impl->children()[i].get(), layer->children()[i].get())));
+        layer_impl->children()[i], layer->children()[i].get())));
   }
 
   return true;

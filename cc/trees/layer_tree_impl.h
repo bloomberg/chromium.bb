@@ -130,9 +130,10 @@ class CC_EXPORT LayerTreeImpl {
 
   // Other public methods
   // ---------------------------------------------------------------------------
-  LayerImpl* root_layer() const { return root_layer_.get(); }
+  LayerImpl* root_layer() const { return root_layer_; }
   void SetRootLayer(scoped_ptr<LayerImpl>);
-  scoped_ptr<LayerImpl> DetachLayerTree();
+  scoped_ptr<OwnedLayerImplList> DetachLayers();
+  void ClearLayers();
 
   void SetPropertyTrees(const PropertyTrees property_trees) {
     property_trees_ = property_trees;
@@ -306,6 +307,10 @@ class CC_EXPORT LayerTreeImpl {
   // These should be called by LayerImpl's ctor/dtor.
   void RegisterLayer(LayerImpl* layer);
   void UnregisterLayer(LayerImpl* layer);
+
+  // These manage ownership of the LayerImpl.
+  void AddLayer(scoped_ptr<LayerImpl> layer);
+  scoped_ptr<LayerImpl> RemoveLayer(int id);
 
   size_t NumLayers();
 
@@ -496,7 +501,7 @@ class CC_EXPORT LayerTreeImpl {
   LayerTreeHostImpl* layer_tree_host_impl_;
   int source_frame_number_;
   int is_first_frame_after_commit_tracker_;
-  scoped_ptr<LayerImpl> root_layer_;
+  LayerImpl* root_layer_;
   HeadsUpDisplayLayerImpl* hud_layer_;
   PropertyTrees property_trees_;
   SkColor background_color_;
@@ -519,8 +524,8 @@ class CC_EXPORT LayerTreeImpl {
 
   scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
 
-  using LayerIdMap = std::unordered_map<int, LayerImpl*>;
-  LayerIdMap layer_id_map_;
+  scoped_ptr<OwnedLayerImplList> layers_;
+  LayerImplMap layer_id_map_;
   // Set of layers that need to push properties.
   std::unordered_set<LayerImpl*> layers_that_should_push_properties_;
 

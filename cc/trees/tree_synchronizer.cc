@@ -7,128 +7,121 @@
 #include <stddef.h>
 
 #include <set>
-#include <unordered_map>
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/layer.h"
+#include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
 
-using ScopedPtrLayerImplMap = std::unordered_map<int, scoped_ptr<LayerImpl>>;
-using RawPtrLayerImplMap = std::unordered_map<int, LayerImpl*>;
-
-void CollectExistingLayerImplRecursive(ScopedPtrLayerImplMap* old_layers,
-                                       scoped_ptr<LayerImpl> layer_impl) {
-  if (!layer_impl)
-    return;
-
-  OwnedLayerImplList& children = layer_impl->children();
-  for (auto& child : children)
-    CollectExistingLayerImplRecursive(old_layers, std::move(child));
-
-  CollectExistingLayerImplRecursive(old_layers, layer_impl->TakeMaskLayer());
-  CollectExistingLayerImplRecursive(old_layers, layer_impl->TakeReplicaLayer());
-
-  int id = layer_impl->id();
-  (*old_layers)[id] = std::move(layer_impl);
-}
-
 template <typename LayerType>
-scoped_ptr<LayerImpl> SynchronizeTreesInternal(
-    LayerType* layer_root,
-    scoped_ptr<LayerImpl> old_layer_impl_root,
-    LayerTreeImpl* tree_impl) {
+void SynchronizeTreesInternal(LayerType* layer_root, LayerTreeImpl* tree_impl) {
   DCHECK(tree_impl);
 
   TRACE_EVENT0("cc", "TreeSynchronizer::SynchronizeTrees");
-  ScopedPtrLayerImplMap old_layers;
-  RawPtrLayerImplMap new_layers;
+  scoped_ptr<OwnedLayerImplList> old_layers(tree_impl->DetachLayers());
 
-  CollectExistingLayerImplRecursive(&old_layers,
-                                    std::move(old_layer_impl_root));
+  OwnedLayerImplMap old_layer_map;
+  for (auto& it : *old_layers)
+    old_layer_map[it->id()] = std::move(it);
 
-  scoped_ptr<LayerImpl> new_tree = SynchronizeTreesRecursive(
-      &new_layers, &old_layers, layer_root, tree_impl);
+  SynchronizeTreesRecursive(&old_layer_map, layer_root, tree_impl);
 
-  return new_tree;
+  for (auto& it : old_layer_map) {
+    if (it.second) {
+      // Need to ensure that layer destruction doesn't tear down child
+      // LayerImpl that have been used in the new tree.
+      it.second->children().clear();
+    }
+  }
 }
 
-scoped_ptr<LayerImpl> TreeSynchronizer::SynchronizeTrees(
-    Layer* layer_root,
-    scoped_ptr<LayerImpl> old_layer_impl_root,
-    LayerTreeImpl* tree_impl) {
-  return SynchronizeTreesInternal(layer_root, std::move(old_layer_impl_root),
-                                  tree_impl);
+void TreeSynchronizer::SynchronizeTrees(Layer* layer_root,
+                                        LayerTreeImpl* tree_impl) {
+  if (!layer_root)
+    tree_impl->ClearLayers();
+  else
+    SynchronizeTreesInternal(layer_root, tree_impl);
 }
 
-scoped_ptr<LayerImpl> TreeSynchronizer::SynchronizeTrees(
-    LayerImpl* layer_root,
-    scoped_ptr<LayerImpl> old_layer_impl_root,
-    LayerTreeImpl* tree_impl) {
-  return SynchronizeTreesInternal(layer_root, std::move(old_layer_impl_root),
-                                  tree_impl);
+void TreeSynchronizer::SynchronizeTrees(LayerImpl* layer_root,
+                                        LayerTreeImpl* tree_impl) {
+  if (!layer_root)
+    tree_impl->ClearLayers();
+  else
+    SynchronizeTreesInternal(layer_root, tree_impl);
 }
 
 template <typename LayerType>
-scoped_ptr<LayerImpl> ReuseOrCreateLayerImpl(RawPtrLayerImplMap* new_layers,
-                                             ScopedPtrLayerImplMap* old_layers,
+scoped_ptr<LayerImpl> ReuseOrCreateLayerImpl(OwnedLayerImplMap* old_layers,
                                              LayerType* layer,
                                              LayerTreeImpl* tree_impl) {
+  if (!layer)
+    return nullptr;
   scoped_ptr<LayerImpl> layer_impl = std::move((*old_layers)[layer->id()]);
-
   if (!layer_impl)
     layer_impl = layer->CreateLayerImpl(tree_impl);
-
-  (*new_layers)[layer->id()] = layer_impl.get();
   return layer_impl;
 }
 
 template <typename LayerType>
 scoped_ptr<LayerImpl> SynchronizeTreesRecursiveInternal(
-    RawPtrLayerImplMap* new_layers,
-    ScopedPtrLayerImplMap* old_layers,
+    OwnedLayerImplMap* old_layers,
     LayerType* layer,
     LayerTreeImpl* tree_impl) {
   if (!layer)
     return nullptr;
 
-  scoped_ptr<LayerImpl> layer_impl =
-      ReuseOrCreateLayerImpl(new_layers, old_layers, layer, tree_impl);
+  scoped_ptr<LayerImpl> layer_impl(
+      ReuseOrCreateLayerImpl(old_layers, layer, tree_impl));
 
-  layer_impl->ClearChildList();
+  layer_impl->children().clear();
   for (size_t i = 0; i < layer->children().size(); ++i) {
     layer_impl->AddChild(SynchronizeTreesRecursiveInternal(
-        new_layers, old_layers, layer->child_at(i), tree_impl));
+        old_layers, layer->child_at(i), tree_impl));
   }
 
-  layer_impl->SetMaskLayer(SynchronizeTreesRecursiveInternal(
-      new_layers, old_layers, layer->mask_layer(), tree_impl));
-  layer_impl->SetReplicaLayer(SynchronizeTreesRecursiveInternal(
-      new_layers, old_layers, layer->replica_layer(), tree_impl));
+  scoped_ptr<LayerImpl> mask_layer = SynchronizeTreesRecursiveInternal(
+      old_layers, layer->mask_layer(), tree_impl);
+  if (layer_impl->mask_layer() && mask_layer &&
+      layer_impl->mask_layer() == mask_layer.get()) {
+    // In this case, we only need to update the ownership, as we're essentially
+    // just resetting the mask layer.
+    tree_impl->AddLayer(std::move(mask_layer));
+  } else {
+    layer_impl->SetMaskLayer(std::move(mask_layer));
+  }
+
+  scoped_ptr<LayerImpl> replica_layer = SynchronizeTreesRecursiveInternal(
+      old_layers, layer->replica_layer(), tree_impl);
+  if (layer_impl->replica_layer() && replica_layer &&
+      layer_impl->replica_layer() == replica_layer.get()) {
+    // In this case, we only need to update the ownership, as we're essentially
+    // just resetting the replica layer.
+    tree_impl->AddLayer(std::move(replica_layer));
+  } else {
+    layer_impl->SetReplicaLayer(std::move(replica_layer));
+  }
 
   return layer_impl;
 }
 
-scoped_ptr<LayerImpl> SynchronizeTreesRecursive(
-    RawPtrLayerImplMap* new_layers,
-    ScopedPtrLayerImplMap* old_layers,
-    Layer* layer,
-    LayerTreeImpl* tree_impl) {
-  return SynchronizeTreesRecursiveInternal(
-      new_layers, old_layers, layer, tree_impl);
+void SynchronizeTreesRecursive(OwnedLayerImplMap* old_layers,
+                               Layer* old_root,
+                               LayerTreeImpl* tree_impl) {
+  tree_impl->SetRootLayer(
+      SynchronizeTreesRecursiveInternal(old_layers, old_root, tree_impl));
 }
 
-scoped_ptr<LayerImpl> SynchronizeTreesRecursive(
-    RawPtrLayerImplMap* new_layers,
-    ScopedPtrLayerImplMap* old_layers,
-    LayerImpl* layer,
-    LayerTreeImpl* tree_impl) {
-  return SynchronizeTreesRecursiveInternal(
-      new_layers, old_layers, layer, tree_impl);
+void SynchronizeTreesRecursive(OwnedLayerImplMap* old_layers,
+                               LayerImpl* old_root,
+                               LayerTreeImpl* tree_impl) {
+  tree_impl->SetRootLayer(
+      SynchronizeTreesRecursiveInternal(old_layers, old_root, tree_impl));
 }
 
 static void CheckScrollAndClipPointersRecursive(Layer* layer,
@@ -155,28 +148,24 @@ static void CheckScrollAndClipPointersRecursive(Layer* layer,
 
   if (layer_impl->scroll_children()) {
     for (std::set<Layer*>::iterator it = layer->scroll_children()->begin();
-         it != layer->scroll_children()->end();
-         ++it) {
+         it != layer->scroll_children()->end(); ++it) {
       DCHECK_EQ((*it)->scroll_parent(), layer);
     }
     for (std::set<LayerImpl*>::iterator it =
              layer_impl->scroll_children()->begin();
-         it != layer_impl->scroll_children()->end();
-         ++it) {
+         it != layer_impl->scroll_children()->end(); ++it) {
       DCHECK_EQ((*it)->scroll_parent(), layer_impl);
     }
   }
 
   if (layer_impl->clip_children()) {
     for (std::set<Layer*>::iterator it = layer->clip_children()->begin();
-         it != layer->clip_children()->end();
-         ++it) {
+         it != layer->clip_children()->end(); ++it) {
       DCHECK_EQ((*it)->clip_parent(), layer);
     }
     for (std::set<LayerImpl*>::iterator it =
              layer_impl->clip_children()->begin();
-         it != layer_impl->clip_children()->end();
-         ++it) {
+         it != layer_impl->clip_children()->end(); ++it) {
       DCHECK_EQ((*it)->clip_parent(), layer_impl);
     }
   }

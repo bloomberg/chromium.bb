@@ -32,12 +32,12 @@ class LayerUtilsGetAnimationBoundsTest : public testing::Test {
                    &shared_bitmap_manager_,
                    &task_graph_runner_),
         root_(CreateTwoForkTree(&host_impl_)),
-        parent1_(root_->children()[0].get()),
-        parent2_(root_->children()[1].get()),
-        child1_(parent1_->children()[0].get()),
-        child2_(parent2_->children()[0].get()),
-        grand_child_(child2_->children()[0].get()),
-        great_grand_child_(grand_child_->children()[0].get()) {
+        parent1_(root_->children()[0]),
+        parent2_(root_->children()[1]),
+        child1_(parent1_->children()[0]),
+        child2_(parent2_->children()[0]),
+        grand_child_(child2_->children()[0]),
+        great_grand_child_(grand_child_->children()[0]) {
     timeline_ =
         AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
     host_impl_.animation_host()->AddAnimationTimeline(timeline_);

@@ -164,7 +164,7 @@ class TileManagerPerfTest : public testing::Test {
     host_impl_.CreatePendingTree();
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
     // Clear recycled tree.
-    pending_tree->DetachLayerTree();
+    pending_tree->ClearLayers();
 
     scoped_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id_,

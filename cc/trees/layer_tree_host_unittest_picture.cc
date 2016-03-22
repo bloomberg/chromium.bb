@@ -82,8 +82,7 @@ class LayerTreeHostPictureTestTwinLayer
     }
 
     FakePictureLayerImpl* pending_picture_impl =
-        static_cast<FakePictureLayerImpl*>(
-            pending_root_impl->children()[0].get());
+        static_cast<FakePictureLayerImpl*>(pending_root_impl->children()[0]);
 
     if (!active_root_impl) {
       EXPECT_EQ(0, activates_);
@@ -98,8 +97,7 @@ class LayerTreeHostPictureTestTwinLayer
     }
 
     FakePictureLayerImpl* active_picture_impl =
-        static_cast<FakePictureLayerImpl*>(
-            active_root_impl->children()[0].get());
+        static_cast<FakePictureLayerImpl*>(active_root_impl->children()[0]);
 
     // After the first activation, when we commit again, we'll have a pending
     // and active layer. Then we recreate a picture layer in the 4th activate
@@ -118,8 +116,7 @@ class LayerTreeHostPictureTestTwinLayer
       EXPECT_EQ(2, activates_);
     } else {
       FakePictureLayerImpl* active_picture_impl =
-          static_cast<FakePictureLayerImpl*>(
-              active_root_impl->children()[0].get());
+          static_cast<FakePictureLayerImpl*>(active_root_impl->children()[0]);
       EXPECT_EQ(nullptr, active_picture_impl->GetPendingOrActiveTwinLayer());
     }
 
@@ -156,7 +153,7 @@ class LayerTreeHostPictureTestResizeViewportWithGpuRaster
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* child = impl->sync_tree()->root_layer()->children()[0].get();
+    LayerImpl* child = impl->sync_tree()->root_layer()->children()[0];
     FakePictureLayerImpl* picture_impl =
         static_cast<FakePictureLayerImpl*>(child);
     gfx::Size tile_size =
@@ -225,7 +222,7 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
   void BeginTest() override { PostSetNeedsCommitToMainThread(); }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* child = impl->active_tree()->root_layer()->children()[0].get();
+    LayerImpl* child = impl->active_tree()->root_layer()->children()[0];
     FakePictureLayerImpl* picture_impl =
         static_cast<FakePictureLayerImpl*>(child);
     switch (++frame_) {
@@ -274,7 +271,7 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
   }
 
   void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override {
-    LayerImpl* child = impl->sync_tree()->root_layer()->children()[0].get();
+    LayerImpl* child = impl->sync_tree()->root_layer()->children()[0];
     FakePictureLayerImpl* picture_impl =
         static_cast<FakePictureLayerImpl*>(child);
     PictureLayerTiling* tiling = picture_impl->HighResTiling();
@@ -329,8 +326,8 @@ class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->sync_tree()->root_layer();
-    LayerImpl* child = root->children()[0].get();
-    LayerImpl* gchild = child->children()[0].get();
+    LayerImpl* child = root->children()[0];
+    LayerImpl* gchild = child->children()[0];
     FakePictureLayerImpl* picture = static_cast<FakePictureLayerImpl*>(gchild);
 
     switch (impl->sync_tree()->source_frame_number()) {
@@ -351,8 +348,8 @@ class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer();
-    LayerImpl* child = root->children()[0].get();
-    LayerImpl* gchild = child->children()[0].get();
+    LayerImpl* child = root->children()[0];
+    LayerImpl* gchild = child->children()[0];
     FakePictureLayerImpl* picture = static_cast<FakePictureLayerImpl*>(gchild);
 
     switch (impl->active_tree()->source_frame_number()) {
@@ -438,8 +435,8 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
 
   void WillActivateTreeOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->sync_tree()->root_layer();
-    LayerImpl* pinch = root->children()[0]->children()[0].get();
-    LayerImpl* gchild = pinch->children()[0].get();
+    LayerImpl* pinch = root->children()[0]->children()[0];
+    LayerImpl* gchild = pinch->children()[0];
     FakePictureLayerImpl* picture = static_cast<FakePictureLayerImpl*>(gchild);
     ready_to_draw_ = false;
 
@@ -465,8 +462,8 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
     LayerImpl* root = impl->active_tree()->root_layer();
-    LayerImpl* pinch = root->children()[0]->children()[0].get();
-    LayerImpl* gchild = pinch->children()[0].get();
+    LayerImpl* pinch = root->children()[0]->children()[0];
+    LayerImpl* gchild = pinch->children()[0];
     FakePictureLayerImpl* picture = static_cast<FakePictureLayerImpl*>(gchild);
 
     if (frame_ != last_frame_drawn_)

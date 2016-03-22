@@ -229,20 +229,22 @@ class PictureLayerImplTest : public testing::Test {
         host_impl_.active_tree()->device_scale_factor());
 
     // Steal from the recycled tree if possible.
-    scoped_ptr<LayerImpl> pending_root = pending_tree->DetachLayerTree();
+    LayerImpl* pending_root = pending_tree->root_layer();
     scoped_ptr<FakePictureLayerImpl> pending_layer;
     DCHECK(!pending_root || pending_root->id() == root_id_);
     if (!pending_root) {
-      pending_root = LayerImpl::Create(pending_tree, root_id_);
+      scoped_ptr<LayerImpl> new_pending_root =
+          LayerImpl::Create(pending_tree, root_id_);
       pending_layer = FakePictureLayerImpl::Create(pending_tree, id_);
       if (!tile_size.IsEmpty())
         pending_layer->set_fixed_tile_size(tile_size);
       pending_layer->SetDrawsContent(true);
-      pending_layer->SetScrollClipLayer(pending_root->id());
+      pending_layer->SetScrollClipLayer(new_pending_root->id());
+      pending_root = new_pending_root.get();
+      pending_tree->SetRootLayer(std::move(new_pending_root));
     } else {
       pending_layer.reset(static_cast<FakePictureLayerImpl*>(
-          pending_root->RemoveChild(pending_root->children()[0].get())
-              .release()));
+          pending_root->RemoveChild(pending_root->children()[0]).release()));
       if (!tile_size.IsEmpty())
         pending_layer->set_fixed_tile_size(tile_size);
     }
@@ -252,7 +254,6 @@ class PictureLayerImplTest : public testing::Test {
     pending_layer->SetRasterSourceOnPending(raster_source, invalidation);
 
     pending_root->AddChild(std::move(pending_layer));
-    pending_tree->SetRootLayer(std::move(pending_root));
     pending_tree->SetViewportLayersFromIds(
         Layer::INVALID_ID, pending_tree->root_layer()->id(), Layer::INVALID_ID,
         Layer::INVALID_ID);
@@ -3860,7 +3861,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // Partial occlusion.
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 1));
-  LayerImpl* layer1 = pending_layer_->children()[0].get();
+  LayerImpl* layer1 = pending_layer_->children()[0];
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
@@ -3955,7 +3956,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // Partial occlusion.
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 1));
-  LayerImpl* layer1 = pending_layer_->children()[0].get();
+  LayerImpl* layer1 = pending_layer_->children()[0];
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
@@ -4052,7 +4053,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, OcclusionForDifferentScales) {
   ASSERT_TRUE(pending_layer_->CanHaveTilings());
 
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 1));
-  LayerImpl* layer1 = pending_layer_->children()[0].get();
+  LayerImpl* layer1 = pending_layer_->children()[0];
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
@@ -4127,7 +4128,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest, DifferentOcclusionOnTrees) {
 
   // Partially occlude the active layer.
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 2));
-  LayerImpl* layer1 = pending_layer_->children()[0].get();
+  LayerImpl* layer1 = pending_layer_->children()[0];
   layer1->SetBounds(layer_bounds);
   layer1->SetDrawsContent(true);
   layer1->SetContentsOpaque(true);
@@ -4220,7 +4221,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // Partially occlude the active layer.
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 2));
-  LayerImpl* active_occluding_layer = pending_layer_->children()[0].get();
+  LayerImpl* active_occluding_layer = pending_layer_->children()[0];
   active_occluding_layer->SetBounds(layer_bounds);
   active_occluding_layer->SetDrawsContent(true);
   active_occluding_layer->SetContentsOpaque(true);
@@ -4235,7 +4236,7 @@ TEST_F(OcclusionTrackingPictureLayerImplTest,
 
   // Partially occlude the pending layer in a different way.
   pending_layer_->AddChild(LayerImpl::Create(host_impl_.pending_tree(), 3));
-  LayerImpl* pending_occluding_layer = pending_layer_->children()[0].get();
+  LayerImpl* pending_occluding_layer = pending_layer_->children()[0];
   pending_occluding_layer->SetBounds(layer_bounds);
   pending_occluding_layer->SetDrawsContent(true);
   pending_occluding_layer->SetContentsOpaque(true);
@@ -4369,7 +4370,7 @@ TEST_F(PictureLayerImplTest, PendingOrActiveTwinLayer) {
 
   // Make an empty pending tree.
   host_impl_.CreatePendingTree();
-  host_impl_.pending_tree()->DetachLayerTree();
+  host_impl_.pending_tree()->ClearLayers();
   EXPECT_FALSE(active_layer_->GetPendingOrActiveTwinLayer());
 }
 

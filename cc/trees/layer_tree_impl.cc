@@ -57,7 +57,8 @@ LayerTreeImpl::LayerTreeImpl(
     : layer_tree_host_impl_(layer_tree_host_impl),
       source_frame_number_(-1),
       is_first_frame_after_commit_tracker_(-1),
-      hud_layer_(0),
+      root_layer_(nullptr),
+      hud_layer_(nullptr),
       background_color_(0),
       has_transparent_background_(false),
       last_scrolled_layer_id_(Layer::INVALID_ID),
@@ -71,6 +72,7 @@ LayerTreeImpl::LayerTreeImpl(
       device_scale_factor_(1.f),
       painted_device_scale_factor_(1.f),
       elastic_overscroll_(elastic_overscroll),
+      layers_(new OwnedLayerImplList),
       viewport_size_invalid_(false),
       needs_update_draw_properties_(true),
       needs_full_tree_sync_(true),
@@ -96,21 +98,22 @@ LayerTreeImpl::~LayerTreeImpl() {
 }
 
 void LayerTreeImpl::Shutdown() {
+  if (root_layer_)
+    RemoveLayer(root_layer_->id());
   root_layer_ = nullptr;
 }
 
 void LayerTreeImpl::ReleaseResources() {
   if (root_layer_) {
     LayerTreeHostCommon::CallFunctionForSubtree(
-        root_layer_.get(), [](LayerImpl* layer) { layer->ReleaseResources(); });
+        root_layer_, [](LayerImpl* layer) { layer->ReleaseResources(); });
   }
 }
 
 void LayerTreeImpl::RecreateResources() {
   if (root_layer_) {
     LayerTreeHostCommon::CallFunctionForSubtree(
-        root_layer_.get(),
-        [](LayerImpl* layer) { layer->RecreateResources(); });
+        root_layer_, [](LayerImpl* layer) { layer->RecreateResources(); });
   }
 }
 
@@ -123,7 +126,7 @@ void LayerTreeImpl::GatherFrameTimingRequestIds(
   // that, we need to inform LayerTreeImpl whenever there are requests when we
   // get them.
   LayerTreeHostCommon::CallFunctionForSubtree(
-      root_layer_.get(), [request_ids](LayerImpl* layer) {
+      root_layer_, [request_ids](LayerImpl* layer) {
         layer->GatherFrameTimingRequestIds(request_ids);
       });
 }
@@ -269,8 +272,11 @@ void LayerTreeImpl::UpdateScrollbars(int scroll_layer_id, int clip_layer_id) {
 }
 
 void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
-  root_layer_ = std::move(layer);
-
+  if (root_layer_ && layer.get() != root_layer_)
+    RemoveLayer(root_layer_->id());
+  root_layer_ = layer.get();
+  if (layer)
+    AddLayer(std::move(layer));
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
@@ -306,10 +312,18 @@ gfx::ScrollOffset LayerTreeImpl::TotalMaxScrollOffset() const {
   return offset;
 }
 
-scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
+scoped_ptr<OwnedLayerImplList> LayerTreeImpl::DetachLayers() {
+  root_layer_ = nullptr;
   render_surface_layer_list_.clear();
   set_needs_update_draw_properties();
-  return std::move(root_layer_);
+  scoped_ptr<OwnedLayerImplList> ret = std::move(layers_);
+  layers_.reset(new OwnedLayerImplList);
+  return ret;
+}
+
+void LayerTreeImpl::ClearLayers() {
+  SetRootLayer(nullptr);
+  DCHECK(layers_->empty());
 }
 
 static void UpdateClipTreeForBoundsDeltaOnLayer(LayerImpl* layer,
@@ -418,7 +432,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 }
 
 LayerListIterator LayerTreeImpl::begin() {
-  return LayerListIterator(root_layer_.get());
+  return LayerListIterator(root_layer_);
 }
 
 LayerListIterator LayerTreeImpl::end() {
@@ -426,7 +440,7 @@ LayerListIterator LayerTreeImpl::end() {
 }
 
 LayerListReverseIterator LayerTreeImpl::rbegin() {
-  return LayerListReverseIterator(root_layer_.get());
+  return LayerListReverseIterator(root_layer_);
 }
 
 LayerListReverseIterator LayerTreeImpl::rend() {
@@ -711,7 +725,7 @@ gfx::Rect LayerTreeImpl::RootScrollLayerDeviceViewportBounds() const {
                                      : InnerViewportScrollLayer();
   if (!root_scroll_layer || root_scroll_layer->children().empty())
     return gfx::Rect();
-  LayerImpl* layer = root_scroll_layer->children()[0].get();
+  LayerImpl* layer = root_scroll_layer->children()[0];
   return MathUtil::MapEnclosingClippedRect(layer->ScreenSpaceTransform(),
                                            gfx::Rect(layer->bounds()));
 }
@@ -946,10 +960,10 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
 }
 
 void LayerTreeImpl::BuildPropertyTreesForTesting() {
-  LayerTreeHostCommon::PreCalculateMetaInformationForTesting(root_layer_.get());
+  LayerTreeHostCommon::PreCalculateMetaInformationForTesting(root_layer_);
   property_trees_.transform_tree.set_source_to_parent_updates_allowed(true);
   PropertyTreeBuilder::BuildPropertyTrees(
-      root_layer_.get(), PageScaleLayer(), InnerViewportScrollLayer(),
+      root_layer_, PageScaleLayer(), InnerViewportScrollLayer(),
       OuterViewportScrollLayer(), OverscrollElasticityLayer(),
       elastic_overscroll()->Current(IsActiveTree()),
       current_page_scale_factor(), device_scale_factor(),
@@ -992,7 +1006,7 @@ gfx::SizeF LayerTreeImpl::ScrollableSize() const {
 }
 
 LayerImpl* LayerTreeImpl::LayerById(int id) const {
-  LayerIdMap::const_iterator iter = layer_id_map_.find(id);
+  LayerImplMap::const_iterator iter = layer_id_map_.find(id);
   return iter != layer_id_map_.end() ? iter->second : NULL;
 }
 
@@ -1028,6 +1042,28 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
       layer->id(),
       IsActiveTree() ? LayerTreeType::ACTIVE : LayerTreeType::PENDING);
   layer_id_map_.erase(layer->id());
+  DCHECK_NE(root_layer_, layer);
+}
+
+// These manage ownership of the LayerImpl.
+void LayerTreeImpl::AddLayer(scoped_ptr<LayerImpl> layer) {
+  DCHECK(std::find(layers_->begin(), layers_->end(), layer) == layers_->end());
+  layers_->push_back(std::move(layer));
+  set_needs_update_draw_properties();
+}
+
+scoped_ptr<LayerImpl> LayerTreeImpl::RemoveLayer(int id) {
+  if (root_layer_ && root_layer_->id() == id)
+    root_layer_ = nullptr;
+  for (auto it = layers_->begin(); it != layers_->end(); ++it) {
+    if ((*it) && (*it)->id() != id)
+      continue;
+    scoped_ptr<LayerImpl> ret = std::move(*it);
+    set_needs_update_draw_properties();
+    layers_->erase(it);
+    return ret;
+  }
+  return nullptr;
 }
 
 size_t LayerTreeImpl::NumLayers() {

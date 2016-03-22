@@ -126,23 +126,24 @@ class TileManagerTilePriorityQueueTest : public testing::Test {
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
 
     // Steal from the recycled tree.
-    scoped_ptr<LayerImpl> old_pending_root = pending_tree->DetachLayerTree();
+    LayerImpl* old_pending_root = pending_tree->root_layer();
     DCHECK(!old_pending_root || old_pending_root->id() == id_);
 
-    scoped_ptr<FakePictureLayerImpl> pending_layer;
+    FakePictureLayerImpl* pending_layer = nullptr;
     if (old_pending_root) {
-      pending_layer.reset(
-          static_cast<FakePictureLayerImpl*>(old_pending_root.release()));
+      pending_layer = static_cast<FakePictureLayerImpl*>(old_pending_root);
       pending_layer->SetRasterSourceOnPending(raster_source, Region());
     } else {
-      pending_layer = FakePictureLayerImpl::CreateWithRasterSource(
-          pending_tree, id_, raster_source);
+      scoped_ptr<FakePictureLayerImpl> new_root =
+          FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id_,
+                                                       raster_source);
+      pending_layer = new_root.get();
+      pending_tree->SetRootLayer(std::move(new_root));
       pending_layer->SetDrawsContent(true);
       pending_layer->SetHasRenderSurface(true);
     }
     // The bounds() just mirror the raster source size.
     pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
-    pending_tree->SetRootLayer(std::move(pending_layer));
 
     pending_layer_ = static_cast<FakePictureLayerImpl*>(
         host_impl_.pending_tree()->LayerById(id_));
@@ -907,7 +908,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   pending_layer_->AddChild(std::move(pending_child));
 
   FakePictureLayerImpl* pending_child_layer =
-      static_cast<FakePictureLayerImpl*>(pending_layer_->children()[0].get());
+      static_cast<FakePictureLayerImpl*>(pending_layer_->children()[0]);
   pending_child_layer->SetDrawsContent(true);
 
   host_impl_.AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
@@ -920,7 +921,7 @@ TEST_F(TileManagerTilePriorityQueueTest,
   SetupPendingTree(pending_raster_source);
 
   FakePictureLayerImpl* active_child_layer =
-      static_cast<FakePictureLayerImpl*>(active_layer_->children()[0].get());
+      static_cast<FakePictureLayerImpl*>(active_layer_->children()[0]);
 
   std::set<Tile*> all_tiles;
   size_t tile_count = 0;
@@ -1622,22 +1623,24 @@ class TileManagerTest : public testing::Test {
     LayerTreeImpl* pending_tree = host_impl_->pending_tree();
 
     // Steal from the recycled tree.
-    scoped_ptr<LayerImpl> old_pending_root = pending_tree->DetachLayerTree();
-    scoped_ptr<FakePictureLayerImpl> pending_layer;
+    LayerImpl* old_pending_root = pending_tree->root_layer();
+    FakePictureLayerImpl* pending_layer = nullptr;
     if (old_pending_root) {
-      pending_layer.reset(
-          static_cast<FakePictureLayerImpl*>(old_pending_root.release()));
+      pending_layer = static_cast<FakePictureLayerImpl*>(old_pending_root);
       pending_layer->SetRasterSourceOnPending(raster_source, Region());
     } else {
       int id = 7;
-      pending_layer = FakePictureLayerImpl::CreateWithRasterSource(
-          pending_tree, id, raster_source);
+      scoped_ptr<FakePictureLayerImpl> new_root =
+          FakePictureLayerImpl::CreateWithRasterSource(pending_tree, id,
+                                                       raster_source);
+      pending_layer = new_root.get();
       pending_layer->SetDrawsContent(true);
       pending_layer->SetHasRenderSurface(true);
+      pending_tree->SetRootLayer(std::move(new_root));
     }
+
     // The bounds() just mirror the raster source size.
     pending_layer->SetBounds(pending_layer->raster_source()->GetSize());
-    pending_tree->SetRootLayer(std::move(pending_layer));
 
     // Add tilings/tiles for the layer.
     bool update_lcd_text = false;

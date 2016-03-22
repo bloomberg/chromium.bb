@@ -184,7 +184,7 @@ class BspTreePerfTest : public CalcDrawPropsTest {
     }
 
     for (size_t i = 0; i < layer->children().size(); i++) {
-      BuildLayerImplList(layer->children()[i].get(), list);
+      BuildLayerImplList(layer->children()[i], list);
     }
   }
 

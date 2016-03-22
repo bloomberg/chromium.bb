@@ -61,7 +61,7 @@ class PictureLayerImplPerfTest : public testing::Test {
         FakeDisplayListRasterSource::CreateFilled(layer_bounds);
     host_impl_.CreatePendingTree();
     LayerTreeImpl* pending_tree = host_impl_.pending_tree();
-    pending_tree->DetachLayerTree();
+    pending_tree->ClearLayers();
 
     scoped_ptr<FakePictureLayerImpl> pending_layer =
         FakePictureLayerImpl::CreateWithRasterSource(pending_tree, 7,

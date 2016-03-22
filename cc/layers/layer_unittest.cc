@@ -1138,7 +1138,7 @@ TEST_F(LayerTest, AddAndRemoveChild) {
   EXPECT_SET_NEEDS_FULL_TREE_SYNC(1, parent->AddChild(child));
 
   ASSERT_EQ(1U, parent->children().size());
-  EXPECT_EQ(child.get(), parent->children()[0].get());
+  EXPECT_EQ(child.get(), parent->children()[0]);
   EXPECT_EQ(parent.get(), child->parent());
   EXPECT_EQ(parent.get(), child->RootLayer());
 

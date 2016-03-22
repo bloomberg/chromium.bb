@@ -22,9 +22,9 @@ LayerListIterator& LayerListIterator::operator++() {
     return *this;
 
   // case 1: descend.
-  const OwnedLayerImplList& current_list = current_layer_->children();
+  const LayerImplList& current_list = current_layer_->children();
   if (!current_list.empty()) {
-    current_layer_ = current_list[0].get();
+    current_layer_ = current_list[0];
     list_indices_.push_back(0);
     return *this;
   }
@@ -32,12 +32,12 @@ LayerListIterator& LayerListIterator::operator++() {
   for (LayerImpl* parent = current_layer_->parent(); parent;
        parent = parent->parent()) {
     // We now try and advance in some list of siblings.
-    const OwnedLayerImplList& sibling_list = parent->children();
+    const LayerImplList& sibling_list = parent->children();
 
     // case 2: Advance to a sibling.
     if (list_indices_.back() + 1 < sibling_list.size()) {
       ++list_indices_.back();
-      current_layer_ = sibling_list[list_indices_.back()].get();
+      current_layer_ = sibling_list[list_indices_.back()];
       return *this;
     }
 
@@ -73,8 +73,8 @@ LayerListIterator& LayerListReverseIterator::operator++() {
   // sibling over, and then descend to the rightmost descendant in that subtree.
   CHECK(current_layer_->parent());
   --list_indices_.back();
-  const OwnedLayerImplList& parent_list = current_layer_->parent()->children();
-  current_layer_ = parent_list[list_indices_.back()].get();
+  const LayerImplList& parent_list = current_layer_->parent()->children();
+  current_layer_ = parent_list[list_indices_.back()];
   DescendToRightmostInSubtree();
   return *this;
 }
@@ -83,12 +83,12 @@ void LayerListReverseIterator::DescendToRightmostInSubtree() {
   if (!current_layer_)
     return;
 
-  const OwnedLayerImplList& current_list = current_layer_->children();
+  const LayerImplList& current_list = current_layer_->children();
   if (current_list.empty())
     return;
 
   size_t last_index = current_list.size() - 1;
-  current_layer_ = current_list[last_index].get();
+  current_layer_ = current_list[last_index];
   list_indices_.push_back(last_index);
   DescendToRightmostInSubtree();
 }

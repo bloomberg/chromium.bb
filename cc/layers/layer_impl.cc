@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <utility>
 
 #include "base/json/json_reader.h"
@@ -46,7 +47,9 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       scroll_parent_(nullptr),
       clip_parent_(nullptr),
       mask_layer_id_(-1),
+      mask_layer_(nullptr),
       replica_layer_id_(-1),
+      replica_layer_(nullptr),
       layer_id_(id),
       layer_tree_impl_(tree_impl),
       scroll_clip_layer_id_(Layer::INVALID_ID),
@@ -114,27 +117,26 @@ LayerImpl::~LayerImpl() {
 
   TRACE_EVENT_OBJECT_DELETED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("cc.debug"), "cc::LayerImpl", this);
+
+  if (mask_layer_)
+    layer_tree_impl_->RemoveLayer(mask_layer_id_);
+  if (replica_layer_)
+    layer_tree_impl_->RemoveLayer(replica_layer_id_);
+  ClearChildList();
 }
 
 void LayerImpl::AddChild(scoped_ptr<LayerImpl> child) {
   child->SetParent(this);
   DCHECK_EQ(layer_tree_impl(), child->layer_tree_impl());
-  children_.push_back(std::move(child));
-  layer_tree_impl()->set_needs_update_draw_properties();
+  children_.push_back(child.get());
+  layer_tree_impl_->AddLayer(std::move(child));
 }
 
 scoped_ptr<LayerImpl> LayerImpl::RemoveChild(LayerImpl* child) {
-  for (OwnedLayerImplList::iterator it = children_.begin();
-       it != children_.end();
-       ++it) {
-    if (it->get() == child) {
-      scoped_ptr<LayerImpl> ret = std::move(*it);
-      children_.erase(it);
-      layer_tree_impl()->set_needs_update_draw_properties();
-      return ret;
-    }
-  }
-  return nullptr;
+  auto it = std::find(children_.begin(), children_.end(), child);
+  if (it != children_.end())
+    children_.erase(it);
+  return layer_tree_impl_->RemoveLayer(child->id());
 }
 
 void LayerImpl::SetParent(LayerImpl* parent) {
@@ -144,9 +146,9 @@ void LayerImpl::SetParent(LayerImpl* parent) {
 void LayerImpl::ClearChildList() {
   if (children_.empty())
     return;
-
+  for (auto* child : children_)
+    layer_tree_impl_->RemoveLayer(child->id());
   children_.clear();
-  layer_tree_impl()->set_needs_update_draw_properties();
 }
 
 bool LayerImpl::HasAncestor(const LayerImpl* ancestor) const {
@@ -996,7 +998,12 @@ void LayerImpl::SetMaskLayer(scoped_ptr<LayerImpl> mask_layer) {
     return;
   }
 
-  mask_layer_ = std::move(mask_layer);
+  if (mask_layer_)
+    layer_tree_impl_->RemoveLayer(mask_layer_->id());
+  mask_layer_ = mask_layer.get();
+  if (mask_layer_)
+    layer_tree_impl_->AddLayer(std::move(mask_layer));
+
   mask_layer_id_ = new_layer_id;
   if (mask_layer_)
     mask_layer_->SetParent(this);
@@ -1004,7 +1011,11 @@ void LayerImpl::SetMaskLayer(scoped_ptr<LayerImpl> mask_layer) {
 
 scoped_ptr<LayerImpl> LayerImpl::TakeMaskLayer() {
   mask_layer_id_ = -1;
-  return std::move(mask_layer_);
+  scoped_ptr<LayerImpl> ret;
+  if (mask_layer_)
+    ret = layer_tree_impl_->RemoveLayer(mask_layer_->id());
+  mask_layer_ = nullptr;
+  return ret;
 }
 
 void LayerImpl::SetReplicaLayer(scoped_ptr<LayerImpl> replica_layer) {
@@ -1017,7 +1028,12 @@ void LayerImpl::SetReplicaLayer(scoped_ptr<LayerImpl> replica_layer) {
     return;
   }
 
-  replica_layer_ = std::move(replica_layer);
+  if (replica_layer_)
+    layer_tree_impl_->RemoveLayer(replica_layer_->id());
+  replica_layer_ = replica_layer.get();
+  if (replica_layer_)
+    layer_tree_impl_->AddLayer(std::move(replica_layer));
+
   replica_layer_id_ = new_layer_id;
   if (replica_layer_)
     replica_layer_->SetParent(this);
@@ -1025,7 +1041,11 @@ void LayerImpl::SetReplicaLayer(scoped_ptr<LayerImpl> replica_layer) {
 
 scoped_ptr<LayerImpl> LayerImpl::TakeReplicaLayer() {
   replica_layer_id_ = -1;
-  return std::move(replica_layer_);
+  scoped_ptr<LayerImpl> ret;
+  if (replica_layer_)
+    ret = layer_tree_impl_->RemoveLayer(replica_layer_->id());
+  replica_layer_ = nullptr;
+  return ret;
 }
 
 ScrollbarLayerImplBase* LayerImpl::ToScrollbarLayer() {

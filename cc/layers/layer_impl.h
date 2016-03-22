@@ -24,7 +24,7 @@
 #include "cc/debug/frame_timing_request.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/draw_properties.h"
-#include "cc/layers/layer_lists.h"
+#include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/performance_properties.h"
 #include "cc/layers/render_surface_impl.h"
@@ -103,15 +103,12 @@ class CC_EXPORT LayerImpl {
   // Tree structure.
   LayerImpl* parent() { return parent_; }
   const LayerImpl* parent() const { return parent_; }
-  const OwnedLayerImplList& children() const { return children_; }
-  OwnedLayerImplList& children() { return children_; }
-  LayerImpl* child_at(size_t index) const { return children_[index].get(); }
+  const LayerImplList& children() const { return children_; }
+  LayerImplList& children() { return children_; }
+  LayerImpl* child_at(size_t index) const { return children_[index]; }
   void AddChild(scoped_ptr<LayerImpl> child);
   scoped_ptr<LayerImpl> RemoveChild(LayerImpl* child);
   void SetParent(LayerImpl* parent);
-
-  // Warning: This does not preserve tree structure invariants.
-  void ClearChildList();
 
   bool HasAncestor(const LayerImpl* ancestor) const;
 
@@ -195,13 +192,13 @@ class CC_EXPORT LayerImpl {
   bool AnchestorHasCopyRequest() const;
 
   void SetMaskLayer(scoped_ptr<LayerImpl> mask_layer);
-  LayerImpl* mask_layer() { return mask_layer_.get(); }
-  const LayerImpl* mask_layer() const { return mask_layer_.get(); }
+  LayerImpl* mask_layer() { return mask_layer_; }
+  const LayerImpl* mask_layer() const { return mask_layer_; }
   scoped_ptr<LayerImpl> TakeMaskLayer();
 
   void SetReplicaLayer(scoped_ptr<LayerImpl> replica_layer);
-  LayerImpl* replica_layer() { return replica_layer_.get(); }
-  const LayerImpl* replica_layer() const { return replica_layer_.get(); }
+  LayerImpl* replica_layer() { return replica_layer_; }
+  const LayerImpl* replica_layer() const { return replica_layer_; }
   scoped_ptr<LayerImpl> TakeReplicaLayer();
 
   bool has_mask() const { return !!mask_layer_; }
@@ -636,6 +633,9 @@ class CC_EXPORT LayerImpl {
   gfx::Rect GetScaledEnclosingRectInTargetSpace(float scale) const;
 
  private:
+  // Warning: This does not preserve tree structure invariants.
+  void ClearChildList();
+
   void ValidateQuadResourcesInternal(DrawQuad* quad) const;
 
   void NoteLayerPropertyChangedForDescendantsInternal();
@@ -645,7 +645,7 @@ class CC_EXPORT LayerImpl {
 
   // Properties internal to LayerImpl
   LayerImpl* parent_;
-  OwnedLayerImplList children_;
+  LayerImplList children_;
 
   LayerImpl* scroll_parent_;
 
@@ -661,9 +661,9 @@ class CC_EXPORT LayerImpl {
   // mask_layer_ can be temporarily stolen during tree sync, we need this ID to
   // confirm newly assigned layer is still the previous one
   int mask_layer_id_;
-  scoped_ptr<LayerImpl> mask_layer_;
+  LayerImpl* mask_layer_;
   int replica_layer_id_;  // ditto
-  scoped_ptr<LayerImpl> replica_layer_;
+  LayerImpl* replica_layer_;
   int layer_id_;
   LayerTreeImpl* layer_tree_impl_;
 
