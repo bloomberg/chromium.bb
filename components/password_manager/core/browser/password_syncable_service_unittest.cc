@@ -609,6 +609,108 @@ TEST_F(PasswordSyncableServiceTest, SerializeEmptyFederation) {
   EXPECT_TRUE(form.federation_origin.unique());
 }
 
+// Serialize empty PasswordForm and make sure the Sync representation is
+// matching the expectations
+TEST_F(PasswordSyncableServiceTest, SerializeEmptyPasswordForm) {
+  autofill::PasswordForm form;
+  syncer::SyncData data = SyncDataFromPassword(form);
+  const sync_pb::PasswordSpecificsData& specifics = GetPasswordSpecifics(data);
+  EXPECT_TRUE(specifics.has_scheme());
+  EXPECT_EQ(0, specifics.scheme());
+  EXPECT_TRUE(specifics.has_signon_realm());
+  EXPECT_EQ("", specifics.signon_realm());
+  EXPECT_TRUE(specifics.has_origin());
+  EXPECT_EQ("", specifics.origin());
+  EXPECT_TRUE(specifics.has_action());
+  EXPECT_EQ("", specifics.action());
+  EXPECT_TRUE(specifics.has_username_element());
+  EXPECT_EQ("", specifics.username_element());
+  EXPECT_TRUE(specifics.has_username_value());
+  EXPECT_EQ("", specifics.username_value());
+  EXPECT_TRUE(specifics.has_password_element());
+  EXPECT_EQ("", specifics.password_element());
+  EXPECT_TRUE(specifics.has_password_value());
+  EXPECT_EQ("", specifics.password_value());
+  EXPECT_TRUE(specifics.has_ssl_valid());
+  EXPECT_FALSE(specifics.ssl_valid());
+  EXPECT_TRUE(specifics.has_preferred());
+  EXPECT_FALSE(specifics.preferred());
+  EXPECT_TRUE(specifics.has_date_created());
+  EXPECT_EQ(0, specifics.date_created());
+  EXPECT_TRUE(specifics.has_blacklisted());
+  EXPECT_FALSE(specifics.blacklisted());
+  EXPECT_TRUE(specifics.has_type());
+  EXPECT_EQ(0, specifics.type());
+  EXPECT_TRUE(specifics.has_times_used());
+  EXPECT_EQ(0, specifics.times_used());
+  EXPECT_TRUE(specifics.has_display_name());
+  EXPECT_EQ("", specifics.display_name());
+  EXPECT_TRUE(specifics.has_avatar_url());
+  EXPECT_EQ("", specifics.avatar_url());
+  EXPECT_TRUE(specifics.has_federation_url());
+  EXPECT_EQ("", specifics.federation_url());
+}
+
+// Serialize a PasswordForm with non-default member values and make sure the
+// Sync representation is matching the expectations.
+TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
+  autofill::PasswordForm form;
+  form.scheme = autofill::PasswordForm::SCHEME_USERNAME_ONLY;
+  form.signon_realm = "http://google.com/";
+  form.origin = GURL("https://google.com/origin");
+  form.action = GURL("https://google.com/action");
+  form.username_element = base::ASCIIToUTF16("username_element");
+  form.username_value = base::ASCIIToUTF16("god@google.com");
+  form.password_element = base::ASCIIToUTF16("password_element");
+  form.password_value = base::ASCIIToUTF16("!@#$%^&*()");
+  form.ssl_valid = true;
+  form.preferred = true;
+  form.date_created = base::Time::FromInternalValue(100);
+  form.blacklisted_by_user = true;
+  form.type = autofill::PasswordForm::TYPE_LAST;
+  form.times_used = 11;
+  form.display_name = base::ASCIIToUTF16("Great Peter");
+  form.icon_url = GURL("https://google.com/icon");
+  form.federation_origin = url::Origin(GURL("https://google.com/"));
+
+  syncer::SyncData data = SyncDataFromPassword(form);
+  const sync_pb::PasswordSpecificsData& specifics = GetPasswordSpecifics(data);
+  EXPECT_TRUE(specifics.has_scheme());
+  EXPECT_EQ(autofill::PasswordForm::SCHEME_USERNAME_ONLY, specifics.scheme());
+  EXPECT_TRUE(specifics.has_signon_realm());
+  EXPECT_EQ("http://google.com/", specifics.signon_realm());
+  EXPECT_TRUE(specifics.has_origin());
+  EXPECT_EQ("https://google.com/origin", specifics.origin());
+  EXPECT_TRUE(specifics.has_action());
+  EXPECT_EQ("https://google.com/action", specifics.action());
+  EXPECT_TRUE(specifics.has_username_element());
+  EXPECT_EQ("username_element", specifics.username_element());
+  EXPECT_TRUE(specifics.has_username_value());
+  EXPECT_EQ("god@google.com", specifics.username_value());
+  EXPECT_TRUE(specifics.has_password_element());
+  EXPECT_EQ("password_element", specifics.password_element());
+  EXPECT_TRUE(specifics.has_password_value());
+  EXPECT_EQ("!@#$%^&*()", specifics.password_value());
+  EXPECT_TRUE(specifics.has_ssl_valid());
+  EXPECT_TRUE(specifics.ssl_valid());
+  EXPECT_TRUE(specifics.has_preferred());
+  EXPECT_TRUE(specifics.preferred());
+  EXPECT_TRUE(specifics.has_date_created());
+  EXPECT_EQ(100, specifics.date_created());
+  EXPECT_TRUE(specifics.has_blacklisted());
+  EXPECT_TRUE(specifics.blacklisted());
+  EXPECT_TRUE(specifics.has_type());
+  EXPECT_EQ(autofill::PasswordForm::TYPE_LAST, specifics.type());
+  EXPECT_TRUE(specifics.has_times_used());
+  EXPECT_EQ(11, specifics.times_used());
+  EXPECT_TRUE(specifics.has_display_name());
+  EXPECT_EQ("Great Peter", specifics.display_name());
+  EXPECT_TRUE(specifics.has_avatar_url());
+  EXPECT_EQ("https://google.com/icon", specifics.avatar_url());
+  EXPECT_TRUE(specifics.has_federation_url());
+  EXPECT_EQ("https://google.com", specifics.federation_url());
+}
+
 }  // namespace
 
 }  // namespace password_manager
