@@ -17,8 +17,6 @@
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
 #include "cc/tiles/tiling_set_eviction_queue.h"
-#include "skia/ext/refptr.h"
-#include "third_party/skia/include/core/SkPicture.h"
 
 namespace cc {
 
@@ -49,7 +47,6 @@ class CC_EXPORT PictureLayerImpl
   void DidBeginTracing() override;
   void ReleaseResources() override;
   void RecreateResources() override;
-  sk_sp<SkPicture> GetPicture() override;
   Region GetInvalidationRegionForDebugging() override;
 
   // PictureLayerTilingClient overrides.

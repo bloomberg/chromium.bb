@@ -649,10 +649,6 @@ void PictureLayerImpl::RecreateResources() {
   layer_tree_impl()->set_needs_update_draw_properties();
 }
 
-sk_sp<SkPicture> PictureLayerImpl::GetPicture() {
-  return raster_source_->GetFlattenedPicture();
-}
-
 Region PictureLayerImpl::GetInvalidationRegionForDebugging() {
   // |invalidation_| gives the invalidation contained in the source frame, but
   // is not cleared after drawing from the layer. However, update_rect() is
