@@ -38,7 +38,9 @@ HardwareRenderer::HardwareRenderer(SharedRendererState* state)
     : shared_renderer_state_(state),
       last_egl_context_(eglGetCurrentContext()),
       gl_surface_(new AwGLSurface),
-      compositor_id_(0),  // Valid compositor id starts at 1.
+      compositor_id_(0u),  // Valid compositor id starts at 1.
+      last_committed_output_surface_id_(0u),
+      last_submitted_output_surface_id_(0u),
       output_surface_(NULL) {
   DCHECK(last_egl_context_);
 
@@ -86,6 +88,7 @@ void HardwareRenderer::CommitFrame() {
   if (!child_frame.get())
     return;
 
+  last_committed_output_surface_id_ = child_frame->output_surface_id;
   ReturnResourcesInChildFrame();
   child_frame_ = std::move(child_frame);
   DCHECK(child_frame_->frame.get());
@@ -110,7 +113,8 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
   // kModeProcess. Instead, submit the frame in "kModeDraw" stage to avoid
   // unnecessary kModeProcess.
   if (child_frame_.get() && child_frame_->frame.get()) {
-    if (compositor_id_ != child_frame_->compositor_id) {
+    if (compositor_id_ != child_frame_->compositor_id ||
+        last_submitted_output_surface_id_ != child_frame_->output_surface_id) {
       if (!root_id_.is_null())
         surface_factory_->Destroy(root_id_);
       if (!child_id_.is_null())
@@ -122,6 +126,7 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
       // This will return all the resources to the previous compositor.
       surface_factory_.reset();
       compositor_id_ = child_frame_->compositor_id;
+      last_submitted_output_surface_id_ = child_frame_->output_surface_id;
       surface_factory_.reset(
           new cc::SurfaceFactory(surface_manager_.get(), this));
     }
@@ -223,7 +228,8 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info,
 
 void HardwareRenderer::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
-  ReturnResourcesToCompositor(resources, compositor_id_);
+  ReturnResourcesToCompositor(resources, compositor_id_,
+                              last_submitted_output_surface_id_);
 }
 
 void HardwareRenderer::SetBeginFrameSource(
@@ -246,15 +252,20 @@ void HardwareRenderer::ReturnResourcesInChildFrame() {
     // The child frame's compositor id is not necessarily same as
     // compositor_id_.
     ReturnResourcesToCompositor(resources_to_return,
-                                child_frame_->compositor_id);
+                                child_frame_->compositor_id,
+                                child_frame_->output_surface_id);
   }
   child_frame_.reset();
 }
 
 void HardwareRenderer::ReturnResourcesToCompositor(
     const cc::ReturnedResourceArray& resources,
-    uint32_t compositor_id) {
-  shared_renderer_state_->InsertReturnedResourcesOnRT(resources, compositor_id);
+    uint32_t compositor_id,
+    uint32_t output_surface_id) {
+  if (output_surface_id != last_committed_output_surface_id_)
+    return;
+  shared_renderer_state_->InsertReturnedResourcesOnRT(resources, compositor_id,
+                                                      output_surface_id);
 }
 
 }  // namespace android_webview

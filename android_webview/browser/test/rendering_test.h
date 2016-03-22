@@ -16,6 +16,10 @@ namespace base {
 class MessageLoop;
 }
 
+namespace cc {
+class CompositorFrame;
+}
+
 namespace content {
 class TestSynchronousCompositor;
 }
@@ -58,6 +62,7 @@ class RenderingTest : public testing::Test,
   void DidDrawOnRT(SharedRendererState* functor) override {}
 
  protected:
+
   RenderingTest();
   ~RenderingTest() override;
 
@@ -68,7 +73,7 @@ class RenderingTest : public testing::Test,
   void InitializeCompositor();
   void Attach();
   void EndTest();
-  void SetCompositorFrame();
+  scoped_ptr<cc::CompositorFrame> ConstructEmptyFrame();
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_ptr<BrowserViewRenderer> browser_view_renderer_;

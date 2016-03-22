@@ -40,7 +40,8 @@ class WebGraphicsContext3DCommandBufferImpl;
 class SynchronousCompositorOutputSurfaceClient {
  public:
   virtual void Invalidate() = 0;
-  virtual void SwapBuffers(cc::CompositorFrame* frame) = 0;
+  virtual void SwapBuffers(uint32_t output_surface_id,
+                           cc::CompositorFrame* frame) = 0;
 
  protected:
   virtual ~SynchronousCompositorOutputSurfaceClient() {}
@@ -61,6 +62,7 @@ class SynchronousCompositorOutputSurface
       const scoped_refptr<cc::ContextProvider>& context_provider,
       const scoped_refptr<cc::ContextProvider>& worker_context_provider,
       int routing_id,
+      uint32_t output_surface_id,
       SynchronousCompositorRegistry* registry,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue);
   ~SynchronousCompositorOutputSurface() override;
@@ -84,7 +86,8 @@ class SynchronousCompositorOutputSurface
                     const gfx::Rect& clip,
                     const gfx::Rect& viewport_rect_for_tile_priority,
                     const gfx::Transform& transform_for_tile_priority);
-  void ReturnResources(const cc::CompositorFrameAck& frame_ack);
+  void ReturnResources(uint32_t output_surface_id,
+                       const cc::CompositorFrameAck& frame_ack);
   void DemandDrawSw(SkCanvas* canvas);
   void SetMemoryPolicy(size_t bytes_limit);
   void SetTreeActivationCallback(const base::Closure& callback);
@@ -108,6 +111,7 @@ class SynchronousCompositorOutputSurface
   void FallbackTickFired();
 
   const int routing_id_;
+  const uint32_t output_surface_id_;
   SynchronousCompositorRegistry* const registry_;  // unowned
   bool registered_;
 

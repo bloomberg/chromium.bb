@@ -42,6 +42,7 @@ SynchronousCompositorHost::SynchronousCompositorHost(
       use_in_process_zero_copy_software_draw_(use_in_proc_software_draw),
       is_active_(false),
       bytes_limit_(0u),
+      output_surface_id_from_last_draw_(0u),
       root_scroll_offset_updated_by_browser_(false),
       renderer_param_version_(0u),
       need_animate_scroll_(false),
@@ -72,7 +73,7 @@ void SynchronousCompositorHost::DidBecomeCurrent() {
   client_->DidBecomeCurrent(this);
 }
 
-scoped_ptr<cc::CompositorFrame> SynchronousCompositorHost::DemandDrawHw(
+SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
     const gfx::Size& surface_size,
     const gfx::Transform& transform,
     const gfx::Rect& viewport,
@@ -82,22 +83,27 @@ scoped_ptr<cc::CompositorFrame> SynchronousCompositorHost::DemandDrawHw(
   SyncCompositorDemandDrawHwParams params(surface_size, transform, viewport,
                                           clip, viewport_rect_for_tile_priority,
                                           transform_for_tile_priority);
-  scoped_ptr<cc::CompositorFrame> frame(new cc::CompositorFrame);
+  SynchronousCompositor::Frame frame;
+  frame.frame.reset(new cc::CompositorFrame);
   SyncCompositorCommonBrowserParams common_browser_params;
   PopulateCommonParams(&common_browser_params);
   SyncCompositorCommonRendererParams common_renderer_params;
   if (!sender_->Send(new SyncCompositorMsg_DemandDrawHw(
           routing_id_, common_browser_params, params, &common_renderer_params,
-          frame.get()))) {
-    return nullptr;
+          &frame.output_surface_id, frame.frame.get()))) {
+    return SynchronousCompositor::Frame();
   }
   ProcessCommonParams(common_renderer_params);
-  if (!frame->delegated_frame_data) {
+  if (!frame.frame->delegated_frame_data) {
     // This can happen if compositor did not swap in this draw.
-    frame.reset();
+    frame.frame.reset();
   }
-  if (frame)
-    UpdateFrameMetaData(frame->metadata);
+  if (frame.frame) {
+    UpdateFrameMetaData(frame.frame->metadata);
+    if (output_surface_id_from_last_draw_ != frame.output_surface_id)
+      returned_resources_.clear();
+    output_surface_id_from_last_draw_ = frame.output_surface_id;
+  }
   return frame;
 }
 
@@ -269,7 +275,13 @@ void SynchronousCompositorHost::SendZeroMemory() {
 }
 
 void SynchronousCompositorHost::ReturnResources(
+    uint32_t output_surface_id,
     const cc::CompositorFrameAck& frame_ack) {
+  // If output_surface_id does not match, then renderer side has switched
+  // to a new OutputSurface, so dropping resources for old OutputSurface
+  // is allowed.
+  if (output_surface_id_from_last_draw_ != output_surface_id)
+    return;
   returned_resources_.insert(returned_resources_.end(),
                              frame_ack.resources.begin(),
                              frame_ack.resources.end());
@@ -389,6 +401,8 @@ void SynchronousCompositorHost::PopulateCommonParams(
   DCHECK(params);
   DCHECK(params->ack.resources.empty());
   params->bytes_limit = bytes_limit_;
+  params->output_surface_id_for_returned_resources =
+      output_surface_id_from_last_draw_;
   params->ack.resources.swap(returned_resources_);
   if (root_scroll_offset_updated_by_browser_) {
     params->root_scroll_offset = root_scroll_offset_;

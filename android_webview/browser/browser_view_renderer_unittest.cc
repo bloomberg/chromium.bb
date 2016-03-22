@@ -2,11 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+#include <queue>
+#include <utility>
+
 #include "android_webview/browser/browser_view_renderer.h"
 #include "android_webview/browser/child_frame.h"
 #include "android_webview/browser/test/rendering_test.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "cc/output/compositor_frame.h"
+#include "content/public/test/test_synchronous_compositor_android.h"
 
 namespace android_webview {
 
@@ -156,7 +162,7 @@ class CompositorNoFrameTest : public RenderingTest {
     if (0 == on_draw_count_) {
       // No frame from compositor.
     } else if (1 == on_draw_count_) {
-      SetCompositorFrame();
+      compositor_->SetHardwareFrame(0u, ConstructEmptyFrame());
     } else if (2 == on_draw_count_) {
       // No frame from compositor.
     }
@@ -185,5 +191,96 @@ class CompositorNoFrameTest : public RenderingTest {
 };
 
 RENDERING_TEST_F(CompositorNoFrameTest);
+
+class SwitchOutputSurfaceIdTest : public RenderingTest {
+ public:
+  struct FrameInfo {
+    uint32_t output_surface_id;
+    cc::ResourceId resource_id;  // Each frame contains a single resource.
+  };
+
+  void StartTest() override {
+    last_output_surface_id_ = 0;
+    FrameInfo infos[] = {
+        // First output surface.
+        {0u, 1u}, {0u, 1u}, {0u, 2u}, {0u, 2u}, {0u, 3u}, {0u, 3u}, {0u, 4u},
+        // Second output surface.
+        {1u, 1u}, {1u, 1u}, {1u, 2u}, {1u, 2u}, {1u, 3u}, {1u, 3u}, {1u, 4u},
+    };
+    for (const auto& info : infos) {
+      content::SynchronousCompositor::Frame frame;
+      frame.output_surface_id = info.output_surface_id;
+      frame.frame = ConstructEmptyFrame();
+      cc::TransferableResource resource;
+      resource.id = info.resource_id;
+      frame.frame->delegated_frame_data->resource_list.push_back(resource);
+      frames_.push(std::move(frame));
+
+      // Keep a id -> count map for the last ouptut_surface_id.
+      if (last_output_surface_id_ != info.output_surface_id) {
+        expected_return_count_.clear();
+        last_output_surface_id_ = info.output_surface_id;
+      }
+      if (expected_return_count_.count(info.resource_id)) {
+        expected_return_count_[info.resource_id]++;
+      } else {
+        expected_return_count_[info.resource_id] = 1;
+      }
+    }
+
+    browser_view_renderer_->PostInvalidate();
+  }
+
+  void WillOnDraw() override {
+    if (!frames_.empty()) {
+      compositor_->SetHardwareFrame(frames_.front().output_surface_id,
+                                    std::move(frames_.front().frame));
+    }
+  }
+
+  void DidOnDraw(bool success) override {
+    EXPECT_TRUE(success);
+    if (frames_.empty()) {
+      ui_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&SwitchOutputSurfaceIdTest::CheckResults,
+                                base::Unretained(this)));
+    } else {
+      frames_.pop();
+      browser_view_renderer_->PostInvalidate();
+    }
+  }
+
+  void CheckResults() {
+    window_->Detach();
+    window_.reset();
+
+    // Make sure resources for the last output surface are returned.
+    content::TestSynchronousCompositor::FrameAckArray returned_resources_array;
+    compositor_->SwapReturnedResources(&returned_resources_array);
+    for (const auto& resources : returned_resources_array) {
+      if (resources.output_surface_id != last_output_surface_id_)
+        continue;
+      for (const auto& returned_resource : resources.resources) {
+        EXPECT_TRUE(!!expected_return_count_.count(returned_resource.id));
+        EXPECT_GE(expected_return_count_[returned_resource.id],
+                  returned_resource.count);
+        expected_return_count_[returned_resource.id] -=
+            returned_resource.count;
+        if (!expected_return_count_[returned_resource.id])
+          expected_return_count_.erase(returned_resource.id);
+      }
+    }
+    EXPECT_TRUE(expected_return_count_.empty());
+
+    EndTest();
+  }
+
+ private:
+  std::queue<content::SynchronousCompositor::Frame> frames_;
+  uint32_t last_output_surface_id_;
+  std::map<cc::ResourceId, int> expected_return_count_;
+};
+
+RENDERING_TEST_F(SwitchOutputSurfaceIdTest);
 
 }  // namespace android_webview

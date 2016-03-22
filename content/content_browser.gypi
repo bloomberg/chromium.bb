@@ -106,6 +106,7 @@
       'public/browser/android/download_controller_android.cc',
       'public/browser/android/download_controller_android.h',
       'public/browser/android/external_video_surface_container.h',
+      'public/browser/android/synchronous_compositor.cc',
       'public/browser/android/synchronous_compositor.h',
       'public/browser/android/synchronous_compositor_client.h',
       'public/browser/appcache_service.h',

@@ -41,6 +41,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
       override;
   scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       int routing_id,
+      uint32_t output_surface_id,
       const scoped_refptr<FrameSwapMessageQueue>& frame_swap_message_queue,
       const scoped_refptr<cc::ContextProvider>& onscreen_context,
       const scoped_refptr<cc::ContextProvider>& worker_context) override;

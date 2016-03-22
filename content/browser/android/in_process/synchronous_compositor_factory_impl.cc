@@ -104,11 +104,12 @@ SynchronousCompositorFactoryImpl::GetCompositorTaskRunner() {
 scoped_ptr<cc::OutputSurface>
 SynchronousCompositorFactoryImpl::CreateOutputSurface(
     int routing_id,
+    uint32_t output_surface_id,
     const scoped_refptr<FrameSwapMessageQueue>& frame_swap_message_queue,
     const scoped_refptr<cc::ContextProvider>& onscreen_context,
     const scoped_refptr<cc::ContextProvider>& worker_context) {
   return make_scoped_ptr(new SynchronousCompositorOutputSurface(
-      onscreen_context, worker_context, routing_id,
+      onscreen_context, worker_context, routing_id, output_surface_id,
       SynchronousCompositorRegistryInProc::GetInstance(),
       frame_swap_message_queue));
 }

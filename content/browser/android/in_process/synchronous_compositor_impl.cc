@@ -150,7 +150,7 @@ void SynchronousCompositorImpl::DidDestroyRendererObjects() {
   need_animate_input_ = false;
 }
 
-scoped_ptr<cc::CompositorFrame> SynchronousCompositorImpl::DemandDrawHw(
+SynchronousCompositor::Frame SynchronousCompositorImpl::DemandDrawHw(
     const gfx::Size& surface_size,
     const gfx::Transform& transform,
     const gfx::Rect& viewport,
@@ -160,45 +160,48 @@ scoped_ptr<cc::CompositorFrame> SynchronousCompositorImpl::DemandDrawHw(
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
   DCHECK(begin_frame_source_);
-  DCHECK(!frame_holder_);
+  DCHECK(!frame_holder_.frame);
 
   output_surface_->DemandDrawHw(surface_size, transform, viewport, clip,
                                 viewport_rect_for_tile_priority,
                                 transform_for_tile_priority);
 
-  if (frame_holder_)
-    UpdateFrameMetaData(frame_holder_->metadata);
+  if (frame_holder_.frame)
+    UpdateFrameMetaData(frame_holder_.frame->metadata);
 
   return std::move(frame_holder_);
 }
 
 void SynchronousCompositorImpl::ReturnResources(
+    uint32_t output_surface_id,
     const cc::CompositorFrameAck& frame_ack) {
   DCHECK(CalledOnValidThread());
-  output_surface_->ReturnResources(frame_ack);
+  output_surface_->ReturnResources(output_surface_id, frame_ack);
 }
 
 bool SynchronousCompositorImpl::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
   DCHECK(output_surface_);
   DCHECK(begin_frame_source_);
-  DCHECK(!frame_holder_);
+  DCHECK(!frame_holder_.frame);
 
   output_surface_->DemandDrawSw(canvas);
 
-  bool success = !!frame_holder_;
-  if (frame_holder_) {
-    UpdateFrameMetaData(frame_holder_->metadata);
-    frame_holder_.reset();
+  bool success = !!frame_holder_.frame;
+  if (frame_holder_.frame) {
+    UpdateFrameMetaData(frame_holder_.frame->metadata);
+    frame_holder_.frame.reset();
   }
 
   return success;
 }
 
-void SynchronousCompositorImpl::SwapBuffers(cc::CompositorFrame* frame) {
-  DCHECK(!frame_holder_);
-  frame_holder_.reset(new cc::CompositorFrame);
-  frame->AssignTo(frame_holder_.get());
+void SynchronousCompositorImpl::SwapBuffers(uint32_t output_surface_id,
+                                            cc::CompositorFrame* frame) {
+  DCHECK(!frame_holder_.frame);
+  frame_holder_.output_surface_id = output_surface_id;
+  frame_holder_.frame.reset(new cc::CompositorFrame);
+  frame->AssignTo(frame_holder_.frame.get());
 }
 
 void SynchronousCompositorImpl::UpdateFrameMetaData(

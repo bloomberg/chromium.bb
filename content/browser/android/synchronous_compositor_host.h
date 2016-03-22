@@ -33,7 +33,7 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
   ~SynchronousCompositorHost() override;
 
   // SynchronousCompositor overrides.
-  scoped_ptr<cc::CompositorFrame> DemandDrawHw(
+  SynchronousCompositor::Frame DemandDrawHw(
       const gfx::Size& surface_size,
       const gfx::Transform& transform,
       const gfx::Rect& viewport,
@@ -41,7 +41,8 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
   bool DemandDrawSw(SkCanvas* canvas) override;
-  void ReturnResources(const cc::CompositorFrameAck& frame_ack) override;
+  void ReturnResources(uint32_t output_surface_id,
+                       const cc::CompositorFrameAck& frame_ack) override;
   void SetMemoryPolicy(size_t bytes_limit) override;
   void DidChangeRootLayerScrollOffset(
       const gfx::ScrollOffset& root_offset) override;
@@ -88,6 +89,7 @@ class SynchronousCompositorHost : public SynchronousCompositorBase {
 
   bool is_active_;
   size_t bytes_limit_;
+  uint32_t output_surface_id_from_last_draw_;
   cc::ReturnedResourceArray returned_resources_;
   scoped_ptr<SharedMemoryWithSize> software_draw_shm_;
 

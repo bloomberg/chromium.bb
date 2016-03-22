@@ -213,18 +213,28 @@ bool SharedRendererState::IsInsideHardwareRelease() const {
   return inside_hardware_release_;
 }
 
+SharedRendererState::ReturnedResources::ReturnedResources()
+    : output_surface_id(0u) {}
+
+SharedRendererState::ReturnedResources::~ReturnedResources() {}
+
 void SharedRendererState::InsertReturnedResourcesOnRT(
     const cc::ReturnedResourceArray& resources,
-    uint32_t compositor_id) {
+    uint32_t compositor_id,
+    uint32_t output_surface_id) {
   base::AutoLock lock(lock_);
-  cc::ReturnedResourceArray& returned_resources =
+  ReturnedResources& returned_resources =
       returned_resources_map_[compositor_id];
-  returned_resources.insert(returned_resources.end(), resources.begin(),
-                            resources.end());
+  if (returned_resources.output_surface_id != output_surface_id) {
+    returned_resources.resources.clear();
+  }
+  returned_resources.resources.insert(returned_resources.resources.end(),
+                                      resources.begin(), resources.end());
+  returned_resources.output_surface_id = output_surface_id;
 }
 
 void SharedRendererState::SwapReturnedResourcesOnUI(
-    std::map<uint32_t, cc::ReturnedResourceArray>* returned_resource_map) {
+    ReturnedResourcesMap* returned_resource_map) {
   DCHECK(returned_resource_map->empty());
   base::AutoLock lock(lock_);
   returned_resource_map->swap(returned_resources_map_);

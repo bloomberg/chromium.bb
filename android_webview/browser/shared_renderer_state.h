@@ -34,6 +34,15 @@ class InsideHardwareReleaseReset;
 // This class is used to pass data between UI thread and RenderThread.
 class SharedRendererState {
  public:
+  struct ReturnedResources {
+    ReturnedResources();
+    ~ReturnedResources();
+
+    uint32_t output_surface_id;
+    cc::ReturnedResourceArray resources;
+  };
+  using ReturnedResourcesMap = std::map<uint32_t, ReturnedResources>;
+
   SharedRendererState(
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_loop,
       BrowserViewRenderer* browser_view_renderer);
@@ -48,8 +57,7 @@ class SharedRendererState {
   void InitializeHardwareDrawIfNeededOnUI();
   void ReleaseHardwareDrawIfNeededOnUI();
   ParentCompositorDrawConstraints GetParentDrawConstraintsOnUI() const;
-  void SwapReturnedResourcesOnUI(
-      std::map<uint32_t, cc::ReturnedResourceArray>* returned_resource_map);
+  void SwapReturnedResourcesOnUI(ReturnedResourcesMap* returned_resource_map);
   bool ReturnedResourcesEmptyOnUI() const;
   scoped_ptr<ChildFrame> PassUncommittedFrameOnUI();
   void DeleteHardwareRendererOnUI();
@@ -62,7 +70,8 @@ class SharedRendererState {
   void PostExternalDrawConstraintsToChildCompositorOnRT(
       const ParentCompositorDrawConstraints& parent_draw_constraints);
   void InsertReturnedResourcesOnRT(const cc::ReturnedResourceArray& resources,
-                                   uint32_t compositor_id);
+                                   uint32_t compositor_id,
+                                   uint32_t output_surface_id);
 
  private:
   friend class internal::RequestDrawGLTracker;
@@ -106,8 +115,7 @@ class SharedRendererState {
   scoped_ptr<ChildFrame> child_frame_;
   bool inside_hardware_release_;
   ParentCompositorDrawConstraints parent_draw_constraints_;
-  // A map from compositor's ID to the resources that belong to the compositor.
-  std::map<uint32_t, cc::ReturnedResourceArray> returned_resources_map_;
+  ReturnedResourcesMap returned_resources_map_;
   base::Closure request_draw_gl_closure_;
 
   base::WeakPtrFactory<SharedRendererState> weak_factory_on_ui_thread_;

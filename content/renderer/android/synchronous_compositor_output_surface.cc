@@ -64,6 +64,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
     const scoped_refptr<cc::ContextProvider>& context_provider,
     const scoped_refptr<cc::ContextProvider>& worker_context_provider,
     int routing_id,
+    uint32_t output_surface_id,
     SynchronousCompositorRegistry* registry,
     scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue)
     : cc::OutputSurface(
@@ -71,6 +72,7 @@ SynchronousCompositorOutputSurface::SynchronousCompositorOutputSurface(
           worker_context_provider,
           scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareDevice(this))),
       routing_id_(routing_id),
+      output_surface_id_(output_surface_id),
       registry_(registry),
       registered_(false),
       sync_client_(nullptr),
@@ -133,7 +135,7 @@ void SynchronousCompositorOutputSurface::SwapBuffers(
   DCHECK(CalledOnValidThread());
   DCHECK(sync_client_);
   if (!fallback_tick_running_)
-    sync_client_->SwapBuffers(frame);
+    sync_client_->SwapBuffers(output_surface_id_, frame);
   client_->DidSwapBuffers();
   did_swap_ = true;
 }
@@ -227,8 +229,10 @@ void SynchronousCompositorOutputSurface::InvokeComposite(
 }
 
 void SynchronousCompositorOutputSurface::ReturnResources(
+    uint32_t output_surface_id,
     const cc::CompositorFrameAck& frame_ack) {
-  ReclaimResources(&frame_ack);
+  if (output_surface_id_ == output_surface_id)
+    ReclaimResources(&frame_ack);
 }
 
 void SynchronousCompositorOutputSurface::SetMemoryPolicy(size_t bytes_limit) {

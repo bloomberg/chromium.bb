@@ -57,10 +57,11 @@ class SynchronousCompositorImpl
 
   // SynchronousCompositorOutputSurfaceClient overrides.
   void Invalidate() override;
-  void SwapBuffers(cc::CompositorFrame* frame) override;
+  void SwapBuffers(uint32_t output_surface_id,
+                   cc::CompositorFrame* frame) override;
 
   // SynchronousCompositor overrides.
-  scoped_ptr<cc::CompositorFrame> DemandDrawHw(
+  SynchronousCompositor::Frame DemandDrawHw(
       const gfx::Size& surface_size,
       const gfx::Transform& transform,
       const gfx::Rect& viewport,
@@ -68,7 +69,8 @@ class SynchronousCompositorImpl
       const gfx::Rect& viewport_rect_for_tile_priority,
       const gfx::Transform& transform_for_tile_priority) override;
   bool DemandDrawSw(SkCanvas* canvas) override;
-  void ReturnResources(const cc::CompositorFrameAck& frame_ack) override;
+  void ReturnResources(uint32_t output_surface_id,
+                       const cc::CompositorFrameAck& frame_ack) override;
   void SetMemoryPolicy(size_t bytes_limit) override;
   void DidChangeRootLayerScrollOffset(
       const gfx::ScrollOffset& root_offset) override;
@@ -116,7 +118,7 @@ class SynchronousCompositorImpl
   bool is_active_;
   bool renderer_needs_begin_frames_;
   bool need_animate_input_;
-  scoped_ptr<cc::CompositorFrame> frame_holder_;
+  SynchronousCompositor::Frame frame_holder_;
 
   base::WeakPtrFactory<SynchronousCompositorImpl> weak_ptr_factory_;
 

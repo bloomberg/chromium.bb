@@ -67,8 +67,7 @@ void RenderingTest::QuitMessageLoop() {
   message_loop_->QuitWhenIdle();
 }
 
-void RenderingTest::SetCompositorFrame() {
-  DCHECK(compositor_.get());
+scoped_ptr<cc::CompositorFrame> RenderingTest::ConstructEmptyFrame() {
   scoped_ptr<cc::CompositorFrame> compositor_frame(new cc::CompositorFrame);
   scoped_ptr<cc::DelegatedFrameData> frame(new cc::DelegatedFrameData);
   scoped_ptr<cc::RenderPass> root_pass(cc::RenderPass::Create());
@@ -77,11 +76,12 @@ void RenderingTest::SetCompositorFrame() {
                     gfx::Transform());
   frame->render_pass_list.push_back(std::move(root_pass));
   compositor_frame->delegated_frame_data = std::move(frame);
-  compositor_->SetHardwareFrame(std::move(compositor_frame));
+  return compositor_frame;
 }
 
 void RenderingTest::WillOnDraw() {
-  SetCompositorFrame();
+  DCHECK(compositor_);
+  compositor_->SetHardwareFrame(0u, ConstructEmptyFrame());
 }
 
 bool RenderingTest::RequestDrawGL(bool wait_for_completion) {
@@ -103,7 +103,8 @@ void RenderingTest::OnNewPicture() {
 }
 
 void RenderingTest::PostInvalidate() {
-  window_->PostInvalidate();
+  if (window_)
+    window_->PostInvalidate();
 }
 
 void RenderingTest::DetachFunctorFromView() {

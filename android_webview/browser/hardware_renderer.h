@@ -52,7 +52,8 @@ class HardwareRenderer : public cc::DisplayClient,
 
   void ReturnResourcesInChildFrame();
   void ReturnResourcesToCompositor(const cc::ReturnedResourceArray& resources,
-                                   uint32_t compositor_routing_id);
+                                   uint32_t compositor_routing_id,
+                                   uint32_t output_surface_id);
 
   SharedRendererState* shared_renderer_state_;
 
@@ -79,6 +80,10 @@ class HardwareRenderer : public cc::DisplayClient,
   cc::SurfaceId child_id_;
   cc::SurfaceId root_id_;
   uint32_t compositor_id_;
+  // HardwareRenderer guarantees resources are returned in the order of
+  // output_surface_id, and resources for old output surfaces are dropped.
+  uint32_t last_committed_output_surface_id_;
+  uint32_t last_submitted_output_surface_id_;
 
   // This is owned by |display_|.
   ParentOutputSurface* output_surface_;

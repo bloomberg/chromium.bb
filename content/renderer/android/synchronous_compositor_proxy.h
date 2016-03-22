@@ -72,7 +72,8 @@ class SynchronousCompositorProxy
 
   // SynchronousCompositorOutputSurfaceClient overrides.
   void Invalidate() override;
-  void SwapBuffers(cc::CompositorFrame* frame) override;
+  void SwapBuffers(uint32_t output_surface_id,
+                   cc::CompositorFrame* frame) override;
 
   void OnMessageReceived(const IPC::Message& message);
   bool Send(IPC::Message* message);
@@ -109,8 +110,9 @@ class SynchronousCompositorProxy
                     const SyncCompositorDemandDrawSwParams& params,
                     IPC::Message* reply_message);
 
-  void SwapBuffersHw(cc::CompositorFrame* frame);
+  void SwapBuffersHw(uint32_t output_surface_id, cc::CompositorFrame* frame);
   void SendDemandDrawHwReply(cc::CompositorFrame* frame,
+                             uint32_t output_surface_id,
                              IPC::Message* reply_message);
   void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
   void SwapBuffersSw(cc::CompositorFrame* frame);

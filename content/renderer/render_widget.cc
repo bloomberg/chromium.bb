@@ -752,14 +752,16 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
 #if defined(OS_ANDROID)
     if (SynchronousCompositorFactory* factory =
             SynchronousCompositorFactory::GetInstance()) {
+      uint32_t output_surface_id = next_output_surface_id_++;
       return factory->CreateOutputSurface(
-          routing_id(), frame_swap_message_queue_, context_provider,
-          worker_context_provider);
+          routing_id(), output_surface_id, frame_swap_message_queue_,
+          context_provider, worker_context_provider);
     } else if (RenderThreadImpl::current()->sync_compositor_message_filter()) {
+      uint32_t output_surface_id = next_output_surface_id_++;
       return make_scoped_ptr(new SynchronousCompositorOutputSurface(
           context_provider, worker_context_provider, routing_id(),
-          content::RenderThreadImpl::current()
-              ->sync_compositor_message_filter(),
+          output_surface_id, content::RenderThreadImpl::current()
+                                 ->sync_compositor_message_filter(),
           frame_swap_message_queue_));
     }
 #endif

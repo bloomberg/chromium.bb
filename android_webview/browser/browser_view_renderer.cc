@@ -250,23 +250,24 @@ bool BrowserViewRenderer::OnDrawHardware() {
     viewport_rect_for_tile_priority = last_on_draw_global_visible_rect_;
   }
 
-  scoped_ptr<cc::CompositorFrame> frame =
+  content::SynchronousCompositor::Frame frame =
       compositor_->DemandDrawHw(surface_size,
                                 gfx::Transform(),
                                 viewport,
                                 clip,
                                 viewport_rect_for_tile_priority,
                                 transform_for_tile_priority);
-  if (!frame.get()) {
+  if (!frame.frame.get()) {
     TRACE_EVENT_INSTANT0("android_webview", "NoNewFrame",
                          TRACE_EVENT_SCOPE_THREAD);
     return shared_renderer_state_.HasFrameOnUI();
   }
 
   scoped_ptr<ChildFrame> child_frame = make_scoped_ptr(new ChildFrame(
-      std::move(frame), GetCompositorID(compositor_),
-      viewport_rect_for_tile_priority.IsEmpty(), transform_for_tile_priority,
-      offscreen_pre_raster_, parent_draw_constraints.is_layer));
+      frame.output_surface_id, std::move(frame.frame),
+      GetCompositorID(compositor_), viewport_rect_for_tile_priority.IsEmpty(),
+      transform_for_tile_priority, offscreen_pre_raster_,
+      parent_draw_constraints.is_layer));
 
   ReturnUnusedResource(shared_renderer_state_.PassUncommittedFrameOnUI());
   shared_renderer_state_.SetCompositorFrameOnUI(std::move(child_frame));
@@ -292,21 +293,23 @@ void BrowserViewRenderer::ReturnUnusedResource(
   content::SynchronousCompositor* compositor =
       compositor_map_[child_frame->compositor_id];
   if (compositor && !frame_ack.resources.empty())
-    compositor->ReturnResources(frame_ack);
+    compositor->ReturnResources(child_frame->output_surface_id, frame_ack);
 }
 
 void BrowserViewRenderer::ReturnResourceFromParent() {
-  std::map<uint32_t, cc::ReturnedResourceArray> returned_resource_map;
+  SharedRendererState::ReturnedResourcesMap returned_resource_map;
   shared_renderer_state_.SwapReturnedResourcesOnUI(&returned_resource_map);
   for (auto iterator = returned_resource_map.begin();
        iterator != returned_resource_map.end(); iterator++) {
     uint32_t compositor_id = iterator->first;
     content::SynchronousCompositor* compositor = compositor_map_[compositor_id];
     cc::CompositorFrameAck frame_ack;
-    frame_ack.resources.swap(iterator->second);
+    frame_ack.resources.swap(iterator->second.resources);
 
-    if (compositor && !frame_ack.resources.empty())
-      compositor->ReturnResources(frame_ack);
+    if (compositor && !frame_ack.resources.empty()) {
+      compositor->ReturnResources(iterator->second.output_surface_id,
+                                  frame_ack);
+    }
   }
 }
 

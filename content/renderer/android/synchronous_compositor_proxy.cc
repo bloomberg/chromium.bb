@@ -218,30 +218,30 @@ void SynchronousCompositorProxy::DemandDrawHw(
   if (inside_receive_) {
     // Did not swap.
     cc::CompositorFrame empty_frame;
-    SendDemandDrawHwReply(&empty_frame, reply_message);
+    SendDemandDrawHwReply(&empty_frame, 0u, reply_message);
     inside_receive_ = false;
   } else {
     DeliverMessages();
   }
 }
 
-void SynchronousCompositorProxy::SwapBuffersHw(cc::CompositorFrame* frame) {
+void SynchronousCompositorProxy::SwapBuffersHw(uint32_t output_surface_id,
+                                               cc::CompositorFrame* frame) {
   DCHECK(inside_receive_);
   DCHECK(hardware_draw_reply_);
   DCHECK(frame);
-  SendDemandDrawHwReply(frame, hardware_draw_reply_);
+  SendDemandDrawHwReply(frame, output_surface_id, hardware_draw_reply_);
   inside_receive_ = false;
 }
 
 void SynchronousCompositorProxy::SendDemandDrawHwReply(
     cc::CompositorFrame* frame,
+    uint32_t output_surface_id,
     IPC::Message* reply_message) {
   SyncCompositorCommonRendererParams common_renderer_params;
   PopulateCommonParams(&common_renderer_params);
-  // Not using WriteParams because cc::CompositorFrame is not copy-able.
-  IPC::ParamTraits<SyncCompositorCommonRendererParams>::Write(
-      reply_message, common_renderer_params);
-  IPC::ParamTraits<cc::CompositorFrame>::Write(reply_message, *frame);
+  SyncCompositorMsg_DemandDrawHw::WriteReplyParams(
+      reply_message, common_renderer_params, output_surface_id, *frame);
   Send(reply_message);
 }
 
@@ -358,19 +358,17 @@ void SynchronousCompositorProxy::SendDemandDrawSwReply(
     IPC::Message* reply_message) {
   SyncCompositorCommonRendererParams common_renderer_params;
   PopulateCommonParams(&common_renderer_params);
-  // Not using WriteParams because cc::CompositorFrame is not copy-able.
-  IPC::ParamTraits<bool>::Write(reply_message, success);
-  IPC::ParamTraits<SyncCompositorCommonRendererParams>::Write(
-      reply_message, common_renderer_params);
-  IPC::ParamTraits<cc::CompositorFrame>::Write(reply_message, *frame);
+  SyncCompositorMsg_DemandDrawSw::WriteReplyParams(
+      reply_message, success, common_renderer_params, *frame);
   Send(reply_message);
 }
 
-void SynchronousCompositorProxy::SwapBuffers(cc::CompositorFrame* frame) {
+void SynchronousCompositorProxy::SwapBuffers(uint32_t output_surface_id,
+                                             cc::CompositorFrame* frame) {
   DCHECK(hardware_draw_reply_ || software_draw_reply_);
   DCHECK(!(hardware_draw_reply_ && software_draw_reply_));
   if (hardware_draw_reply_) {
-    SwapBuffersHw(frame);
+    SwapBuffersHw(output_surface_id, frame);
   } else if (software_draw_reply_) {
     SwapBuffersSw(frame);
   }
@@ -409,7 +407,9 @@ void SynchronousCompositorProxy::ProcessCommonParams(
   begin_frame_source_->SetBeginFrameSourcePaused(
       common_params.begin_frame_source_paused);
   if (!common_params.ack.resources.empty()) {
-    output_surface_->ReturnResources(common_params.ack);
+    output_surface_->ReturnResources(
+        common_params.output_surface_id_for_returned_resources,
+        common_params.ack);
   }
 }
 
