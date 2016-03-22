@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/mac/io_surface.h"
 #include "ui/gl/gl_image_io_surface.h"
