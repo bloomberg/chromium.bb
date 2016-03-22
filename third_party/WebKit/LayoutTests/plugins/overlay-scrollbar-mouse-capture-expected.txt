@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: Blink Test Plugin: initializing
 
 This tests whether scrolling still works correctly when an overlay scrollbar is over a plugin. The plugin should still receive mouse down/up events when clicking an overlay scrollbar. Scrolling should still work correctly too. However mouse capture should not be started on the plugin as this would interfere with events going to the scrollbar.
 

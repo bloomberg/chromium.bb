@@ -6,7 +6,7 @@ if (window.testRunner) {
     testRunner.setCloseRemainingWindowsWhenComplete(true);
 }
 
-var win = window.open('data:application/x-webkit-test-netscape,');
+var win = window.open('data:application/x-blink-test-plugin,');
 setTimeout(function() {
     win.location.reload();
     setTimeout(function() {

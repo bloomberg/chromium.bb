@@ -1,27 +1,16 @@
-Name: WebKit Test PlugIn
+Name: Blink Test Plugin
 
-Description: Simple Netscape plug-in that handles test content for WebKit
+Description: Interesting description.
 
-Filename: test_netscape_plugin.plugin
+Filename: blink_test_plugin.plugin
 
 Mime Types:
 
-Type: application/x-webkit-test-netscape
+Type: application/x-blink-test-plugin
 
-Description: test netscape content
+Description: Interesting description.
 
-Suffixes: testnetscape
-
-
-Plugin.item() works.
-
-Plugin.namedItem() works.
-
-Type: image/png
-
-Description: PNG image
-
-Suffixes: png
+Suffixes:
 
 
 Plugin.item() works.
@@ -32,11 +21,11 @@ PluginArray.item() works.
 
 PluginArray.namedItem() works.
 
-Type: application/x-webkit-test-netscape
+Type: application/x-blink-test-plugin
 
-Description: test netscape content
+Description: Interesting description.
 
-Suffixes: testnetscape
+Suffixes:
 
 MimeTypeArray.item() works.
 
