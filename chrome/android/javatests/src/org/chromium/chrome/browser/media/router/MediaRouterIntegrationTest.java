@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.media.router;
 
+import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
+
 import android.app.Dialog;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -14,9 +16,11 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.media.RouterTestUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
+import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
@@ -203,6 +207,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         startMainActivityOnBlankPage();
     }
 
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testBasic() throws InterruptedException, TimeoutException {
@@ -231,6 +236,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         // executeJavaScriptApi(webContents, TERMINATE_SESSION_SCRIPT);
     }
 
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testSendAndOnMessage() throws InterruptedException, TimeoutException {
@@ -255,6 +261,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
                 String.format(SEND_MESSAGE_AND_EXPECT_RESPONSE_SCRIPT, "foo"));
     }
 
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testOnClose() throws InterruptedException, TimeoutException {
@@ -281,6 +288,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         //         SEND_MESSAGE_AND_EXPECT_CONNECTION_CLOSE_ON_ERROR_SCRIPT);
     }
 
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testFailNoProvider() throws InterruptedException, TimeoutException {
@@ -303,6 +311,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
                 webContents, "UnknownError", "No provider supports createRoute with source");
     }
 
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testFailCreateRoute() throws InterruptedException, TimeoutException {
@@ -325,6 +334,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
                 webContents, "UnknownError", "Unknown sink");
     }
 
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testReconnectSession() throws InterruptedException, TimeoutException {
@@ -357,6 +367,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
         // executeJavaScriptApi(webContents, TERMINATE_SESSION_SCRIPT);
     }
 
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testFailReconnectSession() throws InterruptedException, TimeoutException {
@@ -385,6 +396,7 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
                 String.format("checkReconnectSessionFails('%s');", sessionId));
     }
 
+    @Restriction({ChromeRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"MediaRouter"})
     @LargeTest
     public void testFailStartCancelled() throws InterruptedException, TimeoutException {
