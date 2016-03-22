@@ -14,6 +14,7 @@ class TraceTestExpectations(GpuTestExpectations):
 
     # Skip some stories as a temporary debugging measure.
     # https://crbug.com/595754.
+    self.Skip('trace_test.IOSurface2DCanvas', ['mac', 'amd'], bug=595754)
     self.Skip('trace_test.IOSurface2DCanvasWebGL', ['mac'], bug=595754)
     self.Skip('trace_test.2DCanvasWebGL', bug=595754)
 
