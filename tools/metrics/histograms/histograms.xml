@@ -26273,6 +26273,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.PacResultForStrippedUrl" enum="PacResultForStrippedUrl">
+  <owner>eroman@chromium.org</owner>
+  <summary>
+    Proxy Auto Config (PAC) allows specifying an arbitrary javascript program to
+    pick network proxies on a per-request basis (based on the URL). This works
+    by calling the script's FindProxyForURL() function with the target URL as
+    its first argument.
+
+    Traditionally, the URL parameter passed into the script contains the exact
+    URL being loaded, except maybe for having stripped the fragment and embedded
+    identity portions of the URL.
+
+    This histogram records what happens when the URL passed into
+    FindProxyForURL() additionally has had its path component stripped. Does it
+    return the same proxy list as when calling FindProxyForURL() with the
+    original (unmodified) URL?
+
+    This comparison is done only when the URL scheme implies a secure channel
+    (i.e. https:// and wss://), in order to gather data for crbug.com/593759.
+  </summary>
+</histogram>
+
 <histogram name="Net.Ping_ResponseStartedTime" units="ms">
   <obsolete>
     Deprecated 4/16/2014. No longer tracked.
@@ -76490,6 +76512,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Malformed"/>
   <int value="3" label="Not Found"/>
   <int value="4" label="Index"/>
+</enum>
+
+<enum name="PacResultForStrippedUrl" type="int">
+  <summary>
+    Result for PAC script experiment as defined in
+    net/proxy/proxy_resolver_v8_tracing.h
+  </summary>
+  <int value="0" label="SKIPPED_FALLBACK_BLOCKING_DNS"/>
+  <int value="1" label="SUCCESS"/>
+  <int value="2" label="SUCCESS_DIFFERENT_ALERTS"/>
+  <int value="3" label="SUCCESS_DIFFERENT_NUM_DNS"/>
+  <int value="4" label="FAIL_ABANDONED"/>
+  <int value="5" label="FAIL_FALLBACK_BLOCKING_DNS"/>
+  <int value="6" label="FAIL_ERROR"/>
+  <int value="7" label="FAIL_DIFFERENT_PROXY_LIST"/>
 </enum>
 
 <enum name="PageLoadEvent" type="int">
