@@ -69,5 +69,28 @@ test(function() {
     eventSender.keyDown('\t', ['shiftKey']);
     assert_equals(document.activeElement.id, 'prev');
 }, 'After removing a focused element from the documen tree, sequential focus navigation should start at a place where the focused element was.');
+
+test(function() {
+    var container = document.querySelector('#container');
+    container.innerHTML = '<input id="i1"><input id="i2"><input id="i3">';
+    container.querySelector('#i3').click();
+    container.querySelector('#i1').scrollIntoView();
+    eventSender.keyDown('\t');
+    assert_equals(document.activeElement.id, 'i2');
+}, 'Element.scrollIntoView() should update sequential focus navigation starting point.');
+
+test(function() {
+    var container = document.querySelector('#container');
+    container.innerHTML = '<span>Lorem</span><span tabindex="0" id="ipsum">ipsum</span><span>dolor</span><span tabindex="0" id="sit">sit</span><span>amet</span>';
+    testRunner.findString("dolor", []);
+    eventSender.keyDown('\t');
+    assert_equals(document.activeElement.id, 'sit');
+    testRunner.findString("Lorem", []);
+    eventSender.keyDown('\t');
+    assert_equals(document.activeElement.id, 'ipsum');
+    testRunner.findString("amet", []);
+    eventSender.keyDown('\t', ['shiftKey']);
+    assert_equals(document.activeElement.id, 'sit');
+}, 'Find text should update sequential focus navigation starting point.');
 </script>
 </body>

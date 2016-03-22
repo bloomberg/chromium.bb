@@ -1198,8 +1198,10 @@ PassRefPtrWillBeRawPtr<Range> Editor::findStringAndScrollToVisible(const String&
     if (!nextMatch)
         return nullptr;
 
-    nextMatch->firstNode()->layoutObject()->scrollRectToVisible(LayoutRect(nextMatch->boundingBox()),
+    Node* firstNode = nextMatch->firstNode();
+    firstNode->layoutObject()->scrollRectToVisible(LayoutRect(nextMatch->boundingBox()),
         ScrollAlignment::alignCenterIfNeeded, ScrollAlignment::alignCenterIfNeeded, UserScroll);
+    firstNode->document().setSequentialFocusNavigationStartingPoint(firstNode);
 
     return nextMatch.release();
 }
