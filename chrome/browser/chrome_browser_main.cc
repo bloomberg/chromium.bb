@@ -1887,6 +1887,23 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 
   restart_last_session_ = browser_shutdown::ShutdownPreThreadsStop();
   browser_process_->StartTearDown();
+
+#if defined(SYZYASAN)
+  // Disable the deferred free mechanism in the syzyasan module. This is needed
+  // to avoid a potential crash when the syzyasan module is unloaded.
+  if (base::FeatureList::IsEnabled(features::kSyzyasanDeferredFree)) {
+    typedef VOID(WINAPI * SyzyasanDisableDeferredFreeThreadFunc)(VOID);
+    HMODULE syzyasan_handle = ::GetModuleHandle(L"syzyasan_rtl.dll");
+    if (syzyasan_handle) {
+      SyzyasanDisableDeferredFreeThreadFunc syzyasan_disable_deferred_free =
+          reinterpret_cast<SyzyasanDisableDeferredFreeThreadFunc>(
+              ::GetProcAddress(syzyasan_handle,
+                               "asan_DisableDeferredFreeThread"));
+      if (syzyasan_disable_deferred_free)
+        syzyasan_disable_deferred_free();
+    }
+  }
+#endif  // defined(SYZYASAN)
 #endif  // defined(OS_ANDROID)
 }
 
