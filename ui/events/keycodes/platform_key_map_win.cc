@@ -12,7 +12,10 @@
 #include "base/threading/thread_local_storage.h"
 
 #include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_code_conversion.h"
 
 namespace ui {
 
@@ -87,6 +90,55 @@ void SetModifierState(BYTE* keyboard_state, int flags) {
     keyboard_state[VK_SCROLL] |= 0x01;
 }
 
+DomKey NumPadKeyCodeToDomKey(KeyboardCode key_code) {
+  switch (key_code) {
+    case VKEY_NUMPAD0:
+      return DomKey::Constant<'0'>::Character;
+    case VKEY_NUMPAD1:
+      return DomKey::Constant<'1'>::Character;
+    case VKEY_NUMPAD2:
+      return DomKey::Constant<'2'>::Character;
+    case VKEY_NUMPAD3:
+      return DomKey::Constant<'3'>::Character;
+    case VKEY_NUMPAD4:
+      return DomKey::Constant<'4'>::Character;
+    case VKEY_NUMPAD5:
+      return DomKey::Constant<'5'>::Character;
+    case VKEY_NUMPAD6:
+      return DomKey::Constant<'6'>::Character;
+    case VKEY_NUMPAD7:
+      return DomKey::Constant<'7'>::Character;
+    case VKEY_NUMPAD8:
+      return DomKey::Constant<'8'>::Character;
+    case VKEY_NUMPAD9:
+      return DomKey::Constant<'9'>::Character;
+    case VKEY_CLEAR:
+      return DomKey::CLEAR;
+    case VKEY_PRIOR:
+      return DomKey::PAGE_UP;
+    case VKEY_NEXT:
+      return DomKey::PAGE_DOWN;
+    case VKEY_END:
+      return DomKey::END;
+    case VKEY_HOME:
+      return DomKey::HOME;
+    case VKEY_LEFT:
+      return DomKey::ARROW_LEFT;
+    case VKEY_UP:
+      return DomKey::ARROW_UP;
+    case VKEY_RIGHT:
+      return DomKey::ARROW_RIGHT;
+    case VKEY_DOWN:
+      return DomKey::ARROW_DOWN;
+    case VKEY_INSERT:
+      return DomKey::INSERT;
+    case VKEY_DELETE:
+      return DomKey::DEL;
+    default:
+      return DomKey::NONE;
+  }
+}
+
 void CleanupKeyMapTls(void* data) {
   PlatformKeyMap* key_map = reinterpret_cast<PlatformKeyMap*>(data);
   delete key_map;
@@ -115,7 +167,15 @@ PlatformKeyMap::PlatformKeyMap(HKL layout) {
 
 PlatformKeyMap::~PlatformKeyMap() {}
 
-DomKey PlatformKeyMap::DomCodeAndFlagsToDomKey(DomCode code, int flags) const {
+DomKey PlatformKeyMap::DomKeyFromNativeImpl(DomCode code,
+                                            KeyboardCode key_code,
+                                            int flags) const {
+  if (KeycodeConverter::DomCodeToLocation(code) == DomKeyLocation::NUMPAD) {
+    // Derived the DOM Key value from |key_code| instead of |code|, to address
+    // Windows Numlock/Shift interaction - see crbug.com/594552.
+    return NumPadKeyCodeToDomKey(key_code);
+  }
+
   const int flags_to_try[] = {
       // Trying to match Firefox's behavior and UIEvents DomKey guidelines.
       // If the combination doesn't produce a printable character, the key value
@@ -141,7 +201,7 @@ DomKey PlatformKeyMap::DomCodeAndFlagsToDomKey(DomCode code, int flags) const {
 }
 
 // static
-DomKey PlatformKeyMap::DomCodeAndFlagsToDomKeyStatic(DomCode code, int flags) {
+DomKey PlatformKeyMap::DomKeyFromNative(const base::NativeEvent& native_event) {
   // Use TLS because KeyboardLayout is per thread.
   // However currently PlatformKeyMap will only be used by the host application,
   // which is just one process and one thread.
@@ -156,7 +216,9 @@ DomKey PlatformKeyMap::DomCodeAndFlagsToDomKeyStatic(DomCode code, int flags) {
 
   HKL current_layout = ::GetKeyboardLayout(0);
   platform_key_map->UpdateLayout(current_layout);
-  return platform_key_map->DomCodeAndFlagsToDomKey(code, flags);
+  return platform_key_map->DomKeyFromNativeImpl(
+      CodeFromNative(native_event), KeyboardCodeFromNative(native_event),
+      EventFlagsFromNative(native_event));
 }
 
 void PlatformKeyMap::UpdateLayout(HKL layout) {

@@ -865,7 +865,7 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event)
   if (is_char_)
     key_ = DomKey::FromCharacter(native_event.wParam);
   else
-    key_ = PlatformKeyMap::DomCodeAndFlagsToDomKeyStatic(code_, flags());
+    key_ = PlatformKeyMap::DomKeyFromNative(native_event);
 #endif
 }
 

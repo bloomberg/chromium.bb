@@ -21,7 +21,7 @@ const wchar_t* LAYOUT_FR = L"0000040c";
 struct TestKey {
   // Have to use KeyboardCode instead of DomCode because we don't know the
   // physical keyboard layout for try bots.
-  KeyboardCode vk;
+  KeyboardCode key_code;
   const char* normal;
   const char* shift;
   const char* capslock;
@@ -31,44 +31,68 @@ struct TestKey {
   const char* altgr_capslock;
 };
 
-void CheckDomCodeToKeyString(const char* label,
-                             const PlatformKeyMap& keymap,
-                             const TestKey& t,
-                             HKL layout) {
-  int scan_code = ::MapVirtualKeyEx(t.vk, MAPVK_VK_TO_VSC, layout);
-  DomCode dom_code = KeycodeConverter::NativeKeycodeToDomCode(scan_code);
-  EXPECT_STREQ(t.normal, KeycodeConverter::DomKeyToKeyString(
-    keymap.DomCodeAndFlagsToDomKey(dom_code, EF_NONE)).c_str()
-  ) << label;
-  EXPECT_STREQ(t.shift, KeycodeConverter::DomKeyToKeyString(
-    keymap.DomCodeAndFlagsToDomKey(dom_code, EF_SHIFT_DOWN)).c_str()
-  ) << label;
-  EXPECT_STREQ(t.capslock, KeycodeConverter::DomKeyToKeyString(
-    keymap.DomCodeAndFlagsToDomKey(dom_code, EF_CAPS_LOCK_ON)).c_str()
-  ) << label;
-  EXPECT_STREQ(t.altgr, KeycodeConverter::DomKeyToKeyString(
-    keymap.DomCodeAndFlagsToDomKey(dom_code, EF_ALTGR_DOWN)).c_str()
-  ) << label;
-  EXPECT_STREQ(t.shift_capslock, KeycodeConverter::DomKeyToKeyString(
-    keymap.DomCodeAndFlagsToDomKey(dom_code,
-                                EF_SHIFT_DOWN | EF_CAPS_LOCK_ON)).c_str()
-  ) << label;
-  EXPECT_STREQ(t.shift_altgr, KeycodeConverter::DomKeyToKeyString(
-    keymap.DomCodeAndFlagsToDomKey(dom_code,
-                                EF_SHIFT_DOWN | EF_ALTGR_DOWN)).c_str()
-  ) << label;
-  EXPECT_STREQ(t.altgr_capslock, KeycodeConverter::DomKeyToKeyString(
-    keymap.DomCodeAndFlagsToDomKey(dom_code,
-                                EF_ALTGR_DOWN | EF_CAPS_LOCK_ON)).c_str()
-  ) << label;
-}
-
 }  // anonymous namespace
 
 class PlatformKeyMapTest : public testing::Test {
  public:
   PlatformKeyMapTest() {}
   ~PlatformKeyMapTest() override {}
+
+  void CheckDomCodeToKeyString(const char* label,
+                               const PlatformKeyMap& keymap,
+                               const TestKey& test_case,
+                               HKL layout) {
+    KeyboardCode key_code = test_case.key_code;
+    int scan_code = ::MapVirtualKeyEx(key_code, MAPVK_VK_TO_VSC, layout);
+    DomCode dom_code = KeycodeConverter::NativeKeycodeToDomCode(scan_code);
+    EXPECT_STREQ(test_case.normal,
+                 KeycodeConverter::DomKeyToKeyString(
+                     keymap.DomKeyFromNativeImpl(dom_code, key_code, EF_NONE))
+                     .c_str())
+        << label;
+    EXPECT_STREQ(test_case.shift, KeycodeConverter::DomKeyToKeyString(
+                                      keymap.DomKeyFromNativeImpl(
+                                          dom_code, key_code, EF_SHIFT_DOWN))
+                                      .c_str())
+        << label;
+    EXPECT_STREQ(
+        test_case.capslock,
+        KeycodeConverter::DomKeyToKeyString(
+            keymap.DomKeyFromNativeImpl(dom_code, key_code, EF_CAPS_LOCK_ON))
+            .c_str())
+        << label;
+    EXPECT_STREQ(test_case.altgr, KeycodeConverter::DomKeyToKeyString(
+                                      keymap.DomKeyFromNativeImpl(
+                                          dom_code, key_code, EF_ALTGR_DOWN))
+                                      .c_str())
+        << label;
+    EXPECT_STREQ(test_case.shift_capslock,
+                 KeycodeConverter::DomKeyToKeyString(
+                     keymap.DomKeyFromNativeImpl(
+                         dom_code, key_code, EF_SHIFT_DOWN | EF_CAPS_LOCK_ON))
+                     .c_str())
+        << label;
+    EXPECT_STREQ(test_case.shift_altgr,
+                 KeycodeConverter::DomKeyToKeyString(
+                     keymap.DomKeyFromNativeImpl(dom_code, key_code,
+                                                 EF_SHIFT_DOWN | EF_ALTGR_DOWN))
+                     .c_str())
+        << label;
+    EXPECT_STREQ(test_case.altgr_capslock,
+                 KeycodeConverter::DomKeyToKeyString(
+                     keymap.DomKeyFromNativeImpl(
+                         dom_code, key_code, EF_ALTGR_DOWN | EF_CAPS_LOCK_ON))
+                     .c_str())
+        << label;
+  }
+
+  DomKey DomKeyFromNativeImpl(const PlatformKeyMap& keymap,
+                              DomCode dom_code,
+                              KeyboardCode key_code,
+                              int flags) {
+    return keymap.DomKeyFromNativeImpl(dom_code, key_code, flags);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(PlatformKeyMapTest);
 };
@@ -77,7 +101,7 @@ TEST_F(PlatformKeyMapTest, USLayout) {
   HKL layout = ::LoadKeyboardLayout(LAYOUT_US, 0);
   PlatformKeyMap keymap(layout);
 
-  const TestKey USKeys[] = {
+  const TestKey kUSLayoutTestCases[] = {
       //       n    s    c    a    sc   sa   ac
       {VKEY_0, "0", ")", "0", "0", ")", ")", "0"},
       {VKEY_1, "1", "!", "1", "1", "!", "!", "1"},
@@ -117,8 +141,8 @@ TEST_F(PlatformKeyMapTest, USLayout) {
       {VKEY_Z, "z", "Z", "Z", "z", "z", "Z", "Z"},
   };
 
-  for (const auto& k : USKeys) {
-    CheckDomCodeToKeyString("USLayout", keymap, k, layout);
+  for (const auto& test_case : kUSLayoutTestCases) {
+    CheckDomCodeToKeyString("USLayout", keymap, test_case, layout);
   }
 }
 
@@ -126,7 +150,7 @@ TEST_F(PlatformKeyMapTest, FRLayout) {
   HKL layout = ::LoadKeyboardLayout(LAYOUT_FR, 0);
   PlatformKeyMap keymap(layout);
 
-  const TestKey FRKeys[] = {
+  const TestKey kFRLayoutTestCases[] = {
       //       n     s    c    a       sc    sa   ac
       {VKEY_0, "à",  "0", "0", "@",    "à",  "0", "@"},
       {VKEY_1, "&",  "1", "1", "&",    "&",  "1", "1"},
@@ -166,8 +190,60 @@ TEST_F(PlatformKeyMapTest, FRLayout) {
       {VKEY_Z, "z",  "Z", "Z", "z",    "z",  "Z", "Z"},
   };
 
-  for (const auto& k : FRKeys) {
-    CheckDomCodeToKeyString("FRLayout", keymap, k, layout);
+  for (const auto& test_case : kFRLayoutTestCases) {
+    CheckDomCodeToKeyString("FRLayout", keymap, test_case, layout);
+  }
+}
+
+TEST_F(PlatformKeyMapTest, NumPad) {
+  HKL layout = ::LoadKeyboardLayout(LAYOUT_US, 0);
+  PlatformKeyMap keymap(layout);
+
+  const struct TestCase {
+    KeyboardCode key_code;
+    DomKey key;
+  } kNumPadTestCases[] = {
+      {VKEY_NUMPAD0, DomKey::FromCharacter('0')},
+      {VKEY_NUMPAD1, DomKey::FromCharacter('1')},
+      {VKEY_NUMPAD2, DomKey::FromCharacter('2')},
+      {VKEY_NUMPAD3, DomKey::FromCharacter('3')},
+      {VKEY_NUMPAD4, DomKey::FromCharacter('4')},
+      {VKEY_NUMPAD5, DomKey::FromCharacter('5')},
+      {VKEY_NUMPAD6, DomKey::FromCharacter('6')},
+      {VKEY_NUMPAD7, DomKey::FromCharacter('7')},
+      {VKEY_NUMPAD8, DomKey::FromCharacter('8')},
+      {VKEY_NUMPAD9, DomKey::FromCharacter('9')},
+      {VKEY_CLEAR, DomKey::CLEAR},
+      {VKEY_PRIOR, DomKey::PAGE_UP},
+      {VKEY_NEXT, DomKey::PAGE_DOWN},
+      {VKEY_END, DomKey::END},
+      {VKEY_HOME, DomKey::HOME},
+      {VKEY_LEFT, DomKey::ARROW_LEFT},
+      {VKEY_UP, DomKey::ARROW_UP},
+      {VKEY_RIGHT, DomKey::ARROW_RIGHT},
+      {VKEY_DOWN, DomKey::ARROW_DOWN},
+      {VKEY_INSERT, DomKey::INSERT},
+      {VKEY_DELETE, DomKey::DEL},
+  };
+
+  for (const auto& test_case : kNumPadTestCases) {
+    KeyboardCode key_code = test_case.key_code;
+    int scan_code = ::MapVirtualKeyEx(key_code, MAPVK_VK_TO_VSC, layout);
+    DomCode dom_code = KeycodeConverter::NativeKeycodeToDomCode(scan_code);
+
+    EXPECT_EQ(test_case.key,
+              DomKeyFromNativeImpl(keymap, dom_code, key_code, EF_NONE))
+        << key_code;
+    EXPECT_EQ(test_case.key,
+              DomKeyFromNativeImpl(keymap, dom_code, key_code, EF_ALTGR_DOWN))
+        << key_code;
+    EXPECT_EQ(test_case.key,
+              DomKeyFromNativeImpl(keymap, dom_code, key_code, EF_CONTROL_DOWN))
+        << key_code;
+    EXPECT_EQ(test_case.key,
+              DomKeyFromNativeImpl(keymap, dom_code, key_code,
+                                   EF_ALTGR_DOWN | EF_CONTROL_DOWN))
+        << key_code;
   }
 }
 

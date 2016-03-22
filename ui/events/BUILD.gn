@@ -54,8 +54,6 @@ component("events_base") {
     "keycodes/keyboard_code_conversion_win.cc",
     "keycodes/keyboard_code_conversion_win.h",
     "keycodes/keyboard_codes.h",
-    "keycodes/platform_key_map_win.cc",
-    "keycodes/platform_key_map_win.h",
     "latency_info.cc",
     "latency_info.h",
   ]
@@ -130,6 +128,8 @@ component("events") {
     "events_stub.cc",
     "gestures/gesture_recognizer_impl_mac.cc",
     "gestures/gesture_types.h",
+    "keycodes/platform_key_map_win.cc",
+    "keycodes/platform_key_map_win.h",
     "null_event_targeter.cc",
     "null_event_targeter.h",
     "scoped_target_handler.cc",
