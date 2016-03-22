@@ -15,7 +15,9 @@
 #include "net/base/net_errors.h"
 #include "net/http/bidirectional_stream_request_info.h"
 #include "net/http/http_network_session.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_stream.h"
+#include "net/spdy/spdy_http_utils.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_config.h"
 #include "url/gurl.h"
@@ -43,6 +45,7 @@ BidirectionalStream::BidirectionalStream(
     : request_info_(std::move(request_info)),
       net_log_(BoundNetLog::Make(session->net_log(),
                                  NetLog::SOURCE_BIDIRECTIONAL_STREAM)),
+      session_(session),
       delegate_(delegate),
       timer_(std::move(timer)) {
   DCHECK(delegate_);
@@ -129,6 +132,16 @@ void BidirectionalStream::OnHeadersSent() {
 
 void BidirectionalStream::OnHeadersReceived(
     const SpdyHeaderBlock& response_headers) {
+  HttpResponseInfo response_info;
+  if (!SpdyHeadersToHttpResponse(response_headers, HTTP2, &response_info)) {
+    DLOG(WARNING) << "Invalid headers";
+    delegate_->OnFailed(ERR_FAILED);
+    return;
+  }
+
+  session_->http_stream_factory()->ProcessAlternativeServices(
+      session_, response_info.headers.get(),
+      HostPortPair::FromURL(request_info_->url));
   delegate_->OnHeadersReceived(response_headers);
 }
 

@@ -342,6 +342,7 @@ SpdySessionDependencies::SpdySessionDependencies(NextProto protocol)
       enable_user_alternate_protocol_ports(false),
       enable_npn(true),
       enable_priority_dependencies(true),
+      enable_quic(false),
       protocol(protocol),
       session_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
@@ -379,6 +380,7 @@ SpdySessionDependencies::SpdySessionDependencies(
       enable_user_alternate_protocol_ports(false),
       enable_npn(true),
       enable_priority_dependencies(true),
+      enable_quic(false),
       protocol(protocol),
       session_max_recv_window_size(
           SpdySession::GetDefaultInitialWindowSize(protocol)),
@@ -428,6 +430,7 @@ HttpNetworkSession::Params SpdySessionDependencies::CreateSessionParams(
   params.enable_npn = session_deps->enable_npn;
   params.enable_priority_dependencies =
       session_deps->enable_priority_dependencies;
+  params.enable_quic = session_deps->enable_quic;
   params.spdy_default_protocol = session_deps->protocol;
   params.spdy_session_max_recv_window_size =
       session_deps->session_max_recv_window_size;

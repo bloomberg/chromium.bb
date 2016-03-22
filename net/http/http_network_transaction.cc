@@ -71,44 +71,6 @@ namespace net {
 
 namespace {
 
-void ProcessAlternativeServices(HttpNetworkSession* session,
-                                const HttpResponseHeaders& headers,
-                                const HostPortPair& http_host_port_pair) {
-  if (session->params().parse_alternative_services) {
-    if (headers.HasHeader(kAlternativeServiceHeader)) {
-      std::string alternative_service_str;
-      headers.GetNormalizedHeader(kAlternativeServiceHeader,
-                                  &alternative_service_str);
-      session->http_stream_factory()->ProcessAlternativeService(
-          session->http_server_properties(), alternative_service_str,
-          http_host_port_pair, *session);
-    }
-    // If "Alt-Svc" is enabled, then ignore "Alternate-Protocol".
-    return;
-  }
-
-  if (!headers.HasHeader(kAlternateProtocolHeader))
-    return;
-
-  std::vector<std::string> alternate_protocol_values;
-  size_t iter = 0;
-  std::string alternate_protocol_str;
-  while (headers.EnumerateHeader(&iter, kAlternateProtocolHeader,
-                                 &alternate_protocol_str)) {
-    base::TrimWhitespaceASCII(alternate_protocol_str, base::TRIM_ALL,
-                              &alternate_protocol_str);
-    if (!alternate_protocol_str.empty()) {
-      alternate_protocol_values.push_back(alternate_protocol_str);
-    }
-  }
-
-  session->http_stream_factory()->ProcessAlternateProtocol(
-      session->http_server_properties(),
-      alternate_protocol_values,
-      http_host_port_pair,
-      *session);
-}
-
 scoped_ptr<base::Value> NetLogSSLVersionFallbackCallback(
     const GURL* url,
     int net_error,
@@ -1238,8 +1200,8 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
     return OK;
   }
 
-  ProcessAlternativeServices(session_, *response_.headers.get(),
-                             HostPortPair::FromURL(request_->url));
+  session_->http_stream_factory()->ProcessAlternativeServices(
+      session_, response_.headers.get(), HostPortPair::FromURL(request_->url));
 
   int rv = HandleAuthChallenge();
   if (rv != OK)

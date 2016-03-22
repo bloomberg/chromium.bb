@@ -198,6 +198,7 @@ struct SpdySessionDependencies {
   bool enable_user_alternate_protocol_ports;
   bool enable_npn;
   bool enable_priority_dependencies;
+  bool enable_quic;
   NextProto protocol;
   size_t session_max_recv_window_size;
   size_t stream_max_recv_window_size;

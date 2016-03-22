@@ -187,6 +187,8 @@ class NET_EXPORT BidirectionalStream
   scoped_ptr<BidirectionalStreamRequestInfo> request_info_;
   const BoundNetLog net_log_;
 
+  HttpNetworkSession* session_;
+
   Delegate* const delegate_;
 
   // Timer used to buffer data received in short time-spans and send a single

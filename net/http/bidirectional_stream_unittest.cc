@@ -16,6 +16,7 @@
 #include "net/http/bidirectional_stream_request_info.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
+#include "net/http/http_server_properties.h"
 #include "net/log/net_log.h"
 #include "net/socket/socket_test_util.h"
 #include "net/spdy/spdy_session.h"
@@ -1193,6 +1194,73 @@ TEST_P(BidirectionalStreamTest, CancelOrDeleteStreamDuringOnFailed) {
   EXPECT_EQ(0, delegate->GetTotalSentBytes());
   EXPECT_EQ(0, delegate->GetTotalReceivedBytes());
   EXPECT_EQ(kProtoUnknown, delegate->GetProtocol());
+}
+
+TEST_F(BidirectionalStreamTest, TestHonorAlternativeServiceHeader) {
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet("https://www.example.org", 1, LOWEST));
+  // Empty DATA frame with an END_STREAM flag.
+  scoped_ptr<SpdyFrame> end_stream(
+      spdy_util_.ConstructSpdyBodyFrame(1, nullptr, 0, true));
+
+  MockWrite writes[] = {CreateMockWrite(*req.get(), 0)};
+
+  std::string alt_svc_header_value = AlternateProtocolToString(QUIC);
+  alt_svc_header_value.append("=\"www.example.org:443\"");
+  const char* const kExtraResponseHeaders[] = {"alt-svc",
+                                               alt_svc_header_value.c_str()};
+
+  scoped_ptr<SpdyFrame> resp(
+      spdy_util_.ConstructSpdyGetSynReply(kExtraResponseHeaders, 1, 1));
+  scoped_ptr<SpdyFrame> body_frame(spdy_util_.ConstructSpdyBodyFrame(1, true));
+
+  MockRead reads[] = {
+      CreateMockRead(*resp, 1), CreateMockRead(*body_frame, 2),
+      MockRead(SYNCHRONOUS, 0, 3),
+  };
+
+  HostPortPair host_port_pair("www.example.org", 443);
+  SpdySessionKey key(host_port_pair, ProxyServer::Direct(),
+                     PRIVACY_MODE_DISABLED);
+  session_deps_.parse_alternative_services = true;
+  // Enable QUIC so that the alternative service header can be added to
+  // HttpServerProperties.
+  session_deps_.enable_quic = true;
+  InitSession(reads, arraysize(reads), writes, arraysize(writes), key);
+
+  scoped_ptr<BidirectionalStreamRequestInfo> request_info(
+      new BidirectionalStreamRequestInfo);
+  request_info->method = "GET";
+  request_info->url = GURL("https://www.example.org/");
+  request_info->priority = LOWEST;
+  request_info->end_stream_on_headers = true;
+
+  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  MockTimer* timer = new MockTimer();
+  scoped_ptr<TestDelegateBase> delegate(new TestDelegateBase(
+      read_buffer.get(), kReadBufferSize, make_scoped_ptr(timer)));
+  delegate->SetRunUntilCompletion(true);
+  delegate->Start(std::move(request_info), http_session_.get());
+
+  const SpdyHeaderBlock response_headers = delegate->response_headers();
+  EXPECT_EQ("200", response_headers.find(":status")->second);
+  EXPECT_EQ(alt_svc_header_value, response_headers.find("alt-svc")->second);
+  EXPECT_EQ(0, delegate->on_data_sent_count());
+  EXPECT_EQ(kProtoHTTP2, delegate->GetProtocol());
+  EXPECT_EQ(kUploadData, delegate->data_received());
+  EXPECT_EQ(CountWriteBytes(writes, arraysize(writes)),
+            delegate->GetTotalSentBytes());
+  EXPECT_EQ(CountReadBytes(reads, arraysize(reads)),
+            delegate->GetTotalReceivedBytes());
+
+  AlternativeServiceVector alternative_service_vector =
+      http_session_->http_server_properties()->GetAlternativeServices(
+          host_port_pair);
+  ASSERT_EQ(1u, alternative_service_vector.size());
+  EXPECT_EQ(AlternateProtocolFromNextProto(kProtoQUIC1SPDY3),
+            alternative_service_vector[0].protocol);
+  EXPECT_EQ("www.example.org", alternative_service_vector[0].host);
+  EXPECT_EQ(443, alternative_service_vector[0].port);
 }
 
 }  // namespace net
