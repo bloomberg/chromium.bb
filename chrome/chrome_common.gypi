@@ -332,6 +332,7 @@
         '<(DEPTH)/components/components.gyp:metrics',
         '<(DEPTH)/components/components.gyp:metrics_net',
         '<(DEPTH)/components/components.gyp:omnibox_common',
+        '<(DEPTH)/components/components.gyp:policy',
         '<(DEPTH)/components/components.gyp:policy_component_common',
         # TODO(fdoray): Remove this once the PreRead field trial has expired.
         # crbug.com/577698
@@ -515,11 +516,6 @@
           'sources!': [
             'common/media/webrtc_logging_messages.h',
           ]
-        }],
-        ['configuration_policy==1', {
-          'dependencies': [
-            '<(DEPTH)/components/components.gyp:policy',
-          ],
         }],
         ['safe_browsing==1', {
           'sources': [ '<@(chrome_common_full_safe_browsing_sources)', ],

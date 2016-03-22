@@ -4,8 +4,6 @@
 
 import("//build/config/features.gni")
 
-assert(enable_configuration_policy)
-
 source_set("path_parser") {
   sources = [
     "policy_path_parser.h",

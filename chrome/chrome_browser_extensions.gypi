@@ -467,6 +467,10 @@
       'browser/extensions/api/signed_in_devices/signed_in_devices_manager.h',
       'browser/extensions/api/spellcheck/spellcheck_api.cc',
       'browser/extensions/api/spellcheck/spellcheck_api.h',
+      'browser/extensions/api/storage/managed_value_store_cache.cc',
+      'browser/extensions/api/storage/managed_value_store_cache.h',
+      'browser/extensions/api/storage/policy_value_store.cc',
+      'browser/extensions/api/storage/policy_value_store.h',
       'browser/extensions/api/storage/setting_sync_data.cc',
       'browser/extensions/api/storage/setting_sync_data.h',
       'browser/extensions/api/storage/settings_sync_processor.cc',
@@ -798,6 +802,8 @@
       'browser/extensions/permissions_updater.h',
       'browser/extensions/plugin_manager.cc',
       'browser/extensions/plugin_manager.h',
+      'browser/extensions/policy_handlers.cc',
+      'browser/extensions/policy_handlers.h',
       'browser/extensions/proxy_overridden_bubble_delegate.cc',
       'browser/extensions/proxy_overridden_bubble_delegate.h',
       'browser/extensions/scripting_permissions_modifier.cc',
@@ -918,12 +924,6 @@
       'browser/extensions/api/braille_display_private/brlapi_keycode_map.cc',
       'browser/extensions/api/braille_display_private/brlapi_keycode_map.h',
     ],
-    'chrome_browser_extensions_policy_sources': [
-      'browser/extensions/api/storage/managed_value_store_cache.cc',
-      'browser/extensions/api/storage/managed_value_store_cache.h',
-      'browser/extensions/api/storage/policy_value_store.cc',
-      'browser/extensions/api/storage/policy_value_store.h',
-    ],
     'chrome_browser_extensions_input_ime_linux_win_sources': [
       'browser/extensions/api/input_ime/input_ime_api.cc',
       'browser/extensions/api/input_ime/input_ime_api.h',
@@ -966,6 +966,7 @@
         '../components/components.gyp:copresence',
         '../components/components.gyp:dom_distiller_core',
         '../components/components.gyp:onc_component',
+        '../components/components.gyp:policy',
         '../components/components.gyp:proximity_auth',
         '../components/components.gyp:update_client',
         '../components/components.gyp:url_matcher',
@@ -1084,16 +1085,6 @@
                 '<@(chrome_browser_extensions_input_ime_linux_win_sources)',
               ],
             }],
-          ],
-        }],
-        ['configuration_policy==1', {
-          'dependencies': [
-            '../components/components.gyp:policy',
-          ],
-          'sources': [
-            'browser/extensions/policy_handlers.cc',
-            'browser/extensions/policy_handlers.h',
-            '<@(chrome_browser_extensions_policy_sources)',
           ],
         }],
         ['OS=="win" or OS=="mac"', {
