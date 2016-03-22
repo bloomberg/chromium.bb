@@ -46,7 +46,6 @@
 #include "core/html/parser/HTMLTokenizer.h"
 #include "platform/NotImplemented.h"
 #include "platform/text/PlatformLocale.h"
-#include "wtf/MainThread.h"
 #include "wtf/text/CharacterNames.h"
 
 namespace blink {

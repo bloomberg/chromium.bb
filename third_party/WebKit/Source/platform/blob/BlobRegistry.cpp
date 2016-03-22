@@ -43,7 +43,6 @@
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
-#include "wtf/MainThread.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSpecific.h"
 #include "wtf/Threading.h"

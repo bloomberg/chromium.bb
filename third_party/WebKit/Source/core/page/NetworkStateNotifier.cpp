@@ -30,7 +30,6 @@
 #include "core/page/Page.h"
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
-#include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 

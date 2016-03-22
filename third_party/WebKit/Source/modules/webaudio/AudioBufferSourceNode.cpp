@@ -31,7 +31,6 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/FloatConversion.h"
 #include "platform/audio/AudioUtilities.h"
-#include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 

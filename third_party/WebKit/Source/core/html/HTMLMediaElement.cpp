@@ -82,7 +82,6 @@
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/CString.h"
 #include <limits>

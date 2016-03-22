@@ -30,7 +30,6 @@
 
 #include "platform/audio/AudioDSPKernelProcessor.h"
 #include "platform/audio/AudioDSPKernel.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

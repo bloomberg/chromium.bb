@@ -36,7 +36,6 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "public/platform/Platform.h"
 #include "wtf/LeakAnnotations.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

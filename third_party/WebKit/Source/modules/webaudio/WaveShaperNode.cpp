@@ -28,7 +28,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/webaudio/AbstractAudioContext.h"
 #include "modules/webaudio/AudioBasicProcessorHandler.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

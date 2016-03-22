@@ -38,7 +38,6 @@
 #include "platform/scroll/ScrollbarThemeMac.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
-#include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PassOwnPtr.h"
 

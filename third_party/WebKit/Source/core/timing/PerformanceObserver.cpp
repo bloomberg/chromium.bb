@@ -13,7 +13,6 @@
 #include "core/timing/PerformanceObserverEntryList.h"
 #include "core/timing/PerformanceObserverInit.h"
 #include "platform/Timer.h"
-#include "wtf/MainThread.h"
 #include <algorithm>
 
 namespace blink {

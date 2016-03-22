@@ -32,7 +32,6 @@
 
 #include "platform/text/DateTimeFormat.h"
 #include "public/platform/Platform.h"
-#include "wtf/MainThread.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

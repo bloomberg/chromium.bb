@@ -26,7 +26,6 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioUtilities.h"
 #include "platform/audio/VectorMath.h"
-#include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include <algorithm>
 #include <complex>

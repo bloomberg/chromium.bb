@@ -40,7 +40,6 @@
 #include "platform/audio/AudioBus.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
-#include "wtf/MainThread.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"

@@ -35,7 +35,6 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
-#include "wtf/MainThread.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Threading.h"

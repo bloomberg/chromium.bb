@@ -41,7 +41,6 @@
 #include "public/platform/Platform.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/MainThread.h"
 #include "wtf/Partitions.h"
 #include "wtf/WTF.h"
 #include <base/bind.h>
@@ -84,8 +83,7 @@ int main(int argc, char** argv)
 
     WTF::Partitions::initialize(nullptr);
     WTF::setTimeFunctionsForTesting(dummyCurrentTime);
-    WTF::initialize();
-    WTF::initializeMainThread(0);
+    WTF::initialize(nullptr);
     blink::CompositorFactory::initializeDefault();
     int result = 0;
     {

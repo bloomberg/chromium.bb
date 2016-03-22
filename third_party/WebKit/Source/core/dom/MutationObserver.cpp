@@ -39,7 +39,6 @@
 #include "core/dom/MutationRecord.h"
 #include "core/dom/Node.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "wtf/MainThread.h"
 #include <algorithm>
 
 namespace blink {

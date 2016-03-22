@@ -23,7 +23,6 @@
  */
 
 #include "modules/webaudio/WaveShaperDSPKernel.h"
-#include "wtf/MainThread.h"
 #include "wtf/Threading.h"
 #include <algorithm>
 

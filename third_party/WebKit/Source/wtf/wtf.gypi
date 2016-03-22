@@ -73,8 +73,6 @@
             'LinkedStack.h',
             'ListHashSet.h',
             'Locker.h',
-            'MainThread.cpp',
-            'MainThread.h',
             'MathExtras.h',
             'NonCopyingSort.h',
             'Noncopyable.h',

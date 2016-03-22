@@ -32,7 +32,6 @@
 
 #include "modules/mediasource/MediaSource.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

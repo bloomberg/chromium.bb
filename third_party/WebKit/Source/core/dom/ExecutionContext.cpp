@@ -38,7 +38,6 @@
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

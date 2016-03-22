@@ -33,7 +33,6 @@
 #include "platform/audio/AudioUtilities.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Locker.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

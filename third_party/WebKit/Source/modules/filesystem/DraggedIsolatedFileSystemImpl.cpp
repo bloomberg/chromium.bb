@@ -34,7 +34,6 @@
 #include "modules/filesystem/DOMFileSystem.h"
 #include "platform/Supplementable.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

@@ -32,7 +32,11 @@
 
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/Assertions.h"
+#include "wtf/Functional.h"
 #include "wtf/Partitions.h"
+#include "wtf/Threading.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/StringStatics.h"
 
 namespace WTF {
 
@@ -40,8 +44,24 @@ extern void initializeThreading();
 
 bool s_initialized;
 bool s_shutdown;
+void (*s_callOnMainThreadFunction)(MainThreadFunction, void*);
+ThreadIdentifier s_mainThreadIdentifier;
 
-void initialize()
+namespace internal {
+
+void callOnMainThread(MainThreadFunction* function, void* context)
+{
+    (*s_callOnMainThreadFunction)(function, context);
+}
+
+} // namespace internal
+
+bool isMainThread()
+{
+    return currentThread() == s_mainThreadIdentifier;
+}
+
+void initialize(void (*callOnMainThreadFunction)(MainThreadFunction, void*))
 {
     // WTF, and Blink in general, cannot handle being re-initialized, even if shutdown first.
     // Make that explicit here.
@@ -49,6 +69,11 @@ void initialize()
     RELEASE_ASSERT(!s_shutdown);
     s_initialized = true;
     initializeThreading();
+
+    s_callOnMainThreadFunction = callOnMainThreadFunction;
+    s_mainThreadIdentifier = currentThread();
+    AtomicString::init();
+    StringStatics::init();
 }
 
 void shutdown()

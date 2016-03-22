@@ -36,7 +36,6 @@
 #include "platform/weborigin/SecurityPolicy.h"
 #include "url/url_canon_ip.h"
 #include "wtf/HexNumber.h"
-#include "wtf/MainThread.h"
 #include "wtf/NotFound.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

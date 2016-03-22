@@ -23,7 +23,6 @@
 
 #include "platform/heap/Handle.h"
 #include "wtf/Assertions.h"
-#include "wtf/MainThread.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {

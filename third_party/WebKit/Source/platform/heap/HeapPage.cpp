@@ -47,7 +47,6 @@
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/LeakAnnotations.h"
-#include "wtf/MainThread.h"
 #include "wtf/PageAllocator.h"
 #include "wtf/Partitions.h"
 #include "wtf/PassOwnPtr.h"

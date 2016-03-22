@@ -45,7 +45,6 @@
 #include "platform/network/EncodedFormData.h"
 #include "platform/text/DecodeEscapeSequences.h"
 #include "wtf/ASCIICType.h"
-#include "wtf/MainThread.h"
 
 namespace {
 

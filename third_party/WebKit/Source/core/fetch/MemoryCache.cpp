@@ -30,7 +30,6 @@
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/CString.h"

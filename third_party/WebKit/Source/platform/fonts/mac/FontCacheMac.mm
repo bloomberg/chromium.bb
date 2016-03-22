@@ -41,7 +41,6 @@
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Functional.h"
-#include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 
 // Forward declare Mac SPIs.

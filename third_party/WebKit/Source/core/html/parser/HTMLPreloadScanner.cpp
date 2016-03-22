@@ -48,7 +48,6 @@
 #include "platform/ContentType.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/TraceEvent.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

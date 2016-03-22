@@ -32,7 +32,6 @@
 #include "platform/audio/AudioFileReader.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {

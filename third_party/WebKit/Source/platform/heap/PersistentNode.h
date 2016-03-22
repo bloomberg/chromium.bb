@@ -9,7 +9,6 @@
 #include "platform/heap/ThreadState.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/MainThread.h"
 #include "wtf/ThreadingPrimitives.h"
 
 namespace blink {

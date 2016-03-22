@@ -32,7 +32,6 @@
 
 #include "core/dom/custom/CustomElementCallbackQueue.h"
 #include "core/dom/custom/CustomElementScheduler.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

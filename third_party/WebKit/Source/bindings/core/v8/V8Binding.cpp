@@ -59,7 +59,6 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/xml/XPathNSResolver.h"
 #include "platform/TracedValue.h"
-#include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"

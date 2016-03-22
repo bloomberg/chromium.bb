@@ -9,7 +9,6 @@
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebMemoryPressureLevel.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

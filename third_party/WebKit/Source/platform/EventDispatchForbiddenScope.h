@@ -8,7 +8,6 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/MainThread.h"
 #include "wtf/TemporaryChange.h"
 
 namespace blink {

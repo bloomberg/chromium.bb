@@ -35,7 +35,6 @@
 #include "wtf/Allocator.h"
 
 #if ENABLE(ASSERT)
-#include "wtf/MainThread.h"
 #endif
 
 namespace blink {

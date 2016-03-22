@@ -36,7 +36,6 @@
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WebThreadSupportingGC.h"
 #include "public/platform/Platform.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

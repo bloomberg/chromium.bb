@@ -6,7 +6,6 @@
 
 #include "platform/fonts/FontCache.h"
 #include "wtf/Assertions.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

@@ -43,7 +43,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
-#include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 
 #include <math.h>

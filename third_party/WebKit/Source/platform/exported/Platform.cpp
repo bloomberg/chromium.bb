@@ -88,8 +88,7 @@ void Platform::initialize(Platform* platform)
     s_platform->m_mainThread = platform->currentThread();
 
     WTF::Partitions::initialize(maxObservedSizeFunction);
-    WTF::initialize();
-    WTF::initializeMainThread(callOnMainThreadFunction);
+    WTF::initialize(callOnMainThreadFunction);
 
     Heap::init();
 

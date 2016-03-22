@@ -40,7 +40,6 @@
 #include "public/platform/WebMediaStreamCenter.h"
 #include "public/platform/WebMediaStreamTrack.h"
 #include "wtf/Assertions.h"
-#include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {

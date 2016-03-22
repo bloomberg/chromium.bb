@@ -46,7 +46,6 @@
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
-#include "wtf/MainThread.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 

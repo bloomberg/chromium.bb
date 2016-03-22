@@ -30,7 +30,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebStorageArea.h"
 #include "public/platform/WebStorageNamespace.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

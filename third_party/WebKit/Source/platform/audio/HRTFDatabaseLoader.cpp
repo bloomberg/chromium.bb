@@ -32,7 +32,6 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

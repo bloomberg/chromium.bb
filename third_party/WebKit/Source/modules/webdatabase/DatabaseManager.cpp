@@ -40,7 +40,6 @@
 #include "platform/Logging.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebTraceLocation.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

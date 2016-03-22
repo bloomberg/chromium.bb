@@ -34,7 +34,6 @@
 #include "core/frame/Settings.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/CurrentTime.h"
-#include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/ThreadSpecific.h"
 #include <limits>

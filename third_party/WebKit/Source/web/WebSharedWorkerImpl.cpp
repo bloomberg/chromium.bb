@@ -72,7 +72,6 @@
 #include "web/WebLocalFrameImpl.h"
 #include "web/WorkerContentSettingsClient.h"
 #include "wtf/Functional.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

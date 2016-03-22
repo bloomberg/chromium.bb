@@ -31,7 +31,6 @@
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/AudioParam.h"
 #include "wtf/Atomics.h"
-#include "wtf/MainThread.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>

@@ -10,7 +10,6 @@
 #include "core/workers/WorkerClients.h"
 #include "modules/EventTargetModules.h"
 #include "modules/compositorworker/CompositorWorkerMessagingProxy.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

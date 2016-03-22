@@ -10,7 +10,6 @@
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebMemoryDumpProvider.h"
 #include "wtf/Allocator.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

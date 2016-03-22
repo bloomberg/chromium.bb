@@ -46,7 +46,6 @@
 #include "platform/network/ResourceTimingInfo.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
-#include "wtf/MainThread.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 

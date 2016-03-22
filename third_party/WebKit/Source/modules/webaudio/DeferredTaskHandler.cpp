@@ -28,7 +28,6 @@
 #include "modules/webaudio/OfflineAudioContext.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "public/platform/Platform.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

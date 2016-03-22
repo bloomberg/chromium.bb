@@ -45,7 +45,6 @@
 #include "public/platform/WebThread.h"
 #include "web/IndexedDBClientImpl.h"
 #include "wtf/Assertions.h"
-#include "wtf/MainThread.h"
 #include "wtf/Partitions.h"
 #include "wtf/WTF.h"
 #include "wtf/text/AtomicString.h"

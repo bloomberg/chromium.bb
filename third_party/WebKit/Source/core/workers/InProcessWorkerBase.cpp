@@ -14,7 +14,6 @@
 #include "core/workers/WorkerScriptLoader.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

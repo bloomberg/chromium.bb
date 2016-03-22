@@ -19,7 +19,6 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/Timer.h"
-#include "wtf/MainThread.h"
 #include <algorithm>
 
 namespace blink {

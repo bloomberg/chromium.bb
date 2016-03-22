@@ -38,7 +38,6 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

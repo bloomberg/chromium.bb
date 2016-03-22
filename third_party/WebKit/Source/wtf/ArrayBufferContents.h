@@ -29,7 +29,6 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/MainThread.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"

@@ -50,7 +50,6 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Functional.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

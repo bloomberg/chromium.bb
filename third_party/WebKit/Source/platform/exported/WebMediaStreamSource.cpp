@@ -35,7 +35,6 @@
 #include "public/platform/WebAudioDestinationConsumer.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebString.h"
-#include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 

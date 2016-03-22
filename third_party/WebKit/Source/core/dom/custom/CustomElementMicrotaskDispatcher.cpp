@@ -9,7 +9,6 @@
 #include "core/dom/custom/CustomElementMicrotaskImportStep.h"
 #include "core/dom/custom/CustomElementProcessingStack.h"
 #include "core/dom/custom/CustomElementScheduler.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

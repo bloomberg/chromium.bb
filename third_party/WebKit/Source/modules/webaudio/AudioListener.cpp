@@ -30,7 +30,6 @@
 #include "modules/webaudio/PannerNode.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/HRTFDatabaseLoader.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

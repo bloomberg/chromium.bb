@@ -29,7 +29,6 @@
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "platform/audio/Reverb.h"
-#include "wtf/MainThread.h"
 
 // Note about empirical tuning:
 // The maximum FFT size affects reverb performance and accuracy.

@@ -34,7 +34,6 @@
 #include "platform/weborigin/SecurityOriginCache.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/HexNumber.h"
-#include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 

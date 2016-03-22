@@ -27,7 +27,6 @@
 #include "core/html/HTMLMediaElement.h"
 #include "modules/mediastream/MediaStream.h"
 #include "platform/weborigin/KURL.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

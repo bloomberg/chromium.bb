@@ -35,7 +35,6 @@
 #include "core/html/PublicURLManager.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

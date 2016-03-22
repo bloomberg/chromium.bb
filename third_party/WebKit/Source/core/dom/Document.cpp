@@ -226,7 +226,6 @@
 #include "wtf/DateMath.h"
 #include "wtf/Functional.h"
 #include "wtf/HashFunctions.h"
-#include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/TemporaryChange.h"
 #include "wtf/text/StringBuffer.h"

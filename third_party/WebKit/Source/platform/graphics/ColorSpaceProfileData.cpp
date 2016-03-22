@@ -5,7 +5,6 @@
 #include "platform/graphics/ColorSpaceProfileData.h"
 
 #include "wtf/Assertions.h"
-#include "wtf/MainThread.h"
 
 #if USE(QCMSLIB)
 

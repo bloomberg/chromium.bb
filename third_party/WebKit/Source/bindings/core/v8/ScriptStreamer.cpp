@@ -17,7 +17,6 @@
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/WebScheduler.h"
-#include "wtf/MainThread.h"
 #include "wtf/text/TextEncodingRegistry.h"
 
 namespace blink {

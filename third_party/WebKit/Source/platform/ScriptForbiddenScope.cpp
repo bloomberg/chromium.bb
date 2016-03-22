@@ -5,7 +5,6 @@
 #include "platform/ScriptForbiddenScope.h"
 
 #include "wtf/Assertions.h"
-#include "wtf/MainThread.h"
 
 namespace blink {
 

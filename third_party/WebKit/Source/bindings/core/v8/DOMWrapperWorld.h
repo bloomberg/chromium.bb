@@ -34,7 +34,6 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "wtf/MainThread.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

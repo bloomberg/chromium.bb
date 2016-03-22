@@ -47,7 +47,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
-#include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CharacterNames.h"
 #include "wtf/text/Unicode.h"

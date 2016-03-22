@@ -90,7 +90,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
 #include "wtf/HashMap.h"
-#include "wtf/MainThread.h"
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

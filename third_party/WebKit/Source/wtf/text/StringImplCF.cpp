@@ -22,7 +22,6 @@
 
 #if OS(MACOSX)
 
-#include "wtf/MainThread.h"
 #include "wtf/Partitions.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RetainPtr.h"
