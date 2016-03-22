@@ -26,6 +26,7 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu_process_launch_causes.h"
 #include "content/common/storage_partition_service.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/compositor_dependencies.h"

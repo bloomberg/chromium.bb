@@ -20,7 +20,6 @@
 #include "base/process/process.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/gpu_process_launch_causes.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/gpu_stream_constants.h"
 #include "gpu/ipc/common/surface_handle.h"

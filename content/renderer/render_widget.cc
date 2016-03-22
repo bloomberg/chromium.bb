@@ -33,7 +33,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
-#include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/gpu_process_launch_causes.h"
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/input/web_input_event_traits.h"
 #include "content/common/input_messages.h"

@@ -21,7 +21,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
-#include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/gpu_process_launch_causes.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/command_buffer/common/constants.h"

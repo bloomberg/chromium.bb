@@ -15,7 +15,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/profile_service/profile_app.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/gpu_process_launch_causes.h"
 #include "content/common/mojo/current_thread_loader.h"
 #include "content/common/mojo/mojo_shell_connection_impl.h"
 #include "content/common/mojo/static_loader.h"

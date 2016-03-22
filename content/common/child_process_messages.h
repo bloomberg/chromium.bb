@@ -17,7 +17,7 @@
 #include "cc/resources/shared_bitmap_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits_macros.h"
-#include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/gpu_process_launch_causes.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/common/gpu_param_traits_macros.h"

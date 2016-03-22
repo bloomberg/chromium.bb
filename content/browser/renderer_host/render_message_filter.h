@@ -20,7 +20,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/resources/shared_bitmap_manager.h"
-#include "content/common/gpu/gpu_process_launch_causes.h"
+#include "content/common/gpu_process_launch_causes.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/browser_message_filter.h"

@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/common/gpu/client/gpu_channel_host.h"
+#include "content/common/gpu_process_launch_causes.h"
 #include "ipc/message_filter.h"
 
 namespace content {
