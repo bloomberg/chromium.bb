@@ -153,6 +153,8 @@ def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
             print 'File contents:'
             with open(result_path) as f:
               print f.read()
+          if not can_fail_build:
+            return
           raise
 
         _ProcessResultFile()
