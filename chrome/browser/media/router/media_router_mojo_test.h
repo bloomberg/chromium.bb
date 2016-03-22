@@ -8,11 +8,13 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/media/router/media_router_mojo_impl.h"
 #include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/media/router/test_helper.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/common/extension.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +38,7 @@ class MediaRouterMojoTest : public ::testing::Test {
 
   void ConnectProviderManagerService();
 
-  const std::string& extension_id() const { return extension_id_; }
+  const std::string& extension_id() const { return extension_->id(); }
 
   MediaRouterMojoImpl* router() const { return mock_media_router_.get(); }
 
@@ -48,7 +50,7 @@ class MediaRouterMojoTest : public ::testing::Test {
   media_router::interfaces::MediaRouterPtr media_router_proxy_;
 
  private:
-  std::string extension_id_;
+  scoped_refptr<extensions::Extension> extension_;
   scoped_ptr<MediaRouterMojoImpl> mock_media_router_;
   scoped_ptr<mojo::Binding<interfaces::MediaRouteProvider>> binding_;
   base::MessageLoop message_loop_;

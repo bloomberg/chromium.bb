@@ -45,6 +45,7 @@ mojom("mojo_bindings") {
 source_set("test_support") {
   testonly = true
   deps = [
+    # TODO(crbug.com/596999): Move non-Android code to mojo/
     ":mojo_bindings",
     ":router",
     "//chrome/test:test_support",
@@ -53,4 +54,11 @@ source_set("test_support") {
   sources = rebase_path(gypi_values.media_router_test_support_sources,
                         ".",
                         "//chrome/browser/media/router")
+  if (!is_android) {
+    deps += [ "//extensions/common" ]
+    sources +=
+        rebase_path(gypi_values.media_router_non_android_test_support_sources,
+                    ".",
+                    "//chrome/browser/media/router")
+  }
 }

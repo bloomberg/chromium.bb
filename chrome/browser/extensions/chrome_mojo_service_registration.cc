@@ -33,7 +33,7 @@ void RegisterChromeServicesForFrame(content::RenderFrameHost* render_frame_host,
             APIPermission::kMediaRouterPrivate)) {
       render_frame_host->GetServiceRegistry()->AddService(
           base::Bind(media_router::MediaRouterMojoImpl::BindToRequest,
-                     extension->id(), context));
+                     extension, context));
     }
   }
 #endif  // defined(ENABLE_MEDIA_ROUTER)

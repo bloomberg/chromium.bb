@@ -70,6 +70,7 @@
       ],
       'dependencies': [
         'media_router',
+        # TODO(crbug.com/596999): Move non-Android code to mojo/
         'media_router_mojo',
         'media_router_mojo_gen',
         '<(DEPTH)/base/base.gyp:base',
@@ -78,6 +79,16 @@
       'sources': [
         '<@(media_router_test_support_sources)',
       ],
+      'conditions': [
+        [ 'OS!="android" and OS!="ios"', {
+          'dependencies': [
+            '<(DEPTH)/extensions/extensions.gyp:extensions_common',
+          ],
+          'sources': [
+            '<@(media_router_non_android_test_support_sources)',
+          ]
+        }],
+      ]
     },
   ],
 }

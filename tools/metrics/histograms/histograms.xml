@@ -21098,11 +21098,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Location the user clicked to open the Media Router dialog.</summary>
 </histogram>
 
+<histogram name="MediaRouter.Provider.Version" enum="MediaRouteProviderVersion">
+  <owner>mfoltz@chromium.org</owner>
+  <summary>
+    Records how the major version of the Media Router component extension
+    compares to the major version of the browser.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Provider.WakeReason"
     enum="MediaRouteProviderWakeReason">
   <owner>mfoltz@chromium.org</owner>
   <summary>
     Reason that the Media Router woke the Media Route Provider event page.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.Provider.Wakeup" enum="MediaRouteProviderWakeup">
+  <owner>mfoltz@chromium.org</owner>
+  <summary>
+    Records the outcome of waking the Media Router component's event page.
   </summary>
 </histogram>
 
@@ -74574,6 +74589,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Has errors"/>
 </enum>
 
+<enum name="MediaRouteProviderVersion" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="SameVersionAsChrome"/>
+  <int value="2" label="OneVersionBehindChrome"/>
+  <int value="3" label="MultipleVersionsBehindChrome"/>
+</enum>
+
 <enum name="MediaRouteProviderWakeReason" type="int">
   <int value="0" label="CreateRoute"/>
   <int value="1" label="JoinRoute"/>
@@ -74590,6 +74612,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="12" label="ConnectionError"/>
   <int value="13" label="RegisterMediaRouteProvider"/>
   <int value="14" label="ConnectRouteByRouteId"/>
+</enum>
+
+<enum name="MediaRouteProviderWakeup" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="ErrorUnknown"/>
+  <int value="2" label="ErrorTooManyRetries"/>
 </enum>
 
 <enum name="MediaRouterCreateRouteOutcome" type="int">

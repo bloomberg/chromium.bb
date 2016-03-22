@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "extensions/common/test_util.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 
 namespace media_router {
@@ -27,10 +28,10 @@ MockMediaRouteProvider::~MockMediaRouteProvider() {
 }
 
 MediaRouterMojoTest::MediaRouterMojoTest()
-    : extension_id_("ext-123"),
-      mock_media_router_(new MediaRouterMojoImpl(&mock_event_page_tracker_)),
+    : mock_media_router_(new MediaRouterMojoImpl(&mock_event_page_tracker_)),
       message_loop_(mojo::common::MessagePumpMojo::Create()) {
   mock_media_router_->set_instance_id_for_test(kInstanceId);
+  extension_ = extensions::test_util::CreateEmptyExtension();
 }
 
 MediaRouterMojoTest::~MediaRouterMojoTest() {
@@ -39,7 +40,7 @@ MediaRouterMojoTest::~MediaRouterMojoTest() {
 void MediaRouterMojoTest::ConnectProviderManagerService() {
   // Bind the |media_route_provider| interface to |media_route_provider_|.
   auto request = mojo::GetProxy(&media_router_proxy_);
-  mock_media_router_->BindToMojoRequest(std::move(request), extension_id_);
+  mock_media_router_->BindToMojoRequest(std::move(request), *extension_);
 
   // Bind the Mojo MediaRouter interface used by |mock_media_router_| to
   // |mock_media_route_provider_service_|.
@@ -53,7 +54,7 @@ void MediaRouterMojoTest::ConnectProviderManagerService() {
 }
 
 void MediaRouterMojoTest::SetUp() {
-  ON_CALL(mock_event_page_tracker_, IsEventPageSuspended(extension_id_))
+  ON_CALL(mock_event_page_tracker_, IsEventPageSuspended(extension_id()))
       .WillByDefault(testing::Return(false));
   ConnectProviderManagerService();
   message_loop_.RunUntilIdle();

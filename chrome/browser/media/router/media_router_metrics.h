@@ -5,7 +5,18 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_METRICS_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_ROUTER_METRICS_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/time/time.h"
+
+namespace base {
+class Version;
+}  // namespace base
+
+#if !defined(OS_ANDROID)
+namespace extensions {
+class Extension;
+}  // namespace extensions
+#endif  // !defined(OS_ANDROID)
 
 namespace media_router {
 
@@ -22,28 +33,6 @@ enum class MediaRouterDialogOpenOrigin {
 
   // NOTE: Add entries only immediately above this line.
   TOTAL_COUNT = 4
-};
-
-// Why the Media Route Provider process was woken up.
-enum class MediaRouteProviderWakeReason {
-  CREATE_ROUTE = 0,
-  JOIN_ROUTE = 1,
-  TERMINATE_ROUTE = 2,
-  SEND_SESSION_MESSAGE = 3,
-  SEND_SESSION_BINARY_MESSAGE = 4,
-  DETACH_ROUTE = 5,
-  START_OBSERVING_MEDIA_SINKS = 6,
-  STOP_OBSERVING_MEDIA_SINKS = 7,
-  START_OBSERVING_MEDIA_ROUTES = 8,
-  STOP_OBSERVING_MEDIA_ROUTES = 9,
-  LISTEN_FOR_ROUTE_MESSAGES = 10,
-  STOP_LISTENING_FOR_ROUTE_MESSAGES = 11,
-  CONNECTION_ERROR = 12,
-  REGISTER_MEDIA_ROUTE_PROVIDER = 13,
-  CONNECT_ROUTE_BY_ROUTE_ID = 14,
-
-  // NOTE: Add entries only immediately above this line.
-  TOTAL_COUNT = 15
 };
 
 // The possible outcomes from a route creation response.
@@ -69,15 +58,60 @@ enum class MediaRouterUserAction {
   TOTAL_COUNT = 5
 };
 
+#if !defined(OS_ANDROID)
+// Why the Media Route Provider process was woken up.
+enum class MediaRouteProviderWakeReason {
+  CREATE_ROUTE = 0,
+  JOIN_ROUTE = 1,
+  TERMINATE_ROUTE = 2,
+  SEND_SESSION_MESSAGE = 3,
+  SEND_SESSION_BINARY_MESSAGE = 4,
+  DETACH_ROUTE = 5,
+  START_OBSERVING_MEDIA_SINKS = 6,
+  STOP_OBSERVING_MEDIA_SINKS = 7,
+  START_OBSERVING_MEDIA_ROUTES = 8,
+  STOP_OBSERVING_MEDIA_ROUTES = 9,
+  LISTEN_FOR_ROUTE_MESSAGES = 10,
+  STOP_LISTENING_FOR_ROUTE_MESSAGES = 11,
+  CONNECTION_ERROR = 12,
+  REGISTER_MEDIA_ROUTE_PROVIDER = 13,
+  CONNECT_ROUTE_BY_ROUTE_ID = 14,
+
+  // NOTE: Add entries only immediately above this line.
+  TOTAL_COUNT = 15
+};
+
+// The install status of the Media Router component extension.
+enum class MediaRouteProviderVersion {
+  // Installed but version is invalid or cannot be determined.
+  UNKNOWN = 0,
+  // Installed and the extension version matches the browser version.
+  SAME_VERSION_AS_CHROME = 1,
+  // Installed and the extension version is one version behind the browser
+  // version.
+  ONE_VERSION_BEHIND_CHROME = 2,
+  // Installed and the extension version is more than one version behind the
+  // browser version.
+  MULTIPLE_VERSIONS_BEHIND_CHROME = 3,
+  // Note: Add entries only immediately above this line.
+  TOTAL_COUNT = 4
+};
+
+// The outcome of an attempt to wake the Media Router component event page.
+enum class MediaRouteProviderWakeup {
+  SUCCESS = 0,
+  ERROR_UNKNOWN = 1,
+  ERROR_TOO_MANY_RETRIES = 2,
+  // Note: Add entries only immediately above this line.
+  TOTAL_COUNT = 3
+};
+#endif  // !defined(OS_ANDROID)
+
 class MediaRouterMetrics {
  public:
   // Records where the user clicked to open the Media Router dialog.
   static void RecordMediaRouterDialogOrigin(
       MediaRouterDialogOpenOrigin origin);
-
-  // Records why the media route provider extension was woken up.
-  static void RecordMediaRouteProviderWakeReason(
-      MediaRouteProviderWakeReason reason);
 
   // Records the duration it takes for the Media Router dialog to open and
   // finish painting after a user clicks to open the dialog.
@@ -97,6 +131,29 @@ class MediaRouterMetrics {
   // Records the outcome in a create route response.
   static void RecordRouteCreationOutcome(
       MediaRouterRouteCreationOutcome outcome);
+
+#if !defined(OS_ANDROID)
+  // Records the installed version of the Media Router component extension.
+  static void RecordMediaRouteProviderVersion(
+      const extensions::Extension& extension);
+
+  // Records why the media route provider extension was woken up.
+  static void RecordMediaRouteProviderWakeReason(
+      MediaRouteProviderWakeReason reason);
+
+  // Records the outcome of an attempt to wake the Media Router component event
+  // page.
+  static void RecordMediaRouteProviderWakeup(MediaRouteProviderWakeup wakeup);
+
+ private:
+  FRIEND_TEST_ALL_PREFIXES(MediaRouteProviderMetricsTest,
+                           TestGetMediaRouteProviderVersion);
+
+  // Returns the version status of the Media Router component extension.
+  static MediaRouteProviderVersion GetMediaRouteProviderVersion(
+      const base::Version& extension_version,
+      const base::Version& browser_version);
+#endif  // !defined(OS_ANDROID)
 };
 
 }  // namespace media_router

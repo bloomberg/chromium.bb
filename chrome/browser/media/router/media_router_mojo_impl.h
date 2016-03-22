@@ -34,6 +34,7 @@ class BrowserContext;
 
 namespace extensions {
 class EventPageTracker;
+class Extension;
 }
 
 namespace media_router {
@@ -49,15 +50,15 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   // Sets up the MediaRouterMojoImpl instance owned by |context| to handle
   // MediaRouterObserver requests from the component extension given by
-  // |extension_id|. Creates the MediaRouterMojoImpl instance if it does not
+  // |extension|. Creates the MediaRouterMojoImpl instance if it does not
   // exist.
   // Called by the Mojo module registry.
-  // |extension_id|: The ID of the component extension, used for querying
+  // |extension|: The component extension, used for querying
   //     suspension state.
   // |context|: The BrowserContext which owns the extension process.
   // |request|: The Mojo connection request used for binding.
   static void BindToRequest(
-      const std::string& extension_id,
+      const extensions::Extension* extension,
       content::BrowserContext* context,
       mojo::InterfaceRequest<interfaces::MediaRouter> request);
 
@@ -182,10 +183,10 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   // Binds |this| to a Mojo interface request, so that clients can acquire a
   // handle to a MediaRouterMojoImpl instance via the Mojo service connector.
-  // Stores the |extension_id| of the component extension.
+  // Stores the ID of |extension| in |media_route_provider_extension_id_|.
   void BindToMojoRequest(
       mojo::InterfaceRequest<interfaces::MediaRouter> request,
-      const std::string& extension_id);
+      const extensions::Extension& extension);
 
   // Enqueues a closure for later execution by ExecutePendingRequests().
   void EnqueueTask(const base::Closure& closure);
@@ -370,11 +371,15 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // The last reported sink availability from the media route provider manager.
   interfaces::MediaRouter::SinkAvailability availability_;
 
-  int wakeup_attempt_count_;
+  int wakeup_attempt_count_ = 0;
 
   // Records the current reason the extension is being woken up.  Is set to
   // MediaRouteProviderWakeReason::TOTAL_COUNT if there is no pending reason.
   MediaRouteProviderWakeReason current_wake_reason_;
+
+  // A flag to ensure that we record the provider version once, during the
+  // initial event page wakeup attempt.
+  bool provider_version_was_recorded_ = false;
 
   base::WeakPtrFactory<MediaRouterMojoImpl> weak_factory_;
 

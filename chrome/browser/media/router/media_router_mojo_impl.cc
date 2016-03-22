@@ -78,7 +78,6 @@ MediaRouterMojoImpl::MediaRouterMojoImpl(
     : event_page_tracker_(event_page_tracker),
       instance_id_(base::GenerateGUID()),
       availability_(interfaces::MediaRouter::SinkAvailability::UNAVAILABLE),
-      wakeup_attempt_count_(0),
       current_wake_reason_(MediaRouteProviderWakeReason::TOTAL_COUNT),
       weak_factory_(this) {
   DCHECK(event_page_tracker_);
@@ -90,19 +89,19 @@ MediaRouterMojoImpl::~MediaRouterMojoImpl() {
 
 // static
 void MediaRouterMojoImpl::BindToRequest(
-    const std::string& extension_id,
+    const extensions::Extension* extension,
     content::BrowserContext* context,
     mojo::InterfaceRequest<interfaces::MediaRouter> request) {
   MediaRouterMojoImpl* impl = static_cast<MediaRouterMojoImpl*>(
       MediaRouterFactory::GetApiForBrowserContext(context));
   DCHECK(impl);
 
-  impl->BindToMojoRequest(std::move(request), extension_id);
+  impl->BindToMojoRequest(std::move(request), *extension);
 }
 
 void MediaRouterMojoImpl::BindToMojoRequest(
     mojo::InterfaceRequest<interfaces::MediaRouter> request,
-    const std::string& extension_id) {
+    const extensions::Extension& extension) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   binding_.reset(
@@ -110,7 +109,11 @@ void MediaRouterMojoImpl::BindToMojoRequest(
   binding_->set_connection_error_handler(base::Bind(
       &MediaRouterMojoImpl::OnConnectionError, base::Unretained(this)));
 
-  media_route_provider_extension_id_ = extension_id;
+  media_route_provider_extension_id_ = extension.id();
+  if (!provider_version_was_recorded_) {
+    MediaRouterMetrics::RecordMediaRouteProviderVersion(extension);
+    provider_version_was_recorded_ = true;
+  }
 }
 
 void MediaRouterMojoImpl::OnConnectionError() {
@@ -859,6 +862,8 @@ void MediaRouterMojoImpl::AttemptWakeEventPage() {
                               << "page.";
     DrainPendingRequests();
     wakeup_attempt_count_ = 0;
+    MediaRouterMetrics::RecordMediaRouteProviderWakeup(
+        MediaRouteProviderWakeup::ERROR_TOO_MANY_RETRIES);
     return;
   }
 
@@ -893,6 +898,8 @@ void MediaRouterMojoImpl::EventPageWakeComplete(bool success) {
     MediaRouterMetrics::RecordMediaRouteProviderWakeReason(
         current_wake_reason_);
     ClearWakeReason();
+    MediaRouterMetrics::RecordMediaRouteProviderWakeup(
+        MediaRouteProviderWakeup::SUCCESS);
     return;
   }
 
@@ -901,6 +908,8 @@ void MediaRouterMojoImpl::EventPageWakeComplete(bool success) {
       << "An error encountered while waking the event page.";
   ClearWakeReason();
   DrainPendingRequests();
+  MediaRouterMetrics::RecordMediaRouteProviderWakeup(
+      MediaRouteProviderWakeup::ERROR_UNKNOWN);
 }
 
 void MediaRouterMojoImpl::DrainPendingRequests() {
