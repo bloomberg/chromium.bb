@@ -2551,7 +2551,11 @@ void PepperPluginInstanceImpl::NumberOfFindResultsChanged(
     PP_Instance instance,
     int32_t total,
     PP_Bool final_result) {
-  DCHECK_NE(find_identifier_, -1);
+  // After stopping search and setting find_identifier_ to -1 there still may be
+  // a NumberOfFindResultsChanged notification pending from plug-in. Just ignore
+  // them.
+  if (find_identifier_ == -1)
+    return;
   if (render_frame_) {
     render_frame_->reportFindInPageMatchCount(
         find_identifier_, total, PP_ToBool(final_result));
@@ -2560,7 +2564,8 @@ void PepperPluginInstanceImpl::NumberOfFindResultsChanged(
 
 void PepperPluginInstanceImpl::SelectedFindResultChanged(PP_Instance instance,
                                                          int32_t index) {
-  DCHECK_NE(find_identifier_, -1);
+  if (find_identifier_ == -1)
+    return;
   if (render_frame_) {
     render_frame_->reportFindInPageSelection(
         find_identifier_, index + 1, blink::WebRect());
