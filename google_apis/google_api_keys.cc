@@ -65,6 +65,13 @@
 #define GOOGLE_CLIENT_SECRET_REMOTING_HOST DUMMY_API_TOKEN
 #endif
 
+// This is really the API key for non-stable channels on Android. It's
+// named after the first feature that used it.
+// TODO(jkrcal,rogerta): Rename this to GOOGLE_API_KEY_ANDROID_NON_STABLE.
+#if !defined(GOOGLE_API_KEY_PHYSICAL_WEB_TEST)
+#define GOOGLE_API_KEY_PHYSICAL_WEB_TEST DUMMY_API_TOKEN
+#endif
+
 // These are used as shortcuts for developers and users providing
 // OAuth credentials via preprocessor defines or environment
 // variables.  If set, they will be used to replace any of the client
@@ -89,12 +96,19 @@ class APIKeyCache {
     scoped_ptr<base::Environment> environment(base::Environment::Create());
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
-    api_key_ = CalculateKeyValue(GOOGLE_API_KEY,
-                                 STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY),
-                                 NULL,
-                                 std::string(),
-                                 environment.get(),
-                                 command_line);
+    api_key_ = CalculateKeyValue(
+        GOOGLE_API_KEY, STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY), NULL,
+        std::string(), environment.get(), command_line);
+
+// A special non-stable key is at the moment defined only for Android Chrome.
+#if defined(OS_ANDROID)
+    api_key_non_stable_ = CalculateKeyValue(
+            GOOGLE_API_KEY_PHYSICAL_WEB_TEST,
+            STRINGIZE_NO_EXPANSION(GOOGLE_API_KEY_PHYSICAL_WEB_TEST), NULL,
+            std::string(), environment.get(), command_line);
+#else
+    api_key_non_stable_ = api_key_;
+#endif
 
     api_key_remoting_ =
         CalculateKeyValue(GOOGLE_API_KEY_REMOTING,
@@ -187,6 +201,7 @@ class APIKeyCache {
   }
 
   std::string api_key() const { return api_key_; }
+  std::string api_key_non_stable() const { return api_key_non_stable_; }
   std::string api_key_remoting() const { return api_key_remoting_; }
 
   std::string GetClientID(OAuth2Client client) const {
@@ -253,6 +268,7 @@ class APIKeyCache {
   }
 
   std::string api_key_;
+  std::string api_key_non_stable_;
   std::string api_key_remoting_;
   std::string client_ids_[CLIENT_NUM_ITEMS];
   std::string client_secrets_[CLIENT_NUM_ITEMS];
@@ -278,6 +294,10 @@ bool HasKeysConfigured() {
 
 std::string GetAPIKey() {
   return g_api_key_cache.Get().api_key();
+}
+
+std::string GetNonStableAPIKey() {
+  return g_api_key_cache.Get().api_key_non_stable();
 }
 
 std::string GetRemotingAPIKey() {

@@ -68,6 +68,9 @@ bool HasKeysConfigured();
 // e.g. URL-escaped if you use it in a URL.
 std::string GetAPIKey();
 
+// Non-stable channels may have a different Google API key.
+std::string GetNonStableAPIKey();
+
 std::string GetRemotingAPIKey();
 
 // Represents the different sets of client IDs and secrets in use.
