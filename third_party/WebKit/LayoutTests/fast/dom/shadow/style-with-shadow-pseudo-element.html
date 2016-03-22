@@ -121,7 +121,6 @@ sandbox.appendChild(
                 createDOM('span', {'id': 'target'},
                     document.createTextNode('green border, because of ::shadow.'))))));
 
-// Need to clarify the spec, i.e. using specificity? Currently rgb(255,0,0).
 borderColorShouldBe('host/target', 'rgb(255, 0, 0)');
 
 cleanUp();

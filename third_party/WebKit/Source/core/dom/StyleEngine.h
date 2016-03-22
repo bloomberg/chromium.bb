@@ -55,6 +55,12 @@ class StyleRuleFontFace;
 class StyleSheet;
 class StyleSheetContents;
 
+enum ShadowCascadeOrder {
+    ShadowCascadeNone,
+    ShadowCascadeV0,
+    ShadowCascadeV1
+};
+
 class CORE_EXPORT StyleEngine final : public NoBaseWillBeGarbageCollectedFinalized<StyleEngine>, public CSSFontSelectorClient  {
     USING_FAST_MALLOC_WILL_BE_REMOVED(StyleEngine);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(StyleEngine);
@@ -178,6 +184,9 @@ public:
     StyleResolverStats* stats() { return m_styleResolverStats.get(); }
     void setStatsEnabled(bool);
 
+    ShadowCascadeOrder shadowCascadeOrder() const { return m_shadowCascadeOrder; }
+    void setShadowCascadeOrder(ShadowCascadeOrder);
+
     DECLARE_VIRTUAL_TRACE();
 
 private:
@@ -252,6 +261,9 @@ private:
 
     bool m_ignorePendingStylesheets = false;
     bool m_didCalculateResolver = false;
+
+    ShadowCascadeOrder m_shadowCascadeOrder = ShadowCascadeNone;
+
     OwnPtrWillBeMember<StyleResolver> m_resolver;
     StyleInvalidator m_styleInvalidator;
 

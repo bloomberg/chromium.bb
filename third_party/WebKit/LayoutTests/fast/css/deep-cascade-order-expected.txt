@@ -1,0 +1,14 @@
+CONSOLE WARNING: /deep/ combinator is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.
+Cascade order for inner/outer tree rules with /deep/ (v0 bug compatible).
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS getComputedStyle(root1.querySelector('div')).color is red
+PASS getComputedStyle(root1.querySelector('div + div')).color is red
+PASS getComputedStyle(root2.querySelector('div')).color is red
+PASS getComputedStyle(root2.querySelector('div + div')).color is green
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -389,7 +389,7 @@ static inline ScopedStyleResolver* scopedResolverFor(const Element& element)
 {
     // Ideally, returning element->treeScope().scopedStyleResolver() should be
     // enough, but ::cue and custom pseudo elements like ::-webkit-meter-bar pierce
-    // through a shadow dom boundary, yet they are not part of m_treeBoundaryCrossingRules.
+    // through a shadow dom boundary, yet they are not part of m_treeBoundaryCrossingScopes.
     // The assumption here is that these rules only pierce through one boundary and
     // that the scope of these elements do not have a style resolver due to the fact
     // that VTT scopes and UA shadow trees don't have <style> elements. This is
@@ -413,7 +413,128 @@ static inline ScopedStyleResolver* scopedResolverFor(const Element& element)
     return treeScope->scopedStyleResolver();
 }
 
+static void matchHostRules(const Element& element, ElementRuleCollector& collector)
+{
+    ElementShadow* shadow = element.shadow();
+    if (!shadow)
+        return;
+
+    for (ShadowRoot* shadowRoot = shadow->oldestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->youngerShadowRoot()) {
+        if (!shadowRoot->numberOfStyles())
+            continue;
+        if (ScopedStyleResolver* resolver = shadowRoot->scopedStyleResolver()) {
+            collector.clearMatchedRules();
+            resolver->collectMatchingShadowHostRules(collector);
+            collector.sortAndTransferMatchedRules();
+            collector.finishAddingAuthorRulesForTreeScope();
+        }
+    }
+}
+
+static void matchElementScopeRules(const Element& element, ScopedStyleResolver* elementScopeResolver, ElementRuleCollector& collector)
+{
+    if (elementScopeResolver) {
+        collector.clearMatchedRules();
+        elementScopeResolver->collectMatchingAuthorRules(collector);
+        elementScopeResolver->collectMatchingTreeBoundaryCrossingRules(collector);
+        collector.sortAndTransferMatchedRules();
+    }
+
+    if (element.isStyledElement() && element.inlineStyle() && !collector.isCollectingForPseudoElement()) {
+        // Inline style is immutable as long as there is no CSSOM wrapper.
+        bool isInlineStyleCacheable = !element.inlineStyle()->isMutable();
+        collector.addElementStyleProperties(element.inlineStyle(), isInlineStyleCacheable);
+    }
+
+    collector.finishAddingAuthorRulesForTreeScope();
+}
+
+static bool shouldCheckScope(const Element& element, const Node& scopingNode, bool isInnerTreeScope)
+{
+    if (isInnerTreeScope && element.treeScope() != scopingNode.treeScope()) {
+        // Check if |element| may be affected by a ::content rule in |scopingNode|'s style.
+        // If |element| is a descendant of a shadow host which is ancestral to |scopingNode|,
+        // the |element| should be included for rule collection.
+        // Skip otherwise.
+        const TreeScope* scope = &scopingNode.treeScope();
+        while (scope && scope->parentTreeScope() != &element.treeScope())
+            scope = scope->parentTreeScope();
+        Element* shadowHost = scope ? scope->rootNode().shadowHost() : nullptr;
+        return shadowHost && element.isDescendantOf(shadowHost);
+    }
+
+    // When |element| can be distributed to |scopingNode| via <shadow>, ::content rule can match,
+    // thus the case should be included.
+    if (!isInnerTreeScope && scopingNode.parentOrShadowHostNode() == element.treeScope().rootNode().parentOrShadowHostNode())
+        return true;
+
+    // Obviously cases when ancestor scope has /deep/ or ::shadow rule should be included.
+    // Skip otherwise.
+    return scopingNode.treeScope().scopedStyleResolver()->hasDeepOrShadowSelector();
+}
+
+void StyleResolver::matchScopedRules(const Element& element, ElementRuleCollector& collector)
+{
+    // Match rules from treeScopes in the reverse tree-of-trees order, since the
+    // cascading order for normal rules is such that when comparing rules from
+    // different shadow trees, the rule from the tree which comes first in the
+    // tree-of-trees order wins. From other treeScopes than the element's own
+    // scope, only tree-boundary-crossing rules may match.
+
+    ScopedStyleResolver* elementScopeResolver = scopedResolverFor(element);
+    bool matchElementScopeDone = !elementScopeResolver && !element.inlineStyle();
+
+    // TODO(kochi): This loops through m_treeBoundaryCrossingScopes because to handle
+    // Shadow DOM V0 documents as well. In pure V1 document only have to go through
+    // the chain of scopes for assigned slots. Add fast path for pure V1 document.
+    for (auto it = m_treeBoundaryCrossingScopes.rbegin(); it != m_treeBoundaryCrossingScopes.rend(); ++it) {
+        const TreeScope& scope = (*it)->treeScope();
+        ScopedStyleResolver* resolver = scope.scopedStyleResolver();
+        ASSERT(resolver);
+
+        bool isInnerTreeScope = element.treeScope().isInclusiveAncestorOf(scope);
+        if (!shouldCheckScope(element, **it, isInnerTreeScope))
+            continue;
+
+        if (!matchElementScopeDone && scope.isInclusiveAncestorOf(element.treeScope())) {
+
+            matchElementScopeDone = true;
+
+            // At this point, the iterator has either encountered the scope for the element
+            // itself (if that scope has boundary-crossing rules), or the iterator has moved
+            // to a scope which appears before the element's scope in the tree-of-trees order.
+            // Try to match all rules from the element's scope.
+
+            matchElementScopeRules(element, elementScopeResolver, collector);
+            if (resolver == elementScopeResolver) {
+                // Boundary-crossing rules already collected in matchElementScopeRules.
+                continue;
+            }
+        }
+
+        collector.clearMatchedRules();
+        resolver->collectMatchingTreeBoundaryCrossingRules(collector);
+        collector.sortAndTransferMatchedRules();
+        collector.finishAddingAuthorRulesForTreeScope();
+    }
+
+    if (!matchElementScopeDone)
+        matchElementScopeRules(element, elementScopeResolver, collector);
+}
+
 void StyleResolver::matchAuthorRules(const Element& element, ElementRuleCollector& collector)
+{
+    if (element.document().styleEngine().shadowCascadeOrder() != ShadowCascadeOrder::ShadowCascadeV1) {
+        matchAuthorRulesV0(element, collector);
+        return;
+    }
+
+    ASSERT(RuntimeEnabledFeatures::shadowDOMV1Enabled());
+    matchHostRules(element, collector);
+    matchScopedRules(element, collector);
+}
+
+void StyleResolver::matchAuthorRulesV0(const Element& element, ElementRuleCollector& collector)
 {
     collector.clearMatchedRules();
 
@@ -487,7 +608,8 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
     matchAuthorRules(*state.element(), collector);
 
     if (state.element()->isStyledElement()) {
-        if (state.element()->inlineStyle()) {
+        // For Shadow DOM V1, inline style is already collected in matchScopedRules().
+        if (state.element()->document().styleEngine().shadowCascadeOrder() != ShadowCascadeOrder::ShadowCascadeV1 && state.element()->inlineStyle()) {
             // Inline style is immutable as long as there is no CSSOM wrapper.
             bool isInlineStyleCacheable = !state.element()->inlineStyle()->isMutable();
             collector.addElementStyleProperties(state.element()->inlineStyle(), isInlineStyleCacheable);
@@ -499,30 +621,6 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
     }
 
     collector.finishAddingAuthorRulesForTreeScope();
-}
-
-static bool shouldCheckScope(const Element& element, const Node& scopingNode, bool isInnerTreeScope)
-{
-    if (isInnerTreeScope && element.treeScope() != scopingNode.treeScope()) {
-        // Check if |element| may be affected by a ::content rule in |scopingNode|'s style.
-        // If |element| is a descendant of a shadow host which is ancestral to |scopingNode|,
-        // the |element| should be included for rule collection.
-        // Skip otherwise.
-        const TreeScope* scope = &scopingNode.treeScope();
-        while (scope && scope->parentTreeScope() != &element.treeScope())
-            scope = scope->parentTreeScope();
-        Element* shadowHost = scope ? scope->rootNode().shadowHost() : nullptr;
-        return shadowHost && element.isDescendantOf(shadowHost);
-    }
-
-    // When |element| can be distributed to |scopingNode| via <shadow>, ::content rule can match,
-    // thus the case should be included.
-    if (!isInnerTreeScope && scopingNode.parentOrShadowHostNode() == element.treeScope().rootNode().parentOrShadowHostNode())
-        return true;
-
-    // Obviously cases when ancestor scope has /deep/ or ::shadow rule should be included.
-    // Skip otherwise.
-    return scopingNode.treeScope().scopedStyleResolver()->hasDeepOrShadowSelector();
 }
 
 void StyleResolver::collectTreeBoundaryCrossingRules(const Element& element, ElementRuleCollector& collector)

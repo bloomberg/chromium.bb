@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<script src='../resources/testharness.js'></script>
+<script src='../resources/testharnessreport.js'></script>
+<div id='host'></div>
+<div id='dummy'></div>
+<script>
+'use strict';
+
+var root1 = host.createShadowRoot();
+var root2 = host.createShadowRoot();
+
+root1.innerHTML = '<style>:host { color: red; }</style>';
+root2.innerHTML = '<style>:host { background-color: green; }</style>';
+
+test(() => {
+  assert_equals(window.getComputedStyle(host).color, 'rgb(255, 0, 0)');
+  assert_equals(window.getComputedStyle(host).backgroundColor, 'rgb(0, 128, 0)');
+}, 'In case of multiple shadow, :host rules from all shadows should apply.');
+
+dummy.attachShadow({mode: 'open'});
+
+test(() => {
+  assert_equals(window.getComputedStyle(host).color, 'rgb(255, 0, 0)');
+  assert_equals(window.getComputedStyle(host).backgroundColor, 'rgb(0, 128, 0)');
+}, 'After V1 cascade rule is applied, :host rules from V0 multiple shadow should apply.');
+</script>

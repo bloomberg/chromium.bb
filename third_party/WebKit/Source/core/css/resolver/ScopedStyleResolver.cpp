@@ -164,6 +164,9 @@ void ScopedStyleResolver::collectMatchingShadowHostRules(ElementRuleCollector& c
 
 void ScopedStyleResolver::collectMatchingTreeBoundaryCrossingRules(ElementRuleCollector& collector, CascadeOrder cascadeOrder)
 {
+    if (!m_treeBoundaryCrossingRuleSet)
+        return;
+
     for (const auto& rules : *m_treeBoundaryCrossingRuleSet) {
         MatchRequest request(rules->m_ruleSet.get(), &treeScope().rootNode(), rules->m_parentStyleSheet, rules->m_parentIndex);
         collector.collectMatchingRules(request, cascadeOrder, true);

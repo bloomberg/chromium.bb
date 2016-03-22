@@ -194,7 +194,9 @@ private:
     void collectPseudoRulesForElement(const Element&, ElementRuleCollector&, PseudoId, unsigned rulesToInclude);
     void matchRuleSet(ElementRuleCollector&, RuleSet*);
     void matchUARules(ElementRuleCollector&);
+    void matchScopedRules(const Element&, ElementRuleCollector&);
     void matchAuthorRules(const Element&, ElementRuleCollector&);
+    void matchAuthorRulesV0(const Element&, ElementRuleCollector&);
     void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
     void collectFeatures();
     void collectTreeBoundaryCrossingRules(const Element&, ElementRuleCollector&);

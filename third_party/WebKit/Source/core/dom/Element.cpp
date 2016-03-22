@@ -1908,6 +1908,8 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::createShadowRoot(const ScriptState* 
             return nullptr;
         }
     }
+    document().styleEngine().setShadowCascadeOrder(ShadowCascadeOrder::ShadowCascadeV0);
+
     return createShadowRootInternal(ShadowRootType::V0, exceptionState);
 }
 
@@ -1945,6 +1947,8 @@ PassRefPtrWillBeRawPtr<ShadowRoot> Element::attachShadow(const ScriptState* scri
         exceptionState.throwDOMException(InvalidStateError, "Shadow root cannot be created on a host which already hosts a shadow tree.");
         return nullptr;
     }
+
+    document().styleEngine().setShadowCascadeOrder(ShadowCascadeOrder::ShadowCascadeV1);
 
     ShadowRootType type = ShadowRootType::V0;
     if (shadowRootInitDict.hasMode())

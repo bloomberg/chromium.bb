@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<style>
+    .host1 /deep/ div { color: green }
+    #host2 /deep/ div { color: red !important }
+</style>
+<div id="host1" class="host1"></div>
+<div id="host2" class="host2"></div>
+<script>
+    description("Cascade order for inner/outer tree rules with /deep/ (v0 bug compatible).");
+
+    var root1 = host1.createShadowRoot();
+    root1.innerHTML = '<style>#d1 {color:red}</style><div id="d1">Should be green</div><div style="color: red">Should be green</div>';
+
+    var root2 = host2.createShadowRoot();
+    root2.innerHTML = '<style>.d1 {color:green !important}</style><div class="d1">Should be green</div><div style="color: green !important">Should be green</div>';
+
+    var green = "rgb(0, 128, 0)";
+    var red = "rgb(255, 0, 0)";
+
+    shouldBe("getComputedStyle(root1.querySelector('div')).color", "red");
+    shouldBe("getComputedStyle(root1.querySelector('div + div')).color", "red");
+    shouldBe("getComputedStyle(root2.querySelector('div')).color", "red");
+    shouldBe("getComputedStyle(root2.querySelector('div + div')).color", "green");
+</script>

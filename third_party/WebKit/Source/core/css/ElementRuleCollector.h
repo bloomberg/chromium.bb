@@ -39,8 +39,9 @@ class RuleSet;
 class SelectorFilter;
 class StaticCSSRuleList;
 
+// TODO(kochi): CascadeOrder is used only for Shadow DOM V0 bug-compatible cascading order.
+//              Once Shadow DOM V0 implementation is gone, remove this completely.
 using CascadeOrder = unsigned;
-
 const CascadeOrder ignoreCascadeOrder = 0;
 
 class MatchedRule {
@@ -54,7 +55,7 @@ public:
         ASSERT(m_ruleData);
         static const unsigned BitsForPositionInRuleData = 18;
         static const unsigned BitsForStyleSheetIndex = 32;
-        m_position = ((uint64_t)cascadeOrder << (BitsForStyleSheetIndex + BitsForPositionInRuleData)) + ((uint64_t)styleSheetIndex << BitsForPositionInRuleData)+ m_ruleData->position();
+        m_position = ((uint64_t)cascadeOrder << (BitsForStyleSheetIndex + BitsForPositionInRuleData)) + ((uint64_t)styleSheetIndex << BitsForPositionInRuleData) + m_ruleData->position();
     }
 
     const RuleData* ruleData() const { return m_ruleData; }
@@ -129,6 +130,7 @@ public:
     void finishAddingAuthorRulesForTreeScope() { m_result.finishAddingAuthorRulesForTreeScope(); }
     void setIncludeEmptyRules(bool include) { m_includeEmptyRules = include; }
     bool includeEmptyRules() const { return m_includeEmptyRules; }
+    bool isCollectingForPseudoElement() const { return m_pseudoStyleRequest.pseudoId != PseudoIdNone; }
 
 private:
     template<typename RuleDataListType>

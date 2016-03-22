@@ -59,7 +59,7 @@ public:
     void appendCSSStyleSheet(CSSStyleSheet&, const MediaQueryEvaluator&);
     void collectMatchingAuthorRules(ElementRuleCollector&, CascadeOrder = ignoreCascadeOrder);
     void collectMatchingShadowHostRules(ElementRuleCollector&, CascadeOrder = ignoreCascadeOrder);
-    void collectMatchingTreeBoundaryCrossingRules(ElementRuleCollector&, CascadeOrder);
+    void collectMatchingTreeBoundaryCrossingRules(ElementRuleCollector&, CascadeOrder = ignoreCascadeOrder);
     void matchPageRules(PageRuleCollector&);
     void collectFeaturesTo(RuleFeatureSet&, WillBeHeapHashSet<RawPtrWillBeMember<const StyleSheetContents>>& visitedSharedStyleSheetContents) const;
     void resetAuthorStyle();

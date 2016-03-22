@@ -6,7 +6,7 @@
   </div>
 </div>
 <script>
-description('Checking if styles in the nested shadow roots apply properly to distributed elements.');
+description('Checking if styles in the nested shadow roots apply properly to distributed elements. (v0 bug compatible)');
 var root = document.querySelector('#host').createShadowRoot();
 root.innerHTML = '<div><content></content></div><style>::content .red { color: green; }</style>';
 var root2 = root.firstChild.createShadowRoot();
