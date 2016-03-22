@@ -22,10 +22,10 @@
 
 namespace {
 
-using libvpx_test::CodecFactory;
-using libvpx_test::Decoder;
-using libvpx_test::DxDataIterator;
-using libvpx_test::VP9CodecFactory;
+using libaom_test::CodecFactory;
+using libaom_test::Decoder;
+using libaom_test::DxDataIterator;
+using libaom_test::VP9CodecFactory;
 
 class SvcTest : public ::testing::Test {
  protected:
@@ -111,7 +111,7 @@ class SvcTest : public ::testing::Test {
     codec_enc_.g_pass = VPX_RC_FIRST_PASS;
     InitializeEncoder();
 
-    libvpx_test::I420VideoSource video(
+    libaom_test::I420VideoSource video(
         test_file_name_, codec_enc_.g_w, codec_enc_.g_h,
         codec_enc_.g_timebase.den, codec_enc_.g_timebase.num, 0, 30);
     video.Begin();
@@ -179,7 +179,7 @@ class SvcTest : public ::testing::Test {
     }
     InitializeEncoder();
 
-    libvpx_test::I420VideoSource video(
+    libaom_test::I420VideoSource video(
         test_file_name_, codec_enc_.g_w, codec_enc_.g_h,
         codec_enc_.g_timebase.den, codec_enc_.g_timebase.num, 0, 30);
     video.Begin();

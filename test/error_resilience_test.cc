@@ -20,8 +20,8 @@ const int kMaxErrorFrames = 12;
 const int kMaxDroppableFrames = 12;
 
 class ErrorResilienceTestLarge
-    : public ::libvpx_test::EncoderTest,
-      public ::libvpx_test::CodecTestWith2Params<libvpx_test::TestMode, bool> {
+    : public ::libaom_test::EncoderTest,
+      public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, bool> {
  protected:
   ErrorResilienceTestLarge()
       : EncoderTest(GET_PARAM(0)), svc_support_(GET_PARAM(2)), psnr_(0.0),
@@ -90,8 +90,8 @@ class ErrorResilienceTestLarge
     return frame_flags;
   }
 
-  virtual void PreEncodeFrameHook(libvpx_test::VideoSource *video,
-                                  ::libvpx_test::Encoder *encoder) {
+  virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
+                                  ::libaom_test::Encoder *encoder) {
     frame_flags_ &=
         ~(VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF);
     // For temporal layer case.
@@ -187,7 +187,7 @@ class ErrorResilienceTestLarge
   unsigned int mismatch_nframes_;
   unsigned int error_frames_[kMaxErrorFrames];
   unsigned int droppable_frames_[kMaxDroppableFrames];
-  libvpx_test::TestMode encoding_mode_;
+  libaom_test::TestMode encoding_mode_;
 };
 
 TEST_P(ErrorResilienceTestLarge, OnVersusOff) {
@@ -198,7 +198,7 @@ TEST_P(ErrorResilienceTestLarge, OnVersusOff) {
 
   init_flags_ = VPX_CODEC_USE_PSNR;
 
-  libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      timebase.den, timebase.num, 0, 30);
 
   // Error resilient mode OFF.
@@ -235,7 +235,7 @@ TEST_P(ErrorResilienceTestLarge, DropFramesWithoutRecovery) {
 
   init_flags_ = VPX_CODEC_USE_PSNR;
 
-  libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      timebase.den, timebase.num, 0, 40);
 
   // Error resilient mode ON.
@@ -305,7 +305,7 @@ TEST_P(ErrorResilienceTestLarge, 2LayersDropEnhancement) {
 
   init_flags_ = VPX_CODEC_USE_PSNR;
 
-  libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      timebase.den, timebase.num, 0, 40);
 
   // Error resilient mode ON.
@@ -352,7 +352,7 @@ TEST_P(ErrorResilienceTestLarge, 2LayersNoRefLast) {
 
   init_flags_ = VPX_CODEC_USE_PSNR;
 
-  libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      timebase.den, timebase.num, 0, 100);
 
   // Error resilient mode ON.
@@ -370,8 +370,8 @@ TEST_P(ErrorResilienceTestLarge, 2LayersNoRefLast) {
 }
 
 class ErrorResilienceTestLargeCodecControls
-    : public ::libvpx_test::EncoderTest,
-      public ::libvpx_test::CodecTestWithParam<libvpx_test::TestMode> {
+    : public ::libaom_test::EncoderTest,
+      public ::libaom_test::CodecTestWithParam<libaom_test::TestMode> {
  protected:
   ErrorResilienceTestLargeCodecControls()
       : EncoderTest(GET_PARAM(0)), encoding_mode_(GET_PARAM(1)) {
@@ -457,8 +457,8 @@ class ErrorResilienceTestLargeCodecControls
     return layer_id;
   }
 
-  virtual void PreEncodeFrameHook(libvpx_test::VideoSource *video,
-                                  libvpx_test::Encoder *encoder) {
+  virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
+                                  libaom_test::Encoder *encoder) {
     if (cfg_.ts_number_layers > 1) {
       int layer_id = SetLayerId(video->frame(), cfg_.ts_number_layers);
       int frame_flags = SetFrameFlags(video->frame(), cfg_.ts_number_layers);
@@ -510,7 +510,7 @@ class ErrorResilienceTestLargeCodecControls
   double effective_datarate_[3];
 
  private:
-  libvpx_test::TestMode encoding_mode_;
+  libaom_test::TestMode encoding_mode_;
   vpx_codec_pts_t last_pts_;
   double timebase_;
   int64_t bits_total_[3];
@@ -547,7 +547,7 @@ TEST_P(ErrorResilienceTestLargeCodecControls, CodecControl3TemporalLayers) {
   cfg_.ts_layer_id[2] = 1;
   cfg_.ts_layer_id[3] = 2;
 
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 200);
   for (int i = 200; i <= 800; i += 200) {
     cfg_.rc_target_bitrate = i;

@@ -290,7 +290,7 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
 #endif
   }
 
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
   static void TearDownTestCase() {
     vpx_free(input_ - 1);
@@ -348,7 +348,7 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
         output_[i] = 0;
     }
 
-    ::libvpx_test::ACMRandom prng;
+    ::libaom_test::ACMRandom prng;
     for (int i = 0; i < kInputBufferSize; ++i) {
       if (i & 1) {
         input_[i] = 255;
@@ -707,7 +707,7 @@ TEST_P(ConvolveTest, MatchesReferenceAveragingSubpixelFilter) {
 #endif
 
   // Populate ref and out with some random data
-  ::libvpx_test::ACMRandom prng;
+  ::libaom_test::ACMRandom prng;
   for (int y = 0; y < Height(); ++y) {
     for (int x = 0; x < Width(); ++x) {
       uint16_t r;
@@ -784,7 +784,7 @@ TEST_P(ConvolveTest, FilterExtremes) {
 #endif
 
   // Populate ref and out with some random data
-  ::libvpx_test::ACMRandom prng;
+  ::libaom_test::ACMRandom prng;
   for (int y = 0; y < Height(); ++y) {
     for (int x = 0; x < Width(); ++x) {
       uint16_t r;

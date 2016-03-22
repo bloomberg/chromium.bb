@@ -15,7 +15,7 @@
 #include "aom_ports/x86.h"
 #endif
 
-namespace libvpx_test {
+namespace libaom_test {
 
 // Reset system to a known state. This function should be used for all non-API
 // test cases.
@@ -25,5 +25,5 @@ inline void ClearSystemState() {
 #endif
 }
 
-}  // namespace libvpx_test
+}  // namespace libaom_test
 #endif  // TEST_CLEAR_SYSTEM_STATE_H_

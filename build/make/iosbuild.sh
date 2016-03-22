@@ -26,7 +26,7 @@ DIST_DIR="_dist"
 FRAMEWORK_DIR="VPX.framework"
 HEADER_DIR="${FRAMEWORK_DIR}/Headers/vpx"
 SCRIPT_DIR=$(dirname "$0")
-LIBVPX_SOURCE_DIR=$(cd ${SCRIPT_DIR}/../..; pwd)
+LIBAOM_SOURCE_DIR=$(cd ${SCRIPT_DIR}/../..; pwd)
 LIPO=$(xcrun -sdk iphoneos${SDK} -find lipo)
 ORIG_PWD="$(pwd)"
 ARM_TARGETS="arm64-darwin-gcc
@@ -56,7 +56,7 @@ build_target() {
 
   mkdir "${target}"
   cd "${target}"
-  eval "${LIBVPX_SOURCE_DIR}/configure" --target="${target}" \
+  eval "${LIBAOM_SOURCE_DIR}/configure" --target="${target}" \
     ${CONFIGURE_ARGS} ${EXTRA_CONFIGURE_ARGS} ${target_specific_flags} \
     ${devnull}
   export DIST_DIR
@@ -157,12 +157,12 @@ build_framework() {
   for target in ${targets}; do
     build_target "${target}"
     target_dist_dir="${BUILD_ROOT}/${target}/${DIST_DIR}"
-    lib_list="${lib_list} ${target_dist_dir}/lib/libvpx.a"
+    lib_list="${lib_list} ${target_dist_dir}/lib/libaom.a"
   done
 
   cd "${ORIG_PWD}"
 
-  # The basic libvpx API includes are all the same; just grab the most recent
+  # The basic libaom API includes are all the same; just grab the most recent
   # set.
   cp -p "${target_dist_dir}"/include/vpx/* "${HEADER_DIR}"
 
@@ -213,7 +213,7 @@ iosbuild_usage() {
 cat << EOF
   Usage: ${0##*/} [arguments]
     --help: Display this message and exit.
-    --extra-configure-args <args>: Extra args to pass when configuring libvpx.
+    --extra-configure-args <args>: Extra args to pass when configuring libaom.
     --macosx: Uses darwin15 targets instead of iphonesimulator targets for x86
               and x86_64. Allows linking to framework when builds target MacOSX
               instead of iOS.
@@ -286,7 +286,7 @@ cat << EOF
   EXTRA_CONFIGURE_ARGS=${EXTRA_CONFIGURE_ARGS}
   FRAMEWORK_DIR=${FRAMEWORK_DIR}
   HEADER_DIR=${HEADER_DIR}
-  LIBVPX_SOURCE_DIR=${LIBVPX_SOURCE_DIR}
+  LIBAOM_SOURCE_DIR=${LIBAOM_SOURCE_DIR}
   LIPO=${LIPO}
   MAKEFLAGS=${MAKEFLAGS}
   ORIG_PWD=${ORIG_PWD}

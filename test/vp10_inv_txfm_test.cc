@@ -25,7 +25,7 @@
 #include "aom/vpx_integer.h"
 #include "av1/common/vp10_inv_txfm.h"
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 namespace {
 const double PI = 3.141592653589793238462643383279502884;
@@ -126,7 +126,7 @@ class Vp10PartialIDctTest
     last_nonzero_ = GET_PARAM(4);
   }
 
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   int last_nonzero_;

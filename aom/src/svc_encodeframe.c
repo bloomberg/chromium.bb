@@ -10,7 +10,7 @@
 
 /**
  * @file
- * VP9 SVC encoding support via libvpx
+ * VP9 SVC encoding support via libaom
  */
 
 #include <assert.h>

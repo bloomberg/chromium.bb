@@ -40,7 +40,7 @@ void TestIntraPred(const char name[], VpxPredFunc const *pred_funcs,
                    const char *const pred_func_names[], int num_funcs,
                    const char *const signatures[], int block_size,
                    int num_pixels_per_test) {
-  libvpx_test::ACMRandom rnd(libvpx_test::ACMRandom::DeterministicSeed());
+  libaom_test::ACMRandom rnd(libaom_test::ACMRandom::DeterministicSeed());
   const int kBPS = 32;
   const int kTotalPixels = 32 * kBPS;
   DECLARE_ALIGNED(16, uint8_t, src[kTotalPixels]);
@@ -67,11 +67,11 @@ void TestIntraPred(const char name[], VpxPredFunc const *pred_funcs,
     for (int num_tests = 0; num_tests < kNumTests; ++num_tests) {
       pred_funcs[k](src, kBPS, above, left);
     }
-    libvpx_test::ClearSystemState();
+    libaom_test::ClearSystemState();
     vpx_usec_timer_mark(&timer);
     const int elapsed_time =
         static_cast<int>(vpx_usec_timer_elapsed(&timer) / 1000);
-    libvpx_test::MD5 md5;
+    libaom_test::MD5 md5;
     md5.Add(src, sizeof(src));
     printf("Mode %s[%12s]: %5d ms     MD5: %s\n", name, pred_func_names[k],
            elapsed_time, md5.Get());
@@ -344,4 +344,4 @@ INTRA_PRED_TEST(MSA, TestIntraPred32, vpx_dc_predictor_32x32_msa,
                 vpx_tm_predictor_32x32_msa)
 #endif  // HAVE_MSA
 
-#include "test/test_libvpx.cc"
+#include "test/test_libaom.cc"

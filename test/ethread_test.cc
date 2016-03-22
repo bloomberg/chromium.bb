@@ -19,8 +19,8 @@
 
 namespace {
 class VPxEncoderThreadTest
-    : public ::libvpx_test::EncoderTest,
-      public ::libvpx_test::CodecTestWith2Params<libvpx_test::TestMode, int> {
+    : public ::libaom_test::EncoderTest,
+      public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int> {
  protected:
   VPxEncoderThreadTest()
       : EncoderTest(GET_PARAM(0)), encoder_initialized_(false), tiles_(2),
@@ -39,7 +39,7 @@ class VPxEncoderThreadTest
     InitializeConfig();
     SetMode(encoding_mode_);
 
-    if (encoding_mode_ != ::libvpx_test::kRealTime) {
+    if (encoding_mode_ != ::libaom_test::kRealTime) {
       cfg_.g_lag_in_frames = 3;
       cfg_.rc_end_usage = VPX_VBR;
       cfg_.rc_2pass_vbr_minsection_pct = 5;
@@ -57,13 +57,13 @@ class VPxEncoderThreadTest
     encoder_initialized_ = false;
   }
 
-  virtual void PreEncodeFrameHook(::libvpx_test::VideoSource *video,
-                                  ::libvpx_test::Encoder *encoder) {
+  virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
+                                  ::libaom_test::Encoder *encoder) {
     if (!encoder_initialized_) {
       // Encode 4 column tiles.
       encoder->Control(VP9E_SET_TILE_COLUMNS, tiles_);
       encoder->Control(VP8E_SET_CPUUSED, set_cpu_used_);
-      if (encoding_mode_ != ::libvpx_test::kRealTime) {
+      if (encoding_mode_ != ::libaom_test::kRealTime) {
         encoder->Control(VP8E_SET_ENABLEAUTOALTREF, 1);
         encoder->Control(VP8E_SET_ARNR_MAXFRAMES, 7);
         encoder->Control(VP8E_SET_ARNR_STRENGTH, 5);
@@ -86,7 +86,7 @@ class VPxEncoderThreadTest
     const vpx_image_t *img = decoder_->GetDxData().Next();
 
     if (img) {
-      ::libvpx_test::MD5 md5_res;
+      ::libaom_test::MD5 md5_res;
       md5_res.Add(img);
       md5_.push_back(md5_res.Get());
     }
@@ -94,16 +94,16 @@ class VPxEncoderThreadTest
 
   bool encoder_initialized_;
   int tiles_;
-  ::libvpx_test::TestMode encoding_mode_;
+  ::libaom_test::TestMode encoding_mode_;
   int set_cpu_used_;
-  ::libvpx_test::Decoder *decoder_;
+  ::libaom_test::Decoder *decoder_;
   std::vector<std::string> md5_;
 };
 
 TEST_P(VPxEncoderThreadTest, EncoderResultTest) {
   std::vector<std::string> single_thr_md5, multi_thr_md5;
 
-  ::libvpx_test::Y4mVideoSource video("niklas_1280_720_30.y4m", 15, 20);
+  ::libaom_test::Y4mVideoSource video("niklas_1280_720_30.y4m", 15, 20);
 
   cfg_.rc_target_bitrate = 1000;
 
@@ -125,7 +125,7 @@ TEST_P(VPxEncoderThreadTest, EncoderResultTest) {
 }
 
 VP10_INSTANTIATE_TEST_CASE(VPxEncoderThreadTest,
-                           ::testing::Values(::libvpx_test::kTwoPassGood,
-                                             ::libvpx_test::kOnePassGood),
+                           ::testing::Values(::libaom_test::kTwoPassGood,
+                                             ::libaom_test::kOnePassGood),
                            ::testing::Range(1, 3));
 }  // namespace

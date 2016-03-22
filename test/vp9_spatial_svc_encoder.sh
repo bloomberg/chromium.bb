@@ -8,7 +8,7 @@
 ##  in the file PATENTS.  All contributing project authors may
 ##  be found in the AUTHORS file in the root of the source tree.
 ##
-##  This file tests the libvpx vp9_spatial_svc_encoder example. To add new
+##  This file tests the libaom vp9_spatial_svc_encoder example. To add new
 ##  tests to to this file, do the following:
 ##    1. Write a shell function (this is your test).
 ##    2. Add the function to vp9_spatial_svc_tests (on a new line).
@@ -26,7 +26,7 @@ vp9_spatial_svc_encoder_verify_environment() {
 # Runs vp9_spatial_svc_encoder. $1 is the test name.
 vp9_spatial_svc_encoder() {
   local readonly \
-    encoder="${LIBVPX_BIN_PATH}/vp9_spatial_svc_encoder${VPX_TEST_EXE_SUFFIX}"
+    encoder="${LIBAOM_BIN_PATH}/vp9_spatial_svc_encoder${VPX_TEST_EXE_SUFFIX}"
   local readonly test_name="$1"
   local readonly \
     output_file="${VPX_TEST_OUTPUT_DIR}/vp9_ssvc_encoder${test_name}.ivf"

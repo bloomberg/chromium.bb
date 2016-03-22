@@ -19,7 +19,7 @@
 #include "aom_dsp/bitreader.h"
 #include "aom_dsp/bitwriter.h"
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 namespace {
 const int num_tests = 10;

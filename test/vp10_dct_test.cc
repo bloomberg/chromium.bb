@@ -22,7 +22,7 @@
 #define CONFIG_COEFFICIENT_RANGE_CHECKING 1
 #include "av1/encoder/dct.c"
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 namespace {
 void reference_dct_1d(const double *in, double *out, int size) {

@@ -24,14 +24,14 @@
 
 namespace {
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 const int count_test_block = 100000;
 
 // Base class for VP9 intra prediction tests.
 class VP9IntraPredBase {
  public:
-  virtual ~VP9IntraPredBase() { libvpx_test::ClearSystemState(); }
+  virtual ~VP9IntraPredBase() { libaom_test::ClearSystemState(); }
 
  protected:
   virtual void Predict(PREDICTION_MODE mode) = 0;

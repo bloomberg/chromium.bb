@@ -16,8 +16,8 @@
 namespace {
 
 class AqSegmentTest
-    : public ::libvpx_test::EncoderTest,
-      public ::libvpx_test::CodecTestWith2Params<libvpx_test::TestMode, int> {
+    : public ::libaom_test::EncoderTest,
+      public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int> {
  protected:
   AqSegmentTest() : EncoderTest(GET_PARAM(0)) {}
   virtual ~AqSegmentTest() {}
@@ -29,8 +29,8 @@ class AqSegmentTest
     aq_mode_ = 0;
   }
 
-  virtual void PreEncodeFrameHook(::libvpx_test::VideoSource *video,
-                                  ::libvpx_test::Encoder *encoder) {
+  virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
+                                  ::libaom_test::Encoder *encoder) {
     if (video->frame() == 1) {
       encoder->Control(VP8E_SET_CPUUSED, set_cpu_used_);
       encoder->Control(VP9E_SET_AQ_MODE, aq_mode_);
@@ -56,7 +56,7 @@ TEST_P(AqSegmentTest, TestNoMisMatchAQ1) {
 
   aq_mode_ = 1;
 
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 100);
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
@@ -76,7 +76,7 @@ TEST_P(AqSegmentTest, TestNoMisMatchAQ2) {
 
   aq_mode_ = 2;
 
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 100);
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
@@ -96,14 +96,14 @@ TEST_P(AqSegmentTest, TestNoMisMatchAQ3) {
 
   aq_mode_ = 3;
 
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 100);
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
 VP10_INSTANTIATE_TEST_CASE(AqSegmentTest,
-                           ::testing::Values(::libvpx_test::kRealTime,
-                                             ::libvpx_test::kOnePassGood),
+                           ::testing::Values(::libaom_test::kRealTime,
+                                             ::libaom_test::kOnePassGood),
                            ::testing::Range(3, 9));
 }  // namespace

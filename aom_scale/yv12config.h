@@ -81,9 +81,9 @@ int vpx_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
 
 // Updates the yv12 buffer config with the frame buffer. |byte_alignment| must
 // be a power of 2, from 32 to 1024. 0 sets legacy alignment. If cb is not
-// NULL, then libvpx is using the frame buffer callbacks to handle memory.
-// If cb is not NULL, libvpx will call cb with minimum size in bytes needed
-// to decode the current frame. If cb is NULL, libvpx will allocate memory
+// NULL, then libaom is using the frame buffer callbacks to handle memory.
+// If cb is not NULL, libaom will call cb with minimum size in bytes needed
+// to decode the current frame. If cb is NULL, libaom will allocate memory
 // internally to decode the current frame. Returns 0 on success. Returns < 0
 // on failure.
 int vpx_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,

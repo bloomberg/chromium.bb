@@ -38,7 +38,7 @@ typedef void (*SadMxNx4Func)(const uint8_t *src_ptr, int src_stride,
                              uint32_t *sad_array);
 typedef std::tr1::tuple<int, int, SadMxNx4Func, int> SadMxNx4Param;
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 namespace {
 class SADTestBase : public ::testing::Test {
@@ -76,7 +76,7 @@ class SADTestBase : public ::testing::Test {
     second_pred16_ = NULL;
   }
 
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   // Handle blocks up to 4 blocks 64x64 with stride up to 128

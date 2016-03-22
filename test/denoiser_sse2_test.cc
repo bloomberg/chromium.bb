@@ -24,7 +24,7 @@
 #include "av1/encoder/context_tree.h"
 #include "av1/encoder/denoiser.h"
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 namespace {
 
@@ -35,7 +35,7 @@ class VP9DenoiserTest : public ::testing::TestWithParam<BLOCK_SIZE> {
 
   virtual void SetUp() { bs_ = GetParam(); }
 
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   BLOCK_SIZE bs_;

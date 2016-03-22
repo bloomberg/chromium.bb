@@ -26,7 +26,7 @@
 
 int vpx_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
   if (ybf) {
-    // If libvpx is using frame buffer callbacks then buffer_alloc_sz must
+    // If libaom is using frame buffer callbacks then buffer_alloc_sz must
     // not be set.
     if (ybf->buffer_alloc_sz > 0) {
       vpx_free(ybf->buffer_alloc);

@@ -18,7 +18,7 @@
 #include "test/acm_random.h"
 #include "aom/vpx_integer.h"
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 namespace {
 

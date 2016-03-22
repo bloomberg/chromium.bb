@@ -81,7 +81,7 @@
 ; In some instances macho32 tables get misaligned when using .rodata.
 ; When looking at the disassembly it appears that the offset is either
 ; correct or consistently off by 90. Placing them in the .text section
-; works around the issue. It appears to be specific to the way libvpx
+; works around the issue. It appears to be specific to the way libaom
 ; handles the tables.
 %macro SECTION_RODATA 0-1 16
     %ifidn __OUTPUT_FORMAT__,macho32
@@ -764,7 +764,7 @@ BRANCH_INSTR jz, je, jnz, jne, jl, jle, jnl, jnle, jg, jge, jng, jnge, ja, jae, 
 %macro cglobal_internal 2-3+
     %if %1
         %xdefine %%FUNCTION_PREFIX private_prefix
-        ; libvpx explicitly sets visibility in shared object builds. Avoid
+        ; libaom explicitly sets visibility in shared object builds. Avoid
         ; setting visibility to hidden as it may break builds that split
         ; sources on e.g., directory boundaries.
         %ifdef CHROMIUM

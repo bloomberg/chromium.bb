@@ -29,7 +29,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.*/
 #include "test/acm_random.h"
 #include "av1/common/odintrin.h"
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 TEST(Daala, TestDIVUuptoMAX) {
   for (int d = 1; d <= OD_DIVU_DMAX; d++) {

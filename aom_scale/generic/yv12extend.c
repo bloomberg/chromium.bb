@@ -215,7 +215,7 @@ void vpx_yv12_copy_frame_c(const YV12_BUFFER_CONFIG *src_ybc,
   uint8_t *dst = dst_ybc->y_buffer;
 
 #if 0
-  /* These assertions are valid in the codec, but the libvpx-tester uses
+  /* These assertions are valid in the codec, but the libaom-tester uses
    * this code slightly differently.
    */
   assert(src_ybc->y_width == dst_ybc->y_width);

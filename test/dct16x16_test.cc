@@ -26,7 +26,7 @@
 #include "aom/vpx_integer.h"
 #include "aom_ports/mem.h"
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 namespace {
 
@@ -640,7 +640,7 @@ class Trans16x16DCT : public Trans16x16TestBase,
     inv_txfm_ref = idct16x16_ref;
 #endif
   }
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RunFwdTxfm(int16_t *in, tran_low_t *out, int stride) {
@@ -692,7 +692,7 @@ class Trans16x16HT : public Trans16x16TestBase,
     inv_txfm_ref = iht16x16_ref;
 #endif
   }
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RunFwdTxfm(int16_t *in, tran_low_t *out, int stride) {
@@ -731,7 +731,7 @@ class InvTrans16x16DCT : public Trans16x16TestBase,
     pitch_ = 16;
     mask_ = (1 << bit_depth_) - 1;
   }
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RunFwdTxfm(int16_t *in, tran_low_t *out, int stride) {}

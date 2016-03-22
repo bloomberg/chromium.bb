@@ -45,11 +45,11 @@
 /ivfdec.dox
 /ivfenc
 /ivfenc.dox
-/libvpx.so*
-/libvpx.ver
+/libaom.so*
+/libaom.ver
 /samples.dox
 /test_intra_pred_speed
-/test_libvpx
+/test_libaom
 /vp8_api1_migration.dox
 /vp[89x]_rtcd.h
 /vpx.pc

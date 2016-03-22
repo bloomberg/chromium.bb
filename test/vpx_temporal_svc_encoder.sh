@@ -8,7 +8,7 @@
 ##  in the file PATENTS.  All contributing project authors may
 ##  be found in the AUTHORS file in the root of the source tree.
 ##
-##  This file tests the libvpx vpx_temporal_svc_encoder example. To add new
+##  This file tests the libaom vpx_temporal_svc_encoder example. To add new
 ##  tests to this file, do the following:
 ##    1. Write a shell function (this is your test).
 ##    2. Add the function to vpx_tsvc_encoder_tests (on a new line).
@@ -31,7 +31,7 @@ vpx_tsvc_encoder_verify_environment() {
 # name by $2. Additional positional parameters are passed directly to
 # vpx_temporal_svc_encoder.
 vpx_tsvc_encoder() {
-  local encoder="${LIBVPX_BIN_PATH}/vpx_temporal_svc_encoder"
+  local encoder="${LIBAOM_BIN_PATH}/vpx_temporal_svc_encoder"
   encoder="${encoder}${VPX_TEST_EXE_SUFFIX}"
   local codec="$1"
   local output_file_base="$2"

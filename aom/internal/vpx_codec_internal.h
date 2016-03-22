@@ -219,10 +219,10 @@ typedef vpx_image_t *(*vpx_codec_get_frame_fn_t)(vpx_codec_alg_priv_t *ctx,
 
 /*!\brief Pass in external frame buffers for the decoder to use.
  *
- * Registers functions to be called when libvpx needs a frame buffer
- * to decode the current frame and a function to be called when libvpx does
+ * Registers functions to be called when libaom needs a frame buffer
+ * to decode the current frame and a function to be called when libaom does
  * not internally reference the frame buffer. This set function must
- * be called before the first call to decode or libvpx will assume the
+ * be called before the first call to decode or libaom will assume the
  * default behavior of allocating frame buffers internally.
  *
  * \param[in] ctx          Pointer to this instance's context
@@ -231,7 +231,7 @@ typedef vpx_image_t *(*vpx_codec_get_frame_fn_t)(vpx_codec_alg_priv_t *ctx,
  * \param[in] cb_priv      Callback's private data
  *
  * \retval #VPX_CODEC_OK
- *     External frame buffers will be used by libvpx.
+ *     External frame buffers will be used by libaom.
  * \retval #VPX_CODEC_INVALID_PARAM
  *     One or more of the callbacks were NULL.
  * \retval #VPX_CODEC_ERROR

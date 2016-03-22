@@ -8,7 +8,7 @@
 ##  be found in the AUTHORS file in the root of the source tree.
 ##
 
-# libvpx reverse dependencies (targets that depend on libvpx)
+# libaom reverse dependencies (targets that depend on libaom)
 VPX_NONDEPS=$(addsuffix .$(VCPROJ_SFX),vpx gtest)
 VPX_RDEPS=$(foreach vcp,\
               $(filter-out $(VPX_NONDEPS),$^), --dep=$(vcp:.$(VCPROJ_SFX)=):vpx)
@@ -17,7 +17,7 @@ vpx.sln: $(wildcard *.$(VCPROJ_SFX))
 	@echo "    [CREATE] $@"
 	$(SRC_PATH_BARE)/build/make/gen_msvs_sln.sh \
             $(if $(filter vpx.$(VCPROJ_SFX),$^),$(VPX_RDEPS)) \
-            --dep=test_libvpx:gtest \
+            --dep=test_libaom:gtest \
             --ver=$(CONFIG_VS_VERSION)\
             --out=$@ $^
 vpx.sln.mk: vpx.sln

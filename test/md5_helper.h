@@ -14,7 +14,7 @@
 #include "./md5_utils.h"
 #include "aom/vpx_decoder.h"
 
-namespace libvpx_test {
+namespace libaom_test {
 class MD5 {
  public:
   MD5() { MD5Init(&md5_); }
@@ -70,6 +70,6 @@ class MD5 {
   MD5Context md5_;
 };
 
-}  // namespace libvpx_test
+}  // namespace libaom_test
 
 #endif  // TEST_MD5_HELPER_H_

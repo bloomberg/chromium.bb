@@ -24,7 +24,7 @@
 #include "aom/vpx_codec.h"
 #include "aom/vpx_integer.h"
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 namespace {
 #if CONFIG_VPX_HIGHBITDEPTH
@@ -46,7 +46,7 @@ class ErrorBlockTest : public ::testing::TestWithParam<ErrorBlockParam> {
     bit_depth_ = GET_PARAM(2);
   }
 
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   vpx_bit_depth_t bit_depth_;

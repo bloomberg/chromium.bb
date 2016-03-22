@@ -32,7 +32,7 @@
     movsxd      rax,        dword ptr arg(1)    ; src_stride
     movsxd      rdx,        dword ptr arg(3)    ; ref_stride
 %else
-  %if LIBVPX_YASM_WIN64
+  %if LIBAOM_YASM_WIN64
     SAVE_XMM 7, u
     %define     src_ptr     rcx
     %define     src_stride  rdx
@@ -72,7 +72,7 @@
     pop         rsi
     pop         rbp
 %else
-  %if LIBVPX_YASM_WIN64
+  %if LIBAOM_YASM_WIN64
     RESTORE_XMM
   %endif
 %endif

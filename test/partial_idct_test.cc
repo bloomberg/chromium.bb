@@ -24,7 +24,7 @@
 #include "av1/common/scan.h"
 #include "aom/vpx_integer.h"
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 namespace {
 typedef void (*FwdTxfmFunc)(const int16_t *in, tran_low_t *out, int stride);
@@ -43,7 +43,7 @@ class PartialIDctTest : public ::testing::TestWithParam<PartialInvTxfmParam> {
     last_nonzero_ = GET_PARAM(4);
   }
 
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   int last_nonzero_;

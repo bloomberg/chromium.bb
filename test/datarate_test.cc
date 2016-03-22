@@ -19,8 +19,8 @@
 namespace {
 
 class DatarateTestLarge
-    : public ::libvpx_test::EncoderTest,
-      public ::libvpx_test::CodecTestWithParam<libvpx_test::TestMode> {
+    : public ::libaom_test::EncoderTest,
+      public ::libaom_test::CodecTestWithParam<libaom_test::TestMode> {
  public:
   DatarateTestLarge() : EncoderTest(GET_PARAM(0)) {}
 
@@ -44,8 +44,8 @@ class DatarateTestLarge
     denoiser_offon_period_ = -1;
   }
 
-  virtual void PreEncodeFrameHook(::libvpx_test::VideoSource *video,
-                                  ::libvpx_test::Encoder *encoder) {
+  virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
+                                  ::libaom_test::Encoder *encoder) {
     if (video->frame() == 0)
       encoder->Control(VP8E_SET_NOISE_SENSITIVITY, denoiser_on_);
 
@@ -79,7 +79,7 @@ class DatarateTestLarge
         duration * timebase_ * cfg_.rc_target_bitrate * 1000);
 
     /* Test the buffer model here before subtracting the frame. Do so because
-     * the way the leaky bucket model works in libvpx is to allow the buffer to
+     * the way the leaky bucket model works in libaom is to allow the buffer to
      * empty - and then stop showing frames until we've got enough bits to
      * show one. As noted in comment below (issue 495), this does not currently
      * apply to key frames. For now exclude key frames in condition below. */
@@ -148,7 +148,7 @@ TEST_P(DatarateTestLarge, DenoiserLevels) {
   cfg_.rc_dropframe_thresh = 1;
   cfg_.rc_max_quantizer = 56;
   cfg_.rc_end_usage = VPX_CBR;
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 140);
   for (int j = 1; j < 5; ++j) {
     // Run over the denoiser levels.
@@ -177,7 +177,7 @@ TEST_P(DatarateTestLarge, DenoiserOffOn) {
   cfg_.rc_dropframe_thresh = 1;
   cfg_.rc_max_quantizer = 56;
   cfg_.rc_end_usage = VPX_CBR;
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 299);
   cfg_.rc_target_bitrate = 300;
   ResetModel();
@@ -206,7 +206,7 @@ TEST_P(DatarateTestLarge, BasicBufferModel) {
   // constraints
   // TODO(jimbankoski): ( Fix when issue
   // http://code.google.com/p/webm/issues/detail?id=495 is addressed. )
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 140);
 
   // There is an issue for low bitrates in real-time mode, where the
@@ -235,7 +235,7 @@ TEST_P(DatarateTestLarge, ChangingDropFrameThresh) {
   cfg_.kf_mode = VPX_KF_DISABLED;
 
   const int frame_count = 40;
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, frame_count);
 
   // Here we check that the first dropped frame gets earlier and earlier
@@ -256,8 +256,8 @@ TEST_P(DatarateTestLarge, ChangingDropFrameThresh) {
 }
 
 class DatarateTestVP9Large
-    : public ::libvpx_test::EncoderTest,
-      public ::libvpx_test::CodecTestWith2Params<libvpx_test::TestMode, int> {
+    : public ::libaom_test::EncoderTest,
+      public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int> {
  public:
   DatarateTestVP9Large() : EncoderTest(GET_PARAM(0)) {}
 
@@ -351,8 +351,8 @@ class DatarateTestVP9Large
     return layer_id;
   }
 
-  virtual void PreEncodeFrameHook(::libvpx_test::VideoSource *video,
-                                  ::libvpx_test::Encoder *encoder) {
+  virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
+                                  ::libaom_test::Encoder *encoder) {
     if (video->frame() == 0) encoder->Control(VP8E_SET_CPUUSED, set_cpu_used_);
 
     if (denoiser_offon_test_) {
@@ -458,7 +458,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting) {
   cfg_.rc_end_usage = VPX_CBR;
   cfg_.g_lag_in_frames = 0;
 
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 140);
   for (int i = 150; i < 800; i += 200) {
     cfg_.rc_target_bitrate = i;
@@ -473,7 +473,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting) {
 
 // Check basic rate targeting,
 TEST_P(DatarateTestVP9Large, BasicRateTargeting444) {
-  ::libvpx_test::Y4mVideoSource video("rush_hour_444.y4m", 0, 140);
+  ::libaom_test::Y4mVideoSource video("rush_hour_444.y4m", 0, 140);
 
   cfg_.g_profile = 1;
   cfg_.g_timebase = video.timebase();
@@ -517,7 +517,7 @@ TEST_P(DatarateTestVP9Large, ChangingDropFrameThresh) {
   cfg_.rc_target_bitrate = 200;
   cfg_.g_lag_in_frames = 0;
 
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 140);
 
   const int kDropFrameThreshTestStep = 30;
@@ -567,7 +567,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting2TemporalLayers) {
   if (deadline_ == VPX_DL_REALTIME)
     cfg_.g_error_resilient = 1;
 
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 200);
   for (int i = 200; i <= 800; i += 200) {
     cfg_.rc_target_bitrate = i;
@@ -607,7 +607,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting3TemporalLayers) {
 
   cfg_.temporal_layering_mode = VP9E_TEMPORAL_LAYERING_MODE_BYPASS;
 
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 200);
   for (int i = 200; i <= 800; i += 200) {
     cfg_.rc_target_bitrate = i;
@@ -655,7 +655,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting3TemporalLayersFrameDropping) {
 
   cfg_.temporal_layering_mode = VP9E_TEMPORAL_LAYERING_MODE_BYPASS;
 
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 200);
   cfg_.rc_target_bitrate = 200;
   ResetModel();
@@ -680,8 +680,8 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting3TemporalLayersFrameDropping) {
 #endif
 
 class DatarateOnePassCbrSvc
-    : public ::libvpx_test::EncoderTest,
-      public ::libvpx_test::CodecTestWith2Params<libvpx_test::TestMode, int> {
+    : public ::libaom_test::EncoderTest,
+      public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int> {
  public:
   DatarateOnePassCbrSvc() : EncoderTest(GET_PARAM(0)) {}
   virtual ~DatarateOnePassCbrSvc() {}
@@ -704,8 +704,8 @@ class DatarateOnePassCbrSvc
     mismatch_nframes_ = 0;
   }
   virtual void BeginPassHook(unsigned int /*pass*/) {}
-  virtual void PreEncodeFrameHook(::libvpx_test::VideoSource *video,
-                                  ::libvpx_test::Encoder *encoder) {
+  virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
+                                  ::libaom_test::Encoder *encoder) {
     if (video->frame() == 0) {
       int i;
       for (i = 0; i < VPX_MAX_LAYERS; ++i) {
@@ -835,7 +835,7 @@ TEST_P(DatarateOnePassCbrSvc, OnePassCbrSvc) {
   // TODO(wonkap/marpan): No frame drop for now, we need to implement correct
   // frame dropping for SVC.
   cfg_.rc_dropframe_thresh = 0;
-  ::libvpx_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+  ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 200);
   // TODO(wonkap/marpan): Check that effective_datarate for each layer hits the
   // layer target_bitrate. Also check if test can pass at lower bitrate (~200k).
@@ -879,7 +879,7 @@ TEST_P(DatarateOnePassCbrSvc, OnePassCbrSvc4threads) {
   // TODO(wonkap/marpan): No frame drop for now, we need to implement correct
   // frame dropping for SVC.
   cfg_.rc_dropframe_thresh = 0;
-  ::libvpx_test::I420VideoSource video("niklas_1280_720_30.y4m", 1280, 720, 30,
+  ::libaom_test::I420VideoSource video("niklas_1280_720_30.y4m", 1280, 720, 30,
                                        1, 0, 300);
   cfg_.rc_target_bitrate = 800;
   ResetModel();
@@ -895,13 +895,13 @@ TEST_P(DatarateOnePassCbrSvc, OnePassCbrSvc4threads) {
 }
 
 VP10_INSTANTIATE_TEST_CASE(DatarateTestVP9Large,
-                           ::testing::Values(::libvpx_test::kOnePassGood,
-                                             ::libvpx_test::kRealTime),
+                           ::testing::Values(::libaom_test::kOnePassGood,
+                                             ::libaom_test::kRealTime),
                            ::testing::Range(2, 7));
 
 /* VP10 does not support multiple layers yet.
 VP10_INSTANTIATE_TEST_CASE(DatarateOnePassCbrSvc,
-                           ::testing::Values(::libvpx_test::kRealTime),
+                           ::testing::Values(::libaom_test::kRealTime),
                            ::testing::Range(5, 8));
                            */
 }  // namespace

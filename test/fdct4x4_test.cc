@@ -25,7 +25,7 @@
 #include "aom/vpx_integer.h"
 #include "aom_ports/mem.h"
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 namespace {
 const int kNumCoeffs = 16;
@@ -285,7 +285,7 @@ class Trans4x4DCT : public Trans4x4TestBase,
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
   }
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RunFwdTxfm(const int16_t *in, tran_low_t *out, int stride) {
@@ -321,7 +321,7 @@ class Trans4x4HT : public Trans4x4TestBase,
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
   }
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RunFwdTxfm(const int16_t *in, tran_low_t *out, int stride) {
@@ -358,7 +358,7 @@ class Trans4x4WHT : public Trans4x4TestBase,
     bit_depth_ = GET_PARAM(3);
     mask_ = (1 << bit_depth_) - 1;
   }
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   void RunFwdTxfm(const int16_t *in, tran_low_t *out, int stride) {

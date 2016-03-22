@@ -21,7 +21,7 @@ extern "C" {
 
 #include "./vpx_integer.h"
 
-/*!\brief The maximum number of work buffers used by libvpx.
+/*!\brief The maximum number of work buffers used by libaom.
  *  Support maximum 4 threads to decode video in parallel.
  *  Each thread will use one work buffer.
  * TODO(hkuang): Add support to set number of worker threads dynamically.

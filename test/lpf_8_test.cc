@@ -24,7 +24,7 @@
 #include "av1/common/loopfilter.h"
 #include "aom/vpx_integer.h"
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 namespace {
 // Horizontally and Vertically need 32x32: 8  Coeffs preceeding filtered section
@@ -162,7 +162,7 @@ class Loop8Test6Param : public ::testing::TestWithParam<loop8_param_t> {
     mask_ = (1 << bit_depth_) - 1;
   }
 
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   int bit_depth_;
@@ -182,7 +182,7 @@ class Loop8Test9Param : public ::testing::TestWithParam<dualloop8_param_t> {
     mask_ = (1 << bit_depth_) - 1;
   }
 
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   int bit_depth_;

@@ -28,10 +28,10 @@ namespace vp9 {
 
 class VP9SubtractBlockTest : public ::testing::TestWithParam<SubtractFunc> {
  public:
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 };
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 TEST_P(VP9SubtractBlockTest, SimpleSubtract) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());

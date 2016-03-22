@@ -22,7 +22,7 @@
 #include "test/acm_random.h"
 #include "aom/vpx_encoder.h"
 
-namespace libvpx_test {
+namespace libaom_test {
 
 // Helper macros to ensure LIBAOM_TEST_DATA_PATH is a quoted string.
 // These are undefined right below GetDataPath
@@ -250,6 +250,6 @@ class CompressedVideoSource {
   virtual unsigned int frame_number() const = 0;
 };
 
-}  // namespace libvpx_test
+}  // namespace libaom_test
 
 #endif  // TEST_VIDEO_SOURCE_H_

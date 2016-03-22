@@ -26,7 +26,7 @@
 #include "aom/vpx_integer.h"
 #include "aom_ports/mem.h"
 
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 namespace {
 #ifdef _MSC_VER
@@ -101,7 +101,7 @@ class Trans32x32Test : public ::testing::TestWithParam<Trans32x32Param> {
     mask_ = (1 << bit_depth_) - 1;
   }
 
-  virtual void TearDown() { libvpx_test::ClearSystemState(); }
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
   int version_;

@@ -44,7 +44,7 @@ typedef unsigned int (*SumOfSquaresFunction)(const int16_t *src);
 using ::std::tr1::get;
 using ::std::tr1::make_tuple;
 using ::std::tr1::tuple;
-using libvpx_test::ACMRandom;
+using libaom_test::ACMRandom;
 
 // Truncate high bit depth results by downshifting (with rounding) by:
 // 2 * (bit_depth - 8) for sse
@@ -165,7 +165,7 @@ class SumOfSquaresTest : public ::testing::TestWithParam<SumOfSquaresFunction> {
  public:
   SumOfSquaresTest() : func_(GetParam()) {}
 
-  virtual ~SumOfSquaresTest() { libvpx_test::ClearSystemState(); }
+  virtual ~SumOfSquaresTest() { libaom_test::ClearSystemState(); }
 
  protected:
   void ConstTest();
@@ -247,7 +247,7 @@ class VarianceTest : public ::testing::TestWithParam<
       delete[] CONVERT_TO_SHORTPTR(ref_);
 #endif  // CONFIG_VPX_HIGHBITDEPTH
     }
-    libvpx_test::ClearSystemState();
+    libaom_test::ClearSystemState();
   }
 
  protected:
@@ -401,7 +401,7 @@ class MseTest
   virtual void TearDown() {
     vpx_free(src_);
     delete[] ref_;
-    libvpx_test::ClearSystemState();
+    libaom_test::ClearSystemState();
   }
 
  protected:
@@ -581,7 +581,7 @@ class SubpelVarianceTest
       vpx_free(CONVERT_TO_SHORTPTR(sec_));
 #endif  // CONFIG_VPX_HIGHBITDEPTH
     }
-    libvpx_test::ClearSystemState();
+    libaom_test::ClearSystemState();
   }
 
  protected:
