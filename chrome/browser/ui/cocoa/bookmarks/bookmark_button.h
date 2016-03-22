@@ -190,7 +190,8 @@ class BookmarkNode;
 
 
 // Class for bookmark bar buttons that can be drag sources.
-@interface BookmarkButton : DraggableButton<ThemedWindowDrawing> {
+@interface BookmarkButton
+    : DraggableButton<ThemedWindowDrawing, NSDraggingSource> {
  @private
   IBOutlet NSObject<BookmarkButtonDelegate>* delegate_;  // Weak.
 

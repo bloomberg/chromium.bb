@@ -17,7 +17,7 @@
 using bookmarks::BookmarkNode;
 using bookmarks::BookmarkNodeData;
 
-NSString* kBookmarkButtonDragType = @"ChromiumBookmarkButtonDragType";
+NSString* kBookmarkButtonDragType = @"com.google.chrome.BookmarkButtonDrag";
 
 @interface BookmarkFolderTarget()
 // Copies the given bookmark node to the given pasteboard, declaring appropriate

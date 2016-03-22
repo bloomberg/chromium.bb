@@ -346,6 +346,10 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantLight;
 @interface NSView (LionSDK)
 - (NSSize)convertSizeFromBacking:(NSSize)size;
 - (void)setWantsBestResolutionOpenGLSurface:(BOOL)flag;
+- (NSDraggingSession*)beginDraggingSessionWithItems:(NSArray*)items
+                                              event:(NSEvent*)event
+                                             source:
+                                                 (id<NSDraggingSource>)source;
 @end
 
 @interface NSObject (ICCameraDeviceDelegateLionSDK)
