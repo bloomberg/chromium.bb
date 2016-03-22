@@ -3329,6 +3329,7 @@
    fun:_ZN3WTF6RefPtrIN5blink15StyleFilterDataEEC2IS2_EERKNS_6RawPtrIT_EEPNSt9enable_ifIXsr3std10is_base_ofIS2_S6_EE5valueEvE4typeE
    fun:_ZN5blink7DataRefINS_15StyleFilterDataEE4initEv
    fun:_ZN5blink13ComputedStyle18createInitialStyleEv
+   fun:_ZN5blink13ComputedStyle19mutableInitialStyleEv
    fun:_ZN5blink13ComputedStyle12initialStyleEv
    fun:_ZN5blink13ComputedStyle6createEv
    fun:_ZN5blink13StyleResolver16styleForDocumentERNS_8DocumentE
