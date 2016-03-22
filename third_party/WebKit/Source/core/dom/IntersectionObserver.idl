@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(szager): add link to final spec.
+// TODO(szager): Update the doc link when the spec has an official home; for now it's:
+//   https://github.com/WICG/IntersectionObserver
+
 callback IntersectionObserverCallback = void (sequence<IntersectionObserverEntry> entries, IntersectionObserver observer);
 
-// TODO(szager): Update the doc link when the spec has an official home.
-// https://github.com/slightlyoff/IntersectionObserver
+// TODO(szager): Add the thresholds attribute when FrozenArray has been implemented for IDL:
+//   readonly attribute FrozenArray<double> thresholds;
 [
     CustomConstructor(IntersectionObserverCallback callback, IntersectionObserverInit options),
     Custom=VisitDOMWrapper,
@@ -19,5 +21,4 @@ callback IntersectionObserverCallback = void (sequence<IntersectionObserverEntry
     sequence<IntersectionObserverEntry> takeRecords();
     readonly attribute Element? root;
     readonly attribute DOMString rootMargin;
-    readonly attribute double[] thresholds;
 };
