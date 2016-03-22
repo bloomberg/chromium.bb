@@ -1,37 +1,24 @@
-<html> 
-<head>
-<script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
-</script>
-
-
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
-<script>
-
-function runTest() {
-    var selection = window.getSelection();
-    var e = document.getElementById("test");
-    var r = document.getElementById("removeme");
-    
-    selection.setBaseAndExtent(e, 0, r.childNodes[0], 2);
-    
-    r.parentNode.removeChild(r);
-}
-
-</script>
-
-<title>Removing the endpoints of a selection</title> 
-</head> 
-<body>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <p>This tests behavior when a node that serves as the start or end of a selection is removed from the document.  Ideally, we would just adjust the selection when an endpoint is removed, for now, we just blow away the selection.</p>
 <p>This test creates a selection that ends inside of a node that will be removed.  Then the node is removed.  There should be no selection afterward.</p>
-<div id="test">
-hello <span style="color:red;" id="removeme">removeme</span> world!
+<div id="sample">
+hello <span style="color:red;" id="removeMe">removeme</span> world!
 </div>
+<div id="log"></div>
+<script>
+test(function() {
+    var selection = window.getSelection();
+    var sample = document.getElementById("sample");
+    var removeMe = document.getElementById("removeMe");
+    selection.collapse(sample, 0);
+    selection.extend(removeMe, 1);
+    removeMe.remove();
 
-<script>runTest()</script>
-
-</body>
-</html>
+    assert_equals(selection.anchorNode, sample.firstChild, 'anchorNode');
+    assert_equals(selection.anchorOffset, 1, 'anchorOffset');
+    assert_equals(selection.focusNode, sample, 'focusNode');
+    assert_equals(selection.focusOffset, 1, 'focusOffset');
+});
+</script>
