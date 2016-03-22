@@ -199,6 +199,8 @@ private:
         return m_bitmap.height();
     }
 
+    SkAlphaType computeAlphaType() const;
+
     SkBitmap m_bitmap;
     SkBitmap::Allocator* m_allocator;
     bool m_hasAlpha;

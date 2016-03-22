@@ -98,7 +98,8 @@ bool ImageFrame::setSize(int newWidth, int newHeight)
     // setSize() should only be called once, it leaks memory otherwise.
     ASSERT(!width() && !height());
 
-    m_bitmap.setInfo(SkImageInfo::MakeN32Premul(newWidth, newHeight));
+    m_bitmap.setInfo(SkImageInfo::MakeN32(newWidth, newHeight,
+        m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType));
     if (!m_bitmap.tryAllocPixels(m_allocator, 0))
         return false;
 
@@ -120,19 +121,14 @@ void ImageFrame::setHasAlpha(bool alpha)
 {
     m_hasAlpha = alpha;
 
-    // If the frame is not fully loaded, there will be transparent pixels,
-    // so we can't tell skia we're opaque, even for image types that logically
-    // always are (e.g. jpeg).
-    if (m_status != FrameComplete)
-        alpha = true;
-    m_bitmap.setAlphaType(alpha ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
+    m_bitmap.setAlphaType(computeAlphaType());
 }
 
 void ImageFrame::setStatus(Status status)
 {
     m_status = status;
     if (m_status == FrameComplete) {
-        m_bitmap.setAlphaType(m_hasAlpha ? kPremul_SkAlphaType : kOpaque_SkAlphaType);
+        m_bitmap.setAlphaType(computeAlphaType());
         // Send pending pixels changed notifications now, because we can't do this after
         // the bitmap has been marked immutable.
         notifyBitmapIfPixelsChanged();
@@ -147,6 +143,17 @@ void ImageFrame::zeroFillFrameRect(const IntRect& rect)
 
     m_bitmap.eraseArea(rect, SkColorSetARGB(0, 0, 0, 0));
     setHasAlpha(true);
+}
+
+SkAlphaType ImageFrame::computeAlphaType() const
+{
+    // If the frame is not fully loaded, there will be transparent pixels,
+    // so we can't tell skia we're opaque, even for image types that logically
+    // always are (e.g. jpeg).
+    if (!m_hasAlpha && m_status == FrameComplete)
+        return kOpaque_SkAlphaType;
+
+    return m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType;
 }
 
 } // namespace blink

@@ -516,4 +516,50 @@ TEST(GIFImageDecoderTest, verifyRepetitionCount)
     EXPECT_EQ(expectedRepetitionCount, decoder->repetitionCount()); // Expected value after decode.
 }
 
+TEST(GIFImageDecoderTest, bitmapAlphaType)
+{
+    RefPtr<SharedBuffer> fullData = readFile(decodersTestingDir, "radient.gif");
+    ASSERT_TRUE(fullData.get());
+
+    // Empirically chosen truncation size:
+    //   a) large enough to produce a partial frame &&
+    //   b) small enough to not fully decode the frame
+    const size_t kTruncateSize = 800;
+    ASSERT_TRUE(kTruncateSize < fullData->size());
+    RefPtr<SharedBuffer> partialData = SharedBuffer::create(fullData->data(), kTruncateSize);
+
+    OwnPtr<ImageDecoder> premulDecoder = adoptPtr(new GIFImageDecoder(
+        ImageDecoder::AlphaPremultiplied,
+        ImageDecoder::GammaAndColorProfileApplied,
+        ImageDecoder::noDecodedImageByteLimit));
+    OwnPtr<ImageDecoder> unpremulDecoder = adoptPtr(new GIFImageDecoder(
+        ImageDecoder::AlphaNotPremultiplied,
+        ImageDecoder::GammaAndColorProfileApplied,
+        ImageDecoder::noDecodedImageByteLimit));
+
+    // Partially decoded frame => the frame alpha type is unknown and should reflect the requested format.
+    premulDecoder->setData(partialData.get(), false);
+    ASSERT_TRUE(premulDecoder->frameCount());
+    unpremulDecoder->setData(partialData.get(), false);
+    ASSERT_TRUE(unpremulDecoder->frameCount());
+    ImageFrame* premulFrame = premulDecoder->frameBufferAtIndex(0);
+    EXPECT_TRUE(premulFrame && premulFrame->getStatus() != ImageFrame::FrameComplete);
+    EXPECT_EQ(premulFrame->bitmap().alphaType(), kPremul_SkAlphaType);
+    ImageFrame* unpremulFrame = unpremulDecoder->frameBufferAtIndex(0);
+    EXPECT_TRUE(unpremulFrame && unpremulFrame->getStatus() != ImageFrame::FrameComplete);
+    EXPECT_EQ(unpremulFrame->bitmap().alphaType(), kUnpremul_SkAlphaType);
+
+    // Fully decoded frame => the frame alpha type is known (opaque).
+    premulDecoder->setData(fullData.get(), true);
+    ASSERT_TRUE(premulDecoder->frameCount());
+    unpremulDecoder->setData(fullData.get(), true);
+    ASSERT_TRUE(unpremulDecoder->frameCount());
+    premulFrame = premulDecoder->frameBufferAtIndex(0);
+    EXPECT_TRUE(premulFrame && premulFrame->getStatus() == ImageFrame::FrameComplete);
+    EXPECT_EQ(premulFrame->bitmap().alphaType(), kOpaque_SkAlphaType);
+    unpremulFrame = unpremulDecoder->frameBufferAtIndex(0);
+    EXPECT_TRUE(unpremulFrame && unpremulFrame->getStatus() == ImageFrame::FrameComplete);
+    EXPECT_EQ(unpremulFrame->bitmap().alphaType(), kOpaque_SkAlphaType);
+}
+
 } // namespace blink
