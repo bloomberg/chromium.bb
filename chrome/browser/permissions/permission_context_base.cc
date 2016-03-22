@@ -136,10 +136,10 @@ ContentSetting PermissionContextBase::GetPermissionStatus(
 void PermissionContextBase::ResetPermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
-  HostContentSettingsMapFactory::GetForProfile(profile_)->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(requesting_origin),
-      ContentSettingsPattern::FromURLNoWildcard(embedding_origin),
-      content_settings_type_, std::string(), CONTENT_SETTING_DEFAULT);
+  HostContentSettingsMapFactory::GetForProfile(profile_)
+      ->SetContentSettingDefaultScope(requesting_origin, embedding_origin,
+                                      content_settings_type_, std::string(),
+                                      CONTENT_SETTING_DEFAULT);
 }
 
 void PermissionContextBase::CancelPermissionRequest(
@@ -277,10 +277,10 @@ void PermissionContextBase::UpdateContentSetting(
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
          content_setting == CONTENT_SETTING_BLOCK);
 
-  HostContentSettingsMapFactory::GetForProfile(profile_)->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(requesting_origin),
-      ContentSettingsPattern::FromURLNoWildcard(embedding_origin),
-      content_settings_type_, std::string(), content_setting);
+  HostContentSettingsMapFactory::GetForProfile(profile_)
+      ->SetContentSettingDefaultScope(requesting_origin, embedding_origin,
+                                      content_settings_type_, std::string(),
+                                      content_setting);
 }
 
 bool PermissionContextBase::IsPermissionKillSwitchOn() const {

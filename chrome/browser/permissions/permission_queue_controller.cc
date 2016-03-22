@@ -393,12 +393,8 @@ void PermissionQueueController::UpdateContentSetting(
   ContentSetting content_setting =
       allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
 
-  ContentSettingsPattern embedder_pattern =
-      (content_settings_type_ == CONTENT_SETTINGS_TYPE_NOTIFICATIONS)
-          ? ContentSettingsPattern::Wildcard()
-          : ContentSettingsPattern::FromURLNoWildcard(embedder.GetOrigin());
-
-  HostContentSettingsMapFactory::GetForProfile(profile_)->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(requesting_frame.GetOrigin()),
-      embedder_pattern, content_settings_type_, std::string(), content_setting);
+  HostContentSettingsMapFactory::GetForProfile(profile_)
+      ->SetContentSettingDefaultScope(
+          requesting_frame.GetOrigin(), embedder.GetOrigin(),
+          content_settings_type_, std::string(), content_setting);
 }
