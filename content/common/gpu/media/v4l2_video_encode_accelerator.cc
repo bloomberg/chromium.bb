@@ -131,7 +131,7 @@ bool V4L2VideoEncodeAccelerator::Initialize(
   }
 
   if (!SetFormats(input_format, output_profile)) {
-    LOG(ERROR) << "Failed setting up formats";
+    DLOG(ERROR) << "Failed setting up formats";
     return false;
   }
 
@@ -890,7 +890,7 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
   uint32_t input_format_fourcc =
       V4L2Device::VideoPixelFormatToV4L2PixFmt(input_format);
   if (!input_format_fourcc) {
-    LOG(ERROR) << "Unsupported input format";
+    LOG(ERROR) << "Unsupported input format" << input_format_fourcc;
     return false;
   }
 
@@ -910,8 +910,10 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
     input_format_fourcc = device_->PreferredInputFormat();
     input_format =
         V4L2Device::V4L2PixFmtToVideoPixelFormat(input_format_fourcc);
-    if (input_format == media::PIXEL_FORMAT_UNKNOWN)
+    if (input_format == media::PIXEL_FORMAT_UNKNOWN) {
+      LOG(ERROR) << "Unsupported input format" << input_format_fourcc;
       return false;
+    }
 
     input_planes_count = media::VideoFrame::NumPlanes(input_format);
     DCHECK_LE(input_planes_count, static_cast<size_t>(VIDEO_MAX_PLANES));
@@ -927,9 +929,14 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
     DCHECK_EQ(format.fmt.pix_mp.num_planes, input_planes_count);
   }
 
-  // Take device-adjusted sizes for allocated size.
+  // Take device-adjusted sizes for allocated size. If the size is adjusted
+  // down, it means the input is too big and the hardware does not support it.
   input_allocated_size_ = V4L2Device::CodedSizeFromV4L2Format(format);
-  DCHECK(gfx::Rect(input_allocated_size_).Contains(gfx::Rect(visible_size_)));
+  if (!gfx::Rect(input_allocated_size_).Contains(gfx::Rect(visible_size_))) {
+    DVLOG(1) << "Input size too big " << visible_size_.ToString()
+             << ", adjusted to " << input_allocated_size_.ToString();
+    return false;
+  }
 
   device_input_format_ = input_format;
   input_planes_count_ = input_planes_count;

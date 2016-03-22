@@ -174,9 +174,19 @@ bool VaapiVideoEncodeAccelerator::Initialize(
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
   client_ = client_ptr_factory_->GetWeakPtr();
 
-  if (output_profile < media::H264PROFILE_BASELINE ||
-      output_profile > media::H264PROFILE_MAIN) {
-    DVLOGF(1) << "Unsupported output profile: " << output_profile;
+  const SupportedProfiles& profiles = GetSupportedProfiles();
+  auto profile = find_if(profiles.begin(), profiles.end(),
+      [output_profile](const SupportedProfile& profile) {
+        return profile.profile == output_profile;
+      });
+  if (profile == profiles.end()) {
+    DVLOGF(1) << "Unsupported output profile " << output_profile;
+    return false;
+  }
+  if (input_visible_size.width() > profile->max_resolution.width() ||
+        input_visible_size.height() > profile->max_resolution.height()) {
+    DVLOGF(1) << "Input size too big: " << input_visible_size.ToString()
+              << ", max supported size: " << profile->max_resolution.ToString();
     return false;
   }
 
