@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/mojo_application_manifest.gni")
 import("//testing/test.gni")
 
 # Target that builders build.
@@ -9,7 +10,7 @@ group("all") {
   testonly = true
 
   deps = [
-    ":tests",
+    ":mash_unittests",
     "//components/leveldb",
     "//mash/example",
     "//mash/init",
@@ -20,22 +21,23 @@ group("all") {
   ]
 }
 
-group("tests") {
-  testonly = true
-
-  deps = [
-    ":mash_unittests",
-    "//mash/wm:tests",
-  ]
-}
-
 test("mash_unittests") {
   deps = [
     "//base",
-    "//base/test:run_all_unittests",
     "//base/test:test_config",
     "//base/test:test_support",
     "//mash/wm:unittests",
     "//mojo/platform_handle:platform_handle_impl",
+    "//mojo/shell/background:main",
+    "//mojo/shell/public/cpp/test:run_all_shelltests",
   ]
+  data_deps = [
+    ":unittests_manifest",
+  ]
+}
+
+mojo_application_manifest("unittests_manifest") {
+  type = "exe"
+  application_name = "mash_unittests"
+  source = "unittests_manifest.json"
 }

@@ -35,12 +35,6 @@ tests = [
 if config.target_os != config.OS_ANDROID:
   tests += [
     {
-      'test': 'mojo:mash_wm_apptests',
-      'type': 'gtest_isolated',
-      'args': ['--use-x11-test-config',
-               '--override-use-gl-with-osmesa-for-tests']
-    },
-    {
       'test': 'mojo:media_apptests',
       'type': 'gtest_isolated',
     },

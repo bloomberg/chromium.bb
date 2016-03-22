@@ -1,0 +1,5 @@
+{
+  "name": "exe:mash_unittests",
+  "display_name": "Mash Unittests",
+  "capabilities": { "*": ["*"] }
+}

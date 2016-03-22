@@ -589,7 +589,7 @@ group("mojo_apptests") {
   if (is_win || is_linux) {
     deps += [
       "//components/resource_provider:resource_provider_unittests",
-      "//mash/wm:tests",
+      "//mash:mash_unittests",
       "//media/mojo/services:tests",
       "//ui/views/mus:tests",
     ]

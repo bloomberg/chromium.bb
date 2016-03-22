@@ -11,7 +11,7 @@
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/shell_test.h"
 
 namespace mash {
 namespace wm {
@@ -29,13 +29,20 @@ class WindowTreeDelegateImpl : public mus::WindowTreeDelegate {
   DISALLOW_COPY_AND_ASSIGN(WindowTreeDelegateImpl);
 };
 
-using WindowManagerAppTest = mojo::test::ApplicationTestBase;
+class WindowManagerTest : public mojo::test::ShellTest {
+ public:
+  WindowManagerTest() : mojo::test::ShellTest("exe:mash_unittests") {}
+  ~WindowManagerTest() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowManagerTest);
+};
 
 void OnEmbed(bool success) {
   ASSERT_TRUE(success);
 }
 
-TEST_F(WindowManagerAppTest, OpenWindow) {
+TEST_F(WindowManagerTest, OpenWindow) {
   WindowTreeDelegateImpl window_tree_delegate;
 
   // Bring up the the desktop_wm.
