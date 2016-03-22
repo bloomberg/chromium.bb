@@ -12,7 +12,7 @@ cd ${SCRIPT_DIR}
 OUT_DIR=out
 SMOOTHLIFE_URL=https://github.com/binji/smoothnacl
 SMOOTHLIFE_DIR=${OUT_DIR}/smoothlife
-SMOOTHLIFE_SHA=e81cf2b00290add556dcdc8aa84506ca007bc853
+SMOOTHLIFE_SHA=3c9c7418437ae5ad66b697d8f731b12b9a8916ed
 
 if [ -z "${NACL_SDK_ROOT:-}" ]; then
   echo "-------------------------------------------------------------------"
@@ -67,8 +67,10 @@ Clone ${SMOOTHLIFE_URL} ${SMOOTHLIFE_DIR} ${SMOOTHLIFE_SHA}
 
 pushd ${SMOOTHLIFE_DIR}
 
-Banner Updating submodules
-LogExecute git submodule update --init
+Banner Updating webports
+pushd third_party/webports
+LogExecute gclient sync
+popd
 
 Banner Building FFTW
 LogExecute make ports TOOLCHAIN=pnacl CONFIG=Release
