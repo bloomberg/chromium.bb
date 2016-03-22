@@ -129,6 +129,7 @@ public:
     void disposeObjectGroup(const String16&) override;
     v8::Local<v8::Value> findObject(ErrorString*, const String16& objectId, v8::Local<v8::Context>* = nullptr, String16* groupName = nullptr) override;
     void addInspectedObject(PassOwnPtr<Inspectable>) override;
+
 private:
     v8::MaybeLocal<v8::Value> evaluateInternal(InjectedScript*, bool doNotPauseOnExceptionsAndMuteConsole, const String& expression, v8::MaybeLocal<v8::Object> extension);
 

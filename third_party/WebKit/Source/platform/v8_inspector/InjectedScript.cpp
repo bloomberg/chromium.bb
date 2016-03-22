@@ -76,16 +76,6 @@ InjectedScript::~InjectedScript()
 {
 }
 
-void InjectedScript::getCollectionEntries(ErrorString* errorString, const String16& objectId, OwnPtr<Array<CollectionEntry>>* result)
-{
-    v8::HandleScope handles(m_isolate);
-    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "getCollectionEntries");
-    function.appendArgument(objectId);
-    OwnPtr<protocol::Value> resultValue = makeCall(function);
-    protocol::ErrorSupport errors(errorString);
-    *result = Array<CollectionEntry>::parse(resultValue.get(), &errors);
-}
-
 void InjectedScript::getProperties(ErrorString* errorString, const String16& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<Array<PropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
@@ -164,6 +154,22 @@ bool InjectedScript::wrapObjectProperty(ErrorString* error, v8::Local<v8::Object
         return false;
     }
     return true;
+}
+
+bool InjectedScript::wrapPropertyInArray(ErrorString* errorString, v8::Local<v8::Array> array, v8::Local<v8::String> property, const String16& groupName, bool forceValueType, bool generatePreview) const
+{
+    V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "wrapPropertyInArray");
+    function.appendArgument(array);
+    function.appendArgument(property);
+    function.appendArgument(groupName);
+    function.appendArgument(canAccessInspectedWindow());
+    function.appendArgument(forceValueType);
+    function.appendArgument(generatePreview);
+    bool hadException = false;
+    callFunctionWithEvalEnabled(function, hadException);
+    if (hadException)
+        *errorString = "Internal error.";
+    return !hadException;
 }
 
 v8::MaybeLocal<v8::Value> InjectedScript::wrapValue(ErrorString* error, v8::Local<v8::Value> value, const String16& groupName, bool forceValueType, bool generatePreview) const

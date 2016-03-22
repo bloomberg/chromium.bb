@@ -143,6 +143,13 @@ static String16 calculateHash(const String16& str)
     return hash.toString();
 }
 
+static bool hasInternalError(ErrorString* errorString, bool hasError)
+{
+    if (hasError)
+        *errorString = "Internal error";
+    return hasError;
+}
+
 PassOwnPtr<V8DebuggerAgent> V8DebuggerAgent::create(V8RuntimeAgent* runtimeAgent)
 {
     V8RuntimeAgentImpl* runtimeAgentImpl = static_cast<V8RuntimeAgentImpl*>(runtimeAgent);
@@ -702,18 +709,11 @@ void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const Str
 
     v8::Local<v8::Value> scopesValue;
     v8::Local<v8::Array> scopes;
-    String16 objectGroupName = injectedScript->objectGroupName(*remoteId);
+    String16 groupName = injectedScript->objectGroupName(*remoteId);
     if (m_debugger->functionScopes(function).ToLocal(&scopesValue) && scopesValue->IsArray()) {
         scopes = scopesValue.As<v8::Array>();
-        for (size_t i = 0; i < scopes->Length(); ++i) {
-            v8::Local<v8::Value> scope;
-            if (!scopes->Get(injectedScript->context(), i).ToLocal(&scope) || !scope->IsObject()) {
-                *errorString = "Internal error";
-                return;
-            }
-            if (!injectedScript->wrapObjectProperty(errorString, scope.As<v8::Object>(), toV8String(injectedScript->isolate(), "object"), objectGroupName))
-                return;
-        }
+        if (!injectedScript->wrapPropertyInArray(errorString, scopes, toV8StringInternalized(injectedScript->isolate(), "object"), groupName))
+            return;
     }
 
     OwnPtr<protocol::Debugger::Location> location = protocol::Debugger::Location::create()
@@ -729,10 +729,8 @@ void V8DebuggerAgentImpl::getFunctionDetails(ErrorString* errorString, const Str
     if (!scopes.IsEmpty()) {
         protocol::ErrorSupport errorSupport;
         OwnPtr<protocol::Array<protocol::Debugger::Scope>> scopeChain = protocol::Array<protocol::Debugger::Scope>::parse(toProtocolValue(injectedScript->context(), scopes).get(), &errorSupport);
-        if (errorSupport.hasErrors()) {
-            *errorString = "Internal error";
+        if (hasInternalError(errorString, errorSupport.hasErrors()))
             return;
-        }
         functionDetails->setScopeChain(scopeChain.release());
     }
 
@@ -765,25 +763,21 @@ void V8DebuggerAgentImpl::getGeneratorObjectDetails(ErrorString* errorString, co
 
     v8::Local<v8::Object> detailsObject;
     v8::Local<v8::Value> detailsValue = debugger().generatorObjectDetails(object);
-    if (!detailsValue->IsObject() || !detailsValue->ToObject(context).ToLocal(&detailsObject)) {
-        *errorString = "Internal error";
+    if (hasInternalError(errorString, !detailsValue->IsObject() || !detailsValue->ToObject(context).ToLocal(&detailsObject)))
         return;
-    }
 
     String16 groupName = injectedScript->objectGroupName(*remoteId);
-    if (!injectedScript->wrapObjectProperty(errorString, detailsObject, toV8String(m_isolate, "function"), groupName))
+    if (!injectedScript->wrapObjectProperty(errorString, detailsObject, toV8StringInternalized(m_isolate, "function"), groupName))
         return;
 
     protocol::ErrorSupport errors;
     OwnPtr<GeneratorObjectDetails> protocolDetails = GeneratorObjectDetails::parse(toProtocolValue(context, detailsObject).get(), &errors);
-    if (!protocolDetails) {
-        *errorString = "Internal error";
+    if (hasInternalError(errorString, !protocolDetails))
         return;
-    }
     *outDetails = protocolDetails.release();
 }
 
-void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const String16& objectId, OwnPtr<protocol::Array<CollectionEntry>>* entries)
+void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const String16& objectId, OwnPtr<protocol::Array<CollectionEntry>>* outEntries)
 {
     if (!checkEnabled(errorString))
         return;
@@ -793,7 +787,39 @@ void V8DebuggerAgentImpl::getCollectionEntries(ErrorString* errorString, const S
     InjectedScript* injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
     if (!injectedScript)
         return;
-    injectedScript->getCollectionEntries(errorString, objectId, entries);
+
+    v8::HandleScope scope(m_isolate);
+    v8::Local<v8::Context> context = injectedScript->context();
+    v8::Context::Scope contextScope(context);
+
+    v8::Local<v8::Value> value;
+    if (!injectedScript->findObject(errorString, *remoteId, &value))
+        return;
+    if (!value->IsObject()) {
+        *errorString = "Object with given id is not a collection";
+        return;
+    }
+    v8::Local<v8::Object> object = value.As<v8::Object>();
+    v8::Local<v8::Value> entriesValue = m_debugger->collectionEntries(object);
+    if (hasInternalError(errorString, entriesValue.IsEmpty()))
+        return;
+    if (entriesValue->IsUndefined()) {
+        *errorString = "Object with given id is not a collection";
+        return;
+    }
+    if (hasInternalError(errorString, !entriesValue->IsArray()))
+        return;
+    String16 groupName = injectedScript->objectGroupName(*remoteId);
+    v8::Local<v8::Array> entriesArray = entriesValue.As<v8::Array>();
+    if (!injectedScript->wrapPropertyInArray(errorString, entriesArray, toV8StringInternalized(injectedScript->isolate(), "key"), groupName))
+        return;
+    if (!injectedScript->wrapPropertyInArray(errorString, entriesArray, toV8StringInternalized(injectedScript->isolate(), "value"), groupName))
+        return;
+    protocol::ErrorSupport errors;
+    OwnPtr<protocol::Array<CollectionEntry>> entries = protocol::Array<CollectionEntry>::parse(toProtocolValue(injectedScript->context(), entriesArray).get(), &errors);
+    if (hasInternalError(errorString, !entries))
+        return;
+    *outEntries = entries.release();
 }
 
 void V8DebuggerAgentImpl::schedulePauseOnNextStatement(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)

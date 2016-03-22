@@ -301,6 +301,22 @@ InjectedScript.prototype = {
     },
 
     /**
+     * @param {!Array<!Object>} array
+     * @param {string} property
+     * @param {string} groupName
+     * @param {boolean} canAccessInspectedGlobalObject
+     * @param {boolean} forceValueType
+     * @param {boolean} generatePreview
+     */
+    wrapPropertyInArray: function(array, property, groupName, canAccessInspectedGlobalObject, forceValueType, generatePreview)
+    {
+        for (var i = 0; i < array.length; ++i) {
+            if (typeof array[i] === "object" && property in array[i])
+                array[i][property] = this.wrapObject(array[i][property], groupName, canAccessInspectedGlobalObject, forceValueType, generatePreview);
+        }
+    },
+
+    /**
      * @param {*} object
      * @return {!RuntimeAgent.RemoteObject}
      */
@@ -447,30 +463,6 @@ InjectedScript.prototype = {
             push(descriptors, descriptor);
         }
         return descriptors;
-    },
-
-    /**
-     * @param {string} objectId
-     * @return {!Array.<!Object>|string}
-     */
-    getCollectionEntries: function(objectId)
-    {
-        var parsedObjectId = this._parseObjectId(objectId);
-        var object = this._objectForId(parsedObjectId);
-        if (!object || typeof object !== "object")
-            return "Could not find object with given id";
-        var entries = InjectedScriptHost.collectionEntries(object);
-        if (!entries)
-            return "Object with given id is not a collection";
-        var objectGroupName = InjectedScriptHost.idToObjectGroupName(parsedObjectId.id);
-        for (var i = 0; i < entries.length; ++i) {
-            var entry = nullifyObjectProto(entries[i]);
-            if ("key" in entry)
-                entry.key = this._wrapObject(entry.key, objectGroupName);
-            entry.value = this._wrapObject(entry.value, objectGroupName);
-            entries[i] = entry;
-        }
-        return entries;
     },
 
     /**

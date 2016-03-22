@@ -53,7 +53,6 @@ class InjectedScript final {
 public:
     ~InjectedScript();
 
-    void getCollectionEntries(ErrorString*, const String16& objectId, OwnPtr<protocol::Array<protocol::Debugger::CollectionEntry>>* result);
     void getProperties(ErrorString*, const String16& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result, Maybe<protocol::Runtime::ExceptionDetails>*);
     void releaseObject(const String16& objectId);
 
@@ -61,6 +60,8 @@ public:
 
     PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(ErrorString*, v8::Local<v8::Value>, const String16& groupName, bool forceValueType = false, bool generatePreview = false) const;
     bool wrapObjectProperty(ErrorString*, v8::Local<v8::Object>, v8::Local<v8::Value> key, const String16& groupName, bool forceValueType = false, bool generatePreview = false) const;
+    bool wrapPropertyInArray(ErrorString*, v8::Local<v8::Array>, v8::Local<v8::String> property, const String16& groupName, bool forceValueType = false, bool generatePreview = false) const;
+
     PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const;
     bool findObject(ErrorString*, const RemoteObjectId&, v8::Local<v8::Value>*) const;
     String16 objectGroupName(const RemoteObjectId&) const;

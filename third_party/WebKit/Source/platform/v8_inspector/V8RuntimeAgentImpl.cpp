@@ -49,11 +49,11 @@ static const char customObjectFormatterEnabled[] = "customObjectFormatterEnabled
 using protocol::Runtime::ExceptionDetails;
 using protocol::Runtime::RemoteObject;
 
-static bool checkInternalError(ErrorString* errorString, bool success)
+static bool hasInternalError(ErrorString* errorString, bool hasError)
 {
-    if (!success)
+    if (hasError)
         *errorString = "Internal error";
-    return success;
+    return hasError;
 }
 
 PassOwnPtr<V8RuntimeAgent> V8RuntimeAgent::create(V8Debugger* debugger, int contextGroupId)
@@ -250,15 +250,15 @@ void V8RuntimeAgentImpl::getProperties(
     if (object->IsSymbol())
         return;
     v8::Local<v8::Array> propertiesArray;
-    if (!checkInternalError(errorString, v8::Debug::GetInternalProperties(injectedScript->isolate(), object).ToLocal(&propertiesArray)))
+    if (hasInternalError(errorString, !v8::Debug::GetInternalProperties(injectedScript->isolate(), object).ToLocal(&propertiesArray)))
         return;
     OwnPtr<protocol::Array<InternalPropertyDescriptor>> propertiesProtocolArray = protocol::Array<InternalPropertyDescriptor>::create();
     for (uint32_t i = 0; i < propertiesArray->Length(); i += 2) {
         v8::Local<v8::Value> name;
-        if (!checkInternalError(errorString, propertiesArray->Get(injectedScript->context(), i).ToLocal(&name)) && name->IsString())
+        if (hasInternalError(errorString, !propertiesArray->Get(injectedScript->context(), i).ToLocal(&name)) || !name->IsString())
             return;
         v8::Local<v8::Value> value;
-        if (!checkInternalError(errorString, propertiesArray->Get(injectedScript->context(), i + 1).ToLocal(&value)))
+        if (hasInternalError(errorString, !propertiesArray->Get(injectedScript->context(), i + 1).ToLocal(&value)))
             return;
         OwnPtr<RemoteObject> wrappedValue = injectedScript->wrapObject(errorString, value, objectGroupName);
         if (!wrappedValue)
