@@ -1995,6 +1995,7 @@
           '-ldinput8.lib',
           '-ldwmapi.lib',
           '-ldxguid.lib',
+          '-limm32.lib',
           '-lsensorsapi.lib',
           '-lportabledeviceguids.lib',
         ],

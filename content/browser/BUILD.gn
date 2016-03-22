@@ -232,6 +232,7 @@ source_set("browser") {
       "dinput8.lib",
       "dwmapi.lib",
       "dxguid.lib",
+      "imm32.lib",
       "oleacc.lib",
       "sensorsapi.lib",
       "portabledeviceguids.lib",
