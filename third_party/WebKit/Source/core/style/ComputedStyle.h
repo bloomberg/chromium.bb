@@ -138,13 +138,7 @@ class CORE_EXPORT ComputedStyle: public RefCounted<ComputedStyle> {
     friend class ComputedStyleCSSValueMapping; // Needs to be able to see visited and unvisited colors for devtools.
     friend class StyleBuilderFunctions; // Sets color styles
     friend class CachedUAStyle; // Saves Border/Background information for later comparison.
-    friend class ColorPropertyFunctions; // Reads initial style values and accesses visited and unvisited colors.
-    friend class LengthPropertyFunctions; // Reads initial style values.
-    friend class LengthListPropertyFunctions; // Reads initial style values.
-    friend class NumberPropertyFunctions; // Reads initial style values.
-    friend class PaintPropertyFunctions; // Reads initial style values.
-    friend class BorderImageLengthBoxPropertyFunctions; // Reads initial style values.
-    friend class ImageSlicePropertyFunctions; // Reads initial style values.
+    friend class ColorPropertyFunctions; // Accesses visited and unvisited colors.
 
     // FIXME: When we stop resolving currentColor at style time, these can be removed.
     friend class CSSToStyleMap;
@@ -361,17 +355,18 @@ private:
     ALWAYS_INLINE ComputedStyle(const ComputedStyle&);
 
     static PassRefPtr<ComputedStyle> createInitialStyle();
-    static inline ComputedStyle* initialStyle()
+    static inline ComputedStyle& mutableInitialStyle()
     {
         LEAK_SANITIZER_DISABLED_SCOPE;
         DEFINE_STATIC_REF(ComputedStyle, s_initialStyle, (ComputedStyle::createInitialStyle()));
-        return s_initialStyle;
+        return *s_initialStyle;
     }
 
 public:
     static PassRefPtr<ComputedStyle> create();
     static PassRefPtr<ComputedStyle> createAnonymousStyleWithDisplay(const ComputedStyle& parentStyle, EDisplay);
     static PassRefPtr<ComputedStyle> clone(const ComputedStyle&);
+    static const ComputedStyle& initialStyle() { return mutableInitialStyle(); }
     static void invalidateInitialStyle();
 
     // Computes how the style change should be propagated down the tree.

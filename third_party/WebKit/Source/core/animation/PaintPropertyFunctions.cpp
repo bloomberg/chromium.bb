@@ -11,7 +11,7 @@ namespace blink {
 
 bool PaintPropertyFunctions::getInitialColor(CSSPropertyID property, StyleColor& result)
 {
-    return getColor(property, *ComputedStyle::initialStyle(), result);
+    return getColor(property, ComputedStyle::initialStyle(), result);
 }
 
 static bool getColorFromPaint(const SVGPaintType type, const Color color, StyleColor& result)

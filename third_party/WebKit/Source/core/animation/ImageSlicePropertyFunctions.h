@@ -23,7 +23,7 @@ struct ImageSlice {
 
 class ImageSlicePropertyFunctions {
 public:
-    static ImageSlice getInitialImageSlice(CSSPropertyID property) { return getImageSlice(property, *ComputedStyle::initialStyle()); }
+    static ImageSlice getInitialImageSlice(CSSPropertyID property) { return getImageSlice(property, ComputedStyle::initialStyle()); }
 
     static ImageSlice getImageSlice(CSSPropertyID property, const ComputedStyle& style)
     {

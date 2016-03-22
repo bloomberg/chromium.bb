@@ -120,7 +120,7 @@ ValueRange LengthListPropertyFunctions::getValueRange(CSSPropertyID property)
 
 bool LengthListPropertyFunctions::getInitialLengthList(CSSPropertyID property, Vector<Length>& result)
 {
-    return getLengthList(property, *ComputedStyle::initialStyle(), result);
+    return getLengthList(property, ComputedStyle::initialStyle(), result);
 }
 
 static bool appendToVector(const LengthPoint& point, Vector<Length>& result)

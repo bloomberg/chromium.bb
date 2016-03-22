@@ -10,7 +10,7 @@ namespace blink {
 
 StyleColor ColorPropertyFunctions::getInitialColor(CSSPropertyID property)
 {
-    return getUnvisitedColor(property, *ComputedStyle::initialStyle());
+    return getUnvisitedColor(property, ComputedStyle::initialStyle());
 }
 
 StyleColor ColorPropertyFunctions::getUnvisitedColor(CSSPropertyID property, const ComputedStyle& style)

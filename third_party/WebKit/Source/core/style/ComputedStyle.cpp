@@ -85,7 +85,7 @@ PassRefPtr<ComputedStyle> ComputedStyle::createInitialStyle()
 
 void ComputedStyle::invalidateInitialStyle()
 {
-    initialStyle()->setTapHighlightColor(initialTapHighlightColor());
+    mutableInitialStyle().setTapHighlightColor(initialTapHighlightColor());
 }
 
 PassRefPtr<ComputedStyle> ComputedStyle::createAnonymousStyleWithDisplay(const ComputedStyle& parentStyle, EDisplay display)
@@ -103,14 +103,14 @@ PassRefPtr<ComputedStyle> ComputedStyle::clone(const ComputedStyle& other)
 }
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
-    : m_box(initialStyle()->m_box)
-    , visual(initialStyle()->visual)
-    , m_background(initialStyle()->m_background)
-    , surround(initialStyle()->surround)
-    , rareNonInheritedData(initialStyle()->rareNonInheritedData)
-    , rareInheritedData(initialStyle()->rareInheritedData)
-    , inherited(initialStyle()->inherited)
-    , m_svgStyle(initialStyle()->m_svgStyle)
+    : m_box(initialStyle().m_box)
+    , visual(initialStyle().visual)
+    , m_background(initialStyle().m_background)
+    , surround(initialStyle().surround)
+    , rareNonInheritedData(initialStyle().rareNonInheritedData)
+    , rareInheritedData(initialStyle().rareInheritedData)
+    , inherited(initialStyle().inherited)
+    , m_svgStyle(initialStyle().m_svgStyle)
 {
     setBitDefaults(); // Would it be faster to copy this from the default style?
     static_assert((sizeof(InheritedFlags) <= 8), "InheritedFlags should not grow");

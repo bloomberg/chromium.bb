@@ -12,7 +12,7 @@ namespace blink {
 
 class BorderImageLengthBoxPropertyFunctions {
 public:
-    static const BorderImageLengthBox& getInitialBorderImageLengthBox(CSSPropertyID property) { return getBorderImageLengthBox(property, *ComputedStyle::initialStyle()); }
+    static const BorderImageLengthBox& getInitialBorderImageLengthBox(CSSPropertyID property) { return getBorderImageLengthBox(property, ComputedStyle::initialStyle()); }
 
     static const BorderImageLengthBox& getBorderImageLengthBox(CSSPropertyID property, const ComputedStyle& style)
     {

@@ -10,7 +10,7 @@ namespace blink {
 
 bool NumberPropertyFunctions::getInitialNumber(CSSPropertyID property, double& result)
 {
-    return getNumber(property, *ComputedStyle::initialStyle(), result);
+    return getNumber(property, ComputedStyle::initialStyle(), result);
 }
 
 bool NumberPropertyFunctions::getNumber(CSSPropertyID property, const ComputedStyle& style, double& result)

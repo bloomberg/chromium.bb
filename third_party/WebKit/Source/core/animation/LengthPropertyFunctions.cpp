@@ -120,7 +120,7 @@ bool LengthPropertyFunctions::getInitialLength(CSSPropertyID property, Length& r
         return true;
 
     default:
-        return getLength(property, *ComputedStyle::initialStyle(), result);
+        return getLength(property, ComputedStyle::initialStyle(), result);
     }
 }
 
