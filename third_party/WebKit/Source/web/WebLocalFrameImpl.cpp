@@ -223,6 +223,7 @@
 #include "web/CompositionUnderlineVectorBuilder.h"
 #include "web/FindInPageCoordinates.h"
 #include "web/GeolocationClientProxy.h"
+#include "web/IndexedDBClientImpl.h"
 #include "web/LocalFileSystemClient.h"
 #include "web/MIDIClientProxy.h"
 #include "web/NavigatorContentUtilsClientImpl.h"
@@ -1485,6 +1486,7 @@ WebLocalFrameImpl::WebLocalFrameImpl(WebTreeScopeType scope, WebFrameClient* cli
     , m_selfKeepAlive(this)
 #endif
 {
+    setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
     frameCount++;
 }
 

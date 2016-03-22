@@ -33,6 +33,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebWorkerContentSettingsClientProxy.h"
+#include "web/IndexedDBClientImpl.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -75,6 +76,7 @@ WorkerContentSettingsClient* WorkerContentSettingsClient::from(ExecutionContext&
 WorkerContentSettingsClient::WorkerContentSettingsClient(PassOwnPtr<WebWorkerContentSettingsClientProxy> proxy)
     : m_proxy(proxy)
 {
+    setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
 }
 
 void provideContentSettingsClientToWorker(WorkerClients* clients, PassOwnPtr<WebWorkerContentSettingsClientProxy> proxy)

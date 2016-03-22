@@ -43,7 +43,6 @@
 #include "platform/heap/Heap.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebThread.h"
-#include "web/IndexedDBClientImpl.h"
 #include "wtf/Assertions.h"
 #include "wtf/Partitions.h"
 #include "wtf/WTF.h"
@@ -84,7 +83,6 @@ void initialize(Platform* platform)
     Platform::initialize(platform);
 
     modulesInitializer().initialize();
-    setIndexedDBClientCreateFunction(IndexedDBClientImpl::create);
 
     V8Initializer::initializeMainThread();
 

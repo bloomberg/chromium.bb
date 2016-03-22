@@ -35,6 +35,12 @@ namespace blink {
 
 class ExecutionContext;
 
+// TODO(haraken): Remove IndexedDBClientImpl.
+// This class is used to bypass the disallowed dependency from modules/ to web/
+// to call allowIndexedDB() from modules/. ChromeClient is a mechanism to bypass
+// the dependency but we cannot use ChromeClient here because
+// IndexedDBClientImpl is used by worker threads but ChromeClient works only
+// for the main thread.
 class IndexedDBClientImpl final : public IndexedDBClient {
 public:
     static IndexedDBClient* create();
