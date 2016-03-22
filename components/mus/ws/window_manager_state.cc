@@ -4,6 +4,8 @@
 
 #include "components/mus/ws/window_manager_state.h"
 
+#include "base/memory/weak_ptr.h"
+#include "components/mus/ws/accelerator.h"
 #include "components/mus/ws/display_manager.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/server_window.h"
@@ -50,9 +52,13 @@ scoped_ptr<ui::Event> CoalesceEvents(scoped_ptr<ui::Event> first,
 
 class WindowManagerState::ProcessedEventTarget {
  public:
-  ProcessedEventTarget(ServerWindow* window, bool in_nonclient_area)
+  ProcessedEventTarget(ServerWindow* window,
+                       bool in_nonclient_area,
+                       Accelerator* accelerator)
       : in_nonclient_area_(in_nonclient_area) {
     tracker_.Add(window);
+    if (accelerator)
+      accelerator_ = accelerator->GetWeakPtr();
   }
 
   ~ProcessedEventTarget() {}
@@ -68,9 +74,12 @@ class WindowManagerState::ProcessedEventTarget {
 
   bool in_nonclient_area() const { return in_nonclient_area_; }
 
+  base::WeakPtr<Accelerator> accelerator() { return accelerator_; }
+
  private:
   ServerWindowTracker tracker_;
   const bool in_nonclient_area_;
+  base::WeakPtr<Accelerator> accelerator_;
 
   DISALLOW_COPY_AND_ASSIGN(ProcessedEventTarget);
 };
@@ -149,7 +158,9 @@ void WindowManagerState::OnWillDestroyTree(WindowTree* tree) {
   if (tree_awaiting_input_ack_ != tree)
     return;
   // The WindowTree is dying. So it's not going to ack the event.
-  OnEventAck(tree_awaiting_input_ack_);
+  // If the dying tree matches the root |tree_| marked as handled so we don't
+  // notify it of accelerators.
+  OnEventAck(tree_awaiting_input_ack_, tree == tree_);
 }
 
 WindowManagerState::WindowManagerState(Display* display,
@@ -216,7 +227,7 @@ void WindowManagerState::ProcessEvent(const ui::Event& event) {
   event_dispatcher_.ProcessEvent(event);
 }
 
-void WindowManagerState::OnEventAck(mojom::WindowTree* tree) {
+void WindowManagerState::OnEventAck(mojom::WindowTree* tree, bool handled) {
   if (tree_awaiting_input_ack_ != tree) {
     // TODO(sad): The ack must have arrived after the timeout. We should do
     // something here, and in OnEventAckTimeout().
@@ -224,6 +235,10 @@ void WindowManagerState::OnEventAck(mojom::WindowTree* tree) {
   }
   tree_awaiting_input_ack_ = nullptr;
   event_ack_timer_.Stop();
+
+  if (!handled && post_target_accelerator_)
+    OnAccelerator(post_target_accelerator_->id(), *event_awaiting_input_ack_);
+
   ProcessNextEventFromQueue();
 }
 
@@ -234,7 +249,7 @@ WindowServer* WindowManagerState::window_server() {
 void WindowManagerState::OnEventAckTimeout() {
   // TODO(sad): Figure out what we should do.
   NOTIMPLEMENTED() << "Event ACK timed out.";
-  OnEventAck(tree_awaiting_input_ack_);
+  OnEventAck(tree_awaiting_input_ack_, false);
 }
 
 void WindowManagerState::QueueEvent(
@@ -260,7 +275,7 @@ void WindowManagerState::ProcessNextEventFromQueue() {
       DispatchInputEventToWindowImpl(
           queued_event->processed_target->window(),
           queued_event->processed_target->in_nonclient_area(),
-          *queued_event->event);
+          *queued_event->event, queued_event->processed_target->accelerator());
       return;
     }
   }
@@ -269,7 +284,8 @@ void WindowManagerState::ProcessNextEventFromQueue() {
 void WindowManagerState::DispatchInputEventToWindowImpl(
     ServerWindow* target,
     bool in_nonclient_area,
-    const ui::Event& event) {
+    const ui::Event& event,
+    base::WeakPtr<Accelerator> accelerator) {
   if (target == root_->parent())
     target = root_.get();
 
@@ -306,6 +322,10 @@ void WindowManagerState::DispatchInputEventToWindowImpl(
                          &WindowManagerState::OnEventAckTimeout);
 
   tree_awaiting_input_ack_ = tree;
+  if (accelerator) {
+    event_awaiting_input_ack_ = ui::Event::Clone(event);
+    post_target_accelerator_ = accelerator;
+  }
   tree->DispatchInputEvent(target, event);
 }
 
@@ -341,18 +361,23 @@ void WindowManagerState::OnServerWindowCaptureLost(ServerWindow* window) {
 
 void WindowManagerState::DispatchInputEventToWindow(ServerWindow* target,
                                                     bool in_nonclient_area,
-                                                    const ui::Event& event) {
+                                                    const ui::Event& event,
+                                                    Accelerator* accelerator) {
   DCHECK(IsActive());
   // TODO(sky): this needs to see if another wms has capture and if so forward
   // to it.
   if (event_ack_timer_.IsRunning()) {
     scoped_ptr<ProcessedEventTarget> processed_event_target(
-        new ProcessedEventTarget(target, in_nonclient_area));
+        new ProcessedEventTarget(target, in_nonclient_area, accelerator));
     QueueEvent(event, std::move(processed_event_target));
     return;
   }
 
-  DispatchInputEventToWindowImpl(target, in_nonclient_area, event);
+  base::WeakPtr<Accelerator> weak_accelerator;
+  if (accelerator)
+    weak_accelerator = accelerator->GetWeakPtr();
+  DispatchInputEventToWindowImpl(target, in_nonclient_area, event,
+                                 weak_accelerator);
 }
 
 }  // namespace ws

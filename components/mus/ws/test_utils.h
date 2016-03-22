@@ -10,6 +10,7 @@
 #include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/display.h"
+#include "components/mus/ws/display_binding.h"
 #include "components/mus/ws/event_dispatcher.h"
 #include "components/mus/ws/platform_display.h"
 #include "components/mus/ws/platform_display_factory.h"
@@ -70,6 +71,7 @@ class WindowTreeTestApi {
     tree_->window_manager_internal_ = wm_internal;
   }
 
+  void ClearAck() { tree_->event_ack_id_ = 0; }
   void EnableCapture() { tree_->event_ack_id_ = 1u; }
 
  private:
@@ -120,6 +122,16 @@ class WindowManagerStateTestApi {
   explicit WindowManagerStateTestApi(WindowManagerState* wms) : wms_(wms) {}
   ~WindowManagerStateTestApi() {}
 
+  void DispatchInputEventToWindow(ServerWindow* target,
+                                  bool in_nonclient_area,
+                                  const ui::Event& event,
+                                  Accelerator* accelerator) {
+    wms_->DispatchInputEventToWindow(target, in_nonclient_area, event,
+                                     accelerator);
+  }
+
+  void OnEventAckTimeout() { wms_->OnEventAckTimeout(); }
+
   mojom::WindowTree* tree_awaiting_input_ack() {
     return wms_->tree_awaiting_input_ack_;
   }
@@ -128,6 +140,25 @@ class WindowManagerStateTestApi {
   WindowManagerState* wms_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowManagerStateTestApi);
+};
+
+// -----------------------------------------------------------------------------
+
+// Factory that always embeds the new WindowTree as the root user id.
+class TestDisplayBinding : public DisplayBinding {
+ public:
+  TestDisplayBinding(Display* display, WindowServer* window_server)
+      : display_(display), window_server_(window_server) {}
+  ~TestDisplayBinding() override {}
+
+ private:
+  // DisplayBinding:
+  WindowTree* CreateWindowTree(ServerWindow* root) override;
+
+  Display* display_;
+  WindowServer* window_server_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDisplayBinding);
 };
 
 // -----------------------------------------------------------------------------
@@ -145,6 +176,52 @@ class TestPlatformDisplayFactory : public PlatformDisplayFactory {
   int32_t* cursor_id_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplayFactory);
+};
+
+// -----------------------------------------------------------------------------
+
+class TestWindowManager : public mojom::WindowManager {
+ public:
+  TestWindowManager()
+      : got_create_top_level_window_(false),
+        change_id_(0u),
+        on_accelerator_called_(false),
+        on_accelerator_id_(0u) {}
+  ~TestWindowManager() override {}
+
+  bool did_call_create_top_level_window(uint32_t* change_id) {
+    if (!got_create_top_level_window_)
+      return false;
+
+    got_create_top_level_window_ = false;
+    *change_id = change_id_;
+    return true;
+  }
+
+  bool on_accelerator_called() { return on_accelerator_called_; }
+  uint32_t on_accelerator_id() { return on_accelerator_id_; }
+
+ private:
+  // WindowManager:
+  void WmSetBounds(uint32_t change_id,
+                   uint32_t window_id,
+                   mojo::RectPtr bounds) override {}
+  void WmSetProperty(uint32_t change_id,
+                     uint32_t window_id,
+                     const mojo::String& name,
+                     mojo::Array<uint8_t> value) override {}
+  void WmCreateTopLevelWindow(
+      uint32_t change_id,
+      mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override;
+  void OnAccelerator(uint32_t id, mojom::EventPtr event) override;
+
+  bool got_create_top_level_window_;
+  uint32_t change_id_;
+
+  bool on_accelerator_called_;
+  uint32_t on_accelerator_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWindowManager);
 };
 
 // -----------------------------------------------------------------------------

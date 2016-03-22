@@ -9,6 +9,8 @@ import("//mojo/public/mojo_application_manifest.gni")
 
 source_set("lib") {
   sources = [
+    "accelerator.cc",
+    "accelerator.h",
     "access_policy.h",
     "access_policy_delegate.h",
     "default_access_policy.cc",
@@ -161,6 +163,7 @@ test("mus_ws_unittests") {
     "window_coordinate_conversions_unittest.cc",
     "window_finder_unittest.cc",
     "window_manager_client_unittest.cc",
+    "window_manager_state_unittest.cc",
     "window_tree_client_unittest.cc",
     "window_tree_unittest.cc",
   ]
@@ -170,6 +173,7 @@ test("mus_ws_unittests") {
     ":test_support",
     "//base",
     "//base/test:test_config",
+    "//base/test:test_support",
     "//cc:cc",
     "//components/mus/common:mus_common",
     "//components/mus/public/cpp",

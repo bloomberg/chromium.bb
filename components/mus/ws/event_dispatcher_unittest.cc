@@ -10,7 +10,9 @@
 #include <queue>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/mus/public/cpp/event_matcher.h"
+#include "components/mus/ws/accelerator.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
 #include "components/mus/ws/server_window.h"
 #include "components/mus/ws/server_window_surface_manager_test_api.h"
@@ -26,11 +28,13 @@ namespace {
 
 // Identifies a generated event.
 struct DispatchedEventDetails {
-  DispatchedEventDetails() : window(nullptr), in_nonclient_area(false) {}
+  DispatchedEventDetails()
+      : window(nullptr), in_nonclient_area(false), accelerator(nullptr) {}
 
   ServerWindow* window;
   bool in_nonclient_area;
   scoped_ptr<ui::Event> event;
+  Accelerator* accelerator;
 };
 
 class TestEventDispatcherDelegate : public EventDispatcherDelegate {
@@ -68,14 +72,16 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   bool has_queued_events() const { return !dispatched_event_queue_.empty(); }
   ServerWindow* lost_capture_window() { return lost_capture_window_; }
 
+  // EventDispatcherDelegate:
+  void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override {
+    focused_window_ = window;
+  }
+
  private:
   // EventDispatcherDelegate:
   void OnAccelerator(uint32_t accelerator, const ui::Event& event) override {
     EXPECT_EQ(0u, last_accelerator_);
     last_accelerator_ = accelerator;
-  }
-  void SetFocusedWindowFromEventDispatcher(ServerWindow* window) override {
-    focused_window_ = window;
   }
   ServerWindow* GetFocusedWindowForEventDispatcher() override {
     return focused_window_;
@@ -87,11 +93,13 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   }
   void DispatchInputEventToWindow(ServerWindow* target,
                                   bool in_nonclient_area,
-                                  const ui::Event& event) override {
+                                  const ui::Event& event,
+                                  Accelerator* accelerator) override {
     scoped_ptr<DispatchedEventDetails> details(new DispatchedEventDetails);
     details->window = target;
     details->in_nonclient_area = in_nonclient_area;
     details->event = ui::Event::Clone(event);
+    details->accelerator = accelerator;
     dispatched_event_queue_.push(std::move(details));
   }
 
@@ -376,11 +384,36 @@ TEST_F(EventDispatcherTest, PostTargetAccelerator) {
   dispatcher->AddAccelerator(accelerator_1, std::move(matcher));
 
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
+  // The post-target accelerator should be fired if there is no focused window.
+  dispatcher->ProcessEvent(key);
+  EXPECT_EQ(accelerator_1,
+            event_dispatcher_delegate->GetAndClearLastAccelerator());
+  scoped_ptr<DispatchedEventDetails> details =
+      event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_FALSE(details);
+
+  // Set focused window for EventDispatcher dispatches key events.
+  scoped_ptr<ServerWindow> child = CreateChildWindow(WindowId(1, 3));
+  event_dispatcher_delegate->SetFocusedWindowFromEventDispatcher(child.get());
+
+  // With a focused window the event should be dispatched.
   dispatcher->ProcessEvent(key);
   EXPECT_EQ(0u, event_dispatcher_delegate->GetAndClearLastAccelerator());
+  details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_TRUE(details);
+  EXPECT_TRUE(details->accelerator);
 
-  // TODO(jonross): Update this test to include actual invokation of PostTarget
-  // acceleratos once events acking includes consuming.
+  base::WeakPtr<Accelerator> accelerator_weak_ptr =
+      details->accelerator->GetWeakPtr();
+  dispatcher->RemoveAccelerator(accelerator_1);
+  EXPECT_FALSE(accelerator_weak_ptr);
+
+  // Post deletion there should be no accelerator
+  dispatcher->ProcessEvent(key);
+  EXPECT_EQ(0u, event_dispatcher_delegate->GetAndClearLastAccelerator());
+  details = event_dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
+  EXPECT_TRUE(details);
+  EXPECT_FALSE(details->accelerator);
 }
 
 TEST_F(EventDispatcherTest, Capture) {

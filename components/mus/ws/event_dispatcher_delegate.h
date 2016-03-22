@@ -14,6 +14,7 @@ class Event;
 namespace mus {
 namespace ws {
 
+class Accelerator;
 class ServerWindow;
 
 // Used by EventDispatcher for mocking in tests.
@@ -37,7 +38,8 @@ class EventDispatcherDelegate {
   // |in_nonclient_area| is true if the event occurred in the non-client area.
   virtual void DispatchInputEventToWindow(ServerWindow* target,
                                           bool in_nonclient_area,
-                                          const ui::Event& event) = 0;
+                                          const ui::Event& event,
+                                          Accelerator* accelerator) = 0;
 
  protected:
   virtual ~EventDispatcherDelegate() {}

@@ -7,8 +7,10 @@
 #include "cc/output/copy_output_request.h"
 #include "components/mus/surfaces/surfaces_state.h"
 #include "components/mus/ws/display_binding.h"
+#include "components/mus/ws/window_manager_access_policy.h"
 #include "components/mus/ws/window_manager_factory_service.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/shell/public/interfaces/connector.mojom.h"
 
 namespace mus {
 namespace ws {
@@ -110,6 +112,28 @@ int EventDispatcherTestApi::NumberPointerTargetsForWindow(
     if (pair.second.window == window)
       count++;
   return count;
+}
+
+// TestDisplayBinding ---------------------------------------------------------
+
+WindowTree* TestDisplayBinding::CreateWindowTree(ServerWindow* root) {
+  return window_server_->EmbedAtWindow(
+      root, mojo::shell::mojom::kRootUserID, mus::mojom::WindowTreeClientPtr(),
+      make_scoped_ptr(new WindowManagerAccessPolicy));
+}
+
+// TestWindowManager ----------------------------------------------------------
+
+void TestWindowManager::WmCreateTopLevelWindow(
+    uint32_t change_id,
+    mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) {
+  got_create_top_level_window_ = true;
+  change_id_ = change_id;
+}
+
+void TestWindowManager::OnAccelerator(uint32_t id, mojom::EventPtr event) {
+  on_accelerator_called_ = true;
+  on_accelerator_id_ = id;
 }
 
 // TestWindowTreeClient -------------------------------------------------------

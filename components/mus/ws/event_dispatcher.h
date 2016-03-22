@@ -26,8 +26,8 @@ class PointerEvent;
 namespace mus {
 namespace ws {
 
+class Accelerator;
 class EventDispatcherDelegate;
-class EventMatcher;
 class ServerWindow;
 
 namespace test {
@@ -152,13 +152,10 @@ class EventDispatcher : public ServerWindowObserver {
   // observer for a window if any pointer events are targeting it.
   bool IsObservingWindow(ServerWindow* window);
 
-  // Looks to see if there is an accelerator bound to the specified code/flags,
-  // and of the matching |phase|. If there is one, sets |accelerator_id| to the
-  // id of the accelerator invoked and returns true. If there is none, returns
-  // false so normal key event processing can continue.
-  bool FindAccelerator(const ui::KeyEvent& event,
-                       const mojom::AcceleratorPhase phase,
-                       uint32_t* accelerator_id);
+  // Returns an Accelerator bound to the specified code/flags, and of the
+  // matching |phase|. Otherwise returns null.
+  Accelerator* FindAccelerator(const ui::KeyEvent& event,
+                               const mojom::AcceleratorPhase phase);
 
   // ServerWindowObserver:
   void OnWillChangeWindowHierarchy(ServerWindow* window,
@@ -181,8 +178,8 @@ class EventDispatcher : public ServerWindowObserver {
 
   cc::SurfaceId surface_id_;
 
-  using Entry = std::pair<uint32_t, EventMatcher>;
-  std::map<uint32_t, EventMatcher> accelerators_;
+  using Entry = std::pair<uint32_t, scoped_ptr<Accelerator>>;
+  std::map<uint32_t, scoped_ptr<Accelerator>> accelerators_;
 
   using PointerIdToTargetMap = std::map<int32_t, PointerTarget>;
   // |pointer_targets_| contains the active pointers. For a mouse based pointer

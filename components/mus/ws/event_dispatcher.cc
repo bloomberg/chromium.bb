@@ -9,6 +9,7 @@
 #include "base/time/time.h"
 #include "cc/surfaces/surface_hittest.h"
 #include "components/mus/surfaces/surfaces_state.h"
+#include "components/mus/ws/accelerator.h"
 #include "components/mus/ws/display.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
 #include "components/mus/ws/server_window.h"
@@ -53,142 +54,6 @@ bool IsLocationInNonclientArea(const ServerWindow* target,
 }
 
 }  // namespace
-
-class EventMatcher {
- public:
-  explicit EventMatcher(const mojom::EventMatcher& matcher)
-      : fields_to_match_(NONE),
-        accelerator_phase_(mojom::AcceleratorPhase::PRE_TARGET),
-        event_type_(ui::ET_UNKNOWN),
-        event_flags_(ui::EF_NONE),
-        ignore_event_flags_(ui::EF_NONE),
-        keyboard_code_(ui::VKEY_UNKNOWN),
-        pointer_type_(ui::EventPointerType::POINTER_TYPE_UNKNOWN) {
-    accelerator_phase_ = matcher.accelerator_phase;
-    if (matcher.type_matcher) {
-      fields_to_match_ |= TYPE;
-      switch (matcher.type_matcher->type) {
-        case mus::mojom::EventType::POINTER_DOWN:
-          event_type_ = ui::ET_POINTER_DOWN;
-          break;
-        case mus::mojom::EventType::POINTER_MOVE:
-          event_type_ = ui::ET_POINTER_MOVED;
-          break;
-        case mus::mojom::EventType::MOUSE_EXIT:
-          event_type_ = ui::ET_POINTER_EXITED;
-          break;
-        case mus::mojom::EventType::POINTER_UP:
-          event_type_ = ui::ET_POINTER_UP;
-          break;
-        case mus::mojom::EventType::POINTER_CANCEL:
-          event_type_ = ui::ET_POINTER_CANCELLED;
-          break;
-        case mus::mojom::EventType::KEY_PRESSED:
-          event_type_ = ui::ET_KEY_PRESSED;
-          break;
-        case mus::mojom::EventType::KEY_RELEASED:
-          event_type_ = ui::ET_KEY_RELEASED;
-          break;
-        default:
-          NOTREACHED();
-      }
-    }
-    if (matcher.flags_matcher) {
-      fields_to_match_ |= FLAGS;
-      event_flags_ = matcher.flags_matcher->flags;
-      if (matcher.ignore_flags_matcher)
-        ignore_event_flags_ = matcher.ignore_flags_matcher->flags;
-    }
-    if (matcher.key_matcher) {
-      fields_to_match_ |= KEYBOARD_CODE;
-      keyboard_code_ =
-          static_cast<uint16_t>(matcher.key_matcher->keyboard_code);
-    }
-    if (matcher.pointer_kind_matcher) {
-      fields_to_match_ |= POINTER_KIND;
-      switch (matcher.pointer_kind_matcher->pointer_kind) {
-        case mojom::PointerKind::MOUSE:
-          pointer_type_ = ui::EventPointerType::POINTER_TYPE_MOUSE;
-          break;
-        case mojom::PointerKind::TOUCH:
-          pointer_type_ = ui::EventPointerType::POINTER_TYPE_TOUCH;
-          break;
-        default:
-          NOTREACHED();
-      }
-    }
-    if (matcher.pointer_location_matcher) {
-      fields_to_match_ |= POINTER_LOCATION;
-      pointer_region_ =
-          matcher.pointer_location_matcher->region.To<gfx::RectF>();
-    }
-  }
-
-  ~EventMatcher() {}
-
-  bool MatchesEvent(const ui::Event& event,
-                    const mojom::AcceleratorPhase phase) const {
-    if (accelerator_phase_ != phase)
-      return false;
-    if ((fields_to_match_ & TYPE) && event.type() != event_type_)
-      return false;
-    int flags = event.flags() & ~ignore_event_flags_;
-    if ((fields_to_match_ & FLAGS) && flags != event_flags_)
-      return false;
-    if (fields_to_match_ & KEYBOARD_CODE) {
-      if (!event.IsKeyEvent())
-        return false;
-      if (keyboard_code_ != event.AsKeyEvent()->GetConflatedWindowsKeyCode())
-        return false;
-    }
-    if (fields_to_match_ & POINTER_KIND) {
-      if (!event.IsPointerEvent() ||
-          pointer_type_ !=
-              event.AsPointerEvent()->pointer_details().pointer_type)
-        return false;
-    }
-    if (fields_to_match_ & POINTER_LOCATION) {
-      // TODO(sad): The tricky part here is to make sure the same coord-space is
-      // used for the location-region and the event-location.
-      NOTIMPLEMENTED();
-      return false;
-    }
-
-    return true;
-  }
-
-  bool Equals(const EventMatcher& matcher) const {
-    return fields_to_match_ == matcher.fields_to_match_ &&
-           accelerator_phase_ == matcher.accelerator_phase_ &&
-           event_type_ == matcher.event_type_ &&
-           event_flags_ == matcher.event_flags_ &&
-           ignore_event_flags_ == matcher.ignore_event_flags_ &&
-           keyboard_code_ == matcher.keyboard_code_ &&
-           pointer_type_ == matcher.pointer_type_ &&
-           pointer_region_ == matcher.pointer_region_;
-  }
-
- private:
-  enum MatchFields {
-    NONE = 0,
-    TYPE = 1 << 0,
-    FLAGS = 1 << 1,
-    KEYBOARD_CODE = 1 << 2,
-    POINTER_KIND = 1 << 3,
-    POINTER_LOCATION = 1 << 4,
-  };
-
-  uint32_t fields_to_match_;
-  mojom::AcceleratorPhase accelerator_phase_;
-  ui::EventType event_type_;
-  // Bitfields of kEventFlag* and kMouseEventFlag* values in
-  // input_event_constants.mojom.
-  int event_flags_;
-  int ignore_event_flags_;
-  uint16_t keyboard_code_;
-  ui::EventPointerType pointer_type_;
-  gfx::RectF pointer_region_;
-};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -303,13 +168,13 @@ void EventDispatcher::UpdateCursorProviderByLastKnownLocation() {
 
 bool EventDispatcher::AddAccelerator(uint32_t id,
                                      mojom::EventMatcherPtr event_matcher) {
-  EventMatcher matcher(*event_matcher);
+  scoped_ptr<Accelerator> accelerator(new Accelerator(id, *event_matcher));
   // If an accelerator with the same id or matcher already exists, then abort.
   for (const auto& pair : accelerators_) {
-    if (pair.first == id || matcher.Equals(pair.second))
+    if (pair.first == id || accelerator->EqualEventMatcher(pair.second.get()))
       return false;
   }
-  accelerators_.insert(Entry(id, matcher));
+  accelerators_.insert(Entry(id, std::move(accelerator)));
   return true;
 }
 
@@ -326,10 +191,10 @@ void EventDispatcher::ProcessEvent(const ui::Event& event) {
   if (event.IsKeyEvent()) {
     const ui::KeyEvent* key_event = event.AsKeyEvent();
     if (event.type() == ui::ET_KEY_PRESSED && !key_event->is_char()) {
-      uint32_t accelerator = 0u;
-      if (FindAccelerator(*key_event, mojom::AcceleratorPhase::PRE_TARGET,
-                          &accelerator)) {
-        delegate_->OnAccelerator(accelerator, event);
+      Accelerator* pre_target =
+          FindAccelerator(*key_event, mojom::AcceleratorPhase::PRE_TARGET);
+      if (pre_target) {
+        delegate_->OnAccelerator(pre_target->id(), event);
         return;
       }
     }
@@ -346,10 +211,16 @@ void EventDispatcher::ProcessEvent(const ui::Event& event) {
 }
 
 void EventDispatcher::ProcessKeyEvent(const ui::KeyEvent& event) {
+  Accelerator* post_target =
+      FindAccelerator(event, mojom::AcceleratorPhase::POST_TARGET);
   ServerWindow* focused_window =
       delegate_->GetFocusedWindowForEventDispatcher();
-  if (focused_window)
-    delegate_->DispatchInputEventToWindow(focused_window, false, event);
+  if (focused_window) {
+    delegate_->DispatchInputEventToWindow(focused_window, false, event,
+                                          post_target);
+  } else if (post_target) {
+    delegate_->OnAccelerator(post_target->id(), event);
+  }
 }
 
 void EventDispatcher::ProcessPointerEvent(const ui::PointerEvent& event) {
@@ -504,8 +375,10 @@ void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,
   transform.TransformPoint(&location);
   scoped_ptr<ui::Event> clone = ui::Event::Clone(event);
   clone->AsPointerEvent()->set_location(location);
+  // TODO(jonross): add post-target accelerator support once accelerators
+  // support pointer events.
   delegate_->DispatchInputEventToWindow(target.window, target.in_nonclient_area,
-                                        *clone);
+                                        *clone, nullptr);
 }
 
 void EventDispatcher::CancelPointerEventsToTarget(ServerWindow* window) {
@@ -537,16 +410,15 @@ bool EventDispatcher::IsObservingWindow(ServerWindow* window) {
   return false;
 }
 
-bool EventDispatcher::FindAccelerator(const ui::KeyEvent& event,
-                                      const mojom::AcceleratorPhase phase,
-                                      uint32_t* accelerator_id) {
+Accelerator* EventDispatcher::FindAccelerator(
+    const ui::KeyEvent& event,
+    const mojom::AcceleratorPhase phase) {
   for (const auto& pair : accelerators_) {
-    if (pair.second.MatchesEvent(event, phase)) {
-      *accelerator_id = pair.first;
-      return true;
+    if (pair.second->MatchesEvent(event, phase)) {
+      return pair.second.get();
     }
   }
-  return false;
+  return nullptr;
 }
 
 void EventDispatcher::OnWillChangeWindowHierarchy(ServerWindow* window,

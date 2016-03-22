@@ -59,65 +59,7 @@ ClientWindowId ClientWindowIdForWindow(WindowTree* tree,
   return client_window_id;
 }
 
-class TestWindowManager : public mojom::WindowManager {
- public:
-  TestWindowManager() : got_create_top_level_window_(false), change_id_(0u) {}
-  ~TestWindowManager() override {}
-
-  bool did_call_create_top_level_window(uint32_t* change_id) {
-    if (!got_create_top_level_window_)
-      return false;
-
-    got_create_top_level_window_ = false;
-    *change_id = change_id_;
-    return true;
-  }
-
- private:
-  // WindowManager:
-  void WmSetBounds(uint32_t change_id,
-                   uint32_t window_id,
-                   mojo::RectPtr bounds) override {}
-  void WmSetProperty(uint32_t change_id,
-                     uint32_t window_id,
-                     const mojo::String& name,
-                     mojo::Array<uint8_t> value) override {}
-  void WmCreateTopLevelWindow(
-      uint32_t change_id,
-      mojo::Map<mojo::String, mojo::Array<uint8_t>> properties) override {
-    got_create_top_level_window_ = true;
-    change_id_ = change_id;
-  }
-  void OnAccelerator(uint32_t id, mojom::EventPtr event) override {}
-
-  bool got_create_top_level_window_;
-  uint32_t change_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestWindowManager);
-};
-
 // -----------------------------------------------------------------------------
-
-class TestDisplayBinding : public DisplayBinding {
- public:
-  TestDisplayBinding(Display* display, WindowServer* window_server)
-      : display_(display), window_server_(window_server) {}
-  ~TestDisplayBinding() override {}
-
- private:
-  // DisplayBinding:
-  WindowTree* CreateWindowTree(ServerWindow* root) override {
-    return window_server_->EmbedAtWindow(
-        root, mojo::shell::mojom::kRootUserID,
-        mus::mojom::WindowTreeClientPtr(),
-        make_scoped_ptr(new WindowManagerAccessPolicy));
-  }
-
-  Display* display_;
-  WindowServer* window_server_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDisplayBinding);
-};
 
 ui::PointerEvent CreatePointerDownEvent(int x, int y) {
   return ui::PointerEvent(ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(x, y),

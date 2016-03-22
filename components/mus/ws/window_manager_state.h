@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/ws/event_dispatcher.h"
@@ -22,6 +23,7 @@ struct SurfaceId;
 namespace mus {
 namespace ws {
 
+class Accelerator;
 class Display;
 class PlatformDisplay;
 class ServerWindow;
@@ -93,9 +95,10 @@ class WindowManagerState : public EventDispatcherDelegate {
   // Processes an event from PlatformDisplay.
   void ProcessEvent(const ui::Event& event);
 
-  // Called when the ack from an event dispatched to a WindowTree is received.
+  // Called when the ack from an event dispatched to WindowTree |tree| is
+  // received. When |handled| is true, the client consumed the event.
   // TODO(sky): make this private and use a callback.
-  void OnEventAck(mojom::WindowTree* tree);
+  void OnEventAck(mojom::WindowTree* tree, bool handled);
 
   // Returns a mojom::Display for the specified display. WindowManager specific
   // values are not set.
@@ -146,7 +149,8 @@ class WindowManagerState : public EventDispatcherDelegate {
   // Dispatches the event to the appropriate client and starts the ack timer.
   void DispatchInputEventToWindowImpl(ServerWindow* target,
                                       bool in_nonclient_area,
-                                      const ui::Event& event);
+                                      const ui::Event& event,
+                                      base::WeakPtr<Accelerator> accelerator);
 
   // EventDispatcherDelegate:
   void OnAccelerator(uint32_t accelerator_id, const ui::Event& event) override;
@@ -157,7 +161,8 @@ class WindowManagerState : public EventDispatcherDelegate {
   void OnServerWindowCaptureLost(ServerWindow* window) override;
   void DispatchInputEventToWindow(ServerWindow* target,
                                   bool in_nonclient_area,
-                                  const ui::Event& event) override;
+                                  const ui::Event& event,
+                                  Accelerator* accelerator) override;
 
   Display* display_;
   PlatformDisplay* platform_display_;
@@ -176,6 +181,8 @@ class WindowManagerState : public EventDispatcherDelegate {
   mojom::FrameDecorationValuesPtr frame_decoration_values_;
 
   mojom::WindowTree* tree_awaiting_input_ack_ = nullptr;
+  scoped_ptr<ui::Event> event_awaiting_input_ack_;
+  base::WeakPtr<Accelerator> post_target_accelerator_;
   std::queue<scoped_ptr<QueuedEvent>> event_queue_;
   base::OneShotTimer event_ack_timer_;
 

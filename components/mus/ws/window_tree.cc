@@ -1164,7 +1164,7 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id, bool handled) {
   WindowManagerState* event_source_wms = event_source_wms_;
   event_source_wms_ = nullptr;
   if (event_source_wms)
-    event_source_wms->OnEventAck(this);
+    event_source_wms->OnEventAck(this, handled);
 
   if (!event_queue_.empty()) {
     DCHECK(!event_ack_id_);
