@@ -21,7 +21,7 @@ HEADERS = $(SRCDIR)\louis.h include\liblouis.h include\config.h
 DLLFLAGS = /dll /nologo
 LIBFLAGS = /nologo
 OBJ = compileTranslationTable.obj lou_translateString.obj \
-    lou_backTranslateString.obj wrappers.obj logging.obj
+    lou_backTranslateString.obj logging.obj wrappers.obj pattern.obj
 
 !if "$(UCS)" == "2"
 CFLAGS = $(CFLAGS) /DWIDECHAR_TYPE="unsigned short int"
@@ -54,3 +54,6 @@ logging.obj: $(SRCDIR)\logging.c $(HEADERS)
 
 wrappers.obj: $(SRCDIR)\wrappers.c $(HEADERS)
     $(CC) $(CFLAGS) $(SRCDIR)\wrappers.c
+
+pattern.obj: $(SRCDIR)\pattern.c $(HEADERS)
+    $(CC) $(CFLAGS) $(SRCDIR)\pattern.c
