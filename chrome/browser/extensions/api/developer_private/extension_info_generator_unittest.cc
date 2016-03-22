@@ -4,6 +4,7 @@
 
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
@@ -57,18 +58,17 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
     InitializeEmptyExtensionService();
   }
 
-  void OnInfosGenerated(linked_ptr<developer::ExtensionInfo>* info_out,
-                        const ExtensionInfoGenerator::ExtensionInfoList& list) {
+  void OnInfosGenerated(scoped_ptr<developer::ExtensionInfo>* info_out,
+                        ExtensionInfoGenerator::ExtensionInfoList list) {
     EXPECT_EQ(1u, list.size());
     if (!list.empty())
-      *info_out = list[0];
-    quit_closure_.Run();
-    quit_closure_.Reset();
+      info_out->reset(new developer::ExtensionInfo(std::move(list[0])));
+    base::ResetAndReturn(&quit_closure_).Run();
   }
 
   scoped_ptr<developer::ExtensionInfo> GenerateExtensionInfo(
       const std::string& extension_id) {
-    linked_ptr<developer::ExtensionInfo> info;
+    scoped_ptr<developer::ExtensionInfo> info;
     base::RunLoop run_loop;
     quit_closure_ = run_loop.QuitClosure();
     scoped_ptr<ExtensionInfoGenerator> generator(
@@ -79,7 +79,7 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
                    base::Unretained(this),
                    base::Unretained(&info)));
     run_loop.Run();
-    return make_scoped_ptr(info.release());
+    return info;
   }
 
   const scoped_refptr<const Extension> CreateExtension(
@@ -126,7 +126,7 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
 
   void CompareExpectedAndActualOutput(
       const base::FilePath& extension_path,
-      const InspectableViewsFinder::ViewList& views,
+      InspectableViewsFinder::ViewList views,
       const base::FilePath& expected_output_path) {
     std::string error;
     scoped_ptr<base::DictionaryValue> expected_output_data(
@@ -136,7 +136,7 @@ class ExtensionInfoGeneratorUnitTest : public ExtensionServiceTestBase {
     // Produce test output.
     scoped_ptr<developer::ExtensionInfo> info =
         CreateExtensionInfoFromPath(extension_path, Manifest::INVALID_LOCATION);
-    info->views = views;
+    info->views = std::move(views);
     scoped_ptr<base::DictionaryValue> actual_output_data = info->ToValue();
     ASSERT_TRUE(actual_output_data);
 
@@ -253,7 +253,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   EXPECT_FALSE(info->incognito_access.is_active);
   ASSERT_EQ(2u, info->runtime_errors.size());
   const api::developer_private::RuntimeError& runtime_error =
-      *info->runtime_errors[0];
+      info->runtime_errors[0];
   EXPECT_EQ(extension->id(), runtime_error.extension_id);
   EXPECT_EQ(api::developer_private::ERROR_TYPE_RUNTIME, runtime_error.type);
   EXPECT_EQ(api::developer_private::ERROR_LEVEL_ERROR,
@@ -261,11 +261,11 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   EXPECT_EQ(1u, runtime_error.stack_trace.size());
   ASSERT_EQ(1u, info->manifest_errors.size());
   const api::developer_private::RuntimeError& runtime_error_verbose =
-      *info->runtime_errors[1];
+      info->runtime_errors[1];
   EXPECT_EQ(api::developer_private::ERROR_LEVEL_LOG,
             runtime_error_verbose.severity);
   const api::developer_private::ManifestError& manifest_error =
-      *info->manifest_errors[0];
+      info->manifest_errors[0];
   EXPECT_EQ(extension->id(), manifest_error.extension_id);
 
   // Test an extension that isn't unpacked.
@@ -292,24 +292,25 @@ TEST_F(ExtensionInfoGeneratorUnitTest, GenerateExtensionsJSONData) {
                 .AppendASCII("behllobkkfkfnphdnhnkndlbkcpglgmj")
                 .AppendASCII("1.0.0.0");
 
-  InspectableViewsFinder::ViewList views;
-  views.push_back(InspectableViewsFinder::ConstructView(
-      GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/bar.html"),
-      42, 88, true, false, VIEW_TYPE_TAB_CONTENTS));
-  views.push_back(InspectableViewsFinder::ConstructView(
-      GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/dog.html"),
-      0, 0, false, true, VIEW_TYPE_TAB_CONTENTS));
-
   base::FilePath expected_outputs_path =
       data_dir().AppendASCII("api_test")
                 .AppendASCII("developer")
                 .AppendASCII("generated_output");
 
-  CompareExpectedAndActualOutput(
-      extension_path,
-      views,
-      expected_outputs_path.AppendASCII(
-          "behllobkkfkfnphdnhnkndlbkcpglgmj.json"));
+  {
+    InspectableViewsFinder::ViewList views;
+    views.push_back(InspectableViewsFinder::ConstructView(
+        GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/bar.html"),
+        42, 88, true, false, VIEW_TYPE_TAB_CONTENTS));
+    views.push_back(InspectableViewsFinder::ConstructView(
+        GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/dog.html"), 0,
+        0, false, true, VIEW_TYPE_TAB_CONTENTS));
+
+    CompareExpectedAndActualOutput(
+        extension_path, std::move(views),
+        expected_outputs_path.AppendASCII(
+            "behllobkkfkfnphdnhnkndlbkcpglgmj.json"));
+  }
 
 #if !defined(OS_CHROMEOS)
   // Test Extension2
@@ -318,16 +319,21 @@ TEST_F(ExtensionInfoGeneratorUnitTest, GenerateExtensionsJSONData) {
                              .AppendASCII("hpiknbiabeeppbpihjehijgoemciehgk")
                              .AppendASCII("2");
 
-  // It's OK to have duplicate URLs, so long as the IDs are different.
-  views[0]->url =
-      "chrome-extension://hpiknbiabeeppbpihjehijgoemciehgk/bar.html";
-  views[1]->url = views[0]->url;
+  {
+    // It's OK to have duplicate URLs, so long as the IDs are different.
+    InspectableViewsFinder::ViewList views;
+    views.push_back(InspectableViewsFinder::ConstructView(
+        GURL("chrome-extension://hpiknbiabeeppbpihjehijgoemciehgk/bar.html"),
+        42, 88, true, false, VIEW_TYPE_TAB_CONTENTS));
+    views.push_back(InspectableViewsFinder::ConstructView(
+        GURL("chrome-extension://hpiknbiabeeppbpihjehijgoemciehgk/bar.html"), 0,
+        0, false, true, VIEW_TYPE_TAB_CONTENTS));
 
-  CompareExpectedAndActualOutput(
-      extension_path,
-      views,
-      expected_outputs_path.AppendASCII(
-          "hpiknbiabeeppbpihjehijgoemciehgk.json"));
+    CompareExpectedAndActualOutput(
+        extension_path, std::move(views),
+        expected_outputs_path.AppendASCII(
+            "hpiknbiabeeppbpihjehijgoemciehgk.json"));
+  }
 #endif
 
   // Test Extension3
@@ -335,13 +341,10 @@ TEST_F(ExtensionInfoGeneratorUnitTest, GenerateExtensionsJSONData) {
                              .AppendASCII("Extensions")
                              .AppendASCII("bjafgdebaacbbbecmhlhpofkepfkgcpa")
                              .AppendASCII("1.0");
-  views.clear();
-
-  CompareExpectedAndActualOutput(
-      extension_path,
-      views,
-      expected_outputs_path.AppendASCII(
-          "bjafgdebaacbbbecmhlhpofkepfkgcpa.json"));
+  CompareExpectedAndActualOutput(extension_path,
+                                 InspectableViewsFinder::ViewList(),
+                                 expected_outputs_path.AppendASCII(
+                                     "bjafgdebaacbbbecmhlhpofkepfkgcpa.json"));
 }
 
 // Test that the all_urls checkbox only shows up for extensions that want all

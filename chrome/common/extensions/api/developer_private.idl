@@ -5,7 +5,7 @@
 // developerPrivate API.
 // This is a private API exposing developing and debugging functionalities for
 // apps and extensions.
-namespace developerPrivate {
+[use_movable_types=true] namespace developerPrivate {
 
   // DEPRECATED: Prefer ExtensionType.
   enum ItemType {

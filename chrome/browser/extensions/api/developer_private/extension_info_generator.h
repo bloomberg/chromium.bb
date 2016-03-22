@@ -35,10 +35,9 @@ class WarningService;
 // This class is designed to only have one generation running at a time!
 class ExtensionInfoGenerator {
  public:
-  using ExtensionInfoList =
-      std::vector<linked_ptr<api::developer_private::ExtensionInfo>>;
+  using ExtensionInfoList = std::vector<api::developer_private::ExtensionInfo>;
 
-  using ExtensionInfosCallback = base::Callback<void(const ExtensionInfoList&)>;
+  using ExtensionInfosCallback = base::Callback<void(ExtensionInfoList)>;
 
   explicit ExtensionInfoGenerator(content::BrowserContext* context);
   ~ExtensionInfoGenerator();

@@ -6,6 +6,7 @@
 from cpp_namespace_environment import CppNamespaceEnvironment
 from cpp_type_generator import CppTypeGenerator
 from json_schema import CachedLoad
+import idl_schema
 import model
 import unittest
 
@@ -49,6 +50,10 @@ class CppTypeGeneratorTest(unittest.TestCase):
     self.content_settings_json = CachedLoad('test/content_settings.json')
     self.content_settings = self.models['content_settings'].AddNamespace(
         self.content_settings_json[0], 'path/to/content_settings.json')
+    self.objects_movable_idl = idl_schema.Load('test/objects_movable.idl')
+    self.objects_movable = self.models['objects_movable'].AddNamespace(
+        self.objects_movable_idl[0], 'path/to/objects_movable.idl',
+        include_compiler_options=True)
 
   def testGenerateIncludesAndForwardDeclarations(self):
     m = model.Model()
@@ -152,6 +157,14 @@ class CppTypeGeneratorTest(unittest.TestCase):
         'std::vector<std::string>',
         manager.GetCppType(
             self.permissions.types['Permissions'].properties['origins'].type_))
+
+    manager = CppTypeGenerator(self.models.get('objects_movable'),
+                               _FakeSchemaLoader(None))
+    self.assertEquals(
+        'std::vector<MovablePod>',
+        manager.GetCppType(
+            self.objects_movable.types['MovableParent'].
+                properties['pods'].type_))
 
   def testGetCppTypeLocalRef(self):
     manager = CppTypeGenerator(self.models.get('tabs'), _FakeSchemaLoader(None))

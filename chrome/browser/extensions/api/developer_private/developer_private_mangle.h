@@ -21,7 +21,7 @@ namespace developer_private_mangle {
 // Converts a developer_private::ExtensionInfo into a
 // developer_private::ItemInfo for compatability with deprecated API
 // functions.
-linked_ptr<api::developer_private::ItemInfo> MangleExtensionInfo(
+api::developer_private::ItemInfo MangleExtensionInfo(
     const api::developer_private::ExtensionInfo& info);
 
 }  // namespace developer_private_mangle

@@ -38,45 +38,44 @@ InspectableViewsFinder::View InspectableViewsFinder::ConstructView(
     bool incognito,
     bool is_iframe,
     ViewType type) {
-  linked_ptr<api::developer_private::ExtensionView> view(
-      new api::developer_private::ExtensionView());
-  view->url = url.spec();
-  view->render_process_id = render_process_id;
+  api::developer_private::ExtensionView view;
+  view.url = url.spec();
+  view.render_process_id = render_process_id;
   // NOTE(devlin): This is called "render_view_id" in the api for legacy
   // reasons, but it's not a high priority to change.
-  view->render_view_id = render_frame_id;
-  view->incognito = incognito;
-  view->is_iframe = is_iframe;
+  view.render_view_id = render_frame_id;
+  view.incognito = incognito;
+  view.is_iframe = is_iframe;
   switch (type) {
     case VIEW_TYPE_APP_WINDOW:
-      view->type = api::developer_private::VIEW_TYPE_APP_WINDOW;
+      view.type = api::developer_private::VIEW_TYPE_APP_WINDOW;
       break;
     case VIEW_TYPE_BACKGROUND_CONTENTS:
-      view->type = api::developer_private::VIEW_TYPE_BACKGROUND_CONTENTS;
+      view.type = api::developer_private::VIEW_TYPE_BACKGROUND_CONTENTS;
       break;
     case VIEW_TYPE_COMPONENT:
-      view->type = api::developer_private::VIEW_TYPE_COMPONENT;
+      view.type = api::developer_private::VIEW_TYPE_COMPONENT;
       break;
     case VIEW_TYPE_EXTENSION_BACKGROUND_PAGE:
-      view->type = api::developer_private::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
+      view.type = api::developer_private::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE;
       break;
     case VIEW_TYPE_EXTENSION_DIALOG:
-      view->type = api::developer_private::VIEW_TYPE_EXTENSION_DIALOG;
+      view.type = api::developer_private::VIEW_TYPE_EXTENSION_DIALOG;
       break;
     case VIEW_TYPE_EXTENSION_GUEST:
-      view->type = api::developer_private::VIEW_TYPE_EXTENSION_GUEST;
+      view.type = api::developer_private::VIEW_TYPE_EXTENSION_GUEST;
       break;
     case VIEW_TYPE_EXTENSION_POPUP:
-      view->type = api::developer_private::VIEW_TYPE_EXTENSION_POPUP;
+      view.type = api::developer_private::VIEW_TYPE_EXTENSION_POPUP;
       break;
     case VIEW_TYPE_LAUNCHER_PAGE:
-      view->type = api::developer_private::VIEW_TYPE_LAUNCHER_PAGE;
+      view.type = api::developer_private::VIEW_TYPE_LAUNCHER_PAGE;
       break;
     case VIEW_TYPE_PANEL:
-      view->type = api::developer_private::VIEW_TYPE_PANEL;
+      view.type = api::developer_private::VIEW_TYPE_PANEL;
       break;
     case VIEW_TYPE_TAB_CONTENTS:
-      view->type = api::developer_private::VIEW_TYPE_TAB_CONTENTS;
+      view.type = api::developer_private::VIEW_TYPE_TAB_CONTENTS;
       break;
     default:
       NOTREACHED();

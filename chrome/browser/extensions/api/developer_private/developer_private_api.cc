@@ -388,25 +388,19 @@ void DeveloperPrivateEventRouter::BroadcastItemStateChangedHelper(
     developer::EventType event_type,
     const std::string& extension_id,
     scoped_ptr<ExtensionInfoGenerator> info_generator,
-    const ExtensionInfoGenerator::ExtensionInfoList& infos) {
+    ExtensionInfoGenerator::ExtensionInfoList infos) {
   DCHECK_LE(infos.size(), 1u);
 
   developer::EventData event_data;
   event_data.event_type = event_type;
   event_data.item_id = extension_id;
-  scoped_ptr<base::DictionaryValue> dict = event_data.ToValue();
-
   if (!infos.empty()) {
-    // Hack: Ideally, we would use event_data.extension_info to set the
-    // extension info, but since it's an optional field, it's implemented as a
-    // scoped ptr, and so ownership between that and the vector of linked ptrs
-    // here is, well, messy. Easier to just set it like this.
-    dict->SetWithoutPathExpansion("extensionInfo",
-                                  infos[0]->ToValue().release());
+    event_data.extension_info.reset(
+        new developer::ExtensionInfo(std::move(infos[0])));
   }
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(dict.release());
+  args->Append(event_data.ToValue());
   scoped_ptr<Event> event(
       new Event(events::DEVELOPER_PRIVATE_ON_ITEM_STATE_CHANGED,
                 developer::OnItemStateChanged::kEventName, std::move(args)));
@@ -510,7 +504,7 @@ DeveloperPrivateGetExtensionsInfoFunction::Run() {
 }
 
 void DeveloperPrivateGetExtensionsInfoFunction::OnInfosGenerated(
-    const ExtensionInfoGenerator::ExtensionInfoList& list) {
+    ExtensionInfoGenerator::ExtensionInfoList list) {
   Respond(ArgumentList(developer::GetExtensionsInfo::Results::Create(list)));
 }
 
@@ -538,11 +532,10 @@ DeveloperPrivateGetExtensionInfoFunction::Run() {
 }
 
 void DeveloperPrivateGetExtensionInfoFunction::OnInfosGenerated(
-    const ExtensionInfoGenerator::ExtensionInfoList& list) {
-  DCHECK_EQ(1u, list.size());
-  const linked_ptr<developer::ExtensionInfo>& info = list[0];
-  Respond(info.get() ? OneArgument(info->ToValue()) :
-      Error(kNoSuchExtensionError));
+    ExtensionInfoGenerator::ExtensionInfoList list) {
+  DCHECK_LE(1u, list.size());
+  Respond(list.empty() ? Error(kNoSuchExtensionError)
+                       : OneArgument(list[0].ToValue()));
 }
 
 DeveloperPrivateGetItemsInfoFunction::DeveloperPrivateGetItemsInfoFunction() {}
@@ -564,10 +557,10 @@ ExtensionFunction::ResponseAction DeveloperPrivateGetItemsInfoFunction::Run() {
 }
 
 void DeveloperPrivateGetItemsInfoFunction::OnInfosGenerated(
-    const ExtensionInfoGenerator::ExtensionInfoList& list) {
-  std::vector<linked_ptr<developer::ItemInfo>> item_list;
-  for (const linked_ptr<developer::ExtensionInfo>& info : list)
-    item_list.push_back(developer_private_mangle::MangleExtensionInfo(*info));
+    ExtensionInfoGenerator::ExtensionInfoList list) {
+  std::vector<developer::ItemInfo> item_list;
+  for (const developer::ExtensionInfo& info : list)
+    item_list.push_back(developer_private_mangle::MangleExtensionInfo(info));
 
   Respond(ArgumentList(developer::GetItemsInfo::Results::Create(item_list)));
 }

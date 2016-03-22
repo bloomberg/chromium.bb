@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "tools/json_schema_compiler/test/objects.h"
-
 #include <stddef.h>
 
 #include "base/json/json_writer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "tools/json_schema_compiler/test/objects.h"
+#include "tools/json_schema_compiler/test/objects_movable.h"
 
 using namespace test::api::objects;
+using namespace test::api::objects_movable;
 
 TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
   {
@@ -70,4 +71,39 @@ TEST(JsonSchemaCompilerObjectsTest, OnObjectFiredCreate) {
   base::DictionaryValue* result = NULL;
   ASSERT_TRUE(results->GetDictionary(0, &result));
   ASSERT_TRUE(result->Equals(&expected));
+}
+TEST(JsonSchemaCompilerMovableObjectsTest, MovableObjectsTest) {
+  std::vector<MovablePod> pods;
+  {
+    MovablePod pod;
+    pod.foo = FOO_BAR;
+    pod.str = "str1";
+    pod.num = 42;
+    pod.b = true;
+    pods.push_back(std::move(pod));
+  }
+  {
+    MovablePod pod;
+    pod.foo = FOO_BAZ;
+    pod.str = "str2";
+    pod.num = 45;
+    pod.b = false;
+    pods.push_back(std::move(pod));
+  }
+  MovableParent parent;
+  parent.pods = std::move(pods);
+  parent.strs.push_back("pstr");
+
+  MovableParent parent2(std::move(parent));
+  ASSERT_EQ(2u, parent2.pods.size());
+  EXPECT_EQ(FOO_BAR, parent2.pods[0].foo);
+  EXPECT_EQ("str1", parent2.pods[0].str);
+  EXPECT_EQ(42, parent2.pods[0].num);
+  EXPECT_TRUE(parent2.pods[0].b);
+  EXPECT_EQ(FOO_BAZ, parent2.pods[1].foo);
+  EXPECT_EQ("str2", parent2.pods[1].str);
+  EXPECT_EQ(45, parent2.pods[1].num);
+  EXPECT_FALSE(parent2.pods[1].b);
+  ASSERT_EQ(1u, parent2.strs.size());
+  EXPECT_EQ("pstr", parent2.strs[0]);
 }

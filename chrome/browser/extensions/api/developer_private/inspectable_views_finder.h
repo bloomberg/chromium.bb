@@ -28,7 +28,7 @@ struct ExtensionView;
 // by the developerPrivate API structure and schema compiler.
 class InspectableViewsFinder {
  public:
-  using View = linked_ptr<api::developer_private::ExtensionView>;
+  using View = api::developer_private::ExtensionView;
   using ViewList = std::vector<View>;
 
   explicit InspectableViewsFinder(Profile* profile);

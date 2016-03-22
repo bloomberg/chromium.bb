@@ -25,6 +25,7 @@
           'idl_other_namespace_sub_namespace.idl',
           'idl_object_types.idl',
           'objects.json',
+          'objects_movable.idl',
           'simple_api.json',
           'error_generation.json'
         ],

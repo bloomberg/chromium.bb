@@ -228,6 +228,10 @@ class _Generator(object):
           .Append('%(classname)s();')
           .Append('~%(classname)s();')
       )
+      if 'use_movable_types' in type_.namespace.compiler_options:
+        (c.Append('%(classname)s(%(classname)s&& rhs);')
+          .Append('%(classname)s& operator=(%(classname)s&& rhs);')
+        )
       if type_.origin.from_json:
         (c.Append()
           .Comment('Populates a %s object from a base::Value. Returns'

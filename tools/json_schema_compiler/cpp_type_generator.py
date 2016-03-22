@@ -121,7 +121,12 @@ class CppTypeGenerator(object):
     # TODO(kalman): change this - but it's an exceedingly far-reaching change.
     if not self.FollowRef(type_).property_type == PropertyType.ENUM:
       if is_in_container and (is_ptr or not self.IsCopyable(type_)):
-        cpp_type = 'linked_ptr<%s>' % cpp_util.PadForGenerics(cpp_type)
+        # Only wrap the object in a linked_ptr if this API isn't using movable
+        # types. Since base::Values aren't yet movable, wrap them too.
+        # TODO(devlin): Eventually, movable types should be the default.
+        if (not 'use_movable_types' in type_.namespace.compiler_options or
+            cpp_type == 'base::Value' or cpp_type == 'base::DictionaryValue'):
+          cpp_type = 'linked_ptr<%s>' % cpp_util.PadForGenerics(cpp_type)
       elif is_ptr:
         cpp_type = 'scoped_ptr<%s>' % cpp_util.PadForGenerics(cpp_type)
 

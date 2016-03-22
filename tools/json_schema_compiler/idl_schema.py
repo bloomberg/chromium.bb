@@ -500,6 +500,8 @@ class IDLSchema(object):
           compiler_options['implemented_in'] = node.value
         elif node.name == 'camel_case_enum_to_string':
           compiler_options['camel_case_enum_to_string'] = node.value
+        elif node.name == 'use_movable_types':
+          compiler_options['use_movable_types'] = node.value
         elif node.name == 'deprecated':
           deprecated = str(node.value)
         elif node.name == 'documentation_title':

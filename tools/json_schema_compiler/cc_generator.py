@@ -126,8 +126,17 @@ class _Generator(object):
       (c.Append('%s::%s()' % (classname_in_namespace, classname))
         .Cblock(self._GenerateInitializersAndBody(type_))
         .Append('%s::~%s() {}' % (classname_in_namespace, classname))
-        .Append()
       )
+      if 'use_movable_types' in type_.namespace.compiler_options:
+        # Note: we use 'rhs' because some API objects have a member 'other'.
+        (c.Append('%s::%s(%s&& rhs)' %
+                      (classname_in_namespace, classname, classname))
+          .Cblock(self._GenerateMoveCtor(type_))
+          .Append('%s& %s::operator=(%s&& rhs)' %
+                      (classname_in_namespace, classname_in_namespace,
+                       classname))
+          .Cblock(self._GenerateMoveAssignOperator(type_))
+        )
       if type_.origin.from_json:
         c.Cblock(self._GenerateTypePopulate(classname_in_namespace, type_))
         if cpp_namespace is None:  # only generate for top-level types
@@ -178,10 +187,76 @@ class _Generator(object):
         raise TypeError(t)
 
     if items:
-      s = ': %s' % (', '.join(items))
+      s = ': %s' % (',\n'.join(items))
     else:
       s = ''
     s = s + ' {}'
+    return Code().Append(s)
+
+  def _GetMoveProps(self, type_, copy_str, move_str):
+    """Returns a tuple of (props, dicts) for the type.
+
+    |props| is a list of all the copyable or movable properties generated using
+    the copy_str and move_str, and |dicts| is a list of all the dictionary
+    properties by name.
+
+    Properties:
+    - |type_| the Type to get the properties from
+    - |copy_str| the string to use when copying a value; should have two
+                 placeholders to take the property name.
+    - |move_str| the string to use when moving a value; should have two
+                 placeholders to take the property name.
+    """
+    props = []
+    dicts = []
+    for prop in type_.properties.values():
+      t = prop.type_
+
+      real_t = self._type_helper.FollowRef(t)
+      if (prop.optional or
+          t.property_type == PropertyType.ANY or
+          t.property_type == PropertyType.ARRAY or
+          t.property_type == PropertyType.BINARY or
+          t.property_type == PropertyType.CHOICES or
+          t.property_type == PropertyType.OBJECT or
+          t.property_type == PropertyType.REF or
+          t.property_type == PropertyType.STRING):
+        props.append(move_str % (prop.unix_name, prop.unix_name))
+      elif t.property_type == PropertyType.FUNCTION:
+        dicts.append(prop.unix_name)
+      elif (real_t.property_type == PropertyType.ENUM or
+            t.property_type == PropertyType.INTEGER or
+            t.property_type == PropertyType.DOUBLE or
+            t.property_type == PropertyType.BOOLEAN):
+        props.append(copy_str % (prop.unix_name, prop.unix_name))
+      else:
+        raise TypeError(t)
+
+    return (props, dicts)
+
+  def _GenerateMoveCtor(self, type_):
+    props, dicts = self._GetMoveProps(type_, '%s(rhs.%s)',
+                                      '%s(std::move(rhs.%s))')
+    s = ''
+    if props:
+      s = s + ': %s' % (',\n'.join(props))
+    s = s + '{'
+    for item in dicts:
+      s = s + ('\n%s.Swap(&rhs.%s);' % (item, item))
+    s = s + '\n}'
+
+    return Code().Append(s)
+
+  def _GenerateMoveAssignOperator(self, type_):
+    props, dicts = self._GetMoveProps(type_, '%s = rhs.%s;',
+                                      '%s = std::move(rhs.%s);')
+    s = '{\n'
+    if props:
+      s = s + '\n'.join(props)
+    for item in dicts:
+      s = s + ('\n%s.Swap(&rhs.%s);' % (item, item))
+    s = s + '\nreturn *this;\n}'
+
     return Code().Append(s)
 
   def _GenerateTypePopulate(self, cpp_namespace, type_):

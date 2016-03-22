@@ -132,8 +132,7 @@ class DeveloperPrivateEventRouter : public ExtensionRegistryObserver,
       api::developer_private::EventType event_type,
       const std::string& extension_id,
       scoped_ptr<ExtensionInfoGenerator> info_generator,
-      const std::vector<linked_ptr<api::developer_private::ExtensionInfo>>&
-          infos);
+      std::vector<api::developer_private::ExtensionInfo> infos);
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
@@ -261,8 +260,7 @@ class DeveloperPrivateGetItemsInfoFunction
   ResponseAction Run() override;
 
   void OnInfosGenerated(
-      const std::vector<linked_ptr<api::developer_private::ExtensionInfo>>&
-          infos);
+      std::vector<api::developer_private::ExtensionInfo> infos);
 
   scoped_ptr<ExtensionInfoGenerator> info_generator_;
 
@@ -281,8 +279,7 @@ class DeveloperPrivateGetExtensionsInfoFunction
   ResponseAction Run() override;
 
   void OnInfosGenerated(
-      const std::vector<linked_ptr<api::developer_private::ExtensionInfo>>&
-          infos);
+      std::vector<api::developer_private::ExtensionInfo> infos);
 
   scoped_ptr<ExtensionInfoGenerator> info_generator_;
 
@@ -301,8 +298,7 @@ class DeveloperPrivateGetExtensionInfoFunction
   ResponseAction Run() override;
 
   void OnInfosGenerated(
-      const std::vector<linked_ptr<api::developer_private::ExtensionInfo>>&
-          infos);
+      std::vector<api::developer_private::ExtensionInfo> infos);
 
   scoped_ptr<ExtensionInfoGenerator> info_generator_;
 
