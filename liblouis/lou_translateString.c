@@ -2596,7 +2596,7 @@ insertEmphasesAt(const int at)
 {
 	EmphRuleNumber emphRule;
 	int mask;
-	int type_counts[11];
+	int type_counts[10];
 	int i, j, min, max;
 	
 	/*   simple case   */
@@ -2625,6 +2625,7 @@ insertEmphasesAt(const int at)
 	     nest properly when multiple emphases start and end at
 	     the same place   */
 	//TODO:  ordering with partial word using bit_word and bit_end
+	//TODO:  instead of hard-coding constants, uniformly loop through all typeforms (including caps?)
 
 #define UNDER_COUNT    0
 #define BOLD_COUNT     1
