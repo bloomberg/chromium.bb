@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_network_list.idl modified Fri Nov  1 16:12:12 2013.
+// From ppb_network_list.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -82,14 +82,9 @@ uint32_t GetMTU(PP_Resource resource, uint32_t index) {
   return enter.object()->GetMTU(index);
 }
 
-const PPB_NetworkList_1_0 g_ppb_networklist_thunk_1_0 = {&IsNetworkList,
-                                                         &GetCount,
-                                                         &GetName,
-                                                         &GetType,
-                                                         &GetState,
-                                                         &GetIpAddresses,
-                                                         &GetDisplayName,
-                                                         &GetMTU};
+const PPB_NetworkList_1_0 g_ppb_networklist_thunk_1_0 = {
+    &IsNetworkList, &GetCount,       &GetName,        &GetType,
+    &GetState,      &GetIpAddresses, &GetDisplayName, &GetMTU};
 
 }  // namespace
 

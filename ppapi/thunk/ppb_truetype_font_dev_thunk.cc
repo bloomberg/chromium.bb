@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_truetype_font_dev.idl modified Fri Nov  1 16:12:12 2013.
+// From dev/ppb_truetype_font_dev.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -94,13 +94,8 @@ int32_t GetTable(PP_Resource font,
 }
 
 const PPB_TrueTypeFont_Dev_0_1 g_ppb_truetypefont_dev_thunk_0_1 = {
-    &GetFontFamilies,
-    &GetFontsInFamily,
-    &Create,
-    &IsTrueTypeFont,
-    &Describe,
-    &GetTableTags,
-    &GetTable};
+    &GetFontFamilies, &GetFontsInFamily, &Create,  &IsTrueTypeFont,
+    &Describe,        &GetTableTags,     &GetTable};
 
 }  // namespace
 

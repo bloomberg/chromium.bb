@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_graphics_2d.idl modified Wed May 15 13:57:07 2013.
+// From ppb_graphics_2d.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 #include <string.h>
@@ -102,23 +102,13 @@ float GetScale(PP_Resource resource) {
   return enter.object()->GetScale();
 }
 
-const PPB_Graphics2D_1_0 g_ppb_graphics2d_thunk_1_0 = {&Create,
-                                                       &IsGraphics2D,
-                                                       &Describe,
-                                                       &PaintImageData,
-                                                       &Scroll,
-                                                       &ReplaceContents,
-                                                       &Flush};
+const PPB_Graphics2D_1_0 g_ppb_graphics2d_thunk_1_0 = {
+    &Create, &IsGraphics2D,    &Describe, &PaintImageData,
+    &Scroll, &ReplaceContents, &Flush};
 
-const PPB_Graphics2D_1_1 g_ppb_graphics2d_thunk_1_1 = {&Create,
-                                                       &IsGraphics2D,
-                                                       &Describe,
-                                                       &PaintImageData,
-                                                       &Scroll,
-                                                       &ReplaceContents,
-                                                       &Flush,
-                                                       &SetScale,
-                                                       &GetScale};
+const PPB_Graphics2D_1_1 g_ppb_graphics2d_thunk_1_1 = {
+    &Create,          &IsGraphics2D, &Describe, &PaintImageData, &Scroll,
+    &ReplaceContents, &Flush,        &SetScale, &GetScale};
 
 }  // namespace
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_messaging.idl modified Tue Mar 24 16:53:47 2015.
+// From ppb_messaging.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -47,9 +47,8 @@ void UnregisterMessageHandler(PP_Instance instance) {
 
 const PPB_Messaging_1_0 g_ppb_messaging_thunk_1_0 = {&PostMessage};
 
-const PPB_Messaging_1_2 g_ppb_messaging_thunk_1_2 = {&PostMessage,
-                                                     &RegisterMessageHandler,
-                                                     &UnregisterMessageHandler};
+const PPB_Messaging_1_2 g_ppb_messaging_thunk_1_2 = {
+    &PostMessage, &RegisterMessageHandler, &UnregisterMessageHandler};
 
 }  // namespace
 

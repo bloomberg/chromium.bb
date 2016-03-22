@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_media_stream_video_track.idl modified Thu Sep 18 11:36:39 2014.
+// From ppb_media_stream_video_track.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -129,16 +129,11 @@ const PPB_MediaStreamVideoTrack_0_1 g_ppb_mediastreamvideotrack_thunk_0_1 = {
     &Close};
 
 const PPB_MediaStreamVideoTrack_1_0 g_ppb_mediastreamvideotrack_thunk_1_0 = {
-    &Create,
-    &IsMediaStreamVideoTrack,
-    &Configure,
-    &GetAttrib,
-    &GetId,
-    &HasEnded,
-    &GetFrame,
-    &RecycleFrame,
-    &Close,
-    &GetEmptyFrame,
+    &Create,    &IsMediaStreamVideoTrack,
+    &Configure, &GetAttrib,
+    &GetId,     &HasEnded,
+    &GetFrame,  &RecycleFrame,
+    &Close,     &GetEmptyFrame,
     &PutFrame};
 
 }  // namespace

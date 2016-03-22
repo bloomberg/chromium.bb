@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_printing_dev.idl modified Tue May  7 14:43:00 2013.
+// From dev/ppb_printing_dev.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -39,8 +39,7 @@ int32_t GetDefaultPrintSettings(PP_Resource resource,
 }
 
 const PPB_Printing_Dev_0_7 g_ppb_printing_dev_thunk_0_7 = {
-    &Create,
-    &GetDefaultPrintSettings};
+    &Create, &GetDefaultPrintSettings};
 
 }  // namespace
 

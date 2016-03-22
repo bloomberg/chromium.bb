@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_file_io.idl modified Mon Nov 11 16:02:07 2013.
+// From ppb_file_io.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -132,28 +132,13 @@ int32_t ReadToArray(PP_Resource file_io,
                                                      output, enter.callback()));
 }
 
-const PPB_FileIO_1_0 g_ppb_fileio_thunk_1_0 = {&Create,
-                                               &IsFileIO,
-                                               &Open,
-                                               &Query,
-                                               &Touch,
-                                               &Read,
-                                               &Write,
-                                               &SetLength,
-                                               &Flush,
-                                               &Close};
+const PPB_FileIO_1_0 g_ppb_fileio_thunk_1_0 = {
+    &Create, &IsFileIO, &Open,      &Query, &Touch,
+    &Read,   &Write,    &SetLength, &Flush, &Close};
 
-const PPB_FileIO_1_1 g_ppb_fileio_thunk_1_1 = {&Create,
-                                               &IsFileIO,
-                                               &Open,
-                                               &Query,
-                                               &Touch,
-                                               &Read,
-                                               &Write,
-                                               &SetLength,
-                                               &Flush,
-                                               &Close,
-                                               &ReadToArray};
+const PPB_FileIO_1_1 g_ppb_fileio_thunk_1_1 = {
+    &Create, &IsFileIO,  &Open,  &Query, &Touch,      &Read,
+    &Write,  &SetLength, &Flush, &Close, &ReadToArray};
 
 }  // namespace
 

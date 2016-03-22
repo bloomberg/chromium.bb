@@ -4,6 +4,8 @@
 
 // From ppb_graphics_3d.idl modified Wed Jan 27 17:10:16 2016.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_graphics_3d.h"

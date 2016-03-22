@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_camera_device_private.idl modified Wed Feb 18 16:44:52 2015.
+// From private/ppb_camera_device_private.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -62,8 +62,8 @@ int32_t GetCameraCapabilities(PP_Resource camera_device,
       enter.object()->GetCameraCapabilities(capabilities, enter.callback()));
 }
 
-const PPB_CameraDevice_Private_0_1 g_ppb_cameradevice_private_thunk_0_1 =
-    {&Create, &IsCameraDevice, &Open, &Close, &GetCameraCapabilities};
+const PPB_CameraDevice_Private_0_1 g_ppb_cameradevice_private_thunk_0_1 = {
+    &Create, &IsCameraDevice, &Open, &Close, &GetCameraCapabilities};
 
 }  // namespace
 

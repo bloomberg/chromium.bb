@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_audio_encoder.idl modified Mon Sep  7 10:17:53 2015.
+// From ppb_audio_encoder.idl modified Wed Jan 27 17:39:22 2016.
 
 #include <stdint.h>
 
@@ -56,13 +56,9 @@ int32_t Initialize(PP_Resource audio_encoder,
   EnterResource<PPB_AudioEncoder_API> enter(audio_encoder, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->Initialize(channels,
-                                                    input_sample_rate,
-                                                    input_sample_size,
-                                                    output_profile,
-                                                    initial_bitrate,
-                                                    acceleration,
-                                                    enter.callback()));
+  return enter.SetResult(enter.object()->Initialize(
+      channels, input_sample_rate, input_sample_size, output_profile,
+      initial_bitrate, acceleration, enter.callback()));
 }
 
 int32_t GetNumberOfSamples(PP_Resource audio_encoder) {

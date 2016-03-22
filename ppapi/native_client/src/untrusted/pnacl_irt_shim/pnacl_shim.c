@@ -1,4 +1,4 @@
-/* Copyright (c) 2015 The Chromium Authors. All rights reserved.
+/* Copyright (c) 2016 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -10,6 +10,7 @@
 #include "ppapi/c/dev/ppb_audio_input_dev.h"
 #include "ppapi/c/dev/ppb_device_ref_dev.h"
 #include "ppapi/c/dev/ppb_file_chooser_dev.h"
+#include "ppapi/c/dev/ppb_font_dev.h"
 #include "ppapi/c/dev/ppb_ime_input_event_dev.h"
 #include "ppapi/c/dev/ppb_printing_dev.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
@@ -156,6 +157,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_AudioInput_Dev_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Font_Dev_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Printing_Dev_0_7;
@@ -2733,6 +2735,50 @@ static int32_t Pnacl_M19_PPB_FileChooser_Dev_Show(PP_Resource chooser, struct PP
 
 /* End wrapper methods for PPB_FileChooser_Dev_0_6 */
 
+/* Begin wrapper methods for PPB_Font_Dev_0_6 */
+
+static void Pnacl_M14_PPB_Font_Dev_GetFontFamilies(struct PP_Var* _struct_result, PP_Instance instance) {
+  const struct PPB_Font_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_Font_Dev_0_6.real_iface;
+  *_struct_result = iface->GetFontFamilies(instance);
+}
+
+static PP_Resource Pnacl_M14_PPB_Font_Dev_Create(PP_Instance instance, const struct PP_FontDescription_Dev* description) {
+  const struct PPB_Font_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_Font_Dev_0_6.real_iface;
+  return iface->Create(instance, description);
+}
+
+static PP_Bool Pnacl_M14_PPB_Font_Dev_IsFont(PP_Resource resource) {
+  const struct PPB_Font_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_Font_Dev_0_6.real_iface;
+  return iface->IsFont(resource);
+}
+
+static PP_Bool Pnacl_M14_PPB_Font_Dev_Describe(PP_Resource font, struct PP_FontDescription_Dev* description, struct PP_FontMetrics_Dev* metrics) {
+  const struct PPB_Font_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_Font_Dev_0_6.real_iface;
+  return iface->Describe(font, description, metrics);
+}
+
+static PP_Bool Pnacl_M14_PPB_Font_Dev_DrawTextAt(PP_Resource font, PP_Resource image_data, const struct PP_TextRun_Dev* text, const struct PP_Point* position, uint32_t color, const struct PP_Rect* clip, PP_Bool image_data_is_opaque) {
+  const struct PPB_Font_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_Font_Dev_0_6.real_iface;
+  return iface->DrawTextAt(font, image_data, text, position, color, clip, image_data_is_opaque);
+}
+
+static int32_t Pnacl_M14_PPB_Font_Dev_MeasureText(PP_Resource font, const struct PP_TextRun_Dev* text) {
+  const struct PPB_Font_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_Font_Dev_0_6.real_iface;
+  return iface->MeasureText(font, text);
+}
+
+static uint32_t Pnacl_M14_PPB_Font_Dev_CharacterOffsetForPixel(PP_Resource font, const struct PP_TextRun_Dev* text, int32_t pixel_position) {
+  const struct PPB_Font_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_Font_Dev_0_6.real_iface;
+  return iface->CharacterOffsetForPixel(font, text, pixel_position);
+}
+
+static int32_t Pnacl_M14_PPB_Font_Dev_PixelOffsetForCharacter(PP_Resource font, const struct PP_TextRun_Dev* text, uint32_t char_offset) {
+  const struct PPB_Font_Dev_0_6 *iface = Pnacl_WrapperInfo_PPB_Font_Dev_0_6.real_iface;
+  return iface->PixelOffsetForCharacter(font, text, char_offset);
+}
+
+/* End wrapper methods for PPB_Font_Dev_0_6 */
+
 /* Begin wrapper methods for PPB_IMEInputEvent_Dev_0_1 */
 
 static PP_Bool Pnacl_M16_PPB_IMEInputEvent_Dev_IsIMEInputEvent(PP_Resource resource) {
@@ -3683,6 +3729,8 @@ static int32_t Pnacl_M33_PPB_Flash_DRM_MonitorIsExternal(PP_Resource drm, PP_Boo
 /* End wrapper methods for PPB_Flash_DRM_1_1 */
 
 /* Not generating wrapper methods for PPB_Flash_FontFile_0_1 */
+
+/* Not generating wrapper methods for PPB_Flash_FontFile_0_2 */
 
 /* Not generating wrapper methods for PPB_FlashFullscreen_0_1 */
 
@@ -5324,6 +5372,17 @@ static const struct PPB_FileChooser_Dev_0_6 Pnacl_Wrappers_PPB_FileChooser_Dev_0
     .Show = (int32_t (*)(PP_Resource chooser, struct PP_ArrayOutput output, struct PP_CompletionCallback callback))&Pnacl_M19_PPB_FileChooser_Dev_Show
 };
 
+static const struct PPB_Font_Dev_0_6 Pnacl_Wrappers_PPB_Font_Dev_0_6 = {
+    .GetFontFamilies = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M14_PPB_Font_Dev_GetFontFamilies,
+    .Create = (PP_Resource (*)(PP_Instance instance, const struct PP_FontDescription_Dev* description))&Pnacl_M14_PPB_Font_Dev_Create,
+    .IsFont = (PP_Bool (*)(PP_Resource resource))&Pnacl_M14_PPB_Font_Dev_IsFont,
+    .Describe = (PP_Bool (*)(PP_Resource font, struct PP_FontDescription_Dev* description, struct PP_FontMetrics_Dev* metrics))&Pnacl_M14_PPB_Font_Dev_Describe,
+    .DrawTextAt = (PP_Bool (*)(PP_Resource font, PP_Resource image_data, const struct PP_TextRun_Dev* text, const struct PP_Point* position, uint32_t color, const struct PP_Rect* clip, PP_Bool image_data_is_opaque))&Pnacl_M14_PPB_Font_Dev_DrawTextAt,
+    .MeasureText = (int32_t (*)(PP_Resource font, const struct PP_TextRun_Dev* text))&Pnacl_M14_PPB_Font_Dev_MeasureText,
+    .CharacterOffsetForPixel = (uint32_t (*)(PP_Resource font, const struct PP_TextRun_Dev* text, int32_t pixel_position))&Pnacl_M14_PPB_Font_Dev_CharacterOffsetForPixel,
+    .PixelOffsetForCharacter = (int32_t (*)(PP_Resource font, const struct PP_TextRun_Dev* text, uint32_t char_offset))&Pnacl_M14_PPB_Font_Dev_PixelOffsetForCharacter
+};
+
 static const struct PPB_IMEInputEvent_Dev_0_1 Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_1 = {
     .IsIMEInputEvent = (PP_Bool (*)(PP_Resource resource))&Pnacl_M16_PPB_IMEInputEvent_Dev_IsIMEInputEvent,
     .GetText = (struct PP_Var (*)(PP_Resource ime_event))&Pnacl_M16_PPB_IMEInputEvent_Dev_GetText,
@@ -5590,6 +5649,8 @@ static const struct PPB_Flash_DRM_1_1 Pnacl_Wrappers_PPB_Flash_DRM_1_1 = {
 };
 
 /* Not generating wrapper interface for PPB_Flash_FontFile_0_1 */
+
+/* Not generating wrapper interface for PPB_Flash_FontFile_0_2 */
 
 /* Not generating wrapper interface for PPB_FlashFullscreen_0_1 */
 
@@ -6217,6 +6278,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Font_Dev_0_6 = {
+  .iface_macro = PPB_FONT_DEV_INTERFACE_0_6,
+  .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_Font_Dev_0_6,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1 = {
   .iface_macro = PPB_IME_INPUT_EVENT_DEV_INTERFACE_0_1,
   .wrapped_iface = (const void *) &Pnacl_Wrappers_PPB_IMEInputEvent_Dev_0_1,
@@ -6568,6 +6635,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_DeviceRef_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_5,
   &Pnacl_WrapperInfo_PPB_FileChooser_Dev_0_6,
+  &Pnacl_WrapperInfo_PPB_Font_Dev_0_6,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_IMEInputEvent_Dev_0_2,
   &Pnacl_WrapperInfo_PPB_Printing_Dev_0_7,

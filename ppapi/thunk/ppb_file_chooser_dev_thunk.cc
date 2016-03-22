@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_file_chooser_dev.idl modified Fri Feb  7 08:29:41 2014.
+// From dev/ppb_file_chooser_dev.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -61,12 +61,11 @@ int32_t Show(PP_Resource chooser,
   return enter.SetResult(enter.object()->Show(output, enter.callback()));
 }
 
-const PPB_FileChooser_Dev_0_5 g_ppb_filechooser_dev_thunk_0_5 =
-    {&Create, &IsFileChooser, &Show_0_5, &GetNextChosenFile};
+const PPB_FileChooser_Dev_0_5 g_ppb_filechooser_dev_thunk_0_5 = {
+    &Create, &IsFileChooser, &Show_0_5, &GetNextChosenFile};
 
-const PPB_FileChooser_Dev_0_6 g_ppb_filechooser_dev_thunk_0_6 = {&Create,
-                                                                 &IsFileChooser,
-                                                                 &Show};
+const PPB_FileChooser_Dev_0_6 g_ppb_filechooser_dev_thunk_0_6 = {
+    &Create, &IsFileChooser, &Show};
 
 }  // namespace
 

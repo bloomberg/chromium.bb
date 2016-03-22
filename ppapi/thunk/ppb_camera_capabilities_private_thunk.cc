@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_camera_capabilities_private.idl modified Thu Feb 19 09:06:18
-// 2015.
+// From private/ppb_camera_capabilities_private.idl modified Wed Jan 27 17:10:16
+// 2016.
 
 #include <stdint.h>
 
@@ -38,8 +38,7 @@ void GetSupportedVideoCaptureFormats(PP_Resource capabilities,
 
 const PPB_CameraCapabilities_Private_0_1
     g_ppb_cameracapabilities_private_thunk_0_1 = {
-        &IsCameraCapabilities,
-        &GetSupportedVideoCaptureFormats};
+        &IsCameraCapabilities, &GetSupportedVideoCaptureFormats};
 
 }  // namespace
 

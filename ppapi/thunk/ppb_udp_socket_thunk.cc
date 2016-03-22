@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_udp_socket.idl modified Fri Mar 13 17:49:57 2015.
+// From ppb_udp_socket.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -141,34 +141,17 @@ int32_t LeaveGroup(PP_Resource udp_socket,
   return enter.SetResult(enter.object()->LeaveGroup(group, enter.callback()));
 }
 
-const PPB_UDPSocket_1_0 g_ppb_udpsocket_thunk_1_0 = {&Create,
-                                                     &IsUDPSocket,
-                                                     &Bind,
-                                                     &GetBoundAddress,
-                                                     &RecvFrom,
-                                                     &SendTo,
-                                                     &Close,
-                                                     &SetOption_1_0};
+const PPB_UDPSocket_1_0 g_ppb_udpsocket_thunk_1_0 = {
+    &Create,   &IsUDPSocket, &Bind,  &GetBoundAddress,
+    &RecvFrom, &SendTo,      &Close, &SetOption_1_0};
 
-const PPB_UDPSocket_1_1 g_ppb_udpsocket_thunk_1_1 = {&Create,
-                                                     &IsUDPSocket,
-                                                     &Bind,
-                                                     &GetBoundAddress,
-                                                     &RecvFrom,
-                                                     &SendTo,
-                                                     &Close,
-                                                     &SetOption_1_1};
+const PPB_UDPSocket_1_1 g_ppb_udpsocket_thunk_1_1 = {
+    &Create,   &IsUDPSocket, &Bind,  &GetBoundAddress,
+    &RecvFrom, &SendTo,      &Close, &SetOption_1_1};
 
-const PPB_UDPSocket_1_2 g_ppb_udpsocket_thunk_1_2 = {&Create,
-                                                     &IsUDPSocket,
-                                                     &Bind,
-                                                     &GetBoundAddress,
-                                                     &RecvFrom,
-                                                     &SendTo,
-                                                     &Close,
-                                                     &SetOption,
-                                                     &JoinGroup,
-                                                     &LeaveGroup};
+const PPB_UDPSocket_1_2 g_ppb_udpsocket_thunk_1_2 = {
+    &Create, &IsUDPSocket, &Bind,      &GetBoundAddress, &RecvFrom,
+    &SendTo, &Close,       &SetOption, &JoinGroup,       &LeaveGroup};
 
 }  // namespace
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_audio_buffer.idl modified Thu May 15 17:11:43 2014.
+// From ppb_audio_buffer.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -88,15 +88,10 @@ uint32_t GetDataBufferSize(PP_Resource buffer) {
   return enter.object()->GetDataBufferSize();
 }
 
-const PPB_AudioBuffer_0_1 g_ppb_audiobuffer_thunk_0_1 = {&IsAudioBuffer,
-                                                         &GetTimestamp,
-                                                         &SetTimestamp,
-                                                         &GetSampleRate,
-                                                         &GetSampleSize,
-                                                         &GetNumberOfChannels,
-                                                         &GetNumberOfSamples,
-                                                         &GetDataBuffer,
-                                                         &GetDataBufferSize};
+const PPB_AudioBuffer_0_1 g_ppb_audiobuffer_thunk_0_1 = {
+    &IsAudioBuffer,      &GetTimestamp,  &SetTimestamp,
+    &GetSampleRate,      &GetSampleSize, &GetNumberOfChannels,
+    &GetNumberOfSamples, &GetDataBuffer, &GetDataBufferSize};
 
 }  // namespace
 

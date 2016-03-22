@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_find_private.idl modified Mon Apr  7 08:56:43 2014.
+// From private/ppb_find_private.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -54,10 +54,8 @@ void SetTickmarks(PP_Instance instance,
 }
 
 const PPB_Find_Private_0_3 g_ppb_find_private_thunk_0_3 = {
-    &SetPluginToHandleFindRequests,
-    &NumberOfFindResultsChanged,
-    &SelectedFindResultChanged,
-    &SetTickmarks};
+    &SetPluginToHandleFindRequests, &NumberOfFindResultsChanged,
+    &SelectedFindResultChanged, &SetTickmarks};
 
 }  // namespace
 

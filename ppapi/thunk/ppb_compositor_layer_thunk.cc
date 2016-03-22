@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_compositor_layer.idl modified Thu Jan 29 16:28:15 2015.
+// From ppb_compositor_layer.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -126,28 +126,18 @@ int32_t SetPremultipliedAlpha(PP_Resource layer, PP_Bool premult) {
 }
 
 const PPB_CompositorLayer_0_1 g_ppb_compositorlayer_thunk_0_1 = {
-    &IsCompositorLayer,
-    &SetColor,
-    &SetTexture_0_1,
-    &SetImage,
-    &SetClipRect,
-    &SetTransform,
-    &SetOpacity,
-    &SetBlendMode,
-    &SetSourceRect,
-    &SetPremultipliedAlpha};
+    &IsCompositorLayer, &SetColor,
+    &SetTexture_0_1,    &SetImage,
+    &SetClipRect,       &SetTransform,
+    &SetOpacity,        &SetBlendMode,
+    &SetSourceRect,     &SetPremultipliedAlpha};
 
 const PPB_CompositorLayer_0_2 g_ppb_compositorlayer_thunk_0_2 = {
-    &IsCompositorLayer,
-    &SetColor,
-    &SetTexture,
-    &SetImage,
-    &SetClipRect,
-    &SetTransform,
-    &SetOpacity,
-    &SetBlendMode,
-    &SetSourceRect,
-    &SetPremultipliedAlpha};
+    &IsCompositorLayer, &SetColor,
+    &SetTexture,        &SetImage,
+    &SetClipRect,       &SetTransform,
+    &SetOpacity,        &SetBlendMode,
+    &SetSourceRect,     &SetPremultipliedAlpha};
 
 }  // namespace
 

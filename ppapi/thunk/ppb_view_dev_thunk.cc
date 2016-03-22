@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From dev/ppb_view_dev.idl modified Mon May  6 10:11:29 2013.
+// From dev/ppb_view_dev.idl modified Wed Jan 27 17:10:16 2016.
+
+#include <stdint.h>
 
 #include "ppapi/c/dev/ppb_view_dev.h"
 #include "ppapi/c/pp_errors.h"

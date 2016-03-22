@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_host_resolver.idl modified Mon Jun 24 15:10:54 2013.
+// From ppb_host_resolver.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -70,12 +70,9 @@ PP_Resource GetNetAddress(PP_Resource host_resolver, uint32_t index) {
   return enter.object()->GetNetAddress(index);
 }
 
-const PPB_HostResolver_1_0 g_ppb_hostresolver_thunk_1_0 = {&Create,
-                                                           &IsHostResolver,
-                                                           &Resolve,
-                                                           &GetCanonicalName,
-                                                           &GetNetAddressCount,
-                                                           &GetNetAddress};
+const PPB_HostResolver_1_0 g_ppb_hostresolver_thunk_1_0 = {
+    &Create,           &IsHostResolver,     &Resolve,
+    &GetCanonicalName, &GetNetAddressCount, &GetNetAddress};
 
 }  // namespace
 

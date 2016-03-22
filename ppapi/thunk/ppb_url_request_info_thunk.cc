@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From ppb_url_request_info.idl modified Mon May  6 10:11:29 2013.
+// From ppb_url_request_info.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -64,10 +64,7 @@ PP_Bool AppendFileToBody(PP_Resource request,
 }
 
 const PPB_URLRequestInfo_1_0 g_ppb_urlrequestinfo_thunk_1_0 = {
-    &Create,
-    &IsURLRequestInfo,
-    &SetProperty,
-    &AppendDataToBody,
+    &Create, &IsURLRequestInfo, &SetProperty, &AppendDataToBody,
     &AppendFileToBody};
 
 }  // namespace

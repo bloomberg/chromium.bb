@@ -455,6 +455,7 @@ class TGen(GeneratorByFile):
         filenode.GetProperty('DATETIME'))
     out.Write('// %s %s\n\n' % (from_text, modified_text))
 
+    meta.AddBuiltinInclude('stdint.h')
     if meta.BuiltinIncludes():
       for include in sorted(meta.BuiltinIncludes()):
         out.Write('#include <%s>\n' % include)

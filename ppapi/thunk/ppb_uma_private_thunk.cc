@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// From private/ppb_uma_private.idl modified Mon Apr  7 08:56:43 2014.
+// From private/ppb_uma_private.idl modified Wed Jan 27 17:10:16 2016.
 
 #include <stdint.h>
 
@@ -70,9 +70,7 @@ int32_t IsCrashReportingEnabled(PP_Instance instance,
 }
 
 const PPB_UMA_Private_0_3 g_ppb_uma_private_thunk_0_3 = {
-    &HistogramCustomTimes,
-    &HistogramCustomCounts,
-    &HistogramEnumeration,
+    &HistogramCustomTimes, &HistogramCustomCounts, &HistogramEnumeration,
     &IsCrashReportingEnabled};
 
 }  // namespace

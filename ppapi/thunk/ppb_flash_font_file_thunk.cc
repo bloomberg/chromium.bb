@@ -4,6 +4,8 @@
 
 // From private/ppb_flash_font_file.idl modified Wed Mar  9 12:48:51 2016.
 
+#include <stdint.h>
+
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash_font_file.h"
 #include "ppapi/shared_impl/ppb_flash_font_file_shared.h"
