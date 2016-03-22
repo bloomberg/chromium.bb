@@ -1058,6 +1058,11 @@ void SigninScreenHandler::HandleRebootSystem() {
 }
 
 void SigninScreenHandler::HandleRemoveUser(const AccountId& account_id) {
+  if (delegate_ &&
+      (delegate_->IsUserSigninCompleted() || delegate_->IsSigninInProgress())) {
+    return;
+  }
+
   ProfileMetrics::LogProfileDeleteUser(
       ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
 
