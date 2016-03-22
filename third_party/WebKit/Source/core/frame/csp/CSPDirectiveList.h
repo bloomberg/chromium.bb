@@ -22,11 +22,11 @@ namespace blink {
 
 class ContentSecurityPolicy;
 
-class CSPDirectiveList {
-    USING_FAST_MALLOC(CSPDirectiveList);
+class CSPDirectiveList : public NoBaseWillBeGarbageCollectedFinalized<CSPDirectiveList> {
+    USING_FAST_MALLOC_WILL_BE_REMOVED(CSPDirectiveList);
     WTF_MAKE_NONCOPYABLE(CSPDirectiveList);
 public:
-    static PassOwnPtr<CSPDirectiveList> create(ContentSecurityPolicy*, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
+    static PassOwnPtrWillBeRawPtr<CSPDirectiveList> create(ContentSecurityPolicy*, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
     void parse(const UChar* begin, const UChar* end);
 
@@ -81,6 +81,8 @@ public:
 
     bool shouldSendCSPHeader(Resource::Type) const;
 
+    DECLARE_TRACE();
+
 private:
     CSPDirectiveList(ContentSecurityPolicy*, ContentSecurityPolicyHeaderType, ContentSecurityPolicyHeaderSource);
 
@@ -96,7 +98,7 @@ private:
     void treatAsPublicAddress(const String& name, const String& value);
 
     template <class CSPDirectiveType>
-    void setCSPDirective(const String& name, const String& value, OwnPtr<CSPDirectiveType>&);
+    void setCSPDirective(const String& name, const String& value, OwnPtrWillBeMember<CSPDirectiveType>&);
 
     SourceListDirective* operativeDirective(SourceListDirective*) const;
     SourceListDirective* operativeDirective(SourceListDirective*, SourceListDirective* override) const;
@@ -125,8 +127,7 @@ private:
 
     bool denyIfEnforcingPolicy() const { return m_reportOnly; }
 
-    // TODO(Oilpan): consider moving ContentSecurityPolicy auxilliary objects to the heap.
-    RawPtrWillBeUntracedMember<ContentSecurityPolicy> m_policy;
+    RawPtrWillBeMember<ContentSecurityPolicy> m_policy;
 
     String m_header;
     ContentSecurityPolicyHeaderType m_headerType;
@@ -144,21 +145,21 @@ private:
     bool m_upgradeInsecureRequests;
     bool m_treatAsPublicAddress;
 
-    OwnPtr<MediaListDirective> m_pluginTypes;
-    OwnPtr<SourceListDirective> m_baseURI;
-    OwnPtr<SourceListDirective> m_childSrc;
-    OwnPtr<SourceListDirective> m_connectSrc;
-    OwnPtr<SourceListDirective> m_defaultSrc;
-    OwnPtr<SourceListDirective> m_fontSrc;
-    OwnPtr<SourceListDirective> m_formAction;
-    OwnPtr<SourceListDirective> m_frameAncestors;
-    OwnPtr<SourceListDirective> m_frameSrc;
-    OwnPtr<SourceListDirective> m_imgSrc;
-    OwnPtr<SourceListDirective> m_mediaSrc;
-    OwnPtr<SourceListDirective> m_manifestSrc;
-    OwnPtr<SourceListDirective> m_objectSrc;
-    OwnPtr<SourceListDirective> m_scriptSrc;
-    OwnPtr<SourceListDirective> m_styleSrc;
+    OwnPtrWillBeMember<MediaListDirective> m_pluginTypes;
+    OwnPtrWillBeMember<SourceListDirective> m_baseURI;
+    OwnPtrWillBeMember<SourceListDirective> m_childSrc;
+    OwnPtrWillBeMember<SourceListDirective> m_connectSrc;
+    OwnPtrWillBeMember<SourceListDirective> m_defaultSrc;
+    OwnPtrWillBeMember<SourceListDirective> m_fontSrc;
+    OwnPtrWillBeMember<SourceListDirective> m_formAction;
+    OwnPtrWillBeMember<SourceListDirective> m_frameAncestors;
+    OwnPtrWillBeMember<SourceListDirective> m_frameSrc;
+    OwnPtrWillBeMember<SourceListDirective> m_imgSrc;
+    OwnPtrWillBeMember<SourceListDirective> m_mediaSrc;
+    OwnPtrWillBeMember<SourceListDirective> m_manifestSrc;
+    OwnPtrWillBeMember<SourceListDirective> m_objectSrc;
+    OwnPtrWillBeMember<SourceListDirective> m_scriptSrc;
+    OwnPtrWillBeMember<SourceListDirective> m_styleSrc;
 
     Vector<String> m_reportEndpoints;
 

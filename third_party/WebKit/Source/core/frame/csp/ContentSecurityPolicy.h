@@ -62,7 +62,7 @@ class ResourceRequest;
 class SecurityOrigin;
 
 typedef int SandboxFlags;
-typedef Vector<OwnPtr<CSPDirectiveList>> CSPDirectiveListVector;
+typedef WillBeHeapVector<OwnPtrWillBeMember<CSPDirectiveList>> CSPDirectiveListVector;
 typedef WillBeHeapVector<RefPtrWillBeMember<ConsoleMessage>> ConsoleMessageVector;
 typedef std::pair<String, ContentSecurityPolicyHeaderType> CSPHeaderAndType;
 
@@ -307,7 +307,7 @@ private:
     String m_disableEvalErrorMessage;
     SecurityContext::InsecureRequestsPolicy m_insecureRequestsPolicy;
 
-    OwnPtr<CSPSource> m_selfSource;
+    OwnPtrWillBeMember<CSPSource> m_selfSource;
     String m_selfProtocol;
 };
 

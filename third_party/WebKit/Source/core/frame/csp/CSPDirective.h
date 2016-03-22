@@ -12,8 +12,8 @@ namespace blink {
 
 class ContentSecurityPolicy;
 
-class CSPDirective {
-    USING_FAST_MALLOC(CSPDirective);
+class CSPDirective : public NoBaseWillBeGarbageCollectedFinalized<CSPDirective> {
+    USING_FAST_MALLOC_WILL_BE_REMOVED(CSPDirective);
     WTF_MAKE_NONCOPYABLE(CSPDirective);
 public:
     CSPDirective(const String& name, const String& value, ContentSecurityPolicy* policy)
@@ -22,6 +22,8 @@ public:
         , m_policy(policy)
     {
     }
+    virtual ~CSPDirective() { }
+    DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_policy); }
 
     const String& text() const { return m_text; }
 
@@ -31,8 +33,7 @@ protected:
 private:
     String m_name;
     String m_text;
-    // TODO(Oilpan): consider moving ContentSecurityPolicy auxilliary objects to the heap.
-    RawPtrWillBeUntracedMember<ContentSecurityPolicy> m_policy;
+    RawPtrWillBeMember<ContentSecurityPolicy> m_policy;
 };
 
 } // namespace blink

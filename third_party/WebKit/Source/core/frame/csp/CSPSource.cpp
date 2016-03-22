@@ -105,4 +105,9 @@ bool CSPSource::isSchemeOnly() const
     return m_host.isEmpty();
 }
 
+DEFINE_TRACE(CSPSource)
+{
+    visitor->trace(m_policy);
+}
+
 } // namespace blink

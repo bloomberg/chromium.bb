@@ -16,8 +16,8 @@ namespace blink {
 class ContentSecurityPolicy;
 class KURL;
 
-class CORE_EXPORT CSPSource {
-    USING_FAST_MALLOC(CSPSource);
+class CORE_EXPORT CSPSource : public NoBaseWillBeGarbageCollectedFinalized<CSPSource> {
+    USING_FAST_MALLOC_WILL_BE_REMOVED(CSPSource);
 public:
     enum WildcardDisposition {
         HasWildcard,
@@ -27,6 +27,8 @@ public:
     CSPSource(ContentSecurityPolicy*, const String& scheme, const String& host, int port, const String& path, WildcardDisposition hostWildcard, WildcardDisposition portWildcard);
     bool matches(const KURL&, ContentSecurityPolicy::RedirectStatus = ContentSecurityPolicy::DidNotRedirect) const;
 
+    DECLARE_TRACE();
+
 private:
     bool schemeMatches(const KURL&) const;
     bool hostMatches(const KURL&) const;
@@ -34,8 +36,7 @@ private:
     bool portMatches(const KURL&) const;
     bool isSchemeOnly() const;
 
-    // TODO(Oilpan): consider moving ContentSecurityPolicy auxilliary objects to the heap.
-    RawPtrWillBeUntracedMember<ContentSecurityPolicy> m_policy;
+    RawPtrWillBeMember<ContentSecurityPolicy> m_policy;
     String m_scheme;
     String m_host;
     int m_port;

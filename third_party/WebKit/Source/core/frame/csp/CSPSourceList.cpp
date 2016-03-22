@@ -130,7 +130,7 @@ void CSPSourceList::parse(const UChar* begin, const UChar* end)
                 continue;
             if (m_policy->isDirectiveName(host))
                 m_policy->reportDirectiveAsSourceExpression(m_directiveName, host);
-            m_list.append(CSPSource(m_policy, scheme, host, port, path, hostWildcard, portWildcard));
+            m_list.append(adoptPtrWillBeNoop(new CSPSource(m_policy, scheme, host, port, path, hostWildcard, portWildcard)));
         } else {
             m_policy->reportInvalidSourceExpression(m_directiveName, String(beginSource, position - beginSource));
         }
@@ -511,11 +511,17 @@ void CSPSourceList::addSourceHash(const ContentSecurityPolicyHashAlgorithm& algo
 bool CSPSourceList::hasSourceMatchInList(const KURL& url, ContentSecurityPolicy::RedirectStatus redirectStatus) const
 {
     for (size_t i = 0; i < m_list.size(); ++i) {
-        if (m_list[i].matches(url, redirectStatus))
+        if (m_list[i]->matches(url, redirectStatus))
             return true;
     }
 
     return false;
+}
+
+DEFINE_TRACE(CSPSourceList)
+{
+    visitor->trace(m_policy);
+    visitor->trace(m_list);
 }
 
 } // namespace blink

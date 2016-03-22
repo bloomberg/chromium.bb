@@ -62,4 +62,10 @@ uint8_t SourceListDirective::hashAlgorithmsUsed() const
     return m_sourceList.hashAlgorithmsUsed();
 }
 
+DEFINE_TRACE(SourceListDirective)
+{
+    visitor->trace(m_sourceList);
+    CSPDirective::trace(visitor);
+}
+
 } // namespace blink

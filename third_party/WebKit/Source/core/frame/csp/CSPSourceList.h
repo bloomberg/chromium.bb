@@ -23,6 +23,7 @@ class CORE_EXPORT CSPSourceList {
     WTF_MAKE_NONCOPYABLE(CSPSourceList);
 public:
     CSPSourceList(ContentSecurityPolicy*, const String& directiveName);
+    DECLARE_TRACE();
 
     void parse(const UChar* begin, const UChar* end);
 
@@ -55,9 +56,8 @@ private:
 
     bool hasSourceMatchInList(const KURL&, ContentSecurityPolicy::RedirectStatus) const;
 
-    // TODO(Oilpan): consider moving ContentSecurityPolicy auxilliary objects to the heap.
-    RawPtrWillBeUntracedMember<ContentSecurityPolicy> m_policy;
-    Vector<CSPSource> m_list;
+    RawPtrWillBeMember<ContentSecurityPolicy> m_policy;
+    WillBeHeapVector<OwnPtrWillBeMember<CSPSource>> m_list;
     String m_directiveName;
     bool m_allowSelf;
     bool m_allowStar;

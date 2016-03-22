@@ -57,9 +57,9 @@ CSPDirectiveList::CSPDirectiveList(ContentSecurityPolicy* policy, ContentSecurit
     m_reportOnly = type == ContentSecurityPolicyHeaderTypeReport;
 }
 
-PassOwnPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* policy, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
+PassOwnPtrWillBeRawPtr<CSPDirectiveList> CSPDirectiveList::create(ContentSecurityPolicy* policy, const UChar* begin, const UChar* end, ContentSecurityPolicyHeaderType type, ContentSecurityPolicyHeaderSource source)
 {
-    OwnPtr<CSPDirectiveList> directives = adoptPtr(new CSPDirectiveList(policy, type, source));
+    OwnPtrWillBeRawPtr<CSPDirectiveList> directives = adoptPtrWillBeNoop(new CSPDirectiveList(policy, type, source));
     directives->parse(begin, end);
 
     if (!directives->checkEval(directives->operativeDirective(directives->m_scriptSrc.get()))) {
@@ -562,13 +562,13 @@ void CSPDirectiveList::parseReportURI(const String& name, const String& value)
 
 
 template<class CSPDirectiveType>
-void CSPDirectiveList::setCSPDirective(const String& name, const String& value, OwnPtr<CSPDirectiveType>& directive)
+void CSPDirectiveList::setCSPDirective(const String& name, const String& value, OwnPtrWillBeMember<CSPDirectiveType>& directive)
 {
     if (directive) {
         m_policy->reportDuplicateDirective(name);
         return;
     }
-    directive = adoptPtr(new CSPDirectiveType(name, value, m_policy));
+    directive = adoptPtrWillBeNoop(new CSPDirectiveType(name, value, m_policy));
 }
 
 void CSPDirectiveList::applySandboxPolicy(const String& name, const String& sandboxPolicy)
@@ -790,6 +790,26 @@ void CSPDirectiveList::addDirective(const String& name, const String& value)
     } else {
         m_policy->reportUnsupportedDirective(name);
     }
+}
+
+DEFINE_TRACE(CSPDirectiveList)
+{
+    visitor->trace(m_policy);
+    visitor->trace(m_pluginTypes);
+    visitor->trace(m_baseURI);
+    visitor->trace(m_childSrc);
+    visitor->trace(m_connectSrc);
+    visitor->trace(m_defaultSrc);
+    visitor->trace(m_fontSrc);
+    visitor->trace(m_formAction);
+    visitor->trace(m_frameAncestors);
+    visitor->trace(m_frameSrc);
+    visitor->trace(m_imgSrc);
+    visitor->trace(m_mediaSrc);
+    visitor->trace(m_manifestSrc);
+    visitor->trace(m_objectSrc);
+    visitor->trace(m_scriptSrc);
+    visitor->trace(m_styleSrc);
 }
 
 

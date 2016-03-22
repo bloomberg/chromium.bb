@@ -163,7 +163,7 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
     ASSERT(getSecurityOrigin());
     // Ensure that 'self' processes correctly.
     m_selfProtocol = getSecurityOrigin()->protocol();
-    m_selfSource = adoptPtr(new CSPSource(this, m_selfProtocol, getSecurityOrigin()->host(), getSecurityOrigin()->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
+    m_selfSource = adoptPtrWillBeNoop(new CSPSource(this, m_selfProtocol, getSecurityOrigin()->host(), getSecurityOrigin()->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
 
     if (didSetReferrerPolicy())
         m_executionContext->setReferrerPolicy(m_referrerPolicy);
@@ -208,7 +208,9 @@ ContentSecurityPolicy::~ContentSecurityPolicy()
 DEFINE_TRACE(ContentSecurityPolicy)
 {
     visitor->trace(m_executionContext);
+    visitor->trace(m_policies);
     visitor->trace(m_consoleMessages);
+    visitor->trace(m_selfSource);
 }
 
 Document* ContentSecurityPolicy::document() const
@@ -273,7 +275,7 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(const String& header, Conte
 
         // header1,header2 OR header1
         //        ^                  ^
-        OwnPtr<CSPDirectiveList> policy = CSPDirectiveList::create(this, begin, position, type, source);
+        OwnPtrWillBeMember<CSPDirectiveList> policy = CSPDirectiveList::create(this, begin, position, type, source);
 
         // When a referrer policy has already been set, the most recent
         // one takes precedence.
@@ -304,7 +306,7 @@ void ContentSecurityPolicy::setOverrideURLForSelf(const KURL& url)
     // be overwritten when we bind this object to an execution context.
     RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
     m_selfProtocol = origin->protocol();
-    m_selfSource = adoptPtr(new CSPSource(this, m_selfProtocol, origin->host(), origin->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
+    m_selfSource = adoptPtrWillBeNoop(new CSPSource(this, m_selfProtocol, origin->host(), origin->port(), String(), CSPSource::NoWildcard, CSPSource::NoWildcard));
 }
 
 const PassOwnPtr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::headers() const
