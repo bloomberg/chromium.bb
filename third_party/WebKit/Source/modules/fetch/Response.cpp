@@ -6,7 +6,6 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ReadableStreamOperations.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ArrayBuffer.h"
 #include "bindings/core/v8/V8ArrayBufferView.h"
@@ -18,6 +17,7 @@
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/FormData.h"
+#include "core/streams/ReadableStreamOperations.h"
 #include "modules/fetch/BodyStreamBuffer.h"
 #include "modules/fetch/DataConsumerHandleUtil.h"
 #include "modules/fetch/FetchBlobDataConsumerHandle.h"

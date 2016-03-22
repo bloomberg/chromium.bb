@@ -54,8 +54,6 @@
             'OnStackObjectChecker.h',
             'PrivateScriptRunner.cpp',
             'PrivateScriptRunner.h',
-            'ReadableStreamOperations.cpp',
-            'ReadableStreamOperations.h',
             'RejectedPromises.cpp',
             'RejectedPromises.h',
             'RetainedDOMInfo.cpp',
@@ -186,7 +184,6 @@
             'npruntime_priv.h',
         ],
         'bindings_core_v8_unittest_files': [
-            'ReadableStreamOperationsTest.cpp',
             'ScriptPromisePropertyTest.cpp',
             'ScriptPromiseResolverTest.cpp',
             'ScriptPromiseTest.cpp',

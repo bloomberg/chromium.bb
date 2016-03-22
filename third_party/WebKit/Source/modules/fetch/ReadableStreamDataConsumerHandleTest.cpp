@@ -4,11 +4,11 @@
 
 #include "modules/fetch/ReadableStreamDataConsumerHandle.h"
 
-#include "bindings/core/v8/ReadableStreamOperations.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8GCController.h"
 #include "core/dom/Document.h"
+#include "core/streams/ReadableStreamOperations.h"
 #include "core/testing/DummyPageHolder.h"
 #include "modules/fetch/DataConsumerHandleTestUtil.h"
 #include "platform/heap/Handle.h"

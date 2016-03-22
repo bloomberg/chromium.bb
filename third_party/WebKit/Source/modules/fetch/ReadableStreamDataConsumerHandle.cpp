@@ -5,7 +5,6 @@
 #include "modules/fetch/ReadableStreamDataConsumerHandle.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ReadableStreamOperations.h"
 #include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -14,6 +13,7 @@
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "bindings/core/v8/V8Uint8Array.h"
 #include "core/dom/DOMTypedArray.h"
+#include "core/streams/ReadableStreamOperations.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
 #include "public/platform/WebThread.h"
