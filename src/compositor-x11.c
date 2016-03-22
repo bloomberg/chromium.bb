@@ -58,7 +58,7 @@
 #include "presentation-time-server-protocol.h"
 #include "linux-dmabuf.h"
 
-#define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
+#define DEFAULT_AXIS_STEP_DISTANCE 10
 
 static int option_width;
 static int option_height;
@@ -85,8 +85,8 @@ struct x11_backend {
 	/* We could map multi-pointer X to multiple wayland seats, but
 	 * for now we only support core X input. */
 	struct weston_seat		 core_seat;
-	wl_fixed_t			 prev_x;
-	wl_fixed_t			 prev_y;
+	double				 prev_x;
+	double				 prev_y;
 
 	struct {
 		xcb_atom_t		 wm_protocols;
@@ -1151,7 +1151,7 @@ x11_backend_deliver_motion_event(struct x11_backend *b,
 				 xcb_generic_event_t *event)
 {
 	struct x11_output *output;
-	wl_fixed_t x, y;
+	double x, y;
 	struct weston_pointer_motion_event motion_event = { 0 };
 	xcb_motion_notify_event_t *motion_notify =
 			(xcb_motion_notify_event_t *) event;
@@ -1163,14 +1163,14 @@ x11_backend_deliver_motion_event(struct x11_backend *b,
 		return;
 
 	weston_output_transform_coordinate(&output->base,
-					   wl_fixed_from_int(motion_notify->event_x),
-					   wl_fixed_from_int(motion_notify->event_y),
+					   motion_notify->event_x,
+					   motion_notify->event_y,
 					   &x, &y);
 
 	motion_event = (struct weston_pointer_motion_event) {
 		.mask = WESTON_POINTER_MOTION_REL,
-		.dx = wl_fixed_to_double(x - b->prev_x),
-		.dy = wl_fixed_to_double(y - b->prev_y)
+		.dx = x - b->prev_x,
+		.dy = y - b->prev_y
 	};
 
 	notify_motion(&b->core_seat, weston_compositor_get_time(),
@@ -1186,7 +1186,7 @@ x11_backend_deliver_enter_event(struct x11_backend *b,
 				xcb_generic_event_t *event)
 {
 	struct x11_output *output;
-	wl_fixed_t x, y;
+	double x, y;
 
 	xcb_enter_notify_event_t *enter_notify =
 			(xcb_enter_notify_event_t *) event;
@@ -1199,8 +1199,8 @@ x11_backend_deliver_enter_event(struct x11_backend *b,
 		return;
 
 	weston_output_transform_coordinate(&output->base,
-					   wl_fixed_from_int(enter_notify->event_x),
-					   wl_fixed_from_int(enter_notify->event_y), &x, &y);
+					   enter_notify->event_x,
+					   enter_notify->event_y, &x, &y);
 
 	notify_pointer_focus(&b->core_seat, &output->base, x, y);
 

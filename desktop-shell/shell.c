@@ -4786,7 +4786,7 @@ surface_opacity_binding(struct weston_pointer *pointer, uint32_t time,
 	if (!shsurf)
 		return;
 
-	shsurf->view->alpha -= wl_fixed_to_double(event->value) * step;
+	shsurf->view->alpha -= event->value * step;
 
 	if (shsurf->view->alpha > 1.0)
 		shsurf->view->alpha = 1.0;
@@ -4799,7 +4799,7 @@ surface_opacity_binding(struct weston_pointer *pointer, uint32_t time,
 
 static void
 do_zoom(struct weston_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
-	wl_fixed_t value)
+	double value)
 {
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
@@ -4823,7 +4823,7 @@ do_zoom(struct weston_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 			else if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL)
 				/* For every pixel zoom 20th of a step */
 				increment = output->zoom.increment *
-					    -wl_fixed_to_double(value) / 20.0;
+					    -value / 20.0;
 			else
 				increment = 0;
 

@@ -942,7 +942,6 @@ static BOOL xf_peer_post_connect(freerdp_peer *client)
 static FREERDP_CB_RET_TYPE
 xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 {
-	wl_fixed_t wl_x, wl_y;
 	RdpPeerContext *peerContext = (RdpPeerContext *)input->context;
 	struct rdp_output *output;
 	uint32_t button = 0;
@@ -951,10 +950,8 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 	if (flags & PTR_FLAGS_MOVE) {
 		output = peerContext->rdpBackend->output;
 		if (x < output->base.width && y < output->base.height) {
-			wl_x = wl_fixed_from_int((int)x);
-			wl_y = wl_fixed_from_int((int)y);
 			notify_motion_absolute(&peerContext->item.seat, weston_compositor_get_time(),
-					wl_x, wl_y);
+					x, y);
 			need_frame = true;
 		}
 	}
@@ -988,7 +985,7 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 			value = -value;
 
 		weston_event.axis = WL_POINTER_AXIS_VERTICAL_SCROLL;
-		weston_event.value = wl_fixed_from_double(DEFAULT_AXIS_STEP_DISTANCE * value);
+		weston_event.value = DEFAULT_AXIS_STEP_DISTANCE * value;
 		weston_event.discrete = (int)value;
 		weston_event.has_discrete = true;
 
@@ -1006,16 +1003,13 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 static FREERDP_CB_RET_TYPE
 xf_extendedMouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 {
-	wl_fixed_t wl_x, wl_y;
 	RdpPeerContext *peerContext = (RdpPeerContext *)input->context;
 	struct rdp_output *output;
 
 	output = peerContext->rdpBackend->output;
 	if (x < output->base.width && y < output->base.height) {
-		wl_x = wl_fixed_from_int((int)x);
-		wl_y = wl_fixed_from_int((int)y);
 		notify_motion_absolute(&peerContext->item.seat, weston_compositor_get_time(),
-				wl_x, wl_y);
+				x, y);
 	}
 
 	FREERDP_CB_RETURN(TRUE);

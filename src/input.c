@@ -352,7 +352,8 @@ weston_pointer_send_axis(struct weston_pointer *pointer,
 
 		if (event->value)
 			wl_pointer_send_axis(resource, time,
-					     event->axis, event->value);
+					     event->axis,
+					     wl_fixed_from_double(event->value));
 		else if (wl_resource_get_version(resource) >=
 			 WL_POINTER_AXIS_STOP_SINCE_VERSION)
 			wl_pointer_send_axis_stop(resource, time,
@@ -1275,7 +1276,7 @@ run_modifier_bindings(struct weston_seat *seat, uint32_t old, uint32_t new)
 
 WL_EXPORT void
 notify_motion_absolute(struct weston_seat *seat,
-		       uint32_t time, wl_fixed_t x, wl_fixed_t y)
+		       uint32_t time, double x, double y)
 {
 	struct weston_compositor *ec = seat->compositor;
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
@@ -1285,8 +1286,8 @@ notify_motion_absolute(struct weston_seat *seat,
 
 	event = (struct weston_pointer_motion_event) {
 		.mask = WESTON_POINTER_MOTION_ABS,
-		.x = wl_fixed_to_double(x),
-		.y = wl_fixed_to_double(y),
+		.x = x,
+		.y = y,
 	};
 
 	pointer->grab->interface->motion(pointer->grab, time, &event);
@@ -1682,12 +1683,14 @@ notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 
 WL_EXPORT void
 notify_pointer_focus(struct weston_seat *seat, struct weston_output *output,
-		     wl_fixed_t x, wl_fixed_t y)
+		     double x, double y)
 {
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 
 	if (output) {
-		weston_pointer_move_to(pointer, x, y);
+		weston_pointer_move_to(pointer,
+				       wl_fixed_from_double(x),
+				       wl_fixed_from_double(y));
 	} else {
 		/* FIXME: We should call weston_pointer_set_focus(seat,
 		 * NULL) here, but somehow that breaks re-entry... */
@@ -1815,13 +1818,15 @@ weston_touch_set_focus(struct weston_touch *touch, struct weston_view *view)
  */
 WL_EXPORT void
 notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
-             wl_fixed_t x, wl_fixed_t y, int touch_type)
+             double double_x, double double_y, int touch_type)
 {
 	struct weston_compositor *ec = seat->compositor;
 	struct weston_touch *touch = weston_seat_get_touch(seat);
 	struct weston_touch_grab *grab = touch->grab;
 	struct weston_view *ev;
 	wl_fixed_t sx, sy;
+	wl_fixed_t x = wl_fixed_from_double(double_x);
+	wl_fixed_t y = wl_fixed_from_double(double_y);
 
 	/* Update grab's global coordinates. */
 	if (touch_id == touch->grab_touch_id && touch_type != WL_TOUCH_UP) {

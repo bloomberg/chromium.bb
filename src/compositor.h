@@ -253,7 +253,7 @@ struct weston_pointer_motion_event {
 
 struct weston_pointer_axis_event {
 	uint32_t axis;
-	wl_fixed_t value;
+	double value;
 	bool has_discrete;
 	int32_t discrete;
 };
@@ -1155,7 +1155,7 @@ notify_motion(struct weston_seat *seat, uint32_t time,
 	      struct weston_pointer_motion_event *event);
 void
 notify_motion_absolute(struct weston_seat *seat, uint32_t time,
-		       wl_fixed_t x, wl_fixed_t y);
+		       double x, double y);
 void
 notify_button(struct weston_seat *seat, uint32_t time, int32_t button,
 	      enum wl_pointer_button_state state);
@@ -1177,7 +1177,7 @@ notify_modifiers(struct weston_seat *seat, uint32_t serial);
 
 void
 notify_pointer_focus(struct weston_seat *seat, struct weston_output *output,
-		     wl_fixed_t x, wl_fixed_t y);
+		     double x, double y);
 
 void
 notify_keyboard_focus_in(struct weston_seat *seat, struct wl_array *keys,
@@ -1187,7 +1187,7 @@ notify_keyboard_focus_out(struct weston_seat *seat);
 
 void
 notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
-	     wl_fixed_t x, wl_fixed_t y, int touch_type);
+	     double x, double y, int touch_type);
 void
 notify_touch_frame(struct weston_seat *seat);
 
@@ -1494,8 +1494,8 @@ void
 weston_output_destroy(struct weston_output *output);
 void
 weston_output_transform_coordinate(struct weston_output *output,
-				   wl_fixed_t device_x, wl_fixed_t device_y,
-				   wl_fixed_t *x, wl_fixed_t *y);
+				   double device_x, double device_y,
+				   double *x, double *y);
 
 void
 weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,

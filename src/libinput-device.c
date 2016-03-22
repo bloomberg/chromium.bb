@@ -109,7 +109,7 @@ handle_pointer_motion_absolute(
 		libinput_device_get_user_data(libinput_device);
 	struct weston_output *output = device->output;
 	uint32_t time;
-	wl_fixed_t x, y;
+	double x, y;
 	uint32_t width, height;
 
 	if (!output)
@@ -119,12 +119,10 @@ handle_pointer_motion_absolute(
 	width = device->output->current_mode->width;
 	height = device->output->current_mode->height;
 
-	x = wl_fixed_from_double(
-		libinput_event_pointer_get_absolute_x_transformed(pointer_event,
-								  width));
-	y = wl_fixed_from_double(
-		libinput_event_pointer_get_absolute_y_transformed(pointer_event,
-								  height));
+	x = libinput_event_pointer_get_absolute_x_transformed(pointer_event,
+							      width);
+	y = libinput_event_pointer_get_absolute_y_transformed(pointer_event,
+							      height);
 
 	weston_output_transform_coordinate(device->output, x, y, &x, &y);
 	notify_motion_absolute(device->seat, time, x, y);
@@ -252,7 +250,7 @@ handle_pointer_axis(struct libinput_device *libinput_device,
 		vert = normalize_scroll(pointer_event, axis);
 
 		weston_event.axis = WL_POINTER_AXIS_VERTICAL_SCROLL;
-		weston_event.value = wl_fixed_from_double(vert);
+		weston_event.value = vert;
 		weston_event.discrete = vert_discrete;
 		weston_event.has_discrete = (vert_discrete != 0);
 
@@ -267,7 +265,7 @@ handle_pointer_axis(struct libinput_device *libinput_device,
 		horiz = normalize_scroll(pointer_event, axis);
 
 		weston_event.axis = WL_POINTER_AXIS_HORIZONTAL_SCROLL;
-		weston_event.value = wl_fixed_from_double(horiz);
+		weston_event.value = horiz;
 		weston_event.discrete = horiz_discrete;
 		weston_event.has_discrete = (horiz_discrete != 0);
 
@@ -286,8 +284,8 @@ handle_touch_with_coords(struct libinput_device *libinput_device,
 {
 	struct evdev_device *device =
 		libinput_device_get_user_data(libinput_device);
-	wl_fixed_t x;
-	wl_fixed_t y;
+	double x;
+	double y;
 	uint32_t width, height;
 	uint32_t time;
 	int32_t slot;
@@ -300,10 +298,8 @@ handle_touch_with_coords(struct libinput_device *libinput_device,
 
 	width = device->output->current_mode->width;
 	height = device->output->current_mode->height;
-	x = wl_fixed_from_double(
-		libinput_event_touch_get_x_transformed(touch_event, width));
-	y = wl_fixed_from_double(
-		libinput_event_touch_get_y_transformed(touch_event, height));
+	x =  libinput_event_touch_get_x_transformed(touch_event, width);
+	y =  libinput_event_touch_get_y_transformed(touch_event, height);
 
 	weston_output_transform_coordinate(device->output,
 					   x, y, &x, &y);

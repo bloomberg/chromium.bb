@@ -1275,11 +1275,15 @@ input_set_cursor(struct wayland_input *input)
 static void
 input_handle_pointer_enter(void *data, struct wl_pointer *pointer,
 			   uint32_t serial, struct wl_surface *surface,
-			   wl_fixed_t x, wl_fixed_t y)
+			   wl_fixed_t fixed_x, wl_fixed_t fixed_y)
 {
 	struct wayland_input *input = data;
 	int32_t fx, fy;
 	enum theme_location location;
+	double x, y;
+
+	x = wl_fixed_to_double(fixed_x);
+	y = wl_fixed_to_double(fixed_y);
 
 	/* XXX: If we get a modifier event immediately before the focus,
 	 *      we should try to keep the same serial. */
@@ -1288,11 +1292,10 @@ input_handle_pointer_enter(void *data, struct wl_pointer *pointer,
 
 	if (input->output->frame) {
 		location = frame_pointer_enter(input->output->frame, input,
-					       wl_fixed_to_int(x),
-					       wl_fixed_to_int(y));
+					       x, y);
 		frame_interior(input->output->frame, &fx, &fy, NULL, NULL);
-		x -= wl_fixed_from_int(fx);
-		y -= wl_fixed_from_int(fy);
+		x -= fx;
+		y -= fy;
 
 		if (frame_status(input->output->frame) & FRAME_STATUS_REPAINT)
 			weston_output_schedule_repaint(&input->output->base);
@@ -1337,23 +1340,26 @@ input_handle_pointer_leave(void *data, struct wl_pointer *pointer,
 
 static void
 input_handle_motion(void *data, struct wl_pointer *pointer,
-		    uint32_t time, wl_fixed_t x, wl_fixed_t y)
+		    uint32_t time, wl_fixed_t fixed_x, wl_fixed_t fixed_y)
 {
 	struct wayland_input *input = data;
 	int32_t fx, fy;
 	enum theme_location location;
 	bool want_frame = false;
+	double x, y;
 
 	if (!input->output)
 		return;
 
+	x = wl_fixed_to_double(fixed_x);
+	y = wl_fixed_to_double(fixed_y);
+
 	if (input->output->frame) {
 		location = frame_pointer_motion(input->output->frame, input,
-						wl_fixed_to_int(x),
-						wl_fixed_to_int(y));
+						x, y);
 		frame_interior(input->output->frame, &fx, &fy, NULL, NULL);
-		x -= wl_fixed_from_int(fx);
-		y -= wl_fixed_from_int(fy);
+		x -= fx;
+		y -= fy;
 
 		if (frame_status(input->output->frame) & FRAME_STATUS_REPAINT)
 			weston_output_schedule_repaint(&input->output->base);
@@ -1447,7 +1453,7 @@ input_handle_axis(void *data, struct wl_pointer *pointer,
 	struct weston_pointer_axis_event weston_event;
 
 	weston_event.axis = axis;
-	weston_event.value = value;
+	weston_event.value = wl_fixed_to_double(value);
 
 	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL &&
 	    input->vert.has_discrete) {
@@ -1705,14 +1711,18 @@ static const struct wl_keyboard_listener keyboard_listener = {
 static void
 input_handle_touch_down(void *data, struct wl_touch *wl_touch,
 			uint32_t serial, uint32_t time,
-			struct wl_surface *surface, int32_t id, wl_fixed_t x,
-			wl_fixed_t y)
+			struct wl_surface *surface, int32_t id,
+			wl_fixed_t fixed_x, wl_fixed_t fixed_y)
 {
 	struct wayland_input *input = data;
 	struct wayland_output *output;
 	enum theme_location location;
 	bool first_touch;
 	int32_t fx, fy;
+	double x, y;
+
+	x = wl_fixed_to_double(fixed_x);
+	y = wl_fixed_to_double(fixed_y);
 
 	first_touch = (input->touch_points == 0);
 	input->touch_points++;
@@ -1723,13 +1733,11 @@ input_handle_touch_down(void *data, struct wl_touch *wl_touch,
 		return;
 
 	if (output->frame) {
-		location = frame_touch_down(output->frame, input, id,
-					    wl_fixed_to_int(x),
-					    wl_fixed_to_int(y));
+		location = frame_touch_down(output->frame, input, id, x, y);
 
 		frame_interior(output->frame, &fx, &fy, NULL, NULL);
-		x -= wl_fixed_from_int(fx);
-		y -= wl_fixed_from_int(fy);
+		x -= fx;
+		y -= fy;
 
 		if (frame_status(output->frame) & FRAME_STATUS_REPAINT)
 			weston_output_schedule_repaint(&output->base);
@@ -1792,20 +1800,24 @@ input_handle_touch_up(void *data, struct wl_touch *wl_touch,
 
 static void
 input_handle_touch_motion(void *data, struct wl_touch *wl_touch,
-                        uint32_t time, int32_t id, wl_fixed_t x,
-                        wl_fixed_t y)
+                        uint32_t time, int32_t id,
+                        wl_fixed_t fixed_x, wl_fixed_t fixed_y)
 {
 	struct wayland_input *input = data;
 	struct wayland_output *output = input->touch_focus;
 	int32_t fx, fy;
+	double x, y;
+
+	x = wl_fixed_to_double(fixed_x);
+	y = wl_fixed_to_double(fixed_y);
 
 	if (!output || !input->touch_active)
 		return;
 
 	if (output->frame) {
 		frame_interior(output->frame, &fx, &fy, NULL, NULL);
-		x -= wl_fixed_from_int(fx);
-		y -= wl_fixed_from_int(fy);
+		x -= fx;
+		y -= fy;
 	}
 
 	weston_output_transform_coordinate(&output->base, x, y, &x, &y);

@@ -4359,19 +4359,19 @@ weston_compositor_add_output(struct weston_compositor *compositor,
 
 WL_EXPORT void
 weston_output_transform_coordinate(struct weston_output *output,
-				   wl_fixed_t device_x, wl_fixed_t device_y,
-				   wl_fixed_t *x, wl_fixed_t *y)
+				   double device_x, double device_y,
+				   double *x, double *y)
 {
 	struct weston_vector p = { {
-		wl_fixed_to_double(device_x),
-		wl_fixed_to_double(device_y),
+		device_x,
+		device_y,
 		0.0,
 		1.0 } };
 
 	weston_matrix_transform(&output->inverse_matrix, &p);
 
-	*x = wl_fixed_from_double(p.f[0] / p.f[3]);
-	*y = wl_fixed_from_double(p.f[1] / p.f[3]);
+	*x = p.f[0] / p.f[3];
+	*y = p.f[1] / p.f[3];
 }
 
 static void

@@ -142,7 +142,8 @@ ss_seat_handle_motion(void *data, struct wl_pointer *pointer,
 	/* No transformation of input position is required here because we are
 	 * always receiving the input in the same coordinates as the output. */
 
-	notify_motion_absolute(&seat->base, time, x, y);
+	notify_motion_absolute(&seat->base, time,
+			       wl_fixed_to_double(x), wl_fixed_to_double(y));
 	notify_pointer_frame(&seat->base);
 }
 
@@ -165,7 +166,7 @@ ss_seat_handle_axis(void *data, struct wl_pointer *pointer,
 	struct weston_pointer_axis_event weston_event;
 
 	weston_event.axis = axis;
-	weston_event.value = value;
+	weston_event.value = wl_fixed_to_double(value);
 	weston_event.has_discrete = false;
 
 	notify_axis(&seat->base, time, &weston_event);
