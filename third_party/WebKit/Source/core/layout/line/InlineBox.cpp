@@ -21,7 +21,6 @@
 
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/LayoutBlockFlow.h"
-#include "core/layout/LayoutObject.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/line/InlineFlowBox.h"
 #include "core/layout/line/RootInlineBox.h"
@@ -35,6 +34,8 @@
 #endif
 
 namespace blink {
+
+class LayoutObject;
 
 struct SameSizeAsInlineBox {
     virtual ~SameSizeAsInlineBox() { }

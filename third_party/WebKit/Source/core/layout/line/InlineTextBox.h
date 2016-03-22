@@ -23,7 +23,6 @@
 #ifndef InlineTextBox_h
 #define InlineTextBox_h
 
-#include "core/layout/LayoutText.h" // so textLayoutObject() can be inline
 #include "core/layout/api/LineLayoutText.h"
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineBox.h"

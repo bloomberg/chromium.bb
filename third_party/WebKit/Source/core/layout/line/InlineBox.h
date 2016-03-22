@@ -21,7 +21,6 @@
 #ifndef InlineBox_h
 #define InlineBox_h
 
-#include "core/layout/LayoutBoxModelObject.h"
 #include "core/layout/api/LineLayoutBoxModel.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/api/SelectionState.h"

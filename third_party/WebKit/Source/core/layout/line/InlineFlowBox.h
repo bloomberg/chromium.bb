@@ -21,7 +21,6 @@
 #ifndef InlineFlowBox_h
 #define InlineFlowBox_h
 
-#include "core/layout/LayoutObjectInlines.h"
 #include "core/layout/OverflowModel.h"
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/line/InlineBox.h"
