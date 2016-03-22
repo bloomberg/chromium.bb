@@ -19,7 +19,7 @@ MojoRendererImpl::MojoRendererImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     interfaces::RendererPtr remote_renderer)
     : task_runner_(task_runner),
-      remote_renderer_(std::move(remote_renderer)),
+      remote_renderer_info_(remote_renderer.PassInterface()),
       binding_(this) {
   DVLOG(1) << __FUNCTION__;
 }
@@ -42,6 +42,9 @@ void MojoRendererImpl::Initialize(
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(demuxer_stream_provider);
+
+  // Bind |remote_renderer_| to the |task_runner_|.
+  remote_renderer_.Bind(std::move(remote_renderer_info_));
 
   // If connection error has happened, fail immediately.
   if (remote_renderer_.encountered_error()) {

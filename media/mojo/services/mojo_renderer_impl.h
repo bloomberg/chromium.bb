@@ -30,13 +30,6 @@ class DemuxerStreamProvider;
 // |task_runner|*. That means all Renderer and RendererClient methods will be
 // called/dispached on the |task_runner|. The only exception is GetMediaTime(),
 // which can be called on any thread.
-//
-// * Threading details:
-// mojo::GetProxy() doesn't bind an InterfacePtr to a thread. Then when
-// InterfacePtr::operator->() or InterfacePtr::get() is called for the first
-// time, e.g. to call remote_renderer->Initialize(), the InterfacePtr is bound
-// the thread where the call is made.
-
 class MojoRendererImpl : public Renderer, public interfaces::RendererClient {
  public:
   MojoRendererImpl(
@@ -84,7 +77,12 @@ class MojoRendererImpl : public Renderer, public interfaces::RendererClient {
   // lifetime of |this|.
   DemuxerStreamProvider* demuxer_stream_provider_;
 
-  // Remote Renderer, bound to |task_runner_|.
+  // This class is constructed on one thread and used exclusively on another
+  // thread. This member is used to safely pass the RendererPtr from one thread
+  // to another. It is set in the constructor and is consumed in Initialize().
+  interfaces::RendererPtrInfo remote_renderer_info_;
+
+  // Remote Renderer, bound to |task_runner_| during Initialize().
   interfaces::RendererPtr remote_renderer_;
 
   // Binding for RendererClient, bound to the |task_runner_|.

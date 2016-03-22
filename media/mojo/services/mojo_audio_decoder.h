@@ -63,6 +63,12 @@ class MojoAudioDecoder : public AudioDecoder,
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
+  // This class is constructed on one thread and used exclusively on another
+  // thread. This member is used to safely pass the AudioDecoderPtr from one
+  // thread to another. It is set in the constructor and is consumed in
+  // Initialize().
+  interfaces::AudioDecoderPtrInfo remote_decoder_info_;
+
   interfaces::AudioDecoderPtr remote_decoder_;
 
   // DataPipe for serializing the data section of DecoderBuffer.

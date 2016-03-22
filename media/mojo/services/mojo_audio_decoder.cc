@@ -21,7 +21,7 @@ MojoAudioDecoder::MojoAudioDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     interfaces::AudioDecoderPtr remote_decoder)
     : task_runner_(task_runner),
-      remote_decoder_(std::move(remote_decoder)),
+      remote_decoder_info_(remote_decoder.PassInterface()),
       binding_(this),
       has_connection_error_(false),
       needs_bitstream_conversion_(false) {
@@ -42,6 +42,9 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                   const OutputCB& output_cb) {
   DVLOG(1) << __FUNCTION__;
   DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // Bind |remote_decoder_| to the |task_runner_|.
+  remote_decoder_.Bind(std::move(remote_decoder_info_));
 
   // Fail immediately if the stream is encrypted but |cdm_context| is invalid.
   int cdm_id = (config.is_encrypted() && cdm_context)
