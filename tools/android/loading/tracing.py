@@ -366,6 +366,21 @@ class Event(object):
     return ''.join([str(self._tracing_event),
                     '[%s,%s]' % (self.start_msec, self.end_msec)])
 
+  def Matches(self, category, name):
+    """Match tracing events.
+
+    Args:
+      category: a tracing category (event['cat']).
+      name: the tracing event name (event['name']).
+
+    Returns:
+      True if the event matches and False otherwise.
+    """
+    if name != self.name:
+      return False
+    categories = self.category.split(',')
+    return category in categories
+
   def IsIndexable(self):
     """True iff the event can be indexed by time."""
     return self._synthetic or self.type not in [

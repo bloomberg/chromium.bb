@@ -382,6 +382,23 @@ class IntervalTreeTestCase(unittest.TestCase):
     self.assertEquals(3 + 10, len(tree.OverlappingEvents(450, 550)))
     self.assertEquals(8 + 10, len(tree.OverlappingEvents(450, 800)))
 
+  def testEventMatches(self):
+    event = Event({'name': 'foo',
+                   'cat': 'bar',
+                   'ph': 'X',
+                   'ts': 0, 'dur': 0})
+    self.assertTrue(event.Matches('bar', 'foo'))
+    self.assertFalse(event.Matches('bar', 'biz'))
+    self.assertFalse(event.Matches('biz', 'foo'))
+
+    event = Event({'name': 'foo',
+                   'cat': 'bar,baz,bizbiz',
+                   'ph': 'X',
+                   'ts': 0, 'dur': 0})
+    self.assertTrue(event.Matches('bar', 'foo'))
+    self.assertTrue(event.Matches('baz', 'foo'))
+    self.assertFalse(event.Matches('bar', 'biz'))
+    self.assertFalse(event.Matches('biz', 'foo'))
 
 if __name__ == '__main__':
   unittest.main()
