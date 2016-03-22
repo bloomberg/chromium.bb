@@ -1,0 +1,5 @@
+{
+  "name": "exe:leveldb_service_unittests",
+  "display_name": "LevelDB Service Unittests",
+  "capabilities": { "*": [ "*" ] }
+}

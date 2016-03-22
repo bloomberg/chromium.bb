@@ -9,8 +9,8 @@
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
+#include "mojo/shell/public/cpp/shell_test.h"
 #include "mojo/util/capture_util.h"
 
 using filesystem::FileError;
@@ -19,15 +19,15 @@ using mojo::Capture;
 namespace leveldb {
 namespace {
 
-class LevelDBApptest : public mojo::test::ApplicationTestBase {
+class LevelDBApptest : public mojo::test::ShellTest {
  public:
-  LevelDBApptest() {}
+  LevelDBApptest() : ShellTest("exe:leveldb_service_unittests") {}
   ~LevelDBApptest() override {}
 
  protected:
   // Overridden from mojo::test::ApplicationTestBase:
   void SetUp() override {
-    ApplicationTestBase::SetUp();
+    ShellTest::SetUp();
     connector()->ConnectToInterface("mojo:filesystem", &files_);
     connector()->ConnectToInterface("mojo:leveldb", &leveldb_);
   }

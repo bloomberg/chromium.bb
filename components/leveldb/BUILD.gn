@@ -4,6 +4,7 @@
 
 import("//mojo/public/mojo_application.gni")
 import("//mojo/public/mojo_application_manifest.gni")
+import("//testing/test.gni")
 
 source_set("lib") {
   sources = [
@@ -58,13 +59,9 @@ mojo_application_manifest("manifest") {
   source = "manifest.json"
 }
 
-mojo_native_application("apptests") {
-  output_name = "leveldb_apptests"
-
-  testonly = true
-
+test("leveldb_service_unittests") {
   sources = [
-    "leveldb_apptest.cc",
+    "leveldb_service_unittest.cc",
   ]
 
   deps = [
@@ -72,19 +69,22 @@ mojo_native_application("apptests") {
     "//components/filesystem/public/interfaces",
     "//components/leveldb/public/interfaces",
     "//mojo/common",
-    "//mojo/platform_handle:for_shared_library",
+    "//mojo/platform_handle",
     "//mojo/public/cpp/bindings",
-    "//mojo/shell/public/cpp:test_support",
+    "//mojo/shell/public/cpp:shell_test_support",
+    "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/public/cpp/test:run_all_shelltests",
   ]
 
   data_deps = [
-    ":apptest_manifest",
+    ":test_manifest",
     ":leveldb",
     "//components/filesystem:filesystem",
   ]
 }
 
-mojo_application_manifest("apptest_manifest") {
-  application_name = "leveldb_apptests"
-  source = "apptest_manifest.json"
+mojo_application_manifest("test_manifest") {
+  type = "exe"
+  application_name = "leveldb_service_unittests"
+  source = "test_manifest.json"
 }

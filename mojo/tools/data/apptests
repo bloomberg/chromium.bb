@@ -54,8 +54,4 @@ if config.target_os != config.OS_ANDROID:
 #      'test': 'mojo:media_pipeline_integration_apptests',
 #      'type': 'gtest_isolated',
 #    },
-    {
-      'test': 'mojo:leveldb_apptests',
-      'type': 'gtest_isolated',
-    }
   ]

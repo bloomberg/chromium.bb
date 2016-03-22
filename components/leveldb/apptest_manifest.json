@@ -1,5 +1,0 @@
-{
-  "name": "mojo:leveldb_apptests",
-  "display_name": "LevelDB Service Apptests",
-  "capabilities": { "*": ["*"] }
-}

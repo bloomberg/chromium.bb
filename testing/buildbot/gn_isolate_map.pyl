@@ -319,6 +319,10 @@
     "label": "//ui/keyboard:keyboard_unittests",
     "type": "unknown",
   },
+  "leveldb_service_unittests": {
+    "label": "//components/leveldb:leveldb_service_unittests",
+    "type": "console_test_launcher",
+  },
   # See http://crbug.com/585151
   #"libaddressinput_unittests": {
     #"label": "//third_party/libaddressinput:libaddressinput_unittests",
