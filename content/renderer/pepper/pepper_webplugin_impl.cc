@@ -129,17 +129,17 @@ bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
     if (!replacement_plugin)
       return false;
 
-    // Since we are setting the container to own the replacement plugin, we must
-    // schedule ourselves for deletion.
-    destroy();
+    // The replacement plugin, if it exists, must never fail to initialize.
     container->setPlugin(replacement_plugin);
-    if (!replacement_plugin->initialize(container)) {
-      CHECK(replacement_plugin->container() == nullptr);
-      return false;
-    }
+    CHECK(replacement_plugin->initialize(container));
 
-    CHECK(container->plugin() == replacement_plugin);
-    CHECK(replacement_plugin->container() == container);
+    DCHECK(container->plugin() == replacement_plugin);
+    DCHECK(replacement_plugin->container() == container);
+
+    // Since the container now owns the replacement plugin instead of this
+    // object, we must schedule ourselves for deletion.
+    destroy();
+
     return true;
   }
 

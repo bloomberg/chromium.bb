@@ -107,6 +107,8 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Creates a replacement plugin that is shown when the plugin at |file_path|
   // couldn't be loaded. This allows the embedder to show a custom placeholder.
+  // This may return nullptr. However, if it does return a WebPlugin, it must
+  // never fail to initialize.
   virtual blink::WebPlugin* CreatePluginReplacement(
       RenderFrame* render_frame,
       const base::FilePath& plugin_path);

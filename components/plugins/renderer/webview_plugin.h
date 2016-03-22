@@ -83,6 +83,8 @@ class WebViewPlugin : public blink::WebPlugin,
 
   // WebPlugin methods:
   blink::WebPluginContainer* container() const override;
+  // The WebViewPlugin, by design, never fails to initialize. It's used to
+  // display placeholders and error messages, so it must never fail.
   bool initialize(blink::WebPluginContainer*) override;
   void destroy() override;
 

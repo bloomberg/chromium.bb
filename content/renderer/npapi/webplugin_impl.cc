@@ -122,14 +122,19 @@ bool WebPluginImpl::initialize(WebPluginContainer* container) {
       return false;
     }
 
-    // Disable scripting by this plugin before replacing it with the new
-    // one. This plugin also needs destroying, so use destroy(), which will
-    // implicitly disable scripting while un-setting the container.
+    // The replacement plugin, if it exists, must never fail to initialize.
+    container->setPlugin(replacement_plugin);
+    CHECK(replacement_plugin->initialize(container));
+
+    DCHECK(container->plugin() == replacement_plugin);
+    DCHECK(replacement_plugin->container() == container);
+
+    // Since the container now owns the replacement plugin instead of this
+    // object, we must schedule ourselves for deletion. This also implicitly
+    // disables scripting while un-setting the container.
     destroy();
 
-    // Inform the container of the replacement plugin, then initialize it.
-    container->setPlugin(replacement_plugin);
-    return replacement_plugin->initialize(container);
+    return true;
   }
 
   delegate_ = plugin_delegate;
