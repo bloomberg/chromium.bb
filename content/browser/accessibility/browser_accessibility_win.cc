@@ -4075,7 +4075,8 @@ void BrowserAccessibilityWin::GetSelectionOffsets(
     int* selection_start, int* selection_end) const {
   DCHECK(selection_start && selection_end);
 
-  if (IsSimpleTextControl() &&
+  if (HasState(ui::AX_STATE_EDITABLE) &&
+      !HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
       GetIntAttribute(ui::AX_ATTR_TEXT_SEL_START, selection_start) &&
       GetIntAttribute(ui::AX_ATTR_TEXT_SEL_END, selection_end)) {
     return;

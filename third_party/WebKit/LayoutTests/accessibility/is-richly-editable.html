@@ -17,7 +17,6 @@
     style="border: 1px solid #000000;">
     <div id="richly_editable6" contentEditable="true">Some text.</div>
 </canvas>
-<div id="richly_editable7" contentEditable role="textbox">Some text.</div>
 
 <!-- Non-richly editable elements. -->
 <input id="non_richly_editable1" type="text" value="Some text.">
@@ -28,15 +27,16 @@ Some text.</textarea>
 <div contentEditable="plaintext-only">
     <p id="non_richly_editable5">Some text.</p>
 </div>
-<p id="non_richly_editable6" tabindex="0">Some text.</p>
-<button id="non_richly_editable7">Button</button>
+<div id="non_richly_editable6" contentEditable role="textbox">Some text.</div>
+<p id="non_richly_editable7" tabindex="0">Some text.</p>
+<button id="non_richly_editable8">Button</button>
 
 <script>
     description("This tests that only elements that allow the user to edit rich text in them are recognized as being richly editable.");
 
     if (window.accessibilityController) {
 
-        for (var i = 1; i <= 7; ++i) {
+        for (var i = 1; i <= 6; ++i) {
             var elementId = "richly_editable" + i;
             var element = document.getElementById(elementId);
             element.focus();
