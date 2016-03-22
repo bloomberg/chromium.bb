@@ -121,7 +121,6 @@ void NTPSnippetsFetcher::OnGetTokenSuccess(
   url_fetcher_->SetUploadData("application/json",
                               base::StringPrintf(kRequestParameterFormat,
                                                  host_restricts.c_str()));
-  url_fetcher_->SaveResponseToTemporaryFile(file_task_runner_.get());
   url_fetcher_->Start();
 }
 
@@ -161,7 +160,9 @@ void NTPSnippetsFetcher::OnURLFetchComplete(const URLFetcher* source) {
   }
 
   std::string response;
-  source->GetResponseAsString(&response);
+  bool stores_result_to_string = source->GetResponseAsString(&response);
+  DCHECK(stores_result_to_string);
+
   callback_list_.Notify(response);
 }
 
