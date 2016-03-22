@@ -2,11 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <list>
+
 #include "base/big_endian.h"
+#include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor.h"
+#include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_info.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_packetizer.h"
+#include "extensions/renderer/api/display_source/wifi_display/wifi_display_transport_stream_packetizer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using PacketPart = extensions::WiFiDisplayStreamPacketPart;
+
 namespace extensions {
+
+std::ostream& operator<<(std::ostream& os, const PacketPart& part) {
+  const auto flags = os.flags();
+  os << "{" << std::hex << std::noshowbase;
+  for (const auto& item : part) {
+    if (&item != &*part.begin())
+      os << ", ";
+    os << "0x" << static_cast<unsigned>(item);
+  }
+  os.setf(flags, std::ios::basefield | std::ios::showbase);
+  return os << "}";
+}
+
+bool operator==(const PacketPart& a, const PacketPart& b) {
+  if (a.size() != b.size())
+    return false;
+  return std::equal(a.begin(), a.end(), b.begin());
+}
 
 namespace {
 
@@ -15,6 +40,108 @@ const unsigned kDtsFlag = 0x0040u;
 const unsigned kMarkerFlag = 0x8000u;
 const unsigned kPtsFlag = 0x0080u;
 const size_t kUnitDataAlignment = sizeof(uint32_t);
+}
+
+namespace ts {
+const uint64_t kTimeStampMask = (static_cast<uint64_t>(1u) << 33) - 1u;
+const uint64_t kTimeStampSecond = 90000u;  // 90 kHz
+const uint64_t kProgramClockReferenceSecond =
+    300u * kTimeStampSecond;  // 27 MHz
+
+// Packet header:
+const size_t kPacketHeaderSize = 4u;
+const unsigned kSyncByte = 0x47u;
+const uint32_t kSyncByteMask = 0xFF000000u;
+const uint32_t kTransportErrorIndicator = 0x00800000u;
+const uint32_t kPayloadUnitStartIndicator = 0x00400000u;
+const uint32_t kTransportPriority = 0x00200000u;
+const uint32_t kScramblingControlMask = 0x000000C0u;
+const uint32_t kAdaptationFieldFlag = 0x00000020u;
+const uint32_t kPayloadFlag = 0x00000010u;
+
+// Adaptation field:
+const unsigned kRandomAccessFlag = 0x40u;
+const unsigned kPcrFlag = 0x10u;
+}  // namespace ts
+
+namespace widi {
+const unsigned kProgramAssociationTablePacketId = 0x0000u;
+const unsigned kProgramMapTablePacketId = 0x0100u;
+const unsigned kProgramClockReferencePacketId = 0x1000u;
+const unsigned kVideoStreamPacketId = 0x1011u;
+const unsigned kFirstAudioStreamPacketId = 0x1100u;
+}  // namespace widi
+
+template <typename PacketContainer>
+class PacketCollector {
+ public:
+  PacketContainer FetchPackets() {
+    PacketContainer container;
+    container.swap(packets_);
+    return container;
+  }
+
+ protected:
+  PacketContainer packets_;
+};
+
+class FakeTransportStreamPacketizer
+    : public WiFiDisplayTransportStreamPacketizer,
+      public PacketCollector<std::list<WiFiDisplayTransportStreamPacket>> {
+ public:
+  FakeTransportStreamPacketizer(
+      const base::TimeDelta& delay_for_unit_time_stamps,
+      std::vector<WiFiDisplayElementaryStreamInfo> stream_infos)
+      : WiFiDisplayTransportStreamPacketizer(delay_for_unit_time_stamps,
+                                             std::move(stream_infos)) {}
+
+  using WiFiDisplayTransportStreamPacketizer::NormalizeUnitTimeStamps;
+
+ protected:
+  bool OnPacketizedTransportStreamPacket(
+      const WiFiDisplayTransportStreamPacket& transport_stream_packet,
+      bool flush) override {
+    // Make a copy of header bytes as they are in stack.
+    headers_.emplace_back(transport_stream_packet.header().begin(),
+                          transport_stream_packet.header().end());
+    const auto& header = headers_.back();
+    if (transport_stream_packet.payload().empty()) {
+      packets_.emplace_back(header.data(), header.size());
+    } else {
+      packets_.emplace_back(header.data(), header.size(),
+                            transport_stream_packet.payload().begin());
+    }
+    EXPECT_EQ(transport_stream_packet.header().size(),
+              packets_.back().header().size());
+    EXPECT_EQ(transport_stream_packet.payload().size(),
+              packets_.back().payload().size());
+    EXPECT_EQ(transport_stream_packet.filler().size(),
+              packets_.back().filler().size());
+    return true;
+  }
+
+ private:
+  std::vector<std::vector<uint8_t>> headers_;
+};
+
+struct ProgramClockReference {
+  enum { kInvalidBase = ~static_cast<uint64_t>(0u) };
+  uint64_t base;
+  uint16_t extension;
+};
+
+ProgramClockReference ParseProgramClockReference(const uint8_t pcr_bytes[6]) {
+  const uint8_t reserved_pcr_bits = pcr_bytes[4] & 0x7Eu;
+  EXPECT_EQ(0x7Eu, reserved_pcr_bits);
+  ProgramClockReference pcr;
+  pcr.base = pcr_bytes[0];
+  pcr.base = (pcr.base << 8) | pcr_bytes[1];
+  pcr.base = (pcr.base << 8) | pcr_bytes[2];
+  pcr.base = (pcr.base << 8) | pcr_bytes[3];
+  pcr.base = (pcr.base << 1) | ((pcr_bytes[4] & 0x80u) >> 7);
+  pcr.extension = pcr_bytes[4] & 0x01u;
+  pcr.extension = (pcr.extension << 8) | pcr_bytes[5];
+  return pcr;
 }
 
 uint64_t ParseTimeStamp(const uint8_t ts_bytes[5], uint8_t pts_dts_indicator) {
@@ -29,6 +156,14 @@ uint64_t ParseTimeStamp(const uint8_t ts_bytes[5], uint8_t pts_dts_indicator) {
   ts = (ts << 8) | ts_bytes[3];
   ts = (ts << 7) | ((ts_bytes[4] & 0xFEu) >> 1);
   return ts;
+}
+
+unsigned ParseTransportStreamPacketId(
+    const WiFiDisplayTransportStreamPacket& packet) {
+  if (packet.header().size() < ts::kPacketHeaderSize)
+    return ~0u;
+  return (((packet.header().begin()[1] & 0x001Fu) << 8) |
+          packet.header().begin()[2]);
 }
 
 class WiFiDisplayElementaryStreamUnitPacketizationTest
@@ -120,12 +255,268 @@ class WiFiDisplayElementaryStreamUnitPacketizationTest
     EXPECT_EQ(unit_.size(), packet.unit().size());
   }
 
+  void CheckTransportStreamPacketHeader(
+      base::BigEndianReader* header_reader,
+      bool expected_payload_unit_start_indicator,
+      unsigned expected_packet_id,
+      bool* adaptation_field_flag,
+      uint8_t expected_continuity_counter) {
+    uint32_t parsed_u32;
+    EXPECT_TRUE(header_reader->ReadU32(&parsed_u32));
+    EXPECT_EQ(ts::kSyncByte << 24u, parsed_u32 & ts::kSyncByteMask);
+    EXPECT_EQ(0x0u, parsed_u32 & ts::kTransportErrorIndicator);
+    EXPECT_EQ(expected_payload_unit_start_indicator,
+              (parsed_u32 & ts::kPayloadUnitStartIndicator) != 0u);
+    EXPECT_EQ(0x0u, parsed_u32 & ts::kTransportPriority);
+    EXPECT_EQ(expected_packet_id, (parsed_u32 & 0x001FFF00) >> 8);
+    EXPECT_EQ(0x0u, parsed_u32 & ts::kScramblingControlMask);
+    if (!adaptation_field_flag) {
+      EXPECT_EQ(0x0u, parsed_u32 & ts::kAdaptationFieldFlag);
+    } else {
+      *adaptation_field_flag = (parsed_u32 & ts::kAdaptationFieldFlag) != 0u;
+    }
+    EXPECT_EQ(ts::kPayloadFlag, parsed_u32 & ts::kPayloadFlag);
+    EXPECT_EQ(expected_continuity_counter & 0xFu, parsed_u32 & 0x0000000Fu);
+  }
+
+  void CheckTransportStreamAdaptationField(
+      base::BigEndianReader* header_reader,
+      const WiFiDisplayTransportStreamPacket& packet,
+      uint8_t* adaptation_field_flags) {
+    uint8_t parsed_adaptation_field_length;
+    EXPECT_TRUE(header_reader->ReadU8(&parsed_adaptation_field_length));
+    if (parsed_adaptation_field_length > 0u) {
+      const int initial_remaining = header_reader->remaining();
+      uint8_t parsed_adaptation_field_flags;
+      EXPECT_TRUE(header_reader->ReadU8(&parsed_adaptation_field_flags));
+      if (!adaptation_field_flags) {
+        EXPECT_EQ(0x0u, parsed_adaptation_field_flags);
+      } else {
+        *adaptation_field_flags = parsed_adaptation_field_flags;
+        if (parsed_adaptation_field_flags & ts::kPcrFlag) {
+          uint8_t parsed_pcr_bytes[6];
+          EXPECT_TRUE(header_reader->ReadBytes(parsed_pcr_bytes,
+                                               sizeof(parsed_pcr_bytes)));
+          parsed_pcr_ = ParseProgramClockReference(parsed_pcr_bytes);
+        }
+      }
+      size_t remaining_stuffing_length =
+          parsed_adaptation_field_length -
+          static_cast<size_t>(initial_remaining - header_reader->remaining());
+      while (remaining_stuffing_length > 0u && header_reader->remaining() > 0) {
+        // Adaptation field stuffing byte in header_reader.
+        uint8_t parsed_stuffing_byte;
+        EXPECT_TRUE(header_reader->ReadU8(&parsed_stuffing_byte));
+        EXPECT_EQ(0xFFu, parsed_stuffing_byte);
+        --remaining_stuffing_length;
+      }
+      if (packet.payload().empty()) {
+        // Adaptation field stuffing bytes in packet.filler().
+        EXPECT_EQ(remaining_stuffing_length, packet.filler().size());
+        EXPECT_EQ(0xFFu, packet.filler().value());
+      } else {
+        EXPECT_EQ(0u, remaining_stuffing_length);
+      }
+    }
+  }
+
+  void CheckTransportStreamProgramAssociationTablePacket(
+      const WiFiDisplayTransportStreamPacket& packet) {
+    static const uint8_t kProgramAssicationTable[4u + 13u] = {
+        // Pointer:
+        0u,  // Pointer field
+        // Table header:
+        0x00u,       // Table ID (PAT)
+        0x80u |      // Section syntax indicator (0b1 for PAT)
+            0x00u |  // Private bit (0b0 for PAT)
+            0x30u |  // Reserved bits (0b11)
+            0x00u |  // Section length unused bits (0b00)
+            0u,      // Section length (10 bits)
+        13u,         //
+        // Table syntax:
+        0x00u,       // Table ID extension (transport stream ID)
+        0x01u,       //
+        0xC0u |      // Reserved bits (0b11)
+            0x00u |  // Version (0b00000)
+            0x01u,   // Current indicator (0b1)
+        0u,          // Section number
+        0u,          // Last section number
+        // Program association table specific data:
+        0x00u,      // Program number
+        0x01u,      //
+        0xE0 |      // Reserved bits (0b111)
+            0x01u,  // Program map packet ID (13 bits)
+        0x00,       //
+        // CRC:
+        0xE8u,
+        0xF9u, 0x5Eu, 0x7Du};
+
+    base::BigEndianReader header_reader(
+        reinterpret_cast<const char*>(packet.header().begin()),
+        packet.header().size());
+
+    CheckTransportStreamPacketHeader(
+        &header_reader, true, widi::kProgramAssociationTablePacketId, nullptr,
+        continuity_.program_assication_table++);
+
+    EXPECT_EQ(PacketPart(kProgramAssicationTable),
+              PacketPart(packet.header().end() - header_reader.remaining(),
+                         static_cast<size_t>(header_reader.remaining())));
+    EXPECT_TRUE(header_reader.Skip(header_reader.remaining()));
+
+    EXPECT_EQ(0, header_reader.remaining());
+    EXPECT_EQ(0u, packet.payload().size());
+  }
+
+  void CheckTransportStreamProgramMapTablePacket(
+      const WiFiDisplayTransportStreamPacket& packet,
+      const PacketPart& program_map_table) {
+    base::BigEndianReader header_reader(
+        reinterpret_cast<const char*>(packet.header().begin()),
+        packet.header().size());
+
+    CheckTransportStreamPacketHeader(&header_reader, true,
+                                     widi::kProgramMapTablePacketId, nullptr,
+                                     continuity_.program_map_table++);
+
+    EXPECT_EQ(program_map_table,
+              PacketPart(packet.header().end() - header_reader.remaining(),
+                         static_cast<size_t>(header_reader.remaining())));
+    EXPECT_TRUE(header_reader.Skip(header_reader.remaining()));
+
+    EXPECT_EQ(0, header_reader.remaining());
+    EXPECT_EQ(0u, packet.payload().size());
+  }
+
+  void CheckTransportStreamProgramClockReferencePacket(
+      const WiFiDisplayTransportStreamPacket& packet) {
+    base::BigEndianReader header_reader(
+        reinterpret_cast<const char*>(packet.header().begin()),
+        packet.header().size());
+
+    bool parsed_adaptation_field_flag;
+    CheckTransportStreamPacketHeader(
+        &header_reader, true, widi::kProgramClockReferencePacketId,
+        &parsed_adaptation_field_flag, continuity_.program_clock_reference++);
+    EXPECT_TRUE(parsed_adaptation_field_flag);
+
+    uint8_t parsed_adaptation_field_flags;
+    CheckTransportStreamAdaptationField(&header_reader, packet,
+                                        &parsed_adaptation_field_flags);
+    EXPECT_EQ(ts::kPcrFlag, parsed_adaptation_field_flags);
+
+    EXPECT_EQ(0, header_reader.remaining());
+    EXPECT_EQ(0u, packet.payload().size());
+  }
+
+  void CheckTransportStreamElementaryStreamPacket(
+      const WiFiDisplayTransportStreamPacket& packet,
+      const WiFiDisplayElementaryStreamPacket& elementary_stream_packet,
+      unsigned stream_index,
+      unsigned expected_packet_id,
+      bool expected_random_access,
+      const uint8_t** unit_data_pos) {
+    const bool first_transport_stream_packet_for_current_unit =
+        packet.payload().begin() == unit_.data();
+    const bool last_transport_stream_packet_for_current_unit =
+        packet.payload().end() == unit_.data() + unit_.size();
+    base::BigEndianReader header_reader(
+        reinterpret_cast<const char*>(packet.header().begin()),
+        packet.header().size());
+
+    bool parsed_adaptation_field_flag;
+    CheckTransportStreamPacketHeader(
+        &header_reader, first_transport_stream_packet_for_current_unit,
+        expected_packet_id, &parsed_adaptation_field_flag,
+        continuity_.elementary_streams[stream_index]++);
+
+    if (first_transport_stream_packet_for_current_unit) {
+      // Random access can only be signified by adaptation field.
+      if (expected_random_access)
+        EXPECT_TRUE(parsed_adaptation_field_flag);
+      // If there is no need for padding nor for a random access indicator,
+      // then there is no need for an adaptation field, either.
+      if (!last_transport_stream_packet_for_current_unit &&
+          !expected_random_access) {
+        EXPECT_FALSE(parsed_adaptation_field_flag);
+      }
+      if (parsed_adaptation_field_flag) {
+        uint8_t parsed_adaptation_field_flags;
+        CheckTransportStreamAdaptationField(&header_reader, packet,
+                                            &parsed_adaptation_field_flags);
+        EXPECT_EQ(expected_random_access ? ts::kRandomAccessFlag : 0u,
+                  parsed_adaptation_field_flags);
+      }
+
+      // Elementary stream header.
+      PacketPart parsed_elementary_stream_packet_header(
+          packet.header().end() - header_reader.remaining(),
+          std::min(elementary_stream_packet.header().size(),
+                   static_cast<size_t>(header_reader.remaining())));
+      EXPECT_EQ(elementary_stream_packet.header(),
+                parsed_elementary_stream_packet_header);
+      EXPECT_TRUE(
+          header_reader.Skip(parsed_elementary_stream_packet_header.size()));
+
+      // Elementary stream unit header.
+      PacketPart parsed_unit_header(
+          packet.header().end() - header_reader.remaining(),
+          std::min(elementary_stream_packet.unit_header().size(),
+                   static_cast<size_t>(header_reader.remaining())));
+      EXPECT_EQ(elementary_stream_packet.unit_header(), parsed_unit_header);
+      EXPECT_TRUE(header_reader.Skip(parsed_unit_header.size()));
+
+      // Time stamps.
+      if (parsed_elementary_stream_packet_header.size() >= 19u) {
+        uint64_t parsed_dts = ParseTimeStamp(
+            &parsed_elementary_stream_packet_header.begin()[14], 0x1u);
+        // Check that
+        //   0 <= 300 * parsed_dts - parsed_pcr_value <=
+        //       kProgramClockReferenceSecond
+        // where
+        //   parsed_pcr_value = 300 * parsed_pcr_.base + parsed_pcr_.extension
+        // but allow parsed_pcr_.base and parsed_dts to wrap around in 33 bits.
+        EXPECT_NE(ProgramClockReference::kInvalidBase, parsed_pcr_.base);
+        EXPECT_LE(
+            300u * ((parsed_dts - parsed_pcr_.base) & ts::kTimeStampMask) -
+                parsed_pcr_.extension,
+            ts::kProgramClockReferenceSecond)
+            << " DTS must be not smaller than PCR!";
+      }
+    } else {
+      // If there is no need for padding, then there is no need for
+      // an adaptation field, either.
+      if (!last_transport_stream_packet_for_current_unit)
+        EXPECT_FALSE(parsed_adaptation_field_flag);
+      if (parsed_adaptation_field_flag) {
+        CheckTransportStreamAdaptationField(&header_reader, packet, nullptr);
+      }
+    }
+    EXPECT_EQ(0, header_reader.remaining());
+
+    // Transport stream packet payload.
+    EXPECT_EQ(*unit_data_pos, packet.payload().begin());
+    if (*unit_data_pos == packet.payload().begin())
+      *unit_data_pos += packet.payload().size();
+
+    // Transport stream packet filler.
+    EXPECT_EQ(0u, packet.filler().size());
+  }
+
   enum { kVideoOnlyUnitSize = 0x8000u };  // Not exact. Be on the safe side.
 
   const std::vector<uint8_t> unit_;
   const base::TimeTicks now_;
   const base::TimeTicks dts_;
   const base::TimeTicks pts_;
+
+  struct {
+    size_t program_assication_table;
+    size_t program_map_table;
+    size_t program_clock_reference;
+    size_t elementary_streams[3];
+  } continuity_ = {0u, 0u, 0u, {0u, 0u, 0u}};
+  ProgramClockReference parsed_pcr_ = {ProgramClockReference::kInvalidBase, 0u};
 };
 
 TEST_P(WiFiDisplayElementaryStreamUnitPacketizationTest,
@@ -149,6 +540,163 @@ TEST_P(WiFiDisplayElementaryStreamUnitPacketizationTest,
     CheckElementaryStreamPacketUnitHeader(packet, unit_header_data,
                                           unit_header_size);
     CheckElementaryStreamPacketUnit(packet);
+  }
+}
+
+TEST_P(WiFiDisplayElementaryStreamUnitPacketizationTest,
+       EncodeToTransportStreamPackets) {
+  enum { kStreamCount = 3u };
+  static const bool kBoolValues[] = {false, true};
+  static const unsigned kPacketIds[kStreamCount] = {
+      widi::kVideoStreamPacketId, widi::kFirstAudioStreamPacketId + 0u,
+      widi::kFirstAudioStreamPacketId + 1u};
+  static const uint8_t kProgramMapTable[4u + 42u] = {
+      // Pointer:
+      0u,  // Pointer field
+      // Table header:
+      0x02u,       // Table ID (PMT)
+      0x80u |      // Section syntax indicator (0b1 for PMT)
+          0x00u |  // Private bit (0b0 for PMT)
+          0x30u |  // Reserved bits (0b11)
+          0x00u |  // Section length unused bits (0b00)
+          0u,      // Section length (10 bits)
+      42u,         //
+      // Table syntax:
+      0x00u,       // Table ID extension (program number)
+      0x01u,       //
+      0xC0u |      // Reserved bits (0b11)
+          0x00u |  // Version (0b00000)
+          0x01u,   // Current indicator (0b1)
+      0u,          // Section number
+      0u,          // Last section number
+      // Program map table specific data:
+      0xE0u |      // Reserved bits (0b111)
+          0x10u,   // Program clock reference packet ID (13 bits)
+      0x00u,       //
+      0xF0u |      // Reserved bits (0b11)
+          0x00u |  // Program info length unused bits
+          0u,      // Program info length (10 bits)
+      0u,          //
+      // Elementary stream specific data:
+      0x1Bu,       // Stream type (H.264 in a packetized stream)
+      0xE0u |      // Reserved bits (0b111)
+          0x10u,   // Elementary packet ID (13 bits)
+      0x11u,       //
+      0xF0u |      // Reserved bits (0b1111)
+          0x00u |  // Elementary stream info length unused bits
+          0u,      // Elementary stream info length (10 bits)
+      10u,         //
+      0x28u,       // AVC video descriptor tag
+      4u,          // Descriptor length
+      0xA5u,
+      0xF5u, 0xBDu, 0xBFu,
+      0x2Au,  // AVC timing and HRD descriptor tag
+      2u,     // Descriptor length
+      0x7Eu, 0x1Fu,
+      // Elementary stream specific data:
+      0x83u,       // Stream type (lossless audio in a packetized stream)
+      0xE0u |      // Reserved bits (0b111)
+          0x11u,   // Elementary packet ID (13 bits)
+      0x00u,       //
+      0xF0u |      // Reserved bits (0b1111)
+          0x00u |  // Elementary stream info length unused bits
+          0u,      // Elementary stream info length (10 bits)
+      4u,          //
+      0x83u,       // LPCM audio stream descriptor tag
+      2u,          // Descriptor length
+      0x26u,
+      0x2Fu,
+      // Elementary stream specific data:
+      0x0Fu,       // Stream type (AAC in a packetized stream)
+      0xE0u |      // Reserved bits (0b111)
+          0x11u,   // Elementary packet ID (13 bits)
+      0x01u,       //
+      0xF0u |      // Reserved bits (0b1111)
+          0x00u |  // Elementary stream info length unused bits
+          0u,      // Elementary stream info length (10 bits)
+      0u,          //
+      // CRC:
+      0x4Fu,
+      0x63u, 0xABu, 0x6Eu};
+  static const uint8_t kStreamIds[] = {
+      WiFiDisplayElementaryStreamPacketizer::kFirstVideoStreamId,
+      WiFiDisplayElementaryStreamPacketizer::kPrivateStream1Id,
+      WiFiDisplayElementaryStreamPacketizer::kFirstAudioStreamId};
+
+  using ESDescriptor = WiFiDisplayElementaryStreamDescriptor;
+  std::vector<ESDescriptor> lpcm_descriptors;
+  lpcm_descriptors.emplace_back(ESDescriptor::LPCMAudioStream::Create(
+      ESDescriptor::LPCMAudioStream::SAMPLING_FREQUENCY_44_1K,
+      ESDescriptor::LPCMAudioStream::BITS_PER_SAMPLE_16, false,
+      ESDescriptor::LPCMAudioStream::NUMBER_OF_CHANNELS_STEREO));
+  std::vector<ESDescriptor> video_desciptors;
+  video_desciptors.emplace_back(ESDescriptor::AVCVideo::Create(
+      0xA5u, true, true, true, 0x15u, 0xBDu, true));
+  video_desciptors.emplace_back(ESDescriptor::AVCTimingAndHRD::Create());
+  std::vector<WiFiDisplayElementaryStreamInfo> stream_infos;
+  stream_infos.emplace_back(WiFiDisplayElementaryStreamInfo::VIDEO_H264,
+                            std::move(video_desciptors));
+  stream_infos.emplace_back(WiFiDisplayElementaryStreamInfo::AUDIO_LPCM,
+                            std::move(lpcm_descriptors));
+  stream_infos.emplace_back(WiFiDisplayElementaryStreamInfo::AUDIO_AAC);
+  WiFiDisplayElementaryStreamPacketizer elementary_stream_packetizer;
+  FakeTransportStreamPacketizer packetizer(
+      base::TimeDelta::FromMilliseconds(200), std::move(stream_infos));
+
+  size_t packet_index = 0u;
+  for (unsigned stream_index = 0; stream_index < kStreamCount; ++stream_index) {
+    const uint8_t* unit_header_data = nullptr;
+    size_t unit_header_size = 0u;
+    if (stream_index > 0u) {  // Audio stream.
+      if (unit_.size() >= kVideoOnlyUnitSize)
+        continue;
+      if (stream_index == 1u) {  // LPCM
+        unit_header_data = reinterpret_cast<const uint8_t*>("\xA0\x06\x00\x09");
+        unit_header_size = 4u;
+      }
+    }
+    for (const bool random_access : kBoolValues) {
+      EXPECT_TRUE(packetizer.EncodeElementaryStreamUnit(
+          stream_index, unit_.data(), unit_.size(), random_access, pts_, dts_,
+          true));
+      auto normalized_pts = pts_;
+      auto normalized_dts = dts_;
+      packetizer.NormalizeUnitTimeStamps(&normalized_pts, &normalized_dts);
+      WiFiDisplayElementaryStreamPacket elementary_stream_packet =
+          elementary_stream_packetizer.EncodeElementaryStreamUnit(
+              kStreamIds[stream_index], unit_header_data, unit_header_size,
+              unit_.data(), unit_.size(), normalized_pts, normalized_dts);
+
+      const uint8_t* unit_data_pos = unit_.data();
+      for (const auto& packet : packetizer.FetchPackets()) {
+        switch (ParseTransportStreamPacketId(packet)) {
+          case widi::kProgramAssociationTablePacketId:
+            if (packet_index < 4u)
+              EXPECT_EQ(0u, packet_index);
+            CheckTransportStreamProgramAssociationTablePacket(packet);
+            break;
+          case widi::kProgramMapTablePacketId:
+            if (packet_index < 4u)
+              EXPECT_EQ(1u, packet_index);
+            CheckTransportStreamProgramMapTablePacket(
+                packet, PacketPart(kProgramMapTable));
+            break;
+          case widi::kProgramClockReferencePacketId:
+            if (packet_index < 4u)
+              EXPECT_EQ(2u, packet_index);
+            CheckTransportStreamProgramClockReferencePacket(packet);
+            break;
+          default:
+            if (packet_index < 4u)
+              EXPECT_EQ(3u, packet_index);
+            CheckTransportStreamElementaryStreamPacket(
+                packet, elementary_stream_packet, stream_index,
+                kPacketIds[stream_index], random_access, &unit_data_pos);
+        }
+        ++packet_index;
+      }
+      EXPECT_EQ(unit_.data() + unit_.size(), unit_data_pos);
+    }
   }
 }
 

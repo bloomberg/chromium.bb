@@ -1038,6 +1038,8 @@
     'extensions_renderer_sources_wifi_display': [
       'renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor.cc',
       'renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor.h',
+      'renderer/api/display_source/wifi_display/wifi_display_elementary_stream_info.cc',
+      'renderer/api/display_source/wifi_display/wifi_display_elementary_stream_info.h',
       'renderer/api/display_source/wifi_display/wifi_display_elementary_stream_packetizer.cc',
       'renderer/api/display_source/wifi_display/wifi_display_elementary_stream_packetizer.h',
       'renderer/api/display_source/wifi_display/wifi_display_media_manager.cc',
@@ -1045,6 +1047,8 @@
       'renderer/api/display_source/wifi_display/wifi_display_session.cc',
       'renderer/api/display_source/wifi_display/wifi_display_session.h',
       'renderer/api/display_source/wifi_display/wifi_display_stream_packet_part.h',
+      'renderer/api/display_source/wifi_display/wifi_display_transport_stream_packetizer.cc',
+      'renderer/api/display_source/wifi_display/wifi_display_transport_stream_packetizer.h',
     ],
     'extensions_utility_sources': [
       'utility/unpacker.cc',
