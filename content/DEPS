@@ -10,7 +10,6 @@ include_rules = [
   "+content/grit",
   "+content/public/common",
   "+content/public/test",
-  "+content/shell",  # for content_browsertests
   "+content/test",
 
   "+blink",
@@ -112,3 +111,12 @@ include_rules = [
   # For generated JNI includes.
   "+jni",
 ]
+
+# content -> content/shell dependency is not allowed, except for browser tests.
+specific_include_rules = {
+  ".*_browsertest[a-z_]*\.cc": [
+    "+content/shell/browser",
+    "+content/shell/common",
+  ],
+}
+

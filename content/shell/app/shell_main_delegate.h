@@ -10,9 +10,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "content/public/app/content_main_delegate.h"
-#include "content/shell/common/shell_content_client.h"
 
 namespace content {
+class ContentClient;
 class ShellContentBrowserClient;
 class ShellContentRendererClient;
 class ShellContentUtilityClient;
@@ -44,7 +44,7 @@ class ShellMainDelegate : public ContentMainDelegate {
   scoped_ptr<ShellContentBrowserClient> browser_client_;
   scoped_ptr<ShellContentRendererClient> renderer_client_;
   scoped_ptr<ShellContentUtilityClient> utility_client_;
-  ShellContentClient content_client_;
+  scoped_ptr<ContentClient> content_client_;
 
 #if defined(OS_ANDROID)
   scoped_ptr<BrowserMainRunner> browser_runner_;

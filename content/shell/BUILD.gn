@@ -143,6 +143,8 @@ static_library("content_shell_lib") {
     "browser/shell_web_contents_view_delegate_creator.h",
     "browser/shell_web_contents_view_delegate_mac.mm",
     "browser/shell_web_contents_view_delegate_win.cc",
+    "common/layout_test/layout_test_content_client.cc",
+    "common/layout_test/layout_test_content_client.h",
     "common/layout_test/layout_test_messages.cc",
     "common/layout_test/layout_test_messages.h",
     "common/layout_test/layout_test_switches.cc",

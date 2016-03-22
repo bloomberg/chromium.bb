@@ -195,6 +195,8 @@
         'shell/browser/shell_web_contents_view_delegate_creator.h',
         'shell/browser/shell_web_contents_view_delegate_mac.mm',
         'shell/browser/shell_web_contents_view_delegate_win.cc',
+        'shell/common/layout_test/layout_test_content_client.cc',
+        'shell/common/layout_test/layout_test_content_client.h',
         'shell/common/layout_test/layout_test_messages.cc',
         'shell/common/layout_test/layout_test_messages.h',
         'shell/common/layout_test/layout_test_switches.cc',
