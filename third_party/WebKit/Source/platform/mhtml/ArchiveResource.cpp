@@ -38,8 +38,6 @@ inline ArchiveResource::ArchiveResource(
     const AtomicString& textEncoding)
     : m_url(url)
     , m_contentID(contentID)
-    , m_response(
-        ResourceResponse(url, mimeType, data->size(), textEncoding, String()))
     , m_data(data)
     , m_mimeType(mimeType)
     , m_textEncoding(textEncoding)

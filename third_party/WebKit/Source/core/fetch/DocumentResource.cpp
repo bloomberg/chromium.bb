@@ -37,8 +37,8 @@ PassRefPtrWillBeRawPtr<DocumentResource> DocumentResource::fetchSVGDocument(Fetc
     return toDocumentResource(fetcher->requestResource(request, SVGDocumentResourceFactory()));
 }
 
-DocumentResource::DocumentResource(const ResourceRequest& request, Type type)
-    : Resource(request, type)
+DocumentResource::DocumentResource(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options)
+    : Resource(request, type, options)
     , m_decoder(TextResourceDecoder::create("application/xml"))
 {
     // FIXME: We'll support more types to support HTMLImports.

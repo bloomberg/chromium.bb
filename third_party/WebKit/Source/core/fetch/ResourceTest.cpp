@@ -27,7 +27,7 @@ public:
 
 private:
     UnlockableResource(const ResourceRequest& request, Type type)
-        : Resource(request, type)
+        : Resource(request, type, ResourceLoaderOptions())
         {
         }
 

@@ -46,11 +46,11 @@ PassRefPtrWillBeRawPtr<CSSStyleSheetResource> CSSStyleSheetResource::fetch(Fetch
 
 PassRefPtrWillBeRawPtr<CSSStyleSheetResource> CSSStyleSheetResource::createForTest(const ResourceRequest& request, const String& charset)
 {
-    return adoptRefWillBeNoop(new CSSStyleSheetResource(request, charset));
+    return adoptRefWillBeNoop(new CSSStyleSheetResource(request, ResourceLoaderOptions(), charset));
 }
 
-CSSStyleSheetResource::CSSStyleSheetResource(const ResourceRequest& resourceRequest, const String& charset)
-    : StyleSheetResource(resourceRequest, CSSStyleSheet, "text/css", charset)
+CSSStyleSheetResource::CSSStyleSheetResource(const ResourceRequest& resourceRequest, const ResourceLoaderOptions& options, const String& charset)
+    : StyleSheetResource(resourceRequest, CSSStyleSheet, options, "text/css", charset)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, acceptCSS, ("text/css,*/*;q=0.1", AtomicString::ConstructFromLiteral));
 

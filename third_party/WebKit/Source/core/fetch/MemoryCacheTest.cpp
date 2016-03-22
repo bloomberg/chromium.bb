@@ -46,7 +46,7 @@ public:
     public:
         static RefPtrWillBeRawPtr<FakeDecodedResource> create(const ResourceRequest& request, Type type)
         {
-            return adoptRefWillBeNoop(new FakeDecodedResource(request, type));
+            return adoptRefWillBeNoop(new FakeDecodedResource(request, type, ResourceLoaderOptions()));
         }
 
         virtual void appendData(const char* data, size_t len)
@@ -56,8 +56,8 @@ public:
         }
 
     protected:
-        FakeDecodedResource(const ResourceRequest& request, Type type)
-            : Resource(request, type)
+        FakeDecodedResource(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options)
+            : Resource(request, type, options)
         {
         }
 
@@ -71,7 +71,7 @@ public:
     public:
         static RefPtrWillBeRawPtr<FakeResource> create(const ResourceRequest& request, Type type)
         {
-            return adoptRefWillBeNoop(new FakeResource(request, type));
+            return adoptRefWillBeNoop(new FakeResource(request, type, ResourceLoaderOptions()));
         }
 
         void fakeEncodedSize(size_t size)
@@ -80,8 +80,8 @@ public:
         }
 
     private:
-        FakeResource(const ResourceRequest& request, Type type)
-            : Resource(request, type)
+        FakeResource(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options)
+            : Resource(request, type, options)
         {
         }
     };

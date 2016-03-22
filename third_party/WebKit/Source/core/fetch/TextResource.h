@@ -22,7 +22,7 @@ public:
     String encoding() const override;
 
 protected:
-    TextResource(const ResourceRequest&, Type, const String& mimeType, const String& charset);
+    TextResource(const ResourceRequest&, Type, const ResourceLoaderOptions&, const String& mimeType, const String& charset);
     ~TextResource() override;
 
 private:

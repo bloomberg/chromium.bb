@@ -77,8 +77,8 @@ PassRefPtrWillBeRawPtr<FontResource> FontResource::fetch(FetchRequest& request, 
     return toFontResource(fetcher->requestResource(request, FontResourceFactory()));
 }
 
-FontResource::FontResource(const ResourceRequest& resourceRequest)
-    : Resource(resourceRequest, Font)
+FontResource::FontResource(const ResourceRequest& resourceRequest, const ResourceLoaderOptions& options)
+    : Resource(resourceRequest, Font, options)
     , m_state(Unloaded)
     , m_corsFailed(false)
     , m_fontLoadShortLimitTimer(this, &FontResource::fontLoadShortLimitCallback)
@@ -102,11 +102,10 @@ void FontResource::didUnscheduleLoad()
         m_state = Unloaded;
 }
 
-void FontResource::load(ResourceFetcher*, const ResourceLoaderOptions& options)
+void FontResource::load(ResourceFetcher*)
 {
     // Don't load the file yet. Wait for an access before triggering the load.
     setLoading(true);
-    m_options = options;
     if (!m_revalidatingRequest.isNull())
         m_state = Unloaded;
 }
@@ -127,7 +126,7 @@ void FontResource::beginLoadIfNeeded(ResourceFetcher* dl)
 {
     if (stillNeedsLoad()) {
         m_state = LoadInitiated;
-        Resource::load(dl, m_options);
+        Resource::load(dl);
         m_fontLoadShortLimitTimer.startOneShot(fontLoadWaitShortLimitSec, BLINK_FROM_HERE);
         m_fontLoadLongLimitTimer.startOneShot(fontLoadWaitLongLimitSec, BLINK_FROM_HERE);
 

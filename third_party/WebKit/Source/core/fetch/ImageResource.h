@@ -53,18 +53,18 @@ public:
 
     static PassRefPtrWillBeRawPtr<ImageResource> create(blink::Image* image)
     {
-        return adoptRefWillBeNoop(new ImageResource(image));
+        return adoptRefWillBeNoop(new ImageResource(image, ResourceLoaderOptions()));
     }
 
     // Exposed for testing
     static PassRefPtrWillBeRawPtr<ImageResource> create(const ResourceRequest& request, blink::Image* image)
     {
-        return adoptRefWillBeNoop(new ImageResource(request, image));
+        return adoptRefWillBeNoop(new ImageResource(request, image, ResourceLoaderOptions()));
     }
 
     ~ImageResource() override;
 
-    void load(ResourceFetcher*, const ResourceLoaderOptions&) override;
+    void load(ResourceFetcher*) override;
 
     blink::Image* getImage(); // Returns the nullImage() if the image is not available yet.
     bool hasImage() const { return m_image.get(); }
@@ -129,8 +129,8 @@ protected:
     void destroyDecodedDataForFailedRevalidation() override;
 
 private:
-    explicit ImageResource(blink::Image*);
-    ImageResource(const ResourceRequest&, blink::Image*);
+    explicit ImageResource(blink::Image*, const ResourceLoaderOptions&);
+    ImageResource(const ResourceRequest&, blink::Image*, const ResourceLoaderOptions&);
 
     enum class MultipartParsingState : uint8_t {
         WaitingForFirstPart,
@@ -143,12 +143,12 @@ private:
         ImageResourceFactory()
             : ResourceFactory(Resource::Image) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const String&) const override
+        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String&) const override
         {
-            return adoptRefWillBeNoop(new ImageResource(request));
+            return adoptRefWillBeNoop(new ImageResource(request, options));
         }
     };
-    ImageResource(const ResourceRequest&);
+    ImageResource(const ResourceRequest&, const ResourceLoaderOptions&);
 
     void clear();
 

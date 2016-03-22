@@ -42,8 +42,8 @@ class CORE_EXPORT StyleSheetResource : public TextResource {
 public:
     using ClientType = StyleSheetResourceClient;
 
-    StyleSheetResource(const ResourceRequest& request, Type type, const String& mimeType, const String& charset)
-        : TextResource(request, type, mimeType, charset)
+    StyleSheetResource(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options, const String& mimeType, const String& charset)
+        : TextResource(request, type, options, mimeType, charset)
     { }
 };
 

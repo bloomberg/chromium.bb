@@ -10,8 +10,8 @@
 
 namespace blink {
 
-TextResource::TextResource(const ResourceRequest& resourceRequest, Resource::Type type, const String& mimeType, const String& charset)
-    : Resource(resourceRequest, type)
+TextResource::TextResource(const ResourceRequest& resourceRequest, Resource::Type type, const ResourceLoaderOptions& options, const String& mimeType, const String& charset)
+    : Resource(resourceRequest, type, options)
     , m_decoder(TextResourceDecoder::create(mimeType, charset))
 {
 }

@@ -48,12 +48,12 @@ protected:
         XSLStyleSheetResourceFactory()
             : ResourceFactory(Resource::XSLStyleSheet) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const String& charset) const override
+        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
-            return adoptRefWillBeNoop(new XSLStyleSheetResource(request, charset));
+            return adoptRefWillBeNoop(new XSLStyleSheetResource(request, options, charset));
         }
     };
-    XSLStyleSheetResource(const ResourceRequest&, const String& charset);
+    XSLStyleSheetResource(const ResourceRequest&, const ResourceLoaderOptions&, const String& charset);
 
     void checkNotify() override;
 

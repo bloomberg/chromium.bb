@@ -71,11 +71,12 @@
 
 namespace blink {
 
-FrameFetchContext::FrameFetchContext(DocumentLoader* loader)
-    : m_document(nullptr)
+FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
+    : m_document(document)
     , m_documentLoader(loader)
     , m_imageFetched(false)
 {
+    ASSERT(frame());
 }
 
 FrameFetchContext::~FrameFetchContext()

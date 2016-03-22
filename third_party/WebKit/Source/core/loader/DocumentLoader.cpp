@@ -97,7 +97,7 @@ static bool shouldInheritSecurityOriginFromOwner(const KURL& url)
 
 DocumentLoader::DocumentLoader(LocalFrame* frame, const ResourceRequest& req, const SubstituteData& substituteData)
     : m_frame(frame)
-    , m_fetcher(FrameFetchContext::createContextAndFetcher(this))
+    , m_fetcher(FrameFetchContext::createContextAndFetcher(this, nullptr))
     , m_originalRequest(req)
     , m_substituteData(substituteData)
     , m_request(req)

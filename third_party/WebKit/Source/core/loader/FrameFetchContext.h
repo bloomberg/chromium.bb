@@ -51,9 +51,9 @@ class ResourceRequest;
 
 class CORE_EXPORT FrameFetchContext final : public FetchContext {
 public:
-    static ResourceFetcher* createContextAndFetcher(DocumentLoader* loader)
+    static ResourceFetcher* createContextAndFetcher(DocumentLoader* loader, Document* document)
     {
-        return ResourceFetcher::create(new FrameFetchContext(loader));
+        return ResourceFetcher::create(new FrameFetchContext(loader, document));
     }
 
     static void provideDocumentToContext(FetchContext& context, Document* document)
@@ -117,7 +117,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit FrameFetchContext(DocumentLoader*);
+    explicit FrameFetchContext(DocumentLoader*, Document*);
     inline DocumentLoader* ensureLoaderForNotifications() const;
 
     LocalFrame* frame() const; // Can be null

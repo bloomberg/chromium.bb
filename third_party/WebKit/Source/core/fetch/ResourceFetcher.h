@@ -160,7 +160,6 @@ private:
     void initializeRevalidation(const FetchRequest&, Resource*);
     PassRefPtrWillBeRawPtr<Resource> createResourceForLoading(FetchRequest&, const String& charset, const ResourceFactory&);
     void storeResourceTimingInitiatorInformation(Resource*);
-    bool scheduleArchiveLoad(Resource*, const ResourceRequest&);
 
     PassRefPtrWillBeRawPtr<Resource> resourceForStaticData(const FetchRequest&, const ResourceFactory&, const SubstituteData&);
 

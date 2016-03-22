@@ -53,12 +53,12 @@ private:
         SVGDocumentResourceFactory()
             : ResourceFactory(Resource::SVGDocument) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const String& charset) const override
+        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
-            return adoptRefWillBeNoop(new DocumentResource(request, Resource::SVGDocument));
+            return adoptRefWillBeNoop(new DocumentResource(request, Resource::SVGDocument, options));
         }
     };
-    DocumentResource(const ResourceRequest&, Type);
+    DocumentResource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
 
     bool mimeTypeAllowed() const;
     PassRefPtrWillBeRawPtr<Document> createDocument(const KURL&);

@@ -85,16 +85,16 @@ public:
     };
 
     // Exposed for testing.
-    static PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, Type type)
+    static PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options = ResourceLoaderOptions())
     {
-        return adoptRefWillBeNoop(new Resource(request, type));
+        return adoptRefWillBeNoop(new Resource(request, type, options));
     }
     virtual ~Resource();
 
     virtual void removedFromMemoryCache();
     DECLARE_VIRTUAL_TRACE();
 
-    virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);
+    virtual void load(ResourceFetcher*);
 
     virtual void setEncoding(const String&) { }
     virtual String encoding() const { return String(); }
@@ -124,7 +124,6 @@ public:
     Type getType() const { return static_cast<Type>(m_type); }
     const ResourceLoaderOptions& options() const { return m_options; }
     ResourceLoaderOptions& mutableOptions() { return m_options; }
-    void setOptions(const ResourceLoaderOptions& options) { m_options = options; }
 
     void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
     ResourcePriority priorityFromClients();
@@ -255,7 +254,7 @@ public:
     WeakPtrWillBeRawPtr<Resource> asWeakPtr();
 
 protected:
-    Resource(const ResourceRequest&, Type);
+    Resource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
 
     virtual void checkNotify();
 
@@ -373,7 +372,7 @@ private:
 class ResourceFactory {
     STACK_ALLOCATED();
 public:
-    virtual PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest&, const String&) const = 0;
+    virtual PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest&, const ResourceLoaderOptions&, const String&) const = 0;
     Resource::Type type() const { return m_type; }
 
 protected:

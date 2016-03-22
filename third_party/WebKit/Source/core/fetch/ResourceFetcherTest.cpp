@@ -80,9 +80,9 @@ public:
     TestResourceFactory(Resource::Type type = Resource::Raw)
         : ResourceFactory(type) { }
 
-    PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const String& charset) const override
+    PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
     {
-        return Resource::create(request, type());
+        return Resource::create(request, type(), options);
     }
 };
 

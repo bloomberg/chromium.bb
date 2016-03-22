@@ -90,7 +90,7 @@ TEST(ImageResourceTest, MultipartImage)
     // Emulate starting a real load, but don't expect any "real" WebURLLoaderClient callbacks.
     RefPtrWillBeRawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
     cachedImage->setIdentifier(createUniqueIdentifier());
-    cachedImage->load(fetcher, ResourceLoaderOptions());
+    cachedImage->load(fetcher);
     Platform::current()->unitTestSupport()->unregisterMockedURL(testURL);
 
     MockImageResourceClient client(cachedImage);
@@ -151,7 +151,7 @@ TEST(ImageResourceTest, CancelOnDetach)
     RefPtrWillBeRawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
     cachedImage->setIdentifier(createUniqueIdentifier());
 
-    cachedImage->load(fetcher, ResourceLoaderOptions());
+    cachedImage->load(fetcher);
     memoryCache()->add(cachedImage.get());
 
     MockImageResourceClient client(cachedImage);

@@ -50,7 +50,7 @@ public:
     // Exposed for testing
     static RefPtrWillBeRawPtr<RawResource> create(const ResourceRequest& request, Type type)
     {
-        return adoptRefWillBeNoop(new RawResource(request, type));
+        return adoptRefWillBeNoop(new RawResource(request, type, ResourceLoaderOptions()));
     }
 
     // FIXME: AssociatedURLLoader shouldn't be a DocumentThreadableLoader and therefore shouldn't
@@ -66,13 +66,13 @@ private:
         RawResourceFactory(Resource::Type type)
             : ResourceFactory(type) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const String& charset) const override
+        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
-            return adoptRefWillBeNoop(new RawResource(request, m_type));
+            return adoptRefWillBeNoop(new RawResource(request, m_type, options));
         }
     };
 
-    RawResource(const ResourceRequest&, Type);
+    RawResource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
 
     void didAddClient(ResourceClient*) override;
     void appendData(const char*, size_t) override;

@@ -85,8 +85,8 @@ PassRefPtrWillBeRawPtr<RawResource> RawResource::fetchManifest(FetchRequest& req
     return toRawResource(fetcher->requestResource(request, RawResourceFactory(Resource::Manifest)));
 }
 
-RawResource::RawResource(const ResourceRequest& resourceRequest, Type type)
-    : Resource(resourceRequest, type)
+RawResource::RawResource(const ResourceRequest& resourceRequest, Type type, const ResourceLoaderOptions& options)
+    : Resource(resourceRequest, type, options)
 {
 }
 

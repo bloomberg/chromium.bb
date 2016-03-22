@@ -66,12 +66,12 @@ private:
         CSSStyleSheetResourceFactory()
             : ResourceFactory(Resource::CSSStyleSheet) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const String& charset) const override
+        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
-            return adoptRefWillBeNoop(new CSSStyleSheetResource(request, charset));
+            return adoptRefWillBeNoop(new CSSStyleSheetResource(request, options, charset));
         }
     };
-    CSSStyleSheetResource(const ResourceRequest&, const String& charset);
+    CSSStyleSheetResource(const ResourceRequest&, const ResourceLoaderOptions&, const String& charset);
 
     bool canUseSheet(MIMETypeCheck) const;
     void removedFromMemoryCache() override;

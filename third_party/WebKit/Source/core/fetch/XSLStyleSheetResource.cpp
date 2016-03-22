@@ -55,8 +55,8 @@ PassRefPtrWillBeRawPtr<XSLStyleSheetResource> XSLStyleSheetResource::fetch(Fetch
     return toXSLStyleSheetResource(fetcher->requestResource(request, XSLStyleSheetResourceFactory()));
 }
 
-XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequest, const String& charset)
-    : StyleSheetResource(resourceRequest, XSLStyleSheet, "text/xsl", charset)
+XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequest, const ResourceLoaderOptions& options, const String& charset)
+    : StyleSheetResource(resourceRequest, XSLStyleSheet, options, "text/xsl", charset)
 {
     ASSERT(RuntimeEnabledFeatures::xsltEnabled());
     DEFINE_STATIC_LOCAL(const AtomicString, acceptXSLT, ("text/xml, application/xml, application/xhtml+xml, text/xsl, application/rss+xml, application/atom+xml", AtomicString::ConstructFromLiteral));

@@ -194,8 +194,9 @@ static WebURLRequest::RequestContext requestContextFromType(bool isMainFrame, Re
     return WebURLRequest::RequestContextSubresource;
 }
 
-ResourceFetcher::ResourceFetcher(FetchContext* context)
-    : m_context(context)
+ResourceFetcher::ResourceFetcher(FetchContext* newContext)
+    : m_context(newContext)
+    , m_archive(context().isMainFrame() ? nullptr : context().archive())
     , m_resourceTimingReportTimer(this, &ResourceFetcher::resourceTimingReportTimerFired)
     , m_autoLoadImages(true)
     , m_imagesEnabled(true)
@@ -302,13 +303,13 @@ static PassOwnPtr<TracedValue> urlForTraceEvent(const KURL& url)
 PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::resourceForStaticData(const FetchRequest& request, const ResourceFactory& factory, const SubstituteData& substituteData)
 {
     const KURL& url = request.resourceRequest().url();
-    ASSERT(url.protocolIsData() || substituteData.isValid());
+    ASSERT(url.protocolIsData() || substituteData.isValid() || m_archive);
 
     // TODO(japhet): We only send main resource data: urls through WebURLLoader for the benefit of
     // a service worker test (RenderViewImplTest.ServiceWorkerNetworkProviderSetup), which is at a
     // layer where it isn't easy to mock out a network load. It uses data: urls to emulate the
     // behavior it wants to test, which would otherwise be reserved for network loads.
-    if ((factory.type() == Resource::MainResource && !substituteData.isValid()) || factory.type() == Resource::Raw)
+    if (!m_archive && !substituteData.isValid() && (factory.type() == Resource::MainResource || factory.type() == Resource::Raw))
         return nullptr;
 
     const String cacheIdentifier = getCacheIdentifier();
@@ -326,18 +327,26 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::resourceForStaticData(const Fe
         mimetype = substituteData.mimeType();
         charset = substituteData.textEncoding();
         data = substituteData.content();
-    } else {
+    } else if (url.protocolIsData()) {
         data = PassRefPtr<SharedBuffer>(Platform::current()->parseDataURL(url, mimetype, charset));
         if (!data)
             return nullptr;
+    } else {
+        ArchiveResource* archiveResource = m_archive->subresourceForURL(request.url());
+        // Fall back to the network if the archive doesn't contain the resource.
+        if (!archiveResource)
+            return nullptr;
+        mimetype = archiveResource->mimeType();
+        charset = archiveResource->textEncoding();
+        data = archiveResource->data();
     }
+
     ResourceResponse response(url, mimetype, data->size(), charset, String());
     response.setHTTPStatusCode(200);
     response.setHTTPStatusText("OK");
 
-    RefPtrWillBeRawPtr<Resource> resource = factory.create(request.resourceRequest(), request.charset());
+    RefPtrWillBeRawPtr<Resource> resource = factory.create(request.resourceRequest(), request.options(), request.charset());
     resource->setNeedsSynchronousCacheHit(substituteData.forceSynchronousLoad());
-    resource->setOptions(request.options());
     // FIXME: We should provide a body stream here.
     resource->responseReceived(response, nullptr);
     resource->setDataBufferingPolicy(BufferData);
@@ -422,7 +431,7 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::requestResource(FetchRequest& 
         }
     }
 
-    bool isStaticData = request.resourceRequest().url().protocolIsData() || substituteData.isValid();
+    bool isStaticData = request.resourceRequest().url().protocolIsData() || substituteData.isValid() || m_archive;
     RefPtrWillBeRawPtr<Resource> resource(nullptr);
     if (isStaticData)
         resource = resourceForStaticData(request, factory, substituteData);
@@ -483,8 +492,7 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::requestResource(FetchRequest& 
             return nullptr;
         }
 
-        if (!scheduleArchiveLoad(resource.get(), request.resourceRequest()))
-            resource->load(this, request.options());
+        resource->load(this);
 
         // For asynchronous loads that immediately fail, it's sufficient to return a
         // null Resource, as it indicates that something prevented the load from starting.
@@ -589,7 +597,7 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::createResourceForLoading(Fetch
 
     WTF_LOG(ResourceLoading, "Loading Resource for '%s'.", request.resourceRequest().url().elidedString().latin1().data());
 
-    RefPtrWillBeRawPtr<Resource> resource = factory.create(request.resourceRequest(), charset);
+    RefPtrWillBeRawPtr<Resource> resource = factory.create(request.resourceRequest(), request.options(), charset);
     resource->setLinkPreload(request.isLinkPreload());
     resource->setCacheIdentifier(cacheIdentifier);
 
@@ -834,7 +842,7 @@ void ResourceFetcher::reloadImagesIfNotDeferred()
     for (const auto& documentResource : m_documentResources) {
         Resource* resource = documentResource.value.get();
         if (resource && resource->getType() == Resource::Image && resource->stillNeedsLoad() && !clientDefersImage(resource->url()))
-            const_cast<Resource*>(resource)->load(this, defaultResourceOptions());
+            const_cast<Resource*>(resource)->load(this);
     }
 }
 
@@ -899,29 +907,6 @@ ArchiveResource* ResourceFetcher::createArchive(Resource* resource)
         return nullptr;
     m_archive = MHTMLArchive::create(resource->url(), resource->resourceBuffer());
     return m_archive ? m_archive->mainResource() : nullptr;
-}
-
-bool ResourceFetcher::scheduleArchiveLoad(Resource* resource, const ResourceRequest& request)
-{
-    if (resource->getType() == Resource::MainResource && !context().isMainFrame())
-        m_archive = context().archive();
-
-    if (!m_archive)
-        return false;
-
-    ArchiveResource* archiveResource = m_archive->subresourceForURL(request.url());
-    if (!archiveResource) {
-        resource->error(Resource::LoadError);
-        return false;
-    }
-
-    resource->setLoading(true);
-    resource->responseReceived(archiveResource->response(), nullptr);
-    SharedBuffer* data = archiveResource->data();
-    if (data)
-        resource->appendData(data->data(), data->size());
-    resource->finish();
-    return true;
 }
 
 void ResourceFetcher::didFinishLoading(Resource* resource, double finishTime, int64_t encodedDataLength)

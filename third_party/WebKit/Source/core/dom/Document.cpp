@@ -468,8 +468,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
         m_fetcher = m_frame->loader().documentLoader()->fetcher();
         FrameFetchContext::provideDocumentToContext(m_fetcher->context(), this);
     } else if (m_importsController) {
-        m_fetcher = FrameFetchContext::createContextAndFetcher(nullptr);
-        FrameFetchContext::provideDocumentToContext(m_fetcher->context(), this);
+        m_fetcher = FrameFetchContext::createContextAndFetcher(nullptr, this);
     } else {
         m_fetcher = ResourceFetcher::create(nullptr);
     }

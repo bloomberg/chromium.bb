@@ -47,7 +47,7 @@ public:
     static PassRefPtrWillBeRawPtr<FontResource> fetch(FetchRequest&, ResourceFetcher*);
     ~FontResource() override;
 
-    void load(ResourceFetcher*, const ResourceLoaderOptions&) override;
+    void load(ResourceFetcher*) override;
 
     void didAddClient(ResourceClient*) override;
 
@@ -75,12 +75,12 @@ private:
         FontResourceFactory()
             : ResourceFactory(Resource::Font) { }
 
-        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const String& charset) const override
+        PassRefPtrWillBeRawPtr<Resource> create(const ResourceRequest& request, const ResourceLoaderOptions& options, const String& charset) const override
         {
-            return adoptRefWillBeNoop(new FontResource(request));
+            return adoptRefWillBeNoop(new FontResource(request, options));
         }
     };
-    FontResource(const ResourceRequest&);
+    FontResource(const ResourceRequest&, const ResourceLoaderOptions&);
 
     void checkNotify() override;
     void fontLoadShortLimitCallback(Timer<FontResource>*);

@@ -46,8 +46,9 @@ PassRefPtrWillBeRawPtr<ScriptResource> ScriptResource::fetch(FetchRequest& reque
     return resource.release();
 }
 
-ScriptResource::ScriptResource(const ResourceRequest& resourceRequest, const String& charset)
-    : TextResource(resourceRequest, Script, "application/javascript", charset), m_integrityDisposition(ScriptIntegrityDisposition::NotChecked)
+ScriptResource::ScriptResource(const ResourceRequest& resourceRequest, const ResourceLoaderOptions& options, const String& charset)
+    : TextResource(resourceRequest, Script, options, "application/javascript", charset)
+    , m_integrityDisposition(ScriptIntegrityDisposition::NotChecked)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, acceptScript, ("*/*", AtomicString::ConstructFromLiteral));
 

@@ -58,8 +58,8 @@ PassRefPtrWillBeRawPtr<ImageResource> ImageResource::fetch(FetchRequest& request
     return toImageResource(fetcher->requestResource(request, ImageResourceFactory()));
 }
 
-ImageResource::ImageResource(const ResourceRequest& resourceRequest)
-    : Resource(resourceRequest, Image)
+ImageResource::ImageResource(const ResourceRequest& resourceRequest, const ResourceLoaderOptions& options)
+    : Resource(resourceRequest, Image, options)
     , m_devicePixelRatioHeaderValue(1.0)
     , m_image(nullptr)
     , m_hasDevicePixelRatioHeaderValue(false)
@@ -69,8 +69,8 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest)
     setCustomAcceptHeader();
 }
 
-ImageResource::ImageResource(blink::Image* image)
-    : Resource(ResourceRequest(""), Image)
+ImageResource::ImageResource(blink::Image* image, const ResourceLoaderOptions& options)
+    : Resource(ResourceRequest(""), Image, options)
     , m_devicePixelRatioHeaderValue(1.0)
     , m_image(image)
     , m_hasDevicePixelRatioHeaderValue(false)
@@ -81,8 +81,8 @@ ImageResource::ImageResource(blink::Image* image)
     setCustomAcceptHeader();
 }
 
-ImageResource::ImageResource(const ResourceRequest& resourceRequest, blink::Image* image)
-    : Resource(resourceRequest, Image)
+ImageResource::ImageResource(const ResourceRequest& resourceRequest, blink::Image* image, const ResourceLoaderOptions& options)
+    : Resource(resourceRequest, Image, options)
     , m_image(image)
 {
     WTF_LOG(Timers, "new ImageResource(ResourceRequest, Image) %p", this);
@@ -105,10 +105,11 @@ DEFINE_TRACE(ImageResource)
     MultipartImageResourceParser::Client::trace(visitor);
 }
 
-void ImageResource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)
+void ImageResource::load(ResourceFetcher* fetcher)
 {
-    if (!fetcher || fetcher->autoLoadImages())
-        Resource::load(fetcher, options);
+    ASSERT(fetcher);
+    if (fetcher->autoLoadImages())
+        Resource::load(fetcher);
     else
         setLoading(false);
 }
@@ -455,7 +456,7 @@ void ImageResource::reloadIfLoFi(ResourceFetcher* fetcher)
     m_resourceRequest.setCachePolicy(ResourceRequestCachePolicy::ReloadBypassingCache);
     m_resourceRequest.setLoFiState(WebURLRequest::LoFiOff);
     error(Resource::LoadError);
-    load(fetcher, fetcher->defaultResourceOptions());
+    load(fetcher);
 }
 
 void ImageResource::changedInRect(const blink::Image* image, const IntRect& rect)

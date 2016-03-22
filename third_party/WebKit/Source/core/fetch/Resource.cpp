@@ -144,8 +144,9 @@ String Resource::CacheHandler::encoding() const
     return m_resource->encoding();
 }
 
-Resource::Resource(const ResourceRequest& request, Type type)
+Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoaderOptions& options)
     : m_resourceRequest(request)
+    , m_options(options)
     , m_responseTimestamp(currentTime())
     , m_cancelTimer(this, &Resource::cancelTimerFired)
 #if !ENABLE(OILPAN)
@@ -199,10 +200,9 @@ DEFINE_TRACE(Resource)
 #endif
 }
 
-void Resource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)
+void Resource::load(ResourceFetcher* fetcher)
 {
     RELEASE_ASSERT(!m_loader);
-    m_options = options;
     m_loading = true;
     m_status = Pending;
 
