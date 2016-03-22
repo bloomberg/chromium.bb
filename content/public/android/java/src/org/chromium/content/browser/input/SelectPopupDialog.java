@@ -43,6 +43,7 @@ public class SelectPopupDialog implements SelectPopup {
         AlertDialog.Builder b = new AlertDialog.Builder(windowContext)
                 .setView(listView)
                 .setCancelable(true);
+        setInverseBackgroundForced(b);
 
         if (multiple) {
             b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -91,6 +92,14 @@ public class SelectPopupDialog implements SelectPopup {
                 notifySelection(null);
             }
         });
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void setInverseBackgroundForced(AlertDialog.Builder builder) {
+        // This is needed for pre-Holo themes (e.g. android:Theme.Black), which can be used in
+        // WebView. See http://crbug.com/596626. This can be removed if/when this class starts
+        // using android.support.v7.app.AlertDialog.
+        builder.setInverseBackgroundForced(true);
     }
 
     private int getSelectDialogLayout(boolean isMultiChoice) {
