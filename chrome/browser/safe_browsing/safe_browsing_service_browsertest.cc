@@ -1064,10 +1064,8 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, SubResourceHitOnFreshTab) {
   // Allow popups.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetContentSetting(ContentSettingsPattern::Wildcard(),
-                          ContentSettingsPattern::Wildcard(),
-                          CONTENT_SETTINGS_TYPE_POPUPS, std::string(),
-                          CONTENT_SETTING_ALLOW);
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_POPUPS,
+                                 CONTENT_SETTING_ALLOW);
 
   // Add |kMalwareImg| to fake safebrowsing db.
   GURL img_url = embedded_test_server()->GetURL(kMalwareImg);

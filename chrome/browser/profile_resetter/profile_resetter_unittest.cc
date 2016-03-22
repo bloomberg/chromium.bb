@@ -491,8 +491,7 @@ TEST_F(ProfileResetterTest, ResetHomepagePartially) {
 TEST_F(ProfileResetterTest, ResetContentSettings) {
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
-  ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromString("[*.]example.org");
+  GURL url("http://example.org");
   std::map<ContentSettingsType, ContentSetting> default_settings;
 
   // TODO(raymes): Clean up this test so that we don't have such ugly iteration
@@ -521,9 +520,8 @@ TEST_F(ProfileResetterTest, ResetContentSettings) {
                                                           wildcard_setting);
     }
     if (info->IsSettingValid(site_setting)) {
-      host_content_settings_map->SetContentSetting(
-          pattern, ContentSettingsPattern::Wildcard(), content_type,
-          std::string(), site_setting);
+      host_content_settings_map->SetContentSettingDefaultScope(
+          url, url, content_type, std::string(), site_setting);
       ContentSettingsForOneType host_settings;
       host_content_settings_map->GetSettingsForOneType(
           content_type, std::string(), &host_settings);

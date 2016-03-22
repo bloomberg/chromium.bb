@@ -87,11 +87,10 @@ TEST_F(BackgroundSyncPermissionContextTest, TestBlockOrigin) {
   GURL url1("https://www.example1.com");
   GURL url2("https://www.example2.com");
   BackgroundSyncPermissionContext permission_context(profile());
-  HostContentSettingsMapFactory::GetForProfile(profile())->SetContentSetting(
-      ContentSettingsPattern::FromURLNoWildcard(url1),
-      ContentSettingsPattern::FromURLNoWildcard(url1),
-      CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, std::string(),
-      CONTENT_SETTING_BLOCK);
+  HostContentSettingsMapFactory::GetForProfile(profile())
+      ->SetContentSettingDefaultScope(url1, GURL(),
+                                      CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
+                                      std::string(), CONTENT_SETTING_BLOCK);
 
   NavigateAndRequestPermission(url1, &permission_context);
 

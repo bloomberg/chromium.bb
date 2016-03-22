@@ -241,11 +241,9 @@ IN_PROC_BROWSER_TEST_F(WebstoreInlineInstallerTest,
       GenerateTestServerUrl(kAppDomain, "install_from_popup.html");
   // Disable popup blocking for the test url.
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
-      ->SetContentSetting(ContentSettingsPattern::FromURL(install_url),
-                          ContentSettingsPattern::Wildcard(),
-                          CONTENT_SETTINGS_TYPE_POPUPS,
-                          std::string(),
-                          CONTENT_SETTING_ALLOW);
+      ->SetContentSettingDefaultScope(install_url, GURL(),
+                                      CONTENT_SETTINGS_TYPE_POPUPS,
+                                      std::string(), CONTENT_SETTING_ALLOW);
   ui_test_utils::NavigateToURL(browser(), install_url);
   // The test page opens a popup which is a new |browser| window.
   Browser* popup_browser =
