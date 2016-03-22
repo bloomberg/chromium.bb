@@ -83,6 +83,10 @@ class PolicyDetails:
     self.platforms = []
     for platform, version_range in [ p.split(':')
                                      for p in policy['supported_on'] ]:
+      if self.is_device_only and platform != 'chrome_os':
+        raise RuntimeError('is_device_only is only allowed for Chrome OS: "%s"'
+                           % p)
+
       split_result = version_range.split('-')
       if len(split_result) != 2:
         raise RuntimeError('supported_on must have exactly one dash: "%s"' % p)

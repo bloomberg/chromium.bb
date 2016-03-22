@@ -148,9 +148,10 @@
 #
 # Device Policy:
 #   An additional flag 'device_only' (optional, defaults to False) indicates
-#   that this policy is only supported as a device-level Cloud Policy.
-#   In that case no entry in the UserPolicy Protobuf is generated and
-#   it is assumed that it will be added to the DevicePolicy Protobuf manually.
+#   that this policy is only supported as a device-level Cloud Policy. In that
+#   case no entry in the UserPolicy Protobuf is generated and it is assumed that
+#   it will be added to the DevicePolicy Protobuf manually.  Device policy only
+#   exists on Chrome OS.
 #
 # Enterprise defaults:
 #   For managed users on Chrome OS (i.e. users receiving user policy from the
