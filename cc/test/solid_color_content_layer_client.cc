@@ -43,7 +43,7 @@ SolidColorContentLayerClient::PaintContentsToDisplayList(
       DisplayItemList::Create(clip, settings);
 
   display_list->CreateAndAppendItem<DrawingDisplayItem>(
-      clip, skia::AdoptRef(recorder.endRecordingAsPicture()));
+      clip, recorder.finishRecordingAsPicture());
 
   display_list->Finalize();
   return display_list;

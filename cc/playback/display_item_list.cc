@@ -184,7 +184,7 @@ void DisplayItemList::Finalize() {
     // Convert to an SkPicture for faster rasterization.
     DCHECK(settings_.use_cached_picture);
     DCHECK(!picture_);
-    picture_ = skia::AdoptRef(recorder_->endRecordingAsPicture());
+    picture_ = recorder_->finishRecordingAsPicture();
     DCHECK(picture_);
     picture_memory_usage_ =
         SkPictureUtils::ApproximateBytesUsed(picture_.get());
@@ -265,8 +265,7 @@ DisplayItemList::AsValue(bool include_items) const {
     canvas->translate(-layer_rect_.x(), -layer_rect_.y());
     canvas->clipRect(gfx::RectToSkRect(layer_rect_));
     Raster(canvas, NULL, gfx::Rect(), 1.f);
-    skia::RefPtr<SkPicture> picture =
-        skia::AdoptRef(recorder.endRecordingAsPicture());
+    sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
 
     std::string b64_picture;
     PictureDebugUtil::SerializeAsBase64(picture.get(), &b64_picture);

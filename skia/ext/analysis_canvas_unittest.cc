@@ -345,8 +345,7 @@ TEST(AnalysisCanvasTest, EarlyOutNotSolid) {
   record_canvas->drawText(
       text.c_str(), text.length(), point.fX, point.fY, paint);
 
-  skia::RefPtr<SkPicture> picture =
-      skia::AdoptRef(recorder.endRecordingAsPicture());
+  sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
 
   // Draw the picture into the analysis canvas, using the canvas as a callback
   // as well.

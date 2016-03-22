@@ -25,7 +25,7 @@ void DrawingDisplayItem::replay(GraphicsContext& context) const
 void DrawingDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const
 {
     if (m_picture)
-        list->appendDrawingItem(visualRect, m_picture.get());
+        list->appendDrawingItem(visualRect, toSkSp(m_picture));
 }
 
 bool DrawingDisplayItem::drawsContent() const

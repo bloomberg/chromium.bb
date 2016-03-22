@@ -26,7 +26,7 @@ namespace cc {
 
 DrawingDisplayItem::DrawingDisplayItem() {}
 
-DrawingDisplayItem::DrawingDisplayItem(skia::RefPtr<const SkPicture> picture) {
+DrawingDisplayItem::DrawingDisplayItem(sk_sp<const SkPicture> picture) {
   SetNew(std::move(picture));
 }
 
@@ -35,13 +35,13 @@ DrawingDisplayItem::DrawingDisplayItem(
     ImageSerializationProcessor* image_serialization_processor) {
   DCHECK_EQ(proto::DisplayItem::Type_Drawing, proto.type());
 
-  skia::RefPtr<SkPicture> picture;
+  sk_sp<SkPicture> picture;
   const proto::DrawingDisplayItem& details = proto.drawing_item();
   if (details.has_picture()) {
     SkMemoryStream stream(details.picture().data(), details.picture().size());
 
-    picture = skia::AdoptRef(SkPicture::CreateFromStream(
-        &stream, image_serialization_processor->GetPixelDeserializer()));
+    picture = SkPicture::MakeFromStream(
+        &stream, image_serialization_processor->GetPixelDeserializer());
   }
 
   SetNew(std::move(picture));
@@ -54,7 +54,7 @@ DrawingDisplayItem::DrawingDisplayItem(const DrawingDisplayItem& item) {
 DrawingDisplayItem::~DrawingDisplayItem() {
 }
 
-void DrawingDisplayItem::SetNew(skia::RefPtr<const SkPicture> picture) {
+void DrawingDisplayItem::SetNew(sk_sp<const SkPicture> picture) {
   picture_ = std::move(picture);
 }
 

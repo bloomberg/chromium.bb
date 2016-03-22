@@ -32,7 +32,7 @@ class CC_EXPORT PictureLayer : public Layer {
   void SetNeedsDisplayRect(const gfx::Rect& layer_rect) override;
   bool Update() override;
   void SetIsMask(bool is_mask) override;
-  skia::RefPtr<SkPicture> GetPicture() const override;
+  sk_sp<SkPicture> GetPicture() const override;
   bool IsSuitableForGpuRasterization() const override;
 
   void RunMicroBenchmark(MicroBenchmark* benchmark) override;

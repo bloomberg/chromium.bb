@@ -28,7 +28,6 @@
 #include "cc/layers/paint_properties.h"
 #include "cc/output/filter_operations.h"
 #include "cc/trees/property_tree.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -400,7 +399,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   virtual ScrollbarLayerInterface* ToScrollbarLayer();
 
-  virtual skia::RefPtr<SkPicture> GetPicture() const;
+  virtual sk_sp<SkPicture> GetPicture() const;
 
   // Constructs a LayerImpl of the correct runtime type for this Layer type.
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);

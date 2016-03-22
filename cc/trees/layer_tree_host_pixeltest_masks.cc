@@ -61,7 +61,7 @@ class MaskContentLayerClient : public ContentLayerClient {
     scoped_refptr<DisplayItemList> display_list =
         DisplayItemList::Create(PaintableRegion(), DisplayItemListSettings());
     display_list->CreateAndAppendItem<DrawingDisplayItem>(
-        PaintableRegion(), skia::AdoptRef(recorder.endRecordingAsPicture()));
+        PaintableRegion(), recorder.finishRecordingAsPicture());
 
     display_list->Finalize();
     return display_list;
@@ -329,7 +329,7 @@ class CheckerContentLayerClient : public ContentLayerClient {
     scoped_refptr<DisplayItemList> display_list =
         DisplayItemList::Create(PaintableRegion(), DisplayItemListSettings());
     display_list->CreateAndAppendItem<DrawingDisplayItem>(
-        PaintableRegion(), skia::AdoptRef(recorder.endRecordingAsPicture()));
+        PaintableRegion(), recorder.finishRecordingAsPicture());
 
     display_list->Finalize();
     return display_list;
@@ -367,7 +367,7 @@ class CircleContentLayerClient : public ContentLayerClient {
     scoped_refptr<DisplayItemList> display_list =
         DisplayItemList::Create(PaintableRegion(), DisplayItemListSettings());
     display_list->CreateAndAppendItem<DrawingDisplayItem>(
-        PaintableRegion(), skia::AdoptRef(recorder.endRecordingAsPicture()));
+        PaintableRegion(), recorder.finishRecordingAsPicture());
 
     display_list->Finalize();
     return display_list;

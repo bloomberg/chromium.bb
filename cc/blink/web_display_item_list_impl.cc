@@ -50,12 +50,12 @@ WebDisplayItemListImpl::WebDisplayItemListImpl(
 
 void WebDisplayItemListImpl::appendDrawingItem(
     const blink::WebRect& visual_rect,
-    const SkPicture* picture) {
+    sk_sp<const SkPicture> picture) {
   if (display_item_list_->RetainsIndividualDisplayItems()) {
     display_item_list_->CreateAndAppendItem<cc::DrawingDisplayItem>(
-        visual_rect, skia::SharePtr(picture));
+        visual_rect, std::move(picture));
   } else {
-    cc::DrawingDisplayItem item(skia::SharePtr(picture));
+    cc::DrawingDisplayItem item(std::move(picture));
     display_item_list_->RasterIntoCanvas(item);
   }
 }

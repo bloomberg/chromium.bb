@@ -32,7 +32,6 @@
 #include "cc/quads/shared_quad_state.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/tiles/tile_priority.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -530,7 +529,7 @@ class CC_EXPORT LayerImpl {
   // ReleaseResources call.
   virtual void RecreateResources();
 
-  virtual skia::RefPtr<SkPicture> GetPicture();
+  virtual sk_sp<SkPicture> GetPicture();
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl);
   virtual void PushPropertiesTo(LayerImpl* layer);

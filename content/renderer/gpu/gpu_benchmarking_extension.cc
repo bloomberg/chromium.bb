@@ -127,7 +127,7 @@ class SkPictureSerializer {
       Serialize(children[i].get());
     }
 
-    skia::RefPtr<SkPicture> picture = layer->GetPicture();
+    sk_sp<SkPicture> picture = layer->GetPicture();
     if (!picture)
       return;
 

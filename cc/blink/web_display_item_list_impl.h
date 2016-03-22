@@ -42,7 +42,8 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
   ~WebDisplayItemListImpl() override;
 
   // blink::WebDisplayItemList implementation.
-  void appendDrawingItem(const blink::WebRect&, const SkPicture*) override;
+  void appendDrawingItem(const blink::WebRect&,
+                         sk_sp<const SkPicture>) override;
   void appendClipItem(
       const blink::WebRect& visual_rect,
       const blink::WebRect& clip_rect,

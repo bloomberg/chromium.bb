@@ -6,7 +6,7 @@
 #define PaintArtifactToSkCanvas_h
 
 #include "platform/PlatformExport.h"
-#include "wtf/PassRefPtr.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 
 class SkCanvas;
 class SkPicture;
@@ -26,7 +26,7 @@ class PaintArtifact;
 PLATFORM_EXPORT void paintArtifactToSkCanvas(const PaintArtifact&, SkCanvas*);
 
 // Using the previous, converts the paint artifact to an SkPicture.
-PLATFORM_EXPORT PassRefPtr<SkPicture> paintArtifactToSkPicture(
+PLATFORM_EXPORT sk_sp<const SkPicture> paintArtifactToSkPicture(
     const PaintArtifact&, const SkRect& bounds);
 
 } // namespace blink

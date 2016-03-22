@@ -80,10 +80,8 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
   // transparent images blend correctly.
   canvas->drawImage(image_.get(), 0, 0);
 
-  skia::RefPtr<SkPicture> picture =
-      skia::AdoptRef(recorder.endRecordingAsPicture());
-  display_list->CreateAndAppendItem<DrawingDisplayItem>(PaintableRegion(),
-                                                        std::move(picture));
+  display_list->CreateAndAppendItem<DrawingDisplayItem>(
+      PaintableRegion(), recorder.finishRecordingAsPicture());
 
   display_list->Finalize();
   return display_list;

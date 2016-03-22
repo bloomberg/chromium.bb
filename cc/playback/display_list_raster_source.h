@@ -18,7 +18,6 @@
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/playback/display_list_recording_source.h"
 #include "skia/ext/analysis_canvas.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
 namespace cc {
@@ -103,7 +102,7 @@ class CC_EXPORT DisplayListRasterSource
   // Tracing functionality.
   virtual void DidBeginTracing();
   virtual void AsValueInto(base::trace_event::TracedValue* array) const;
-  virtual skia::RefPtr<SkPicture> GetFlattenedPicture();
+  virtual sk_sp<SkPicture> GetFlattenedPicture();
   virtual size_t GetPictureMemoryUsage() const;
 
   // Return true if LCD anti-aliasing may be used when rastering text.

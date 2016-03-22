@@ -43,7 +43,7 @@ PaintRecorder::~PaintRecorder() {
   const auto& item =
       context_.list_->CreateAndAppendItem<cc::DrawingDisplayItem>(
           bounds_in_layer_,
-          skia::AdoptRef(context_.recorder_->endRecordingAsPicture()));
+          context_.recorder_->finishRecordingAsPicture());
   if (cache_)
     cache_->SetCache(item);
 }

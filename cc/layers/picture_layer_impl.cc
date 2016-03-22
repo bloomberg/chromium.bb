@@ -649,7 +649,7 @@ void PictureLayerImpl::RecreateResources() {
   layer_tree_impl()->set_needs_update_draw_properties();
 }
 
-skia::RefPtr<SkPicture> PictureLayerImpl::GetPicture() {
+sk_sp<SkPicture> PictureLayerImpl::GetPicture() {
   return raster_source_->GetFlattenedPicture();
 }
 

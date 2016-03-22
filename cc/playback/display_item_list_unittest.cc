@@ -56,7 +56,7 @@ void AppendFirstSerializationTestPicture(scoped_refptr<DisplayItemList> list,
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(0.f, 0.f, 4.f, 4.f, red_paint);
   list->CreateAndAppendItem<DrawingDisplayItem>(
-      kVisualRect, skia::AdoptRef(recorder.endRecordingAsPicture()));
+      kVisualRect, recorder.finishRecordingAsPicture());
 }
 
 void AppendSecondSerializationTestPicture(scoped_refptr<DisplayItemList> list,
@@ -73,7 +73,7 @@ void AppendSecondSerializationTestPicture(scoped_refptr<DisplayItemList> list,
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(3.f, 3.f, 7.f, 7.f, blue_paint);
   list->CreateAndAppendItem<DrawingDisplayItem>(
-      kVisualRect, skia::AdoptRef(recorder.endRecordingAsPicture()));
+      kVisualRect, recorder.finishRecordingAsPicture());
 }
 
 void ValidateDisplayItemListSerialization(const gfx::Size& layer_size,
@@ -256,7 +256,6 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
   gfx::Rect layer_rect(100, 100);
   SkPictureRecorder recorder;
   skia::RefPtr<SkCanvas> canvas;
-  skia::RefPtr<SkPicture> picture;
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
   SkPaint red_paint;
@@ -273,9 +272,8 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
-  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
-  list->CreateAndAppendItem<DrawingDisplayItem>(kVisualRect,
-                                                std::move(picture));
+  list->CreateAndAppendItem<DrawingDisplayItem>(
+      kVisualRect, recorder.finishRecordingAsPicture());
   list->Finalize();
   DrawDisplayList(pixels, layer_rect, list);
 
@@ -317,7 +315,7 @@ TEST(DisplayItemListTest, ClipItem) {
   canvas->translate(first_offset.x(), first_offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   list->CreateAndAppendItem<DrawingDisplayItem>(
-      kVisualRect, skia::AdoptRef(recorder.endRecordingAsPicture()));
+      kVisualRect, recorder.finishRecordingAsPicture());
 
   gfx::Rect clip_rect(60, 60, 10, 10);
   list->CreateAndAppendItem<ClipDisplayItem>(kVisualRect, clip_rect,
@@ -331,7 +329,7 @@ TEST(DisplayItemListTest, ClipItem) {
   canvas->translate(second_offset.x(), second_offset.y());
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
   list->CreateAndAppendItem<DrawingDisplayItem>(
-      kVisualRect, skia::AdoptRef(recorder.endRecordingAsPicture()));
+      kVisualRect, recorder.finishRecordingAsPicture());
 
   list->CreateAndAppendItem<EndClipDisplayItem>(kVisualRect);
   list->Finalize();
@@ -377,7 +375,7 @@ TEST(DisplayItemListTest, TransformItem) {
   canvas->translate(first_offset.x(), first_offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   list->CreateAndAppendItem<DrawingDisplayItem>(
-      kVisualRect, skia::AdoptRef(recorder.endRecordingAsPicture()));
+      kVisualRect, recorder.finishRecordingAsPicture());
 
   gfx::Transform transform;
   transform.Rotate(45.0);
@@ -391,7 +389,7 @@ TEST(DisplayItemListTest, TransformItem) {
   canvas->translate(second_offset.x(), second_offset.y());
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
   list->CreateAndAppendItem<DrawingDisplayItem>(
-      kVisualRect, skia::AdoptRef(recorder.endRecordingAsPicture()));
+      kVisualRect, recorder.finishRecordingAsPicture());
 
   list->CreateAndAppendItem<EndTransformDisplayItem>(kVisualRect);
   list->Finalize();
@@ -472,7 +470,6 @@ TEST(DisplayItemListTest, CompactingItems) {
   gfx::Rect layer_rect(100, 100);
   SkPictureRecorder recorder;
   skia::RefPtr<SkCanvas> canvas;
-  skia::RefPtr<SkPicture> picture;
   SkPaint blue_paint;
   blue_paint.setColor(SK_ColorBLUE);
   SkPaint red_paint;
@@ -492,7 +489,7 @@ TEST(DisplayItemListTest, CompactingItems) {
   canvas->translate(offset.x(), offset.y());
   canvas->drawRectCoords(0.f, 0.f, 60.f, 60.f, red_paint);
   canvas->drawRectCoords(50.f, 50.f, 75.f, 75.f, blue_paint);
-  picture = skia::AdoptRef(recorder.endRecordingAsPicture());
+  sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
   list_without_caching->CreateAndAppendItem<DrawingDisplayItem>(kVisualRect,
                                                                 picture);
   list_without_caching->Finalize();
@@ -535,8 +532,7 @@ TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithCachedPicture) {
   paint.setAntiAlias(true);
   canvas->drawPath(path, paint);
 
-  skia::RefPtr<SkPicture> suitable_picture =
-      skia::AdoptRef(recorder.endRecordingAsPicture());
+  sk_sp<SkPicture> suitable_picture = recorder.finishRecordingAsPicture();
   list->CreateAndAppendItem<DrawingDisplayItem>(kVisualRect, suitable_picture);
   list->Finalize();
 
@@ -556,8 +552,7 @@ TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithCachedPicture) {
       skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
   for (int i = 0; i < 10; ++i)
     canvas->drawPath(path, paint);
-  skia::RefPtr<SkPicture> unsuitable_picture =
-      skia::AdoptRef(recorder.endRecordingAsPicture());
+  sk_sp<SkPicture> unsuitable_picture = recorder.finishRecordingAsPicture();
   list->CreateAndAppendItem<DrawingDisplayItem>(kVisualRect,
                                                 unsuitable_picture);
   list->Finalize();
@@ -600,7 +595,7 @@ TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithoutCachedPicture) {
   canvas->drawPath(path, paint);
 
   list->CreateAndAppendItem<DrawingDisplayItem>(
-      kVisualRect, skia::AdoptRef(recorder.endRecordingAsPicture()));
+      kVisualRect, recorder.finishRecordingAsPicture());
   list->Finalize();
 
   // A single DrawingDisplayItem with a large AA concave path shouldn't trigger
@@ -613,7 +608,7 @@ TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithoutCachedPicture) {
   for (int i = 0; i < 10; ++i)
     canvas->drawPath(path, paint);
   list->CreateAndAppendItem<DrawingDisplayItem>(
-      kVisualRect, skia::AdoptRef(recorder.endRecordingAsPicture()));
+      kVisualRect, recorder.finishRecordingAsPicture());
   list->Finalize();
 
   // A single DrawingDisplayItem with several large AA concave paths should
@@ -626,7 +621,7 @@ TEST(DisplayItemListTest, IsSuitableForGpuRasterizationWithoutCachedPicture) {
         skia::SharePtr(recorder.beginRecording(gfx::RectToSkRect(layer_rect)));
     canvas->drawPath(path, paint);
     list->CreateAndAppendItem<DrawingDisplayItem>(
-        kVisualRect, skia::AdoptRef(recorder.endRecordingAsPicture()));
+        kVisualRect, recorder.finishRecordingAsPicture());
   }
   list->Finalize();
 
@@ -649,8 +644,7 @@ TEST(DisplayItemListTest, ApproximateMemoryUsage) {
   SkCanvas* canvas = recorder.beginRecording(gfx::RectToSkRect(layer_rect));
   for (int i = 0; i < kNumCommandsInTestSkPicture; i++)
     canvas->drawPaint(blue_paint);
-  skia::RefPtr<SkPicture> picture =
-      skia::AdoptRef(recorder.endRecordingAsPicture());
+  sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
   size_t picture_size = SkPictureUtils::ApproximateBytesUsed(picture.get());
   ASSERT_GE(picture_size, kNumCommandsInTestSkPicture * sizeof(blue_paint));
 

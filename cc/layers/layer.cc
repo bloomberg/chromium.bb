@@ -217,8 +217,8 @@ bool Layer::IsPropertyChangeAllowed() const {
   return !layer_tree_host_->in_paint_layer_contents();
 }
 
-skia::RefPtr<SkPicture> Layer::GetPicture() const {
-  return skia::RefPtr<SkPicture>();
+sk_sp<SkPicture> Layer::GetPicture() const {
+  return nullptr;
 }
 
 void Layer::SetParent(Layer* layer) {

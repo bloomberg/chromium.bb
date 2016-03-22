@@ -14,6 +14,7 @@
 
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkRRect.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "third_party/skia/include/core/SkXfermode.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
@@ -36,8 +37,7 @@ class WebDisplayItemList {
 public:
     virtual ~WebDisplayItemList() { }
 
-    // This grabs a ref on the passed-in SkPicture.
-    virtual void appendDrawingItem(const WebRect& visualRect, const SkPicture*) { }
+    virtual void appendDrawingItem(const WebRect& visualRect, sk_sp<const SkPicture>) { }
 
     virtual void appendClipItem(const WebRect& visualRect, const WebRect& clipRect, const WebVector<SkRRect>& roundedClipRects) { }
     virtual void appendEndClipItem(const WebRect& visualRect) { }

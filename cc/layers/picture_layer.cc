@@ -129,12 +129,12 @@ void PictureLayer::SetIsMask(bool is_mask) {
   is_mask_ = is_mask;
 }
 
-skia::RefPtr<SkPicture> PictureLayer::GetPicture() const {
+sk_sp<SkPicture> PictureLayer::GetPicture() const {
   // We could either flatten the DisplayListRecordingSource into a single
   // SkPicture, or paint a fresh one depending on what we intend to do with the
   // picture. For now we just paint a fresh one to get consistent results.
   if (!DrawsContent())
-    return skia::RefPtr<SkPicture>();
+    return nullptr;
 
   gfx::Size layer_size = bounds();
   scoped_ptr<DisplayListRecordingSource> recording_source(

@@ -49,7 +49,7 @@ class CC_EXPORT PictureLayerImpl
   void DidBeginTracing() override;
   void ReleaseResources() override;
   void RecreateResources() override;
-  skia::RefPtr<SkPicture> GetPicture() override;
+  sk_sp<SkPicture> GetPicture() override;
   Region GetInvalidationRegionForDebugging() override;
 
   // PictureLayerTilingClient overrides.

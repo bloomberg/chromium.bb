@@ -55,8 +55,7 @@ void GpuRasterizer::RasterizeSource(
   raster_source->PlaybackToCanvas(canvas.get(), raster_full_rect, playback_rect,
                                   scale, include_images);
   canvas->restore();
-  skia::RefPtr<SkPicture> picture =
-      skia::AdoptRef(recorder.endRecordingAsPicture());
+  sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
 
   // Turn on distance fields for layers that have ever animated.
   bool use_distance_field_text =

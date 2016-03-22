@@ -51,7 +51,7 @@ struct Page {
   SkSize page_size_;
   SkRect content_area_;
   float scale_factor_;
-  skia::RefPtr<SkPicture> content_;
+  sk_sp<SkPicture> content_;
 };
 
 bool WriteAssetToBuffer(const SkStreamAsset* asset,
@@ -144,7 +144,7 @@ bool PdfMetafileSkia::FinishPage() {
     return false;
   DCHECK(!(data_->pages_.back().content_));
   data_->pages_.back().content_ =
-      skia::AdoptRef(data_->recorder_.endRecordingAsPicture());
+      data_->recorder_.finishRecordingAsPicture();
   return true;
 }
 
@@ -173,7 +173,7 @@ bool PdfMetafileSkia::FinishDocument() {
         page.page_size_.width(), page.page_size_.height(), &page.content_area_);
     // No need to save/restore, since this canvas is not reused after endPage()
     canvas->scale(page.scale_factor_, page.scale_factor_);
-    canvas->drawPicture(page.content_.get());
+    canvas->drawPicture(page.content_);
     pdf_doc->endPage();
   }
   if (!pdf_doc->close())

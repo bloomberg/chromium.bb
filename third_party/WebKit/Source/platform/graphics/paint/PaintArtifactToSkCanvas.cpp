@@ -136,12 +136,12 @@ void paintArtifactToSkCanvas(const PaintArtifact& artifact, SkCanvas* canvas)
     }
 }
 
-PassRefPtr<SkPicture> paintArtifactToSkPicture(const PaintArtifact& artifact, const SkRect& bounds)
+sk_sp<const SkPicture> paintArtifactToSkPicture(const PaintArtifact& artifact, const SkRect& bounds)
 {
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(bounds);
     paintArtifactToSkCanvas(artifact, canvas);
-    return adoptRef(recorder.endRecordingAsPicture());
+    return recorder.finishRecordingAsPicture();
 }
 
 } // namespace blink

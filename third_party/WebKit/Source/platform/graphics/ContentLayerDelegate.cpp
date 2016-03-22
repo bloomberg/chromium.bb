@@ -57,8 +57,8 @@ static void paintArtifactToWebDisplayItemList(WebDisplayItemList* list, const Pa
         // separate layers and send those to the compositor, instead of sending
         // one big flat SkPicture.
         SkRect skBounds = SkRect::MakeXYWH(bounds.x(), bounds.y(), bounds.width(), bounds.height());
-        RefPtr<SkPicture> picture = paintArtifactToSkPicture(artifact, skBounds);
-        list->appendDrawingItem(WebRect(bounds.x(), bounds.y(), bounds.width(), bounds.height()), picture.get());
+        list->appendDrawingItem(WebRect(bounds.x(), bounds.y(), bounds.width(), bounds.height()),
+            paintArtifactToSkPicture(artifact, skBounds));
         return;
     }
     artifact.appendToWebDisplayItemList(list);

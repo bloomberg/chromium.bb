@@ -84,7 +84,7 @@ static void appendDisplayItemToCcDisplayItemList(const DisplayItem& displayItem,
         if (!picture)
             return;
         gfx::Rect bounds = gfx::SkIRectToRect(picture->cullRect().roundOut());
-        list->CreateAndAppendItem<cc::DrawingDisplayItem>(bounds, skia::SharePtr(picture));
+        list->CreateAndAppendItem<cc::DrawingDisplayItem>(bounds, sk_ref_sp(picture));
     }
 }
 

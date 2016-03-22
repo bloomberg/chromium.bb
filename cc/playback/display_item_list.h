@@ -126,7 +126,7 @@ class CC_EXPORT DisplayItemList
   // |items_| . These rects are intentionally kept separate
   // because they are not needed while walking the |items_| for raster.
   std::vector<gfx::Rect> visual_rects_;
-  skia::RefPtr<SkPicture> picture_;
+  sk_sp<SkPicture> picture_;
 
   scoped_ptr<SkPictureRecorder> recorder_;
   skia::RefPtr<SkCanvas> canvas_;

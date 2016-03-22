@@ -133,7 +133,7 @@ class BlueYellowClient : public ContentLayerClient {
     canvas->drawRect(gfx::RectToSkRect(yellow_rect), paint);
 
     display_list->CreateAndAppendItem<DrawingDisplayItem>(
-        PaintableRegion(), skia::AdoptRef(recorder.endRecordingAsPicture()));
+        PaintableRegion(), recorder.finishRecordingAsPicture());
     display_list->Finalize();
     return display_list;
   }

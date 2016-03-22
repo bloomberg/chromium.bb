@@ -464,8 +464,8 @@ bool LayerImpl::user_scrollable(ScrollbarOrientation orientation) const {
                                      : user_scrollable_vertical_;
 }
 
-skia::RefPtr<SkPicture> LayerImpl::GetPicture() {
-  return skia::RefPtr<SkPicture>();
+sk_sp<SkPicture> LayerImpl::GetPicture() {
+  return nullptr;
 }
 
 scoped_ptr<LayerImpl> LayerImpl::CreateLayerImpl(LayerTreeImpl* tree_impl) {

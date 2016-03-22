@@ -260,7 +260,7 @@ void DisplayListRasterSource::RasterCommon(
   }
 }
 
-skia::RefPtr<SkPicture> DisplayListRasterSource::GetFlattenedPicture() {
+sk_sp<SkPicture> DisplayListRasterSource::GetFlattenedPicture() {
   TRACE_EVENT0("cc", "DisplayListRasterSource::GetFlattenedPicture");
 
   gfx::Rect display_list_rect(size_);
@@ -272,10 +272,8 @@ skia::RefPtr<SkPicture> DisplayListRasterSource::GetFlattenedPicture() {
                                1.f);
     RasterCommon(canvas, nullptr, display_list_rect, display_list_rect, 1.f);
   }
-  skia::RefPtr<SkPicture> picture =
-      skia::AdoptRef(recorder.endRecordingAsPicture());
 
-  return picture;
+  return recorder.finishRecordingAsPicture();
 }
 
 size_t DisplayListRasterSource::GetPictureMemoryUsage() const {

@@ -273,8 +273,8 @@ void LinkHighlightImpl::paintContents(WebDisplayItemList* webDisplayItemList, We
     paint.setColor(m_node->layoutObject()->style()->tapHighlightColor().rgb());
     canvas->drawPath(m_path.getSkPath(), paint);
 
-    RefPtr<const SkPicture> picture = adoptRef(recorder.endRecording());
-    webDisplayItemList->appendDrawingItem(WebRect(visualRect.x(), visualRect.y(), visualRect.width(), visualRect.height()), picture.get());
+    webDisplayItemList->appendDrawingItem(WebRect(visualRect.x(), visualRect.y(),
+        visualRect.width(), visualRect.height()), recorder.finishRecordingAsPicture());
 }
 
 void LinkHighlightImpl::startHighlightAnimationIfNeeded()
