@@ -46,7 +46,7 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
   var TestEasyUnlockBrowserProxy = function() {
     settings.TestBrowserProxy.call(this, [
       'getEnabledStatus',
-      'launchSetup',
+      'startTurnOnFlow',
     ]);
 
     /** @private {boolean} */
@@ -70,8 +70,8 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
     },
 
     /** @override */
-    launchSetup: function() {
-      this.methodCalled('launchSetup');
+    startTurnOnFlow: function() {
+      this.methodCalled('startTurnOnFlow');
     },
   };
 
@@ -126,7 +126,7 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
         assertTrue(!!setupButton);
 
         MockInteractions.tap(setupButton);
-        return browserProxy.whenCalled('launchSetup');
+        return browserProxy.whenCalled('startTurnOnFlow');
       });
     });
   });

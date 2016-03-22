@@ -196,7 +196,7 @@ Polymer({
 <if expr="chromeos">
   /** @private */
   onEasyUnlockSetupTap_: function() {
-    this.browserProxy_.launchSetup();
+    this.browserProxy_.startTurnOnFlow();
   },
 
   /** @private */

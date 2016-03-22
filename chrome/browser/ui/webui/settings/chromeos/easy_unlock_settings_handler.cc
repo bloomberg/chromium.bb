@@ -56,20 +56,20 @@ void EasyUnlockSettingsHandler::RegisterMessages() {
       base::Bind(&EasyUnlockSettingsHandler::HandleGetEnabledStatus,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "easyUnlockLaunchSetup",
-      base::Bind(&EasyUnlockSettingsHandler::HandleLaunchSetup,
+      "easyUnlockStartTurnOnFlow",
+      base::Bind(&EasyUnlockSettingsHandler::HandleStartTurnOnFlow,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "easyUnlockGetTurnOffFlowStatus",
       base::Bind(&EasyUnlockSettingsHandler::HandleGetTurnOffFlowStatus,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "easyUnlockRequestTurnOff",
-      base::Bind(&EasyUnlockSettingsHandler::HandleRequestTurnOff,
+      "easyUnlockStartTurnOffFlow",
+      base::Bind(&EasyUnlockSettingsHandler::HandleStartTurnOffFlow,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "easyUnlockTurnOffOverlayDismissed",
-      base::Bind(&EasyUnlockSettingsHandler::HandlePageDismissed,
+      "easyUnlockCancelTurnOffFlow",
+      base::Bind(&EasyUnlockSettingsHandler::HandleCancelTurnOffFlow,
                  base::Unretained(this)));
 }
 
@@ -86,7 +86,10 @@ void EasyUnlockSettingsHandler::RenderViewReused() {
 }
 
 void EasyUnlockSettingsHandler::OnTurnOffOperationStatusChanged() {
-  SendTurnOffOperationStatus();
+  web_ui()->CallJavascriptFunction(
+      "cr.webUIListenerCallback",
+      base::StringValue("easy-unlock-turn-off-flow-status"),
+      base::StringValue(GetTurnOffFlowStatus()));
 }
 
 void EasyUnlockSettingsHandler::SendEnabledStatus() {
@@ -96,12 +99,12 @@ void EasyUnlockSettingsHandler::SendEnabledStatus() {
       base::FundamentalValue(EasyUnlockService::Get(profile_)->IsEnabled()));
 }
 
-void EasyUnlockSettingsHandler::SendTurnOffOperationStatus() {
+std::string EasyUnlockSettingsHandler::GetTurnOffFlowStatus() {
   EasyUnlockService::TurnOffFlowStatus status =
       EasyUnlockService::Get(profile_)->GetTurnOffFlowStatus();
 
   // Translate status into JS UI state string. Note the translated string
-  // should match UIState defined in easy_unlock_turn_off_overlay.js.
+  // should match UIState defined in easy_unlock_turn_off_dialog.js.
   std::string status_string;
   switch (status) {
     case EasyUnlockService::IDLE:
@@ -119,10 +122,7 @@ void EasyUnlockSettingsHandler::SendTurnOffOperationStatus() {
       break;
   }
 
-  web_ui()->CallJavascriptFunction(
-      "cr.webUIListenerCallback",
-      base::StringValue("easy-unlock-turn-off-flow-status"),
-      base::StringValue(status_string));
+  return status_string;
 }
 
 void EasyUnlockSettingsHandler::HandleGetEnabledStatus(
@@ -148,22 +148,26 @@ void EasyUnlockSettingsHandler::HandleGetEnabledStatus(
       base::FundamentalValue(EasyUnlockService::Get(profile_)->IsEnabled()));
 }
 
-void EasyUnlockSettingsHandler::HandleLaunchSetup(
+void EasyUnlockSettingsHandler::HandleStartTurnOnFlow(
     const base::ListValue* args) {
   EasyUnlockService::Get(profile_)->LaunchSetup();
 }
 
 void EasyUnlockSettingsHandler::HandleGetTurnOffFlowStatus(
     const base::ListValue* args) {
-  SendTurnOffOperationStatus();
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  ResolveJavascriptCallback(*callback_id,
+                            base::StringValue(GetTurnOffFlowStatus()));
 }
 
-void EasyUnlockSettingsHandler::HandleRequestTurnOff(
+void EasyUnlockSettingsHandler::HandleStartTurnOffFlow(
     const base::ListValue* args) {
   EasyUnlockService::Get(profile_)->RunTurnOffFlow();
 }
 
-void EasyUnlockSettingsHandler::HandlePageDismissed(
+void EasyUnlockSettingsHandler::HandleCancelTurnOffFlow(
     const base::ListValue* args) {
   EasyUnlockService::Get(profile_)->ResetTurnOffFlow();
 }

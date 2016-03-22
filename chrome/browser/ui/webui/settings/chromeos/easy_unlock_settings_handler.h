@@ -41,17 +41,17 @@ class EasyUnlockSettingsHandler : public ::settings::SettingsPageUIHandler,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EasyUnlockSettingsHandlerTest, EnabledStatus);
-  FRIEND_TEST_ALL_PREFIXES(EasyUnlockSettingsHandlerTest, TurnOffStatus);
+  FRIEND_TEST_ALL_PREFIXES(EasyUnlockSettingsHandlerTest, TurnOffFlowStatus);
 
   void SendEnabledStatus();
-  void SendTurnOffOperationStatus();
+  std::string GetTurnOffFlowStatus();
 
   // JS callbacks.
   void HandleGetEnabledStatus(const base::ListValue* args);
-  void HandleLaunchSetup(const base::ListValue* args);
+  void HandleStartTurnOnFlow(const base::ListValue* args);
   void HandleGetTurnOffFlowStatus(const base::ListValue* args);
-  void HandleRequestTurnOff(const base::ListValue* args);
-  void HandlePageDismissed(const base::ListValue* args);
+  void HandleStartTurnOffFlow(const base::ListValue* args);
+  void HandleCancelTurnOffFlow(const base::ListValue* args);
 
   Profile* const profile_;
 

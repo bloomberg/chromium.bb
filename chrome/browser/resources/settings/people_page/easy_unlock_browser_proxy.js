@@ -22,7 +22,23 @@ cr.define('settings', function() {
     /**
      * Starts the Easy Unlock setup flow.
      */
-    launchSetup: function() {}
+    startTurnOnFlow: function() {},
+
+    /**
+     * Returns the Easy Unlock turn off flow status.
+     * @return {!Promise<string>}
+     */
+    getTurnOffFlowStatus: function() {},
+
+    /**
+     * Begins the Easy Unlock turn off flow.
+     */
+    startTurnOffFlow: function() {},
+
+    /**
+     * Cancels any in-progress Easy Unlock turn-off flows.
+     */
+    cancelTurnOffFlow: function() {},
   };
 
   /**
@@ -41,8 +57,23 @@ cr.define('settings', function() {
     },
 
     /** @override */
-    launchSetup: function() {
-      chrome.send('easyUnlockLaunchSetup');
+    startTurnOnFlow: function() {
+      chrome.send('easyUnlockStartTurnOnFlow');
+    },
+
+    /** @override */
+    getTurnOffFlowStatus: function() {
+      return cr.sendWithPromise('easyUnlockGetTurnOffFlowStatus');
+    },
+
+    /** @override */
+    startTurnOffFlow: function() {
+      chrome.send('easyUnlockStartTurnOffFlow');
+    },
+
+    /** @override */
+    cancelTurnOffFlow: function() {
+      chrome.send('easyUnlockCancelTurnOffFlow');
     },
   };
 
