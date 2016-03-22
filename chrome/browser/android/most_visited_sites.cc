@@ -158,6 +158,10 @@ bool NeedPopularSites(const PrefService* prefs, size_t num_tiles) {
   return false;
 }
 
+bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
+  return url1.host() == url2.host() && url1.path() == url2.path();
+}
+
 }  // namespace
 
 MostVisitedSites::Suggestion::Suggestion() : provider_index(-1) {}
@@ -429,11 +433,23 @@ void MostVisitedSites::InitiateTopSitesQuery() {
       false);
 }
 
+base::FilePath MostVisitedSites::GetWhitelistLargeIconPath(const GURL& url) {
+  SupervisedUserService* supervised_user_service =
+      SupervisedUserServiceFactory::GetForProfile(profile_);
+
+  for (const auto& whitelist : supervised_user_service->whitelists()) {
+    if (AreURLsEquivalent(whitelist->entry_point(), url))
+      return whitelist->large_icon_path();
+  }
+  return base::FilePath();
+}
+
 void MostVisitedSites::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& visited_list) {
   SupervisedUserURLFilter* url_filter =
       SupervisedUserServiceFactory::GetForProfile(profile_)
           ->GetURLFilterForUIThread();
+
   MostVisitedSites::SuggestionsVector suggestions;
   size_t num_tiles =
       std::min(visited_list.size(), static_cast<size_t>(num_sites_));
@@ -452,6 +468,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
     suggestion->title = visited.title;
     suggestion->url = visited.url;
     suggestion->source = TOP_SITES;
+    suggestion->whitelist_icon_path = GetWhitelistLargeIconPath(visited.url);
 
     suggestions.push_back(std::move(suggestion));
   }
@@ -488,6 +505,8 @@ void MostVisitedSites::OnSuggestionsProfileAvailable(
     generated_suggestion->title = base::UTF8ToUTF16(suggestion.title());
     generated_suggestion->url = GURL(suggestion.url());
     generated_suggestion->source = SUGGESTIONS_SERVICE;
+    generated_suggestion->whitelist_icon_path = GetWhitelistLargeIconPath(
+        GURL(suggestion.url()));
     if (suggestion.providers_size() > 0)
       generated_suggestion->provider_index = suggestion.providers(0);
 

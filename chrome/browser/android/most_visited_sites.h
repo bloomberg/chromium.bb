@@ -112,6 +112,9 @@ class MostVisitedSites : public history::TopSitesObserver,
   // enabled, or if it returns no data.
   void InitiateTopSitesQuery();
 
+  // If there's a whitelist entry point for the URL, return the large icon path.
+  base::FilePath GetWhitelistLargeIconPath(const GURL& url);
+
   // Callback for when data is available from TopSites.
   void OnMostVisitedURLsAvailable(
       const history::MostVisitedURLList& visited_list);
