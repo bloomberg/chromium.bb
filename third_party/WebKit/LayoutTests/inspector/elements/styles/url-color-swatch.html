@@ -4,6 +4,8 @@
 #inspected {
     background-image: url("red green blue.jpg");
     color: red;
+    --blue: blue;
+    border-color: var(--blue);
 }
 </style>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
@@ -18,6 +20,7 @@ function test()
     {
         dumpDOM(InspectorTest.getMatchedStylePropertyTreeItem("background-image"));
         dumpDOM(InspectorTest.getMatchedStylePropertyTreeItem("color"));
+        dumpDOM(InspectorTest.getMatchedStylePropertyTreeItem("border-color"));
         InspectorTest.completeTest();
     }
 
@@ -54,6 +57,7 @@ function test()
 <body onload="runTest()">
 <p>
 Tests that url(...) with space-delimited color names as filename segments do not contain color swatches. Bug <a href="http://bugs.webkit.org/show_bug.cgi?id=106770">106770</a>.
+Also tests that CSS variables such as var(--blue) do not contain color swatches. Bug <a href="https://bugs.chromium.org/p/chromium/issues/detail?id=595231">595231</a>.
 </p>
 <div id="inspected"></div>
 </body>
