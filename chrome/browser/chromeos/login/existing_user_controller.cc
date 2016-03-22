@@ -304,8 +304,8 @@ void ExistingUserController::Observe(
     content::BrowserThread::PostDelayedTask(
         content::BrowserThread::IO, FROM_HERE,
         base::Bind(&TransferContextAuthenticationsOnIOThread,
-                   signin_profile_context_getter,
-                   browser_process_context_getter),
+                   base::RetainedRef(signin_profile_context_getter),
+                   base::RetainedRef(browser_process_context_getter)),
         base::TimeDelta::FromMilliseconds(kAuthCacheTransferDelayMs));
   }
 }

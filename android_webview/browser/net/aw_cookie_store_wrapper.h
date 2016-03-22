@@ -111,8 +111,8 @@ class AwCookieStoreWrapper : public net::CookieStore {
     if (callback.is_null())
       return callback;
     return base::Bind(&AwCookieStoreWrapper::RunCallbackOnClientThread<Type>,
-                      client_task_runner_, weak_factory_.GetWeakPtr(),
-                      callback);
+                      base::RetainedRef(client_task_runner_),
+                      weak_factory_.GetWeakPtr(), callback);
   }
 
   // Returns a base::Closure that posts a task to the |client_task_runner_| to

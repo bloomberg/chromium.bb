@@ -342,9 +342,10 @@ void SafeBrowsingService::StopOnIOThread(bool shutdown) {
 void SafeBrowsingService::Start() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
-  web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
-                           base::Bind(&SafeBrowsingService::StartOnIOThread,
-                                      this, url_request_context_getter_));
+  web::WebThread::PostTask(
+      web::WebThread::IO, FROM_HERE,
+      base::Bind(&SafeBrowsingService::StartOnIOThread, this,
+                 base::RetainedRef(url_request_context_getter_)));
 }
 
 void SafeBrowsingService::Stop(bool shutdown) {

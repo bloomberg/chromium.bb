@@ -969,9 +969,8 @@ int SSLClientSocketNSS::Core::Read(IOBuffer* buf, int buf_len,
 
     nss_waiting_read_ = true;
     bool posted = nss_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(IgnoreResult(&Core::Read), this, make_scoped_refptr(buf),
-                   buf_len, callback));
+        FROM_HERE, base::Bind(IgnoreResult(&Core::Read), this,
+                              base::RetainedRef(buf), buf_len, callback));
     if (!posted) {
       nss_is_closed_ = true;
       nss_waiting_read_ = false;
@@ -1026,9 +1025,8 @@ int SSLClientSocketNSS::Core::Write(IOBuffer* buf, int buf_len,
 
     nss_waiting_write_ = true;
     bool posted = nss_task_runner_->PostTask(
-        FROM_HERE,
-        base::Bind(IgnoreResult(&Core::Write), this, make_scoped_refptr(buf),
-                   buf_len, callback));
+        FROM_HERE, base::Bind(IgnoreResult(&Core::Write), this,
+                              base::RetainedRef(buf), buf_len, callback));
     if (!posted) {
       nss_is_closed_ = true;
       nss_waiting_write_ = false;
@@ -1536,11 +1534,10 @@ int SSLClientSocketNSS::Core::DoPayloadRead() {
     pending_read_nss_error_ = 0;
 
     if (rv == 0) {
-      PostOrRunCallback(
-          FROM_HERE,
-          base::Bind(&LogByteTransferEvent, weak_net_log_,
-                     NetLog::TYPE_SSL_SOCKET_BYTES_RECEIVED, rv,
-                     scoped_refptr<IOBuffer>(user_read_buf_)));
+      PostOrRunCallback(FROM_HERE,
+                        base::Bind(&LogByteTransferEvent, weak_net_log_,
+                                   NetLog::TYPE_SSL_SOCKET_BYTES_RECEIVED, rv,
+                                   base::RetainedRef(user_read_buf_)));
     } else {
       PostOrRunCallback(
           FROM_HERE,
@@ -1621,11 +1618,10 @@ int SSLClientSocketNSS::Core::DoPayloadRead() {
   DCHECK_NE(ERR_IO_PENDING, pending_read_result_);
 
   if (rv >= 0) {
-    PostOrRunCallback(
-        FROM_HERE,
-        base::Bind(&LogByteTransferEvent, weak_net_log_,
-                   NetLog::TYPE_SSL_SOCKET_BYTES_RECEIVED, rv,
-                   scoped_refptr<IOBuffer>(user_read_buf_)));
+    PostOrRunCallback(FROM_HERE,
+                      base::Bind(&LogByteTransferEvent, weak_net_log_,
+                                 NetLog::TYPE_SSL_SOCKET_BYTES_RECEIVED, rv,
+                                 base::RetainedRef(user_read_buf_)));
   } else if (rv != ERR_IO_PENDING) {
     PostOrRunCallback(
         FROM_HERE,
@@ -1654,11 +1650,10 @@ int SSLClientSocketNSS::Core::DoPayloadWrite() {
         base::Bind(&Core::OnNSSBufferUpdated, this, new_amount_in_read_buffer));
   }
   if (rv >= 0) {
-    PostOrRunCallback(
-        FROM_HERE,
-        base::Bind(&LogByteTransferEvent, weak_net_log_,
-                   NetLog::TYPE_SSL_SOCKET_BYTES_SENT, rv,
-                   scoped_refptr<IOBuffer>(user_write_buf_)));
+    PostOrRunCallback(FROM_HERE,
+                      base::Bind(&LogByteTransferEvent, weak_net_log_,
+                                 NetLog::TYPE_SSL_SOCKET_BYTES_SENT, rv,
+                                 base::RetainedRef(user_write_buf_)));
     return rv;
   }
   PRErrorCode prerr = PR_GetError();
@@ -1725,9 +1720,8 @@ int SSLClientSocketNSS::Core::BufferRecv() {
       rv = DoBufferRecv(read_buffer.get(), nb);
     } else {
       bool posted = network_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(IgnoreResult(&Core::DoBufferRecv), this, read_buffer,
-                     nb));
+          FROM_HERE, base::Bind(IgnoreResult(&Core::DoBufferRecv), this,
+                                base::RetainedRef(read_buffer), nb));
       rv = posted ? ERR_IO_PENDING : ERR_ABORTED;
     }
 
@@ -1775,9 +1769,8 @@ int SSLClientSocketNSS::Core::BufferSend() {
       rv = DoBufferSend(send_buffer.get(), len);
     } else {
       bool posted = network_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(IgnoreResult(&Core::DoBufferSend), this, send_buffer,
-                     len));
+          FROM_HERE, base::Bind(IgnoreResult(&Core::DoBufferSend), this,
+                                base::RetainedRef(send_buffer), len));
       rv = posted ? ERR_IO_PENDING : ERR_ABORTED;
     }
 
@@ -1983,7 +1976,7 @@ void SSLClientSocketNSS::Core::UpdateServerCert() {
     // own a reference to the certificate.
     NetLog::ParametersCallback net_log_callback =
         base::Bind(&NetLogX509CertificateCallback,
-                   nss_handshake_state_.server_cert);
+                   base::RetainedRef(nss_handshake_state_.server_cert));
     PostOrRunCallback(
         FROM_HERE,
         base::Bind(&AddLogEventWithCallback, weak_net_log_,
@@ -2164,12 +2157,12 @@ int SSLClientSocketNSS::Core::DoBufferRecv(IOBuffer* read_buffer, int len) {
   int rv = transport_->socket()->Read(
       read_buffer, len,
       base::Bind(&Core::BufferRecvComplete, base::Unretained(this),
-                 scoped_refptr<IOBuffer>(read_buffer)));
+                 base::RetainedRef(read_buffer)));
 
   if (!OnNSSTaskRunner() && rv != ERR_IO_PENDING) {
-    nss_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Core::BufferRecvComplete, this,
-                              scoped_refptr<IOBuffer>(read_buffer), rv));
+    nss_task_runner_->PostTask(FROM_HERE,
+                               base::Bind(&Core::BufferRecvComplete, this,
+                                          base::RetainedRef(read_buffer), rv));
     return rv;
   }
 
@@ -2306,7 +2299,7 @@ void SSLClientSocketNSS::Core::BufferRecvComplete(
 
     nss_task_runner_->PostTask(
         FROM_HERE, base::Bind(&Core::BufferRecvComplete, this,
-                              scoped_refptr<IOBuffer>(read_buffer), result));
+                              base::RetainedRef(read_buffer), result));
     return;
   }
 

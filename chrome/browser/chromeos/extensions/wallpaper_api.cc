@@ -205,7 +205,8 @@ void WallpaperSetWallpaperFunction::GenerateThumbnail(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&WallpaperSetWallpaperFunction::ThumbnailGenerated, this,
-                 original_data, thumbnail_data));
+                 base::RetainedRef(original_data),
+                 base::RetainedRef(thumbnail_data)));
 }
 
 void WallpaperSetWallpaperFunction::ThumbnailGenerated(

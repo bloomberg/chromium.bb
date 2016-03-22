@@ -263,7 +263,7 @@ void AwContentsClientBridge::ProvideClientCertificateResponse(
       base::Bind(&RecordClientCertificateKey, client_cert,
                  base::Passed(&private_key)),
       base::Bind(&content::ClientCertificateDelegate::ContinueWithCertificate,
-                 base::Owned(delegate), client_cert));
+                 base::Owned(delegate), base::RetainedRef(client_cert)));
 }
 
 void AwContentsClientBridge::RunJavaScriptDialog(

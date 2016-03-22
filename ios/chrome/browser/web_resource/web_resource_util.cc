@@ -65,9 +65,10 @@ void StartParseJSONAsync(
     const WebResourceService::SuccessCallback& success_callback,
     const WebResourceService::ErrorCallback& error_callback) {
   web::WebThread::PostBlockingPoolTask(
-      FROM_HERE, base::Bind(&ParseJSONOnBackgroundThread,
-                            base::ThreadTaskRunnerHandle::Get(), data,
-                            success_callback, error_callback));
+      FROM_HERE,
+      base::Bind(&ParseJSONOnBackgroundThread,
+                 base::RetainedRef(base::ThreadTaskRunnerHandle::Get()), data,
+                 success_callback, error_callback));
 }
 
 }  // namespace

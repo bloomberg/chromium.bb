@@ -48,8 +48,7 @@ void CertDatabase::OnAndroidKeyStoreChanged() {
 }
 
 void CertDatabase::OnAndroidKeyChainChanged() {
-  observer_list_->Notify(FROM_HERE, &Observer::OnCACertChanged,
-                         scoped_refptr<X509Certificate>());
+  observer_list_->Notify(FROM_HERE, &Observer::OnCACertChanged, nullptr);
 }
 
 }  // namespace net

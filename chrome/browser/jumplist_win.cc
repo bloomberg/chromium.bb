@@ -575,7 +575,7 @@ void JumpList::DeferredRunUpdate() {
                  incognito_availability,
                  app_id_,
                  icon_dir_,
-                 jumplist_data_));
+                 base::RetainedRef(jumplist_data_)));
 }
 
 void JumpList::TopSitesLoaded(history::TopSites* top_sites) {

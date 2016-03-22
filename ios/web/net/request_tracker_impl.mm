@@ -517,8 +517,8 @@ void RequestTrackerImpl::CaptureHeaders(net::URLRequest* request) {
   scoped_refptr<net::HttpResponseHeaders> headers(request->response_headers());
   web::WebThread::PostTask(
       web::WebThread::UI, FROM_HERE,
-      base::Bind(&RequestTrackerImpl::NotifyResponseHeaders, this, headers,
-                 request->url()));
+      base::Bind(&RequestTrackerImpl::NotifyResponseHeaders, this,
+                 base::RetainedRef(headers), request->url()));
 }
 
 void RequestTrackerImpl::CaptureExpectedLength(const net::URLRequest* request,
@@ -626,7 +626,8 @@ void RequestTrackerImpl::CaptureCertificatePolicyCache(
     web::WebThread::PostTask(
         web::WebThread::UI, FROM_HERE,
         base::Bind(&RequestTrackerImpl::NotifyCertificateUsed, this,
-                   ssl_info.cert, host, ssl_info.cert_status));
+                   base::RetainedRef(ssl_info.cert), host,
+                   ssl_info.cert_status));
   }
   should_continue.Run(true);
 }
@@ -1149,7 +1150,7 @@ void RequestTrackerImpl::RecomputeCertificatePolicy(
       web::WebThread::PostTask(
           web::WebThread::UI, FROM_HERE,
           base::Bind(&RequestTrackerImpl::NotifyCertificateUsed, this,
-                     counts->ssl_info.cert, host,
+                     base::RetainedRef(counts->ssl_info.cert), host,
                      counts->ssl_info.cert_status));
     }
     if (counts == splitPosition)

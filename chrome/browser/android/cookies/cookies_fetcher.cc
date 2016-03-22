@@ -44,9 +44,10 @@ void CookiesFetcher::PersistCookies(JNIEnv* env,
   jobject_.Reset(env, obj);
 
   // The rest must be done from the IO thread.
-  content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
       base::Bind(&CookiesFetcher::PersistCookiesInternal,
-      base::Unretained(this), getter));
+                 base::Unretained(this), base::RetainedRef(getter)));
 }
 
 void CookiesFetcher::PersistCookiesInternal(
@@ -132,12 +133,9 @@ void CookiesFetcher::RestoreCookies(JNIEnv* env,
 
   // The rest must be done from the IO thread.
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
+      content::BrowserThread::IO, FROM_HERE,
       base::Bind(&CookiesFetcher::RestoreToCookieJarInternal,
-                 base::Unretained(this),
-                 getter,
-                 cookie));
+                 base::Unretained(this), base::RetainedRef(getter), cookie));
 }
 
 void CookiesFetcher::RestoreToCookieJarInternal(

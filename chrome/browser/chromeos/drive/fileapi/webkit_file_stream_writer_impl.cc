@@ -85,7 +85,7 @@ int WebkitFileStreamWriterImpl::Write(net::IOBuffer* buf,
       file_system_getter_, file_path_,
       base::Bind(
           &WebkitFileStreamWriterImpl::WriteAfterCreateWritableSnapshotFile,
-          weak_ptr_factory_.GetWeakPtr(), make_scoped_refptr(buf), buf_len));
+          weak_ptr_factory_.GetWeakPtr(), base::RetainedRef(buf), buf_len));
   return net::ERR_IO_PENDING;
 }
 

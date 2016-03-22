@@ -461,9 +461,8 @@ bool URLDataManagerIOSBackend::StartRequest(const net::URLRequest* request,
   base::MessageLoop* target_message_loop =
       web::WebThread::UnsafeGetMessageLoopForThread(web::WebThread::UI);
   target_message_loop->PostTask(
-      FROM_HERE,
-      base::Bind(&GetMimeTypeOnUI, scoped_refptr<URLDataSourceIOSImpl>(source),
-                 path, job->weak_factory_.GetWeakPtr()));
+      FROM_HERE, base::Bind(&GetMimeTypeOnUI, base::RetainedRef(source), path,
+                            job->weak_factory_.GetWeakPtr()));
 
   target_message_loop->PostTask(
       FROM_HERE, base::Bind(&URLDataManagerIOSBackend::CallStartRequest,

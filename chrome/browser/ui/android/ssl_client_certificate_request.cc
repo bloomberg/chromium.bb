@@ -175,7 +175,8 @@ static void OnSystemRequestCompletion(
       base::Bind(&RecordClientCertificateKey, client_cert,
                  base::Passed(&private_key)),
       base::Bind(&content::ClientCertificateDelegate::ContinueWithCertificate,
-                 base::Owned(delegate.release()), client_cert));
+                 base::Owned(delegate.release()),
+                 base::RetainedRef(client_cert)));
 }
 
 static void NotifyClientCertificatesChanged() {

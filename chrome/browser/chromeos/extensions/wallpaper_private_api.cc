@@ -670,10 +670,10 @@ void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
       wallpaper::kWallpaperThumbnailWidth, wallpaper::kWallpaperThumbnailHeight,
       &data, NULL);
   BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(
-            &WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated,
-            this, data));
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(
+          &WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated, this,
+          base::RetainedRef(data)));
 }
 
 void WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated(
