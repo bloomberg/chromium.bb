@@ -211,25 +211,32 @@ SingleFileDetailsPanel.prototype = {
    */
   setDetails_: function(entry, item) {
     var elem;
-    // Modification Time
-    elem = queryRequiredElement('.modification-time', this.list_);
-    if (item.modificationTime) {
-      elem.classList.toggle('available', true);
-      queryRequiredElement('.content', elem).textContent =
-          this.formatter_.formatModDate(item.modificationTime);
-    } else {
-      elem.classList.toggle('available', false);
-    }
-    // Filesize
-    elem = queryRequiredElement('.file-size', this.list_);
-    if (item.size) {
-      elem.classList.toggle('available', true);
-      queryRequiredElement('.content', elem).textContent =
-          this.formatter_.formatSize(item.size, item.hosted);
-    } else {
-      elem.classList.toggle('available', false);
-    }
-    // TODO(ryoh): Display more and more details...
+    var self = this;
+    var update = function(query, cond, thunk) {
+      var elem = queryRequiredElement(query, self.list_);
+      if (cond) {
+        elem.classList.toggle('available', true);
+        queryRequiredElement('.content', elem).textContent = thunk();
+      } else {
+        elem.classList.toggle('available', false);
+      }
+    };
+    update('.modification-time', item.modificationTime, function() {
+      return self.formatter_.formatModDate(item.modificationTime);
+    });
+    update('.file-size', item.size, function() {
+      return self.formatter_.formatSize(item.size, item.hosted);
+    });
+    update('.image-size', item.imageWidth && item.imageHeight, function() {
+      return item.imageWidth.toString()+"x"+item.imageHeight;
+    });
+    update('.media-title', item.mediaTitle, function() {
+      return item.mediaTitle;
+    });
+    update('.media-artist', item.mediaArtist, function() {
+      return item.mediaArtist;
+    });
+    // TODO(ryoh): Should we display more and more items?
   },
   /**
    * Called when visibility of this panel is changed.
@@ -256,8 +263,6 @@ SingleFileDetailsPanel.prototype = {
  * @const
  */
 SingleFileDetailsPanel.LOADING_ITEMS = [
-  'availableOffline',
-  'availableWhenMetered',
   'croppedThumbnailUrl',
   'customIconUrl',
   'dirty',
@@ -270,10 +275,6 @@ SingleFileDetailsPanel.LOADING_ITEMS = [
   'mediaMimeType',
   'mediaTitle',
   'modificationTime',
-  'pinned',
-  'present',
-  'shared',
-  'sharedWithMe',
   'size',
   'thumbnailUrl'
 ];
