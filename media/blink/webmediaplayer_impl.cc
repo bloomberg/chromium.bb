@@ -883,6 +883,8 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
 void WebMediaPlayerImpl::OnPipelineSuspended() {
 #if defined(OS_ANDROID)
   if (isRemote()) {
+    if (delegate_)
+      delegate_->PlayerGone(delegate_id_);
     scoped_refptr<VideoFrame> frame = cast_impl_.GetCastingBanner();
     if (frame) {
       compositor_->PaintFrameUsingOldRenderingPath(frame);
