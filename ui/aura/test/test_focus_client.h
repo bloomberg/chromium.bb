@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window_observer.h"
@@ -33,6 +34,7 @@ class TestFocusClient : public client::FocusClient,
 
   Window* focused_window_;
   ScopedObserver<Window, WindowObserver> observer_manager_;
+  base::ObserverList<aura::client::FocusChangeObserver> focus_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestFocusClient);
 };
