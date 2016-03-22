@@ -102,6 +102,8 @@ also start a new shell and keep the following command running:
   destroyed before serialization.
 * `--android-fonts-path=$PATH`: Path to where the fonts are located.
   Typically this would be `out-linux/Debug/gen/third_party/blimp_fonts`.
+* `--disable-remote-fonts`: Disables downloading of custom web fonts in the
+  renderer.
 
 #### Typical invocation
 When the client connects to a manually specified engine instead of using the

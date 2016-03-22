@@ -14,6 +14,7 @@ LD_LIBRARY_PATH=/engine/ /engine/blimp_engine_app \
   --disable-cached-picture-raster \
   --blimp-client-token-path=/engine/data/client_token \
   --android-fonts-path=/engine/fonts \
+  --disable-remote-fonts \
   $@ &
 
 # Stop execution if either stunnel or blimp_engine_app die.
