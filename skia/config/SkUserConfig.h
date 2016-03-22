@@ -247,6 +247,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_NEW_SURFACE_API
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_COLORFILTER_PTR
+#   define SK_SUPPORT_LEGACY_COLORFILTER_PTR
+#endif
+
 #ifndef    SK_SUPPORT_LEGACY_EVAL_CUBIC
 #   define SK_SUPPORT_LEGACY_EVAL_CUBIC
 #endif
