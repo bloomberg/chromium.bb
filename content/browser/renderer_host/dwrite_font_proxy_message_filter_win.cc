@@ -71,7 +71,6 @@ base::string16 GetWindowsFontsPath() {
                                        font_path_chars.data(), CSIDL_FONTS,
                                        FALSE /* fCreate */);
   DCHECK(result);
-  CHECK(result);
   return base::i18n::FoldCase(font_path_chars.data());
 }
 
@@ -144,19 +143,14 @@ void DWriteFontProxyMessageFilter::OnGetFamilyNames(
   mswr::ComPtr<IDWriteFontFamily> family;
   HRESULT hr = collection_->GetFontFamily(family_index, &family);
   if (!SUCCEEDED(hr)) {
-    // Crash only if index was not out of bounds.
-    CHECK(family_index >= collection_->GetFontFamilyCount());
     return;
   }
-  CHECK(family);
 
   mswr::ComPtr<IDWriteLocalizedStrings> localized_names;
   hr = family->GetFamilyNames(&localized_names);
   if (!SUCCEEDED(hr)) {
-    CHECK(false);
     return;
   }
-  CHECK(localized_names);
 
   size_t string_count = localized_names->GetCount();
 
@@ -166,14 +160,12 @@ void DWriteFontProxyMessageFilter::OnGetFamilyNames(
     UINT32 length = 0;
     hr = localized_names->GetLocaleNameLength(index, &length);
     if (!SUCCEEDED(hr)) {
-      CHECK(false);
       return;
     }
     ++length;  // Reserve space for the null terminator.
     locale.resize(length);
     hr = localized_names->GetLocaleName(index, locale.data(), length);
     if (!SUCCEEDED(hr)) {
-      CHECK(false);
       return;
     }
     CHECK_EQ(L'\0', locale[length - 1]);
@@ -181,14 +173,12 @@ void DWriteFontProxyMessageFilter::OnGetFamilyNames(
     length = 0;
     hr = localized_names->GetStringLength(index, &length);
     if (!SUCCEEDED(hr)) {
-      CHECK(false);
       return;
     }
     ++length;  // Reserve space for the null terminator.
     name.resize(length);
     hr = localized_names->GetString(index, name.data(), length);
     if (!SUCCEEDED(hr)) {
-      CHECK(false);
       return;
     }
     CHECK_EQ(L'\0', name[length - 1]);
@@ -211,8 +201,6 @@ void DWriteFontProxyMessageFilter::OnGetFontFiles(
   mswr::ComPtr<IDWriteFontFamily> family;
   HRESULT hr = collection_->GetFontFamily(family_index, &family);
   if (!SUCCEEDED(hr)) {
-    // Crash only if index was not out of bounds.
-    CHECK(family_index >= collection_->GetFontFamilyCount());
     return;
   }
 
@@ -226,10 +214,8 @@ void DWriteFontProxyMessageFilter::OnGetFontFiles(
     mswr::ComPtr<IDWriteFont> font;
     hr = family->GetFont(font_index, &font);
     if (!SUCCEEDED(hr)) {
-      CHECK(false);
       return;
     }
-    CHECK(font);
 
     AddFilesForFont(&path_set, font.Get());
   }
@@ -246,15 +232,13 @@ void DWriteFontProxyMessageFilter::InitializeDirectWrite() {
   mswr::ComPtr<IDWriteFactory> factory;
   gfx::win::CreateDWriteFactory(&factory);
   if (factory == nullptr) {
-    CHECK(false);
     // We won't be able to load fonts, but we should still return messages so
     // renderers don't hang if they for some reason send us a font message.
     return;
   }
 
   HRESULT hr = factory->GetSystemFontCollection(&collection_);
-  CHECK(SUCCEEDED(hr));
-  CHECK(collection_);
+  DCHECK(SUCCEEDED(hr));
 }
 
 bool DWriteFontProxyMessageFilter::AddFilesForFont(
@@ -264,14 +248,12 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
   HRESULT hr;
   hr = font->CreateFontFace(&font_face);
   if (!SUCCEEDED(hr)) {
-    CHECK(false);
     return false;
   }
 
   UINT32 file_count;
   hr = font_face->GetFiles(&file_count, nullptr);
   if (!SUCCEEDED(hr)) {
-    CHECK(false);
     return false;
   }
 
@@ -280,7 +262,6 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
   hr = font_face->GetFiles(
       &file_count, reinterpret_cast<IDWriteFontFile**>(font_files.data()));
   if (!SUCCEEDED(hr)) {
-    CHECK(false);
     return false;
   }
 
@@ -288,7 +269,6 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
     mswr::ComPtr<IDWriteFontFileLoader> loader;
     hr = font_files[file_index]->GetLoader(&loader);
     if (!SUCCEEDED(hr)) {
-      CHECK(false);
       return false;
     }
 
@@ -308,13 +288,8 @@ bool DWriteFontProxyMessageFilter::AddFilesForFont(
       LogLoaderType(OTHER_LOADER);
       DCHECK(false);
 
-      // UMA indicates zero results for loaderType=OTHER_LOADER, so doing this
-      // CHECK should be safe to rule out this case as a possibility.
-      CHECK(false);
-
       return false;
     } else if (!SUCCEEDED(hr)) {
-      CHECK(false);
       return false;
     }
 
@@ -335,14 +310,12 @@ bool DWriteFontProxyMessageFilter::AddLocalFile(
   UINT32 key_size;
   hr = font_file->GetReferenceKey(&key, &key_size);
   if (!SUCCEEDED(hr)) {
-    CHECK(false);
     return false;
   }
 
   UINT32 path_length = 0;
   hr = local_loader->GetFilePathLengthFromKey(key, key_size, &path_length);
   if (!SUCCEEDED(hr)) {
-    CHECK(false);
     return false;
   }
   ++path_length;  // Reserve space for the null terminator.
@@ -351,7 +324,6 @@ bool DWriteFontProxyMessageFilter::AddLocalFile(
   hr = local_loader->GetFilePathFromKey(key, key_size, file_path_chars.data(),
                                         path_length);
   if (!SUCCEEDED(hr)) {
-    CHECK(false);
     return false;
   }
 
