@@ -24,6 +24,7 @@ URL: http://bgoffice.sourceforge.net/
      http://www.broffice.org/
      http://www.dicollecte.org/
      http://www.justlocal.com.au/
+     http://sourceforge.net/projects/lilak/
 License: MPL 1.1/GPL 2.0/LGPL 2.1
 Security Critical: no
 Version: unknown
@@ -84,17 +85,19 @@ de_DE_neu:  Added words
         Removed "Information" from dic_delta in favor of "Information/P" to fix
             the spelling of "Informationen"
 
-en_AU:  Added words
+en_AU:  Is a copy of en_GB.
 
 en_CA:  Added words
 
-en_GB:  Added words
+en_GB:  Added the same words as en_CA.
 
-en_US:  Added words
+en_US:  Added the same words as en_CA.
 
 es_ES:  Added words
 
 et_EE:  No changes
+
+fa_IR:  Removed IGNORE from affix file, because we don't support it.
 
 fo_FO:  No changes
 
@@ -200,3 +203,9 @@ of any dictionary.
 
 On Mar 10, 2015, we reran convert_dict on en-US and en-CA dictionaries to fix
 the missing REP rules.
+
+On Mar 18, 2016, we added "Lilak" dictionary for Persian Language (fa-IR) and
+updated en-US, en-CA and en-GB dictionaries from SCOWL. Added several words to
+en*.dic_delta files. Because both aff and dic files changed, we incremented
+major version to 7-0. That's 1 higher than the highest major version of any
+dictionary.
