@@ -212,9 +212,9 @@ bool HTMLLinkElement::shouldLoadLink()
     return inDocument();
 }
 
-bool HTMLLinkElement::loadLink(const String& type, const String& as, const KURL& url)
+bool HTMLLinkElement::loadLink(const String& type, const String& as, const String& media, const KURL& url)
 {
-    return m_linkLoader->loadLink(m_relAttribute, crossOriginAttributeValue(fastGetAttribute(HTMLNames::crossoriginAttr)), type, as, url, document(), NetworkHintsInterfaceImpl());
+    return m_linkLoader->loadLink(m_relAttribute, crossOriginAttributeValue(fastGetAttribute(HTMLNames::crossoriginAttr)), type, as, media, url, document(), NetworkHintsInterfaceImpl());
 }
 
 LinkResource* HTMLLinkElement::linkResourceToProcess()
@@ -702,6 +702,7 @@ void LinkStyle::process()
     ASSERT(m_owner->shouldProcessStyle());
     String type = m_owner->typeValue().lower();
     String as = m_owner->asValue().lower();
+    String media = m_owner->media().lower();
     LinkRequestBuilder builder(m_owner);
 
     if (m_owner->relAttribute().getIconType() != InvalidIcon && builder.url().isValid() && !builder.url().isEmpty()) {
@@ -715,7 +716,7 @@ void LinkStyle::process()
             document().frame()->loader().client()->dispatchDidChangeIcons(m_owner->relAttribute().getIconType());
     }
 
-    if (!m_owner->loadLink(type, as, builder.url()))
+    if (!m_owner->loadLink(type, as, media, builder.url()))
         return;
 
     if (m_disabledState != Disabled && m_owner->relAttribute().isStyleSheet() && styleSheetTypeIsSupported(type) && shouldLoadResource() && builder.url().isValid()) {

@@ -173,7 +173,7 @@ public:
     bool shouldLoadLink() override;
 
     // For LinkStyle
-    bool loadLink(const String& type, const String& as, const KURL&);
+    bool loadLink(const String& type, const String& as, const String& media, const KURL&);
     bool isAlternate() const { return linkStyle()->isUnset() && m_relAttribute.isAlternate(); }
     bool shouldProcessStyle() { return linkResourceToProcess() && linkStyle(); }
     bool isCreatedByParser() const { return m_createdByParser; }

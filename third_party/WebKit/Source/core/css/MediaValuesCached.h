@@ -100,8 +100,7 @@ public:
     const String mediaType() const override;
     WebDisplayMode displayMode() const override;
 
-    void setViewportWidth(double);
-    void setViewportHeight(double);
+    void overrideViewportDimensions(double width, double height) override;
 
 protected:
     MediaValuesCached();

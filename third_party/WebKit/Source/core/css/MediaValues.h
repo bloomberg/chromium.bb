@@ -58,6 +58,8 @@ public:
     virtual Document* document() const = 0;
     virtual bool hasValues() const = 0;
 
+    virtual void overrideViewportDimensions(double width, double height) = 0;
+
 protected:
     static double calculateViewportWidth(LocalFrame*);
     static double calculateViewportHeight(LocalFrame*);

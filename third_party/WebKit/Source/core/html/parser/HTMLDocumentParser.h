@@ -96,6 +96,7 @@ public:
     public:
         OwnPtr<CompactHTMLTokenStream> tokens;
         PreloadRequestStream preloads;
+        ViewportDescriptionWrapper viewport;
         XSSInfoStream xssInfos;
         HTMLTokenizer::State tokenizerState;
         HTMLTreeBuilderSimulator::State treeBuilderState;
@@ -211,6 +212,7 @@ private:
     unsigned m_pumpSessionNestingLevel;
     unsigned m_pumpSpeculationsSessionNestingLevel;
     bool m_isParsingAtLineNumber;
+    bool m_triedLoadingLinkHeaders;
 };
 
 } // namespace blink

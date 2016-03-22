@@ -27,13 +27,25 @@ PassRefPtrWillBeRawPtr<MediaValues> MediaValuesDynamic::create(LocalFrame* frame
 
 MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame)
     : m_frame(frame)
+    , m_viewportDimensionsOverridden(false)
+    , m_viewportWidthOverride(0)
+    , m_viewportHeightOverride(0)
+{
+    ASSERT(m_frame);
+}
+
+MediaValuesDynamic::MediaValuesDynamic(LocalFrame* frame, bool overriddenViewportDimensions, double viewportWidth, double viewportHeight)
+    : m_frame(frame)
+    , m_viewportDimensionsOverridden(overriddenViewportDimensions)
+    , m_viewportWidthOverride(viewportWidth)
+    , m_viewportHeightOverride(viewportHeight)
 {
     ASSERT(m_frame);
 }
 
 PassRefPtrWillBeRawPtr<MediaValues> MediaValuesDynamic::copy() const
 {
-    return adoptRefWillBeNoop(new MediaValuesDynamic(m_frame));
+    return adoptRefWillBeNoop(new MediaValuesDynamic(m_frame, m_viewportDimensionsOverridden, m_viewportWidthOverride, m_viewportHeightOverride));
 }
 
 bool MediaValuesDynamic::computeLength(double value, CSSPrimitiveValue::UnitType type, int& result) const
@@ -58,11 +70,15 @@ bool MediaValuesDynamic::computeLength(double value, CSSPrimitiveValue::UnitType
 
 double MediaValuesDynamic::viewportWidth() const
 {
+    if (m_viewportDimensionsOverridden)
+        return m_viewportWidthOverride;
     return calculateViewportWidth(m_frame);
 }
 
 double MediaValuesDynamic::viewportHeight() const
 {
+    if (m_viewportDimensionsOverridden)
+        return m_viewportHeightOverride;
     return calculateViewportHeight(m_frame);
 }
 
@@ -145,6 +161,13 @@ DEFINE_TRACE(MediaValuesDynamic)
 {
     visitor->trace(m_frame);
     MediaValues::trace(visitor);
+}
+
+void MediaValuesDynamic::overrideViewportDimensions(double width, double height)
+{
+    m_viewportDimensionsOverridden = true;
+    m_viewportWidthOverride = width;
+    m_viewportHeightOverride = height;
 }
 
 } // namespace blink

@@ -49,6 +49,7 @@ class Document;
 class LinkRelAttribute;
 class NetworkHintsInterface;
 class PrerenderHandle;
+struct ViewportDescriptionWrapper;
 
 // The LinkLoader can load link rel types icon, dns-prefetch, subresource, prefetch and prerender.
 class CORE_EXPORT LinkLoader final : public NoBaseWillBeGarbageCollectedFinalized<LinkLoader>, public ResourceOwner<Resource, ResourceClient>, public PrerenderClient {
@@ -73,9 +74,9 @@ public:
     void triggerEvents(const Resource*);
 
     void released();
-    bool loadLink(const LinkRelAttribute&, CrossOriginAttributeValue, const String& type, const String& as, const KURL&, Document&, const NetworkHintsInterface&);
+    bool loadLink(const LinkRelAttribute&, CrossOriginAttributeValue, const String& type, const String& as, const String& media, const KURL&, Document&, const NetworkHintsInterface&);
     enum CanLoadResources { OnlyLoadResources, DoNotLoadResources, LoadResourcesAndPreconnect };
-    static void loadLinksFromHeader(const String& headerValue, const KURL& baseURL, Document*, const NetworkHintsInterface&, CanLoadResources);
+    static void loadLinksFromHeader(const String& headerValue, const KURL& baseURL, Document*, const NetworkHintsInterface&, CanLoadResources, ViewportDescriptionWrapper*);
     static bool getResourceTypeFromAsAttribute(const String& as, Resource::Type&);
 
     DECLARE_TRACE();

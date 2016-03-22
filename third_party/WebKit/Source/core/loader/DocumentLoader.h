@@ -31,6 +31,7 @@
 #define DocumentLoader_h
 
 #include "core/CoreExport.h"
+#include "core/dom/ViewportDescription.h"
 #include "core/dom/WeakIdentifierMap.h"
 #include "core/fetch/ClientHintsPreferences.h"
 #include "core/fetch/RawResource.h"

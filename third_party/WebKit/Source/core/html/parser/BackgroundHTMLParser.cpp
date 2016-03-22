@@ -245,7 +245,7 @@ void BackgroundHTMLParser::pumpTokenizer()
 
             CompactHTMLToken token(m_token.get(), position);
 
-            m_preloadScanner->scan(token, m_input.current(), m_pendingPreloads);
+            m_preloadScanner->scan(token, m_input.current(), m_pendingPreloads, &m_viewportDescription);
             simulatedToken = m_treeBuilderSimulator.simulate(token, m_tokenizer.get());
 
             // Break chunks before a script tag is inserted and flag the chunk as starting a script
@@ -282,6 +282,8 @@ void BackgroundHTMLParser::sendTokensToMainThread()
 
     OwnPtr<HTMLDocumentParser::ParsedChunk> chunk = adoptPtr(new HTMLDocumentParser::ParsedChunk);
     chunk->preloads.swap(m_pendingPreloads);
+    if (m_viewportDescription.set)
+        chunk->viewport = m_viewportDescription;
     chunk->xssInfos.swap(m_pendingXSSInfos);
     chunk->tokenizerState = m_tokenizer->getState();
     chunk->treeBuilderState = m_treeBuilderSimulator.state();

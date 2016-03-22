@@ -45,6 +45,15 @@ class HTMLParserOptions;
 class HTMLTokenizer;
 class SegmentedString;
 
+struct ViewportDescriptionWrapper {
+    ViewportDescription description;
+    bool set;
+    ViewportDescriptionWrapper()
+        : set(false)
+    {
+    }
+};
+
 struct CORE_EXPORT CachedDocumentParameters {
     USING_FAST_MALLOC(CachedDocumentParameters);
 public:
@@ -69,8 +78,8 @@ public:
     TokenPreloadScanner(const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&);
     ~TokenPreloadScanner();
 
-    void scan(const HTMLToken&, const SegmentedString&, PreloadRequestStream& requests);
-    void scan(const CompactHTMLToken&, const SegmentedString&, PreloadRequestStream& requests);
+    void scan(const HTMLToken&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*);
+    void scan(const CompactHTMLToken&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*);
 
     void setPredictedBaseElementURL(const KURL& url) { m_predictedBaseElementURL = url; }
 
@@ -83,7 +92,7 @@ private:
     class StartTagScanner;
 
     template <typename Token>
-    inline void scanCommon(const Token&, const SegmentedString&, PreloadRequestStream& requests);
+    inline void scanCommon(const Token&, const SegmentedString&, PreloadRequestStream& requests, ViewportDescriptionWrapper*);
 
     template<typename Token>
     void updatePredictedBaseURL(const Token&);
@@ -146,7 +155,7 @@ public:
     ~HTMLPreloadScanner();
 
     void appendToEnd(const SegmentedString&);
-    void scan(ResourcePreloader*, const KURL& documentBaseElementURL);
+    void scan(ResourcePreloader*, const KURL& documentBaseElementURL, ViewportDescriptionWrapper*);
 
 private:
     HTMLPreloadScanner(const HTMLParserOptions&, const KURL& documentURL, PassOwnPtr<CachedDocumentParameters>, const MediaValuesCached::MediaValuesCachedData&);

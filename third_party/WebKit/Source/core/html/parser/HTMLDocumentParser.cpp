@@ -43,6 +43,7 @@
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/LinkLoader.h"
 #include "core/loader/NavigationScheduler.h"
 #include "platform/SharedBuffer.h"
 #include "platform/ThreadSafeFunctional.h"
@@ -127,6 +128,7 @@ HTMLDocumentParser::HTMLDocumentParser(HTMLDocument& document, bool reportErrors
     , m_pumpSessionNestingLevel(0)
     , m_pumpSpeculationsSessionNestingLevel(0)
     , m_isParsingAtLineNumber(false)
+    , m_triedLoadingLinkHeaders(false)
 {
     ASSERT(shouldUseThreading() || (m_token && m_tokenizer));
 }
@@ -490,6 +492,16 @@ size_t HTMLDocumentParser::processParsedChunkFromBackgroundParser(PassOwnPtr<Par
         if (!m_queuedPreloads.isEmpty() && document()->documentElement())
             m_preloader->takeAndPreload(m_queuedPreloads);
 
+        if (!m_triedLoadingLinkHeaders && document()->loader()) {
+            String linkHeader = document()->loader()->response().httpHeaderField(HTTPNames::Link);
+            if (!linkHeader.isEmpty()) {
+                ASSERT(chunk);
+                LinkLoader::loadLinksFromHeader(linkHeader, document()->loader()->response().url(),
+                    document(), NetworkHintsInterfaceImpl(), LinkLoader::OnlyLoadResources, &(chunk->viewport));
+                m_triedLoadingLinkHeaders = true;
+            }
+        }
+
         if (isWaitingForScripts()) {
             ASSERT(it + 1 == tokens->end()); // The </script> is assumed to be the last token of this bunch.
             runScriptsForPausedTreeBuilder();
@@ -664,7 +676,7 @@ void HTMLDocumentParser::pumpTokenizer()
                     MediaValuesCached::MediaValuesCachedData(*document()));
                 m_preloadScanner->appendToEnd(m_input.current());
             }
-            m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL());
+            m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL(), nullptr);
         }
     }
 
@@ -751,7 +763,7 @@ void HTMLDocumentParser::insert(const SegmentedString& source)
         }
 
         m_insertionPreloadScanner->appendToEnd(source);
-        m_insertionPreloadScanner->scan(m_preloader.get(), document()->baseElementURL());
+        m_insertionPreloadScanner->scan(m_preloader.get(), document()->baseElementURL(), nullptr);
     }
 
     endIfDelayed();
@@ -831,7 +843,7 @@ void HTMLDocumentParser::append(const String& inputSource)
         } else {
             m_preloadScanner->appendToEnd(source);
             if (isWaitingForScripts())
-                m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL());
+                m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL(), nullptr);
         }
     }
 
@@ -1011,7 +1023,7 @@ void HTMLDocumentParser::appendCurrentInputStreamToPreloadScannerAndScan()
 {
     ASSERT(m_preloadScanner);
     m_preloadScanner->appendToEnd(m_input.current());
-    m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL());
+    m_preloadScanner->scan(m_preloader.get(), document()->baseElementURL(), nullptr);
 }
 
 void HTMLDocumentParser::notifyScriptLoaded(Resource* cachedResource)

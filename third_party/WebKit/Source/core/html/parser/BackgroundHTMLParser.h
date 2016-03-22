@@ -113,6 +113,7 @@ private:
     OwnPtr<CompactHTMLTokenStream> m_pendingTokens;
     const size_t m_pendingTokenLimit;
     PreloadRequestStream m_pendingPreloads;
+    ViewportDescriptionWrapper m_viewportDescription;
     XSSInfoStream m_pendingXSSInfos;
 
     OwnPtr<XSSAuditor> m_xssAuditor;

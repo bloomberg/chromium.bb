@@ -258,6 +258,8 @@ void LinkHeader::setValue(LinkParameterName name, String value)
         m_as = value.lower();
     else if (name == LinkParameterType)
         m_mimeType = value.lower();
+    else if (name == LinkParameterMedia)
+        m_media = value.lower();
 }
 
 template <typename CharType>

@@ -161,13 +161,9 @@ bool MediaValuesCached::hasValues() const
     return true;
 }
 
-void MediaValuesCached::setViewportWidth(double width)
+void MediaValuesCached::overrideViewportDimensions(double width, double height)
 {
     m_data.viewportWidth = width;
-}
-
-void MediaValuesCached::setViewportHeight(double height)
-{
     m_data.viewportHeight = height;
 }
 
