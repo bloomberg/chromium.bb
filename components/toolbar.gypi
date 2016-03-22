@@ -39,6 +39,7 @@
       'target_name': 'toolbar_test_support',
       'type': 'static_library',
       'dependencies': [
+        '../ui/gfx/gfx.gyp:gfx_vector_icons',
         'components_resources.gyp:components_resources',
         'toolbar',
       ],
