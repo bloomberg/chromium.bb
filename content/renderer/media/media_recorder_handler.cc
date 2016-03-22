@@ -24,6 +24,7 @@
 #include "media/base/video_frame.h"
 #include "media/muxers/webm_muxer.h"
 #include "third_party/WebKit/public/platform/WebMediaRecorderHandlerClient.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
 using base::TimeDelta;
@@ -134,11 +135,15 @@ bool MediaRecorderHandler::start(int timeslice) {
     return false;
   }
 
-  const bool use_video_tracks =
-      !video_tracks.isEmpty() && video_tracks[0].isEnabled();
-  const bool use_audio_tracks =
-      !audio_tracks.isEmpty() && MediaStreamAudioTrack::From(audio_tracks[0])
-       && audio_tracks[0].isEnabled();
+  const bool use_video_tracks = !video_tracks.isEmpty() &&
+                                video_tracks[0].isEnabled() &&
+                                video_tracks[0].source().getReadyState() ==
+                                    blink::WebMediaStreamSource::ReadyStateLive;
+  const bool use_audio_tracks = !audio_tracks.isEmpty() &&
+                                MediaStreamAudioTrack::From(audio_tracks[0]) &&
+                                audio_tracks[0].isEnabled() &&
+                                audio_tracks[0].source().getReadyState() ==
+                                    blink::WebMediaStreamSource::ReadyStateLive;
 
   webm_muxer_.reset(new media::WebmMuxer(
       use_vp9_ ? media::kCodecVP9 : media::kCodecVP8, use_video_tracks,
