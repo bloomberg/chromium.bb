@@ -582,8 +582,8 @@ body.check-select #sort-button {
 
 #details-button > .icon {
   background-image: -webkit-image-set(
-      url(../images/files/ui/details_white.png) 1x,
-      url(../images/files/ui/2x/details_white.png) 2x);
+      url(../images/files/ui/info_white.png) 1x,
+      url(../images/files/ui/2x/info_white.png) 2x);
 }
 
 body.check-select #details-button {
