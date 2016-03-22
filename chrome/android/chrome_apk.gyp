@@ -162,6 +162,7 @@
         'jinja_output': '<(chrome_public_apk_manifest)',
         'jinja_variables': [
           'channel=<(android_channel)',
+          'configuration_policy=<(configuration_policy)',
           'manifest_package=<(manifest_package)',
           'min_sdk_version=16',
           'target_sdk_version=23',
@@ -178,6 +179,7 @@
         'jinja_output': '<(chrome_sync_shell_apk_manifest)',
         'jinja_variables': [
           'channel=<(android_channel)',
+          'configuration_policy=<(configuration_policy)',
           'manifest_package=<(sync_shell_manifest_package)',
           'min_sdk_version=16',
           'target_sdk_version=22',

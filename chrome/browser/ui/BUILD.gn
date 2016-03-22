@@ -83,7 +83,6 @@ source_set("ui") {
     "//components/password_manager/content/browser",
     "//components/password_manager/core/browser",
     "//components/pdf/browser",
-    "//components/policy",
     "//components/pref_registry",
     "//components/proximity_auth",
     "//components/proxy_config",
@@ -219,6 +218,12 @@ source_set("ui") {
     sources +=
         rebase_path(gypi_values.chrome_browser_ui_nacl_sources, ".", "//chrome")
     deps += [ "//native_client/src/trusted/service_runtime:sel" ]
+  }
+  if (enable_configuration_policy) {
+    sources += rebase_path(gypi_values.chrome_browser_ui_policy_sources,
+                           ".",
+                           "//chrome")
+    deps += [ "//components/policy" ]
   }
   if (enable_plugins) {
     sources += rebase_path(gypi_values.chrome_browser_ui_plugin_sources,

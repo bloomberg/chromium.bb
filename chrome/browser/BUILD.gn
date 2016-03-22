@@ -150,9 +150,7 @@ source_set("browser") {
     "//components/packed_ct_ev_whitelist",
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
-    "//components/policy",
     "//components/policy:policy_component",
-    "//components/policy/proto",
     "//components/proxy_config",
     "//components/query_parser",
     "//components/rappor",
@@ -422,20 +420,16 @@ source_set("browser") {
   if (!is_win && !is_mac && !is_ios) {
     sources += [ "net/net_error_diagnostics_dialog_generic.cc" ]
   }
-  if (!is_android && !is_ios && !is_chromeos) {
+  if (!is_android && !is_ios && !is_chromeos && enable_configuration_policy) {
     sources += [
       "net/disk_cache_dir_policy_handler.cc",
       "net/disk_cache_dir_policy_handler.h",
     ]
   }
-  if (!is_android && !is_ios) {
+  if (!is_android && !is_ios && enable_configuration_policy) {
     sources += [
       "download/download_dir_policy_handler.cc",
       "download/download_dir_policy_handler.h",
-    ]
-    deps += [
-      "//chrome/browser/policy:path_parser",
-      "//net:net_browser_services",
     ]
   }
   if (is_mac) {
@@ -504,6 +498,48 @@ source_set("browser") {
     deps += [ "//components/nacl/browser" ]
   }
 
+  if (enable_configuration_policy) {
+    sources +=
+        rebase_path(gypi_values.chrome_browser_policy_shared_with_ios_sources,
+                    ".",
+                    "//chrome")
+    deps += [
+      "//components/policy",
+      "//components/policy/proto",
+    ]
+    if (!is_ios) {
+      sources += rebase_path(gypi_values.chrome_browser_policy_non_ios_sources,
+                             ".",
+                             "//chrome")
+    }
+    if (!is_chromeos) {
+      sources += rebase_path(
+              gypi_values.chrome_browser_policy_shared_with_ios_not_chromeos_sources,
+              ".",
+              "//chrome")
+    }
+    if (is_win || is_mac || is_desktop_linux) {
+      sources += rebase_path(gypi_values.chrome_browser_policy_desktop_sources,
+                             ".",
+                             "//chrome")
+    }
+    if (is_android || is_ios) {
+      sources += rebase_path(gypi_values.chrome_browser_policy_mobile_sources,
+                             ".",
+                             "//chrome")
+    } else {
+      deps += [
+        "//chrome/browser/policy:path_parser",
+        "//net:net_browser_services",
+      ]
+    }
+  } else {
+    # Configuration policy disabled.
+    sources += rebase_path(gypi_values.chrome_browser_policy_disabled_sources,
+                           ".",
+                           "//chrome")
+  }
+
   if (enable_plugins) {
     sources +=
         rebase_path(gypi_values.chrome_browser_plugins_sources, ".", "//chrome")
@@ -562,10 +598,6 @@ source_set("browser") {
                            ".",
                            "//chrome")
     deps += [ "//chrome/browser/chromeos" ]
-  } else {  # Non-ChromeOS.
-    sources += rebase_path(gypi_values.chrome_browser_non_chromeos_sources,
-                           ".",
-                           "//chrome")
   }
 
   if (is_chromeos || is_ios) {

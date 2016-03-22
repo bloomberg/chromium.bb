@@ -3,25 +3,29 @@
 # found in the LICENSE file.
 
 {
-  'targets': [
-    {
-      # GN version: //chrome/browser/policy:path_parser
-      'target_name': 'policy_path_parser',
-      'type': 'static_library',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../chrome/common_constants.gyp:common_constants',
-        '../components/components.gyp:policy',
+  'conditions': [
+    ['configuration_policy==1', {
+      'targets': [
+        {
+          # GN version: //chrome/browser/policy:path_parser
+          'target_name': 'policy_path_parser',
+          'type': 'static_library',
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../chrome/common_constants.gyp:common_constants',
+            '../components/components.gyp:policy',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'sources': [
+            'browser/policy/policy_path_parser.h',
+            'browser/policy/policy_path_parser_linux.cc',
+            'browser/policy/policy_path_parser_mac.mm',
+            'browser/policy/policy_path_parser_win.cc',
+          ],
+        },
       ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'browser/policy/policy_path_parser.h',
-        'browser/policy/policy_path_parser_linux.cc',
-        'browser/policy/policy_path_parser_mac.mm',
-        'browser/policy/policy_path_parser_win.cc',
-      ],
-    },
+    }],
   ],
 }

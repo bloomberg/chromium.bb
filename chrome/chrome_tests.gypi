@@ -367,16 +367,6 @@
       'browser/pdf/pdf_extension_test_util.cc',
       'browser/pdf/pdf_extension_test_util.h',
       'browser/plugins/plugin_power_saver_browsertest.cc',
-      'browser/policy/cloud/cloud_policy_browsertest.cc',
-      'browser/policy/cloud/cloud_policy_manager_browsertest.cc',
-      'browser/policy/cloud/component_cloud_policy_browsertest.cc',
-      'browser/policy/cloud/device_management_service_browsertest.cc',
-      'browser/policy/cloud/test_request_interceptor.cc',
-      'browser/policy/cloud/test_request_interceptor.h',
-      'browser/policy/policy_browsertest.cc',
-      'browser/policy/policy_network_browsertest.cc',
-      'browser/policy/policy_prefs_browsertest.cc',
-      'browser/policy/policy_startup_browsertest.cc',
       'browser/prefetch/prefetch_browsertest.cc',
       'browser/prefs/pref_functional_browsertest.cc',
       'browser/prefs/pref_service_browsertest.cc',
@@ -527,7 +517,6 @@
       'browser/ui/webui/net_internals/net_internals_ui_browsertest.cc',
       'browser/ui/webui/net_internals/net_internals_ui_browsertest.h',
       'browser/ui/webui/ntp/new_tab_ui_browsertest.cc',
-      'browser/ui/webui/options/certificate_manager_browsertest.cc',
       'browser/ui/webui/options/clear_browser_data_browsertest.cc',
       'browser/ui/webui/options/content_settings_exception_area_browsertest.cc',
       'browser/ui/webui/options/multilanguage_options_browsertest.cc',
@@ -535,10 +524,7 @@
       'browser/ui/webui/options/options_browsertest.cc',
       'browser/ui/webui/options/options_ui_browsertest.cc',
       'browser/ui/webui/options/options_ui_browsertest.h',
-      'browser/ui/webui/options/preferences_browsertest.cc',
-      'browser/ui/webui/options/preferences_browsertest.h',
       'browser/ui/webui/password_manager_internals/password_manager_internals_ui_browsertest.cc',
-      'browser/ui/webui/policy_ui_browsertest.cc',
       'browser/ui/webui/print_preview/print_preview_ui_browsertest.cc',
       'browser/ui/webui/signin/inline_login_ui_browsertest.cc',
       'browser/ui/webui/signin/user_manager_ui_browsertest.cc',
@@ -859,6 +845,22 @@
     'chrome_browser_tests_views_non_cros_or_mac_sources': [
       # This should be brought up on OSX Views but not CrOS.
       'browser/ui/views/profiles/profile_chooser_view_browsertest.cc',
+    ],
+    'chrome_browser_tests_policy_sources': [
+      'browser/policy/cloud/cloud_policy_browsertest.cc',
+      'browser/policy/cloud/cloud_policy_manager_browsertest.cc',
+      'browser/policy/cloud/component_cloud_policy_browsertest.cc',
+      'browser/policy/cloud/device_management_service_browsertest.cc',
+      'browser/policy/cloud/test_request_interceptor.cc',
+      'browser/policy/cloud/test_request_interceptor.h',
+      'browser/policy/policy_browsertest.cc',
+      'browser/policy/policy_network_browsertest.cc',
+      'browser/policy/policy_prefs_browsertest.cc',
+      'browser/policy/policy_startup_browsertest.cc',
+      'browser/ui/webui/options/certificate_manager_browsertest.cc',
+      'browser/ui/webui/options/preferences_browsertest.cc',
+      'browser/ui/webui/options/preferences_browsertest.h',
+      'browser/ui/webui/policy_ui_browsertest.cc',
     ],
     'chrome_browser_tests_speech_sources': [
       'browser/speech/extension_api/tts_extension_apitest.cc',
@@ -2398,11 +2400,10 @@
             'browser/ui/webui/signin/user_manager_ui_browsertest.cc',
           ],
           'dependencies': [
+            '../dbus/dbus.gyp:dbus_test_support',
             '../build/linux/system.gyp:dbus',
             '../chromeos/ime/input_method.gyp:gencode',
-            '../components/components.gyp:arc_test_support',
             '../components/components.gyp:drive_test_support',
-            '../dbus/dbus.gyp:dbus_test_support',
             '../ui/login/login.gyp:login_resources',
           ],
         }, {  # Non-ChromeOS
@@ -2427,6 +2428,16 @@
                 'browser/ui/views/ime/input_ime_apitest_nonchromeos.cc',
               ]
             }],
+          ]
+        }],
+        ['configuration_policy==1', {
+          'sources': [ '<@(chrome_browser_tests_policy_sources)' ],
+          'conditions': [
+            ['chromeos==1', {
+              'dependencies': [
+                '../components/components.gyp:arc_test_support',
+              ]
+            }]
           ]
         }],
         ['enable_web_speech==1', {

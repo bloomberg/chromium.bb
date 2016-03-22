@@ -89,7 +89,6 @@ static_library("common") {
     "//components/nacl/common:switches",
     "//components/offline_pages:switches",
     "//components/omnibox/common",
-    "//components/policy",
     "//components/policy:policy_component_common",
     "//components/prefs",
     "//components/strings",
@@ -271,6 +270,9 @@ static_library("common") {
   }
   if (!enable_webrtc) {
     sources -= [ "media/webrtc_logging_messages.h" ]
+  }
+  if (enable_configuration_policy) {
+    public_deps += [ "//components/policy" ]
   }
 
   if (safe_browsing_mode == 1) {

@@ -556,7 +556,6 @@
             '../base/base.gyp:base_build_config_gen',
             '../build/android/java_google_api_keys.gyp:google_api_keys_java',
             '../chrome/android/chrome_apk.gyp:custom_tabs_service_aidl',
-            '../components/components.gyp:app_restrictions_resources',
             '../components/components.gyp:autocomplete_match_java',
             '../components/components.gyp:autocomplete_match_type_java',
             '../components/components.gyp:bookmarks_java',
@@ -568,7 +567,6 @@
             '../components/components.gyp:navigation_interception_java',
             '../components/components.gyp:offline_page_feature_enums_java',
             '../components/components.gyp:offline_page_model_enums_java',
-            '../components/components.gyp:policy_java',
             '../components/components.gyp:precache_java',
             '../components/components.gyp:safe_json_java',
             '../components/components.gyp:security_state_enums_java',
@@ -620,6 +618,14 @@
               '<!@pymod_do_main(grit_info <@(grit_defines) --outputs "<(SHARED_INTERMEDIATE_DIR)/chrome" app/generated_resources.grd)',
             ],
           },
+          'conditions': [
+            ['configuration_policy == 1', {
+              'dependencies': [
+                '../components/components.gyp:app_restrictions_resources',
+                '../components/components.gyp:policy_java',
+              ],
+            }],
+          ],
           'includes': [
             '../build/java.gypi',
           ],
@@ -707,7 +713,7 @@
         'chrome_android.gypi',
       ]}, # 'includes'
     ],  # OS=="android"
-    ['OS!="android" and OS!="ios"', {
+    ['configuration_policy==1 and OS!="android" and OS!="ios"', {
       'includes': [ 'policy.gypi', ],
     }],
     ['enable_extensions==1', {

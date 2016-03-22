@@ -115,8 +115,10 @@ by a child template that "extends" this file.
         {% if channel in ['dev', 'canary', 'default'] %}
         <meta-data android:name="com.sec.android.support.multiwindow" android:value="true" />
         {% endif %}
+        {% if configuration_policy == '1' %}
         <meta-data android:name="android.content.APP_RESTRICTIONS"
             android:resource="@xml/app_restrictions"/>
+        {% endif %}
 
         <!-- Note: All activities directly or indirectly derived from ChromeActivity
              must specify android:hardwareAccelerated="false".

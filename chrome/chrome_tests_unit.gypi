@@ -167,14 +167,6 @@
       'browser/permissions/chooser_context_base_unittest.cc',
       'browser/permissions/permission_context_base_unittest.cc',
       'browser/permissions/permission_manager_unittest.cc',
-      'browser/policy/cloud/cloud_policy_invalidator_unittest.cc',
-      'browser/policy/cloud/remote_commands_invalidator_unittest.cc',
-      'browser/policy/cloud/user_policy_signin_service_unittest.cc',
-      'browser/policy/file_selection_dialogs_policy_handler_unittest.cc',
-      'browser/policy/javascript_policy_handler_unittest.cc',
-      'browser/policy/managed_bookmarks_policy_handler_unittest.cc',
-      'browser/policy/policy_path_parser_unittest.cc',
-      'browser/policy/profile_policy_connector_unittest.cc',
       'browser/predictors/autocomplete_action_predictor_table_unittest.cc',
       'browser/predictors/autocomplete_action_predictor_unittest.cc',
       'browser/predictors/resource_prefetch_common_unittest.cc',
@@ -186,7 +178,6 @@
       'browser/prefs/command_line_pref_store_ssl_manager_unittest.cc',
       'browser/prefs/command_line_pref_store_unittest.cc',
       'browser/prefs/incognito_mode_prefs_unittest.cc',
-      'browser/prefs/proxy_policy_unittest.cc',
       'browser/prefs/profile_pref_store_manager_unittest.cc',
       'browser/prefs/session_startup_pref_unittest.cc',
       'browser/prerender/prerender_history_unittest.cc',
@@ -197,7 +188,6 @@
       'browser/process_info_snapshot_mac_unittest.cc',
       'browser/process_singleton_win_unittest.cc',
       'browser/profiles/gaia_info_update_service_unittest.cc',
-      'browser/profiles/incognito_mode_policy_handler_unittest.cc',
       'browser/profiles/profile_attributes_storage_unittest.cc',
       'browser/profiles/profile_avatar_icon_util_unittest.cc',
       'browser/profiles/profile_downloader_unittest.cc',
@@ -228,7 +218,6 @@
       'browser/services/gcm/fake_gcm_profile_service.h',
       'browser/services/gcm/fake_signin_manager.cc',
       'browser/services/gcm/fake_signin_manager.h',
-      'browser/sessions/restore_on_startup_policy_handler_unittest.cc',
       'browser/shell_integration_win_unittest.cc',
       'browser/signin/account_reconcilor_unittest.cc',
       'browser/signin/chrome_signin_client_unittest.cc',
@@ -341,7 +330,6 @@
       'browser/permissions/permission_queue_controller_unittest.cc',
     ],
     'chrome_unit_tests_non_mobile_sources': [
-      'browser/download/download_dir_policy_handler_unittest.cc',
       'browser/lifetime/keep_alive_registry_unittest.cc',
       'browser/renderer_context_menu/render_view_context_menu_test_util.cc',
       'browser/renderer_context_menu/render_view_context_menu_test_util.h',
@@ -458,7 +446,6 @@
       'browser/extensions/api/socket/tls_socket_unittest.cc',
       'browser/extensions/api/socket/udp_socket_unittest.cc',
       'browser/extensions/api/sockets_tcp_server/sockets_tcp_server_api_unittest.cc',
-      'browser/extensions/api/storage/policy_value_store_unittest.cc',
       'browser/extensions/api/storage/settings_sync_unittest.cc',
       'browser/extensions/api/streams_private/streams_private_manifest_unittest.cc',
       'browser/extensions/api/tabs/tabs_api_unittest.cc',
@@ -529,7 +516,6 @@
       'browser/extensions/permission_messages_unittest.cc',
       'browser/extensions/permissions_based_management_policy_provider_unittest.cc',
       'browser/extensions/permissions_updater_unittest.cc',
-      'browser/extensions/policy_handlers_unittest.cc',
       'browser/extensions/scripting_permissions_modifier_unittest.cc',
       'browser/extensions/shared_module_service_unittest.cc',
       'browser/extensions/standard_management_policy_provider_unittest.cc',
@@ -731,6 +717,24 @@
       'browser/printing/cloud_print/privet_http_unittest.cc',
       'browser/printing/cloud_print/privet_notifications_unittest.cc',
       'browser/printing/cloud_print/privet_url_fetcher_unittest.cc',
+    ],
+    'chrome_unit_tests_configuration_policy_sources': [
+      'browser/policy/cloud/cloud_policy_invalidator_unittest.cc',
+      'browser/policy/cloud/remote_commands_invalidator_unittest.cc',
+      'browser/policy/cloud/user_policy_signin_service_unittest.cc',
+      'browser/policy/file_selection_dialogs_policy_handler_unittest.cc',
+      'browser/policy/javascript_policy_handler_unittest.cc',
+      'browser/policy/managed_bookmarks_policy_handler_unittest.cc',
+      'browser/policy/policy_path_parser_unittest.cc',
+      'browser/policy/profile_policy_connector_unittest.cc',
+      'browser/prefs/proxy_policy_unittest.cc',
+      'browser/profiles/incognito_mode_policy_handler_unittest.cc',
+      'browser/sessions/restore_on_startup_policy_handler_unittest.cc',
+    ],
+    # This is extensions && policy sources.
+    'chrome_unit_tests_extensions_policy_sources': [
+      'browser/extensions/api/storage/policy_value_store_unittest.cc',
+      'browser/extensions/policy_handlers_unittest.cc',
     ],
     'chrome_unit_tests_speech_sources': [
       'browser/speech/extension_api/extension_manifests_tts_unittest.cc',
@@ -1673,8 +1677,6 @@
         '../components/components.gyp:offline_pages_test_support',
         '../components/components.gyp:omnibox_test_support',
         '../components/components.gyp:password_manager_core_browser_test_support',
-        '../components/components.gyp:policy_component_test_support',
-        '../components/components.gyp:policy_test_support',
         '../components/components.gyp:pref_registry_test_support',
         '../components/components.gyp:rappor_test_support',
         '../components/components.gyp:search_engines_test_support',
@@ -1703,8 +1705,6 @@
       ],
       'export_dependent_settings': [
         '../base/base.gyp:test_support_base',
-        '../components/components.gyp:policy_component_test_support',
-        '../components/components.gyp:policy_test_support',
         '../content/content_shell_and_tests.gyp:test_support_content',
       ],
       'include_dirs': [
@@ -1747,8 +1747,6 @@
         'browser/net/url_request_mock_util.h',
         'browser/notifications/notification_test_util.cc',
         'browser/notifications/notification_test_util.h',
-        'browser/policy/test/local_policy_test_server.cc',
-        'browser/policy/test/local_policy_test_server.h',
         'browser/profile_resetter/profile_resetter_test_base.cc',
         'browser/profile_resetter/profile_resetter_test_base.h',
         'browser/search_engines/template_url_service_factory_test_util.cc',
@@ -2003,6 +2001,20 @@
             '../ash/ash.gyp:ash',
             '../ui/aura/aura.gyp:aura',
             '../ui/aura/aura.gyp:aura_test_support',
+          ],
+        }],
+        ['configuration_policy==1', {
+          'dependencies': [
+            '../components/components.gyp:policy_component_test_support',
+            '../components/components.gyp:policy_test_support',
+          ],
+          'export_dependent_settings': [
+            '../components/components.gyp:policy_component_test_support',
+            '../components/components.gyp:policy_test_support',
+          ],
+          'sources': [
+            'browser/policy/test/local_policy_test_server.cc',
+            'browser/policy/test/local_policy_test_server.h',
           ],
         }],
         ['safe_browsing==1', {
@@ -2291,9 +2303,6 @@
         }],
         ['OS=="android"', {
           'sources': [ '<@(chrome_unit_tests_offline_pages_sources)' ],
-          'sources!': [
-            'browser/policy/policy_path_parser_unittest.cc',
-          ],
           'dependencies!': [
             '../third_party/libaddressinput/libaddressinput.gyp:libaddressinput',
           ],
@@ -2331,7 +2340,6 @@
         ['chromeos==1', {
           'sources!': [
             'browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc',
-            'browser/policy/cloud/user_policy_signin_service_unittest.cc',
           ],
         }],
         ['enable_background==1', {
@@ -2368,6 +2376,9 @@
             '../extensions/extensions_strings.gyp:extensions_strings',
           ],
           'conditions': [
+            ['configuration_policy==1', {
+              'sources': [ '<@(chrome_unit_tests_extensions_policy_sources)' ],
+            }],
             ['enable_service_discovery==1', {
               'sources': [ '<@(chrome_unit_tests_extensions_service_discovery_sources)' ],
             }],
@@ -2408,7 +2419,6 @@
         }],
         ['OS!="android" and OS!="ios" and chromeos==0', {
           'sources': [
-            'browser/net/disk_cache_dir_policy_handler_unittest.cc',
             'browser/profiles/profile_list_desktop_unittest.cc',
             'browser/profiles/profile_statistics_unittest.cc',
           ],
@@ -2433,6 +2443,31 @@
         }],
         ['enable_service_discovery==1', {
           'sources': [ '<@(chrome_unit_tests_service_discovery_sources)' ],
+        }],
+        ['configuration_policy==1', {
+          'sources': [ '<@(chrome_unit_tests_configuration_policy_sources)' ],
+          'conditions': [
+            ['chromeos==1', {
+              'sources!': [
+                'browser/policy/cloud/user_policy_signin_service_unittest.cc',
+              ],
+            }],
+            ['OS=="android"', {
+              'sources!': [
+                'browser/policy/policy_path_parser_unittest.cc',
+              ],
+            }],
+            ['OS!="android" and OS!="ios" and chromeos==0', {
+              'sources': [
+                'browser/net/disk_cache_dir_policy_handler_unittest.cc',
+              ],
+            }],
+            ['OS!="android" and OS!="ios"', {
+              'sources': [
+                'browser/download/download_dir_policy_handler_unittest.cc'
+              ],
+            }],
+          ],
         }],
         ['enable_web_speech==1', {
           'sources': [ '<@(chrome_unit_tests_speech_sources)' ],

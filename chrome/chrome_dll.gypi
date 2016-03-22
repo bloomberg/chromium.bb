@@ -122,13 +122,16 @@
           'dependencies': [
             '<@(chromium_browser_dependencies)',
             'chrome_features.gyp:chrome_common_features',
-            'policy_path_parser',
             '../content/content.gyp:content_app_browser',
           ],
           'conditions': [
             ['OS=="win"', {
               'dependencies': [
                 '<(DEPTH)/chrome_elf/chrome_elf.gyp:chrome_elf',
+              ],
+            }],
+            ['OS=="win" and configuration_policy==1', {
+              'dependencies': [
                 '<(DEPTH)/components/components.gyp:policy',
               ],
             }],
@@ -360,9 +363,6 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'dependencies': [
-                '<(DEPTH)/components/components.gyp:policy',
-              ],
               'conditions': [
                 ['chrome_pgo_phase!=0', {
                   # Disable Warning 4702 ("Unreachable code") for the WPO/PGO
@@ -398,6 +398,16 @@
                   },
                 }],
               ]
+            }],
+            ['OS=="win" and configuration_policy==1', {
+              'dependencies': [
+                '<(DEPTH)/components/components.gyp:policy',
+              ],
+            }],
+            ['configuration_policy==1', {
+              'dependencies': [
+                'policy_path_parser',
+              ],
             }],
             ['enable_plugins==1', {
               'dependencies': [
