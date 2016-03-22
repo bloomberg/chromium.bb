@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.52",
+  "version": "8.53",
   "entries": [
     {
       "id": 1,
@@ -1843,6 +1843,17 @@ LONG_STRING_CONST(
       "gl_renderer": "Vivante GC1000",
       "features": [
         "disable_multisampled_render_to_texture"
+      ]
+    },
+    {
+      "id": 154,
+      "cr_bugs": [581777],
+      "description": "glReadPixels does not work on IOSurface backed textures",
+      "os": {
+        "type": "macosx"
+      },
+      "features": [
+        "iosurface_readback_workaround"
       ]
     }
   ]

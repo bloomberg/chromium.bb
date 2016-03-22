@@ -160,6 +160,7 @@ test("gl_tests") {
     "command_buffer/tests/gl_ext_srgb_unittest.cc",
     "command_buffer/tests/gl_fence_sync_unittest.cc",
     "command_buffer/tests/gl_gpu_memory_buffer_unittest.cc",
+    "command_buffer/tests/gl_iosurface_readback_workaround_unittest.cc",
     "command_buffer/tests/gl_lose_context_chromium_unittest.cc",
     "command_buffer/tests/gl_manager.cc",
     "command_buffer/tests/gl_manager.h",

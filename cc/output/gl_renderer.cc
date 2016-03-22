@@ -65,16 +65,6 @@ using gpu::gles2::GLES2Interface;
 namespace cc {
 namespace {
 
-bool NeedsIOSurfaceReadbackWorkaround() {
-#if defined(OS_MACOSX)
-  // This isn't strictly required in DumpRenderTree-mode when Mesa is used,
-  // but it doesn't seem to hurt.
-  return true;
-#else
-  return false;
-#endif
-}
-
 Float4 UVTransform(const TextureDrawQuad* quad) {
   gfx::PointF uv0 = quad->uv_top_left;
   gfx::PointF uv1 = quad->uv_bottom_right;
@@ -2821,38 +2811,6 @@ void GLRenderer::GetFramebufferPixelsAsync(
   pending_async_read_pixels_.insert(pending_async_read_pixels_.begin(),
                                     std::move(pending_read));
 
-  bool do_workaround = NeedsIOSurfaceReadbackWorkaround();
-
-  unsigned temporary_texture = 0;
-  unsigned temporary_fbo = 0;
-
-  if (do_workaround) {
-    // On Mac OS X, calling glReadPixels() against an FBO whose color attachment
-    // is an IOSurface-backed texture causes corruption of future glReadPixels()
-    // calls, even those on different OpenGL contexts. It is believed that this
-    // is the root cause of top crasher
-    // http://crbug.com/99393. <rdar://problem/10949687>
-
-    gl_->GenTextures(1, &temporary_texture);
-    gl_->BindTexture(GL_TEXTURE_2D, temporary_texture);
-    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    // Copy the contents of the current (IOSurface-backed) framebuffer into a
-    // temporary texture.
-    GetFramebufferTexture(
-        temporary_texture, RGBA_8888, gfx::Rect(current_surface_size_));
-    gl_->GenFramebuffers(1, &temporary_fbo);
-    // Attach this texture to an FBO, and perform the readback from that FBO.
-    gl_->BindFramebuffer(GL_FRAMEBUFFER, temporary_fbo);
-    gl_->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              GL_TEXTURE_2D, temporary_texture, 0);
-
-    DCHECK_EQ(static_cast<unsigned>(GL_FRAMEBUFFER_COMPLETE),
-              gl_->CheckFramebufferStatus(GL_FRAMEBUFFER));
-  }
-
   GLuint buffer = 0;
   gl_->GenBuffers(1, &buffer);
   gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, buffer);
@@ -2867,14 +2825,6 @@ void GLRenderer::GetFramebufferPixelsAsync(
                   window_rect.height(), GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
   gl_->BindBuffer(GL_PIXEL_PACK_TRANSFER_BUFFER_CHROMIUM, 0);
-
-  if (do_workaround) {
-    // Clean up.
-    gl_->BindFramebuffer(GL_FRAMEBUFFER, 0);
-    gl_->BindTexture(GL_TEXTURE_2D, 0);
-    gl_->DeleteFramebuffers(1, &temporary_fbo);
-    gl_->DeleteTextures(1, &temporary_texture);
-  }
 
   base::Closure finished_callback = base::Bind(&GLRenderer::FinishedReadback,
                                                base::Unretained(this),

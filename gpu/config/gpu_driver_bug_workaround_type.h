@@ -140,6 +140,8 @@
          unfold_short_circuit_as_ternary_operation)          \
   GPU_OP(UNPACK_ALIGNMENT_WORKAROUND_WITH_UNPACK_BUFFER,     \
          unpack_alignment_workaround_with_unpack_buffer)     \
+  GPU_OP(IOSURFACE_READBACK_WORKAROUND,                      \
+         iosurface_readback_workaround)                      \
   GPU_OP(UNROLL_FOR_LOOP_WITH_SAMPLER_ARRAY_INDEX,           \
          unroll_for_loop_with_sampler_array_index)           \
   GPU_OP(USE_CLIENT_SIDE_ARRAYS_FOR_STREAM_BUFFERS,          \

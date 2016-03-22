@@ -388,6 +388,23 @@ class ScopedResolvedFrameBufferBinder {
   DISALLOW_COPY_AND_ASSIGN(ScopedResolvedFrameBufferBinder);
 };
 
+// When an instance of this class is created, it uses copyTexImage2D to copy the
+// contents of the framebuffer into a texture. This texture is then bound to a
+// new framebuffer. When the instance is destroyed, the original texture and
+// framebuffer are restored.
+class ScopedFrameBufferReadPixelHelper {
+ public:
+  ScopedFrameBufferReadPixelHelper(ContextState* state,
+                                   GLES2DecoderImpl* decoder);
+  ~ScopedFrameBufferReadPixelHelper();
+
+ private:
+  GLuint temp_texture_id_ = 0;
+  GLuint temp_fbo_id_ = 0;
+  scoped_ptr<ScopedFrameBufferBinder> fbo_binder_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedFrameBufferReadPixelHelper);
+};
+
 // Encapsulates an OpenGL texture.
 class BackTexture {
  public:
@@ -702,6 +719,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
  private:
   friend class ScopedFrameBufferBinder;
+  friend class ScopedFrameBufferReadPixelHelper;
   friend class ScopedResolvedFrameBufferBinder;
   friend class BackFramebuffer;
 
@@ -1914,6 +1932,13 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                        GLuint* source_texture_service_id,
                                        GLenum* source_texture_target);
 
+  // On Mac OS X, calling glReadPixels() against an FBO whose color attachment
+  // is an IOSurface-backed texture causes corruption of future glReadPixels()
+  // calls, even those on different OpenGL contexts. It is believed that this
+  // is the root cause of top crasher
+  // http://crbug.com/99393. <rdar://problem/10949687>
+  bool NeedsIOSurfaceReadbackWorkaround();
+
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
 #define GLES2_CMD_OP(name) \
@@ -2278,6 +2303,41 @@ ScopedResolvedFrameBufferBinder::~ScopedResolvedFrameBufferBinder() {
   if (decoder_->state_.enable_flags.scissor_test) {
     decoder_->state_.SetDeviceCapabilityState(GL_SCISSOR_TEST, true);
   }
+}
+
+ScopedFrameBufferReadPixelHelper::ScopedFrameBufferReadPixelHelper(
+    ContextState* state,
+    GLES2DecoderImpl* decoder) {
+  DCHECK_EQ(static_cast<unsigned>(GL_FRAMEBUFFER_COMPLETE),
+            glCheckFramebufferStatusEXT(GL_FRAMEBUFFER));
+
+  const Framebuffer::Attachment* attachment =
+      decoder->GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT)
+          ->GetReadBufferAttachment();
+  GLsizei width = attachment->width();
+  GLsizei height = attachment->height();
+
+  glGenTextures(1, &temp_texture_id_);
+  glGenFramebuffersEXT(1, &temp_fbo_id_);
+  {
+    ScopedTextureBinder binder(state, temp_texture_id_, GL_TEXTURE_2D);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glCopyTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, width, height, 0);
+
+    fbo_binder_.reset(new ScopedFrameBufferBinder(decoder, temp_fbo_id_));
+  }
+
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                            temp_texture_id_, 0);
+}
+
+ScopedFrameBufferReadPixelHelper::~ScopedFrameBufferReadPixelHelper() {
+  fbo_binder_.reset();
+  glDeleteTextures(1, &temp_texture_id_);
+  glDeleteFramebuffersEXT(1, &temp_fbo_id_);
 }
 
 BackTexture::BackTexture(
@@ -9467,6 +9527,9 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glReadPixels");
 
   ScopedResolvedFrameBufferBinder binder(this, false, true);
+  scoped_ptr<ScopedFrameBufferReadPixelHelper> helper;
+  if (NeedsIOSurfaceReadbackWorkaround())
+    helper.reset(new ScopedFrameBufferReadPixelHelper(&state_, this));
 
   gfx::Rect rect(x, y, width, height);  // Safe before we checked above.
   gfx::Rect max_rect(max_size);
@@ -16090,6 +16153,28 @@ bool GLES2DecoderImpl::NeedsCopyTextureImageWorkaround(
   *source_texture_target = texture->texture()->target();
   *source_texture_service_id = texture->service_id();
   return true;
+}
+
+bool GLES2DecoderImpl::NeedsIOSurfaceReadbackWorkaround() {
+  if (!workarounds().iosurface_readback_workaround)
+    return false;
+
+  Framebuffer* framebuffer =
+      GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT);
+  if (!framebuffer)
+    return false;
+
+  const Framebuffer::Attachment* attachment =
+      framebuffer->GetReadBufferAttachment();
+  if (!attachment)
+    return false;
+
+  if (!attachment->IsTextureAttachment())
+    return false;
+
+  TextureRef* texture =
+      texture_manager()->GetTexture(attachment->object_name());
+  return texture->texture()->HasImages();
 }
 
 error::Error GLES2DecoderImpl::HandleBindFragmentInputLocationCHROMIUMBucket(
