@@ -20,6 +20,10 @@ bool SubsequenceRecorder::useCachedSubsequenceIfPossible(GraphicsContext& contex
     if (!context.getPaintController().clientCacheIsValid(client))
         return false;
 
+    // TODO(pdr): Implement subsequence caching for spv2 (crbug.com/596983).
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        return false;
+
     context.getPaintController().createAndAppend<CachedDisplayItem>(client, DisplayItem::CachedSubsequence);
 
 #if ENABLE(ASSERT)

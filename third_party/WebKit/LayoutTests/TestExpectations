@@ -463,6 +463,9 @@ crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/019
 crbug.com/580355 virtual/spv2/fast/block/margin-collapse/block-inside-inline/020.html [ Pass ]
 crbug.com/580355 virtual/spv2/fast/block/positioning/height-change.html [ Pass ]
 crbug.com/580355 virtual/spv2/fast/block/positioning/relayout-on-position-change.html [ Pass ]
+crbug.com/596780 virtual/spv2/compositing/framesets/composited-frame-alignment.html [ Pass ]
+crbug.com/596780 virtual/spv2/compositing/geometry/outline-change.html [ Pass ]
+crbug.com/596780 virtual/spv2/compositing/squashing/incorrect-clip-after-remove-compositing.html [ Pass ]
 
 crbug.com/563667 virtual/spv2/fast/overflow/007.html [ Failure ]
 crbug.com/537409 virtual/spv2/fast/overflow [ Pass ]
@@ -483,6 +486,8 @@ crbug.com/589265 virtual/spv2/fast/overflow/overflow-stacking.html [ Failure ]
 crbug.com/589265 virtual/spv2/fast/overflow/overflow-text-hit-testing.html [ Failure ]
 crbug.com/589265 virtual/spv2/fast/overflow/overflow-with-local-background-attachment.html [ Failure ]
 crbug.com/589265 virtual/spv2/fast/overflow/scrollbar-position-update.html [ Failure ]
+crbug.com/589265 virtual/spv2/compositing/geometry/root-layer-update.html [ Failure ]
+
 # Implement scrollbars in FramePainter for SPv2
 crbug.com/589279 virtual/spv2/fast/overflow/006.html [ Failure ]
 crbug.com/589279 virtual/spv2/fast/overflow/hidden-viewport-x.html [ Failure ]
@@ -504,6 +509,17 @@ crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibilit
 crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibility-simple.html [ Pass ]
 crbug.com/587970 virtual/spv2/compositing/plugins/webplugin-alpha.html [ Pass ]
 crbug.com/587970 virtual/spv2/compositing/plugins/webplugin-no-alpha.html [ Pass ]
+
+# These failures have been manually verified to be only paint invalidation text differences.
+crbug.com/596780 virtual/spv2/compositing/geometry/bounds-clipped-composited-child.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/geometry/bounds-ignores-hidden-dynamic-negzindex.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/geometry/bounds-ignores-hidden-dynamic.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-absolute.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-fixed.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/rtl/rtl-iframe-relative.html [ Failure ]
+crbug.com/596780 virtual/spv2/compositing/visibility/layer-visible-content.html [ Failure ]
 
 # In imported/web-platform-tests/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
