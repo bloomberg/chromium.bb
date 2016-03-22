@@ -379,6 +379,7 @@ def _OnStaleMd5(options):
                        '-m',
                        '-M', options.android_manifest,
                        '--auto-add-overlay',
+                       '--no-version-vectors',
                        '-I', options.android_sdk_jar,
                        '--output-text-symbols', gen_dir,
                        '-J', gen_dir,

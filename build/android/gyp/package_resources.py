@@ -227,6 +227,7 @@ def _ConstructMostAaptArgs(options):
       '--no-crunch',
       '-f',
       '--auto-add-overlay',
+      '--no-version-vectors',
       '-I', options.android_sdk_jar,
       '-F', options.apk_path,
       '--ignore-assets', build_utils.AAPT_IGNORE_PATTERN,
