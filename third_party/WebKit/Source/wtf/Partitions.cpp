@@ -189,7 +189,7 @@ static NEVER_INLINE void partitionsOutOfMemoryUsingLessThan16M()
 {
     size_t signature = 16 * 1024 * 1024 - 1;
     base::debug::Alias(&signature);
-    FATAL("ParitionAlloc: out of memory with < 16M usage (error:%u)", getAllocPageErrorCode());
+    DLOG(FATAL) << "ParitionAlloc: out of memory with < 16M usage (error:" << getAllocPageErrorCode() << ")";
 }
 
 void Partitions::handleOutOfMemory()

@@ -66,10 +66,6 @@
 #define ASSERT_ARG_DISABLED !ENABLE(ASSERT)
 #endif
 
-#ifndef FATAL_DISABLED
-#define FATAL_DISABLED !ENABLE(ASSERT)
-#endif
-
 #ifndef ERROR_DISABLED
 #define ERROR_DISABLED !ENABLE(ASSERT)
 #endif
@@ -95,7 +91,6 @@ typedef struct {
 WTF_EXPORT void WTFReportAssertionFailure(const char* file, int line, const char* function, const char* assertion);
 WTF_EXPORT void WTFReportAssertionFailureWithMessage(const char* file, int line, const char* function, const char* assertion, const char* format, ...) WTF_ATTRIBUTE_PRINTF(5, 6);
 WTF_EXPORT void WTFReportArgumentAssertionFailure(const char* file, int line, const char* function, const char* argName, const char* assertion);
-WTF_EXPORT void WTFReportFatalError(const char* file, int line, const char* function, const char* format, ...) WTF_ATTRIBUTE_PRINTF(4, 5);
 WTF_EXPORT void WTFReportError(const char* file, int line, const char* function, const char* format, ...) WTF_ATTRIBUTE_PRINTF(4, 5);
 WTF_EXPORT void WTFLog(WTFLogChannel*, const char* format, ...) WTF_ATTRIBUTE_PRINTF(2, 3);
 WTF_EXPORT void WTFLogVerbose(const char* file, int line, const char* function, WTFLogChannel*, const char* format, ...) WTF_ATTRIBUTE_PRINTF(5, 6);
@@ -257,17 +252,6 @@ while (0)
     } \
 while (0)
 
-#endif
-
-// FATAL
-// This is deprecated.  We should use DLOG(FATAL) << ...
-#if FATAL_DISABLED
-#define FATAL(...) ((void)0)
-#else
-#define FATAL(...) do { \
-    WTFReportFatalError(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, __VA_ARGS__); \
-    CRASH(); \
-} while (0)
 #endif
 
 // WTF_LOG_ERROR

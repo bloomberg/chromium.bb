@@ -271,16 +271,6 @@ void WTFPrintBacktrace(void** stack, int size)
     }
 }
 
-void WTFReportFatalError(const char* file, int line, const char* function, const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    vprintf_stderr_with_prefix("FATAL ERROR: ", format, args);
-    va_end(args);
-    printf_stderr_common("\n");
-    printCallSite(file, line, function);
-}
-
 void WTFReportError(const char* file, int line, const char* function, const char* format, ...)
 {
     va_list args;
