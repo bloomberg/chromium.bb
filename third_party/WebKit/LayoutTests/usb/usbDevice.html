@@ -125,7 +125,7 @@ usb_test(usb => {
         assertRejectsWithNotOpenError(device.selectConfiguration(1)),
         assertRejectsWithNotOpenError(device.claimInterface(0)),
         assertRejectsWithNotOpenError(device.releaseInterface(0)),
-        assertRejectsWithNotOpenError(device.setInterface(0, 1)),
+        assertRejectsWithNotOpenError(device.selectAlternateInterface(0, 1)),
         assertRejectsWithNotOpenError(device.controlTransferIn({
             requestType: 'vendor',
             recipient: 'device',
@@ -195,7 +195,7 @@ usb_test(usb => {
     return device.open().then(() => Promise.all([
         assertRejectsWithNotConfiguredError(device.claimInterface(0)),
         assertRejectsWithNotConfiguredError(device.releaseInterface(0)),
-        assertRejectsWithNotConfiguredError(device.setInterface(0, 1)),
+        assertRejectsWithNotConfiguredError(device.selectAlternateInterface(0, 1)),
         assertRejectsWithNotConfiguredError(device.controlTransferIn({
             requestType: 'vendor',
             recipient: 'device',
@@ -292,10 +292,26 @@ usb_test(usb => {
     return device.open()
       .then(() => device.selectConfiguration(2))
       .then(() => device.claimInterface(0))
-      .then(() => device.setInterface(0, 1))
+      .then(() => device.selectAlternateInterface(0, 1))
       .then(() => device.close());
   });
 }, 'can select an alternate interface');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
+    let device = devices[0];
+    return device.open()
+      .then(() => device.selectConfiguration(2))
+      .then(() => device.claimInterface(0))
+      .then(() => assertRejectsWithError(
+          device.selectAlternateInterface(0, 2), 'NotFoundError',
+          'The alternate setting provided is not supported by the device in ' +
+          'its current configuration.'))
+      .then(() => device.close());
+  });
+}, 'cannot select a non-existent alternate interface');
 
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
@@ -307,10 +323,10 @@ usb_test(usb => {
       .then(() => device.claimInterface(0))
       .then(() => {
         usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
-        return assertRejectsWithNotFoundError(device.setInterface(0, 1));
+        return assertRejectsWithNotFoundError(device.selectAlternateInterface(0, 1));
       });
   });
-}, 'setInterface rejects when called on a disconnected device');
+}, 'selectAlternateInterface rejects when called on a disconnected device');
 
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
@@ -535,7 +551,7 @@ usb_test(usb => {
     return device.open()
       .then(() => device.selectConfiguration(2))
       .then(() => device.claimInterface(0))
-      .then(() => device.setInterface(0, 1))
+      .then(() => device.selectAlternateInterface(0, 1))
       .then(() => device.isochronousTransferIn(
           1, [64, 64, 64, 64, 64, 64, 64, 64]))
       .then(result => {
@@ -568,7 +584,7 @@ usb_test(usb => {
     return device.open()
       .then(() => device.selectConfiguration(2))
       .then(() => device.claimInterface(0))
-      .then(() => device.setInterface(0, 1))
+      .then(() => device.selectAlternateInterface(0, 1))
       .then(() => {
         usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
         return assertRejectsWithNotFoundError(device.isochronousTransferIn(
@@ -585,7 +601,7 @@ usb_test(usb => {
     return device.open()
       .then(() => device.selectConfiguration(2))
       .then(() => device.claimInterface(0))
-      .then(() => device.setInterface(0, 1))
+      .then(() => device.selectAlternateInterface(0, 1))
       .then(() => {
         let data = new DataView(new ArrayBuffer(64 * 8));
         for (let i = 0; i < 8; ++i) {
@@ -618,7 +634,7 @@ usb_test(usb => {
     return device.open()
       .then(() => device.selectConfiguration(2))
       .then(() => device.claimInterface(0))
-      .then(() => device.setInterface(0, 1))
+      .then(() => device.selectAlternateInterface(0, 1))
       .then(() => {
         let data = new DataView(new ArrayBuffer(64 * 8));
         for (let i = 0; i < 8; ++i) {

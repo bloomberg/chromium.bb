@@ -45,7 +45,9 @@ public:
     void onDeviceOpenedOrClosed(bool);
     void onConfigurationSelected(bool success, size_t configurationIndex);
     void onInterfaceClaimedOrUnclaimed(bool claimed, size_t interfaceIndex);
+    void onAlternateInterfaceSelected(bool success, size_t interfaceIndex, size_t alternateIndex);
     bool isInterfaceClaimed(size_t configurationIndex, size_t interfaceIndex) const;
+    size_t selectedAlternateInterface(size_t interfaceIndex) const;
 
     // IDL exposed interface:
     String guid() const { return info().guid; }
@@ -72,7 +74,7 @@ public:
     ScriptPromise selectConfiguration(ScriptState*, uint8_t configurationValue);
     ScriptPromise claimInterface(ScriptState*, uint8_t interfaceNumber);
     ScriptPromise releaseInterface(ScriptState*, uint8_t interfaceNumber);
-    ScriptPromise setInterface(ScriptState*, uint8_t interfaceNumber, uint8_t alternateSetting);
+    ScriptPromise selectAlternateInterface(ScriptState*, uint8_t interfaceNumber, uint8_t alternateSetting);
     ScriptPromise controlTransferIn(ScriptState*, const USBControlTransferParameters& setup, unsigned length);
     ScriptPromise controlTransferOut(ScriptState*, const USBControlTransferParameters& setup);
     ScriptPromise controlTransferOut(ScriptState*, const USBControlTransferParameters& setup, const ArrayBufferOrArrayBufferView& data);
@@ -90,6 +92,7 @@ public:
 private:
     int findConfigurationIndex(uint8_t configurationValue) const;
     int findInterfaceIndex(uint8_t interfaceNumber) const;
+    int findAlternateIndex(size_t interfaceIndex, uint8_t alternateSetting) const;
     bool ensureNoDeviceOrInterfaceChangeInProgress(ScriptPromiseResolver*) const;
     bool ensureDeviceConfigured(ScriptPromiseResolver*) const;
     bool ensureInterfaceClaimed(uint8_t interfaceNumber, ScriptPromiseResolver*) const;
@@ -102,6 +105,7 @@ private:
     int m_configurationIndex;
     WTF::BitVector m_claimedInterfaces;
     WTF::BitVector m_interfaceStateChangeInProgress;
+    WTF::Vector<size_t> m_selectedAlternates;
 };
 
 } // namespace blink

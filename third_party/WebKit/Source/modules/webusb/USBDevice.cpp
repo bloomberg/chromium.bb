@@ -176,6 +176,39 @@ private:
     bool m_desiredState; // true: claimed, false: unclaimed
 };
 
+class SelectAlternateInterfacePromiseAdapter : public WebCallbacks<void, const WebUSBError&> {
+public:
+    SelectAlternateInterfacePromiseAdapter(USBDevice* device, ScriptPromiseResolver* resolver, size_t interfaceIndex, size_t alternateIndex)
+        : m_device(device)
+        , m_resolver(resolver)
+        , m_interfaceIndex(interfaceIndex)
+        , m_alternateIndex(alternateIndex)
+    {
+    }
+
+    void onSuccess() override
+    {
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_device->onAlternateInterfaceSelected(true /* success */, m_interfaceIndex, m_alternateIndex);
+        m_resolver->resolve();
+    }
+
+    void onError(const WebUSBError& e) override
+    {
+        if (!m_resolver->getExecutionContext() || m_resolver->getExecutionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_device->onAlternateInterfaceSelected(false /* failure */, m_interfaceIndex, m_alternateIndex);
+        m_resolver->reject(USBError::take(m_resolver, e));
+    }
+
+private:
+    Persistent<USBDevice> m_device;
+    Persistent<ScriptPromiseResolver> m_resolver;
+    size_t m_interfaceIndex;
+    size_t m_alternateIndex;
+};
+
 class InputTransferResult {
     WTF_MAKE_NONCOPYABLE(InputTransferResult);
 public:
@@ -304,6 +337,8 @@ void USBDevice::onConfigurationSelected(bool success, size_t configurationIndex)
         m_claimedInterfaces.resize(numInterfaces);
         m_interfaceStateChangeInProgress.clearAll();
         m_interfaceStateChangeInProgress.resize(numInterfaces);
+        m_selectedAlternates.resize(numInterfaces);
+        m_selectedAlternates.fill(0);
     }
     m_deviceStateChangeInProgress = false;
 }
@@ -317,9 +352,21 @@ void USBDevice::onInterfaceClaimedOrUnclaimed(bool claimed, size_t interfaceInde
     m_interfaceStateChangeInProgress.clear(interfaceIndex);
 }
 
+void USBDevice::onAlternateInterfaceSelected(bool success, size_t interfaceIndex, size_t alternateIndex)
+{
+    if (success)
+        m_selectedAlternates[interfaceIndex] = alternateIndex;
+    m_interfaceStateChangeInProgress.clear(interfaceIndex);
+}
+
 bool USBDevice::isInterfaceClaimed(size_t configurationIndex, size_t interfaceIndex) const
 {
     return m_configurationIndex != -1 && static_cast<size_t>(m_configurationIndex) == configurationIndex && m_claimedInterfaces.get(interfaceIndex);
+}
+
+size_t USBDevice::selectedAlternateInterface(size_t interfaceIndex) const
+{
+    return m_selectedAlternates[interfaceIndex];
 }
 
 USBConfiguration* USBDevice::configuration() const
@@ -430,12 +477,22 @@ ScriptPromise USBDevice::releaseInterface(ScriptState* scriptState, uint8_t inte
     return promise;
 }
 
-ScriptPromise USBDevice::setInterface(ScriptState* scriptState, uint8_t interfaceNumber, uint8_t alternateSetting)
+ScriptPromise USBDevice::selectAlternateInterface(ScriptState* scriptState, uint8_t interfaceNumber, uint8_t alternateSetting)
 {
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    if (ensureInterfaceClaimed(interfaceNumber, resolver))
-        m_device->setInterface(interfaceNumber, alternateSetting, new CallbackPromiseAdapter<void, USBError>(resolver));
+    if (ensureInterfaceClaimed(interfaceNumber, resolver)) {
+        // TODO(reillyg): This is duplicated work.
+        int interfaceIndex = findInterfaceIndex(interfaceNumber);
+        ASSERT(interfaceIndex != -1);
+        int alternateIndex = findAlternateIndex(interfaceIndex, alternateSetting);
+        if (alternateIndex == -1) {
+            resolver->reject(DOMException::create(NotFoundError, "The alternate setting provided is not supported by the device in its current configuration."));
+        } else {
+            m_interfaceStateChangeInProgress.set(interfaceIndex);
+            m_device->setInterface(interfaceNumber, alternateSetting, new SelectAlternateInterfacePromiseAdapter(this, resolver, interfaceIndex, alternateIndex));
+        }
+    }
     return promise;
 }
 
@@ -575,6 +632,17 @@ int USBDevice::findInterfaceIndex(uint8_t interfaceNumber) const
     const auto& interfaces = info().configurations[m_configurationIndex].interfaces;
     for (size_t i = 0; i < interfaces.size(); ++i) {
         if (interfaces[i].interfaceNumber == interfaceNumber)
+            return i;
+    }
+    return -1;
+}
+
+int USBDevice::findAlternateIndex(size_t interfaceIndex, uint8_t alternateSetting) const
+{
+    ASSERT(m_configurationIndex != -1);
+    const auto& alternates = info().configurations[m_configurationIndex].interfaces[interfaceIndex].alternates;
+    for (size_t i = 0; i < alternates.size(); ++i) {
+        if (alternates[i].alternateSetting == alternateSetting)
             return i;
     }
     return -1;

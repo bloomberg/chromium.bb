@@ -41,6 +41,13 @@ const WebUSBDeviceInfo::Interface& USBInterface::info() const
     return m_device->info().configurations[m_configurationIndex].interfaces[m_interfaceIndex];
 }
 
+USBAlternateInterface* USBInterface::alternate() const
+{
+    if (m_device->isInterfaceClaimed(m_configurationIndex, m_interfaceIndex))
+        return USBAlternateInterface::create(this, m_device->selectedAlternateInterface(m_interfaceIndex));
+    return nullptr;
+}
+
 HeapVector<Member<USBAlternateInterface>> USBInterface::alternates() const
 {
     HeapVector<Member<USBAlternateInterface>> alternates;

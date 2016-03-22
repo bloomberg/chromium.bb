@@ -29,6 +29,7 @@ public:
     const WebUSBDeviceInfo::Interface& info() const;
 
     uint8_t interfaceNumber() const;
+    USBAlternateInterface* alternate() const;
     HeapVector<Member<USBAlternateInterface>> alternates() const;
     bool claimed() const;
 

@@ -40,7 +40,7 @@ enum USBTransferStatus {
     [CallWith=ScriptState] Promise<void> selectConfiguration(octet configurationValue);
     [CallWith=ScriptState] Promise<void> claimInterface(octet interfaceNumber);
     [CallWith=ScriptState] Promise<void> releaseInterface(octet interfaceNumber);
-    [CallWith=ScriptState] Promise<void> setInterface(octet interfaceNumber, octet alternateSetting);
+    [CallWith=ScriptState] Promise<void> selectAlternateInterface(octet interfaceNumber, octet alternateSetting);
     [CallWith=ScriptState] Promise<USBInTransferResult> controlTransferIn(USBControlTransferParameters setup, unsigned short length);
     [CallWith=ScriptState] Promise<USBOutTransferResult> controlTransferOut(USBControlTransferParameters setup, optional BufferSource data);
     [CallWith=ScriptState] Promise<void> clearHalt(USBDirection direction, octet endpointNumber);

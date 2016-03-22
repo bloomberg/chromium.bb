@@ -11,6 +11,7 @@
     RuntimeEnabled=WebUSB,
 ] interface USBInterface {
     readonly attribute octet interfaceNumber;
+    readonly attribute USBAlternateInterface? alternate;
     readonly attribute sequence<USBAlternateInterface> alternates;
     readonly attribute boolean claimed;
 };
