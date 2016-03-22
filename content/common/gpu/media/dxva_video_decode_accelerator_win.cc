@@ -1823,7 +1823,10 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
   output_picture_buffers_.clear();
   stale_output_picture_buffers_.clear();
   pending_output_samples_.clear();
-  pending_input_buffers_.clear();
+  // We want to continue processing pending input after detecting a config
+  // change.
+  if (GetState() != kConfigChange)
+    pending_input_buffers_.clear();
   decoder_.Release();
   pictures_requested_ = false;
 
@@ -2002,12 +2005,12 @@ void DXVAVideoDecodeAccelerator::DecodeInternal(
       PLATFORM_FAILURE,);
 
   if (config_changed) {
+    pending_input_buffers_.push_back(sample);
     main_thread_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&DXVAVideoDecodeAccelerator::ConfigChanged,
                    weak_this_factory_.GetWeakPtr(),
-                   config_,
-                   sample));
+                   config_));
     return;
   }
 
@@ -2642,16 +2645,16 @@ HRESULT DXVAVideoDecodeAccelerator::CheckConfigChanged(
 }
 
 void DXVAVideoDecodeAccelerator::ConfigChanged(
-    const Config& config,
-    const base::win::ScopedComPtr<IMFSample>& input_sample) {
+    const Config& config) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  SetState(kConfigChange);
   DismissStaleBuffers(true);
   Invalidate();
   Initialize(config_, client_);
   decoder_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&DXVAVideoDecodeAccelerator::DecodeInternal,
-                 base::Unretained(this), input_sample));
+      base::Bind(&DXVAVideoDecodeAccelerator::DecodePendingInputBuffers,
+                 base::Unretained(this)));
 }
 
 }  // namespace content

@@ -92,6 +92,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
     kResetting,                   // upon received Reset(), before ResetDone()
     kStopped,                     // upon output EOS received.
     kFlushing,                    // upon flush request received.
+    kConfigChange,                // stream configuration change detected.
   };
 
   // Does not take ownership of |client| which must outlive |*this|.
@@ -305,8 +306,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Called when we detect a stream configuration change. We reinitialize the
   // decoder here.
-  void ConfigChanged(const Config& config,
-                     const base::win::ScopedComPtr<IMFSample>& input_sample);
+  void ConfigChanged(const Config& config);
 
   // To expose client callbacks from VideoDecodeAccelerator.
   media::VideoDecodeAccelerator::Client* client_;
