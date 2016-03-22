@@ -168,6 +168,7 @@ public:
     Entry at(size_t index) const;
 
     bool booleanProperty(const String16& name, bool defaultValue) const;
+    double numberProperty(const String16& name, double defaultValue) const;
     void remove(const String16& name);
 
     ~DictionaryValue() override;

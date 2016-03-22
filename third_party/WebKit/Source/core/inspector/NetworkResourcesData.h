@@ -160,9 +160,9 @@ public:
         RefPtr<BlobDataHandle> m_downloadedFileBlob;
     };
 
-    static PassOwnPtrWillBeRawPtr<NetworkResourcesData> create()
+    static PassOwnPtrWillBeRawPtr<NetworkResourcesData> create(size_t totalBufferSize, size_t resourceBufferSize)
     {
-        return adoptPtrWillBeNoop(new NetworkResourcesData);
+        return adoptPtrWillBeNoop(new NetworkResourcesData(totalBufferSize, resourceBufferSize));
     }
     ~NetworkResourcesData();
 
@@ -185,7 +185,7 @@ public:
 
     DECLARE_TRACE();
 private:
-    NetworkResourcesData();
+    NetworkResourcesData(size_t totalBufferSize, size_t resourceBufferSize);
 
     ResourceData* resourceDataForRequestId(const String& requestId);
     void ensureNoDataForRequestId(const String& requestId);
