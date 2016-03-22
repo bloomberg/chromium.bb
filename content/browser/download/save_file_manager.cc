@@ -74,6 +74,10 @@ void SaveFileManager::SaveURL(SaveItemId save_item_id,
                               SavePackage* save_package) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // Insert started saving job to tracking list.
+  DCHECK(packages_.find(save_item_id) == packages_.end());
+  packages_[save_item_id] = save_package;
+
   // Register a saving job.
   if (save_source == SaveFileCreateInfo::SAVE_FILE_FROM_NET) {
     DCHECK(url.is_valid());
@@ -201,19 +205,29 @@ void SaveFileManager::SaveFinished(SaveItemId save_item_id,
             << " save_package_id = " << save_package_id
             << " is_success = " << is_success;
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+
+  int64_t bytes_so_far;
   SaveFile* save_file = LookupSaveFile(save_item_id);
   if (save_file != nullptr) {
     DCHECK(save_file->InProgress());
     DVLOG(20) << " " << __FUNCTION__ << "()"
               << " save_file = " << save_file->DebugString();
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&SaveFileManager::OnSaveFinished, this, save_item_id,
-                   save_file->BytesSoFar(), is_success));
-
+    bytes_so_far = save_file->BytesSoFar();
     save_file->Finish();
     save_file->Detach();
+  } else {
+    // We got called before StartSave - this should only happen if
+    // ResourceHandler failed before it got a chance to parse headers
+    // and metadata.
+    DCHECK(!is_success);
+
+    bytes_so_far = 0;
   }
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&SaveFileManager::OnSaveFinished, this, save_item_id,
+                 bytes_so_far, is_success));
 }
 
 // Notifications sent from the file thread and run on the UI thread.
@@ -227,10 +241,6 @@ void SaveFileManager::OnStartSave(const SaveFileCreateInfo& info) {
     SendCancelRequest(info.save_item_id);
     return;
   }
-
-  // Insert started saving job to tracking list.
-  DCHECK(packages_.find(info.save_item_id) == packages_.end());
-  packages_[info.save_item_id] = save_package;
 
   // Forward this message to SavePackage.
   save_package->StartSave(&info);

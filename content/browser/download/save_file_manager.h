@@ -90,8 +90,10 @@ class SaveFileManager : public base::RefCountedThreadSafe<SaveFileManager> {
   // Lifetime management.
   CONTENT_EXPORT void Shutdown();
 
-  // Save the specified URL. Called on the UI thread and forwarded to the
-  // ResourceDispatcherHostImpl on the IO thread.
+  // Save the specified URL.  Caller has to guarantee that |save_package| will
+  // be alive until the call to RemoveSaveFile.  Called on the UI thread (and in
+  // case of network downloads forwarded to the ResourceDispatcherHostImpl on
+  // the IO thread).
   void SaveURL(SaveItemId save_item_id,
                const GURL& url,
                const Referrer& referrer,

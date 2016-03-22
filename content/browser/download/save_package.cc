@@ -1013,8 +1013,14 @@ void SavePackage::GetSerializedHtmlWithLocalLinksForFrame(
       target_frame_tree_node_id);
   if (it != frame_tree_node_id_to_contained_save_items_.end()) {
     for (SaveItem* save_item : it->second) {
-      // Calculate the local link to use for this |save_item|.
-      DCHECK(save_item->has_final_name());
+      // Skip items that failed to save.
+      if (!save_item->has_final_name()) {
+        DCHECK_EQ(SaveItem::SaveState::COMPLETE, save_item->state());
+        DCHECK(!save_item->success());
+        continue;
+      }
+
+      // Calculate the relative path for referring to the |save_item|.
       base::FilePath local_path(base::FilePath::kCurrentDirectory);
       if (target_tree_node->IsMainFrame()) {
         local_path = local_path.Append(saved_main_directory_path_.BaseName());
