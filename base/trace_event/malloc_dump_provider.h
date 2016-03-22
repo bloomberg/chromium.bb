@@ -8,10 +8,7 @@
 #include <istream>
 
 #include "base/macros.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
-#include "base/synchronization/lock.h"
-#include "base/threading/platform_thread.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
 
@@ -22,8 +19,6 @@
 
 namespace base {
 namespace trace_event {
-
-class AllocationRegister;
 
 // Dump provider which collects process-wide memory stats.
 class BASE_EXPORT MallocDumpProvider : public MemoryDumpProvider {
@@ -38,27 +33,11 @@ class BASE_EXPORT MallocDumpProvider : public MemoryDumpProvider {
   bool OnMemoryDump(const MemoryDumpArgs& args,
                     ProcessMemoryDump* pmd) override;
 
-  void OnHeapProfilingEnabled(bool enabled) override;
-
-  // For heap profiling.
-  void InsertAllocation(void* address, size_t size);
-  void RemoveAllocation(void* address);
-
  private:
   friend struct DefaultSingletonTraits<MallocDumpProvider>;
 
   MallocDumpProvider();
   ~MallocDumpProvider() override;
-
-  // For heap profiling.
-  bool heap_profiler_enabled_;
-  scoped_ptr<AllocationRegister> allocation_register_;
-  Lock allocation_register_lock_;
-
-  // When in OnMemoryDump(), this contains the current thread ID.
-  // This is to prevent re-entrancy in the heap profiler when the heap dump
-  // generation is malloc/new-ing for its own bookeeping data structures.
-  PlatformThreadId tid_dumping_heap_;
 
   DISALLOW_COPY_AND_ASSIGN(MallocDumpProvider);
 };

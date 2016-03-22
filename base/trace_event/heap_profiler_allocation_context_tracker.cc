@@ -18,10 +18,6 @@ subtle::Atomic32 AllocationContextTracker::capture_enabled_ = 0;
 
 namespace {
 
-const size_t kMaxStackDepth = 128u;
-AllocationContextTracker* const kInitializingSentinel =
-    reinterpret_cast<AllocationContextTracker*>(-1);
-
 ThreadLocalStorage::StaticSlot g_tls_alloc_ctx_tracker = TLS_INITIALIZER;
 
 // This function is added to the TLS slot to clean up the instance when the
@@ -32,27 +28,21 @@ void DestructAllocationContextTracker(void* alloc_ctx_tracker) {
 
 }  // namespace
 
+AllocationContextTracker::AllocationContextTracker() {}
+AllocationContextTracker::~AllocationContextTracker() {}
+
 // static
-AllocationContextTracker*
-AllocationContextTracker::GetInstanceForCurrentThread() {
-  AllocationContextTracker* tracker =
+AllocationContextTracker* AllocationContextTracker::GetThreadLocalTracker() {
+  auto tracker =
       static_cast<AllocationContextTracker*>(g_tls_alloc_ctx_tracker.Get());
-  if (tracker == kInitializingSentinel)
-    return nullptr;  // Re-entrancy case.
 
   if (!tracker) {
-    g_tls_alloc_ctx_tracker.Set(kInitializingSentinel);
     tracker = new AllocationContextTracker();
     g_tls_alloc_ctx_tracker.Set(tracker);
   }
 
   return tracker;
 }
-
-AllocationContextTracker::AllocationContextTracker() {
-  pseudo_stack_.reserve(kMaxStackDepth);
-}
-AllocationContextTracker::~AllocationContextTracker() {}
 
 // static
 void AllocationContextTracker::SetCaptureEnabled(bool enabled) {
@@ -66,41 +56,45 @@ void AllocationContextTracker::SetCaptureEnabled(bool enabled) {
   subtle::Release_Store(&capture_enabled_, enabled);
 }
 
+// static
 void AllocationContextTracker::PushPseudoStackFrame(StackFrame frame) {
+  auto tracker = AllocationContextTracker::GetThreadLocalTracker();
+
   // Impose a limit on the height to verify that every push is popped, because
   // in practice the pseudo stack never grows higher than ~20 frames.
-  if (pseudo_stack_.size() < kMaxStackDepth)
-    pseudo_stack_.push_back(frame);
-  else
-    NOTREACHED();
+  DCHECK_LT(tracker->pseudo_stack_.size(), 128u);
+  tracker->pseudo_stack_.push_back(frame);
 }
 
 // static
 void AllocationContextTracker::PopPseudoStackFrame(StackFrame frame) {
+  auto tracker = AllocationContextTracker::GetThreadLocalTracker();
+
   // Guard for stack underflow. If tracing was started with a TRACE_EVENT in
   // scope, the frame was never pushed, so it is possible that pop is called
   // on an empty stack.
-  if (pseudo_stack_.empty())
+  if (tracker->pseudo_stack_.empty())
     return;
 
   // Assert that pushes and pops are nested correctly. This DCHECK can be
   // hit if some TRACE_EVENT macro is unbalanced (a TRACE_EVENT_END* call
   // without a corresponding TRACE_EVENT_BEGIN).
-  DCHECK_EQ(frame, pseudo_stack_.back())
+  DCHECK_EQ(frame, tracker->pseudo_stack_.back())
       << "Encountered an unmatched TRACE_EVENT_END";
 
-  pseudo_stack_.pop_back();
+  tracker->pseudo_stack_.pop_back();
 }
 
 // static
 AllocationContext AllocationContextTracker::GetContextSnapshot() {
+  AllocationContextTracker* tracker = GetThreadLocalTracker();
   AllocationContext ctx;
 
   // Fill the backtrace.
   {
-    auto src = pseudo_stack_.begin();
+    auto src = tracker->pseudo_stack_.begin();
     auto dst = std::begin(ctx.backtrace.frames);
-    auto src_end = pseudo_stack_.end();
+    auto src_end = tracker->pseudo_stack_.end();
     auto dst_end = std::end(ctx.backtrace.frames);
 
     // Copy as much of the bottom of the pseudo stack into the backtrace as

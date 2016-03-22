@@ -25,7 +25,7 @@ When there is a way to get notified of all allocations and frees, this is the
 normal flow:
 
  1. When an allocation occurs, call
-    [`AllocationContextTracker::GetInstanceForCurrentThread()->GetContextSnapshot()`][context-tracker]
+    [`AllocationContextTracker::GetContextSnapshot()`][context-tracker]
     to get an [`AllocationContext`][alloc-context].
  2. Insert that context together with the address and size into an
     [`AllocationRegister`][alloc-register] by calling `Insert()`.
@@ -121,7 +121,7 @@ class FooDumpProvider : public MemoryDumpProvider {
   static FooDumpProvider* GetInstance();
 
   void InsertAllocation(void* address, size_t size) {
-    AllocationContext context = AllocationContextTracker::GetInstanceForCurrentThread()->GetContextSnapshot();
+    AllocationContext context = AllocationContextTracker::GetContextSnapshot();
     AutoLock lock(allocation_register_lock_);
     allocation_register_->Insert(address, size, context);
   }

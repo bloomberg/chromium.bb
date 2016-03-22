@@ -43,24 +43,21 @@ class BASE_EXPORT AllocationContextTracker {
     return subtle::Acquire_Load(&capture_enabled_) != 0;
   }
 
-  // Returns the thread-local instance, creating one if necessary. Returns
-  // always a valid instance, unless it is called re-entrantly, in which case
-  // returns nullptr in the nested calls.
-  static AllocationContextTracker* GetInstanceForCurrentThread();
-
   // Pushes a frame onto the thread-local pseudo stack.
-  void PushPseudoStackFrame(StackFrame frame);
+  static void PushPseudoStackFrame(StackFrame frame);
 
   // Pops a frame from the thread-local pseudo stack.
-  void PopPseudoStackFrame(StackFrame frame);
+  static void PopPseudoStackFrame(StackFrame frame);
 
   // Returns a snapshot of the current thread-local context.
-  AllocationContext GetContextSnapshot();
+  static AllocationContext GetContextSnapshot();
 
   ~AllocationContextTracker();
 
  private:
   AllocationContextTracker();
+
+  static AllocationContextTracker* GetThreadLocalTracker();
 
   static subtle::Atomic32 capture_enabled_;
 

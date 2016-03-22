@@ -1318,14 +1318,12 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   if (!(flags & TRACE_EVENT_FLAG_COPY)) {
     if (AllocationContextTracker::capture_enabled()) {
       if (phase == TRACE_EVENT_PHASE_BEGIN ||
-          phase == TRACE_EVENT_PHASE_COMPLETE) {
-        AllocationContextTracker::GetInstanceForCurrentThread()
-            ->PushPseudoStackFrame(name);
-      } else if (phase == TRACE_EVENT_PHASE_END)
+          phase == TRACE_EVENT_PHASE_COMPLETE)
+        AllocationContextTracker::PushPseudoStackFrame(name);
+      else if (phase == TRACE_EVENT_PHASE_END)
         // The pop for |TRACE_EVENT_PHASE_COMPLETE| events
         // is in |TraceLog::UpdateTraceEventDuration|.
-        AllocationContextTracker::GetInstanceForCurrentThread()
-            ->PopPseudoStackFrame(name);
+        AllocationContextTracker::PopPseudoStackFrame(name);
     }
   }
 
@@ -1449,8 +1447,7 @@ void TraceLog::UpdateTraceEventDuration(
 
     if (base::trace_event::AllocationContextTracker::capture_enabled()) {
       // The corresponding push is in |AddTraceEventWithThreadIdAndTimestamp|.
-      base::trace_event::AllocationContextTracker::GetInstanceForCurrentThread()
-          ->PopPseudoStackFrame(name);
+      base::trace_event::AllocationContextTracker::PopPseudoStackFrame(name);
     }
   }
 
