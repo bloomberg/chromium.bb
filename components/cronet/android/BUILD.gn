@@ -363,6 +363,7 @@ instrumentation_test_apk("cronet_sample_test_apk") {
     "//base:base_java",
     "//base:base_java_test_support",
   ]
+  additional_apks = [ "//net/android:net_test_support_apk" ]
 
   run_findbugs = true
   proguard_enabled = !is_debug
@@ -593,6 +594,7 @@ instrumentation_test_apk("cronet_test_instrumentation_apk") {
     "//net/android:net_java",
     "//net/android:net_java_test_support",
   ]
+  additional_apks = [ "//net/android:net_test_support_apk" ]
 
   run_findbugs = true
 }

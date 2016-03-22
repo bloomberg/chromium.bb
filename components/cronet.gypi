@@ -343,12 +343,16 @@
             'cronet_sample_apk_java',
             'cronet_api',
             '../base/base.gyp:base_java_test_support',
+            '../net/net.gyp:require_net_test_support_apk',
           ],
           'variables': {
             'apk_name': 'CronetSampleTest',
             'java_in_dir': 'cronet/android/sample/javatests',
             'is_test_apk': 1,
             'run_findbugs': 1,
+            'additional_apks': [
+              '<(PRODUCT_DIR)/apks/ChromiumNetTestSupport.apk',
+            ],
           },
           'includes': [ '../build/java_apk.gypi' ],
         },
@@ -491,6 +495,7 @@
           'dependencies': [
             'cronet_test_apk_java',
             '../base/base.gyp:base_java_test_support',
+            '../net/net.gyp:require_net_test_support_apk',
           ],
           'variables': {
             'apk_name': 'CronetTestInstrumentation',
@@ -498,6 +503,9 @@
             'resource_dir': 'cronet/android/test/res',
             'is_test_apk': 1,
             'run_findbugs': 1,
+            'additional_apks': [
+              '<(PRODUCT_DIR)/apks/ChromiumNetTestSupport.apk',
+            ],
           },
           'includes': [ '../build/java_apk.gypi' ],
         },
