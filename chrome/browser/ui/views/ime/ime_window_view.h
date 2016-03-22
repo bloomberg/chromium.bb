@@ -47,6 +47,8 @@ class ImeWindowView : public ImeNativeWindow,
                 content::WebContents* contents);
   ~ImeWindowView() override;
 
+  void OnCloseButtonClicked();
+
   // Methods to deal with mouse/touch dragging on the non client view.
   bool OnTitlebarPointerPressed(const gfx::Point& pointer_location,
                                 PointerType pointer_type);

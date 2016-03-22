@@ -82,6 +82,7 @@ void ImeWindow::Hide() {
 }
 
 void ImeWindow::Close() {
+  web_contents_.reset();
   native_window_->Close();
 }
 
@@ -125,10 +126,6 @@ void ImeWindow::OnWindowDestroyed() {
   FOR_EACH_OBSERVER(ImeWindowObserver, observers_, OnWindowDestroyed(this));
   native_window_ = nullptr;
   delete this;
-  // TODO(shuchen): manages the ime window instances in ImeWindowManager.
-  // e.g. for normal window, limits the max window count, and for follow cursor
-  // window, limits single window instance (and reuse).
-  // So at here it will callback to ImeWindowManager to delete |this|.
 }
 
 void ImeWindow::AddObserver(ImeWindowObserver* observer) {

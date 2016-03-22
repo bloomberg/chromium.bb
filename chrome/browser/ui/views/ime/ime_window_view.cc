@@ -90,6 +90,10 @@ bool ImeWindowView::IsVisible() const {
   return GetWidget()->IsVisible();
 }
 
+void ImeWindowView::OnCloseButtonClicked() {
+  ime_window_->Close();
+}
+
 bool ImeWindowView::OnTitlebarPointerPressed(
     const gfx::Point& pointer_location, PointerType pointer_type) {
   if (dragging_state_ != DragState::NO_DRAG &&

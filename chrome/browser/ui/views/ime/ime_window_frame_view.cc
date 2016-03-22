@@ -238,7 +238,7 @@ void ImeWindowFrameView::OnGestureEvent(ui::GestureEvent* event) {
 void ImeWindowFrameView::ButtonPressed(views::Button* sender,
                                        const ui::Event& event) {
   if (sender == close_button_)
-    ime_window_view_->Close();
+    ime_window_view_->OnCloseButtonClicked();
 }
 
 void ImeWindowFrameView::PaintFrameBackground(gfx::Canvas* canvas) {
