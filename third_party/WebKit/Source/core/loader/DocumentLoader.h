@@ -56,7 +56,6 @@ class DocumentInit;
 class LocalFrame;
 class FrameLoader;
 class ResourceLoader;
-class ThreadedDataReceiver;
 
 class CORE_EXPORT DocumentLoader : public RefCountedWillBeGarbageCollectedFinalized<DocumentLoader>, private RawResourceClient {
     USING_FAST_MALLOC_WILL_BE_REMOVED(DocumentLoader);
@@ -112,7 +111,6 @@ public:
     void startLoadingMainResource();
     void cancelMainResourceLoad(const ResourceError&);
 
-    void attachThreadedDataReceiver(PassRefPtrWillBeRawPtr<ThreadedDataReceiver>);
     void acceptDataFromThreadedReceiver(const char* data, int dataLength, int encodedDataLength);
     DocumentLoadTiming& timing() { return m_documentLoadTiming; }
     const DocumentLoadTiming& timing() const { return m_documentLoadTiming; }
