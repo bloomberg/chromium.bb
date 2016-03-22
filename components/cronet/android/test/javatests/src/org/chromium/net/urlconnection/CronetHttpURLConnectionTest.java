@@ -235,6 +235,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             assertTrue(e instanceof java.net.ConnectException
                     || e instanceof UrlRequestException);
             assertTrue((e.getMessage().contains("ECONNREFUSED")
+                    || (e.getMessage().contains("Connection refused"))
                     || e.getMessage().contains("net::ERR_CONNECTION_REFUSED")));
         }
         checkExceptionsAreThrown(secondConnection);
@@ -260,6 +261,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             assertTrue(e instanceof java.net.ConnectException
                     || e instanceof UrlRequestException);
             assertTrue((e.getMessage().contains("ECONNREFUSED")
+                    || (e.getMessage().contains("Connection refused"))
                     || e.getMessage().contains("net::ERR_CONNECTION_REFUSED")));
         }
         checkExceptionsAreThrown(urlConnection);
