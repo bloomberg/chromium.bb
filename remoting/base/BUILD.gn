@@ -66,7 +66,7 @@ source_set("unit_tests") {
     "rate_counter_unittest.cc",
     "rsa_key_pair_unittest.cc",
     "run_all_unittests.cc",
-    "running_average_unittest.cc",
+    "running_samples_unittest.cc",
     "test_rsa_key_pair.h",
     "typed_buffer_unittest.cc",
     "util_unittest.cc",

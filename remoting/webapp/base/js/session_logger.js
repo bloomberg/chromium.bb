@@ -291,6 +291,11 @@ remoting.SessionLogger.prototype.makeStats_ = function() {
     entry.decode_latency = perfStats.decodeLatency;
     entry.render_latency = perfStats.renderLatency;
     entry.roundtrip_latency = perfStats.roundtripLatency;
+    entry.max_capture_latency = perfStats.maxCaptureLatency;
+    entry.max_encode_latency = perfStats.maxEncodeLatency;
+    entry.max_decode_latency = perfStats.maxDecodeLatency;
+    entry.max_render_latency = perfStats.maxRenderLatency;
+    entry.max_roundtrip_latency = perfStats.maxRoundtripLatency;
     return entry;
   }
   return null;

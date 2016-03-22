@@ -13,7 +13,7 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "remoting/base/running_average.h"
+#include "remoting/base/running_samples.h"
 #include "remoting/protocol/video_feedback_stub.h"
 
 namespace remoting {
@@ -88,8 +88,8 @@ class CaptureScheduler : public VideoFeedbackStub {
 
   int num_of_processors_;
 
-  RunningAverage capture_time_;
-  RunningAverage encode_time_;
+  RunningSamples capture_time_;
+  RunningSamples encode_time_;
 
   // Number of frames pending encoding.
   int num_encoding_frames_;
