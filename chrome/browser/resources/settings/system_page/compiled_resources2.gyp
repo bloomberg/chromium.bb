@@ -4,9 +4,10 @@
 {
   'targets': [
     {
-      'target_name': 'system_page_delegate',
+      'target_name': 'system_page_browser_proxy',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(EXTERNS_GYP):chrome_send',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -14,7 +15,7 @@
     {
       'target_name': 'system_page',
       'dependencies': [
-        'system_page_delegate',
+        'system_page_browser_proxy',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

@@ -45,25 +45,9 @@ Polymer({
    */
   sectionSelector: 'settings-section',
 
-<if expr="not chromeos">
-  listeners: {
-    'dom-change': 'onDomChange_',
-  },
-</if>
-
   /** @override */
   attached: function() {
     /** @override */
     this.scroller = this.parentElement;
   },
-
-<if expr="not chromeos">
-  /** @private */
-  onDomChange_: function() {
-    var systemPage = /** @type {?SettingsSystemPageElement} */(
-        this.$$('settings-system-page'));
-    if (systemPage && !systemPage.delegate)
-      systemPage.delegate = new settings.SystemPageDelegateImpl;
-  },
-</if>
 });

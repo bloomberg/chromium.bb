@@ -12,6 +12,10 @@ namespace base {
 class ListValue;
 }
 
+namespace content {
+class WebUIDataSource;
+}
+
 namespace settings {
 
 class SystemHandler : public SettingsPageUIHandler {
@@ -19,12 +23,18 @@ class SystemHandler : public SettingsPageUIHandler {
   SystemHandler();
   ~SystemHandler() override;
 
+  // Populates handler-specific loadTimeData values used by the system page.
+  static void AddLoadTimeData(content::WebUIDataSource* data_source);
+
   // SettingsPageUIHandler:
   void RegisterMessages() override;
 
  private:
   // Handler for the "changeProxySettings" message. No args.
   void HandleChangeProxySettings(const base::ListValue* /*args*/);
+
+  // Handler for the "restartBrowser" message. No args.
+  void HandleRestartBrowser(const base::ListValue* /*args*/);
 
   DISALLOW_COPY_AND_ASSIGN(SystemHandler);
 };

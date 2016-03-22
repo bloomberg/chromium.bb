@@ -623,11 +623,11 @@
                  type="chrome_html"
                  flattenhtml="true"
                  allowexternalscript="true" />
-      <structure name="IDR_SETTINGS_SYSTEM_PAGE_DELEGATE_HTML"
-                 file="system_page/system_page_delegate.html"
+      <structure name="IDR_SETTINGS_SYSTEM_PAGE_BROWSER_PROXY_HTML"
+                 file="system_page/system_page_browser_proxy.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_SYSTEM_PAGE_DELEGATE_JS"
-                 file="system_page/system_page_delegate.js"
+      <structure name="IDR_SETTINGS_SYSTEM_PAGE_BROWSER_PROXY"
+                 file="system_page/system_page_browser_proxy.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SYSTEM_PAGE_HTML"
                  file="system_page/system_page.html"

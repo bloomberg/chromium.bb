@@ -56,6 +56,10 @@ class SafeBrowsingUIManager;
 class SRTFetcher;
 }
 
+namespace settings {
+class SystemHandler;
+}
+
 namespace speech {
 class ChromeSpeechRecognitionManagerDelegate;
 }
@@ -94,6 +98,7 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class safe_browsing::DownloadSBClient;
   friend class safe_browsing::SafeBrowsingService;
   friend class safe_browsing::SafeBrowsingUIManager;
+  friend class settings::SystemHandler;
 
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);

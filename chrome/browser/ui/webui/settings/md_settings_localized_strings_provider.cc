@@ -34,8 +34,11 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
+#else
+#include "chrome/browser/ui/webui/settings/system_handler.h"
 #endif
 
+namespace settings {
 namespace {
 
 // Note that settings.html contains a <script> tag which imports a script of
@@ -67,6 +70,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source) {
       {"advancedPageTitle", IDS_SETTINGS_ADVANCED},
       {"basicPageTitle", IDS_SETTINGS_BASIC},
       {"settings", IDS_SETTINGS_SETTINGS},
+      {"restart", IDS_SETTINGS_RESTART},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
@@ -366,7 +370,7 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
     {"powerwashTitle", IDS_OPTIONS_FACTORY_RESET},
     {"powerwashDialogTitle", IDS_OPTIONS_FACTORY_RESET_HEADING},
     {"powerwashDialogExplanation", IDS_OPTIONS_FACTORY_RESET_WARNING},
-    {"powerwashDialogButton", IDS_RELAUNCH_BUTTON},
+    {"powerwashDialogButton", IDS_SETTINGS_RESTART},
     {"powerwashLearnMoreUrl", IDS_FACTORY_RESET_HELP_URL},
 #endif
     // Automatic reset banner.
@@ -497,7 +501,6 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
        IDS_OPTIONS_LANGUAGES_OFFER_TO_TRANSLATE_IN_THIS_LANGUAGE},
       {"cannotTranslateInThisLanguage",
        IDS_OPTIONS_LANGUAGES_CANNOT_TRANSLATE_IN_THIS_LANGUAGE},
-      {"restart", IDS_OPTIONS_SETTINGS_LANGUAGES_RELAUNCH_BUTTON},
       {"editDictionaryPageTitle", IDS_SETTINGS_LANGUAGES_EDIT_DICTIONARY_TITLE},
       {"addDictionaryWordLabel", IDS_SETTINGS_LANGUAGES_ADD_DICTIONARY_WORD},
       {"addDictionaryWordButton",
@@ -810,6 +813,10 @@ void AddSystemStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+
+  // TODO(dbeam): we should probably rename anything involving "localized
+  // strings" to "load time data" as all primitive types are used now.
+  SystemHandler::AddLoadTimeData(html_source);
 }
 #endif
 
@@ -845,8 +852,6 @@ void AddWebContentStrings(content::WebUIDataSource* html_source) {
 }
 
 }  // namespace
-
-namespace settings {
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source,
                          Profile* profile) {

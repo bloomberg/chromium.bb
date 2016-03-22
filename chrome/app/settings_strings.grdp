@@ -115,6 +115,16 @@
   <message name="IDS_SETTINGS_SETTINGS" desc="The settings page title.">
     Settings
   </message>
+  <if expr="not chromeos">
+    <message name="IDS_SETTINGS_RESTART" desc="Text for a button that will restart Chrome.">
+      Relaunch
+    </message>
+  </if>
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_RESTART" desc="Text for a button that will restart ChromeOS.">
+      Restart
+    </message>
+  </if>
 
   <!-- Passwords and Autofill Page -->
   <message name="IDS_SETTINGS_PASSWORDS_AND_AUTOFILL_PAGE_TITLE" desc="Name of the settings page which allows managing passwords and autofill settings.">

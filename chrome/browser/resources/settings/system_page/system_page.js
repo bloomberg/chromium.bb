@@ -11,19 +11,30 @@ Polymer({
   is: 'settings-system-page',
 
   properties: {
-    /** @type {settings.SystemPageDelegate} */
-    delegate: {
-      type: Object,
-    },
-
     prefs: {
       type: Object,
       notify: true,
     },
   },
 
+  /**
+   * @param {boolean} enabled Whether hardware acceleration is currently
+   *     enabled.
+   * @private
+   */
+  shouldShowRestart_: function(enabled) {
+    var proxy = settings.SystemPageBrowserProxyImpl.getInstance();
+    return enabled != proxy.wasHardwareAccelerationEnabledAtStartup();
+  },
+
   /** @private */
   onChangeProxySettingsTap_: function() {
-    this.delegate.changeProxySettings();
+    settings.SystemPageBrowserProxyImpl.getInstance().changeProxySettings();
+  },
+
+  /** @private */
+  onRestartTap_: function() {
+    // TODO(dbeam): we should prompt before restarting the browser.
+    settings.SystemPageBrowserProxyImpl.getInstance().restartBrowser();
   },
 });

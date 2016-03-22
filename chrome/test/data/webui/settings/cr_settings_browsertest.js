@@ -199,8 +199,7 @@ CrSettingsDevicePageTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /** @override */
-  browsePreload:
-      'chrome://md-settings/device_page/device_page.html',
+  browsePreload: 'chrome://md-settings/device_page/device_page.html',
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
@@ -211,6 +210,32 @@ CrSettingsDevicePageTest.prototype = {
 };
 
 TEST_F('CrSettingsDevicePageTest', 'DevicePage', function() {
+  mocha.run();
+});
+GEN('#endif');
+
+GEN('#if !defined(OS_CHROMEOS)');
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+*/
+function CrSettingsSystemPageTest() {}
+
+CrSettingsSystemPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/system_page/system_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_browser_proxy.js',
+    'system_page_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsSystemPageTest', 'Restart', function() {
   mocha.run();
 });
 GEN('#endif');
