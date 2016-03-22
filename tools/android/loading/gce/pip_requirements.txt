@@ -1,2 +1,3 @@
 gunicorn==19.4.5
 gcloud==0.10.1
+psutil==4.1.0

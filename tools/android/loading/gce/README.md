@@ -21,10 +21,27 @@ When offered, accept to clone the Google Cloud repo.
 
 ## Update or Change the code
 
-Make changes to the code, or simply copy the latest version from Chromium into
-your local Google Cloud repository. Then commit and push:
+Make changes to the code, or copy the latest version from Chromium into your
+local Google Cloud repository:
 
 ```shell
+# Build Chrome
+BUILD_DIR=out/Release
+ninja -C $BUILD_DIR -j1000 -l60 chrome chrome_sandbox
+
+GCE_DIR=~/dev/clovis/default
+
+# Deploy to GCE
+# CHROME_BUCKET_NAME is the name of the Google Cloud Storage bucket where the
+# Chrome build artifacts will be uploaded, and matches the value of
+# 'bucket_name' in server_config.json.
+./tools/android/loading/gce/deploy.sh $BUILD_DIR $GCE_DIR $CHROME_BUCKET_NAME
+
+cd $GCE_DIR
+
+# git add the relevant files
+
+# commit and push:
 git commit
 git push -u origin master
 ```
@@ -43,8 +60,13 @@ gcloud compute instances create clovis-tracer-1 \
  --zone europe-west1-c \
  --tags clovis-http-server \
  --scopes cloud-platform \
- --metadata-from-file startup-script=default/startup-script.sh
+ --metadata auto-start=true \
+ --metadata-from-file startup-script=tools/android/loading/gce/startup-script.sh
 ```
+
+**Note:** To start an instance without automatically starting the app on it,
+remove the `--metadata auto-start=true` argument. This can be useful when doing
+iterative development on the instance, to be able to restart the app manually.
 
 This should output the IP address of the instance.
 Otherwise the IP address can be retrieved by doing:
@@ -52,10 +74,6 @@ Otherwise the IP address can be retrieved by doing:
 ```shell
 gcloud compute instances list
 ```
-
-TODO: allow starting the instance in the cloud without Supervisor. This enables
-iterative development on the instance using SSH, manually starting and stopping
-the app. This can be done using [instance metadata][2].
 
 ## Use the app
 
@@ -67,7 +85,7 @@ To send a list of URLs to process:
 curl -X POST -d @urls.json http://<instance-ip>:8080/set_tasks
 ```
 
-where `urls.txt` is a file containing URLs (one per line).
+where `urls.json` is a file containing URLs as a JSON array.
 
 Start the processing by sending a request to `http://<instance-ip>:8080/start`,
 for example:
@@ -101,10 +119,10 @@ pip install -r pip_requirements.txt
 Launch the app:
 
 ```shell
-gunicorn --workers=1 main:app --bind 127.0.0.1:8000
+gunicorn --workers=1 main:app --bind 127.0.0.1:8080
 ```
 
-In your browser, go to `http://localhost:8000` and use the app.
+In your browser, go to `http://localhost:8080` and use the app.
 
 Tear down the local environment:
 
@@ -145,4 +163,3 @@ gcloud compute firewall-rules delete default-allow-http-8080
 ```
 
 [1]: https://cloud.google.com/sdk
-[2]: https://cloud.google.com/compute/docs/startupscript#custom
