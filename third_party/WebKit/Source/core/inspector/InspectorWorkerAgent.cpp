@@ -30,7 +30,7 @@
 
 #include "core/inspector/InspectorWorkerAgent.h"
 
-#include "core/inspector/IdentifiersFactory.h"
+#include "core/dom/Document.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/inspector/PageConsoleAgent.h"
@@ -65,15 +65,12 @@ InspectorWorkerAgent::~InspectorWorkerAgent()
 #endif
 }
 
-void InspectorWorkerAgent::init()
-{
-    m_instrumentingAgents->setInspectorWorkerAgent(this);
-}
-
 void InspectorWorkerAgent::restore()
 {
-    if (enabled())
-        connectToAllProxies();
+    if (!enabled())
+        return;
+    m_instrumentingAgents->setInspectorWorkerAgent(this);
+    connectToAllProxies();
 }
 
 void InspectorWorkerAgent::enable(ErrorString*)
@@ -81,6 +78,7 @@ void InspectorWorkerAgent::enable(ErrorString*)
     if (enabled())
         return;
     m_state->setBoolean(WorkerAgentState::workerInspectionEnabled, true);
+    m_instrumentingAgents->setInspectorWorkerAgent(this);
     connectToAllProxies();
 }
 
@@ -90,8 +88,10 @@ void InspectorWorkerAgent::disable(ErrorString*)
         return;
     m_state->setBoolean(WorkerAgentState::workerInspectionEnabled, false);
     m_state->setBoolean(WorkerAgentState::waitForDebuggerOnStart, false);
-    for (auto& idProxy : m_idToProxy)
+    m_instrumentingAgents->setInspectorWorkerAgent(nullptr);
+    for (auto& idProxy : m_connectedProxies)
         idProxy.value->disconnectFromInspector(this);
+    m_connectedProxies.clear();
 }
 
 bool InspectorWorkerAgent::enabled()
@@ -106,7 +106,7 @@ void InspectorWorkerAgent::sendMessageToWorker(ErrorString* error, const String&
         return;
     }
 
-    WorkerInspectorProxy* proxy = m_idToProxy.get(workerId);
+    WorkerInspectorProxy* proxy = m_connectedProxies.get(workerId);
     if (proxy)
         proxy->sendMessageToInspector(message);
     else
@@ -123,8 +123,8 @@ void InspectorWorkerAgent::setTracingSessionId(const String& sessionId)
     m_tracingSessionId = sessionId;
     if (sessionId.isEmpty())
         return;
-    for (auto& idProxy : m_idToProxy)
-        idProxy.value->writeTimelineStartedEvent(sessionId, idProxy.key);
+    for (auto& idProxy : m_connectedProxies)
+        idProxy.value->writeTimelineStartedEvent(sessionId);
 }
 
 bool InspectorWorkerAgent::shouldWaitForDebuggerOnWorkerStart()
@@ -132,70 +132,58 @@ bool InspectorWorkerAgent::shouldWaitForDebuggerOnWorkerStart()
     return enabled() && m_state->booleanProperty(WorkerAgentState::waitForDebuggerOnStart, false);
 }
 
-void InspectorWorkerAgent::didStartWorker(WorkerInspectorProxy* workerInspectorProxy, bool waitingForDebugger)
+void InspectorWorkerAgent::didStartWorker(WorkerInspectorProxy* proxy, bool waitingForDebugger)
 {
-    String id = "dedicated:" + IdentifiersFactory::createIdentifier();
-    m_idToProxy.set(id, workerInspectorProxy);
-    m_proxyToId.set(workerInspectorProxy, id);
-
-    if (frontend() && enabled())
-        connectToProxy(workerInspectorProxy, id, waitingForDebugger);
-
+    ASSERT(frontend() && enabled());
+    connectToProxy(proxy, waitingForDebugger);
     if (!m_tracingSessionId.isEmpty())
-        workerInspectorProxy->writeTimelineStartedEvent(m_tracingSessionId, id);
+        proxy->writeTimelineStartedEvent(m_tracingSessionId);
 }
 
 void InspectorWorkerAgent::workerTerminated(WorkerInspectorProxy* proxy)
 {
-    if (m_proxyToId.find(proxy) == m_proxyToId.end())
+    ASSERT(frontend() && enabled());
+    if (m_connectedProxies.find(proxy->inspectorId()) == m_connectedProxies.end())
         return;
-
-    String id = m_proxyToId.get(proxy);
-    if (enabled()) {
-        frontend()->workerTerminated(id);
-        proxy->disconnectFromInspector(this);
-    }
-
-    m_idToProxy.remove(id);
-    m_proxyToId.remove(proxy);
+    frontend()->workerTerminated(proxy->inspectorId());
+    proxy->disconnectFromInspector(this);
+    m_connectedProxies.remove(proxy->inspectorId());
 }
 
 void InspectorWorkerAgent::connectToAllProxies()
 {
-    for (auto& idProxy : m_idToProxy)
-        connectToProxy(idProxy.value, idProxy.key, false);
+    for (WorkerInspectorProxy* proxy : WorkerInspectorProxy::allProxies()) {
+        if (proxy->getDocument()->frame() && m_inspectedFrames->contains(proxy->getDocument()->frame()))
+            connectToProxy(proxy, false);
+    }
 }
 
 void InspectorWorkerAgent::didCommitLoadForLocalFrame(LocalFrame* frame)
 {
-    if (frame != m_inspectedFrames->root())
+    if (!enabled() || frame != m_inspectedFrames->root())
         return;
 
     // During navigation workers from old page may die after a while.
     // Usually, it's fine to report them terminated later, but some tests
     // expect strict set of workers, and we reuse renderer between tests.
-    if (enabled()) {
-        for (auto& idProxy : m_idToProxy) {
-            frontend()->workerTerminated(idProxy.key);
-            idProxy.value->disconnectFromInspector(this);
-        }
+    for (auto& idProxy : m_connectedProxies) {
+        frontend()->workerTerminated(idProxy.key);
+        idProxy.value->disconnectFromInspector(this);
     }
-    m_idToProxy.clear();
-    m_proxyToId.clear();
+    m_connectedProxies.clear();
 }
 
-void InspectorWorkerAgent::connectToProxy(WorkerInspectorProxy* proxy, const String& id, bool waitingForDebugger)
+void InspectorWorkerAgent::connectToProxy(WorkerInspectorProxy* proxy, bool waitingForDebugger)
 {
+    m_connectedProxies.set(proxy->inspectorId(), proxy);
     proxy->connectToInspector(this);
     ASSERT(frontend());
-    frontend()->workerCreated(id, proxy->url(), waitingForDebugger);
+    frontend()->workerCreated(proxy->inspectorId(), proxy->url(), waitingForDebugger);
 }
 
 void InspectorWorkerAgent::dispatchMessageFromWorker(WorkerInspectorProxy* proxy, const String& message)
 {
-    if (m_proxyToId.find(proxy) == m_proxyToId.end())
-        return;
-    frontend()->dispatchMessageFromWorker(m_proxyToId.get(proxy), message);
+    frontend()->dispatchMessageFromWorker(proxy->inspectorId(), message);
 }
 
 void InspectorWorkerAgent::workerConsoleAgentEnabled(WorkerInspectorProxy* proxy)
@@ -206,8 +194,7 @@ void InspectorWorkerAgent::workerConsoleAgentEnabled(WorkerInspectorProxy* proxy
 DEFINE_TRACE(InspectorWorkerAgent)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_idToProxy);
-    visitor->trace(m_proxyToId);
+    visitor->trace(m_connectedProxies);
     visitor->trace(m_consoleAgent);
 #endif
     visitor->trace(m_inspectedFrames);

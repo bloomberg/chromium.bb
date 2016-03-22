@@ -346,7 +346,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished()
     m_mainScriptLoader.clear();
 
     workerThread()->start(startupData.release());
-    m_workerInspectorProxy->workerThreadCreated(m_loadingDocument.get(), workerThread(), m_url);
+    m_workerInspectorProxy->workerThreadCreated(toDocument(m_loadingDocument.get()), workerThread(), m_url);
     m_client->workerScriptLoaded();
 }
 

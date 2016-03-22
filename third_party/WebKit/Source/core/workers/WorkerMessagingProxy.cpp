@@ -119,7 +119,7 @@ void WorkerMessagingProxy::startWorkerGlobalScope(const KURL& scriptURL, const S
     m_workerThread = createWorkerThread(originTime);
     m_workerThread->start(startupData.release());
     workerThreadCreated();
-    m_workerInspectorProxy->workerThreadCreated(m_executionContext.get(), m_workerThread.get(), scriptURL);
+    m_workerInspectorProxy->workerThreadCreated(document, m_workerThread.get(), scriptURL);
 }
 
 void WorkerMessagingProxy::postMessageToWorkerObject(PassRefPtr<SerializedScriptValue> message, PassOwnPtr<MessagePortChannelArray> channels)

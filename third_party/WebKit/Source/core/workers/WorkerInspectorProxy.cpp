@@ -5,6 +5,7 @@
 #include "core/workers/WorkerInspectorProxy.h"
 
 #include "core/dom/CrossThreadTask.h"
+#include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/WorkerInspectorController.h"
@@ -16,9 +17,24 @@
 
 namespace blink {
 
+namespace {
+
+static WorkerInspectorProxy::WorkerInspectorProxySet& inspectorProxies()
+{
+    DEFINE_STATIC_LOCAL(WorkerInspectorProxy::WorkerInspectorProxySet, proxies, ());
+    return proxies;
+}
+
+} // namespace
+
+const WorkerInspectorProxy::WorkerInspectorProxySet& WorkerInspectorProxy::allProxies()
+{
+    return inspectorProxies();
+}
+
 WorkerInspectorProxy::WorkerInspectorProxy()
     : m_workerThread(nullptr)
-    , m_executionContext(nullptr)
+    , m_document(nullptr)
     , m_pageInspector(nullptr)
 {
 }
@@ -32,29 +48,41 @@ WorkerInspectorProxy::~WorkerInspectorProxy()
 {
 }
 
-WorkerThreadStartMode WorkerInspectorProxy::workerStartMode(ExecutionContext* context)
+const String& WorkerInspectorProxy::inspectorId()
 {
-    if (InspectorInstrumentation::shouldWaitForDebuggerOnWorkerStart(context))
+    if (m_inspectorId.isEmpty())
+        m_inspectorId = "dedicated:" + IdentifiersFactory::createIdentifier();
+    return m_inspectorId;
+}
+
+WorkerThreadStartMode WorkerInspectorProxy::workerStartMode(Document* document)
+{
+    if (InspectorInstrumentation::shouldWaitForDebuggerOnWorkerStart(document))
         return PauseWorkerGlobalScopeOnStart;
     return DontPauseWorkerGlobalScopeOnStart;
 }
 
-void WorkerInspectorProxy::workerThreadCreated(ExecutionContext* context, WorkerThread* workerThread, const KURL& url)
+void WorkerInspectorProxy::workerThreadCreated(Document* document, WorkerThread* workerThread, const KURL& url)
 {
     m_workerThread = workerThread;
-    m_executionContext = context;
+    m_document = document;
     m_url = url.getString();
+    inspectorProxies().add(this);
     // We expect everyone starting worker thread to synchronously ask for workerStartMode right before.
-    bool waitingForDebugger = InspectorInstrumentation::shouldWaitForDebuggerOnWorkerStart(context);
-    InspectorInstrumentation::didStartWorker(context, this, waitingForDebugger);
+    bool waitingForDebugger = InspectorInstrumentation::shouldWaitForDebuggerOnWorkerStart(document);
+    InspectorInstrumentation::didStartWorker(document, this, waitingForDebugger);
 }
 
 void WorkerInspectorProxy::workerThreadTerminated()
 {
-    if (m_workerThread)
-        InspectorInstrumentation::workerTerminated(m_executionContext, this);
+    if (m_workerThread) {
+        ASSERT(inspectorProxies().contains(this));
+        inspectorProxies().remove(this);
+        InspectorInstrumentation::workerTerminated(m_document, this);
+    }
     m_workerThread = nullptr;
     m_pageInspector = nullptr;
+    m_document = nullptr;
 }
 
 void WorkerInspectorProxy::dispatchMessageFromWorker(const String& message)
@@ -110,16 +138,16 @@ void WorkerInspectorProxy::sendMessageToInspector(const String& message)
         m_workerThread->appendDebuggerTask(threadSafeBind(dispatchOnInspectorBackendTask, message, AllowCrossThreadAccess(m_workerThread)));
 }
 
-void WorkerInspectorProxy::writeTimelineStartedEvent(const String& sessionId, const String& workerId)
+void WorkerInspectorProxy::writeTimelineStartedEvent(const String& sessionId)
 {
     if (!m_workerThread)
         return;
-    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TracingSessionIdForWorker", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTracingSessionIdForWorkerEvent::data(sessionId, workerId, m_workerThread));
+    TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "TracingSessionIdForWorker", TRACE_EVENT_SCOPE_THREAD, "data", InspectorTracingSessionIdForWorkerEvent::data(sessionId, inspectorId(), m_workerThread));
 }
 
 DEFINE_TRACE(WorkerInspectorProxy)
 {
-    visitor->trace(m_executionContext);
+    visitor->trace(m_document);
 }
 
 } // namespace blink

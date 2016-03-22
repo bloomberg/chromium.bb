@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class ExecutionContext;
+class Document;
 class KURL;
 class WebTraceLocation;
 class WorkerGlobalScopeProxy;
@@ -34,8 +34,8 @@ public:
         virtual void workerConsoleAgentEnabled(WorkerInspectorProxy*) = 0;
     };
 
-    WorkerThreadStartMode workerStartMode(ExecutionContext*);
-    void workerThreadCreated(ExecutionContext*, WorkerThread*, const KURL&);
+    WorkerThreadStartMode workerStartMode(Document*);
+    void workerThreadCreated(Document*, WorkerThread*, const KURL&);
     void workerThreadTerminated();
     void dispatchMessageFromWorker(const String&);
     void workerConsoleAgentEnabled();
@@ -43,17 +43,23 @@ public:
     void connectToInspector(PageInspector*);
     void disconnectFromInspector(PageInspector*);
     void sendMessageToInspector(const String&);
-    void writeTimelineStartedEvent(const String& sessionId, const String& workerId);
+    void writeTimelineStartedEvent(const String& sessionId);
 
     const String& url() { return m_url; }
+    Document* getDocument() { return m_document; }
+    const String& inspectorId();
+
+    using WorkerInspectorProxySet = WillBePersistentHeapHashSet<RawPtrWillBeWeakMember<WorkerInspectorProxy>>;
+    static const WorkerInspectorProxySet& allProxies();
 
 private:
     WorkerInspectorProxy();
 
     WorkerThread* m_workerThread;
-    RawPtrWillBeMember<ExecutionContext> m_executionContext;
+    RawPtrWillBeMember<Document> m_document;
     PageInspector* m_pageInspector;
     String m_url;
+    String m_inspectorId;
 };
 
 } // namespace blink

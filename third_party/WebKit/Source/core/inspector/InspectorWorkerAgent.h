@@ -53,7 +53,6 @@ public:
     ~InspectorWorkerAgent() override;
     DECLARE_VIRTUAL_TRACE();
 
-    void init() override;
     void disable(ErrorString*) override;
     void restore() override;
     void didCommitLoadForLocalFrame(LocalFrame*) override;
@@ -74,17 +73,14 @@ private:
     InspectorWorkerAgent(InspectedFrames*, PageConsoleAgent*);
     bool enabled();
     void connectToAllProxies();
-    void connectToProxy(WorkerInspectorProxy*, const String& id, bool waitingForDebugger);
+    void connectToProxy(WorkerInspectorProxy*, bool waitingForDebugger);
 
     // WorkerInspectorProxy::PageInspector implementation.
     void dispatchMessageFromWorker(WorkerInspectorProxy*, const String& message) override;
     void workerConsoleAgentEnabled(WorkerInspectorProxy*) override;
 
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
-    using IdToProxyMap = WillBeHeapHashMap<String, RawPtrWillBeMember<WorkerInspectorProxy>>;
-    IdToProxyMap m_idToProxy;
-    using ProxyToIdMap = WillBeHeapHashMap<RawPtrWillBeMember<WorkerInspectorProxy>, String>;
-    ProxyToIdMap m_proxyToId;
+    WillBeHeapHashMap<String, RawPtrWillBeMember<WorkerInspectorProxy>> m_connectedProxies;
     String m_tracingSessionId;
     RawPtrWillBeMember<PageConsoleAgent> m_consoleAgent;
 };
