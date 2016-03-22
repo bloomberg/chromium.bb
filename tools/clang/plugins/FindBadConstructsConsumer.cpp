@@ -48,13 +48,6 @@ const char kNotePublicDtor[] =
 const char kNoteProtectedNonVirtualDtor[] =
     "[chromium-style] Protected non-virtual destructor declared here";
 
-bool TypeHasNonTrivialDtor(const Type* type) {
-  if (const CXXRecordDecl* cxx_r = type->getAsCXXRecordDecl())
-    return !cxx_r->hasTrivialDestructor();
-
-  return false;
-}
-
 // Returns the underlying Type for |type| by expanding typedefs and removing
 // any namespace qualifiers. This is similar to desugaring, except that for
 // ElaboratedTypes, desugar will unwrap too much.
@@ -564,12 +557,17 @@ void FindBadConstructsConsumer::CountType(const Type* type,
                                           int* templated_non_trivial_member) {
   switch (type->getTypeClass()) {
     case Type::Record: {
+      auto* record_decl = type->getAsCXXRecordDecl();
       // Simplifying; the whole class isn't trivial if the dtor is, but
       // we use this as a signal about complexity.
-      if (TypeHasNonTrivialDtor(type))
-        (*non_trivial_member)++;
-      else
+      // Note that if a record doesn't have a definition, it doesn't matter how
+      // it's counted, since the translation unit will fail to build. In that
+      // case, just count it as a trivial member to avoid emitting warnings that
+      // might be spurious.
+      if (!record_decl->hasDefinition() || record_decl->hasTrivialDestructor())
         (*trivial_member)++;
+      else
+        (*non_trivial_member)++;
       break;
     }
     case Type::TemplateSpecialization: {
