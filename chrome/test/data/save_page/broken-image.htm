@@ -25,5 +25,14 @@
     OTOH, this test hopefully covers more than just testing this one
     DCHECK - hopefully the broken image scenario hits some other corner
     cases as well.
+    <br><br>
+
+    The link to the image below is broken on purpose, to test additional code
+    paths - in particular in this case ResourceHandler::OnResponseStarted
+    is not called at all and the failure is reported directly via
+    ResourceHandler::OnResponseCompleted.  See also https://crbug.com/594219.
+    <img src="http://f0b310b1-4038-46a8-ac98-529187682f2d.no.such.host/x.png">
+    <br><br>
+
   </body>
 </html>

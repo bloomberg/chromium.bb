@@ -1220,8 +1220,14 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, Style) {
   TestOriginalVsSavedPage(save_page_type, url, 6, expected_substrings);
 }
 
-// Test for saving a page with a broken image (see also crbug.com/586680).
+// Test for saving a page with broken subresources:
+// - Broken, undecodable image (see also https://crbug.com/586680)
+// - Broken link, to unresolvable host (see also https://crbug.com/594219)
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, BrokenImage) {
+  // Clear resolver rules to make sure that *.no.such.host used in the test html
+  // doesn't resolve to 127.0.0.1
+  host_resolver()->ClearRules();
+
   content::SavePageType save_page_type = GetParam();
 
   std::string arr[] = {
@@ -1229,8 +1235,8 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, BrokenImage) {
   };
   std::vector<std::string> expected_substrings(std::begin(arr), std::end(arr));
 
-  GURL url(
-      embedded_test_server()->GetURL("a.com", "/save_page/broken-image.htm"));
+  GURL url(embedded_test_server()->GetURL("127.0.0.1",
+                                          "/save_page/broken-image.htm"));
 
   TestOriginalVsSavedPage(save_page_type, url, 1, expected_substrings);
 }
