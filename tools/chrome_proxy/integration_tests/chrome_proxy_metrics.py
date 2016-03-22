@@ -257,8 +257,8 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     super(ChromeProxyMetric, self).AddResults(tab, results)
 
   def AddResultsForLoFiPreview(self, tab, results):
-    lo_fi_request_count = 0
     lo_fi_preview_request_count = 0
+    lo_fi_preview_exp_request_count = 0
     lo_fi_preview_response_count = 0
 
     for resp in self.IterResponses(tab):
@@ -271,19 +271,26 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
 
       if resp.HasChromeProxyLoFiPreviewRequest():
         lo_fi_preview_request_count += 1
-      elif resp.HasChromeProxyLoFiRequest():
-        lo_fi_request_count += 1
-      else:
-        raise ChromeProxyMetricException, (
-            '%s: LoFi not in request header.' % (resp.response.url))
+
+      if resp.HasChromeProxyLoFiPreviewExpRequest():
+        lo_fi_preview_exp_request_count += 1
 
       if resp.HasChromeProxyLoFiPreviewResponse():
         lo_fi_preview_response_count += 1
+
+      if resp.HasChromeProxyLoFiRequest():
+        raise ChromeProxyMetricException, (
+        '%s: Lo-Fi directive should not be in preview request header.' %
+        (resp.response.url))
 
     if lo_fi_preview_request_count == 0:
       raise ChromeProxyMetricException, (
           'Expected at least one LoFi preview request, but zero such requests '
           'were sent.')
+    if lo_fi_preview_exp_request_count == 0:
+      raise ChromeProxyMetricException, (
+          'Expected at least one LoFi preview exp=ignore_preview_blacklist '
+          'request, but zero such requests were sent.')
     if lo_fi_preview_response_count == 0:
       raise ChromeProxyMetricException, (
           'Expected at least one LoFi preview response, but zero such '
@@ -295,8 +302,8 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
             'count', lo_fi_preview_request_count))
     results.AddValue(
         scalar.ScalarValue(
-            results.current_page, 'lo_fi_request',
-            'count', lo_fi_request_count))
+            results.current_page, 'lo_fi_preview_exp_request',
+            'count', lo_fi_preview_exp_request_count))
     results.AddValue(
         scalar.ScalarValue(
             results.current_page, 'lo_fi_preview_response',

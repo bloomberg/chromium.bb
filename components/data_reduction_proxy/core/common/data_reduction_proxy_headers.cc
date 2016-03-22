@@ -31,6 +31,8 @@ const char kActionValueDelimiter = '=';
 
 const char kChromeProxyLoFiDirective[] = "q=low";
 const char kChromeProxyLoFiPreviewDirective[] = "q=preview";
+const char kChromeProxyLoFiIngorePreviewBlacklistDirective[] =
+    "exp=ignore_preview_blacklist";
 
 const char kChromeProxyActionBlockOnce[] = "block-once";
 const char kChromeProxyActionBlock[] = "block";
@@ -67,6 +69,10 @@ const char* chrome_proxy_lo_fi_directive() {
 
 const char* chrome_proxy_lo_fi_preview_directive() {
   return kChromeProxyLoFiPreviewDirective;
+}
+
+const char* chrome_proxy_lo_fi_ignore_preview_blacklist_directive() {
+  return kChromeProxyLoFiIngorePreviewBlacklistDirective;
 }
 
 bool GetDataReductionProxyActionValue(

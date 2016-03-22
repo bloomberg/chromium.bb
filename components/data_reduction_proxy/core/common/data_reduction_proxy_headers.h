@@ -78,6 +78,10 @@ const char* chrome_proxy_lo_fi_directive();
 // requests and responses.
 const char* chrome_proxy_lo_fi_preview_directive();
 
+// Gets the Chrome-Proxy directive used by data reduction proxy Lo-Fi preview
+// experiment to ignore the blacklist.
+const char* chrome_proxy_lo_fi_ignore_preview_blacklist_directive();
+
 // Returns true if the Chrome-Proxy header is present and contains a bypass
 // delay. Sets |proxy_info->bypass_duration| to the specified delay if greater
 // than 0, and to 0 otherwise to indicate that the default proxy delay

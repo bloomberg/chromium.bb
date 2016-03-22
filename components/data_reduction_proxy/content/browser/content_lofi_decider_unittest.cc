@@ -145,6 +145,18 @@ class ContentLoFiDeciderTest : public testing::Test {
                   std::string::npos);
   }
 
+  static void VerifyLoFiIgnorePreviewBlacklistHeader(
+      bool expected_lofi_preview_used,
+      const net::HttpRequestHeaders& headers) {
+    EXPECT_TRUE(headers.HasHeader(chrome_proxy_header()));
+    std::string header_value;
+    headers.GetHeader(chrome_proxy_header(), &header_value);
+    EXPECT_EQ(expected_lofi_preview_used,
+              header_value.find(
+                  chrome_proxy_lo_fi_ignore_preview_blacklist_directive()) !=
+                  std::string::npos);
+  }
+
  protected:
   base::MessageLoopForIO message_loop_;
   net::MockClientSocketFactory mock_socket_factory_;
@@ -178,6 +190,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
     NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(false, headers);
     VerifyLoFiPreviewHeader(false, headers);
+    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
 
     // The Lo-Fi flag is "always-on", Lo-Fi is being used, and it's a main frame
     // request. Lo-Fi preview header should be added.
@@ -191,6 +204,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
                      headers);
     VerifyLoFiPreviewHeader(
         tests[i].is_using_lofi && tests[i].is_using_previews, headers);
+    VerifyLoFiIgnorePreviewBlacklistHeader(
+        tests[i].is_using_lofi && tests[i].is_using_previews, headers);
 
     // The Lo-Fi flag is "always-on" and Lo-Fi is being used. Lo-Fi header
     // should be added.
@@ -200,6 +215,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
     VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
                      headers);
     VerifyLoFiPreviewHeader(false, headers);
+    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
 
     // The Lo-Fi flag is "cellular-only" and Lo-Fi is being used. Lo-Fi header
     // should be added.
@@ -211,6 +227,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
     VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
                      headers);
     VerifyLoFiPreviewHeader(false, headers);
+    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
 
     // The Lo-Fi flag is "slow-connections-only" and Lo-Fi is being used. Lo-Fi
     // header should be added.
@@ -222,6 +239,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
     VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
                      headers);
     VerifyLoFiPreviewHeader(false, headers);
+    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
   }
 }
 
@@ -242,6 +260,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiEnabledFieldTrial) {
     NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(tests[i].is_using_lofi, headers);
     VerifyLoFiPreviewHeader(false, headers);
+    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
   }
 }
 
@@ -262,6 +281,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiControlFieldTrial) {
     NotifyBeforeSendProxyHeaders(&headers, request.get(), true);
     VerifyLoFiHeader(false, headers);
     VerifyLoFiPreviewHeader(false, headers);
+    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
   }
 }
 
@@ -286,6 +306,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiPreviewFieldTrial) {
     VerifyLoFiHeader(false, headers);
     VerifyLoFiPreviewHeader(tests[i].is_using_lofi && tests[i].is_main_frame,
                             headers);
+    VerifyLoFiIgnorePreviewBlacklistHeader(false, headers);
   }
 }
 

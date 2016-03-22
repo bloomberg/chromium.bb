@@ -33,7 +33,6 @@ class LoFiDecider {
   // request adds the "q=preview" and it is a main frame request directive to
   // the |headers|. Only adds this header if the provided |proxy_server| is a
   // data reduction proxy as identified by the given |config|.
-
   virtual bool MaybeAddLoFiDirectiveToHeaders(
       const net::URLRequest& request,
       net::HttpRequestHeaders* headers,
