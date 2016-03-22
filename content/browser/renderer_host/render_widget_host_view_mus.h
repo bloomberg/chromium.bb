@@ -124,6 +124,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMus : public RenderWidgetHostViewBase {
 #if defined(OS_WIN)
   void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) override;
+  gfx::NativeViewId GetParentForWindowlessPlugin() const override;
 #endif
 
   RenderWidgetHostImpl* host_;

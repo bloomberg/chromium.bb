@@ -72,6 +72,10 @@ class WebPluginProxy : public WebPlugin,
   void DidStartLoading() override;
   void DidStopLoading() override;
   bool IsOffTheRecord() override;
+#if defined(OS_WIN)
+  void SetWindowlessData(HANDLE pump_messages_event,
+                         gfx::NativeViewId dummy_activation_window) override;
+#endif
 #if defined(OS_MACOSX)
   void FocusChanged(bool focused) override;
   void StartIme() override;
@@ -102,6 +106,14 @@ class WebPluginProxy : public WebPlugin,
 
   // Callback from the renderer to let us know that a paint occurred.
   void DidPaint();
+
+#if defined(OS_WIN) && !defined(USE_AURA)
+  // Retrieves the IME status from a windowless plugin and sends it to a
+  // renderer process. A renderer process will convert the coordinates from
+  // local to the window coordinates and send the converted coordinates to a
+  // browser process.
+  void UpdateIMEStatus();
+#endif
 
  private:
   class SharedTransportDIB : public base::RefCounted<SharedTransportDIB> {

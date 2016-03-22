@@ -589,6 +589,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void OnShowDisambiguationPopup(const gfx::Rect& rect_pixels,
                                  const gfx::Size& size,
                                  const cc::SharedBitmapId& id);
+#if defined(OS_WIN)
+  void OnWindowlessPluginDummyWindowCreated(
+      gfx::NativeViewId dummy_activation_window);
+  void OnWindowlessPluginDummyWindowDestroyed(
+      gfx::NativeViewId dummy_activation_window);
+#endif
   void OnSelectionChanged(const base::string16& text,
                           uint32_t offset,
                           const gfx::Range& range);
@@ -797,6 +803,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // receipt of those messages (unless FirstPaintAfterLoad is prevented from
   // being sent, in which case the timer should fire).
   bool received_paint_after_load_;
+
+#if defined(OS_WIN)
+  std::list<HWND> dummy_windows_for_activation_;
+#endif
 
   RenderWidgetHostLatencyTracker latency_tracker_;
 

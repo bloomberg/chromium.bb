@@ -515,6 +515,11 @@ void RenderWidgetHostViewGuest::UnlockCompositingSurface() {
 void RenderWidgetHostViewGuest::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
 }
+
+gfx::NativeViewId RenderWidgetHostViewGuest::GetParentForWindowlessPlugin()
+    const {
+  return NULL;
+}
 #endif
 
 void RenderWidgetHostViewGuest::DestroyGuestView() {

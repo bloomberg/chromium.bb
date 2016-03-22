@@ -180,6 +180,8 @@
       'child/npapi/webplugin_delegate_impl_aura.cc',
       'child/npapi/webplugin_delegate_impl_mac.mm',
       'child/npapi/webplugin_delegate_impl_win.cc',
+      'child/npapi/webplugin_ime_win.cc',
+      'child/npapi/webplugin_ime_win.h',
       'child/npapi/webplugin_resource_client.h',
       'child/permissions/permission_dispatcher.cc',
       'child/permissions/permission_dispatcher.h',

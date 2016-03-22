@@ -46,6 +46,10 @@ class WebPluginAcceleratedSurface;
 class ExternalDragTracker;
 #endif  // OS_MACOSX
 
+#if defined(OS_WIN)
+class WebPluginIMEWin;
+#endif  // OS_WIN
+
 // An implementation of WebPluginDelegate that runs in the plugin process,
 // proxied from the renderer by WebPluginDelegateProxy.
 class WebPluginDelegateImpl : public WebPluginDelegate {
@@ -107,6 +111,21 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Informs the plugin that the view it is in has gained or lost focus.
   void SetContentAreaHasFocus(bool has_focus);
 
+#if defined(OS_WIN)
+  // Informs the plugin that an IME has changed its status.
+  void ImeCompositionUpdated(const base::string16& text,
+                             const std::vector<int>& clauses,
+                             const std::vector<int>& target,
+                             int cursor_position);
+
+  // Informs the plugin that IME composition has completed./ If |text| is empty,
+  // IME was cancelled.
+  void ImeCompositionCompleted(const base::string16& text);
+
+  // Returns the IME status retrieved from a plugin.
+  bool GetIMEStatus(int* input_type, gfx::Rect* caret_rect);
+#endif
+
 #if defined(OS_MACOSX) && !defined(USE_AURA)
   // Informs the plugin that the geometry has changed, as with UpdateGeometry,
   // but also includes the new buffer context for that new geometry.
@@ -156,6 +175,20 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Called by DestroyInstance(), used for platform-specific destruction.
   void PlatformDestroyInstance();
 
+#if defined(OS_WIN)
+  // Our WndProc functions.
+  static LRESULT CALLBACK FlashWindowlessWndProc(
+      HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam);
+  static LRESULT CALLBACK DummyWindowProc(
+      HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+  // Used for throttling Flash messages.
+  static void ClearThrottleQueueForWindow(HWND window);
+  static void OnThrottleMessage();
+  static void ThrottleMessage(WNDPROC proc, HWND hwnd, UINT message,
+      WPARAM wParam, LPARAM lParam);
+#endif
+
   //----------------------------
   // used for windowless plugins
   void WindowlessUpdateGeometry(const gfx::Rect& window_rect,
@@ -194,12 +227,67 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   WebPlugin* plugin_;
   scoped_refptr<PluginInstance> instance_;
 
+#if defined(OS_WIN)
+  // An IME emulator used by a windowless plugin to retrieve IME data through
+  // IMM32 functions.
+  scoped_ptr<WebPluginIMEWin> plugin_ime_;
+#endif  // defined(OS_WIN)
+
   NPWindow window_;
   gfx::Rect window_rect_;
   gfx::Rect clip_rect_;
   int quirks_;
 
-#if defined(OS_MACOSX) && !defined(USE_AURA)
+#if defined(OS_WIN)
+  // Windowless plugins don't have keyboard focus causing issues with the
+  // plugin not receiving keyboard events if the plugin enters a modal
+  // loop like TrackPopupMenuEx or MessageBox, etc.
+  // This is a basic issue with windows activation and focus arising due to
+  // the fact that these windows are created by different threads. Activation
+  // and focus are thread specific states, and if the browser has focus,
+  // the plugin may not have focus.
+  // To fix a majority of these activation issues we create a dummy visible
+  // child window to which we set focus whenever the windowless plugin
+  // receives a WM_LBUTTONDOWN/WM_RBUTTONDOWN message via NPP_HandleEvent.
+
+  HWND dummy_window_for_activation_;
+  HWND dummy_window_parent_;
+  WNDPROC old_dummy_window_proc_;
+  bool CreateDummyWindowForActivation();
+
+  // Returns true if the event passed in needs to be tracked for a potential
+  // modal loop.
+  static bool ShouldTrackEventForModalLoops(NPEvent* event);
+
+  // The message filter hook procedure, which tracks modal loops entered by
+  // a plugin in the course of a NPP_HandleEvent call.
+  static LRESULT CALLBACK HandleEventMessageFilterHook(int code, WPARAM wParam,
+                                                       LPARAM lParam);
+
+  // TrackPopupMenu interceptor. Parameters are the same as the Win32 function
+  // TrackPopupMenu.
+  static BOOL WINAPI TrackPopupMenuPatch(HMENU menu, unsigned int flags, int x,
+                                         int y, int reserved, HWND window,
+                                         const RECT* rect);
+
+  // SetCursor interceptor for windowless plugins.
+  static HCURSOR WINAPI SetCursorPatch(HCURSOR cursor);
+
+  // RegEnumKeyExW interceptor.
+  static LONG WINAPI RegEnumKeyExWPatch(
+      HKEY key, DWORD index, LPWSTR name, LPDWORD name_size, LPDWORD reserved,
+      LPWSTR class_name, LPDWORD class_size, PFILETIME last_write_time);
+
+  // GetProcAddress intercepter for windowless plugins.
+  static FARPROC WINAPI GetProcAddressPatch(HMODULE module, LPCSTR name);
+
+  // WindowFromPoint patch for Flash windowless plugins. When flash receives
+  // mouse move messages it calls the WindowFromPoint API to eventually convert
+  // the mouse coordinates to screen. We need to return the dummy plugin parent
+  // window for Aura to ensure that these conversions occur correctly.
+  static HWND WINAPI WindowFromPointPatch(POINT point);
+
+#elif defined(OS_MACOSX) && !defined(USE_AURA)
   // Sets window_rect_ to |rect|
   void SetPluginRect(const gfx::Rect& rect);
   // Sets content_area_origin to |origin|
@@ -251,6 +339,15 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
 
   // The url with which the plugin was instantiated.
   std::string plugin_url_;
+
+#if defined(OS_WIN)
+  // Handle to the message filter hook
+  HHOOK handle_event_message_filter_hook_;
+
+  // Event which is set when the plugin enters a modal loop in the course
+  // of a NPP_HandleEvent call.
+  HANDLE handle_event_pump_messages_event_;
+#endif
 
   // Holds the depth of the HandleEvent callstack.
   int handle_event_depth_;

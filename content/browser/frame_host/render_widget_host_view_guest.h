@@ -137,6 +137,7 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
 #if defined(OS_WIN)
   void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) override;
+  gfx::NativeViewId GetParentForWindowlessPlugin() const override;
 #endif
 
   void WheelEventAck(const blink::WebMouseWheelEvent& event,

@@ -638,6 +638,9 @@ RenderViewImpl::RenderViewImpl(CompositorDependencies* compositor_deps,
 #if defined(OS_ANDROID)
       expected_content_intent_id_(0),
 #endif
+#if defined(OS_WIN)
+      focused_plugin_id_(-1),
+#endif
 #if defined(ENABLE_PLUGINS)
       focused_pepper_plugin_(NULL),
       pepper_last_mouse_event_target_(NULL),
@@ -1206,6 +1209,15 @@ void RenderViewImpl::UnregisterPluginDelegate(
     WebPluginDelegateProxy* delegate) {
   plugin_delegates_.erase(delegate);
 }
+
+#if defined(OS_WIN)
+void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
+  if (focused)
+    focused_plugin_id_ = plugin_id;
+  else
+    focused_plugin_id_ = -1;
+}
+#endif
 
 #if defined(OS_MACOSX)
 void RenderViewImpl::PluginFocusChanged(bool focused, int plugin_id) {
@@ -2914,6 +2926,32 @@ void RenderViewImpl::OnImeSetComposition(
         text, underlines, selection_start, selection_end);
     return;
   }
+
+#if defined(OS_WIN)
+  // When a plugin has focus, we create platform-specific IME data used by
+  // our IME emulator and send it directly to the focused plugin, i.e. we
+  // bypass WebKit. (WebPluginDelegate dispatches this IME data only when its
+  // instance ID is the same one as the specified ID.)
+  if (focused_plugin_id_ >= 0) {
+    std::vector<int> clauses;
+    std::vector<int> target;
+    for (size_t i = 0; i < underlines.size(); ++i) {
+      clauses.push_back(underlines[i].startOffset);
+      clauses.push_back(underlines[i].endOffset);
+      if (underlines[i].thick) {
+        target.clear();
+        target.push_back(underlines[i].startOffset);
+        target.push_back(underlines[i].endOffset);
+      }
+    }
+    std::set<WebPluginDelegateProxy*>::iterator it;
+    for (it = plugin_delegates_.begin(); it != plugin_delegates_.end(); ++it) {
+      (*it)->ImeCompositionUpdated(text, clauses, target, selection_end,
+                                   focused_plugin_id_);
+    }
+    return;
+  }
+#endif  // OS_WIN
 #endif  // ENABLE_PLUGINS
   if (replacement_range.IsValid() && webview()) {
     // Select the text in |replacement_range|, it will then be replaced by
@@ -2942,6 +2980,20 @@ void RenderViewImpl::OnImeConfirmComposition(
         text, replacement_range, keep_selection);
     return;
   }
+#if defined(OS_WIN)
+  // Same as OnImeSetComposition(), we send the text from IMEs directly to
+  // plugins. When we send IME text directly to plugins, we should not send
+  // it to WebKit to prevent WebKit from controlling IMEs.
+  // TODO(thakis): Honor |replacement_range| for plugins?
+  if (focused_plugin_id_ >= 0) {
+    std::set<WebPluginDelegateProxy*>::iterator it;
+    for (it = plugin_delegates_.begin();
+          it != plugin_delegates_.end(); ++it) {
+      (*it)->ImeCompositionCompleted(text, focused_plugin_id_);
+    }
+    return;
+  }
+#endif  // OS_WIN
 #endif  // ENABLE_PLUGINS
   if (replacement_range.IsValid() && webview()) {
     // Select the text in |replacement_range|, it will then be replaced by

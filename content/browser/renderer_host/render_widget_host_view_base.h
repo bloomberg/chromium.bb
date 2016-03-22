@@ -381,6 +381,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 #if defined(OS_WIN)
   virtual void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) = 0;
+
+  // Returns an HWND that's given as the parent window for windowless Flash to
+  // workaround crbug.com/301548.
+  virtual gfx::NativeViewId GetParentForWindowlessPlugin() const = 0;
 #endif
 
   // Add and remove observers for lifetime event notifications. The order in

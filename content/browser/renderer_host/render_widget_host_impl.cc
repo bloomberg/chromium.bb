@@ -469,6 +469,12 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SelectionBoundsChanged,
                         OnSelectionBoundsChanged)
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WindowlessPluginDummyWindowCreated,
+                        OnWindowlessPluginDummyWindowCreated)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WindowlessPluginDummyWindowDestroyed,
+                        OnWindowlessPluginDummyWindowDestroyed)
+#endif
     IPC_MESSAGE_HANDLER(InputHostMsg_ImeCompositionRangeChanged,
                         OnImeCompositionRangeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstPaintAfterLoad,
@@ -1811,6 +1817,43 @@ void RenderWidgetHostImpl::OnShowDisambiguationPopup(
   zoomed_bitmap.setPixels(0);
   Send(new ViewMsg_ReleaseDisambiguationPopupBitmap(GetRoutingID(), id));
 }
+
+#if defined(OS_WIN)
+void RenderWidgetHostImpl::OnWindowlessPluginDummyWindowCreated(
+    gfx::NativeViewId dummy_activation_window) {
+  HWND hwnd = reinterpret_cast<HWND>(dummy_activation_window);
+
+  // This may happen as a result of a race condition when the plugin is going
+  // away.
+  wchar_t window_title[MAX_PATH + 1] = {0};
+  if (!IsWindow(hwnd) ||
+      !GetWindowText(hwnd, window_title, arraysize(window_title)) ||
+      lstrcmpiW(window_title, kDummyActivationWindowName) != 0) {
+    return;
+  }
+
+#if defined(USE_AURA)
+  SetParent(hwnd,
+            reinterpret_cast<HWND>(view_->GetParentForWindowlessPlugin()));
+#else
+  SetParent(hwnd, reinterpret_cast<HWND>(GetNativeViewId()));
+#endif
+  dummy_windows_for_activation_.push_back(hwnd);
+}
+
+void RenderWidgetHostImpl::OnWindowlessPluginDummyWindowDestroyed(
+    gfx::NativeViewId dummy_activation_window) {
+  HWND hwnd = reinterpret_cast<HWND>(dummy_activation_window);
+  std::list<HWND>::iterator i = dummy_windows_for_activation_.begin();
+  for (; i != dummy_windows_for_activation_.end(); ++i) {
+    if ((*i) == hwnd) {
+      dummy_windows_for_activation_.erase(i);
+      return;
+    }
+  }
+  NOTREACHED() << "Unknown dummy window";
+}
+#endif
 
 void RenderWidgetHostImpl::SetIgnoreInputEvents(bool ignore_input_events) {
   ignore_input_events_ = ignore_input_events;

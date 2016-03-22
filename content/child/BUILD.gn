@@ -93,7 +93,11 @@ source_set("child") {
         "npapi/webplugin_delegate_impl_mac.mm",
       ]
     } else if (is_win) {
-      sources -= [ "npapi/webplugin_delegate_impl_win.cc" ]
+      sources -= [
+        "npapi/webplugin_delegate_impl_win.cc",
+        "npapi/webplugin_ime_win.cc",
+        "npapi/webplugin_ime_win.h",
+      ]
     } else if (is_android) {
       sources -= [ "npapi/webplugin_delegate_impl_android.cc" ]
     }

@@ -76,6 +76,12 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   // NPAPI's instance identifier for this instance
   NPP npp() { return npp_; }
 
+  // Get/Set for the instance's window handle.
+  gfx::PluginWindowHandle window_handle() const { return window_handle_; }
+  void set_window_handle(gfx::PluginWindowHandle value) {
+    window_handle_ = value;
+  }
+
   // Get/Set whether this instance is transparent. This only applies to
   // windowless plugins.  Transparent plugins require that webkit paint the
   // background.
@@ -221,6 +227,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   NPP                                      npp_;
   scoped_refptr<PluginHost>                host_;
   NPPluginFuncs*                           npp_functions_;
+  gfx::PluginWindowHandle                  window_handle_;
   bool                                     transparent_;
   WebPlugin*                               webplugin_;
   std::string                              mime_type_;
