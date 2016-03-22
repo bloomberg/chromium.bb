@@ -130,11 +130,16 @@ def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
       os.remove(result_path)
 
     env = {}
+    stderr_filter = None
     if cache_dir:
+      # When _JAVA_OPTIONS is set, java prints to stderr:
+      # Picked up _JAVA_OPTIONS: ...
       env['_JAVA_OPTIONS'] = '-Duser.home=%s' % _RelativizePath(cache_dir)
+      stderr_filter = lambda l: '' if '_JAVA_OPTIONS' in l else l
 
     try:
-      build_utils.CheckOutput(cmd, cwd=_SRC_ROOT, env=env or None)
+      build_utils.CheckOutput(cmd, cwd=_SRC_ROOT, env=env or None,
+                              stderr_filter=stderr_filter)
     except build_utils.CalledProcessError:
       if can_fail_build:
         traceback.print_exc()
@@ -192,6 +197,9 @@ def main():
   parser.add_argument('--cache-dir',
                       help='Path to the directory in which the android cache '
                            'directory tree should be stored.')
+  parser.add_argument('--create-cache', action='store_true',
+                      help='Mark the lint cache file as an output rather than '
+                      'an input.')
   parser.add_argument('--can-fail-build', action='store_true',
                       help='If set, script will exit with nonzero exit status'
                            ' if lint errors are present')
@@ -257,9 +265,13 @@ def main():
     if args.cache_dir:
       if not args.build_tools_version:
         parser.error('--cache-dir specified without --build-tools-version')
-      output_paths.append(os.path.join(
-          args.cache_dir, '.android', 'cache',
-          'api-versions-6-%s.bin' % args.build_tools_version))
+      _cache_file = os.path.join(
+            args.cache_dir, '.android', 'cache',
+            'api-versions-6-%s.bin' % args.build_tools_version)
+      if args.create_cache:
+        output_paths.append(_cache_file)
+      else:
+        input_paths.append(_cache_file)
 
     build_utils.CallAndWriteDepfileIfStale(
         lambda changes: _OnStaleMd5(changes, args.lint_path,
