@@ -14,6 +14,7 @@ import datetime
 import logging
 import os
 import shutil
+import socket
 import subprocess
 import sys
 import tempfile
@@ -32,10 +33,6 @@ sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'devil'))
 from devil.android.sdk import intent
 
 OPTIONS = options.OPTIONS
-
-# An estimate of time to wait for the device to become idle after expensive
-# operations, such as opening the launcher activity.
-_TIME_TO_DEVICE_IDLE_SECONDS = 2
 
 
 class ChromeControllerBase(object):
@@ -193,8 +190,15 @@ class ChromeControllerBase(object):
 
 class RemoteChromeController(ChromeControllerBase):
   """A controller for an android device, aka remote chrome instance."""
-  # Seconds to sleep after starting chrome activity.
-  POST_ACTIVITY_SLEEP_SECONDS = 2
+  # Number of connection attempt to chrome's devtools.
+  DEVTOOLS_CONNECTION_ATTEMPTS = 10
+
+  # Time interval in seconds between chrome's devtools connection attempts.
+  DEVTOOLS_CONNECTION_ATTEMPT_INTERVAL_SECONDS = 1
+
+  # An estimate of time to wait for the device to become idle after expensive
+  # operations, such as opening the launcher activity.
+  TIME_TO_IDLE_SECONDS = 2
 
   def __init__(self, device):
     """Initialize the controller.
@@ -203,38 +207,50 @@ class RemoteChromeController(ChromeControllerBase):
       device: an andriod device.
     """
     assert device is not None, 'Should you be using LocalController instead?'
-    self._device = device
     super(RemoteChromeController, self).__init__()
+    self._device = device
+    self._device.EnableRoot()
 
   @contextlib.contextmanager
   def Open(self):
     """Overridden connection creation."""
     package_info = OPTIONS.ChromePackage()
     command_line_path = '/data/local/chrome-command-line'
-
-    self._device.EnableRoot()
     self._device.KillAll(package_info.package, quiet=True)
-
+    chrome_args = self._GetChromeArguments()
+    logging.info('Launching %s with flags: %s' % (package_info.package,
+        subprocess.list2cmdline(chrome_args)))
     with device_setup.FlagReplacer(
         self._device, command_line_path, self._GetChromeArguments()):
       start_intent = intent.Intent(
           package=package_info.package, activity=package_info.activity,
           data='about:blank')
       self._device.StartActivity(start_intent, blocking=True)
-      time.sleep(self.POST_ACTIVITY_SLEEP_SECONDS)
-      with device_setup.ForwardPort(
-          self._device, 'tcp:%d' % OPTIONS.devtools_port,
-          'localabstract:chrome_devtools_remote'):
-        connection = devtools_monitor.DevToolsConnection(
-            OPTIONS.devtools_hostname, OPTIONS.devtools_port)
-        self._StartConnection(connection)
-        yield connection
-    if self._slow_death:
-      self._device.adb.Shell('am start com.google.android.launcher')
-      time.sleep(_TIME_TO_DEVICE_IDLE_SECONDS)
-      self._device.KillAll(OPTIONS.chrome_package_name, quiet=True)
-      time.sleep(_TIME_TO_DEVICE_IDLE_SECONDS)
-    self._device.KillAll(package_info.package, quiet=True)
+      try:
+        for attempt_id in xrange(self.DEVTOOLS_CONNECTION_ATTEMPTS + 1):
+          if attempt_id == self.DEVTOOLS_CONNECTION_ATTEMPTS:
+            raise RuntimeError('Failed to connect to chrome devtools after {} '
+                               'attempts.'.format(attempt_id))
+          logging.info('Devtools connection attempt %d' % attempt_id)
+          with device_setup.ForwardPort(
+              self._device, 'tcp:%d' % OPTIONS.devtools_port,
+              'localabstract:chrome_devtools_remote'):
+            try:
+              connection = devtools_monitor.DevToolsConnection(
+                  OPTIONS.devtools_hostname, OPTIONS.devtools_port)
+              self._StartConnection(connection)
+            except socket.error as e:
+              assert str(e).startswith('[Errno 104] Connection reset by peer')
+              time.sleep(self.DEVTOOLS_CONNECTION_ATTEMPT_INTERVAL_SECONDS)
+              continue
+            logging.info('Devtools connection success')
+            yield connection
+            if self._slow_death:
+              self._device.adb.Shell('am start com.google.android.launcher')
+              time.sleep(self.TIME_TO_IDLE_SECONDS)
+            break
+      finally:
+        self._device.KillAll(package_info.package, quiet=True)
 
   def PushBrowserCache(self, cache_path):
     """Override for chrome cache pushing."""
