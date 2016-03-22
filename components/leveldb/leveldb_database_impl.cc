@@ -29,7 +29,7 @@ uint64_t GetSafeRandomId(const std::map<uint64_t, T>& m) {
 
 LevelDBDatabaseImpl::LevelDBDatabaseImpl(
     leveldb::LevelDBDatabaseRequest request,
-    scoped_ptr<MojoEnv> environment,
+    scoped_ptr<leveldb::Env> environment,
     scoped_ptr<leveldb::DB> db)
     : binding_(this, std::move(request)),
       environment_(std::move(environment)),

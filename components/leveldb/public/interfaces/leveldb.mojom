@@ -32,6 +32,8 @@ interface LevelDBService {
   Open(filesystem.Directory directory,
        string dbname,
        LevelDBDatabase& database) => (DatabaseError status);
+
+  OpenInMemory(LevelDBDatabase& database) => (DatabaseError status);
 };
 
 // A leveldb database.

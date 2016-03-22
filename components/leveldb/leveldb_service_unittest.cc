@@ -303,5 +303,47 @@ TEST_F(LevelDBApptest, InvalidArgumentOnInvalidSnapshot) {
   EXPECT_EQ(DatabaseError::INVALID_ARGUMENT, error);
 }
 
+TEST_F(LevelDBApptest, MemoryDBReadWrite) {
+  LevelDBDatabasePtr database;
+  DatabaseError error = DatabaseError::INVALID_ARGUMENT;
+  leveldb()->OpenInMemory(GetProxy(&database), Capture(&error));
+  ASSERT_TRUE(leveldb().WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+
+  // Write a key to the database.
+  error = DatabaseError::INVALID_ARGUMENT;
+  database->Put(mojo::Array<uint8_t>::From(std::string("key")),
+                mojo::Array<uint8_t>::From(std::string("value")),
+                Capture(&error));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+
+  // Read the key back from the database.
+  error = DatabaseError::INVALID_ARGUMENT;
+  mojo::Array<uint8_t> value;
+  database->Get(mojo::Array<uint8_t>::From(std::string("key")),
+                Capture(&error, &value));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+  EXPECT_EQ("value", value.To<std::string>());
+
+  // Delete the key from the database.
+  error = DatabaseError::INVALID_ARGUMENT;
+  database->Delete(mojo::Array<uint8_t>::From(std::string("key")),
+                   Capture(&error));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::OK, error);
+
+  // Read the key back from the database.
+  error = DatabaseError::INVALID_ARGUMENT;
+  value.SetToEmpty();
+  database->Get(mojo::Array<uint8_t>::From(std::string("key")),
+                Capture(&error, &value));
+  ASSERT_TRUE(database.WaitForIncomingResponse());
+  EXPECT_EQ(DatabaseError::NOT_FOUND, error);
+  EXPECT_EQ("", value.To<std::string>());
+}
+
+
 }  // namespace
 }  // namespace leveldb

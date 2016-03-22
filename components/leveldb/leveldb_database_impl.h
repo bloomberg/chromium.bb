@@ -19,7 +19,7 @@ class MojoEnv;
 class LevelDBDatabaseImpl : public LevelDBDatabase {
  public:
   LevelDBDatabaseImpl(leveldb::LevelDBDatabaseRequest request,
-                      scoped_ptr<MojoEnv> environment,
+                      scoped_ptr<leveldb::Env> environment,
                       scoped_ptr<leveldb::DB> db);
   ~LevelDBDatabaseImpl() override;
 
@@ -40,7 +40,7 @@ class LevelDBDatabaseImpl : public LevelDBDatabase {
 
  private:
   mojo::StrongBinding<LevelDBDatabase> binding_;
-  scoped_ptr<MojoEnv> environment_;
+  scoped_ptr<leveldb::Env> environment_;
   scoped_ptr<leveldb::DB> db_;
 
   std::map<uint64_t, const Snapshot*> snapshot_map_;

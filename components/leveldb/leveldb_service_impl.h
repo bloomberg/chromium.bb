@@ -23,6 +23,8 @@ class LevelDBServiceImpl : public LevelDBService {
             const mojo::String& dbname,
             leveldb::LevelDBDatabaseRequest database,
             const OpenCallback& callback) override;
+  void OpenInMemory(leveldb::LevelDBDatabaseRequest database,
+                    const OpenInMemoryCallback& callback) override;
 
  private:
   // Thread to own the mojo message pipe. Because leveldb spawns multiple

@@ -128,26 +128,30 @@ class DOMStorageContextWrapper::MojoState {
 void DOMStorageContextWrapper::MojoState::OpenLocalStorage(
     const url::Origin& origin,
     LevelDBWrapperRequest request) {
-  // If we don't have a specific subdirectory where we want to put our data
-  // (ie, we're in incognito mode), just bind the storage with a null leveldb_
-  // database.
-  if (subdirectory_.empty()) {
-    BindLocalStorage(origin, std::move(request));
-    return;
-  }
-
   // If we don't have a filesystem_connection_, we'll need to establish one.
   if (connection_state_ == NO_CONNECTION) {
     profile_app_connection_ = MojoAppConnection::Create(
         mojo_user_id_, "mojo:profile", kBrowserMojoAppUrl);
-    profile_app_connection_->GetInterface(&profile_service_);
 
-    profile_service_->GetSubDirectory(
-        mojo::String::From(subdirectory_.AsUTF8Unsafe()),
-        GetProxy(&directory_),
-        base::Bind(&MojoState::OnDirectoryOpened,
-                   weak_ptr_factory_.GetWeakPtr()));
     connection_state_ = CONNECTION_IN_PROGRESS;
+
+    if (!subdirectory_.empty()) {
+      // We were given a subdirectory to write to. Get it and use a disk backed
+      // database.
+      profile_app_connection_->GetInterface(&profile_service_);
+      profile_service_->GetSubDirectory(
+          mojo::String::From(subdirectory_.AsUTF8Unsafe()),
+          GetProxy(&directory_),
+          base::Bind(&MojoState::OnDirectoryOpened,
+                     weak_ptr_factory_.GetWeakPtr()));
+    } else {
+      // We were not given a subdirectory. Use a memory backed database.
+      profile_app_connection_->GetInterface(&leveldb_service_);
+      leveldb_service_->OpenInMemory(
+          GetProxy(&database_),
+          base::Bind(&MojoState::OnDatabaseOpened,
+                     weak_ptr_factory_.GetWeakPtr()));
+    }
   }
 
   if (connection_state_ == CONNECTION_IN_PROGRESS) {

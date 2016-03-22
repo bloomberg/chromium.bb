@@ -8,6 +8,7 @@
 #include "components/leveldb/leveldb_database_impl.h"
 #include "components/leveldb/util.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/filter_policy.h"
@@ -47,6 +48,27 @@ void LevelDBServiceImpl::Open(filesystem::DirectoryPtr directory,
 
   if (s.ok()) {
     new LevelDBDatabaseImpl(std::move(database), std::move(env_mojo),
+                            scoped_ptr<leveldb::DB>(db));
+  }
+
+  callback.Run(LeveldbStatusToError(s));
+}
+
+void LevelDBServiceImpl::OpenInMemory(leveldb::LevelDBDatabaseRequest database,
+                                      const OpenCallback& callback) {
+  leveldb::Options options;
+  options.create_if_missing = true;
+  options.max_open_files = 0;  // Use minimum.
+  options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
+
+  scoped_ptr<leveldb::Env> env(leveldb::NewMemEnv(leveldb::Env::Default()));
+  options.env = env.get();
+
+  leveldb::DB* db = nullptr;
+  leveldb::Status s = leveldb::DB::Open(options, "", &db);
+
+  if (s.ok()) {
+    new LevelDBDatabaseImpl(std::move(database), std::move(env),
                             scoped_ptr<leveldb::DB>(db));
   }
 
