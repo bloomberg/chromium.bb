@@ -29,6 +29,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/graphics/GraphicsTypes3D.h"
 #include "platform/heap/Handle.h"
+#include "wtf/Assertions.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
@@ -47,9 +48,17 @@ class WebGLContextGroup;
 class WebGLRenderingContextBase;
 
 template <typename T>
-Platform3DObject objectOrZero(const T* object)
+GLuint objectOrZero(const T* object)
 {
     return object ? object->object() : 0;
+}
+
+template <typename T>
+GLuint objectNonZero(const T* object)
+{
+    GLuint result = object->object();
+    DCHECK(result);
+    return result;
 }
 
 class WebGLObject : public GarbageCollectedFinalized<WebGLObject>, public ScriptWrappable {

@@ -754,6 +754,8 @@ protected:
 
     // Errors raised by synthesizeGLError() while the context is lost.
     Vector<GLenum> m_lostContextErrors;
+    // Other errors raised by synthesizeGLError().
+    Vector<GLenum> m_syntheticErrors;
 
     bool m_isWebGL2FormatsTypesAdded;
     bool m_isWebGL2InternalFormatsCopyTexImageAdded;

@@ -2296,6 +2296,15 @@ WebGLActiveInfo* WebGLRenderingContextBase::getActiveAttrib(WebGLProgram* progra
     if (isContextLost() || !validateWebGLObject("getActiveAttrib", program))
         return nullptr;
     WebGraphicsContext3D::ActiveInfo info;
+    GLuint programId = objectNonZero(program);
+    GLint maxNameLength = -1;
+    contextGL()->GetProgramiv(programId, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxNameLength);
+    if (maxNameLength < 0)
+        return nullptr;
+    if (maxNameLength == 0) {
+        synthesizeGLError(GL_INVALID_VALUE, "getActiveAttrib", "no active attributes exist");
+        return nullptr;
+    }
     if (!webContext()->getActiveAttrib(objectOrZero(program), index, info))
         return nullptr;
     return WebGLActiveInfo::create(info.name, info.type, info.size);
@@ -2305,8 +2314,17 @@ WebGLActiveInfo* WebGLRenderingContextBase::getActiveUniform(WebGLProgram* progr
 {
     if (isContextLost() || !validateWebGLObject("getActiveUniform", program))
         return nullptr;
+    GLuint programId = objectNonZero(program);
+    GLint maxNameLength = -1;
+    contextGL()->GetProgramiv(programId, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLength);
+    if (maxNameLength < 0)
+        return nullptr;
+    if (maxNameLength == 0) {
+        synthesizeGLError(GL_INVALID_VALUE, "getActiveUniform", "no active uniforms exist");
+        return nullptr;
+    }
     WebGraphicsContext3D::ActiveInfo info;
-    if (!webContext()->getActiveUniform(objectOrZero(program), index, info))
+    if (!webContext()->getActiveUniform(programId, index, info))
         return nullptr;
     return WebGLActiveInfo::create(info.name, info.type, info.size);
 }
@@ -2339,7 +2357,7 @@ GLint WebGLRenderingContextBase::getAttribLocation(WebGLProgram* program, const 
         return -1;
     if (isPrefixReserved(name))
         return -1;
-    if (!program->linkStatus()) {
+    if (!program->linkStatus(this)) {
         synthesizeGLError(GL_INVALID_OPERATION, "getAttribLocation", "program not linked");
         return 0;
     }
@@ -2401,16 +2419,22 @@ void WebGLRenderingContextBase::getContextAttributes(Nullable<WebGLContextAttrib
 
 GLenum WebGLRenderingContextBase::getError()
 {
-    if (m_lostContextErrors.size()) {
-        GLenum err = m_lostContextErrors.first();
+    if (!m_lostContextErrors.isEmpty()) {
+        GLenum error = m_lostContextErrors.first();
         m_lostContextErrors.remove(0);
-        return err;
+        return error;
     }
 
     if (isContextLost())
         return GL_NO_ERROR;
 
-    return webContext()->getError();
+    if (!m_syntheticErrors.isEmpty()) {
+        GLenum error = m_syntheticErrors.first();
+        m_syntheticErrors.remove(0);
+        return error;
+    }
+
+    return contextGL()->GetError();
 }
 
 const char* const* WebGLRenderingContextBase::ExtensionTracker::prefixes() const
@@ -2806,7 +2830,7 @@ ScriptValue WebGLRenderingContextBase::getProgramParameter(ScriptState* scriptSt
         contextGL()->GetProgramiv(objectOrZero(program), pname, &value);
         return WebGLAny(scriptState, static_cast<bool>(value));
     case GL_LINK_STATUS:
-        return WebGLAny(scriptState, program->linkStatus());
+        return WebGLAny(scriptState, program->linkStatus(this));
     case GL_ACTIVE_UNIFORM_BLOCKS:
     case GL_TRANSFORM_FEEDBACK_VARYINGS:
         if (!isWebGL2OrHigher()) {
@@ -3208,7 +3232,7 @@ WebGLUniformLocation* WebGLRenderingContextBase::getUniformLocation(WebGLProgram
         return nullptr;
     if (isPrefixReserved(name))
         return nullptr;
-    if (!program->linkStatus()) {
+    if (!program->linkStatus(this)) {
         synthesizeGLError(GL_INVALID_OPERATION, "getUniformLocation", "program not linked");
         return nullptr;
     }
@@ -4779,7 +4803,7 @@ void WebGLRenderingContextBase::useProgram(ScriptState* scriptState, WebGLProgra
         return;
     if (deleted)
         program = 0;
-    if (program && !program->linkStatus()) {
+    if (program && !program->linkStatus(this)) {
         synthesizeGLError(GL_INVALID_OPERATION, "useProgram", "program not valid");
         return;
     }
@@ -6062,9 +6086,10 @@ void WebGLRenderingContextBase::synthesizeGLError(GLenum error, const char* func
         printGLErrorToConsole(message);
     }
     if (!isContextLost()) {
-        webContext()->synthesizeGLError(error);
+        if (!m_syntheticErrors.contains(error))
+            m_syntheticErrors.append(error);
     } else {
-        if (m_lostContextErrors.find(error) == WTF::kNotFound)
+        if (!m_lostContextErrors.contains(error))
             m_lostContextErrors.append(error);
     }
     InspectorInstrumentation::didFireWebGLError(canvas(), errorType);

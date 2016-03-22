@@ -49,7 +49,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
                         blink::WGC3Duint index,
                         ActiveInfo&) override;
 
-  blink::WGC3Denum getError() override;
   blink::WebString getProgramInfoLog(blink::WebGLId program) override;
   blink::WebString getShaderInfoLog(blink::WebGLId shader) override;
   blink::WebString getShaderSource(blink::WebGLId shader) override;
@@ -83,8 +82,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void deleteFramebuffer(blink::WebGLId) override;
   void deleteRenderbuffer(blink::WebGLId) override;
   void deleteTexture(blink::WebGLId) override;
-
-  void synthesizeGLError(blink::WGC3Denum) override;
 
   blink::WebString getRequestableExtensionsCHROMIUM() override;
 

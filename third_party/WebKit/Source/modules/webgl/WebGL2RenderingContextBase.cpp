@@ -2289,7 +2289,7 @@ WebGLActiveInfo* WebGL2RenderingContextBase::getTransformFeedbackVarying(WebGLPr
     if (isContextLost() || !validateWebGLObject("getTransformFeedbackVarying", program))
         return nullptr;
 
-    if (!program->linkStatus()) {
+    if (!program->linkStatus(this)) {
         synthesizeGLError(GL_INVALID_OPERATION, "getTransformFeedbackVarying", "program not linked");
         return nullptr;
     }
@@ -2583,7 +2583,7 @@ GLuint WebGL2RenderingContextBase::getUniformBlockIndex(WebGLProgram* program, c
 bool WebGL2RenderingContextBase::validateUniformBlockIndex(const char* functionName, WebGLProgram* program, GLuint blockIndex)
 {
     ASSERT(program);
-    if (!program->linkStatus()) {
+    if (!program->linkStatus(this)) {
         synthesizeGLError(GL_INVALID_OPERATION, functionName, "program not linked");
         return false;
     }
@@ -2707,7 +2707,7 @@ void WebGL2RenderingContextBase::bindVertexArray(ScriptState* scriptState, WebGL
         return;
 
     if (vertexArray && (vertexArray->isDeleted() || !vertexArray->validate(0, this))) {
-        webContext()->synthesizeGLError(GL_INVALID_OPERATION);
+        synthesizeGLError(GL_INVALID_OPERATION, "bindVertexArray", "invalid vertexArray");
         return;
     }
 

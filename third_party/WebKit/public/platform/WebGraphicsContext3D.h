@@ -137,16 +137,6 @@ public:
     // This destructor needs to be public so that using classes can destroy instances if initialization fails.
     virtual ~WebGraphicsContext3D() { }
 
-    // Synthesizes an OpenGL error which will be returned from a
-    // later call to getError. This is used to emulate OpenGL ES
-    // 2.0 behavior on the desktop and to enforce additional error
-    // checking mandated by WebGL.
-    //
-    // Per the behavior of glGetError, this stores at most one
-    // instance of any given error, and returns them from calls to
-    // getError in the order they were added.
-    virtual void synthesizeGLError(WGC3Denum) = 0;
-
     // GL_CHROMIUM_request_extension
     virtual WebString getRequestableExtensionsCHROMIUM() = 0;
 
@@ -160,7 +150,6 @@ public:
 
     virtual bool getActiveAttrib(WebGLId program, WGC3Duint index, ActiveInfo&) = 0;
     virtual bool getActiveUniform(WebGLId program, WGC3Duint index, ActiveInfo&) = 0;
-    virtual WGC3Denum getError() = 0;
     virtual WebString getProgramInfoLog(WebGLId program) = 0;
     virtual WebString getShaderInfoLog(WebGLId shader) = 0;
     virtual WebString getShaderSource(WebGLId shader) = 0;

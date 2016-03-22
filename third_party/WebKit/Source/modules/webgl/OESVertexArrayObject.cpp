@@ -94,7 +94,7 @@ void OESVertexArrayObject::bindVertexArrayOES(ScriptState* scriptState, WebGLVer
         return;
 
     if (arrayObject && (arrayObject->isDeleted() || !arrayObject->validate(0, scoped.context()))) {
-        scoped.context()->webContext()->synthesizeGLError(GL_INVALID_OPERATION);
+        scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "bindVertexArrayOES", "invalid arrayObject");
         return;
     }
 

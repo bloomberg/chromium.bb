@@ -75,22 +75,22 @@ void EXTDisjointTimerQuery::beginQueryEXT(GLenum target, WebGLTimerQueryEXT* que
         return;
 
     if (!query || query->isDeleted() || !query->validate(0, scoped.context())) {
-        scoped.context()->webContext()->synthesizeGLError(GL_INVALID_OPERATION);
+        scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "beginQueryEXT", "invalid query");
         return;
     }
 
     if (target != GL_TIME_ELAPSED_EXT) {
-        scoped.context()->webContext()->synthesizeGLError(GL_INVALID_ENUM);
+        scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "beginQueryEXT", "invalid target");
         return;
     }
 
-    if (m_currentElapsedQuery.get()) {
-        scoped.context()->webContext()->synthesizeGLError(GL_INVALID_OPERATION);
+    if (m_currentElapsedQuery) {
+        scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "beginQueryEXT", "no current query");
         return;
     }
 
     if (query->hasTarget() && query->target() != target) {
-        scoped.context()->webContext()->synthesizeGLError(GL_INVALID_OPERATION);
+        scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "beginQueryEXT", "target does not match query");
         return;
     }
 
@@ -106,12 +106,12 @@ void EXTDisjointTimerQuery::endQueryEXT(GLenum target)
         return;
 
     if (target != GL_TIME_ELAPSED_EXT) {
-        scoped.context()->webContext()->synthesizeGLError(GL_INVALID_ENUM);
+        scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "endQueryEXT", "invalid target");
         return;
     }
 
     if (!m_currentElapsedQuery) {
-        scoped.context()->webContext()->synthesizeGLError(GL_INVALID_OPERATION);
+        scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "endQueryEXT", "no current query");
         return;
     }
 
@@ -127,17 +127,17 @@ void EXTDisjointTimerQuery::queryCounterEXT(WebGLTimerQueryEXT* query, GLenum ta
         return;
 
     if (!query || query->isDeleted() || !query->validate(0, scoped.context())) {
-        scoped.context()->webContext()->synthesizeGLError(GL_INVALID_OPERATION);
+        scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT", "invalid query");
         return;
     }
 
     if (target != GL_TIMESTAMP_EXT) {
-        scoped.context()->webContext()->synthesizeGLError(GL_INVALID_ENUM);
+        scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "queryCounterEXT", "invalid target");
         return;
     }
 
     if (query->hasTarget() && query->target() != target) {
-        scoped.context()->webContext()->synthesizeGLError(GL_INVALID_OPERATION);
+        scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT", "target does not match query");
         return;
     }
 
@@ -168,7 +168,7 @@ ScriptValue EXTDisjointTimerQuery::getQueryEXT(ScriptState* scriptState, GLenum 
         }
     }
 
-    scoped.context()->webContext()->synthesizeGLError(GL_INVALID_ENUM);
+    scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "getQueryEXT", "invalid target or pname");
     return ScriptValue::createNull(scriptState);
 }
 
@@ -179,7 +179,7 @@ ScriptValue EXTDisjointTimerQuery::getQueryObjectEXT(ScriptState* scriptState, W
         return ScriptValue::createNull(scriptState);
 
     if (!query || query->isDeleted() || !query->validate(0, scoped.context()) || m_currentElapsedQuery == query) {
-        scoped.context()->webContext()->synthesizeGLError(GL_INVALID_OPERATION);
+        scoped.context()->synthesizeGLError(GL_INVALID_OPERATION, "getQueryObjectEXT", "invalid query");
         return ScriptValue::createNull(scriptState);
     }
 
@@ -193,7 +193,7 @@ ScriptValue EXTDisjointTimerQuery::getQueryObjectEXT(ScriptState* scriptState, W
         return WebGLAny(scriptState, query->isQueryResultAvailable());
     }
     default:
-        scoped.context()->webContext()->synthesizeGLError(GL_INVALID_ENUM);
+        scoped.context()->synthesizeGLError(GL_INVALID_ENUM, "getQueryObjectEXT", "invalid pname");
         break;
     }
 

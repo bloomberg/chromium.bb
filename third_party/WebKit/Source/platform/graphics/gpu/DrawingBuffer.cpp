@@ -674,7 +674,7 @@ bool DrawingBuffer::resizeMultisampleFramebuffer(const IntSize& size)
         m_gl->BindRenderbuffer(GL_RENDERBUFFER, m_multisampleColorBuffer);
         m_gl->RenderbufferStorageMultisampleCHROMIUM(GL_RENDERBUFFER, m_sampleCount, m_colorBuffer.parameters.internalRenderbufferFormat, size.width(), size.height());
 
-        if (m_context->getError() == GL_OUT_OF_MEMORY)
+        if (m_gl->GetError() == GL_OUT_OF_MEMORY)
             return false;
 
         m_gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, m_multisampleColorBuffer);

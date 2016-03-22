@@ -73,33 +73,9 @@ void WebGLProgram::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2:
     }
 }
 
-unsigned WebGLProgram::numActiveAttribLocations()
+bool WebGLProgram::linkStatus(WebGLRenderingContextBase* context)
 {
-    cacheInfoIfNeeded();
-    return m_activeAttribLocations.size();
-}
-
-GLint WebGLProgram::getActiveAttribLocation(GLuint index)
-{
-    cacheInfoIfNeeded();
-    if (index >= numActiveAttribLocations())
-        return -1;
-    return m_activeAttribLocations[index];
-}
-
-bool WebGLProgram::isUsingVertexAttrib0()
-{
-    cacheInfoIfNeeded();
-    for (unsigned ii = 0; ii < numActiveAttribLocations(); ++ii) {
-        if (!getActiveAttribLocation(ii))
-            return true;
-    }
-    return false;
-}
-
-bool WebGLProgram::linkStatus()
-{
-    cacheInfoIfNeeded();
+    cacheInfoIfNeeded(context);
     return m_linkStatus;
 }
 
@@ -171,39 +147,15 @@ bool WebGLProgram::detachShader(WebGLShader* shader)
     }
 }
 
-void WebGLProgram::cacheActiveAttribLocations(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
-{
-    m_activeAttribLocations.clear();
-
-    GLint numAttribs = 0;
-    gl->GetProgramiv(m_object, GL_ACTIVE_ATTRIBUTES, &numAttribs);
-    m_activeAttribLocations.resize(static_cast<size_t>(numAttribs));
-    for (int i = 0; i < numAttribs; ++i) {
-        WebGraphicsContext3D::ActiveInfo info;
-        context3d->getActiveAttrib(m_object, i, info);
-        m_activeAttribLocations[i] = gl->GetAttribLocation(m_object, info.name.utf8().data());
-    }
-}
-
-void WebGLProgram::cacheInfoIfNeeded()
+void WebGLProgram::cacheInfoIfNeeded(WebGLRenderingContextBase* context)
 {
     if (m_infoValid)
         return;
-
     if (!m_object)
         return;
-
-    if (!contextGroup())
-        return;
-    WebGraphicsContext3D* context = contextGroup()->getAWebGraphicsContext3D();
-    if (!context)
-        return;
-    gpu::gles2::GLES2Interface* gl = context->getGLES2Interface();
-    GLint linkStatus = 0;
-    gl->GetProgramiv(m_object, GL_LINK_STATUS, &linkStatus);
-    m_linkStatus = linkStatus;
-    if (m_linkStatus)
-        cacheActiveAttribLocations(context, gl);
+    gpu::gles2::GLES2Interface* gl = context->contextGL();
+    m_linkStatus = 0;
+    gl->GetProgramiv(m_object, GL_LINK_STATUS, &m_linkStatus);
     m_infoValid = true;
 }
 

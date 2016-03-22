@@ -192,13 +192,6 @@ WebGraphicsContext3DImpl::~WebGraphicsContext3DImpl() {
 
 }
 
-void WebGraphicsContext3DImpl::synthesizeGLError(WGC3Denum error) {
-  if (std::find(synthetic_errors_.begin(), synthetic_errors_.end(), error) ==
-      synthetic_errors_.end()) {
-    synthetic_errors_.push_back(error);
-  }
-}
-
 blink::WebString WebGraphicsContext3DImpl::
     getRequestableExtensionsCHROMIUM() {
   return blink::WebString::fromUTF8(
@@ -226,20 +219,11 @@ void WebGraphicsContext3DImpl::drawElements(WGC3Denum mode,
 
 bool WebGraphicsContext3DImpl::getActiveAttrib(
     WebGLId program, WGC3Duint index, ActiveInfo& info) {
-  if (!program) {
-    synthesizeGLError(GL_INVALID_VALUE);
-    return false;
-  }
   GLint max_name_length = -1;
   gl_->GetProgramiv(
       program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_name_length);
-  if (max_name_length < 0)
-    return false;
-  if (max_name_length == 0) {
-    // No active attributes exist.
-    synthesizeGLError(GL_INVALID_VALUE);
-    return false;
-  }
+  // The caller already checked that there is some active attribute.
+  DCHECK_GT(max_name_length, 0);
   scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
   GLsizei length = 0;
   GLint size = -1;
@@ -260,13 +244,8 @@ bool WebGraphicsContext3DImpl::getActiveUniform(
   GLint max_name_length = -1;
   gl_->GetProgramiv(
       program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_name_length);
-  if (max_name_length < 0)
-    return false;
-  if (max_name_length == 0) {
-    // No active uniforms exist.
-    synthesizeGLError(GL_INVALID_VALUE);
-    return false;
-  }
+  // The caller already checked that there is some active uniform.
+  DCHECK_GT(max_name_length, 0);
   scoped_ptr<GLchar[]> name(new GLchar[max_name_length]);
   GLsizei length = 0;
   GLint size = -1;
@@ -280,17 +259,6 @@ bool WebGraphicsContext3DImpl::getActiveUniform(
   info.type = type;
   info.size = size;
   return true;
-}
-
-WGC3Denum WebGraphicsContext3DImpl::getError() {
-  if (!synthetic_errors_.empty()) {
-    std::vector<WGC3Denum>::iterator iter = synthetic_errors_.begin();
-    WGC3Denum err = *iter;
-    synthetic_errors_.erase(iter);
-    return err;
-  }
-
-  return gl_->GetError();
 }
 
 blink::WebString WebGraphicsContext3DImpl::getProgramInfoLog(
