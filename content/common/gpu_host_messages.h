@@ -7,8 +7,8 @@
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/common/establish_channel_params.h"
 #include "content/common/gpu/gpu_memory_uma_stats.h"
-#include "content/gpu/establish_channel_params.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"

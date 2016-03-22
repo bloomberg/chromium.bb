@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_GPU_ESTABLISH_CHANNEL_PARAMS_H_
-#define CONTENT_GPU_ESTABLISH_CHANNEL_PARAMS_H_
+#ifndef CONTENT_COMMON_ESTABLISH_CHANNEL_PARAMS_H_
+#define CONTENT_COMMON_ESTABLISH_CHANNEL_PARAMS_H_
 
 #include <stdint.h>
 
@@ -24,4 +24,4 @@ struct CONTENT_EXPORT EstablishChannelParams {
 
 }  // namespace content
 
-#endif  // CONTENT_GPU_ESTABLISH_CHANNEL_PARAMS_H_
+#endif  // CONTENT_COMMON_ESTABLISH_CHANNEL_PARAMS_H_

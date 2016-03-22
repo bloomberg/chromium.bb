@@ -22,7 +22,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/gpu/gpu_host_messages.h"
+#include "content/common/gpu_host_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "ui/gfx/swap_result.h"
