@@ -468,6 +468,11 @@ void Compositor::DidAbortSwapBuffers() {
                     OnCompositingAborted(this));
 }
 
+void Compositor::SetOutputIsSecure(bool output_is_secure) {
+  host_->SetOutputIsSecure(output_is_secure);
+  host_->SetNeedsRedraw();
+}
+
 void Compositor::SendBeginFramesToChildren(const cc::BeginFrameArgs& args) {
   FOR_EACH_OBSERVER(CompositorBeginFrameObserver, begin_frame_observer_list_,
                     OnSendBeginFrame(args));

@@ -139,8 +139,8 @@ class LayerTestCommon {
 
     void RequestCopyOfOutput();
 
-    void SetSecureOutputSurface(bool secure_output) {
-      host_->host_impl()->output_surface()->set_is_secure(secure_output);
+    void SetOutputIsSecure(bool output_is_secure) {
+      host_->host_impl()->set_output_is_secure(output_is_secure);
     }
 
     OutputSurface* output_surface() const {

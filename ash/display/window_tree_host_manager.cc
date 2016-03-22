@@ -775,6 +775,16 @@ void WindowTreeHostManager::PostDisplayConfigurationChange() {
                               : layout.primary_id);
     }
   }
+
+  for (const gfx::Display& display : display_manager->active_display_list()) {
+    bool output_is_secure =
+        !display_manager->IsInMirrorMode() && display.IsInternal();
+    GetAshWindowTreeHostForDisplayId(display.id())
+        ->AsWindowTreeHost()
+        ->compositor()
+        ->SetOutputIsSecure(output_is_secure);
+  }
+
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanged());
   UpdateMouseLocationAfterDisplayChange();
 }

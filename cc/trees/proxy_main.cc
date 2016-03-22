@@ -449,6 +449,10 @@ void ProxyMain::UpdateTopControlsState(TopControlsState constraints,
   channel_main_->UpdateTopControlsStateOnImpl(constraints, current, animate);
 }
 
+void ProxyMain::SetOutputIsSecure(bool output_is_secure) {
+  NOTREACHED() << "Only used by SingleProxyMain";
+}
+
 bool ProxyMain::SendCommitRequestToImplThreadIfNeeded(
     CommitPipelineStage required_stage) {
   DCHECK(IsMainThread());

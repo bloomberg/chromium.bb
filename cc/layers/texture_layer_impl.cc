@@ -166,8 +166,7 @@ void TextureLayerImpl::AppendQuads(RenderPass* render_pass,
     return;
 
   if (!texture_mailbox_.secure_output_only() ||
-      (layer_tree_impl()->output_surface()->is_secure() &&
-       !AnchestorHasCopyRequest())) {
+      (layer_tree_impl()->OutputIsSecure() && !AnchestorHasCopyRequest())) {
     TextureDrawQuad* quad =
         render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     ResourceId id =

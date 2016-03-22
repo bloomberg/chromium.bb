@@ -103,7 +103,7 @@ TEST(TextureLayerImplTest, Occlusion) {
   }
 }
 
-TEST(TextureLayerImplTest, Protected) {
+TEST(TextureLayerImplTest, OutputIsSecure) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
 
@@ -138,7 +138,7 @@ TEST(TextureLayerImplTest, Protected) {
   }
 
   {
-    impl.SetSecureOutputSurface(true);
+    impl.SetOutputIsSecure(true);
     gfx::Rect occluded;
     impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);
 
@@ -148,7 +148,7 @@ TEST(TextureLayerImplTest, Protected) {
   }
 
   {
-    impl.SetSecureOutputSurface(false);
+    impl.SetOutputIsSecure(false);
     impl.RequestCopyOfOutput();
     gfx::Rect occluded;
     impl.AppendQuadsWithOcclusion(texture_layer_impl, occluded);

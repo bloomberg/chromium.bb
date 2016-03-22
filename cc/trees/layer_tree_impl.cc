@@ -1391,6 +1391,10 @@ bool LayerTreeImpl::IsUIResourceOpaque(UIResourceId uid) const {
   return layer_tree_host_impl_->IsUIResourceOpaque(uid);
 }
 
+bool LayerTreeImpl::OutputIsSecure() const {
+  return layer_tree_host_impl_->output_is_secure();
+}
+
 void LayerTreeImpl::ProcessUIResourceRequestQueue() {
   for (const auto& req : ui_resource_request_queue_) {
     switch (req.GetType()) {

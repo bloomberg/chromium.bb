@@ -61,6 +61,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void UpdateTopControlsState(TopControlsState constraints,
                               TopControlsState current,
                               bool animate) override;
+  void SetOutputIsSecure(bool output_is_secure) override;
 
   // SchedulerClient implementation
   void WillBeginImplFrame(const BeginFrameArgs& args) override;

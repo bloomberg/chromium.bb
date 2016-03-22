@@ -306,6 +306,10 @@ void RemoteChannelImpl::UpdateTopControlsState(TopControlsState constraints,
   NOTREACHED() << "Should not be called on the remote client LayerTreeHost";
 }
 
+void RemoteChannelImpl::SetOutputIsSecure(bool output_is_secure) {
+  NOTREACHED() << "Only used by SingleProxyMain";
+}
+
 bool RemoteChannelImpl::MainFrameWillHappenForTesting() {
   DCHECK(task_runner_provider_->IsMainThread());
   bool main_frame_will_happen;

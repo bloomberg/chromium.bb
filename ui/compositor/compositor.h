@@ -318,6 +318,8 @@ class COMPOSITOR_EXPORT Compositor
 
   bool IsLocked() { return compositor_lock_ != NULL; }
 
+  void SetOutputIsSecure(bool output_is_secure);
+
   const cc::LayerTreeDebugState& GetLayerTreeDebugState() const;
   void SetLayerTreeDebugState(const cc::LayerTreeDebugState& debug_state);
   const cc::RendererSettings& GetRendererSettings() const;

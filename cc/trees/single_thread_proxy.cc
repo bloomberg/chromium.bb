@@ -886,6 +886,10 @@ void SingleThreadProxy::UpdateTopControlsState(TopControlsState constraints,
   NOTREACHED() << "Top Controls are used only in threaded mode";
 }
 
+void SingleThreadProxy::SetOutputIsSecure(bool output_is_secure) {
+  layer_tree_host_impl_->set_output_is_secure(output_is_secure);
+}
+
 void SingleThreadProxy::DidFinishImplFrame() {
   layer_tree_host_impl_->DidFinishImplFrame();
 #if DCHECK_IS_ON()

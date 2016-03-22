@@ -167,10 +167,6 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  // Is this output surface associated with a secure display.
-  bool is_secure() const { return is_secure_; }
-  void set_is_secure(bool is_secure) { is_secure_ = is_secure; }
-
  protected:
   OutputSurfaceClient* client_;
 
@@ -196,7 +192,6 @@ class CC_EXPORT OutputSurface : public base::trace_event::MemoryDumpProvider {
  private:
   bool external_stencil_test_enabled_;
 
-  bool is_secure_ = false;
   base::WeakPtrFactory<OutputSurface> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputSurface);
