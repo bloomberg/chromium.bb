@@ -52,7 +52,7 @@ public:
     ALWAYS_INLINE void lock()
     {
         static_assert(sizeof(m_lock) == sizeof(int), "int and m_lock are different sizes");
-        if (LIKELY(!m_lock.exchange(true, std::memory_order_acq_rel)))
+        if (LIKELY(!m_lock.exchange(true, std::memory_order_acquire)))
             return;
         lockSlow();
     }

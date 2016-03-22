@@ -70,14 +70,14 @@ void SpinLock::lockSlow()
             for (int count = 0; count < kYieldProcessorTries; ++count) {
                 // Let the Processor know we're spinning.
                 YIELD_PROCESSOR;
-                if (!m_lock.load(std::memory_order_relaxed) && LIKELY(!m_lock.exchange(true, std::memory_order_acq_rel)))
+                if (!m_lock.load(std::memory_order_relaxed) && LIKELY(!m_lock.exchange(true, std::memory_order_acquire)))
                     return;
             }
 
             // Give the OS a chance to schedule something on this core.
             YIELD_THREAD;
         } while (m_lock.load(std::memory_order_relaxed));
-    } while (UNLIKELY(m_lock.exchange(true, std::memory_order_acq_rel)));
+    } while (UNLIKELY(m_lock.exchange(true, std::memory_order_acquire)));
 }
 
 } // namespace WTF
