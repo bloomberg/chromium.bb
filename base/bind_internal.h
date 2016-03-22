@@ -181,6 +181,11 @@ class RunnableAdapter<R(T::*)(Args...)> {
     return (object->*method_)(std::forward<RunArgs>(args)...);
   }
 
+  template <typename RefType, typename... RunArgs>
+  R Run(const scoped_refptr<RefType>& object, RunArgs&&... args) {
+    return (object.get()->*method_)(std::forward<RunArgs>(args)...);
+  }
+
  private:
   R (T::*method_)(Args...);
 };
@@ -199,6 +204,11 @@ class RunnableAdapter<R(T::*)(Args...) const> {
   template <typename... RunArgs>
   R Run(const T* object, RunArgs&&... args) {
     return (object->*method_)(std::forward<RunArgs>(args)...);
+  }
+
+  template <typename RefType, typename... RunArgs>
+  R Run(const scoped_refptr<RefType>& object, RunArgs&&... args) {
+    return (object.get()->*method_)(std::forward<RunArgs>(args)...);
   }
 
  private:

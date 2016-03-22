@@ -431,11 +431,6 @@ const T& Unwrap(ConstRefWrapper<T> const_ref) {
 }
 
 template <typename T>
-T* Unwrap(const scoped_refptr<T>& o) {
-  return o.get();
-}
-
-template <typename T>
 T* Unwrap(const RetainedRefWrapper<T>& o) {
   return o.get();
 }
