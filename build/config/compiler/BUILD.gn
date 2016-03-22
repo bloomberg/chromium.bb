@@ -143,6 +143,19 @@ config("compiler") {
     ":compiler_codegen",
   ]
 
+  if (is_win) {
+    ldflags += [
+      # Suggested by Microsoft Devrel to avoid
+      #   LINK : fatal error LNK1248: image size (80000000) exceeds maximum allowable size (80000000)
+      # which started happening more regularly after VS2013 Update 4.
+      # Needs to be a bit lower for VS2015, or else errors out.
+      "/maxilksize:0x7ff00000",
+
+      # Tell the linker to crash on failures.
+      "/fastfail",
+    ]
+  }
+
   # In general, Windows is totally different, but all the other builds share
   # some common GCC configuration.
   if (!is_win) {

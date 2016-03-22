@@ -3275,6 +3275,8 @@
               # which started happening more regularly after VS2013 Update 4.
               # Needs to be a bit lower for VS2015, or else errors out.
               '/maxilksize:0x7ff00000',
+              # Tell the linker to crash on failures.
+              '/fastfail',
             ],
           },
         },
