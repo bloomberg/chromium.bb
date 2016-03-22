@@ -2833,7 +2833,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_Renaming) {
 
 // Test that the entire download pipeline handles unicode correctly.
 // Disabled on Windows due to flaky timeouts: crbug.com/446695
-#if defined(OS_WIN)
+// Disabled on chromeos due to flaky crash: crbug.com/577332
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #define MAYBE_DownloadTest_CrazyFilenames DISABLED_DownloadTest_CrazyFilenames
 #else
 #define MAYBE_DownloadTest_CrazyFilenames DownloadTest_CrazyFilenames
