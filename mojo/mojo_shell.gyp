@@ -7,8 +7,6 @@
     'target_name': 'mojo_shell_lib',
     'type': 'static_library',
     'sources': [
-      'services/catalog/builder.cc',
-      'services/catalog/builder.h',
       'services/catalog/catalog.cc',
       'services/catalog/catalog.h',
       'services/catalog/entry.cc',

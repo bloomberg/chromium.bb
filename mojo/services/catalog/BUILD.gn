@@ -15,8 +15,6 @@ group("catalog") {
 
 source_set("lib") {
   sources = [
-    "builder.cc",
-    "builder.h",
     "catalog.cc",
     "catalog.h",
     "entry.cc",
@@ -48,7 +46,7 @@ mojo_application_manifest("manifest") {
 source_set("unittests") {
   testonly = true
   sources = [
-    "builder_unittest.cc",
+    "entry_unittest.cc",
   ]
   deps = [
     ":lib",

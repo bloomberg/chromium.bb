@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/services/catalog/builder.h"
+#include "mojo/services/catalog/entry.h"
 
 #include "base/files/file_path.h"
 #include "base/json/json_file_value_serializer.h"
@@ -15,19 +15,20 @@
 
 namespace catalog {
 
-class BuilderTest : public testing::Test {
+class EntryTest : public testing::Test {
  public:
-  BuilderTest() {}
-  ~BuilderTest() override {}
+  EntryTest() {}
+  ~EntryTest() override {}
 
  protected:
-  scoped_ptr<base::Value> ReadEntry(const std::string& manifest, Entry* entry) {
-    DCHECK(entry);
+  scoped_ptr<Entry> ReadEntry(const std::string& manifest,
+                              scoped_ptr<base::Value>* out_value) {
     scoped_ptr<base::Value> value = ReadManifest(manifest);
     base::DictionaryValue* dictionary = nullptr;
     CHECK(value->GetAsDictionary(&dictionary));
-    *entry = BuildEntry(*dictionary);
-    return value;
+    if (out_value)
+      *out_value = std::move(value);
+    return Entry::Deserialize(*dictionary);
   }
 
   scoped_ptr<base::Value> ReadManifest(const std::string& manifest) {
@@ -49,55 +50,50 @@ class BuilderTest : public testing::Test {
   void SetUp() override {}
   void TearDown() override {}
 
-  DISALLOW_COPY_AND_ASSIGN(BuilderTest);
+  DISALLOW_COPY_AND_ASSIGN(EntryTest);
 };
 
-TEST_F(BuilderTest, Simple) {
-  Entry entry;
-  ReadEntry("simple", &entry);
-
-  EXPECT_EQ("mojo:foo", entry.name);
-  EXPECT_EQ(mojo::GetNamePath(entry.name), entry.qualifier);
-  EXPECT_EQ("Foo", entry.display_name);
+TEST_F(EntryTest, Simple) {
+  scoped_ptr<Entry> entry = ReadEntry("simple", nullptr);
+  EXPECT_EQ("mojo:foo", entry->name());
+  EXPECT_EQ(mojo::GetNamePath(entry->name()), entry->qualifier());
+  EXPECT_EQ("Foo", entry->display_name());
 }
 
-TEST_F(BuilderTest, Instance) {
-  Entry entry;
-  ReadEntry("instance", &entry);
-
-  EXPECT_EQ("mojo:foo", entry.name);
-  EXPECT_EQ("bar", entry.qualifier);
-  EXPECT_EQ("Foo", entry.display_name);
+TEST_F(EntryTest, Instance) {
+  scoped_ptr<Entry> entry = ReadEntry("instance", nullptr);
+  EXPECT_EQ("mojo:foo", entry->name());
+  EXPECT_EQ("bar", entry->qualifier());
+  EXPECT_EQ("Foo", entry->display_name());
 }
 
-TEST_F(BuilderTest, Capabilities) {
-  Entry entry;
-  ReadEntry("capabilities", &entry);
+TEST_F(EntryTest, Capabilities) {
+  scoped_ptr<Entry> entry = ReadEntry("capabilities", nullptr);
 
-  EXPECT_EQ("mojo:foo", entry.name);
-  EXPECT_EQ("bar", entry.qualifier);
-  EXPECT_EQ("Foo", entry.display_name);
+  EXPECT_EQ("mojo:foo", entry->name());
+  EXPECT_EQ("bar", entry->qualifier());
+  EXPECT_EQ("Foo", entry->display_name());
   mojo::CapabilitySpec spec;
   mojo::CapabilityRequest request;
   request.interfaces.insert("mojo::Bar");
   spec.required["mojo:bar"] = request;
-  EXPECT_EQ(spec, entry.capabilities);
+  EXPECT_EQ(spec, entry->capabilities());
 }
 
-TEST_F(BuilderTest, Serialization) {
-  Entry entry;
-  scoped_ptr<base::Value> value = ReadEntry("serialization", &entry);
+TEST_F(EntryTest, Serialization) {
+  scoped_ptr<base::Value> value;
+  scoped_ptr<Entry> entry = ReadEntry("serialization", &value);
 
-  scoped_ptr<base::DictionaryValue> serialized(SerializeEntry(entry));
+  scoped_ptr<base::DictionaryValue> serialized(entry->Serialize());
 
   // We can't just compare values, since during deserialization some of the
   // lists get converted to std::sets, which are sorted, so Value::Equals will
   // fail.
-  Entry reconstituted = BuildEntry(*serialized.get());
-  EXPECT_EQ(entry, reconstituted);
+  scoped_ptr<Entry> reconstituted = Entry::Deserialize(*serialized.get());
+  EXPECT_EQ(*entry, *reconstituted);
 }
 
-TEST_F(BuilderTest, Malformed) {
+TEST_F(EntryTest, Malformed) {
   scoped_ptr<base::Value> value = ReadManifest("malformed");
   EXPECT_FALSE(value.get());
 }

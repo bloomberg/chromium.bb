@@ -76,7 +76,8 @@ class Catalog : public mojom::Resolver,
   void SerializeCatalog();
 
   // Construct a catalog entry from |dictionary|.
-  const Entry& DeserializeApplication(const base::DictionaryValue* dictionary);
+  scoped_ptr<Entry> DeserializeApplication(
+      const base::DictionaryValue* dictionary);
 
   GURL GetManifestURL(const std::string& name);
 

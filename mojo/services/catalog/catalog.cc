@@ -9,7 +9,6 @@
 #include "base/strings/string_split.h"
 #include "base/task_runner_util.h"
 #include "mojo/common/url_type_converters.h"
-#include "mojo/services/catalog/builder.h"
 #include "mojo/services/catalog/entry.h"
 #include "mojo/services/catalog/store.h"
 #include "mojo/shell/public/cpp/names.h"
@@ -120,8 +119,8 @@ void Catalog::GetEntries(mojo::Array<mojo::String> names,
       continue;
     const Entry& entry = catalog_[name];
     mojom::CatalogEntryPtr entry_ptr(mojom::CatalogEntry::New());
-    entry_ptr->display_name = entry.display_name;
-    entries[entry.name] = std::move(entry_ptr);
+    entry_ptr->display_name = entry.display_name();
+    entries[entry.name()] = std::move(entry_ptr);
   }
   callback.Run(std::move(entries));
 }
@@ -153,7 +152,8 @@ void Catalog::CompleteResolveMojoName(
   }
 
   mojo::shell::mojom::CapabilitySpecPtr capabilities_ptr =
-      mojo::shell::mojom::CapabilitySpec::From(entry_iter->second.capabilities);
+      mojo::shell::mojom::CapabilitySpec::From(
+          entry_iter->second.capabilities());
 
   callback.Run(resolved_name, qualifier, std::move(capabilities_ptr),
                file_url.spec());
@@ -193,24 +193,29 @@ void Catalog::DeserializeCatalog() {
     const base::DictionaryValue* dictionary = nullptr;
     const base::Value* v = *it;
     CHECK(v->GetAsDictionary(&dictionary));
-    const Entry entry = BuildEntry(*dictionary);
-    catalog_[entry.name] = entry;
+    scoped_ptr<Entry> entry = Entry::Deserialize(*dictionary);
+    if (entry.get())
+      catalog_[entry->name()] = *entry;
   }
 }
 
 void Catalog::SerializeCatalog() {
   scoped_ptr<base::ListValue> catalog(new base::ListValue);
   for (const auto& entry : catalog_)
-    catalog->Append(SerializeEntry(entry.second));
+    catalog->Append(entry.second.Serialize());
   if (store_)
     store_->UpdateStore(std::move(catalog));
 }
 
-const Entry& Catalog::DeserializeApplication(
+scoped_ptr<Entry> Catalog::DeserializeApplication(
     const base::DictionaryValue* dictionary) {
-  Entry entry = BuildEntry(*dictionary);
-  if (catalog_.find(entry.name) == catalog_.end()) {
-    catalog_[entry.name] = entry;
+  scoped_ptr<Entry> entry = Entry::Deserialize(*dictionary);
+  if (!entry)
+    return entry;
+
+  // TODO(beng): move raw dictionary analysis into Deserialize().
+  if (catalog_.find(entry->name()) == catalog_.end()) {
+    catalog_[entry->name()] = *entry;
 
     if (dictionary->HasKey("applications")) {
       const base::ListValue* applications = nullptr;
@@ -218,14 +223,16 @@ const Entry& Catalog::DeserializeApplication(
       for (size_t i = 0; i < applications->GetSize(); ++i) {
         const base::DictionaryValue* child_value = nullptr;
         applications->GetDictionary(i, &child_value);
-        const Entry& child = DeserializeApplication(child_value);
-        mojo_name_aliases_[child.name] =
-            std::make_pair(entry.name, child.qualifier);
+        scoped_ptr<Entry> child = DeserializeApplication(child_value);
+        if (child) {
+          mojo_name_aliases_[child->name()] =
+              std::make_pair(entry->name(), child->qualifier());
+        }
       }
     }
-    qualifiers_[entry.name] = entry.qualifier;
+    qualifiers_[entry->name()] = entry->qualifier();
   }
-  return catalog_[entry.name];
+  return entry;
 }
 
 GURL Catalog::GetManifestURL(const std::string& name) {
@@ -262,10 +269,10 @@ void Catalog::OnReadManifestImpl(const std::string& name,
     DeserializeApplication(dictionary);
   } else {
     Entry entry;
-    entry.name = name;
-    entry.display_name = name;
-    catalog_[entry.name] = entry;
-    qualifiers_[entry.name] = mojo::GetNamePath(name);
+    entry.set_name(name);
+    entry.set_display_name(name);
+    catalog_[entry.name()] = entry;
+    qualifiers_[entry.name()] = mojo::GetNamePath(name);
   }
   SerializeCatalog();
 
