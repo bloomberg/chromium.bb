@@ -175,16 +175,16 @@ InspectorTest.validateASTRanges = function(ast)
 
 InspectorTest.validateMapping = function(mapping)
 {
-    InspectorTest.addResult("Mapped CSS: " + mapping._cssToSass.size);
-    InspectorTest.addResult("Mapped SCSS: " + mapping._sassToCss.size);
-    var cssNodes = mapping._cssToSass.keysArray();
+    InspectorTest.addResult("Mapped CSS: " + mapping._compiledToSource.size);
+    InspectorTest.addResult("Mapped SCSS: " + mapping._sourceToCompiled.size);
+    var cssNodes = mapping._compiledToSource.keysArray();
     var staleCSS = 0;
     var staleSASS = 0;
     for (var i = 0; i < cssNodes.length; ++i) {
         var cssNode = cssNodes[i];
-        staleCSS += cssNode.document !== mapping.cssAST().document ? 1 : 0;
-        var sassNode = mapping.toSASSNode(cssNode);
-        var sassAST = mapping.sassModels().get(sassNode.document.url);
+        staleCSS += cssNode.document !== mapping.compiledModel().document ? 1 : 0;
+        var sassNode = mapping.toSourceNode(cssNode);
+        var sassAST = mapping.sourceModels().get(sassNode.document.url);
         staleSASS += sassNode.document !== sassAST.document ? 1 : 0;
     }
     if (staleCSS || staleSASS) {
@@ -219,8 +219,8 @@ InspectorTest.runCSSEditTests = function(header, tests)
     {
         astSourceMap = map;
         InspectorTest.addResult("INITIAL MODELS");
-        logASTText(map.cssAST(), true);
-        for (var ast of map.sassModels().values())
+        logASTText(map.compiledModel(), true);
+        for (var ast of map.sourceModels().values())
             logASTText(ast, true);
         runTests();
     }
@@ -234,7 +234,7 @@ InspectorTest.runCSSEditTests = function(header, tests)
         }
         var test = tests.shift();
         logTestName(test.name);
-        var text = astSourceMap.cssAST().document.text.value();
+        var text = astSourceMap.compiledModel().document.text.value();
         var edits = test(text);
         logSourceEdits(text, edits);
         var ranges = edits.map(edit => edit.oldRange);
@@ -250,9 +250,9 @@ InspectorTest.runCSSEditTests = function(header, tests)
             runTests();
             return;
         }
-        logASTText(result.map.cssAST());
+        logASTText(result.map.compiledModel());
         for (var sassURL of result.newSASSSources.keys()) {
-            var ast = result.map.sassModels().get(sassURL);
+            var ast = result.map.sourceModels().get(sassURL);
             logASTText(ast);
         }
         runTests();

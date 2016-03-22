@@ -10,20 +10,17 @@
 
 function test()
 {
-    var mapping;
-
     var header = InspectorTest.cssModel.styleSheetHeaders().find(header => !!header.sourceMapURL);
     InspectorTest.loadASTMapping(header, onMappingLoaded);
 
     function onMappingLoaded(map)
     {
-        mapping = map;
-        if (!mapping.isValid()) {
+        if (!WebInspector.SASSProcessor.validate(map)) {
             InspectorTest.addResult("ERROR: mapping is not valid.");
             InspectorTest.completeTest();
             return;
         }
-        InspectorTest.validateMapping(mapping);
+        InspectorTest.validateMapping(map);
         InspectorTest.completeTest();
     }
 }
