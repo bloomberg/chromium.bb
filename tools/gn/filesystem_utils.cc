@@ -529,6 +529,19 @@ std::string MakeRelativePath(const std::string& input,
     corrected_dest.append(dest);
     return MakeRelativePath(input, corrected_dest);
   }
+
+  // Make sure that both absolute paths use the same drive letter case.
+  if (IsPathAbsolute(input) && IsPathAbsolute(dest) && input.size() > 1 &&
+      dest.size() > 1) {
+    int letter_pos = base::IsAsciiAlpha(input[0]) ? 0 : 1;
+    if (input[letter_pos] != dest[letter_pos] &&
+        base::ToUpperASCII(input[letter_pos]) ==
+            base::ToUpperASCII(dest[letter_pos])) {
+      std::string corrected_input = input;
+      corrected_input[letter_pos] = dest[letter_pos];
+      return MakeRelativePath(corrected_input, dest);
+    }
+  }
 #endif
 
   std::string ret;

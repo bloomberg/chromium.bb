@@ -488,6 +488,24 @@ TEST(FilesystemUtils, RebasePath) {
             RebasePath("/path/to/foo", SourceDir("/source/root/a/b"),
                        base::StringPiece("/x/y/z")));
 
+#if defined(OS_WIN)
+  // Test corrections while rebasing Windows-style absolute paths.
+  EXPECT_EQ("../../../../path/to/foo",
+            RebasePath("C:/path/to/foo", SourceDir("//a/b"),
+                       base::StringPiece("/C:/source/root")));
+  EXPECT_EQ("../../../../path/to/foo",
+            RebasePath("/C:/path/to/foo", SourceDir("//a/b"),
+                       base::StringPiece("C:/source/root")));
+  EXPECT_EQ("../../../../path/to/foo",
+            RebasePath("/C:/path/to/foo", SourceDir("//a/b"),
+                       base::StringPiece("/c:/source/root")));
+  EXPECT_EQ("../../../../path/to/foo",
+            RebasePath("/c:/path/to/foo", SourceDir("//a/b"),
+                       base::StringPiece("c:/source/root")));
+  EXPECT_EQ("../../../../path/to/foo",
+            RebasePath("/c:/path/to/foo", SourceDir("//a/b"),
+                       base::StringPiece("C:/source/root")));
+#endif
 }
 
 TEST(FilesystemUtils, DirectoryWithNoLastSlash) {
