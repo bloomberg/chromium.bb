@@ -106,5 +106,9 @@ bool QuickLaunchApplication::AcceptConnection(mojo::Connection* connection) {
   return true;
 }
 
+void QuickLaunchApplication::ShellConnectionLost() {
+  base::MessageLoop::current()->QuitWhenIdle();
+}
+
 }  // namespace quick_launch
 }  // namespace mash

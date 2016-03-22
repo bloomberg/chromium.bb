@@ -61,12 +61,7 @@ class ShellConnection : public shell::mojom::ShellClient {
   // TODO(rockot): Remove this once we get rid of app tests.
   void SetAppTestConnectorForTesting(shell::mojom::ConnectorPtr connector);
 
-  // Specify a function to be called when the connection to the shell is lost.
-  void set_connection_lost_closure(const base::Closure& closure) {
-    connection_lost_closure_ = closure;
-  }
-
-private:
+ private:
   // shell::mojom::ShellClient:
   void Initialize(shell::mojom::IdentityPtr identity,
                   uint32_t id,
@@ -94,8 +89,6 @@ private:
   mojo::ShellClient* client_;
   Binding<shell::mojom::ShellClient> binding_;
   scoped_ptr<Connector> connector_;
-
-  base::Closure connection_lost_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellConnection);
 };

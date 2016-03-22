@@ -79,6 +79,12 @@ class ConnectTestApp : public ShellClient,
 
     return true;
   }
+  void ShellConnectionLost() override {
+    if (base::MessageLoop::current() &&
+        base::MessageLoop::current()->is_running()) {
+      base::MessageLoop::current()->QuitWhenIdle();
+    }
+  }
 
   // InterfaceFactory<test::mojom::ConnectTestService>:
   void Create(Connection* connection,

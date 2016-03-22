@@ -17,6 +17,6 @@ bool ShellClient::AcceptConnection(Connection* connection) {
   return false;
 }
 
-bool ShellClient::ShellConnectionLost() { return true; }
+void ShellClient::ShellConnectionLost() {}
 
 }  // namespace mojo

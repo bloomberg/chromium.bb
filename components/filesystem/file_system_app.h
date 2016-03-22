@@ -34,6 +34,8 @@ class FileSystemApp : public mojo::ShellClient,
   void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
                   uint32_t id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
+  void ShellConnectionLost() override;
+
   // |InterfaceFactory<Files>| implementation:
   void Create(mojo::Connection* connection,
               mojo::InterfaceRequest<FileSystem> request) override;

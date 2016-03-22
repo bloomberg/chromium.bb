@@ -384,7 +384,6 @@ void WindowTypeLauncher::Initialize(mojo::Connector* connector,
   widget->Show();
 }
 
-bool WindowTypeLauncher::ShellConnectionLost() {
+void WindowTypeLauncher::ShellConnectionLost() {
   base::MessageLoop::current()->QuitWhenIdle();
-  return false;
 }

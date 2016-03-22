@@ -5,12 +5,10 @@
 #include "mojo/shell/public/cpp/application_runner.h"
 
 #include "base/at_exit.h"
-#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/launch.h"
-#include "base/run_loop.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
 
@@ -56,9 +54,7 @@ MojoResult ApplicationRunner::Run(MojoHandle shell_client_request_handle,
         client_.get(),
         MakeRequest<shell::mojom::ShellClient>(MakeScopedHandle(
             MessagePipeHandle(shell_client_request_handle)))));
-    base::RunLoop run_loop;
-    connection_->set_connection_lost_closure(run_loop.QuitClosure());
-    run_loop.Run();
+    loop->Run();
     // It's very common for the client to cache the app and terminate on errors.
     // If we don't delete the client before the app we run the risk of the
     // client having a stale reference to the app and trying to use it.

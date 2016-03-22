@@ -75,6 +75,7 @@ class MandolineUIServicesApp
   void Initialize(mojo::Connector* connector, const mojo::Identity& identity,
                   uint32_t id) override;
   bool AcceptConnection(mojo::Connection* connection) override;
+  void ShellConnectionLost() override;
 
   // WindowServerDelegate:
   void OnFirstDisplayReady() override;

@@ -55,6 +55,10 @@ void FileSystemApp::Create(mojo::Connection* connection,
                      lock_table_);
 }
 
+void FileSystemApp::ShellConnectionLost() {
+  _exit(1);
+}
+
 //static
 base::FilePath FileSystemApp::GetUserDataDir() {
   base::FilePath path;

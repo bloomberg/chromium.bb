@@ -126,6 +126,10 @@ bool MojoShellConnectionImpl::AcceptConnection(mojo::Connection* connection) {
   return found;
 }
 
+void MojoShellConnectionImpl::ShellConnectionLost() {
+  LOG(ERROR) << "Shell connection lost.";
+}
+
 mojo::Connector* MojoShellConnectionImpl::GetConnector() {
   DCHECK(shell_connection_);
   return shell_connection_->connector();

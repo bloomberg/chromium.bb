@@ -43,13 +43,8 @@ class ShellClient {
 
   // Called when ShellConnection's ShellClient binding (i.e. the pipe the
   // Mojo Shell has to talk to us over) is closed. A shell client may use this
-  // as a signal to terminate. Return true from this method to tell the
-  // ShellConnection to run its connection lost closure if it has one, false to
-  // prevent it from being run. The default implementation returns true.
-  // When used in conjunction with ApplicationRunner, returning true here quits
-  // the message loop created by ApplicationRunner, which results in the app
-  // quitting.
-  virtual bool ShellConnectionLost();
+  // as a signal to terminate.
+  virtual void ShellConnectionLost();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellClient);
