@@ -251,9 +251,11 @@ component("seccomp_bpf") {
   ]
   defines = [ "SANDBOX_IMPLEMENTATION" ]
 
+  public_deps = [
+    ":sandbox_services_headers",
+  ]
   deps = [
     ":sandbox_services",
-    ":sandbox_services_headers",
     "//base",
   ]
 
@@ -360,6 +362,7 @@ component("sandbox_services") {
 
   defines = [ "SANDBOX_IMPLEMENTATION" ]
 
+  public_deps = []
   deps = [
     "//base",
   ]
@@ -374,7 +377,7 @@ component("sandbox_services") {
       "services/namespace_utils.h",
     ]
 
-    deps += [ ":sandbox_services_headers" ]
+    public_deps += [ ":sandbox_services_headers" ]
   }
 
   if (is_nacl_nonsfi) {
