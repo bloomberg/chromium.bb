@@ -1368,7 +1368,7 @@ def MarkAndroidAsStable(buildroot, tracking_branch, boards,
       command = ['emerge-%s' % board, '-p', '--quiet', '=%s' % android_atom]
       RunBuildScript(buildroot, command, enter_chroot=True,
                      combine_stdout_stderr=True, capture_output=True)
-    except cros_build_lib.RunCommandError:
+    except failures_lib.BuildScriptFailure:
       logging.error('Cannot emerge-%s =%s\nIs Android pinned to an older '
                     'version?' % (board, android_atom))
       raise AndroidIsPinnedUprevError(android_atom)
