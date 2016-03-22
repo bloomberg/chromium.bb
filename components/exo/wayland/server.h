@@ -18,7 +18,7 @@ class Display;
 namespace wayland {
 
 // This class is a thin wrapper around a Wayland display server. All Wayland
-// requests are dispatched into the given Exospere display.
+// requests are dispatched into the given Exosphere display.
 class Server {
  public:
   explicit Server(Display* display);
@@ -36,7 +36,7 @@ class Server {
   int GetFileDescriptor() const;
 
   // This function dispatches events. This must be called on a thread for
-  // which it's safe to access the Exospere display that this server was
+  // which it's safe to access the Exosphere display that this server was
   // created for. The |timeout| argument specifies the amount of time that
   // Dispatch() should block waiting for the file descriptor to become ready.
   void Dispatch(base::TimeDelta timeout);
