@@ -9,6 +9,8 @@ import sys
 import tempfile
 import unittest
 
+from telemetry import benchmark
+
 
 class ScriptsSmokeTest(unittest.TestCase):
 
@@ -37,6 +39,8 @@ class ScriptsSmokeTest(unittest.TestCase):
     self.assertIn('No benchmark named "foo"', stdout)
     self.assertNotEquals(return_code, 0)
 
+  # crbug.com/483212
+  @benchmark.Disabled('chromeos')
   def testRunBenchmarkListListsOutBenchmarks(self):
     return_code, stdout = self.RunPerfScript('run_benchmark list')
     self.assertEquals(return_code, 0, stdout)
@@ -64,6 +68,8 @@ class ScriptsSmokeTest(unittest.TestCase):
     self.assertEquals(return_code, 0, stdout)
     self.assertIn('kraken', stdout)
 
+  # crbug.com/483212
+  @benchmark.Disabled('chromeos')
   def testRunBenchmarkListJSONListsOutBenchmarks(self):
     tmp_file = tempfile.NamedTemporaryFile(delete=False)
     tmp_file_name = tmp_file.name
