@@ -92,17 +92,12 @@ void CookieSettings::SetDefaultCookieSetting(ContentSetting setting) {
       CONTENT_SETTINGS_TYPE_COOKIES, setting);
 }
 
-void CookieSettings::SetCookieSetting(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern,
-    ContentSetting setting) {
+void CookieSettings::SetCookieSetting(const GURL& primary_url,
+                                      ContentSetting setting) {
   DCHECK(IsValidSetting(setting));
-  if (setting == CONTENT_SETTING_SESSION_ONLY) {
-    DCHECK(secondary_pattern == ContentSettingsPattern::Wildcard());
-  }
-  host_content_settings_map_->SetContentSetting(
-      primary_pattern, secondary_pattern, CONTENT_SETTINGS_TYPE_COOKIES,
-      std::string(), setting);
+  host_content_settings_map_->SetContentSettingDefaultScope(
+      primary_url, GURL(), CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+      setting);
 }
 
 void CookieSettings::ResetCookieSetting(const GURL& primary_url) {

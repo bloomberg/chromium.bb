@@ -331,17 +331,13 @@ TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
   EXPECT_FALSE(policy_->HasSessionOnlyOrigins());
 
   // Or the session-onlyness can affect individual origins.
-  ContentSettingsPattern pattern =
-      ContentSettingsPattern::FromString("pattern.com");
-
-  cookie_settings->SetCookieSetting(pattern,
-                                    ContentSettingsPattern::Wildcard(),
-                                    CONTENT_SETTING_SESSION_ONLY);
+  GURL url("http://pattern.com");
+  cookie_settings->SetCookieSetting(url, CONTENT_SETTING_SESSION_ONLY);
 
   EXPECT_TRUE(policy_->HasSessionOnlyOrigins());
 
   // Clearing an origin-specific rule.
-  cookie_settings->ResetCookieSetting(GURL("http://pattern.com"));
+  cookie_settings->ResetCookieSetting(url);
 
   EXPECT_FALSE(policy_->HasSessionOnlyOrigins());
 }

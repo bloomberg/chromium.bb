@@ -765,9 +765,7 @@ void CookieTreeHostNode::CreateContentException(
          setting == CONTENT_SETTING_SESSION_ONLY);
   if (CanCreateContentException()) {
     cookie_settings->ResetCookieSetting(url_);
-    cookie_settings->SetCookieSetting(
-        ContentSettingsPattern::FromURL(url_),
-        ContentSettingsPattern::Wildcard(), setting);
+    cookie_settings->SetCookieSetting(url_, setting);
   }
 }
 

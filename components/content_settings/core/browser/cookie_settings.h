@@ -77,12 +77,10 @@ class CookieSettings : public RefcountedKeyedService {
   // This should only be called on the UI thread.
   void SetDefaultCookieSetting(ContentSetting setting);
 
-  // Sets the cookie setting for the given patterns.
+  // Sets the cookie setting for the given url.
   //
   // This should only be called on the UI thread.
-  void SetCookieSetting(const ContentSettingsPattern& primary_pattern,
-                        const ContentSettingsPattern& secondary_pattern,
-                        ContentSetting setting);
+  void SetCookieSetting(const GURL& primary_url, ContentSetting setting);
 
   // Resets the cookie setting for the given url.
   //

@@ -166,9 +166,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, AllowCookiesUsingExceptions) {
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
 
-  settings->SetCookieSetting(
-      ContentSettingsPattern::FromURL(url),
-      ContentSettingsPattern::Wildcard(), CONTENT_SETTING_ALLOW);
+  settings->SetCookieSetting(url, CONTENT_SETTING_ALLOW);
 
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_FALSE(GetCookies(browser()->profile(), url).empty());
@@ -180,9 +178,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, BlockCookiesUsingExceptions) {
   GURL url = embedded_test_server()->GetURL("/setcookie.html");
   content_settings::CookieSettings* settings =
       CookieSettingsFactory::GetForProfile(browser()->profile()).get();
-  settings->SetCookieSetting(ContentSettingsPattern::FromURL(url),
-                             ContentSettingsPattern::Wildcard(),
-                             CONTENT_SETTING_BLOCK);
+  settings->SetCookieSetting(url, CONTENT_SETTING_BLOCK);
 
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
@@ -212,9 +208,7 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest,
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_TRUE(GetCookies(browser()->profile(), url).empty());
 
-  settings->SetCookieSetting(
-      ContentSettingsPattern::FromURL(url),
-      ContentSettingsPattern::Wildcard(), CONTENT_SETTING_SESSION_ONLY);
+  settings->SetCookieSetting(url, CONTENT_SETTING_SESSION_ONLY);
   ui_test_utils::NavigateToURL(browser(), url);
   ASSERT_FALSE(GetCookies(browser()->profile(), url).empty());
 }

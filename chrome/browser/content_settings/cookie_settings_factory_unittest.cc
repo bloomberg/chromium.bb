@@ -41,9 +41,7 @@ TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingRules) {
 
   // Modify the regular cookie settings after the incognito cookie settings have
   // been instantiated.
-  cookie_settings_->SetCookieSetting(
-      ContentSettingsPattern::FromURL(kBlockedSite),
-      ContentSettingsPattern::Wildcard(), CONTENT_SETTING_BLOCK);
+  cookie_settings_->SetCookieSetting(kBlockedSite, CONTENT_SETTING_BLOCK);
 
   // The modification should apply to the regular profile and incognito profile.
   EXPECT_FALSE(
@@ -53,9 +51,7 @@ TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingRules) {
 
   // Modify an incognito cookie setting and check that this does not propagate
   // into regular mode.
-  incognito_settings->SetCookieSetting(
-      ContentSettingsPattern::FromURL(kHttpsSite),
-      ContentSettingsPattern::Wildcard(), CONTENT_SETTING_BLOCK);
+  incognito_settings->SetCookieSetting(kHttpsSite, CONTENT_SETTING_BLOCK);
   EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(kHttpsSite, kHttpsSite));
   EXPECT_FALSE(
       incognito_settings->IsReadingCookieAllowed(kHttpsSite, kHttpsSite));
@@ -76,9 +72,7 @@ TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingEverything) {
 
   // A whitelisted item set in incognito mode should only apply to incognito
   // mode.
-  incognito_settings->SetCookieSetting(
-      ContentSettingsPattern::FromURL(kAllowedSite),
-      ContentSettingsPattern::Wildcard(), CONTENT_SETTING_ALLOW);
+  incognito_settings->SetCookieSetting(kAllowedSite, CONTENT_SETTING_ALLOW);
   EXPECT_TRUE(
       incognito_settings->IsReadingCookieAllowed(kAllowedSite, kAllowedSite));
   EXPECT_FALSE(
@@ -86,9 +80,7 @@ TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingEverything) {
 
   // A whitelisted item set in regular mode should apply to regular and
   // incognito mode.
-  cookie_settings_->SetCookieSetting(
-      ContentSettingsPattern::FromURL(kHttpsSite),
-      ContentSettingsPattern::Wildcard(), CONTENT_SETTING_ALLOW);
+  cookie_settings_->SetCookieSetting(kHttpsSite, CONTENT_SETTING_ALLOW);
   EXPECT_TRUE(
       incognito_settings->IsReadingCookieAllowed(kHttpsSite, kHttpsSite));
   EXPECT_TRUE(cookie_settings_->IsReadingCookieAllowed(kHttpsSite, kHttpsSite));

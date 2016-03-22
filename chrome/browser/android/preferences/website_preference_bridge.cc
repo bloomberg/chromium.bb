@@ -462,19 +462,14 @@ static void SetCookieSettingForOrigin(JNIEnv* env,
                                       jint value,
                                       jboolean is_incognito) {
   GURL url(ConvertJavaStringToUTF8(env, origin));
-  ContentSettingsPattern primary_pattern(
-      ContentSettingsPattern::FromURLNoWildcard(url));
-  ContentSettingsPattern secondary_pattern(ContentSettingsPattern::Wildcard());
-  ContentSetting setting = CONTENT_SETTING_DEFAULT;
-  if (value == -1) {
+  ContentSetting setting = static_cast<ContentSetting>(value);
+  if (setting == CONTENT_SETTING_DEFAULT) {
     GetCookieSettings()->ResetCookieSetting(url);
   } else {
-    setting = value ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-    GetCookieSettings()->SetCookieSetting(primary_pattern, secondary_pattern,
-                                          setting);
+    GetCookieSettings()->SetCookieSetting(url, setting);
   }
-  WebSiteSettingsUmaUtil::LogPermissionChange(
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS, setting);
+  WebSiteSettingsUmaUtil::LogPermissionChange(CONTENT_SETTINGS_TYPE_COOKIES,
+                                              setting);
 }
 
 static jboolean IsContentSettingsPatternValid(

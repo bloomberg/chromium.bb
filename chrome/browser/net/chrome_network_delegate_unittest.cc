@@ -499,10 +499,7 @@ TEST_F(ChromeNetworkDelegatePrivacyModeTest, EnablePrivacyIfCookiesBlocked) {
   EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kBlockedSite,
                                                        kEmptyFirstPartySite));
 
-  cookie_settings_->SetCookieSetting(
-      ContentSettingsPattern::FromURL(kBlockedSite),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTING_BLOCK);
+  cookie_settings_->SetCookieSetting(kBlockedSite, CONTENT_SETTING_BLOCK);
   EXPECT_TRUE(network_delegate_->CanEnablePrivacyMode(kBlockedSite,
                                                       kEmptyFirstPartySite));
 }
@@ -530,10 +527,8 @@ TEST_F(ChromeNetworkDelegatePrivacyModeTest,
   EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kAllowedSite,
                                                        kBlockedFirstPartySite));
 
-  cookie_settings_->SetCookieSetting(
-      ContentSettingsPattern::FromURL(kBlockedFirstPartySite),
-      ContentSettingsPattern::Wildcard(),
-      CONTENT_SETTING_BLOCK);
+  cookie_settings_->SetCookieSetting(kBlockedFirstPartySite,
+                                     CONTENT_SETTING_BLOCK);
   // Privacy mode is disabled as kAllowedSite is still getting cookies
   EXPECT_FALSE(network_delegate_->CanEnablePrivacyMode(kAllowedSite,
                                                        kBlockedFirstPartySite));
