@@ -217,6 +217,7 @@ public class OfflinePageUtils {
         final int snackbarTextId = getStringId(R.string.offline_pages_viewing_offline_page);
         Snackbar snackbar = Snackbar.make(context.getString(snackbarTextId), snackbarController,
                                             Snackbar.TYPE_ACTION)
+                                    .setSingleLine(false)
                                     .setAction(context.getString(R.string.reload), RELOAD_BUTTON);
         snackbar.setDuration(SNACKBAR_DURATION);
         snackbarManager.showSnackbar(snackbar);
