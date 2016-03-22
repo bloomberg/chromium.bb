@@ -876,12 +876,8 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    // Perform 2 commits.
-    if (!num_draws_) {
+    if (num_draws_ < 2)
       PostSetNeedsRedrawRectToMainThread(invalid_rect_);
-    } else {
-      EndTest();
-    }
     num_draws_++;
   }
 
@@ -904,6 +900,7 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
       EXPECT_EQ(
           pending_tiling->TilingDataForTesting().max_texture_size().width(),
           active_tiling->TilingDataForTesting().max_texture_size().width());
+      EndTest();
     }
   }
 
@@ -924,10 +921,9 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
   scoped_refptr<FakePictureLayer> root_layer_;
 };
 
-#if !defined(OS_WIN)
-// Flaky on win: http://crbug.com/596880
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterDeviceSizeChanged);
-#endif
+// As there's no pending tree in single-threaded case, this test should run
+// only for multi-threaded case.
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterDeviceSizeChanged);
 
 class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
  public:
