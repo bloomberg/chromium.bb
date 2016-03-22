@@ -19,31 +19,31 @@ class WebConnectCallbacksImpl
     : public blink::WebServicePortConnectEventCallbacks {
  public:
   WebConnectCallbacksImpl(
-      const ServicePortDispatcher::ConnectCallback& callback)
+      const mojom::ServicePortDispatcher::ConnectCallback& callback)
       : callback_(callback) {}
 
   ~WebConnectCallbacksImpl() override {}
 
   void onSuccess(const blink::WebServicePort& port) override {
-    callback_.Run(ServicePortConnectResult::ACCEPT,
+    callback_.Run(mojom::ServicePortConnectResult::ACCEPT,
                   mojo::String::From<base::string16>(port.name),
                   mojo::String::From<base::string16>(port.data));
   }
 
   void onError() override {
-    callback_.Run(ServicePortConnectResult::REJECT, mojo::String(""),
+    callback_.Run(mojom::ServicePortConnectResult::REJECT, mojo::String(""),
                   mojo::String(""));
   }
 
  private:
-  ServicePortDispatcher::ConnectCallback callback_;
+  mojom::ServicePortDispatcher::ConnectCallback callback_;
 };
 
 }  // namespace
 
 void ServicePortDispatcherImpl::Create(
     base::WeakPtr<blink::WebServiceWorkerContextProxy> proxy,
-    mojo::InterfaceRequest<ServicePortDispatcher> request) {
+    mojo::InterfaceRequest<mojom::ServicePortDispatcher> request) {
   new ServicePortDispatcherImpl(proxy, std::move(request));
 }
 
@@ -53,7 +53,7 @@ ServicePortDispatcherImpl::~ServicePortDispatcherImpl() {
 
 ServicePortDispatcherImpl::ServicePortDispatcherImpl(
     base::WeakPtr<blink::WebServiceWorkerContextProxy> proxy,
-    mojo::InterfaceRequest<ServicePortDispatcher> request)
+    mojo::InterfaceRequest<mojom::ServicePortDispatcher> request)
     : binding_(this, std::move(request)), proxy_(proxy) {
   WorkerThread::AddObserver(this);
 }
@@ -67,7 +67,7 @@ void ServicePortDispatcherImpl::Connect(const mojo::String& target_url,
                                         int32_t port_id,
                                         const ConnectCallback& callback) {
   if (!proxy_) {
-    callback.Run(ServicePortConnectResult::REJECT, mojo::String(""),
+    callback.Run(mojom::ServicePortConnectResult::REJECT, mojo::String(""),
                  mojo::String(""));
     return;
   }

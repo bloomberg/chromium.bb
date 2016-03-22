@@ -110,7 +110,8 @@ void GeolocationDispatcher::QueryNextPosition() {
                  base::Unretained(this)));
 }
 
-void GeolocationDispatcher::OnPositionUpdate(MojoGeopositionPtr geoposition) {
+void GeolocationDispatcher::OnPositionUpdate(
+    mojom::MojoGeopositionPtr geoposition) {
   QueryNextPosition();
 
   if (geoposition->valid) {
@@ -131,10 +132,10 @@ void GeolocationDispatcher::OnPositionUpdate(MojoGeopositionPtr geoposition) {
   } else {
     WebGeolocationError::Error code;
     switch (geoposition->error_code) {
-      case MojoGeoposition::ErrorCode::PERMISSION_DENIED:
+      case mojom::MojoGeoposition::ErrorCode::PERMISSION_DENIED:
         code = WebGeolocationError::ErrorPermissionDenied;
         break;
-      case MojoGeoposition::ErrorCode::POSITION_UNAVAILABLE:
+      case mojom::MojoGeoposition::ErrorCode::POSITION_UNAVAILABLE:
         code = WebGeolocationError::ErrorPositionUnavailable;
         break;
       default:

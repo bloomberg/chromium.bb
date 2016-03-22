@@ -13,16 +13,18 @@
 namespace mojo {
 
 template <>
-struct CONTENT_EXPORT TypeConverter<content::TransferredMessagePort,
-                                    content::MojoTransferredMessagePortPtr> {
+struct CONTENT_EXPORT
+    TypeConverter<content::TransferredMessagePort,
+                  content::mojom::MojoTransferredMessagePortPtr> {
   static content::TransferredMessagePort Convert(
-      const content::MojoTransferredMessagePortPtr& input);
+      const content::mojom::MojoTransferredMessagePortPtr& input);
 };
 
 template <>
-struct CONTENT_EXPORT TypeConverter<content::MojoTransferredMessagePortPtr,
-                                    content::TransferredMessagePort> {
-  static content::MojoTransferredMessagePortPtr Convert(
+struct CONTENT_EXPORT
+    TypeConverter<content::mojom::MojoTransferredMessagePortPtr,
+                  content::TransferredMessagePort> {
+  static content::mojom::MojoTransferredMessagePortPtr Convert(
       const content::TransferredMessagePort& input);
 };
 

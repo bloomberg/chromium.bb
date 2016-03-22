@@ -117,7 +117,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   virtual void DispatchSyncEvent(
       const std::string& tag,
       const scoped_refptr<ServiceWorkerVersion>& active_version,
-      BackgroundSyncEventLastChance last_chance,
+      mojom::BackgroundSyncEventLastChance last_chance,
       const ServiceWorkerVersion::StatusCallback& callback);
   virtual void ScheduleDelayedTask(const base::Closure& callback,
                                    base::TimeDelta delay);

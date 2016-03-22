@@ -104,7 +104,7 @@ class NavigatorConnectContextImpl : public NavigatorConnectContext {
                            service_worker_registration,
                        const scoped_refptr<ServiceWorkerVersion>& worker,
                        int request_id,
-                       ServicePortConnectResult result,
+                       mojom::ServicePortConnectResult result,
                        const mojo::String& name,
                        const mojo::String& data);
 

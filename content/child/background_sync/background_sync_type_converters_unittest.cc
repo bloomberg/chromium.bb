@@ -13,52 +13,53 @@ namespace {
 TEST(BackgroundSyncTypeConverterTest, TestBlinkToMojoNetworkStateConversions) {
   ASSERT_EQ(blink::WebSyncRegistration::NetworkStateAny,
             ConvertTo<blink::WebSyncRegistration::NetworkState>(
-                content::BackgroundSyncNetworkState::ANY));
+                content::mojom::BackgroundSyncNetworkState::ANY));
   ASSERT_EQ(blink::WebSyncRegistration::NetworkStateAvoidCellular,
             ConvertTo<blink::WebSyncRegistration::NetworkState>(
-                content::BackgroundSyncNetworkState::AVOID_CELLULAR));
+                content::mojom::BackgroundSyncNetworkState::AVOID_CELLULAR));
   ASSERT_EQ(blink::WebSyncRegistration::NetworkStateOnline,
             ConvertTo<blink::WebSyncRegistration::NetworkState>(
-                content::BackgroundSyncNetworkState::ONLINE));
+                content::mojom::BackgroundSyncNetworkState::ONLINE));
 }
 
 TEST(BackgroundSyncTypeConverterTest, TestMojoToBlinkNetworkStateConversions) {
-  ASSERT_EQ(content::BackgroundSyncNetworkState::ANY,
-            ConvertTo<content::BackgroundSyncNetworkState>(
+  ASSERT_EQ(content::mojom::BackgroundSyncNetworkState::ANY,
+            ConvertTo<content::mojom::BackgroundSyncNetworkState>(
                 blink::WebSyncRegistration::NetworkStateAny));
-  ASSERT_EQ(content::BackgroundSyncNetworkState::AVOID_CELLULAR,
-            ConvertTo<content::BackgroundSyncNetworkState>(
+  ASSERT_EQ(content::mojom::BackgroundSyncNetworkState::AVOID_CELLULAR,
+            ConvertTo<content::mojom::BackgroundSyncNetworkState>(
                 blink::WebSyncRegistration::NetworkStateAvoidCellular));
-  ASSERT_EQ(content::BackgroundSyncNetworkState::ONLINE,
-            ConvertTo<content::BackgroundSyncNetworkState>(
+  ASSERT_EQ(content::mojom::BackgroundSyncNetworkState::ONLINE,
+            ConvertTo<content::mojom::BackgroundSyncNetworkState>(
                 blink::WebSyncRegistration::NetworkStateOnline));
 }
 
 TEST(BackgroundSyncTypeConverterTest, TestDefaultBlinkToMojoConversion) {
   blink::WebSyncRegistration in;
-  content::SyncRegistrationPtr out =
-      ConvertTo<content::SyncRegistrationPtr>(in);
+  content::mojom::SyncRegistrationPtr out =
+      ConvertTo<content::mojom::SyncRegistrationPtr>(in);
 
   ASSERT_EQ(blink::WebSyncRegistration::UNREGISTERED_SYNC_ID, out->id);
   ASSERT_EQ("", out->tag);
-  ASSERT_EQ(content::BackgroundSyncNetworkState::ONLINE, out->network_state);
+  ASSERT_EQ(content::mojom::BackgroundSyncNetworkState::ONLINE,
+            out->network_state);
 }
 
 TEST(BackgroundSyncTypeConverterTest, TestFullBlinkToMojoConversion) {
   blink::WebSyncRegistration in(
       7, "BlinkToMojo", blink::WebSyncRegistration::NetworkStateAvoidCellular);
-  content::SyncRegistrationPtr out =
-      ConvertTo<content::SyncRegistrationPtr>(in);
+  content::mojom::SyncRegistrationPtr out =
+      ConvertTo<content::mojom::SyncRegistrationPtr>(in);
 
   ASSERT_EQ(7, out->id);
   ASSERT_EQ("BlinkToMojo", out->tag);
-  ASSERT_EQ(content::BackgroundSyncNetworkState::AVOID_CELLULAR,
+  ASSERT_EQ(content::mojom::BackgroundSyncNetworkState::AVOID_CELLULAR,
             out->network_state);
 }
 
 TEST(BackgroundSyncTypeConverterTest, TestDefaultMojoToBlinkConversion) {
-  content::SyncRegistrationPtr in(
-      content::SyncRegistration::New());
+  content::mojom::SyncRegistrationPtr in(
+      content::mojom::SyncRegistration::New());
   scoped_ptr<blink::WebSyncRegistration> out =
       ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(in);
 
@@ -68,11 +69,12 @@ TEST(BackgroundSyncTypeConverterTest, TestDefaultMojoToBlinkConversion) {
 }
 
 TEST(BackgroundSyncTypeConverterTest, TestFullMojoToBlinkConversion) {
-  content::SyncRegistrationPtr in(
-      content::SyncRegistration::New());
+  content::mojom::SyncRegistrationPtr in(
+      content::mojom::SyncRegistration::New());
   in->id = 41;
   in->tag = mojo::String("MojoToBlink");
-  in->network_state = content::BackgroundSyncNetworkState::AVOID_CELLULAR;
+  in->network_state =
+      content::mojom::BackgroundSyncNetworkState::AVOID_CELLULAR;
   scoped_ptr<blink::WebSyncRegistration> out =
       ConvertTo<scoped_ptr<blink::WebSyncRegistration>>(in);
 

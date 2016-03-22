@@ -47,7 +47,7 @@ struct TransferredMessagePort;
 // Uses mojo to communicate with the browser process.
 class ServicePortProvider
     : public blink::WebServicePortProvider,
-      public ServicePortServiceClient,
+      public mojom::ServicePortServiceClient,
       public base::RefCountedThreadSafe<ServicePortProvider> {
  public:
   ServicePortProvider(
@@ -64,11 +64,12 @@ class ServicePortProvider
                    blink::WebMessagePortChannelArray* channels) override;
   void closePort(blink::WebServicePortID port_id) override;
 
-  // ServicePortServiceClient implementation.
-  void PostMessageToPort(int32_t port_id,
-                         const mojo::String& message,
-                         mojo::Array<MojoTransferredMessagePortPtr> ports,
-                         mojo::Array<int32_t> new_routing_ids) override;
+  // mojom::ServicePortServiceClient implementation.
+  void PostMessageToPort(
+      int32_t port_id,
+      const mojo::String& message,
+      mojo::Array<mojom::MojoTransferredMessagePortPtr> ports,
+      mojo::Array<int32_t> new_routing_ids) override;
 
  private:
   ~ServicePortProvider() override;
@@ -80,16 +81,16 @@ class ServicePortProvider
 
   void OnConnectResult(
       scoped_ptr<blink::WebServicePortConnectCallbacks> callbacks,
-      ServicePortConnectResult result,
+      mojom::ServicePortConnectResult result,
       int32_t port_id);
 
   blink::WebServicePortProviderClient* client_;
 
   // Helper method that returns an initialized ServicePortServicePtr.
-  ServicePortServicePtr& GetServicePortServicePtr();
-  mojo::Binding<ServicePortServiceClient> binding_;
+  mojom::ServicePortServicePtr& GetServicePortServicePtr();
+  mojo::Binding<mojom::ServicePortServiceClient> binding_;
 
-  ServicePortServicePtr service_port_service_;
+  mojom::ServicePortServicePtr service_port_service_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_loop_;
 

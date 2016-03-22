@@ -133,7 +133,7 @@ class GpuChildThread : public ChildThreadImpl,
   void OnLoseAllContexts();
 
   void BindProcessControlRequest(
-      mojo::InterfaceRequest<ProcessControl> request);
+      mojo::InterfaceRequest<mojom::ProcessControl> request);
 
   gpu::GpuPreferences gpu_preferences_;
 
@@ -170,8 +170,8 @@ class GpuChildThread : public ChildThreadImpl,
   // Process control for Mojo application hosting.
   scoped_ptr<GpuProcessControlImpl> process_control_;
 
-  // Bindings to the ProcessControl impl.
-  mojo::BindingSet<ProcessControl> process_control_bindings_;
+  // Bindings to the mojom::ProcessControl impl.
+  mojo::BindingSet<mojom::ProcessControl> process_control_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChildThread);
 };

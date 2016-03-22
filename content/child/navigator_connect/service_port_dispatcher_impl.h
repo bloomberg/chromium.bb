@@ -24,29 +24,30 @@ namespace content {
 // called on that same thread. Lifetime of this class is tied to both the mojo
 // channel and the lifetime of the worker thread. If either the channel is
 // disconnected or the worker thread stops the instance deletes itself.
-class ServicePortDispatcherImpl : public ServicePortDispatcher,
+class ServicePortDispatcherImpl : public mojom::ServicePortDispatcher,
                                   public WorkerThread::Observer {
  public:
-  static void Create(base::WeakPtr<blink::WebServiceWorkerContextProxy> proxy,
-                     mojo::InterfaceRequest<ServicePortDispatcher> request);
+  static void Create(
+      base::WeakPtr<blink::WebServiceWorkerContextProxy> proxy,
+      mojo::InterfaceRequest<mojom::ServicePortDispatcher> request);
 
   ~ServicePortDispatcherImpl() override;
 
  private:
   ServicePortDispatcherImpl(
       base::WeakPtr<blink::WebServiceWorkerContextProxy> proxy,
-      mojo::InterfaceRequest<ServicePortDispatcher> request);
+      mojo::InterfaceRequest<mojom::ServicePortDispatcher> request);
 
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  // ServicePortDispatcher implementation.
+  // mojom::ServicePortDispatcher implementation.
   void Connect(const mojo::String& target_url,
                const mojo::String& origin,
                int32_t port_id,
                const ConnectCallback& callback) override;
 
-  mojo::StrongBinding<ServicePortDispatcher> binding_;
+  mojo::StrongBinding<mojom::ServicePortDispatcher> binding_;
   base::WeakPtr<blink::WebServiceWorkerContextProxy> proxy_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicePortDispatcherImpl);

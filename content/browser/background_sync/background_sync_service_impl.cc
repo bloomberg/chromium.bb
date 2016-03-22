@@ -19,7 +19,7 @@ namespace {
 // specializations.
 
 BackgroundSyncRegistrationOptions ToBackgroundSyncRegistrationOptions(
-    const SyncRegistrationPtr& in) {
+    const mojom::SyncRegistrationPtr& in) {
   BackgroundSyncRegistrationOptions out;
 
   out.tag = in->tag;
@@ -27,11 +27,12 @@ BackgroundSyncRegistrationOptions ToBackgroundSyncRegistrationOptions(
   return out;
 }
 
-SyncRegistrationPtr ToMojoRegistration(const BackgroundSyncRegistration& in) {
-  SyncRegistrationPtr out(content::SyncRegistration::New());
+mojom::SyncRegistrationPtr ToMojoRegistration(
+    const BackgroundSyncRegistration& in) {
+  mojom::SyncRegistrationPtr out(content::mojom::SyncRegistration::New());
   out->id = in.id();
   out->tag = in.options()->tag;
-  out->network_state = static_cast<content::BackgroundSyncNetworkState>(
+  out->network_state = static_cast<content::mojom::BackgroundSyncNetworkState>(
       in.options()->network_state);
   return out;
 }
@@ -44,26 +45,26 @@ SyncRegistrationPtr ToMojoRegistration(const BackgroundSyncRegistration& in) {
                 "mojo and manager enums must match")
 
 // TODO(iclelland): Move these tests somewhere else
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncError::NONE,
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::NONE,
                              BACKGROUND_SYNC_STATUS_OK);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncError::STORAGE,
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::STORAGE,
                              BACKGROUND_SYNC_STATUS_STORAGE_ERROR);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncError::NOT_FOUND,
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::NOT_FOUND,
                              BACKGROUND_SYNC_STATUS_NOT_FOUND);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncError::NO_SERVICE_WORKER,
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::NO_SERVICE_WORKER,
                              BACKGROUND_SYNC_STATUS_NO_SERVICE_WORKER);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncError::NOT_ALLOWED,
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::NOT_ALLOWED,
                              BACKGROUND_SYNC_STATUS_NOT_ALLOWED);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncError::MAX,
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncError::MAX,
                              BACKGROUND_SYNC_STATUS_NOT_ALLOWED);
 
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::ANY,
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncNetworkState::ANY,
                              SyncNetworkState::NETWORK_STATE_ANY);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::AVOID_CELLULAR,
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncNetworkState::AVOID_CELLULAR,
                              SyncNetworkState::NETWORK_STATE_AVOID_CELLULAR);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::ONLINE,
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncNetworkState::ONLINE,
                              SyncNetworkState::NETWORK_STATE_ONLINE);
-COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::MAX,
+COMPILE_ASSERT_MATCHING_ENUM(mojom::BackgroundSyncNetworkState::MAX,
                              SyncNetworkState::NETWORK_STATE_ONLINE);
 
 BackgroundSyncServiceImpl::~BackgroundSyncServiceImpl() {
@@ -73,7 +74,7 @@ BackgroundSyncServiceImpl::~BackgroundSyncServiceImpl() {
 
 BackgroundSyncServiceImpl::BackgroundSyncServiceImpl(
     BackgroundSyncContextImpl* background_sync_context,
-    mojo::InterfaceRequest<BackgroundSyncService> request)
+    mojo::InterfaceRequest<mojom::BackgroundSyncService> request)
     : background_sync_context_(background_sync_context),
       binding_(this, std::move(request)),
       weak_ptr_factory_(this) {
@@ -90,10 +91,11 @@ void BackgroundSyncServiceImpl::OnConnectionError() {
   // |this| is now deleted.
 }
 
-void BackgroundSyncServiceImpl::Register(content::SyncRegistrationPtr options,
-                                         int64_t sw_registration_id,
-                                         bool requested_from_service_worker,
-                                         const RegisterCallback& callback) {
+void BackgroundSyncServiceImpl::Register(
+    content::mojom::SyncRegistrationPtr options,
+    int64_t sw_registration_id,
+    bool requested_from_service_worker,
+    const RegisterCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BackgroundSyncRegistrationOptions mgr_options =
@@ -128,14 +130,15 @@ void BackgroundSyncServiceImpl::OnRegisterResult(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (status != BACKGROUND_SYNC_STATUS_OK) {
-    callback.Run(static_cast<content::BackgroundSyncError>(status),
-                 SyncRegistrationPtr(content::SyncRegistration::New()));
+    callback.Run(
+        static_cast<content::mojom::BackgroundSyncError>(status),
+        mojom::SyncRegistrationPtr(content::mojom::SyncRegistration::New()));
     return;
   }
 
   DCHECK(result);
-  SyncRegistrationPtr mojoResult = ToMojoRegistration(*result);
-  callback.Run(static_cast<content::BackgroundSyncError>(status),
+  mojom::SyncRegistrationPtr mojoResult = ToMojoRegistration(*result);
+  callback.Run(static_cast<content::mojom::BackgroundSyncError>(status),
                std::move(mojoResult));
 }
 
@@ -146,11 +149,11 @@ void BackgroundSyncServiceImpl::OnGetRegistrationsResult(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(result_registrations);
 
-  mojo::Array<content::SyncRegistrationPtr> mojo_registrations;
+  mojo::Array<content::mojom::SyncRegistrationPtr> mojo_registrations;
   for (const BackgroundSyncRegistration* registration : *result_registrations)
     mojo_registrations.push_back(ToMojoRegistration(*registration));
 
-  callback.Run(static_cast<content::BackgroundSyncError>(status),
+  callback.Run(static_cast<content::mojom::BackgroundSyncError>(status),
                std::move(mojo_registrations));
 }
 

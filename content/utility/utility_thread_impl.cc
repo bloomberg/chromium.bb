@@ -148,7 +148,7 @@ void UtilityThreadImpl::OnLoadPlugins(
 #endif
 
 void UtilityThreadImpl::BindProcessControlRequest(
-    mojo::InterfaceRequest<ProcessControl> request) {
+    mojo::InterfaceRequest<mojom::ProcessControl> request) {
   DCHECK(process_control_);
   process_control_bindings_.AddBinding(process_control_.get(),
                                        std::move(request));

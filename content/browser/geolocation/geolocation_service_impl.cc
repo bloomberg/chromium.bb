@@ -61,7 +61,7 @@ void RecordGeopositionErrorCode(Geoposition::ErrorCode error_code) {
 }  // namespace
 
 GeolocationServiceImpl::GeolocationServiceImpl(
-    mojo::InterfaceRequest<GeolocationService> request,
+    mojo::InterfaceRequest<mojom::GeolocationService> request,
     GeolocationServiceContext* context,
     const base::Closure& update_callback)
     : binding_(this, std::move(request)),
@@ -79,7 +79,7 @@ GeolocationServiceImpl::~GeolocationServiceImpl() {
   // Make sure to respond to any pending callback even without a valid position.
   if (!position_callback_.is_null()) {
     if (!current_position_.valid) {
-      current_position_.error_code = MojoGeoposition::ErrorCode(
+      current_position_.error_code = mojom::MojoGeoposition::ErrorCode(
           GEOPOSITION_ERROR_CODE_POSITION_UNAVAILABLE);
       current_position_.error_message = mojo::String("");
     }
@@ -178,7 +178,7 @@ void GeolocationServiceImpl::OnLocationUpdate(const Geoposition& position) {
   current_position_.speed = position.speed;
   current_position_.timestamp = position.timestamp.ToDoubleT();
   current_position_.error_code =
-      MojoGeoposition::ErrorCode(position.error_code);
+      mojom::MojoGeoposition::ErrorCode(position.error_code);
   current_position_.error_message = position.error_message;
 
   has_position_to_report_ = true;

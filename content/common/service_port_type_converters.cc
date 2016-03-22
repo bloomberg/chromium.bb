@@ -9,8 +9,8 @@ namespace mojo {
 // static
 content::TransferredMessagePort
 TypeConverter<content::TransferredMessagePort,
-              content::MojoTransferredMessagePortPtr>::
-    Convert(const content::MojoTransferredMessagePortPtr& input) {
+              content::mojom::MojoTransferredMessagePortPtr>::
+    Convert(const content::mojom::MojoTransferredMessagePortPtr& input) {
   content::TransferredMessagePort output;
   output.id = input->id;
   output.send_messages_as_values = input->send_messages_as_values;
@@ -18,12 +18,12 @@ TypeConverter<content::TransferredMessagePort,
 }
 
 // static
-content::MojoTransferredMessagePortPtr
-TypeConverter<content::MojoTransferredMessagePortPtr,
+content::mojom::MojoTransferredMessagePortPtr
+TypeConverter<content::mojom::MojoTransferredMessagePortPtr,
               content::TransferredMessagePort>::
     Convert(const content::TransferredMessagePort& input) {
-  content::MojoTransferredMessagePortPtr output(
-      content::MojoTransferredMessagePort::New());
+  content::mojom::MojoTransferredMessagePortPtr output(
+      content::mojom::MojoTransferredMessagePort::New());
   output->id = input.id;
   output->send_messages_as_values = input.send_messages_as_values;
   return output;

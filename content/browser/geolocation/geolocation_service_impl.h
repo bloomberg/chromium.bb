@@ -18,14 +18,15 @@ class GeolocationProvider;
 class GeolocationServiceContext;
 
 // Implements the GeolocationService Mojo interface.
-class GeolocationServiceImpl : public GeolocationService {
+class GeolocationServiceImpl : public mojom::GeolocationService {
  public:
   // |context| must outlive this object. |update_callback| will be called when
   // location updates are sent, allowing the client to know when the service
   // is being used.
-  GeolocationServiceImpl(mojo::InterfaceRequest<GeolocationService> request,
-                         GeolocationServiceContext* context,
-                         const base::Closure& update_callback);
+  GeolocationServiceImpl(
+      mojo::InterfaceRequest<mojom::GeolocationService> request,
+      GeolocationServiceContext* context,
+      const base::Closure& update_callback);
   ~GeolocationServiceImpl() override;
 
   // Starts listening for updates.
@@ -40,7 +41,7 @@ class GeolocationServiceImpl : public GeolocationService {
   void ClearOverride();
 
  private:
-  typedef mojo::Callback<void(MojoGeopositionPtr)> PositionCallback;
+  typedef mojo::Callback<void(mojom::MojoGeopositionPtr)> PositionCallback;
 
   // GeolocationService:
   void SetHighAccuracy(bool high_accuracy) override;
@@ -52,7 +53,7 @@ class GeolocationServiceImpl : public GeolocationService {
   void ReportCurrentPosition();
 
   // The binding between this object and the other end of the pipe.
-  mojo::Binding<GeolocationService> binding_;
+  mojo::Binding<mojom::GeolocationService> binding_;
 
   // Owns this object.
   GeolocationServiceContext* context_;
@@ -69,7 +70,7 @@ class GeolocationServiceImpl : public GeolocationService {
   // subsequently been called.
   Geoposition position_override_;
 
-  MojoGeoposition current_position_;
+  mojom::MojoGeoposition current_position_;
 
   // Whether this instance is currently observing location updates with high
   // accuracy.

@@ -61,17 +61,17 @@ class BackgroundSyncProvider : public blink::WebSyncProvider,
   // Callback handlers
   void RegisterCallback(
       scoped_ptr<blink::WebSyncRegistrationCallbacks> callbacks,
-      BackgroundSyncError error,
-      const SyncRegistrationPtr& options);
+      mojom::BackgroundSyncError error,
+      const mojom::SyncRegistrationPtr& options);
   void GetRegistrationsCallback(
       scoped_ptr<blink::WebSyncGetRegistrationsCallbacks> callbacks,
-      BackgroundSyncError error,
-      const mojo::Array<SyncRegistrationPtr>& registrations);
+      mojom::BackgroundSyncError error,
+      const mojo::Array<mojom::SyncRegistrationPtr>& registrations);
 
   // Helper method that returns an initialized BackgroundSyncServicePtr.
-  BackgroundSyncServicePtr& GetBackgroundSyncServicePtr();
+  mojom::BackgroundSyncServicePtr& GetBackgroundSyncServicePtr();
 
-  BackgroundSyncServicePtr background_sync_service_;
+  mojom::BackgroundSyncServicePtr background_sync_service_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncProvider);

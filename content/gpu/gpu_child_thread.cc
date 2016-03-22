@@ -561,7 +561,7 @@ void GpuChildThread::OnLoseAllContexts() {
 }
 
 void GpuChildThread::BindProcessControlRequest(
-    mojo::InterfaceRequest<ProcessControl> request) {
+    mojo::InterfaceRequest<mojom::ProcessControl> request) {
   DVLOG(1) << "GPU: Binding ProcessControl request";
   DCHECK(process_control_);
   process_control_bindings_.AddBinding(process_control_.get(),

@@ -49,7 +49,7 @@ const char kBrowserAppName[] = "exe:chrome";
 const MojoShellContext::StaticApplicationMap* g_applications_for_test;
 
 void StartUtilityProcessOnIOThread(
-    mojo::InterfaceRequest<ProcessControl> request,
+    mojo::InterfaceRequest<mojom::ProcessControl> request,
     const base::string16& process_name,
     bool use_sandbox) {
   UtilityProcessHost* process_host =
@@ -84,7 +84,7 @@ class DefaultLoader : public mojo::shell::Loader {
 };
 
 // This launches a utility process and forwards the Load request the
-// ProcessControl service there. The utility process is sandboxed iff
+// mojom::ProcessControl service there. The utility process is sandboxed iff
 // |use_sandbox| is true.
 class UtilityProcessLoader : public mojo::shell::Loader {
  public:
@@ -96,7 +96,7 @@ class UtilityProcessLoader : public mojo::shell::Loader {
   // mojo::shell::Loader:
   void Load(const std::string& name,
             mojo::shell::mojom::ShellClientRequest request) override {
-    ProcessControlPtr process_control;
+    mojom::ProcessControlPtr process_control;
     auto process_request = mojo::GetProxy(&process_control);
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                             base::Bind(&StartUtilityProcessOnIOThread,
@@ -112,8 +112,10 @@ class UtilityProcessLoader : public mojo::shell::Loader {
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessLoader);
 };
 
-// Request ProcessControl from GPU process host. Must be called on IO thread.
-void RequestGpuProcessControl(mojo::InterfaceRequest<ProcessControl> request) {
+// Request mojom::ProcessControl from GPU process host. Must be called on IO
+// thread.
+void RequestGpuProcessControl(
+    mojo::InterfaceRequest<mojom::ProcessControl> request) {
   BrowserChildProcessHostDelegate* process_host =
       GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                           CAUSE_FOR_GPU_LAUNCH_MOJO_SETUP);
@@ -124,7 +126,8 @@ void RequestGpuProcessControl(mojo::InterfaceRequest<ProcessControl> request) {
 
   // TODO(xhwang): It's possible that |process_host| is non-null, but the actual
   // process is dead. In that case, |request| will be dropped and application
-  // load requests through ProcessControl will also fail. Make sure we handle
+  // load requests through mojom::ProcessControl will also fail. Make sure we
+  // handle
   // these cases correctly.
   process_host->GetServiceRegistry()->ConnectToRemoteService(
       std::move(request));
@@ -140,7 +143,7 @@ class GpuProcessLoader : public mojo::shell::Loader {
   // mojo::shell::Loader:
   void Load(const std::string& name,
             mojo::shell::mojom::ShellClientRequest request) override {
-    ProcessControlPtr process_control;
+    mojom::ProcessControlPtr process_control;
     auto process_request = mojo::GetProxy(&process_control);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,

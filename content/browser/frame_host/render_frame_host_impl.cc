@@ -1836,7 +1836,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
     // latter is triggered by receiving a message that the pipe was closed from
     // the renderer side. Hence, supply the reference to this object as a weak
     // pointer.
-    GetServiceRegistry()->AddService<GeolocationService>(
+    GetServiceRegistry()->AddService(
         base::Bind(&GeolocationServiceContext::CreateService,
                    base::Unretained(geolocation_service_context),
                    base::Bind(&RenderFrameHostImpl::DidUseGeolocationPermission,
@@ -2193,7 +2193,7 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
     return;
 
   RegisterMojoServices();
-  RenderFrameSetupPtr setup;
+  mojom::RenderFrameSetupPtr setup;
   GetProcess()->GetServiceRegistry()->ConnectToRemoteService(
       mojo::GetProxy(&setup));
 

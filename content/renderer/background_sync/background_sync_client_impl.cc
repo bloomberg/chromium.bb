@@ -19,26 +19,26 @@ namespace content {
 
 // static
 void BackgroundSyncClientImpl::Create(
-    mojo::InterfaceRequest<BackgroundSyncServiceClient> request) {
+    mojo::InterfaceRequest<mojom::BackgroundSyncServiceClient> request) {
   new BackgroundSyncClientImpl(std::move(request));
 }
 
 BackgroundSyncClientImpl::~BackgroundSyncClientImpl() {}
 
 BackgroundSyncClientImpl::BackgroundSyncClientImpl(
-    mojo::InterfaceRequest<BackgroundSyncServiceClient> request)
+    mojo::InterfaceRequest<mojom::BackgroundSyncServiceClient> request)
     : binding_(this, std::move(request)) {}
 
 void BackgroundSyncClientImpl::Sync(
     const mojo::String& tag,
-    content::BackgroundSyncEventLastChance last_chance,
+    content::mojom::BackgroundSyncEventLastChance last_chance,
     const SyncCallback& callback) {
   DCHECK(!blink::Platform::current()->mainThread()->isCurrentThread());
 
   ServiceWorkerContextClient* client =
       ServiceWorkerContextClient::ThreadSpecificInstance();
   if (!client) {
-    callback.Run(ServiceWorkerEventStatus::ABORTED);
+    callback.Run(mojom::ServiceWorkerEventStatus::ABORTED);
     return;
   }
 

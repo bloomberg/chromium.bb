@@ -45,7 +45,7 @@ class GeolocationDispatcher
       const blink::WebGeolocationPermissionRequest& permissionRequest) override;
 
   void QueryNextPosition();
-  void OnPositionUpdate(MojoGeopositionPtr geoposition);
+  void OnPositionUpdate(mojom::MojoGeopositionPtr geoposition);
 
   // Permission for using geolocation has been set.
   void OnPermissionSet(int permission_request_id, PermissionStatus status);
@@ -54,7 +54,7 @@ class GeolocationDispatcher
 
   scoped_ptr<blink::WebGeolocationPermissionRequestManager>
       pending_permissions_;
-  GeolocationServicePtr geolocation_service_;
+  mojom::GeolocationServicePtr geolocation_service_;
   bool enable_high_accuracy_;
   PermissionServicePtr permission_service_;
 };

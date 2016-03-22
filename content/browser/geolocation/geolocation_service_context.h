@@ -23,7 +23,7 @@ class GeolocationServiceContext {
   // |update_callback| will be called when services send
   // location updates to their clients.
   void CreateService(const base::Closure& update_callback,
-                     mojo::InterfaceRequest<GeolocationService> request);
+                     mojo::InterfaceRequest<mojom::GeolocationService> request);
 
   // Called when a service has a connection error. After this call, it is no
   // longer safe to access |service|.

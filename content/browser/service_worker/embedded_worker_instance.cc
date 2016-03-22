@@ -91,7 +91,7 @@ void SetupMojoOnUIThread(
   // |rph| or its ServiceRegistry may be NULL in unit tests.
   if (!rph || !rph->GetServiceRegistry())
     return;
-  EmbeddedWorkerSetupPtr setup;
+  mojom::EmbeddedWorkerSetupPtr setup;
   rph->GetServiceRegistry()->ConnectToRemoteService(mojo::GetProxy(&setup));
   setup->ExchangeInterfaceProviders(
       thread_id, std::move(services),

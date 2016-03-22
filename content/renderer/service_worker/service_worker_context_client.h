@@ -67,7 +67,7 @@ class WebServiceWorkerRegistrationImpl;
 class ServiceWorkerContextClient
     : public blink::WebServiceWorkerContextClient {
  public:
-  using SyncCallback = mojo::Callback<void(ServiceWorkerEventStatus)>;
+  using SyncCallback = mojo::Callback<void(mojom::ServiceWorkerEventStatus)>;
 
   // Returns a thread-specific client instance.  This does NOT create a
   // new instance.

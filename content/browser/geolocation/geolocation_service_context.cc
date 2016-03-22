@@ -16,7 +16,7 @@ GeolocationServiceContext::~GeolocationServiceContext() {
 
 void GeolocationServiceContext::CreateService(
     const base::Closure& update_callback,
-    mojo::InterfaceRequest<GeolocationService> request) {
+    mojo::InterfaceRequest<mojom::GeolocationService> request) {
   GeolocationServiceImpl* service =
       new GeolocationServiceImpl(std::move(request), this, update_callback);
   services_.push_back(service);

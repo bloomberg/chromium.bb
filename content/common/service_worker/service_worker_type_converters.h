@@ -12,9 +12,9 @@ namespace mojo {
 
 template <>
 struct CONTENT_EXPORT TypeConverter<content::ServiceWorkerStatusCode,
-                                    content::ServiceWorkerEventStatus> {
+                                    content::mojom::ServiceWorkerEventStatus> {
   static content::ServiceWorkerStatusCode Convert(
-      content::ServiceWorkerEventStatus status);
+      content::mojom::ServiceWorkerEventStatus status);
 };
 
 }  // namespace

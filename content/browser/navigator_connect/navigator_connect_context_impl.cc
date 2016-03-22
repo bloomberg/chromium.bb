@@ -30,7 +30,7 @@ struct NavigatorConnectContextImpl::Port {
   GURL target_url;
   GURL client_origin;
 
-  // Set to nullptr when the ServicePortService goes away.
+  // Set to nullptr when the mojom::ServicePortService goes away.
   ServicePortServiceImpl* service = nullptr;
 
   // If this port is associated with a service worker, these fields store that
@@ -178,8 +178,9 @@ void NavigatorConnectContextImpl::DispatchConnectEvent(
       ServiceWorkerMetrics::EventType::SERVICE_PORT_CONNECT,
       base::Bind(&NavigatorConnectContextImpl::OnConnectError, this, callback,
                  client_port_id, service_port_id));
-  base::WeakPtr<ServicePortDispatcher> dispatcher =
-      worker->GetMojoServiceForRequest<ServicePortDispatcher>(request_id);
+  base::WeakPtr<mojom::ServicePortDispatcher> dispatcher =
+      worker->GetMojoServiceForRequest<mojom::ServicePortDispatcher>(
+          request_id);
   dispatcher->Connect(
       mojo::String::From(service_port.target_url),
       mojo::String::From(service_port.client_origin), service_port_id,
@@ -220,16 +221,16 @@ void NavigatorConnectContextImpl::OnConnectResult(
     const scoped_refptr<ServiceWorkerRegistration>& service_worker_registration,
     const scoped_refptr<ServiceWorkerVersion>& worker,
     int request_id,
-    ServicePortConnectResult result,
+    mojom::ServicePortConnectResult result,
     const mojo::String& name,
     const mojo::String& data) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!worker->FinishRequest(request_id,
-                             result == ServicePortConnectResult::ACCEPT))
+                             result == mojom::ServicePortConnectResult::ACCEPT))
     return;
 
-  if (result != ServicePortConnectResult::ACCEPT) {
+  if (result != mojom::ServicePortConnectResult::ACCEPT) {
     OnConnectError(callback, client_port_id, service_port_id,
                    SERVICE_WORKER_ERROR_FAILED);
     return;

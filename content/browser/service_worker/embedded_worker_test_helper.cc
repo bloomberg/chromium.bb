@@ -51,10 +51,11 @@ class MockMessagePortMessageFilter : public MessagePortMessageFilter {
 }  // namespace
 
 class EmbeddedWorkerTestHelper::MockEmbeddedWorkerSetup
-    : public EmbeddedWorkerSetup {
+    : public mojom::EmbeddedWorkerSetup {
  public:
-  static void Create(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-                     mojo::InterfaceRequest<EmbeddedWorkerSetup> request) {
+  static void Create(
+      const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
+      mojo::InterfaceRequest<mojom::EmbeddedWorkerSetup> request) {
     new MockEmbeddedWorkerSetup(helper, std::move(request));
   }
 
@@ -69,12 +70,13 @@ class EmbeddedWorkerTestHelper::MockEmbeddedWorkerSetup
   }
 
  private:
-  MockEmbeddedWorkerSetup(const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
-                          mojo::InterfaceRequest<EmbeddedWorkerSetup> request)
+  MockEmbeddedWorkerSetup(
+      const base::WeakPtr<EmbeddedWorkerTestHelper>& helper,
+      mojo::InterfaceRequest<mojom::EmbeddedWorkerSetup> request)
       : helper_(helper), binding_(this, std::move(request)) {}
 
   base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
-  mojo::StrongBinding<EmbeddedWorkerSetup> binding_;
+  mojo::StrongBinding<mojom::EmbeddedWorkerSetup> binding_;
 };
 
 EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(

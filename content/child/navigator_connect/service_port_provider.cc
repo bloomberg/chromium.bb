@@ -23,7 +23,7 @@ namespace content {
 namespace {
 
 void ConnectToServiceOnMainThread(
-    mojo::InterfaceRequest<ServicePortService> ptr) {
+    mojo::InterfaceRequest<mojom::ServicePortService> ptr) {
   ChildThreadImpl::current()->service_registry()->ConnectToRemoteService(
       std::move(ptr));
 }
@@ -85,7 +85,7 @@ void ServicePortProvider::closePort(blink::WebServicePortID port_id) {
 void ServicePortProvider::PostMessageToPort(
     int32_t port_id,
     const mojo::String& message,
-    mojo::Array<MojoTransferredMessagePortPtr> ports,
+    mojo::Array<mojom::MojoTransferredMessagePortPtr> ports,
     mojo::Array<int32_t> new_routing_ids) {
   client_->postMessage(port_id, message.To<base::string16>(),
                        WebMessagePortChannelImpl::CreatePorts(
@@ -102,23 +102,23 @@ void ServicePortProvider::PostMessageToBrowser(
     const std::vector<TransferredMessagePort> ports) {
   GetServicePortServicePtr()->PostMessageToPort(
       port_id, mojo::String::From(message),
-      mojo::Array<MojoTransferredMessagePortPtr>::From(ports));
+      mojo::Array<mojom::MojoTransferredMessagePortPtr>::From(ports));
 }
 
 void ServicePortProvider::OnConnectResult(
     scoped_ptr<blink::WebServicePortConnectCallbacks> callbacks,
-    ServicePortConnectResult result,
+    mojom::ServicePortConnectResult result,
     int32_t port_id) {
-  if (result == ServicePortConnectResult::ACCEPT) {
+  if (result == mojom::ServicePortConnectResult::ACCEPT) {
     callbacks->onSuccess(port_id);
   } else {
     callbacks->onError();
   }
 }
 
-ServicePortServicePtr& ServicePortProvider::GetServicePortServicePtr() {
+mojom::ServicePortServicePtr& ServicePortProvider::GetServicePortServicePtr() {
   if (!service_port_service_.get()) {
-    mojo::InterfaceRequest<ServicePortService> request =
+    mojo::InterfaceRequest<mojom::ServicePortService> request =
         mojo::GetProxy(&service_port_service_);
     main_loop_->PostTask(FROM_HERE, base::Bind(&ConnectToServiceOnMainThread,
                                                base::Passed(&request)));

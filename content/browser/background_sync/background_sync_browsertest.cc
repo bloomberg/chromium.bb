@@ -74,7 +74,8 @@ void RegistrationPendingDidGetSyncRegistration(
   // Find the right registration in the list and check its status.
   for (const BackgroundSyncRegistration* registration : *registrations) {
     if (registration->options()->tag == tag) {
-      callback.Run(registration->sync_state() == BackgroundSyncState::PENDING);
+      callback.Run(registration->sync_state() ==
+                   mojom::BackgroundSyncState::PENDING);
       return;
     }
   }

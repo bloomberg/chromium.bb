@@ -23,7 +23,7 @@ struct TransferredMessagePort;
 // instance of this class is created for each ServicePortCollection, and is
 // automatically destroyed when the ServicePortCollection in the renderer goes
 // away.
-class ServicePortServiceImpl : public ServicePortService {
+class ServicePortServiceImpl : public mojom::ServicePortService {
  public:
   // Factory method called by mojo to create a new instance of this class to
   // handle requests from a new ServicePortCollection.
@@ -31,7 +31,7 @@ class ServicePortServiceImpl : public ServicePortService {
                          navigator_connect_context,
                      const scoped_refptr<MessagePortMessageFilter>&
                          message_port_message_filter,
-                     mojo::InterfaceRequest<ServicePortService> request);
+                     mojo::InterfaceRequest<mojom::ServicePortService> request);
   ~ServicePortServiceImpl() override;
 
   // Called by NavigatorConnectContextImpl to post a message to a port that is
@@ -47,22 +47,23 @@ class ServicePortServiceImpl : public ServicePortService {
           navigator_connect_context,
       const scoped_refptr<MessagePortMessageFilter>&
           message_port_message_filter,
-      mojo::InterfaceRequest<ServicePortService> request);
-  ServicePortServiceImpl(const scoped_refptr<NavigatorConnectContextImpl>&
-                             navigator_connect_context,
-                         const scoped_refptr<MessagePortMessageFilter>&
-                             message_port_message_filter,
-                         mojo::InterfaceRequest<ServicePortService> request);
+      mojo::InterfaceRequest<mojom::ServicePortService> request);
+  ServicePortServiceImpl(
+      const scoped_refptr<NavigatorConnectContextImpl>&
+          navigator_connect_context,
+      const scoped_refptr<MessagePortMessageFilter>&
+          message_port_message_filter,
+      mojo::InterfaceRequest<mojom::ServicePortService> request);
 
-  // ServicePortService methods:
-  void SetClient(ServicePortServiceClientPtr client) override;
+  // mojom::ServicePortService methods:
+  void SetClient(mojom::ServicePortServiceClientPtr client) override;
   void Connect(const mojo::String& target_url,
                const mojo::String& origin,
                const ConnectCallback& callback) override;
   void PostMessageToPort(
       int32_t port_id,
       const mojo::String& message,
-      mojo::Array<MojoTransferredMessagePortPtr> ports) override;
+      mojo::Array<mojom::MojoTransferredMessagePortPtr> ports) override;
   void ClosePort(int32_t port_id) override;
 
   // Callback called when a connection to a service has been establised or
@@ -71,10 +72,10 @@ class ServicePortServiceImpl : public ServicePortService {
                        int message_port_id,
                        bool success);
 
-  mojo::StrongBinding<ServicePortService> binding_;
+  mojo::StrongBinding<mojom::ServicePortService> binding_;
   scoped_refptr<NavigatorConnectContextImpl> navigator_connect_context_;
   scoped_refptr<MessagePortMessageFilter> message_port_message_filter_;
-  ServicePortServiceClientPtr client_;
+  mojom::ServicePortServiceClientPtr client_;
   base::WeakPtrFactory<ServicePortServiceImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServicePortServiceImpl);

@@ -21,7 +21,7 @@ namespace content {
 void ServicePortServiceImpl::Create(
     const scoped_refptr<NavigatorConnectContextImpl>& navigator_connect_context,
     const scoped_refptr<MessagePortMessageFilter>& message_port_message_filter,
-    mojo::InterfaceRequest<ServicePortService> request) {
+    mojo::InterfaceRequest<mojom::ServicePortService> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -56,7 +56,8 @@ void ServicePortServiceImpl::PostMessageToClient(
       sent_message_ports, &new_routing_ids);
   client_->PostMessageToPort(
       port_id, mojo::String::From(message.message_as_string),
-      mojo::Array<MojoTransferredMessagePortPtr>::From(sent_message_ports),
+      mojo::Array<mojom::MojoTransferredMessagePortPtr>::From(
+          sent_message_ports),
       mojo::Array<int32_t>::From(new_routing_ids));
 }
 
@@ -64,7 +65,7 @@ void ServicePortServiceImpl::PostMessageToClient(
 void ServicePortServiceImpl::CreateOnIOThread(
     const scoped_refptr<NavigatorConnectContextImpl>& navigator_connect_context,
     const scoped_refptr<MessagePortMessageFilter>& message_port_message_filter,
-    mojo::InterfaceRequest<ServicePortService> request) {
+    mojo::InterfaceRequest<mojom::ServicePortService> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   new ServicePortServiceImpl(navigator_connect_context,
                              message_port_message_filter, std::move(request));
@@ -73,7 +74,7 @@ void ServicePortServiceImpl::CreateOnIOThread(
 ServicePortServiceImpl::ServicePortServiceImpl(
     const scoped_refptr<NavigatorConnectContextImpl>& navigator_connect_context,
     const scoped_refptr<MessagePortMessageFilter>& message_port_message_filter,
-    mojo::InterfaceRequest<ServicePortService> request)
+    mojo::InterfaceRequest<mojom::ServicePortService> request)
     : binding_(this, std::move(request)),
       navigator_connect_context_(navigator_connect_context),
       message_port_message_filter_(message_port_message_filter),
@@ -81,7 +82,8 @@ ServicePortServiceImpl::ServicePortServiceImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-void ServicePortServiceImpl::SetClient(ServicePortServiceClientPtr client) {
+void ServicePortServiceImpl::SetClient(
+    mojom::ServicePortServiceClientPtr client) {
   DCHECK(!client_.get());
   // TODO(mek): Set ErrorHandler to listen for errors.
   client_ = std::move(client);
@@ -99,7 +101,7 @@ void ServicePortServiceImpl::Connect(const mojo::String& target_url,
 void ServicePortServiceImpl::PostMessageToPort(
     int32_t port_id,
     const mojo::String& message,
-    mojo::Array<MojoTransferredMessagePortPtr> ports) {
+    mojo::Array<mojom::MojoTransferredMessagePortPtr> ports) {
   // TODO(mek): Similar to http://crbug.com/490222 this code should make sure
   // port_id belongs to the process this IPC was received from.
   std::vector<TransferredMessagePort> transferred_ports =
@@ -124,8 +126,8 @@ void ServicePortServiceImpl::ClosePort(int32_t port_id) {
 void ServicePortServiceImpl::OnConnectResult(const ConnectCallback& callback,
                                              int message_port_id,
                                              bool success) {
-  callback.Run(success ? ServicePortConnectResult::ACCEPT
-                       : ServicePortConnectResult::REJECT,
+  callback.Run(success ? mojom::ServicePortConnectResult::ACCEPT
+                       : mojom::ServicePortConnectResult::REJECT,
                message_port_id);
 }
 

@@ -43,8 +43,8 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   RegistrationId id() const { return id_; }
   void set_id(RegistrationId id) { id_ = id; }
 
-  BackgroundSyncState sync_state() const { return sync_state_; }
-  void set_sync_state(BackgroundSyncState state) { sync_state_ = state; }
+  mojom::BackgroundSyncState sync_state() const { return sync_state_; }
+  void set_sync_state(mojom::BackgroundSyncState state) { sync_state_ = state; }
 
   int num_attempts() const { return num_attempts_; }
   void set_num_attempts(int num_attempts) { num_attempts_ = num_attempts; }
@@ -57,7 +57,7 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
 
   BackgroundSyncRegistrationOptions options_;
   RegistrationId id_ = kInvalidRegistrationId;
-  BackgroundSyncState sync_state_ = BackgroundSyncState::PENDING;
+  mojom::BackgroundSyncState sync_state_ = mojom::BackgroundSyncState::PENDING;
   int num_attempts_ = 0;
   base::Time delay_until_;
 };
@@ -69,15 +69,15 @@ namespace mojo {
 template <>
 struct CONTENT_EXPORT
     TypeConverter<scoped_ptr<content::BackgroundSyncRegistration>,
-                  content::SyncRegistrationPtr> {
+                  content::mojom::SyncRegistrationPtr> {
   static scoped_ptr<content::BackgroundSyncRegistration> Convert(
-      const content::SyncRegistrationPtr& input);
+      const content::mojom::SyncRegistrationPtr& input);
 };
 
 template <>
-struct CONTENT_EXPORT TypeConverter<content::SyncRegistrationPtr,
+struct CONTENT_EXPORT TypeConverter<content::mojom::SyncRegistrationPtr,
                                     content::BackgroundSyncRegistration> {
-  static content::SyncRegistrationPtr Convert(
+  static content::mojom::SyncRegistrationPtr Convert(
       const content::BackgroundSyncRegistration& input);
 };
 

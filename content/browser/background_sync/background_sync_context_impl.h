@@ -37,7 +37,8 @@ class CONTENT_EXPORT BackgroundSyncContextImpl : public BackgroundSyncContext {
 
   // Create a BackgroundSyncServiceImpl that is owned by this. Call on the UI
   // thread.
-  void CreateService(mojo::InterfaceRequest<BackgroundSyncService> request);
+  void CreateService(
+      mojo::InterfaceRequest<mojom::BackgroundSyncService> request);
 
   // Called by BackgroundSyncServiceImpl objects so that they can
   // be deleted. Call on the IO thread.
@@ -56,7 +57,7 @@ class CONTENT_EXPORT BackgroundSyncContextImpl : public BackgroundSyncContext {
       const scoped_refptr<ServiceWorkerContextWrapper>& context);
 
   void CreateServiceOnIOThread(
-      mojo::InterfaceRequest<BackgroundSyncService> request);
+      mojo::InterfaceRequest<mojom::BackgroundSyncService> request);
 
   void ShutdownOnIO();
 

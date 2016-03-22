@@ -144,7 +144,9 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   base::Closure delayed_task() const { return delayed_task_; }
   base::TimeDelta delayed_task_delta() const { return delayed_task_delta_; }
 
-  BackgroundSyncEventLastChance last_chance() const { return last_chance_; }
+  mojom::BackgroundSyncEventLastChance last_chance() const {
+    return last_chance_;
+  }
 
   void set_has_main_frame_provider_host(bool value) {
     has_main_frame_provider_host_ = value;
@@ -201,7 +203,7 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   void DispatchSyncEvent(
       const std::string& tag,
       const scoped_refptr<ServiceWorkerVersion>& active_version,
-      BackgroundSyncEventLastChance last_chance,
+      mojom::BackgroundSyncEventLastChance last_chance,
       const ServiceWorkerVersion::StatusCallback& callback) override {
     ASSERT_FALSE(dispatch_sync_callback_.is_null());
     last_chance_ = last_chance;
@@ -223,8 +225,8 @@ class TestBackgroundSyncManager : public BackgroundSyncManager {
   bool corrupt_backend_ = false;
   bool delay_backend_ = false;
   bool has_main_frame_provider_host_ = true;
-  BackgroundSyncEventLastChance last_chance_ =
-      BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE;
+  mojom::BackgroundSyncEventLastChance last_chance_ =
+      mojom::BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE;
   base::Closure continuation_;
   DispatchSyncCallback dispatch_sync_callback_;
   base::Closure delayed_task_;
@@ -1421,7 +1423,7 @@ TEST_F(BackgroundSyncManagerTest, LastChance) {
   InitFailedSyncEventTest();
 
   EXPECT_TRUE(Register(sync_options_1_));
-  EXPECT_EQ(BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE,
+  EXPECT_EQ(mojom::BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE,
             test_background_sync_manager_->last_chance());
   EXPECT_TRUE(GetRegistration(sync_options_1_));
 
@@ -1430,7 +1432,7 @@ TEST_F(BackgroundSyncManagerTest, LastChance) {
   test_background_sync_manager_->delayed_task().Run();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(GetRegistration(sync_options_1_));
-  EXPECT_EQ(BackgroundSyncEventLastChance::IS_LAST_CHANCE,
+  EXPECT_EQ(mojom::BackgroundSyncEventLastChance::IS_LAST_CHANCE,
             test_background_sync_manager_->last_chance());
 }
 

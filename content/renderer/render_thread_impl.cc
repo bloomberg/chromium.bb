@@ -363,10 +363,10 @@ void LowMemoryNotificationOnThisThread() {
   isolate->LowMemoryNotification();
 }
 
-class RenderFrameSetupImpl : public RenderFrameSetup {
+class RenderFrameSetupImpl : public mojom::RenderFrameSetup {
  public:
   explicit RenderFrameSetupImpl(
-      mojo::InterfaceRequest<RenderFrameSetup> request)
+      mojo::InterfaceRequest<mojom::RenderFrameSetup> request)
       : routing_id_highmark_(-1), binding_(this, std::move(request)) {}
 
   void ExchangeInterfaceProviders(
@@ -395,10 +395,11 @@ class RenderFrameSetupImpl : public RenderFrameSetup {
 
  private:
   int32_t routing_id_highmark_;
-  mojo::StrongBinding<RenderFrameSetup> binding_;
+  mojo::StrongBinding<mojom::RenderFrameSetup> binding_;
 };
 
-void CreateRenderFrameSetup(mojo::InterfaceRequest<RenderFrameSetup> request) {
+void CreateRenderFrameSetup(
+    mojo::InterfaceRequest<mojom::RenderFrameSetup> request) {
   new RenderFrameSetupImpl(std::move(request));
 }
 
@@ -426,10 +427,10 @@ void SetupEmbeddedWorkerOnWorkerThread(
                               mojo::MakeProxy(std::move(exposed_services)));
 }
 
-class EmbeddedWorkerSetupImpl : public EmbeddedWorkerSetup {
+class EmbeddedWorkerSetupImpl : public mojom::EmbeddedWorkerSetup {
  public:
   explicit EmbeddedWorkerSetupImpl(
-      mojo::InterfaceRequest<EmbeddedWorkerSetup> request)
+      mojo::InterfaceRequest<mojom::EmbeddedWorkerSetup> request)
       : binding_(this, std::move(request)) {}
 
   void ExchangeInterfaceProviders(
@@ -443,11 +444,11 @@ class EmbeddedWorkerSetupImpl : public EmbeddedWorkerSetup {
   }
 
  private:
-  mojo::StrongBinding<EmbeddedWorkerSetup> binding_;
+  mojo::StrongBinding<mojom::EmbeddedWorkerSetup> binding_;
 };
 
 void CreateEmbeddedWorkerSetup(
-    mojo::InterfaceRequest<EmbeddedWorkerSetup> request) {
+    mojo::InterfaceRequest<mojom::EmbeddedWorkerSetup> request) {
   new EmbeddedWorkerSetupImpl(std::move(request));
 }
 
@@ -834,10 +835,8 @@ void RenderThreadImpl::Init() {
   base::DiscardableMemoryAllocator::SetInstance(
       ChildThreadImpl::discardable_shared_memory_manager());
 
-  service_registry()->AddService<RenderFrameSetup>(
-      base::Bind(CreateRenderFrameSetup));
-  service_registry()->AddService<EmbeddedWorkerSetup>(
-      base::Bind(CreateEmbeddedWorkerSetup));
+  service_registry()->AddService(base::Bind(CreateRenderFrameSetup));
+  service_registry()->AddService(base::Bind(CreateEmbeddedWorkerSetup));
 
 #if defined(MOJO_SHELL_CLIENT)
   // We may not have a MojoShellConnection object in tests that directly

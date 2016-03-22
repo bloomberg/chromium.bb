@@ -20,19 +20,19 @@ namespace content {
 class BackgroundSyncContextImpl;
 
 class CONTENT_EXPORT BackgroundSyncServiceImpl
-    : public NON_EXPORTED_BASE(BackgroundSyncService) {
+    : public NON_EXPORTED_BASE(mojom::BackgroundSyncService) {
  public:
   BackgroundSyncServiceImpl(
       BackgroundSyncContextImpl* background_sync_context,
-      mojo::InterfaceRequest<BackgroundSyncService> request);
+      mojo::InterfaceRequest<mojom::BackgroundSyncService> request);
 
   ~BackgroundSyncServiceImpl() override;
 
  private:
   friend class BackgroundSyncServiceImplTest;
 
-  // BackgroundSyncService methods:
-  void Register(content::SyncRegistrationPtr options,
+  // mojom::BackgroundSyncService methods:
+  void Register(content::mojom::SyncRegistrationPtr options,
                 int64_t sw_registration_id,
                 bool requested_from_service_worker,
                 const RegisterCallback& callback) override;
@@ -53,7 +53,7 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   // background_sync_context_ owns this.
   BackgroundSyncContextImpl* background_sync_context_;
 
-  mojo::Binding<BackgroundSyncService> binding_;
+  mojo::Binding<mojom::BackgroundSyncService> binding_;
 
   base::WeakPtrFactory<BackgroundSyncServiceImpl> weak_ptr_factory_;
 

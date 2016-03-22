@@ -18,24 +18,24 @@
 namespace content {
 
 class CONTENT_EXPORT BackgroundSyncClientImpl
-    : public NON_EXPORTED_BASE(BackgroundSyncServiceClient) {
+    : public NON_EXPORTED_BASE(mojom::BackgroundSyncServiceClient) {
  public:
   static void Create(
-      mojo::InterfaceRequest<BackgroundSyncServiceClient> request);
+      mojo::InterfaceRequest<mojom::BackgroundSyncServiceClient> request);
 
   ~BackgroundSyncClientImpl() override;
 
  private:
-  using SyncCallback = mojo::Callback<void(ServiceWorkerEventStatus)>;
+  using SyncCallback = mojo::Callback<void(mojom::ServiceWorkerEventStatus)>;
   explicit BackgroundSyncClientImpl(
-      mojo::InterfaceRequest<BackgroundSyncServiceClient> request);
+      mojo::InterfaceRequest<mojom::BackgroundSyncServiceClient> request);
 
   // BackgroundSyncServiceClient methods:
   void Sync(const mojo::String& tag,
-            content::BackgroundSyncEventLastChance last_chance,
+            content::mojom::BackgroundSyncEventLastChance last_chance,
             const SyncCallback& callback) override;
 
-  mojo::StrongBinding<BackgroundSyncServiceClient> binding_;
+  mojo::StrongBinding<mojom::BackgroundSyncServiceClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncClientImpl);
 };

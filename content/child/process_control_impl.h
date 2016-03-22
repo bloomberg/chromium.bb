@@ -20,8 +20,8 @@ class Loader;
 
 namespace content {
 
-// Default implementation of the ProcessControl interface.
-class ProcessControlImpl : public ProcessControl {
+// Default implementation of the mojom::ProcessControl interface.
+class ProcessControlImpl : public mojom::ProcessControl {
  public:
   ProcessControlImpl();
   ~ProcessControlImpl() override;
