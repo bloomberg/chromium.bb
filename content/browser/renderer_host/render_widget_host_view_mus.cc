@@ -319,11 +319,6 @@ void RenderWidgetHostViewMus::UnlockCompositingSurface() {
 #if defined(OS_WIN)
 void RenderWidgetHostViewMus::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {}
-
-gfx::NativeViewId RenderWidgetHostViewMus::GetParentForWindowlessPlugin()
-    const {
-  return gfx::NativeViewId();
-}
 #endif
 
 }  // namespace content

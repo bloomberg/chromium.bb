@@ -1075,15 +1075,6 @@ void RenderWidgetHostViewAura::DidStopFlinging() {
 void RenderWidgetHostViewAura::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
 }
-
-gfx::NativeViewId RenderWidgetHostViewAura::GetParentForWindowlessPlugin()
-    const {
-  if (legacy_render_widget_host_HWND_) {
-    return reinterpret_cast<gfx::NativeViewId>(
-        legacy_render_widget_host_HWND_->hwnd());
-  }
-  return NULL;
-}
 #endif
 
 bool RenderWidgetHostViewAura::HasAcceleratedSurface(
@@ -2586,10 +2577,8 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   delegated_frame_host_->WasResized();
 #if defined(OS_WIN)
   // Create the legacy dummy window which corresponds to the bounds of the
-  // webcontents. This will be passed as the container window for windowless
-  // plugins.
-  // Additonally the legacy dummy window is needed for accessibility and for
-  // scrolling to work in legacy drivers for trackpoints/trackpads, etc.
+  // webcontents. It is needed for accessibility and for scrolling to work in
+  // legacy drivers for trackpoints/trackpads, etc.
   if (!legacy_window_destroyed_ && GetNativeViewId()) {
     if (!legacy_render_widget_host_HWND_) {
       legacy_render_widget_host_HWND_ = LegacyRenderWidgetHostHWND::Create(

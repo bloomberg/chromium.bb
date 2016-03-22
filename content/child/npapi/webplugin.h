@@ -66,15 +66,6 @@ class WebPlugin {
   // Returns true iff in incognito mode.
   virtual bool IsOffTheRecord() = 0;
 
-#if defined(OS_WIN)
-  // |pump_messages_event| is a event handle which is used in NPP_HandleEvent
-  // calls to pump messages if the plugin enters a modal loop.
-  // |dummy_activation_window} is used to ensure correct keyboard activation.
-  // It needs to be a child of the parent window.
-  virtual void SetWindowlessData(HANDLE pump_messages_event,
-                                 gfx::NativeViewId dummy_activation_window) = 0;
-#endif
-
 #if defined(OS_MACOSX)
   // Called to inform the WebPlugin that the plugin has gained or lost focus.
   virtual void FocusChanged(bool focused) {}

@@ -138,7 +138,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
 #if defined(OS_WIN)
   void SetParentNativeViewAccessible(
       gfx::NativeViewAccessible accessible_parent) override;
-  gfx::NativeViewId GetParentForWindowlessPlugin() const override;
 #endif
 
   bool is_showing() const { return is_showing_; }

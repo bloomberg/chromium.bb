@@ -14,8 +14,6 @@
 
 namespace content {
 
-extern const base::char16 kDummyActivationWindowName[];
-
 // The name of the registry key which NPAPI plugins update on installation.
 extern const base::char16 kRegistryMozillaPlugins[];
 
@@ -24,16 +22,8 @@ extern const base::char16 kNewWMPPlugin[];
 extern const base::char16 kOldWMPPlugin[];
 extern const base::char16 kYahooApplicationStatePlugin[];
 extern const base::char16 kWanWangProtocolHandlerPlugin[];
-extern const base::char16 kFlashPlugin[];
-extern const base::char16 kAcrobatReaderPlugin[];
-extern const base::char16 kRealPlayerPlugin[];
-extern const base::char16 kSilverlightPlugin[];
 extern const base::char16 kJavaPlugin1[];
 extern const base::char16 kJavaPlugin2[];
-
-extern const char kGPUPluginMimeType[];
-
-extern const base::char16 kPluginDummyParentProperty[];
 
 }  // namespace content
 

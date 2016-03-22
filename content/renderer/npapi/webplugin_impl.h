@@ -110,12 +110,6 @@ class WebPluginImpl : public WebPlugin,
   void DidStartLoading() override;
   void DidStopLoading() override;
   bool IsOffTheRecord() override;
-#if defined(OS_WIN)
-  void SetWindowlessData(HANDLE pump_messages_event,
-                         gfx::NativeViewId dummy_activation_window) override {}
-  void ReparentPluginWindow(HWND window, HWND parent) { }
-  void ReportExecutableMemory(size_t size) { }
-#endif
 #if defined(OS_MACOSX)
   WebPluginAcceleratedSurface* GetAcceleratedSurface(
       gfx::GpuPreference gpu_preference) override;
