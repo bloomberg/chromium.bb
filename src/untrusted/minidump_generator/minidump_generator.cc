@@ -302,7 +302,9 @@ static MDMemoryDescriptor SnapshotMemory(MinidumpAllocator *minidump_writer,
 }
 
 static bool GetStackEnd(void **stack_end) {
-#if defined(__GLIBC__)
+#if defined(_NEWLIB_VERSION)
+  return pthread_get_stack_end_np(pthread_self(), stack_end) == 0;
+#else
   void *stack_base;
   size_t stack_size;
   pthread_attr_t attr;
@@ -312,6 +314,7 @@ static bool GetStackEnd(void **stack_end) {
     pthread_attr_destroy(&attr);
     return true;
   }
+#if defined(__GLIBC__)
   // pthread_getattr_np() currently fails on the initial thread.  As a
   // workaround, if we reach here, assume we are on the initial thread
   // and get the initial thread's stack end as recorded by glibc.
@@ -319,7 +322,8 @@ static bool GetStackEnd(void **stack_end) {
   *stack_end = __libc_stack_end;
   return true;
 #else
-  return pthread_get_stack_end_np(pthread_self(), stack_end) == 0;
+  return false;
+#endif
 #endif
 }
 
