@@ -142,15 +142,8 @@ void QuicSimpleServerStream::SendResponse() {
 
   // Examing response status, if it was not pure integer as typical h2 response
   // status, send error response.
-  string request_url;
-  if (!request_headers_[":scheme"].as_string().empty()) {
-    request_url = request_headers_[":scheme"].as_string() + "://" +
-                  request_headers_[":authority"].as_string() +
-                  request_headers_[":path"].as_string();
-  } else {
-    request_url = request_headers_[":authority"].as_string() +
-                  request_headers_[":path"].as_string();
-  }
+  string request_url = request_headers_[":authority"].as_string() +
+                       request_headers_[":path"].as_string();
   int response_code;
   SpdyHeaderBlock response_headers = response->headers();
   if (!base::StringToInt(response_headers[":status"], &response_code)) {

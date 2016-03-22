@@ -10,9 +10,11 @@
 #include <unordered_map>
 
 #include "base/containers/hash_tables.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
+#include "net/http/http_response_headers.h"
 #include "net/quic/spdy_utils.h"
 #include "net/spdy/spdy_framer.h"
 #include "url/gurl.h"
@@ -45,13 +47,13 @@ class QuicInMemoryCache {
   // comprising a response for the push request.
   struct ServerPushInfo {
     ServerPushInfo(GURL request_url,
-                   const net::SpdyHeaderBlock& headers,
-                   net::SpdyPriority priority,
+                   const SpdyHeaderBlock& headers,
+                   SpdyPriority priority,
                    string body);
     ServerPushInfo(const ServerPushInfo& other);
     GURL request_url;
-    net::SpdyHeaderBlock headers;
-    net::SpdyPriority priority;
+    SpdyHeaderBlock headers;
+    SpdyPriority priority;
     string body;
   };
 
@@ -86,6 +88,56 @@ class QuicInMemoryCache {
     std::string body_;
 
     DISALLOW_COPY_AND_ASSIGN(Response);
+  };
+
+  // Class to manage loading a resource file into memory.  There are
+  // two uses: called by InitializeFromDirectory to load resources
+  // from files, and recursively called when said resources specify
+  // server push associations.
+  class ResourceFile {
+   public:
+    explicit ResourceFile(const base::FilePath& file_name);
+    virtual ~ResourceFile();
+
+    // abstract: implementation details are chromium and internal
+    // version specific.
+    virtual void Read() = 0;
+    void SetHostPathFromBase(base::StringPiece base);
+
+    StringPiece host() { return host_; }
+    void set_host(base::StringPiece host) { host_ = host; }
+
+    StringPiece path() { return path_; }
+    void set_path(base::StringPiece path) { path_ = path; }
+
+    SpdyHeaderBlock spdy_headers() { return spdy_headers_; }
+
+    StringPiece body() { return body_; }
+
+    const std::vector<base::StringPiece>& push_urls() { return push_urls_; }
+
+    const std::string& file_name() { return file_name_string_; }
+
+   protected:
+    void HandleXOriginalUrl();
+    void HandlePushUrls(const std::vector<base::StringPiece>& push_urls);
+    StringPiece RemoveScheme(base::StringPiece url);
+
+    const string cache_directory_;
+    const base::FilePath file_name_;
+    const std::string file_name_string_;
+    string file_contents_;
+    base::StringPiece body_;
+    SpdyHeaderBlock spdy_headers_;
+    base::StringPiece x_original_url_;
+    std::vector<base::StringPiece> push_urls_;
+
+   private:
+    base::StringPiece host_;
+    base::StringPiece path_;
+    QuicInMemoryCache* cache_;
+
+    DISALLOW_COPY_AND_ASSIGN(ResourceFile);
   };
 
   // Returns the singleton instance of the cache.

@@ -22,6 +22,62 @@ using std::string;
 
 namespace net {
 
+namespace {
+
+class ResourceFileImpl : public net::QuicInMemoryCache::ResourceFile {
+ public:
+  ResourceFileImpl(const base::FilePath& file_name) : ResourceFile(file_name) {}
+
+  void Read() override {
+    base::ReadFileToString(FilePath(file_name_), &file_contents_);
+
+    int file_len = static_cast<int>(file_contents_.length());
+    int headers_end =
+        HttpUtil::LocateEndOfHeaders(file_contents_.data(), file_len);
+    if (headers_end < 1) {
+      LOG(DFATAL) << "Headers invalid or empty, ignoring: "
+                  << file_name_.value();
+      return;
+    }
+    http_headers_ = new HttpResponseHeaders(
+        HttpUtil::AssembleRawHeaders(file_contents_.data(), headers_end));
+
+    if (http_headers_->GetNormalizedHeader("X-Original-Url", &url_)) {
+      x_original_url_ = StringPiece(url_);
+      HandleXOriginalUrl();
+    }
+
+    // X-Push-URL header is a relatively quick way to support sever push
+    // in the toy server.  A production server should use link=preload
+    // stuff as described in https://w3c.github.io/preload/.
+    StringPiece x_push_url("X-Push-Url");
+    if (http_headers_->HasHeader(x_push_url)) {
+      size_t iter = 0;
+      std::unique_ptr<std::string> push_url(new string());
+      while (
+          http_headers_->EnumerateHeader(&iter, x_push_url, push_url.get())) {
+        push_urls_.push_back(StringPiece(*push_url));
+        push_url_values_.push_back(std::move(push_url));
+        push_url.reset(new string());
+      }
+    }
+
+    body_ = StringPiece(file_contents_.data() + headers_end,
+                        file_contents_.size() - headers_end);
+
+    CreateSpdyHeadersFromHttpResponse(*http_headers_, HTTP2, &spdy_headers_);
+  }
+
+ private:
+  scoped_refptr<HttpResponseHeaders> http_headers_;
+  std::string url_;
+  std::list<std::unique_ptr<string>> push_url_values_;
+
+  DISALLOW_COPY_AND_ASSIGN(ResourceFileImpl);
+};
+
+}  // namespace
+
 QuicInMemoryCache::ServerPushInfo::ServerPushInfo(
     GURL request_url,
     const SpdyHeaderBlock& headers,
@@ -38,6 +94,39 @@ QuicInMemoryCache::ServerPushInfo::ServerPushInfo(const ServerPushInfo& other) =
 QuicInMemoryCache::Response::Response() : response_type_(REGULAR_RESPONSE) {}
 
 QuicInMemoryCache::Response::~Response() {}
+
+QuicInMemoryCache::ResourceFile::ResourceFile(const base::FilePath& file_name)
+    : file_name_(file_name), file_name_string_(file_name.AsUTF8Unsafe()) {}
+
+QuicInMemoryCache::ResourceFile::~ResourceFile() {}
+
+void QuicInMemoryCache::ResourceFile::SetHostPathFromBase(StringPiece base) {
+  size_t path_start = base.find_first_of('/');
+  DCHECK_LT(0UL, path_start);
+  host_ = base.substr(0, path_start);
+  size_t query_start = base.find_first_of(',');
+  if (query_start > 0) {
+    path_ = base.substr(path_start, query_start - 1);
+  } else {
+    path_ = base.substr(path_start);
+  }
+}
+
+StringPiece QuicInMemoryCache::ResourceFile::RemoveScheme(StringPiece url) {
+  if (url.starts_with("https://")) {
+    url.remove_prefix(8);
+  } else if (url.starts_with("http://")) {
+    url.remove_prefix(7);
+  }
+  return url;
+}
+
+void QuicInMemoryCache::ResourceFile::HandleXOriginalUrl() {
+  StringPiece url(x_original_url_);
+  // Remove the protocol so we can add it below.
+  url = RemoveScheme(url);
+  SetHostPathFromBase(url);
+}
 
 // static
 QuicInMemoryCache* QuicInMemoryCache::GetInstance() {
@@ -126,7 +215,7 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
           << cache_directory;
   FilePath directory(FilePath::FromUTF8Unsafe(cache_directory));
   base::FileEnumerator file_list(directory, true, base::FileEnumerator::FILES);
-
+  list<std::unique_ptr<ResourceFile>> resource_files;
   for (FilePath file_iter = file_list.Next(); !file_iter.empty();
        file_iter = file_list.Next()) {
     // Need to skip files in .svn directories
@@ -134,55 +223,40 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
       continue;
     }
 
+    std::unique_ptr<ResourceFile> resource_file(
+        new ResourceFileImpl(file_iter));
+
     // Tease apart filename into host and path.
-    string file = file_iter.AsUTF8Unsafe();
-    file.erase(0, cache_directory.length());
-    if (file[0] == '/') {
-      file.erase(0, 1);
+    StringPiece base(resource_file->file_name());
+    base.remove_prefix(cache_directory.length());
+    if (base[0] == '/') {
+      base.remove_prefix(1);
     }
 
-    string file_contents;
-    base::ReadFileToString(file_iter, &file_contents);
-    int file_len = static_cast<int>(file_contents.length());
-    int headers_end =
-        HttpUtil::LocateEndOfHeaders(file_contents.data(), file_len);
-    if (headers_end < 1) {
-      LOG(DFATAL) << "Headers invalid or empty, ignoring: " << file;
-      continue;
-    }
+    resource_file->SetHostPathFromBase(base);
+    resource_file->Read();
 
-    string raw_headers =
-        HttpUtil::AssembleRawHeaders(file_contents.data(), headers_end);
+    AddResponse(resource_file->host(), resource_file->path(),
+                resource_file->spdy_headers(), resource_file->body());
 
-    scoped_refptr<HttpResponseHeaders> response_headers =
-        new HttpResponseHeaders(raw_headers);
+    resource_files.push_back(std::move(resource_file));
+  }
 
-    string base;
-    if (response_headers->GetNormalizedHeader("X-Original-Url", &base)) {
-      response_headers->RemoveHeader("X-Original-Url");
-      // Remove the protocol so we can add it below.
-      if (base::StartsWith(base, "https://",
-                           base::CompareCase::INSENSITIVE_ASCII)) {
-        base = base.substr(8);
-      } else if (base::StartsWith(base, "http://",
-                                  base::CompareCase::INSENSITIVE_ASCII)) {
-        base = base.substr(7);
+  for (const auto& resource_file : resource_files) {
+    list<ServerPushInfo> push_resources;
+    for (const auto& push_url : resource_file->push_urls()) {
+      GURL url(push_url);
+      const Response* response = GetResponse(url.host(), url.path());
+      if (!response) {
+        QUIC_BUG << "Push URL '" << push_url << "' not found.";
+        return;
       }
-    } else {
-      base = file;
+      push_resources.push_back(ServerPushInfo(url, response->headers(),
+                                              net::kV3LowestPriority,
+                                              response->body().as_string()));
     }
-
-    size_t path_start = base.find_first_of('/');
-    StringPiece host(StringPiece(base).substr(0, path_start));
-    StringPiece path(StringPiece(base).substr(path_start));
-    if (path.back() == ',') {
-      path.remove_suffix(1);
-    }
-    StringPiece body(file_contents.data() + headers_end,
-                     file_contents.size() - headers_end);
-    SpdyHeaderBlock header_block;
-    CreateSpdyHeadersFromHttpResponse(*response_headers, HTTP2, &header_block);
-    AddResponse(host, path, header_block, body);
+    MaybeAddServerPushResources(resource_file->host(), resource_file->path(),
+                                push_resources);
   }
 }
 
@@ -193,6 +267,8 @@ list<ServerPushInfo> QuicInMemoryCache::GetServerPushResources(
   for (auto it = resource_range.first; it != resource_range.second; ++it) {
     resources.push_back(it->second);
   }
+  DVLOG(1) << "Found " << resources.size() << " push resources for "
+           << request_url;
   return resources;
 }
 
@@ -218,6 +294,7 @@ void QuicInMemoryCache::AddResponseImpl(
   new_response->set_headers(response_headers);
   new_response->set_body(response_body);
   new_response->set_trailers(response_trailers);
+  DVLOG(1) << "Add response with key " << key;
   responses_[key] = new_response;
 }
 
@@ -229,14 +306,16 @@ void QuicInMemoryCache::MaybeAddServerPushResources(
     StringPiece request_host,
     StringPiece request_path,
     list<ServerPushInfo> push_resources) {
-  string request_url = request_host.as_string() + request_path.as_string();
+  string request_url = GetKey(request_host, request_path);
 
   for (const auto& push_resource : push_resources) {
     if (PushResourceExistsInCache(request_url, push_resource)) {
       continue;
     }
 
-    DVLOG(1) << "Add request-resource association.";
+    DVLOG(1) << "Add request-resource association: request url " << request_url
+             << " push url " << push_resource.request_url
+             << " response headers " << push_resource.headers.DebugString();
     server_push_resources_.insert(std::make_pair(request_url, push_resource));
     string host = push_resource.request_url.host();
     if (host.empty()) {
@@ -248,7 +327,7 @@ void QuicInMemoryCache::MaybeAddServerPushResources(
       SpdyHeaderBlock headers = push_resource.headers;
       StringPiece body = push_resource.body;
       DVLOG(1) << "Add response for push resource: host " << host << " path "
-               << path << " body " << body;
+               << path;
       AddResponse(host, path, headers, body);
     }
   }

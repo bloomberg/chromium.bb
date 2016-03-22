@@ -69,7 +69,7 @@ bool FLAGS_quic_never_write_unencrypted_data = true;
 bool FLAGS_quic_require_fix = true;
 
 // If true, headers stream will support receiving PUSH_PROMISE frames.
-bool FLAGS_quic_supports_push_promise = false;
+bool FLAGS_quic_supports_push_promise = true;
 
 // When turn on, log packet loss into transport connection stats LossEvent.
 bool FLAGS_quic_log_loss_event = true;

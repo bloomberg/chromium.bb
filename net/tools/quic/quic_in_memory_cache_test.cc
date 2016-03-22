@@ -112,6 +112,24 @@ TEST_F(QuicInMemoryCacheTest, ReadsCacheDir) {
   EXPECT_LT(0U, response->body().length());
 }
 
+TEST_F(QuicInMemoryCacheTest, ReadsCacheDirWithServerPushResource) {
+  QuicInMemoryCache::GetInstance()->InitializeFromDirectory(CacheDirectory() +
+                                                            "_with_push");
+  QuicInMemoryCache* cache = QuicInMemoryCache::GetInstance();
+  std::list<ServerPushInfo> resources =
+      cache->GetServerPushResources("quic.test.url/");
+  ASSERT_EQ(1UL, resources.size());
+}
+
+TEST_F(QuicInMemoryCacheTest, ReadsCacheDirWithServerPushResources) {
+  QuicInMemoryCache::GetInstance()->InitializeFromDirectory(CacheDirectory() +
+                                                            "_with_push");
+  QuicInMemoryCache* cache = QuicInMemoryCache::GetInstance();
+  std::list<ServerPushInfo> resources =
+      cache->GetServerPushResources("quic.test.url/index2.html");
+  ASSERT_EQ(2UL, resources.size());
+}
+
 TEST_F(QuicInMemoryCacheTest, UsesOriginalUrl) {
   QuicInMemoryCache::GetInstance()->InitializeFromDirectory(CacheDirectory());
   const QuicInMemoryCache::Response* response =
