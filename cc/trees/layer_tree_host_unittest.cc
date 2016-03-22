@@ -924,7 +924,10 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
   scoped_refptr<FakePictureLayer> root_layer_;
 };
 
+#if !defined(OS_WIN)
+// Flaky on win: http://crbug.com/596880
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterDeviceSizeChanged);
+#endif
 
 class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
  public:
