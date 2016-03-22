@@ -65,7 +65,7 @@ class AppListController : public ui::EventHandler,
   // Returns app list window or NULL if it is not visible.
   aura::Window* GetWindow();
 
-  // Returns app list view or NULL if it is not visible.
+  // Returns app list view if one exists, or NULL otherwise.
   app_list::AppListView* GetView() { return view_; }
 
  private:

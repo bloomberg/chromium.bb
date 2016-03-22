@@ -250,7 +250,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Returns app list window or NULL if it is not visible.
   aura::Window* GetAppListWindow();
 
-  // Returns app list view or NULL if it is not visible.
+  // Returns app list view if one exists, or NULL otherwise.
   app_list::AppListView* GetAppListView();
 
   // Returns true if a system-modal dialog window is currently open.

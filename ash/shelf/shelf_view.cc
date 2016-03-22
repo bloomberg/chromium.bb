@@ -1906,7 +1906,7 @@ const ShelfItem* ShelfView::ShelfItemForView(const views::View* view) const {
 
 bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
   if (view == GetAppListButtonView() &&
-      Shell::GetInstance()->GetAppListWindow())
+      Shell::GetInstance()->GetAppListTargetVisibility())
     return false;
   const ShelfItem* item = ShelfItemForView(view);
   if (!item)
