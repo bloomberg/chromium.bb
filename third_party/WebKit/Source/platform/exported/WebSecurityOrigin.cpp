@@ -30,7 +30,6 @@
 
 #include "public/platform/WebSecurityOrigin.h"
 
-#include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebString.h"
@@ -41,11 +40,6 @@ namespace blink {
 
 class WebSecurityOriginPrivate : public SecurityOrigin {
 };
-
-WebSecurityOrigin WebSecurityOrigin::createFromDatabaseIdentifier(const WebString& databaseIdentifier)
-{
-    return WebSecurityOrigin(createSecurityOriginFromDatabaseIdentifier(databaseIdentifier));
-}
 
 WebSecurityOrigin WebSecurityOrigin::createFromString(const WebString& origin)
 {
@@ -133,12 +127,6 @@ WebString WebSecurityOrigin::toString() const
 {
     ASSERT(m_private);
     return m_private->toString();
-}
-
-WebString WebSecurityOrigin::databaseIdentifier() const
-{
-    ASSERT(m_private);
-    return createDatabaseIdentifierFromSecurityOrigin(m_private);
 }
 
 bool WebSecurityOrigin::canAccessPasswordManager() const

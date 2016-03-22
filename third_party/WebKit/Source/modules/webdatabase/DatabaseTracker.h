@@ -63,7 +63,7 @@ public:
 
     unsigned long long getMaxSizeForDatabase(const Database*);
 
-    void closeDatabasesImmediately(const String& originIdentifier, const String& name);
+    void closeDatabasesImmediately(SecurityOrigin*, const String& name);
 
     void prepareToOpenDatabase(Database*);
     void failedToOpenDatabase(Database*);

@@ -41,10 +41,11 @@
 #include "modules/filesystem/FileWriterCallback.h"
 #include "modules/filesystem/MetadataCallback.h"
 #include "platform/FileMetadata.h"
-#include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
 #include "public/platform/WebFileSystemCallbacks.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -65,7 +66,7 @@ DOMFileSystem* DOMFileSystem::createIsolatedFileSystem(ExecutionContext* context
         return 0;
 
     StringBuilder filesystemName;
-    filesystemName.append(createDatabaseIdentifierFromSecurityOrigin(context->getSecurityOrigin()));
+    filesystemName.append(Platform::current()->fileSystemCreateOriginIdentifier(WebSecurityOrigin(context->getSecurityOrigin())));
     filesystemName.appendLiteral(":Isolated_");
     filesystemName.append(filesystemId);
 

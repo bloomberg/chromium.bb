@@ -34,43 +34,44 @@
 namespace blink {
 
 class WebString;
+class WebSecurityOrigin;
 
 class WebDatabaseObserver {
 public:
     virtual void databaseOpened(
-        const WebString& databaseIdentifier,
+        const WebSecurityOrigin&,
         const WebString& databaseName,
         const WebString& databaseDisplayName,
         unsigned long estimatedSize) = 0;
     virtual void databaseModified(
-        const WebString& databaseIdentifier,
+        const WebSecurityOrigin&,
         const WebString& databaseName) = 0;
     virtual void databaseClosed(
-        const WebString& databaseIdentifier,
+        const WebSecurityOrigin&,
         const WebString& databaseName) = 0;
     virtual void reportOpenDatabaseResult(
-        const WebString& databaseIdentifier,
+        const WebSecurityOrigin&,
         const WebString& databaseName,
         int errorSite, int webSqlErrorCode, int sqliteErrorCode,
         double callTime) { }
     virtual void reportChangeVersionResult(
-        const WebString& databaseIdentifier,
+        const WebSecurityOrigin&,
         const WebString& databaseName,
         int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
     virtual void reportStartTransactionResult(
-        const WebString& databaseIdentifier,
+        const WebSecurityOrigin&,
         const WebString& databaseName,
         int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
     virtual void reportCommitTransactionResult(
-        const WebString& databaseIdentifier,
+        const WebSecurityOrigin&,
         const WebString& databaseName,
         int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
     virtual void reportExecuteStatementResult(
-        const WebString& databaseIdentifier,
+        const WebSecurityOrigin&,
         const WebString& databaseName,
         int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
     virtual void reportVacuumDatabaseResult(
-        const WebString& databaseIdentifier,
+        const WebSecurityOrigin&,
         const WebString& databaseName,
         int sqliteErrorCode) { }
 

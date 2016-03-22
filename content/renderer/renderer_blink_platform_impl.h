@@ -106,9 +106,12 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebString& vfs_file_name) override;
   long long databaseGetFileSize(const blink::WebString& vfs_file_name) override;
   long long databaseGetSpaceAvailableForOrigin(
-      const blink::WebString& origin_identifier) override;
+      const blink::WebSecurityOrigin& origin) override;
   bool databaseSetFileSize(const blink::WebString& vfs_file_name,
                            long long size) override;
+  blink::WebString databaseCreateOriginIdentifier(
+      const blink::WebSecurityOrigin& origin) override;
+
   blink::WebString signedPublicKeyAndChallengeString(
       unsigned key_size_index,
       const blink::WebString& challenge,
@@ -123,6 +126,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebServiceWorkerCacheStorage* cacheStorage(
       const blink::WebSecurityOrigin& security_origin) override;
   blink::WebFileSystem* fileSystem() override;
+  blink::WebString fileSystemCreateOriginIdentifier(
+      const blink::WebSecurityOrigin& origin) override;
+
   bool canAccelerate2dCanvas() override;
   bool isThreadedCompositingEnabled() override;
   bool isThreadedAnimationEnabled() override;

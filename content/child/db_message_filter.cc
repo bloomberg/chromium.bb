@@ -5,12 +5,27 @@
 #include "content/child/db_message_filter.h"
 
 #include "content/common/database_messages.h"
+#include "storage/common/database/database_identifier.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDatabase.h"
 
+using blink::WebSecurityOrigin;
 using blink::WebString;
 
 namespace content {
+
+namespace {
+
+// TODO(jsbell): Pass url::Origin over IPC instead of database identifier/GURL.
+// https://crbug.com/591482
+WebSecurityOrigin OriginFromIdentifier(const std::string& identifier) {
+  return WebSecurityOrigin::create(
+      storage::GetOriginFromIdentifier(identifier));
+}
+
+}  // namespace
 
 DBMessageFilter::DBMessageFilter() {
 }
@@ -34,27 +49,27 @@ void DBMessageFilter::OnDatabaseUpdateSize(const std::string& origin_identifier,
                                            const base::string16& database_name,
                                            int64_t database_size) {
   blink::WebDatabase::updateDatabaseSize(
-      WebString::fromUTF8(origin_identifier), database_name, database_size);
+      OriginFromIdentifier(origin_identifier), database_name, database_size);
 }
 
 void DBMessageFilter::OnDatabaseUpdateSpaceAvailable(
     const std::string& origin_identifier,
     int64_t space_available) {
   blink::WebDatabase::updateSpaceAvailable(
-      WebString::fromUTF8(origin_identifier), space_available);
+      OriginFromIdentifier(origin_identifier), space_available);
 }
 
 void DBMessageFilter::OnDatabaseResetSpaceAvailable(
     const std::string& origin_identifier) {
   blink::WebDatabase::resetSpaceAvailable(
-      WebString::fromUTF8(origin_identifier));
+      OriginFromIdentifier(origin_identifier));
 }
 
 void DBMessageFilter::OnDatabaseCloseImmediately(
     const std::string& origin_identifier,
     const base::string16& database_name) {
   blink::WebDatabase::closeDatabaseImmediately(
-      WebString::fromUTF8(origin_identifier), database_name);
+      OriginFromIdentifier(origin_identifier), database_name);
 }
 
 }  // namespace content

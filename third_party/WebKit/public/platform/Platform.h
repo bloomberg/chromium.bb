@@ -206,11 +206,13 @@ public:
     virtual long long databaseGetFileSize(const WebString& vfsFileName) { return 0; }
 
     // Returns the space available for the given origin
-    virtual long long databaseGetSpaceAvailableForOrigin(const WebString& originIdentifier) { return 0; }
+    virtual long long databaseGetSpaceAvailableForOrigin(const WebSecurityOrigin& origin) { return 0; }
 
     // Set the size of the given database file
     virtual bool databaseSetFileSize(const WebString& vfsFileName, long long size) { return false; }
 
+    // Return a filename-friendly identifier for an origin.
+    virtual WebString databaseCreateOriginIdentifier(const WebSecurityOrigin& origin) { return WebString(); }
 
     // DOM Storage --------------------------------------------------
 
@@ -223,6 +225,8 @@ public:
     // Must return non-null.
     virtual WebFileSystem* fileSystem() { return nullptr; }
 
+    // Return a filename-friendly identifier for an origin.
+    virtual WebString fileSystemCreateOriginIdentifier(const WebSecurityOrigin& origin) { return WebString(); }
 
     // IDN conversion ------------------------------------------------------
 

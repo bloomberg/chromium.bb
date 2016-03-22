@@ -954,7 +954,7 @@ long long BlinkPlatformImpl::databaseGetFileSize(
 }
 
 long long BlinkPlatformImpl::databaseGetSpaceAvailableForOrigin(
-    const blink::WebString& origin_identifier) {
+    const blink::WebSecurityOrigin& origin) {
   return 0;
 }
 

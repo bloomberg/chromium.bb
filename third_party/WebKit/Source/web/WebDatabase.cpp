@@ -33,28 +33,29 @@
 #include "modules/webdatabase/DatabaseTracker.h"
 #include "modules/webdatabase/QuotaTracker.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebString.h"
 
 namespace blink {
 
-void WebDatabase::updateDatabaseSize(const WebString& originIdentifier, const WebString& name, long long size)
+void WebDatabase::updateDatabaseSize(const WebSecurityOrigin& origin, const WebString& name, long long size)
 {
-    QuotaTracker::instance().updateDatabaseSize(originIdentifier, name, size);
+    QuotaTracker::instance().updateDatabaseSize(origin.get(), name, size);
 }
 
-void WebDatabase::updateSpaceAvailable(const WebString& originIdentifier, long long spaceAvailable)
+void WebDatabase::updateSpaceAvailable(const WebSecurityOrigin& origin, long long spaceAvailable)
 {
-    QuotaTracker::instance().updateSpaceAvailableToOrigin(originIdentifier, spaceAvailable);
+    QuotaTracker::instance().updateSpaceAvailableToOrigin(origin.get(), spaceAvailable);
 }
 
-void WebDatabase::resetSpaceAvailable(const WebString& originIdentifier)
+void WebDatabase::resetSpaceAvailable(const WebSecurityOrigin& origin)
 {
-    QuotaTracker::instance().resetSpaceAvailableToOrigin(originIdentifier);
+    QuotaTracker::instance().resetSpaceAvailableToOrigin(origin.get());
 }
 
-void WebDatabase::closeDatabaseImmediately(const WebString& originIdentifier, const WebString& databaseName)
+void WebDatabase::closeDatabaseImmediately(const WebSecurityOrigin& origin, const WebString& databaseName)
 {
-    DatabaseTracker::tracker().closeDatabasesImmediately(originIdentifier, databaseName);
+    DatabaseTracker::tracker().closeDatabasesImmediately(origin.get(), databaseName);
 }
 
 } // namespace blink

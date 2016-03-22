@@ -8,7 +8,6 @@
 #include "platform/inspector_protocol/Dispatcher.h"
 #include "platform/inspector_protocol/TypeBuilder.h"
 #include "platform/inspector_protocol/Values.h"
-#include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"

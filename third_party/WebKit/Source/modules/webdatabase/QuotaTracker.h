@@ -32,13 +32,14 @@
 #define QuotaTracker_h
 
 #include "modules/ModulesExport.h"
-#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/HashMap.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
+
+class SecurityOrigin;
 
 class MODULES_EXPORT QuotaTracker {
     USING_FAST_MALLOC(QuotaTracker);
@@ -47,13 +48,13 @@ public:
     static QuotaTracker& instance();
 
     void getDatabaseSizeAndSpaceAvailableToOrigin(
-        const String& originIdentifier, const String& databaseName,
+        SecurityOrigin*, const String& databaseName,
         unsigned long long* databaseSize, unsigned long long* spaceAvailable);
     void updateDatabaseSize(
-        const String& originIdentifier, const String& databaseName,
+        SecurityOrigin*, const String& databaseName,
         unsigned long long databaseSize);
-    void updateSpaceAvailableToOrigin(const String& originIdentifier, unsigned long long spaceAvailable);
-    void resetSpaceAvailableToOrigin(const String& originIdentifier);
+    void updateSpaceAvailableToOrigin(SecurityOrigin*, unsigned long long spaceAvailable);
+    void resetSpaceAvailableToOrigin(SecurityOrigin*);
 
 private:
     QuotaTracker() { }

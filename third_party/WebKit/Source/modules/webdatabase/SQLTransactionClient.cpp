@@ -34,30 +34,38 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseContext.h"
-#include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebDatabaseObserver.h"
+#include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebTraceLocation.h"
 #include "wtf/Functional.h"
 
 namespace blink {
 
-static void databaseModified(const String& originIdentifier, const String& databaseName)
+namespace {
+
+void databaseModified(const WebSecurityOrigin& origin, const String& databaseName)
 {
     if (Platform::current()->databaseObserver())
-        Platform::current()->databaseObserver()->databaseModified(originIdentifier, databaseName);
+        Platform::current()->databaseObserver()->databaseModified(origin, databaseName);
 }
+
+void databaseModifiedCrossThread(const String& originString, const String& databaseName)
+{
+    databaseModified(WebSecurityOrigin::createFromString(originString), databaseName);
+}
+
+} // namespace
 
 void SQLTransactionClient::didCommitWriteTransaction(Database* database)
 {
-    String originIdentifier = createDatabaseIdentifierFromSecurityOrigin(database->getSecurityOrigin());
     String databaseName = database->stringIdentifier();
     ExecutionContext* executionContext = database->getDatabaseContext()->getExecutionContext();
     if (!executionContext->isContextThread()) {
-        executionContext->postTask(BLINK_FROM_HERE, createCrossThreadTask(&databaseModified, originIdentifier, databaseName));
+        executionContext->postTask(BLINK_FROM_HERE, createCrossThreadTask(&databaseModifiedCrossThread, executionContext->getSecurityOrigin()->toString(), databaseName));
     } else {
-        databaseModified(originIdentifier, databaseName);
+        databaseModified(WebSecurityOrigin(executionContext->getSecurityOrigin()), databaseName);
     }
 }
 

@@ -447,6 +447,12 @@ WebFileSystem* RendererBlinkPlatformImpl::fileSystem() {
   return WebFileSystemImpl::ThreadSpecificInstance(default_task_runner_);
 }
 
+WebString RendererBlinkPlatformImpl::fileSystemCreateOriginIdentifier(
+    const blink::WebSecurityOrigin& origin) {
+  return WebString::fromUTF8(storage::GetIdentifierFromOrigin(
+      WebSecurityOriginToGURL(origin)));
+}
+
 //------------------------------------------------------------------------------
 
 WebMimeRegistry::SupportsType
@@ -607,15 +613,24 @@ long long RendererBlinkPlatformImpl::databaseGetFileSize(
 }
 
 long long RendererBlinkPlatformImpl::databaseGetSpaceAvailableForOrigin(
-    const WebString& origin_identifier) {
-  return DatabaseUtil::DatabaseGetSpaceAvailable(origin_identifier,
-                                                 sync_message_filter_.get());
+    const blink::WebSecurityOrigin& origin) {
+  // TODO(jsbell): Pass url::Origin over IPC instead of database
+  // identifier/GURL. https://crbug.com/591482
+  return DatabaseUtil::DatabaseGetSpaceAvailable(WebString::fromUTF8(
+      storage::GetIdentifierFromOrigin(WebSecurityOriginToGURL(origin))),
+      sync_message_filter_.get());
 }
 
 bool RendererBlinkPlatformImpl::databaseSetFileSize(
     const WebString& vfs_file_name, long long size) {
   return DatabaseUtil::DatabaseSetFileSize(
       vfs_file_name, size, sync_message_filter_.get());
+}
+
+WebString RendererBlinkPlatformImpl::databaseCreateOriginIdentifier(
+    const blink::WebSecurityOrigin& origin) {
+  return WebString::fromUTF8(storage::GetIdentifierFromOrigin(
+      WebSecurityOriginToGURL(origin)));
 }
 
 bool RendererBlinkPlatformImpl::canAccelerate2dCanvas() {

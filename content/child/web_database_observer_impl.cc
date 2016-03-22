@@ -9,10 +9,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/thread_task_runner_handle.h"
+#include "content/child/storage_util.h"
 #include "content/common/database_messages.h"
+#include "storage/common/database/database_identifier.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/sqlite/sqlite3.h"
 
+using blink::WebSecurityOrigin;
 using blink::WebString;
 
 namespace content {
@@ -52,6 +56,13 @@ int DetermineHistogramResult(int websql_error, int sqlite_error) {
                                 callsite, kCallsiteHistogramSize); \
     } \
   } while (0)
+
+// TODO(jsbell): Replace with use of url::Origin end-to-end.
+// https://crbug.com/591482
+std::string GetIdentifierFromOrigin(const WebSecurityOrigin& origin) {
+  return storage::GetIdentifierFromOrigin(WebSecurityOriginToGURL(origin));
+}
+
 }  // namespace
 
 WebDatabaseObserverImpl::WebDatabaseObserverImpl(IPC::SyncMessageFilter* sender)
@@ -66,40 +77,35 @@ WebDatabaseObserverImpl::~WebDatabaseObserverImpl() {
 }
 
 void WebDatabaseObserverImpl::databaseOpened(
-    const WebString& origin_identifier,
+    const WebSecurityOrigin& origin,
     const WebString& database_name,
     const WebString& database_display_name,
     unsigned long estimated_size) {
-  open_connections_->AddOpenConnection(origin_identifier.utf8(),
-                                       database_name);
+  const std::string origin_identifier = GetIdentifierFromOrigin(origin);
+  open_connections_->AddOpenConnection(origin_identifier, database_name);
   sender_->Send(new DatabaseHostMsg_Opened(
-      origin_identifier.utf8(), database_name,
-      database_display_name, estimated_size));
+      origin_identifier, database_name, database_display_name, estimated_size));
 }
 
-void WebDatabaseObserverImpl::databaseModified(
-    const WebString& origin_identifier,
-    const WebString& database_name) {
-  sender_->Send(new DatabaseHostMsg_Modified(
-      origin_identifier.utf8(), database_name));
+void WebDatabaseObserverImpl::databaseModified(const WebSecurityOrigin& origin,
+                                               const WebString& database_name) {
+  sender_->Send(new DatabaseHostMsg_Modified(GetIdentifierFromOrigin(origin),
+                                             database_name));
 }
 
-void WebDatabaseObserverImpl::databaseClosed(
-    const WebString& origin_identifier,
-    const WebString& database_name) {
+void WebDatabaseObserverImpl::databaseClosed(const WebSecurityOrigin& origin,
+                                             const WebString& database_name) {
   DCHECK(!main_thread_task_runner_->RunsTasksOnCurrentThread());
+  const std::string origin_identifier = GetIdentifierFromOrigin(origin);
   main_thread_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(
-          base::IgnoreResult(&IPC::SyncMessageFilter::Send),
-          sender_,
-          new DatabaseHostMsg_Closed(origin_identifier.utf8(), database_name)));
-  open_connections_->RemoveOpenConnection(origin_identifier.utf8(),
-                                          database_name);
+      base::Bind(base::IgnoreResult(&IPC::SyncMessageFilter::Send), sender_,
+                 new DatabaseHostMsg_Closed(origin_identifier, database_name)));
+  open_connections_->RemoveOpenConnection(origin_identifier, database_name);
 }
 
 void WebDatabaseObserverImpl::reportOpenDatabaseResult(
-    const WebString& origin_identifier,
+    const WebSecurityOrigin& origin,
     const WebString& database_name,
     int callsite,
     int websql_error,
@@ -107,7 +113,7 @@ void WebDatabaseObserverImpl::reportOpenDatabaseResult(
     double call_time) {
   UMA_HISTOGRAM_WEBSQL_RESULT("OpenResult", callsite,
                               websql_error, sqlite_error);
-  HandleSqliteError(origin_identifier, database_name, sqlite_error);
+  HandleSqliteError(origin, database_name, sqlite_error);
 
   if (websql_error == kWebSQLSuccess && sqlite_error == SQLITE_OK) {
     UMA_HISTOGRAM_TIMES("websql.Async.OpenTime.Success",
@@ -119,50 +125,57 @@ void WebDatabaseObserverImpl::reportOpenDatabaseResult(
 }
 
 void WebDatabaseObserverImpl::reportChangeVersionResult(
-    const WebString& origin_identifier,
+    const WebSecurityOrigin& origin,
     const WebString& database_name,
-    int callsite, int websql_error, int sqlite_error) {
+    int callsite,
+    int websql_error,
+    int sqlite_error) {
   UMA_HISTOGRAM_WEBSQL_RESULT("ChangeVersionResult", callsite,
                               websql_error, sqlite_error);
-  HandleSqliteError(origin_identifier, database_name, sqlite_error);
+  HandleSqliteError(origin, database_name, sqlite_error);
 }
 
 void WebDatabaseObserverImpl::reportStartTransactionResult(
-    const WebString& origin_identifier,
+    const WebSecurityOrigin& origin,
     const WebString& database_name,
-    int callsite, int websql_error, int sqlite_error) {
+    int callsite,
+    int websql_error,
+    int sqlite_error) {
   UMA_HISTOGRAM_WEBSQL_RESULT("BeginResult", callsite,
                               websql_error, sqlite_error);
-  HandleSqliteError(origin_identifier, database_name, sqlite_error);
+  HandleSqliteError(origin, database_name, sqlite_error);
 }
 
 void WebDatabaseObserverImpl::reportCommitTransactionResult(
-    const WebString& origin_identifier,
+    const WebSecurityOrigin& origin,
     const WebString& database_name,
-    int callsite, int websql_error, int sqlite_error) {
+    int callsite,
+    int websql_error,
+    int sqlite_error) {
   UMA_HISTOGRAM_WEBSQL_RESULT("CommitResult", callsite,
                               websql_error, sqlite_error);
-  HandleSqliteError(origin_identifier, database_name, sqlite_error);
+  HandleSqliteError(origin, database_name, sqlite_error);
 }
 
 void WebDatabaseObserverImpl::reportExecuteStatementResult(
-    const WebString& origin_identifier,
+    const WebSecurityOrigin& origin,
     const WebString& database_name,
-    int callsite, int websql_error, int sqlite_error) {
+    int callsite,
+    int websql_error,
+    int sqlite_error) {
   UMA_HISTOGRAM_WEBSQL_RESULT("StatementResult", callsite,
                               websql_error, sqlite_error);
-  HandleSqliteError(origin_identifier, database_name, sqlite_error);
+  HandleSqliteError(origin, database_name, sqlite_error);
 }
 
 void WebDatabaseObserverImpl::reportVacuumDatabaseResult(
-    const WebString& origin_identifier,
+    const WebSecurityOrigin& origin,
     const WebString& database_name,
     int sqlite_error) {
   int result = DetermineHistogramResult(-1, sqlite_error);
   UMA_HISTOGRAM_ENUMERATION("websql.Async.VacuumResult",
                               result, kResultHistogramSize);
-
-  HandleSqliteError(origin_identifier, database_name, sqlite_error);
+  HandleSqliteError(origin, database_name, sqlite_error);
 }
 
 bool WebDatabaseObserverImpl::WaitForAllDatabasesToClose(
@@ -171,18 +184,15 @@ bool WebDatabaseObserverImpl::WaitForAllDatabasesToClose(
   return open_connections_->WaitForAllDatabasesToClose(timeout);
 }
 
-void WebDatabaseObserverImpl::HandleSqliteError(
-    const WebString& origin_identifier,
-    const WebString& database_name,
-    int error) {
+void WebDatabaseObserverImpl::HandleSqliteError(const WebSecurityOrigin& origin,
+                                                const WebString& database_name,
+                                                int error) {
   // We filter out errors which the backend doesn't act on to avoid
   // a unnecessary ipc traffic, this method can get called at a fairly
   // high frequency (per-sqlstatement).
   if (error == SQLITE_CORRUPT || error == SQLITE_NOTADB) {
     sender_->Send(new DatabaseHostMsg_HandleSqliteError(
-        origin_identifier.utf8(),
-        database_name,
-        error));
+        GetIdentifierFromOrigin(origin), database_name, error));
   }
 }
 

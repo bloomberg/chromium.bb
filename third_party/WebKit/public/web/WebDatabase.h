@@ -41,14 +41,14 @@ class WebString;
 class WebDatabase {
 public:
     BLINK_EXPORT static void updateDatabaseSize(
-        const WebString& originIdentifier, const WebString& name, long long size);
+        const WebSecurityOrigin&, const WebString& name, long long size);
     BLINK_EXPORT static void updateSpaceAvailable(
-        const WebString& originIdentifier, long long spaceAvailable);
+        const WebSecurityOrigin&, long long spaceAvailable);
     BLINK_EXPORT static void resetSpaceAvailable(
-        const WebString& originIdentifier);
+        const WebSecurityOrigin&);
 
     BLINK_EXPORT static void closeDatabaseImmediately(
-        const WebString& originIdentifier, const WebString& databaseName);
+        const WebSecurityOrigin&, const WebString& databaseName);
 
 private:
     WebDatabase() { }
