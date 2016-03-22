@@ -1522,11 +1522,8 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
         || (endLine < firstExplicitLine)
         || (endLine > lastExplicitLine);
 
-    size_t initialPosition = startIsAuto ? 0 : startLine;
-    size_t finalPosition = endIsAuto ? lastExplicitLine : endLine;
-
-    LayoutUnit start = startIsAuto ? LayoutUnit() : isForColumns ?  m_columnPositions[initialPosition] : m_rowPositions[initialPosition];
-    LayoutUnit end = endIsAuto ? isForColumns ? logicalWidth() : logicalHeight() : isForColumns ?  m_columnPositions[finalPosition] : m_rowPositions[finalPosition];
+    LayoutUnit start = startIsAuto ? LayoutUnit() : isForColumns ?  m_columnPositions[startLine] : m_rowPositions[startLine];
+    LayoutUnit end = endIsAuto ? isForColumns ? logicalWidth() : logicalHeight() : isForColumns ?  m_columnPositions[endLine] : m_rowPositions[endLine];
 
     breadth = end - start;
 
