@@ -15,12 +15,6 @@ cr.define('settings_device_page', function() {
   };
 
   suite('SettingsDevicePage', function() {
-    /** @type {CrSettingsPrefsElement} */
-    var settingsPrefs = null;
-
-    /** @type {settings.FakeSettingsPrivate} */
-    var fakeApi = null;
-
     var fakePrefs = [{
       key: 'settings.touchpad.enable_tap_to_click',
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
@@ -59,19 +53,10 @@ cr.define('settings_device_page', function() {
       value: false,
     }];
 
-    // Initialize <settings-device-page> before each test.
-    setup(function() {
-      CrSettingsPrefs.deferInitialization = true;
-      fakeApi = new settings.FakeSettingsPrivate(fakePrefs);
-      settingsPrefs = document.createElement('settings-prefs');
-      settingsPrefs.initializeForTesting(fakeApi);
-      return CrSettingsPrefs.initialized;
-    });
-
     test('keyboard subpage', function() {
       var devicePage = document.createElement('settings-device-page');
       devicePage.currentRoute = {page: 'basic', section: '', subpage: []};
-      devicePage.prefs = settingsPrefs.prefs;
+      devicePage.prefs = fakePrefs;
 
       // Open the keyboard subpage.
       var keyboardRow = devicePage.$$('#main #keyboardRow');
