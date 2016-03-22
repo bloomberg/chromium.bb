@@ -4102,7 +4102,7 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionTy
         targetLevel = 0;
         targetInternalformat = GL_RGBA;
         targetType = GL_UNSIGNED_BYTE;
-        targetTexture = webContext()->createTexture();
+        contextGL()->GenTextures(1, &targetTexture);
         contextGL()->BindTexture(GL_TEXTURE_2D, targetTexture);
         contextGL()->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         contextGL()->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -4128,7 +4128,8 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionTy
     }
 
     if (!possibleDirectCopy) {
-        WebGLId tmpFBO = webContext()->createFramebuffer();
+        GLuint tmpFBO;
+        contextGL()->GenFramebuffers(1, &tmpFBO);
         contextGL()->BindFramebuffer(GL_FRAMEBUFFER, tmpFBO);
         contextGL()->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, targetTexture, 0);
         contextGL()->BindTexture(texture->getTarget(), texture->object());
@@ -4141,8 +4142,8 @@ void WebGLRenderingContextBase::texImageCanvasByGPU(TexImageByGPUType functionTy
         }
         contextGL()->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, 0, 0);
         restoreCurrentFramebuffer();
-        webContext()->deleteFramebuffer(tmpFBO);
-        webContext()->deleteTexture(targetTexture);
+        contextGL()->DeleteFramebuffers(1, &tmpFBO);
+        contextGL()->DeleteTextures(1, &targetTexture);
     }
 }
 

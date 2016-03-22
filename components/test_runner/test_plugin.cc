@@ -39,7 +39,7 @@ namespace test_runner {
 
 namespace {
 
-void PremultiplyAlpha(const unsigned color_in[3],
+void PremultiplyAlpha(const uint8_t color_in[3],
                       float alpha,
                       float color_out[4]) {
   for (int i = 0; i < 3; ++i)
@@ -334,7 +334,7 @@ TestPlugin::Primitive TestPlugin::ParsePrimitive(
 
 // FIXME: This method should already exist. Use it.
 // For now just parse primary colors.
-void TestPlugin::ParseColor(const blink::WebString& string, unsigned color[3]) {
+void TestPlugin::ParseColor(const blink::WebString& string, uint8_t color[3]) {
   color[0] = color[1] = color[2] = 0;
   if (string == "black")
     return;
@@ -359,14 +359,14 @@ bool TestPlugin::ParseBoolean(const blink::WebString& string) {
 }
 
 bool TestPlugin::InitScene() {
-  if (!context_)
+  if (!gl_)
     return true;
 
   float color[4];
   PremultiplyAlpha(scene_.background_color, scene_.opacity, color);
 
-  color_texture_ = context_->createTexture();
-  framebuffer_ = context_->createFramebuffer();
+  gl_->GenTextures(1, &color_texture_);
+  gl_->GenFramebuffers(1, &framebuffer_);
 
   gl_->Viewport(0, 0, rect_.width, rect_.height);
   gl_->Disable(GL_DEPTH_TEST);
@@ -423,17 +423,17 @@ void TestPlugin::DestroyScene() {
     scene_.program = 0;
   }
   if (scene_.vbo) {
-    context_->deleteBuffer(scene_.vbo);
+    gl_->DeleteBuffers(1, &scene_.vbo);
     scene_.vbo = 0;
   }
 
   if (framebuffer_) {
-    context_->deleteFramebuffer(framebuffer_);
+    gl_->DeleteFramebuffers(1, &framebuffer_);
     framebuffer_ = 0;
   }
 
   if (color_texture_) {
-    context_->deleteTexture(color_texture_);
+    gl_->DeleteTextures(1, &color_texture_);
     color_texture_ = 0;
   }
 }
@@ -464,7 +464,7 @@ bool TestPlugin::InitProgram() {
 bool TestPlugin::InitPrimitive() {
   DCHECK_EQ(scene_.primitive, PrimitiveTriangle);
 
-  scene_.vbo = context_->createBuffer();
+  gl_->GenBuffers(1, &scene_.vbo);
   if (!scene_.vbo)
     return false;
 
@@ -496,8 +496,8 @@ void TestPlugin::DrawPrimitive() {
   gl_->DrawArrays(GL_TRIANGLES, 0, 3);
 }
 
-unsigned TestPlugin::LoadShader(unsigned type, const std::string& source) {
-  unsigned shader = gl_->CreateShader(type);
+GLuint TestPlugin::LoadShader(GLenum type, const std::string& source) {
+  GLuint shader = gl_->CreateShader(type);
   if (shader) {
     context_->shaderSource(shader, source.data());
     gl_->CompileShader(shader);
@@ -512,11 +512,11 @@ unsigned TestPlugin::LoadShader(unsigned type, const std::string& source) {
   return shader;
 }
 
-unsigned TestPlugin::LoadProgram(const std::string& vertex_source,
-                                 const std::string& fragment_source) {
-  unsigned vertex_shader = LoadShader(GL_VERTEX_SHADER, vertex_source);
-  unsigned fragment_shader = LoadShader(GL_FRAGMENT_SHADER, fragment_source);
-  unsigned program = gl_->CreateProgram();
+GLuint TestPlugin::LoadProgram(const std::string& vertex_source,
+                               const std::string& fragment_source) {
+  GLuint vertex_shader = LoadShader(GL_VERTEX_SHADER, vertex_source);
+  GLuint fragment_shader = LoadShader(GL_FRAGMENT_SHADER, fragment_source);
+  GLuint program = gl_->CreateProgram();
   if (vertex_shader && fragment_shader && program) {
     gl_->AttachShader(program, vertex_shader);
     gl_->AttachShader(program, fragment_shader);

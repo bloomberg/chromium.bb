@@ -311,7 +311,7 @@ private:
     WebGraphicsContext3D::Attributes m_requestedAttributes;
     bool m_multisampleExtensionSupported;
     bool m_discardFramebufferSupported;
-    Platform3DObject m_fbo;
+    GLuint m_fbo;
     // DrawingBuffer's output is double-buffered. m_colorBuffer is the back buffer.
     TextureInfo m_colorBuffer;
     struct FrontBufferInfo {
@@ -323,11 +323,11 @@ private:
     OwnPtr<SameThreadClosure> m_newMailboxCallback;
 
     // This is used when the user requests either a depth or stencil buffer.
-    Platform3DObject m_depthStencilBuffer;
+    GLuint m_depthStencilBuffer;
 
     // For multisampling.
-    Platform3DObject m_multisampleFBO;
-    Platform3DObject m_multisampleColorBuffer;
+    GLuint m_multisampleFBO;
+    GLuint m_multisampleColorBuffer;
 
     // True if our contents have been modified since the last presentation of this buffer.
     bool m_contentsChanged;
