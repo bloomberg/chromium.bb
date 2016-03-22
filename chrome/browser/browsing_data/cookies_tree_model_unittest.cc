@@ -236,9 +236,7 @@ class CookiesTreeModelTest : public testing::Test {
       if (expected_url.SchemeIsFile()) {
         EXPECT_FALSE(host->CanCreateContentException());
       } else {
-        cookie_settings->ResetCookieSetting(
-            ContentSettingsPattern::FromURLNoWildcard(expected_url),
-            ContentSettingsPattern::Wildcard());
+        cookie_settings->ResetCookieSetting(expected_url);
         EXPECT_FALSE(cookie_settings->IsCookieSessionOnly(expected_url));
 
         host->CreateContentException(cookie_settings,
@@ -1430,21 +1428,11 @@ TEST_F(CookiesTreeModelTest, ContentSettings) {
 
   EXPECT_EQ(1, origin->child_count());
   EXPECT_TRUE(origin->CanCreateContentException());
-  EXPECT_CALL(observer,
-              OnContentSettingsChanged(
-                  content_settings,
-                  CONTENT_SETTINGS_TYPE_COOKIES,
-                  false,
-                  ContentSettingsPattern::FromURLNoWildcard(host),
-                  ContentSettingsPattern::Wildcard(),
-                  false));
-  EXPECT_CALL(observer,
-              OnContentSettingsChanged(content_settings,
-                  CONTENT_SETTINGS_TYPE_COOKIES,
-                  false,
-                  ContentSettingsPattern::FromURL(host),
-                  ContentSettingsPattern::Wildcard(),
-                  false));
+  EXPECT_CALL(observer, OnContentSettingsChanged(
+                            content_settings, CONTENT_SETTINGS_TYPE_COOKIES,
+                            false, ContentSettingsPattern::FromURL(host),
+                            ContentSettingsPattern::Wildcard(), false))
+      .Times(2);
   origin->CreateContentException(
       cookie_settings, CONTENT_SETTING_SESSION_ONLY);
   EXPECT_TRUE(cookie_settings->IsReadingCookieAllowed(host, host));

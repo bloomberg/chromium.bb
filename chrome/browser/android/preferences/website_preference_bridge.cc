@@ -467,7 +467,7 @@ static void SetCookieSettingForOrigin(JNIEnv* env,
   ContentSettingsPattern secondary_pattern(ContentSettingsPattern::Wildcard());
   ContentSetting setting = CONTENT_SETTING_DEFAULT;
   if (value == -1) {
-    GetCookieSettings()->ResetCookieSetting(primary_pattern, secondary_pattern);
+    GetCookieSettings()->ResetCookieSetting(url);
   } else {
     setting = value ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
     GetCookieSettings()->SetCookieSetting(primary_pattern, secondary_pattern,

@@ -341,8 +341,7 @@ TEST_F(ExtensionSpecialStoragePolicyTest, HasSessionOnlyOrigins) {
   EXPECT_TRUE(policy_->HasSessionOnlyOrigins());
 
   // Clearing an origin-specific rule.
-  cookie_settings->ResetCookieSetting(pattern,
-                                      ContentSettingsPattern::Wildcard());
+  cookie_settings->ResetCookieSetting(GURL("http://pattern.com"));
 
   EXPECT_FALSE(policy_->HasSessionOnlyOrigins());
 }

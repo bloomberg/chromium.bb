@@ -84,11 +84,10 @@ class CookieSettings : public RefcountedKeyedService {
                         const ContentSettingsPattern& secondary_pattern,
                         ContentSetting setting);
 
-  // Resets the cookie setting for the given patterns.
+  // Resets the cookie setting for the given url.
   //
   // This should only be called on the UI thread.
-  void ResetCookieSetting(const ContentSettingsPattern& primary_pattern,
-                          const ContentSettingsPattern& secondary_pattern);
+  void ResetCookieSetting(const GURL& primary_url);
 
   bool IsStorageDurable(const GURL& origin) const;
 

@@ -105,12 +105,10 @@ void CookieSettings::SetCookieSetting(
       std::string(), setting);
 }
 
-void CookieSettings::ResetCookieSetting(
-    const ContentSettingsPattern& primary_pattern,
-    const ContentSettingsPattern& secondary_pattern) {
-  host_content_settings_map_->SetContentSetting(
-      primary_pattern, secondary_pattern, CONTENT_SETTINGS_TYPE_COOKIES,
-      std::string(), CONTENT_SETTING_DEFAULT);
+void CookieSettings::ResetCookieSetting(const GURL& primary_url) {
+  host_content_settings_map_->SetNarrowestContentSetting(
+      primary_url, GURL(), CONTENT_SETTINGS_TYPE_COOKIES,
+      CONTENT_SETTING_DEFAULT);
 }
 
 bool CookieSettings::IsStorageDurable(const GURL& origin) const {
