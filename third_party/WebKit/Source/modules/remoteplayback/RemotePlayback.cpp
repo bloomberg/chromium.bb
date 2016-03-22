@@ -5,7 +5,8 @@
 #include "modules/remoteplayback/RemotePlayback.h"
 
 #include "core/dom/Document.h"
-#include "core/frame/LocalFrame.h"
+#include "core/events/Event.h"
+#include "core/html/HTMLMediaElement.h"
 #include "modules/EventTargetModules.h"
 
 namespace blink {
@@ -31,18 +32,21 @@ const AtomicString& remotePlaybackStateToString(WebRemotePlaybackState state)
 } // anonymous namespace
 
 // static
-RemotePlayback* RemotePlayback::create(LocalFrame* frame)
+RemotePlayback* RemotePlayback::create(HTMLMediaElement& element)
 {
-    ASSERT(frame);
+    ASSERT(element.document().frame());
 
-    RemotePlayback* remotePlayback = new RemotePlayback(frame);
+    RemotePlayback* remotePlayback = new RemotePlayback(
+        element.document().frame(),
+        element.isPlayingRemotely() ? WebRemotePlaybackState::Connected : WebRemotePlaybackState::Disconnected);
+    element.setRemotePlaybackClient(remotePlayback);
 
     return remotePlayback;
 }
 
-RemotePlayback::RemotePlayback(LocalFrame* frame)
+RemotePlayback::RemotePlayback(LocalFrame* frame, WebRemotePlaybackState state)
     : DOMWindowProperty(frame)
-    , m_state(WebRemotePlaybackState::Disconnected)
+    , m_state(state)
 {
 }
 
@@ -61,6 +65,15 @@ ExecutionContext* RemotePlayback::getExecutionContext() const
 String RemotePlayback::state() const
 {
     return remotePlaybackStateToString(m_state);
+}
+
+void RemotePlayback::stateChanged(WebRemotePlaybackState state)
+{
+    if (m_state == state)
+        return;
+
+    m_state = state;
+    dispatchEvent(Event::create(EventTypeNames::statechange));
 }
 
 DEFINE_TRACE(RemotePlayback)

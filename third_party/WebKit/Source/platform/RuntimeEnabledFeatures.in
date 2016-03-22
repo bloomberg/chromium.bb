@@ -158,7 +158,7 @@ PushMessagingData status=stable
 PushSubscriptionRestrictions status=experimental
 QuotaPromise status=experimental
 ReducedReferrerGranularity
-RemotePlayback status=test
+RemotePlayback status=experimental
 RenderingPipelineThrottling status=experimental
 RequestIdleCallback status=stable
 RequestAutocomplete status=test

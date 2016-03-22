@@ -64,6 +64,7 @@ class VideoTrackList;
 class WebAudioSourceProvider;
 class WebInbandTextTrack;
 class WebLayer;
+class WebRemotePlaybackClient;
 
 class CORE_EXPORT HTMLMediaElement : public HTMLElement, public WillBeHeapSupplementable<HTMLMediaElement>, public ActiveScriptWrappable, public ActiveDOMObject, private WebMediaPlayerClient {
     DEFINE_WRAPPERTYPEINFO();
@@ -260,6 +261,9 @@ public:
     // Temporary callback for crbug.com/487345,402044
     void notifyPositionMayHaveChanged(const IntRect&);
     void updatePositionNotificationRegistration();
+
+    WebRemotePlaybackClient* remotePlaybackClient() { return m_remotePlaybackClient; }
+    void setRemotePlaybackClient(WebRemotePlaybackClient*);
 
 protected:
     HTMLMediaElement(const QualifiedName&, Document&);
@@ -638,6 +642,8 @@ private:
     friend class MediaControlsTest;
 
     AutoplayExperimentHelper m_autoplayHelper;
+
+    WebRemotePlaybackClient* m_remotePlaybackClient;
 
     static URLRegistry* s_mediaStreamRegistry;
 };

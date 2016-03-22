@@ -8,6 +8,7 @@
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
 #include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
@@ -15,16 +16,18 @@
 namespace blink {
 
 class ExecutionContext;
+class HTMLMediaElement;
 class LocalFrame;
 
 class RemotePlayback final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<RemotePlayback>
-    , public DOMWindowProperty {
+    , public DOMWindowProperty
+    , private WebRemotePlaybackClient {
     REFCOUNTED_GARBAGE_COLLECTED_EVENT_TARGET(RemotePlayback);
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(RemotePlayback);
 public:
-    static RemotePlayback* create(LocalFrame*);
+    static RemotePlayback* create(HTMLMediaElement&);
 
     ~RemotePlayback() override = default;
 
@@ -34,12 +37,14 @@ public:
 
     String state() const;
 
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    explicit RemotePlayback(LocalFrame*);
+    RemotePlayback(LocalFrame*, WebRemotePlaybackState);
+
+    void stateChanged(WebRemotePlaybackState) override;
 
     WebRemotePlaybackState m_state;
 };

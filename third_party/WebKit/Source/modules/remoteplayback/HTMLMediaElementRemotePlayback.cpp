@@ -45,7 +45,7 @@ RemotePlayback* HTMLMediaElementRemotePlayback::remote(HTMLMediaElement& element
         return nullptr;
 
     if (!self.m_remote)
-        self.m_remote = RemotePlayback::create(document.frame());
+        self.m_remote = RemotePlayback::create(element);
 
     return self.m_remote;
 }

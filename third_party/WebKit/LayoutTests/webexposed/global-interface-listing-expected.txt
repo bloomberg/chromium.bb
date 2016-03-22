@@ -4413,8 +4413,10 @@ interface RelatedEvent : Event
     method constructor
 interface RemotePlayback : EventTarget
     attribute @@toStringTag
+    getter onstatechange
     getter state
     method constructor
+    setter onstatechange
 interface Request
     attribute @@toStringTag
     getter bodyUsed

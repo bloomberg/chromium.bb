@@ -81,6 +81,8 @@
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebInbandTextTrack.h"
+#include "public/platform/modules/remoteplayback/WebRemotePlaybackClient.h"
+#include "public/platform/modules/remoteplayback/WebRemotePlaybackState.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/CString.h"
@@ -363,6 +365,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document& docum
     , m_playPromiseRejectTask(CancellableTaskFactory::create(this, &HTMLMediaElement::rejectPlayPromises))
     , m_audioSourceNode(nullptr)
     , m_autoplayHelper(*this)
+    , m_remotePlaybackClient(nullptr)
 {
 #if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
@@ -2920,6 +2923,8 @@ void HTMLMediaElement::connectedToRemoteDevice()
     m_playingRemotely = true;
     if (mediaControls())
         mediaControls()->startedCasting();
+    if (remotePlaybackClient())
+        remotePlaybackClient()->stateChanged(WebRemotePlaybackState::Connected);
 }
 
 void HTMLMediaElement::disconnectedFromRemoteDevice()
@@ -2927,6 +2932,8 @@ void HTMLMediaElement::disconnectedFromRemoteDevice()
     m_playingRemotely = false;
     if (mediaControls())
         mediaControls()->stoppedCasting();
+    if (remotePlaybackClient())
+        remotePlaybackClient()->stateChanged(WebRemotePlaybackState::Disconnected);
 }
 
 // MediaPlayerPresentation methods
@@ -3680,6 +3687,11 @@ void HTMLMediaElement::notifyPositionMayHaveChanged(const IntRect& visibleRect)
 void HTMLMediaElement::updatePositionNotificationRegistration()
 {
     m_autoplayHelper.updatePositionNotificationRegistration();
+}
+
+void HTMLMediaElement::setRemotePlaybackClient(WebRemotePlaybackClient* client)
+{
+    m_remotePlaybackClient = client;
 }
 
 // TODO(liberato): remove once autoplay gesture override experiment concludes.
