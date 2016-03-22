@@ -66,9 +66,7 @@ class SharedContextRateLimiter;
 #define CANVAS2D_HIBERNATION_ENABLED 0
 
 // IOSurfaces are a primitive only present on OS X.
-// TODO(erikchen): Re-enable this after debugging for
-// https://bugs.chromium.org/p/chromium/issues/detail?id=595754.
-#define USE_IOSURFACE_FOR_2D_CANVAS 0
+#define USE_IOSURFACE_FOR_2D_CANVAS 1
 #else
 #define CANVAS2D_HIBERNATION_ENABLED 1
 #define USE_IOSURFACE_FOR_2D_CANVAS 0
