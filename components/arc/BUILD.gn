@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//testing/test.gni")
 
 static_library("arc") {
   sources = [
@@ -106,21 +107,6 @@ static_library("arc_test_support") {
   ]
 }
 
-static_library("arc_standalone") {
-  sources = [
-    "standalone/arc_standalone_bridge_runner.cc",
-    "standalone/arc_standalone_bridge_runner.h",
-  ]
-
-  deps = [
-    ":arc",
-    "//base",
-    "//ipc:ipc",
-    "//ipc/mojo:mojo",
-    "//mojo/edk/system",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -145,6 +131,45 @@ source_set("unit_tests") {
   ]
 }
 
+static_library("arc_standalone_service") {
+  sources = [
+    "standalone/service_helper.cc",
+    "standalone/service_helper.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
+static_library("arc_standalone") {
+  sources = [
+    "standalone/arc_standalone_bridge_runner.cc",
+    "standalone/arc_standalone_bridge_runner.h",
+  ]
+
+  deps = [
+    ":arc",
+    ":arc_standalone_service",
+    "//base",
+    "//ipc:ipc",
+    "//ipc/mojo:mojo",
+    "//mojo/edk/system",
+  ]
+}
+
+test("arc_standalone_service_unittests") {
+  sources = [
+    "standalone/service_helper_unittest.cc",
+  ]
+
+  deps = [
+    ":arc_standalone_service",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}
+
 executable("arc_standalone_bridge") {
   sources = [
     "standalone/arc_standalone_bridge_main.cc",
@@ -152,6 +177,7 @@ executable("arc_standalone_bridge") {
 
   deps = [
     ":arc_standalone",
+    ":arc_standalone_service",
     "//base",
     "//ipc:ipc",
     "//ipc/mojo:mojo",

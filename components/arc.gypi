@@ -84,24 +84,6 @@
       ],
     },
     {
-      # GN version: //components/arc:arc_standalone
-      'target_name': 'arc_standalone',
-      'type': 'static_library',
-      'include_dirs': [
-        '..',
-      ],
-      'dependencies': [
-        'arc',
-        '../base/base.gyp:base',
-        '../ipc/ipc.gyp:ipc',
-        '../mojo/mojo_edk.gyp:mojo_system_impl',
-      ],
-      'sources': [
-        'arc/standalone/arc_standalone_bridge_runner.cc',
-        'arc/standalone/arc_standalone_bridge_runner.h',
-      ]
-    },
-    {
       # GN version: //components/arc:mojo_bindings
       'target_name': 'arc_mojo_bindings',
       'type': 'static_library',
@@ -126,6 +108,38 @@
       ],
     },
     {
+      # GN version: //components/arc:arc_standalone_service
+      'target_name': 'arc_standalone_service',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../ipc/ipc.gyp:ipc',
+        '../mojo/mojo_edk.gyp:mojo_system_impl',
+      ],
+      'sources': [
+        'arc/standalone/service_helper.cc',
+        'arc/standalone/service_helper.h',
+      ],
+    },
+    {
+      # GN version: //components/arc:arc_standalone
+      'target_name': 'arc_standalone',
+      'type': 'static_library',
+      'include_dirs': [
+        '..',
+      ],
+      'dependencies': [
+        'arc',
+        '../base/base.gyp:base',
+        '../ipc/ipc.gyp:ipc',
+        '../mojo/mojo_edk.gyp:mojo_system_impl',
+      ],
+      'sources': [
+        'arc/standalone/arc_standalone_bridge_runner.cc',
+        'arc/standalone/arc_standalone_bridge_runner.h',
+      ]
+    },
+    {
       # GN version: //components/arc:arc_standalone_bridge
       'target_name': 'arc_standalone_bridge',
       'type': 'executable',
@@ -134,6 +148,7 @@
       ],
       'dependencies': [
         'arc_standalone',
+        'arc_standalone_service',
         '../base/base.gyp:base',
         '../ipc/ipc.gyp:ipc',
         '../mojo/mojo_edk.gyp:mojo_system_impl',
