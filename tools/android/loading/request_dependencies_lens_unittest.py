@@ -11,77 +11,122 @@ from request_track import (Request, TimingFromDict)
 import test_utils
 
 
-class RequestDependencyLensTestCase(unittest.TestCase):
-  _REDIRECT_REQUEST = Request.FromJsonDict(
+class TestRequests(object):
+  FIRST_REDIRECT_REQUEST = Request.FromJsonDict(
       {'url': 'http://bla.com', 'request_id': '1234.redirect.1',
        'initiator': {'type': 'other'},
+       'timestamp': 0.5, 'timing': TimingFromDict({})})
+  SECOND_REDIRECT_REQUEST = Request.FromJsonDict(
+      {'url': 'http://bla.com/redirect1', 'request_id': '1234.redirect.2',
+       'initiator': {'type': 'redirect',
+                     'initiating_request': '1234.redirect.1'},
        'timestamp': 1, 'timing': TimingFromDict({})})
-  _REDIRECTED_REQUEST = Request.FromJsonDict({
-      'url': 'http://bla.com',
+  REDIRECTED_REQUEST = Request.FromJsonDict({
+      'url': 'http://bla.com/index.html',
       'request_id': '1234.1',
       'frame_id': '123.1',
       'initiator': {'type': 'redirect',
-                    'initiating_request': '1234.redirect.1'},
+                    'initiating_request': '1234.redirect.2'},
       'timestamp': 2,
       'timing': TimingFromDict({})})
-  _REQUEST = Request.FromJsonDict({'url': 'http://bla.com',
-                                   'request_id': '1234.1',
-                                   'frame_id': '123.1',
-                                   'initiator': {'type': 'other'},
-                                   'timestamp': 2,
-                                   'timing': TimingFromDict({})})
-  _JS_REQUEST = Request.FromJsonDict({'url': 'http://bla.com/nyancat.js',
-                                      'request_id': '1234.12',
-                                      'frame_id': '123.1',
-                                      'initiator': {'type': 'parser',
-                                                    'url': 'http://bla.com'},
-                                      'timestamp': 3,
-                                      'timing': TimingFromDict({})})
-  _JS_REQUEST_OTHER_FRAME = Request.FromJsonDict(
+  REQUEST = Request.FromJsonDict({'url': 'http://bla.com/index.html',
+                                  'request_id': '1234.1',
+                                  'frame_id': '123.1',
+                                  'initiator': {'type': 'other'},
+                                  'timestamp': 2,
+                                  'timing': TimingFromDict({})})
+  JS_REQUEST = Request.FromJsonDict({'url': 'http://bla.com/nyancat.js',
+                                     'request_id': '1234.12',
+                                     'frame_id': '123.123',
+                                     'initiator': {
+                                         'type': 'parser',
+                                         'url': 'http://bla.com/index.html'},
+                                     'timestamp': 3,
+                                     'timing': TimingFromDict({})})
+  JS_REQUEST_OTHER_FRAME = Request.FromJsonDict(
       {'url': 'http://bla.com/nyancat.js',
        'request_id': '1234.42',
        'frame_id': '123.13',
        'initiator': {'type': 'parser',
-                     'url': 'http://bla.com'},
+                     'url': 'http://bla.com/index.html'},
        'timestamp': 4, 'timing': TimingFromDict({})})
-  _JS_REQUEST_UNRELATED_FRAME = Request.FromJsonDict(
+  JS_REQUEST_UNRELATED_FRAME = Request.FromJsonDict(
       {'url': 'http://bla.com/nyancat.js',
-       'request_id': '1234.42',
+       'request_id': '1234.56',
        'frame_id': '123.99',
        'initiator': {'type': 'parser',
-                     'url': 'http://bla.com'},
+                     'url': 'http://bla.com/index.html'},
        'timestamp': 5, 'timing': TimingFromDict({})})
-  _JS_REQUEST_2 = Request.FromJsonDict(
+  JS_REQUEST_2 = Request.FromJsonDict(
       {'url': 'http://bla.com/cat.js', 'request_id': '1234.13',
-       'frame_id': '123.1',
+       'frame_id': '123.123',
        'initiator': {'type': 'script',
                      'stack': {'callFrames': [
                          {'url': 'unknown'},
                          {'url': 'http://bla.com/nyancat.js'}]}},
        'timestamp': 10, 'timing': TimingFromDict({})})
-  _PAGE_EVENTS = [{'method': 'Page.frameAttached',
-                   'frame_id': '123.13', 'parent_frame_id': '123.1'}]
+  PAGE_EVENTS = [{'method': 'Page.frameAttached',
+                   'frame_id': '123.13', 'parent_frame_id': '123.1'},
+                 {'method': 'Page.frameAttached',
+                  'frame_id': '123.123', 'parent_frame_id': '123.1'}]
 
+  @classmethod
+  def CreateLoadingTrace(cls, trace_events=None):
+    return test_utils.LoadingTraceFromEvents(
+        [cls.FIRST_REDIRECT_REQUEST, cls.SECOND_REDIRECT_REQUEST,
+         cls.REDIRECTED_REQUEST, cls.REQUEST, cls.JS_REQUEST, cls.JS_REQUEST_2,
+         cls.JS_REQUEST_OTHER_FRAME, cls.JS_REQUEST_UNRELATED_FRAME],
+        cls.PAGE_EVENTS, trace_events)
+
+
+class RequestDependencyLensTestCase(unittest.TestCase):
   def testRedirectDependency(self):
     loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._REDIRECT_REQUEST, self._REDIRECTED_REQUEST])
+        [TestRequests.FIRST_REDIRECT_REQUEST,
+         TestRequests.SECOND_REDIRECT_REQUEST, TestRequests.REDIRECTED_REQUEST])
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
-    self.assertEquals(1, len(deps))
+    self.assertEquals(2, len(deps))
     (first, second, reason) = deps[0]
     self.assertEquals('redirect', reason)
-    self.assertEquals(self._REDIRECT_REQUEST.request_id, first.request_id)
-    self.assertEquals(self._REQUEST.request_id, second.request_id)
+    self.assertEquals(TestRequests.FIRST_REDIRECT_REQUEST.request_id,
+                      first.request_id)
+    self.assertEquals(TestRequests.SECOND_REDIRECT_REQUEST.request_id,
+                      second.request_id)
+    (first, second, reason) = deps[1]
+    self.assertEquals('redirect', reason)
+    self.assertEquals(TestRequests.SECOND_REDIRECT_REQUEST.request_id,
+                      first.request_id)
+    self.assertEquals(TestRequests.REQUEST.request_id, second.request_id)
+
+  def testGetRedirectChain(self):
+    loading_trace = test_utils.LoadingTraceFromEvents(
+        [TestRequests.FIRST_REDIRECT_REQUEST,
+         TestRequests.SECOND_REDIRECT_REQUEST, TestRequests.REDIRECTED_REQUEST])
+    request_dependencies_lens = RequestDependencyLens(loading_trace)
+    whole_chain = [TestRequests.FIRST_REDIRECT_REQUEST,
+                   TestRequests.SECOND_REDIRECT_REQUEST,
+                   TestRequests.REDIRECTED_REQUEST]
+    chain = request_dependencies_lens.GetRedirectChain(
+        TestRequests.FIRST_REDIRECT_REQUEST)
+    self.assertListEqual(whole_chain, chain)
+    chain = request_dependencies_lens.GetRedirectChain(
+        TestRequests.SECOND_REDIRECT_REQUEST)
+    self.assertListEqual(whole_chain[1:], chain)
+    chain = request_dependencies_lens.GetRedirectChain(
+        TestRequests.REDIRECTED_REQUEST)
+    self.assertEquals(whole_chain[2:], chain)
 
   def testScriptDependency(self):
     loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._JS_REQUEST, self._JS_REQUEST_2])
+        [TestRequests.JS_REQUEST, TestRequests.JS_REQUEST_2])
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
     self.assertEquals(1, len(deps))
     self._AssertDependencyIs(
         deps[0],
-        self._JS_REQUEST.request_id, self._JS_REQUEST_2.request_id, 'script')
+        TestRequests.JS_REQUEST.request_id,
+        TestRequests.JS_REQUEST_2.request_id, 'script')
 
   def testAsyncScriptDependency(self):
     JS_REQUEST_WITH_ASYNC_STACK = Request.FromJsonDict(
@@ -93,65 +138,76 @@ class RequestDependencyLensTestCase(unittest.TestCase):
                                       {'url': 'http://bla.com/nyancat.js'}]}}},
          'timestamp': 10, 'timing': TimingFromDict({})})
     loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._JS_REQUEST, JS_REQUEST_WITH_ASYNC_STACK])
+        [TestRequests.JS_REQUEST, JS_REQUEST_WITH_ASYNC_STACK])
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
     self.assertEquals(1, len(deps))
     self._AssertDependencyIs(
-        deps[0], self._JS_REQUEST.request_id,
+        deps[0], TestRequests.JS_REQUEST.request_id,
         JS_REQUEST_WITH_ASYNC_STACK.request_id, 'script')
 
   def testParserDependency(self):
     loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._REQUEST, self._JS_REQUEST])
+        [TestRequests.REQUEST, TestRequests.JS_REQUEST])
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
     self.assertEquals(1, len(deps))
     self._AssertDependencyIs(
         deps[0],
-        self._REQUEST.request_id, self._JS_REQUEST.request_id, 'parser')
+        TestRequests.REQUEST.request_id, TestRequests.JS_REQUEST.request_id,
+        'parser')
 
   def testSeveralDependencies(self):
     loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._REDIRECT_REQUEST, self._REDIRECTED_REQUEST, self._JS_REQUEST,
-         self._JS_REQUEST_2])
+        [TestRequests.FIRST_REDIRECT_REQUEST,
+         TestRequests.SECOND_REDIRECT_REQUEST,
+         TestRequests.REDIRECTED_REQUEST,
+         TestRequests.JS_REQUEST, TestRequests.JS_REQUEST_2])
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
-    self.assertEquals(3, len(deps))
+    self.assertEquals(4, len(deps))
     self._AssertDependencyIs(
-        deps[0], self._REDIRECT_REQUEST.request_id, self._REQUEST.request_id,
-        'redirect')
+        deps[0], TestRequests.FIRST_REDIRECT_REQUEST.request_id,
+        TestRequests.SECOND_REDIRECT_REQUEST.request_id, 'redirect')
     self._AssertDependencyIs(
-        deps[1],
-        self._REQUEST.request_id, self._JS_REQUEST.request_id, 'parser')
+        deps[1], TestRequests.SECOND_REDIRECT_REQUEST.request_id,
+        TestRequests.REQUEST.request_id, 'redirect')
     self._AssertDependencyIs(
         deps[2],
-        self._JS_REQUEST.request_id, self._JS_REQUEST_2.request_id, 'script')
+        TestRequests.REQUEST.request_id, TestRequests.JS_REQUEST.request_id,
+        'parser')
+    self._AssertDependencyIs(
+        deps[3],
+        TestRequests.JS_REQUEST.request_id,
+        TestRequests.JS_REQUEST_2.request_id, 'script')
 
   def testDependencyDifferentFrame(self):
     """Checks that a more recent request from another frame is ignored."""
     loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._JS_REQUEST, self._JS_REQUEST_OTHER_FRAME, self._JS_REQUEST_2])
+        [TestRequests.JS_REQUEST, TestRequests.JS_REQUEST_OTHER_FRAME,
+         TestRequests.JS_REQUEST_2])
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
     self.assertEquals(1, len(deps))
     self._AssertDependencyIs(
         deps[0],
-        self._JS_REQUEST.request_id, self._JS_REQUEST_2.request_id, 'script')
+        TestRequests.JS_REQUEST.request_id,
+        TestRequests.JS_REQUEST_2.request_id, 'script')
 
   def testDependencySameParentFrame(self):
     """Checks that a more recent request from an unrelated frame is ignored
     if there is one from a related frame."""
     loading_trace = test_utils.LoadingTraceFromEvents(
-        [self._JS_REQUEST_OTHER_FRAME, self._JS_REQUEST_UNRELATED_FRAME,
-         self._JS_REQUEST_2], self._PAGE_EVENTS)
+        [TestRequests.JS_REQUEST_OTHER_FRAME,
+         TestRequests.JS_REQUEST_UNRELATED_FRAME, TestRequests.JS_REQUEST_2],
+        TestRequests.PAGE_EVENTS)
     request_dependencies_lens = RequestDependencyLens(loading_trace)
     deps = request_dependencies_lens.GetRequestDependencies()
     self.assertEquals(1, len(deps))
     self._AssertDependencyIs(
         deps[0],
-        self._JS_REQUEST_OTHER_FRAME.request_id,
-        self._JS_REQUEST_2.request_id, 'script')
+        TestRequests.JS_REQUEST_OTHER_FRAME.request_id,
+        TestRequests.JS_REQUEST_2.request_id, 'script')
 
   def _AssertDependencyIs(
       self, dep, first_request_id, second_request_id, reason):

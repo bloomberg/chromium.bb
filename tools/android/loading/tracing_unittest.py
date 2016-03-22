@@ -287,13 +287,34 @@ class TracingTrackTestCase(unittest.TestCase):
     with self.assertRaises(AssertionError):
       self.track.EventFromStep(no_step)
 
-  def testTracingTrackForThread(self):
+  def testFilterPidTid(self):
     self._HandleEvents(self._EVENTS)
-    tracing_track = self.track.TracingTrackForThread((2, 1))
+    tracing_track = self.track.Filter(2, 1)
     self.assertTrue(tracing_track is not self.track)
     self.assertEquals(4, len(tracing_track.GetEvents()))
-    tracing_track = self.track.TracingTrackForThread((2, 42))
+    tracing_track = self.track.Filter(2, 42)
     self.assertEquals(0, len(tracing_track.GetEvents()))
+
+  def testFilterCategories(self):
+    events = [
+        {'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 2, 'tid': 1, 'cat': 'A'},
+        {'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 2, 'tid': 1, 'cat': 'B'},
+        {'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 2, 'tid': 1, 'cat': 'C,D'},
+        {'ts': 5, 'ph': 'X', 'dur': 10, 'pid': 2, 'tid': 1, 'cat': 'A,B,C,D'}]
+    self._HandleEvents(events)
+    tracing_events = self.track.GetEvents()
+    self.assertEquals(4, len(tracing_events))
+    filtered_events = self.track.Filter(categories=None).GetEvents()
+    self.assertListEqual(tracing_events, filtered_events)
+    filtered_events = self.track.Filter(categories=set(['A'])).GetEvents()
+    self.assertEquals(2, len(filtered_events))
+    self.assertListEqual([tracing_events[0], tracing_events[3]],
+                         filtered_events)
+    filtered_events = self.track.Filter(categories=set(['Z'])).GetEvents()
+    self.assertEquals(0, len(filtered_events))
+    filtered_events = self.track.Filter(categories=set(['B', 'C'])).GetEvents()
+    self.assertEquals(3, len(filtered_events))
+    self.assertListEqual(tracing_events[1:], filtered_events)
 
   def _HandleEvents(self, events):
     self.track.Handle('Tracing.dataCollected', {'params': {'value': [

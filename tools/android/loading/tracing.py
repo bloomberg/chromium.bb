@@ -91,19 +91,24 @@ class TracingTrack(devtools_monitor.Track):
   def ToJsonDict(self):
     return {'events': [e.ToJsonDict() for e in self._events]}
 
-  def TracingTrackForThread(self, pid_tid):
-    """Returns a new TracingTrack with only the events from a given thread.
+  def Filter(self, pid=None, tid=None, categories=None):
+    """Returns a new TracingTrack with a subset of the events.
 
     Args:
-      pid_tid: ((int, int) PID and TID.
-
-    Returns:
-      A new instance of TracingTrack.
+      pid: (int or None) Selects events from this PID.
+      tid: (int or None) Selects events from this TID.
+      categories: (set([str]) or None) Selects events belonging to one of the
+                  categories.
     """
-    (pid, tid) = pid_tid
-    events = [e for e in self._events
-              if (e.tracing_event['pid'] == pid
-                  and e.tracing_event['tid'] == tid)]
+    events = self._events
+    if pid is not None:
+      events = filter(lambda e : e.tracing_event['pid'] == pid, events)
+    if tid is not None:
+      events = filter(lambda e : e.tracing_event['tid'] == tid, events)
+    if categories is not None:
+      events = filter(
+          lambda e : set(e.category.split(',')).intersection(categories),
+          events)
     tracing_track = TracingTrack(None)
     tracing_track._events = events
     return tracing_track

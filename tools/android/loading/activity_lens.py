@@ -29,8 +29,8 @@ class ActivityLens(object):
     self._trace = trace
     events = trace.tracing_track.GetEvents()
     self._renderer_main_pid_tid = self._GetRendererMainThreadId(events)
-    self._tracing = self._trace.tracing_track.TracingTrackForThread(
-        self._renderer_main_pid_tid)
+    self._tracing = self._trace.tracing_track.Filter(
+        *self._renderer_main_pid_tid)
 
   @classmethod
   def _GetRendererMainThreadId(cls, events):

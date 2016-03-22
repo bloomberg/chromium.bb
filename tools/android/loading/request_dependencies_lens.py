@@ -30,6 +30,7 @@ class RequestDependencyLens(object):
     self._requests = self.loading_trace.request_track.GetEvents()
     self._requests_by_id = {r.request_id: r for r in self._requests}
     self._requests_by_url = collections.defaultdict(list)
+    self._deps = None
     for request in self._requests:
       self._requests_by_url[request.url].append(request)
     self._frame_to_parent = {}
@@ -45,12 +46,36 @@ class RequestDependencyLens(object):
       request_track.Request, and reason is in DEPENDENCIES. The second request
       depends on the first one, with the listed reason.
     """
-    deps = []
+    self._ComputeRequestDependencies()
+    return copy.copy(self._deps)
+
+  def GetRedirectChain(self, request):
+    """Returns the whole redirect chain for a given request.
+
+    Note that this misses some JS-based redirects.
+
+    Returns:
+      A list of request, containing the request passed as a parameter.
+    """
+    self._ComputeRequestDependencies()
+    chain = [request]
+    while True:
+      for (first_request, second_request, why) in self._deps:
+        if first_request == request and why == 'redirect':
+          chain.append(second_request)
+          request = second_request
+          break
+      else:
+        return chain
+
+  def _ComputeRequestDependencies(self):
+    if self._deps is not None:
+      return
+    self._deps = []
     for request in self._requests:
       dependency = self._GetDependency(request)
       if dependency:
-        deps.append(dependency)
-    return deps
+        self._deps.append(dependency)
 
   def _GetDependency(self, request):
     """Returns (first, second, reason), or None.
