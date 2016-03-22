@@ -80,19 +80,6 @@ class WebPluginDelegateProxy
   // Informs the plugin that its containing content view has gained or lost
   // first responder status.
   virtual void SetContentAreaFocus(bool has_focus);
-#if defined(OS_WIN)
-  // Informs the plugin that plugin IME has updated its status.
-  virtual void ImeCompositionUpdated(
-      const base::string16& text,
-      const std::vector<int>& clauses,
-      const std::vector<int>& target,
-      int cursor_position,
-      int plugin_id);
-  // Informs the plugin that plugin IME has completed.
-  // If |text| is empty, composition was cancelled.
-  virtual void ImeCompositionCompleted(const base::string16& text,
-                                       int plugin_id);
-#endif
 #if defined(OS_MACOSX)
   // Informs the plugin that its enclosing window has gained or lost focus.
   virtual void SetWindowFocus(bool window_has_focus);
@@ -155,11 +142,6 @@ class WebPluginDelegateProxy
                                              int32_t height,
                                              uint32_t surface_id);
   void OnAcceleratedPluginSwappedIOSurface();
-#endif
-#if defined(OS_WIN)
-  void OnSetWindowlessData(HANDLE modal_loop_pump_messages_event_handle,
-                           gfx::NativeViewId dummy_activation_window);
-  void OnNotifyIMEStatus(const int input_mode, const gfx::Rect& caret_rect);
 #endif
   // Helper function that sends the UpdateGeometry message.
   void SendUpdateGeometry(bool bitmaps_changed);
@@ -226,9 +208,6 @@ class WebPluginDelegateProxy
   bool uses_shared_bitmaps_;
 #if defined(OS_MACOSX)
   bool uses_compositor_;
-#elif defined(OS_WIN)
-  // Used for windowless plugins so that keyboard activation works.
-  gfx::NativeViewId dummy_activation_window_;
 #endif
   scoped_refptr<PluginChannelHost> channel_host_;
   std::string mime_type_;
@@ -242,10 +221,6 @@ class WebPluginDelegateProxy
 
   // Dummy NPP used to uniquely identify this plugin.
   scoped_ptr<NPP_t> npp_;
-
-  // Event passed in by the plugin process and is used to decide if messages
-  // need to be pumped in the NPP_HandleEvent sync call.
-  scoped_ptr<base::WaitableEvent> modal_loop_pump_messages_event_;
 
   // Bitmap for crashed plugin
   SkBitmap* sad_plugin_;

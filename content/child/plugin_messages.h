@@ -111,17 +111,6 @@ IPC_MESSAGE_CONTROL1(PluginMsg_SignalModalDialogEvent,
 IPC_MESSAGE_CONTROL1(PluginMsg_ResetModalDialogEvent,
                      int /* render_view_id */)
 
-#if defined(OS_WIN)
-IPC_MESSAGE_ROUTED4(PluginMsg_ImeCompositionUpdated,
-                    base::string16 /* text */,
-                    std::vector<int> /* clauses */,
-                    std::vector<int>, /* target */
-                    int /* cursor_position */)
-
-IPC_MESSAGE_ROUTED1(PluginMsg_ImeCompositionCompleted,
-                    base::string16 /* text */)
-#endif
-
 #if defined(OS_MACOSX)
 IPC_MESSAGE_ROUTED1(PluginMsg_SetWindowFocus,
                     bool /* has_focus */)
@@ -181,26 +170,6 @@ IPC_SYNC_MESSAGE_CONTROL1_0(PluginHostMsg_SetException,
                             std::string /* message */)
 
 IPC_MESSAGE_CONTROL0(PluginHostMsg_PluginShuttingDown)
-
-#if defined(OS_WIN)
-// The modal_loop_pump_messages_event parameter is an event handle which is
-// passed in for windowless plugins and is used to indicate if messages
-// are to be pumped in sync calls to the plugin process. Currently used
-// in HandleEvent calls.
-IPC_SYNC_MESSAGE_ROUTED2_0(PluginHostMsg_SetWindowlessData,
-                           HANDLE /* modal_loop_pump_messages_event */,
-                           gfx::NativeViewId /* dummy_activation_window*/)
-
-// Send the IME status retrieved from a windowless plugin. A windowless plugin
-// uses the IME attached to a browser process as a renderer does. A plugin
-// sends this message to control the IME status of a browser process. I would
-// note that a plugin sends this message to a renderer process that hosts this
-// plugin (not directly to a browser process) so the renderer process can
-// update its IME status.
-IPC_MESSAGE_ROUTED2(PluginHostMsg_NotifyIMEStatus,
-                    int /* input_type */,
-                    gfx::Rect /* caret_rect */)
-#endif
 
 #if defined(OS_MACOSX)
 IPC_MESSAGE_ROUTED1(PluginHostMsg_FocusChanged,

@@ -76,19 +76,6 @@ bool WebPluginProxy::Send(IPC::Message* msg) {
   return channel_->Send(msg);
 }
 
-#if defined(OS_WIN)
-void WebPluginProxy::SetWindowlessData(
-    HANDLE pump_messages_event, gfx::NativeViewId dummy_activation_window) {
-  HANDLE pump_messages_event_for_renderer = NULL;
-  BrokerDuplicateHandle(pump_messages_event, channel_->peer_pid(),
-                                 &pump_messages_event_for_renderer,
-                                 SYNCHRONIZE | EVENT_MODIFY_STATE, 0);
-  DCHECK(pump_messages_event_for_renderer);
-  Send(new PluginHostMsg_SetWindowlessData(
-      route_id_, pump_messages_event_for_renderer, dummy_activation_window));
-}
-#endif
-
 void WebPluginProxy::Invalidate() {
   gfx::Rect rect(0, 0,
                  delegate_->GetRect().width(),
@@ -474,18 +461,5 @@ void WebPluginProxy::OnPaint(const gfx::Rect& damaged_rect) {
 bool WebPluginProxy::IsOffTheRecord() {
   return channel_->incognito();
 }
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-void WebPluginProxy::UpdateIMEStatus() {
-  // Retrieve the IME status from a plugin and send it to a renderer process
-  // when the plugin has updated it.
-  int input_type;
-  gfx::Rect caret_rect;
-  if (!delegate_->GetIMEStatus(&input_type, &caret_rect))
-    return;
-
-  Send(new PluginHostMsg_NotifyIMEStatus(route_id_, input_type, caret_rect));
-}
-#endif
 
 }  // namespace content

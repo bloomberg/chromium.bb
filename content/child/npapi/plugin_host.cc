@@ -502,8 +502,6 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
   // Variables:
   //    NPNVxDisplay (unix only)
   //    NPNVxtAppContext (unix only)
-  //    NPNVnetscapeWindow (win only) - Gets the native window on which the
-  //              plugin drawing occurs, returns HWND
   //    NPNVjavascriptEnabledBool:  tells whether Javascript is enabled
   //    NPNVasdEnabledBool:  tells whether SmartUpdate is enabled
   //    NPNVOfflineBool: tells whether offline-mode is enabled
@@ -551,19 +549,6 @@ NPError NPN_GetValue(NPP id, NPNVariable variable, void* value) {
       }
       break;
     }
-  #if !defined(OS_MACOSX)  // OS X doesn't have windowed plugins.
-    case NPNVnetscapeWindow: {
-      scoped_refptr<PluginInstance> plugin = FindInstance(id);
-      if (!plugin.get()) {
-        NOTREACHED();
-        return NPERR_INVALID_INSTANCE_ERROR;
-      }
-      gfx::PluginWindowHandle handle = plugin->window_handle();
-      *((void**)value) = (void*)handle;
-      rv = NPERR_NO_ERROR;
-      break;
-    }
-  #endif
     case NPNVjavascriptEnabledBool: {
       // yes, JS is enabled.
       *((void**)value) = (void*)1;

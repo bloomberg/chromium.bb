@@ -538,11 +538,6 @@ bool RenderWidgetHostViewChildFrame::HasAcceleratedSurface(
 void RenderWidgetHostViewChildFrame::SetParentNativeViewAccessible(
     gfx::NativeViewAccessible accessible_parent) {
 }
-
-gfx::NativeViewId RenderWidgetHostViewChildFrame::GetParentForWindowlessPlugin()
-    const {
-  return NULL;
-}
 #endif  // defined(OS_WIN)
 
 // cc::SurfaceFactoryClient implementation.

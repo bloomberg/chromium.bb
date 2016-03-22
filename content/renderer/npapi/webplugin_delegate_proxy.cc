@@ -108,8 +108,6 @@ WebPluginDelegateProxy::WebPluginDelegateProxy(
       uses_shared_bitmaps_(true),
 #if defined(OS_MACOSX)
       uses_compositor_(false),
-#elif defined(OS_WIN)
-      dummy_activation_window_(NULL),
 #endif
       mime_type_(mime_type),
       instance_id_(MSG_ROUTING_NONE),
@@ -132,18 +130,10 @@ WebPluginDelegateProxy::SharedBitmap::SharedBitmap() {}
 WebPluginDelegateProxy::SharedBitmap::~SharedBitmap() {}
 
 void WebPluginDelegateProxy::PluginDestroyed() {
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX)
   // Ensure that the renderer doesn't think the plugin still has focus.
   if (render_view_)
     render_view_->PluginFocusChanged(false, instance_id_);
-#endif
-
-#if defined(OS_WIN)
-  if (dummy_activation_window_ && render_view_) {
-    render_view_->Send(new ViewHostMsg_WindowlessPluginDummyWindowDestroyed(
-        render_view_->GetRoutingID(), dummy_activation_window_));
-  }
-  dummy_activation_window_ = NULL;
 #endif
 
   if (render_view_.get())
@@ -304,10 +294,6 @@ bool WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginHostMsg_CancelDocumentLoad, OnCancelDocumentLoad)
     IPC_MESSAGE_HANDLER(PluginHostMsg_DidStartLoading, OnDidStartLoading)
     IPC_MESSAGE_HANDLER(PluginHostMsg_DidStopLoading, OnDidStopLoading)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_SetWindowlessData, OnSetWindowlessData)
-    IPC_MESSAGE_HANDLER(PluginHostMsg_NotifyIMEStatus, OnNotifyIMEStatus)
-#endif
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PluginHostMsg_FocusChanged,
                         OnFocusChanged);
@@ -335,7 +321,7 @@ void WebPluginDelegateProxy::OnChannelError() {
         info_.path, channel_host_->peer_pid());
   }
 
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_MACOSX)
   // Ensure that the renderer doesn't think the plugin still has focus.
   if (render_view_)
     render_view_->PluginFocusChanged(false, instance_id_);
@@ -591,10 +577,6 @@ bool WebPluginDelegateProxy::GetFormValue(base::string16* value) {
 
 void WebPluginDelegateProxy::SetFocus(bool focused) {
   Send(new PluginMsg_SetFocus(instance_id_, focused));
-#if defined(OS_WIN)
-  if (render_view_)
-    render_view_->PluginFocusChanged(focused, instance_id_);
-#endif
 }
 
 bool WebPluginDelegateProxy::HandleInputEvent(
@@ -602,14 +584,7 @@ bool WebPluginDelegateProxy::HandleInputEvent(
     WebCursor::CursorInfo* cursor_info) {
   bool handled = false;
   WebCursor cursor;
-  // A windowless plugin can enter a modal loop in the context of a
-  // NPP_HandleEvent call, in which case we need to pump messages to
-  // the plugin. We pass of the corresponding event handle to the
-  // plugin process, which is set if the plugin does enter a modal loop.
-  IPC::SyncMessage* message = new PluginMsg_HandleInputEvent(
-      instance_id_, &event, &handled, &cursor);
-  message->set_pump_messages_event(modal_loop_pump_messages_event_.get());
-  Send(message);
+  Send(new PluginMsg_HandleInputEvent(instance_id_, &event, &handled, &cursor));
   return handled;
 }
 
@@ -625,35 +600,6 @@ void WebPluginDelegateProxy::SetContentAreaFocus(bool has_focus) {
   msg->set_unblock(true);
   Send(msg);
 }
-
-#if defined(OS_WIN)
-void WebPluginDelegateProxy::ImeCompositionUpdated(
-    const base::string16& text,
-    const std::vector<int>& clauses,
-    const std::vector<int>& target,
-    int cursor_position,
-    int plugin_id) {
-  // Dispatch the raw IME data if this plugin is the focused one.
-  if (instance_id_ != plugin_id)
-    return;
-
-  IPC::Message* msg = new PluginMsg_ImeCompositionUpdated(instance_id_,
-      text, clauses, target, cursor_position);
-  msg->set_unblock(true);
-  Send(msg);
-}
-
-void WebPluginDelegateProxy::ImeCompositionCompleted(const base::string16& text,
-                                                     int plugin_id) {
-  // Dispatch the IME text if this plugin is the focused one.
-  if (instance_id_ != plugin_id)
-    return;
-
-  IPC::Message* msg = new PluginMsg_ImeCompositionCompleted(instance_id_, text);
-  msg->set_unblock(true);
-  Send(msg);
-}
-#endif
 
 #if defined(OS_MACOSX)
 void WebPluginDelegateProxy::SetWindowFocus(bool window_has_focus) {
@@ -705,50 +651,6 @@ void WebPluginDelegateProxy::ImeCompositionCompleted(const base::string16& text,
   Send(msg);
 }
 #endif  // OS_MACOSX
-
-#if defined(OS_WIN)
-void WebPluginDelegateProxy::OnSetWindowlessData(
-      HANDLE modal_loop_pump_messages_event_handle,
-      gfx::NativeViewId dummy_activation_window) {
-  DCHECK(!modal_loop_pump_messages_event_.get());
-  DCHECK(!dummy_activation_window_);
-  base::win::ScopedHandle modal_loop_pump_messages_event(
-      modal_loop_pump_messages_event_handle);
-
-  dummy_activation_window_ = dummy_activation_window;
-  render_view_->Send(new ViewHostMsg_WindowlessPluginDummyWindowCreated(
-      render_view_->GetRoutingID(), dummy_activation_window_));
-
-  // Bug 25583: this can be null because some "virus scanners" block the
-  // DuplicateHandle call in the plugin process.
-  if (!modal_loop_pump_messages_event.IsValid())
-    return;
-
-  modal_loop_pump_messages_event_.reset(
-      new base::WaitableEvent(std::move(modal_loop_pump_messages_event)));
-}
-
-void WebPluginDelegateProxy::OnNotifyIMEStatus(int input_type,
-                                               const gfx::Rect& caret_rect) {
-  if (!render_view_)
-    return;
-
-  ViewHostMsg_TextInputState_Params params;
-  params.type = static_cast<ui::TextInputType>(input_type);
-  params.mode = ui::TEXT_INPUT_MODE_DEFAULT;
-  params.can_compose_inline = true;
-  render_view_->Send(new ViewHostMsg_TextInputStateChanged(
-      render_view_->GetRoutingID(), params));
-
-  ViewHostMsg_SelectionBounds_Params bounds_params;
-  bounds_params.anchor_rect = bounds_params.focus_rect = caret_rect;
-  bounds_params.anchor_dir = bounds_params.focus_dir =
-      blink::WebTextDirectionLeftToRight;
-  bounds_params.is_anchor_first = true;
-  render_view_->Send(new ViewHostMsg_SelectionBoundsChanged(
-      render_view_->GetRoutingID(), bounds_params));
-}
-#endif
 
 void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect) {
   if (!plugin_)

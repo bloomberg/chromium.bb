@@ -103,12 +103,6 @@ bool WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometry, OnUpdateGeometry)
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometrySync, OnUpdateGeometry)
     IPC_MESSAGE_HANDLER(PluginMsg_SetContentAreaFocus, OnSetContentAreaFocus)
-#if defined(OS_WIN) && !defined(USE_AURA)
-    IPC_MESSAGE_HANDLER(PluginMsg_ImeCompositionUpdated,
-                        OnImeCompositionUpdated)
-    IPC_MESSAGE_HANDLER(PluginMsg_ImeCompositionCompleted,
-                        OnImeCompositionCompleted)
-#endif
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PluginMsg_SetWindowFocus, OnSetWindowFocus)
     IPC_MESSAGE_HANDLER(PluginMsg_ContainerHidden, OnContainerHidden)
@@ -179,10 +173,6 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
 
 void WebPluginDelegateStub::OnSetFocus(bool focused) {
   delegate_->SetFocus(focused);
-#if defined(OS_WIN) && !defined(USE_AURA)
-  if (focused)
-    webplugin_->UpdateIMEStatus();
-#endif
 }
 
 void WebPluginDelegateStub::OnHandleInputEvent(
@@ -242,24 +232,6 @@ void WebPluginDelegateStub::OnSetContentAreaFocus(bool has_focus) {
   if (delegate_)
     delegate_->SetContentAreaHasFocus(has_focus);
 }
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-void WebPluginDelegateStub::OnImeCompositionUpdated(
-    const base::string16& text,
-    const std::vector<int>& clauses,
-    const std::vector<int>& target,
-    int cursor_position) {
-  if (delegate_)
-    delegate_->ImeCompositionUpdated(text, clauses, target, cursor_position);
-  webplugin_->UpdateIMEStatus();
-}
-
-void WebPluginDelegateStub::OnImeCompositionCompleted(
-    const base::string16& text) {
-  if (delegate_)
-    delegate_->ImeCompositionCompleted(text);
-}
-#endif
 
 #if defined(OS_MACOSX)
 void WebPluginDelegateStub::OnSetWindowFocus(bool has_focus) {
