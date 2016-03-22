@@ -143,8 +143,8 @@ static_library("cld2_dynamic") {
   ]
 }
 
-# Does not build on Windows or Android.
-if (!is_win && !is_android) {
+# Does not build on Windows, Android or iOS.
+if (!is_win && !is_android && !is_ios) {
   executable("cld_2_dynamic_data_tool") {
     sources = [
       "src/internal/cld2_dynamic_data_extractor.cc",
