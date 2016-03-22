@@ -1,6 +1,6 @@
-README - 23 March 2015
+README - 22 March 2016
 
-Welcome to the WebM VP8/VP9 Codec SDK!
+Welcome to the AOM Codec SDK!
 
 COMPILING THE APPLICATIONS/LIBRARIES:
   The build system used is similar to autotools. Building generally consists of
@@ -33,13 +33,13 @@ COMPILING THE APPLICATIONS/LIBRARIES:
 
     $ mkdir build
     $ cd build
-    $ ../libvpx/configure <options>
+    $ ../libaom/configure <options>
     $ make
 
   3. Configuration options
   The 'configure' script supports a number of options. The --help option can be
   used to get a list of supported options:
-    $ ../libvpx/configure --help
+    $ ../libaom/configure --help
 
   4. Cross development
   For cross development, the most notable option is the --target option. The
@@ -114,7 +114,7 @@ COMPILING THE APPLICATIONS/LIBRARIES:
   toolchain, the following command could be used (note, POSIX SH syntax, adapt
   to your shell as necessary):
 
-    $ CROSS=mipsel-linux-uclibc- ../libvpx/configure
+    $ CROSS=mipsel-linux-uclibc- ../libaom/configure
 
   In addition, the executables to be invoked can be overridden by specifying the
   environment variables: CC, AR, LD, AS, STRIP, NM. Additional flags can be
@@ -125,15 +125,15 @@ COMPILING THE APPLICATIONS/LIBRARIES:
   This defaults to config.log. This should give a good indication of what went
   wrong. If not, contact us for support.
 
-VP8/VP9 TEST VECTORS:
+AOM TEST VECTORS:
   The test vectors can be downloaded and verified using the build system after
   running configure. To specify an alternate directory the
-  LIBVPX_TEST_DATA_PATH environment variable can be used.
+  LIBAOM_TEST_DATA_PATH environment variable can be used.
 
   $ ./configure --enable-unit-tests
-  $ LIBVPX_TEST_DATA_PATH=../libvpx-test-data make testdata
+  $ LIBAOM_TEST_DATA_PATH=../libaom-test-data make testdata
 
 SUPPORT
   This library is an open source project supported by its community. Please
-  please email webm-discuss@webmproject.org for help.
+  please email aomediacodec-chair@jointdevelopment.kavi.com for help.
 

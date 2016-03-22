@@ -19,7 +19,7 @@
 # $LIBVPX_BIN_PATH.
 set_maps_verify_environment() {
   if [ ! -e "${YUV_RAW_INPUT}" ]; then
-    echo "Libvpx test data must exist in LIBVPX_TEST_DATA_PATH."
+    echo "Libvpx test data must exist in LIBAOM_TEST_DATA_PATH."
     return 1
   fi
   if [ -z "$(vpx_tool_path set_maps)" ]; then

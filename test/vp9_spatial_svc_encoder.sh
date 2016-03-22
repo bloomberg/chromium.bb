@@ -18,7 +18,7 @@
 # Environment check: $YUV_RAW_INPUT is required.
 vp9_spatial_svc_encoder_verify_environment() {
   if [ ! -e "${YUV_RAW_INPUT}" ]; then
-    echo "Libvpx test data must exist in LIBVPX_TEST_DATA_PATH."
+    echo "Libvpx test data must exist in LIBAOM_TEST_DATA_PATH."
     return 1
   fi
 }

@@ -19,7 +19,7 @@
 vp8_multi_resolution_encoder_verify_environment() {
   if [ "$(vpx_config_option_enabled CONFIG_MULTI_RES_ENCODING)" = "yes" ]; then
     if [ ! -e "${YUV_RAW_INPUT}" ]; then
-      elog "Libvpx test data must exist in LIBVPX_TEST_DATA_PATH."
+      elog "Libvpx test data must exist in LIBAOM_TEST_DATA_PATH."
       return 1
     fi
     local readonly app="vp8_multi_resolution_encoder"
