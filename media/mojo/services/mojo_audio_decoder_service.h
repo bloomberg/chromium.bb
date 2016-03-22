@@ -15,9 +15,13 @@
 
 namespace media {
 
+class MediaKeys;
+class MojoCdmServiceContext;
+
 class MojoAudioDecoderService : public interfaces::AudioDecoder {
  public:
   MojoAudioDecoderService(
+      base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
       scoped_ptr<media::AudioDecoder> decoder,
       mojo::InterfaceRequest<interfaces::AudioDecoder> request);
 
@@ -38,7 +42,9 @@ class MojoAudioDecoderService : public interfaces::AudioDecoder {
 
  private:
   // Called by |decoder_| upon finishing initialization.
-  void OnInitialized(const InitializeCallback& callback, bool success);
+  void OnInitialized(const InitializeCallback& callback,
+                     scoped_refptr<MediaKeys> cdm,
+                     bool success);
 
   // Called by |decoder_| when DecoderBuffer is accepted or rejected.
   void OnDecodeStatus(const DecodeCallback& callback,
@@ -61,11 +67,18 @@ class MojoAudioDecoderService : public interfaces::AudioDecoder {
   // DataPipe for serializing the data section of DecoderBuffer.
   mojo::ScopedDataPipeConsumerHandle consumer_handle_;
 
+  // A helper object required to get CDM from CDM id.
+  base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context_;
+
   // The AudioDecoder that does actual decoding work.
   scoped_ptr<media::AudioDecoder> decoder_;
 
   // The destination for the decoded buffers.
   interfaces::AudioDecoderClientPtr client_;
+
+  // Hold a reference to the CDM to keep it alive for the lifetime of the
+  // |decoder_|. The |cdm_| owns the CdmContext which is passed to |decoder_|.
+  scoped_refptr<MediaKeys> cdm_;
 
   base::WeakPtr<MojoAudioDecoderService> weak_this_;
   base::WeakPtrFactory<MojoAudioDecoderService> weak_factory_;

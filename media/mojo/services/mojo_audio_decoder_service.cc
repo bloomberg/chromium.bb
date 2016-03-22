@@ -8,14 +8,18 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "media/base/cdm_context.h"
+#include "media/base/media_keys.h"
 #include "media/mojo/common/media_type_converters.h"
+#include "media/mojo/services/mojo_cdm_service_context.h"
 
 namespace media {
 
 MojoAudioDecoderService::MojoAudioDecoderService(
+    base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
     scoped_ptr<media::AudioDecoder> decoder,
     mojo::InterfaceRequest<interfaces::AudioDecoder> request)
     : binding_(this, std::move(request)),
+      mojo_cdm_service_context_(mojo_cdm_service_context),
       decoder_(std::move(decoder)),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -31,22 +35,37 @@ void MojoAudioDecoderService::Initialize(
   DVLOG(1) << __FUNCTION__ << " "
            << config.To<media::AudioDecoderConfig>().AsHumanReadableString();
 
-  // Encrypted streams are not supported for now.
-  if (config.To<media::AudioDecoderConfig>().is_encrypted() &&
-      cdm_id == CdmContext::kInvalidCdmId) {
-    // The client should prevent this situation.
-    NOTREACHED() << "Encrypted streams are not supported";
-    callback.Run(false, false);
-    return;
+  // Get CdmContext from cdm_id if the stream is encrypted.
+  CdmContext* cdm_context = nullptr;
+  scoped_refptr<MediaKeys> cdm;
+  if (config.To<media::AudioDecoderConfig>().is_encrypted()) {
+    if (!mojo_cdm_service_context_) {
+      DVLOG(1) << "CDM service context not available.";
+      callback.Run(false, false);
+      return;
+    }
+
+    cdm = mojo_cdm_service_context_->GetCdm(cdm_id);
+    if (!cdm) {
+      DVLOG(1) << "CDM not found for CDM id: " << cdm_id;
+      callback.Run(false, false);
+      return;
+    }
+
+    cdm_context = cdm->GetCdmContext();
+    if (!cdm_context) {
+      DVLOG(1) << "CDM context not available for CDM id: " << cdm_id;
+      callback.Run(false, false);
+      return;
+    }
   }
 
   client_ = std::move(client);
 
-  // TODO(timav): Get CdmContext from cdm_id.
   decoder_->Initialize(
-      config.To<media::AudioDecoderConfig>(),
-      nullptr,  // no CdmContext
-      base::Bind(&MojoAudioDecoderService::OnInitialized, weak_this_, callback),
+      config.To<media::AudioDecoderConfig>(), cdm_context,
+      base::Bind(&MojoAudioDecoderService::OnInitialized, weak_this_, callback,
+                 cdm),
       base::Bind(&MojoAudioDecoderService::OnAudioBufferReady, weak_this_));
 }
 
@@ -71,9 +90,17 @@ void MojoAudioDecoderService::Reset(const ResetCallback& callback) {
 }
 
 void MojoAudioDecoderService::OnInitialized(const InitializeCallback& callback,
+                                            scoped_refptr<MediaKeys> cdm,
                                             bool success) {
   DVLOG(1) << __FUNCTION__ << " success:" << success;
-  callback.Run(success, decoder_->NeedsBitstreamConversion());
+
+  if (success) {
+    cdm_ = cdm;
+    callback.Run(success, decoder_->NeedsBitstreamConversion());
+  } else {
+    // Do not call decoder_->NeedsBitstreamConversion() if init failed.
+    callback.Run(false, false);
+  }
 }
 
 static interfaces::AudioDecoder::DecodeStatus ConvertDecodeStatus(

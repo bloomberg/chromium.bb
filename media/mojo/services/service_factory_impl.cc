@@ -48,7 +48,8 @@ void ServiceFactoryImpl::CreateAudioDecoder(
     return;
   }
 
-  new MojoAudioDecoderService(std::move(audio_decoder), std::move(request));
+  new MojoAudioDecoderService(cdm_service_context_.GetWeakPtr(),
+                              std::move(audio_decoder), std::move(request));
 }
 
 void ServiceFactoryImpl::CreateRenderer(
