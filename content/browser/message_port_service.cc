@@ -198,10 +198,6 @@ void MessagePortService::PostMessageTo(
     }
     entangled_port.queued_messages.push_back(
         std::make_pair(message, sent_message_ports));
-
-    if (entangled_port.delegate)
-      entangled_port.delegate->MessageWasHeld(entangled_port.route_id);
-
     return;
   }
 

@@ -32,11 +32,6 @@ class CONTENT_EXPORT MessagePortDelegate {
       const MessagePortMessage& message,
       const std::vector<TransferredMessagePort>& sent_message_ports) = 0;
 
-  // Called when MessagePortService tried to send a message to a port, but
-  // instead added it to its queue because the port is currently configured to
-  // hold all its messages.
-  virtual void MessageWasHeld(int route_id) {}
-
   // Requests messages to the given route to be queued.
   virtual void SendMessagesAreQueued(int route_id) = 0;
 
