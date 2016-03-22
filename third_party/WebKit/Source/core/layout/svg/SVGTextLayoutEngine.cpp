@@ -114,7 +114,7 @@ void SVGTextLayoutEngine::updateRelativePositionAdjustmentsIfNeeded(float dx, fl
 static void computeGlyphOverflow(SVGInlineTextBox* textBox, SVGTextFragment& textFragment)
 {
     LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText(textBox->getLineLayoutItem());
-    TextRun run = SVGTextMetrics::constructTextRun(textLineLayout, textFragment.characterOffset, textFragment.length, textLineLayout.styleRef().direction());
+    TextRun run = textBox->constructTextRun(textLineLayout.styleRef(), textFragment);
 
     float scalingFactor = textLineLayout.scalingFactor();
     ASSERT(scalingFactor);
