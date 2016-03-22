@@ -516,14 +516,6 @@ public class TabPersistentStore extends TabPersister {
     }
 
     /**
-     * Clears all the encrypted data from the disk.
-     * Most likely called when we lost the encryption key.
-     */
-    public void clearEncryptedState() {
-        cleanupAllEncryptedPersistentData();
-    }
-
-    /**
      * Cancels loading of {@link Tab}s from disk from saved state. This is useful if the user
      * does an action which impacts all {@link Tab}s, not just the ones currently loaded into
      * the model. For example, if the user tries to close all {@link Tab}s, we need don't want
@@ -956,26 +948,6 @@ public class TabPersistentStore extends TabPersister {
 
         if (mTabContentManager != null) {
             mTabContentManager.cleanUpPersistentData(mTabModelSelector);
-        }
-    }
-
-    private void cleanupAllEncryptedPersistentData() {
-        String[] files = null;
-        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/473357
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            long time = SystemClock.elapsedRealtime();
-            files = getStateDirectory().list();
-            logExecutionTime("CleanupAllEncryptedTime", time);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-        if (files != null) {
-            for (String file : files) {
-                if (file.startsWith(TabState.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO)) {
-                    deleteFileAsync(file);
-                }
-            }
         }
     }
 

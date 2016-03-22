@@ -551,10 +551,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
             Intent intent = getIntent();
 
-            if (!CipherFactory.getInstance().restoreFromBundle(getSavedInstanceState())) {
-                mTabModelSelectorImpl.clearEncryptedState();
-            }
-
             boolean noRestoreState =
                     CommandLine.getInstance().hasSwitch(ChromeSwitches.NO_RESTORE_STATE);
             if (noRestoreState) {
