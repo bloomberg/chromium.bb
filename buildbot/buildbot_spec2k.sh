@@ -277,6 +277,8 @@ pnacl-trybot-arm-hw() {
   download-test-binaries try
   build-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclTranslatorArmOptHW "${TRYBOT_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorArmOptSzHW "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorArmOptSzHW "${TRYBOT_TESTS}" 1 1
   build-tests SetupPnaclTranslator1ThreadArmOptHW "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclTranslator1ThreadArmOptHW "${TRYBOT_TESTS}" 1 1
   pushd ${SPEC_BASE};
@@ -285,8 +287,12 @@ pnacl-trybot-arm-hw() {
   popd
   build-tests SetupPnaclTranslatorFastArmOptHW "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclTranslatorFastArmOptHW "${TRYBOT_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorFastArmOptSzHW "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorFastArmOptSzHW "${TRYBOT_TESTS}" 1 1
   build-tests SetupPnaclTranslatorFast1ThreadArmOptHW "${TRYBOT_TESTS}" 1 1
   run-tests SetupPnaclTranslatorFast1ThreadArmOptHW "${TRYBOT_TESTS}" 1 1
+  build-tests SetupPnaclTranslatorFast1ThreadArmOptSzHW "${TRYBOT_TESTS}" 1 1
+  run-tests SetupPnaclTranslatorFast1ThreadArmOptSzHW "${TRYBOT_TESTS}" 1 1
 }
 
 pnacl-trybot-x8632() {
@@ -369,6 +375,8 @@ pnacl-arm-hw() {
   download-test-binaries regular
   build-tests SetupPnaclTranslatorArmOptHW all 1 1
   run-tests SetupPnaclTranslatorArmOptHW all 1 2
+  build-tests SetupPnaclTranslatorArmOptSzHW all 1 1
+  run-tests SetupPnaclTranslatorArmOptSzHW all 1 2
   # Only run 1 thread ARM tests 1x to save some time for now.
   # Hopefully perf infrastructure will smooth out flakes.
   # Otherwise, we'll bump the runs up to 2x as well.
@@ -381,6 +389,8 @@ pnacl-arm-hw() {
   # Otherwise, we'll bump the runs up to 2x as well.
   build-tests SetupPnaclTranslatorFast1ThreadArmOptHW all 1 1
   run-tests SetupPnaclTranslatorFast1ThreadArmOptHW all 1 1
+  build-tests SetupPnaclTranslatorFast1ThreadArmOptSzHW all 1 1
+  run-tests SetupPnaclTranslatorFast1ThreadArmOptSzHW all 1 1
 }
 
 pnacl-x8664() {

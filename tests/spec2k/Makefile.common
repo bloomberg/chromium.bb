@@ -373,9 +373,19 @@ $(IT).pnacl_translator.opt.hw.arm:
 	 -o $@ -arch arm
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
+$(IT).pnacl_translator.opt.sz.hw.arm:
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(PNACL_SZ_FLAGS) \
+	$(IT).opt.stripped.pexe -o $@ -arch arm
+	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
+
 $(IT).pnacl_translator_fast.opt.hw.arm:
 	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(IT).opt.stripped.pexe \
 	 $(PNACL_TRANSLATOR_FLAGS_FAST) -o $@ -arch arm
+	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
+
+$(IT).pnacl_translator_fast.opt.sz.hw.arm:
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(IT).opt.stripped.pexe \
+	 $(PNACL_TRANSLATOR_FLAGS_FAST) $(PNACL_SZ_FLAGS) -o $@ -arch arm
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
 $(IT).pnacl_translator_1thread.opt.hw.arm:
@@ -388,12 +398,21 @@ $(IT).pnacl_translator_fast_1thread.opt.hw.arm:
 	 $(PNACL_TRANSLATOR_FLAGS_FAST) -o $@ -arch arm -threads=seq
 	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
 
+$(IT).pnacl_translator_fast_1thread.opt.sz.hw.arm:
+	$(PNACL_TRANSLATOR_SB) $(PNACL_FLAGS) $(IT).opt.stripped.pexe \
+	 $(PNACL_TRANSLATOR_FLAGS_FAST) $(PNACL_SZ_FLAGS) -o $@ \
+	 -arch arm -threads=seq
+	@$(call LOG_TIME_AND_SIZE,$@,$(IT))
+
 
 .PHONY: $(IT).pnacl_translator.hw.arm
 .PHONY: $(IT).pnacl_translator.opt.hw.arm
+.PHONY: $(IT).pnacl_translator.opt.sz.hw.arm
 .PHONY: $(IT).pnacl_translator_fast.opt.hw.arm
+.PHONY: $(IT).pnacl_translator_fast.opt.sz.hw.arm
 .PHONY: $(IT).pnacl_translator_1thread.opt.hw.arm
 .PHONY: $(IT).pnacl_translator_fast_1thread.opt.hw.arm
+.PHONY: $(IT).pnacl_translator_fast_1thread.opt.sz.hw.arm
 
 ######################################################################
 # BITCODE - BACKEND - X8632 (sandboxed and non-sandboxed translators)
