@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "base/logging.h"
@@ -23,6 +25,19 @@ const int kAccessibilityFocusRingMargin = 7;
 
 // Time to transition between one location and the next.
 const int kTransitionTimeMilliseconds = 300;
+
+const int kCursorFadeInTimeMilliseconds = 400;
+const int kCursorFadeOutTimeMilliseconds = 1200;
+
+// The color of the cursor ring.
+const int kCursorRingColorRed = 255;
+const int kCursorRingColorGreen = 51;
+const int kCursorRingColorBlue = 51;
+
+// The color of the caret ring.
+const int kCaretRingColorRed = 51;
+const int kCaretRingColorGreen = 51;
+const int kCaretRingColorBlue = 255;
 
 // A Region is an unordered collection of Rects that maintains its
 // bounding box. Used in the middle of an algorithm that groups
@@ -45,8 +60,7 @@ AccessibilityFocusRingController*
 }
 
 AccessibilityFocusRingController::AccessibilityFocusRingController()
-    : compositor_(nullptr) {
-}
+    : compositor_(nullptr), cursor_opacity_(0), cursor_compositor_(nullptr) {}
 
 AccessibilityFocusRingController::~AccessibilityFocusRingController() {
 }
@@ -62,6 +76,9 @@ void AccessibilityFocusRingController::Update() {
   rings_.clear();
   RectsToRings(rects_, &rings_);
   layers_.resize(rings_.size());
+  if (rings_.empty())
+    return;
+
   for (size_t i = 0; i < rings_.size(); ++i) {
     if (!layers_[i])
       layers_[i] = new AccessibilityFocusRingLayer(this);
@@ -69,30 +86,80 @@ void AccessibilityFocusRingController::Update() {
     if (i > 0) {
       // Focus rings other than the first one don't animate.
       layers_[i]->Set(rings_[i]);
-      continue;
-    }
-
-    gfx::Rect bounds = rings_[0].GetBounds();
-    gfx::Display display = gfx::Screen::GetScreen()->GetDisplayMatching(bounds);
-    aura::Window* root_window = ash::Shell::GetInstance()
-                                    ->window_tree_host_manager()
-                                    ->GetRootWindowForDisplayId(display.id());
-    ui::Compositor* compositor = root_window->layer()->GetCompositor();
-    if (!compositor || root_window != layers_[0]->root_window()) {
-      layers_[0]->Set(rings_[0]);
-      if (compositor_ && compositor_->HasAnimationObserver(this)) {
-        compositor_->RemoveAnimationObserver(this);
-        compositor_ = nullptr;
-      }
-      continue;
-    }
-
-    focus_change_time_ = base::TimeTicks::Now();
-    if (!compositor->HasAnimationObserver(this)) {
-      compositor_ = compositor;
-      compositor_->AddAnimationObserver(this);
     }
   }
+
+  ui::Compositor* compositor = CompositorForBounds(rings_[0].GetBounds());
+  if (compositor != compositor_) {
+    RemoveAnimationObservers();
+    compositor_ = compositor;
+    AddAnimationObservers();
+  }
+
+  if (compositor_ && compositor_->HasAnimationObserver(this)) {
+    focus_change_time_ = base::TimeTicks::Now();
+  } else {
+    // If we can't animate, set the location of the first ring.
+    layers_[0]->Set(rings_[0]);
+  }
+}
+
+ui::Compositor* AccessibilityFocusRingController::CompositorForBounds(
+    const gfx::Rect& bounds) {
+  gfx::Display display = gfx::Screen::GetScreen()->GetDisplayMatching(bounds);
+  aura::Window* root_window = ash::Shell::GetInstance()
+                                  ->window_tree_host_manager()
+                                  ->GetRootWindowForDisplayId(display.id());
+  return root_window->layer()->GetCompositor();
+}
+
+void AccessibilityFocusRingController::RemoveAnimationObservers() {
+  if (compositor_ && compositor_->HasAnimationObserver(this))
+    compositor_->RemoveAnimationObserver(this);
+  if (cursor_compositor_ && cursor_compositor_->HasAnimationObserver(this))
+    cursor_compositor_->RemoveAnimationObserver(this);
+}
+
+void AccessibilityFocusRingController::AddAnimationObservers() {
+  if (compositor_ && !compositor_->HasAnimationObserver(this))
+    compositor_->AddAnimationObserver(this);
+  if (cursor_compositor_ && !cursor_compositor_->HasAnimationObserver(this))
+    cursor_compositor_->AddAnimationObserver(this);
+}
+
+void AccessibilityFocusRingController::SetCursorRing(
+    const gfx::Point& location) {
+  cursor_location_ = location;
+  cursor_change_time_ = base::TimeTicks::Now();
+  if (cursor_opacity_ == 0)
+    cursor_start_time_ = cursor_change_time_;
+
+  if (!cursor_layer_) {
+    cursor_layer_.reset(new AccessibilityCursorRingLayer(
+        this, kCursorRingColorRed, kCursorRingColorGreen,
+        kCursorRingColorBlue));
+  }
+  cursor_layer_->Set(location);
+
+  ui::Compositor* compositor =
+      CompositorForBounds(gfx::Rect(location.x(), location.y(), 0, 0));
+  if (compositor != cursor_compositor_) {
+    RemoveAnimationObservers();
+    cursor_compositor_ = compositor;
+    AddAnimationObservers();
+  }
+}
+
+void AccessibilityFocusRingController::SetCaretRing(
+    const gfx::Point& location) {
+  caret_location_ = location;
+
+  if (!caret_layer_) {
+    caret_layer_.reset(new AccessibilityCursorRingLayer(
+        this, kCaretRingColorRed, kCaretRingColorGreen, kCaretRingColorBlue));
+  }
+
+  caret_layer_->Set(location);
 }
 
 void AccessibilityFocusRingController::RectsToRings(
@@ -291,10 +358,15 @@ void AccessibilityFocusRingController::OnDeviceScaleFactorChanged() {
 
 void AccessibilityFocusRingController::OnAnimationStep(
     base::TimeTicks timestamp) {
-  if (rings_.empty())
-    return;
+  if (!rings_.empty() && compositor_)
+    AnimateFocusRings(timestamp);
 
-  CHECK(compositor_);
+  if (cursor_layer_ && cursor_compositor_)
+    AnimateCursorRing(timestamp);
+}
+
+void AccessibilityFocusRingController::AnimateFocusRings(
+    base::TimeTicks timestamp) {
   CHECK(!rings_.empty());
   CHECK(!layers_.empty());
   CHECK(layers_[0]);
@@ -310,8 +382,10 @@ void AccessibilityFocusRingController::OnAnimationStep(
       base::TimeDelta::FromMilliseconds(kTransitionTimeMilliseconds);
   if (delta >= transition_time) {
     layers_[0]->Set(rings_[0]);
-    compositor_->RemoveAnimationObserver(this);
+
+    RemoveAnimationObservers();
     compositor_ = nullptr;
+    AddAnimationObservers();
     return;
   }
 
@@ -320,15 +394,60 @@ void AccessibilityFocusRingController::OnAnimationStep(
   // Ease-in effect.
   fraction = pow(fraction, 0.3);
 
+  // Handle corner case where we're animating but we don't have previous
+  // rings.
+  if (previous_rings_.empty())
+    previous_rings_ = rings_;
+
   layers_[0]->Set(AccessibilityFocusRing::Interpolate(
       previous_rings_[0], rings_[0], fraction));
 }
 
+void AccessibilityFocusRingController::AnimateCursorRing(
+    base::TimeTicks timestamp) {
+  CHECK(cursor_layer_);
+
+  // It's quite possible for the first 1 or 2 animation frames to be
+  // for a timestamp that's earlier than the time we received the
+  // mouse movement, so we just treat those as a delta of zero.
+  if (timestamp < cursor_start_time_)
+    timestamp = cursor_start_time_;
+
+  base::TimeDelta start_delta = timestamp - cursor_start_time_;
+  base::TimeDelta change_delta = timestamp - cursor_change_time_;
+  base::TimeDelta fade_in_time =
+      base::TimeDelta::FromMilliseconds(kCursorFadeInTimeMilliseconds);
+  base::TimeDelta fade_out_time =
+      base::TimeDelta::FromMilliseconds(kCursorFadeOutTimeMilliseconds);
+
+  if (change_delta > fade_in_time + fade_out_time) {
+    cursor_opacity_ = 0.0;
+    cursor_layer_.reset();
+    return;
+  }
+
+  if (start_delta < fade_in_time) {
+    cursor_opacity_ = start_delta.InSecondsF() / fade_in_time.InSecondsF();
+    if (cursor_opacity_ > 1.0)
+      cursor_opacity_ = 1.0;
+  } else {
+    cursor_opacity_ = 1.0 - (change_delta.InSecondsF() /
+                             (fade_in_time + fade_out_time).InSecondsF());
+    if (cursor_opacity_ < 0.0)
+      cursor_opacity_ = 0.0;
+  }
+  cursor_layer_->SetOpacity(cursor_opacity_);
+}
+
 void AccessibilityFocusRingController::OnCompositingShuttingDown(
     ui::Compositor* compositor) {
-  DCHECK_EQ(compositor_, compositor);
-  compositor_->RemoveAnimationObserver(this);
-  compositor_ = nullptr;
+  if (compositor == compositor_ || compositor == cursor_compositor_)
+    compositor->RemoveAnimationObserver(this);
+
+  if (compositor == compositor_)
+    compositor_ = nullptr;
+  if (compositor == cursor_compositor_)
+    cursor_compositor_ = nullptr;
 }
 
 }  // namespace chromeos

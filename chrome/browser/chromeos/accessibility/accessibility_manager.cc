@@ -33,6 +33,7 @@
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_highlight_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -901,7 +902,7 @@ void AccessibilityManager::UpdateCaretHighlightFromPref() {
     return;
   caret_highlight_enabled_ = enabled;
 
-  // TODO(dmazzoni): implement feature here.
+  UpdateAccessibilityHighlightingFromPrefs();
 }
 
 void AccessibilityManager::SetCursorHighlightEnabled(bool enabled) {
@@ -929,7 +930,7 @@ void AccessibilityManager::UpdateCursorHighlightFromPref() {
     return;
   cursor_highlight_enabled_ = enabled;
 
-  // TODO(dmazzoni): implement feature here.
+  UpdateAccessibilityHighlightingFromPrefs();
 }
 
 void AccessibilityManager::SetFocusHighlightEnabled(bool enabled) {
@@ -956,7 +957,7 @@ void AccessibilityManager::UpdateFocusHighlightFromPref() {
     return;
   focus_highlight_enabled_ = enabled;
 
-  // TODO(dmazzoni): implement feature here.
+  UpdateAccessibilityHighlightingFromPrefs();
 }
 
 void AccessibilityManager::SetSelectToSpeakEnabled(bool enabled) {
@@ -1011,6 +1012,22 @@ void AccessibilityManager::UpdateSwitchAccessFromPref() {
   switch_access_enabled_ = enabled;
 
   // TODO(dmazzoni): implement feature here.
+}
+
+void AccessibilityManager::UpdateAccessibilityHighlightingFromPrefs() {
+  if (!focus_highlight_enabled_ && !caret_highlight_enabled_ &&
+      !cursor_highlight_enabled_) {
+    if (accessibility_highlight_manager_)
+      accessibility_highlight_manager_.reset();
+    return;
+  }
+
+  if (!accessibility_highlight_manager_)
+    accessibility_highlight_manager_.reset(new AccessibilityHighlightManager());
+
+  accessibility_highlight_manager_->HighlightFocus(focus_highlight_enabled_);
+  accessibility_highlight_manager_->HighlightCaret(caret_highlight_enabled_);
+  accessibility_highlight_manager_->HighlightCursor(cursor_highlight_enabled_);
 }
 
 bool AccessibilityManager::IsBrailleDisplayConnected() const {

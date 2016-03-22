@@ -34,6 +34,8 @@ class Profile;
 
 namespace chromeos {
 
+class AccessibilityHighlightManager;
+
 enum AccessibilityNotificationType {
   ACCESSIBILITY_MANAGER_SHUTDOWN,
   ACCESSIBILITY_TOGGLE_HIGH_CONTRAST_MODE,
@@ -281,6 +283,7 @@ class AccessibilityManager
   void UpdateFocusHighlightFromPref();
   void UpdateSelectToSpeakFromPref();
   void UpdateSwitchAccessFromPref();
+  void UpdateAccessibilityHighlightingFromPrefs();
 
   void CheckBrailleState();
   void ReceiveBrailleDisplayState(
@@ -378,6 +381,8 @@ class AccessibilityManager
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  scoped_ptr<AccessibilityHighlightManager> accessibility_highlight_manager_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 

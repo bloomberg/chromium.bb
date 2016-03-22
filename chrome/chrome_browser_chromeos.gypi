@@ -9,6 +9,8 @@
     'browser_chromeos_sources': [
         # All .cc, .h, .m, and .mm files under browser/chromeos, except for tests
         # and mocks.
+        'browser/chromeos/accessibility/accessibility_highlight_manager.cc',
+        'browser/chromeos/accessibility/accessibility_highlight_manager.h',
         'browser/chromeos/accessibility/accessibility_manager.cc',
         'browser/chromeos/accessibility/accessibility_manager.h',
         'browser/chromeos/accessibility/accessibility_util.cc',
@@ -1008,6 +1010,8 @@
         'browser/chromeos/system_logs/touch_log_source.h',
         'browser/chromeos/system_logs/touch_log_source_ozone.cc',
         'browser/chromeos/system_logs/touch_log_source_x11.cc',
+        'browser/chromeos/ui/accessibility_cursor_ring_layer.cc',
+        'browser/chromeos/ui/accessibility_cursor_ring_layer.h',
         'browser/chromeos/ui/accessibility_focus_ring.cc',
         'browser/chromeos/ui/accessibility_focus_ring.h',
         'browser/chromeos/ui/accessibility_focus_ring_controller.cc',
