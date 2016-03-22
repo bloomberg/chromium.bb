@@ -26,6 +26,8 @@
 #include "modules/webgl/WebGLVertexArrayObject.h"
 #include "platform/CheckedInt.h"
 #include "platform/NotImplemented.h"
+#include "public/platform/WebGraphicsContext3D.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -111,8 +113,8 @@ const GLenum kCompressedTextureFormatsETC2EAC[] = {
     GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC,
 };
 
-WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
-    : WebGLRenderingContextBase(passedCanvas, context, requestedAttributes)
+WebGL2RenderingContextBase::WebGL2RenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+    : WebGLRenderingContextBase(passedCanvas, contextProvider, requestedAttributes)
 {
     m_supportedInternalFormatsStorage.insert(kSupportedInternalFormatsStorage, kSupportedInternalFormatsStorage + WTF_ARRAY_LENGTH(kSupportedInternalFormatsStorage));
     m_supportedInternalFormatsStorage.insert(kCompressedTextureFormatsETC2EAC, kCompressedTextureFormatsETC2EAC + WTF_ARRAY_LENGTH(kCompressedTextureFormatsETC2EAC));

@@ -162,14 +162,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void createHTMLVideoElementCapturer(
       blink::WebMediaStream* web_media_stream,
       blink::WebMediaPlayer* web_media_player) override;
-  blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
-      const blink::WebGraphicsContext3D::Attributes& attributes) override;
-  blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
+  blink::WebGraphicsContext3DProvider* createOffscreenGraphicsContext3DProvider(
       const blink::WebGraphicsContext3D::Attributes& attributes,
-      blink::WebGraphicsContext3D* share_context) override;
-  blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
-      const blink::WebGraphicsContext3D::Attributes& attributes,
-      blink::WebGraphicsContext3D* share_context,
+      blink::WebGraphicsContext3DProvider* share_provider,
       blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info) override;
   blink::WebGraphicsContext3DProvider*
   createSharedOffscreenGraphicsContext3DProvider() override;

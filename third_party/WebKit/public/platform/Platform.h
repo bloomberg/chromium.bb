@@ -451,15 +451,16 @@ public:
 
     // GPU ----------------------------------------------------------------
     //
-    // May return null if GPU is not supported.
-    // Returns newly allocated and initialized offscreen WebGraphicsContext3D instance.
-    // Passing an existing context to shareContext will create the new context in the same share group as the passed context.
-    virtual WebGraphicsContext3D* createOffscreenGraphicsContext3D(const WebGraphicsContext3D::Attributes&, WebGraphicsContext3D* shareContext) { return nullptr; }
-    virtual WebGraphicsContext3D* createOffscreenGraphicsContext3D(const WebGraphicsContext3D::Attributes&, WebGraphicsContext3D* shareContext, WebGraphicsContext3D::WebGraphicsInfo* glInfo) { return nullptr; }
-    virtual WebGraphicsContext3D* createOffscreenGraphicsContext3D(const WebGraphicsContext3D::Attributes&) { return nullptr; }
+    // Returns a newly allocated and initialized offscreen context provider,
+    // backed by an independent context. Returns null if the context cannot be
+    // created or initialized.
+    // Passing an existing provider to shareContext will create the new context
+    // in the same share group as the one passed.
+    virtual WebGraphicsContext3DProvider* createOffscreenGraphicsContext3DProvider(const WebGraphicsContext3D::Attributes&, WebGraphicsContext3DProvider* shareContext, WebGraphicsContext3D::WebGraphicsInfo* glInfo) { return nullptr; }
 
-    // Returns a newly allocated and initialized offscreen context provider. The provider may return a null
-    // graphics context if GPU is not supported.
+    // Returns a newly allocated and initialized offscreen context provider,
+    // backed by the process-wide shared main thread context. Returns null if
+    // the context cannot be created or initialized.
     virtual WebGraphicsContext3DProvider* createSharedOffscreenGraphicsContext3DProvider() { return nullptr; }
 
     // Returns true if the platform is capable of producing an offscreen context suitable for accelerating 2d canvas.

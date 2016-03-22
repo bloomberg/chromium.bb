@@ -89,19 +89,18 @@ static bool shouldFailDrawingBufferCreationForTesting = false;
 
 } // namespace
 
-PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3D> context, const IntSize& size, PreserveDrawingBuffer preserve, WebGraphicsContext3D::Attributes requestedAttributes)
+PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, PreserveDrawingBuffer preserve, WebGraphicsContext3D::Attributes requestedAttributes)
 {
-    ASSERT(context);
+    ASSERT(contextProvider);
 
     if (shouldFailDrawingBufferCreationForTesting) {
         shouldFailDrawingBufferCreationForTesting = false;
         return nullptr;
     }
 
-    gpu::gles2::GLES2Interface* gl = context->getGLES2Interface();
-    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get(), gl);
+    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->context3d(), contextProvider->contextGL());
     if (!extensionsUtil->isValid()) {
-        // This might be the first time we notice that the WebGraphicsContext3D is lost.
+        // This might be the first time we notice that the GL context is lost.
         return nullptr;
     }
     ASSERT(extensionsUtil->supportsExtension("GL_OES_packed_depth_stencil"));
@@ -120,7 +119,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3D>
     if (discardFramebufferSupported)
         extensionsUtil->ensureExtensionEnabled("GL_EXT_discard_framebuffer");
 
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(std::move(context), gl, extensionsUtil.release(), multisampleSupported, discardFramebufferSupported, preserve, requestedAttributes));
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(std::move(contextProvider), extensionsUtil.release(), multisampleSupported, discardFramebufferSupported, preserve, requestedAttributes));
     if (!drawingBuffer->initialize(size)) {
         drawingBuffer->beginDestruction();
         return PassRefPtr<DrawingBuffer>();
@@ -133,15 +132,16 @@ void DrawingBuffer::forceNextDrawingBufferCreationToFail()
     shouldFailDrawingBufferCreationForTesting = true;
 }
 
-DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context, gpu::gles2::GLES2Interface* gl, PassOwnPtr<Extensions3DUtil> extensionsUtil, bool multisampleExtensionSupported, bool discardFramebufferSupported, PreserveDrawingBuffer preserve, WebGraphicsContext3D::Attributes requestedAttributes)
+DrawingBuffer::DrawingBuffer(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<Extensions3DUtil> extensionsUtil, bool multisampleExtensionSupported, bool discardFramebufferSupported, PreserveDrawingBuffer preserve, WebGraphicsContext3D::Attributes requestedAttributes)
     : m_preserveDrawingBuffer(preserve)
     , m_scissorEnabled(false)
     , m_texture2DBinding(0)
     , m_drawFramebufferBinding(0)
     , m_readFramebufferBinding(0)
     , m_activeTextureUnit(GL_TEXTURE0)
-    , m_context(std::move(context))
-    , m_gl(gl)
+    , m_contextProvider(std::move(contextProvider))
+    , m_context(m_contextProvider->context3d())
+    , m_gl(m_contextProvider->contextGL())
     , m_extensionsUtil(std::move(extensionsUtil))
     , m_size(-1, -1)
     , m_requestedAttributes(requestedAttributes)
@@ -174,7 +174,7 @@ DrawingBuffer::~DrawingBuffer()
     ASSERT(m_destructionInProgress);
     ASSERT(m_textureMailboxes.isEmpty());
     m_layer.clear();
-    m_context.clear();
+    m_contextProvider.clear();
 #ifndef NDEBUG
     drawingBufferCounter().decrement();
 #endif
@@ -202,7 +202,7 @@ void DrawingBuffer::setBufferClearNeeded(bool flag)
 
 WebGraphicsContext3D* DrawingBuffer::context()
 {
-    return m_context.get();
+    return m_context;
 }
 
 gpu::gles2::GLES2Interface* DrawingBuffer::contextGL()

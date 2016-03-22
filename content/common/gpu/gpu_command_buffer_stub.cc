@@ -105,7 +105,7 @@ class GpuCommandBufferMemoryTracker : public gpu::gles2::MemoryTracker {
 // url_hash matches.
 void FastSetActiveURL(const GURL& url, size_t url_hash, GpuChannel* channel) {
   // Leave the previously set URL in the empty case -- empty URLs are given by
-  // BlinkPlatformImpl::createOffscreenGraphicsContext3D. Hopefully the
+  // BlinkPlatformImpl::createOffscreenGraphicsContext3DProvider. Hopefully the
   // onscreen context URL was set previously and will show up even when a crash
   // occurs during offscreen command processing.
   if (url.is_empty())

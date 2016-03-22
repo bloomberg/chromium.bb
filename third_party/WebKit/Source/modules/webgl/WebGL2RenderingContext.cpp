@@ -26,6 +26,7 @@
 #include "modules/webgl/WebGLLoseContext.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 
 namespace blink {
 
@@ -37,18 +38,18 @@ PassOwnPtrWillBeRawPtr<CanvasRenderingContext> WebGL2RenderingContext::Factory::
     }
 
     WebGLContextAttributes attributes = toWebGLContextAttributes(attrs);
-    OwnPtr<WebGraphicsContext3D> context(createWebGraphicsContext3D(canvas, attributes, 2));
-    if (!context)
+    OwnPtr<WebGraphicsContext3DProvider> contextProvider(createWebGraphicsContext3DProvider(canvas, attributes, 2));
+    if (!contextProvider)
         return nullptr;
-    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get(), context->getGLES2Interface());
+    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->context3d(), contextProvider->contextGL());
     if (!extensionsUtil)
         return nullptr;
     if (extensionsUtil->supportsExtension("GL_EXT_debug_marker")) {
-        String contextLabel(String::format("WebGL2RenderingContext-%p", context.get()));
-        context->pushGroupMarkerEXT(contextLabel.ascii().data());
+        String contextLabel(String::format("WebGL2RenderingContext-%p", contextProvider.get()));
+        contextProvider->context3d()->pushGroupMarkerEXT(contextLabel.ascii().data());
     }
 
-    OwnPtrWillBeRawPtr<WebGL2RenderingContext> renderingContext = adoptPtrWillBeNoop(new WebGL2RenderingContext(canvas, context.release(), attributes));
+    OwnPtrWillBeRawPtr<WebGL2RenderingContext> renderingContext = adoptPtrWillBeNoop(new WebGL2RenderingContext(canvas, contextProvider.release(), attributes));
 
     if (!renderingContext->drawingBuffer()) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "Could not create a WebGL2 context."));
@@ -66,8 +67,8 @@ void WebGL2RenderingContext::Factory::onError(HTMLCanvasElement* canvas, const S
     canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, error));
 }
 
-WebGL2RenderingContext::WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
-    : WebGL2RenderingContextBase(passedCanvas, context, requestedAttributes)
+WebGL2RenderingContext::WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
+    : WebGL2RenderingContextBase(passedCanvas, contextProvider, requestedAttributes)
 {
 }
 

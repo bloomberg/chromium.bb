@@ -944,22 +944,7 @@ blink::WebSpeechSynthesizer* RendererBlinkPlatformImpl::createSpeechSynthesizer(
 
 //------------------------------------------------------------------------------
 
-blink::WebGraphicsContext3D*
-RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
-    const blink::WebGraphicsContext3D::Attributes& attributes) {
-  return createOffscreenGraphicsContext3D(attributes, NULL);
-}
-
-blink::WebGraphicsContext3D*
-RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
-    const blink::WebGraphicsContext3D::Attributes& attributes,
-    blink::WebGraphicsContext3D* share_context) {
-  blink::WebGraphicsContext3D::WebGraphicsInfo gl_info;
-  return createOffscreenGraphicsContext3D(attributes, share_context, &gl_info);
-}
-
 static void Collect3DContextInformationOnFailure(
-    blink::WebGraphicsContext3D* share_context,
     blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info,
     GpuChannelHost* host) {
   DCHECK(gl_info);
@@ -997,44 +982,43 @@ static void Collect3DContextInformationOnFailure(
   }
 }
 
-blink::WebGraphicsContext3D*
-RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
+blink::WebGraphicsContext3DProvider*
+RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
     const blink::WebGraphicsContext3D::Attributes& attributes,
-    blink::WebGraphicsContext3D* share_context,
+    blink::WebGraphicsContext3DProvider* share_provider,
     blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info) {
   DCHECK(gl_info);
   if (!RenderThreadImpl::current()) {
     std::string error_message("Failed to run in Current RenderThreadImpl");
     gl_info->errorMessage = WebString::fromUTF8(error_message);
-    return NULL;
+    return nullptr;
   }
 
   scoped_refptr<GpuChannelHost> gpu_channel_host(
       RenderThreadImpl::current()->EstablishGpuChannelSync(
           CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
 
+  WebGraphicsContext3DCommandBufferImpl* share_context =
+      share_provider ? static_cast<WebGraphicsContext3DCommandBufferImpl*>(
+                           share_provider->context3d())
+                     : nullptr;
   WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
   bool lose_context_when_out_of_memory = false;
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-          gpu_channel_host.get(),
-          attributes,
-          lose_context_when_out_of_memory,
-          blink::WebStringToGURL(attributes.topDocumentURL),
-          limits,
-          static_cast<WebGraphicsContext3DCommandBufferImpl*>(share_context)));
-
-  // Most likely the GPU process exited and the attempt to reconnect to it
-  // failed. Need to try to restore the context again later.
-  if (!context || !context->InitializeOnCurrentThread() ||
-      gl_info->testFailContext) {
+          gpu_channel_host.get(), attributes, lose_context_when_out_of_memory,
+          blink::WebStringToGURL(attributes.topDocumentURL), limits,
+          share_context));
+  scoped_refptr<ContextProviderCommandBuffer> provider =
+      ContextProviderCommandBuffer::Create(std::move(context),
+                                           RENDERER_MAINTHREAD_CONTEXT);
+  if (!provider || !provider->BindToCurrentThread()) {
     // Collect Graphicsinfo if there is a context failure or it is failed
     // purposefully in case of layout tests.
-    Collect3DContextInformationOnFailure(share_context, gl_info,
-                                         gpu_channel_host.get());
-      return NULL;
+    Collect3DContextInformationOnFailure(gl_info, gpu_channel_host.get());
+    return nullptr;
   }
-  return context.release();
+  return new WebGraphicsContext3DProviderImpl(std::move(provider));
 }
 
 //------------------------------------------------------------------------------
@@ -1043,9 +1027,9 @@ blink::WebGraphicsContext3DProvider*
 RendererBlinkPlatformImpl::createSharedOffscreenGraphicsContext3DProvider() {
   scoped_refptr<cc_blink::ContextProviderWebContext> provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider();
-  if (!provider.get())
-    return NULL;
-  return new WebGraphicsContext3DProviderImpl(provider);
+  if (!provider)
+    return nullptr;
+  return new WebGraphicsContext3DProviderImpl(std::move(provider));
 }
 
 //------------------------------------------------------------------------------

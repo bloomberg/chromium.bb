@@ -63,6 +63,7 @@ class ImageBuffer;
 class WebExternalBitmap;
 class WebExternalTextureLayer;
 class WebGraphicsContext3D;
+class WebGraphicsContext3DProvider;
 class WebLayer;
 
 // Manages a rendering target (framebuffer + attachment) for a canvas.  Can publish its rendering
@@ -75,7 +76,7 @@ public:
         Discard
     };
 
-    static PassRefPtr<DrawingBuffer> create(PassOwnPtr<WebGraphicsContext3D>, const IntSize&, PreserveDrawingBuffer, WebGraphicsContext3D::Attributes requestedAttributes);
+    static PassRefPtr<DrawingBuffer> create(PassOwnPtr<WebGraphicsContext3DProvider>, const IntSize&, PreserveDrawingBuffer, WebGraphicsContext3D::Attributes requestedAttributes);
     static void forceNextDrawingBufferCreationToFail();
 
     ~DrawingBuffer() override;
@@ -179,8 +180,7 @@ public:
 
 protected: // For unittests
     DrawingBuffer(
-        PassOwnPtr<WebGraphicsContext3D>,
-        gpu::gles2::GLES2Interface*,
+        PassOwnPtr<WebGraphicsContext3DProvider>,
         PassOwnPtr<Extensions3DUtil>,
         bool multisampleExtensionSupported,
         bool discardFramebufferSupported,
@@ -304,8 +304,9 @@ private:
     Platform3DObject m_readFramebufferBinding;
     GLenum m_activeTextureUnit;
 
-    OwnPtr<WebGraphicsContext3D> m_context;
-    gpu::gles2::GLES2Interface* m_gl; // Lifetime is tied to the m_context.
+    OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
+    WebGraphicsContext3D* m_context; // Lifetime is tied to the m_contextProvider.
+    gpu::gles2::GLES2Interface* m_gl; // Lifetime is tied to the m_contextProvider.
     OwnPtr<Extensions3DUtil> m_extensionsUtil;
     IntSize m_size;
     WebGraphicsContext3D::Attributes m_requestedAttributes;

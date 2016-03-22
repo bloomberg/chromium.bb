@@ -94,6 +94,8 @@
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebGraphicsContext3D.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
@@ -563,7 +565,7 @@ static String extractWebGLContextCreationError(const WebGraphicsContext3D::WebGr
     return statusMessage;
 }
 
-PassOwnPtr<WebGraphicsContext3D> WebGLRenderingContextBase::createWebGraphicsContext3D(HTMLCanvasElement* canvas, WebGLContextAttributes attributes, unsigned webGLVersion)
+PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGraphicsContext3DProvider(HTMLCanvasElement* canvas, WebGLContextAttributes attributes, unsigned webGLVersion)
 {
     Document& document = canvas->document();
     LocalFrame* frame = document.frame();
@@ -583,18 +585,18 @@ PassOwnPtr<WebGraphicsContext3D> WebGLRenderingContextBase::createWebGraphicsCon
     WebGraphicsContext3D::Attributes wgc3dAttributes = toWebGraphicsContext3DAttributes(attributes, document.topDocument().url().getString(), settings, webGLVersion);
     WebGraphicsContext3D::WebGraphicsInfo glInfo;
     glInfo.testFailContext = shouldFailContextCreationForTesting;
-    OwnPtr<WebGraphicsContext3D> context = adoptPtr(Platform::current()->createOffscreenGraphicsContext3D(wgc3dAttributes, 0, &glInfo));
-    if (!context || shouldFailContextCreationForTesting) {
+    OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(wgc3dAttributes, 0, &glInfo));
+    if (!contextProvider || shouldFailContextCreationForTesting) {
         shouldFailContextCreationForTesting = false;
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, extractWebGLContextCreationError(glInfo)));
         return nullptr;
     }
-    if (context->getString(GL_EXTENSIONS).utf8().find("GL_OES_packed_depth_stencil") == std::string::npos) {
+    if (contextProvider->context3d()->getString(GL_EXTENSIONS).utf8().find("GL_OES_packed_depth_stencil") == std::string::npos) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "OES_packed_depth_stencil support is required."));
         return nullptr;
     }
 
-    return context.release();
+    return contextProvider.release();
 }
 
 void WebGLRenderingContextBase::forceNextWebGLContextCreationToFail()
@@ -839,7 +841,7 @@ bool isSRGBFormat(GLenum internalformat)
 
 } // namespace
 
-WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D> context, const WebGLContextAttributes& requestedAttributes)
+WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const WebGLContextAttributes& requestedAttributes)
     : CanvasRenderingContext(passedCanvas)
     , m_isHidden(false)
     , m_contextLostMode(NotLostContext)
@@ -865,16 +867,15 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     , m_weakPtrFactory(this)
 #endif
 {
-    ASSERT(context);
-    gpu::gles2::GLES2Interface* gl = context->getGLES2Interface();
+    ASSERT(contextProvider);
 
     m_contextGroup = WebGLContextGroup::create();
     m_contextGroup->addContext(this);
 
     m_maxViewportDims[0] = m_maxViewportDims[1] = 0;
-    gl->GetIntegerv(GL_MAX_VIEWPORT_DIMS, m_maxViewportDims);
+    contextProvider->contextGL()->GetIntegerv(GL_MAX_VIEWPORT_DIMS, m_maxViewportDims);
 
-    RefPtr<DrawingBuffer> buffer = createDrawingBuffer(context);
+    RefPtr<DrawingBuffer> buffer = createDrawingBuffer(contextProvider);
     if (!buffer) {
         m_contextLostMode = SyntheticLostContext;
         return;
@@ -896,7 +897,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesES2);
 }
 
-PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwnPtr<WebGraphicsContext3D> context)
+PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider)
 {
     WebGraphicsContext3D::Attributes attrs;
     attrs.alpha = m_requestedAttributes.alpha();
@@ -905,7 +906,7 @@ PassRefPtr<DrawingBuffer> WebGLRenderingContextBase::createDrawingBuffer(PassOwn
     attrs.antialias = m_requestedAttributes.antialias();
     attrs.premultipliedAlpha = m_requestedAttributes.premultipliedAlpha();
     DrawingBuffer::PreserveDrawingBuffer preserve = m_requestedAttributes.preserveDrawingBuffer() ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
-    return DrawingBuffer::create(context, clampedCanvasSize(), preserve, attrs);
+    return DrawingBuffer::create(contextProvider, clampedCanvasSize(), preserve, attrs);
 }
 
 void WebGLRenderingContextBase::initializeNewContext()
@@ -5987,11 +5988,12 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     }
 
     WebGraphicsContext3D::Attributes attributes = toWebGraphicsContext3DAttributes(m_requestedAttributes, canvas()->document().topDocument().url().getString(), settings, version());
-    OwnPtr<WebGraphicsContext3D> context = adoptPtr(Platform::current()->createOffscreenGraphicsContext3D(attributes, 0));
+    blink::WebGraphicsContext3D::WebGraphicsInfo glInfo;
+    OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(attributes, 0, &glInfo));
     RefPtr<DrawingBuffer> buffer;
-    if (context) {
+    if (contextProvider) {
         // Construct a new drawing buffer with the new WebGraphicsContext3D.
-        buffer = createDrawingBuffer(context.release());
+        buffer = createDrawingBuffer(contextProvider.release());
         // If DrawingBuffer::create() fails to allocate a fbo, |drawingBuffer| is set to null.
     }
     if (!buffer) {

@@ -21,6 +21,7 @@
 namespace blink {
 class WebFrame;
 class WebGraphicsContext3D;
+class WebGraphicsContext3DProvider;
 class WebLayer;
 struct WebPluginParams;
 }
@@ -155,6 +156,7 @@ class TestPlugin : public blink::WebPlugin, public cc::TextureLayerClient {
   blink::WebPluginContainer* container_;
 
   blink::WebRect rect_;
+  scoped_ptr<blink::WebGraphicsContext3DProvider> context_provider_;
   blink::WebGraphicsContext3D* context_;
   gpu::gles2::GLES2Interface* gl_;
   unsigned color_texture_;

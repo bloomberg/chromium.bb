@@ -38,7 +38,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3D>, const WebGLContextAttributes& requestedAttributes);
+    WebGL2RenderingContext(HTMLCanvasElement* passedCanvas, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes& requestedAttributes);
 
     PersistentWillBeMember<CHROMIUMSubscribeUniform> m_chromiumSubscribeUniform;
     PersistentWillBeMember<EXTColorBufferFloat> m_extColorBufferFloat;

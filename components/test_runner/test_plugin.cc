@@ -20,6 +20,7 @@
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebCompositorSupport.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
 #include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
@@ -173,9 +174,12 @@ TestPlugin::~TestPlugin() {
 
 bool TestPlugin::initialize(blink::WebPluginContainer* container) {
   blink::WebGraphicsContext3D::Attributes attrs;
-  context_ =
-      blink::Platform::current()->createOffscreenGraphicsContext3D(attrs);
-  gl_ = context_ ? context_->getGLES2Interface() : nullptr;
+  blink::WebGraphicsContext3D::WebGraphicsInfo gl_info;
+  context_provider_ = make_scoped_ptr(
+      blink::Platform::current()->createOffscreenGraphicsContext3DProvider(
+          attrs, nullptr, &gl_info));
+  context_ = context_provider_ ? context_provider_->context3d() : nullptr;
+  gl_ = context_provider_ ? context_provider_->contextGL() : nullptr;
 
   if (!InitScene())
     return false;
@@ -205,8 +209,7 @@ void TestPlugin::destroy() {
   DestroyScene();
 
   gl_ = nullptr;
-  delete context_;
-  context_ = nullptr;
+  context_provider_.reset();
 
   container_ = nullptr;
   frame_ = nullptr;
@@ -240,7 +243,7 @@ void TestPlugin::updateGeometry(
 
   if (rect_.isEmpty()) {
     texture_mailbox_ = cc::TextureMailbox();
-  } else if (context_) {
+  } else if (gl_) {
     gl_->Viewport(0, 0, rect_.width, rect_.height);
 
     gl_->BindTexture(GL_TEXTURE_2D, color_texture_);
@@ -359,7 +362,7 @@ bool TestPlugin::ParseBoolean(const blink::WebString& string) {
 }
 
 bool TestPlugin::InitScene() {
-  if (!context_)
+  if (!gl_)
     return true;
 
   float color[4];

@@ -38,6 +38,8 @@
 #include "platform/graphics/test/MockWebGraphicsContext3D.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebExternalTextureMailbox.h"
+#include "public/platform/WebGraphicsContext3D.h"
+#include "public/platform/WebGraphicsContext3DProvider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefPtr.h"
@@ -192,8 +194,8 @@ private:
 
 class WebGraphicsContext3DForTests : public MockWebGraphicsContext3D {
 public:
-    WebGraphicsContext3DForTests(PassOwnPtr<GLES2InterfaceForTests> contextGL)
-        : m_contextGL(std::move(contextGL))
+    WebGraphicsContext3DForTests(GLES2InterfaceForTests* contextGL)
+        : m_contextGL(contextGL)
     {
     }
 
@@ -215,11 +217,11 @@ public:
 
     gpu::gles2::GLES2Interface* getGLES2Interface() override
     {
-        return m_contextGL.get();
+        return m_contextGL;
     }
 
 private:
-    OwnPtr<GLES2InterfaceForTests> m_contextGL;
+    GLES2InterfaceForTests* m_contextGL;
 };
 
 static const int initialWidth = 100;
@@ -228,10 +230,10 @@ static const int alternateHeight = 50;
 
 class DrawingBufferForTests : public DrawingBuffer {
 public:
-    static PassRefPtr<DrawingBufferForTests> create(PassOwnPtr<WebGraphicsContext3D> context, gpu::gles2::GLES2Interface* gl, const IntSize& size, PreserveDrawingBuffer preserve)
+    static PassRefPtr<DrawingBufferForTests> create(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, PreserveDrawingBuffer preserve)
     {
-        OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(context.get(), gl);
-        RefPtr<DrawingBufferForTests> drawingBuffer = adoptRef(new DrawingBufferForTests(context, gl, extensionsUtil.release(), preserve));
+        OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->context3d(), contextProvider->contextGL());
+        RefPtr<DrawingBufferForTests> drawingBuffer = adoptRef(new DrawingBufferForTests(contextProvider, extensionsUtil.release(), preserve));
         if (!drawingBuffer->initialize(size)) {
             drawingBuffer->beginDestruction();
             return PassRefPtr<DrawingBufferForTests>();
@@ -239,8 +241,8 @@ public:
         return drawingBuffer.release();
     }
 
-    DrawingBufferForTests(PassOwnPtr<WebGraphicsContext3D> context, gpu::gles2::GLES2Interface* gl, PassOwnPtr<Extensions3DUtil> extensionsUtil, PreserveDrawingBuffer preserve)
-        : DrawingBuffer(context, gl, extensionsUtil, false /* multisampleExtensionSupported */, false /* discardFramebufferSupported */, preserve, WebGraphicsContext3D::Attributes())
+    DrawingBufferForTests(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, PassOwnPtr<Extensions3DUtil> extensionsUtil, PreserveDrawingBuffer preserve)
+        : DrawingBuffer(contextProvider, extensionsUtil, false /* multisampleExtensionSupported */, false /* discardFramebufferSupported */, preserve, WebGraphicsContext3D::Attributes())
         , m_live(0)
     { }
 
@@ -253,16 +255,34 @@ public:
     bool* m_live;
 };
 
+class WebGraphicsContext3DProviderForTests : public WebGraphicsContext3DProvider {
+public:
+    WebGraphicsContext3DProviderForTests(PassOwnPtr<WebGraphicsContext3D> context, PassOwnPtr<gpu::gles2::GLES2Interface> gl)
+        : m_context(std::move(context))
+        , m_gl(std::move(gl))
+    {
+    }
+
+    WebGraphicsContext3D* context3d() override { return m_context.get(); }
+    gpu::gles2::GLES2Interface* contextGL() override { return m_gl.get(); }
+    // Not used by WebGL code.
+    GrContext* grContext() override { return nullptr; }
+
+private:
+    OwnPtr<WebGraphicsContext3D> m_context;
+    OwnPtr<gpu::gles2::GLES2Interface> m_gl;
+};
+
 class DrawingBufferTest : public Test {
 protected:
     void SetUp() override
     {
         OwnPtr<GLES2InterfaceForTests> gl = adoptPtr(new GLES2InterfaceForTests);
         m_gl = gl.get();
-        OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests(gl.release()));
+        OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests(m_gl));
         m_context = context.get();
-        m_drawingBuffer = DrawingBufferForTests::create(context.release(), m_gl,
-            IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
+        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(context.release(), gl.release()));
+        m_drawingBuffer = DrawingBufferForTests::create(provider.release(), IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
     }
 
     WebGraphicsContext3DForTests* webContext()
@@ -488,12 +508,13 @@ protected:
     {
         OwnPtr<GLES2InterfaceForTests> gl = adoptPtr(new GLES2InterfaceForTests);
         m_gl = gl.get();
-        OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests(gl.release()));
+        OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests(m_gl));
         m_context = context.get();
+        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(context.release(), gl.release()));
         RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
         m_imageId0 = webContext()->nextImageIdToBeCreated();
         EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId0)).Times(1);
-        m_drawingBuffer = DrawingBufferForTests::create(context.release(), m_gl,
+        m_drawingBuffer = DrawingBufferForTests::create(provider.release(),
             IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
         testing::Mock::VerifyAndClearExpectations(webContext());
     }
@@ -630,13 +651,17 @@ private:
 
 class DepthStencilTrackingContext : public MockWebGraphicsContext3D {
 public:
-    DepthStencilTrackingContext() : m_nextRenderBufferId(1) {}
+    DepthStencilTrackingContext(DepthStencilTrackingGLES2Interface* gl)
+        : m_nextRenderBufferId(1)
+        , m_contextGL(gl)
+    {
+    }
     ~DepthStencilTrackingContext() override {}
 
     int numAllocatedRenderBuffer() const { return m_nextRenderBufferId - 1; }
-    WebGLId stencilAttachment() const { return m_contextGL.stencilAttachment(); }
-    WebGLId depthAttachment() const { return m_contextGL.depthAttachment(); }
-    WebGLId depthStencilAttachment() const { return m_contextGL.depthStencilAttachment(); }
+    WebGLId stencilAttachment() const { return m_contextGL->stencilAttachment(); }
+    WebGLId depthAttachment() const { return m_contextGL->depthAttachment(); }
+    WebGLId depthStencilAttachment() const { return m_contextGL->depthStencilAttachment(); }
 
     WebString getString(WGC3Denum type) override
     {
@@ -651,11 +676,11 @@ public:
         return ++m_nextRenderBufferId;
     }
 
-    gpu::gles2::GLES2Interface* getGLES2Interface() override { return &m_contextGL; }
+    gpu::gles2::GLES2Interface* getGLES2Interface() override { return m_contextGL; }
 
 private:
     WebGLId m_nextRenderBufferId;
-    DepthStencilTrackingGLES2Interface m_contextGL;
+    DepthStencilTrackingGLES2Interface* m_contextGL;
 };
 
 struct DepthStencilTestCase {
@@ -687,14 +712,17 @@ TEST(DrawingBufferDepthStencilTest, packedDepthStencilSupported)
 
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {
         SCOPED_TRACE(cases[i].testCaseName);
-        OwnPtr<DepthStencilTrackingContext> context = adoptPtr(new DepthStencilTrackingContext);
+        OwnPtr<DepthStencilTrackingGLES2Interface> gl = adoptPtr(new DepthStencilTrackingGLES2Interface);
+        DepthStencilTrackingGLES2Interface* trackingGL = gl.get();
+        OwnPtr<DepthStencilTrackingContext> context = adoptPtr(new DepthStencilTrackingContext(trackingGL));
         DepthStencilTrackingContext* trackingContext = context.get();
+        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(context.release(), gl.release()));
         DrawingBuffer::PreserveDrawingBuffer preserve = DrawingBuffer::Preserve;
 
         WebGraphicsContext3D::Attributes requestedAttributes;
         requestedAttributes.stencil = cases[i].requestStencil;
         requestedAttributes.depth = cases[i].requestDepth;
-        RefPtr<DrawingBuffer> drawingBuffer = DrawingBuffer::create(context.release(), IntSize(10, 10), preserve, requestedAttributes);
+        RefPtr<DrawingBuffer> drawingBuffer = DrawingBuffer::create(provider.release(), IntSize(10, 10), preserve, requestedAttributes);
 
         EXPECT_EQ(cases[i].requestDepth, drawingBuffer->getActualAttributes().depth);
         EXPECT_EQ(cases[i].requestStencil, drawingBuffer->getActualAttributes().stencil);
@@ -755,10 +783,11 @@ protected:
         OwnPtr<GLES2InterfaceForTests> gl = adoptPtr(new GLES2InterfaceForTests);
         gl->setAllowImageChromium(false);
         m_gl = gl.get();
-        OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests(gl.release()));
+        OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests(m_gl));
         m_context = context.get();
+        OwnPtr<WebGraphicsContext3DProviderForTests> provider = adoptPtr(new WebGraphicsContext3DProviderForTests(context.release(), gl.release()));
         RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
-        m_drawingBuffer = DrawingBufferForTests::create(context.release(), m_gl,
+        m_drawingBuffer = DrawingBufferForTests::create(provider.release(),
             IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
     }
 

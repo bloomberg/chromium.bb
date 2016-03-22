@@ -59,7 +59,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3D>, const WebGLContextAttributes&);
+    WebGLRenderingContext(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
 
     // Enabled extension objects.
     PersistentWillBeMember<ANGLEInstancedArrays> m_angleInstancedArrays;

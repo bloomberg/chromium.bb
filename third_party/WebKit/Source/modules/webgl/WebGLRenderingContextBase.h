@@ -155,7 +155,7 @@ public:
 
     static unsigned getWebGLVersion(const CanvasRenderingContext*);
 
-    static PassOwnPtr<WebGraphicsContext3D> createWebGraphicsContext3D(HTMLCanvasElement*, WebGLContextAttributes, unsigned webGLVersion);
+    static PassOwnPtr<WebGraphicsContext3DProvider> createWebGraphicsContext3DProvider(HTMLCanvasElement*, WebGLContextAttributes, unsigned webGLVersion);
     static void forceNextWebGLContextCreationToFail();
 
     int drawingBufferWidth() const;
@@ -448,8 +448,8 @@ protected:
     friend class ScopedTexture2DRestorer;
     friend class ScopedFramebufferRestorer;
 
-    WebGLRenderingContextBase(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3D>, const WebGLContextAttributes&);
-    PassRefPtr<DrawingBuffer> createDrawingBuffer(PassOwnPtr<WebGraphicsContext3D>);
+    WebGLRenderingContextBase(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes&);
+    PassRefPtr<DrawingBuffer> createDrawingBuffer(PassOwnPtr<WebGraphicsContext3DProvider>);
     void setupFlags();
 
     // CanvasRenderingContext implementation.

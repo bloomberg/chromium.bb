@@ -218,7 +218,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    WebGL2RenderingContextBase(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3D>, const WebGLContextAttributes& requestedAttributes);
+    WebGL2RenderingContextBase(HTMLCanvasElement*, PassOwnPtr<WebGraphicsContext3DProvider>, const WebGLContextAttributes& requestedAttributes);
 
     // Helper function to validate target and the attachment combination for getFramebufferAttachmentParameters.
     // Generate GL error and return false if parameters are illegal.
