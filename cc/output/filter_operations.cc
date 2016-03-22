@@ -68,9 +68,7 @@ void FilterOperations::GetOutsets(int* top,
       if (!op.image_filter())
         continue;
       SkIRect src = SkIRect::MakeWH(0, 0);
-      SkIRect dst;
-      bool result = op.image_filter()->filterBounds(src, SkMatrix::I(), &dst);
-      DCHECK(result);
+      SkIRect dst = op.image_filter()->filterBounds(src, SkMatrix::I());
       *top += std::max(0, -dst.top());
       *right += std::max(0, dst.right());
       *bottom += std::max(0, dst.bottom());

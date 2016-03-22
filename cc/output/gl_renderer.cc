@@ -1015,10 +1015,9 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         gfx::Vector2dF scale = quad->filters_scale;
         SkMatrix scale_matrix;
         scale_matrix.setScale(scale.x(), scale.y());
-        SkIRect result_rect;
-        filter->filterBounds(gfx::RectToSkIRect(quad->rect), scale_matrix,
-                             &result_rect,
-                             SkImageFilter::kForward_MapDirection);
+        SkIRect result_rect =
+            filter->filterBounds(gfx::RectToSkIRect(quad->rect), scale_matrix,
+                                 SkImageFilter::kForward_MapDirection);
         gfx::RectF dst_rect = gfx::SkRectToRectF(SkRect::Make(result_rect));
         gfx::Rect clip_rect = quad->shared_quad_state->clip_rect;
         if (clip_rect.IsEmpty()) {
