@@ -180,8 +180,9 @@ bool EventDispatcher::AddAccelerator(uint32_t id,
 
 void EventDispatcher::RemoveAccelerator(uint32_t id) {
   auto it = accelerators_.find(id);
-  DCHECK(it != accelerators_.end());
-  accelerators_.erase(it);
+  // Clients may pass bogus ids.
+  if (it != accelerators_.end())
+    accelerators_.erase(it);
 }
 
 void EventDispatcher::ProcessEvent(const ui::Event& event) {
