@@ -5143,6 +5143,7 @@ class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
   void Reset() {
     message_received_ = false;
     initial_rect_ = gfx::Rect();
+    message_loop_runner_ = new content::MessageLoopRunner;
   }
 
  private:
@@ -5173,11 +5174,11 @@ class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 // Page Popups work differently on Aura than on Android and Mac. This tests
 // only the Aura mechanism.
-#define MAYBE_PagePopupMenuTest DISABLED_PagePopupMenuTest
+#define MAYBE_PopupMenuTest DISABLED_PopupMenuTest
 #else
-#define MAYBE_PagePopupMenuTest PagePopupMenuTest
+#define MAYBE_PopupMenuTest PopupMenuTest
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_PagePopupMenuTest) {
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_PopupMenuTest) {
   GURL main_url(
       embedded_test_server()->GetURL("/cross_site_iframe_factory.html?a(a)"));
   NavigateToURL(shell(), main_url);
@@ -5223,6 +5224,118 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_PagePopupMenuTest) {
 
   EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 354);
   EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 94);
+}
+
+// Test that clicking a select element in a nested out-of-process iframe creates
+// a popup menu in the correct position, even if the top-level page repositions
+// its out-of-process iframe. This verifies that screen positioning information
+// is propagating down the frame tree correctly.
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+// Page Popups work differently on Aura than on Android and Mac. This tests
+// only the Aura mechanism.
+#define MAYBE_NestedPopupMenuTest DISABLED_NestedPopupMenuTest
+#else
+#define MAYBE_NestedPopupMenuTest NestedPopupMenuTest
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NestedPopupMenuTest) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/cross_site_iframe_factory.html?a(b(c))"));
+  NavigateToURL(shell(), main_url);
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Position main window to ensure consistent screen coordinates.
+  RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  rwhv_root->SetBounds(gfx::Rect(100, 100, 500, 500));
+  static_cast<WebContentsImpl*>(shell()->web_contents())->SendScreenRects();
+
+  // For clarity, we are labeling the frame tree nodes as:
+  //  - root_node
+  //   \-> b_node (out-of-process from root and c_node)
+  //     \-> c_node (out-of-process from root and b_node)
+
+  content::TestNavigationObserver navigation_observer(shell()->web_contents());
+  FrameTreeNode* b_node = root->child_at(0);
+  FrameTreeNode* c_node = b_node->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL(
+      "baz.com", "/site_isolation/page-with-select.html"));
+  NavigateFrameToURL(c_node, site_url);
+
+  RenderWidgetHostViewBase* rwhv_c_node =
+      static_cast<RenderWidgetHostViewBase*>(
+          c_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            c_node->current_frame_host()->GetSiteInstance());
+
+  scoped_refptr<ShowWidgetMessageFilter> filter = new ShowWidgetMessageFilter();
+  c_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
+
+  // Target left-click event to child frame.
+  blink::WebMouseEvent click_event;
+  click_event.type = blink::WebInputEvent::MouseDown;
+  click_event.button = blink::WebPointerProperties::ButtonLeft;
+  click_event.x = 15;
+  click_event.y = 15;
+  click_event.clickCount = 1;
+  rwhv_c_node->ProcessMouseEvent(click_event);
+
+  filter->Wait();
+
+  gfx::Rect popup_rect = filter->last_initial_rect();
+
+  EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 354);
+  EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 154);
+
+  // Prompt the WebContents to dismiss the popup by clicking elsewhere.
+  click_event.button = blink::WebPointerProperties::ButtonLeft;
+  click_event.x = 1;
+  click_event.y = 1;
+  click_event.clickCount = 1;
+  rwhv_c_node->ProcessMouseEvent(click_event);
+
+  // Save the screen rect for b_node. Since it updates asynchronously from
+  // the script command that changes it, we need to wait for it to change
+  // before attempting to create the popup widget again.
+  gfx::Rect last_b_node_bounds_rect =
+      b_node->current_frame_host()->GetView()->GetViewBounds();
+
+  std::string script =
+      "var iframe = document.querySelector('iframe');"
+      "iframe.style.position = 'absolute';"
+      "iframe.style.left = 150;"
+      "iframe.style.top = 150;";
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script));
+
+  filter->Reset();
+
+  // Busy loop to wait for b_node's screen rect to get updated. There
+  // doesn't seem to be any better way to find out when this happens.
+  while (last_b_node_bounds_rect.x() ==
+             b_node->current_frame_host()->GetView()->GetViewBounds().x() &&
+         last_b_node_bounds_rect.y() ==
+             b_node->current_frame_host()->GetView()->GetViewBounds().y()) {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+    run_loop.Run();
+  }
+
+  click_event.button = blink::WebPointerProperties::ButtonLeft;
+  click_event.x = 15;
+  click_event.y = 15;
+  click_event.clickCount = 1;
+  rwhv_c_node->ProcessMouseEvent(click_event);
+
+  filter->Wait();
+
+  popup_rect = filter->last_initial_rect();
+
+  EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 203);
+  EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 248);
 }
 
 // Test for https://crbug.com/526304, where a parent frame executes a

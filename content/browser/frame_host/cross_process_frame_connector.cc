@@ -247,9 +247,26 @@ void CrossProcessFrameConnector::SetDeviceScaleFactor(float scale_factor) {
 }
 
 void CrossProcessFrameConnector::SetRect(const gfx::Rect& frame_rect) {
+  gfx::Rect old_rect = child_frame_rect_;
   child_frame_rect_ = frame_rect;
-  if (view_)
+  if (view_) {
     view_->SetBounds(frame_rect);
+
+    // Out-of-process iframes nested underneath this one implicitly have their
+    // view rects changed when their ancestor is repositioned, and therefore
+    // need to have their screen rects updated.
+    FrameTreeNode* proxy_node =
+        frame_proxy_in_parent_renderer_->frame_tree_node();
+    if (old_rect.x() != child_frame_rect_.x() ||
+        old_rect.y() != child_frame_rect_.y()) {
+      for (FrameTreeNode* node :
+           proxy_node->frame_tree()->SubtreeNodes(proxy_node)) {
+        if (node != proxy_node &&
+            node->current_frame_host()->GetRenderWidgetHost())
+          node->current_frame_host()->GetRenderWidgetHost()->SendScreenRects();
+      }
+    }
+  }
 }
 
 RenderWidgetHostViewBase*

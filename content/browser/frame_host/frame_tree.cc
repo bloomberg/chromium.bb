@@ -72,15 +72,16 @@ FrameTree::NodeIterator::NodeIterator(FrameTreeNode* starting_node,
       node_to_skip_(node_to_skip) {}
 
 FrameTree::NodeIterator FrameTree::NodeRange::begin() {
-  return NodeIterator(tree_->root(), node_to_skip_);
+  return NodeIterator(root_, node_to_skip_);
 }
 
 FrameTree::NodeIterator FrameTree::NodeRange::end() {
   return NodeIterator(nullptr, nullptr);
 }
 
-FrameTree::NodeRange::NodeRange(FrameTree* tree, FrameTreeNode* node_to_skip)
-    : tree_(tree), node_to_skip_(node_to_skip) {}
+FrameTree::NodeRange::NodeRange(FrameTreeNode* root,
+                                FrameTreeNode* node_to_skip)
+    : root_(root), node_to_skip_(node_to_skip) {}
 
 FrameTree::ConstNodeIterator::~ConstNodeIterator() {}
 
@@ -110,15 +111,15 @@ FrameTree::ConstNodeIterator::ConstNodeIterator(
     : current_node_(starting_node) {}
 
 FrameTree::ConstNodeIterator FrameTree::ConstNodeRange::begin() {
-  return ConstNodeIterator(tree_->root());
+  return ConstNodeIterator(root_);
 }
 
 FrameTree::ConstNodeIterator FrameTree::ConstNodeRange::end() {
   return ConstNodeIterator(nullptr);
 }
 
-FrameTree::ConstNodeRange::ConstNodeRange(const FrameTree* tree)
-    : tree_(tree) {}
+FrameTree::ConstNodeRange::ConstNodeRange(const FrameTreeNode* root)
+    : root_(root) {}
 
 FrameTree::FrameTree(Navigator* navigator,
                      RenderFrameHostDelegate* render_frame_delegate,
@@ -193,12 +194,16 @@ FrameTree::NodeRange FrameTree::Nodes() {
   return NodesExcept(nullptr);
 }
 
+FrameTree::NodeRange FrameTree::SubtreeNodes(FrameTreeNode* subtree_root) {
+  return NodeRange(subtree_root, nullptr);
+}
+
 FrameTree::NodeRange FrameTree::NodesExcept(FrameTreeNode* node_to_skip) {
-  return NodeRange(this, node_to_skip);
+  return NodeRange(root_, node_to_skip);
 }
 
 FrameTree::ConstNodeRange FrameTree::ConstNodes() const {
-  return ConstNodeRange(this);
+  return ConstNodeRange(root_);
 }
 
 bool FrameTree::AddFrame(

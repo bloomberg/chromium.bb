@@ -75,9 +75,9 @@ class CONTENT_EXPORT FrameTree {
    private:
     friend class FrameTree;
 
-    NodeRange(FrameTree* tree, FrameTreeNode* node_to_skip);
+    NodeRange(FrameTreeNode* root, FrameTreeNode* node_to_skip);
 
-    FrameTree* const tree_;
+    FrameTreeNode* const root_;
     FrameTreeNode* const node_to_skip_;
   };
 
@@ -111,9 +111,9 @@ class CONTENT_EXPORT FrameTree {
    private:
     friend class FrameTree;
 
-    ConstNodeRange(const FrameTree* tree);
+    ConstNodeRange(const FrameTreeNode* root);
 
-    const FrameTree* const tree_;
+    const FrameTreeNode* const root_;
   };
 
   // Each FrameTreeNode will default to using the given |navigator| for
@@ -147,6 +147,10 @@ class CONTENT_EXPORT FrameTree {
   // Returns a range to iterate over all FrameTreeNodes in the frame tree in
   // breadth-first traversal order.
   NodeRange Nodes();
+
+  // Returns a range to iterate over all FrameTreeNodes in a subtree of the
+  // frame tree, starting from |subtree_root|.
+  NodeRange SubtreeNodes(FrameTreeNode* subtree_root);
 
   // Returns a range to iterate over all FrameTreeNodes in the frame tree in
   // breadth-first traversal order. All FrameTreeNodes returned will be const.
