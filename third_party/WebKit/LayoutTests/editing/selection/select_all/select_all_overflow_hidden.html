@@ -1,32 +1,20 @@
-<html> 
-<head>
-
+<!doctype html>
 <style>
 body { overflow:hidden; }
-.editing { 
+.editing {
     border: solid red 50px;
-    font-size: 24px; 
-    line-height: 48px; 
-    padding: 24px; 
+    font-size: 24px;
+    line-height: 48px;
+    padding: 24px;
     margin: 64px;
-    width: 600px; 
+    width: 600px;
 }
 </style>
-<script src=../editing.js language="JavaScript" type="text/JavaScript" ></script>
-
-<script>
-
-function editingTest() {
-    selectAllCommand();    
-}
-
-</script>
-
-<title>Editing Test</title> 
-</head> 
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <body>
-<div contenteditable id="root" class="editing">
-<div id="test">
+<div contenteditable class="editing">
+<div id="sample">
 Four score and seven years ago our fathers brought forth, upon this
 continent, a new nation, conceived in Liberty, and dedicated to the
 proposition that all men are created equal. Now we are engaged in a
@@ -40,10 +28,17 @@ continent, a new nation, conceived in Liberty, and dedicated to the
 proposition that all men are created equal.
 </div>
 </div>
-
-<script>
-runEditingTest();
-</script>
-
+<div id="log"></div>
 </body>
-</html>
+<script>
+test(function() {
+    var selection = window.getSelection();
+    var sample = document.getElementById('sample');
+    selection.collapse(sample, 0);
+    document.execCommand('selectAll');
+    assert_equals(selection.anchorNode, sample.firstChild, 'anchorNode');
+    assert_equals(selection.anchorOffset, 1, 'anchorOffset');
+    assert_equals(selection.focusNode, sample.firstChild, 'focusNode');
+    assert_equals(selection.focusOffset, 737, 'focusOffset');
+}, 'overflow:hidden does not affect select-ability');
+</script>

@@ -1,0 +1,21 @@
+<!doctype html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<body contenteditable>
+VisiblePositions created at [html, x] where html is non-editable should descend
+into an editable body, for convenience.  Everything on this page should be
+selected.
+<div id="log"></div>
+</body>
+<script>
+test(function() {
+    var selection = window.getSelection();
+    var html = document.documentElement;
+    selection.setBaseAndExtent(html, 1, html, 2);
+    var body = document.body;
+    assert_equals(selection.anchorNode, body.firstChild, 'anchorNode');
+    assert_equals(selection.anchorOffset, 1, 'anchorOffset');
+    assert_equals(selection.focusNode, body.firstChild, 'focusNode');
+    assert_equals(selection.focusOffset, 165, 'focusOffset');
+}, 'special case of HTML element');
+</script>
