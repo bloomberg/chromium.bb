@@ -78,6 +78,7 @@ Polymer({
    * Adds the newly updated history results into historyData. Adds new fields
    * for each result.
    * @param {!Array<!HistoryEntry>} historyResults The new history results.
+   * @param {string} searchTerm Search query used to find these results.
    */
   addNewResults: function(historyResults, searchTerm) {
     this.loading_ = false;
@@ -147,6 +148,9 @@ Polymer({
    * @param {number} overallItemCount The number of checkboxes selected.
    */
   unselectAllItems: function(overallItemCount) {
+    if (this.historyData === undefined)
+      return;
+
     for (var i = 0; i < this.historyData.length; i++) {
       if (this.historyData[i].selected) {
         this.set('historyData.' + i + '.selected', false);

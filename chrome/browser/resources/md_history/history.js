@@ -2,10 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-window.addEventListener('load', function() {
-  chrome.send('queryHistory', ['', 0, 0, 0, RESULTS_PER_PAGE]);
-  chrome.send('getForeignSessions');
-});
+// Send the history query immediately. This allows the query to process during
+// the initial page startup.
+chrome.send('queryHistory', ['', 0, 0, 0, RESULTS_PER_PAGE]);
+chrome.send('getForeignSessions');
+
+/**
+ * @param {HTMLElement} element
+ * @return {!Promise} Resolves once a Polymer element has been fully upgraded.
+ */
+function waitForUpgrade(element) {
+  return new Promise(function(resolve, reject) {
+    if (window.Polymer && Polymer.isInstance && Polymer.isInstance(element))
+      resolve();
+    else
+      $('bundle').addEventListener('load', resolve);
+  });
+}
 
 /**
  * Listens for history-item being selected or deselected (through checkbox)
@@ -70,10 +83,17 @@ window.addEventListener('switch-display', function(e) {
  * @param {!Array<HistoryEntry>} results A list of results.
  */
 function historyResult(info, results) {
-  var historyList = /** @type {HistoryListElement} */($('history-list'));
-  historyList.addNewResults(results, info.term);
-  if (info.finished)
-    historyList.disableResultLoading();
+  var listElem = $('history-list');
+  waitForUpgrade(listElem).then(function() {
+    var list = /** @type {HistoryListElement} */(listElem);
+    list.addNewResults(results, info.term);
+    if (info.finished)
+      list.disableResultLoading();
+    // TODO(tsergeant): Showing everything as soon as the list is ready is not
+    // ideal, as the sidebar can still pop in after. Fix this to show everything
+    // at once.
+    document.body.classList.remove('loading');
+  });
 }
 
 /**
@@ -88,11 +108,13 @@ function historyResult(info, results) {
 function setForeignSessions(sessionList, isTabSyncEnabled) {
   // TODO(calamity): Add a 'no synced devices' message when sessions are empty.
   $('history-side-bar').hidden = !isTabSyncEnabled;
-  if (isTabSyncEnabled) {
-    var syncedDeviceManager = /** @type {HistorySyncedDeviceManagerElement} */(
-        $('history-synced-device-manager'));
-    syncedDeviceManager.addSyncedHistory(sessionList);
-  }
+  var syncedDeviceElem = $('history-synced-device-manager');
+  waitForUpgrade(syncedDeviceElem).then(function() {
+    var syncedDeviceManager =
+        /** @type {HistorySyncedDeviceManagerElement} */(syncedDeviceElem);
+    if (isTabSyncEnabled)
+      syncedDeviceManager.addSyncedHistory(sessionList);
+  });
 }
 
 /**

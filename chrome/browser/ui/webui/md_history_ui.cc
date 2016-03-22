@@ -42,6 +42,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddLocalizedString("historyMenuItem",
                              IDS_MD_HISTORY_HISTORY_MENU_ITEM);
   source->AddLocalizedString("itemsSelected", IDS_MD_HISTORY_ITEMS_SELECTED);
+  source->AddLocalizedString("loading", IDS_HISTORY_LOADING);
   source->AddLocalizedString("moreFromSite", IDS_HISTORY_MORE_FROM_SITE);
   source->AddLocalizedString("openAll", IDS_HISTORY_OTHER_SESSIONS_OPEN_ALL);
   source->AddLocalizedString("openTabsMenuItem",
@@ -59,6 +60,7 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile) {
   source->AddBoolean("allowDeletingHistory", allow_deleting_history);
   source->AddResourcePath("constants.html", IDR_MD_HISTORY_CONSTANTS_HTML);
   source->AddResourcePath("constants.js", IDR_MD_HISTORY_CONSTANTS_JS);
+  source->AddResourcePath("elements.html", IDR_MD_HISTORY_ELEMENTS_HTML);
   source->AddResourcePath("history_item.html",
                           IDR_MD_HISTORY_HISTORY_ITEM_HTML);
   source->AddResourcePath("history_item.js", IDR_MD_HISTORY_HISTORY_ITEM_JS);

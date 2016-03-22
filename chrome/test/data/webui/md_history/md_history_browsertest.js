@@ -34,7 +34,21 @@ MaterialHistoryBrowserTest.prototype = {
     'history_supervised_user_test.js',
     'history_synced_tabs_test.js',
     'history_toolbar_test.js'
-  ])
+  ]),
+
+  /** @override */
+  setUp: function() {
+    PolymerTest.prototype.setUp.call(this);
+
+    suiteSetup(function() {
+      // Wait for each of the top-level elements to be upgraded.
+      return Promise.all([
+        waitForUpgrade($('history-list')),
+        waitForUpgrade($('toolbar')),
+        waitForUpgrade($('history-synced-device-manager')),
+      ]);
+    });
+  },
 };
 
 TEST_F('MaterialHistoryBrowserTest', 'HistoryItemTest', function() {
