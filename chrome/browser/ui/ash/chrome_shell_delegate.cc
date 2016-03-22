@@ -50,18 +50,12 @@ const char kKeyboardShortcutHelpPageUrl[] =
 
 }  // namespace
 
-// static
-ChromeShellDelegate* ChromeShellDelegate::instance_ = NULL;
-
 ChromeShellDelegate::ChromeShellDelegate()
     : shelf_delegate_(NULL) {
-  instance_ = this;
   PlatformInit();
 }
 
 ChromeShellDelegate::~ChromeShellDelegate() {
-  if (instance_ == this)
-    instance_ = NULL;
 }
 
 bool ChromeShellDelegate::IsMultiProfilesEnabled() const {

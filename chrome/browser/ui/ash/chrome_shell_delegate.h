@@ -35,8 +35,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   ChromeShellDelegate();
   ~ChromeShellDelegate() override;
 
-  static ChromeShellDelegate* instance() { return instance_; }
-
   // ash::ShellDelegate overrides;
   bool IsFirstRunAfterBoot() const override;
   bool IsMultiProfilesEnabled() const override;
@@ -77,8 +75,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
 
  private:
   void PlatformInit();
-
-  static ChromeShellDelegate* instance_;
 
   content::NotificationRegistrar registrar_;
 
