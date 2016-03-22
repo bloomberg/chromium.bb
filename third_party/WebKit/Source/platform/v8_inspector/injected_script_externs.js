@@ -66,12 +66,6 @@ InjectedScriptHostClass.prototype.getInternalProperties = function(obj) {}
 InjectedScriptHostClass.prototype.getEventListeners = function(target) {}
 
 /**
- * @param {string} text
- * @return {*}
- */
-InjectedScriptHostClass.prototype.eval = function(text) {}
-
-/**
  * @param {*} fn
  */
 InjectedScriptHostClass.prototype.debugFunction = function(fn) {}
@@ -120,18 +114,6 @@ InjectedScriptHostClass.prototype.setNonEnumProperty = function(obj, key, value)
  * @return {number}
  */
 InjectedScriptHostClass.prototype.bind = function(value, groupName) {}
-
-/**
- * @param {number} id
- * @return {*}
- */
-InjectedScriptHostClass.prototype.objectForId = function(id) {}
-
-/**
- * @param {number} id
- * @return {string}
- */
-InjectedScriptHostClass.prototype.idToObjectGroupName = function(id) {}
 
 /** @type {!InjectedScriptHostClass} */
 var InjectedScriptHost;

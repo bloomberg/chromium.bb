@@ -29,8 +29,6 @@ public:
     static void collectionEntriesCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void getInternalPropertiesCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void getEventListenersCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void evalCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void evaluateWithExceptionDetailsCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void debugFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void undebugFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void monitorFunctionCallback(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -40,8 +38,6 @@ public:
     static void setNonEnumPropertyCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void setFunctionVariableValueCallback(const v8::FunctionCallbackInfo<v8::Value>&);
     static void bindCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void objectForIdCallback(const v8::FunctionCallbackInfo<v8::Value>&);
-    static void idToObjectGroupNameCallback(const v8::FunctionCallbackInfo<v8::Value>&);
 };
 
 } // namespace blink

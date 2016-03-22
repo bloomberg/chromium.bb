@@ -239,18 +239,21 @@ void V8RuntimeAgentImpl::getProperties(
 
     v8::HandleScope handles(injectedScript->isolate());
     v8::Context::Scope scope(injectedScript->context());
-    v8::Local<v8::Value> object;
-    if (!injectedScript->findObject(errorString, *remoteId, &object))
+    v8::Local<v8::Value> objectValue;
+    if (!injectedScript->findObject(errorString, *remoteId, &objectValue))
         return;
-    String16 objectGroupName = injectedScript->objectGroupName(*remoteId);
+    if (!objectValue->IsObject()) {
+        *errorString = "Value with given id is not an object";
+        return;
+    }
 
-    injectedScript->getProperties(errorString, objectId, ownProperties.fromMaybe(false), accessorPropertiesOnly.fromMaybe(false), generatePreview.fromMaybe(false), result, exceptionDetails);
+    v8::Local<v8::Object> object = objectValue.As<v8::Object>();
+    String16 objectGroupName = injectedScript->objectGroupName(*remoteId);
+    injectedScript->getProperties(errorString, object, objectGroupName, ownProperties.fromMaybe(false), accessorPropertiesOnly.fromMaybe(false), generatePreview.fromMaybe(false), result, exceptionDetails);
     if (!errorString->isEmpty() || exceptionDetails->isJust() || accessorPropertiesOnly.fromMaybe(false))
         return;
-    if (object->IsSymbol())
-        return;
     v8::Local<v8::Array> propertiesArray;
-    if (hasInternalError(errorString, !v8::Debug::GetInternalProperties(injectedScript->isolate(), object).ToLocal(&propertiesArray)))
+    if (hasInternalError(errorString, !v8::Debug::GetInternalProperties(injectedScript->isolate(), objectValue).ToLocal(&propertiesArray)))
         return;
     OwnPtr<protocol::Array<InternalPropertyDescriptor>> propertiesProtocolArray = protocol::Array<InternalPropertyDescriptor>::create();
     for (uint32_t i = 0; i < propertiesArray->Length(); i += 2) {

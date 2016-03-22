@@ -76,11 +76,12 @@ InjectedScript::~InjectedScript()
 {
 }
 
-void InjectedScript::getProperties(ErrorString* errorString, const String16& objectId, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<Array<PropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
+void InjectedScript::getProperties(ErrorString* errorString, v8::Local<v8::Object> object, const String16& groupName, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<Array<PropertyDescriptor>>* properties, Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
     v8::HandleScope handles(m_isolate);
     V8FunctionCall function(m_manager->debugger(), context(), v8Value(), "getProperties");
-    function.appendArgument(objectId);
+    function.appendArgument(object);
+    function.appendArgument(groupName);
     function.appendArgument(ownProperties);
     function.appendArgument(accessorPropertiesOnly);
     function.appendArgument(generatePreview);

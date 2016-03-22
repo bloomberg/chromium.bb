@@ -406,15 +406,6 @@ InjectedScript.prototype = {
         return "{\"injectedScriptId\":" + injectedScriptId + ",\"id\":" + id + "}";
     },
 
-    /**
-     * @param {string} objectId
-     * @return {!Object}
-     */
-    _parseObjectId: function(objectId)
-    {
-        return nullifyObjectProto(/** @type {!Object} */ (InjectedScriptHost.eval("(" + objectId + ")")));
-    },
-
     clearLastEvaluationResult: function()
     {
         delete this._lastResult;
@@ -429,21 +420,15 @@ InjectedScript.prototype = {
     },
 
     /**
-     * @param {string} objectId
+     * @param {!Object} object
+     * @param {string} objectGroupName
      * @param {boolean} ownProperties
      * @param {boolean} accessorPropertiesOnly
      * @param {boolean} generatePreview
-     * @return {!Array.<!RuntimeAgent.PropertyDescriptor>|boolean}
+     * @return {!Array<!RuntimeAgent.PropertyDescriptor>|boolean}
      */
-    getProperties: function(objectId, ownProperties, accessorPropertiesOnly, generatePreview)
+    getProperties: function(object, objectGroupName, ownProperties, accessorPropertiesOnly, generatePreview)
     {
-        var parsedObjectId = this._parseObjectId(objectId);
-        var object = this._objectForId(parsedObjectId);
-        var objectGroupName = InjectedScriptHost.idToObjectGroupName(parsedObjectId.id);
-
-        if (!this._isDefined(object) || isSymbol(object))
-            return false;
-        object = /** @type {!Object} */ (object);
         var descriptors = [];
         var iter = this._propertyDescriptors(object, ownProperties, accessorPropertiesOnly, undefined);
         // Go over properties, wrap object values.
@@ -670,15 +655,6 @@ InjectedScript.prototype = {
             return this._wrapObject(object, objectGroup, forceValueType, generatePreview, columnNames, isTable, false, customObjectConfig);
         }
         return { bindRemoteObject: bind(wrap, this), __proto__: null};
-    },
-
-    /**
-     * @param {!Object} objectId
-     * @return {!Object|symbol|undefined}
-     */
-    _objectForId: function(objectId)
-    {
-        return objectId.injectedScriptId === injectedScriptId ? /** @type{!Object|symbol|undefined} */ (InjectedScriptHost.objectForId(objectId.id)) : void 0;
     },
 
     /**
