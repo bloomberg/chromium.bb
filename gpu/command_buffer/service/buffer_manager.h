@@ -63,7 +63,7 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   // offset is in bytes.
   // count is in elements of type.
   bool GetMaxValueForRange(GLuint offset, GLsizei count, GLenum type,
-                           GLuint* max_value);
+                           bool primitive_restart_enabled, GLuint* max_value);
 
   // Returns a pointer to shadowed data.
   const void* GetRange(GLintptr offset, GLsizeiptr size) const;
@@ -101,10 +101,12 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
   // Represents a range in a buffer.
   class Range {
    public:
-    Range(GLuint offset, GLsizei count, GLenum type)
+    Range(GLuint offset, GLsizei count, GLenum type,
+          bool primitive_restart_enabled)
         : offset_(offset),
           count_(count),
-          type_(type) {
+          type_(type),
+          primitive_restart_enabled_(primitive_restart_enabled) {
     }
 
     // A less functor provided for std::map so it can find ranges.
@@ -116,7 +118,10 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
         if (lhs.count_ != rhs.count_) {
           return lhs.count_ < rhs.count_;
         }
-        return lhs.type_ < rhs.type_;
+        if (lhs.type_ != rhs.type_) {
+          return lhs.type_ < rhs.type_;
+        }
+        return lhs.primitive_restart_enabled_ < rhs.primitive_restart_enabled_;
       }
     };
 
@@ -124,6 +129,7 @@ class GPU_EXPORT Buffer : public base::RefCounted<Buffer> {
     GLuint offset_;
     GLsizei count_;
     GLenum type_;
+    bool primitive_restart_enabled_;
   };
 
   ~Buffer();
