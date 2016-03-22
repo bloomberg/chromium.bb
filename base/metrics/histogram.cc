@@ -153,21 +153,10 @@ HistogramBase* Histogram::Factory::Build() {
   PersistentHistogramAllocator::ImportGlobalHistograms();
 
   HistogramBase* histogram = StatisticsRecorder::FindHistogram(name_);
-
-  // crbug.com/588946 debugging. See comment at end of function.
-  const BucketRanges* created_ranges =
-      reinterpret_cast<const BucketRanges*>(0xDEADBEEF);
-  const BucketRanges* registered_ranges =
-      reinterpret_cast<const BucketRanges*>(0xDEADBEEF);
-  scoped_ptr<HistogramBase> tentative_histogram;
-  PersistentHistogramAllocator* allocator =
-      reinterpret_cast<PersistentHistogramAllocator*>(0xDEADBEEF);
-  PersistentHistogramAllocator::Reference histogram_ref = 0xDEADBEEF;
-
   if (!histogram) {
     // To avoid racy destruction at shutdown, the following will be leaked.
-    created_ranges = CreateRanges();
-    registered_ranges =
+    const BucketRanges* created_ranges = CreateRanges();
+    const BucketRanges* registered_ranges =
         StatisticsRecorder::RegisterOrDeleteDuplicateRanges(created_ranges);
 
     // In most cases, the bucket-count, minimum, and maximum values are known
@@ -180,15 +169,15 @@ HistogramBase* Histogram::Factory::Build() {
       minimum_ = registered_ranges->range(1);
       maximum_ = registered_ranges->range(bucket_count_ - 1);
     }
-    CHECK_LT(0, minimum_);
-    CHECK_LT(0, maximum_);
 
     // Try to create the histogram using a "persistent" allocator. As of
     // 2016-02-25, the availability of such is controlled by a base::Feature
     // that is off by default. If the allocator doesn't exist or if
     // allocating from it fails, code below will allocate the histogram from
     // the process heap.
-    allocator =
+    PersistentHistogramAllocator::Reference histogram_ref = 0;
+    scoped_ptr<HistogramBase> tentative_histogram;
+    PersistentHistogramAllocator* allocator =
         PersistentHistogramAllocator::GetGlobalAllocator();
     if (allocator) {
       tentative_histogram = allocator->AllocateHistogram(
@@ -199,33 +188,16 @@ HistogramBase* Histogram::Factory::Build() {
           registered_ranges,
           flags_,
           &histogram_ref);
-      CHECK_LT(0, minimum_);
-      CHECK_LT(0, maximum_);
-      CHECK_EQ(
-          minimum_,
-          static_cast<Histogram*>(tentative_histogram.get())->declared_min_);
-      CHECK_EQ(
-          maximum_,
-          static_cast<Histogram*>(tentative_histogram.get())->declared_max_);
     }
 
     // Handle the case where no persistent allocator is present or the
     // persistent allocation fails (perhaps because it is full).
     if (!tentative_histogram) {
-      // DCHECK(!histogram_ref);  // Should never have been set.
-      // DCHECK(!allocator);  // Shouldn't have failed.
+      DCHECK(!histogram_ref);  // Should never have been set.
+      DCHECK(!allocator);  // Shouldn't have failed.
       flags_ &= ~HistogramBase::kIsPersistent;
       tentative_histogram = HeapAlloc(registered_ranges);
       tentative_histogram->SetFlags(flags_);
-
-      CHECK_LT(0, minimum_);
-      CHECK_LT(0, maximum_);
-      CHECK_EQ(
-          minimum_,
-          static_cast<Histogram*>(tentative_histogram.get())->declared_min_);
-      CHECK_EQ(
-          maximum_,
-          static_cast<Histogram*>(tentative_histogram.get())->declared_max_);
     }
 
     FillHistogram(tentative_histogram.get());
@@ -239,7 +211,7 @@ HistogramBase* Histogram::Factory::Build() {
         tentative_histogram.release());
 
     // Persistent histograms need some follow-up processing.
-    if (histogram_ref != 0xDEADBEEF) {
+    if (histogram_ref) {
       allocator->FinalizeHistogram(histogram_ref,
                                    histogram == tentative_histogram_ptr);
     }
@@ -252,15 +224,6 @@ HistogramBase* Histogram::Factory::Build() {
   }
 
   DCHECK_EQ(histogram_type_, histogram->GetHistogramType()) << name_;
-  bool bad_args = false;
-  HistogramBase* existing_histogram = histogram;
-  HistogramType existing_type = histogram->GetHistogramType();
-  const char* existing_name = histogram->histogram_name().c_str();
-  Sample existing_minimum = static_cast<Histogram*>(histogram)->declared_min_;
-  Sample existing_maximum = static_cast<Histogram*>(histogram)->declared_max_;
-  uint32_t existing_bucket_count =
-    static_cast<Histogram*>(histogram)->bucket_count();
-
   if (bucket_count_ != 0 &&
       !histogram->HasConstructionArguments(minimum_, maximum_, bucket_count_)) {
     // The construction arguments do not match the existing histogram.  This can
@@ -270,45 +233,8 @@ HistogramBase* Histogram::Factory::Build() {
     // on dereference, but extension/Pepper APIs will guard against NULL and not
     // crash.
     DLOG(ERROR) << "Histogram " << name_ << " has bad construction arguments";
-    bad_args = true;
-    histogram = nullptr;
+    return nullptr;
   }
-
-#if !DCHECK_IS_ON() && defined(OS_WIN)  // Affect only Windows release builds.
-  // For the moment, crash here so that collected crash reports have access
-  // to the construction values in order to figure out why this is failing.
-  // TODO(bcwhite): Remove this once crbug.com/588946 is resolved. Also remove
-  // from beta-branch because we don't want crashes due to misbehaving
-  // extensions (see comment above).
-  if (!histogram) {
-    HistogramType histogram_type = histogram_type_;
-    HistogramBase::Sample minimum = minimum_;
-    HistogramBase::Sample maximum = maximum_;
-    uint32_t bucket_count = bucket_count_;
-    int32_t flags = flags_;
-    CHECK(histogram) << name_ << ": bad-args=" << bad_args;
-    base::debug::Alias(&histogram_type);
-    base::debug::Alias(&minimum);
-    base::debug::Alias(&maximum);
-    base::debug::Alias(&bucket_count);
-    base::debug::Alias(&flags);
-    base::debug::Alias(&created_ranges);
-    base::debug::Alias(&registered_ranges);
-    base::debug::Alias(&histogram_ref);
-    base::debug::Alias(&tentative_histogram);
-    base::debug::Alias(&allocator);
-    base::debug::Alias(&tentative_histogram);
-  }
-#endif
-
-  // Down here so vars are always "used".
-  base::debug::Alias(&bad_args);
-  base::debug::Alias(&existing_histogram);
-  base::debug::Alias(&existing_type);
-  base::debug::Alias(&existing_name);
-  base::debug::Alias(&existing_minimum);
-  base::debug::Alias(&existing_maximum);
-  base::debug::Alias(&existing_bucket_count);
   return histogram;
 }
 
@@ -571,12 +497,8 @@ Histogram::Histogram(const std::string& name,
     bucket_ranges_(ranges),
     declared_min_(minimum),
     declared_max_(maximum) {
-  CHECK_LT(0, minimum);
-  CHECK_LT(0, maximum);
   if (ranges)
     samples_.reset(new SampleVector(HashMetricName(name), ranges));
-  CHECK_EQ(minimum, declared_min_);
-  CHECK_EQ(maximum, declared_max_);
 }
 
 Histogram::Histogram(const std::string& name,
@@ -592,16 +514,12 @@ Histogram::Histogram(const std::string& name,
     bucket_ranges_(ranges),
     declared_min_(minimum),
     declared_max_(maximum) {
-  CHECK_LT(0, minimum);
-  CHECK_LT(0, maximum);
   if (ranges) {
     samples_.reset(new SampleVector(HashMetricName(name),
                                     counts, counts_size, meta, ranges));
     logged_samples_.reset(new SampleVector(samples_->id(), logged_counts,
                                            counts_size, logged_meta, ranges));
   }
-  CHECK_EQ(minimum, declared_min_);
-  CHECK_EQ(maximum, declared_max_);
 }
 
 Histogram::~Histogram() {
