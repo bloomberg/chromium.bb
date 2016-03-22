@@ -69,10 +69,13 @@ struct MandolineUIServicesApp::UserState {
 MandolineUIServicesApp::MandolineUIServicesApp() {}
 
 MandolineUIServicesApp::~MandolineUIServicesApp() {
+  // Destroy |window_server_| first, since it depends on |event_source_|.
+  // WindowServer (or more correctly its Displays) may have state that needs to
+  // be destroyed before GpuState as well.
+  window_server_.reset();
+
   if (platform_display_init_params_.gpu_state)
     platform_display_init_params_.gpu_state->StopThreads();
-  // Destroy |window_server_| first, since it depends on |event_source_|.
-  window_server_.reset();
 }
 
 void MandolineUIServicesApp::InitializeResources(mojo::Connector* connector) {
@@ -181,7 +184,9 @@ void MandolineUIServicesApp::OnFirstDisplayReady() {
 }
 
 void MandolineUIServicesApp::OnNoMoreDisplays() {
-  base::MessageLoop::current()->QuitWhenIdle();
+  // We may get here from the destructor, in which case there is no messageloop.
+  if (base::MessageLoop::current())
+    base::MessageLoop::current()->QuitWhenIdle();
 }
 
 scoped_ptr<ws::WindowTreeBinding>

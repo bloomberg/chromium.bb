@@ -155,7 +155,7 @@ bool ServerWindowSurface::ConvertSurfaceDrawQuad(
 
 void ServerWindowSurface::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
-  if (!client_)
+  if (!client_ || !base::MessageLoop::current())
     return;
   client_->ReturnResources(
       mojo::Array<mojom::ReturnedResourcePtr>::From(resources));

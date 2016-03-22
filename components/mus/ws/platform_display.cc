@@ -200,7 +200,9 @@ void DefaultPlatformDisplay::Init(PlatformDisplayDelegate* delegate) {
 }
 
 DefaultPlatformDisplay::~DefaultPlatformDisplay() {
-  delegate_->OnTopLevelSurfaceChanged(cc::SurfaceId());
+  // Don't notify the delegate from the destructor.
+  delegate_ = nullptr;
+
   // Invalidate WeakPtrs now to avoid callbacks back into the
   // DefaultPlatformDisplay during destruction of |top_level_display_client_|.
   weak_factory_.InvalidateWeakPtrs();
@@ -399,7 +401,8 @@ void DefaultPlatformDisplay::OnCloseRequest() {
 }
 
 void DefaultPlatformDisplay::OnClosed() {
-  delegate_->OnDisplayClosed();
+  if (delegate_)
+    delegate_->OnDisplayClosed();
 }
 
 void DefaultPlatformDisplay::OnWindowStateChanged(

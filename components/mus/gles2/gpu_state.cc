@@ -25,6 +25,7 @@ GpuState::GpuState()
   base::ThreadRestrictions::ScopedAllowWait allow_wait;
   gpu_thread_.Start();
   control_thread_.Start();
+  control_thread_task_runner_ = control_thread_.task_runner();
   base::WaitableEvent event(true, false);
   gpu_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&GpuState::InitializeOnGpuThread,
@@ -36,6 +37,9 @@ GpuState::~GpuState() {}
 
 void GpuState::StopThreads() {
   control_thread_.Stop();
+  gpu_thread_.task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&GpuState::DestroyGpuSpecificStateOnGpuThread, this));
   gpu_thread_.Stop();
 }
 
@@ -67,6 +71,10 @@ void GpuState::InitializeOnGpuThread(base::WaitableEvent* event) {
 #if defined(USE_OZONE)
   ui::OzonePlatform::InitializeForGPU();
 #endif
+}
+
+void GpuState::DestroyGpuSpecificStateOnGpuThread() {
+  driver_manager_.reset();
 }
 
 }  // namespace mus
