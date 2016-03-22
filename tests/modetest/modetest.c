@@ -314,6 +314,8 @@ static void dump_prop(struct device *dev, drmModePropertyPtr prop,
 	printf("\t\tvalue:");
 	if (drm_property_type_is(prop, DRM_MODE_PROP_BLOB))
 		dump_blob(dev, value);
+	else if (drm_property_type_is(prop, DRM_MODE_PROP_SIGNED_RANGE))
+		printf(" %"PRId64"\n", value);
 	else
 		printf(" %"PRIu64"\n", value);
 }
