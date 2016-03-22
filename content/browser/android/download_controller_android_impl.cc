@@ -450,6 +450,10 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
       ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value());
   ScopedJavaLocalRef<jstring> jfilename = ConvertUTF8ToJavaString(
       env, item->GetTargetFilePath().BaseName().value());
+  ScopedJavaLocalRef<jstring> joriginal_url =
+      ConvertUTF8ToJavaString(env, item->GetOriginalUrl().spec());
+  ScopedJavaLocalRef<jstring> jreferrer_url =
+      ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec());
 
   switch (item->GetState()) {
     case DownloadItem::IN_PROGRESS: {
@@ -475,7 +479,7 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
           env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
           item->GetReceivedBytes(), true, item->GetId(),
-          item->HasUserGesture());
+          joriginal_url.obj(), jreferrer_url.obj(), item->HasUserGesture());
       break;
     case DownloadItem::CANCELLED:
       Java_DownloadController_onDownloadCancelled(
@@ -490,7 +494,7 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
           env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
           item->GetReceivedBytes(), false, item->GetId(),
-          item->HasUserGesture());
+          joriginal_url.obj(), jreferrer_url.obj(), item->HasUserGesture());
       break;
     case DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();

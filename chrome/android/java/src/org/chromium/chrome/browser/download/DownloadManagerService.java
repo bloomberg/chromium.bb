@@ -103,6 +103,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private OMADownloadHandler mOMADownloadHandler;
     private DownloadSnackbarController mDownloadSnackbarController;
     private long mNativeDownloadManagerService;
+    private DownloadManagerDelegate mDownloadManagerDelegate;
 
     /**
      * Enum representing status of a download.
@@ -216,6 +217,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
         mIsUIUpdateScheduled = new AtomicBoolean(false);
         mOMADownloadHandler = new OMADownloadHandler(context);
         mDownloadSnackbarController = new DownloadSnackbarController(context);
+        mDownloadManagerDelegate = new DownloadManagerDelegate();
         if (mSharedPrefs.contains(DEPRECATED_DOWNLOAD_NOTIFICATION_IDS)) {
             mSharedPrefs.edit().remove(DEPRECATED_DOWNLOAD_NOTIFICATION_IDS).apply();
         }
@@ -231,6 +233,10 @@ public class DownloadManagerService extends BroadcastReceiver implements
         mNativeDownloadManagerService = nativeInit();
         DownloadController.setDownloadNotificationService(this);
         recordAutoPausedDownloads();
+    }
+
+    public void setDownloadManagerDelegate(DownloadManagerDelegate downloadManagerDelegate) {
+        mDownloadManagerDelegate = downloadManagerDelegate;
     }
 
     @Override
@@ -501,14 +507,14 @@ public class DownloadManagerService extends BroadcastReceiver implements
         if (TextUtils.isEmpty(mimeType)) mimeType = UNKNOWN_MIME_TYPE;
         String description = downloadInfo.getDescription();
         if (TextUtils.isEmpty(description)) description = downloadInfo.getFileName();
-        DownloadManager manager =
-                (DownloadManager) mContext.getSystemService(Context.DOWNLOAD_SERVICE);
-        long downloadId = INVALID_DOWNLOAD_ID;
         try {
-            downloadId = manager.addCompletedDownload(
-                    downloadInfo.getFileName(), description, true, mimeType,
-                    downloadInfo.getFilePath(), downloadInfo.getContentLength(), false);
-        } catch (IllegalArgumentException e) {
+            // Exceptions can be thrown when calling this, although it is not
+            // documented on Android SDK page.
+            return mDownloadManagerDelegate.addCompletedDownload(
+                    mContext, downloadInfo.getFileName(), description, mimeType,
+                    downloadInfo.getFilePath(), downloadInfo.getContentLength(),
+                    downloadInfo.getOriginalUrl(), downloadInfo.getReferer());
+        } catch (RuntimeException e) {
             Log.w(TAG, "Failed to add the download item to DownloadManager: ", e);
             if (downloadInfo.getFilePath() != null) {
                 File file = new File(downloadInfo.getFilePath());
@@ -516,9 +522,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
                     Log.w(TAG, "Failed to remove the unsuccessful download");
                 }
             }
-            return INVALID_DOWNLOAD_ID;
         }
-        return downloadId;
+        return INVALID_DOWNLOAD_ID;
     }
 
     /**

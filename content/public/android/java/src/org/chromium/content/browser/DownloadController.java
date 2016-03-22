@@ -116,7 +116,7 @@ public class DownloadController {
     @CalledByNative
     private void onDownloadCompleted(String url, String mimeType,
             String filename, String path, long contentLength, boolean successful, int downloadId,
-            boolean hasUserGesture) {
+            String originalUrl, String refererUrl, boolean hasUserGesture) {
         if (sDownloadNotificationService != null) {
             DownloadInfo downloadInfo = new DownloadInfo.Builder()
                     .setUrl(url)
@@ -128,6 +128,8 @@ public class DownloadController {
                     .setDescription(filename)
                     .setDownloadId(downloadId)
                     .setHasDownloadId(true)
+                    .setOriginalUrl(originalUrl)
+                    .setReferer(refererUrl)
                     .setHasUserGesture(hasUserGesture)
                     .build();
             sDownloadNotificationService.onDownloadCompleted(downloadInfo);

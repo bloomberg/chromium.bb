@@ -16,6 +16,7 @@ public final class DownloadInfo {
     private final String mDescription;
     private final String mFilePath;
     private final String mReferer;
+    private final String mOriginalUrl;
     private final long mContentLength;
     private final boolean mHasDownloadId;
     private final int mDownloadId;
@@ -37,6 +38,7 @@ public final class DownloadInfo {
         mDescription = builder.mDescription;
         mFilePath = builder.mFilePath;
         mReferer = builder.mReferer;
+        mOriginalUrl = builder.mOriginalUrl;
         mContentLength = builder.mContentLength;
         mHasDownloadId = builder.mHasDownloadId;
         mDownloadId = builder.mDownloadId;
@@ -80,6 +82,10 @@ public final class DownloadInfo {
 
     public String getReferer() {
         return mReferer;
+    }
+
+    public String getOriginalUrl() {
+        return mOriginalUrl;
     }
 
     public long getContentLength() {
@@ -141,6 +147,7 @@ public final class DownloadInfo {
         private String mDescription;
         private String mFilePath;
         private String mReferer;
+        private String mOriginalUrl;
         private long mContentLength;
         private boolean mIsGETRequest;
         private boolean mHasDownloadId;
@@ -190,6 +197,11 @@ public final class DownloadInfo {
 
         public Builder setReferer(String referer) {
             mReferer = referer;
+            return this;
+        }
+
+        public Builder setOriginalUrl(String originalUrl) {
+            mOriginalUrl = originalUrl;
             return this;
         }
 
@@ -268,6 +280,7 @@ public final class DownloadInfo {
                     .setDescription(downloadInfo.getDescription())
                     .setFilePath(downloadInfo.getFilePath())
                     .setReferer(downloadInfo.getReferer())
+                    .setOriginalUrl(downloadInfo.getOriginalUrl())
                     .setContentLength(downloadInfo.getContentLength())
                     .setHasDownloadId(downloadInfo.hasDownloadId())
                     .setDownloadId(downloadInfo.getDownloadId())
