@@ -18,7 +18,6 @@ import android.os.SystemClock;
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
-import com.google.android.gms.auth.UserRecoverableAuthException;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
@@ -78,13 +77,15 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         assert !ThreadUtils.runningOnUiThread();
         assert AccountManagerHelper.GOOGLE_ACCOUNT_TYPE.equals(account.type);
         try {
-            return GoogleAuthUtil.getToken(mApplicationContext, account, authTokenScope);
-        } catch (UserRecoverableAuthException ex) {
-            throw new AuthException(false /* isTransientError */, ex.getIntent(), ex);
+            return GoogleAuthUtil.getTokenWithNotification(mApplicationContext, account,
+                    authTokenScope, null);
         } catch (GoogleAuthException ex) {
-            throw new AuthException(false /* isTransientError */, null, ex);
+            // This case includes a UserRecoverableNotifiedException, but most clients will have
+            // their own retry mechanism anyway.
+            // TODO(bauerb): Investigate integrating the callback with ConnectionRetry.
+            throw new AuthException(false /* isTransientError */, ex);
         } catch (IOException ex) {
-            throw new AuthException(true /* isTransientError */, null, ex);
+            throw new AuthException(true /* isTransientError */, ex);
         }
     }
 
@@ -93,11 +94,11 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         try {
             GoogleAuthUtil.clearToken(mApplicationContext, authToken);
         } catch (GooglePlayServicesAvailabilityException ex) {
-            throw new AuthException(false /* isTransientError */, null, ex);
+            throw new AuthException(false /* isTransientError */, ex);
         } catch (GoogleAuthException ex) {
-            throw new AuthException(false /* isTransientError */, null, ex);
+            throw new AuthException(false /* isTransientError */, ex);
         } catch (IOException ex) {
-            throw new AuthException(true /* isTransientError */, null, ex);
+            throw new AuthException(true /* isTransientError */, ex);
         }
     }
 

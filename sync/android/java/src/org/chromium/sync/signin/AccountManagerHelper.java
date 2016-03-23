@@ -9,7 +9,6 @@ import android.Manifest;
 import android.accounts.Account;
 import android.accounts.AuthenticatorDescription;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Process;
@@ -299,7 +298,7 @@ public class AccountManagerHelper {
      */
     public void getAuthToken(final Account account, final String authTokenType,
             final GetAuthTokenCallback callback) {
-        ConnectionRetry.runAuthTask(mApplicationContext, new AuthTask<String>() {
+        ConnectionRetry.runAuthTask(new AuthTask<String>() {
             @Override
             public String run() throws AuthException {
                 return mAccountManager.getAuthToken(account, authTokenType);
@@ -338,7 +337,7 @@ public class AccountManagerHelper {
         if (authToken == null || authToken.isEmpty()) {
             return;
         }
-        ConnectionRetry.runAuthTask(mApplicationContext, new AuthTask<Boolean>() {
+        ConnectionRetry.runAuthTask(new AuthTask<Boolean>() {
             @Override
             public Boolean run() throws AuthException {
                 mAccountManager.invalidateAuthToken(authToken);
@@ -374,17 +373,15 @@ public class AccountManagerHelper {
             implements NetworkChangeNotifier.ConnectionTypeObserver {
         private static final int MAX_TRIES = 3;
 
-        private final Context mContext;
         private final AuthTask<T> mAuthTask;
         private final AtomicInteger mNumTries;
         private final AtomicBoolean mIsTransientError;
 
-        public static <T> void runAuthTask(Context context, AuthTask<T> authTask) {
-            new ConnectionRetry<T>(context, authTask).attempt();
+        public static <T> void runAuthTask(AuthTask<T> authTask) {
+            new ConnectionRetry<T>(authTask).attempt();
         }
 
-        private ConnectionRetry(Context context, AuthTask<T> authTask) {
-            mContext = context;
+        private ConnectionRetry(AuthTask<T> authTask) {
             mAuthTask = authTask;
             mNumTries = new AtomicInteger(0);
             mIsTransientError = new AtomicBoolean(false);
@@ -405,15 +402,6 @@ public class AccountManagerHelper {
                     } catch (AuthException ex) {
                         Log.w(TAG, "Failed to perform auth task", ex);
                         mIsTransientError.set(ex.isTransientError());
-
-                        // TODO(547048): This will fire the intent indiscriminately. We should fix
-                        // this in the future to fire only once per user actionable intent to avoid
-                        // spamming the user.
-                        if (ex.getRecoveryIntent() != null) {
-                            Intent i = ex.getRecoveryIntent();
-                            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            mContext.startActivity(i);
-                        }
                     }
                     return null;
                 }
