@@ -1077,7 +1077,30 @@ String LayoutThemeMac::extraDefaultStyleSheet()
 
 bool LayoutThemeMac::themeDrawsFocusRing(const ComputedStyle& style) const
 {
-    return (style.hasAppearance() && style.appearance() != TextFieldPart && style.appearance() != SearchFieldPart && style.appearance() != TextAreaPart && style.appearance() != MenulistButtonPart && style.appearance() != ListboxPart && !shouldUseFallbackTheme(style));
+    if (shouldUseFallbackTheme(style))
+        return false;
+    switch (style.appearance()) {
+    case CheckboxPart:
+    case RadioPart:
+    case PushButtonPart:
+    case SquareButtonPart:
+    case ButtonPart:
+    case MenulistPart:
+    case SliderThumbHorizontalPart:
+    case SliderThumbVerticalPart:
+        return true;
+
+    // Actually, they don't support native focus rings, but this function
+    // returns true for them in order to prevent Blink from drawing focus rings.
+    // SliderThumb*Part have focus rings, and we don't need to draw two focus
+    // rings for single slider.
+    case SliderHorizontalPart:
+    case SliderVerticalPart:
+        return true;
+
+    default:
+        return false;
+    }
 }
 
 bool LayoutThemeMac::shouldUseFallbackTheme(const ComputedStyle& style) const

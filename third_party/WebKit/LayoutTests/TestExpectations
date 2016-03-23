@@ -1324,7 +1324,7 @@ crbug.com/580378 [ Mac ] fast/replaced/width100percent-searchfield.html [ Failur
 crbug.com/571765 [ Linux Trusty Mac10.9 ] inspector/console/worker-eval-contains-stack.html [ Timeout Crash Pass ]
 
 crbug.com/571773 inspector/console/worker-exception-message-contains-stack.html [ Failure Timeout Crash Pass ]
-
+crbug.com/591451 media/controls-focus-ring.html [ NeedsRebaseline ]
 crbug.com/551843 fast/text/fallback-traits-fixup.html [ NeedsManualRebaseline ]
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
