@@ -42,8 +42,6 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
  public:
   static DevToolsUIBindings* ForWebContents(
       content::WebContents* web_contents);
-  static content::DevToolsExternalAgentProxyDelegate*
-      CreateWebSocketAPIChannel();
 
   class Delegate {
    public:
@@ -82,8 +80,6 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   bool IsAttachedTo(content::DevToolsAgentHost* agent_host);
 
  private:
-  friend class WebSocketAPIChannel;
-
   void HandleMessageFromDevToolsFrontend(const std::string& message);
 
   // content::DevToolsAgentHostClient implementation.
@@ -142,7 +138,6 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   void SendJsonRequest(const DispatchCallback& callback,
                        const std::string& browser_id,
                        const std::string& url) override;
-  void SendFrontendAPINotification(const std::string& message) override;
   void GetPreferences(const DispatchCallback& callback) override;
   void SetPreference(const std::string& name,
                      const std::string& value) override;

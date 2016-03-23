@@ -143,7 +143,7 @@ std::string ChromeDevToolsHttpHandlerDelegate::GetPageThumbnailData(
 content::DevToolsExternalAgentProxyDelegate*
 ChromeDevToolsHttpHandlerDelegate::HandleWebSocketConnection(
     const std::string& path) {
-  return DevToolsWindow::CreateWebSocketAPIChannel(path);
+  return nullptr;
 }
 
 }  // namespace

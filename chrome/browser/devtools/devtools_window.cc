@@ -557,15 +557,6 @@ void DevToolsWindow::InspectElement(
     window->inspect_element_start_time_ = start_time;
 }
 
-// static
-content::DevToolsExternalAgentProxyDelegate*
-DevToolsWindow::CreateWebSocketAPIChannel(const std::string& path) {
-  if (path.find("/devtools/frontend_api") != 0)
-    return nullptr;
-
-  return DevToolsUIBindings::CreateWebSocketAPIChannel();
-}
-
 void DevToolsWindow::ScheduleShow(const DevToolsToggleAction& action) {
   if (life_stage_ == kLoadCompleted) {
     Show(action);

@@ -114,11 +114,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                              int x,
                              int y);
 
-  // Creates and opens the front-end API channel to applicable front-end in a
-  // form of devtools agent host.
-  static content::DevToolsExternalAgentProxyDelegate*
-      CreateWebSocketAPIChannel(const std::string& path);
-
   // Sets closure to be called after load is done. If already loaded, calls
   // closure immediately.
   void SetLoadCompletedCallback(const base::Closure& closure);
