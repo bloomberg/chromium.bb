@@ -40,11 +40,6 @@ struct Mailbox;
 struct SyncToken;
 }
 
-namespace media {
-class VideoDecodeAccelerator;
-class VideoEncodeAccelerator;
-}
-
 namespace content {
 class GpuChannelHost;
 

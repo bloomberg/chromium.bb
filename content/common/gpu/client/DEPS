@@ -1,5 +1,8 @@
 include_rules = [
   "+cc/blink",
+  "+media/video/jpeg_decode_accelerator.h",
+  "+media/video/video_decode_accelerator.h",
+  "+media/video/video_encode_accelerator.h",
 ]
 
 specific_include_rules = {
