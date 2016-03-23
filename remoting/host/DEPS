@@ -3,6 +3,7 @@ include_rules = [
   "+cc/output",
   "+components/policy/core/common",
   "+extensions/browser/api/messaging",
+  "+google_apis",
   "+jingle/glue",
   "+net",
   "+remoting/codec",

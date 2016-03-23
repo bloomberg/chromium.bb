@@ -15,7 +15,6 @@
 #include "jingle/glue/thread_wrapper.h"
 #include "net/socket/client_socket_factory.h"
 #include "remoting/base/chromium_url_request.h"
-#include "remoting/base/service_urls.h"
 #include "remoting/client/audio_player.h"
 #include "remoting/client/client_status_logger.h"
 #include "remoting/client/jni/android_keymap.h"
@@ -40,6 +39,8 @@ namespace {
 const char* const kXmppServer = "talk.google.com";
 const int kXmppPort = 5222;
 const bool kXmppUseTls = true;
+
+const char kDirectoryBotJid[] = "remoting@bot.talk.google.com";
 
 // Interval at which to log performance statistics, if enabled.
 const int kPerfStatsIntervalMs = 60000;
@@ -394,9 +395,8 @@ void ChromotingJniInstance::ConnectToHostOnNetworkThread() {
       new XmppSignalStrategy(net::ClientSocketFactory::GetDefaultFactory(),
                              jni_runtime_->url_requester(), xmpp_config_));
 
-  client_status_logger_.reset(
-      new ClientStatusLogger(ServerLogEntry::ME2ME, signaling_.get(),
-                             ServiceUrls::GetInstance()->directory_bot_jid()));
+  client_status_logger_.reset(new ClientStatusLogger(
+      ServerLogEntry::ME2ME, signaling_.get(), kDirectoryBotJid));
 
   scoped_refptr<protocol::TransportContext> transport_context =
       new protocol::TransportContext(
