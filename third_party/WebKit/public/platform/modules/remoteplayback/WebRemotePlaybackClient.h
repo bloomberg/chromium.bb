@@ -16,6 +16,9 @@ public:
 
     // Notifies the client that the media element state has changed.
     virtual void stateChanged(WebRemotePlaybackState) = 0;
+
+    // Notifies the client of the remote playback device availability change.
+    virtual void availabilityChanged(bool availability) = 0;
 };
 
 } // namespace blink

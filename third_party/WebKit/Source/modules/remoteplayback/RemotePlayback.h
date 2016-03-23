@@ -5,6 +5,7 @@
 #ifndef RemotePlayback_h
 #define RemotePlayback_h
 
+#include "bindings/core/v8/ScriptPromise.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
@@ -18,6 +19,7 @@ namespace blink {
 class ExecutionContext;
 class HTMLMediaElement;
 class LocalFrame;
+class RemotePlaybackAvailability;
 
 class RemotePlayback final
     : public RefCountedGarbageCollectedEventTargetWithInlineData<RemotePlayback>
@@ -35,6 +37,8 @@ public:
     const WTF::AtomicString& interfaceName() const override;
     ExecutionContext* getExecutionContext() const override;
 
+    ScriptPromise getAvailability(ScriptState*);
+
     String state() const;
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
@@ -42,11 +46,14 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    RemotePlayback(LocalFrame*, WebRemotePlaybackState);
+    RemotePlayback(LocalFrame*, WebRemotePlaybackState, bool availability);
 
     void stateChanged(WebRemotePlaybackState) override;
+    void availabilityChanged(bool available) override;
 
     WebRemotePlaybackState m_state;
+    bool m_availability;
+    HeapVector<Member<RemotePlaybackAvailability>> m_availabilityObjects;
 };
 
 } // namespace blink

@@ -4434,7 +4434,14 @@ interface RemotePlayback : EventTarget
     getter onstatechange
     getter state
     method constructor
+    method getAvailability
     setter onstatechange
+interface RemotePlaybackAvailability : EventTarget
+    attribute @@toStringTag
+    getter onchange
+    getter value
+    method constructor
+    setter onchange
 interface Request
     attribute @@toStringTag
     getter bodyUsed

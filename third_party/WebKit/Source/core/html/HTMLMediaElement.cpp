@@ -2916,6 +2916,8 @@ void HTMLMediaElement::remoteRouteAvailabilityChanged(bool routesAvailable)
     m_remoteRoutesAvailable = routesAvailable;
     if (mediaControls())
         mediaControls()->refreshCastButtonVisibility();
+    if (remotePlaybackClient())
+        remotePlaybackClient()->availabilityChanged(routesAvailable);
 }
 
 void HTMLMediaElement::connectedToRemoteDevice()
