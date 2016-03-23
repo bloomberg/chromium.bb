@@ -97,6 +97,10 @@ vars = {
   # the commit queue can handle CLs rolling freetype-android
   # and whatever else without interference from each other.
   'freetype_android_revision': 'a512b0fe7a8d9db0e5aa9c0a4db1e92cb861722d',
+  # Three lines of non-changing comments so that
+  # the commit queue can handle CLs rolling catapult
+  # and whatever else without interference from each other.
+  'catapult_revision': 'e1f22c94d067b622e50bb02d2981dee24e387671',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -267,7 +271,7 @@ deps = {
 
   'src/third_party/catapult':
     Var('chromium_git') + '/external/github.com/catapult-project/catapult.git' + '@' +
-    'e1f22c94d067b622e50bb02d2981dee24e387671',
+    Var('catapult_revision'),
 
   'src/third_party/openh264/src':
     Var('chromium_git') + '/external/github.com/cisco/openh264' + '@' + 'b37cda248234162033e3e11b0335f3131cdfe488',
