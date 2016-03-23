@@ -131,22 +131,6 @@ class GraphSack(object):
       return 0
     return float(len(a & b)) / len(a | b)
 
-  def FilterOccurrence(self, tag, filter_from_graph):
-    """Accumulate filter occurrences for each bag in the graph.
-
-    This can be retrieved under tag for each Bag in the graph. For example, if
-    FilterContentful marks the nodes of each graph before the first contentful
-    paint, then FilterOccurrence('contentful', FilterContentful) will count, for
-    each bag, the fraction of nodes that were before the first contentful paint.
-
-    Args:
-      tag: the tag to count the filter appearances under.
-      filter_from_graph: a function graph -> node filter, where node filter
-        takes a node to a boolean.
-    """
-    for bag in self.bags:
-      bag.MarkOccurrence(tag, filter_from_graph)
-
   @property
   def num_graphs(self):
     return len(self.graph_info)
@@ -190,12 +174,6 @@ class Bag(dag.Node):
     self._total_costs = []
     self._relative_costs = []
     self._num_critical = 0
-
-    # See MarkOccurrence and GetOccurrence, below. This maps an occurrence
-    # tag to a list of nodes matching the occurrence.
-    self._occurence_matches = {}
-    # Number of nodes seen for each occurrence.
-    self._occurence_count = {}
 
   @property
   def url(self):
@@ -253,37 +231,6 @@ class Bag(dag.Node):
       self.AddSuccessor(successor_bag)
       self._successor_sources[successor_bag].add((graph, node, s))
       self._successor_edge_costs[successor_bag].add(graph.EdgeCost(node, s))
-
-  def MarkOccurrence(self, tag, filter_from_graph):
-    """Mark occurrences for nodes in this bag according to graph_filters.
-
-    Results can be querried by GetOccurrence().
-
-    Args:
-      tag: a label for this set of occurrences.
-      filter_from_graph: a function graph -> node filter, where node filter
-        takes a node to a boolean.
-    """
-    self._occurence_matches[tag] = 0
-    self._occurence_count[tag] = 0
-    for graph, nodes in self.graphs.iteritems():
-      for n in nodes:
-        self._occurence_count[tag] += 1
-        if filter_from_graph(graph)(n):
-          self._occurence_matches[tag] += 1
-
-  def GetOccurrence(self, tag):
-    """Retrieve the occurrence fraction of a tag.
-
-    Args:
-      tag: the tag under which the occurrence was counted. This must have been
-        previously added at least once via AddOccurrence.
-
-    Returns:
-      A fraction occurrence matches / occurrence node count.
-    """
-    assert self._occurence_count[tag] > 0
-    return float(self._occurence_matches[tag]) / self._occurence_count[tag]
 
   @classmethod
   def _MakeShortname(cls, url):
