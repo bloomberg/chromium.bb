@@ -46,7 +46,7 @@ void SetSecondaryDisplayLayout(DisplayPlacement::Position position) {
                                        ->display_manager()
                                        ->GetCurrentDisplayLayout()
                                        .Copy());
-  layout->placement_list[0]->position = position;
+  layout->placement_list[0].position = position;
   Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
       std::move(layout));
 }

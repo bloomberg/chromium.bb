@@ -13,7 +13,6 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string_piece.h"
 
 namespace base {
@@ -61,9 +60,9 @@ struct ASH_EXPORT DisplayPlacement {
   // based on the top/left edge of the primary display.
   int offset;
 
-  explicit DisplayPlacement(const DisplayPlacement& placement);
   DisplayPlacement(Position position, int offset);
   DisplayPlacement();
+  DisplayPlacement(const DisplayPlacement& placement);
 
   DisplayPlacement& Swap();
 
@@ -82,7 +81,7 @@ class ASH_EXPORT DisplayLayout final {
   // Validates the layout object.
   static bool Validate(const DisplayIdList& list, const DisplayLayout& layout);
 
-  ScopedVector<DisplayPlacement> placement_list;
+  std::vector<DisplayPlacement> placement_list;
 
   // True if displays are mirrored.
   bool mirrored;
@@ -102,9 +101,9 @@ class ASH_EXPORT DisplayLayout final {
   // Returns string representation of the layout for debugging/testing.
   std::string ToString() const;
 
-  // Returns the DisplayPlacement entry in |placement_list| matching
-  // |display_id| if it exists, otherwise returns nullptr.
-  const DisplayPlacement* FindPlacementById(int64_t display_id) const;
+  // Returns the DisplayPlacement entry matching |display_id| if it exists,
+  // otherwise returns a DisplayPlacement with an invalid display id.
+  DisplayPlacement FindPlacementById(int64_t display_id) const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplayLayout);

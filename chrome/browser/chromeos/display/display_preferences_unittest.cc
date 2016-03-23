@@ -108,8 +108,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
     std::string name = ash::DisplayIdListToString(list);
     DictionaryPrefUpdate update(&local_state_, prefs::kSecondaryDisplays);
     ash::DisplayLayout display_layout;
-    display_layout.placement_list.push_back(
-        new ash::DisplayPlacement(position, offset));
+    display_layout.placement_list.emplace_back(position, offset);
     display_layout.primary_id = primary_id;
 
     DCHECK(!name.empty());
@@ -197,7 +196,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
         ->layout_store()
         ->GetRegisteredDisplayLayout(list)
         .placement_list[0]
-        ->ToString();
+        .ToString();
   }
 
   PrefService* local_state() { return &local_state_; }
@@ -244,7 +243,7 @@ TEST_F(DisplayPreferencesTest, ListedLayoutOverrides) {
             shell->display_manager()
                 ->GetCurrentDisplayLayout()
                 .placement_list[0]
-                ->ToString());
+                .ToString());
   EXPECT_EQ("id=2200000001, parent=2200000000, top, 20",
             GetRegisteredDisplayPlacementStr(list));
   EXPECT_EQ("id=2200000002, parent=2200000000, left, 30",
@@ -278,8 +277,8 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   display_manager->SetLayoutForCurrentDisplays(
       ash::test::CreateDisplayLayout(ash::DisplayPlacement::TOP, 10));
   const ash::DisplayLayout& layout = display_manager->GetCurrentDisplayLayout();
-  EXPECT_EQ(ash::DisplayPlacement::TOP, layout.placement_list[0]->position);
-  EXPECT_EQ(10, layout.placement_list[0]->offset);
+  EXPECT_EQ(ash::DisplayPlacement::TOP, layout.placement_list[0].position);
+  EXPECT_EQ(10, layout.placement_list[0].offset);
 
   ash::DisplayLayoutBuilder dummy_layout_builder(id1);
   dummy_layout_builder.SetSecondaryPlacement(dummy_id,
@@ -310,10 +309,10 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_TRUE(ash::JsonToDisplayLayout(*layout_value, &stored_layout));
   ASSERT_EQ(1u, stored_layout.placement_list.size());
 
-  EXPECT_EQ(dummy_layout->placement_list[0]->position,
-            stored_layout.placement_list[0]->position);
-  EXPECT_EQ(dummy_layout->placement_list[0]->offset,
-            stored_layout.placement_list[0]->offset);
+  EXPECT_EQ(dummy_layout->placement_list[0].position,
+            stored_layout.placement_list[0].position);
+  EXPECT_EQ(dummy_layout->placement_list[0].offset,
+            stored_layout.placement_list[0].offset);
 
   bool mirrored = true;
   EXPECT_TRUE(layout_value->GetBoolean(kMirroredKey, &mirrored));
@@ -404,7 +403,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_TRUE(ash::JsonToDisplayLayout(*layout_value, &stored_layout));
   ASSERT_EQ(1u, stored_layout.placement_list.size());
   const ash::DisplayPlacement& stored_placement =
-      *stored_layout.placement_list[0];
+      stored_layout.placement_list[0];
   EXPECT_EQ(ash::DisplayPlacement::BOTTOM, stored_placement.position);
   EXPECT_EQ(-10, stored_placement.offset);
   EXPECT_EQ(id1, stored_placement.display_id);
@@ -581,7 +580,7 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
     EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
     ASSERT_EQ(1u, stored_layout.placement_list.size());
     const ash::DisplayPlacement& stored_placement =
-        *stored_layout.placement_list[0];
+        stored_layout.placement_list[0];
     EXPECT_EQ(ash::DisplayPlacement::LEFT, stored_placement.position);
     EXPECT_EQ(0, stored_placement.offset);
     EXPECT_EQ(id1, stored_placement.display_id);
@@ -599,7 +598,7 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
     EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
     ASSERT_EQ(1u, stored_layout.placement_list.size());
     const ash::DisplayPlacement& stored_placement =
-        *stored_layout.placement_list[0];
+        stored_layout.placement_list[0];
     EXPECT_EQ(ash::DisplayPlacement::TOP, stored_placement.position);
     EXPECT_EQ(10, stored_placement.offset);
     EXPECT_EQ(id1, stored_placement.display_id);
@@ -618,7 +617,7 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
     EXPECT_TRUE(ash::JsonToDisplayLayout(*new_value, &stored_layout));
     ASSERT_EQ(1u, stored_layout.placement_list.size());
     const ash::DisplayPlacement& stored_placement =
-        *stored_layout.placement_list[0];
+        stored_layout.placement_list[0];
     EXPECT_EQ(ash::DisplayPlacement::BOTTOM, stored_placement.position);
     EXPECT_EQ(-10, stored_placement.offset);
     EXPECT_EQ(id2, stored_placement.display_id);
@@ -688,7 +687,7 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   gfx::Screen* screen = gfx::Screen::GetScreen();
   EXPECT_EQ(id2, screen->GetPrimaryDisplay().id());
   const ash::DisplayPlacement& placement =
-      *display_manager->GetCurrentDisplayLayout().placement_list[0];
+      display_manager->GetCurrentDisplayLayout().placement_list[0];
   EXPECT_EQ(ash::DisplayPlacement::BOTTOM, placement.position);
   EXPECT_EQ(-10, placement.offset);
   const gfx::Display& primary_display = screen->GetPrimaryDisplay();

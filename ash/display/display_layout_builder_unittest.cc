@@ -16,10 +16,10 @@ TEST_F(DisplayLayoutBuilderTest, SecondaryPlacement) {
   scoped_ptr<DisplayLayout> layout(builder.Build());
   ASSERT_EQ(1u, layout->placement_list.size());
 
-  EXPECT_EQ(2, layout->placement_list[0]->display_id);
-  EXPECT_EQ(1, layout->placement_list[0]->parent_display_id);
-  EXPECT_EQ(30, layout->placement_list[0]->offset);
-  EXPECT_EQ(DisplayPlacement::LEFT, layout->placement_list[0]->position);
+  EXPECT_EQ(2, layout->placement_list[0].display_id);
+  EXPECT_EQ(1, layout->placement_list[0].parent_display_id);
+  EXPECT_EQ(30, layout->placement_list[0].offset);
+  EXPECT_EQ(DisplayPlacement::LEFT, layout->placement_list[0].position);
 }
 
 TEST_F(DisplayLayoutBuilderTest, MultiplePlacement) {
@@ -32,20 +32,20 @@ TEST_F(DisplayLayoutBuilderTest, MultiplePlacement) {
   ASSERT_EQ(3u, layout->placement_list.size());
 
   // placmenets are sorted by display_id.
-  EXPECT_EQ(3, layout->placement_list[0]->display_id);
-  EXPECT_EQ(5, layout->placement_list[0]->parent_display_id);
-  EXPECT_EQ(20, layout->placement_list[0]->offset);
-  EXPECT_EQ(DisplayPlacement::LEFT, layout->placement_list[0]->position);
+  EXPECT_EQ(3, layout->placement_list[0].display_id);
+  EXPECT_EQ(5, layout->placement_list[0].parent_display_id);
+  EXPECT_EQ(20, layout->placement_list[0].offset);
+  EXPECT_EQ(DisplayPlacement::LEFT, layout->placement_list[0].position);
 
-  EXPECT_EQ(4, layout->placement_list[1]->display_id);
-  EXPECT_EQ(5, layout->placement_list[1]->parent_display_id);
-  EXPECT_EQ(10, layout->placement_list[1]->offset);
-  EXPECT_EQ(DisplayPlacement::RIGHT, layout->placement_list[1]->position);
+  EXPECT_EQ(4, layout->placement_list[1].display_id);
+  EXPECT_EQ(5, layout->placement_list[1].parent_display_id);
+  EXPECT_EQ(10, layout->placement_list[1].offset);
+  EXPECT_EQ(DisplayPlacement::RIGHT, layout->placement_list[1].position);
 
-  EXPECT_EQ(5, layout->placement_list[2]->display_id);
-  EXPECT_EQ(1, layout->placement_list[2]->parent_display_id);
-  EXPECT_EQ(30, layout->placement_list[2]->offset);
-  EXPECT_EQ(DisplayPlacement::TOP, layout->placement_list[2]->position);
+  EXPECT_EQ(5, layout->placement_list[2].display_id);
+  EXPECT_EQ(1, layout->placement_list[2].parent_display_id);
+  EXPECT_EQ(30, layout->placement_list[2].offset);
+  EXPECT_EQ(DisplayPlacement::TOP, layout->placement_list[2].position);
 }
 
 }  // namespace ash

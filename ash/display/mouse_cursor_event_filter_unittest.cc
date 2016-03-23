@@ -46,7 +46,7 @@ TEST_F(MouseCursorEventFilterTest, WarpMouse) {
                                          ->display_manager()
                                          ->GetCurrentDisplayLayout()
                                          .placement_list[0]
-                                         ->position);
+                                         .position);
 
   EXPECT_FALSE(TestIfMouseWarpsAt(gfx::Point(11, 11)));
 
@@ -86,7 +86,7 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
                                          ->display_manager()
                                          ->GetCurrentDisplayLayout()
                                          .placement_list[0]
-                                         ->position);
+                                         .position);
 
   // Touch the left edge of the secondary root window. Pointer should NOT warp
   // because 1px left of (0, 500) is outside the primary root window.
@@ -114,7 +114,7 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplaysInNative) {
                                          ->display_manager()
                                          ->GetCurrentDisplayLayout()
                                          .placement_list[0]
-                                         ->position);
+                                         .position);
 
   aura::Env::GetInstance()->set_last_mouse_location(gfx::Point(900, 123));
 

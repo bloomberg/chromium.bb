@@ -807,7 +807,7 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
   EXPECT_EQ("200,0 300x253", secondary_display.work_area().ToString());
   EXPECT_EQ(
       "id=2200000001, parent=2200000000, right, 50",
-      display_manager->GetCurrentDisplayLayout().placement_list[0]->ToString());
+      display_manager->GetCurrentDisplayLayout().placement_list[0].ToString());
 
   // Switch primary and secondary by display ID.
   TestObserver observer;
@@ -828,7 +828,7 @@ TEST_F(WindowTreeHostManagerTest, SwapPrimaryById) {
       display_manager->GetCurrentDisplayLayout();
 
   EXPECT_EQ("id=2200000000, parent=2200000001, left, -50",
-            inverted_layout.placement_list[0]->ToString());
+            inverted_layout.placement_list[0].ToString());
   // Test if the bounds are correctly swapped.
   gfx::Display swapped_primary = gfx::Screen::GetScreen()->GetPrimaryDisplay();
   gfx::Display swapped_secondary = ScreenUtil::GetSecondaryDisplay();

@@ -97,7 +97,7 @@ bool PointIsOverRadiusVector(const gfx::Point& point,
 //
 // The rectangle shares an egde with the reference's bottom edge, but it's
 // center point is in the left area.
-scoped_ptr<ash::DisplayPlacement> CreatePlacementForRectangles(
+ash::DisplayPlacement CreatePlacementForRectangles(
     const gfx::Rect& reference,
     const gfx::Rect& rectangle) {
   // Translate coordinate system so origin is in the reference's top left point
@@ -153,7 +153,7 @@ scoped_ptr<ash::DisplayPlacement> CreatePlacementForRectangles(
                 position == ash::DisplayPlacement::RIGHT)
                    ? rectangle.y()
                    : rectangle.x();
-  return make_scoped_ptr(new ash::DisplayPlacement(position, offset));
+  return ash::DisplayPlacement(position, offset);
 }
 
 // Updates the display layout for the target display in reference to the primary
@@ -162,13 +162,13 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
                          int64_t primary_display_id,
                          const gfx::Rect& target_display_bounds,
                          int64_t target_display_id) {
-  scoped_ptr<ash::DisplayPlacement> placement(CreatePlacementForRectangles(
+  ash::DisplayPlacement placement(CreatePlacementForRectangles(
       primary_display_bounds, target_display_bounds));
-  placement->display_id = target_display_id;
-  placement->parent_display_id = primary_display_id;
+  placement.display_id = target_display_id;
+  placement.parent_display_id = primary_display_id;
 
   scoped_ptr<ash::DisplayLayout> layout(new ash::DisplayLayout);
-  layout->placement_list.push_back(std::move(placement));
+  layout->placement_list.push_back(placement);
   layout->primary_id = primary_display_id;
 
   ash::Shell::GetInstance()

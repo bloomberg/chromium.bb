@@ -4,6 +4,8 @@
 
 #include "ash/display/display_layout_builder.h"
 
+#include <algorithm>
+
 namespace ash {
 
 DisplayLayoutBuilder::DisplayLayoutBuilder(const DisplayLayout& layout)
@@ -37,12 +39,12 @@ DisplayLayoutBuilder& DisplayLayoutBuilder::AddDisplayPlacement(
     int64_t parent_display_id,
     DisplayPlacement::Position position,
     int offset) {
-  scoped_ptr<DisplayPlacement> placement(new DisplayPlacement);
-  placement->position = position;
-  placement->offset = offset;
-  placement->display_id = display_id;
-  placement->parent_display_id = parent_display_id;
-  layout_->placement_list.push_back(std::move(placement));
+  DisplayPlacement placement;
+  placement.position = position;
+  placement.offset = offset;
+  placement.display_id = display_id;
+  placement.parent_display_id = parent_display_id;
+  layout_->placement_list.push_back(placement);
   return *this;
 }
 
@@ -57,8 +59,8 @@ DisplayLayoutBuilder& DisplayLayoutBuilder::SetSecondaryPlacement(
 
 scoped_ptr<DisplayLayout> DisplayLayoutBuilder::Build() {
   std::sort(layout_->placement_list.begin(), layout_->placement_list.end(),
-            [](const DisplayPlacement* a, const DisplayPlacement* b) {
-              return a->display_id < b->display_id;
+            [](const DisplayPlacement& a, const DisplayPlacement& b) {
+              return a.display_id < b.display_id;
             });
   return std::move(layout_);
 }

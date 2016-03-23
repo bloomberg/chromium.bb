@@ -48,12 +48,6 @@ DisplayPlacement::DisplayPlacement()
       position(DisplayPlacement::RIGHT),
       offset(0) {}
 
-DisplayPlacement::DisplayPlacement(const DisplayPlacement& placement)
-    : display_id(placement.display_id),
-      parent_display_id(placement.parent_display_id),
-      position(placement.position),
-      offset(placement.offset) {}
-
 DisplayPlacement::DisplayPlacement(Position pos, int offset)
     : display_id(gfx::Display::kInvalidDisplayID),
       parent_display_id(gfx::Display::kInvalidDisplayID),
@@ -68,6 +62,12 @@ DisplayPlacement::DisplayPlacement(Position pos, int offset)
 
   DCHECK_GE(kMaxValidOffset, abs(offset));
 }
+
+DisplayPlacement::DisplayPlacement(const DisplayPlacement& placement)
+    : display_id(placement.display_id),
+      parent_display_id(placement.parent_display_id),
+      position(placement.position),
+      offset(placement.offset) {}
 
 DisplayPlacement& DisplayPlacement::Swap() {
   switch (position) {
@@ -167,36 +167,35 @@ bool DisplayLayout::Validate(const DisplayIdList& list,
   bool has_primary_as_parent = false;
   int64_t id = 0;
 
-  for (const auto* placement : layout.placement_list) {
+  for (const auto& placement : layout.placement_list) {
     // Placements are sorted by display_id.
-    if (id >= placement->display_id) {
+    if (id >= placement.display_id) {
       LOG(ERROR) << "PlacementList must be sorted by display_id";
       return false;
     }
-    if (placement->display_id == gfx::Display::kInvalidDisplayID) {
+    if (placement.display_id == gfx::Display::kInvalidDisplayID) {
       LOG(ERROR) << "display_id is not initialized";
       return false;
     }
-    if (placement->parent_display_id == gfx::Display::kInvalidDisplayID) {
+    if (placement.parent_display_id == gfx::Display::kInvalidDisplayID) {
       LOG(ERROR) << "display_parent_id is not initialized";
       return false;
     }
-    if (placement->display_id == placement->parent_display_id) {
+    if (placement.display_id == placement.parent_display_id) {
       LOG(ERROR) << "display_id must not be same as parent_display_id";
       return false;
     }
-    if (!IsIdInList(placement->display_id, list)) {
-      LOG(ERROR) << "display_id is not in the id list:"
-                 << placement->ToString();
+    if (!IsIdInList(placement.display_id, list)) {
+      LOG(ERROR) << "display_id is not in the id list:" << placement.ToString();
       return false;
     }
 
-    if (!IsIdInList(placement->parent_display_id, list)) {
+    if (!IsIdInList(placement.parent_display_id, list)) {
       LOG(ERROR) << "parent_display_id is not in the id list:"
-                 << placement->ToString();
+                 << placement.ToString();
       return false;
     }
-    has_primary_as_parent |= layout.primary_id == placement->parent_display_id;
+    has_primary_as_parent |= layout.primary_id == placement.parent_display_id;
   }
   if (!has_primary_as_parent)
     LOG(ERROR) << "At least, one placement must have the primary as a parent.";
@@ -205,8 +204,8 @@ bool DisplayLayout::Validate(const DisplayIdList& list,
 
 scoped_ptr<DisplayLayout> DisplayLayout::Copy() const {
   scoped_ptr<DisplayLayout> copy(new DisplayLayout);
-  for (auto placement : placement_list)
-    copy->placement_list.push_back(new DisplayPlacement(*placement));
+  for (const auto& placement : placement_list)
+    copy->placement_list.push_back(placement);
   copy->mirrored = mirrored;
   copy->default_unified = default_unified;
   copy->primary_id = primary_id;
@@ -217,8 +216,8 @@ bool DisplayLayout::HasSamePlacementList(const DisplayLayout& layout) const {
   if (placement_list.size() != layout.placement_list.size())
     return false;
   for (size_t index = 0; index < placement_list.size(); index++) {
-    const DisplayPlacement& placement1 = *placement_list[index];
-    const DisplayPlacement& placement2 = *layout.placement_list[index];
+    const DisplayPlacement& placement1 = placement_list[index];
+    const DisplayPlacement& placement2 = layout.placement_list[index];
     if (placement1.position != placement2.position ||
         placement1.offset != placement2.offset ||
         placement1.display_id != placement2.display_id ||
@@ -237,9 +236,9 @@ std::string DisplayLayout::ToString() const {
   if (default_unified)
     s << ", default_unified";
   bool added = false;
-  for (const auto* placement : placement_list) {
+  for (const auto& placement : placement_list) {
     s << (added ? "),(" : " [(");
-    s << placement->ToString();
+    s << placement.ToString();
     added = true;
   }
   if (added)
@@ -247,14 +246,14 @@ std::string DisplayLayout::ToString() const {
   return s.str();
 }
 
-const DisplayPlacement* DisplayLayout::FindPlacementById(
-    int64_t display_id) const {
+DisplayPlacement DisplayLayout::FindPlacementById(int64_t display_id) const {
   const auto iter =
       std::find_if(placement_list.begin(), placement_list.end(),
-                   [display_id](const DisplayPlacement* placement) {
-                     return placement->display_id == display_id;
+                   [display_id](const DisplayPlacement& placement) {
+                     return placement.display_id == display_id;
                    });
-  return (iter == placement_list.end()) ? nullptr : *iter;
+  return (iter == placement_list.end()) ? DisplayPlacement()
+                                        : DisplayPlacement(*iter);
 }
 
 }  // namespace ash

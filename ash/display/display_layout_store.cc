@@ -58,14 +58,13 @@ void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
   // Old data may not have the display_id/parent_display_id.
   // Guess these values based on the saved primary_id.
   if (layout->placement_list.size() >= 1 &&
-      layout->placement_list[0]->display_id ==
-          gfx::Display::kInvalidDisplayID) {
+      layout->placement_list[0].display_id == gfx::Display::kInvalidDisplayID) {
     if (layout->primary_id == list[1]) {
-      layout->placement_list[0]->display_id = list[0];
-      layout->placement_list[0]->parent_display_id = list[1];
+      layout->placement_list[0].display_id = list[0];
+      layout->placement_list[0].parent_display_id = list[1];
     } else {
-      layout->placement_list[0]->display_id = list[1];
-      layout->placement_list[0]->parent_display_id = list[0];
+      layout->placement_list[0].display_id = list[1];
+      layout->placement_list[0].parent_display_id = list[0];
     }
   }
   DCHECK(DisplayLayout::Validate(list, *layout.get())) << layout->ToString();
@@ -102,11 +101,10 @@ DisplayLayout* DisplayLayoutStore::CreateDefaultDisplayLayout(
   layout->primary_id = list[0];
   layout->placement_list.clear();
   for (size_t i = 0; i < list.size() - 1; i++) {
-    scoped_ptr<DisplayPlacement> placement(
-        new DisplayPlacement(default_display_placement_));
-    placement->display_id = list[i + 1];
-    placement->parent_display_id = list[i];
-    layout->placement_list.push_back(std::move(placement));
+    DisplayPlacement placement(default_display_placement_);
+    placement.display_id = list[i + 1];
+    placement.parent_display_id = list[i];
+    layout->placement_list.push_back(placement);
   }
   layouts_[list] = std::move(layout);
   auto iter = layouts_.find(list);

@@ -16,16 +16,16 @@ TEST(JsonConverterTest, JsonFromToDisplayLayout) {
   layout.primary_id = 1;
   layout.mirrored = true;
   layout.default_unified = false;
-  layout.placement_list.push_back(new DisplayPlacement);
-  layout.placement_list.push_back(new DisplayPlacement);
-  layout.placement_list[0]->display_id = 2;
-  layout.placement_list[0]->parent_display_id = 1;
-  layout.placement_list[0]->position = DisplayPlacement::BOTTOM;
+  layout.placement_list.push_back(DisplayPlacement());
+  layout.placement_list.push_back(DisplayPlacement());
+  layout.placement_list[0].display_id = 2;
+  layout.placement_list[0].parent_display_id = 1;
+  layout.placement_list[0].position = DisplayPlacement::BOTTOM;
 
-  layout.placement_list[1]->display_id = 3;
-  layout.placement_list[1]->parent_display_id = 2;
-  layout.placement_list[1]->position = DisplayPlacement::LEFT;
-  layout.placement_list[1]->offset = 30;
+  layout.placement_list[1].display_id = 3;
+  layout.placement_list[1].parent_display_id = 2;
+  layout.placement_list[1].position = DisplayPlacement::LEFT;
+  layout.placement_list[1].offset = 30;
 
   base::DictionaryValue value;
   DisplayLayoutToJson(layout, &value);
@@ -85,8 +85,8 @@ TEST(JsonConverterTest, OldJsonToDisplayLayout) {
   EXPECT_EQ(1, read_layout.primary_id);
   EXPECT_EQ(false, read_layout.default_unified);
   ASSERT_EQ(1u, read_layout.placement_list.size());
-  EXPECT_EQ(DisplayPlacement::BOTTOM, read_layout.placement_list[0]->position);
-  EXPECT_EQ(20, read_layout.placement_list[0]->offset);
+  EXPECT_EQ(DisplayPlacement::BOTTOM, read_layout.placement_list[0].position);
+  EXPECT_EQ(20, read_layout.placement_list[0].offset);
 }
 
 }  // namespace ash

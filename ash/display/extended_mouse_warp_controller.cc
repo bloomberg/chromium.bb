@@ -80,13 +80,13 @@ ExtendedMouseWarpController::ExtendedMouseWarpController(
       Shell::GetInstance()->display_manager();
 
   // TODO(oshima): Use ComputeBondary instead and try all combinations.
-  for (const auto* placement :
+  for (const auto& placement :
        display_manager->GetCurrentDisplayLayout().placement_list) {
-    DisplayPlacement::Position position = placement->position;
+    DisplayPlacement::Position position = placement.position;
     const gfx::Display& a =
-        display_manager->GetDisplayForId(placement->parent_display_id);
+        display_manager->GetDisplayForId(placement.parent_display_id);
     const gfx::Display& b =
-        display_manager->GetDisplayForId(placement->display_id);
+        display_manager->GetDisplayForId(placement.display_id);
 
     if (position == DisplayPlacement::TOP ||
         position == DisplayPlacement::BOTTOM) {

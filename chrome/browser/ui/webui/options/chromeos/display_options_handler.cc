@@ -339,14 +339,14 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
     js_display->Set("availableColorProfiles", available_color_profiles);
 
     if (display_manager->GetNumDisplays() > 1) {
-      const ash::DisplayPlacement* placement =
+      const ash::DisplayPlacement placement =
           display_manager->GetCurrentDisplayLayout().FindPlacementById(
               display.id());
-      if (placement) {
+      if (placement.display_id != gfx::Display::kInvalidDisplayID) {
         js_display->SetString(
-            "parentId", base::Int64ToString(placement->parent_display_id));
-        js_display->SetInteger("layoutType", placement->position);
-        js_display->SetInteger("offset", placement->offset);
+            "parentId", base::Int64ToString(placement.parent_display_id));
+        js_display->SetInteger("layoutType", placement.position);
+        js_display->SetInteger("offset", placement.offset);
       }
     }
 

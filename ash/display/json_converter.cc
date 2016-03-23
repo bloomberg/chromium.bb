@@ -9,7 +9,6 @@
 #include "ash/display/display_layout.h"
 #include "ash/display/display_pref_util.h"
 #include "base/logging.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 
@@ -40,7 +39,7 @@ bool AddLegacyValuesFromValue(const base::Value& value, DisplayLayout* layout) {
     if (!dict_value->GetString(kPositionKey, &position_str))
       return false;
     DisplayPlacement::StringToPosition(position_str, &position);
-    layout->placement_list.push_back(new DisplayPlacement(position, offset));
+    layout->placement_list.emplace_back(position, offset);
   }
   return true;
 }
@@ -112,7 +111,7 @@ bool UpdateFromDict(const base::DictionaryValue* dict_value,
 template <>
 bool UpdateFromDict(const base::DictionaryValue* dict_value,
                     const std::string& field_name,
-                    ScopedVector<DisplayPlacement>* output) {
+                    std::vector<DisplayPlacement>* output) {
   bool (base::Value::*getter)(const base::ListValue**) const =
       &base::Value::GetAsList;
   const base::ListValue* list = nullptr;
@@ -128,17 +127,17 @@ bool UpdateFromDict(const base::DictionaryValue* dict_value,
     if (!list_item->GetAsDictionary(&item_values))
       return false;
 
-    scoped_ptr<DisplayPlacement> item(new DisplayPlacement);
-    if (!UpdateFromDict(item_values, kOffsetKey, &item->offset) ||
-        !UpdateFromDict(item_values, kPositionKey, &item->position) ||
+    DisplayPlacement item;
+    if (!UpdateFromDict(item_values, kOffsetKey, &item.offset) ||
+        !UpdateFromDict(item_values, kPositionKey, &item.position) ||
         !UpdateFromDict(item_values, kDisplayPlacementDisplayIdKey,
-                        &item->display_id) ||
+                        &item.display_id) ||
         !UpdateFromDict(item_values, kDisplayPlacementParentDisplayIdKey,
-                        &item->parent_display_id)) {
+                        &item.parent_display_id)) {
       return false;
     }
 
-    output->push_back(std::move(item));
+    output->push_back(item);
   }
   return true;
 }
@@ -177,17 +176,17 @@ bool DisplayLayoutToJson(const DisplayLayout& layout, base::Value* value) {
   dict_value->SetString(kPrimaryIdKey, base::Int64ToString(layout.primary_id));
 
   scoped_ptr<base::ListValue> placement_list(new base::ListValue);
-  for (const auto* placement : layout.placement_list) {
+  for (const auto& placement : layout.placement_list) {
     scoped_ptr<base::DictionaryValue> placement_value(
         new base::DictionaryValue);
     placement_value->SetString(
-        kPositionKey, DisplayPlacement::PositionToString(placement->position));
-    placement_value->SetInteger(kOffsetKey, placement->offset);
+        kPositionKey, DisplayPlacement::PositionToString(placement.position));
+    placement_value->SetInteger(kOffsetKey, placement.offset);
     placement_value->SetString(kDisplayPlacementDisplayIdKey,
-                               base::Int64ToString(placement->display_id));
+                               base::Int64ToString(placement.display_id));
     placement_value->SetString(
         kDisplayPlacementParentDisplayIdKey,
-        base::Int64ToString(placement->parent_display_id));
+        base::Int64ToString(placement.parent_display_id));
     placement_list->Append(std::move(placement_value));
   }
   dict_value->Set(kDisplayPlacementKey, std::move(placement_list));

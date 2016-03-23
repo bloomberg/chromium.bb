@@ -1326,11 +1326,11 @@ void DisplayManager::ApplyDisplayLayout(const DisplayLayout& layout,
   while (parents.size()) {
     int64_t parent_id = *parents.begin();
     parents.erase(parent_id);
-    for (const DisplayPlacement* placement : layout.placement_list) {
-      if (placement->parent_display_id == parent_id) {
-        if (ApplyDisplayPlacement(*placement, display_list) && updated_ids)
-          updated_ids->push_back(placement->display_id);
-        parents.insert(placement->display_id);
+    for (const DisplayPlacement& placement : layout.placement_list) {
+      if (placement.parent_display_id == parent_id) {
+        if (ApplyDisplayPlacement(placement, display_list) && updated_ids)
+          updated_ids->push_back(placement.display_id);
+        parents.insert(placement.display_id);
       }
     }
   }

@@ -2203,8 +2203,7 @@ TEST_F(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
   int64_t id2 = 10002;
 
   scoped_ptr<DisplayLayout> old_layout(new DisplayLayout);
-  old_layout->placement_list.push_back(
-      new DisplayPlacement(DisplayPlacement::BOTTOM, 0));
+  old_layout->placement_list.emplace_back(DisplayPlacement::BOTTOM, 0);
   old_layout->primary_id = id1;
 
   DisplayLayoutStore* layout_store = display_manager()->layout_store();
@@ -2212,8 +2211,8 @@ TEST_F(DisplayManagerTest, GuessDisplayIdFieldsInDisplayLayout) {
   layout_store->RegisterLayoutForDisplayIdList(list, std::move(old_layout));
   const DisplayLayout& stored = layout_store->GetRegisteredDisplayLayout(list);
 
-  EXPECT_EQ(id1, stored.placement_list[0]->parent_display_id);
-  EXPECT_EQ(id2, stored.placement_list[0]->display_id);
+  EXPECT_EQ(id1, stored.placement_list[0].parent_display_id);
+  EXPECT_EQ(id2, stored.placement_list[0].display_id);
 }
 
 #endif  // OS_CHROMEOS

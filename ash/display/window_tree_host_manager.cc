@@ -445,7 +445,7 @@ void WindowTreeHostManager::SetPrimaryDisplayId(int64_t id) {
   // Only update the layout if it is requested to swap primary display.
   if (layout.primary_id != new_primary_display.id()) {
     scoped_ptr<DisplayLayout> swapped_layout(layout.Copy());
-    swapped_layout->placement_list[0]->Swap();
+    swapped_layout->placement_list[0].Swap();
     swapped_layout->primary_id = new_primary_display.id();
     DisplayIdList list = display_manager->GetCurrentDisplayIdList();
     GetDisplayManager()->layout_store()->RegisterLayoutForDisplayIdList(

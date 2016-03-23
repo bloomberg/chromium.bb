@@ -61,7 +61,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
             mouse_warp_controller()->warp_regions_[0]->b_indicator_bounds());
 
   // Move 2nd display downwards a bit.
-  layout->placement_list[0]->offset = 5;
+  layout->placement_list[0].offset = 5;
   display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   // This is same as before because the 2nd display's y is above
@@ -79,7 +79,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
 
   // Move it down further so that the shared edge is shorter than
   // minimum hole size (160).
-  layout->placement_list[0]->offset = 200;
+  layout->placement_list[0].offset = 200;
   display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
@@ -95,7 +95,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnRight) {
             mouse_warp_controller()->warp_regions_[0]->b_indicator_bounds());
 
   // Now move 2nd display upwards
-  layout->placement_list[0]->offset = -5;
+  layout->placement_list[0].offset = -5;
   display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
@@ -139,7 +139,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnLeft) {
   EXPECT_EQ(gfx::Rect(0, 0, 1, 360),
             mouse_warp_controller()->warp_regions_[0]->b_indicator_bounds());
 
-  layout->placement_list[0]->offset = 250;
+  layout->placement_list[0].offset = 250;
   display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
@@ -180,7 +180,7 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
   EXPECT_EQ(gfx::Rect(0, 0, 360, 1),
             mouse_warp_controller()->warp_regions_[0]->b_indicator_bounds());
 
-  layout->placement_list[0]->offset = 250;
+  layout->placement_list[0].offset = 250;
   display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
@@ -195,8 +195,8 @@ TEST_F(ExtendedMouseWarpControllerTest, IndicatorBoundsTestOnTopBottom) {
   EXPECT_EQ(gfx::Rect(250, 0, 110, 1),
             mouse_warp_controller()->warp_regions_[0]->b_indicator_bounds());
 
-  layout->placement_list[0]->position = DisplayPlacement::BOTTOM;
-  layout->placement_list[0]->offset = 0;
+  layout->placement_list[0].position = DisplayPlacement::BOTTOM;
+  layout->placement_list[0].offset = 0;
   display_manager->SetLayoutForCurrentDisplays(layout->Copy());
   event_filter()->ShowSharedEdgeIndicator(root_windows[0] /* primary */);
   ASSERT_EQ(1U, mouse_warp_controller()->warp_regions_.size());
