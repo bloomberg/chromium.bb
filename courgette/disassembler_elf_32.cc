@@ -61,6 +61,11 @@ FileOffset DisassemblerElf32::RVAToFileOffset(RVA rva) const {
   return kNoFileOffset;
 }
 
+RVA DisassemblerElf32::PointerToTargetRVA(const uint8_t* p) const {
+  // TODO(huangs): Add check (e.g., IsValidTargetRVA(), but more efficient).
+  return Read32LittleEndian(p);
+}
+
 bool DisassemblerElf32::ParseHeader() {
   if (length() < sizeof(Elf32_Ehdr))
     return Bad("Too small");
@@ -350,8 +355,8 @@ CheckBool DisassemblerElf32::ParseProgbitsSection(
 
     if (*current_abs_offset != end_abs_offset &&
         file_offset == **current_abs_offset) {
-      const uint8_t* p = FileOffsetToPointer(file_offset);
-      RVA target_rva = Read32LittleEndian(p);
+      RVA target_rva = PointerToTargetRVA(FileOffsetToPointer(file_offset));
+      DCHECK_NE(kNoRVA, target_rva);
 
       if (!program->EmitAbs32(program->FindOrMakeAbs32Label(target_rva)))
         return false;

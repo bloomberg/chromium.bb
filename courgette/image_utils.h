@@ -19,12 +19,13 @@ namespace courgette {
 // - VA (Virtual Address): Virtual memory address of a loaded image. This is
 //   subject to relocation by the OS.
 // - RVA (Relative Virtual Address): VA relative to some base address. This is
-//   the preferred way to specify pointers in an image. Two ways to encode RVA
-//   are:
-//   - abs32: RVA value is encoded directly.
-//   - rel32: RVA is encoded as offset from an instruction address. This is
-//     commonly used for relative branch/call opcodes.
-// Courgette operates on File Offsets and RVAs only.
+//   the preferred way to specify pointers in an image.
+//
+// In Courgette we consider two types of addresses:
+// - abs32: In an image these are directly stored as VA whose locations are
+//   stored in the relocation table.
+// - rel32: In an image these appear in branch/call opcodes, and are represented
+//   as offsets from an instruction address.
 
 using RVA = uint32_t;
 const RVA kUnassignedRVA = 0xFFFFFFFFU;
@@ -33,24 +34,37 @@ const RVA kNoRVA = 0xFFFFFFFFU;
 using FileOffset = size_t;
 const FileOffset kNoFileOffset = UINTPTR_MAX;
 
-// An interface for {File Offset, RVA, pointer to image data} translation.
+// An interface translate and read addresses. The main conversion path is:
+//  (1) Location RVA.
+//  (2) Location FileOffset.
+//  (3) Pointer in image.
+//  (4) Target VA (32-bit or 64-bit).
+//  (5) Target RVA (32-bit).
+// For abs32, we get (1) from relocation table, and convert to (5).
+// For rel32, we get (2) from scanning opcode, and convert to (1).
 class AddressTranslator {
  public:
-  // Returns the RVA corresponding to |file_offset|, or kNoRVA if nonexistent.
+  // (2) -> (1): Returns the RVA corresponding to |file_offset|, or kNoRVA if
+  // nonexistent.
   virtual RVA FileOffsetToRVA(FileOffset file_offset) const = 0;
 
-  // Returns the file offset corresponding to |rva|, or kNoFileOffset if
-  // nonexistent.
+  // (1) -> (2): Returns the file offset corresponding to |rva|, or
+  // kNoFileOffset if nonexistent.
   virtual FileOffset RVAToFileOffset(RVA rva) const = 0;
 
-  // Returns the pointer to the image data for |file_offset|. Assumes that
-  // 0 <= |file_offset| <= image size. If |file_offset| == image, the resulting
-  // pointer is an end bound for iteration that should never be dereferenced.
+  // (2) -> (3): Returns image data pointer correspnoding to |file_offset|.
+  // Assumes 0 <= |file_offset| <= image size.
+  // If |file_offset| == image size, then the resulting pointer is an end bound
+  // for iteration, and should not be dereferenced.
   virtual const uint8_t* FileOffsetToPointer(FileOffset file_offset) const = 0;
 
-  // Returns the pointer to the image data for |rva|, or null if |rva| is
-  // invalid.
+  // (1) -> (3): Returns the pointer to the image data for |rva|, or null if
+  // |rva| is invalid.
   virtual const uint8_t* RVAToPointer(RVA rva) const = 0;
+
+  // (3) -> (5): Returns the target RVA located at |p|, where |p| is a pointer
+  // to image data.
+  virtual RVA PointerToTargetRVA(const uint8_t* p) const = 0;
 };
 
 // A Label is a symbolic reference to an address.  Unlike a conventional

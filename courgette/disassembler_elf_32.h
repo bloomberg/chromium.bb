@@ -79,6 +79,7 @@ class DisassemblerElf32 : public Disassembler {
   // Disassembler interfaces.
   RVA FileOffsetToRVA(FileOffset file_offset) const override;
   FileOffset RVAToFileOffset(RVA rva) const override;
+  RVA PointerToTargetRVA(const uint8_t* p) const override;
   virtual ExecutableType kind() const override = 0;
   bool ParseHeader() override;
   bool Disassemble(AssemblyProgram* target) override;
@@ -90,7 +91,6 @@ class DisassemblerElf32 : public Disassembler {
   ScopedVector<TypedRVA> &Rel32Locations() { return rel32_locations_; }
 
  protected:
-
   bool UpdateLength();
 
   // Misc Section Helpers

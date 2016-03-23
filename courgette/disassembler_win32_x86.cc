@@ -41,6 +41,21 @@ DisassemblerWin32X86::DisassemblerWin32X86(const void* start, size_t length)
       number_of_data_directories_(0) {
 }
 
+RVA DisassemblerWin32X86::FileOffsetToRVA(FileOffset file_offset) const {
+  for (int i = 0; i < number_of_sections_; ++i) {
+    const Section* section = &sections_[i];
+    if (file_offset >= section->file_offset_of_raw_data) {
+      FileOffset offset_in_section =
+          file_offset - section->file_offset_of_raw_data;
+      if (offset_in_section < section->size_of_raw_data)
+        return static_cast<RVA>(section->virtual_address + offset_in_section);
+    }
+  }
+
+  NOTREACHED();
+  return kNoRVA;
+}
+
 FileOffset DisassemblerWin32X86::RVAToFileOffset(RVA rva) const {
   const Section* section = RVAToSection(rva);
   if (section != nullptr) {
@@ -65,19 +80,8 @@ FileOffset DisassemblerWin32X86::RVAToFileOffset(RVA rva) const {
   return kNoFileOffset;
 }
 
-RVA DisassemblerWin32X86::FileOffsetToRVA(FileOffset file_offset) const {
-  for (int i = 0; i < number_of_sections_; ++i) {
-    const Section* section = &sections_[i];
-    if (file_offset >= section->file_offset_of_raw_data) {
-      FileOffset offset_in_section =
-          file_offset - section->file_offset_of_raw_data;
-      if (offset_in_section < section->size_of_raw_data)
-        return static_cast<RVA>(section->virtual_address + offset_in_section);
-    }
-  }
-
-  NOTREACHED();
-  return kNoRVA;
+RVA DisassemblerWin32X86::PointerToTargetRVA(const uint8_t* p) const {
+  return Address32ToRVA(Read32LittleEndian(p));
 }
 
 // ParseHeader attempts to match up the buffer with the Windows data
@@ -308,9 +312,8 @@ bool DisassemblerWin32X86::ParseRelocs(std::vector<RVA> *relocs) {
       // Skip the relocs that live outside of the image. It might be the case
       // if a reloc is relative to a register, e.g.:
       //     mov    ecx,dword ptr [eax+044D5888h]
-      uint32_t target_address = Read32LittleEndian(RVAToPointer(rva));
-      if (target_address < image_base_ ||
-          target_address > (image_base_ + size_of_image_)) {
+      RVA target_rva = PointerToTargetRVA(RVAToPointer(rva));
+      if (target_rva == kNoRVA) {
         continue;
       }
       if (type == 3) {         // IMAGE_REL_BASED_HIGHLOW
@@ -342,6 +345,12 @@ const Section* DisassemblerWin32X86::RVAToSection(RVA rva) const {
     }
   }
   return nullptr;
+}
+
+RVA DisassemblerWin32X86::Address32ToRVA(uint32_t address) const {
+  if (address < image_base() || address >= image_base() + size_of_image_)
+    return kNoRVA;
+  return static_cast<RVA>(address - image_base());
 }
 
 std::string DisassemblerWin32X86::SectionName(const Section* section) {
@@ -396,8 +405,7 @@ bool DisassemblerWin32X86::ParseAbs32Relocs() {
   for (size_t i = 0; i < abs32_locations_.size(); ++i) {
     RVA rva = abs32_locations_[i];
     // The 4 bytes at the relocation are a reference to some address.
-    uint32_t target_address = Read32LittleEndian(RVAToPointer(rva));
-    ++abs32_target_rvas_[target_address - image_base()];
+    ++abs32_target_rvas_[PointerToTargetRVA(RVAToPointer(rva))];
   }
 #endif
   return true;
@@ -531,8 +539,8 @@ CheckBool DisassemblerWin32X86::ParseFileRegion(const Section* section,
       ++abs32_pos;
 
     if (abs32_pos != abs32_locations_.end() && *abs32_pos == current_rva) {
-      uint32_t target_address = Read32LittleEndian(p);
-      RVA target_rva = target_address - image_base();
+      RVA target_rva = PointerToTargetRVA(p);
+      DCHECK_NE(kNoRVA, target_rva);
       // TODO(sra): target could be Label+offset.  It is not clear how to guess
       // which it might be.  We assume offset==0.
       if (!program->EmitAbs32(program->FindOrMakeAbs32Label(target_rva)))

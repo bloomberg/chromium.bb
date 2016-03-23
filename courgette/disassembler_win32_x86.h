@@ -29,6 +29,7 @@ class DisassemblerWin32X86 : public Disassembler {
   // Disassembler interfaces.
   RVA FileOffsetToRVA(FileOffset file_offset) const override;
   FileOffset RVAToFileOffset(RVA rva) const override;
+  RVA PointerToTargetRVA(const uint8_t* p) const override;
   ExecutableType kind() const override { return EXE_WIN_32_X86; }
   bool ParseHeader() override;
   bool Disassemble(AssemblyProgram* target) override;
@@ -45,6 +46,10 @@ class DisassemblerWin32X86 : public Disassembler {
 
   // Returns Section containing the relative virtual address, or null if none.
   const Section* RVAToSection(RVA rva) const;
+
+  // (4) -> (5) (see AddressTranslator comment): Returns the RVA of the VA
+  // specified by |address|, or kNoRVA if |address| lies outside of the image.
+  RVA Address32ToRVA(uint32_t address) const;
 
   static std::string SectionName(const Section* section);
 

@@ -25,6 +25,7 @@ class Disassembler : public AddressTranslator {
   virtual FileOffset RVAToFileOffset(RVA rva) const override = 0;
   const uint8_t* FileOffsetToPointer(FileOffset file_offset) const override;
   const uint8_t* RVAToPointer(RVA rva) const override;
+  RVA PointerToTargetRVA(const uint8_t* p) const = 0;
 
   virtual ExecutableType kind() const = 0;
 
