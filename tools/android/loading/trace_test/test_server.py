@@ -86,7 +86,7 @@ class ServerApp(object):
       for header in self._response_headers[path]:
         headers.append((str(header[0]), str(header[1])))
     start_response('200 OK', headers)
-    return file(filename).read()
+    return [file(filename).read()]
 
 
 if __name__ == '__main__':
