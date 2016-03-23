@@ -784,19 +784,20 @@ void StreamMixerAlsa::AddLoopbackAudioObserver(
     CastMediaShlib::LoopbackAudioObserver* observer) {
   RUN_ON_MIXER_THREAD(&StreamMixerAlsa::AddLoopbackAudioObserver, observer);
   DCHECK(observer);
-  if (std::find(loopback_observers_.begin(), loopback_observers_.end(),
-                observer) != loopback_observers_.end()) {
-    return;  // Don't add the observer again if it is already in the list.
-  }
+  DCHECK(std::find(loopback_observers_.begin(), loopback_observers_.end(),
+                   observer) == loopback_observers_.end());
   loopback_observers_.push_back(observer);
 }
 
 void StreamMixerAlsa::RemoveLoopbackAudioObserver(
     CastMediaShlib::LoopbackAudioObserver* observer) {
   RUN_ON_MIXER_THREAD(&StreamMixerAlsa::RemoveLoopbackAudioObserver, observer);
+  DCHECK(std::find(loopback_observers_.begin(), loopback_observers_.end(),
+                   observer) != loopback_observers_.end());
   loopback_observers_.erase(std::remove(loopback_observers_.begin(),
                                         loopback_observers_.end(), observer),
                             loopback_observers_.end());
+  observer->OnRemoved();
 }
 
 }  // namespace media

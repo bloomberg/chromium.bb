@@ -37,18 +37,23 @@ class CHROMECAST_EXPORT CastMediaShlib {
    public:
     // Called whenever audio data is about to be output. The |timestamp| is the
     // estimated time in microseconds (relative to CLOCK_MONOTONIC_RAW) that
-    // the audio will actually be output. |length| is the length of |data| in
-    // bytes. The format and sample rate of |data| are determined when calling
-    // AddLoopbackAudioObserver(); the number of channels is constant for the
-    // system (AddLoopbackAudioObserver() provides the number of channels).
-    // This method is called on the audio output thread, and MUST not block
-    // or take very much time (or audio underruns will occur).
+    // the audio will actually be output. |length| is the length of the audio
+    // |data| in bytes. The format of the data is given by |sample_format| and
+    // |num_channels|.
+    // This method may be called by any thread, and MUST not block or take very
+    // much time (to avoid audio underruns).
     virtual void OnLoopbackAudio(int64_t timestamp,
                                  SampleFormat sample_format,
                                  int sample_rate,
                                  int num_channels,
                                  uint8_t* data,
                                  int length) = 0;
+
+    // Called once this observer has been fully removed by a call to
+    // RemoveLoopbackAudioObserver(). After this is called, no more calls to
+    // OnLoopbackAudio() will be made for this observer unless it is added
+    // again. This method could be called from any thread.
+    virtual void OnRemoved() = 0;
 
    protected:
     virtual ~LoopbackAudioObserver() {}
@@ -89,14 +94,21 @@ class CHROMECAST_EXPORT CastMediaShlib {
   // Tests if the implementation supports renderer clock rate adjustments.
   static bool SupportsMediaClockRateChange();
 
-  // Adds a loopback audio observer. Adding the same observer more than
-  // once has no effect.
+  // Adds a loopback audio observer. An observer will not be added more than
+  // once without being removed first.
   // This function is optional to implement.
   static void AddLoopbackAudioObserver(LoopbackAudioObserver* observer)
       __attribute__((__weak__));
 
-  // Removes a loopback audio observer. It is not an error to remove an observer
-  // that was never added, or to remove the same observer more than once.
+  // Removes a loopback audio observer. An observer will not be removed unless
+  // it was previously added, and will not be removed more than once without
+  // being added again first.
+  // Once the observer is fully removed (ie. once it is certain that
+  // OnLoopbackAudio() will not be called again for the observer), the
+  // observer's OnRemoved() method must be called. The OnRemoved() method must
+  // be called once for each time that RemoveLoopbackAudioObserver() is called
+  // for a given observer, even if the observer was not added. The
+  // implementation may call OnRemoved() from any thread.
   // This function is optional to implement.
   static void RemoveLoopbackAudioObserver(LoopbackAudioObserver* observer)
       __attribute__((__weak__));
