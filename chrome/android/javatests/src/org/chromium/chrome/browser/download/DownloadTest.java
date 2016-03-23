@@ -164,8 +164,12 @@ public class DownloadTest extends DownloadTestBase {
                 hasDownload("superbo (1).txt", SUPERBO_CONTENTS));
     }
 
-    @MediumTest
-    @Feature({"Downloads"})
+    /**
+    * Bug http://crbug/597230
+    * @MediumTest
+    * @Feature({"Downloads"})
+    */
+    @DisabledTest
     public void testDuplicateHttpPostDownload_CreateNew() throws Exception {
         // Download a file.
         loadUrl(mTestServer.getURL("/chrome/test/data/android/download/post.html"));
@@ -225,8 +229,12 @@ public class DownloadTest extends DownloadTestBase {
                 hasDownload("superbo (1).txt", SUPERBO_CONTENTS));
     }
 
-    @MediumTest
-    @Feature({"Downloads"})
+    /**
+    * Bug http://crbug/597230
+    * @MediumTest
+    * @Feature({"Downloads"})
+    */
+    @DisabledTest
     public void testDuplicateHttpPostDownload_AllowMultipleInfoBars() throws Exception {
         assertFalse(hasDownload("superbo.txt", SUPERBO_CONTENTS));
         // Download a file.
