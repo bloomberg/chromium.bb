@@ -30,7 +30,7 @@ InspectorTest.parseSCSS = function(url, text)
 InspectorTest.loadASTMapping = function(header, callback)
 {
     var completeSourceMapURL = WebInspector.ParsedURL.completeURL(header.sourceURL, header.sourceMapURL);
-    WebInspector.SourceMap.load(completeSourceMapURL, header.sourceURL).then(onSourceMapLoaded);
+    WebInspector.TextSourceMap.load(completeSourceMapURL, header.sourceURL).then(onSourceMapLoaded);
 
     function onSourceMapLoaded(sourceMap)
     {
