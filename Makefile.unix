@@ -1,7 +1,8 @@
 CXX       := g++
 DEFINES   := -D__STDC_CONSTANT_MACROS -D__STDC_LIMIT_MACROS
 INCLUDES  := -I.
-CXXFLAGS  := -W -Wall -g -MMD -MP $(DEFINES) $(INCLUDES)
+CXXFLAGS  := -W -Wall -g
+ALL_CXXFLAGS := -MMD -MP $(DEFINES) $(INCLUDES) $(CXXFLAGS)
 LIBWEBMA  := libwebm.a
 LIBWEBMSO := libwebm.so
 WEBMOBJS  := mkvmuxer/mkvmuxer.o mkvmuxer/mkvmuxerutil.o mkvmuxer/mkvwriter.o
@@ -38,14 +39,14 @@ libwebm.a: $(OBJSA)
 	$(AR) rcs $@ $^
 
 libwebm.so: $(OBJSSO)
-	$(CXX) $(CXXFLAGS) -shared $(OBJSSO) -o $(LIBWEBMSO)
+	$(CXX) $(ALL_CXXFLAGS) -shared $(OBJSSO) -o $(LIBWEBMSO)
 
 %.o: %.cc
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+	$(CXX) -c $(ALL_CXXFLAGS) $< -o $@
 %_a.o: %.cc
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+	$(CXX) -c $(ALL_CXXFLAGS) $< -o $@
 %_so.o: %.cc
-	$(CXX) -c $(CXXFLAGS) -fPIC $< -o $@
+	$(CXX) -c $(ALL_CXXFLAGS) -fPIC $< -o $@
 
 clean:
 	$(RM) -f $(CLEAN) Makefile.bak
