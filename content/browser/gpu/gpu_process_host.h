@@ -20,12 +20,12 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "content/common/gpu_process_launch_causes.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/ipc/common/gpu_memory_uma_stats.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/message_filter.h"
@@ -192,7 +192,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                         gpu::error::ContextLostReason reason,
                         const GURL& url);
   void OnDidDestroyOffscreenContext(const GURL& url);
-  void OnGpuMemoryUmaStatsReceived(const GPUMemoryUmaStats& stats);
+  void OnGpuMemoryUmaStatsReceived(const gpu::GPUMemoryUmaStats& stats);
 #if defined(OS_MACOSX)
   void OnAcceleratedSurfaceBuffersSwapped(const IPC::Message& message);
 #endif
@@ -281,7 +281,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // Statics kept around to send to UMA histograms on GPU process lost.
   bool uma_memory_stats_received_;
-  GPUMemoryUmaStats uma_memory_stats_;
+  gpu::GPUMemoryUmaStats uma_memory_stats_;
 
   typedef std::map<int32_t, scoped_refptr<ShaderDiskCache>>
       ClientIdToShaderCacheMap;

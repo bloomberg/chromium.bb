@@ -41,7 +41,7 @@ class TestGpuChannelManagerDelegate : public GpuChannelManagerDelegate {
   void DidLoseContext(bool offscreen,
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
-  void GpuMemoryUmaStats(const GPUMemoryUmaStats& params) override;
+  void GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) override;
   void RemoveSubscription(int32_t client_id, unsigned int target) override;
   void StoreShaderToDisk(int32_t client_id,
                          const std::string& key,

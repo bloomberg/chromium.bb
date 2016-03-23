@@ -318,7 +318,7 @@ void GpuChildThread::DidLoseContext(bool offscreen,
   Send(new GpuHostMsg_DidLoseContext(offscreen, reason, active_url));
 }
 
-void GpuChildThread::GpuMemoryUmaStats(const GPUMemoryUmaStats& params) {
+void GpuChildThread::GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) {
   Send(new GpuHostMsg_GpuMemoryUmaStats(params));
 }
 

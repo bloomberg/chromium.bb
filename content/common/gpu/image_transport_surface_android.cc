@@ -5,8 +5,8 @@
 #include "content/common/gpu/image_transport_surface.h"
 
 #include "base/logging.h"
-#include "content/common/gpu/gpu_surface_lookup.h"
 #include "content/common/gpu/pass_through_image_transport_surface.h"
+#include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace content {
@@ -17,12 +17,12 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuCommandBufferStub* stub,
     gpu::SurfaceHandle surface_handle,
     gfx::GLSurface::Format format) {
-  DCHECK(GpuSurfaceLookup::GetInstance());
+  DCHECK(gpu::GpuSurfaceLookup::GetInstance());
   DCHECK_NE(surface_handle, gpu::kNullSurfaceHandle);
   // On Android, the surface_handle is the id of the surface in the
-  // GpuSurfaceTracker/GpuSurfaceLookup
+  // GpuSurfaceTracker/gpu::GpuSurfaceLookup
   ANativeWindow* window =
-      GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(surface_handle);
+      gpu::GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(surface_handle);
   if (!window) {
     LOG(WARNING) << "Failed to acquire native widget.";
     return nullptr;

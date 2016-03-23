@@ -2,14 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/gpu_surface_lookup.h"
+#include "gpu/ipc/common/gpu_surface_lookup.h"
 
 #include "base/logging.h"
 
-namespace content {
+namespace gpu {
+
 namespace {
 GpuSurfaceLookup* g_instance = NULL;
-} // anonymous namespace
+}  // anonymous namespace
 
 // static
 GpuSurfaceLookup* GpuSurfaceLookup::GetInstance() {
@@ -30,4 +31,4 @@ gfx::ScopedJavaSurface GpuSurfaceLookup::AcquireJavaSurface(int surface_id) {
 }
 #endif
 
-}  // namespace content
+}  // namespace gpu

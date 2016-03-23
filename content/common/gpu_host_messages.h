@@ -8,12 +8,12 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/establish_channel_params.h"
-#include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/common/value_state.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
+#include "gpu/ipc/common/gpu_memory_uma_stats.h"
 #include "gpu/ipc/common/gpu_param_traits.h"
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -38,7 +38,7 @@
 
 #define IPC_MESSAGE_START GpuMsgStart
 
-IPC_STRUCT_TRAITS_BEGIN(content::GPUMemoryUmaStats)
+IPC_STRUCT_TRAITS_BEGIN(gpu::GPUMemoryUmaStats)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_current)
   IPC_STRUCT_TRAITS_MEMBER(bytes_allocated_max)
 IPC_STRUCT_TRAITS_END()
@@ -278,7 +278,7 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_DidDestroyOffscreenContext, GURL /* url */)
 
 // Tells the browser about GPU memory usage statistics for UMA logging.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryUmaStats,
-                     content::GPUMemoryUmaStats /* GPU memory UMA stats */)
+                     gpu::GPUMemoryUmaStats /* GPU memory UMA stats */)
 
 // Tells the browser that a context has subscribed to a new target and
 // the browser should start sending the corresponding information

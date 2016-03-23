@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_GPU_MEMORY_UMA_STATS_H_
-#define CONTENT_COMMON_GPU_GPU_MEMORY_UMA_STATS_H_
+#ifndef GPU_IPC_COMMON_GPU_MEMORY_UMA_STATS_H_
+#define GPU_IPC_COMMON_GPU_MEMORY_UMA_STATS_H_
 
 #include <stddef.h>
 #include <stdint.h>
 
-namespace content {
+namespace gpu {
 
 // Memory usage statistics send periodically to the browser process to report
 // in UMA histograms if the GPU process crashes.
@@ -18,8 +18,7 @@ struct GPUMemoryUmaStats {
   GPUMemoryUmaStats()
       : bytes_allocated_current(0),
         bytes_allocated_max(0),
-        context_group_count(0) {
-  }
+        context_group_count(0) {}
 
   // The number of bytes currently allocated.
   uint64_t bytes_allocated_current;
@@ -31,6 +30,6 @@ struct GPUMemoryUmaStats {
   uint32_t context_group_count;
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_COMMON_GPU_GPU_MEMORY_UMA_STATS_H_
+#endif  // GPU_IPC_COMMON_GPU_MEMORY_UMA_STATS_H_

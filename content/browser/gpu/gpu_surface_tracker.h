@@ -14,7 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/gpu_surface_lookup.h"
+#include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
@@ -30,7 +30,7 @@ namespace content {
 // Note: The ID can exist before the actual native handle for the surface is
 // created, for example to allow giving a reference to it to a renderer, so that
 // it is unamibiguously identified.
-class CONTENT_EXPORT GpuSurfaceTracker : public GpuSurfaceLookup {
+class CONTENT_EXPORT GpuSurfaceTracker : public gpu::GpuSurfaceLookup {
  public:
   // GpuSurfaceLookup implementation:
   // Returns the native widget associated with a given surface_id.

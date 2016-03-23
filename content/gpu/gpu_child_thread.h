@@ -87,7 +87,7 @@ class GpuChildThread : public ChildThreadImpl,
   void DidLoseContext(bool offscreen,
                       gpu::error::ContextLostReason reason,
                       const GURL& active_url) override;
-  void GpuMemoryUmaStats(const GPUMemoryUmaStats& params) override;
+  void GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) override;
   void RemoveSubscription(int32_t client_id, unsigned int target) override;
 #if defined(OS_MACOSX)
   void SendAcceleratedSurfaceBuffersSwapped(

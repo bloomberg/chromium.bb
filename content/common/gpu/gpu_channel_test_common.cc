@@ -36,7 +36,7 @@ void TestGpuChannelManagerDelegate::DidLoseContext(
     const GURL& active_url) {}
 
 void TestGpuChannelManagerDelegate::GpuMemoryUmaStats(
-    const GPUMemoryUmaStats& params) {}
+    const gpu::GPUMemoryUmaStats& params) {}
 
 void TestGpuChannelManagerDelegate::RemoveSubscription(int32_t client_id,
                                                        unsigned int target) {}

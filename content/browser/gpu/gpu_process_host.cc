@@ -887,7 +887,7 @@ void GpuProcessHost::OnDidDestroyOffscreenContext(const GURL& url) {
 }
 
 void GpuProcessHost::OnGpuMemoryUmaStatsReceived(
-    const GPUMemoryUmaStats& stats) {
+    const gpu::GPUMemoryUmaStats& stats) {
   TRACE_EVENT0("gpu", "GpuProcessHost::OnGpuMemoryUmaStatsReceived");
   uma_memory_stats_received_ = true;
   uma_memory_stats_ = stats;

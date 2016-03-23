@@ -20,6 +20,7 @@
     '..',
   ],
   'sources': [
+    "ipc/common/gpu_memory_uma_stats.h",
     "ipc/common/gpu_message_generator.cc",
     "ipc/common/gpu_message_generator.h",
     "ipc/common/gpu_messages.h",
@@ -27,6 +28,8 @@
     'ipc/common/gpu_param_traits.h',
     'ipc/common/gpu_param_traits_macros.h',
     "ipc/common/gpu_stream_constants.h",
+    "ipc/common/gpu_surface_lookup.cc",
+    "ipc/common/gpu_surface_lookup.h",
   ],
   'conditions': [
     # This section applies to gpu_ipc_win64, used by the NaCl Win64 helper

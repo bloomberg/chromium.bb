@@ -13,7 +13,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "content/common/gpu/gpu_channel.h"
-#include "content/common/gpu/gpu_surface_lookup.h"
 #include "content/common/gpu/media/avda_codec_image.h"
 #include "content/common/gpu/media/avda_return_on_failure.h"
 #include "content/common/gpu/media/avda_shared_state.h"
@@ -21,6 +20,7 @@
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
@@ -50,8 +50,8 @@ gfx::ScopedJavaSurface AndroidDeferredRenderingBackingStrategy::Initialize(
 
   gfx::ScopedJavaSurface surface;
   if (surface_view_id != media::VideoDecodeAccelerator::Config::kNoSurfaceID) {
-    surface =
-        GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(surface_view_id);
+    surface = gpu::GpuSurfaceLookup::GetInstance()->AcquireJavaSurface(
+        surface_view_id);
   } else {
     if (DoesSurfaceTextureDetachWork()) {
       // Create a detached SurfaceTexture. Detaching it will silently fail to

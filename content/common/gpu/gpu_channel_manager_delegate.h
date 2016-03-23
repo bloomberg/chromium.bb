@@ -14,10 +14,13 @@ namespace IPC {
 struct ChannelHandle;
 }
 
+namespace gpu {
+struct GPUMemoryUmaStats;
+}
+
 namespace content {
 
 struct AcceleratedSurfaceBuffersSwappedParams;
-struct GPUMemoryUmaStats;
 
 class GpuChannelManagerDelegate {
  public:
@@ -45,7 +48,7 @@ class GpuChannelManagerDelegate {
                               const GURL& active_url) = 0;
 
   // Tells the delegate about GPU memory usage statistics for UMA logging.
-  virtual void GpuMemoryUmaStats(const GPUMemoryUmaStats& params) = 0;
+  virtual void GpuMemoryUmaStats(const gpu::GPUMemoryUmaStats& params) = 0;
 
   // Tells the delegate that no contexts are subscribed to the target anymore
   // so the delegate should stop sending the corresponding information.

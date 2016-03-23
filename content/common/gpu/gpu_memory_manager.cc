@@ -15,9 +15,9 @@
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_channel_manager_delegate.h"
 #include "content/common/gpu/gpu_memory_tracking.h"
-#include "content/common/gpu/gpu_memory_uma_stats.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/ipc/common/gpu_memory_uma_stats.h"
 #include "gpu/ipc/common/memory_stats.h"
 
 using gpu::MemoryAllocation;
@@ -116,7 +116,7 @@ void GpuMemoryManager::GetVideoMemoryUsageStats(
 void GpuMemoryManager::SendUmaStatsToHost() {
   if (!channel_manager_)
     return;
-  GPUMemoryUmaStats params;
+  gpu::GPUMemoryUmaStats params;
   params.bytes_allocated_current = GetCurrentUsage();
   params.bytes_allocated_max = bytes_allocated_historical_max_;
   params.context_group_count = static_cast<uint32_t>(tracking_groups_.size());

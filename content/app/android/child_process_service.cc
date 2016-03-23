@@ -14,10 +14,10 @@
 #include "base/macros.h"
 #include "base/posix/global_descriptors.h"
 #include "content/child/child_thread_impl.h"
-#include "content/common/gpu/gpu_surface_lookup.h"
 #include "content/public/common/content_descriptors.h"
 #include "gpu/ipc/common/android/surface_texture_manager.h"
 #include "gpu/ipc/common/android/surface_texture_peer.h"
+#include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "ipc/ipc_descriptors.h"
 #include "jni/ChildProcessService_jni.h"
 #include "ui/gl/android/scoped_java_surface.h"
@@ -34,7 +34,7 @@ namespace {
 // we're in a renderer or gpu process.
 class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
                                   public gpu::SurfaceTexturePeer,
-                                  public GpuSurfaceLookup {
+                                  public gpu::GpuSurfaceLookup {
  public:
   // |service| is the instance of
   // org.chromium.content.app.ChildProcessService.
@@ -42,11 +42,11 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
       const base::android::JavaRef<jobject>& service)
       : service_(service) {
     SurfaceTexturePeer::InitInstance(this);
-    GpuSurfaceLookup::InitInstance(this);
+    gpu::GpuSurfaceLookup::InitInstance(this);
   }
   ~SurfaceTextureManagerImpl() override {
     SurfaceTexturePeer::InitInstance(NULL);
-    GpuSurfaceLookup::InitInstance(NULL);
+    gpu::GpuSurfaceLookup::InitInstance(NULL);
   }
 
   // Overridden from SurfaceTextureManager:

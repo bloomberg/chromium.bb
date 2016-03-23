@@ -15,11 +15,11 @@ namespace content {
 
 GpuSurfaceTracker::GpuSurfaceTracker()
     : next_surface_id_(1) {
-  GpuSurfaceLookup::InitInstance(this);
+  gpu::GpuSurfaceLookup::InitInstance(this);
 }
 
 GpuSurfaceTracker::~GpuSurfaceTracker() {
-  GpuSurfaceLookup::InitInstance(NULL);
+  gpu::GpuSurfaceLookup::InitInstance(NULL);
 }
 
 GpuSurfaceTracker* GpuSurfaceTracker::GetInstance() {

@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_GPU_SURFACE_LOOKUP_H_
-#define CONTENT_COMMON_GPU_GPU_SURFACE_LOOKUP_H_
+#ifndef GPU_IPC_COMMON_GPU_SURFACE_LOOKUP_H_
+#define GPU_IPC_COMMON_GPU_SURFACE_LOOKUP_H_
 
 #include "base/macros.h"
-#include "content/common/content_export.h"
+#include "gpu/gpu_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
 #include "ui/gl/android/scoped_java_surface.h"
 #endif
 
-namespace content {
+namespace gpu {
 
 // This class provides an interface to look up window surface handles
 // that cannot be sent through the IPC channel.
-class CONTENT_EXPORT GpuSurfaceLookup {
+class GPU_EXPORT GpuSurfaceLookup {
  public:
-  GpuSurfaceLookup() { }
-  virtual ~GpuSurfaceLookup() { }
+  GpuSurfaceLookup() {}
+  virtual ~GpuSurfaceLookup() {}
 
   static GpuSurfaceLookup* GetInstance();
   static void InitInstance(GpuSurfaceLookup* lookup);
@@ -35,6 +35,6 @@ class CONTENT_EXPORT GpuSurfaceLookup {
   DISALLOW_COPY_AND_ASSIGN(GpuSurfaceLookup);
 };
 
-}  // namespace content
+}  // namespace gpu
 
-#endif  // CONTENT_COMMON_GPU_GPU_SURFACE_LOOKUP_H_
+#endif  // GPU_IPC_COMMON_GPU_SURFACE_LOOKUP_H_
