@@ -26,7 +26,6 @@
 
   'sources': [
     '../third_party/skia/src/ports/SkImageDecoder_empty.cpp',
-    '../third_party/skia/src/images/SkScaledBitmapSampler.cpp',
 
     '../third_party/skia/src/ports/SkFontConfigInterface_direct.cpp',
     '../third_party/skia/src/ports/SkFontConfigInterface_direct_factory.cpp',
