@@ -517,12 +517,6 @@ class IOThread : public content::BrowserThreadDelegate {
       const base::CommandLine& command_line,
       const VariationParameters& quic_trial_params);
 
-  // Returns the alternative service probability threshold specified by
-  // any flags in |command_line| or |quic_trial_params|.
-  static double GetAlternativeProtocolProbabilityThreshold(
-      const base::CommandLine& command_line,
-      const VariationParameters& quic_trial_params);
-
   static net::URLRequestContext* ConstructSystemRequestContext(
       IOThread::Globals* globals,
       net::NetLog* net_log);
