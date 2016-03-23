@@ -10,9 +10,11 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "media/base/android/media_drm_bridge_cdm_context.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/media_export.h"
@@ -121,6 +123,7 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder {
   // Possible states.
   enum State {
     STATE_UNINITIALIZED,
+    STATE_WAITING_FOR_MEDIA_CRYPTO,
     STATE_READY,
     STATE_WAITING_FOR_KEY,
     STATE_DRAINING,
@@ -144,6 +147,15 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder {
     bool is_eos;          // true if this buffer is the end of stream.
     bool is_key_frame;
   };
+
+  // A helper method to start CDM initialization.
+  void SetCdm(CdmContext* cdm_context, const InitCB& init_cb);
+
+  // This callback is called after CDM obtained a MediaCrypto object.
+  void OnMediaCryptoReady(
+      const InitCB& init_cb,
+      media::MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
+      bool needs_protected_surface);
 
   // Callback called when a new key is available after the codec received
   // the status MEDIA_CODEC_NO_KEY.
@@ -242,6 +254,22 @@ class MEDIA_EXPORT MediaCodecAudioDecoder : public AudioDecoder {
   // Such buffer appears in MEDIA_CODEC_NO_KEY processing. The -1 value means
   // there is no such buffer.
   int pending_input_buf_index_;
+
+  // CDM related stuff.
+
+  // CDM context that knowns about MediaCrypto. Owned by CDM which is external
+  // to this decoder.
+  MediaDrmBridgeCdmContext* media_drm_bridge_cdm_context_;
+
+  // MediaDrmBridge requires registration/unregistration of the player, this
+  // registration id is used for this.
+  int cdm_registration_id_;
+
+  // The MediaCrypto object is used in the MediaCodec.configure() in case of
+  // an encrypted stream.
+  media::MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto_;
+
+  base::WeakPtrFactory<MediaCodecAudioDecoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaCodecAudioDecoder);
 };
