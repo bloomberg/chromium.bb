@@ -57,12 +57,18 @@ public:
     virtual bool canRender() const { return true; }
     virtual bool isLoaded() const { return true; }
     virtual bool errorOccurred() const { return false; }
+    // Note that the defaultObjectSize is assumed to be in the
+    // effective zoom level given by multiplier, i.e. if multiplier is
+    // the constant 1 the defaultObjectSize should be unzoomed.
     virtual LayoutSize imageSize(const LayoutObject&, float multiplier, const LayoutSize& defaultObjectSize) const = 0;
     virtual bool imageHasRelativeSize() const = 0;
     virtual bool usesImageContainerSize() const = 0;
     virtual void addClient(LayoutObject*) = 0;
     virtual void removeClient(LayoutObject*) = 0;
-    virtual PassRefPtr<Image> image(const LayoutObject&, const IntSize&, float) const = 0;
+    // Note that the containerSize is assumed to be in the effective
+    // zoom level given by multiplier, i.e if the multiplier is the
+    // constant 1 the containerSize should be unzoomed.
+    virtual PassRefPtr<Image> image(const LayoutObject&, const IntSize& containerSize, float multiplier) const = 0;
     virtual WrappedImagePtr data() const = 0;
     virtual float imageScaleFactor() const { return 1; }
     virtual bool knownToBeOpaque(const LayoutObject&) const = 0;

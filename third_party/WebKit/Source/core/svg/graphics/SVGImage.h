@@ -77,7 +77,10 @@ public:
 
     void updateUseCounters(Document&) const;
 
-    FloatSize concreteObjectSize(const FloatSize&) const;
+    // The defaultObjectSize is assumed to be unzoomed, i.e. it should
+    // not have the effective zoom level applied. The returned size is
+    // thus also independent of current zoom level.
+    FloatSize concreteObjectSize(const FloatSize& defaultObjectSize) const;
 
     // DisplayItemClient methods.
     String debugName() const final { return "SVGImage"; }

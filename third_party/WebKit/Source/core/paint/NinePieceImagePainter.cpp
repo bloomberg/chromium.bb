@@ -49,6 +49,8 @@ bool NinePieceImagePainter::paint(GraphicsContext& graphicsContext, const Layout
     rectWithOutsets.expand(style.imageOutsets(ninePieceImage));
     LayoutRect borderImageRect = rectWithOutsets;
 
+    // NinePieceImage returns the image slices without effective zoom applied and thus we compute
+    // the nine piece grid on top of the image in unzoomed coordinates.
     LayoutSize defaultObjectSize = borderImageRect.size();
     defaultObjectSize.scale(1 / style.effectiveZoom());
     IntSize imageSize = roundedIntSize(styleImage->imageSize(m_layoutObject, 1, defaultObjectSize));
