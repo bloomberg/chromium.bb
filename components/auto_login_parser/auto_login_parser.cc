@@ -54,8 +54,10 @@ bool ParseHeader(const std::string& header,
        ++it) {
     const std::string& key = it->first;
     const std::string& value = it->second;
-    std::string unescaped_value(
-        net::UnescapeURLComponent(value, net::UnescapeRule::URL_SPECIAL_CHARS));
+    std::string unescaped_value(net::UnescapeURLComponent(
+        value,
+        net::UnescapeRule::PATH_SEPARATORS |
+            net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
     if (key == "realm") {
       if (!MatchRealm(unescaped_value, realm_restriction))
         return false;

@@ -94,9 +94,11 @@ bool CanonicalizeHashComponent(const base::StringPiece& input_hash,
   // safe" base64 alphabet; plus the padding ('=').
   const char kBase64NonAlphanumericChars[] = "-_=";
 
-  // We need net::UnescapeRule::URL_SPECIAL_CHARS to unescape the padding ('=').
+  // We need net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS to
+  // unescape the padding ('=').
   std::string base64_encoded_hash = net::UnescapeURLComponent(
-      input_hash.as_string(), net::UnescapeRule::URL_SPECIAL_CHARS);
+      input_hash.as_string(),
+      net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
 
   if (!base64_encoded_hash.empty() &&
       CanonicalizeBase64Padding(&base64_encoded_hash) &&

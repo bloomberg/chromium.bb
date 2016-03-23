@@ -620,11 +620,13 @@ GURL FixupRelativeFile(const base::FilePath& base_dir,
 #if defined(OS_WIN)
     std::wstring unescaped = base::UTF8ToWide(net::UnescapeURLComponent(
         base::WideToUTF8(trimmed),
-        net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS));
+        net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+            net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS));
 #elif defined(OS_POSIX)
     std::string unescaped = net::UnescapeURLComponent(
         trimmed,
-        net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS);
+        net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+            net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
 #endif
 
     if (!ValidPathForFile(unescaped, &full_path))

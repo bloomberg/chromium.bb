@@ -527,8 +527,9 @@ base::string16 CleanUpUrlForMatching(
   return base::i18n::ToLower(url_formatter::FormatUrlWithAdjustments(
       GURL(TruncateUrl(gurl.spec())), languages,
       url_formatter::kFormatUrlOmitUsernamePassword,
-      net::UnescapeRule::SPACES | net::UnescapeRule::URL_SPECIAL_CHARS, NULL,
-      NULL, adjustments ? adjustments : &tmp_adjustments));
+      net::UnescapeRule::SPACES | net::UnescapeRule::PATH_SEPARATORS |
+          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS,
+      nullptr, nullptr, adjustments ? adjustments : &tmp_adjustments));
 }
 
 base::string16 CleanUpTitleForMatching(const base::string16& title) {
