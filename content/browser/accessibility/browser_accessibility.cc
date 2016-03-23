@@ -451,10 +451,7 @@ gfx::Rect BrowserAccessibility::GetGlobalBoundsForRange(int start, int len)
 
 base::string16 BrowserAccessibility::GetValue() const {
   base::string16 value = GetString16Attribute(ui::AX_ATTR_VALUE);
-  // Some screen readers like Jaws and older versions of VoiceOver require a
-  // value to be set in text fields with rich content, even though the same
-  // information is available on the children.
-  if (value.empty() && (IsSimpleTextControl() || IsRichTextControl()))
+  if (value.empty() && IsSimpleTextControl())
     value = GetInnerText();
   return value;
 }
@@ -832,7 +829,9 @@ bool BrowserAccessibility::IsCellOrTableHeaderRole() const {
 }
 
 bool BrowserAccessibility::HasCaret() const {
-  if (IsSimpleTextControl() && HasIntAttribute(ui::AX_ATTR_TEXT_SEL_START) &&
+  if (HasState(ui::AX_STATE_EDITABLE) &&
+      !HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
+      HasIntAttribute(ui::AX_ATTR_TEXT_SEL_START) &&
       HasIntAttribute(ui::AX_ATTR_TEXT_SEL_END)) {
     return true;
   }
@@ -940,9 +939,8 @@ bool BrowserAccessibility::IsSimpleTextControl() const {
   switch (GetRole()) {
     case ui::AX_ROLE_COMBO_BOX:
     case ui::AX_ROLE_SEARCH_BOX:
-      return true;
     case ui::AX_ROLE_TEXT_FIELD:
-      return !HasState(ui::AX_STATE_RICHLY_EDITABLE);
+      return true;
     default:
       return false;
   }

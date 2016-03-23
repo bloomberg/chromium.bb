@@ -941,7 +941,7 @@ TEST_F(BrowserAccessibilityTest, TestValueAttributeInTextControls) {
   slider_text.SetName("Slider text");
   slider.role = ui::AX_ROLE_SLIDER;
   slider_text.role = ui::AX_ROLE_STATIC_TEXT;
-  slider.state = slider_text.state = 1 << ui::AX_STATE_READ_ONLY;
+  slider_text.state = 1 << ui::AX_STATE_READ_ONLY;
   slider.child_ids.push_back(slider_text.id);
 
   root.child_ids.push_back(2);   // Combo box.
