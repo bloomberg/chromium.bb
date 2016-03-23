@@ -25,6 +25,7 @@ TestConfigurator::TestConfigurator(
     const scoped_refptr<base::SequencedTaskRunner>& worker_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner)
     : worker_task_runner_(worker_task_runner),
+      brand_("TEST"),
       initial_time_(0),
       ondemand_time_(0),
       use_cup_signing_(false),
@@ -70,6 +71,10 @@ std::string TestConfigurator::GetChannel() const {
   return "fake_channel_string";
 }
 
+std::string TestConfigurator::GetBrand() const {
+  return brand_;
+}
+
 std::string TestConfigurator::GetLang() const {
   return "fake_lang";
 }
@@ -105,6 +110,10 @@ bool TestConfigurator::UseBackgroundDownloader() const {
 
 bool TestConfigurator::UseCupSigning() const {
   return use_cup_signing_;
+}
+
+void TestConfigurator::SetBrand(const std::string& brand) {
+  brand_ = brand;
 }
 
 void TestConfigurator::SetOnDemandTime(int seconds) {

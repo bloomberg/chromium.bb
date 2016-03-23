@@ -28,6 +28,11 @@ namespace update_client {
 
 namespace {
 
+// Returns a sanitized version of the brand or an empty string otherwise.
+std::string SanitizeBrand(const std::string& brand) {
+  return IsValidBrand(brand) ? brand : std::string("");
+}
+
 // Builds an update check request for |components|. |additional_attributes| is
 // serialized as part of the <request> element of the request to customize it
 // with data that is not platform or component specific. For each |item|, a
@@ -45,12 +50,15 @@ namespace {
 std::string BuildUpdateCheckRequest(const Configurator& config,
                                     const std::vector<CrxUpdateItem*>& items,
                                     const std::string& additional_attributes) {
+  const std::string brand(SanitizeBrand(config.GetBrand()));
   std::string app_elements;
   for (size_t i = 0; i != items.size(); ++i) {
     const CrxUpdateItem* item = items[i];
     std::string app("<app ");
     base::StringAppendF(&app, "appid=\"%s\" version=\"%s\"", item->id.c_str(),
                         item->component.version.GetString().c_str());
+    if (!brand.empty())
+      base::StringAppendF(&app, " brand=\"%s\"", brand.c_str());
     if (item->on_demand)
       base::StringAppendF(&app, " installsource=\"ondemand\"");
     base::StringAppendF(&app, ">");

@@ -32,6 +32,7 @@ class ChromeUpdateClientConfig : public UpdateClientConfig {
   std::vector<GURL> PingUrl() const override;
   base::Version GetBrowserVersion() const override;
   std::string GetChannel() const override;
+  std::string GetBrand() const override;
   std::string GetLang() const override;
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;

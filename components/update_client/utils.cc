@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <vector>
@@ -224,6 +226,16 @@ bool VerifyFileHash256(const base::FilePath& filepath,
   hasher->Finish(actual_hash, sizeof(actual_hash));
 
   return memcmp(actual_hash, &expected_hash[0], sizeof(actual_hash)) == 0;
+}
+
+bool IsValidBrand(const std::string& brand) {
+  const size_t kMaxBrandSize = 4;
+  if (brand.size() > kMaxBrandSize)
+    return false;
+
+  return std::find_if_not(brand.begin(), brand.end(), [](char ch) {
+           return base::IsAsciiAlpha(ch);
+         }) == brand.end();
 }
 
 }  // namespace update_client

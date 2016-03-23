@@ -95,6 +95,9 @@ std::string GetCrxComponentID(const CrxComponent& component);
 bool VerifyFileHash256(const base::FilePath& filepath,
                        const std::string& expected_hash);
 
+// Returns true if the |brand| parameter matches ^([a-zA-Z]{4})?$ .
+bool IsValidBrand(const std::string& brand);
+
 }  // namespace update_client
 
 #endif  // COMPONENTS_UPDATE_CLIENT_UTILS_H_

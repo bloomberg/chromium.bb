@@ -12,6 +12,7 @@
 #include "components/component_updater/configurator_impl.h"
 #include "components/update_client/component_patcher_operation.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/google/google_brand.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
 
@@ -34,6 +35,7 @@ class IOSConfigurator : public update_client::Configurator {
   std::vector<GURL> PingUrl() const override;
   base::Version GetBrowserVersion() const override;
   std::string GetChannel() const override;
+  std::string GetBrand() const override;
   std::string GetLang() const override;
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;
@@ -94,6 +96,12 @@ base::Version IOSConfigurator::GetBrowserVersion() const {
 
 std::string IOSConfigurator::GetChannel() const {
   return GetChannelString();
+}
+
+std::string IOSConfigurator::GetBrand() const {
+  std::string brand;
+  ios::google_brand::GetBrand(&brand);
+  return brand;
 }
 
 std::string IOSConfigurator::GetLang() const {

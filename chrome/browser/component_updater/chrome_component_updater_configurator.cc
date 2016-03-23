@@ -14,6 +14,7 @@
 #include "base/win/win_util.h"
 #endif
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
 #if defined(OS_WIN)
@@ -41,6 +42,7 @@ class ChromeConfigurator : public update_client::Configurator {
   std::vector<GURL> PingUrl() const override;
   base::Version GetBrowserVersion() const override;
   std::string GetChannel() const override;
+  std::string GetBrand() const override;
   std::string GetLang() const override;
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;
@@ -101,6 +103,12 @@ base::Version ChromeConfigurator::GetBrowserVersion() const {
 
 std::string ChromeConfigurator::GetChannel() const {
   return chrome::GetChannelString();
+}
+
+std::string ChromeConfigurator::GetBrand() const {
+  std::string brand;
+  google_brand::GetBrand(&brand);
+  return brand;
 }
 
 std::string ChromeConfigurator::GetLang() const {

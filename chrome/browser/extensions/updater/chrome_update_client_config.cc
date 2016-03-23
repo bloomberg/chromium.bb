@@ -6,6 +6,7 @@
 #include "base/version.h"
 #include "chrome/browser/component_updater/component_patcher_operation_out_of_process.h"
 #include "chrome/browser/extensions/updater/chrome_update_client_config.h"
+#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
 #include "content/public/browser/browser_context.h"
@@ -52,6 +53,12 @@ base::Version ChromeUpdateClientConfig::GetBrowserVersion() const {
 
 std::string ChromeUpdateClientConfig::GetChannel() const {
   return chrome::GetChannelString();
+}
+
+std::string ChromeUpdateClientConfig::GetBrand() const {
+  std::string brand;
+  google_brand::GetBrand(&brand);
+  return brand;
 }
 
 std::string ChromeUpdateClientConfig::GetLang() const {

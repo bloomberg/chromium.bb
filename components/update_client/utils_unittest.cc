@@ -57,4 +57,28 @@ TEST(UpdateClientUtils, VerifyFileHash256) {
           "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")));
 }
 
+// Tests that the brand matches ^([a-zA-Z]{4})?$
+TEST(UpdateClientUtils, IsValidBrand) {
+  EXPECT_TRUE(IsValidBrand(std::string("")));
+  EXPECT_TRUE(IsValidBrand(std::string("T")));
+  EXPECT_TRUE(IsValidBrand(std::string("TE")));
+  EXPECT_TRUE(IsValidBrand(std::string("TES")));
+  EXPECT_TRUE(IsValidBrand(std::string("TEST")));
+  EXPECT_TRUE(IsValidBrand(std::string("")));
+  EXPECT_TRUE(IsValidBrand(std::string("t")));
+  EXPECT_TRUE(IsValidBrand(std::string("te")));
+  EXPECT_TRUE(IsValidBrand(std::string("tes")));
+  EXPECT_TRUE(IsValidBrand(std::string("test")));
+  EXPECT_TRUE(IsValidBrand(std::string("TEst")));
+
+  EXPECT_FALSE(IsValidBrand(std::string("TESTS")));  // Too long.
+  EXPECT_FALSE(IsValidBrand(std::string("TES1")));   // Has digit.
+  EXPECT_FALSE(IsValidBrand(std::string(" TES")));   // Begins with white space.
+  EXPECT_FALSE(IsValidBrand(std::string("TES ")));   // Ends with white space.
+  EXPECT_FALSE(IsValidBrand(std::string("T ES")));   // Contains white space.
+  EXPECT_FALSE(IsValidBrand(std::string("<TE")));    // Has <.
+  EXPECT_FALSE(IsValidBrand(std::string("TE>")));    // Has >.
+  EXPECT_FALSE(IsValidBrand(std::string("\xaa")));   // Has non-ASCII char.
+}
+
 }  // namespace update_client

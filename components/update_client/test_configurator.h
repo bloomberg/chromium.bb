@@ -65,6 +65,7 @@ class TestConfigurator : public Configurator {
   std::vector<GURL> PingUrl() const override;
   base::Version GetBrowserVersion() const override;
   std::string GetChannel() const override;
+  std::string GetBrand() const override;
   std::string GetLang() const override;
   std::string GetOSLongName() const override;
   std::string ExtraRequestParams() const override;
@@ -77,6 +78,7 @@ class TestConfigurator : public Configurator {
   scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner()
       const override;
 
+  void SetBrand(const std::string& brand);
   void SetOnDemandTime(int seconds);
   void SetInitialDelay(int seconds);
   void SetDownloadPreference(const std::string& download_preference);
@@ -89,6 +91,7 @@ class TestConfigurator : public Configurator {
 
   scoped_refptr<base::SequencedTaskRunner> worker_task_runner_;
 
+  std::string brand_;
   int initial_time_;
   int ondemand_time_;
   std::string download_preference_;
