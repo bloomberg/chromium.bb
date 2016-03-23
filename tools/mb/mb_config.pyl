@@ -111,7 +111,7 @@
       'Chromium Win PGO Builder': 'tbd',
       'Chromium Win x64 Clobber': 'tbd',
       'Chromium Win x64 PGO Builder': 'tbd',
-      'Chromium Windows Analyze': 'tbd',
+      'Chromium Windows Analyze': 'gyp_windows_analyze',
       'Chromium Windows Buildrunner': 'tbd',
       'Chromium Windows Instant Extended': 'tbd',
       'ChromiumOS Linux Tests': 'tbd',
@@ -1101,6 +1101,11 @@
       'gyp', 'chromeos', 'valgrind', 'release_bot',
     ],
 
+    'gyp_windows_analyze': [
+      'gyp', 'no_symbols', 'disable_precompiled_headers', 
+      'shared', 'x86', 'win_analyze',
+    ],
+
     'gyp_drmemory_shared_release_x86': [
       'gyp', 'drmemory', 'shared', 'release', 'x86',
     ],
@@ -1526,6 +1531,11 @@
       'gyp_defines': 'disable_nacl=1',
     },
 
+    'disable_precompiled_headers': {
+      'gn_args': 'disable_precompiled_headers=true',
+      'gyp_defines': 'chromium_win_pch=0',
+    },
+
     'embedded': {
       'gn_args': 'error',
       'gyp_defines': 'embedded=1',
@@ -1681,6 +1691,11 @@
     'tsan': {
       'gn_args': 'is_tsan=true',
       'gyp_defines': 'tsan=1',
+    },
+
+    'win_analyze': {
+      'gn_args': 'use_vs_code_analysis=true',
+      'gyp_defines': 'win_analyze=1',
     },
 
     'x64': {

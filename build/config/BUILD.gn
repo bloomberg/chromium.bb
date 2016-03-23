@@ -33,6 +33,11 @@ declare_args() {
 
   # Set to true to enable dcheck in Release builds.
   dcheck_always_on = false
+
+  # Normally we try to decide whether to use precompiled headers or
+  # not based on the other build arguments, but in some cases it is
+  # easiest to force them off explicitly.
+  disable_precompiled_headers = false
 }
 
 # TODO(brettw) Most of these should be removed. Instead of global feature
@@ -438,32 +443,34 @@ config("shared_library_config") {
 #
 # Recommend precompiled headers for targets with more than 50 .cc files.
 config("precompiled_headers") {
-  if (is_win && !is_official_build && !use_goma) {
-    # This is a string rather than a file GN knows about. It has to match
-    # exactly what's in the /FI flag below, and what might appear in the source
-    # code in quotes for an #include directive.
-    precompiled_header = "build/precompile.h"
+  if (!is_official_build && !use_goma && !disable_precompiled_headers) {
+    if (is_win) {
+      # This is a string rather than a file GN knows about. It has to match
+      # exactly what's in the /FI flag below, and what might appear in the
+      # source code in quotes for an #include directive.
+      precompiled_header = "build/precompile.h"
 
-    # This is a file that GN will compile with the above header. It will be
-    # implicitly added to the sources (potentially multiple times, with one
-    # variant for each language used in the target).
-    precompiled_source = "//build/precompile.cc"
+      # This is a file that GN will compile with the above header. It will be
+      # implicitly added to the sources (potentially multiple times, with one
+      # variant for each language used in the target).
+      precompiled_source = "//build/precompile.cc"
 
-    # Force include the header.
-    cflags = [ "/FI$precompiled_header" ]
+      # Force include the header.
+      cflags = [ "/FI$precompiled_header" ]
 
-    # Disable warning for "this file was empty after preprocessing". This
-    # error is generated only in C mode for ANSI compatibility. It conflicts
-    # with precompiled headers since the source file that's "compiled" for
-    # making the precompiled header is empty.
-    #
-    # This error doesn't happen every time. In VS2013, it seems if the .pch
-    # file doesn't exist, no error will be generated (probably MS tested this
-    # case but forgot the other one?). To reproduce this error, do a build,
-    # then delete the precompile.c.obj file, then build again.
-    cflags_c = [ "/wd4206" ]
-  } else if (is_mac && !is_official_build && !use_goma) {
-    precompiled_header = "build/precompile.h"
-    precompiled_source = "//build/precompile.h"
+      # Disable warning for "this file was empty after preprocessing". This
+      # error is generated only in C mode for ANSI compatibility. It conflicts
+      # with precompiled headers since the source file that's "compiled" for
+      # making the precompiled header is empty.
+      #
+      # This error doesn't happen every time. In VS2013, it seems if the .pch
+      # file doesn't exist, no error will be generated (probably MS tested this
+      # case but forgot the other one?). To reproduce this error, do a build,
+      # then delete the precompile.c.obj file, then build again.
+      cflags_c = [ "/wd4206" ]
+    } else if (is_mac) {
+      precompiled_header = "build/precompile.h"
+      precompiled_source = "//build/precompile.h"
+    }
   }
 }
