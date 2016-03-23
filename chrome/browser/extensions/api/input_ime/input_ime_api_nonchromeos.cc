@@ -35,8 +35,8 @@ const char kErrorAPIDisabled[] =
 const char kErrorNoActiveEngine[] = "The extension has not been activated.";
 
 bool IsInputImeEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableInputImeAPI);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableInputImeAPI);
 
 }  // namespace
 
