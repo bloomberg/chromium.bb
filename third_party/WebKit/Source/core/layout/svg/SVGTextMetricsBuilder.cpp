@@ -75,6 +75,8 @@ private:
     unsigned m_currentPosition;
 
     LineLayoutSVGInlineText m_text;
+    float m_fontScalingFactor;
+    float m_cachedFontHeight;
     TextRun m_run;
 
     BidiCharacterRun* m_bidiRun;
@@ -115,6 +117,8 @@ TextRun SVGTextMetricsCalculator::constructTextRun(LineLayoutSVGInlineText textL
 SVGTextMetricsCalculator::SVGTextMetricsCalculator(LayoutSVGInlineText* text)
     : m_currentPosition(0)
     , m_text(LineLayoutSVGInlineText(text))
+    , m_fontScalingFactor(m_text.scalingFactor())
+    , m_cachedFontHeight(m_text.scaledFont().getFontMetrics().floatHeight() / m_fontScalingFactor)
     , m_run(constructTextRun(m_text, 0, m_text.textLength(), m_text.styleRef().direction()))
     , m_bidiRun(nullptr)
 {
@@ -202,7 +206,7 @@ SVGTextMetrics SVGTextMetricsCalculator::currentCharacterMetrics()
     unsigned currentSubrunPosition = updateSubrunRangesForCurrentPosition();
     unsigned length = currentCharacterStartsSurrogatePair() ? 2 : 1;
     float width = m_subrunRanges[currentSubrunPosition].width();
-    return SVGTextMetrics(m_text, length, width);
+    return SVGTextMetrics(length, width / m_fontScalingFactor, m_cachedFontHeight);
 }
 
 struct TreeWalkTextState {

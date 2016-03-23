@@ -19,7 +19,6 @@
 
 #include "core/layout/svg/SVGTextMetrics.h"
 
-#include "core/layout/api/LineLayoutSVGInlineText.h"
 #include "platform/fonts/FontOrientation.h"
 
 namespace blink {
@@ -31,24 +30,16 @@ SVGTextMetrics::SVGTextMetrics()
 {
 }
 
-SVGTextMetrics::SVGTextMetrics(SVGTextMetrics::MetricsType)
-    : m_width(0)
-    , m_height(0)
-    , m_length(1)
+SVGTextMetrics::SVGTextMetrics(unsigned length, float width, float height)
+    : m_width(width)
+    , m_height(height)
+    , m_length(length)
 {
 }
 
-SVGTextMetrics::SVGTextMetrics(LineLayoutSVGInlineText textLayoutItem, unsigned length, float width)
+SVGTextMetrics::SVGTextMetrics(SVGTextMetrics::MetricsType)
+    : SVGTextMetrics(1, 0, 0)
 {
-    ASSERT(textLayoutItem);
-
-    float scalingFactor = textLayoutItem.scalingFactor();
-    ASSERT(scalingFactor);
-
-    m_width = width / scalingFactor;
-    m_height = textLayoutItem.scaledFont().getFontMetrics().floatHeight() / scalingFactor;
-
-    m_length = length;
 }
 
 float SVGTextMetrics::advance(FontOrientation orientation) const

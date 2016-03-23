@@ -25,7 +25,6 @@
 namespace blink {
 
 enum class FontOrientation;
-class LineLayoutSVGInlineText;
 
 class SVGTextMetrics {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -36,13 +35,11 @@ public:
 
     SVGTextMetrics();
     SVGTextMetrics(MetricsType);
-    SVGTextMetrics(LineLayoutSVGInlineText, unsigned length, float width);
+    SVGTextMetrics(unsigned length, float width, float height);
 
     bool isEmpty() const { return !m_width && !m_height && m_length <= 1; }
 
     float width() const { return m_width; }
-    void setWidth(float width) { m_width = width; }
-
     float height() const { return m_height; }
 
     // TODO(kojii): We should store logical width (advance) and height instead
