@@ -534,12 +534,6 @@ bool RenderWidgetHostViewChildFrame::HasAcceleratedSurface(
   return false;
 }
 
-#if defined(OS_WIN)
-void RenderWidgetHostViewChildFrame::SetParentNativeViewAccessible(
-    gfx::NativeViewAccessible accessible_parent) {
-}
-#endif  // defined(OS_WIN)
-
 // cc::SurfaceFactoryClient implementation.
 void RenderWidgetHostViewChildFrame::ReturnResources(
     const cc::ReturnedResourceArray& resources) {

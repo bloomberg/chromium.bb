@@ -186,11 +186,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // applies, returns null.
   virtual scoped_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(const GURL& url);
 
-#if defined(OS_WIN)
-  // Returns the frame's parent's NativeViewAccessible.
-  virtual gfx::NativeViewAccessible GetParentNativeViewAccessible();
-#endif
-
  protected:
   virtual ~RenderFrameHostDelegate() {}
 };

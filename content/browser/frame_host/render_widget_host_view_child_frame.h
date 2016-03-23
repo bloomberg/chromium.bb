@@ -164,10 +164,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;
 
-#if defined(OS_WIN)
-  void SetParentNativeViewAccessible(
-      gfx::NativeViewAccessible accessible_parent) override;
-#endif
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
 

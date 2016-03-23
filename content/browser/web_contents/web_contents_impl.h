@@ -257,10 +257,6 @@ class CONTENT_EXPORT WebContentsImpl
   void EnableTreeOnlyAccessibilityMode() override;
   bool IsTreeOnlyAccessibilityModeForTesting() const override;
   bool IsFullAccessibilityModeForTesting() const override;
-#if defined(OS_WIN)
-  void SetParentNativeViewAccessible(
-      gfx::NativeViewAccessible accessible_parent) override;
-#endif
   const PageImportanceSignals& GetPageImportanceSignals() const override;
   const base::string16& GetTitle() const override;
   int32_t GetMaxPageID() override;
@@ -444,9 +440,6 @@ class CONTENT_EXPORT WebContentsImpl
       SiteInstance* source_site_instance) const override;
   void EnsureOpenerProxiesExist(RenderFrameHost* source_rfh) override;
   scoped_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(const GURL& url) override;
-#if defined(OS_WIN)
-  gfx::NativeViewAccessible GetParentNativeViewAccessible() override;
-#endif
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -1074,10 +1067,6 @@ class CONTENT_EXPORT WebContentsImpl
   // True if this tab was opened by another tab. This is not unset if the opener
   // is closed.
   bool created_with_opener_;
-
-#if defined(OS_WIN)
-  gfx::NativeViewAccessible accessible_parent_;
-#endif
 
   // Helper classes ------------------------------------------------------------
 

@@ -552,17 +552,6 @@ void InterstitialPageImpl::HandleKeyboardEvent(
     render_widget_host_delegate_->HandleKeyboardEvent(event);
 }
 
-#if defined(OS_WIN)
-gfx::NativeViewAccessible
-InterstitialPageImpl::GetParentNativeViewAccessible() {
-  if (web_contents_) {
-    WebContentsImpl* wci = static_cast<WebContentsImpl*>(web_contents_);
-    return wci->GetParentNativeViewAccessible();
-  }
-  return NULL;
-}
-#endif
-
 WebContents* InterstitialPageImpl::web_contents() const {
   return web_contents_;
 }

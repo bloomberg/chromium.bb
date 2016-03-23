@@ -317,9 +317,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       controller_(this, browser_context),
       render_view_host_delegate_view_(NULL),
       created_with_opener_(false),
-#if defined(OS_WIN)
-      accessible_parent_(NULL),
-#endif
       frame_tree_(new NavigatorImpl(&controller_, this),
                   this,
                   this,
@@ -918,16 +915,6 @@ bool WebContentsImpl::IsTreeOnlyAccessibilityModeForTesting() const {
 bool WebContentsImpl::IsFullAccessibilityModeForTesting() const {
   return accessibility_mode_ == AccessibilityModeComplete;
 }
-
-#if defined(OS_WIN)
-void WebContentsImpl::SetParentNativeViewAccessible(
-gfx::NativeViewAccessible accessible_parent) {
-  accessible_parent_ = accessible_parent;
-  RenderFrameHostImpl* rfh = GetMainFrame();
-  if (rfh)
-    rfh->SetParentNativeViewAccessible(accessible_parent);
-}
-#endif
 
 const PageImportanceSignals& WebContentsImpl::GetPageImportanceSignals() const {
   return page_importance_signals_;
@@ -3916,12 +3903,6 @@ bool WebContentsImpl::IsNeverVisible() {
     return false;
   return delegate_->IsNeverVisible(this);
 }
-
-#if defined(OS_WIN)
-gfx::NativeViewAccessible WebContentsImpl::GetParentNativeViewAccessible() {
-  return accessible_parent_;
-}
-#endif
 
 RenderViewHostDelegateView* WebContentsImpl::GetDelegateView() {
   return render_view_host_delegate_view_;

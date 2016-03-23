@@ -207,11 +207,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
                                        cc::SurfaceId original_surface,
                                        gfx::Point* transformed_point) override;
 
-#if defined(OS_WIN)
-  void SetParentNativeViewAccessible(
-      gfx::NativeViewAccessible accessible_parent) override;
-#endif
-
   // Overridden from ui::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
   void ConfirmCompositionText() override;

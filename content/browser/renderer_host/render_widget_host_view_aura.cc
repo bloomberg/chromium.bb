@@ -1071,12 +1071,6 @@ void RenderWidgetHostViewAura::DidStopFlinging() {
   selection_controller_client_->OnScrollCompleted();
 }
 
-#if defined(OS_WIN)
-void RenderWidgetHostViewAura::SetParentNativeViewAccessible(
-    gfx::NativeViewAccessible accessible_parent) {
-}
-#endif
-
 bool RenderWidgetHostViewAura::HasAcceleratedSurface(
     const gfx::Size& desired_size) {
   // Aura doesn't use GetBackingStore for accelerated pages, so it doesn't

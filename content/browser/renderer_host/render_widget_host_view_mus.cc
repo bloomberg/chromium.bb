@@ -316,9 +316,4 @@ void RenderWidgetHostViewMus::UnlockCompositingSurface() {
   NOTIMPLEMENTED();
 }
 
-#if defined(OS_WIN)
-void RenderWidgetHostViewMus::SetParentNativeViewAccessible(
-    gfx::NativeViewAccessible accessible_parent) {}
-#endif
-
 }  // namespace content

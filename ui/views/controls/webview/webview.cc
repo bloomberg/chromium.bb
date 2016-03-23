@@ -339,24 +339,12 @@ void WebView::AttachWebContents() {
   if (focus_manager && focus_manager->GetFocusedView() == this)
     OnFocus();
 
-#if defined(OS_WIN)
-  if (!is_embedding_fullscreen_widget_) {
-    web_contents()->SetParentNativeViewAccessible(
-        parent()->GetNativeViewAccessible());
-  }
-#endif
-
   OnWebContentsAttached();
 }
 
 void WebView::DetachWebContents() {
-  if (web_contents()) {
+  if (web_contents())
     holder_->Detach();
-#if defined(OS_WIN)
-    if (!is_embedding_fullscreen_widget_)
-      web_contents()->SetParentNativeViewAccessible(NULL);
-#endif
-  }
 }
 
 void WebView::ReattachForFullscreenChange(bool enter_fullscreen) {

@@ -511,12 +511,6 @@ void RenderWidgetHostViewGuest::UnlockCompositingSurface() {
   NOTIMPLEMENTED();
 }
 
-#if defined(OS_WIN)
-void RenderWidgetHostViewGuest::SetParentNativeViewAccessible(
-    gfx::NativeViewAccessible accessible_parent) {
-}
-#endif
-
 void RenderWidgetHostViewGuest::DestroyGuestView() {
   // Let our observers know we're going away, since we don't want any event
   // processing calls coming in after we release host_.

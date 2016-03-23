@@ -168,10 +168,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Notification that the widget has lost the mouse lock.
   virtual void LostMouseLock(RenderWidgetHostImpl* render_widget_host) {}
 
-#if defined(OS_WIN)
-  virtual gfx::NativeViewAccessible GetParentNativeViewAccessible();
-#endif
-
   // Called when the widget has sent a compositor proto.  This is used in Btlimp
   // mode with the RemoteChannel compositor.
   virtual void ForwardCompositorProto(RenderWidgetHostImpl* render_widget_host,

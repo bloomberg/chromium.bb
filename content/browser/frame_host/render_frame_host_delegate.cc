@@ -88,11 +88,4 @@ scoped_ptr<WebUIImpl> RenderFrameHostDelegate::CreateWebUIForRenderFrameHost(
   return nullptr;
 }
 
-#if defined(OS_WIN)
-gfx::NativeViewAccessible
-    RenderFrameHostDelegate::GetParentNativeViewAccessible() {
-  return NULL;
-}
-#endif  // defined(OS_WIN)
-
 }  // namespace content

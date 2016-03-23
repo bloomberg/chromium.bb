@@ -288,11 +288,6 @@ class WebContents : public PageNavigator,
   // both renderer accessibility, and a native browser accessibility tree.
   virtual bool IsFullAccessibilityModeForTesting() const = 0;
 
-#if defined(OS_WIN)
-  virtual void SetParentNativeViewAccessible(
-      gfx::NativeViewAccessible accessible_parent) = 0;
-#endif
-
   virtual const PageImportanceSignals& GetPageImportanceSignals() const = 0;
 
   // Tab navigation state ------------------------------------------------------

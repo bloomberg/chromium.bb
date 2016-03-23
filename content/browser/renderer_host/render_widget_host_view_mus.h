@@ -121,11 +121,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMus : public RenderWidgetHostViewBase {
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;
 
-#if defined(OS_WIN)
-  void SetParentNativeViewAccessible(
-      gfx::NativeViewAccessible accessible_parent) override;
-#endif
-
   RenderWidgetHostImpl* host_;
 
   aura::Window* aura_window_;

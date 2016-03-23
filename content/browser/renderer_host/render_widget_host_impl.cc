@@ -2190,11 +2190,4 @@ BrowserAccessibilityManager*
       delegate_->GetOrCreateRootBrowserAccessibilityManager() : NULL;
 }
 
-#if defined(OS_WIN)
-gfx::NativeViewAccessible
-    RenderWidgetHostImpl::GetParentNativeViewAccessible() {
-  return delegate_ ? delegate_->GetParentNativeViewAccessible() : NULL;
-}
-#endif
-
 }  // namespace content

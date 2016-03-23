@@ -483,11 +483,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
     no_create_browser_accessibility_manager_for_testing_ = flag;
   }
 
-#if defined(OS_WIN)
-  void SetParentNativeViewAccessible(
-      gfx::NativeViewAccessible accessible_parent);
-  gfx::NativeViewAccessible GetParentNativeViewAccessible() const;
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   // Select popup menu related methods (for external popup menus).
   void DidSelectPopupMenuItem(int selected_index);
   void DidCancelPopupMenu();

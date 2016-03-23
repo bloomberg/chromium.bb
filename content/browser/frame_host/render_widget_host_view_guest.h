@@ -134,11 +134,6 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void LockCompositingSurface() override;
   void UnlockCompositingSurface() override;
 
-#if defined(OS_WIN)
-  void SetParentNativeViewAccessible(
-      gfx::NativeViewAccessible accessible_parent) override;
-#endif
-
   void WheelEventAck(const blink::WebMouseWheelEvent& event,
                      InputEventAckState ack_result) override;
 

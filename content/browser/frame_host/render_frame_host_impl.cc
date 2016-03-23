@@ -2455,22 +2455,7 @@ int RenderFrameHostImpl::GetProxyCount() {
   return frame_tree_node_->render_manager()->GetProxyCount();
 }
 
-#if defined(OS_WIN)
-
-void RenderFrameHostImpl::SetParentNativeViewAccessible(
-    gfx::NativeViewAccessible accessible_parent) {
-  RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
-      render_view_host_->GetWidget()->GetView());
-  if (view)
-    view->SetParentNativeViewAccessible(accessible_parent);
-}
-
-gfx::NativeViewAccessible
-RenderFrameHostImpl::GetParentNativeViewAccessible() const {
-  return delegate_->GetParentNativeViewAccessible();
-}
-
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX)
 
 void RenderFrameHostImpl::DidSelectPopupMenuItem(int selected_index) {
   Send(new FrameMsg_SelectPopupMenuItem(routing_id_, selected_index));

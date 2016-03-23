@@ -201,12 +201,6 @@ bool TestRenderWidgetHostView::LockMouse() {
 void TestRenderWidgetHostView::UnlockMouse() {
 }
 
-#if defined(OS_WIN)
-void TestRenderWidgetHostView::SetParentNativeViewAccessible(
-    gfx::NativeViewAccessible accessible_parent) {
-}
-#endif
-
 TestRenderViewHost::TestRenderViewHost(SiteInstance* instance,
                                        scoped_ptr<RenderWidgetHostImpl> widget,
                                        RenderViewHostDelegate* delegate,

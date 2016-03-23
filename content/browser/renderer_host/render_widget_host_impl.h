@@ -475,10 +475,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   void RejectMouseLockOrUnlockIfNecessary();
 
-#if defined(OS_WIN)
-  gfx::NativeViewAccessible GetParentNativeViewAccessible();
-#endif
-
   void set_renderer_initialized(bool renderer_initialized) {
     renderer_initialized_ = renderer_initialized;
   }
