@@ -6,7 +6,6 @@
 -RenderViewImplTest.GetCompositionCharacterBoundsTest
 -RenderViewImplTest.OnNavigationHttpPost
 -RenderViewImplTest.TestBackForward
--SecurityExploitBrowserTest.MismatchedOriginOnCommit
 -ServiceWorkerBrowserTest.FetchPageWithSaveData
 -ServiceWorkerBrowserTest.FetchPageWithSaveDataPassThroughOnFetch
 -SessionHistoryTest.FrameBackForward
