@@ -67,13 +67,182 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/array-complex-indexing.html', bug=483282)
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
 
-    # Remove after we roll in https://github.com/KhronosGroup/WebGL/pull/1520.
-    self.Fail('conformance2/vertex_arrays/vertex-array-object.html',
-        bug=295792)
-
-    # Note that this test fails on ['win', 'intel'] with bug=483282
-    self.Fail('conformance2/buffers/uniform-buffers.html', bug=577368)
     self.Fail('conformance2/misc/expando-loss-2.html', bug=483282)
+
+    # Windows / Mac.
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'r8-red-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'r16f-red-half_float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'r16f-red-float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'r32f-red-float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'r8ui-red_integer-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'srgb8-rgb-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
+        'srgb8_alpha8-rgba-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-' +
+        'r8-red-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-' +
+        'r16f-red-half_float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-' +
+        'r16f-red-float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-' +
+        'r32f-red-float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-' +
+        'r8ui-red_integer-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-' +
+        'srgb8-rgb-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_image/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-' +
+        'srgb8_alpha8-rgba-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-canvas-' +
+        'r8-red-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-canvas-' +
+        'r16f-red-half_float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-canvas-' +
+        'r16f-red-float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-canvas-' +
+        'r32f-red-float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-canvas-' +
+        'r8ui-red_integer-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-canvas-' +
+        'srgb8-rgb-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-canvas-' +
+        'srgb8_alpha8-rgba-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-canvas-' +
+        'r8-red-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-canvas-' +
+        'r16f-red-half_float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-canvas-' +
+        'r16f-red-float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-canvas-' +
+        'r32f-red-float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-canvas-' +
+        'r8ui-red_integer-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-canvas-' +
+        'srgb8-rgb-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-canvas-' +
+        'srgb8_alpha8-rgba-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-blob-' +
+        'r8-red-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-blob-' +
+        'r16f-red-half_float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-blob-' +
+        'r16f-red-float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-blob-' +
+        'r32f-red-float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-blob-' +
+        'r8ui-red_integer-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-blob-' +
+        'srgb8-rgb-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-blob-' +
+        'srgb8_alpha8-rgba-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-blob-' +
+        'r8-red-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-blob-' +
+        'r16f-red-half_float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-blob-' +
+        'r16f-red-float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-blob-' +
+        'r32f-red-float.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-blob-' +
+        'r8ui-red_integer-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-blob-' +
+        'srgb8-rgb-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-blob-' +
+        'srgb8_alpha8-rgba-unsigned_byte.html',
+        ['win', 'mac'], bug=595097)
 
     # Windows only.
     self.Fail('conformance2/textures/canvas/tex-image-and-sub-image-2d' +
@@ -102,6 +271,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Fail('conformance2/textures/canvas/tex-image-and-sub-image-2d' +
         '-with-canvas-rgba4-rgba-unsigned_short_4_4_4_4.html',
+        ['win'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['win'], bug=483282)
 
     self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-2d' +
@@ -286,6 +457,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/*', ['win', ('amd', 0x6779)], bug=491419)
     self.Flaky('deqp/*', ['win', ('amd', 0x6779)], bug=491419)
 
+    # Win / Intel
+    self.Fail('conformance2/buffers/uniform-buffers.html',
+        ['win', 'intel'], bug=483282)
+
     # Mac only.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
         ['mac'], bug=483282)
@@ -357,14 +532,16 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/clipping.html',
         ['mac', 'amd'], bug=483282)
 
+    # Mac Intel
+    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
+        ['mac', 'intel'], bug=483282)
+
     # Linux only.
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/rendering/draw-buffers.html',
-        ['linux'], bug=483282)
-    self.Fail('deqp/functional/gles3/fbostatequery.html',
         ['linux'], bug=483282)
 
     self.Flaky('deqp/functional/gles3/negativeshaderapi.html',
