@@ -10,7 +10,7 @@
 #include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/clipboard/arc_clipboard_bridge.h"
 #include "components/arc/crash_collector/arc_crash_collector_bridge.h"
-#include "components/arc/ime/arc_ime_bridge.h"
+#include "components/arc/ime/arc_ime_service.h"
 #include "components/arc/input/arc_input_bridge.h"
 #include "components/arc/metrics/arc_metrics_service.h"
 #include "components/arc/net/arc_net_host_impl.h"
@@ -44,7 +44,7 @@ ArcServiceManager::ArcServiceManager() {
   AddService(make_scoped_ptr(new ArcClipboardBridge(arc_bridge_service())));
   AddService(
       make_scoped_ptr(new ArcCrashCollectorBridge(arc_bridge_service())));
-  AddService(make_scoped_ptr(new ArcImeBridge(arc_bridge_service())));
+  AddService(make_scoped_ptr(new ArcImeService(arc_bridge_service())));
   AddService(make_scoped_ptr(new ArcInputBridge(arc_bridge_service())));
   AddService(make_scoped_ptr(new ArcMetricsService(arc_bridge_service())));
   AddService(make_scoped_ptr(new ArcNetHostImpl(arc_bridge_service())));

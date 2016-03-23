@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/ime/arc_ime_bridge.h"
+#include "components/arc/ime/arc_ime_service.h"
 
 #include "base/logging.h"
 #include "components/arc/ime/arc_ime_ipc_host_impl.h"
@@ -31,9 +31,9 @@ bool IsArcTopLevelWindow(const aura::Window* window) {
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
-// ArcImeBridge main implementation:
+// ArcImeService main implementation:
 
-ArcImeBridge::ArcImeBridge(ArcBridgeService* bridge_service)
+ArcImeService::ArcImeService(ArcBridgeService* bridge_service)
     : ArcService(bridge_service),
       ipc_host_(new ArcImeIpcHostImpl(this, bridge_service)),
       ime_type_(ui::TEXT_INPUT_TYPE_NONE),
@@ -44,7 +44,7 @@ ArcImeBridge::ArcImeBridge(ArcBridgeService* bridge_service)
     env->AddObserver(this);
 }
 
-ArcImeBridge::~ArcImeBridge() {
+ArcImeService::~ArcImeService() {
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method)
     input_method->DetachTextInputClient(this);
@@ -58,17 +58,17 @@ ArcImeBridge::~ArcImeBridge() {
     env->RemoveObserver(this);
 }
 
-void ArcImeBridge::SetIpcHostForTesting(
+void ArcImeService::SetIpcHostForTesting(
     scoped_ptr<ArcImeIpcHost> test_ipc_host) {
   ipc_host_ = std::move(test_ipc_host);
 }
 
-void ArcImeBridge::SetInputMethodForTesting(
+void ArcImeService::SetInputMethodForTesting(
     ui::InputMethod* test_input_method) {
   test_input_method_ = test_input_method;
 }
 
-ui::InputMethod* ArcImeBridge::GetInputMethod() {
+ui::InputMethod* ArcImeService::GetInputMethod() {
   if (test_input_method_)
     return test_input_method_;
   if (!focused_arc_window_.has_windows())
@@ -79,14 +79,14 @@ ui::InputMethod* ArcImeBridge::GetInputMethod() {
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from aura::EnvObserver:
 
-void ArcImeBridge::OnWindowInitialized(aura::Window* new_window) {
+void ArcImeService::OnWindowInitialized(aura::Window* new_window) {
   if (IsArcWindow(new_window)) {
     arc_windows_.Add(new_window);
     new_window->AddObserver(this);
   }
 }
 
-void ArcImeBridge::OnWindowAddedToRootWindow(aura::Window* window) {
+void ArcImeService::OnWindowAddedToRootWindow(aura::Window* window) {
   aura::Window* root = window->GetRootWindow();
   aura::client::FocusClient* focus_client = aura::client::GetFocusClient(root);
   if (focus_client && !observing_root_windows_.Contains(root)) {
@@ -98,7 +98,7 @@ void ArcImeBridge::OnWindowAddedToRootWindow(aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from aura::client::FocusChangeObserver:
 
-void ArcImeBridge::OnWindowFocused(aura::Window* gained_focus,
+void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
                                    aura::Window* lost_focus) {
   // The Aura focus may or may not be on sub-window of the toplevel ARC++ frame.
   // To handle all cases, judge the state by always climbing up to the toplevel.
@@ -125,7 +125,7 @@ void ArcImeBridge::OnWindowFocused(aura::Window* gained_focus,
 ////////////////////////////////////////////////////////////////////////////////
 // Overridden from arc::ArcImeIpcHost::Delegate
 
-void ArcImeBridge::OnTextInputTypeChanged(ui::TextInputType type) {
+void ArcImeService::OnTextInputTypeChanged(ui::TextInputType type) {
   if (ime_type_ == type)
     return;
   ime_type_ = type;
@@ -145,7 +145,7 @@ void ArcImeBridge::OnTextInputTypeChanged(ui::TextInputType type) {
   }
 }
 
-void ArcImeBridge::OnCursorRectChanged(const gfx::Rect& rect) {
+void ArcImeService::OnCursorRectChanged(const gfx::Rect& rect) {
   if (cursor_rect_ == rect)
     return;
   cursor_rect_ = rect;
@@ -155,7 +155,7 @@ void ArcImeBridge::OnCursorRectChanged(const gfx::Rect& rect) {
     input_method->OnCaretBoundsChanged(this);
 }
 
-void ArcImeBridge::OnCancelComposition() {
+void ArcImeService::OnCancelComposition() {
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method)
     input_method->CancelComposition(this);
@@ -164,30 +164,30 @@ void ArcImeBridge::OnCancelComposition() {
 ////////////////////////////////////////////////////////////////////////////////
 // Oberridden from ui::TextInputClient:
 
-void ArcImeBridge::SetCompositionText(
+void ArcImeService::SetCompositionText(
     const ui::CompositionText& composition) {
   has_composition_text_ = !composition.text.empty();
   ipc_host_->SendSetCompositionText(composition);
 }
 
-void ArcImeBridge::ConfirmCompositionText() {
+void ArcImeService::ConfirmCompositionText() {
   has_composition_text_ = false;
   ipc_host_->SendConfirmCompositionText();
 }
 
-void ArcImeBridge::ClearCompositionText() {
+void ArcImeService::ClearCompositionText() {
   if (has_composition_text_) {
     has_composition_text_ = false;
     ipc_host_->SendInsertText(base::string16());
   }
 }
 
-void ArcImeBridge::InsertText(const base::string16& text) {
+void ArcImeService::InsertText(const base::string16& text) {
   has_composition_text_ = false;
   ipc_host_->SendInsertText(text);
 }
 
-void ArcImeBridge::InsertChar(const ui::KeyEvent& event) {
+void ArcImeService::InsertChar(const ui::KeyEvent& event) {
   // Drop 0x00-0x1f (C0 controls), 0x7f (DEL), and 0x80-0x9f (C1 controls).
   // See: https://en.wikipedia.org/wiki/Unicode_control_characters
   // They are control characters and not treated as a text insertion.
@@ -201,66 +201,66 @@ void ArcImeBridge::InsertChar(const ui::KeyEvent& event) {
   }
 }
 
-ui::TextInputType ArcImeBridge::GetTextInputType() const {
+ui::TextInputType ArcImeService::GetTextInputType() const {
   return ime_type_;
 }
 
-gfx::Rect ArcImeBridge::GetCaretBounds() const {
+gfx::Rect ArcImeService::GetCaretBounds() const {
   return cursor_rect_;
 }
 
-ui::TextInputMode ArcImeBridge::GetTextInputMode() const {
+ui::TextInputMode ArcImeService::GetTextInputMode() const {
   return ui::TEXT_INPUT_MODE_DEFAULT;
 }
 
-int ArcImeBridge::GetTextInputFlags() const {
+int ArcImeService::GetTextInputFlags() const {
   return ui::TEXT_INPUT_FLAG_NONE;
 }
 
-bool ArcImeBridge::CanComposeInline() const {
+bool ArcImeService::CanComposeInline() const {
   return true;
 }
 
-bool ArcImeBridge::GetCompositionCharacterBounds(
+bool ArcImeService::GetCompositionCharacterBounds(
     uint32_t index, gfx::Rect* rect) const {
   return false;
 }
 
-bool ArcImeBridge::HasCompositionText() const {
+bool ArcImeService::HasCompositionText() const {
   return has_composition_text_;
 }
 
-bool ArcImeBridge::GetTextRange(gfx::Range* range) const {
+bool ArcImeService::GetTextRange(gfx::Range* range) const {
   return false;
 }
 
-bool ArcImeBridge::GetCompositionTextRange(gfx::Range* range) const {
+bool ArcImeService::GetCompositionTextRange(gfx::Range* range) const {
   return false;
 }
 
-bool ArcImeBridge::GetSelectionRange(gfx::Range* range) const {
+bool ArcImeService::GetSelectionRange(gfx::Range* range) const {
   return false;
 }
 
-bool ArcImeBridge::SetSelectionRange(const gfx::Range& range) {
+bool ArcImeService::SetSelectionRange(const gfx::Range& range) {
   return false;
 }
 
-bool ArcImeBridge::DeleteRange(const gfx::Range& range) {
+bool ArcImeService::DeleteRange(const gfx::Range& range) {
   return false;
 }
 
-bool ArcImeBridge::GetTextFromRange(
+bool ArcImeService::GetTextFromRange(
     const gfx::Range& range, base::string16* text) const {
   return false;
 }
 
-bool ArcImeBridge::ChangeTextDirectionAndLayoutAlignment(
+bool ArcImeService::ChangeTextDirectionAndLayoutAlignment(
     base::i18n::TextDirection direction) {
   return false;
 }
 
-bool ArcImeBridge::IsEditCommandEnabled(int command_id) {
+bool ArcImeService::IsEditCommandEnabled(int command_id) {
   return false;
 }
 

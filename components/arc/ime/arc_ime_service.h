@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_IME_ARC_IME_BRIDGE_H_
-#define COMPONENTS_ARC_IME_ARC_IME_BRIDGE_H_
+#ifndef COMPONENTS_ARC_IME_ARC_IME_SERVICE_H_
+#define COMPONENTS_ARC_IME_ARC_IME_SERVICE_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -32,15 +32,15 @@ class ArcBridgeService;
 
 // This class implements ui::TextInputClient and makes ARC windows behave
 // as a text input target in Chrome OS environment.
-class ArcImeBridge : public ArcService,
-                     public ArcImeIpcHost::Delegate,
-                     public aura::EnvObserver,
-                     public aura::WindowObserver,
-                     public aura::client::FocusChangeObserver,
-                     public ui::TextInputClient {
+class ArcImeService : public ArcService,
+                      public ArcImeIpcHost::Delegate,
+                      public aura::EnvObserver,
+                      public aura::WindowObserver,
+                      public aura::client::FocusChangeObserver,
+                      public ui::TextInputClient {
  public:
-  explicit ArcImeBridge(ArcBridgeService* bridge_service);
-  ~ArcImeBridge() override;
+  explicit ArcImeService(ArcBridgeService* bridge_service);
+  ~ArcImeService() override;
 
   // Injects the custom IPC host object for testing purpose only.
   void SetIpcHostForTesting(scoped_ptr<ArcImeIpcHost> test_ipc_host);
@@ -110,9 +110,9 @@ class ArcImeBridge : public ArcService,
 
   ui::InputMethod* test_input_method_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcImeBridge);
+  DISALLOW_COPY_AND_ASSIGN(ArcImeService);
 };
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_IME_ARC_IME_BRIDGE_H_
+#endif  // COMPONENTS_ARC_IME_ARC_IME_SERVICE_H_

@@ -7,7 +7,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/arc/ime/arc_ime_bridge.h"
+#include "components/arc/ime/arc_ime_service.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/composition_text.h"
@@ -66,19 +66,19 @@ class FakeInputMethod : public ui::DummyInputMethod {
 
 }  // namespace
 
-class ArcImeBridgeTest : public testing::Test {
+class ArcImeServiceTest : public testing::Test {
  public:
-  ArcImeBridgeTest() {}
+  ArcImeServiceTest() {}
 
  protected:
   scoped_ptr<FakeArcBridgeService> fake_arc_bridge_service_;
   scoped_ptr<FakeInputMethod> fake_input_method_;
-  scoped_ptr<ArcImeBridge> instance_;
+  scoped_ptr<ArcImeService> instance_;
 
  private:
   void SetUp() override {
     fake_arc_bridge_service_.reset(new FakeArcBridgeService);
-    instance_.reset(new ArcImeBridge(fake_arc_bridge_service_.get()));
+    instance_.reset(new ArcImeService(fake_arc_bridge_service_.get()));
     instance_->SetIpcHostForTesting(make_scoped_ptr(new FakeArcImeIpcHost));
 
     fake_input_method_.reset(new FakeInputMethod);
@@ -91,7 +91,7 @@ class ArcImeBridgeTest : public testing::Test {
   }
 };
 
-TEST_F(ArcImeBridgeTest, HasCompositionText) {
+TEST_F(ArcImeServiceTest, HasCompositionText) {
   ui::CompositionText composition;
   composition.text = base::UTF8ToUTF16("nonempty text");
 
@@ -118,7 +118,7 @@ TEST_F(ArcImeBridgeTest, HasCompositionText) {
   EXPECT_FALSE(instance_->HasCompositionText());
 }
 
-TEST_F(ArcImeBridgeTest, ShowImeIfNeeded) {
+TEST_F(ArcImeServiceTest, ShowImeIfNeeded) {
   fake_input_method_->SetFocusedTextInputClient(instance_.get());
   instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE);
   ASSERT_EQ(0, fake_input_method_->count_show_ime_if_needed());
@@ -138,7 +138,7 @@ TEST_F(ArcImeBridgeTest, ShowImeIfNeeded) {
   EXPECT_EQ(2, fake_input_method_->count_show_ime_if_needed());
 }
 
-TEST_F(ArcImeBridgeTest, CancelComposition) {
+TEST_F(ArcImeServiceTest, CancelComposition) {
   // The bridge should forward the cancel event to the input method.
   fake_input_method_->SetFocusedTextInputClient(instance_.get());
   instance_->OnCancelComposition();
