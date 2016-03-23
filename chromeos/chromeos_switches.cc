@@ -346,8 +346,9 @@ const char kCrosRegionsModeHide[] = "hide";
 // Forces CrOS region value.
 const char kCrosRegion[] = "cros-region";
 
-// Enables IME menu
+// Enables or disables the opt-in IME menu.
 const char kEnableImeMenu[] = "enable-ime-menu";
+const char kDisableImeMenu[] = "disable-ime-menu";
 
 // Controls CrOS GaiaId migration for tests:
 // ""        - default,
@@ -403,7 +404,7 @@ GetMemoryPressureThresholds() {
 }
 
 bool IsImeMenuEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableImeMenu);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableImeMenu);
 }
 
 bool IsGaiaIdMigrationStarted() {
