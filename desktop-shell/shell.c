@@ -451,10 +451,11 @@ get_output_panel_size(struct desktop_shell *shell,
 }
 
 static void
-get_output_work_area(struct desktop_shell *shell,
+get_output_work_area(void *data,
 		     struct weston_output *output,
 		     pixman_rectangle32_t *area)
 {
+	struct desktop_shell *shell = data;
 	int32_t panel_width = 0, panel_height = 0;
 
 	area->x = output->x;
@@ -6628,6 +6629,7 @@ module_init(struct weston_compositor *ec,
 	ec->shell_interface.set_window_geometry = set_window_geometry;
 	ec->shell_interface.set_maximized = shell_interface_set_maximized;
 	ec->shell_interface.set_pid = set_pid;
+	ec->shell_interface.get_output_work_area = get_output_work_area;
 
 	weston_layer_init(&shell->fullscreen_layer, &ec->cursor_layer.link);
 	weston_layer_init(&shell->panel_layer, &shell->fullscreen_layer.link);
