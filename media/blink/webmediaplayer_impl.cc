@@ -1088,6 +1088,9 @@ void WebMediaPlayerImpl::OnHidden() {
   // prevent an idle network connection from lingering.
   setBufferingStrategy(WebMediaPlayer::BufferingStrategy::Normal);
   pipeline_controller_.Suspend();
+  // If we're in the middle of a suspend/resume cycle we no longer want to
+  // resume when the suspend completes.
+  pending_suspend_resume_cycle_ = false;
   if (delegate_)
     delegate_->PlayerGone(delegate_id_);
 }
