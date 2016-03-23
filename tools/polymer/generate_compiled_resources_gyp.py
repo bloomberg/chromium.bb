@@ -13,6 +13,8 @@ _SRC = path.join(path.dirname(path.abspath(__file__)), "..", "..")
 _COMPILE_JS = path.join(
     _SRC, "third_party", "closure_compiler", "compile_js2.gypi")
 _POLYMERS = ["polymer%s.html" % p for p in "", "-mini", "-micro"]
+_WEB_ANIMATIONS_BASE = "web-animations.html"
+_WEB_ANIMATIONS_TARGET = "<(EXTERNS_GYP):web_animations"
 _COMPILED_RESOURCES_TEMPLATE = """
 # Copyright %d The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -44,6 +46,10 @@ def main(created_by, html_files):
     for html_import in sorted(imports):
       import_dir, import_base = path.split(html_import.encode("ascii"))
       if import_base in _POLYMERS:
+        continue
+
+      if import_base == _WEB_ANIMATIONS_BASE:
+        dependencies.append(_WEB_ANIMATIONS_TARGET)
         continue
 
       target = import_base[:-5] + "-extracted"

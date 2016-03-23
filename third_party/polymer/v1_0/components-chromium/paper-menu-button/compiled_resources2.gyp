@@ -9,6 +9,7 @@
       'target_name': 'paper-menu-button-animations-extracted',
       'dependencies': [
         '../neon-animation/compiled_resources2.gyp:neon-animation-behavior-extracted',
+        '<(EXTERNS_GYP):web_animations',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],
     },

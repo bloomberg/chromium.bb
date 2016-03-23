@@ -34,6 +34,25 @@ var PlaybackDirection = {
 };
 
 /**
+ * @enum {number}
+ * @see https://w3c.github.io/web-animations/#enumdef-iterationcompositeoperation
+ */
+var IterationCompositeOperation = {
+  'replace': 0,
+  'accumulate': 1
+};
+
+/**
+ * @enum {number}
+ * @see https://w3c.github.io/web-animations/#enumdef-compositeoperation
+ */
+var CompositeOperation = {
+  'replace': 0,
+  'add': 1,
+  'accumulate': 2
+};
+
+/**
  * @constructor
  * @param {!Event} event
  */
@@ -83,6 +102,58 @@ KeyframeEffectOptions.prototype.easing;
 
 /** @type {string} */
 KeyframeEffectOptions.prototype.id;
+
+/**
+ * @constructor
+ * @param {?Animatable} target
+ * @param {?Object} frames
+ * @param {number|KeyframeEffectOptions=} opt_options
+ * @see https://w3c.github.io/web-animations/#keyframeeffectreadonly
+ */
+var KeyframeEffectReadOnly = function(target, frames, opt_options) {};
+
+/** @const {?Animatable} */
+KeyframeEffectReadOnly.prototype.target;
+
+/** @const {IterationCompositeOperation} */
+KeyframeEffectReadOnly.prototype.iterationComposite;
+
+/** @const {CompositeOperation} */
+KeyframeEffectReadOnly.prototype.composite;
+
+/** @const {string} */
+KeyframeEffectReadOnly.prototype.spacing;
+
+/** @return {KeyframeEffect} */
+KeyframeEffectReadOnly.prototype.clone;
+
+/** @return {Array<Object>} */
+KeyframeEffectReadOnly.prototype.getFrames;
+
+/**
+ * @constructor
+ * @extends KeyframeEffectReadOnly
+ * @param {?Animatable} target
+ * @param {?Object} frames
+ * @param {number|KeyframeEffectOptions=} opt_options
+ * @see https://w3c.github.io/web-animations/#keyframeeffect
+ */
+var KeyframeEffect = function(target, frames, opt_options) {};
+
+/** @override */
+KeyframeEffect.prototype.target;
+
+/** @override */
+KeyframeEffect.prototype.iterationComposite;
+
+/** @override */
+KeyframeEffect.prototype.composite;
+
+/** @override */
+KeyframeEffect.prototype.spacing;
+
+/** @param {?Object} frames */
+KeyframeEffect.prototype.setFrames;
 
 /**
  * @interface
