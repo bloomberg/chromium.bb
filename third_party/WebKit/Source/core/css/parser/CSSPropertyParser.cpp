@@ -3063,6 +3063,45 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeGridLine(CSSParserTokenRange& ran
     return values.release();
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeGridBreadth(CSSParserTokenRange& range, CSSParserMode cssParserMode, TrackSizeRestriction restriction = AllowAll)
+{
+    if (restriction == AllowAll) {
+        const CSSParserToken& token = range.peek();
+        if (identMatches<CSSValueMinContent, CSSValueMaxContent, CSSValueAuto>(token.id()))
+            return consumeIdent(range);
+        if (token.type() == DimensionToken && token.unitType() == CSSPrimitiveValue::UnitType::Fraction) {
+            if (range.peek().numericValue() < 0)
+                return nullptr;
+            return cssValuePool().createValue(range.consumeIncludingWhitespace().numericValue(), CSSPrimitiveValue::UnitType::Fraction);
+        }
+    }
+    return consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative, UnitlessQuirk::Allow);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeGridTrackSize(CSSParserTokenRange& range, CSSParserMode cssParserMode, TrackSizeRestriction restriction = AllowAll)
+{
+    const CSSParserToken& token = range.peek();
+    if (restriction == AllowAll && identMatches<CSSValueAuto>(token.id()))
+        return consumeIdent(range);
+
+    if (token.functionId() == CSSValueMinmax) {
+        CSSParserTokenRange rangeCopy = range;
+        CSSParserTokenRange args = consumeFunction(rangeCopy);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> minTrackBreadth = consumeGridBreadth(args, cssParserMode, restriction);
+        if (!minTrackBreadth || !consumeCommaIncludingWhitespace(args))
+            return nullptr;
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> maxTrackBreadth = consumeGridBreadth(args, cssParserMode);
+        if (!maxTrackBreadth || !args.atEnd())
+            return nullptr;
+        range = rangeCopy;
+        RefPtrWillBeRawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValueMinmax);
+        result->append(minTrackBreadth.release());
+        result->append(maxTrackBreadth.release());
+        return result.release();
+    }
+    return consumeGridBreadth(range, cssParserMode, restriction);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3431,6 +3470,10 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyGridRowStart:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         return consumeGridLine(m_range);
+    case CSSPropertyGridAutoColumns:
+    case CSSPropertyGridAutoRows:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return consumeGridTrackSize(m_range, m_context.mode());
     default:
         CSSParserValueList valueList(m_range);
         if (valueList.size()) {

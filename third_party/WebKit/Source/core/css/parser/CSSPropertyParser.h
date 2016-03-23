@@ -43,6 +43,9 @@ class CSSValue;
 class CSSValueList;
 class StylePropertyShorthand;
 
+// TODO(rob.buis) to move to cpp file once legacy parser is removed.
+enum TrackSizeRestriction { FixedSizeOnly, AllowAll };
+
 // Inputs: PropertyID, isImportant bool, CSSParserValueList.
 // Outputs: Vector of CSSProperties
 
@@ -112,7 +115,6 @@ private:
 
     bool consumeColumns(bool important);
 
-    enum TrackSizeRestriction { FixedSizeOnly, AllowAll };
     bool consumeGridItemPositionShorthand(CSSPropertyID, bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridTemplateColumns(bool important);
     bool parseGridTemplateRowsAndAreasAndColumns(bool important);

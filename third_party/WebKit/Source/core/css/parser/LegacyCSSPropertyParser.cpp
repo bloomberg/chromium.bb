@@ -264,11 +264,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseGridAutoFlow(*m_valueList);
         break;
-    case CSSPropertyGridAutoColumns:
-    case CSSPropertyGridAutoRows:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        parsedValue = parseGridTrackSize(*m_valueList);
-        break;
 
     case CSSPropertyGridTemplateColumns:
     case CSSPropertyGridTemplateRows:
