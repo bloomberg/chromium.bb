@@ -58,6 +58,9 @@ cr.define('options.passwordManager', function() {
         title = title.substring(ind + 3);
       }
     }
+    // Since the direction is switched to RTL, punctuation symbols appear on the
+    // left side, that is wrong. So, just remove trailing punctuation symbols.
+    title = title.replace(/[^A-Za-z0-9]+$/, '');
     return title;
   }
 
@@ -75,11 +78,13 @@ cr.define('options.passwordManager', function() {
       urlLink = item.ownerDocument.createElement('a');
       urlLink.href = item.url;
       urlLink.setAttribute('target', '_blank');
-      urlLink.dir = 'ltr';
+      urlLink.textContent = item.shownUrl.split('').reverse().join('');
+
+      urlDiv.classList.add('left-elided-url');
     } else {
       urlLink = item.ownerDocument.createElement('span');
+      urlLink.textContent = item.shownUrl;
     }
-    urlLink.textContent = item.shownUrl;
     urlLink.addEventListener('focus', function() {
       item.handleFocus();
     }.bind(item));
@@ -103,7 +108,6 @@ cr.define('options.passwordManager', function() {
       this.urlLink = createUrlLink(this, urlDiv);
       urlDiv.appendChild(this.urlLink);
 
-      this.urlDiv = urlDiv;
       this.contentElement.appendChild(urlDiv);
 
       // The stored username.
@@ -369,7 +373,6 @@ cr.define('options.passwordManager', function() {
       this.urlLink = createUrlLink(this, urlDiv);
       urlDiv.appendChild(this.urlLink);
 
-      this.urlDiv = urlDiv;
       this.contentElement.appendChild(urlDiv);
     },
 
