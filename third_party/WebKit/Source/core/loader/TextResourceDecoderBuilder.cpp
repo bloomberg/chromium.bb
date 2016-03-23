@@ -42,6 +42,80 @@ static inline bool canReferToParentFrameEncoding(const LocalFrame* frame, const 
     return parentFrame && parentFrame->document()->getSecurityOrigin()->canAccess(frame->document()->getSecurityOrigin());
 }
 
+namespace {
+
+struct LegacyEncoding {
+    const char* domain;
+    const char* encoding;
+};
+
+static const LegacyEncoding encodings[] = {
+    { "au", "windows-1252" },
+    { "az", "ISO-8859-9" },
+    { "bd", "windows-1252" },
+    { "bg", "windows-1251" },
+    { "br", "windows-1252" },
+    { "ca", "windows-1252" },
+    { "ch", "windows-1252" },
+    { "cn", "GBK" },
+    { "cz", "windows-1250" },
+    { "de", "windows-1252" },
+    { "dk", "windows-1252" },
+    { "ee", "windows-1256" },
+    { "eg", "windows-1257" },
+    { "et", "windows-1252" },
+    { "fi", "windows-1252" },
+    { "fr", "windows-1252" },
+    { "gb", "windows-1252" },
+    { "gr", "ISO-8859-7" },
+    { "hk", "Big5" },
+    { "hr", "windows-1250" },
+    { "hu", "ISO-8859-2" },
+    { "il", "windows-1255" },
+    { "ir", "windows-1257" },
+    { "is", "windows-1252" },
+    { "it", "windows-1252" },
+    { "jp", "Shift_JIS" },
+    { "kr", "windows-949" },
+    { "lt", "windows-1256" },
+    { "lv", "windows-1256" },
+    { "mk", "windows-1251" },
+    { "nl", "windows-1252" },
+    { "no", "windows-1252" },
+    { "pl", "ISO-8859-2" },
+    { "pt", "windows-1252" },
+    { "ro", "ISO-8859-2" },
+    { "rs", "windows-1251" },
+    { "ru", "windows-1251" },
+    { "se", "windows-1252" },
+    { "si", "ISO-8859-2" },
+    { "sk", "windows-1250" },
+    { "th", "windows-874" },
+    { "tr", "ISO-8859-9" },
+    { "tw", "Big5" },
+    { "tz", "windows-1252" },
+    { "ua", "windows-1251" },
+    { "us", "windows-1252" },
+    { "vn", "windows-1258" },
+    { "xa", "windows-1252" },
+    { "xb", "windows-1257" }
+};
+
+static const WTF::TextEncoding getEncodingFromDomain(const KURL& url)
+{
+    Vector<String> tokens;
+    url.host().split(".", tokens);
+    if (!tokens.isEmpty()) {
+        auto tld = tokens.last();
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(encodings); i++) {
+            if (tld == encodings[i].domain)
+                return WTF::TextEncoding(encodings[i].encoding);
+        }
+    }
+    return WTF::TextEncoding();
+}
+
+} // namespace
 
 TextResourceDecoderBuilder::TextResourceDecoderBuilder(const AtomicString& mimeType, const AtomicString& encoding)
     : m_mimeType(mimeType)
@@ -56,12 +130,13 @@ TextResourceDecoderBuilder::~TextResourceDecoderBuilder()
 
 inline PassOwnPtr<TextResourceDecoder> TextResourceDecoderBuilder::createDecoderInstance(Document* document)
 {
+    const WTF::TextEncoding encodingFromDomain = getEncodingFromDomain(document->url());
     if (LocalFrame* frame = document->frame()) {
         if (Settings* settings = frame->settings())
-            return TextResourceDecoder::create(m_mimeType, settings->defaultTextEncodingName(), settings->usesEncodingDetector());
+            return TextResourceDecoder::create(m_mimeType, encodingFromDomain.isValid() ? encodingFromDomain : settings->defaultTextEncodingName(), settings->usesEncodingDetector());
     }
 
-    return TextResourceDecoder::create(m_mimeType, String());
+    return TextResourceDecoder::create(m_mimeType, encodingFromDomain);
 }
 
 inline void TextResourceDecoderBuilder::setupEncoding(TextResourceDecoder* decoder, Document* document)

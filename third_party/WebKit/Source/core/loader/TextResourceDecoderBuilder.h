@@ -41,7 +41,7 @@ namespace blink {
 class Document;
 class TextResourceDecoder;
 
-class TextResourceDecoderBuilder {
+class CORE_EXPORT TextResourceDecoderBuilder {
     DISALLOW_NEW();
 public:
     TextResourceDecoderBuilder(const AtomicString& mimeType, const AtomicString& encoding);
