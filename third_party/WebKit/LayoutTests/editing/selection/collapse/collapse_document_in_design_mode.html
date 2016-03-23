@@ -1,0 +1,22 @@
+<!doctype HTML>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<body contenteditable>
+<p id="anchor">This tests for setting the selection at a position inside a
+document in designMode. You should see a caret at the start of the body.</p>
+<div id="log"></div>
+</body>
+<script>
+test(function() {
+    document.designMode = 'on';
+    var selection = window.getSelection();
+    selection.collapse(document, 0);
+
+    var anchor = document.getElementById('anchor').firstChild;
+    assert_equals(selection.anchorNode, anchor, 'anchorNode');
+    assert_equals(selection.anchorOffset, 0, 'anchorOffset');
+    assert_equals(selection.focusNode, anchor, 'focusNode');
+    assert_equals(selection.focusOffset, 0, 'focusOffset');
+});
+</script>
+</html>
