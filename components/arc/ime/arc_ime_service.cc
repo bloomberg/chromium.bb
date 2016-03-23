@@ -5,7 +5,7 @@
 #include "components/arc/ime/arc_ime_service.h"
 
 #include "base/logging.h"
-#include "components/arc/ime/arc_ime_ipc_host_impl.h"
+#include "components/arc/ime/arc_ime_bridge_impl.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/surface.h"
 #include "ui/aura/client/focus_client.h"
@@ -35,7 +35,7 @@ bool IsArcTopLevelWindow(const aura::Window* window) {
 
 ArcImeService::ArcImeService(ArcBridgeService* bridge_service)
     : ArcService(bridge_service),
-      ipc_host_(new ArcImeIpcHostImpl(this, bridge_service)),
+      ime_bridge_(new ArcImeBridgeImpl(this, bridge_service)),
       ime_type_(ui::TEXT_INPUT_TYPE_NONE),
       has_composition_text_(false),
       test_input_method_(nullptr) {
@@ -58,9 +58,9 @@ ArcImeService::~ArcImeService() {
     env->RemoveObserver(this);
 }
 
-void ArcImeService::SetIpcHostForTesting(
-    scoped_ptr<ArcImeIpcHost> test_ipc_host) {
-  ipc_host_ = std::move(test_ipc_host);
+void ArcImeService::SetImeBridgeForTesting(
+    scoped_ptr<ArcImeBridge> test_ime_bridge) {
+  ime_bridge_ = std::move(test_ime_bridge);
 }
 
 void ArcImeService::SetInputMethodForTesting(
@@ -123,7 +123,7 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Overridden from arc::ArcImeIpcHost::Delegate
+// Overridden from arc::ArcImeBridge::Delegate
 
 void ArcImeService::OnTextInputTypeChanged(ui::TextInputType type) {
   if (ime_type_ == type)
@@ -167,24 +167,24 @@ void ArcImeService::OnCancelComposition() {
 void ArcImeService::SetCompositionText(
     const ui::CompositionText& composition) {
   has_composition_text_ = !composition.text.empty();
-  ipc_host_->SendSetCompositionText(composition);
+  ime_bridge_->SendSetCompositionText(composition);
 }
 
 void ArcImeService::ConfirmCompositionText() {
   has_composition_text_ = false;
-  ipc_host_->SendConfirmCompositionText();
+  ime_bridge_->SendConfirmCompositionText();
 }
 
 void ArcImeService::ClearCompositionText() {
   if (has_composition_text_) {
     has_composition_text_ = false;
-    ipc_host_->SendInsertText(base::string16());
+    ime_bridge_->SendInsertText(base::string16());
   }
 }
 
 void ArcImeService::InsertText(const base::string16& text) {
   has_composition_text_ = false;
-  ipc_host_->SendInsertText(text);
+  ime_bridge_->SendInsertText(text);
 }
 
 void ArcImeService::InsertChar(const ui::KeyEvent& event) {
@@ -197,7 +197,7 @@ void ArcImeService::InsertChar(const ui::KeyEvent& event) {
 
   if (!is_control_char && !ui::IsSystemKeyModifier(event.flags())) {
     has_composition_text_ = false;
-    ipc_host_->SendInsertText(base::string16(1, event.GetText()));
+    ime_bridge_->SendInsertText(base::string16(1, event.GetText()));
   }
 }
 

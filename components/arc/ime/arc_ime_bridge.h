@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_IME_ARC_IME_IPC_HOST_H_
-#define COMPONENTS_ARC_IME_ARC_IME_IPC_HOST_H_
+#ifndef COMPONENTS_ARC_IME_ARC_IME_BRIDGE_H_
+#define COMPONENTS_ARC_IME_ARC_IME_BRIDGE_H_
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -21,9 +21,9 @@ namespace arc {
 
 // This interface class encapsulates the detail of IME related IPC between
 // Chromium and the ARC container.
-class ArcImeIpcHost {
+class ArcImeBridge {
  public:
-  virtual ~ArcImeIpcHost() {}
+  virtual ~ArcImeBridge() {}
 
   // Received IPCs are deserialized and passed to this delegate.
   class Delegate {
@@ -40,12 +40,12 @@ class ArcImeIpcHost {
   virtual void SendInsertText(const base::string16& text) = 0;
 
  protected:
-  ArcImeIpcHost() {}
+  ArcImeBridge() {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ArcImeIpcHost);
+  DISALLOW_COPY_AND_ASSIGN(ArcImeBridge);
 };
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_IME_ARC_IME_IPC_HOST_H_
+#endif  // COMPONENTS_ARC_IME_ARC_IME_BRIDGE_H_

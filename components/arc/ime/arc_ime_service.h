@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/arc/arc_service.h"
-#include "components/arc/ime/arc_ime_ipc_host.h"
+#include "components/arc/ime/arc_ime_bridge.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
@@ -33,7 +33,7 @@ class ArcBridgeService;
 // This class implements ui::TextInputClient and makes ARC windows behave
 // as a text input target in Chrome OS environment.
 class ArcImeService : public ArcService,
-                      public ArcImeIpcHost::Delegate,
+                      public ArcImeBridge::Delegate,
                       public aura::EnvObserver,
                       public aura::WindowObserver,
                       public aura::client::FocusChangeObserver,
@@ -42,8 +42,8 @@ class ArcImeService : public ArcService,
   explicit ArcImeService(ArcBridgeService* bridge_service);
   ~ArcImeService() override;
 
-  // Injects the custom IPC host object for testing purpose only.
-  void SetIpcHostForTesting(scoped_ptr<ArcImeIpcHost> test_ipc_host);
+  // Injects the custom IPC bridge object for testing purpose only.
+  void SetImeBridgeForTesting(scoped_ptr<ArcImeBridge> test_ime_bridge);
 
   // Injects the custom IME for testing purpose only.
   void SetInputMethodForTesting(ui::InputMethod* test_input_method);
@@ -58,7 +58,7 @@ class ArcImeService : public ArcService,
   void OnWindowFocused(aura::Window* gained_focus,
                        aura::Window* lost_focus) override;
 
-  // Overridden from ArcImeIpcHost::Delegate:
+  // Overridden from ArcImeBridge::Delegate:
   void OnTextInputTypeChanged(ui::TextInputType type) override;
   void OnCursorRectChanged(const gfx::Rect& rect) override;
   void OnCancelComposition() override;
@@ -99,7 +99,7 @@ class ArcImeService : public ArcService,
  private:
   ui::InputMethod* GetInputMethod();
 
-  scoped_ptr<ArcImeIpcHost> ipc_host_;
+  scoped_ptr<ArcImeBridge> ime_bridge_;
   ui::TextInputType ime_type_;
   gfx::Rect cursor_rect_;
   bool has_composition_text_;

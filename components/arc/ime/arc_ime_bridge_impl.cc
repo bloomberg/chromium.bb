@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/ime/arc_ime_ipc_host_impl.h"
+#include "components/arc/ime/arc_ime_bridge_impl.h"
 
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -69,21 +69,21 @@ mojo::Array<arc::CompositionSegmentPtr> ConvertSegments(
 
 }  // namespace
 
-ArcImeIpcHostImpl::ArcImeIpcHostImpl(Delegate* delegate,
-                                     ArcBridgeService* bridge_service)
+ArcImeBridgeImpl::ArcImeBridgeImpl(Delegate* delegate,
+                                   ArcBridgeService* bridge_service)
     : binding_(this), delegate_(delegate), bridge_service_(bridge_service) {
   bridge_service_->AddObserver(this);
 }
 
-ArcImeIpcHostImpl::~ArcImeIpcHostImpl() {
+ArcImeBridgeImpl::~ArcImeBridgeImpl() {
   bridge_service_->RemoveObserver(this);
 }
 
-void ArcImeIpcHostImpl::OnImeInstanceReady() {
+void ArcImeBridgeImpl::OnImeInstanceReady() {
   bridge_service_->ime_instance()->Init(binding_.CreateInterfacePtrAndBind());
 }
 
-void ArcImeIpcHostImpl::SendSetCompositionText(
+void ArcImeBridgeImpl::SendSetCompositionText(
     const ui::CompositionText& composition) {
   ImeInstance* ime_instance = bridge_service_->ime_instance();
   if (!ime_instance) {
@@ -95,7 +95,7 @@ void ArcImeIpcHostImpl::SendSetCompositionText(
                                    ConvertSegments(composition));
 }
 
-void ArcImeIpcHostImpl::SendConfirmCompositionText() {
+void ArcImeBridgeImpl::SendConfirmCompositionText() {
   ImeInstance* ime_instance = bridge_service_->ime_instance();
   if (!ime_instance) {
     LOG(ERROR) << "ArcImeInstance method called before being ready.";
@@ -105,7 +105,7 @@ void ArcImeIpcHostImpl::SendConfirmCompositionText() {
   ime_instance->ConfirmCompositionText();
 }
 
-void ArcImeIpcHostImpl::SendInsertText(const base::string16& text) {
+void ArcImeBridgeImpl::SendInsertText(const base::string16& text) {
   ImeInstance* ime_instance = bridge_service_->ime_instance();
   if (!ime_instance) {
     LOG(ERROR) << "ArcImeInstance method called before being ready.";
@@ -115,11 +115,11 @@ void ArcImeIpcHostImpl::SendInsertText(const base::string16& text) {
   ime_instance->InsertText(base::UTF16ToUTF8(text));
 }
 
-void ArcImeIpcHostImpl::OnTextInputTypeChanged(arc::TextInputType type) {
+void ArcImeBridgeImpl::OnTextInputTypeChanged(arc::TextInputType type) {
   delegate_->OnTextInputTypeChanged(ConvertTextInputType(type));
 }
 
-void ArcImeIpcHostImpl::OnCursorRectChanged(arc::CursorRectPtr rect) {
+void ArcImeBridgeImpl::OnCursorRectChanged(arc::CursorRectPtr rect) {
   delegate_->OnCursorRectChanged(gfx::Rect(
       rect->left,
       rect->top,
@@ -127,7 +127,7 @@ void ArcImeIpcHostImpl::OnCursorRectChanged(arc::CursorRectPtr rect) {
       rect->bottom - rect->top));
 }
 
-void ArcImeIpcHostImpl::OnCancelComposition() {
+void ArcImeBridgeImpl::OnCancelComposition() {
   delegate_->OnCancelComposition();
 }
 

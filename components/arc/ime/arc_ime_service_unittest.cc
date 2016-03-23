@@ -17,7 +17,7 @@ namespace arc {
 
 namespace {
 
-class FakeArcImeIpcHost : public ArcImeIpcHost {
+class FakeArcImeBridge : public ArcImeBridge {
  public:
   void SendSetCompositionText(const ui::CompositionText& composition) override {
   }
@@ -79,7 +79,7 @@ class ArcImeServiceTest : public testing::Test {
   void SetUp() override {
     fake_arc_bridge_service_.reset(new FakeArcBridgeService);
     instance_.reset(new ArcImeService(fake_arc_bridge_service_.get()));
-    instance_->SetIpcHostForTesting(make_scoped_ptr(new FakeArcImeIpcHost));
+    instance_->SetImeBridgeForTesting(make_scoped_ptr(new FakeArcImeBridge));
 
     fake_input_method_.reset(new FakeInputMethod);
     instance_->SetInputMethodForTesting(fake_input_method_.get());
