@@ -18,6 +18,7 @@ const char kRegionIgnoredRe[] =
     "province|region|other"
     "|provincia"  // es
     "|bairro|suburb";  // pt-BR, pt-PT
+const char kAddressNameIgnoredRe[] = "address.*nickname|address.*label";
 const char kCompanyRe[] =
     "company|business|organization|organisation"
     "|firma|firmenname"  // de-DE

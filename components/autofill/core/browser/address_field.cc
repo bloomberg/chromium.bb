@@ -58,7 +58,8 @@ scoped_ptr<FormField> AddressField::Parse(AutofillScanner* scanner) {
   while (!scanner->IsEnd()) {
     const size_t cursor = scanner->SaveCursor();
     // Ignore "Address Lookup" field. http://crbug.com/427622
-    if (ParseField(scanner, base::UTF8ToUTF16(kAddressLookupRe), NULL)) {
+    if (ParseField(scanner, base::UTF8ToUTF16(kAddressLookupRe), NULL) ||
+        ParseField(scanner, base::UTF8ToUTF16(kAddressNameIgnoredRe), NULL)) {
       continue;
     } else if (address_field->ParseAddressLines(scanner) ||
         address_field->ParseCityStateZipCode(scanner) ||

@@ -10,6 +10,6 @@ ADDRESS_HOME_STATE | addressFormInlineState | STATE / PROVINCE* | NO_STATE_TYPE_
 ADDRESS_HOME_ZIP | addressFormInlineZip | ZIP / POSTAL CODE* |  | addressFormInlineFirstName_1-default
 PHONE_HOME_WHOLE_NUMBER | addressFormInlinePhoneNumber | PHONE NUMBER* |  | addressFormInlineFirstName_1-default
 EMAIL_ADDRESS | addressFormInlineEmail | EMAIL |  | addressFormInlineFirstName_1-default
-ADDRESS_HOME_LINE1 | addressFormInlineAddressNickName | ADDRESS NICKNAME* ?The Address Nickname is a short name you create to help you easily identify this address within your address book. |  | addressFormInlineAddressNickName_1-default
-UNKNOWN_TYPE | saveAddressCheckboxInline | Add to address book. | on | addressFormInlineAddressNickName_1-default
-UNKNOWN_TYPE | setDefaultCheckboxInline | Save as default shipping address in Address Book | on | addressFormInlineAddressNickName_1-default
+UNKNOWN_TYPE | addressFormInlineAddressNickName | ADDRESS NICKNAME* ?The Address Nickname is a short name you create to help you easily identify this address within your address book. |  | addressFormInlineFirstName_1-default
+UNKNOWN_TYPE | saveAddressCheckboxInline | Add to address book. | on | addressFormInlineFirstName_1-default
+UNKNOWN_TYPE | setDefaultCheckboxInline | Save as default shipping address in Address Book | on | addressFormInlineFirstName_1-default

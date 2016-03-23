@@ -9,6 +9,7 @@ namespace autofill {
 
 extern const char kAttentionIgnoredRe[];
 extern const char kRegionIgnoredRe[];
+extern const char kAddressNameIgnoredRe[];
 extern const char kCompanyRe[];
 extern const char kAddressLine1Re[];
 extern const char kAddressLine1LabelRe[];
