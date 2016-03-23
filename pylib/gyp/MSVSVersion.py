@@ -68,7 +68,7 @@ class VisualStudioVersion(object):
     of a user override."""
     return self.default_toolset
 
-  def SetupScript(self, target_arch):
+  def _SetupScriptInternal(self, target_arch):
     """Returns a command (with arguments) to be used to set up the
     environment."""
     # If WindowsSDKDir is set and SetEnv.Cmd exists then we are using the
@@ -107,6 +107,14 @@ class VisualStudioVersion(object):
           arg = 'amd64'
         return [os.path.normpath(
             os.path.join(self.path, 'VC/vcvarsall.bat')), arg]
+
+  def SetupScript(self, target_arch):
+    script_data = self._SetupScriptInternal(target_arch)
+    script_path = script_data[0]
+    if not os.path.exists(script_path):
+      raise Exception('%s is missing - make sure VC++ tools are installed.' %
+                      script_path)
+    return script_data
 
 
 def _RegistryQueryBase(sysdir, key, value):
