@@ -17,6 +17,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 import android.util.Pair;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
@@ -25,6 +26,7 @@ import org.chromium.content.browser.DownloadInfo;
 import org.chromium.content.browser.DownloadInfo.Builder;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.net.ConnectionType;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.Collections;
@@ -57,6 +59,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
             DOWNLOAD_SUCCESSFUL,
             DOWNLOAD_FAILED,
             DOWNLOAD_PROGRESS,
+            DOWNLOAD_PAUSED,
             CANCEL_DOWNLOAD_ID,
             CLEAR_PENDING_DOWNLOADS
         }
@@ -121,6 +124,11 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         @Override
         public void notifyDownloadProgress(DownloadInfo downloadInfo, long startTime) {
             assertCorrectExpectedCall(MethodID.DOWNLOAD_PROGRESS, downloadInfo);
+        }
+
+        @Override
+        public void notifyDownloadPaused(DownloadInfo downloadInfo, boolean isAutoResumable) {
+            assertCorrectExpectedCall(MethodID.DOWNLOAD_PAUSED, downloadInfo);
         }
 
         @Override
@@ -257,6 +265,9 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
     }
 
     private static class DownloadManagerServiceForTest extends DownloadManagerService {
+        boolean mResumed;
+        boolean mIsActiveNetworkMetered;
+
         public DownloadManagerServiceForTest(Context context, MockDownloadNotifier mockNotifier,
                 long updateDelayInMillis) {
             super(context, mockNotifier, getTestHandler(), updateDelayInMillis);
@@ -268,7 +279,17 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         }
 
         @Override
+        protected boolean isActiveNetworkMetered() {
+            return mIsActiveNetworkMetered;
+        }
+
+        @Override
         protected void init() {}
+
+        @Override
+        protected void resumeDownload(int downloadId, String fileName, boolean hasUserGesture) {
+            mResumed = true;
+        }
     }
 
     private static Handler getTestHandler() {
@@ -353,8 +374,7 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
                 getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
         dService.setDownloadSnackbarController(snackbarController);
         // Try calling download completed directly.
-        DownloadInfo successful = Builder.fromDownloadInfo(getDownloadInfo())
-                .setIsSuccessful(true).build();
+        DownloadInfo successful = getDownloadInfo();
 
         notifier.expect(MethodID.DOWNLOAD_SUCCESSFUL, successful);
 
@@ -362,25 +382,44 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         notifier.waitTillExpectedCallsComplete();
         snackbarController.waitForSnackbarControllerToFinish(true);
 
-        // Now check that a download failure works.
-        DownloadInfo failure = Builder.fromDownloadInfo(getDownloadInfo())
-                .setIsSuccessful(false).build();
-        notifier.expect(MethodID.DOWNLOAD_FAILED, failure);
-        dService.onDownloadCompleted(failure);
-        notifier.waitTillExpectedCallsComplete();
-        snackbarController.waitForSnackbarControllerToFinish(false);
-
         // Now check that a successful notification appears after a download progress.
         DownloadInfo progress = getDownloadInfo();
-        successful = Builder.fromDownloadInfo(progress)
-                .setIsSuccessful(true).build();
         notifier.expect(MethodID.DOWNLOAD_PROGRESS, progress)
-                .andThen(MethodID.DOWNLOAD_SUCCESSFUL, successful);
+                .andThen(MethodID.DOWNLOAD_SUCCESSFUL, progress);
         dService.onDownloadUpdated(progress);
         Thread.sleep(DELAY_BETWEEN_CALLS);
-        dService.onDownloadCompleted(successful);
+        dService.onDownloadCompleted(progress);
         notifier.waitTillExpectedCallsComplete();
         snackbarController.waitForSnackbarControllerToFinish(true);
+    }
+
+    @MediumTest
+    @Feature({"Download"})
+    public void testDownloadFailedIsCalled() throws InterruptedException {
+        MockDownloadNotifier notifier = new MockDownloadNotifier();
+        DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
+                getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
+        // Check that if an interrupted download cannot be resumed, it will trigger a download
+        // failure.
+        DownloadInfo failure =
+                Builder.fromDownloadInfo(getDownloadInfo()).setIsResumable(false).build();
+        notifier.expect(MethodID.DOWNLOAD_FAILED, failure);
+        dService.onDownloadInterrupted(failure, false);
+        notifier.waitTillExpectedCallsComplete();
+    }
+
+    @MediumTest
+    @Feature({"Download"})
+    public void testDownloadPausedIsCalled() throws InterruptedException {
+        MockDownloadNotifier notifier = new MockDownloadNotifier();
+        DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
+                getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
+        dService.disableNetworkChangeNotifierForTest();
+        DownloadInfo paused =
+                Builder.fromDownloadInfo(getDownloadInfo()).setIsResumable(true).build();
+        notifier.expect(MethodID.DOWNLOAD_PAUSED, paused);
+        dService.onDownloadInterrupted(paused, true);
+        notifier.waitTillExpectedCallsComplete();
     }
 
     @MediumTest
@@ -407,25 +446,50 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
 
     @MediumTest
     @Feature({"Download"})
-    public void testInProgressDownloadsAreCancelled() {
+    public void testInterruptedDownloadAreAutoResumed() throws InterruptedException {
         MockDownloadNotifier notifier = new MockDownloadNotifier();
-        DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
+        final DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
                 getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
-
-        DownloadInfo download1 = getDownloadInfo();
-        DownloadInfo download2 = getDownloadInfo();
-        DownloadInfo download3 = getDownloadInfo();
-        OneTimeMatchSet matchSet = new OneTimeMatchSet(download1, download2, download3);
-        notifier.expect(MethodID.DOWNLOAD_PROGRESS, matchSet)
-                .andThen(MethodID.DOWNLOAD_PROGRESS, matchSet)
-                .andThen(MethodID.DOWNLOAD_PROGRESS, matchSet);
-
-        dService.onDownloadUpdated(download1);
-        dService.onDownloadUpdated(download2);
-        dService.onDownloadUpdated(download3);
-
+        dService.disableNetworkChangeNotifierForTest();
+        DownloadInfo paused =
+                Builder.fromDownloadInfo(getDownloadInfo()).setIsResumable(true).build();
+        notifier.expect(MethodID.DOWNLOAD_PROGRESS, paused)
+                .andThen(MethodID.DOWNLOAD_PAUSED, paused);
+        dService.onDownloadUpdated(paused);
+        Thread.sleep(DELAY_BETWEEN_CALLS);
+        dService.onDownloadInterrupted(paused, true);
         notifier.waitTillExpectedCallsComplete();
-        assertTrue("All downloads should be updated.", matchSet.mMatches.isEmpty());
+        int resumableIdCount = dService.mAutoResumableDownloadIds.size();
+        dService.onConnectionTypeChanged(ConnectionType.CONNECTION_WIFI);
+        assertEquals(resumableIdCount - 1, dService.mAutoResumableDownloadIds.size());
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                assertTrue(dService.mResumed);
+            }
+        });
+    }
+
+    @MediumTest
+    @Feature({"Download"})
+    public void testInterruptedUnmeteredDownloadCannotAutoResumeOnMeteredNetwork() throws
+            InterruptedException {
+        MockDownloadNotifier notifier = new MockDownloadNotifier();
+        final DownloadManagerServiceForTest dService = new DownloadManagerServiceForTest(
+                getTestContext(), notifier, UPDATE_DELAY_FOR_TEST);
+        dService.disableNetworkChangeNotifierForTest();
+        DownloadInfo paused =
+                Builder.fromDownloadInfo(getDownloadInfo()).setIsResumable(true).build();
+        notifier.expect(MethodID.DOWNLOAD_PROGRESS, paused)
+                .andThen(MethodID.DOWNLOAD_PAUSED, paused);
+        dService.onDownloadUpdated(paused);
+        Thread.sleep(DELAY_BETWEEN_CALLS);
+        dService.onDownloadInterrupted(paused, true);
+        notifier.waitTillExpectedCallsComplete();
+        dService.mIsActiveNetworkMetered = true;
+        int resumableIdCount = dService.mAutoResumableDownloadIds.size();
+        dService.onConnectionTypeChanged(ConnectionType.CONNECTION_2G);
+        assertEquals(resumableIdCount, dService.mAutoResumableDownloadIds.size());
     }
 
     /**

@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
@@ -32,6 +33,9 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.content.browser.DownloadController;
 import org.chromium.content.browser.DownloadInfo;
+import org.chromium.net.ConnectionType;
+import org.chromium.net.NetworkChangeNotifierAutoDetect;
+import org.chromium.net.RegistrationPolicyAlwaysRegister;
 import org.chromium.ui.widget.Toast;
 
 import java.io.File;
@@ -39,9 +43,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -51,7 +57,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * updates for progress of downloads and handles cleaning up of interrupted progress notifications.
  */
 public class DownloadManagerService extends BroadcastReceiver implements
-        DownloadController.DownloadNotificationService {
+        DownloadController.DownloadNotificationService,
+        NetworkChangeNotifierAutoDetect.Observer {
     private static final String TAG = "DownloadService";
     // Deprecated shared preference entry. Keep this for a while so that it will be removed when
     // user updates Chrome.
@@ -69,7 +76,15 @@ public class DownloadManagerService extends BroadcastReceiver implements
     private static final int UMA_DOWNLOAD_RESUMPTION_BROWSER_KILLED = 1;
     private static final int UMA_DOWNLOAD_RESUMPTION_CLICKED = 2;
     private static final int UMA_DOWNLOAD_RESUMPTION_FAILED = 3;
-    private static final int UMA_DOWNLOAD_RESUMPTION_COUNT = 4;
+    private static final int UMA_DOWNLOAD_RESUMPTION_AUTO_STARTED = 4;
+    private static final int UMA_DOWNLOAD_RESUMPTION_COUNT = 5;
+
+    // Download status.
+    private static final int DOWNLOAD_STATUS_IN_PROGRESS = 0;
+    private static final int DOWNLOAD_STATUS_COMPLETE = 1;
+    private static final int DOWNLOAD_STATUS_FAILED = 2;
+    private static final int DOWNLOAD_STATUS_CANCELLED = 3;
+    private static final int DOWNLOAD_STATUS_INTERRUPTED = 4;
 
     // Set will be more expensive to initialize, so use an ArrayList here.
     private static final List<String> MIME_TYPES_TO_OPEN = new ArrayList<String>(Arrays.asList(
@@ -100,33 +115,31 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
     private final LongSparseArray<DownloadInfo> mPendingDownloads =
             new LongSparseArray<DownloadInfo>();
+    // Using vector for thread safety.
+    @VisibleForTesting protected final Vector<Integer> mAutoResumableDownloadIds =
+            new Vector<Integer>();
+    private DownloadBroadcastReceiver mDownloadBroadcastReceiver;
     private OMADownloadHandler mOMADownloadHandler;
     private DownloadSnackbarController mDownloadSnackbarController;
     private long mNativeDownloadManagerService;
     private DownloadManagerDelegate mDownloadManagerDelegate;
-
-    /**
-     * Enum representing status of a download.
-     */
-    private enum DownloadStatus {
-        IN_PROGRESS,
-        COMPLETE,
-        FAILED,
-        CANCELLED
-    }
+    private NetworkChangeNotifierAutoDetect mNetworkChangeNotifier;
+    private boolean mIsNetworkChangeNotifierDisabled;
 
     /**
      * Class representing progress of a download.
      */
     private static class DownloadProgress {
         final long mStartTimeInMillis;
+        boolean mCanDownloadWhileMetered;
         volatile DownloadInfo mDownloadInfo;
-        volatile DownloadStatus mDownloadStatus;
+        volatile int mDownloadStatus;
         volatile boolean mUpdateNotification;
 
-        DownloadProgress(long startTimeInMillis, DownloadInfo downloadInfo,
-                DownloadStatus downloadStatus, boolean updateNotification) {
+        DownloadProgress(long startTimeInMillis, boolean canDownloadWhileMetered,
+                DownloadInfo downloadInfo, int downloadStatus, boolean updateNotification) {
             mStartTimeInMillis = startTimeInMillis;
+            mCanDownloadWhileMetered = canDownloadWhileMetered;
             mDownloadInfo = downloadInfo;
             mDownloadStatus = downloadStatus;
             mUpdateNotification = updateNotification;
@@ -241,9 +254,9 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
     @Override
     public void onDownloadCompleted(final DownloadInfo downloadInfo) {
-        DownloadStatus status = DownloadStatus.COMPLETE;
-        if (!downloadInfo.isSuccessful() || downloadInfo.getContentLength() == 0) {
-            status = DownloadStatus.FAILED;
+        int status = DOWNLOAD_STATUS_COMPLETE;
+        if (downloadInfo.getContentLength() == 0) {
+            status = DOWNLOAD_STATUS_FAILED;
         }
         updateDownloadProgress(downloadInfo, status);
         scheduleUpdateIfNeeded();
@@ -251,13 +264,30 @@ public class DownloadManagerService extends BroadcastReceiver implements
 
     @Override
     public void onDownloadUpdated(final DownloadInfo downloadInfo) {
-        updateDownloadProgress(downloadInfo, DownloadStatus.IN_PROGRESS);
+        updateDownloadProgress(downloadInfo, DOWNLOAD_STATUS_IN_PROGRESS);
+        // If user manually paused a download, this download is no longer auto resumable.
+        if (downloadInfo.isPaused()) {
+            removeAutoResumableDownload(downloadInfo.getDownloadId());
+        }
         scheduleUpdateIfNeeded();
     }
 
     @Override
     public void onDownloadCancelled(final DownloadInfo downloadInfo) {
-        updateDownloadProgress(downloadInfo, DownloadStatus.CANCELLED);
+        updateDownloadProgress(downloadInfo, DOWNLOAD_STATUS_CANCELLED);
+        removeAutoResumableDownload(downloadInfo.getDownloadId());
+        scheduleUpdateIfNeeded();
+    }
+
+    @Override
+    public void onDownloadInterrupted(final DownloadInfo downloadInfo, boolean isAutoResumable) {
+        int status = DOWNLOAD_STATUS_INTERRUPTED;
+        if (!downloadInfo.isResumable()) {
+            status = DOWNLOAD_STATUS_FAILED;
+        } else if (isAutoResumable) {
+            addAutoResumableDownload(downloadInfo.getDownloadId());
+        }
+        updateDownloadProgress(downloadInfo, status);
         scheduleUpdateIfNeeded();
     }
 
@@ -457,7 +487,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
             if (progress != null) {
                 DownloadInfo info = progress.mDownloadInfo;
                 switch (progress.mDownloadStatus) {
-                    case COMPLETE:
+                    case DOWNLOAD_STATUS_COMPLETE:
                         mDownloadProgressMap.remove(info.getDownloadId());
                         long downloadId = addCompletedDownload(info);
                         if (downloadId == INVALID_DOWNLOAD_ID) {
@@ -472,22 +502,41 @@ public class DownloadManagerService extends BroadcastReceiver implements
                             broadcastDownloadSuccessful(info);
                         }
                         break;
-                    case FAILED:
+                    case DOWNLOAD_STATUS_FAILED:
                         mDownloadProgressMap.remove(info.getDownloadId());
                         mDownloadNotifier.notifyDownloadFailed(info);
                         completionMap.put(info, Pair.create(INVALID_DOWNLOAD_ID, false));
                         Log.w(TAG, "Download failed: " + info.getFilePath());
                         break;
-                    case IN_PROGRESS:
+                    case DOWNLOAD_STATUS_IN_PROGRESS:
                         if (!progress.mUpdateNotification) break;
-                        mDownloadNotifier.notifyDownloadProgress(info, progress.mStartTimeInMillis);
-                        if (info.isPaused() && info.isResumable()) {
-                            recordDownloadResumption(UMA_DOWNLOAD_RESUMPTION_MANUAL_PAUSE);
+                        if (progress.mDownloadInfo.isPaused()) {
+                            mDownloadProgressMap.remove(info.getDownloadId());
+                            mDownloadNotifier.notifyDownloadPaused(info, false);
+                            if (info.isResumable()) {
+                                recordDownloadResumption(UMA_DOWNLOAD_RESUMPTION_MANUAL_PAUSE);
+                            }
+                        } else {
+                            mDownloadNotifier.notifyDownloadProgress(
+                                    info, progress.mStartTimeInMillis);
                         }
                         break;
-                    case CANCELLED:
+                    case DOWNLOAD_STATUS_CANCELLED:
                         mDownloadProgressMap.remove(info.getDownloadId());
                         mDownloadNotifier.cancelNotification(info.getDownloadId());
+                        break;
+                    case DOWNLOAD_STATUS_INTERRUPTED:
+                        // If the download can be auto resumed, keep it in the progress map so we
+                        // can resume it once network becomes available.
+                        boolean isAutoResumable =
+                                mAutoResumableDownloadIds.contains(info.getDownloadId());
+                        if (!isAutoResumable) {
+                            mDownloadProgressMap.remove(info.getDownloadId());
+                        }
+                        mDownloadNotifier.notifyDownloadPaused(info, isAutoResumable);
+                        break;
+                    default:
+                        assert false;
                         break;
                 }
             }
@@ -589,21 +638,22 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * Updates the progress of a download.
      *
      * @param downloadInfo Information about the download.
-     * @param status Status of the download.
+     * @param downloadStatus Status of the download.
      */
-    private void updateDownloadProgress(DownloadInfo downloadInfo, DownloadStatus status) {
+    private void updateDownloadProgress(DownloadInfo downloadInfo, int downloadStatus) {
         assert downloadInfo.hasDownloadId();
         int downloadId = downloadInfo.getDownloadId();
         DownloadProgress progress = mDownloadProgressMap.get(downloadId);
         if (progress == null) {
-            progress = new DownloadProgress(System.currentTimeMillis(), downloadInfo, status, true);
+            progress = new DownloadProgress(System.currentTimeMillis(), isActiveNetworkMetered(),
+                    downloadInfo, downloadStatus, true);
             mDownloadProgressMap.putIfAbsent(downloadId, progress);
         } else if (progress.mDownloadInfo.isPaused() && downloadInfo.isPaused()) {
             // when download is paused, this function can get called over and over. So stop updating
             // the notifications unless the status changes.
             progress.mUpdateNotification = false;
         } else {
-            progress.mDownloadStatus = status;
+            progress.mDownloadStatus = downloadStatus;
             progress.mDownloadInfo = downloadInfo;
             progress.mUpdateNotification = true;
         }
@@ -1039,9 +1089,22 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * Called to resume a paused download.
      * @param downloadId Id of the download.
      * @param fileName Name of the download file.
+     * @param hasUserGesture Whether the resumption is triggered by user gesture.
      */
-    void resumeDownload(int downloadId, String fileName) {
-        recordDownloadResumption(UMA_DOWNLOAD_RESUMPTION_CLICKED);
+    @VisibleForTesting
+    protected void resumeDownload(int downloadId, String fileName, boolean hasUserGesture) {
+        int uma = hasUserGesture ? UMA_DOWNLOAD_RESUMPTION_CLICKED
+                : UMA_DOWNLOAD_RESUMPTION_AUTO_STARTED;
+        recordDownloadResumption(uma);
+        if (hasUserGesture) {
+            DownloadProgress progress = mDownloadProgressMap.get(downloadId);
+            // If user manually resumes a download, update the connection type that the download
+            // can start. If the previous connection type is metered, manually resuming on an
+            // unmetered network should not affect the original connection type.
+            if (progress != null && !progress.mCanDownloadWhileMetered) {
+                progress.mCanDownloadWhileMetered = isActiveNetworkMetered();
+            }
+        }
         nativeResumeDownload(mNativeDownloadManagerService, downloadId, fileName);
     }
 
@@ -1088,6 +1151,102 @@ public class DownloadManagerService extends BroadcastReceiver implements
         RecordHistogram.recordEnumeratedHistogram(
                 "MobileDownload.DownloadResumption", type, UMA_DOWNLOAD_RESUMPTION_COUNT);
     }
+
+    /**
+     * Check if current network is metered.
+     * @return true if the network is metered, or false otherwise.
+     */
+    @VisibleForTesting
+    protected boolean isActiveNetworkMetered() {
+        ConnectivityManager cm =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm.isActiveNetworkMetered();
+    }
+
+    /**
+     * Called by tests to disable listening to network connection changes.
+     */
+    @VisibleForTesting
+    void disableNetworkChangeNotifierForTest() {
+        mIsNetworkChangeNotifierDisabled = true;
+    }
+
+    /**
+     * Helper method to add an auto resumable download.
+     * @param downloadId Id of the download item.
+     */
+    private void addAutoResumableDownload(int downloadId) {
+        if (mAutoResumableDownloadIds.isEmpty() && !mIsNetworkChangeNotifierDisabled) {
+            mNetworkChangeNotifier = new NetworkChangeNotifierAutoDetect(this, mContext,
+                    new RegistrationPolicyAlwaysRegister());
+        }
+        if (!mAutoResumableDownloadIds.contains(downloadId)) {
+            mAutoResumableDownloadIds.add(downloadId);
+        }
+    }
+
+    /**
+     * Helper method to remove an auto resumable download.
+     * @param downloadId Id of the download item.
+     */
+    private void removeAutoResumableDownload(int downloadId) {
+        if (mAutoResumableDownloadIds.isEmpty()) return;
+        mAutoResumableDownloadIds.remove(Integer.valueOf(downloadId));
+        stopListenToConnectionChangeIfNotNeeded();
+    }
+
+    @Override
+    public void onConnectionTypeChanged(int connectionType) {
+        if (mAutoResumableDownloadIds.isEmpty()) return;
+        if (connectionType == ConnectionType.CONNECTION_NONE) return;
+        boolean isMetered = isActiveNetworkMetered();
+        Iterator<Integer> iterator = mAutoResumableDownloadIds.iterator();
+        while (iterator.hasNext()) {
+            final int downloadId = iterator.next();
+            final DownloadProgress progress = mDownloadProgressMap.get(downloadId);
+            // Introduce some delay in each resumption so we don't start all of them immediately.
+            if (progress.mCanDownloadWhileMetered || !isMetered) {
+                // Remove the pending resumable item so that the task won't be posted again on the
+                // next connectivity change.
+                iterator.remove();
+                // Post a delayed task to avoid an issue that when connectivity status just changed
+                // to CONNECTED, immediately establishing a connection will sometimes fail.
+                mHandler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        resumeDownload(downloadId, progress.mDownloadInfo.getFileName(), false);
+                    }
+                }, mUpdateDelayInMillis);
+            }
+        }
+        stopListenToConnectionChangeIfNotNeeded();
+    }
+
+    /**
+     * Helper method to stop listening to the connection type change
+     * if it is no longer needed.
+     */
+    private void stopListenToConnectionChangeIfNotNeeded() {
+        if (mAutoResumableDownloadIds.isEmpty() && mNetworkChangeNotifier != null) {
+            mNetworkChangeNotifier.destroy();
+            mNetworkChangeNotifier = null;
+        }
+    }
+
+    @Override
+    public void onMaxBandwidthChanged(double maxBandwidthMbps) {}
+
+    @Override
+    public void onNetworkConnect(int netId, int connectionType) {}
+
+    @Override
+    public void onNetworkSoonToDisconnect(int netId) {}
+
+    @Override
+    public void onNetworkDisconnect(int netId) {}
+
+    @Override
+    public void updateActiveNetworkList(int[] activeNetIds) {}
 
     private native long nativeInit();
     private native void nativeResumeDownload(

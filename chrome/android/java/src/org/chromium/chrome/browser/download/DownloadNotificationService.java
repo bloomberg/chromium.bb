@@ -205,10 +205,10 @@ public class DownloadNotificationService extends Service {
      * @param downloadId ID of the download.
      * @param fileName File name of the download.
      * @param isResumable whether download is resumable.
-     * @param hasUserGesture whether download is paused by user gesture.
+     * @param isAutoResumable whether download is can be resumed automatically.
      */
     public void notifyDownloadPaused(
-            int downloadId, String fileName, boolean isResumable, boolean hasUserGesture) {
+            int downloadId, String fileName, boolean isResumable, boolean isAutoResumable) {
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.ic_media_pause,
                 fileName,
@@ -225,9 +225,8 @@ public class DownloadNotificationService extends Service {
                     buildPendingIntent(ACTION_DOWNLOAD_RESUME, downloadId, fileName));
         }
         updateNotification(downloadId, builder.build());
-        // If download is paused by user gesture, it should not be auto resumed and there is no
-        // need to keep it in SharedPreferences.
-        if (!isResumable || hasUserGesture) {
+        // If download is not auto resumable, there is no need to keep it in SharedPreferences.
+        if (!isResumable || !isAutoResumable) {
             removePendingDownloadFromSharedPrefs(downloadId);
         }
     }
@@ -277,7 +276,7 @@ public class DownloadNotificationService extends Service {
             PendingNotification notification = notifications.get(i);
             if (notification.downloadId > 0) {
                 notifyDownloadPaused(notification.downloadId, notification.fileName,
-                        notification.isResumable, false);
+                        notification.isResumable, true);
             }
         }
     }
@@ -344,7 +343,7 @@ public class DownloadNotificationService extends Service {
                         service.pauseDownload(downloadId);
                         break;
                     case ACTION_DOWNLOAD_RESUME:
-                        service.resumeDownload(downloadId, fileName);
+                        service.resumeDownload(downloadId, fileName, true);
                         notifyDownloadProgress(
                                 downloadId, fileName, INVALID_DOWNLOAD_PERCENTAGE, 0, 0, true);
                         break;
