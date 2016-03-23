@@ -32,7 +32,7 @@ const int kFetchingIntervalWifiChargingSeconds = 30 * 60;
 const int kFetchingIntervalWifiSeconds = 2 * 60 * 60;
 const int kFetchingIntervalFallbackSeconds = 24 * 60 * 60;
 
-const int kDefaultExpiryTimeMins = 4 * 60;
+const int kDefaultExpiryTimeMins = 24 * 60;
 
 base::TimeDelta GetFetchingInterval(const char* switch_name,
                                     int default_value_seconds) {
