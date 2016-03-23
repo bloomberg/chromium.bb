@@ -6,7 +6,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_device_handler.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -56,8 +60,19 @@ DeviceNetworkConfigurationUpdater::DeviceNetworkConfigurationUpdater(
 void DeviceNetworkConfigurationUpdater::Init() {
   NetworkConfigurationUpdater::Init();
 
-  // Apply the roaming setting initially.
-  OnDataRoamingSettingChanged();
+  // TODO(xdai): kAllowDataRoamingByDefault is only used by Rialto devices for
+  // development/testing purpose. After Rialto migrates to use KIOSK app mode,
+  // remove this part of logic.
+  const policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (!connector->IsEnterpriseManaged() &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kAllowDataRoamingByDefault)) {
+    network_device_handler_->SetCellularAllowRoaming(true);
+  } else {
+    // Apply the roaming setting initially.
+    OnDataRoamingSettingChanged();
+  }
 }
 
 void DeviceNetworkConfigurationUpdater::ImportCertificates(

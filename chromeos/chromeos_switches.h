@@ -13,14 +13,15 @@ namespace switches {
 
 // Switches that are used in src/chromeos must go here.
 // Other switches that apply just to chromeos code should go here also (along
-// with any code that is specific to the chromeos system). ChromeOS specific UI
-// should be in src/ash.
+// with any code that is specific to the chromeos system). Chrome OS specific
+// UI should be in src/ash.
 
 // Note: If you add a switch, consider if it needs to be copied to a subsequent
 // command line if the process executes a new copy of itself.  (For example,
 // see chromeos::LoginUtil::GetOffTheRecordCommandLine().)
 
 // Please keep alphabetized.
+CHROMEOS_EXPORT extern const char kAllowDataRoamingByDefault[];
 CHROMEOS_EXPORT extern const char kAllowFailedPolicyFetchForTest[];
 CHROMEOS_EXPORT extern const char kAllowRAInDevMode[];
 CHROMEOS_EXPORT extern const char kAppOemManifestFile[];

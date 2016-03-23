@@ -12,6 +12,13 @@
 
 namespace chromeos {
 namespace switches {
+
+// If this flag is set, enable data roaming in the cellular network by default
+// upon system start if it's an unmanaged device. This flag is used by Rialto
+// device to obtain device policy during OOBE since the Rialto device has no
+// display and and only connects over cell.
+const char kAllowDataRoamingByDefault[] = "allow-data-roaming-by-default";
+
 // If this flag is passed, failed policy fetches will not cause profile
 // initialization to fail. This is useful for tests because it means that
 // tests don't have to mock out the policy infrastructure.
