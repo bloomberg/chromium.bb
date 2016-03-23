@@ -2,12 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+#include <array>
 #include <list>
 
 #include "base/big_endian.h"
+#include "base/bind.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_descriptor.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_info.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_elementary_stream_packetizer.h"
+#include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_packetizer.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_transport_stream_packetizer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,6 +46,17 @@ const unsigned kPtsFlag = 0x0080u;
 const size_t kUnitDataAlignment = sizeof(uint32_t);
 }
 
+namespace rtp {
+const unsigned kVersionMask = 0xC000u;
+const unsigned kVersion2 = 0x8000u;
+const unsigned kPaddingFlag = 0x2000u;
+const unsigned kExtensionFlag = 0x1000u;
+const unsigned kContributingSourceCountMask = 0x0F00u;
+const unsigned kMarkerFlag = 0x0010u;
+const unsigned kPayloadTypeMask = 0x007Fu;
+const unsigned kPayloadTypeMP2T = 0x0021u;
+}  // namespace rtp
+
 namespace ts {
 const uint64_t kTimeStampMask = (static_cast<uint64_t>(1u) << 33) - 1u;
 const uint64_t kTimeStampSecond = 90000u;  // 90 kHz
@@ -70,6 +85,7 @@ const unsigned kProgramMapTablePacketId = 0x0100u;
 const unsigned kProgramClockReferencePacketId = 0x1000u;
 const unsigned kVideoStreamPacketId = 0x1011u;
 const unsigned kFirstAudioStreamPacketId = 0x1100u;
+const size_t kMaxTransportStreamPacketCountPerDatagramPacket = 7u;
 }  // namespace widi
 
 template <typename PacketContainer>
@@ -83,6 +99,36 @@ class PacketCollector {
 
  protected:
   PacketContainer packets_;
+};
+
+class FakeMediaPacketizer
+    : public WiFiDisplayMediaPacketizer,
+      public PacketCollector<std::vector<std::vector<uint8_t>>> {
+ public:
+  FakeMediaPacketizer(const base::TimeDelta& delay_for_unit_time_stamps,
+                      std::vector<WiFiDisplayElementaryStreamInfo> stream_infos)
+      : WiFiDisplayMediaPacketizer(
+            delay_for_unit_time_stamps,
+            std::move(stream_infos),
+            base::Bind(&FakeMediaPacketizer::OnPacketizedMediaDatagramPacket,
+                       base::Unretained(this))) {}
+
+  // Extend the interface in order to allow to bypass packetization of units to
+  // Packetized Elementary Stream (PES) packets and further to Transport Stream
+  // (TS) packets and to test only packetization of TS packets to media
+  // datagram packets.
+  bool EncodeTransportStreamPacket(
+      const WiFiDisplayTransportStreamPacket& transport_stream_packet,
+      bool flush) {
+    return OnPacketizedTransportStreamPacket(transport_stream_packet, flush);
+  }
+
+ private:
+  bool OnPacketizedMediaDatagramPacket(
+      WiFiDisplayMediaDatagramPacket media_datagram_packet) {
+    packets_.emplace_back(std::move(media_datagram_packet));
+    return true;
+  }
 };
 
 class FakeTransportStreamPacketizer
@@ -709,6 +755,151 @@ INSTANTIATE_TEST_CASE_P(
                      testing::Values(base::TimeDelta::Max(),
                                      base::TimeDelta::FromMicroseconds(
                                          1000 * INT64_C(0x123456789) / 90))));
+
+TEST(WiFiDisplayTransportStreamPacketizationTest, EncodeToMediaDatagramPacket) {
+  const size_t kPacketHeaderSize = 12u;
+
+  // Create fake units.
+  const size_t kUnitCount = 12u;
+  const size_t kUnitSize =
+      WiFiDisplayTransportStreamPacket::kPacketSize - 4u - 12u;
+  std::vector<std::array<uint8_t, kUnitSize>> units(kUnitCount);
+  for (auto& unit : units)
+    unit.fill(static_cast<uint8_t>(&unit - units.data()));
+
+  // Create transport stream packets.
+  std::vector<WiFiDisplayElementaryStreamInfo> stream_infos;
+  stream_infos.emplace_back(WiFiDisplayElementaryStreamInfo::VIDEO_H264);
+  FakeTransportStreamPacketizer transport_stream_packetizer(
+      base::TimeDelta::FromMilliseconds(0), std::move(stream_infos));
+  for (const auto& unit : units) {
+    EXPECT_TRUE(transport_stream_packetizer.EncodeElementaryStreamUnit(
+        0u, unit.data(), unit.size(), false, base::TimeTicks(),
+        base::TimeTicks(), &unit == &units.back()));
+  }
+  auto transport_stream_packets = transport_stream_packetizer.FetchPackets();
+  // There should be exactly one transport stream payload packet for each unit.
+  // There should also be some but not too many transport stream meta
+  // information packets.
+  EXPECT_EQ(1u, transport_stream_packets.size() / kUnitCount);
+
+  // Encode transport stream packets to datagram packets.
+  FakeMediaPacketizer packetizer(
+      base::TimeDelta::FromMilliseconds(0),
+      std::vector<WiFiDisplayElementaryStreamInfo>());
+  for (const auto& transport_stream_packet : transport_stream_packets) {
+    EXPECT_TRUE(packetizer.EncodeTransportStreamPacket(
+        transport_stream_packet,
+        &transport_stream_packet == &transport_stream_packets.back()));
+  }
+  auto packets = packetizer.FetchPackets();
+
+  // Check datagram packets.
+  ProgramClockReference pcr = {ProgramClockReference::kInvalidBase, 0u};
+  uint16_t sequence_number;
+  uint32_t synchronization_source_identifier;
+  auto transport_stream_packet_it = transport_stream_packets.cbegin();
+  for (const auto& packet : packets) {
+    base::BigEndianReader header_reader(
+        reinterpret_cast<const char*>(packet.data()),
+        std::min(kPacketHeaderSize, packet.size()));
+
+    // Packet flags.
+    uint16_t parsed_u16;
+    EXPECT_TRUE(header_reader.ReadU16(&parsed_u16));
+    EXPECT_EQ(rtp::kVersion2, parsed_u16 & rtp::kVersionMask);
+    EXPECT_FALSE(parsed_u16 & rtp::kPaddingFlag);
+    EXPECT_FALSE(parsed_u16 & rtp::kExtensionFlag);
+    EXPECT_EQ(0u, parsed_u16 & rtp::kContributingSourceCountMask);
+    EXPECT_FALSE(parsed_u16 & rtp::kMarkerFlag);
+    EXPECT_EQ(rtp::kPayloadTypeMP2T, parsed_u16 & rtp::kPayloadTypeMask);
+
+    // Packet sequence number.
+    uint16_t parsed_sequence_number;
+    EXPECT_TRUE(header_reader.ReadU16(&parsed_sequence_number));
+    if (&packet == &packets.front())
+      sequence_number = parsed_sequence_number;
+    EXPECT_EQ(sequence_number++, parsed_sequence_number);
+
+    // Packet time stamp.
+    uint32_t parsed_time_stamp;
+    EXPECT_TRUE(header_reader.ReadU32(&parsed_time_stamp));
+    if (pcr.base == ProgramClockReference::kInvalidBase) {
+      // This happens only for the first datagram packet.
+      EXPECT_TRUE(&packet == &packets.front());
+      // Ensure that the next datagram packet reaches the else branch.
+      EXPECT_FALSE(&packet == &packets.back());
+    } else {
+      // Check that
+      //   0 <= parsed_time_stamp - pcr.base <= kTimeStampSecond
+      // but allow pcr.base and parsed_time_stamp to wrap around in 32 bits.
+      EXPECT_LE((parsed_time_stamp - pcr.base) & 0xFFFFFFFFu,
+                ts::kTimeStampSecond)
+          << " Time stamp must not be smaller than PCR!";
+    }
+
+    // Packet synchronization source identifier.
+    uint32_t parsed_synchronization_source_identifier;
+    EXPECT_TRUE(
+        header_reader.ReadU32(&parsed_synchronization_source_identifier));
+    if (&packet == &packets.front()) {
+      synchronization_source_identifier =
+          parsed_synchronization_source_identifier;
+    }
+    EXPECT_EQ(synchronization_source_identifier,
+              parsed_synchronization_source_identifier);
+
+    EXPECT_EQ(0, header_reader.remaining());
+
+    // Packet payload.
+    size_t offset = kPacketHeaderSize;
+    while (offset + WiFiDisplayTransportStreamPacket::kPacketSize <=
+               packet.size() &&
+           transport_stream_packet_it != transport_stream_packets.end()) {
+      const auto& transport_stream_packet = *transport_stream_packet_it++;
+      const PacketPart parsed_transport_stream_packet_header(
+          packet.data() + offset, transport_stream_packet.header().size());
+      const PacketPart parsed_transport_stream_packet_payload(
+          parsed_transport_stream_packet_header.end(),
+          transport_stream_packet.payload().size());
+      const PacketPart parsed_transport_stream_packet_filler(
+          parsed_transport_stream_packet_payload.end(),
+          transport_stream_packet.filler().size());
+      offset += WiFiDisplayTransportStreamPacket::kPacketSize;
+
+      // Check bytes.
+      EXPECT_EQ(transport_stream_packet.header(),
+                parsed_transport_stream_packet_header);
+      EXPECT_EQ(transport_stream_packet.payload(),
+                parsed_transport_stream_packet_payload);
+      EXPECT_EQ(transport_stream_packet.filler().size(),
+                std::count(parsed_transport_stream_packet_filler.begin(),
+                           parsed_transport_stream_packet_filler.end(),
+                           transport_stream_packet.filler().value()));
+
+      if (ParseTransportStreamPacketId(transport_stream_packet) ==
+          widi::kProgramClockReferencePacketId) {
+        pcr = ParseProgramClockReference(
+            &transport_stream_packet.header().begin()[6]);
+      }
+    }
+    EXPECT_EQ(offset, packet.size()) << " Extra packet payload bytes.";
+
+    // Check that the payload contains a correct number of transport stream
+    // packets.
+    const size_t transport_stream_packet_count_in_datagram_packet =
+        packet.size() / WiFiDisplayTransportStreamPacket::kPacketSize;
+    if (&packet == &packets.back()) {
+      EXPECT_GE(transport_stream_packet_count_in_datagram_packet, 1u);
+      EXPECT_LE(transport_stream_packet_count_in_datagram_packet,
+                widi::kMaxTransportStreamPacketCountPerDatagramPacket);
+    } else {
+      EXPECT_EQ(widi::kMaxTransportStreamPacketCountPerDatagramPacket,
+                transport_stream_packet_count_in_datagram_packet);
+    }
+  }
+  EXPECT_EQ(transport_stream_packets.end(), transport_stream_packet_it);
+}
 
 }  // namespace
 }  // namespace extensions

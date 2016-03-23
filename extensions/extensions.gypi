@@ -1044,6 +1044,8 @@
       'renderer/api/display_source/wifi_display/wifi_display_elementary_stream_packetizer.h',
       'renderer/api/display_source/wifi_display/wifi_display_media_manager.cc',
       'renderer/api/display_source/wifi_display/wifi_display_media_manager.h',
+      'renderer/api/display_source/wifi_display/wifi_display_media_packetizer.cc',
+      'renderer/api/display_source/wifi_display/wifi_display_media_packetizer.h',
       'renderer/api/display_source/wifi_display/wifi_display_session.cc',
       'renderer/api/display_source/wifi_display/wifi_display_session.h',
       'renderer/api/display_source/wifi_display/wifi_display_stream_packet_part.h',
