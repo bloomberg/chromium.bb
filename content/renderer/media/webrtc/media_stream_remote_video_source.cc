@@ -208,10 +208,6 @@ void MediaStreamRemoteVideoSource::OnChanged(
     webrtc::MediaStreamTrackInterface::TrackState state) {
   DCHECK(CalledOnValidThread());
   switch (state) {
-    case webrtc::MediaStreamTrackInterface::kInitializing:
-      // Ignore the kInitializing state since there is no match in
-      // WebMediaStreamSource::ReadyState.
-      break;
     case webrtc::MediaStreamTrackInterface::kLive:
       SetReadyState(blink::WebMediaStreamSource::ReadyStateLive);
       break;

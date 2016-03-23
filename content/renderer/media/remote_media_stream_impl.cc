@@ -262,10 +262,6 @@ void RemoteAudioTrackAdapter::OnChangedOnMainThread(
   state_ = state;
 
   switch (state) {
-    case webrtc::MediaStreamTrackInterface::kInitializing:
-      // Ignore the kInitializing state since there is no match in
-      // WebMediaStreamSource::ReadyState.
-      break;
     case webrtc::MediaStreamTrackInterface::kLive:
       webkit_track()->source().setReadyState(
           blink::WebMediaStreamSource::ReadyStateLive);
