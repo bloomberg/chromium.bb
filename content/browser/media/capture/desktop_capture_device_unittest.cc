@@ -261,7 +261,7 @@ class DesktopCaptureDeviceTest : public testing::Test {
 
   void CopyFrame(const uint8_t* frame, int size,
                  const media::VideoCaptureFormat&, int, base::TimeTicks) {
-    ASSERT_TRUE(output_frame_.get() != NULL);
+    ASSERT_TRUE(output_frame_);
     ASSERT_EQ(output_frame_->stride() * output_frame_->size().height(), size);
     memcpy(output_frame_->data(), frame, size);
   }

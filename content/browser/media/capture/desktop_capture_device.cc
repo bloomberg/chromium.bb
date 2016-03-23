@@ -160,8 +160,8 @@ void DesktopCaptureDevice::Core::AllocateAndStart(
   DCHECK_GT(params.requested_format.frame_size.GetArea(), 0);
   DCHECK_GT(params.requested_format.frame_rate, 0);
   DCHECK(desktop_capturer_);
-  DCHECK(client.get());
-  DCHECK(!client_.get());
+  DCHECK(client);
+  DCHECK(!client_);
 
   client_ = std::move(client);
   requested_frame_rate_ = params.requested_format.frame_rate;
@@ -247,7 +247,7 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
   // it with a black frame to avoid the video appearing frozen at the last
   // frame.
   if (frame->size().width() == 1 || frame->size().height() == 1) {
-    if (!black_frame_.get()) {
+    if (!black_frame_) {
       black_frame_.reset(new webrtc::BasicDesktopFrame(output_size));
       memset(black_frame_->data(),
              0,

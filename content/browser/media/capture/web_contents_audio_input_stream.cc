@@ -131,8 +131,8 @@ WebContentsAudioInputStream::Impl::Impl(
       is_target_lost_(false),
       callback_(NULL) {
   DCHECK(mirroring_manager_);
-  DCHECK(tracker_.get());
-  DCHECK(mixer_stream_.get());
+  DCHECK(tracker_);
+  DCHECK(mixer_stream_);
 
   // WAIS::Impl can be constructed on any thread, but will DCHECK that all
   // its methods from here on are called from the same thread.

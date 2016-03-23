@@ -24,10 +24,10 @@ WebContentsTracker::~WebContentsTracker() {
 
 void WebContentsTracker::Start(int render_process_id, int main_render_frame_id,
                                const ChangeCallback& callback) {
-  DCHECK(!task_runner_.get() || task_runner_->BelongsToCurrentThread());
+  DCHECK(!task_runner_ || task_runner_->BelongsToCurrentThread());
 
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
-  DCHECK(task_runner_.get());
+  DCHECK(task_runner_);
   callback_ = callback;
 
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
@@ -81,7 +81,7 @@ RenderWidgetHost* WebContentsTracker::GetTargetRenderWidgetHost() const {
 
 void WebContentsTracker::SetResizeChangeCallback(
     const base::Closure& callback) {
-  DCHECK(!task_runner_.get() || task_runner_->BelongsToCurrentThread());
+  DCHECK(!task_runner_ || task_runner_->BelongsToCurrentThread());
   resize_callback_ = callback;
 }
 

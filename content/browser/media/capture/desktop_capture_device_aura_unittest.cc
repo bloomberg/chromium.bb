@@ -145,7 +145,7 @@ TEST_F(DesktopCaptureDeviceAuraTest, StartAndStop) {
       DesktopCaptureDeviceAura::Create(
           content::DesktopMediaID::RegisterAuraWindow(
               content::DesktopMediaID::TYPE_SCREEN, root_window()));
-  ASSERT_TRUE(capture_device.get());
+  ASSERT_TRUE(capture_device);
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
   EXPECT_CALL(*client, OnError(_, _)).Times(0);

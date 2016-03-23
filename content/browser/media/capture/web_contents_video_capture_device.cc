@@ -407,10 +407,10 @@ void FrameSubscriber::DidCaptureFrame(
 bool FrameSubscriber::IsUserInteractingWithContent() {
   bool interactive_mode = false;
   bool ui_activity = false;
-  if (window_activity_tracker_.get()) {
+  if (window_activity_tracker_) {
     ui_activity = window_activity_tracker_->IsUiInteractionActive();
   }
-  if (cursor_renderer_.get()) {
+  if (cursor_renderer_) {
     bool animation_active =
         (base::TimeTicks::Now() -
          oracle_proxy_->last_time_animation_was_detected()) <
@@ -668,7 +668,7 @@ bool WebContentsCaptureMachine::InternalStart(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!IsStarted());
 
-  DCHECK(oracle_proxy.get());
+  DCHECK(oracle_proxy);
   oracle_proxy_ = oracle_proxy;
   capture_params_ = params;
 
@@ -719,7 +719,7 @@ void WebContentsCaptureMachine::InternalStop(const base::Closure& callback) {
 
   // The render thread cannot be stopped on the UI thread, so post a message
   // to the thread pool used for blocking operations.
-  if (render_thread_.get()) {
+  if (render_thread_) {
     BrowserThread::PostBlockingPoolTask(
         FROM_HERE,
         base::Bind(&DeleteOnWorkerThread, base::Passed(&render_thread_),
@@ -852,7 +852,7 @@ void WebContentsCaptureMachine::DidCopyFromBackingStore(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::TimeTicks now = base::TimeTicks::Now();
-  DCHECK(render_thread_.get());
+  DCHECK(render_thread_);
   if (response == READBACK_SUCCESS) {
     UMA_HISTOGRAM_TIMES("TabCapture.CopyTimeBitmap", now - start_time);
     TRACE_EVENT_ASYNC_STEP_INTO0("gpu.capture", "Capture", target.get(),

@@ -74,7 +74,7 @@ bool AuraWindowCaptureMachine::InternalStart(
   if (!layer)
     return false;
 
-  DCHECK(oracle_proxy.get());
+  DCHECK(oracle_proxy);
   oracle_proxy_ = oracle_proxy;
   capture_params_ = params;
 
@@ -155,7 +155,7 @@ void AuraWindowCaptureMachine::SetWindow(aura::Window* window) {
 
 void AuraWindowCaptureMachine::UpdateCaptureSize() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (oracle_proxy_.get() && desktop_window_) {
+  if (oracle_proxy_ && desktop_window_) {
      ui::Layer* layer = desktop_window_->layer();
      oracle_proxy_->UpdateCaptureSize(ui::ConvertSizeToPixel(
          layer, layer->bounds().size()));
@@ -238,7 +238,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
 
   if (result->IsEmpty() || result->size().IsEmpty() || !desktop_window_)
     return false;
-  DCHECK(video_frame.get());
+  DCHECK(video_frame);
 
   // Compute the dest size we want after the letterboxing resize. Make the
   // coordinates and sizes even because we letterbox in YUV space
@@ -308,7 +308,7 @@ void AuraWindowCaptureMachine::CopyOutputFinishedForVideo(
   // Render the cursor and deliver the captured frame if the
   // AuraWindowCaptureMachine has not been stopped (i.e., the WeakPtr is
   // still valid).
-  if (machine.get()) {
+  if (machine) {
     if (machine->cursor_renderer_ && result)
       machine->cursor_renderer_->RenderOnVideoFrame(target);
     capture_frame_cb.Run(target, start_time, result);

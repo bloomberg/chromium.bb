@@ -436,7 +436,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
         : id_(buffer_id),
           pool_(pool),
           buffer_handle_(std::move(buffer_handle)) {
-      DCHECK(pool_.get());
+      DCHECK(pool_);
     }
     int id() const override { return id_; }
     gfx::Size dimensions() const override { return gfx::Size(); }
