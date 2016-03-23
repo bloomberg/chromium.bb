@@ -804,16 +804,17 @@ void View::Paint(const ui::PaintContext& parent_context) {
   // std::optional once we can do so.
   ui::ClipRecorder clip_recorder(parent_context);
   if (paint_relative_to_parent) {
-    // Set the clip rect to the bounds of this View. Note that the X (or left)
-    // position we pass to ClipRect takes into consideration whether or not the
-    // View uses a right-to-left layout so that we paint the View in its
-    // mirrored position if need be.
-    gfx::Rect clip_rect_in_parent = bounds();
-    clip_rect_in_parent.Inset(clip_insets_);
-    if (parent_)
-      clip_rect_in_parent.set_x(
-          parent_->GetMirroredXForRect(clip_rect_in_parent));
-    clip_recorder.ClipRect(clip_rect_in_parent);
+    // Set the clip rect to the bounds of this View, or |clip_path_| if it's
+    // been set. Note that the X (or left) position we pass to ClipRect takes
+    // into consideration whether or not the View uses a right-to-left layout so
+    // that we paint the View in its mirrored position if need be.
+    if (clip_path_.isEmpty()) {
+      clip_recorder.ClipRect(GetMirroredBounds());
+    } else {
+      gfx::Path clip_path_in_parent = clip_path_;
+      clip_path_in_parent.offset(GetMirroredX(), y());
+      clip_recorder.ClipPath(clip_path_in_parent);
+    }
   }
 
   ui::TransformRecorder transform_recorder(context);

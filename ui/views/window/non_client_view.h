@@ -65,6 +65,12 @@ class VIEWS_EXPORT NonClientFrameView : public View,
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const = 0;
 
+  // Gets the clip mask (in this View's parent's coordinates) that should be
+  // applied to the client view. Returns false if no special clip should be
+  // used.
+  virtual bool GetClientMask(const gfx::Size& size,
+                             gfx::Path* mask) const;
+
   // This function must ask the ClientView to do a hittest.  We don't do this in
   // the parent NonClientView because that makes it more difficult to calculate
   // hittests for regions that are partially obscured by the ClientView, e.g.

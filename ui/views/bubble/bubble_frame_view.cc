@@ -12,6 +12,8 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/screen.h"
@@ -134,6 +136,15 @@ gfx::Rect BubbleFrameView::GetWindowBoundsForClientBounds(
   return bubble_border_->GetBounds(gfx::Rect(), size);
 }
 
+bool BubbleFrameView::GetClientMask(const gfx::Size& size,
+                                    gfx::Path* path) const {
+  const int radius = bubble_border_->GetBorderCornerRadius();
+  gfx::RectF rect((gfx::Rect(size)));
+  rect.Inset(gfx::InsetsF(0.5f));
+  path->addRoundRect(gfx::RectFToSkRect(rect), radius, radius);
+  return true;
+}
+
 int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!bounds().Contains(point))
     return HTNOWHERE;
@@ -215,6 +226,10 @@ void BubbleFrameView::SizeConstraintsChanged() {}
 
 void BubbleFrameView::SetTitleFontList(const gfx::FontList& font_list) {
   title_->SetFontList(font_list);
+}
+
+const char* BubbleFrameView::GetClassName() const {
+  return kViewClassName;
 }
 
 gfx::Insets BubbleFrameView::GetInsets() const {
@@ -317,10 +332,6 @@ void BubbleFrameView::Layout() {
   }
 }
 
-const char* BubbleFrameView::GetClassName() const {
-  return kViewClassName;
-}
-
 void BubbleFrameView::OnThemeChanged() {
   UpdateWindowTitle();
   ResetWindowControls();
@@ -333,6 +344,19 @@ void BubbleFrameView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
         GetSystemColor(ui::NativeTheme::kColorId_DialogBackground));
     SchedulePaint();
   }
+}
+
+void BubbleFrameView::OnPaint(gfx::Canvas* canvas) {
+  OnPaintBackground(canvas);
+  // Border comes after children.
+}
+
+void BubbleFrameView::PaintChildren(const ui::PaintContext& context) {
+  NonClientFrameView::PaintChildren(context);
+
+  ui::PaintCache paint_cache;
+  ui::PaintRecorder recorder(context, size(), &paint_cache);
+  OnPaintBorder(recorder.canvas());
 }
 
 void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {

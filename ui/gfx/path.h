@@ -33,9 +33,6 @@ class GFX_EXPORT Path : public SkPath {
   Path(const PointF* points, size_t count);
 
   ~Path();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Path);
 };
 
 }

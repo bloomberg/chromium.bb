@@ -35,6 +35,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/path.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/views_export.h"
 
@@ -298,8 +299,8 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   gfx::Transform GetTransform() const;
 
-  // Clipping parameters. Clipping is done relative to the view bounds.
-  void set_clip_insets(gfx::Insets clip_insets) { clip_insets_ = clip_insets; }
+  // Clipping is done relative to the view's local bounds.
+  void set_clip_path(const gfx::Path& path) { clip_path_ = path; }
 
   // Sets the transform to the supplied transform.
   void SetTransform(const gfx::Transform& transform);
@@ -1485,9 +1486,9 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Transformations -----------------------------------------------------------
 
-  // Clipping parameters. skia transformation matrix does not give us clipping.
-  // So we do it ourselves.
-  gfx::Insets clip_insets_;
+  // Painting will be clipped to this path. TODO(estade): this doesn't work for
+  // layers.
+  gfx::Path clip_path_;
 
   // Layout --------------------------------------------------------------------
 

@@ -41,6 +41,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   gfx::Rect GetBoundsForClientView() const override;
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override;
+  bool GetClientMask(const gfx::Size& size, gfx::Path* path) const override;
   int NonClientHitTest(const gfx::Point& point) override;
   void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override;
   void ResetWindowControls() override;
@@ -53,12 +54,14 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   void SetTitleFontList(const gfx::FontList& font_list);
 
   // View overrides:
+  const char* GetClassName() const override;
   gfx::Insets GetInsets() const override;
   gfx::Size GetPreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void Layout() override;
-  const char* GetClassName() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
+  void PaintChildren(const ui::PaintContext& context) override;
   void OnThemeChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 

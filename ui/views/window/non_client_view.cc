@@ -31,6 +31,14 @@ static const int kClientViewIndex = 1;
 // The overlay view is always on top (index == child_count() - 1).
 
 ////////////////////////////////////////////////////////////////////////////////
+// NonClientFrameView, default implementations:
+
+bool NonClientFrameView::GetClientMask(const gfx::Size& size,
+                                       gfx::Path* mask) const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // NonClientView, public:
 
 NonClientView::NonClientView()
@@ -158,6 +166,10 @@ void NonClientView::Layout() {
 
   // Then layout the ClientView, using those bounds.
   client_view_->SetBoundsRect(frame_view_->GetBoundsForClientView());
+
+  gfx::Path client_clip;
+  if (frame_view_->GetClientMask(client_view_->size(), &client_clip))
+    client_view_->set_clip_path(client_clip);
 
   // We need to manually call Layout on the ClientView as well for the same
   // reason as above.

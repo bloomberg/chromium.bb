@@ -236,7 +236,10 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
 
   gfx::Rect onscreen_bounds(
       GetPageBoundsForState(AppListModel::STATE_SEARCH_RESULTS));
-  set_clip_insets(bounds().InsetsFrom(onscreen_bounds));
+  onscreen_bounds -= bounds().OffsetFromOrigin();
+  gfx::Path path;
+  path.addRect(gfx::RectToSkRect(onscreen_bounds));
+  set_clip_path(path);
 }
 
 int SearchResultPageView::GetSearchBoxZHeight() const {
