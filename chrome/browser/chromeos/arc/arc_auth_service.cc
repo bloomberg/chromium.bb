@@ -9,7 +9,10 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_util.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
+#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -25,6 +28,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/syncable_prefs/pref_service_syncable.h"
+#include "components/user_manager/user.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/app_window/app_window_registry.h"
@@ -170,8 +174,14 @@ void ArcAuthService::OnSignInFailed(arc::ArcSignInFailureReason reason) {
 void ArcAuthService::GetIsAccountManaged(
     const GetIsAccountManagedCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // Stub for testing. TODO(phweiss): Implement correct behaviour.
-  callback.Run(true);
+
+  const user_manager::User* const primary_user =
+      user_manager::UserManager::Get()->GetPrimaryUser();
+  Profile* const profile =
+      chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
+  const policy::ProfilePolicyConnector* const profile_policy_connector =
+      policy::ProfilePolicyConnectorFactory::GetForBrowserContext(profile);
+  callback.Run(profile_policy_connector->IsManaged());
 }
 
 void ArcAuthService::SetState(State state) {
