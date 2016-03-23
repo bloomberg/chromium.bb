@@ -63,7 +63,7 @@ ImeWindowView::ImeWindowView(ImeWindow* ime_window,
 ImeWindowView::~ImeWindowView() {}
 
 void ImeWindowView::Show() {
-  window_->Show();
+  window_->ShowInactive();
 }
 
 void ImeWindowView::Hide() {
