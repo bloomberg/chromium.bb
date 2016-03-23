@@ -737,4 +737,116 @@ TEST_F(CALayerTreeTest, SortingContextMustHaveConsistentClip) {
   }
 }
 
+// Test updating each layer's properties.
+TEST_F(CALayerTreeTest, AVLayer) {
+  base::ScopedCFTypeRef<IOSurfaceRef> io_surface(gfx::CreateIOSurface(
+      gfx::Size(256, 256), gfx::BufferFormat::YUV_420_BIPLANAR));
+  bool is_clipped = true;
+  gfx::Rect clip_rect(2, 4, 8, 16);
+  int sorting_context_id = 0;
+  gfx::Transform transform;
+  gfx::RectF contents_rect(0.0f, 0.0f, 1.0f, 1.0f);
+  gfx::Rect rect(16, 32, 64, 128);
+  unsigned background_color = SkColorSetARGB(0xFF, 0xFF, 0, 0);
+  unsigned edge_aa_mask = GL_CA_LAYER_EDGE_LEFT_CHROMIUM;
+  float opacity = 0.5f;
+  float scale_factor = 1.0f;
+  bool result = false;
+
+  scoped_ptr<CALayerTree> ca_layer_tree;
+  CALayer* root_layer = nil;
+  CALayer* clip_and_sorting_layer = nil;
+  CALayer* transform_layer = nil;
+  CALayer* content_layer1 = nil;
+  CALayer* content_layer2 = nil;
+  CALayer* content_layer3 = nil;
+
+  // Validate the initial values.
+  {
+    scoped_ptr<CALayerTree> new_ca_layer_tree(new CALayerTree);
+    result = new_ca_layer_tree->ScheduleCALayer(
+        is_clipped, clip_rect, sorting_context_id, transform, io_surface,
+        contents_rect, rect, background_color, edge_aa_mask, opacity);
+    EXPECT_TRUE(result);
+    new_ca_layer_tree->CommitScheduledCALayers(
+        superlayer_, std::move(ca_layer_tree), scale_factor);
+    std::swap(new_ca_layer_tree, ca_layer_tree);
+
+    // Validate the tree structure.
+    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+    root_layer = [[superlayer_ sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[root_layer sublayers] count]);
+    clip_and_sorting_layer = [[root_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+    transform_layer = [[clip_and_sorting_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+    content_layer1 = [[transform_layer sublayers] objectAtIndex:0];
+
+    // Validate the content layer.
+    EXPECT_TRUE([content_layer1
+        isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
+  }
+
+  io_surface.reset(gfx::CreateIOSurface(gfx::Size(256, 256),
+                                        gfx::BufferFormat::YUV_420_BIPLANAR));
+
+  // Pass another frame.
+  {
+    scoped_ptr<CALayerTree> new_ca_layer_tree(new CALayerTree);
+    result = new_ca_layer_tree->ScheduleCALayer(
+        is_clipped, clip_rect, sorting_context_id, transform, io_surface,
+        contents_rect, rect, background_color, edge_aa_mask, opacity);
+    EXPECT_TRUE(result);
+    new_ca_layer_tree->CommitScheduledCALayers(
+        superlayer_, std::move(ca_layer_tree), scale_factor);
+    std::swap(new_ca_layer_tree, ca_layer_tree);
+
+    // Validate the tree structure.
+    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+    root_layer = [[superlayer_ sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[root_layer sublayers] count]);
+    clip_and_sorting_layer = [[root_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+    transform_layer = [[clip_and_sorting_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+    content_layer2 = [[transform_layer sublayers] objectAtIndex:0];
+
+    // Validate the content layer.
+    EXPECT_TRUE([content_layer2
+        isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
+    EXPECT_EQ(content_layer2, content_layer1);
+  }
+
+  io_surface.reset(gfx::CreateIOSurface(gfx::Size(256, 256),
+                                        gfx::BufferFormat::YUV_420_BIPLANAR));
+
+  // Pass a frame that is clipped.
+  contents_rect = gfx::RectF(0, 0, 1, 0.9);
+  {
+    scoped_ptr<CALayerTree> new_ca_layer_tree(new CALayerTree);
+    result = new_ca_layer_tree->ScheduleCALayer(
+        is_clipped, clip_rect, sorting_context_id, transform, io_surface,
+        contents_rect, rect, background_color, edge_aa_mask, opacity);
+    EXPECT_TRUE(result);
+    new_ca_layer_tree->CommitScheduledCALayers(
+        superlayer_, std::move(ca_layer_tree), scale_factor);
+    std::swap(new_ca_layer_tree, ca_layer_tree);
+
+    // Validate the tree structure.
+    EXPECT_EQ(1u, [[superlayer_ sublayers] count]);
+    root_layer = [[superlayer_ sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[root_layer sublayers] count]);
+    clip_and_sorting_layer = [[root_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[clip_and_sorting_layer sublayers] count]);
+    transform_layer = [[clip_and_sorting_layer sublayers] objectAtIndex:0];
+    EXPECT_EQ(1u, [[transform_layer sublayers] count]);
+    content_layer3 = [[transform_layer sublayers] objectAtIndex:0];
+
+    // Validate the content layer.
+    EXPECT_FALSE([content_layer3
+        isKindOfClass:NSClassFromString(@"AVSampleBufferDisplayLayer")]);
+    EXPECT_NE(content_layer3, content_layer2);
+  }
+}
+
 }  // namespace content

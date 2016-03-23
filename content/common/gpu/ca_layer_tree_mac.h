@@ -18,6 +18,8 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/transform.h"
 
+@class AVSampleBufferDisplayLayer;
+
 namespace content {
 
 // The CALayerTree will construct a hierarchy of CALayers from a linear list,
@@ -173,6 +175,11 @@ class CONTENT_EXPORT CALayerTree {
     CAEdgeAntialiasingMask ca_edge_aa_mask = 0;
     float opacity = 1;
     base::scoped_nsobject<CALayer> ca_layer;
+
+    // If this layer's contents can be represented as an
+    // AVSampleBufferDisplayLayer, then |ca_layer| will point to |av_layer|.
+    base::scoped_nsobject<AVSampleBufferDisplayLayer> av_layer;
+    bool use_av_layer = false;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ContentLayer);

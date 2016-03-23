@@ -679,6 +679,9 @@
       ],
       'link_settings': {
         'libraries': [
+          '$(SDKROOT)/System/Library/Frameworks/AVFoundation.framework',
+          '$(SDKROOT)/System/Library/Frameworks/CoreMedia.framework',
+          '$(SDKROOT)/System/Library/Frameworks/CoreVideo.framework',
           '$(SDKROOT)/System/Library/Frameworks/IOSurface.framework',
           '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
           '$(SDKROOT)/usr/lib/libsandbox.dylib',

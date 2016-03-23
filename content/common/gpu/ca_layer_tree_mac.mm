@@ -4,6 +4,10 @@
 
 #include "content/common/gpu/ca_layer_tree_mac.h"
 
+#include <AVFoundation/AVFoundation.h>
+#include <CoreMedia/CoreMedia.h>
+#include <CoreVideo/CoreVideo.h>
+
 #include "base/command_line.h"
 #include "base/mac/sdk_forward_declarations.h"
 #include "base/trace_event/trace_event.h"
@@ -13,7 +17,105 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/geometry/dip_util.h"
 
+#if !defined(MAC_OS_X_VERSION_10_8) || \
+    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
+extern NSString* const AVLayerVideoGravityResize;
+extern "C" void NSAccessibilityPostNotificationWithUserInfo(
+    id object,
+    NSString* notification,
+    NSDictionary* user_info);
+extern "C" OSStatus CMSampleBufferCreateForImageBuffer(
+    CFAllocatorRef,
+    CVImageBufferRef,
+    Boolean dataReady,
+    CMSampleBufferMakeDataReadyCallback,
+    void*,
+    CMVideoFormatDescriptionRef,
+    const CMSampleTimingInfo*,
+    CMSampleBufferRef*);
+extern "C" CFArrayRef CMSampleBufferGetSampleAttachmentsArray(CMSampleBufferRef,
+                                                              Boolean);
+extern "C" OSStatus CMVideoFormatDescriptionCreateForImageBuffer(
+    CFAllocatorRef,
+    CVImageBufferRef,
+    CMVideoFormatDescriptionRef*);
+extern "C" CMTime CMTimeMake(int64_t, int32_t);
+extern CFStringRef const kCMSampleAttachmentKey_DisplayImmediately;
+extern const CMTime kCMTimeInvalid;
+#endif  // MAC_OS_X_VERSION_10_8
+
 namespace content {
+
+namespace {
+
+// This will enqueue |io_surface| to be drawn by |av_layer| by wrapping
+// |io_surface| in a CVPixelBuffer. This will increase the in-use count
+// of and retain |io_surface| until it is no longer being displayed.
+bool AVSampleBufferDisplayLayerEnqueueIOSurface(
+    AVSampleBufferDisplayLayer* av_layer,
+    IOSurfaceRef io_surface) {
+  OSStatus os_status = noErr;
+  CVReturn cv_return = kCVReturnSuccess;
+
+  base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer;
+  cv_return = CVPixelBufferCreateWithIOSurface(
+      nullptr, io_surface, nullptr, cv_pixel_buffer.InitializeInto());
+  if (cv_return != kCVReturnSuccess) {
+    LOG(ERROR) << "CVPixelBufferCreateWithIOSurface failed with " << cv_return;
+    return false;
+  }
+
+  base::ScopedCFTypeRef<CMVideoFormatDescriptionRef> video_info;
+  os_status = CMVideoFormatDescriptionCreateForImageBuffer(
+      nullptr, cv_pixel_buffer, video_info.InitializeInto());
+  if (os_status != noErr) {
+    LOG(ERROR) << "CMVideoFormatDescriptionCreateForImageBuffer failed with "
+               << os_status;
+    return false;
+  }
+
+  // The frame time doesn't matter because we will specify to display
+  // immediately.
+  CMTime frame_time = CMTimeMake(0, 1);
+  CMSampleTimingInfo timing_info = {frame_time, frame_time, kCMTimeInvalid};
+
+  base::ScopedCFTypeRef<CMSampleBufferRef> sample_buffer;
+  os_status = CMSampleBufferCreateForImageBuffer(
+      nullptr, cv_pixel_buffer, YES, nullptr, nullptr, video_info, &timing_info,
+      sample_buffer.InitializeInto());
+  if (os_status != noErr) {
+    LOG(ERROR) << "CMSampleBufferCreateForImageBuffer failed with "
+               << os_status;
+    return false;
+  }
+
+  // Specify to display immediately via the sample buffer attachments.
+  CFArrayRef attachments =
+      CMSampleBufferGetSampleAttachmentsArray(sample_buffer, YES);
+  if (!attachments) {
+    LOG(ERROR) << "CMSampleBufferGetSampleAttachmentsArray failed";
+    return false;
+  }
+  if (CFArrayGetCount(attachments) < 1) {
+    LOG(ERROR) << "CMSampleBufferGetSampleAttachmentsArray result was empty";
+    return false;
+  }
+  CFMutableDictionaryRef attachments_dictionary =
+      reinterpret_cast<CFMutableDictionaryRef>(
+          const_cast<void*>(CFArrayGetValueAtIndex(attachments, 0)));
+  if (!attachments_dictionary) {
+    LOG(ERROR) << "Failed to get attachments dictionary";
+    return false;
+  }
+  CFDictionarySetValue(attachments_dictionary,
+                       kCMSampleAttachmentKey_DisplayImmediately,
+                       kCFBooleanTrue);
+
+  [av_layer enqueueSampleBuffer:sample_buffer];
+  return true;
+}
+
+}  // namespace
 
 CALayerTree::CALayerTree() {}
 CALayerTree::~CALayerTree() {}
@@ -154,6 +256,14 @@ CALayerTree::ContentLayer::ContentLayer(
   // marked as InUse.
   if (io_surface)
     IOSurfaceIncrementUseCount(io_surface);
+
+  // Only allow 4:2:0 frames which fill the layer's contents to be promoted to
+  // AV layers.
+  if (IOSurfaceGetPixelFormat(io_surface) ==
+          kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange &&
+      contents_rect == gfx::RectF(0, 0, 1, 1)) {
+    use_av_layer = true;
+  }
 }
 
 CALayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
@@ -163,9 +273,12 @@ CALayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
       background_color(layer.background_color),
       ca_edge_aa_mask(layer.ca_edge_aa_mask),
       opacity(layer.opacity),
-      ca_layer(layer.ca_layer) {
+      ca_layer(layer.ca_layer),
+      av_layer(layer.av_layer),
+      use_av_layer(layer.use_av_layer) {
   DCHECK(!layer.ca_layer);
   layer.ca_layer.reset();
+  layer.av_layer.reset();
   // See remarks in the non-move constructor.
   if (io_surface)
     IOSurfaceIncrementUseCount(io_surface);
@@ -388,9 +501,10 @@ void CALayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   bool update_background_color = true;
   bool update_ca_edge_aa_mask = true;
   bool update_opacity = true;
-  if (old_layer) {
+  if (old_layer && old_layer->use_av_layer == use_av_layer) {
     DCHECK(old_layer->ca_layer);
     std::swap(ca_layer, old_layer->ca_layer);
+    std::swap(av_layer, old_layer->av_layer);
     update_contents = old_layer->io_surface != io_surface;
     update_contents_rect = old_layer->contents_rect != contents_rect;
     update_rect = old_layer->rect != rect;
@@ -398,7 +512,13 @@ void CALayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
     update_ca_edge_aa_mask = old_layer->ca_edge_aa_mask != ca_edge_aa_mask;
     update_opacity = old_layer->opacity != opacity;
   } else {
-    ca_layer.reset([[CALayer alloc] init]);
+    if (use_av_layer) {
+      av_layer.reset([[AVSampleBufferDisplayLayer alloc] init]);
+      ca_layer.reset([av_layer retain]);
+      [av_layer setVideoGravity:AVLayerVideoGravityResize];
+    } else {
+      ca_layer.reset([[CALayer alloc] init]);
+    }
     [ca_layer setAnchorPoint:CGPointZero];
     [superlayer addSublayer:ca_layer];
   }
@@ -406,14 +526,18 @@ void CALayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   bool update_anything = update_contents || update_contents_rect ||
                          update_rect || update_background_color ||
                          update_ca_edge_aa_mask || update_opacity;
-
-  if (update_contents) {
-    [ca_layer setContents:static_cast<id>(io_surface.get())];
-    if ([ca_layer respondsToSelector:(@selector(setContentsScale:))])
-      [ca_layer setContentsScale:scale_factor];
+  if (use_av_layer) {
+    if (update_contents)
+      AVSampleBufferDisplayLayerEnqueueIOSurface(av_layer, io_surface);
+  } else {
+    if (update_contents) {
+      [ca_layer setContents:static_cast<id>(io_surface.get())];
+      if ([ca_layer respondsToSelector:(@selector(setContentsScale:))])
+        [ca_layer setContentsScale:scale_factor];
+    }
+    if (update_contents_rect)
+      [ca_layer setContentsRect:contents_rect.ToCGRect()];
   }
-  if (update_contents_rect)
-    [ca_layer setContentsRect:contents_rect.ToCGRect()];
   if (update_rect) {
     gfx::RectF dip_rect = gfx::RectF(rect);
     dip_rect.Scale(1 / scale_factor);
@@ -441,8 +565,13 @@ void CALayerTree::ContentLayer::CommitToCA(CALayer* superlayer,
   if (show_borders) {
     base::ScopedCFTypeRef<CGColorRef> color;
     if (update_anything) {
-      // Pink represents a CALayer that changed this frame.
-      color.reset(CGColorCreateGenericRGB(1, 0, 1, 1));
+      if (use_av_layer) {
+        // Green represents an AV layer that changed this frame.
+        color.reset(CGColorCreateGenericRGB(0, 1, 0, 1));
+      } else {
+        // Pink represents a CALayer that changed this frame.
+        color.reset(CGColorCreateGenericRGB(1, 0, 1, 1));
+      }
     } else {
       // Grey represents a CALayer that has not changed.
       color.reset(CGColorCreateGenericRGB(0, 0, 0, 0.1));

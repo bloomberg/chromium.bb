@@ -244,6 +244,9 @@ source_set("common") {
     ]
     lib_dirs = [ "$mac_sdk_path/usr/lib" ]
     libs += [
+      "AVFoundation.framework",
+      "CoreMedia.framework",
+      "CoreVideo.framework",
       "IOSurface.framework",
       "OpenGL.framework",
       "QuartzCore.framework",
