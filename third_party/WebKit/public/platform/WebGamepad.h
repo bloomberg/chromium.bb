@@ -26,10 +26,6 @@
 
 #include "WebCommon.h"
 
-#if BLINK_IMPLEMENTATION
-#include "wtf/Assertions.h"
-#endif
-
 namespace blink {
 
 #pragma pack(push, 1)
@@ -96,9 +92,7 @@ public:
     WebUChar mapping[mappingLengthCap];
 };
 
-#if BLINK_IMPLEMENTATION
 static_assert(sizeof(WebGamepad) == 721, "WebGamepad has wrong size");
-#endif
 
 #pragma pack(pop)
 

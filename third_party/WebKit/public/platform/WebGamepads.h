@@ -26,10 +26,6 @@
 
 #include "WebGamepad.h"
 
-#if BLINK_IMPLEMENTATION
-#include "wtf/Assertions.h"
-#endif
-
 #pragma pack(push, 1)
 
 namespace blink {
@@ -51,9 +47,7 @@ public:
     WebGamepad items[itemsLengthCap];
 };
 
-#if BLINK_IMPLEMENTATION
 static_assert(sizeof(WebGamepads) == 2888, "WebGamepads has wrong size");
-#endif
 
 #pragma pack(pop)
 

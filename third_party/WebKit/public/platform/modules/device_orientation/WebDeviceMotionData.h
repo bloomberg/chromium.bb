@@ -33,10 +33,6 @@
 
 #include "public/platform/WebCommon.h"
 
-#if INSIDE_BLINK
-#include "wtf/Assertions.h"
-#endif
-
 namespace blink {
 
 #pragma pack(push, 1)
@@ -75,9 +71,7 @@ public:
     bool allAvailableSensorsAreActive : 1;
 };
 
-#if INSIDE_BLINK
 static_assert(sizeof(WebDeviceMotionData) == (10 * sizeof(double) + 2 * sizeof(char)), "WebDeviceMotionData has wrong size");
-#endif
 
 #pragma pack(pop)
 
