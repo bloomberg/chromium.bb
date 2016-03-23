@@ -1682,6 +1682,9 @@ void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
 }
 
 void RenderWidgetHostViewMac::SetBackgroundColor(SkColor color) {
+  if (color == background_color_)
+    return;
+
   RenderWidgetHostViewBase::SetBackgroundColor(color);
   bool opaque = GetBackgroundOpaque();
 
@@ -1691,6 +1694,11 @@ void RenderWidgetHostViewMac::SetBackgroundColor(SkColor color) {
   [cocoa_view_ setOpaque:opaque];
   if (browser_compositor_state_ != BrowserCompositorDestroyed)
     browser_compositor_->compositor()->SetHostHasTransparentBackground(!opaque);
+
+  ScopedCAActionDisabler disabler;
+  base::ScopedCFTypeRef<CGColorRef> cg_color(
+      skia::CGColorCreateFromSkColor(color));
+  [background_layer_ setBackgroundColor:cg_color];
 }
 
 BrowserAccessibilityManager*
