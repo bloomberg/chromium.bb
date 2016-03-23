@@ -68,7 +68,9 @@ void SiteEngagementHelper::PeriodicTracker::StartTimer(
 SiteEngagementHelper::InputTracker::InputTracker(
     SiteEngagementHelper* helper,
     content::WebContents* web_contents)
-    : PeriodicTracker(helper), content::WebContentsObserver(web_contents) {}
+    : PeriodicTracker(helper),
+      content::WebContentsObserver(web_contents),
+      is_tracking_(false) {}
 
 void SiteEngagementHelper::InputTracker::TrackingStarted() {
   is_tracking_ = true;
