@@ -107,7 +107,15 @@ ui::ThreePartImage& GetMaskImage() {
   return mask;
 }
 
-ui::ThreePartImage& GetStrokeImage() {
+ui::ThreePartImage& GetStrokeImage(bool active) {
+  if (!ui::MaterialDesignController::IsModeMaterial() && !active) {
+    CR_DEFINE_STATIC_LOCAL(
+        ui::ThreePartImage, inactiveStroke,
+            (imageForResourceID(IDR_TAB_INACTIVE_LEFT),
+             imageForResourceID(IDR_TAB_INACTIVE_CENTER),
+             imageForResourceID(IDR_TAB_INACTIVE_RIGHT)));
+    return inactiveStroke;
+  }
   CR_DEFINE_STATIC_LOCAL(
       ui::ThreePartImage, stroke,
           (imageForResourceID(IDR_TAB_ACTIVE_LEFT),
@@ -477,7 +485,8 @@ CGFloat LineWidthFromContext(CGContextRef context) {
     // In MD, the tab stroke is always opaque.
     alpha = 1;
   }
-  GetStrokeImage().DrawInRect(bounds, NSCompositeSourceOver, alpha);
+  GetStrokeImage(state_ == NSOnState)
+      .DrawInRect(bounds, NSCompositeSourceOver, alpha);
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
