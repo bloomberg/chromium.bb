@@ -45,7 +45,6 @@
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
-#include "ui/base/test/scoped_fake_nswindow_fullscreen.h"
 #endif
 
 namespace views {
@@ -1133,11 +1132,6 @@ TEST_F(WidgetTest, MAYBE_GetRestoredBounds) {
     NOTIMPLEMENTED();
     return;
   }
-
-#if defined(OS_MACOSX)
-  // Fullscreen on Mac requires an interactive UI test, fake them here.
-  ui::test::ScopedFakeNSWindowFullscreen fake_fullscreen;
-#endif
 
   WidgetAutoclosePtr toplevel(CreateNativeDesktopWidget());
   toplevel->Show();
@@ -2994,27 +2988,34 @@ TEST_F(WidgetTest, FullscreenStatePropagated) {
   init_params.bounds = gfx::Rect(0, 0, 500, 500);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
 
-  {
-    Widget top_level_widget;
-    top_level_widget.Init(init_params);
-    top_level_widget.SetFullscreen(true);
-    EXPECT_EQ(top_level_widget.IsVisible(),
-              IsNativeWindowVisible(top_level_widget.GetNativeWindow()));
-    top_level_widget.CloseNow();
-  }
-#if !defined(OS_CHROMEOS)
-  {
-    Widget top_level_widget;
-    init_params.native_widget = CreatePlatformDesktopNativeWidgetImpl(
-        init_params, &top_level_widget, nullptr);
-    top_level_widget.Init(init_params);
-    top_level_widget.SetFullscreen(true);
-    EXPECT_EQ(top_level_widget.IsVisible(),
-              IsNativeWindowVisible(top_level_widget.GetNativeWindow()));
-    top_level_widget.CloseNow();
-  }
-#endif
+  Widget top_level_widget;
+  top_level_widget.Init(init_params);
+  top_level_widget.SetFullscreen(true);
+  EXPECT_EQ(top_level_widget.IsVisible(),
+            IsNativeWindowVisible(top_level_widget.GetNativeWindow()));
+  top_level_widget.CloseNow();
 }
+
+// Verifies nativeview visbility matches that of Widget visibility when
+// SetFullscreen is invoked, for a widget provided with a desktop widget.
+#if !defined(OS_CHROMEOS)
+TEST_F(WidgetTest, FullscreenStatePropagated_DesktopWidget) {
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  init_params.show_state = ui::SHOW_STATE_NORMAL;
+  init_params.bounds = gfx::Rect(0, 0, 500, 500);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  Widget top_level_widget;
+  init_params.native_widget = CreatePlatformDesktopNativeWidgetImpl(
+      init_params, &top_level_widget, nullptr);
+
+  top_level_widget.Init(init_params);
+  top_level_widget.SetFullscreen(true);
+  EXPECT_EQ(top_level_widget.IsVisible(),
+            IsNativeWindowVisible(top_level_widget.GetNativeWindow()));
+  top_level_widget.CloseNow();
+}
+#endif
 
 namespace {
 
