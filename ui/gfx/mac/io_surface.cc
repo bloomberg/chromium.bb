@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/mach_logging.h"
 #include "base/macros.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -150,12 +151,18 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
 
   IOSurfaceRef surface = IOSurfaceCreate(properties);
 
-  // Zero-initialize the IOSurface. Calling IOSurfaceLock/IOSurfaceUnlock
-  // appears to be sufficient. https://crbug.com/584760#c17
-  IOReturn r = IOSurfaceLock(surface, 0, nullptr);
-  DCHECK_EQ(kIOReturnSuccess, r);
-  r = IOSurfaceUnlock(surface, 0, nullptr);
-  DCHECK_EQ(kIOReturnSuccess, r);
+  // For unknown reasons, triggering this lock on OS X 10.9, on certain GPUs,
+  // causes PDFs to render incorrectly. Hopefully this check can be removed once
+  // pdfium switches to a Skia backend on Mac.
+  // https://crbug.com/594343.
+  if (!base::mac::IsOSMavericks()) {
+    // Zero-initialize the IOSurface. Calling IOSurfaceLock/IOSurfaceUnlock
+    // appears to be sufficient. https://crbug.com/584760#c17
+    IOReturn r = IOSurfaceLock(surface, 0, nullptr);
+    DCHECK_EQ(kIOReturnSuccess, r);
+    r = IOSurfaceUnlock(surface, 0, nullptr);
+    DCHECK_EQ(kIOReturnSuccess, r);
+  }
 
   return surface;
 }
