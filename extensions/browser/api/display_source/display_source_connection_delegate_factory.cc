@@ -36,7 +36,7 @@ DisplaySourceConnectionDelegateFactory::
 
 KeyedService* DisplaySourceConnectionDelegateFactory::BuildServiceInstanceFor(
     BrowserContext* browser_context) const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DisplaySourceConnectionDelegate* delegate = nullptr;
   // TODO(mikhail): Add implementation.
