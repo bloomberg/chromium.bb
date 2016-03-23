@@ -9,26 +9,20 @@
 #include "platform/inspector_protocol/Dispatcher.h"
 #include "platform/inspector_protocol/Frontend.h"
 #include "platform/inspector_protocol/String16.h"
-#include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8DebuggerImpl.h"
 #include "platform/v8_inspector/public/V8DebuggerAgent.h"
 
 namespace blink {
 
-class DevToolsFunctionInfo;
-class InjectedScript;
 class InjectedScriptManager;
 class JavaScriptCallFrame;
 class PromiseTracker;
-class RemoteCallFrameId;
-class ScriptRegexp;
 class V8AsyncCallTracker;
 class V8StackTraceImpl;
 
 namespace protocol {
 class DictionaryValue;
 }
-
 
 using protocol::Maybe;
 

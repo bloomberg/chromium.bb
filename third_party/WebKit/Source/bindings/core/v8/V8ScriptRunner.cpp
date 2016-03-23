@@ -448,7 +448,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::runCompiledInternalScript(v8::Isolate*
 
 v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(v8::Local<v8::Function> function, ExecutionContext* context, v8::Local<v8::Value> receiver, int argc, v8::Local<v8::Value> args[], v8::Isolate* isolate)
 {
-    TRACE_EVENT1("devtools.timeline,v8", "FunctionCall", "data", devToolsTraceEventData(isolate, context, function));
+    TRACE_EVENT1("devtools.timeline,v8", "FunctionCall", "data", InspectorFunctionCallEvent::data(context, function));
     TRACE_EVENT_SCOPED_SAMPLING_STATE("v8", "V8Execution");
 
     if (v8::MicrotasksScope::GetCurrentDepth(isolate) >= kMaxRecursionDepth)

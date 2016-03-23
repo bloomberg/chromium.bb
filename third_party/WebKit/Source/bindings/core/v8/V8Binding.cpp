@@ -906,53 +906,6 @@ v8::Isolate* toIsolate(LocalFrame* frame)
     return frame->script().isolate();
 }
 
-void DevToolsFunctionInfo::ensureInitialized() const
-{
-    if (m_function.IsEmpty())
-        return;
-
-    v8::HandleScope scope(m_function->GetIsolate());
-    v8::Local<v8::Function> originalFunction = getBoundFunction(m_function);
-    m_scriptId = originalFunction->ScriptId();
-    v8::ScriptOrigin origin = originalFunction->GetScriptOrigin();
-    if (!origin.ResourceName().IsEmpty()) {
-        V8StringResource<> stringResource(origin.ResourceName());
-        stringResource.prepare();
-        m_resourceName = stringResource;
-        m_lineNumber = originalFunction->GetScriptLineNumber() + 1;
-    }
-    if (m_resourceName.isEmpty()) {
-        m_resourceName = "";
-        m_lineNumber = 1;
-    }
-
-    m_function.Clear();
-}
-
-int DevToolsFunctionInfo::scriptId() const
-{
-    ensureInitialized();
-    return m_scriptId;
-}
-
-int DevToolsFunctionInfo::lineNumber() const
-{
-    ensureInitialized();
-    return m_lineNumber;
-}
-
-String DevToolsFunctionInfo::resourceName() const
-{
-    ensureInitialized();
-    return m_resourceName;
-}
-
-PassOwnPtr<TracedValue> devToolsTraceEventData(v8::Isolate* isolate, ExecutionContext* context, v8::Local<v8::Function> function)
-{
-    DevToolsFunctionInfo info(function);
-    return InspectorFunctionCallEvent::data(context, info.scriptId(), info.resourceName(), info.lineNumber());
-}
-
 void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     v8::Local<v8::Value> data = info.Data();

@@ -13,6 +13,7 @@
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/PromiseTracker.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
+#include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8AsyncCallTracker.h"
 #include "platform/v8_inspector/V8Regex.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"

@@ -28,6 +28,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
+#include "platform/v8_inspector/V8StringUtil.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/Vector.h"
 #include "wtf/text/TextPosition.h"
@@ -683,15 +684,34 @@ PassOwnPtr<TracedValue> InspectorCompileScriptEvent::data(const String& url, con
     return fillLocation(url, textPosition);
 }
 
-PassOwnPtr<TracedValue> InspectorFunctionCallEvent::data(ExecutionContext* context, int scriptId, const String& scriptName, int scriptLine)
+PassOwnPtr<TracedValue> InspectorFunctionCallEvent::data(ExecutionContext* context, const v8::Local<v8::Function>& function)
 {
     OwnPtr<TracedValue> value = TracedValue::create();
-    value->setString("scriptId", String::number(scriptId));
-    value->setString("scriptName", scriptName);
-    value->setInteger("scriptLine", scriptLine);
+    setCallStack(value.get());
     if (LocalFrame* frame = frameForExecutionContext(context))
         value->setString("frame", toHexString(frame));
-    setCallStack(value.get());
+
+    if (function.IsEmpty())
+        return value.release();
+
+    v8::Local<v8::Function> originalFunction = getBoundFunction(function);
+    v8::ScriptOrigin origin = originalFunction->GetScriptOrigin();
+    int scriptId = originalFunction->ScriptId();
+    int lineNumber = 0;
+    String scriptName;
+    if (!origin.ResourceName().IsEmpty()) {
+        V8StringResource<> stringResource(origin.ResourceName());
+        stringResource.prepare();
+        scriptName = stringResource;
+        if (!scriptName.isEmpty())
+            lineNumber = originalFunction->GetScriptLineNumber() + 1;
+    }
+    v8::Local<v8::Value> functionName = originalFunction->GetDebugName();
+    if (!functionName.IsEmpty() && functionName->IsString())
+        value->setString("functionName", toCoreString(functionName.As<v8::String>()));
+    value->setString("scriptId", String::number(scriptId));
+    value->setString("scriptName", scriptName);
+    value->setInteger("scriptLine", lineNumber);
     return value.release();
 }
 

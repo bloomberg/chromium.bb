@@ -1037,39 +1037,6 @@ private:
     v8::Isolate* m_isolate;
 };
 
-class DevToolsFunctionInfo final {
-    STACK_ALLOCATED();
-public:
-    explicit DevToolsFunctionInfo(v8::Local<v8::Function>& function)
-        : m_scriptId(0)
-        , m_lineNumber(1)
-        , m_function(function)
-    {
-        ASSERT(!m_function.IsEmpty());
-    }
-
-    DevToolsFunctionInfo(int scriptId, const String& resourceName, int lineNumber)
-        : m_scriptId(scriptId)
-        , m_lineNumber(lineNumber)
-        , m_resourceName(resourceName)
-    {
-    }
-
-    int scriptId() const;
-    int lineNumber() const;
-    String resourceName() const;
-
-private:
-    void ensureInitialized() const;
-
-    mutable int m_scriptId;
-    mutable int m_lineNumber;
-    mutable String m_resourceName;
-    mutable v8::Local<v8::Function> m_function;
-};
-
-PassOwnPtr<TracedValue> devToolsTraceEventData(v8::Isolate*, ExecutionContext*, v8::Local<v8::Function>);
-
 // Callback functions used by generated code.
 CORE_EXPORT void v8ConstructorAttributeGetter(v8::Local<v8::Name> propertyName, const v8::PropertyCallbackInfo<v8::Value>&);
 
