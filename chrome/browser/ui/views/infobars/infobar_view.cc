@@ -234,6 +234,7 @@ void InfoBarView::Layout() {
   }
 
   int content_minimum_width = ContentMinimumWidth();
+  close_button_->SizeToPreferredSize();
   close_button_->SetPosition(gfx::Point(
       std::max(
           start_x + content_minimum_width +
@@ -275,7 +276,6 @@ void InfoBarView::ViewHierarchyChanged(
       close_button_->SetImage(views::CustomButton::STATE_PRESSED,
                               rb.GetImageNamed(IDR_CLOSE_1_P).ToImageSkia());
     }
-    close_button_->SizeToPreferredSize();
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     close_button_->SetFocusable(true);

@@ -136,13 +136,13 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
 // ImageButton, protected:
 
 void ImageButton::OnFocus() {
-  View::OnFocus();
+  CustomButton::OnFocus();
   if (focus_painter_.get())
     SchedulePaint();
 }
 
 void ImageButton::OnBlur() {
-  View::OnBlur();
+  CustomButton::OnBlur();
   if (focus_painter_.get())
     SchedulePaint();
 }

@@ -9,6 +9,7 @@
 #include "ui/gfx/vector_icons_public.h"
 #include "ui/views/animation/button_ink_drop_delegate.h"
 #include "ui/views/border.h"
+#include "ui/views/painter.h"
 
 namespace {
 
@@ -25,6 +26,8 @@ BarControlButton::BarControlButton(views::ButtonListener* listener)
   set_has_ink_drop_action_on_click(true);
   SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                     views::ImageButton::ALIGN_MIDDLE);
+  SetFocusPainter(nullptr);
+  UseMdFocusRing();
 }
 
 BarControlButton::~BarControlButton() {}

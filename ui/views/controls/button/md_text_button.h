@@ -32,15 +32,9 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void SetCallToAction(CallToAction cta);
 
   // LabelButton:
-  void Layout() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   SkColor GetInkDropBaseColor() const override;
   void SetText(const base::string16& text) override;
-
- protected:
-  // LabelButton:
-  void OnFocus() override;
-  void OnBlur() override;
 
  private:
   MdTextButton(ButtonListener* listener);
@@ -49,11 +43,6 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   void UpdateColorsFromNativeTheme();
 
   ButtonInkDropDelegate ink_drop_delegate_;
-
-  // A child view to draw the focus ring. This is not done via a FocusPainter
-  // because it needs to paint to a layer so it can extend beyond the bounds of
-  // |this|.
-  views::View* focus_ring_;
 
   // The call to action style for this button.
   CallToAction cta_;

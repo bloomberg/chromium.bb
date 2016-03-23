@@ -382,13 +382,13 @@ void LabelButton::OnPaint(gfx::Canvas* canvas) {
 }
 
 void LabelButton::OnFocus() {
-  View::OnFocus();
+  CustomButton::OnFocus();
   // Typically the border renders differently when focused.
   SchedulePaint();
 }
 
 void LabelButton::OnBlur() {
-  View::OnBlur();
+  CustomButton::OnBlur();
   // Typically the border renders differently when focused.
   SchedulePaint();
 }

@@ -10,8 +10,10 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/animation/throb_animation.h"
+#include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/screen.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/animation/ink_drop_delegate.h"
 #include "ui/views/animation/ink_drop_hover.h"
 #include "ui/views/controls/button/blue_button.h"
@@ -29,14 +31,49 @@
 
 namespace views {
 
-// How long the hover animation takes if uninterrupted.
-static const int kHoverFadeDurationMs = 150;
+namespace {
 
-// static
-const char CustomButton::kViewClassName[] = "CustomButton";
+// How long the hover animation takes if uninterrupted.
+const int kHoverFadeDurationMs = 150;
+
+// The amount to enlarge the focus border in all directions relative to the
+// button.
+const int kFocusBorderOutset = -2;
+
+// The corner radius of the focus border roundrect.
+const int kFocusBorderCornerRadius = 3;
+
+class MdFocusRing : public views::View {
+ public:
+  MdFocusRing() {
+    SetPaintToLayer(true);
+    layer()->SetFillsBoundsOpaquely(false);
+  }
+  ~MdFocusRing() override {}
+
+  void OnPaint(gfx::Canvas* canvas) override {
+    SkPaint paint;
+    paint.setAntiAlias(true);
+    paint.setColor(GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_CallToActionColor));
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(1);
+    gfx::RectF rect(GetLocalBounds());
+    rect.Inset(gfx::InsetsF(0.5));
+    canvas->DrawRoundRect(rect, kFocusBorderCornerRadius, paint);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MdFocusRing);
+};
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // CustomButton, public:
+
+// static
+const char CustomButton::kViewClassName[] = "CustomButton";
 
 // static
 const CustomButton* CustomButton::AsCustomButton(const views::View* view) {
@@ -352,6 +389,37 @@ void CustomButton::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// CustomButton, View overrides (public):
+
+void CustomButton::Layout() {
+  Button::Layout();
+  gfx::Rect focus_bounds = GetLocalBounds();
+  focus_bounds.Inset(gfx::Insets(kFocusBorderOutset));
+  if (md_focus_ring_)
+    md_focus_ring_->SetBoundsRect(focus_bounds);
+}
+
+void CustomButton::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (!details.is_add && state_ != STATE_DISABLED)
+    SetState(STATE_NORMAL);
+}
+
+void CustomButton::OnFocus() {
+  Button::OnFocus();
+  if (md_focus_ring_)
+    md_focus_ring_->SetVisible(true);
+}
+
+void CustomButton::OnBlur() {
+  Button::OnBlur();
+  if (IsHotTracked())
+    SetState(STATE_NORMAL);
+  if (md_focus_ring_)
+    md_focus_ring_->SetVisible(false);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // CustomButton, protected:
 
 CustomButton::CustomButton(ButtonListener* listener)
@@ -366,7 +434,8 @@ CustomButton::CustomButton(ButtonListener* listener)
       notify_action_(NOTIFY_ON_RELEASE),
       has_ink_drop_action_on_click_(false),
       ink_drop_action_on_click_(InkDropState::QUICK_ACTION),
-      ink_drop_base_color_(gfx::kPlaceholderColor) {
+      ink_drop_base_color_(gfx::kPlaceholderColor),
+      md_focus_ring_(nullptr) {
   hover_animation_.SetSlideDuration(kHoverFadeDurationMs);
 }
 
@@ -412,19 +481,16 @@ bool CustomButton::ShouldEnterHoveredState() {
   return check_mouse_position && IsMouseHovered();
 }
 
+void CustomButton::UseMdFocusRing() {
+  DCHECK(!md_focus_ring_);
+  md_focus_ring_ = new MdFocusRing();
+  AddChildView(md_focus_ring_);
+  md_focus_ring_->SetVisible(false);
+  set_request_focus_on_press(false);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
-// CustomButton, View overrides (protected):
-
-void CustomButton::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  if (!details.is_add && state_ != STATE_DISABLED)
-    SetState(STATE_NORMAL);
-}
-
-void CustomButton::OnBlur() {
-  if (IsHotTracked())
-    SetState(STATE_NORMAL);
-}
+// CustomButton, Button overrides (protected):
 
 void CustomButton::NotifyClick(const ui::Event& event) {
   if (ink_drop_delegate() && has_ink_drop_action_on_click_)
