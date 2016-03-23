@@ -50,7 +50,7 @@ CSSGridLayout status=experimental
 CSSIndependentTransformProperties status=experimental
 CSSMaskSourceType status=experimental
 CSSOMSmoothScroll status=experimental
-CSSPaintAPI
+CSSPaintAPI status=test, depends_on=Worklet
 CSSPropertyD status=experimental
 CSSSnapSize status=experimental
 CSSStickyPosition

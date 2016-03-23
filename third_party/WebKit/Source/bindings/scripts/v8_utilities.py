@@ -231,6 +231,7 @@ def deprecate_as(member):
 EXPOSED_EXECUTION_CONTEXT_METHOD = {
     'CompositorWorker': 'isCompositorWorkerGlobalScope',
     'DedicatedWorker': 'isDedicatedWorkerGlobalScope',
+    'PaintWorklet': 'isPaintWorkletGlobalScope',
     'ServiceWorker': 'isServiceWorkerGlobalScope',
     'SharedWorker': 'isSharedWorkerGlobalScope',
     'Window': 'isDocument',

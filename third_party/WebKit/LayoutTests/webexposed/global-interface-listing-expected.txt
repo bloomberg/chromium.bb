@@ -7518,11 +7518,11 @@ interface webkitURL
     attribute outerWidth
     attribute pageXOffset
     attribute pageYOffset
+    attribute paintWorklet
     attribute parent
     attribute performance
     attribute personalbar
     attribute propertyNamesInGlobal
-    attribute renderWorklet
     attribute screen
     attribute screenLeft
     attribute screenTop

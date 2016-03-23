@@ -8,7 +8,7 @@
 <script>
     promise_test(function() {
 
-        return renderWorklet.import('resources/empty-worklet-script.js').then(function(undefined_arg) {
+        return paintWorklet.import('resources/empty-worklet-script.js').then(function(undefined_arg) {
             assert_equals(undefined_arg, undefined, 'Promise should resolve with no arguments.');
         }).catch(function(error) {
             assert_unreached('unexpected rejection: ' + error);
@@ -18,7 +18,7 @@
 
     promise_test(function() {
 
-        return renderWorklet.import('resources/throwing-worklet-script.js').then(function(undefined_arg) {
+        return paintWorklet.import('resources/throwing-worklet-script.js').then(function(undefined_arg) {
             assert_equals(undefined_arg, undefined, 'Promise should resolve with no arguments.');
         }).catch(function(error) {
             assert_unreached('unexpected rejection: ' + error);
@@ -28,7 +28,7 @@
 
     promise_test(function() {
 
-        return renderWorklet.import('non-existant-worklet-script.js').then(function() {
+        return paintWorklet.import('non-existant-worklet-script.js').then(function() {
             assert_unreached('import should fail.');
         }).catch(function(error) {
             assert_equals(error.name, 'NetworkError', 'error should be a NetworkError.');
@@ -38,7 +38,7 @@
 
     promise_test(function() {
 
-        return renderWorklet.import('http://invalid:123$').then(function() {
+        return paintWorklet.import('http://invalid:123$').then(function() {
             assert_unreached('import should fail.');
         }).catch(function(error) {
             assert_equals(error.name, 'SyntaxError', 'error should be a SyntaxError.');

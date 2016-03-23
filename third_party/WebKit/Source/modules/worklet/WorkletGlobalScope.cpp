@@ -12,15 +12,6 @@
 
 namespace blink {
 
-// static
-PassRefPtrWillBeRawPtr<WorkletGlobalScope> WorkletGlobalScope::create(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
-{
-    RefPtrWillBeRawPtr<WorkletGlobalScope> workletGlobalScope = adoptRefWillBeNoop(new WorkletGlobalScope(frame, url, userAgent, securityOrigin, isolate));
-    workletGlobalScope->scriptController()->initializeContextIfNeeded();
-    MainThreadDebugger::contextCreated(workletGlobalScope->scriptController()->getScriptState(), workletGlobalScope->frame(), workletGlobalScope->getSecurityOrigin());
-    return workletGlobalScope.release();
-}
-
 WorkletGlobalScope::WorkletGlobalScope(LocalFrame* frame, const KURL& url, const String& userAgent, PassRefPtr<SecurityOrigin> securityOrigin, v8::Isolate* isolate)
     : MainThreadWorkletGlobalScope(frame)
     , m_url(url)

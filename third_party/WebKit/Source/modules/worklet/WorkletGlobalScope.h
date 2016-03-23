@@ -31,9 +31,6 @@ public:
     using RefCounted<WorkletGlobalScope>::deref;
 #endif
 
-    // The url, userAgent and securityOrigin arguments are inherited from the
-    // parent ExecutionContext for Worklets.
-    static PassRefPtrWillBeRawPtr<WorkletGlobalScope> create(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
     ~WorkletGlobalScope() override;
 
     bool isWorkletGlobalScope() const final { return true; }
@@ -72,13 +69,16 @@ public:
 
     DECLARE_VIRTUAL_TRACE();
 
+protected:
+    // The url, userAgent and securityOrigin arguments are inherited from the
+    // parent ExecutionContext for Worklets.
+    WorkletGlobalScope(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
+
 private:
 #if !ENABLE(OILPAN)
     void refExecutionContext() final { ref(); }
     void derefExecutionContext() final { deref(); }
 #endif
-
-    WorkletGlobalScope(LocalFrame*, const KURL&, const String& userAgent, PassRefPtr<SecurityOrigin>, v8::Isolate*);
 
     const KURL& virtualURL() const final { return m_url; }
     KURL virtualCompleteURL(const String&) const final;
