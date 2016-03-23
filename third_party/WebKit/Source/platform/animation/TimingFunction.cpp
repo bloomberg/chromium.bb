@@ -54,7 +54,7 @@ double CubicBezierTimingFunction::evaluate(double fraction, double accuracy) con
 {
     if (!m_bezier)
         m_bezier = adoptPtr(new UnitBezier(m_x1, m_y1, m_x2, m_y2));
-    return m_bezier->solve(fraction, accuracy);
+    return m_bezier->solveWithEpsilon(fraction, accuracy);
 }
 
 // This works by taking taking the derivative of the cubic bezier, on the y
@@ -109,8 +109,8 @@ void CubicBezierTimingFunction::range(double* minValue, double* maxValue) const
 
     // Since our input values can be out of the range 0->1 so we must also
     // consider the minimum and maximum points.
-    double solutionMin = m_bezier->solve(*minValue, std::numeric_limits<double>::epsilon());
-    double solutionMax = m_bezier->solve(*maxValue, std::numeric_limits<double>::epsilon());
+    double solutionMin = m_bezier->solveWithEpsilon(*minValue, std::numeric_limits<double>::epsilon());
+    double solutionMax = m_bezier->solveWithEpsilon(*maxValue, std::numeric_limits<double>::epsilon());
     *minValue = std::min(std::min(solutionMin, solutionMax), 0.0);
     *maxValue = std::max(std::max(solutionMin, solutionMax), 1.0);
     *minValue = std::min(std::min(*minValue, solution1), solution2);

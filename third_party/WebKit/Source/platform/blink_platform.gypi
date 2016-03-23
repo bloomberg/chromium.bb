@@ -176,6 +176,7 @@
       'animation/CubicBezierControlPoints.h',
       'animation/TimingFunction.cpp',
       'animation/TimingFunction.h',
+      'animation/UnitBezier.cpp',
       'animation/UnitBezier.h',
       'audio/AudioArray.h',
       'audio/AudioBus.cpp',

@@ -447,7 +447,7 @@ float SVGAnimationElement::calculatePercentForSpline(float percent, unsigned spl
     SMILTime duration = simpleDuration();
     if (!duration.isFinite())
         duration = 100.0;
-    return narrowPrecisionToFloat(bezier.solve(percent, solveEpsilon(duration.value())));
+    return narrowPrecisionToFloat(bezier.solveWithEpsilon(percent, solveEpsilon(duration.value())));
 }
 
 float SVGAnimationElement::calculatePercentFromKeyPoints(float percent) const

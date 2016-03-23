@@ -451,7 +451,7 @@ static void checkCubicRegions2(double x1, double y1, double x2, double y2)
     EXPECT_EQ(1, regions.at(1).end);
 
     UnitBezier bezier = UnitBezier(x1, y1, x2, y2);
-    EXPECT_FLOAT_EQ(0.5, bezier.solve(regions.at(0).end, std::numeric_limits<double>::epsilon()));
+    EXPECT_FLOAT_EQ(0.5, bezier.solveWithEpsilon(regions.at(0).end, std::numeric_limits<double>::epsilon()));
 }
 
 static void checkCubicRegions4(double x1, double y1, double x2, double y2)
@@ -473,8 +473,8 @@ static void checkCubicRegions4(double x1, double y1, double x2, double y2)
     EXPECT_EQ(1, regions.at(3).end);
 
     UnitBezier bezier = UnitBezier(x1, y1, x2, y2);
-    EXPECT_FLOAT_EQ(0.5, bezier.solve(regions.at(0).end, std::numeric_limits<double>::epsilon()));
-    EXPECT_FLOAT_EQ(0.5, bezier.solve(regions.at(1).end, std::numeric_limits<double>::epsilon()));
+    EXPECT_FLOAT_EQ(0.5, bezier.solveWithEpsilon(regions.at(0).end, std::numeric_limits<double>::epsilon()));
+    EXPECT_FLOAT_EQ(0.5, bezier.solveWithEpsilon(regions.at(1).end, std::numeric_limits<double>::epsilon()));
 }
 
 TEST_F(TimingFunctionTest, StepsPartitioning)

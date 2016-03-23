@@ -29,73 +29,42 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include <math.h>
+
+#include <algorithm>
+#include <cmath>
 
 namespace blink {
 
-struct UnitBezier {
+struct PLATFORM_EXPORT UnitBezier {
     USING_FAST_MALLOC(UnitBezier);
 public:
-    UnitBezier(double p1x, double p1y, double p2x, double p2y)
-    {
-        // Calculate the polynomial coefficients, implicit first and last control points are (0,0) and (1,1).
-        cx = 3.0 * p1x;
-        bx = 3.0 * (p2x - p1x) - cx;
-        ax = 1.0 - cx -bx;
+    UnitBezier(double p1x, double p1y, double p2x, double p2y);
 
-        cy = 3.0 * p1y;
-        by = 3.0 * (p2y - p1y) - cy;
-        ay = 1.0 - cy - by;
+    static const double kBezierEpsilon;
 
-        // End-point gradients are used to calculate timing function results
-        // outside the range [0, 1].
-        //
-        // There are three possibilities for the gradient at each end:
-        // (1) the closest control point is not horizontally coincident with regard to
-        //     (0, 0) or (1, 1). In this case the line between the end point and
-        //     the control point is tangent to the bezier at the end point.
-        // (2) the closest control point is coincident with the end point. In
-        //     this case the line between the end point and the far control
-        //     point is tangent to the bezier at the end point.
-        // (3) the closest control point is horizontally coincident with the end
-        //     point, but vertically distinct. In this case the gradient at the
-        //     end point is Infinite. However, this causes issues when
-        //     interpolating. As a result, we break down to a simple case of
-        //     0 gradient under these conditions.
-
-        if (p1x > 0)
-            m_startGradient = p1y / p1x;
-        else if (!p1y && p2x > 0)
-            m_startGradient = p2y / p2x;
-        else
-            m_startGradient = 0;
-
-        if (p2x < 1)
-            m_endGradient = (p2y - 1) / (p2x - 1);
-        else if (p2x == 1 && p1x < 1)
-            m_endGradient = (p1y - 1) / (p1x - 1);
-        else
-            m_endGradient = 0;
-    }
-
-    double sampleCurveX(double t)
+    double sampleCurveX(double t) const
     {
         // `ax t^3 + bx t^2 + cx t' expanded using Horner's rule.
         return ((ax * t + bx) * t + cx) * t;
     }
 
-    double sampleCurveY(double t)
+    double sampleCurveY(double t) const
     {
         return ((ay * t + by) * t + cy) * t;
     }
 
-    double sampleCurveDerivativeX(double t)
+    double sampleCurveDerivativeX(double t) const
     {
         return (3.0 * ax * t + 2.0 * bx) * t + cx;
     }
 
+    double sampleCurveDerivativeY(double t) const
+    {
+        return (3.0 * ay * t + 2.0 * by) * t + cy;
+    }
+
     // Given an x value, find a parametric value it came from.
-    double solveCurveX(double x, double epsilon)
+    double solveCurveX(double x, double epsilon) const
     {
         ASSERT(x >= 0.0);
         ASSERT(x <= 1.0);
@@ -138,9 +107,15 @@ public:
         return t2;
     }
 
+    // Evaluates y at the given x.
+    double solve(double x) const
+    {
+        return solveWithEpsilon(x, kBezierEpsilon);
+    }
+
     // Evaluates y at the given x. The epsilon parameter provides a hint as to the required
     // accuracy and is not guaranteed.
-    double solve(double x, double epsilon)
+    double solveWithEpsilon(double x, double epsilon) const
     {
         if (x < 0.0)
             return 0.0 + m_startGradient * x;
@@ -149,7 +124,33 @@ public:
         return sampleCurveY(solveCurveX(x, epsilon));
     }
 
+    // Returns an approximation of dy/dx at the given x.
+    double slope(double x) const
+    {
+        return slopeWithEpsilon(x, kBezierEpsilon);
+    }
+
+    double slopeWithEpsilon(double x, double epsilon) const
+    {
+        double t = solveCurveX(x, epsilon);
+        double dx = sampleCurveDerivativeX(t);
+        double dy = sampleCurveDerivativeY(t);
+        return dy / dx;
+    }
+
+    // Sets |min| and |max| to the bezier's minimum and maximium y values in the
+    // interval [0, 1].
+    void range(double* min, double* max) const
+    {
+        *min = m_rangeMin;
+        *max = m_rangeMax;
+    }
+
 private:
+    void initCoefficients(double p1x, double p1y, double p2x, double p2y);
+    void initGradients(double p1x, double p1y, double p2x, double p2y);
+    void initRange(double p1y, double p2y);
+
     double ax;
     double bx;
     double cx;
@@ -160,6 +161,9 @@ private:
 
     double m_startGradient;
     double m_endGradient;
+
+    double m_rangeMin;
+    double m_rangeMax;
 };
 
 } // namespace blink
