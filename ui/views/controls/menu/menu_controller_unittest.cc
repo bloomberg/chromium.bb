@@ -1127,5 +1127,44 @@ TEST_F(MenuControllerTest, AsynchronousRepostEventDeletesController) {
   EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
 }
 
+// Tests that having the MenuController deleted during OnGestureEvent does not
+// cause a crash. ASAN bots should not detect use-after-free in MenuController.
+TEST_F(MenuControllerTest, AsynchronousGestureDeletesController) {
+  MenuController* controller = menu_controller();
+  scoped_ptr<TestMenuControllerDelegate> nested_delegate(
+      new TestMenuControllerDelegate());
+  ASSERT_FALSE(IsAsyncRun());
+
+  controller->AddNestedDelegate(nested_delegate.get());
+  controller->SetAsyncRun(true);
+
+  EXPECT_TRUE(IsAsyncRun());
+  EXPECT_EQ(nested_delegate.get(), GetCurrentDelegate());
+
+  MenuItemView* item = menu_item();
+  int mouse_event_flags = 0;
+  MenuItemView* run_result =
+      controller->Run(owner(), nullptr, item, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+                      false, false, &mouse_event_flags);
+  EXPECT_EQ(run_result, nullptr);
+
+  // Show a sub menu to target with a tap event.
+  SubmenuView* sub_menu = item->GetSubmenu();
+  sub_menu->ShowAt(owner(), gfx::Rect(0, 0, 100, 100), true);
+
+  gfx::Point location(sub_menu->bounds().CenterPoint());
+  ui::GestureEvent event(location.x(), location.y(), 0, ui::EventTimeForNow(),
+                         ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+
+  // This will lead to MenuController being deleted during the processing of the
+  // gesture event. The remainder of this test, and TearDown should not crash.
+  DestroyMenuControllerOnMenuClosed(nested_delegate.get());
+  controller->OnGestureEvent(sub_menu, &event);
+
+  // Close to remove observers before test TearDown
+  sub_menu->Close();
+  EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
+}
+
 }  // namespace test
 }  // namespace views

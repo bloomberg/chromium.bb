@@ -779,8 +779,8 @@ void MenuController::OnGestureEvent(SubmenuView* source,
         !(part.menu->HasSubmenu())) {
       if (part.menu->GetDelegate()->IsTriggerableEvent(
           part.menu, *event)) {
-        Accept(part.menu, event->flags());
         item_selected_by_touch_ = true;
+        Accept(part.menu, event->flags());
       }
       event->StopPropagation();
     } else if (part.type == MenuPart::MENU_ITEM) {
