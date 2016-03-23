@@ -27,6 +27,10 @@
 #include "mojo/public/cpp/bindings/lib/pipe_control_message_proxy.h"
 #include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace mojo {
 
 class AssociatedGroup;
@@ -172,11 +176,11 @@ class MultiplexRouter
   // on to a ref outside of |lock_| before calling this method.
   void ProcessTasks(bool force_async);
 
-  // Returns true to indicate that |task| has been processed. Otherwise the task
-  // will be added back to the front of the queue.
+  // Returns true to indicate that |task|/|message| has been processed.
   bool ProcessNotifyErrorTask(Task* task, bool force_async);
-  bool ProcessIncomingMessageTask(Task* task, bool force_async);
+  bool ProcessIncomingMessage(Message* message, bool force_async);
 
+  void MaybePostToProcessTasks(base::SingleThreadTaskRunner* task_runner);
   void LockAndCallProcessTasks();
 
   // Updates the state of |endpoint|. If both the endpoint and its peer have
@@ -187,6 +191,8 @@ class MultiplexRouter
                                     EndpointStateUpdateType type);
 
   void RaiseErrorInNonTestingMode();
+
+  InterfaceEndpoint* FindOrInsertEndpoint(InterfaceId id, bool* inserted);
 
   // Whether to set the namespace bit when generating interface IDs. Please see
   // comments of kInterfaceIdNamespaceMask.
@@ -207,6 +213,8 @@ class MultiplexRouter
   uint32_t next_interface_id_value_;
 
   std::deque<scoped_ptr<Task>> tasks_;
+
+  bool posted_to_process_tasks_;
 
   bool testing_mode_;
 
