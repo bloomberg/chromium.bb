@@ -186,7 +186,7 @@ ScriptPromise OfflineAudioContext::suspendContext(ScriptState* scriptState)
 {
     // This CANNOT be called on OfflineAudioContext; this is only to implement
     // the pure virtual interface from AbstractAudioContext.
-    RELEASE_ASSERT_NOT_REACHED();
+    RELEASE_NOTREACHED();
 
     return ScriptPromise();
 }

@@ -244,15 +244,11 @@ while (0)
    Please sure to file bugs for these failures using the security template:
       http://code.google.com/p/chromium/issues/entry?template=Security%20Bug
 */
-// RELEASE_ASSERT* are deprecated.  We should use:
-//  - CHECK() for RELEASE_ASSERT()
-//  - RELEASE_NOTREACHED() for RELEASE_ASSERT_NOT_REACHED().
+// RELEASE_ASSERT is deprecated.  We should use CHECK() instead.
 #if ENABLE(ASSERT)
 #define RELEASE_ASSERT(assertion) ASSERT(assertion)
-#define RELEASE_ASSERT_NOT_REACHED() ASSERT_NOT_REACHED()
 #else
 #define RELEASE_ASSERT(assertion) (UNLIKELY(!(assertion)) ? (IMMEDIATE_CRASH()) : (void)0)
-#define RELEASE_ASSERT_NOT_REACHED() IMMEDIATE_CRASH()
 #endif
 // TODO(tkent): Move this to base/logging.h?
 #define RELEASE_NOTREACHED() LOG(FATAL)

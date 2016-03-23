@@ -438,7 +438,7 @@ inline v8::Local<v8::String> v8AtomicString(v8::Isolate* isolate, const char* st
         return value;
     // Immediately crashes when NewFromUtf8() fails because it only fails the
     // given str is too long.
-    RELEASE_ASSERT_NOT_REACHED();
+    RELEASE_NOTREACHED();
     return v8::String::Empty(isolate);
 }
 

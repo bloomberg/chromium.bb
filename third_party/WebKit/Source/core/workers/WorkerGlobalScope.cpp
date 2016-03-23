@@ -399,13 +399,13 @@ v8::Local<v8::Object> WorkerGlobalScope::wrap(v8::Isolate*, v8::Local<v8::Object
 {
     // WorkerGlobalScope must never be wrapped with wrap method.  The global
     // object of ECMAScript environment is used as the wrapper.
-    RELEASE_ASSERT_NOT_REACHED();
+    RELEASE_NOTREACHED();
     return v8::Local<v8::Object>();
 }
 
 v8::Local<v8::Object> WorkerGlobalScope::associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper)
 {
-    RELEASE_ASSERT_NOT_REACHED(); // same as wrap method
+    RELEASE_NOTREACHED(); // same as wrap method
     return v8::Local<v8::Object>();
 }
 

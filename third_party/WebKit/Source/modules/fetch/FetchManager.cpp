@@ -263,7 +263,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
             tainting = FetchRequestData::CORSTainting;
             break;
         case WebURLRequest::FetchRequestModeNavigate:
-            RELEASE_ASSERT_NOT_REACHED();
+            RELEASE_NOTREACHED();
             break;
         }
     }
@@ -286,7 +286,7 @@ void FetchManager::Loader::didReceiveResponse(unsigned long, const ResourceRespo
             // When ServiceWorker respond to the request from fetch() with an
             // error response, FetchManager::Loader::didFail() must be called
             // instead.
-            RELEASE_ASSERT_NOT_REACHED();
+            RELEASE_NOTREACHED();
             break;
         }
     }

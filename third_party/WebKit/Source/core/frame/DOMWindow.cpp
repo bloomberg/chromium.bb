@@ -45,13 +45,13 @@ v8::Local<v8::Object> DOMWindow::wrap(v8::Isolate*, v8::Local<v8::Object> creati
 {
     // DOMWindow must never be wrapped with wrap method.  The wrappers must be
     // created at WindowProxy::installDOMWindow().
-    RELEASE_ASSERT_NOT_REACHED();
+    RELEASE_NOTREACHED();
     return v8::Local<v8::Object>();
 }
 
 v8::Local<v8::Object> DOMWindow::associateWithWrapper(v8::Isolate*, const WrapperTypeInfo*, v8::Local<v8::Object> wrapper)
 {
-    RELEASE_ASSERT_NOT_REACHED(); // same as wrap method
+    RELEASE_NOTREACHED(); // same as wrap method
     return v8::Local<v8::Object>();
 }
 

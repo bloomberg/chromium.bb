@@ -195,7 +195,7 @@ inline v8::Local<v8::Value> toV8(const ScriptValue& value, v8::Local<v8::Object>
 
 inline v8::Local<v8::Value> toV8(const Dictionary& value, v8::Local<v8::Object> creationContext, v8::Isolate*)
 {
-    RELEASE_ASSERT_NOT_REACHED();
+    RELEASE_NOTREACHED();
     return v8::Local<v8::Value>();
 }
 
