@@ -43,6 +43,7 @@
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "wtf/ArrayBufferContents.h"
+#include "wtf/CheckedNumeric.h"
 #include <algorithm>
 #ifndef NDEBUG
 #include "wtf/RefCountedLeakCounter.h"
@@ -862,10 +863,10 @@ bool DrawingBuffer::paintRenderingResultsToImageData(int& width, int& height, So
     width = size().width();
     height = size().height();
 
-    Checked<int, RecordOverflow> dataSize = 4;
+    CheckedNumeric<int> dataSize = 4;
     dataSize *= width;
     dataSize *= height;
-    if (dataSize.hasOverflowed())
+    if (!dataSize.IsValid())
         return false;
 
     WTF::ArrayBufferContents pixels(width * height, 4, WTF::ArrayBufferContents::NotShared, WTF::ArrayBufferContents::DontInitialize);

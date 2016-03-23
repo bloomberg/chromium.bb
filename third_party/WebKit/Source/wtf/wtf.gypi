@@ -30,7 +30,7 @@
             'ByteOrder.h',
             'ByteSwap.h',
             'CPU.h',
-            'CheckedArithmetic.h',
+            'CheckedNumeric.h',
             'Compiler.h',
             'ConditionalDestructor.h',
             'ContainerAnnotations.h',
@@ -202,7 +202,6 @@
         'wtf_unittest_files': [
             'ASCIICTypeTest.cpp',
             'ArrayBufferBuilderTest.cpp',
-            'CheckedArithmeticTest.cpp',
             'DequeTest.cpp',
             'FunctionalTest.cpp',
             'HashMapTest.cpp',
