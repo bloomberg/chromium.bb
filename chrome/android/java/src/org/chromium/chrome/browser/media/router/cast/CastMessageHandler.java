@@ -417,8 +417,8 @@ public class CastMessageHandler {
                         clientId, "remove_session", mSession.getSessionId(), sequenceNumber);
             }
             mStopRequests.remove(clientId);
-            mSession = null;
         }
+        mSession = null;
     }
 
     /**
