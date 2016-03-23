@@ -80,7 +80,8 @@ FocusEventDispatchMediator::FocusEventDispatchMediator(PassRefPtrWillBeRawPtr<Fo
 
 DispatchEventResult FocusEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
-    event().eventPath().adjustForRelatedTarget(dispatcher.node(), event().relatedTarget());
+    if (event().relatedTargetScoped())
+        event().eventPath().adjustForRelatedTarget(dispatcher.node(), event().relatedTarget());
     return EventDispatchMediator::dispatchEvent(dispatcher);
 }
 

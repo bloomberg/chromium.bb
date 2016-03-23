@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../fast/dom/shadow/resources/shadow-dom.js"></script>
+
+<div id="log"></div>
+<div id="sandbox">
+  <div id="top">
+    <div id="host">
+      <template>
+        <input id="input1"></input>
+        <input id="input2"></input>
+      </template>
+    </div>
+  </div>
+</div>
+<script>
+
+var sandbox = document.getElementById('sandbox');
+convertTemplatesToShadowRootsWithin(sandbox);
+
+var host = document.getElementById('host');
+var topDiv = document.getElementById('top');
+var sr = host.shadowRoot;
+
+var input1 = getNodeInComposedTree('host/input1');
+var input2 = getNodeInComposedTree('host/input2');
+
+async_test(function(t) {
+  input2.onfocus = function(e) {
+    t.step(function() {
+      assert_false(e.relatedTargetScoped);
+      var expected1 = [input2, sr, host, topDiv, sandbox, document.body, document.documentElement, document, window];
+      assert_array_equals(e.path, expected1);
+      t.done();
+    });
+  };
+}, 'Event paths of untrusted events with relatedTargetScoped false do not stop.');
+
+async_test(function(t) {
+  input1.onfocus = function(e) {
+    t.step(function() {
+      assert_true(e.relatedTargetScoped);
+      var expected2 = [input1, sr];
+      assert_array_equals(e.path, expected2);
+      t.done();
+    });
+  };
+}, 'Event paths of untrusted events with relatedTargetScoped true stop at the common ancestor of the target & the related target.');
+
+var userFocus1 = new FocusEvent('focus', { relatedTarget: input1 });
+input2.dispatchEvent(userFocus1);
+
+var userFocus2 = new FocusEvent('focus', { relatedTarget: input2, relatedTargetScoped: true });
+input1.dispatchEvent(userFocus2);
+</script>

@@ -195,7 +195,7 @@ void MouseEvent::initMouseEventInternal(const AtomicString& type, bool canBubble
     int detail, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers modifiers,
     short button, PassRefPtrWillBeRawPtr<EventTarget> relatedTarget, InputDeviceCapabilities* sourceCapabilities, unsigned short buttons)
 {
-    initUIEventInternal(type, canBubble, cancelable, view, detail, sourceCapabilities);
+    initUIEventInternal(type, canBubble, cancelable, relatedTarget.get(), view, detail, sourceCapabilities);
 
     m_screenLocation = IntPoint(screenX, screenY);
     m_button = button;
@@ -273,10 +273,11 @@ MouseEvent& MouseEventDispatchMediator::event() const
 DispatchEventResult MouseEventDispatchMediator::dispatchEvent(EventDispatcher& dispatcher) const
 {
     MouseEvent& mouseEvent = event();
-    if (!mouseEvent.isTrusted()) {
+    if (mouseEvent.relatedTargetScoped())
         mouseEvent.eventPath().adjustForRelatedTarget(dispatcher.node(), mouseEvent.relatedTarget());
+
+    if (!mouseEvent.isTrusted())
         return dispatcher.dispatch();
-    }
 
     if (isDisabledFormControl(&dispatcher.node()))
         return DispatchEventResult::CanceledBeforeDispatch;
@@ -287,7 +288,6 @@ DispatchEventResult MouseEventDispatchMediator::dispatchEvent(EventDispatcher& d
     ASSERT(!mouseEvent.target() || mouseEvent.target() != mouseEvent.relatedTarget());
 
     EventTarget* relatedTarget = mouseEvent.relatedTarget();
-    mouseEvent.eventPath().adjustForRelatedTarget(dispatcher.node(), relatedTarget);
 
     DispatchEventResult dispatchResult = dispatcher.dispatch();
 

@@ -109,6 +109,11 @@ Event::~Event()
 
 void Event::initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool cancelableArg)
 {
+    initEvent(eventTypeArg, canBubbleArg, cancelableArg, nullptr);
+}
+
+void Event::initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget)
+{
     if (dispatched())
         return;
 
@@ -120,6 +125,8 @@ void Event::initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool 
     m_type = eventTypeArg;
     m_canBubble = canBubbleArg;
     m_cancelable = cancelableArg;
+
+    m_relatedTargetScoped = relatedTarget ? true : false;
 }
 
 bool Event::legacyReturnValue(ExecutionContext* executionContext) const

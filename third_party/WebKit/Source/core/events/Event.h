@@ -108,6 +108,7 @@ public:
     virtual ~Event();
 
     void initEvent(const AtomicString& type, bool canBubble, bool cancelable);
+    void initEvent(const AtomicString& eventTypeArg, bool canBubbleArg, bool cancelableArg, EventTarget* relatedTarget);
 
     const AtomicString& type() const { return m_type; }
     void setType(const AtomicString& type) { m_type = type; }
