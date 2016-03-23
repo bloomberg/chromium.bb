@@ -32,7 +32,7 @@ bool Deserialize_(internal::{{struct.name}}_Data* input,
   return success;
 }
 
-{%- if not variant and not struct|is_native_only_kind %}
+{%- if not struct|is_native_only_kind %}
 
 {{struct.name}}_Reader::{{struct.name}}_Reader(
     internal::{{struct.name}}_Data*  data,

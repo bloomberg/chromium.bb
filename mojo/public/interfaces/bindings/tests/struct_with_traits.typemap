@@ -6,8 +6,11 @@
   "c++": {
     "mojo.test.StructWithTraits": {
       "typename": "mojo::test::StructWithTraitsImpl",
-      "headers": [
+      "public_headers": [
         "mojo/public/cpp/bindings/tests/struct_with_traits_impl.h"
+      ],
+      "traits_headers": [
+        "mojo/public/cpp/bindings/tests/struct_with_traits_impl_traits.h"
       ]
     }
   }

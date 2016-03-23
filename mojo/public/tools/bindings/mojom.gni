@@ -209,17 +209,22 @@ template("mojom") {
     all_deps += invoker.public_deps
   }
 
-  group("${target_name}__is_mojom") {
+  if (defined(invoker.variant)) {
+    variant_suffix = "of_variant_${invoker.variant}"
+  } else {
+    variant_suffix = "of_no_variant"
+  }
+  group("${target_name}__is_mojom_${variant_suffix}") {
   }
 
   # Explicitly ensure that all dependencies (invoker.deps and
-  # invoker.public_deps) are mojom targets themselves.
-  group("${target_name}__check_deps_are_all_mojom") {
+  # invoker.public_deps) are mojom targets of the same variant themselves.
+  group("${target_name}__check_deps_are_all_mojom_${variant_suffix}") {
     deps = []
     foreach(d, all_deps) {
       name = get_label_info(d, "label_no_toolchain")
       toolchain = get_label_info(d, "toolchain")
-      deps += [ "${name}__is_mojom(${toolchain})" ]
+      deps += [ "${name}__is_mojom_${variant_suffix}(${toolchain})" ]
     }
   }
 

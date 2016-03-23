@@ -6,7 +6,10 @@
   "c++": {
     "url.mojom.Origin": {
       "typename": "url::Origin",
-      "headers": [
+      "public_headers": [
+        "url/origin.h"
+      ],
+      "traits_headers": [
         "url/mojo/origin_struct_traits.h"
       ]
     }

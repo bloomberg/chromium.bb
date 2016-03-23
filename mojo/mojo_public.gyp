@@ -11,6 +11,28 @@
       '..',
     ],
   },
+  'variables': {
+    'mojo_public_test_interfaces_mojom_files': [
+      'public/interfaces/bindings/tests/math_calculator.mojom',
+      'public/interfaces/bindings/tests/no_module.mojom',
+      'public/interfaces/bindings/tests/ping_service.mojom',
+      'public/interfaces/bindings/tests/rect.mojom',
+      'public/interfaces/bindings/tests/regression_tests.mojom',
+      'public/interfaces/bindings/tests/sample_factory.mojom',
+      'public/interfaces/bindings/tests/sample_import.mojom',
+      'public/interfaces/bindings/tests/sample_import2.mojom',
+      'public/interfaces/bindings/tests/sample_interfaces.mojom',
+      'public/interfaces/bindings/tests/sample_service.mojom',
+      'public/interfaces/bindings/tests/scoping.mojom',
+      'public/interfaces/bindings/tests/serialization_test_structs.mojom',
+      'public/interfaces/bindings/tests/test_constants.mojom',
+      'public/interfaces/bindings/tests/test_native_types.mojom',
+      'public/interfaces/bindings/tests/test_structs.mojom',
+      'public/interfaces/bindings/tests/test_sync_methods.mojom',
+      'public/interfaces/bindings/tests/test_unions.mojom',
+      'public/interfaces/bindings/tests/validation_test_interfaces.mojom',
+    ]
+  },
   'targets': [
     {
       'target_name': 'mojo_public',
@@ -357,25 +379,7 @@
       'target_name': 'mojo_public_test_interfaces_mojom',
       'type': 'none',
       'variables': {
-        'mojom_files': [
-          'public/interfaces/bindings/tests/math_calculator.mojom',
-          'public/interfaces/bindings/tests/no_module.mojom',
-          'public/interfaces/bindings/tests/ping_service.mojom',
-          'public/interfaces/bindings/tests/rect.mojom',
-          'public/interfaces/bindings/tests/regression_tests.mojom',
-          'public/interfaces/bindings/tests/sample_factory.mojom',
-          'public/interfaces/bindings/tests/sample_import.mojom',
-          'public/interfaces/bindings/tests/sample_import2.mojom',
-          'public/interfaces/bindings/tests/sample_interfaces.mojom',
-          'public/interfaces/bindings/tests/sample_service.mojom',
-          'public/interfaces/bindings/tests/scoping.mojom',
-          'public/interfaces/bindings/tests/serialization_test_structs.mojom',
-          'public/interfaces/bindings/tests/test_constants.mojom',
-          'public/interfaces/bindings/tests/test_structs.mojom',
-          'public/interfaces/bindings/tests/test_sync_methods.mojom',
-          'public/interfaces/bindings/tests/test_unions.mojom',
-          'public/interfaces/bindings/tests/validation_test_interfaces.mojom',
-        ],
+        'mojom_files': '<(mojo_public_test_interfaces_mojom_files)',
       },
       'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
     },
@@ -400,9 +404,7 @@
         'mojom_extra_generator_args': [
           '--typemap', '<(DEPTH)/mojo/public/interfaces/bindings/tests/blink_test.typemap',
         ],
-        'mojom_files': [
-          'public/interfaces/bindings/tests/test_native_types.mojom',
-        ],
+        'mojom_files': '<(mojo_public_test_interfaces_mojom_files)',
       },
       'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
       'dependencies': [
@@ -417,9 +419,7 @@
         'mojom_extra_generator_args': [
           '--typemap', '<(DEPTH)/mojo/public/interfaces/bindings/tests/chromium_test.typemap',
         ],
-        'mojom_files': [
-          'public/interfaces/bindings/tests/test_native_types.mojom',
-        ],
+        'mojom_files': '<(mojo_public_test_interfaces_mojom_files)',
       },
       'includes': [ 'mojom_bindings_generator_explicit.gypi' ],
       'dependencies': [

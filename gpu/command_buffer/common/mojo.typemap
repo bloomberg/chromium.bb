@@ -6,43 +6,55 @@
   "c++": {
     "gpu.mojom.Capabilities": {
       "typename": "gpu::Capabilities",
-      "headers": [
-        "gpu/command_buffer/common/capabilities.h",
+      "public_headers": [
+        "gpu/command_buffer/common/capabilities.h"
+      ],
+      "traits_headers": [
         "gpu/ipc/common/gpu_command_buffer_traits.h"
       ]
     },
     "gpu.mojom.CommandBufferState": {
       "typename": "gpu::CommandBuffer::State",
-      "headers": [
-        "gpu/command_buffer/common/command_buffer.h",
+      "public_headers": [
+        "gpu/command_buffer/common/command_buffer.h"
+      ],
+      "traits_headers": [
         "gpu/ipc/common/gpu_command_buffer_traits.h"
       ]
     },
     "gpu.mojom.Mailbox": {
       "typename": "gpu::Mailbox",
-      "headers": [
-        "gpu/command_buffer/common/mailbox.h",
+      "public_headers": [
+        "gpu/command_buffer/common/mailbox.h"
+      ],
+      "traits_headers": [
         "gpu/ipc/common/gpu_command_buffer_traits.h"
       ]
     },
     "gpu.mojom.MailboxHolder": {
       "typename": "gpu::MailboxHolder",
-      "headers": [
-        "gpu/command_buffer/common/mailbox_holder.h",
+      "public_headers": [
+        "gpu/command_buffer/common/mailbox_holder.h"
+      ],
+      "traits_headers": [
         "gpu/ipc/common/gpu_command_buffer_traits.h"
       ]
     },
     "gpu.mojom.SyncToken": {
       "typename": "gpu::SyncToken",
-      "headers": [
-        "gpu/command_buffer/common/sync_token.h",
+      "public_headers": [
+        "gpu/command_buffer/common/sync_token.h"
+      ],
+      "traits_headers": [
         "gpu/ipc/common/gpu_command_buffer_traits.h"
       ]
     },
     "gpu.mojom.ValueState": {
       "typename": "gpu::ValueState",
-      "headers": [
-        "gpu/command_buffer/common/value_state.h",
+      "public_headers": [
+        "gpu/command_buffer/common/value_state.h"
+      ],
+      "traits_headers": [
         "gpu/ipc/common/gpu_command_buffer_traits.h"
       ]
     }

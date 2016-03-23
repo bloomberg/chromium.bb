@@ -4,24 +4,12 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("url_mojom") {
-  sources = [
-    "origin.mojom",
-    "url.mojom",
-  ]
-}
-
 mojom("url_mojom_gurl") {
   sources = [
     "url.mojom",
   ]
 
-  variant = "chromium"
   typemaps = [ "gurl.typemap" ]
-
-  public_deps = [
-    ":url_mojom",
-  ]
 }
 
 mojom("url_mojom_origin") {
@@ -29,11 +17,10 @@ mojom("url_mojom_origin") {
     "origin.mojom",
   ]
 
-  variant = "chromium"
   typemaps = [ "origin.typemap" ]
 
   public_deps = [
-    ":url_mojom",
+    ":url_mojom_gurl",
   ]
 }
 

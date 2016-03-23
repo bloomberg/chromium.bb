@@ -51,6 +51,70 @@ _for_blink = False
 _variant = None
 
 
+class _NameFormatter(object):
+  """A formatter for the names of kinds or values."""
+
+  def __init__(self, token, variant):
+    self._token = token
+    self._variant = variant
+
+  def Format(self, separator, prefixed=False, internal=False,
+             include_variant=False, add_same_module_namespaces=False):
+    parts = []
+    if self._ShouldIncludeNamespace(add_same_module_namespaces):
+      if prefixed:
+        parts.append("")
+      parts.extend(self._GetNamespace())
+      if include_variant and self._variant:
+        parts.append(self._variant)
+    parts.extend(self._GetName(internal))
+    return separator.join(parts)
+
+  def FormatForCpp(self, add_same_module_namespaces=False, internal=False):
+    return self.Format(
+        "::", prefixed=True,
+        add_same_module_namespaces=add_same_module_namespaces,
+        internal=internal, include_variant=True)
+
+  def FormatForMojom(self):
+    return self.Format(".", add_same_module_namespaces=True)
+
+  def _MapKindName(self, token, internal):
+    if not internal:
+      return token.name
+    if mojom.IsStructKind(token) and token.native_only:
+      return "mojo::Array_Data<uint8_t>"
+    if (mojom.IsStructKind(token) or mojom.IsUnionKind(token) or
+        mojom.IsInterfaceKind(token) or mojom.IsEnumKind(token)):
+      return token.name + "_Data"
+    return token.name
+
+  def _GetName(self, internal):
+    name = []
+    if internal:
+      name.append("internal")
+    if self._token.parent_kind:
+      name.append(self._MapKindName(self._token.parent_kind, internal))
+    # Both variable and enum constants are constructed like:
+    # Namespace::Struct::CONSTANT_NAME
+    # For enums, CONSTANT_NAME is EnumName::ENUM_VALUE.
+    if isinstance(self._token, mojom.EnumValue):
+      name.extend([self._token.enum.name, self._token.name])
+    else:
+      name.append(self._MapKindName(self._token, internal))
+    return name
+
+  def _ShouldIncludeNamespace(self, add_same_module_namespaces):
+    return add_same_module_namespaces or self._token.imported_from
+
+  def _GetNamespace(self):
+    if self._token.imported_from:
+      return NamespaceToArray(self._token.imported_from["namespace"])
+    elif hasattr(self._token, "module"):
+      return NamespaceToArray(self._token.module.namespace)
+    return []
+
+
 def ConstantValue(constant):
   return ExpressionToText(constant.value, kind=constant.kind)
 
@@ -69,48 +133,15 @@ def DefaultValue(field):
 def NamespaceToArray(namespace):
   return namespace.split(".") if namespace else []
 
-def GetNamePartsForKind(kind, add_same_module_namespaces, add_variant,
-                        internal):
-  def MapKindName_(kind):
-    if not internal:
-      return kind.name
-    if mojom.IsStructKind(kind) and kind.native_only:
-      return "mojo::Array_Data<uint8_t>"
-    if (mojom.IsStructKind(kind) or mojom.IsUnionKind(kind) or
-        mojom.IsInterfaceKind(kind) or mojom.IsEnumKind(kind)):
-      return kind.name + "_Data"
-    return kind.name
-
-  parts = []
-  if kind.imported_from:
-    parts.extend(NamespaceToArray(kind.imported_from["namespace"]))
-    if _variant and add_variant:
-      parts.append(_variant)
-  elif add_same_module_namespaces:
-    if hasattr(kind, "module"):
-      parts.extend(NamespaceToArray(kind.module.namespace))
-    if _variant and add_variant:
-      parts.append(_variant)
-  if internal:
-    parts.append("internal")
-  if kind.parent_kind:
-    parts.append(MapKindName_(kind.parent_kind))
-  parts.append(MapKindName_(kind))
-  return parts
-
 def GetNameForKind(kind, internal=False):
-  parts = GetNamePartsForKind(kind, False, True, internal)
-  return "::".join(parts)
+  return _NameFormatter(kind, _variant).FormatForCpp(internal=internal)
 
 def GetQualifiedNameForKind(kind, internal=False):
-  # Always start with an empty part to force a leading "::" on output.
-  parts = [""]
-  parts.extend(GetNamePartsForKind(kind, True, True, internal))
-  return "::".join(parts)
+  return _NameFormatter(kind, _variant).FormatForCpp(
+      internal=internal, add_same_module_namespaces=True)
 
 def GetFullMojomNameForKind(kind):
-  parts = GetNamePartsForKind(kind, True, False, False)
-  return ".".join(parts)
+  return _NameFormatter(kind, _variant).FormatForMojom()
 
 def IsTypemappedKind(kind):
   return hasattr(kind, "name") and \
@@ -378,21 +409,7 @@ def GetUnionGetterReturnType(kind):
 
 def TranslateConstants(token, kind):
   if isinstance(token, mojom.NamedValue):
-    # Both variable and enum constants are constructed like:
-    # Namespace::Struct::CONSTANT_NAME
-    # For enums, CONSTANT_NAME is ENUM_NAME_ENUM_VALUE.
-    name = []
-    if token.imported_from:
-      name.extend(NamespaceToArray(token.namespace))
-    if _variant:
-      name.append(_variant)
-    if token.parent_kind:
-      name.append(token.parent_kind.name)
-    if isinstance(token, mojom.EnumValue):
-      name.extend([token.enum.name, token.name])
-    else:
-      name.append(token.name)
-    return "::".join(name)
+    return _NameFormatter(token, _variant).FormatForCpp()
 
   if isinstance(token, mojom.BuiltinValue):
     if token.value == "double.INFINITY" or token.value == "float.INFINITY":
@@ -523,10 +540,16 @@ class Generator(generator.Generator):
     "under_to_camel": generator.UnderToCamel,
   }
 
-  def GetExtraHeaders(self):
+  def GetExtraTraitsHeaders(self):
     extra_headers = set()
-    for name, entry in self.typemap.iteritems():
-      extra_headers.update(entry["headers"])
+    for entry in self.typemap.itervalues():
+      extra_headers.update(entry.get("traits_headers", []))
+    return list(extra_headers)
+
+  def GetExtraPublicHeaders(self):
+    extra_headers = set()
+    for entry in self.typemap.itervalues():
+      extra_headers.update(entry.get("public_headers", []))
     return list(extra_headers)
 
   def GetJinjaExports(self):
@@ -541,7 +564,8 @@ class Generator(generator.Generator):
       "unions": self.GetUnions(),
       "interfaces": self.GetInterfaces(),
       "variant": self.variant,
-      "extra_headers": self.GetExtraHeaders(),
+      "extra_traits_headers": self.GetExtraTraitsHeaders(),
+      "extra_public_headers": self.GetExtraPublicHeaders(),
       "for_blink": self.for_blink,
     }
 

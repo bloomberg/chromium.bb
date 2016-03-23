@@ -6,7 +6,6 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_TESTS_RECT_BLINK_H_
 
 #include "base/logging.h"
-#include "mojo/public/interfaces/bindings/tests/rect.mojom.h"
 
 namespace mojo {
 namespace test {
@@ -60,26 +59,6 @@ class RectBlink {
 };
 
 }  // namespace test
-
-template <>
-struct StructTraits<test::Rect, test::RectBlink> {
-  static int x(const test::RectBlink& r) { return r.x(); }
-  static int y(const test::RectBlink& r) { return r.y(); }
-  static int width(const test::RectBlink& r) { return r.width(); }
-  static int height(const test::RectBlink& r) { return r.height(); }
-
-  static bool Read(test::Rect::Reader r, test::RectBlink* out) {
-    if (r.x() < 0 || r.y() < 0 || r.width() < 0 || r.height() < 0) {
-      return false;
-    }
-    out->setX(r.x());
-    out->setY(r.y());
-    out->setWidth(r.width());
-    out->setHeight(r.height());
-    return true;
-  }
-};
-
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_BINDINGS_TESTS_RECT_BLINK_H_

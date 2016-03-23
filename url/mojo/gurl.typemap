@@ -6,7 +6,10 @@
   "c++": {
     "url.mojom.Url": {
       "typename": "GURL",
-      "headers": [
+      "public_headers": [
+        "url/gurl.h"
+      ],
+      "traits_headers": [
         "url/mojo/url_gurl_struct_traits.h"
       ]
     }

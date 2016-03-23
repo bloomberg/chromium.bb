@@ -4,6 +4,7 @@
 
 #include "components/mus/ws/window_manager_factory_service.h"
 
+#include "base/bind.h"
 #include "components/mus/ws/window_manager_factory_registry.h"
 #include "components/mus/ws/window_tree.h"
 

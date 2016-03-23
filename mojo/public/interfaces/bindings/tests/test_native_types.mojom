@@ -4,7 +4,7 @@
 
 module mojo.test;
 
-// import "mojo/public/interfaces/bindings/tests/rect.mojom";
+import "mojo/public/interfaces/bindings/tests/rect.mojom";
 
 // Used to verify that structs can be declared with no body in mojom.
 
@@ -23,11 +23,10 @@ interface PicklePasser {
       => (array<array<PickledStruct>> passed);
 };
 
-// TODO: crbug.com/596202
 // Used to verify support for native serialization of mojom-defined structs
 // using StrucTraits with different variants of the Rect type from rect.mojom.
 
-// interface RectService {
-//   AddRect(Rect r);
-//   GetLargestRect() => (Rect largest);
-// };
+interface RectService {
+  AddRect(TypemappedRect r);
+  GetLargestRect() => (TypemappedRect largest);
+};

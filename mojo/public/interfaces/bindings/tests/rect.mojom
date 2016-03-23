@@ -11,3 +11,12 @@ struct Rect {
   int32 width;
   int32 height;
 };
+
+// A copy of Rect that can be typemapped. Arrays of Rect are currently used,
+// which do not support typemapping.
+struct TypemappedRect {
+  int32 x;
+  int32 y;
+  int32 width;
+  int32 height;
+};

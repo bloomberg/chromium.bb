@@ -43,7 +43,7 @@ namespace {{variant}} {
 
 {%- endif %}
 
-{%- if not variant and not struct|is_native_only_kind %}
+{%- if not struct|is_native_only_kind %}
 
 {# NOTE: Generated Reader instances are intentionally cheap to copy and devoid
    of heap allocations. They should stay this way. #}

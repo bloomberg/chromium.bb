@@ -40,6 +40,10 @@
 #include "mojo/public/cpp/bindings/lib/wtf_serialization.h"
 {%- endif %}
 
+{%- for header in extra_traits_headers %}
+#include "{{header}}"
+{%- endfor %}
+
 {%- for namespace in namespaces_as_array %}
 namespace {{namespace}} {
 {%- endfor %}

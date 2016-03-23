@@ -49,6 +49,10 @@
 #include "third_party/WebKit/Source/wtf/text/WTFString.h"
 {%- endif %}
 
+{%- for header in extra_public_headers %}
+#include "{{header}}"
+{%- endfor %}
+
 {%- for namespace in namespaces_as_array %}
 namespace {{namespace}} {
 {%- endfor %}

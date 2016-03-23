@@ -11,6 +11,7 @@
       'variables': {
         'mojom_extra_generator_args': [
           '--typemap', '<(DEPTH)/url/mojo/origin.typemap',
+          '--typemap', '<(DEPTH)/url/mojo/gurl.typemap',
         ],
         'mojom_files': [
           # NOTE: Sources duplicated in //content/common/BUILD.gn:mojo_bindings.
