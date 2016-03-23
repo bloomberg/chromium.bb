@@ -19,7 +19,10 @@ ThemeServiceWin::ThemeServiceWin() {
   if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
     dwm_key_.reset(new base::win::RegKey(
         HKEY_CURRENT_USER, L"SOFTWARE\\Microsoft\\Windows\\DWM", KEY_READ));
-    OnDwmKeyUpdated();
+    if (dwm_key_->Valid())
+      OnDwmKeyUpdated();
+    else
+      dwm_key_.reset();
   }
 }
 
