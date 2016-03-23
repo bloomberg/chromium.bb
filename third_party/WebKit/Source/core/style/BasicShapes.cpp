@@ -245,8 +245,8 @@ void BasicShapeInset::path(Path& path, const FloatRect& boundingBox)
 
 static inline LengthSize blendLengthSize(const LengthSize& to, const LengthSize& from, double progress)
 {
-    return LengthSize(to.width().blend(from.width(), progress, ValueRangeAll),
-        to.height().blend(from.height(), progress, ValueRangeAll));
+    return LengthSize(to.width().blend(from.width(), progress, ValueRangeNonNegative),
+        to.height().blend(from.height(), progress, ValueRangeNonNegative));
 }
 
 PassRefPtr<BasicShape> BasicShapeInset::blend(const BasicShape* other, double progress) const

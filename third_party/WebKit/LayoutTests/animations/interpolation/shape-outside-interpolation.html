@@ -98,15 +98,15 @@ assertNoInterpolation({
 
 assertInterpolation({
   property: 'shape-outside',
-  from: 'inset(0%)',
-  to: 'inset(20%)',
+  from: 'inset(100%)',
+  to: 'inset(120%)',
 }, [
-  {at: -0.3, is: 'inset(-6%)'},
-  {at: 0, is: 'inset(0%)'},
-  {at: 0.3, is: 'inset(6%)'},
-  {at: 0.6, is: 'inset(12%)'},
-  {at: 1, is: 'inset(20%)'},
-  {at: 1.5, is: 'inset(30%)'},
+  {at: -0.3, is: 'inset(94%)'},
+  {at: 0, is: 'inset(100%)'},
+  {at: 0.3, is: 'inset(106%)'},
+  {at: 0.6, is: 'inset(112%)'},
+  {at: 1, is: 'inset(120%)'},
+  {at: 1.5, is: 'inset(130%)'},
 ]);
 
 assertNoInterpolation({
@@ -118,12 +118,12 @@ assertNoInterpolation({
 // TODO: add intermediate keyframe tests when CSS shapes position computed values are cleaned up
 assertInterpolation({
   property: 'shape-outside',
-  from: 'circle(20% at right 10% bottom 20px)',
-  to: 'circle(30% at right 20% bottom 30px)',
+  from: 'circle(25% at right 5% bottom 15px)',
+  to: 'circle(45% at right 25% bottom 35px)',
 }, [
-  {at: 0, is: 'circle(20% at right 10% bottom 20px)'},
-  {at: 0.5, is: 'circle(25% at 85% calc(-25px + 100%))'},
-  {at: 1, is: 'circle(30% at right 20% bottom 30px)'},
+  {at: 0.25, is: 'circle(30% at 90% calc(-20px + 100%))'},
+  {at: 0.5, is: 'circle(35% at 85% calc(-25px + 100%))'},
+  {at: 0.75, is: 'circle(40% at 80% calc(-30px + 100%))'},
 ]);
 </script>
 </body>

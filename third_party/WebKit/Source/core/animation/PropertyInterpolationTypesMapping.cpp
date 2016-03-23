@@ -5,6 +5,7 @@
 #include "core/animation/PropertyInterpolationTypesMapping.h"
 
 #include "core/HTMLNames.h"
+#include "core/animation/CSSBasicShapeInterpolationType.h"
 #include "core/animation/CSSBorderImageLengthBoxInterpolationType.h"
 #include "core/animation/CSSClipInterpolationType.h"
 #include "core/animation/CSSColorInterpolationType.h"
@@ -229,6 +230,10 @@ const InterpolationTypes* PropertyInterpolationTypesMapping::get(const PropertyH
         case CSSPropertyBorderImageSlice:
         case CSSPropertyWebkitMaskBoxImageSlice:
             applicableTypes->append(adoptPtr(new CSSImageSliceInterpolationType(cssProperty)));
+            break;
+        case CSSPropertyWebkitClipPath:
+        case CSSPropertyShapeOutside:
+            applicableTypes->append(adoptPtr(new CSSBasicShapeInterpolationType(cssProperty)));
             break;
         default:
             // TODO(alancutter): Support all interpolable CSS properties here so we can stop falling back to the old StyleInterpolation implementation.
