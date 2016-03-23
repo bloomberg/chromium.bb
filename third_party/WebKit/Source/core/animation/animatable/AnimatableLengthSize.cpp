@@ -46,4 +46,11 @@ bool AnimatableLengthSize::equalTo(const AnimatableValue* value) const
     return width()->equals(lengthSize->width()) && height()->equals(lengthSize->height());
 }
 
+bool AnimatableLengthSize::usesDefaultInterpolationWith(const AnimatableValue* other) const
+{
+    const AnimatableLengthSize* lengthSize = toAnimatableLengthSize(other);
+    return usesDefaultInterpolation(width(), lengthSize->width())
+        || usesDefaultInterpolation(height(), lengthSize->height());
+}
+
 } // namespace blink
