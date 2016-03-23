@@ -2838,7 +2838,7 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   base::MessageLoop::current()->Run();
 
   personal_data_->GetNonEmptyTypes(&non_empty_types);
-  EXPECT_EQ(27U, non_empty_types.size());
+  EXPECT_EQ(29U, non_empty_types.size());
   EXPECT_TRUE(non_empty_types.count(NAME_FIRST));
   EXPECT_TRUE(non_empty_types.count(NAME_MIDDLE));
   EXPECT_TRUE(non_empty_types.count(NAME_MIDDLE_INITIAL));
@@ -2859,6 +2859,8 @@ TEST_F(PersonalDataManagerTest, GetNonEmptyTypes) {
   EXPECT_TRUE(non_empty_types.count(PHONE_HOME_CITY_AND_NUMBER));
   EXPECT_TRUE(non_empty_types.count(PHONE_HOME_WHOLE_NUMBER));
   EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_NAME_FULL));
+  EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_NAME_FIRST));
+  EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_NAME_LAST));
   EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_NUMBER));
   EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_TYPE));
   EXPECT_TRUE(non_empty_types.count(CREDIT_CARD_EXP_MONTH));

@@ -416,6 +416,24 @@ class AutofillManager : public AutofillDownloadManager::Observer,
       const std::string& app_locale,
       FormStructure* submitted_form);
 
+  // Uses context about previous and next fields to select the appropriate type
+  // for fields with ambiguous upload types.
+  static void DisambiguateUploadTypes(FormStructure* form);
+
+  // Disambiguates address field upload types.
+  static void DisambiguateAddressUploadTypes(FormStructure* form,
+                                             size_t current_index);
+
+  // Disambiguates phone field upload types.
+  static void DisambiguatePhoneUploadTypes(FormStructure* form,
+                                           size_t current_index);
+
+  // Disambiguates name field upload types.
+  static void DisambiguateNameUploadTypes(
+      FormStructure* form,
+      size_t current_index,
+      const ServerFieldTypeSet& upload_types);
+
 #ifdef ENABLE_FORM_DEBUG_DUMP
   // Dumps the cached forms to a file on disk.
   void DumpAutofillData(bool imported_cc) const;
@@ -517,6 +535,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
                            DeterminePossibleFieldTypesForUpload);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DeterminePossibleFieldTypesForUploadStressTest);
+  FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest, DisambiguateUploadTypes);
   FRIEND_TEST_ALL_PREFIXES(AutofillManagerTest,
                            DisabledAutofillDispatchesError);
   FRIEND_TEST_ALL_PREFIXES(AutofillMetricsTest, AddressFilledFormEvents);

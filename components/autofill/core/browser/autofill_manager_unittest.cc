@@ -3183,6 +3183,11 @@ TEST_F(AutofillManagerTest, FormSubmittedPossibleTypesTwoSubmissions) {
                                false);
 
   personal_data_.ClearAutofillProfiles();
+  // The default credit card is a Elvis card. It must be removed because name
+  // fields would be detected. However at least one profile or card is needed to
+  // start the upload process, which is why this other card is created.
+  personal_data_.ClearCreditCards();
+  personal_data_.CreateTestCreditCardsYearAndMonth("2012", "04");
   ASSERT_EQ(0u, personal_data_.GetProfiles().size());
 
   // Simulate form submission. The first submission should not count the data
@@ -3340,8 +3345,8 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
   // Set up the test credit cards.
   std::vector<CreditCard> credit_cards;
   CreditCard credit_card;
-  test::SetCreditCardInfo(&credit_card, "Elvis Presley", "4234-5678-9012-3456",
-                          "04", "2012");
+  test::SetCreditCardInfo(&credit_card, "John Doe", "4234-5678-9012-3456", "04",
+                          "2012");
   credit_card.set_guid("00000000-0000-0000-0000-000000000003");
   credit_cards.push_back(credit_card);
 
@@ -3390,7 +3395,9 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
       {"2", PHONE_HOME_CITY_CODE},
 
       // Credit card fields matches.
-      {"Elvis Presley", CREDIT_CARD_NAME_FULL},
+      {"John Doe", CREDIT_CARD_NAME_FULL},
+      {"John", CREDIT_CARD_NAME_FIRST},
+      {"Doe", CREDIT_CARD_NAME_LAST},
       {"4234-5678-9012-3456", CREDIT_CARD_NUMBER},
       {"04", CREDIT_CARD_EXP_MONTH},
       {"April", CREDIT_CARD_EXP_MONTH},
@@ -3437,11 +3444,8 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
     form.action = GURL("http://myform.com/submit.html");
 
     FormFieldData field;
-    ServerFieldTypeSet types;
     test::CreateTestFormField("", "1", "", "text", &field);
     field.value = ASCIIToUTF16(test_case.input_value);
-    types.clear();
-    types.insert(test_case.field_type);
     form.fields.push_back(field);
 
     FormStructure form_structure(form);
@@ -3507,6 +3511,182 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload_IsTriggered) {
 
   autofill_manager_->set_expected_submitted_field_types(expected_types);
   FormSubmitted(form);
+}
+
+// Tests that DisambiguateUploadTypes makes the correct choices.
+TEST_F(AutofillManagerTest, DisambiguateUploadTypes) {
+  // Set up the test profile.
+  std::vector<AutofillProfile> profiles;
+  AutofillProfile profile;
+  test::SetProfileInfo(&profile, "Elvis", "Aaron", "Presley",
+                       "theking@gmail.com", "RCA", "3734 Elvis Presley Blvd.",
+                       "", "Memphis", "Tennessee", "38116", "US",
+                       "(234) 567-8901");
+  profile.set_guid("00000000-0000-0000-0000-000000000001");
+  profiles.push_back(profile);
+
+  // Set up the test credit card.
+  std::vector<CreditCard> credit_cards;
+  CreditCard credit_card;
+  test::SetCreditCardInfo(&credit_card, "Elvis Presley", "4234-5678-9012-3456",
+                          "04", "2012");
+  credit_card.set_guid("00000000-0000-0000-0000-000000000003");
+  credit_cards.push_back(credit_card);
+
+  typedef struct {
+    std::string input_value;
+    ServerFieldType predicted_type;
+    bool expect_disambiguation;
+    ServerFieldType expected_upload_type;
+  } TestFieldData;
+
+  std::vector<TestFieldData> test_cases[13];
+
+  // Address disambiguation.
+  // An ambiguous address line followed by a field predicted as a line 2 and
+  // that is empty should be disambiguated as an ADDRESS_HOME_LINE1.
+  test_cases[0].push_back({"3734 Elvis Presley Blvd.", ADDRESS_HOME_LINE1, true,
+                           ADDRESS_HOME_LINE1});
+  test_cases[0].push_back({"", ADDRESS_HOME_LINE2, true, EMPTY_TYPE});
+
+  // An ambiguous address line followed by a field predicted as a line 2 but
+  // filled with another know profile value should be disambiguated as an
+  // ADDRESS_HOME_STREET_ADDRESS.
+  test_cases[1].push_back({"3734 Elvis Presley Blvd.",
+                           ADDRESS_HOME_STREET_ADDRESS, true,
+                           ADDRESS_HOME_STREET_ADDRESS});
+  test_cases[1].push_back(
+      {"38116", ADDRESS_HOME_LINE2, true, ADDRESS_HOME_ZIP});
+
+  // An ambiguous address line followed by an empty field predicted as
+  // something other than a line 2 should be disambiguated as an
+  // ADDRESS_HOME_STREET_ADDRESS.
+  test_cases[2].push_back({"3734 Elvis Presley Blvd.",
+                           ADDRESS_HOME_STREET_ADDRESS, true,
+                           ADDRESS_HOME_STREET_ADDRESS});
+  test_cases[2].push_back({"", ADDRESS_HOME_ZIP, true, EMPTY_TYPE});
+
+  // An ambiguous address line followed by no other field should be
+  // disambiguated as an ADDRESS_HOME_STREET_ADDRESS.
+  test_cases[3].push_back({"3734 Elvis Presley Blvd.",
+                           ADDRESS_HOME_STREET_ADDRESS, true,
+                           ADDRESS_HOME_STREET_ADDRESS});
+
+  // Phone number disambiguation.
+  // A field with possible types PHONE_HOME_CITY_AND_NUMBER and
+  // PHONE_HOME_WHOLE_NUMBER should be disambiguated as
+  // PHONE_HOME_CITY_AND_NUMBER
+  test_cases[4].push_back({"2345678901", PHONE_HOME_WHOLE_NUMBER, true,
+                           PHONE_HOME_CITY_AND_NUMBER});
+
+  // Name disambiguation.
+  // An ambiguous name field that has no next field and that is preceded by
+  // a non credit card field should be disambiguated as a non credit card
+  // name.
+  test_cases[5].push_back(
+      {"Memphis", ADDRESS_HOME_CITY, true, ADDRESS_HOME_CITY});
+  test_cases[5].push_back({"Elvis", CREDIT_CARD_NAME_FIRST, true, NAME_FIRST});
+  test_cases[5].push_back({"Presley", CREDIT_CARD_NAME_LAST, true, NAME_LAST});
+
+  // An ambiguous name field that has no next field and that is preceded by
+  // a credit card field should be disambiguated as a credit card name.
+  test_cases[6].push_back(
+      {"4234-5678-9012-3456", CREDIT_CARD_NUMBER, true, CREDIT_CARD_NUMBER});
+  test_cases[6].push_back({"Elvis", NAME_FIRST, true, CREDIT_CARD_NAME_FIRST});
+  test_cases[6].push_back({"Presley", NAME_LAST, true, CREDIT_CARD_NAME_LAST});
+
+  // An ambiguous name field that has no previous field and that is
+  // followed by a non credit card field should be disambiguated as a non
+  // credit card name.
+  test_cases[7].push_back({"Elvis", CREDIT_CARD_NAME_FIRST, true, NAME_FIRST});
+  test_cases[7].push_back({"Presley", CREDIT_CARD_NAME_LAST, true, NAME_LAST});
+  test_cases[7].push_back(
+      {"Memphis", ADDRESS_HOME_CITY, true, ADDRESS_HOME_CITY});
+
+  // An ambiguous name field that has no previous field and that is followed
+  // by a credit card field should be disambiguated as a credit card name.
+  test_cases[8].push_back({"Elvis", NAME_FIRST, true, CREDIT_CARD_NAME_FIRST});
+  test_cases[8].push_back({"Presley", NAME_LAST, true, CREDIT_CARD_NAME_LAST});
+  test_cases[8].push_back(
+      {"4234-5678-9012-3456", CREDIT_CARD_NUMBER, true, CREDIT_CARD_NUMBER});
+
+  // An ambiguous name field that is preceded and followed by non credit
+  // card fields should be disambiguated as a non credit card name.
+  test_cases[9].push_back(
+      {"Memphis", ADDRESS_HOME_CITY, true, ADDRESS_HOME_CITY});
+  test_cases[9].push_back({"Elvis", CREDIT_CARD_NAME_FIRST, true, NAME_FIRST});
+  test_cases[9].push_back({"Presley", CREDIT_CARD_NAME_LAST, true, NAME_LAST});
+  test_cases[9].push_back(
+      {"Tennessee", ADDRESS_HOME_STATE, true, ADDRESS_HOME_STATE});
+
+  // An ambiguous name field that is preceded and followed by credit card
+  // fields should be disambiguated as a credit card name.
+  test_cases[10].push_back(
+      {"4234-5678-9012-3456", CREDIT_CARD_NUMBER, true, CREDIT_CARD_NUMBER});
+  test_cases[10].push_back({"Elvis", NAME_FIRST, true, CREDIT_CARD_NAME_FIRST});
+  test_cases[10].push_back({"Presley", NAME_LAST, true, CREDIT_CARD_NAME_LAST});
+  test_cases[10].push_back({"2012", CREDIT_CARD_EXP_4_DIGIT_YEAR, true,
+                            CREDIT_CARD_EXP_4_DIGIT_YEAR});
+
+  // An ambiguous name field that is preceded by a non credit card field and
+  // followed by a credit card field should not be disambiguated.
+  test_cases[11].push_back(
+      {"Memphis", ADDRESS_HOME_CITY, true, ADDRESS_HOME_CITY});
+  test_cases[11].push_back(
+      {"Elvis", NAME_FIRST, false, CREDIT_CARD_NAME_FIRST});
+  test_cases[11].push_back(
+      {"Presley", NAME_LAST, false, CREDIT_CARD_NAME_LAST});
+  test_cases[11].push_back({"2012", CREDIT_CARD_EXP_4_DIGIT_YEAR, true,
+                            CREDIT_CARD_EXP_4_DIGIT_YEAR});
+
+  // An ambiguous name field that is preceded by a credit card field and
+  // followed by a non credit card field should not be disambiguated.
+  test_cases[12].push_back({"2012", CREDIT_CARD_EXP_4_DIGIT_YEAR, true,
+                            CREDIT_CARD_EXP_4_DIGIT_YEAR});
+  test_cases[12].push_back(
+      {"Elvis", NAME_FIRST, false, CREDIT_CARD_NAME_FIRST});
+  test_cases[12].push_back(
+      {"Presley", NAME_LAST, false, CREDIT_CARD_NAME_LAST});
+  test_cases[12].push_back(
+      {"Memphis", ADDRESS_HOME_CITY, true, ADDRESS_HOME_CITY});
+
+  for (const std::vector<TestFieldData>& test_fields : test_cases) {
+    FormData form;
+    form.name = ASCIIToUTF16("MyForm");
+    form.origin = GURL("http://myform.com/form.html");
+    form.action = GURL("http://myform.com/submit.html");
+
+    // Create the form fields specified in the test case.
+    FormFieldData field;
+    for (const TestFieldData& test_field : test_fields) {
+      test::CreateTestFormField("", "1", "", "text", &field);
+      field.value = ASCIIToUTF16(test_field.input_value);
+      form.fields.push_back(field);
+    }
+
+    // Assign the specified predicted type for each field in the test case.
+    FormStructure form_structure(form);
+    for (size_t i = 0; i < test_fields.size(); ++i) {
+      form_structure.field(i)->set_server_type(test_fields[i].predicted_type);
+    }
+
+    AutofillManager::DeterminePossibleFieldTypesForUpload(
+        profiles, credit_cards, "en-us", &form_structure);
+    ASSERT_EQ(test_fields.size(), form_structure.field_count());
+
+    // Make sure the disambiguation method selects the expected upload type.
+    ServerFieldTypeSet possible_types;
+    for (size_t i = 0; i < test_fields.size(); ++i) {
+      possible_types = form_structure.field(i)->possible_types();
+      if (test_fields[i].expect_disambiguation) {
+        EXPECT_EQ(1U, possible_types.size());
+        EXPECT_NE(possible_types.end(),
+                  possible_types.find(test_fields[i].expected_upload_type));
+      } else {
+        EXPECT_EQ(2U, possible_types.size());
+      }
+    }
+  }
 }
 
 TEST_F(AutofillManagerTest, RemoveProfile) {

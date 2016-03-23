@@ -647,9 +647,10 @@ bool CreditCard::IsValid() const {
              expiration_year_, expiration_month_, base::Time::Now());
 }
 
-// TODO(crbug.com/589536): Upload new credit card types to the server.
 void CreditCard::GetSupportedTypes(ServerFieldTypeSet* supported_types) const {
   supported_types->insert(CREDIT_CARD_NAME_FULL);
+  supported_types->insert(CREDIT_CARD_NAME_FIRST);
+  supported_types->insert(CREDIT_CARD_NAME_LAST);
   supported_types->insert(CREDIT_CARD_NUMBER);
   supported_types->insert(CREDIT_CARD_TYPE);
   supported_types->insert(CREDIT_CARD_EXP_MONTH);

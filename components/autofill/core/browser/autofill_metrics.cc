@@ -31,13 +31,14 @@ enum FieldTypeGroupForMetrics {
   GROUP_PHONE,
   GROUP_FAX,  // Deprecated.
   GROUP_EMAIL,
-  GROUP_CREDIT_CARD_NAME_FULL,
+  GROUP_CREDIT_CARD_NAME,
   GROUP_CREDIT_CARD_NUMBER,
   GROUP_CREDIT_CARD_DATE,
   GROUP_CREDIT_CARD_TYPE,
   GROUP_PASSWORD,
   GROUP_ADDRESS_LINE_3,
   GROUP_USERNAME,
+  GROUP_STREET_ADDRESS,
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
 
@@ -99,6 +100,8 @@ int GetFieldTypeGroupMetric(ServerFieldType field_type,
         case ADDRESS_HOME_LINE3:
           group = GROUP_ADDRESS_LINE_3;
           break;
+        case ADDRESS_HOME_STREET_ADDRESS:
+          group = GROUP_STREET_ADDRESS;
         case ADDRESS_HOME_CITY:
           group = GROUP_ADDRESS_CITY;
           break;
@@ -130,7 +133,9 @@ int GetFieldTypeGroupMetric(ServerFieldType field_type,
     case CREDIT_CARD:
       switch (field_type) {
         case CREDIT_CARD_NAME_FULL:
-          group = GROUP_CREDIT_CARD_NAME_FULL;
+        case CREDIT_CARD_NAME_FIRST:
+        case CREDIT_CARD_NAME_LAST:
+          group = GROUP_CREDIT_CARD_NAME;
           break;
         case CREDIT_CARD_NUMBER:
           group = GROUP_CREDIT_CARD_NUMBER;
