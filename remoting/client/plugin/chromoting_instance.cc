@@ -1034,11 +1034,16 @@ void ChromotingInstance::UpdatePerfStatsInUI() {
   scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
   data->SetDouble("videoBandwidth", perf_tracker_.video_bandwidth());
   data->SetDouble("videoFrameRate", perf_tracker_.video_frame_rate());
-  data->SetDouble("captureLatency", perf_tracker_.video_capture_ms());
-  data->SetDouble("encodeLatency", perf_tracker_.video_encode_ms());
-  data->SetDouble("decodeLatency", perf_tracker_.video_decode_ms());
-  data->SetDouble("renderLatency", perf_tracker_.video_paint_ms());
-  data->SetDouble("roundtripLatency", perf_tracker_.round_trip_ms());
+  data->SetDouble("captureLatency", perf_tracker_.video_capture_ms().Average());
+  data->SetDouble("maxCaptureLatency", perf_tracker_.video_capture_ms().Max());
+  data->SetDouble("encodeLatency", perf_tracker_.video_encode_ms().Average());
+  data->SetDouble("maxEncodeLatency", perf_tracker_.video_encode_ms().Max());
+  data->SetDouble("decodeLatency", perf_tracker_.video_decode_ms().Average());
+  data->SetDouble("maxDecodeLatency", perf_tracker_.video_decode_ms().Max());
+  data->SetDouble("renderLatency", perf_tracker_.video_paint_ms().Average());
+  data->SetDouble("maxRenderLatency", perf_tracker_.video_paint_ms().Max());
+  data->SetDouble("roundtripLatency", perf_tracker_.round_trip_ms().Average());
+  data->SetDouble("maxRoundtripLatency", perf_tracker_.round_trip_ms().Max());
   PostLegacyJsonMessage("onPerfStats", std::move(data));
 }
 

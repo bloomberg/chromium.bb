@@ -79,6 +79,16 @@ remoting.ChromotingEvent = function(type) {
   this.render_latency;
   /** @type {number} */
   this.roundtrip_latency;
+  /** @type {number} */
+  this.max_capture_latency;
+  /** @type {number} */
+  this.max_encode_latency;
+  /** @type {number} */
+  this.max_decode_latency;
+  /** @type {number} */
+  this.max_render_latency;
+  /** @type {number} */
+  this.max_roundtrip_latency;
   /** @type {remoting.ChromotingEvent.Mode} */
   this.mode;
   /** @type {remoting.ChromotingEvent.SignalStrategyType} */

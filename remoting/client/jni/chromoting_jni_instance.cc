@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/format_macros.h"
 #include "base/logging.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "net/socket/client_socket_factory.h"
@@ -484,12 +485,20 @@ void ChromotingJniInstance::LogPerfStats() {
 
   __android_log_print(
       ANDROID_LOG_INFO, "stats",
-      "Bandwidth:%.0f FrameRate:%.1f Capture:%.1f Encode:%.1f "
-      "Decode:%.1f Render:%.1f Latency:%.0f",
+      "Bandwidth:%.0f FrameRate:%.1f;"
+      " (Avg, Max) Capture:%.1f, %" PRId64 " Encode:%.1f, %" PRId64
+      " Decode:%.1f, %" PRId64 " Render:%.1f, %" PRId64 " RTL:%.0f, %" PRId64,
       perf_tracker_->video_bandwidth(), perf_tracker_->video_frame_rate(),
-      perf_tracker_->video_capture_ms(), perf_tracker_->video_encode_ms(),
-      perf_tracker_->video_decode_ms(), perf_tracker_->video_paint_ms(),
-      perf_tracker_->round_trip_ms());
+      perf_tracker_->video_capture_ms().Average(),
+      perf_tracker_->video_capture_ms().Max(),
+      perf_tracker_->video_encode_ms().Average(),
+      perf_tracker_->video_encode_ms().Max(),
+      perf_tracker_->video_decode_ms().Average(),
+      perf_tracker_->video_decode_ms().Max(),
+      perf_tracker_->video_paint_ms().Average(),
+      perf_tracker_->video_paint_ms().Max(),
+      perf_tracker_->round_trip_ms().Average(),
+      perf_tracker_->round_trip_ms().Max());
 
   client_status_logger_->LogStatistics(perf_tracker_.get());
 
