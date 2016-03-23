@@ -16,6 +16,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
+#include "ui/base/page_transition_types.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(offline_pages::OfflinePageTabHelper);
 
@@ -42,6 +43,15 @@ void OfflinePageTabHelper::DidStartNavigation(
   // connection.
   if (net::NetworkChangeNotifier::IsOffline())
     return;
+
+  // Ignore navigations that are forward or back transitions in the nav stack
+  // which are not at the head of the stack.
+  if (web_contents()->GetController().GetEntryCount() > 0 &&
+      web_contents()->GetController().GetCurrentEntryIndex() != -1 &&
+      (web_contents()->GetController().GetCurrentEntryIndex() <
+       web_contents()->GetController().GetEntryCount() - 1)) {
+    return;
+  }
 
   // Skips if not loading an offline copy of saved page.
   GURL online_url = offline_pages::OfflinePageUtils::GetOnlineURLForOfflineURL(
@@ -77,6 +87,12 @@ void OfflinePageTabHelper::DidFinishNavigation(
   if (!net::NetworkChangeNotifier::IsOffline())
     return;
 
+  // On a forward or back transition, don't affect the order of the nav stack.
+  if (navigation_handle->GetPageTransition() ==
+      ui::PAGE_TRANSITION_FORWARD_BACK) {
+    return;
+  }
+
   // Skips if not loading an online version of saved page.
   GURL offline_url = offline_pages::OfflinePageUtils::GetOfflineURLForOnlineURL(
       web_contents()->GetBrowserContext(), navigation_handle->GetURL());
@@ -99,6 +115,7 @@ void OfflinePageTabHelper::RedirectFromOfflineToOnline(const GURL& online_url) {
   UMA_HISTOGRAM_COUNTS("OfflinePages.RedirectToOnlineCount", 1);
   content::NavigationController::LoadURLParams load_params(online_url);
   load_params.transition_type = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+  load_params.should_replace_current_entry = true;
   web_contents()->GetController().LoadURLWithParams(load_params);
 }
 
@@ -107,6 +124,7 @@ void OfflinePageTabHelper::RedirectFromOnlineToOffline(
   UMA_HISTOGRAM_COUNTS("OfflinePages.RedirectToOfflineCount", 1);
   content::NavigationController::LoadURLParams load_params(offline_url);
   load_params.transition_type = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+  load_params.should_replace_current_entry = true;
   web_contents()->GetController().LoadURLWithParams(load_params);
 }
 
