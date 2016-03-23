@@ -1650,6 +1650,7 @@ def main(argv=None):
   parser.add_option("--rietveld_email_file", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_private_key_file", help=optparse.SUPPRESS_HELP)
 
+  # TODO(phajdan.jr): Update callers and remove obsolete --trybot-json .
   parser.add_option("--trybot-json",
                     help="Output trybot information to the file specified.")
   auth.add_auth_options(parser)
@@ -1696,32 +1697,6 @@ def main(argv=None):
       options.description = props['description']
       logging.info('Got author: "%s"', options.author)
       logging.info('Got description: """\n%s\n"""', options.description)
-  if options.trybot_json:
-    with open(options.trybot_json, 'w') as f:
-      # Python's sets aren't JSON-encodable, so we convert them to lists here.
-      class SetEncoder(json.JSONEncoder):
-        # pylint: disable=E0202
-        def default(self, obj):
-          if isinstance(obj, set):
-            return sorted(obj)
-          return json.JSONEncoder.default(self, obj)
-      change = change_class(options.name,
-                      options.description,
-                      options.root,
-                      files,
-                      options.issue,
-                      options.patchset,
-                      options.author,
-                      upstream=options.upstream)
-      trybots = DoGetTrySlaves(
-          change,
-          change.LocalPaths(),
-          change.RepositoryRoot(),
-          None,
-          None,
-          options.verbose,
-          sys.stdout)
-      json.dump(trybots, f, cls=SetEncoder)
   try:
     with canned_check_filter(options.skip_canned):
       results = DoPresubmitChecks(
