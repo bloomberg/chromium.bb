@@ -37,7 +37,6 @@
             '--product-dir', '<(PRODUCT_DIR)',
             '--result-path', '<(result_path)',
             '--stamp', '<(android_lint_cache_stamp)',
-            '--create-cache',
             '--silent',
             '--enable'
           ],

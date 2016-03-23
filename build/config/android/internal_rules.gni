@@ -24,6 +24,13 @@ if (is_debug) {
 }
 
 template("android_lint") {
+  set_sources_assignment_filter([])
+
+  jar_path = invoker.jar_path
+  android_manifest = invoker.android_manifest
+  java_files = invoker.java_files
+  base_path = "$target_gen_dir/$target_name"
+
   action(target_name) {
     deps = []
     forward_variables_from(invoker,
@@ -33,65 +40,41 @@ template("android_lint") {
                              "public_deps",
                              "testonly",
                            ])
-    _cache_dir = "$root_build_dir/android_lint_cache"
-    _result_path = "$target_gen_dir/$target_name/result.xml"
-    _config_path = "$target_gen_dir/$target_name/config.xml"
-    _suppressions_file = "//build/android/lint/suppressions.xml"
-    _cache_file = "$_cache_dir/.android/cache/api-versions-6-${android_sdk_build_tools_version}.bin"
-
     script = "//build/android/gyp/lint.py"
-    depfile = "$target_gen_dir/$target_name.d"
+    result_path = base_path + "/result.xml"
+    config_path = base_path + "/config.xml"
+    suppressions_file = "//build/android/lint/suppressions.xml"
     inputs = [
-      "${android_sdk_root}/platform-tools/api/api-versions.xml",
-      _suppressions_file,
-      invoker.android_manifest,
-    ]
+               suppressions_file,
+               android_manifest,
+               jar_path,
+             ] + java_files
 
     outputs = [
-      depfile,
-      _config_path,
-      _result_path,
+      config_path,
+      result_path,
     ]
+
+    deps += [ "//build/android:prepare_android_lint_cache" ]
+
+    rebased_java_files = rebase_path(java_files, root_build_dir)
 
     args = [
       "--lint-path=$rebased_android_sdk_root/tools/lint",
-      "--cache-dir",
-      rebase_path(_cache_dir, root_build_dir),
-      "--build-tools-version",
-      android_sdk_build_tools_version,
-      "--depfile",
-      rebase_path(depfile, root_build_dir),
       "--config-path",
-      rebase_path(_suppressions_file, root_build_dir),
+      rebase_path(suppressions_file, root_build_dir),
       "--manifest-path",
-      rebase_path(invoker.android_manifest, root_build_dir),
+      rebase_path(android_manifest, root_build_dir),
       "--product-dir=.",
+      "--jar-path",
+      rebase_path(jar_path, root_build_dir),
       "--processed-config-path",
-      rebase_path(_config_path, root_build_dir),
+      rebase_path(config_path, root_build_dir),
       "--result-path",
-      rebase_path(_result_path, root_build_dir),
+      rebase_path(result_path, root_build_dir),
+      "--java-files=$rebased_java_files",
       "--enable",
     ]
-
-    if (defined(invoker.create_cache) && invoker.create_cache) {
-      outputs += [ _cache_file ]
-      args += [
-        "--create-cache",
-        "--silent",
-      ]
-    } else {
-      inputs += [
-                  _cache_file,
-                  invoker.jar_path,
-                ] + invoker.java_files
-      deps += [ "//build/android:prepare_android_lint_cache" ]
-      _rebased_java_files = rebase_path(invoker.java_files, root_build_dir)
-      args += [
-        "--jar-path",
-        rebase_path(invoker.jar_path, root_build_dir),
-        "--java-files=$_rebased_java_files",
-      ]
-    }
   }
 }
 
