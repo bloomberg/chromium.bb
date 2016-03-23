@@ -38,9 +38,10 @@ namespace blink {
 
 static inline bool shouldSuppressPaintingLayer(const PaintLayer& layer)
 {
-    // Avoid painting descendants of the root layer when stylesheets haven't loaded. This eliminates FOUC.
-    // It's ok not to draw, because later on, when all the stylesheets do load, updateStyleSelector on the Document
-    // will do a full paintInvalidationForWholeLayoutObject().
+    // Avoid painting descendants of the root layer when stylesheets haven't loaded. This avoids some FOUC.
+    // It's ok not to draw, because later on, when all the stylesheets do load, Document::styleResolverMayHaveChanged()
+    // will invalidate all painted output via a call to LayoutView::invalidatePaintForViewAndCompositedLayers().
+    // We also avoid caching subsequences in this mode; see shouldCreateSubsequence().
     if (layer.layoutObject()->document().didLayoutWithPendingStylesheets() && !layer.isRootLayer() && !layer.layoutObject()->isDocumentElement())
         return true;
 
