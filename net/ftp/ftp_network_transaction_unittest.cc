@@ -430,6 +430,34 @@ class FtpSocketDataProviderFileDownload : public FtpSocketDataProvider {
   DISALLOW_COPY_AND_ASSIGN(FtpSocketDataProviderFileDownload);
 };
 
+class FtpSocketDataProviderPathSeparatorsNotUnescaped
+    : public FtpSocketDataProvider {
+ public:
+  FtpSocketDataProviderPathSeparatorsNotUnescaped() {}
+
+  MockWriteResult OnWrite(const std::string& data) override {
+    if (InjectFault())
+      return MockWriteResult(ASYNC, data.length());
+    switch (state()) {
+      case PRE_SIZE:
+        return Verify("SIZE /foo%2f..%2fbar%5c\r\n", data, PRE_CWD,
+                      "213 18\r\n");
+      case PRE_CWD:
+        return Verify("CWD /foo%2f..%2fbar%5c\r\n", data,
+                      use_epsv() ? PRE_RETR_EPSV : PRE_RETR_PASV,
+                      "550 Not a directory\r\n");
+      case PRE_RETR:
+        return Verify("RETR /foo%2f..%2fbar%5c\r\n", data, PRE_QUIT,
+                      "200 OK\r\n");
+      default:
+        return FtpSocketDataProvider::OnWrite(data);
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FtpSocketDataProviderPathSeparatorsNotUnescaped);
+};
+
 class FtpSocketDataProviderFileNotFound : public FtpSocketDataProvider {
  public:
   FtpSocketDataProviderFileNotFound() {
@@ -1307,6 +1335,18 @@ TEST_P(FtpNetworkTransactionTest, DownloadTransactionSpaceInLogin) {
 TEST_P(FtpNetworkTransactionTest, DownloadTransactionSpaceInPassword) {
   FtpSocketDataProviderEvilLogin ctrl_socket("test", "hello world");
   ExecuteTransaction(&ctrl_socket, "ftp://test:hello%20world@host/file", OK);
+}
+
+// Make sure FtpNetworkTransaction doesn't request paths like
+// "/foo/../bar".  Doing so wouldn't be a security issue, client side, but just
+// doesn't seem like a good idea.
+TEST_P(FtpNetworkTransactionTest,
+       DownloadTransactionPathSeparatorsNotUnescaped) {
+  FtpSocketDataProviderPathSeparatorsNotUnescaped ctrl_socket;
+  ExecuteTransaction(&ctrl_socket, "ftp://host/foo%2f..%2fbar%5c", OK);
+
+  // We pass an artificial value of 18 as a response to the SIZE command.
+  EXPECT_EQ(18, transaction_.GetResponseInfo()->expected_content_size);
 }
 
 TEST_P(FtpNetworkTransactionTest, EvilRestartUser) {

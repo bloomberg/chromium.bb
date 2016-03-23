@@ -487,8 +487,9 @@ std::string FtpNetworkTransaction::GetRequestPathForFtpCommand(
   // with a trailing slash.
   if (!is_directory && path.length() > 1 && path.back() == '/')
     path.erase(path.length() - 1);
-  UnescapeRule::Type unescape_rules = UnescapeRule::SPACES |
-                                      UnescapeRule::URL_SPECIAL_CHARS;
+  UnescapeRule::Type unescape_rules =
+      UnescapeRule::SPACES |
+      UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS;
   // This may unescape to non-ASCII characters, but we allow that. See the
   // comment for IsValidFTPCommandString.
   path = UnescapeURLComponent(path, unescape_rules);
