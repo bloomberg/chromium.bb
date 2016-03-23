@@ -80,7 +80,6 @@
       'p224.h',
       'random.h',
       'random.cc',
-      'rsa_private_key.cc',
       'rsa_private_key.h',
       'rsa_private_key_nss.cc',
       'rsa_private_key_openssl.cc',
