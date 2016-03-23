@@ -1270,6 +1270,7 @@ template("android_java_prebuilt") {
 #   requires_sdk_api_level_23: If defined and true, the apk is intended for
 #     installation only on Android M or later. In these releases the system
 #     linker does relocation unpacking, so we can enable it unconditionally.
+#   secondary_native_libs: the path of native libraries for secondary app abi.
 #
 #   DEPRECATED_java_in_dir: Directory containing java files. All .java files in
 #     this directory will be included in the library. This is only supported to
@@ -1774,6 +1775,7 @@ template("android_apk") {
                              "language_splits",
                              "page_align_shared_libraries",
                              "public_deps",
+                             "secondary_native_libs",
                              "shared_resources",
                              "uncompress_shared_libraries",
                              "write_asset_list",

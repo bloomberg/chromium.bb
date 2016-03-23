@@ -784,6 +784,16 @@ template("package_apk") {
     if (_native_lib_placeholders != []) {
       args += [ "--native-lib-placeholders=$_native_lib_placeholders" ]
     }
+    if (defined(invoker.secondary_native_libs) &&
+        invoker.secondary_native_libs != []) {
+      assert(defined(android_app_secondary_abi))
+      inputs += invoker.secondary_native_libs
+      _secondary_native_libs = rebase_path(invoker.secondary_native_libs)
+      args += [
+        "--secondary-native-libs=$_secondary_native_libs",
+        "--secondary-android-abi=$android_app_secondary_abi",
+      ]
+    }
 
     if (defined(invoker.emma_instrument) && invoker.emma_instrument) {
       _emma_device_jar = "$android_sdk_root/tools/lib/emma_device.jar"
@@ -1100,6 +1110,7 @@ template("create_apk") {
                              "emma_instrument",
                              "native_lib_placeholders",
                              "native_libs_filearg",
+                             "secondary_native_libs",
                              "uncompress_shared_libraries",
                              "write_asset_list",
                            ])
@@ -1120,6 +1131,7 @@ template("create_apk") {
                            [
                              "assets_build_config",
                              "emma_instrument",
+                             "secondary_native_libs",
                              "uncompress_shared_libraries",
                            ])
     _dex_target = "//build/android/incremental_install:bootstrap_java__dex"
