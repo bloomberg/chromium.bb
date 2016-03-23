@@ -3186,7 +3186,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN7storage12QuotaManager14LazyInitializeEv
-   fun:_ZN7storage12QuotaManager26GetUsageAndQuotaForWebAppsERK4GURLNS_11StorageTypeERKN4base8CallbackIFvNS_15QuotaStatusCodeEllEEE
+   fun:_ZN7storage12QuotaManager26GetUsageAndQuotaForWebAppsERK4GURLNS_11StorageTypeERKN4base8CallbackIFvNS_15QuotaStatusCodeEllELNS5_8internal8CopyModeE1EEE
 }
 {
    bug_562712
