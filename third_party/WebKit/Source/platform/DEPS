@@ -6,7 +6,6 @@ include_rules = [
     "+base/location.h",
     "+base/memory",
     "+base/metrics/histogram.h",
-    "+base/metrics/histogram_base.h",
     "+base/metrics/sparse_histogram.h",
     "+base/strings/stringprintf.h",
     "+base/synchronization/waitable_event.h",

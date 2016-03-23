@@ -31,10 +31,8 @@
 #include "platform/graphics/BitmapImage.h"
 
 #include "platform/SharedBuffer.h"
-#include "platform/graphics/BitmapImageMetrics.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/graphics/ImageObserver.h"
-#include "platform/testing/HistogramTester.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -314,64 +312,5 @@ TEST_F(BitmapImageDeferredDecodingTest, correctDecodedDataSize)
     destroyDecodedData(false);
     EXPECT_EQ(-frameSize * 2, m_imageObserver->m_lastDecodedSizeChangedDelta);
 }
-
-template <typename HistogramEnumType>
-struct HistogramTestParams {
-    const char* filename;
-    HistogramEnumType type;
-};
-
-template <typename HistogramEnumType>
-class BitmapHistogramTest
-    : public BitmapImageTest
-    , public ::testing::WithParamInterface<HistogramTestParams<HistogramEnumType>> {
-protected:
-    void runTest(const char* histogramName)
-    {
-        HistogramTester histogramTester;
-        loadImage(this->GetParam().filename);
-        histogramTester.expectUniqueSample(histogramName, this->GetParam().type, 1);
-    }
-};
-
-using DecodedImageTypeHistogramTest = BitmapHistogramTest<BitmapImageMetrics::DecodedImageType>;
-
-TEST_P(DecodedImageTypeHistogramTest, ImageType)
-{
-    runTest("Blink.DecodedImageType");
-}
-
-DecodedImageTypeHistogramTest::ParamType kDecodedImageTypeHistogramTestParams[] = {
-    {"/LayoutTests/fast/images/resources/green.jpg", BitmapImageMetrics::ImageJPEG},
-    {"/LayoutTests/fast/images/resources/palatted-color-png-gamma-one-color-profile.png", BitmapImageMetrics::ImagePNG},
-    {"/LayoutTests/fast/images/resources/animated-10color.gif", BitmapImageMetrics::ImageGIF},
-    {"/LayoutTests/fast/images/resources/webp-color-profile-lossy.webp", BitmapImageMetrics::ImageWebP},
-    {"/LayoutTests/fast/images/resources/wrong-frame-dimensions.ico", BitmapImageMetrics::ImageICO},
-    {"/LayoutTests/fast/images/resources/lenna.bmp", BitmapImageMetrics::ImageBMP}
-};
-
-INSTANTIATE_TEST_CASE_P(DecodedImageTypeHistogramTest, DecodedImageTypeHistogramTest,
-    ::testing::ValuesIn(kDecodedImageTypeHistogramTestParams));
-
-using DecodedImageOrientationHistogramTest = BitmapHistogramTest<ImageOrientationEnum>;
-
-TEST_P(DecodedImageOrientationHistogramTest, ImageOrientation)
-{
-    runTest("Blink.DecodedImage.Orientation");
-}
-
-DecodedImageOrientationHistogramTest::ParamType kDecodedImageOrientationHistogramTestParams[] = {
-    {"/LayoutTests/fast/images/resources/exif-orientation-1-ul.jpg", OriginTopLeft},
-    {"/LayoutTests/fast/images/resources/exif-orientation-2-ur.jpg", OriginTopRight},
-    {"/LayoutTests/fast/images/resources/exif-orientation-3-lr.jpg", OriginBottomRight},
-    {"/LayoutTests/fast/images/resources/exif-orientation-4-lol.jpg", OriginBottomLeft},
-    {"/LayoutTests/fast/images/resources/exif-orientation-5-lu.jpg", OriginLeftTop},
-    {"/LayoutTests/fast/images/resources/exif-orientation-6-ru.jpg", OriginRightTop},
-    {"/LayoutTests/fast/images/resources/exif-orientation-7-rl.jpg", OriginRightBottom},
-    {"/LayoutTests/fast/images/resources/exif-orientation-8-llo.jpg", OriginLeftBottom}
-};
-
-INSTANTIATE_TEST_CASE_P(DecodedImageOrientationHistogramTest, DecodedImageOrientationHistogramTest,
-    ::testing::ValuesIn(kDecodedImageOrientationHistogramTestParams));
 
 } // namespace blink

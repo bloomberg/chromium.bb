@@ -12,6 +12,17 @@ namespace blink {
 
 void BitmapImageMetrics::countDecodedImageType(const String& type)
 {
+    enum DecodedImageType { // Values synced with 'DecodedImageType' in src/tools/metrics/histograms/histograms.xml
+        ImageUnknown = 0,
+        ImageJPEG = 1,
+        ImagePNG = 2,
+        ImageGIF = 3,
+        ImageWebP = 4,
+        ImageICO = 5,
+        ImageBMP = 6,
+        DecodedImageTypeEnumEnd = ImageBMP + 1
+    };
+
     DecodedImageType decodedImageType =
         type == "jpg"  ? ImageJPEG :
         type == "png"  ? ImagePNG  :

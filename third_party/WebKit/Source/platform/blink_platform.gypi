@@ -1246,8 +1246,6 @@
       'testing/FontTestHelpers.h',
       'testing/GeometryPrinters.cpp',
       'testing/GeometryPrinters.h',
-      'testing/HistogramTester.cpp',
-      'testing/HistogramTester.h',
       'testing/MessageLoopForMojo.h',
       'testing/PaintPrinters.cpp',
       'testing/PaintPrinters.h',
