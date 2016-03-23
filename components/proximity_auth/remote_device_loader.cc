@@ -4,6 +4,7 @@
 
 #include "components/proximity_auth/remote_device_loader.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/base64url.h"
