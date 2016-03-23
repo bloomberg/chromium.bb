@@ -331,6 +331,12 @@ def Update(force=False):
   return 0
 
 
+def NormalizePath(path):
+  while path.endswith("\\"):
+    path = path[:-1]
+  return path
+
+
 def GetToolchainDir():
   """Gets location information about the current toolchain (must have been
   previously updated by 'update'). This is used for the GN build."""
@@ -348,10 +354,10 @@ vs_version = "%s"
 wdk_dir = "%s"
 runtime_dirs = "%s"
 ''' % (
-      os.environ['GYP_MSVS_OVERRIDE_PATH'],
-      os.environ['WINDOWSSDKDIR'],
+      NormalizePath(os.environ['GYP_MSVS_OVERRIDE_PATH']),
+      NormalizePath(os.environ['WINDOWSSDKDIR']),
       GetVisualStudioVersion(),
-      os.environ.get('WDK_DIR', ''),
+      NormalizePath(os.environ.get('WDK_DIR', '')),
       os.path.pathsep.join(runtime_dll_dirs or ['None']))
 
 
