@@ -26,8 +26,6 @@
 
 #include "core/layout/svg/LayoutSVGModelObject.h"
 
-class SkPicture;
-
 namespace blink {
 
 class LayoutImageResource;
@@ -45,7 +43,6 @@ public:
     const LayoutImageResource* imageResource() const { return m_imageResource.get(); }
 
     const AffineTransform& localToSVGParentTransform() const override { return m_localTransform; }
-    RefPtr<const SkPicture>& bufferedForeground() { return m_bufferedForeground; }
 
     FloatRect objectBoundingBox() const override { return m_objectBoundingBox; }
     bool isOfType(LayoutObjectType type) const override { return type == LayoutObjectSVGImage || LayoutSVGModelObject::isOfType(type); }
@@ -76,8 +73,6 @@ private:
     AffineTransform m_localTransform;
     FloatRect m_objectBoundingBox;
     OwnPtrWillBePersistent<LayoutImageResource> m_imageResource;
-
-    RefPtr<const SkPicture> m_bufferedForeground;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGImage, isSVGImage());

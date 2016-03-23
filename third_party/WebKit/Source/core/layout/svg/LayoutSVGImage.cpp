@@ -88,8 +88,6 @@ void LayoutSVGImage::layout()
     }
 
     if (m_needsBoundariesUpdate) {
-        m_bufferedForeground.clear();
-
         m_paintInvalidationBoundingBox = m_objectBoundingBox;
         SVGLayoutSupport::intersectPaintInvalidationRectWithResources(this, m_paintInvalidationBoundingBox);
 
@@ -144,8 +142,6 @@ void LayoutSVGImage::imageChanged(WrappedImagePtr, const IntRect*)
     // references from resources (filters) that may have a cached
     // representation of this image/layout object.
     LayoutSVGResourceContainer::markForLayoutAndParentResourceInvalidation(this, false);
-
-    m_bufferedForeground.clear();
 
     setShouldDoFullPaintInvalidation();
 }
