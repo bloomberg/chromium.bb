@@ -13,6 +13,7 @@ if (use_aura) {
     ]
 
     deps = [
+      "//chromecast/public",
       "//ui/aura",
       "//ui/gfx",
       "//ui/gfx/geometry",

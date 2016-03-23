@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
-#include "chromecast/media/base/media_message_loop.h"
 #include "chromecast/public/cast_media_shlib.h"
 
 namespace chromecast {
@@ -140,10 +139,21 @@ class VideoPlaneController::RateLimitedSetVideoPlaneGeometry
   DISALLOW_COPY_AND_ASSIGN(RateLimitedSetVideoPlaneGeometry);
 };
 
-// static
-VideoPlaneController* VideoPlaneController::GetInstance() {
-  return base::Singleton<VideoPlaneController>::get();
-}
+VideoPlaneController::VideoPlaneController(
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner)
+    : is_paused_(false),
+      have_output_res_(false),
+      have_graphics_res_(false),
+      output_res_(0, 0),
+      graphics_res_(0, 0),
+      have_video_plane_geometry_(false),
+      video_plane_display_rect_(0, 0),
+      video_plane_transform_(VideoPlane::TRANSFORM_NONE),
+      media_task_runner_(media_task_runner),
+      video_plane_wrapper_(
+          new RateLimitedSetVideoPlaneGeometry(media_task_runner_)) {}
+
+VideoPlaneController::~VideoPlaneController() {}
 
 // TODO(esum): SetGeometry, SetDeviceResolution, and SetGraphicsPlaneResolution
 // follow the same pattern (copy/paste). Currently it's not worth modularizing
@@ -223,21 +233,6 @@ bool VideoPlaneController::is_paused() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return is_paused_;
 }
-
-VideoPlaneController::VideoPlaneController()
-    : is_paused_(false),
-      have_output_res_(false),
-      have_graphics_res_(false),
-      output_res_(0, 0),
-      graphics_res_(0, 0),
-      have_video_plane_geometry_(false),
-      video_plane_display_rect_(0, 0),
-      video_plane_transform_(VideoPlane::TRANSFORM_NONE),
-      media_task_runner_(MediaMessageLoop::GetTaskRunner()),
-      video_plane_wrapper_(
-          new RateLimitedSetVideoPlaneGeometry(media_task_runner_)) {}
-
-VideoPlaneController::~VideoPlaneController() {}
 
 void VideoPlaneController::MaybeRunSetGeometry() {
   DCHECK(thread_checker_.CalledOnValidThread());

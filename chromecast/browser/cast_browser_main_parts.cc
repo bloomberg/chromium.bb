@@ -251,6 +251,12 @@ CastBrowserMainParts::CastBrowserMainParts(
 CastBrowserMainParts::~CastBrowserMainParts() {
 }
 
+scoped_refptr<base::SingleThreadTaskRunner>
+CastBrowserMainParts::GetMediaTaskRunner() const {
+  // TODO(alokp): Obtain task runner from a local thread or mojo media app.
+  return media::MediaMessageLoop::GetTaskRunner();
+}
+
 void CastBrowserMainParts::PreMainMessageLoopStart() {
   // GroupedHistograms needs to be initialized before any threads are created
   // to prevent race conditions between calls to Preregister and those threads
@@ -383,16 +389,22 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   // TODO(halliwell) move audio builds to use ozone_platform_cast, then can
   // simplify this by removing DISABLE_DISPLAY condition.  Should then also
   // assert(ozone_platform_cast) in BUILD.gn where it depends on //ui/ozone.
+  video_plane_controller_.reset(
+      new media::VideoPlaneController(GetMediaTaskRunner()));
+  cast_browser_process_->cast_screen()->SetDisplayResizeCallback(
+      base::Bind(&media::VideoPlaneController::SetGraphicsPlaneResolution,
+                 base::Unretained(video_plane_controller_.get())));
   ui::OverlayManagerCast::SetOverlayCompositedCallback(
       base::Bind(&media::VideoPlaneController::SetGeometry,
-                 base::Unretained(media::VideoPlaneController::GetInstance())));
+                 base::Unretained(video_plane_controller_.get())));
 #endif
 
   cast_browser_process_->SetCastService(
       cast_browser_process_->browser_client()->CreateCastService(
           cast_browser_process_->browser_context(),
           cast_browser_process_->pref_service(),
-          url_request_context_factory_->GetSystemGetter()));
+          url_request_context_factory_->GetSystemGetter(),
+          video_plane_controller_.get()));
   cast_browser_process_->cast_service()->Initialize();
 
   // Initializing metrics service and network delegates must happen after cast
@@ -450,6 +462,13 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
 
   DeregisterKillOnAlarm();
 #endif
+}
+
+void CastBrowserMainParts::PostDestroyThreads() {
+  // Finalize CastMediaShlib on media thread to ensure it's not accessed
+  // after Finalize.
+  GetMediaTaskRunner()->PostTask(FROM_HERE,
+                                 base::Bind(&media::CastMediaShlib::Finalize));
 }
 
 }  // namespace shell

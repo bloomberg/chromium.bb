@@ -36,8 +36,9 @@ namespace media {
 // All calls to public methods should be from the same thread.
 class VideoPlaneController {
  public:
-  static VideoPlaneController* GetInstance();
-
+  explicit VideoPlaneController(
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner);
+  ~VideoPlaneController();
   // Sets the video plane geometry (forwards to VideoPlane::SetGeometry)
   // in *graphics plane coordinates*.
   //  * This should be called on UI thread (hopping to media thread is handled
@@ -76,9 +77,6 @@ class VideoPlaneController {
  private:
   class RateLimitedSetVideoPlaneGeometry;
   friend struct base::DefaultSingletonTraits<VideoPlaneController>;
-
-  VideoPlaneController();
-  ~VideoPlaneController();
 
   // Check if HaveDataForSetGeometry. If not, this method is a no-op. Otherwise
   // it scales the display rect from graphics to device resolution coordinates.

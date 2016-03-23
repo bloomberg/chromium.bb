@@ -31,8 +31,6 @@
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
-#include "chromecast/media/base/media_message_loop.h"
-#include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
@@ -81,8 +79,8 @@ static scoped_ptr<mojo::ShellClient> CreateCastMojoMediaApplication(
 }  // namespace
 
 CastContentBrowserClient::CastContentBrowserClient()
-    : url_request_context_factory_(new URLRequestContextFactory()) {
-}
+    : cast_browser_main_parts_(nullptr),
+      url_request_context_factory_(new URLRequestContextFactory()) {}
 
 CastContentBrowserClient::~CastContentBrowserClient() {
   content::BrowserThread::DeleteSoon(
@@ -101,7 +99,8 @@ void CastContentBrowserClient::PreCreateThreads() {
 scoped_ptr<CastService> CastContentBrowserClient::CreateCastService(
     content::BrowserContext* browser_context,
     PrefService* pref_service,
-    net::URLRequestContextGetter* request_context_getter) {
+    net::URLRequestContextGetter* request_context_getter,
+    media::VideoPlaneController* video_plane_controller) {
   return make_scoped_ptr(new CastServiceSimple(browser_context, pref_service));
 }
 
@@ -113,13 +112,6 @@ CastContentBrowserClient::GetCmaMediaPipelineClient() {
   return cma_media_pipeline_client_;
 }
 #endif  // OS_ANDROID
-
-void CastContentBrowserClient::ProcessExiting() {
-  // Finalize CastMediaShlib on media thread to ensure it's not accessed
-  // after Finalize.
-  GetMediaTaskRunner()->PostTask(FROM_HERE,
-                                 base::Bind(&media::CastMediaShlib::Finalize));
-}
 
 void CastContentBrowserClient::SetMetricsClientId(
     const std::string& client_id) {
@@ -135,10 +127,11 @@ bool CastContentBrowserClient::EnableRemoteDebuggingImmediately() {
 
 content::BrowserMainParts* CastContentBrowserClient::CreateBrowserMainParts(
     const content::MainFunctionParams& parameters) {
-  content::BrowserMainParts* parts =
+  DCHECK(!cast_browser_main_parts_);
+  cast_browser_main_parts_ =
       new CastBrowserMainParts(parameters, url_request_context_factory_.get());
   CastBrowserProcess::GetInstance()->SetCastContentBrowserClient(this);
-  return parts;
+  return cast_browser_main_parts_;
 }
 
 void CastContentBrowserClient::RenderProcessWillLaunch(
@@ -163,8 +156,8 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
 
 scoped_refptr<base::SingleThreadTaskRunner>
 CastContentBrowserClient::GetMediaTaskRunner() {
-  // TODO(alokp): Obtain task runner from a local thread or mojo media app.
-  return media::MediaMessageLoop::GetTaskRunner();
+  DCHECK(cast_browser_main_parts_);
+  return cast_browser_main_parts_->GetMediaTaskRunner();
 }
 
 #if !defined(OS_ANDROID)

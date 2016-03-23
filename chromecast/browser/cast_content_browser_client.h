@@ -32,9 +32,8 @@ namespace chromecast {
 class CastService;
 
 namespace media {
-class MediaPipelineBackend;
-struct MediaPipelineDeviceParams;
 class CmaMediaPipelineClient;
+class VideoPlaneController;
 }
 
 namespace shell {
@@ -62,16 +61,14 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   virtual scoped_ptr<CastService> CreateCastService(
       content::BrowserContext* browser_context,
       PrefService* pref_service,
-      net::URLRequestContextGetter* request_context_getter);
+      net::URLRequestContextGetter* request_context_getter,
+      media::VideoPlaneController* video_plane_controller);
 
 #if !defined(OS_ANDROID)
   // Returns CmaMediaPipelineClient which is responsible to create
   // CMA backend for media playback and watch media pipeline status.
   scoped_refptr<media::CmaMediaPipelineClient> GetCmaMediaPipelineClient();
 #endif
-
-  // Performs cleanup for process exit (but before AtExitManager cleanup).
-  void ProcessExiting();
 
   // Invoked when the metrics client ID changes.
   virtual void SetMetricsClientId(const std::string& client_id);
@@ -160,8 +157,6 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   CastContentBrowserClient();
 
   // Returns the task runner that must be used for media IO.
-  // TODO(alokp): We might need to make it public as we convert more callsites
-  // using MediaMessageLoop directly.
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
 
 #if !defined(OS_ANDROID)
@@ -196,6 +191,8 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
   scoped_refptr<media::CmaMediaPipelineClient> cma_media_pipeline_client_;
 #endif  // !defined(OS_ANDROID)
 
+  // Created by CastContentBrowserClient but owned by BrowserMainLoop.
+  CastBrowserMainParts* cast_browser_main_parts_;
   scoped_ptr<URLRequestContextFactory> url_request_context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentBrowserClient);

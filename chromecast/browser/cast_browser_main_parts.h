@@ -6,15 +6,25 @@
 #define CHROMECAST_BROWSER_CAST_BROWSER_MAIN_PARTS_H_
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace net {
 class NetLog;
 }
 
 namespace chromecast {
+
+namespace media {
+class VideoPlaneController;
+}  // namespace media
+
 namespace shell {
 class CastBrowserProcess;
 class URLRequestContextFactory;
@@ -26,6 +36,8 @@ class CastBrowserMainParts : public content::BrowserMainParts {
                        URLRequestContextFactory* url_request_context_factory);
   ~CastBrowserMainParts() override;
 
+  scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner() const;
+
   // content::BrowserMainParts implementation:
   void PreMainMessageLoopStart() override;
   void PostMainMessageLoopStart() override;
@@ -34,12 +46,14 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   void PreMainMessageLoopRun() override;
   bool MainMessageLoopRun(int* result_code) override;
   void PostMainMessageLoopRun() override;
+  void PostDestroyThreads() override;
 
  private:
   scoped_ptr<CastBrowserProcess> cast_browser_process_;
   const content::MainFunctionParams parameters_;  // For running browser tests.
   URLRequestContextFactory* const url_request_context_factory_;
   scoped_ptr<net::NetLog> net_log_;
+  scoped_ptr<media::VideoPlaneController> video_plane_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(CastBrowserMainParts);
 };
