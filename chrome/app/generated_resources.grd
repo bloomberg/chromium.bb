@@ -14243,34 +14243,34 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </if>
 
       <!-- Strings describing Chrome security policy for DevTools security panel -->
-      <message name="IDS_MAJOR_SHA1" desc="Summary phrase for a security problem where the site's certificate expires in 2017 or later and contains a SHA1 signature in the chain.">
+      <message name="IDS_MAJOR_SHA1" desc="Summary phrase for a security problem where the site's certificate expires in 2017 or later and contains a SHA1 signature in the chain." translateable="false">
         SHA-1 Certificate
       </message>
-      <message name="IDS_MAJOR_SHA1_DESCRIPTION" desc="Description of a security problem where the site's certificate expires in 2017 or later and contains a SHA1 signature in the chain.">
+      <message name="IDS_MAJOR_SHA1_DESCRIPTION" desc="Description of a security problem where the site's certificate expires in 2017 or later and contains a SHA1 signature in the chain." translateable="false">
         The certificate for this site expires in 2017 or later, and the certificate chain contains a certificate signed using SHA-1.
       </message>
-      <message name="IDS_MINOR_SHA1" desc="Summary phrase for a security problem where the site's certificate expires in 2016 and contains a SHA1 signature in the chain.">
+      <message name="IDS_MINOR_SHA1" desc="Summary phrase for a security problem where the site's certificate expires in 2016 and contains a SHA1 signature in the chain." translateable="false">
         SHA-1 Certificate
       </message>
-      <message name="IDS_MINOR_SHA1_DESCRIPTION" desc="Description of a security problem where the site's certificate expires in 2016 and contains a SHA1 signature in the chain.">
+      <message name="IDS_MINOR_SHA1_DESCRIPTION" desc="Description of a security problem where the site's certificate expires in 2016 and contains a SHA1 signature in the chain." translateable="false">
         The certificate for this site expires in 2016, and the certificate chain contains a certificate signed using SHA-1.
       </message>
-      <message name="IDS_CERTIFICATE_CHAIN_ERROR" desc="Summary phrase for a security problem with the site's certificate.">
+      <message name="IDS_CERTIFICATE_CHAIN_ERROR" desc="Summary phrase for a security problem with the site's certificate." translateable="false">
         Certificate Error
       </message>
-      <message name="IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT" desc="Description of a security problem with the site's certificate.">
+      <message name="IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT" desc="Description of a security problem with the site's certificate." translateable="false">
         There are issues with the site's certificate chain (<ph name="CERT_ERROR_DESCRIPTION">$1<ex>net::ERR_CERT_AUTHORITY_INVALID</ex></ph>).
       </message>
-      <message name="IDS_VALID_SERVER_CERTIFICATE" desc="Summary phrase for a site that has a valid server certificate.">
+      <message name="IDS_VALID_SERVER_CERTIFICATE" desc="Summary phrase for a site that has a valid server certificate." translateable="false">
         Valid Certificate
       </message>
-      <message name="IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION" desc="Description of a site that has a valid server certificate.">
+      <message name="IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION" desc="Description of a site that has a valid server certificate." translateable="false">
         The connection to this site is using a valid, trusted server certificate.
       </message>
-      <message name="IDS_SECURE_PROTOCOL_AND_CIPHERSUITE" desc="Summary phrase for a site that uses a modern, secure TLS protocol version and ciphersuite.">
+      <message name="IDS_SECURE_PROTOCOL_AND_CIPHERSUITE" desc="Summary phrase for a site that uses a modern, secure TLS protocol version and ciphersuite." translateable="false">
         Secure TLS connection
       </message>
-      <message name="IDS_SECURE_PROTOCOL_AND_CIPHERSUITE_DESCRIPTION" desc="Description of a site that uses a modern, secure TLS protocol version and ciphersuite.">
+      <message name="IDS_SECURE_PROTOCOL_AND_CIPHERSUITE_DESCRIPTION" desc="Description of a site that uses a modern, secure TLS protocol version and ciphersuite." translateable="false">
         The connection to this site is using a strong protocol version and cipher suite.
       </message>
       <message name="IDS_SAVE_PASSWORD_DIFFERENT_DOMAINS_TITLE" desc="The title of the save password bubble when the submitted form origin isn't equal to the page origin.">
