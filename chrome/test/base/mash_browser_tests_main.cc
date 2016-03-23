@@ -27,21 +27,53 @@ void ConnectToDefaultApps(mojo::Connector* connector) {
   connector->Connect("mojo:mash_session");
 }
 
-// Used to setup the command line for passing a mojo channel to tests.
-class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
+class MashTestSuite : public ChromeTestSuite {
  public:
-  explicit MashTestLauncherDelegate(ChromeTestSuiteRunner* runner)
-      : ChromeTestLauncherDelegate(runner) {}
-  ~MashTestLauncherDelegate() override {}
+  MashTestSuite(int argc, char** argv) : ChromeTestSuite(argc, argv) {}
 
-  MojoTestConnector* GetMojoTestConnector() {
-    if (!mojo_test_connector_)
-      mojo_test_connector_.reset(new MojoTestConnector);
+  void SetMojoTestConnector(scoped_ptr<MojoTestConnector> connector) {
+    mojo_test_connector_ = std::move(connector);
+  }
+  MojoTestConnector* mojo_test_connector() {
     return mojo_test_connector_.get();
   }
 
  private:
+  // ChromeTestSuite:
+  void Shutdown() override {
+    mojo_test_connector_.reset();
+    ChromeTestSuite::Shutdown();
+  }
+
+  scoped_ptr<MojoTestConnector> mojo_test_connector_;
+
+  DISALLOW_COPY_AND_ASSIGN(MashTestSuite);
+};
+
+// Used to setup the command line for passing a mojo channel to tests.
+class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
+ public:
+  MashTestLauncherDelegate() : ChromeTestLauncherDelegate(nullptr) {}
+  ~MashTestLauncherDelegate() override {}
+
+  MojoTestConnector* GetMojoTestConnectorForSingleProcess() {
+    // This is only called for single process tests, in which case we need
+    // the TestSuite to own the MojoTestConnector.
+    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+        content::kSingleProcessTestsFlag));
+    DCHECK(test_suite_);
+    test_suite_->SetMojoTestConnector(make_scoped_ptr(new MojoTestConnector));
+    return test_suite_->mojo_test_connector();
+  }
+
+ private:
   // ChromeTestLauncherDelegate:
+  int RunTestSuite(int argc, char** argv) override {
+    test_suite_.reset(new MashTestSuite(argc, argv));
+    const int result = test_suite_->Run();
+    test_suite_.reset();
+    return result;
+  }
   scoped_ptr<content::TestState> PreRunTest(
       base::CommandLine* command_line,
       base::TestLauncher::LaunchOptions* test_launch_options) override {
@@ -52,10 +84,18 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
           shell_client_.get(), mojo_test_connector_->Init()));
       ConnectToDefaultApps(shell_connection_->connector());
     }
-    return GetMojoTestConnector()->PrepareForTest(command_line,
-                                                  test_launch_options);
+    return mojo_test_connector_->PrepareForTest(command_line,
+                                                test_launch_options);
+  }
+  void OnDoneRunningTests() override {
+    // We have to shutdown this state here, while an AtExitManager is still
+    // valid.
+    shell_connection_.reset();
+    shell_client_.reset();
+    mojo_test_connector_.reset();
   }
 
+  scoped_ptr<MashTestSuite> test_suite_;
   scoped_ptr<MojoTestConnector> mojo_test_connector_;
   scoped_ptr<mojo::ShellClient> shell_client_;
   scoped_ptr<mojo::ShellConnection> shell_connection_;
@@ -65,8 +105,9 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
 
 void CreateMojoShellConnection(MashTestLauncherDelegate* delegate) {
   const bool is_external_shell = true;
-  content::MojoShellConnection::Create(delegate->GetMojoTestConnector()->Init(),
-                                       is_external_shell);
+  content::MojoShellConnection::Create(
+      delegate->GetMojoTestConnectorForSingleProcess()->Init(),
+      is_external_shell);
   ConnectToDefaultApps(content::MojoShellConnection::Get()->GetConnector());
 }
 
@@ -92,8 +133,7 @@ bool RunMashBrowserTests(int argc, char** argv, int* exit_code) {
   }
 
   int default_jobs = std::max(1, base::SysInfo::NumberOfProcessors() / 2);
-  ChromeTestSuiteRunner runner;
-  MashTestLauncherDelegate delegate(&runner);
+  MashTestLauncherDelegate delegate;
   // --single_process and no primoridal pipe token indicate we were run directly
   // from the command line. In this case we have to start up MojoShellConnection
   // as though we were embedded.

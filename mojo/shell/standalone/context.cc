@@ -140,7 +140,8 @@ void Context::Init(scoped_ptr<InitParams> init_params) {
   blocking_pool_ =
       new base::SequencedWorkerPool(kMaxBlockingPoolThreads, "blocking_pool");
 
-  if (!init_params || init_params->init_edk) {
+  init_edk_ = !init_params || init_params->init_edk;
+  if (init_edk_) {
     edk::InitIPCSupport(this, io_thread_->task_runner().get());
 #if defined(OS_MACOSX)
     edk::SetMachPortProvider(MachBroker::GetInstance()->port_provider());
@@ -210,8 +211,13 @@ void Context::Shutdown() {
   // loop shutdown.
   shell_.reset();
 
-  TRACE_EVENT0("mojo_shell", "Context::Shutdown");
   DCHECK_EQ(base::MessageLoop::current()->task_runner(), shell_runner_);
+
+  // If we didn't initialize the edk we should not shut it down.
+  if (!init_edk_)
+    return;
+
+  TRACE_EVENT0("mojo_shell", "Context::Shutdown");
   // Post a task in case OnShutdownComplete is called synchronously.
   base::MessageLoop::current()->PostTask(FROM_HERE,
                                          base::Bind(edk::ShutdownIPCSupport));

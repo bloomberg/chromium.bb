@@ -135,6 +135,11 @@ bool MojoShellConnectionImpl::UsingExternalShell() const {
   return external_;
 }
 
+void MojoShellConnectionImpl::SetConnectionLostClosure(
+    const base::Closure& closure) {
+  shell_connection_->set_connection_lost_closure(closure);
+}
+
 void MojoShellConnectionImpl::AddListener(Listener* listener) {
   DCHECK(std::find(listeners_.begin(), listeners_.end(), listener) ==
          listeners_.end());

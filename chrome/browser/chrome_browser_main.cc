@@ -257,6 +257,11 @@
 #include "components/webusb/webusb_detector.h"
 #endif
 
+#if defined(MOJO_SHELL_CLIENT)
+#include "chrome/browser/lifetime/application_lifetime.h"
+#include "content/public/common/mojo_shell_connection.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -1138,6 +1143,13 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 }
 
 void ChromeBrowserMainParts::PreMainMessageLoopRun() {
+#if defined(MOJO_SHELL_CLIENT)
+  if (content::MojoShellConnection::Get() &&
+      content::MojoShellConnection::Get()->UsingExternalShell()) {
+    content::MojoShellConnection::Get()->SetConnectionLostClosure(
+        base::Bind(&chrome::SessionEnding));
+  }
+#endif
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopRun");
   TRACK_SCOPED_REGION(
       "Startup", "ChromeBrowserMainParts::PreMainMessageLoopRun");

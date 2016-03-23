@@ -472,6 +472,8 @@ scoped_ptr<TestState> TestLauncherDelegate::PreRunTest(
   return nullptr;
 }
 
+void TestLauncherDelegate::OnDoneRunningTests() {}
+
 TestLauncherDelegate::~TestLauncherDelegate() {
 }
 
@@ -541,7 +543,9 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
   WrapperTestLauncherDelegate delegate(launcher_delegate);
   base::TestLauncher launcher(&delegate, default_jobs);
-  return (launcher.Run() ? 0 : 1);
+  const int result = launcher.Run() ? 0 : 1;
+  launcher_delegate->OnDoneRunningTests();
+  return result;
 }
 
 TestLauncherDelegate* GetCurrentTestLauncherDelegate() {

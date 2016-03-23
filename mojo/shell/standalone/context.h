@@ -75,6 +75,7 @@ class Context : public edk::ProcessDelegate {
   scoped_ptr<catalog::Factory> catalog_;
   scoped_ptr<Shell> shell_;
   base::Time main_entry_time_;
+  bool init_edk_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Context);
 };

@@ -64,6 +64,11 @@ class TestLauncherDelegate {
   // when --test-launcher-jobs isn't specified on the command-line.
   virtual void AdjustDefaultParallelJobs(int* default_jobs) {}
 
+  // Called prior to returning from LaunchTests(). Gives the delegate a chance
+  // to do cleanup before state created by TestLauncher has been destroyed (such
+  // as the AtExitManager).
+  virtual void OnDoneRunningTests();
+
  protected:
   virtual ~TestLauncherDelegate();
 };

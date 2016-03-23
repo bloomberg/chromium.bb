@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/services/catalog/store.h"
 #include "mojo/shell/background/tests/test_catalog_store.h"
+#include "mojo/shell/native_runner_delegate.h"
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/cpp/shell_client.h"
 #include "mojo/shell/public/cpp/shell_connection.h"
@@ -216,18 +217,38 @@ class MojoTestState : public content::TestState {
 
 }  // namespace
 
+class MojoTestConnector::NativeRunnerDelegateImpl
+    : public mojo::shell::NativeRunnerDelegate {
+ public:
+  NativeRunnerDelegateImpl() {}
+  ~NativeRunnerDelegateImpl() override {}
+
+ private:
+  // mojo::shell::NativeRunnerDelegate:
+  void AdjustCommandLineArgumentsForTarget(
+      const mojo::Identity& target,
+      base::CommandLine* command_line) override {
+    if (target.name() == "exe:chrome")
+      command_line->AppendSwitch(switches::kWaitForMojoShell);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(NativeRunnerDelegateImpl);
+};
+
 // static
 const char MojoTestConnector::kTestSwitch[] = "is_test";
 
 MojoTestConnector::MojoTestConnector() {}
 
 mojo::shell::mojom::ShellClientRequest MojoTestConnector::Init() {
+  native_runner_delegate_.reset(new NativeRunnerDelegateImpl);
   scoped_ptr<mojo::shell::BackgroundShell::InitParams> init_params(
       new mojo::shell::BackgroundShell::InitParams);
   init_params->catalog_store = BuildTestCatalogStore();
   // When running in single_process mode chrome initializes the edk.
   init_params->init_edk = !base::CommandLine::ForCurrentProcess()->HasSwitch(
       content::kSingleProcessTestsFlag);
+  init_params->native_runner_delegate = native_runner_delegate_.get();
   background_shell_.Init(std::move(init_params));
   return background_shell_.CreateShellClientRequest(kTestRunnerName);
 }
