@@ -9,9 +9,6 @@ for more details on the presubmit API built into depot_tools.
 """
 import sys
 
-def GetPreferredTrySlaves():
-  return ['linux_chromeos']
-
 def _CreateAPIPermissionIDChecker(input_api, output_api):
   original_sys_path = sys.path
 
