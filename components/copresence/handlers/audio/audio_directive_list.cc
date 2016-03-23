@@ -4,6 +4,8 @@
 
 #include "components/copresence/handlers/audio/audio_directive_list.h"
 
+#include <algorithm>
+
 namespace copresence {
 
 // Public functions.
