@@ -4,6 +4,8 @@
 
 #include "core/dom/Document.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/layout/LayoutView.h"
+#include "core/paint/PaintLayer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/tests/sim/SimCompositor.h"
 #include "web/tests/sim/SimDisplayItemList.h"
@@ -269,6 +271,14 @@ TEST_F(DocumentLoadingRenderingTest, ShouldNotPaintIframeContentWithPendingSheet
     // The child frame still has pending sheets, and the parent frame has no
     // invalid paint so we shouldn't draw any text.
     EXPECT_FALSE(frame2.containsText());
+
+    LayoutView* iframeLayoutView = childFrame->contentDocument()->layoutView();
+    const DisplayItemList& displayItemList = iframeLayoutView->layer()->graphicsLayerBacking()->getPaintController().getDisplayItemList();
+    // Check that the DisplayItemList has no subsequene caching markers. These are not allowed in pending-style-sheets mode
+    // since otherwise caching would be incorrect.
+    ASSERT_EQ(2u, displayItemList.size());
+    EXPECT_EQ(DisplayItem::DocumentBackground, displayItemList[0].getType());
+    EXPECT_EQ(DisplayItem::BoxDecorationBackground, displayItemList[1].getType());
 
     // 1 for the main frame background (white),
     // 1 for the iframe background (pink)

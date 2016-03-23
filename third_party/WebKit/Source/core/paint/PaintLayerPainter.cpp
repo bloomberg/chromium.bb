@@ -36,12 +36,12 @@
 
 namespace blink {
 
-static inline bool shouldSuppressPaintingLayer(PaintLayer* layer)
+static inline bool shouldSuppressPaintingLayer(const PaintLayer& layer)
 {
     // Avoid painting descendants of the root layer when stylesheets haven't loaded. This eliminates FOUC.
     // It's ok not to draw, because later on, when all the stylesheets do load, updateStyleSelector on the Document
     // will do a full paintInvalidationForWholeLayoutObject().
-    if (layer->layoutObject()->document().didLayoutWithPendingStylesheets() && !layer->isRootLayer() && !layer->layoutObject()->isDocumentElement())
+    if (layer.layoutObject()->document().didLayoutWithPendingStylesheets() && !layer.isRootLayer() && !layer.layoutObject()->isDocumentElement())
         return true;
 
     return false;
@@ -77,7 +77,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayer(GraphicsContext& co
     if (!m_paintLayer.isSelfPaintingLayer() && !m_paintLayer.hasSelfPaintingLayerDescendant())
         return FullyPainted;
 
-    if (shouldSuppressPaintingLayer(&m_paintLayer))
+    if (shouldSuppressPaintingLayer(m_paintLayer))
         return FullyPainted;
 
     if (m_paintLayer.layoutObject()->isLayoutView() && toLayoutView(m_paintLayer.layoutObject())->frameView()->shouldThrottleRendering())
@@ -207,6 +207,12 @@ static bool shouldCreateSubsequence(const PaintLayer& paintLayer, GraphicsContex
 
     // The layer doesn't have children. Subsequence caching is not worth because normally the actual painting will be cheap.
     if (!PaintLayerStackingNodeIterator(*paintLayer.stackingNode(), AllChildren).next())
+        return false;
+
+    // When in FOUC-avoidance mode, don't cache any subsequences, to avoid having
+    // to invalidate all of them when leaving this mode. There is an early-out in BlockPainter::paintContents that may result
+    // in nothing getting painted in thos mode, in addition to early-out logic in PaintLayerPainter.
+    if (paintLayer.layoutObject()->document().didLayoutWithPendingStylesheets())
         return false;
 
     return true;
