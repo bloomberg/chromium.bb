@@ -1361,7 +1361,7 @@ void Editor::tidyUpHTMLStructure(Document& document)
         body = existingBody.release();
     else
         body = HTMLBodyElement::create(document);
-    if (document.documentElement())
+    if (document.documentElement() && body != document.documentElement())
         body->appendChild(document.documentElement());
     root->appendChild(body.release());
     ASSERT(!document.documentElement());
