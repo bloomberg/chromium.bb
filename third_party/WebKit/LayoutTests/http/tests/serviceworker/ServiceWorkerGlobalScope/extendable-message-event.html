@@ -5,6 +5,9 @@
 <script src='../resources/test-helpers.js'></script>
 <script>
 
+// TODO(nhiroki): Add tests for the constructor of ExtendableMessageEvent.
+// (http://crbug.com/543198)
+
 promise_test(function(t) {
     var script = 'resources/extendable-message-event-worker.js';
     var scope = 'resources/scope/extendable-message-event-from-toplevel';
@@ -21,7 +24,8 @@ promise_test(function(t) {
               navigator.serviceWorker.onmessage =
                   function(event) { resolve(event.data); }
             });
-          registration.active.postMessage('start');
+          var channel = new MessageChannel;
+          registration.active.postMessage('', [channel.port1]);
           return saw_message;
         })
       .then(function(results) {
@@ -34,7 +38,7 @@ promise_test(function(t) {
               '  event.source.frameType: top-level',
               '  event.source.visibilityState: visible',
               '  event.source.focused: true',
-              '  event.ports: null',
+              '  event.ports: [object MessagePort]',
           ];
           assert_array_equals(results, expected_results);
         });
@@ -71,7 +75,7 @@ promise_test(function(t) {
               '  event.source.frameType: nested',
               '  event.source.visibilityState: visible',
               '  event.source.focused: false',
-              '  event.ports: null',
+              '  event.ports: ',
           ];
           assert_array_equals(results, expected_results);
         });
@@ -108,7 +112,7 @@ promise_test(function(t) {
               '  event.source.frameType: nested',
               '  event.source.visibilityState: visible',
               '  event.source.focused: false',
-              '  event.ports: null',
+              '  event.ports: ',
           ];
           assert_array_equals(results, expected_results);
         });
@@ -153,14 +157,14 @@ promise_test(function(t) {
               '  event.source: [object ServiceWorker]',
               '  event.source.scriptURL: ' + normalizeURL(script),
               '  event.source.state: activated',
-              '  event.ports: null',
+              '  event.ports: ',
               '2nd loopback: [object ExtendableMessageEvent]',
               '  event.origin: ' + location.origin,
               '  event.lastEventId: ',
               '  event.source: [object ServiceWorker]',
               '  event.source.scriptURL: ' + normalizeURL(script),
               '  event.source.state: activated',
-              '  event.ports: null',
+              '  event.ports: ',
           ];
           assert_array_equals(results, expected_results);
         });
@@ -214,14 +218,14 @@ promise_test(function(t) {
               '  event.source: [object ServiceWorker]',
               '  event.source.scriptURL: ' + normalizeURL(script1),
               '  event.source.state: activated',
-              '  event.ports: null',
+              '  event.ports: ',
               'Pong message: [object ExtendableMessageEvent]',
               '  event.origin: ' + location.origin,
               '  event.lastEventId: ',
               '  event.source: [object ServiceWorker]',
               '  event.source.scriptURL: ' + normalizeURL(script2),
               '  event.source.state: installed',
-              '  event.ports: null',
+              '  event.ports: ',
           ];
           assert_array_equals(results, expected_results);
         });

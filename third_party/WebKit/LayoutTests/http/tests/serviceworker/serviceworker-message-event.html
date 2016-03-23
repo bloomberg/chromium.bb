@@ -25,15 +25,12 @@ promise_test(function(t) {
                         'Source should equal to the passing service worker');
           return new Promise(function(resolve) {
               w.navigator.serviceWorker.onmessage = t.step_func(function(e) {
-                  assert_true(
-                      e instanceof w.ServiceWorkerMessageEvent,
-                      'Instance type should be ServiceWorkerMessageEvent');
-                  assert_true(e.source instanceof w.ServiceWorker,
-                              'Source type should be ServiceWorker');
-                  assert_equals(e.type, 'message',
-                                'Event type should be "message"');
+                  assert_true(e instanceof w.ServiceWorkerMessageEvent);
+                  assert_true(e.source instanceof w.ServiceWorker);
+                  assert_equals(e.type, 'message');
                   assert_equals(e.source, worker,
                                 'Source worker should equal to the controller');
+                  assert_equals(e.ports.length, 0);
                   resolve();
               });
               worker.postMessage('PING');

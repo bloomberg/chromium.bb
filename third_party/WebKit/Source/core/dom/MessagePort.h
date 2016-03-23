@@ -76,13 +76,16 @@ public:
     void entangle(PassOwnPtr<WebMessagePortChannel>);
     PassOwnPtr<WebMessagePortChannel> disentangle();
 
+    // Returns nullptr if the passed-in array is nullptr/empty.
     static PassOwnPtr<WebMessagePortChannelArray> toWebMessagePortChannelArray(PassOwnPtr<MessagePortChannelArray>);
+
+    // Returns an empty array if the passed array is empty.
     static MessagePortArray* toMessagePortArray(ExecutionContext*, const WebMessagePortChannelArray&);
 
-    // Returns 0 if there is an exception, or if the passed-in array is 0/empty.
+    // Returns nullptr if there is an exception, or if the passed-in array is nullptr/empty.
     static PassOwnPtr<MessagePortChannelArray> disentanglePorts(ExecutionContext*, const MessagePortArray*, ExceptionState&);
 
-    // Returns 0 if the passed array is 0/empty.
+    // Returns an empty array if the passed array is nullptr/empty.
     static MessagePortArray* entanglePorts(ExecutionContext&, PassOwnPtr<MessagePortChannelArray>);
 
     bool started() const { return m_started; }

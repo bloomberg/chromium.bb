@@ -111,14 +111,10 @@ PassOwnPtr<WebMessagePortChannelArray> MessagePort::toWebMessagePortChannelArray
 // static
 MessagePortArray* MessagePort::toMessagePortArray(ExecutionContext* context, const WebMessagePortChannelArray& webChannels)
 {
-    MessagePortArray* ports = nullptr;
-    if (!webChannels.isEmpty()) {
-        OwnPtr<MessagePortChannelArray> channels = adoptPtr(new MessagePortChannelArray(webChannels.size()));
-        for (size_t i = 0; i < webChannels.size(); ++i)
-            (*channels)[i] = adoptPtr(webChannels[i]);
-        ports = MessagePort::entanglePorts(*context, channels.release());
-    }
-    return ports;
+    OwnPtr<MessagePortChannelArray> channels = adoptPtr(new MessagePortChannelArray(webChannels.size()));
+    for (size_t i = 0; i < webChannels.size(); ++i)
+        (*channels)[i] = adoptPtr(webChannels[i]);
+    return MessagePort::entanglePorts(*context, channels.release());
 }
 
 PassOwnPtr<WebMessagePortChannel> MessagePort::disentangle()
