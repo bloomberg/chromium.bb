@@ -19,6 +19,7 @@ namespace {
 
 const char kSubsystemHid[] = "hid";
 const char kSubsystemInput[] = "input";
+const char kSubsystemMisc[] = "misc";
 const char kTypeBluetooth[] = "bluetooth";
 const char kTypeUsb[] = "usb";
 const char kTypeSerio[] = "serio";
@@ -50,8 +51,14 @@ bool GetBoolProperty(udev_device* device, const char* key) {
 }
 
 InputServiceLinux::InputDeviceInfo::Type GetDeviceType(udev_device* device) {
-  if (udev_device_get_parent_with_subsystem_devtype(
-          device, kTypeBluetooth, NULL)) {
+  // Bluetooth classic hid devices are registered under bluetooth subsystem.
+  // Bluetooth LE hid devices are registered under virtual misc/hid subsystems.
+  if (udev_device_get_parent_with_subsystem_devtype(device, kTypeBluetooth,
+                                                    NULL) ||
+      (udev_device_get_parent_with_subsystem_devtype(device, kSubsystemHid,
+                                                     NULL) &&
+       udev_device_get_parent_with_subsystem_devtype(device, kSubsystemMisc,
+                                                     NULL))) {
     return InputServiceLinux::InputDeviceInfo::TYPE_BLUETOOTH;
   }
   if (udev_device_get_parent_with_subsystem_devtype(device, kTypeUsb, NULL))
