@@ -99,19 +99,19 @@ public:
 
     float deltaX() const
     {
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
+        ASSERT(m_type == PlatformEvent::GestureScrollBegin || m_type == PlatformEvent::GestureScrollUpdate);
         return m_data.m_scroll.m_deltaX;
     }
 
     float deltaY() const
     {
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
+        ASSERT(m_type == PlatformEvent::GestureScrollBegin || m_type == PlatformEvent::GestureScrollUpdate);
         return m_data.m_scroll.m_deltaY;
     }
 
     ScrollGranularity deltaUnits() const
     {
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
+        ASSERT(m_type == PlatformEvent::GestureScrollBegin || m_type == PlatformEvent::GestureScrollUpdate || m_type == PlatformEvent::GestureScrollEnd);
         return m_data.m_scroll.m_deltaUnits;
     }
 
@@ -135,8 +135,14 @@ public:
 
     bool inertial() const
     {
-        ASSERT(m_type == PlatformEvent::GestureScrollUpdate || m_type == PlatformEvent::GestureScrollEnd);
+        ASSERT(m_type == PlatformEvent::GestureScrollBegin || m_type == PlatformEvent::GestureScrollUpdate || m_type == PlatformEvent::GestureScrollEnd);
         return m_data.m_scroll.m_inertial;
+    }
+
+    bool synthetic() const
+    {
+        ASSERT(m_type == PlatformEvent::GestureScrollBegin || m_type == PlatformEvent::GestureScrollEnd);
+        return m_data.m_scroll.m_synthetic;
     }
 
     int resendingPluginId() const
@@ -214,6 +220,8 @@ protected:
         } m_tap;
 
         struct {
+            // |m_deltaX| and |m_deltaY| represent deltas in GSU but
+            // are only hints in GSB.
             float m_deltaX;
             float m_deltaY;
             float m_velocityX;
@@ -222,6 +230,7 @@ protected:
             bool m_inertial;
             ScrollGranularity m_deltaUnits;
             int m_resendingPluginId;
+            bool m_synthetic;
         } m_scroll;
 
         struct {

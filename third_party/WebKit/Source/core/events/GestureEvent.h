@@ -57,19 +57,22 @@ public:
 
     GestureSource source() const { return m_source; }
     int resendingPluginId() const { return m_resendingPluginId; }
+    bool synthetic() const { return m_synthetic; }
+    ScrollGranularity deltaUnits() const { return m_deltaUnits; }
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
     GestureEvent();
-    GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double platformTimeStamp, int resendingPluginId, GestureSource);
+    GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView>, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, bool synthetic, ScrollGranularity deltaUnits, double platformTimeStamp, int resendingPluginId, GestureSource);
 
     float m_deltaX;
     float m_deltaY;
     float m_velocityX;
     float m_velocityY;
     bool m_inertial;
-
+    bool m_synthetic;
+    ScrollGranularity m_deltaUnits;
     GestureSource m_source;
     int m_resendingPluginId;
 };

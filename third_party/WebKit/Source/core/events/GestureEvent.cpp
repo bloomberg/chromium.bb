@@ -38,6 +38,8 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
     float velocityX = 0;
     float velocityY = 0;
     bool inertial = false;
+    bool synthetic = false;
+    ScrollGranularity deltaUnits = ScrollGranularity::ScrollByPrecisePixel;
 
     GestureSource source = GestureSourceUninitialized;
     switch (event.source()) {
@@ -53,9 +55,17 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
 
     switch (event.type()) {
     case PlatformEvent::GestureScrollBegin:
-        eventType = EventTypeNames::gesturescrollstart; break;
+        eventType = EventTypeNames::gesturescrollstart;
+        synthetic = event.synthetic();
+        deltaUnits = event.deltaUnits();
+        inertial = event.inertial();
+        break;
     case PlatformEvent::GestureScrollEnd:
-        eventType = EventTypeNames::gesturescrollend; break;
+        eventType = EventTypeNames::gesturescrollend;
+        synthetic = event.synthetic();
+        deltaUnits = event.deltaUnits();
+        inertial = event.inertial();
+        break;
     case PlatformEvent::GestureScrollUpdate:
         // Only deltaX/Y are used when converting this
         // back to a PlatformGestureEvent.
@@ -63,6 +73,7 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
         deltaX = event.deltaX();
         deltaY = event.deltaY();
         inertial = event.inertial();
+        deltaUnits = event.deltaUnits();
         break;
     case PlatformEvent::GestureTap:
         eventType = EventTypeNames::gesturetap; break;
@@ -87,7 +98,7 @@ PassRefPtrWillBeRawPtr<GestureEvent> GestureEvent::create(PassRefPtrWillBeRawPtr
     default:
         return nullptr;
     }
-    return adoptRefWillBeNoop(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.getModifiers(), deltaX, deltaY, velocityX, velocityY, inertial, event.timestamp(), event.resendingPluginId(), source));
+    return adoptRefWillBeNoop(new GestureEvent(eventType, view, event.globalPosition().x(), event.globalPosition().y(), event.position().x(), event.position().y(), event.getModifiers(), deltaX, deltaY, velocityX, velocityY, inertial, synthetic, deltaUnits, event.timestamp(), event.resendingPluginId(), source));
 }
 
 const AtomicString& GestureEvent::interfaceName() const
@@ -109,18 +120,22 @@ GestureEvent::GestureEvent()
     , m_velocityX(0)
     , m_velocityY(0)
     , m_inertial(false)
+    , m_synthetic(false)
+    , m_deltaUnits(ScrollGranularity::ScrollByPrecisePixel)
     , m_source(GestureSourceUninitialized)
     , m_resendingPluginId(-1)
 {
 }
 
-GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, double platformTimeStamp, int resendingPluginId, GestureSource source)
+GestureEvent::GestureEvent(const AtomicString& type, PassRefPtrWillBeRawPtr<AbstractView> view, int screenX, int screenY, int clientX, int clientY, PlatformEvent::Modifiers modifiers, float deltaX, float deltaY, float velocityX, float velocityY, bool inertial, bool synthetic, ScrollGranularity deltaUnits, double platformTimeStamp, int resendingPluginId, GestureSource source)
     : MouseRelatedEvent(type, true, true, nullptr, view, 0, IntPoint(screenX, screenY), IntPoint(clientX, clientY), IntPoint(0, 0), modifiers, platformTimeStamp, PositionType::Position)
     , m_deltaX(deltaX)
     , m_deltaY(deltaY)
     , m_velocityX(velocityX)
     , m_velocityY(velocityY)
     , m_inertial(inertial)
+    , m_synthetic(synthetic)
+    , m_deltaUnits(deltaUnits)
     , m_source(source)
     , m_resendingPluginId(resendingPluginId)
 {

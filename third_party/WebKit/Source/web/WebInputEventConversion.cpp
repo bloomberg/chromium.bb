@@ -49,7 +49,8 @@
 
 namespace blink {
 
-static float scaleDeltaToWindow(const Widget* widget, float delta)
+namespace {
+float scaleDeltaToWindow(const Widget* widget, float delta)
 {
     float scale = 1;
     if (widget) {
@@ -60,7 +61,7 @@ static float scaleDeltaToWindow(const Widget* widget, float delta)
     return delta / scale;
 }
 
-static FloatSize scaleSizeToWindow(const Widget* widget, FloatSize size)
+FloatSize scaleSizeToWindow(const Widget* widget, FloatSize size)
 {
     return FloatSize(scaleDeltaToWindow(widget, size.width()), scaleDeltaToWindow(widget, size.height()));
 }
@@ -70,7 +71,7 @@ static FloatSize scaleSizeToWindow(const Widget* widget, FloatSize size)
 // in the root layer (see updateRootLayerTransform in WebViewImpl) as well as the overscroll effect on OSX.
 // This is in addition to the visual viewport "pinch-zoom" transformation and is one of the few cases where
 // the visual viewport is not equal to the renderer's coordinate-space.
-static FloatPoint convertHitPointToRootFrame(const Widget* widget, FloatPoint pointInRendererViewport)
+FloatPoint convertHitPointToRootFrame(const Widget* widget, FloatPoint pointInRendererViewport)
 {
     float scale = 1;
     IntSize offset;
@@ -90,7 +91,7 @@ static FloatPoint convertHitPointToRootFrame(const Widget* widget, FloatPoint po
         (pointInRendererViewport.y() - offset.height()) / scale + visualViewport.y() + overscrollOffset.height());
 }
 
-static unsigned toPlatformModifierFrom(WebMouseEvent::Button button)
+unsigned toPlatformModifierFrom(WebMouseEvent::Button button)
 {
     if (button == WebMouseEvent::ButtonNone)
         return 0;
@@ -103,6 +104,38 @@ static unsigned toPlatformModifierFrom(WebMouseEvent::Button button)
 
     return webMouseButtonToPlatformModifier[button];
 }
+
+ScrollGranularity toPlatformScrollGranularity(WebGestureEvent::ScrollUnits units)
+{
+    switch (units) {
+    case WebGestureEvent::ScrollUnits::PrecisePixels:
+        return ScrollGranularity::ScrollByPrecisePixel;
+    case WebGestureEvent::ScrollUnits::Pixels:
+        return ScrollGranularity::ScrollByPixel;
+    case WebGestureEvent::ScrollUnits::Page:
+        return ScrollGranularity::ScrollByPage;
+    default:
+        ASSERT_NOT_REACHED();
+        return ScrollGranularity::ScrollByPrecisePixel;
+    }
+}
+
+WebGestureEvent::ScrollUnits toWebGestureScrollUnits(ScrollGranularity granularity)
+{
+    switch (granularity) {
+    case ScrollGranularity::ScrollByPrecisePixel:
+        return WebGestureEvent::ScrollUnits::PrecisePixels;
+    case ScrollGranularity::ScrollByPixel:
+        return WebGestureEvent::ScrollUnits::Pixels;
+    case ScrollGranularity::ScrollByPage:
+        return WebGestureEvent::ScrollUnits::Page;
+    default:
+        ASSERT_NOT_REACHED();
+        return WebGestureEvent::ScrollUnits::PrecisePixels;
+    }
+}
+
+} // namespace
 
 // MakePlatformMouseEvent -----------------------------------------------------
 
@@ -185,10 +218,18 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
     case WebInputEvent::GestureScrollBegin:
         m_type = PlatformEvent::GestureScrollBegin;
         m_data.m_scroll.m_resendingPluginId = e.resendingPluginId;
+        m_data.m_scroll.m_deltaX = e.data.scrollBegin.deltaXHint;
+        m_data.m_scroll.m_deltaY = e.data.scrollBegin.deltaYHint;
+        m_data.m_scroll.m_deltaUnits = toPlatformScrollGranularity(e.data.scrollBegin.deltaHintUnits);
+        m_data.m_scroll.m_inertial = e.data.scrollBegin.inertial;
+        m_data.m_scroll.m_synthetic = e.data.scrollBegin.synthetic;
         break;
     case WebInputEvent::GestureScrollEnd:
         m_type = PlatformEvent::GestureScrollEnd;
         m_data.m_scroll.m_resendingPluginId = e.resendingPluginId;
+        m_data.m_scroll.m_deltaUnits = toPlatformScrollGranularity(e.data.scrollEnd.deltaUnits);
+        m_data.m_scroll.m_inertial = e.data.scrollEnd.inertial;
+        m_data.m_scroll.m_synthetic = e.data.scrollEnd.synthetic;
         break;
     case WebInputEvent::GestureFlingStart:
         m_type = PlatformEvent::GestureFlingStart;
@@ -204,19 +245,7 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
         m_data.m_scroll.m_velocityY = e.data.scrollUpdate.velocityY;
         m_data.m_scroll.m_preventPropagation = e.data.scrollUpdate.preventPropagation;
         m_data.m_scroll.m_inertial = e.data.scrollUpdate.inertial;
-        switch (e.data.scrollUpdate.deltaUnits) {
-        case WebGestureEvent::ScrollUnits::PrecisePixels:
-            m_data.m_scroll.m_deltaUnits = ScrollGranularity::ScrollByPrecisePixel;
-            break;
-        case WebGestureEvent::ScrollUnits::Pixels:
-            m_data.m_scroll.m_deltaUnits = ScrollGranularity::ScrollByPixel;
-            break;
-        case WebGestureEvent::ScrollUnits::Page:
-            m_data.m_scroll.m_deltaUnits = ScrollGranularity::ScrollByPage;
-            break;
-        default:
-            ASSERT_NOT_REACHED();
-        }
+        m_data.m_scroll.m_deltaUnits = toPlatformScrollGranularity(e.data.scrollUpdate.deltaUnits);
         break;
     case WebInputEvent::GestureTap:
         m_type = PlatformEvent::GestureTap;
@@ -712,11 +741,20 @@ WebGestureEventBuilder::WebGestureEventBuilder(const LayoutObject* layoutObject,
     } else if (event.type() == EventTypeNames::gesturescrollstart) {
         type = GestureScrollBegin;
         resendingPluginId = event.resendingPluginId();
+        data.scrollBegin.deltaXHint = event.deltaX();
+        data.scrollBegin.deltaYHint = event.deltaY();
+        data.scrollBegin.deltaHintUnits = toWebGestureScrollUnits(event.deltaUnits());
+        data.scrollBegin.inertial = event.inertial();
+        data.scrollBegin.synthetic = event.synthetic();
     } else if (event.type() == EventTypeNames::gesturescrollend) {
         type = GestureScrollEnd;
         resendingPluginId = event.resendingPluginId();
+        data.scrollEnd.deltaUnits = toWebGestureScrollUnits(event.deltaUnits());
+        data.scrollEnd.inertial = event.inertial();
+        data.scrollEnd.synthetic = event.synthetic();
     } else if (event.type() == EventTypeNames::gesturescrollupdate) {
         type = GestureScrollUpdate;
+        data.scrollUpdate.deltaUnits = toWebGestureScrollUnits(event.deltaUnits());
         data.scrollUpdate.deltaX = event.deltaX();
         data.scrollUpdate.deltaY = event.deltaY();
         data.scrollUpdate.inertial = event.inertial();

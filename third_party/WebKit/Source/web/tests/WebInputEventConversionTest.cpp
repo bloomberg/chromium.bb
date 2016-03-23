@@ -993,4 +993,74 @@ TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)
     }
 }
 
+TEST(WebInputEventConversionTest, PlatformGestureEventBuilder)
+{
+    const std::string baseURL("http://www.test8.com/");
+    const std::string fileName("fixed_layout.html");
+
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(baseURL + fileName, true);
+    int pageWidth = 640;
+    int pageHeight = 480;
+    webViewImpl->resize(WebSize(pageWidth, pageHeight));
+    webViewImpl->updateAllLifecyclePhases();
+
+    FrameView* view = toLocalFrame(webViewImpl->page()->mainFrame())->view();
+
+    {
+        WebGestureEvent webGestureEvent;
+        webGestureEvent.type = WebInputEvent::GestureScrollBegin;
+        webGestureEvent.x = 0;
+        webGestureEvent.y = 5;
+        webGestureEvent.globalX = 10;
+        webGestureEvent.globalY = 15;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchpad;
+        webGestureEvent.resendingPluginId = 2;
+        webGestureEvent.data.scrollBegin.inertial = true;
+        webGestureEvent.data.scrollBegin.synthetic = true;
+        webGestureEvent.data.scrollBegin.deltaXHint = 100;
+        webGestureEvent.data.scrollBegin.deltaYHint = 10;
+        webGestureEvent.data.scrollBegin.deltaHintUnits = WebGestureEvent::Pixels;
+
+        PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
+        EXPECT_EQ(PlatformGestureSourceTouchpad, platformGestureBuilder.source());
+        EXPECT_EQ(2, platformGestureBuilder.resendingPluginId());
+        EXPECT_EQ(0, platformGestureBuilder.position().x());
+        EXPECT_EQ(5, platformGestureBuilder.position().y());
+        EXPECT_EQ(10, platformGestureBuilder.globalPosition().x());
+        EXPECT_EQ(15, platformGestureBuilder.globalPosition().y());
+        EXPECT_TRUE(platformGestureBuilder.inertial());
+        EXPECT_TRUE(platformGestureBuilder.synthetic());
+        EXPECT_EQ(100, platformGestureBuilder.deltaX());
+        EXPECT_EQ(10, platformGestureBuilder.deltaY());
+        EXPECT_EQ(ScrollGranularity::ScrollByPixel, platformGestureBuilder.deltaUnits());
+    }
+
+    {
+        WebGestureEvent webGestureEvent;
+        webGestureEvent.type = WebInputEvent::GestureScrollEnd;
+        webGestureEvent.x = 0;
+        webGestureEvent.y = 5;
+        webGestureEvent.globalX = 10;
+        webGestureEvent.globalY = 15;
+        webGestureEvent.sourceDevice = WebGestureDeviceTouchpad;
+        webGestureEvent.resendingPluginId = 2;
+        webGestureEvent.data.scrollEnd.inertial = false;
+        webGestureEvent.data.scrollEnd.synthetic = true;
+        webGestureEvent.data.scrollEnd.deltaUnits = WebGestureEvent::Page;
+
+        PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
+        EXPECT_EQ(PlatformGestureSourceTouchpad, platformGestureBuilder.source());
+        EXPECT_EQ(2, platformGestureBuilder.resendingPluginId());
+        EXPECT_EQ(0, platformGestureBuilder.position().x());
+        EXPECT_EQ(5, platformGestureBuilder.position().y());
+        EXPECT_EQ(10, platformGestureBuilder.globalPosition().x());
+        EXPECT_EQ(15, platformGestureBuilder.globalPosition().y());
+        EXPECT_FALSE(platformGestureBuilder.inertial());
+        EXPECT_TRUE(platformGestureBuilder.synthetic());
+        EXPECT_EQ(ScrollGranularity::ScrollByPage, platformGestureBuilder.deltaUnits());
+    }
+}
+
 } // namespace blink
