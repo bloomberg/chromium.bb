@@ -123,10 +123,14 @@ TEST(ImageResourceTest, MultipartImage)
     // The first bytes arrive. The data buffer is created, but no image is created.
     cachedImage->appendData(secondPart, strlen(secondPart));
     ASSERT_TRUE(cachedImage->resourceBuffer());
-    ASSERT_EQ(cachedImage->resourceBuffer()->size(), strlen(secondPart));
     ASSERT_FALSE(cachedImage->hasImage());
     ASSERT_EQ(client.imageChangedCount(), 0);
     ASSERT_FALSE(client.notifyFinishedCalled());
+
+    const char thirdPart[] = "--boundary";
+    cachedImage->appendData(thirdPart, strlen(thirdPart));
+    ASSERT_TRUE(cachedImage->resourceBuffer());
+    ASSERT_EQ(cachedImage->resourceBuffer()->size(), strlen(secondPart) - 1);
 
     // This part finishes. The image is created, callbacks are sent, and the data buffer is cleared.
     cachedImage->finish();

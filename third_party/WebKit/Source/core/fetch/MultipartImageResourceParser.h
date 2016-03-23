@@ -67,13 +67,13 @@ public:
 
     DECLARE_TRACE();
 
-    static size_t pushOverLineForTest(const Vector<char>& data, size_t size) { return pushOverLine(data, size); }
+    static size_t skippableLengthForTest(const Vector<char>& data, size_t size) { return skippableLength(data, size); }
     static size_t findBoundaryForTest(const Vector<char>& data, Vector<char>* boundary) { return findBoundary(data, boundary); }
 
 private:
     bool parseHeaders();
     bool isCancelled() const { return m_isCancelled; }
-    static size_t pushOverLine(const Vector<char>&, size_t);
+    static size_t skippableLength(const Vector<char>&, size_t);
     // This function updates |*boundary|.
     static size_t findBoundary(const Vector<char>& data, Vector<char>* boundary);
 

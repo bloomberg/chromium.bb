@@ -43,7 +43,7 @@ public:
     Vector<Vector<char>> m_data;
 };
 
-TEST(MultipartResponseTest, PushOverLine)
+TEST(MultipartResponseTest, SkippableLength)
 {
     struct {
         const char* input;
@@ -55,19 +55,19 @@ TEST(MultipartResponseTest, PushOverLine)
         { "Line", 10, 0 },
         { "\r\nLine", 0, 2 },
         { "\nLine", 0, 1 },
-        { "\n\nLine", 0, 2 },
-        { "\rLine", 0, 1 },
+        { "\n\nLine", 0, 1 },
+        { "\rLine", 0, 0 },
         { "Line\r\nLine", 4, 2 },
         { "Line\nLine", 4, 1 },
-        { "Line\n\nLine", 4, 2 },
-        { "Line\rLine", 4, 1 },
-        { "Line\r\rLine", 4, 1 },
+        { "Line\n\nLine", 4, 1 },
+        { "Line\rLine", 4, 0 },
+        { "Line\r\rLine", 4, 0 },
     };
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(lineTests); ++i) {
         Vector<char> input;
         input.append(lineTests[i].input, strlen(lineTests[i].input));
         EXPECT_EQ(lineTests[i].expected,
-            MultipartImageResourceParser::pushOverLineForTest(input, lineTests[i].position));
+            MultipartImageResourceParser::skippableLengthForTest(input, lineTests[i].position));
     }
 }
 
@@ -201,7 +201,7 @@ TEST(MultipartResponseTest, NoEndBoundary)
     parser->appendData(data, strlen(data));
     ASSERT_EQ(1u, client->m_responses.size());
     ASSERT_EQ(1u, client->m_data.size());
-    EXPECT_EQ("This is a sample response\n", toString(client->m_data[0]));
+    EXPECT_EQ("This is a sample ", toString(client->m_data[0]));
 
     parser->finish();
     ASSERT_EQ(1u, client->m_responses.size());
@@ -226,7 +226,7 @@ TEST(MultipartResponseTest, NoStartAndEndBoundary)
     parser->appendData(data, strlen(data));
     ASSERT_EQ(1u, client->m_responses.size());
     ASSERT_EQ(1u, client->m_data.size());
-    EXPECT_EQ("This is a sample response\n", toString(client->m_data[0]));
+    EXPECT_EQ("This is a sample ", toString(client->m_data[0]));
 
     parser->finish();
     ASSERT_EQ(1u, client->m_responses.size());
@@ -322,7 +322,7 @@ TEST(MultipartResponseTest, BreakInBoundary)
     // Break in first and second
     const TestChunk bound2[] = {
         { 0, 4, 0, "" },
-        { 4, 55, 1, "datadatadatadat" },
+        { 4, 55, 1, "datadatadatad" },
         { 55, 65, 1, "datadatadatadatadata" },
         { 65, 110, 2, "foofoofoofoofoo" },
     };
@@ -330,7 +330,7 @@ TEST(MultipartResponseTest, BreakInBoundary)
 
     // Break in second only
     const TestChunk bound3[] = {
-        { 0, 55, 1, "datadatadatadat" },
+        { 0, 55, 1, "datadatadatad" },
         { 55, 110, 2, "foofoofoofoofoo" },
     };
     variousChunkSizesTest(bound3, 2, 3, "foofoofoofoofoo");
@@ -440,6 +440,66 @@ TEST(MultipartResponseTest, MultipleBoundaries)
     ASSERT_EQ(2u, client->m_data.size());
     EXPECT_EQ("", toString(client->m_data[0]));
     EXPECT_EQ("foofoo", toString(client->m_data[1]));
+}
+
+TEST(MultipartResponseTest, EatLeadingLF)
+{
+    ResourceResponse response;
+    response.setMimeType("multipart/x-mixed-replace");
+    MockClient* client = new MockClient;
+    Vector<char> boundary;
+    boundary.append("bound", 5);
+
+    const char data[] =
+        "\n\n\n--bound\n\n\ncontent-type: 1\n\n"
+        "\n\n\n--bound\n\ncontent-type: 2\n\n"
+        "\n\n\n--bound\ncontent-type: 3\n\n";
+    MultipartImageResourceParser* parser = new MultipartImageResourceParser(response, boundary, client);
+
+    for (size_t i = 0; i < strlen(data); ++i)
+        parser->appendData(&data[i], 1);
+    parser->finish();
+
+    ASSERT_EQ(4u, client->m_responses.size());
+    ASSERT_EQ(4u, client->m_data.size());
+    EXPECT_EQ(String(), client->m_responses[0].httpHeaderField("content-type"));
+    EXPECT_EQ("", toString(client->m_data[0]));
+    EXPECT_EQ(String(), client->m_responses[1].httpHeaderField("content-type"));
+    EXPECT_EQ("\ncontent-type: 1\n\n\n\n", toString(client->m_data[1]));
+    EXPECT_EQ(String(), client->m_responses[2].httpHeaderField("content-type"));
+    EXPECT_EQ("content-type: 2\n\n\n\n", toString(client->m_data[2]));
+    EXPECT_EQ("3", client->m_responses[3].httpHeaderField("content-type"));
+    EXPECT_EQ("", toString(client->m_data[3]));
+}
+
+TEST(MultipartResponseTest, EatLeadingCRLF)
+{
+    ResourceResponse response;
+    response.setMimeType("multipart/x-mixed-replace");
+    MockClient* client = new MockClient;
+    Vector<char> boundary;
+    boundary.append("bound", 5);
+
+    const char data[] =
+        "\r\n\r\n\r\n--bound\r\n\r\n\r\ncontent-type: 1\r\n\r\n"
+        "\r\n\r\n\r\n--bound\r\n\r\ncontent-type: 2\r\n\r\n"
+        "\r\n\r\n\r\n--bound\r\ncontent-type: 3\r\n\r\n";
+    MultipartImageResourceParser* parser = new MultipartImageResourceParser(response, boundary, client);
+
+    for (size_t i = 0; i < strlen(data); ++i)
+        parser->appendData(&data[i], 1);
+    parser->finish();
+
+    ASSERT_EQ(4u, client->m_responses.size());
+    ASSERT_EQ(4u, client->m_data.size());
+    EXPECT_EQ(String(), client->m_responses[0].httpHeaderField("content-type"));
+    EXPECT_EQ("", toString(client->m_data[0]));
+    EXPECT_EQ(String(), client->m_responses[1].httpHeaderField("content-type"));
+    EXPECT_EQ("\r\ncontent-type: 1\r\n\r\n\r\n\r\n", toString(client->m_data[1]));
+    EXPECT_EQ(String(), client->m_responses[2].httpHeaderField("content-type"));
+    EXPECT_EQ("content-type: 2\r\n\r\n\r\n\r\n", toString(client->m_data[2]));
+    EXPECT_EQ("3", client->m_responses[3].httpHeaderField("content-type"));
+    EXPECT_EQ("", toString(client->m_data[3]));
 }
 
 } // namespace

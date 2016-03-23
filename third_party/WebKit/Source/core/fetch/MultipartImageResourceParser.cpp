@@ -35,15 +35,15 @@ void MultipartImageResourceParser::appendData(const char* bytes, size_t size)
 
     if (m_isParsingTop) {
         // Eat leading \r\n
-        size_t pos = pushOverLine(m_data, 0);
-        if (pos)
-            m_data.remove(0, pos);
-
-        if (m_data.size() < m_boundary.size() + 2) {
+        size_t pos = skippableLength(m_data, 0);
+        // +2 for "--"
+        if (m_data.size() < m_boundary.size() + 2 + pos) {
             // We don't have enough data yet to make a boundary token.  Just
             // wait until the next chunk of data arrives.
             return;
         }
+        if (pos)
+            m_data.remove(0, pos);
 
         // Some servers don't send a boundary token before the first chunk of
         // data.  We handle this case anyway (Gecko does too).
@@ -56,11 +56,6 @@ void MultipartImageResourceParser::appendData(const char* bytes, size_t size)
 
     // Headers
     if (m_isParsingHeaders) {
-        // Eat leading \r\n
-        size_t pos = pushOverLine(m_data, 0);
-        if (pos)
-            m_data.remove(0, pos);
-
         if (!parseHeaders()) {
             // Get more data before trying again.
             return;
@@ -96,8 +91,7 @@ void MultipartImageResourceParser::appendData(const char* bytes, size_t size)
         }
 
         // We can now throw out data up through the boundary
-        size_t offset = pushOverLine(m_data, boundaryEndPosition);
-        m_data.remove(0, boundaryEndPosition + offset);
+        m_data.remove(0, boundaryEndPosition);
 
         // Ok, back to parsing headers
         if (!parseHeaders()) {
@@ -108,14 +102,11 @@ void MultipartImageResourceParser::appendData(const char* bytes, size_t size)
             return;
     }
 
-    // At this point, we should send over any data we have, but keep enough data
-    // buffered to handle a boundary that may have been truncated.
-    if (!m_isParsingHeaders && m_data.size() > m_boundary.size()) {
-        // If the last character is a new line character, go ahead and just send
-        // everything we have buffered.  This matches an optimization in Gecko.
-        size_t sendLength = m_data.size() - m_boundary.size();
-        if (m_data.last() == '\n')
-            sendLength = m_data.size();
+    // At this point, we should send over any data we have, but keep enough
+    // data buffered to handle a boundary that may have been truncated.
+    // "+2" for CRLF, as we may ignore the last CRLF.
+    if (!m_isParsingHeaders && m_data.size() > m_boundary.size() + 2) {
+        size_t sendLength = m_data.size() - m_boundary.size() - 2;
         m_client->multipartDataReceived(m_data.data(), sendLength);
         m_data.remove(0, sendLength);
     }
@@ -134,23 +125,20 @@ void MultipartImageResourceParser::finish()
     m_sawLastBoundary = true;
 }
 
-size_t MultipartImageResourceParser::pushOverLine(const Vector<char>& data, size_t pos)
+size_t MultipartImageResourceParser::skippableLength(const Vector<char>& data, size_t pos)
 {
-    size_t offset = 0;
-    // TODO(yhirano): This function has two problems. Fix them.
-    //  1. It eats "\n\n".
-    //  2. When the incoming data is not sufficient (i.e. data[pos] == '\r'
-    //     && data.size() == pos + 1), it should notify the caller.
-    if (pos < data.size() && (data[pos] == '\r' || data[pos] == '\n')) {
-        ++offset;
-        if (pos + 1 < data.size() && data[pos + 1] == '\n')
-            ++offset;
-    }
-    return offset;
+    if (data.size() >= pos + 2 && data[pos] == '\r' && data[pos + 1] == '\n')
+        return 2;
+    if (data.size() >= pos + 1 && data[pos] == '\n')
+        return 1;
+    return 0;
 }
 
 bool MultipartImageResourceParser::parseHeaders()
 {
+    // Eat leading \r\n
+    size_t pos = skippableLength(m_data, 0);
+
     // Create a WebURLResponse based on the original set of headers + the
     // replacement headers. We only replace the same few headers that gecko
     // does. See netwerk/streamconv/converters/nsMultiMixedConv.cpp.
@@ -159,9 +147,9 @@ bool MultipartImageResourceParser::parseHeaders()
         response.addHTTPHeaderField(header.key, header.value);
 
     size_t end = 0;
-    if (!Platform::current()->parseMultipartHeadersFromBody(m_data.data(), m_data.size(), &response, &end))
+    if (!Platform::current()->parseMultipartHeadersFromBody(m_data.data() + pos, m_data.size() - pos, &response, &end))
         return false;
-    m_data.remove(0, end);
+    m_data.remove(0, end + pos);
     // Send the response!
     m_client->onePartInMultipartReceived(response.toResourceResponse());
     return true;
