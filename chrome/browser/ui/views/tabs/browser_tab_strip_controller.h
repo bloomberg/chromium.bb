@@ -53,7 +53,6 @@ class BrowserTabStripController : public TabStripController,
   int GetActiveIndex() const override;
   bool IsTabSelected(int model_index) const override;
   bool IsTabPinned(int model_index) const override;
-  bool IsNewTabPage(int model_index) const override;
   void SelectTab(int model_index) override;
   void ExtendSelectionTo(int model_index) override;
   void ToggleSelected(int model_index) override;

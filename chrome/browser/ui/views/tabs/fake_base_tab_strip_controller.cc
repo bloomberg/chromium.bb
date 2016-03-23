@@ -70,10 +70,6 @@ bool FakeBaseTabStripController::IsTabPinned(int index) const {
   return false;
 }
 
-bool FakeBaseTabStripController::IsNewTabPage(int index) const {
-  return false;
-}
-
 void FakeBaseTabStripController::SelectTab(int index) {
   if (!IsValidIndex(index) || active_index_ == index)
     return;

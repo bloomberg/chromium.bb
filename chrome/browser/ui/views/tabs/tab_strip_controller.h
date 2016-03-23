@@ -50,9 +50,6 @@ class TabStripController {
   // Returns true if the selected index is pinned.
   virtual bool IsTabPinned(int index) const = 0;
 
-  // Returns true if the selected index is the new tab page.
-  virtual bool IsNewTabPage(int index) const = 0;
-
   // Select the tab at the specified index in the model.
   virtual void SelectTab(int index) = 0;
 

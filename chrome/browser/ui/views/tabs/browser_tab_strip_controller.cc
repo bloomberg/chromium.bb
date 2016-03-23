@@ -265,15 +265,6 @@ bool BrowserTabStripController::IsTabPinned(int model_index) const {
   return model_->ContainsIndex(model_index) && model_->IsTabPinned(model_index);
 }
 
-bool BrowserTabStripController::IsNewTabPage(int model_index) const {
-  if (!model_->ContainsIndex(model_index))
-    return false;
-
-  const WebContents* contents = model_->GetWebContentsAt(model_index);
-  return contents && (contents->GetURL() == GURL(chrome::kChromeUINewTabURL) ||
-                      search::IsInstantNTP(contents));
-}
-
 void BrowserTabStripController::SelectTab(int model_index) {
   model_->ActivateTabAt(model_index, true);
 }
