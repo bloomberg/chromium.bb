@@ -27,11 +27,14 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""
-The Manager runs a series of tests (TestType interface) against a set
-of test files.  If a test file fails a TestType, it returns a list of TestFailure
-objects to the Manager. The Manager then aggregates the TestFailures to
-create a final report.
+"""The Manager orchestrates the overall process of running layout tests.
+
+This includes finding tests to run, reading the test expectations,
+starting the required helper servers, deciding the order and way to
+run the tests, retrying fails tests and collecting the test results,
+including crash logs, and mismatches with expectations.
+
+The Manager object has a constructor and one main method called run.
 """
 
 import datetime
@@ -62,16 +65,15 @@ TestExpectations = test_expectations.TestExpectations
 
 
 class Manager(object):
-    """A class for managing running a series of tests on a series of layout
-    test files."""
+    """A class for managing running a series of layout tests."""
 
     def __init__(self, port, options, printer):
         """Initialize test runner data structures.
 
         Args:
-          port: an object implementing port-specific
-          options: a dictionary of command line options
-          printer: a Printer object to record updates to.
+          port: An object implementing platform-specific functionality.
+          options: An options argument which contains command line options.
+          printer: A Printer object to record updates to.
         """
         self._port = port
         self._filesystem = port.host.filesystem
@@ -152,10 +154,12 @@ class Manager(object):
             should_add_missing_baselines=(self._options.new_test_results and not self._test_is_expected_missing(test_file)))
 
     def _test_requires_lock(self, test_file):
-        """Return True if the test needs to be locked when
-        running multiple copies of NRWTs. Perf tests are locked
-        because heavy load caused by running other tests in parallel
-        might cause some of them to timeout."""
+        """Return True if the test needs to be locked when running multiple
+        instances of this test runner.
+
+        Perf tests are locked because heavy load caused by running other
+        tests in parallel might cause some of them to time out.
+        """
         return self._is_http_test(test_file) or self._is_perf_test(test_file)
 
     def _test_is_expected_missing(self, test_file):
@@ -417,12 +421,15 @@ class Manager(object):
         return True
 
     def _look_for_new_crash_logs(self, run_results, start_time):
-        """Since crash logs can take a long time to be written out if the system is
-           under stress do a second pass at the end of the test run.
+        """Looks for and writes new crash logs, at the end of the test run.
 
-           run_results: the results of the test run
-           start_time: time the tests started at.  We're looking for crash
-               logs after that time.
+        Since crash logs can take a long time to be written out if the system is
+        under stress, do a second pass at the end of the test run.
+
+        Args:
+          run_results: The results of the test run.
+          start_time: Time the tests started at. We're looking for crash
+              logs after that time.
         """
         crashed_processes = []
         for test, result in run_results.unexpected_results_by_name.iteritems():
