@@ -18,15 +18,15 @@ declare_args() {
   # pages. https://github.com/polymer/vulcanize
   use_vulcanize = true
 
+  # Enables support for background apps.
+  enable_background = !is_ios && !is_android
+
+  enable_one_click_signin = is_win || is_mac || (is_linux && !is_chromeos)
+
   # Set to true to bundle all the mash related mojo services into chrome.
   # Specify --mash to chrome to have chrome start the mash environment.
   enable_package_mash_services = is_chromeos
 }
-
-enable_one_click_signin = is_win || is_mac || (is_linux && !is_chromeos)
-
-# Enables support for background apps.
-enable_background = !is_ios && !is_android
 
 chrome_grit_defines = [
   "enable_background=$enable_background",
