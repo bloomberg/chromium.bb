@@ -5190,7 +5190,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_PopupMenuTest) {
   // Position main window to ensure consistent screen coordinates.
   RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
-  rwhv_root->SetBounds(gfx::Rect(100, 100, 500, 500));
   static_cast<WebContentsImpl*>(shell()->web_contents())->SendScreenRects();
 
   content::TestNavigationObserver navigation_observer(shell()->web_contents());
@@ -5249,7 +5248,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NestedPopupMenuTest) {
   // Position main window to ensure consistent screen coordinates.
   RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
-  rwhv_root->SetBounds(gfx::Rect(100, 100, 500, 500));
   static_cast<WebContentsImpl*>(shell()->web_contents())->SendScreenRects();
 
   // For clarity, we are labeling the frame tree nodes as:
