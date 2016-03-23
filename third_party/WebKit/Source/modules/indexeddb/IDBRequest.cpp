@@ -452,7 +452,7 @@ DispatchEventResult IDBRequest::dispatchEventInternal(PassRefPtrWillBeRawPtr<Eve
     }
 
     // FIXME: When we allow custom event dispatching, this will probably need to change.
-    ASSERT_WITH_MESSAGE(event->type() == EventTypeNames::success || event->type() == EventTypeNames::error || event->type() == EventTypeNames::blocked || event->type() == EventTypeNames::upgradeneeded, "event type was %s", event->type().utf8().data());
+    DCHECK(event->type() == EventTypeNames::success || event->type() == EventTypeNames::error || event->type() == EventTypeNames::blocked || event->type() == EventTypeNames::upgradeneeded) << "event type was " << event->type();
     const bool setTransactionActive = m_transaction && (event->type() == EventTypeNames::success || event->type() == EventTypeNames::upgradeneeded || (event->type() == EventTypeNames::error && !m_requestAborted));
 
     if (setTransactionActive)
@@ -517,7 +517,7 @@ void IDBRequest::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
     if (m_contextStopped || !getExecutionContext())
         return;
 
-    ASSERT_WITH_MESSAGE(m_readyState == PENDING || m_didFireUpgradeNeededEvent, "When queueing event %s, m_readyState was %d", event->type().utf8().data(), m_readyState);
+    DCHECK(m_readyState == PENDING || m_didFireUpgradeNeededEvent) << "When queueing event " << event->type() << ", m_readyState was " << m_readyState;
 
     EventQueue* eventQueue = getExecutionContext()->getEventQueue();
     event->setTarget(this);

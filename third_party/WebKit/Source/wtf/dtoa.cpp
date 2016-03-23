@@ -620,7 +620,7 @@ static ALWAYS_INLINE int quorem(BigInt& b, BigInt& s)
     ASSERT(s.size() <= 1 || s.words()[s.size() - 1]);
 
     n = s.size();
-    ASSERT_WITH_MESSAGE(b.size() <= n, "oversize b in quorem");
+    DCHECK_LE(b.size(), n) << "oversize b in quorem";
     if (b.size() < n)
         return 0;
     sx = s.words();
@@ -628,7 +628,7 @@ static ALWAYS_INLINE int quorem(BigInt& b, BigInt& s)
     bx = b.words();
     bxe = bx + n;
     q = *bxe / (*sxe + 1);    /* ensure q <= true quotient */
-    ASSERT_WITH_MESSAGE(q <= 9, "oversized quotient in quorem");
+    DCHECK_LE(q, 9u) << "oversized quotient in quorem";
     if (q) {
         borrow = 0;
         carry = 0;

@@ -395,7 +395,7 @@ void LayoutTableSection::distributeWholeExtraRowSpanHeightToPercentRows(LayoutTa
         m_rowPos[row + 1] += accumulatedPositionIncrease;
     }
 
-    ASSERT_WITH_MESSAGE(!round(remainder), "remainder was %f", remainder);
+    DCHECK(!round(remainder)) << "remainder was " << remainder;
 
     extraRowSpanningHeight -= accumulatedPositionIncrease;
 }
@@ -419,7 +419,7 @@ void LayoutTableSection::distributeExtraRowSpanHeightToAutoRows(LayoutTableCell*
         m_rowPos[row + 1] += accumulatedPositionIncrease;
     }
 
-    ASSERT_WITH_MESSAGE(!round(remainder) , "remainder was %f", remainder);
+    DCHECK(!round(remainder)) << "remainder was " << remainder;
 
     extraRowSpanningHeight -= accumulatedPositionIncrease;
 }
@@ -443,7 +443,7 @@ void LayoutTableSection::distributeExtraRowSpanHeightToRemainingRows(LayoutTable
         m_rowPos[row + 1] += accumulatedPositionIncrease;
     }
 
-    ASSERT_WITH_MESSAGE(!round(remainder), "remainder was %f", remainder);
+    DCHECK(!round(remainder)) << "remainder was " << remainder;
 
     extraRowSpanningHeight -= accumulatedPositionIncrease;
 }

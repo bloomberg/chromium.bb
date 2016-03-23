@@ -77,9 +77,9 @@ public:
     {
         for (auto& item : *this) {
 #ifdef NDEBUG
-            ASSERT_WITH_MESSAGE(DisplayItemClient::isAlive(item.client()), "Short-lived DisplayItemClient. See crbug.com/570030.");
+            DCHECK(DisplayItemClient::isAlive(item.client())) << "Short-lived DisplayItemClient. See crbug.com/570030.";
 #else
-            ASSERT_WITH_MESSAGE(DisplayItemClient::isAlive(item.client()), "Short-lived DisplayItemClient: %s. See crbug.com/570030.", item.clientDebugString().utf8().data());
+            DCHECK(DisplayItemClient::isAlive(item.client())) << "Short-lived DisplayItemClient: " << item.clientDebugString() << ". See crbug.com/570030.";
 #endif
         }
     }

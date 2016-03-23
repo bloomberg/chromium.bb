@@ -89,7 +89,6 @@ typedef struct {
 } WTFLogChannel;
 
 WTF_EXPORT void WTFReportAssertionFailure(const char* file, int line, const char* function, const char* assertion);
-WTF_EXPORT void WTFReportAssertionFailureWithMessage(const char* file, int line, const char* function, const char* assertion, const char* format, ...) WTF_ATTRIBUTE_PRINTF(5, 6);
 WTF_EXPORT void WTFReportArgumentAssertionFailure(const char* file, int line, const char* function, const char* argName, const char* assertion);
 WTF_EXPORT void WTFReportError(const char* file, int line, const char* function, const char* format, ...) WTF_ATTRIBUTE_PRINTF(4, 5);
 WTF_EXPORT void WTFLog(WTFLogChannel*, const char* format, ...) WTF_ATTRIBUTE_PRINTF(2, 3);
@@ -210,33 +209,6 @@ WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
 #define ENABLE_SECURITY_ASSERT 0
 #endif
 
-// ASSERT_WITH_MESSAGE
-// This is deprecated.  We should use DCHECK() << "message".
-#if ASSERT_MSG_DISABLED
-#define ASSERT_WITH_MESSAGE(assertion, ...) ((void)0)
-#else
-#define ASSERT_WITH_MESSAGE(assertion, ...) do \
-    if (!(assertion)) { \
-        WTFReportAssertionFailureWithMessage(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, #assertion, __VA_ARGS__); \
-        CRASH(); \
-    } \
-while (0)
-#endif
-
-// ASSERT_WITH_MESSAGE_UNUSED
-// This is deprecated.  We should use DCHECK() << "message" and
-// ALLOW_UNUSED_LOCAL().
-#if ASSERT_MSG_DISABLED
-#define ASSERT_WITH_MESSAGE_UNUSED(variable, assertion, ...) ((void)variable)
-#else
-#define ASSERT_WITH_MESSAGE_UNUSED(variable, assertion, ...) do \
-    if (!(assertion)) { \
-        WTFReportAssertionFailureWithMessage(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, #assertion, __VA_ARGS__); \
-        CRASH(); \
-    } \
-while (0)
-#endif
-
 /* ASSERT_ARG */
 
 #if ASSERT_ARG_DISABLED
@@ -274,15 +246,12 @@ while (0)
 */
 // RELEASE_ASSERT* are deprecated.  We should use:
 //  - CHECK() for RELEASE_ASSERT()
-//  - CHECK() << message for RELEASE_ASSERT_WITH_MESSAGE()
 //  - RELEASE_NOTREACHED() for RELEASE_ASSERT_NOT_REACHED().
 #if ENABLE(ASSERT)
 #define RELEASE_ASSERT(assertion) ASSERT(assertion)
-#define RELEASE_ASSERT_WITH_MESSAGE(assertion, ...) ASSERT_WITH_MESSAGE(assertion, __VA_ARGS__)
 #define RELEASE_ASSERT_NOT_REACHED() ASSERT_NOT_REACHED()
 #else
 #define RELEASE_ASSERT(assertion) (UNLIKELY(!(assertion)) ? (IMMEDIATE_CRASH()) : (void)0)
-#define RELEASE_ASSERT_WITH_MESSAGE(assertion, ...) RELEASE_ASSERT(assertion)
 #define RELEASE_ASSERT_NOT_REACHED() IMMEDIATE_CRASH()
 #endif
 // TODO(tkent): Move this to base/logging.h?

@@ -169,16 +169,6 @@ void WTFReportAssertionFailure(const char* file, int line, const char* function,
     printCallSite(file, line, function);
 }
 
-void WTFReportAssertionFailureWithMessage(const char* file, int line, const char* function, const char* assertion, const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    vprintf_stderr_with_prefix("ASSERTION FAILED: ", format, args);
-    va_end(args);
-    printf_stderr_common("\n%s\n", assertion);
-    printCallSite(file, line, function);
-}
-
 void WTFReportArgumentAssertionFailure(const char* file, int line, const char* function, const char* argName, const char* assertion)
 {
     printf_stderr_common("ARGUMENT BAD: %s, %s\n", argName, assertion);

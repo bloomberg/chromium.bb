@@ -29,8 +29,11 @@
 
 void ReportBlockedObjCException(NSException *exception)
 {
-#if ENABLE(ASSERT)
-    ASSERT_WITH_MESSAGE(0, "Uncaught exception - %s", [[exception description] UTF8String]);
+#if DCHECK_IS_ON()
+    NOTREACHED() << "Uncaught exception - " << [[exception description] UTF8String];
+    // This function is marked as NO_RETURN_DUE_TO_ASSERT, but NOTREACHED() and
+    // DCHECK(false) are not recognized as NO_RETURN.
+    CRASH();
 #else
     NSLog(@"*** WebKit discarding exception: <%@> %@", [exception name], [exception reason]);
 #endif

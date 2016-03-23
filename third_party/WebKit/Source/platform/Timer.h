@@ -130,7 +130,7 @@ private:
     CancellableTimerTask* m_cancellableTimerTask; // NOT OWNED
     WebTaskRunner* m_webTaskRunner; // Not owned.
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
     ThreadIdentifier m_thread;
 #endif
 

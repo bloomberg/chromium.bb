@@ -266,8 +266,11 @@ bool DocumentLifecycle::canRewindTo(LifecycleState nextState) const
 
 void DocumentLifecycle::advanceTo(LifecycleState nextState)
 {
-    ASSERT_WITH_MESSAGE(canAdvanceTo(nextState),
-        "Cannot advance document lifecycle from %s to %s.", stateAsDebugString(m_state), stateAsDebugString(nextState));
+#if DCHECK_IS_ON()
+    DCHECK(canAdvanceTo(nextState))
+        << "Cannot advance document lifecycle from " << stateAsDebugString(m_state)
+        << " to " << stateAsDebugString(nextState) << ".";
+#endif
     m_state = nextState;
 }
 
@@ -276,8 +279,11 @@ void DocumentLifecycle::ensureStateAtMost(LifecycleState state)
     ASSERT(state == VisualUpdatePending || state == StyleClean || state == LayoutClean);
     if (m_state <= state)
         return;
-    ASSERT_WITH_MESSAGE(canRewindTo(state),
-        "Cannot rewind document lifecycle from %s to %s.", stateAsDebugString(m_state), stateAsDebugString(state));
+#if DCHECK_IS_ON()
+    DCHECK(canRewindTo(state))
+        << "Cannot rewind document lifecycle from " << stateAsDebugString(m_state)
+        << " to " <<stateAsDebugString(state) << ".";
+#endif
     m_state = state;
 }
 

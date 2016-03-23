@@ -475,7 +475,7 @@ static TextBreakIterator* wordBreakIterator(const LChar* string, int length)
     static TextBreakIterator* breakIter = 0;
     if (!breakIter) {
         breakIter = icu::BreakIterator::createWordInstance(icu::Locale(currentTextBreakLocaleID()), errorCode);
-        ASSERT_WITH_MESSAGE(U_SUCCESS(errorCode), "ICU could not open a break iterator: %s (%d)", u_errorName(errorCode), errorCode);
+        DCHECK(U_SUCCESS(errorCode)) << "ICU could not open a break iterator: " << u_errorName(errorCode) << " (" << errorCode << ")";
         if (!breakIter)
             return 0;
     }
@@ -518,7 +518,7 @@ TextBreakIterator* wordBreakIterator(const UChar* string, int length)
     static TextBreakIterator* breakIter = 0;
     if (!breakIter) {
         breakIter = icu::BreakIterator::createWordInstance(icu::Locale(currentTextBreakLocaleID()), errorCode);
-        ASSERT_WITH_MESSAGE(U_SUCCESS(errorCode), "ICU could not open a break iterator: %s (%d)", u_errorName(errorCode), errorCode);
+        DCHECK(U_SUCCESS(errorCode)) << "ICU could not open a break iterator: " << u_errorName(errorCode) << " (" << errorCode << ")";
         if (!breakIter)
             return 0;
     }
@@ -650,7 +650,7 @@ void NonSharedCharacterBreakIterator::createIteratorForBuffer(const UChar* buffe
     if (!createdIterator) {
         UErrorCode errorCode = U_ZERO_ERROR;
         m_iterator = icu::BreakIterator::createCharacterInstance(icu::Locale(currentTextBreakLocaleID()), errorCode);
-        ASSERT_WITH_MESSAGE(U_SUCCESS(errorCode), "ICU could not open a break iterator: %s (%d)", u_errorName(errorCode), errorCode);
+        DCHECK(U_SUCCESS(errorCode)) << "ICU could not open a break iterator: " << u_errorName(errorCode) << " (" << errorCode << ")";
     }
 
     setText16(m_iterator, buffer, length);
@@ -716,7 +716,7 @@ TextBreakIterator* sentenceBreakIterator(const UChar* string, int length)
     static TextBreakIterator* iterator = 0;
     if (!iterator) {
         iterator =  icu::BreakIterator::createSentenceInstance(icu::Locale(currentTextBreakLocaleID()), openStatus);
-        ASSERT_WITH_MESSAGE(U_SUCCESS(openStatus), "ICU could not open a break iterator: %s (%d)", u_errorName(openStatus), openStatus);
+        DCHECK(U_SUCCESS(openStatus)) << "ICU could not open a break iterator: " << u_errorName(openStatus) << " (" << openStatus << ")";
         if (!iterator)
             return 0;
     }
@@ -745,7 +745,7 @@ static TextBreakIterator* setUpIteratorWithRules(const char* breakRules, const U
         String(breakRules).appendTo(rules);
 
         iterator = new icu::RuleBasedBreakIterator(icu::UnicodeString(rules.data(), rules.size()), parseStatus, openStatus);
-        ASSERT_WITH_MESSAGE(U_SUCCESS(openStatus), "ICU could not open a break iterator: %s (%d)", u_errorName(openStatus), openStatus);
+        DCHECK(U_SUCCESS(openStatus)) << "ICU could not open a break iterator: " << u_errorName(openStatus) << " (" << openStatus << ")";
         if (!iterator)
             return 0;
     }

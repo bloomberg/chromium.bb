@@ -191,7 +191,7 @@ void IDBTransaction::objectStoreDeleted(const String& name)
 
 void IDBTransaction::setActive(bool active)
 {
-    ASSERT_WITH_MESSAGE(m_state != Finished, "A finished transaction tried to setActive(%s)", active ? "true" : "false");
+    DCHECK_NE(m_state, Finished) << "A finished transaction tried to setActive(" << (active ? "true" : "false") << ")";
     if (m_state == Finishing)
         return;
     ASSERT(active != (m_state == Active));
@@ -413,7 +413,7 @@ void IDBTransaction::stop()
 
 void IDBTransaction::enqueueEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
-    ASSERT_WITH_MESSAGE(m_state != Finished, "A finished transaction tried to enqueue an event of type %s.", event->type().utf8().data());
+    DCHECK_NE(m_state, Finished) << "A finished transaction tried to enqueue an event of type " << event->type() << ".";
     if (m_contextStopped || !getExecutionContext())
         return;
 

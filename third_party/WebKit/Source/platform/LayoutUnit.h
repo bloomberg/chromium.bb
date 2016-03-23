@@ -815,6 +815,11 @@ inline LayoutUnit clampToLayoutUnit(LayoutUnit value, LayoutUnit min, LayoutUnit
     return value;
 }
 
+inline std::ostream& operator<<(std::ostream& stream, const LayoutUnit& value)
+{
+    return stream << value.toDouble();
+}
+
 } // namespace blink
 
 #endif // LayoutUnit_h

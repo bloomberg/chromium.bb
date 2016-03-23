@@ -60,9 +60,9 @@ PropertyHandleSet StringKeyframe::properties() const
     PropertyHandleSet properties;
     for (unsigned i = 0; i < m_cssPropertyMap->propertyCount(); ++i) {
         StylePropertySet::PropertyReference propertyReference = m_cssPropertyMap->propertyAt(i);
-        ASSERT_WITH_MESSAGE(
-            !isShorthandProperty(propertyReference.id()) || propertyReference.value()->isVariableReferenceValue(),
-            "Web Animations: Encountered unexpanded shorthand CSS property (%d).", propertyReference.id());
+        DCHECK(
+            !isShorthandProperty(propertyReference.id()) || propertyReference.value()->isVariableReferenceValue())
+            << "Web Animations: Encountered unexpanded shorthand CSS property (" << propertyReference.id() << ").";
         properties.add(PropertyHandle(propertyReference.id(), false));
     }
 
