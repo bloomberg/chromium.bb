@@ -24,22 +24,13 @@ namespace {
 // Weak pointer.  This class is owned by ChromeBrowserMainPartsChromeos.
 ArcServiceManager* g_arc_service_manager = nullptr;
 
-// This pointer is owned by ArcServiceManager.
-ArcBridgeService* g_arc_bridge_service_for_testing = nullptr;
-
 }  // namespace
 
-ArcServiceManager::ArcServiceManager() {
+ArcServiceManager::ArcServiceManager()
+    : arc_bridge_service_(
+          new ArcBridgeServiceImpl(ArcBridgeBootstrap::Create())) {
   DCHECK(!g_arc_service_manager);
   g_arc_service_manager = this;
-
-  if (g_arc_bridge_service_for_testing) {
-    arc_bridge_service_.reset(g_arc_bridge_service_for_testing);
-    g_arc_bridge_service_for_testing = nullptr;
-  } else {
-    arc_bridge_service_.reset(new ArcBridgeServiceImpl(
-        ArcBridgeBootstrap::Create()));
-  }
 
   AddService(make_scoped_ptr(new ArcClipboardBridge(arc_bridge_service())));
   AddService(
@@ -55,9 +46,6 @@ ArcServiceManager::~ArcServiceManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(g_arc_service_manager == this);
   g_arc_service_manager = nullptr;
-  if (g_arc_bridge_service_for_testing) {
-    delete g_arc_bridge_service_for_testing;
-  }
 }
 
 // static
@@ -84,15 +72,6 @@ void ArcServiceManager::OnPrimaryUserProfilePrepared(
 
   AddService(make_scoped_ptr(
       new ArcNotificationManager(arc_bridge_service(), account_id)));
-}
-
-//static
-void ArcServiceManager::SetArcBridgeServiceForTesting(
-    scoped_ptr<ArcBridgeService> arc_bridge_service) {
-  if (g_arc_bridge_service_for_testing) {
-    delete g_arc_bridge_service_for_testing;
-  }
-  g_arc_bridge_service_for_testing = arc_bridge_service.release();
 }
 
 }  // namespace arc

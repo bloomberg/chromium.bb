@@ -44,7 +44,7 @@ GuestModeOptionsUIBrowserTest.prototype = {
 TEST_F('GuestModeOptionsUIBrowserTest', 'testSections', function() {
   this.expectHidden($('startup-section'));
   this.expectHidden($('appearance-section'));
-  this.expectHidden($('android-apps-section'));
+  this.expectHidden($('andorid-apps-section'));
   this.expectHidden($('sync-users-section'));
   this.expectHidden($('easy-unlock-section'));
   this.expectHidden($('reset-profile-settings-section'));

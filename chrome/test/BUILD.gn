@@ -1046,7 +1046,6 @@ if (!is_android) {
       ]
       deps += [
         "//chromeos/ime:gencode",
-        "//components/arc:arc_test_support",
         "//components/user_manager:test_support",
         "//dbus",
         "//dbus:test_support",

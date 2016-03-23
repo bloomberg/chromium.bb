@@ -202,17 +202,24 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
       profile_, GURL(site_url));
   CHECK(storage_partition_);
 
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kArcEnabled, base::Bind(&ArcAuthService::OnOptInPreferenceChanged,
-                                     base::Unretained(this)));
-  if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
-    OnOptInPreferenceChanged();
-  } else {
-    if (!disable_ui_for_testing && profile_->IsNewProfile()) {
-      PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
-      OnIsSyncingChanged();
+  // In case UI is disabled we assume that ARC is opted-in.
+  if (!IsOptInVerificationDisabled()) {
+    pref_change_registrar_.Init(profile_->GetPrefs());
+    pref_change_registrar_.Add(
+        prefs::kArcEnabled,
+        base::Bind(&ArcAuthService::OnOptInPreferenceChanged,
+                   base::Unretained(this)));
+    if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
+      OnOptInPreferenceChanged();
+    } else {
+      if (!disable_ui_for_testing && profile_->IsNewProfile()) {
+        PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
+        OnIsSyncingChanged();
+      }
     }
+  } else {
+    auth_code_.clear();
+    StartArc();
   }
 }
 
@@ -291,20 +298,16 @@ void ArcAuthService::OnOptInPreferenceChanged() {
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
     if (state_ != State::ACTIVE) {
+      CloseUI();
       auth_code_.clear();
 
-      if (!IsOptInVerificationDisabled()) {
-        CloseUI();
-        if (!profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
-          // Need pre-fetch auth code and show OptIn UI if needed.
-          initial_opt_in_ = true;
-          SetState(State::FETCHING_CODE);
-          FetchAuthCode();
-        } else {
-          // Ready to start Arc.
-          StartArc();
-        }
+      if (!profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
+        // Need pre-fetch auth code and show OptIn UI if needed.
+        initial_opt_in_ = true;
+        SetState(State::FETCHING_CODE);
+        FetchAuthCode();
       } else {
+        // Ready to start Arc.
         StartArc();
       }
     }

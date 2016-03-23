@@ -2327,11 +2327,10 @@ cr.define('options', function() {
     };
 
     /**
-     * Hides Android Apps settings when they are not available.
-     * (Chrome OS only).
+     * Hides Android Apps settings when they are not available (ChromeOS only).
      */
     BrowserOptions.hideAndroidAppsSection = function() {
-      var section = $('android-apps-section');
+      var section = $('andorid-apps-section');
       if (section)
         section.hidden = true;
     };

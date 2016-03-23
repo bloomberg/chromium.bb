@@ -38,10 +38,6 @@ class ArcServiceManager {
   // Called when the main profile is initialized after user logs in.
   void OnPrimaryUserProfilePrepared(const AccountId& account_id);
 
-  // Set ArcBridgeService instance for testing. Call before ArcServiceManager
-  // creation. ArcServiceManager owns |arc_bridge_service|.
-  static void SetArcBridgeServiceForTesting(
-      scoped_ptr<ArcBridgeService> arc_bridge_service);
  private:
   base::ThreadChecker thread_checker_;
   scoped_ptr<ArcBridgeService> arc_bridge_service_;

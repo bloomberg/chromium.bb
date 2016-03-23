@@ -2401,7 +2401,6 @@
           'dependencies': [
             '../build/linux/system.gyp:dbus',
             '../chromeos/ime/input_method.gyp:gencode',
-            '../components/components.gyp:arc_test_support',
             '../components/components.gyp:drive_test_support',
             '../dbus/dbus.gyp:dbus_test_support',
             '../ui/login/login.gyp:login_resources',

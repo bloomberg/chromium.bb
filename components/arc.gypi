@@ -73,8 +73,6 @@
       'sources': [
         'arc/test/fake_app_instance.cc',
         'arc/test/fake_app_instance.h',
-        'arc/test/fake_arc_bridge_bootstrap.cc',
-        'arc/test/fake_arc_bridge_bootstrap.h',
         'arc/test/fake_arc_bridge_instance.cc',
         'arc/test/fake_arc_bridge_instance.h',
         'arc/test/fake_arc_bridge_service.cc',

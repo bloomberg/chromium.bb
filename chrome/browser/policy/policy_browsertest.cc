@@ -191,20 +191,9 @@
 #include "ash/shell.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chromeos/audio/cras_audio_handler.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/fake_session_manager_client.h"
-#include "chromeos/dbus/session_manager_client.h"
-#include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_bridge_service_impl.h"
-#include "components/arc/arc_service_manager.h"
-#include "components/arc/test/fake_arc_bridge_bootstrap.h"
-#include "components/arc/test/fake_arc_bridge_instance.h"
 #include "ui/chromeos/accessibility_types.h"
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/snapshot/screenshot_grabber.h"
@@ -4001,87 +3990,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, UnifiedDesktopEnabledByDefault) {
                NULL);
   UpdateProviderPolicy(policies);
   EXPECT_FALSE(display_manager->unified_desktop_enabled());
-}
-
-class ArcPolicyTest : public PolicyTest {
- public:
-  ArcPolicyTest() {}
-  ~ArcPolicyTest() override {}
-
- protected:
-  void SetUpTest() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kDisableArcOptInVerification);
-    arc::ArcAuthService::DisableUIForTesting();
-
-    arc::ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
-        multi_user_util::GetAccountIdFromProfile(browser()->profile()));
-    arc::ArcAuthService::Get()->OnPrimaryUserProfilePrepared(
-        browser()->profile());
-  }
-
-  void TearDownTest() {
-    arc::ArcAuthService::Get()->Shutdown();
-  }
-
-  void SetUpInProcessBrowserTestFixture() override {
-    PolicyTest::SetUpInProcessBrowserTestFixture();
-    fake_session_manager_client_ = new chromeos::FakeSessionManagerClient;
-    fake_session_manager_client_->set_arc_available(true);
-    chromeos::DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-        scoped_ptr<chromeos::SessionManagerClient>(
-            fake_session_manager_client_));
-
-    fake_arc_bridge_instance_.reset(new arc::FakeArcBridgeInstance);
-    arc::ArcServiceManager::SetArcBridgeServiceForTesting(make_scoped_ptr(
-        new arc::ArcBridgeServiceImpl(make_scoped_ptr(
-            new arc::FakeArcBridgeBootstrap(
-                fake_arc_bridge_instance_.get())))));
-  }
-
- private:
-  chromeos::FakeSessionManagerClient *fake_session_manager_client_;
-  scoped_ptr<arc::FakeArcBridgeInstance> fake_arc_bridge_instance_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArcPolicyTest);
-};
-
-// Test ArcEnabled policy.
-IN_PROC_BROWSER_TEST_F(ArcPolicyTest, ArcEnabled) {
-  SetUpTest();
-
-  const PrefService* const pref = browser()->profile()->GetPrefs();
-  const arc::ArcBridgeService* const arc_bridge_service
-      = arc::ArcBridgeService::Get();
-
-  // ARC is switched off by default.
-  EXPECT_EQ(arc::ArcBridgeService::State::STOPPED, arc_bridge_service->state());
-  EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
-
-  // Enable ARC.
-  PolicyMap policies;
-  policies.Set(key::kArcEnabled,
-               POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD,
-               new base::FundamentalValue(true),
-               nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_TRUE(pref->GetBoolean(prefs::kArcEnabled));
-  EXPECT_EQ(arc::ArcBridgeService::State::READY, arc_bridge_service->state());
-
-  // Disable ARC.
-  policies.Set(key::kArcEnabled,
-               POLICY_LEVEL_MANDATORY,
-               POLICY_SCOPE_USER,
-               POLICY_SOURCE_CLOUD,
-               new base::FundamentalValue(false),
-               nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(pref->GetBoolean(prefs::kArcEnabled));
-  EXPECT_EQ(arc::ArcBridgeService::State::STOPPED, arc_bridge_service->state());
-
-  TearDownTest();
 }
 #endif  // defined(OS_CHROMEOS)
 
