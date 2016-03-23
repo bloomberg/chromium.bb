@@ -240,11 +240,7 @@ void ImageBitmapFactories::ImageBitmapLoader::resolvePromiseOnOriginalThread(Pas
         rejectPromise();
         return;
     }
-    ASSERT(!frame || (frame->width() && frame->height()));
-    if (!frame) {
-        rejectPromise();
-        return;
-    }
+    ASSERT(frame->width() && frame->height());
 
     RefPtr<StaticBitmapImage> image = StaticBitmapImage::create(frame);
     image->setOriginClean(true);
