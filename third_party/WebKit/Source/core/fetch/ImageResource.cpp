@@ -36,7 +36,6 @@
 #include "platform/TraceEvent.h"
 #include "platform/graphics/BitmapImage.h"
 #include "public/platform/Platform.h"
-#include "wtf/CheckedNumeric.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 
@@ -383,9 +382,9 @@ void ImageResource::decodedSizeChanged(const blink::Image* image, int delta)
     if (!image || image != m_image)
         return;
 
-    CheckedNumeric<intptr_t> signedDecodedSize(decodedSize());
-    signedDecodedSize += delta;
-    setDecodedSize(safeCast<size_t>(signedDecodedSize.ValueOrDie()));
+    // TODO(bsep): Crash on underflow, which is possible if an error causes
+    // decodedSize to be 0.
+    setDecodedSize(decodedSize() + delta);
 }
 
 void ImageResource::didDraw(const blink::Image* image)

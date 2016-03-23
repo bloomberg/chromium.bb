@@ -27,7 +27,6 @@
 #include "SkMatrixConvolutionImageFilter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
-#include "wtf/CheckedNumeric.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
@@ -123,7 +122,7 @@ bool FEConvolveMatrix::parametersValid() const
     if (m_kernelSize.isEmpty())
         return false;
     uint64_t kernelArea = m_kernelSize.area();
-    if (!CheckedNumeric<int>(kernelArea).IsValid())
+    if (!WTF::isInBounds<int>(kernelArea))
         return false;
     if (safeCast<size_t>(kernelArea) != m_kernelMatrix.size())
         return false;

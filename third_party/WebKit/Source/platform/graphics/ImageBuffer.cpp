@@ -55,7 +55,6 @@
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "wtf/ArrayBufferContents.h"
-#include "wtf/CheckedNumeric.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Vector.h"
 #include "wtf/text/Base64.h"
@@ -285,10 +284,10 @@ void ImageBuffer::flushGpu(FlushReason reason)
 
 bool ImageBuffer::getImageData(Multiply multiplied, const IntRect& rect, WTF::ArrayBufferContents& contents) const
 {
-    CheckedNumeric<int> dataSize = 4;
+    Checked<int, RecordOverflow> dataSize = 4;
     dataSize *= rect.width();
     dataSize *= rect.height();
-    if (!dataSize.IsValid())
+    if (dataSize.hasOverflowed())
         return false;
 
     if (!isSurfaceValid()) {
@@ -363,10 +362,12 @@ void ImageBuffer::updateGPUMemoryUsage() const
     if (this->isAccelerated()) {
         // If image buffer is accelerated, we should keep track of GPU memory usage.
         int gpuBufferCount = 2;
-        CheckedNumeric<intptr_t> checkedGPUUsage = 4 * gpuBufferCount;
+        Checked<intptr_t, RecordOverflow> checkedGPUUsage = 4 * gpuBufferCount;
         checkedGPUUsage *= this->size().width();
         checkedGPUUsage *= this->size().height();
-        intptr_t gpuMemoryUsage = checkedGPUUsage.ValueOrDefault(std::numeric_limits<intptr_t>::max());
+        intptr_t gpuMemoryUsage;
+        if (checkedGPUUsage.safeGet(gpuMemoryUsage) == CheckedState::DidOverflow)
+            gpuMemoryUsage = std::numeric_limits<intptr_t>::max();
 
         s_globalGPUMemoryUsage += (gpuMemoryUsage - m_gpuMemoryUsage);
         m_gpuMemoryUsage = gpuMemoryUsage;

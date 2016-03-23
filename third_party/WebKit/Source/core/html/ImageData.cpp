@@ -34,19 +34,19 @@
 #include "core/frame/ImageBitmap.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "wtf/CheckedNumeric.h"
 
 namespace blink {
 
 ImageData* ImageData::create(const IntSize& size)
 {
-    CheckedNumeric<int> dataSize = 4;
+    Checked<int, RecordOverflow> dataSize = 4;
     dataSize *= size.width();
     dataSize *= size.height();
-    if (!dataSize.IsValid() || dataSize.ValueOrDie() < 0)
+    if (dataSize.hasOverflowed() || dataSize.unsafeGet() < 0)
         return nullptr;
 
-    RefPtr<DOMUint8ClampedArray> byteArray = DOMUint8ClampedArray::createOrNull(dataSize.ValueOrDie());
+    RefPtr<DOMUint8ClampedArray> byteArray =
+        DOMUint8ClampedArray::createOrNull(dataSize.unsafeGet());
     if (!byteArray)
         return nullptr;
 
@@ -55,14 +55,14 @@ ImageData* ImageData::create(const IntSize& size)
 
 ImageData* ImageData::create(const IntSize& size, PassRefPtr<DOMUint8ClampedArray> byteArray)
 {
-    CheckedNumeric<int> dataSize = 4;
+    Checked<int, RecordOverflow> dataSize = 4;
     dataSize *= size.width();
     dataSize *= size.height();
-    if (!dataSize.IsValid())
+    if (dataSize.hasOverflowed())
         return nullptr;
 
-    if (dataSize.ValueOrDie() < 0
-        || static_cast<unsigned>(dataSize.ValueOrDie()) > byteArray->length())
+    if (dataSize.unsafeGet() < 0
+        || static_cast<unsigned>(dataSize.unsafeGet()) > byteArray->length())
         return nullptr;
 
     return new ImageData(size, byteArray);
@@ -75,17 +75,18 @@ ImageData* ImageData::create(unsigned width, unsigned height, ExceptionState& ex
         return nullptr;
     }
 
-    CheckedNumeric<unsigned> dataSize = 4;
+    Checked<unsigned, RecordOverflow> dataSize = 4;
     dataSize *= width;
     dataSize *= height;
-    if (!dataSize.IsValid()
+    if (dataSize.hasOverflowed()
         || static_cast<int>(width) < 0
         || static_cast<int>(height) < 0) {
         exceptionState.throwDOMException(IndexSizeError, "The requested image size exceeds the supported range.");
         return nullptr;
     }
 
-    RefPtr<DOMUint8ClampedArray> byteArray = DOMUint8ClampedArray::createOrNull(dataSize.ValueOrDie());
+    RefPtr<DOMUint8ClampedArray> byteArray =
+        DOMUint8ClampedArray::createOrNull(dataSize.unsafeGet());
     if (!byteArray) {
         exceptionState.throwDOMException(V8GeneralError, "Out of memory at ImageData creation");
         return nullptr;

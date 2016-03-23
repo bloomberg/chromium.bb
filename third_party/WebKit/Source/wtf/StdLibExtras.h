@@ -26,9 +26,9 @@
 #ifndef WTF_StdLibExtras_h
 #define WTF_StdLibExtras_h
 
-#include "base/numerics/safe_conversions.h"
 #include "wtf/Assertions.h"
 #include "wtf/CPU.h"
+#include "wtf/CheckedArithmetic.h"
 #include "wtf/LeakAnnotations.h"
 #include <cstddef>
 
@@ -153,7 +153,8 @@ inline TO bitwise_cast(FROM from)
 template<typename To, typename From>
 inline To safeCast(From value)
 {
-    return base::checked_cast<To>(value);
+    RELEASE_ASSERT(isInBounds<To>(value));
+    return static_cast<To>(value);
 }
 
 // Use the following macros to prevent errors caused by accidental

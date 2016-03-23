@@ -31,7 +31,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/events/MutationEvent.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "wtf/CheckedNumeric.h"
+#include "wtf/CheckedArithmetic.h"
 
 namespace blink {
 
@@ -102,10 +102,10 @@ static bool validateOffsetCount(unsigned offset, unsigned count, unsigned length
         return false;
     }
 
-    CheckedNumeric<unsigned> offsetCount = offset;
+    Checked<unsigned, RecordOverflow> offsetCount = offset;
     offsetCount += count;
 
-    if (!offsetCount.IsValid() || offset + count > length)
+    if (offsetCount.hasOverflowed() || offset + count > length)
         realCount = length - offset;
     else
         realCount = count;
