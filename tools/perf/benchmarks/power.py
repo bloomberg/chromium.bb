@@ -24,7 +24,7 @@ class PowerAndroidAcceptance(perf_benchmark.PerfBenchmark):
     return 'power.android_acceptance'
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled('all') # http://crbug.com/597290
 class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
   """Android typical 10 mobile power test."""
   test = power.Power
