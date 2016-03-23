@@ -210,6 +210,21 @@ TEST_F(USBDeviceManagerImplTest, GetDeviceChanges) {
                                                 loop.QuitClosure()));
     loop.Run();
   }
+
+  {
+    std::set<std::string> added_guids;
+    std::set<std::string> removed_guids;
+    added_guids.insert(device0->guid());
+    base::RunLoop loop;
+    device_manager->GetDeviceChanges(base::Bind(&ExpectDeviceChangesAndThen,
+                                                added_guids, removed_guids,
+                                                loop.QuitClosure()));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&MockUsbService::AddDevice,
+                   base::Unretained(device_client_.usb_service()), device0));
+    loop.Run();
+  }
 }
 
 }  // namespace usb

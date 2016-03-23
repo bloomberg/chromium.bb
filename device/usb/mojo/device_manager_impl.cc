@@ -130,18 +130,17 @@ void DeviceManagerImpl::WillDestroyUsbService() {
 }
 
 void DeviceManagerImpl::MaybeRunDeviceChangesCallback() {
-  if (!device_change_callbacks_.empty()) {
+  if (!device_change_callbacks_.empty() &&
+      !(devices_added_.empty() && devices_removed_.empty())) {
     DeviceChangeNotificationPtr notification = DeviceChangeNotification::New();
     notification->devices_added.SetToEmpty();
     notification->devices_removed.SetToEmpty();
-    for (auto& map_entry : devices_added_) {
+    for (auto& map_entry : devices_added_)
       notification->devices_added.push_back(std::move(map_entry.second));
-    }
     devices_added_.clear();
     notification->devices_removed.Swap(&devices_removed_);
 
-    const GetDeviceChangesCallback& callback = device_change_callbacks_.front();
-    callback.Run(std::move(notification));
+    device_change_callbacks_.front().Run(std::move(notification));
     device_change_callbacks_.pop();
   }
 }
