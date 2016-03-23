@@ -852,7 +852,8 @@ InputMethodManagerImpl::InputMethodManagerImpl(
       state_(NULL),
       util_(delegate_.get()),
       component_extension_ime_manager_(new ComponentExtensionIMEManager()),
-      enable_extension_loading_(enable_extension_loading) {
+      enable_extension_loading_(enable_extension_loading),
+      is_ime_menu_activated_(false) {
   if (base::SysInfo::IsRunningOnChromeOS())
     keyboard_.reset(ImeKeyboard::Create());
   else
@@ -865,11 +866,13 @@ InputMethodManagerImpl::InputMethodManagerImpl(
   const InputMethodDescriptors& descriptors =
       component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor();
   util_.ResetInputMethods(descriptors);
+  chromeos::UserAddingScreen::Get()->AddObserver(this);
 }
 
 InputMethodManagerImpl::~InputMethodManagerImpl() {
   if (candidate_window_controller_.get())
     candidate_window_controller_->RemoveObserver(this);
+  chromeos::UserAddingScreen::Get()->RemoveObserver(this);
 }
 
 void InputMethodManagerImpl::RecordInputMethodUsage(
@@ -917,19 +920,27 @@ InputMethodManager::UISessionState InputMethodManagerImpl::GetUISessionState() {
 
 void InputMethodManagerImpl::SetUISessionState(UISessionState new_ui_session) {
   ui_session_ = new_ui_session;
-  switch (ui_session_) {
-    case STATE_LOGIN_SCREEN:
-      break;
-    case STATE_BROWSER_SCREEN:
-      break;
-    case STATE_LOCK_SCREEN:
-      break;
-    case STATE_TERMINATING: {
-      if (candidate_window_controller_.get())
-        candidate_window_controller_.reset();
-      break;
-    }
+  if (ui_session_ == STATE_TERMINATING && candidate_window_controller_.get())
+    candidate_window_controller_.reset();
+
+  // The expanded IME menu is only supportive with 'normal' screen type. It
+  // should be deactivated when the screen type is not 'normal', and be
+  // re-activated when changing back.
+  if (is_ime_menu_activated_ && ui_session_ != STATE_TERMINATING) {
+    FOR_EACH_OBSERVER(
+        InputMethodManager::ImeMenuObserver, ime_menu_observers_,
+        ImeMenuActivationChanged(ui_session_ == STATE_BROWSER_SCREEN));
   }
+}
+
+void InputMethodManagerImpl::OnUserAddingStarted() {
+  if (ui_session_ == STATE_BROWSER_SCREEN)
+    SetUISessionState(STATE_SECONDARY_LOGIN_SCREEN);
+}
+
+void InputMethodManagerImpl::OnUserAddingFinished() {
+  if (ui_session_ == STATE_SECONDARY_LOGIN_SCREEN)
+    SetUISessionState(STATE_BROWSER_SCREEN);
 }
 
 scoped_ptr<InputMethodDescriptors>
@@ -1168,6 +1179,9 @@ void InputMethodManagerImpl::CandidateWindowClosed() {
 }
 
 void InputMethodManagerImpl::ImeMenuActivationChanged(bool is_active) {
+  // Saves the state that whether the expanded IME menu has been activated by
+  // users. This method is only called when the preference is changing.
+  is_ime_menu_activated_ = is_active;
   FOR_EACH_OBSERVER(InputMethodManager::ImeMenuObserver, ime_menu_observers_,
                     ImeMenuActivationChanged(is_active));
 }

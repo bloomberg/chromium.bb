@@ -17,6 +17,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/input_method/candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
+#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/profiles/profile.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/ime/chromeos/input_method_whitelist.h"
@@ -36,7 +37,8 @@ class ImeKeyboard;
 
 // The implementation of InputMethodManager.
 class InputMethodManagerImpl : public InputMethodManager,
-                               public CandidateWindowController::Observer {
+                               public CandidateWindowController::Observer,
+                               public UserAddingScreen::Observer {
  public:
   class StateImpl : public InputMethodManager::State {
    public:
@@ -168,6 +170,10 @@ class InputMethodManagerImpl : public InputMethodManager,
       const std::string& engine_id,
       const std::vector<InputMethodManager::MenuItem>& items) override;
 
+  // chromeos::UserAddingScreen:
+  void OnUserAddingStarted() override;
+  void OnUserAddingFinished() override;
+
   ImeKeyboard* GetImeKeyboard() override;
   InputMethodUtil* GetInputMethodUtil() override;
   ComponentExtensionIMEManager* GetComponentExtensionIMEManager() override;
@@ -272,9 +278,11 @@ class InputMethodManagerImpl : public InputMethodManager,
   // auto-repeat interval.
   scoped_ptr<ImeKeyboard> keyboard_;
 
-
   // Whether load IME extensions.
   bool enable_extension_loading_;
+
+  // Whether the expanded IME menu is activated.
+  bool is_ime_menu_activated_;
 
   // The engine map from extension_id to an engine.
   typedef std::map<std::string, ui::IMEEngineHandlerInterface*> EngineMap;

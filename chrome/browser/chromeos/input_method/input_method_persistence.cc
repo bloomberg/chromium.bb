@@ -139,6 +139,7 @@ void InputMethodPersistence::InputMethodChanged(InputMethodManager* manager,
       PersistUserInputMethod(current_input_method, manager, profile);
       return;
     case InputMethodManager::STATE_LOCK_SCREEN:
+    case InputMethodManager::STATE_SECONDARY_LOGIN_SCREEN:
       // We use a special set of input methods on the screen. Do not update.
       return;
     case InputMethodManager::STATE_TERMINATING:

@@ -11,7 +11,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -232,10 +231,10 @@ class ImeObserverChromeOS : public ui::ImeObserver {
         return "login";
       case chromeos::input_method::InputMethodManager::STATE_LOCK_SCREEN:
         return "lock";
+      case chromeos::input_method::InputMethodManager::
+          STATE_SECONDARY_LOGIN_SCREEN:
+        return "secondary-login";
       case chromeos::input_method::InputMethodManager::STATE_BROWSER_SCREEN:
-        return chromeos::UserAddingScreen::Get()->IsRunning()
-                   ? "secondary-login"
-                   : "normal";
       case chromeos::input_method::InputMethodManager::STATE_TERMINATING:
         return "normal";
     }
