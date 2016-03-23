@@ -67,6 +67,7 @@
 #include "platform/transforms/AffineTransform.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
+#include "wtf/CheckedNumeric.h"
 #include <math.h>
 #include <v8.h>
 
@@ -827,15 +828,13 @@ void HTMLCanvasElement::updateExternallyAllocatedMemory() const
         bufferCount++;
 
     // Four bytes per pixel per buffer.
-    Checked<intptr_t, RecordOverflow> checkedExternallyAllocatedMemory = 4 * bufferCount;
+    CheckedNumeric<intptr_t> checkedExternallyAllocatedMemory = 4 * bufferCount;
     if (is3D())
         checkedExternallyAllocatedMemory += m_context->externallyAllocatedBytesPerPixel();
 
     checkedExternallyAllocatedMemory *= width();
     checkedExternallyAllocatedMemory *= height();
-    intptr_t externallyAllocatedMemory;
-    if (checkedExternallyAllocatedMemory.safeGet(externallyAllocatedMemory) == CheckedState::DidOverflow)
-        externallyAllocatedMemory = std::numeric_limits<intptr_t>::max();
+    intptr_t externallyAllocatedMemory = checkedExternallyAllocatedMemory.ValueOrDefault(std::numeric_limits<intptr_t>::max());
 
     // Subtracting two intptr_t that are known to be positive will never underflow.
     v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(externallyAllocatedMemory - m_externallyAllocatedMemory);
