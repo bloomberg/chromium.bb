@@ -130,11 +130,16 @@ def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
       os.remove(result_path)
 
     env = {}
+    stderr_filter = None
     if cache_dir:
+      # When _JAVA_OPTIONS is set, java prints to stderr:
+      # Picked up _JAVA_OPTIONS: ...
       env['_JAVA_OPTIONS'] = '-Duser.home=%s' % _RelativizePath(cache_dir)
+      stderr_filter = lambda l: '' if '_JAVA_OPTIONS' in l else l
 
     try:
-      build_utils.CheckOutput(cmd, cwd=_SRC_ROOT, env=env or None)
+      build_utils.CheckOutput(cmd, cwd=_SRC_ROOT, env=env or None,
+                              stderr_filter=stderr_filter)
     except build_utils.CalledProcessError:
       # There is a problem with lint usage
       if not os.path.exists(result_path):
@@ -203,12 +208,14 @@ def main():
                       help='Path to product dir.')
   parser.add_argument('--result-path', required=True,
                       help='Path to XML lint result file.')
-
-  parser.add_argument('--build-tools-version',
-                      help='Version of the build tools in the Android SDK.')
-  parser.add_argument('--cache-dir',
+  parser.add_argument('--cache-dir', required=True,
                       help='Path to the directory in which the android cache '
                            'directory tree should be stored.')
+  parser.add_argument('--platform-xml-path', required=True,
+                      help='Path to api-platforms.xml')
+  parser.add_argument('--create-cache', action='store_true',
+                      help='Mark the lint cache file as an output rather than '
+                      'an input.')
   parser.add_argument('--can-fail-build', action='store_true',
                       help='If set, script will exit with nonzero exit status'
                            ' if lint errors are present')
@@ -222,8 +229,6 @@ def main():
                       help='Paths to java files.')
   parser.add_argument('--manifest-path',
                       help='Path to AndroidManifest.xml')
-  parser.add_argument('--platform-xml-path',
-                      help='Path to api-platforms.xml')
   parser.add_argument('--processed-config-path',
                       help='Path to processed lint suppressions file.')
   parser.add_argument('--resource-dir',
@@ -252,6 +257,7 @@ def main():
 
     input_paths = [
         args.lint_path,
+        args.platform_xml_path,
     ]
     if args.config_path:
       input_paths.append(args.config_path)
@@ -259,8 +265,6 @@ def main():
       input_paths.append(args.jar_path)
     if args.manifest_path:
       input_paths.append(args.manifest_path)
-    if args.platform_xml_path:
-      input_paths.append(args.platform_xml_path)
     if args.resource_dir:
       input_paths.extend(build_utils.FindInDirectory(args.resource_dir, '*'))
     if sources:
@@ -271,12 +275,6 @@ def main():
       input_strings.append(args.processed_config_path)
 
     output_paths = [ args.result_path ]
-    if args.cache_dir:
-      if not args.build_tools_version:
-        parser.error('--cache-dir specified without --build-tools-version')
-      output_paths.append(os.path.join(
-          args.cache_dir, '.android', 'cache',
-          'api-versions-6-%s.bin' % args.build_tools_version))
 
     build_utils.CallAndWriteDepfileIfStale(
         lambda changes: _OnStaleMd5(changes, args.lint_path,

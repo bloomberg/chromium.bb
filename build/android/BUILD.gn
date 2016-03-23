@@ -10,37 +10,9 @@ sun_tools_jar_path = "$root_gen_dir/sun_tools_jar/tools.jar"
 # Create or update the API versions cache if necessary by running a
 # functionally empty lint task. This prevents racy creation of the
 # cache while linting java targets in android_lint.
-action("prepare_android_lint_cache") {
-  _cache_dir = "${root_out_dir}/android_lint_cache"
-  depfile = "${_cache_dir}/prepare_android_lint_cache.d"
-  _manifest_file = "//build/android/AndroidManifest.xml"
-  _result_file = "${_cache_dir}/result.xml"
-  script = "//build/android/gyp/lint.py"
-
-  inputs = [
-    "${android_sdk_root}/platform-tools/api/api-versions.xml",
-  ]
-  outputs = [
-    depfile,
-  ]
-  args = [
-    "--build-tools-version",
-    android_sdk_build_tools_version,
-    "--cache-dir",
-    rebase_path(_cache_dir, root_build_dir),
-    "--depfile",
-    rebase_path(depfile, root_build_dir),
-    "--lint-path",
-    "$rebased_android_sdk_root/tools/lint",
-    "--manifest-path",
-    rebase_path(_manifest_file, root_build_dir),
-    "--product-dir",
-    ".",
-    "--result-path",
-    rebase_path(_result_file, root_build_dir),
-    "--silent",
-    "--enable",
-  ]
+android_lint("prepare_android_lint_cache") {
+  android_manifest = "//build/android/AndroidManifest.xml"
+  create_cache = true
 }
 
 action("find_sun_tools_jar") {
