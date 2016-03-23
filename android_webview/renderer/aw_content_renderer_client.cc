@@ -68,9 +68,6 @@ void AwContentRendererClient::RenderThreadStarted() {
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
   thread->AddObserver(visited_link_slave_.get());
 
-  // Using WebString requires blink initialization.
-  thread->EnsureWebKitInitialized();
-
   blink::WebString content_scheme(base::ASCIIToUTF16(url::kContentScheme));
   blink::WebSecurityPolicy::registerURLSchemeAsLocal(content_scheme);
 

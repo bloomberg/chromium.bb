@@ -299,8 +299,6 @@ bool DomStorageDispatcher::OnMessageReceived(const IPC::Message& msg) {
 
 void DomStorageDispatcher::OnStorageEvent(
     const DOMStorageMsg_Event_Params& params) {
-  RenderThreadImpl::current()->EnsureWebKitInitialized();
-
   WebStorageAreaImpl* originating_area = NULL;
   if (params.connection_id) {
     originating_area = WebStorageAreaImpl::FromConnectionId(

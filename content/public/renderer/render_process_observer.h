@@ -27,9 +27,6 @@ class CONTENT_EXPORT RenderProcessObserver {
   // Notification that the render process is shutting down.
   virtual void OnRenderProcessShutdown() {}
 
-  // Called right after the WebKit API is initialized.
-  virtual void WebKitInitialized() {}
-
   // Called when the renderer cache of the plugin list has changed.
   virtual void PluginListChanged() {}
 

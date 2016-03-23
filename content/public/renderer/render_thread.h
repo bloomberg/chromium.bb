@@ -75,10 +75,6 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   virtual void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) = 0;
 
-  // We initialize WebKit as late as possible. Call this to force
-  // initialization.
-  virtual void EnsureWebKitInitialized() = 0;
-
   // Asks the host to create a block of shared memory for the renderer.
   // The shared memory allocated by the host is returned back.
   virtual scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(

@@ -11,14 +11,12 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/web_cache/public/interfaces/web_cache.mojom.h"
-#include "content/public/renderer/render_process_observer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace web_cache {
 
 // This class implements the Mojo interface mojom::WebCache.
-class WebCacheRenderProcessObserver : public mojom::WebCache,
-                                      public content::RenderProcessObserver {
+class WebCacheRenderProcessObserver : public mojom::WebCache {
  public:
   WebCacheRenderProcessObserver();
   ~WebCacheRenderProcessObserver() override;
@@ -30,10 +28,6 @@ class WebCacheRenderProcessObserver : public mojom::WebCache,
   void ExecutePendingClearCache();
 
  private:
-  // RenderProcessObserver implementation.
-  void WebKitInitialized() override;
-  void OnRenderProcessShutdown() override;
-
   // mojom::WebCache methods:
   void SetCacheCapacities(uint64_t min_dead_capacity,
                           uint64_t max_dead_capacity,
@@ -44,10 +38,6 @@ class WebCacheRenderProcessObserver : public mojom::WebCache,
 
   // If true, the web cache shall be cleared before the next navigation event.
   bool clear_cache_pending_;
-  bool webkit_initialized_;
-  size_t pending_cache_min_dead_capacity_;
-  size_t pending_cache_max_dead_capacity_;
-  size_t pending_cache_capacity_;
 
   mojo::BindingSet<mojom::WebCache> bindings_;
 

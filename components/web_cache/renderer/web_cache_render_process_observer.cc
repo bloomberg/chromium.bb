@@ -14,16 +14,8 @@
 
 namespace web_cache {
 
-namespace {
-const size_t kUnitializedCacheCapacity = UINT_MAX;
-}
-
 WebCacheRenderProcessObserver::WebCacheRenderProcessObserver()
-  : clear_cache_pending_(false),
-    webkit_initialized_(false),
-    pending_cache_min_dead_capacity_(0),
-    pending_cache_max_dead_capacity_(0),
-    pending_cache_capacity_(kUnitializedCacheCapacity) {
+  : clear_cache_pending_(false) {
   content::ServiceRegistry* service_registry =
       content::RenderThread::Get()->GetServiceRegistry();
   service_registry->AddService(base::Bind(
@@ -39,23 +31,10 @@ void WebCacheRenderProcessObserver::BindRequest(
 }
 
 void WebCacheRenderProcessObserver::ExecutePendingClearCache() {
-  if (clear_cache_pending_ && webkit_initialized_) {
+  if (clear_cache_pending_) {
     clear_cache_pending_ = false;
     blink::WebCache::clear();
   }
-}
-
-void WebCacheRenderProcessObserver::WebKitInitialized() {
-  webkit_initialized_ = true;
-  if (pending_cache_capacity_ != kUnitializedCacheCapacity) {
-    blink::WebCache::setCapacities(pending_cache_min_dead_capacity_,
-                                   pending_cache_max_dead_capacity_,
-                                   pending_cache_capacity_);
-  }
-}
-
-void WebCacheRenderProcessObserver::OnRenderProcessShutdown() {
-  webkit_initialized_ = false;
 }
 
 void WebCacheRenderProcessObserver::SetCacheCapacities(
@@ -66,19 +45,12 @@ void WebCacheRenderProcessObserver::SetCacheCapacities(
   size_t max_dead_capacity2 = base::checked_cast<size_t>(max_dead_capacity);
   size_t capacity = base::checked_cast<size_t>(capacity64);
 
-  if (!webkit_initialized_) {
-    pending_cache_min_dead_capacity_ = min_dead_capacity2;
-    pending_cache_max_dead_capacity_ = max_dead_capacity2;
-    pending_cache_capacity_ = capacity;
-    return;
-  }
-
   blink::WebCache::setCapacities(min_dead_capacity2, max_dead_capacity2,
                                  capacity);
 }
 
 void WebCacheRenderProcessObserver::ClearCache(bool on_navigation) {
-  if (on_navigation || !webkit_initialized_)
+  if (on_navigation)
     clear_cache_pending_ = true;
   else
     blink::WebCache::clear();

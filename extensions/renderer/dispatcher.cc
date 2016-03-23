@@ -211,7 +211,6 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
       content_watcher_(new ContentWatcher()),
       source_map_(&ResourceBundle::GetSharedInstance()),
       v8_schema_registry_(new V8SchemaRegistry),
-      is_webkit_initialized_(false),
       user_script_set_manager_observer_(this),
       webrequest_used_(false) {
   const base::CommandLine& command_line =
@@ -233,6 +232,62 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
   request_sender_.reset(new RequestSender(this));
   PopulateSourceMap();
   WakeEventPage::Get()->Init(RenderThread::Get());
+
+  RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
+
+  // WebSecurityPolicy whitelists. They should be registered for both
+  // chrome-extension: and chrome-extension-resource.
+  using RegisterFunction = void (*)(const WebString&);
+  RegisterFunction register_functions[] = {
+      // Treat as secure because communication with them is entirely in the
+      // browser, so there is no danger of manipulation or eavesdropping on
+      // communication with them by third parties.
+      WebSecurityPolicy::registerURLSchemeAsSecure,
+      // As far as Blink is concerned, they should be allowed to receive CORS
+      // requests. At the Extensions layer, requests will actually be blocked
+      // unless overridden by the web_accessible_resources manifest key.
+      // TODO(kalman): See what happens with a service worker.
+      WebSecurityPolicy::registerURLSchemeAsCORSEnabled,
+      // Resources should bypass Content Security Policy checks when included in
+      // protected resources. TODO(kalman): What are "protected resources"?
+      WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy,
+      // Extension resources are HTTP-like and safe to expose to the fetch API.
+      // The rules for the fetch API are consistent with XHR.
+      WebSecurityPolicy::registerURLSchemeAsSupportingFetchAPI,
+      // Extension resources, when loaded as the top-level document, should
+      // bypass Blink's strict first-party origin checks.
+      WebSecurityPolicy::registerURLSchemeAsFirstPartyWhenTopLevel,
+  };
+
+  WebString extension_scheme(base::ASCIIToUTF16(kExtensionScheme));
+  WebString extension_resource_scheme(base::ASCIIToUTF16(
+      kExtensionResourceScheme));
+  for (RegisterFunction func : register_functions) {
+    func(extension_scheme);
+    func(extension_resource_scheme);
+  }
+
+  // For extensions, we want to ensure we call the IdleHandler every so often,
+  // even if the extension keeps up activity.
+  if (set_idle_notifications_) {
+    forced_idle_timer_.reset(new base::RepeatingTimer);
+    forced_idle_timer_->Start(
+        FROM_HERE,
+        base::TimeDelta::FromMilliseconds(kMaxExtensionIdleHandlerDelayMs),
+        RenderThread::Get(),
+        &RenderThread::IdleHandler);
+  }
+
+  // Initialize host permissions for any extensions that were activated before
+  // WebKit was initialized.
+  for (const std::string& extension_id : active_extension_ids_) {
+    const Extension* extension =
+        RendererExtensionRegistry::Get()->GetByID(extension_id);
+    CHECK(extension);
+    InitOriginPermissions(extension);
+  }
+
+  EnableCustomElementWhiteList();
 }
 
 Dispatcher::~Dispatcher() {
@@ -889,67 +944,6 @@ bool Dispatcher::OnControlMessageReceived(const IPC::Message& message) {
 
   return handled;
 }
-
-void Dispatcher::WebKitInitialized() {
-  RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
-
-  // WebSecurityPolicy whitelists. They should be registered for both
-  // chrome-extension: and chrome-extension-resource.
-  using RegisterFunction = void (*)(const WebString&);
-  RegisterFunction register_functions[] = {
-      // Treat as secure because communication with them is entirely in the
-      // browser, so there is no danger of manipulation or eavesdropping on
-      // communication with them by third parties.
-      WebSecurityPolicy::registerURLSchemeAsSecure,
-      // As far as Blink is concerned, they should be allowed to receive CORS
-      // requests. At the Extensions layer, requests will actually be blocked
-      // unless overridden by the web_accessible_resources manifest key.
-      // TODO(kalman): See what happens with a service worker.
-      WebSecurityPolicy::registerURLSchemeAsCORSEnabled,
-      // Resources should bypass Content Security Policy checks when included in
-      // protected resources. TODO(kalman): What are "protected resources"?
-      WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy,
-      // Extension resources are HTTP-like and safe to expose to the fetch API.
-      // The rules for the fetch API are consistent with XHR.
-      WebSecurityPolicy::registerURLSchemeAsSupportingFetchAPI,
-      // Extension resources, when loaded as the top-level document, should
-      // bypass Blink's strict first-party origin checks.
-      WebSecurityPolicy::registerURLSchemeAsFirstPartyWhenTopLevel,
-  };
-
-  WebString extension_scheme(base::ASCIIToUTF16(kExtensionScheme));
-  WebString extension_resource_scheme(base::ASCIIToUTF16(
-      kExtensionResourceScheme));
-  for (RegisterFunction func : register_functions) {
-    func(extension_scheme);
-    func(extension_resource_scheme);
-  }
-
-  // For extensions, we want to ensure we call the IdleHandler every so often,
-  // even if the extension keeps up activity.
-  if (set_idle_notifications_) {
-    forced_idle_timer_.reset(new base::RepeatingTimer);
-    forced_idle_timer_->Start(
-        FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kMaxExtensionIdleHandlerDelayMs),
-        RenderThread::Get(),
-        &RenderThread::IdleHandler);
-  }
-
-  // Initialize host permissions for any extensions that were activated before
-  // WebKit was initialized.
-  for (const std::string& extension_id : active_extension_ids_) {
-    const Extension* extension =
-        RendererExtensionRegistry::Get()->GetByID(extension_id);
-    CHECK(extension);
-    InitOriginPermissions(extension);
-  }
-
-  EnableCustomElementWhiteList();
-
-  is_webkit_initialized_ = true;
-}
-
 void Dispatcher::IdleNotification() {
   if (set_idle_notifications_ && forced_idle_timer_) {
     // Dampen the forced delay as well if the extension stays idle for long
@@ -1003,12 +997,10 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
   // handler ticking.
   RenderThread::Get()->ScheduleIdleHandler(kInitialExtensionIdleHandlerDelayMs);
 
-  if (is_webkit_initialized_) {
-    DOMActivityLogger::AttachToWorld(
-        DOMActivityLogger::kMainWorldId, extension_id);
+  DOMActivityLogger::AttachToWorld(
+      DOMActivityLogger::kMainWorldId, extension_id);
 
-    InitOriginPermissions(extension);
-  }
+  InitOriginPermissions(extension);
 
   UpdateActiveExtensions();
 }
@@ -1189,12 +1181,10 @@ void Dispatcher::OnUpdatePermissions(
   scoped_ptr<const PermissionSet> withheld =
       params.withheld_permissions.ToPermissionSet();
 
-  if (is_webkit_initialized_) {
-    UpdateOriginPermissions(
-        extension->url(),
-        extension->permissions_data()->GetEffectiveHostPermissions(),
-        active->effective_hosts());
-  }
+  UpdateOriginPermissions(
+      extension->url(),
+      extension->permissions_data()->GetEffectiveHostPermissions(),
+      active->effective_hosts());
 
   extension->permissions_data()->SetPermissions(std::move(active),
                                                 std::move(withheld));
@@ -1219,7 +1209,7 @@ void Dispatcher::OnUpdateTabSpecificPermissions(const GURL& visible_url,
                                 extensions::ManifestPermissionSet(), new_hosts,
                                 extensions::URLPatternSet()));
 
-  if (is_webkit_initialized_ && update_origin_whitelist) {
+  if (update_origin_whitelist) {
     UpdateOriginPermissions(
         extension->url(),
         old_effective,
@@ -1237,7 +1227,7 @@ void Dispatcher::OnClearTabSpecificPermissions(
       URLPatternSet old_effective =
           extension->permissions_data()->GetEffectiveHostPermissions();
       extension->permissions_data()->ClearTabSpecificPermissions(tab_id);
-      if (is_webkit_initialized_ && update_origin_whitelist) {
+      if (update_origin_whitelist) {
         UpdateOriginPermissions(
             extension->url(),
             old_effective,

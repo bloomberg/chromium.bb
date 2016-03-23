@@ -155,7 +155,6 @@ class Dispatcher : public content::RenderProcessObserver,
 
   // RenderProcessObserver implementation:
   bool OnControlMessageReceived(const IPC::Message& message) override;
-  void WebKitInitialized() override;
   void IdleNotification() override;
   void OnRenderProcessShutdown() override;
 
@@ -297,9 +296,6 @@ class Dispatcher : public content::RenderProcessObserver,
 
   // Mapping of port IDs to tabs. If there is no tab, the value would be -1.
   std::map<int, int> port_to_tab_id_map_;
-
-  // True once WebKit has been initialized (and it is therefore safe to poke).
-  bool is_webkit_initialized_;
 
   // It is important for this to come after the ScriptInjectionManager, so that
   // the observer is destroyed before the UserScriptSet.

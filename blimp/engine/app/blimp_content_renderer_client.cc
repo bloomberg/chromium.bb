@@ -6,7 +6,6 @@
 
 #include "blimp/common/compositor/blimp_image_serialization_processor.h"
 #include "components/web_cache/renderer/web_cache_render_process_observer.h"
-#include "content/public/renderer/render_thread.h"
 
 namespace blimp {
 namespace engine {
@@ -20,7 +19,6 @@ BlimpContentRendererClient::~BlimpContentRendererClient() {}
 
 void BlimpContentRendererClient::RenderThreadStarted() {
   web_cache_observer_.reset(new web_cache::WebCacheRenderProcessObserver());
-  content::RenderThread::Get()->AddObserver(web_cache_observer_.get());
 }
 
 cc::ImageSerializationProcessor*

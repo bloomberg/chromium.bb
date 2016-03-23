@@ -37,7 +37,6 @@ class LayoutTestRenderProcessObserver : public RenderProcessObserver {
   void SetMainWindow(RenderView* view);
 
   // RenderProcessObserver implementation.
-  void WebKitInitialized() override;
   void OnRenderProcessShutdown() override;
   bool OnControlMessageReceived(const IPC::Message& message) override;
 

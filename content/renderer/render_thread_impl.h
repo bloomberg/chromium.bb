@@ -180,7 +180,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void RemoveObserver(RenderProcessObserver* observer) override;
   void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) override;
-  void EnsureWebKitInitialized() override;
   scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(
       size_t buffer_size) override;
   cc::SharedBitmapManager* GetSharedBitmapManager() override;
@@ -458,12 +457,12 @@ class CONTENT_EXPORT RenderThreadImpl
   StoragePartitionService* GetStoragePartitionService();
 
  protected:
-  RenderThreadImpl(const InProcessChildThreadParams& params,
-                   scoped_ptr<scheduler::RendererScheduler> scheduler);
+  RenderThreadImpl(
+      const InProcessChildThreadParams& params,
+      scoped_ptr<scheduler::RendererScheduler> scheduler,
+      scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
   RenderThreadImpl(scoped_ptr<base::MessageLoop> main_message_loop,
                    scoped_ptr<scheduler::RendererScheduler> scheduler);
-  virtual void SetResourceDispatchTaskQueue(
-    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
 
  private:
   // ChildThread
@@ -477,9 +476,12 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
   scoped_ptr<base::SharedMemory> AllocateSharedMemory(size_t size) override;
 
-  void Init();
+  void Init(scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
 
   void InitializeCompositorThread();
+
+  void InitializeWebKit(
+      scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue);
 
   void OnCreateNewFrame(FrameMsg_NewFrame_Params params);
   void OnCreateNewFrameProxy(int routing_id,

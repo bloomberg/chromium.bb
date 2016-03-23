@@ -63,7 +63,6 @@ class MockRenderThread : public RenderThread {
   void RemoveObserver(RenderProcessObserver* observer) override;
   void SetResourceDispatcherDelegate(
       ResourceDispatcherDelegate* delegate) override;
-  void EnsureWebKitInitialized() override;
   void RecordAction(const base::UserMetricsAction& action) override;
   void RecordComputedAction(const std::string& action) override;
   scoped_ptr<base::SharedMemory> HostAllocateSharedMemoryBuffer(

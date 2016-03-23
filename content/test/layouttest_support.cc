@@ -98,7 +98,6 @@ RenderFrameImpl* CreateWebFrameTestProxy(
 // DirectWrite only has access to %WINDIR%\Fonts by default. For developer
 // side-loading, support kRegisterFontFiles to allow access to additional fonts.
 void RegisterSideloadedTypefaces(SkFontMgr* fontmgr) {
-  RenderThreadImpl::current()->EnsureWebKitInitialized();
   std::vector<std::string> files = switches::GetSideloadFontFiles();
   for (std::vector<std::string>::const_iterator i(files.begin());
        i != files.end();

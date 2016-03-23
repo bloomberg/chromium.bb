@@ -591,7 +591,9 @@ RenderThreadImpl* RenderThreadImpl::Create(
     const InProcessChildThreadParams& params) {
   scoped_ptr<scheduler::RendererScheduler> renderer_scheduler =
       scheduler::RendererScheduler::Create();
-  return new RenderThreadImpl(params, std::move(renderer_scheduler));
+  scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
+  return new RenderThreadImpl(
+      params, std::move(renderer_scheduler), test_task_counter);
 }
 
 // static
@@ -608,14 +610,15 @@ RenderThreadImpl* RenderThreadImpl::current() {
 
 RenderThreadImpl::RenderThreadImpl(
     const InProcessChildThreadParams& params,
-    scoped_ptr<scheduler::RendererScheduler> scheduler)
+    scoped_ptr<scheduler::RendererScheduler> scheduler,
+    scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue)
     : ChildThreadImpl(Options::Builder()
                           .InBrowserProcess(params)
                           .UseMojoChannel(ShouldUseMojoChannel())
                           .Build()),
       renderer_scheduler_(std::move(scheduler)),
       raster_worker_pool_(new RasterWorkerPool()) {
-  Init();
+  Init(resource_task_queue);
 }
 
 // When we run plugins in process, we actually run them on the render thread,
@@ -629,10 +632,12 @@ RenderThreadImpl::RenderThreadImpl(
       renderer_scheduler_(std::move(scheduler)),
       main_message_loop_(std::move(main_message_loop)),
       raster_worker_pool_(new RasterWorkerPool()) {
-  Init();
+  scoped_refptr<base::SingleThreadTaskRunner> test_task_counter;
+  Init(test_task_counter);
 }
 
-void RenderThreadImpl::Init() {
+void RenderThreadImpl::Init(
+    scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
   TRACE_EVENT0("startup", "RenderThreadImpl::Init");
 
   base::trace_event::TraceLog::GetInstance()->SetThreadSortIndex(
@@ -648,6 +653,8 @@ void RenderThreadImpl::Init() {
 
   // Register this object as the main thread.
   ChildProcess::current()->set_main_thread(this);
+
+  InitializeWebKit(resource_task_queue);
 
   // In single process the single process is all there is.
   notify_webkit_of_modal_loop_ = true;
@@ -1155,21 +1162,6 @@ void RenderThreadImpl::SetResourceDispatcherDelegate(
   resource_dispatcher()->set_delegate(delegate);
 }
 
-void RenderThreadImpl::SetResourceDispatchTaskQueue(
-    const scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
-  // Add a filter that forces resource messages to be dispatched via a
-  // particular task runner.
-  scoped_refptr<ResourceSchedulingFilter> filter(
-      new ResourceSchedulingFilter(resource_task_queue, resource_dispatcher()));
-  channel()->AddFilter(filter.get());
-  resource_dispatcher()->SetResourceSchedulingFilter(filter);
-
-  // The ChildResourceMessageFilter and the ResourceDispatcher need to use the
-  // same queue to ensure tasks are executed in the expected order.
-  child_resource_message_filter()->SetMainThreadTaskRunner(resource_task_queue);
-  resource_dispatcher()->SetMainThreadTaskRunner(resource_task_queue);
-}
-
 void RenderThreadImpl::InitializeCompositorThread() {
 #if defined(OS_ANDROID)
   SynchronousCompositorFactory* sync_compositor_factory =
@@ -1233,9 +1225,9 @@ void RenderThreadImpl::InitializeCompositorThread() {
       synchronous_input_handler_proxy_client, renderer_scheduler_.get()));
 }
 
-void RenderThreadImpl::EnsureWebKitInitialized() {
-  if (blink_platform_impl_)
-    return;
+void RenderThreadImpl::InitializeWebKit(
+    scoped_refptr<base::SingleThreadTaskRunner>& resource_task_queue) {
+  DCHECK(!blink_platform_impl_);
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -1262,7 +1254,26 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       base::Bind(base::IgnoreResult(&RenderThreadImpl::OnMessageReceived),
                  base::Unretained(this)));
 
-  SetResourceDispatchTaskQueue(renderer_scheduler_->LoadingTaskRunner());
+  scoped_refptr<base::SingleThreadTaskRunner> resource_task_queue2;
+  if (resource_task_queue) {
+    resource_task_queue2 = resource_task_queue;
+  } else {
+    resource_task_queue2 = renderer_scheduler_->LoadingTaskRunner();
+  }
+  // Add a filter that forces resource messages to be dispatched via a
+  // particular task runner.
+  scoped_refptr<ResourceSchedulingFilter> filter(
+      new ResourceSchedulingFilter(
+          resource_task_queue2, resource_dispatcher()));
+  channel()->AddFilter(filter.get());
+  resource_dispatcher()->SetResourceSchedulingFilter(filter);
+
+  // The ChildResourceMessageFilter and the ResourceDispatcher need to use the
+  // same queue to ensure tasks are executed in the expected order.
+  child_resource_message_filter()->SetMainThreadTaskRunner(
+      resource_task_queue2);
+  resource_dispatcher()->SetMainThreadTaskRunner(resource_task_queue2);
+
   if (!command_line.HasSwitch(switches::kDisableThreadedCompositing) &&
       !command_line.HasSwitch(switches::kUseRemoteCompositing))
     InitializeCompositorThread();
@@ -1293,8 +1304,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       command_line.GetSwitchValueASCII(switches::kBlinkPlatformLogChannels));
 
   RenderMediaClient::Initialize();
-
-  FOR_EACH_OBSERVER(RenderProcessObserver, observers_, WebKitInitialized());
 
   devtools_agent_message_filter_ = new DevToolsAgentFilter();
   AddFilter(devtools_agent_message_filter_.get());
@@ -1378,7 +1387,6 @@ cc::SharedBitmapManager* RenderThreadImpl::GetSharedBitmapManager() {
 }
 
 void RenderThreadImpl::RegisterExtension(v8::Extension* extension) {
-  EnsureWebKitInitialized();
   WebScriptController::registerExtension(extension);
 }
 
@@ -1837,7 +1845,6 @@ void RenderThreadImpl::OnSetZoomLevelForCurrentURL(const std::string& scheme,
 }
 
 void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
-  EnsureWebKitInitialized();
   CompositorDependencies* compositor_deps = this;
   // When bringing in render_view, also bring in webkit's glue and jsbindings.
   RenderViewImpl::Create(compositor_deps, params, false);
@@ -1923,7 +1930,6 @@ GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
 
 #if defined(ENABLE_PLUGINS)
 void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
-  EnsureWebKitInitialized();
   // The call below will cause a GetPlugins call with refresh=true, but at this
   // point we already know that the browser has refreshed its list, so disable
   // refresh temporarily to prevent each renderer process causing the list to be
@@ -1939,7 +1945,6 @@ void RenderThreadImpl::OnPurgePluginListCache(bool reload_pages) {
 void RenderThreadImpl::OnNetworkConnectionChanged(
     net::NetworkChangeNotifier::ConnectionType type,
     double max_bandwidth_mbps) {
-  EnsureWebKitInitialized();
   bool online = type != net::NetworkChangeNotifier::CONNECTION_NONE;
   WebNetworkStateNotifier::setOnLine(online);
   FOR_EACH_OBSERVER(
@@ -1962,7 +1967,6 @@ void RenderThreadImpl::OnUpdateTimezone(const std::string& zone_id) {
 
 #if defined(OS_ANDROID)
 void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
-  EnsureWebKitInitialized();
   if (suspend) {
     renderer_scheduler_->SuspendTimerQueue();
   } else {
@@ -1975,7 +1979,6 @@ void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
 #if defined(OS_MACOSX)
 void RenderThreadImpl::OnUpdateScrollbarTheme(
     const ViewMsg_UpdateScrollbarTheme_Params& params) {
-  EnsureWebKitInitialized();
   static_cast<WebScrollbarBehaviorImpl*>(
       blink_platform_impl_->scrollbarBehavior())
       ->set_jump_on_track_click(params.jump_on_track_click);

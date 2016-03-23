@@ -40,8 +40,6 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver,
 
   static bool is_incognito_process() { return is_incognito_process_; }
 
-  bool webkit_initialized() const { return webkit_initialized_; }
-
   // Returns a pointer to the content setting rules owned by
   // |ChromeRenderProcessObserver|.
   const RendererContentSettingRules* content_setting_rules() const;
@@ -53,8 +51,6 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver,
 
   // content::RenderProcessObserver:
   bool OnControlMessageReceived(const IPC::Message& message) override;
-  void WebKitInitialized() override;
-  void OnRenderProcessShutdown() override;
 
   // base::FieldTrialList::Observer:
   void OnFieldTrialGroupFinalized(const std::string& trial_name,
@@ -72,8 +68,6 @@ class ChromeRenderProcessObserver : public content::RenderProcessObserver,
   static bool is_incognito_process_;
   scoped_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
   RendererContentSettingRules content_setting_rules_;
-
-  bool webkit_initialized_;
 
   base::WeakPtrFactory<ChromeRenderProcessObserver> weak_factory_;
 

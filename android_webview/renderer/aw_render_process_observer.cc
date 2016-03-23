@@ -11,8 +11,7 @@
 
 namespace android_webview {
 
-AwRenderProcessObserver::AwRenderProcessObserver()
-  : webkit_initialized_(false) {
+AwRenderProcessObserver::AwRenderProcessObserver() {
 }
 
 AwRenderProcessObserver::~AwRenderProcessObserver() {
@@ -29,18 +28,12 @@ bool AwRenderProcessObserver::OnControlMessageReceived(
   return handled;
 }
 
-void AwRenderProcessObserver::WebKitInitialized() {
-  webkit_initialized_ = true;
-}
-
 void AwRenderProcessObserver::OnClearCache() {
-  if (webkit_initialized_)
-    blink::WebCache::clear();
+  blink::WebCache::clear();
 }
 
 void AwRenderProcessObserver::OnSetJsOnlineProperty(bool network_up) {
-  if (webkit_initialized_)
-    blink::WebNetworkStateNotifier::setOnLine(network_up);
+  blink::WebNetworkStateNotifier::setOnLine(network_up);
 }
 
 }  // nanemspace android_webview

@@ -43,26 +43,7 @@ LayoutTestRenderProcessObserver::LayoutTestRenderProcessObserver()
   g_instance = this;
   RenderThread::Get()->AddObserver(this);
   EnableRendererLayoutTestMode();
-}
 
-LayoutTestRenderProcessObserver::~LayoutTestRenderProcessObserver() {
-  CHECK(g_instance == this);
-  g_instance = NULL;
-}
-
-void LayoutTestRenderProcessObserver::SetTestDelegate(
-    test_runner::WebTestDelegate* delegate) {
-  test_interfaces_->SetDelegate(delegate);
-  test_delegate_ = delegate;
-}
-
-void LayoutTestRenderProcessObserver::SetMainWindow(RenderView* view) {
-  BlinkTestRunner* test_runner = BlinkTestRunner::Get(view);
-  test_interfaces_->SetWebView(view->GetWebView(), test_runner->proxy());
-  main_test_runner_ = test_runner;
-}
-
-void LayoutTestRenderProcessObserver::WebKitInitialized() {
   // We always expose GC to layout tests.
   std::string flags("--expose-gc");
   v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
@@ -83,6 +64,23 @@ void LayoutTestRenderProcessObserver::WebKitInitialized() {
           switches::kAlwaysUseComplexText)) {
     blink::setAlwaysUseComplexTextForTest(true);
   }
+}
+
+LayoutTestRenderProcessObserver::~LayoutTestRenderProcessObserver() {
+  CHECK(g_instance == this);
+  g_instance = NULL;
+}
+
+void LayoutTestRenderProcessObserver::SetTestDelegate(
+    test_runner::WebTestDelegate* delegate) {
+  test_interfaces_->SetDelegate(delegate);
+  test_delegate_ = delegate;
+}
+
+void LayoutTestRenderProcessObserver::SetMainWindow(RenderView* view) {
+  BlinkTestRunner* test_runner = BlinkTestRunner::Get(view);
+  test_interfaces_->SetWebView(view->GetWebView(), test_runner->proxy());
+  main_test_runner_ = test_runner;
 }
 
 void LayoutTestRenderProcessObserver::OnRenderProcessShutdown() {

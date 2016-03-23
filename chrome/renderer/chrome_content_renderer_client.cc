@@ -355,7 +355,6 @@ void ChromeContentRendererClient::RenderThreadStarted() {
 #endif
 
   thread->AddObserver(chrome_observer_.get());
-  thread->AddObserver(web_cache_observer_.get());
 #if defined(FULL_SAFE_BROWSING)
   thread->AddObserver(phishing_classifier_.get());
 #endif

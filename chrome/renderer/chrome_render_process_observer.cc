@@ -183,7 +183,7 @@ class ResourceUsageReporterImpl : public ResourceUsageReporter {
     // Since it is not safe to call any Blink or V8 functions until Blink has
     // been initialized (which also initializes V8), early out and send 0 back
     // for all resources.
-    if (!observer_ || !observer_->webkit_initialized()) {
+    if (!observer_) {
       SendResults();
       return;
     }
@@ -238,7 +238,7 @@ void CreateResourceUsageReporter(
 bool ChromeRenderProcessObserver::is_incognito_process_ = false;
 
 ChromeRenderProcessObserver::ChromeRenderProcessObserver()
-    : webkit_initialized_(false), weak_factory_(this) {
+    : weak_factory_(this) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
@@ -274,6 +274,19 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver()
       chrome_common_media::LocalizedStringProvider);
 
   InitFieldTrialObserving(command_line);
+
+  // chrome-native: is a scheme used for placeholder navigations that allow
+  // UIs to be drawn with platform native widgets instead of HTML.  These pages
+  // should not be accessible, and should also be treated as empty documents
+  // that can commit synchronously.  No code should be runnable in these pages,
+  // so it should not need to access anything nor should it allow javascript
+  // URLs since it should never be visible to the user.
+  WebString native_scheme(base::ASCIIToUTF16(chrome::kChromeNativeScheme));
+  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(native_scheme);
+  WebSecurityPolicy::registerURLSchemeAsEmptyDocument(native_scheme);
+  WebSecurityPolicy::registerURLSchemeAsNoAccess(native_scheme);
+  WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
+      native_scheme);
 }
 
 ChromeRenderProcessObserver::~ChromeRenderProcessObserver() {}
@@ -318,26 +331,6 @@ bool ChromeRenderProcessObserver::OnControlMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
-}
-
-void ChromeRenderProcessObserver::WebKitInitialized() {
-  webkit_initialized_ = true;
-  // chrome-native: is a scheme used for placeholder navigations that allow
-  // UIs to be drawn with platform native widgets instead of HTML.  These pages
-  // should not be accessible, and should also be treated as empty documents
-  // that can commit synchronously.  No code should be runnable in these pages,
-  // so it should not need to access anything nor should it allow javascript
-  // URLs since it should never be visible to the user.
-  WebString native_scheme(base::ASCIIToUTF16(chrome::kChromeNativeScheme));
-  WebSecurityPolicy::registerURLSchemeAsDisplayIsolated(native_scheme);
-  WebSecurityPolicy::registerURLSchemeAsEmptyDocument(native_scheme);
-  WebSecurityPolicy::registerURLSchemeAsNoAccess(native_scheme);
-  WebSecurityPolicy::registerURLSchemeAsNotAllowingJavascriptURLs(
-      native_scheme);
-}
-
-void ChromeRenderProcessObserver::OnRenderProcessShutdown() {
-  webkit_initialized_ = false;
 }
 
 void ChromeRenderProcessObserver::OnSetIsIncognitoProcess(

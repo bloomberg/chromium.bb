@@ -78,7 +78,6 @@ void EmbeddedWorkerDispatcher::OnStartWorker(
     const EmbeddedWorkerMsg_StartWorker_Params& params) {
   DCHECK(!workers_.Lookup(params.embedded_worker_id));
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerDispatcher::OnStartWorker");
-  RenderThread::Get()->EnsureWebKitInitialized();
   scoped_ptr<WorkerWrapper> wrapper(
       new WorkerWrapper(blink::WebEmbeddedWorker::create(
                             new ServiceWorkerContextClient(

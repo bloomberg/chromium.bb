@@ -123,9 +123,6 @@ void MockRenderThread::SetResourceDispatcherDelegate(
     ResourceDispatcherDelegate* delegate) {
 }
 
-void MockRenderThread::EnsureWebKitInitialized() {
-}
-
 void MockRenderThread::RecordAction(const base::UserMetricsAction& action) {
 }
 
