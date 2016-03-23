@@ -31,6 +31,12 @@
     'includes': [
         '../Source/build/features.gypi',
     ],
+    'variables': {
+        'blink_mojo_sources': [
+            'platform/modules/bluetooth/web_bluetooth.mojom',
+            'platform/modules/notifications/notification.mojom',
+        ],
+    },
     'targets': [
         {
             # GN version: //third_party/WebKit/public:blink
@@ -82,24 +88,36 @@
             ],
         },
         {
+            # GN version: //third_party/WebKit/public:mojo_bindings_blink
+            'target_name': 'mojo_bindings_blink_mojom',
+            'type': 'none',
+            'variables': {
+                'mojom_files': ['<@(blink_mojo_sources)'],
+                'mojom_variant': 'wtf',
+                'for_blink': 'true',
+            },
+            'includes': [
+                '../../../mojo/mojom_bindings_generator_explicit.gypi',
+            ],
+        },
+        {
+            # GN version: //third_party/WebKit/public:mojo_bindings
             'target_name': 'mojo_bindings_mojom',
             'type': 'none',
             'variables': {
-              'mojom_files': [
-                'platform/modules/bluetooth/web_bluetooth.mojom',
-                'platform/modules/notifications/notification.mojom',
-              ],
+                'mojom_files': ['<@(blink_mojo_sources)'],
             },
             'includes': [
-              '../../../mojo/mojom_bindings_generator_explicit.gypi',
+                '../../../mojo/mojom_bindings_generator_explicit.gypi',
             ],
         },
         {
             'target_name': 'mojo_bindings',
             'type': 'static_library',
             'dependencies': [
-              'mojo_bindings_mojom',
-              '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
+                'mojo_bindings_blink_mojom',
+                'mojo_bindings_mojom',
+                '../../../mojo/mojo_public.gyp:mojo_cpp_bindings',
             ],
         },
     ],

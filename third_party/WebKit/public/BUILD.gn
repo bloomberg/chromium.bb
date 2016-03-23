@@ -175,6 +175,17 @@ grit("image_resources") {
   ]
 }
 
+# GYP version: WebKit/public/blink.gyp:mojo_bindings_blink_mojom
+mojom("mojo_bindings_blink") {
+  sources = [
+    "platform/modules/bluetooth/web_bluetooth.mojom",
+    "platform/modules/notifications/notification.mojom",
+  ]
+  for_blink = true
+  variant = "wtf"
+}
+
+# GYP version: WebKit/public/blink.gyp:mojo_bindings_mojom
 mojom("mojo_bindings") {
   sources = [
     "platform/modules/bluetooth/web_bluetooth.mojom",
