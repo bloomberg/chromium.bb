@@ -111,7 +111,7 @@ inline v8::Local<v8::Object> V8DOMWrapper::associateObjectWithWrapper(v8::Isolat
 class V8WrapperInstantiationScope {
     STACK_ALLOCATED();
 public:
-    V8WrapperInstantiationScope(v8::Local<v8::Object> creationContext, v8::Isolate* isolate, bool withSecurityCheck = true)
+    V8WrapperInstantiationScope(v8::Local<v8::Object> creationContext, v8::Isolate* isolate, bool withSecurityCheck)
         : m_didEnterContext(false)
         , m_context(isolate->GetCurrentContext())
         , m_tryCatch(isolate)

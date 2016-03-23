@@ -243,8 +243,6 @@ String DOMWindow::sanitizedCrossDomainAccessErrorMessage(const LocalDOMWindow* c
     if (callingWindowURL.isNull())
         return String();
 
-    ASSERT(!callingWindow->document()->getSecurityOrigin()->canAccessCheckSuborigins(frame()->securityContext()->getSecurityOrigin()));
-
     const SecurityOrigin* activeOrigin = callingWindow->document()->getSecurityOrigin();
     String message = "Blocked a frame with origin \"" + activeOrigin->toString() + "\" from accessing a cross-origin frame.";
 
