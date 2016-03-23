@@ -1,9 +1,9 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_BASE_RUNNING_SAMPLES_H_
-#define REMOTING_BASE_RUNNING_SAMPLES_H_
+#ifndef REMOTING_BASE_RUNNING_AVERAGE_H_
+#define REMOTING_BASE_RUNNING_AVERAGE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -15,26 +15,20 @@
 
 namespace remoting {
 
-// Calculates the maximum or average of the most recent N recorded samples.
+// Calculates the average of the most recent N recorded samples.
 // This is typically used to smooth out random variation in point samples
 // over bandwidth, frame rate, etc.
-class RunningSamples {
+class RunningAverage {
  public:
-  // Constructs a running sample helper that stores |window_size| most
-  // recent samples.
-  explicit RunningSamples(int window_size);
-  virtual ~RunningSamples();
+  // Constructs a helper to average over the |window_size| most recent samples.
+  explicit RunningAverage(int window_size);
+  virtual ~RunningAverage();
 
   // Records a point sample.
   void Record(int64_t value);
 
   // Returns the average over up to |window_size| of the most recent samples.
-  // 0 if no sample available
-  double Average() const;
-
-  // Returns the max over up to |window_size| of the most recent samples.
-  // 0 if no sample available
-  int64_t Max() const;
+  double Average();
 
  private:
   // Stores the desired window size, as size_t to avoid casting when comparing
@@ -45,13 +39,13 @@ class RunningSamples {
   std::deque<int64_t> data_points_;
 
   // Holds the sum of the samples in |data_points_|.
-  int64_t sum_ = 0;
+  int64_t sum_;
 
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(RunningSamples);
+  DISALLOW_COPY_AND_ASSIGN(RunningAverage);
 };
 
 }  // namespace remoting
 
-#endif  // REMOTING_BASE_RUNNING_SAMPLES_H_
+#endif  // REMOTING_BASE_RUNNING_AVERAGE_H_

@@ -123,36 +123,23 @@ remoting.ConnectionStats.prototype.update = function(stats) {
   /**
    * @param {number} value
    * @param {string} units
-   * @param {number} number of digits after decimal.
    * @return {string} Formatted number.
    */
-  function formatStatNumber(value, units, digits) {
+  function formatStatNumber(value, units) {
     if (value != undefined) {
-      return value.toFixed(digits) + ' ' + units;
+      return value.toFixed(2) + ' ' + units;
     } else {
       return "n/a";
     }
   }
 
-  /**
-   * @param {string} type
-   * @param {number} avg
-   * @param {number} max
-   * @return {string} "type: avg, max; " e.g. "RTT: 8.0, 13; "
-   */
-  function formatStat(type, avg, max) {
-    return type + ': ' + avg.toFixed(1) + ', ' + max + '; ';
-  }
-
   var statistics = document.getElementById('statistics');
   this.statsElement_.innerText = (
-      '(avg, max in ms) ' +
-      formatStat('Capture', stats.captureLatency, stats.maxCaptureLatency) +
-      formatStat('Encode', stats.encodeLatency, stats.maxEncodeLatency) +
-      formatStat('Decode', stats.decodeLatency, stats.maxDecodeLatency) +
-      formatStat('Render', stats.renderLatency, stats.maxRenderLatency) +
-      formatStat('RTT', stats.roundtripLatency, stats.maxRoundtripLatency) +
-      'Bandwidth: ' + formatStatNumber(videoBandwidth, units, 2) + '; ' +
-      'Frame Rate: ' + formatStatNumber(stats.videoFrameRate, 'fps', 1)
-    );
+      'Bandwidth: ' + formatStatNumber(videoBandwidth, units) +
+      ', Frame Rate: ' + formatStatNumber(stats.videoFrameRate, 'fps') +
+      ', Capture: ' + formatStatNumber(stats.captureLatency, 'ms') +
+      ', Encode: ' + formatStatNumber(stats.encodeLatency, 'ms') +
+      ', Decode: ' + formatStatNumber(stats.decodeLatency, 'ms') +
+      ', Render: ' + formatStatNumber(stats.renderLatency, 'ms') +
+      ', Latency: ' + formatStatNumber(stats.roundtripLatency, 'ms'));
 };

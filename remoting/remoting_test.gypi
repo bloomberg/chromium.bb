@@ -232,7 +232,7 @@
         'base/rate_counter_unittest.cc',
         'base/rsa_key_pair_unittest.cc',
         'base/run_all_unittests.cc',
-        'base/running_samples_unittest.cc',
+        'base/running_average_unittest.cc',
         'base/test_rsa_key_pair.h',
         'base/typed_buffer_unittest.cc',
         'base/util_unittest.cc',

@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "remoting/base/rate_counter.h"
-#include "remoting/base/running_samples.h"
+#include "remoting/base/running_average.h"
 
 namespace remoting {
 
@@ -49,11 +49,11 @@ class PerformanceTracker {
   double video_bandwidth() { return video_bandwidth_.Rate(); }
   double video_frame_rate() { return video_frame_rate_.Rate(); }
   double video_packet_rate() { return video_packet_rate_.Rate(); }
-  const RunningSamples& video_capture_ms() { return video_capture_ms_; }
-  const RunningSamples& video_encode_ms() { return video_encode_ms_; }
-  const RunningSamples& video_decode_ms() { return video_decode_ms_; }
-  const RunningSamples& video_paint_ms() { return video_paint_ms_; }
-  const RunningSamples& round_trip_ms() { return round_trip_ms_; }
+  double video_capture_ms() { return video_capture_ms_.Average(); }
+  double video_encode_ms() { return video_encode_ms_.Average(); }
+  double video_decode_ms() { return video_decode_ms_.Average(); }
+  double video_paint_ms() { return video_paint_ms_.Average(); }
+  double round_trip_ms() { return round_trip_ms_.Average(); }
 
   // Record stats for a video-packet.
   void RecordVideoPacketStats(const VideoPacket& packet);
@@ -113,11 +113,11 @@ class PerformanceTracker {
   // The following running-averages are uploaded to UMA per video packet and
   // also used for display to users, averaged over the N most recent samples.
   // N = kLatencySampleSize.
-  RunningSamples video_capture_ms_;
-  RunningSamples video_encode_ms_;
-  RunningSamples video_decode_ms_;
-  RunningSamples video_paint_ms_;
-  RunningSamples round_trip_ms_;
+  RunningAverage video_capture_ms_;
+  RunningAverage video_encode_ms_;
+  RunningAverage video_decode_ms_;
+  RunningAverage video_paint_ms_;
+  RunningAverage round_trip_ms_;
 
   // Used to update UMA stats, if set.
   UpdateUmaCustomHistogramCallback uma_custom_counts_updater_;

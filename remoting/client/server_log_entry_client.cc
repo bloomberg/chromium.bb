@@ -117,15 +117,15 @@ scoped_ptr<ServerLogEntry> MakeLogEntryForStatistics(
   entry->Set("video-bandwidth",
              StringPrintf("%.2f", perf_tracker->video_bandwidth()));
   entry->Set("capture-latency",
-             StringPrintf("%.2f", perf_tracker->video_capture_ms().Average()));
+             StringPrintf("%.2f", perf_tracker->video_capture_ms()));
   entry->Set("encode-latency",
-             StringPrintf("%.2f", perf_tracker->video_encode_ms().Average()));
+             StringPrintf("%.2f", perf_tracker->video_encode_ms()));
   entry->Set("decode-latency",
-             StringPrintf("%.2f", perf_tracker->video_decode_ms().Average()));
+             StringPrintf("%.2f", perf_tracker->video_decode_ms()));
   entry->Set("render-latency",
-             StringPrintf("%.2f", perf_tracker->video_paint_ms().Average()));
+             StringPrintf("%.2f", perf_tracker->video_frame_rate()));
   entry->Set("roundtrip-latency",
-             StringPrintf("%.2f", perf_tracker->round_trip_ms().Average()));
+             StringPrintf("%.2f", perf_tracker->round_trip_ms()));
 
   return entry;
 }
