@@ -62,6 +62,7 @@ private:
     void updateCurrentTextPosition(float x, float y, float glyphAdvance);
     void updateRelativePositionAdjustmentsIfNeeded(float dx, float dy);
 
+    void computeCurrentFragmentMetrics(SVGInlineTextBox*);
     void recordTextFragment(SVGInlineTextBox*);
 
     void beginTextPathLayout(SVGInlineFlowBox*);

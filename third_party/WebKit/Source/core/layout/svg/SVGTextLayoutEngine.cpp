@@ -111,10 +111,10 @@ void SVGTextLayoutEngine::updateRelativePositionAdjustmentsIfNeeded(float dx, fl
     m_dy = dy;
 }
 
-static void computeGlyphOverflow(SVGInlineTextBox* textBox, SVGTextFragment& textFragment)
+void SVGTextLayoutEngine::computeCurrentFragmentMetrics(SVGInlineTextBox* textBox)
 {
     LineLayoutSVGInlineText textLineLayout = LineLayoutSVGInlineText(textBox->getLineLayoutItem());
-    TextRun run = textBox->constructTextRun(textLineLayout.styleRef(), textFragment);
+    TextRun run = textBox->constructTextRun(textLineLayout.styleRef(), m_currentTextFragment);
 
     float scalingFactor = textLineLayout.scalingFactor();
     ASSERT(scalingFactor);
@@ -124,11 +124,15 @@ static void computeGlyphOverflow(SVGInlineTextBox* textBox, SVGTextFragment& tex
     float width = scaledFont.width(run, nullptr, &glyphOverflowBounds);
     float ascent = scaledFont.getFontMetrics().floatAscent();
     float descent = scaledFont.getFontMetrics().floatDescent();
-    textFragment.glyphOverflow.setFromBounds(glyphOverflowBounds, ascent, descent, width);
-    textFragment.glyphOverflow.top /= scalingFactor;
-    textFragment.glyphOverflow.left /= scalingFactor;
-    textFragment.glyphOverflow.right /= scalingFactor;
-    textFragment.glyphOverflow.bottom /= scalingFactor;
+    m_currentTextFragment.glyphOverflow.setFromBounds(glyphOverflowBounds, ascent, descent, width);
+    m_currentTextFragment.glyphOverflow.top /= scalingFactor;
+    m_currentTextFragment.glyphOverflow.left /= scalingFactor;
+    m_currentTextFragment.glyphOverflow.right /= scalingFactor;
+    m_currentTextFragment.glyphOverflow.bottom /= scalingFactor;
+
+    float height = scaledFont.getFontMetrics().floatHeight();
+    m_currentTextFragment.height = height / scalingFactor;
+    m_currentTextFragment.width = width / scalingFactor;
 }
 
 void SVGTextLayoutEngine::recordTextFragment(SVGInlineTextBox* textBox)
@@ -139,27 +143,8 @@ void SVGTextLayoutEngine::recordTextFragment(SVGInlineTextBox* textBox)
     m_currentTextFragment.length = m_visualMetricsIterator.characterOffset() - m_currentTextFragment.characterOffset;
 
     // Figure out fragment metrics.
-    const unsigned visualMetricsListOffset = m_visualMetricsIterator.metricsListOffset();
-    const Vector<SVGTextMetrics>& textMetricsValues = m_visualMetricsIterator.metricsList();
-    const SVGTextMetrics& lastCharacterMetrics = textMetricsValues.at(visualMetricsListOffset - 1);
-    m_currentTextFragment.width = lastCharacterMetrics.width();
-    m_currentTextFragment.height = lastCharacterMetrics.height();
+    computeCurrentFragmentMetrics(textBox);
 
-    if (m_currentTextFragment.length > 1) {
-        // SVGTextLayoutAttributesBuilder assures that the length of the range is equal to the sum of the individual lengths of the glyphs.
-        float length = 0;
-        if (m_isVerticalText) {
-            for (unsigned i = m_currentTextFragment.metricsListOffset; i < visualMetricsListOffset; ++i)
-                length += textMetricsValues.at(i).height();
-            m_currentTextFragment.height = length;
-        } else {
-            for (unsigned i = m_currentTextFragment.metricsListOffset; i < visualMetricsListOffset; ++i)
-                length += textMetricsValues.at(i).width();
-            m_currentTextFragment.width = length;
-        }
-    }
-
-    computeGlyphOverflow(textBox, m_currentTextFragment);
     textBox->textFragments().append(m_currentTextFragment);
     m_currentTextFragment = SVGTextFragment();
 }
