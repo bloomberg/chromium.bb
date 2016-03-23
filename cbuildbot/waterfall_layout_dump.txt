@@ -65,8 +65,6 @@ internal-toolchain-minor
   jecht-release
   rikku-release
   tidus-release
-kayle-paladin
-kayle-release
 [kunimitsu-release-group]
   kunimitsu-release
   lars-release

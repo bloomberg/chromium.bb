@@ -123,11 +123,6 @@
         "AOSP_GOB_INSTANCE": "android",
         "AOSP_GOB_URL": "https://android.googlesource.com",
         "AOSP_REMOTE": "aosp",
-        "BRANCHABLE_PROJECTS": {
-            "cros": "chromiumos/(.+)",
-            "cros-internal": "chromeos/(.+)",
-            "kayle-cros-internal": "chromeos/(.+)"
-        },
         "CHANGE_PREFIX": {
             "cros": "",
             "cros-internal": "*"
@@ -138,7 +133,6 @@
             "aosp": "https://android.googlesource.com",
             "cros": "https://chromium.googlesource.com",
             "cros-internal": "https://chrome-internal.googlesource.com",
-            "kayle-cros-internal": "https://chrome-internal.googlesource.com",
             "weave": "https://weave.googlesource.com"
         },
         "EXTERNAL_MANIFEST_VERSIONS_PATH": "manifest-versions",
@@ -158,7 +152,6 @@
             "chromium": "https://chromium.googlesource.com",
             "cros": "https://chromium.googlesource.com",
             "cros-internal": "https://chrome-internal.googlesource.com",
-            "kayle-cros-internal": "https://chrome-internal.googlesource.com",
             "weave": "https://weave.googlesource.com"
         },
         "GOB_REMOTES": {
@@ -166,7 +159,6 @@
             "chromium": "cros"
         },
         "INTERNAL_MANIFEST_VERSIONS_PATH": "manifest-versions-internal",
-        "KAYLE_INTERNAL_REMOTE": "kayle-cros-internal",
         "MANIFEST_INT_PROJECT": "chromeos/manifest-internal",
         "MANIFEST_INT_URL": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
         "MANIFEST_PROJECT": "chromiumos/manifest",
@@ -9686,208 +9678,6 @@
         "useflags": [
             "-chrome_internal"
         ]
-    },
-    "kayle-chrome-pfq": {
-        "_template": "chrome-pfq",
-        "boards": [
-            "kayle"
-        ],
-        "chrome_sdk": false,
-        "dev_manifest": "kayle.xml",
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "images": [
-            "base"
-        ],
-        "important": false,
-        "manifest": "kayle.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "kayle-chromium-pfq": {
-        "_template": "chromium-pfq",
-        "boards": [
-            "kayle"
-        ],
-        "chrome_sdk": false,
-        "description": "Preflight Chromium Uprev & Build (internal)",
-        "dev_manifest": "kayle.xml",
-        "doc": "http://www.chromium.org/chromium-os/build/builder-overview#TOC-Chrome-PFQ",
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "images": [
-            "base"
-        ],
-        "important": false,
-        "internal": true,
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "public",
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "kayle-compile-only-pre-cq": {
-        "_template": "compile-only-pre-cq",
-        "boards": [
-            "kayle"
-        ],
-        "dev_manifest": "kayle.xml",
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "images": [
-            "base"
-        ],
-        "internal": true,
-        "manifest": "kayle.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "sync_chrome": false,
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "kayle-full": {
-        "_template": "full",
-        "boards": [
-            "kayle"
-        ],
-        "chrome_sdk": false,
-        "dev_manifest": "kayle.xml",
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "images": [
-            "base"
-        ],
-        "prebuilts": "public",
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "kayle-no-vmtest-pre-cq": {
-        "_template": "no-vmtest-pre-cq",
-        "boards": [
-            "kayle"
-        ],
-        "dev_manifest": "kayle.xml",
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "images": [
-            "base"
-        ],
-        "internal": true,
-        "manifest": "kayle.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "sync_chrome": false,
-        "useflags": [
-            "chrome_internal"
-        ]
-    },
-    "kayle-paladin": {
-        "_template": "paladin",
-        "active_waterfall": "chromeos",
-        "boards": [
-            "kayle"
-        ],
-        "chrome_sdk": false,
-        "description": "Commit Queue (internal)",
-        "dev_manifest": "kayle.xml",
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "images": [
-            "base"
-        ],
-        "internal": true,
-        "manifest": "kayle.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "prebuilts": "private",
-        "sync_chrome": false,
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": [],
-        "vm_tests_override": null
-    },
-    "kayle-pre-cq": {
-        "_template": "pre-cq",
-        "boards": [
-            "kayle"
-        ],
-        "dev_manifest": "kayle.xml",
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "images": [
-            "base"
-        ],
-        "internal": true,
-        "manifest": "kayle.xml",
-        "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-        "overlays": "both",
-        "sync_chrome": false,
-        "useflags": [
-            "chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "kayle-release": {
-        "_template": "release",
-        "active_waterfall": "chromeos",
-        "afdo_use": false,
-        "boards": [
-            "kayle"
-        ],
-        "chrome_sdk": false,
-        "dev_installer_prebuilts": false,
-        "dev_manifest": "kayle.xml",
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "hwqual": false,
-        "images": [
-            "base"
-        ],
-        "manifest": "kayle.xml",
-        "paygen": false,
-        "signer_tests": false,
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "kayle-tot-chrome-pfq-informational": {
-        "_template": "chrome-pfq-informational",
-        "boards": [
-            "kayle"
-        ],
-        "dev_manifest": "kayle.xml",
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "images": [
-            "base"
-        ],
-        "manifest": "kayle.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "kayle-tot-chromium-pfq-informational": {
-        "_template": "chromium-pfq-informational",
-        "boards": [
-            "kayle"
-        ],
-        "dev_manifest": "kayle.xml",
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "images": [
-            "base"
-        ],
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
     },
     "kernel-3_14-a-pre-cq": {
         "_template": "no-vmtest-pre-cq",

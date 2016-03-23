@@ -395,7 +395,6 @@ _arm_internal_release_boards = frozenset([
     'elm',
     'gale',
     'gru',
-    'kayle',
     'nyan',
     'nyan_big',
     'nyan_blaze',
@@ -561,7 +560,6 @@ _brillo_boards = frozenset([
     'arkham',
     'gale',
     'gizmo',
-    'kayle',
     'panther_embedded',
     'purin',
     'storm',
@@ -598,9 +596,7 @@ _toolchains_from_source = frozenset([
 
 _noimagetest_boards = _lakitu_boards
 
-_nohwqual_boards = _lakitu_boards | frozenset([
-    'kayle',
-])
+_nohwqual_boards = _lakitu_boards
 
 _norootfs_verification_boards = frozenset([
 ])
@@ -658,7 +654,6 @@ _waterfall_config_map = {
 
         # Experimental Canaries
         'amd64-generic-goofy-release',
-        'kayle-release',
         'kunimitsu-release-group',
         'lakitu_next-release',
         'nyan_freon-release',
@@ -696,7 +691,6 @@ def GetConfig():
   manifest_int_project = 'chromeos/manifest-internal'
   external_remote = 'cros'
   internal_remote = 'cros-internal'
-  kayle_internal_remote = 'kayle-cros-internal'
   chromium_remote = 'chromium'
   chrome_remote = 'chrome'
   aosp_remote = 'aosp'
@@ -731,7 +725,6 @@ def GetConfig():
           site_params['EXTERNAL_GOB_INSTANCE']: external_remote,
           site_params['INTERNAL_GOB_INSTANCE']: internal_remote
       },
-      KAYLE_INTERNAL_REMOTE=kayle_internal_remote,
       CHROMIUM_REMOTE=chromium_remote,
       CHROME_REMOTE=chrome_remote,
       AOSP_REMOTE=aosp_remote,
@@ -748,7 +741,6 @@ def GetConfig():
       CROS_REMOTES={
           external_remote: site_params['EXTERNAL_GOB_URL'],
           internal_remote: site_params['INTERNAL_GOB_URL'],
-          kayle_internal_remote: site_params['INTERNAL_GOB_URL'],
           aosp_remote: site_params['AOSP_GOB_URL'],
           weave_remote: site_params['WEAVE_GOB_URL']
       },
@@ -757,7 +749,6 @@ def GetConfig():
           chrome_remote: site_params['INTERNAL_GOB_URL'],
           external_remote: site_params['EXTERNAL_GOB_URL'],
           internal_remote: site_params['INTERNAL_GOB_URL'],
-          kayle_internal_remote: site_params['INTERNAL_GOB_URL'],
           aosp_remote: site_params['AOSP_GOB_URL'],
           weave_remote: site_params['WEAVE_GOB_URL']
       },
@@ -786,7 +777,6 @@ def GetConfig():
       BRANCHABLE_PROJECTS={
           external_remote: r'chromiumos/(.+)',
           internal_remote: r'chromeos/(.+)',
-          kayle_internal_remote: r'chromeos/(.+)'
       },
 
       # Additional parameters used to filter manifests, create modified
@@ -1176,19 +1166,6 @@ def GetConfig():
         base.update(no_unittest_builder)
       if board in _no_vmtest_boards:
         base.update(no_vmtest_builder)
-
-      # TODO(akeshet) Eliminate or clean up this special case.
-      # kayle board has a lot of kayle-specific config changes.
-      if board == 'kayle':
-        base.update(manifest='kayle.xml',
-                    dev_manifest='kayle.xml',
-                    factory_toolkit=False,
-                    # TODO(namnguyen): Cannot build factory net install (no
-                    # usbnet).
-                    factory_install_netboot=False,
-                    # TODO(namngyuyen) Cannot build dev or test images due to
-                    # #436523.
-                    images=['base'])
 
       board_config = base.derive(boards=[board])
       # Note: base configs should not specify a useflag list. Convert any
@@ -1691,7 +1668,6 @@ def GetConfig():
       'gizmo',
       'glados',
       'guado_moblab',
-      'kayle',
       'lakitu',
       'leon',
       'link',
@@ -2414,13 +2390,6 @@ def GetConfig():
           payload_image='base'
       ).derive(_grouped_variant_config),
       important=True,
-  )
-
-  site_config.Add(
-      'kayle-release', _release,
-      _base_configs['kayle'],
-      paygen=False,
-      signer_tests=False,
   )
 
   site_config.Add(
