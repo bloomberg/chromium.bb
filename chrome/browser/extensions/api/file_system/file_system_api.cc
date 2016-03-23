@@ -94,7 +94,7 @@ const char kRequiresFileSystemWriteError[] =
 const char kRequiresFileSystemDirectoryError[] =
     "Operation requires fileSystem.directory permission";
 const char kMultipleUnsupportedError[] =
-    "acceptsMultiple: true is not supported for 'saveFile'";
+    "acceptsMultiple: true is only supported for 'openFile'";
 const char kUnknownIdError[] = "Unknown id";
 
 #if !defined(OS_CHROMEOS)
@@ -1057,7 +1057,7 @@ bool FileSystemChooseEntryFunction::RunAsync() {
 
   file_system::ChooseEntryOptions* options = params->options.get();
   if (options) {
-    multiple_ = !!options->accepts_multiple;
+    multiple_ = options->accepts_multiple && *options->accepts_multiple;
     if (multiple_)
       picker_type = ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE;
 

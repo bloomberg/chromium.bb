@@ -6,6 +6,6 @@ chrome.test.runTests([
   function saveFile() {
     chrome.fileSystem.chooseEntry(
         {type: 'saveFile', acceptsMultiple: true}, chrome.test.callbackFail(
-            "acceptsMultiple: true is not supported for 'saveFile'"));
+            "acceptsMultiple: true is only supported for 'openFile'"));
   }
 ]);
