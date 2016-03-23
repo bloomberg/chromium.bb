@@ -117,9 +117,13 @@ def _LoadToolchainEnv(cpu, sdk_dir):
     if 'GYP_MSVS_OVERRIDE_PATH' not in os.environ:
       os.environ['GYP_MSVS_OVERRIDE_PATH'] = _DetectVisualStudioPath()
     # We only support x64-hosted tools.
-    args = [os.path.normpath(os.path.join(os.environ['GYP_MSVS_OVERRIDE_PATH'],
-                                          'VC/vcvarsall.bat')),
-            'amd64_x86' if cpu == 'x86' else 'amd64']
+    script_path = os.path.normpath(os.path.join(
+                                       os.environ['GYP_MSVS_OVERRIDE_PATH'],
+                                       'VC/vcvarsall.bat'))
+    if not os.path.exists(script_path):
+      raise Exception('%s is missing - make sure VC++ tools are installed.' %
+                      script_path)
+    args = [script_path, 'amd64_x86' if cpu == 'x86' else 'amd64']
     variables = _LoadEnvFromBat(args)
   return _ExtractImportantEnvironment(variables)
 
