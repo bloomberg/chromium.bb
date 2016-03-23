@@ -155,7 +155,7 @@ component("boringssl_fuzzer") {
   }
 }
 
-fuzzer_test("boringssl_d2i_x509_fuzzer") {
+fuzzer_test("boringssl_cert_fuzzer") {
   sources = [
     "src/fuzz/cert.cc",
   ]
@@ -165,7 +165,7 @@ fuzzer_test("boringssl_d2i_x509_fuzzer") {
   seed_corpus = "src/fuzz/cert_corpus"
 }
 
-fuzzer_test("boringssl_client_bio_write_fuzzer") {
+fuzzer_test("boringssl_client_fuzzer") {
   sources = [
     "src/fuzz/client.cc",
   ]
@@ -175,7 +175,7 @@ fuzzer_test("boringssl_client_bio_write_fuzzer") {
   seed_corpus = "src/fuzz/client_corpus"
 }
 
-fuzzer_test("boringssl_d2i_autoprivatekey_fuzzer") {
+fuzzer_test("boringssl_privkey_fuzzer") {
   sources = [
     "src/fuzz/privkey.cc",
   ]
@@ -185,7 +185,7 @@ fuzzer_test("boringssl_d2i_autoprivatekey_fuzzer") {
   seed_corpus = "src/fuzz/privkey_corpus"
 }
 
-fuzzer_test("boringssl_server_bio_write_fuzzer") {
+fuzzer_test("boringssl_server_fuzzer") {
   sources = [
     "src/fuzz/server.cc",
   ]
