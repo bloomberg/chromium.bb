@@ -35,8 +35,8 @@ sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'webpagereplay'))
 import adb_install_cert
 import certutils
 
-import chrome_setup
 import devtools_monitor
+import emulation
 import options
 
 
@@ -127,13 +127,6 @@ def ForwardPort(device, local, remote):
     device.adb.ForwardRemove(local)
 
 
-# Deprecated
-def _SetUpDevice(device, package_info):
-  """Enables root and closes Chrome on a device."""
-  device.EnableRoot()
-  device.KillAll(package_info.package, quiet=True)
-
-
 @contextlib.contextmanager
 def _WprHost(wpr_archive_path, record=False,
              network_condition_name=None,
@@ -148,13 +141,13 @@ def _WprHost(wpr_archive_path, record=False,
   else:
     assert os.path.exists(wpr_archive_path)
   if network_condition_name:
-    condition = chrome_setup.NETWORK_CONDITIONS[network_condition_name]
+    condition = emulation.NETWORK_CONDITIONS[network_condition_name]
     if record:
       logging.warning('WPR network condition is ignored when recording.')
     else:
       wpr_server_args.extend([
-          '--down', chrome_setup.BandwidthToString(condition['download']),
-          '--up', chrome_setup.BandwidthToString(condition['upload']),
+          '--down', emulation.BandwidthToString(condition['download']),
+          '--up', emulation.BandwidthToString(condition['upload']),
           '--delay_ms', str(condition['latency']),
           '--shaping_type', 'proxy'])
 
@@ -207,7 +200,7 @@ def LocalWprHost(wpr_archive_path, record=False,
     wpr_archive_path: host sided WPR archive's path.
     record: Enables or disables WPR archive recording.
     network_condition_name: Network condition name available in
-        chrome_setup.NETWORK_CONDITIONS.
+        emulation.NETWORK_CONDITIONS.
     disable_script_injection: Disable JavaScript file injections that is
       fighting against resources name entropy.
 
@@ -243,7 +236,7 @@ def RemoteWprHost(device, wpr_archive_path, record=False,
     wpr_archive_path: host sided WPR archive's path.
     record: Enables or disables WPR archive recording.
     network_condition_name: Network condition name available in
-        chrome_setup.NETWORK_CONDITIONS.
+        emulation.NETWORK_CONDITIONS.
     disable_script_injection: Disable JavaScript file injections that is
       fighting against resources name entropy.
 
@@ -374,57 +367,3 @@ def RemoteSpeedIndexRecorder(device, connection, local_output_path):
       })();
     """)
     yield
-
-
-@contextlib.contextmanager
-def _DevToolsConnectionOnDevice(device, flags):
-  """Returns a DevToolsConnection context manager for a given device.
-
-  Args:
-    device: Device to connect to.
-    flags: ([str]) List of flags.
-
-  Returns:
-    A DevToolsConnection context manager.
-  """
-  package_info = OPTIONS.ChromePackage()
-  command_line_path = '/data/local/chrome-command-line'
-  _SetUpDevice(device, package_info)
-  with FlagReplacer(device, command_line_path, flags):
-    start_intent = intent.Intent(
-        package=package_info.package, activity=package_info.activity,
-        data='about:blank')
-    device.StartActivity(start_intent, blocking=True)
-    time.sleep(2)
-    with ForwardPort(device, 'tcp:%d' % OPTIONS.devtools_port,
-                     'localabstract:chrome_devtools_remote'):
-      yield devtools_monitor.DevToolsConnection(
-          OPTIONS.devtools_hostname, OPTIONS.devtools_port)
-
-
-# Deprecated, use *Controller.
-def DeviceConnection(device, additional_flags=None):
-  """Context for starting recording on a device.
-
-  Sets up and restores any device and tracing appropriately
-
-  Args:
-    device: Android device, or None for a local run (in which case chrome needs
-      to have been started with --remote-debugging-port=XXX).
-    additional_flags: Additional chromium arguments.
-
-  Returns:
-    A context manager type which evaluates to a DevToolsConnection.
-  """
-  new_flags = ['--disable-fre',
-               '--enable-test-events',
-               '--remote-debugging-port=%d' % OPTIONS.devtools_port]
-  if OPTIONS.no_sandbox:
-    new_flags.append('--no-sandbox')
-  if additional_flags != None:
-    new_flags.extend(additional_flags)
-
-  if device:
-    return _DevToolsConnectionOnDevice(device, new_flags)
-  else:
-    return chrome_setup.DevToolsConnectionForLocalBinary(new_flags)

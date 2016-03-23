@@ -44,7 +44,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import controller
 import loading_trace
 import options
-import trace_recorder
+
 
 OPTIONS = options.OPTIONS
 WEBSERVER = os.path.join(os.path.dirname(__file__), 'test_server.py')
