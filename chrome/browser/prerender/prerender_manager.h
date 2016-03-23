@@ -134,6 +134,14 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
 
+  // Adds a prerender from an external request that will prerender even on
+  // cellular networks as long as the user setting for prerendering is ON.
+  PrerenderHandle* AddPrerenderOnCellularFromExternalRequest(
+      const GURL& url,
+      const content::Referrer& referrer,
+      content::SessionStorageNamespace* session_storage_namespace,
+      const gfx::Size& size);
+
   // Adds a prerender for Instant Search |url| if valid. The
   // |session_storage_namespace| matches the namespace of the active tab at the
   // time the prerender is generated. Returns a caller-owned PrerenderHandle* or
@@ -394,6 +402,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Returns whether prerendering is currently enabled or the reason why it is
   // disabled.
   chrome_browser_net::NetworkPredictionStatus GetPredictionStatus() const;
+
+  // Returns whether prerendering is currently enabled or the reason why it is
+  // disabled after taking into account the origin of the request.
+  chrome_browser_net::NetworkPredictionStatus GetPredictionStatusForOrigin(
+      Origin origin) const;
 
   // Adds a prerender for |url| from |referrer|. The |origin| specifies how the
   // prerender was added. If |size| is empty, then

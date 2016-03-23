@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.IntentUtils;
@@ -273,7 +274,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         WarmupManager.getInstance().maybePreconnectUrlAndSubResources(
                 Profile.getLastUsedProfile(), url);
         boolean didStartPrerender = false;
-        if (!noPrerendering && mayPrerender()) {
+        if (!noPrerendering && mayPrerender(session)) {
             didStartPrerender = prerenderUrl(session, url, extras, uid);
         }
         preconnectUrls(otherLikelyBundles);
@@ -517,6 +518,11 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         return mClientManager.shouldHideDomainForSession(session);
     }
 
+    /** @see ClientManager#shouldPrerenderOnCellularForSession(IBinder) */
+    public boolean shouldPrerenderOnCellularForSession(IBinder session) {
+        return mClientManager.shouldPrerenderOnCellularForSession(session);
+    }
+
     /** See {@link ClientManager#getClientPackageNameForSession(IBinder)} */
     public String getClientPackageNameForSession(IBinder session) {
         return mClientManager.getClientPackageNameForSession(session);
@@ -661,13 +667,14 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         mClientManager.cleanupAll();
     }
 
-    private boolean mayPrerender() {
+    private boolean mayPrerender(IBinder session) {
         if (FieldTrialList.findFullName("CustomTabs").equals("DisablePrerender")) return false;
         if (!DeviceClassManager.enablePrerendering()) return false;
+        if (!PrivacyPreferencesManager.getInstance(mApplication).shouldPrerender()) return false;
         ConnectivityManager cm =
                 (ConnectivityManager) mApplication.getApplicationContext().getSystemService(
                         Context.CONNECTIVITY_SERVICE);
-        return !cm.isActiveNetworkMetered();
+        return !cm.isActiveNetworkMetered() || shouldPrerenderOnCellularForSession(session);
     }
 
     /** Cancels a prerender for a given session, or any session if null. */
@@ -696,7 +703,7 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         // limitation, or remove ChromePrerenderService.
         WarmupManager.getInstance().disallowPrerendering();
         // Ignores mayPrerender() for an empty URL, since it cancels an existing prerender.
-        if (!mayPrerender() && !TextUtils.isEmpty(url)) return false;
+        if (!mayPrerender(session) && !TextUtils.isEmpty(url)) return false;
         if (!mWarmupHasBeenCalled.get()) return false;
         // Last one wins and cancels the previous prerender.
         cancelPrerender(null);
@@ -720,7 +727,8 @@ public class CustomTabsConnection extends ICustomTabsService.Stub {
         }
         if (referrer == null) referrer = "";
         WebContents webContents = mExternalPrerenderHandler.addPrerender(
-                Profile.getLastUsedProfile(), url, referrer, contentSize.x, contentSize.y);
+                Profile.getLastUsedProfile(), url, referrer, contentSize.x, contentSize.y,
+                shouldPrerenderOnCellularForSession(session));
         if (webContents == null) return false;
         mClientManager.registerPrerenderRequest(uid, url);
         mPrerender = new PrerenderedUrlParams(session, webContents, url, referrer, extras);

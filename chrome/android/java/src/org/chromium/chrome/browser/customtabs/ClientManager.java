@@ -54,6 +54,7 @@ class ClientManager {
         public final IBinder.DeathRecipient deathRecipient;
         public boolean mIgnoreFragments;
         private boolean mShouldHideDomain;
+        private boolean mShouldPrerenderOnCellular;
         private ServiceConnection mKeepAliveConnection;
         private String mPredictedUrl;
         private long mLastMayLaunchUrlTimestamp;
@@ -270,7 +271,23 @@ class ClientManager {
     /** Sets whether the fragment should be ignored for prerender matching. */
     public synchronized void setIgnoreFragmentsForSession(IBinder session, boolean value) {
         SessionParams params = mSessionParams.get(session);
-        params.mIgnoreFragments = value;
+        if (params != null) params.mIgnoreFragments = value;
+    }
+
+    /**
+     * @return Whether prerender should be turned on for cellular networks for given session.
+     */
+    public synchronized boolean shouldPrerenderOnCellularForSession(IBinder session) {
+        SessionParams params = mSessionParams.get(session);
+        return params != null ? params.mShouldPrerenderOnCellular : false;
+    }
+
+    /**
+     * Sets whether prerender should be turned on for mobile networks for given session.
+     */
+    public synchronized void setPrerenderCellularForSession(IBinder session, boolean prerender) {
+        SessionParams params = mSessionParams.get(session);
+        if (params != null) params.mShouldPrerenderOnCellular = prerender;
     }
 
     /** Tries to bind to a client to keep it alive, and returns true for success. */

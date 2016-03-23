@@ -300,7 +300,19 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromExternalRequest(
     const content::Referrer& referrer,
     SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
-  return AddPrerender(ORIGIN_EXTERNAL_REQUEST, url, referrer, size,
+  return AddPrerender(
+      ORIGIN_EXTERNAL_REQUEST, url, referrer, size, session_storage_namespace);
+}
+
+PrerenderHandle* PrerenderManager::AddPrerenderOnCellularFromExternalRequest(
+    const GURL& url,
+    const content::Referrer& referrer,
+    SessionStorageNamespace* session_storage_namespace,
+    const gfx::Size& size) {
+  return AddPrerender(ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR,
+                      url,
+                      referrer,
+                      size,
                       session_storage_namespace);
 }
 
@@ -577,8 +589,10 @@ void PrerenderManager::RecordPerceivedPageLoadTime(
     double fraction_plt_elapsed_at_swap_in,
     const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (GetPredictionStatus() != NetworkPredictionStatus::ENABLED)
+  if (GetPredictionStatusForOrigin(origin)
+      != NetworkPredictionStatus::ENABLED) {
     return;
+  }
 
   histograms_->RecordPerceivedPageLoadTime(
       origin, perceived_page_load_time, navigation_type, url);
@@ -791,6 +805,12 @@ base::DictionaryValue* PrerenderManager::GetAsValue() const {
   dict_value->Set("active", GetActivePrerendersAsValue());
   dict_value->SetBoolean("enabled",
       GetPredictionStatus() == NetworkPredictionStatus::ENABLED);
+  std::string disabled_note;
+  if (GetPredictionStatus() == NetworkPredictionStatus::DISABLED_ALWAYS)
+    disabled_note = "Disabled by user setting";
+  if (GetPredictionStatus() == NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK)
+    disabled_note = "Disabled on cellular connection by default";
+  dict_value->SetString("disabled_note", disabled_note);
   dict_value->SetBoolean("omnibox_enabled", IsOmniboxEnabled(profile_));
   // If prerender is disabled via a flag this method is not even called.
   std::string enabled_note;
@@ -942,7 +962,8 @@ PrerenderHandle* PrerenderManager::AddPrerender(
     return nullptr;
   }
 
-  NetworkPredictionStatus prerendering_status = GetPredictionStatus();
+  NetworkPredictionStatus prerendering_status =
+      GetPredictionStatusForOrigin(origin);
   if (prerendering_status != NetworkPredictionStatus::ENABLED) {
     FinalStatus final_status =
         prerendering_status == NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK
@@ -1289,6 +1310,18 @@ void PrerenderManager::RecordNetworkBytes(Origin origin,
 NetworkPredictionStatus PrerenderManager::GetPredictionStatus() const {
   DCHECK(CalledOnValidThread());
   return CanPrefetchAndPrerenderUI(profile_->GetPrefs());
+}
+
+NetworkPredictionStatus PrerenderManager::GetPredictionStatusForOrigin(
+    Origin origin) const {
+  DCHECK(CalledOnValidThread());
+  NetworkPredictionStatus prediction_status =
+      CanPrefetchAndPrerenderUI(profile_->GetPrefs());
+  if (prediction_status == NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK
+      && origin == ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR) {
+    prediction_status = NetworkPredictionStatus::ENABLED;
+  }
+  return prediction_status;
 }
 
 void PrerenderManager::AddProfileNetworkBytesIfEnabled(int64_t bytes) {

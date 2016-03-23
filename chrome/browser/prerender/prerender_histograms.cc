@@ -54,6 +54,8 @@ std::string GetHistogramName(Origin origin, bool is_wash,
       return ComposeHistogramName("webnext", name);
     case ORIGIN_GWS_PRERENDER:
       return ComposeHistogramName("gws", name);
+    case ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR:
+      return ComposeHistogramName("externalrequestforced", name);
     default:
       NOTREACHED();
       break;
@@ -104,6 +106,8 @@ do { \
   } else if (origin == ORIGIN_INSTANT) { \
     HISTOGRAM; \
   } else if (origin == ORIGIN_LINK_REL_NEXT) { \
+    HISTOGRAM; \
+  } else if (origin == ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR) { \
     HISTOGRAM; \
   } else { \
     HISTOGRAM; \

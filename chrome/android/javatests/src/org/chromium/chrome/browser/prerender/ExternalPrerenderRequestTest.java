@@ -79,7 +79,7 @@ public class ExternalPrerenderRequestTest extends ChromeActivityTestCaseBase<Chr
      * Test adding a prerender and canceling that to add a new one.
      */
     public void testAddPrerenderAndCancel() throws InterruptedException {
-        WebContents webContents = mHandler.addPrerender(mProfile, mGoogleUrl, "", 0, 0);
+        WebContents webContents = mHandler.addPrerender(mProfile, mGoogleUrl, "", 0, 0, false);
         assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
                 mProfile, mGoogleUrl, webContents));
 
@@ -88,7 +88,7 @@ public class ExternalPrerenderRequestTest extends ChromeActivityTestCaseBase<Chr
                 mProfile, mGoogleUrl, webContents));
         webContents.destroy();
         Thread.sleep(PRERENDER_DELAY_MS);
-        webContents = mHandler.addPrerender(mProfile, mYoutubeUrl, "", 0, 0);
+        webContents = mHandler.addPrerender(mProfile, mYoutubeUrl, "", 0, 0, false);
         assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
                 mProfile, mYoutubeUrl, webContents));
     }
@@ -102,7 +102,7 @@ public class ExternalPrerenderRequestTest extends ChromeActivityTestCaseBase<Chr
      */
     public void testCancelPrerender() {
         mHandler.cancelCurrentPrerender();
-        WebContents webContents = mHandler.addPrerender(mProfile, mGoogleUrl, "", 0, 0);
+        WebContents webContents = mHandler.addPrerender(mProfile, mGoogleUrl, "", 0, 0, false);
         assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
                 mProfile, mGoogleUrl, webContents));
     }
@@ -115,11 +115,11 @@ public class ExternalPrerenderRequestTest extends ChromeActivityTestCaseBase<Chr
      * Test adding two prerenders without canceling the first one.
      */
     public void testAddingPrerendersInaRow() throws InterruptedException {
-        WebContents webContents = mHandler.addPrerender(mProfile, mGoogleUrl, "", 0, 0);
+        WebContents webContents = mHandler.addPrerender(mProfile, mGoogleUrl, "", 0, 0, false);
         assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
                 mProfile, mGoogleUrl, webContents));
         Thread.sleep(PRERENDER_DELAY_MS);
-        WebContents newWebContents = mHandler.addPrerender(mProfile, mYoutubeUrl, "", 0, 0);
+        WebContents newWebContents = mHandler.addPrerender(mProfile, mYoutubeUrl, "", 0, 0, false);
         assertTrue(ExternalPrerenderHandler.hasPrerenderedUrl(
                 mProfile, mYoutubeUrl, newWebContents));
     }

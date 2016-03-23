@@ -26,6 +26,7 @@ const char* kOriginNames[] = {
   "External Request",
   "Instant",
   "Link Rel Next",
+  "External Request Forced Cellular",
   "Max",
 };
 static_assert(arraysize(kOriginNames) == ORIGIN_MAX + 1,

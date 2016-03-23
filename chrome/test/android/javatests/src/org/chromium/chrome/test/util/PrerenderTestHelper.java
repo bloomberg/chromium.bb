@@ -97,7 +97,8 @@ public class PrerenderTestHelper {
                                 currentTab.getContentViewCore().getRenderCoordinates()
                                         .getContentWidthPixInt(),
                                 currentTab.getContentViewCore().getRenderCoordinates()
-                                        .getContentHeightPixInt());
+                                        .getContentHeightPixInt(),
+                                false);
                         Assert.assertTrue("Failed to prerender test url: " + testUrl, didPrerender);
                         return prerenderHandler;
                     }

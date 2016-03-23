@@ -89145,6 +89145,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   </suffix>
   <suffix name="gws" label="GWS triggered prerender."/>
   <suffix name="externalrequest" label="Externally triggered prerender."/>
+  <suffix name="externalrequestforced"
+      label="Forced prerender regardless of network."/>
   <suffix name="Instant" label="Instant search prerender."/>
   <suffix name="localpredictor" label="Local predictor triggered prerender.">
     <obsolete>

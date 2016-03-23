@@ -131,7 +131,7 @@ public final class WarmupManager {
         }
 
         mPrerenderedWebContents = mExternalPrerenderHandler.addPrerender(
-                Profile.getLastUsedProfile(), url, referrer, widthPix, heightPix);
+                Profile.getLastUsedProfile(), url, referrer, widthPix, heightPix, false);
         if (mPrerenderedWebContents != null) mPrerendered = true;
     }
 

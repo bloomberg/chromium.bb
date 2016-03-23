@@ -15,8 +15,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "content/public/browser/web_contents.h"
-
 #include "jni/ExternalPrerenderHandler_jni.h"
+#include "net/base/network_change_notifier.h"
 
 using base::android::ConvertJavaStringToUTF16;
 
@@ -57,7 +57,8 @@ bool ExternalPrerenderHandlerAndroid::AddPrerender(
     const JavaParamRef<jstring>& jurl,
     const JavaParamRef<jstring>& jreferrer,
     jint width,
-    jint height) {
+    jint height,
+    jboolean prerender_on_cellular) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
 
   GURL url = GURL(ConvertJavaStringToUTF16(env, jurl));
@@ -77,12 +78,23 @@ bool ExternalPrerenderHandlerAndroid::AddPrerender(
   if (prerender_handle_.get()) {
     prerender_handle_->OnNavigateAway();
   }
-  prerender_handle_.reset(
-      prerender_manager->AddPrerenderFromExternalRequest(
-          url,
-          referrer,
-          web_contents->GetController().GetDefaultSessionStorageNamespace(),
-          gfx::Size(width, height)));
+  if (prerender_on_cellular && net::NetworkChangeNotifier::IsConnectionCellular(
+                   net::NetworkChangeNotifier::GetConnectionType())) {
+    prerender_handle_.reset(
+        prerender_manager->AddPrerenderOnCellularFromExternalRequest(
+            url,
+            referrer,
+            web_contents->GetController().GetDefaultSessionStorageNamespace(),
+            gfx::Size(width, height)));
+  } else {
+    prerender_handle_.reset(
+        prerender_manager->AddPrerenderFromExternalRequest(
+            url,
+            referrer,
+            web_contents->GetController().GetDefaultSessionStorageNamespace(),
+            gfx::Size(width, height)));
+  }
+
   if (!prerender_handle_)
     return false;
   return true;
