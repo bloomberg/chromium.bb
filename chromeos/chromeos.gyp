@@ -584,6 +584,8 @@
         'dbus/services/service_provider_test_helper.h',
         'disks/mock_disk_mount_manager.cc',
         'disks/mock_disk_mount_manager.h',
+        'geolocation/simple_geolocation_request_test_monitor.cc',
+        'geolocation/simple_geolocation_request_test_monitor.h',
         'login/auth/fake_extended_authenticator.cc',
         'login/auth/fake_extended_authenticator.h',
         'login/auth/mock_auth_attempt_state_resolver.cc',

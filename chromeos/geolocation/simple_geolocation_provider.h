@@ -33,9 +33,11 @@ class CHROMEOS_EXPORT SimpleGeolocationProvider {
                             const GURL& url);
   virtual ~SimpleGeolocationProvider();
 
-  // Initiates new request (See SimpleGeolocationRequest for parameters
-  // description.)
+  // Initiates new request. If |send_wifi_access_points|, WiFi AP information
+  // will be added to the request. See SimpleGeolocationRequest for the
+  // description of the other parameters.
   void RequestGeolocation(base::TimeDelta timeout,
+                          bool send_wifi_access_points,
                           SimpleGeolocationRequest::ResponseCallback callback);
 
   // Returns default geolocation service URL.

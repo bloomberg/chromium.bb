@@ -52,6 +52,8 @@ class CHROMEOS_EXPORT GeolocationHandler : public ShillPropertyChangedObserver {
  private:
   friend class NetworkHandler;
   friend class GeolocationHandlerTest;
+  friend class SimpleGeolocationWiFiTest;
+
   GeolocationHandler();
 
   void Init();

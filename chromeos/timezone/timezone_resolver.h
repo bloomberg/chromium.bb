@@ -79,6 +79,8 @@ class CHROMEOS_EXPORT TimeZoneResolver {
 
   scoped_ptr<TimeZoneResolverImpl> implementation_;
 
+  bool send_wifi_data_to_geolocation_api_;
+
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(TimeZoneResolver);

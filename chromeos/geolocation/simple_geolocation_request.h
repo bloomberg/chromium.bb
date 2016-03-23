@@ -12,7 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/geolocation/geoposition.h"
+#include "chromeos/network/network_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
@@ -23,6 +25,8 @@ class URLRequestContextGetter;
 
 namespace chromeos {
 
+class SimpleGeolocationRequestTestMonitor;
+
 // Sends request to a server to get local geolocation information.
 // It performs formatting of the request and interpretation of the response.
 // Request is owned and destroyed by caller (usually SimpleGeolocationProvider).
@@ -32,7 +36,10 @@ namespace chromeos {
 // (position.status is set to STATUS_TIMEOUT.)
 // - If request is destroyed while callback has not beed called yet, request
 // is silently cancelled.
-class SimpleGeolocationRequest : private net::URLFetcherDelegate {
+//
+// Note: we need CHROMEOS_EXPORT for tests.
+class CHROMEOS_EXPORT SimpleGeolocationRequest
+    : private net::URLFetcherDelegate {
  public:
   // Called when a new geo geolocation information is available.
   // The second argument indicates whether there was a server error or not.
@@ -44,9 +51,11 @@ class SimpleGeolocationRequest : private net::URLFetcherDelegate {
 
   // |url| is the server address to which the request wil be sent.
   // |timeout| retry request on error until timeout.
+  // If wifi_data is not null, it will be sent to the geolocation server.
   SimpleGeolocationRequest(net::URLRequestContextGetter* url_context_getter,
                            const GURL& service_url,
-                           base::TimeDelta timeout);
+                           base::TimeDelta timeout,
+                           scoped_ptr<WifiAccessPointVector> wifi_data);
 
   ~SimpleGeolocationRequest() override;
 
@@ -65,6 +74,11 @@ class SimpleGeolocationRequest : private net::URLFetcherDelegate {
     retry_sleep_on_bad_response_ = value;
   }
 
+  // Sets global requests monitoring object for testing.
+  static void SetTestMonitor(SimpleGeolocationRequestTestMonitor* monitor);
+
+  std::string FormatRequestBodyForTesting() const;
+
  private:
   // net::URLFetcherDelegate
   void OnURLFetchComplete(const net::URLFetcher* source) override;
@@ -80,6 +94,9 @@ class SimpleGeolocationRequest : private net::URLFetcherDelegate {
 
   // Called by timeout_timer_ .
   void OnTimeout();
+
+  // Returns API request body.
+  std::string FormatRequestBody() const;
 
   scoped_refptr<net::URLRequestContextGetter> url_context_getter_;
 
@@ -113,6 +130,8 @@ class SimpleGeolocationRequest : private net::URLFetcherDelegate {
 
   // This is updated on each retry.
   Geoposition position_;
+
+  scoped_ptr<WifiAccessPointVector> wifi_data_;
 
   // Creation and destruction should happen on the same thread.
   base::ThreadChecker thread_checker_;

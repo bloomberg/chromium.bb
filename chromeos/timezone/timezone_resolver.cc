@@ -183,6 +183,7 @@ void TZRequest::StartRequestOnNetworkAvailable() {
   resolver_->RecordAttempt();
   resolver_->geolocation_provider()->RequestGeolocation(
       base::TimeDelta::FromSeconds(kRefreshTimeZoneTimeoutSeconds),
+      false /* send_wifi_geolocation_data */,
       base::Bind(&TZRequest::OnLocationResolved, AsWeakPtr()));
 }
 
@@ -383,7 +384,8 @@ TimeZoneResolver::TimeZoneResolver(
       url_(url),
       apply_timezone_(apply_timezone),
       delay_network_call_(delay_network_call),
-      local_state_(local_state) {
+      local_state_(local_state),
+      send_wifi_data_to_geolocation_api_(false) {
   DCHECK(!apply_timezone.is_null());
 }
 

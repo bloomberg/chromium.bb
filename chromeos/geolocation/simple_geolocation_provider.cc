@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "chromeos/geolocation/geoposition.h"
+#include "chromeos/network/geolocation_handler.h"
+#include "chromeos/network/network_handler.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace chromeos {
@@ -16,6 +18,20 @@ namespace chromeos {
 namespace {
 const char kDefaultGeolocationProviderUrl[] =
     "https://www.googleapis.com/geolocation/v1/geolocate?";
+
+scoped_ptr<WifiAccessPointVector> GetAccessPointData() {
+  if (!chromeos::NetworkHandler::Get()->geolocation_handler()->wifi_enabled())
+    return nullptr;
+
+  scoped_ptr<WifiAccessPointVector> result(new chromeos::WifiAccessPointVector);
+  int64_t age_ms = 0;
+  if (!NetworkHandler::Get()->geolocation_handler()->GetWifiAccessPoints(
+          result.get(), &age_ms)) {
+    return nullptr;
+  }
+  return result;
+}
+
 }  // namespace
 
 SimpleGeolocationProvider::SimpleGeolocationProvider(
@@ -30,10 +46,13 @@ SimpleGeolocationProvider::~SimpleGeolocationProvider() {
 
 void SimpleGeolocationProvider::RequestGeolocation(
     base::TimeDelta timeout,
+    bool send_wifi_access_points,
     SimpleGeolocationRequest::ResponseCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  SimpleGeolocationRequest* request(
-      new SimpleGeolocationRequest(url_context_getter_.get(), url_, timeout));
+
+  SimpleGeolocationRequest* request(new SimpleGeolocationRequest(
+      url_context_getter_.get(), url_, timeout,
+      send_wifi_access_points ? GetAccessPointData() : nullptr));
   requests_.push_back(request);
 
   // SimpleGeolocationProvider owns all requests. It is safe to pass unretained

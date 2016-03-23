@@ -48192,6 +48192,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Events in reqests processing of IP-based SimpleGeolocation.</summary>
 </histogram>
 
+<histogram name="SimpleGeolocation.Request.HasWiFiAccessPoints"
+    enum="SimpleGeolocationRequestHasWiFiAccessPoints">
+  <owner>alemate@chromium.org</owner>
+  <summary>
+    This boolean histogram counts SimpleGeolocationRequests carrying nonzero
+    number of WiFi access points.
+  </summary>
+</histogram>
+
 <histogram name="SimpleGeolocation.Request.ResponseCode"
     enum="HttpResponseCode">
   <owner>alemate@chromium.org</owner>
@@ -81332,6 +81341,11 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2" label="Response not OK"/>
   <int value="3" label="Response empty"/>
   <int value="4" label="Response malformed"/>
+</enum>
+
+<enum name="SimpleGeolocationRequestHasWiFiAccessPoints" type="int">
+  <int value="0" label="No WiFi data in request."/>
+  <int value="1" label="WiFi data present."/>
 </enum>
 
 <enum name="SimpleGeolocationRequestResult" type="int">

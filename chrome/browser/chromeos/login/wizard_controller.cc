@@ -782,6 +782,7 @@ void WizardController::StartTimezoneResolve() {
       SimpleGeolocationProvider::DefaultGeolocationProviderURL()));
   geolocation_provider_->RequestGeolocation(
       base::TimeDelta::FromSeconds(kResolveTimeZoneTimeoutSeconds),
+      false /* send_wifi_geolocation_data */,
       base::Bind(&WizardController::OnLocationResolved,
                  weak_factory_.GetWeakPtr()));
 }
