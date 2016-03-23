@@ -918,8 +918,9 @@ void DesktopWindowTreeHostWin::HandleWindowSizeChanged() {
   // the screen). In that case do a resize to the current size to reenable
   // swaps.
   if (compositor()) {
-    compositor()->SetScaleAndSize(compositor()->device_scale_factor(),
-                                  GetBounds().size());
+    compositor()->SetScaleAndSize(
+        compositor()->device_scale_factor(),
+        message_handler_->GetClientAreaBounds().size());
   }
 }
 
