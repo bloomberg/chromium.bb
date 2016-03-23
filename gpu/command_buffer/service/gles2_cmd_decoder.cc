@@ -8343,9 +8343,7 @@ error::Error GLES2DecoderImpl::DoDrawElements(const char* function_name,
       state_.vertex_attrib_manager->element_array_buffer();
 
   if (!element_array_buffer->GetMaxValueForRange(
-          offset, count, type,
-          state_.enable_flags.primitive_restart_fixed_index,
-          &max_vertex_accessed)) {
+      offset, count, type, &max_vertex_accessed)) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION, function_name, "range out of bounds for buffer");
     return error::kNoError;
@@ -8442,18 +8440,8 @@ GLuint GLES2DecoderImpl::DoGetMaxValueInBufferCHROMIUM(
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE, "GetMaxValueInBufferCHROMIUM", "unknown buffer");
   } else {
-    // The max value is used here to emulate client-side vertex
-    // arrays, by uploading enough vertices into buffer objects to
-    // cover the DrawElements call. Baking the primitive restart bit
-    // into this result isn't strictly correct in all cases; the
-    // client side code should pass down the bit and decide how to use
-    // the result. However, the only caller makes the draw call
-    // immediately afterward, so the state won't change between this
-    // query and the draw call.
     if (!buffer->GetMaxValueForRange(
-            offset, count, type,
-            state_.enable_flags.primitive_restart_fixed_index,
-            &max_vertex_accessed)) {
+        offset, count, type, &max_vertex_accessed)) {
       // TODO(gman): Should this be a GL error or a command buffer error?
       LOCAL_SET_GL_ERROR(
           GL_INVALID_OPERATION,

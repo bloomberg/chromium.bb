@@ -199,17 +199,13 @@ void Buffer::ClearCache() {
 }
 
 template <typename T>
-GLuint GetMaxValue(const void* data, GLuint offset, GLsizei count,
-    GLuint primitive_restart_index) {
+GLuint GetMaxValue(const void* data, GLuint offset, GLsizei count) {
   GLuint max_value = 0;
   const T* element =
       reinterpret_cast<const T*>(static_cast<const int8_t*>(data) + offset);
   const T* end = element + count;
   for (; element < end; ++element) {
     if (*element > max_value) {
-      if (*element == primitive_restart_index) {
-        continue;
-      }
       max_value = *element;
     }
   }
@@ -217,52 +213,12 @@ GLuint GetMaxValue(const void* data, GLuint offset, GLsizei count,
 }
 
 bool Buffer::GetMaxValueForRange(
-    GLuint offset, GLsizei count, GLenum type, bool primitive_restart_enabled,
-    GLuint* max_value) {
-  GLuint primitive_restart_index = 0;
-  if (primitive_restart_enabled) {
-    switch (type) {
-      case GL_UNSIGNED_BYTE:
-        primitive_restart_index = 0xFF;
-        break;
-      case GL_UNSIGNED_SHORT:
-        primitive_restart_index = 0xFFFF;
-        break;
-      case GL_UNSIGNED_INT:
-        primitive_restart_index = 0xFFFFFFFF;
-        break;
-      default:
-        NOTREACHED();  // should never get here by validation.
-        break;
-    }
-  }
-
-  Range range(offset, count, type, primitive_restart_enabled);
+    GLuint offset, GLsizei count, GLenum type, GLuint* max_value) {
+  Range range(offset, count, type);
   RangeToMaxValueMap::iterator it = range_set_.find(range);
   if (it != range_set_.end()) {
     *max_value = it->second;
     return true;
-  }
-  // Optimization. If:
-  //  - primitive restart is enabled
-  //  - we don't have an entry in the range set for these parameters
-  //    for the situation when primitive restart is enabled
-  //  - we do have an entry in the range set for these parameters for
-  //    the situation when primitive restart is disabled
-  //  - this entry is less than the primitive restart index
-  // Then we can repurpose this entry for the situation when primitive
-  // restart is enabled. Otherwise, we need to compute the max index
-  // from scratch.
-  if (primitive_restart_enabled) {
-    Range disabled_range(offset, count, type, false);
-    RangeToMaxValueMap::iterator it = range_set_.find(disabled_range);
-    if (it != range_set_.end() && it->second < primitive_restart_index) {
-      // This reuses the max value for the case where primitive
-      // restart is enabled.
-      range_set_.insert(std::make_pair(range, it->second));
-      *max_value = it->second;
-      return true;
-    }
   }
 
   uint32_t size;
@@ -287,24 +243,21 @@ bool Buffer::GetMaxValueForRange(
   GLuint max_v = 0;
   switch (type) {
     case GL_UNSIGNED_BYTE:
-      max_v = GetMaxValue<uint8_t>(shadow_.get(), offset, count,
-          primitive_restart_index);
+      max_v = GetMaxValue<uint8_t>(shadow_.get(), offset, count);
       break;
     case GL_UNSIGNED_SHORT:
       // Check we are not accessing an odd byte for a 2 byte value.
       if ((offset & 1) != 0) {
         return false;
       }
-      max_v = GetMaxValue<uint16_t>(shadow_.get(), offset, count,
-          primitive_restart_index);
+      max_v = GetMaxValue<uint16_t>(shadow_.get(), offset, count);
       break;
     case GL_UNSIGNED_INT:
       // Check we are not accessing a non aligned address for a 4 byte value.
       if ((offset & 3) != 0) {
         return false;
       }
-      max_v = GetMaxValue<uint32_t>(shadow_.get(), offset, count,
-          primitive_restart_index);
+      max_v = GetMaxValue<uint32_t>(shadow_.get(), offset, count);
       break;
     default:
       NOTREACHED();  // should never get here by validation.
