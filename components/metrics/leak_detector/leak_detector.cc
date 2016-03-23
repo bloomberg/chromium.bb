@@ -85,7 +85,7 @@ void GetReportsForObservers(
     const InternalVector<InternalLeakReport>& leak_reports,
     std::vector<LeakReport>* reports_for_observers) {
   reports_for_observers->clear();
-  reports_for_observers->resize(leak_reports.size());
+  reports_for_observers->reserve(leak_reports.size());
   for (const InternalLeakReport& report : leak_reports) {
     reports_for_observers->push_back(LeakReport());
     LeakReport* new_report = &reports_for_observers->back();
