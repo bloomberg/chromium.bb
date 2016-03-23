@@ -65,7 +65,10 @@ void BlimpMessageOutputBuffer::ProcessMessage(
   message->set_message_id(++prev_message_id_);
 
   current_buffer_size_bytes_ += message->ByteSize();
-  DCHECK_GE(max_buffer_size_bytes_, current_buffer_size_bytes_);
+  if (max_buffer_size_bytes_ < current_buffer_size_bytes_)
+    DLOG(WARNING) << "Output Buffer Size exceeds " << max_buffer_size_bytes_
+                  << "bytes. Current size: " << current_buffer_size_bytes_
+                  << " bytes.";
 
   write_buffer_.push_back(
       make_scoped_ptr(new BufferEntry(std::move(message), callback)));
