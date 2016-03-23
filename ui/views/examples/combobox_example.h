@@ -42,6 +42,7 @@ class VIEWS_EXAMPLES_EXPORT ComboboxExample : public ExampleBase,
 
   ComboboxModelExample combobox_model_;
   Combobox* combobox_ = nullptr;
+  Combobox* disabled_combobox_ = nullptr;
   Combobox* action_combobox_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ComboboxExample);

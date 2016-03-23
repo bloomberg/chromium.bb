@@ -5,11 +5,11 @@
 #include "ui/views/controls/focusable_rounded_border_mac.h"
 
 #include "ui/gfx/canvas.h"
+#include "ui/native_theme/native_theme_mac.h"
 
 namespace {
 
 const int kThickness = 1;
-const int kCornerRadius = 5;
 
 }  // namespace
 
@@ -37,7 +37,8 @@ void FocusableRoundedBorder::Paint(const View& view, gfx::Canvas* canvas) {
   float half_thickness = kThickness / 2.0f;
   gfx::RectF bounds(view.GetLocalBounds());
   bounds.Inset(half_thickness, half_thickness);
-  canvas->DrawRoundRect(bounds, kCornerRadius, paint);
+  canvas->DrawRoundRect(bounds, ui::NativeThemeMac::kComboboxCornerRadius,
+                        paint);
 }
 
 }  // namespace views

@@ -14,6 +14,8 @@ namespace ui {
 // Mac implementation of native theme support.
 class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
  public:
+  static const int kComboboxCornerRadius = 5;
+
   static NativeThemeMac* instance();
 
   // Overridden from NativeTheme:
@@ -29,6 +31,11 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
       State state,
       const gfx::Rect& rect,
       const MenuItemExtraParams& menu_item) const override;
+
+  // Creates a shader appropriate for painting the background of a button.
+  static skia::RefPtr<SkShader> GetButtonBackgroundShader(
+      State state,
+      int height);
 
  private:
   NativeThemeMac();

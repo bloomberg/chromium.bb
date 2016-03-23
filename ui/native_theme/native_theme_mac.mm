@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #import "skia/ext/skia_utils_mac.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
@@ -264,6 +265,38 @@ void NativeThemeMac::PaintMenuItemBackground(
       NOTREACHED();
       break;
   }
+}
+
+// static
+skia::RefPtr<SkShader> NativeThemeMac::GetButtonBackgroundShader(
+    NativeTheme::State state, int height) {
+  typedef SkColor ColorByState[NativeTheme::State::kNumStates];
+  SkPoint gradient_points[2];
+  gradient_points[0].iset(0, 0);
+  gradient_points[1].iset(0, height);
+
+  SkScalar gradient_positions[] = { 0.0, 0.38, 1.0 };
+
+  ColorByState start_colors;
+  start_colors[NativeTheme::State::kDisabled] = gfx::kMaterialGrey300;
+  start_colors[NativeTheme::State::kHovered] = gfx::kMaterialBlue300;
+  start_colors[NativeTheme::State::kNormal] = gfx::kMaterialBlue300;
+  start_colors[NativeTheme::State::kPressed] = gfx::kMaterialBlue300;
+  ColorByState end_colors;
+  end_colors[NativeTheme::State::kDisabled] = gfx::kMaterialGrey300;
+  end_colors[NativeTheme::State::kHovered] = gfx::kMaterialBlue700;
+  end_colors[NativeTheme::State::kNormal] = gfx::kMaterialBlue700;
+  end_colors[NativeTheme::State::kPressed] = gfx::kMaterialBlue700;
+
+  SkColor gradient_colors[] = {
+    start_colors[state], start_colors[state], end_colors[state]
+  };
+
+  skia::RefPtr<SkShader> gradient_shader = skia::AdoptRef(
+      SkGradientShader::CreateLinear(
+          gradient_points, gradient_colors, gradient_positions, 3,
+          SkShader::kClamp_TileMode));
+  return gradient_shader;
 }
 
 NativeThemeMac::NativeThemeMac() {

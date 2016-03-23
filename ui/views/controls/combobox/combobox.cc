@@ -27,6 +27,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
@@ -354,6 +355,9 @@ Combobox::Combobox(ui::ComboboxModel* model)
   ModelChanged();
   SetFocusable(true);
   UpdateBorder();
+  // set_background() takes ownership but takes a raw pointer.
+  scoped_ptr<Background> b = PlatformStyle::CreateComboboxBackground();
+  set_background(b.release());
 
   // Initialize the button images.
   Button::ButtonState button_states[] = {
@@ -455,6 +459,12 @@ void Combobox::SetInvalid(bool invalid) {
 
   UpdateBorder();
   SchedulePaint();
+}
+
+int Combobox::GetArrowButtonWidth() const {
+  return GetDisclosureArrowLeftPadding() +
+         ArrowSize().width() +
+         GetDisclosureArrowRightPadding();
 }
 
 void Combobox::Layout() {
@@ -713,7 +723,8 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
   int y = insets.top();
   int text_height = height() - insets.height();
   SkColor text_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor);
+      enabled() ? ui::NativeTheme::kColorId_LabelEnabledColor :
+                  ui::NativeTheme::kColorId_LabelDisabledColor);
 
   DCHECK_GE(selected_index_, 0);
   DCHECK_LT(selected_index_, model()->GetItemCount());

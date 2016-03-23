@@ -290,6 +290,8 @@
       'round_rect_painter.h',
       'shadow_border.cc',
       'shadow_border.h',
+      'style/mac/combobox_background_mac.cc',
+      'style/mac/combobox_background_mac.h',
       'style/mac/dialog_button_border_mac.cc',
       'style/mac/dialog_button_border_mac.h',
       'style/platform_style.cc',

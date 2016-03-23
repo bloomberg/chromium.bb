@@ -32,8 +32,10 @@ ComboboxExample::ComboboxExample() : ExampleBase("Combo Box") {
 ComboboxExample::~ComboboxExample() {
   // Delete |combobox_| first as it references |combobox_model_|.
   delete combobox_;
+  delete disabled_combobox_;
   delete action_combobox_;
   combobox_ = nullptr;
+  disabled_combobox_ = nullptr;
   action_combobox_ = nullptr;
 }
 
@@ -41,6 +43,11 @@ void ComboboxExample::CreateExampleView(View* container) {
   combobox_ = new Combobox(&combobox_model_);
   combobox_->set_listener(this);
   combobox_->SetSelectedIndex(3);
+
+  disabled_combobox_ = new Combobox(&combobox_model_);
+  disabled_combobox_->set_listener(this);
+  disabled_combobox_->SetSelectedIndex(4);
+  disabled_combobox_->SetEnabled(false);
 
   action_combobox_ = new Combobox(&combobox_model_);
   action_combobox_->set_listener(this);
@@ -52,6 +59,7 @@ void ComboboxExample::CreateExampleView(View* container) {
       BoxLayout::kVertical,
       1, 1, 1));
   container->AddChildView(combobox_);
+  container->AddChildView(disabled_combobox_);
   container->AddChildView(action_combobox_);
 }
 

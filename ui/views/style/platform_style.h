@@ -23,6 +23,9 @@ class PlatformStyle {
   // Creates the appropriate border for a focusable Combobox.
   static scoped_ptr<FocusableBorder> CreateComboboxBorder();
 
+  // Creates the appropriate background for a Combobox.
+  static scoped_ptr<Background> CreateComboboxBackground();
+
   // Creates the default label button border for the given |style|. Used when a
   // custom default border is not provided for a particular LabelButton class.
   static scoped_ptr<LabelButtonBorder> CreateLabelButtonBorder(

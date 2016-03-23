@@ -6,6 +6,7 @@
 
 #include "build/build_config.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/focusable_border.h"
@@ -14,9 +15,15 @@
 namespace views {
 
 #if !defined(OS_MACOSX)
+
 // static
 scoped_ptr<FocusableBorder> PlatformStyle::CreateComboboxBorder() {
   return make_scoped_ptr(new FocusableBorder());
+}
+
+// static
+scoped_ptr<Background> PlatformStyle::CreateComboboxBackground() {
+  return nullptr;
 }
 
 // static

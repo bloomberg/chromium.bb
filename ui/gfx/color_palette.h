@@ -27,6 +27,15 @@ const SkColor kGoogleGreen700 = SkColorSetRGB(0x0B, 0x80, 0x43);
 const SkColor kGoogleYellow300 = SkColorSetRGB(0xF7, 0xCB, 0x4D);
 const SkColor kGoogleYellow700 = SkColorSetRGB(0xF0, 0x93, 0x00);
 
+// Material Design canonical colors, from
+// https://www.google.com/design/spec/style/color.html#color-color-palette
+const SkColor kMaterialBlue300 = SkColorSetRGB(0x64, 0xB5, 0xF6);
+const SkColor kMaterialBlue500 = SkColorSetRGB(0x21, 0x96, 0xF3);
+const SkColor kMaterialBlue700 = SkColorSetRGB(0x19, 0x76, 0xD2);
+
+const SkColor kMaterialGrey300 = SkColorSetRGB(0xE0, 0xE0, 0xE0);
+const SkColor kMaterialGrey500 = SkColorSetRGB(0x9E, 0x9E, 0x9E);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_COLOR_PALETTE_H_

@@ -85,6 +85,10 @@ class VIEWS_EXPORT Combobox : public PrefixDelegate, public ButtonListener {
   void SetInvalid(bool invalid);
   bool invalid() const { return invalid_; }
 
+  // Returns the width of the arrow button component of the combobox: the arrow
+  // button itself, and the padding on either side of it.
+  int GetArrowButtonWidth() const;
+
   // Overridden from View:
   gfx::Size GetPreferredSize() const override;
   const char* GetClassName() const override;
