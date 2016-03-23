@@ -9,10 +9,10 @@
 #include <utility>
 #include <vector>
 
-#include "ash/shelf/shelf_button_host.h"
 #include "ash/shelf/shelf_button_pressed_metric_tracker.h"
 #include "ash/shelf/shelf_item_delegate.h"
 #include "ash/shelf/shelf_model_observer.h"
+#include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -44,7 +44,6 @@ class DragImageView;
 class OverflowBubble;
 class OverflowButton;
 class ShelfButton;
-class ShelfTooltipManager;
 
 namespace test {
 class ShelfViewTestAPI;
@@ -58,7 +57,6 @@ extern const int SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT;
 class ASH_EXPORT ShelfView : public views::View,
                              public ShelfModelObserver,
                              public views::ButtonListener,
-                             public ShelfButtonHost,
                              public views::ContextMenuController,
                              public views::FocusTraversable,
                              public views::BoundsAnimatorObserver,
@@ -66,8 +64,6 @@ class ASH_EXPORT ShelfView : public views::View,
  public:
   ShelfView(ShelfModel* model, ShelfDelegate* delegate, Shelf* shelf);
   ~ShelfView() override;
-
-  ShelfTooltipManager* tooltip_manager() { return tooltip_.get(); }
 
   Shelf* shelf() const { return shelf_; }
   ShelfModel* model() const { return model_; }
@@ -106,7 +102,13 @@ class ASH_EXPORT ShelfView : public views::View,
   // There are thin gaps between launcher buttons but the tooltip shouldn't hide
   // in the gaps, but the tooltip should hide if the mouse moved totally outside
   // of the buttons area.
-  bool ShouldHideTooltip(const gfx::Point& cursor_location);
+  bool ShouldHideTooltip(const gfx::Point& cursor_location) const;
+
+  // Returns true if a tooltip should be shown for the shelf item |view|.
+  bool ShouldShowTooltipForView(const views::View* view) const;
+
+  // Returns the title of the shelf item |view|.
+  base::string16 GetTitleForView(const views::View* view) const;
 
   // Returns rectangle bounding all visible launcher items. Used screen
   // coordinate system.
@@ -130,6 +132,18 @@ class ASH_EXPORT ShelfView : public views::View,
                  const gfx::Point& location_in_screen_coordinates) override;
   bool Drag(const gfx::Point& location_in_screen_coordinates) override;
   void EndDrag(bool cancel) override;
+
+  // The shelf buttons use the Pointer interface to enable item reordering.
+  enum Pointer { NONE, DRAG_AND_DROP, MOUSE, TOUCH };
+  void PointerPressedOnButton(views::View* view,
+                              Pointer pointer,
+                              const ui::LocatedEvent& event);
+  void PointerDraggedOnButton(views::View* view,
+                              Pointer pointer,
+                              const ui::LocatedEvent& event);
+  void PointerReleasedOnButton(views::View* view,
+                               Pointer pointer,
+                               bool canceled);
 
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
@@ -246,6 +260,8 @@ class ASH_EXPORT ShelfView : public views::View,
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   FocusTraversable* GetPaneFocusTraversable() override;
   void GetAccessibleState(ui::AXViewState* state) override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
 
   // Overridden from ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -255,21 +271,6 @@ class ASH_EXPORT ShelfView : public views::View,
   void ShelfItemRemoved(int model_index, ShelfID id) override;
   void ShelfItemChanged(int model_index, const ShelfItem& old_item) override;
   void ShelfItemMoved(int start_index, int target_index) override;
-
-  // Overridden from ShelfButtonHost:
-  void PointerPressedOnButton(views::View* view,
-                              Pointer pointer,
-                              const ui::LocatedEvent& event) override;
-  void PointerDraggedOnButton(views::View* view,
-                              Pointer pointer,
-                              const ui::LocatedEvent& event) override;
-  void PointerReleasedOnButton(views::View* view,
-                               Pointer pointer,
-                               bool canceled) override;
-  void MouseMovedOverButton(views::View* view) override;
-  void MouseEnteredButton(views::View* view) override;
-  void MouseExitedButton(views::View* view) override;
-  base::string16 GetAccessibleName(const views::View* view) override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -309,9 +310,6 @@ class ASH_EXPORT ShelfView : public views::View,
   // Convenience accessor to model_->items().
   const ShelfItem* ShelfItemForView(const views::View* view) const;
 
-  // Returns true if a tooltip should be shown for |view|.
-  bool ShouldShowTooltipForView(const views::View* view) const;
-
   // Get the distance from the given |coordinate| to the closest point on this
   // launcher/shelf.
   int CalculateShelfDistance(const gfx::Point& coordinate) const;
@@ -344,7 +342,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   OverflowBubble* owner_overflow_bubble_;
 
-  scoped_ptr<ShelfTooltipManager> tooltip_;
+  ShelfTooltipManager tooltip_;
 
   // Pointer device that initiated the current drag operation. If there is no
   // current dragging operation, this is NONE.

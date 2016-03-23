@@ -27,6 +27,7 @@ class OverflowBubble;
 class ShelfButton;
 class ShelfButtonPressedMetricTracker;
 class ShelfDelegate;
+class ShelfTooltipManager;
 class ShelfView;
 
 namespace test {
@@ -67,6 +68,9 @@ class ShelfViewTestAPI {
 
   // An accessor for |shelf_view|.
   ShelfView* shelf_view() { return shelf_view_; }
+
+  // An accessor for the shelf tooltip manager.
+  ShelfTooltipManager* tooltip_manager();
 
   // An accessor for overflow bubble.
   OverflowBubble* overflow_bubble();

@@ -9,23 +9,15 @@
 #include "ui/views/controls/button/image_button.h"
 
 namespace ash {
-class ShelfButtonHost;
-class ShelfWidget;
+class ShelfView;
 
 // Button used for the AppList icon on the shelf.
 class AppListButton : public views::ImageButton {
  public:
-  // Bounds size (inset) required for the app icon image (in pixels).
-  static const int kImageBoundsSize;
-
-  AppListButton(views::ButtonListener* listener,
-                ShelfButtonHost* host,
-                ShelfWidget* shelf_widget);
+  explicit AppListButton(ShelfView* shelf_view);
   ~AppListButton() override;
 
-  bool draw_background_as_active() {
-    return draw_background_as_active_;
-  }
+  bool draw_background_as_active() { return draw_background_as_active_; }
 
  protected:
   // views::ImageButton overrides:
@@ -33,9 +25,6 @@ class AppListButton : public views::ImageButton {
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnMouseCaptureLost() override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void OnMouseMoved(const ui::MouseEvent& event) override;
-  void OnMouseEntered(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
   void OnPaint(gfx::Canvas* canvas) override;
   void GetAccessibleState(ui::AXViewState* state) override;
 
@@ -50,10 +39,7 @@ class AppListButton : public views::ImageButton {
   // the application list.
   bool draw_background_as_active_;
 
-  ShelfButtonHost* host_;
-  // Reference to the shelf widget containing this button, owned by the
-  // root window controller.
-  ShelfWidget* shelf_widget_;
+  ShelfView* shelf_view_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListButton);
 };

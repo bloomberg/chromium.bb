@@ -12,6 +12,10 @@ class Point;
 class Vector2d;
 }  // namespace gfx
 
+namespace views {
+class View;
+}  // namespace views
+
 namespace app_list {
 
 // This class will get used by the AppListView to drag and drop Application

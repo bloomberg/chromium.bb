@@ -23,7 +23,6 @@
 #include "ash/shelf/shelf_item_delegate_manager.h"
 #include "ash/shelf/shelf_menu_model.h"
 #include "ash/shelf/shelf_model.h"
-#include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
@@ -224,8 +223,7 @@ bool ShelfMenuModelAdapter::ShouldReserveSpaceForSubmenuIndicator() const {
 class ShelfFocusSearch : public views::FocusSearch {
  public:
   explicit ShelfFocusSearch(views::ViewModel* view_model)
-      : FocusSearch(NULL, true, true),
-        view_model_(view_model) {}
+      : FocusSearch(nullptr, true, true), view_model_(view_model) {}
   ~ShelfFocusSearch() override {}
 
   // views::FocusSearch overrides:
@@ -370,25 +368,26 @@ ShelfView::ShelfView(ShelfModel* model, ShelfDelegate* delegate, Shelf* shelf)
       view_model_(new views::ViewModel),
       first_visible_index_(0),
       last_visible_index_(-1),
-      overflow_button_(NULL),
-      owner_overflow_bubble_(NULL),
+      overflow_button_(nullptr),
+      owner_overflow_bubble_(nullptr),
+      tooltip_(this),
       drag_pointer_(NONE),
-      drag_view_(NULL),
+      drag_view_(nullptr),
       start_drag_index_(-1),
       context_menu_id_(0),
       leading_inset_(kDefaultLeadingInset),
       cancelling_drag_model_changed_(false),
       last_hidden_index_(0),
       closing_event_time_(base::TimeDelta()),
-      got_deleted_(NULL),
+      got_deleted_(nullptr),
       drag_and_drop_item_pinned_(false),
       drag_and_drop_shelf_id_(0),
       drag_replaced_view_(nullptr),
       dragged_off_shelf_(false),
-      snap_back_from_rip_off_view_(NULL),
+      snap_back_from_rip_off_view_(nullptr),
       item_manager_(Shell::GetInstance()->shelf_item_delegate_manager()),
       overflow_mode_(false),
-      main_shelf_(NULL),
+      main_shelf_(nullptr),
       dragged_off_from_overflow_to_shelf_(false),
       is_repost_event_(false),
       last_pressed_index_(-1) {
@@ -397,7 +396,6 @@ ShelfView::ShelfView(ShelfModel* model, ShelfDelegate* delegate, Shelf* shelf)
   bounds_animator_->AddObserver(this);
   set_context_menu_controller(this);
   focus_search_.reset(new ShelfFocusSearch(view_model_.get()));
-  tooltip_.reset(new ShelfTooltipManager(shelf->shelf_layout_manager(), this));
 }
 
 ShelfView::~ShelfView() {
@@ -434,7 +432,7 @@ void ShelfView::OnShelfAlignmentChanged() {
     if (i >= first_visible_index_ && i <= last_visible_index_)
       view_model_->view_at(i)->Layout();
   }
-  tooltip_->Close();
+  tooltip_.Close();
   if (overflow_bubble_)
     overflow_bubble_->Hide();
 }
@@ -517,7 +515,42 @@ views::View* ShelfView::GetAppListButtonView() const {
   }
 
   NOTREACHED() << "Applist button not found";
-  return NULL;
+  return nullptr;
+}
+
+bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
+  gfx::Rect tooltip_bounds;
+  for (int i = 0; i < child_count(); ++i) {
+    const views::View* child = child_at(i);
+    if (child != overflow_button_ && ShouldShowTooltipForView(child))
+      tooltip_bounds.Union(child->GetMirroredBounds());
+  }
+  return !tooltip_bounds.Contains(cursor_location);
+}
+
+bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
+  if (view == GetAppListButtonView() &&
+      Shell::GetInstance()->GetAppListWindow()) {
+    return false;
+  }
+  const ShelfItem* item = ShelfItemForView(view);
+  if (!item)
+    return false;
+  return item_manager_->GetShelfItemDelegate(item->id)->ShouldShowTooltip();
+}
+
+base::string16 ShelfView::GetTitleForView(const views::View* view) const {
+  const ShelfItem* item = ShelfItemForView(view);
+  if (!item)
+    return base::string16();
+  return item_manager_->GetShelfItemDelegate(item->id)->GetTitle();
+}
+
+gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
+  gfx::Size preferred_size = GetPreferredSize();
+  gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);
+  ConvertPointToScreen(this, &origin);
+  return gfx::Rect(origin, preferred_size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -560,7 +593,7 @@ void ShelfView::CreateDragIconProxy(
 
 void ShelfView::UpdateDragIconProxy(
     const gfx::Point& location_in_screen_coordinates) {
-  // TODO(jennyz): Investigate why drag_image_ becomes NULL at this point per
+  // TODO(jennyz): Investigate why drag_image_ becomes null at this point per
   // crbug.com/34722, while the app list item is still being dragged around.
   if (drag_image_) {
     drag_image_->SetScreenPosition(
@@ -621,9 +654,7 @@ bool ShelfView::StartDrag(const std::string& app_id,
       ash::wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_PRESSED, pt, point_in_root,
                        ui::EventTimeForNow(), 0, 0);
-  PointerPressedOnButton(drag_and_drop_view,
-                         ShelfButtonHost::DRAG_AND_DROP,
-                         event);
+  PointerPressedOnButton(drag_and_drop_view, DRAG_AND_DROP, event);
 
   // Drag the item where it really belongs.
   Drag(location_in_screen_coordinates);
@@ -644,9 +675,7 @@ bool ShelfView::Drag(const gfx::Point& location_in_screen_coordinates) {
       ash::wm::GetRootWindowAt(location_in_screen_coordinates), &point_in_root);
   ui::MouseEvent event(ui::ET_MOUSE_DRAGGED, pt, point_in_root,
                        ui::EventTimeForNow(), 0, 0);
-  PointerDraggedOnButton(drag_and_drop_view,
-                         ShelfButtonHost::DRAG_AND_DROP,
-                         event);
+  PointerDraggedOnButton(drag_and_drop_view, DRAG_AND_DROP, event);
   return true;
 }
 
@@ -656,8 +685,7 @@ void ShelfView::EndDrag(bool cancel) {
 
   views::View* drag_and_drop_view = view_model_->view_at(
       model_->ItemIndexByID(drag_and_drop_shelf_id_));
-  PointerReleasedOnButton(
-      drag_and_drop_view, ShelfButtonHost::DRAG_AND_DROP, cancel);
+  PointerReleasedOnButton(drag_and_drop_view, DRAG_AND_DROP, cancel);
 
   // Either destroy the temporarily created item - or - make the item visible.
   if (drag_and_drop_item_pinned_ && cancel) {
@@ -674,6 +702,69 @@ void ShelfView::EndDrag(bool cancel) {
   }
 
   drag_and_drop_shelf_id_ = 0;
+}
+
+void ShelfView::PointerPressedOnButton(views::View* view,
+                                       Pointer pointer,
+                                       const ui::LocatedEvent& event) {
+  if (drag_view_)
+    return;
+
+  int index = view_model_->GetIndexOfView(view);
+  if (index == -1)
+    return;
+
+  ShelfItemDelegate* item_delegate =
+      item_manager_->GetShelfItemDelegate(model_->items()[index].id);
+  if (view_model_->view_size() <= 1 || !item_delegate->IsDraggable())
+    return;  // View is being deleted or not draggable, ignore request.
+
+  // Only when the repost event occurs on the same shelf item, we should ignore
+  // the call in ShelfView::ButtonPressed(...).
+  is_repost_event_ = IsRepostEvent(event) && (last_pressed_index_ == index);
+
+  CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
+  drag_view_ = static_cast<ShelfButton*>(view);
+  drag_origin_ = gfx::Point(event.x(), event.y());
+  UMA_HISTOGRAM_ENUMERATION("Ash.ShelfAlignmentUsage",
+                            shelf_->SelectValueForShelfAlignment(
+                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
+                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
+                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT, -1),
+                            SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
+}
+
+void ShelfView::PointerDraggedOnButton(views::View* view,
+                                       Pointer pointer,
+                                       const ui::LocatedEvent& event) {
+  // To prepare all drag types (moving an item in the shelf and dragging off),
+  // we should check the x-axis and y-axis offset.
+  if (!dragging() && drag_view_ &&
+      ((std::abs(event.x() - drag_origin_.x()) >= kMinimumDragDistance) ||
+       (std::abs(event.y() - drag_origin_.y()) >= kMinimumDragDistance))) {
+    PrepareForDrag(pointer, event);
+  }
+  if (drag_pointer_ == pointer)
+    ContinueDrag(event);
+}
+
+void ShelfView::PointerReleasedOnButton(views::View* view,
+                                        Pointer pointer,
+                                        bool canceled) {
+  // Reset |is_repost_event| to false.
+  is_repost_event_ = false;
+
+  if (canceled) {
+    CancelDrag(-1);
+  } else if (drag_pointer_ == pointer) {
+    FinalizeRipOffDrag(false);
+    drag_pointer_ = NONE;
+    AnimateToIdealBounds();
+  }
+  // If the drag pointer is NONE, no drag operation is going on and the
+  // drag_view can be released.
+  if (drag_pointer_ == NONE)
+    drag_view_ = nullptr;
 }
 
 void ShelfView::LayoutToIdealBounds() {
@@ -883,7 +974,7 @@ void ShelfView::AnimateToIdealBounds() {
 }
 
 views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
-  views::View* view = NULL;
+  views::View* view = nullptr;
   switch (item.type) {
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP_SHORTCUT:
@@ -891,7 +982,7 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     case TYPE_PLATFORM_APP:
     case TYPE_DIALOG:
     case TYPE_APP_PANEL: {
-      ShelfButton* button = ShelfButton::Create(this, this, shelf_);
+      ShelfButton* button = new ShelfButton(this);
       button->SetImage(item.image);
       ReflectItemStatus(item, button);
       view = button;
@@ -899,16 +990,15 @@ views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
     }
 
     case TYPE_APP_LIST: {
-      view = new AppListButton(this, this, shelf_->shelf_widget());
+      view = new AppListButton(this);
       break;
     }
 
-    default:
-      break;
+    case TYPE_UNDEFINED:
+      return nullptr;
   }
-  view->set_context_menu_controller(this);
 
-  DCHECK(view);
+  view->set_context_menu_controller(this);
   ConfigureChildView(view);
   return view;
 }
@@ -1295,30 +1385,6 @@ void ShelfView::UpdateOverflowRange(ShelfView* overflow_view) const {
   overflow_view->last_visible_index_ = last_overflow_index;
 }
 
-bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) {
-  gfx::Rect active_bounds;
-
-  for (int i = 0; i < child_count(); ++i) {
-    views::View* child = child_at(i);
-    if (child == overflow_button_)
-      continue;
-    if (!ShouldShowTooltipForView(child))
-      continue;
-
-    gfx::Rect child_bounds = child->GetMirroredBounds();
-    active_bounds.Union(child_bounds);
-  }
-
-  return !active_bounds.Contains(cursor_location);
-}
-
-gfx::Rect ShelfView::GetVisibleItemsBoundsInScreen() {
-  gfx::Size preferred_size = GetPreferredSize();
-  gfx::Point origin(GetMirroredXWithWidthInView(0, preferred_size.width()), 0);
-  ConvertPointToScreen(this, &origin);
-  return gfx::Rect(origin, preferred_size);
-}
-
 gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
   gfx::Size preferred_size;
   if (is_overflow_mode()) {
@@ -1366,7 +1432,7 @@ int ShelfView::CancelDrag(int modified_index) {
   bool was_dragging = dragging();
   int drag_view_index = view_model_->GetIndexOfView(drag_view_);
   drag_pointer_ = NONE;
-  drag_view_ = NULL;
+  drag_view_ = nullptr;
   if (drag_view_index == modified_index) {
     // The view that was being dragged is being modified. Don't do anything.
     return modified_index;
@@ -1376,9 +1442,9 @@ int ShelfView::CancelDrag(int modified_index) {
 
   // Restore previous position, tracking the position of the modified view.
   bool at_end = modified_index == view_model_->view_size();
-  views::View* modified_view =
-      (modified_index >= 0 && !at_end) ?
-      view_model_->view_at(modified_index) : NULL;
+  views::View* modified_view = (modified_index >= 0 && !at_end)
+                                   ? view_model_->view_at(modified_index)
+                                   : nullptr;
   model_->Move(drag_view_index, start_drag_index_);
 
   // If the modified view will be at the end of the list, return the new end of
@@ -1439,6 +1505,12 @@ views::FocusTraversable* ShelfView::GetPaneFocusTraversable() {
 void ShelfView::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_TOOLBAR;
   state->name = l10n_util::GetStringUTF16(IDS_ASH_SHELF_ACCESSIBLE_NAME);
+}
+
+void ShelfView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this && GetWidget())
+    tooltip_.Init();
 }
 
 void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
@@ -1523,10 +1595,8 @@ void ShelfView::ShelfItemRemoved(int model_index, ShelfID id) {
     AnimateToIdealBounds();
   }
 
-  // Close the tooltip because it isn't needed any longer and its anchor view
-  // will be deleted soon.
-  if (tooltip_->GetCurrentAnchorView() == view)
-    tooltip_->Close();
+  if (view == tooltip_.GetCurrentAnchorView())
+    tooltip_.Close();
 }
 
 void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
@@ -1583,104 +1653,6 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
   // at this time the |view_model_| is inconsistent with the |model_|.
   if (!cancelling_drag_model_changed_)
     AnimateToIdealBounds();
-}
-
-void ShelfView::PointerPressedOnButton(views::View* view,
-                                       Pointer pointer,
-                                       const ui::LocatedEvent& event) {
-  if (drag_view_)
-    return;
-
-  int index = view_model_->GetIndexOfView(view);
-  if (index == -1)
-    return;
-
-  ShelfItemDelegate* item_delegate = item_manager_->GetShelfItemDelegate(
-      model_->items()[index].id);
-  if (view_model_->view_size() <= 1 || !item_delegate->IsDraggable())
-    return;  // View is being deleted or not draggable, ignore request.
-
-  // Only when the repost event occurs on the same shelf item, we should ignore
-  // the call in ShelfView::ButtonPressed(...).
-  is_repost_event_ = IsRepostEvent(event) && (last_pressed_index_ == index);
-
-  CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
-  drag_view_ = static_cast<ShelfButton*>(view);
-  drag_origin_ = gfx::Point(event.x(), event.y());
-  UMA_HISTOGRAM_ENUMERATION("Ash.ShelfAlignmentUsage",
-                            shelf_->SelectValueForShelfAlignment(
-                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_BOTTOM,
-                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_LEFT,
-                                SHELF_ALIGNMENT_UMA_ENUM_VALUE_RIGHT, -1),
-                            SHELF_ALIGNMENT_UMA_ENUM_VALUE_COUNT);
-}
-
-void ShelfView::PointerDraggedOnButton(views::View* view,
-                                       Pointer pointer,
-                                       const ui::LocatedEvent& event) {
-  // To prepare all drag types (moving an item in the shelf and dragging off),
-  // we should check the x-axis and y-axis offset.
-  if (!dragging() && drag_view_ &&
-      ((std::abs(event.x() - drag_origin_.x()) >= kMinimumDragDistance) ||
-       (std::abs(event.y() - drag_origin_.y()) >= kMinimumDragDistance))) {
-    PrepareForDrag(pointer, event);
-  }
-  if (drag_pointer_ == pointer)
-    ContinueDrag(event);
-}
-
-void ShelfView::PointerReleasedOnButton(views::View* view,
-                                        Pointer pointer,
-                                        bool canceled) {
-  // Reset |is_repost_event| to false.
-  is_repost_event_ = false;
-
-  if (canceled) {
-    CancelDrag(-1);
-  } else if (drag_pointer_ == pointer) {
-    FinalizeRipOffDrag(false);
-    drag_pointer_ = NONE;
-    AnimateToIdealBounds();
-  }
-  // If the drag pointer is NONE, no drag operation is going on and the
-  // drag_view can be released.
-  if (drag_pointer_ == NONE)
-    drag_view_ = NULL;
-}
-
-void ShelfView::MouseMovedOverButton(views::View* view) {
-  if (!ShouldShowTooltipForView(view))
-    return;
-
-  if (!tooltip_->IsVisible())
-    tooltip_->ResetTimer();
-}
-
-void ShelfView::MouseEnteredButton(views::View* view) {
-  if (!ShouldShowTooltipForView(view))
-    return;
-
-  if (tooltip_->IsVisible()) {
-    tooltip_->ShowImmediately(view, GetAccessibleName(view));
-  } else {
-    tooltip_->ShowDelayed(view, GetAccessibleName(view));
-  }
-}
-
-void ShelfView::MouseExitedButton(views::View* view) {
-  if (!tooltip_->IsVisible())
-    tooltip_->StopTimer();
-}
-
-base::string16 ShelfView::GetAccessibleName(const views::View* view) {
-  int view_index = view_model_->GetIndexOfView(view);
-  // May be -1 while in the process of animating closed.
-  if (view_index == -1)
-    return base::string16();
-
-  ShelfItemDelegate* item_delegate = item_manager_->GetShelfItemDelegate(
-      model_->items()[view_index].id);
-  return item_delegate->GetTitle();
 }
 
 void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
@@ -1882,7 +1854,7 @@ void ShelfView::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
           break;
         }
       }
-      snap_back_from_rip_off_view_ = NULL;
+      snap_back_from_rip_off_view_ = nullptr;
     }
   }
 }
@@ -1902,18 +1874,6 @@ bool ShelfView::IsRepostEvent(const ui::Event& event) {
 const ShelfItem* ShelfView::ShelfItemForView(const views::View* view) const {
   const int view_index = view_model_->GetIndexOfView(view);
   return (view_index < 0) ? nullptr : &(model_->items()[view_index]);
-}
-
-bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
-  if (view == GetAppListButtonView() &&
-      Shell::GetInstance()->GetAppListTargetVisibility())
-    return false;
-  const ShelfItem* item = ShelfItemForView(view);
-  if (!item)
-    return true;
-  ShelfItemDelegate* item_delegate =
-      item_manager_->GetShelfItemDelegate(item->id);
-  return item_delegate->ShouldShowTooltip();
 }
 
 int ShelfView::CalculateShelfDistance(const gfx::Point& coordinate) const {

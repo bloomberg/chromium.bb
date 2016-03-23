@@ -45,11 +45,11 @@ namespace sysui {
 
 namespace {
 
-// Tries to determine the corresponding container in mash from the ash container
-// for the widget.
-mash::wm::mojom::Container GetContainerId(aura::Window* container) {
-  DCHECK(container);
-  int id = container->id();
+// Tries to determine the corresponding mash container from widget init params.
+mash::wm::mojom::Container GetContainerId(
+    const views::Widget::InitParams& params) {
+  DCHECK(params.parent);
+  const int id = params.parent->id();
   if (id == kShellWindowId_DesktopBackgroundContainer)
     return mash::wm::mojom::Container::USER_BACKGROUND;
   // mash::wm::ShelfLayout manages both the shelf and the status area.
@@ -57,6 +57,16 @@ mash::wm::mojom::Container GetContainerId(aura::Window* container) {
       id == kShellWindowId_StatusContainer) {
     return mash::wm::mojom::Container::USER_SHELF;
   }
+
+  // Show mash shelf tooltips and settings bubbles in the menu container.
+  if (params.type == views::Widget::InitParams::Type::TYPE_MENU ||
+      params.type == views::Widget::InitParams::Type::TYPE_BUBBLE) {
+    return mash::wm::mojom::Container::MENUS;
+  }
+
+  if (params.type == views::Widget::InitParams::Type::TYPE_TOOLTIP)
+    return mash::wm::mojom::Container::TOOLTIPS;
+
   return mash::wm::mojom::Container::COUNT;
 }
 
@@ -118,7 +128,7 @@ class NativeWidgetFactory {
       views::internal::NativeWidgetDelegate* delegate) {
     std::map<std::string, std::vector<uint8_t>> properties;
     if (params.parent) {
-      mash::wm::mojom::Container container = GetContainerId(params.parent);
+      mash::wm::mojom::Container container = GetContainerId(params);
       if (container != mash::wm::mojom::Container::COUNT) {
         properties[mash::wm::mojom::kWindowContainer_Property] =
             mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(

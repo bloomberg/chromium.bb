@@ -106,9 +106,7 @@ class ShelfViewIconObserverTest : public AshTestBase {
 
   TestShelfIconObserver* observer() { return observer_.get(); }
 
-  ShelfViewTestAPI* shelf_view_test() {
-    return shelf_view_test_.get();
-  }
+  ShelfViewTestAPI* shelf_view_test() { return shelf_view_test_.get(); }
 
   Shelf* ShelfForSecondaryDisplay() {
     return Shelf::ForWindow(Shell::GetAllRootWindows()[1]);
@@ -432,52 +430,46 @@ class ShelfViewTest : public AshTestBase {
     }
   }
 
-  ShelfButton* SimulateButtonPressed(ShelfButtonHost::Pointer pointer,
+  ShelfButton* SimulateButtonPressed(ShelfView::Pointer pointer,
                                      int button_index) {
-    ShelfButtonHost* button_host = shelf_view_;
     ShelfButton* button = test_api_->GetButton(button_index);
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(),
                                button->GetBoundsInScreen().origin(),
                                ui::EventTimeForNow(), 0, 0);
-    button_host->PointerPressedOnButton(button, pointer, click_event);
+    shelf_view_->PointerPressedOnButton(button, pointer, click_event);
     return button;
   }
 
   // Simulates a single mouse click.
   void SimulateClick(int button_index) {
-    ShelfButtonHost* button_host = shelf_view_;
-    ShelfButton* button =
-        SimulateButtonPressed(ShelfButtonHost::MOUSE, button_index);
+    ShelfButton* button = SimulateButtonPressed(ShelfView::MOUSE, button_index);
     ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                  button->GetBoundsInScreen().origin(),
                                  ui::EventTimeForNow(), 0, 0);
     test_api_->ButtonPressed(button, release_event);
-    button_host->PointerReleasedOnButton(button, ShelfButtonHost::MOUSE, false);
+    shelf_view_->PointerReleasedOnButton(button, ShelfView::MOUSE, false);
   }
 
   // Simulates the second click of a double click.
   void SimulateDoubleClick(int button_index) {
-    ShelfButtonHost* button_host = shelf_view_;
-    ShelfButton* button =
-        SimulateButtonPressed(ShelfButtonHost::MOUSE, button_index);
+    ShelfButton* button = SimulateButtonPressed(ShelfView::MOUSE, button_index);
     ui::MouseEvent release_event(ui::ET_MOUSE_RELEASED, gfx::Point(),
                                  button->GetBoundsInScreen().origin(),
                                  ui::EventTimeForNow(), ui::EF_IS_DOUBLE_CLICK,
                                  0);
     test_api_->ButtonPressed(button, release_event);
-    button_host->PointerReleasedOnButton(button, ShelfButtonHost::MOUSE, false);
+    shelf_view_->PointerReleasedOnButton(button, ShelfView::MOUSE, false);
   }
 
   void DoDrag(int dist_x,
               int dist_y,
               views::View* button,
-              ShelfButtonHost::Pointer pointer,
+              ShelfView::Pointer pointer,
               views::View* to) {
     ui::MouseEvent drag_event(ui::ET_MOUSE_DRAGGED, gfx::Point(dist_x, dist_y),
                               to->GetBoundsInScreen().origin(),
                               ui::EventTimeForNow(), 0, 0);
-    static_cast<ShelfButtonHost*>(shelf_view_)
-        ->PointerDraggedOnButton(button, pointer, drag_event);
+    shelf_view_->PointerDraggedOnButton(button, pointer, drag_event);
   }
 
   /*
@@ -487,7 +479,7 @@ class ShelfViewTest : public AshTestBase {
    * drag behavior.
    */
   void ContinueDrag(views::View* button,
-                    ShelfButtonHost::Pointer pointer,
+                    ShelfView::Pointer pointer,
                     int from_index,
                     int to_index,
                     bool progressively) {
@@ -511,7 +503,7 @@ class ShelfViewTest : public AshTestBase {
    * series of changes of the posistion of dragged item) like the behavior of
    * user drags.
    */
-  views::View* SimulateDrag(ShelfButtonHost::Pointer pointer,
+  views::View* SimulateDrag(ShelfView::Pointer pointer,
                             int button_index,
                             int destination_index,
                             bool progressively) {
@@ -534,12 +526,12 @@ class ShelfViewTest : public AshTestBase {
   void DragAndVerify(
       int from,
       int to,
-      ShelfButtonHost* button_host,
+      ShelfView* shelf_view,
       const std::vector<std::pair<int, views::View*>>& expected_id_map) {
     views::View* dragged_button =
-        SimulateDrag(ShelfButtonHost::MOUSE, from, to, true);
-    button_host->PointerReleasedOnButton(dragged_button, ShelfButtonHost::MOUSE,
-                                         false);
+        SimulateDrag(ShelfView::MOUSE, from, to, true);
+    shelf_view->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE,
+                                        false);
     test_api_->RunMessageLoopUntilAnimationsDone();
     ASSERT_NO_FATAL_FAILURE(CheckModelIDs(expected_id_map));
   }
@@ -564,10 +556,6 @@ class ShelfViewTest : public AshTestBase {
     ASSERT_NO_FATAL_FAILURE(CheckModelIDs(*id_map));
   }
 
-  views::View* GetTooltipAnchorView() {
-    return shelf_view_->tooltip_manager()->anchor_;
-  }
-
   void AddButtonsUntilOverflow() {
     int items_added = 0;
     while (!test_api_->IsOverflowButtonVisible()) {
@@ -575,10 +563,6 @@ class ShelfViewTest : public AshTestBase {
       ++items_added;
       ASSERT_LT(items_added, 10000);
     }
-  }
-
-  void ShowTooltip() {
-    shelf_view_->tooltip_manager()->ShowInternal();
   }
 
   void TestDraggingAnItemFromOverflowToShelf(bool cancel) {
@@ -1106,107 +1090,97 @@ TEST_F(ShelfViewTest, AddButtonQuickly) {
 // Check that model changes are handled correctly while a shelf icon is being
 // dragged.
 TEST_F(ShelfViewTest, ModelChangesWhileDragging) {
-  ShelfButtonHost* button_host = shelf_view_;
-
   std::vector<std::pair<ShelfID, views::View*> > id_map;
   SetupForDragTest(&id_map);
 
   // Dragging browser shortcut at index 1.
   EXPECT_TRUE(model_->items()[1].type == TYPE_BROWSER_SHORTCUT);
-  views::View* dragged_button =
-      SimulateDrag(ShelfButtonHost::MOUSE, 1, 3, false);
+  views::View* dragged_button = SimulateDrag(ShelfView::MOUSE, 1, 3, false);
   std::rotate(id_map.begin() + 1,
               id_map.begin() + 2,
               id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-  button_host->PointerReleasedOnButton(
-      dragged_button, ShelfButtonHost::MOUSE, false);
+  shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, false);
   EXPECT_TRUE(model_->items()[3].type == TYPE_BROWSER_SHORTCUT);
 
   // Dragging changes model order.
-  dragged_button = SimulateDrag(ShelfButtonHost::MOUSE, 1, 3, false);
+  dragged_button = SimulateDrag(ShelfView::MOUSE, 1, 3, false);
   std::rotate(id_map.begin() + 1,
               id_map.begin() + 2,
               id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Cancelling the drag operation restores previous order.
-  button_host->PointerReleasedOnButton(
-      dragged_button, ShelfButtonHost::MOUSE, true);
+  shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, true);
   std::rotate(id_map.begin() + 1,
               id_map.begin() + 3,
               id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Deleting an item keeps the remaining intact.
-  dragged_button = SimulateDrag(ShelfButtonHost::MOUSE, 1, 3, false);
+  dragged_button = SimulateDrag(ShelfView::MOUSE, 1, 3, false);
   model_->RemoveItemAt(1);
   id_map.erase(id_map.begin() + 1);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-  button_host->PointerReleasedOnButton(
-      dragged_button, ShelfButtonHost::MOUSE, false);
+  shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, false);
 
   // Adding a shelf item cancels the drag and respects the order.
-  dragged_button = SimulateDrag(ShelfButtonHost::MOUSE, 1, 3, false);
+  dragged_button = SimulateDrag(ShelfView::MOUSE, 1, 3, false);
   ShelfID new_id = AddAppShortcut();
   id_map.insert(id_map.begin() + 6,
                 std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-  button_host->PointerReleasedOnButton(
-      dragged_button, ShelfButtonHost::MOUSE, false);
+  shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, false);
 
   // Adding a shelf item at the end (i.e. a panel)  canels drag and respects
   // the order.
-  dragged_button = SimulateDrag(ShelfButtonHost::MOUSE, 1, 3, false);
+  dragged_button = SimulateDrag(ShelfView::MOUSE, 1, 3, false);
   new_id = AddPanel();
   id_map.insert(id_map.begin() + 7,
                 std::make_pair(new_id, GetButtonByID(new_id)));
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-  button_host->PointerReleasedOnButton(
-      dragged_button, ShelfButtonHost::MOUSE, false);
+  shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, false);
 }
 
 // Check that 2nd drag from the other pointer would be ignored.
 TEST_F(ShelfViewTest, SimultaneousDrag) {
-  ShelfButtonHost* button_host = shelf_view_;
-
   std::vector<std::pair<ShelfID, views::View*> > id_map;
   SetupForDragTest(&id_map);
 
   // Start a mouse drag.
   views::View* dragged_button_mouse =
-      SimulateDrag(ShelfButtonHost::MOUSE, 1, 3, false);
+      SimulateDrag(ShelfView::MOUSE, 1, 3, false);
   std::rotate(id_map.begin() + 1,
               id_map.begin() + 2,
               id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
   // Attempt a touch drag before the mouse drag finishes.
   views::View* dragged_button_touch =
-      SimulateDrag(ShelfButtonHost::TOUCH, 4, 2, false);
+      SimulateDrag(ShelfView::TOUCH, 4, 2, false);
 
   // Nothing changes since 2nd drag is ignored.
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Finish the mouse drag.
-  button_host->PointerReleasedOnButton(
-      dragged_button_mouse, ShelfButtonHost::MOUSE, false);
+  shelf_view_->PointerReleasedOnButton(dragged_button_mouse, ShelfView::MOUSE,
+                                       false);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // Now start a touch drag.
-  dragged_button_touch = SimulateDrag(ShelfButtonHost::TOUCH, 4, 2, false);
+  dragged_button_touch = SimulateDrag(ShelfView::TOUCH, 4, 2, false);
   std::rotate(id_map.begin() + 3,
               id_map.begin() + 4,
               id_map.begin() + 5);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
   // And attempt a mouse drag before the touch drag finishes.
-  dragged_button_mouse = SimulateDrag(ShelfButtonHost::MOUSE, 1, 2, false);
+  dragged_button_mouse = SimulateDrag(ShelfView::MOUSE, 1, 2, false);
 
   // Nothing changes since 2nd drag is ignored.
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 
-  button_host->PointerReleasedOnButton(
-      dragged_button_touch, ShelfButtonHost::TOUCH, false);
+  shelf_view_->PointerReleasedOnButton(dragged_button_touch, ShelfView::TOUCH,
+                                       false);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 }
 
@@ -1235,8 +1209,6 @@ TEST_F(ShelfViewTest, DragWithNotDraggableItemInFront) {
 // Check that clicking first on one item and then dragging another works as
 // expected.
 TEST_F(ShelfViewTest, ClickOneDragAnother) {
-  ShelfButtonHost* button_host = shelf_view_;
-
   std::vector<std::pair<ShelfID, views::View*> > id_map;
   SetupForDragTest(&id_map);
 
@@ -1245,14 +1217,10 @@ TEST_F(ShelfViewTest, ClickOneDragAnother) {
 
   // Dragging browser index at 0 should change the model order correctly.
   EXPECT_TRUE(model_->items()[1].type == TYPE_BROWSER_SHORTCUT);
-  views::View* dragged_button =
-      SimulateDrag(ShelfButtonHost::MOUSE, 1, 3, false);
-  std::rotate(id_map.begin() + 1,
-              id_map.begin() + 2,
-              id_map.begin() + 4);
+  views::View* dragged_button = SimulateDrag(ShelfView::MOUSE, 1, 3, false);
+  std::rotate(id_map.begin() + 1, id_map.begin() + 2, id_map.begin() + 4);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
-  button_host->PointerReleasedOnButton(
-      dragged_button, ShelfButtonHost::MOUSE, false);
+  shelf_view_->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE, false);
   EXPECT_TRUE(model_->items()[3].type == TYPE_BROWSER_SHORTCUT);
 }
 
@@ -1375,8 +1343,7 @@ TEST_F(ShelfViewTest, ShelfItemBoundsCheck) {
 }
 
 TEST_F(ShelfViewTest, ShelfTooltipTest) {
-  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1,
-            test_api_->GetButtonCount());
+  ASSERT_EQ(test_api_->GetLastVisibleIndex() + 1, test_api_->GetButtonCount());
 
   // Prepare some items to the shelf.
   ShelfID app_button_id = AddAppShortcut();
@@ -1385,53 +1352,53 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
   ShelfButton* app_button = GetButtonByID(app_button_id);
   ShelfButton* platform_button = GetButtonByID(platform_button_id);
 
-  ShelfButtonHost* button_host = shelf_view_;
-  ShelfTooltipManager* tooltip_manager = shelf_view_->tooltip_manager();
+  ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
+  EXPECT_TRUE(test_api_->shelf_view()->GetWidget()->GetNativeWindow());
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
-  button_host->MouseEnteredButton(app_button);
+  generator.MoveMouseTo(app_button->GetBoundsInScreen().CenterPoint());
   // There's a delay to show the tooltip, so it's not visible yet.
   EXPECT_FALSE(tooltip_manager->IsVisible());
-  EXPECT_EQ(app_button, GetTooltipAnchorView());
+  EXPECT_EQ(nullptr, tooltip_manager->GetCurrentAnchorView());
 
-  ShowTooltip();
+  tooltip_manager->ShowTooltip(app_button);
   EXPECT_TRUE(tooltip_manager->IsVisible());
+  EXPECT_EQ(app_button, tooltip_manager->GetCurrentAnchorView());
 
-  // Once it's visible, it keeps visibility and is pointing to the same
-  // item.
-  button_host->MouseExitedButton(app_button);
+  // The tooltip will continue showing while the cursor moves between buttons.
+  const gfx::Point midpoint =
+      gfx::UnionRects(app_button->GetBoundsInScreen(),
+                      platform_button->GetBoundsInScreen())
+          .CenterPoint();
+  generator.MoveMouseTo(midpoint);
   EXPECT_TRUE(tooltip_manager->IsVisible());
-  EXPECT_EQ(app_button, GetTooltipAnchorView());
+  EXPECT_EQ(app_button, tooltip_manager->GetCurrentAnchorView());
 
-  // When entered to another item, it switches to the new item.  There is no
-  // delay for the visibility.
-  button_host->MouseEnteredButton(platform_button);
+  // When the cursor moves over another item, its tooltip shows immediately.
+  generator.MoveMouseTo(platform_button->GetBoundsInScreen().CenterPoint());
   EXPECT_TRUE(tooltip_manager->IsVisible());
-  EXPECT_EQ(platform_button, GetTooltipAnchorView());
-
-  button_host->MouseExitedButton(platform_button);
+  EXPECT_EQ(platform_button, tooltip_manager->GetCurrentAnchorView());
   tooltip_manager->Close();
 
-  // Next time: enter app_button -> move immediately to tab_button.
-  button_host->MouseEnteredButton(app_button);
-  button_host->MouseExitedButton(app_button);
-  button_host->MouseEnteredButton(platform_button);
+  // Now cursor over the app_button and move immediately to the platform_button.
+  generator.MoveMouseTo(app_button->GetBoundsInScreen().CenterPoint());
+  generator.MoveMouseTo(midpoint);
+  generator.MoveMouseTo(platform_button->GetBoundsInScreen().CenterPoint());
   EXPECT_FALSE(tooltip_manager->IsVisible());
-  EXPECT_EQ(platform_button, GetTooltipAnchorView());
+  EXPECT_EQ(nullptr, tooltip_manager->GetCurrentAnchorView());
 }
 
 // Verify a fix for crash caused by a tooltip update for a deleted shelf
 // button, see crbug.com/288838.
 TEST_F(ShelfViewTest, RemovingItemClosesTooltip) {
-  ShelfButtonHost* button_host = shelf_view_;
-  ShelfTooltipManager* tooltip_manager = shelf_view_->tooltip_manager();
+  ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
 
   // Add an item to the shelf.
   ShelfID app_button_id = AddAppShortcut();
   ShelfButton* app_button = GetButtonByID(app_button_id);
 
   // Spawn a tooltip on that item.
-  button_host->MouseEnteredButton(app_button);
-  ShowTooltip();
+  tooltip_manager->ShowTooltip(app_button);
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Remove the app shortcut while the tooltip is open. The tooltip should be
@@ -1446,16 +1413,14 @@ TEST_F(ShelfViewTest, RemovingItemClosesTooltip) {
 
 // Changing the shelf alignment closes any open tooltip.
 TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
-  ShelfButtonHost* button_host = shelf_view_;
-  ShelfTooltipManager* tooltip_manager = shelf_view_->tooltip_manager();
+  ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
 
   // Add an item to the shelf.
   ShelfID app_button_id = AddAppShortcut();
   ShelfButton* app_button = GetButtonByID(app_button_id);
 
   // Spawn a tooltip on the item.
-  button_host->MouseEnteredButton(app_button);
-  ShowTooltip();
+  tooltip_manager->ShowTooltip(app_button);
   EXPECT_TRUE(tooltip_manager->IsVisible());
 
   // Changing shelf alignment hides the tooltip.
@@ -1539,8 +1504,8 @@ TEST_F(ShelfViewTest, ShouldHideTooltipWithAppListWindowTest) {
 // Test that by moving the mouse cursor off the button onto the bubble it closes
 // the bubble.
 TEST_F(ShelfViewTest, ShouldHideTooltipWhenHoveringOnTooltip) {
-  ShelfTooltipManager* tooltip_manager = shelf_view_->tooltip_manager();
-  tooltip_manager->CreateZeroDelayTimerForTest();
+  ShelfTooltipManager* tooltip_manager = test_api_->tooltip_manager();
+  tooltip_manager->set_timer_delay_for_test(0);
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
 
   // Move the mouse off any item and check that no tooltip is shown.

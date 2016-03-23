@@ -66,10 +66,7 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
     return false;
   }
 
-  bool ShouldShowTooltip() override {
-    // NOTIMPLEMENTED(); very noisy
-    return false;
-  }
+  bool ShouldShowTooltip() override { return true; }
 
   void Close() override { NOTIMPLEMENTED(); }
 

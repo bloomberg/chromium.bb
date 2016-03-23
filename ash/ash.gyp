@@ -232,7 +232,6 @@
       'shelf/shelf_bezel_event_filter.h',
       'shelf/shelf_button.cc',
       'shelf/shelf_button.h',
-      'shelf/shelf_button_host.h',
       'shelf/shelf_constants.cc',
       'shelf/shelf_constants.h',
       'shelf/shelf_delegate.h',

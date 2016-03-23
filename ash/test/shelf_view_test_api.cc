@@ -101,6 +101,10 @@ OverflowBubble* ShelfViewTestAPI::overflow_bubble() {
   return shelf_view_->overflow_bubble_.get();
 }
 
+ShelfTooltipManager* ShelfViewTestAPI::tooltip_manager() {
+  return &shelf_view_->tooltip_;
+}
+
 gfx::Size ShelfViewTestAPI::GetPreferredSize() {
   return shelf_view_->GetPreferredSize();
 }

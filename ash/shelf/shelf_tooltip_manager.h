@@ -7,106 +7,72 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
-#include "ash/shelf/shelf_types.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/timer/timer.h"
 #include "ui/events/event_handler.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/views/bubble/bubble_border.h"
-#include "ui/views/bubble/bubble_delegate.h"
-
-namespace base {
-class Timer;
-}
 
 namespace views {
 class BubbleDelegateView;
-class Label;
+class View;
 }
 
 namespace ash {
-class ShelfView;
 class ShelfLayoutManager;
+class ShelfView;
 
 namespace test {
 class ShelfTooltipManagerTest;
 class ShelfViewTest;
 }
 
-// ShelfTooltipManager manages the tooltip balloon poping up on shelf items.
+// ShelfTooltipManager manages the tooltip bubble that appears for shelf items.
 class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
                                        public ShelfLayoutManagerObserver {
  public:
-  ShelfTooltipManager(ShelfLayoutManager* shelf_layout_manager,
-                      ShelfView* shelf_view);
+  explicit ShelfTooltipManager(ShelfView* shelf_view);
   ~ShelfTooltipManager() override;
 
-  ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
-
-  // Called when the bubble is closed.
-  void OnBubbleClosed(views::BubbleDelegateView* view);
-
-  // Shows the tooltip after a delay.  It also has the appearing animation.
-  void ShowDelayed(views::View* anchor, const base::string16& text);
-
-  // Shows the tooltip immediately.  It omits the appearing animation.
-  void ShowImmediately(views::View* anchor, const base::string16& text);
+  // Initializes the tooltip manager once the shelf is shown.
+  void Init();
 
   // Closes the tooltip.
   void Close();
 
-  // Changes the arrow location of the tooltip in case that the launcher
-  // arrangement has changed.
-  void UpdateArrow();
-
-  // Resets the timer for the delayed showing |view_|.  If the timer isn't
-  // running, it starts a new timer.
-  void ResetTimer();
-
-  // Stops the timer for the delayed showing |view_|.
-  void StopTimer();
-
   // Returns true if the tooltip is currently visible.
-  bool IsVisible();
+  bool IsVisible() const;
 
-  // Returns the view to which the tooltip bubble is anchored. May be NULL.
-  views::View* GetCurrentAnchorView() { return anchor_; }
+  // Returns the view to which the tooltip bubble is anchored. May be null.
+  views::View* GetCurrentAnchorView() const;
 
-  // Create an instant timer for test purposes.
-  void CreateZeroDelayTimerForTest();
+  // Show the tooltip bubble for the specified view.
+  void ShowTooltip(views::View* view);
+  void ShowTooltipWithDelay(views::View* view);
 
-protected:
+  // Set the timer delay in ms for testing.
+  void set_timer_delay_for_test(int timer_delay) { timer_delay_ = timer_delay; }
+
+ protected:
   // ui::EventHandler overrides:
- void OnMouseEvent(ui::MouseEvent* event) override;
- void OnTouchEvent(ui::TouchEvent* event) override;
- void OnGestureEvent(ui::GestureEvent* event) override;
- void OnCancelMode(ui::CancelModeEvent* event) override;
+  void OnEvent(ui::Event* event) override;
 
   // ShelfLayoutManagerObserver overrides:
- void WillDeleteShelf() override;
- void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
- void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
+  void WillDeleteShelf() override;
+  void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
+  void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
 
  private:
   class ShelfTooltipBubble;
   friend class test::ShelfViewTest;
   friend class test::ShelfTooltipManagerTest;
 
-  void CancelHidingAnimation();
-  void CloseSoon();
-  void ShowInternal();
-  void CreateBubble(views::View* anchor, const base::string16& text);
-  void CreateTimer(int delay_in_ms);
+  int timer_delay_;
+  base::OneShotTimer timer_;
 
-  ShelfTooltipBubble* view_;
-  views::Widget* widget_;
-  views::View* anchor_;
-  base::string16 text_;
-  scoped_ptr<base::Timer> timer_;
-
-  ShelfLayoutManager* shelf_layout_manager_;
   ShelfView* shelf_view_;
+  ShelfLayoutManager* shelf_layout_manager_;
+  views::BubbleDelegateView* bubble_;
 
   base::WeakPtrFactory<ShelfTooltipManager> weak_factory_;
 

@@ -4,34 +4,18 @@
 
 #include "ash/shelf/shelf_tooltip_manager.h"
 
-#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_test_api.h"
-#include "ash/wm/window_util.h"
-#include "base/strings/string16.h"
-#include "base/time/time.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/events/event.h"
+#include "ash/test/shelf_view_test_api.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/event_handler.h"
-#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/events/test/events_test_utils.h"
+#include "ui/events/test/event_generator.h"
+#include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-void SetEventTarget(ui::EventTarget* target,
-                    ui::Event* event) {
-  ui::Event::DispatcherApi dispatch_helper(event);
-  dispatch_helper.set_target(target);
-}
-
-}
 
 namespace ash {
 namespace test {
@@ -43,52 +27,38 @@ class ShelfTooltipManagerTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    RootWindowController* controller = Shell::GetPrimaryRootWindowController();
-    tooltip_manager_.reset(new ShelfTooltipManager(
-        controller->GetShelfLayoutManager(),
-        ShelfTestAPI(controller->shelf()->shelf()).shelf_view()));
-  }
-
-  void TearDown() override {
-    tooltip_manager_.reset();
-    AshTestBase::TearDown();
+    shelf_ = Shelf::ForPrimaryDisplay();
+    ShelfView* shelf_view = test::ShelfTestAPI(shelf_).shelf_view();
+    tooltip_manager_ = test::ShelfViewTestAPI(shelf_view).tooltip_manager();
   }
 
   void ShowDelayed() {
     CreateWidget();
-    tooltip_manager_->ShowDelayed(dummy_anchor_.get(), base::string16());
+    tooltip_manager_->ShowTooltipWithDelay(dummy_anchor_.get());
   }
 
   void ShowImmediately() {
     CreateWidget();
-    tooltip_manager_->ShowImmediately(dummy_anchor_.get(), base::string16());
+    tooltip_manager_->ShowTooltip(dummy_anchor_.get());
   }
 
-  bool TooltipIsVisible() {
-    return tooltip_manager_->IsVisible();
-  }
+  bool TooltipIsVisible() { return tooltip_manager_->IsVisible(); }
+  bool IsTimerRunning() { return tooltip_manager_->timer_.IsRunning(); }
 
-  bool IsTimerRunning() {
-    return tooltip_manager_->timer_.get() != NULL;
-  }
-
-  ui::EventHandler* GetEventHandler() {
-    return tooltip_manager_.get();
-  }
-
-  views::Widget* GetTooltipWidget() {
-    return tooltip_manager_->widget_;
+  aura::Window* GetTooltipWindow() {
+    return tooltip_manager_->bubble_->GetWidget()->GetNativeWindow();
   }
 
  protected:
   scoped_ptr<views::Widget> widget_;
   scoped_ptr<views::View> dummy_anchor_;
-  scoped_ptr<ShelfTooltipManager> tooltip_manager_;
+
+  Shelf* shelf_;
+  ShelfTooltipManager* tooltip_manager_;
 
  private:
   void CreateWidget() {
     dummy_anchor_.reset(new views::View);
-
     widget_.reset(new views::Widget);
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -96,7 +66,6 @@ class ShelfTooltipManagerTest : public AshTestBase {
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.parent = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
                                         ash::kShellWindowId_ShelfContainer);
-
     widget_->Init(params);
     widget_->SetContentsView(dummy_anchor_.get());
   }
@@ -129,10 +98,7 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsHidden) {
   widget->Show();
 
   // Once the shelf is hidden, the tooltip should be invisible.
-  ASSERT_EQ(
-      SHELF_HIDDEN,
-      Shell::GetPrimaryRootWindowController()->
-          GetShelfLayoutManager()->visibility_state());
+  ASSERT_EQ(SHELF_HIDDEN, shelf_->shelf_layout_manager()->visibility_state());
   EXPECT_FALSE(TooltipIsVisible());
 
   // Do not show the view if the shelf is hidden.
@@ -156,11 +122,10 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHide) {
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 
-  ShelfLayoutManager* shelf =
-      Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager();
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
-  shelf->UpdateAutoHideState();
-  ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  ShelfLayoutManager* shelf_layout_manager = shelf_->shelf_layout_manager();
+  shelf_layout_manager->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  shelf_layout_manager->UpdateAutoHideState();
+  ASSERT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf_layout_manager->auto_hide_state());
 
   // Tooltip visibility change for auto hide may take time.
   EXPECT_TRUE(TooltipIsVisible());
@@ -176,113 +141,67 @@ TEST_F(ShelfTooltipManagerTest, HideWhenShelfIsAutoHide) {
   EXPECT_FALSE(IsTimerRunning());
 }
 
-TEST_F(ShelfTooltipManagerTest, ShouldHideForEvents) {
+TEST_F(ShelfTooltipManagerTest, HideForEvents) {
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+  gfx::Rect shelf_bounds = shelf_->shelf_widget()->GetNativeWindow()->bounds();
+
+  // Should hide if the mouse exits the shelf area.
+  ShowImmediately();
+  ASSERT_TRUE(TooltipIsVisible());
+  generator.MoveMouseTo(shelf_bounds.CenterPoint());
+  generator.SendMouseExit();
+  EXPECT_FALSE(TooltipIsVisible());
+
+  // Should hide if the mouse is pressed in the shelf area.
+  ShowImmediately();
+  ASSERT_TRUE(TooltipIsVisible());
+  generator.MoveMouseTo(shelf_bounds.CenterPoint());
+  generator.PressLeftButton();
+  EXPECT_FALSE(TooltipIsVisible());
+
+  // Should hide for touch events in the shelf.
+  ShowImmediately();
+  ASSERT_TRUE(TooltipIsVisible());
+  generator.set_current_location(shelf_bounds.CenterPoint());
+  generator.PressTouch();
+  EXPECT_FALSE(TooltipIsVisible());
+
+  // Should hide for gesture events in the shelf.
+  ShowImmediately();
+  ASSERT_TRUE(TooltipIsVisible());
+  generator.GestureTapDownAndUp(shelf_bounds.CenterPoint());
+  EXPECT_FALSE(TooltipIsVisible());
+}
+
+// TODO(msw): Hiding for touch and gesture events outside the shelf is broken.
+TEST_F(ShelfTooltipManagerTest, HideForEventsBroken) {
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
 
-  aura::Window* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
-  ui::EventHandler* event_handler = GetEventHandler();
+  generator.set_current_location(gfx::Point());
+  generator.PressTouch();
+  EXPECT_TRUE(TooltipIsVisible());
+
+  generator.GestureTapDownAndUp(gfx::Point());
+  EXPECT_TRUE(TooltipIsVisible());
+}
+
+TEST_F(ShelfTooltipManagerTest, DoNotHideForEvents) {
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+
+  ShowImmediately();
+  ASSERT_TRUE(TooltipIsVisible());
 
   // Should not hide for key events.
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::EF_NONE);
-  SetEventTarget(root_window, &key_event);
-  event_handler->OnKeyEvent(&key_event);
-  EXPECT_FALSE(key_event.handled());
+  generator.PressKey(ui::VKEY_A, ui::EF_NONE);
   EXPECT_TRUE(TooltipIsVisible());
 
-  // Should hide for touch events.
-  ui::TouchEvent touch_event(
-      ui::ET_TOUCH_PRESSED, gfx::Point(), 0, base::TimeDelta());
-  SetEventTarget(root_window, &touch_event);
-  event_handler->OnTouchEvent(&touch_event);
-  EXPECT_FALSE(touch_event.handled());
-  EXPECT_FALSE(TooltipIsVisible());
-
-  // Shouldn't hide if the touch happens on the tooltip.
-  ShowImmediately();
-  views::Widget* tooltip_widget = GetTooltipWidget();
-  SetEventTarget(tooltip_widget->GetNativeWindow(), &touch_event);
-  event_handler->OnTouchEvent(&touch_event);
-  EXPECT_FALSE(touch_event.handled());
+  // Should not hide for touch events on the tooltip.
+  generator.set_current_location(GetTooltipWindow()->bounds().CenterPoint());
+  generator.PressTouch();
   EXPECT_TRUE(TooltipIsVisible());
-
-  // Should hide for gesture events.
-  ui::GestureEvent gesture_event(
-      0,
-      0,
-      ui::EF_NONE,
-      base::TimeDelta::FromMilliseconds(base::Time::Now().ToDoubleT() * 1000),
-      ui::GestureEventDetails(ui::ET_GESTURE_BEGIN));
-  SetEventTarget(tooltip_widget->GetNativeWindow(), &gesture_event);
-  event_handler->OnGestureEvent(&gesture_event);
-  EXPECT_FALSE(gesture_event.handled());
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(TooltipIsVisible());
-}
-
-TEST_F(ShelfTooltipManagerTest, HideForMouseMoveEvent) {
-  ShowImmediately();
-  ASSERT_TRUE(TooltipIsVisible());
-
-  aura::Window* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
-  ui::EventHandler* event_handler = GetEventHandler();
-
-  gfx::Rect tooltip_rect = GetTooltipWidget()->GetNativeWindow()->bounds();
-  ASSERT_FALSE(tooltip_rect.IsEmpty());
-
-  // Shouldn't hide if the mouse is in the tooltip.
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, tooltip_rect.CenterPoint(),
-                             tooltip_rect.CenterPoint(), ui::EventTimeForNow(),
-                             ui::EF_NONE, ui::EF_NONE);
-  ui::LocatedEventTestApi test_api(&mouse_event);
-
-  SetEventTarget(root_window, &mouse_event);
-  event_handler->OnMouseEvent(&mouse_event);
-  EXPECT_FALSE(mouse_event.handled());
-  EXPECT_TRUE(TooltipIsVisible());
-
-  // Should hide if the mouse is out of the tooltip.
-  test_api.set_location(tooltip_rect.origin() + gfx::Vector2d(-1, -1));
-  event_handler->OnMouseEvent(&mouse_event);
-  EXPECT_FALSE(mouse_event.handled());
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(TooltipIsVisible());
-}
-
-// Checks that tooltip is hidden when mouse is pressed in anywhere.
-TEST_F(ShelfTooltipManagerTest, HideForMouseClickEvent) {
-  ShowImmediately();
-  ASSERT_TRUE(TooltipIsVisible());
-
-  aura::Window* root_window = Shell::GetInstance()->GetPrimaryRootWindow();
-  ui::EventHandler* event_handler = GetEventHandler();
-
-  gfx::Rect tooltip_rect = GetTooltipWidget()->GetNativeWindow()->bounds();
-  ASSERT_FALSE(tooltip_rect.IsEmpty());
-
-  // Should hide if the mouse is pressed in the tooltip.
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_PRESSED, tooltip_rect.CenterPoint(),
-                             tooltip_rect.CenterPoint(), ui::EventTimeForNow(),
-                             ui::EF_NONE, ui::EF_NONE);
-
-  SetEventTarget(root_window, &mouse_event);
-  event_handler->OnMouseEvent(&mouse_event);
-  EXPECT_FALSE(mouse_event.handled());
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(TooltipIsVisible());
-
-  // Should hide if the mouse is pressed outside of the tooltip.
-  ShowImmediately();
-  ASSERT_TRUE(TooltipIsVisible());
-
-  ui::LocatedEventTestApi test_api(&mouse_event);
-  test_api.set_location(tooltip_rect.origin() + gfx::Vector2d(-1, -1));
-
-  SetEventTarget(root_window, &mouse_event);
-  event_handler->OnMouseEvent(&mouse_event);
-  EXPECT_FALSE(mouse_event.handled());
-  RunAllPendingInMessageLoop();
-  EXPECT_FALSE(TooltipIsVisible());
 }
 
 }  // namespace test

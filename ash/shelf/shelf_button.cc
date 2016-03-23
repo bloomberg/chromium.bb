@@ -9,7 +9,7 @@
 #include "ash/ash_constants.h"
 #include "ash/ash_switches.h"
 #include "ash/shelf/shelf.h"
-#include "ash/shelf/shelf_button_host.h"
+#include "ash/shelf/shelf_view.h"
 #include "base/time/time.h"
 #include "grit/ash_resources.h"
 #include "skia/ext/image_operations.h"
@@ -115,8 +115,8 @@ namespace ash {
 class ShelfButton::BarView : public views::ImageView,
                              public ShelfButtonAnimation::Observer {
  public:
-  BarView(ShelfButton* host)
-      : host_(host),
+  BarView(Shelf* shelf)
+      : shelf_(shelf),
         show_attention_(false),
         animation_end_time_(base::TimeTicks()),
         animating_(false) {
@@ -180,7 +180,7 @@ class ShelfButton::BarView : public views::ImageView,
       double animation = animating_ ?
           ShelfButtonAnimation::GetInstance()->GetAnimation() : 1.0;
       double scale = .35 + .65 * animation;
-      if (host_->shelf()->alignment() == SHELF_ALIGNMENT_BOTTOM) {
+      if (shelf_->alignment() == SHELF_ALIGNMENT_BOTTOM) {
         int width = base_bounds_.width() * scale;
         bounds.set_width(std::min(width, kIconSize));
         int x_offset = (base_bounds_.width() - bounds.width()) / 2;
@@ -206,7 +206,7 @@ class ShelfButton::BarView : public views::ImageView,
     }
   }
 
-  ShelfButton* host_;
+  Shelf* shelf_;
   bool show_attention_;
   base::TimeTicks animation_end_time_;  // For attention throbbing underline.
   bool animating_;  // Is time-limited attention animation running?
@@ -216,41 +216,18 @@ class ShelfButton::BarView : public views::ImageView,
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// ShelfButton::IconView
-
-ShelfButton::IconView::IconView() : icon_size_(kIconSize) {
-  // Do not make this interactive, so that events are sent to ShelfView for
-  // handling.
-  set_interactive(false);
-}
-
-ShelfButton::IconView::~IconView() {
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // ShelfButton
 
 // static
 const char ShelfButton::kViewClassName[] = "ash/ShelfButton";
 
-ShelfButton* ShelfButton::Create(views::ButtonListener* listener,
-                                 ShelfButtonHost* host,
-                                 Shelf* shelf) {
-  ShelfButton* button = new ShelfButton(listener, host, shelf);
-  button->Init();
-  return button;
-}
-
-ShelfButton::ShelfButton(views::ButtonListener* listener,
-                         ShelfButtonHost* host,
-                         Shelf* shelf)
-    : CustomButton(listener),
-      host_(host),
-      icon_view_(NULL),
-      bar_(new BarView(this)),
+ShelfButton::ShelfButton(ShelfView* shelf_view)
+    : CustomButton(shelf_view),
+      shelf_view_(shelf_view),
+      icon_view_(new views::ImageView()),
+      bar_(new BarView(shelf_view->shelf())),
       state_(STATE_NORMAL),
-      shelf_(shelf),
-      destroyed_flag_(NULL) {
+      destroyed_flag_(nullptr) {
   SetAccessibilityFocusable(true);
 
   const gfx::ShadowValue kShadows[] = {
@@ -260,7 +237,16 @@ ShelfButton::ShelfButton(views::ButtonListener* listener,
   };
   icon_shadows_.assign(kShadows, kShadows + arraysize(kShadows));
 
+  // TODO: refactor the layers so each button doesn't require 2.
+  icon_view_->SetPaintToLayer(true);
+  icon_view_->layer()->SetFillsBoundsOpaquely(false);
+  icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
+  icon_view_->SetVerticalAlignment(views::ImageView::LEADING);
+  // Do not make this interactive, so that events are sent to ShelfView.
+  icon_view_->set_interactive(false);
+
   AddChildView(bar_);
+  AddChildView(icon_view_);
 }
 
 ShelfButton::~ShelfButton() {
@@ -280,19 +266,13 @@ void ShelfButton::SetImage(const gfx::ImageSkia& image) {
     return;
   }
 
-  if (icon_view_->icon_size() == 0) {
-    SetShadowedImage(image);
-    return;
-  }
-
   // Resize the image maintaining our aspect ratio.
-  int pref = icon_view_->icon_size();
   float aspect_ratio =
       static_cast<float>(image.width()) / static_cast<float>(image.height());
-  int height = pref;
+  int height = kIconSize;
   int width = static_cast<int>(aspect_ratio * height);
-  if (width > pref) {
-    width = pref;
+  if (width > kIconSize) {
+    width = kIconSize;
     height = static_cast<int>(width / aspect_ratio);
   }
 
@@ -342,7 +322,7 @@ void ShelfButton::ShowContextMenu(const gfx::Point& p,
   CustomButton::ShowContextMenu(p, source_type);
 
   if (!destroyed) {
-    destroyed_flag_ = NULL;
+    destroyed_flag_ = nullptr;
     // The menu will not propagate mouse events while its shown. To address,
     // the hover state gets cleared once the menu was shown (and this was not
     // destroyed).
@@ -356,71 +336,53 @@ const char* ShelfButton::GetClassName() const {
 
 bool ShelfButton::OnMousePressed(const ui::MouseEvent& event) {
   CustomButton::OnMousePressed(event);
-  host_->PointerPressedOnButton(this, ShelfButtonHost::MOUSE, event);
+  shelf_view_->PointerPressedOnButton(this, ShelfView::MOUSE, event);
   return true;
 }
 
 void ShelfButton::OnMouseReleased(const ui::MouseEvent& event) {
   CustomButton::OnMouseReleased(event);
-  host_->PointerReleasedOnButton(this, ShelfButtonHost::MOUSE, false);
+  shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, false);
 }
 
 void ShelfButton::OnMouseCaptureLost() {
   ClearState(STATE_HOVERED);
-  host_->PointerReleasedOnButton(this, ShelfButtonHost::MOUSE, true);
+  shelf_view_->PointerReleasedOnButton(this, ShelfView::MOUSE, true);
   CustomButton::OnMouseCaptureLost();
 }
 
 bool ShelfButton::OnMouseDragged(const ui::MouseEvent& event) {
   CustomButton::OnMouseDragged(event);
-  host_->PointerDraggedOnButton(this, ShelfButtonHost::MOUSE, event);
+  shelf_view_->PointerDraggedOnButton(this, ShelfView::MOUSE, event);
   return true;
-}
-
-void ShelfButton::OnMouseMoved(const ui::MouseEvent& event) {
-  CustomButton::OnMouseMoved(event);
-  host_->MouseMovedOverButton(this);
-}
-
-void ShelfButton::OnMouseEntered(const ui::MouseEvent& event) {
-  AddState(STATE_HOVERED);
-  CustomButton::OnMouseEntered(event);
-  host_->MouseEnteredButton(this);
-}
-
-void ShelfButton::OnMouseExited(const ui::MouseEvent& event) {
-  ClearState(STATE_HOVERED);
-  CustomButton::OnMouseExited(event);
-  host_->MouseExitedButton(this);
 }
 
 void ShelfButton::GetAccessibleState(ui::AXViewState* state) {
   state->role = ui::AX_ROLE_BUTTON;
-  state->name = host_->GetAccessibleName(this);
+  state->name = shelf_view_->GetTitleForView(this);
 }
 
 void ShelfButton::Layout() {
   const gfx::Rect button_bounds(GetContentsBounds());
-  int icon_pad = shelf_->IsHorizontalAlignment() ? kIconPad : kIconPadVertical;
-  int x_offset = shelf_->PrimaryAxisValue(0, icon_pad);
-  int y_offset = shelf_->PrimaryAxisValue(icon_pad, 0);
+  Shelf* shelf = shelf_view_->shelf();
+  int icon_pad = shelf->PrimaryAxisValue(kIconPad, kIconPadVertical);
+  int x_offset = shelf->PrimaryAxisValue(0, icon_pad);
+  int y_offset = shelf->PrimaryAxisValue(icon_pad, 0);
 
-  int icon_width = std::min(kIconSize,
-      button_bounds.width() - x_offset);
-  int icon_height = std::min(kIconSize,
-      button_bounds.height() - y_offset);
+  int icon_width = std::min(kIconSize, button_bounds.width() - x_offset);
+  int icon_height = std::min(kIconSize, button_bounds.height() - y_offset);
 
   // If on the left or top 'invert' the inset so the constant gap is on
   // the interior (towards the center of display) edge of the shelf.
-  if (SHELF_ALIGNMENT_LEFT == shelf_->alignment())
+  if (SHELF_ALIGNMENT_LEFT == shelf->alignment())
     x_offset = button_bounds.width() - (kIconSize + icon_pad);
 
-  if (SHELF_ALIGNMENT_TOP == shelf_->alignment())
+  if (SHELF_ALIGNMENT_TOP == shelf->alignment())
     y_offset = button_bounds.height() - (kIconSize + icon_pad);
 
   // Center icon with respect to the secondary axis, and ensure
   // that the icon doesn't occlude the bar highlight.
-  if (shelf_->IsHorizontalAlignment()) {
+  if (shelf->IsHorizontalAlignment()) {
     x_offset = std::max(0, button_bounds.width() - icon_width) / 2;
     if (y_offset + icon_height + kBarSize > button_bounds.height())
       icon_height = button_bounds.height() - (y_offset + kBarSize);
@@ -484,16 +446,16 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
       ClearState(STATE_HOVERED);
       return CustomButton::OnGestureEvent(event);
     case ui::ET_GESTURE_SCROLL_BEGIN:
-      host_->PointerPressedOnButton(this, ShelfButtonHost::TOUCH, *event);
+      shelf_view_->PointerPressedOnButton(this, ShelfView::TOUCH, *event);
       event->SetHandled();
       return;
     case ui::ET_GESTURE_SCROLL_UPDATE:
-      host_->PointerDraggedOnButton(this, ShelfButtonHost::TOUCH, *event);
+      shelf_view_->PointerDraggedOnButton(this, ShelfView::TOUCH, *event);
       event->SetHandled();
       return;
     case ui::ET_GESTURE_SCROLL_END:
     case ui::ET_SCROLL_FLING_START:
-      host_->PointerReleasedOnButton(this, ShelfButtonHost::TOUCH, false);
+      shelf_view_->PointerReleasedOnButton(this, ShelfView::TOUCH, false);
       event->SetHandled();
       return;
     default:
@@ -501,28 +463,12 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void ShelfButton::Init() {
-  icon_view_ = CreateIconView();
-
-  // TODO: refactor the layers so each button doesn't require 2.
-  icon_view_->SetPaintToLayer(true);
-  icon_view_->layer()->SetFillsBoundsOpaquely(false);
-  icon_view_->SetHorizontalAlignment(views::ImageView::CENTER);
-  icon_view_->SetVerticalAlignment(views::ImageView::LEADING);
-
-  AddChildView(icon_view_);
-}
-
-ShelfButton::IconView* ShelfButton::CreateIconView() {
-  return new IconView;
-}
-
 void ShelfButton::UpdateState() {
   UpdateBar();
-
-  icon_view_->SetHorizontalAlignment(shelf_->PrimaryAxisValue(
+  Shelf* shelf = shelf_view_->shelf();
+  icon_view_->SetHorizontalAlignment(shelf->PrimaryAxisValue(
       views::ImageView::CENTER, views::ImageView::LEADING));
-  icon_view_->SetVerticalAlignment(shelf_->PrimaryAxisValue(
+  icon_view_->SetVerticalAlignment(shelf->PrimaryAxisValue(
       views::ImageView::LEADING, views::ImageView::CENTER));
   SchedulePaint();
 }
@@ -544,20 +490,22 @@ void ShelfButton::UpdateBar() {
   if (bar_id != 0) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::ImageSkia* image = rb.GetImageNamed(bar_id).ToImageSkia();
-    if (shelf_->alignment() == SHELF_ALIGNMENT_BOTTOM) {
+
+    Shelf* shelf = shelf_view_->shelf();
+    if (shelf->alignment() == SHELF_ALIGNMENT_BOTTOM) {
       bar_->SetImage(*image);
     } else {
       bar_->SetImage(gfx::ImageSkiaOperations::CreateRotatedImage(
-          *image, shelf_->SelectValueForShelfAlignment(
+          *image, shelf->SelectValueForShelfAlignment(
                       SkBitmapOperations::ROTATION_90_CW,
                       SkBitmapOperations::ROTATION_90_CW,
                       SkBitmapOperations::ROTATION_270_CW,
                       SkBitmapOperations::ROTATION_180_CW)));
     }
-    bar_->SetHorizontalAlignment(shelf_->SelectValueForShelfAlignment(
+    bar_->SetHorizontalAlignment(shelf->SelectValueForShelfAlignment(
         views::ImageView::CENTER, views::ImageView::LEADING,
         views::ImageView::TRAILING, views::ImageView::CENTER));
-    bar_->SetVerticalAlignment(shelf_->SelectValueForShelfAlignment(
+    bar_->SetVerticalAlignment(shelf->SelectValueForShelfAlignment(
         views::ImageView::TRAILING, views::ImageView::CENTER,
         views::ImageView::CENTER, views::ImageView::LEADING));
     bar_->SchedulePaint();

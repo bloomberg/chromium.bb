@@ -9,12 +9,9 @@
 namespace ash {
 namespace test {
 
-ShelfTestAPI::ShelfTestAPI(Shelf* shelf)
-    : shelf_(shelf) {
-}
+ShelfTestAPI::ShelfTestAPI(Shelf* shelf) : shelf_(shelf) {}
 
-ShelfTestAPI::~ShelfTestAPI() {
-}
+ShelfTestAPI::~ShelfTestAPI() {}
 
 ShelfView* ShelfTestAPI::shelf_view() { return shelf_->shelf_view_; }
 

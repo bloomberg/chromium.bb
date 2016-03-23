@@ -13,14 +13,11 @@
 #include "base/bind.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/bubble/bubble_delegate.h"
-#include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -50,21 +47,12 @@ class ShelfTooltipManager::ShelfTooltipBubble
     : public views::BubbleDelegateView {
  public:
   ShelfTooltipBubble(views::View* anchor,
-                        views::BubbleBorder::Arrow arrow,
-                        ShelfTooltipManager* host);
-
-  void SetText(const base::string16& text);
-  void Close();
+                     views::BubbleBorder::Arrow arrow,
+                     const base::string16& text);
 
  private:
-  // views::WidgetDelegate overrides:
-  void WindowClosing() override;
-
   // views::View overrides:
   gfx::Size GetPreferredSize() const override;
-
-  ShelfTooltipManager* host_;
-  views::Label* label_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfTooltipBubble);
 };
@@ -72,14 +60,11 @@ class ShelfTooltipManager::ShelfTooltipBubble
 ShelfTooltipManager::ShelfTooltipBubble::ShelfTooltipBubble(
     views::View* anchor,
     views::BubbleBorder::Arrow arrow,
-    ShelfTooltipManager* host)
-    : views::BubbleDelegateView(anchor, arrow), host_(host) {
+    const base::string16& text)
+    : views::BubbleDelegateView(anchor, arrow) {
   gfx::Insets insets = gfx::Insets(kArrowOffsetTopBottom,
-                                   kArrowOffsetLeftRight,
-                                   kArrowOffsetTopBottom,
                                    kArrowOffsetLeftRight);
-  // Shelf items can have an asymmetrical border for spacing reasons.
-  // Adjust anchor location for this.
+  // Adjust the anchor location for asymmetrical borders of shelf item.
   if (anchor->border())
     insets += anchor->border()->GetInsets();
 
@@ -88,286 +73,151 @@ ShelfTooltipManager::ShelfTooltipBubble::ShelfTooltipBubble(
   set_close_on_deactivate(false);
   set_can_activate(false);
   set_accept_events(false);
-  set_margins(gfx::Insets(kTooltipTopBottomMargin, kTooltipLeftRightMargin,
-                          kTooltipTopBottomMargin, kTooltipLeftRightMargin));
+  set_margins(gfx::Insets(kTooltipTopBottomMargin, kTooltipLeftRightMargin));
   set_shadow(views::BubbleBorder::SMALL_SHADOW);
   SetLayoutManager(new views::FillLayout());
   // The anchor may not have the widget in tests.
-  if (anchor->GetWidget() && anchor->GetWidget()->GetNativeView()) {
-    aura::Window* root_window =
-        anchor->GetWidget()->GetNativeView()->GetRootWindow();
-    set_parent_window(ash::Shell::GetInstance()->GetContainer(
-        root_window, ash::kShellWindowId_SettingBubbleContainer));
+  if (anchor->GetWidget() && anchor->GetWidget()->GetNativeWindow()) {
+    set_parent_window(ash::Shell::GetContainer(
+        anchor->GetWidget()->GetNativeWindow()->GetRootWindow(),
+        ash::kShellWindowId_SettingBubbleContainer));
   }
-  label_ = new views::Label;
-  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label_->SetEnabledColor(kTooltipTextColor);
-  AddChildView(label_);
+  views::Label* label = new views::Label(text);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetEnabledColor(kTooltipTextColor);
+  AddChildView(label);
   views::BubbleDelegateView::CreateBubble(this);
-}
-
-void ShelfTooltipManager::ShelfTooltipBubble::SetText(
-    const base::string16& text) {
-  label_->SetText(text);
   SizeToContents();
 }
 
-void ShelfTooltipManager::ShelfTooltipBubble::Close() {
-  if (GetWidget()) {
-    host_ = NULL;
-    GetWidget()->Close();
-  }
-}
-
-void ShelfTooltipManager::ShelfTooltipBubble::WindowClosing() {
-  views::BubbleDelegateView::WindowClosing();
-  if (host_)
-    host_->OnBubbleClosed(this);
-}
-
 gfx::Size ShelfTooltipManager::ShelfTooltipBubble::GetPreferredSize() const {
-  gfx::Size pref_size = views::BubbleDelegateView::GetPreferredSize();
-  if (pref_size.height() < kTooltipMinHeight)
-    pref_size.set_height(kTooltipMinHeight);
-  if (pref_size.width() > kTooltipMaxWidth)
-    pref_size.set_width(kTooltipMaxWidth);
-  return pref_size;
+  const gfx::Size size = views::BubbleDelegateView::GetPreferredSize();
+  return gfx::Size(std::min(size.width(), kTooltipMaxWidth),
+                   std::max(size.height(), kTooltipMinHeight));
 }
 
-ShelfTooltipManager::ShelfTooltipManager(
-    ShelfLayoutManager* shelf_layout_manager,
-    ShelfView* shelf_view)
-    : view_(NULL),
-      widget_(NULL),
-      anchor_(NULL),
-      shelf_layout_manager_(shelf_layout_manager),
+ShelfTooltipManager::ShelfTooltipManager(ShelfView* shelf_view)
+    : timer_delay_(kTooltipAppearanceDelay),
       shelf_view_(shelf_view),
-      weak_factory_(this) {
-  if (shelf_layout_manager)
-    shelf_layout_manager->AddObserver(this);
-  if (Shell::HasInstance())
-    Shell::GetInstance()->AddPreTargetHandler(this);
-}
+      shelf_layout_manager_(nullptr),
+      bubble_(nullptr),
+      weak_factory_(this) {}
 
 ShelfTooltipManager::~ShelfTooltipManager() {
-  CancelHidingAnimation();
-  Close();
-  if (shelf_layout_manager_)
-    shelf_layout_manager_->RemoveObserver(this);
-  if (Shell::HasInstance())
-    Shell::GetInstance()->RemovePreTargetHandler(this);
+  WillDeleteShelf();
 }
 
-void ShelfTooltipManager::ShowDelayed(views::View* anchor,
-                                      const base::string16& text) {
-  if (view_) {
-    if (timer_.get() && timer_->IsRunning()) {
-      return;
-    } else {
-      CancelHidingAnimation();
-      Close();
-    }
-  }
-
-  if (shelf_layout_manager_ && !shelf_layout_manager_->IsVisible())
-    return;
-
-  CreateBubble(anchor, text);
-  ResetTimer();
-}
-
-void ShelfTooltipManager::ShowImmediately(views::View* anchor,
-                                          const base::string16& text) {
-  if (view_) {
-    if (timer_.get() && timer_->IsRunning())
-      StopTimer();
-    CancelHidingAnimation();
-    Close();
-  }
-
-  if (shelf_layout_manager_ && !shelf_layout_manager_->IsVisible())
-    return;
-
-  CreateBubble(anchor, text);
-  ShowInternal();
+void ShelfTooltipManager::Init() {
+  shelf_layout_manager_ = shelf_view_->shelf()->shelf_layout_manager();
+  shelf_layout_manager_->AddObserver(this);
+  // TODO(msw): Capture events outside the shelf to close tooltips?
+  shelf_view_->GetWidget()->GetNativeWindow()->AddPreTargetHandler(this);
 }
 
 void ShelfTooltipManager::Close() {
-  StopTimer();
-  if (view_) {
-    view_->Close();
-    view_ = NULL;
-    widget_ = NULL;
-  }
+  timer_.Stop();
+  if (bubble_)
+    bubble_->GetWidget()->Close();
+  bubble_ = nullptr;
 }
 
-void ShelfTooltipManager::OnBubbleClosed(views::BubbleDelegateView* view) {
-  if (view == view_) {
-    view_ = NULL;
-    widget_ = NULL;
-  }
+bool ShelfTooltipManager::IsVisible() const {
+  return bubble_ && bubble_->GetWidget()->IsVisible();
 }
 
-void ShelfTooltipManager::UpdateArrow() {
-  if (view_) {
-    CancelHidingAnimation();
+views::View* ShelfTooltipManager::GetCurrentAnchorView() const {
+  return bubble_ ? bubble_->GetAnchorView() : nullptr;
+}
+
+void ShelfTooltipManager::ShowTooltip(views::View* view) {
+  timer_.Stop();
+  if (bubble_) {
+    // Cancel the hiding animation to hide the old bubble immediately.
+    gfx::NativeView native_view = bubble_->GetWidget()->GetNativeView();
+    wm::SetWindowVisibilityAnimationTransition(native_view, wm::ANIMATE_NONE);
     Close();
-    ShowImmediately(anchor_, text_);
-  }
-}
-
-void ShelfTooltipManager::ResetTimer() {
-  if (timer_.get() && timer_->IsRunning()) {
-    timer_->Reset();
-    return;
   }
 
-  // We don't start the timer if the shelf isn't visible.
   if (shelf_layout_manager_ && !shelf_layout_manager_->IsVisible())
     return;
 
-  CreateTimer(kTooltipAppearanceDelay);
-}
-
-void ShelfTooltipManager::StopTimer() {
-  timer_.reset();
-}
-
-bool ShelfTooltipManager::IsVisible() {
-  if (timer_.get() && timer_->IsRunning())
-    return false;
-
-  return widget_ && widget_->IsVisible();
-}
-
-void ShelfTooltipManager::CreateZeroDelayTimerForTest() {
-  CreateTimer(0);
-}
-
-void ShelfTooltipManager::OnMouseEvent(ui::MouseEvent* event) {
-  DCHECK(event);
-  DCHECK(event->target());
-  if (!widget_ || !widget_->IsVisible())
-    return;
-
-  DCHECK(view_);
-  DCHECK(shelf_view_);
-
-  // Pressing the mouse button anywhere should close the tooltip.
-  if (event->type() == ui::ET_MOUSE_PRESSED) {
-    CloseSoon();
-    return;
-  }
-
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (widget_->GetNativeWindow()->GetRootWindow() != target->GetRootWindow()) {
-    CloseSoon();
-    return;
-  }
-
-  gfx::Point location_in_shelf_view = event->location();
-  aura::Window::ConvertPointToTarget(
-      target, shelf_view_->GetWidget()->GetNativeWindow(),
-      &location_in_shelf_view);
-
-  if (shelf_view_->ShouldHideTooltip(location_in_shelf_view)) {
-    // Because this mouse event may arrive to |view_|, here we just schedule
-    // the closing event rather than directly calling Close().
-    CloseSoon();
-  }
-}
-
-void ShelfTooltipManager::OnTouchEvent(ui::TouchEvent* event) {
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  if (widget_ && widget_->IsVisible() && widget_->GetNativeWindow() != target)
-    Close();
-}
-
-void ShelfTooltipManager::OnGestureEvent(ui::GestureEvent* event) {
-  if (widget_ && widget_->IsVisible()) {
-    // Because this mouse event may arrive to |view_|, here we just schedule
-    // the closing event rather than directly calling Close().
-    CloseSoon();
-  }
-}
-
-void ShelfTooltipManager::OnCancelMode(ui::CancelModeEvent* event) {
-  Close();
-}
-
-void ShelfTooltipManager::WillDeleteShelf() {
-  shelf_layout_manager_ = NULL;
-}
-
-void ShelfTooltipManager::WillChangeVisibilityState(
-    ShelfVisibilityState new_state) {
-  if (new_state == SHELF_HIDDEN) {
-    StopTimer();
-    Close();
-  }
-}
-
-void ShelfTooltipManager::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
-  if (new_state == SHELF_AUTO_HIDE_HIDDEN) {
-    StopTimer();
-    // AutoHide state change happens during an event filter, so immediate close
-    // may cause a crash in the HandleMouseEvent() after the filter.  So we just
-    // schedule the Close here.
-    CloseSoon();
-  }
-}
-
-void ShelfTooltipManager::CancelHidingAnimation() {
-  if (!widget_ || !widget_->GetNativeView())
-    return;
-
-  gfx::NativeView native_view = widget_->GetNativeView();
-  wm::SetWindowVisibilityAnimationTransition(
-      native_view, wm::ANIMATE_NONE);
-}
-
-void ShelfTooltipManager::CloseSoon() {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&ShelfTooltipManager::Close, weak_factory_.GetWeakPtr()));
-}
-
-void ShelfTooltipManager::ShowInternal() {
-  if (view_)
-    view_->GetWidget()->Show();
-
-  timer_.reset();
-}
-
-void ShelfTooltipManager::CreateBubble(views::View* anchor,
-                                       const base::string16& text) {
-  DCHECK(!view_);
-
-  anchor_ = anchor;
-  text_ = text;
-  Shelf* shelf = shelf_layout_manager_->shelf_widget()->shelf();
+  Shelf* shelf = shelf_view_->shelf();
   views::BubbleBorder::Arrow arrow = shelf->SelectValueForShelfAlignment(
       views::BubbleBorder::BOTTOM_CENTER, views::BubbleBorder::LEFT_CENTER,
       views::BubbleBorder::RIGHT_CENTER, views::BubbleBorder::TOP_CENTER);
 
-  view_ = new ShelfTooltipBubble(anchor, arrow, this);
-  widget_ = view_->GetWidget();
-  view_->SetText(text_);
-
-  gfx::NativeView native_view = widget_->GetNativeView();
+  base::string16 text = shelf_view_->GetTitleForView(view);
+  bubble_ = new ShelfTooltipBubble(view, arrow, text);
+  gfx::NativeView native_view = bubble_->GetWidget()->GetNativeView();
   wm::SetWindowVisibilityAnimationType(
       native_view, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_VERTICAL);
-  wm::SetWindowVisibilityAnimationTransition(
-      native_view, wm::ANIMATE_HIDE);
+  wm::SetWindowVisibilityAnimationTransition(native_view, wm::ANIMATE_HIDE);
+  bubble_->GetWidget()->Show();
 }
 
-void ShelfTooltipManager::CreateTimer(int delay_in_ms) {
-  base::OneShotTimer* new_timer = new base::OneShotTimer();
-  new_timer->Start(FROM_HERE,
-                   base::TimeDelta::FromMilliseconds(delay_in_ms),
-                   this,
-                   &ShelfTooltipManager::ShowInternal);
-  timer_.reset(new_timer);
+void ShelfTooltipManager::ShowTooltipWithDelay(views::View* view) {
+  if (!shelf_layout_manager_ || shelf_layout_manager_->IsVisible()) {
+    timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(timer_delay_),
+                 base::Bind(&ShelfTooltipManager::ShowTooltip,
+                            weak_factory_.GetWeakPtr(), view));
+  }
+}
+
+void ShelfTooltipManager::OnEvent(ui::Event* event) {
+  // Close the tooltip on mouse press or exit, and on most non-mouse events.
+  if (event->type() == ui::ET_MOUSE_PRESSED ||
+      event->type() == ui::ET_MOUSE_EXITED || !event->IsMouseEvent()) {
+    if (!event->IsKeyEvent())
+      Close();
+    return;
+  }
+
+  gfx::Point point = static_cast<ui::LocatedEvent*>(event)->location();
+  views::View::ConvertPointFromWidget(shelf_view_, &point);
+  if (IsVisible() && shelf_view_->ShouldHideTooltip(point)) {
+    Close();
+    return;
+  }
+
+  views::View* view = shelf_view_->GetTooltipHandlerForPoint(point);
+  const bool should_show = shelf_view_->ShouldShowTooltipForView(view);
+  if (IsVisible() && bubble_->GetAnchorView() != view && should_show)
+    ShowTooltip(view);
+
+  if (!IsVisible() && event->type() == ui::ET_MOUSE_MOVED) {
+    timer_.Stop();
+    if (should_show)
+      ShowTooltipWithDelay(view);
+  }
+}
+
+void ShelfTooltipManager::WillDeleteShelf() {
+  if (shelf_layout_manager_)
+    shelf_layout_manager_->RemoveObserver(this);
+  shelf_layout_manager_ = nullptr;
+
+  views::Widget* widget = shelf_view_ ? shelf_view_->GetWidget() : nullptr;
+  if (widget && widget->GetNativeWindow())
+    widget->GetNativeWindow()->RemovePreTargetHandler(this);
+  shelf_view_ = nullptr;
+}
+
+void ShelfTooltipManager::WillChangeVisibilityState(
+    ShelfVisibilityState new_state) {
+  if (new_state == SHELF_HIDDEN)
+    Close();
+}
+
+void ShelfTooltipManager::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
+  if (new_state == SHELF_AUTO_HIDE_HIDDEN) {
+    timer_.Stop();
+    // AutoHide state change happens during an event filter, so immediate close
+    // may cause a crash in the HandleMouseEvent() after the filter.  So we just
+    // schedule the Close here.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&ShelfTooltipManager::Close, weak_factory_.GetWeakPtr()));
+  }
 }
 
 }  // namespace ash
