@@ -186,7 +186,7 @@
           },
           'includes': [ '../build/java_apk.gypi' ],
           'conditions': [
-            ['target_arch == "arm"', {
+            ['enable_cardboard == 1 and target_arch == "arm"', {
               'dependencies': [ 'remoting_cardboard_extract_native_lib' ],
               'variables': {
                 'extra_native_libs': [ '<(SHARED_LIB_DIR)/libvrtoolkit.so' ],
