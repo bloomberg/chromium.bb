@@ -70,7 +70,6 @@ class SynchronousCompositorOutputSurface
   void SetSyncClient(SynchronousCompositorOutputSurfaceClient* compositor);
 
   // OutputSurface.
-  void DidLoseOutputSurface() override;
   bool BindToClient(cc::OutputSurfaceClient* surface_client) override;
   void DetachFromClient() override;
   void Reshape(const gfx::Size& size,

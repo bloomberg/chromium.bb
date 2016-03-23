@@ -24,19 +24,18 @@ namespace content {
 SynchronousCompositorProxy::SynchronousCompositorProxy(
     int routing_id,
     IPC::Sender* sender,
-    SynchronousCompositorOutputSurface* output_surface,
     SynchronousCompositorExternalBeginFrameSource* begin_frame_source,
     ui::SynchronousInputHandlerProxy* input_handler_proxy,
     InputHandlerManagerClient::Handler* handler)
     : routing_id_(routing_id),
       sender_(sender),
-      output_surface_(output_surface),
       begin_frame_source_(begin_frame_source),
       input_handler_proxy_(input_handler_proxy),
       input_handler_(handler),
       use_in_process_zero_copy_software_draw_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kSingleProcess)),
+      output_surface_(nullptr),
       inside_receive_(false),
       hardware_draw_reply_(nullptr),
       software_draw_reply_(nullptr),
@@ -49,23 +48,34 @@ SynchronousCompositorProxy::SynchronousCompositorProxy(
       need_invalidate_count_(0u),
       need_begin_frame_(false),
       did_activate_pending_tree_count_(0u) {
-  DCHECK(output_surface_);
   DCHECK(begin_frame_source_);
   DCHECK(input_handler_proxy_);
   DCHECK(input_handler_);
-  output_surface_->SetSyncClient(this);
-  output_surface_->SetTreeActivationCallback(
-      base::Bind(&SynchronousCompositorProxy::DidActivatePendingTree,
-                 base::Unretained(this)));
   begin_frame_source_->SetClient(this);
   input_handler_proxy_->SetOnlySynchronouslyAnimateRootFlings(this);
 }
 
 SynchronousCompositorProxy::~SynchronousCompositorProxy() {
-  output_surface_->SetSyncClient(nullptr);
-  output_surface_->SetTreeActivationCallback(base::Closure());
+  SetOutputSurface(nullptr);
   begin_frame_source_->SetClient(nullptr);
   input_handler_proxy_->SetOnlySynchronouslyAnimateRootFlings(nullptr);
+}
+
+void SynchronousCompositorProxy::SetOutputSurface(
+    SynchronousCompositorOutputSurface* output_surface) {
+  DCHECK_NE(output_surface_, output_surface);
+  if (output_surface_) {
+    output_surface_->SetSyncClient(nullptr);
+    output_surface_->SetTreeActivationCallback(base::Closure());
+  }
+  output_surface_ = output_surface;
+  if (output_surface_) {
+    output_surface_->SetSyncClient(this);
+    output_surface_->SetTreeActivationCallback(
+        base::Bind(&SynchronousCompositorProxy::DidActivatePendingTree,
+                   base::Unretained(this)));
+    output_surface_->SetMemoryPolicy(bytes_limit_);
+  }
 }
 
 void SynchronousCompositorProxy::SetNeedsSynchronousAnimateInput() {
@@ -117,6 +127,7 @@ void SynchronousCompositorProxy::DidActivatePendingTree() {
 }
 
 void SynchronousCompositorProxy::DeliverMessages() {
+  DCHECK(output_surface_);
   std::vector<scoped_ptr<IPC::Message>> messages;
   output_surface_->GetMessagesToDeliver(&messages);
   for (auto& msg : messages) {
@@ -206,7 +217,7 @@ void SynchronousCompositorProxy::DemandDrawHw(
   inside_receive_ = true;
   ProcessCommonParams(common_params);
 
-  {
+  if (output_surface_) {
     base::AutoReset<IPC::Message*> scoped_hardware_draw_reply(
         &hardware_draw_reply_, reply_message);
     output_surface_->DemandDrawHw(params.surface_size, params.transform,
@@ -302,7 +313,7 @@ void SynchronousCompositorProxy::DemandDrawSw(
   DCHECK(!inside_receive_);
   inside_receive_ = true;
   ProcessCommonParams(common_params);
-  {
+  if (output_surface_) {
     base::AutoReset<IPC::Message*> scoped_software_draw_reply(
         &software_draw_reply_, reply_message);
     if (use_in_process_zero_copy_software_draw_) {
@@ -325,6 +336,7 @@ void SynchronousCompositorProxy::DemandDrawSw(
 
 void SynchronousCompositorProxy::DoDemandDrawSw(
     const SyncCompositorDemandDrawSwParams& params) {
+  DCHECK(output_surface_);
   DCHECK(software_draw_shm_->zeroed);
   software_draw_shm_->zeroed = false;
 
@@ -396,7 +408,8 @@ void SynchronousCompositorProxy::ProcessCommonParams(
     const SyncCompositorCommonBrowserParams& common_params) {
   if (bytes_limit_ != common_params.bytes_limit) {
     bytes_limit_ = common_params.bytes_limit;
-    output_surface_->SetMemoryPolicy(bytes_limit_);
+    if (output_surface_)
+      output_surface_->SetMemoryPolicy(bytes_limit_);
   }
   if (common_params.update_root_scroll_offset &&
       total_scroll_offset_ != common_params.root_scroll_offset) {
@@ -406,7 +419,7 @@ void SynchronousCompositorProxy::ProcessCommonParams(
   }
   begin_frame_source_->SetBeginFrameSourcePaused(
       common_params.begin_frame_source_paused);
-  if (!common_params.ack.resources.empty()) {
+  if (output_surface_ && !common_params.ack.resources.empty()) {
     output_surface_->ReturnResources(
         common_params.output_surface_id_for_returned_resources,
         common_params.ack);

@@ -98,11 +98,6 @@ void SynchronousCompositorOutputSurface::SetSyncClient(
   sync_client_ = compositor;
 }
 
-void SynchronousCompositorOutputSurface::DidLoseOutputSurface() {
-  // Android WebView does not handle context loss.
-  LOG(FATAL) << "Renderer compositor context loss";
-}
-
 bool SynchronousCompositorOutputSurface::BindToClient(
     cc::OutputSurfaceClient* surface_client) {
   DCHECK(CalledOnValidThread());
