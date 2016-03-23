@@ -8,9 +8,9 @@
 #include <cstring>
 
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
+#include "net/base/parse_number.h"
 #include "net/cert/x509_certificate.h"
 
 namespace net {
@@ -23,7 +23,8 @@ namespace {
 // untouched otherwise. Returns the parsed integer.
 int ParseIntAndAdvance(const char** field, size_t field_len, bool* ok) {
   int result = 0;
-  *ok &= base::StringToInt(base::StringPiece(*field, field_len), &result);
+  *ok &=
+      ParseNonNegativeDecimalInt(base::StringPiece(*field, field_len), &result);
   *field += field_len;
   return result;
 }
