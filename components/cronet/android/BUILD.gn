@@ -245,7 +245,33 @@ shared_library("cronet") {
 # cronet_api.jar defines Cronet API and provides implementation of
 # legacy api using HttpUrlConnection (not the Chromium stack).
 android_library("cronet_api") {
-  DEPRECATED_java_in_dir = "api/src"
+  java_files = [
+    "api/src/org/chromium/net/BidirectionalStream.java",
+    "api/src/org/chromium/net/ChunkedWritableByteChannel.java",
+    "api/src/org/chromium/net/CronetEngine.java",
+    "api/src/org/chromium/net/CronetException.java",
+    "api/src/org/chromium/net/HttpUrlConnectionUrlRequest.java",
+    "api/src/org/chromium/net/HttpUrlConnectionUrlRequestFactory.java",
+    "api/src/org/chromium/net/HttpUrlRequest.java",
+    "api/src/org/chromium/net/HttpUrlRequestFactory.java",
+    "api/src/org/chromium/net/HttpUrlRequestFactoryConfig.java",
+    "api/src/org/chromium/net/HttpUrlRequestListener.java",
+    "api/src/org/chromium/net/InputStreamChannel.java",
+    "api/src/org/chromium/net/JavaCronetEngine.java",
+    "api/src/org/chromium/net/JavaUrlRequest.java",
+    "api/src/org/chromium/net/NetworkQualityRttListener.java",
+    "api/src/org/chromium/net/NetworkQualityThroughputListener.java",
+    "api/src/org/chromium/net/Preconditions.java",
+    "api/src/org/chromium/net/ResponseTooLargeException.java",
+    "api/src/org/chromium/net/UploadDataProvider.java",
+    "api/src/org/chromium/net/UploadDataProviders.java",
+    "api/src/org/chromium/net/UploadDataSink.java",
+    "api/src/org/chromium/net/UrlRequest.java",
+    "api/src/org/chromium/net/UrlRequestContextConfig.java",
+    "api/src/org/chromium/net/UrlRequestException.java",
+    "api/src/org/chromium/net/UrlResponseInfo.java",
+    "api/src/org/chromium/net/UserAgent.java",
+  ]
 
   deps = [
     "//third_party/android_tools:android_support_annotations_javalib",
@@ -305,7 +331,10 @@ android_resources("cronet_sample_apk_resources") {
 }
 
 android_library("cronet_sample_apk_java") {
-  DEPRECATED_java_in_dir = "sample/src"
+  java_files = [
+    "sample/src/org/chromium/cronet_sample_apk/CronetSampleActivity.java",
+    "sample/src/org/chromium/cronet_sample_apk/CronetSampleApplication.java",
+  ]
 
   deps = [
     ":cronet_api",
@@ -353,7 +382,10 @@ instrumentation_test_apk("cronet_sample_test_apk") {
   apk_name = "CronetSampleTest"
   apk_under_test = ":cronet_sample_apk"
   android_manifest = "sample/javatests/AndroidManifest.xml"
-  DEPRECATED_java_in_dir = "sample/javatests/src"
+  java_files = [
+    "sample/javatests/src/org/chromium/cronet_sample_apk/Criteria.java",
+    "sample/javatests/src/org/chromium/cronet_sample_apk/CronetSampleTest.java",
+  ]
 
   deps = [
     ":cronet_api",

@@ -130,7 +130,75 @@ android_resources("ui_java_resources") {
 }
 
 android_library("ui_java") {
-  DEPRECATED_java_in_dir = "java/src"
+  java_files = [
+    "java/src/org/chromium/ui/ColorPickerAdvanced.java",
+    "java/src/org/chromium/ui/ColorPickerAdvancedComponent.java",
+    "java/src/org/chromium/ui/ColorPickerDialog.java",
+    "java/src/org/chromium/ui/ColorPickerMoreButton.java",
+    "java/src/org/chromium/ui/ColorPickerSimple.java",
+    "java/src/org/chromium/ui/ColorSuggestion.java",
+    "java/src/org/chromium/ui/ColorSuggestionListAdapter.java",
+    "java/src/org/chromium/ui/DropdownAdapter.java",
+    "java/src/org/chromium/ui/DropdownDividerDrawable.java",
+    "java/src/org/chromium/ui/DropdownItem.java",
+    "java/src/org/chromium/ui/DropdownPopupWindow.java",
+    "java/src/org/chromium/ui/OnColorChangedListener.java",
+    "java/src/org/chromium/ui/UiUtils.java",
+    "java/src/org/chromium/ui/VSyncMonitor.java",
+    "java/src/org/chromium/ui/autofill/AutofillDelegate.java",
+    "java/src/org/chromium/ui/autofill/AutofillKeyboardAccessory.java",
+    "java/src/org/chromium/ui/autofill/AutofillPopup.java",
+    "java/src/org/chromium/ui/autofill/AutofillSuggestion.java",
+    "java/src/org/chromium/ui/base/ActivityWindowAndroid.java",
+    "java/src/org/chromium/ui/base/AndroidPermissionDelegate.java",
+    "java/src/org/chromium/ui/base/Clipboard.java",
+    "java/src/org/chromium/ui/base/DeviceFormFactor.java",
+    "java/src/org/chromium/ui/base/LocalizationUtils.java",
+    "java/src/org/chromium/ui/base/ResourceBundle.java",
+    "java/src/org/chromium/ui/base/SelectFileDialog.java",
+    "java/src/org/chromium/ui/base/TouchDevice.java",
+    "java/src/org/chromium/ui/base/ViewAndroidDelegate.java",
+    "java/src/org/chromium/ui/base/WindowAndroid.java",
+    "java/src/org/chromium/ui/gfx/BitmapHelper.java",
+    "java/src/org/chromium/ui/gfx/DeviceDisplayInfo.java",
+    "java/src/org/chromium/ui/gfx/ViewConfigurationHelper.java",
+    "java/src/org/chromium/ui/gl/SurfaceTextureListener.java",
+    "java/src/org/chromium/ui/gl/SurfaceTexturePlatformWrapper.java",
+    "java/src/org/chromium/ui/interpolators/BakedBezierInterpolator.java",
+    "java/src/org/chromium/ui/picker/ChromeDatePickerDialog.java",
+    "java/src/org/chromium/ui/picker/DateDialogNormalizer.java",
+    "java/src/org/chromium/ui/picker/DateTimePickerDialog.java",
+    "java/src/org/chromium/ui/picker/DateTimeSuggestion.java",
+    "java/src/org/chromium/ui/picker/DateTimeSuggestionListAdapter.java",
+    "java/src/org/chromium/ui/picker/InputDialogContainer.java",
+    "java/src/org/chromium/ui/picker/MonthPicker.java",
+    "java/src/org/chromium/ui/picker/MonthPickerDialog.java",
+    "java/src/org/chromium/ui/picker/MultiFieldTimePickerDialog.java",
+    "java/src/org/chromium/ui/picker/TwoFieldDatePicker.java",
+    "java/src/org/chromium/ui/picker/TwoFieldDatePickerDialog.java",
+    "java/src/org/chromium/ui/picker/WeekPicker.java",
+    "java/src/org/chromium/ui/picker/WeekPickerDialog.java",
+    "java/src/org/chromium/ui/resources/LayoutResource.java",
+    "java/src/org/chromium/ui/resources/Resource.java",
+    "java/src/org/chromium/ui/resources/ResourceLoader.java",
+    "java/src/org/chromium/ui/resources/ResourceManager.java",
+    "java/src/org/chromium/ui/resources/async/AsyncPreloadResourceLoader.java",
+    "java/src/org/chromium/ui/resources/dynamics/BitmapDynamicResource.java",
+    "java/src/org/chromium/ui/resources/dynamics/DynamicResource.java",
+    "java/src/org/chromium/ui/resources/dynamics/DynamicResourceLoader.java",
+    "java/src/org/chromium/ui/resources/dynamics/ViewResourceAdapter.java",
+    "java/src/org/chromium/ui/resources/dynamics/ViewResourceInflater.java",
+    "java/src/org/chromium/ui/resources/sprites/CrushedSpriteResource.java",
+    "java/src/org/chromium/ui/resources/sprites/CrushedSpriteResourceLoader.java",
+    "java/src/org/chromium/ui/resources/statics/NinePatchData.java",
+    "java/src/org/chromium/ui/resources/statics/StaticResource.java",
+    "java/src/org/chromium/ui/resources/statics/StaticResourceLoader.java",
+    "java/src/org/chromium/ui/resources/system/SystemResourceLoader.java",
+    "java/src/org/chromium/ui/text/SpanApplier.java",
+    "java/src/org/chromium/ui/widget/ButtonCompat.java",
+    "java/src/org/chromium/ui/widget/TextViewWithClickableSpans.java",
+    "java/src/org/chromium/ui/widget/Toast.java",
+  ]
   deps = [
     ":ui_java_resources",
     "//base:base_java",
@@ -139,7 +207,10 @@ android_library("ui_java") {
 }
 
 android_library("ui_javatests") {
-  DEPRECATED_java_in_dir = "javatests/src"
+  java_files = [
+    "javatests/src/org/chromium/ui/picker/DateTimePickerDialogTest.java",
+    "javatests/src/org/chromium/ui/resources/sprites/CrushedSpriteResourceTest.java",
+  ]
   testonly = true
   deps = [
     ":ui_java",

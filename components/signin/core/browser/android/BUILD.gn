@@ -19,5 +19,6 @@ android_library("java") {
     "//sync/android:sync_java",
   ]
 
-  DEPRECATED_java_in_dir = "java/src"
+  java_files =
+      [ "java/src/org/chromium/components/signin/ChildAccountInfoFetcher.java" ]
 }

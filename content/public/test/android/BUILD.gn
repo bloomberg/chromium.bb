@@ -16,5 +16,28 @@ android_library("content_java_test_support") {
     "//base:base_java_test_support",
     "//content/public/android:content_java",
   ]
-  DEPRECATED_java_in_dir = "javatests/src"
+  java_files = [
+    "javatests/src/org/chromium/content/browser/test/NativeLibraryTestBase.java",
+    "javatests/src/org/chromium/content/browser/test/NestedSystemMessageHandler.java",
+    "javatests/src/org/chromium/content/browser/test/util/ApplicationUtils.java",
+    "javatests/src/org/chromium/content/browser/test/util/CallbackHelper.java",
+    "javatests/src/org/chromium/content/browser/test/util/Criteria.java",
+    "javatests/src/org/chromium/content/browser/test/util/CriteriaHelper.java",
+    "javatests/src/org/chromium/content/browser/test/util/DOMUtils.java",
+    "javatests/src/org/chromium/content/browser/test/util/EqualityCriteria.java",
+    "javatests/src/org/chromium/content/browser/test/util/HistoryUtils.java",
+    "javatests/src/org/chromium/content/browser/test/util/JavaScriptUtils.java",
+    "javatests/src/org/chromium/content/browser/test/util/KeyUtils.java",
+    "javatests/src/org/chromium/content/browser/test/util/MockLocationProvider.java",
+    "javatests/src/org/chromium/content/browser/test/util/MockOrientationObserver.java",
+    "javatests/src/org/chromium/content/browser/test/util/OrientationChangeObserverCriteria.java",
+    "javatests/src/org/chromium/content/browser/test/util/RenderProcessLimit.java",
+    "javatests/src/org/chromium/content/browser/test/util/TestCallbackHelperContainer.java",
+    "javatests/src/org/chromium/content/browser/test/util/TestContentViewClient.java",
+    "javatests/src/org/chromium/content/browser/test/util/TestInputMethodManagerWrapper.java",
+    "javatests/src/org/chromium/content/browser/test/util/TestTouchUtils.java",
+    "javatests/src/org/chromium/content/browser/test/util/TestWebContentsObserver.java",
+    "javatests/src/org/chromium/content/browser/test/util/TouchCommon.java",
+    "javatests/src/org/chromium/content/browser/test/util/UiUtils.java",
+  ]
 }

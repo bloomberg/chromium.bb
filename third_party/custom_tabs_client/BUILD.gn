@@ -11,7 +11,7 @@ android_resources("chrome_tabs_client_example_apk_resources") {
 }
 
 android_apk("custom_tabs_client_example_apk") {
-  DEPRECATED_java_in_dir = "src/Application/src/main/java"
+  java_files = [ "src/Application/src/main/java/org/chromium/customtabsclient/MainActivity.java" ]
   android_manifest = "src/Application/src/main/AndroidManifest.xml"
   apk_name = "CustomTabsClientExample"
   deps = [
@@ -23,15 +23,28 @@ android_apk("custom_tabs_client_example_apk") {
 }
 
 android_library("custom_tabs_client_shared_lib") {
-  DEPRECATED_java_in_dir =
-      "src/shared/src/main/java/org/chromium/customtabsclient/shared"
+  java_files = [
+    "src/shared/src/main/java/org/chromium/customtabsclient/shared/CustomTabsHelper.java",
+    "src/shared/src/main/java/org/chromium/customtabsclient/shared/KeepAliveService.java",
+    "src/shared/src/main/java/org/chromium/customtabsclient/shared/ServiceConnectionCallback.java",
+    "src/shared/src/main/java/org/chromium/customtabsclient/shared/ServiceConnection.java",
+  ]
+
   deps = [
     ":custom_tabs_support_lib",
   ]
 }
 
 android_library("custom_tabs_support_lib") {
-  DEPRECATED_java_in_dir = "src/customtabs/src"
+  java_files = [
+    "src/customtabs/src/android/support/customtabs/CustomTabsCallback.java",
+    "src/customtabs/src/android/support/customtabs/CustomTabsClient.java",
+    "src/customtabs/src/android/support/customtabs/CustomTabsIntent.java",
+    "src/customtabs/src/android/support/customtabs/CustomTabsService.java",
+    "src/customtabs/src/android/support/customtabs/CustomTabsServiceConnection.java",
+    "src/customtabs/src/android/support/customtabs/CustomTabsSession.java",
+    "src/customtabs/src/android/support/customtabs/CustomTabsSessionToken.java",
+  ]
   deps = [
     "//third_party/android_tools:android_support_v13_java",
   ]

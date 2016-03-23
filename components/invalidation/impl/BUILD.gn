@@ -213,7 +213,11 @@ if (is_android) {
       "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
       "//third_party/jsr-305:jsr_305_javalib",
     ]
-    DEPRECATED_java_in_dir = "android/java/src"
+    java_files = [
+      "android/java/src/org/chromium/components/invalidation/InvalidationClientService.java",
+      "android/java/src/org/chromium/components/invalidation/InvalidationService.java",
+      "android/java/src/org/chromium/components/invalidation/PendingInvalidation.java",
+    ]
   }
   proto_java_library("proto_java") {
     proto_path = "android/proto"
@@ -230,7 +234,10 @@ if (is_android) {
       "//third_party/cacheinvalidation:cacheinvalidation_javalib",
       "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     ]
-    DEPRECATED_java_in_dir = "android/javatests/src"
+    java_files = [
+      "android/javatests/src/org/chromium/components/invalidation/InvalidationClientServiceTest.java",
+      "android/javatests/src/org/chromium/components/invalidation/TestableInvalidationClientService.java",
+    ]
   }
   junit_binary("components_invalidation_impl_junit_tests") {
     java_files = [ "android/junit/src/org/chromium/components/invalidation/PendingInvalidationTest.java" ]

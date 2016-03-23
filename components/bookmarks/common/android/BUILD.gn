@@ -25,7 +25,7 @@ android_library("bookmarks_java") {
     "//base:base_java",
   ]
   srcjar_deps = [ ":bookmark_type_javagen" ]
-  DEPRECATED_java_in_dir = "java/src"
+  java_files = [ "java/src/org/chromium/components/bookmarks/BookmarkId.java" ]
 }
 
 # GYP: //components/bookmarks.gyp:bookmarks_jni_headers

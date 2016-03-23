@@ -277,6 +277,15 @@ if (is_android) {
     deps = [
       "//base:base_java",
     ]
-    DEPRECATED_java_in_dir = "android/java/src"
+    java_files = [
+      "android/java/src/org/chromium/printing/PrintDocumentAdapterWrapper.java",
+      "android/java/src/org/chromium/printing/PrintManagerDelegate.java",
+      "android/java/src/org/chromium/printing/PrintManagerDelegateImpl.java",
+      "android/java/src/org/chromium/printing/Printable.java",
+      "android/java/src/org/chromium/printing/PrintingContext.java",
+      "android/java/src/org/chromium/printing/PrintingContextInterface.java",
+      "android/java/src/org/chromium/printing/PrintingController.java",
+      "android/java/src/org/chromium/printing/PrintingControllerImpl.java",
+    ]
   }
 }

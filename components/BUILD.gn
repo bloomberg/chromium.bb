@@ -311,7 +311,10 @@ if (is_android) {
       "//content/shell/android:content_shell_browsertests_java",
       "//testing/android/native_test:native_test_java",
     ]
-    DEPRECATED_java_in_dir = "//components/test/android/browsertests_apk/src"
+    java_files = [
+      "test/android/browsertests_apk/src/org/chromium/components_browsertests_apk/ComponentsBrowserTestsActivity.java",
+      "test/android/browsertests_apk/src/org/chromium/components_browsertests_apk/ComponentsBrowserTestsApplication.java",
+    ]
   }
 
   jinja_template("components_browsertests_manifest") {

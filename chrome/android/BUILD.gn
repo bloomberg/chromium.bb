@@ -12,6 +12,7 @@ import("//testing/test.gni")
 import("//third_party/icu/config.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("channel.gni")
+import("java_sources.gni")
 
 manifest_package = "org.chromium.chrome"
 
@@ -167,7 +168,8 @@ android_library("chrome_java") {
   # TODO(sievers): Split java code into components. Not everything
   # is really all that UI related here.
   if (android_java_ui) {
-    DEPRECATED_java_in_dir = "java/src"
+    # From java_sources.gni.
+    java_files = chrome_java_sources
 
     srcjar_deps += [
       ":custom_tabs_service_aidl",
@@ -342,7 +344,9 @@ android_aidl("custom_tabs_service_aidl") {
 # GYP: //chrome/android/chrome_apk.gyp:chrome_shared_test_java
 android_library("chrome_shared_test_java") {
   testonly = true
-  DEPRECATED_java_in_dir = "javatests/src"
+
+  # From java_sources.gni.
+  java_files = chrome_shared_test_java_sources
 
   deps = [
     "//base:base_java",
@@ -555,7 +559,19 @@ instrumentation_test_apk("chrome_public_test_apk") {
 
 android_library("chrome_sync_shell_test_apk_java") {
   testonly = true
-  DEPRECATED_java_in_dir = "sync_shell/javatests/src"
+  java_files = [
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/AutofillTest.java",
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/BookmarksTest.java",
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java",
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/FirstRunTest.java",
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/GmsCoreSyncListenerTest.java",
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/OpenTabsTest.java",
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/SyncCustomizationFragmentTest.java",
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/SyncTest.java",
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/SyncTestBase.java",
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/TypedUrlsTest.java",
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/ui/PassphraseTypeDialogFragmentTest.java",
+  ]
 
   deps = [
     "//base:base_java",

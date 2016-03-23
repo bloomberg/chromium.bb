@@ -6,7 +6,22 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
 android_library("net_java") {
-  DEPRECATED_java_in_dir = "java/src"
+  java_files = [
+    "java/src/org/chromium/net/AndroidCertVerifyResult.java",
+    "java/src/org/chromium/net/AndroidKeyStore.java",
+    "java/src/org/chromium/net/AndroidNetworkLibrary.java",
+    "java/src/org/chromium/net/AndroidTrafficStats.java",
+    "java/src/org/chromium/net/GURLUtils.java",
+    "java/src/org/chromium/net/HttpNegotiateAuthenticator.java",
+    "java/src/org/chromium/net/HttpNegotiateConstants.java",
+    "java/src/org/chromium/net/NetStringUtil.java",
+    "java/src/org/chromium/net/NetworkChangeNotifier.java",
+    "java/src/org/chromium/net/NetworkChangeNotifierAutoDetect.java",
+    "java/src/org/chromium/net/ProxyChangeListener.java",
+    "java/src/org/chromium/net/RegistrationPolicyAlwaysRegister.java",
+    "java/src/org/chromium/net/RegistrationPolicyApplicationStatus.java",
+    "java/src/org/chromium/net/X509Util.java",
+  ]
   deps = [
     "//base:base_java",
   ]
@@ -25,7 +40,21 @@ android_aidl("embedded_test_server_aidl") {
 
 android_library("net_java_test_support") {
   testonly = true
-  DEPRECATED_java_in_dir = "../test/android/javatests/src"
+  java_files = [
+    "../test/android/javatests/src/org/chromium/net/test/BaseHttpTestServer.java",
+    "../test/android/javatests/src/org/chromium/net/test/BaseTcpTestServer.java",
+    "../test/android/javatests/src/org/chromium/net/test/BaseTestServer.java",
+    "../test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java",
+    "../test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticatorService.java",
+    "../test/android/javatests/src/org/chromium/net/test/EmbeddedTestServer.java",
+    "../test/android/javatests/src/org/chromium/net/test/EmbeddedTestServerImpl.java",
+    "../test/android/javatests/src/org/chromium/net/test/EmbeddedTestServerService.java",
+    "../test/android/javatests/src/org/chromium/net/test/TestServerBuilder.java",
+    "../test/android/javatests/src/org/chromium/net/test/TestServerSpawner.java",
+    "../test/android/javatests/src/org/chromium/net/test/util/CertTestUtil.java",
+    "../test/android/javatests/src/org/chromium/net/test/util/NetworkChangeNotifierTestUtil.java",
+    "../test/android/javatests/src/org/chromium/net/test/util/TestWebServer.java",
+  ]
   deps = [
     ":net_java",
     "//base:base_java",
@@ -83,7 +112,13 @@ android_resources("net_unittests_apk_resources") {
 
 android_library("net_javatests") {
   testonly = true
-  DEPRECATED_java_in_dir = "javatests/src"
+  java_files = [
+    "javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java",
+    "javatests/src/org/chromium/net/AndroidProxySelectorTest.java",
+    "javatests/src/org/chromium/net/NetErrorsTest.java",
+    "javatests/src/org/chromium/net/NetworkChangeNotifierTest.java",
+    "javatests/src/org/chromium/net/X509UtilTest.java",
+  ]
   deps = [
     ":net_java",
     ":net_java_test_support",

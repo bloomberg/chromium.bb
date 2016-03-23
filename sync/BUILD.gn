@@ -864,7 +864,12 @@ if (is_android) {
       "//base:base_java_test_support",
       "//third_party/jsr-305:jsr_305_javalib",
     ]
-    DEPRECATED_java_in_dir = "test/android/javatests/src"
+    java_files = [
+      "test/android/javatests/src/org/chromium/sync/test/util/AccountHolder.java",
+      "test/android/javatests/src/org/chromium/sync/test/util/MockAccountManager.java",
+      "test/android/javatests/src/org/chromium/sync/test/util/MockSyncContentResolverDelegate.java",
+      "test/android/javatests/src/org/chromium/sync/test/util/SimpleFuture.java",
+    ]
   }
 
   # GYP: //sync/sync_tests.gypi:test_support_sync_fake_server_android

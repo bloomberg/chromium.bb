@@ -7,7 +7,11 @@ import("//build/config/android/rules.gni")
 assert(is_android)
 
 android_library("android_swipe_refresh_java") {
-  DEPRECATED_java_in_dir = "java/src"
+  java_files = [
+    "java/src/org/chromium/third_party/android/swiperefresh/CircleImageView.java",
+    "java/src/org/chromium/third_party/android/swiperefresh/MaterialProgressDrawable.java",
+    "java/src/org/chromium/third_party/android/swiperefresh/SwipeRefreshLayout.java",
+  ]
   deps = [
     "//third_party/android_tools:android_support_v13_java",
   ]

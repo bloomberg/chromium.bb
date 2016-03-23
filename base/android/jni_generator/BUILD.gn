@@ -34,7 +34,8 @@ generate_jni("jni_sample_header") {
 
 # GYP: //base/android/jni_generator/jni_generator.gyp:jni_sample_java
 android_library("jni_sample_java") {
-  DEPRECATED_java_in_dir = "java/src"
+  java_files =
+      [ "java/src/org/chromium/example/jni_generator/SampleForTests.java" ]
   deps = [
     "//base:base_java",
   ]

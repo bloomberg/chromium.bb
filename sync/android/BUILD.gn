@@ -16,7 +16,24 @@ android_library("sync_java") {
     google_play_services_library,
   ]
   srcjar_deps = [ ":java_enums" ]
-  DEPRECATED_java_in_dir = "java/src"
+  java_files = [
+    "java/src/org/chromium/sync/AndroidSyncSettings.java",
+    "java/src/org/chromium/sync/ModelTypeHelper.java",
+    "java/src/org/chromium/sync/PassphraseType.java",
+    "java/src/org/chromium/sync/SyncConstants.java",
+    "java/src/org/chromium/sync/SyncContentResolverDelegate.java",
+    "java/src/org/chromium/sync/SystemSyncContentResolverDelegate.java",
+    "java/src/org/chromium/sync/notifier/InvalidationClientNameGenerator.java",
+    "java/src/org/chromium/sync/notifier/InvalidationClientNameProvider.java",
+    "java/src/org/chromium/sync/notifier/InvalidationIntentProtocol.java",
+    "java/src/org/chromium/sync/notifier/InvalidationPreferences.java",
+    "java/src/org/chromium/sync/notifier/RandomizedInvalidationClientNameGenerator.java",
+    "java/src/org/chromium/sync/signin/AccountManagerDelegate.java",
+    "java/src/org/chromium/sync/signin/AccountManagerHelper.java",
+    "java/src/org/chromium/sync/signin/AuthException.java",
+    "java/src/org/chromium/sync/signin/ChromeSigninController.java",
+    "java/src/org/chromium/sync/signin/SystemAccountManagerDelegate.java",
+  ]
 }
 
 android_library("sync_javatests") {
@@ -30,7 +47,12 @@ android_library("sync_javatests") {
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
-  DEPRECATED_java_in_dir = "javatests/src"
+  java_files = [
+    "javatests/src/org/chromium/sync/AndroidSyncSettingsTest.java",
+    "javatests/src/org/chromium/sync/notifier/InvalidationClientNameProviderTest.java",
+    "javatests/src/org/chromium/sync/notifier/InvalidationPreferencesTest.java",
+    "javatests/src/org/chromium/sync/notifier/signin/AccountManagerHelperTest.java",
+  ]
 }
 
 # GYP: //sync/sync_android.gypi:model_type_java

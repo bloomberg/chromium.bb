@@ -8,5 +8,8 @@ android_library("navigation_interception_java") {
   deps = [
     "//base:base_java",
   ]
-  DEPRECATED_java_in_dir = "java/src"
+  java_files = [
+    "java/src/org/chromium/components/navigation_interception/InterceptNavigationDelegate.java",
+    "java/src/org/chromium/components/navigation_interception/NavigationParams.java",
+  ]
 }

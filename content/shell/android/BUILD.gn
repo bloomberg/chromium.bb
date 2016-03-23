@@ -51,7 +51,12 @@ android_library("content_shell_java") {
     "//net/android:net_java",
     "//ui/android:ui_java",
   ]
-  DEPRECATED_java_in_dir = "java/src"
+  java_files = [
+    "java/src/org/chromium/content_shell/Shell.java",
+    "java/src/org/chromium/content_shell/ShellLayoutTestUtils.java",
+    "java/src/org/chromium/content_shell/ShellManager.java",
+    "java/src/org/chromium/content_shell/ShellMojoTestUtils.java",
+  ]
 }
 
 content_shell_manifest =
@@ -84,7 +89,10 @@ android_library("content_shell_apk_java") {
     "//net/android:net_java",
     "//ui/android:ui_java",
   ]
-  DEPRECATED_java_in_dir = "shell_apk/src"
+  java_files = [
+    "shell_apk/src/org/chromium/content_shell_apk/ContentShellActivity.java",
+    "shell_apk/src/org/chromium/content_shell_apk/ContentShellApplication.java",
+  ]
 }
 
 android_assets("content_shell_assets") {
@@ -132,7 +140,12 @@ android_library("content_shell_test_java") {
     "//content/public/test/android:content_java_test_support",
     "//content/shell/android:content_shell_java",
   ]
-  DEPRECATED_java_in_dir = "javatests/src"
+  java_files = [
+    "javatests/src/org/chromium/content_shell_apk/ContentShellPreconditionsTest.java",
+    "javatests/src/org/chromium/content_shell_apk/ContentShellShellManagementTest.java",
+    "javatests/src/org/chromium/content_shell_apk/ContentShellTestBase.java",
+    "javatests/src/org/chromium/content_shell_apk/ContentShellUrlTest.java",
+  ]
 }
 
 instrumentation_test_apk("content_shell_test_apk") {
@@ -184,7 +197,11 @@ if (current_cpu != "x64") {
     ]
     android_manifest = chromium_linker_test_manifest
     apk_name = "ChromiumLinkerTest"
-    DEPRECATED_java_in_dir = "linker_test_apk/src"
+    java_files = [
+      "linker_test_apk/src/org/chromium/chromium_linker_test_apk/ChromiumLinkerTestActivity.java",
+      "linker_test_apk/src/org/chromium/chromium_linker_test_apk/ChromiumLinkerTestApplication.java",
+      "linker_test_apk/src/org/chromium/chromium_linker_test_apk/LinkerTests.java",
+    ]
     native_libs = [ "liblinker_test.so" ]
     use_chromium_linker = true
     enable_chromium_linker_tests = true
@@ -230,5 +247,5 @@ android_library("content_shell_browsertests_java") {
     "//testing/android/native_test:native_test_java",
     "//ui/android:ui_java",
   ]
-  DEPRECATED_java_in_dir = "browsertests/src"
+  java_files = [ "browsertests/src/org/chromium/content_shell/browsertests/ContentShellBrowserTestActivity.java" ]
 }

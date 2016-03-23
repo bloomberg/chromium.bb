@@ -26,7 +26,7 @@ android_library("service_tab_launcher_java") {
     "//base:base_java",
     "//content/public/android:content_java",
   ]
-  DEPRECATED_java_in_dir = "android/java/src"
+  java_files = [ "android/java/src/org/chromium/components/service_tab_launcher/ServiceTabLauncher.java" ]
 }
 
 # GYP: //components/service_tab_launcher:service_tab_launcher_jni_headers

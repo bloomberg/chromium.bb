@@ -126,5 +126,13 @@ android_library("media_java") {
     "//base:base_java",
   ]
 
-  DEPRECATED_java_in_dir = "java/src"
+  java_files = [
+    "java/src/org/chromium/media/AudioManagerAndroid.java",
+    "java/src/org/chromium/media/AudioRecordInput.java",
+    "java/src/org/chromium/media/MediaCodecBridge.java",
+    "java/src/org/chromium/media/MediaCodecUtil.java",
+    "java/src/org/chromium/media/MediaDrmBridge.java",
+    "java/src/org/chromium/media/MediaPlayerBridge.java",
+    "java/src/org/chromium/media/MediaPlayerListener.java",
+  ]
 }

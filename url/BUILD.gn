@@ -73,7 +73,7 @@ component("url") {
 
 if (is_android) {
   android_library("url_java") {
-    DEPRECATED_java_in_dir = "android/java/src"
+    java_files = [ "android/java/src/org/chromium/url/IDNStringUtil.java" ]
     deps = [
       "//base:base_java",
     ]

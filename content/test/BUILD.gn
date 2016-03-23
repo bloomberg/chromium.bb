@@ -297,7 +297,10 @@ if (is_android) {
 
   android_library("content_browsertests_java") {
     testonly = true
-    DEPRECATED_java_in_dir = "//content/shell/android/browsertests_apk/src"
+    java_files = [
+      "../shell/android/browsertests_apk/src/org/chromium/content_browsertests_apk/ContentBrowserTestsActivity.java",
+      "../shell/android/browsertests_apk/src/org/chromium/content_browsertests_apk/ContentBrowserTestsApplication.java",
+    ]
     deps = [
       ":content_browsertests_resources",
       "//base:base_java",
