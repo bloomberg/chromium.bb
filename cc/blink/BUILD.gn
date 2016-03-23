@@ -44,7 +44,7 @@ component("blink") {
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//gpu",
-    "//third_party/WebKit/public:blink_for_unittests",
+    "//third_party/WebKit/public:blink",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -71,7 +71,7 @@ if (!is_mac) {
       "//skia",
       "//testing/gmock",
       "//testing/gtest",
-      "//third_party/WebKit/public:blink",
+      "//third_party/WebKit/public:blink_for_unittests",
       "//ui/gfx:test_support",
       "//ui/gfx/geometry",
     ]
