@@ -14,17 +14,32 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.widget.TextView;
 
+import org.chromium.net.test.EmbeddedTestServer;
+
 /**
  * Base test class for all CronetSample based tests.
  */
 public class CronetSampleTest extends
         ActivityInstrumentationTestCase2<CronetSampleActivity> {
-
-    // URL used for base tests.
-    private static final String URL = "http://127.0.0.1:8000";
+    private EmbeddedTestServer mTestServer;
+    private String mUrl;
 
     public CronetSampleTest() {
         super(CronetSampleActivity.class);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer =
+                EmbeddedTestServer.createAndStartDefaultServer(getInstrumentation().getContext());
+        mUrl = mTestServer.getURL("/echo?status=200");
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
     }
 
     /*
@@ -34,7 +49,7 @@ public class CronetSampleTest extends
     */
     @FlakyTest
     public void testLoadUrl() throws Exception {
-        CronetSampleActivity activity = launchCronetSampleWithUrl(URL);
+        CronetSampleActivity activity = launchCronetSampleWithUrl(mUrl);
 
         // Make sure the activity was created as expected.
         assertNotNull(activity);
@@ -51,7 +66,7 @@ public class CronetSampleTest extends
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.equals("Completed " + URL + " (200)")) {
+                if (s.equals("Completed " + mUrl + " (200)")) {
                     done.open();
                 }
             }

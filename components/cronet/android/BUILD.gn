@@ -394,6 +394,7 @@ instrumentation_test_apk("cronet_sample_test_apk") {
     ":cronet_sample_test_apk_resources",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//net/android:net_java_test_support",
   ]
   additional_apks = [ "//net/android:net_test_support_apk" ]
 

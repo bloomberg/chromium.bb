@@ -100,6 +100,23 @@ public class EmbeddedTestServerImpl extends IEmbeddedTestServerImpl.Stub {
         });
     }
 
+    /** Add the default handlers and serve files from the provided directory relative to the
+     *  external storage directory.
+     *
+     *  @param directoryPath The path of the directory from which files should be served, relative
+     *      to the external storage directory.
+     */
+    @Override
+    public void addDefaultHandlers(final String directoryPath) {
+        runOnHandlerThread(new Callable<Void>() {
+            @Override
+            public Void call() {
+                nativeAddDefaultHandlers(mNativeEmbeddedTestServer, directoryPath);
+                return null;
+            }
+        });
+    }
+
     /** Serve files from the provided directory.
      *
      *  @param directoryPath The path of the directory from which files should be served.
@@ -181,6 +198,8 @@ public class EmbeddedTestServerImpl extends IEmbeddedTestServerImpl.Stub {
     private native boolean nativeStart(long nativeEmbeddedTestServerAndroid);
     private native boolean nativeShutdownAndWaitUntilComplete(long nativeEmbeddedTestServerAndroid);
     private native String nativeGetURL(long nativeEmbeddedTestServerAndroid, String relativeUrl);
+    private native void nativeAddDefaultHandlers(
+            long nativeEmbeddedTestServerAndroid, String directoryPath);
     private native void nativeServeFilesFromDirectory(
             long nativeEmbeddedTestServerAndroid, String directoryPath);
 }

@@ -15,6 +15,14 @@ interface IEmbeddedTestServerImpl {
      */
     boolean start();
 
+    /** Add the default handlers and serve files from the provided directory relative to the
+     *  external storage directory.
+     *
+     *  @param directoryPath The path of the directory from which files should be served, relative
+     *      to the external storage directory.
+     */
+    void addDefaultHandlers(String directoryPath);
+
     /** Serve files from the provided directory.
      *
      *  @param directoryPath The path of the directory from which files should be served.

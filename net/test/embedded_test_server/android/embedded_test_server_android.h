@@ -36,6 +36,11 @@ class EmbeddedTestServerAndroid {
       const base::android::JavaParamRef<jobject>& jobj,
       const base::android::JavaParamRef<jstring>& jrelative_url) const;
 
+  void AddDefaultHandlers(
+      JNIEnv* jenv,
+      const base::android::JavaParamRef<jobject>& jobj,
+      const base::android::JavaParamRef<jstring>& jdirectory_path);
+
   void ServeFilesFromDirectory(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jobj,

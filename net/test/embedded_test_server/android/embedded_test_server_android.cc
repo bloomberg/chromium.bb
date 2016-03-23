@@ -46,6 +46,15 @@ base::android::ScopedJavaLocalRef<jstring> EmbeddedTestServerAndroid::GetURL(
   return base::android::ConvertUTF8ToJavaString(env, gurl.spec());
 }
 
+void EmbeddedTestServerAndroid::AddDefaultHandlers(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jobj,
+    const JavaParamRef<jstring>& jdirectory_path) {
+  const base::FilePath directory(
+      base::android::ConvertJavaStringToUTF8(env, jdirectory_path));
+  test_server_.AddDefaultHandlers(directory);
+}
+
 void EmbeddedTestServerAndroid::ServeFilesFromDirectory(
     JNIEnv* env,
     const JavaParamRef<jobject>& jobj,

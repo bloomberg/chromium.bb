@@ -111,6 +111,35 @@ public class EmbeddedTestServer {
         }
     }
 
+    /** Add the default handlers and serve files from the provided directory relative to the
+     *  external storage directory.
+     *
+     *  @param directory The directory from which files should be served relative to the external
+     *      storage directory.
+     */
+    public void addDefaultHandlers(File directory) {
+        addDefaultHandlers(directory.getPath());
+    }
+
+    /** Add the default handlers and serve files from the provided directory relative to the
+     *  external storage directory.
+     *
+     *  @param directoryPath The path of the directory from which files should be served relative
+     *      to the external storage directory.
+     */
+    public void addDefaultHandlers(String directoryPath) {
+        try {
+            synchronized (mImplMonitor) {
+                checkServiceLocked();
+                mImpl.addDefaultHandlers(directoryPath);
+            }
+        } catch (RemoteException e) {
+            throw new EmbeddedTestServerFailure(
+                    "Failed to add default handlers and start serving files from " + directoryPath
+                    + ": " + e.toString());
+        }
+    }
+
     /** Serve files from the provided directory.
      *
      *  @param directory The directory from which files should be served.
@@ -176,6 +205,25 @@ public class EmbeddedTestServer {
         if (!server.start()) {
             throw new EmbeddedTestServerFailure(
                     "Failed to start serving files from " + directory.getPath());
+        }
+        return server;
+    }
+
+    /** Create and initialize a server with the default handlers.
+     *
+     *  This handles native object initialization, server configuration, and server initialization.
+     *  On returning, the server is ready for use.
+     *
+     *  @param context The context in which the server will run.
+     *  @return The created server.
+     */
+    public static EmbeddedTestServer createAndStartDefaultServer(Context context)
+            throws InterruptedException {
+        EmbeddedTestServer server = new EmbeddedTestServer();
+        server.initializeNative(context);
+        server.addDefaultHandlers("/");
+        if (!server.start()) {
+            throw new EmbeddedTestServerFailure("Failed to start serving using default handlers.");
         }
         return server;
     }
