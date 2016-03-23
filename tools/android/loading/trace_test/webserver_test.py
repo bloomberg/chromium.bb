@@ -229,9 +229,12 @@ def RunTest(webserver, test_page, expected):
   url = 'http://%s/%s' % (webserver.Address(), test_page)
   sys.stdout.write('Testing %s...' % url)
   chrome_controller = controller.LocalChromeController()
-  chrome_controller.SetClearCache()
-  observed_seq = InitiatorSequence(
-      loading_trace.LoadingTrace.FromUrlAndController(url, chrome_controller))
+
+  with chrome_controller.Open() as connection:
+    connection.ClearCache()
+    observed_seq = InitiatorSequence(
+        loading_trace.LoadingTrace.RecordUrlNavigation(
+            url, connection, chrome_controller.ChromeMetadata()))
   if observed_seq == expected:
     sys.stdout.write(' ok\n')
     return True

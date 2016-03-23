@@ -66,20 +66,11 @@ class ChromeControllerBase(object):
     self._metadata = {}
     self._emulated_device = None
     self._emulated_network = None
-    self._clear_cache = False
     self._slow_death = False
 
   def AddChromeArgument(self, arg):
     """Add command-line argument to the chrome execution."""
     self._chrome_args.append(arg)
-
-  def SetClearCache(self, clear_cache=True):
-    """Ensure cache is cleared before running.
-
-    Args:
-      clear_cache: true if cache should be cleared.
-    """
-    self._clear_cache = clear_cache
 
   @contextlib.contextmanager
   def Open(self):
@@ -182,11 +173,8 @@ class ChromeControllerBase(object):
     if self._emulated_network:
       emulation.SetUpNetworkEmulation(connection, **self._emulated_network)
       self._metadata.update(self._emulated_network)
-
     self._metadata.update(date=datetime.datetime.utcnow().isoformat(),
                           seconds_since_epoch=time.time())
-    if self._clear_cache:
-      connection.AddHook(connection.ClearCache)
 
   def _GetChromeArguments(self):
     """Get command-line arguments for the chrome execution."""
@@ -215,6 +203,10 @@ class RemoteChromeController(ChromeControllerBase):
     super(RemoteChromeController, self).__init__()
     self._device = device
     self._device.EnableRoot()
+
+  def GetDevice(self):
+    """Overridden android device."""
+    return self._device
 
   @contextlib.contextmanager
   def Open(self):

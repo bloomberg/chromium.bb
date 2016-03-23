@@ -19,6 +19,8 @@ sys.path.append(chromium_config.GetTelemetryDir())
 from telemetry.internal.backends.chrome_inspector import inspector_websocket
 from telemetry.internal.backends.chrome_inspector import websocket
 
+import common_util
+
 
 DEFAULT_TIMEOUT_SECONDS = 10 # seconds
 
@@ -100,7 +102,6 @@ class DevToolsConnection(object):
     self._domains_to_enable = set()
     self._tearing_down_tracing = False
     self._please_stop = False
-    self._hooks = []
     self._ws = None
     self._target_descriptor = None
 
@@ -212,14 +213,6 @@ class DevToolsConnection(object):
     assert res['result'], 'Cache clearing is not supported by this browser.'
     self.SyncRequest('Network.clearBrowserCache')
 
-  def AddHook(self, hook):
-    """Add hook to be run on monitoring start.
-
-    Args:
-      hook: a function.
-    """
-    self._hooks.append(hook)
-
   def MonitorUrl(self, url, timeout_seconds=DEFAULT_TIMEOUT_SECONDS):
     """Navigate to url and dispatch monitoring loop.
 
@@ -239,8 +232,6 @@ class DevToolsConnection(object):
     for scoped_state in self._scoped_states:
       self.SyncRequestNoResponse(scoped_state,
                                  self._scoped_states[scoped_state][0])
-    for hook in self._hooks:
-      hook()
     self._tearing_down_tracing = False
 
     self.SendAndIgnoreResponse('Page.navigate', {'url': url})
@@ -251,6 +242,37 @@ class DevToolsConnection(object):
   def StopMonitoring(self):
     """Stops the monitoring."""
     self._please_stop = True
+
+  def ExecuteJavaScript(self, expression):
+    """Run JavaScript expression.
+
+    Args:
+      expression: JavaScript expression to run.
+
+    Returns:
+      The return value from the JavaScript expression.
+    """
+    response = self.SyncRequest('Runtime.evaluate', {
+        'expression': expression,
+        'returnByValue': True})
+    if 'error' in response:
+      raise Exception(response['error']['message'])
+    if 'wasThrown' in response['result'] and response['result']['wasThrown']:
+      raise Exception(response['error']['result']['description'])
+    if response['result']['result']['type'] == 'undefined':
+      return None
+    return response['result']['result']['value']
+
+  def PollForJavaScriptExpression(self, expression, interval):
+    """Wait until JavaScript expression is true.
+
+    Args:
+      expression: JavaScript expression to run.
+      interval: Period between expression evaluation in seconds.
+    """
+    common_util.PollFor(lambda: bool(self.ExecuteJavaScript(expression)),
+                        'JavaScript: {}'.format(expression),
+                        interval)
 
   def Close(self):
     """Cleanly close chrome by closing the only tab."""

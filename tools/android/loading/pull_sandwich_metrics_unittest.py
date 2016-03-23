@@ -194,10 +194,41 @@ class PageTrackTest(unittest.TestCase):
     self.assertEquals(30971, metrics['browser_malloc_avg'])
     self.assertEquals(55044, metrics['browser_malloc_max'])
 
+  def testComputeSpeedIndex(self):
+    def point(time, frame_completeness):
+      return puller.CompletenessPoint(time=time,
+                                      frame_completeness=frame_completeness)
+    completness_record = [
+      point(0, 0.0),
+      point(120, 0.4),
+      point(190, 0.75),
+      point(280, 1.0),
+      point(400, 1.0),
+    ]
+    self.assertEqual(120 + 70 * 0.6 + 90 * 0.25,
+                     puller.ComputeSpeedIndex(completness_record))
+
+    completness_record = [
+      point(70, 0.0),
+      point(150, 0.3),
+      point(210, 0.6),
+      point(220, 0.9),
+      point(240, 1.0),
+    ]
+    self.assertEqual(80 + 60 * 0.7 + 10 * 0.4 + 20 * 0.1,
+                     puller.ComputeSpeedIndex(completness_record))
+
+    completness_record = [
+      point(90, 0.0),
+      point(200, 0.6),
+      point(150, 0.3),
+      point(230, 1.0),
+    ]
+    with self.assertRaises(ValueError):
+      puller.ComputeSpeedIndex(completness_record)
+
   def testCommandLine(self):
     tmp_dir = tempfile.mkdtemp()
-    with open(os.path.join(tmp_dir, 'run_infos.json'), 'w') as out_file:
-      json.dump({'urls': ['a.com', 'b.com', 'c.org']}, out_file)
     for dirname in ['1', '2', 'whatever']:
       os.mkdir(os.path.join(tmp_dir, dirname))
       LoadingTrace(_MINIMALIST_TRACE_EVENTS).ToJsonFile(

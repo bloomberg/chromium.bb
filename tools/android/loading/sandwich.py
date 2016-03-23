@@ -146,6 +146,9 @@ class SandwichRunner(object):
     # List of urls to run.
     self.urls = _ReadUrlsFromJobDescription(job_name)
 
+    # Configures whether to record speed-index video.
+    self.record_video = False
+
     # Path to the WPR archive to load or save. Is str or None.
     self.wpr_archive_path = None
 
@@ -199,23 +202,50 @@ class SandwichRunner(object):
       return self.network_condition
     return None
 
-  def _RunNavigation(self, url, clear_cache, trace_id=None):
-    self._chrome_ctl.SetClearCache(clear_cache)
+  def _RunNavigation(self, url, clear_cache, run_id=None):
+    """Run a page navigation to the given URL.
+
+    Args:
+      url: The URL to navigate to.
+      clear_cache: Whether if the cache should be cleared before navigation.
+      run_id: Id of the run in the output directory. If it is None, then no
+        trace or video will be saved.
+    """
+    run_path = None
+    if self.trace_output_directory is not None and run_id is not None:
+      run_path = os.path.join(self.trace_output_directory, str(run_id))
+      if os.path.isdir(run_path):
+        os.makedirs(run_path)
     self._chrome_ctl.SetNetworkEmulation(
         self._GetEmulatorNetworkCondition('browser'))
     # TODO(gabadie): add a way to avoid recording a trace.
-    trace = loading_trace.LoadingTrace.FromUrlAndController(
-        url=url,
-        controller=self._chrome_ctl,
-        categories=pull_sandwich_metrics.CATEGORIES,
-        timeout_seconds=_DEVTOOLS_TIMEOUT)
-    if trace_id != None and self.trace_output_directory:
-      trace_path = os.path.join(
-          self.trace_output_directory, str(trace_id), 'trace.json')
-      os.makedirs(os.path.dirname(trace_path))
+    with self._chrome_ctl.Open() as connection:
+      if clear_cache:
+        connection.ClearCache()
+      if run_path is not None and self.record_video:
+        device = self._chrome_ctl.GetDevice()
+        assert device, 'Can only record video on a remote device.'
+        video_recording_path = os.path.join(run_path, 'video.mp4')
+        with device_setup.RemoteSpeedIndexRecorder(device, connection,
+                                                   video_recording_path):
+          trace = loading_trace.LoadingTrace.RecordUrlNavigation(
+              url=url,
+              connection=connection,
+              chrome_metadata=self._chrome_ctl.ChromeMetadata(),
+              categories=pull_sandwich_metrics.CATEGORIES,
+              timeout_seconds=_DEVTOOLS_TIMEOUT)
+      else:
+        trace = loading_trace.LoadingTrace.RecordUrlNavigation(
+            url=url,
+            connection=connection,
+            chrome_metadata=self._chrome_ctl.ChromeMetadata(),
+            categories=pull_sandwich_metrics.CATEGORIES,
+            timeout_seconds=_DEVTOOLS_TIMEOUT)
+    if run_path is not None:
+      trace_path = os.path.join(run_path, 'trace.json')
       trace.ToJsonFile(trace_path)
 
-  def _RunUrl(self, url, trace_id=0):
+  def _RunUrl(self, url, run_id):
     clear_cache = False
     if self.cache_operation == 'clear':
       clear_cache = True
@@ -224,8 +254,8 @@ class SandwichRunner(object):
     elif self.cache_operation == 'reload':
       self._RunNavigation(url, clear_cache=True)
     elif self.cache_operation == 'save':
-      clear_cache = trace_id == 0
-    self._RunNavigation(url, clear_cache=clear_cache, trace_id=trace_id)
+      clear_cache = run_id == 0
+    self._RunNavigation(url, clear_cache=clear_cache, run_id=run_id)
 
   def _PullCacheFromDevice(self):
     assert self.cache_operation == 'save'
@@ -264,7 +294,7 @@ class SandwichRunner(object):
         ):
       for _ in xrange(self.job_repeat):
         for url in self.urls:
-          self._RunUrl(url, trace_id=len(ran_urls))
+          self._RunUrl(url, run_id=len(ran_urls))
           ran_urls.append(url)
 
     if self._local_cache_directory_path:
@@ -350,6 +380,9 @@ def _ArgumentParser():
           ' to be set.')
   run_parser.add_argument('--job-repeat', default=1, type=int,
                           help='How many times to run the job.')
+  run_parser.add_argument('--record-video', action='store_true',
+                          help='Configures either to record or not a video of '
+                              +'chrome loading the web pages.')
   run_parser.add_argument('--wpr-archive', default=None, type=str,
                           dest='wpr_archive_path',
                           help='Web page replay archive to load job\'s urls ' +

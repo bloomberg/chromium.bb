@@ -22,11 +22,13 @@ from devil.android.sdk import intent
 
 sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
 from pylib import constants
+from video_recorder import video_recorder
 
 sys.path.append(os.path.join(_SRC_DIR, 'tools', 'perf'))
 from chrome_telemetry_build import chromium_config
 
 sys.path.append(chromium_config.GetTelemetryDir())
+from telemetry.internal.image_processing import video
 from telemetry.internal.util import webpagereplay
 
 sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'webpagereplay'))
@@ -39,6 +41,9 @@ import options
 
 
 OPTIONS = options.OPTIONS
+
+# The speed index's video recording's bit rate in Mb/s.
+_SPEED_INDEX_VIDEO_BITRATE = 4
 
 
 class DeviceSetupException(Exception):
@@ -287,6 +292,90 @@ def RemoteWprHost(device, wpr_archive_path, record=False,
 
 
 # Deprecated
+@contextlib.contextmanager
+def _RemoteVideoRecorder(device, local_output_path, megabits_per_second):
+  """Record a video on Device.
+
+  Args:
+    device: (device_utils.DeviceUtils) Android device to connect to.
+    local_output_path: Output path were to save the video locally.
+    megabits_per_second: Video recorder Mb/s.
+
+  Yields:
+    None
+  """
+  assert device
+  if megabits_per_second > 100:
+    raise ValueError('Android video capture cannot capture at %dmbps. '
+                     'Max capture rate is 100mbps.' % megabits_per_second)
+  assert local_output_path.endswith('.mp4')
+  recorder = video_recorder.VideoRecorder(device, megabits_per_second)
+  recorder.Start()
+  try:
+    yield
+    recorder.Stop()
+    recorder.Pull(host_file=local_output_path)
+    recorder = None
+  finally:
+    if recorder:
+      recorder.Stop()
+
+
+@contextlib.contextmanager
+def RemoteSpeedIndexRecorder(device, connection, local_output_path):
+  """Records on a device a video compatible for speed-index computation.
+
+  Note:
+    Chrome should be opened with the --disable-infobars command line argument to
+    avoid web page viewport size to be changed, that can change speed-index
+    value.
+
+  Args:
+    device: (device_utils.DeviceUtils) Android device to connect to.
+    connection: devtools connection.
+    local_output_path: Output path were to save the video locally.
+
+  Yields:
+    None
+  """
+  # Paint the current HTML document with the ORANGE that video is detecting with
+  # the view-port position and size.
+  color = video.HIGHLIGHT_ORANGE_FRAME
+  connection.ExecuteJavaScript("""
+    (function() {
+      var screen = document.createElement('div');
+      screen.style.background = 'rgb(%d, %d, %d)';
+      screen.style.position = 'fixed';
+      screen.style.top = '0';
+      screen.style.left = '0';
+      screen.style.width = '100%%';
+      screen.style.height = '100%%';
+      screen.style.zIndex = '2147483638';
+      document.body.appendChild(screen);
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          window.__speedindex_screen = screen;
+        });
+      });
+    })();
+  """ % (color.r, color.g, color.b))
+  connection.PollForJavaScriptExpression('!!window.__speedindex_screen', 1)
+
+  with _RemoteVideoRecorder(device, local_output_path,
+                            megabits_per_second=_SPEED_INDEX_VIDEO_BITRATE):
+    # Paint the current HTML document with white so that it is not troubling the
+    # speed index measurement.
+    connection.ExecuteJavaScript("""
+      (function() {
+        requestAnimationFrame(function() {
+          var screen = window.__speedindex_screen;
+          screen.style.background = 'rgb(255, 255, 255)';
+        });
+      })();
+    """)
+    yield
+
+
 @contextlib.contextmanager
 def _DevToolsConnectionOnDevice(device, flags):
   """Returns a DevToolsConnection context manager for a given device.

@@ -7,10 +7,23 @@
 python pull_sandwich_metrics.py -h
 """
 
-import json
+import collections
 import logging
 import os
+import shutil
 import sys
+import tempfile
+
+_SRC_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..'))
+
+sys.path.append(os.path.join(_SRC_DIR, 'tools', 'perf'))
+from chrome_telemetry_build import chromium_config
+
+sys.path.append(chromium_config.GetTelemetryDir())
+from telemetry.internal.image_processing import video
+from telemetry.util import image_util
+from telemetry.util import rgba_color
 
 import loading_trace as loading_trace_module
 import tracing
@@ -24,9 +37,19 @@ CSV_FIELD_NAMES = [
     'total_load',
     'onload',
     'browser_malloc_avg',
-    'browser_malloc_max']
+    'browser_malloc_max',
+    'speed_index']
 
 _TRACKED_EVENT_NAMES = set(['requestStart', 'loadEventStart', 'loadEventEnd'])
+
+# Points of a completeness record.
+#
+# Members:
+#   |time| is in milliseconds,
+#   |frame_completeness| value representing how complete the frame is at a given
+#     |time|. Caution: this completeness might be negative.
+CompletenessPoint = collections.namedtuple('CompletenessPoint',
+    ('time', 'frame_completeness'))
 
 
 def _GetBrowserPID(tracing_track):
@@ -136,6 +159,65 @@ def _PullMetricsFromLoadingTrace(loading_trace):
   }
 
 
+def _ExtractCompletenessRecordFromVideo(video_path):
+  """Extracts the completeness record from a video.
+
+  The video must start with a filled rectangle of orange (RGB: 222, 100, 13), to
+  give the view-port size/location from where to compute the completeness.
+
+  Args:
+    video_path: Path of the video to extract the completeness list from.
+
+  Returns:
+    list(CompletenessPoint)
+  """
+  video_file = tempfile.NamedTemporaryFile()
+  shutil.copy(video_path, video_file.name)
+  video_capture = video.Video(video_file)
+
+  histograms = [
+      (time, image_util.GetColorHistogram(
+          image, ignore_color=rgba_color.WHITE, tolerance=8))
+      for time, image in video_capture.GetVideoFrameIter()
+  ]
+
+  start_histogram = histograms[1][1]
+  final_histogram = histograms[-1][1]
+  total_distance = start_histogram.Distance(final_histogram)
+
+  def FrameProgress(histogram):
+    if total_distance == 0:
+      if histogram.Distance(final_histogram) == 0:
+        return 1.0
+      else:
+        return 0.0
+    return 1 - histogram.Distance(final_histogram) / total_distance
+
+  return [(time, FrameProgress(hist)) for time, hist in histograms]
+
+
+def ComputeSpeedIndex(completeness_record):
+  """Computes the speed-index from a completeness record.
+
+  Args:
+    completeness_record: list(CompletenessPoint)
+
+  Returns:
+    Speed-index value.
+  """
+  speed_index = 0.0
+  last_time = completeness_record[0][0]
+  last_completness = completeness_record[0][1]
+  for time, completeness in completeness_record:
+    if time < last_time:
+      raise ValueError('Completeness record must be sorted by timestamps.')
+    elapsed = time - last_time
+    speed_index += elapsed * (1.0 - last_completness)
+    last_time = time
+    last_completness = completeness
+  return speed_index
+
+
 def PullMetricsFromOutputDirectory(output_directory_path):
   """Pulls all the metrics from all the traces of a sandwich run directory.
 
@@ -147,10 +229,6 @@ def PullMetricsFromOutputDirectory(output_directory_path):
     List of dictionaries with all CSV_FIELD_NAMES's field set.
   """
   assert os.path.isdir(output_directory_path)
-  run_infos = None
-  with open(os.path.join(output_directory_path, 'run_infos.json')) as f:
-    run_infos = json.load(f)
-  assert run_infos
   metrics = []
   for node_name in os.listdir(output_directory_path):
     if not os.path.isdir(os.path.join(output_directory_path, node_name)):
@@ -159,15 +237,22 @@ def PullMetricsFromOutputDirectory(output_directory_path):
       page_id = int(node_name)
     except ValueError:
       continue
-    trace_path = os.path.join(output_directory_path, node_name, 'trace.json')
+    run_path = os.path.join(output_directory_path, node_name)
+    trace_path = os.path.join(run_path, 'trace.json')
     if not os.path.isfile(trace_path):
       continue
     logging.info('processing \'%s\'' % trace_path)
     loading_trace = loading_trace_module.LoadingTrace.FromJsonFile(trace_path)
-    trace_metrics = _PullMetricsFromLoadingTrace(loading_trace)
-    trace_metrics['id'] = page_id
-    trace_metrics['url'] = run_infos['urls'][page_id]
-    metrics.append(trace_metrics)
+    row_metrics = {key: 'unavailable' for key in CSV_FIELD_NAMES}
+    row_metrics.update(_PullMetricsFromLoadingTrace(loading_trace))
+    row_metrics['id'] = page_id
+    row_metrics['url'] = loading_trace.url
+    video_path = os.path.join(run_path, 'video.mp4')
+    if os.path.isfile(video_path):
+      logging.info('processing \'%s\'' % video_path)
+      completeness_record = _ExtractCompletenessRecordFromVideo(video_path)
+      row_metrics['speed_index'] = ComputeSpeedIndex(completeness_record)
+    metrics.append(row_metrics)
   assert len(metrics) > 0, ('Looks like \'{}\' was not a sandwich ' +
                             'run directory.').format(output_directory_path)
   return metrics
