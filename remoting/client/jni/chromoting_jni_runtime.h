@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread.h"
+#include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/jni/chromoting_jni_instance.h"
 #include "remoting/protocol/connection_to_host.h"
 
@@ -34,19 +35,19 @@ class ChromotingJniRuntime {
   static ChromotingJniRuntime* GetInstance();
 
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner() {
-    return ui_task_runner_;
+    return runtime_->ui_task_runner();
   }
 
   scoped_refptr<AutoThreadTaskRunner> network_task_runner() {
-    return network_task_runner_;
+    return runtime_->network_task_runner();
   }
 
   scoped_refptr<AutoThreadTaskRunner> display_task_runner() {
-    return display_task_runner_;
+    return runtime_->display_task_runner();
   }
 
   scoped_refptr<net::URLRequestContextGetter> url_requester() {
-    return url_requester_;
+    return runtime_->url_requester();
   }
 
   // Initiates a connection with the specified host. Only call when a host
@@ -126,15 +127,13 @@ class ChromotingJniRuntime {
   // Detaches JVM from the current thread, then signals. Doesn't own |waiter|.
   void DetachFromVmAndSignal(base::WaitableEvent* waiter);
 
-  // Chromium code's connection to the Java message loop.
+  // Chromium code's connection to the app message loop. Once created the
+  // MessageLoop will live for the life of the program.
   scoped_ptr<base::MessageLoopForUI> ui_loop_;
 
-  // References to native threads.
-  scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
-  scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
-  scoped_refptr<AutoThreadTaskRunner> display_task_runner_;
-
-  scoped_refptr<net::URLRequestContextGetter> url_requester_;
+  // Contains threads.
+  //
+  scoped_ptr<ChromotingClientRuntime> runtime_;
 
   // Contains all connection-specific state.
   scoped_refptr<ChromotingJniInstance> session_;

@@ -32,6 +32,11 @@ source_set("client") {
       "client_status_logger.cc",
       "server_log_entry_client.cc",
     ]
+  } else {
+    sources += rebase_path(
+            remoting_srcs_gypi_values.remoting_client_standalone_sources,
+            ".",
+            "//remoting")
   }
 }
 
@@ -43,6 +48,7 @@ source_set("unit_tests") {
   set_sources_assignment_filter([])
   sources = [
     "audio_player_unittest.cc",
+    "chromoting_client_runtime_unittest.cc",
     "client_status_logger_unittest.cc",
     "empty_cursor_filter_unittest.cc",
     "key_event_mapper_unittest.cc",
