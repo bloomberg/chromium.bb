@@ -23,8 +23,11 @@
 
 namespace content {
 
-class CanvasCaptureHandler::VideoCapturerSource
-    : public media::VideoCapturerSource {
+// Implementation VideoCapturerSource that is owned by
+// MediaStreamVideoCapturerSource and delegates the Start/Stop calls to
+// CanvasCaptureHandler.
+// This class is single threaded and pinned to main render thread.
+class VideoCapturerSource : public media::VideoCapturerSource {
  public:
   explicit VideoCapturerSource(base::WeakPtr<CanvasCaptureHandler>
                                    canvas_handler,
@@ -58,15 +61,16 @@ class CanvasCaptureHandler::VideoCapturerSource
   }
   void StopCapture() override {
     DCHECK(main_render_thread_checker_.CalledOnValidThread());
-    canvas_handler_->StopVideoCapture();
+    if (canvas_handler_.get())
+      canvas_handler_->StopVideoCapture();
   }
 
  private:
-  double frame_rate_;
+  const double frame_rate_;
   // Bound to Main Render thread.
   base::ThreadChecker main_render_thread_checker_;
-  // CanvasCaptureHandler is owned by CanvasDrawListener in blink and
-  // guaranteed to be alive during the lifetime of this class.
+  // CanvasCaptureHandler is owned by CanvasDrawListener in blink and might be
+  // destroyed before StopCapture() call.
   base::WeakPtr<CanvasCaptureHandler> canvas_handler_;
 };
 
@@ -113,8 +117,7 @@ CanvasCaptureHandler::CanvasCaptureHandler(
       io_task_runner_(io_task_runner),
       weak_ptr_factory_(this) {
   scoped_ptr<media::VideoCapturerSource> video_source(
-      new CanvasCaptureHandler::VideoCapturerSource(
-          weak_ptr_factory_.GetWeakPtr(), frame_rate));
+      new VideoCapturerSource(weak_ptr_factory_.GetWeakPtr(), frame_rate));
   AddVideoCapturerSourceToVideoTrack(std::move(video_source), track);
 }
 

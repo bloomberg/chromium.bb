@@ -142,6 +142,20 @@ TEST_F(CanvasCaptureHandlerTest, ConstructAndDestruct) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Checks that the destruction sequence works fine.
+TEST_F(CanvasCaptureHandlerTest, DestructTrack) {
+  EXPECT_TRUE(canvas_capture_handler_->needsNewFrame());
+  track_.reset();
+  base::RunLoop().RunUntilIdle();
+}
+
+// Checks that the destruction sequence works fine.
+TEST_F(CanvasCaptureHandlerTest, DestructHandler) {
+  EXPECT_TRUE(canvas_capture_handler_->needsNewFrame());
+  canvas_capture_handler_.reset();
+  base::RunLoop().RunUntilIdle();
+}
+
 // Checks that VideoCapturerSource call sequence works fine.
 TEST_P(CanvasCaptureHandlerTest, GetFormatsStartAndStop) {
   InSequence s;

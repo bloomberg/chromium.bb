@@ -72,10 +72,6 @@ class CONTENT_EXPORT CanvasCaptureHandler final
       scoped_ptr<media::VideoCapturerSource> source,
       blink::WebMediaStreamTrack* web_track);
 
-  // Implementation VideoCapturerSource that is owned by Blink and delegates
-  // the Start/Stop calls to CanvasCaptureHandler.
-  class VideoCapturerSource;
-
   // Object that does all the work of running |new_frame_callback_|.
   // Destroyed on |frame_callback_task_runner_| after the class is destroyed.
   class CanvasCaptureHandlerDelegate;
