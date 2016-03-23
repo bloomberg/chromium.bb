@@ -633,12 +633,14 @@ static scoped_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
       std::string key = net::UnescapeURLComponent(
           escaped_key,
           net::UnescapeRule::NORMAL | net::UnescapeRule::SPACES |
-              net::UnescapeRule::URL_SPECIAL_CHARS);
+              net::UnescapeRule::PATH_SEPARATORS |
+              net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
 
       std::string value = net::UnescapeURLComponent(
           escaped_value,
           net::UnescapeRule::NORMAL | net::UnescapeRule::SPACES |
-              net::UnescapeRule::URL_SPECIAL_CHARS);
+              net::UnescapeRule::PATH_SEPARATORS |
+              net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
 
       if (key == "method")
         fail_method = value;

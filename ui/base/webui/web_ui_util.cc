@@ -91,9 +91,10 @@ bool ParseScaleFactor(const base::StringPiece& identifier,
 void ParsePathAndScale(const GURL& url,
                        std::string* path,
                        float* scale_factor) {
-  *path = net::UnescapeURLComponent(url.path().substr(1),
-                                    (net::UnescapeRule::URL_SPECIAL_CHARS |
-                                     net::UnescapeRule::SPACES));
+  *path = net::UnescapeURLComponent(
+      url.path().substr(1),
+      net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
+          net::UnescapeRule::SPACES);
   if (scale_factor)
     *scale_factor = 1.0f;
 
