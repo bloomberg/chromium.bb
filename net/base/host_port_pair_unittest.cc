@@ -38,11 +38,8 @@ TEST(HostPortPairTest, Parsing) {
 
 TEST(HostPortPairTest, BadString) {
   const char* kBadStrings[] = {
-    "foo.com:2:3",
-    "bar.com:two",
-    "www.google.com:-1",
-    "127.0.0.1:65536",
-    "[2001:db8::42]:65536",
+      "foo.com:2:3",       "bar.com:two",     "www.google.com:-1",
+      "www.google.com:+1", "127.0.0.1:65536", "[2001:db8::42]:65536",
   };
 
   for (size_t index = 0; index < arraysize(kBadStrings); ++index) {

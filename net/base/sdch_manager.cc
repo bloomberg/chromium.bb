@@ -16,6 +16,7 @@
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
+#include "net/base/parse_number.h"
 #include "net/base/sdch_observer.h"
 #include "net/url_request/url_request_http_job.h"
 
@@ -376,12 +377,12 @@ SdchProblemCode SdchManager::AddSdchDictionary(
           return SDCH_DICTIONARY_UNSUPPORTED_VERSION;
       } else if (name == "max-age") {
         int64_t seconds;
+        // TODO(eroman): crbug.com/596541 -- should not accept a leading +.
         base::StringToInt64(value, &seconds);
         expiration = base::Time::Now() + base::TimeDelta::FromSeconds(seconds);
       } else if (name == "port") {
         int port;
-        base::StringToInt(value, &port);
-        if (port >= 0)
+        if (ParseNonNegativeDecimalInt(value, &port))
           ports.insert(port);
       }
     }

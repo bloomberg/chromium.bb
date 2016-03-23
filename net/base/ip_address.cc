@@ -4,10 +4,10 @@
 
 #include "net/base/ip_address.h"
 
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "net/base/ip_address_number.h"
+#include "net/base/parse_number.h"
 #include "url/gurl.h"
 #include "url/url_canon_ip.h"
 
@@ -179,15 +179,9 @@ bool ParseCIDRBlock(const std::string& cidr_literal,
   if (!ip_address->AssignFromIPLiteral(parts[0]))
     return false;
 
-  // TODO(martijnc): Find a more general solution for the overly permissive
-  // base::StringToInt() parsing. https://crbug.com/596523.
-  const base::StringPiece& prefix_length = parts[1];
-  if (prefix_length.starts_with("+"))
-    return false;
-
   // Parse the prefix length.
   int number_of_bits = -1;
-  if (!base::StringToInt(prefix_length, &number_of_bits))
+  if (!ParseNonNegativeDecimalInt(parts[1], &number_of_bits))
     return false;
 
   // Make sure the prefix length is in a valid range.
