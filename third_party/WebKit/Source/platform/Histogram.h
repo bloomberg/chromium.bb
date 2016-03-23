@@ -5,6 +5,7 @@
 #ifndef Histogram_h
 #define Histogram_h
 
+#include "base/metrics/histogram_base.h"
 #include "platform/PlatformExport.h"
 #include <stdint.h>
 
@@ -16,8 +17,8 @@ namespace blink {
 
 class PLATFORM_EXPORT CustomCountHistogram {
 public:
-    CustomCountHistogram(const char* name, int32_t min, int32_t max, int32_t bucketCount);
-    void count(int32_t sample);
+    CustomCountHistogram(const char* name, base::HistogramBase::Sample min, base::HistogramBase::Sample max, int32_t bucketCount);
+    void count(base::HistogramBase::Sample);
 
 protected:
     explicit CustomCountHistogram(base::HistogramBase*);
@@ -28,14 +29,14 @@ private:
 
 class PLATFORM_EXPORT EnumerationHistogram : public CustomCountHistogram {
 public:
-    EnumerationHistogram(const char* name, int32_t boundaryValue);
+    EnumerationHistogram(const char* name, base::HistogramBase::Sample boundaryValue);
 };
 
 class PLATFORM_EXPORT SparseHistogram {
 public:
     explicit SparseHistogram(const char* name);
 
-    void sample(int32_t sample);
+    void sample(base::HistogramBase::Sample);
 
 private:
     base::HistogramBase* m_histogram;

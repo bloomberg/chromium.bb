@@ -15,6 +15,18 @@ namespace blink {
 class PLATFORM_EXPORT BitmapImageMetrics {
     STATIC_ONLY(BitmapImageMetrics);
 public:
+    // Values synced with 'DecodedImageType' in src/tools/metrics/histograms/histograms.xml
+    enum DecodedImageType {
+        ImageUnknown = 0,
+        ImageJPEG = 1,
+        ImagePNG = 2,
+        ImageGIF = 3,
+        ImageWebP = 4,
+        ImageICO = 5,
+        ImageBMP = 6,
+        DecodedImageTypeEnumEnd = ImageBMP + 1
+    };
+
     static void countDecodedImageType(const String& type);
     static void countImageOrientation(const ImageOrientationEnum);
 };
