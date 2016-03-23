@@ -480,10 +480,13 @@ void LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* anc
     mapToVisibleRectInAncestorSpace(ancestor, rect, IsNotFixedPosition, invalidationState);
 }
 
-void LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint, const PaintInvalidationState* state) const
+void LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint,
+    const PaintInvalidationState* paintInvalidationState) const
 {
     if (document().printing())
         return;
+
+    // TODO(chrishtr): fix PaintInvalidationState offsets for LayoutViews.
 
     if (style()->isFlippedBlocksWritingMode()) {
         // We have to flip by hand since the view's logical height has not been determined.  We
@@ -509,7 +512,7 @@ void LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* anc
         return;
 
     if (LayoutBox* obj = owner->layoutBox()) {
-        if (!state || !state->viewClippingAndScrollOffsetDisabled()) {
+        if (!paintInvalidationState || !paintInvalidationState->viewClippingAndScrollOffsetDisabled()) {
             // Intersect the viewport with the paint invalidation rect.
             LayoutRect viewRectangle = viewRect();
             rect.intersect(viewRectangle);

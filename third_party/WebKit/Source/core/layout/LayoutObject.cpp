@@ -1658,7 +1658,7 @@ void LayoutObject::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* a
                 return;
         }
 
-        parent->mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState);
+        parent->mapToVisibleRectInAncestorSpace(ancestor, rect, nullptr);
     }
 }
 

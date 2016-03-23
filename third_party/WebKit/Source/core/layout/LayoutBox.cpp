@@ -2011,9 +2011,9 @@ void LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ance
     }
 
     if (container->isLayoutView())
-        toLayoutView(container)->mapToVisibleRectInAncestorSpace(ancestor, rect, LayoutView::toViewportConstrainedPosition(position), paintInvalidationState);
+        toLayoutView(container)->mapToVisibleRectInAncestorSpace(ancestor, rect, LayoutView::toViewportConstrainedPosition(position), nullptr);
     else
-        container->mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState);
+        container->mapToVisibleRectInAncestorSpace(ancestor, rect, nullptr);
 }
 
 void LayoutBox::inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect& paintInvalidationRect) const

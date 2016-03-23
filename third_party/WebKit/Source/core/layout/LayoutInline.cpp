@@ -1125,7 +1125,7 @@ void LayoutInline::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* a
         return;
     }
 
-    container->mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState);
+    container->mapToVisibleRectInAncestorSpace(ancestor, rect, nullptr);
 }
 
 LayoutSize LayoutInline::offsetFromContainer(const LayoutObject* container) const
