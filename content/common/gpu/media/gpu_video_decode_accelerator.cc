@@ -183,7 +183,8 @@ GpuVideoDecodeAccelerator::GetCapabilities(
   capabilities.supported_profiles =
       VTVideoDecodeAccelerator::GetSupportedProfiles();
 #elif defined(OS_ANDROID)
-  capabilities = AndroidVideoDecodeAccelerator::GetCapabilities();
+  capabilities =
+      AndroidVideoDecodeAccelerator::GetCapabilities(gpu_preferences);
 #endif
   return GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeCapabilities(
       capabilities);

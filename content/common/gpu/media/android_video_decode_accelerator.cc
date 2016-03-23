@@ -22,7 +22,6 @@
 #include "content/common/gpu/media/avda_return_on_failure.h"
 #include "content/common/gpu/media/shared_memory_region.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/android/media_codec_util.h"
@@ -268,7 +267,9 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
       error_sequence_token_(0),
       defer_errors_(false),
       weak_this_factory_(this) {
-  if (UseDeferredRenderingStrategy()) {
+  const gpu::GpuPreferences& gpu_preferences =
+      gl_decoder_->GetContextGroup()->gpu_preferences();
+  if (UseDeferredRenderingStrategy(gpu_preferences)) {
     // TODO(liberato, watk): Figure out what we want to do about zero copy for
     // fullscreen external SurfaceView in WebView.  http://crbug.com/582170.
     DCHECK(!gl_decoder_->GetContextGroup()->mailbox_manager()->UsesSync());
@@ -1153,16 +1154,17 @@ void AndroidVideoDecodeAccelerator::ManageTimer(bool did_work) {
 }
 
 // static
-bool AndroidVideoDecodeAccelerator::UseDeferredRenderingStrategy() {
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+bool AndroidVideoDecodeAccelerator::UseDeferredRenderingStrategy(
+    const gpu::GpuPreferences& gpu_preferences) {
   // TODO(liberato, watk): Figure out what we want to do about zero copy for
   // fullscreen external SurfaceView in WebView.  http://crbug.com/582170.
-  return !cmd_line->HasSwitch(switches::kEnableThreadedTextureMailboxes);
+  return !gpu_preferences.enable_threaded_texture_mailboxes;
 }
 
 // static
 media::VideoDecodeAccelerator::Capabilities
-AndroidVideoDecodeAccelerator::GetCapabilities() {
+AndroidVideoDecodeAccelerator::GetCapabilities(
+    const gpu::GpuPreferences& gpu_preferences) {
   Capabilities capabilities;
   SupportedProfiles& profiles = capabilities.supported_profiles;
 
@@ -1207,7 +1209,7 @@ AndroidVideoDecodeAccelerator::GetCapabilities() {
     profiles.push_back(profile);
   }
 
-  if (UseDeferredRenderingStrategy()) {
+  if (UseDeferredRenderingStrategy(gpu_preferences)) {
     capabilities.flags = media::VideoDecodeAccelerator::Capabilities::
                              NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE |
                          media::VideoDecodeAccelerator::Capabilities::

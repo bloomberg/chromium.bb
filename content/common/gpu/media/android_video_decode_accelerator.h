@@ -19,6 +19,7 @@
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/avda_state_provider.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/android/media_drm_bridge_cdm_context.h"
 #include "media/base/android/sdk_media_codec_bridge.h"
 #include "media/base/media_keys.h"
@@ -135,7 +136,8 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   void PostError(const ::tracked_objects::Location& from_here,
                  media::VideoDecodeAccelerator::Error error) override;
 
-  static media::VideoDecodeAccelerator::Capabilities GetCapabilities();
+  static media::VideoDecodeAccelerator::Capabilities GetCapabilities(
+      const gpu::GpuPreferences& gpu_preferences);
 
   // Notifies about SurfaceTexture::OnFrameAvailable.  This can happen on any
   // thread at any time!
@@ -229,7 +231,8 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   void DismissPictureBuffers();
 
   // Return true if and only if we should use deferred rendering.
-  static bool UseDeferredRenderingStrategy();
+  static bool UseDeferredRenderingStrategy(
+      const gpu::GpuPreferences& gpu_preferences);
 
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
