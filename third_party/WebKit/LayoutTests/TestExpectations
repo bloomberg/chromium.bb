@@ -901,7 +901,7 @@ crbug.com/528062 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Fail
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 
 crbug.com/539725 [ Linux Debug ] inspector/elements/shadow/elements-panel-shadow-selection-on-refresh.html [ Failure ]
-crbug.com/577870 [ Win Release ] inspector/elements/shadow/elements-panel-shadow-selection-on-refresh.html [ Pass Failure ]
+crbug.com/577870 [ Win Release ] inspector/elements/shadow/elements-panel-shadow-selection-on-refresh.html [ Pass Failure Timeout ]
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
 
