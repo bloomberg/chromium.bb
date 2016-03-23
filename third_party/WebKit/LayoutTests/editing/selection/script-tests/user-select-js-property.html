@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<div id="container">
+<p id="description">Test setting CSSStyleDeclaration.webkitUserStyle</p>
+<div id="sample1" contenteditable="true">editable</div>
+<div id="sample2" contenteditable="false">uneditable</div>
+</div>
+<div id="log"></div>
+<script>
+var selection = window.getSelection();
+function setSelection(node)
+{
+    var range = document.createRange();
+    range.selectNodeContents(node);
+    selection.empty();
+    selection.addRange(range);
+}
+
+test(function(){
+    // user-select:none in editable element
+    sample1.style.webkitUserSelect = 'none';
+    setSelection(sample1);
+    assert_equals(selection.type, 'Range');
+
+    // user-select:none in uneditable element
+    sample2.style.webkitUserSelect = 'none';
+    setSelection(sample2);
+    assert_equals(selection.type, 'None');
+});
+</script>

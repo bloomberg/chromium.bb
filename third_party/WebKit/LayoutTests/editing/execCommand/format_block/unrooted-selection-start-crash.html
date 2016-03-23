@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+Should not crash when selection start is unrooted (caused by reattachment of render objects).
+<span id="elem" contenteditable="true">
+  <b><img></b>
+  <br>
+</span>
+<div id="log"></div>
+<script>
+test(function () {
+    window.getSelection().setBaseAndExtent(elem, 0, elem, 4);
+    document.execCommand('JustifyCenter');
+});
+</script>

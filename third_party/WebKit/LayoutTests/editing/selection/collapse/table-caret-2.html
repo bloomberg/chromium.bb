@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<style>
+table, td {
+    border: 1px solid #999;
+}
+</style>
+<div id="log"></div>
+<p>This tests the caret position for the caret after a block table.</p>
+<div id="div" contenteditable="true">foo<table id="sample"><tr><td>this</td></tr><tr><td>is</td></tr><tr><td>a table</td></tr></table>baz</div>
+<script>
+test(function () {
+    var selection = window.getSelection();
+    selection.collapse(sample, sample.childNodes.length);
+    assert_true(selection.isCollapsed, 'isCollapsed');
+    assert_equals(selection.anchorNode, div, 'anchorNode');
+    assert_equals(selection.anchorOffset, 2, 'anchorOffset');
+});
+</script>
