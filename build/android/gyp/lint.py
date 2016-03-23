@@ -136,44 +136,61 @@ def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
     try:
       build_utils.CheckOutput(cmd, cwd=_SRC_ROOT, env=env or None)
     except build_utils.CalledProcessError:
-      if can_fail_build:
-        traceback.print_exc()
-
       # There is a problem with lint usage
       if not os.path.exists(result_path):
         raise
 
-      # There are actual lint issues
-      else:
-        try:
-          num_issues = _ParseAndShowResultFile()
-        except Exception: # pylint: disable=broad-except
-          if not silent:
-            print 'Lint created unparseable xml file...'
-            print 'File contents:'
-            with open(result_path) as f:
-              print f.read()
-          if not can_fail_build:
-            return
-          raise
-
-        _ProcessResultFile()
-        msg = ('\nLint found %d new issues.\n'
-               ' - For full explanation refer to %s\n' %
-               (num_issues,
-                _RelativizePath(result_path)))
-        if config_path:
-          msg += (' - Wanna suppress these issues?\n'
-                  '    1. Read comment in %s\n'
-                  '    2. Run "python %s %s"\n' %
-                  (_RelativizePath(config_path),
-                   _RelativizePath(os.path.join(_SRC_ROOT, 'build', 'android',
-                                                'lint', 'suppress.py')),
-                   _RelativizePath(result_path)))
-        if not silent:
-          print >> sys.stderr, msg
+      # Sometimes produces empty (almost) files:
+      if os.path.getsize(result_path) < 10:
         if can_fail_build:
-          raise Exception('Lint failed.')
+          raise
+        elif not silent:
+          traceback.print_exc()
+        return
+
+      # There are actual lint issues
+      try:
+        num_issues = _ParseAndShowResultFile()
+      except Exception: # pylint: disable=broad-except
+        if not silent:
+          print 'Lint created unparseable xml file...'
+          print 'File contents:'
+          with open(result_path) as f:
+            print f.read()
+        if not can_fail_build:
+          return
+
+      if can_fail_build and not silent:
+        traceback.print_exc()
+
+      # There are actual lint issues
+      try:
+        num_issues = _ParseAndShowResultFile()
+      except Exception: # pylint: disable=broad-except
+        if not silent:
+          print 'Lint created unparseable xml file...'
+          print 'File contents:'
+          with open(result_path) as f:
+            print f.read()
+        raise
+
+      _ProcessResultFile()
+      msg = ('\nLint found %d new issues.\n'
+             ' - For full explanation refer to %s\n' %
+             (num_issues,
+              _RelativizePath(result_path)))
+      if config_path:
+        msg += (' - Wanna suppress these issues?\n'
+                '    1. Read comment in %s\n'
+                '    2. Run "python %s %s"\n' %
+                (_RelativizePath(config_path),
+                 _RelativizePath(os.path.join(_SRC_ROOT, 'build', 'android',
+                                              'lint', 'suppress.py')),
+                 _RelativizePath(result_path)))
+      if not silent:
+        print >> sys.stderr, msg
+      if can_fail_build:
+        raise Exception('Lint failed.')
 
 
 def main():
