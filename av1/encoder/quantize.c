@@ -389,13 +389,12 @@ void vp10_init_plane_quantizers(VP10_COMP *cpi, MACROBLOCK *x) {
   const int segment_id = xd->mi[0]->mbmi.segment_id;
   const int qindex = vp10_get_qindex(&cm->seg, segment_id, cm->base_qindex);
   const int rdmult = vp10_compute_rd_mult(cpi, qindex + cm->y_dc_delta_q);
-  const int lossless = xd->lossless[segment_id];
   int i;
 #if CONFIG_AOM_QM
   int minqm = cm->min_qmlevel;
   int maxqm = cm->max_qmlevel;
   // Quant matrix only depends on the base QP so there is only one set per frame
-  int qmlevel = (lossless || cm->using_qmatrix == 0)
+  int qmlevel = (xd->lossless[segment_id] || cm->using_qmatrix == 0)
                     ? NUM_QM_LEVELS - 1
                     : aom_get_qmlevel(cm->base_qindex, minqm, maxqm);
 #endif
