@@ -68852,6 +68852,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="V8Window_WebkitSpeechRecognitionEvent_ConstructorGetter"/>
   <int value="1272" label="V8Window_SpeechSynthesis_AttributeGetter"/>
   <int value="1273" label="V8IDBFactory_WebkitGetDatabaseNames_Method"/>
+  <int value="1274" label="ImageDocument"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
