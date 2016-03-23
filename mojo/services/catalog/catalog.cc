@@ -5,7 +5,6 @@
 #include "mojo/services/catalog/catalog.h"
 
 #include "base/bind.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/strings/string_split.h"
 #include "base/task_runner_util.h"
 #include "mojo/common/url_type_converters.h"
@@ -13,37 +12,19 @@
 #include "mojo/services/catalog/store.h"
 #include "mojo/shell/public/cpp/names.h"
 #include "mojo/util/filename_util.h"
+#include "url/gurl.h"
 #include "url/url_util.h"
 
 namespace catalog {
-namespace {
-
-scoped_ptr<base::Value> ReadManifest(const base::FilePath& manifest_path) {
-  JSONFileValueDeserializer deserializer(manifest_path);
-  int error = 0;
-  std::string message;
-  // TODO(beng): probably want to do more detailed error checking. This should
-  //             be done when figuring out if to unblock connection completion.
-  return deserializer.Deserialize(&error, &message);
-}
-
-}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // Catalog, public:
 
 Catalog::Catalog(base::TaskRunner* blocking_pool, scoped_ptr<Store> store)
-    : blocking_pool_(blocking_pool),
-      store_(std::move(store)),
+    : store_(std::move(store)),
       weak_factory_(this) {
-  base::FilePath shell_dir;
-  PathService::Get(base::DIR_MODULE, &shell_dir);
-
-  system_package_dir_ =
-      mojo::util::FilePathToFileURL(shell_dir).Resolve(std::string());
-  system_package_dir_ =
-      mojo::util::AddTrailingSlashIfNeeded(system_package_dir_);
-
+  PathService::Get(base::DIR_MODULE, &package_path_);
+  reader_.reset(new Reader(package_path_, blocking_pool));
   DeserializeCatalog();
 }
 
@@ -101,10 +82,13 @@ void Catalog::ResolveMojoName(const mojo::String& mojo_name,
   if (qualifier_iter != qualifiers_.end())
     qualifier = qualifier_iter->second;
 
-  if (IsNameInCatalog(resolved_name))
+  if (IsNameInCatalog(resolved_name)) {
     CompleteResolveMojoName(resolved_name, qualifier, callback);
-  else
-    AddNameToCatalog(resolved_name, callback);
+  } else {
+    reader_->Read(resolved_name,
+                  base::Bind(&Catalog::OnReadEntry, weak_factory_.GetWeakPtr(),
+                             resolved_name, callback));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -135,19 +119,21 @@ void Catalog::CompleteResolveMojoName(
   auto entry_iter = catalog_.find(resolved_name);
   CHECK(entry_iter != catalog_.end());
 
+  GURL package_url = mojo::util::AddTrailingSlashIfNeeded(
+      mojo::util::FilePathToFileURL(package_path_));
   GURL file_url;
   std::string type = mojo::GetNameType(resolved_name);
   if (type == "mojo") {
     // It's still a mojo: URL, use the default mapping scheme.
     const std::string host = mojo::GetNamePath(resolved_name);
-    file_url = system_package_dir_.Resolve(host + "/" + host + ".mojo");
+    file_url = package_url.Resolve(host + "/" + host + ".mojo");
   } else if (type == "exe") {
 #if defined OS_WIN
     std::string extension = ".exe";
 #else
     std::string extension;
 #endif
-    file_url = system_package_dir_.Resolve(
+    file_url = package_url.Resolve(
         mojo::GetNamePath(resolved_name) + extension);
   }
 
@@ -163,26 +149,6 @@ bool Catalog::IsNameInCatalog(const std::string& name) const {
   return catalog_.find(name) != catalog_.end();
 }
 
-void Catalog::AddNameToCatalog(const std::string& name,
-                               const ResolveMojoNameCallback& callback) {
-  GURL manifest_url = GetManifestURL(name);
-  if (manifest_url.is_empty()) {
-    // The name is of some form that can't be resolved to a manifest (e.g. some
-    // scheme used for tests). Just pass it back to the caller so it can be
-    // loaded with a custom loader.
-    callback.Run(name, mojo::GetNamePath(name), nullptr, nullptr);
-    return;
-  }
-
-  std::string type = mojo::GetNameType(name);
-  CHECK(type == "mojo" || type == "exe");
-  base::FilePath manifest_path = mojo::util::UrlToFilePath(manifest_url);
-  base::PostTaskAndReplyWithResult(
-      blocking_pool_, FROM_HERE, base::Bind(&ReadManifest, manifest_path),
-      base::Bind(&Catalog::OnReadManifest, weak_factory_.GetWeakPtr(),
-                 name, callback));
-}
-
 void Catalog::DeserializeCatalog() {
   if (!store_)
     return;
@@ -194,7 +160,7 @@ void Catalog::DeserializeCatalog() {
     const base::Value* v = *it;
     CHECK(v->GetAsDictionary(&dictionary));
     scoped_ptr<Entry> entry = Entry::Deserialize(*dictionary);
-    if (entry.get())
+    if (entry)
       catalog_[entry->name()] = *entry;
   }
 }
@@ -207,73 +173,41 @@ void Catalog::SerializeCatalog() {
     store_->UpdateStore(std::move(catalog));
 }
 
-scoped_ptr<Entry> Catalog::DeserializeApplication(
-    const base::DictionaryValue* dictionary) {
-  scoped_ptr<Entry> entry = Entry::Deserialize(*dictionary);
-  if (!entry)
-    return entry;
+// static
+void Catalog::OnReadEntry(base::WeakPtr<Catalog> catalog,
+                          const std::string& name,
+                          const ResolveMojoNameCallback& callback,
+                          scoped_ptr<Entry> entry) {
+  if (!catalog) {
+    callback.Run(name, mojo::GetNamePath(name), nullptr, nullptr);
+    return;
+  }
+  catalog->OnReadEntryImpl(name, callback, std::move(entry));
+}
 
-  // TODO(beng): move raw dictionary analysis into Deserialize().
+void Catalog::OnReadEntryImpl(const std::string& name,
+                              const ResolveMojoNameCallback& callback,
+                              scoped_ptr<Entry> entry) {
+  // TODO(beng): evaluate the conditions under which entry is null.
+  if (!entry) {
+    entry.reset(new Entry);
+    entry->set_name(name);
+    entry->set_display_name(name);
+    entry->set_qualifier(mojo::GetNamePath(name));
+  }
+
   if (catalog_.find(entry->name()) == catalog_.end()) {
     catalog_[entry->name()] = *entry;
 
-    if (dictionary->HasKey("applications")) {
-      const base::ListValue* applications = nullptr;
-      dictionary->GetList("applications", &applications);
-      for (size_t i = 0; i < applications->GetSize(); ++i) {
-        const base::DictionaryValue* child_value = nullptr;
-        applications->GetDictionary(i, &child_value);
-        scoped_ptr<Entry> child = DeserializeApplication(child_value);
-        if (child) {
-          mojo_name_aliases_[child->name()] =
-              std::make_pair(entry->name(), child->qualifier());
-        }
+    if (!entry->applications().empty()) {
+      for (const auto& child : entry->applications()) {
+        mojo_name_aliases_[child.name()] =
+            std::make_pair(entry->name(), child.qualifier());
       }
     }
     qualifiers_[entry->name()] = entry->qualifier();
   }
-  return entry;
-}
 
-GURL Catalog::GetManifestURL(const std::string& name) {
-  // TODO(beng): think more about how this should be done for exe targets.
-  std::string type = mojo::GetNameType(name);
-  std::string path = mojo::GetNamePath(name);
-  if (type == "mojo")
-    return system_package_dir_.Resolve(path + "/manifest.json");
-  else if (type == "exe")
-    return system_package_dir_.Resolve(path + "_manifest.json");
-  return GURL();
-}
-
-// static
-void Catalog::OnReadManifest(base::WeakPtr<Catalog> catalog,
-                             const std::string& name,
-                             const ResolveMojoNameCallback& callback,
-                             scoped_ptr<base::Value> manifest) {
-  if (!catalog) {
-    // The Catalog was destroyed, we're likely in shutdown. Run the
-    // callback so we don't trigger a DCHECK.
-    callback.Run(name, mojo::GetNamePath(name), nullptr, nullptr);
-    return;
-  }
-  catalog->OnReadManifestImpl(name, callback, std::move(manifest));
-}
-
-void Catalog::OnReadManifestImpl(const std::string& name,
-                                 const ResolveMojoNameCallback& callback,
-                                 scoped_ptr<base::Value> manifest) {
-  if (manifest) {
-    base::DictionaryValue* dictionary = nullptr;
-    CHECK(manifest->GetAsDictionary(&dictionary));
-    DeserializeApplication(dictionary);
-  } else {
-    Entry entry;
-    entry.set_name(name);
-    entry.set_display_name(name);
-    catalog_[entry.name()] = entry;
-    qualifiers_[entry.name()] = mojo::GetNamePath(name);
-  }
   SerializeCatalog();
 
   auto qualifier_iter = qualifiers_.find(name);

@@ -179,6 +179,19 @@ scoped_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
     entry->set_capabilities(BuildCapabilitiesV0(*capabilities));
   else
     entry->set_capabilities(BuildCapabilitiesV1(*capabilities));
+
+  if (value.HasKey(Store::kApplicationsKey)) {
+    const base::ListValue* applications = nullptr;
+    value.GetList(Store::kApplicationsKey, &applications);
+    for (size_t i = 0; i < applications->GetSize(); ++i) {
+      const base::DictionaryValue* application = nullptr;
+      applications->GetDictionary(i, &application);
+      scoped_ptr<Entry> child = Entry::Deserialize(*application);
+      if (child)
+        entry->applications_.insert(*child);
+    }
+  }
+
   return entry;
 }
 
@@ -186,6 +199,12 @@ bool Entry::operator==(const Entry& other) const {
   return other.name_ == name_ && other.qualifier_ == qualifier_ &&
          other.display_name_ == display_name_ &&
          other.capabilities_ == capabilities_;
+}
+
+bool Entry::operator<(const Entry& other) const {
+  return std::tie(name_, qualifier_, display_name_, capabilities_) <
+         std::tie(other.name_, other.qualifier_, other.display_name_,
+                  other.capabilities_);
 }
 
 }  // catalog

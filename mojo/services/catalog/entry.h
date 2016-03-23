@@ -5,6 +5,7 @@
 #ifndef MOJO_SERVICES_CATALOG_ENTRY_H_
 #define MOJO_SERVICES_CATALOG_ENTRY_H_
 
+#include <set>
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
@@ -27,6 +28,7 @@ class Entry {
   static scoped_ptr<Entry> Deserialize(const base::DictionaryValue& value);
 
   bool operator==(const Entry& other) const;
+  bool operator<(const Entry& other) const;
 
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
@@ -40,12 +42,14 @@ class Entry {
   void set_capabilities(const mojo::CapabilitySpec& capabilities) {
     capabilities_ = capabilities;
   }
+  const std::set<Entry>& applications() { return applications_; }
 
  private:
   std::string name_;
   std::string qualifier_;
   std::string display_name_;
   mojo::CapabilitySpec capabilities_;
+  std::set<Entry> applications_;
 };
 
 }  // namespace catalog

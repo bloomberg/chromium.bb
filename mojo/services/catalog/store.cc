@@ -24,5 +24,7 @@ const char Store::kCapabilities_RequiredKey[] = "required";
 const char Store::kCapabilities_ClassesKey[] = "classes";
 // static
 const char Store::kCapabilities_InterfacesKey[] = "interfaces";
+// static
+const char Store::kApplicationsKey[] = "applications";
 
 }  // namespace catalog

@@ -13,10 +13,10 @@
 #include "mojo/services/catalog/entry.h"
 #include "mojo/services/catalog/public/interfaces/catalog.mojom.h"
 #include "mojo/services/catalog/public/interfaces/resolver.mojom.h"
+#include "mojo/services/catalog/reader.h"
 #include "mojo/services/catalog/store.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/interfaces/shell_resolver.mojom.h"
-#include "url/gurl.h"
 
 namespace catalog {
 
@@ -65,36 +65,26 @@ class Catalog : public mojom::Resolver,
 
   bool IsNameInCatalog(const std::string& name) const;
 
-  // Called from ResolveMojoName().
-  // Attempts to load a manifest for |name|, reads it and adds its metadata to
-  // the catalog.
-  void AddNameToCatalog(const std::string& name,
-                        const ResolveMojoNameCallback& callback);
-
   // Populate/serialize the catalog from/to the supplied store.
   void DeserializeCatalog();
   void SerializeCatalog();
+
+  // Callback for Reader, receives an Entry constructed from the manifest for
+  // |name|.
+  static void OnReadEntry(base::WeakPtr<Catalog> catalog,
+                          const std::string& name,
+                          const ResolveMojoNameCallback& callback,
+                          scoped_ptr<Entry> entry);
+  void OnReadEntryImpl(const std::string& name,
+                       const ResolveMojoNameCallback& callback,
+                       scoped_ptr<Entry> entry);
 
   // Construct a catalog entry from |dictionary|.
   scoped_ptr<Entry> DeserializeApplication(
       const base::DictionaryValue* dictionary);
 
-  GURL GetManifestURL(const std::string& name);
-
-  // Called once the manifest has been read. |pm| may be null at this point,
-  // but |callback| must be run.
-  static void OnReadManifest(base::WeakPtr<Catalog> catalog,
-                             const std::string& name,
-                             const ResolveMojoNameCallback& callback,
-                             scoped_ptr<base::Value> manifest);
-
-  // Called once the manifest is read and |this| hasn't been deleted.
-  void OnReadManifestImpl(const std::string& name,
-                          const ResolveMojoNameCallback& callback,
-                          scoped_ptr<base::Value> manifest);
-
-  base::TaskRunner* blocking_pool_;
-  GURL system_package_dir_;
+  scoped_ptr<Reader> reader_;
+  base::FilePath package_path_;
 
   mojo::BindingSet<mojom::Resolver> resolver_bindings_;
   mojo::BindingSet<mojo::shell::mojom::ShellResolver> shell_resolver_bindings_;

@@ -13,11 +13,21 @@ bool CapabilityRequest::operator==(const CapabilityRequest& other) const {
   return other.classes == classes && other.interfaces == interfaces;
 }
 
+bool CapabilityRequest::operator<(const CapabilityRequest& other) const {
+  return std::tie(classes, interfaces) <
+      std::tie(other.classes, other.interfaces);
+}
+
 CapabilitySpec::CapabilitySpec() {}
 CapabilitySpec::~CapabilitySpec() {}
 
 bool CapabilitySpec::operator==(const CapabilitySpec& other) const {
   return other.provided == provided && other.required == required;
+}
+
+bool CapabilitySpec::operator<(const CapabilitySpec& other) const {
+  return std::tie(provided, required) <
+      std::tie(other.provided, other.required);
 }
 
 // static

@@ -32,6 +32,8 @@ class Store {
   static const char kCapabilities_ClassesKey[];
   // Value is a list.
   static const char kCapabilities_InterfacesKey[];
+  // Value is a list.
+  static const char kApplicationsKey[];
 
   virtual ~Store() {}
 

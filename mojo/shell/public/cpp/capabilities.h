@@ -25,6 +25,7 @@ struct CapabilityRequest {
   CapabilityRequest();
   ~CapabilityRequest();
   bool operator==(const CapabilityRequest& other) const;
+  bool operator<(const CapabilityRequest& other) const;
   Classes classes;
   Interfaces interfaces;
 };
@@ -33,6 +34,7 @@ struct CapabilitySpec {
   CapabilitySpec();
   ~CapabilitySpec();
   bool operator==(const CapabilitySpec& other) const;
+  bool operator<(const CapabilitySpec& other) const;
   std::map<Class, Interfaces> provided;
   std::map<Name, CapabilityRequest> required;
 };
