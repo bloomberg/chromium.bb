@@ -393,7 +393,7 @@ void NavigationScheduler::schedule(PassOwnPtrWillBeRawPtr<ScheduledNavigation> r
     // FIXME: This check seems out of place.
     if (!m_frame->loader().stateMachine()->committedFirstRealDocumentLoad() && m_frame->loader().provisionalDocumentLoader()) {
         RefPtrWillBeRawPtr<LocalFrame> protect(m_frame.get());
-        m_frame->loader().provisionalDocumentLoader()->stopLoading();
+        m_frame->loader().stopAllLoaders();
         if (!m_frame->host())
             return;
     }

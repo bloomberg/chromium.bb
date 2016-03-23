@@ -35,24 +35,8 @@
 
 namespace blink {
 
-ActiveParserSession::ActiveParserSession(unsigned& nestingLevel, Document* document)
+PumpSession::PumpSession(unsigned& nestingLevel)
     : NestingLevelIncrementer(nestingLevel)
-    , m_document(document)
-{
-    if (!m_document)
-        return;
-    m_document->incrementActiveParserCount();
-}
-
-ActiveParserSession::~ActiveParserSession()
-{
-    if (!m_document)
-        return;
-    m_document->decrementActiveParserCount();
-}
-
-PumpSession::PumpSession(unsigned& nestingLevel, Document* document)
-    : ActiveParserSession(nestingLevel, document)
 {
 }
 
@@ -60,8 +44,8 @@ PumpSession::~PumpSession()
 {
 }
 
-SpeculationsPumpSession::SpeculationsPumpSession(unsigned& nestingLevel, Document* document)
-    : ActiveParserSession(nestingLevel, document)
+SpeculationsPumpSession::SpeculationsPumpSession(unsigned& nestingLevel)
+    : NestingLevelIncrementer(nestingLevel)
     , m_startTime(currentTime())
     , m_processedElementTokens(0)
 {

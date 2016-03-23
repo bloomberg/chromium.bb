@@ -964,6 +964,7 @@ bool WebTestProxyBase::DidFailProvisionalLoad(
     blink::WebLocalFrame* frame,
     const blink::WebURLError& error,
     blink::WebHistoryCommitType commit_type) {
+  DCHECK(frame->provisionalDataSource());
   if (test_interfaces_->GetTestRunner()->shouldDumpFrameLoadCallbacks()) {
     PrintFrameDescription(delegate_, frame);
     delegate_->PrintMessage(" - didFailProvisionalLoadWithError\n");
