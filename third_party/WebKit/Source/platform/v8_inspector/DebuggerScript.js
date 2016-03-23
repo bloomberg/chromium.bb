@@ -418,13 +418,14 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
     var location;
     var scopeStartLocations;
     var scopeEndLocations;
+    var details;
 
     function createLocation(script, pos)
     {
         if (!script)
             return null;
 
-        location = script.locationFromPosition(pos, true);
+        var location = script.locationFromPosition(pos, true);
         return {
             "lineNumber": location.line,
             "columnNumber": location.column,
@@ -465,34 +466,47 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
         return scopeChain;
     }
 
-    function lazyScopeTypes()
+    function lazyDetails()
     {
-        if (!scopeChain)
-            lazyScopeChain();
-        return scopeTypes;
-    }
-
-    function lazyScopeNames()
-    {
-        if (!scopeChain)
-            lazyScopeChain();
-        return scopeNames;
-    }
-
-    function lazyScopeStartLocations()
-    {
-        if (!scopeChain)
-            lazyScopeChain();
-
-        return scopeStartLocations;
-    }
-
-    function lazyScopeEndLocations()
-    {
-        if (!scopeChain)
-            lazyScopeChain();
-
-        return scopeEndLocations;
+        if (!details) {
+            var scopeObjects = lazyScopeChain();
+            var script = ensureFuncMirror().script();
+            var scopes = [];
+            for (var i = 0; i < scopeObjects.length; ++i) {
+                var scope = {
+                    "type": scopeTypes[i],
+                    "object": scopeObjects[i],
+                };
+                if (scopeNames[i])
+                    scope.name = scopeNames[i];
+                if (scopeStartLocations[i])
+                    scope.startLocation = scopeStartLocations[i];
+                if (scopeEndLocations[i])
+                    scope.endLocation = scopeEndLocations[i];
+                scopes.push(scope);
+            }
+            details = {
+                "functionName": ensureFuncMirror().debugName(),
+                "location": {
+                    "lineNumber": line(),
+                    "columnNumber": column(),
+                    "scriptId": String(script.id())
+                },
+                "this": thisObject,
+                "scopeChain": scopes
+            };
+            var functionLocation = ensureFuncMirror().sourceLocation();
+            if (functionLocation) {
+                details.functionLocation = {
+                    "lineNumber": functionLocation.line,
+                    "columnNumber": functionLocation.column,
+                    "scriptId": String(script.id())
+                };
+            }
+            if (isAtReturn)
+                details.returnValue = returnValue;
+        }
+        return details;
     }
 
     function ensureFuncMirror()
@@ -533,29 +547,6 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
         return script && script.id();
     }
 
-    function scriptName()
-    {
-        var script = ensureFuncMirror().script();
-        return script && script.name();
-    }
-
-    function functionName()
-    {
-        return ensureFuncMirror().debugName();
-    }
-
-    function functionLine()
-    {
-        var location = ensureFuncMirror().sourceLocation();
-        return location ? location.line : 0;
-    }
-
-    function functionColumn()
-    {
-        var location = ensureFuncMirror().sourceLocation();
-        return location ? location.column : 0;
-    }
-
     function evaluate(expression)
     {
         return frameMirror.evaluate(expression, false).value();
@@ -571,49 +562,17 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
         return DebuggerScript._setScopeVariableValue(frameMirror, scopeNumber, variableName, newValue);
     }
 
-    function stepInPositions()
-    {
-        var stepInPositionsV8 = frameMirror.stepInPositions();
-        var stepInPositionsProtocol;
-        if (stepInPositionsV8) {
-            stepInPositionsProtocol = [];
-            var script = ensureFuncMirror().script();
-            if (script) {
-                var scriptId = String(script.id());
-                for (var i = 0; i < stepInPositionsV8.length; i++) {
-                    var item = {
-                        scriptId: scriptId,
-                        lineNumber: stepInPositionsV8[i].position.line,
-                        columnNumber: stepInPositionsV8[i].position.column
-                    };
-                    stepInPositionsProtocol.push(item);
-                }
-            }
-        }
-        return JSON.stringify(stepInPositionsProtocol);
-    }
-
     return {
         "sourceID": sourceID,
         "line": line,
         "column": column,
-        "scriptName": scriptName,
-        "functionName": functionName,
-        "functionLine": functionLine,
-        "functionColumn": functionColumn,
         "thisObject": thisObject,
-        "scopeChain": lazyScopeChain,
-        "scopeType": lazyScopeTypes,
-        "scopeName": lazyScopeNames,
-        "scopeStartLocation": lazyScopeStartLocations,
-        "scopeEndLocation": lazyScopeEndLocations,
         "evaluate": evaluate,
         "caller": callerFrame,
         "restart": restart,
         "setVariableValue": setVariableValue,
-        "stepInPositions": stepInPositions,
         "isAtReturn": isAtReturn,
-        "returnValue": returnValue
+        "details": lazyDetails
     };
 }
 

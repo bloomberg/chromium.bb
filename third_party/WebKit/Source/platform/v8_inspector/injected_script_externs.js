@@ -117,61 +117,6 @@ InjectedScriptHostClass.prototype.bind = function(value, groupName) {}
 
 /** @type {!InjectedScriptHostClass} */
 var InjectedScriptHost;
-
-/** @interface */
-function JavaScriptCallFrame()
-{
-    /** @type {!JavaScriptCallFrame} */
-    this.caller;
-    /** @type {number} */
-    this.sourceID;
-    /** @type {number} */
-    this.line;
-    /** @type {number} */
-    this.column;
-    /** @type {!Array.<!Object>} */
-    this.scopeChain;
-    /** @type {!Object} */
-    this.thisObject;
-    /** @type {string} */
-    this.stepInPositions;
-    /** @type {string} */
-    this.functionName;
-    /** @type {number} */
-    this.functionLine;
-    /** @type {number} */
-    this.functionColumn;
-    /** @type {boolean} */
-    this.isAtReturn;
-    /** @type {*} */
-    this.returnValue;
-}
-
-/**
- * @param {number} scopeIndex
- * @return {!DebuggerAgent.ScopeType<string>}
- */
-JavaScriptCallFrame.prototype.scopeType = function(scopeIndex) {}
-
-/**
- * @param {number} scopeIndex
- * @return {string}
- */
-JavaScriptCallFrame.prototype.scopeName = function(scopeIndex) {}
-
-/**
- * @param {number} scopeIndex
- * @return {?DebuggerAgent.Location}
- */
-JavaScriptCallFrame.prototype.scopeStartLocation = function(scopeIndex) {}
-
-/**
- * @param {number} scopeIndex
- * @return {?DebuggerAgent.Location}
- */
-JavaScriptCallFrame.prototype.scopeEndLocation = function(scopeIndex) {}
-
-
 /** @type {!Window} */
 var inspectedGlobalObject;
 /** @type {number} */

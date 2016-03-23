@@ -36,7 +36,6 @@
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
-#include "platform/v8_inspector/V8JavaScriptCallFrame.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
 #include "platform/v8_inspector/V8StackTraceImpl.h"
 #include "platform/v8_inspector/V8StringUtil.h"
@@ -90,7 +89,6 @@ void V8DebuggerImpl::enable()
     v8::HandleScope scope(m_isolate);
     v8::Debug::SetDebugEventListener(m_isolate, &V8DebuggerImpl::v8DebugEventCallback, v8::External::New(m_isolate, this));
     m_debuggerContext.Reset(m_isolate, v8::Debug::GetDebugContext(m_isolate));
-    m_callFrameWrapperTemplate.Reset(m_isolate, V8JavaScriptCallFrame::createWrapperTemplate(m_isolate));
     compileDebuggerScript();
 }
 
@@ -100,7 +98,6 @@ void V8DebuggerImpl::disable()
     clearBreakpoints();
     m_debuggerScript.Reset();
     m_debuggerContext.Reset();
-    m_callFrameWrapperTemplate.Reset();
     v8::Debug::SetDebugEventListener(m_isolate, nullptr);
 }
 
@@ -399,7 +396,7 @@ void V8DebuggerImpl::clearStepping()
     callDebuggerMethod("clearStepping", 0, argv);
 }
 
-bool V8DebuggerImpl::setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString* error, Maybe<protocol::Debugger::SetScriptSourceError>* errorData, v8::Global<v8::Object>* newCallFrames, Maybe<bool>* stackChanged)
+bool V8DebuggerImpl::setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString* error, Maybe<protocol::Debugger::SetScriptSourceError>* errorData, OwnPtr<JavaScriptCallFrame>* newCallFrames, Maybe<bool>* stackChanged)
 {
     class EnableLiveEditScope {
     public:
@@ -451,7 +448,7 @@ bool V8DebuggerImpl::setScriptSource(const String16& sourceID, const String16& n
             *stackChanged = resultTuple->Get(1)->BooleanValue();
             // Call stack may have changed after if the edited function was on the stack.
             if (!preview && isPaused())
-                newCallFrames->Reset(m_isolate, currentCallFrames());
+                *newCallFrames = currentCallFrames();
             return true;
         }
     // Compile error.
@@ -495,25 +492,17 @@ PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::wrapCallFrames()
     return JavaScriptCallFrame::create(debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
 }
 
-v8::Local<v8::Object> V8DebuggerImpl::currentCallFrames()
+PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::currentCallFrames()
 {
     if (!m_isolate->InContext())
-        return v8::Local<v8::Object>();
+        return nullptr;
 
     // Filter out stack traces entirely consisting of V8's internal scripts.
     v8::Local<v8::StackTrace> stackTrace = v8::StackTrace::CurrentStackTrace(m_isolate, 1);
     if (!stackTrace->GetFrameCount())
-        return v8::Local<v8::Object>();
+        return nullptr;
 
-    OwnPtr<JavaScriptCallFrame> currentCallFrame = wrapCallFrames();
-    if (!currentCallFrame)
-        return v8::Local<v8::Object>();
-
-    v8::Local<v8::FunctionTemplate> wrapperTemplate = v8::Local<v8::FunctionTemplate>::New(m_isolate, m_callFrameWrapperTemplate);
-    v8::Local<v8::Context> context = m_pausedContext.IsEmpty() ? m_isolate->GetCurrentContext() : m_pausedContext;
-    v8::Context::Scope scope(context);
-    v8::Local<v8::Object> wrapper = V8JavaScriptCallFrame::wrap(wrapperTemplate, context, currentCallFrame.release());
-    return wrapper;
+    return wrapCallFrames();
 }
 
 PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::callFrame(int index)

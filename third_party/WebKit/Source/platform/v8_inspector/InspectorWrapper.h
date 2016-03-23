@@ -6,7 +6,6 @@
 #define InspectorWrapper_h
 
 #include "platform/inspector_protocol/Collections.h"
-#include "wtf/PassOwnPtr.h"
 #include <v8.h>
 
 namespace blink {
@@ -44,14 +43,6 @@ public:
             m_persistent.SetWeak(this, &WeakCallbackData::weakCallback, v8::WeakCallbackType::kParameter);
         }
 
-        WeakCallbackData(v8::Isolate* isolate, PassOwnPtr<T> impl, v8::Local<v8::Object> wrapper)
-            : m_impl(impl.get())
-            , m_implOwn(impl)
-            , m_persistent(isolate, wrapper)
-        {
-            m_persistent.SetWeak(this, &WeakCallbackData::weakCallback, v8::WeakCallbackType::kParameter);
-        }
-
         T* m_impl;
         OwnPtr<T> m_implOwn;
 
@@ -70,20 +61,6 @@ public:
     }
 
     static v8::Local<v8::Object> wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, T* object)
-    {
-        v8::Context::Scope contextScope(context);
-        v8::Local<v8::Object> result = InspectorWrapperBase::createWrapper(constructorTemplate, context);
-        if (result.IsEmpty())
-            return v8::Local<v8::Object>();
-        v8::Isolate* isolate = context->GetIsolate();
-        v8::Local<v8::External> objectReference = v8::External::New(isolate, new WeakCallbackData(isolate, object, result));
-
-        v8::Local<v8::Private> privateKey = v8::Private::ForApi(isolate, v8::String::NewFromUtf8(isolate, hiddenPropertyName, v8::NewStringType::kInternalized).ToLocalChecked());
-        result->SetPrivate(context, privateKey, objectReference);
-        return result;
-    }
-
-    static v8::Local<v8::Object> wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassOwnPtr<T> object)
     {
         v8::Context::Scope contextScope(context);
         v8::Local<v8::Object> result = InspectorWrapperBase::createWrapper(constructorTemplate, context);

@@ -317,6 +317,19 @@ InjectedScript.prototype = {
     },
 
     /**
+     * @param {!Array<*>} array
+     * @param {string} groupName
+     * @param {boolean} canAccessInspectedGlobalObject
+     * @param {boolean} forceValueType
+     * @param {boolean} generatePreview
+     */
+    wrapObjectsInArray: function(array, groupName, canAccessInspectedGlobalObject, forceValueType, generatePreview)
+    {
+        for (var i = 0; i < array.length; ++i)
+            array[i] = this.wrapObject(array[i], groupName, canAccessInspectedGlobalObject, forceValueType, generatePreview);
+    },
+
+    /**
      * @param {*} object
      * @return {!RuntimeAgent.RemoteObject}
      */
@@ -604,25 +617,6 @@ InjectedScript.prototype = {
         } finally {
             this._customPreviewRecursionDepth--;
         }
-    },
-
-    /**
-     * @param {?Object} callFrame
-     * @return {!Array.<!InjectedScript.CallFrameProxy>|boolean}
-     */
-    wrapCallFrames: function(callFrame)
-    {
-        if (!callFrame)
-            return false;
-
-        var result = [];
-        var depth = 0;
-        do {
-            result[depth] = new InjectedScript.CallFrameProxy(depth, callFrame);
-            callFrame = callFrame.caller;
-            ++depth;
-        } while (callFrame);
-        return result;
     },
 
     /**
@@ -1148,66 +1142,6 @@ InjectedScript.RemoteObject.prototype = {
             return string.substr(0, leftHalf) + "\u2026" + string.substr(string.length - rightHalf, rightHalf);
         }
         return string.substr(0, maxLength) + "\u2026";
-    },
-
-    __proto__: null
-}
-
-/**
- * @constructor
- * @param {number} ordinal
- * @param {!JavaScriptCallFrame} callFrame
- */
-InjectedScript.CallFrameProxy = function(ordinal, callFrame)
-{
-    this.callFrameId = "{\"ordinal\":" + ordinal + ",\"injectedScriptId\":" + injectedScriptId + "}";
-    this.functionName = callFrame.functionName;
-    this.functionLocation = { scriptId: toString(callFrame.sourceID), lineNumber: callFrame.functionLine, columnNumber: callFrame.functionColumn, __proto__: null };
-    this.location = { scriptId: toString(callFrame.sourceID), lineNumber: callFrame.line, columnNumber: callFrame.column, __proto__: null };
-    this.scopeChain = this._wrapScopeChain(callFrame);
-    this.this = injectedScript._wrapObject(callFrame.thisObject, "backtrace");
-    if (callFrame.isAtReturn)
-        this.returnValue = injectedScript._wrapObject(callFrame.returnValue, "backtrace");
-}
-
-InjectedScript.CallFrameProxy.prototype = {
-    /**
-     * @param {!JavaScriptCallFrame} callFrame
-     * @return {!Array<!DebuggerAgent.Scope>}
-     */
-    _wrapScopeChain: function(callFrame)
-    {
-        var scopeChain = callFrame.scopeChain;
-        var scopeChainProxy = [];
-        for (var i = 0; i < scopeChain.length; ++i)
-            scopeChainProxy[i] = this._createScopeJson(callFrame.scopeType(i), callFrame.scopeName(i), scopeChain[i], callFrame.scopeStartLocation(i), callFrame.scopeEndLocation(i) );
-        return scopeChainProxy;
-    },
-
-    /**
-     * @param {!DebuggerAgent.ScopeType<string>} scopeType
-     * @param {string} scopeName
-     * @param {*} scopeObject
-     * @param {?DebuggerAgent.Location} startLocation
-     * @param {?DebuggerAgent.Location} endLocation
-     * @return {!DebuggerAgent.Scope}
-     */
-    _createScopeJson: function(scopeType, scopeName, scopeObject, startLocation, endLocation)
-    {
-        var scope = {
-            object: injectedScript._wrapObject(scopeObject, "backtrace"),
-            type: scopeType,
-            __proto__: null
-        };
-        if (scopeName)
-            scope.name = scopeName;
-
-        if (startLocation)
-            scope.startLocation = startLocation;
-        if (endLocation)
-            scope.endLocation = endLocation;
-
-        return scope;
     },
 
     __proto__: null

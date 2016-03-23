@@ -83,8 +83,8 @@ public:
     void stepOutOfFunction();
     void clearStepping();
 
-    bool setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString*, Maybe<protocol::Debugger::SetScriptSourceError>*, v8::Global<v8::Object>* newCallFrames, Maybe<bool>* stackChanged);
-    v8::Local<v8::Object> currentCallFrames();
+    bool setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString*, Maybe<protocol::Debugger::SetScriptSourceError>*, OwnPtr<JavaScriptCallFrame>* newCallFrames, Maybe<bool>* stackChanged);
+    PassOwnPtr<JavaScriptCallFrame> currentCallFrames();
     PassOwnPtr<JavaScriptCallFrame> callFrame(int index);
     int frameCount();
 
@@ -151,7 +151,6 @@ private:
     v8::Global<v8::FunctionTemplate> m_breakProgramCallbackTemplate;
     v8::Global<v8::Object> m_debuggerScript;
     v8::Global<v8::Context> m_debuggerContext;
-    v8::Global<v8::FunctionTemplate> m_callFrameWrapperTemplate;
     v8::Local<v8::Object> m_executionState;
     v8::Local<v8::Context> m_pausedContext;
     bool m_runningNestedMessageLoop;

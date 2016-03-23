@@ -1068,8 +1068,6 @@
       'v8_inspector/V8HeapProfilerAgentImpl.h',
       'v8_inspector/V8InjectedScriptHost.cpp',
       'v8_inspector/V8InjectedScriptHost.h',
-      'v8_inspector/V8JavaScriptCallFrame.cpp',
-      'v8_inspector/V8JavaScriptCallFrame.h',
       'v8_inspector/V8ProfilerAgentImpl.cpp',
       'v8_inspector/V8ProfilerAgentImpl.h',
       'v8_inspector/V8Regex.cpp',

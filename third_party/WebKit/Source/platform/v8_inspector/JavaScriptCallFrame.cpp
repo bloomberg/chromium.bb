@@ -70,19 +70,6 @@ int JavaScriptCallFrame::callV8FunctionReturnInt(const char* name) const
     return result.As<v8::Int32>()->Value();
 }
 
-String16 JavaScriptCallFrame::callV8FunctionReturnString(const char* name) const
-{
-    v8::HandleScope handleScope(m_isolate);
-    v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
-    v8::Local<v8::Context> context = v8::Local<v8::Context>::New(m_isolate, m_debuggerContext);
-    v8::Local<v8::Object> callFrame = v8::Local<v8::Object>::New(m_isolate, m_callFrame);
-    v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(callFrame->Get(toV8StringInternalized(m_isolate, name)));
-    v8::Local<v8::Value> result;
-    if (!func->Call(context, callFrame, 0, nullptr).ToLocal(&result))
-        return String16();
-    return toProtocolStringWithTypeCheck(result);
-}
-
 int JavaScriptCallFrame::sourceID() const
 {
     return callV8FunctionReturnInt("sourceID");
@@ -98,85 +85,6 @@ int JavaScriptCallFrame::column() const
     return callV8FunctionReturnInt("column");
 }
 
-String16 JavaScriptCallFrame::scriptName() const
-{
-    return callV8FunctionReturnString("scriptName");
-}
-
-String16 JavaScriptCallFrame::functionName() const
-{
-    return callV8FunctionReturnString("functionName");
-}
-
-int JavaScriptCallFrame::functionLine() const
-{
-    return callV8FunctionReturnInt("functionLine");
-}
-
-int JavaScriptCallFrame::functionColumn() const
-{
-    return callV8FunctionReturnInt("functionColumn");
-}
-
-v8::Local<v8::Value> JavaScriptCallFrame::scopeChain() const
-{
-    v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
-    v8::Local<v8::Object> callFrame = v8::Local<v8::Object>::New(m_isolate, m_callFrame);
-    v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(callFrame->Get(toV8StringInternalized(m_isolate, "scopeChain")));
-    v8::Local<v8::Array> scopeChain = v8::Local<v8::Array>::Cast(func->Call(m_isolate->GetCurrentContext(), callFrame, 0, nullptr).ToLocalChecked());
-    v8::Local<v8::Array> result = v8::Array::New(m_isolate, scopeChain->Length());
-    for (uint32_t i = 0; i < scopeChain->Length(); i++)
-        result->Set(i, scopeChain->Get(i));
-    return result;
-}
-
-v8::Local<v8::String> JavaScriptCallFrame::scopeType(int scopeIndex) const
-{
-    v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
-    v8::Local<v8::Object> callFrame = v8::Local<v8::Object>::New(m_isolate, m_callFrame);
-    v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(callFrame->Get(toV8StringInternalized(m_isolate, "scopeType")));
-    v8::Local<v8::Array> scopeType = v8::Local<v8::Array>::Cast(func->Call(m_isolate->GetCurrentContext(), callFrame, 0, nullptr).ToLocalChecked());
-    return scopeType->Get(scopeIndex)->ToString();
-}
-
-v8::Local<v8::String> JavaScriptCallFrame::scopeName(int scopeIndex) const
-{
-    v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
-    v8::Local<v8::Object> callFrame = v8::Local<v8::Object>::New(m_isolate, m_callFrame);
-    v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(callFrame->Get(toV8StringInternalized(m_isolate, "scopeName")));
-    v8::Local<v8::Array> scopeName = v8::Local<v8::Array>::Cast(func->Call(m_isolate->GetCurrentContext(), callFrame, 0, nullptr).ToLocalChecked());
-    return scopeName->Get(scopeIndex)->ToString();
-}
-
-v8::Local<v8::Value> JavaScriptCallFrame::scopeStartLocation(int scopeIndex) const
-{
-    return callScopeLocationFunction("scopeStartLocation", scopeIndex);
-}
-
-v8::Local<v8::Value> JavaScriptCallFrame::scopeEndLocation(int scopeIndex) const
-{
-    return callScopeLocationFunction("scopeEndLocation", scopeIndex);
-}
-
-v8::Local<v8::Value> JavaScriptCallFrame::callScopeLocationFunction(const char* name, int scopeIndex) const
-{
-    v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
-    v8::Local<v8::Object> callFrame = v8::Local<v8::Object>::New(m_isolate, m_callFrame);
-    v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(callFrame->Get(toV8StringInternalized(m_isolate, name)));
-    v8::Local<v8::Array> locations = v8::Local<v8::Array>::Cast(func->Call(m_isolate->GetCurrentContext(), callFrame, 0, nullptr).ToLocalChecked());
-    return locations->Get(scopeIndex);
-}
-
-v8::Local<v8::Value> JavaScriptCallFrame::thisObject() const
-{
-    return v8::Local<v8::Object>::New(m_isolate, m_callFrame)->Get(toV8StringInternalized(m_isolate, "thisObject"));
-}
-
-String16 JavaScriptCallFrame::stepInPositions() const
-{
-    return callV8FunctionReturnString("stepInPositions");
-}
-
 bool JavaScriptCallFrame::isAtReturn() const
 {
     v8::HandleScope handleScope(m_isolate);
@@ -186,9 +94,12 @@ bool JavaScriptCallFrame::isAtReturn() const
     return result->BooleanValue();
 }
 
-v8::Local<v8::Value> JavaScriptCallFrame::returnValue() const
+v8::Local<v8::Object> JavaScriptCallFrame::details() const
 {
-    return v8::Local<v8::Object>::New(m_isolate, m_callFrame)->Get(toV8StringInternalized(m_isolate, "returnValue"));
+    v8::MicrotasksScope microtasks(m_isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+    v8::Local<v8::Object> callFrame = v8::Local<v8::Object>::New(m_isolate, m_callFrame);
+    v8::Local<v8::Function> func = v8::Local<v8::Function>::Cast(callFrame->Get(toV8StringInternalized(m_isolate, "details")));
+    return v8::Local<v8::Object>::Cast(func->Call(m_isolate->GetCurrentContext(), callFrame, 0, nullptr).ToLocalChecked());
 }
 
 v8::MaybeLocal<v8::Value> JavaScriptCallFrame::evaluate(v8::Local<v8::Value> expression)

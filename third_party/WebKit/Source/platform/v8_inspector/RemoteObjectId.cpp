@@ -64,4 +64,9 @@ PassOwnPtr<RemoteCallFrameId> RemoteCallFrameId::parse(ErrorString* errorString,
     return result.release();
 }
 
+String16 RemoteCallFrameId::serialize(int injectedScriptId, int frameOrdinal)
+{
+    return "{\"ordinal\":" + String16::number(frameOrdinal) + ",\"injectedScriptId\":" + String16::number(injectedScriptId) + "}";
+}
+
 } // namespace blink

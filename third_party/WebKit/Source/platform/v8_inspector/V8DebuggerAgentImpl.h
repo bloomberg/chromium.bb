@@ -177,7 +177,7 @@ public:
     void reset();
 
     // Interface for V8DebuggerImpl
-    SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Object> callFrames, v8::Local<v8::Value> exception, const protocol::Vector<String16>& hitBreakpoints, bool isPromiseRejection);
+    SkipPauseRequest didPause(v8::Local<v8::Context>, PassOwnPtr<JavaScriptCallFrame> callFrames, v8::Local<v8::Value> exception, const protocol::Vector<String16>& hitBreakpoints, bool isPromiseRejection);
     void didContinue();
     void didParseSource(const V8DebuggerParsedScript&);
     bool v8AsyncTaskEventsEnabled() const;
@@ -198,7 +198,7 @@ private:
 
     void schedulePauseOnNextStatementIfSteppingInto();
 
-    PassOwnPtr<protocol::Array<protocol::Debugger::CallFrame>> currentCallFrames();
+    PassOwnPtr<protocol::Array<protocol::Debugger::CallFrame>> currentCallFrames(ErrorString*);
     PassOwnPtr<protocol::Runtime::StackTrace> currentAsyncStackTrace();
 
     void clearCurrentAsyncOperation();
@@ -241,7 +241,7 @@ private:
     protocol::Frontend::Debugger* m_frontend;
     v8::Isolate* m_isolate;
     v8::Global<v8::Context> m_pausedContext;
-    v8::Global<v8::Object> m_currentCallStack;
+    OwnPtr<JavaScriptCallFrame> m_currentCallStack;
     ScriptsMap m_scripts;
     BreakpointIdToDebuggerBreakpointIdsMap m_breakpointIdToDebuggerBreakpointIds;
     DebugServerBreakpointToBreakpointIdAndSourceMap m_serverBreakpoints;

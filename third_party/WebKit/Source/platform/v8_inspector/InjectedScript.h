@@ -56,11 +56,10 @@ public:
     void getProperties(ErrorString*, v8::Local<v8::Object>, const String16& groupName, bool ownProperties, bool accessorPropertiesOnly, bool generatePreview, OwnPtr<protocol::Array<protocol::Runtime::PropertyDescriptor>>* result, Maybe<protocol::Runtime::ExceptionDetails>*);
     void releaseObject(const String16& objectId);
 
-    PassOwnPtr<protocol::Array<protocol::Debugger::CallFrame>> wrapCallFrames(v8::Local<v8::Object>);
-
     PassOwnPtr<protocol::Runtime::RemoteObject> wrapObject(ErrorString*, v8::Local<v8::Value>, const String16& groupName, bool forceValueType = false, bool generatePreview = false) const;
     bool wrapObjectProperty(ErrorString*, v8::Local<v8::Object>, v8::Local<v8::Value> key, const String16& groupName, bool forceValueType = false, bool generatePreview = false) const;
     bool wrapPropertyInArray(ErrorString*, v8::Local<v8::Array>, v8::Local<v8::String> property, const String16& groupName, bool forceValueType = false, bool generatePreview = false) const;
+    bool wrapObjectsInArray(ErrorString*, v8::Local<v8::Array>, const String16& groupName, bool forceValueType = false, bool generatePreview = false) const;
 
     PassOwnPtr<protocol::Runtime::RemoteObject> wrapTable(v8::Local<v8::Value> table, v8::Local<v8::Value> columns) const;
     bool findObject(ErrorString*, const RemoteObjectId&, v8::Local<v8::Value>*) const;

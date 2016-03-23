@@ -47,6 +47,7 @@ public:
 
     int frameOrdinal() const { return m_frameOrdinal; }
 
+    static String16 serialize(int injectedScriptId, int frameOrdinal);
 private:
     RemoteCallFrameId();
 

@@ -51,35 +51,17 @@ public:
     int sourceID() const;
     int line() const;
     int column() const;
-    String16 scriptName() const;
-    String16 functionName() const;
-    int functionLine() const;
-    int functionColumn() const;
 
-    v8::Local<v8::Value> scopeChain() const;
-    v8::Local<v8::String> scopeType(int scopeIndex) const;
-    v8::Local<v8::String> scopeName(int scopeIndex) const;
-    v8::Local<v8::Value> scopeStartLocation(int scopeIndex) const;
-    v8::Local<v8::Value> scopeEndLocation(int scopeIndex) const;
-    v8::Local<v8::Value> thisObject() const;
-    String16 stepInPositions() const;
     bool isAtReturn() const;
-    v8::Local<v8::Value> returnValue() const;
+    v8::Local<v8::Object> details() const;
 
     v8::MaybeLocal<v8::Value> evaluate(v8::Local<v8::Value> expression);
     v8::MaybeLocal<v8::Value> restart();
     v8::MaybeLocal<v8::Value> setVariableValue(int scopeNumber, v8::Local<v8::Value> variableName, v8::Local<v8::Value> newValue);
-
-    // FIXME: store this template in per isolate data
-    void setWrapperTemplate(v8::Local<v8::FunctionTemplate> wrapperTemplate, v8::Isolate* isolate) { m_wrapperTemplate.Reset(isolate, wrapperTemplate); }
-    v8::Local<v8::FunctionTemplate> wrapperTemplate(v8::Isolate* isolate) { return v8::Local<v8::FunctionTemplate>::New(isolate, m_wrapperTemplate); }
-
 private:
     JavaScriptCallFrame(v8::Local<v8::Context> debuggerContext, v8::Local<v8::Object> callFrame);
 
     int callV8FunctionReturnInt(const char* name) const;
-    String16 callV8FunctionReturnString(const char* name) const;
-    v8::Local<v8::Value> callScopeLocationFunction(const char* name, int scopeIndex) const;
 
     v8::Isolate* m_isolate;
     OwnPtr<JavaScriptCallFrame> m_caller;
