@@ -39,6 +39,7 @@ class GraphicsLayer;
 class IntPoint;
 class Page;
 class LayoutPart;
+class Scrollbar;
 class ScrollingCoordinator;
 
 enum CompositingUpdateType {
@@ -209,6 +210,10 @@ private:
     bool requiresScrollCornerLayer() const;
 
     void applyOverlayFullscreenVideoAdjustmentIfNeeded();
+
+    // Checks the given graphics layer against the compositor's horizontal and vertical scrollbar
+    // graphics layers, returning the associated Scrollbar instance if any, else nullptr.
+    Scrollbar* graphicsLayerToScrollbar(const GraphicsLayer*) const;
 
     LayoutView& m_layoutView;
     OwnPtr<GraphicsLayer> m_rootContentLayer;

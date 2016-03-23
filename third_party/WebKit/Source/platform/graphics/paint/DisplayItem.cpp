@@ -101,6 +101,7 @@ static WTF::String specialDrawingTypeAsDebugString(DisplayItem::Type type)
         DEBUG_STRING_CASE(ScrollbarThumb);
         DEBUG_STRING_CASE(ScrollbarTickmarks);
         DEBUG_STRING_CASE(ScrollbarTrackBackground);
+        DEBUG_STRING_CASE(ScrollbarCompositedScrollbar);
         DEBUG_STRING_CASE(SelectionTint);
         DEBUG_STRING_CASE(TableCellBackgroundFromColumnGroup);
         DEBUG_STRING_CASE(TableCellBackgroundFromColumn);

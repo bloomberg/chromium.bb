@@ -56,11 +56,13 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/TraceEvent.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
 
 namespace blink {
@@ -791,11 +793,8 @@ bool PaintLayerCompositor::needsContentsCompositingLayer(const PaintLayer* layer
     return layer->stackingNode()->hasNegativeZOrderList();
 }
 
-static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context, const IntRect& clip)
+static void paintScrollbar(const GraphicsLayer* graphicsLayer, const Scrollbar* scrollbar, GraphicsContext& context, const IntRect& clip)
 {
-    if (!scrollbar)
-        return;
-
     // Frame scrollbars are painted in the space of the containing frame, not the local space of the scrollbar.
     const IntPoint& paintOffset = scrollbar->frameRect().location();
     IntRect transformedClip = clip;
@@ -804,7 +803,6 @@ static void paintScrollbar(const Scrollbar* scrollbar, GraphicsContext& context,
     AffineTransform translation;
     translation.translate(-paintOffset.x(), -paintOffset.y());
     TransformRecorder transformRecorder(context, *scrollbar, translation);
-
     scrollbar->paint(context, CullRect(transformedClip));
 }
 
@@ -815,12 +813,37 @@ IntRect PaintLayerCompositor::computeInterestRect(const GraphicsLayer* graphicsL
 
 void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer, GraphicsContext& context, GraphicsLayerPaintingPhase, const IntRect& interestRect) const
 {
-    if (graphicsLayer == layerForHorizontalScrollbar())
-        paintScrollbar(m_layoutView.frameView()->horizontalScrollbar(), context, interestRect);
-    else if (graphicsLayer == layerForVerticalScrollbar())
-        paintScrollbar(m_layoutView.frameView()->verticalScrollbar(), context, interestRect);
-    else if (graphicsLayer == layerForScrollCorner())
-        FramePainter(*m_layoutView.frameView()).paintScrollCorner(context, interestRect);
+    const Scrollbar* scrollbar = graphicsLayerToScrollbar(graphicsLayer);
+    if (!scrollbar && graphicsLayer != layerForScrollCorner())
+        return;
+
+    if (DrawingRecorder::useCachedDrawingIfPossible(context, *graphicsLayer, DisplayItem::ScrollbarCompositedScrollbar))
+        return;
+
+    FloatRect layerBounds(FloatPoint(), graphicsLayer->size());
+    SkPictureBuilder pictureBuilder(layerBounds, nullptr, &context);
+
+    if (scrollbar)
+        paintScrollbar(graphicsLayer, scrollbar, pictureBuilder.context(), interestRect);
+    else
+        FramePainter(*m_layoutView.frameView()).paintScrollCorner(pictureBuilder.context(), interestRect);
+
+    // Replay the painted scrollbar content with the GraphicsLayer backing as the DisplayItemClient
+    // in order for the resulting DrawingDisplayItem to produce the correct visualRect (i.e., the
+    // bounds of the involved GraphicsLayer).
+    DrawingRecorder drawingRecorder(context, *graphicsLayer, DisplayItem::ScrollbarCompositedScrollbar, layerBounds);
+    pictureBuilder.endRecording()->playback(context.canvas());
+}
+
+Scrollbar* PaintLayerCompositor::graphicsLayerToScrollbar(const GraphicsLayer* graphicsLayer) const
+{
+    if (graphicsLayer == layerForHorizontalScrollbar()) {
+        return m_layoutView.frameView()->horizontalScrollbar();
+    }
+    if (graphicsLayer == layerForVerticalScrollbar()) {
+        return m_layoutView.frameView()->verticalScrollbar();
+    }
+    return nullptr;
 }
 
 bool PaintLayerCompositor::supportsFixedRootBackgroundCompositing() const
