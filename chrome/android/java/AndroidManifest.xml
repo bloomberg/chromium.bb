@@ -92,6 +92,9 @@ by a child template that "extends" this file.
     -->
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 
+    {% block extra_keyset_definitions %}
+    {% endblock %}
+
     <!-- Set android:largeHeap to "true" to allow more than the default
          Java heap limit (32Mb on Nexus S, 48Mb on Xoom). -->
     <application android:name="{% block application_name %}org.chromium.chrome.browser.ChromeApplication{% endblock %}"
@@ -636,7 +639,7 @@ by a child template that "extends" this file.
             android:value="{{ num_privileged_services }}"/>
         {% for i in range(num_privileged_services) %}
         {% set privileged_process_name = ':privileged_process%d' % i %}
-        <!-- TODO(tedchoc): Omit this for release builds as MultiDex is debug only. --> 
+        <!-- TODO(tedchoc): Omit this for release builds as MultiDex is debug only. -->
         <meta-data android:name="{{ manifest_package }}{{ privileged_process_name }}.ignore_multidex"
 android:value="true" />
         <service android:name="org.chromium.content.app.PrivilegedProcessService{{ i }}"
