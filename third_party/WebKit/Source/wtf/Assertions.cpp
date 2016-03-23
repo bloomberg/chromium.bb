@@ -107,18 +107,6 @@ static void vprintf_stderr_common(const char* format, va_list args)
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
 
-static void vprintf_stderr_with_prefix(const char* prefix, const char* format, va_list args)
-{
-    size_t prefixLength = strlen(prefix);
-    size_t formatLength = strlen(format);
-    OwnPtr<char[]> formatWithPrefix = adoptArrayPtr(new char[prefixLength + formatLength + 1]);
-    memcpy(formatWithPrefix.get(), prefix, prefixLength);
-    memcpy(formatWithPrefix.get() + prefixLength, format, formatLength);
-    formatWithPrefix[prefixLength + formatLength] = 0;
-
-    vprintf_stderr_common(formatWithPrefix.get(), args);
-}
-
 static void vprintf_stderr_with_trailing_newline(const char* format, va_list args)
 {
     size_t formatLength = strlen(format);
@@ -259,16 +247,6 @@ void WTFPrintBacktrace(void** stack, int size)
         else
             printf_stderr_common("%-3d %p\n", frameNumber, stack[i]);
     }
-}
-
-void WTFReportError(const char* file, int line, const char* function, const char* format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    vprintf_stderr_with_prefix("ERROR: ", format, args);
-    va_end(args);
-    printf_stderr_common("\n");
-    printCallSite(file, line, function);
 }
 
 void WTFLog(WTFLogChannel* channel, const char* format, ...)

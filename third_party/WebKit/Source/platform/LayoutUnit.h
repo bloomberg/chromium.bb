@@ -42,18 +42,10 @@
 
 namespace blink {
 
-#if !ERROR_DISABLED
-
-#define REPORT_OVERFLOW(doesOverflow) ((void)0)
-
+#if DCHECK_IS_ON()
+#define REPORT_OVERFLOW(doesOverflow) DLOG_IF(ERROR, !(doesOverflow)) << "LayoutUnit overflow !(" << #doesOverflow << ") in " << WTF_PRETTY_FUNCTION
 #else
-
-#define REPORT_OVERFLOW(doesOverflow) do \
-    if (!(doesOverflow)) { \
-        WTFReportError(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, "!(%s)", #doesOverflow); \
-    } \
-while (0)
-
+#define REPORT_OVERFLOW(doesOverflow) ((void)0)
 #endif
 
 static const int kLayoutUnitFractionalBits = 6;

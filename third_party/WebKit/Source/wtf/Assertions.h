@@ -66,10 +66,6 @@
 #define ASSERT_ARG_DISABLED !ENABLE(ASSERT)
 #endif
 
-#ifndef ERROR_DISABLED
-#define ERROR_DISABLED !ENABLE(ASSERT)
-#endif
-
 #ifndef LOG_DISABLED
 #define LOG_DISABLED !ENABLE(ASSERT)
 #endif
@@ -90,7 +86,6 @@ typedef struct {
 
 WTF_EXPORT void WTFReportAssertionFailure(const char* file, int line, const char* function, const char* assertion);
 WTF_EXPORT void WTFReportArgumentAssertionFailure(const char* file, int line, const char* function, const char* argName, const char* assertion);
-WTF_EXPORT void WTFReportError(const char* file, int line, const char* function, const char* format, ...) WTF_ATTRIBUTE_PRINTF(4, 5);
 WTF_EXPORT void WTFLog(WTFLogChannel*, const char* format, ...) WTF_ATTRIBUTE_PRINTF(2, 3);
 WTF_EXPORT void WTFLogVerbose(const char* file, int line, const char* function, WTFLogChannel*, const char* format, ...) WTF_ATTRIBUTE_PRINTF(5, 6);
 WTF_EXPORT void WTFLogAlways(const char* format, ...) WTF_ATTRIBUTE_PRINTF(1, 2);
