@@ -81,7 +81,7 @@ layer at (0,0) size 480x360
               chunk 1 text run 1 at (177.00,213.00) startOffset 0 endOffset 7 width 66.67: "online:"
           LayoutSVGText {text} at (601,304) size 167x17 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 167x17
-              chunk 1 text run 1 at (601.00,321.00) startOffset 0 endOffset 16 width 166.67: "Sibyll Trelawney"
+              chunk 1 text run 1 at (601.00,321.00) startOffset 0 endOffset 16 width 166.30: "Sibyll Trelawney"
         LayoutSVGContainer {g} at (198,57) size 27x21
           LayoutSVGText {text} at (256,141) size 317x17 contains 1 chunk(s)
             LayoutSVGInlineText {#text} at (0,0) size 317x17
