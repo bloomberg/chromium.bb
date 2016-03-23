@@ -109,8 +109,6 @@ class CC_EXPORT LayerImpl {
   scoped_ptr<LayerImpl> RemoveChild(LayerImpl* child);
   void SetParent(LayerImpl* parent);
 
-  bool HasAncestor(const LayerImpl* ancestor) const;
-
   void SetScrollParent(LayerImpl* parent);
 
   LayerImpl* scroll_parent() { return scroll_parent_; }

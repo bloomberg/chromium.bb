@@ -151,18 +151,6 @@ void LayerImpl::ClearChildList() {
   children_.clear();
 }
 
-bool LayerImpl::HasAncestor(const LayerImpl* ancestor) const {
-  if (!ancestor)
-    return false;
-
-  for (const LayerImpl* layer = this; layer; layer = layer->parent()) {
-    if (layer == ancestor)
-      return true;
-  }
-
-  return false;
-}
-
 void LayerImpl::SetScrollParent(LayerImpl* parent) {
   if (scroll_parent_ == parent)
     return;
