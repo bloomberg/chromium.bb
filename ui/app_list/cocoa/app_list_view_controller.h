@@ -29,13 +29,18 @@ class AppListModelObserverBridge;
 APP_LIST_EXPORT
 @interface AppListViewController : NSViewController<AppsPaginationModelObserver,
                                                     AppsSearchBoxDelegate,
-                                                    AppsSearchResultsDelegate> {
+                                                    AppsSearchResultsDelegate,
+                                                    NSTextViewDelegate> {
  @private
   base::scoped_nsobject<AppsGridController> appsGridController_;
   base::scoped_nsobject<AppListPagerView> pagerControl_;
   base::scoped_nsobject<AppsSearchBoxController> appsSearchBoxController_;
   base::scoped_nsobject<AppsSearchResultsController>
       appsSearchResultsController_;
+
+  // If set, a message displayed above the app list grid.
+  base::scoped_nsobject<NSTextView> messageText_;
+  base::scoped_nsobject<NSScrollView> messageScrollView_;
 
   // Subview for drawing the background.
   base::scoped_nsobject<NSView> backgroundView_;

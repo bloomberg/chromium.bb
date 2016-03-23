@@ -120,6 +120,15 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   bool ShouldCenterWindow() const override;
   void AddObserver(app_list::AppListViewDelegateObserver* observer) override;
   void RemoveObserver(app_list::AppListViewDelegateObserver* observer) override;
+#if !defined(OS_CHROMEOS)
+  base::string16 GetMessageTitle() const override;
+  base::string16 GetMessageText(size_t* message_break) const override;
+  base::string16 GetAppsShortcutName() const override;
+  base::string16 GetLearnMoreText() const override;
+  base::string16 GetLearnMoreLink() const override;
+  gfx::ImageSkia* GetAppsIcon() const override;
+  void OpenLearnMoreLink() override;
+#endif
 
   // Overridden from TemplateURLServiceObserver:
   void OnTemplateURLServiceChanged() override;

@@ -878,6 +878,14 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
             Remove From Chromium...
           </message>
         </if>
+        <if expr="not chromeos">
+          <message name="IDS_APP_LIST_MESSAGE_TITLE" desc="Title given to the message displayed in the app launcher to say it is going away">
+            The Chromium App Launcher is going away.
+          </message>
+          <message name="IDS_APP_LIST_MESSAGE_TEXT" desc="The message body text displayed in the app launcher to say it is going away">
+            Use the <ph name="APPS_ICON_IMAGE">$1<ex>Apps</ex></ph> shortcut in the Chromium bookmarks bar to continue accessing your apps.
+          </message>
+        </if>
       </if>
 
       <!-- App shortcuts -->

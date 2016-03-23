@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_model.h"
@@ -20,6 +21,7 @@
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #include "ui/app_list/search_box_model.h"
 #import "ui/base/cocoa/flipped_view.h"
+#import "ui/gfx/image/image_skia_util_mac.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
@@ -44,6 +46,15 @@ const CGFloat kMaxSegmentWidth = 80;
 
 // Duration of the animation for sliding in and out search results.
 const NSTimeInterval kResultsAnimationDuration = 0.2;
+
+// Properties of the message rectangle, if it is shown.
+const NSRect kMessageRect = {{12, 12}, {370, 91}};
+const CGFloat kMessageCornerRadius = 2;
+const CGFloat kSpacingBelowMessageTitle = 6;
+const SkColor kMessageBackgroundColor = SkColorSetRGB(0xFF, 0xFD, 0xE7);
+const SkColor kMessageStrokeColor = SkColorSetARGB(0x3d, 0x00, 0x00, 0x00);
+// The inset should be 16px, but NSTextView has its own inset of 3.
+const CGFloat kMessageTextInset = 13;
 
 }  // namespace
 
@@ -74,8 +85,33 @@ const NSTimeInterval kResultsAnimationDuration = 0.2;
 
 @end
 
+@interface MessageBackgroundView : FlippedView
+@end
+
+@implementation MessageBackgroundView
+
+- (void)drawRect:(NSRect)dirtyRect {
+  NSRect boundsRect = [self bounds];
+  gfx::ScopedNSGraphicsContextSaveGState context;
+  [[NSBezierPath bezierPathWithRoundedRect:boundsRect
+                                   xRadius:kMessageCornerRadius
+                                   yRadius:kMessageCornerRadius] addClip];
+
+  [skia::SkColorToSRGBNSColor(kMessageStrokeColor) set];
+  NSRectFill(boundsRect);
+
+  [[NSBezierPath bezierPathWithRoundedRect:NSInsetRect(boundsRect, 1, 1)
+                                   xRadius:kMessageCornerRadius
+                                   yRadius:kMessageCornerRadius] addClip];
+  [skia::SkColorToSRGBNSColor(kMessageBackgroundColor) set];
+  NSRectFill(boundsRect);
+}
+
+@end
+
 @interface AppListViewController ()
 
+- (void)updateMessage;
 - (void)loadAndSetView;
 - (void)revealSearchResults:(BOOL)show;
 
@@ -176,6 +212,7 @@ void AppListModelObserverBridge::OnShutdown() {
     [appsSearchResultsController_ setDelegate:nil];
     [appsSearchBoxController_ setDelegate:nil];
     [appsGridController_ setDelegate:nil];
+    [messageText_ setDelegate:nil];
   }
   delegate_ = newDelegate;
   if (delegate_) {
@@ -191,17 +228,179 @@ void AppListModelObserverBridge::OnShutdown() {
   app_list_model_observer_bridge_.reset(
       new app_list::AppListModelObserverBridge(self));
   [self onProfilesChanged];
+  [self updateMessage];
 }
 
--(void)loadAndSetView {
+- (void)updateMessage {
+  if (![AppsGridController hasFewerRows])
+    return;
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  NSFont* messageFont = rb.GetFontWithDelta(0).GetNativeFont();
+  NSFont* titleFont = rb.GetFontWithDelta(2).GetNativeFont();
+
+  base::string16 title = delegate_->GetMessageTitle();
+  size_t messageBreak;
+  base::string16 messageFull = delegate_->GetMessageText(&messageBreak);
+  base::string16 shortcutName = delegate_->GetAppsShortcutName();
+  base::string16 learnMore = delegate_->GetLearnMoreText();
+  base::string16 learnMoreUrl = delegate_->GetLearnMoreLink();
+
+  base::string16 messagePre = messageFull.substr(0, messageBreak);
+  base::string16 messagePost = messageFull.substr(messageBreak);
+
+  NSURL* linkURL = [NSURL URLWithString:base::SysUTF16ToNSString(learnMoreUrl)];
+  gfx::ImageSkia* icon = delegate_->GetAppsIcon();
+
+  // Shift the baseline up so that the graphics align centered. 4 looks nice. It
+  // happens to be the image size minus the font size, but that's a coincidence.
+  const CGFloat kBaselineShift = 4;
+  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
+      [[NSMutableParagraphStyle alloc] init]);
+  [paragraphStyle setLineSpacing:kSpacingBelowMessageTitle + kBaselineShift];
+
+  NSNumber* baselineOffset = [NSNumber numberWithFloat:kBaselineShift];
+  base::scoped_nsobject<NSMutableAttributedString> text(
+      [[NSMutableAttributedString alloc]
+          initWithString:base::SysUTF16ToNSString(title)
+              attributes:@{
+                NSParagraphStyleAttributeName : paragraphStyle,
+                NSFontAttributeName : titleFont
+              }]);
+
+  NSDictionary* defaultAttributes = @{
+    NSFontAttributeName : messageFont,
+    NSBaselineOffsetAttributeName : baselineOffset
+  };
+
+  base::scoped_nsobject<NSAttributedString> lineBreak(
+      [[NSAttributedString alloc] initWithString:@"\n"
+                                      attributes:defaultAttributes]);
+  base::scoped_nsobject<NSAttributedString> space([[NSAttributedString alloc]
+      initWithString:@" "
+          attributes:defaultAttributes]);
+  base::scoped_nsobject<NSAttributedString> messagePreString(
+      [[NSAttributedString alloc]
+          initWithString:base::SysUTF16ToNSString(messagePre)
+              attributes:defaultAttributes]);
+  base::scoped_nsobject<NSAttributedString> messagePostString(
+      [[NSAttributedString alloc]
+          initWithString:base::SysUTF16ToNSString(messagePost)
+              attributes:defaultAttributes]);
+
+  // NSNoUnderlineStyle is broken.
+  base::scoped_nsobject<NSAttributedString> learnMoreString(
+      [[NSAttributedString alloc]
+          initWithString:base::SysUTF16ToNSString(learnMore)
+              attributes:@{
+                NSParagraphStyleAttributeName : paragraphStyle,
+                NSFontAttributeName : messageFont,
+                NSLinkAttributeName : linkURL,
+                NSBaselineOffsetAttributeName : baselineOffset,
+                NSUnderlineStyleAttributeName :
+                    [NSNumber numberWithInt:NSNoUnderlineStyle]
+              }]);
+  base::scoped_nsobject<NSAttributedString> shortcutStringText(
+      [[NSAttributedString alloc]
+          initWithString:base::SysUTF16ToNSString(shortcutName)
+              attributes:defaultAttributes]);
+  base::scoped_nsobject<NSMutableAttributedString> shortcutString(
+      [[NSMutableAttributedString alloc] init]);
+  if (icon) {
+    NSImage* image = gfx::NSImageFromImageSkia(*icon);
+    // The image has a bunch of representations. Ensure the smallest is used.
+    // (Going smaller would make pixels all manky, so don't do that).
+    [image setSize:NSMakeSize(16, 16)];
+
+    base::scoped_nsobject<NSTextAttachmentCell> attachmentCell(
+        [[NSTextAttachmentCell alloc] initImageCell:image]);
+    base::scoped_nsobject<NSTextAttachment> attachment(
+        [[NSTextAttachment alloc] init]);
+    [attachment setAttachmentCell:attachmentCell];
+    [shortcutString
+        appendAttributedString:[NSAttributedString
+                                   attributedStringWithAttachment:attachment]];
+    [shortcutString appendAttributedString:space];
+  }
+  [shortcutString appendAttributedString:shortcutStringText];
+
+  [text appendAttributedString:lineBreak];
+  [text appendAttributedString:messagePreString];
+  [text appendAttributedString:shortcutString];
+  [text appendAttributedString:messagePostString];
+  [text appendAttributedString:space];
+  [text appendAttributedString:learnMoreString];
+
+  [[messageText_ textStorage] setAttributedString:text];
+  [messageText_ sizeToFit];
+
+  // If the user scroller preference is to always show scrollbars, and the
+  // translated message is long, the scroll track may be present. This means
+  // text will be under the scroller. We only want vertical scrolling, but
+  // reducing the width puts the scroll track in a weird spot. So, increase the
+  // width of the scroll view to move the track into the padding towards the
+  // message background border, then reduce the width of the text view. The
+  // non-overlay scroller still looks kinda weird but hopefully not many will
+  // actually see it.
+  CGFloat overlap =
+      NSWidth([messageText_ bounds]) - [messageScrollView_ contentSize].width;
+  if (overlap > 0) {
+    NSRect rect = [messageScrollView_ frame];
+    rect.size.width += kMessageTextInset - 2;
+    [messageScrollView_ setFrame:rect];
+    overlap -= kMessageTextInset - 2;
+    DCHECK_GT(overlap, 0);
+    rect = [messageText_ frame];
+    rect.size.width -= overlap;
+    [messageText_ setFrame:rect];
+    [messageText_ sizeToFit];
+
+    // And after doing all that for some reason Cocoa scrolls to the bottom. So
+    // fix that.
+    [[messageScrollView_ documentView] scrollPoint:NSMakePoint(0, 0)];
+  }
+
+  [messageText_ setDelegate:self];
+}
+
+- (void)loadAndSetView {
   pagerControl_.reset([[AppListPagerView alloc] init]);
   [pagerControl_ setTarget:appsGridController_];
   [pagerControl_ setAction:@selector(onPagerClicked:)];
 
   NSRect gridFrame = [[appsGridController_ view] frame];
-  NSRect contentsRect = NSMakeRect(0, kSearchInputHeight + kTopSeparatorSize,
-      NSWidth(gridFrame), NSHeight(gridFrame) + kPagerPreferredHeight -
-          [AppsGridController scrollerPadding]);
+
+  base::scoped_nsobject<NSView> messageTextBackground;
+  if ([AppsGridController hasFewerRows]) {
+    messageTextBackground.reset(
+        [[MessageBackgroundView alloc] initWithFrame:kMessageRect]);
+    NSRect frameRect =
+        NSInsetRect(kMessageRect, kMessageTextInset, kMessageTextInset);
+    messageText_.reset([[NSTextView alloc] initWithFrame:frameRect]);
+    // Provide a solid background here (as well as the background) so that
+    // subpixel AA works.
+    [messageText_
+        setBackgroundColor:skia::SkColorToSRGBNSColor(kMessageBackgroundColor)];
+    [messageText_ setDrawsBackground:YES];
+    [messageText_ setEditable:NO];
+    // Ideally setSelectable:NO would also be set here, but that disables mouse
+    // events completely, breaking the "Learn more" link. Instead, selection is
+    // "disabled" via a delegate method which Apple's documentation suggests. In
+    // reality, selection still happens, it just disappears once the mouse is
+    // released. To avoid the selection appearing, also set selected text to
+    // have no special attributes. Sadly, the mouse cursor still displays an
+    // I-beam, but hacking cursor rectangles on the view so that the "Learn
+    // More" link is still correctly handled is too hard.
+    [messageText_ setSelectedTextAttributes:@{}];
+    gridFrame.origin.y += NSMaxY([messageTextBackground frame]);
+  }
+
+  [[appsGridController_ view] setFrame:gridFrame];
+
+  NSRect contentsRect =
+      NSMakeRect(0, kSearchInputHeight + kTopSeparatorSize, NSWidth(gridFrame),
+                 NSMaxY(gridFrame) + kPagerPreferredHeight -
+                     [AppsGridController scrollerPadding]);
 
   contentsView_.reset([[FlippedView alloc] initWithFrame:contentsRect]);
 
@@ -236,6 +435,28 @@ void AppListModelObserverBridge::OnShutdown() {
   [loadingIndicator_ setDisplayedWhenStopped:NO];
   [loadingIndicator_ startAnimation:self];
 
+  if (messageText_) {
+    [contentsView_ addSubview:messageTextBackground];
+
+    // Add a scroll view in case the translation is long and doesn't fit. Mac
+    // likes to hide scrollbars, so add to the height so the user can see part
+    // of the next line of text: just extend out into the padding towards the
+    // text background's border. Subtract at least 2: one for the border stroke
+    // and one for a bit of padding.
+    NSRect frameRect = [messageText_ frame];
+    frameRect.size.height += kMessageTextInset - 2;
+    messageScrollView_.reset([[NSScrollView alloc] initWithFrame:frameRect]);
+    [messageScrollView_ setHasVerticalScroller:YES];
+    [messageScrollView_ setAutohidesScrollers:YES];
+
+    // Now the message is going into an NSScrollView, origin should be 0, 0.
+    frameRect = [messageText_ frame];
+    frameRect.origin = NSMakePoint(0, 0);
+    [messageText_ setFrame:frameRect];
+
+    [messageScrollView_ setDocumentView:messageText_];
+    [contentsView_ addSubview:messageScrollView_];
+  }
   [contentsView_ addSubview:[appsGridController_ view]];
   [contentsView_ addSubview:pagerControl_];
   [contentsView_ addSubview:loadingIndicator_];
@@ -366,6 +587,22 @@ void AppListModelObserverBridge::OnShutdown() {
 
 - (void)onProfilesChanged {
   [appsSearchBoxController_ rebuildMenu];
+}
+
+// NSTextViewDelegate implementation.
+
+- (BOOL)textView:(NSTextView*)textView
+    clickedOnLink:(id)link
+          atIndex:(NSUInteger)charIndex {
+  DCHECK(delegate_);
+  delegate_->OpenLearnMoreLink();
+  return YES;
+}
+
+- (NSArray*)textView:(NSTextView*)aTextView
+    willChangeSelectionFromCharacterRanges:(NSArray*)oldSelectedCharRanges
+                         toCharacterRanges:(NSArray*)newSelectedCharRanges {
+  return oldSelectedCharRanges;
 }
 
 @end

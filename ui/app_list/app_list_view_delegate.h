@@ -165,6 +165,21 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // Adds/removes an observer for profile changes.
   virtual void AddObserver(AppListViewDelegateObserver* observer) {}
   virtual void RemoveObserver(AppListViewDelegateObserver* observer) {}
+
+#if !defined(OS_CHROMEOS)
+  // Methods to retrieve properties of the message displayed on the app launcher
+  // above the apps grid.
+  virtual base::string16 GetMessageTitle() const;
+  // Returns the message text (with the placeholder symbol removed).
+  // |message_break| is set to the index where the placeholder was in the
+  // string.
+  virtual base::string16 GetMessageText(size_t* message_break) const;
+  virtual base::string16 GetAppsShortcutName() const;
+  virtual base::string16 GetLearnMoreText() const;
+  virtual base::string16 GetLearnMoreLink() const;
+  virtual gfx::ImageSkia* GetAppsIcon() const;
+  virtual void OpenLearnMoreLink();
+#endif
 };
 
 }  // namespace app_list

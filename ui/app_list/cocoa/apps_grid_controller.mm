@@ -4,6 +4,7 @@
 
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 
+#include "base/command_line.h"
 #include "base/mac/foundation_util.h"
 #include "base/macros.h"
 #include "ui/app_list/app_list_item.h"
@@ -17,10 +18,8 @@
 
 namespace {
 
-// OSX app list has hardcoded rows and columns for now.
-const int kFixedRows = 4;
+// OSX app list has hardcoded columns for now.
 const int kFixedColumns = 4;
-const int kItemsPerPage = kFixedRows * kFixedColumns;
 
 // Padding space in pixels for fixed layout.
 const CGFloat kGridTopPadding = 1;
@@ -34,10 +33,30 @@ const CGFloat kPreferredTileHeight = 98;
 
 const CGFloat kViewWidth =
     kFixedColumns * kPreferredTileWidth + 2 * kLeftRightPadding;
-const CGFloat kViewHeight = kFixedRows * kPreferredTileHeight;
 
 const NSTimeInterval kScrollWhileDraggingDelay = 1.0;
 NSTimeInterval g_scroll_duration = 0.18;
+
+const char kTestType[] = "test-type";
+
+int DetermineFixedRowCount() {
+  // This needs to be called before a delegate exists, since it is needed to
+  // determine the height of the view.
+  return [AppsGridController hasFewerRows] ? 3 : 4;
+}
+
+int RowCount() {
+  static const int row_count = DetermineFixedRowCount();
+  return row_count;
+}
+
+int ItemsPerPage() {
+  return RowCount() * kFixedColumns;
+}
+
+CGFloat ViewHeight() {
+  return RowCount() * kPreferredTileHeight;
+}
 
 }  // namespace
 
@@ -119,7 +138,7 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
       return;
 
     [parent_ selectItemAtIndex:index];
-    [parent_ scrollToPage:index / kItemsPerPage];
+    [parent_ scrollToPage:index / ItemsPerPage()];
   }
 
   AppsGridController* parent_;  // Weak, owns us.
@@ -152,17 +171,21 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
   return kScrollerPadding;
 }
 
++ (BOOL)hasFewerRows {
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(kTestType);
+}
+
 @synthesize paginationObserver = paginationObserver_;
 
 - (id)init {
   if ((self = [super init])) {
     bridge_.reset(new app_list::AppsGridDelegateBridge(self));
     NSSize cellSize = NSMakeSize(kPreferredTileWidth, kPreferredTileHeight);
-    dragManager_.reset(
-        [[AppsCollectionViewDragManager alloc] initWithCellSize:cellSize
-                                                           rows:kFixedRows
-                                                        columns:kFixedColumns
-                                                 gridController:self]);
+    dragManager_.reset([[AppsCollectionViewDragManager alloc]
+        initWithCellSize:cellSize
+                    rows:RowCount()
+                 columns:kFixedColumns
+          gridController:self]);
     pages_.reset([[NSMutableArray alloc] init]);
     items_.reset([[NSMutableArray alloc] init]);
     [self loadAndSetView];
@@ -357,7 +380,7 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
       [[PageContainerView alloc] initWithFrame:NSZeroRect]);
 
   NSRect scrollFrame = NSMakeRect(0, kGridTopPadding, kViewWidth,
-                                  kViewHeight + kScrollerPadding);
+                                  ViewHeight() + kScrollerPadding);
   base::scoped_nsobject<ScrollViewWithNoScrollbars> scrollView(
       [[ScrollViewWithNoScrollbars alloc] initWithFrame:scrollFrame]);
   [scrollView setBorderType:NSNoBorder];
@@ -403,9 +426,9 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
 }
 
 - (AppsGridViewItem*)itemAtIndex:(size_t)itemIndex {
-  const size_t pageIndex = itemIndex / kItemsPerPage;
+  const size_t pageIndex = itemIndex / ItemsPerPage();
   return [self itemAtPageIndex:pageIndex
-                   indexInPage:itemIndex - pageIndex * kItemsPerPage];
+                   indexInPage:itemIndex - pageIndex * ItemsPerPage()];
 }
 
 - (NSUInteger)selectedItemIndex {
@@ -414,7 +437,7 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
   if (indexOnPage == NSNotFound)
     return NSNotFound;
 
-  return indexOnPage + visiblePage_ * kItemsPerPage;
+  return indexOnPage + visiblePage_ * ItemsPerPage();
 }
 
 - (NSButton*)selectedButton {
@@ -437,7 +460,7 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
   // Note there is always at least one page.
   size_t targetPages = 1;
   if ([items_ count] != 0)
-    targetPages = ([items_ count] - 1) / kItemsPerPage + 1;
+    targetPages = ([items_ count] - 1) / ItemsPerPage() + 1;
 
   const size_t currentPages = [self pageCount];
   // First see if the number of pages have changed.
@@ -449,20 +472,19 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
     } else {
       // Pages need to be added.
       for (size_t i = currentPages; i < targetPages; ++i) {
-        NSRect pageFrame = NSMakeRect(
-            kLeftRightPadding + kViewWidth * i, 0,
-            kViewWidth, kViewHeight);
+        NSRect pageFrame = NSMakeRect(kLeftRightPadding + kViewWidth * i, 0,
+                                      kViewWidth, ViewHeight());
         [pages_ addObject:[dragManager_ makePageWithFrame:pageFrame]];
       }
     }
 
     [[self pagesContainerView] setSubviews:pages_];
-    NSSize pagesSize = NSMakeSize(kViewWidth * targetPages, kViewHeight);
+    NSSize pagesSize = NSMakeSize(kViewWidth * targetPages, ViewHeight());
     [[self pagesContainerView] setFrameSize:pagesSize];
     [paginationObserver_ totalPagesChanged];
   }
 
-  const size_t startPage = startItemIndex / kItemsPerPage;
+  const size_t startPage = startItemIndex / ItemsPerPage();
   // All pages on or after |startPage| may need items added or removed.
   for (size_t pageIndex = startPage; pageIndex < targetPages; ++pageIndex) {
     [self updatePageContent:pageIndex
@@ -484,7 +506,7 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
   }
 
   NSRange inPageRange = NSIntersectionRange(
-      NSMakeRange(pageIndex * kItemsPerPage, kItemsPerPage),
+      NSMakeRange(pageIndex * ItemsPerPage(), ItemsPerPage()),
       NSMakeRange(0, [items_ count]));
   NSArray* pageContent = [items_ subarrayWithRange:inPageRange];
   [pageView setContent:pageContent];
@@ -507,8 +529,8 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
   [items_ insertObject:item
                atIndex:toIndex];
 
-  size_t fromPageIndex = fromIndex / kItemsPerPage;
-  size_t toPageIndex = toIndex / kItemsPerPage;
+  size_t fromPageIndex = fromIndex / ItemsPerPage();
+  size_t toPageIndex = toIndex / ItemsPerPage();
   if (fromPageIndex == toPageIndex) {
     [self updatePageContent:fromPageIndex
                  resetModel:NO];  // Just reorder items.
@@ -603,7 +625,7 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
 
   // If nothing is currently selected, select the first item on the page.
   if (oldIndex == NSNotFound) {
-    [self selectItemAtIndex:visiblePage_ * kItemsPerPage];
+    [self selectItemAtIndex:visiblePage_ * ItemsPerPage()];
     return YES;
   }
 
@@ -629,8 +651,8 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
   if (index >= [items_ count])
     return;
 
-  if (index / kItemsPerPage != visiblePage_)
-    [self scrollToPage:index / kItemsPerPage];
+  if (index / ItemsPerPage() != visiblePage_)
+    [self scrollToPage:index / ItemsPerPage()];
 
   [[self itemAtIndex:index] setSelected:YES];
 }
@@ -645,39 +667,41 @@ class AppsGridDelegateBridge : public AppListItemListObserver {
   NSUInteger oldIndex = [self selectedItemIndex];
   // If nothing is currently selected, select the first item on the page.
   if (oldIndex == NSNotFound) {
-    [self selectItemAtIndex:visiblePage_ * kItemsPerPage];
+    [self selectItemAtIndex:visiblePage_ * ItemsPerPage()];
     return YES;
   }
 
   if (command == @selector(moveLeft:)) {
-    return oldIndex % kFixedColumns == 0 ?
-        [self moveSelectionByDelta:-kItemsPerPage + kFixedColumns - 1] :
-        [self moveSelectionByDelta:-1];
+    return oldIndex % kFixedColumns == 0
+               ? [self moveSelectionByDelta:-ItemsPerPage() + kFixedColumns - 1]
+               : [self moveSelectionByDelta:-1];
   }
 
   if (command == @selector(moveRight:)) {
-    return oldIndex % kFixedColumns == kFixedColumns - 1 ?
-        [self moveSelectionByDelta:+kItemsPerPage - kFixedColumns + 1] :
-        [self moveSelectionByDelta:1];
+    return oldIndex % kFixedColumns == kFixedColumns - 1
+               ? [self moveSelectionByDelta:+ItemsPerPage() - kFixedColumns + 1]
+               : [self moveSelectionByDelta:1];
   }
 
   if (command == @selector(moveUp:)) {
-    return oldIndex / kFixedColumns % kFixedRows == 0 ?
-        NO : [self moveSelectionByDelta:-kFixedColumns];
+    return oldIndex / kFixedColumns % RowCount() == 0
+               ? NO
+               : [self moveSelectionByDelta:-kFixedColumns];
   }
 
   if (command == @selector(moveDown:)) {
-    return oldIndex / kFixedColumns % kFixedRows == kFixedRows - 1 ?
-        NO : [self moveSelectionByDelta:kFixedColumns];
+    return oldIndex / kFixedColumns % RowCount() == RowCount() - 1
+               ? NO
+               : [self moveSelectionByDelta:kFixedColumns];
   }
 
   if (command == @selector(pageUp:) ||
       command == @selector(scrollPageUp:))
-    return [self moveSelectionByDelta:-kItemsPerPage];
+    return [self moveSelectionByDelta:-ItemsPerPage()];
 
   if (command == @selector(pageDown:) ||
       command == @selector(scrollPageDown:))
-    return [self moveSelectionByDelta:kItemsPerPage];
+    return [self moveSelectionByDelta:ItemsPerPage()];
 
   return NO;
 }

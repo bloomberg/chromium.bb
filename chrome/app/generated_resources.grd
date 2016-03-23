@@ -13293,6 +13293,14 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         <message name="IDS_APP_LIST_SIGNIN_SETTINGS_TEXT" desc="App launcher sign-in settings link text.">
           App Launcher Settings
         </message>
+        <if expr="not chromeos">
+          <message name="IDS_APP_LIST_MESSAGE_LEARN_MORE_TEXT" desc="Link anchor text displayed at the end of a message in the app launcher linking to a site with additional information about the message.">
+            Learn more.
+          </message>
+          <message name="IDS_APP_LIST_MESSAGE_LEARN_MORE_LINK" desc="URL for the Learn More link displayed at the end of the app launcher message.">
+            https://support.google.com/chrome/answer/3060053?hl=[GRITLANGCODE]
+          </message>
+        </if>
       </if>
 
       <!-- iOS Chrome to Device strings-->

@@ -59,6 +59,9 @@ APP_LIST_EXPORT
 // invisible scroller that allows for gesture scrolling.
 + (CGFloat)scrollerPadding;
 
+// Whether the grid is configured with fewer rows than normal.
++ (BOOL)hasFewerRows;
+
 - (NSCollectionView*)collectionViewAtPageIndex:(size_t)pageIndex;
 - (size_t)pageIndexForCollectionView:(NSCollectionView*)page;
 
