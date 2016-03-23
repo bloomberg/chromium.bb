@@ -26,7 +26,7 @@ class Options(object):
              'hostname for devtools websocket connection'),
             ('devtools_port', 9222,
              'port for devtools websocket connection'),
-            ('local_binary', 'out/Release/chrome',
+            ('local_binary', os.path.join(_SRC_DIR, 'out/Release/chrome'),
              'chrome binary for local runs'),
             ('local_noisy', False,
              'Enable local chrome console output'),
