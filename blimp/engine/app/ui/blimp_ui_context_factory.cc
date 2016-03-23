@@ -20,7 +20,6 @@ BlimpUiContextFactory::~BlimpUiContextFactory() {}
 
 void BlimpUiContextFactory::CreateOutputSurface(
     base::WeakPtr<ui::Compositor> compositor) {
-  NOTIMPLEMENTED();
 }
 
 scoped_ptr<ui::Reflector> BlimpUiContextFactory::CreateReflector(
@@ -55,7 +54,6 @@ uint32_t BlimpUiContextFactory::GetImageTextureTarget(gfx::BufferFormat format,
 }
 
 cc::SharedBitmapManager* BlimpUiContextFactory::GetSharedBitmapManager() {
-  NOTIMPLEMENTED();
   return nullptr;
 }
 
@@ -76,7 +74,6 @@ BlimpUiContextFactory::CreateSurfaceIdAllocator() {
 
 void BlimpUiContextFactory::ResizeDisplay(ui::Compositor* compositor,
                                           const gfx::Size& size) {
-  NOTIMPLEMENTED();
 }
 
 }  // namespace engine

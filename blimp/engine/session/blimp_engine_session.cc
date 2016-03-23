@@ -468,8 +468,8 @@ void BlimpEngineSession::NavigationStateChanged(
     details->set_url(source->GetURL().spec());
 
   if (changed_flags & content::InvalidateTypes::INVALIDATE_TYPE_TAB) {
-    // TODO(dtrainor): Serialize the favicon?
-    NOTIMPLEMENTED();
+    // TODO(dtrainor): Serialize the favicon? crbug.com/597094.
+    DVLOG(3) << "Tab favicon changed";
   }
 
   if (changed_flags & content::InvalidateTypes::INVALIDATE_TYPE_TITLE)
