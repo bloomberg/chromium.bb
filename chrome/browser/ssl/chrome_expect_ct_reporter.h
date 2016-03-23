@@ -30,6 +30,10 @@ class ChromeExpectCTReporter
                         const net::SSLInfo& ssl_info) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest, NoCommandLineSwitch);
+  FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest, EmptyReportURI);
+  FRIEND_TEST_ALL_PREFIXES(ChromeExpectCTReporterTest, SendReport);
+
   scoped_ptr<net::CertificateReportSender> report_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExpectCTReporter);

@@ -402,6 +402,10 @@ const char kEnableDeviceDiscoveryNotifications[] =
 // Enables Domain Reliability Monitoring.
 const char kEnableDomainReliability[] = "enable-domain-reliability";
 
+// Enables Expect CT reporting, which sends reports for opted-in sites
+// that don't serve sufficient Certificate Transparency information.
+const char kEnableExpectCTReporting[] = "enable-expect-ct-reporting";
+
 // Enables experimental hotword features specific to always-on.
 const char kEnableExperimentalHotwordHardware[] = "enable-hotword-hardware";
 
