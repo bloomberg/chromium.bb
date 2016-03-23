@@ -464,7 +464,10 @@ TEST_F(ChromeRenderViewTest, BackToTranslatablePage) {
   EXPECT_EQ("fr", std::get<0>(params).adopted_language);
   render_thread_->sink().ClearMessages();
 
-  GoBack(back_state);
+  GoBack(GURL("data:text/html;charset=utf-8,<html><head>"
+              "<meta http-equiv=\"content-language\" content=\"zh\">"
+              "</head><body>This page is in Chinese.</body></html>"),
+         back_state);
 
   message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeFrameHostMsg_TranslateLanguageDetermined::ID);

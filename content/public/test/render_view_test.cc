@@ -280,12 +280,12 @@ PageState RenderViewTest::GetCurrentPageState() {
   }
 }
 
-void RenderViewTest::GoBack(const PageState& state) {
-  GoToOffset(-1, state);
+void RenderViewTest::GoBack(const GURL& url, const PageState& state) {
+  GoToOffset(-1, url, state);
 }
 
-void RenderViewTest::GoForward(const PageState& state) {
-  GoToOffset(1, state);
+void RenderViewTest::GoForward(const GURL& url, const PageState& state) {
+  GoToOffset(1, url, state);
 }
 
 void RenderViewTest::SetUp() {
@@ -697,7 +697,9 @@ scoped_ptr<ResizeParams> RenderViewTest::InitialSizeParams() {
   return make_scoped_ptr(new ResizeParams());
 }
 
-void RenderViewTest::GoToOffset(int offset, const PageState& state) {
+void RenderViewTest::GoToOffset(int offset,
+                                const GURL& url,
+                                const PageState& state) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
 
   int history_list_length = impl->historyBackListCount() +
@@ -705,7 +707,7 @@ void RenderViewTest::GoToOffset(int offset, const PageState& state) {
   int pending_offset = offset + impl->history_list_offset_;
 
   CommonNavigationParams common_params(
-      GURL(), Referrer(), ui::PAGE_TRANSITION_FORWARD_BACK,
+      url, Referrer(), ui::PAGE_TRANSITION_FORWARD_BACK,
       FrameMsg_Navigate_Type::NORMAL, true, false, base::TimeTicks(),
       FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(),
       LOFI_UNSPECIFIED, base::TimeTicks::Now(), "GET");

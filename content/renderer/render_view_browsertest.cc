@@ -1456,26 +1456,38 @@ TEST_F(RenderViewImplTest, TestBackForward) {
   EXPECT_EQ(1, was_page_c);
 
   PageState forward_state = GetCurrentPageState();
-  GoBack(back_state);
+
+  // Go back.
+  GoBack(GURL("data:text/html;charset=utf-8,<div id=pagename>Page B</div>"),
+         back_state);
+
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
-
   PageState back_state2 = GetCurrentPageState();
 
-  GoForward(forward_state);
+  // Go forward.
+  GoForward(GURL("data:text/html;charset=utf-8,<div id=pagename>Page C</div>"),
+            forward_state);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_c, &was_page_c));
   EXPECT_EQ(1, was_page_c);
 
-  GoBack(back_state2);
+  // Go back.
+  GoBack(GURL("data:text/html;charset=utf-8,<div id=pagename>Page B</div>"),
+         back_state2);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
 
   forward_state = GetCurrentPageState();
-  GoBack(page_a_state);
+
+  // Go back.
+  GoBack(GURL("data:text/html;charset=utf-8,<div id=pagename>Page A</div>"),
+         page_a_state);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_a, &was_page_a));
   EXPECT_EQ(1, was_page_a);
 
-  GoForward(forward_state);
+  // Go forward.
+  GoForward(GURL("data:text/html;charset=utf-8,<div id=pagename>Page B</div>"),
+            forward_state);
   EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(check_page_b, &was_page_b));
   EXPECT_EQ(1, was_page_b);
 }
@@ -2046,25 +2058,30 @@ TEST_F(RenderViewImplTest, BrowserNavigationStartNotUsedForHistoryNavigation) {
   ProcessPendingMessages();
   render_thread_->sink().ClearMessages();
 
-  CommonNavigationParams common_params;
-  common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
   // Go back.
-  GoToOffsetWithParams(-1, back_state, common_params, StartNavigationParams(),
-                       RequestNavigationParams());
+  CommonNavigationParams common_params_back;
+  common_params_back.url =
+      GURL("data:text/html;charset=utf-8,<div id=pagename>Page B</div>");
+  common_params_back.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
+  GoToOffsetWithParams(-1, back_state, common_params_back,
+                       StartNavigationParams(), RequestNavigationParams());
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
   EXPECT_PRED2(TimeTicksGT, base::get<1>(host_nav_params),
-               common_params.navigation_start);
+               common_params_back.navigation_start);
   render_thread_->sink().ClearMessages();
 
   // Go forward.
-  GoToOffsetWithParams(1, forward_state, common_params,
-                             StartNavigationParams(),
-                             RequestNavigationParams());
+  CommonNavigationParams common_params_forward;
+  common_params_forward.url =
+      GURL("data:text/html;charset=utf-8,<div id=pagename>Page C</div>");
+  common_params_forward.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
+  GoToOffsetWithParams(1, forward_state, common_params_forward,
+                       StartNavigationParams(), RequestNavigationParams());
   FrameHostMsg_DidStartProvisionalLoad::Param host_nav_params2 =
       ProcessAndReadIPC<FrameHostMsg_DidStartProvisionalLoad>();
   EXPECT_PRED2(TimeTicksGT, base::get<1>(host_nav_params2),
-               common_params.navigation_start);
+               common_params_forward.navigation_start);
 }
 
 TEST_F(RenderViewImplTest, BrowserNavigationStartSuccessfullyTransmitted) {

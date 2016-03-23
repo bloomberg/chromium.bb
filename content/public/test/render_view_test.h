@@ -103,8 +103,8 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
 
   // Navigates the main frame back or forward in session history and commits.
   // The caller must capture a PageState for the target page.
-  void GoBack(const PageState& state);
-  void GoForward(const PageState& state);
+  void GoBack(const GURL& url, const PageState& state);
+  void GoForward(const GURL& url, const PageState& state);
 
   // Sends one native key event over IPC.
   void SendNativeKeyEvent(const NativeWebKeyboardEvent& key_event);
@@ -213,7 +213,7 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
 #endif
 
  private:
-  void GoToOffset(int offset, const PageState& state);
+  void GoToOffset(int offset, const GURL& url, const PageState& state);
 };
 
 }  // namespace content
