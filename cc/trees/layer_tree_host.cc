@@ -1504,19 +1504,11 @@ void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
   // Layer hierarchy.
   scoped_refptr<Layer> new_root_layer =
       LayerProtoConverter::DeserializeLayerHierarchy(root_layer_,
-                                                     proto.root_layer());
+                                                     proto.root_layer(), this);
   if (root_layer_ != new_root_layer) {
-    if (root_layer_)
-      root_layer_->SetLayerTreeHost(nullptr);
     root_layer_ = new_root_layer;
-    root_layer_->SetLayerTreeHost(this);
   }
 
-  // Populate layer_id_map_ with the new layers.
-  layer_id_map_.clear();
-  LayerTreeHostCommon::CallFunctionForSubtree(
-      root_layer(),
-      [this](Layer* layer) { layer_id_map_[layer->id()] = layer; });
   for (auto layer_id : proto.layers_that_should_push_properties())
     layers_that_should_push_properties_.insert(layer_id_map_[layer_id]);
 

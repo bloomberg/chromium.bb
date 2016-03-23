@@ -375,12 +375,20 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // construction of the correct layer on the client.
   void ToLayerNodeProto(proto::LayerNode* proto) const;
 
+  // Recursively iterate over this layer and all children and reset the
+  // properties sent with the hierarchical structure in the LayerNode protos.
+  // This must be done before deserializing the new LayerTree from the Layernode
+  // protos.
+  void ClearLayerTreePropertiesForDeserializationAndAddToMap(
+      LayerIdMap* layer_map);
+
   // Recursively iterate over the given LayerNode proto and read the structure
   // into this node and its children. The |layer_map| should be used to look
   // for previously existing Layers, since they should be re-used between each
   // hierarchy update.
   void FromLayerNodeProto(const proto::LayerNode& proto,
-                          const LayerIdMap& layer_map);
+                          const LayerIdMap& layer_map,
+                          LayerTreeHost* layer_tree_host);
 
   // This method is similar to PushPropertiesTo, but instead of pushing to
   // a LayerImpl, it pushes the properties to proto::LayerProperties. It is

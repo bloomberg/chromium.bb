@@ -68,7 +68,8 @@ TEST_F(LayerProtoConverterTest, TestKeepingRoot) {
   child_c_node->set_parent_id(child_b_node->id());
 
   scoped_refptr<Layer> new_root =
-      LayerProtoConverter::DeserializeLayerHierarchy(old_root, root_node);
+      LayerProtoConverter::DeserializeLayerHierarchy(old_root, root_node,
+                                                     layer_tree_host_.get());
 
   // The new root should not be the same as the old root.
   EXPECT_EQ(old_root->id(), new_root->id());
@@ -84,6 +85,8 @@ TEST_F(LayerProtoConverterTest, TestKeepingRoot) {
 
   scoped_refptr<Layer> child_c = child_b->children()[0];
   EXPECT_EQ(child_c_node->id(), child_c->id());
+
+  new_root->SetLayerTreeHost(nullptr);
 }
 
 TEST_F(LayerProtoConverterTest, TestNoExistingRoot) {
@@ -104,7 +107,8 @@ TEST_F(LayerProtoConverterTest, TestNoExistingRoot) {
   child_a_node->set_parent_id(new_root_id);  // root_node
 
   scoped_refptr<Layer> new_root =
-      LayerProtoConverter::DeserializeLayerHierarchy(nullptr, root_node);
+      LayerProtoConverter::DeserializeLayerHierarchy(nullptr, root_node,
+                                                     layer_tree_host_.get());
 
   // The new root should not be the same as the old root.
   EXPECT_EQ(new_root_id, new_root->id());
@@ -113,6 +117,8 @@ TEST_F(LayerProtoConverterTest, TestNoExistingRoot) {
 
   EXPECT_EQ(child_a_node->id(), child_a->id());
   EXPECT_EQ(0u, child_a->children().size());
+
+  new_root->SetLayerTreeHost(nullptr);
 }
 
 TEST_F(LayerProtoConverterTest, TestSwappingRoot) {
@@ -145,7 +151,8 @@ TEST_F(LayerProtoConverterTest, TestSwappingRoot) {
 
   scoped_refptr<Layer> old_root = Layer::Create();
   scoped_refptr<Layer> new_root =
-      LayerProtoConverter::DeserializeLayerHierarchy(old_root, root_node);
+      LayerProtoConverter::DeserializeLayerHierarchy(old_root, root_node,
+                                                     layer_tree_host_.get());
 
   // The new root should not be the same as the old root.
   EXPECT_EQ(root_node.id(), new_root->id());
@@ -161,6 +168,8 @@ TEST_F(LayerProtoConverterTest, TestSwappingRoot) {
 
   scoped_refptr<Layer> child_c = child_b->children()[0];
   EXPECT_EQ(child_c_node->id(), child_c->id());
+
+  new_root->SetLayerTreeHost(nullptr);
 }
 
 TEST_F(LayerProtoConverterTest, RecursivePropertiesSerialization) {
@@ -343,7 +352,8 @@ TEST_F(LayerProtoConverterTest, PictureLayerTypeDeserialization) {
   root_node.set_type(proto::LayerNode::PICTURE_LAYER);
 
   scoped_refptr<Layer> new_root =
-      LayerProtoConverter::DeserializeLayerHierarchy(old_root, root_node);
+      LayerProtoConverter::DeserializeLayerHierarchy(old_root, root_node,
+                                                     layer_tree_host_.get());
 
   // Validate that the ids are equal.
   EXPECT_EQ(old_root->id(), new_root->id());
@@ -353,6 +363,8 @@ TEST_F(LayerProtoConverterTest, PictureLayerTypeDeserialization) {
   proto::LayerNode layer_node;
   new_root->SetTypeForProtoSerialization(&layer_node);
   EXPECT_EQ(proto::LayerNode::PICTURE_LAYER, layer_node.type());
+
+  new_root->SetLayerTreeHost(nullptr);
 }
 
 TEST_F(LayerProtoConverterTest, HudLayerTypeSerialization) {
@@ -374,7 +386,8 @@ TEST_F(LayerProtoConverterTest, HudLayerTypeDeserialization) {
   root_node.set_type(proto::LayerNode::HEADS_UP_DISPLAY_LAYER);
 
   scoped_refptr<Layer> new_root =
-      LayerProtoConverter::DeserializeLayerHierarchy(old_root, root_node);
+      LayerProtoConverter::DeserializeLayerHierarchy(old_root, root_node,
+                                                     layer_tree_host_.get());
 
   // Validate that the ids are equal.
   EXPECT_EQ(old_root->id(), new_root->id());
@@ -384,6 +397,8 @@ TEST_F(LayerProtoConverterTest, HudLayerTypeDeserialization) {
   proto::LayerNode layer_node;
   new_root->SetTypeForProtoSerialization(&layer_node);
   EXPECT_EQ(proto::LayerNode::HEADS_UP_DISPLAY_LAYER, layer_node.type());
+
+  new_root->SetLayerTreeHost(nullptr);
 }
 
 }  // namespace

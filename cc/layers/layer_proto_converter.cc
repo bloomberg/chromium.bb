@@ -30,10 +30,13 @@ void LayerProtoConverter::SerializeLayerHierarchy(
 // static
 scoped_refptr<Layer> LayerProtoConverter::DeserializeLayerHierarchy(
     scoped_refptr<Layer> existing_root,
-    const proto::LayerNode& root_node) {
+    const proto::LayerNode& root_node,
+    LayerTreeHost* layer_tree_host) {
   LayerIdMap layer_id_map;
-  if (existing_root)
-    RecursivelyFindAllLayers(existing_root.get(), &layer_id_map);
+  if (existing_root) {
+    existing_root->ClearLayerTreePropertiesForDeserializationAndAddToMap(
+        &layer_id_map);
+  }
 
   scoped_refptr<Layer> new_root = existing_root;
   if (!existing_root ||
@@ -42,7 +45,7 @@ scoped_refptr<Layer> LayerProtoConverter::DeserializeLayerHierarchy(
     // so find or create the new root.
     new_root = FindOrAllocateAndConstruct(root_node, layer_id_map);
   }
-  new_root->FromLayerNodeProto(root_node, layer_id_map);
+  new_root->FromLayerNodeProto(root_node, layer_id_map, layer_tree_host);
   return new_root;
 }
 

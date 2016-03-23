@@ -1309,16 +1309,51 @@ void Layer::ToLayerNodeProto(proto::LayerNode* proto) const {
     replica_layer_->ToLayerNodeProto(proto->mutable_replica_layer());
 }
 
+void Layer::ClearLayerTreePropertiesForDeserializationAndAddToMap(
+    LayerIdMap* layer_map) {
+  (*layer_map)[layer_id_] = this;
+
+  if (layer_tree_host_)
+    layer_tree_host_->UnregisterLayer(this);
+
+  layer_tree_host_ = nullptr;
+  parent_ = nullptr;
+
+  // Clear these properties for all the children and add them to the map.
+  for (auto& child : children_) {
+    child->ClearLayerTreePropertiesForDeserializationAndAddToMap(layer_map);
+  }
+
+  children_.clear();
+
+  if (mask_layer_) {
+    mask_layer_->ClearLayerTreePropertiesForDeserializationAndAddToMap(
+        layer_map);
+    mask_layer_ = nullptr;
+  }
+
+  if (replica_layer_) {
+    replica_layer_->ClearLayerTreePropertiesForDeserializationAndAddToMap(
+        layer_map);
+    replica_layer_ = nullptr;
+  }
+}
+
 void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
-                               const LayerIdMap& layer_map) {
+                               const LayerIdMap& layer_map,
+                               LayerTreeHost* layer_tree_host) {
+  DCHECK(!layer_tree_host_);
+  DCHECK(children_.empty());
+  DCHECK(!mask_layer_);
+  DCHECK(!replica_layer_);
+  DCHECK(layer_tree_host);
   DCHECK(proto.has_id());
+
   layer_id_ = proto.id();
 
-  // To deserialize the new children, make a copy of the old list, before
-  // inserting each of the new children in a new list, reusing old Layer objects
-  // if the Layer already exists.
-  LayerList old_children = children_;
-  children_.clear();
+  layer_tree_host_ = layer_tree_host;
+  layer_tree_host_->RegisterLayer(this);
+
   for (int i = 0; i < proto.children_size(); ++i) {
     const proto::LayerNode& child_proto = proto.children(i);
     DCHECK(child_proto.has_type());
@@ -1326,51 +1361,26 @@ void Layer::FromLayerNodeProto(const proto::LayerNode& proto,
         LayerProtoConverter::FindOrAllocateAndConstruct(child_proto, layer_map);
     // The child must now refer to this layer as its parent, and must also have
     // the same LayerTreeHost. This must be done before deserializing children.
+    DCHECK(!child->parent_);
     child->parent_ = this;
-    child->layer_tree_host_ = layer_tree_host_;
-    child->FromLayerNodeProto(child_proto, layer_map);
+    child->FromLayerNodeProto(child_proto, layer_map, layer_tree_host_);
     children_.push_back(child);
   }
 
-  // Remove now-unused children from the tree.
-  for (auto& child : old_children) {
-    // A child might have been moved to a different parent.
-    if (child->parent_ != this)
-      continue;
-    // Our own child is not part of our new children, so remove it.
-    if (std::find(children_.begin(), children_.end(), child) ==
-        children_.end()) {
-      child->parent_ = nullptr;
-      child->layer_tree_host_ = nullptr;
-    }
-  }
-
-  if (mask_layer_) {
-    mask_layer_->parent_ = nullptr;
-    mask_layer_->layer_tree_host_ = nullptr;
-  }
   if (proto.has_mask_layer()) {
     mask_layer_ = LayerProtoConverter::FindOrAllocateAndConstruct(
         proto.mask_layer(), layer_map);
     mask_layer_->parent_ = this;
-    mask_layer_->layer_tree_host_ = layer_tree_host_;
-    mask_layer_->FromLayerNodeProto(proto.mask_layer(), layer_map);
-  } else {
-    mask_layer_ = nullptr;
+    mask_layer_->FromLayerNodeProto(proto.mask_layer(), layer_map,
+                                    layer_tree_host_);
   }
 
-  if (replica_layer_) {
-    replica_layer_->parent_ = nullptr;
-    replica_layer_->layer_tree_host_ = nullptr;
-  }
   if (proto.has_replica_layer()) {
     replica_layer_ = LayerProtoConverter::FindOrAllocateAndConstruct(
         proto.replica_layer(), layer_map);
     replica_layer_->parent_ = this;
-    replica_layer_->layer_tree_host_ = layer_tree_host_;
-    replica_layer_->FromLayerNodeProto(proto.replica_layer(), layer_map);
-  } else {
-    replica_layer_ = nullptr;
+    replica_layer_->FromLayerNodeProto(proto.replica_layer(), layer_map,
+                                       layer_tree_host_);
   }
 }
 

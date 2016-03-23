@@ -393,11 +393,8 @@ class LayerSerializationTest : public testing::Test {
     Layer::LayerIdMap empty_dest_layer_map;
     scoped_refptr<Layer> layer_dest_root = Layer::Create();
 
-    // Forcefully set the layer tree host for the root layer, which should cause
-    // it to propagate to all the children.
-    layer_dest_root->layer_tree_host_ = layer_tree_host_.get();
-
-    layer_dest_root->FromLayerNodeProto(proto, empty_dest_layer_map);
+    layer_dest_root->FromLayerNodeProto(proto, empty_dest_layer_map,
+                                        layer_tree_host_.get());
 
     EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
     EXPECT_EQ(nullptr, layer_dest_root->parent());
@@ -451,15 +448,19 @@ class LayerSerializationTest : public testing::Test {
     layer_root->ToLayerNodeProto(&root_proto);
 
     Layer::LayerIdMap dest_layer_map;
-    dest_layer_map[layer_root->id()] = layer_root;
-    dest_layer_map[layer_src_a->id()] = layer_src_a;
-    layer_root->FromLayerNodeProto(root_proto, dest_layer_map);
+    layer_root->ClearLayerTreePropertiesForDeserializationAndAddToMap(
+        &dest_layer_map);
+    layer_root->FromLayerNodeProto(root_proto, dest_layer_map,
+                                   layer_tree_host_.get());
 
     EXPECT_EQ(33, layer_root->transform_tree_index_);
     ASSERT_EQ(1u, layer_root->children().size());
     scoped_refptr<Layer> layer_dest_a = layer_root->children()[0];
     EXPECT_EQ(layer_src_a, layer_dest_a);
     EXPECT_EQ(42, layer_dest_a->transform_tree_index_);
+
+    // Clear the reference to the LTH for all the layers.
+    layer_root->SetLayerTreeHost(nullptr);
   }
 
   void RunNonDestructiveDeserializationReorderChildrenTest() {
@@ -488,7 +489,8 @@ class LayerSerializationTest : public testing::Test {
     layer_src_root->ToLayerNodeProto(&root_proto_1);
     Layer::LayerIdMap dest_layer_map;
     scoped_refptr<Layer> layer_dest_root = Layer::Create();
-    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
+    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map,
+                                        layer_tree_host_.get());
 
     // Ensure initial copy is correct.
     ASSERT_EQ(2u, layer_dest_root->children().size());
@@ -510,10 +512,10 @@ class LayerSerializationTest : public testing::Test {
     // Now serialize and deserialize again.
     proto::LayerNode root_proto_2;
     layer_src_root->ToLayerNodeProto(&root_proto_2);
-    dest_layer_map[layer_dest_root->id()] = layer_dest_root;
-    dest_layer_map[layer_dest_a->id()] = layer_dest_a;
-    dest_layer_map[layer_dest_b->id()] = layer_dest_b;
-    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map);
+    layer_dest_root->ClearLayerTreePropertiesForDeserializationAndAddToMap(
+        &dest_layer_map);
+    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map,
+                                        layer_tree_host_.get());
 
     // Ensure second copy is correct.
     EXPECT_EQ(33, layer_dest_root->transform_tree_index_);
@@ -524,6 +526,8 @@ class LayerSerializationTest : public testing::Test {
     layer_dest_a = layer_dest_root->children()[1];
     EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
     EXPECT_EQ(42, layer_dest_a->transform_tree_index_);
+
+    layer_dest_root->SetLayerTreeHost(nullptr);
   }
 
   void RunNonDestructiveDeserializationAddChildTest() {
@@ -550,7 +554,8 @@ class LayerSerializationTest : public testing::Test {
     layer_src_root->ToLayerNodeProto(&root_proto_1);
     Layer::LayerIdMap dest_layer_map;
     scoped_refptr<Layer> layer_dest_root = Layer::Create();
-    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
+    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map,
+                                        layer_tree_host_.get());
 
     // Ensure initial copy is correct.
     ASSERT_EQ(1u, layer_dest_root->children().size());
@@ -568,9 +573,10 @@ class LayerSerializationTest : public testing::Test {
     // Now serialize and deserialize again.
     proto::LayerNode root_proto_2;
     layer_src_root->ToLayerNodeProto(&root_proto_2);
-    dest_layer_map[layer_dest_root->id()] = layer_dest_root;
-    dest_layer_map[layer_dest_a->id()] = layer_dest_a;
-    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map);
+    layer_dest_root->ClearLayerTreePropertiesForDeserializationAndAddToMap(
+        &dest_layer_map);
+    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map,
+                                        layer_tree_host_.get());
 
     // Ensure second copy is correct.
     EXPECT_EQ(33, layer_dest_root->transform_tree_index_);
@@ -580,6 +586,8 @@ class LayerSerializationTest : public testing::Test {
     EXPECT_EQ(42, layer_dest_a->transform_tree_index_);
     scoped_refptr<Layer> layer_dest_b = layer_dest_root->children()[1];
     EXPECT_EQ(layer_src_b->id(), layer_dest_b->id());
+
+    layer_dest_root->SetLayerTreeHost(nullptr);
   }
 
   void RunNonDestructiveDeserializationRemoveChildTest() {
@@ -608,7 +616,8 @@ class LayerSerializationTest : public testing::Test {
     layer_src_root->ToLayerNodeProto(&root_proto_1);
     Layer::LayerIdMap dest_layer_map;
     scoped_refptr<Layer> layer_dest_root = Layer::Create();
-    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
+    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map,
+                                        layer_tree_host_.get());
 
     // Ensure initial copy is correct.
     ASSERT_EQ(2u, layer_dest_root->children().size());
@@ -628,10 +637,10 @@ class LayerSerializationTest : public testing::Test {
     // Now serialize and deserialize again.
     proto::LayerNode root_proto_2;
     layer_src_root->ToLayerNodeProto(&root_proto_2);
-    dest_layer_map[layer_dest_root->id()] = layer_dest_root;
-    dest_layer_map[layer_dest_a->id()] = layer_dest_a;
-    dest_layer_map[layer_dest_b->id()] = layer_dest_b;
-    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map);
+    layer_dest_root->ClearLayerTreePropertiesForDeserializationAndAddToMap(
+        &dest_layer_map);
+    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map,
+                                        layer_tree_host_.get());
 
     // Ensure second copy is correct.
     EXPECT_EQ(33, layer_dest_root->transform_tree_index_);
@@ -639,6 +648,8 @@ class LayerSerializationTest : public testing::Test {
     layer_dest_a = layer_dest_root->children()[0];
     EXPECT_EQ(layer_src_a->id(), layer_dest_a->id());
     EXPECT_EQ(42, layer_dest_a->transform_tree_index_);
+
+    layer_dest_root->SetLayerTreeHost(nullptr);
   }
 
   void RunNonDestructiveDeserializationMoveChildEarlierTest() {
@@ -673,7 +684,8 @@ class LayerSerializationTest : public testing::Test {
     layer_src_root->ToLayerNodeProto(&root_proto_1);
     Layer::LayerIdMap dest_layer_map;
     scoped_refptr<Layer> layer_dest_root = Layer::Create();
-    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
+    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map,
+                                        layer_tree_host_.get());
 
     // Ensure initial copy is correct.
     ASSERT_EQ(2u, layer_dest_root->children().size());
@@ -699,11 +711,10 @@ class LayerSerializationTest : public testing::Test {
     // Now serialize and deserialize again.
     proto::LayerNode root_proto_2;
     layer_src_root->ToLayerNodeProto(&root_proto_2);
-    dest_layer_map[layer_dest_root->id()] = layer_dest_root;
-    dest_layer_map[layer_dest_a->id()] = layer_dest_a;
-    dest_layer_map[layer_dest_b->id()] = layer_dest_b;
-    dest_layer_map[layer_dest_c->id()] = layer_dest_c;
-    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map);
+    layer_dest_root->ClearLayerTreePropertiesForDeserializationAndAddToMap(
+        &dest_layer_map);
+    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map,
+                                        layer_tree_host_.get());
 
     // Ensure second copy is correct.
     EXPECT_EQ(33, layer_dest_root->transform_tree_index_);
@@ -718,6 +729,8 @@ class LayerSerializationTest : public testing::Test {
     layer_dest_c = layer_dest_a->children()[0];
     EXPECT_EQ(layer_src_c->id(), layer_dest_c->id());
     EXPECT_EQ(99, layer_dest_c->transform_tree_index_);
+
+    layer_dest_root->SetLayerTreeHost(nullptr);
   }
 
   void RunNonDestructiveDeserializationMoveChildLaterTest() {
@@ -752,7 +765,8 @@ class LayerSerializationTest : public testing::Test {
     layer_src_root->ToLayerNodeProto(&root_proto_1);
     Layer::LayerIdMap dest_layer_map;
     scoped_refptr<Layer> layer_dest_root = Layer::Create();
-    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map);
+    layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map,
+                                        layer_tree_host_.get());
 
     // Ensure initial copy is correct.
     ASSERT_EQ(2u, layer_dest_root->children().size());
@@ -778,11 +792,10 @@ class LayerSerializationTest : public testing::Test {
     // Now serialize and deserialize again.
     proto::LayerNode root_proto_2;
     layer_src_root->ToLayerNodeProto(&root_proto_2);
-    dest_layer_map[layer_dest_root->id()] = layer_dest_root;
-    dest_layer_map[layer_dest_a->id()] = layer_dest_a;
-    dest_layer_map[layer_dest_b->id()] = layer_dest_b;
-    dest_layer_map[layer_dest_c->id()] = layer_dest_c;
-    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map);
+    layer_dest_root->ClearLayerTreePropertiesForDeserializationAndAddToMap(
+        &dest_layer_map);
+    layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map,
+                                        layer_tree_host_.get());
 
     // Ensure second copy is correct.
     EXPECT_EQ(33, layer_dest_root->transform_tree_index_);
@@ -797,6 +810,8 @@ class LayerSerializationTest : public testing::Test {
     layer_dest_c = layer_dest_b->children()[0];
     EXPECT_EQ(layer_src_c->id(), layer_dest_c->id());
     EXPECT_EQ(99, layer_dest_c->transform_tree_index_);
+
+    layer_dest_root->SetLayerTreeHost(nullptr);
   }
 
   TestTaskGraphRunner task_graph_runner_;
@@ -2232,7 +2247,8 @@ TEST_F(LayerTest, RecursiveHierarchySerialization) {
 
   Layer::LayerIdMap empty_dest_layer_map;
   scoped_refptr<Layer> layer_dest_root = Layer::Create();
-  layer_dest_root->FromLayerNodeProto(proto, empty_dest_layer_map);
+  layer_dest_root->FromLayerNodeProto(proto, empty_dest_layer_map,
+                                      layer_tree_host_.get());
 
   EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
   EXPECT_EQ(nullptr, layer_dest_root->parent());
@@ -2254,6 +2270,8 @@ TEST_F(LayerTest, RecursiveHierarchySerialization) {
   EXPECT_EQ(0u, layer_dest_c->children().size());
   EXPECT_EQ(layer_src_c_mask->id(), layer_dest_c->mask_layer()->id());
   EXPECT_EQ(layer_src_c_replica->id(), layer_dest_c->replica_layer()->id());
+
+  layer_dest_root->SetLayerTreeHost(nullptr);
 }
 
 TEST_F(LayerTest, RecursiveHierarchySerializationWithNodeReuse) {
@@ -2278,7 +2296,8 @@ TEST_F(LayerTest, RecursiveHierarchySerializationWithNodeReuse) {
 
   Layer::LayerIdMap dest_layer_map_1;
   scoped_refptr<Layer> layer_dest_root = Layer::Create();
-  layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map_1);
+  layer_dest_root->FromLayerNodeProto(root_proto_1, dest_layer_map_1,
+                                      layer_tree_host_.get());
 
   EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
   ASSERT_EQ(1u, layer_dest_root->children().size());
@@ -2287,8 +2306,8 @@ TEST_F(LayerTest, RecursiveHierarchySerializationWithNodeReuse) {
 
   // Setup new destination layer map.
   Layer::LayerIdMap dest_layer_map_2;
-  dest_layer_map_2[layer_dest_root->id()] = layer_dest_root;
-  dest_layer_map_2[layer_dest_a_1->id()] = layer_dest_a_1;
+  layer_dest_root->ClearLayerTreePropertiesForDeserializationAndAddToMap(
+      &dest_layer_map_2);
 
   // Add Layer |b|.
   scoped_refptr<Layer> layer_src_b = Layer::Create();
@@ -2299,7 +2318,8 @@ TEST_F(LayerTest, RecursiveHierarchySerializationWithNodeReuse) {
   layer_src_root->ToLayerNodeProto(&root_proto_2);
 
   // Second deserialization.
-  layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map_2);
+  layer_dest_root->FromLayerNodeProto(root_proto_2, dest_layer_map_2,
+                                      layer_tree_host_.get());
 
   EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
   ASSERT_EQ(2u, layer_dest_root->children().size());
@@ -2316,6 +2336,8 @@ TEST_F(LayerTest, RecursiveHierarchySerializationWithNodeReuse) {
 
   // Layer |a| should be the same.
   EXPECT_EQ(layer_dest_a_1.get(), layer_dest_a_2.get());
+
+  layer_dest_root->SetLayerTreeHost(nullptr);
 }
 
 TEST_F(LayerTest, DeletingSubtreeDeletesLayers) {
@@ -2347,7 +2369,8 @@ TEST_F(LayerTest, DeletingSubtreeDeletesLayers) {
   // Deserialization 1.
   Layer::LayerIdMap empty_dest_layer_map;
   scoped_refptr<Layer> layer_dest_root = Layer::Create();
-  layer_dest_root->FromLayerNodeProto(proto1, empty_dest_layer_map);
+  layer_dest_root->FromLayerNodeProto(proto1, empty_dest_layer_map,
+                                      layer_tree_host_.get());
 
   EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
   ASSERT_EQ(2u, layer_dest_root->children().size());
@@ -2367,13 +2390,15 @@ TEST_F(LayerTest, DeletingSubtreeDeletesLayers) {
 
   // Deserialization 2.
   Layer::LayerIdMap dest_layer_map_2;
-  dest_layer_map_2[layer_dest_root->id()] = layer_dest_root;
-  dest_layer_map_2[layer_dest_a->id()] = layer_dest_a;
-  dest_layer_map_2[layer_dest_b->id()] = layer_dest_b;
-  layer_dest_root->FromLayerNodeProto(proto2, dest_layer_map_2);
+  layer_dest_root->ClearLayerTreePropertiesForDeserializationAndAddToMap(
+      &dest_layer_map_2);
+  layer_dest_root->FromLayerNodeProto(proto2, dest_layer_map_2,
+                                      layer_tree_host_.get());
 
   EXPECT_EQ(0u, layer_dest_a->children().size());
   EXPECT_EQ(0u, layer_dest_b->children().size());
+
+  layer_dest_root->SetLayerTreeHost(nullptr);
 }
 
 TEST_F(LayerTest, DeleteMaskAndReplicaLayer) {
@@ -2390,7 +2415,8 @@ TEST_F(LayerTest, DeleteMaskAndReplicaLayer) {
   // Deserialization 1.
   Layer::LayerIdMap dest_layer_map;
   scoped_refptr<Layer> layer_dest_root = Layer::Create();
-  layer_dest_root->FromLayerNodeProto(proto1, dest_layer_map);
+  layer_dest_root->FromLayerNodeProto(proto1, dest_layer_map,
+                                      layer_tree_host_.get());
 
   EXPECT_EQ(layer_src_root->id(), layer_dest_root->id());
   ASSERT_TRUE(layer_dest_root->mask_layer());
@@ -2401,13 +2427,6 @@ TEST_F(LayerTest, DeleteMaskAndReplicaLayer) {
   EXPECT_EQ(layer_src_root->replica_layer()->id(),
             layer_dest_root->replica_layer()->id());
 
-  // Store the newly constructed layer structure in the id map.
-  dest_layer_map[layer_dest_root->id()] = layer_dest_root;
-  dest_layer_map[layer_dest_root->mask_layer()->id()] =
-      layer_dest_root->mask_layer();
-  dest_layer_map[layer_dest_root->replica_layer()->id()] =
-      layer_dest_root->replica_layer();
-
   // Clear mask and replica layers.
   layer_src_root->mask_layer()->RemoveFromParent();
   layer_src_root->replica_layer()->RemoveFromParent();
@@ -2417,10 +2436,15 @@ TEST_F(LayerTest, DeleteMaskAndReplicaLayer) {
   layer_src_root->ToLayerNodeProto(&proto2);
 
   // Deserialization 2.
-  layer_dest_root->FromLayerNodeProto(proto2, dest_layer_map);
+  layer_dest_root->ClearLayerTreePropertiesForDeserializationAndAddToMap(
+      &dest_layer_map);
+  layer_dest_root->FromLayerNodeProto(proto2, dest_layer_map,
+                                      layer_tree_host_.get());
 
   EXPECT_EQ(nullptr, layer_dest_root->mask_layer());
   EXPECT_EQ(nullptr, layer_dest_root->replica_layer());
+
+  layer_dest_root->SetLayerTreeHost(nullptr);
 }
 
 TEST_F(LayerSerializationTest, HierarchyDeserializationWithLayerTreeHost) {

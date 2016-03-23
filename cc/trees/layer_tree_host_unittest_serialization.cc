@@ -40,11 +40,17 @@ class LayerTreeHostSerializationTest : public testing::Test {
     layer_tree_host_src_->in_paint_layer_contents_ = false;
     layer_tree_host_dst_->in_paint_layer_contents_ = false;
 
-    // Need to reset root layer and LayerTreeHost pointers before tear down.
-    layer_tree_host_src_->SetRootLayer(nullptr);
+    // Need to reset LayerTreeHost pointers before tear down.
     layer_tree_host_src_ = nullptr;
-    layer_tree_host_dst_->SetRootLayer(nullptr);
     layer_tree_host_dst_ = nullptr;
+  }
+
+  void VerifyHostHasAllExpectedLayersInTree(Layer* root_layer) {
+    LayerTreeHostCommon::CallFunctionForSubtree(
+        root_layer, [root_layer](Layer* layer) {
+          DCHECK(layer->layer_tree_host());
+          EXPECT_EQ(layer, layer->layer_tree_host()->LayerById(layer->id()));
+        });
   }
 
   void VerifySerializationAndDeserialization() {
@@ -269,7 +275,7 @@ class LayerTreeHostSerializationTest : public testing::Test {
     VerifySerializationAndDeserialization();
   }
 
-  void LayersChangedMultipleSerializations() {
+  void RunLayersChangedMultipleSerializations() {
     // Just fake setup a layer for both source and dest.
     scoped_refptr<Layer> root_layer_src = Layer::Create();
     layer_tree_host_src_->SetRootLayer(root_layer_src);
@@ -307,6 +313,39 @@ class LayerTreeHostSerializationTest : public testing::Test {
     VerifySerializationAndDeserialization();
   }
 
+  void RunAddAndRemoveNodeFromLayerTree() {
+    /* Testing serialization when the tree hierarchy changes like this:
+         root                  root
+        /    \                /    \
+       a      b        =>    a      c
+               \                     \
+                c                     d
+    */
+    scoped_refptr<Layer> layer_src_root = Layer::Create();
+    layer_tree_host_src_->SetRootLayer(layer_src_root);
+
+    scoped_refptr<Layer> layer_src_a = Layer::Create();
+    scoped_refptr<Layer> layer_src_b = Layer::Create();
+    scoped_refptr<Layer> layer_src_c = Layer::Create();
+    scoped_refptr<Layer> layer_src_d = Layer::Create();
+
+    layer_src_root->AddChild(layer_src_a);
+    layer_src_root->AddChild(layer_src_b);
+    layer_src_b->AddChild(layer_src_c);
+
+    VerifySerializationAndDeserialization();
+    VerifyHostHasAllExpectedLayersInTree(layer_tree_host_dst_->root_layer());
+
+    // Now change the Layer Hierarchy
+    layer_src_c->RemoveFromParent();
+    layer_src_b->RemoveFromParent();
+    layer_src_root->AddChild(layer_src_c);
+    layer_src_c->AddChild(layer_src_d);
+
+    VerifySerializationAndDeserialization();
+    VerifyHostHasAllExpectedLayersInTree(layer_tree_host_dst_->root_layer());
+  }
+
  private:
   TestTaskGraphRunner task_graph_runner_src_;
   FakeLayerTreeHostClient client_src_;
@@ -326,7 +365,11 @@ TEST_F(LayerTreeHostSerializationTest, LayersChanged) {
 }
 
 TEST_F(LayerTreeHostSerializationTest, LayersChangedMultipleSerializations) {
-  LayersChangedMultipleSerializations();
+  RunLayersChangedMultipleSerializations();
+}
+
+TEST_F(LayerTreeHostSerializationTest, AddAndRemoveNodeFromLayerTree) {
+  RunAddAndRemoveNodeFromLayerTree();
 }
 
 }  // namespace cc
