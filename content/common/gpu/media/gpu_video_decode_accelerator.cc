@@ -448,14 +448,17 @@ GpuVideoDecodeAccelerator::CreateV4L2SliceVDA() {
 #if (defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)) || defined(OS_MACOSX)
 void GpuVideoDecodeAccelerator::BindImage(uint32_t client_texture_id,
                                           uint32_t texture_target,
-                                          scoped_refptr<gl::GLImage> image) {
+                                          scoped_refptr<gl::GLImage> image,
+                                          bool can_bind_to_sampler) {
   gpu::gles2::GLES2Decoder* command_decoder = stub_->decoder();
   gpu::gles2::TextureManager* texture_manager =
       command_decoder->GetContextGroup()->texture_manager();
   gpu::gles2::TextureRef* ref = texture_manager->GetTexture(client_texture_id);
   if (ref) {
     texture_manager->SetLevelImage(ref, texture_target, 0, image.get(),
-                                   gpu::gles2::Texture::BOUND);
+                                   can_bind_to_sampler
+                                       ? gpu::gles2::Texture::BOUND
+                                       : gpu::gles2::Texture::UNBOUND);
   }
 }
 #endif

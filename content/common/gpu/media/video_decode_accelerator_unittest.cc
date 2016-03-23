@@ -366,7 +366,8 @@ class GLRenderingVDAClient
 
   void BindImage(uint32_t client_texture_id,
                  uint32_t texture_target,
-                 scoped_refptr<gl::GLImage> image);
+                 scoped_refptr<gl::GLImage> image,
+                 bool can_bind_as_sampler);
 
   void SetState(ClientState new_state);
   void FinishInitialization();
@@ -577,7 +578,8 @@ GLRenderingVDAClient::CreateVaapiVDA() {
 
 void GLRenderingVDAClient::BindImage(uint32_t client_texture_id,
                                      uint32_t texture_target,
-                                     scoped_refptr<gl::GLImage> image) {}
+                                     scoped_refptr<gl::GLImage> image,
+                                     bool can_bind_to_sampler) {}
 
 void GLRenderingVDAClient::CreateAndStartDecoder() {
   LOG_ASSERT(decoder_deleted());

@@ -74,9 +74,9 @@ static base::ScopedCFTypeRef<CFMutableDictionaryRef>
 BuildImageConfig(CMVideoDimensions coded_dimensions) {
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config;
 
-  // 4:2:2 is used over the native 4:2:0 because only 4:2:2 can be directly
-  // bound to a texture by CGLTexImageIOSurface2D().
-  int32_t pixel_format = kCVPixelFormatType_422YpCbCr8;
+  // Note that 4:2:0 textures cannot be used directly as RGBA in OpenGL, but are
+  // lower power than 4:2:2 when composited directly by CoreAnimation.
+  int32_t pixel_format = kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange;
 #define CFINT(i) CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &i)
   base::ScopedCFTypeRef<CFNumberRef> cf_pixel_format(CFINT(pixel_format));
   base::ScopedCFTypeRef<CFNumberRef> cf_width(CFINT(coded_dimensions.width));
@@ -85,12 +85,9 @@ BuildImageConfig(CMVideoDimensions coded_dimensions) {
   if (!cf_pixel_format.get() || !cf_width.get() || !cf_height.get())
     return image_config;
 
-  image_config.reset(
-      CFDictionaryCreateMutable(
-          kCFAllocatorDefault,
-          4,  // capacity
-          &kCFTypeDictionaryKeyCallBacks,
-          &kCFTypeDictionaryValueCallBacks));
+  image_config.reset(CFDictionaryCreateMutable(
+      kCFAllocatorDefault, 0, &kCFTypeDictionaryKeyCallBacks,
+      &kCFTypeDictionaryValueCallBacks));
   if (!image_config.get())
     return image_config;
 
@@ -98,8 +95,6 @@ BuildImageConfig(CMVideoDimensions coded_dimensions) {
                        cf_pixel_format);
   CFDictionarySetValue(image_config, kCVPixelBufferWidthKey, cf_width);
   CFDictionarySetValue(image_config, kCVPixelBufferHeightKey, cf_height);
-  CFDictionarySetValue(image_config, kCVPixelBufferOpenGLCompatibilityKey,
-                       kCFBooleanTrue);
 
   return image_config;
 }
@@ -288,9 +283,8 @@ bool VTVideoDecodeAccelerator::FrameOrder::operator()(
 }
 
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
-    const base::Callback<bool(void)>& make_context_current,
-    const base::Callback<void(uint32_t, uint32_t, scoped_refptr<gl::GLImage>)>&
-        bind_image)
+    const MakeContextCurrentCallback& make_context_current,
+    const BindImageCallback& bind_image)
     : make_context_current_(make_context_current),
       bind_image_(bind_image),
       client_(nullptr),
@@ -1034,41 +1028,21 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     return false;
   }
 
-  IOSurfaceRef surface = CVPixelBufferGetIOSurface(frame.image.get());
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGLCoreProfile)
-    glEnable(GL_TEXTURE_RECTANGLE_ARB);
-  gfx::ScopedTextureBinder texture_binder(GL_TEXTURE_RECTANGLE_ARB,
-                                          picture_info->service_texture_id);
-  CGLContextObj cgl_context =
-      static_cast<CGLContextObj>(gfx::GLContext::GetCurrent()->GetHandle());
-  CGLError status = CGLTexImageIOSurface2D(
-      cgl_context,                  // ctx
-      GL_TEXTURE_RECTANGLE_ARB,     // target
-      GL_RGB,                       // internal_format
-      frame.coded_size.width(),     // width
-      frame.coded_size.height(),    // height
-      GL_YCBCR_422_APPLE,           // format
-      GL_UNSIGNED_SHORT_8_8_APPLE,  // type
-      surface,                      // io_surface
-      0);                           // plane
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationDesktopGLCoreProfile)
-    glDisable(GL_TEXTURE_RECTANGLE_ARB);
-  if (status != kCGLNoError) {
-    NOTIFY_STATUS("CGLTexImageIOSurface2D()", status, SFT_PLATFORM_ERROR);
+  IOSurfaceRef io_surface = CVPixelBufferGetIOSurface(frame.image.get());
+
+  scoped_refptr<gl::GLImageIOSurface> gl_image(
+      new gl::GLImageIOSurface(frame.coded_size, GL_BGRA_EXT));
+  if (!gl_image->Initialize(io_surface, gfx::GenericSharedMemoryId(),
+                            gfx::BufferFormat::YUV_420_BIPLANAR)) {
+    NOTIFY_STATUS("Failed to initialize GLImageIOSurface", PLATFORM_FAILURE,
+                  SFT_PLATFORM_ERROR);
     return false;
   }
 
-  bool allow_overlay = false;
-  scoped_refptr<gl::GLImageIOSurface> gl_image(
-      new gl::GLImageIOSurface(frame.coded_size, GL_BGRA_EXT));
-  if (gl_image->Initialize(surface, gfx::GenericSharedMemoryId(),
-                           gfx::BufferFormat::BGRA_8888)) {
-    allow_overlay = true;
-  } else {
-    gl_image = nullptr;
-  }
+  // Mark that the image is not bound for sampling. 4:2:0 images need to
+  // undergo a separate copy to be displayed.
   bind_image_.Run(picture_info->client_texture_id, GL_TEXTURE_RECTANGLE_ARB,
-                  gl_image);
+                  gl_image, false);
 
   // Assign the new image(s) to the the picture info.
   picture_info->gl_image = gl_image;
@@ -1081,8 +1055,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   // resolution changed. We should find the correct API to get the real
   // coded size and fix it.
   client_->PictureReady(media::Picture(picture_id, frame.bitstream_id,
-                                       gfx::Rect(frame.coded_size),
-                                       allow_overlay));
+                                       gfx::Rect(frame.coded_size), true));
   return true;
 }
 

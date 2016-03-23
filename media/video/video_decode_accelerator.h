@@ -15,6 +15,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/gl_image.h"
 
 typedef unsigned int GLenum;
 
@@ -36,6 +37,10 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     bool encrypted_only;
   };
   using SupportedProfiles = std::vector<SupportedProfile>;
+
+  using MakeContextCurrentCallback = base::Callback<bool(void)>;
+  using BindImageCallback = base::Callback<
+      void(uint32_t, uint32_t, scoped_refptr<gl::GLImage>, bool)>;
 
   struct MEDIA_EXPORT Capabilities {
     Capabilities();
