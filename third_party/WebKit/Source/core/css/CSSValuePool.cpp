@@ -128,6 +128,8 @@ PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSValuePool::createValue(const Length
 
 PassRefPtrWillBeRawPtr<CSSFontFamilyValue> CSSValuePool::createFontFamilyValue(const String& familyName)
 {
+    if (familyName.isNull())
+        return CSSFontFamilyValue::create(familyName);
     RefPtrWillBeMember<CSSFontFamilyValue>& value = m_fontFamilyValueCache.add(familyName, nullptr).storedValue->value;
     if (!value)
         value = CSSFontFamilyValue::create(familyName);
