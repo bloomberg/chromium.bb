@@ -99,6 +99,8 @@ public:
             result->m_vector.append(item.release());
         }
         errors->pop();
+        if (errors->hasErrors())
+            return nullptr;
         return result.release();
     }
 
