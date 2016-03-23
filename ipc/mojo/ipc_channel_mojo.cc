@@ -223,7 +223,11 @@ scoped_ptr<ChannelFactory> ChannelMojo::CreateClientFactory(
 ChannelMojo::ChannelMojo(mojo::ScopedMessagePipeHandle handle,
                          Mode mode,
                          Listener* listener)
-    : listener_(listener), waiting_connect_(true), weak_factory_(this) {
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      pipe_(handle.get()),
+      listener_(listener),
+      waiting_connect_(true),
+      weak_factory_(this) {
   // Create MojoBootstrap after all members are set as it touches
   // ChannelMojo from a different thread.
   bootstrap_ = MojoBootstrap::Create(std::move(handle), mode, this);
@@ -234,15 +238,27 @@ ChannelMojo::~ChannelMojo() {
 }
 
 bool ChannelMojo::Connect() {
+  base::AutoLock lock(lock_);
   DCHECK(!message_reader_);
   bootstrap_->Connect();
   return true;
 }
 
 void ChannelMojo::Close() {
-  message_reader_.reset();
-  // We might Close() before we Connect().
-  waiting_connect_ = false;
+  scoped_ptr<internal::MessagePipeReader, ReaderDeleter> reader;
+  {
+    base::AutoLock lock(lock_);
+    if (!message_reader_)
+      return;
+    // The reader's destructor may re-enter Close, so we swap it out first to
+    // avoid deadlock when freeing it below.
+    std::swap(message_reader_, reader);
+
+    // We might Close() before we Connect().
+    waiting_connect_ = false;
+  }
+
+  reader.reset();
 }
 
 // MojoBootstrap::Delegate implementation
@@ -264,39 +280,49 @@ void ChannelMojo::InitMessageReader(mojom::ChannelAssociatedPtrInfo sender,
   mojom::ChannelAssociatedPtr sender_ptr;
   sender_ptr.Bind(std::move(sender));
   scoped_ptr<internal::MessagePipeReader, ChannelMojo::ReaderDeleter> reader(
-      new internal::MessagePipeReader(std::move(sender_ptr),
+      new internal::MessagePipeReader(pipe_, std::move(sender_ptr),
                                       std::move(receiver), peer_pid, this));
 
-  for (size_t i = 0; i < pending_messages_.size(); ++i) {
-    bool sent = reader->Send(std::move(pending_messages_[i]));
-    if (!sent) {
-      // OnChannelError() is notified by OnPipeError().
+  bool connected = true;
+  {
+    base::AutoLock lock(lock_);
+    for (size_t i = 0; i < pending_messages_.size(); ++i) {
+      if (!reader->Send(std::move(pending_messages_[i]))) {
+        LOG(ERROR) << "Failed to flush pending messages";
+        pending_messages_.clear();
+        connected = false;
+        break;
+      }
+    }
+
+    if (connected) {
+      // We set |message_reader_| here and won't get any |pending_messages_|
+      // hereafter. Although we might have some if there is an error, we don't
+      // care. They cannot be sent anyway.
+      message_reader_ = std::move(reader);
       pending_messages_.clear();
-      LOG(ERROR) << "Failed to flush pending messages";
-      return;
+      waiting_connect_ = false;
     }
   }
 
-  // We set |message_reader_| here and won't get any |pending_messages_|
-  // hereafter. Although we might have some if there is an error, we don't
-  // care. They cannot be sent anyway.
-  message_reader_ = std::move(reader);
-  pending_messages_.clear();
-  waiting_connect_ = false;
-
-  listener_->OnChannelConnected(static_cast<int32_t>(GetPeerPID()));
+  if (connected)
+    listener_->OnChannelConnected(static_cast<int32_t>(GetPeerPID()));
+  else
+    OnPipeError();
 }
 
-void ChannelMojo::OnPipeClosed(internal::MessagePipeReader* reader) {
-  Close();
+void ChannelMojo::OnPipeError() {
+  if (task_runner_->RunsTasksOnCurrentThread()) {
+    listener_->OnChannelError();
+  } else {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&ChannelMojo::OnPipeError, weak_factory_.GetWeakPtr()));
+  }
 }
-
-void ChannelMojo::OnPipeError(internal::MessagePipeReader* reader) {
-  listener_->OnChannelError();
-}
-
 
 bool ChannelMojo::Send(Message* message) {
+  base::AutoLock lock(lock_);
   if (!message_reader_) {
     pending_messages_.push_back(make_scoped_ptr(message));
     // Counts as OK before the connection is established, but it's an
@@ -304,10 +330,20 @@ bool ChannelMojo::Send(Message* message) {
     return waiting_connect_;
   }
 
-  return message_reader_->Send(make_scoped_ptr(message));
+  if (!message_reader_->Send(make_scoped_ptr(message))) {
+    OnPipeError();
+    return false;
+  }
+
+  return true;
+}
+
+bool ChannelMojo::IsSendThreadSafe() const {
+  return true;
 }
 
 base::ProcessId ChannelMojo::GetPeerPID() const {
+  base::AutoLock lock(lock_);
   if (!message_reader_)
     return base::kNullProcessId;
 

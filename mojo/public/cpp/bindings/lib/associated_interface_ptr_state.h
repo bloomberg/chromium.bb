@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/lib/interface_id.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/lib/scoped_interface_endpoint_handle.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
 namespace internal {
@@ -39,6 +40,11 @@ class AssociatedInterfacePtrState {
   }
 
   uint32_t version() const { return version_; }
+
+  uint32_t interface_id() const {
+    DCHECK(is_bound());
+    return endpoint_client_->interface_id();
+  }
 
   void QueryVersion(const Callback<void(uint32_t)>& callback) {
     // It is safe to capture |this| because the callback won't be run after this

@@ -149,6 +149,11 @@ AssociatedGroup* InterfaceEndpointClient::associated_group() {
   return associated_group_.get();
 }
 
+uint32_t InterfaceEndpointClient::interface_id() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return handle_.id();
+}
+
 ScopedInterfaceEndpointHandle InterfaceEndpointClient::PassHandle() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!has_pending_responders());

@@ -79,6 +79,9 @@ class AssociatedInterfacePtr {
   // Returns the version number of the interface that the remote side supports.
   uint32_t version() const { return internal_state_.version(); }
 
+  // Returns the internal interface ID of this associated interface.
+  uint32_t interface_id() const { return internal_state_.interface_id(); }
+
   // Queries the max version that the remote side supports. On completion, the
   // result will be returned as the input of |callback|. The version number of
   // this object will also be updated.

@@ -19,6 +19,7 @@
 #include "ipc/mojo/ipc.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace IPC {
 namespace internal {
@@ -46,8 +47,7 @@ class MessagePipeReader : public mojom::Channel {
   class Delegate {
    public:
     virtual void OnMessageReceived(const Message& message) = 0;
-    virtual void OnPipeClosed(MessagePipeReader* reader) = 0;
-    virtual void OnPipeError(MessagePipeReader* reader) = 0;
+    virtual void OnPipeError() = 0;
   };
 
   // Delay the object deletion using the current message loop.
@@ -65,11 +65,18 @@ class MessagePipeReader : public mojom::Channel {
     void operator()(MessagePipeReader* ptr) const;
   };
 
-  // Both parameters must be non-null.
-  // Build a reader that reads messages from |receive_handle| and lets
+  // Builds a reader that reads messages from |receive_handle| and lets
   // |delegate| know.
+  //
+  // |pipe| is the message pipe handle corresponding to the channel's master
+  // interface. This is the message pipe underlying both |sender| and
+  // |receiver|.
+  //
+  // Both |sender| and |receiver| must be non-null.
+  //
   // Note that MessagePipeReader doesn't delete |delegate|.
-  MessagePipeReader(mojom::ChannelAssociatedPtr sender,
+  MessagePipeReader(mojo::MessagePipeHandle pipe,
+                    mojom::ChannelAssociatedPtr sender,
                     mojo::AssociatedInterfaceRequest<mojom::Channel> receiver,
                     base::ProcessId peer_pid,
                     Delegate* delegate);
@@ -77,12 +84,12 @@ class MessagePipeReader : public mojom::Channel {
 
   // Close and destroy the MessagePipe.
   void Close();
-  // Close the mesage pipe with notifying the client with the error.
-  void CloseWithError(MojoResult error);
 
   // Return true if the MessagePipe is alive.
   bool IsValid() { return sender_; }
 
+  // Sends an IPC::Message to the other end of the pipe. Safe to call from any
+  // thread.
   bool Send(scoped_ptr<Message> message);
 
   base::ProcessId GetPeerPid() const { return peer_pid_; }
@@ -92,6 +99,7 @@ class MessagePipeReader : public mojom::Channel {
   void OnPipeError(MojoResult error);
 
  private:
+  // mojom::Channel:
   void Receive(mojo::Array<uint8_t> data,
                mojo::Array<mojom::SerializedHandlePtr> handles) override;
 
@@ -100,6 +108,12 @@ class MessagePipeReader : public mojom::Channel {
   base::ProcessId peer_pid_;
   mojom::ChannelAssociatedPtr sender_;
   mojo::AssociatedBinding<mojom::Channel> binding_;
+
+  // Raw message pipe handle and interface ID we use to send legacy IPC messages
+  // over the associated pipe.
+  const uint32_t sender_interface_id_;
+  const mojo::MessagePipeHandle sender_pipe_;
+
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipeReader);

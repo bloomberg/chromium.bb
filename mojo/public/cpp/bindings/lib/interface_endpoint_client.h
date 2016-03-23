@@ -60,6 +60,7 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
 
   MultiplexRouter* router() const { return handle_.router(); }
   AssociatedGroup* associated_group();
+  uint32_t interface_id() const;
 
   // After this call the object is in an invalid state and shouldn't be reused.
   ScopedInterfaceEndpointHandle PassHandle();

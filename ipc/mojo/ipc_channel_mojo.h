@@ -10,9 +10,12 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/synchronization/lock.h"
+#include "base/task_runner.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_factory.h"
@@ -58,6 +61,7 @@ class IPC_MOJO_EXPORT ChannelMojo
   bool Connect() override;
   void Close() override;
   bool Send(Message* message) override;
+  bool IsSendThreadSafe() const override;
   base::ProcessId GetPeerPID() const override;
   base::ProcessId GetSelfPID() const override;
 
@@ -83,8 +87,7 @@ class IPC_MOJO_EXPORT ChannelMojo
 
   // MessagePipeReader::Delegate
   void OnMessageReceived(const Message& message) override;
-  void OnPipeClosed(internal::MessagePipeReader* reader) override;
-  void OnPipeError(internal::MessagePipeReader* reader) override;
+  void OnPipeError() override;
 
  private:
   ChannelMojo(mojo::ScopedMessagePipeHandle handle,
@@ -100,9 +103,15 @@ class IPC_MOJO_EXPORT ChannelMojo
   // notifications invoked by them.
   typedef internal::MessagePipeReader::DelayedDeleter ReaderDeleter;
 
+  // A TaskRunner which runs tasks on the ChannelMojo's owning thread.
+  scoped_refptr<base::TaskRunner> task_runner_;
+
+  const mojo::MessagePipeHandle pipe_;
   scoped_ptr<MojoBootstrap> bootstrap_;
   Listener* listener_;
 
+  // Guards access to the fields below.
+  mutable base::Lock lock_;
   scoped_ptr<internal::MessagePipeReader, ReaderDeleter> message_reader_;
   std::vector<scoped_ptr<Message>> pending_messages_;
   bool waiting_connect_;
