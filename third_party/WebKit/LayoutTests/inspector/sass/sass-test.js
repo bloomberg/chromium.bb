@@ -11,6 +11,14 @@ InspectorTest.cssParserService = function()
     return cssParserService;
 }
 
+var sassSourceMapFactory = null;
+InspectorTest.sassSourceMapFactory = function()
+{
+    if (!sassSourceMapFactory)
+        sassSourceMapFactory = new WebInspector.SASSSourceMapFactory();
+    return sassSourceMapFactory;
+}
+
 InspectorTest.parseCSS = function(url, text)
 {
     return WebInspector.SASSSupport.parseCSS(InspectorTest.cssParserService(), url, text);
@@ -34,10 +42,8 @@ InspectorTest.loadASTMapping = function(header, callback)
 
     function onSourceMapLoaded(sourceMap)
     {
-        var astService = new WebInspector.ASTService();
-        WebInspector.ASTSourceMap.fromSourceMap(astService, header.cssModel(), sourceMap)
-            .then(mapping => callback(mapping))
-            .then(() => astService.dispose());
+        InspectorTest.sassSourceMapFactory().editableSourceMap(header.cssModel().target(), sourceMap)
+            .then(map => callback(map));
     }
 }
 
@@ -212,7 +218,6 @@ InspectorTest.updateSASSText = function(url, newText)
 InspectorTest.runCSSEditTests = function(header, tests)
 {
     var astSourceMap;
-    var astService = new WebInspector.ASTService();
     InspectorTest.loadASTMapping(header, onMapping);
 
     function onMapping(map)
@@ -229,7 +234,6 @@ InspectorTest.runCSSEditTests = function(header, tests)
     {
         if (!tests.length) {
             InspectorTest.completeTest();
-            astService.dispose();
             return;
         }
         var test = tests.shift();
@@ -239,7 +243,7 @@ InspectorTest.runCSSEditTests = function(header, tests)
         logSourceEdits(text, edits);
         var ranges = edits.map(edit => edit.oldRange);
         var texts = edits.map(edit => edit.newText);
-        WebInspector.SASSProcessor.processCSSEdits(astService, astSourceMap, ranges, texts)
+        astSourceMap.editCompiled(ranges, texts)
             .then(onEditsDone);
     }
 
@@ -251,7 +255,7 @@ InspectorTest.runCSSEditTests = function(header, tests)
             return;
         }
         logASTText(result.map.compiledModel());
-        for (var sassURL of result.newSASSSources.keys()) {
+        for (var sassURL of result.newSources.keys()) {
             var ast = result.map.sourceModels().get(sassURL);
             logASTText(ast);
         }

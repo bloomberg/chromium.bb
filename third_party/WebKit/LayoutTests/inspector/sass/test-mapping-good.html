@@ -18,7 +18,7 @@ function test()
     function onMappingLoaded(map)
     {
         mapping = map;
-        if (!WebInspector.SASSProcessor.validate(map)) {
+        if (!map) {
             InspectorTest.addResult("ERROR: mapping is not valid.");
             InspectorTest.completeTest();
             return;
@@ -34,11 +34,6 @@ function test()
             var sassAST = mapping.sourceModels().valuesArray()[0];
             var sassClone = sassAST.clone();
             var newMapping = mapping.rebase([cssClone, sassClone]);
-            if (!WebInspector.SASSProcessor.validate(newMapping)) {
-                InspectorTest.addResult("ERROR: mapping is not valid.");
-                InspectorTest.completeTest();
-                return;
-            }
             InspectorTest.validateMapping(newMapping);
             next();
         },

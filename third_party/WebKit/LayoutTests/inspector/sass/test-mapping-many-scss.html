@@ -15,7 +15,7 @@ function test()
 
     function onMappingLoaded(map)
     {
-        if (!WebInspector.SASSProcessor.validate(map)) {
+        if (!map) {
             InspectorTest.addResult("ERROR: mapping is not valid.");
             InspectorTest.completeTest();
             return;

@@ -15,7 +15,7 @@ function test()
 
     function onMapping(map)
     {
-        if (WebInspector.SASSProcessor.validate(map)) {
+        if (map) {
             InspectorTest.addResult("ERROR: a valid mapping created for misaligned sourcemap.");
         } else {
             InspectorTest.addResult("OK: the mapping successfully reported misalignment.");
