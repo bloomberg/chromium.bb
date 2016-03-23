@@ -6,6 +6,7 @@
 
 #include <limits.h>
 #include <openssl/asn1.h>
+#include <openssl/digest.h>
 #include <openssl/mem.h>
 
 #include <algorithm>
@@ -19,7 +20,10 @@
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
 #include "crypto/scoped_openssl_types.h"
+#include "net/cert/internal/parse_certificate.h"
+#include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/x509_cert_types.h"
+#include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/ssl/scoped_openssl_types.h"
 
@@ -300,6 +304,57 @@ bool GetDER(X509* x509, base::StringPiece* der_cache) {
     X509_set_ex_data(x509, x509_der_cache_index, new_cache.release());
   }
   *der_cache = base::StringPiece(internal_cache->data);
+  return true;
+}
+
+bool GetTLSServerEndPointChannelBinding(const X509Certificate& certificate,
+                                        std::string* token) {
+  static const char kChannelBindingPrefix[] = "tls-server-end-point:";
+
+  std::string der_encoded_certificate;
+  if (!X509Certificate::GetDEREncoded(certificate.os_cert_handle(),
+                                      &der_encoded_certificate))
+    return false;
+
+  ParsedCertificate parsed_certificate;
+  if (!ParseCertificate(der::Input(base::StringPiece(der_encoded_certificate)),
+                        &parsed_certificate))
+    return false;
+
+  scoped_ptr<SignatureAlgorithm> signature_algorithm =
+      SignatureAlgorithm::CreateFromDer(
+          parsed_certificate.signature_algorithm_tlv);
+  if (!signature_algorithm)
+    return false;
+
+  const EVP_MD* digest_evp_md = nullptr;
+  switch (signature_algorithm->digest()) {
+    case net::DigestAlgorithm::Sha1:
+    case net::DigestAlgorithm::Sha256:
+      digest_evp_md = EVP_sha256();
+      break;
+
+    case net::DigestAlgorithm::Sha384:
+      digest_evp_md = EVP_sha384();
+      break;
+
+    case net::DigestAlgorithm::Sha512:
+      digest_evp_md = EVP_sha512();
+      break;
+  }
+  if (!digest_evp_md)
+    return false;
+
+  std::vector<uint8_t> digest(EVP_MAX_MD_SIZE);
+  unsigned int out_size = digest.size();
+  if (!EVP_Digest(der_encoded_certificate.data(),
+                  der_encoded_certificate.size(), digest.data(), &out_size,
+                  digest_evp_md, nullptr))
+    return false;
+
+  digest.resize(out_size);
+  token->assign(kChannelBindingPrefix);
+  token->append(digest.begin(), digest.end());
   return true;
 }
 

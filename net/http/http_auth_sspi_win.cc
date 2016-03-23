@@ -292,6 +292,7 @@ HttpAuth::AuthorizationResult HttpAuthSSPI::ParseChallenge(
 
 int HttpAuthSSPI::GenerateAuthToken(const AuthCredentials* credentials,
                                     const std::string& spn,
+                                    const std::string& channel_bindings,
                                     std::string* auth_token,
                                     const CompletionCallback& /*callback*/) {
   // Initial challenge.
@@ -305,12 +306,9 @@ int HttpAuthSSPI::GenerateAuthToken(const AuthCredentials* credentials,
   void* out_buf;
   int out_buf_len;
   int rv = GetNextSecurityToken(
-      spn,
-      static_cast<void *>(const_cast<char *>(
-          decoded_server_auth_token_.c_str())),
-      decoded_server_auth_token_.length(),
-      &out_buf,
-      &out_buf_len);
+      spn, channel_bindings,
+      static_cast<void*>(const_cast<char*>(decoded_server_auth_token_.c_str())),
+      decoded_server_auth_token_.length(), &out_buf, &out_buf_len);
   if (rv != OK)
     return rv;
 
@@ -344,27 +342,27 @@ int HttpAuthSSPI::OnFirstRound(const AuthCredentials* credentials) {
   return rv;
 }
 
-int HttpAuthSSPI::GetNextSecurityToken(
-    const std::string& spn,
-    const void* in_token,
-    int in_token_len,
-    void** out_token,
-    int* out_token_len) {
-  CtxtHandle* ctxt_ptr;
+int HttpAuthSSPI::GetNextSecurityToken(const std::string& spn,
+                                       const std::string& channel_bindings,
+                                       const void* in_token,
+                                       int in_token_len,
+                                       void** out_token,
+                                       int* out_token_len) {
+  CtxtHandle* ctxt_ptr = nullptr;
   SecBufferDesc in_buffer_desc, out_buffer_desc;
-  SecBufferDesc* in_buffer_desc_ptr;
-  SecBuffer in_buffer, out_buffer;
+  SecBufferDesc* in_buffer_desc_ptr = nullptr;
+  SecBuffer in_buffers[2], out_buffer;
 
+  in_buffer_desc.ulVersion = SECBUFFER_VERSION;
+  in_buffer_desc.cBuffers = 0;
+  in_buffer_desc.pBuffers = in_buffers;
   if (in_token_len > 0) {
     // Prepare input buffer.
-    in_buffer_desc.ulVersion = SECBUFFER_VERSION;
-    in_buffer_desc.cBuffers = 1;
-    in_buffer_desc.pBuffers = &in_buffer;
-    in_buffer.BufferType = SECBUFFER_TOKEN;
-    in_buffer.cbBuffer = in_token_len;
-    in_buffer.pvBuffer = const_cast<void*>(in_token);
+    SecBuffer& sec_buffer = in_buffers[in_buffer_desc.cBuffers++];
+    sec_buffer.BufferType = SECBUFFER_TOKEN;
+    sec_buffer.cbBuffer = in_token_len;
+    sec_buffer.pvBuffer = const_cast<void*>(in_token);
     ctxt_ptr = &ctxt_;
-    in_buffer_desc_ptr = &in_buffer_desc;
   } else {
     // If there is no input token, then we are starting a new authentication
     // sequence.  If we have already initialized our security context, then
@@ -373,9 +371,32 @@ int HttpAuthSSPI::GetNextSecurityToken(
       NOTREACHED();
       return ERR_UNEXPECTED;
     }
-    ctxt_ptr = NULL;
-    in_buffer_desc_ptr = NULL;
   }
+
+  std::vector<char> sec_channel_bindings_buffer;
+  if (!channel_bindings.empty()) {
+    sec_channel_bindings_buffer.reserve(sizeof(SEC_CHANNEL_BINDINGS) +
+                                        channel_bindings.size());
+    sec_channel_bindings_buffer.resize(sizeof(SEC_CHANNEL_BINDINGS));
+    SEC_CHANNEL_BINDINGS* bindings_desc =
+        reinterpret_cast<SEC_CHANNEL_BINDINGS*>(
+            &sec_channel_bindings_buffer.front());
+    bindings_desc->cbApplicationDataLength = channel_bindings.size();
+    bindings_desc->dwApplicationDataOffset = sizeof(SEC_CHANNEL_BINDINGS);
+    sec_channel_bindings_buffer.insert(sec_channel_bindings_buffer.end(),
+                                       channel_bindings.begin(),
+                                       channel_bindings.end());
+    DCHECK_EQ(sizeof(SEC_CHANNEL_BINDINGS) + channel_bindings.size(),
+              sec_channel_bindings_buffer.size());
+
+    SecBuffer& sec_buffer = in_buffers[in_buffer_desc.cBuffers++];
+    sec_buffer.BufferType = SECBUFFER_CHANNEL_BINDINGS;
+    sec_buffer.cbBuffer = sec_channel_bindings_buffer.size();
+    sec_buffer.pvBuffer = &sec_channel_bindings_buffer.front();
+  }
+
+  if (in_buffer_desc.cBuffers > 0)
+    in_buffer_desc_ptr = &in_buffer_desc;
 
   // Prepare output buffer.
   out_buffer_desc.ulVersion = SECBUFFER_VERSION;
@@ -397,18 +418,18 @@ int HttpAuthSSPI::GetNextSecurityToken(
   DWORD context_attribute;
   base::string16 spn16 = base::ASCIIToUTF16(spn);
   SECURITY_STATUS status = library_->InitializeSecurityContext(
-      &cred_,  // phCredential
-      ctxt_ptr,  // phContext
+      &cred_,                                    // phCredential
+      ctxt_ptr,                                  // phContext
       const_cast<base::char16*>(spn16.c_str()),  // pszTargetName
-      context_flags,  // fContextReq
-      0,  // Reserved1 (must be 0)
-      SECURITY_NATIVE_DREP,  // TargetDataRep
-      in_buffer_desc_ptr,  // pInput
-      0,  // Reserved2 (must be 0)
-      &ctxt_,  // phNewContext
-      &out_buffer_desc,  // pOutput
-      &context_attribute,  // pfContextAttr
-      NULL);  // ptsExpiry
+      context_flags,                             // fContextReq
+      0,                                         // Reserved1 (must be 0)
+      SECURITY_NATIVE_DREP,                      // TargetDataRep
+      in_buffer_desc_ptr,                        // pInput
+      0,                                         // Reserved2 (must be 0)
+      &ctxt_,                                    // phNewContext
+      &out_buffer_desc,                          // pOutput
+      &context_attribute,                        // pfContextAttr
+      nullptr);                                  // ptsExpiry
   int rv = MapInitializeSecurityContextStatusToError(status);
   if (rv != OK) {
     ResetSecurityContext();

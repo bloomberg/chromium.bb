@@ -1203,12 +1203,12 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   session_->http_stream_factory()->ProcessAlternativeServices(
       session_, response_.headers.get(), HostPortPair::FromURL(request_->url));
 
+  if (IsSecureRequest())
+    stream_->GetSSLInfo(&response_.ssl_info);
+
   int rv = HandleAuthChallenge();
   if (rv != OK)
     return rv;
-
-  if (IsSecureRequest())
-    stream_->GetSSLInfo(&response_.ssl_info);
 
   headers_valid_ = true;
   return OK;
@@ -1665,10 +1665,11 @@ int HttpNetworkTransaction::HandleAuthChallenge() {
     return ERR_UNEXPECTED_PROXY_AUTH;
 
   int rv = auth_controllers_[target]->HandleAuthChallenge(
-      headers, (request_->load_flags & LOAD_DO_NOT_SEND_AUTH_DATA) != 0, false,
+      headers, response_.ssl_info,
+      (request_->load_flags & LOAD_DO_NOT_SEND_AUTH_DATA) != 0, false,
       net_log_);
   if (auth_controllers_[target]->HaveAuthHandler())
-      pending_auth_target_ = target;
+    pending_auth_target_ = target;
 
   scoped_refptr<AuthChallengeInfo> auth_info =
       auth_controllers_[target]->auth_info();

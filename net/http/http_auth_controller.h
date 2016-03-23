@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,7 @@ class HttpAuthHandlerFactory;
 class HttpAuthCache;
 class HttpRequestHeaders;
 struct HttpRequestInfo;
+class SSLInfo;
 
 class NET_EXPORT_PRIVATE HttpAuthController
     : public base::RefCounted<HttpAuthController>,
@@ -55,6 +56,7 @@ class NET_EXPORT_PRIVATE HttpAuthController
   // |HandleAuthChallenge()| returns OK on success, or a network error code
   // otherwise. It may also populate |auth_info_|.
   virtual int HandleAuthChallenge(scoped_refptr<HttpResponseHeaders> headers,
+                                  const SSLInfo& ssl_info,
                                   bool do_not_send_server_auth,
                                   bool establishing_tunnel,
                                   const BoundNetLog& net_log);

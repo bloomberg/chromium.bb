@@ -700,6 +700,7 @@ HttpAuth::AuthorizationResult HttpAuthGSSAPI::ParseChallenge(
 
 int HttpAuthGSSAPI::GenerateAuthToken(const AuthCredentials* credentials,
                                       const std::string& spn,
+                                      const std::string& channel_bindings,
                                       std::string* auth_token,
                                       const CompletionCallback& /*callback*/) {
   DCHECK(auth_token);
@@ -711,7 +712,8 @@ int HttpAuthGSSAPI::GenerateAuthToken(const AuthCredentials* credentials,
       NULL;
   gss_buffer_desc output_token = GSS_C_EMPTY_BUFFER;
   ScopedBuffer scoped_output_token(&output_token, library_);
-  int rv = GetNextSecurityToken(spn, &input_token, &output_token);
+  int rv =
+      GetNextSecurityToken(spn, channel_bindings, &input_token, &output_token);
   if (rv != OK)
     return rv;
 
@@ -819,6 +821,7 @@ int MapInitSecContextStatusToError(OM_uint32 major_status) {
 }
 
 int HttpAuthGSSAPI::GetNextSecurityToken(const std::string& spn,
+                                         const std::string& channel_bindings,
                                          gss_buffer_t in_token,
                                          gss_buffer_t out_token) {
   // Create a name for the principal
@@ -843,24 +846,32 @@ int HttpAuthGSSAPI::GetNextSecurityToken(const std::string& spn,
   }
   ScopedName scoped_name(principal_name, library_);
 
+  std::vector<char> channel_bindings_data;
+  scoped_ptr<gss_channel_bindings_struct> gss_channel_bindings;
+  if (!channel_bindings.empty()) {
+    gss_channel_bindings.reset(new gss_channel_bindings_struct);
+    memset(gss_channel_bindings.get(), 0, sizeof(gss_channel_bindings_struct));
+    channel_bindings_data.assign(channel_bindings.begin(),
+                                 channel_bindings.end());
+    gss_channel_bindings->application_data.value = channel_bindings_data.data();
+    gss_channel_bindings->application_data.length =
+        channel_bindings_data.size();
+  }
+
   // Continue creating a security context.
   OM_uint32 req_flags = 0;
   if (can_delegate_)
     req_flags |= GSS_C_DELEG_FLAG;
   major_status = library_->init_sec_context(
-      &minor_status,
-      GSS_C_NO_CREDENTIAL,
-      scoped_sec_context_.receive(),
-      principal_name,
-      gss_oid_,
-      req_flags,
-      GSS_C_INDEFINITE,
-      GSS_C_NO_CHANNEL_BINDINGS,
+      &minor_status, GSS_C_NO_CREDENTIAL, scoped_sec_context_.receive(),
+      principal_name, gss_oid_, req_flags, GSS_C_INDEFINITE,
+      gss_channel_bindings ? gss_channel_bindings.get()
+                           : GSS_C_NO_CHANNEL_BINDINGS,
       in_token,
-      NULL,  // actual_mech_type
+      nullptr,  // actual_mech_type
       out_token,
-      NULL,  // ret flags
-      NULL);
+      nullptr,  // ret flags
+      nullptr);
   rv = MapInitSecContextStatusToError(major_status);
   if (rv != OK) {
     LOG(ERROR) << "Problem initializing context. \n"

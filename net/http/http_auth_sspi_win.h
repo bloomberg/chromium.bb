@@ -146,6 +146,7 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI {
   // credentials are used instead.
   int GenerateAuthToken(const AuthCredentials* credentials,
                         const std::string& spn,
+                        const std::string& channel_bindings,
                         std::string* auth_token,
                         const CompletionCallback& callback);
 
@@ -157,12 +158,12 @@ class NET_EXPORT_PRIVATE HttpAuthSSPI {
  private:
   int OnFirstRound(const AuthCredentials* credentials);
 
-  int GetNextSecurityToken(
-      const std::string& spn,
-      const void* in_token,
-      int in_token_len,
-      void** out_token,
-      int* out_token_len);
+  int GetNextSecurityToken(const std::string& spn,
+                           const std::string& channing_bindings,
+                           const void* in_token,
+                           int in_token_len,
+                           void** out_token,
+                           int* out_token_len);
 
   void ResetSecurityContext();
 

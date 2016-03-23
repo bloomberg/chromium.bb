@@ -93,6 +93,7 @@ void HttpAuthHandlerDigest::Factory::set_nonce_generator(
 int HttpAuthHandlerDigest::Factory::CreateAuthHandler(
     HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
+    const SSLInfo& ssl_info,
     const GURL& origin,
     CreateReason reason,
     int digest_nonce_count,
@@ -102,7 +103,8 @@ int HttpAuthHandlerDigest::Factory::CreateAuthHandler(
   //                 method and only constructing when valid.
   scoped_ptr<HttpAuthHandler> tmp_handler(
       new HttpAuthHandlerDigest(digest_nonce_count, nonce_generator_.get()));
-  if (!tmp_handler->InitFromChallenge(challenge, target, origin, net_log))
+  if (!tmp_handler->InitFromChallenge(challenge, target, ssl_info, origin,
+                                      net_log))
     return ERR_INVALID_RESPONSE;
   handler->swap(tmp_handler);
   return OK;
@@ -135,7 +137,8 @@ HttpAuth::AuthorizationResult HttpAuthHandlerDigest::HandleAnotherChallenge(
       HttpAuth::AUTHORIZATION_RESULT_REJECT;
 }
 
-bool HttpAuthHandlerDigest::Init(HttpAuthChallengeTokenizer* challenge) {
+bool HttpAuthHandlerDigest::Init(HttpAuthChallengeTokenizer* challenge,
+                                 const SSLInfo& ssl_info) {
   return ParseChallenge(challenge);
 }
 

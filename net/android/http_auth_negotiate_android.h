@@ -107,6 +107,7 @@ class NET_EXPORT_PRIVATE HttpAuthNegotiateAndroid {
   // credentials are used instead.
   int GenerateAuthToken(const AuthCredentials* credentials,
                         const std::string& spn,
+                        const std::string& channel_bindings,
                         std::string* auth_token,
                         const net::CompletionCallback& callback);
 

@@ -21,6 +21,7 @@ class BoundNetLog;
 class HttpAuthHandler;
 class HttpAuthHandlerFactory;
 class HttpResponseHeaders;
+class SSLInfo;
 
 // Utility class for http authentication.
 class NET_EXPORT_PRIVATE HttpAuth {
@@ -122,18 +123,22 @@ class NET_EXPORT_PRIVATE HttpAuth {
   // Returns a string representation of an authentication Scheme.
   static const char* SchemeToString(Scheme scheme);
 
-  // Iterate through the challenge headers, and pick the best one that
-  // we support. Obtains the implementation class for handling the challenge,
-  // and passes it back in |*handler|. If no supported challenge was found,
-  // |*handler| is set to NULL.
+  // Iterate through |response_headers|, and pick the best one that we support.
+  // Obtains the implementation class for handling the challenge, and passes it
+  // back in |*handler|. If no supported challenge was found, |*handler| is set
+  // to NULL.
   //
   // |disabled_schemes| is the set of schemes that we should not use.
   //
   // |origin| is used by the NTLM and Negotiation authentication scheme to
-  // construct the service principal name.  It is ignored by other schemes.
+  // construct the service principal name. It is ignored by other schemes.
+  //
+  // |ssl_info| is passed through to the scheme specific authentication handlers
+  // to use as appropriate.
   static void ChooseBestChallenge(
       HttpAuthHandlerFactory* http_auth_handler_factory,
-      const HttpResponseHeaders* headers,
+      const HttpResponseHeaders& response_headers,
+      const SSLInfo& ssl_info,
       Target target,
       const GURL& origin,
       const std::set<Scheme>& disabled_schemes,
@@ -150,7 +155,7 @@ class NET_EXPORT_PRIVATE HttpAuth {
   // |handler| must be non-NULL, and is the HttpAuthHandler from the previous
   // authentication round.
   //
-  // |headers| must be non-NULL and contain the new HTTP response.
+  // |response_headers| must contain the new HTTP response.
   //
   // |target| specifies whether the authentication challenge response came
   // from a server or a proxy.
@@ -163,7 +168,7 @@ class NET_EXPORT_PRIVATE HttpAuth {
   // the value is cleared.
   static AuthorizationResult HandleChallengeResponse(
       HttpAuthHandler* handler,
-      const HttpResponseHeaders* headers,
+      const HttpResponseHeaders& response_headers,
       Target target,
       const std::set<Scheme>& disabled_schemes,
       std::string* challenge_used);

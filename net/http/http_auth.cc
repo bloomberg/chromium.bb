@@ -24,7 +24,8 @@ HttpAuth::Identity::Identity() : source(IDENT_SRC_NONE), invalid(true) {}
 // static
 void HttpAuth::ChooseBestChallenge(
     HttpAuthHandlerFactory* http_auth_handler_factory,
-    const HttpResponseHeaders* headers,
+    const HttpResponseHeaders& response_headers,
+    const SSLInfo& ssl_info,
     Target target,
     const GURL& origin,
     const std::set<Scheme>& disabled_schemes,
@@ -38,10 +39,10 @@ void HttpAuth::ChooseBestChallenge(
   const std::string header_name = GetChallengeHeaderName(target);
   std::string cur_challenge;
   size_t iter = 0;
-  while (headers->EnumerateHeader(&iter, header_name, &cur_challenge)) {
+  while (response_headers.EnumerateHeader(&iter, header_name, &cur_challenge)) {
     scoped_ptr<HttpAuthHandler> cur;
     int rv = http_auth_handler_factory->CreateAuthHandlerFromString(
-        cur_challenge, target, origin, net_log, &cur);
+        cur_challenge, target, ssl_info, origin, net_log, &cur);
     if (rv != OK) {
       VLOG(1) << "Unable to create AuthHandler. Status: "
               << ErrorToString(rv) << " Challenge: " << cur_challenge;
@@ -57,12 +58,11 @@ void HttpAuth::ChooseBestChallenge(
 // static
 HttpAuth::AuthorizationResult HttpAuth::HandleChallengeResponse(
     HttpAuthHandler* handler,
-    const HttpResponseHeaders* headers,
+    const HttpResponseHeaders& response_headers,
     Target target,
     const std::set<Scheme>& disabled_schemes,
     std::string* challenge_used) {
   DCHECK(handler);
-  DCHECK(headers);
   DCHECK(challenge_used);
   challenge_used->clear();
   HttpAuth::Scheme current_scheme = handler->auth_scheme();
@@ -74,7 +74,7 @@ HttpAuth::AuthorizationResult HttpAuth::HandleChallengeResponse(
   std::string challenge;
   HttpAuth::AuthorizationResult authorization_result =
       HttpAuth::AUTHORIZATION_RESULT_INVALID;
-  while (headers->EnumerateHeader(&iter, header_name, &challenge)) {
+  while (response_headers.EnumerateHeader(&iter, header_name, &challenge)) {
     HttpAuthChallengeTokenizer props(challenge.begin(), challenge.end());
     if (!base::LowerCaseEqualsASCII(props.scheme(),
                                     current_scheme_name.c_str()))

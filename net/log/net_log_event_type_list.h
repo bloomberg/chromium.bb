@@ -1872,6 +1872,9 @@ EVENT_TYPE(AUTH_PROXY)
 // The time spent authentication to the server.
 EVENT_TYPE(AUTH_SERVER)
 
+// The channel bindings generated for the connection.
+EVENT_TYPE(AUTH_CHANNEL_BINDINGS)
+
 // ------------------------------------------------------------------------
 // HTML5 Application Cache
 // ------------------------------------------------------------------------

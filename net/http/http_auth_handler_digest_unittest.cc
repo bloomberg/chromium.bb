@@ -11,6 +11,7 @@
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_digest.h"
 #include "net/http/http_request_info.h"
+#include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -52,9 +53,11 @@ bool RespondToChallenge(HttpAuth::Target target,
   scoped_ptr<HttpAuthHandler> handler;
 
   // Create a handler for a particular challenge.
+  SSLInfo null_ssl_info;
   GURL url_origin(target == HttpAuth::AUTH_SERVER ? request_url : proxy_name);
   int rv_create = factory->CreateAuthHandlerFromString(
-    challenge, target, url_origin.GetOrigin(), BoundNetLog(), &handler);
+      challenge, target, null_ssl_info, url_origin.GetOrigin(), BoundNetLog(),
+      &handler);
   if (rv_create != OK || handler.get() == NULL) {
     ADD_FAILURE() << "Unable to create auth handler.";
     return false;
@@ -351,12 +354,11 @@ TEST(HttpAuthHandlerDigestTest, ParseChallenge) {
   scoped_ptr<HttpAuthHandlerDigest::Factory> factory(
       new HttpAuthHandlerDigest::Factory());
   for (size_t i = 0; i < arraysize(tests); ++i) {
+    SSLInfo null_ssl_info;
     scoped_ptr<HttpAuthHandler> handler;
-    int rv = factory->CreateAuthHandlerFromString(tests[i].challenge,
-                                                  HttpAuth::AUTH_SERVER,
-                                                  origin,
-                                                  BoundNetLog(),
-                                                  &handler);
+    int rv = factory->CreateAuthHandlerFromString(
+        tests[i].challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
+        BoundNetLog(), &handler);
     if (tests[i].parsed_success) {
       EXPECT_EQ(OK, rv);
     } else {
@@ -516,12 +518,11 @@ TEST(HttpAuthHandlerDigestTest, AssembleCredentials) {
   scoped_ptr<HttpAuthHandlerDigest::Factory> factory(
       new HttpAuthHandlerDigest::Factory());
   for (size_t i = 0; i < arraysize(tests); ++i) {
+    SSLInfo null_ssl_info;
     scoped_ptr<HttpAuthHandler> handler;
-    int rv = factory->CreateAuthHandlerFromString(tests[i].challenge,
-                                                  HttpAuth::AUTH_SERVER,
-                                                  origin,
-                                                  BoundNetLog(),
-                                                  &handler);
+    int rv = factory->CreateAuthHandlerFromString(
+        tests[i].challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
+        BoundNetLog(), &handler);
     EXPECT_EQ(OK, rv);
     ASSERT_TRUE(handler != NULL);
 
@@ -547,9 +548,10 @@ TEST(HttpAuthHandlerDigest, HandleAnotherChallenge) {
   std::string default_challenge =
       "Digest realm=\"Oblivion\", nonce=\"nonce-value\"";
   GURL origin("intranet.google.com");
+  SSLInfo null_ssl_info;
   int rv = factory->CreateAuthHandlerFromString(
-      default_challenge, HttpAuth::AUTH_SERVER, origin, BoundNetLog(),
-      &handler);
+      default_challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
+      BoundNetLog(), &handler);
   EXPECT_EQ(OK, rv);
   ASSERT_TRUE(handler.get() != NULL);
   HttpAuthChallengeTokenizer tok_default(default_challenge.begin(),

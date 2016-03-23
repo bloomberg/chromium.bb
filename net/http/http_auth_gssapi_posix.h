@@ -272,6 +272,7 @@ class NET_EXPORT_PRIVATE HttpAuthGSSAPI {
   // credentials are used instead.
   int GenerateAuthToken(const AuthCredentials* credentials,
                         const std::string& spn,
+                        const std::string& channel_bindings,
                         std::string* auth_token,
                         const CompletionCallback& callback);
 
@@ -282,6 +283,7 @@ class NET_EXPORT_PRIVATE HttpAuthGSSAPI {
 
  private:
   int GetNextSecurityToken(const std::string& spn,
+                           const std::string& channel_bindings,
                            gss_buffer_t in_token,
                            gss_buffer_t out_token);
 

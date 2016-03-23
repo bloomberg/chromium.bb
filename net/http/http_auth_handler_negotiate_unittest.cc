@@ -13,6 +13,10 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_request_info.h"
 #include "net/http/mock_allow_http_auth_preferences.h"
+#include "net/ssl/ssl_info.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
+
 #if defined(OS_ANDROID)
 #include "net/android/dummy_spnego_authenticator.h"
 #elif defined(OS_WIN)
@@ -20,8 +24,6 @@
 #elif defined(OS_POSIX)
 #include "net/http/mock_gssapi_library_posix.h"
 #endif
-#include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
 
 namespace net {
 
@@ -189,10 +191,11 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest {
 
 #endif  // defined(OS_POSIX)
 
-  int CreateHandler(bool disable_cname_lookup, bool use_port,
-                     bool synchronous_resolve_mode,
-                     const std::string& url_string,
-                     scoped_ptr<HttpAuthHandlerNegotiate>* handler) {
+  int CreateHandler(bool disable_cname_lookup,
+                    bool use_port,
+                    bool synchronous_resolve_mode,
+                    const std::string& url_string,
+                    scoped_ptr<HttpAuthHandlerNegotiate>* handler) {
     http_auth_preferences_->set_negotiate_disable_cname_lookup(
         disable_cname_lookup);
     http_auth_preferences_->set_negotiate_enable_port(use_port);
@@ -205,11 +208,10 @@ class HttpAuthHandlerNegotiateTest : public PlatformTest {
     // after creating the handler, and make sure that generic_handler
     // no longer holds on to the HttpAuthHandlerNegotiate object.
     scoped_ptr<HttpAuthHandler> generic_handler;
-    int rv = factory_->CreateAuthHandlerFromString("Negotiate",
-                                                   HttpAuth::AUTH_SERVER,
-                                                   gurl,
-                                                   BoundNetLog(),
-                                                   &generic_handler);
+    SSLInfo null_ssl_info;
+    int rv = factory_->CreateAuthHandlerFromString(
+        "Negotiate", HttpAuth::AUTH_SERVER, null_ssl_info, gurl, BoundNetLog(),
+        &generic_handler);
     if (rv != OK)
       return rv;
     HttpAuthHandlerNegotiate* negotiate_handler =

@@ -8,6 +8,9 @@
 #include "base/time/time.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/rsa_private_key.h"
+#include "net/base/hash_value.h"
+#include "net/cert/internal/parse_certificate.h"
+#include "net/cert/internal/signature_algorithm.h"
 #include "net/cert/x509_certificate.h"
 
 namespace net {

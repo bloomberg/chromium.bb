@@ -24,35 +24,6 @@ namespace net {
 
 namespace {
 
-// Returns a log message for all the response headers related to the auth
-// challenge.
-std::string AuthChallengeLogMessage(HttpResponseHeaders* headers) {
-  std::string msg;
-  std::string header_val;
-  size_t iter = 0;
-  while (headers->EnumerateHeader(&iter, "proxy-authenticate", &header_val)) {
-    msg.append("\n  Has header Proxy-Authenticate: ");
-    msg.append(header_val);
-  }
-
-  iter = 0;
-  while (headers->EnumerateHeader(&iter, "www-authenticate", &header_val)) {
-    msg.append("\n  Has header WWW-Authenticate: ");
-    msg.append(header_val);
-  }
-
-  // RFC 4559 requires that a proxy indicate its support of NTLM/Negotiate
-  // authentication with a "Proxy-Support: Session-Based-Authentication"
-  // response header.
-  iter = 0;
-  while (headers->EnumerateHeader(&iter, "proxy-support", &header_val)) {
-    msg.append("\n  Has header Proxy-Support: ");
-    msg.append(header_val);
-  }
-
-  return msg;
-}
-
 enum AuthEvent {
   AUTH_EVENT_START = 0,
   AUTH_EVENT_REJECT,
@@ -247,15 +218,13 @@ void HttpAuthController::AddAuthorizationHeader(
 
 int HttpAuthController::HandleAuthChallenge(
     scoped_refptr<HttpResponseHeaders> headers,
+    const SSLInfo& ssl_info,
     bool do_not_send_server_auth,
     bool establishing_tunnel,
     const BoundNetLog& net_log) {
   DCHECK(CalledOnValidThread());
   DCHECK(headers.get());
   DCHECK(auth_origin_.is_valid());
-  VLOG(1) << "The " << HttpAuth::GetAuthTargetString(target_) << " "
-          << auth_origin_ << " requested auth "
-          << AuthChallengeLogMessage(headers.get());
 
   // Give the existing auth handler first try at the authentication headers.
   // This will also evict the entry in the HttpAuthCache if the previous
@@ -263,12 +232,8 @@ int HttpAuthController::HandleAuthChallenge(
   // case.
   if (HaveAuth()) {
     std::string challenge_used;
-    HttpAuth::AuthorizationResult result =
-        HttpAuth::HandleChallengeResponse(handler_.get(),
-                                          headers.get(),
-                                          target_,
-                                          disabled_schemes_,
-                                          &challenge_used);
+    HttpAuth::AuthorizationResult result = HttpAuth::HandleChallengeResponse(
+        handler_.get(), *headers, target_, disabled_schemes_, &challenge_used);
     switch (result) {
       case HttpAuth::AUTHORIZATION_RESULT_ACCEPT:
         break;
@@ -317,24 +282,15 @@ int HttpAuthController::HandleAuthChallenge(
   do {
     if (!handler_.get() && can_send_auth) {
       // Find the best authentication challenge that we support.
-      HttpAuth::ChooseBestChallenge(http_auth_handler_factory_,
-                                    headers.get(),
-                                    target_,
-                                    auth_origin_,
-                                    disabled_schemes_,
-                                    net_log,
-                                    &handler_);
+      HttpAuth::ChooseBestChallenge(http_auth_handler_factory_, *headers,
+                                    ssl_info, target_, auth_origin_,
+                                    disabled_schemes_, net_log, &handler_);
       if (handler_.get())
         HistogramAuthEvent(handler_.get(), AUTH_EVENT_START);
     }
 
     if (!handler_.get()) {
       if (establishing_tunnel) {
-        LOG(ERROR) << "Can't perform auth to the "
-                   << HttpAuth::GetAuthTargetString(target_) << " "
-                   << auth_origin_ << " when establishing a tunnel"
-                   << AuthChallengeLogMessage(headers.get());
-
         // We are establishing a tunnel, we can't show the error page because an
         // active network attacker could control its contents.  Instead, we just
         // fail to establish the tunnel.

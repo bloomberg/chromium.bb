@@ -101,7 +101,8 @@ bool HttpAuthHandlerMock::AllowsExplicitCredentials() {
   return allows_explicit_credentials_;
 }
 
-bool HttpAuthHandlerMock::Init(HttpAuthChallengeTokenizer* challenge) {
+bool HttpAuthHandlerMock::Init(HttpAuthChallengeTokenizer* challenge,
+                               const SSLInfo& ssl_info) {
   auth_scheme_ = HttpAuth::AUTH_SCHEME_MOCK;
   score_ = 1;
   properties_ = connection_based_ ? IS_CONNECTION_BASED : 0;
@@ -167,6 +168,7 @@ void HttpAuthHandlerMock::Factory::AddMockHandler(
 int HttpAuthHandlerMock::Factory::CreateAuthHandler(
     HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
+    const SSLInfo& ssl_info,
     const GURL& origin,
     CreateReason reason,
     int nonce_count,
@@ -178,7 +180,8 @@ int HttpAuthHandlerMock::Factory::CreateAuthHandler(
   std::vector<scoped_ptr<HttpAuthHandler>>& handlers = handlers_[target];
   handlers.erase(handlers.begin());
   if (do_init_from_challenge_ &&
-      !tmp_handler->InitFromChallenge(challenge, target, origin, net_log))
+      !tmp_handler->InitFromChallenge(challenge, target, ssl_info, origin,
+                                      net_log))
     return ERR_INVALID_RESPONSE;
   handler->swap(tmp_handler);
   return OK;

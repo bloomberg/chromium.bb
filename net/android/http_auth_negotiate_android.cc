@@ -101,6 +101,7 @@ HttpAuth::AuthorizationResult HttpAuthNegotiateAndroid::ParseChallenge(
 int HttpAuthNegotiateAndroid::GenerateAuthToken(
     const AuthCredentials* credentials,
     const std::string& spn,
+    const std::string& channel_bindings,
     std::string* auth_token,
     const net::CompletionCallback& callback) {
   if (prefs_->AuthAndroidNegotiateAccountType().empty()) {

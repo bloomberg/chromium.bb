@@ -7,15 +7,38 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "net/base/address_family.h"
 #include "net/base/net_errors.h"
+#include "net/cert/x509_util.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/single_request_host_resolver.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_preferences.h"
+#include "net/log/net_log.h"
+#include "net/ssl/ssl_info.h"
 
 namespace net {
+
+namespace {
+
+scoped_ptr<base::Value> NetLogParameterChannelBindings(
+    const std::string& channel_binding_token,
+    NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::DictionaryValue> dict;
+  if (!capture_mode.include_socket_bytes())
+    return std::move(dict);
+
+  dict.reset(new base::DictionaryValue());
+  dict->SetString("token", base::HexEncode(channel_binding_token.data(),
+                                           channel_binding_token.size()));
+  return std::move(dict);
+}
+
+}  // namespace
 
 HttpAuthHandlerNegotiate::Factory::Factory()
     : resolver_(NULL),
@@ -36,6 +59,7 @@ void HttpAuthHandlerNegotiate::Factory::set_host_resolver(
 int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
     HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
+    const SSLInfo& ssl_info,
     const GURL& origin,
     CreateReason reason,
     int digest_nonce_count,
@@ -78,7 +102,8 @@ int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
   scoped_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNegotiate(
       auth_library_.get(), http_auth_preferences(), resolver_));
 #endif
-  if (!tmp_handler->InitFromChallenge(challenge, target, origin, net_log))
+  if (!tmp_handler->InitFromChallenge(challenge, target, ssl_info, origin,
+                                      net_log))
     return ERR_INVALID_RESPONSE;
   handler->swap(tmp_handler);
   return OK;
@@ -185,7 +210,8 @@ bool HttpAuthHandlerNegotiate::AllowsExplicitCredentials() {
 
 // The Negotiate challenge header looks like:
 //   WWW-Authenticate: NEGOTIATE auth-data
-bool HttpAuthHandlerNegotiate::Init(HttpAuthChallengeTokenizer* challenge) {
+bool HttpAuthHandlerNegotiate::Init(HttpAuthChallengeTokenizer* challenge,
+                                    const SSLInfo& ssl_info) {
 #if defined(OS_POSIX)
   if (!auth_system_.Init()) {
     VLOG(1) << "can't initialize GSSAPI library";
@@ -203,9 +229,21 @@ bool HttpAuthHandlerNegotiate::Init(HttpAuthChallengeTokenizer* challenge) {
   auth_scheme_ = HttpAuth::AUTH_SCHEME_NEGOTIATE;
   score_ = 4;
   properties_ = ENCRYPTS_IDENTITY | IS_CONNECTION_BASED;
+
   HttpAuth::AuthorizationResult auth_result =
       auth_system_.ParseChallenge(challenge);
-  return (auth_result == HttpAuth::AUTHORIZATION_RESULT_ACCEPT);
+  if (auth_result != HttpAuth::AUTHORIZATION_RESULT_ACCEPT)
+    return false;
+
+  // Try to extract channel bindings.
+  if (ssl_info.is_valid())
+    x509_util::GetTLSServerEndPointChannelBinding(*ssl_info.cert,
+                                                  &channel_bindings_);
+  if (!channel_bindings_.empty())
+    net_log_.AddEvent(
+        NetLog::TYPE_AUTH_CHANNEL_BINDINGS,
+        base::Bind(&NetLogParameterChannelBindings, channel_bindings_));
+  return true;
 }
 
 int HttpAuthHandlerNegotiate::GenerateAuthTokenImpl(
@@ -319,7 +357,7 @@ int HttpAuthHandlerNegotiate::DoGenerateAuthToken() {
   next_state_ = STATE_GENERATE_AUTH_TOKEN_COMPLETE;
   AuthCredentials* credentials = has_credentials_ ? &credentials_ : NULL;
   return auth_system_.GenerateAuthToken(
-      credentials, spn_, auth_token_,
+      credentials, spn_, channel_bindings_, auth_token_,
       base::Bind(&HttpAuthHandlerNegotiate::OnIOComplete,
                  base::Unretained(this)));
 }

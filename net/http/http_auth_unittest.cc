@@ -20,6 +20,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/http/mock_allow_http_auth_preferences.h"
+#include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -33,10 +34,9 @@ HttpAuthHandlerMock* CreateMockHandler(bool connection_based) {
   HttpAuthChallengeTokenizer challenge(challenge_text.begin(),
                                          challenge_text.end());
   GURL origin("www.example.com");
-  EXPECT_TRUE(auth_handler->InitFromChallenge(&challenge,
-                                              HttpAuth::AUTH_SERVER,
-                                              origin,
-                                              BoundNetLog()));
+  SSLInfo null_ssl_info;
+  EXPECT_TRUE(auth_handler->InitFromChallenge(
+      &challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin, BoundNetLog()));
   return auth_handler;
 }
 
@@ -54,12 +54,9 @@ HttpAuth::AuthorizationResult HandleChallengeResponse(
   std::set<HttpAuth::Scheme> disabled_schemes;
   scoped_refptr<HttpResponseHeaders> headers(
       HeadersFromResponseText(headers_text));
-  return HttpAuth::HandleChallengeResponse(
-      mock_handler.get(),
-      headers.get(),
-      HttpAuth::AUTH_SERVER,
-      disabled_schemes,
-      challenge_used);
+  return HttpAuth::HandleChallengeResponse(mock_handler.get(), *headers,
+                                           HttpAuth::AUTH_SERVER,
+                                           disabled_schemes, challenge_used);
 }
 
 }  // namespace
@@ -136,14 +133,11 @@ TEST(HttpAuthTest, ChooseBestChallenge) {
     scoped_refptr<HttpResponseHeaders> headers(
         HeadersFromResponseText(headers_with_status_line));
 
+    SSLInfo null_ssl_info;
     scoped_ptr<HttpAuthHandler> handler;
-    HttpAuth::ChooseBestChallenge(http_auth_handler_factory.get(),
-                                  headers.get(),
-                                  HttpAuth::AUTH_SERVER,
-                                  origin,
-                                  disabled_schemes,
-                                  BoundNetLog(),
-                                  &handler);
+    HttpAuth::ChooseBestChallenge(http_auth_handler_factory.get(), *headers,
+                                  null_ssl_info, HttpAuth::AUTH_SERVER, origin,
+                                  disabled_schemes, BoundNetLog(), &handler);
 
     if (handler.get()) {
       EXPECT_EQ(tests[i].challenge_scheme, handler->auth_scheme());

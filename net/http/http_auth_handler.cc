@@ -22,11 +22,11 @@ HttpAuthHandler::HttpAuthHandler()
 HttpAuthHandler::~HttpAuthHandler() {
 }
 
-bool HttpAuthHandler::InitFromChallenge(
-    HttpAuthChallengeTokenizer* challenge,
-    HttpAuth::Target target,
-    const GURL& origin,
-    const BoundNetLog& net_log) {
+bool HttpAuthHandler::InitFromChallenge(HttpAuthChallengeTokenizer* challenge,
+                                        HttpAuth::Target target,
+                                        const SSLInfo& ssl_info,
+                                        const GURL& origin,
+                                        const BoundNetLog& net_log) {
   origin_ = origin;
   target_ = target;
   score_ = -1;
@@ -34,7 +34,7 @@ bool HttpAuthHandler::InitFromChallenge(
   net_log_ = net_log;
 
   auth_challenge_ = challenge->challenge_text();
-  bool ok = Init(challenge);
+  bool ok = Init(challenge, ssl_info);
 
   // Init() is expected to set the scheme, realm, score, and properties.  The
   // realm may be empty.

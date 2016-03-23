@@ -73,6 +73,9 @@ class NET_EXPORT HttpAuthHandlerFactory {
   // scheme, and indicates the number of handlers generated for a particular
   // server nonce challenge.
   //
+  // |ssl_info| is valid if the authentication session is being established over
+  // a secure connection.
+  //
   // For the NTLM and Negotiate handlers:
   // If |origin| does not match the authentication method's filters for
   // the specified |target|, ERR_INVALID_AUTH_CREDENTIALS is returned.
@@ -81,6 +84,7 @@ class NET_EXPORT HttpAuthHandlerFactory {
   // |*challenge| should not be reused after a call to |CreateAuthHandler()|,
   virtual int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
                                 HttpAuth::Target target,
+                                const SSLInfo& ssl_info,
                                 const GURL& origin,
                                 CreateReason create_reason,
                                 int digest_nonce_count,
@@ -94,6 +98,7 @@ class NET_EXPORT HttpAuthHandlerFactory {
   // more details on return values.
   int CreateAuthHandlerFromString(const std::string& challenge,
                                   HttpAuth::Target target,
+                                  const SSLInfo& ssl_info,
                                   const GURL& origin,
                                   const BoundNetLog& net_log,
                                   scoped_ptr<HttpAuthHandler>* handler);
@@ -177,6 +182,7 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
   // based on the first token in |challenge|.
   int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
                         HttpAuth::Target target,
+                        const SSLInfo& ssl_info,
                         const GURL& origin,
                         CreateReason reason,
                         int digest_nonce_count,

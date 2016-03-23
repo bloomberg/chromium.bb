@@ -14,6 +14,7 @@
 #include "net/http/http_auth_handler_ntlm.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_scheme.h"
+#include "net/ssl/ssl_info.h"
 
 #if defined(USE_KERBEROS)
 #include "net/http/http_auth_handler_negotiate.h"
@@ -24,12 +25,13 @@ namespace net {
 int HttpAuthHandlerFactory::CreateAuthHandlerFromString(
     const std::string& challenge,
     HttpAuth::Target target,
+    const SSLInfo& ssl_info,
     const GURL& origin,
     const BoundNetLog& net_log,
     scoped_ptr<HttpAuthHandler>* handler) {
   HttpAuthChallengeTokenizer props(challenge.begin(), challenge.end());
-  return CreateAuthHandler(&props, target, origin, CREATE_CHALLENGE, 1,
-                           net_log, handler);
+  return CreateAuthHandler(&props, target, ssl_info, origin, CREATE_CHALLENGE,
+                           1, net_log, handler);
 }
 
 int HttpAuthHandlerFactory::CreatePreemptiveAuthHandlerFromString(
@@ -40,8 +42,10 @@ int HttpAuthHandlerFactory::CreatePreemptiveAuthHandlerFromString(
     const BoundNetLog& net_log,
     scoped_ptr<HttpAuthHandler>* handler) {
   HttpAuthChallengeTokenizer props(challenge.begin(), challenge.end());
-  return CreateAuthHandler(&props, target, origin, CREATE_PREEMPTIVE,
-                           digest_nonce_count, net_log, handler);
+  SSLInfo null_ssl_info;
+  return CreateAuthHandler(&props, target, null_ssl_info, origin,
+                           CREATE_PREEMPTIVE, digest_nonce_count, net_log,
+                           handler);
 }
 
 namespace {
@@ -161,6 +165,7 @@ HttpAuthHandlerRegistryFactory::Create(const HttpAuthPreferences* prefs,
 int HttpAuthHandlerRegistryFactory::CreateAuthHandler(
     HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
+    const SSLInfo& ssl_info,
     const GURL& origin,
     CreateReason reason,
     int digest_nonce_count,
@@ -178,8 +183,9 @@ int HttpAuthHandlerRegistryFactory::CreateAuthHandler(
     return ERR_UNSUPPORTED_AUTH_SCHEME;
   }
   DCHECK(it->second);
-  return it->second->CreateAuthHandler(challenge, target, origin, reason,
-                                       digest_nonce_count, net_log, handler);
+  return it->second->CreateAuthHandler(challenge, target, ssl_info, origin,
+                                       reason, digest_nonce_count, net_log,
+                                       handler);
 }
 
 }  // namespace net

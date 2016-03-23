@@ -10,6 +10,7 @@
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler.h"
 #include "net/http/http_auth_handler_factory.h"
+#include "net/ssl/ssl_info.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -33,6 +34,7 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
 
   int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
                         HttpAuth::Target target,
+                        const SSLInfo& ssl_info,
                         const GURL& origin,
                         CreateReason reason,
                         int nonce_count,
@@ -98,11 +100,13 @@ TEST_F(URLRequestContextBuilderTest, DefaultHttpAuthHandlerFactory) {
   GURL gurl("www.google.com");
   scoped_ptr<HttpAuthHandler> handler;
   scoped_ptr<URLRequestContext> context(builder_.Build());
+  SSLInfo null_ssl_info;
 
   // Verify that the default basic handler is present
   EXPECT_EQ(OK,
             context->http_auth_handler_factory()->CreateAuthHandlerFromString(
-                "basic", HttpAuth::AUTH_SERVER, gurl, BoundNetLog(), &handler));
+                "basic", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
+                BoundNetLog(), &handler));
 }
 
 TEST_F(URLRequestContextBuilderTest, CustomHttpAuthHandlerFactory) {
@@ -112,24 +116,24 @@ TEST_F(URLRequestContextBuilderTest, CustomHttpAuthHandlerFactory) {
   builder_.SetHttpAuthHandlerFactory(make_scoped_ptr(
       new MockHttpAuthHandlerFactory("ExtraScheme", kBasicReturnCode)));
   scoped_ptr<URLRequestContext> context(builder_.Build());
+  SSLInfo null_ssl_info;
   // Verify that a handler is returned for a custom scheme.
   EXPECT_EQ(kBasicReturnCode,
             context->http_auth_handler_factory()->CreateAuthHandlerFromString(
-                "ExtraScheme",
-                HttpAuth::AUTH_SERVER,
-                gurl,
-                BoundNetLog(),
-                &handler));
+                "ExtraScheme", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
+                BoundNetLog(), &handler));
 
   // Verify that the default basic handler isn't present
   EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME,
             context->http_auth_handler_factory()->CreateAuthHandlerFromString(
-                "basic", HttpAuth::AUTH_SERVER, gurl, BoundNetLog(), &handler));
+                "basic", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
+                BoundNetLog(), &handler));
 
   // Verify that a handler isn't returned for a bogus scheme.
   EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME,
             context->http_auth_handler_factory()->CreateAuthHandlerFromString(
-                "Bogus", HttpAuth::AUTH_SERVER, gurl, BoundNetLog(), &handler));
+                "Bogus", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
+                BoundNetLog(), &handler));
 }
 
 }  // namespace

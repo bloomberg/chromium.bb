@@ -38,7 +38,8 @@ class MockAuthHandler : public HttpAuthHandler {
   }
 
  protected:
-  bool Init(HttpAuthChallengeTokenizer* challenge) override {
+  bool Init(HttpAuthChallengeTokenizer* challenge,
+            const SSLInfo& ssl_info) override {
     return false;  // Unused.
   }
 

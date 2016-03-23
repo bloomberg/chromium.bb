@@ -12,8 +12,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
+#include "net/cert/x509_util.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_scheme.h"
+#include "net/http/http_response_info.h"
 
 namespace net {
 
@@ -22,10 +24,15 @@ HttpAuth::AuthorizationResult HttpAuthHandlerNTLM::HandleAnotherChallenge(
   return ParseChallenge(challenge, false);
 }
 
-bool HttpAuthHandlerNTLM::Init(HttpAuthChallengeTokenizer* tok) {
+bool HttpAuthHandlerNTLM::Init(HttpAuthChallengeTokenizer* tok,
+                               const SSLInfo& ssl_info) {
   auth_scheme_ = HttpAuth::AUTH_SCHEME_NTLM;
   score_ = 3;
   properties_ = ENCRYPTS_IDENTITY | IS_CONNECTION_BASED;
+
+  if (ssl_info.is_valid())
+    x509_util::GetTLSServerEndPointChannelBinding(*ssl_info.cert,
+                                                  &channel_bindings_);
 
   return ParseChallenge(tok, true) == HttpAuth::AUTHORIZATION_RESULT_ACCEPT;
 }
@@ -35,7 +42,7 @@ int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
     const CompletionCallback& callback, std::string* auth_token) {
 #if defined(NTLM_SSPI)
   return auth_sspi_.GenerateAuthToken(credentials, CreateSPN(origin_),
-                                      auth_token, callback);
+                                      channel_bindings_, auth_token, callback);
 #else  // !defined(NTLM_SSPI)
   // TODO(cbentzel): Shouldn't be hitting this case.
   if (!credentials) {

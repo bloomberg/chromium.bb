@@ -31,6 +31,12 @@ enum DigestAlgorithm {
   DIGEST_SHA256
 };
 
+// Generate a 'tls-server-end-point' channel binding based on the specified
+// certificate. Channel bindings are based on RFC 5929.
+NET_EXPORT_PRIVATE bool GetTLSServerEndPointChannelBinding(
+    const X509Certificate& certificate,
+    std::string* token);
+
 // Creates a public-private keypair and a self-signed certificate.
 // Subject, serial number and validity period are given as parameters.
 // The certificate is signed by the private key in |key|. The key length and

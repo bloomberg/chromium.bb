@@ -31,8 +31,9 @@ TEST(HttpAuthNegotiateAndroidTest, GenerateAuthToken) {
   EXPECT_TRUE(auth.Init());
 
   TestCompletionCallback callback;
-  EXPECT_EQ(OK, callback.GetResult(auth.GenerateAuthToken(
-                    nullptr, "Dummy", &auth_token, callback.callback())));
+  EXPECT_EQ(OK, callback.GetResult(
+                    auth.GenerateAuthToken(nullptr, "Dummy", std::string(),
+                                           &auth_token, callback.callback())));
 
   EXPECT_EQ("Negotiate DummyToken", auth_token);
 

@@ -14,6 +14,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
+#include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -72,8 +73,9 @@ void RunSingleRoundAuthTest(HandlerRunMode run_mode,
       new HttpAuthController(HttpAuth::AUTH_PROXY,
                              GURL("http://example.com"),
                              &dummy_auth_cache, &auth_handler_factory));
-  ASSERT_EQ(OK,
-            controller->HandleAuthChallenge(headers, false, false, dummy_log));
+  SSLInfo null_ssl_info;
+  ASSERT_EQ(OK, controller->HandleAuthChallenge(headers, null_ssl_info, false,
+                                                false, dummy_log));
   ASSERT_TRUE(controller->HaveAuthHandler());
   controller->ResetAuth(AuthCredentials());
   EXPECT_TRUE(controller->HaveAuth());
@@ -128,8 +130,9 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
     }
 
    protected:
-    bool Init(HttpAuthChallengeTokenizer* challenge) override {
-      HttpAuthHandlerMock::Init(challenge);
+    bool Init(HttpAuthChallengeTokenizer* challenge,
+              const SSLInfo& ssl_info) override {
+      HttpAuthHandlerMock::Init(challenge, ssl_info);
       set_allows_default_credentials(true);
       set_allows_explicit_credentials(false);
       set_connection_based(true);
@@ -209,8 +212,9 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
       new HttpAuthController(HttpAuth::AUTH_SERVER,
                              GURL("http://example.com"),
                              &dummy_auth_cache, &auth_handler_factory));
-  ASSERT_EQ(OK,
-            controller->HandleAuthChallenge(headers, false, false, dummy_log));
+  SSLInfo null_ssl_info;
+  ASSERT_EQ(OK, controller->HandleAuthChallenge(headers, null_ssl_info, false,
+                                                false, dummy_log));
   ASSERT_TRUE(controller->HaveAuthHandler());
   controller->ResetAuth(AuthCredentials());
   EXPECT_TRUE(controller->HaveAuth());
@@ -222,8 +226,8 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
 
   // Once a token is generated, simulate the receipt of a server response
   // indicating that the authentication attempt was rejected.
-  ASSERT_EQ(OK,
-            controller->HandleAuthChallenge(headers, false, false, dummy_log));
+  ASSERT_EQ(OK, controller->HandleAuthChallenge(headers, null_ssl_info, false,
+                                                false, dummy_log));
   ASSERT_TRUE(controller->HaveAuthHandler());
   controller->ResetAuth(AuthCredentials(base::ASCIIToUTF16("Hello"),
                         base::string16()));

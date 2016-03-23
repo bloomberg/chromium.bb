@@ -209,7 +209,7 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_TwoRounds) {
   EstablishInitialContext(&mock_library);
   std::string auth_token;
   EXPECT_EQ(OK, auth_gssapi.GenerateAuthToken(NULL, "HTTP/intranet.google.com",
-                                              &auth_token,
+                                              std::string(), &auth_token,
                                               base::Bind(&UnexpectedCallback)));
 
   std::string second_challenge_text = "Negotiate Zm9vYmFy";
@@ -247,7 +247,7 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_MissingTokenSecondRound) {
   EstablishInitialContext(&mock_library);
   std::string auth_token;
   EXPECT_EQ(OK, auth_gssapi.GenerateAuthToken(NULL, "HTTP/intranet.google.com",
-                                              &auth_token,
+                                              std::string(), &auth_token,
                                               base::Bind(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),
@@ -271,7 +271,7 @@ TEST(HttpAuthGSSAPITest, ParseChallenge_NonBase64EncodedToken) {
   EstablishInitialContext(&mock_library);
   std::string auth_token;
   EXPECT_EQ(OK, auth_gssapi.GenerateAuthToken(NULL, "HTTP/intranet.google.com",
-                                              &auth_token,
+                                              std::string(), &auth_token,
                                               base::Bind(&UnexpectedCallback)));
   std::string second_challenge_text = "Negotiate =happyjoy=";
   HttpAuthChallengeTokenizer second_challenge(second_challenge_text.begin(),

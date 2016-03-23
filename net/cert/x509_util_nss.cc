@@ -180,6 +180,12 @@ bool CreateSelfSignedCert(crypto::RSAPrivateKey* key,
   return true;
 }
 
+bool GetTLSServerEndPointChannelBinding(const X509Certificate& certificate,
+                                        std::string* token) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 } // namespace x509_util
 
 } // namespace net

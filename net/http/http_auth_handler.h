@@ -16,6 +16,7 @@ namespace net {
 
 class HttpAuthChallengeTokenizer;
 struct HttpRequestInfo;
+class SSLInfo;
 
 // HttpAuthHandler is the interface for the authentication schemes
 // (basic, digest, NTLM, Negotiate).
@@ -32,6 +33,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
   // for later use, and are not part of the initial challenge.
   bool InitFromChallenge(HttpAuthChallengeTokenizer* challenge,
                          HttpAuth::Target target,
+                         const SSLInfo& ssl_info,
                          const GURL& origin,
                          const BoundNetLog& net_log);
 
@@ -148,9 +150,14 @@ class NET_EXPORT_PRIVATE HttpAuthHandler {
   // |challenge| must be non-NULL and have already tokenized the
   // authentication scheme, but none of the tokens occurring after the
   // authentication scheme.
+  //
+  // If the request was sent over an encrypted connection, |ssl_info| is valid
+  // and describes the connection.
+  //
   // Implementations are expected to initialize the following members:
   // scheme_, realm_, score_, properties_
-  virtual bool Init(HttpAuthChallengeTokenizer* challenge) = 0;
+  virtual bool Init(HttpAuthChallengeTokenizer* challenge,
+                    const SSLInfo& ssl_info) = 0;
 
   // |GenerateAuthTokenImpl()} is the auth-scheme specific implementation
   // of generating the next auth token. Callers should use |GenerateAuthToken()|

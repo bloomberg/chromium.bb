@@ -11513,6 +11513,7 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
     HttpAuthHandlerMock::Factory* auth_factory(
         new HttpAuthHandlerMock::Factory());
     session_deps_.http_auth_handler_factory.reset(auth_factory);
+    SSLInfo empty_ssl_info;
     const TestConfig& test_config = test_configs[i];
 
     // Set up authentication handlers as necessary.
@@ -11524,7 +11525,7 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
         HttpAuthChallengeTokenizer tokenizer(auth_challenge.begin(),
                                              auth_challenge.end());
         auth_handler->InitFromChallenge(&tokenizer, HttpAuth::AUTH_PROXY,
-                                        origin, BoundNetLog());
+                                        empty_ssl_info, origin, BoundNetLog());
         auth_handler->SetGenerateExpectation(
             test_config.proxy_auth_timing == AUTH_ASYNC,
             test_config.proxy_auth_rv);
@@ -11538,7 +11539,7 @@ TEST_P(HttpNetworkTransactionTest, GenerateAuthToken) {
       HttpAuthChallengeTokenizer tokenizer(auth_challenge.begin(),
                                            auth_challenge.end());
       auth_handler->InitFromChallenge(&tokenizer, HttpAuth::AUTH_SERVER,
-                                      origin, BoundNetLog());
+                                      empty_ssl_info, origin, BoundNetLog());
       auth_handler->SetGenerateExpectation(
           test_config.server_auth_timing == AUTH_ASYNC,
           test_config.server_auth_rv);
@@ -11647,8 +11648,9 @@ TEST_P(HttpNetworkTransactionTest, MultiRoundAuth) {
   GURL origin("http://www.example.com");
   HttpAuthChallengeTokenizer tokenizer(auth_challenge.begin(),
                                        auth_challenge.end());
+  SSLInfo empty_ssl_info;
   auth_handler->InitFromChallenge(&tokenizer, HttpAuth::AUTH_SERVER,
-                                  origin, BoundNetLog());
+                                  empty_ssl_info, origin, BoundNetLog());
   auth_factory->AddMockHandler(auth_handler, HttpAuth::AUTH_SERVER);
 
   int rv = OK;

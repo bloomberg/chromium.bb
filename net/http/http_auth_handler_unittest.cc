@@ -14,6 +14,7 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
+#include "net/ssl/ssl_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -43,7 +44,8 @@ TEST(HttpAuthHandlerTest, NetLog) {
         BoundNetLog bound_net_log(
             BoundNetLog::Make(&test_net_log, NetLog::SOURCE_NONE));
 
-        mock_handler.InitFromChallenge(&tokenizer, target,
+        SSLInfo empty_ssl_info;
+        mock_handler.InitFromChallenge(&tokenizer, target, empty_ssl_info,
                                        origin, bound_net_log);
         mock_handler.SetGenerateExpectation(async, rv);
         mock_handler.GenerateAuthToken(&credentials, &request,
