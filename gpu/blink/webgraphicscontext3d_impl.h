@@ -47,12 +47,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   blink::WebString getProgramInfoLog(blink::WebGLId program) override;
   blink::WebString getShaderInfoLog(blink::WebGLId shader) override;
   blink::WebString getShaderSource(blink::WebGLId shader) override;
-  blink::WebString getString(blink::WGC3Denum name) override;
-
-  void shaderSource(blink::WebGLId shader,
-                    const blink::WGC3Dchar* string) override;
-
-  blink::WebString getRequestableExtensionsCHROMIUM() override;
 
   blink::WebString getTranslatedShaderSourceANGLE(
       blink::WebGLId shader) override;
@@ -62,8 +56,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
 
   void setErrorMessageCallback(
       WebGraphicsContext3D::WebGraphicsErrorMessageCallback* callback) override;
-
-  void pushGroupMarkerEXT(const blink::WGC3Dchar* marker) override;
 
   // WebGraphicsContext3D implementation.
   ::gpu::gles2::GLES2Interface* getGLES2Interface() override;

@@ -73,12 +73,6 @@ WebGraphicsContext3DImpl::~WebGraphicsContext3DImpl() {
 
 }
 
-blink::WebString WebGraphicsContext3DImpl::
-    getRequestableExtensionsCHROMIUM() {
-  return blink::WebString::fromUTF8(
-      gl_->GetRequestableExtensionsCHROMIUM());
-}
-
 bool WebGraphicsContext3DImpl::getActiveAttrib(
     WebGLId program, WGC3Duint index, ActiveInfo& info) {
   GLint max_name_length = -1;
@@ -200,18 +194,6 @@ blink::WebString WebGraphicsContext3DImpl::
   return res;
 }
 
-blink::WebString WebGraphicsContext3DImpl::getString(
-    WGC3Denum name) {
-  return blink::WebString::fromUTF8(
-      reinterpret_cast<const char*>(gl_->GetString(name)));
-}
-
-void WebGraphicsContext3DImpl::shaderSource(
-    WebGLId shader, const WGC3Dchar* string) {
-  GLint length = strlen(string);
-  gl_->ShaderSource(shader, 1, &string, &length);
-}
-
 void WebGraphicsContext3DImpl::setErrorMessageCallback(
     WebGraphicsContext3D::WebGraphicsErrorMessageCallback* cb) {
   error_message_callback_ = cb;
@@ -220,11 +202,6 @@ void WebGraphicsContext3DImpl::setErrorMessageCallback(
 void WebGraphicsContext3DImpl::setContextLostCallback(
     WebGraphicsContext3D::WebGraphicsContextLostCallback* cb) {
   context_lost_callback_ = cb;
-}
-
-void WebGraphicsContext3DImpl::pushGroupMarkerEXT(
-    const WGC3Dchar* marker) {
-  gl_->PushGroupMarkerEXT(0, marker);
 }
 
 ::gpu::gles2::GLES2Interface* WebGraphicsContext3DImpl::getGLES2Interface() {

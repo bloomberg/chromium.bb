@@ -30,6 +30,9 @@
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
+
+using WTF::String;
 
 namespace blink {
 
@@ -2780,10 +2783,11 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState, G
     if (isContextLost())
         return ScriptValue::createNull(scriptState);
     switch (pname) {
-    case GL_SHADING_LANGUAGE_VERSION:
-        return WebGLAny(scriptState, "WebGL GLSL ES 3.00 (" + String(webContext()->getString(GL_SHADING_LANGUAGE_VERSION)) + ")");
+    case GL_SHADING_LANGUAGE_VERSION: {
+        return WebGLAny(scriptState, "WebGL GLSL ES 3.00 (" + String(contextGL()->GetString(GL_SHADING_LANGUAGE_VERSION)) + ")");
+    }
     case GL_VERSION:
-        return WebGLAny(scriptState, "WebGL 2.0 (" + String(webContext()->getString(GL_VERSION)) + ")");
+        return WebGLAny(scriptState, "WebGL 2.0 (" + String(contextGL()->GetString(GL_VERSION)) + ")");
 
     case GL_COPY_READ_BUFFER_BINDING:
         return WebGLAny(scriptState, m_boundCopyReadBuffer.get());

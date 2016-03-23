@@ -23,14 +23,12 @@ class GLES2Interface;
 
 namespace blink {
 
-class WebGraphicsContext3D;
-
 class PLATFORM_EXPORT Extensions3DUtil final {
     USING_FAST_MALLOC(Extensions3DUtil);
     WTF_MAKE_NONCOPYABLE(Extensions3DUtil);
 public:
     // Creates a new Extensions3DUtil. If the passed GLES2Interface has been spontaneously lost, returns null.
-    static PassOwnPtr<Extensions3DUtil> create(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*);
+    static PassOwnPtr<Extensions3DUtil> create(gpu::gles2::GLES2Interface*);
     ~Extensions3DUtil();
 
     bool isValid() { return m_isValid; }
@@ -42,10 +40,9 @@ public:
     static bool canUseCopyTextureCHROMIUM(GLenum destTarget, GLenum destFormat, GLenum destType, GLint level);
 
 private:
-    Extensions3DUtil(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*);
+    Extensions3DUtil(gpu::gles2::GLES2Interface*);
     void initializeExtensions();
 
-    WebGraphicsContext3D* m_context;
     gpu::gles2::GLES2Interface* m_gl;
     HashSet<String> m_enabledExtensions;
     HashSet<String> m_requestableExtensions;

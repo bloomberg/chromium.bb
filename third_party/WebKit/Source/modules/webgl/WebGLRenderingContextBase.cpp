@@ -99,6 +99,7 @@
 #include "wtf/ArrayBufferContents.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringUTF8Adaptor.h"
 
 namespace blink {
 
@@ -591,7 +592,8 @@ PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGra
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, extractWebGLContextCreationError(glInfo)));
         return nullptr;
     }
-    if (contextProvider->context3d()->getString(GL_EXTENSIONS).utf8().find("GL_OES_packed_depth_stencil") == std::string::npos) {
+    gpu::gles2::GLES2Interface* gl = contextProvider->contextGL();
+    if (!String(gl->GetString(GL_EXTENSIONS)).contains("GL_OES_packed_depth_stencil")) {
         canvas->dispatchEvent(WebGLContextEvent::create(EventTypeNames::webglcontextcreationerror, false, true, "OES_packed_depth_stencil support is required."));
         return nullptr;
     }
@@ -2702,7 +2704,7 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
     case GL_SCISSOR_TEST:
         return getBooleanParameter(scriptState, pname);
     case GL_SHADING_LANGUAGE_VERSION:
-        return WebGLAny(scriptState, "WebGL GLSL ES 1.0 (" + String(webContext()->getString(GL_SHADING_LANGUAGE_VERSION)) + ")");
+        return WebGLAny(scriptState, "WebGL GLSL ES 1.0 (" + String(contextGL()->GetString(GL_SHADING_LANGUAGE_VERSION)) + ")");
     case GL_STENCIL_BACK_FAIL:
         return getUnsignedIntParameter(scriptState, pname);
     case GL_STENCIL_BACK_FUNC:
@@ -2756,7 +2758,7 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
     case GL_VENDOR:
         return WebGLAny(scriptState, String("WebKit"));
     case GL_VERSION:
-        return WebGLAny(scriptState, "WebGL 1.0 (" + String(webContext()->getString(GL_VERSION)) + ")");
+        return WebGLAny(scriptState, "WebGL 1.0 (" + String(contextGL()->GetString(GL_VERSION)) + ")");
     case GL_VIEWPORT:
         return getWebGLIntArrayParameter(scriptState, pname);
     case GL_FRAGMENT_SHADER_DERIVATIVE_HINT_OES: // OES_standard_derivatives
@@ -2766,12 +2768,12 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
         return ScriptValue::createNull(scriptState);
     case WebGLDebugRendererInfo::UNMASKED_RENDERER_WEBGL:
         if (extensionEnabled(WebGLDebugRendererInfoName))
-            return WebGLAny(scriptState, webContext()->getString(GL_RENDERER));
+            return WebGLAny(scriptState, String(contextGL()->GetString(GL_RENDERER)));
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_debug_renderer_info not enabled");
         return ScriptValue::createNull(scriptState);
     case WebGLDebugRendererInfo::UNMASKED_VENDOR_WEBGL:
         if (extensionEnabled(WebGLDebugRendererInfoName))
-            return WebGLAny(scriptState, webContext()->getString(GL_VENDOR));
+            return WebGLAny(scriptState, String(contextGL()->GetString(GL_VENDOR)));
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, WEBGL_debug_renderer_info not enabled");
         return ScriptValue::createNull(scriptState);
     case GL_VERTEX_ARRAY_BINDING_OES: // OES_vertex_array_object
@@ -3718,10 +3720,16 @@ void WebGLRenderingContextBase::shaderSource(WebGLShader* shader, const String& 
     if (isContextLost() || !validateWebGLObject("shaderSource", shader))
         return;
     String stringWithoutComments = StripComments(string).result();
+    // TODO(danakj): Make validateString reject characters > 255 (or utf16 Strings)
+    // so we don't need to use StringUTF8Adaptor.
     if (!validateString("shaderSource", stringWithoutComments))
         return;
     shader->setSource(string);
-    webContext()->shaderSource(objectOrZero(shader), stringWithoutComments.utf8().data());
+    WTF::StringUTF8Adaptor adaptor(stringWithoutComments);
+    const GLchar* shaderData = adaptor.data();
+    // TODO(danakj): Use base::saturated_cast<GLint>.
+    const GLint shaderLength = adaptor.length();
+    contextGL()->ShaderSource(objectOrZero(shader), 1, &shaderData, &shaderLength);
 }
 
 void WebGLRenderingContextBase::stencilFunc(GLenum func, GLint ref, GLuint mask)
@@ -5116,10 +5124,9 @@ void WebGLRenderingContextBase::setFilterQuality(SkFilterQuality filterQuality)
 Extensions3DUtil* WebGLRenderingContextBase::extensionsUtil()
 {
     if (!m_extensionsUtil) {
-        WebGraphicsContext3D* context = webContext();
         gpu::gles2::GLES2Interface* gl = contextGL();
-        m_extensionsUtil = Extensions3DUtil::create(context, gl);
-        // The only reason the ExtensionsUtil should be invalid is if the webContext is lost.
+        m_extensionsUtil = Extensions3DUtil::create(gl);
+        // The only reason the ExtensionsUtil should be invalid is if the gl context is lost.
         ASSERT(m_extensionsUtil->isValid() || gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
     }
     return m_extensionsUtil.get();

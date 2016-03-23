@@ -502,7 +502,9 @@ void TestPlugin::DrawPrimitive() {
 GLuint TestPlugin::LoadShader(GLenum type, const std::string& source) {
   GLuint shader = gl_->CreateShader(type);
   if (shader) {
-    context_->shaderSource(shader, source.data());
+    const GLchar* shader_data = source.data();
+    GLint shader_length = strlen(shader_data); //source.length();
+    gl_->ShaderSource(shader, 1, &shader_data, &shader_length);
     gl_->CompileShader(shader);
 
     int compiled = 0;

@@ -239,7 +239,7 @@ class DrawingBufferForTests : public DrawingBuffer {
 public:
     static PassRefPtr<DrawingBufferForTests> create(PassOwnPtr<WebGraphicsContext3DProvider> contextProvider, const IntSize& size, PreserveDrawingBuffer preserve)
     {
-        OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->context3d(), contextProvider->contextGL());
+        OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->contextGL());
         RefPtr<DrawingBufferForTests> drawingBuffer = adoptRef(new DrawingBufferForTests(contextProvider, extensionsUtil.release(), preserve));
         if (!drawingBuffer->initialize(size)) {
             drawingBuffer->beginDestruction();
@@ -646,6 +646,13 @@ public:
         }
     }
 
+    const GLubyte* GetString(GLenum type) override
+    {
+        if (type == GL_EXTENSIONS)
+            return reinterpret_cast<const GLubyte*>("GL_OES_packed_depth_stencil");
+        return reinterpret_cast<const GLubyte*>("");
+    }
+
     void GenRenderbuffers(GLsizei n, GLuint* renderbuffers) override
     {
         for (GLsizei i = 0; i < n; ++i)
@@ -676,14 +683,6 @@ public:
     WebGLId stencilAttachment() const { return m_contextGL->stencilAttachment(); }
     WebGLId depthAttachment() const { return m_contextGL->depthAttachment(); }
     WebGLId depthStencilAttachment() const { return m_contextGL->depthStencilAttachment(); }
-
-    WebString getString(WGC3Denum type) override
-    {
-        if (type == GL_EXTENSIONS) {
-            return WebString::fromUTF8("GL_OES_packed_depth_stencil");
-        }
-        return WebString();
-    }
 
     gpu::gles2::GLES2Interface* getGLES2Interface() override { return m_contextGL; }
 

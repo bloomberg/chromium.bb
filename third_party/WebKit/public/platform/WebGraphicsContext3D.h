@@ -136,9 +136,6 @@ public:
     // This destructor needs to be public so that using classes can destroy instances if initialization fails.
     virtual ~WebGraphicsContext3D() { }
 
-    // GL_CHROMIUM_request_extension
-    virtual WebString getRequestableExtensionsCHROMIUM() = 0;
-
     // The entry points below map directly to the OpenGL ES 2.0 API.
     // See: http://www.khronos.org/registry/gles/
     // and: http://www.khronos.org/opengles/sdk/docs/man/
@@ -147,17 +144,11 @@ public:
     virtual WebString getProgramInfoLog(WebGLId program) = 0;
     virtual WebString getShaderInfoLog(WebGLId shader) = 0;
     virtual WebString getShaderSource(WebGLId shader) = 0;
-    virtual WebString getString(WGC3Denum name) = 0;
-
-    virtual void shaderSource(WebGLId shader, const WGC3Dchar* string) = 0;
 
     virtual void setContextLostCallback(WebGraphicsContextLostCallback* callback) { }
     virtual void setErrorMessageCallback(WebGraphicsErrorMessageCallback* callback) { }
 
     virtual WebString getTranslatedShaderSourceANGLE(WebGLId shader) = 0;
-
-    // GL_EXT_debug_marker
-    virtual void pushGroupMarkerEXT(const WGC3Dchar* marker) { }
 
     // Prefer getting a GLES2Interface off WebGraphicsContext3DProvider if possible, and avoid using WebGraphicsContext3D at all.
     virtual gpu::gles2::GLES2Interface* getGLES2Interface() = 0;

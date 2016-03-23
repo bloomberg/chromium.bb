@@ -41,8 +41,6 @@ public:
     {
     }
 
-    virtual WebString getRequestableExtensionsCHROMIUM() { return WebString(); }
-
     virtual void blitFramebufferCHROMIUM(WGC3Dint srcX0, WGC3Dint srcY0, WGC3Dint srcX1, WGC3Dint srcY1, WGC3Dint dstX0, WGC3Dint dstY0, WGC3Dint dstX1, WGC3Dint dstY1, WGC3Dbitfield mask, WGC3Denum filter) { }
 
     virtual bool getActiveAttrib(WebGLId program, WGC3Duint index, ActiveInfo&) { return false; }
@@ -51,9 +49,6 @@ public:
     virtual WebString getProgramInfoLog(WebGLId program) { return WebString(); }
     virtual WebString getShaderInfoLog(WebGLId shader) { return WebString(); }
     virtual WebString getShaderSource(WebGLId shader) { return WebString(); }
-    virtual WebString getString(WGC3Denum name) { return WebString(); }
-
-    virtual void shaderSource(WebGLId shader, const WGC3Dchar* string) { }
 
     virtual WebString getTranslatedShaderSourceANGLE(WebGLId) { return WebString(); }
 

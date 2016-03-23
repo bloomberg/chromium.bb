@@ -5,7 +5,8 @@
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "public/platform/WebGraphicsContext3D.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringHash.h"
 
@@ -23,16 +24,15 @@ void splitStringHelper(const String& str, HashSet<String>& set)
 
 } // anonymous namespace
 
-PassOwnPtr<Extensions3DUtil> Extensions3DUtil::create(WebGraphicsContext3D* context, gpu::gles2::GLES2Interface* gl)
+PassOwnPtr<Extensions3DUtil> Extensions3DUtil::create(gpu::gles2::GLES2Interface* gl)
 {
-    OwnPtr<Extensions3DUtil> out = adoptPtr(new Extensions3DUtil(context, gl));
+    OwnPtr<Extensions3DUtil> out = adoptPtr(new Extensions3DUtil(gl));
     out->initializeExtensions();
     return out.release();
 }
 
-Extensions3DUtil::Extensions3DUtil(WebGraphicsContext3D* context, gpu::gles2::GLES2Interface* gl)
-    : m_context(context)
-    , m_gl(gl)
+Extensions3DUtil::Extensions3DUtil(gpu::gles2::GLES2Interface* gl)
+    : m_gl(gl)
     , m_isValid(true)
 {
 }
@@ -50,10 +50,10 @@ void Extensions3DUtil::initializeExtensions()
         return;
     }
 
-    String extensionsString = m_context->getString(GL_EXTENSIONS);
+    String extensionsString(m_gl->GetString(GL_EXTENSIONS));
     splitStringHelper(extensionsString, m_enabledExtensions);
 
-    String requestableExtensionsString = m_context->getRequestableExtensionsCHROMIUM();
+    String requestableExtensionsString(m_gl->GetRequestableExtensionsCHROMIUM());
     splitStringHelper(requestableExtensionsString, m_requestableExtensions);
 }
 
@@ -84,8 +84,8 @@ bool Extensions3DUtil::isExtensionEnabled(const String& name)
 
 bool Extensions3DUtil::canUseCopyTextureCHROMIUM(GLenum destTarget, GLenum destFormat, GLenum destType, GLint level)
 {
-    // FIXME: restriction of (RGB || RGBA)/UNSIGNED_BYTE/(Level 0) should be lifted when
-    // WebGraphicsContext3D::copyTextureCHROMIUM(...) are fully functional.
+    // TODO(zmo): restriction of (RGB || RGBA)/UNSIGNED_BYTE/(Level 0) should be lifted when
+    // GLES2Interface::CopyTextureCHROMIUM(...) are fully functional.
     if (destTarget == GL_TEXTURE_2D && (destFormat == GL_RGB || destFormat == GL_RGBA)
         && destType == GL_UNSIGNED_BYTE
         && !level)

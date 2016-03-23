@@ -98,7 +98,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(PassOwnPtr<WebGraphicsContext3DP
         return nullptr;
     }
 
-    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->context3d(), contextProvider->contextGL());
+    OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(contextProvider->contextGL());
     if (!extensionsUtil->isValid()) {
         // This might be the first time we notice that the GL context is lost.
         return nullptr;

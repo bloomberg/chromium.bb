@@ -31,7 +31,7 @@ SharedContextRateLimiter::SharedContextRateLimiter(unsigned maxPendingTicks)
 
     gpu::gles2::GLES2Interface* gl = m_contextProvider->contextGL();
     if (gl && gl->GetGraphicsResetStatusKHR() == GL_NO_ERROR) {
-        OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(m_contextProvider->context3d(), gl);
+        OwnPtr<Extensions3DUtil> extensionsUtil = Extensions3DUtil::create(gl);
         // TODO(junov): when the GLES 3.0 command buffer is ready, we could use fenceSync instead
         m_canUseSyncQueries = extensionsUtil->supportsExtension("GL_CHROMIUM_sync_query");
     }
