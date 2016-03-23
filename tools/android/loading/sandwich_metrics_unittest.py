@@ -12,7 +12,7 @@ import unittest
 
 import loading_trace
 import page_track
-import pull_sandwich_metrics as puller
+import sandwich_metrics as puller
 import request_track
 import tracing
 
