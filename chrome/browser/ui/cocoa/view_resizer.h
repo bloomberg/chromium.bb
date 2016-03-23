@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_UI_COCOA_VIEW_RESIZER_H_
 #define CHROME_BROWSER_UI_COCOA_VIEW_RESIZER_H_
 
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#import <Foundation/Foundation.h>
 
-#import <Cocoa/Cocoa.h>
+@class NSView;
 
 // Defines a protocol that allows controllers to delegate resizing their views
 // to their parents.  When a controller needs to change a view's height, rather

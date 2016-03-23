@@ -15,8 +15,6 @@
 #import "chrome/browser/ui/cocoa/animatable_view.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_bar_state.h"
 
-@class BookmarkBarView;
-
 class Profile;
 
 // An interface to allow mocking of a BookmarkBarController by the

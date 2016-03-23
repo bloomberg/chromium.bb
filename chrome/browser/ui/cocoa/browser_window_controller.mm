@@ -347,12 +347,13 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
                        hasLocationBar:[self hasLocationBar]];
 
     // Create a sub-controller for the bookmark bar.
-    bookmarkBarController_.reset(
-        [[BookmarkBarController alloc]
-            initWithBrowser:browser_.get()
-               initialWidth:NSWidth([[[self window] contentView] frame])
-                   delegate:self
-             resizeDelegate:self]);
+    bookmarkBarController_.reset([[BookmarkBarController alloc]
+        initWithBrowser:browser_.get()
+           initialWidth:NSWidth([[[self window] contentView] frame])
+               delegate:self]);
+    // This call triggers an -awakeFromNib for ToolbarView.xib.
+    [[bookmarkBarController_ controlledView] setResizeDelegate:self];
+
     [bookmarkBarController_ setBookmarkBarEnabled:[self supportsBookmarkBar]];
 
     // Create the infobar container view, so we can pass it to the

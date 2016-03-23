@@ -209,9 +209,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
   // Delegate that is informed about state changes in the bookmark bar.
   id<BookmarkBarControllerDelegate> delegate_;  // weak
 
-  // Delegate that can resize us.
-  id<ViewResizer> resizeDelegate_;  // weak
-
   // Logic for dealing with a click on a bookmark folder button.
   base::scoped_nsobject<BookmarkFolderTarget> folderTarget_;
 
@@ -306,15 +303,19 @@ willAnimateFromState:(BookmarkBar::State)oldState
 @property(assign, nonatomic) BOOL stateAnimationsEnabled;
 @property(assign, nonatomic) BOOL innerContentAnimationsEnabled;
 
-// Initializes the bookmark bar controller with the given browser
-// profile and delegates.
+// Initializes the bookmark bar controller with the given browser and delegate.
+// To properly manage vertical resizing of the bookmark bar, the caller must
+// also call -setResizeDelegate on the -controlledView. This should be done once
+// the initializer returns, since it will trigger nib loading.
 - (id)initWithBrowser:(Browser*)browser
          initialWidth:(CGFloat)initialWidth
-             delegate:(id<BookmarkBarControllerDelegate>)delegate
-       resizeDelegate:(id<ViewResizer>)resizeDelegate;
+             delegate:(id<BookmarkBarControllerDelegate>)delegate;
 
 // The Browser corresponding to this BookmarkBarController.
 - (Browser*)browser;
+
+// Strongly-typed version of [self view]. Note this may trigger nib loading.
+- (BookmarkBarToolbarView*)controlledView;
 
 // The controller for all bookmark bar context menus.
 - (BookmarkContextMenuCocoaController*)menuController;

@@ -41,8 +41,7 @@ typedef std::pair<GURL,WindowOpenDisposition> OpenInfo;
 - (id)initWithBrowser:(Browser*)browser {
   if ((self = [super initWithBrowser:browser
                         initialWidth:100  // arbitrary
-                            delegate:nil
-                      resizeDelegate:nil])) {
+                            delegate:nil])) {
     callbacks_.reset([[NSMutableArray alloc] init]);
   }
   return self;

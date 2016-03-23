@@ -170,12 +170,10 @@ class BookmarkBarFolderControllerTest : public CocoaProfileTest {
     model->AddURL(folderB, folderB->child_count(), ASCIIToUTF16("t"),
                   GURL("http://www.google.com/c"));
 
-    bar_.reset(
-      [[BookmarkBarControllerChildFolderRedirect alloc]
-          initWithBrowser:browser()
-             initialWidth:300
-                 delegate:nil
-           resizeDelegate:nil]);
+    bar_.reset([[BookmarkBarControllerChildFolderRedirect alloc]
+        initWithBrowser:browser()
+           initialWidth:300
+               delegate:nil]);
     [bar_ loaded:model];
     // Make parent frame for bookmark bar then open it.
     NSRect frame = [[test_window() contentView] frame];
@@ -723,16 +721,15 @@ class BookmarkBarFolderControllerMenuTest : public CocoaProfileTest {
     parent_view_.reset([[NSView alloc] initWithFrame:parent_frame]);
     [parent_view_ setHidden:YES];
     bar_.reset([[BookmarkBarController alloc]
-                initWithBrowser:browser()
-                   initialWidth:NSWidth(parent_frame)
-                       delegate:nil
-                 resizeDelegate:resizeDelegate_.get()]);
+        initWithBrowser:browser()
+           initialWidth:NSWidth(parent_frame)
+               delegate:nil]);
     InstallAndToggleBar(bar_.get());
   }
 
   void InstallAndToggleBar(BookmarkBarController* bar) {
-    // Force loading of the nib.
-    [bar view];
+    // Forces loading of the nib.
+    [[bar controlledView] setResizeDelegate:resizeDelegate_];
     // Awkwardness to look like we've been installed.
     [parent_view_ addSubview:[bar view]];
     NSRect frame = [[[bar view] superview] frame];
@@ -1628,10 +1625,9 @@ class BookmarkBarFolderControllerClosingTest : public
     ASSERT_TRUE(browser());
 
     bar_.reset([[BookmarkBarControllerNoDelete alloc]
-                initWithBrowser:browser()
-                   initialWidth:NSWidth([parent_view_ frame])
-                       delegate:nil
-                 resizeDelegate:resizeDelegate_.get()]);
+        initWithBrowser:browser()
+           initialWidth:NSWidth([parent_view_ frame])
+               delegate:nil]);
     InstallAndToggleBar(bar_.get());
   }
 };

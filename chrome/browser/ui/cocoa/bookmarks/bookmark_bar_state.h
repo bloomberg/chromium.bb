@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_STATE_H_
 #define CHROME_BROWSER_UI_COCOA_BOOKMARKS_BOOKMARK_BAR_STATE_H_
 
-#import <Cocoa/Cocoa.h>
+#include <CoreGraphics/CoreGraphics.h>
 
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 
