@@ -1803,18 +1803,6 @@ EVENT_TYPE(QUIC_SESSION_CLOSED)
 // QuicHttpStream
 // ------------------------------------------------------------------------
 
-// The stream is sending the request headers.
-//   {
-//     "headers": <The list of header:value pairs>
-//   }
-EVENT_TYPE(QUIC_HTTP_STREAM_SEND_REQUEST_HEADERS)
-
-// The stream has read the response headers.
-//   {
-//     "headers": <The list of header:value pairs>
-//   }
-EVENT_TYPE(QUIC_HTTP_STREAM_READ_RESPONSE_HEADERS)
-
 // A stream request's url matches a received push promise.  The
 // promised stream can be adopted for this request once vary header
 // validation is complete (as part of response header processing).
@@ -1838,6 +1826,28 @@ EVENT_TYPE(QUIC_HTTP_STREAM_ADOPTED_PUSH_STREAM)
 //      "source_dependency": <Source identifier for session that was used>,
 //   }
 EVENT_TYPE(HTTP_STREAM_REQUEST_BOUND_TO_QUIC_SESSION)
+
+// ------------------------------------------------------------------------
+// QuicChromiumClientStream
+// ------------------------------------------------------------------------
+
+// The stream is sending the request headers.
+//   {
+//     "headers": <The list of header:value pairs>
+//   }
+EVENT_TYPE(QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS)
+
+// The stream has read the response headers.
+//   {
+//     "headers": <The list of header:value pairs>
+//   }
+EVENT_TYPE(QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_HEADERS)
+
+// The stream has read the response trailers.
+//   {
+//     "headers": <The list of header:value pairs>
+//   }
+EVENT_TYPE(QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_TRAILERS)
 
 // ------------------------------------------------------------------------
 // HttpStreamParser

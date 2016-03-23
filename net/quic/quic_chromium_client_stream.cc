@@ -10,6 +10,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/quic/quic_chromium_client_session.h"
+#include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_spdy_session.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
@@ -104,6 +105,17 @@ void QuicChromiumClientStream::OnCanWrite() {
   }
 }
 
+size_t QuicChromiumClientStream::WriteHeaders(
+    const SpdyHeaderBlock& header_block,
+    bool fin,
+    QuicAckListenerInterface* ack_notifier_delegate) {
+  net_log_.AddEvent(
+      NetLog::TYPE_QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
+      base::Bind(&QuicRequestNetLogCallback, id(), &header_block,
+                 QuicSpdyStream::priority()));
+  return QuicSpdyStream::WriteHeaders(header_block, fin, ack_notifier_delegate);
+}
+
 SpdyPriority QuicChromiumClientStream::priority() const {
   if (delegate_ && delegate_->HasSendHeadersComplete()) {
     return QuicSpdyStream::priority();
@@ -187,10 +199,18 @@ void QuicChromiumClientStream::NotifyDelegateOfHeadersComplete(
   if (!delegate_)
     return;
   // Only mark trailers consumed when we are about to notify delegate.
-  if (headers_delivered_)
+  if (headers_delivered_) {
     MarkTrailersConsumed(decompressed_trailers().length());
+    net_log_.AddEvent(
+        NetLog::TYPE_QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_TRAILERS,
+        base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
+  } else {
+    headers_delivered_ = true;
+    net_log_.AddEvent(
+        NetLog::TYPE_QUIC_CHROMIUM_CLIENT_STREAM_READ_RESPONSE_HEADERS,
+        base::Bind(&SpdyHeaderBlockNetLogCallback, &headers));
+  }
 
-  headers_delivered_ = true;
   delegate_->OnHeadersAvailable(headers, frame_len);
 }
 

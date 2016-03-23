@@ -15,6 +15,8 @@
 #include "net/base/net_errors.h"
 #include "net/http/bidirectional_stream_request_info.h"
 #include "net/http/transport_security_state.h"
+#include "net/log/test_net_log.h"
+#include "net/log/test_net_log_util.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
@@ -272,8 +274,7 @@ class BidirectionalStreamQuicImplTest
   };
 
   BidirectionalStreamQuicImplTest()
-      : net_log_(BoundNetLog()),
-        crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
+      : crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
         read_buffer_(new IOBufferWithSize(4096)),
         connection_id_(2),
         stream_id_(kClientDataStreamId1),
@@ -322,8 +323,8 @@ class BidirectionalStreamQuicImplTest
     socket_data_.reset(new StaticSocketDataProvider(
         nullptr, 0, mock_writes_.get(), writes_.size()));
 
-    MockUDPClientSocket* socket =
-        new MockUDPClientSocket(socket_data_.get(), net_log_.net_log());
+    MockUDPClientSocket* socket = new MockUDPClientSocket(
+        socket_data_.get(), net_log().bound().net_log());
     socket->Connect(peer_addr_);
     runner_ = new TestTaskRunner(&clock_);
     helper_.reset(new QuicChromiumConnectionHelper(runner_.get(), &clock_,
@@ -344,7 +345,7 @@ class BidirectionalStreamQuicImplTest
         /*cert_verify_flags=*/0, DefaultQuicConfig(), &crypto_config_,
         "CONNECTION_UNKNOWN", base::TimeTicks::Now(), &push_promise_index_,
         base::ThreadTaskRunnerHandle::Get().get(),
-        /*socket_performance_watcher=*/nullptr, nullptr));
+        /*socket_performance_watcher=*/nullptr, net_log().bound().net_log()));
     session_->Initialize();
     session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
@@ -458,12 +459,12 @@ class BidirectionalStreamQuicImplTest
                                 !kIncludeCongestionFeedback);
   }
 
-  const BoundNetLog& net_log() const { return net_log_; }
+  const BoundTestNetLog& net_log() const { return net_log_; }
 
   QuicChromiumClientSession* session() const { return session_.get(); }
 
  private:
-  BoundNetLog net_log_;
+  BoundTestNetLog net_log_;
   scoped_refptr<TestTaskRunner> runner_;
   scoped_ptr<MockWrite[]> mock_writes_;
   MockClock clock_;
@@ -510,7 +511,7 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   scoped_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
-  delegate->Start(&request, net_log(), session()->GetWeakPtr());
+  delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnHeadersSent
 
   // Server acks the request.
@@ -565,6 +566,21 @@ TEST_P(BidirectionalStreamQuicImplTest, GetRequest) {
       static_cast<int64_t>(spdy_response_headers_frame_length +
                            strlen(kResponseBody) + spdy_trailers_frame_length),
       delegate->GetTotalReceivedBytes());
+  // Check that NetLog was filled as expected.
+  TestNetLogEntry::List entries;
+  net_log().GetEntries(&entries);
+  size_t pos = ExpectLogContainsSomewhere(
+      entries, /*min_offset=*/0,
+      NetLog::TYPE_QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
+      NetLog::PHASE_NONE);
+  pos = ExpectLogContainsSomewhere(
+      entries, /*min_offset=*/pos,
+      NetLog::TYPE_QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
+      NetLog::PHASE_NONE);
+  ExpectLogContainsSomewhere(
+      entries, /*min_offset=*/pos,
+      NetLog::TYPE_QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
+      NetLog::PHASE_NONE);
 }
 
 TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
@@ -586,7 +602,7 @@ TEST_P(BidirectionalStreamQuicImplTest, PostRequest) {
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   scoped_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
-  delegate->Start(&request, net_log(), session()->GetWeakPtr());
+  delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnHeadersSent
 
   // Send a DATA frame.
@@ -663,7 +679,7 @@ TEST_P(BidirectionalStreamQuicImplTest, InterleaveReadDataAndSendData) {
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   scoped_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
-  delegate->Start(&request, net_log(), session()->GetWeakPtr());
+  delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnHeadersSent
 
   // Server acks the request.
@@ -740,7 +756,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   scoped_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
-  delegate->Start(&request, net_log(), session()->GetWeakPtr());
+  delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnHeadersSent
 
   // Server sends a Rst.
@@ -779,7 +795,7 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   scoped_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
-  delegate->Start(&request, net_log(), session()->GetWeakPtr());
+  delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnHeadersSent
 
   // Server acks the request.
@@ -836,7 +852,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CancelStreamAfterSendData) {
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   scoped_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
-  delegate->Start(&request, net_log(), session()->GetWeakPtr());
+  delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnHeadersSent
 
   // Server acks the request.
@@ -886,7 +902,7 @@ TEST_P(BidirectionalStreamQuicImplTest, SessionClosedBeforeReadData) {
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   scoped_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
-  delegate->Start(&request, net_log(), session()->GetWeakPtr());
+  delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnHeadersSent
 
   // Server acks the request.
@@ -940,7 +956,7 @@ TEST_P(BidirectionalStreamQuicImplTest, CancelStreamAfterReadData) {
   scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
   scoped_ptr<TestDelegateBase> delegate(
       new TestDelegateBase(read_buffer.get(), kReadBufferSize));
-  delegate->Start(&request, net_log(), session()->GetWeakPtr());
+  delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnHeadersSent
 
   // Server acks the request.
@@ -990,7 +1006,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnHeadersReceived) {
   scoped_ptr<DeleteStreamDelegate> delegate(new DeleteStreamDelegate(
       read_buffer.get(), kReadBufferSize,
       DeleteStreamDelegate::ON_HEADERS_RECEIVED, true));
-  delegate->Start(&request, net_log(), session()->GetWeakPtr());
+  delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnHeadersSent
 
   // Server acks the request.
@@ -1033,7 +1049,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnDataRead) {
   scoped_ptr<DeleteStreamDelegate> delegate(
       new DeleteStreamDelegate(read_buffer.get(), kReadBufferSize,
                                DeleteStreamDelegate::ON_DATA_READ, true));
-  delegate->Start(&request, net_log(), session()->GetWeakPtr());
+  delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnHeadersSent
 
   // Server acks the request.
@@ -1085,7 +1101,7 @@ TEST_P(BidirectionalStreamQuicImplTest, DeleteStreamDuringOnTrailersReceived) {
   scoped_ptr<DeleteStreamDelegate> delegate(new DeleteStreamDelegate(
       read_buffer.get(), kReadBufferSize,
       DeleteStreamDelegate::ON_TRAILERS_RECEIVED, true));
-  delegate->Start(&request, net_log(), session()->GetWeakPtr());
+  delegate->Start(&request, net_log().bound(), session()->GetWeakPtr());
   delegate->WaitUntilNextCallback();  // OnHeadersSent
 
   // Server acks the request.
