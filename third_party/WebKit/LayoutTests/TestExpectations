@@ -579,8 +579,6 @@ crbug.com/517840 imported/web-platform-tests/webrtc/rtcpeerconnection/rtcpeercon
 
 # Linux Aura doesn't support NPAPI plugins (yet?)
 crbug.com/318978 [ Linux ] compositing/plugins/invalidate_rect.html [ Skip ]
-crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-navigation-allowed.html [ Skip ]
-crbug.com/318978 [ Linux ] fast/frames/sandboxed-iframe-plugins.html [ Skip ]
 crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-child.html [ Skip ]
 crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Skip ]
 crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-url-01.html [ Skip ]
