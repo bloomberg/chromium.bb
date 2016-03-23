@@ -176,6 +176,7 @@ struct CONTENT_EXPORT WebPreferences {
   bool navigate_on_drag_drop;
   V8CacheOptions v8_cache_options;
   bool inert_visual_viewport;
+  bool record_whole_document;
 
   // This flags corresponds to a Page's Settings' setCookieEnabled state. It
   // only controls whether or not the "document.cookie" field is properly
@@ -218,7 +219,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool clobber_user_agent_initial_scale_quirk;
   bool ignore_main_frame_overflow_hidden_quirk;
   bool report_screen_size_in_physical_pixels_quirk;
-  bool record_whole_document;
   std::string autoplay_experiment_mode;
 #endif
 

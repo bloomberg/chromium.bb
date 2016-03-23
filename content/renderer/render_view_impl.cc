@@ -1031,6 +1031,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->setInertVisualViewport(prefs.inert_visual_viewport);
 
+  settings->setMainFrameClipsContent(!prefs.record_whole_document);
+
   settings->setSmartInsertDeleteEnabled(prefs.smart_insert_delete_enabled);
 
   settings->setSpatialNavigationEnabled(prefs.spatial_navigation_enabled);
@@ -1089,7 +1091,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setReportScreenSizeInPhysicalPixelsQuirk(
       prefs.report_screen_size_in_physical_pixels_quirk);
   settings->setPreferHiddenVolumeControls(true);
-  settings->setMainFrameClipsContent(!prefs.record_whole_document);
   settings->setShrinksViewportContentToFit(true);
   settings->setUseMobileViewportStyle(true);
   settings->setAutoplayExperimentMode(

@@ -159,6 +159,7 @@ WebPreferences::WebPreferences()
       navigate_on_drag_drop(true),
       v8_cache_options(V8_CACHE_OPTIONS_DEFAULT),
       inert_visual_viewport(false),
+      record_whole_document(false),
       cookie_enabled(true),
       pepper_accelerated_video_decode_enabled(false),
       animation_policy(IMAGE_ANIMATION_POLICY_ALLOWED),
@@ -184,7 +185,6 @@ WebPreferences::WebPreferences()
       clobber_user_agent_initial_scale_quirk(false),
       ignore_main_frame_overflow_hidden_quirk(false),
       report_screen_size_in_physical_pixels_quirk(false),
-      record_whole_document(false),
 #endif
 #if defined(OS_ANDROID)
       default_minimum_page_scale_factor(0.25f),
