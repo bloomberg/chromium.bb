@@ -40,34 +40,18 @@ class BluetoothTestMac::ScopedMockCentralManager {
 
 namespace {
 
-CBPeripheral* CreateMockPeripheral(NSString* peripheral_identifier) {
-  Class peripheral_class = NSClassFromString(@"CBPeripheral");
-  id mock_peripheral = [OCMockObject mockForClass:[peripheral_class class]];
-  [[[mock_peripheral stub] andReturnValue:@(CBPeripheralStateDisconnected)]
-      performSelector:@selector(state)];
-  Class uuid_class = NSClassFromString(@"NSUUID");
-  [[[mock_peripheral stub]
-      andReturn:[[uuid_class performSelector:@selector(UUID)]
-                    performSelector:@selector(initWithUUIDString:)
-                         withObject:peripheral_identifier]]
-      performSelector:@selector(identifier)];
-  [[[mock_peripheral stub]
-      andReturn:[NSString stringWithUTF8String:BluetoothTest::kTestDeviceName
-                                                   .c_str()]] name];
-  return mock_peripheral;
-}
-
 NSDictionary* CreateAdvertisementData(NSString* name, NSArray* uuids) {
   NSMutableDictionary* advertisement_data =
       [NSMutableDictionary dictionaryWithDictionary:@{
         CBAdvertisementDataLocalNameKey : name,
-        CBAdvertisementDataServiceDataKey : [NSDictionary dictionary],
+        CBAdvertisementDataServiceDataKey : @{},
         CBAdvertisementDataIsConnectable : @(YES),
       }];
-  if (uuids)
+  if (uuids) {
     [advertisement_data setObject:uuids
                            forKey:CBAdvertisementDataServiceUUIDsKey];
-  return advertisement_data;
+  }
+  return [advertisement_data retain];
 }
 
 }  // namespace
@@ -129,75 +113,60 @@ BluetoothDevice* BluetoothTestMac::DiscoverLowEnergyDevice(int device_ordinal) {
   CBCentralManager* central_manager = adapter_mac_->low_energy_central_manager_;
   BluetoothLowEnergyCentralManagerDelegate* central_manager_delegate =
       adapter_mac_->low_energy_central_manager_delegate_;
-  Class cbuuid_class = NSClassFromString(@"CBUUID");
   switch (device_ordinal) {
     case 1: {
-      CBPeripheral* peripheral = CreateMockPeripheral(
-          [NSString stringWithUTF8String:kTestPeripheralUUID1.c_str()]);
-      NSString* name = [NSString stringWithUTF8String:kTestDeviceName.c_str()];
+      scoped_nsobject<MockCBPeripheral> mock_peripheral(
+          [[MockCBPeripheral alloc]
+              initWithUTF8StringIdentifier:kTestPeripheralUUID1.c_str()]);
       NSArray* uuids = @[
-        [cbuuid_class
-            UUIDWithString:[NSString stringWithUTF8String:kTestUUIDGenericAccess
-                                                              .c_str()]],
-        [cbuuid_class
-            UUIDWithString:[NSString
-                               stringWithUTF8String:kTestUUIDGenericAttribute
-                                                        .c_str()]]
+        [CBUUID UUIDWithString:@(kTestUUIDGenericAccess.c_str())],
+        [CBUUID UUIDWithString:@(kTestUUIDGenericAttribute.c_str())]
       ];
-      NSDictionary* advertisement_data = CreateAdvertisementData(name, uuids);
+      scoped_nsobject<NSDictionary> advertisement_data =
+          CreateAdvertisementData(@(kTestDeviceName.c_str()), uuids);
       [central_manager_delegate centralManager:central_manager
-                         didDiscoverPeripheral:peripheral
+                         didDiscoverPeripheral:mock_peripheral.get().peripheral
                              advertisementData:advertisement_data
                                           RSSI:@(0)];
       break;
     }
     case 2: {
-      CBPeripheral* peripheral = CreateMockPeripheral(
-          [NSString stringWithUTF8String:kTestPeripheralUUID1.c_str()]);
-      NSString* name = [NSString stringWithUTF8String:kTestDeviceName.c_str()];
+      scoped_nsobject<MockCBPeripheral> mock_peripheral(
+          [[MockCBPeripheral alloc]
+              initWithUTF8StringIdentifier:kTestPeripheralUUID1.c_str()]);
       NSArray* uuids = @[
-        [cbuuid_class
-            UUIDWithString:[NSString
-                               stringWithUTF8String:kTestUUIDImmediateAlert
-                                                        .c_str()]],
-        [cbuuid_class
-            UUIDWithString:[NSString
-                               stringWithUTF8String:kTestUUIDLinkLoss.c_str()]]
+        [CBUUID UUIDWithString:@(kTestUUIDImmediateAlert.c_str())],
+        [CBUUID UUIDWithString:@(kTestUUIDLinkLoss.c_str())]
       ];
-      NSDictionary* advertisement_data = CreateAdvertisementData(name, uuids);
+      scoped_nsobject<NSDictionary> advertisement_data =
+          CreateAdvertisementData(@(kTestDeviceName.c_str()), uuids);
       [central_manager_delegate centralManager:central_manager
-                         didDiscoverPeripheral:peripheral
+                         didDiscoverPeripheral:mock_peripheral.get().peripheral
                              advertisementData:advertisement_data
                                           RSSI:@(0)];
       break;
     }
     case 3: {
-      scoped_nsobject<NSString> uuid_string(
-          [[NSString alloc] initWithUTF8String:kTestPeripheralUUID1.c_str()]);
-      scoped_nsobject<NSUUID> identifier(
-          [[NSUUID alloc] initWithUUIDString:uuid_string]);
-      scoped_nsobject<CBPeripheral> peripheral;
-      peripheral.reset(static_cast<CBPeripheral*>(
-          [[MockCBPeripheral alloc] initWithIdentifier:identifier]));
-      scoped_nsobject<NSString> name(
-          [[NSString alloc] initWithUTF8String:kTestDeviceNameEmpty.c_str()]);
+      scoped_nsobject<MockCBPeripheral> mock_peripheral(
+          [[MockCBPeripheral alloc]
+              initWithUTF8StringIdentifier:kTestPeripheralUUID1.c_str()]);
       scoped_nsobject<NSDictionary> advertisement_data(
-          [CreateAdvertisementData(name, nil) retain]);
+          CreateAdvertisementData(@(kTestDeviceNameEmpty.c_str()), nil));
       [central_manager_delegate centralManager:central_manager
-                         didDiscoverPeripheral:peripheral
+                         didDiscoverPeripheral:mock_peripheral.get().peripheral
                              advertisementData:advertisement_data
                                           RSSI:@(0)];
       break;
     }
     case 4: {
-      CBPeripheral* peripheral = CreateMockPeripheral(
-          [NSString stringWithUTF8String:kTestPeripheralUUID2.c_str()]);
-      NSString* name =
-          [NSString stringWithUTF8String:kTestDeviceNameEmpty.c_str()];
+      scoped_nsobject<MockCBPeripheral> mock_peripheral(
+          [[MockCBPeripheral alloc]
+              initWithUTF8StringIdentifier:kTestPeripheralUUID2.c_str()]);
       NSArray* uuids = nil;
-      NSDictionary* advertisement_data = CreateAdvertisementData(name, uuids);
+      scoped_nsobject<NSDictionary> advertisement_data =
+          CreateAdvertisementData(@(kTestDeviceNameEmpty.c_str()), uuids);
       [central_manager_delegate centralManager:central_manager
-                         didDiscoverPeripheral:peripheral
+                         didDiscoverPeripheral:mock_peripheral.get().peripheral
                              advertisementData:advertisement_data
                                           RSSI:@(0)];
       break;

@@ -16,8 +16,14 @@
 @property(nonatomic, readonly) CBPeripheralState state;
 @property(nonatomic, readonly) NSUUID* identifier;
 @property(nonatomic, readonly) NSString* name;
+@property(nonatomic, readonly) CBPeripheral* peripheral;
 
+- (instancetype)init NS_UNAVAILABLE;
 - (instancetype)initWithIdentifier:(NSUUID*)identifier;
+- (instancetype)initWithUTF8StringIdentifier:(const char*)identifier;
+- (instancetype)initWithIdentifier:(NSUUID*)identifier
+                              name:(NSString*)name NS_DESIGNATED_INITIALIZER;
+
 - (void)setState:(CBPeripheralState)state;
 
 @end
