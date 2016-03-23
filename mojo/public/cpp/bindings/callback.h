@@ -5,6 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_CALLBACK_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_CALLBACK_H_
 
+#include <type_traits>
 #include <utility>
 
 #include "base/memory/ref_counted.h"
@@ -46,7 +47,23 @@ class Callback<void(Args...)> {
   // As above, but can take an object that isn't derived from Runnable, so long
   // as it has a compatible operator() or Run() method. operator() will be
   // preferred if the type has both.
-  template <typename Sink>
+  //
+  // The std::enable_if is used to disable this constructor if the argument is
+  // derived from Runnable. This is needed because the compiler will pick this
+  // constructor instead of the Runnable* one above when the argument is of the
+  // type of the derived class instead of down casted to a Runnable. i.e:
+  // class Foo : public Callback::Runnable {
+  //   ...
+  // };
+  // Callback cb(new Foo);
+  //
+  // The call site can fix this by using a static_cast to down cast to a
+  // Runnable*, but that shouldn't be necessary.
+  template <
+      typename Sink,
+      typename std::enable_if<!std::is_base_of<
+          Runnable,
+          typename std::remove_pointer<Sink>::type>::value>::type* = nullptr>
   Callback(const Sink& sink) {
     using sink_type = typename internal::Conditional<
         internal::HasCompatibleCallOperator<Sink, Args...>::value,
