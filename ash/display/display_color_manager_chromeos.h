@@ -14,15 +14,16 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "ui/display/chromeos/display_configurator.h"
-#include "ui/gfx/display.h"
-#include "ui/gfx/display_observer.h"
+#include "ui/display/types/display_constants.h"
 
 namespace base {
 class SequencedWorkerPool;
 }
 
 namespace ui {
+class DisplaySnapshot;
 struct GammaRampRGBEntry;
 }  // namespace ui
 
@@ -31,8 +32,7 @@ namespace ash {
 // An object that observes changes in display configuration applies any color
 // calibration where needed.
 class ASH_EXPORT DisplayColorManager
-    : public ui::DisplayConfigurator::Observer,
-      public base::SupportsWeakPtr<DisplayColorManager> {
+    : public ui::DisplayConfigurator::Observer {
  public:
   DisplayColorManager(ui::DisplayConfigurator* configurator,
                       base::SequencedWorkerPool* blocking_pool);
@@ -52,18 +52,27 @@ class ASH_EXPORT DisplayColorManager
     std::vector<ui::GammaRampRGBEntry> lut;
   };
 
+ protected:
+  virtual void FinishLoadCalibrationForDisplay(int64_t display_id,
+                                               int64_t product_id,
+                                               ui::DisplayConnectionType type,
+                                               const base::FilePath& path,
+                                               bool file_downloaded);
+  virtual void UpdateCalibrationData(int64_t display_id,
+                                     int64_t product_id,
+                                     scoped_ptr<ColorCalibrationData> data);
+
  private:
   void ApplyDisplayColorCalibration(int64_t display_id, int64_t product_id);
   void LoadCalibrationForDisplay(const ui::DisplaySnapshot* display);
-  void UpdateCalibrationData(
-      int64_t display_id,
-      int64_t product_id,
-      scoped_ptr<DisplayColorManager::ColorCalibrationData> data,
-      bool success);
 
   ui::DisplayConfigurator* configurator_;
   std::map<int64_t, ColorCalibrationData*> calibration_map_;
+  base::ThreadChecker thread_checker_;
   base::SequencedWorkerPool* blocking_pool_;
+
+  // Factory for callbacks.
+  base::WeakPtrFactory<DisplayColorManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayColorManager);
 };

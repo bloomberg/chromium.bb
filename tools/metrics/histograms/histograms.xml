@@ -73175,6 +73175,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-351127770" label="enable-offline-pages-as-bookmarks"/>
   <int value="-349057743" label="extensions-on-chrome-urls"/>
   <int value="-345838366" label="enable-hosted-apps-in-windows"/>
+  <int value="-345324571" label="enable-quirks-client"/>
   <int value="-344343842" label="disable-experimental-app-list"/>
   <int value="-340622848" label="disable-javascript-harmony-shipping"/>
   <int value="-340255045" label="allow-nacl-socket-api"/>

@@ -13,6 +13,8 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "chromeos/chromeos_paths.h"
+#include "components/quirks/quirks_manager.h"
+#include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/chromeos/test/action_logger_util.h"
 #include "ui/display/chromeos/test/test_display_snapshot.h"
@@ -22,30 +24,79 @@ namespace ash {
 
 namespace {
 
-// Monitors if any task is processed by the message loop.
-class TaskObserver : public base::MessageLoop::TaskObserver {
- public:
-  TaskObserver() { base::MessageLoop::current()->AddTaskObserver(this); }
-  ~TaskObserver() override {
-    base::MessageLoop::current()->RemoveTaskObserver(this);
-  }
+const char kSetGammaAction[] =
+    "set_gamma_ramp(id=123,rgb[0]*rgb[255]=???????????\?)";
 
-  // MessageLoop::TaskObserver overrides.
-  void WillProcessTask(const base::PendingTask& pending_task) override {}
-  void DidProcessTask(const base::PendingTask& pending_task) override {
-    base::MessageLoop::current()->QuitWhenIdle();
+class DisplayColorManagerForTest : public DisplayColorManager {
+ public:
+  DisplayColorManagerForTest(ui::DisplayConfigurator* configurator,
+                             base::SequencedWorkerPool* blocking_pool)
+      : DisplayColorManager(configurator, blocking_pool) {}
+
+  void SetOnFinishedForTest(base::Closure on_finished_for_test) {
+    on_finished_for_test_ = on_finished_for_test;
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TaskObserver);
+  void FinishLoadCalibrationForDisplay(int64_t display_id,
+                                       int64_t product_id,
+                                       ui::DisplayConnectionType type,
+                                       const base::FilePath& path,
+                                       bool file_downloaded) override {
+    DisplayColorManager::FinishLoadCalibrationForDisplay(
+        display_id, product_id, type, path, file_downloaded);
+    // If path is empty, there is no icc file, and the DCM's work is done.
+    if (path.empty() && !on_finished_for_test_.is_null()) {
+      on_finished_for_test_.Run();
+      on_finished_for_test_.Reset();
+    }
+  }
+
+  void UpdateCalibrationData(int64_t display_id,
+                             int64_t product_id,
+                             scoped_ptr<ColorCalibrationData> data) override {
+    DisplayColorManager::UpdateCalibrationData(display_id, product_id,
+                                               std::move(data));
+    if (!on_finished_for_test_.is_null()) {
+      on_finished_for_test_.Run();
+      on_finished_for_test_.Reset();
+    }
+  }
+
+  base::Closure on_finished_for_test_;
+
+  DISALLOW_COPY_AND_ASSIGN(DisplayColorManagerForTest);
 };
 
-// Run at least one task. WARNING: Will not return unless there is at least one
-// task to be processed.
-void RunBlockingPoolTask() {
-  TaskObserver task_observer;
-  base::RunLoop().Run();
-}
+// Implementation of QuirksManager::Delegate to fake chrome-restricted parts.
+class QuirksManagerDelegateTestImpl : public quirks::QuirksManager::Delegate {
+ public:
+  QuirksManagerDelegateTestImpl(base::FilePath color_path)
+      : color_path_(color_path) {}
+
+  // Unused by these tests.
+  std::string GetApiKey() const override { return std::string(); }
+
+  base::FilePath GetBuiltInDisplayProfileDirectory() const override {
+    return color_path_;
+  }
+
+  // Unused by these tests.
+  base::FilePath GetDownloadDisplayProfileDirectory() const override {
+    return base::FilePath();
+  }
+
+  // Unused by these tests.
+  void GetDaysSinceOobe(
+      quirks::QuirksManager::DaysSinceOobeCallback callback) const override {}
+
+ private:
+  ~QuirksManagerDelegateTestImpl() override = default;
+
+  base::FilePath color_path_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuirksManagerDelegateTestImpl);
+};
 
 }  // namespace
 
@@ -61,8 +112,8 @@ class DisplayColorManagerTest : public testing::Test {
     configurator_.SetDelegateForTesting(
         scoped_ptr<ui::NativeDisplayDelegate>(native_display_delegate_));
 
-    color_manager_.reset(
-        new DisplayColorManager(&configurator_, pool_owner_->pool().get()));
+    color_manager_.reset(new DisplayColorManagerForTest(
+        &configurator_, pool_owner_->pool().get()));
 
     EXPECT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &color_path_));
 
@@ -71,9 +122,23 @@ class DisplayColorManagerTest : public testing::Test {
                       .Append(FILE_PATH_LITERAL("test_data"));
     path_override_.reset(new base::ScopedPathOverride(
         chromeos::DIR_DEVICE_COLOR_CALIBRATION_PROFILES, color_path_));
+
+    quirks::QuirksManager::Initialize(
+        scoped_ptr<quirks::QuirksManager::Delegate>(
+            new QuirksManagerDelegateTestImpl(color_path_)),
+        pool_owner_->pool().get(), nullptr, nullptr);
   }
 
-  void TearDown() override { pool_owner_->pool()->Shutdown(); }
+  void TearDown() override {
+    quirks::QuirksManager::Shutdown();
+    pool_owner_->pool()->Shutdown();
+  }
+
+  void WaitOnColorCalibration() {
+    base::RunLoop run_loop;
+    color_manager_->SetOnFinishedForTest(run_loop.QuitClosure());
+    run_loop.Run();
+  }
 
   DisplayColorManagerTest() : test_api_(&configurator_) {}
   ~DisplayColorManagerTest() override {}
@@ -85,7 +150,7 @@ class DisplayColorManagerTest : public testing::Test {
   ui::DisplayConfigurator configurator_;
   ui::DisplayConfigurator::TestApi test_api_;
   ui::test::TestNativeDisplayDelegate* native_display_delegate_;  // not owned
-  scoped_ptr<DisplayColorManager> color_manager_;
+  scoped_ptr<DisplayColorManagerForTest> color_manager_;
 
   base::MessageLoopForUI ui_message_loop_;
   scoped_ptr<base::SequencedWorkerPoolOwner> pool_owner_;
@@ -114,13 +179,10 @@ TEST_F(DisplayColorManagerTest, VCGTOnly) {
 
   configurator_.OnConfigurationChanged();
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
+
   log_->GetActionsAndClear();
-
-  RunBlockingPoolTask();
-
-  EXPECT_TRUE(base::MatchPattern(
-      log_->GetActionsAndClear(),
-      "set_gamma_ramp(id=123,rgb[0]*rgb[255]=???????????\?)"));
+  WaitOnColorCalibration();
+  EXPECT_TRUE(base::MatchPattern(log_->GetActionsAndClear(), kSetGammaAction));
 }
 
 TEST_F(DisplayColorManagerTest, NoMatchProductID) {
@@ -145,7 +207,7 @@ TEST_F(DisplayColorManagerTest, NoMatchProductID) {
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
 
   log_->GetActionsAndClear();
-  RunBlockingPoolTask();
+  WaitOnColorCalibration();
   EXPECT_STREQ("", log_->GetActionsAndClear().c_str());
 }
 
@@ -171,7 +233,7 @@ TEST_F(DisplayColorManagerTest, NoVCGT) {
   EXPECT_TRUE(test_api_.TriggerConfigureTimeout());
 
   log_->GetActionsAndClear();
-  RunBlockingPoolTask();
+  WaitOnColorCalibration();
   EXPECT_STREQ("", log_->GetActionsAndClear().c_str());
 }
 

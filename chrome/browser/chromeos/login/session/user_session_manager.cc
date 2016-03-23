@@ -99,6 +99,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/quirks/quirks_manager.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -1176,6 +1177,9 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   // Now that profile is ready, proceed to either alternative login flows or
   // launch browser.
   bool browser_launched = InitializeUserSession(profile);
+
+  // Only allow Quirks downloads after login is finished.
+  quirks::QuirksManager::Get()->OnLoginCompleted();
 
   // If needed, create browser observer to display first run OOBE Goodies page.
   first_run::GoodiesDisplayer::Init();

@@ -47,11 +47,14 @@ const base::FilePath::CharType kDeviceLocalAccountExternalDataDir[] =
 const base::FilePath::CharType kDeviceLocalAccountComponentPolicy[] =
     FILE_PATH_LITERAL("/var/cache/device_local_account_component_policy");
 
-const base::FilePath::CharType kDeviceExtensionLocalCache[] =
-    FILE_PATH_LITERAL("/var/cache/external_cache");
+const base::FilePath::CharType kDeviceDisplayProfileDirectory[] =
+    FILE_PATH_LITERAL("/var/cache/display_profiles");
 
 const base::FilePath::CharType kDeviceColorProfileDirectory[] =
     FILE_PATH_LITERAL("/usr/share/color/icc");
+
+const base::FilePath::CharType kDeviceExtensionLocalCache[] =
+    FILE_PATH_LITERAL("/var/cache/external_cache");
 
 bool PathProvider(int key, base::FilePath* result) {
   switch (key) {
@@ -84,6 +87,9 @@ bool PathProvider(int key, base::FilePath* result) {
       break;
     case DIR_DEVICE_LOCAL_ACCOUNT_COMPONENT_POLICY:
       *result = base::FilePath(kDeviceLocalAccountComponentPolicy);
+      break;
+    case DIR_DEVICE_DISPLAY_PROFILES:
+      *result = base::FilePath(kDeviceDisplayProfileDirectory);
       break;
     case DIR_DEVICE_COLOR_CALIBRATION_PROFILES:
       *result = base::FilePath(kDeviceColorProfileDirectory);

@@ -135,6 +135,8 @@
         'browser/chromeos/display/output_protection_delegate.h',
         'browser/chromeos/display/overscan_calibrator.cc',
         'browser/chromeos/display/overscan_calibrator.h',
+        'browser/chromeos/display/quirks_manager_delegate_impl.cc',
+        'browser/chromeos/display/quirks_manager_delegate_impl.h',
         'browser/chromeos/drive/debug_info_collector.cc',
         'browser/chromeos/drive/debug_info_collector.h',
         'browser/chromeos/drive/download_handler.cc',
@@ -1162,6 +1164,7 @@
         '../components/components.gyp:pairing',
         '../components/components.gyp:policy',
         '../components/components.gyp:proxy_config',
+        '../components/components.gyp:quirks',
         '../components/components.gyp:ssl_config',
         '../components/components.gyp:user_manager',
         # This depends directly on the variations target, rather than just

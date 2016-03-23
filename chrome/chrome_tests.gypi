@@ -706,6 +706,7 @@
       'browser/chromeos/customization/customization_document_browsertest.cc',
       'browser/chromeos/customization/customization_wallpaper_downloader_browsertest.cc',
       'browser/chromeos/device/input_service_proxy_browsertest.cc',
+      'browser/chromeos/display/quirks_browsertest.cc',
       'browser/chromeos/drive/drive_integration_service_browsertest.cc',
       'browser/chromeos/extensions/accessibility_features_apitest.cc',
       'browser/chromeos/extensions/echo_private_apitest.cc',

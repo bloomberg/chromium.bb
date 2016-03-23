@@ -155,6 +155,7 @@
       'includes': [
         'arc.gypi',
         'pairing.gypi',
+        'quirks.gypi',
         'timers.gypi',
         'wifi_sync.gypi',
       ],

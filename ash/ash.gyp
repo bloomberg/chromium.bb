@@ -1028,6 +1028,7 @@
             '../chromeos/chromeos.gyp:chromeos',
             # Ash #includes power_supply_properties.pb.h directly.
             '../chromeos/chromeos.gyp:power_manager_proto',
+            '../components/components.gyp:quirks',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../third_party/qcms/qcms.gyp:qcms',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
@@ -1230,6 +1231,7 @@
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos_test_support_without_gmock',
             '../chromeos/chromeos.gyp:power_manager_proto',
+            '../components/components.gyp:quirks',
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../ui/display/display.gyp:display',
             '../ui/display/display.gyp:display_test_support',

@@ -105,6 +105,7 @@ component("ash") {
     deps += [
       "//chromeos",
       "//chromeos:power_manager_proto",
+      "//components/quirks",
       "//device/bluetooth",
 
       # TODO(msw): Remove this; only ash_with_content should depend on webkit.
@@ -425,7 +426,9 @@ test("ash_unittests") {
       "//chromeos",
       "//chromeos:power_manager_proto",
       "//chromeos:test_support_without_gmock",
+      "//components/quirks",
       "//device/bluetooth",
+      "//net:net",
       "//ui/chromeos:ui_chromeos",
       "//ui/display",
       "//ui/display:test_support",

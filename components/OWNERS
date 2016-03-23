@@ -153,6 +153,8 @@ per-file proxy_config.gypi=file://components/proxy_config/OWNERS
 
 per-file query_parser.gypi=file://components/query_parser/OWNERS
 
+per-file quirks.gypi=file://components/quirks/OWNERS
+
 per-file rappor.gypi=file://components/rappor/OWNERS
 
 per-file renderer_context_menu.gypi=file://components/renderer_context_menu/OWNERS

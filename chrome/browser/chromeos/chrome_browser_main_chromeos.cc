@@ -39,6 +39,7 @@
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolver_delegate.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
+#include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
 #include "chrome/browser/chromeos/events/event_rewriter.h"
 #include "chrome/browser/chromeos/events/event_rewriter_controller.h"
 #include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
@@ -398,6 +399,13 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   CrasAudioHandler::Initialize(
       new AudioDevicesPrefHandlerImpl(g_browser_process->local_state()));
+
+  quirks::QuirksManager::Initialize(
+      scoped_ptr<quirks::QuirksManager::Delegate>(
+          new quirks::QuirksManagerDelegateImpl()),
+      content::BrowserThread::GetBlockingPool(),
+      g_browser_process->local_state(),
+      g_browser_process->system_request_context());
 
   // Start loading machine statistics here. StatisticsProvider::Shutdown()
   // will ensure that loading is aborted on early exit.
@@ -847,6 +855,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   // Shutdown after PostMainMessageLoopRun() which should destroy all observers.
   CrasAudioHandler::Shutdown();
+
+  quirks::QuirksManager::Shutdown();
 
   // Called after
   // ChromeBrowserMainPartsLinux::PostMainMessageLoopRun() to be

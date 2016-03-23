@@ -195,6 +195,7 @@
 #include "chromeos/audio/audio_devices_pref_handler_impl.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/invalidation/impl/invalidator_storage.h"
+#include "components/quirks/quirks_manager.h"
 #else
 #include "chrome/browser/extensions/default_apps.h"
 #endif
@@ -371,6 +372,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::StartupUtils::RegisterPrefs(registry);
   chromeos::system::AutomaticRebootManager::RegisterPrefs(registry);
   chromeos::system::InputDeviceSettings::RegisterPrefs(registry);
+  chromeos::TimeZoneResolver::RegisterPrefs(registry);
   chromeos::UserImageManager::RegisterPrefs(registry);
   chromeos::UserSessionManager::RegisterPrefs(registry);
   chromeos::WallpaperManager::RegisterPrefs(registry);
@@ -383,7 +385,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::DeviceCloudPolicyManagerChromeOS::RegisterPrefs(registry);
   policy::DeviceStatusCollector::RegisterPrefs(registry);
   policy::PolicyCertServiceFactory::RegisterPrefs(registry);
-  chromeos::TimeZoneResolver::RegisterPrefs(registry);
+  quirks::QuirksManager::RegisterPrefs(registry);
 #endif
 
 #if defined(OS_MACOSX)

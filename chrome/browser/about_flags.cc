@@ -48,6 +48,7 @@
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/proximity_auth/switches.h"
+#include "components/quirks/switches.h"
 #include "components/search/search_switches.h"
 #include "components/security_state/switches.h"
 #include "components/signin/core/common/signin_switches.h"
@@ -835,6 +836,11 @@ const FeatureEntry kFeatureEntries[] = {
         IDS_FLAGS_DISPLAY_COLOR_CALIBRATION_DESCRIPTION, kOsCrOS,
         SINGLE_DISABLE_VALUE_TYPE(
             ui::switches::kDisableDisplayColorCalibration),
+    },
+    {
+        "enable-quirks-client", IDS_FLAGS_ENABLE_QUIRKS_CLIENT_NAME,
+        IDS_FLAGS_ENABLE_QUIRKS_CLIENT_DESCRIPTION, kOsCrOS,
+        SINGLE_VALUE_TYPE(quirks::switches::kEnableQuirksClient),
     },
     {
         "ash-disable-screen-orientation-lock",
