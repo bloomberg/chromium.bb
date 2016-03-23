@@ -245,7 +245,7 @@ void BrowserPolicyConnectorChromeOS::Shutdown() {
   ChromeBrowserPolicyConnector::Shutdown();
 }
 
-bool BrowserPolicyConnectorChromeOS::IsEnterpriseManaged() {
+bool BrowserPolicyConnectorChromeOS::IsEnterpriseManaged() const {
   return install_attributes_ && install_attributes_->IsEnterpriseDevice();
 }
 
@@ -253,7 +253,7 @@ std::string BrowserPolicyConnectorChromeOS::GetEnterpriseDomain() const {
   return install_attributes_ ? install_attributes_->GetDomain() : std::string();
 }
 
-std::string BrowserPolicyConnectorChromeOS::GetDeviceAssetID() {
+std::string BrowserPolicyConnectorChromeOS::GetDeviceAssetID() const {
   if (device_cloud_policy_manager_) {
     const enterprise_management::PolicyData* policy =
         device_cloud_policy_manager_->device_store()->policy();
@@ -263,7 +263,7 @@ std::string BrowserPolicyConnectorChromeOS::GetDeviceAssetID() {
   return std::string();
 }
 
-std::string BrowserPolicyConnectorChromeOS::GetDirectoryApiID() {
+std::string BrowserPolicyConnectorChromeOS::GetDirectoryApiID() const {
   if (device_cloud_policy_manager_) {
     const enterprise_management::PolicyData* policy =
         device_cloud_policy_manager_->device_store()->policy();
@@ -273,7 +273,7 @@ std::string BrowserPolicyConnectorChromeOS::GetDirectoryApiID() {
   return std::string();
 }
 
-DeviceMode BrowserPolicyConnectorChromeOS::GetDeviceMode() {
+DeviceMode BrowserPolicyConnectorChromeOS::GetDeviceMode() const {
   return install_attributes_ ? install_attributes_->GetMode()
                              : DEVICE_MODE_NOT_SET;
 }

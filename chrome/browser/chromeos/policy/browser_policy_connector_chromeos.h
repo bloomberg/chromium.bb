@@ -39,7 +39,7 @@ class NetworkConfigurationUpdater;
 class ProxyPolicyProvider;
 class ServerBackedStateKeysBroker;
 
-// Extends ChromeBrowserPolicyConnector with the setup specific to ChromeOS.
+// Extends ChromeBrowserPolicyConnector with the setup specific to Chrome OS.
 class BrowserPolicyConnectorChromeOS
     : public ChromeBrowserPolicyConnector,
       public DeviceCloudPolicyManagerChromeOS::Observer {
@@ -62,45 +62,45 @@ class BrowserPolicyConnectorChromeOS
 
   // Returns true if this device is managed by an enterprise (as opposed to
   // a local owner).
-  bool IsEnterpriseManaged();
+  bool IsEnterpriseManaged() const;
 
   // Returns the enterprise domain if device is managed.
   std::string GetEnterpriseDomain() const;
 
   // Returns the device asset ID if it is set.
-  std::string GetDeviceAssetID();
+  std::string GetDeviceAssetID() const;
 
   // Returns the cloud directory API ID or an empty string if it is not set.
-  std::string GetDirectoryApiID();
+  std::string GetDirectoryApiID() const;
 
-  // Returns the device mode. For ChromeOS this function will return the mode
+  // Returns the device mode. For Chrome OS this function will return the mode
   // stored in the lockbox, or DEVICE_MODE_CONSUMER if the lockbox has been
   // locked empty, or DEVICE_MODE_UNKNOWN if the device has not been owned yet.
   // For other OSes the function will always return DEVICE_MODE_CONSUMER.
-  DeviceMode GetDeviceMode();
+  DeviceMode GetDeviceMode() const;
 
   // Get the enrollment configuration for the device as decided by various
   // factors. See DeviceCloudPolicyInitializer::GetPrescribedEnrollmentConfig()
   // for details.
   EnrollmentConfig GetPrescribedEnrollmentConfig() const;
 
-  DeviceCloudPolicyManagerChromeOS* GetDeviceCloudPolicyManager() {
+  DeviceCloudPolicyManagerChromeOS* GetDeviceCloudPolicyManager() const {
     return device_cloud_policy_manager_;
   }
 
-  DeviceCloudPolicyInitializer* GetDeviceCloudPolicyInitializer() {
+  DeviceCloudPolicyInitializer* GetDeviceCloudPolicyInitializer() const {
     return device_cloud_policy_initializer_.get();
   }
 
-  DeviceLocalAccountPolicyService* GetDeviceLocalAccountPolicyService() {
+  DeviceLocalAccountPolicyService* GetDeviceLocalAccountPolicyService() const {
     return device_local_account_policy_service_.get();
   }
 
-  EnterpriseInstallAttributes* GetInstallAttributes() {
+  EnterpriseInstallAttributes* GetInstallAttributes() const {
     return install_attributes_.get();
   }
 
-  ServerBackedStateKeysBroker* GetStateKeysBroker() {
+  ServerBackedStateKeysBroker* GetStateKeysBroker() const {
     return state_keys_broker_.get();
   }
 
