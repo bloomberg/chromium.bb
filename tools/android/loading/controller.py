@@ -74,6 +74,11 @@ class ChromeControllerBase(object):
     self._chrome_args.append(arg)
 
   def SetClearCache(self, clear_cache=True):
+    """Ensure cache is cleared before running.
+
+    Args:
+      clear_cache: true if cache should be cleared.
+    """
     self._clear_cache = clear_cache
 
   @contextlib.contextmanager
@@ -287,10 +292,19 @@ class LocalChromeController(ChromeControllerBase):
     self._using_temp_profile_dir = self._profile_dir is None
     if self._using_temp_profile_dir:
       self._profile_dir = tempfile.mkdtemp(suffix='.profile')
+    self._headless = False
 
   def __del__(self):
     if self._using_temp_profile_dir:
       shutil.rmtree(self._profile_dir)
+
+  def SetHeadless(self, headless=True):
+    """Set a headless run.
+
+    Args:
+      headless: true if the chrome instance should be headless.
+    """
+    self._headless = headless
 
   @contextlib.contextmanager
   def Open(self):
@@ -305,7 +319,7 @@ class LocalChromeController(ChromeControllerBase):
     chrome_cmd.append('about:blank')
     chrome_out = None if OPTIONS.local_noisy else file('/dev/null', 'w')
     environment = os.environ.copy()
-    if OPTIONS.headless:
+    if self._headless:
       environment['DISPLAY'] = 'localhost:99'
       xvfb_process = subprocess.Popen(
           ['Xvfb', ':99', '-screen', '0', '1600x1200x24'], shell=False,
@@ -331,7 +345,7 @@ class LocalChromeController(ChromeControllerBase):
     finally:
       if connection:
         chrome_process.kill()
-      if OPTIONS.headless:
+      if self._headless:
         xvfb_process.kill()
 
   def PushBrowserCache(self, cache_path):

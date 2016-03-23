@@ -41,7 +41,7 @@ import urlparse
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from device_setup import DeviceConnection
+import controller
 import loading_trace
 import options
 import trace_recorder
@@ -211,7 +211,7 @@ class InitiatorSequence(object):
     return short
 
 
-def RunTest(webserver, connection, test_page, expected):
+def RunTest(webserver, test_page, expected):
   """Run an webserver test.
 
   The expected result can be None, in which case --failed_trace_dir can be set
@@ -220,7 +220,6 @@ def RunTest(webserver, connection, test_page, expected):
   Args:
     webserver [WebServer]: the webserver to use for the test. It must be
       started.
-    connection [DevToolsConnection]: the connection to trace against.
     test_page: the name of the page to load.
     expected [InitiatorSequence]: expected initiator sequence.
 
@@ -229,8 +228,10 @@ def RunTest(webserver, connection, test_page, expected):
   """
   url = 'http://%s/%s' % (webserver.Address(), test_page)
   sys.stdout.write('Testing %s...' % url)
-  observed_seq = InitiatorSequence(trace_recorder.MonitorUrl(
-      connection, url, clear_cache=True))
+  chrome_controller = controller.LocalChromeController()
+  chrome_controller.SetClearCache()
+  observed_seq = InitiatorSequence(
+      loading_trace.LoadingTrace.FromUrlAndController(url, chrome_controller))
   if observed_seq == expected:
     sys.stdout.write(' ok\n')
     return True
@@ -251,12 +252,16 @@ def RunAllTests():
   All tests must have a corresponding result in RESULTDIR unless
   --failed_trace_dir is set.
   """
+  test_filter = set(OPTIONS.test_filter.split(',')) \
+      if OPTIONS.test_filter else None
+
   with TemporaryDirectory() as temp_dir, \
-       WebServer.Context(TESTDIR, temp_dir) as webserver, \
-       DeviceConnection(None) as connection:
+       WebServer.Context(TESTDIR, temp_dir) as webserver:
     failure = False
     for test in sorted(os.listdir(TESTDIR)):
       if test.endswith('.html'):
+        if test_filter and test not in test_filter:
+          continue
         result = os.path.join(RESULTDIR, test[:test.rfind('.')] + '.result')
         assert OPTIONS.failed_trace_dir or os.path.exists(result), \
             'No result found for test'
@@ -264,7 +269,7 @@ def RunAllTests():
         if os.path.exists(result):
           with file(result) as result_file:
             expected = InitiatorSequence.ReadFromFile(result_file)
-        if not RunTest(webserver, connection, test, expected):
+        if not RunTest(webserver, test, expected):
           failure = True
   if failure:
     print 'FAILED!'
@@ -276,5 +281,6 @@ if __name__ == '__main__':
   OPTIONS.ParseArgs(sys.argv[1:],
                     description='Run webserver integration test',
                     extra=[('--failed_trace_dir', ''),
-                           ('--noisy', False)])
+                           ('--noisy', False),
+                           ('--test_filter', None)])
   RunAllTests()

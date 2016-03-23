@@ -110,6 +110,7 @@ def _LogRequests(url, clear_cache_override=None):
   """
   if OPTIONS.local:
     chrome_ctl = controller.LocalChromeController()
+    chrome_ctl.SetHeadless(OPTIONS.headless)
   else:
     chrome_ctl = controller.RemoteChromeController(
         device_setup.GetFirstDevice())
