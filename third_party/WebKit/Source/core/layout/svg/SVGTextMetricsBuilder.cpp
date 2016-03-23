@@ -161,12 +161,7 @@ unsigned SVGTextMetricsCalculator::updateSubrunRangesForCurrentPosition()
         }
     }
 
-    // TODO(pdr): m_subrunRanges can be too short in the presence of invalid
-    // unicode characters (see: crbug.com/595960). This is a temporary
-    // workaround to ensure the returned index is valid for m_subrunRages.
-    if (positionInRun >= m_subrunRanges.size())
-        return 0;
-
+    ASSERT(m_subrunRanges.size() && positionInRun < m_subrunRanges.size());
     return positionInRun;
 }
 
