@@ -34,6 +34,8 @@
 
 namespace blink {
 
+namespace {
+
 class SVGTextMetricsCalculator {
 public:
     SVGTextMetricsCalculator(LayoutSVGInlineText*);
@@ -62,6 +64,8 @@ public:
 private:
     void setupBidiRuns();
 
+    static TextRun constructTextRun(LineLayoutSVGInlineText, unsigned position, unsigned length, TextDirection);
+
     // Ensure |m_subrunRanges| is updated for the current bidi run, or the
     // complete m_run if no bidi runs are present. Returns the current position
     // in the subrun which can be used to index into |m_subrunRanges|.
@@ -80,10 +84,38 @@ private:
     Vector<CharacterRange> m_subrunRanges;
 };
 
+TextRun SVGTextMetricsCalculator::constructTextRun(LineLayoutSVGInlineText textLayoutItem, unsigned position, unsigned length, TextDirection textDirection)
+{
+    const ComputedStyle& style = textLayoutItem.styleRef();
+
+    TextRun run(static_cast<const LChar*>(nullptr) // characters, will be set below if non-zero.
+        , 0 // length, will be set below if non-zero.
+        , 0 // xPos, only relevant with allowTabs=true
+        , 0 // padding, only relevant for justified text, not relevant for SVG
+        , TextRun::AllowTrailingExpansion
+        , textDirection
+        , isOverride(style.unicodeBidi()) /* directionalOverride */);
+
+    if (length) {
+        if (textLayoutItem.is8Bit())
+            run.setText(textLayoutItem.characters8() + position, length);
+        else
+            run.setText(textLayoutItem.characters16() + position, length);
+    }
+
+    // We handle letter & word spacing ourselves.
+    run.disableSpacing();
+
+    // Propagate the maximum length of the characters buffer to the TextRun, even when we're only processing a substring.
+    run.setCharactersLength(textLayoutItem.textLength() - position);
+    ASSERT(run.charactersLength() >= run.length());
+    return run;
+}
+
 SVGTextMetricsCalculator::SVGTextMetricsCalculator(LayoutSVGInlineText* text)
     : m_currentPosition(0)
     , m_text(LineLayoutSVGInlineText(text))
-    , m_run(SVGTextMetrics::constructTextRun(m_text, 0, m_text.textLength(), m_text.styleRef().direction()))
+    , m_run(constructTextRun(m_text, 0, m_text.textLength(), m_text.styleRef().direction()))
     , m_bidiRun(nullptr)
 {
     setupBidiRuns();
@@ -133,7 +165,7 @@ unsigned SVGTextMetricsCalculator::updateSubrunRangesForCurrentPosition()
         unsigned subrunStart = m_bidiRun ? m_bidiRun->start() : 0;
         unsigned subrunEnd = m_bidiRun ? m_bidiRun->stop() : m_run.charactersLength();
         TextDirection subrunDirection = m_bidiRun ? m_bidiRun->direction() : m_text.styleRef().direction();
-        TextRun subRun = SVGTextMetrics::constructTextRun(m_text, subrunStart, subrunEnd - subrunStart, subrunDirection);
+        TextRun subRun = constructTextRun(m_text, subrunStart, subrunEnd - subrunStart, subrunDirection);
         m_subrunRanges = m_text.scaledFont().individualCharacterRanges(subRun);
 
         // TODO(pdr): We only have per-glyph data so we need to synthesize per-
@@ -217,7 +249,7 @@ struct UpdateAttributes {
     const SVGCharacterDataMap* allCharactersMap;
 };
 
-static void walkInlineText(LayoutSVGInlineText* text, TreeWalkTextState& textState, UpdateAttributes* attributesToUpdate = nullptr)
+void walkInlineText(LayoutSVGInlineText* text, TreeWalkTextState& textState, UpdateAttributes* attributesToUpdate = nullptr)
 {
     if (attributesToUpdate)
         attributesToUpdate->clearExistingAttributes();
@@ -255,7 +287,7 @@ static void walkInlineText(LayoutSVGInlineText* text, TreeWalkTextState& textSta
     textState.valueListPosition += calculator.currentPosition() - skippedWhitespace;
 }
 
-static void walkTree(LayoutSVGText* start, LayoutSVGInlineText* stopAtText, SVGCharacterDataMap* allCharactersMap = nullptr)
+void walkTree(LayoutSVGText* start, LayoutSVGInlineText* stopAtText, SVGCharacterDataMap* allCharactersMap = nullptr)
 {
     TreeWalkTextState textState;
     LayoutObject* child = start->firstChild();
@@ -278,6 +310,8 @@ static void walkTree(LayoutSVGText* start, LayoutSVGInlineText* stopAtText, SVGC
         child = child->nextInPreOrderAfterChildren(start);
     }
 }
+
+} // namespace
 
 void SVGTextMetricsBuilder::measureTextLayoutObject(LayoutSVGInlineText* text)
 {

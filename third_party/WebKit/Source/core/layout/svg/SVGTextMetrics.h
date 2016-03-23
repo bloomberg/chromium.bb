@@ -20,14 +20,12 @@
 #ifndef SVGTextMetrics_h
 #define SVGTextMetrics_h
 
-#include "platform/text/TextDirection.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
 
 enum class FontOrientation;
 class LineLayoutSVGInlineText;
-class TextRun;
 
 class SVGTextMetrics {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
@@ -39,8 +37,6 @@ public:
     SVGTextMetrics();
     SVGTextMetrics(MetricsType);
     SVGTextMetrics(LineLayoutSVGInlineText, unsigned length, float width);
-
-    static TextRun constructTextRun(LineLayoutSVGInlineText, unsigned position, unsigned length, TextDirection);
 
     bool isEmpty() const { return !m_width && !m_height && m_length <= 1; }
 

@@ -20,7 +20,6 @@
 #include "core/layout/svg/SVGTextMetrics.h"
 
 #include "core/layout/api/LineLayoutSVGInlineText.h"
-#include "core/layout/svg/LayoutSVGInlineText.h"
 #include "platform/fonts/FontOrientation.h"
 
 namespace blink {
@@ -37,34 +36,6 @@ SVGTextMetrics::SVGTextMetrics(SVGTextMetrics::MetricsType)
     , m_height(0)
     , m_length(1)
 {
-}
-
-TextRun SVGTextMetrics::constructTextRun(LineLayoutSVGInlineText textLayoutItem, unsigned position, unsigned length, TextDirection textDirection)
-{
-    const ComputedStyle& style = textLayoutItem.styleRef();
-
-    TextRun run(static_cast<const LChar*>(nullptr) // characters, will be set below if non-zero.
-        , 0 // length, will be set below if non-zero.
-        , 0 // xPos, only relevant with allowTabs=true
-        , 0 // padding, only relevant for justified text, not relevant for SVG
-        , TextRun::AllowTrailingExpansion
-        , textDirection
-        , isOverride(style.unicodeBidi()) /* directionalOverride */);
-
-    if (length) {
-        if (textLayoutItem.is8Bit())
-            run.setText(textLayoutItem.characters8() + position, length);
-        else
-            run.setText(textLayoutItem.characters16() + position, length);
-    }
-
-    // We handle letter & word spacing ourselves.
-    run.disableSpacing();
-
-    // Propagate the maximum length of the characters buffer to the TextRun, even when we're only processing a substring.
-    run.setCharactersLength(textLayoutItem.textLength() - position);
-    ASSERT(run.charactersLength() >= run.length());
-    return run;
 }
 
 SVGTextMetrics::SVGTextMetrics(LineLayoutSVGInlineText textLayoutItem, unsigned length, float width)
