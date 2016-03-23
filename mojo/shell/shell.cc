@@ -712,14 +712,21 @@ void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
   // Clients that request "all_users" class from the shell are allowed to
   // field connection requests from any user. They also run with a synthetic
   // user id generated here. The user id provided via Connect() is ignored.
+  // Additionally apps with the "all_users" class are not tied to the lifetime
+  // of the app that connected to them, instead they are owned by the shell.
+  Identity source_identity_for_creation;
   if (HasClass(capabilities, kCapabilityClass_AllUsers)) {
     singletons_.insert(target.name());
     target.set_user_id(base::GenerateGUID());
+    source_identity_for_creation = CreateShellIdentity();
+  } else {
+    source_identity_for_creation = params->source();
   }
 
   mojom::ClientProcessConnectionPtr client_process_connection =
       params->TakeClientProcessConnection();
-  Instance* instance = CreateInstance(params->source(), target, capabilities);
+  Instance* instance = CreateInstance(source_identity_for_creation,
+                                      target, capabilities);
 
   // Below are various paths through which a new Instance can be bound to a
   // ShellClient proxy.
