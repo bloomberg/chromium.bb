@@ -660,10 +660,6 @@
       # This assumes the AppListService is views-based.
       'browser/ui/app_list/app_list_service_views_browsertest.cc',
 
-      # This test is for the spelling options submenu that's only for Windows,
-      # ChromeOS, and Linux.
-      'browser/renderer_context_menu/spelling_options_submenu_observer_browsertest.cc',
-
       # TODO(tapted): Move these to chrome_browser_tests_views_sources when the
       # the corresponding files are moved in chrome_browser_ui.gypi (i.e. out of
       # chrome_browser_ui_views_non_mac_sources). http://crbug.com/404979.
@@ -689,6 +685,11 @@
       'browser/ui/views/toolbar/toolbar_view_browsertest.cc',
       'browser/ui/views/translate/translate_bubble_view_browsertest.cc',
       'browser/ui/views/web_dialog_view_browsertest.cc',
+    ],
+    'chrome_browser_tests_non_mac_desktop_sources': [
+      # This test is for the spelling options submenu that's only for Windows,
+      # ChromeOS, and Linux.
+      'browser/renderer_context_menu/spelling_options_submenu_observer_browsertest.cc',
     ],
     'chrome_browser_tests_chromeos_sources': [
       '../ui/base/ime/chromeos/input_method_whitelist.cc',
@@ -2560,6 +2561,9 @@
           'dependencies': [
             '../components/components.gyp:wifi_test_support',
           ],
+        }],
+        ['OS=="linux" or OS=="win"', {
+            'sources': [ '<@(chrome_browser_tests_non_mac_desktop_sources)' ],
         }],
         ['os_posix == 0 or chromeos == 1', {
           'sources!': [

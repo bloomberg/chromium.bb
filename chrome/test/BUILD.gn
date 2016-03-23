@@ -1206,6 +1206,12 @@ if (!is_android) {
       ]
       deps += [ "//components/wifi:test_support" ]
     }
+    if (is_linux || is_win) {
+      sources += rebase_path(
+              chrome_tests_gypi_values.chrome_browser_tests_non_mac_desktop_sources,
+              ".",
+              "//chrome")
+    }
     if (!is_posix || is_chromeos) {
       sources -= [ "../common/time_format_browsertest.cc" ]
     }
