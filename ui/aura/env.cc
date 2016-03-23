@@ -4,6 +4,7 @@
 
 #include "ui/aura/env.h"
 
+#include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
 #include "ui/aura/env_observer.h"
@@ -22,6 +23,14 @@ namespace {
 // Env is thread local so that aura may be used on multiple threads.
 base::LazyInstance<base::ThreadLocalPointer<Env> >::Leaky lazy_tls_ptr =
     LAZY_INSTANCE_INITIALIZER;
+
+#if defined(USE_OZONE)
+// Returns true if running inside of mus. Checks for mojo specific flag.
+bool RunningInsideMus() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      "primordial-pipe-token");
+}
+#endif
 
 }  // namespace
 
@@ -88,8 +97,10 @@ void Env::Init(bool create_event_source) {
     return;
 #if defined(USE_OZONE)
   // The ozone platform can provide its own event source. So initialize the
-  // platform before creating the default event source.
-  ui::OzonePlatform::InitializeForUI();
+  // platform before creating the default event source. If running inside mus
+  // let the mus process initialize ozone instead.
+  if (!RunningInsideMus())
+    ui::OzonePlatform::InitializeForUI();
 #endif
   if (!ui::PlatformEventSource::GetInstance())
     event_source_ = ui::PlatformEventSource::CreateDefault();
