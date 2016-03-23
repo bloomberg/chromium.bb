@@ -391,7 +391,8 @@ bool SiteEngagementService::IsEnabled() {
   }
   const std::string group_name =
       base::FieldTrialList::FindFullName(kEngagementParams);
-  return base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
+  return !base::StartsWith(group_name, "Disabled",
+                           base::CompareCase::SENSITIVE);
 }
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
