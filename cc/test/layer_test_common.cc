@@ -123,10 +123,12 @@ LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
     : client_(FakeLayerTreeHostClient::DIRECT_3D),
       output_surface_(FakeOutputSurface::Create3d()),
       host_(FakeLayerTreeHost::Create(&client_, &task_graph_runner_, settings)),
-      root_layer_impl_(LayerImpl::Create(host_->host_impl()->active_tree(), 1)),
       render_pass_(RenderPass::Create()),
       layer_impl_id_(2) {
-  root_layer_impl_->SetHasRenderSurface(true);
+  scoped_ptr<LayerImpl> root_layer_impl =
+      LayerImpl::Create(host_->host_impl()->active_tree(), 1);
+  root_layer_impl->SetHasRenderSurface(true);
+  host_->host_impl()->active_tree()->SetRootLayer(std::move(root_layer_impl));
   host_->host_impl()->SetVisible(true);
   host_->host_impl()->InitializeRenderer(output_surface_.get());
 
@@ -150,7 +152,8 @@ void LayerTestCommon::LayerImplTest::CalcDrawProps(
   LayerImplList layer_list;
   host_->host_impl()->active_tree()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root_layer_impl_.get(), viewport_size, &layer_list,
+      host_->host_impl()->active_tree()->root_layer(), viewport_size,
+      &layer_list,
       host_->host_impl()->active_tree()->current_render_surface_list_id());
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 }
@@ -211,7 +214,8 @@ void LayerTestCommon::LayerImplTest::RequestCopyOfOutput() {
   std::vector<scoped_ptr<CopyOutputRequest>> copy_requests;
   copy_requests.push_back(
       CopyOutputRequest::CreateRequest(base::Bind(&EmptyCopyOutputCallback)));
-  root_layer_impl_->PassCopyRequests(&copy_requests);
+  host_->host_impl()->active_tree()->root_layer()->PassCopyRequests(
+      &copy_requests);
 }
 
 }  // namespace cc

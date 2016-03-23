@@ -359,9 +359,17 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
                                false);
   root->AddChild(std::move(clip_layer_scoped_ptr));
   root->SetHasRenderSurface(true);
+  LayerImpl* root_layer = root.get();
+  host_impl.active_tree()->SetRootLayer(std::move(root));
 
-  ExecuteCalculateDrawProperties(
-      root.get(), kDeviceScale, kPageScale, scroll_layer->parent());
+  // We need property trees to exist when we try to update page scale factor on
+  // active tree. But we still need to rebuild property trees after that because
+  // BuildingPropertyTreesForTesting doesn't take into account the scale factors
+  // and the page scale layer.
+  root_layer->layer_tree_impl()->BuildPropertyTreesForTesting();
+  root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root_layer, kDeviceScale, kPageScale,
+                                 scroll_layer->parent());
   gfx::Transform expected_transform = identity_matrix;
   gfx::PointF sub_layer_screen_position = kScrollLayerPosition - kScrollDelta;
   expected_transform.Translate(MathUtil::Round(sub_layer_screen_position.x() *
@@ -382,9 +390,9 @@ TEST_F(LayerTreeHostCommonTest, TransformsAboutScrollOffset) {
   SetLayerPropertiesForTesting(scroll_layer, arbitrary_translate,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(10, 20),
                                true, false, false);
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(
-      root.get(), kDeviceScale, kPageScale, scroll_layer->parent());
+  root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(root_layer, kDeviceScale, kPageScale,
+                                 scroll_layer->parent());
   expected_transform.MakeIdentity();
   expected_transform.Translate(
       MathUtil::Round(kTranslateX * kPageScale * kDeviceScale +
@@ -4834,6 +4842,12 @@ TEST_F(LayerTreeHostCommonScalingTest, SurfaceLayerTransformsInHighDPI) {
 
   float device_scale_factor = 2.5f;
   float page_scale_factor = 3.f;
+  // We need property trees to exist when we try to update page scale factor on
+  // active tree. But we still need to rebuild property trees after that because
+  // BuildingPropertyTreesForTesting doesn't take into account the scale factors
+  // and the page scale layer.
+  root->layer_tree_impl()->BuildPropertyTreesForTesting();
+  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
                                  root);
 
@@ -4920,6 +4934,12 @@ TEST_F(LayerTreeHostCommonScalingTest, SmallIdealScale) {
   float page_scale_factor = 0.01f;
 
   {
+    // We need property trees to exist when we try to update page scale factor
+    // on active tree. But we still need to rebuild property trees after that
+    // because BuildingPropertyTreesForTesting doesn't take into account the
+    // scale factors and the page scale layer.
+    root->layer_tree_impl()->BuildPropertyTreesForTesting();
+    root->layer_tree_impl()->property_trees()->needs_rebuild = true;
     ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
                                    root);
 
@@ -5584,6 +5604,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                true);
   root->SetDrawsContent(true);
+  LayerImpl* root_layer = root.get();
 
   scoped_ptr<LayerImpl> child = LayerImpl::Create(host_impl.pending_tree(), 2);
   SetLayerPropertiesForTesting(child.get(), identity_matrix, gfx::Point3F(),
@@ -5601,20 +5622,21 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
 
   child->AddChild(std::move(grand_child));
   root->AddChild(std::move(child));
+  host_impl.pending_tree()->SetRootLayer(std::move(root));
 
   LayerImplList render_surface_layer_list;
-  root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+  root_layer->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root.get(), root->bounds(), &render_surface_layer_list,
-      root->layer_tree_impl()->current_render_surface_list_id());
+      root_layer, root_layer->bounds(), &render_surface_layer_list,
+      root_layer->layer_tree_impl()->current_render_surface_list_id());
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   // We should have one render surface and one layers. The child has
   // hidden itself and the grand child.
   ASSERT_EQ(1u, render_surface_layer_list.size());
-  ASSERT_EQ(1u, root->render_surface()->layer_list().size());
-  EXPECT_EQ(1, root->render_surface()->layer_list().at(0)->id());
+  ASSERT_EQ(1u, root_layer->render_surface()->layer_list().size());
+  EXPECT_EQ(1, root_layer->render_surface()->layer_list().at(0)->id());
 }
 
 void EmptyCopyOutputCallback(scoped_ptr<CopyOutputResult> result) {}
@@ -5633,6 +5655,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                true);
   root->SetDrawsContent(true);
+  LayerImpl* root_layer = root.get();
 
   scoped_ptr<LayerImpl> copy_grand_parent =
       LayerImpl::Create(host_impl.pending_tree(), 2);
@@ -5699,6 +5722,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   root->AddChild(std::move(copy_grand_parent_sibling_before));
   root->AddChild(std::move(copy_grand_parent));
   root->AddChild(std::move(copy_grand_parent_sibling_after));
+  host_impl.pending_tree()->SetRootLayer(std::move(root));
 
   // Hide the copy_grand_parent and its subtree. But make a copy request in that
   // hidden subtree on copy_layer. Also hide the copy grand child and its
@@ -5715,14 +5739,14 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   EXPECT_TRUE(copy_layer->HasCopyRequest());
 
   LayerImplList render_surface_layer_list;
-  root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+  root_layer->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root.get(), root->bounds(), &render_surface_layer_list,
-      root->layer_tree_impl()->current_render_surface_list_id());
+      root_layer, root_layer->bounds(), &render_surface_layer_list,
+      root_layer->layer_tree_impl()->current_render_surface_list_id());
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
-  EXPECT_GT(root->num_copy_requests_in_target_subtree(), 0);
+  EXPECT_GT(root_layer->num_copy_requests_in_target_subtree(), 0);
   EXPECT_GT(copy_grand_parent_layer->num_copy_requests_in_target_subtree(), 0);
   EXPECT_GT(copy_parent_layer->num_copy_requests_in_target_subtree(), 0);
   EXPECT_GT(copy_layer->num_copy_requests_in_target_subtree(), 0);
@@ -5731,17 +5755,18 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   // parent since it has opacity and two drawing descendants, one for the parent
   // since it owns a surface, and one for the copy_layer.
   ASSERT_EQ(4u, render_surface_layer_list.size());
-  EXPECT_EQ(root->id(), render_surface_layer_list.at(0)->id());
+  EXPECT_EQ(root_layer->id(), render_surface_layer_list.at(0)->id());
   EXPECT_EQ(copy_grand_parent_layer->id(),
             render_surface_layer_list.at(1)->id());
   EXPECT_EQ(copy_parent_layer->id(), render_surface_layer_list.at(2)->id());
   EXPECT_EQ(copy_layer->id(), render_surface_layer_list.at(3)->id());
 
   // The root render surface should have 2 contributing layers.
-  ASSERT_EQ(2u, root->render_surface()->layer_list().size());
-  EXPECT_EQ(root->id(), root->render_surface()->layer_list().at(0)->id());
+  ASSERT_EQ(2u, root_layer->render_surface()->layer_list().size());
+  EXPECT_EQ(root_layer->id(),
+            root_layer->render_surface()->layer_list().at(0)->id());
   EXPECT_EQ(copy_grand_parent_layer->id(),
-            root->render_surface()->layer_list().at(1)->id());
+            root_layer->render_surface()->layer_list().at(1)->id());
 
   // Nothing actually draws into the copy parent, so only the copy_layer will
   // appear in its list, since it needs to be drawn for the copy request.
@@ -5760,7 +5785,8 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHiddenWithCopyRequest) {
   // but the copy_layer and copy_child should be drawn for the copy request.
   // copy grand child should not be drawn as its hidden even in the copy
   // request.
-  EffectTree tree = root->layer_tree_impl()->property_trees()->effect_tree;
+  EffectTree tree =
+      root_layer->layer_tree_impl()->property_trees()->effect_tree;
   EffectNode* node = tree.Node(copy_grand_parent_layer->effect_tree_index());
   EXPECT_FALSE(node->data.is_drawn);
   node = tree.Node(copy_parent_layer->effect_tree_index());
@@ -5823,23 +5849,26 @@ TEST_F(LayerTreeHostCommonTest, ClippedOutCopyRequest) {
   copy_layer->AddChild(std::move(copy_child));
   copy_parent->AddChild(std::move(copy_layer));
   root->AddChild(std::move(copy_parent));
+  host_impl.pending_tree()->SetRootLayer(std::move(root));
+  LayerImpl* root_ptr = host_impl.pending_tree()->root_layer();
 
   LayerImplList render_surface_layer_list;
-  root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+  root_ptr->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root.get(), root->bounds(), &render_surface_layer_list,
-      root->layer_tree_impl()->current_render_surface_list_id());
+      root_ptr, root_ptr->bounds(), &render_surface_layer_list,
+      root_ptr->layer_tree_impl()->current_render_surface_list_id());
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   // We should have two render surface, as the others are clipped out.
   ASSERT_EQ(2u, render_surface_layer_list.size());
-  EXPECT_EQ(root->id(), render_surface_layer_list.at(0)->id());
+  EXPECT_EQ(root_ptr->id(), render_surface_layer_list.at(0)->id());
 
   // The root render surface should only have 2 contributing layer, since the
   // other layers are empty/clipped away.
-  ASSERT_EQ(2u, root->render_surface()->layer_list().size());
-  EXPECT_EQ(root->id(), root->render_surface()->layer_list().at(0)->id());
+  ASSERT_EQ(2u, root_ptr->render_surface()->layer_list().size());
+  EXPECT_EQ(root_ptr->id(),
+            root_ptr->render_surface()->layer_list().at(0)->id());
 }
 
 TEST_F(LayerTreeHostCommonTest, VisibleContentRectInsideSurface) {
@@ -6386,14 +6415,16 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
   child2->AddChild(std::move(child3));
   child1->AddChild(std::move(child2));
   root->AddChild(std::move(child1));
+  host_impl.active_tree()->SetRootLayer(std::move(root));
+  LayerImpl* root_ptr = host_impl.active_tree()->root_layer();
 
   {
     LayerImplList render_surface_layer_list;
-    FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root.get());
-    root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+    FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root_ptr);
+    root_ptr->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root.get(), root->bounds(), &render_surface_layer_list,
-        root->layer_tree_impl()->current_render_surface_list_id());
+        root_ptr, root_ptr->bounds(), &render_surface_layer_list,
+        root_ptr->layer_tree_impl()->current_render_surface_list_id());
     inputs.can_render_to_separate_surface = true;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -6423,10 +6454,10 @@ TEST_F(LayerTreeHostCommonTest, CanRenderToSeparateSurface) {
 
   {
     LayerImplList render_surface_layer_list;
-    root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+    root_ptr->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
     LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-        root.get(), root->bounds(), &render_surface_layer_list,
-        root->layer_tree_impl()->current_render_surface_list_id());
+        root_ptr, root_ptr->bounds(), &render_surface_layer_list,
+        root_ptr->layer_tree_impl()->current_render_surface_list_id());
     inputs.can_render_to_separate_surface = false;
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
@@ -7315,12 +7346,14 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   AnimationScaleFactorTrackingLayerImpl* parent_raw = parent.get();
   AnimationScaleFactorTrackingLayerImpl* child_raw = child.get();
   AnimationScaleFactorTrackingLayerImpl* grand_child_raw = grand_child.get();
+  AnimationScaleFactorTrackingLayerImpl* grand_parent_raw = grand_parent.get();
 
   child->AddChild(std::move(grand_child));
   parent->AddChild(std::move(child));
   grand_parent->AddChild(std::move(parent));
+  host_impl.active_tree()->SetRootLayer(std::move(grand_parent));
 
-  SetLayerPropertiesForTesting(grand_parent.get(), identity_matrix,
+  SetLayerPropertiesForTesting(grand_parent_raw, identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(1, 2),
                                true, false, true);
   SetLayerPropertiesForTesting(parent_raw, identity_matrix, gfx::Point3F(),
@@ -7334,19 +7367,21 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
                                gfx::PointF(), gfx::Size(1, 2), true, false,
                                false);
 
-  ExecuteCalculateDrawProperties(grand_parent.get());
+  ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // No layers have animations.
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().maximum_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f, child_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
@@ -7366,16 +7401,18 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
                                         TransformOperations(), translation);
 
   // No layers have scale-affecting animations.
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().maximum_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f, child_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
@@ -7390,19 +7427,21 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   AddAnimatedTransformToLayerWithPlayer(child_raw->id(), timeline, 1.0,
                                         TransformOperations(), scale);
   child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(grand_parent.get());
+  ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // Only |child| has a scale-affecting animation.
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().maximum_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(5.f, child_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(
       5.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(1.f,
@@ -7411,14 +7450,15 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
       1.f,
       grand_child_raw->draw_properties().starting_animation_contents_scale);
 
-  AddAnimatedTransformToLayerWithPlayer(grand_parent->id(), timeline, 1.0,
+  AddAnimatedTransformToLayerWithPlayer(grand_parent_raw->id(), timeline, 1.0,
                                         TransformOperations(), scale);
-  grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(grand_parent.get());
+  grand_parent_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // |grand_parent| and |child| have scale-affecting animations.
-  EXPECT_EQ(5.f,
-            grand_parent->draw_properties().maximum_animation_contents_scale);
+  EXPECT_EQ(
+      5.f,
+      grand_parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(5.f,
             parent_raw->draw_properties().maximum_animation_contents_scale);
   // We don't support combining animated scales from two nodes; 0.f means
@@ -7427,8 +7467,9 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
-  EXPECT_EQ(1.f,
-            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      1.f,
+      grand_parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(1.f,
             parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
@@ -7440,19 +7481,21 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   AddAnimatedTransformToLayerWithPlayer(parent_raw->id(), timeline, 1.0,
                                         TransformOperations(), scale);
   parent_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(grand_parent.get());
+  ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // |grand_parent|, |parent|, and |child| have scale-affecting animations.
-  EXPECT_EQ(5.f,
-            grand_parent->draw_properties().maximum_animation_contents_scale);
+  EXPECT_EQ(
+      5.f,
+      grand_parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f, child_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
-  EXPECT_EQ(1.f,
-            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      1.f,
+      grand_parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
@@ -7461,7 +7504,7 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
       0.f,
       grand_child_raw->draw_properties().starting_animation_contents_scale);
 
-  AbortAnimationsOnLayerWithPlayer(grand_parent->id(), timeline,
+  AbortAnimationsOnLayerWithPlayer(grand_parent_raw->id(), timeline,
                                    TargetProperty::TRANSFORM);
   AbortAnimationsOnLayerWithPlayer(parent_raw->id(), timeline,
                                    TargetProperty::TRANSFORM);
@@ -7474,20 +7517,22 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   AddAnimatedTransformToLayerWithPlayer(child_raw->id(), timeline, 1.0,
                                         TransformOperations(), perspective);
   child_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(grand_parent.get());
+  ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // |child| has a scale-affecting animation but computing the maximum of this
   // animation is not supported.
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().maximum_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f, child_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
@@ -7500,18 +7545,19 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
                                    TargetProperty::TRANSFORM);
   gfx::Transform scale_matrix;
   scale_matrix.Scale(1.f, 2.f);
-  grand_parent->SetTransform(scale_matrix);
+  grand_parent_raw->SetTransform(scale_matrix);
   parent_raw->SetTransform(scale_matrix);
-  grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  grand_parent_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
   AddAnimatedTransformToLayerWithPlayer(parent_raw->id(), timeline, 1.0,
                                         TransformOperations(), scale);
-  ExecuteCalculateDrawProperties(grand_parent.get());
+  ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // |grand_parent| and |parent| each have scale 2.f. |parent| has a  scale
   // animation with maximum scale 5.f.
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().maximum_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(10.f,
             parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(10.f,
@@ -7520,8 +7566,9 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
       10.f,
       grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(2.f,
             parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(2.f,
@@ -7533,20 +7580,22 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
   gfx::Transform perspective_matrix;
   perspective_matrix.ApplyPerspectiveDepth(2.f);
   child_raw->SetTransform(perspective_matrix);
-  grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(grand_parent.get());
+  grand_parent_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // |child| has a transform that's neither a translation nor a scale.
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().maximum_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(10.f,
             parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f, child_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(2.f,
             parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
@@ -7556,21 +7605,23 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
       grand_child_raw->draw_properties().starting_animation_contents_scale);
 
   parent_raw->SetTransform(perspective_matrix);
-  grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawProperties(grand_parent.get());
+  grand_parent_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // |parent| and |child| have transforms that are neither translations nor
   // scales.
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().maximum_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f, child_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
@@ -7581,22 +7632,24 @@ TEST_F(LayerTreeHostCommonTest, MaximumAnimationScaleFactor) {
 
   parent_raw->SetTransform(identity_matrix);
   child_raw->SetTransform(identity_matrix);
-  grand_parent->SetTransform(perspective_matrix);
-  grand_parent->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  grand_parent_raw->SetTransform(perspective_matrix);
+  grand_parent_raw->layer_tree_impl()->property_trees()->needs_rebuild = true;
 
-  ExecuteCalculateDrawProperties(grand_parent.get());
+  ExecuteCalculateDrawProperties(grand_parent_raw);
 
   // |grand_parent| has a transform that's neither a translation nor a scale.
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().maximum_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(0.f, child_raw->draw_properties().maximum_animation_contents_scale);
   EXPECT_EQ(
       0.f, grand_child_raw->draw_properties().maximum_animation_contents_scale);
 
-  EXPECT_EQ(0.f,
-            grand_parent->draw_properties().starting_animation_contents_scale);
+  EXPECT_EQ(
+      0.f,
+      grand_parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
             parent_raw->draw_properties().starting_animation_contents_scale);
   EXPECT_EQ(0.f,
@@ -7656,6 +7709,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceLayerListMembership) {
   child->AddChild(std::move(grand_child2));
   parent->AddChild(std::move(child));
   grand_parent->AddChild(std::move(parent));
+  host_impl.active_tree()->SetRootLayer(std::move(grand_parent));
 
   SetLayerPropertiesForTesting(grand_parent_raw, identity_matrix,
                                gfx::Point3F(), gfx::PointF(), gfx::Size(1, 2),
@@ -7899,6 +7953,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   root->AddChild(std::move(child2));
   root->SetForceRenderSurface(true);
   root->SetDrawsContent(true);
+  host_impl.active_tree()->SetRootLayer(std::move(root));
 
   gfx::Transform identity_matrix, scale_transform_child1,
       scale_transform_child2;
@@ -7938,7 +7993,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
                                true, false, false);
   child2_layer->SetDrawsContent(true);
 
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
   ExecuteCalculateDrawProperties(root_layer);
 
   EXPECT_FLOAT_EQ(1.f, root_layer->GetIdealContentsScale());
@@ -8011,7 +8066,7 @@ TEST_F(LayerTreeHostCommonTest, DrawPropertyScales) {
   device_scale_factor = 4.0f;
   inputs.device_scale_factor = device_scale_factor;
   inputs.can_adjust_raster_scales = true;
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   EXPECT_FLOAT_EQ(12.f, root_layer->GetIdealContentsScale());
@@ -8860,14 +8915,16 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
                                gfx::PointF(), gfx::Size(10, 10), true, false,
                                false);
 
+  LayerImpl* root_ptr = root.get();
   LayerImpl* child_ptr = child.get();
   LayerImpl* grandchild_ptr = grandchild.get();
 
   child->AddChild(std::move(grandchild));
   root->AddChild(std::move(child));
+  host_impl.active_tree()->SetRootLayer(std::move(root));
 
   // Check the non-skipped case.
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 
   // Now we will reset the visible rect from property trees for the grandchild,
@@ -8879,17 +8936,17 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
   singular.matrix().set(0, 0, 0);
 
   child_ptr->SetTransform(singular);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   child_ptr->SetTransform(identity);
 
   child_ptr->SetHideLayerAndSubtree(true);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
   child_ptr->SetHideLayerAndSubtree(false);
 
   child_ptr->SetOpacity(0.f);
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
   EXPECT_EQ(gfx::Rect(0, 0), grandchild_ptr->visible_layer_rect());
 
   // Now, even though child has zero opacity, we will configure |grandchild| and
@@ -8899,8 +8956,8 @@ TEST_F(LayerTreeHostCommonTest, SkippingSubtreeImpl) {
   requests.push_back(CopyOutputRequest::CreateEmptyRequest());
 
   grandchild_ptr->PassCopyRequests(&requests);
-  root.get()->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
+  root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  ExecuteCalculateDrawPropertiesWithPropertyTrees(root_ptr);
   EXPECT_EQ(gfx::Rect(10, 10), grandchild_ptr->visible_layer_rect());
 }
 

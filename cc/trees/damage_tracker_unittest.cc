@@ -1465,12 +1465,14 @@ TEST_F(DamageTrackerTest, VerifyDamageForEmptyLayerList) {
 
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl_.active_tree(), 1);
   root->SetForceRenderSurface(true);
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
-  EmulateDrawingOneFrame(root.get());
-  root->draw_properties().render_target = root.get();
+  host_impl_.active_tree()->SetRootLayer(std::move(root));
+  LayerImpl* root_ptr = host_impl_.active_tree()->root_layer();
+  root_ptr->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  EmulateDrawingOneFrame(root_ptr);
+  root_ptr->draw_properties().render_target = root_ptr;
 
-  ASSERT_EQ(root.get(), root->render_target());
-  RenderSurfaceImpl* target_surface = root->render_surface();
+  ASSERT_EQ(root_ptr, root_ptr->render_target());
+  RenderSurfaceImpl* target_surface = root_ptr->render_surface();
 
   LayerImplList empty_list;
   target_surface->damage_tracker()->UpdateDamageTrackingState(

@@ -453,40 +453,28 @@ void FindLayersThatNeedUpdates(
 }
 
 template <typename LayerType>
-void UpdateRenderSurfacesWithEffectTreeInternal(EffectTree* effect_tree,
-                                                LayerType* layer) {
+void UpdateRenderSurfaceForLayer(EffectTree* effect_tree,
+                                 bool non_root_surfaces_enabled,
+                                 LayerType* layer) {
+  if (!non_root_surfaces_enabled) {
+    layer->SetHasRenderSurface(!layer->parent());
+    return;
+  }
   EffectNode* node = effect_tree->Node(layer->effect_tree_index());
 
   if (node->owner_id == layer->id() && node->data.has_render_surface)
     layer->SetHasRenderSurface(true);
   else
     layer->SetHasRenderSurface(false);
+}
+
+void UpdateRenderSurfacesForLayersRecursive(EffectTree* effect_tree,
+                                            Layer* layer) {
+  UpdateRenderSurfaceForLayer(effect_tree, true, layer);
 
   for (size_t i = 0; i < layer->children().size(); ++i) {
-    UpdateRenderSurfacesWithEffectTreeInternal<LayerType>(effect_tree,
-                                                          layer->child_at(i));
+    UpdateRenderSurfacesForLayersRecursive(effect_tree, layer->child_at(i));
   }
-}
-
-void UpdateRenderSurfacesWithEffectTree(EffectTree* effect_tree, Layer* layer) {
-  UpdateRenderSurfacesWithEffectTreeInternal<Layer>(effect_tree, layer);
-}
-
-void UpdateRenderSurfacesNonRootSurfacesDisabled(LayerImpl* layer) {
-  // Only root layer has render surface, all other layers don't.
-  layer->SetHasRenderSurface(!layer->parent());
-
-  for (size_t i = 0; i < layer->children().size(); ++i)
-    UpdateRenderSurfacesNonRootSurfacesDisabled(layer->child_at(i));
-}
-
-void UpdateRenderSurfacesWithEffectTree(EffectTree* effect_tree,
-                                        bool non_root_surfaces_enabled,
-                                        LayerImpl* layer) {
-  if (!non_root_surfaces_enabled)
-    UpdateRenderSurfacesNonRootSurfacesDisabled(layer);
-  else
-    UpdateRenderSurfacesWithEffectTreeInternal<LayerImpl>(effect_tree, layer);
 }
 
 }  // namespace
@@ -697,7 +685,8 @@ void BuildPropertyTreesAndComputeVisibleRects(
       outer_viewport_scroll_layer, overscroll_elasticity_layer,
       elastic_overscroll, page_scale_factor, device_scale_factor, viewport,
       device_transform, property_trees);
-  UpdateRenderSurfacesWithEffectTree(&property_trees->effect_tree, root_layer);
+  UpdateRenderSurfacesForLayersRecursive(&property_trees->effect_tree,
+                                         root_layer);
   ValidateRenderSurfaces(root_layer);
   ComputeVisibleRects(root_layer, property_trees,
                       can_render_to_separate_surface, update_layer_list);
@@ -740,8 +729,9 @@ void ComputeVisibleRects(LayerImpl* root_layer,
                          PropertyTrees* property_trees,
                          bool can_render_to_separate_surface,
                          LayerImplList* visible_layer_list) {
-  UpdateRenderSurfacesWithEffectTree(
-      &property_trees->effect_tree, can_render_to_separate_surface, root_layer);
+  for (auto* layer : *root_layer->layer_tree_impl())
+    UpdateRenderSurfaceForLayer(&property_trees->effect_tree,
+                                can_render_to_separate_surface, layer);
   if (can_render_to_separate_surface)
     ValidateRenderSurfaces(root_layer);
   LayerImplList update_layer_list;

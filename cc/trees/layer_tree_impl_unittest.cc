@@ -648,6 +648,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
   //
   scoped_ptr<LayerImpl> root =
       LayerImpl::Create(host_impl().active_tree(), 123);
+  LayerImpl* root_layer = root.get();
 
   gfx::Transform identity_matrix;
   gfx::Point3F transform_origin;
@@ -702,12 +703,12 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
     grand_child->AddChild(std::move(rotated_leaf));
     child->AddChild(std::move(grand_child));
     root->AddChild(std::move(child));
+    host_impl().active_tree()->SetRootLayer(std::move(root));
 
-    ExecuteCalculateDrawProperties(root.get());
+    ExecuteCalculateDrawProperties(root_layer);
   }
 
-  host_impl().SetViewportSize(root->bounds());
-  host_impl().active_tree()->SetRootLayer(std::move(root));
+  host_impl().SetViewportSize(root_layer->bounds());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
   // (11, 89) is close to the the bottom left corner within the clip, but it is
   // not inside the layer.
@@ -830,6 +831,7 @@ TEST_F(LayerTreeImplTest, HitTestingForNonClippingIntermediateLayer) {
 
 TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl().active_tree(), 1);
+  LayerImpl* root_layer = root.get();
 
   gfx::Transform identity_matrix;
   gfx::Point3F transform_origin;
@@ -879,16 +881,16 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
     child1->AddChild(std::move(grand_child1));
     root->AddChild(std::move(child1));
     root->AddChild(std::move(child2));
+    host_impl().active_tree()->SetRootLayer(std::move(root));
 
-    ExecuteCalculateDrawProperties(root.get());
+    ExecuteCalculateDrawProperties(root_layer);
   }
 
-  LayerImpl* child1 = root->children()[0];
-  LayerImpl* child2 = root->children()[1];
+  LayerImpl* child1 = root_layer->children()[0];
+  LayerImpl* child2 = root_layer->children()[1];
   LayerImpl* grand_child1 = child1->children()[0];
 
-  host_impl().SetViewportSize(root->bounds());
-  host_impl().active_tree()->SetRootLayer(std::move(root));
+  host_impl().SetViewportSize(root_layer->bounds());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
@@ -897,7 +899,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayers) {
   ASSERT_TRUE(grand_child1);
   ASSERT_EQ(1u, RenderSurfaceLayerList().size());
 
-  RenderSurfaceImpl* root_render_surface = root_layer()->render_surface();
+  RenderSurfaceImpl* root_render_surface = root_layer->render_surface();
   ASSERT_EQ(4u, root_render_surface->layer_list().size());
   ASSERT_EQ(1, root_render_surface->layer_list().at(0)->id());  // root layer
   ASSERT_EQ(2, root_render_surface->layer_list().at(1)->id());  // child1
@@ -1292,6 +1294,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
   // all layers are forced to be render surfaces now.
   //
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl().active_tree(), 1);
+  LayerImpl* root_layer = root.get();
 
   gfx::Transform identity_matrix;
   gfx::Point3F transform_origin;
@@ -1344,16 +1347,16 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
     child1->AddChild(std::move(grand_child1));
     root->AddChild(std::move(child1));
     root->AddChild(std::move(child2));
+    host_impl().active_tree()->SetRootLayer(std::move(root));
 
-    ExecuteCalculateDrawProperties(root.get());
+    ExecuteCalculateDrawProperties(root_layer);
   }
 
-  LayerImpl* child1 = root->children()[0];
-  LayerImpl* child2 = root->children()[1];
+  LayerImpl* child1 = root_layer->children()[0];
+  LayerImpl* child2 = root_layer->children()[1];
   LayerImpl* grand_child1 = child1->children()[0];
 
-  host_impl().SetViewportSize(root->bounds());
-  host_impl().active_tree()->SetRootLayer(std::move(root));
+  host_impl().SetViewportSize(root_layer->bounds());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
 
   // Sanity check the scenario we just created.
@@ -1366,7 +1369,7 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
   ASSERT_EQ(4u, RenderSurfaceLayerList().size());
   // The root surface has the root layer, and child1's and child2's render
   // surfaces.
-  ASSERT_EQ(3u, root_layer()->render_surface()->layer_list().size());
+  ASSERT_EQ(3u, root_layer->render_surface()->layer_list().size());
   // The child1 surface has the child1 layer and grand_child1's render surface.
   ASSERT_EQ(2u, child1->render_surface()->layer_list().size());
   ASSERT_EQ(1u, child2->render_surface()->layer_list().size());

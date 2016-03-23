@@ -61,7 +61,8 @@ class LayerTestCommon {
       scoped_ptr<T> layer =
           T::Create(host_->host_impl()->active_tree(), layer_impl_id_++);
       T* ptr = layer.get();
-      root_layer_impl_->AddChild(std::move(layer));
+      LayerImpl* root_layer_impl = host_->active_tree()->root_layer();
+      root_layer_impl->AddChild(std::move(layer));
       return ptr;
     }
 
@@ -88,7 +89,8 @@ class LayerTestCommon {
       scoped_ptr<T> layer =
           T::Create(host_->host_impl()->active_tree(), layer_impl_id_++, a);
       T* ptr = layer.get();
-      root_layer_impl_->AddChild(std::move(layer));
+      LayerImpl* root_layer_impl = host_->active_tree()->root_layer();
+      root_layer_impl->AddChild(std::move(layer));
       return ptr;
     }
 
@@ -97,7 +99,8 @@ class LayerTestCommon {
       scoped_ptr<T> layer =
           T::Create(host_->host_impl()->active_tree(), layer_impl_id_++, a, b);
       T* ptr = layer.get();
-      root_layer_impl_->AddChild(std::move(layer));
+      LayerImpl* root_layer_impl = host_->active_tree()->root_layer();
+      root_layer_impl->AddChild(std::move(layer));
       return ptr;
     }
 
@@ -106,7 +109,8 @@ class LayerTestCommon {
       scoped_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
                                       layer_impl_id_++, a, b, c, d);
       T* ptr = layer.get();
-      root_layer_impl_->AddChild(std::move(layer));
+      LayerImpl* root_layer_impl = host_->active_tree()->root_layer();
+      root_layer_impl->AddChild(std::move(layer));
       return ptr;
     }
 
@@ -124,7 +128,8 @@ class LayerTestCommon {
       scoped_ptr<T> layer = T::Create(host_->host_impl()->active_tree(),
                                       layer_impl_id_++, a, b, c, d, e);
       T* ptr = layer.get();
-      root_layer_impl_->AddChild(std::move(layer));
+      LayerImpl* root_layer_impl = host_->active_tree()->root_layer();
+      root_layer_impl->AddChild(std::move(layer));
       return ptr;
     }
 
@@ -149,7 +154,9 @@ class LayerTestCommon {
     ResourceProvider* resource_provider() const {
       return host_->host_impl()->resource_provider();
     }
-    LayerImpl* root_layer() const { return root_layer_impl_.get(); }
+    LayerImpl* root_layer() const {
+      return host_->host_impl()->active_tree()->root_layer();
+    }
     FakeLayerTreeHost* host() { return host_.get(); }
     FakeLayerTreeHostImpl* host_impl() const { return host_->host_impl(); }
     TaskRunnerProvider* task_runner_provider() const {
@@ -164,7 +171,6 @@ class LayerTestCommon {
     TestTaskGraphRunner task_graph_runner_;
     scoped_ptr<OutputSurface> output_surface_;
     scoped_ptr<FakeLayerTreeHost> host_;
-    scoped_ptr<LayerImpl> root_layer_impl_;
     scoped_ptr<RenderPass> render_pass_;
     scoped_refptr<AnimationTimeline> timeline_;
     scoped_refptr<AnimationTimeline> timeline_impl_;

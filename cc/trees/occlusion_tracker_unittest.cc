@@ -105,8 +105,7 @@ class OcclusionTrackerTest : public testing::Test {
     TestContentLayerImpl* layer_ptr = layer.get();
     SetProperties(layer_ptr, transform, position, bounds);
 
-    DCHECK(!root_.get());
-    root_ = std::move(layer);
+    host_->host_impl()->active_tree()->SetRootLayer(std::move(layer));
 
     layer_ptr->SetForceRenderSurface(true);
     SetRootLayerOnMainThread(layer_ptr);
@@ -196,7 +195,7 @@ class OcclusionTrackerTest : public testing::Test {
   }
 
   void DestroyLayers() {
-    root_ = nullptr;
+    host_->host_impl()->active_tree()->SetRootLayer(nullptr);
     render_surface_layer_list_impl_.clear();
     replica_layers_.clear();
     mask_layers_.clear();
@@ -219,7 +218,7 @@ class OcclusionTrackerTest : public testing::Test {
   }
 
   void CalcDrawEtc(TestContentLayerImpl* root) {
-    DCHECK(root == root_.get());
+    DCHECK(root == root->layer_tree_impl()->root_layer());
 
     // These occlusion tests attach and detach layers in multiple
     // iterations, so rebuild property trees every time.
@@ -311,7 +310,6 @@ class OcclusionTrackerTest : public testing::Test {
   TestTaskGraphRunner task_graph_runner_;
   scoped_ptr<FakeLayerTreeHost> host_;
   // These hold ownership of the layers for the duration of the test.
-  scoped_ptr<LayerImpl> root_;
   LayerImplList render_surface_layer_list_impl_;
   LayerIterator layer_iterator_begin_;
   LayerIterator layer_iterator_;
