@@ -123,7 +123,7 @@ remoting.ConnectionStats.prototype.update = function(stats) {
   /**
    * @param {number} value
    * @param {string} units
-   * @param {number} digits
+   * @param {number} number of digits after decimal.
    * @return {string} Formatted number.
    */
   function formatStatNumber(value, units, digits) {
