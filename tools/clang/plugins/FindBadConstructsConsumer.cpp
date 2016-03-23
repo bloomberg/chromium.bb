@@ -223,6 +223,10 @@ void FindBadConstructsConsumer::CheckCtorDtorWeight(
   if (record->getIdentifier() == NULL)
     return;
 
+  // We don't handle unions.
+  if (record->isUnion())
+    return;
+
   // Skip records that derive from ignored base classes.
   if (HasIgnoredBases(record))
     return;
