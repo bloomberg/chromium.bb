@@ -31,7 +31,6 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     private static final int DOWNLOAD_NOTIFICATION_TYPE_FAILURE = 2;
     private static final int DOWNLOAD_NOTIFICATION_TYPE_CANCEL = 3;
     private static final int DOWNLOAD_NOTIFICATION_TYPE_CLEAR = 4;
-    private static final int DOWNLOAD_NOTIFICATION_TYPE_PAUSE = 5;
     private final Context mApplicationContext;
     private final Object mLock = new Object();
     @Nullable private DownloadNotificationService mBoundService;
@@ -49,15 +48,13 @@ public class SystemDownloadNotifier implements DownloadNotifier {
         public final DownloadInfo downloadInfo;
         public final Intent intent;
         public final long startTime;
-        public final boolean isAutoResumable;
 
-        public PendingNotificationInfo(int type, DownloadInfo downloadInfo, Intent intent,
-                long startTime, boolean isAutoResumable) {
+        public PendingNotificationInfo(
+                int type, DownloadInfo downloadInfo, Intent intent, long startTime) {
             this.type = type;
             this.downloadInfo = downloadInfo;
             this.intent = intent;
             this.startTime = startTime;
-            this.isAutoResumable = isAutoResumable;
         }
     }
 
@@ -181,36 +178,29 @@ public class SystemDownloadNotifier implements DownloadNotifier {
     @Override
     public void cancelNotification(int downloadId) {
         DownloadInfo info = new DownloadInfo.Builder().setDownloadId(downloadId).build();
-        updateDownloadNotification(DOWNLOAD_NOTIFICATION_TYPE_CANCEL, info, null, -1, false);
+        updateDownloadNotification(DOWNLOAD_NOTIFICATION_TYPE_CANCEL, info, null, -1);
     }
 
     @Override
     public void notifyDownloadSuccessful(DownloadInfo downloadInfo, Intent intent) {
-        updateDownloadNotification(
-                DOWNLOAD_NOTIFICATION_TYPE_SUCCESS, downloadInfo, intent, -1, false);
+        updateDownloadNotification(DOWNLOAD_NOTIFICATION_TYPE_SUCCESS, downloadInfo, intent, -1);
     }
 
     @Override
     public void notifyDownloadFailed(DownloadInfo downloadInfo) {
-        updateDownloadNotification(
-                DOWNLOAD_NOTIFICATION_TYPE_FAILURE, downloadInfo, null, -1, false);
+        updateDownloadNotification(DOWNLOAD_NOTIFICATION_TYPE_FAILURE, downloadInfo, null, -1);
     }
 
     @Override
     public void notifyDownloadProgress(DownloadInfo downloadInfo, long startTime) {
         updateDownloadNotification(
-                DOWNLOAD_NOTIFICATION_TYPE_PROGRESS, downloadInfo, null, startTime, false);
-    }
-
-    @Override
-    public void notifyDownloadPaused(DownloadInfo downloadInfo, boolean isAutoResumable) {
-        updateDownloadNotification(
-                DOWNLOAD_NOTIFICATION_TYPE_PAUSE, downloadInfo, null, -1, isAutoResumable);
+                DOWNLOAD_NOTIFICATION_TYPE_PROGRESS, downloadInfo, null, startTime);
     }
 
     @Override
     public void clearPendingDownloads() {
-        updateDownloadNotification(DOWNLOAD_NOTIFICATION_TYPE_CLEAR, null, null, -1, false);
+        updateDownloadNotification(
+                DOWNLOAD_NOTIFICATION_TYPE_CLEAR, null, null, -1);
     }
 
     /**
@@ -220,10 +210,9 @@ public class SystemDownloadNotifier implements DownloadNotifier {
      * @param info Download information.
      * @param intent Action to perform when clicking on the notification.
      * @param startTime Download start time.
-     * @param isAutoResumable Whether download can be auto resumed when network becomes available.
      */
     private void updateDownloadNotification(
-            int type, DownloadInfo info, Intent intent, long startTime, boolean isAutoResumable) {
+            int type, DownloadInfo info, Intent intent, long startTime) {
         synchronized (mLock) {
             startAndBindToServiceIfNeeded();
             if (type == DOWNLOAD_NOTIFICATION_TYPE_PROGRESS) {
@@ -236,18 +225,20 @@ public class SystemDownloadNotifier implements DownloadNotifier {
                 // the notification. Put the notification in the pending notifications
                 // list.
                 mPendingNotifications.add(new PendingNotificationInfo(
-                        type, info, intent, startTime, isAutoResumable));
+                        type, info, intent, startTime));
             } else {
                 switch (type) {
                     case DOWNLOAD_NOTIFICATION_TYPE_PROGRESS:
-                        mBoundService.notifyDownloadProgress(info.getDownloadId(),
-                                info.getFileName(), info.getPercentCompleted(),
-                                info.getTimeRemainingInMillis(), startTime, info.isResumable());
-                        break;
-                    case DOWNLOAD_NOTIFICATION_TYPE_PAUSE:
-                        assert info.isResumable();
-                        mBoundService.notifyDownloadPaused(info.getDownloadId(), info.getFileName(),
-                                info.isResumable(), isAutoResumable);
+                        if (info.isPaused()) {
+                            assert info.isResumable();
+                            mBoundService.notifyDownloadPaused(info.getDownloadId(),
+                                    info.getFileName(), info.isResumable(), true);
+                        } else {
+                            mBoundService.notifyDownloadProgress(
+                                    info.getDownloadId(), info.getFileName(),
+                                    info.getPercentCompleted(), info.getTimeRemainingInMillis(),
+                                    startTime, info.isResumable());
+                        }
                         break;
                     case DOWNLOAD_NOTIFICATION_TYPE_SUCCESS:
                         mBoundService.notifyDownloadSuccessful(

@@ -23,6 +23,7 @@ public final class DownloadInfo {
     private final boolean mHasUserGesture;
     private final String mContentDisposition;
     private final boolean mIsGETRequest;
+    private final boolean mIsSuccessful;
     private final int mPercentCompleted;
     private final long mTimeRemainingInMillis;
     private final boolean mIsResumable;
@@ -42,6 +43,7 @@ public final class DownloadInfo {
         mHasDownloadId = builder.mHasDownloadId;
         mDownloadId = builder.mDownloadId;
         mHasUserGesture = builder.mHasUserGesture;
+        mIsSuccessful = builder.mIsSuccessful;
         mIsGETRequest = builder.mIsGETRequest;
         mContentDisposition = builder.mContentDisposition;
         mPercentCompleted = builder.mPercentCompleted;
@@ -106,6 +108,10 @@ public final class DownloadInfo {
         return mHasUserGesture;
     }
 
+    public boolean isSuccessful() {
+        return mIsSuccessful;
+    }
+
     public String getContentDisposition() {
         return mContentDisposition;
     }
@@ -147,6 +153,7 @@ public final class DownloadInfo {
         private boolean mHasDownloadId;
         private int mDownloadId;
         private boolean mHasUserGesture;
+        private boolean mIsSuccessful;
         private String mContentDisposition;
         private int mPercentCompleted = -1;
         private long mTimeRemainingInMillis;
@@ -223,6 +230,11 @@ public final class DownloadInfo {
             return this;
         }
 
+        public Builder setIsSuccessful(boolean isSuccessful) {
+            mIsSuccessful = isSuccessful;
+            return this;
+        }
+
         public Builder setContentDisposition(String contentDisposition) {
             mContentDisposition = contentDisposition;
             return this;
@@ -275,6 +287,7 @@ public final class DownloadInfo {
                     .setHasUserGesture(downloadInfo.hasUserGesture())
                     .setContentDisposition(downloadInfo.getContentDisposition())
                     .setIsGETRequest(downloadInfo.isGETRequest())
+                    .setIsSuccessful(downloadInfo.isSuccessful())
                     .setPercentCompleted(downloadInfo.getPercentCompleted())
                     .setTimeRemainingInMillis(downloadInfo.getTimeRemainingInMillis())
                     .setIsResumable(downloadInfo.isResumable())

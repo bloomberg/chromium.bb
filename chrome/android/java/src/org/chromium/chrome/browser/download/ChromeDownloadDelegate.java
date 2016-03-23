@@ -89,8 +89,8 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
                         }
                     }.execute();
                 } else {
-                    DownloadInfo newDownloadInfo =
-                            DownloadInfo.Builder.fromDownloadInfo(mPendingRequest).build();
+                    DownloadInfo newDownloadInfo = DownloadInfo.Builder.fromDownloadInfo(
+                            mPendingRequest).setIsSuccessful(true).build();
                     DownloadManagerService.getDownloadManagerService(mContext).onDownloadCompleted(
                             newDownloadInfo);
                 }
