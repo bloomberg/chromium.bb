@@ -115,12 +115,14 @@ bool RegisterBlinkTestPlugin(base::CommandLine* command_line) {
       FILE_PATH_LITERAL("#Blink Deprecated Test Plugin#Description#0.1");
 
   std::vector<PluginInfo> plugins;
-  plugins.push_back(
-      PluginInfo(kPluginLibrary, kExtraParameters,
-                 FILE_PATH_LITERAL("application/x-blink-test-plugin")));
   plugins.push_back(PluginInfo(
-      kDeprecatedPluginLibrary, kDeprecatedExtraParameters,
-      FILE_PATH_LITERAL("application/x-blink-deprecated-test-plugin")));
+      kPluginLibrary, kExtraParameters,
+      FILE_PATH_LITERAL("application/x-blink-test-plugin#blinktestplugin")));
+  plugins.push_back(
+      PluginInfo(kDeprecatedPluginLibrary, kDeprecatedExtraParameters,
+                 FILE_PATH_LITERAL("application/"
+                                   "x-blink-deprecated-test-plugin#"
+                                   "blinkdeprecatedtestplugin")));
   return RegisterPlugins(command_line, plugins);
 }
 

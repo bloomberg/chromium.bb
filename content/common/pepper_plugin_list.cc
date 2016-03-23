@@ -54,7 +54,8 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
   // plugin-entry =
   //    <file-path> +
   //    ["#" + <name> + ["#" + <description> + ["#" + <version>]]] +
-  //    *1( LWS + ";" + LWS + <mime-type> )
+  //    *1( LWS + ";" + LWS + <mime-type-data> )
+  // mime-type-data = <mime-type> + [ LWS + "#" + LWS + <extension> ]
   std::vector<std::string> modules = base::SplitString(
       value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
@@ -105,8 +106,14 @@ void ComputePluginsFromCommandLine(std::vector<PepperPluginInfo>* plugins) {
     if (name_parts.size() > 3)
       plugin.version = name_parts[3];
     for (size_t j = 1; j < parts.size(); ++j) {
-      WebPluginMimeType mime_type(parts[j],
-                                  std::string(),
+      std::vector<std::string> mime_parts = base::SplitString(
+          parts[j], "#", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      DCHECK_GE(mime_parts.size(), 1u);
+      std::string mime_extension;
+      if (mime_parts.size() > 1)
+        mime_extension = mime_parts[1];
+      WebPluginMimeType mime_type(mime_parts[0],
+                                  mime_extension,
                                   plugin.description);
       plugin.mime_types.push_back(mime_type);
     }

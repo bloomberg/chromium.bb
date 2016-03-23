@@ -48,7 +48,7 @@ function test()
     shouldBe("embed.getAttribute('width')", 1);
     shouldBe("embed.getAttribute('type')", 1);
     shouldBe("embed.getAttribute('src')", 1);
-    shouldBe("typeof embed.testCallback", "function");
+    shouldBe("typeof embed.postMessage", "function");
 
     print("----------");
     
@@ -56,9 +56,9 @@ function test()
     print("[Embed is dynamically created element with only type specified]");
 
     embed.style.visibility = "hidden";
-    embed.type = "application/x-webkit-test-netscape";
+    embed.type = "application/x-blink-test-plugin";
     document.body.appendChild(embed);
-    shouldBe("typeof embed.testCallback", "function");
+    shouldBe("typeof embed.postMessage", "function");
     
     print("----------");
     
@@ -66,9 +66,9 @@ function test()
     print("[Embed is dynamically created element with only src specified]");
 
     embed.style.visibility = "hidden";
-    embed.src = "resources/test.testnetscape";
+    embed.src = "resources/test.blinktestplugin";
     document.body.appendChild(embed);
-    shouldBe("typeof embed.testCallback", "function");
+    shouldBe("typeof embed.postMessage", "function");
 }
 </script>
 </head>
@@ -78,7 +78,7 @@ function test()
 <hr>
 <div id='console'></div>
 
-<embed style="visibility: hidden" type="application/x-webkit-test-netscape" id='embed'></embed>
+<embed style="visibility: hidden" type="application/x-blink-test-plugin" id='embed'></embed>
 
 </body>
 </html>

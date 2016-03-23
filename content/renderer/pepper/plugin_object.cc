@@ -146,8 +146,12 @@ bool PluginObject::SetNamedProperty(v8::Isolate* isolate,
 std::vector<std::string> PluginObject::EnumerateNamedProperties(
     v8::Isolate* isolate) {
   std::vector<std::string> result;
-  if (!instance_)
+  if (!instance_) {
+    std::string error = "Plugin object deleted";
+    isolate->ThrowException(
+        v8::Exception::ReferenceError(gin::StringToV8(isolate, error)));
     return result;
+  }
 
   V8VarConverter var_converter(instance_->pp_instance(),
                                V8VarConverter::kAllowObjectVars);

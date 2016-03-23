@@ -1,14 +1,10 @@
 <head>
 <script>
-function MyCallback() {
-  
-}
-
 function test() {
   try {
 
     var plugin = window.frames["subframe"].document.plugins[0];
-    plugin.getURL('javascript:parent.document.getElementById("d").innerHTML = "";', '_self');
+    plugin.testExecuteScript('parent.document.getElementById("d").innerHTML = "";');
 
   } catch (ex) {
     alert(ex);

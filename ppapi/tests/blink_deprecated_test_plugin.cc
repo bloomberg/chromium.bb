@@ -9,11 +9,56 @@
 // MIME type application/x-blink-test-plugin. For layout tests that absolutely
 // need to test deprecated synchronous scripting interfaces, this plugin can be
 // instantiated using the application/x-blink-deprecated-test-plugin MIME type.
+//
+// The plugin exposes the following interface:
+//
+// Attributes:
+// testwindowopen: if set, the plugin will synchronously attempt to open a
+// window from DidCreateInstance, and log a message if successful.
+//
+// keydownscript: if set, the plugin will execute the value of the attribute as
+// a script on a key down.
+//
+// mousedownscript: if set, the plugin will execute the value of the attribute
+// as a script on a mouse button down.
+//
+//
+// Functions:
+// * plugin.normalize(): synchronously calls window.pluginCallback.
+//
+// * plugin.remember(value): keeps a reference on |value| in the plugin.
+//
+// * plugin.testCloneObject(): creates and returns another instance of the
+// plugin object.
+//
+// * plugin.testExecuteScript(script): synchronously evaluates |script| and
+// returns the result.
+//
+// * plugin.testGetProperty(property): returns the property named |property|
+// from the window object.
+//
+// * plugin.testPassTestObject(function, object): synchronously calls the
+// function named |function| on the window object, passing it |object| as a
+// parameter, and returns its result.
+//
+// * plugin.testScriptObjectInvoke(function, value): synchronously calls the
+// function named |function| on the window object, passing it |value| as a
+// parameter, and returns its result.
+//
+//
+// Properties:
+// * plugin.testObject (read-only): a TestObject instance (see below).
+//
+//
+// TestObject exposes the following interface:
+// Properties:
+// * object.testObject (read-only: another TestObject instance.
 
 #include <stdint.h>
 
 #include <map>
 #include <sstream>
+#include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
@@ -21,6 +66,7 @@
 #include "base/callback.h"
 #include "base/strings/stringprintf.h"
 #include "ppapi/cpp/dev/scriptable_object_deprecated.h"
+#include "ppapi/cpp/input_event.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/instance_private.h"
 #include "ppapi/cpp/private/var_private.h"
@@ -126,6 +172,15 @@ class InstanceSO : public ScriptableBase {
   explicit InstanceSO(pp::InstancePrivate* instance)
       : ScriptableBase(instance) {
     methods_.insert(std::make_pair(
+        "normalize",
+        base::Bind(&InstanceSO::Normalize, base::Unretained(this))));
+    methods_.insert(std::make_pair(
+        "remember",
+        base::Bind(&InstanceSO::Remember, base::Unretained(this))));
+    methods_.insert(std::make_pair(
+        "testCloneObject",
+        base::Bind(&InstanceSO::TestCloneObject, base::Unretained(this))));
+    methods_.insert(std::make_pair(
         "testExecuteScript",
         base::Bind(&InstanceSO::TestExecuteScript, base::Unretained(this))));
     methods_.insert(std::make_pair(
@@ -134,6 +189,13 @@ class InstanceSO : public ScriptableBase {
     methods_.insert(std::make_pair(
         "testPassTestObject",
         base::Bind(&InstanceSO::TestPassTestObject, base::Unretained(this))));
+    // Note: the semantics of testScriptObjectInvoke are identical to the
+    // semantics of testPassTestObject: call args[0] with args[1] as a
+    // parameter.
+    methods_.insert(
+        std::make_pair("testScriptObjectInvoke",
+                       base::Bind(&InstanceSO::TestPassTestObject,
+                                  base::Unretained(this))));
     properties_.insert(std::make_pair(
         "testObject", base::Bind(&InstanceSO::TestObjectAccessor,
                                  base::Unretained(this))));
@@ -141,6 +203,28 @@ class InstanceSO : public ScriptableBase {
   ~InstanceSO() override {}
 
  private:
+  // Requires no argument.
+  pp::Var Normalize(const std::vector<pp::Var>& args, pp::Var* exception) {
+    pp::VarPrivate object = instance_->GetWindowObject();
+    return object.Call(pp::Var("pluginCallback"), exception);
+  }
+
+  // Requires 1 argument. The argument is retained into remembered_
+  pp::Var Remember(const std::vector<pp::Var>& args, pp::Var* exception) {
+    if (args.size() != 1) {
+      *exception = pp::Var("remember requires one argument");
+      return pp::Var();
+    }
+    remembered_ = args[0];
+    return pp::Var();
+  }
+
+  // Requires no argument.
+  pp::Var TestCloneObject(const std::vector<pp::Var>& args,
+                          pp::Var* exception) {
+    return pp::VarPrivate(instance_, new InstanceSO(instance_));
+  }
+
   // Requires one argument. The argument is passed through as-is to
   // pp::InstancePrivate::ExecuteScript().
   pp::Var TestExecuteScript(const std::vector<pp::Var>& args,
@@ -191,6 +275,7 @@ class InstanceSO : public ScriptableBase {
   }
 
   pp::VarPrivate test_object_;
+  pp::Var remembered_;
 };
 
 class BlinkDeprecatedTestInstance : public pp::InstancePrivate {
@@ -201,8 +286,37 @@ class BlinkDeprecatedTestInstance : public pp::InstancePrivate {
     LogMessage("%s", "Destroying");
   }
 
-  bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
+  // pp::Instance overrides
+  bool Init(uint32_t argc, const char* argn[], const char* argv[]) override {
+    for (uint32_t i = 0; i < argc; ++i)
+      attributes_[argn[i]] = argv[i];
+
+    if (HasAttribute("testwindowopen"))
+      return TestWindowOpen();
+
+    uint32_t event_classes = 0;
+    if (HasAttribute("keydownscript"))
+        event_classes |= PP_INPUTEVENT_CLASS_KEYBOARD;
+    if (HasAttribute("mousedownscript"))
+        event_classes |= PP_INPUTEVENT_CLASS_MOUSE;
+    RequestFilteringInputEvents(event_classes);
+
     return true;
+  }
+
+  virtual bool HandleInputEvent(const pp::InputEvent& event) override {
+    switch (event.GetType()) {
+      case PP_INPUTEVENT_TYPE_MOUSEDOWN:
+        if (HasAttribute("mousedownscript"))
+          ExecuteScript(attributes_["mousedownscript"]);
+        return true;
+      case PP_INPUTEVENT_TYPE_KEYDOWN:
+        if (HasAttribute("keydownscript"))
+          ExecuteScript(attributes_["keydownscript"]);
+        return true;
+      default:
+        return false;
+    }
   }
 
   // pp::InstancePrivate overrides:
@@ -212,6 +326,19 @@ class BlinkDeprecatedTestInstance : public pp::InstancePrivate {
       instance_var_ = pp::VarPrivate(this, instance_so_);
     }
     return instance_var_;
+  }
+
+  void NotifyTestCompletion() {
+    ExecuteScript("window.testRunner.notifyDone()");
+  }
+
+  bool TestWindowOpen() {
+    pp::Var result = GetWindowObject().Call(
+        pp::Var("open"), pp::Var("about:blank"), pp::Var("_blank"));
+    if (result.is_object())
+      LogMessage("PLUGIN: WINDOW OPEN SUCCESS");
+    NotifyTestCompletion();
+    return true;
   }
 
   void LogMessage(const char* format...) {
@@ -224,6 +351,11 @@ class BlinkDeprecatedTestInstance : public pp::InstancePrivate {
   }
 
  private:
+  bool HasAttribute(const std::string& name) {
+    return attributes_.find(name) != attributes_.end();
+  }
+
+  std::unordered_map<std::string, std::string> attributes_;
   pp::VarPrivate instance_var_;
   // Owned by |instance_var_|.
   InstanceSO* instance_so_;

@@ -6,7 +6,7 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-function log(a) 
+function log(a)
 {
     document.getElementById("results").innerHTML += a + "<br>";
 }
@@ -14,35 +14,24 @@ function log(a)
 function test()
 {
     var plugin = document.createElement('embed');
-    plugin.setAttribute("type", "application/x-webkit-test-netscape");
-    plugin.setAttribute("onNew", "loadedFirst()");
+    plugin.setAttribute("type", "application/x-blink-test-plugin");
     document.getElementById("plugins").appendChild(plugin);
-}
+    if (plugin.postMessage)
+        log("PASS: first plugin loaded");
 
-function done()
-{
-    if (window.testRunner)
-        testRunner.notifyDone();
-}
-
-function loadedFirst()
-{
-    log("PASS: first plugin loaded");
     if (window.testRunner && testRunner.setPluginsAllowed)
         testRunner.setPluginsAllowed(false);
     else
         log("This test requires testRunner.setPluginsAllowed, so it be can't run in a browser.");
 
-    var plugin = document.createElement('embed');
-    plugin.setAttribute("type", "application/x-webkit-test-netscape");
-    plugin.setAttribute("onNew", "loadedSecond()");
-    document.getElementById("plugins").appendChild(plugin);
-    window.setTimeout(done, 5);
-}
+    var plugin2 = document.createElement('embed');
+    plugin2.setAttribute("type", "application/x-blink-test-plugin");
+    document.getElementById("plugins").appendChild(plugin2);
+    if (plugin2.postMessage)
+        log("FAIL: second plugin loaded");
 
-function loadedSecond()
-{
-    log("FAIL: second plugin loaded");
+    if (window.testRunner)
+        testRunner.notifyDone();
 }
 </script>
 </head>

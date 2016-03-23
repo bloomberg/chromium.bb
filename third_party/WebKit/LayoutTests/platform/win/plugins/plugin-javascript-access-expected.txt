@@ -10,7 +10,7 @@ Type: application/x-blink-test-plugin
 
 Description: Interesting description.
 
-Suffixes:
+Suffixes: blinktestplugin
 
 
 Plugin.item() works.
@@ -25,7 +25,7 @@ Type: application/x-blink-test-plugin
 
 Description: Interesting description.
 
-Suffixes:
+Suffixes: blinktestplugin
 
 MimeTypeArray.item() works.
 
