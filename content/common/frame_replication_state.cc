@@ -31,6 +31,9 @@ FrameReplicationState::FrameReplicationState(
       has_potentially_trustworthy_unique_origin(
           has_potentially_trustworthy_unique_origin) {}
 
+FrameReplicationState::FrameReplicationState(
+    const FrameReplicationState& other) = default;
+
 FrameReplicationState::~FrameReplicationState() {
 }
 

@@ -29,6 +29,7 @@ struct FieldCandidate {
 class FieldCandidates {
  public:
   FieldCandidates();
+  FieldCandidates(const FieldCandidates& other);
   ~FieldCandidates();
 
   // Includes a possible |type| for a given field.

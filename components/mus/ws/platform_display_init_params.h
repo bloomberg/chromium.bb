@@ -20,6 +20,7 @@ namespace ws {
 
 struct PlatformDisplayInitParams {
   PlatformDisplayInitParams();
+  PlatformDisplayInitParams(const PlatformDisplayInitParams& other);
   ~PlatformDisplayInitParams();
 
   mojo::Connector* connector = nullptr;

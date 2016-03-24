@@ -73,6 +73,8 @@ struct CookieStoreCommand {
   // Constructor for ADD, UPDATE_ACCESS_TIME, and REMOVE calls.
   CookieStoreCommand(Type type, const CanonicalCookie& cookie);
 
+  CookieStoreCommand(const CookieStoreCommand& other);
+
   ~CookieStoreCommand();
 
   Type type;

@@ -21,6 +21,8 @@ PrioritizedTile::PrioritizedTile(
       priority_(priority),
       is_occluded_(is_occluded) {}
 
+PrioritizedTile::PrioritizedTile(const PrioritizedTile& other) = default;
+
 PrioritizedTile::~PrioritizedTile() {
 }
 

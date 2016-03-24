@@ -45,6 +45,7 @@ struct BLIMP_CLIENT_EXPORT Assignment {
   };
 
   Assignment();
+  Assignment(const Assignment& other);
   ~Assignment();
 
   // Returns true if the net::IPEndPoint has an unspecified IP, port, or

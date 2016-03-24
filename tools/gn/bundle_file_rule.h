@@ -20,6 +20,7 @@ class BundleFileRule {
  public:
   BundleFileRule(const std::vector<SourceFile> sources,
                  const SubstitutionPattern& pattern);
+  BundleFileRule(const BundleFileRule& other);
   ~BundleFileRule();
 
   // Applies the substitution pattern to a source file, returning the result

@@ -32,6 +32,8 @@ TextInputState::TextInputState(TextInputType type,
       composition_end(composition_end),
       can_compose_inline(can_compose_inline) {}
 
+TextInputState::TextInputState(const TextInputState& other) = default;
+
 bool TextInputState::operator==(const TextInputState& other) const {
   return type == other.type &&
          flags == other.flags &&

@@ -38,6 +38,9 @@ QuicCompressedCertsCache::CachedCerts::CachedCerts(
       client_cached_cert_hashes_(*uncompressed_certs.client_cached_cert_hashes),
       compressed_cert_(compressed_cert) {}
 
+QuicCompressedCertsCache::CachedCerts::CachedCerts(const CachedCerts& other) =
+    default;
+
 QuicCompressedCertsCache::CachedCerts::~CachedCerts() {}
 
 bool QuicCompressedCertsCache::CachedCerts::MatchesUncompressedCerts(

@@ -19,6 +19,7 @@ class CC_EXPORT PrioritizedTile {
   // This class is constructed and returned by a |PictureLayerTiling|, and
   // represents a tile and its priority.
   PrioritizedTile();
+  PrioritizedTile(const PrioritizedTile& other);
   ~PrioritizedTile();
 
   Tile* tile() const { return tile_; }

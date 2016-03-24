@@ -46,6 +46,7 @@ enum ChangeType {
 // TODO(sky): consider nuking and converting directly to WindowData.
 struct TestWindow {
   TestWindow();
+  TestWindow(const TestWindow& other);
   ~TestWindow();
 
   // Returns a string description of this.
@@ -65,6 +66,7 @@ struct TestWindow {
 // fields that are used.
 struct Change {
   Change();
+  Change(const Change& other);
   ~Change();
 
   ChangeType type;

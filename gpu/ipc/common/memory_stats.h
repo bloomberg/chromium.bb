@@ -21,6 +21,7 @@ namespace gpu {
 // is sent over IPC which could span 32 & 64 bit processes.
 struct GPU_EXPORT VideoMemoryUsageStats {
   VideoMemoryUsageStats();
+  VideoMemoryUsageStats(const VideoMemoryUsageStats& other);
   ~VideoMemoryUsageStats();
 
   struct GPU_EXPORT ProcessStats {

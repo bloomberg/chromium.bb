@@ -25,6 +25,7 @@ struct CONTENT_EXPORT FrameReplicationState {
                         blink::WebSandboxFlags sandbox_flags,
                         bool should_enforce_strict_mixed_content_checking,
                         bool has_potentially_trustworthy_unique_origin);
+  FrameReplicationState(const FrameReplicationState& other);
   ~FrameReplicationState();
 
   // Current origin of the frame. This field is updated whenever a frame

@@ -21,6 +21,7 @@ namespace cc {
 class CC_EXPORT SchedulerSettings {
  public:
   SchedulerSettings();
+  SchedulerSettings(const SchedulerSettings& other);
   ~SchedulerSettings();
 
   bool use_external_begin_frame_source;

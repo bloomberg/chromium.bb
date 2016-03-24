@@ -176,6 +176,8 @@ Assignment GetAssignmentFromCommandLine() {
 
 Assignment::Assignment() : transport_protocol(TransportProtocol::UNKNOWN) {}
 
+Assignment::Assignment(const Assignment& other) = default;
+
 Assignment::~Assignment() {}
 
 bool Assignment::IsValid() const {

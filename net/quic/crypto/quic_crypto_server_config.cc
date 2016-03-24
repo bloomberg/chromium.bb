@@ -205,6 +205,9 @@ QuicCryptoServerConfig::ConfigOptions::ConfigOptions()
       token_binding_enabled(false),
       p256(false) {}
 
+QuicCryptoServerConfig::ConfigOptions::ConfigOptions(
+    const ConfigOptions& other) = default;
+
 QuicCryptoServerConfig::QuicCryptoServerConfig(
     StringPiece source_address_token_secret,
     QuicRandom* server_nonce_entropy,

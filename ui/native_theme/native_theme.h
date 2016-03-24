@@ -199,6 +199,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   union NATIVE_THEME_EXPORT ExtraParams {
     ExtraParams();
+    ExtraParams(const ExtraParams& other);
 
     ButtonExtraParams button;
     InnerSpinButtonExtraParams inner_spin;

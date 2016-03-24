@@ -65,6 +65,7 @@ enum class ThreatPatternType {
 // Some fields are only applicable to certain lists.
 struct ThreatMetadata {
   ThreatMetadata();
+  ThreatMetadata(const ThreatMetadata& other);
   ~ThreatMetadata();
 
   // Type of blacklisted page. Used on malware and UwS lists.

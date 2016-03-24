@@ -17,6 +17,7 @@ namespace protocol {
 
 struct IceConfig {
   IceConfig();
+  IceConfig(const IceConfig& other);
   ~IceConfig();
 
   bool is_null() const { return expiration_time.is_null(); }

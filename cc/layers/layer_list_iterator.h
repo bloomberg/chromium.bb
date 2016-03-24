@@ -22,6 +22,7 @@ class LayerImpl;
 class CC_EXPORT LayerListIterator {
  public:
   explicit LayerListIterator(LayerImpl* root_layer);
+  LayerListIterator(const LayerListIterator& other);
   virtual ~LayerListIterator();
 
   bool operator==(const LayerListIterator& other) const {

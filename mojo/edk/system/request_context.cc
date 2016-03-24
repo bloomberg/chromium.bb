@@ -90,6 +90,9 @@ RequestContext::WatchNotifyFinalizer::WatchNotifyFinalizer(
     : watcher(watcher), result(result), state(state) {
 }
 
+RequestContext::WatchNotifyFinalizer::WatchNotifyFinalizer(
+    const WatchNotifyFinalizer& other) = default;
+
 RequestContext::WatchNotifyFinalizer::~WatchNotifyFinalizer() {}
 
 }  // namespace edk

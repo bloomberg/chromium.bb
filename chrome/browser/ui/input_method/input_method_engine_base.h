@@ -28,6 +28,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
  public:
   struct KeyboardEvent {
     KeyboardEvent();
+    KeyboardEvent(const KeyboardEvent& other);
     virtual ~KeyboardEvent();
 
     std::string type;

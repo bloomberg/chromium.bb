@@ -385,6 +385,9 @@ GpuMainThreadFactoryFunction g_gpu_main_thread_factory = NULL;
 GpuProcessHost::EstablishChannelRequest::EstablishChannelRequest()
     : client_id(0) {}
 
+GpuProcessHost::EstablishChannelRequest::EstablishChannelRequest(
+    const EstablishChannelRequest& other) = default;
+
 GpuProcessHost::EstablishChannelRequest::~EstablishChannelRequest() {}
 
 void GpuProcessHost::RegisterGpuMainThreadFactory(

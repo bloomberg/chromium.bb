@@ -70,6 +70,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   struct EstablishChannelRequest {
     EstablishChannelRequest();
+    EstablishChannelRequest(const EstablishChannelRequest& other);
     ~EstablishChannelRequest();
     int32_t client_id;
     EstablishChannelCallback callback;

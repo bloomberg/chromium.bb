@@ -148,6 +148,9 @@ void GetExtensionKeyboardEventFromKeyEvent(
 InputMethodEngineBase::KeyboardEvent::KeyboardEvent()
     : alt_key(false), ctrl_key(false), shift_key(false), caps_lock(false) {}
 
+InputMethodEngineBase::KeyboardEvent::KeyboardEvent(
+    const KeyboardEvent& other) = default;
+
 InputMethodEngineBase::KeyboardEvent::~KeyboardEvent() {}
 
 InputMethodEngineBase::InputMethodEngineBase()

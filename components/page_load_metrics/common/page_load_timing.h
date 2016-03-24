@@ -15,6 +15,7 @@ namespace page_load_metrics {
 struct PageLoadTiming {
  public:
   PageLoadTiming();
+  PageLoadTiming(const PageLoadTiming& other);
   ~PageLoadTiming();
 
   bool operator==(const PageLoadTiming& other) const;

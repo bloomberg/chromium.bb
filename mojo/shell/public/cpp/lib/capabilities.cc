@@ -7,6 +7,7 @@
 namespace mojo {
 
 CapabilityRequest::CapabilityRequest() {}
+CapabilityRequest::CapabilityRequest(const CapabilityRequest& other) = default;
 CapabilityRequest::~CapabilityRequest() {}
 
 bool CapabilityRequest::operator==(const CapabilityRequest& other) const {
@@ -19,6 +20,7 @@ bool CapabilityRequest::operator<(const CapabilityRequest& other) const {
 }
 
 CapabilitySpec::CapabilitySpec() {}
+CapabilitySpec::CapabilitySpec(const CapabilitySpec& other) = default;
 CapabilitySpec::~CapabilitySpec() {}
 
 bool CapabilitySpec::operator==(const CapabilitySpec& other) const {

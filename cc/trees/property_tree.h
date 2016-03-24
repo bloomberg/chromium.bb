@@ -556,6 +556,7 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
  public:
   ScrollTree();
+  ScrollTree(const ScrollTree& other);
   ~ScrollTree() override;
 
   ScrollTree& operator=(const ScrollTree& from);
@@ -619,6 +620,7 @@ class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
 class CC_EXPORT PropertyTrees final {
  public:
   PropertyTrees();
+  PropertyTrees(const PropertyTrees& other);
   ~PropertyTrees();
 
   bool operator==(const PropertyTrees& other) const;

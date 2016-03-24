@@ -16,6 +16,8 @@ FieldCandidate::FieldCandidate(ServerFieldType field_type, float field_score)
 
 FieldCandidates::FieldCandidates() {}
 
+FieldCandidates::FieldCandidates(const FieldCandidates& other) = default;
+
 FieldCandidates::~FieldCandidates() {}
 
 void FieldCandidates::AddFieldCandidate(ServerFieldType type, float score) {

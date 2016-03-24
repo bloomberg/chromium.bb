@@ -198,6 +198,8 @@ Change::Change()
       bool_value(false),
       change_id(0u) {}
 
+Change::Change(const Change& other) = default;
+
 Change::~Change() {}
 
 TestChangeTracker::TestChangeTracker() : delegate_(NULL) {}
@@ -390,6 +392,8 @@ void TestChangeTracker::AddChange(const Change& change) {
 }
 
 TestWindow::TestWindow() {}
+
+TestWindow::TestWindow(const TestWindow& other) = default;
 
 TestWindow::~TestWindow() {}
 

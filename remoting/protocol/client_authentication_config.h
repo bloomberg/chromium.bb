@@ -40,6 +40,7 @@ typedef base::Callback<void(
 
 struct ClientAuthenticationConfig {
   ClientAuthenticationConfig();
+  ClientAuthenticationConfig(const ClientAuthenticationConfig& other);
   ~ClientAuthenticationConfig();
 
   // Used for all authenticators.

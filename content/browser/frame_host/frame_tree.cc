@@ -83,6 +83,9 @@ FrameTree::NodeRange::NodeRange(FrameTreeNode* root,
                                 FrameTreeNode* node_to_skip)
     : root_(root), node_to_skip_(node_to_skip) {}
 
+FrameTree::ConstNodeIterator::ConstNodeIterator(
+    const ConstNodeIterator& other) = default;
+
 FrameTree::ConstNodeIterator::~ConstNodeIterator() {}
 
 FrameTree::ConstNodeIterator& FrameTree::ConstNodeIterator::operator++() {

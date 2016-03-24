@@ -330,6 +330,8 @@ LogData::LogData()
       dispatch(0) {
 }
 
+LogData::LogData(const LogData& other) = default;
+
 LogData::~LogData() {
 }
 

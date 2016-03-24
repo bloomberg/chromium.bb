@@ -126,6 +126,7 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // pointers guaranteed alive by callers until unregistered.
   struct ClientSourceMapping {
     ClientSourceMapping();
+    ClientSourceMapping(const ClientSourceMapping& other);
     ~ClientSourceMapping();
     bool is_empty() const { return !client && !children.size(); }
     // The client that's responsible for creating this namespace.  Never null.

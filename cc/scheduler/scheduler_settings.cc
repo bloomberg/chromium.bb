@@ -20,6 +20,8 @@ SchedulerSettings::SchedulerSettings()
       maximum_number_of_failed_draws_before_draw_is_forced(3),
       background_frame_interval(base::TimeDelta::FromSeconds(1)) {}
 
+SchedulerSettings::SchedulerSettings(const SchedulerSettings& other) = default;
+
 SchedulerSettings::~SchedulerSettings() {}
 
 scoped_ptr<base::trace_event::ConvertableToTraceFormat>

@@ -33,6 +33,8 @@ bool IsKnownList(const std::string& name) {
 ThreatMetadata::ThreatMetadata()
     : threat_pattern_type(ThreatPatternType::NONE) {}
 
+ThreatMetadata::ThreatMetadata(const ThreatMetadata& other) = default;
+
 ThreatMetadata::~ThreatMetadata() {}
 
 // SBCachedFullHashResult ------------------------------------------------------

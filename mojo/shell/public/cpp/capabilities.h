@@ -23,6 +23,7 @@ using Name = std::string;
 
 struct CapabilityRequest {
   CapabilityRequest();
+  CapabilityRequest(const CapabilityRequest& other);
   ~CapabilityRequest();
   bool operator==(const CapabilityRequest& other) const;
   bool operator<(const CapabilityRequest& other) const;
@@ -32,6 +33,7 @@ struct CapabilityRequest {
 
 struct CapabilitySpec {
   CapabilitySpec();
+  CapabilitySpec(const CapabilitySpec& other);
   ~CapabilitySpec();
   bool operator==(const CapabilitySpec& other) const;
   bool operator<(const CapabilitySpec& other) const;

@@ -36,6 +36,7 @@ struct NET_EXPORT SignedTreeHead {
                  const char sha256_root_hash[kSthRootHashLength],
                  const DigitallySigned& signature,
                  const std::string& log_id);
+  SignedTreeHead(const SignedTreeHead& other);
   ~SignedTreeHead();
 
   Version version;

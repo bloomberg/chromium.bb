@@ -74,6 +74,7 @@ class NET_EXPORT_PRIVATE QuicCompressedCertsCache {
     CachedCerts();
     CachedCerts(const UncompressedCerts& uncompressed_certs,
                 const string& compressed_cert);
+    CachedCerts(const CachedCerts& other);
 
     ~CachedCerts();
 

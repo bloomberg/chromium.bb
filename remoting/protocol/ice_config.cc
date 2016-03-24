@@ -8,6 +8,7 @@ namespace remoting {
 namespace protocol {
 
 IceConfig::IceConfig() {}
+IceConfig::IceConfig(const IceConfig& other) = default;
 IceConfig::~IceConfig() {}
 
 }  // namespace protocol

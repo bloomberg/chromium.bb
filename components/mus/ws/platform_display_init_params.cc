@@ -11,6 +11,8 @@ namespace mus {
 namespace ws {
 
 PlatformDisplayInitParams::PlatformDisplayInitParams() {}
+PlatformDisplayInitParams::PlatformDisplayInitParams(
+    const PlatformDisplayInitParams& other) = default;
 PlatformDisplayInitParams::~PlatformDisplayInitParams() {}
 
 }  // namespace ws

@@ -8,6 +8,8 @@ namespace remoting {
 namespace protocol {
 
 ClientAuthenticationConfig::ClientAuthenticationConfig() {}
+ClientAuthenticationConfig::ClientAuthenticationConfig(
+    const ClientAuthenticationConfig& other) = default;
 ClientAuthenticationConfig::~ClientAuthenticationConfig() {}
 
 }  // namespace protocol

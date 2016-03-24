@@ -14,6 +14,8 @@ BundleFileRule::BundleFileRule(const std::vector<SourceFile> sources,
                                const SubstitutionPattern& pattern)
     : sources_(sources), pattern_(pattern) {}
 
+BundleFileRule::BundleFileRule(const BundleFileRule& other) = default;
+
 BundleFileRule::~BundleFileRule() {}
 
 SourceFile BundleFileRule::ApplyPatternToSource(

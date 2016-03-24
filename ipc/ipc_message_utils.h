@@ -54,6 +54,7 @@ struct ChannelHandle;
 // How we send IPC message logs across channels.
 struct IPC_EXPORT LogData {
   LogData();
+  LogData(const LogData& other);
   ~LogData();
 
   std::string channel;

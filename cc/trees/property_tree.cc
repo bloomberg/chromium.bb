@@ -1311,6 +1311,8 @@ ScrollTree::ScrollTree()
     : currently_scrolling_node_id_(-1),
       layer_id_to_scroll_offset_map_(ScrollTree::ScrollOffsetMap()) {}
 
+ScrollTree::ScrollTree(const ScrollTree& other) = default;
+
 ScrollTree::~ScrollTree() {}
 
 ScrollTree& ScrollTree::operator=(const ScrollTree& from) {
@@ -1719,6 +1721,8 @@ PropertyTrees::PropertyTrees()
   clip_tree.SetPropertyTrees(this);
   scroll_tree.SetPropertyTrees(this);
 }
+
+PropertyTrees::PropertyTrees(const PropertyTrees& other) = default;
 
 PropertyTrees::~PropertyTrees() {}
 

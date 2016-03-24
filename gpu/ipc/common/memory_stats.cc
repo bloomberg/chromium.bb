@@ -9,6 +9,9 @@ namespace gpu {
 VideoMemoryUsageStats::VideoMemoryUsageStats()
     : bytes_allocated(0), bytes_allocated_historical_max(0) {}
 
+VideoMemoryUsageStats::VideoMemoryUsageStats(
+    const VideoMemoryUsageStats& other) = default;
+
 VideoMemoryUsageStats::~VideoMemoryUsageStats() {}
 
 VideoMemoryUsageStats::ProcessStats::ProcessStats()

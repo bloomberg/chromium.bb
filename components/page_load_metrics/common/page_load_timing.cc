@@ -8,6 +8,8 @@ namespace page_load_metrics {
 
 PageLoadTiming::PageLoadTiming() {}
 
+PageLoadTiming::PageLoadTiming(const PageLoadTiming& other) = default;
+
 PageLoadTiming::~PageLoadTiming() {}
 
 bool PageLoadTiming::operator==(const PageLoadTiming& other) const {

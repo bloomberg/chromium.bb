@@ -33,6 +33,8 @@ class CC_EXPORT ImageDecodeControllerKey {
  public:
   static ImageDecodeControllerKey FromDrawImage(const DrawImage& image);
 
+  ImageDecodeControllerKey(const ImageDecodeControllerKey& other);
+
   bool operator==(const ImageDecodeControllerKey& other) const {
     // The image_id always has to be the same. However, after that all original
     // decodes are the same, so if we can use the original decode, return true.

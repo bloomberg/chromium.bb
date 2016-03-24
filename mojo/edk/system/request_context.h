@@ -67,6 +67,7 @@ class MOJO_SYSTEM_IMPL_EXPORT RequestContext {
     WatchNotifyFinalizer(scoped_refptr<Watcher> watcher,
                          MojoResult result,
                          const HandleSignalsState& state);
+    WatchNotifyFinalizer(const WatchNotifyFinalizer& other);
     ~WatchNotifyFinalizer();
 
     scoped_refptr<Watcher> watcher;

@@ -17,6 +17,7 @@ namespace ui {
 // A struct represents the status of an ongoing composition text.
 struct UI_BASE_IME_EXPORT CompositionText {
   CompositionText();
+  CompositionText(const CompositionText& other);
   ~CompositionText();
 
   bool operator==(const CompositionText& rhs) const {

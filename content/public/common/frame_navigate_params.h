@@ -12,6 +12,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/referrer.h"
+#include "ipc/ipc_message_utils.h"
 #include "net/base/host_port_pair.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -19,7 +20,10 @@
 namespace content {
 
 // Struct used by WebContentsObserver.
-struct CONTENT_EXPORT FrameNavigateParams {
+// Note that we derived from IPC::NoParams here, because this struct is used in
+// an IPC struct as a parent. Deriving from NoParams allows us to by-pass the
+// out of line constructor checks in our clang plugins.
+struct CONTENT_EXPORT FrameNavigateParams : public IPC::NoParams {
   FrameNavigateParams();
   FrameNavigateParams(const FrameNavigateParams& other);
   ~FrameNavigateParams();

@@ -23,6 +23,7 @@ struct TextInputState {
                  int composition_start,
                  int composition_end,
                  bool can_compose_inline);
+  TextInputState(const TextInputState& other);
   bool operator==(const TextInputState& other) const;
 
   // The type of input field.

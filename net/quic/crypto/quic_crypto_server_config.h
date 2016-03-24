@@ -125,6 +125,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerConfig {
   // ConfigOptions contains options for generating server configs.
   struct NET_EXPORT_PRIVATE ConfigOptions {
     ConfigOptions();
+    ConfigOptions(const ConfigOptions& other);
 
     // expiry_time is the time, in UNIX seconds, when the server config will
     // expire. If unset, it defaults to the current time plus six months.

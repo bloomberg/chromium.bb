@@ -294,6 +294,9 @@ SSLSocketDataProvider::SSLSocketDataProvider(IoMode mode, int result)
   SSLConnectionStatusSetCipherSuite(0xcc14, &connection_status);
 }
 
+SSLSocketDataProvider::SSLSocketDataProvider(
+    const SSLSocketDataProvider& other) = default;
+
 SSLSocketDataProvider::~SSLSocketDataProvider() {
 }
 

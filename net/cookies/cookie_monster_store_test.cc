@@ -34,6 +34,9 @@ CookieStoreCommand::CookieStoreCommand(
 CookieStoreCommand::CookieStoreCommand(Type type, const CanonicalCookie& cookie)
     : type(type), cookie(cookie) {}
 
+CookieStoreCommand::CookieStoreCommand(const CookieStoreCommand& other) =
+    default;
+
 CookieStoreCommand::~CookieStoreCommand() {}
 
 MockPersistentCookieStore::MockPersistentCookieStore()

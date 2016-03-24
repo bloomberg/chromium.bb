@@ -821,6 +821,9 @@ ImageDecodeControllerKey::ImageDecodeControllerKey(
   }
 }
 
+ImageDecodeControllerKey::ImageDecodeControllerKey(
+    const ImageDecodeControllerKey& other) = default;
+
 std::string ImageDecodeControllerKey::ToString() const {
   std::ostringstream str;
   str << "id[" << image_id_ << "] src_rect[" << src_rect_.x() << ","

@@ -14,6 +14,10 @@ NativeTheme::ExtraParams::ExtraParams() {
   memset(this, 0, sizeof(*this));
 }
 
+NativeTheme::ExtraParams::ExtraParams(const ExtraParams& other) {
+  memcpy(this, &other, sizeof(*this));
+}
+
 void NativeTheme::SetScrollbarColors(unsigned inactive_color,
                                      unsigned active_color,
                                      unsigned track_color) {

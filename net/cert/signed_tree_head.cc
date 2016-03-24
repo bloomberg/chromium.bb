@@ -29,6 +29,8 @@ SignedTreeHead::SignedTreeHead(Version version,
   memcpy(this->sha256_root_hash, sha256_root_hash, kSthRootHashLength);
 }
 
+SignedTreeHead::SignedTreeHead(const SignedTreeHead& other) = default;
+
 SignedTreeHead::~SignedTreeHead() {}
 
 void PrintTo(const SignedTreeHead& sth, std::ostream* os) {

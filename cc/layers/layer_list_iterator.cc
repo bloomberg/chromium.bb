@@ -14,6 +14,8 @@ LayerListIterator::LayerListIterator(LayerImpl* root_layer)
   list_indices_.push_back(0);
 }
 
+LayerListIterator::LayerListIterator(const LayerListIterator& other) = default;
+
 LayerListIterator::~LayerListIterator() {}
 
 LayerListIterator& LayerListIterator::operator++() {

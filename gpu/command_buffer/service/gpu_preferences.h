@@ -18,6 +18,8 @@ struct GPU_EXPORT GpuPreferences {
  public:
   GpuPreferences();
 
+  GpuPreferences(const GpuPreferences& other);
+
   ~GpuPreferences();
 
   // ===================================

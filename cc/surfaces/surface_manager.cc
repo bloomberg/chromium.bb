@@ -17,6 +17,9 @@ namespace cc {
 SurfaceManager::ClientSourceMapping::ClientSourceMapping()
     : client(nullptr), source(nullptr) {}
 
+SurfaceManager::ClientSourceMapping::ClientSourceMapping(
+    const ClientSourceMapping& other) = default;
+
 SurfaceManager::ClientSourceMapping::~ClientSourceMapping() {
   DCHECK(is_empty()) << "client: " << client
                      << ", children: " << children.size();
