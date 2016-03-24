@@ -475,16 +475,15 @@ void LayoutView::invalidatePaintForViewAndCompositedLayers()
         compositor()->fullyInvalidatePaint();
 }
 
-void LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* invalidationState) const
+bool LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* invalidationState, VisibleRectFlags visibleRectFlags) const
 {
-    mapToVisibleRectInAncestorSpace(ancestor, rect, IsNotFixedPosition, invalidationState);
+    return mapToVisibleRectInAncestorSpace(ancestor, rect, IsNotFixedPosition, invalidationState, visibleRectFlags);
 }
 
-void LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint,
-    const PaintInvalidationState* paintInvalidationState) const
+bool LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, ViewportConstrainedPosition viewportConstraint, const PaintInvalidationState* paintInvalidationState, VisibleRectFlags visibleRectFlags) const
 {
     if (document().printing())
-        return;
+        return true;
 
     // TODO(chrishtr): fix PaintInvalidationState offsets for LayoutViews.
 
@@ -505,17 +504,22 @@ void LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* anc
 
     ASSERT(ancestor);
     if (ancestor == this)
-        return;
+        return true;
 
     Element* owner = document().ownerElement();
     if (!owner)
-        return;
+        return true;
 
     if (LayoutBox* obj = owner->layoutBox()) {
         if (!paintInvalidationState || !paintInvalidationState->viewClippingAndScrollOffsetDisabled()) {
             // Intersect the viewport with the paint invalidation rect.
             LayoutRect viewRectangle = viewRect();
-            rect.intersect(viewRectangle);
+            if (visibleRectFlags & EdgeInclusive) {
+                if (!rect.inclusiveIntersect(viewRectangle))
+                    return false;
+            } else {
+                rect.intersect(viewRectangle);
+            }
 
             // Adjust for scroll offset of the view.
             rect.moveBy(-viewRectangle.location());
@@ -523,8 +527,10 @@ void LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* anc
 
         // Adjust for frame border.
         rect.move(obj->contentBoxOffset());
-        obj->mapToVisibleRectInAncestorSpace(ancestor, rect, 0);
+        return obj->mapToVisibleRectInAncestorSpace(ancestor, rect, 0, visibleRectFlags);
     }
+
+    return true;
 }
 
 void LayoutView::adjustViewportConstrainedOffset(LayoutRect& rect, ViewportConstrainedPosition viewportConstraint) const

@@ -80,6 +80,21 @@ void LayoutRect::intersect(const LayoutRect& other)
     m_size = newMaxPoint - newLocation;
 }
 
+bool LayoutRect::inclusiveIntersect(const LayoutRect& other)
+{
+    LayoutPoint newLocation(std::max(x(), other.x()), std::max(y(), other.y()));
+    LayoutPoint newMaxPoint(std::min(maxX(), other.maxX()), std::min(maxY(), other.maxY()));
+
+    if (newLocation.x() > newMaxPoint.x() || newLocation.y() > newMaxPoint.y()) {
+        *this = LayoutRect();
+        return false;
+    }
+
+    m_location = newLocation;
+    m_size = newMaxPoint - newLocation;
+    return true;
+}
+
 void LayoutRect::unite(const LayoutRect& other)
 {
     // Handle empty special cases first.

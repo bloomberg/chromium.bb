@@ -1638,28 +1638,28 @@ LayoutRect LayoutObject::clippedOverflowRectForPaintInvalidation(const LayoutBox
     return LayoutRect();
 }
 
-void LayoutObject::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+bool LayoutObject::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState, VisibleRectFlags visibleRectFlags) const
 {
-    if (ancestor == this)
-        return;
+    // For any layout object that doesn't override this method (the main example is LayoutText),
+    // the rect is assumed to be in the coordinate space of the object's parent.
 
-    if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor)) {
-        paintInvalidationState->mapObjectRectToAncestor(*this, ancestor, rect);
-        return;
-    }
+    if (ancestor == this)
+        return true;
+
+    if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor))
+        return paintInvalidationState->mapObjectRectToAncestor(*this, ancestor, rect, visibleRectFlags);
 
     if (LayoutObject* parent = this->parent()) {
         if (parent->hasOverflowClip()) {
             LayoutBox* parentBox = toLayoutBox(parent);
             parentBox->mapScrollingContentsRectToBoxSpace(rect);
-            if (parent != ancestor)
-                parentBox->applyOverflowClip(rect);
-            if (rect.isEmpty())
-                return;
+            if (parent != ancestor && !parentBox->applyOverflowClip(rect, visibleRectFlags))
+                return false;
         }
 
-        parent->mapToVisibleRectInAncestorSpace(ancestor, rect, nullptr);
+        return parent->mapToVisibleRectInAncestorSpace(ancestor, rect, nullptr, visibleRectFlags);
     }
+    return true;
 }
 
 void LayoutObject::dirtyLinesFromChangedChild(LayoutObject*)

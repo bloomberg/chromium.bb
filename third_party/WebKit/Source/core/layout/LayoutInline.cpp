@@ -1081,20 +1081,18 @@ LayoutRect LayoutInline::visualOverflowRect() const
     return overflowRect;
 }
 
-void LayoutInline::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+bool LayoutInline::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState, VisibleRectFlags visibleRectFlags) const
 {
-    if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor)) {
-        paintInvalidationState->mapObjectRectToAncestor(*this, ancestor, rect);
-        return;
-    }
+    if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor))
+        return paintInvalidationState->mapObjectRectToAncestor(*this, ancestor, rect, visibleRectFlags);
 
     if (ancestor == this)
-        return;
+        return true;
 
     bool ancestorSkipped;
     LayoutObject* container = this->container(ancestor, &ancestorSkipped);
     if (!container)
-        return;
+        return true;
 
     LayoutPoint topLeft = rect.location();
 
@@ -1112,20 +1110,18 @@ void LayoutInline::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* a
     if (container->hasOverflowClip()) {
         LayoutBox* containerBox = toLayoutBox(container);
         containerBox->mapScrollingContentsRectToBoxSpace(rect);
-        if (container != ancestor)
-            containerBox->applyOverflowClip(rect);
-        if (rect.isEmpty())
-            return;
+        if (container != ancestor && !containerBox->applyOverflowClip(rect, visibleRectFlags))
+            return false;
     }
 
     if (ancestorSkipped) {
         // If the paintInvalidationContainer is below o, then we need to map the rect into paintInvalidationContainer's coordinates.
         LayoutSize containerOffset = ancestor->offsetFromAncestorContainer(container);
         rect.move(-containerOffset);
-        return;
+        return true;
     }
 
-    container->mapToVisibleRectInAncestorSpace(ancestor, rect, nullptr);
+    return container->mapToVisibleRectInAncestorSpace(ancestor, rect, nullptr, visibleRectFlags);
 }
 
 LayoutSize LayoutInline::offsetFromContainer(const LayoutObject* container) const

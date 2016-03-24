@@ -361,14 +361,14 @@ LayoutRect LayoutTableCell::clippedOverflowRectForPaintInvalidation(const Layout
     return r;
 }
 
-void LayoutTableCell::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& r, const PaintInvalidationState* paintInvalidationState) const
+bool LayoutTableCell::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& r, const PaintInvalidationState* paintInvalidationState, VisibleRectFlags visibleRectFlags) const
 {
     if (ancestor == this)
-        return;
+        return true;
     r.setY(r.y());
     if ((!paintInvalidationState || !paintInvalidationState->canMapToAncestor(ancestor)) && parent())
         r.moveBy(-parentBox()->location()); // Rows are in the same coordinate space, so don't add their offset in.
-    LayoutBlockFlow::mapToVisibleRectInAncestorSpace(ancestor, r, paintInvalidationState);
+    return LayoutBlockFlow::mapToVisibleRectInAncestorSpace(ancestor, r, paintInvalidationState, visibleRectFlags);
 }
 
 int LayoutTableCell::cellBaselinePosition() const

@@ -639,7 +639,7 @@ public:
     bool hasForcedBreakAfter() const;
 
     LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
-    void mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, const PaintInvalidationState*) const override;
+    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, const PaintInvalidationState*, VisibleRectFlags = DefaultVisibleRectFlags) const override;
     virtual void invalidatePaintForOverhangingFloats(bool paintAllDescendants);
 
     LayoutUnit containingBlockLogicalHeightForGetComputedStyle() const;
@@ -842,7 +842,11 @@ public:
 
     IntSize scrolledContentOffset() const;
     void mapScrollingContentsRectToBoxSpace(LayoutRect&) const;
-    void applyOverflowClip(LayoutRect&) const;
+
+    // Returns true if the rect actually intersects the clipping region.
+    // If edgeInclusive is true, then this method may return true even
+    // if the resulting rect has zero area.
+    bool applyOverflowClip(LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const;
 
     virtual bool hasRelativeLogicalWidth() const;
     virtual bool hasRelativeLogicalHeight() const;

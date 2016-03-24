@@ -973,7 +973,7 @@ void LayoutBox::mapScrollingContentsRectToBoxSpace(LayoutRect& rect) const
     rect.move(offset);
 }
 
-void LayoutBox::applyOverflowClip(LayoutRect& rect) const
+bool LayoutBox::applyOverflowClip(LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
 {
     ASSERT(hasLayer());
     ASSERT(hasOverflowClip());
@@ -984,8 +984,16 @@ void LayoutBox::applyOverflowClip(LayoutRect& rect) const
     // layer's size instead. Even if the layer's size is wrong, the layer itself will issue paint invalidations
     // anyway if its size does change.
     LayoutRect clipRect(LayoutPoint(), LayoutSize(layer()->size()));
-    rect = intersection(rect, clipRect);
-    flipForWritingMode(rect);
+    bool doesIntersect;
+    if (visibleRectFlags & EdgeInclusive) {
+        doesIntersect = rect.inclusiveIntersect(clipRect);
+    } else {
+        rect.intersect(clipRect);
+        doesIntersect = !rect.isEmpty();
+    }
+    if (doesIntersect)
+        flipForWritingMode(rect);
+    return doesIntersect;
 }
 
 void LayoutBox::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
@@ -1929,7 +1937,7 @@ LayoutRect LayoutBox::clippedOverflowRectForPaintInvalidation(const LayoutBoxMod
     return r;
 }
 
-void LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+bool LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState, VisibleRectFlags visibleRectFlags) const
 {
     // The rect we compute at each step is shifted by our x/y offset in the parent container's coordinate space.
     // Only when we cross a writing mode boundary will we have to possibly flipForWritingMode (to convert into a more appropriate
@@ -1949,20 +1957,19 @@ void LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ance
     inflatePaintInvalidationRectForReflectionAndFilter(rect);
 
     if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor) && position != FixedPosition) {
-        paintInvalidationState->mapObjectRectToAncestor(*this, ancestor, rect);
-        return;
+        return paintInvalidationState->mapObjectRectToAncestor(*this, ancestor, rect, visibleRectFlags);
     }
 
     if (ancestor == this) {
         if (ancestor->style()->isFlippedBlocksWritingMode())
             flipForWritingMode(rect);
-        return;
+        return true;
     }
 
     bool containerSkipped;
     LayoutObject* container = this->container(ancestor, &containerSkipped);
     if (!container)
-        return;
+        return true;
 
     if (isWritingModeRoot())
         flipForWritingMode(rect);
@@ -1994,10 +2001,8 @@ void LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ance
     if (container->hasOverflowClip()) {
         LayoutBox* containerBox = toLayoutBox(container);
         containerBox->mapScrollingContentsRectToBoxSpace(rect);
-        if (container != ancestor)
-            containerBox->applyOverflowClip(rect);
-        if (rect.isEmpty())
-            return;
+        if (container != ancestor && !containerBox->applyOverflowClip(rect, visibleRectFlags))
+            return false;
     }
 
     if (containerSkipped) {
@@ -2007,13 +2012,13 @@ void LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ance
         // If the paintInvalidationContainer is fixed, then the rect is already in its coordinates so doesn't need viewport-adjusting.
         if (ancestor->style()->position() != FixedPosition && container->isLayoutView())
             toLayoutView(container)->adjustViewportConstrainedOffset(rect, LayoutView::toViewportConstrainedPosition(position));
-        return;
+        return true;
     }
 
     if (container->isLayoutView())
-        toLayoutView(container)->mapToVisibleRectInAncestorSpace(ancestor, rect, LayoutView::toViewportConstrainedPosition(position), nullptr);
+        return toLayoutView(container)->mapToVisibleRectInAncestorSpace(ancestor, rect, LayoutView::toViewportConstrainedPosition(position), nullptr, visibleRectFlags);
     else
-        container->mapToVisibleRectInAncestorSpace(ancestor, rect, nullptr);
+        return container->mapToVisibleRectInAncestorSpace(ancestor, rect, nullptr, visibleRectFlags);
 }
 
 void LayoutBox::inflatePaintInvalidationRectForReflectionAndFilter(LayoutRect& paintInvalidationRect) const

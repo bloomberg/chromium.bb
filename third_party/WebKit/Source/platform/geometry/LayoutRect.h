@@ -164,6 +164,15 @@ public:
     void unite(const LayoutRect&);
     void uniteIfNonZero(const LayoutRect&);
 
+    // Set this rect to be the intersection of itself and the argument rect
+    // using edge-inclusive geometry.  If the two rectangles overlap but the
+    // overlap region is zero-area (either because one of the two rectangles
+    // is zero-area, or because the rectangles overlap at an edge or a corner),
+    // the result is the zero-area intersection.  The return value indicates
+    // whether the two rectangle actually have an intersection, since checking
+    // the result for isEmpty() is not conclusive.
+    bool inclusiveIntersect(const LayoutRect&);
+
     // Besides non-empty rects, this method also unites empty rects (as points or line segments).
     // For example, union of (100, 100, 0x0) and (200, 200, 50x0) is (100, 100, 150x100).
     void uniteEvenIfEmpty(const LayoutRect&);

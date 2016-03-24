@@ -21,6 +21,25 @@ TEST(LayoutRectTest, ToString)
     LayoutRect granularRect(LayoutUnit(1.6f), LayoutUnit(2.7f), LayoutUnit(3.8f), LayoutUnit(4.9f));
     EXPECT_EQ(String("1.593750,2.687500 3.796875x4.890625"), granularRect.toString());
 }
+
+TEST(LayoutRectTest, InclusiveIntersect)
+{
+    LayoutRect rect(11, 12, 0, 0);
+    EXPECT_TRUE(rect.inclusiveIntersect(LayoutRect(11, 12, 13, 14)));
+    EXPECT_EQ(rect, LayoutRect(11, 12, 0, 0));
+
+    rect = LayoutRect(11, 12, 13, 14);
+    EXPECT_TRUE(rect.inclusiveIntersect(LayoutRect(24, 8, 0, 7)));
+    EXPECT_EQ(rect, LayoutRect(24, 12, 0, 3));
+
+    rect = LayoutRect(11, 12, 13, 14);
+    EXPECT_TRUE(rect.inclusiveIntersect(LayoutRect(9, 15, 4, 0)));
+    EXPECT_EQ(rect, LayoutRect(11, 15, 2, 0));
+
+    rect = LayoutRect(11, 12, 0, 14);
+    EXPECT_FALSE(rect.inclusiveIntersect(LayoutRect(12, 13, 15, 16)));
+    EXPECT_EQ(rect, LayoutRect());
+}
 #endif
 
 } // namespace blink

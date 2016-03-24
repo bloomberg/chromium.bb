@@ -11,6 +11,9 @@
 namespace blink {
 
 class LayoutObjectTest : public RenderingTest {
+public:
+    LayoutObjectTest()
+        : RenderingTest(SingleChildFrameLoaderClient::create()) {}
 protected:
     LayoutView& layoutView() const { return *document().layoutView(); }
 };
@@ -106,20 +109,76 @@ TEST_F(LayoutObjectTest, ContainingBlockAbsoluteLayoutObjectShouldNotBeNonStatic
     EXPECT_EQ(layoutObject->containingBlock(), bodyLayoutObject);
 }
 
-TEST_F(LayoutObjectTest, MapToVisibleRectInAncestorSpace)
+TEST_F(LayoutObjectTest, LayoutTextMapToVisibleRectInAncestorSpace)
 {
     setBodyInnerHTML(
-        "<div id='container' style='overflow: scroll; will-change: transform; width: 50px; height: 50px'>"
+        "<style>body { margin: 0; }</style>"
+        "<div id='container' style='overflow: scroll; width: 50px; height: 50px'>"
         "  <span><img style='width: 20px; height: 100px'></span>"
         "  text text text text text text text"
         "</div>");
+
     LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
     LayoutText* text = toLayoutText(container->lastChild());
 
     container->setScrollTop(LayoutUnit(50));
-    LayoutRect rect(0, 60, 20, 20);
-    text->mapToVisibleRectInAncestorSpace(container, rect, nullptr);
-    EXPECT_TRUE(rect == LayoutRect(0, 10, 20, 20));
+    LayoutRect rect(0, 60, 20, 80);
+    EXPECT_TRUE(text->mapToVisibleRectInAncestorSpace(container, rect, nullptr));
+    EXPECT_EQ(rect, LayoutRect(0, 10, 20, 80));
+
+    rect = LayoutRect(0, 60, 80, 0);
+    EXPECT_TRUE(text->mapToVisibleRectInAncestorSpace(container, rect, nullptr, EdgeInclusive));
+    EXPECT_EQ(rect, LayoutRect(0, 10, 80, 0));
+}
+
+TEST_F(LayoutObjectTest, LayoutInlineMapToVisibleRectInAncestorSpace)
+{
+    document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div id='container' style='overflow: scroll; width: 50px; height: 50px'>"
+        "  <span><img style='width: 20px; height: 100px'></span>"
+        "  <span id=leaf></span></div>");
+
+    LayoutBlock* container = toLayoutBlock(getLayoutObjectByElementId("container"));
+    LayoutObject* leaf = container->lastChild();
+
+    container->setScrollTop(LayoutUnit(50));
+    LayoutRect rect(0, 60, 20, 80);
+    EXPECT_TRUE(leaf->mapToVisibleRectInAncestorSpace(container, rect, nullptr));
+    EXPECT_EQ(rect, LayoutRect(0, 10, 20, 80));
+
+    rect = LayoutRect(0, 60, 80, 0);
+    EXPECT_TRUE(leaf->mapToVisibleRectInAncestorSpace(container, rect, nullptr, EdgeInclusive));
+    EXPECT_EQ(rect, LayoutRect(0, 10, 80, 0));
+}
+
+TEST_F(LayoutObjectTest, LayoutViewMapToVisibleRectInAncestorSpace)
+{
+    document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div id=frameContainer>"
+        "  <iframe id=frame src='http://test.com' width='50' height='50' frameBorder='0'></iframe>"
+        "</div>");
+
+    Document& frameDocument = setupChildIframe("frame", "<style>body { margin: 0; }</style><span><img style='width: 20px; height: 100px'></span>text text text");
+    frameDocument.updateLayout();
+
+    LayoutBlock* frameContainer = toLayoutBlock(getLayoutObjectByElementId("frameContainer"));
+    LayoutBlock* frameBody = toLayoutBlock(frameDocument.body()->layoutObject());
+    LayoutText* frameText = toLayoutText(frameBody->lastChild());
+
+    // This case involves clipping: frame height is 50, y-coordinate of result rect is 13,
+    // so height should be clipped to (50 - 13) == 37.
+    frameDocument.view()->setScrollPosition(DoublePoint(0, 47), ProgrammaticScroll);
+    LayoutRect rect(4, 60, 20, 80);
+    EXPECT_TRUE(frameText->mapToVisibleRectInAncestorSpace(frameContainer, rect, nullptr));
+    EXPECT_EQ(rect, LayoutRect(4, 13, 20, 37));
+
+    rect = LayoutRect(4, 60, 0, 80);
+    EXPECT_TRUE(frameText->mapToVisibleRectInAncestorSpace(frameContainer, rect, nullptr, EdgeInclusive));
+    EXPECT_EQ(rect, LayoutRect(4, 13, 0, 37));
 }
 
 } // namespace blink

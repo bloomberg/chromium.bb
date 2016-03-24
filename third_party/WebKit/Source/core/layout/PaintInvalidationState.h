@@ -18,6 +18,11 @@ class LayoutSVGModelObject;
 class LayoutView;
 class PaintLayer;
 
+enum VisibleRectFlags {
+    DefaultVisibleRectFlags = 0,
+    EdgeInclusive = 1
+};
+
 // PaintInvalidationState is an optimization used during the paint
 // invalidation phase.
 //
@@ -72,7 +77,7 @@ public:
     {
         return m_cachedOffsetsEnabled && ancestor == &m_paintInvalidationContainer;
     }
-    void mapObjectRectToAncestor(const LayoutObject&, const LayoutBoxModelObject* ancestor, LayoutRect&) const;
+    bool mapObjectRectToAncestor(const LayoutObject&, const LayoutBoxModelObject* ancestor, LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const;
 
     // Records |obj| as needing paint invalidation on the next frame. See the definition of PaintInvalidationDelayedFull for more details.
     void pushDelayedPaintInvalidationTarget(LayoutObject& obj) const { m_pendingDelayedPaintInvalidations.append(&obj); }

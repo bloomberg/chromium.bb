@@ -104,11 +104,11 @@ LayoutRect LayoutSVGBlock::clippedOverflowRectForPaintInvalidation(const LayoutB
     return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this, paintInvalidationContainer, paintInvalidationState);
 }
 
-void LayoutSVGBlock::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+bool LayoutSVGBlock::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState, VisibleRectFlags visibleRectFlags) const
 {
     FloatRect paintInvalidationRect(rect);
     const LayoutSVGRoot& svgRoot = SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(*this, paintInvalidationRect, rect);
-    svgRoot.mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState);
+    return svgRoot.mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState, visibleRectFlags);
 }
 
 bool LayoutSVGBlock::nodeAtPoint(HitTestResult&, const HitTestLocation&, const LayoutPoint&, HitTestAction)

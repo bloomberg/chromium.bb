@@ -352,16 +352,22 @@ LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutBo
     return rect;
 }
 
-void LayoutSVGRoot::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState) const
+bool LayoutSVGRoot::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState, VisibleRectFlags visibleRectFlags) const
 {
     // Note that we don't apply the border-box transform here - it's assumed
     // that whoever called us has done that already.
 
     // Apply initial viewport clip
-    if (shouldApplyViewportClip())
-        rect.intersect(LayoutRect(pixelSnappedBorderBoxRect()));
+    if (shouldApplyViewportClip()) {
+        if (visibleRectFlags & EdgeInclusive) {
+            if (!rect.inclusiveIntersect(LayoutRect(pixelSnappedBorderBoxRect())))
+                return false;
+        } else {
+            rect.intersect(LayoutRect(pixelSnappedBorderBoxRect()));
+        }
+    }
 
-    LayoutReplaced::mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState);
+    return LayoutReplaced::mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState, visibleRectFlags);
 }
 
 // This method expects local CSS box coordinates.

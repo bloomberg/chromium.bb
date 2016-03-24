@@ -156,14 +156,14 @@ void PaintInvalidationState::updatePaintOffsetAndClipForChildren()
     // FIXME: <http://bugs.webkit.org/show_bug.cgi?id=13443> Apply control clip if present.
 }
 
-void PaintInvalidationState::mapObjectRectToAncestor(const LayoutObject& object, const LayoutBoxModelObject* ancestor, LayoutRect& rect) const
+bool PaintInvalidationState::mapObjectRectToAncestor(const LayoutObject& object, const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
 {
     ASSERT(canMapToAncestor(ancestor));
 
     if (ancestor == &object) {
         if (object.isBox() && object.styleRef().isFlippedBlocksWritingMode())
             toLayoutBox(object).flipForWritingMode(rect);
-        return;
+        return true;
     }
 
     if (object.hasLayer()) {
@@ -179,8 +179,13 @@ void PaintInvalidationState::mapObjectRectToAncestor(const LayoutObject& object,
 
     rect.move(m_paintOffset);
 
-    if (m_clipped)
+    if (m_clipped) {
+        if (visibleRectFlags & EdgeInclusive)
+            return rect.inclusiveIntersect(m_clipRect);
         rect.intersect(m_clipRect);
+    }
+
+    return !rect.isEmpty();
 }
 
 void PaintInvalidationState::addClipRectRelativeToPaintOffset(const LayoutSize& clipSize)

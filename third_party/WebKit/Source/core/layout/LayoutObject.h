@@ -1143,9 +1143,15 @@ public:
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
 
     // Given a rect in the object's coordinate space, compute a rect in the coordinate space of |ancestor|.  If
-    // intermediate containers have clipping or scrolling of any kind, it is applied; but overflow clipping is *not*
-    // applied for |ancestor| itself. The output rect is suitable for purposes such as paint invalidation.
-    virtual void mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, const PaintInvalidationState*) const;
+    // intermediate containers have clipping or scrolling of any kind, it is applied; but overflow clipping is
+    // *not* applied for |ancestor| itself. The output rect is suitable for purposes such as paint invalidation.
+    //
+    // If visibleRectFlags has the EdgeInclusive bit set, clipping operations will use
+    // LayoutRect::inclusiveIntersect, and the return value of inclusiveIntersect will be propagated
+    // to the return value of this method.  Otherwise, clipping operations will use LayoutRect::intersect,
+    // and the return value will be true only if the clipped rect has non-zero area.
+    // See the documentation for LayoutRect::inclusiveIntersect for more information.
+    virtual bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, const PaintInvalidationState*, VisibleRectFlags = DefaultVisibleRectFlags) const;
 
     // Return the offset to the column in which the specified point (in flow-thread coordinates)
     // lives. This is used to convert a flow-thread point to a visual point.
