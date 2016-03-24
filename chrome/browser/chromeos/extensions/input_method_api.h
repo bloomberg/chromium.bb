@@ -157,6 +157,23 @@ class InputMethodPrivateSetXkbLayoutFunction
   DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateSetXkbLayoutFunction);
 };
 
+// Implements the inputMethodPrivate.showInputView method.
+class InputMethodPrivateShowInputViewFunction
+    : public UIThreadExtensionFunction {
+ public:
+  InputMethodPrivateShowInputViewFunction() {}
+
+ protected:
+  ~InputMethodPrivateShowInputViewFunction() override {}
+
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.showInputView",
+                             INPUTMETHODPRIVATE_SHOWINPUTVIEW)
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateShowInputViewFunction);
+};
+
 class InputMethodAPI : public BrowserContextKeyedAPI,
                        public extensions::EventRouter::Observer {
  public:

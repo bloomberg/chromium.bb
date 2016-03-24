@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/values.h"
@@ -34,6 +35,7 @@
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 
 namespace AddWordToDictionary =
@@ -57,6 +59,8 @@ namespace {
 
 // Prefix, which is used by XKB.
 const char kXkbPrefix[] = "xkb:";
+const char kErrorFailToShowInputView[] =
+    "Unable to show the input view window.";
 
 }  // namespace
 
@@ -224,6 +228,36 @@ InputMethodPrivateSetXkbLayoutFunction::Run() {
       chromeos::input_method::InputMethodManager::Get();
   chromeos::input_method::ImeKeyboard* keyboard = manager->GetImeKeyboard();
   keyboard->SetCurrentKeyboardLayoutByName(params->xkb_name);
+  return RespondNow(NoArguments());
+#endif
+}
+
+ExtensionFunction::ResponseAction
+InputMethodPrivateShowInputViewFunction::Run() {
+#if !defined(OS_CHROMEOS)
+  EXTENSION_FUNCTION_VALIDATE(false);
+#else
+  keyboard::KeyboardController* keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller) {
+    keyboard_controller->ShowKeyboard(false);
+    return RespondNow(NoArguments());
+  }
+
+  if (keyboard::IsKeyboardEnabled())
+    return RespondNow(Error(kErrorFailToShowInputView));
+
+  // Forcibly enables the a11y onscreen keyboard if there is on keyboard enabled
+  // for now. And re-disables it after showing once.
+  keyboard::SetAccessibilityKeyboardEnabled(true);
+  ash::Shell::GetInstance()->CreateKeyboard();
+  keyboard_controller = keyboard::KeyboardController::GetInstance();
+  if (!keyboard_controller) {
+    keyboard::SetAccessibilityKeyboardEnabled(false);
+    return RespondNow(Error(kErrorFailToShowInputView));
+  }
+  keyboard_controller->ShowKeyboard(false);
+  keyboard::SetAccessibilityKeyboardEnabled(false);
   return RespondNow(NoArguments());
 #endif
 }

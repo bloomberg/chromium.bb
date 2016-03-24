@@ -218,6 +218,19 @@
             "description": "Name of the MenuItem which was activated"
           }
         ]
+      }, {
+        "name": "showInputView",
+        "type": "function",
+        "description": "Shows the input view window. If the input view window is already shown, this function will do nothing.",
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes.",
+            "parameters": []
+          }
+        ]
       }
     ],
     "events": [

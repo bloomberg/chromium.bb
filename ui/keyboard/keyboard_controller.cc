@@ -388,7 +388,8 @@ void KeyboardController::OnInputMethodDestroyed(
 }
 
 void KeyboardController::OnShowImeIfNeeded() {
-  ShowKeyboardInternal();
+  if (IsKeyboardEnabled())
+    ShowKeyboardInternal();
 }
 
 void KeyboardController::ShowKeyboardInternal() {

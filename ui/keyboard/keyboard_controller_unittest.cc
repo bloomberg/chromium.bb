@@ -316,6 +316,7 @@ TEST_F(KeyboardControllerTest, FloatingKeyboardSize) {
 
 // Tests that tapping/clicking inside the keyboard does not give it focus.
 TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
+  keyboard::SetAccessibilityKeyboardEnabled(true);
   const gfx::Rect& root_bounds = root_window()->bounds();
   aura::test::EventCountDelegate delegate;
   scoped_ptr<aura::Window> window(new aura::Window(&delegate));
@@ -356,9 +357,11 @@ TEST_F(KeyboardControllerTest, ClickDoesNotFocusKeyboard) {
   generator.ClickLeftButton();
   EXPECT_EQ("1 1", delegate.GetMouseButtonCountsAndReset());
   keyboard_container->RemovePreTargetHandler(&observer);
+  keyboard::SetAccessibilityKeyboardEnabled(false);
 }
 
 TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
+  keyboard::SetAccessibilityKeyboardEnabled(true);
   ui::DummyTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_2(ui::TEXT_INPUT_TYPE_TEXT);
@@ -394,6 +397,7 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
 
   EXPECT_FALSE(WillHideKeyboard());
   EXPECT_TRUE(keyboard_container->IsVisible());
+  keyboard::SetAccessibilityKeyboardEnabled(false);
 }
 
 // Test to prevent spurious overscroll boxes when changing tabs during keyboard
@@ -423,6 +427,7 @@ TEST_F(KeyboardControllerTest, CheckOverscrollInsetDuringVisibilityChange) {
 // Verify switch to FLOATING mode will reset the overscroll or resize and when
 // in FLOATING mode, overscroll or resize wont be triggered.
 TEST_F(KeyboardControllerTest, FloatingKeyboardDontOverscrollOrResize) {
+  keyboard::SetAccessibilityKeyboardEnabled(true);
   ui::DummyTextInputClient input_client(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient no_input_client(ui::TEXT_INPUT_TYPE_NONE);
 
@@ -453,6 +458,7 @@ TEST_F(KeyboardControllerTest, FloatingKeyboardDontOverscrollOrResize) {
   // In FLOATING mode, no overscroll or resize should be triggered.
   EXPECT_EQ(3, number_of_calls());
   EXPECT_EQ(gfx::Rect(), controller()->current_keyboard_bounds());
+  keyboard::SetAccessibilityKeyboardEnabled(false);
 }
 
 // Verify switch to FULL_WIDTH mode will move virtual keyboard to the right
@@ -479,6 +485,7 @@ TEST_F(KeyboardControllerTest, SwitchToFullWidthVirtualKeyboard) {
 }
 
 TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
+  keyboard::SetAccessibilityKeyboardEnabled(true);
   ui::DummyTextInputClient input_client_0(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient input_client_1(ui::TEXT_INPUT_TYPE_TEXT);
   ui::DummyTextInputClient no_input_client_0(ui::TEXT_INPUT_TYPE_NONE);
@@ -514,6 +521,7 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   // Wait for hide keyboard to finish.
   base::MessageLoop::current()->Run();
   EXPECT_FALSE(keyboard_container->IsVisible());
+  keyboard::SetAccessibilityKeyboardEnabled(false);
 }
 
 class KeyboardControllerAnimationTest : public KeyboardControllerTest {
@@ -553,6 +561,7 @@ class KeyboardControllerAnimationTest : public KeyboardControllerTest {
 // Tests virtual keyboard has correct show and hide animation.
 TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   ui::Layer* layer = keyboard_container()->layer();
+  keyboard::SetAccessibilityKeyboardEnabled(true);
   ShowKeyboard();
 
   // Keyboard container and window should immediately become visible before
@@ -593,12 +602,14 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_GT(hide_start_opacity, hide_end_opacity);
   EXPECT_EQ(transform, layer->transform());
   EXPECT_EQ(gfx::Rect(), notified_bounds());
+  keyboard::SetAccessibilityKeyboardEnabled(false);
 }
 
 // Show keyboard during keyboard hide animation should abort the hide animation
 // and the keyboard should animate in.
 // Test for crbug.com/333284.
 TEST_F(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
+  keyboard::SetAccessibilityKeyboardEnabled(true);
   ui::Layer* layer = keyboard_container()->layer();
   ShowKeyboard();
   RunAnimationForLayer(layer);
@@ -611,6 +622,7 @@ TEST_F(KeyboardControllerAnimationTest, ContainerShowWhileHide) {
   EXPECT_TRUE(keyboard_window()->IsVisible());
   EXPECT_EQ(1.0, layer->opacity());
   EXPECT_EQ(gfx::Transform(), layer->transform());
+  keyboard::SetAccessibilityKeyboardEnabled(false);
 }
 
 // Test for crbug.com/568274.
