@@ -62,10 +62,6 @@
 #define ASSERT_MSG_DISABLED !ENABLE(ASSERT)
 #endif
 
-#ifndef ASSERT_ARG_DISABLED
-#define ASSERT_ARG_DISABLED !ENABLE(ASSERT)
-#endif
-
 #ifndef LOG_DISABLED
 #define LOG_DISABLED !ENABLE(ASSERT)
 #endif
@@ -85,7 +81,6 @@ typedef struct {
 } WTFLogChannel;
 
 WTF_EXPORT void WTFReportAssertionFailure(const char* file, int line, const char* function, const char* assertion);
-WTF_EXPORT void WTFReportArgumentAssertionFailure(const char* file, int line, const char* function, const char* argName, const char* assertion);
 WTF_EXPORT void WTFLog(WTFLogChannel*, const char* format, ...) WTF_ATTRIBUTE_PRINTF(2, 3);
 WTF_EXPORT void WTFLogAlways(const char* format, ...) WTF_ATTRIBUTE_PRINTF(1, 2);
 
@@ -198,23 +193,6 @@ WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
 #define ENABLE_SECURITY_ASSERT 1
 #else
 #define ENABLE_SECURITY_ASSERT 0
-#endif
-
-/* ASSERT_ARG */
-
-#if ASSERT_ARG_DISABLED
-
-#define ASSERT_ARG(argName, assertion) ((void)0)
-
-#else
-
-#define ASSERT_ARG(argName, assertion) do \
-    if (!(assertion)) { \
-        WTFReportArgumentAssertionFailure(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, #argName, #assertion); \
-        CRASH(); \
-    } \
-while (0)
-
 #endif
 
 // WTF_LOG

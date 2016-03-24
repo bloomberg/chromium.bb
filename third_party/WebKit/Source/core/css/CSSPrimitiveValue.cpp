@@ -192,8 +192,8 @@ CSSPrimitiveValue::UnitType CSSPrimitiveValue::typeWithCalcResolved() const
 
 static const AtomicString& valueName(CSSValueID valueID)
 {
-    ASSERT_ARG(valueID, valueID >= 0);
-    ASSERT_ARG(valueID, valueID < numCSSValueKeywords);
+    DCHECK_GE(valueID, 0);
+    DCHECK_LT(valueID, numCSSValueKeywords);
 
     if (valueID < 0)
         return nullAtom;

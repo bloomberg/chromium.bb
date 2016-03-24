@@ -60,7 +60,7 @@ void LayoutRubyBase::moveChildren(LayoutRubyBase* toBase, LayoutObject* beforeCh
 {
     // This function removes all children that are before (!) beforeChild
     // and appends them to toBase.
-    ASSERT_ARG(toBase, toBase);
+    DCHECK(toBase);
     // Callers should have handled the percent height descendant map.
     ASSERT(!hasPercentHeightDescendants());
 
@@ -79,7 +79,7 @@ void LayoutRubyBase::moveChildren(LayoutRubyBase* toBase, LayoutObject* beforeCh
 void LayoutRubyBase::moveInlineChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild)
 {
     ASSERT(childrenInline());
-    ASSERT_ARG(toBase, toBase);
+    DCHECK(toBase);
 
     if (!firstChild())
         return;
@@ -106,7 +106,7 @@ void LayoutRubyBase::moveInlineChildren(LayoutRubyBase* toBase, LayoutObject* be
 void LayoutRubyBase::moveBlockChildren(LayoutRubyBase* toBase, LayoutObject* beforeChild)
 {
     ASSERT(!childrenInline());
-    ASSERT_ARG(toBase, toBase);
+    DCHECK(toBase);
 
     if (!firstChild())
         return;

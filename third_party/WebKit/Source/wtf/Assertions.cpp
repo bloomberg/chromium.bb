@@ -157,12 +157,6 @@ void WTFReportAssertionFailure(const char* file, int line, const char* function,
     printCallSite(file, line, function);
 }
 
-void WTFReportArgumentAssertionFailure(const char* file, int line, const char* function, const char* argName, const char* assertion)
-{
-    printf_stderr_common("ARGUMENT BAD: %s, %s\n", argName, assertion);
-    printCallSite(file, line, function);
-}
-
 void WTFGetBacktrace(void** stack, int* size)
 {
 #if OS(MACOSX) || (OS(LINUX) && !defined(__UCLIBC__))

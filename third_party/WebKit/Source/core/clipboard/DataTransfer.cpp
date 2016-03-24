@@ -406,13 +406,13 @@ DragOperation DataTransfer::destinationOperation() const
 
 void DataTransfer::setSourceOperation(DragOperation op)
 {
-    ASSERT_ARG(op, op != DragOperationPrivate);
+    DCHECK_NE(op, DragOperationPrivate);
     m_effectAllowed = convertDragOperationToEffectAllowed(op);
 }
 
 void DataTransfer::setDestinationOperation(DragOperation op)
 {
-    ASSERT_ARG(op, op == DragOperationCopy || op == DragOperationNone || op == DragOperationLink || op == DragOperationGeneric || op == DragOperationMove || op == (DragOperation)(DragOperationGeneric | DragOperationMove));
+    DCHECK(op == DragOperationCopy || op == DragOperationNone || op == DragOperationLink || op == DragOperationGeneric || op == DragOperationMove || op == static_cast<DragOperation>(DragOperationGeneric | DragOperationMove));
     m_dropEffect = convertDragOperationToEffectAllowed(op);
 }
 

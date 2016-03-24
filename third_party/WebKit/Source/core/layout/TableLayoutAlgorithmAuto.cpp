@@ -473,7 +473,8 @@ int TableLayoutAlgorithmAuto::calcEffectiveLogicalWidth()
 */
 void TableLayoutAlgorithmAuto::insertSpanCell(LayoutTableCell *cell)
 {
-    ASSERT_ARG(cell, cell && cell->colSpan() != 1);
+    DCHECK(cell);
+    DCHECK_NE(cell->colSpan(), 1u);
     if (!cell || cell->colSpan() == 1)
         return;
 
