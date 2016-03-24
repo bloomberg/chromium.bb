@@ -15,10 +15,12 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
+#include "chrome/common/channel_info.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
 #include "components/url_formatter/url_fixer.h"
@@ -236,6 +238,12 @@ void SupervisedUserInternalsMessageHandler::HandleTryURL(
 
 void SupervisedUserInternalsMessageHandler::SendBasicInfo() {
   scoped_ptr<base::ListValue> section_list(new base::ListValue);
+
+  base::ListValue* section_general = AddSection(section_list.get(), "General");
+  AddSectionEntry(section_general, "Chrome version",
+                  chrome::GetVersionString());
+  AddSectionEntry(section_general, "Child detection enabled",
+                  ChildAccountService::IsChildAccountDetectionEnabled());
 
   Profile* profile = Profile::FromWebUI(web_ui());
 
