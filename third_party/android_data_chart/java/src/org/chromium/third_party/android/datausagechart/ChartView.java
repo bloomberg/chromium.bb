@@ -28,10 +28,9 @@ import android.widget.FrameLayout;
 import org.chromium.third_party.android.R;
 
 /**
- * Container for two-dimensional chart, drawn with a combination of
- * {@link ChartGridView} and {@link ChartNetworkSeriesView} children. The entire chart uses
- * {@link ChartAxis} to map between raw values and screen coordinates.
- * Derived from com.android.settings.widget.ChartView
+ * Container for two-dimensional chart, drawn with a combination of {@link ChartNetworkSeriesView}
+ * children. The entire chart uses {@link ChartAxis} to map between raw values and screen
+ * coordinates. Derived from com.android.settings.widget.ChartView
  */
 public class ChartView extends FrameLayout {
     ChartAxis mHoriz;
@@ -41,7 +40,9 @@ public class ChartView extends FrameLayout {
     private int mOptimalWidth = -1;
     private float mOptimalWidthWeight = 0;
 
+    // Used in onLayout(). Reused to avoid allocations during layout.
     private Rect mContent = new Rect();
+    private Rect mChildRect = new Rect();
 
     public ChartView(Context context) {
         this(context, null, 0);
@@ -100,20 +101,15 @@ public class ChartView extends FrameLayout {
         mHoriz.setSize(width);
         mVert.setSize(height);
 
-        final Rect parentRect = new Rect();
-        final Rect childRect = new Rect();
-
         for (int i = 0; i < getChildCount(); i++) {
             final View child = getChildAt(i);
             final LayoutParams params = (LayoutParams) child.getLayoutParams();
 
-            parentRect.set(mContent);
-
-            if (child instanceof ChartNetworkSeriesView || child instanceof ChartGridView) {
+            if (child instanceof ChartNetworkSeriesView) {
                 // series are always laid out to fill entire graph area
                 // Scrolling is not supported for series larger than the content area.
-                Gravity.apply(params.gravity, width, height, parentRect, childRect);
-                child.layout(childRect.left, childRect.top, childRect.right, childRect.bottom);
+                Gravity.apply(params.gravity, width, height, mContent, mChildRect);
+                child.layout(mChildRect.left, mChildRect.top, mChildRect.right, mChildRect.bottom);
 
             }
         }

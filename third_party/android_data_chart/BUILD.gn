@@ -15,7 +15,6 @@ android_library("android_data_chart_java") {
   java_files = [
     "java/src/org/chromium/third_party/android/datausagechart/ChartAxis.java",
     "java/src/org/chromium/third_party/android/datausagechart/ChartDataUsageView.java",
-    "java/src/org/chromium/third_party/android/datausagechart/ChartGridView.java",
     "java/src/org/chromium/third_party/android/datausagechart/ChartNetworkSeriesView.java",
     "java/src/org/chromium/third_party/android/datausagechart/ChartView.java",
     "java/src/org/chromium/third_party/android/datausagechart/InvertedChartAxis.java",

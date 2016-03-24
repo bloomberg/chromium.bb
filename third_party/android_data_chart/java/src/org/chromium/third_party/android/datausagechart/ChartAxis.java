@@ -42,9 +42,6 @@ public interface ChartAxis {
      */
     public long buildLabel(Resources res, SpannableStringBuilder builder, long value);
 
-    /** Return list of tick points for drawing a grid. */
-    public float[] getTickPoints();
-
     /**
      * Test if given raw value should cause the axis to grow or shrink;
      * returning positive value to grow and negative to shrink.

@@ -58,15 +58,6 @@ public class InvertedChartAxis implements ChartAxis {
     }
 
     @Override
-    public float[] getTickPoints() {
-        final float[] points = mWrapped.getTickPoints();
-        for (int i = 0; i < points.length; i++) {
-            points[i] = mSize - points[i];
-        }
-        return points;
-    }
-
-    @Override
     public int shouldAdjustAxis(long value) {
         return mWrapped.shouldAdjustAxis(value);
     }

@@ -22,7 +22,6 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
-import android.text.format.Time;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -301,31 +300,6 @@ public class ChartDataUsageView extends ChartView {
         }
 
         @Override
-        public float[] getTickPoints() {
-            final float[] ticks = new float[32];
-            int i = 0;
-
-            // tick mark for first day of each week
-            final Time time = new Time();
-            time.set(mMax);
-            time.monthDay -= time.weekDay - FIRST_DAY_OF_WEEK;
-            time.hour = time.minute = time.second = 0;
-
-            time.normalize(true);
-            long timeMillis = time.toMillis(true);
-            while (timeMillis > mMin) {
-                if (timeMillis <= mMax) {
-                    ticks[i++] = convertToPoint(timeMillis);
-                }
-                time.monthDay -= 7;
-                time.normalize(true);
-                timeMillis = time.toMillis(true);
-            }
-
-            return Arrays.copyOf(ticks, i);
-        }
-
-        @Override
         public int shouldAdjustAxis(long value) {
             // time axis never adjusts
             return 0;
@@ -429,23 +403,6 @@ public class ChartDataUsageView extends ChartView {
             setText(builder, sSpanUnit, unit, "^2");
 
             return (long) resultRounded;
-        }
-
-        @Override
-        public float[] getTickPoints() {
-            final long range = mMax - mMin;
-
-            // target about 16 ticks on screen, rounded to nearest power of 2
-            final long tickJump = roundUpToPowerOfTwo(range / 16);
-            final int tickCount = (int) (range / tickJump);
-            final float[] tickPoints = new float[tickCount];
-            long value = mMin;
-            for (int i = 0; i < tickPoints.length; i++) {
-                tickPoints[i] = convertToPoint(value);
-                value += tickJump;
-            }
-
-            return tickPoints;
         }
 
         @Override
