@@ -510,6 +510,23 @@ class LayerWithDelegateTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(LayerWithDelegateTest);
 };
 
+void ReturnMailbox(bool* run, const gpu::SyncToken& sync_token, bool is_lost) {
+  *run = true;
+}
+
+TEST(LayerStandaloneTest, ReleaseMailboxOnDestruction) {
+  scoped_ptr<Layer> layer(new Layer(LAYER_TEXTURED));
+  bool callback_run = false;
+  cc::TextureMailbox mailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), 0);
+  layer->SetTextureMailbox(mailbox,
+                           cc::SingleReleaseCallback::Create(
+                               base::Bind(ReturnMailbox, &callback_run)),
+                           gfx::Size(10, 10));
+  EXPECT_FALSE(callback_run);
+  layer.reset();
+  EXPECT_TRUE(callback_run);
+}
+
 // L1
 //  +-- L2
 TEST_F(LayerWithDelegateTest, ConvertPointToLayer_Simple) {
@@ -711,10 +728,6 @@ TEST_F(LayerWithNullDelegateTest, EscapedDebugNames) {
   std::string roundtrip;
   EXPECT_TRUE(dictionary->GetString("layer_name", &roundtrip));
   EXPECT_EQ(name, roundtrip);
-}
-
-void ReturnMailbox(bool* run, const gpu::SyncToken& sync_token, bool is_lost) {
-  *run = true;
 }
 
 TEST_F(LayerWithNullDelegateTest, SwitchLayerPreservesCCLayerState) {

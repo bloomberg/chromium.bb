@@ -113,6 +113,8 @@ Layer::~Layer() {
     children_[i]->parent_ = NULL;
 
   cc_layer_->RemoveFromParent();
+  if (mailbox_release_callback_)
+    mailbox_release_callback_->Run(gpu::SyncToken(), false);
 }
 
 const Compositor* Layer::GetCompositor() const {
