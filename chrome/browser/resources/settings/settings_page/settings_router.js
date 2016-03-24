@@ -315,6 +315,12 @@ Polymer({
     },
 </if>
     {
+      url: '/passwords',
+      page: 'advanced',
+      section: 'passwordsAndForms',
+      subpage: ['manage-passwords'],
+    },
+    {
       url: '/languages',
       page: 'advanced',
       section: 'languages',

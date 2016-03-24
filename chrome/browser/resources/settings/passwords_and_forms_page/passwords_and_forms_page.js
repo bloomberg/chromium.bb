@@ -88,9 +88,20 @@ PasswordManagerImpl.prototype = {
 Polymer({
   is: 'settings-passwords-and-forms-page',
 
+  behaviors: [
+    I18nBehavior,
+    PrefsBehavior,
+  ],
+
   properties: {
     /** Preferences state. */
     prefs: {
+      type: Object,
+      notify: true,
+    },
+
+    /** The current active route. */
+    currentRoute: {
       type: Object,
       notify: true,
     },
@@ -111,15 +122,6 @@ Polymer({
     passwordExceptions: {
       type: Array,
       value: function() { return []; },
-    },
-
-    /**
-     * Whether the password section section is opened or not.
-     * @type {boolean}
-     */
-    passwordsOpened: {
-      type: Boolean,
-      value: false,
     },
   },
 
@@ -156,6 +158,20 @@ Polymer({
    */
   removeSavedPassword_: function(event) {
     this.passwordManager_.removeSavedPassword(event.detail);
+  },
+
+  /**
+   * Shows the manage passwords sub page.
+   * @param {!Event} event
+   * @private
+   */
+  onPasswordsTap_: function(event) {
+    // Ignore clicking on the toggle button and only expand if the manager is
+    // enabled.
+    if (Polymer.dom(event).localTarget != this.$.passwordToggle &&
+        this.getPref('profile.password_manager_enabled').value) {
+      this.$.pages.setSubpageChain(['manage-passwords']);
+    }
   },
 });
 })();

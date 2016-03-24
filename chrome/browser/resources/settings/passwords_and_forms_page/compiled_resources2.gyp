@@ -6,8 +6,12 @@
     {
       'target_name': 'passwords_and_forms_page',
       'dependencies': [
+        '../prefs/compiled_resources2.gyp:prefs_behavior',
+        '../settings_page/compiled_resources2.gyp:settings_animated_pages',
+        '<(DEPTH)/third_party/closure_compiler/externs/compiled_resources2.gyp:settings_private',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(EXTERNS_GYP):passwords_private',
         'passwords_section',
       ],
