@@ -27,6 +27,8 @@
                 android:paddingEnd="10dp"
                 android:singleLine="true"
                 android:maxLines="1"
+                android:selectAllOnFocus="true"
+                android:inputType="textUri"
                 android:background="@drawable/textbox"
                 android:textColor="#333" />
             <ProgressBar
