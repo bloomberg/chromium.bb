@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2003, 2006 Apple Computer, Inc.  All rights reserved.
+ * Copyright (C) 2007 Apple Computer, Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -23,37 +23,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef Logging_h
-#define Logging_h
+#ifndef NotImplemented_h
+#define NotImplemented_h
 
 #include "platform/PlatformExport.h"
 #include "wtf/Assertions.h"
-#include "wtf/Forward.h"
 
-#if !LOG_DISABLED
-
-#ifndef LOG_CHANNEL_PREFIX
-#define LOG_CHANNEL_PREFIX Log
-#endif
+#if LOG_DISABLED
+    #define notImplemented() ((void)0)
+#else
 
 namespace blink {
+PLATFORM_EXPORT WTFLogChannel* notImplementedLoggingChannel();
+} // namespace blink
 
-PLATFORM_EXPORT extern WTFLogChannel LogFileAPI;
-PLATFORM_EXPORT extern WTFLogChannel LogFonts;
-PLATFORM_EXPORT extern WTFLogChannel LogMedia;
-PLATFORM_EXPORT extern WTFLogChannel LogNetwork;
-PLATFORM_EXPORT extern WTFLogChannel LogNotYetImplemented;
-PLATFORM_EXPORT extern WTFLogChannel LogPlugins;
-PLATFORM_EXPORT extern WTFLogChannel LogResourceLoading;
-PLATFORM_EXPORT extern WTFLogChannel LogSQLDatabase;
-PLATFORM_EXPORT extern WTFLogChannel LogStorageAPI;
-PLATFORM_EXPORT extern WTFLogChannel LogTimers;
-PLATFORM_EXPORT extern WTFLogChannel LogWebAudio;
+#define notImplemented() do { \
+        static bool havePrinted = false; \
+        if (!havePrinted) { \
+            WTFLogVerbose(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, blink::notImplementedLoggingChannel(), "UNIMPLEMENTED: "); \
+            havePrinted = true; \
+        } \
+    } while (0)
 
-PLATFORM_EXPORT WTFLogChannel* getChannelFromName(const String& channelName);
+#endif // NDEBUG
 
-}
-
-#endif // !LOG_DISABLED
-
-#endif // Logging_h
+#endif // NotImplemented_h

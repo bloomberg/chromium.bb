@@ -30,6 +30,8 @@
 #include <windows.h>
 #elif OS(MACOSX)
 #import <Carbon/Carbon.h>
+#else
+#include "platform/NotImplemented.h"
 #endif
 
 namespace blink {
@@ -81,7 +83,7 @@ bool PlatformKeyboardEvent::currentCapsLockState()
 #elif OS(MACOSX)
             return GetCurrentKeyModifiers() & alphaLock;
 #else
-            NOTIMPLEMENTED();
+            notImplemented();
             return false;
 #endif
     case OverrideCapsLockState::On:
@@ -114,7 +116,7 @@ PlatformEvent::Modifiers PlatformKeyboardEvent::getCurrentModifierState()
         modifiers |= MetaKey;
 #else
     // See https://crbug.com/538289
-    NOTIMPLEMENTED();
+    notImplemented();
 #endif
     return static_cast<Modifiers>(modifiers);
 }

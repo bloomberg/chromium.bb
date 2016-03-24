@@ -12,6 +12,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 #include "platform/LayoutTestSupport.h"
+#include "platform/NotImplemented.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 #include "wtf/Assertions.h"
 #include "wtf/RefCounted.h"
@@ -143,7 +144,7 @@ WaitUntilObserver::WaitUntilObserver(ExecutionContext* context, EventType type, 
 void WaitUntilObserver::reportError(const ScriptValue& value)
 {
     // FIXME: Propagate error message to the client for onerror handling.
-    NOTIMPLEMENTED();
+    notImplemented();
 
     m_hasError = true;
 }

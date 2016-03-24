@@ -11,6 +11,7 @@
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
+#include "platform/NotImplemented.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/heap/Handle.h"

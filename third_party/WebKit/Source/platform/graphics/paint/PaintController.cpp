@@ -4,6 +4,7 @@
 
 #include "platform/graphics/paint/PaintController.h"
 
+#include "platform/NotImplemented.h"
 #include "platform/TraceEvent.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"

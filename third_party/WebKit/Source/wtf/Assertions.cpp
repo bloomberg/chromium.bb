@@ -157,6 +157,12 @@ void WTFReportAssertionFailure(const char* file, int line, const char* function,
     printCallSite(file, line, function);
 }
 
+void WTFReportArgumentAssertionFailure(const char* file, int line, const char* function, const char* argName, const char* assertion)
+{
+    printf_stderr_common("ARGUMENT BAD: %s, %s\n", argName, assertion);
+    printCallSite(file, line, function);
+}
+
 void WTFGetBacktrace(void** stack, int* size)
 {
 #if OS(MACOSX) || (OS(LINUX) && !defined(__UCLIBC__))
@@ -252,6 +258,19 @@ void WTFLog(WTFLogChannel* channel, const char* format, ...)
     va_start(args, format);
     vprintf_stderr_with_trailing_newline(format, args);
     va_end(args);
+}
+
+void WTFLogVerbose(const char* file, int line, const char* function, WTFLogChannel* channel, const char* format, ...)
+{
+    if (channel->state != WTFLogChannelOn)
+        return;
+
+    va_list args;
+    va_start(args, format);
+    vprintf_stderr_with_trailing_newline(format, args);
+    va_end(args);
+
+    printCallSite(file, line, function);
 }
 
 void WTFLogAlways(const char* format, ...)

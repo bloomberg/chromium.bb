@@ -38,6 +38,7 @@
 #include "core/html/parser/HTMLScriptRunnerHost.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
 #include "platform/Histogram.h"
+#include "platform/NotImplemented.h"
 #include "platform/TraceEvent.h"
 #include "platform/TracedValue.h"
 #include "public/platform/Platform.h"
@@ -382,7 +383,7 @@ bool HTMLScriptRunner::requestPendingScript(PendingScript* pendingScript, Elemen
     // This should correctly return 0 for empty or invalid srcValues.
     ScriptResource* resource = toScriptLoaderIfPossible(script)->resource();
     if (!resource) {
-        NOTIMPLEMENTED(); // Dispatch error event.
+        notImplemented(); // Dispatch error event.
         return false;
     }
     pendingScript->setScriptResource(resource);

@@ -45,6 +45,7 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "platform/KeyboardCodes.h"
+#include "platform/NotImplemented.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/web/WebWidgetClient.h"
 #include "web/ContextMenuAllowedScope.h"
@@ -602,7 +603,7 @@ void WebFrameWidgetImpl::setTextDirection(WebTextDirection direction)
         break;
 
     default:
-        NOTIMPLEMENTED();
+        notImplemented();
         break;
     }
 }

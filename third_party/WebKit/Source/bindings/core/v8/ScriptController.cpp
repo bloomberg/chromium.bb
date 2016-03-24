@@ -68,6 +68,7 @@
 #include "core/loader/ProgressTracker.h"
 #include "core/plugins/PluginView.h"
 #include "platform/Histogram.h"
+#include "platform/NotImplemented.h"
 #include "platform/TraceEvent.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/Widget.h"
@@ -343,8 +344,8 @@ void ScriptController::registerExtensionIfNeeded(v8::Extension* extension)
 
 static NPObject* createNoScriptObject()
 {
-    NOTIMPLEMENTED();
-    return nullptr;
+    notImplemented();
+    return 0;
 }
 
 static NPObject* createScriptObject(LocalFrame* frame, v8::Isolate* isolate)

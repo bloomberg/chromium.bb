@@ -86,6 +86,7 @@
 #include "modules/webgl/WebGLVertexArrayObject.h"
 #include "modules/webgl/WebGLVertexArrayObjectOES.h"
 #include "platform/CheckedInt.h"
+#include "platform/NotImplemented.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -3214,7 +3215,7 @@ ScriptValue WebGLRenderingContextBase::getUniform(ScriptState* scriptState, WebG
                     return WebGLAny(scriptState, static_cast<bool>(value[0]));
                 }
                 default:
-                    NOTIMPLEMENTED();
+                    notImplemented();
                 }
             }
         }
@@ -5176,7 +5177,7 @@ ScriptValue WebGLRenderingContextBase::getBooleanParameter(ScriptState* scriptSt
 ScriptValue WebGLRenderingContextBase::getBooleanArrayParameter(ScriptState* scriptState, GLenum pname)
 {
     if (pname != GL_COLOR_WRITEMASK) {
-        NOTIMPLEMENTED();
+        notImplemented();
         return WebGLAny(scriptState, 0, 0);
     }
     GLboolean value[4] = {0};
@@ -5237,7 +5238,7 @@ ScriptValue WebGLRenderingContextBase::getWebGLFloatArrayParameter(ScriptState* 
         length = 4;
         break;
     default:
-        NOTIMPLEMENTED();
+        notImplemented();
     }
     return WebGLAny(scriptState, DOMFloat32Array::create(value, length));
 }
@@ -5257,7 +5258,7 @@ ScriptValue WebGLRenderingContextBase::getWebGLIntArrayParameter(ScriptState* sc
         length = 4;
         break;
     default:
-        NOTIMPLEMENTED();
+        notImplemented();
     }
     return WebGLAny(scriptState, DOMInt32Array::create(value, length));
 }

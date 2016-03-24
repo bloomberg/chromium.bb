@@ -8,6 +8,7 @@
 #include "modules/mediacapturefromelement/AutoCanvasDrawListener.h"
 #include "modules/mediacapturefromelement/OnRequestCanvasDrawListener.h"
 #include "modules/mediacapturefromelement/TimedCanvasDrawListener.h"
+#include "platform/NotImplemented.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 
 namespace blink {

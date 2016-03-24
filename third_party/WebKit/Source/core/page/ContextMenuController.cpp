@@ -47,7 +47,7 @@ using namespace HTMLNames;
 ContextMenuController::ContextMenuController(Page*, ContextMenuClient* client)
     : m_client(client)
 {
-    DCHECK(client);
+    ASSERT_ARG(client, client);
 }
 
 ContextMenuController::~ContextMenuController()

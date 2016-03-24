@@ -376,7 +376,7 @@ const LayoutObject* LayoutView::pushMappingToContainer(const LayoutBoxModelObjec
 
     // If a container was specified, and was not 0 or the LayoutView, then we
     // should have found it by now unless we're traversing to a parent document.
-    DCHECK(!ancestorToStopAt || ancestorToStopAt == this || container);
+    ASSERT_ARG(ancestorToStopAt, !ancestorToStopAt || ancestorToStopAt == this || container);
 
     if ((!ancestorToStopAt || container) && shouldUseTransformFromContainer(container)) {
         TransformationMatrix t;

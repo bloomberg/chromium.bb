@@ -36,6 +36,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerMessagingProxy.h"
+#include "platform/NotImplemented.h"
 #include "wtf/Functional.h"
 
 namespace blink {

@@ -44,6 +44,7 @@
 #include "core/html/parser/HTMLStackItem.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLTokenizer.h"
+#include "platform/NotImplemented.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/text/CharacterNames.h"
 
@@ -1463,7 +1464,7 @@ bool HTMLTreeBuilder::processBodyEndTagForInBody(AtomicHTMLToken* token)
         parseError(token);
         return false;
     }
-    NOTIMPLEMENTED(); // Emit a more specific parse error based on stack contents.
+    notImplemented(); // Emit a more specific parse error based on stack contents.
     setInsertionMode(AfterBodyMode);
     return true;
 }
@@ -1511,7 +1512,7 @@ void HTMLTreeBuilder::callTheAdoptionAgency(AtomicHTMLToken* token)
         // 4.c
         if ((m_tree.openElements()->contains(formattingElement)) && !m_tree.openElements()->inScope(formattingElement)) {
             parseError(token);
-            NOTIMPLEMENTED(); // Check the stack of open elements for a more specific parse error.
+            notImplemented(); // Check the stack of open elements for a more specific parse error.
             return;
         }
         // 4.b
@@ -2463,7 +2464,7 @@ void HTMLTreeBuilder::processEndOfFile(AtomicHTMLToken* token)
     case InCaptionMode:
     case InRowMode:
         ASSERT(getInsertionMode() == InBodyMode || getInsertionMode() == InCellMode || getInsertionMode() == InCaptionMode || getInsertionMode() == InRowMode || getInsertionMode() == TemplateContentsMode);
-        NOTIMPLEMENTED(); // Emit parse error based on what elements are still open.
+        notImplemented(); // Emit parse error based on what elements are still open.
         if (!m_templateInsertionModes.isEmpty() && processEndOfFileForInTemplateContents(token))
             return;
         break;
@@ -2506,7 +2507,7 @@ void HTMLTreeBuilder::processEndOfFile(AtomicHTMLToken* token)
     case TextMode:
         parseError(token);
         if (m_tree.currentStackItem()->hasTagName(scriptTag))
-            NOTIMPLEMENTED(); // mark the script element as "already started".
+            notImplemented(); // mark the script element as "already started".
         m_tree.openElements()->pop();
         ASSERT(m_originalInsertionMode != TextMode);
         setInsertionMode(m_originalInsertionMode);
@@ -2522,7 +2523,7 @@ void HTMLTreeBuilder::processEndOfFile(AtomicHTMLToken* token)
 
 void HTMLTreeBuilder::defaultForInitial()
 {
-    NOTIMPLEMENTED();
+    notImplemented();
     m_tree.setDefaultCompatibilityMode();
     // FIXME: parse error
     setInsertionMode(BeforeHTMLMode);

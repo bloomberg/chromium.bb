@@ -152,7 +152,7 @@ FontPlatformData::FontPlatformData(NSFont *nsFont, float size, bool syntheticBol
     , m_orientation(orientation)
     , m_isHashTableDeletedValue(false)
 {
-    DCHECK(nsFont);
+    ASSERT_ARG(nsFont, nsFont);
     if (canLoadInProcess(nsFont)) {
         m_typeface = adoptRef(SkCreateTypefaceFromCTFont(toCTFontRef(nsFont)));
     } else {

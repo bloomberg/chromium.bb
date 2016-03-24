@@ -86,7 +86,7 @@ FontPlatformData FontCustomPlatformData::fontPlatformData(float size, bool bold,
 
 PassOwnPtr<FontCustomPlatformData> FontCustomPlatformData::create(SharedBuffer* buffer, String& otsParseMessage)
 {
-    DCHECK(buffer);
+    ASSERT_ARG(buffer, buffer);
 
     OpenTypeSanitizer sanitizer(buffer);
     RefPtr<SharedBuffer> transcodeBuffer = sanitizer.sanitize();

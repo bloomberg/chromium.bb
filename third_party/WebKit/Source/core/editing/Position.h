@@ -392,6 +392,9 @@ inline PositionInFlatTree fromPositionInDOMTree<EditingInFlatTreeStrategy>(const
 
 // These printers are available only for testing in "webkit_unit_tests", and
 // implemented in "core/testing/CoreTestPrinters.cpp".
+std::ostream& operator<<(std::ostream&, const Node&);
+std::ostream& operator<<(std::ostream&, const Node*);
+
 std::ostream& operator<<(std::ostream&, PositionAnchorType);
 std::ostream& operator<<(std::ostream&, const Position&);
 std::ostream& operator<<(std::ostream&, const PositionInFlatTree&);

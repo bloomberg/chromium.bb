@@ -2054,7 +2054,7 @@ void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks
 
 PassRefPtr<ComputedStyle> Document::styleForElementIgnoringPendingStylesheets(Element* element)
 {
-    DCHECK_EQ(element->document(), this);
+    ASSERT_ARG(element, element->document() == this);
     StyleEngine::IgnoringPendingStylesheet ignoring(styleEngine());
     return ensureStyleResolver().styleForElement(element, element->parentNode() ? element->parentNode()->ensureComputedStyle() : 0);
 }
