@@ -33,6 +33,7 @@
 
 #include <stdint.h>
 
+#include <fstream>
 #include <iostream>
 
 #include "base/at_exit.h"
@@ -69,7 +70,7 @@ const char kUsage[] =
     "Once in the shell, you can issue the following commands:\n"
     "\n"
     "  StartTracing\n"
-    "  StopTracing\n"
+    "  StopTracing <optional file path>\n"
     "  SupportsExplicitClockSync\n"
     "  RecordClockSyncMarker <marker>\n"
     "  Exit\n"
@@ -90,6 +91,14 @@ void HandleError(battor::BattOrError error) {
 // Prints an error message and exits due to a required thread failing to start.
 void ExitFromThreadStartFailure(const std::string& thread_name) {
   LOG(FATAL) << "Failed to start " << thread_name;
+}
+
+std::vector<std::string> TokenizeString(std::string cmd) {
+  base::StringTokenizer tokenizer(cmd, " ");
+  std::vector<std::string> tokens;
+  while (tokenizer.GetNext())
+    tokens.push_back(tokenizer.token());
+  return tokens;
 }
 
 }  // namespace
@@ -124,18 +133,24 @@ class BattOrAgentBin : public BattOrAgent::Listener {
 
       if (cmd == "StartTracing") {
         StartTracing();
-      } else if (cmd == "StopTracing") {
-        StopTracing();
+      } else if (cmd.find("StopTracing") != std::string::npos) {
+        std::vector<std::string> tokens = TokenizeString(cmd);
+        if (tokens.size() == 1 && tokens[0] == "StopTracing") {
+          // No path given.
+          StopTracing();
+        } else if (tokens.size() == 2 && tokens[0] == "StopTracing") {
+          // Path given.
+          StopTracing(tokens[1]);
+        } else {
+          std::cout << "Invalid StopTracing command." << endl;
+          std::cout << kUsage << endl;
+          continue;
+        }
         break;
       } else if (cmd == "SupportsExplicitClockSync") {
         PrintSupportsExplicitClockSync();
       } else if (cmd.find("RecordClockSyncMarker") != std::string::npos) {
-        base::StringTokenizer tokenizer(cmd, " ");
-
-        std::vector<std::string> tokens;
-        while (tokenizer.GetNext())
-          tokens.push_back(tokenizer.token());
-
+        std::vector<std::string> tokens = TokenizeString(cmd);
         if (tokens.size() != 2 || tokens[0] != "RecordClockSyncMarker") {
           std::cout << "Invalid RecordClockSyncMarker command." << endl;
           std::cout << kUsage << endl;
@@ -194,17 +209,30 @@ class BattOrAgentBin : public BattOrAgent::Listener {
     done_.Signal();
   }
 
-  void StopTracing() {
+  void StopTracing(const std::string& path = "") {
+    trace_output_file_ = path;
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&BattOrAgent::StopTracing, base::Unretained(agent_.get())));
     done_.Wait();
+    trace_output_file_ = std::string();
   }
 
   void OnStopTracingComplete(const std::string& trace,
                              BattOrError error) override {
     if (error == BATTOR_ERROR_NONE) {
-      std::cout << trace;
+      if (trace_output_file_.empty()) {
+        std::cout << trace;
+      }
+      else {
+        std::ofstream trace_stream(trace_output_file_);
+        if (!trace_stream.is_open()) {
+          std::cout << "Tracing output file could not be opened." << endl;
+          exit(1);
+        }
+        trace_stream << trace;
+        trace_stream.close();
+      }
       std::cout << "Done." << endl;
     } else {
       HandleError(error);
@@ -268,6 +296,9 @@ class BattOrAgentBin : public BattOrAgent::Listener {
 
   // The agent capable of asynchronously communicating with the BattOr.
   scoped_ptr<BattOrAgent> agent_;
+
+  std::string trace_output_file_;
+
 };
 
 }  // namespace battor
