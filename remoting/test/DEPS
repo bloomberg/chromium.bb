@@ -1,4 +1,5 @@
 include_rules = [
+  "+google_apis",
   "+jingle/glue",
   "+net",
   "+remoting/client",
