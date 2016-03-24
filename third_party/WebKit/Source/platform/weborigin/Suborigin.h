@@ -16,7 +16,8 @@ class PLATFORM_EXPORT Suborigin {
 public:
     enum class SuboriginPolicyOptions : unsigned {
         None = 0,
-        UnsafePostMessageSend = 1 << 0
+        UnsafePostMessageSend = 1 << 0,
+        UnsafePostMessageReceive = 1 << 1
     };
 
     Suborigin();

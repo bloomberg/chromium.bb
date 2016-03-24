@@ -71,6 +71,8 @@
 #include "core/page/WindowFeatures.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "platform/EventDispatchForbiddenScope.h"
+#include "platform/weborigin/SecurityOrigin.h"
+#include "platform/weborigin/Suborigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebScreenInfo.h"
@@ -714,7 +716,12 @@ void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intende
 {
     if (intendedTargetOrigin) {
         // Check target origin now since the target document may have changed since the timer was scheduled.
-        if (!intendedTargetOrigin->isSameSchemeHostPortAndSuborigin(document()->getSecurityOrigin())) {
+        SecurityOrigin* securityOrigin = document()->getSecurityOrigin();
+        bool validTarget = intendedTargetOrigin->isSameSchemeHostPortAndSuborigin(securityOrigin);
+        if (securityOrigin->hasSuborigin() && securityOrigin->suborigin()->policyContains(Suborigin::SuboriginPolicyOptions::UnsafePostMessageReceive))
+            validTarget = intendedTargetOrigin->isSameSchemeHostPort(securityOrigin);
+
+        if (!validTarget) {
             String message = ExceptionMessages::failedToExecute("postMessage", "DOMWindow", "The target origin provided ('" + intendedTargetOrigin->toString() + "') does not match the recipient window's origin ('" + document()->getSecurityOrigin()->toString() + "').");
             RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel, message);
             consoleMessage->setCallStack(stackTrace);

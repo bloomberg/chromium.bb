@@ -15,9 +15,10 @@ var p = window.opener;
 if (is_iframe)
     p = window.parent;
 
+var target = "<?php if ($_GET["target"]) echo $_GET["target"]; else echo "*"; ?>";
 p.postMessage({
   'suborigin': document.suborigin,
   'type': type
-}, '*');
+}, target);
 </script>
 </html>

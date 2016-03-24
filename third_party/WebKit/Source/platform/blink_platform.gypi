@@ -1221,6 +1221,7 @@
       'weborigin/SchemeRegistryTest.cpp',
       'weborigin/SecurityOriginTest.cpp',
       'weborigin/SecurityPolicyTest.cpp',
+      'weborigin/SuboriginTest.cpp',
     ],
     # NOTE: These are legacy unit tests and tests that require a Platform
     # object. Do not add more unless the test requires a Platform object.
