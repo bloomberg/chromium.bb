@@ -262,11 +262,9 @@ class HttpStreamFactoryImpl::Job {
   bool IsSpdyAlternative() const;
   bool IsQuicAlternative() const;
 
-  // Sets several fields of |ssl_config| for |server| based on the proxy info
-  // and other factors.
-  void InitSSLConfig(const HostPortPair& server,
-                     SSLConfig* ssl_config,
-                     bool is_proxy) const;
+  // Sets several fields of |ssl_config| based on the proxy info and other
+  // factors.
+  void InitSSLConfig(SSLConfig* ssl_config, bool is_proxy) const;
 
   // Retrieve SSLInfo from our SSL Socket.
   // This must only be called when we are using an SSLSocket.

@@ -956,14 +956,13 @@ int HttpStreamFactoryImpl::Job::DoInitConnection() {
   }
 
   if (proxy_info_.is_https() || proxy_info_.is_quic()) {
-    InitSSLConfig(proxy_info_.proxy_server().host_port_pair(),
-                  &proxy_ssl_config_, /*is_proxy=*/true);
+    InitSSLConfig(&proxy_ssl_config_, /*is_proxy=*/true);
     // Disable revocation checking for HTTPS proxies since the revocation
     // requests are probably going to need to go through the proxy too.
     proxy_ssl_config_.rev_checking_enabled = false;
   }
   if (using_ssl_) {
-    InitSSLConfig(server_, &server_ssl_config_, /*is_proxy=*/false);
+    InitSSLConfig(&server_ssl_config_, /*is_proxy=*/false);
   }
 
   if (using_quic_) {
@@ -1512,8 +1511,7 @@ bool HttpStreamFactoryImpl::Job::IsQuicAlternative() const {
   return alternative_service_.protocol == QUIC;
 }
 
-void HttpStreamFactoryImpl::Job::InitSSLConfig(const HostPortPair& server,
-                                               SSLConfig* ssl_config,
+void HttpStreamFactoryImpl::Job::InitSSLConfig(SSLConfig* ssl_config,
                                                bool is_proxy) const {
   if (!is_proxy) {
     // Prior to HTTP/2 and SPDY, some servers use TLS renegotiation to request
