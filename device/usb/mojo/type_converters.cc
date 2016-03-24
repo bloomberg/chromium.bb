@@ -138,7 +138,7 @@ device::usb::EndpointInfoPtr
 TypeConverter<device::usb::EndpointInfoPtr, device::UsbEndpointDescriptor>::
     Convert(const device::UsbEndpointDescriptor& endpoint) {
   device::usb::EndpointInfoPtr info = device::usb::EndpointInfo::New();
-  info->endpoint_number = endpoint.address;
+  info->endpoint_number = endpoint.address & 0xf;
   info->direction =
       ConvertTo<device::usb::TransferDirection>(endpoint.direction);
   info->type = ConvertTo<device::usb::EndpointType>(endpoint.transfer_type);

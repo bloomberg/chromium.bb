@@ -32,40 +32,7 @@ const char kInterfaceStateChangeInProgress[] = "An operation that changes interf
 const char kOpenRequired[] = "The device must be opened first.";
 const char kVisibiltyError[] = "Connection is only allowed while the page is visible. This is a temporary measure until we are able to effectively communicate to the user that the page is connected to a device.";
 
-DOMException* convertControlTransferParameters(
-    WebUSBDevice::TransferDirection direction,
-    const USBControlTransferParameters& parameters,
-    WebUSBDevice::ControlTransferParameters* webParameters)
-{
-    webParameters->direction = direction;
 
-    if (parameters.requestType() == "standard")
-        webParameters->type = WebUSBDevice::RequestType::Standard;
-    else if (parameters.requestType() == "class")
-        webParameters->type = WebUSBDevice::RequestType::Class;
-    else if (parameters.requestType() == "vendor")
-        webParameters->type = WebUSBDevice::RequestType::Vendor;
-    else
-        return DOMException::create(TypeMismatchError, "The control transfer requestType parameter is invalid.");
-
-    // TODO(reillyg): Check for interface and endpoint availability if that is
-    // the control transfer target.
-    if (parameters.recipient() == "device")
-        webParameters->recipient = WebUSBDevice::RequestRecipient::Device;
-    else if (parameters.recipient() == "interface")
-        webParameters->recipient = WebUSBDevice::RequestRecipient::Interface;
-    else if (parameters.recipient() == "endpoint")
-        webParameters->recipient = WebUSBDevice::RequestRecipient::Endpoint;
-    else if (parameters.recipient() == "other")
-        webParameters->recipient = WebUSBDevice::RequestRecipient::Other;
-    else
-        return DOMException::create(TypeMismatchError, "The control transfer recipient parameter is invalid.");
-
-    webParameters->request = parameters.request();
-    webParameters->value = parameters.value();
-    webParameters->index = parameters.index();
-    return nullptr;
-}
 
 String convertTransferStatus(const WebUSBTransferInfo::Status& status)
 {
@@ -325,6 +292,8 @@ USBDevice::USBDevice(PassOwnPtr<WebUSBDevice> device, ExecutionContext* context)
     , m_opened(false)
     , m_deviceStateChangeInProgress(false)
     , m_configurationIndex(-1)
+    , m_inEndpoints(15)
+    , m_outEndpoints(15)
 {
     int configurationIndex = findConfigurationIndex(info().activeConfiguration);
     if (configurationIndex != -1)
@@ -348,16 +317,21 @@ void USBDevice::onConfigurationSelected(bool success, size_t configurationIndex)
         m_interfaceStateChangeInProgress.resize(numInterfaces);
         m_selectedAlternates.resize(numInterfaces);
         m_selectedAlternates.fill(0);
+        m_inEndpoints.clearAll();
+        m_outEndpoints.clearAll();
     }
     m_deviceStateChangeInProgress = false;
 }
 
 void USBDevice::onInterfaceClaimedOrUnclaimed(bool claimed, size_t interfaceIndex)
 {
-    if (claimed)
+    if (claimed) {
         m_claimedInterfaces.set(interfaceIndex);
-    else
+    } else {
         m_claimedInterfaces.clear(interfaceIndex);
+        m_selectedAlternates[interfaceIndex] = 0;
+    }
+    setEndpointsForInterface(interfaceIndex, claimed);
     m_interfaceStateChangeInProgress.clear(interfaceIndex);
 }
 
@@ -365,6 +339,7 @@ void USBDevice::onAlternateInterfaceSelected(bool success, size_t interfaceIndex
 {
     if (success)
         m_selectedAlternates[interfaceIndex] = alternateIndex;
+    setEndpointsForInterface(interfaceIndex, success);
     m_interfaceStateChangeInProgress.clear(interfaceIndex);
 }
 
@@ -479,6 +454,9 @@ ScriptPromise USBDevice::releaseInterface(ScriptState* scriptState, uint8_t inte
         } else if (!m_claimedInterfaces.get(interfaceIndex)) {
             resolver->resolve();
         } else {
+            // Mark this interface's endpoints unavailable while its state is
+            // changing.
+            setEndpointsForInterface(interfaceIndex, false);
             m_interfaceStateChangeInProgress.set(interfaceIndex);
             m_device->releaseInterface(interfaceNumber, new ClaimInterfacePromiseAdapter(this, resolver, interfaceIndex, false /* release */));
         }
@@ -498,6 +476,9 @@ ScriptPromise USBDevice::selectAlternateInterface(ScriptState* scriptState, uint
         if (alternateIndex == -1) {
             resolver->reject(DOMException::create(NotFoundError, "The alternate setting provided is not supported by the device in its current configuration."));
         } else {
+            // Mark this old alternate interface's endpoints unavailable while
+            // the change is in progress.
+            setEndpointsForInterface(interfaceIndex, false);
             m_interfaceStateChangeInProgress.set(interfaceIndex);
             m_device->setInterface(interfaceNumber, alternateSetting, new SelectAlternateInterfacePromiseAdapter(this, resolver, interfaceIndex, alternateIndex));
         }
@@ -511,10 +492,7 @@ ScriptPromise USBDevice::controlTransferIn(ScriptState* scriptState, const USBCo
     ScriptPromise promise = resolver->promise();
     if (ensureDeviceConfigured(resolver)) {
         WebUSBDevice::ControlTransferParameters parameters;
-        DOMException* error = convertControlTransferParameters(WebUSBDevice::TransferDirection::In, setup, &parameters);
-        if (error)
-            resolver->reject(error);
-        else
+        if (convertControlTransferParameters(WebUSBDevice::TransferDirection::In, setup, &parameters, resolver))
             m_device->controlTransfer(parameters, nullptr, length, 0, new CallbackPromiseAdapter<InputTransferResult, USBError>(resolver));
     }
     return promise;
@@ -526,10 +504,7 @@ ScriptPromise USBDevice::controlTransferOut(ScriptState* scriptState, const USBC
     ScriptPromise promise = resolver->promise();
     if (ensureDeviceConfigured(resolver)) {
         WebUSBDevice::ControlTransferParameters parameters;
-        DOMException* error = convertControlTransferParameters(WebUSBDevice::TransferDirection::Out, setup, &parameters);
-        if (error)
-            resolver->reject(error);
-        else
+        if (convertControlTransferParameters(WebUSBDevice::TransferDirection::Out, setup, &parameters, resolver))
             m_device->controlTransfer(parameters, nullptr, 0, 0, new CallbackPromiseAdapter<OutputTransferResult, USBError>(resolver));
     }
     return promise;
@@ -541,10 +516,7 @@ ScriptPromise USBDevice::controlTransferOut(ScriptState* scriptState, const USBC
     ScriptPromise promise = resolver->promise();
     if (ensureDeviceConfigured(resolver)) {
         WebUSBDevice::ControlTransferParameters parameters;
-        DOMException* error = convertControlTransferParameters(WebUSBDevice::TransferDirection::Out, setup, &parameters);
-        if (error) {
-            resolver->reject(error);
-        } else {
+        if (convertControlTransferParameters(WebUSBDevice::TransferDirection::Out, setup, &parameters, resolver)) {
             BufferSource buffer(data);
             m_device->controlTransfer(parameters, buffer.data(), buffer.size(), 0, new CallbackPromiseAdapter<OutputTransferResult, USBError>(resolver));
         }
@@ -723,9 +695,18 @@ bool USBDevice::ensureInterfaceClaimed(uint8_t interfaceNumber, ScriptPromiseRes
 
 bool USBDevice::ensureEndpointAvailable(bool inTransfer, uint8_t endpointNumber, ScriptPromiseResolver* resolver) const
 {
-    // TODO(reillyg): Check endpoint availability once Blink is tracking which
-    // alternate interfaces are selected.
-    return ensureDeviceConfigured(resolver);
+    if (!ensureDeviceConfigured(resolver))
+        return false;
+    if (endpointNumber == 0 || endpointNumber >= 16) {
+        resolver->reject(DOMException::create(IndexSizeError, "The specified endpoint number is out of range."));
+        return false;
+    }
+    auto& bitVector = inTransfer ? m_inEndpoints : m_outEndpoints;
+    if (!bitVector.get(endpointNumber - 1)) {
+        resolver->reject(DOMException::create(NotFoundError, "The specified endpoint is not part of a claimed and selected alternate interface."));
+        return false;
+    }
+    return true;
 }
 
 bool USBDevice::anyInterfaceChangeInProgress() const
@@ -735,6 +716,67 @@ bool USBDevice::anyInterfaceChangeInProgress() const
             return true;
     }
     return false;
+}
+
+bool USBDevice::convertControlTransferParameters(
+    WebUSBDevice::TransferDirection direction,
+    const USBControlTransferParameters& parameters,
+    WebUSBDevice::ControlTransferParameters* webParameters,
+    ScriptPromiseResolver* resolver) const
+{
+    webParameters->direction = direction;
+
+    if (parameters.requestType() == "standard") {
+        webParameters->type = WebUSBDevice::RequestType::Standard;
+    } else if (parameters.requestType() == "class") {
+        webParameters->type = WebUSBDevice::RequestType::Class;
+    } else if (parameters.requestType() == "vendor") {
+        webParameters->type = WebUSBDevice::RequestType::Vendor;
+    } else {
+        resolver->reject(DOMException::create(TypeMismatchError, "The control transfer requestType parameter is invalid."));
+        return false;
+    }
+
+    if (parameters.recipient() == "device") {
+        webParameters->recipient = WebUSBDevice::RequestRecipient::Device;
+    } else if (parameters.recipient() == "interface") {
+        size_t interfaceNumber = parameters.index() & 0xff;
+        if (!ensureInterfaceClaimed(interfaceNumber, resolver))
+            return false;
+        webParameters->recipient = WebUSBDevice::RequestRecipient::Interface;
+    } else if (parameters.recipient() == "endpoint") {
+        bool inTransfer = parameters.index() & 0x80;
+        size_t endpointNumber = parameters.index() & 0x0f;
+        if (!ensureEndpointAvailable(inTransfer, endpointNumber, resolver))
+            return false;
+        webParameters->recipient = WebUSBDevice::RequestRecipient::Endpoint;
+    } else if (parameters.recipient() == "other") {
+        webParameters->recipient = WebUSBDevice::RequestRecipient::Other;
+    } else {
+        resolver->reject(DOMException::create(TypeMismatchError, "The control transfer recipient parameter is invalid."));
+        return false;
+    }
+
+    webParameters->request = parameters.request();
+    webParameters->value = parameters.value();
+    webParameters->index = parameters.index();
+    return true;
+}
+
+void USBDevice::setEndpointsForInterface(size_t interfaceIndex, bool set)
+{
+    const auto& configuration = info().configurations[m_configurationIndex];
+    const auto& interface = configuration.interfaces[interfaceIndex];
+    const auto& alternate = interface.alternates[m_selectedAlternates[interfaceIndex]];
+    for (const auto& endpoint : alternate.endpoints) {
+        if (endpoint.endpointNumber == 0 || endpoint.endpointNumber >= 16)
+            continue; // Ignore endpoints with invalid indices.
+        auto& bitVector = endpoint.direction == WebUSBDevice::TransferDirection::In ? m_inEndpoints : m_outEndpoints;
+        if (set)
+            bitVector.set(endpoint.endpointNumber - 1);
+        else
+            bitVector.clear(endpoint.endpointNumber - 1);
+    }
 }
 
 } // namespace blink

@@ -106,6 +106,8 @@ private:
     bool ensureInterfaceClaimed(uint8_t interfaceNumber, ScriptPromiseResolver*) const;
     bool ensureEndpointAvailable(bool inTransfer, uint8_t endpointNumber, ScriptPromiseResolver*) const;
     bool anyInterfaceChangeInProgress() const;
+    bool convertControlTransferParameters(WebUSBDevice::TransferDirection, const USBControlTransferParameters&, WebUSBDevice::ControlTransferParameters*, ScriptPromiseResolver*) const;
+    void setEndpointsForInterface(size_t interfaceIndex, bool set);
 
     OwnPtr<WebUSBDevice> m_device;
     bool m_opened;
@@ -114,6 +116,8 @@ private:
     WTF::BitVector m_claimedInterfaces;
     WTF::BitVector m_interfaceStateChangeInProgress;
     WTF::Vector<size_t> m_selectedAlternates;
+    WTF::BitVector m_inEndpoints;
+    WTF::BitVector m_outEndpoints;
 };
 
 } // namespace blink
