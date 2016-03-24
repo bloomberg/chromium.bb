@@ -192,7 +192,7 @@ def BuildRootGitCleanup(buildroot):
         corrupted = git.IsGitRepositoryCorrupted(repo_git_store)
         lock.write_lock()
         logging.warning('Deleting %s because %s failed', cwd, result.cmd)
-        osutils.RmDir(cwd, ignore_missing=True)
+        osutils.RmDir(cwd, ignore_missing=True, sudo=True)
         if corrupted:
           # Looks like the object dir is corrupted. Delete the whole repository.
           deleted_objdirs.set()
