@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/value_store/value_store_factory.h"
 #include "extensions/common/extension.h"
 
 namespace {
@@ -69,11 +70,10 @@ void StateStore::DelayedTaskQueue::SetReady() {
 }
 
 StateStore::StateStore(content::BrowserContext* context,
-                       const std::string& uma_client_name,
-                       const base::FilePath& db_path,
+                       const scoped_refptr<ValueStoreFactory>& store_factory,
+                       ValueStoreFrontend::BackendType backend_type,
                        bool deferred_load)
-    : db_path_(db_path),
-      uma_client_name_(uma_client_name),
+    : store_(new ValueStoreFrontend(store_factory, backend_type)),
       task_queue_(new DelayedTaskQueue()),
       extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(context));
@@ -90,17 +90,6 @@ StateStore::StateStore(content::BrowserContext* context,
   }
 }
 
-StateStore::StateStore(content::BrowserContext* context,
-                       scoped_ptr<ValueStore> value_store)
-    : store_(std::move(value_store)),
-      task_queue_(new DelayedTaskQueue()),
-      extension_registry_observer_(this) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(context));
-
-  // This constructor is for testing. No need to delay Init.
-  Init();
-}
-
 StateStore::~StateStore() {
 }
 
@@ -115,25 +104,23 @@ void StateStore::RegisterKey(const std::string& key) {
 void StateStore::GetExtensionValue(const std::string& extension_id,
                                    const std::string& key,
                                    ReadCallback callback) {
-  task_queue_->InvokeWhenReady(base::Bind(&ValueStoreFrontend::Get,
-                                          base::Unretained(&store_),
-                                          GetFullKey(extension_id, key),
-                                          callback));
+  task_queue_->InvokeWhenReady(
+      base::Bind(&ValueStoreFrontend::Get, base::Unretained(store_.get()),
+                 GetFullKey(extension_id, key), callback));
 }
 
 void StateStore::SetExtensionValue(const std::string& extension_id,
                                    const std::string& key,
                                    scoped_ptr<base::Value> value) {
-  task_queue_->InvokeWhenReady(base::Bind(&ValueStoreFrontend::Set,
-                                          base::Unretained(&store_),
-                                          GetFullKey(extension_id, key),
-                                          base::Passed(&value)));
+  task_queue_->InvokeWhenReady(
+      base::Bind(&ValueStoreFrontend::Set, base::Unretained(store_.get()),
+                 GetFullKey(extension_id, key), base::Passed(&value)));
 }
 
 void StateStore::RemoveExtensionValue(const std::string& extension_id,
                                       const std::string& key) {
   task_queue_->InvokeWhenReady(base::Bind(&ValueStoreFrontend::Remove,
-                                          base::Unretained(&store_),
+                                          base::Unretained(store_.get()),
                                           GetFullKey(extension_id, key)));
 }
 
@@ -170,8 +157,9 @@ void StateStore::Init() {
   if (IsInitialized())
     return;
 
-  if (!db_path_.empty())
-    store_.Init(uma_client_name_, db_path_);
+  // TODO(cmumford): The store now always lazily initializes upon first access.
+  // A follow-on CL will remove this deferred initialization implementation
+  // which is now vestigial.
   task_queue_->SetReady();
 }
 
@@ -190,7 +178,7 @@ void StateStore::RemoveKeysForExtension(const std::string& extension_id) {
        key != registered_keys_.end();
        ++key) {
     task_queue_->InvokeWhenReady(base::Bind(&ValueStoreFrontend::Remove,
-                                            base::Unretained(&store_),
+                                            base::Unretained(store_.get()),
                                             GetFullKey(extension_id, *key)));
   }
 }

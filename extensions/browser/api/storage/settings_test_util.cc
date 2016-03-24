@@ -118,34 +118,6 @@ scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
   return extension;
 }
 
-// ScopedSettingsFactory
-
-ScopedSettingsStorageFactory::ScopedSettingsStorageFactory() {}
-
-ScopedSettingsStorageFactory::ScopedSettingsStorageFactory(
-    const scoped_refptr<SettingsStorageFactory>& delegate)
-    : delegate_(delegate) {}
-
-ScopedSettingsStorageFactory::~ScopedSettingsStorageFactory() {}
-
-void ScopedSettingsStorageFactory::Reset(
-    const scoped_refptr<SettingsStorageFactory>& delegate) {
-  delegate_ = delegate;
-}
-
-ValueStore* ScopedSettingsStorageFactory::Create(
-    const base::FilePath& base_path,
-    const std::string& extension_id) {
-  DCHECK(delegate_.get());
-  return delegate_->Create(base_path, extension_id);
-}
-
-void ScopedSettingsStorageFactory::DeleteDatabaseIfExists(
-    const base::FilePath& base_path,
-    const std::string& extension_id) {
-  delegate_->DeleteDatabaseIfExists(base_path, extension_id);
-}
-
 }  // namespace settings_test_util
 
 }  // namespace extensions

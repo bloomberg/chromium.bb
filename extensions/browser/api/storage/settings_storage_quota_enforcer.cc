@@ -70,10 +70,11 @@ ValueStore::Status QuotaExceededError(Resource resource) {
 
 }  // namespace
 
-SettingsStorageQuotaEnforcer::SettingsStorageQuotaEnforcer(const Limits& limits,
-                                                           ValueStore* delegate)
+SettingsStorageQuotaEnforcer::SettingsStorageQuotaEnforcer(
+    const Limits& limits,
+    scoped_ptr<ValueStore> delegate)
     : limits_(limits),
-      delegate_(delegate),
+      delegate_(std::move(delegate)),
       used_total_(0),
       usage_calculated_(false) {}
 

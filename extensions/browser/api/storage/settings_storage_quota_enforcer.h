@@ -13,6 +13,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/value_store/value_store.h"
 
@@ -33,7 +34,8 @@ class SettingsStorageQuotaEnforcer : public ValueStore {
     size_t max_items;
   };
 
-  SettingsStorageQuotaEnforcer(const Limits& limits, ValueStore* delegate);
+  SettingsStorageQuotaEnforcer(const Limits& limits,
+                               scoped_ptr<ValueStore> delegate);
 
   ~SettingsStorageQuotaEnforcer() override;
 

@@ -13,31 +13,21 @@
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
+#include "extensions/browser/value_store/value_store_factory.h"
 
 using content::BrowserThread;
+using extensions::ValueStoreFactory;
 
 class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
  public:
-  Backend() : storage_(NULL) {}
-
-  void Init(const std::string& uma_client_name, const base::FilePath& db_path) {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-    DCHECK(!storage_);
-    TRACE_EVENT0("ValueStoreFrontend::Backend", "Init");
-    db_path_ = db_path;
-    storage_ = new LeveldbValueStore(uma_client_name, db_path);
-  }
-
-  // This variant is useful for testing (using a mock ValueStore).
-  void InitWithStore(scoped_ptr<ValueStore> storage) {
-    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-    DCHECK(!storage_);
-    storage_ = storage.release();
-  }
+  Backend(const scoped_refptr<ValueStoreFactory>& store_factory,
+          BackendType backend_type)
+      : store_factory_(store_factory), backend_type_(backend_type) {}
 
   void Get(const std::string& key,
            const ValueStoreFrontend::ReadCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    LazyInit();
     ValueStore::ReadResult result = storage_->Get(key);
 
     // Extract the value from the ReadResult and pass ownership of it to the
@@ -57,6 +47,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
 
   void Set(const std::string& key, scoped_ptr<base::Value> value) {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    LazyInit();
     // We don't need the old value, so skip generating changes.
     ValueStore::WriteResult result = storage_->Set(
         ValueStore::IGNORE_QUOTA | ValueStore::NO_GENERATE_CHANGES,
@@ -68,6 +59,7 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
 
   void Remove(const std::string& key) {
     DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    LazyInit();
     storage_->Remove(key);
   }
 
@@ -75,10 +67,23 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
   friend class base::RefCountedThreadSafe<Backend>;
 
   virtual ~Backend() {
-    if (BrowserThread::CurrentlyOn(BrowserThread::FILE)) {
-      delete storage_;
-    } else {
-      BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, storage_);
+    if (storage_ && !BrowserThread::CurrentlyOn(BrowserThread::FILE))
+      BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
+                                storage_.release());
+  }
+
+  void LazyInit() {
+    DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    if (storage_)
+      return;
+    TRACE_EVENT0("ValueStoreFrontend::Backend", "LazyInit");
+    switch (backend_type_) {
+      case BackendType::RULES:
+        storage_ = store_factory_->CreateRulesStore();
+        break;
+      case BackendType::STATE:
+        storage_ = store_factory_->CreateStateStore();
+        break;
     }
   }
 
@@ -88,41 +93,27 @@ class ValueStoreFrontend::Backend : public base::RefCountedThreadSafe<Backend> {
     callback.Run(std::move(value));
   }
 
+  // The factory which will be used to lazily create the ValueStore when needed.
+  // Used exclusively on the FILE thread.
+  scoped_refptr<ValueStoreFactory> store_factory_;
+  BackendType backend_type_;
+
   // The actual ValueStore that handles persisting the data to disk. Used
   // exclusively on the FILE thread.
-  ValueStore* storage_;
+  scoped_ptr<ValueStore> storage_;
 
   base::FilePath db_path_;
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
 
-ValueStoreFrontend::ValueStoreFrontend()
-    : backend_(new Backend()) {
-}
-
-ValueStoreFrontend::ValueStoreFrontend(const std::string& uma_client_name,
-                                       const base::FilePath& db_path)
-    : backend_(new Backend()) {
-  Init(uma_client_name, db_path);
-}
-
-ValueStoreFrontend::ValueStoreFrontend(scoped_ptr<ValueStore> value_store)
-    : backend_(new Backend()) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&ValueStoreFrontend::Backend::InitWithStore,
-                 backend_, base::Passed(&value_store)));
-}
+ValueStoreFrontend::ValueStoreFrontend(
+    const scoped_refptr<ValueStoreFactory>& store_factory,
+    BackendType backend_type)
+    : backend_(new Backend(store_factory, backend_type)) {}
 
 ValueStoreFrontend::~ValueStoreFrontend() {
   DCHECK(CalledOnValidThread());
-}
-
-void ValueStoreFrontend::Init(const std::string& uma_client_name,
-                              const base::FilePath& db_path) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&ValueStoreFrontend::Backend::Init,
-                                     backend_, uma_client_name, db_path));
 }
 
 void ValueStoreFrontend::Get(const std::string& key,

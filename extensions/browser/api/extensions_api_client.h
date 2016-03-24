@@ -40,8 +40,8 @@ class MimeHandlerViewGuest;
 class MimeHandlerViewGuestDelegate;
 class RulesCacheDelegate;
 class SettingsObserver;
-class SettingsStorageFactory;
 class ValueStoreCache;
+class ValueStoreFactory;
 class VirtualKeyboardDelegate;
 class WebRequestEventRouterDelegate;
 class WebViewGuest;
@@ -69,7 +69,7 @@ class ExtensionsAPIClient {
   // to |caches|. By default adds nothing.
   virtual void AddAdditionalValueStoreCaches(
       content::BrowserContext* context,
-      const scoped_refptr<SettingsStorageFactory>& factory,
+      const scoped_refptr<ValueStoreFactory>& factory,
       const scoped_refptr<base::ObserverListThreadSafe<SettingsObserver>>&
           observers,
       std::map<settings_namespace::Namespace, ValueStoreCache*>* caches);

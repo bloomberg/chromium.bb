@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/api/storage/settings_observer.h"
-#include "extensions/browser/api/storage/settings_storage_factory.h"
 #include "extensions/browser/api/storage/value_store_cache.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 
@@ -23,6 +22,8 @@ class BrowserContext;
 
 namespace extensions {
 
+class ValueStoreFactory;
+
 // The component of the Storage API which runs on the UI thread.
 class StorageFrontend : public BrowserContextKeyedAPI {
  public:
@@ -31,7 +32,7 @@ class StorageFrontend : public BrowserContextKeyedAPI {
 
   // Creates with a specific |storage_factory|.
   static scoped_ptr<StorageFrontend> CreateForTesting(
-      const scoped_refptr<SettingsStorageFactory>& storage_factory,
+      const scoped_refptr<ValueStoreFactory>& storage_factory,
       content::BrowserContext* context);
 
   // Public so tests can create and delete their own instances.
@@ -74,10 +75,10 @@ class StorageFrontend : public BrowserContextKeyedAPI {
   explicit StorageFrontend(content::BrowserContext* context);
 
   // Constructor for tests.
-  StorageFrontend(const scoped_refptr<SettingsStorageFactory>& storage_factory,
+  StorageFrontend(const scoped_refptr<ValueStoreFactory>& storage_factory,
                   content::BrowserContext* context);
 
-  void Init(const scoped_refptr<SettingsStorageFactory>& storage_factory);
+  void Init(const scoped_refptr<ValueStoreFactory>& storage_factory);
 
   // The (non-incognito) browser context this Frontend belongs to.
   content::BrowserContext* const browser_context_;

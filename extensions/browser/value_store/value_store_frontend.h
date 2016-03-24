@@ -20,21 +20,24 @@ namespace base {
 class FilePath;
 }
 
+namespace extensions {
+class ValueStoreFactory;
+}  // namespace extensions
+
 // A frontend for a LeveldbValueStore, for use on the UI thread.
 class ValueStoreFrontend
     : public base::SupportsWeakPtr<ValueStoreFrontend>,
       public base::NonThreadSafe {
  public:
+  // The kind of extensions data stored in a backend.
+  enum class BackendType { RULES, STATE };
+
   typedef base::Callback<void(scoped_ptr<base::Value>)> ReadCallback;
 
-  ValueStoreFrontend();
-  ValueStoreFrontend(const std::string& uma_client_name,
-                     const base::FilePath& db_path);
-  // This variant is useful for testing (using a mock ValueStore).
-  explicit ValueStoreFrontend(scoped_ptr<ValueStore> value_store);
+  ValueStoreFrontend(
+      const scoped_refptr<extensions::ValueStoreFactory>& store_factory,
+      BackendType backend_type);
   ~ValueStoreFrontend();
-
-  void Init(const std::string& uma_client_name, const base::FilePath& db_path);
 
   // Retrieves a value from the database asynchronously, passing a copy to
   // |callback| when ready. NULL is passed if no matching entry is found.

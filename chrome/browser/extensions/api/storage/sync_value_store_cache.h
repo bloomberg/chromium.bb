@@ -23,17 +23,16 @@ class SyncableService;
 
 namespace extensions {
 
-class SettingsStorageFactory;
 class SyncStorageBackend;
+class ValueStoreFactory;
 
 // ValueStoreCache for the SYNC namespace. It owns a backend for apps and
 // another for extensions. Each backend takes care of persistence and syncing.
 class SyncValueStoreCache : public ValueStoreCache {
  public:
-  SyncValueStoreCache(
-      const scoped_refptr<SettingsStorageFactory>& factory,
-      const scoped_refptr<SettingsObserverList>& observers,
-      const base::FilePath& profile_path);
+  SyncValueStoreCache(const scoped_refptr<ValueStoreFactory>& factory,
+                      const scoped_refptr<SettingsObserverList>& observers,
+                      const base::FilePath& profile_path);
   ~SyncValueStoreCache() override;
 
   syncer::SyncableService* GetSyncableService(syncer::ModelType type) const;
@@ -45,7 +44,7 @@ class SyncValueStoreCache : public ValueStoreCache {
   void DeleteStorageSoon(const std::string& extension_id) override;
 
  private:
-  void InitOnFileThread(const scoped_refptr<SettingsStorageFactory>& factory,
+  void InitOnFileThread(const scoped_refptr<ValueStoreFactory>& factory,
                         const scoped_refptr<SettingsObserverList>& observers,
                         const base::FilePath& profile_path);
 

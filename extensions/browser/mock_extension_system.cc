@@ -4,6 +4,7 @@
 
 #include "extensions/browser/mock_extension_system.h"
 
+#include "extensions/browser/value_store/value_store_factory.h"
 #include "extensions/common/extension_set.h"
 
 namespace extensions {
@@ -43,6 +44,10 @@ StateStore* MockExtensionSystem::state_store() {
 }
 
 StateStore* MockExtensionSystem::rules_store() {
+  return nullptr;
+}
+
+scoped_refptr<ValueStoreFactory> MockExtensionSystem::store_factory() {
   return nullptr;
 }
 

@@ -23,6 +23,7 @@ class BrowserContext;
 namespace extensions {
 
 class ExtensionRegistry;
+class ValueStoreFactory;
 
 // A storage area for per-extension state that needs to be persisted to disk.
 class StateStore : public base::SupportsWeakPtr<StateStore>,
@@ -34,8 +35,8 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
   // If |deferred_load| is true, we won't load the database until the first
   // page has been loaded.
   StateStore(content::BrowserContext* context,
-             const std::string& uma_client_name,
-             const base::FilePath& db_path,
+             const scoped_refptr<ValueStoreFactory>& store_factory,
+             ValueStoreFrontend::BackendType backend_type,
              bool deferred_load);
   // This variant is useful for testing (using a mock ValueStore).
   StateStore(content::BrowserContext* context, scoped_ptr<ValueStore> store);
@@ -94,14 +95,8 @@ class StateStore : public base::SupportsWeakPtr<StateStore>,
                                   bool is_update,
                                   const std::string& old_name) override;
 
-  // Path to our database, on disk. Empty during testing.
-  base::FilePath db_path_;
-
-  // Database client name used for UMA logging by database backend.
-  const std::string uma_client_name_;
-
   // The store that holds our key/values.
-  ValueStoreFrontend store_;
+  scoped_ptr<ValueStoreFrontend> store_;
 
   // List of all known keys. They will be cleared for each extension when it is
   // (un)installed.

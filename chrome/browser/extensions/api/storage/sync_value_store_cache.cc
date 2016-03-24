@@ -6,18 +6,11 @@
 
 #include <stddef.h>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/files/file_path.h"
-#include "base/sequenced_task_runner.h"
 #include "chrome/browser/extensions/api/storage/sync_storage_backend.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
-#include "extensions/browser/api/storage/storage_frontend.h"
+#include "extensions/browser/value_store/value_store_factory.h"
 #include "extensions/common/api/storage.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
 
 using content::BrowserThread;
 
@@ -38,7 +31,7 @@ SettingsStorageQuotaEnforcer::Limits GetSyncQuotaLimits() {
 }  // namespace
 
 SyncValueStoreCache::SyncValueStoreCache(
-    const scoped_refptr<SettingsStorageFactory>& factory,
+    const scoped_refptr<ValueStoreFactory>& factory,
     const scoped_refptr<SettingsObserverList>& observers,
     const base::FilePath& profile_path)
     : initialized_(false) {
@@ -91,21 +84,19 @@ void SyncValueStoreCache::DeleteStorageSoon(const std::string& extension_id) {
 }
 
 void SyncValueStoreCache::InitOnFileThread(
-    const scoped_refptr<SettingsStorageFactory>& factory,
+    const scoped_refptr<ValueStoreFactory>& factory,
     const scoped_refptr<SettingsObserverList>& observers,
     const base::FilePath& profile_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(!initialized_);
   app_backend_.reset(new SyncStorageBackend(
       factory,
-      profile_path.AppendASCII(kSyncAppSettingsDirectoryName),
       GetSyncQuotaLimits(),
       observers,
       syncer::APP_SETTINGS,
       sync_start_util::GetFlareForSyncableService(profile_path)));
   extension_backend_.reset(new SyncStorageBackend(
       factory,
-      profile_path.AppendASCII(kSyncExtensionSettingsDirectoryName),
       GetSyncQuotaLimits(),
       observers,
       syncer::EXTENSION_SETTINGS,

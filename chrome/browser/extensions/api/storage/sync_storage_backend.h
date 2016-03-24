@@ -16,8 +16,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "extensions/browser/api/storage/settings_observer.h"
-#include "extensions/browser/api/storage/settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
+#include "extensions/browser/value_store/value_store_factory.h"
 #include "sync/api/syncable_service.h"
 
 namespace syncer {
@@ -28,6 +28,7 @@ namespace extensions {
 
 class SettingsSyncProcessor;
 class SyncableSettingsStorage;
+class ValueStoreFactory;
 
 // Manages ValueStore objects for extensions, including routing
 // changes from sync to them.
@@ -35,16 +36,12 @@ class SyncableSettingsStorage;
 class SyncStorageBackend : public syncer::SyncableService {
  public:
   // |storage_factory| is use to create leveldb storage areas.
-  // |base_path| is the base of the extension settings directory, so the
-  // databases will be at base_path/extension_id.
   // |observers| is the list of observers to settings changes.
-  SyncStorageBackend(
-      const scoped_refptr<SettingsStorageFactory>& storage_factory,
-      const base::FilePath& base_path,
-      const SettingsStorageQuotaEnforcer::Limits& quota,
-      const scoped_refptr<SettingsObserverList>& observers,
-      syncer::ModelType sync_type,
-      const syncer::SyncableService::StartSyncFlare& flare);
+  SyncStorageBackend(const scoped_refptr<ValueStoreFactory>& storage_factory,
+                     const SettingsStorageQuotaEnforcer::Limits& quota,
+                     const scoped_refptr<SettingsObserverList>& observers,
+                     syncer::ModelType sync_type,
+                     const syncer::SyncableService::StartSyncFlare& flare);
 
   ~SyncStorageBackend() override;
 
@@ -72,17 +69,15 @@ class SyncStorageBackend : public syncer::SyncableService {
 
   // Gets all extension IDs known to extension settings.  This may not be all
   // installed extensions.
-  std::set<std::string> GetKnownExtensionIDs() const;
+  std::set<std::string> GetKnownExtensionIDs(
+      ValueStoreFactory::ModelType model_type) const;
 
   // Creates a new SettingsSyncProcessor for an extension.
   scoped_ptr<SettingsSyncProcessor> CreateSettingsSyncProcessor(
       const std::string& extension_id) const;
 
   // The Factory to use for creating new ValueStores.
-  const scoped_refptr<SettingsStorageFactory> storage_factory_;
-
-  // The base file path to use when creating new ValueStores.
-  const base::FilePath base_path_;
+  const scoped_refptr<ValueStoreFactory> storage_factory_;
 
   // Quota limits (see SettingsStorageQuotaEnforcer).
   const SettingsStorageQuotaEnforcer::Limits quota_;

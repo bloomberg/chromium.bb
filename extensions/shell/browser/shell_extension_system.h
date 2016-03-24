@@ -23,6 +23,8 @@ class BrowserContext;
 
 namespace extensions {
 
+class ValueStoreFactory;
+
 // A simplified version of ExtensionSystem for app_shell. Allows
 // app_shell to skip initialization of services it doesn't need.
 class ShellExtensionSystem : public ExtensionSystem {
@@ -52,6 +54,7 @@ class ShellExtensionSystem : public ExtensionSystem {
   SharedUserScriptMaster* shared_user_script_master() override;
   StateStore* state_store() override;
   StateStore* rules_store() override;
+  scoped_refptr<ValueStoreFactory> store_factory() override;
   InfoMap* info_map() override;
   QuotaService* quota_service() override;
   AppSorting* app_sorting() override;
@@ -80,6 +83,8 @@ class ShellExtensionSystem : public ExtensionSystem {
   scoped_ptr<RuntimeData> runtime_data_;
   scoped_ptr<QuotaService> quota_service_;
   scoped_ptr<AppSorting> app_sorting_;
+
+  scoped_refptr<ValueStoreFactory> store_factory_;
 
   // Signaled when the extension system has completed its startup tasks.
   OneShotEvent ready_;

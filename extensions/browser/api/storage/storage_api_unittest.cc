@@ -9,7 +9,6 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/test/test_browser_context.h"
 #include "extensions/browser/api/extensions_api_client.h"
-#include "extensions/browser/api/storage/leveldb_settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
 #include "extensions/browser/api/storage/storage_api.h"
@@ -20,6 +19,7 @@
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/browser/value_store/leveldb_value_store.h"
 #include "extensions/browser/value_store/value_store.h"
+#include "extensions/browser/value_store/value_store_factory_impl.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/test_util.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -32,8 +32,9 @@ namespace {
 // Caller owns the returned object.
 scoped_ptr<KeyedService> CreateStorageFrontendForTesting(
     content::BrowserContext* context) {
-  return StorageFrontend::CreateForTesting(new LeveldbSettingsStorageFactory(),
-                                           context);
+  scoped_refptr<ValueStoreFactory> factory =
+      new ValueStoreFactoryImpl(context->GetPath());
+  return StorageFrontend::CreateForTesting(factory, context);
 }
 
 scoped_ptr<KeyedService> BuildEventRouter(content::BrowserContext* context) {
@@ -105,6 +106,8 @@ TEST_F(StorageApiUnittest, RestoreCorruptedStorage) {
                                      settings_namespace::LOCAL,
                                      StorageFrontend::Get(browser_context()));
   ASSERT_TRUE(store);
+  // TODO(cmumford): Modify test as this requires that the factory always
+  //                 creates instances of LeveldbValueStore.
   SettingsStorageQuotaEnforcer* quota_store =
       static_cast<SettingsStorageQuotaEnforcer*>(store);
   LeveldbValueStore* leveldb_store =

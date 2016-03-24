@@ -12,12 +12,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/value_store/test_value_store_factory.h"
 #include "extensions/common/extension_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-
-const char kDatabaseUMAClientName[] = "Test";
 
 class ValueStoreFrontendTest : public testing::Test {
  public:
@@ -35,6 +34,8 @@ class ValueStoreFrontendTest : public testing::Test {
     db_path_ = temp_dir_.path().AppendASCII("temp_db");
     base::CopyDirectory(src_db, db_path_, true);
 
+    factory_ = new extensions::TestValueStoreFactory(db_path_);
+
     ResetStorage();
   }
 
@@ -45,7 +46,8 @@ class ValueStoreFrontendTest : public testing::Test {
 
   // Reset the value store, reloading the DB from disk.
   void ResetStorage() {
-    storage_.reset(new ValueStoreFrontend(kDatabaseUMAClientName, db_path_));
+    storage_.reset(new ValueStoreFrontend(
+        factory_, ValueStoreFrontend::BackendType::RULES));
   }
 
   bool Get(const std::string& key, scoped_ptr<base::Value>* output) {
@@ -62,6 +64,7 @@ class ValueStoreFrontendTest : public testing::Test {
     base::MessageLoop::current()->QuitWhenIdle();
   }
 
+  scoped_refptr<extensions::TestValueStoreFactory> factory_;
   scoped_ptr<ValueStoreFrontend> storage_;
   base::ScopedTempDir temp_dir_;
   base::FilePath db_path_;

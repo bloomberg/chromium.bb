@@ -8,18 +8,10 @@
 
 #include <limits>
 
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/files/file_path.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/api/storage/settings_storage_factory.h"
-#include "extensions/browser/api/storage/settings_storage_quota_enforcer.h"
 #include "extensions/browser/api/storage/weak_unlimited_settings_storage.h"
-#include "extensions/browser/value_store/value_store.h"
+#include "extensions/browser/value_store/value_store_factory.h"
 #include "extensions/common/api/storage.h"
-#include "extensions/common/constants.h"
-#include "extensions/common/extension.h"
-#include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
 
 using content::BrowserThread;
@@ -40,13 +32,8 @@ SettingsStorageQuotaEnforcer::Limits GetLocalQuotaLimits() {
 }  // namespace
 
 LocalValueStoreCache::LocalValueStoreCache(
-    const scoped_refptr<SettingsStorageFactory>& factory,
-    const base::FilePath& profile_path)
-    : storage_factory_(factory),
-      extension_base_path_(
-          profile_path.AppendASCII(kLocalExtensionSettingsDirectoryName)),
-      app_base_path_(profile_path.AppendASCII(kLocalAppSettingsDirectoryName)),
-      quota_(GetLocalQuotaLimits()) {
+    const scoped_refptr<ValueStoreFactory>& factory)
+    : storage_factory_(factory), quota_(GetLocalQuotaLimits()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -59,7 +46,7 @@ void LocalValueStoreCache::RunWithValueStoreForExtension(
     scoped_refptr<const Extension> extension) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  ValueStore* storage = GetStorage(extension);
+  ValueStore* storage = GetStorage(extension.get());
 
   // A neat way to implement unlimited storage; if the extension has the
   // unlimited storage permission, force through all calls to Set().
@@ -75,21 +62,26 @@ void LocalValueStoreCache::RunWithValueStoreForExtension(
 void LocalValueStoreCache::DeleteStorageSoon(const std::string& extension_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   storage_map_.erase(extension_id);
-  storage_factory_->DeleteDatabaseIfExists(app_base_path_, extension_id);
-  storage_factory_->DeleteDatabaseIfExists(extension_base_path_, extension_id);
+  storage_factory_->DeleteSettings(settings_namespace::LOCAL,
+                                   ValueStoreFactory::ModelType::APP,
+                                   extension_id);
+  storage_factory_->DeleteSettings(settings_namespace::LOCAL,
+                                   ValueStoreFactory::ModelType::EXTENSION,
+                                   extension_id);
 }
 
-ValueStore* LocalValueStoreCache::GetStorage(
-    scoped_refptr<const Extension> extension) {
+ValueStore* LocalValueStoreCache::GetStorage(const Extension* extension) {
   StorageMap::iterator iter = storage_map_.find(extension->id());
   if (iter != storage_map_.end())
     return iter->second.get();
 
-  const base::FilePath& file_path =
-      extension->is_app() ? app_base_path_ : extension_base_path_;
+  ValueStoreFactory::ModelType model_type =
+      extension->is_app() ? ValueStoreFactory::ModelType::APP
+                          : ValueStoreFactory::ModelType::EXTENSION;
+  scoped_ptr<ValueStore> store = storage_factory_->CreateSettingsStore(
+      settings_namespace::LOCAL, model_type, extension->id());
   linked_ptr<SettingsStorageQuotaEnforcer> storage(
-      new SettingsStorageQuotaEnforcer(
-          quota_, storage_factory_->Create(file_path, extension->id())));
+      new SettingsStorageQuotaEnforcer(quota_, std::move(store)));
   DCHECK(storage.get());
 
   storage_map_[extension->id()] = storage;

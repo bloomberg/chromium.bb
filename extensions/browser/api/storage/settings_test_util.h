@@ -14,9 +14,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/test/base/testing_profile.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
-#include "extensions/browser/api/storage/settings_storage_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/mock_extension_system.h"
+#include "extensions/browser/value_store/value_store_factory.h"
 #include "extensions/common/extension.h"
 
 class ValueStore;
@@ -55,30 +55,6 @@ scoped_refptr<const Extension> AddExtensionWithIdAndPermissions(
     const std::string& id,
     Manifest::Type type,
     const std::set<std::string>& permissions);
-
-// SettingsStorageFactory which acts as a wrapper for other factories.
-class ScopedSettingsStorageFactory : public SettingsStorageFactory {
- public:
-  ScopedSettingsStorageFactory();
-
-  explicit ScopedSettingsStorageFactory(
-      const scoped_refptr<SettingsStorageFactory>& delegate);
-
-  // Sets the delegate factory (equivalent to scoped_ptr::reset).
-  void Reset(const scoped_refptr<SettingsStorageFactory>& delegate);
-
-  // SettingsStorageFactory implementation.
-  ValueStore* Create(const base::FilePath& base_path,
-                     const std::string& extension_id) override;
-  void DeleteDatabaseIfExists(const base::FilePath& base_path,
-                              const std::string& extension_id) override;
-
- private:
-  // SettingsStorageFactory is refcounted.
-  ~ScopedSettingsStorageFactory() override;
-
-  scoped_refptr<SettingsStorageFactory> delegate_;
-};
 
 }  // namespace settings_test_util
 

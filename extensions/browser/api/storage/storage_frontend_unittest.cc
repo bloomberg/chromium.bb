@@ -12,12 +12,12 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/api/extensions_api_client.h"
-#include "extensions/browser/api/storage/leveldb_settings_storage_factory.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 #include "extensions/browser/api/storage/settings_test_util.h"
 #include "extensions/browser/api/storage/storage_frontend.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/value_store/value_store.h"
+#include "extensions/browser/value_store/value_store_factory_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -40,13 +40,13 @@ const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
 class ExtensionSettingsFrontendTest : public ExtensionsTest {
  public:
   ExtensionSettingsFrontendTest()
-      : storage_factory_(new util::ScopedSettingsStorageFactory()),
-        ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
+      : ui_thread_(BrowserThread::UI, base::MessageLoop::current()),
         file_thread_(BrowserThread::FILE, base::MessageLoop::current()) {}
 
   void SetUp() override {
     ExtensionsTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    storage_factory_ = new ValueStoreFactoryImpl(temp_dir_.path());
     ResetFrontend();
   }
 
@@ -59,14 +59,13 @@ class ExtensionSettingsFrontendTest : public ExtensionsTest {
 
  protected:
   void ResetFrontend() {
-    storage_factory_->Reset(new LeveldbSettingsStorageFactory());
     frontend_ =
         StorageFrontend::CreateForTesting(storage_factory_, browser_context());
   }
 
   base::ScopedTempDir temp_dir_;
   scoped_ptr<StorageFrontend> frontend_;
-  scoped_refptr<util::ScopedSettingsStorageFactory> storage_factory_;
+  scoped_refptr<ValueStoreFactoryImpl> storage_factory_;
 
  private:
   base::MessageLoop message_loop_;

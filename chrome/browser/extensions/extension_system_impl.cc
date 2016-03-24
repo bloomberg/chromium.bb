@@ -50,6 +50,7 @@
 #include "extensions/browser/service_worker_manager.h"
 #include "extensions/browser/state_store.h"
 #include "extensions/browser/uninstall_ping_sender.h"
+#include "extensions/browser/value_store/value_store_factory_impl.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_url_handlers.h"
 
@@ -70,13 +71,6 @@
 #endif
 
 using content::BrowserThread;
-
-// Statistics are logged to UMA with this string as part of histogram name. They
-// can all be found under Extensions.Database.Open.<client>. Changing this needs
-// to synchronize with histograms.xml, AND will also become incompatible with
-// older browsers still reporting the previous values.
-const char kStateDatabaseUMAClientName[] = "State";
-const char kRulesDatabaseUMAClientName[] = "Rules";
 
 namespace extensions {
 
@@ -107,18 +101,18 @@ ExtensionSystemImpl::Shared::~Shared() {
 }
 
 void ExtensionSystemImpl::Shared::InitPrefs() {
+  store_factory_ = new ValueStoreFactoryImpl(profile_->GetPath());
+
   // Two state stores. The latter, which contains declarative rules, must be
   // loaded immediately so that the rules are ready before we issue network
   // requests.
   state_store_.reset(new StateStore(
-      profile_, kStateDatabaseUMAClientName,
-      profile_->GetPath().AppendASCII(extensions::kStateStoreName), true));
+      profile_, store_factory_, ValueStoreFrontend::BackendType::STATE, true));
   state_store_notification_observer_.reset(
       new StateStoreNotificationObserver(state_store_.get()));
 
   rules_store_.reset(new StateStore(
-      profile_, kRulesDatabaseUMAClientName,
-      profile_->GetPath().AppendASCII(extensions::kRulesStoreName), false));
+      profile_, store_factory_, ValueStoreFrontend::BackendType::RULES, false));
 
 #if defined(OS_CHROMEOS)
   const user_manager::User* user =
@@ -281,6 +275,11 @@ StateStore* ExtensionSystemImpl::Shared::rules_store() {
   return rules_store_.get();
 }
 
+scoped_refptr<ValueStoreFactory> ExtensionSystemImpl::Shared::store_factory()
+    const {
+  return store_factory_;
+}
+
 ExtensionService* ExtensionSystemImpl::Shared::extension_service() {
   return extension_service_.get();
 }
@@ -372,6 +371,10 @@ StateStore* ExtensionSystemImpl::state_store() {
 
 StateStore* ExtensionSystemImpl::rules_store() {
   return shared_->rules_store();
+}
+
+scoped_refptr<ValueStoreFactory> ExtensionSystemImpl::store_factory() {
+  return shared_->store_factory();
 }
 
 InfoMap* ExtensionSystemImpl::info_map() { return shared_->info_map(); }

@@ -6,7 +6,6 @@
 #define EXTENSIONS_BROWSER_API_STORAGE_LOCAL_VALUE_STORE_CACHE_H_
 
 #include "base/compiler_specific.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
@@ -16,14 +15,14 @@
 
 namespace extensions {
 
-class SettingsStorageFactory;
+class ValueStoreFactory;
 
 // ValueStoreCache for the LOCAL namespace. It owns a backend for apps and
 // another for extensions. Each backend takes care of persistence.
 class LocalValueStoreCache : public ValueStoreCache {
  public:
-  LocalValueStoreCache(const scoped_refptr<SettingsStorageFactory>& factory,
-                       const base::FilePath& profile_path);
+  explicit LocalValueStoreCache(
+      const scoped_refptr<ValueStoreFactory>& factory);
   ~LocalValueStoreCache() override;
 
   // ValueStoreCache implementation:
@@ -35,16 +34,10 @@ class LocalValueStoreCache : public ValueStoreCache {
  private:
   typedef std::map<std::string, linked_ptr<ValueStore> > StorageMap;
 
-  ValueStore* GetStorage(scoped_refptr<const Extension> extension);
+  ValueStore* GetStorage(const Extension* extension);
 
   // The Factory to use for creating new ValueStores.
-  const scoped_refptr<SettingsStorageFactory> storage_factory_;
-
-  // The base path to use for extensions when creating new ValueStores.
-  const base::FilePath extension_base_path_;
-
-  // The base path to use for apps when creating new ValueStores.
-  const base::FilePath app_base_path_;
+  const scoped_refptr<ValueStoreFactory> storage_factory_;
 
   // Quota limits (see SettingsStorageQuotaEnforcer).
   const SettingsStorageQuotaEnforcer::Limits quota_;

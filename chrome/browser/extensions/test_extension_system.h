@@ -23,6 +23,8 @@ class BrowserContext;
 
 namespace extensions {
 
+class TestValueStoreFactory;
+
 // Test ExtensionSystem, for use with TestingProfile.
 class TestExtensionSystem : public ExtensionSystem {
  public:
@@ -50,6 +52,7 @@ class TestExtensionSystem : public ExtensionSystem {
   SharedUserScriptMaster* shared_user_script_master() override;
   StateStore* state_store() override;
   StateStore* rules_store() override;
+  scoped_refptr<ValueStoreFactory> store_factory() override;
   TestingValueStore* value_store();
   InfoMap* info_map() override;
   QuotaService* quota_service() override;
@@ -78,8 +81,7 @@ class TestExtensionSystem : public ExtensionSystem {
 
  private:
   scoped_ptr<StateStore> state_store_;
-  // A pointer to the TestingValueStore owned by |state_store_|.
-  TestingValueStore* value_store_;
+  scoped_refptr<TestValueStoreFactory> store_factory_;
   scoped_ptr<ManagementPolicy> management_policy_;
   scoped_ptr<RuntimeData> runtime_data_;
   scoped_ptr<ExtensionService> extension_service_;
