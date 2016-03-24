@@ -35,38 +35,6 @@ namespace base {
 
 namespace {
 
-const char kTrialName[] = "MacMemoryMechanism";
-const char kTrialMach[] = "Mach";
-const char kTrialPosix[] = "Posix";
-
-SharedMemoryHandle::Type GetABTestMechanism() {
-  static bool found_group = false;
-  static SharedMemoryHandle::Type group = SharedMemoryHandle::MACH;
-
-  if (found_group)
-    return group;
-
-  const std::string group_name =
-      base::FieldTrialList::FindFullName(kTrialName);
-  if (group_name == kTrialMach) {
-    group = SharedMemoryHandle::MACH;
-    found_group = true;
-  } else if (group_name == kTrialPosix) {
-    group = SharedMemoryHandle::POSIX;
-    found_group = true;
-  } else {
-    group = SharedMemoryHandle::MACH;
-  }
-
-  return group;
-}
-
-// Emits a histogram entry indicating which type of SharedMemory was created.
-void EmitMechanism(SharedMemoryHandle::Type type) {
-  UMA_HISTOGRAM_ENUMERATION("OSX.SharedMemory.Mechanism", type,
-                            SharedMemoryHandle::TypeMax);
-}
-
 // Returns whether the operation succeeded.
 // |new_handle| is an output variable, populated on success. The caller takes
 // ownership of the underlying memory object.
@@ -180,17 +148,7 @@ SharedMemoryCreateOptions::SharedMemoryCreateOptions()
     : type(SharedMemoryHandle::MACH),
       size(0),
       executable(false),
-      share_read_only(false) {
-  if (mac::IsOSLionOrLater()) {
-    // A/B test the mechanism. Once the experiment is over, this will always be
-    // set to SharedMemoryHandle::MACH.
-    // http://crbug.com/547261
-    type = GetABTestMechanism();
-  } else {
-    // Mach shared memory isn't supported on OSX 10.6 or older.
-    type = SharedMemoryHandle::POSIX;
-  }
-}
+      share_read_only(false) {}
 
 SharedMemory::SharedMemory()
     : mapped_memory_mechanism_(SharedMemoryHandle::POSIX),
@@ -281,8 +239,6 @@ bool SharedMemory::Create(const SharedMemoryCreateOptions& options) {
 
   if (options.size > static_cast<size_t>(std::numeric_limits<int>::max()))
     return false;
-
-  EmitMechanism(options.type);
 
   if (options.type == SharedMemoryHandle::MACH) {
     shm_ = SharedMemoryHandle(options.size);

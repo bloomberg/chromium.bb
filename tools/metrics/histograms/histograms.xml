@@ -33586,6 +33586,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="OSX.SharedMemory.Mechanism" enum="OSXSharedMemoryMechanism">
+  <obsolete>
+    Deprecated as of Chrome 51 since Mach has become the default mechanism.
+  </obsolete>
   <owner>erikchen@chromium.org</owner>
   <summary>
     A histogram entry is emitted each time a base::SharedMemory object is
