@@ -141,6 +141,7 @@ class SystemModalContainerEventFilter;
 class SystemTray;
 class SystemTrayDelegate;
 class SystemTrayNotifier;
+class ToastManager;
 class ToplevelWindowEventHandler;
 class TouchTransformerController;
 class TouchObserverHUD;
@@ -585,6 +586,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
 #endif  // defined(OS_CHROMEOS)
 
+  ToastManager* toast_manager() { return toast_manager_.get(); }
+
   GPUSupport* gpu_support() { return gpu_support_.get(); }
 
  private:
@@ -747,6 +750,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   scoped_ptr<ui::EventHandler> speech_feedback_handler_;
 #endif  // defined(OS_CHROMEOS)
 
+  scoped_ptr<ToastManager> toast_manager_;
   scoped_ptr<MaximizeModeController> maximize_mode_controller_;
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a

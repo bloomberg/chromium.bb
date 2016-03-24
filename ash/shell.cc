@@ -53,6 +53,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/locale/locale_notification_controller.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/toast/toast_manager.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/utility/partial_screenshot_controller.h"
@@ -734,6 +735,9 @@ Shell::~Shell() {
   // layout.
   DeactivateKeyboard();
 
+  // Destroy toasts
+  toast_manager_.reset();
+
   // Destroy SystemTrayDelegate before destroying the status area(s). Make sure
   // to deinitialize the shelf first, as it is initialized after the delegate.
   HideShelf();
@@ -1058,6 +1062,9 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   // Initialize system_tray_delegate_ after StatusAreaWidget is created.
   system_tray_delegate_->Initialize();
+
+  // Initialize toast manager
+  toast_manager_.reset(new ToastManager);
 
 #if defined(OS_CHROMEOS)
   // Create the LogoutConfirmationController after the SystemTrayDelegate.

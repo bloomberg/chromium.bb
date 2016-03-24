@@ -360,6 +360,10 @@ Press Ctrl+Alt+Z to disable.
         Previous menu
       </message>
 
+      <message name="IDS_ASH_TOAST_DISMISS_BUTTON" desc="The text button shown in toasts to close the toast immediately without waiting timeout.">
+        DISMISS
+      </message>
+
       <message name="IDS_ASH_NOTIFICATION_UNREAD_COUNT_NINE_PLUS" desc="The text shown in the notification icon for the unread count when the count is more than 9.">
         9+
       </message>
