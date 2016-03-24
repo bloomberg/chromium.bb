@@ -171,7 +171,7 @@ class V8TodoMVCIgnition(perf_benchmark.PerfBenchmark):
 
 # Disabled on reference builds because they don't support the new
 # Tracing.requestMemoryDump DevTools API. See http://crbug.com/540022.
-@benchmark.Disabled('reference', 'android')  # crbug.com/579546
+@benchmark.Disabled('reference')
 @benchmark.Disabled('win')  # https://crbug.com/590747
 class V8InfiniteScroll(_InfiniteScrollBenchmark):
   """Measures V8 GC metrics and memory usage while scrolling the top web pages.
