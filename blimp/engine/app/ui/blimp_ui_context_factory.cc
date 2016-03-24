@@ -7,6 +7,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/resources/shared_bitmap_manager.h"
 #include "cc/surfaces/surface_id_allocator.h"
+#include "content/browser/compositor/image_transport_factory.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/compositor/reflector.h"
 
@@ -68,8 +69,13 @@ cc::TaskGraphRunner* BlimpUiContextFactory::GetTaskGraphRunner() {
 
 scoped_ptr<cc::SurfaceIdAllocator>
 BlimpUiContextFactory::CreateSurfaceIdAllocator() {
-  return make_scoped_ptr(
+  scoped_ptr<cc::SurfaceIdAllocator> allocator(
       new cc::SurfaceIdAllocator(next_surface_id_namespace_++));
+  content::ImageTransportFactory* factory =
+      content::ImageTransportFactory::GetInstance();
+  if (factory->GetSurfaceManager())
+    allocator->RegisterSurfaceIdNamespace(factory->GetSurfaceManager());
+  return allocator;
 }
 
 void BlimpUiContextFactory::ResizeDisplay(ui::Compositor* compositor,

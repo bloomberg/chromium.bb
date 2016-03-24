@@ -4,6 +4,7 @@ include_rules = [
   "-chrome",
   "+components/version_info",
   "+components/web_cache/renderer",
+  "+content/browser/compositor",
   "+content/public",
   "+net",
   "+third_party/blimp_fonts",
