@@ -323,19 +323,19 @@ class BidirectionalStreamQuicImplTest
     socket_data_.reset(new StaticSocketDataProvider(
         nullptr, 0, mock_writes_.get(), writes_.size()));
 
-    MockUDPClientSocket* socket = new MockUDPClientSocket(
-        socket_data_.get(), net_log().bound().net_log());
+    scoped_ptr<MockUDPClientSocket> socket(new MockUDPClientSocket(
+        socket_data_.get(), net_log().bound().net_log()));
     socket->Connect(peer_addr_);
     runner_ = new TestTaskRunner(&clock_);
     helper_.reset(new QuicChromiumConnectionHelper(runner_.get(), &clock_,
                                                    &random_generator_));
     connection_ = new QuicConnection(
         connection_id_, peer_addr_, helper_.get(),
-        new QuicChromiumPacketWriter(socket), true /* owns_writer */,
+        new QuicChromiumPacketWriter(socket.get()), true /* owns_writer */,
         Perspective::IS_CLIENT, SupportedVersions(GetParam()));
 
     session_.reset(new QuicChromiumClientSession(
-        connection_, scoped_ptr<DatagramClientSocket>(socket),
+        connection_, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
         &transport_security_state_, make_scoped_ptr((QuicServerInfo*)nullptr),
         QuicServerId(kDefaultServerHostName, kDefaultServerPort,

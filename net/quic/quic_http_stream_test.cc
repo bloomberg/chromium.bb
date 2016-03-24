@@ -196,8 +196,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     socket_data_.reset(new StaticSocketDataProvider(
         nullptr, 0, mock_writes_.get(), writes_.size()));
 
-    MockUDPClientSocket* socket =
-        new MockUDPClientSocket(socket_data_.get(), net_log_.bound().net_log());
+    scoped_ptr<MockUDPClientSocket> socket(new MockUDPClientSocket(
+        socket_data_.get(), net_log_.bound().net_log()));
     socket->Connect(peer_addr_);
     runner_ = new TestTaskRunner(&clock_);
     send_algorithm_ = new MockSendAlgorithm();
@@ -220,7 +220,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                                    &random_generator_));
     connection_ = new TestQuicConnection(
         SupportedVersions(GetParam()), connection_id_, peer_addr_,
-        helper_.get(), new QuicChromiumPacketWriter(socket));
+        helper_.get(), new QuicChromiumPacketWriter(socket.get()));
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
 
@@ -234,7 +234,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details_);
 
     session_.reset(new QuicChromiumClientSession(
-        connection_, scoped_ptr<DatagramClientSocket>(socket),
+        connection_, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
         &transport_security_state_, make_scoped_ptr((QuicServerInfo*)nullptr),
         QuicServerId(kDefaultServerHostName, kDefaultServerPort,
