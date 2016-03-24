@@ -369,14 +369,9 @@ void HttpBridge::OnURLFetchComplete(const net::URLFetcher* source) {
   fetch_state_.response_headers = source->GetResponseHeaders();
   UpdateNetworkTime();
 
-  int64_t compressed_content_length = fetch_state_.response_content.size();
-  int64_t original_content_length = compressed_content_length;
-  if (fetch_state_.response_headers &&
-      fetch_state_.response_headers->HasHeaderValue("content-encoding",
-                                                    "gzip")) {
-    compressed_content_length =
-        fetch_state_.response_headers->GetContentLength();
-  }
+  int64_t original_content_length = fetch_state_.response_content.size();
+  int64_t compressed_content_length =
+      source->GetReceivedResponseContentLength();
   RecordSyncResponseContentLengthHistograms(compressed_content_length,
                                             original_content_length);
 
