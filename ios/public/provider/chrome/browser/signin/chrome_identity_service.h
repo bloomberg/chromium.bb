@@ -155,6 +155,10 @@ class ChromeIdentityService {
                                      NSDictionary* user_info,
                                      MDMStatusCallback callback);
 
+  // Returns whether the |error| associated with |identity| is due to MDM
+  // (Mobile Device Management).
+  virtual bool IsMDMError(ChromeIdentity* identity, NSError* error);
+
   // Adds and removes observers.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

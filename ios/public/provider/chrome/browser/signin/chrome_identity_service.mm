@@ -80,6 +80,11 @@ bool ChromeIdentityService::HandleMDMNotification(ChromeIdentity* identity,
   return false;
 }
 
+bool ChromeIdentityService::IsMDMError(ChromeIdentity* identity,
+                                       NSError* error) {
+  return false;
+}
+
 void ChromeIdentityService::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
