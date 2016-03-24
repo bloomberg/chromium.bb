@@ -404,6 +404,7 @@ private:
 
     Node* nodeForHitTest() const;
 
+    // Returns true if the positioned movement-only layout succeeded.
     bool tryLayoutDoingPositionedMovementOnly();
 
     bool avoidsFloats() const override { return true; }
