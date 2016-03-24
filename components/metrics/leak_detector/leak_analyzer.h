@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "components/metrics/leak_detector/custom_allocator.h"
 #include "components/metrics/leak_detector/leak_detector_value_type.h"
-#include "components/metrics/leak_detector/ranked_list.h"
+#include "components/metrics/leak_detector/ranked_set.h"
 #include "components/metrics/leak_detector/stl_allocator.h"
 
 namespace metrics {
@@ -33,10 +33,10 @@ class LeakAnalyzer {
   LeakAnalyzer(uint32_t ranking_size, uint32_t num_suspicions_threshold);
   ~LeakAnalyzer();
 
-  // Take in a RankedList of allocations, sorted by count. Removes the contents
-  // of |ranked_list| to be stored internally, which is why it is not passed in
-  // as a const reference.
-  void AddSample(RankedList ranked_list);
+  // Take in a RankedSet of allocations, sorted by count. Removes the contents
+  // of |ranked_entries| to be stored internally, which is why it is not passed
+  // in as a const reference.
+  void AddSample(RankedSet ranked_entries);
 
   // Used to report suspected leaks. Reported leaks are sorted by ValueType.
   const std::vector<ValueType, Allocator<ValueType>>& suspected_leaks() const {
@@ -46,7 +46,7 @@ class LeakAnalyzer {
  private:
   // Analyze a list of allocation count deltas from the previous iteration. If
   // anything looks like a possible leak, update the suspicion scores.
-  void AnalyzeDeltas(const RankedList& ranked_deltas);
+  void AnalyzeDeltas(const RankedSet& ranked_deltas);
 
   // Returns the count for the given value from the previous analysis in
   // |count|. Returns true if the given value was present in the previous
@@ -74,9 +74,9 @@ class LeakAnalyzer {
   std::vector<ValueType, Allocator<ValueType>> suspected_leaks_;
 
   // The most recent allocation entries, since the last call to AddSample().
-  RankedList ranked_entries_;
+  RankedSet ranked_entries_;
   // The previous allocation entries, from before the last call to AddSample().
-  RankedList prev_ranked_entries_;
+  RankedSet prev_ranked_entries_;
 
   DISALLOW_COPY_AND_ASSIGN(LeakAnalyzer);
 };

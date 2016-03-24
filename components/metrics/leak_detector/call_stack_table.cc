@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "components/metrics/leak_detector/call_stack_manager.h"
+#include "components/metrics/leak_detector/ranked_set.h"
 
 namespace metrics {
 namespace leak_detector {
@@ -63,17 +64,17 @@ void CallStackTable::Remove(const CallStack* call_stack) {
 
 void CallStackTable::TestForLeaks() {
   // Add all entries to the ranked list.
-  RankedList ranked_list(kMaxCountOfSuspciousStacks);
+  RankedSet ranked_entries(kMaxCountOfSuspciousStacks);
 
   for (const auto& entry_pair : entry_map_) {
     const Entry& entry = entry_pair.second;
     // Assumes that |entry.net_num_allocs| is always > 0. If that changes
     // elsewhere in this class, this code should be updated to only pass values
-    // > 0 to |ranked_list|.
+    // > 0 to |ranked_entries|.
     LeakDetectorValueType call_stack_value(entry_pair.first);
-    ranked_list.Add(call_stack_value, entry.net_num_allocs);
+    ranked_entries.Add(call_stack_value, entry.net_num_allocs);
   }
-  leak_analyzer_.AddSample(std::move(ranked_list));
+  leak_analyzer_.AddSample(std::move(ranked_entries));
 }
 
 }  // namespace leak_detector

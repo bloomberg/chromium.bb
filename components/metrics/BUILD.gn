@@ -134,8 +134,8 @@ if (is_chromeos) {
       "leak_detector/leak_detector_impl.h",
       "leak_detector/leak_detector_value_type.cc",
       "leak_detector/leak_detector_value_type.h",
-      "leak_detector/ranked_list.cc",
-      "leak_detector/ranked_list.h",
+      "leak_detector/ranked_set.cc",
+      "leak_detector/ranked_set.h",
     ]
 
     deps = [
@@ -294,7 +294,7 @@ if (is_chromeos) {
       "leak_detector/leak_analyzer_unittest.cc",
       "leak_detector/leak_detector_impl_unittest.cc",
       "leak_detector/leak_detector_unittest.cc",
-      "leak_detector/ranked_list_unittest.cc",
+      "leak_detector/ranked_set_unittest.cc",
     ]
 
     deps = [

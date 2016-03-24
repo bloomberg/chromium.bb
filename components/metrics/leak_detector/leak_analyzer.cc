@@ -11,7 +11,7 @@ namespace leak_detector {
 
 namespace {
 
-using RankedEntry = RankedList::Entry;
+using RankedEntry = RankedSet::Entry;
 
 // Increase suspicion scores by this much each time an entry is suspected as
 // being a leak.
@@ -30,14 +30,14 @@ LeakAnalyzer::LeakAnalyzer(uint32_t ranking_size,
 
 LeakAnalyzer::~LeakAnalyzer() {}
 
-void LeakAnalyzer::AddSample(RankedList ranked_list) {
+void LeakAnalyzer::AddSample(RankedSet ranked_set) {
   // Save the ranked entries from the previous call.
   prev_ranked_entries_ = std::move(ranked_entries_);
 
   // Save the current entries.
-  ranked_entries_ = std::move(ranked_list);
+  ranked_entries_ = std::move(ranked_set);
 
-  RankedList ranked_deltas(ranking_size_);
+  RankedSet ranked_deltas(ranking_size_);
   for (const RankedEntry& entry : ranked_entries_) {
     // Determine what count was recorded for this value last time.
     uint32_t prev_count = 0;
@@ -48,13 +48,13 @@ void LeakAnalyzer::AddSample(RankedList ranked_list) {
   AnalyzeDeltas(ranked_deltas);
 }
 
-void LeakAnalyzer::AnalyzeDeltas(const RankedList& ranked_deltas) {
+void LeakAnalyzer::AnalyzeDeltas(const RankedSet& ranked_deltas) {
   bool found_drop = false;
-  RankedList::const_iterator drop_position = ranked_deltas.end();
+  RankedSet::const_iterator drop_position = ranked_deltas.end();
 
   if (ranked_deltas.size() > 1) {
-    RankedList::const_iterator entry_iter = ranked_deltas.begin();
-    RankedList::const_iterator next_entry_iter = ranked_deltas.begin();
+    RankedSet::const_iterator entry_iter = ranked_deltas.begin();
+    RankedSet::const_iterator next_entry_iter = ranked_deltas.begin();
     ++next_entry_iter;
 
     // If the first entry is 0, that means all deltas are 0 or negative. Do
@@ -80,9 +80,9 @@ void LeakAnalyzer::AnalyzeDeltas(const RankedList& ranked_deltas) {
   std::set<ValueType, std::less<ValueType>, Allocator<ValueType>>
       current_suspects;
   if (found_drop) {
-    for (RankedList::const_iterator ranked_list_iter = ranked_deltas.begin();
-         ranked_list_iter != drop_position; ++ranked_list_iter) {
-      current_suspects.insert(ranked_list_iter->value);
+    for (RankedSet::const_iterator ranked_set_iter = ranked_deltas.begin();
+         ranked_set_iter != drop_position; ++ranked_set_iter) {
+      current_suspects.insert(ranked_set_iter->value);
     }
   }
 

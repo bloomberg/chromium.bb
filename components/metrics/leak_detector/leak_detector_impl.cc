@@ -14,7 +14,7 @@
 #include "base/process/process_handle.h"
 #include "components/metrics/leak_detector/call_stack_table.h"
 #include "components/metrics/leak_detector/custom_allocator.h"
-#include "components/metrics/leak_detector/ranked_list.h"
+#include "components/metrics/leak_detector/ranked_set.h"
 
 namespace metrics {
 namespace leak_detector {
@@ -22,7 +22,7 @@ namespace leak_detector {
 namespace {
 
 // Look for leaks in the the top N entries in each tier, where N is this value.
-const int kRankedListSize = 16;
+const int kRankedSetSize = 16;
 
 // Initial hash table size for |LeakDetectorImpl::address_map_|.
 const int kAddressMapNumBuckets = 100003;
@@ -76,7 +76,7 @@ LeakDetectorImpl::LeakDetectorImpl(uintptr_t mapping_addr,
       num_allocs_with_call_stack_(0),
       num_stack_tables_(0),
       address_map_(kAddressMapNumBuckets),
-      size_leak_analyzer_(kRankedListSize, size_suspicion_threshold),
+      size_leak_analyzer_(kRankedSetSize, size_suspicion_threshold),
       size_entries_(kNumSizeEntries),
       mapping_addr_(mapping_addr),
       mapping_size_(mapping_size),
@@ -149,13 +149,13 @@ void LeakDetectorImpl::RecordFree(const void* ptr) {
 
 void LeakDetectorImpl::TestForLeaks(InternalVector<LeakReport>* reports) {
   // Add net alloc counts for each size to a ranked list.
-  RankedList size_ranked_list(kRankedListSize);
+  RankedSet size_ranked_set(kRankedSetSize);
   for (size_t i = 0; i < size_entries_.size(); ++i) {
     const AllocSizeEntry& entry = size_entries_[i];
     ValueType size_value(IndexToSize(i));
-    size_ranked_list.Add(size_value, entry.num_allocs - entry.num_frees);
+    size_ranked_set.Add(size_value, entry.num_allocs - entry.num_frees);
   }
-  size_leak_analyzer_.AddSample(std::move(size_ranked_list));
+  size_leak_analyzer_.AddSample(std::move(size_ranked_set));
 
   // Get suspected leaks by size.
   for (const ValueType& size_value : size_leak_analyzer_.suspected_leaks()) {

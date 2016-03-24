@@ -376,7 +376,7 @@
       'metrics/leak_detector/leak_analyzer_unittest.cc',
       'metrics/leak_detector/leak_detector_unittest.cc',
       'metrics/leak_detector/leak_detector_impl_unittest.cc',
-      'metrics/leak_detector/ranked_list_unittest.cc',
+      'metrics/leak_detector/ranked_set_unittest.cc',
     ],
     'mime_util_unittest_sources': [
       'mime_util/mime_util_unittest.cc',

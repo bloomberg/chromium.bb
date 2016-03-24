@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_METRICS_LEAK_DETECTOR_RANKED_LIST_H_
-#define COMPONENTS_METRICS_LEAK_DETECTOR_RANKED_LIST_H_
+#ifndef COMPONENTS_METRICS_LEAK_DETECTOR_RANKED_SET_H_
+#define COMPONENTS_METRICS_LEAK_DETECTOR_RANKED_SET_H_
 
 #include <stddef.h>
 
-#include <list>
+#include <functional>  // for std::less
+#include <set>
 
 #include "base/macros.h"
 #include "components/metrics/leak_detector/custom_allocator.h"
@@ -17,35 +18,38 @@
 namespace metrics {
 namespace leak_detector {
 
-// RankedList lets you add entries consisting of a value-count pair, and
+// RankedSet lets you add entries consisting of a value-count pair, and
 // automatically sorts them internally by count in descending order. This allows
-// for the user of this list to put value-count pairs into this list without
-// having to explicitly sort them by count.
-class RankedList {
+// for the user of this container to insert value-count pairs without having to
+// explicitly sort them by count.
+class RankedSet {
  public:
   using ValueType = LeakDetectorValueType;
 
-  // A single entry in the RankedList. The RankedList sorts entries by |count|
+  // A single entry in the RankedSet. The RankedSet sorts entries by |count|
   // in descending order.
   struct Entry {
     ValueType value;
     int count;
 
-    // Create a < comparator for reverse sorting.
-    bool operator<(const Entry& entry) const { return count > entry.count; }
+    // This less-than comparator is used for sorting Entries within a sorted
+    // container. It internally reverses the comparison so that higher-count
+    // entries are sorted ahead of lower-count entries.
+    bool operator<(const Entry& other) const;
   };
 
   // This class uses CustomAllocator to avoid recursive malloc hook invocation
   // when analyzing allocs and frees.
-  using EntryList = std::list<Entry, STLAllocator<Entry, CustomAllocator>>;
-  using const_iterator = EntryList::const_iterator;
+  using EntrySet =
+      std::set<Entry, std::less<Entry>, STLAllocator<Entry, CustomAllocator>>;
+  using const_iterator = EntrySet::const_iterator;
 
-  explicit RankedList(size_t max_size);
-  ~RankedList();
+  explicit RankedSet(size_t max_size);
+  ~RankedSet();
 
   // For move semantics.
-  RankedList(RankedList&& other);
-  RankedList& operator=(RankedList&& other);
+  RankedSet(RankedSet&& other);
+  RankedSet& operator=(RankedSet&& other);
 
   // Accessors for begin() and end() const iterators.
   const_iterator begin() const { return entries_.begin(); }
@@ -54,8 +58,12 @@ class RankedList {
   size_t size() const { return entries_.size(); }
   size_t max_size() const { return max_size_; }
 
-  // Add a new value-count pair to the list. Does not check for existing entries
-  // with the same value. Is an O(n) operation due to ordering.
+  // Add a new value-count pair to the container. Will overwrite any existing
+  // entry with the same value and count. Will not overwrite an existing entry
+  // with the same value but a different count, or different values with the
+  // same count.
+  //
+  // Time complexity is O(log n).
   void Add(const ValueType& value, int count);
 
  private:
@@ -70,13 +78,13 @@ class RankedList {
   // Max number of items that can be stored in the list.
   size_t max_size_;
 
-  // Points to the array of entries.
-  std::list<Entry, STLAllocator<Entry, CustomAllocator>> entries_;
+  // Actual storage container for entries.
+  EntrySet entries_;
 
-  DISALLOW_COPY_AND_ASSIGN(RankedList);
+  DISALLOW_COPY_AND_ASSIGN(RankedSet);
 };
 
 }  // namespace leak_detector
 }  // namespace metrics
 
-#endif  // COMPONENTS_METRICS_LEAK_DETECTOR_RANKED_LIST_H_
+#endif  // COMPONENTS_METRICS_LEAK_DETECTOR_RANKED_SET_H_
