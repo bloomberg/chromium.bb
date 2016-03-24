@@ -37,11 +37,6 @@ bool IsTabSwitcherEnabled();
 // Whether the reading list is enabled.
 bool IsReadingListEnabled();
 
-// Whether the file sent by the share extension sould be deleted after being
-// processed. If true, files will be reprocessed everytime the application is
-// put in foreground.
-bool IsReadingListKeepItemsEnabled();
-
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_

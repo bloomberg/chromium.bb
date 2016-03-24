@@ -263,19 +263,17 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 
 - (void)deleteFileAtURL:(NSURL*)url withCompletion:(ProceduralBlock)completion {
   DCHECK_CURRENTLY_ON(web::WebThread::FILE);
-  if (!experimental_flags::IsReadingListKeepItemsEnabled()) {
-    base::scoped_nsobject<NSFileCoordinator> deletingCoordinator(
-        [[NSFileCoordinator alloc] initWithFilePresenter:self]);
-    NSError* error = nil;
-    [deletingCoordinator
-        coordinateWritingItemAtURL:url
-                           options:NSFileCoordinatorWritingForDeleting
-                             error:&error
-                        byAccessor:^(NSURL* newURL) {
-                          [[NSFileManager defaultManager] removeItemAtURL:newURL
-                                                                    error:nil];
-                        }];
-  }
+  base::scoped_nsobject<NSFileCoordinator> deletingCoordinator(
+      [[NSFileCoordinator alloc] initWithFilePresenter:self]);
+  NSError* error = nil;
+  [deletingCoordinator
+      coordinateWritingItemAtURL:url
+                         options:NSFileCoordinatorWritingForDeleting
+                           error:&error
+                      byAccessor:^(NSURL* newURL) {
+                        [[NSFileManager defaultManager] removeItemAtURL:newURL
+                                                                  error:nil];
+                      }];
   if (completion) {
     completion();
   }
