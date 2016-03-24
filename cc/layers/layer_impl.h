@@ -560,10 +560,6 @@ class CC_EXPORT LayerImpl {
 
   virtual gfx::Rect GetEnclosingRectInTargetSpace() const;
 
-  void set_visited(bool visited) { visited_ = visited; }
-
-  bool visited() { return visited_; }
-
   void set_layer_or_descendant_is_drawn(bool layer_or_descendant_is_drawn) {
     layer_or_descendant_is_drawn_ = layer_or_descendant_is_drawn;
   }
@@ -579,11 +575,6 @@ class CC_EXPORT LayerImpl {
   bool layer_or_descendant_has_touch_handler() {
     return layer_or_descendant_has_touch_handler_;
   }
-
-  void set_sorted_for_recursion(bool sorted_for_recursion) {
-    sorted_for_recursion_ = sorted_for_recursion;
-  }
-  bool sorted_for_recursion() { return sorted_for_recursion_; }
 
   int num_copy_requests_in_target_subtree();
 
@@ -770,11 +761,9 @@ class CC_EXPORT LayerImpl {
 
   std::vector<FrameTimingRequest> frame_timing_requests_;
   bool frame_timing_requests_dirty_;
-  bool visited_;
   bool layer_or_descendant_is_drawn_;
   // If true, the layer or one of its descendants has a touch handler.
   bool layer_or_descendant_has_touch_handler_;
-  bool sorted_for_recursion_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };

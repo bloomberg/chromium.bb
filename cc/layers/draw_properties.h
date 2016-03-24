@@ -70,12 +70,6 @@ struct CC_EXPORT DrawProperties {
   // does not include our clip children because they are clipped by us.
   size_t num_unclipped_descendants;
 
-  // This is true if the layer has any direct child that has a scroll parent.
-  // This layer will not be the scroll parent in this case. This information
-  // lets us avoid work in CalculateDrawPropertiesInternal -- if none of our
-  // children have scroll parents, we will not need to recur out of order.
-  bool has_child_with_a_scroll_parent;
-
   // Each time we generate a new render surface layer list, an ID is used to
   // identify it. |last_drawn_render_surface_layer_list_id| is set to the ID
   // that marked the render surface layer list generation which last updated

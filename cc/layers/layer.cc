@@ -87,9 +87,6 @@ Layer::Layer()
       blend_mode_(SkXfermode::kSrcOver_Mode),
       draw_blend_mode_(SkXfermode::kSrcOver_Mode),
       scroll_parent_(nullptr),
-      layer_or_descendant_is_drawn_tracker_(0),
-      sorted_for_recursion_tracker_(0),
-      visited_tracker_(0),
       clip_parent_(nullptr),
       replica_layer_(nullptr),
       client_(nullptr),
@@ -1840,41 +1837,6 @@ int Layer::num_copy_requests_in_target_subtree() {
       ->property_trees()
       ->effect_tree.Node(effect_tree_index())
       ->data.num_copy_requests_in_subtree;
-}
-
-void Layer::set_visited(bool visited) {
-  visited_tracker_ =
-      visited ? layer_tree_host()->meta_information_sequence_number() : 0;
-}
-
-bool Layer::visited() {
-  return visited_tracker_ ==
-         layer_tree_host()->meta_information_sequence_number();
-}
-
-void Layer::set_layer_or_descendant_is_drawn(
-    bool layer_or_descendant_is_drawn) {
-  layer_or_descendant_is_drawn_tracker_ =
-      layer_or_descendant_is_drawn
-          ? layer_tree_host()->meta_information_sequence_number()
-          : 0;
-}
-
-bool Layer::layer_or_descendant_is_drawn() {
-  return layer_or_descendant_is_drawn_tracker_ ==
-         layer_tree_host()->meta_information_sequence_number();
-}
-
-void Layer::set_sorted_for_recursion(bool sorted_for_recursion) {
-  sorted_for_recursion_tracker_ =
-      sorted_for_recursion
-          ? layer_tree_host()->meta_information_sequence_number()
-          : 0;
-}
-
-bool Layer::sorted_for_recursion() {
-  return sorted_for_recursion_tracker_ ==
-         layer_tree_host()->meta_information_sequence_number();
 }
 
 gfx::Transform Layer::draw_transform() const {

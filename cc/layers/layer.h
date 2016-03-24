@@ -505,13 +505,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   void SetMutableProperties(uint32_t properties);
   uint32_t mutable_properties() const { return mutable_properties_; }
 
-  void set_visited(bool visited);
-  bool visited();
-  void set_layer_or_descendant_is_drawn(bool layer_or_descendant_is_drawn);
-  bool layer_or_descendant_is_drawn();
-  void set_sorted_for_recursion(bool sorted_for_recursion);
-  bool sorted_for_recursion();
-
   // Interactions with attached animations.
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
   void OnFilterAnimated(const FilterOperations& filters);
@@ -676,14 +669,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   LayerPositionConstraint position_constraint_;
   Layer* scroll_parent_;
   scoped_ptr<std::set<Layer*>> scroll_children_;
-
-  // The following three variables are tracker variables. They are bools
-  // wrapped inside an integer variable. If true, their value equals the
-  // LayerTreeHost's meta_information_sequence_number. This wrapping of bools
-  // inside ints is done to avoid a layer tree treewalk to reset their values.
-  int layer_or_descendant_is_drawn_tracker_;
-  int sorted_for_recursion_tracker_;
-  int visited_tracker_;
 
   Layer* clip_parent_;
   scoped_ptr<std::set<Layer*>> clip_children_;

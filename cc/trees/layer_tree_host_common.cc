@@ -488,10 +488,6 @@ static void PreCalculateMetaInformationInternal(
     return;
   }
 
-  layer->set_sorted_for_recursion(false);
-  layer->set_layer_or_descendant_is_drawn(false);
-  layer->set_visited(false);
-
   if (layer->clip_parent())
     recursive_data->num_unclipped_descendants++;
 
@@ -531,11 +527,6 @@ static void PreCalculateMetaInformationInternal(
 static void PreCalculateMetaInformationInternal(
     LayerImpl* layer,
     PreCalculateMetaInformationRecursiveData* recursive_data) {
-  layer->set_sorted_for_recursion(false);
-  layer->draw_properties().has_child_with_a_scroll_parent = false;
-  layer->set_layer_or_descendant_is_drawn(false);
-  layer->set_visited(false);
-
   if (layer->clip_parent())
     recursive_data->num_unclipped_descendants++;
 
@@ -550,9 +541,6 @@ static void PreCalculateMetaInformationInternal(
 
     PreCalculateMetaInformationRecursiveData data_for_child;
     PreCalculateMetaInformationInternal(child_layer, &data_for_child);
-
-    if (child_layer->scroll_parent())
-      layer->draw_properties().has_child_with_a_scroll_parent = true;
     recursive_data->Merge(data_for_child);
   }
 

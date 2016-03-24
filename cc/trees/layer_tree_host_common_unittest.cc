@@ -3602,79 +3602,6 @@ TEST_F(LayerTreeHostCommonTest,
 }
 
 TEST_F(LayerTreeHostCommonTest,
-       SingularTransformDoesNotPreventClearingDrawProperties) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<LayerWithForcedDrawsContent> child =
-      make_scoped_refptr(new LayerWithForcedDrawsContent());
-  root->AddChild(child);
-
-  host()->SetRootLayer(root);
-
-  gfx::Transform identity_matrix;
-  gfx::Transform uninvertible_matrix(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-  ASSERT_FALSE(uninvertible_matrix.IsInvertible());
-
-  SetLayerPropertiesForTesting(root.get(),
-                               uninvertible_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-  SetLayerPropertiesForTesting(child.get(),
-                               identity_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(5.f, 5.f),
-                               gfx::Size(50, 50),
-                               true,
-                               false);
-
-  child->set_sorted_for_recursion(true);
-
-  TransformOperations start_transform_operations;
-  start_transform_operations.AppendScale(1.f, 0.f, 0.f);
-
-  TransformOperations end_transform_operations;
-  end_transform_operations.AppendScale(1.f, 1.f, 0.f);
-
-  AddAnimatedTransformToLayerWithPlayer(root->id(), timeline(), 10.0,
-                                        start_transform_operations,
-                                        end_transform_operations);
-  EXPECT_TRUE(root->TransformIsAnimating());
-
-  ExecuteCalculateDrawProperties(root.get());
-
-  EXPECT_FALSE(child->sorted_for_recursion());
-}
-
-TEST_F(LayerTreeHostCommonTest,
-       SingularNonAnimatingTransformDoesNotPreventClearingDrawProperties) {
-  scoped_refptr<Layer> root = Layer::Create();
-
-  host()->SetRootLayer(root);
-
-  gfx::Transform identity_matrix;
-  gfx::Transform uninvertible_matrix(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-  ASSERT_FALSE(uninvertible_matrix.IsInvertible());
-
-  SetLayerPropertiesForTesting(root.get(),
-                               uninvertible_matrix,
-                               gfx::Point3F(),
-                               gfx::PointF(),
-                               gfx::Size(100, 100),
-                               true,
-                               false);
-
-  root->set_sorted_for_recursion(true);
-
-  EXPECT_FALSE(root->TransformIsAnimating());
-
-  ExecuteCalculateDrawProperties(root.get());
-
-  EXPECT_FALSE(root->sorted_for_recursion());
-}
-
-TEST_F(LayerTreeHostCommonTest,
        DrawableAndVisibleContentRectsForLayersInClippedRenderSurface) {
   LayerImpl* root = root_layer();
   LayerImpl* render_surface = AddChildToRoot<LayerImpl>();
@@ -9091,44 +9018,6 @@ TEST_F(LayerTreeHostCommonTest, ResetPropertyTreeIndices) {
 
   ExecuteCalculateDrawPropertiesWithPropertyTrees(root.get());
   EXPECT_EQ(-1, child->transform_tree_index());
-}
-
-TEST_F(LayerTreeHostCommonTest, ResetLayerDrawPropertiestest) {
-  scoped_refptr<Layer> root = Layer::Create();
-  scoped_refptr<Layer> child = Layer::Create();
-
-  root->AddChild(child);
-  gfx::Transform identity;
-
-  SetLayerPropertiesForTesting(root.get(), identity, gfx::Point3F(),
-                               gfx::PointF(), gfx::Size(100, 100), true, false);
-  SetLayerPropertiesForTesting(child.get(), identity, gfx::Point3F(),
-                               gfx::PointF(), gfx::Size(100, 100), true, false);
-
-  host()->SetRootLayer(root);
-
-  EXPECT_FALSE(root->layer_or_descendant_is_drawn());
-  EXPECT_FALSE(root->visited());
-  EXPECT_FALSE(root->sorted_for_recursion());
-  EXPECT_FALSE(child->layer_or_descendant_is_drawn());
-  EXPECT_FALSE(child->visited());
-  EXPECT_FALSE(child->sorted_for_recursion());
-
-  root->set_layer_or_descendant_is_drawn(true);
-  root->set_visited(true);
-  root->set_sorted_for_recursion(true);
-  child->set_layer_or_descendant_is_drawn(true);
-  child->set_visited(true);
-  child->set_sorted_for_recursion(true);
-
-  LayerTreeHostCommon::PreCalculateMetaInformationForTesting(root.get());
-
-  EXPECT_FALSE(root->layer_or_descendant_is_drawn());
-  EXPECT_FALSE(root->visited());
-  EXPECT_FALSE(root->sorted_for_recursion());
-  EXPECT_FALSE(child->layer_or_descendant_is_drawn());
-  EXPECT_FALSE(child->visited());
-  EXPECT_FALSE(child->sorted_for_recursion());
 }
 
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
