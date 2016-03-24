@@ -390,6 +390,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
                                      &init_data_from_delegate,
                                      &optional_parameters_from_delegate)) {
         promise->reject(INVALID_ACCESS_ERROR, 0, "Invalid init data.");
+        return;
       }
       if (!init_data_from_delegate.empty()) {
         j_init_data =
