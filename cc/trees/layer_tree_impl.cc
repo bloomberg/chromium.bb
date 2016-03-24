@@ -280,6 +280,10 @@ void LayerTreeImpl::SetRootLayer(scoped_ptr<LayerImpl> layer) {
   layer_tree_host_impl_->OnCanDrawStateChangedForTree();
 }
 
+bool LayerTreeImpl::IsRootLayer(const LayerImpl* layer) const {
+  return root_layer_ == layer;
+}
+
 LayerImpl* LayerTreeImpl::InnerViewportScrollLayer() const {
   return LayerById(inner_viewport_scroll_layer_id_);
 }

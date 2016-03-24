@@ -809,7 +809,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(
     RenderSurfaceImpl* render_surface = render_surface_layer->render_surface();
 
     bool should_draw_into_render_pass =
-        render_surface_layer->parent() == NULL ||
+        active_tree_->IsRootLayer(render_surface_layer) ||
         render_surface->contributes_to_drawn_surface() ||
         render_surface_layer->HasCopyRequest();
     if (should_draw_into_render_pass)

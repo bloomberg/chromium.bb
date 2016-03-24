@@ -132,6 +132,7 @@ class CC_EXPORT LayerTreeImpl {
   // ---------------------------------------------------------------------------
   LayerImpl* root_layer() const { return root_layer_; }
   void SetRootLayer(scoped_ptr<LayerImpl>);
+  bool IsRootLayer(const LayerImpl* layer) const;
   scoped_ptr<OwnedLayerImplList> DetachLayers();
   void ClearLayers();
 

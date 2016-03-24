@@ -243,9 +243,12 @@ gfx::Rect LayerTreeHostCommon::CalculateVisibleRect(
       target_surface_rect, layer_bound_rect, layer_in_surface_space, transform);
 }
 
-template <typename LayerType>
-static inline bool IsRootLayer(LayerType* layer) {
+static inline bool IsRootLayer(const Layer* layer) {
   return !layer->parent();
+}
+
+static inline bool IsRootLayer(const LayerImpl* layer) {
+  return layer->layer_tree_impl()->IsRootLayer(layer);
 }
 
 template <typename LayerType>
@@ -321,7 +324,7 @@ static bool LayerShouldBeSkipped(LayerImpl* layer,
 
   LayerImpl* backface_test_layer = layer;
   if (layer->use_parent_backface_visibility()) {
-    DCHECK(layer->parent());
+    DCHECK(!IsRootLayer(layer));
     DCHECK(!layer->parent()->use_parent_backface_visibility());
     backface_test_layer = layer->parent();
   }
@@ -710,7 +713,7 @@ void CalculateRenderTarget(LayerImpl* layer,
           layer;
 
   } else {
-    DCHECK(layer->parent());
+    DCHECK(!IsRootLayer(layer));
     layer->draw_properties().render_target = layer->parent()->render_target();
   }
 

@@ -23,12 +23,16 @@ namespace draw_property_utils {
 
 namespace {
 
-template <typename LayerType>
-static void ValidateRenderSurfaces(LayerType* layer) {
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    ValidateRenderSurfaces(layer->child_at(i));
-  }
+static bool IsRootLayer(const Layer* layer) {
+  return !layer->parent();
+}
 
+static bool IsRootLayer(const LayerImpl* layer) {
+  return layer->layer_tree_impl()->IsRootLayer(layer);
+}
+
+template <typename LayerType>
+static void ValidateRenderSurfaceForLayer(LayerType* layer) {
   // This test verifies that there are no cases where a LayerImpl needs
   // a render surface, but doesn't have one.
   if (layer->has_render_surface())
@@ -36,13 +40,19 @@ static void ValidateRenderSurfaces(LayerType* layer) {
 
   DCHECK(layer->filters().IsEmpty()) << "layer: " << layer->id();
   DCHECK(layer->background_filters().IsEmpty()) << "layer: " << layer->id();
-  DCHECK(layer->parent()) << "layer: " << layer->id();
+  DCHECK(!IsRootLayer(layer)) << "layer: " << layer->id();
   if (layer->parent()->replica_layer() == layer)
     return;
   DCHECK(!layer->mask_layer()) << "layer: " << layer->id();
   DCHECK(!layer->replica_layer()) << "layer: " << layer->id();
   DCHECK(!layer->is_root_for_isolated_group()) << "layer: " << layer->id();
   DCHECK(!layer->HasCopyRequest()) << "layer: " << layer->id();
+}
+
+static void ValidateRenderSurfacesRecursive(Layer* layer) {
+  ValidateRenderSurfaceForLayer(layer);
+  for (size_t i = 0; i < layer->children().size(); ++i)
+    ValidateRenderSurfacesRecursive(layer->child_at(i));
 }
 
 template <typename LayerType>
@@ -427,7 +437,7 @@ void FindLayersThatNeedUpdates(
   bool layer_is_drawn =
       effect_tree.Node(layer->effect_tree_index())->data.is_drawn;
 
-  if (layer->parent() &&
+  if (!IsRootLayer(layer) &&
       SubtreeShouldBeSkipped(layer, layer_is_drawn, transform_tree))
     return;
 
@@ -457,7 +467,7 @@ void UpdateRenderSurfaceForLayer(EffectTree* effect_tree,
                                  bool non_root_surfaces_enabled,
                                  LayerType* layer) {
   if (!non_root_surfaces_enabled) {
-    layer->SetHasRenderSurface(!layer->parent());
+    layer->SetHasRenderSurface(IsRootLayer(layer));
     return;
   }
   EffectNode* node = effect_tree->Node(layer->effect_tree_index());
@@ -687,7 +697,7 @@ void BuildPropertyTreesAndComputeVisibleRects(
       device_transform, property_trees);
   UpdateRenderSurfacesForLayersRecursive(&property_trees->effect_tree,
                                          root_layer);
-  ValidateRenderSurfaces(root_layer);
+  ValidateRenderSurfacesRecursive(root_layer);
   ComputeVisibleRects(root_layer, property_trees,
                       can_render_to_separate_surface, update_layer_list);
 }
@@ -729,11 +739,12 @@ void ComputeVisibleRects(LayerImpl* root_layer,
                          PropertyTrees* property_trees,
                          bool can_render_to_separate_surface,
                          LayerImplList* visible_layer_list) {
-  for (auto* layer : *root_layer->layer_tree_impl())
+  for (auto* layer : *root_layer->layer_tree_impl()) {
     UpdateRenderSurfaceForLayer(&property_trees->effect_tree,
                                 can_render_to_separate_surface, layer);
-  if (can_render_to_separate_surface)
-    ValidateRenderSurfaces(root_layer);
+    if (can_render_to_separate_surface)
+      ValidateRenderSurfaceForLayer(layer);
+  }
   LayerImplList update_layer_list;
   ComputeVisibleRectsInternal(root_layer, property_trees,
                               can_render_to_separate_surface,
@@ -745,7 +756,7 @@ static gfx::Transform DrawTransformInternal(const LayerType* layer,
                                             const TransformNode* node) {
   gfx::Transform xform;
   const bool owns_non_root_surface =
-      layer->parent() && layer->has_render_surface();
+      !IsRootLayer(layer) && layer->has_render_surface();
   if (!owns_non_root_surface) {
     // If you're not the root, or you don't own a surface, you need to apply
     // your local offset.
@@ -1054,7 +1065,7 @@ static void UpdatePageScaleFactorInternal(PropertyTrees* property_trees,
   DCHECK_EQ(page_scale_layer->transform_origin().ToString(),
             gfx::Point3F().ToString());
 
-  if (!page_scale_layer->parent()) {
+  if (IsRootLayer(page_scale_layer)) {
     // When the page scale layer is also the root layer, the node should also
     // store the combined scale factor and not just the page scale factor.
     float post_local_scale_factor = page_scale_factor * device_scale_factor;

@@ -13,6 +13,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/render_surface_impl.h"
+#include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -141,7 +142,8 @@ void OcclusionTracker::EnterRenderTarget(const LayerImpl* new_target) {
       new_target->render_surface()->screen_space_transform().GetInverse(
           &inverse_new_target_screen_space_transform);
 
-  bool entering_root_target = new_target->parent() == NULL;
+  bool entering_root_target =
+      new_target->layer_tree_impl()->IsRootLayer(new_target);
 
   bool copy_outside_occlusion_forward =
       stack_.size() > 1 &&
@@ -293,7 +295,7 @@ void OcclusionTracker::LeaveToRenderTarget(const LayerImpl* new_target) {
         old_occlusion_from_inside_target_in_new_target);
     // TODO(danakj): Strictly this should subtract the inside target occlusion
     // before union.
-    if (new_target->parent()) {
+    if (!new_target->layer_tree_impl()->IsRootLayer(new_target)) {
       stack_[last_index - 1].occlusion_from_outside_target.Union(
           old_occlusion_from_outside_target_in_new_target);
     }
@@ -303,7 +305,7 @@ void OcclusionTracker::LeaveToRenderTarget(const LayerImpl* new_target) {
     stack_.back().target = new_target;
     stack_.back().occlusion_from_inside_target =
         old_occlusion_from_inside_target_in_new_target;
-    if (new_target->parent()) {
+    if (!new_target->layer_tree_impl()->IsRootLayer(new_target)) {
       stack_.back().occlusion_from_outside_target =
           old_occlusion_from_outside_target_in_new_target;
     } else {
@@ -385,7 +387,8 @@ void OcclusionTracker::MarkOccludedBehindLayer(const LayerImpl* layer) {
 }
 
 Region OcclusionTracker::ComputeVisibleRegionInScreen() const {
-  DCHECK(!stack_.back().target->parent());
+  DCHECK(stack_.back().target->layer_tree_impl()->IsRootLayer(
+      stack_.back().target));
   const SimpleEnclosedRegion& occluded =
       stack_.back().occlusion_from_inside_target;
   Region visible_region(screen_space_clip_rect_);

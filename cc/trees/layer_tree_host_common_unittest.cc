@@ -5259,52 +5259,55 @@ TEST_F(LayerTreeHostCommonTest, OpacityAnimatingOnPendingTree) {
 
   root->AddChild(std::move(child));
   root->SetHasRenderSurface(true);
+  LayerImpl* root_layer = root.get();
+  host_impl.pending_tree()->SetRootLayer(std::move(root));
 
   LayerImplList render_surface_layer_list;
-  root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+  root_layer->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root.get(), root->bounds(), &render_surface_layer_list,
-      root->layer_tree_impl()->current_render_surface_list_id());
+      root_layer, root_layer->bounds(), &render_surface_layer_list,
+      root_layer->layer_tree_impl()->current_render_surface_list_id());
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   // We should have one render surface and two layers. The child
   // layer should be included even though it is transparent.
   ASSERT_EQ(1u, render_surface_layer_list.size());
-  ASSERT_EQ(2u, root->render_surface()->layer_list().size());
+  ASSERT_EQ(2u, root_layer->render_surface()->layer_list().size());
 
   // If the root itself is hidden, the child should not be drawn even if it has
   // an animating opacity.
-  root->SetOpacity(0.0f);
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  root_layer->SetOpacity(0.0f);
+  root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
   LayerImplList render_surface_layer_list2;
-  root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+  root_layer->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs2(
-      root.get(), root->bounds(), &render_surface_layer_list2,
-      root->layer_tree_impl()->current_render_surface_list_id());
+      root_layer, root_layer->bounds(), &render_surface_layer_list2,
+      root_layer->layer_tree_impl()->current_render_surface_list_id());
   inputs2.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs2);
 
-  LayerImpl* child_ptr = root->layer_tree_impl()->LayerById(2);
-  EffectTree tree = root->layer_tree_impl()->property_trees()->effect_tree;
+  LayerImpl* child_ptr = root_layer->layer_tree_impl()->LayerById(2);
+  EffectTree tree =
+      root_layer->layer_tree_impl()->property_trees()->effect_tree;
   EffectNode* node = tree.Node(child_ptr->effect_tree_index());
   EXPECT_FALSE(node->data.is_drawn);
 
   // A layer should be drawn and it should contribute to drawn surface when
   // it has animating opacity even if it has opacity 0.
-  root->SetOpacity(1.0f);
+  root_layer->SetOpacity(1.0f);
   child_ptr->SetOpacity(0.0f);
-  root->layer_tree_impl()->property_trees()->needs_rebuild = true;
+  root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
   LayerImplList render_surface_layer_list3;
-  root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+  root_layer->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs3(
-      root.get(), root->bounds(), &render_surface_layer_list3,
-      root->layer_tree_impl()->current_render_surface_list_id());
+      root_layer, root_layer->bounds(), &render_surface_layer_list3,
+      root_layer->layer_tree_impl()->current_render_surface_list_id());
   inputs3.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs3);
 
-  child_ptr = root->layer_tree_impl()->LayerById(2);
-  tree = root->layer_tree_impl()->property_trees()->effect_tree;
+  child_ptr = root_layer->layer_tree_impl()->LayerById(2);
+  tree = root_layer->layer_tree_impl()->property_trees()->effect_tree;
   node = tree.Node(child_ptr->effect_tree_index());
   EXPECT_TRUE(node->data.is_drawn);
   EXPECT_TRUE(tree.ContributesToDrawnSurface(child_ptr->effect_tree_index()));
@@ -5551,6 +5554,7 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
   const gfx::Transform identity_matrix;
 
   scoped_ptr<LayerImpl> root = LayerImpl::Create(host_impl.pending_tree(), 1);
+  LayerImpl* root_layer = root.get();
   SetLayerPropertiesForTesting(root.get(), identity_matrix, gfx::Point3F(),
                                gfx::PointF(), gfx::Size(50, 50), true, false,
                                false);
@@ -5573,21 +5577,22 @@ TEST_F(LayerTreeHostCommonTest, SubtreeHidden_SingleLayerImpl) {
   child->AddChild(std::move(grand_child));
   root->AddChild(std::move(child));
   root->SetHasRenderSurface(true);
+  host_impl.pending_tree()->SetRootLayer(std::move(root));
 
   LayerImplList render_surface_layer_list;
-  root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+  root_layer->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root.get(), root->bounds(), &render_surface_layer_list,
-      root->layer_tree_impl()->current_render_surface_list_id());
+      root_layer, root_layer->bounds(), &render_surface_layer_list,
+      root_layer->layer_tree_impl()->current_render_surface_list_id());
   inputs.can_adjust_raster_scales = true;
   LayerTreeHostCommon::CalculateDrawProperties(&inputs);
 
   // We should have one render surface and two layers. The grand child has
   // hidden itself.
   ASSERT_EQ(1u, render_surface_layer_list.size());
-  ASSERT_EQ(2u, root->render_surface()->layer_list().size());
-  EXPECT_EQ(1, root->render_surface()->layer_list().at(0)->id());
-  EXPECT_EQ(2, root->render_surface()->layer_list().at(1)->id());
+  ASSERT_EQ(2u, root_layer->render_surface()->layer_list().size());
+  EXPECT_EQ(1, root_layer->render_surface()->layer_list().at(0)->id());
+  EXPECT_EQ(2, root_layer->render_surface()->layer_list().at(1)->id());
 }
 
 TEST_F(LayerTreeHostCommonTest, SubtreeHidden_TwoLayersImpl) {
