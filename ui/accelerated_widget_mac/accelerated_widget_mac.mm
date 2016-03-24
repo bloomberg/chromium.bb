@@ -45,9 +45,7 @@ AcceleratedWidgetMac* GetHelperFromAcceleratedWidget(
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratedWidgetMac
 
-AcceleratedWidgetMac::AcceleratedWidgetMac(bool needs_gl_finish_workaround)
-    : view_(NULL),
-      needs_gl_finish_workaround_(needs_gl_finish_workaround) {
+AcceleratedWidgetMac::AcceleratedWidgetMac() : view_(nullptr) {
   // Disable the fade-in animation as the layers are added.
   ScopedCAActionDisabler disabler;
 

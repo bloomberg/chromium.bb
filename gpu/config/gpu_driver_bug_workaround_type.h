@@ -64,8 +64,6 @@
          force_cube_map_positive_x_allocation)               \
   GPU_OP(FORCE_DISCRETE_GPU,                                 \
          force_discrete_gpu)                                 \
-  GPU_OP(FORCE_GL_FINISH_AFTER_COMPOSITING,                  \
-         force_gl_finish_after_compositing)                  \
   GPU_OP(FORCE_INTEGRATED_GPU,                               \
          force_integrated_gpu)                               \
   GPU_OP(GL_BEGIN_GL_END_ON_FBO_CHANGE_TO_BACKBUFFER,        \

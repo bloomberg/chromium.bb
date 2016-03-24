@@ -1151,11 +1151,7 @@ void BridgedNativeWidget::CreateCompositor() {
 
   AddCompositorSuperview();
 
-  // TODO(tapted): Get this value from GpuDataManagerImpl via ViewsDelegate.
-  bool needs_gl_finish_workaround = false;
-
-  compositor_widget_.reset(
-      new ui::AcceleratedWidgetMac(needs_gl_finish_workaround));
+  compositor_widget_.reset(new ui::AcceleratedWidgetMac());
   compositor_.reset(
       new ui::Compositor(context_factory, GetCompositorTaskRunner()));
   compositor_->SetAcceleratedWidget(compositor_widget_->accelerated_widget());

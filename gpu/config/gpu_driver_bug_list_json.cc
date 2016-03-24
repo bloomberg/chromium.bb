@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.54",
+  "version": "8.55",
   "entries": [
     {
       "id": 1,
@@ -750,23 +750,6 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       "vendor_id": "0x10de",
       "features": [
         "init_vertex_attributes"
-      ]
-    },
-    {
-      "id": 66,
-      "description": "Force glFinish() after compositing on older OS X on Intel GPU",
-      "cr_bugs": [123409],
-      "os": {
-        "type": "macosx",
-        "version": {
-          "op": "<=",
-          "value": "10.7"
-        }
-      },
-      "vendor_id": "0x8086",
-      "multi_gpu_category": "active",
-      "features": [
-        "force_gl_finish_after_compositing"
       ]
     },
     {

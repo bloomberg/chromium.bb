@@ -51,7 +51,7 @@ class AcceleratedWidgetMacNSView {
 // in an NSView by setting the AcceleratedWidgetMacNSView for the helper.
 class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
  public:
-  explicit AcceleratedWidgetMac(bool needs_gl_finish_workaround);
+  AcceleratedWidgetMac();
   virtual ~AcceleratedWidgetMac();
 
   gfx::AcceleratedWidget accelerated_widget() { return native_widget_; }
@@ -112,10 +112,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac {
 
   // The size in DIP of the last swap received from |compositor_|.
   gfx::Size last_swap_size_dip_;
-
-  // Whether surfaces created by the widget should use the glFinish() workaround
-  // after compositing.
-  bool needs_gl_finish_workaround_;
 
   DISALLOW_COPY_AND_ASSIGN(AcceleratedWidgetMac);
 };

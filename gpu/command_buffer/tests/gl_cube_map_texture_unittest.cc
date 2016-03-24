@@ -79,7 +79,7 @@ TEST_P(GLCubeMapTextureTest, TexImage2DAfterFBOBinding) {
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
   glBindTexture(GL_TEXTURE_CUBE_MAP, texture_);
-  // force_gl_finish_after_compositing workaround prevents Nexus 5 crash.
+  // force_cube_map_positive_x_allocation workaround prevents Nexus 5 crash.
   // TODO(dshwang): remove the workaround when it's fixed. crbug.com/518889
   glTexImage2D(cube_map_target, 0, GL_RGBA, width_, width_, 0, GL_RGBA,
                GL_UNSIGNED_BYTE, pixels_);
@@ -127,7 +127,7 @@ TEST_P(GLCubeMapTextureTest, ReadPixelsFromIncompleteCubeTexture) {
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, cube_map_target,
                          texture_, 0);
 
-  // force_gl_finish_after_compositing workaround prevents Nexus 5 crash.
+  // force_cube_map_positive_x_allocation workaround prevents Nexus 5 crash.
   // TODO(dshwang): remove the workaround when it's fixed. crbug.com/518889
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
