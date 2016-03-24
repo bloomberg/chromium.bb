@@ -32,7 +32,7 @@ public class ChromeDownloadDelegateTest extends ChromeActivityTestCaseBase<Chrom
      */
     static class MockChromeDownloadDelegate extends ChromeDownloadDelegate {
         public MockChromeDownloadDelegate(Context context, Tab tab) {
-            super(context, null, tab);
+            super(context, tab);
         }
 
         @Override

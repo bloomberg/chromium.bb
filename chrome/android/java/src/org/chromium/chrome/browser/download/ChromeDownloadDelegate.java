@@ -25,6 +25,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -124,7 +125,6 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
     // The application context.
     private final Context mContext;
     private Tab mTab;
-    private final TabModelSelector mTabModelSelector;
 
     // Pending download request for a dangerous file.
     private DownloadInfo mPendingRequest;
@@ -132,11 +132,9 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
     /**
      * Creates ChromeDownloadDelegate.
      * @param context The application context.
-     * @param tabModelSelector The TabModelSelector responsible for {@code mTab}.
      * @param tab The corresponding tab instance.
      */
-    public ChromeDownloadDelegate(
-            Context context, TabModelSelector tabModelSelector, Tab tab) {
+    public ChromeDownloadDelegate(Context context, Tab tab) {
         mContext = context;
         mTab = tab;
         mTab.addObserver(new EmptyTabObserver() {
@@ -146,7 +144,6 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
             }
         });
 
-        mTabModelSelector = tabModelSelector;
         mPendingRequest = null;
         mDangerousDownloadListener = new DangerousDownloadListener();
     }
@@ -578,7 +575,11 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
                 || contents.getNavigationController().isInitialNavigation();
         if (isInitialNavigation) {
             // Tab is created just for download, close it.
-            return mTabModelSelector.closeTab(mTab);
+            Activity activity = mTab.getWindowAndroid().getActivity().get();
+            if (!(activity instanceof ChromeActivity)) return true;
+
+            TabModelSelector selector = ((ChromeActivity) activity).getTabModelSelector();
+            return selector == null ? true : selector.closeTab(mTab);
         }
         return false;
     }
