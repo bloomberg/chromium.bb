@@ -894,27 +894,22 @@ class Changelist(object):
         assert codereview in ('rietveld', 'gerrit')
       return
 
-    # Automatic selection.
+    # Automatic selection based on issue number set for a current branch.
+    # Rietveld takes precedence over Gerrit.
     assert not self.issue
-    # Check if this branch is associated with Rietveld => Rieveld.
-    self._codereview_impl = _RietveldChangelistImpl(self, **kwargs)
-    if self.GetIssue(force_lookup=True):
-      return
+    # Whether we find issue or not, we are doing the lookup.
+    self.lookedup_issue = True
+    for cls in [_RietveldChangelistImpl, _GerritChangelistImpl]:
+      setting = cls.IssueSetting(self.GetBranch())
+      issue = RunGit(['config', setting], error_ok=True).strip()
+      if issue:
+        self._codereview_impl = cls(self, **kwargs)
+        self.issue = int(issue)
+        return
 
-    tmp_rietveld = self._codereview_impl  # Save Rietveld object.
-
-    # Check if this branch has Gerrit issue associated => Gerrit.
-    self._codereview_impl = _GerritChangelistImpl(self, **kwargs)
-    if self.GetIssue(force_lookup=True):
-      return
-
-    # OK, no issue is set for this branch.
-    # If Gerrit is set repo-wide => Gerrit.
-    if settings.GetIsGerrit():
-      return
-
-    self._codereview_impl = tmp_rietveld
-    return
+    # No issue is set for this branch, so decide based on repo-wide settings.
+    return self._load_codereview_impl(
+          codereview='gerrit' if settings.GetIsGerrit() else 'rietveld')
 
 
   def GetCCList(self):
@@ -1131,10 +1126,11 @@ class Changelist(object):
                    cwd=url).strip()
     return url
 
-  def GetIssue(self, force_lookup=False):
+  def GetIssue(self):
     """Returns the issue number as a int or None if not set."""
-    if force_lookup or (self.issue is None and not self.lookedup_issue):
-      issue = RunGit(['config', self._codereview_impl.IssueSetting()],
+    if self.issue is None and not self.lookedup_issue:
+      issue = RunGit(['config',
+                      self._codereview_impl.IssueSetting(self.GetBranch())],
                      error_ok=True).strip()
       self.issue = int(issue) or None if issue else None
       self.lookedup_issue = True
@@ -1180,7 +1176,7 @@ class Changelist(object):
 
   def SetIssue(self, issue=None):
     """Set this branch's issue.  If issue isn't given, clears the issue."""
-    issue_setting = self._codereview_impl.IssueSetting()
+    issue_setting = self._codereview_impl.IssueSetting(self.GetBranch())
     codereview_setting = self._codereview_impl.GetCodereviewServerSetting()
     if issue:
       self.issue = issue
@@ -1312,8 +1308,10 @@ class _ChangelistCodereviewBase(object):
     """Returns git config setting for the codereview server."""
     raise NotImplementedError()
 
-  def IssueSetting(self):
-    """Returns name of git config setting which stores issue number."""
+  @staticmethod
+  def IssueSetting(branch):
+    """Returns name of git config setting which stores issue number for a given
+    branch."""
     raise NotImplementedError()
 
   def PatchsetSetting(self):
@@ -1498,9 +1496,9 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
           self._auth_config or auth.make_auth_config())
     return self._rpc_server
 
-  def IssueSetting(self):
-    """Return the git setting that stores this change's issue."""
-    return 'branch.%s.rietveldissue' % self.GetBranch()
+  @staticmethod
+  def IssueSetting(branch):
+    return 'branch.%s.rietveldissue' % branch
 
   def PatchsetSetting(self):
     """Return the git setting that stores this change's most recent patchset."""
@@ -1550,9 +1548,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         self._gerrit_server = 'https://%s' % self._gerrit_host
     return self._gerrit_server
 
-  def IssueSetting(self):
-    """Return the git setting that stores this change's issue."""
-    return 'branch.%s.gerritissue' % self.GetBranch()
+  @staticmethod
+  def IssueSetting(branch):
+    return 'branch.%s.gerritissue' % branch
 
   def PatchsetSetting(self):
     """Return the git setting that stores this change's most recent patchset."""
