@@ -243,6 +243,10 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
     // The selected menu item.
     MenuItemView* item;
 
+    // Used to capture a hot tracked child button when a nested menu is opened
+    // and to restore the hot tracked state when exiting a nested menu.
+    CustomButton* hot_button;
+
     // If item has a submenu this indicates if the submenu is showing.
     bool submenu_open;
 
@@ -678,7 +682,7 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // screen coordinates). Otherwise this will be (0, 0).
   gfx::Point menu_start_mouse_press_loc_;
 
-  // Controls behviour differences between an asynchronous run, and other types
+  // Controls behaviour differences between an asynchronous run, and other types
   // of run (blocking, drag and drop).
   bool async_run_;
 

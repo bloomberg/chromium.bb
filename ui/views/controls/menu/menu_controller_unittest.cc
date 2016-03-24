@@ -461,6 +461,19 @@ class MenuControllerTest : public ViewsTestBase {
     menu_item()->GetSubmenu()->ShowAt(owner(), menu_item()->bounds(), false);
   }
 
+  CustomButton* GetHotButton() {
+    return menu_controller_->hot_button_;
+  }
+
+  void SetHotTrackedButton(CustomButton* hot_button) {
+    menu_controller_->SetHotTrackedButton(hot_button);
+  }
+
+  void ExitMenuRun() {
+    menu_controller_->SetExitType(MenuController::ExitType::EXIT_OUTERMOST);
+    menu_controller_->ExitMenuRun();
+  }
+
  private:
   void DestroyMenuController() {
     if (!menu_controller_)
@@ -833,6 +846,65 @@ TEST_F(MenuControllerTest, DeleteChildButtonView) {
   EXPECT_FALSE(button3->IsHotTracked());
 }
 
+// Creates a menu with CustomButton child views, simulates running a nested
+// menu and tests that existing the nested run restores hot-tracked child view.
+TEST_F(MenuControllerTest, ChildButtonHotTrackedWhenNested) {
+  AddButtonMenuItems();
+
+  // Handle searching for 'f'; should find "Four".
+  SelectByChar('f');
+  EXPECT_EQ(4, pending_state_item()->GetCommand());
+
+  View* buttons_view = menu_item()->GetSubmenu()->child_at(4);
+  ASSERT_NE(nullptr, buttons_view);
+  CustomButton* button1 =
+      CustomButton::AsCustomButton(buttons_view->child_at(0));
+  ASSERT_NE(nullptr, button1);
+  CustomButton* button2 =
+      CustomButton::AsCustomButton(buttons_view->child_at(1));
+  ASSERT_NE(nullptr, button2);
+  CustomButton* button3 =
+      CustomButton::AsCustomButton(buttons_view->child_at(2));
+  ASSERT_NE(nullptr, button2);
+  EXPECT_FALSE(button1->IsHotTracked());
+  EXPECT_FALSE(button2->IsHotTracked());
+  EXPECT_FALSE(button3->IsHotTracked());
+
+  // Increment twice to move selection to |button2|.
+  IncrementSelection();
+  IncrementSelection();
+  EXPECT_EQ(5, pending_state_item()->GetCommand());
+  EXPECT_FALSE(button1->IsHotTracked());
+  EXPECT_TRUE(button2->IsHotTracked());
+  EXPECT_FALSE(button3->IsHotTracked());
+  EXPECT_EQ(button2, GetHotButton());
+
+  MenuController* controller = menu_controller();
+  controller->SetAsyncRun(true);
+  int mouse_event_flags = 0;
+  MenuItemView* run_result =
+      controller->Run(owner(), nullptr, menu_item(), gfx::Rect(),
+                      MENU_ANCHOR_TOPLEFT, false, false, &mouse_event_flags);
+  EXPECT_EQ(run_result, nullptr);
+
+  // |button2| should stay in hot-tracked state but menu controller should not
+  // track it anymore (preventing resetting hot-tracked state when changing
+  // selection while a nested run is active).
+  EXPECT_TRUE(button2->IsHotTracked());
+  EXPECT_EQ(nullptr, GetHotButton());
+
+  // Setting hot-tracked button while nested should get reverted when nested
+  // menu run ends.
+  SetHotTrackedButton(button1);
+  EXPECT_TRUE(button1->IsHotTracked());
+  EXPECT_EQ(button1, GetHotButton());
+
+  ExitMenuRun();
+  EXPECT_FALSE(button1->IsHotTracked());
+  EXPECT_TRUE(button2->IsHotTracked());
+  EXPECT_EQ(button2, GetHotButton());
+}
+
 // Tests that a menu opened asynchronously, will notify its
 // MenuControllerDelegate when Accept is called.
 TEST_F(MenuControllerTest, AsynchronousAccept) {
@@ -1038,7 +1110,7 @@ TEST_F(MenuControllerTest, AsynchronousTouchEventRepostEvent) {
   TestMenuControllerDelegate* delegate = menu_controller_delegate();
   controller->SetAsyncRun(true);
 
-  // Show a sub menu to targert with a touch event. However have the event occur
+  // Show a sub menu to target with a touch event. However have the event occur
   // outside of the bounds of the entire menu.
   MenuItemView* item = menu_item();
   SubmenuView* sub_menu = item->GetSubmenu();

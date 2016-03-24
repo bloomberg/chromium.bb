@@ -363,7 +363,8 @@ struct MenuController::SelectByCharDetails {
 // MenuController:State ------------------------------------------------------
 
 MenuController::State::State()
-    : item(NULL),
+    : item(nullptr),
+      hot_button(nullptr),
       submenu_open(false),
       anchor(MENU_ANCHOR_TOPLEFT),
       context_menu(false) {
@@ -424,6 +425,8 @@ MenuItemView* MenuController::Run(Widget* parent,
     // blocking/non-blocking shouldn't be needed.
     DCHECK(blocking_run_);
 
+    state_.hot_button = hot_button_;
+    hot_button_ = nullptr;
     // We're already showing, push the current state.
     menu_stack_.push_back(
         std::make_pair(state_, make_linked_ptr(pressed_lock_.release())));
@@ -558,8 +561,8 @@ bool MenuController::OnMousePressed(SubmenuView* source,
     View* view =
         forward_to_root->GetEventHandlerForPoint(event_for_root.location());
     CustomButton* button = CustomButton::AsCustomButton(view);
-    if (hot_button_ && hot_button_ != button)
-      SetHotTrackedButton(nullptr);
+    if (hot_button_ != button)
+      SetHotTrackedButton(button);
 
     // Empty menu items are always handled by the menu controller.
     if (!view || view->id() != MenuItemView::kEmptyMenuItemViewID) {
@@ -834,9 +837,16 @@ void MenuController::ViewHierarchyChanged(
       current_mouse_event_target_ = nullptr;
       current_mouse_pressed_state_ = 0;
     }
-    // Update |hot_button_| if it gets removed while a menu is up.
-    if (details.child == hot_button_)
+    // Update |hot_button_| (both in |this| and in |menu_stack_| if it gets
+    // removed while a menu is up.
+    if (details.child == hot_button_) {
       hot_button_ = nullptr;
+      for (auto nested_state : menu_stack_) {
+        State& state = nested_state.first;
+        if (details.child == state.hot_button)
+          state.hot_button = nullptr;
+      }
+    }
   }
 }
 
@@ -2549,6 +2559,7 @@ MenuItemView* MenuController::ExitMenuRun() {
     // The menus are already showing, so we don't have to show them.
     state_ = menu_stack_.back().first;
     pending_state_ = menu_stack_.back().first;
+    hot_button_ = state_.hot_button;
     nested_pressed_lock = menu_stack_.back().second;
     menu_stack_.pop_back();
     // Even though the menus are nested, there may not be nested delegates.
@@ -2588,9 +2599,11 @@ MenuItemView* MenuController::ExitMenuRun() {
     }
   }
 
-  // Reset our pressed lock to the previous state's, if there was one.
-  // The lock handles the case if the button was destroyed.
+  // Reset our pressed lock and hot-tracked state to the previous state's, if
+  // they were active. The lock handles the case if the button was destroyed.
   pressed_lock_.reset(nested_pressed_lock.release());
+  if (hot_button_)
+    hot_button_->SetHotTracked(true);
 
   return result;
 }
