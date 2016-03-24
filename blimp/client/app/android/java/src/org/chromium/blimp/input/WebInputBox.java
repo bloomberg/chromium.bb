@@ -4,10 +4,12 @@
 
 package org.chromium.blimp.input;
 
+import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -25,9 +27,11 @@ import org.chromium.ui.UiUtils;
 public class WebInputBox extends EditText {
     private static final String TAG = "WebInputBox";
     private long mNativeWebInputBoxPtr;
+    private Context mContext;
 
     public WebInputBox(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mContext = context;
         setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_NEXT
@@ -67,6 +71,9 @@ public class WebInputBox extends EditText {
     @Override
     public boolean dispatchKeyEventPreIme(KeyEvent event) {
         if (event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+            ((Activity) mContext)
+                    .getWindow()
+                    .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
             setVisibility(View.GONE);
         }
         return super.dispatchKeyEventPreIme(event);
@@ -76,6 +83,10 @@ public class WebInputBox extends EditText {
      *  Brings up the IME along with the edit text above it.
      */
     public void showIme() {
+        // TODO(shaktisahu): Find a better way to prevent resize (crbug/596653).
+        ((Activity) mContext)
+                .getWindow()
+                .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         setVisibility(View.VISIBLE);
         requestFocus();
         UiUtils.showKeyboard(this);
@@ -85,6 +96,9 @@ public class WebInputBox extends EditText {
      * Hides the edit text along with the IME.
      */
     private void hideIme() {
+        ((Activity) mContext)
+                .getWindow()
+                .setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
         setText("");
         setVisibility(View.GONE);
         UiUtils.hideKeyboard(this);
