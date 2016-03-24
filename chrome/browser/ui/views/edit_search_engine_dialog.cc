@@ -33,17 +33,6 @@
 using views::GridLayout;
 using views::Textfield;
 
-namespace chrome {
-
-void EditSearchEngine(gfx::NativeWindow parent,
-                      TemplateURL* template_url,
-                      EditSearchEngineControllerDelegate* delegate,
-                      Profile* profile) {
-  EditSearchEngineDialog::Show(parent, template_url, delegate, profile);
-}
-
-}  // namespace chrome
-
 EditSearchEngineDialog::EditSearchEngineDialog(
     TemplateURL* template_url,
     EditSearchEngineControllerDelegate* delegate,

@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_BROWSER_DIALOGS_H_
 #define CHROME_BROWSER_UI_VIEWS_BROWSER_DIALOGS_H_
 
-#include "base/callback_forward.h"
-#include "ui/gfx/native_widget_types.h"
-
 // This file contains functions for running a variety of browser dialogs and
 // popups. The dialogs here are the ones that the caller does not need to
 // access the class of the popup. It allows us to break dependencies by
@@ -16,25 +13,12 @@
 // into chrome/browser/ui/browser_dialogs.h.
 
 class BrowserView;
-class EditSearchEngineControllerDelegate;
 class FindBar;
-class Profile;
-class TemplateURL;
 
 namespace chrome {
 
 // Creates and returns a find bar for the given browser window. See FindBarWin.
 FindBar* CreateFindBar(BrowserView* browser_view);
-
-// Shows a dialog box that allows a search engine to be edited. |template_url|
-// is the search engine being edited. If it is NULL, then the dialog will add a
-// new search engine with the data the user supplies. |delegate| is an object
-// to be notified when the user is done editing, or NULL. If NULL, the dialog
-// will update the model with the user's edits directly.
-void EditSearchEngine(gfx::NativeWindow parent,
-                      TemplateURL* template_url,
-                      EditSearchEngineControllerDelegate* delegate,
-                      Profile* profile);
 
 }  // namespace chrome
 

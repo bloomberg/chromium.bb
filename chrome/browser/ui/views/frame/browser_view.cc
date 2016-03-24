@@ -67,6 +67,7 @@
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/download/download_in_progress_dialog_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
+#include "chrome/browser/ui/views/edit_search_engine_dialog.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/extensions/bookmark_app_bubble_view.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
@@ -1226,7 +1227,8 @@ gfx::Rect BrowserView::GetRootWindowResizerRect() const {
 
 void BrowserView::ConfirmAddSearchProvider(TemplateURL* template_url,
                                            Profile* profile) {
-  chrome::EditSearchEngine(GetNativeWindow(), template_url, nullptr, profile);
+  EditSearchEngineDialog::Show(GetNativeWindow(), template_url, nullptr,
+                               profile);
 }
 
 void BrowserView::ShowUpdateChromeDialog() {
