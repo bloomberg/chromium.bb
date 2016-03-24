@@ -4,24 +4,16 @@
 
 #include "content/browser/device_sensors/device_orientation_absolute_message_filter.h"
 
-#include "content/browser/device_sensors/device_inertial_sensor_service.h"
 #include "content/common/device_sensors/device_orientation_messages.h"
 
 namespace content {
 
 DeviceOrientationAbsoluteMessageFilter::DeviceOrientationAbsoluteMessageFilter()
-    : BrowserMessageFilter(DeviceOrientationMsgStart),
-      is_started_(false) {
-}
+    : DeviceSensorMessageFilter(CONSUMER_TYPE_ORIENTATION_ABSOLUTE,
+                                DeviceOrientationMsgStart) {}
 
 DeviceOrientationAbsoluteMessageFilter::
-    ~DeviceOrientationAbsoluteMessageFilter() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (is_started_) {
-    DeviceInertialSensorService::GetInstance()->RemoveConsumer(
-        CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
-  }
-}
+    ~DeviceOrientationAbsoluteMessageFilter() {}
 
 bool DeviceOrientationAbsoluteMessageFilter::OnMessageReceived(
     const IPC::Message& message) {
@@ -36,31 +28,9 @@ bool DeviceOrientationAbsoluteMessageFilter::OnMessageReceived(
   return handled;
 }
 
-void DeviceOrientationAbsoluteMessageFilter::OnStartPolling() {
-  DCHECK(!is_started_);
-  if (is_started_)
-    return;
-  is_started_ = true;
-  DeviceInertialSensorService::GetInstance()->AddConsumer(
-      CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
-  DidStartPolling();
-}
-
-void DeviceOrientationAbsoluteMessageFilter::OnStopPolling() {
-  DCHECK(is_started_);
-  if (!is_started_)
-    return;
-  is_started_ = false;
-  DeviceInertialSensorService::GetInstance()->RemoveConsumer(
-      CONSUMER_TYPE_ORIENTATION_ABSOLUTE);
-}
-
-void DeviceOrientationAbsoluteMessageFilter::DidStartPolling() {
-  Send(new DeviceOrientationAbsoluteMsg_DidStartPolling(
-      DeviceInertialSensorService::GetInstance()->
-          GetSharedMemoryHandleForProcess(
-              CONSUMER_TYPE_ORIENTATION_ABSOLUTE,
-              PeerHandle())));
+void DeviceOrientationAbsoluteMessageFilter::DidStartPolling(
+    base::SharedMemoryHandle handle) {
+  Send(new DeviceOrientationAbsoluteMsg_DidStartPolling(handle));
 }
 
 }  // namespace content

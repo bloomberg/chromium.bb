@@ -5,12 +5,11 @@
 #ifndef CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_LIGHT_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_LIGHT_MESSAGE_FILTER_H_
 
-#include "base/macros.h"
-#include "content/public/browser/browser_message_filter.h"
+#include "content/browser/device_sensors/device_sensor_message_filter.h"
 
 namespace content {
 
-class DeviceLightMessageFilter : public BrowserMessageFilter {
+class DeviceLightMessageFilter : public DeviceSensorMessageFilter {
  public:
   DeviceLightMessageFilter();
 
@@ -20,11 +19,8 @@ class DeviceLightMessageFilter : public BrowserMessageFilter {
  private:
   ~DeviceLightMessageFilter() override;
 
-  void OnDeviceLightStartPolling();
-  void OnDeviceLightStopPolling();
-  void DidStartDeviceLightPolling();
-
-  bool is_started_;
+  // DeviceSensorMessageFilter implementation.
+  void DidStartPolling(base::SharedMemoryHandle handle) override;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceLightMessageFilter);
 };

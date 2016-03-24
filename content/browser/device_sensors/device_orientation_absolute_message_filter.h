@@ -5,12 +5,12 @@
 #ifndef CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_ORIENTATION_ABSOLUTE_MESSAGE_FILTER_H_
 #define CONTENT_BROWSER_DEVICE_SENSORS_DEVICE_ORIENTATION_ABSOLUTE_MESSAGE_FILTER_H_
 
-#include "base/macros.h"
-#include "content/public/browser/browser_message_filter.h"
+#include "content/browser/device_sensors/device_sensor_message_filter.h"
 
 namespace content {
 
-class DeviceOrientationAbsoluteMessageFilter : public BrowserMessageFilter {
+class DeviceOrientationAbsoluteMessageFilter
+    : public DeviceSensorMessageFilter {
  public:
   DeviceOrientationAbsoluteMessageFilter();
 
@@ -20,11 +20,8 @@ class DeviceOrientationAbsoluteMessageFilter : public BrowserMessageFilter {
  private:
   ~DeviceOrientationAbsoluteMessageFilter() override;
 
-  void OnStartPolling();
-  void OnStopPolling();
-  void DidStartPolling();
-
-  bool is_started_;
+  // DeviceSensorMessageFilter implementation.
+  void DidStartPolling(base::SharedMemoryHandle handle) override;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOrientationAbsoluteMessageFilter);
 };
