@@ -239,6 +239,8 @@ class BrowserActionsContainer : public views::View,
   bool IsAnimating() const override;
   void StopAnimating() override;
   int GetChevronWidth() const override;
+  void ShowToolbarActionBubble(
+      scoped_ptr<ToolbarActionsBarBubbleDelegate> controller) override;
   void ShowExtensionMessageBubble(
       scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
       ToolbarActionViewController* anchor_action) override;

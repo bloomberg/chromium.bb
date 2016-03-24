@@ -527,10 +527,22 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   // Grant activeTab permission, and perform another XHR. The extension should
   // receive the event.
   EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST, runner->GetBlockedActions(extension));
+  runner->set_default_bubble_close_action_for_testing(
+      make_scoped_ptr(new ToolbarActionsBarBubbleDelegate::CloseAction(
+          ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE)));
   runner->RunAction(extension, true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+  // The runner will have refreshed the page...
   EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension));
+  int xhr_count = GetWebRequestCountFromBackgroundPage(extension, profile());
+  // ... which means that we should have a non-zero xhr count.
+  EXPECT_GT(xhr_count, 0);
+  // And the extension should receive future events.
   PerformXhrInPage(web_contents, kHost, port, kXhrPath);
-  EXPECT_EQ(1, GetWebRequestCountFromBackgroundPage(extension, profile()));
+  ++xhr_count;
+  EXPECT_EQ(xhr_count,
+            GetWebRequestCountFromBackgroundPage(extension, profile()));
 
   // If we revoke the extension's tab permissions, it should no longer receive
   // webRequest events.
@@ -540,7 +552,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
   granter->RevokeForTesting();
   base::RunLoop().RunUntilIdle();
   PerformXhrInPage(web_contents, kHost, port, kXhrPath);
-  EXPECT_EQ(1, GetWebRequestCountFromBackgroundPage(extension, profile()));
+  EXPECT_EQ(xhr_count,
+            GetWebRequestCountFromBackgroundPage(extension, profile()));
   EXPECT_EQ(BLOCKED_ACTION_WEB_REQUEST, runner->GetBlockedActions(extension));
 }
 

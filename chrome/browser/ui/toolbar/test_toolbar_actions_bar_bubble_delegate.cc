@@ -23,6 +23,7 @@ class TestToolbarActionsBarBubbleDelegate::DelegateImpl
   base::string16 GetLearnMoreButtonText() override {
     return parent_->learn_more_;
   }
+  std::string GetAnchorActionId() override { return std::string(); }
   void OnBubbleShown() override {
     CHECK(!parent_->shown_);
     parent_->shown_ = true;

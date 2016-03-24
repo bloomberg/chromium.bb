@@ -91,6 +91,10 @@ ExtensionToolbarIconSurfacingBubbleDelegate::GetLearnMoreButtonText() {
   return base::string16();  // No learn more link.
 }
 
+std::string ExtensionToolbarIconSurfacingBubbleDelegate::GetAnchorActionId() {
+  return std::string();  // Point to the whole set of actions.
+}
+
 void ExtensionToolbarIconSurfacingBubbleDelegate::OnBubbleShown() {
   // Record the last time the bubble was shown.
   profile_->GetPrefs()->SetInt64(

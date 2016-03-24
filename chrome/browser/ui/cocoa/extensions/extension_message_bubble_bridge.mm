@@ -44,6 +44,11 @@ base::string16 ExtensionMessageBubbleBridge::GetLearnMoreButtonText() {
   return controller_->delegate()->GetLearnMoreLabel();
 }
 
+std::string ExtensionMessageBubbleBridge::GetAnchorActionId() {
+  return controller_->GetExtensionIdList().size() == 1u ?
+      controller_->GetExtensionIdList()[0] : std::string();
+}
+
 void ExtensionMessageBubbleBridge::OnBubbleShown() {
 }
 

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_BUBBLE_DELEGATE_H_
 #define CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_BUBBLE_DELEGATE_H_
 
+#include <string>
+
 #include "base/strings/string16.h"
 
 // A delegate for a generic bubble that hangs off the toolbar actions bar.
@@ -42,6 +44,10 @@ class ToolbarActionsBarBubbleDelegate {
   // button will correspond with ACTION_LEARN_MORE. If this returns an empty
   // string, no button will be added.
   virtual base::string16 GetLearnMoreButtonText() = 0;
+
+  // Returns the id of the action to point to, or the empty string if the
+  // bubble should point to the center of the actions container.
+  virtual std::string GetAnchorActionId() = 0;
 
   // Called when the bubble is shown.
   virtual void OnBubbleShown() = 0;

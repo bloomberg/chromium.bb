@@ -209,7 +209,7 @@ TEST_F(ExtensionActionRunnerUnitTest, RequestPermissionAndExecute) {
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
   // Click to accept the extension executing.
-  runner()->RunAction(extension, true);
+  runner()->RunForTesting(extension);
 
   // The extension should execute, and the extension shouldn't want to run.
   EXPECT_EQ(1u, GetExecutionCountForExtension(extension->id()));
@@ -234,7 +234,7 @@ TEST_F(ExtensionActionRunnerUnitTest, RequestPermissionAndExecute) {
 
   // Grant access.
   RequestInjection(extension);
-  runner()->RunAction(extension, true);
+  runner()->RunForTesting(extension);
   EXPECT_EQ(2u, GetExecutionCountForExtension(extension->id()));
   EXPECT_FALSE(runner()->WantsToRun(extension));
 
@@ -266,7 +266,7 @@ TEST_F(ExtensionActionRunnerUnitTest, PendingInjectionsRemovedAtNavigation) {
 
   // Request and accept a new injection.
   RequestInjection(extension);
-  runner()->RunAction(extension, true);
+  runner()->RunForTesting(extension);
 
   // The extension should only have executed once, even though a grand total
   // of two executions were requested.
@@ -290,7 +290,7 @@ TEST_F(ExtensionActionRunnerUnitTest, MultiplePendingInjection) {
 
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
-  runner()->RunAction(extension, true);
+  runner()->RunForTesting(extension);
 
   // All pending injections should have executed.
   EXPECT_EQ(kNumInjections, GetExecutionCountForExtension(extension->id()));
@@ -388,7 +388,7 @@ TEST_F(ExtensionActionRunnerUnitTest, TestAlwaysRun) {
   // Allow the extension to always run on this origin.
   ScriptingPermissionsModifier modifier(profile(), extension);
   modifier.GrantHostPermission(web_contents()->GetLastCommittedURL());
-  runner()->RunAction(extension, true);
+  runner()->RunForTesting(extension);
 
   // The extension should execute, and the extension shouldn't want to run.
   EXPECT_EQ(1u, GetExecutionCountForExtension(extension->id()));
@@ -444,7 +444,7 @@ TEST_F(ExtensionActionRunnerUnitTest, TestDifferentScriptRunLocations) {
   EXPECT_EQ(BLOCKED_ACTION_SCRIPT_AT_START | BLOCKED_ACTION_SCRIPT_OTHER,
             runner()->GetBlockedActions(extension));
 
-  runner()->RunAction(extension, true);
+  runner()->RunForTesting(extension);
   EXPECT_EQ(BLOCKED_ACTION_NONE, runner()->GetBlockedActions(extension));
 }
 

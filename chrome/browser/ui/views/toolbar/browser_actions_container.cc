@@ -319,6 +319,25 @@ int BrowserActionsContainer::GetChevronWidth() const {
       chevron_->GetPreferredSize().width() + GetChevronSpacing() : 0;
 }
 
+void BrowserActionsContainer::ShowToolbarActionBubble(
+    scoped_ptr<ToolbarActionsBarBubbleDelegate> controller) {
+  // The container shouldn't be asked to show a bubble if it's animating.
+  DCHECK(!animating());
+  views::View* anchor_view = nullptr;
+  if (!controller->GetAnchorActionId().empty()) {
+    ToolbarActionView* action_view =
+        GetViewForId(controller->GetAnchorActionId());
+    anchor_view =
+        action_view->visible() ? action_view : GetOverflowReferenceView();
+  } else {
+    anchor_view = this;
+  }
+  ToolbarActionsBarBubbleViews* bubble =
+      new ToolbarActionsBarBubbleViews(anchor_view, std::move(controller));
+  views::BubbleDelegateView::CreateBubble(bubble);
+  bubble->Show();
+}
+
 void BrowserActionsContainer::ShowExtensionMessageBubble(
     scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
     ToolbarActionViewController* anchor_action) {

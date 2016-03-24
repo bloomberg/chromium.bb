@@ -493,6 +493,8 @@ void ToolbarActionsBar::OnAnimationEnded() {
   // message bubble, or to show a popup.
   if (pending_extension_bubble_controller_) {
     MaybeShowExtensionBubble(std::move(pending_extension_bubble_controller_));
+  } else if (pending_toolbar_bubble_controller_) {
+    ShowToolbarActionBubble(std::move(pending_toolbar_bubble_controller_));
   } else if (!popped_out_closure_.is_null()) {
     popped_out_closure_.Run();
     popped_out_closure_.Reset();
@@ -573,6 +575,16 @@ void ToolbarActionsBar::AddObserver(ToolbarActionsBarObserver* observer) {
 
 void ToolbarActionsBar::RemoveObserver(ToolbarActionsBarObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void ToolbarActionsBar::ShowToolbarActionBubble(
+    scoped_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
+  DCHECK(bubble->GetAnchorActionId().empty() ||
+         GetActionForId(bubble->GetAnchorActionId()));
+  if (delegate_->IsAnimating())
+    pending_toolbar_bubble_controller_ = std::move(bubble);
+  else
+    delegate_->ShowToolbarActionBubble(std::move(bubble));
 }
 
 void ToolbarActionsBar::MaybeShowExtensionBubble(

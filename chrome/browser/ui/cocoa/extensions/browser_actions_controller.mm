@@ -167,11 +167,11 @@ const CGFloat kBrowserActionBubbleYOffset = 3.0;
 // Returns the associated ToolbarController.
 - (ToolbarController*)toolbarController;
 
-// Creates a message bubble anchored to the given |anchorAction|, or the app
-// menu if no |anchorAction| is null.
+// Creates a message bubble with the given |delegate| that is anchored to the
+// given |anchorView|.
 - (ToolbarActionsBarBubbleMac*)createMessageBubble:
     (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate
-    anchorToSelf:(BOOL)anchorToSelf;
+    anchorView:(NSView*)anchorView;
 
 // Called when the window for the active bubble is closing, and sets the active
 // bubble to nil.
@@ -223,6 +223,8 @@ class ToolbarActionsBarBridge : public ToolbarActionsBarDelegate {
   void ShowExtensionMessageBubble(
       scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
       ToolbarActionViewController* anchor_action) override;
+  void ShowToolbarActionBubble(
+      scoped_ptr<ToolbarActionsBarBubbleDelegate> bubble) override;
 
   // The owning BrowserActionsController; weak.
   BrowserActionsController* controller_;
@@ -297,6 +299,19 @@ int ToolbarActionsBarBridge::GetChevronWidth() const {
 void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
     scoped_ptr<extensions::ExtensionMessageBubbleController> bubble_controller,
     ToolbarActionViewController* anchor_action) {
+  NSView* anchorView = nil;
+  BOOL anchoredToAction = NO;
+  if (anchor_action) {
+    BrowserActionButton* actionButton =
+        [controller_ buttonForId:anchor_action->GetId()];
+    if (actionButton && [actionButton superview]) {
+      anchorView = actionButton;
+      anchoredToAction = YES;
+    }
+  }
+  if (!anchorView)
+    anchorView = [[controller_ toolbarController] appMenuButton];
+
   // This goop is a by-product of needing to wire together abstract classes,
   // C++/Cocoa bridges, and ExtensionMessageBubbleController's somewhat strange
   // Show() interface. It's ugly, but it's pretty confined, so it's probably
@@ -305,12 +320,30 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
       bubble_controller.get();
   scoped_ptr<ExtensionMessageBubbleBridge> bridge(
       new ExtensionMessageBubbleBridge(std::move(bubble_controller),
-                                       anchor_action != nullptr));
+                                       anchoredToAction));
   ToolbarActionsBarBubbleMac* bubble =
       [controller_ createMessageBubble:std::move(bridge)
-                          anchorToSelf:anchor_action != nil];
+                            anchorView:anchorView];
   weak_controller->OnShown();
   [bubble showWindow:nil];
+}
+
+void ToolbarActionsBarBridge::ShowToolbarActionBubble(
+      scoped_ptr<ToolbarActionsBarBubbleDelegate> bubble) {
+  NSView* anchorView = nil;
+  if (!bubble->GetAnchorActionId().empty()) {
+    BrowserActionButton* button =
+        [controller_ buttonForId:bubble->GetAnchorActionId()];
+    anchorView = button && [button superview] ? button :
+        [[controller_ toolbarController] appMenuButton];
+  } else {
+    anchorView = [controller_ containerView];
+  }
+
+  ToolbarActionsBarBubbleMac* bubbleView =
+      [controller_ createMessageBubble:std::move(bubble)
+                            anchorView:anchorView];
+  [bubbleView showWindow:nil];
 }
 
 }  // namespace
@@ -826,7 +859,8 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
     scoped_ptr<ToolbarActionsBarBubbleDelegate> delegate(
         new ExtensionToolbarIconSurfacingBubbleDelegate(browser_->profile()));
     ToolbarActionsBarBubbleMac* bubble =
-        [self createMessageBubble:std::move(delegate) anchorToSelf:YES];
+        [self createMessageBubble:std::move(delegate)
+                       anchorView:containerView_];
     [bubble showWindow:nil];
   }
   [containerView_ setTrackingEnabled:NO];
@@ -1042,10 +1076,9 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 
 - (ToolbarActionsBarBubbleMac*)createMessageBubble:
     (scoped_ptr<ToolbarActionsBarBubbleDelegate>)delegate
-    anchorToSelf:(BOOL)anchorToSelf {
+    anchorView:(NSView*)anchorView {
+  DCHECK(anchorView);
   DCHECK_GE([buttons_ count], 0u);
-  NSView* anchorView =
-      anchorToSelf ? containerView_ : [[self toolbarController] appMenuButton];
   NSPoint anchor = [self popupPointForView:anchorView
                                 withBounds:[anchorView bounds]];
 

@@ -12,6 +12,7 @@
 #include "ui/gfx/geometry/size.h"
 
 class ToolbarActionViewController;
+class ToolbarActionsBarBubbleDelegate;
 
 namespace extensions {
 class ExtensionMessageBubbleController;
@@ -70,6 +71,10 @@ class ToolbarActionsBarDelegate {
   virtual void ShowExtensionMessageBubble(
       scoped_ptr<extensions::ExtensionMessageBubbleController> controller,
       ToolbarActionViewController* anchor_action) = 0;
+
+  // Shows the given |bubble| if no other bubbles are showing.
+  virtual void ShowToolbarActionBubble(
+      scoped_ptr<ToolbarActionsBarBubbleDelegate> bubble) = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_TOOLBAR_TOOLBAR_ACTIONS_BAR_DELEGATE_H_

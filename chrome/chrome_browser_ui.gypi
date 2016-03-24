@@ -2769,6 +2769,8 @@
       'browser/ui/extensions/extension_message_bubble_factory.h',
       'browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.cc',
       'browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h',
+      'browser/ui/extensions/blocked_action_bubble_delegate.cc',
+      'browser/ui/extensions/blocked_action_bubble_delegate.h',
       'browser/ui/extensions/hosted_app_browser_controller.cc',
       'browser/ui/extensions/hosted_app_browser_controller.h',
       'browser/ui/extensions/icon_with_badge_image_source.cc',

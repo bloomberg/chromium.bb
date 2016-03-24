@@ -211,6 +211,10 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   void AddObserver(ToolbarActionsBarObserver* observer);
   void RemoveObserver(ToolbarActionsBarObserver* observer);
 
+  // Displays the given |bubble| once the toolbar is no longer animating.
+  void ShowToolbarActionBubble(
+      scoped_ptr<ToolbarActionsBarBubbleDelegate> bubble);
+
   // Returns the underlying toolbar actions, but does not order them. Primarily
   // for use in testing.
   const std::vector<ToolbarActionViewController*>& toolbar_actions_unordered()
@@ -336,9 +340,16 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
   // it is fully popped out.
   base::Closure popped_out_closure_;
 
-  // The controller of the bubble to show once animation finishes, if any.
+  // The controller of the extension message bubble to show once animation
+  // finishes, if any. This has priority over
+  // |pending_toolbar_bubble_controller_|.
   scoped_ptr<extensions::ExtensionMessageBubbleController>
       pending_extension_bubble_controller_;
+
+  // The controller for the toolbar action bubble to show once animation
+  // finishes, if any.
+  scoped_ptr<ToolbarActionsBarBubbleDelegate>
+      pending_toolbar_bubble_controller_;
 
   base::ObserverList<ToolbarActionsBarObserver> observers_;
 

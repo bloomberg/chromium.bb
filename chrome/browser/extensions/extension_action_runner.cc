@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_action_runner.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,6 +18,10 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/blocked_action_bubble_delegate.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/navigation_controller.h"
@@ -35,6 +40,13 @@
 
 namespace extensions {
 
+namespace {
+
+// The blocked actions that require a page refresh to run.
+const int kRefreshRequiredActionsMask =
+    BLOCKED_ACTION_WEB_REQUEST | BLOCKED_ACTION_SCRIPT_AT_START;
+}
+
 ExtensionActionRunner::PendingScript::PendingScript(
     UserScript::RunLocation run_location,
     const base::Closure& permit_script)
@@ -50,7 +62,9 @@ ExtensionActionRunner::ExtensionActionRunner(content::WebContents* web_contents)
       num_page_requests_(0),
       browser_context_(web_contents->GetBrowserContext()),
       was_used_on_page_(false),
-      extension_registry_observer_(this) {
+      ignore_active_tab_granted_(false),
+      extension_registry_observer_(this),
+      weak_factory_(this) {
   CHECK(web_contents);
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
@@ -71,15 +85,19 @@ ExtensionActionRunner* ExtensionActionRunner::GetForWebContents(
 ExtensionAction::ShowAction ExtensionActionRunner::RunAction(
     const Extension* extension,
     bool grant_tab_permissions) {
-  bool has_pending_scripts = WantsToRun(extension);
   if (grant_tab_permissions) {
+    int blocked = GetBlockedActions(extension);
+    if ((blocked & kRefreshRequiredActionsMask) != 0) {
+      ShowBlockedActionBubble(extension);
+      return ExtensionAction::ACTION_NONE;
+    }
     TabHelper::FromWebContents(web_contents())
         ->active_tab_permission_granter()
         ->GrantIfRequested(extension);
     // If the extension had blocked actions, granting active tab will have
     // run the extension. Don't execute further since clicking should run
     // blocked actions *or* the normal extension action, not both.
-    if (has_pending_scripts)
+    if (blocked != BLOCKED_ACTION_NONE)
       return ExtensionAction::ACTION_NONE;
   }
 
@@ -123,7 +141,7 @@ void ExtensionActionRunner::RunBlockedActions(const Extension* extension) {
 
 void ExtensionActionRunner::OnActiveTabPermissionGranted(
     const Extension* extension) {
-  if (WantsToRun(extension))
+  if (!ignore_active_tab_granted_ && WantsToRun(extension))
     RunBlockedActions(extension);
 }
 
@@ -160,6 +178,14 @@ int ExtensionActionRunner::GetBlockedActions(const Extension* extension) {
 
 bool ExtensionActionRunner::WantsToRun(const Extension* extension) {
   return GetBlockedActions(extension) != BLOCKED_ACTION_NONE;
+}
+
+void ExtensionActionRunner::RunForTesting(const Extension* extension) {
+  if (WantsToRun(extension)) {
+    TabHelper::FromWebContents(web_contents())
+          ->active_tab_permission_granter()
+          ->GrantIfRequested(extension);
+  }
 }
 
 PermissionsData::AccessType
@@ -312,6 +338,49 @@ void ExtensionActionRunner::LogUMA() const {
   }
 }
 
+void ExtensionActionRunner::ShowBlockedActionBubble(
+    const Extension* extension) {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+  ToolbarActionsBar* toolbar_actions_bar =
+      browser ? browser->window()->GetToolbarActionsBar() : nullptr;
+  if (toolbar_actions_bar) {
+    auto callback =
+        base::Bind(&ExtensionActionRunner::OnBlockedActionBubbleClosed,
+                   weak_factory_.GetWeakPtr(), extension->id());
+    if (default_bubble_close_action_for_testing_) {
+      base::MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(callback, *default_bubble_close_action_for_testing_));
+    } else {
+      toolbar_actions_bar->ShowToolbarActionBubble(make_scoped_ptr(
+          new BlockedActionBubbleDelegate(callback, extension->id())));
+    }
+  }
+}
+
+void ExtensionActionRunner::OnBlockedActionBubbleClosed(
+    const std::string& extension_id,
+    ToolbarActionsBarBubbleDelegate::CloseAction action) {
+  // If the user agreed to refresh the page, do so.
+  if (action == ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE) {
+    const Extension* extension = ExtensionRegistry::Get(browser_context_)
+                                     ->enabled_extensions()
+                                     .GetByID(extension_id);
+    if (!extension)
+      return;
+    {
+      // Ignore the active tab permission being granted because we don't want
+      // to run scripts right before we refresh the page.
+      base::AutoReset<bool> ignore_active_tab(&ignore_active_tab_granted_,
+                                              true);
+      TabHelper::FromWebContents(web_contents())
+          ->active_tab_permission_granter()
+          ->GrantIfRequested(extension);
+    }
+    web_contents()->GetController().Reload(false);
+  }
+}
+
 bool ExtensionActionRunner::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
@@ -336,6 +405,7 @@ void ExtensionActionRunner::DidNavigateMainFrame(
   pending_scripts_.clear();
   web_request_blocked_.clear();
   was_used_on_page_ = false;
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void ExtensionActionRunner::OnExtensionUnloaded(

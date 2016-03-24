@@ -15,8 +15,10 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_action.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_bar_bubble_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "extensions/browser/blocked_action_type.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -76,7 +78,16 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   // Returns true if the given |extension| has any blocked actions.
   bool WantsToRun(const Extension* extension);
 
+  // Runs any blocked actions the extension has, but does not handle any page
+  // refreshes for document_start/webRequest.
+  void RunForTesting(const Extension* extension);
+
   int num_page_requests() const { return num_page_requests_; }
+
+  void set_default_bubble_close_action_for_testing(
+      scoped_ptr<ToolbarActionsBarBubbleDelegate::CloseAction> action) {
+    default_bubble_close_action_for_testing_ = std::move(action);
+  }
 
 #if defined(UNIT_TEST)
   // Only used in tests.
@@ -141,6 +152,15 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   // Log metrics.
   void LogUMA() const;
 
+  // Shows the bubble to prompt the user to refresh the page to run the blocked
+  // actions for the given |extension|.
+  void ShowBlockedActionBubble(const Extension* extension);
+
+  // Called when the blocked actions bubble is closed.
+  void OnBlockedActionBubbleClosed(
+      const std::string& extension_id,
+      ToolbarActionsBarBubbleDelegate::CloseAction action);
+
   // content::WebContentsObserver implementation.
   bool OnMessageReceived(const IPC::Message& message,
                          content::RenderFrameHost* render_frame_host) override;
@@ -177,8 +197,18 @@ class ExtensionActionRunner : public content::WebContentsObserver,
   // should incorporate more fully with ActiveTab.
   std::set<std::string> permitted_extensions_;
 
+  // If true, ignore active tab being granted rather than running pending
+  // actions.
+  bool ignore_active_tab_granted_;
+
+  // If non-null, the bubble action to simulate for testing.
+  scoped_ptr<ToolbarActionsBarBubbleDelegate::CloseAction>
+      default_bubble_close_action_for_testing_;
+
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       extension_registry_observer_;
+
+  base::WeakPtrFactory<ExtensionActionRunner> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionRunner);
 };
