@@ -726,9 +726,6 @@ struct weston_compositor {
 	struct wl_signal output_destroyed_signal;
 	struct wl_signal output_moved_signal;
 
-	struct wl_event_loop *input_loop;
-	struct wl_event_source *input_loop_source;
-
 	struct wl_signal session_signal;
 	int session_active;
 

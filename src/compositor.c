@@ -2383,7 +2383,6 @@ weston_output_repaint(struct weston_output *output)
 	output->repaint_needed = 0;
 
 	weston_compositor_repick(ec);
-	wl_event_loop_dispatch(ec->input_loop, 0);
 
 	wl_list_for_each_safe(cb, cnext, &frame_callback_list, link) {
 		wl_callback_send_done(cb->resource, output->frame_time);
@@ -2400,34 +2399,11 @@ weston_output_repaint(struct weston_output *output)
 	return r;
 }
 
-static int
-weston_compositor_read_input(int fd, uint32_t mask, void *data)
-{
-	struct weston_compositor *compositor = data;
-
-	wl_event_loop_dispatch(compositor->input_loop, 0);
-
-	return 1;
-}
-
 static void
 weston_output_schedule_repaint_reset(struct weston_output *output)
 {
-	struct weston_compositor *compositor = output->compositor;
-	struct wl_event_loop *loop;
-	int fd;
-
 	output->repaint_scheduled = 0;
 	TL_POINT("core_repaint_exit_loop", TLP_OUTPUT(output), TLP_END);
-
-	if (compositor->input_loop_source)
-		return;
-
-	loop = wl_display_get_event_loop(compositor->wl_display);
-	fd = wl_event_loop_get_fd(compositor->input_loop);
-	compositor->input_loop_source =
-		wl_event_loop_add_fd(loop, fd, WL_EVENT_READABLE,
-				     weston_compositor_read_input, compositor);
 }
 
 static int
@@ -2576,12 +2552,6 @@ weston_output_schedule_repaint(struct weston_output *output)
 	wl_event_loop_add_idle(loop, idle_repaint, output);
 	output->repaint_scheduled = 1;
 	TL_POINT("core_repaint_enter_loop", TLP_OUTPUT(output), TLP_END);
-
-
-	if (compositor->input_loop_source) {
-		wl_event_source_remove(compositor->input_loop_source);
-		compositor->input_loop_source = NULL;
-	}
 }
 
 WL_EXPORT void
@@ -4780,8 +4750,6 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 	loop = wl_display_get_event_loop(ec->wl_display);
 	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
 
-	ec->input_loop = wl_event_loop_create();
-
 	weston_layer_init(&ec->fade_layer, &ec->layer_list);
 	weston_layer_init(&ec->cursor_layer, &ec->fade_layer.link);
 
@@ -4801,8 +4769,6 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 	struct weston_output *output, *next;
 
 	wl_event_source_remove(ec->idle_source);
-	if (ec->input_loop_source)
-		wl_event_source_remove(ec->input_loop_source);
 
 	/* Destroy all outputs associated with this compositor */
 	wl_list_for_each_safe(output, next, &ec->output_list, link)
@@ -4819,8 +4785,6 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 	weston_binding_list_destroy_all(&ec->debug_binding_list);
 
 	weston_plane_release(&ec->primary_plane);
-
-	wl_event_loop_destroy(ec->input_loop);
 }
 
 WL_EXPORT void
