@@ -241,11 +241,11 @@ void DashboardPrivateShowPermissionPromptForDelegatedBundleInstallFunction::
   BundleInstaller::ItemList items;
   for (const auto& entry : params_->contents) {
     BundleInstaller::Item item;
-    item.id = entry->id;
-    item.manifest = entry->manifest;
-    item.localized_name = entry->localized_name;
-    if (entry->icon_url)
-      item.icon_url = source_url().Resolve(*entry->icon_url);
+    item.id = entry.id;
+    item.manifest = entry.manifest;
+    item.localized_name = entry.localized_name;
+    if (entry.icon_url)
+      item.icon_url = source_url().Resolve(*entry.icon_url);
     items.push_back(item);
   }
   if (items.empty()) {

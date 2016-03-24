@@ -6,7 +6,8 @@
   {
     "namespace": "echoPrivate",
     "compiler_options": {
-      "implemented_in": "chrome/browser/chromeos/extensions/echo_private_api.h"
+      "implemented_in": "chrome/browser/chromeos/extensions/echo_private_api.h",
+      "use_movable_types": true
     },
     "description": "none",
     "functions": [

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/memory/linked_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/thread_task_runner_handle.h"
@@ -673,9 +672,9 @@ bool EasyUnlockPrivateSetRemoteDevicesFunction::RunSync() {
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   base::ListValue devices;
-  for (size_t i = 0; i < params->devices.size(); ++i) {
-    devices.Append(params->devices[i]->ToValue().release());
-  }
+  for (const easy_unlock_private::Device& device : params->devices)
+    devices.Append(device.ToValue());
+
   // Store the BLE device if we are trying out the BLE experiment.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)) {
@@ -893,27 +892,25 @@ EasyUnlockPrivateGetUserInfoFunction::~EasyUnlockPrivateGetUserInfoFunction() {
 bool EasyUnlockPrivateGetUserInfoFunction::RunSync() {
   EasyUnlockService* service =
       EasyUnlockService::Get(Profile::FromBrowserContext(browser_context()));
-  std::vector<linked_ptr<easy_unlock_private::UserInfo> > users;
+  std::vector<easy_unlock_private::UserInfo> users;
   const AccountId& account_id = service->GetAccountId();
   if (account_id.is_valid()) {
-    users.push_back(
-        linked_ptr<easy_unlock_private::UserInfo>(
-            new easy_unlock_private::UserInfo()));
-    users[0]->user_id = account_id.GetUserEmail();
-    users[0]->logged_in = service->GetType() == EasyUnlockService::TYPE_REGULAR;
-    users[0]->data_ready = users[0]->logged_in ||
-                           service->GetRemoteDevices() != NULL;
+    easy_unlock_private::UserInfo user;
+    user.user_id = account_id.GetUserEmail();
+    user.logged_in = service->GetType() == EasyUnlockService::TYPE_REGULAR;
+    user.data_ready = user.logged_in || service->GetRemoteDevices() != NULL;
 
     EasyUnlockService::UserSettings user_settings =
         EasyUnlockService::GetUserSettings(account_id);
-    users[0]->require_close_proximity = user_settings.require_close_proximity;
+    user.require_close_proximity = user_settings.require_close_proximity;
 
-    users[0]->device_user_id = proximity_auth::CalculateDeviceUserId(
+    user.device_user_id = proximity_auth::CalculateDeviceUserId(
         EasyUnlockService::GetDeviceId(), account_id.GetUserEmail());
 
-    users[0]->ble_discovery_enabled =
+    user.ble_discovery_enabled =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery);
+    users.push_back(std::move(user));
   }
   results_ = easy_unlock_private::GetUserInfo::Results::Create(users);
   return true;

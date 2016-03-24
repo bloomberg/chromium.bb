@@ -20,11 +20,10 @@
 
 class Profile;
 
-using extensions::api::feedback_private::SystemInformation;
-
 namespace extensions {
 
-using SystemInformationList = std::vector<linked_ptr<SystemInformation>>;
+using SystemInformationList =
+    std::vector<api::feedback_private::SystemInformation>;
 
 // The feedback service provides the ability to gather the various pieces of
 // data needed to send a feedback report and then send the report once all

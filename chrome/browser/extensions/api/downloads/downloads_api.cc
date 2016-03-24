@@ -988,12 +988,7 @@ bool DownloadsDownloadFunction::RunAsync() {
     download_params->set_prompt(*options.save_as.get());
 
   if (options.headers.get()) {
-    typedef downloads::HeaderNameValuePair HeaderNameValuePair;
-    for (std::vector<linked_ptr<HeaderNameValuePair> >::const_iterator iter =
-         options.headers->begin();
-         iter != options.headers->end();
-         ++iter) {
-      const HeaderNameValuePair& name_value = **iter;
+    for (const downloads::HeaderNameValuePair& name_value : *options.headers) {
       if (!net::HttpUtil::IsValidHeaderName(name_value.name)) {
         error_ = errors::kInvalidHeaderName;
         return false;

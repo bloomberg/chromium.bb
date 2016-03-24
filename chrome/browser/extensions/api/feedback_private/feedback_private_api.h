@@ -14,8 +14,6 @@ namespace extensions {
 
 class FeedbackService;
 
-using extensions::api::feedback_private::SystemInformation;
-
 class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
  public:
   explicit FeedbackPrivateAPI(content::BrowserContext* context);
@@ -93,7 +91,7 @@ class FeedbackPrivateGetSystemInformationFunction
 
  private:
   void OnCompleted(
-      const std::vector<linked_ptr<SystemInformation> >& sys_info);
+      const std::vector<api::feedback_private::SystemInformation>& sys_info);
 };
 
 class FeedbackPrivateSendFeedbackFunction

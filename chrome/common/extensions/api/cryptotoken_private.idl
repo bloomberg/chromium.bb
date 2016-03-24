@@ -4,7 +4,7 @@
 
 // <code>chrome.cryptotokenPrivate</code> API that provides hooks to Chrome to
 // be used by cryptotoken component extension.
-namespace cryptotokenPrivate {
+[use_movable_types=true] namespace cryptotokenPrivate {
 
   // Callback for appId check
   callback AppIdCallback = void(boolean result);

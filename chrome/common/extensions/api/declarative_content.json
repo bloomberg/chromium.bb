@@ -6,6 +6,7 @@
   {
     "namespace": "declarativeContent",
     "description": "Use the <code>chrome.declarativeContent</code> API to take actions depending on the content of a page, without requiring permission to read the page's content.",
+    "compiler_options": {"use_movable_types": true},
     "types": [
       {
         "id": "ImageDataType",

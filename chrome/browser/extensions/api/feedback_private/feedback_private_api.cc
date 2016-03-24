@@ -29,6 +29,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "url/url_util.h"
 
+using extensions::api::feedback_private::SystemInformation;
 using feedback::FeedbackData;
 
 namespace {
@@ -235,9 +236,8 @@ bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
       new FeedbackData::SystemLogsMap);
   SystemInformationList* sys_info = feedback_info.system_information.get();
   if (sys_info) {
-    for (SystemInformationList::iterator it = sys_info->begin();
-         it != sys_info->end(); ++it)
-      (*sys_logs.get())[it->get()->key] = it->get()->value;
+    for (const SystemInformation& info : *sys_info)
+      (*sys_logs)[info.key] = info.value;
   }
   feedback_data->SetAndCompressSystemInfo(std::move(sys_logs));
 

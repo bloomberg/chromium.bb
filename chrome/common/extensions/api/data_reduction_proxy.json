@@ -6,6 +6,7 @@
   {
     "namespace": "dataReductionProxy",
     "description": "Use the <code>chrome.dataReductionProxy</code> API to control the data reduction proxy and access usage metrics. This API relies on the <a href='types#ChromeSetting'>ChromeSetting prototype of the type API</a> for getting and setting Chrome's configuration.",
+    "compiler_options": {"use_movable_types": true},
     "properties": {
       "spdyProxyEnabled": {
         "nocompile": true,

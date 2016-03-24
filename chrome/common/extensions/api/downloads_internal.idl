@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // downloadsInternal
-[nodoc=true]
+[nodoc=true,use_movable_types=true]
 namespace downloadsInternal {
   interface Functions {
     // Secretly called when onDeterminingFilename handlers return.

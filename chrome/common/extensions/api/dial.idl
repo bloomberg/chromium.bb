@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.dial</code> API to discover devices that support DIAL.
 // Protocol specification: http://www.dial-multiscreen.org/
-namespace dial {
+[use_movable_types=true] namespace dial {
 
   // Represents a unique device that responded to a DIAL discovery request.
   dictionary DialDevice {

@@ -15,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
+using extensions::api::feedback_private::SystemInformation;
 using feedback::FeedbackData;
 
 namespace extensions {
@@ -28,10 +29,10 @@ void PopulateSystemInfo(SystemInformationList* sys_info_list,
   sys_info_value.Set("key", new base::StringValue(key));
   sys_info_value.Set("value", new base::StringValue(value));
 
-  linked_ptr<SystemInformation> sys_info(new SystemInformation());
-  SystemInformation::Populate(sys_info_value, sys_info.get());
+  SystemInformation sys_info;
+  SystemInformation::Populate(sys_info_value, &sys_info);
 
-  sys_info_list->push_back(sys_info);
+  sys_info_list->push_back(std::move(sys_info));
 }
 
 }  // namespace
