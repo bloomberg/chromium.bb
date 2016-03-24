@@ -461,6 +461,7 @@ source_set("test_support") {
   ]
 
   deps = [
+    "//base/test:test_support",
     "//device/battery",
     "//device/battery:mojo_bindings",
     "//mojo/edk/system",

@@ -46,6 +46,7 @@
 #include <base/bind.h>
 #include <base/bind_helpers.h>
 #include <base/command_line.h>
+#include <base/metrics/statistics_recorder.h>
 #include <base/test/launcher/unit_test_launcher.h>
 #include <base/test/test_suite.h>
 #include <cc/blink/web_compositor_support_impl.h>
@@ -77,6 +78,8 @@ int main(int argc, char** argv)
 
     base::TestDiscardableMemoryAllocator discardableMemoryAllocator;
     base::DiscardableMemoryAllocator::SetInstance(&discardableMemoryAllocator);
+
+    base::StatisticsRecorder::Initialize();
 
     OwnPtr<DummyPlatform> platform = adoptPtr(new DummyPlatform);
     blink::Platform::setCurrentPlatformForTesting(platform.get());
