@@ -70,12 +70,4 @@ bool cookiesEnabled(const Document* document)
     return cookieJar->cookiesEnabled(document->cookieURL(), document->firstPartyForCookies());
 }
 
-String cookieRequestHeaderFieldValue(const Document* document, const KURL& url)
-{
-    WebCookieJar* cookieJar = toCookieJar(document);
-    if (!cookieJar)
-        return String();
-    return cookieJar->cookieRequestHeaderFieldValue(url, document->firstPartyForCookies());
-}
-
 } // namespace blink

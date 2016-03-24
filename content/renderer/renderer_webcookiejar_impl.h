@@ -26,9 +26,6 @@ class RendererWebCookieJarImpl : public blink::WebCookieJar {
   blink::WebString cookies(
       const blink::WebURL& url,
       const blink::WebURL& first_party_for_cookies) override;
-  blink::WebString cookieRequestHeaderFieldValue(
-      const blink::WebURL& url,
-      const blink::WebURL& first_party_for_cookies) override;
   bool cookiesEnabled(const blink::WebURL& url,
                       const blink::WebURL& first_party_for_cookies) override;
 

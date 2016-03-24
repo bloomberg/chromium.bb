@@ -30,11 +30,6 @@ WebString RendererWebCookieJarImpl::cookies(
   return WebString::fromUTF8(value_utf8);
 }
 
-WebString RendererWebCookieJarImpl::cookieRequestHeaderFieldValue(
-    const WebURL& url, const WebURL& first_party_for_cookies) {
-  return cookies(url, first_party_for_cookies);
-}
-
 bool RendererWebCookieJarImpl::cookiesEnabled(
     const WebURL& url, const WebURL& first_party_for_cookies) {
   bool cookies_enabled = false;
