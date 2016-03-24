@@ -72,6 +72,7 @@ def quote_data(data):
         lines.append(l)
     return lines
 
+
 class ServerProcess(object):
     """This class provides a wrapper around a subprocess that
     implements a simple request/response usage model. The primary benefit
@@ -137,11 +138,11 @@ class ServerProcess(object):
                 env_str += '\n'.join("%s=%s" % (k, v) for k, v in self._env.items()) + '\n'
             _log.info('CMD: \n%s%s\n', env_str, _quote_cmd(self._cmd))
         self._proc = self._host.executive.popen(self._cmd, stdin=self._host.executive.PIPE,
-            stdout=self._host.executive.PIPE,
-            stderr=self._host.executive.PIPE,
-            close_fds=close_fds,
-            env=self._env,
-            universal_newlines=self._universal_newlines)
+                                                stdout=self._host.executive.PIPE,
+                                                stderr=self._host.executive.PIPE,
+                                                close_fds=close_fds,
+                                                env=self._env,
+                                                universal_newlines=self._universal_newlines)
         self._pid = self._proc.pid
         fd = self._proc.stdout.fileno()
         if not self._use_win32_apis:
@@ -215,7 +216,8 @@ class ServerProcess(object):
             return None  # Instructs the caller to keep waiting.
 
         return_value = self._read(deadline, retrieve_bytes_from_buffers)
-        # FIXME: This is a bit of a hack around the fact that _read normally only returns one value, but this caller wants it to return two.
+        # FIXME: This is a bit of a hack around the fact that _read normally only
+        # returns one value, but this caller wants it to return two.
         if return_value is None:
             return None, None
         return return_value

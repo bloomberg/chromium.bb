@@ -9,6 +9,7 @@ from webkitpy.layout_tests.controllers import layout_test_finder
 
 
 class LayoutTestFinderTests(unittest.TestCase):
+
     def test_find_fastest_tests(self):
         host = MockHost()
         port = host.port_factory.get('test-win-win7', None)

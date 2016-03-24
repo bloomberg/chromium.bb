@@ -24,7 +24,9 @@ LAYER_TREE = """{
 }
 """
 
+
 class TestRepaintOverlay(unittest.TestCase):
+
     def test_result_contains_repaint_rects(self):
         self.assertTrue(repaint_overlay.result_contains_repaint_rects(LAYER_TREE))
         self.assertFalse(repaint_overlay.result_contains_repaint_rects('ABCD'))

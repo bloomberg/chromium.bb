@@ -58,7 +58,8 @@ class MacPortTest(port_testcase.PortTestCase):
 
         # Test that we prefer the legacy dir over the new dir.
         options = MockOptions(configuration='Release', build_directory=None)
-        self.assert_build_path(options, ['/mock-checkout/xcodebuild/Release', '/mock-checkout/out/Release'], '/mock-checkout/xcodebuild/Release')
+        self.assert_build_path(options, ['/mock-checkout/xcodebuild/Release',
+                                         '/mock-checkout/out/Release'], '/mock-checkout/xcodebuild/Release')
 
     def test_build_path_timestamps(self):
         options = MockOptions(configuration='Release', build_directory=None)

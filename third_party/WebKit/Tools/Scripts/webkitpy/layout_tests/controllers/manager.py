@@ -63,7 +63,6 @@ BUILDER_BASE_URL = "http://build.chromium.org/buildbot/layout_test_results/"
 TestExpectations = test_expectations.TestExpectations
 
 
-
 class Manager(object):
     """A class for managing running a series of layout tests."""
 
@@ -99,7 +98,7 @@ class Manager(object):
 
     def _collect_tests(self, args):
         return self._finder.find_tests(args, test_list=self._options.test_list,
-            fastest_percentile=self._options.fastest)
+                                       fastest_percentile=self._options.fastest)
 
     def _is_http_test(self, test):
         return (
@@ -138,7 +137,7 @@ class Manager(object):
             random.shuffle(tests_to_run)
         elif self._options.order == 'random-seeded':
             rnd = random.Random()
-            rnd.seed(4) # http://xkcd.com/221/
+            rnd.seed(4)  # http://xkcd.com/221/
             rnd.shuffle(tests_to_run)
 
         tests_to_run, tests_in_other_chunks = self._finder.split_into_chunks(tests_to_run)
@@ -149,9 +148,9 @@ class Manager(object):
 
     def _test_input_for_file(self, test_file):
         return TestInput(test_file,
-            self._options.slow_time_out_ms if self._test_is_slow(test_file) else self._options.time_out_ms,
-            self._test_requires_lock(test_file),
-            should_add_missing_baselines=(self._options.new_test_results and not self._test_is_expected_missing(test_file)))
+                         self._options.slow_time_out_ms if self._test_is_slow(test_file) else self._options.time_out_ms,
+                         self._test_requires_lock(test_file),
+                         should_add_missing_baselines=(self._options.new_test_results and not self._test_is_expected_missing(test_file)))
 
     def _test_requires_lock(self, test_file):
         """Return True if the test needs to be locked when running multiple
@@ -174,7 +173,8 @@ class Manager(object):
 
     def _rename_results_folder(self):
         try:
-            timestamp = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime(self._filesystem.mtime(self._filesystem.join(self._results_directory, "results.html"))))
+            timestamp = time.strftime(
+                "%Y-%m-%d-%H-%M-%S", time.localtime(self._filesystem.mtime(self._filesystem.join(self._results_directory, "results.html"))))
         except (IOError, OSError), e:
             # It might be possible that results.html was not generated in previous run, because the test
             # run was interrupted even before testing started. In those cases, don't archive the folder.
@@ -281,7 +281,8 @@ class Manager(object):
                 num_workers)
 
             # Don't retry failures when interrupted by user or failures limit exception.
-            should_retry_failures = should_retry_failures and not (initial_results.interrupted or initial_results.keyboard_interrupted)
+            should_retry_failures = should_retry_failures and not (
+                initial_results.interrupted or initial_results.keyboard_interrupted)
 
             tests_to_retry = self._tests_to_retry(initial_results)
             all_retry_results = []
@@ -497,7 +498,8 @@ class Manager(object):
         json_results_generator.write_json(self._filesystem, summarized_full_results, full_results_path)
 
         full_results_path = self._filesystem.join(self._results_directory, "failing_results.json")
-        # We write failing_results.json out as jsonp because we need to load it from a file url for results.html and Chromium doesn't allow that.
+        # We write failing_results.json out as jsonp because we need to load it
+        # from a file url for results.html and Chromium doesn't allow that.
         json_results_generator.write_json(self._filesystem, summarized_failing_results, full_results_path, callback="ADD_RESULTS")
 
         _log.debug("Finished writing JSON files.")
@@ -515,7 +517,8 @@ class Manager(object):
                  ("testtype", self._options.step_name),
                  ("master", self._options.master_name)]
 
-        files = [(file, self._filesystem.join(self._results_directory, file)) for file in ["failing_results.json", "full_results.json", "times_ms.json"]]
+        files = [(file, self._filesystem.join(self._results_directory, file))
+                 for file in ["failing_results.json", "full_results.json", "times_ms.json"]]
 
         url = "http://%s/testfile/upload" % self._options.test_results_server
         # Set uploading timeout in case appengine server is having problems.
@@ -548,7 +551,8 @@ class Manager(object):
         stats = {}
         for result in initial_results.results_by_name.values():
             if result.type != test_expectations.SKIP:
-                stats[result.test_name] = {'results': (_worker_number(result.worker_name), result.test_number, result.pid, int(result.test_run_time * 1000), int(result.total_run_time * 1000))}
+                stats[result.test_name] = {'results': (_worker_number(result.worker_name), result.test_number, result.pid, int(
+                    result.test_run_time * 1000), int(result.total_run_time * 1000))}
         stats_trie = {}
         for name, value in stats.iteritems():
             json_results_generator.add_path_to_trie(name, value, stats_trie)

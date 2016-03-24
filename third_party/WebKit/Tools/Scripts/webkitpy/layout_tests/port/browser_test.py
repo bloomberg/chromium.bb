@@ -47,6 +47,7 @@ class BrowserTestPortOverrides(object):
     """Set of overrides that every browser test platform port should have. This
     class should not be instantiated as certain functions depend on base. Port
     to work."""
+
     def _driver_class(self):
         return browser_test_driver.BrowserTestDriver
 
@@ -80,6 +81,7 @@ class BrowserTestLinuxPort(BrowserTestPortOverrides, linux.LinuxPort):
 
 
 class BrowserTestMacPort(BrowserTestPortOverrides, mac.MacPort):
+
     def _path_to_driver(self, target=None):
         return self._build_path_with_target(target, self.driver_name())
 
@@ -92,6 +94,7 @@ class BrowserTestMacPort(BrowserTestPortOverrides, mac.MacPort):
 
 
 class BrowserTestWinPort(BrowserTestPortOverrides, win.WinPort):
+
     def default_timeout_ms(self):
         timeout_ms = 20 * 1000
         if self.get_option('configuration') == 'Debug':  # pylint: disable=E1101

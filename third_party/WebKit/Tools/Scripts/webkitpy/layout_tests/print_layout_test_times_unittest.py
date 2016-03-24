@@ -58,36 +58,36 @@ class PrintLayoutTestTimesTest(unittest.TestCase):
     def test_fastest_overall(self):
         # This is the fastest 10% of the tests overall (ignoring dir structure, equivalent to -f 0).
         self.check(['--fastest', '10'],
-            "bar/bar1/fast5.html 10\n"
-            "bar/bar1/fast6.html 10\n"
-            "foo/foo1/fast1.html 10\n")
+                   "bar/bar1/fast5.html 10\n"
+                   "bar/bar1/fast6.html 10\n"
+                   "foo/foo1/fast1.html 10\n")
 
     def test_fastest_forward_1(self):
         # Note that we don't get anything from foo/foo2, as foo/foo1 used up the budget for foo.
         self.check(['-f', '1', '--fastest', '10'],
-            "bar/bar1/fast5.html 10\n"
-            "foo/foo1/fast1.html 10\n"
-            "foo/foo1/fast2.html 10\n")
+                   "bar/bar1/fast5.html 10\n"
+                   "foo/foo1/fast1.html 10\n"
+                   "foo/foo1/fast2.html 10\n")
 
     def test_fastest_back_1(self):
         # Here we get one test from each dir, showing that we are going properly breadth-first.
         self.check(['-b', '1', '--fastest', '10'],
-            "bar/bar1/fast5.html 10\n"
-            "foo/foo1/fast1.html 10\n"
-            "foo/foo2/fast3.html 10\n")
+                   "bar/bar1/fast5.html 10\n"
+                   "foo/foo1/fast1.html 10\n"
+                   "foo/foo2/fast3.html 10\n")
 
     def test_no_args(self):
         # This should be every test, sorted lexicographically.
         self.check([],
-            "bar/bar1/fast5.html 10\n"
-            "bar/bar1/fast6.html 10\n"
-            "bar/bar1/slow3.html 80\n"
-            "foo/foo1/fast1.html 10\n"
-            "foo/foo1/fast2.html 10\n"
-            "foo/foo1/slow1.html 80\n"
-            "foo/foo2/fast3.html 10\n"
-            "foo/foo2/fast4.html 10\n"
-            "foo/foo2/slow2.html 80\n")
+                   "bar/bar1/fast5.html 10\n"
+                   "bar/bar1/fast6.html 10\n"
+                   "bar/bar1/slow3.html 80\n"
+                   "foo/foo1/fast1.html 10\n"
+                   "foo/foo1/fast2.html 10\n"
+                   "foo/foo1/slow1.html 80\n"
+                   "foo/foo2/fast3.html 10\n"
+                   "foo/foo2/fast4.html 10\n"
+                   "foo/foo2/slow2.html 80\n")
 
     def test_total(self):
         self.check(['-f', '0'], "300\n")

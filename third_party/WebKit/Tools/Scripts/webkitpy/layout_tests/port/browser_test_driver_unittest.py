@@ -41,6 +41,7 @@ from webkitpy.tool.mocktool import MockOptions
 
 
 class BrowserTestDriverTest(unittest.TestCase):
+
     def test_read_stdin_path(self):
         port = TestWebKitPort()
         driver = browser_test_driver.BrowserTestDriver(port, 0, pixel_tests=True)

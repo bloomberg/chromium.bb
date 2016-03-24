@@ -108,7 +108,7 @@ class Port(object):
         # FIXME: Technically this should be 'arm', but adding a third architecture type breaks TestConfigurationConverter.
         # If we need this to be 'arm' in the future, then we first have to fix TestConfigurationConverter.
         ('icecreamsandwich', 'x86'),
-        )
+    )
 
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': ['retina', 'mac10.9', 'mac10.10', 'mac10.11'],
@@ -726,7 +726,8 @@ class Port(object):
             if len(split_line) < 3:
                 continue
             expectation_type, test_file, ref_file = split_line
-            parsed_list.setdefault(filesystem.join(test_dirpath, test_file), []).append((expectation_type, filesystem.join(test_dirpath, ref_file)))
+            parsed_list.setdefault(filesystem.join(test_dirpath, test_file), []).append(
+                (expectation_type, filesystem.join(test_dirpath, ref_file)))
         return parsed_list
 
     def reference_files(self, test_name):
@@ -758,7 +759,8 @@ class Port(object):
     def _real_tests(self, paths):
         # When collecting test cases, skip these directories
         skipped_directories = set(['.svn', '_svn', 'platform', 'resources', 'support', 'script-tests', 'reference', 'reftest'])
-        files = find_files.find(self._filesystem, self.layout_tests_dir(), paths, skipped_directories, Port.is_test_file, self.test_key)
+        files = find_files.find(self._filesystem, self.layout_tests_dir(), paths,
+                                skipped_directories, Port.is_test_file, self.test_key)
         return [self.relative_test_filename(f) for f in files]
 
     # When collecting test cases, we include any file with these extensions.
@@ -1129,7 +1131,7 @@ class Port(object):
             _log.debug("Starting layout helper %s" % helper_path)
             # Note: Not thread safe: http://bugs.python.org/issue2320
             self._helper = self._executive.popen([helper_path],
-                stdin=self._executive.PIPE, stdout=self._executive.PIPE, stderr=None)
+                                                 stdin=self._executive.PIPE, stdout=self._executive.PIPE, stderr=None)
             is_ready = self._helper.stdout.readline()
             if not is_ready.startswith('ready'):
                 _log.error("layout_test_helper failed to be ready")
@@ -1368,7 +1370,7 @@ class Port(object):
         # with conflicting encodings.  Thus we do not decode the output.
         command = self._wdiff_command(actual_filename, expected_filename)
         wdiff = self._executive.run_command(command, decode_output=False,
-            error_handler=self._handle_wdiff_error)
+                                            error_handler=self._handle_wdiff_error)
         return self._format_wdiff_output_as_html(wdiff)
 
     _wdiff_error_html = "Failed to run wdiff, see error log."
@@ -1527,7 +1529,8 @@ class Port(object):
             # Running the symbolizer script can take a lot of memory, so we need to
             # serialize access to it across all the concurrently running drivers.
 
-            llvm_symbolizer_path = self.path_from_chromium_base('third_party', 'llvm-build', 'Release+Asserts', 'bin', 'llvm-symbolizer')
+            llvm_symbolizer_path = self.path_from_chromium_base(
+                'third_party', 'llvm-build', 'Release+Asserts', 'bin', 'llvm-symbolizer')
             if self._filesystem.exists(llvm_symbolizer_path):
                 env = os.environ.copy()
                 env['LLVM_SYMBOLIZER_PATH'] = llvm_symbolizer_path
@@ -1536,7 +1539,8 @@ class Port(object):
             sanitizer_filter_path = self.path_from_chromium_base('tools', 'valgrind', 'asan', 'asan_symbolize.py')
             sanitizer_strip_path_prefix = 'Release/../../'
             if self._filesystem.exists(sanitizer_filter_path):
-                stderr = self._executive.run_command(['flock', sys.executable, sanitizer_filter_path, sanitizer_strip_path_prefix], input=stderr, decode_output=False, env=env)
+                stderr = self._executive.run_command(
+                    ['flock', sys.executable, sanitizer_filter_path, sanitizer_strip_path_prefix], input=stderr, decode_output=False, env=env)
 
         name_str = name or '<unknown process name>'
         pid_str = str(pid or '<unknown>')
@@ -1554,8 +1558,8 @@ class Port(object):
             stderr_lines = [u'<empty>']
 
         return (stderr, 'crash log for %s (pid %s):\n%s\n%s\n' % (name_str, pid_str,
-            '\n'.join(('STDOUT: ' + l) for l in stdout_lines),
-            '\n'.join(('STDERR: ' + l) for l in stderr_lines)))
+                                                                  '\n'.join(('STDOUT: ' + l) for l in stdout_lines),
+                                                                  '\n'.join(('STDERR: ' + l) for l in stderr_lines)))
 
     def look_for_new_crash_logs(self, crashed_processes, start_time):
         pass
@@ -1760,6 +1764,7 @@ class Port(object):
 
 
 class VirtualTestSuite(object):
+
     def __init__(self, prefix=None, base=None, args=None, references_use_default_args=False):
         assert base
         assert args
@@ -1775,6 +1780,7 @@ class VirtualTestSuite(object):
 
 
 class PhysicalTestSuite(object):
+
     def __init__(self, base, args, reference_args=None):
         self.name = base
         self.base = base

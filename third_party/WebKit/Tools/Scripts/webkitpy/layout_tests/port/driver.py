@@ -46,6 +46,7 @@ DRIVER_START_TIMEOUT_SECS = 30
 
 
 class DriverInput(object):
+
     def __init__(self, test_name, timeout, image_hash, should_run_pixel_test, args):
         self.test_name = test_name
         self.timeout = timeout  # in ms
@@ -59,8 +60,8 @@ class DriverOutput(object):
     and post-processing of data."""
 
     def __init__(self, text, image, image_hash, audio, crash=False,
-            test_time=0, measurements=None, timeout=False, error='', crashed_process_name='??',
-            crashed_pid=None, crash_log=None, leak=False, leak_log=None, pid=None):
+                 test_time=0, measurements=None, timeout=False, error='', crashed_process_name='??',
+                 crashed_pid=None, crash_log=None, leak=False, leak_log=None, pid=None):
         # FIXME: Args could be renamed to better clarify what they do.
         self.text = text
         self.image = image  # May be empty-string if the test crashes.
@@ -133,7 +134,7 @@ class Driver(object):
         if self._port.get_option("profile"):
             profiler_name = self._port.get_option("profiler")
             self._profiler = ProfilerFactory.create_profiler(self._port.host,
-                self._port._path_to_driver(), self._port.results_directory(), profiler_name)
+                                                             self._port._path_to_driver(), self._port.results_directory(), profiler_name)
         else:
             self._profiler = None
 
@@ -172,7 +173,8 @@ class Driver(object):
         if not crashed:
             sanitizer = self._port.output_contains_sanitizer_messages(self.error_from_test)
             if sanitizer:
-                self.error_from_test = 'OUTPUT CONTAINS "' + sanitizer + '", so we are treating this test as if it crashed, even though it did not.\n\n' + self.error_from_test
+                self.error_from_test = 'OUTPUT CONTAINS "' + sanitizer + \
+                    '", so we are treating this test as if it crashed, even though it did not.\n\n' + self.error_from_test
                 crashed = True
                 self._crashed_process_name = "unknown process name"
                 self._crashed_pid = 0
@@ -204,12 +206,12 @@ class Driver(object):
                     crash_log += '\nstdout:\n%s\nstderr:\n%s\n' % (text, self.error_from_test)
 
         return DriverOutput(text, image, actual_image_hash, audio,
-            crash=crashed, test_time=time.time() - test_begin_time, measurements=self._measurements,
-            timeout=timed_out, error=self.error_from_test,
-            crashed_process_name=self._crashed_process_name,
-            crashed_pid=self._crashed_pid, crash_log=crash_log,
-            leak=leaked, leak_log=self._leak_log,
-            pid=pid)
+                            crash=crashed, test_time=time.time() - test_begin_time, measurements=self._measurements,
+                            timeout=timed_out, error=self.error_from_test,
+                            crashed_process_name=self._crashed_process_name,
+                            crashed_pid=self._crashed_pid, crash_log=crash_log,
+                            leak=leaked, leak_log=self._leak_log,
+                            pid=pid)
 
     def _get_crash_log(self, stdout, stderr, newer_than):
         return self._port._get_crash_log(self._crashed_process_name, self._crashed_pid, stdout, stderr, newer_than)
@@ -319,7 +321,8 @@ class Driver(object):
         self._leaked = False
         self._leak_log = None
         cmd_line = self.cmd_line(pixel_tests, per_test_args)
-        self._server_process = self._port._server_process_constructor(self._port, server_name, cmd_line, environment, logging=self._port.get_option("driver_logging"))
+        self._server_process = self._port._server_process_constructor(
+            self._port, server_name, cmd_line, environment, logging=self._port.get_option("driver_logging"))
         self._server_process.start()
         self._current_cmd_line = cmd_line
 
@@ -383,7 +386,7 @@ class Driver(object):
             self._crashed_process_name = self._server_process.name()
             self._crashed_pid = self._server_process.pid()
         elif (error_line.startswith("#CRASHED - ")
-            or error_line.startswith("#PROCESS UNRESPONSIVE - ")):
+              or error_line.startswith("#PROCESS UNRESPONSIVE - ")):
             # WebKitTestRunner uses this to report that the WebProcess subprocess crashed.
             match = re.match('#(?:CRASHED|PROCESS UNRESPONSIVE) - (\S+)', error_line)
             self._crashed_process_name = match.group(1) if match else 'WebProcess'
@@ -409,7 +412,7 @@ class Driver(object):
 
     def _command_from_driver_input(self, driver_input):
         # FIXME: performance tests pass in full URLs instead of test names.
-        if driver_input.test_name.startswith('http://') or driver_input.test_name.startswith('https://')  or driver_input.test_name == ('about:blank'):
+        if driver_input.test_name.startswith('http://') or driver_input.test_name.startswith('https://') or driver_input.test_name == ('about:blank'):
             command = driver_input.test_name
         elif self.is_http_test(driver_input.test_name) or self._should_treat_as_wpt_test(driver_input.test_name):
             command = self.test_to_uri(driver_input.test_name)
@@ -530,6 +533,7 @@ class Driver(object):
 
 
 class ContentBlock(object):
+
     def __init__(self):
         self.content_type = None
         self.encoding = None

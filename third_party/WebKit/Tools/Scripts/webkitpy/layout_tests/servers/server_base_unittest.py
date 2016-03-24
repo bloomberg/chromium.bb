@@ -34,6 +34,7 @@ from webkitpy.layout_tests.servers.server_base import ServerBase
 
 
 class TestServerBase(unittest.TestCase):
+
     def test_corrupt_pid_file(self):
         # This tests that if the pid file is corrupt or invalid,
         # both start() and stop() deal with it correctly and delete the file.

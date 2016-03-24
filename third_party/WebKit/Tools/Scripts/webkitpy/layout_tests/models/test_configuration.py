@@ -30,6 +30,7 @@ import copy
 
 
 class TestConfiguration(object):
+
     def __init__(self, version, architecture, build_type):
         self.version = version
         self.architecture = architecture
@@ -65,6 +66,7 @@ class TestConfiguration(object):
 
 
 class SpecifierSorter(object):
+
     def __init__(self, all_test_configurations=None, macros=None):
         self._specifier_to_category = {}
 
@@ -109,6 +111,7 @@ class SpecifierSorter(object):
 
 
 class TestConfigurationConverter(object):
+
     def __init__(self, all_test_configurations, configuration_macros=None):
         self._all_test_configurations = all_test_configurations
         self._configuration_macros = configuration_macros or {}
@@ -281,7 +284,6 @@ class TestConfigurationConverter(object):
         #   (win7, release), (win10, release) --> (win7, win10, release)
         while try_abbreviating(self._collapsing_sets_by_size.values()):
             pass
-
 
         # 4) Substitute specifier subsets that match macros witin each set:
         #   (win7, win10, release) -> (win, release)

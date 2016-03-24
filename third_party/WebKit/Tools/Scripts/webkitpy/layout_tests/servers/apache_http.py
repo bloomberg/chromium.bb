@@ -39,6 +39,7 @@ _log = logging.getLogger(__name__)
 
 
 class ApacheHTTP(server_base.ServerBase):
+
     def __init__(self, port_obj, output_dir, additional_dirs, number_of_servers):
         super(ApacheHTTP, self).__init__(port_obj, output_dir)
         # We use the name "httpd" instead of "apache" to make our paths (e.g. the pid file: /tmp/WebKit/httpd.pid)
@@ -83,7 +84,7 @@ class ApacheHTTP(server_base.ServerBase):
             '-c', 'PidFile %s' % self._pid_file,
             '-c', 'SSLCertificateFile "%s"' % cert_file,
             '-c', 'Alias /inspector-sources "%s"' % inspector_sources_dir,
-            ]
+        ]
 
         if self._is_win:
             start_cmd += ['-c', "ThreadsPerChild %d" % (self._number_of_servers * 8)]
@@ -122,10 +123,10 @@ class ApacheHTTP(server_base.ServerBase):
             self._start_cmd = start_cmd
             for alias, path in additional_dirs.iteritems():
                 start_cmd += ['-c', 'Alias %s "%s"' % (alias, path),
-                        # Disable CGI handler for additional dirs.
-                        '-c', '<Location %s>' % alias,
-                        '-c', 'RemoveHandler .cgi .pl',
-                        '-c', '</Location>']
+                              # Disable CGI handler for additional dirs.
+                              '-c', '<Location %s>' % alias,
+                              '-c', 'RemoveHandler .cgi .pl',
+                              '-c', '</Location>']
 
         self._start_cmd = start_cmd
 

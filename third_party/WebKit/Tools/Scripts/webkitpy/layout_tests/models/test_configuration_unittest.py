@@ -51,6 +51,7 @@ MOCK_MACROS = {
 
 
 class TestConfigurationTest(unittest.TestCase):
+
     def test_items(self):
         config = TestConfiguration('win7', 'x86', 'release')
         result_config_dict = {}
@@ -85,7 +86,8 @@ class TestConfigurationTest(unittest.TestCase):
         self.assertRaises(KeyError, query_unknown_key)
         self.assertIn(TestConfiguration('win7', 'x86', 'release'), config_dict)
         self.assertNotIn(TestConfiguration('win7', 'x86', 'debug'), config_dict)
-        configs_list = [TestConfiguration('win7', 'x86', 'release'), TestConfiguration('win7', 'x86', 'debug'), TestConfiguration('win7', 'x86', 'debug')]
+        configs_list = [TestConfiguration('win7', 'x86', 'release'), TestConfiguration(
+            'win7', 'x86', 'debug'), TestConfiguration('win7', 'x86', 'debug')]
         self.assertEqual(len(configs_list), 3)
         self.assertEqual(len(set(configs_list)), 2)
 
@@ -102,6 +104,7 @@ class TestConfigurationTest(unittest.TestCase):
 
 
 class SpecifierSorterTest(unittest.TestCase):
+
     def __init__(self, testFunc):
         self._all_test_configurations = make_mock_all_test_configurations_set()
         unittest.TestCase.__init__(self, testFunc)
@@ -148,18 +151,21 @@ class SpecifierSorterTest(unittest.TestCase):
         self.assertEqual(sorter.sort_specifiers(set(['x86'])), ['x86'])
         self.assertEqual(sorter.sort_specifiers(set(['x86', 'win7'])), ['win7', 'x86'])
         self.assertEqual(sorter.sort_specifiers(set(['x86', 'debug', 'win7'])), ['win7', 'x86', 'debug'])
-        self.assertEqual(sorter.sort_specifiers(set(['snowleopard', 'x86', 'debug', 'win7'])), ['snowleopard', 'win7', 'x86', 'debug'])
+        self.assertEqual(sorter.sort_specifiers(set(['snowleopard', 'x86', 'debug', 'win7'])), [
+                         'snowleopard', 'win7', 'x86', 'debug'])
         self.assertEqual(sorter.sort_specifiers(set(['x86', 'mac', 'debug', 'win7'])), ['mac', 'win7', 'x86', 'debug'])
 
 
 class TestConfigurationConverterTest(unittest.TestCase):
+
     def __init__(self, testFunc):
         self._all_test_configurations = make_mock_all_test_configurations_set()
         unittest.TestCase.__init__(self, testFunc)
 
     def test_symmetric_difference(self):
         self.assertEqual(TestConfigurationConverter.symmetric_difference([set(['a', 'b']), set(['b', 'c'])]), set(['a', 'c']))
-        self.assertEqual(TestConfigurationConverter.symmetric_difference([set(['a', 'b']), set(['b', 'c']), set(['b', 'd'])]), set(['a', 'c', 'd']))
+        self.assertEqual(TestConfigurationConverter.symmetric_difference(
+            [set(['a', 'b']), set(['b', 'c']), set(['b', 'd'])]), set(['a', 'c', 'd']))
 
     def test_to_config_set(self):
         converter = TestConfigurationConverter(self._all_test_configurations)

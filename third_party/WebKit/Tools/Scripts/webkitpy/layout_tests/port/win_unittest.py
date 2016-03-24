@@ -144,7 +144,8 @@ class WinPortTest(port_testcase.PortTestCase):
 
     def test_driver_name_option(self):
         self.assertTrue(self.make_port()._path_to_driver().endswith('content_shell.exe'))
-        self.assertTrue(self.make_port(options=MockOptions(driver_name='OtherDriver'))._path_to_driver().endswith('OtherDriver.exe'))
+        self.assertTrue(self.make_port(options=MockOptions(driver_name='OtherDriver')
+                                       )._path_to_driver().endswith('OtherDriver.exe'))
 
     def test_path_to_image_diff(self):
         self.assertEqual(self.make_port()._path_to_image_diff(), '/mock-checkout/out/Release/image_diff.exe')

@@ -46,7 +46,6 @@ from webkitpy.layout_tests.generate_results_dashboard import DashBoardGenerator
 _log = logging.getLogger(__name__)
 
 
-
 def main(argv, stdout, stderr):
     options, args = parse_args(argv)
 

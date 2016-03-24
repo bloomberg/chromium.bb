@@ -55,7 +55,8 @@ class _BrowserTestTestCaseMixin(object):
                          3 * self.timeout_ms)
 
     def test_driver_type(self):
-        self.assertTrue(isinstance(self.make_port(options=MockOptions(driver_name='browser_tests')).create_driver(1), browser_test_driver.BrowserTestDriver))
+        self.assertTrue(isinstance(self.make_port(options=MockOptions(driver_name='browser_tests')
+                                                  ).create_driver(1), browser_test_driver.BrowserTestDriver))
 
     def test_layout_tests_dir(self):
         self.assertTrue(self.make_port().layout_tests_dir().endswith('chrome/test/data/printing/layout_tests'))

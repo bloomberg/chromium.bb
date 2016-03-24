@@ -71,12 +71,12 @@ class TestWebKitPort(Port):
 
 
 class FakePrinter(object):
+
     def write_update(self, msg):
         pass
 
     def write_throttled_update(self, msg):
         pass
-
 
 
 class PortTestCase(unittest.TestCase):
@@ -126,7 +126,7 @@ class PortTestCase(unittest.TestCase):
         try:
             oc.capture_output()
             self.assertEqual(port.check_build(needs_http=True, printer=FakePrinter()),
-                            test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
+                             test_run_results.UNEXPECTED_ERROR_EXIT_STATUS)
         finally:
             out, err, logs = oc.restore_output()
             self.assertIn('pretty patches', logs)        # And, here we should get warnings about both.
@@ -241,7 +241,8 @@ class PortTestCase(unittest.TestCase):
     def test_diff_image_crashed(self):
         port = self.make_port()
         port._executive = MockExecutive2(exit_code=2)
-        self.assertEqual(port.diff_image("EXPECTED", "ACTUAL"), (None, 'Image diff returned an exit code of 2. See http://crbug.com/278596'))
+        self.assertEqual(port.diff_image("EXPECTED", "ACTUAL"),
+                         (None, 'Image diff returned an exit code of 2. See http://crbug.com/278596'))
 
     def test_check_wdiff(self):
         port = self.make_port()
@@ -278,30 +279,30 @@ class PortTestCase(unittest.TestCase):
     def test_get_crash_log(self):
         port = self.make_port()
         self.assertEqual(port._get_crash_log(None, None, None, None, newer_than=None),
-           (None,
-            'crash log for <unknown process name> (pid <unknown>):\n'
-            'STDOUT: <empty>\n'
-            'STDERR: <empty>\n'))
+                         (None,
+                          'crash log for <unknown process name> (pid <unknown>):\n'
+                          'STDOUT: <empty>\n'
+                          'STDERR: <empty>\n'))
 
         self.assertEqual(port._get_crash_log('foo', 1234, 'out bar\nout baz', 'err bar\nerr baz\n', newer_than=None),
-            ('err bar\nerr baz\n',
-             'crash log for foo (pid 1234):\n'
-             'STDOUT: out bar\n'
-             'STDOUT: out baz\n'
-             'STDERR: err bar\n'
-             'STDERR: err baz\n'))
+                         ('err bar\nerr baz\n',
+                          'crash log for foo (pid 1234):\n'
+                          'STDOUT: out bar\n'
+                          'STDOUT: out baz\n'
+                          'STDERR: err bar\n'
+                          'STDERR: err baz\n'))
 
         self.assertEqual(port._get_crash_log('foo', 1234, 'foo\xa6bar', 'foo\xa6bar', newer_than=None),
-            ('foo\xa6bar',
-             u'crash log for foo (pid 1234):\n'
-             u'STDOUT: foo\ufffdbar\n'
-             u'STDERR: foo\ufffdbar\n'))
+                         ('foo\xa6bar',
+                          u'crash log for foo (pid 1234):\n'
+                          u'STDOUT: foo\ufffdbar\n'
+                          u'STDERR: foo\ufffdbar\n'))
 
         self.assertEqual(port._get_crash_log('foo', 1234, 'foo\xa6bar', 'foo\xa6bar', newer_than=1.0),
-            ('foo\xa6bar',
-             u'crash log for foo (pid 1234):\n'
-             u'STDOUT: foo\ufffdbar\n'
-             u'STDERR: foo\ufffdbar\n'))
+                         ('foo\xa6bar',
+                          u'crash log for foo (pid 1234):\n'
+                          u'STDOUT: foo\ufffdbar\n'
+                          u'STDERR: foo\ufffdbar\n'))
 
     def assert_build_path(self, options, dirs, expected_path):
         port = self.make_port(options=options)
@@ -373,7 +374,8 @@ class PortTestCase(unittest.TestCase):
             "webaudio/codec-tests/aac",
         ])
 
-        result_directories = set(TestWebKitPort(symbols_string=symbols_string)._skipped_tests_for_unsupported_features(test_list=['webaudio/codec-tests/mp3/foo.html']))
+        result_directories = set(TestWebKitPort(symbols_string=symbols_string)._skipped_tests_for_unsupported_features(
+            test_list=['webaudio/codec-tests/mp3/foo.html']))
         self.assertEqual(result_directories, expected_directories)
 
         # Test that the nm string parsing actually works:
@@ -386,7 +388,8 @@ class PortTestCase(unittest.TestCase):
         expected_directories = set([
             "webaudio/codec-tests/aac",
         ])
-        result_directories = set(TestWebKitPort(symbols_string=symbols_string)._skipped_tests_for_unsupported_features(test_list=['webaudio/codec-tests/mp3/foo.html']))
+        result_directories = set(TestWebKitPort(symbols_string=symbols_string)._skipped_tests_for_unsupported_features(
+            test_list=['webaudio/codec-tests/mp3/foo.html']))
         self.assertEqual(result_directories, expected_directories)
 
     def _assert_config_file_for_platform(self, port, platform, config_file):
@@ -409,7 +412,8 @@ class PortTestCase(unittest.TestCase):
         self._assert_config_file_for_linux_distribution(port, 'redhat', 'redhat-httpd-2.2.conf')
 
         self._assert_config_file_for_platform(port, 'mac', 'apache2-httpd-2.2.conf')
-        self._assert_config_file_for_platform(port, 'win32', 'apache2-httpd-2.2.conf')  # win32 isn't a supported sys.platform.  AppleWin/WinCairo/WinCE ports all use cygwin.
+        # win32 isn't a supported sys.platform.  AppleWin/WinCairo/WinCE ports all use cygwin.
+        self._assert_config_file_for_platform(port, 'win32', 'apache2-httpd-2.2.conf')
         self._assert_config_file_for_platform(port, 'barf', 'apache2-httpd-2.2.conf')
 
     def test_path_to_apache_config_file(self):

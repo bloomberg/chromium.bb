@@ -40,6 +40,7 @@ _log = logging.getLogger(__name__)
 
 
 class LayoutTestFinder(object):
+
     def __init__(self, port, options):
         self._port = port
         self._options = options

@@ -140,6 +140,7 @@ class BotTestExpectationsFactory(object):
             return None
         return BotTestExpectations(results_json)
 
+
 class BotTestExpectations(object):
     # FIXME: Get this from the json instead of hard-coding it.
     RESULT_TYPES_TO_IGNORE = ['N', 'X', 'Y']  # NO_DATA, SKIP, NOTRUN

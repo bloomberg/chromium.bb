@@ -37,6 +37,7 @@ from webkitpy.layout_tests.models import test_failures
 
 
 class TestResultWriterTests(unittest.TestCase):
+
     def run_test(self, failures=None, files=None):
         failures = failures or []
         host = MockSystemHost()

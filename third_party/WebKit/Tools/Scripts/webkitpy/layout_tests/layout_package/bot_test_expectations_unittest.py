@@ -34,6 +34,7 @@ from webkitpy.layout_tests.port import builders
 
 
 class BotTestExpectationsFactoryTest(unittest.TestCase):
+
     def fake_results_json_for_builder(self, builder):
         return bot_test_expectations.ResultsJSON(builder, 'Dummy content')
 
@@ -69,7 +70,7 @@ class BotTestExpectationsFactoryTest(unittest.TestCase):
 class BotTestExpectationsTest(unittest.TestCase):
     # FIXME: Find a way to import this map from Tools/TestResultServer/model/jsonresults.py.
     FAILURE_MAP = {"A": "AUDIO", "C": "CRASH", "F": "TEXT", "I": "IMAGE", "O": "MISSING",
-        "N": "NO DATA", "P": "PASS", "T": "TIMEOUT", "Y": "NOTRUN", "X": "SKIP", "Z": "IMAGE+TEXT", "K": "LEAK"}
+                   "N": "NO DATA", "P": "PASS", "T": "TIMEOUT", "Y": "NOTRUN", "X": "SKIP", "Z": "IMAGE+TEXT", "K": "LEAK"}
 
     # All result_string's in this file represent retries from a single run.
     # The left-most entry is the first try, the right-most is the last.

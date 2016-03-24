@@ -42,6 +42,7 @@ from webkitpy.common.system.crashlogs import CrashLogs
 # This sets basic expectations for a test. Each individual expectation
 # can be overridden by a keyword argument in TestList.add().
 class TestInstance(object):
+
     def __init__(self, name):
         self.name = name
         self.base = name[(name.rfind("/") + 1):name.rfind(".")]
@@ -75,6 +76,7 @@ class TestInstance(object):
 # This is an in-memory list of tests, what we want them to produce, and
 # what we want to claim are the expected results.
 class TestList(object):
+
     def __init__(self):
         self.tests = {}
 
@@ -108,6 +110,7 @@ TOTAL_SKIPS = 26
 TOTAL_CRASHES = 80
 UNEXPECTED_PASSES = 1
 UNEXPECTED_FAILURES = 26
+
 
 def unit_test_list():
     tests = TestList()
@@ -217,7 +220,8 @@ layer at (0,0) size 800x34
     tests.add_reftest('passes/phpreftest.php', 'passes/phpreftest-expected-mismatch.svg', same_image=False)
     tests.add_reftest('failures/expected/reftest.html', 'failures/expected/reftest-expected.html', same_image=False)
     tests.add_reftest('failures/expected/mismatch.html', 'failures/expected/mismatch-expected-mismatch.html', same_image=True)
-    tests.add_reftest('failures/unexpected/crash-reftest.html', 'failures/unexpected/crash-reftest-expected.html', same_image=True, crash=True)
+    tests.add_reftest('failures/unexpected/crash-reftest.html',
+                      'failures/unexpected/crash-reftest-expected.html', same_image=True, crash=True)
     tests.add_reftest('failures/unexpected/reftest.html', 'failures/unexpected/reftest-expected.html', same_image=False)
     tests.add_reftest('failures/unexpected/mismatch.html', 'failures/unexpected/mismatch-expected-mismatch.html', same_image=True)
     tests.add('failures/unexpected/reftest-nopixel.html', actual_checksum=None, actual_image=None, is_reftest=True)
@@ -253,11 +257,11 @@ layer at (0,0) size 800x34
 
     # For testing --pixel-test-directories.
     tests.add('failures/unexpected/pixeldir/image_in_pixeldir.html',
-        actual_image='image_in_pixeldir-pngtEXtchecksum\x00checksum_fail',
-        expected_image='image_in_pixeldir-pngtEXtchecksum\x00checksum-png')
+              actual_image='image_in_pixeldir-pngtEXtchecksum\x00checksum_fail',
+              expected_image='image_in_pixeldir-pngtEXtchecksum\x00checksum-png')
     tests.add('failures/unexpected/image_not_in_pixeldir.html',
-        actual_image='image_not_in_pixeldir-pngtEXtchecksum\x00checksum_fail',
-        expected_image='image_not_in_pixeldir-pngtEXtchecksum\x00checksum-png')
+              actual_image='image_not_in_pixeldir-pngtEXtchecksum\x00checksum_fail',
+              expected_image='image_not_in_pixeldir-pngtEXtchecksum\x00checksum-png')
 
     # For testing that virtual test suites don't expand names containing themselves
     # See webkit.org/b/97925 and base_unittest.PortTest.test_tests().
@@ -353,7 +357,8 @@ Bug(test) passes/text.html [ Pass ]
         add_file(test, '-expected.txt', test.expected_text)
         add_file(test, '-expected.png', test.expected_image)
 
-    filesystem.write_text_file(filesystem.join(LAYOUT_TEST_DIR, 'virtual', 'virtual_passes', 'passes', 'args-expected.txt'), 'args-txt --virtual-arg')
+    filesystem.write_text_file(filesystem.join(LAYOUT_TEST_DIR, 'virtual', 'virtual_passes',
+                                               'passes', 'args-expected.txt'), 'args-txt --virtual-arg')
     # Clear the list of written files so that we can watch what happens during testing.
     filesystem.clear_written_files()
 
@@ -376,13 +381,13 @@ class TestPort(Port):
     )
 
     FALLBACK_PATHS = {
-        'win7':        ['test-win-win7', 'test-win-win10'],
-        'win10':       ['test-win-win10'],
-        'mac10.10':    ['test-mac-mac10.10', 'test-mac-mac10.11'],
-        'mac10.11':    ['test-mac-mac10.11'],
-        'trusty':      ['test-linux-trusty', 'test-win-win7'],
-        'precise':     ['test-linux-precise', 'test-linux-trusty', 'test-win-win7'],
-        'linux32':     ['test-linux-x86', 'test-linux-precise', 'test-linux-trusty', 'test-win-win7'],
+        'win7': ['test-win-win7', 'test-win-win10'],
+        'win10': ['test-win-win10'],
+        'mac10.10': ['test-mac-mac10.10', 'test-mac-mac10.11'],
+        'mac10.11': ['test-mac-mac10.11'],
+        'trusty': ['test-linux-trusty', 'test-win-win7'],
+        'precise': ['test-linux-precise', 'test-linux-trusty', 'test-win-win7'],
+        'linux32': ['test-linux-x86', 'test-linux-precise', 'test-linux-trusty', 'test-win-win7'],
     }
 
     @classmethod
@@ -655,10 +660,10 @@ class TestDriver(Driver):
         else:
             image = test.actual_image
         return DriverOutput(actual_text, image, test.actual_checksum, audio,
-            crash=(crash or web_process_crash), crashed_process_name=crashed_process_name,
-            crashed_pid=crashed_pid, crash_log=crash_log,
-            test_time=time.time() - start_time, timeout=test.timeout, error=test.error, pid=self.pid,
-            leak=test.leak)
+                            crash=(crash or web_process_crash), crashed_process_name=crashed_process_name,
+                            crashed_pid=crashed_pid, crash_log=crash_log,
+                            test_time=time.time() - start_time, timeout=test.timeout, error=test.error, pid=self.pid,
+                            leak=test.leak)
 
     def stop(self):
         self.started = False

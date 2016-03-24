@@ -95,7 +95,7 @@ class Printer(object):
             self._print_default("Pixel tests disabled")
 
         self._print_default("Regular timeout: %s, slow test timeout: %s" %
-                  (self._options.time_out_ms, self._options.slow_time_out_ms))
+                            (self._options.time_out_ms, self._options.slow_time_out_ms))
 
         self._print_default('Command line: ' + ' '.join(self._port.driver_cmd_line()))
         self._print_default('')
@@ -165,7 +165,8 @@ class Printer(object):
             cuml_time += result.total_run_time
 
         for worker_name in stats:
-            self._print_debug("    %10s: %5d tests, %6.2f secs" % (worker_name, stats[worker_name]['num_tests'], stats[worker_name]['total_time']))
+            self._print_debug("    %10s: %5d tests, %6.2f secs" % (worker_name, stats[
+                              worker_name]['num_tests'], stats[worker_name]['total_time']))
         self._print_debug("   %6.2f cumulative, %6.2f optimal" % (cuml_time, cuml_time / num_workers))
         self._print_debug("")
 
@@ -176,7 +177,8 @@ class Printer(object):
     def _print_individual_test_times(self, run_results):
         # Reverse-sort by the time spent in the driver.
 
-        individual_test_timings = sorted(run_results.results_by_name.values(), key=lambda result: result.test_run_time, reverse=True)
+        individual_test_timings = sorted(run_results.results_by_name.values(),
+                                         key=lambda result: result.test_run_time, reverse=True)
         num_printed = 0
         slow_tests = []
         timeout_or_crash_tests = []
@@ -202,7 +204,7 @@ class Printer(object):
         self._print_debug("")
         if unexpected_slow_tests:
             self._print_test_list_timing("%s slowest tests that are not marked as SLOW and did not timeout/crash:" %
-                NUM_SLOW_TESTS_TO_LOG, unexpected_slow_tests)
+                                         NUM_SLOW_TESTS_TO_LOG, unexpected_slow_tests)
             self._print_debug("")
 
         if slow_tests:
@@ -302,7 +304,8 @@ class Printer(object):
 
         expected_summary_str = ''
         if run_results.expected_failures > 0:
-            expected_summary_str = " (%d passed, %d didn't)" % (expected - run_results.expected_failures, run_results.expected_failures)
+            expected_summary_str = " (%d passed, %d didn't)" % (
+                expected - run_results.expected_failures, run_results.expected_failures)
 
         summary = ''
         if unexpected == 0:
@@ -312,9 +315,11 @@ class Printer(object):
                 else:
                     summary = "The test ran as expected%s%s." % (expected_summary_str, timing_summary)
             else:
-                summary = "%s ran as expected%s%s%s." % (grammar.pluralize('test', expected), expected_summary_str, incomplete_str, timing_summary)
+                summary = "%s ran as expected%s%s%s." % (grammar.pluralize(
+                    'test', expected), expected_summary_str, incomplete_str, timing_summary)
         else:
-            summary = "%s ran as expected%s, %d didn't%s%s:" % (grammar.pluralize('test', expected), expected_summary_str, unexpected, incomplete_str, timing_summary)
+            summary = "%s ran as expected%s, %d didn't%s%s:" % (grammar.pluralize(
+                'test', expected), expected_summary_str, unexpected, incomplete_str, timing_summary)
 
         self._print_quiet(summary)
         self._print_quiet("")
@@ -397,7 +402,7 @@ class Printer(object):
                 self._print_default('  ref: %s' % self._port.relative_test_filename(filename))
         else:
             for extension in ('.txt', '.png', '.wav'):
-                    self._print_baseline(test_name, extension)
+                self._print_baseline(test_name, extension)
 
         self._print_default('  exp: %s' % exp_str)
         self._print_default('  got: %s' % got_str)

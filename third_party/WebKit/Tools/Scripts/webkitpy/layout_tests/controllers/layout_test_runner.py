@@ -50,6 +50,7 @@ WorkerException = message_pool.WorkerException
 
 class TestRunInterruptedException(Exception):
     """Raised when a test run should be stopped immediately."""
+
     def __init__(self, reason):
         Exception.__init__(self)
         self.reason = reason
@@ -60,6 +61,7 @@ class TestRunInterruptedException(Exception):
 
 
 class LayoutTestRunner(object):
+
     def __init__(self, options, port, printer, results_directory, test_is_slow_fn):
         self._options = options
         self._port = port
@@ -97,8 +99,8 @@ class LayoutTestRunner(object):
 
         self._printer.write_update('Sharding tests ...')
         locked_shards, unlocked_shards = self._sharder.shard_tests(test_inputs,
-            int(self._options.child_processes), self._options.fully_parallel,
-            self._options.run_singly or (self._options.batch_size == 1))
+                                                                   int(self._options.child_processes), self._options.fully_parallel,
+                                                                   self._options.run_singly or (self._options.batch_size == 1))
 
         # We don't have a good way to coordinate the workers so that they don't
         # try to run the shards that need a lock. The easiest solution is to
@@ -178,7 +180,8 @@ class LayoutTestRunner(object):
             "Exiting early after %d crashes and %d timeouts." % (run_results.unexpected_crashes, run_results.unexpected_timeouts))
 
     def _update_summary_with_result(self, run_results, result):
-        expected = self._expectations.matches_an_expected_result(result.test_name, result.type, self._options.pixel_tests or result.reftest_type, self._options.enable_sanitizer)
+        expected = self._expectations.matches_an_expected_result(
+            result.test_name, result.type, self._options.pixel_tests or result.reftest_type, self._options.enable_sanitizer)
         exp_str = self._expectations.get_expectations_string(result.test_name)
         got_str = self._expectations.expectation_to_string(result.type)
 
@@ -212,6 +215,7 @@ class LayoutTestRunner(object):
 
 
 class Worker(object):
+
     def __init__(self, caller, results_directory, options):
         self._caller = caller
         self._worker_number = caller.worker_number
@@ -351,6 +355,7 @@ class TestShard(object):
 
 
 class Sharder(object):
+
     def __init__(self, test_split_fn, max_locked_shards):
         self._split = test_split_fn
         self._max_locked_shards = max_locked_shards
@@ -422,7 +427,7 @@ class Sharder(object):
         # The locked shards still need to be limited to self._max_locked_shards in order to not
         # overload the http server for the http tests.
         return (self._resize_shards(locked_virtual_shards + locked_shards, self._max_locked_shards, 'locked_shard'),
-            unlocked_virtual_shards + unlocked_shards)
+                unlocked_virtual_shards + unlocked_shards)
 
     def _shard_by_directory(self, test_inputs):
         """Returns two lists of shards, each shard containing all the files in a directory.

@@ -35,6 +35,7 @@ from webkitpy.layout_tests import lint_test_expectations
 
 
 class FakePort(object):
+
     def __init__(self, host, name, path):
         self.host = host
         self.name = name
@@ -65,7 +66,9 @@ class FakePort(object):
     def path_to_generic_test_expectations_file(self):
         return ''
 
+
 class FakeFactory(object):
+
     def __init__(self, host, ports):
         self.host = host
         self.ports = {}
@@ -80,6 +83,7 @@ class FakeFactory(object):
 
 
 class LintTest(unittest.TestCase):
+
     def test_all_configurations(self):
         host = MockHost()
         host.ports_parsed = []
@@ -113,7 +117,6 @@ class LintTest(unittest.TestCase):
         finally:
             lint_test_expectations.tear_down_logging(logger, handler)
 
-
     def test_lint_test_files__errors(self):
         options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
         host = MockHost()
@@ -138,6 +141,7 @@ class LintTest(unittest.TestCase):
 
 
 class CheckVirtualSuiteTest(unittest.TestCase):
+
     def test_check_virtual_test_suites(self):
         host = MockHost()
         options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})

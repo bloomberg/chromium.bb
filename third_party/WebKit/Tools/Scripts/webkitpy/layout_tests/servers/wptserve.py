@@ -8,6 +8,7 @@ from webkitpy.layout_tests.servers import server_base
 
 
 class WPTServe(server_base.ServerBase):
+
     def __init__(self, port_obj, output_dir):
         super(WPTServe, self).__init__(port_obj, output_dir)
         # These ports must match wpt_support/wpt.config.json

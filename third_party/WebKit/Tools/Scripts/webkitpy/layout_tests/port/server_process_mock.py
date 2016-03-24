@@ -28,6 +28,7 @@
 
 
 class MockServerProcess(object):
+
     def __init__(self, port_obj=None, name=None, cmd=None, env=None, universal_newlines=False, treat_no_data_as_crash=False, logging=False, lines=None, crashed=False):
         self.timed_out = False
         self.lines = lines or ['#READY']

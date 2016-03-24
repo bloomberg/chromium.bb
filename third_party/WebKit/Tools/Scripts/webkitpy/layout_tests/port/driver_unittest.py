@@ -41,6 +41,7 @@ from webkitpy.tool.mocktool import MockOptions
 
 
 class DriverTest(unittest.TestCase):
+
     def make_port(self):
         port = Port(MockSystemHost(), 'test', MockOptions(configuration='Release'))
         port._config.build_directory = lambda configuration: '/mock-checkout/out/' + configuration
@@ -142,6 +143,7 @@ class DriverTest(unittest.TestCase):
         driver = Driver(port, 0, pixel_tests=True)
 
         class FakeServerProcess(object):
+
             def __init__(self, crashed):
                 self.crashed = crashed
 

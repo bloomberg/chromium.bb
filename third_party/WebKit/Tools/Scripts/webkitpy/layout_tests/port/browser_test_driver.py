@@ -33,6 +33,7 @@ import shutil
 
 class BrowserTestDriver(driver.Driver):
     """Object for running print preview test(s) using browser_tests."""
+
     def __init__(self, port, worker_number, pixel_tests, no_timeout=False):
         """Invokes the constructor of driver.Driver."""
         super(BrowserTestDriver, self).__init__(port, worker_number, pixel_tests, no_timeout)

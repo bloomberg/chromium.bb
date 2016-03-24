@@ -48,6 +48,7 @@ from webkitpy.layout_tests.port.test import add_unit_tests_to_mock_filesystem, T
 
 
 class PortTest(unittest.TestCase):
+
     def make_port(self, executive=None, with_tests=False, port_name=None, **kwargs):
         host = MockSystemHost()
         if executive:
@@ -218,9 +219,11 @@ class PortTest(unittest.TestCase):
 
     def test_nonexistant_expectations(self):
         port = self.make_port(port_name='foo')
-        port.expectations_files = lambda: ['/mock-checkout/third_party/WebKit/LayoutTests/platform/exists/TestExpectations', '/mock-checkout/third_party/WebKit/LayoutTests/platform/nonexistant/TestExpectations']
+        port.expectations_files = lambda: ['/mock-checkout/third_party/WebKit/LayoutTests/platform/exists/TestExpectations',
+                                           '/mock-checkout/third_party/WebKit/LayoutTests/platform/nonexistant/TestExpectations']
         port._filesystem.write_text_file('/mock-checkout/third_party/WebKit/LayoutTests/platform/exists/TestExpectations', '')
-        self.assertEqual('\n'.join(port.expectations_dict().keys()), '/mock-checkout/third_party/WebKit/LayoutTests/platform/exists/TestExpectations')
+        self.assertEqual('\n'.join(port.expectations_dict().keys()),
+                         '/mock-checkout/third_party/WebKit/LayoutTests/platform/exists/TestExpectations')
 
     def test_additional_expectations(self):
         port = self.make_port(port_name='foo')
@@ -305,26 +308,29 @@ class PortTest(unittest.TestCase):
     def test_parse_reftest_list(self):
         port = self.make_port(with_tests=True)
         port.host.filesystem.files['bar/reftest.list'] = "\n".join(["== test.html test-ref.html",
-        "",
-        "# some comment",
-        "!= test-2.html test-notref.html # more comments",
-        "== test-3.html test-ref.html",
-        "== test-3.html test-ref2.html",
-        "!= test-3.html test-notref.html",
-        "fuzzy(80,500) == test-3 test-ref.html"])
+                                                                    "",
+                                                                    "# some comment",
+                                                                    "!= test-2.html test-notref.html # more comments",
+                                                                    "== test-3.html test-ref.html",
+                                                                    "== test-3.html test-ref2.html",
+                                                                    "!= test-3.html test-notref.html",
+                                                                    "fuzzy(80,500) == test-3 test-ref.html"])
 
         # Note that we don't support the syntax in the last line; the code should ignore it, rather than crashing.
 
         reftest_list = Port._parse_reftest_list(port.host.filesystem, 'bar')
         self.assertEqual(reftest_list, {'bar/test.html': [('==', 'bar/test-ref.html')],
-            'bar/test-2.html': [('!=', 'bar/test-notref.html')],
-            'bar/test-3.html': [('==', 'bar/test-ref.html'), ('==', 'bar/test-ref2.html'), ('!=', 'bar/test-notref.html')]})
+                                        'bar/test-2.html': [('!=', 'bar/test-notref.html')],
+                                        'bar/test-3.html': [('==', 'bar/test-ref.html'), ('==', 'bar/test-ref2.html'), ('!=', 'bar/test-notref.html')]})
 
     def test_reference_files(self):
         port = self.make_port(with_tests=True)
-        self.assertEqual(port.reference_files('passes/svgreftest.svg'), [('==', port.layout_tests_dir() + '/passes/svgreftest-expected.svg')])
-        self.assertEqual(port.reference_files('passes/xhtreftest.svg'), [('==', port.layout_tests_dir() + '/passes/xhtreftest-expected.html')])
-        self.assertEqual(port.reference_files('passes/phpreftest.php'), [('!=', port.layout_tests_dir() + '/passes/phpreftest-expected-mismatch.svg')])
+        self.assertEqual(port.reference_files('passes/svgreftest.svg'),
+                         [('==', port.layout_tests_dir() + '/passes/svgreftest-expected.svg')])
+        self.assertEqual(port.reference_files('passes/xhtreftest.svg'),
+                         [('==', port.layout_tests_dir() + '/passes/xhtreftest-expected.html')])
+        self.assertEqual(port.reference_files('passes/phpreftest.php'),
+                         [('!=', port.layout_tests_dir() + '/passes/phpreftest-expected-mismatch.svg')])
 
     def test_operating_system(self):
         self.assertEqual('mac', self.make_port().operating_system())
@@ -441,6 +447,7 @@ class PortTest(unittest.TestCase):
 
 
 class NaturalCompareTest(unittest.TestCase):
+
     def setUp(self):
         self._port = TestPort(MockSystemHost())
 
@@ -466,6 +473,7 @@ class NaturalCompareTest(unittest.TestCase):
 
 
 class KeyCompareTest(unittest.TestCase):
+
     def setUp(self):
         self._port = TestPort(MockSystemHost())
 
@@ -484,6 +492,7 @@ class KeyCompareTest(unittest.TestCase):
 
 
 class VirtualTestSuiteTest(unittest.TestCase):
+
     def test_basic(self):
         suite = VirtualTestSuite(prefix='suite', base='base/foo', args=['--args'])
         self.assertEqual(suite.name, 'virtual/suite/base/foo')

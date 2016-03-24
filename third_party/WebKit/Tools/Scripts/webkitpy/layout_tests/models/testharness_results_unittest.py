@@ -63,4 +63,5 @@ class TestHarnessResultCheckerTest(unittest.TestCase):
         ]
 
         for data in test_data:
-            self.assertEqual(data['result'], testharness_results.is_testharness_output_with_console_errors_or_warnings(data['content']))
+            self.assertEqual(
+                data['result'], testharness_results.is_testharness_output_with_console_errors_or_warnings(data['content']))

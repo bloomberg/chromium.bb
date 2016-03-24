@@ -105,7 +105,8 @@ class DashBoardGenerator(object):
 
     def _copy_dashboard_html(self):
         dashboard_file = self._filesystem.join(self._results_directory, 'dashboard.html')
-        dashboard_html_file_path = self._filesystem.join(self._port.layout_tests_dir(), 'fast/harness/archived-results-dashboard.html')
+        dashboard_html_file_path = self._filesystem.join(
+            self._port.layout_tests_dir(), 'fast/harness/archived-results-dashboard.html')
         if not self._filesystem.exists(dashboard_file):
             if self._filesystem.exists(dashboard_html_file_path):
                 self._filesystem.copyfile(dashboard_html_file_path, dashboard_file)
@@ -144,7 +145,8 @@ class DashBoardGenerator(object):
 
         # There must be at least one archived result to be processed
         if self._current_result_json_dict:
-            process_json_data = ProcessJsonData(self._current_result_json_dict, self._old_failing_results_list, self._old_full_results_list)
+            process_json_data = ProcessJsonData(self._current_result_json_dict,
+                                                self._old_failing_results_list, self._old_full_results_list)
             self._final_result = process_json_data.generate_archived_result()
             final_json = json.dumps(self._final_result)
             final_json = 'ADD_RESULTS(' + final_json + ');'

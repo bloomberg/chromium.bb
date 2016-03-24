@@ -130,7 +130,7 @@ class ServerBase(object):
                 return
             if self._pid != actual_pid:
                 _log.warning('Failed to stop %s: pid file contains %d, not %d' %
-                            (self._name, actual_pid, self._pid))
+                             (self._name, actual_pid, self._pid))
                 # Try to kill the existing pid, anyway, in case it got orphaned.
                 self._executive.kill_process(self._pid)
                 self._pid = None

@@ -32,6 +32,7 @@ from webkitpy.layout_tests.models.test_failures import *
 
 
 class TestFailuresTest(unittest.TestCase):
+
     def assert_loads(self, cls):
         failure_obj = cls()
         s = failure_obj.dumps()
@@ -45,6 +46,7 @@ class TestFailuresTest(unittest.TestCase):
 
     def test_unknown_failure_type(self):
         class UnknownFailure(TestFailure):
+
             def message(self):
                 return ''
 

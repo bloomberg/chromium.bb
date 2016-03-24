@@ -164,8 +164,8 @@ def parse_options(argv):
         return None
 
     options = optparse.Values({
-        'actual_directory':        get_arg('--actual-directory'),
-        'platform':                get_arg('--platform'),
+        'actual_directory': get_arg('--actual-directory'),
+        'platform': get_arg('--platform'),
         'virtual_test_suite_base': get_arg('--virtual-test-suite-base'),
         'virtual_test_suite_name': get_arg('--virtual-test-suite-name'),
     })
@@ -173,6 +173,7 @@ def parse_options(argv):
 
 
 class MockDRT(object):
+
     def __init__(self, options, args, host, stdin, stdout, stderr):
         self._options = options
         self._args = args
@@ -224,7 +225,8 @@ class MockDRT(object):
     def output_for_test(self, test_input, is_reftest):
         port = self._port
         if self._options.virtual_test_suite_name:
-            test_input.test_name = test_input.test_name.replace(self._options.virtual_test_suite_base, self._options.virtual_test_suite_name)
+            test_input.test_name = test_input.test_name.replace(
+                self._options.virtual_test_suite_base, self._options.virtual_test_suite_name)
         actual_text = port.expected_text(test_input.test_name)
         actual_audio = port.expected_audio(test_input.test_name)
         actual_image = None

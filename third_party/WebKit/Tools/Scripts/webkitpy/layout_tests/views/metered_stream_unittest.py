@@ -107,6 +107,7 @@ class RegularTest(unittest.TestCase):
         self.logger.info('foo %s %d', 'bar', 2)
         self.assertEqual(self.buflist, ['foo bar 2\n'])
 
+
 class TtyTest(RegularTest):
     verbose = False
     isatty = True
@@ -114,14 +115,14 @@ class TtyTest(RegularTest):
     def test_basic(self):
         buflist = self._basic([0, 1, 1.05, 1.1, 2])
         self.assertEqual(buflist, ['foo',
-                                     MeteredStream._erasure('foo'), 'bar',
-                                     MeteredStream._erasure('bar'), 'baz 2',
-                                     MeteredStream._erasure('baz 2'), 'done\n'])
+                                   MeteredStream._erasure('foo'), 'bar',
+                                   MeteredStream._erasure('bar'), 'baz 2',
+                                   MeteredStream._erasure('baz 2'), 'done\n'])
 
     def test_log_after_update(self):
         buflist = self._log_after_update()
         self.assertEqual(buflist, ['foo',
-                                     MeteredStream._erasure('foo'), 'bar\n'])
+                                   MeteredStream._erasure('foo'), 'bar\n'])
 
     def test_bytestream(self):
         self.meter.write('German umlauts: \xe4\xf6\xfc')

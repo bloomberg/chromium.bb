@@ -68,13 +68,16 @@ ERROR_CODES = (
 # the value returned by num_regressions
 MAX_FAILURES_EXIT_STATUS = 101
 
+
 class TestRunException(Exception):
+
     def __init__(self, code, msg):
         self.code = code
         self.msg = msg
 
 
 class TestRunResults(object):
+
     def __init__(self, expectations, num_tests):
         self.total = num_tests
         self.remaining = self.total
@@ -135,6 +138,7 @@ class TestRunResults(object):
 
 
 class RunDetails(object):
+
     def __init__(self, exit_code, summarized_full_results=None,
                  summarized_failing_results=None, initial_results=None,
                  all_retry_results=None, enabled_pixel_tests_in_retry=False):
@@ -277,8 +281,8 @@ def summarize_results(port_obj, expectations, initial_results,
 
         def is_expected(actual_result):
             return expectations.matches_an_expected_result(test_name, actual_result,
-                port_obj.get_option('pixel_tests') or result.reftest_type,
-                port_obj.get_option('enable_sanitizer'))
+                                                           port_obj.get_option('pixel_tests') or result.reftest_type,
+                                                           port_obj.get_option('enable_sanitizer'))
 
         # To avoid bloating the output results json too much, only add an entry for whether the failure is unexpected.
         if not any(is_expected(actual_result) for actual_result in actual_types):
@@ -321,7 +325,9 @@ def summarize_results(port_obj, expectations, initial_results,
     results['num_flaky'] = num_flaky
     # FIXME: Remove this. It is redundant with results['num_failures_by_type'].
     results['num_regressions'] = num_regressions
-    results['interrupted'] = initial_results.interrupted  # Does results.html have enough information to compute this itself? (by checking total number of results vs. total number of tests?)
+    # Does results.html have enough information to compute this itself? (by
+    # checking total number of results vs. total number of tests?)
+    results['interrupted'] = initial_results.interrupted
     results['layout_tests_dir'] = port_obj.layout_tests_dir()
     results['has_wdiff'] = port_obj.wdiff_available()
     results['has_pretty_patch'] = port_obj.pretty_patch_available()

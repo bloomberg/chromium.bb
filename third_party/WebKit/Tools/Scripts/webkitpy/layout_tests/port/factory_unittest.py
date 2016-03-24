@@ -78,7 +78,7 @@ class FactoryTest(unittest.TestCase):
 
     def test_get_from_builder_name(self):
         self.assertEqual(factory.PortFactory(MockSystemHost()).get_from_builder_name('WebKit Mac10.11').name(),
-                          'mac-mac10.11')
+                         'mac-mac10.11')
 
     def get_port(self, target=None, configuration=None, files=None):
         host = MockSystemHost()

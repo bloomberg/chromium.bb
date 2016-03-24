@@ -99,7 +99,8 @@ class MeteredStream(object):
             self._erase_last_partial_line()
         if self._verbose:
             now_tuple = time.localtime(now)
-            msg = '%02d:%02d:%02d.%03d %d %s' % (now_tuple.tm_hour, now_tuple.tm_min, now_tuple.tm_sec, int((now * 1000) % 1000), pid, self._ensure_newline(txt))
+            msg = '%02d:%02d:%02d.%03d %d %s' % (now_tuple.tm_hour, now_tuple.tm_min, now_tuple.tm_sec,
+                                                 int((now * 1000) % 1000), pid, self._ensure_newline(txt))
         elif self._isatty:
             msg = txt
         else:
@@ -129,6 +130,7 @@ class MeteredStream(object):
 
 
 class _LogHandler(logging.Handler):
+
     def __init__(self, meter):
         logging.Handler.__init__(self)
         self._meter = meter

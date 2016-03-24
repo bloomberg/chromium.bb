@@ -32,6 +32,7 @@ import builders
 
 
 class BuildersTest(unittest.TestCase):
+
     def test_path_from_name(self):
         tests = {
             'test': 'test',

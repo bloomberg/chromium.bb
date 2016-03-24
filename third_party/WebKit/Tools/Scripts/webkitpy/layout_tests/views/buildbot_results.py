@@ -68,14 +68,14 @@ class BuildBotPrinter(object):
         self._print("")
         # FIXME: We should be skipping anything marked WONTFIX, so we shouldn't bother logging these stats.
         self._print_run_results_entry(run_results, test_expectations.WONTFIX,
-            "Tests that will only be fixed if they crash (WONTFIX)")
+                                      "Tests that will only be fixed if they crash (WONTFIX)")
         self._print("")
 
     def _print_run_results_entry(self, run_results, timeline, heading):
         total = len(run_results.tests_by_timeline[timeline])
         not_passing = (total -
-            len(run_results.tests_by_expectation[test_expectations.PASS] &
-                run_results.tests_by_timeline[timeline]))
+                       len(run_results.tests_by_expectation[test_expectations.PASS] &
+                           run_results.tests_by_timeline[timeline]))
         self._print("=> %s (%d):" % (heading, not_passing))
 
         for result in TestExpectations.EXPECTATION_DESCRIPTIONS.keys():
@@ -143,7 +143,8 @@ class BuildBotPrinter(object):
                     actual = result['actual'].split(" ")
                     expected = result['expected'].split(" ")
                     # FIXME: clean this up once the old syntax is gone
-                    new_expectations_list = [TestExpectationParser._inverted_expectation_tokens[exp] for exp in list(set(actual) | set(expected))]
+                    new_expectations_list = [TestExpectationParser._inverted_expectation_tokens[exp]
+                                             for exp in list(set(actual) | set(expected))]
                     self._print("  %s [ %s ]" % (test, " ".join(new_expectations_list)))
                 self._print("")
             self._print("")

@@ -35,26 +35,36 @@ from webkitpy.layout_tests.generate_results_dashboard import ProcessJsonData
 class ProcessJsonDataTester(unittest.TestCase):
 
     def test_check_failing_results(self):
-        valid_json_data = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name': {u'test.html': {u'expected': u'PASS', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
-        valid_json_data_1 = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name': {u'test.html': {u'expected': u'TEXT', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
-        valid_json_data_2 = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name_2': {u'test_2.html': {u'expected': u'PASS', u'actual': u'TEXT', u'is_unexpected': True}}, u'test_name': {u'test.html': {u'expected': u'TEXT', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
-        expected_result = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name': {u'test.html': {u'archived_results': [u'TEXT', u'PASS']}}}}}}
+        valid_json_data = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name': {
+            u'test.html': {u'expected': u'PASS', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
+        valid_json_data_1 = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name': {
+            u'test.html': {u'expected': u'TEXT', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
+        valid_json_data_2 = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name_2': {u'test_2.html': {
+            u'expected': u'PASS', u'actual': u'TEXT', u'is_unexpected': True}}, u'test_name': {u'test.html': {u'expected': u'TEXT', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
+        expected_result = {u'tests': {u'test_category': {u'test_sub_category': {
+            u'test_name': {u'test.html': {u'archived_results': [u'TEXT', u'PASS']}}}}}}
         process_json_data = ProcessJsonData(valid_json_data, [valid_json_data_1], [valid_json_data_2])
         actual_result = process_json_data.generate_archived_result()
         self.assertEqual(expected_result, actual_result)
 
     def test_check_full_results(self):
-        valid_json_data = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name_2': {u'test_2.html': {u'expected': u'PASS', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
-        valid_json_data_1 = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name': {u'test.html': {u'expected': u'TEXT', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
-        valid_json_data_2 = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name_2': {u'test_2.html': {u'expected': u'PASS', u'actual': u'TEXT', u'is_unexpected': True}}, u'test_name': {u'test.html': {u'expected': u'TEXT', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
-        expected_result = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name_2': {u'test_2.html': {u'archived_results': [u'TEXT', u'TEXT']}}}}}}
+        valid_json_data = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name_2': {
+            u'test_2.html': {u'expected': u'PASS', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
+        valid_json_data_1 = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name': {
+            u'test.html': {u'expected': u'TEXT', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
+        valid_json_data_2 = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name_2': {u'test_2.html': {
+            u'expected': u'PASS', u'actual': u'TEXT', u'is_unexpected': True}}, u'test_name': {u'test.html': {u'expected': u'TEXT', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
+        expected_result = {u'tests': {u'test_category': {u'test_sub_category': {
+            u'test_name_2': {u'test_2.html': {u'archived_results': [u'TEXT', u'TEXT']}}}}}}
         process_json_data = ProcessJsonData(valid_json_data, [valid_json_data_1], [valid_json_data_2])
         actual_result = process_json_data.generate_archived_result()
         self.assertEqual(expected_result, actual_result)
 
     def test_null_check(self):
-        valid_json_data = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name': {u'test.html': {u'expected': u'PASS', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
-        expected_result = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name': {u'test.html': {u'archived_results': [u'TEXT']}}}}}}
+        valid_json_data = {u'tests': {u'test_category': {u'test_sub_category': {u'test_name': {
+            u'test.html': {u'expected': u'PASS', u'actual': u'TEXT', u'is_unexpected': True}}}}}}
+        expected_result = {u'tests': {u'test_category': {u'test_sub_category': {
+            u'test_name': {u'test.html': {u'archived_results': [u'TEXT']}}}}}}
         process_json_data = ProcessJsonData(valid_json_data, [], [])
         actual_result = process_json_data.generate_archived_result()
         self.assertEqual(expected_result, actual_result)

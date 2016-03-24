@@ -39,6 +39,7 @@ from webkitpy.layout_tests.servers.server_base import ServerError
 
 
 class TestApacheHTTP(unittest.TestCase):
+
     def test_start_cmd(self):
         # Fails on win - see https://bugs.webkit.org/show_bug.cgi?id=84726
         if sys.platform in ('cygwin', 'win32'):

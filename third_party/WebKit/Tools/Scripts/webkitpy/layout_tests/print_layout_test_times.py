@@ -38,7 +38,7 @@ def main(host, argv):
     parser.add_option('-f', '--forward', action='store', type='int',
                       help='group times by first N directories of test')
     parser.add_option('-b', '--backward', action='store', type='int',
-                     help='group times by last N directories of test')
+                      help='group times by last N directories of test')
     parser.add_option('--fastest', action='store', type='float',
                       help='print a list of tests that will take N % of the time')
 
@@ -107,7 +107,7 @@ def print_fastest(host, port, options, times):
         while tests_by_time and total_so_far <= budget:
             test = tests_by_time.pop(0)
             test_time = times[test]
-             # Make sure test time > 0 so we don't include tests that are skipped.
+            # Make sure test time > 0 so we don't include tests that are skipped.
             if test_time and total_so_far + test_time <= budget:
                 fast_tests_by_key[key].append(test)
                 total_so_far += test_time
