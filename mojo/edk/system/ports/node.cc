@@ -553,7 +553,7 @@ int Node::OnUserMessage(ScopedMessage message) {
 int Node::OnPortAccepted(const PortName& port_name) {
   scoped_refptr<Port> port = GetPort(port_name);
   if (!port)
-    return OOPS(ERROR_PORT_UNKNOWN);
+    return ERROR_PORT_UNKNOWN;
 
   {
     // We must hold |ports_lock_| before grabbing the port lock because
