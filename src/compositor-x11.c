@@ -1576,6 +1576,7 @@ x11_backend_create(struct weston_compositor *compositor,
 {
 	struct x11_backend *b;
 	struct x11_output *output;
+	struct wl_event_loop *loop;
 	struct weston_config_section *section;
 	int i, x = 0, output_count = 0;
 	int width, height, scale, count;
@@ -1705,8 +1706,9 @@ x11_backend_create(struct weston_compositor *compositor,
 		x = pixman_region32_extents(&output->base.region)->x2;
 	}
 
+	loop = wl_display_get_event_loop(compositor->wl_display);
 	b->xcb_source =
-		wl_event_loop_add_fd(compositor->input_loop,
+		wl_event_loop_add_fd(loop,
 				     xcb_get_file_descriptor(b->conn),
 				     WL_EVENT_READABLE,
 				     x11_backend_handle_event, b);
