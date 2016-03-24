@@ -703,16 +703,9 @@ void ServiceWorkerContextCore::CheckHasServiceWorker(
 void ServiceWorkerContextCore::UpdateVersionFailureCount(
     int64_t version_id,
     ServiceWorkerStatusCode status) {
-  if (failure_counts_expiration_time_.is_null()) {
-    failure_counts_expiration_time_ =
-        base::Time::Now() + base::TimeDelta::FromHours(24);
-  }
-
   // Don't count these, they aren't start worker failures.
-  if (status == SERVICE_WORKER_ERROR_DISALLOWED ||
-      status == SERVICE_WORKER_ERROR_DISABLED_WORKER) {
+  if (status == SERVICE_WORKER_ERROR_DISALLOWED)
     return;
-  }
 
   auto it = failure_counts_.find(version_id);
   if (status == SERVICE_WORKER_OK) {
@@ -731,15 +724,6 @@ void ServiceWorkerContextCore::UpdateVersionFailureCount(
 }
 
 int ServiceWorkerContextCore::GetVersionFailureCount(int64_t version_id) {
-  // Periodically clear failure counts to give disabled versions a chance to
-  // start.
-  if (base::Time::Now() > failure_counts_expiration_time_) {
-    failure_counts_.clear();
-    failure_counts_expiration_time_ =
-        base::Time::Now() + base::TimeDelta::FromHours(24);
-    return 0;
-  }
-
   auto it = failure_counts_.find(version_id);
   if (it == failure_counts_.end())
     return 0;

@@ -288,9 +288,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerFailToStartTest,
-                           FailingWorkerIsDisabled);
-
   typedef std::map<int64_t, ServiceWorkerRegistration*> RegistrationsMap;
   typedef std::map<int64_t, ServiceWorkerVersion*> VersionMap;
 
@@ -342,7 +339,6 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   std::map<int64_t, ServiceWorkerVersion*> live_versions_;
   std::map<int64_t, scoped_refptr<ServiceWorkerVersion>> protected_versions_;
   std::map<int64_t /* version_id */, int /* count */> failure_counts_;
-  base::Time failure_counts_expiration_time_;
 
   // PlzNavigate
   // Map of ServiceWorkerNavigationHandleCores used for navigation requests.
