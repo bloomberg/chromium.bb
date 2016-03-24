@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "mojo/shell/public/cpp/capabilities.h"
 
@@ -21,10 +22,15 @@ namespace catalog {
 class Entry {
  public:
   Entry();
+  explicit Entry(const std::string& name);
   explicit Entry(const Entry& other);
   ~Entry();
 
   scoped_ptr<base::DictionaryValue> Serialize() const;
+
+  // If the constructed Entry is a package that provides other Entrys, the
+  // caller must assume ownership of the tree of Entrys by enumerating
+  // applications().
   static scoped_ptr<Entry> Deserialize(const base::DictionaryValue& value);
 
   bool operator==(const Entry& other) const;
@@ -32,6 +38,8 @@ class Entry {
 
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }
+  const base::FilePath& path() const { return path_; }
+  void set_path(const base::FilePath& path) { path_ = path; }
   const std::string& qualifier() const { return qualifier_; }
   void set_qualifier(const std::string& qualifier) { qualifier_ = qualifier; }
   const std::string& display_name() const { return display_name_; }
@@ -42,16 +50,27 @@ class Entry {
   void set_capabilities(const mojo::CapabilitySpec& capabilities) {
     capabilities_ = capabilities;
   }
-  const std::set<Entry>& applications() { return applications_; }
+  const Entry* package() const { return package_; }
+  void set_package(Entry* package) { package_ = package; }
+  const std::set<Entry*>& applications() { return applications_; }
 
  private:
   std::string name_;
+  base::FilePath path_;
   std::string qualifier_;
   std::string display_name_;
   mojo::CapabilitySpec capabilities_;
-  std::set<Entry> applications_;
+  Entry* package_ = nullptr;
+  std::set<Entry*> applications_;
 };
 
 }  // namespace catalog
+
+namespace mojo {
+template <>
+struct TypeConverter<shell::mojom::ResolveResultPtr, catalog::Entry> {
+  static shell::mojom::ResolveResultPtr Convert(const catalog::Entry& input);
+};
+}
 
 #endif  // MOJO_SERVICES_CATALOG_ENTRY_H_

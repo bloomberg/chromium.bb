@@ -7,6 +7,8 @@
 #include "base/values.h"
 #include "mojo/services/catalog/store.h"
 #include "mojo/shell/public/cpp/names.h"
+#include "mojo/util/filename_util.h"
+#include "url/gurl.h"
 
 namespace catalog {
 namespace {
@@ -101,6 +103,10 @@ mojo::CapabilitySpec BuildCapabilitiesV1(
 }  // namespace
 
 Entry::Entry() {}
+Entry::Entry(const std::string& name)
+    : name_(name),
+      qualifier_(mojo::GetNamePath(name)),
+      display_name_(name) {}
 Entry::Entry(const Entry& other) = default;
 Entry::~Entry() {}
 
@@ -187,8 +193,11 @@ scoped_ptr<Entry> Entry::Deserialize(const base::DictionaryValue& value) {
       const base::DictionaryValue* application = nullptr;
       applications->GetDictionary(i, &application);
       scoped_ptr<Entry> child = Entry::Deserialize(*application);
-      if (child)
-        entry->applications_.insert(*child);
+      if (child) {
+        child->set_package(entry.get());
+        // Caller must assume ownership of these items.
+        entry->applications_.insert(child.release());
+      }
     }
   }
 
@@ -208,3 +217,22 @@ bool Entry::operator<(const Entry& other) const {
 }
 
 }  // catalog
+
+namespace mojo {
+
+// static
+shell::mojom::ResolveResultPtr
+    TypeConverter<shell::mojom::ResolveResultPtr, catalog::Entry>::Convert(
+        const catalog::Entry& input) {
+  shell::mojom::ResolveResultPtr result(shell::mojom::ResolveResult::New());
+  result->name = input.name();
+  const catalog::Entry& package = input.package() ? *input.package() : input;
+  result->resolved_name = package.name();
+  result->qualifier = input.qualifier();
+  result->capabilities =
+      shell::mojom::CapabilitySpec::From(input.capabilities());
+  result->package_url = mojo::util::FilePathToFileURL(package.path()).spec();
+  return result;
+}
+
+}  // namespace mojo

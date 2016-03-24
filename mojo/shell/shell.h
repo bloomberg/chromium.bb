@@ -142,18 +142,11 @@ class Shell : public ShellClient {
   // |params| are the params passed to Connect().
   // |client| if provided is a ShellClientPtr which should be used to manage the
   // new application instance. This may be null.
-  // |resolved_name| is the mojo: name identifying the physical package
-  // application.
-  // |file_url| is the resolved file:// URL of the physical package.
-  // |capabilities| is the CapabilitySpecPtr the requested application should be
-  // run with, from its manifest.
+  // |result| contains the result of the resolve operation.
   void OnGotResolvedName(mojom::ShellResolverPtr resolver,
                          scoped_ptr<ConnectParams> params,
                          mojom::ShellClientPtr client,
-                         const String& resolved_name,
-                         const String& resolved_instance,
-                         mojom::CapabilitySpecPtr capabilities,
-                         const String& file_url);
+                         mojom::ResolveResultPtr result);
 
   // Tries to load |target| with an Loader. Returns true if one was registered
   // and it was loaded, in which case |request| is taken.

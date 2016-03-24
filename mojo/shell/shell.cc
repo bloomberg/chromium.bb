@@ -41,10 +41,7 @@ const char kCapabilityClass_ClientProcess[] = "client_process";
 const char kCapabilityClass_InstanceName[] = "instance_name";
 const char kCapabilityClass_AllUsers[] = "all_users";
 
-void EmptyResolverCallback(const String& resolved_name,
-                           const String& resolved_instance,
-                           mojom::CapabilitySpecPtr capabilities,
-                           const String& file_url) {}
+void EmptyResolverCallback(mojom::ResolveResultPtr result) {}
 
 }
 
@@ -683,14 +680,11 @@ void Shell::OnShellClientFactoryLost(const Identity& which) {
 void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
                               scoped_ptr<ConnectParams> params,
                               mojom::ShellClientPtr client,
-                              const String& resolved_name,
-                              const String& resolved_instance,
-                              mojom::CapabilitySpecPtr capabilities_ptr,
-                              const String& file_url) {
+                              mojom::ResolveResultPtr result) {
   std::string instance_name = params->target().instance();
   if (instance_name == GetNamePath(params->target().name()) &&
-      resolved_instance != GetNamePath(resolved_name)) {
-    instance_name = resolved_instance;
+      result->qualifier != GetNamePath(result->resolved_name)) {
+    instance_name = result->qualifier;
   }
   Identity target(params->target().name(), params->target().user_id(),
                   instance_name);
@@ -706,8 +700,8 @@ void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
   // |capabilities_ptr| can be null when there is no manifest, e.g. for URL
   // types not resolvable by the resolver.
   CapabilitySpec capabilities = GetPermissiveCapabilities();
-  if (!capabilities_ptr.is_null())
-    capabilities = capabilities_ptr.To<CapabilitySpec>();
+  if (!result->capabilities.is_null())
+    capabilities = result->capabilities.To<CapabilitySpec>();
 
   // Clients that request "all_users" class from the shell are allowed to
   // field connection requests from any user. They also run with a synthetic
@@ -745,15 +739,17 @@ void Shell::OnGotResolvedName(mojom::ShellResolverPtr resolver,
     if (LoadWithLoader(target, &request)) {
       instance->StartWithClient(std::move(client));
     } else {
-      CHECK(!file_url.is_null() && !capabilities_ptr.is_null());
+      CHECK(!result->package_url.is_null() && !result->capabilities.is_null());
 
-      if (target.name() != resolved_name) {
+      if (target.name() != result->resolved_name) {
         instance->StartWithClient(std::move(client));
-        CreateShellClientWithFactory(
-            source, Identity(resolved_name, target.user_id(), instance_name),
-            target.name(), std::move(request));
+        Identity factory(result->resolved_name, target.user_id(),
+                         instance_name);
+        CreateShellClientWithFactory(source, factory, target.name(),
+                                     std::move(request));
       } else {
-        instance->StartWithFilePath(util::UrlToFilePath(file_url.To<GURL>()));
+        instance->StartWithFilePath(
+            util::UrlToFilePath(result->package_url.To<GURL>()));
       }
     }
   }

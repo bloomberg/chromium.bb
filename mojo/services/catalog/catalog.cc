@@ -5,26 +5,77 @@
 #include "mojo/services/catalog/catalog.h"
 
 #include "base/bind.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/strings/string_split.h"
 #include "base/task_runner_util.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/services/catalog/entry.h"
 #include "mojo/services/catalog/store.h"
 #include "mojo/shell/public/cpp/names.h"
-#include "mojo/util/filename_util.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
 
 namespace catalog {
+namespace {
+
+base::FilePath GetManifestPath(const base::FilePath& package_dir,
+                               const std::string& name) {
+  // TODO(beng): think more about how this should be done for exe targets.
+  std::string type = mojo::GetNameType(name);
+  std::string path = mojo::GetNamePath(name);
+  if (type == mojo::kNameType_Mojo)
+    return package_dir.AppendASCII(path + "/manifest.json");
+  if (type == mojo::kNameType_Exe)
+    return package_dir.AppendASCII(path + "_manifest.json");
+  return base::FilePath();
+}
+
+base::FilePath GetPackagePath(const base::FilePath& package_dir,
+                              const std::string& name) {
+  std::string type = mojo::GetNameType(name);
+  if (type == mojo::kNameType_Mojo) {
+    // It's still a mojo: URL, use the default mapping scheme.
+    const std::string host = mojo::GetNamePath(name);
+    return package_dir.AppendASCII(host + "/" + host + ".mojo");
+  }
+  if (type == mojo::kNameType_Exe) {
+#if defined OS_WIN
+    std::string extension = ".exe";
+#else
+    std::string extension;
+#endif
+    return package_dir.AppendASCII(mojo::GetNamePath(name) + extension);
+  }
+  return base::FilePath();
+}
+
+scoped_ptr<ReadManifestResult> ReadManifest(const base::FilePath& package_dir,
+                                            const std::string& name) {
+  base::FilePath manifest_path = GetManifestPath(package_dir, name);
+  JSONFileValueDeserializer deserializer(manifest_path);
+  int error = 0;
+  std::string message;
+  // TODO(beng): probably want to do more detailed error checking. This should
+  //             be done when figuring out if to unblock connection completion.
+  scoped_ptr<ReadManifestResult> result(new ReadManifestResult);
+  result->manifest_root = deserializer.Deserialize(&error, &message);
+  result->package_dir = package_dir;
+  return result;
+}
+
+}  // namespace
+
+ReadManifestResult::ReadManifestResult() {}
+ReadManifestResult::~ReadManifestResult() {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Catalog, public:
 
-Catalog::Catalog(base::TaskRunner* blocking_pool, scoped_ptr<Store> store)
+Catalog::Catalog(scoped_ptr<Store> store, base::TaskRunner* file_task_runner)
     : store_(std::move(store)),
+      file_task_runner_(file_task_runner),
       weak_factory_(this) {
-  PathService::Get(base::DIR_MODULE, &package_path_);
-  reader_.reset(new Reader(package_path_, blocking_pool));
+  PathService::Get(base::DIR_MODULE, &system_package_dir_);
   DeserializeCatalog();
 }
 
@@ -72,22 +123,22 @@ void Catalog::ResolveProtocolScheme(
 
 void Catalog::ResolveMojoName(const mojo::String& mojo_name,
                               const ResolveMojoNameCallback& callback) {
-  std::string resolved_name = mojo_name;
-  auto alias_iter = mojo_name_aliases_.find(resolved_name);
-  if (alias_iter != mojo_name_aliases_.end())
-    resolved_name = alias_iter->second.first;
+  std::string type = mojo::GetNameType(mojo_name);
+  if (type != "mojo" && type != "exe") {
+    scoped_ptr<Entry> entry(new Entry(mojo_name));
+    callback.Run(mojo::shell::mojom::ResolveResult::From(*entry));
+    return;
+  }
 
-  std::string qualifier = mojo::GetNamePath(resolved_name);
-  auto qualifier_iter = qualifiers_.find(resolved_name);
-  if (qualifier_iter != qualifiers_.end())
-    qualifier = qualifier_iter->second;
-
-  if (IsNameInCatalog(resolved_name)) {
-    CompleteResolveMojoName(resolved_name, qualifier, callback);
+  auto entry = catalog_.find(mojo_name);
+  if (entry != catalog_.end()) {
+    callback.Run(mojo::shell::mojom::ResolveResult::From(*entry->second));
   } else {
-    reader_->Read(resolved_name,
-                  base::Bind(&Catalog::OnReadEntry, weak_factory_.GetWeakPtr(),
-                             resolved_name, callback));
+    base::PostTaskAndReplyWithResult(
+        file_task_runner_, FROM_HERE,
+        base::Bind(&ReadManifest, system_package_dir_, mojo_name),
+        base::Bind(&Catalog::OnReadManifest, weak_factory_.GetWeakPtr(),
+                   mojo_name, callback));
   }
 }
 
@@ -101,7 +152,7 @@ void Catalog::GetEntries(mojo::Array<mojo::String> names,
   for (const std::string& name : names_vec) {
     if (catalog_.find(name) == catalog_.end())
       continue;
-    const Entry& entry = catalog_[name];
+    const Entry& entry = *catalog_[name];
     mojom::CatalogEntryPtr entry_ptr(mojom::CatalogEntry::New());
     entry_ptr->display_name = entry.display_name();
     entries[entry.name()] = std::move(entry_ptr);
@@ -111,43 +162,6 @@ void Catalog::GetEntries(mojo::Array<mojo::String> names,
 
 ////////////////////////////////////////////////////////////////////////////////
 // Catalog, private:
-
-void Catalog::CompleteResolveMojoName(
-    const std::string& resolved_name,
-    const std::string& qualifier,
-    const ResolveMojoNameCallback& callback) {
-  auto entry_iter = catalog_.find(resolved_name);
-  CHECK(entry_iter != catalog_.end());
-
-  GURL package_url = mojo::util::AddTrailingSlashIfNeeded(
-      mojo::util::FilePathToFileURL(package_path_));
-  GURL file_url;
-  std::string type = mojo::GetNameType(resolved_name);
-  if (type == "mojo") {
-    // It's still a mojo: URL, use the default mapping scheme.
-    const std::string host = mojo::GetNamePath(resolved_name);
-    file_url = package_url.Resolve(host + "/" + host + ".mojo");
-  } else if (type == "exe") {
-#if defined OS_WIN
-    std::string extension = ".exe";
-#else
-    std::string extension;
-#endif
-    file_url = package_url.Resolve(
-        mojo::GetNamePath(resolved_name) + extension);
-  }
-
-  mojo::shell::mojom::CapabilitySpecPtr capabilities_ptr =
-      mojo::shell::mojom::CapabilitySpec::From(
-          entry_iter->second.capabilities());
-
-  callback.Run(resolved_name, qualifier, std::move(capabilities_ptr),
-               file_url.spec());
-}
-
-bool Catalog::IsNameInCatalog(const std::string& name) const {
-  return catalog_.find(name) != catalog_.end();
-}
 
 void Catalog::DeserializeCatalog() {
   if (!store_)
@@ -161,59 +175,44 @@ void Catalog::DeserializeCatalog() {
     CHECK(v->GetAsDictionary(&dictionary));
     scoped_ptr<Entry> entry = Entry::Deserialize(*dictionary);
     if (entry)
-      catalog_[entry->name()] = *entry;
+      catalog_[entry->name()] = std::move(entry);
   }
 }
 
 void Catalog::SerializeCatalog() {
   scoped_ptr<base::ListValue> catalog(new base::ListValue);
   for (const auto& entry : catalog_)
-    catalog->Append(entry.second.Serialize());
+    catalog->Append(entry.second->Serialize());
   if (store_)
     store_->UpdateStore(std::move(catalog));
 }
 
 // static
-void Catalog::OnReadEntry(base::WeakPtr<Catalog> catalog,
-                          const std::string& name,
-                          const ResolveMojoNameCallback& callback,
-                          scoped_ptr<Entry> entry) {
-  if (!catalog) {
-    callback.Run(name, mojo::GetNamePath(name), nullptr, nullptr);
-    return;
+void Catalog::OnReadManifest(base::WeakPtr<Catalog> catalog,
+                             const std::string& name,
+                             const ResolveMojoNameCallback& callback,
+                             scoped_ptr<ReadManifestResult> result) {
+  scoped_ptr<Entry> entry(new Entry(name));
+  if (result->manifest_root) {
+    const base::DictionaryValue* dictionary = nullptr;
+    CHECK(result->manifest_root->GetAsDictionary(&dictionary));
+    entry = Entry::Deserialize(*dictionary);
   }
-  catalog->OnReadEntryImpl(name, callback, std::move(entry));
+  entry->set_path(GetPackagePath(result->package_dir, name));
+
+  callback.Run(mojo::shell::mojom::ResolveResult::From(*entry));
+  if (catalog)
+    catalog->AddEntryToCatalog(std::move(entry));
 }
 
-void Catalog::OnReadEntryImpl(const std::string& name,
-                              const ResolveMojoNameCallback& callback,
-                              scoped_ptr<Entry> entry) {
-  // TODO(beng): evaluate the conditions under which entry is null.
-  if (!entry) {
-    entry.reset(new Entry);
-    entry->set_name(name);
-    entry->set_display_name(name);
-    entry->set_qualifier(mojo::GetNamePath(name));
-  }
-
-  if (catalog_.find(entry->name()) == catalog_.end()) {
-    catalog_[entry->name()] = *entry;
-
-    if (!entry->applications().empty()) {
-      for (const auto& child : entry->applications()) {
-        mojo_name_aliases_[child.name()] =
-            std::make_pair(entry->name(), child.qualifier());
-      }
-    }
-    qualifiers_[entry->name()] = entry->qualifier();
-  }
-
+void Catalog::AddEntryToCatalog(scoped_ptr<Entry> entry) {
+  DCHECK(entry);
+  if (catalog_.end() != catalog_.find(entry->name()))
+    return;
+  for (auto child : entry->applications())
+    AddEntryToCatalog(make_scoped_ptr(child));
+  catalog_[entry->name()] = std::move(entry);
   SerializeCatalog();
-
-  auto qualifier_iter = qualifiers_.find(name);
-  DCHECK(qualifier_iter != qualifiers_.end());
-  std::string qualifier = qualifier_iter->second;
-  CompleteResolveMojoName(name, qualifier, callback);
 }
 
 }  // namespace catalog

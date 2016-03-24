@@ -13,7 +13,6 @@
 #include "mojo/services/catalog/entry.h"
 #include "mojo/services/catalog/public/interfaces/catalog.mojom.h"
 #include "mojo/services/catalog/public/interfaces/resolver.mojom.h"
-#include "mojo/services/catalog/reader.h"
 #include "mojo/services/catalog/store.h"
 #include "mojo/shell/public/cpp/interface_factory.h"
 #include "mojo/shell/public/interfaces/shell_resolver.mojom.h"
@@ -22,11 +21,18 @@ namespace catalog {
 
 class Store;
 
+struct ReadManifestResult {
+  ReadManifestResult();
+  ~ReadManifestResult();
+  scoped_ptr<base::Value> manifest_root;
+  base::FilePath package_dir;
+};
+
 class Catalog : public mojom::Resolver,
                 public mojo::shell::mojom::ShellResolver,
                 public mojom::Catalog {
  public:
-  Catalog(base::TaskRunner* blocking_pool, scoped_ptr<Store> store);
+  Catalog(scoped_ptr<Store> store, base::TaskRunner* file_task_runner);
   ~Catalog() override;
 
   void BindResolver(mojom::ResolverRequest request);
@@ -57,48 +63,38 @@ class Catalog : public mojom::Resolver,
   void GetEntries(mojo::Array<mojo::String> names,
                   const GetEntriesCallback& callback) override;
 
-  // Completes resolving a Mojo name from the Shell after the resolved name has
-  // been added to the catalog and the manifest read.
-  void CompleteResolveMojoName(const std::string& resolved_name,
-                               const std::string& qualifier,
-                               const ResolveMojoNameCallback& callback);
-
-  bool IsNameInCatalog(const std::string& name) const;
-
   // Populate/serialize the catalog from/to the supplied store.
   void DeserializeCatalog();
   void SerializeCatalog();
 
-  // Callback for Reader, receives an Entry constructed from the manifest for
-  // |name|.
-  static void OnReadEntry(base::WeakPtr<Catalog> catalog,
-                          const std::string& name,
-                          const ResolveMojoNameCallback& callback,
-                          scoped_ptr<Entry> entry);
-  void OnReadEntryImpl(const std::string& name,
-                       const ResolveMojoNameCallback& callback,
-                       scoped_ptr<Entry> entry);
+  // Receives the result of manifest parsing on |file_task_runner_|, may be
+  // received after the catalog object that issued the request is destroyed.
+  static void OnReadManifest(base::WeakPtr<Catalog> catalog,
+                             const std::string& name,
+                             const ResolveMojoNameCallback& callback,
+                             scoped_ptr<ReadManifestResult> result);
 
-  // Construct a catalog entry from |dictionary|.
-  scoped_ptr<Entry> DeserializeApplication(
-      const base::DictionaryValue* dictionary);
+  // Populate the catalog with data from |entry|, and pass it to the client
+  // via callback.
+  void AddEntryToCatalog(scoped_ptr<Entry> entry);
 
-  scoped_ptr<Reader> reader_;
-  base::FilePath package_path_;
+  // Directory that contains packages and executables visible to all users.
+  base::FilePath system_package_dir_;
+
+  // TODO(beng): add user package dir.
+
+  // User-specific persistent storage of package manifests and other settings.
+  scoped_ptr<Store> store_;
+
+  // Task runner for performing file operations.
+  base::TaskRunner* file_task_runner_;
 
   mojo::BindingSet<mojom::Resolver> resolver_bindings_;
   mojo::BindingSet<mojo::shell::mojom::ShellResolver> shell_resolver_bindings_;
   mojo::BindingSet<mojom::Catalog> catalog_bindings_;
 
-  scoped_ptr<Store> store_;
-  std::map<std::string, Entry> catalog_;
-
-  // Used when an app handles multiple names. Maps from app (as name) to name of
-  // app that is responsible for handling it. The value is a pair of the name of
-  // the handler along with a qualifier.
-  MojoNameAliasMap mojo_name_aliases_;
-
-  std::map<std::string, std::string> qualifiers_;
+  // Mojo name -> Entry storage, constructed from Store/package manifests.
+  std::map<std::string, scoped_ptr<Entry>> catalog_;
 
   base::WeakPtrFactory<Catalog> weak_factory_;
 

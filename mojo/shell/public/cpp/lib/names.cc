@@ -9,6 +9,9 @@
 
 namespace mojo {
 
+const char kNameType_Mojo[] = "mojo";
+const char kNameType_Exe[] = "exe";
+
 bool IsValidName(const std::string& name) {
   std::vector<std::string> parts =
       base::SplitString(name, ":", base::KEEP_WHITESPACE,

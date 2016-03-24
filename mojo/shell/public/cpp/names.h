@@ -9,6 +9,9 @@
 
 namespace mojo {
 
+extern const char kNameType_Mojo[];
+extern const char kNameType_Exe[];
+
 // Mojo services and applications are identified by structured "names", of the
 // form:
 //
