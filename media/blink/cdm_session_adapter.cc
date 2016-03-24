@@ -179,7 +179,6 @@ void CdmSessionAdapter::OnSessionMessage(
 void CdmSessionAdapter::OnSessionKeysChange(const std::string& session_id,
                                             bool has_additional_usable_key,
                                             CdmKeysInfo keys_info) {
-  // TODO(jrummell): Pass |keys_info| on.
   WebContentDecryptionModuleSessionImpl* session = GetSession(session_id);
   DLOG_IF(WARNING, !session) << __FUNCTION__ << " for unknown session "
                              << session_id;
