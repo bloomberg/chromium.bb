@@ -110,6 +110,7 @@ public:
     void dispatchOnInspectorBackend(int sessionId, const WebString& message) override;
     void inspectElementAt(const WebPoint&) override;
     void failedToRequestDevTools() override;
+    void evaluateInWebInspector(long callId, const WebString& script) override;
     WebString evaluateInWebInspectorOverlay(const WebString& script) override;
 
 private:

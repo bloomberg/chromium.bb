@@ -429,10 +429,12 @@ void BlinkTestRunner::CloseDevTools() {
     agent->detach();
 }
 
-void BlinkTestRunner::EvaluateInWebInspector(int call_id,
+void BlinkTestRunner::EvaluateInWebInspector(long call_id,
                                              const std::string& script) {
-  Send(new ShellViewHostMsg_EvaluateInDevTools(
-      routing_id(), call_id, script));
+  WebDevToolsAgent* agent =
+      render_view()->GetMainRenderFrame()->GetWebFrame()->devToolsAgent();
+  if (agent)
+    agent->evaluateInWebInspector(call_id, WebString::fromUTF8(script));
 }
 
 std::string BlinkTestRunner::EvaluateInWebInspectorOverlay(

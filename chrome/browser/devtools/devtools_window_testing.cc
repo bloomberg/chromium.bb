@@ -96,12 +96,10 @@ void DevToolsWindowTesting::WindowClosed(DevToolsWindow* window) {
 
 // static
 void DevToolsWindowTesting::WaitForDevToolsWindowLoad(DevToolsWindow* window) {
-  if (!window->ready_for_test_) {
-    scoped_refptr<content::MessageLoopRunner> runner =
-        new content::MessageLoopRunner;
-    window->ready_for_test_callback_ = runner->QuitClosure();
-    runner->Run();
-  }
+  scoped_refptr<content::MessageLoopRunner> runner =
+      new content::MessageLoopRunner;
+  window->ready_for_test_callback_ = runner->QuitClosure();
+  runner->Run();
   base::string16 harness = base::UTF8ToUTF16(
       content::DevToolsFrontendHost::GetFrontendResource(kHarnessScript));
   window->main_web_contents_->GetMainFrame()->ExecuteJavaScript(harness);

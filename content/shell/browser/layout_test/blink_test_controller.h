@@ -202,7 +202,6 @@ class BlinkTestController : public base::NonThreadSafe,
   void OnClearDevToolsLocalStorage();
   void OnShowDevTools(const std::string& settings,
                       const std::string& frontend_url);
-  void OnEvaluateInDevTools(int call_id, const std::string& script);
   void OnCloseDevTools();
   void OnGoToOffset(int offset);
   void OnReload();

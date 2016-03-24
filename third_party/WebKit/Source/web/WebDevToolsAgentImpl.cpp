@@ -676,6 +676,11 @@ void WebDevToolsAgentImpl::waitForCreateWindow(LocalFrame* frame)
         ClientMessageLoopAdapter::pauseForCreateWindow(m_webLocalFrameImpl);
 }
 
+void WebDevToolsAgentImpl::evaluateInWebInspector(long callId, const WebString& script)
+{
+    m_inspectorAgent->evaluateForTestInFrontend(callId, script);
+}
+
 WebString WebDevToolsAgentImpl::evaluateInWebInspectorOverlay(const WebString& script)
 {
     if (!m_overlay)
