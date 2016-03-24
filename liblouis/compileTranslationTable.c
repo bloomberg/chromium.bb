@@ -243,6 +243,7 @@ static const char *opcodeNames[CTO_None] = {
   "seqbeforechars",
   "seqafterchars",
   "seqafterpattern",
+  "seqafterexpression",
   "emphclass",
   "emphletter",
   "begemphword",
@@ -3692,226 +3693,6 @@ compileHyphenation (FileInfo * nested, CharsString * encoding)
   return 1;
 }
 
-static int pattern_compile(const widechar *input, const int input_max, widechar *expr, const int expr_max)
-{
-	int icrs, rcrs;
-	int iend, rcnt;
-	int inxt, rnxt;
-	int attrs0, attrs1, aend;
-	int esc;
-	int i;
-
-	rcrs = 1;
-	icrs = iend = inxt = rnxt = rcnt = aend = 0;
-
-	expr[rnxt] = PTN_LAST;
-	
-	/*   no pattern   */
-	if(input[0] == '-' && input_max == 1)
-		return 1;
-	
-	while(icrs < input_max)
-	{
-		if(rcrs >= expr_max)
-			return 0;
-
-		switch(input[icrs])
-		{
-			
-		case '!':
-
-			icrs++;
-			expr[rcrs++] = PTN_NOT;
-			break;
-		
-		case '^':
-
-			icrs++;
-			expr[rcrs++] = PTN_END_OF_INPUT;
-			expr[rnxt] = rcrs - rnxt;
-			rnxt = rcrs++;
-			expr[rnxt] = PTN_LAST;
-			break;
-
-		case '[':
-
-			icrs++;
-			esc = 0;
-			for(iend = icrs; input[iend]; iend++)
-			{
-				if(input[iend] == '\\' && !esc)
-				{
-					esc = 1;
-					continue;
-				}
-
-				if(input[iend] == ']' && !esc)
-					break;
-				esc = 0;
-			}
-			if(input[iend] != ']')
-				return 0;
-
-			inxt = iend + 1;
-			if(inxt < input_max)
-			if(input[inxt] == '*')
-			{
-				expr[rcrs++] = PTN_ZERO_MORE;
-				inxt++;
-			}
-			else if(input[inxt] == '+')
-			{
-				expr[rcrs++] = PTN_ONE_MORE;
-				inxt++;
-			}
-
-			expr[rcrs++] = PTN_CHARS;
-			rcnt = rcrs++;
-
-			expr[rcnt] = 0;
-			esc = 0;
-			for(i = icrs; i < iend; i++)
-			{
-				if(input[i] == '\\' && !esc)
-				{
-					esc = 1;
-					continue;
-				}
-
-				esc = 0;
-				expr[rcrs++] = (widechar)input[i];
-				expr[rcnt]++;
-			}
-			icrs = inxt;
-
-			expr[rnxt] = rcrs - rnxt;
-			rnxt = rcrs++;
-			expr[rnxt] = PTN_LAST;
-			break;
-
-		case '%':
-
-			icrs++;
-			if(input[icrs] == '"')
-			{
-				icrs++;
-				for(aend = icrs; aend < input_max; aend++)
-				if(input[aend] == '"')
-					break;
-				if(aend == input_max)
-					return 0;
-				inxt = aend + 1;
-			}
-			else
-			{
-				aend = icrs + 1;
-				inxt = aend;
-			}
-
-			if(inxt < input_max)
-			if(input[inxt] == '*')
-			{
-				expr[rcrs++] = PTN_ZERO_MORE;
-				inxt++;
-			}
-			else if(input[inxt] == '+')
-			{
-				expr[rcrs++] = PTN_ONE_MORE;
-				inxt++;
-			}
-			expr[rcrs++] = PTN_ATTRIBUTES;
-
-			attrs0 = attrs1 = 0;
-			for( ; icrs < aend; icrs++)
-			switch(input[icrs])
-			{
-			case '_':  attrs0 |= CTC_Space;         break;
-			case '#':  attrs0 |= CTC_Digit;         break;
-			case 'a':  attrs0 |= CTC_Letter;        break;
-			case 'u':  attrs0 |= CTC_UpperCase;     break;
-			case 'l':  attrs0 |= CTC_LowerCase;     break;
-			case '.':  attrs0 |= CTC_Punctuation;   break;
-			case '$':  attrs0 |= CTC_Sign;          break;
-			case '~':  attrs0 |= CTC_SeqDelimiter;  break;
-			case '<':  attrs0 |= CTC_SeqBefore;     break;
-			case '>':  attrs0 |= CTC_SeqAfter;      break;
-			//case '1':  attrs0 |= CTC_Class1;        break;
-			//case '2':  attrs0 |= CTC_Class2;        break;
-			//case '3':  attrs0 |= CTC_Class3;        break;
-			//case '4':  attrs0 |= CTC_Class4;        break;
-
-			case '0':  attrs1 |= (CTC_UserDefined0 >> 16);  break;
-			case '1':  attrs1 |= (CTC_UserDefined1 >> 16);  break;
-			case '2':  attrs1 |= (CTC_UserDefined2 >> 16);  break;
-			case '3':  attrs1 |= (CTC_UserDefined3 >> 16);  break;
-			case '4':  attrs1 |= (CTC_UserDefined4 >> 16);  break;
-			case '5':  attrs1 |= (CTC_UserDefined5 >> 16);  break;
-			case '6':  attrs1 |= (CTC_UserDefined6 >> 16);  break;
-			case '7':  attrs1 |= (CTC_UserDefined7 >> 16);  break;
-			case '^':  attrs1 |= (CTC_EndOfInput >> 16);  break;
-
-			default:  return 0;
-			}
-			expr[rcrs++] = attrs1;
-			expr[rcrs++] = attrs0;
-
-			icrs = inxt;
-
-			expr[rnxt] = rcrs - rnxt;
-			rnxt = rcrs++;
-			expr[rnxt] = PTN_LAST;
-			break;
-
-		default:
-
-			inxt = icrs + 1;
-			if(inxt < input_max)
-			if(input[inxt] == '*')
-			{
-				expr[rcrs++] = PTN_ZERO_MORE;
-				inxt++;
-			}
-			else if(input[inxt] == '+')
-			{
-				expr[rcrs++] = PTN_ONE_MORE;
-				inxt++;
-			}
-
-			expr[rcrs++] = PTN_CHARS;
-			expr[rcrs++] = 1;
-			expr[rcrs++] = (widechar)input[icrs];
-			icrs = inxt;
-
-			expr[rnxt] = rcrs - rnxt;
-			rnxt = rcrs++;
-			expr[rnxt] = PTN_LAST;
-			break;
-		}
-	}
-
-	return rcrs;
-}
-
-static widechar* pattern_reverse(const widechar *org, widechar *expr)
-{	
-	int i;
-	
-	if(org[0] == PTN_LAST)
-	{
-		expr[0] = PTN_LAST;
-		return expr;
-	}
-	
-	expr = pattern_reverse(&org[org[0]], expr);
-	
-	/*   copy rule   */
-	for(i = 0; i < org[0]; i++)
-		expr[i] = org[i];
-	expr[i] = PTN_LAST;
-	
-	return &expr[i];
-}
-
 static int
 compileCharDef (FileInfo * nested,
 		TranslationTableOpcode opcode,
@@ -3964,6 +3745,9 @@ compileCharDef (FileInfo * nested,
     putCharAndDots (nested, ruleChars.chars[0], ruleDots.chars[0]);
   return 1;
 }
+
+int pattern_compile(const widechar *input, const int input_max, widechar *expr_data, const int expr_max, const TranslationTableHeader *t);
+void pattern_reverse(widechar *expr_data);
 
 static int
 compileBeforeAfter(FileInfo * nested)
@@ -4035,10 +3819,11 @@ doOpcode:
 		case CTO_Match:
 		{
 			CharsString ptn_before, ptn_after;
-			widechar patterns[512], buffer[256];
+			widechar patterns[27720];
 			TranslationTableOffset offset;
 			int len, mrk;
 
+				memset(patterns, 0xffff, sizeof(patterns));
 			noback = 1;
 			getCharacters(nested, &ptn_before);
 			getRuleCharsText(nested, &ruleChars);
@@ -4047,16 +3832,24 @@ doOpcode:
 
 			if(!addRule(nested, opcode, &ruleChars, &ruleDots, 0, 0))
 				ok = 0;
-			len = pattern_compile(&ptn_before.chars[0], ptn_before.length, buffer, 256);
+
+			if(ptn_before.chars[0] == '-' && ptn_before.length == 1)
+				len = pattern_compile(&ptn_before.chars[0], 0, &patterns[1], 13841, table);
+			else
+				len = pattern_compile(&ptn_before.chars[0], ptn_before.length, &patterns[1], 13841, table);
 			if(!len)
 			{
 				ok = 0;
 				break;
 			}
 			mrk = patterns[0] = len + 1;
-			pattern_reverse(buffer, &patterns[1]);
+			pattern_reverse(&patterns[1]);
 
-			len = pattern_compile(&ptn_after.chars[0], ptn_after.length, &patterns[mrk], 256);
+
+			if(ptn_after.chars[0] == '-' && ptn_after.length == 1)
+				len = pattern_compile(&ptn_after.chars[0], 0, &patterns[mrk], 13841, table);
+			else
+				len = pattern_compile(&ptn_after.chars[0], ptn_after.length, &patterns[mrk], 13841, table);
 			if(!len)
 			{
 				ok = 0;
@@ -4064,11 +3857,15 @@ doOpcode:
 			}
 			len += mrk;
 
+
 			if(!allocateSpaceInTable(nested, &offset, len * sizeof(widechar)))
 			{
 				ok = 0;
 				break;
 			}
+
+			/*   realloc may have moved table, so make sure newRule is still valid   */
+			newRule = (TranslationTableRule*)&table->ruleArea[newRuleOffset];
 
 			memcpy(&table->ruleArea[offset], patterns, len * sizeof(widechar));
 			newRule->patterns = offset;
@@ -4547,6 +4344,15 @@ doOpcode:
 			table->seqPatterns[table->seqPatternsCount++] = 0;
 		}	
 		break;
+    case CTO_SeqAfterExpression:
+
+      if (getRuleCharsText(nested, &ruleChars))
+	{
+	  for(table->seqAfterExpressionLength = 0; table->seqAfterExpressionLength < ruleChars.length; table->seqAfterExpressionLength++)
+	    table->seqAfterExpression[table->seqAfterExpressionLength] = ruleChars.chars[table->seqAfterExpressionLength];
+	  table->seqAfterExpression[table->seqAfterExpressionLength] = 0;
+	}
+      break;
 	
 	case CTO_CapsModeChars:
 	
@@ -5473,14 +5279,14 @@ getEmphClasses(const char* tableList)
 void *EXPORT_CALL
 lou_getTable (const char *tableList)
 {
-  void *table = NULL;
+  void *xtable = NULL;
   if (tableList == NULL || tableList[0] == 0)
     return NULL;
   errorCount = fileCount = 0;
-  table = getTable (tableList);
-  if (!table)
+  xtable = getTable (tableList);
+  if (!xtable)
     logMessage (LOG_ERROR, "%s could not be found", tableList);
-  return table;
+  return xtable;
 }
 
 static unsigned char *destSpacing = NULL;

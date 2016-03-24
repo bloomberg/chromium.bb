@@ -226,6 +226,7 @@ extern "C"
     CTO_SeqBeforeChars,
     CTO_SeqAfterChars,
     CTO_SeqAfterPattern,
+    CTO_SeqAfterExpression,
     CTO_EmphClass,
     
     /* Do not change the order of the following opcodes! */
@@ -485,8 +486,10 @@ extern "C"
     widechar seqPatterns[SEQPATTERNSIZE];
     char* emphClasses[MAX_EMPH_CLASSES + 1];
     int seqPatternsCount;
+    widechar seqAfterExpression[SEQPATTERNSIZE];
+    int seqAfterExpressionLength;
 
-	/* emphRules, including caps. */
+    /* emphRules, including caps. */
     TranslationTableOffset emphRules[MAX_EMPH_CLASSES + 1][9];
 
     TranslationTableOffset begComp;
@@ -532,21 +535,6 @@ extern "C"
     alloc_srcMapping,
     alloc_prevSrcMapping
   } AllocBuf;
-  
-typedef enum
-{
-	PTN_LAST,
-
-	PTN_END_OF_INPUT,
-
-	PTN_NOT,
-	PTN_ZERO_MORE,
-	PTN_ONE_MORE,
-
-	PTN_CHARS,
-
-	PTN_ATTRIBUTES,
-} PatternCodes;
 
 typedef enum
 {

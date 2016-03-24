@@ -126,8 +126,10 @@ tests:
   - xfail: true
 - - He came 4th in the race.
   - ',he came #dth 9 ! race4'
+  - xfail: true
 - - If you go 1st–will I go 2nd?
   - ',if y g #ast,-w ,i g #bnd8'
+  - xfail: true
 - - I have a 6-CD boxed set.
   - ',i h a #f-;,,cd box$ set4'
 - - There are 3 beds in this 4-bed ward.

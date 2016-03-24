@@ -299,7 +299,6 @@ tests:
   - '|-(-!-way'
 - - chifforobe
   - '*i6orobe'
-  - xfail: true
 - - twofold
   - twofold
 - - insofar
@@ -763,6 +762,7 @@ tests:
   - di_s$
 - - disulphide
   - disulphide
+  - xfail: true
 - - indistinct
   - 9di/9ct
 
@@ -782,7 +782,6 @@ tests:
   - ',mc,connell'
 - - O'Connor
   - ',o'',connor'
-  - xfail: true
 - - MetroDisco
   - ',metro,disco'
 - - be'ave
@@ -807,10 +806,8 @@ tests:
   - ',be,l9da'
 - - conCUR
   - con,,cur
-  - xfail: true
 - - DisCORD
   - ',dis,,cord'
-  - xfail: true
 - - DISlike
   - ',,dis,''like'
   - xfail: true
@@ -825,12 +822,12 @@ tests:
   - 4t4
 - - mod cons
   - mod 3s
+  - xfail: true
 - - BEd
   - ',b,$'
   - xfail: true
 - - Belg
   - ',belg'
-  - xfail: true
 - - bet
   - bet
 - - Bev
@@ -1052,7 +1049,6 @@ tests:
   - geanticl9e
 - - preamble
   - preamble
-  - xfail: true
 - - reaction
   - reac;n
 
@@ -1201,7 +1197,6 @@ tests:
   - xfail: true
 - - (bein')
   - '"<29''">'
-  - xfail: true
 - - bein'
   - 2in'
   - xfail: true
@@ -1365,7 +1360,6 @@ tests:
   - td
 - - Lucknow
   - ',luckn{'
-  - xfail: true
 - - chlordane
   - '*lordane'
 - - chemotherapy
@@ -1445,7 +1439,6 @@ tests:
   - ',hades'
 - - Hadrian
   - ',hadrian'
-  - xfail: true
 - - menhaden
   - m5had5
 - - shadow
@@ -1483,13 +1476,11 @@ tests:
   - ev}.n
 - - Guinevere
   - ',gu9ev}e'
-  - xfail: true
 - - McKeever
   - ',mc,keev}'
   - xfail: true
 - - Monteverdi
   - ',montev}di'
-  - xfail: true
 - - persevere
   - p}sev}e
 - - reverberate
@@ -1698,7 +1689,6 @@ tests:
   - c5timet}
 - - Mortimer
   - ',mortim}'
-  - xfail: true
 - - multimedia
   - multim$ia
 - - sentiment

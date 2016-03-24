@@ -235,10 +235,8 @@ tests:
   - s*like
 - - Our boyfriends mustn't miss tomorrow's afterdinner speaker!
   - ',|r boyfrs m/n''t miss tm''s afd9n} sp1k}6'
-  - xfail: true
 - - Mr Letterman could've quickly rebrailled the Aftercare Newsletter.
   - ',mr ,lrman cd''ve qkly rebrld ! ,afc>e ,newslr4'
-  - xfail: true
 - - I am brailling the newsletters' headlines.
   - ',i am braill+ ! newslrs'' h1dl9es4'
 - - friend(s)
@@ -253,7 +251,6 @@ tests:
   - .1un.'necess>y
   - typeform:
       italic: '++         '
-    xfail: true
 - - www.afterschool.gov
   - www4aft}s*ool4gov
 - - aftereffect
@@ -288,7 +285,6 @@ tests:
   - misconceiv$
 - - '"couldx"'
   - 8c|ldx0
-  - xfail: true
 - - Himalayas
   - ',himalayas'
 - - Suchet
@@ -302,7 +298,6 @@ tests:
   - ',brltte bo>d'
 - - Marcillat-en-Combraille, France
   - ',m>cillat-en-,combrl1 ,fr.e'
-  - xfail: true
 - - Greatford Hall
   - ',grt=d ,hall'
 - - greatgreatgreatgrandchildren
@@ -311,10 +306,8 @@ tests:
   - ',grtorex'
 - - Blindcraft
   - ',blcraft'
-  - xfail: true
 - - Blindheim
   - ',blheim'
-  - xfail: true
 - - Firstbank
   - ',f/bank'
 - - Firstchoice
@@ -331,27 +324,20 @@ tests:
   - ',bl9doc'
 - - www.braillex.com
   - www4braillex4com
-  - xfail: true
 - - Firstamerica
   - ',fir/am}ica'
-  - xfail: true
 - - Goodacre
   - ',goodacre'
-  - xfail: true
 - - Littlearm
   - ',little>m'
-  - xfail: true
 - - Letterewe Estate
   - ',lett}ewe ,e/ate'
-  - xfail: true
 - - Mr Linkletter of Portlittle
   - ',mr ,l9klett} ( ,portlittle'
 - - Bisquick Pancake Mix
   - ',bisquick ,pancake ,mix'
-  - xfail: true
 - - Ted Makegood of Goodena
   - ',t$ ,makegood ( ,good5a'
-  - xfail: true
 
 #  10.9.4 page 140
 
@@ -398,3 +384,40 @@ tests:
 - - ozbrl
   - ;;ozbrl
   - xfail: true
+
+#   Appendix 1.2
+
+- [ahimsa, ahimsa]
+- [braillist, brailli/]
+- [declaration, decl>a;n]
+- [drafter, 'draft}']
+- [lacrosse, lacrosse]
+- [marabout, m>ab|t]
+- [mustache, mu/a*e]
+- [mustang, mu/ang]
+- [muster, 'mu/}']
+- [necessarily, necess>ily]
+- [rafter, 'raft}']
+- [shoulder, '%|ld}']
+
+#   Appendix 1.3
+
+- [abouts, ab|ts]
+- [acrosses, acrosses]
+- [againe, aga9e]
+- [almosts, almo/s]
+- [hims, hims]
+
+#   Appendix 1.4
+
+- [aftereffect, 'aft}e6ect']
+- [afterimage, 'aft}image']
+- [blinded, bl9d$]
+- [blinding, bl9d+]
+- [befriended, 2fri5d$]
+
+#   Appendix 1.5
+
+- [hereinbefore, '"h9be=e']
+- [inbetween, 9betwe5]
+- [misconceived, misconceiv$]

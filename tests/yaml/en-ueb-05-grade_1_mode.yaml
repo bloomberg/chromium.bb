@@ -51,6 +51,7 @@ tests:
 
 - - 1st
   - '#ast'
+  - xfail: true
 - - shopping4you
   - '%opp+#dyou'
   - xfail: true
@@ -62,6 +63,7 @@ tests:
 
 - - I'll go 3rd–you go 4th.
   - ',i''ll g #crd,-y g #dth4'
+  - xfail: true
 - - 3-D
   - '#c-;,d'
 - - 3-dimensional

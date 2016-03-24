@@ -160,7 +160,6 @@ tests:
   - ',x.0'
 - - Braillex®
   - ',braillex~r'
-  - xfail: true
 - - Braille4All
   - ',braille#d,all'
 - - ‘It'll

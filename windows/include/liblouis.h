@@ -61,8 +61,9 @@ char * EXPORT_CALL lou_getProgramPath (void);
 	trans_note_3 = 0x0400,
 	trans_note_4 = 0x0800,
 	trans_note_5 = 0x1000,
-	//  used by syllable   0x2000,
+	no_contract = 0x2000,
 	//  used by syllable   0x4000,
+	//  used by syllable   0x8000,
   } typeforms;
 #define comp_emph_1 italic
 #define comp_emph_2 underline

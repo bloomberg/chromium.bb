@@ -70,13 +70,17 @@ digit 9 24
 
 display ! 2346
 punctuation ! 235
-#TODO:  why?
+
+#TODO:  why?!
 display " 5
 punctuation " 5
-punctuation " 236
-punctuation " 356
-prepunc " 236
-postpunc " 356
+#punctuation " 236
+#punctuation " 356
+#prepunc " 236
+#postpunc " 356
+match %[^_~]%<* " %[_.$]*%[a#] 236
+match %[a#]%[_.$]* " %>*%[^_~] 356
+
 display # 3456
 sign # 456-1456
 begnum # 456-1456 print number sign before number
@@ -283,7 +287,7 @@ punctuation \x00ad 36 - soft hyphen
 sign \x00ae 45-1235 ® registered
 sign \x00af 4-36 ¯
 #sign \x00ba 0 º
-sign \x00b4 45-34 ´ acute accent
+sign \x00b4 45-56-12 ´ acute accent
 sign \x00b6 45-1234 ¶ pilcrow 
 sign \x00b8 45-12346 ¸ cedilla 
 punctuation \x00bb 456-356 »
@@ -386,7 +390,7 @@ sign \x2229 46-236 ∩ set intersection
 sign \x222a 46-235 ∪ set union
 sign \x222b 2346 ∫ integral
 sign \x222e 4-2346 contour integral
-sign \x2234 6-16 ∴ therefore
+#sign \x2234 6-16 ∴ therefore   conlicts with Child
 sign \x2235 4-34 ∵ because
 sign \x2237 25-25 ∷ proportion
 sign \x2243 456-35 ≃ asymptotically equal to

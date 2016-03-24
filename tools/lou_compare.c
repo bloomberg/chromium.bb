@@ -71,6 +71,14 @@ widechar tnote5Text[BUF_MAX];
 char tnote5Line[BUF_MAX];
 int tnote5Len;
 
+widechar noContractText[BUF_MAX];
+char noContractLine[BUF_MAX];
+int noContractLen;
+
+widechar directTransText[BUF_MAX];
+char directTransLine[BUF_MAX];
+int directTransLen;
+
 static void trimLine(char *line)
 {
 	char *crs = line;
@@ -350,12 +358,6 @@ int main(int argn, char **args)
 		else
 			return 1;
 		
-		if(!strncmp("~trans_note", inputLine, 11))
-		if(inputEmphasis(trans_note, tnoteLine, tnoteText, &tnoteLen))
-			continue;
-		else
-			return 1;
-		
 		if(!strncmp("~trans_note_1", inputLine, 13))
 		if(inputEmphasis(trans_note_1, tnote1Line, tnote1Text, &tnote1Len))
 			continue;
@@ -381,7 +383,25 @@ int main(int argn, char **args)
 			continue;
 		else
 			return 1;
-		
+
+		if(!strncmp("~no_contract", inputLine, 12))
+		if(inputEmphasis(no_contract, noContractLine, noContractText, &noContractLen))
+			continue;
+		else
+			return 1;
+
+		if(!strncmp("~direct_trans", inputLine, 13))
+		if(inputEmphasis(computer_braille, directTransLine, directTransText, &directTransLen))
+			continue;
+		else
+			return 1;
+
+		if(!strncmp("~trans_note", inputLine, 11))
+		if(inputEmphasis(trans_note, tnoteLine, tnoteText, &tnoteLen))
+			continue;
+		else
+			return 1;
+
 		memcpy(emp1, emphasis, BUF_MAX * sizeof(formtype));
 		memcpy(emp2, emphasis, BUF_MAX * sizeof(formtype));
 		
@@ -476,7 +496,13 @@ int main(int argn, char **args)
 				outputEmphasis(outFile, 0, "~trans_note_4", tnote4Text, tnote4Len);
 			if(tnote5Len)
 				outputEmphasis(outFile, 0, "~trans_note_5", tnote5Text, tnote5Len);
-				
+
+			if(noContractLen)
+				outputEmphasis(outFile, 0, "~no_contract", noContractText, noContractLen);
+
+			if(directTransLen)
+				outputEmphasis(outFile, 0, "~direct_trans", directTransText, directTransLen);
+
 			write(outFile, inputText, inputLen * 2);
 			if(out_pos)
 			{
@@ -585,7 +611,13 @@ int main(int argn, char **args)
 				outputEmphasis(failFile, 1, "note4:  ", tnote4Text, tnote4Len);
 			if(tnote5Len)
 				outputEmphasis(failFile, 1, "note5:  ", tnote5Text, tnote5Len);
-			
+
+			if(noContractLen)
+				outputEmphasis(failFile, 1, "nocont:  ", noContractText, noContractLen);
+
+			if(directTransLen)
+				outputEmphasis(failFile, 1, "~direct_trans", directTransText, directTransLen);
+
 				tmpLen = extParseChars("ueb:    ", tmpText);
 			write(failFile, tmpText, tmpLen * 2);
 			write(failFile, expectText, expectLen * 2);
