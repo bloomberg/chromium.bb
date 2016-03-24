@@ -6513,8 +6513,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_NAME" desc="Name of the flag to enable the new simplified fullscreen and mouse lock UI.">
         Simplified full screen / mouse lock UI.
       </message>
-      <message name="IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_DESCRIPTION" desc="Description of the flag to enable the new simplified fullscreen and mouse lock UI.">
-        An experimental new user experience when entering page-triggered full screen or mouse pointer lock states.
+      <message name="IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_DESCRIPTION" desc="Description of the flag to enable the new simplified full screen and mouse lock UI.">
+        A simplified new user experience when entering page-triggered full screen or mouse pointer lock states.
+      </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_KEYBOARD_LOCK_UI_NAME" desc="Name of the flag to enable the experimental prototype for full screen with keyboard lock.">
+        Experimental keyboard lock UI.
+      </message>
+      <message name="IDS_FLAGS_EXPERIMENTAL_KEYBOARD_LOCK_UI_DESCRIPTION" desc="Description of the flag to enable the experimental full screen keyboard lock UI.">
+        An experimental full screen with keyboard lock mode requiring users to hold Esc to exit.
       </message>
       <if expr="is_android">
         <message name="IDS_FLAGS_PROGRESS_BAR_ANIMATION_NAME" desc="Name of the flag to configure Android page loading progress bar animation.">
@@ -12408,6 +12414,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
       </message>
       <message name="IDS_FULLSCREEN_PRESS_ESC_TO_EXIT_MOUSELOCK" desc="Text displayed in the bubble to tell users how to return from mouselock mode (where the mouse cursor is hidden) to normal mode. Please surround the name of the key (e.g. 'Esc') in pipe characters so it can be rendered as a key.">
         Press |<ph name="ACCELERATOR">$1<ex>Esc</ex></ph>| to show your cursor
+      </message>
+      <message name="IDS_FULLSCREEN_HOLD_ESC_TO_EXIT_FULLSCREEN" desc="Text displayed in the bubble to tell users how to return from fullscreen mode (where the web page occupies the entire screen) to normal mode. Please surround the name of the key (e.g. 'Esc') in pipe characters so it can be rendered as a key.">
+        Hold |<ph name="ACCELERATOR">$1<ex>Esc</ex></ph>| to exit full screen
       </message>
       <message name="IDS_FULLSCREEN_ALLOW" desc="Text in the bubble button that grants permission for a site to enter fullscreen and/or lock the mouse.">
         Allow

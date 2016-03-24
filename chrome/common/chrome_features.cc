@@ -14,6 +14,11 @@ const base::Feature kAutomaticTabDiscarding{"AutomaticTabDiscarding",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
+// An experimental fullscreen prototype that allows pages to map browser and
+// system-reserved keyboard shortcuts.
+const base::Feature kExperimentalKeyboardLockUI{
+    "ExperimentalKeyboardLockUI", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Enables showing the "This computer will no longer receive Google Chrome
 // updates" infobar instead of the "will soon stop receiving" infobar on

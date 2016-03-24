@@ -1601,6 +1601,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"simplified-fullscreen-ui", IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_NAME,
      IDS_FLAGS_SIMPLIFIED_FULLSCREEN_UI_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kSimplifiedFullscreenUI)},
+    {"experimental-keyboard-lock-ui",
+     IDS_FLAGS_EXPERIMENTAL_KEYBOARD_LOCK_UI_NAME,
+     IDS_FLAGS_EXPERIMENTAL_KEYBOARD_LOCK_UI_DESCRIPTION, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kExperimentalKeyboardLockUI)},
 #if defined(OS_ANDROID)
     {"progress-bar-animation", IDS_FLAGS_PROGRESS_BAR_ANIMATION_NAME,
      IDS_FLAGS_PROGRESS_BAR_ANIMATION_DESCRIPTION, kOsAndroid,
