@@ -420,7 +420,7 @@ TEST_F(NfcClientTest, AdaptersAddedAndRemoved) {
   EXPECT_CALL(*this,
               ErrorCallback(nfc_client_helpers::kUnknownObjectError, _));
   EXPECT_CALL(*mock_adapter1_proxy_, CallMethodWithErrorCallback(_, _, _, _))
-      .Times(0);
+      .Times(1);
   adapter_client_->StartPollLoop(
       dbus::ObjectPath(kTestAdapterPath1),
       nfc_adapter::kModeInitiator,
@@ -547,7 +547,7 @@ TEST_F(NfcClientTest, TagsAddedAndRemoved) {
   EXPECT_CALL(*this,
               ErrorCallback(nfc_client_helpers::kUnknownObjectError, _));
   EXPECT_CALL(*mock_tag1_proxy_, CallMethodWithErrorCallback(_, _, _, _))
-      .Times(0);
+      .Times(1);
   tag_client_->Write(dbus::ObjectPath(kTestTagPath1), write_data,
                      base::Bind(&NfcClientTest::SuccessCallback,
                                 base::Unretained(this)),
@@ -675,7 +675,7 @@ TEST_F(NfcClientTest, DevicesAddedAndRemoved) {
   EXPECT_CALL(*this,
               ErrorCallback(nfc_client_helpers::kUnknownObjectError, _));
   EXPECT_CALL(*mock_device1_proxy_, CallMethodWithErrorCallback(_, _, _, _))
-      .Times(0);
+      .Times(1);
   device_client_->Push(dbus::ObjectPath(kTestDevicePath1), write_data,
                        base::Bind(&NfcClientTest::SuccessCallback,
                                   base::Unretained(this)),

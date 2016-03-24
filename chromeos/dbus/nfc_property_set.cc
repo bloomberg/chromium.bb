@@ -12,18 +12,19 @@ namespace chromeos {
 NfcPropertySet::NfcPropertySet(dbus::ObjectProxy* object_proxy,
                                const std::string& interface,
                                const PropertyChangedCallback& callback)
-    : dbus::PropertySet(object_proxy, interface, callback) {
-}
+    : dbus::PropertySet(object_proxy, interface, callback),
+      weak_ptr_factory_(this) {}
 
 NfcPropertySet::~NfcPropertySet() {
 }
 
 void NfcPropertySet::ConnectSignals() {
   object_proxy()->ConnectToSignal(
-      interface(),
-      nfc_common::kPropertyChangedSignal,
-      base::Bind(&dbus::PropertySet::ChangedReceived, GetWeakPtr()),
-      base::Bind(&dbus::PropertySet::ChangedConnected, GetWeakPtr()));
+      interface(), nfc_common::kPropertyChangedSignal,
+      base::Bind(&dbus::PropertySet::ChangedReceived,
+                 weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&dbus::PropertySet::ChangedConnected,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void NfcPropertySet::SetAllPropertiesReceivedCallback(
@@ -39,10 +40,11 @@ void NfcPropertySet::Get(dbus::PropertyBase* property,
 void NfcPropertySet::GetAll() {
   dbus::MethodCall method_call(
       interface(), nfc_common::kGetProperties);
-  object_proxy()->CallMethod(&method_call,
-                           dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                           base::Bind(&dbus::PropertySet::OnGetAll,
-                                      GetWeakPtr()));
+  object_proxy()->CallMethodWithErrorCallback(
+      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::Bind(&dbus::PropertySet::OnGetAll, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&NfcPropertySet::OnGetAllError,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void NfcPropertySet::OnGetAll(dbus::Response* response) {
@@ -67,18 +69,33 @@ void NfcPropertySet::Set(dbus::PropertyBase* property,
   dbus::MessageWriter writer(&method_call);
   writer.AppendString(property->name());
   property->AppendSetValueToWriter(&writer);
-  object_proxy()->CallMethod(&method_call,
-                           dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                           base::Bind(&dbus::PropertySet::OnSet,
-                                      GetWeakPtr(),
-                                      property,
-                                      callback));
+  object_proxy()->CallMethod(
+      &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+      base::Bind(&dbus::PropertySet::OnSet, weak_ptr_factory_.GetWeakPtr(),
+                 property, callback));
 }
 
 void NfcPropertySet::ChangedReceived(dbus::Signal* signal) {
   DCHECK(signal);
   dbus::MessageReader reader(signal);
   UpdatePropertyFromReader(&reader);
+}
+
+void NfcPropertySet::OnGetAllError(dbus::ErrorResponse* response) {
+  if (response) {
+    dbus::MessageReader reader(response);
+    std::string error_message;
+    reader.PopString(&error_message);
+
+    if (response->GetErrorName() == DBUS_ERROR_SERVICE_UNKNOWN) {
+      // Do not LOG(ERROR) if service is unknown. crbug.com/393311.
+      VLOG(2) << "NfcPropertySet::GetAll failed because the service is unknown."
+              << " NFC not enabled on this device? : " << error_message;
+    } else {
+      LOG(ERROR) << "NfcPropertySet::GetAll failed: " << error_message;
+    }
+  }
+  OnGetAll(nullptr);
 }
 
 }  // namespace chromeos

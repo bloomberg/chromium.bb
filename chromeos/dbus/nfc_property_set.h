@@ -45,9 +45,13 @@ class NfcPropertySet : public dbus::PropertySet {
   const base::Closure& on_get_all_callback() { return on_get_all_callback_; }
 
  private:
+  void OnGetAllError(dbus::ErrorResponse* response);
+
   // Optional callback used to notify clients when all properties were received
   // after a call to GetAll.
   base::Closure on_get_all_callback_;
+
+  base::WeakPtrFactory<NfcPropertySet> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NfcPropertySet);
 };
