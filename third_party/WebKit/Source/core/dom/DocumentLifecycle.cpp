@@ -86,7 +86,7 @@ DocumentLifecycle::~DocumentLifecycle()
 {
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 
 bool DocumentLifecycle::canAdvanceTo(LifecycleState nextState) const
 {
@@ -292,7 +292,7 @@ bool DocumentLifecycle::throttlingAllowed() const
     return s_allowThrottlingCount;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 #define DEBUG_STRING_CASE(StateName) \
     case StateName: return #StateName
 

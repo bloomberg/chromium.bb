@@ -163,12 +163,10 @@ public:
 
     bool throttlingAllowed() const;
 
-#if ENABLE(ASSERT)
-    static const char* stateAsDebugString(const LifecycleState);
-#endif
 
 private:
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
+    static const char* stateAsDebugString(const LifecycleState);
     bool canAdvanceTo(LifecycleState) const;
     bool canRewindTo(LifecycleState) const;
 #endif
