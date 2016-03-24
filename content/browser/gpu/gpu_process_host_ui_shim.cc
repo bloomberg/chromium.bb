@@ -28,7 +28,7 @@
 #include "ui/gfx/swap_result.h"
 
 #if defined(OS_MACOSX)
-#include "content/common/gpu/accelerated_surface_buffers_swapped_params_mac.h"
+#include "content/common/accelerated_surface_buffers_swapped_params_mac.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #endif
 

@@ -91,7 +91,12 @@ class GpuChildThread : public ChildThreadImpl,
   void RemoveSubscription(int32_t client_id, unsigned int target) override;
 #if defined(OS_MACOSX)
   void SendAcceleratedSurfaceBuffersSwapped(
-      const AcceleratedSurfaceBuffersSwappedParams& params) override;
+      int32_t surface_id,
+      CAContextID ca_context_id,
+      const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
+      const gfx::Size& size,
+      float scale_factor,
+      std::vector<ui::LatencyInfo> latency_info) override;
 #endif
 #if defined(OS_WIN)
   void SendAcceleratedSurfaceCreatedChildWindow(

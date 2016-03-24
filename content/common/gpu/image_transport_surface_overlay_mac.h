@@ -12,6 +12,7 @@
 #include "base/timer/timer.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
 #include "content/common/gpu/image_transport_surface.h"
+#include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/events/latency_info.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_switching_observer.h"
@@ -23,7 +24,6 @@ namespace content {
 
 class CALayerTree;
 class CALayerPartialDamageTree;
-struct AcceleratedSurfaceBuffersSwappedParams;
 struct BufferPresentedParams;
 
 class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
@@ -76,7 +76,12 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
   void BufferPresented(const BufferPresentedParams& params);
   void SendAcceleratedSurfaceBuffersSwapped(
-      AcceleratedSurfaceBuffersSwappedParams params);
+      int32_t surface_id,
+      CAContextID ca_context_id,
+      const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
+      const gfx::Size& size,
+      float scale_factor,
+      std::vector<ui::LatencyInfo> latency_info);
   gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect);
 
   // Returns true if the front of |pending_swaps_| has completed, or has timed

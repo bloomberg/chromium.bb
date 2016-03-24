@@ -329,7 +329,19 @@ void GpuChildThread::RemoveSubscription(int32_t client_id,
 
 #if defined(OS_MACOSX)
 void GpuChildThread::SendAcceleratedSurfaceBuffersSwapped(
-    const AcceleratedSurfaceBuffersSwappedParams& params) {
+    int32_t surface_id,
+    CAContextID ca_context_id,
+    const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
+    const gfx::Size& size,
+    float scale_factor,
+    std::vector<ui::LatencyInfo> latency_info) {
+  AcceleratedSurfaceBuffersSwappedParams params;
+  params.surface_id = surface_id;
+  params.ca_context_id = ca_context_id;
+  params.io_surface = io_surface;
+  params.size = size;
+  params.scale_factor = scale_factor;
+  params.latency_info = std::move(latency_info);
   Send(new GpuHostMsg_AcceleratedSurfaceBuffersSwapped(params));
 }
 #endif

@@ -8,6 +8,12 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/ipc/common/surface_handle.h"
 
+#if defined(OS_MACOSX)
+#include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/events/latency_info.h"
+#include "ui/gfx/mac/io_surface.h"
+#endif
+
 class GURL;
 
 namespace IPC {
@@ -20,13 +26,8 @@ struct GPUMemoryUmaStats;
 
 namespace content {
 
-struct AcceleratedSurfaceBuffersSwappedParams;
-
 class GpuChannelManagerDelegate {
  public:
-  // Sets the currently active URL.  Use GURL() to clear the URL.
-  virtual void SetActiveURL(const GURL& url) = 0;
-
   // Tells the delegate that a context has subscribed to a new target and
   // the browser should start sending the corresponding information
   virtual void AddSubscription(int32_t client_id, unsigned int target) = 0;
@@ -64,7 +65,12 @@ class GpuChannelManagerDelegate {
 #if defined(OS_MACOSX)
   // Tells the delegate that an accelerated surface has swapped.
   virtual void SendAcceleratedSurfaceBuffersSwapped(
-      const AcceleratedSurfaceBuffersSwappedParams& params) = 0;
+      int32_t surface_id,
+      CAContextID ca_context_id,
+      const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
+      const gfx::Size& size,
+      float scale_factor,
+      std::vector<ui::LatencyInfo> latency_info) = 0;
 #endif
 
 #if defined(OS_WIN)
@@ -72,6 +78,9 @@ class GpuChannelManagerDelegate {
       gpu::SurfaceHandle parent_window,
       gpu::SurfaceHandle child_window) = 0;
 #endif
+
+  // Sets the currently active URL.  Use GURL() to clear the URL.
+  virtual void SetActiveURL(const GURL& url) = 0;
 
  protected:
   virtual ~GpuChannelManagerDelegate() {}

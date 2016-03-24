@@ -27,7 +27,7 @@
 #include "url/ipc/url_param_traits.h"
 
 #if defined(OS_MACOSX)
-#include "content/common/gpu/accelerated_surface_buffers_swapped_params_mac.h"
+#include "content/common/accelerated_surface_buffers_swapped_params_mac.h"
 #include "content/common/gpu/buffer_presented_params_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/gfx/mac/io_surface.h"

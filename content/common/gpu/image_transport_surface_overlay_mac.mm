@@ -24,7 +24,6 @@ typedef void* GLeglImageOES;
 #include "base/bind_helpers.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/gpu/accelerated_surface_buffers_swapped_params_mac.h"
 #include "content/common/gpu/buffer_presented_params_mac.h"
 #include "content/common/gpu/ca_layer_partial_damage_tree_mac.h"
 #include "content/common/gpu/ca_layer_tree_mac.h"
@@ -199,15 +198,21 @@ void ImageTransportSurfaceOverlayMac::BufferPresented(
 }
 
 void ImageTransportSurfaceOverlayMac::SendAcceleratedSurfaceBuffersSwapped(
-    AcceleratedSurfaceBuffersSwappedParams params) {
+    int32_t surface_id,
+    CAContextID ca_context_id,
+    const gfx::ScopedRefCountedIOSurfaceMachPort& io_surface,
+    const gfx::Size& size,
+    float scale_factor,
+    std::vector<ui::LatencyInfo> latency_info) {
   // TRACE_EVENT for gpu tests:
   TRACE_EVENT_INSTANT2("test_gpu", "SwapBuffers", TRACE_EVENT_SCOPE_THREAD,
                        "GLImpl", static_cast<int>(gfx::GetGLImplementation()),
-                       "width", params.size.width());
+                       "width", size.width());
   // On mac, handle_ is a surface id. See
   // GpuProcessTransportFactory::CreatePerCompositorData
-  params.surface_id = handle_;
-  manager_->delegate()->SendAcceleratedSurfaceBuffersSwapped(params);
+  manager_->delegate()->SendAcceleratedSurfaceBuffersSwapped(
+      surface_id, ca_context_id, io_surface, size, scale_factor,
+      std::move(latency_info));
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
@@ -360,17 +365,20 @@ void ImageTransportSurfaceOverlayMac::DisplayFirstPendingSwapImmediately() {
   }
 
   // Send acknowledgement to the browser.
-  AcceleratedSurfaceBuffersSwappedParams params;
+  CAContextID ca_context_id = 0;
+  gfx::ScopedRefCountedIOSurfaceMachPort io_surface;
   if (use_remote_layer_api_) {
-    params.ca_context_id = [ca_context_ contextId];
+    ca_context_id = [ca_context_ contextId];
   } else if (current_partial_damage_tree_) {
-    params.io_surface.reset(IOSurfaceCreateMachPort(
+    io_surface.reset(IOSurfaceCreateMachPort(
         current_partial_damage_tree_->RootLayerIOSurface()));
   }
-  params.size = swap->pixel_size;
-  params.scale_factor = swap->scale_factor;
-  params.latency_info.swap(swap->latency_info);
-  SendAcceleratedSurfaceBuffersSwapped(params);
+  gfx::Size size = swap->pixel_size;
+  float scale_factor = swap->scale_factor;
+  std::vector<ui::LatencyInfo> latency_info;
+  latency_info.swap(swap->latency_info);
+  SendAcceleratedSurfaceBuffersSwapped(handle_, ca_context_id, io_surface, size,
+                                       scale_factor, std::move(latency_info));
 
   // Remove this from the queue, and reset any callback timers.
   pending_swaps_.pop_front();

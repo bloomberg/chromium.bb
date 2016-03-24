@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_ACCELERATED_SURFACE_BUFFERS_SWAPPED_PARAMS_MAC_H_
-#define CONTENT_COMMON_GPU_ACCELERATED_SURFACE_BUFFERS_SWAPPED_PARAMS_MAC_H_
+#ifndef CONTENT_COMMON_ACCELERATED_SURFACE_BUFFERS_SWAPPED_PARAMS_MAC_H_
+#define CONTENT_COMMON_ACCELERATED_SURFACE_BUFFERS_SWAPPED_PARAMS_MAC_H_
 
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/events/latency_info.h"
@@ -25,4 +25,4 @@ struct AcceleratedSurfaceBuffersSwappedParams {
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_GPU_ACCELERATED_SURFACE_BUFFERS_SWAPPED_PARAMS_MAC_H_
+#endif  // CONTENT_COMMON_ACCELERATED_SURFACE_BUFFERS_SWAPPED_PARAMS_MAC_H_
