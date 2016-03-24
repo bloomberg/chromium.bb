@@ -7,6 +7,7 @@
 #ifndef NET_TOOLS_QUIC_QUIC_SOCKET_UTILS_H_
 #define NET_TOOLS_QUIC_QUIC_SOCKET_UTILS_H_
 
+#include <netinet/in.h>
 #include <stddef.h>
 #include <sys/socket.h>
 
@@ -20,11 +21,37 @@
 
 namespace net {
 
+// This is the structure that SO_TIMESTAMPING fills into the cmsg header. It is
+// well-defined, but does not have a definition in a public header. See
+// https://www.kernel.org/doc/Documentation/networking/timestamping.txt for more
+// information.
+struct LinuxTimestamping {
+  // The converted system time of the timestamp.
+  struct timespec systime;
+  // Deprecated; serves only as padding.
+  struct timespec hwtimetrans;
+  // The raw hardware timestamp.
+  struct timespec hwtimeraw;
+};
+
 class QuicSocketUtils {
  public:
-  // If the msghdr contains IP_PKTINFO or IPV6_PKTINFO, this will return the
-  // IPAddress in that header.  Returns an empty IPAddress on failure.
-  static IPAddress GetAddressFromMsghdr(struct msghdr* hdr);
+  // The first integer is for overflow. The in6_pktinfo is the larger of the
+  // address structures present. LinuxTimestamping is present for socket
+  // timestamping.
+  // The final int is a sentinel so the msg_controllen feedback
+  // can be used to detect larger control messages than there is space for.
+  static const int kSpaceForCmsg =
+      CMSG_SPACE(CMSG_LEN(sizeof(int)) + CMSG_LEN(sizeof(in6_pktinfo)) +
+                 CMSG_LEN(sizeof(LinuxTimestamping)) +
+                 CMSG_LEN(sizeof(int)));
+
+  // Fills in |address| if |hdr| contains IP_PKTINFO or IPV6_PKTINFO. Fills in
+  // |timestamp| if |hdr| contains |SO_TIMESTAMPING|. |address| and |timestamp|
+  // must not be null.
+  static void GetAddressAndTimestampFromMsghdr(struct msghdr* hdr,
+                                               IPAddress* address,
+                                               QuicTime* timestamp);
 
   // If the msghdr contains an SO_RXQ_OVFL entry, this will set dropped_packets
   // to the correct value and return true. Otherwise it will return false.
@@ -34,6 +61,10 @@ class QuicSocketUtils {
   // Sets either IP_PKTINFO or IPV6_PKTINFO on the socket, based on
   // address_family.  Returns the return code from setsockopt.
   static int SetGetAddressInfo(int fd, int address_family);
+
+  // Sets SO_TIMESTAMPING on the socket for software receive timestamping.
+  // Returns the return code from setsockopt.
+  static int SetGetSoftwareReceiveTimestamp(int fd);
 
   // Sets the send buffer size to |size| and returns false if it fails.
   static bool SetSendBufferSize(int fd, size_t size);
@@ -50,11 +81,17 @@ class QuicSocketUtils {
   //
   // If self_address is non-null, it will be set to the address the peer sent
   // packets to, assuming a packet was read.
+  //
+  // If timestamp is non-null, it will be filled with the timestamp of the
+  // received packet, assuming a packet was read and the platform supports
+  // packet receipt timestamping. If the platform does not support packet
+  // receipt timestamping, timestamp will not be changed.
   static int ReadPacket(int fd,
                         char* buffer,
                         size_t buf_len,
                         QuicPacketCount* dropped_packets,
                         IPAddress* self_address,
+                        QuicTime* timestamp,
                         IPEndPoint* peer_address);
 
   // Writes buf_len to the socket. If writing is successful, sets the result's

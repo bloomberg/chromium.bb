@@ -109,6 +109,12 @@ QuicEncryptedPacket* ConstructEncryptedPacket(QuicConnectionId connection_id,
                                               QuicPacketNumber packet_number,
                                               const std::string& data);
 
+// Constructs a received packet for testing. The caller must take ownership of
+// the returned pointer.
+QuicReceivedPacket* ConstructReceivedPacket(
+    const QuicEncryptedPacket& encrypted_packet,
+    QuicTime receipt_time);
+
 // Create an encrypted packet for testing whose data portion erroneous.
 // The specific way the data portion is erroneous is not specified, but
 // it is an error that QuicFramer detects.
@@ -377,7 +383,7 @@ class MockConnection : public QuicConnection {
   MOCK_METHOD3(ProcessUdpPacket,
                void(const IPEndPoint& self_address,
                     const IPEndPoint& peer_address,
-                    const QuicEncryptedPacket& packet));
+                    const QuicReceivedPacket& packet));
   MOCK_METHOD1(SendConnectionClose, void(QuicErrorCode error));
   MOCK_METHOD2(SendConnectionCloseWithDetails,
                void(QuicErrorCode error, const std::string& details));
@@ -407,7 +413,7 @@ class MockConnection : public QuicConnection {
 
   void ReallyProcessUdpPacket(const IPEndPoint& self_address,
                               const IPEndPoint& peer_address,
-                              const QuicEncryptedPacket& packet) {
+                              const QuicReceivedPacket& packet) {
     QuicConnection::ProcessUdpPacket(self_address, peer_address, packet);
   }
 
@@ -454,6 +460,8 @@ class MockQuicSpdySession : public QuicSpdySession {
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD1(CreateOutgoingDynamicStream,
                QuicSpdyStream*(SpdyPriority priority));
+  MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
+  MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
   MOCK_METHOD5(WritevData,
                QuicConsumedData(QuicStreamId id,
                                 QuicIOVector data,
@@ -547,6 +555,8 @@ class TestQuicSpdyClientSession : public QuicClientSessionBase {
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD1(CreateOutgoingDynamicStream,
                QuicSpdyStream*(SpdyPriority priority));
+  MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
+  MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
 
   QuicCryptoClientStream* GetCryptoStream() override;
 

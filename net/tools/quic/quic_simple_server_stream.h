@@ -73,7 +73,7 @@ class QuicSimpleServerStream : public QuicSpdyStream {
 
   // The parsed headers received from the client.
   SpdyHeaderBlock request_headers_;
-  int content_length_;
+  int64_t content_length_;
   std::string body_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSimpleServerStream);

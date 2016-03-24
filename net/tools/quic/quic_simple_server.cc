@@ -202,7 +202,8 @@ void QuicSimpleServer::OnReadComplete(int result) {
     return;
   }
 
-  QuicEncryptedPacket packet(read_buffer_->data(), result, false);
+  QuicReceivedPacket packet(read_buffer_->data(), result,
+                            helper_->GetClock()->Now(), false);
   dispatcher_->ProcessPacket(server_address_, client_address_, packet);
 
   StartReading();

@@ -130,7 +130,7 @@ class QuicSimpleClient : public QuicClientBase,
 
   // QuicChromiumPacketReader::Visitor
   void OnReadError(int result, const DatagramClientSocket* socket) override;
-  bool OnPacket(const QuicEncryptedPacket& packet,
+  bool OnPacket(const QuicReceivedPacket& packet,
                 IPEndPoint local_address,
                 IPEndPoint peer_address) override;
 

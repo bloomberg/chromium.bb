@@ -46,5 +46,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_rto_timeout;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_dont_limit_max_cwnd;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_dont_copy_acks;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_sslr_byte_conservation;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_socket_timestamp;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_consolidate_onstreamframe_errors;
 
 #endif  // NET_QUIC_QUIC_FLAGS_H_

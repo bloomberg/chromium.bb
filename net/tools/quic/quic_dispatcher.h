@@ -63,7 +63,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // an existing session, or passing it to the time wait list.
   void ProcessPacket(const IPEndPoint& server_address,
                      const IPEndPoint& client_address,
-                     const QuicEncryptedPacket& packet) override;
+                     const QuicReceivedPacket& packet) override;
 
   // Called when the socket becomes writable to allow queued writes to happen.
   void OnCanWrite() override;
@@ -182,7 +182,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   const IPEndPoint& current_server_address() { return current_server_address_; }
   const IPEndPoint& current_client_address() { return current_client_address_; }
-  const QuicEncryptedPacket& current_packet() { return *current_packet_; }
+  const QuicReceivedPacket& current_packet() { return *current_packet_; }
 
   const QuicConfig& config() const { return config_; }
 
@@ -257,7 +257,7 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   // Information about the packet currently being handled.
   IPEndPoint current_client_address_;
   IPEndPoint current_server_address_;
-  const QuicEncryptedPacket* current_packet_;
+  const QuicReceivedPacket* current_packet_;
   QuicConnectionId current_connection_id_;
 
   QuicFramer framer_;

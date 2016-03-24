@@ -158,7 +158,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   // QuicSession methods:
   void OnStreamFrame(const QuicStreamFrame& frame) override;
-  bool ShouldCreateOutgoingDynamicStream();
   QuicChromiumClientStream* CreateOutgoingDynamicStream(
       SpdyPriority priority) override;
   QuicCryptoClientStream* GetCryptoStream() override;
@@ -187,7 +186,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   // QuicChromiumPacketReader::Visitor methods:
   void OnReadError(int result, const DatagramClientSocket* socket) override;
-  bool OnPacket(const QuicEncryptedPacket& packet,
+  bool OnPacket(const QuicReceivedPacket& packet,
                 IPEndPoint local_address,
                 IPEndPoint peer_address) override;
 
@@ -270,6 +269,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
  protected:
   // QuicSession methods:
+  bool ShouldCreateIncomingDynamicStream(QuicStreamId id) override;
+  bool ShouldCreateOutgoingDynamicStream() override;
+
   QuicChromiumClientStream* CreateIncomingDynamicStream(
       QuicStreamId id) override;
 

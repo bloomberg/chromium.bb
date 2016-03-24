@@ -248,14 +248,14 @@ TEST_P(QuicClientSessionTest, InvalidPacketReceived) {
   EXPECT_CALL(*connection_, OnError(_)).Times(1);
 
   // Verify that empty packets don't close the connection.
-  QuicEncryptedPacket zero_length_packet(nullptr, 0, false);
+  QuicReceivedPacket zero_length_packet(nullptr, 0, QuicTime::Zero(), false);
   EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
   session_->ProcessUdpPacket(client_address, server_address,
                              zero_length_packet);
 
   // Verifiy that small, invalid packets don't close the connection.
   char buf[2] = {0x00, 0x01};
-  QuicEncryptedPacket valid_packet(buf, 2, false);
+  QuicReceivedPacket valid_packet(buf, 2, QuicTime::Zero(), false);
   // Close connection shouldn't be called.
   EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
   session_->ProcessUdpPacket(client_address, server_address, valid_packet);
@@ -264,11 +264,13 @@ TEST_P(QuicClientSessionTest, InvalidPacketReceived) {
   QuicConnectionId connection_id = session_->connection()->connection_id();
   scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
       connection_id, false, false, false, kDefaultPathId, 100, "data"));
+  scoped_ptr<QuicReceivedPacket> received(
+      ConstructReceivedPacket(*packet, QuicTime::Zero()));
   // Change the last byte of the encrypted data.
-  *(const_cast<char*>(packet->data() + packet->length() - 1)) += 1;
+  *(const_cast<char*>(received->data() + received->length() - 1)) += 1;
   EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(0);
   EXPECT_CALL(*connection_, OnError(Truly(CheckForDecryptionError))).Times(1);
-  session_->ProcessUdpPacket(client_address, server_address, *packet);
+  session_->ProcessUdpPacket(client_address, server_address, *received);
 }
 
 // A packet with invalid framing should cause a connection to be closed.
@@ -286,8 +288,10 @@ TEST_P(QuicClientSessionTest, InvalidFramedPacketReceived) {
   scoped_ptr<QuicEncryptedPacket> packet(ConstructMisFramedEncryptedPacket(
       connection_id, false, false, false, kDefaultPathId, 100, "data",
       PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER, nullptr));
+  scoped_ptr<QuicReceivedPacket> received(
+      ConstructReceivedPacket(*packet, QuicTime::Zero()));
   EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(_, _)).Times(1);
-  session_->ProcessUdpPacket(client_address, server_address, *packet);
+  session_->ProcessUdpPacket(client_address, server_address, *received);
 }
 
 TEST_P(QuicClientSessionTest, PushPromiseOnPromiseHeaders) {

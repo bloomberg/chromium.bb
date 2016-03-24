@@ -240,7 +240,7 @@ class QuicTestClient : public test::SimpleClient,
 
   bool response_complete_;
   bool response_headers_complete_;
-  mutable BalsaHeaders headers_;
+  mutable BalsaHeaders response_headers_;
 
   // Parsed response trailers (if present), copied from the stream in OnClose.
   SpdyHeaderBlock response_trailers_;

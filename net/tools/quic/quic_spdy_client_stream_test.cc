@@ -100,7 +100,7 @@ TEST_F(QuicSpdyClientStreamTest, TestFraming) {
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, body_));
-  EXPECT_EQ("200", stream_->headers().find(":status")->second);
+  EXPECT_EQ("200", stream_->response_headers().find(":status")->second);
   EXPECT_EQ(200, stream_->response_code());
   EXPECT_EQ(body_, stream_->data());
 }
@@ -110,7 +110,7 @@ TEST_F(QuicSpdyClientStreamTest, TestFramingOnePacket) {
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
   stream_->OnStreamFrame(
       QuicStreamFrame(stream_->id(), /*fin=*/false, /*offset=*/0, body_));
-  EXPECT_EQ("200", stream_->headers().find(":status")->second);
+  EXPECT_EQ("200", stream_->response_headers().find(":status")->second);
   EXPECT_EQ(200, stream_->response_code());
   EXPECT_EQ(body_, stream_->data());
 }
@@ -122,7 +122,7 @@ TEST_F(QuicSpdyClientStreamTest, DISABLED_TestFramingExtraData) {
   stream_->OnStreamHeadersComplete(false, headers_string_.size());
   // The headers should parse successfully.
   EXPECT_EQ(QUIC_STREAM_NO_ERROR, stream_->stream_error());
-  EXPECT_EQ("200", stream_->headers().find(":status")->second);
+  EXPECT_EQ("200", stream_->response_headers().find(":status")->second);
   EXPECT_EQ(200, stream_->response_code());
 
   EXPECT_CALL(*connection_,

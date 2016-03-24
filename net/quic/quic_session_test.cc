@@ -89,10 +89,6 @@ class TestStream : public QuicSpdyStream {
 
   void OnDataAvailable() override {}
 
-  void SendBody(const string& data, bool fin) {
-    WriteOrBufferData(data, fin, nullptr);
-  }
-
   MOCK_METHOD0(OnCanWrite, void());
 };
 
@@ -141,6 +137,12 @@ class TestSession : public QuicSpdySession {
       return stream;
     }
   }
+
+  bool ShouldCreateIncomingDynamicStream(QuicStreamId /*id*/) override {
+    return true;
+  }
+
+  bool ShouldCreateOutgoingDynamicStream() override { return true; }
 
   bool IsClosedStream(QuicStreamId id) {
     return QuicSession::IsClosedStream(id);
@@ -723,7 +725,7 @@ TEST_P(QuicSessionTestServer, HandshakeUnblocksFlowControlBlockedStream) {
   EXPECT_FALSE(session_.IsStreamFlowControlBlocked());
   EXPECT_CALL(*connection_, SendBlocked(stream2->id()));
   EXPECT_CALL(*connection_, SendBlocked(0));
-  stream2->SendBody(body, false);
+  stream2->WriteOrBufferBody(body, false, nullptr);
   EXPECT_TRUE(stream2->flow_controller()->IsBlocked());
   EXPECT_TRUE(session_.IsConnectionFlowControlBlocked());
   EXPECT_TRUE(session_.IsStreamFlowControlBlocked());

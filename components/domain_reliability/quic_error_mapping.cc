@@ -96,7 +96,7 @@ const struct QuicErrorMapping {
   // There was an error while reading from the socket.
   { net::QUIC_PACKET_READ_ERROR, "quic.packet.read_error" },
   // We received a STREAM_FRAME with no data and no fin flag set.
-  { net::QUIC_INVALID_STREAM_FRAME, "quic.invalid_stream_frame" },
+  { net::QUIC_EMPTY_STREAM_FRAME_NO_FIN, "quic.empty_stream_frame_no_fin" },
   // We received invalid data on the headers stream.
   { net::QUIC_INVALID_HEADERS_STREAM_DATA, "quic.invalid_headers_stream_data" },
   // The peer received too much data, violating flow control.
@@ -219,6 +219,9 @@ const struct QuicErrorMapping {
   // Network changed, but connection had one or more non-migratable streams.
   { net::QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM,
     "quic.connection_migration_non_migratable_stream" },
+  // Stream frame overlaps with buffered data.
+  { net::QUIC_OVERLAPPING_STREAM_DATA,
+    "quic.overlapping_stream_data" },
 
   // No error. Used as bound while iterating.
   { net::QUIC_LAST_ERROR, "quic.last_error"}

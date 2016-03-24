@@ -79,7 +79,7 @@ void QuicSpdyClientStream::OnTrailingHeadersComplete(bool fin,
 void QuicSpdyClientStream::OnPromiseHeadersComplete(QuicStreamId promised_id,
                                                     size_t frame_len) {
   header_bytes_read_ += frame_len;
-  int content_length = -1;
+  int64_t content_length = -1;
   SpdyHeaderBlock promise_headers;
   if (!SpdyUtils::ParseHeaders(decompressed_headers().data(),
                                decompressed_headers().length(), &content_length,
@@ -111,7 +111,7 @@ void QuicSpdyClientStream::OnDataAvailable() {
     data_.append(static_cast<char*>(iov.iov_base), iov.iov_len);
 
     if (content_length_ >= 0 &&
-        static_cast<int>(data_.size()) > content_length_) {
+        data_.size() > static_cast<uint64_t>(content_length_)) {
       Reset(QUIC_BAD_APPLICATION_PAYLOAD);
       return;
     }
@@ -137,16 +137,6 @@ size_t QuicSpdyClientStream::SendRequest(const SpdyHeaderBlock& headers,
   }
 
   return bytes_sent;
-}
-
-void QuicSpdyClientStream::SendBody(const string& data, bool fin) {
-  SendBody(data, fin, nullptr);
-}
-
-void QuicSpdyClientStream::SendBody(const string& data,
-                                    bool fin,
-                                    QuicAckListenerInterface* listener) {
-  WriteOrBufferData(data, fin, listener);
 }
 
 }  // namespace net

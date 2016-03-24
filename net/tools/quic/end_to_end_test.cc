@@ -1003,7 +1003,7 @@ TEST_P(EndToEndTest, DoNotSetResumeWriteAlarmIfConnectionFlowControlBlocked) {
 
   // Make sure that the stream has data pending so that it will be marked as
   // write blocked when it receives a stream level WINDOW_UPDATE.
-  stream->SendBody("hello", false);
+  stream->WriteOrBufferBody("hello", false, nullptr);
 
   // The stream now attempts to write, fails because it is still connection
   // level flow control blocked, and is added to the write blocked list.
@@ -1505,7 +1505,7 @@ TEST_P(EndToEndTest, DifferentFlowControlWindows) {
 
   // Open a data stream to make sure the stream level flow control is updated.
   QuicSpdyClientStream* stream = client_->GetOrCreateStream();
-  stream->SendBody("hello", false);
+  stream->WriteOrBufferBody("hello", false, nullptr);
 
   // Client should have the right values for server's receive window.
   EXPECT_EQ(kServerStreamIFCW,
@@ -1972,6 +1972,55 @@ class StreamWithErrorFactory : public QuicTestServer::StreamFactory {
   string response_body_;
 };
 
+// A test server stream that drops all received body.
+class ServerStreamThatDropsBody : public QuicSimpleServerStream {
+ public:
+  ServerStreamThatDropsBody(QuicStreamId id, QuicSpdySession* session)
+      : QuicSimpleServerStream(id, session) {}
+
+  ~ServerStreamThatDropsBody() override {}
+
+ protected:
+  void OnDataAvailable() override {
+    while (HasBytesToRead()) {
+      struct iovec iov;
+      if (GetReadableRegions(&iov, 1) == 0) {
+        // No more data to read.
+        break;
+      }
+      DVLOG(1) << "Processed " << iov.iov_len << " bytes for stream " << id();
+      MarkConsumed(iov.iov_len);
+    }
+
+    if (!sequencer()->IsClosed()) {
+      sequencer()->SetUnblocked();
+      return;
+    }
+
+    // If the sequencer is closed, then all the body, including the fin, has
+    // been consumed.
+    OnFinRead();
+
+    if (write_side_closed() || fin_buffered()) {
+      return;
+    }
+
+    SendResponse();
+  }
+};
+
+class ServerStreamThatDropsBodyFactory : public QuicTestServer::StreamFactory {
+ public:
+  ServerStreamThatDropsBodyFactory() {}
+
+  ~ServerStreamThatDropsBodyFactory() override{};
+
+  QuicSimpleServerStream* CreateStream(QuicStreamId id,
+                                       QuicSpdySession* session) override {
+    return new ServerStreamThatDropsBody(id, session);
+  }
+};
+
 TEST_P(EndToEndTest, EarlyResponseFinRecording) {
   set_smaller_flow_control_receive_window();
 
@@ -2367,6 +2416,39 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitWithBlocking) {
   // Including response to original request, 12 responses in total were
   // recieved.
   EXPECT_EQ(12u, client_->num_responses());
+}
+
+// TODO(fayang): this test seems to cause net_unittests timeouts :|
+TEST_P(EndToEndTest, DISABLED_TestHugePost) {
+  // This test tests a huge post with body size greater than 4GB, making sure
+  // QUIC code does not broke for 32-bit builds.
+  ServerStreamThatDropsBodyFactory stream_factory;
+  SetSpdyStreamFactory(&stream_factory);
+  ASSERT_TRUE(Initialize());
+  // Set client's epoll server's time out to 0 to make this test be finished
+  // within a short time.
+  client_->epoll_server()->set_timeout_in_us(0);
+
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // To avoid storing the whole request body in memory, use a loop to repeatedly
+  // send body size of kSizeBytes until the whole request body size is reached.
+  const int kSizeBytes = 128 * 1024;
+  HTTPMessage request(HttpConstants::HTTP_1_1, HttpConstants::POST, "/foo");
+  // Request body size is 4G plus one more kSizeBytes.
+  int64_t request_body_size_bytes = pow(2, 32) + kSizeBytes;
+  request.AddHeader("content-length", IntToString(request_body_size_bytes));
+  request.set_has_complete_message(false);
+  string body;
+  test::GenerateBody(&body, kSizeBytes);
+
+  client_->SendMessage(request);
+  for (int i = 0; i < request_body_size_bytes / kSizeBytes; ++i) {
+    bool fin = (i == request_body_size_bytes - 1);
+    client_->SendData(string(body.data(), kSizeBytes), fin);
+    client_->client()->WaitForEvents();
+  }
+  VerifyCleanConnection(false);
 }
 
 }  // namespace

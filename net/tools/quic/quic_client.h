@@ -187,7 +187,7 @@ class QuicClient : public QuicClientBase,
   // packet.
   void ProcessPacket(const IPEndPoint& self_address,
                      const IPEndPoint& peer_address,
-                     const QuicEncryptedPacket& packet) override;
+                     const QuicReceivedPacket& packet) override;
 
   QuicClientPushPromiseIndex* push_promise_index() {
     return &push_promise_index_;

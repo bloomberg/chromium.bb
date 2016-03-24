@@ -230,7 +230,7 @@ bool QuicSession::HasOpenDynamicStreams() const {
 
 void QuicSession::ProcessUdpPacket(const IPEndPoint& self_address,
                                    const IPEndPoint& peer_address,
-                                   const QuicEncryptedPacket& packet) {
+                                   const QuicReceivedPacket& packet) {
   connection_->ProcessUdpPacket(self_address, peer_address, packet);
 }
 

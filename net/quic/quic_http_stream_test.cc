@@ -129,11 +129,11 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   // Holds a packet to be written to the wire, and the IO mode that should
   // be used by the mock socket when performing the write.
   struct PacketToWrite {
-    PacketToWrite(IoMode mode, QuicEncryptedPacket* packet)
+    PacketToWrite(IoMode mode, QuicReceivedPacket* packet)
         : mode(mode), packet(packet) {}
     PacketToWrite(IoMode mode, int rv) : mode(mode), packet(nullptr), rv(rv) {}
     IoMode mode;
-    QuicEncryptedPacket* packet;
+    QuicReceivedPacket* packet;
     int rv;
   };
 
@@ -161,7 +161,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   // Adds a packet to the list of expected writes.
-  void AddWrite(scoped_ptr<QuicEncryptedPacket> packet) {
+  void AddWrite(scoped_ptr<QuicReceivedPacket> packet) {
     writes_.push_back(PacketToWrite(SYNCHRONOUS, packet.release()));
   }
 
@@ -170,14 +170,14 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   }
 
   // Returns the packet to be written at position |pos|.
-  QuicEncryptedPacket* GetWrite(size_t pos) { return writes_[pos].packet; }
+  QuicReceivedPacket* GetWrite(size_t pos) { return writes_[pos].packet; }
 
   bool AtEof() {
     return socket_data_->AllReadDataConsumed() &&
            socket_data_->AllWriteDataConsumed();
   }
 
-  void ProcessPacket(scoped_ptr<QuicEncryptedPacket> packet) {
+  void ProcessPacket(scoped_ptr<QuicReceivedPacket> packet) {
     connection_->ProcessUdpPacket(self_addr_, peer_addr_, *packet);
   }
 
@@ -283,7 +283,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     response_data_ = body;
   }
 
-  scoped_ptr<QuicEncryptedPacket> InnerConstructDataPacket(
+  scoped_ptr<QuicReceivedPacket> InnerConstructDataPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
@@ -294,7 +294,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                  should_include_version, fin, offset, data);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructDataPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructDataPacket(
       QuicPacketNumber packet_number,
       bool should_include_version,
       bool fin,
@@ -304,7 +304,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                     should_include_version, fin, offset, data);
   }
 
-  scoped_ptr<QuicEncryptedPacket> InnerConstructRequestHeadersPacket(
+  scoped_ptr<QuicReceivedPacket> InnerConstructRequestHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool should_include_version,
@@ -318,7 +318,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         request_headers_, spdy_headers_frame_length);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructRequestHeadersPacket(
       QuicPacketNumber packet_number,
       bool fin,
       RequestPriority request_priority,
@@ -328,7 +328,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         spdy_headers_frame_length);
   }
 
-  scoped_ptr<QuicEncryptedPacket> InnerConstructResponseHeadersPacket(
+  scoped_ptr<QuicReceivedPacket> InnerConstructResponseHeadersPacket(
       QuicPacketNumber packet_number,
       QuicStreamId stream_id,
       bool fin,
@@ -338,7 +338,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         spdy_headers_frame_length, &response_offset_);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructResponseHeadersPacket(
       QuicPacketNumber packet_number,
       bool fin,
       size_t* spdy_headers_frame_length) {
@@ -346,7 +346,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                                spdy_headers_frame_length);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacketWithOffset(
+  scoped_ptr<QuicReceivedPacket> ConstructResponseHeadersPacketWithOffset(
       QuicPacketNumber packet_number,
       bool fin,
       size_t* spdy_headers_frame_length,
@@ -356,7 +356,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         spdy_headers_frame_length, offset);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructResponseTrailersPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructResponseTrailersPacket(
       QuicPacketNumber packet_number,
       bool fin,
       const SpdyHeaderBlock& trailers,
@@ -367,26 +367,26 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
                                             spdy_headers_frame_length, offset);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructRstStreamPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructRstStreamPacket(
       QuicPacketNumber packet_number) {
     return maker_.MakeRstPacket(
         packet_number, true, stream_id_,
         AdjustErrorForVersion(QUIC_RST_ACKNOWLEDGEMENT, GetParam()));
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructRstStreamCancelledPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructRstStreamCancelledPacket(
       QuicPacketNumber packet_number) {
     return maker_.MakeRstPacket(packet_number, !kIncludeVersion, stream_id_,
                                 QUIC_STREAM_CANCELLED);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructRstStreamVaryMismatchPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructRstStreamVaryMismatchPacket(
       QuicPacketNumber packet_number) {
     return maker_.MakeRstPacket(packet_number, !kIncludeVersion, promise_id_,
                                 QUIC_PROMISE_VARY_MISMATCH);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructAckAndRstStreamPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructAckAndRstStreamPacket(
       QuicPacketNumber packet_number,
       QuicPacketNumber largest_received,
       QuicPacketNumber ack_least_unacked,
@@ -397,12 +397,12 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
         !kIncludeCongestionFeedback);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructAckAndRstStreamPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructAckAndRstStreamPacket(
       QuicPacketNumber packet_number) {
     return ConstructAckAndRstStreamPacket(packet_number, 2, 1, 1);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructAckPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructAckPacket(
       QuicPacketNumber packet_number,
       QuicPacketNumber largest_received,
       QuicPacketNumber least_unacked) {

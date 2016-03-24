@@ -194,6 +194,8 @@ QuicTag QuicVersionToQuicTag(const QuicVersion version) {
       return MakeQuicTag('Q', '0', '3', '0');
     case QUIC_VERSION_31:
       return MakeQuicTag('Q', '0', '3', '1');
+    case QUIC_VERSION_32:
+      return MakeQuicTag('Q', '0', '3', '2');
     default:
       // This shold be an ERROR because we should never attempt to convert an
       // invalid QuicVersion to be written to the wire.
@@ -227,6 +229,7 @@ string QuicVersionToString(const QuicVersion version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_29);
     RETURN_STRING_LITERAL(QUIC_VERSION_30);
     RETURN_STRING_LITERAL(QUIC_VERSION_31);
+    RETURN_STRING_LITERAL(QUIC_VERSION_32);
     default:
       return "QUIC_VERSION_UNSUPPORTED";
   }
@@ -354,7 +357,7 @@ QuicFrame::QuicFrame(QuicPathCloseFrame* frame)
 
 ostream& operator<<(ostream& os, const QuicStopWaitingFrame& sent_info) {
   os << "entropy_hash: " << static_cast<int>(sent_info.entropy_hash)
-     << " least_unacked: " << sent_info.least_unacked;
+     << " least_unacked: " << sent_info.least_unacked << "\n";
   return os;
 }
 
@@ -532,7 +535,7 @@ ostream& operator<<(ostream& os, const QuicAckFrame& ack_frame) {
        ack_frame.received_packet_times) {
     os << p.first << " at " << p.second.ToDebuggingValue() << " ";
   }
-  os << " ]";
+  os << " ]\n";
   return os;
 }
 
@@ -695,6 +698,40 @@ QuicEncryptedPacket::QuicEncryptedPacket(char* buffer,
                                          bool owns_buffer)
     : QuicData(buffer, length, owns_buffer) {}
 
+QuicEncryptedPacket* QuicEncryptedPacket::Clone() const {
+  char* buffer = new char[this->length()];
+  memcpy(buffer, this->data(), this->length());
+  return new QuicEncryptedPacket(buffer, this->length(), true);
+}
+
+ostream& operator<<(ostream& os, const QuicEncryptedPacket& s) {
+  os << s.length() << "-byte data";
+  return os;
+}
+
+QuicReceivedPacket::QuicReceivedPacket(const char* buffer,
+                                       size_t length,
+                                       QuicTime receipt_time)
+    : QuicEncryptedPacket(buffer, length), receipt_time_(receipt_time) {}
+
+QuicReceivedPacket::QuicReceivedPacket(char* buffer,
+                                       size_t length,
+                                       QuicTime receipt_time,
+                                       bool owns_buffer)
+    : QuicEncryptedPacket(buffer, length, owns_buffer),
+      receipt_time_(receipt_time) {}
+
+QuicReceivedPacket* QuicReceivedPacket::Clone() const {
+  char* buffer = new char[this->length()];
+  memcpy(buffer, this->data(), this->length());
+  return new QuicReceivedPacket(buffer, this->length(), receipt_time(), true);
+}
+
+ostream& operator<<(ostream& os, const QuicReceivedPacket& s) {
+  os << s.length() << "-byte data";
+  return os;
+}
+
 StringPiece QuicPacket::AssociatedData() const {
   return StringPiece(data(), GetStartOfEncryptedData(
                                  connection_id_length_, includes_version_,
@@ -745,17 +782,6 @@ SerializedPacket::SerializedPacket(QuicPathId path_id,
 SerializedPacket::SerializedPacket(const SerializedPacket& other) = default;
 
 SerializedPacket::~SerializedPacket() {}
-
-QuicEncryptedPacket* QuicEncryptedPacket::Clone() const {
-  char* buffer = new char[this->length()];
-  memcpy(buffer, this->data(), this->length());
-  return new QuicEncryptedPacket(buffer, this->length(), true);
-}
-
-ostream& operator<<(ostream& os, const QuicEncryptedPacket& s) {
-  os << s.length() << "-byte data";
-  return os;
-}
 
 TransmissionInfo::TransmissionInfo()
     : encryption_level(ENCRYPTION_NONE),

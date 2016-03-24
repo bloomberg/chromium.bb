@@ -138,3 +138,11 @@ bool FLAGS_quic_dont_copy_acks = true;
 // Use a byte conservation approach instead of packet conservation in the
 // Slow Start Large Reduction experiment.
 bool FLAGS_quic_sslr_byte_conservation = true;
+
+// Try to use the socket timestamp to determine the time a packet was
+// received instead of Now().
+bool FLAGS_quic_use_socket_timestamp = true;
+
+// If true, handling of errors from invalid stream frames is done in
+// one place in QuicStreamSequencer::OnStreamFrame.
+bool FLAGS_quic_consolidate_onstreamframe_errors = true;

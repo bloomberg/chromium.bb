@@ -74,7 +74,7 @@ void QuicDispatcher::InitializeWithWriter(QuicPacketWriter* writer) {
 
 void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
                                    const IPEndPoint& client_address,
-                                   const QuicEncryptedPacket& packet) {
+                                   const QuicReceivedPacket& packet) {
   current_server_address_ = server_address;
   current_client_address_ = client_address;
   current_packet_ = &packet;

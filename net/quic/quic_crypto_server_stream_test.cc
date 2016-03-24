@@ -146,7 +146,7 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   }
 
   bool AsyncStrikeRegisterVerification() {
-    if (server_connection_->version() > QUIC_VERSION_31) {
+    if (server_connection_->version() > QUIC_VERSION_32) {
       return false;
     }
     return GetParam();

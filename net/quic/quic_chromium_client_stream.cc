@@ -40,7 +40,7 @@ void QuicChromiumClientStream::OnStreamHeadersComplete(bool fin,
   if (decompressed_headers().empty() && !decompressed_trailers().empty()) {
     DCHECK(trailers_decompressed());
     // The delegate will read the trailers via a posted task.
-    NotifyDelegateOfHeadersCompleteLater(response_trailers(), frame_len);
+    NotifyDelegateOfHeadersCompleteLater(received_trailers(), frame_len);
   } else {
     DCHECK(!headers_delivered_);
     SpdyHeaderBlock headers;

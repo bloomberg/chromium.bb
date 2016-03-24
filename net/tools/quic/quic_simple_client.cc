@@ -339,7 +339,8 @@ void QuicSimpleClient::OnClose(QuicSpdyStream* stream) {
   QuicSpdyClientStream* client_stream =
       static_cast<QuicSpdyClientStream*>(stream);
   HttpResponseInfo response;
-  SpdyHeadersToHttpResponse(client_stream->headers(), net::HTTP2, &response);
+  SpdyHeadersToHttpResponse(client_stream->response_headers(), net::HTTP2,
+                            &response);
   if (response_listener_.get() != nullptr) {
     response_listener_->OnCompleteResponse(stream->id(), *response.headers,
                                            client_stream->data());
@@ -388,7 +389,7 @@ void QuicSimpleClient::OnReadError(int result,
   Disconnect();
 }
 
-bool QuicSimpleClient::OnPacket(const QuicEncryptedPacket& packet,
+bool QuicSimpleClient::OnPacket(const QuicReceivedPacket& packet,
                                 IPEndPoint local_address,
                                 IPEndPoint peer_address) {
   session()->connection()->ProcessUdpPacket(local_address, peer_address,

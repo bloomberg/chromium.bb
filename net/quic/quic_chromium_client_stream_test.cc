@@ -112,6 +112,10 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
       const ProofVerifyDetails& verify_details) override {}
   bool IsAuthorized(const std::string& hostname) override { return true; }
 
+ protected:
+  MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
+  MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
+
  private:
   scoped_ptr<QuicCryptoStream> crypto_stream_;
 

@@ -105,6 +105,11 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
                               bool fin,
                               QuicAckListenerInterface* ack_notifier_delegate);
 
+  // Sends |data| to the peer, or buffers if it can't be sent immediately.
+  void WriteOrBufferBody(const std::string& data,
+                         bool fin,
+                         QuicAckListenerInterface* ack_notifier_delegate);
+
   // Writes the trailers contained in |trailer_block| to the dedicated
   // headers stream. Trailers will always have the FIN set.
   size_t WriteTrailers(SpdyHeaderBlock trailer_block,
@@ -142,8 +147,8 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   }
 
   // Returns whatever trailers have been received for this stream.
-  const SpdyHeaderBlock& response_trailers() const {
-    return response_trailers_;
+  const SpdyHeaderBlock& received_trailers() const {
+    return received_trailers_;
   }
 
   virtual SpdyPriority priority() const;
@@ -188,7 +193,7 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   // via ProcessData or Readv.
   std::string decompressed_trailers_;
   // The parsed trailers received from the peer.
-  SpdyHeaderBlock response_trailers_;
+  SpdyHeaderBlock received_trailers_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicSpdyStream);
 };

@@ -51,18 +51,11 @@ class QuicSpdyClientStream : public QuicSpdyStream {
                      base::StringPiece body,
                      bool fin);
 
-  // Sends body data to the server, or buffers if it can't be sent immediately.
-  void SendBody(const std::string& data, bool fin);
-  // As above, but |delegate| will be notified once |data| is ACKed.
-  void SendBody(const std::string& data,
-                bool fin,
-                QuicAckListenerInterface* listener);
-
   // Returns the response data.
   const std::string& data() { return data_; }
 
   // Returns whatever headers have been received for this stream.
-  const SpdyHeaderBlock& headers() { return response_headers_; }
+  const SpdyHeaderBlock& response_headers() { return response_headers_; }
 
   size_t header_bytes_read() const { return header_bytes_read_; }
 
@@ -87,7 +80,7 @@ class QuicSpdyClientStream : public QuicSpdyStream {
   SpdyHeaderBlock response_headers_;
 
   // The parsed content-length, or -1 if none is specified.
-  int content_length_;
+  int64_t content_length_;
   int response_code_;
   std::string data_;
   size_t header_bytes_read_;

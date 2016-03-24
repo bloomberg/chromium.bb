@@ -265,11 +265,11 @@ class BidirectionalStreamQuicImplTest
   // Holds a packet to be written to the wire, and the IO mode that should
   // be used by the mock socket when performing the write.
   struct PacketToWrite {
-    PacketToWrite(IoMode mode, QuicEncryptedPacket* packet)
+    PacketToWrite(IoMode mode, QuicReceivedPacket* packet)
         : mode(mode), packet(packet) {}
     PacketToWrite(IoMode mode, int rv) : mode(mode), packet(nullptr), rv(rv) {}
     IoMode mode;
-    QuicEncryptedPacket* packet;
+    QuicReceivedPacket* packet;
     int rv;
   };
 
@@ -300,11 +300,11 @@ class BidirectionalStreamQuicImplTest
   }
 
   // Adds a packet to the list of expected writes.
-  void AddWrite(scoped_ptr<QuicEncryptedPacket> packet) {
+  void AddWrite(scoped_ptr<QuicReceivedPacket> packet) {
     writes_.push_back(PacketToWrite(SYNCHRONOUS, packet.release()));
   }
 
-  void ProcessPacket(scoped_ptr<QuicEncryptedPacket> packet) {
+  void ProcessPacket(scoped_ptr<QuicReceivedPacket> packet) {
     connection_->ProcessUdpPacket(self_addr_, peer_addr_, *packet);
   }
 
@@ -361,20 +361,20 @@ class BidirectionalStreamQuicImplTest
     return maker_.GetResponseHeaders(response_code);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructDataPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructDataPacket(
       QuicPacketNumber packet_number,
       bool should_include_version,
       bool fin,
       QuicStreamOffset offset,
       base::StringPiece data) {
-    scoped_ptr<QuicEncryptedPacket> packet(maker_.MakeDataPacket(
+    scoped_ptr<QuicReceivedPacket> packet(maker_.MakeDataPacket(
         packet_number, stream_id_, should_include_version, fin, offset, data));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
              << QuicUtils::StringToHexASCIIDump(packet->AsStringPiece());
     return packet;
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructRequestHeadersPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructRequestHeadersPacket(
       QuicPacketNumber packet_number,
       bool fin,
       RequestPriority request_priority,
@@ -386,7 +386,7 @@ class BidirectionalStreamQuicImplTest
         request_headers_, spdy_headers_frame_length);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructResponseHeadersPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructResponseHeadersPacket(
       QuicPacketNumber packet_number,
       bool fin,
       const SpdyHeaderBlock& response_headers,
@@ -397,7 +397,7 @@ class BidirectionalStreamQuicImplTest
         spdy_headers_frame_length, offset);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructResponseTrailersPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructResponseTrailersPacket(
       QuicPacketNumber packet_number,
       bool fin,
       const SpdyHeaderBlock& trailers,
@@ -408,15 +408,15 @@ class BidirectionalStreamQuicImplTest
                                             spdy_headers_frame_length, offset);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructRstStreamPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructRstStreamPacket(
       QuicPacketNumber packet_number) {
     return ConstructRstStreamCancelledPacket(packet_number, 0);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructRstStreamCancelledPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructRstStreamCancelledPacket(
       QuicPacketNumber packet_number,
       size_t bytes_written) {
-    scoped_ptr<QuicEncryptedPacket> packet(
+    scoped_ptr<QuicReceivedPacket> packet(
         maker_.MakeRstPacket(packet_number, !kIncludeVersion, stream_id_,
                              QUIC_STREAM_CANCELLED, bytes_written));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
@@ -424,7 +424,7 @@ class BidirectionalStreamQuicImplTest
     return packet;
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructAckAndRstStreamPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructAckAndRstStreamPacket(
       QuicPacketNumber packet_number,
       QuicPacketNumber largest_received,
       QuicPacketNumber ack_least_unacked,
@@ -435,7 +435,7 @@ class BidirectionalStreamQuicImplTest
         !kIncludeCongestionFeedback);
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructAckAndDataPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructAckAndDataPacket(
       QuicPacketNumber packet_number,
       bool should_include_version,
       QuicPacketNumber largest_received,
@@ -443,7 +443,7 @@ class BidirectionalStreamQuicImplTest
       bool fin,
       QuicStreamOffset offset,
       base::StringPiece data) {
-    scoped_ptr<QuicEncryptedPacket> packet(maker_.MakeAckAndDataPacket(
+    scoped_ptr<QuicReceivedPacket> packet(maker_.MakeAckAndDataPacket(
         packet_number, should_include_version, stream_id_, largest_received,
         least_unacked, fin, offset, data));
     DVLOG(2) << "packet(" << packet_number << "): " << std::endl
@@ -451,7 +451,7 @@ class BidirectionalStreamQuicImplTest
     return packet;
   }
 
-  scoped_ptr<QuicEncryptedPacket> ConstructAckPacket(
+  scoped_ptr<QuicReceivedPacket> ConstructAckPacket(
       QuicPacketNumber packet_number,
       QuicPacketNumber largest_received,
       QuicPacketNumber least_unacked) {

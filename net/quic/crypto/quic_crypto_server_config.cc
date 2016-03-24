@@ -1031,6 +1031,13 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     return;
   }
 
+  if (!client_hello.GetStringPiece(kNONC, &info->client_nonce)) {
+    info->reject_reasons.push_back(SERVER_CONFIG_INCHOATE_HELLO_FAILURE);
+    // Report no client nonce as INCHOATE_HELLO_FAILURE.
+    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    return;
+  }
+
   bool found_error = false;
   if (source_address_token_error != HANDSHAKE_OK) {
     info->reject_reasons.push_back(source_address_token_error);
@@ -1063,8 +1070,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     }
   }
 
-  if (!client_hello.GetStringPiece(kNONC, &info->client_nonce) ||
-      info->client_nonce.size() != kNonceSize) {
+  if (info->client_nonce.size() != kNonceSize) {
     info->reject_reasons.push_back(CLIENT_NONCE_INVALID_FAILURE);
     // Invalid client nonce.
     LOG(ERROR) << "Invalid client nonce: " << client_hello.DebugString();
@@ -1079,8 +1085,8 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   // Server nonce is optional, and used for key derivation if present.
   client_hello.GetStringPiece(kServerNonceTag, &info->server_nonce);
 
-  if (version > QUIC_VERSION_31) {
-    DVLOG(1) << "No 0-RTT replay protection in QUIC_VERSION_32 and higher.";
+  if (version > QUIC_VERSION_32) {
+    DVLOG(1) << "No 0-RTT replay protection in QUIC_VERSION_33 and higher.";
     // If the server nonce is empty and we're requiring handshake confirmation
     // for DoS reasons then we must reject the CHLO.
     if (FLAGS_quic_require_handshake_confirmation &&

@@ -646,6 +646,35 @@ TEST_P(QuicSpdyStreamTest, ReceivingTrailers) {
   EXPECT_EQ("", stream_->decompressed_trailers());
 }
 
+TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithoutOffset) {
+  // Test that receiving trailers without a final offset field is an error.
+  Initialize(kShouldProcessData);
+
+  // Receive initial headers.
+  string headers = SpdyUtils::SerializeUncompressedHeaders(headers_);
+  stream_->OnStreamHeaders(headers);
+  stream_->OnStreamHeadersComplete(false, headers.size());
+  stream_->MarkHeadersConsumed(stream_->decompressed_headers().size());
+
+  const string body = "this is the body";
+  // Receive trailing headers, without kFinalOffsetHeaderKey.
+  SpdyHeaderBlock trailers_block;
+  trailers_block["key1"] = "value1";
+  trailers_block["key2"] = "value2";
+  trailers_block["key3"] = "value3";
+  string trailers = SpdyUtils::SerializeUncompressedHeaders(trailers_block);
+  stream_->OnStreamHeaders(trailers);
+
+  // Verify that the trailers block didn't contain a final offset.
+  EXPECT_EQ("", trailers_block[kFinalOffsetHeaderKey].as_string());
+
+  // Receipt of the malformed trailers will close the connection.
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
+                                QUIC_INVALID_HEADERS_STREAM_DATA, _))
+      .Times(1);
+  stream_->OnStreamHeadersComplete(/*fin=*/true, trailers.size());
+}
+
 TEST_P(QuicSpdyStreamTest, ReceivingTrailersWithoutFin) {
   // Test that received Trailers must always have the FIN set.
   Initialize(kShouldProcessData);

@@ -124,7 +124,7 @@ int QuicP2PSession::DoReadComplete(int result) {
     return result;
   }
 
-  QuicEncryptedPacket packet(read_buffer_->data(), result);
+  QuicReceivedPacket packet(read_buffer_->data(), result, clock_.Now());
   connection()->ProcessUdpPacket(connection()->self_address(),
                                  connection()->peer_address(), packet);
   return OK;

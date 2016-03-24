@@ -337,7 +337,10 @@ enum QuicPacketPrivateFlags {
   PACKET_PRIVATE_FLAGS_FEC = 1 << 2,
 
   // All bits set (bits 3-7 are not currently used): 00000111
-  PACKET_PRIVATE_FLAGS_MAX = (1 << 3) - 1
+  PACKET_PRIVATE_FLAGS_MAX = (1 << 3) - 1,
+
+  // For version 32 (bits 1-7 are not used): 00000001
+  PACKET_PRIVATE_FLAGS_MAX_VERSION_32 = (1 << 1) - 1
 };
 
 // The available versions of QUIC. Guaranteed that the integer value of the enum
@@ -358,6 +361,7 @@ enum QuicVersion {
   QUIC_VERSION_29 = 29,  // Server and client honor QUIC_STREAM_NO_ERROR.
   QUIC_VERSION_30 = 30,  // Add server side support of cert transparency.
   QUIC_VERSION_31 = 31,  // Adds a hash of the client hello to crypto proof.
+  QUIC_VERSION_32 = 32,  // FEC related fields are removed from wire format.
 };
 
 // This vector contains QUIC versions which we currently support.
@@ -368,8 +372,8 @@ enum QuicVersion {
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
 static const QuicVersion kSupportedQuicVersions[] = {
-    QUIC_VERSION_31, QUIC_VERSION_30, QUIC_VERSION_29, QUIC_VERSION_28,
-    QUIC_VERSION_27, QUIC_VERSION_26, QUIC_VERSION_25};
+    QUIC_VERSION_32, QUIC_VERSION_31, QUIC_VERSION_30, QUIC_VERSION_29,
+    QUIC_VERSION_28, QUIC_VERSION_27, QUIC_VERSION_26, QUIC_VERSION_25};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
@@ -494,6 +498,8 @@ enum QuicErrorCode {
   QUIC_INVALID_FEC_DATA = 5,
   // STREAM frame data is malformed.
   QUIC_INVALID_STREAM_DATA = 46,
+  // STREAM frame data overlaps with buffered data.
+  QUIC_OVERLAPPING_STREAM_DATA = 87,
   // STREAM frame data is not encrypted.
   QUIC_UNENCRYPTED_STREAM_DATA = 61,
   // FEC frame data is not encrypted.
@@ -559,7 +565,7 @@ enum QuicErrorCode {
   // There was an error while reading from the socket.
   QUIC_PACKET_READ_ERROR = 51,
   // We received a STREAM_FRAME with no data and no fin flag set.
-  QUIC_INVALID_STREAM_FRAME = 50,
+  QUIC_EMPTY_STREAM_FRAME_NO_FIN = 50,
   // We received invalid data on the headers stream.
   QUIC_INVALID_HEADERS_STREAM_DATA = 56,
   // The peer received too much data, violating flow control.
@@ -662,7 +668,7 @@ enum QuicErrorCode {
   QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM = 84,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 87,
+  QUIC_LAST_ERROR = 88,
 };
 
 // Must be updated any time a QuicErrorCode is deprecated.
@@ -1243,6 +1249,35 @@ class NET_EXPORT_PRIVATE QuicEncryptedPacket : public QuicData {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(QuicEncryptedPacket);
+};
+
+// A received encrypted QUIC packet, with a recorded time of receipt.
+class NET_EXPORT_PRIVATE QuicReceivedPacket : public QuicEncryptedPacket {
+ public:
+  QuicReceivedPacket(const char* buffer, size_t length, QuicTime receipt_time);
+  QuicReceivedPacket(char* buffer,
+                     size_t length,
+                     QuicTime receipt_time,
+                     bool owns_buffer);
+
+  // Clones the packet into a new packet which owns the buffer.
+  QuicReceivedPacket* Clone() const;
+
+  // Returns the time at which the packet was received.
+  QuicTime receipt_time() const { return receipt_time_; }
+
+  // By default, gtest prints the raw bytes of an object. The bool data
+  // member (in the base class QuicData) causes this object to have padding
+  // bytes, which causes the default gtest object printer to read
+  // uninitialize memory. So we need to teach gtest how to print this object.
+  NET_EXPORT_PRIVATE friend std::ostream& operator<<(
+      std::ostream& os,
+      const QuicReceivedPacket& s);
+
+ private:
+  const QuicTime receipt_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(QuicReceivedPacket);
 };
 
 // Pure virtual class to listen for packet acknowledgements.

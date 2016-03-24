@@ -1202,7 +1202,7 @@ const QuicConnectionStats& QuicConnection::GetStats() {
 
 void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
                                       const IPEndPoint& peer_address,
-                                      const QuicEncryptedPacket& packet) {
+                                      const QuicReceivedPacket& packet) {
   if (!connected_) {
     return;
   }
@@ -1223,6 +1223,12 @@ void QuicConnection::ProcessUdpPacket(const IPEndPoint& self_address,
 
   stats_.bytes_received += packet.length();
   ++stats_.packets_received;
+
+  if (FLAGS_quic_use_socket_timestamp) {
+    time_of_last_received_packet_ = packet.receipt_time();
+    DVLOG(1) << ENDPOINT << "time of last received packet: "
+             << time_of_last_received_packet_.ToDebuggingValue();
+  }
 
   ScopedRetransmissionScheduler alarm_delayer(this);
   if (!framer_.ProcessPacket(packet)) {
@@ -1353,9 +1359,11 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
 
   DCHECK_EQ(NEGOTIATED_VERSION, version_negotiation_state_);
 
-  time_of_last_received_packet_ = clock_->Now();
-  DVLOG(1) << ENDPOINT << "time of last received packet: "
-           << time_of_last_received_packet_.ToDebuggingValue();
+  if (!FLAGS_quic_use_socket_timestamp) {
+    time_of_last_received_packet_ = clock_->Now();
+    DVLOG(1) << ENDPOINT << "time of last received packet: "
+             << time_of_last_received_packet_.ToDebuggingValue();
+  }
 
   if (last_size_ > largest_received_packet_size_) {
     largest_received_packet_size_ = last_size_;

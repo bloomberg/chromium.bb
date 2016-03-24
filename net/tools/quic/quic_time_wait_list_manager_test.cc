@@ -278,8 +278,7 @@ TEST_F(QuicTimeWaitListManagerTest, SendPublicReset) {
   const int kRandomSequenceNumber = 1;
   EXPECT_CALL(writer_,
               WritePacket(_, _, server_address_.address(), client_address_, _))
-      .With(Args<0, 1>(
-          PublicResetPacketEq(connection_id_, kRandomSequenceNumber)))
+      .With(Args<0, 1>(PublicResetPacketEq(connection_id_, 0)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, 0)));
 
   ProcessPacket(connection_id_, kRandomSequenceNumber);
@@ -380,14 +379,14 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   // Let first write through.
   EXPECT_CALL(writer_,
               WritePacket(_, _, server_address_.address(), client_address_, _))
-      .With(Args<0, 1>(PublicResetPacketEq(connection_id, packet_number)))
+      .With(Args<0, 1>(PublicResetPacketEq(connection_id, 0)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
   ProcessPacket(connection_id, packet_number);
 
   // write block for the next packet.
   EXPECT_CALL(writer_,
               WritePacket(_, _, server_address_.address(), client_address_, _))
-      .With(Args<0, 1>(PublicResetPacketEq(connection_id, packet_number)))
+      .With(Args<0, 1>(PublicResetPacketEq(connection_id, 0)))
       .WillOnce(DoAll(Assign(&writer_is_blocked_, true),
                       Return(WriteResult(WRITE_STATUS_BLOCKED, EAGAIN))));
   EXPECT_CALL(visitor_, OnWriteBlocked(&time_wait_list_manager_));
@@ -412,12 +411,11 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
   writer_is_blocked_ = false;
   EXPECT_CALL(writer_,
               WritePacket(_, _, server_address_.address(), client_address_, _))
-      .With(Args<0, 1>(PublicResetPacketEq(connection_id, packet_number)))
+      .With(Args<0, 1>(PublicResetPacketEq(connection_id, 0)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, packet->length())));
   EXPECT_CALL(writer_,
               WritePacket(_, _, server_address_.address(), client_address_, _))
-      .With(Args<0, 1>(
-          PublicResetPacketEq(other_connection_id, other_packet_number)))
+      .With(Args<0, 1>(PublicResetPacketEq(other_connection_id, 0)))
       .WillOnce(Return(WriteResult(WRITE_STATUS_OK, other_packet->length())));
   time_wait_list_manager_.OnCanWrite();
 }

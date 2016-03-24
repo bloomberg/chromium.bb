@@ -392,7 +392,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // than that of this connection.
   virtual void ProcessUdpPacket(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address,
-                                const QuicEncryptedPacket& packet);
+                                const QuicReceivedPacket& packet);
 
   // QuicBlockedWriterInterface
   // Called when the underlying connection becomes writable to allow queued

@@ -240,7 +240,7 @@ TEST_F(QuicStreamSequencerTest, BlockedThenFullFrameAndFinConsumed) {
 
 TEST_F(QuicStreamSequencerTest, EmptyFrame) {
   EXPECT_CALL(stream_,
-              CloseConnectionWithDetails(QUIC_INVALID_STREAM_FRAME, _));
+              CloseConnectionWithDetails(QUIC_EMPTY_STREAM_FRAME_NO_FIN, _));
   OnFrame(0, "");
   EXPECT_EQ(0u, NumBufferedBytes());
   EXPECT_EQ(0u, sequencer_->NumBytesConsumed());
@@ -563,7 +563,11 @@ TEST_F(QuicStreamSequencerTest, DontAcceptOverlappingFrames) {
   sequencer_->OnStreamFrame(frame1);
 
   QuicStreamFrame frame2(kClientDataStreamId1, false, 2, StringPiece("hello"));
-  EXPECT_CALL(stream_, CloseConnectionWithDetails(QUIC_INVALID_STREAM_FRAME, _))
+  EXPECT_CALL(stream_, CloseConnectionWithDetails(
+                           FLAGS_quic_consolidate_onstreamframe_errors
+                               ? QUIC_OVERLAPPING_STREAM_DATA
+                               : QUIC_EMPTY_STREAM_FRAME_NO_FIN,
+                           _))
       .Times(1);
   sequencer_->OnStreamFrame(frame2);
 }

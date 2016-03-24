@@ -229,9 +229,12 @@ class QuicDispatcherTest : public ::testing::Test {
     scoped_ptr<QuicEncryptedPacket> packet(ConstructEncryptedPacket(
         connection_id, has_version_flag, false, false, 0, packet_number, data,
         connection_id_length, packet_number_length, &versions));
+    scoped_ptr<QuicReceivedPacket> received_packet(
+        ConstructReceivedPacket(*packet, helper_.GetClock()->Now()));
 
     data_ = string(packet->data(), packet->length());
-    dispatcher_.ProcessPacket(server_address_, client_address, *packet);
+    dispatcher_.ProcessPacket(server_address_, client_address,
+                              *received_packet);
   }
 
   void ValidatePacket(const QuicEncryptedPacket& packet) {
@@ -353,6 +356,8 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   packet.nonce_proof = 132232;
   scoped_ptr<QuicEncryptedPacket> encrypted(
       QuicFramer::BuildPublicResetPacket(packet));
+  scoped_ptr<QuicReceivedPacket> received(
+      ConstructReceivedPacket(*encrypted, helper_.GetClock()->Now()));
   EXPECT_CALL(*session1_, OnConnectionClosed(QUIC_PUBLIC_RESET,
                                              ConnectionCloseSource::FROM_PEER))
       .Times(1)
@@ -364,7 +369,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
       .WillOnce(
           Invoke(reinterpret_cast<MockConnection*>(session1_->connection()),
                  &MockConnection::ReallyProcessUdpPacket));
-  dispatcher_.ProcessPacket(IPEndPoint(), client_address, *encrypted);
+  dispatcher_.ProcessPacket(IPEndPoint(), client_address, *received);
   EXPECT_TRUE(time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
 
   // Dispatcher forwards subsequent packets for this connection_id to the time

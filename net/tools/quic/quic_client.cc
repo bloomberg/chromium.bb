@@ -391,7 +391,8 @@ void QuicClient::OnEvent(int fd, EpollEvent* event) {
     bool more_to_read = true;
     while (connected() && more_to_read) {
       more_to_read = packet_reader_->ReadAndDispatchPackets(
-          GetLatestFD(), QuicClient::GetLatestClientAddress().port(), this,
+          GetLatestFD(), QuicClient::GetLatestClientAddress().port(),
+          *helper()->GetClock(), this,
           overflow_supported_ ? &packets_dropped_ : nullptr);
     }
   }
@@ -408,22 +409,22 @@ void QuicClient::OnClose(QuicSpdyStream* stream) {
   DCHECK(stream != nullptr);
   QuicSpdyClientStream* client_stream =
       static_cast<QuicSpdyClientStream*>(stream);
-  BalsaHeaders headers;
-  SpdyBalsaUtils::SpdyHeadersToResponseHeaders(client_stream->headers(),
-                                               &headers);
+  BalsaHeaders response_headers;
+  SpdyBalsaUtils::SpdyHeadersToResponseHeaders(
+      client_stream->response_headers(), &response_headers);
 
   if (response_listener_.get() != nullptr) {
-    response_listener_->OnCompleteResponse(stream->id(), headers,
+    response_listener_->OnCompleteResponse(stream->id(), response_headers,
                                            client_stream->data());
   }
 
   // Store response headers and body.
   if (store_response_) {
-    latest_response_code_ = headers.parsed_response_code();
-    headers.DumpHeadersToString(&latest_response_headers_);
+    latest_response_code_ = response_headers.parsed_response_code();
+    response_headers.DumpHeadersToString(&latest_response_headers_);
     latest_response_body_ = client_stream->data();
     latest_response_trailers_ =
-        client_stream->response_trailers().DebugString();
+        client_stream->received_trailers().DebugString();
   }
 }
 
@@ -486,7 +487,7 @@ int QuicClient::GetLatestFD() const {
 
 void QuicClient::ProcessPacket(const IPEndPoint& self_address,
                                const IPEndPoint& peer_address,
-                               const QuicEncryptedPacket& packet) {
+                               const QuicReceivedPacket& packet) {
   session()->connection()->ProcessUdpPacket(self_address, peer_address, packet);
 }
 

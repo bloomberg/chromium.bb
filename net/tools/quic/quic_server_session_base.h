@@ -95,12 +95,12 @@ class QuicServerSessionBase : public QuicSpdySession {
   // Return false when connection is closed or forward secure encryption hasn't
   // established yet or number of server initiated streams already reaches the
   // upper limit.
-  virtual bool ShouldCreateOutgoingDynamicStream();
+  bool ShouldCreateOutgoingDynamicStream() override;
 
   // If we should create an incoming stream, returns true. Otherwise
   // does error handling, including communicating the error to the client and
   // possibly closing the connection, and returns false.
-  virtual bool ShouldCreateIncomingDynamicStream(QuicStreamId id);
+  bool ShouldCreateIncomingDynamicStream(QuicStreamId id) override;
 
   virtual QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
       const QuicCryptoServerConfig* crypto_config,

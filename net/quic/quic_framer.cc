@@ -621,12 +621,6 @@ bool QuicFramer::ProcessPublicResetPacket(
   }
   // TODO(satyamshekhar): validate nonce to protect against DoS.
 
-  if (reset->GetUint64(kRSEQ, &packet.rejected_packet_number) !=
-      QUIC_NO_ERROR) {
-    set_detailed_error("Unable to read rejected packet number.");
-    return RaiseError(QUIC_INVALID_PUBLIC_RST_PACKET);
-  }
-
   StringPiece address;
   if (reset->GetStringPiece(kCADR, &address)) {
     QuicSocketAddressCoder address_coder;
@@ -1009,9 +1003,16 @@ bool QuicFramer::ProcessAuthenticatedHeader(QuicDataReader* reader,
     return RaiseError(QUIC_INVALID_PACKET_HEADER);
   }
 
-  if (private_flags > PACKET_PRIVATE_FLAGS_MAX) {
-    set_detailed_error("Illegal private flags value.");
-    return RaiseError(QUIC_INVALID_PACKET_HEADER);
+  if (quic_version_ > QUIC_VERSION_31) {
+    if (private_flags > PACKET_PRIVATE_FLAGS_MAX_VERSION_32) {
+      set_detailed_error("Illegal private flags value.");
+      return RaiseError(QUIC_INVALID_PACKET_HEADER);
+    }
+  } else {
+    if (private_flags > PACKET_PRIVATE_FLAGS_MAX) {
+      set_detailed_error("Illegal private flags value.");
+      return RaiseError(QUIC_INVALID_PACKET_HEADER);
+    }
   }
 
   header->entropy_flag = (private_flags & PACKET_PRIVATE_FLAGS_ENTROPY) != 0;
@@ -1367,6 +1368,10 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader,
     // can't overlap by 1 packet number.  This allows a missing_delta of 0
     // to represent an adjacent nack range.
     last_packet_number -= (range_length + 1);
+  }
+
+  if (quic_version_ > QUIC_VERSION_31) {
+    return true;
   }
 
   // Parse the revived packets list.
@@ -1753,7 +1758,10 @@ size_t QuicFramer::GetAckFrameSize(
 
   size_t ack_size = GetMinAckFrameSize(largest_observed_length);
   if (!ack_info.nack_ranges.empty()) {
-    ack_size += kNumberOfNackRangesSize + kNumberOfRevivedPacketsSize;
+    ack_size += kNumberOfNackRangesSize;
+    if (quic_version_ <= QUIC_VERSION_31) {
+      ack_size += kNumberOfRevivedPacketsSize;
+    }
     ack_size += min(ack_info.nack_ranges.size(), kMaxNackRanges) *
                 (missing_packet_number_length + PACKET_1BYTE_PACKET_NUMBER);
   }
@@ -1935,9 +1943,12 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicPacketHeader& header,
   QuicPacketNumberLength missing_packet_number_length =
       GetMinSequenceNumberLength(ack_info.max_delta);
   // Determine whether we need to truncate ranges.
-  size_t available_range_bytes =
-      writer->capacity() - writer->length() - kNumberOfRevivedPacketsSize -
-      kNumberOfNackRangesSize - GetMinAckFrameSize(largest_observed_length);
+  size_t available_range_bytes = writer->capacity() - writer->length() -
+                                 kNumberOfNackRangesSize -
+                                 GetMinAckFrameSize(largest_observed_length);
+  if (quic_version_ <= QUIC_VERSION_31) {
+    available_range_bytes -= kNumberOfRevivedPacketsSize;
+  }
   size_t max_num_ranges =
       available_range_bytes /
       (missing_packet_number_length + PACKET_1BYTE_PACKET_NUMBER);
@@ -2042,6 +2053,10 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicPacketHeader& header,
     ++num_ranges_written;
   }
   DCHECK_EQ(num_missing_ranges, num_ranges_written);
+
+  if (quic_version_ > QUIC_VERSION_31) {
+    return true;
+  }
 
   // Append revived packets.
   // FEC is not supported.

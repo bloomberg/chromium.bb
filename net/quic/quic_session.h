@@ -88,7 +88,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Called on every incoming packet. Passes |packet| through to |connection_|.
   virtual void ProcessUdpPacket(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address,
-                                const QuicEncryptedPacket& packet);
+                                const QuicReceivedPacket& packet);
 
   // Called by streams when they want to write data to the peer.
   // Returns a pair with the number of bytes consumed from data, and a boolean

@@ -77,6 +77,13 @@ size_t QuicSpdyStream::WriteHeaders(
   return bytes_written;
 }
 
+void QuicSpdyStream::WriteOrBufferBody(
+    const string& data,
+    bool fin,
+    QuicAckListenerInterface* ack_notifier_delegate) {
+  WriteOrBufferData(data, fin, ack_notifier_delegate);
+}
+
 size_t QuicSpdyStream::WriteTrailers(
     SpdyHeaderBlock trailer_block,
     QuicAckListenerInterface* ack_notifier_delegate) {
@@ -218,7 +225,7 @@ void QuicSpdyStream::OnTrailingHeadersComplete(bool fin, size_t /*frame_len*/) {
   SpdyHeaderBlock trailers;
   if (!SpdyUtils::ParseTrailers(decompressed_trailers().data(),
                                 decompressed_trailers().length(),
-                                &final_byte_offset, &response_trailers_)) {
+                                &final_byte_offset, &received_trailers_)) {
     DLOG(ERROR) << "Trailers are malformed: " << id();
     session()->connection()->SendConnectionCloseWithDetails(
         QUIC_INVALID_HEADERS_STREAM_DATA, "Trailers are malformed");

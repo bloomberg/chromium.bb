@@ -750,8 +750,8 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
                                                   buffer, kMaxPacketSize);
     connection_.ProcessUdpPacket(
         self_address, peer_address,
-        QuicEncryptedPacket(serialized_packet.encrypted_buffer,
-                            serialized_packet.encrypted_length));
+        QuicReceivedPacket(serialized_packet.encrypted_buffer,
+                           serialized_packet.encrypted_length, clock_.Now()));
     if (connection_.GetSendAlarm()->IsSet()) {
       connection_.GetSendAlarm()->Fire();
     }
@@ -778,7 +778,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
         level, path_id, number, *packet, buffer, kMaxPacketSize);
     connection_.ProcessUdpPacket(
         kSelfAddress, kPeerAddress,
-        QuicEncryptedPacket(buffer, encrypted_length, false));
+        QuicReceivedPacket(buffer, encrypted_length, QuicTime::Zero(), false));
     return base::checked_cast<QuicPacketEntropyHash>(encrypted_length);
   }
 
@@ -801,7 +801,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
         level, path_id, number, *packet, buffer, kMaxPacketSize);
     connection_.ProcessUdpPacket(
         kSelfAddress, kPeerAddress,
-        QuicEncryptedPacket(buffer, encrypted_length, false));
+        QuicReceivedPacket(buffer, encrypted_length, QuicTime::Zero(), false));
     if (connection_.GetSendAlarm()->IsSet()) {
       connection_.GetSendAlarm()->Fire();
     }
@@ -815,7 +815,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
         ENCRYPTION_NONE, path_id, number, *packet, buffer, kMaxPacketSize);
     connection_.ProcessUdpPacket(
         kSelfAddress, kPeerAddress,
-        QuicEncryptedPacket(buffer, encrypted_length, false));
+        QuicReceivedPacket(buffer, encrypted_length, QuicTime::Zero(), false));
   }
 
   QuicByteCount SendStreamDataToPeer(QuicStreamId id,
@@ -1102,7 +1102,7 @@ TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSize) {
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
   connection_.ProcessUdpPacket(
       kSelfAddress, kPeerAddress,
-      QuicEncryptedPacket(buffer, encrypted_length, false));
+      QuicReceivedPacket(buffer, encrypted_length, QuicTime::Zero(), false));
 
   EXPECT_EQ(kMaxPacketSize, connection_.max_packet_length());
 }
@@ -1136,7 +1136,7 @@ TEST_P(QuicConnectionTest, IncreaseServerMaxPacketSizeWhileWriterLimited) {
   EXPECT_CALL(visitor_, OnStreamFrame(_)).Times(1);
   connection_.ProcessUdpPacket(
       kSelfAddress, kPeerAddress,
-      QuicEncryptedPacket(buffer, encrypted_length, false));
+      QuicReceivedPacket(buffer, encrypted_length, QuicTime::Zero(), false));
 
   // Here, the limit imposed by the writer is lower than the size of the packet
   // received, so the writer max packet size is used.
@@ -3916,9 +3916,11 @@ TEST_P(QuicConnectionTest, PublicReset) {
   header.rejected_packet_number = 10101;
   scoped_ptr<QuicEncryptedPacket> packet(
       framer_.BuildPublicResetPacket(header));
+  scoped_ptr<QuicReceivedPacket> received(
+      ConstructReceivedPacket(*packet, QuicTime::Zero()));
   EXPECT_CALL(visitor_, OnConnectionClosed(QUIC_PUBLIC_RESET,
                                            ConnectionCloseSource::FROM_PEER));
-  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *packet);
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *received);
 }
 
 TEST_P(QuicConnectionTest, GoAway) {
@@ -3963,7 +3965,7 @@ TEST_P(QuicConnectionTest, PathClose) {
 TEST_P(QuicConnectionTest, ZeroBytePacket) {
   // Don't close the connection for zero byte packets.
   EXPECT_CALL(visitor_, OnConnectionClosed(_, _)).Times(0);
-  QuicEncryptedPacket encrypted(nullptr, 0);
+  QuicReceivedPacket encrypted(nullptr, 0, QuicTime::Zero());
   connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, encrypted);
 }
 
@@ -4074,7 +4076,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacket) {
   connection_.set_perspective(Perspective::IS_SERVER);
   connection_.ProcessUdpPacket(
       kSelfAddress, kPeerAddress,
-      QuicEncryptedPacket(buffer, encrypted_length, false));
+      QuicReceivedPacket(buffer, encrypted_length, QuicTime::Zero(), false));
   EXPECT_TRUE(writer_->version_negotiation_packet() != nullptr);
 
   size_t num_versions = arraysize(kSupportedQuicVersions);
@@ -4110,7 +4112,7 @@ TEST_P(QuicConnectionTest, ServerSendsVersionNegotiationPacketSocketBlocked) {
   BlockOnNextWrite();
   connection_.ProcessUdpPacket(
       kSelfAddress, kPeerAddress,
-      QuicEncryptedPacket(buffer, encrypted_length, false));
+      QuicReceivedPacket(buffer, encrypted_length, QuicTime::Zero(), false));
   EXPECT_EQ(0u, writer_->last_packet_size());
   EXPECT_TRUE(connection_.HasQueuedData());
 
@@ -4153,7 +4155,7 @@ TEST_P(QuicConnectionTest,
   writer_->set_is_write_blocked_data_buffered(true);
   connection_.ProcessUdpPacket(
       kSelfAddress, kPeerAddress,
-      QuicEncryptedPacket(buffer, encryped_length, false));
+      QuicReceivedPacket(buffer, encryped_length, QuicTime::Zero(), false));
   EXPECT_EQ(0u, writer_->last_packet_size());
   EXPECT_FALSE(connection_.HasQueuedData());
 }
@@ -4167,7 +4169,9 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.BuildVersionNegotiationPacket(connection_id_,
                                             QuicSupportedVersions()));
-  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
+  scoped_ptr<QuicReceivedPacket> received(
+      ConstructReceivedPacket(*encrypted, QuicTime::Zero()));
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *received);
 
   // Now force another packet.  The connection should transition into
   // NEGOTIATED_VERSION state and tell the packet creator to StopSendingVersion.
@@ -4187,7 +4191,7 @@ TEST_P(QuicConnectionTest, ClientHandlesVersionNegotiation) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
   connection_.ProcessUdpPacket(
       kSelfAddress, kPeerAddress,
-      QuicEncryptedPacket(buffer, encrypted_length, false));
+      QuicReceivedPacket(buffer, encrypted_length, QuicTime::Zero(), false));
 
   ASSERT_FALSE(QuicPacketCreatorPeer::SendVersionInPacket(creator_));
 }
@@ -4201,7 +4205,9 @@ TEST_P(QuicConnectionTest, BadVersionNegotiation) {
   scoped_ptr<QuicEncryptedPacket> encrypted(
       framer_.BuildVersionNegotiationPacket(connection_id_,
                                             QuicSupportedVersions()));
-  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *encrypted);
+  scoped_ptr<QuicReceivedPacket> received(
+      ConstructReceivedPacket(*encrypted, QuicTime::Zero()));
+  connection_.ProcessUdpPacket(kSelfAddress, kPeerAddress, *received);
 }
 
 TEST_P(QuicConnectionTest, CheckSendStats) {
@@ -4277,7 +4283,7 @@ TEST_P(QuicConnectionTest, ProcessFramesIfPacketClosedConnection) {
 
   connection_.ProcessUdpPacket(
       kSelfAddress, kPeerAddress,
-      QuicEncryptedPacket(buffer, encrypted_length, false));
+      QuicReceivedPacket(buffer, encrypted_length, QuicTime::Zero(), false));
 }
 
 TEST_P(QuicConnectionTest, SelectMutualVersion) {

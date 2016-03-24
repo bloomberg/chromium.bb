@@ -32,7 +32,7 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketReader {
     virtual ~Visitor(){};
     virtual void OnReadError(int result,
                              const DatagramClientSocket* socket) = 0;
-    virtual bool OnPacket(const QuicEncryptedPacket& packet,
+    virtual bool OnPacket(const QuicReceivedPacket& packet,
                           IPEndPoint local_address,
                           IPEndPoint peer_address) = 0;
   };

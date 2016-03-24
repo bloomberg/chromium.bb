@@ -545,6 +545,15 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   return new QuicEncryptedPacket(buffer, encrypted_length, true);
 }
 
+QuicReceivedPacket* ConstructReceivedPacket(
+    const QuicEncryptedPacket& encrypted_packet,
+    QuicTime receipt_time) {
+  char* buffer = new char[encrypted_packet.length()];
+  memcpy(buffer, encrypted_packet.data(), encrypted_packet.length());
+  return new QuicReceivedPacket(buffer, encrypted_packet.length(), receipt_time,
+                                true);
+}
+
 QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
     QuicConnectionId connection_id,
     bool version_flag,

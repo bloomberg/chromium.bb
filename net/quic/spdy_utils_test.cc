@@ -31,7 +31,7 @@ TEST(SpdyUtilsTest, SerializeAndParseHeaders) {
 
   // Take the serialized header block, and parse back into SpdyHeaderBlock.
   SpdyHeaderBlock output_headers;
-  int content_length = -1;
+  int64_t content_length = -1;
   ASSERT_TRUE(SpdyUtils::ParseHeaders(serialized_headers.data(),
                                       serialized_headers.size(),
                                       &content_length, &output_headers));

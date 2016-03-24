@@ -633,6 +633,42 @@ TEST_P(CryptoServerTest, BadClientNonce) {
   }
 }
 
+TEST_P(CryptoServerTest, NoClientNonce) {
+  // No client nonces should result in INCHOATE_HELLO_FAILURE.
+  // clang-format off
+  CryptoHandshakeMessage msg = CryptoTestUtils::Message(
+      "CHLO",
+      "VER\0", client_version_string_.c_str(),
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      nullptr);
+  // clang-format on
+
+  ShouldSucceed(msg);
+  const HandshakeFailureReason kRejectReasons[] = {
+      SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
+  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
+
+  // clang-format off
+  CryptoHandshakeMessage msg1 = CryptoTestUtils::Message(
+      "CHLO",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "SCID", scid_hex_.c_str(),
+      "#004b5453", srct_hex_.c_str(),
+      "PUBS", pub_hex_.c_str(),
+      "XLCT", XlctHexString().c_str(),
+      "VER\0", client_version_string_.c_str(),
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      nullptr);
+  // clang-format on
+
+  ShouldSucceed(msg1);
+  CheckRejectTag();
+  const HandshakeFailureReason kRejectReasons1[] = {
+      SERVER_CONFIG_INCHOATE_HELLO_FAILURE};
+  CheckRejectReasons(kRejectReasons1, arraysize(kRejectReasons1));
+}
+
 TEST_P(CryptoServerTest, DowngradeAttack) {
   if (supported_versions_.size() == 1) {
     // No downgrade attack is possible if the server only supports one version.
@@ -745,7 +781,7 @@ TEST_P(CryptoServerTest, CorruptMultipleTags) {
   ShouldSucceed(msg);
   CheckRejectTag();
 
-  if (client_version_ <= QUIC_VERSION_31) {
+  if (client_version_ <= QUIC_VERSION_32) {
     const HandshakeFailureReason kRejectReasons[] = {
         SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE, CLIENT_NONCE_INVALID_FAILURE,
         SERVER_NONCE_DECRYPTION_FAILURE};

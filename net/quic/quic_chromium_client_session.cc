@@ -655,24 +655,32 @@ bool QuicChromiumClientSession::CanPool(const std::string& hostname,
                               server_id_.host(), hostname);
 }
 
-QuicChromiumClientStream*
-QuicChromiumClientSession::CreateIncomingDynamicStream(QuicStreamId id) {
+bool QuicChromiumClientSession::ShouldCreateIncomingDynamicStream(
+    QuicStreamId id) {
   if (!connection()->connected()) {
     LOG(DFATAL) << "ShouldCreateIncomingDynamicStream called when disconnected";
-    return nullptr;
+    return false;
   }
   if (goaway_received()) {
-    DVLOG(1) << "Failed to create a new outgoing stream. "
+    DVLOG(1) << "Cannot create a new outgoing stream. "
              << "Already received goaway.";
-    return nullptr;
+    return false;
   }
   if (going_away_) {
-    return nullptr;
+    return false;
   }
   if (id % 2 != 0) {
     LOG(WARNING) << "Received invalid push stream id " << id;
     connection()->SendConnectionCloseWithDetails(
         QUIC_INVALID_STREAM_ID, "Server created odd numbered stream");
+    return false;
+  }
+  return true;
+}
+
+QuicChromiumClientStream*
+QuicChromiumClientSession::CreateIncomingDynamicStream(QuicStreamId id) {
+  if (!ShouldCreateIncomingDynamicStream(id)) {
     return nullptr;
   }
   return CreateIncomingReliableStreamImpl(id);
@@ -1056,7 +1064,7 @@ void QuicChromiumClientSession::OnReadError(
   NotifyFactoryOfSessionClosedLater();
 }
 
-bool QuicChromiumClientSession::OnPacket(const QuicEncryptedPacket& packet,
+bool QuicChromiumClientSession::OnPacket(const QuicReceivedPacket& packet,
                                          IPEndPoint local_address,
                                          IPEndPoint peer_address) {
   ProcessUdpPacket(local_address, peer_address, packet);

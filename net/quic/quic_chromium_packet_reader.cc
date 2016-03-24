@@ -77,7 +77,7 @@ void QuicChromiumPacketReader::OnReadComplete(int result) {
     return;
   }
 
-  QuicEncryptedPacket packet(read_buffer_->data(), result);
+  QuicReceivedPacket packet(read_buffer_->data(), result, clock_->Now());
   IPEndPoint local_address;
   IPEndPoint peer_address;
   socket_->GetLocalAddress(&local_address);
