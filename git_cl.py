@@ -1593,7 +1593,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     raise NotImplementedError()
 
   def CloseIssue(self):
-    gerrit_util.AbandonChange(self._GetGerritHost(), self.GetIssue(), msg='')
+    # TODO(tandrii)
+    raise NotImplementedError()
 
 
 class ChangeDescription(object):
