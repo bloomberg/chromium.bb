@@ -108,9 +108,9 @@
       'Chromium Mac 10.9 Goma Canary (dbg)(clobber)': 'tbd',
       'Chromium Win 10': 'tbd',
       'Chromium Win MiniInstaller Tests': 'tbd',
-      'Chromium Win PGO Builder': 'tbd',
+      'Chromium Win PGO Builder': 'gyp_official_winpgo',
       'Chromium Win x64 Clobber': 'tbd',
-      'Chromium Win x64 PGO Builder': 'tbd',
+      'Chromium Win x64 PGO Builder': 'gyp_official_winpgo_x64',
       'Chromium Windows Analyze': 'gyp_windows_analyze',
       'Chromium Windows Buildrunner': 'tbd',
       'Chromium Windows Instant Extended': 'tbd',
@@ -562,28 +562,29 @@
     },
 
     'official.desktop': {
-      'mac64': 'tbd',
-      'win': 'tbd',
-      'win-asan': 'tbd',
-      'win-pgo': 'tbd',
-      'win64': 'tbd',
-      'win64-pgo': 'tbd',
-
       'blimp-engine': 'gn_blimp_debug',
+      'mac64': 'gyp_official',
       'precise64': 'gn_official',
+
+      # Currently the official bots set mini_installer_official_deps=1
+      # but it's not clear if that's actually used anywhere.
+      'win': 'gyp_official',
+      'win-asan': 'gyp_official_syzyasan',
+      'win-pgo': 'gyp_official_winpgo',
+      'win64': 'gyp_official_x64',
+      'win64-pgo': 'gyp_official_winpgo_x64',
     },
 
     'official.desktop.continuous': {
-      'mac beta': 'tbd',
-      'mac stable': 'tbd',
-      'mac trunk': 'tbd',
-      'win beta': 'tbd',
-      'win stable': 'tbd',
-      'win trunk': 'tbd',
-
+      'mac beta': 'gyp_official',
+      'mac stable': 'gyp_official',
+      'mac trunk': 'gyp_official',
       'precise64 beta': 'gn_official',
       'precise64 stable': 'gn_official',
       'precise64 trunk': 'gn_official',
+      'win beta': 'gyp_official',
+      'win stable': 'gyp_official',
+      'win trunk': 'gyp_official',
     },
 
     'tryserver.blink': {
@@ -809,7 +810,6 @@
       'win_nacl_sdk': 'tbd',
       'win_nacl_sdk_build': 'tbd',
       'win_optional_gpu_tests_rel': 'tbd',
-      'win_pgo': 'tbd',
 
       'win8_chromium_gn_dbg': 'gn_debug_bot_minimal_symbols_x86',
       'win8_chromium_gn_upload': 'gn_release_bot_minimal_symbols_x86',
@@ -819,6 +819,7 @@
       'win_chromium_gn_x64_rel': 'gn_release_trybot',
       'win_chromium_x64_rel_ng': 'gn_release_trybot',
       'win_clang_x64_dbg': 'win_clang_debug_bot',
+      'win_pgo': 'gyp_official_winpgo',
     },
 
     'tryserver.v8': {
@@ -1046,6 +1047,10 @@
       'gn', 'release_trybot', 'x86',
     ],
 
+    'gyp_official': [
+      'gyp', 'official',
+    ],
+
     'gyp_official_goma': [
       'gyp', 'official', 'goma',
     ],
@@ -1064,6 +1069,24 @@
 
     'gyp_official_goma_minimal_symbols_x86': [
       'gyp', 'official', 'goma', 'minimal_symbols', 'x86',
+    ],
+
+    'gyp_official_syzyasan': [
+      'gyp', 'official', 'syzyasan',
+    ],
+
+    # TODO(crbug.com/595947) - figure out how to handle PGO, which needs
+    # to invoke GYP/GN twice, with two different sets of flags, apparently.
+    'gyp_official_winpgo': [
+      'gyp', 'error',
+    ],
+
+    'gyp_official_winpgo_x64': [
+      'gyp', 'error', 'x64',
+    ],
+
+    'gyp_official_x64': [
+      'gyp', 'official', 'x64',
     ],
 
     'gyp_release_bot_android': [
@@ -1670,7 +1693,7 @@
     },
 
     'release_trybot': {
-      'mixins': ['release_bot_minimal_symbols', 'dcheck_always_on']
+      'mixins': ['release_bot_minimal_symbols', 'dcheck_always_on'],
     },
 
     'shared': {
@@ -1686,6 +1709,11 @@
     'swarming': {
       'gn_args': '',
       'gyp_defines': 'test_isolation_mode=prepare',
+    },
+
+    'syzyasan': {
+      'gn_args': 'is_syzyasan=true',
+      'gyp_defines': 'syzyasan=1'
     },
 
     'tsan': {
