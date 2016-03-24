@@ -24,6 +24,9 @@ ShapeResultSpacing::ShapeResultSpacing(const TextRun& run,
     , m_isAfterExpansion(false)
     , m_isVerticalOffset(fontDescription.isVerticalAnyUpright())
 {
+    if (m_textRun.spacingDisabled())
+        return;
+
     if (!m_letterSpacing && !m_wordSpacing && !m_expansion)
         return;
 
