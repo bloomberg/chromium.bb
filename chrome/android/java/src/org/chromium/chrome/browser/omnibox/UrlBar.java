@@ -374,8 +374,11 @@ public class UrlBar extends VerticallyFixedEditText {
             mSelectionChangedInBatchMode = false;
         }
 
-        boolean textDeleted = getText().length() < mBeforeBatchEditLength;
-        notifyAutocompleteTextStateChanged(textDeleted);
+        int currentTextLength = getText().length();
+        if (currentTextLength != 0 || mBeforeBatchEditLength != 0) {
+            boolean textDeleted = currentTextLength < mBeforeBatchEditLength;
+            notifyAutocompleteTextStateChanged(textDeleted);
+        }
         mBeforeBatchEditLength = 0;
     }
 
