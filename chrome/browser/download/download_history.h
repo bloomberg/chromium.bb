@@ -64,6 +64,12 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
     // Fires when RemoveDownloads messages are sent to the DB thread.
     virtual void OnDownloadsRemoved(const IdSet& ids) {}
 
+    // Fires when the DownloadHistory completes the initial history query.
+    // Unlike the other observer methods, this one is invoked if the initial
+    // history query has already completed by the time the caller calls
+    // AddObserver().
+    virtual void OnHistoryQueryComplete() {}
+
     // Fires when the DownloadHistory is being destroyed so that implementors
     // can RemoveObserver() and nullify their DownloadHistory*s.
     virtual void OnDownloadHistoryDestroyed() {}
@@ -149,6 +155,8 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
 
   // Count the number of items in the history for UMA.
   int64_t history_size_;
+
+  bool initial_history_query_complete_;
 
   base::ObserverList<Observer> observers_;
 

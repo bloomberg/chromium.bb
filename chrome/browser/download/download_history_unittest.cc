@@ -172,6 +172,14 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   DISALLOW_COPY_AND_ASSIGN(FakeHistoryAdapter);
 };
 
+class TestDownloadHistoryObserver : public DownloadHistory::Observer {
+ public:
+  void OnHistoryQueryComplete() override {
+    on_history_query_complete_called_ = true;
+  }
+  bool on_history_query_complete_called_ = false;
+};
+
 class DownloadHistoryTest : public testing::Test {
  public:
   // Generic callback that receives a pointer to a StrictMockDownloadItem.
@@ -499,6 +507,55 @@ TEST_F(DownloadHistoryTest, DownloadHistoryTest_Load) {
   ids.insert(info.id);
   item(0).NotifyObserversDownloadRemoved();
   ExpectDownloadsRemoved(ids);
+}
+
+// Test that the OnHistoryQueryComplete() observer method is invoked for an
+// observer that was added before the initial history query completing.
+TEST_F(DownloadHistoryTest, DownloadHistoryTest_OnHistoryQueryComplete_Pre) {
+  class TestHistoryAdapter : public DownloadHistory::HistoryAdapter {
+   public:
+    TestHistoryAdapter(
+        history::HistoryService::DownloadQueryCallback* callback_storage)
+        : HistoryAdapter(nullptr),
+          query_callback_(callback_storage) {}
+    void QueryDownloads(const history::HistoryService::DownloadQueryCallback&
+                            callback) override {
+      *query_callback_ = callback;
+    }
+
+    history::HistoryService::DownloadQueryCallback* query_callback_;
+  };
+
+  TestDownloadHistoryObserver observer;
+  history::HistoryService::DownloadQueryCallback query_callback;
+  scoped_ptr<TestHistoryAdapter> test_history_adapter(
+      new TestHistoryAdapter(&query_callback));
+
+  // Create a new DownloadHistory object. This should cause
+  // TestHistoryAdapter::QueryDownloads() to be called. The TestHistoryAdapter
+  // stored the completion callback.
+  scoped_ptr<DownloadHistory> history(
+      new DownloadHistory(&manager(), std::move(test_history_adapter)));
+  history->AddObserver(&observer);
+  EXPECT_FALSE(observer.on_history_query_complete_called_);
+  ASSERT_FALSE(query_callback.is_null());
+
+  // Now invoke the query completion callback.
+  scoped_ptr<std::vector<history::DownloadRow>> query_results(
+      new std::vector<history::DownloadRow>());
+  query_callback.Run(std::move(query_results));
+  EXPECT_TRUE(observer.on_history_query_complete_called_);
+  history->RemoveObserver(&observer);
+}
+
+// Test that the OnHistoryQueryComplete() observer method is invoked for an
+// observer that was added after the initial history query completing.
+TEST_F(DownloadHistoryTest, DownloadHistoryTest_OnHistoryQueryComplete_Post) {
+  TestDownloadHistoryObserver observer;
+  CreateDownloadHistory(scoped_ptr<InfoVector>(new InfoVector()));
+  download_history()->AddObserver(&observer);
+  EXPECT_TRUE(observer.on_history_query_complete_called_);
+  download_history()->RemoveObserver(&observer);
 }
 
 // Test that WasRestoredFromHistory accurately identifies downloads that were

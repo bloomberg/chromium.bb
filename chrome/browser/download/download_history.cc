@@ -218,6 +218,7 @@ DownloadHistory::DownloadHistory(content::DownloadManager* manager,
       history_(std::move(history)),
       loading_id_(content::DownloadItem::kInvalidId),
       history_size_(0),
+      initial_history_query_complete_(false),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::DownloadManager::DownloadVector items;
@@ -239,6 +240,9 @@ DownloadHistory::~DownloadHistory() {
 void DownloadHistory::AddObserver(DownloadHistory::Observer* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   observers_.AddObserver(observer);
+
+  if (initial_history_query_complete_)
+    observer->OnHistoryQueryComplete();
 }
 
 void DownloadHistory::RemoveObserver(DownloadHistory::Observer* observer) {
@@ -301,6 +305,9 @@ void DownloadHistory::QueryCallback(scoped_ptr<InfoVector> infos) {
     ++history_size_;
   }
   notifier_.GetManager()->CheckForHistoryFilesRemoval();
+
+  initial_history_query_complete_ = true;
+  FOR_EACH_OBSERVER(Observer, observers_, OnHistoryQueryComplete());
 }
 
 void DownloadHistory::MaybeAddToHistory(content::DownloadItem* item) {
