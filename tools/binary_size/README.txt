@@ -59,17 +59,16 @@ pretend that you are building the Content Shell APK for Android.
      build with a Release configuration so that the end product is as close to
      the real thing as possible. However, it can sometimes be useful to improve
      consistency and accuracy of symbol lookup even if it perturbs the overall
-     accuracy of the tool. Consider adding these defines (e.g., via GYP_DEFINES
-     or GN build arguments):
-       clang=1
+     accuracy of the tool. Consider adding these GN args:
+       is_clang = true
          Anecdotally produces more stable symbol names over time.
-       profiling=1
-         Anecdotally makes symbol lookup more accurate (note that profiling=1
+       enable_profiling = true
+         Anecdotally makes symbol lookup more accurate (note that it
          doesn't work with clang on ARM/Android builds, see
          https://crbug.com/417323 for more information.
-       profiling_full_stack_frames=1
-         With profiling=1, should further improve symbol lookup accuracy but
-         will completely disable inlining, further decreasing spatial accuracy.
+       enable_full_stack_frames_for_profiling = true
+         With enable_profiling, further improves symbol lookup accuracy but
+         will completely disable inlining, decreasing spatial accuracy.
 
   2. Run the tool specifying the library and the output report directory.
      This command will run the analysis on the Content Shell native library for
@@ -77,7 +76,7 @@ pretend that you are building the Content Shell APK for Android.
      (useful for re-running the tool or analyzing deltas between two builds)
      under /tmp/report/nm.out:
        tools/binary_size/run_binary_size_analysis.py \
-         --library out/Release/lib/libcontent_shell_content_view.so \
+         --library out/Release/lib.unstripped/libcontent_shell_content_view.so \
          --destdir /tmp/report
 
 Of course, there are additional options that you can see by running the tool
