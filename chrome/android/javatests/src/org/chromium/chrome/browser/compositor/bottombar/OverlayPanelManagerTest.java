@@ -106,12 +106,6 @@ public class OverlayPanelManagerTest extends InstrumentationTestCase {
             @Override
             public void removeLastHistoryEntry(String url, long timeInMs) {}
         }
-
-        @Override
-        protected float getPeekPromoHeight() {
-            // Android Views are not used in this test so we cannot get the actual height.
-            return 0.f;
-        }
     }
 
     // --------------------------------------------------------------------------------------------

@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.compositor.scene_layer;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
+import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchBarControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchIconSpriteControl;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPeekPromoControl;
@@ -33,24 +33,20 @@ public class ContextualSearchSceneLayer extends SceneLayer {
      * Update the scene layer to draw an OverlayPanel.
      * @param resourceManager Manager to get view and image resources.
      * @param panel The OverlayPanel to render.
-     * @param searchContextViewId The ID of the view for Contextual Search's context.
-     * @param searchTermViewId The ID of the view containing the Contextual Search search term.
-     * @param peekPromoControl The peeking promotion for Contextual Search; optional if
-     *                         "panelType" is READER_MODE_PANEL.
-     * @param searchContextOpacity The opacity of the text specified by "searchContextViewId".
-     * @param searchTermOpacity The opacity of the text specified by "searchTermViewId".
-     * @param spriteControl The object controling the "G" animation for Contextual Search; optional
-     *                      if "panelType" is READER_MODE_PANEL.
+     * @param searchBarControl The Search Bar control.
+     * @param peekPromoControl The peeking promotion for Contextual Search.
+     * @param spriteControl The object controlling the "G" animation for Contextual Search.
      */
     public void update(ResourceManager resourceManager,
-            OverlayPanel panel,
-            int searchContextViewId,
-            int searchTermViewId,
+            ContextualSearchPanel panel,
+            ContextualSearchBarControl searchBarControl,
             ContextualSearchPeekPromoControl peekPromoControl,
-            float searchContextOpacity,
-            float searchTermOpacity,
             ContextualSearchIconSpriteControl spriteControl) {
 
+        int searchContextViewId = searchBarControl.getSearchContextViewId();
+        int searchTermViewId = searchBarControl.getSearchTermViewId();
+
+        // TODO(pedrosimonetti): Move to Promo logic to its own control class.
         boolean searchPromoVisible = panel.getPromoVisible();
         float searchPromoHeightPx = panel.getPromoHeightPx();
         float searchPromoOpacity = panel.getPromoOpacity();
@@ -73,6 +69,9 @@ public class ContextualSearchSceneLayer extends SceneLayer {
 
         float searchBarMarginSide = panel.getBarMarginSide();
         float searchBarHeight = panel.getBarHeight();
+
+        float searchContextOpacity = searchBarControl.getSearchBarContextOpacity();
+        float searchTermOpacity = searchBarControl.getSearchBarTermOpacity();
 
         boolean searchBarBorderVisible = panel.isBarBorderVisible();
         float searchBarBorderHeight = panel.getBarBorderHeight();

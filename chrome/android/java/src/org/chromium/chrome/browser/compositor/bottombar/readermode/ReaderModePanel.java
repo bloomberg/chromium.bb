@@ -155,10 +155,6 @@ public class ReaderModePanel extends OverlayPanel {
             mManagerDelegate = delegate;
             if (mManagerDelegate != null) {
                 setChromeActivity(mManagerDelegate.getChromeActivity());
-                initializeUiState();
-                // TODO(mdjones): Improve the base page movement API so that the default behavior
-                // is to hide the toolbar; this function call should not be necessary here.
-                updateBasePageTargetY();
             }
         }
     }
@@ -288,12 +284,6 @@ public class ReaderModePanel extends OverlayPanel {
         // This will cause the reader mode bar to behave like the top controls; sliding out of
         // view as the page scrolls.
         return super.getOffsetY() + (shouldAutoHide ? getTopControlsOffsetDp() : 0.0f);
-    }
-
-    @Override
-    protected float calculateBasePageTargetY(PanelState state) {
-        // In the case of reader mode the base page will always need to move the same amount.
-        return -getToolbarHeight();
     }
 
     @Override

@@ -6,9 +6,6 @@ package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.os.Handler;
-import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -16,10 +13,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchOptOutPromo;
-import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchOptOutPromo.ContextualSearchPromoHost;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
-import org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -30,9 +23,8 @@ import java.util.Map;
 
 /**
  * Base abstract class for the Overlay Panel.
- * TODO(mdjones): Remove contextual search dependencies from this class.
  */
-abstract class OverlayPanelBase implements ContextualSearchPromoHost {
+abstract class OverlayPanelBase {
     /** The side padding of Bar icons in dps. */
     private static final float BAR_ICON_SIDE_PADDING_DP = 12.f;
 
@@ -113,9 +105,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     /** Ratio of dps per pixel. */
     protected float mPxToDp;
 
-    /** The approximate Y coordinate of the selection in pixels. */
-    private float mBasePageSelectionYPx = -1.f;
-
     /**
      * The Y coordinate to apply to the Base Page in order to keep the selection
      * in view when the Overlay Panel is in its EXPANDED state.
@@ -136,7 +125,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      */
     protected static final Map<PanelState, PanelState> PREVIOUS_STATES;
     static {
-        Map<PanelState, PanelState> states = new HashMap<PanelState, PanelState>();
+        Map<PanelState, PanelState> states = new HashMap<>();
         // Pairs are of the form <Current, Previous>.
         states.put(PanelState.PEEKED, PanelState.CLOSED);
         states.put(PanelState.EXPANDED, PanelState.PEEKED);
@@ -167,21 +156,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     protected abstract void closePanel(StateChangeReason reason, boolean animate);
 
     /**
-     * Animates the acceptance of the Promo.
-     */
-    protected abstract void animatePromoAcceptance();
-
-    /**
-     * Animates the search term resolution.
-     */
-    protected abstract void animateSearchTermResolution();
-
-    /**
-     * Cancels the search term resolution animation if it is in progress.
-     */
-    protected abstract void cancelSearchTermResolutionAnimation();
-
-    /**
      * Event notification that the Panel did get closed.
      * @param reason The reason the panel is closing.
      */
@@ -197,24 +171,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @return The resource id that contains how large the top controls are.
      */
     protected abstract int getControlContainerHeightResource();
-
-    // ============================================================================================
-    // Peeking promo methods
-    // ============================================================================================
-
-    /**
-     * @return The height of the Peek Promo in the peeked state, in pixels.
-     */
-    protected float getPeekPromoHeightPeekingPx() {
-        return 0;
-    }
-
-    /**
-     * @return The height of the Peek Promo, in pixels.
-     */
-    protected float getPeekPromoHeight() {
-        return 0;
-    }
 
     // ============================================================================================
     // Layout Integration
@@ -250,17 +206,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
             mOffsetX = calculateOverlayPanelX();
             mOffsetY = calculateOverlayPanelY();
         }
-    }
-
-    /**
-     * Overrides the FullWidthSizePanel state for testing.
-     *
-     * @param isFullWidthSizePanel
-     */
-    @VisibleForTesting
-    public void setIsFullWidthSizePanelForTesting(boolean isFullWidthSizePanel) {
-        mOverrideIsFullWidthSizePanelForTesting = true;
-        mIsFullWidthSizePanelForTesting = isFullWidthSizePanel;
     }
 
     /**
@@ -368,7 +313,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @return The Panel Bar Container in dps.
      */
     protected float getBarContainerHeight() {
-        return getBarHeight() + getPeekPromoHeight();
+        return getBarHeight();
     }
 
     /**
@@ -390,52 +335,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     // ============================================================================================
     // UI States
     // ============================================================================================
-
-    // --------------------------------------------------------------------------------------------
-    // Test Infrastructure
-    // --------------------------------------------------------------------------------------------
-
-    /**
-     * @param height The height of the Overlay Panel to be set.
-     */
-    @VisibleForTesting
-    public void setHeightForTesting(float height) {
-        mHeight = height;
-    }
-
-    /**
-     * @param offsetY The vertical offset of the Overlay Panel to be
-     *            set.
-     */
-    @VisibleForTesting
-    public void setOffsetYForTesting(float offsetY) {
-        mOffsetY = offsetY;
-    }
-
-    /**
-     * @param isMaximized The setting for whether the Overlay Panel is fully
-     *            maximized.
-     */
-    @VisibleForTesting
-    public void setMaximizedForTesting(boolean isMaximized) {
-        mIsMaximized = isMaximized;
-    }
-
-    /**
-     * @param barHeight The height of the Overlay Bar to be set.
-     */
-    @VisibleForTesting
-    public void setSearchBarHeightForTesting(float barHeight) {
-        mBarHeight = barHeight;
-    }
-
-    /**
-     * @param barBorderHeight The height of the Bar border to be set.
-     */
-    @VisibleForTesting
-    public void setSearchBarBorderHeight(float barBorderHeight) {
-        mBarBorderHeight = barBorderHeight;
-    }
 
     // --------------------------------------------------------------------------------------------
     // Overlay Panel states
@@ -666,64 +565,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
         mProgressBarCompletion = completion;
     }
 
-    // --------------------------------------------------------------------------------------------
-    // Promo states
-    // --------------------------------------------------------------------------------------------
-
-    private boolean mPromoVisible = false;
-    private float mPromoContentHeightPx = 0.f;
-    private float mPromoHeightPx;
-    private float mPromoOpacity;
-
-    /**
-     * @return Whether the promo is visible.
-     */
-    public boolean getPromoVisible() {
-        return mPromoVisible;
-    }
-
-    /**
-     * Sets the height of the promo content.
-     */
-    public void setPromoContentHeightPx(float heightPx) {
-        mPromoContentHeightPx = heightPx;
-    }
-
-    /**
-     * @return Height of the promo in dps.
-     */
-    public float getPromoHeight() {
-        return mPromoHeightPx * mPxToDp;
-    }
-
-    /**
-     * @return Height of the promo in pixels.
-     */
-    public float getPromoHeightPx() {
-        return mPromoHeightPx;
-    }
-
-    /**
-     * @return The opacity of the promo.
-     */
-    public float getPromoOpacity() {
-        return mPromoOpacity;
-    }
-
-    /**
-     * Gets the height of the promo content.
-     */
-    protected float getPromoContentHeight() {
-        return mPromoContentHeightPx * mPxToDp;
-    }
-
-    /**
-     * @return Y coordinate of the promo in pixels.
-     */
-    protected float getPromoYPx() {
-        return Math.round((getOffsetY() + getBarContainerHeight()) / mPxToDp);
-    }
-
     // ============================================================================================
     // State Handler
     // ============================================================================================
@@ -744,8 +585,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
         if (state == PanelState.CLOSED) {
             mIsShowing = false;
             onClosed(reason);
-        } else if (state == PanelState.EXPANDED) {
-            showPromoViewAtYPosition(getPromoYPx());
         }
 
         // We should only set the state at the end of this method, in oder to make sure that
@@ -827,7 +666,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @return The peeked height of the panel in dps.
      */
     protected float getPeekedHeight() {
-        return mBarHeightPeeking + getPeekPromoHeightPeekingPx() * mPxToDp;
+        return mBarHeightPeeking;
     }
 
     /**
@@ -858,7 +697,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     protected void initializeUiState() {
         mIsShowing = false;
 
-        // Static values.
         mPxToDp = 1.f / mContext.getResources().getDisplayMetrics().density;
 
         mToolbarHeight = mContext.getResources().getDimension(
@@ -870,11 +708,11 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
                 R.dimen.toolbar_height_no_shadow) * mPxToDp;
         mBarHeightExpanded =
                 Math.round((mBarHeightPeeking + mBarHeightMaximized) / 2.f);
+
         mBarMarginSide = BAR_ICON_SIDE_PADDING_DP;
         mProgressBarHeight = PROGRESS_BAR_HEIGHT_DP;
         mBarBorderHeight = BAR_BORDER_HEIGHT_DP;
 
-        // Dynamic values.
         mBarHeight = mBarHeightPeeking;
     }
 
@@ -946,12 +784,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @param height The height of the panel in dps.
      */
     protected void setPanelHeight(float height) {
-        // As soon as we resize the Panel to a different height than the expanded one,
-        // then we should hide the Promo View once the snapshot will be shown in its place.
-        if (height != getPanelHeightFromState(PanelState.EXPANDED)) {
-            hidePromoView();
-        }
-
         updatePanelForHeight(height);
     }
 
@@ -977,7 +809,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
         PanelState startState = getPreviousPanelState(endState);
         float percentage = getStateCompletion(height, startState, endState);
 
-        updatePanelSize(height, endState, percentage);
+        updatePanelSize(height);
 
         if (endState == PanelState.CLOSED || endState == PanelState.PEEKED) {
             updatePanelForCloseOrPeek(percentage);
@@ -992,10 +824,8 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * Updates the Panel size information.
      *
      * @param height The Overlay Panel height.
-     * @param endState The final state of transition being executed.
-     * @param percentage The completion percentage of the transition.
      */
-    private void updatePanelSize(float height, PanelState endState, float percentage) {
+    private void updatePanelSize(float height) {
         mHeight = height;
         mOffsetX = calculateOverlayPanelX();
         mOffsetY = calculateOverlayPanelY();
@@ -1045,14 +875,11 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     private float getStateCompletion(float height, PanelState startState, PanelState endState) {
         float startSize = getPanelHeightFromState(startState);
         float endSize = getPanelHeightFromState(endState);
-        float percentage =
-                // NOTE(pedrosimonetti): Handle special case from PanelState.UNDEFINED
-                // to PanelState.CLOSED, where both have a height of zero. Returning
-                // zero here means the Panel will be reset to its CLOSED state.
-                startSize == 0.f && endSize == 0.f ? 0.f
-                        : (height - startSize) / (endSize - startSize);
-
-        return percentage;
+        // NOTE(pedrosimonetti): Handle special case from PanelState.UNDEFINED
+        // to PanelState.CLOSED, where both have a height of zero. Returning
+        // zero here means the Panel will be reset to its CLOSED state.
+        return startSize == 0.f && endSize == 0.f ? 0.f
+                : (height - startSize) / (endSize - startSize);
     }
 
     /**
@@ -1062,9 +889,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @param percentage The completion percentage.
      */
     protected void updatePanelForCloseOrPeek(float percentage) {
-        // Update the opt out promo.
-        updatePromoVisibility(1.f);
-
         // Base page offset.
         mBasePageY = 0.f;
 
@@ -1097,29 +921,23 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @param percentage The completion percentage.
      */
     protected void updatePanelForExpansion(float percentage) {
-        // Update the opt out promo.
-        updatePromoVisibility(1.f);
-
         // Base page offset.
-        float baseBaseY = MathUtils.interpolate(
+        mBasePageY = MathUtils.interpolate(
                 0.f,
                 getBasePageTargetY(),
                 percentage);
-        mBasePageY = baseBaseY;
 
         // Base page brightness.
-        float brightness = MathUtils.interpolate(
+        mBasePageBrightness = MathUtils.interpolate(
                 BASE_PAGE_BRIGHTNESS_STATE_PEEKED,
                 BASE_PAGE_BRIGHTNESS_STATE_EXPANDED,
                 percentage);
-        mBasePageBrightness = brightness;
 
         // Bar height.
-        float barHeight = Math.round(MathUtils.interpolate(
+        mBarHeight = Math.round(MathUtils.interpolate(
                 mBarHeightPeeking,
                 getBarHeightExpanded(),
                 percentage));
-        mBarHeight = barHeight;
 
         // Bar border.
         mIsBarBorderVisible = true;
@@ -1148,8 +966,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
         float diff = Math.min(mHeight - peekedHeight, threshold);
         // Fades the Progress Bar the closer it gets to the bottom of the
         // screen.
-        float progressBarOpacity = MathUtils.interpolate(0.f, 1.f, diff / threshold);
-        mProgressBarOpacity = progressBarOpacity;
+        mProgressBarOpacity = MathUtils.interpolate(0.f, 1.f, diff / threshold);
 
         // Update the Bar Shadow.
         updateBarShadow();
@@ -1162,9 +979,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * @param percentage The completion percentage.
      */
     protected void updatePanelForMaximization(float percentage) {
-        // Update the opt out promo.
-        updatePromoVisibility(1.f - percentage);
-
         boolean supportsExpandedState = isSupportedState(PanelState.EXPANDED);
 
         // Base page offset.
@@ -1230,47 +1044,25 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
-     * @return Whether the Panel Promo is visible.
-     */
-    protected boolean isPromoVisible() {
-        return false;
-    }
-
-    /**
-     * Updates the UI state for Opt Out Promo.
-     *
-     * @param percentage The visibility percentage of the Promo. A visibility of 0 means the
-     * Promo is not visible. A visibility of 1 means the Promo is fully visible. And
-     * visibility between 0 and 1 means the Promo is partially visible.
-     */
-    private void updatePromoVisibility(float percentage) {
-        if (isPromoVisible()) {
-            mPromoVisible = true;
-
-            mPromoHeightPx = Math.round(MathUtils.clamp(percentage * mPromoContentHeightPx,
-                    0.f, mPromoContentHeightPx));
-            mPromoOpacity = percentage;
-        } else {
-            mPromoVisible = false;
-            mPromoHeightPx = 0.f;
-            mPromoOpacity = 0.f;
-        }
-    }
-
-    /**
      * Updates the UI state for Bar Shadow.
      */
-    private void updateBarShadow() {
-        float barShadowHeightPx = 9.f / mPxToDp;
-        if (mPromoVisible && mPromoHeightPx > 0.f) {
+    protected void updateBarShadow() {
+        float barShadowOpacity = calculateBarShadowOpacity();
+
+        if (barShadowOpacity > 0.f) {
             mBarShadowVisible = true;
-            float threshold = 2 * barShadowHeightPx;
-            mBarShadowOpacity = mPromoHeightPx > barShadowHeightPx ? 1.f
-                    : MathUtils.interpolate(0.f, 1.f, mPromoHeightPx / threshold);
+            mBarShadowOpacity = barShadowOpacity;
         } else {
             mBarShadowVisible = false;
             mBarShadowOpacity = 0.f;
         }
+    }
+
+    /**
+     * @return The new opacity value for the Bar Shadow.
+     */
+    protected float calculateBarShadowOpacity() {
+        return 0.f;
     }
 
     // ============================================================================================
@@ -1278,12 +1070,15 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     // ============================================================================================
 
     /**
-     * Updates the coordinate of the existing selection.
-     * @param y The y coordinate of the selection in pixels.
+     * Calculates the desired offset for the Base Page. The purpose of this method is to allow
+     * subclasses to provide an specific offset, which can be useful for keeping a certain
+     * portion of the Base Page visible when a Panel is in expanded state. To facilitate the
+     * calculation, the first argument contains the height of the Panel in the expanded state.
+     *
+     * @return The desired offset for the Base Page
      */
-    protected void updateBasePageSelectionYPx(float y) {
-        mBasePageSelectionYPx = y;
-        updateBasePageTargetY();
+    protected float calculateBasePageDesiredOffset() {
+        return 0.f;
     }
 
     /**
@@ -1291,34 +1086,26 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      * after expanding the Panel.
      */
     protected void updateBasePageTargetY() {
-        mBasePageTargetY = calculateBasePageTargetY(PanelState.EXPANDED);
+        mBasePageTargetY = calculateBasePageTargetY();
     }
 
     /**
-     * Calculates the target offset of the Base Page in order to keep the selection in view
-     * after expanding the Panel to the given |expandedState|.
+     * Calculates the target offset of the Base Page in order to achieve the desired offset
+     * specified by {@link #calculateBasePageDesiredOffset} while assuring that the Base
+     * Page will always fill the gap between the Panel and the top of the screen, because
+     * there's nothing to see below the Base Page layer. This method will take into
+     * consideration the Toolbar height, and adjust the offset accordingly, in order to
+     * move the Toolbar out of the view as the Panel expands.
      *
-     * @param expandedState
      * @return The target offset Y.
      */
-    protected float calculateBasePageTargetY(PanelState expandedState) {
+    private float calculateBasePageTargetY() {
         // Only a fullscreen wide Panel should offset the base page. A small panel should
         // always return zero to ensure the Base Page remains in the same position.
         if (!isFullWidthSizePanel()) return 0.f;
 
-        // Convert from px to dp.
-        final float selectionY = mBasePageSelectionYPx * mPxToDp;
-
-        // Calculate the exact height of the expanded Panel without taking into
-        // consideration the height of the shadow (what is returned by the
-        // getPanelFromHeight method). We need the measurement of the portion
-        // of the Panel that occludes the page.
-        final float expandedHeight = getPanelHeightFromState(expandedState);
-
-        // Calculate the offset to center the selection on the available area.
-        final float tabHeight = getTabHeight();
-        final float availableHeight = tabHeight - expandedHeight;
-        float offset = -selectionY + availableHeight / 2;
+        // Start with the desired offset.
+        float offset = calculateBasePageDesiredOffset();
 
         // Make sure offset is negative to prevent Base Page from moving down,
         // because there's nothing to render above the Page.
@@ -1328,7 +1115,7 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
         offset -= (mToolbarHeight - getTopControlsOffsetDp());
         // Make sure the offset is not greater than the expanded height, because
         // there's nothing to render below the Page.
-        offset = Math.max(offset, -expandedHeight);
+        offset = Math.max(offset, -getExpandedHeight());
 
         return offset;
     }
@@ -1353,11 +1140,6 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
      */
     public void setDynamicResourceLoader(DynamicResourceLoader resourceLoader) {
         mResourceLoader = resourceLoader;
-
-        if (mPromoView != null) {
-            mResourceLoader.registerResource(R.id.contextual_search_opt_out_promo,
-                    mPromoView.getResourceAdapter());
-        }
     }
 
     /**
@@ -1370,157 +1152,51 @@ abstract class OverlayPanelBase implements ContextualSearchPromoHost {
     }
 
     // ============================================================================================
-    // Promo Host
+    // Test Infrastructure
     // ============================================================================================
 
-    @Override
-    public void onPromoPreferenceClick() {
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                PreferencesLauncher.launchSettingsPage(mContext,
-                        ContextualSearchPreferenceFragment.class.getName());
-            }
-        });
+    /**
+     * @param height The height of the Overlay Panel to be set.
+     */
+    @VisibleForTesting
+    public void setHeightForTesting(float height) {
+        mHeight = height;
     }
 
     /**
-     * @param enabled Whether the preference should be enabled.
+     * @param offsetY The vertical offset of the Overlay Panel to be
+     *            set.
      */
-    public void setPreferenceState(boolean enabled) {
-    }
-
-    @Override
-    public void onPromoButtonClick(boolean accepted) {
-        if (accepted) {
-            animatePromoAcceptance();
-        } else {
-            hidePromoView();
-            // NOTE(pedrosimonetti): If the user has opted out of Contextual Search, we should set
-            // the preference right away because the preference state controls whether the promo
-            // will be visible, and we want to hide the promo immediately when the user opts out.
-            setPreferenceState(false);
-            closePanel(StateChangeReason.OPTOUT, true);
-        }
-    }
-
-    // ============================================================================================
-    // Opt Out Promo View
-    // ============================================================================================
-
-    // TODO(pedrosimonetti): Consider maybe adding a 9.patch to avoid the hacky nested layouts in
-    // order to have the transparent gap at the top of the Promo View.
-
-    /**
-     * The {@link ContextualSearchOptOutPromo} instance.
-     */
-    private ContextualSearchOptOutPromo mPromoView;
-
-    /**
-     * Whether the Search Promo View is visible.
-     */
-    private boolean mIsSearchPromoViewVisible = false;
-
-    /**
-     * Creates the Search Promo View.
-     */
-    protected void createPromoView() {
-        if (isPromoVisible() && mPromoView == null) {
-            assert mContainerView != null;
-
-            // TODO(pedrosimonetti): Refactor promo code to use ViewResourceInflater.
-            LayoutInflater.from(mContext).inflate(
-                    R.layout.contextual_search_opt_out_promo, mContainerView);
-            mPromoView = (ContextualSearchOptOutPromo)
-                    mContainerView.findViewById(R.id.contextual_search_opt_out_promo);
-
-            if (mResourceLoader != null) {
-                mResourceLoader.registerResource(R.id.contextual_search_opt_out_promo,
-                        mPromoView.getResourceAdapter());
-            }
-
-            mPromoView.setPromoHost(this);
-
-            updatePromoLayout();
-
-            assert mPromoView != null;
-        }
+    @VisibleForTesting
+    public void setOffsetYForTesting(float offsetY) {
+        mOffsetY = offsetY;
     }
 
     /**
-     * Destroys the Search Promo View.
+     * @param isMaximized The setting for whether the Overlay Panel is fully
+     *            maximized.
      */
-    protected void destroyPromoView() {
-        if (mPromoView != null) {
-            mContainerView.removeView(mPromoView);
-            mPromoView = null;
-            if (mResourceLoader != null) {
-                mResourceLoader.unregisterResource(R.id.contextual_search_opt_out_promo);
-            }
-        }
+    @VisibleForTesting
+    public void setMaximizedForTesting(boolean isMaximized) {
+        mIsMaximized = isMaximized;
     }
 
     /**
-     * Updates the Promo layout.
+     * @param barHeight The height of the Overlay Bar to be set.
      */
-    protected void updatePromoLayout() {
-        final int maximumWidth = getMaximumWidthPx();
-
-        // Adjust size for small Panel.
-        if (!isFullWidthSizePanel()) {
-            mPromoView.getLayoutParams().width = maximumWidth;
-            mPromoView.requestLayout();
-        }
-
-        setPromoContentHeightPx(mPromoView.getHeightForGivenWidth(maximumWidth));
+    @VisibleForTesting
+    public void setSearchBarHeightForTesting(float barHeight) {
+        mBarHeight = barHeight;
     }
 
     /**
-     * Displays the Search Promo View at the given Y position.
+     * Overrides the FullWidthSizePanel state for testing.
      *
-     * @param y The Y position.
+     * @param isFullWidthSizePanel Whether the Panel has a full width size.
      */
-    private void showPromoViewAtYPosition(float y) {
-        if (mPromoView == null || !isPromoVisible()) return;
-
-        float offsetX = getOffsetX() / mPxToDp;
-        if (LocalizationUtils.isLayoutRtl()) {
-            offsetX = -offsetX;
-        }
-
-        mPromoView.setTranslationX(offsetX);
-        mPromoView.setTranslationY(y);
-        mPromoView.setVisibility(View.VISIBLE);
-
-        // NOTE(pedrosimonetti): We need to call requestLayout, otherwise
-        // the Promo View will not become visible.
-        mPromoView.requestLayout();
-
-        mIsSearchPromoViewVisible = true;
-    }
-
-    /**
-     * Hides the Search Promo View.
-     */
-    protected void hidePromoView() {
-        if (mPromoView == null
-                || !mIsSearchPromoViewVisible
-                || !isPromoVisible()) {
-            return;
-        }
-
-        mPromoView.setVisibility(View.INVISIBLE);
-
-        mIsSearchPromoViewVisible = false;
-    }
-
-    /**
-     * Updates the UI state for Opt In Promo animation.
-     *
-     * @param percentage The visibility percentage of the Promo.
-     */
-    protected void setPromoVisibilityForOptInAnimation(float percentage) {
-        updatePromoVisibility(percentage);
-        updateBarShadow();
+    @VisibleForTesting
+    public void setIsFullWidthSizePanelForTesting(boolean isFullWidthSizePanel) {
+        mOverrideIsFullWidthSizePanelForTesting = true;
+        mIsFullWidthSizePanelForTesting = isFullWidthSizePanel;
     }
 }

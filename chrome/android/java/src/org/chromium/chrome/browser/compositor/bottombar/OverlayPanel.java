@@ -43,20 +43,20 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     /**
      * State of the Overlay Panel.
      */
-    public static enum PanelState {
+    public enum PanelState {
         // TODO(pedrosimonetti): consider removing the UNDEFINED state
         UNDEFINED,
         CLOSED,
         PEEKED,
         EXPANDED,
-        MAXIMIZED;
+        MAXIMIZED
     }
 
     /**
      * The reason for a change in the Overlay Panel's state.
      * TODO(mdjones): Separate generic reasons from Contextual Search reasons.
      */
-    public static enum StateChangeReason {
+    public enum StateChangeReason {
         UNKNOWN,
         RESET,
         BACK_PRESS,
@@ -85,7 +85,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         KEYBOARD_SHOWN,
         KEYBOARD_HIDDEN,
         TAB_NAVIGATION,
-        PROMO_ACCEPTED;
+        PROMO_ACCEPTED
     }
 
     /** The activity this panel is in. */
@@ -237,6 +237,12 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
         if (mActivity != null) {
             ApplicationStatus.registerStateListenerForActivity(this, mActivity);
         }
+
+        // TODO(pedrosimonetti): Coordinate with mdjones@ to move this to the OverlayPanelBase
+        // constructor, once we are able to get the Activity during instantiation. The Activity
+        // is needed in order to get the correct height of the Toolbar, which varies depending
+        // on the Activity (WebApps have a smaller toolbar for example).
+        initializeUiState();
     }
 
     /**
@@ -492,8 +498,8 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     // ============================================================================================
 
     /**
-     * Sets the {@OverlayPanelHost} used to communicate with the supported layout.
-     * @param host The {@OverlayPanelHost}.
+     * Sets the {@link OverlayPanelHost} used to communicate with the supported layout.
+     * @param host The {@link OverlayPanelHost}.
      */
     public void setHost(OverlayPanelHost host) {
         mOverlayPanelHost = host;
@@ -541,11 +547,6 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      * Updates the Panel so it preserves its state when the orientation changes.
      */
     protected void updatePanelForOrientationChange() {
-        // NOTE(pedrosimonetti): We cannot tell where the selection will be after the
-        // orientation change, so we are setting the selection position to zero, which
-        // means the base page will be positioned in its original state and we won't
-        // try to keep the selection in view.
-        updateBasePageSelectionYPx(0.f);
         resizePanelToState(getPanelState(), StateChangeReason.UNKNOWN);
     }
 
@@ -700,7 +701,7 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
      * @return The vertical offset of the Overlay Content View in dp.
      */
     public float getContentY() {
-        return getOffsetY() + getBarContainerHeight() + getPromoHeight();
+        return getOffsetY() + getBarContainerHeight();
     }
 
     /**

@@ -28,8 +28,8 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      */
     protected enum Property {
         PANEL_HEIGHT,
-        PROMO_VISIBILITY,
-        BOTTOM_BAR_TEXT_VISIBILITY
+        // TODO(pedrosimonetti): Move Promo logic to its own control class.
+        PROMO_VISIBILITY
     }
 
     /**
@@ -69,11 +69,6 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
     private ChromeAnimation<Animatable<?>> mLayoutAnimations;
 
     /**
-     * Whether the Promo's acceptance animation is running.
-     */
-    private boolean mIsAnimatingPromoAcceptance;
-
-    /**
      * The {@link LayoutUpdateHost} used to request a new frame to be updated and rendered.
      */
     private final LayoutUpdateHost mUpdateHost;
@@ -110,11 +105,8 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
     // Animation API
     // ============================================================================================
 
-    /**
-     * Notifies that the acceptance animation has finished.
-     */
-    protected void onPromoAcceptanceAnimationFinished() {
-    }
+    // TODO(pedrosimonetti): Move Promo logic to its own control class.
+    protected void setPromoVisibilityForOptInAnimation(float percentage) {}
 
     /**
      * Animates the Overlay Panel to its maximized state.
@@ -142,6 +134,8 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      * @param reason The reason for the change of panel state.
      */
     protected void peekPanel(StateChangeReason reason) {
+        updateBasePageTargetY();
+
         // Indicate to the Compositor that for now on the Panel should be
         // rendered, until it's closed.
         startShowing();
@@ -233,26 +227,6 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
     // Animation Helpers
     // ============================================================================================
 
-    @Override
-    protected void animatePromoAcceptance() {
-        hidePromoView();
-        mIsAnimatingPromoAcceptance = true;
-        animateProperty(Property.PROMO_VISIBILITY, 1.f, 0.f, BASE_ANIMATION_DURATION_MS);
-    }
-
-    @Override
-    protected void animateSearchTermResolution() {
-        animateProperty(Property.BOTTOM_BAR_TEXT_VISIBILITY, 0.f, 1.f,
-                MAXIMUM_ANIMATION_DURATION_MS);
-    }
-
-    @Override
-    protected void cancelSearchTermResolutionAnimation() {
-        if (animationIsRunning()) {
-            cancelAnimation(this, Property.BOTTOM_BAR_TEXT_VISIBILITY);
-        }
-    }
-
     /**
      * Animates the Panel to its nearest state.
      */
@@ -274,6 +248,19 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      * @param velocity The velocity of the gesture in dps per second.
      */
     protected void animateToProjectedState(float velocity) {
+        PanelState projectedState = getProjectedState(velocity);
+
+        final float displacement = getPanelHeightFromState(projectedState) - getHeight();
+        final long duration = calculateAnimationDuration(velocity, displacement);
+
+        animatePanelToState(projectedState, StateChangeReason.FLING, duration);
+    }
+
+    /**
+     * @param velocity The given velocity.
+     * @return The projected state the Panel will be if the given velocity is applied.
+     */
+    protected PanelState getProjectedState(float velocity) {
         final float kickY = calculateAnimationDisplacement(velocity, BASE_ANIMATION_DURATION_MS);
         final float projectedHeight = getHeight() - kickY;
 
@@ -281,21 +268,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
         // duration of the animation given the current velocity and the projected displacement.
         PanelState projectedState = findNearestPanelStateFromHeight(projectedHeight, velocity);
 
-        // Prevent the fling gesture from moving the Panel from PEEKED to MAXIMIZED if the Panel
-        // Promo is available and we are running in full screen panel mode. This is to make sure
-        // the Promo will be visible, considering that the EXPANDED state is the only one that will
-        // show the Promo in full screen panel mode. In narrow panel UI the Promo is visible in
-        // maximized so this project state change is not needed.
-        if (projectedState == PanelState.MAXIMIZED
-                && getPanelState() == PanelState.PEEKED
-                && isPromoVisible()) {
-            projectedState = PanelState.EXPANDED;
-        }
-
-        final float displacement = getPanelHeightFromState(projectedState) - getHeight();
-        final long duration = calculateAnimationDuration(velocity, displacement);
-
-        animatePanelToState(projectedState, StateChangeReason.FLING, duration);
+        return projectedState;
     }
 
     /**
@@ -403,6 +376,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
         if (prop == Property.PANEL_HEIGHT) {
             setPanelHeight(value);
         } else if (prop == Property.PROMO_VISIBILITY) {
+            // TODO(pedrosimonetti): Move Promo logic to its own control class.
             setPromoVisibilityForOptInAnimation(value);
         }
     }
@@ -445,11 +419,6 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      * Called when layout-specific actions are needed after the animation finishes.
      */
     protected void onAnimationFinished() {
-        if (mIsAnimatingPromoAcceptance) {
-            mIsAnimatingPromoAcceptance = false;
-            onPromoAcceptanceAnimationFinished();
-        }
-
         mIsAnimatingPanelClosing = false;
         mIsAnimatingPanelExpanding = false;
 
@@ -528,7 +497,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
     /**
      * @return whether or not the animation is currently being run.
      */
-    protected boolean animationIsRunning() {
+    public boolean animationIsRunning() {
         return mLayoutAnimations != null && !mLayoutAnimations.finished();
     }
 
@@ -537,7 +506,7 @@ public abstract class OverlayPanelAnimation extends OverlayPanelBase
      * @param object The object being animated.
      * @param prop   The property to search for.
      */
-    protected <T extends Enum<?>> void cancelAnimation(Animatable<T> object, T prop) {
+    public <T extends Enum<?>> void cancelAnimation(Animatable<T> object, T prop) {
         if (mLayoutAnimations != null) {
             mLayoutAnimations.cancel(object, prop);
         }

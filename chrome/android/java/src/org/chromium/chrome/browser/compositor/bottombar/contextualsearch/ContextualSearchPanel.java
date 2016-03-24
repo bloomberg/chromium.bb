@@ -7,9 +7,12 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
+import android.view.LayoutInflater;
+import android.view.View;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelContent;
@@ -20,12 +23,17 @@ import org.chromium.chrome.browser.compositor.scene_layer.ContextualSearchSceneL
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
+import org.chromium.chrome.browser.preferences.privacy.ContextualSearchPreferenceFragment;
+import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
 
 /**
  * Controls the Contextual Search Panel.
  */
-public class ContextualSearchPanel extends OverlayPanel {
+public class ContextualSearchPanel extends OverlayPanel
+        implements ContextualSearchOptOutPromo.ContextualSearchPromoHost {
 
     /**
      * The delay after which the hide progress will be hidden.
@@ -125,11 +133,8 @@ public class ContextualSearchPanel extends OverlayPanel {
         if (mSceneLayer == null) return;
 
         mSceneLayer.update(resourceManager, this,
-                getSearchContextViewId(),
-                getSearchTermViewId(),
+                getSearchBarControl(),
                 getPeekPromoControl(),
-                getSearchBarContextOpacity(),
-                getSearchBarTermOpacity(),
                 getIconSpriteControl());
     }
 
@@ -153,7 +158,6 @@ public class ContextualSearchPanel extends OverlayPanel {
             mManagementDelegate = delegate;
             if (delegate != null) {
                 setChromeActivity(mManagementDelegate.getChromeActivity());
-                initializeUiState();
             }
         }
     }
@@ -186,6 +190,10 @@ public class ContextualSearchPanel extends OverlayPanel {
             }
         }
 
+        if (toState == PanelState.EXPANDED) {
+            showPromoViewAtYPosition(getPromoYPx());
+        }
+
         if (fromState == PanelState.PEEKED
                 && (toState == PanelState.EXPANDED || toState == PanelState.MAXIMIZED)) {
             // After opening the Panel to either expanded or maximized state,
@@ -204,29 +212,17 @@ public class ContextualSearchPanel extends OverlayPanel {
         if (canDisplayContentInPanel()) {
             return super.getExpandedHeight();
         } else {
-            return getBarHeightPeeking() + getPromoContentHeight();
+            return getBarHeightPeeking() + mPromoContentHeightPx * mPxToDp;
         }
-    }
-
-    // ============================================================================================
-    // Promo Host
-    // ============================================================================================
-
-    @Override
-    public void onPromoPreferenceClick() {
-        super.onPromoPreferenceClick();
-    }
-
-    @Override
-    public void onPromoButtonClick(boolean accepted) {
-        super.onPromoButtonClick(accepted);
     }
 
     // ============================================================================================
     // Contextual Search Manager Integration
     // ============================================================================================
 
-    @Override
+    /**
+     * @param enabled Whether the preference should be enabled.
+     */
     public void setPreferenceState(boolean enabled) {
         if (mManagementDelegate != null) {
             PrefServiceBridge.getInstance().setContextualSearchState(enabled);
@@ -335,17 +331,14 @@ public class ContextualSearchPanel extends OverlayPanel {
     protected void onAnimationFinished() {
         super.onAnimationFinished();
 
+        if (mIsAnimatingPromoAcceptance) {
+            mIsAnimatingPromoAcceptance = false;
+            onPromoAcceptanceAnimationFinished();
+        }
+
         if (mShouldPromoteToTabAfterMaximizing && getPanelState() == PanelState.MAXIMIZED) {
             mShouldPromoteToTabAfterMaximizing = false;
             mManagementDelegate.promoteToTab();
-        }
-    }
-
-    @Override
-    public void setProperty(Property prop, float value) {
-        super.setProperty(prop, value);
-        if (prop == Property.BOTTOM_BAR_TEXT_VISIBILITY) {
-            updateSearchBarTextOpacity(value);
         }
     }
 
@@ -439,12 +432,6 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     @Override
-    public void updateBasePageSelectionYPx(float y) {
-        // NOTE(pedrosimonetti): exposing superclass method.
-        super.updateBasePageSelectionYPx(y);
-    }
-
-    @Override
     public PanelState getPanelState() {
         // NOTE(pedrosimonetti): exposing superclass method to the interface.
         return super.getPanelState();
@@ -463,9 +450,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param searchTerm The string that represents the search term.
      */
     public void displaySearchTerm(String searchTerm) {
-        cancelSearchTermResolutionAnimation();
         getSearchBarControl().setSearchTerm(searchTerm);
-        resetSearchBarTermOpacity();
         mPanelMetrics.onSearchRequestStarted();
     }
 
@@ -475,9 +460,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param end The portion of the context from the selection to its end.
      */
     public void displaySearchContext(String selection, String end) {
-        cancelSearchTermResolutionAnimation();
         getSearchBarControl().setSearchContext(selection, end);
-        resetSearchBarContextOpacity();
         mPanelMetrics.onSearchRequestStarted();
     }
 
@@ -488,7 +471,6 @@ public class ContextualSearchPanel extends OverlayPanel {
     public void onSearchTermResolved(String searchTerm) {
         mPanelMetrics.onSearchTermResolved();
         getSearchBarControl().setSearchTerm(searchTerm);
-        animateSearchTermResolution();
     }
 
     /**
@@ -508,6 +490,9 @@ public class ContextualSearchPanel extends OverlayPanel {
     protected void updatePanelForCloseOrPeek(float percentage) {
         super.updatePanelForCloseOrPeek(percentage);
 
+        // Update the opt out promo.
+        updatePromoVisibility(1.f);
+
         getPeekPromoControl().onUpdateFromCloseToPeek(percentage);
     }
 
@@ -515,12 +500,18 @@ public class ContextualSearchPanel extends OverlayPanel {
     protected void updatePanelForExpansion(float percentage) {
         super.updatePanelForExpansion(percentage);
 
+        // Update the opt out promo.
+        updatePromoVisibility(1.f);
+
         getPeekPromoControl().onUpdateFromPeekToExpand(percentage);
     }
 
     @Override
     protected void updatePanelForMaximization(float percentage) {
         super.updatePanelForMaximization(percentage);
+
+        // Update the opt out promo.
+        updatePromoVisibility(1.f - percentage);
 
         getPeekPromoControl().onUpdateFromExpandToMaximize(percentage);
     }
@@ -531,44 +522,50 @@ public class ContextualSearchPanel extends OverlayPanel {
             updatePromoLayout();
         }
 
+        // NOTE(pedrosimonetti): We cannot tell where the selection will be after the
+        // orientation change, so we are setting the selection position to zero, which
+        // means the base page will be positioned in its original state and we won't
+        // try to keep the selection in view.
+        updateBasePageSelectionYPx(0.f);
+        updateBasePageTargetY();
+
         super.updatePanelForOrientationChange();
+    }
+
+    // ============================================================================================
+    // Selection position
+    // ============================================================================================
+
+    /** The approximate Y coordinate of the selection in pixels. */
+    private float mBasePageSelectionYPx = -1.f;
+
+    /**
+     * Updates the coordinate of the existing selection.
+     * @param y The y coordinate of the selection in pixels.
+     */
+    public void updateBasePageSelectionYPx(float y) {
+        mBasePageSelectionYPx = y;
+    }
+
+    @Override
+    protected float calculateBasePageDesiredOffset() {
+        float offset = 0.f;
+        if (mBasePageSelectionYPx > 0.f) {
+            // Convert from px to dp.
+            final float selectionY = mBasePageSelectionYPx * mPxToDp;
+
+            // Calculate the offset to center the selection on the available area.
+            final float availableHeight = getTabHeight() - getExpandedHeight();
+            offset = -selectionY + availableHeight / 2;
+        }
+        return offset;
     }
 
     // ============================================================================================
     // ContextualSearchBarControl
     // ============================================================================================
 
-    private ContextualSearchBarControl mContextualSearchBarControl;
-    private float mSearchBarContextOpacity = 1.f;
-    private float mSearchBarTermOpacity = 1.f;
-
-    /**
-     * @return The opacity of the SearchBar's search context.
-     */
-    public float getSearchBarContextOpacity() {
-        return mSearchBarContextOpacity;
-    }
-
-    /**
-     * @return The opacity of the SearchBar's search term.
-     */
-    public float getSearchBarTermOpacity() {
-        return mSearchBarTermOpacity;
-    }
-
-    /**
-     * @return The Id of the Search Context View.
-     */
-    public int getSearchContextViewId() {
-        return getSearchBarControl().getSearchContextViewId();
-    }
-
-    /**
-     * @return The Id of the Search Term View.
-     */
-    public int getSearchTermViewId() {
-        return getSearchBarControl().getSearchTermViewId();
-    }
+    private ContextualSearchBarControl mSearchBarControl;
 
     /**
      * Creates the ContextualSearchBarControl, if needed. The Views are set to INVISIBLE, because
@@ -578,59 +575,22 @@ public class ContextualSearchPanel extends OverlayPanel {
         assert mContainerView != null;
         assert mResourceLoader != null;
 
-        if (mContextualSearchBarControl == null) {
-            mContextualSearchBarControl =
+        if (mSearchBarControl == null) {
+            mSearchBarControl =
                     new ContextualSearchBarControl(this, mContext, mContainerView, mResourceLoader);
         }
 
-        assert mContextualSearchBarControl != null;
-        return mContextualSearchBarControl;
+        return mSearchBarControl;
     }
 
     /**
      * Destroys the ContextualSearchBarControl.
      */
     protected void destroySearchBarControl() {
-        if (mContextualSearchBarControl != null) {
-            mContextualSearchBarControl.destroy();
-            mContextualSearchBarControl = null;
+        if (mSearchBarControl != null) {
+            mSearchBarControl.destroy();
+            mSearchBarControl = null;
         }
-    }
-
-    /**
-     * Updates the UI state for the SearchBar text. The search context view will fade out
-     * while the search term fades in.
-     *
-     * @param percentage The visibility percentage of the search term view.
-     */
-    protected void updateSearchBarTextOpacity(float percentage) {
-        // The search context will start fading out before the search term starts fading in.
-        // They will both be partially visible for overlapPercentage of the animation duration.
-        float overlapPercentage = .75f;
-        float fadingOutPercentage = Math.max(1 - (percentage / overlapPercentage), 0.f);
-        float fadingInPercentage =
-                Math.max(percentage - (1 - overlapPercentage), 0.f) / overlapPercentage;
-
-        mSearchBarContextOpacity = fadingOutPercentage;
-        mSearchBarTermOpacity = fadingInPercentage;
-    }
-
-    /**
-     * Resets the SearchBar text opacity when a new search context is set. The search
-     * context is made visible and the search term invisible.
-     */
-    private void resetSearchBarContextOpacity() {
-        mSearchBarContextOpacity = 1.f;
-        mSearchBarTermOpacity = 0.f;
-    }
-
-    /**
-     * Resets the SearchBar text opacity when a new search term is set. The search
-     * term is made visible and the search context invisible.
-     */
-    private void resetSearchBarTermOpacity() {
-        mSearchBarContextOpacity = 0.f;
-        mSearchBarTermOpacity = 1.f;
     }
 
     // ============================================================================================
@@ -666,12 +626,16 @@ public class ContextualSearchPanel extends OverlayPanel {
 
     private ContextualSearchPeekPromoControl mPeekPromoControl;
 
-    @Override
+    /**
+     * @return The height of the Peek Promo in the peeked state, in pixels.
+     */
     protected float getPeekPromoHeightPeekingPx() {
         return getPeekPromoControl().getHeightPeekingPx();
     }
 
-    @Override
+    /**
+     * @return The height of the Peek Promo, in pixels.
+     */
     protected float getPeekPromoHeight() {
         return getPeekPromoControl().getHeightPx();
     }
@@ -723,23 +687,16 @@ public class ContextualSearchPanel extends OverlayPanel {
      */
     private boolean mIsAnimatingMandatoryPromoAcceptance;
 
-    @Override
+    /**
+     * @return Whether the Panel Promo is visible.
+     */
     protected boolean isPromoVisible() {
         return mIsPromoVisible;
     }
 
-    @Override
-    protected void animatePromoAcceptance() {
-        if (mIsPromoMandatory) {
-            mIsAnimatingMandatoryPromoAcceptance = true;
-            getOverlayPanelContent().showContent();
-            expandPanel(StateChangeReason.PROMO_ACCEPTED);
-        }
-
-        super.animatePromoAcceptance();
-    }
-
-    @Override
+    /**
+     * Notifies that the acceptance animation has finished.
+     */
     protected void onPromoAcceptanceAnimationFinished() {
         mIsAnimatingMandatoryPromoAcceptance = false;
 
@@ -784,5 +741,310 @@ public class ContextualSearchPanel extends OverlayPanel {
      */
     public void destroyContent() {
         super.destroyOverlayPanelContent();
+    }
+
+    // ============================================================================================
+    // Promo Host
+    // ============================================================================================
+
+    @Override
+    public void onPromoPreferenceClick() {
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                PreferencesLauncher.launchSettingsPage(mContext,
+                        ContextualSearchPreferenceFragment.class.getName());
+            }
+        });
+    }
+
+    @Override
+    public void onPromoButtonClick(boolean accepted) {
+        if (accepted) {
+            animatePromoAcceptance();
+        } else {
+            hidePromoView();
+            // NOTE(pedrosimonetti): If the user has opted out of Contextual Search, we should set
+            // the preference right away because the preference state controls whether the promo
+            // will be visible, and we want to hide the promo immediately when the user opts out.
+            setPreferenceState(false);
+            closePanel(StateChangeReason.OPTOUT, true);
+        }
+    }
+
+    // ============================================================================================
+    // Opt Out Promo View
+    // ============================================================================================
+
+    // TODO(pedrosimonetti): Consider maybe adding a 9.patch to avoid the hacky nested layouts in
+    // order to have the transparent gap at the top of the Promo View. Currently, the Promo View
+    // has a gap at the top where a shadow will be rendered. The gap is needed because the shadow
+    // needs to be rendered with the Compositor, which cannot be rendered on top of the Promo's
+    // Android View. The suggestion here is to try to use a 9.patch to render the background of
+    // the Promo View, which would include the gap at the top. This would allow us simplify the
+    // Promo View, by removing the extra nested layout used to leave a gap at the top of the View.
+
+    /**
+     * The {@link ContextualSearchOptOutPromo} instance.
+     */
+    private ContextualSearchOptOutPromo mPromoView;
+
+    /**
+     * Whether the Search Promo View is visible.
+     */
+    private boolean mIsSearchPromoViewVisible = false;
+
+    /**
+     * Whether the Promo's acceptance animation is running.
+     */
+    private boolean mIsAnimatingPromoAcceptance;
+
+    /**
+     * Creates the Search Promo View.
+     */
+    protected void createPromoView() {
+        if (isPromoVisible() && mPromoView == null) {
+            assert mContainerView != null;
+
+            // TODO(pedrosimonetti): Refactor promo code to use ViewResourceInflater.
+            LayoutInflater.from(mContext).inflate(
+                    R.layout.contextual_search_opt_out_promo, mContainerView);
+            mPromoView = (ContextualSearchOptOutPromo)
+                    mContainerView.findViewById(R.id.contextual_search_opt_out_promo);
+
+            if (mResourceLoader != null) {
+                mResourceLoader.registerResource(R.id.contextual_search_opt_out_promo,
+                        mPromoView.getResourceAdapter());
+            }
+
+            mPromoView.setPromoHost(this);
+
+            updatePromoLayout();
+
+            assert mPromoView != null;
+        }
+    }
+
+    /**
+     * Updates the Promo layout.
+     */
+    protected void updatePromoLayout() {
+        final int maximumWidth = getMaximumWidthPx();
+
+        // Adjust size for small Panel.
+        if (!isFullWidthSizePanel()) {
+            mPromoView.getLayoutParams().width = maximumWidth;
+            mPromoView.requestLayout();
+        }
+
+        setPromoContentHeightPx(mPromoView.getHeightForGivenWidth(maximumWidth));
+    }
+
+    /**
+     * Destroys the Search Promo View.
+     */
+    protected void destroyPromoView() {
+        if (mPromoView != null) {
+            mContainerView.removeView(mPromoView);
+            mPromoView = null;
+            if (mResourceLoader != null) {
+                mResourceLoader.unregisterResource(R.id.contextual_search_opt_out_promo);
+            }
+        }
+    }
+
+    /**
+     * Displays the Search Promo View at the given Y position.
+     *
+     * @param y The Y position.
+     */
+    private void showPromoViewAtYPosition(float y) {
+        if (mPromoView == null
+                || mIsSearchPromoViewVisible
+                || mIsAnimatingMandatoryPromoAcceptance
+                || !isPromoVisible()) return;
+
+        float offsetX = getOffsetX() / mPxToDp;
+        if (LocalizationUtils.isLayoutRtl()) {
+            offsetX = -offsetX;
+        }
+
+        mPromoView.setTranslationX(offsetX);
+        mPromoView.setTranslationY(y);
+        mPromoView.setVisibility(View.VISIBLE);
+
+        // NOTE(pedrosimonetti): We need to call requestLayout, otherwise
+        // the Promo View will not become visible.
+        mPromoView.requestLayout();
+
+        mIsSearchPromoViewVisible = true;
+    }
+
+    /**
+     * Hides the Search Promo View.
+     */
+    protected void hidePromoView() {
+        if (mPromoView == null
+                || !mIsSearchPromoViewVisible
+                || !isPromoVisible()) {
+            return;
+        }
+
+        mPromoView.setVisibility(View.INVISIBLE);
+
+        mIsSearchPromoViewVisible = false;
+    }
+
+    /**
+     * Animates the acceptance of the Promo.
+     */
+    protected void animatePromoAcceptance() {
+        hidePromoView();
+
+        if (mIsPromoMandatory) {
+            mIsAnimatingMandatoryPromoAcceptance = true;
+            getOverlayPanelContent().showContent();
+            expandPanel(StateChangeReason.PROMO_ACCEPTED);
+        }
+
+        mIsAnimatingPromoAcceptance = true;
+        animateProperty(Property.PROMO_VISIBILITY, 1.f, 0.f, BASE_ANIMATION_DURATION_MS);
+    }
+
+    /**
+     * Updates the UI state for Opt In Promo animation.
+     *
+     * @param percentage The visibility percentage of the Promo.
+     */
+    @Override
+    protected void setPromoVisibilityForOptInAnimation(float percentage) {
+        updatePromoVisibility(percentage);
+        updateBarShadow();
+    }
+
+    /**
+     * Updates the UI state for Opt Out Promo.
+     *
+     * @param percentage The visibility percentage of the Promo. A visibility of 0 means the
+     * Promo is not visible. A visibility of 1 means the Promo is fully visible. And
+     * visibility between 0 and 1 means the Promo is partially visible.
+     */
+    private void updatePromoVisibility(float percentage) {
+        if (isPromoVisible()) {
+            mPromoVisible = true;
+
+            mPromoHeightPx = Math.round(MathUtils.clamp(percentage * mPromoContentHeightPx,
+                    0.f, mPromoContentHeightPx));
+            mPromoOpacity = percentage;
+        } else {
+            mPromoVisible = false;
+            mPromoHeightPx = 0.f;
+            mPromoOpacity = 0.f;
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------
+    // Promo states
+    // --------------------------------------------------------------------------------------------
+
+    private boolean mPromoVisible = false;
+    private float mPromoContentHeightPx = 0.f;
+    private float mPromoHeightPx;
+    private float mPromoOpacity;
+
+    /**
+     * @return Whether the promo is visible.
+     */
+    public boolean getPromoVisible() {
+        return mPromoVisible;
+    }
+
+    /**
+     * Sets the height of the promo content.
+     */
+    public void setPromoContentHeightPx(float heightPx) {
+        mPromoContentHeightPx = heightPx;
+    }
+
+    /**
+     * @return Height of the promo in pixels.
+     */
+    public float getPromoHeightPx() {
+        return mPromoHeightPx;
+    }
+
+    /**
+     * @return The opacity of the promo.
+     */
+    public float getPromoOpacity() {
+        return mPromoOpacity;
+    }
+
+    /**
+     * @return Y coordinate of the promo in pixels.
+     */
+    protected float getPromoYPx() {
+        return Math.round((getOffsetY() + getBarContainerHeight()) / mPxToDp);
+    }
+
+    // ============================================================================================
+    // Changes made to the OverlayPanel methods in order to support the Promo.
+    // TODO(pedrosimonetti): Re-organize this code once Promo is implemented in its own Control.
+    // ============================================================================================
+
+    @Override
+    protected void setPanelHeight(float height) {
+        // As soon as we resize the Panel to a different height than the expanded one,
+        // then we should hide the Promo View once the snapshot will be shown in its place.
+        if (height != getPanelHeightFromState(PanelState.EXPANDED)) {
+            hidePromoView();
+        }
+
+        super.setPanelHeight(height);
+    }
+
+    @Override
+    protected PanelState getProjectedState(float velocity) {
+        PanelState projectedState = super.getProjectedState(velocity);
+
+        // Prevent the fling gesture from moving the Panel from PEEKED to MAXIMIZED if the Panel
+        // Promo is available and we are running in full screen panel mode. This is to make sure
+        // the Promo will be visible, considering that the EXPANDED state is the only one that will
+        // show the Promo in full screen panel mode. In narrow panel UI the Promo is visible in
+        // maximized so this project state change is not needed.
+        if (isPromoVisible()
+                && projectedState == PanelState.MAXIMIZED
+                && getPanelState() == PanelState.PEEKED) {
+            projectedState = PanelState.EXPANDED;
+        }
+
+        return projectedState;
+    }
+
+    @Override
+    public float getContentY() {
+        return getOffsetY() + getBarContainerHeight() + getPromoHeightPx() * mPxToDp;
+    }
+
+    @Override
+    protected float getBarContainerHeight() {
+        return getBarHeight() + getPeekPromoHeight();
+    }
+
+    @Override
+    protected float getPeekedHeight() {
+        return getBarHeightPeeking() + getPeekPromoHeightPeekingPx() * mPxToDp;
+    }
+
+    @Override
+    protected float calculateBarShadowOpacity() {
+        float barShadowOpacity = 0.f;
+        float barShadowHeightPx = 9.f / mPxToDp;
+        if (getPromoHeightPx() > 0.f) {
+            float threshold = 2 * barShadowHeightPx;
+            barShadowOpacity = getPromoHeightPx() > barShadowHeightPx ? 1.f
+                    : MathUtils.interpolate(0.f, 1.f, getPromoHeightPx() / threshold);
+        }
+        return barShadowOpacity;
     }
 }

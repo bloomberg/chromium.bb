@@ -17,7 +17,7 @@ import org.chromium.ui.resources.dynamics.ViewResourceInflater;
 public abstract class OverlayPanelInflater extends ViewResourceInflater {
 
     /**
-     * The panel delegate used to get information about the panel layout.
+     * The panel used to get information about the panel layout.
      */
     protected OverlayPanel mOverlayPanel;
 
