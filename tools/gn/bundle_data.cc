@@ -43,26 +43,38 @@ BundleData::BundleData() {}
 
 BundleData::~BundleData() {}
 
-void BundleData::AddFileRuleFromTarget(const Target* target) {
+void BundleData::AddBundleData(const Target* target) {
   DCHECK_EQ(target->output_type(), Target::BUNDLE_DATA);
+  bundle_deps_.push_back(target);
+}
 
-  std::vector<SourceFile> file_rule_sources;
-  for (const SourceFile& source_file : target->sources()) {
-    if (IsSourceFileFromAssetCatalog(source_file, nullptr)) {
-      asset_catalog_sources_.push_back(source_file);
-    } else {
-      file_rule_sources.push_back(source_file);
+void BundleData::OnTargetResolved(Target* owning_target) {
+  // Only initialize file_rules_ and asset_catalog_sources for "create_bundle"
+  // target (properties are only used by those targets).
+  if (owning_target->output_type() != Target::CREATE_BUNDLE)
+    return;
+
+  for (const Target* target : bundle_deps_) {
+    SourceFiles file_rule_sources;
+    for (const SourceFile& source_file : target->sources()) {
+      if (IsSourceFileFromAssetCatalog(source_file, nullptr)) {
+        asset_catalog_sources_.push_back(source_file);
+      } else {
+        file_rule_sources.push_back(source_file);
+      }
+    }
+
+    if (!file_rule_sources.empty()) {
+      DCHECK_EQ(target->action_values().outputs().list().size(), 1u);
+      file_rules_.push_back(BundleFileRule(
+          file_rule_sources, target->action_values().outputs().list()[0]));
     }
   }
 
-  if (!file_rule_sources.empty()) {
-    DCHECK_EQ(target->action_values().outputs().list().size(), 1u);
-    file_rules_.push_back(BundleFileRule(
-        file_rule_sources, target->action_values().outputs().list()[0]));
-  }
+  GetSourceFiles(&owning_target->sources());
 }
 
-void BundleData::GetSourceFiles(std::vector<SourceFile>* sources) const {
+void BundleData::GetSourceFiles(SourceFiles* sources) const {
   for (const BundleFileRule& file_rule : file_rules_) {
     sources->insert(sources->end(), file_rule.sources().begin(),
                     file_rule.sources().end());
@@ -72,8 +84,8 @@ void BundleData::GetSourceFiles(std::vector<SourceFile>* sources) const {
 }
 
 void BundleData::GetOutputFiles(const Settings* settings,
-                                std::vector<OutputFile>* outputs) const {
-  std::vector<SourceFile> outputs_as_sources;
+                                OutputFiles* outputs) const {
+  SourceFiles outputs_as_sources;
   GetOutputsAsSourceFiles(settings, &outputs_as_sources);
   for (const SourceFile& source_file : outputs_as_sources)
     outputs->push_back(OutputFile(settings->build_settings(), source_file));
@@ -81,7 +93,7 @@ void BundleData::GetOutputFiles(const Settings* settings,
 
 void BundleData::GetOutputsAsSourceFiles(
     const Settings* settings,
-    std::vector<SourceFile>* outputs_as_source) const {
+    SourceFiles* outputs_as_source) const {
   for (const BundleFileRule& file_rule : file_rules_) {
     for (const SourceFile& source : file_rule.sources()) {
       outputs_as_source->push_back(

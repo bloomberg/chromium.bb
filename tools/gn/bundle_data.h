@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "tools/gn/bundle_file_rule.h"
+#include "tools/gn/unique_vector.h"
 
 class OutputFile;
 class SourceFile;
@@ -31,38 +32,46 @@ bool IsSourceFileFromAssetCatalog(const SourceFile& source,
 // BundleData holds the information required by "create_bundle" target.
 class BundleData {
  public:
+  using UniqueTargets = UniqueVector<const Target*>;
+  using SourceFiles = std::vector<SourceFile>;
+  using OutputFiles = std::vector<OutputFile>;
+  using BundleFileRules = std::vector<BundleFileRule>;
+
   BundleData();
   ~BundleData();
 
-  // Extracts the information required from a "bundle_data" target.
-  void AddFileRuleFromTarget(const Target* target);
+  // Adds a bundle_data target to the recursive collection of all bundle_data
+  // that the target depends on.
+  void AddBundleData(const Target* target);
+
+  // Called upon resolution of the target owning this instance of BundleData.
+  // |owning_target| is the owning target.
+  void OnTargetResolved(Target* owning_target);
 
   // Returns the list of inputs.
-  void GetSourceFiles(std::vector<SourceFile>* sources) const;
+  void GetSourceFiles(SourceFiles* sources) const;
 
   // Returns the list of outputs.
   void GetOutputFiles(const Settings* settings,
-                      std::vector<OutputFile>* outputs) const;
+                      OutputFiles* outputs) const;
 
   // Returns the list of outputs as SourceFile.
   void GetOutputsAsSourceFiles(
       const Settings* settings,
-      std::vector<SourceFile>* outputs_as_source) const;
+      SourceFiles* outputs_as_source) const;
 
   // Returns the path to the compiled asset catalog. Only valid if
   // asset_catalog_sources() is not empty.
   SourceFile GetCompiledAssetCatalogPath() const;
 
   // Returns the list of inputs for the compilation of the asset catalog.
-  std::vector<SourceFile>& asset_catalog_sources() {
-    return asset_catalog_sources_;
-  }
-  const std::vector<SourceFile>& asset_catalog_sources() const {
+  SourceFiles& asset_catalog_sources() { return asset_catalog_sources_; }
+  const SourceFiles& asset_catalog_sources() const {
     return asset_catalog_sources_;
   }
 
-  std::vector<BundleFileRule>& file_rules() { return file_rules_; }
-  const std::vector<BundleFileRule>& file_rules() const { return file_rules_; }
+  BundleFileRules& file_rules() { return file_rules_; }
+  const BundleFileRules& file_rules() const { return file_rules_; }
 
   std::string& root_dir() { return root_dir_; }
   const std::string& root_dir() const { return root_dir_; }
@@ -76,9 +85,13 @@ class BundleData {
   std::string& plugins_dir() { return plugins_dir_; }
   const std::string& plugins_dir() const { return plugins_dir_; }
 
+  // Recursive collection of all bundle_data that the target depends on.
+  const UniqueTargets& bundle_deps() const { return bundle_deps_; }
+
  private:
-  std::vector<SourceFile> asset_catalog_sources_;
-  std::vector<BundleFileRule> file_rules_;
+  SourceFiles asset_catalog_sources_;
+  BundleFileRules file_rules_;
+  UniqueTargets bundle_deps_;
 
   // All those values are subdirectories relative to root_build_dir, and apart
   // from root_dir, they are either equal to root_dir_ or subdirectories of it.

@@ -125,6 +125,14 @@ bool EnsureFileIsGeneratedByDependency(const Target* target,
                                             seen_targets))
         return true;  // Found a path.
     }
+    if (target->output_type() == Target::CREATE_BUNDLE) {
+      for (const auto& dep : target->bundle_data().bundle_deps()) {
+        if (EnsureFileIsGeneratedByDependency(dep, file, false,
+                                              consider_object_files,
+                                              seen_targets))
+          return true;  // Found a path.
+      }
+    }
   }
   return false;
 }
@@ -481,38 +489,21 @@ void Target::PullRecursiveHardDeps() {
 }
 
 void Target::PullRecursiveBundleData() {
-  if (output_type_ != CREATE_BUNDLE)
-    return;
-
-  std::set<const Target*> visited;
-  std::vector<const Target*> deps;
-  deps.push_back(this);
-
-  while (!deps.empty()) {
-    const Target* current = deps.back();
-    deps.pop_back();
-
-    if (visited.find(current) != visited.end())
+  for (const auto& pair : GetDeps(DEPS_LINKED)) {
+    // Don't propagate bundle_data once they are added to a bundle.
+    if (pair.ptr->output_type() == CREATE_BUNDLE)
       continue;
-    visited.insert(current);
 
-    if (current->output_type_ == BUNDLE_DATA)
-      bundle_data_.AddFileRuleFromTarget(current);
+    // Direct dependency on a bundle_data target.
+    if (pair.ptr->output_type() == BUNDLE_DATA)
+      bundle_data_.AddBundleData(pair.ptr);
 
-    for (const LabelTargetPair& pair : current->GetDeps(DEPS_ALL)) {
-      DCHECK(pair.ptr);
-      DCHECK(pair.ptr->toolchain_);
-      if (visited.find(pair.ptr) != visited.end())
-        continue;
-
-      if (pair.ptr->output_type() == CREATE_BUNDLE)
-        continue;
-
-      deps.push_back(pair.ptr);
-    }
+    // Recursive bundle_data informations from all dependencies.
+    for (const auto& target : pair.ptr->bundle_data().bundle_deps())
+      bundle_data_.AddBundleData(target);
   }
 
-  bundle_data_.GetSourceFiles(&sources_);
+  bundle_data_.OnTargetResolved(this);
 }
 
 void Target::FillOutputFiles() {
