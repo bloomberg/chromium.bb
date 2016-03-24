@@ -159,6 +159,7 @@
     '<@(skia_export_defines)',
 
     'SK_DEFAULT_FONT_CACHE_LIMIT=<(default_font_cache_limit)',
+    'SK_IGNORE_MAC_FONT_WEIGHT_FIX=1',
   ],
 
   'direct_dependent_settings': {
