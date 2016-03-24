@@ -3963,6 +3963,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Canvas.RequestedImageMimeTypes" enum="RequestedImageMimeType">
+  <owner>xlai@chromium.org</owner>
+  <summary>
+    Records the occurence of image file formats passed into toDataURL and toBlob
+    functions in canvas.
+  </summary>
+</histogram>
+
 <histogram name="CAPSUpdater.Step" enum="CAPSUpdaterStep">
   <owner>cpu@chromium.org</owner>
   <summary>
@@ -79590,6 +79598,17 @@ To add a new entry, add it with any value and run test to compute valid value.
   </int>
 </enum>
 
+<enum name="RequestedImageMimeType" type="int">
+  <int value="0" label="Png"/>
+  <int value="1" label="Jpeg"/>
+  <int value="2" label="Webp"/>
+  <int value="3" label="Gif"/>
+  <int value="4" label="Bmp"/>
+  <int value="5" label="Ico"/>
+  <int value="6" label="Tiff"/>
+  <int value="7" label="Unknown"/>
+</enum>
+
 <enum name="RequestMediaKeySystemAccessStatus" type="int">
   <int value="0" label="Requested"/>
   <int value="1" label="Supported"/>
@@ -85464,6 +85483,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="PLT.BeginToFinish_LinkLoadStaleOk"/>
   <affected-histogram name="PLT.BeginToFinish_NormalLoad"/>
   <affected-histogram name="PLT.BeginToFinish_Reload"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="CanvasRequestedImageMimeTypeFunctions">
+  <suffix name="toDataURL" label="Image formats passed to canvas.toDataURL"/>
+  <suffix name="toBlobCallback"
+      label="Image formats passed to canvas.toBlob (callback)"/>
+  <affected-histogram name="Canvas.RequestedImageMimeTypes"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="CertificateTypeAlgorithms" separator=".">

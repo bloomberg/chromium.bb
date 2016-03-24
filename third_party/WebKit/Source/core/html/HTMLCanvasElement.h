@@ -98,7 +98,12 @@ public:
 
     bool isPaintable() const;
 
-    static String toEncodingMimeType(const String& mimeType);
+    enum EncodeReason {
+        EncodeReasonToDataURL = 0,
+        EncodeReasonToBlobCallback = 1,
+        NumberOfEncodeReasons
+    };
+    static String toEncodingMimeType(const String& mimeType, const EncodeReason);
     String toDataURL(const String& mimeType, const ScriptValue& qualityArgument, ExceptionState&) const;
     String toDataURL(const String& mimeType, ExceptionState& exceptionState) const { return toDataURL(mimeType, ScriptValue(), exceptionState); }
 
