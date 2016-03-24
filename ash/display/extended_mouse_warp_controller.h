@@ -105,11 +105,11 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
                                      const gfx::Point& point_in_screen,
                                      bool update_mouse_location_now);
 
-  // Creates WarpRegion between display |a| and
-  // |b|. |drag_source_dispaly_id| is used to indicate in which
-  // display a drag is started, or invalid id passed if this is not
-  // for dragging. Returns null scoped_ptr if two displays do not
-  // share the edge.
+  // Creates WarpRegion between display |a| and |b|.
+  // |drag_source_dispaly_id| is used to indicate in which display a
+  // drag is started, or invalid id passed if this is not for
+  // dragging. Returns null scoped_ptr if two displays do not share
+  // the edge.
   scoped_ptr<WarpRegion> CreateWarpRegion(const gfx::Display& a,
                                           const gfx::Display& b,
                                           int64_t drag_source_dispay_id);

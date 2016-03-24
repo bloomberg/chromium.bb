@@ -104,7 +104,11 @@ ExtendedMouseWarpController::ExtendedMouseWarpController(
   int64_t drag_source_id = drag_source ? GetDisplayIdFromWindow(drag_source)
                                        : gfx::Display::kInvalidDisplayID;
   DisplayList display_list = display_manager->active_display_list();
-  while (display_list.size() > 0) {
+  // Try to create a Warp region for all possible two displays combination.
+  // The following code does it by poping the last element in the list
+  // and then pairing with remaining displays in the list, until the list
+  // becomes single element.
+  while (display_list.size() > 1) {
     gfx::Display display = display_list.back();
     display_list.pop_back();
     for (const gfx::Display& peer : display_list) {

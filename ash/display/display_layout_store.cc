@@ -50,8 +50,8 @@ void DisplayLayoutStore::SetDefaultDisplayPlacement(
 void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
     const DisplayIdList& list,
     scoped_ptr<DisplayLayout> layout) {
-  // A dev/beta channel may have a bad layout data saved in local state.
-  // TODO(oshima): Consider removing this a coulpe of milestones later.
+  // m50/51 dev/beta channel may have bad layout data saved in local state.
+  // TODO(oshima): Consider removing this after m53.
   if (list.size() == 2 && layout->placement_list.size() > 1)
     return;
 
