@@ -79,12 +79,11 @@ class CloudPrintTestsDelegateMock : public extensions::CloudPrintTestsDelegate {
 
 MATCHER(IsExpectedUserSettings, "") {
   const UserSettings& settings = arg;
-  return settings.connect_new_printers &&
-         settings.printers.size() == 2 &&
-         settings.printers[0]->name == "printer1" &&
-         !settings.printers[0]->connect &&
-         settings.printers[1]->name == "printer2" &&
-         settings.printers[1]->connect;
+  return settings.connect_new_printers && settings.printers.size() == 2 &&
+         settings.printers[0].name == "printer1" &&
+         !settings.printers[0].connect &&
+         settings.printers[1].name == "printer2" &&
+         settings.printers[1].connect;
 }
 
 // http://crbug.com/177163

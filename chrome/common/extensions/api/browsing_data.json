@@ -6,6 +6,7 @@
   {
     "namespace": "browsingData",
     "description": "Use the <code>chrome.browsingData</code> API to remove browsing data from a user's local profile.",
+    "compiler_options": {"use_movable_types": true},
     "types": [
       {
         "id": "RemovalOptions",

@@ -93,10 +93,10 @@ CastDevicesPrivateUpdateDevicesFunction::Run() {
       api::cast_devices_private::UpdateDevices::Params::Create(*args_);
 
   CastDeviceUpdateListeners::ReceiverAndActivityList devices;
-  for (linked_ptr<api::cast_devices_private::ReceiverActivity> device :
+  for (const api::cast_devices_private::ReceiverActivity& device :
        params->devices) {
-    devices.push_back(ConvertReceiverAndActivityType(device->receiver,
-                                                     device->activity.get()));
+    devices.push_back(
+        ConvertReceiverAndActivityType(device.receiver, device.activity.get()));
   }
 
   auto listeners = CastDeviceUpdateListeners::Get(browser_context());

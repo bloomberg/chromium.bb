@@ -103,8 +103,8 @@ ExtensionFunction::ResponseAction CopresencePrivateSendFoundFunction::Run() {
 
   std::vector<audio_modem::AudioToken> tokens;
   for (size_t i = 0; i < params->tokens.size(); ++i) {
-    tokens.push_back(audio_modem::AudioToken(params->tokens[i]->token,
-                                            params->tokens[i]->audible));
+    tokens.push_back(audio_modem::AudioToken(params->tokens[i].token,
+                                             params->tokens[i].audible));
   }
   whispernet_client->GetTokensCallback().Run(tokens);
   return RespondNow(NoArguments());

@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.copresence</code> API to communicate with other nearby
 // devices using Google's copresence service.
-namespace copresence {
+[use_movable_types=true] namespace copresence {
   // Suggestions to copresence on how to do the publication and subscription.
   // Note: These are only suggestions. Actual behavior may not always match
   // what is requested.

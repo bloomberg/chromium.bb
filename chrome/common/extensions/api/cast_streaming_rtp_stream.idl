@@ -7,7 +7,7 @@
 // session.
 //
 // Valid stream IDs are positive and non-zero.
-namespace cast.streaming.rtpStream {
+[use_movable_types=true]namespace cast.streaming.rtpStream {
   // Params for audio and video codec.
   dictionary CodecSpecificParams {
     DOMString key;

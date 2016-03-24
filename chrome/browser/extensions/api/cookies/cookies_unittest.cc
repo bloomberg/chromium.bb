@@ -87,41 +87,39 @@ TEST_F(ExtensionCookiesTest, ExtensionTypeCreation) {
       GURL(), "ABC", "DEF", "www.foobar.com", "/", base::Time(), base::Time(),
       base::Time(), false, false, net::CookieSameSite::DEFAULT_MODE,
       net::COOKIE_PRIORITY_DEFAULT);
-  scoped_ptr<Cookie> cookie1(
-      cookies_helpers::CreateCookie(
-          canonical_cookie1, "some cookie store"));
-  EXPECT_EQ("ABC", cookie1->name);
-  EXPECT_EQ("DEF", cookie1->value);
-  EXPECT_EQ("www.foobar.com", cookie1->domain);
-  EXPECT_TRUE(cookie1->host_only);
-  EXPECT_EQ("/", cookie1->path);
-  EXPECT_FALSE(cookie1->secure);
-  EXPECT_FALSE(cookie1->http_only);
-  EXPECT_EQ(api::cookies::SAME_SITE_STATUS_NO_RESTRICTION, cookie1->same_site);
-  EXPECT_TRUE(cookie1->session);
-  EXPECT_FALSE(cookie1->expiration_date.get());
-  EXPECT_EQ("some cookie store", cookie1->store_id);
+  Cookie cookie1 =
+      cookies_helpers::CreateCookie(canonical_cookie1, "some cookie store");
+  EXPECT_EQ("ABC", cookie1.name);
+  EXPECT_EQ("DEF", cookie1.value);
+  EXPECT_EQ("www.foobar.com", cookie1.domain);
+  EXPECT_TRUE(cookie1.host_only);
+  EXPECT_EQ("/", cookie1.path);
+  EXPECT_FALSE(cookie1.secure);
+  EXPECT_FALSE(cookie1.http_only);
+  EXPECT_EQ(api::cookies::SAME_SITE_STATUS_NO_RESTRICTION, cookie1.same_site);
+  EXPECT_TRUE(cookie1.session);
+  EXPECT_FALSE(cookie1.expiration_date.get());
+  EXPECT_EQ("some cookie store", cookie1.store_id);
 
   net::CanonicalCookie canonical_cookie2(
       GURL(), "ABC", "DEF", ".foobar.com", "/", base::Time(),
       base::Time::FromDoubleT(10000), base::Time(), false, false,
       net::CookieSameSite::STRICT_MODE, net::COOKIE_PRIORITY_DEFAULT);
-  scoped_ptr<Cookie> cookie2(
-      cookies_helpers::CreateCookie(
-          canonical_cookie2, "some cookie store"));
-  EXPECT_FALSE(cookie2->host_only);
-  EXPECT_FALSE(cookie2->session);
-  EXPECT_EQ(api::cookies::SAME_SITE_STATUS_STRICT, cookie2->same_site);
-  ASSERT_TRUE(cookie2->expiration_date.get());
-  EXPECT_EQ(10000, *cookie2->expiration_date);
+  Cookie cookie2 =
+      cookies_helpers::CreateCookie(canonical_cookie2, "some cookie store");
+  EXPECT_FALSE(cookie2.host_only);
+  EXPECT_FALSE(cookie2.session);
+  EXPECT_EQ(api::cookies::SAME_SITE_STATUS_STRICT, cookie2.same_site);
+  ASSERT_TRUE(cookie2.expiration_date.get());
+  EXPECT_EQ(10000, *cookie2.expiration_date);
 
   TestingProfile profile;
   base::ListValue* tab_ids_list = new base::ListValue();
   std::vector<int> tab_ids;
-  scoped_ptr<CookieStore> cookie_store(
-      cookies_helpers::CreateCookieStore(&profile, tab_ids_list));
-  EXPECT_EQ("0", cookie_store->id);
-  EXPECT_EQ(tab_ids, cookie_store->tab_ids);
+  CookieStore cookie_store =
+      cookies_helpers::CreateCookieStore(&profile, tab_ids_list);
+  EXPECT_EQ("0", cookie_store.id);
+  EXPECT_EQ(tab_ids, cookie_store.tab_ids);
 }
 
 TEST_F(ExtensionCookiesTest, GetURLFromCanonicalCookie) {
@@ -185,11 +183,12 @@ TEST_F(ExtensionCookiesTest, DecodeUTF8WithErrorHandling) {
       GURL(), std::string(), "011Q255bNX_1!yd\203e+", "test.com", "/path\203",
       base::Time(), base::Time(), base::Time(), false, false,
       net::CookieSameSite::DEFAULT_MODE, net::COOKIE_PRIORITY_DEFAULT);
-  scoped_ptr<Cookie> cookie(
-      cookies_helpers::CreateCookie(
-          canonical_cookie, "some cookie store"));
-  EXPECT_EQ(std::string("011Q255bNX_1!yd\xEF\xBF\xBD" "e+"), cookie->value);
-  EXPECT_EQ(std::string(), cookie->path);
+  Cookie cookie =
+      cookies_helpers::CreateCookie(canonical_cookie, "some cookie store");
+  EXPECT_EQ(std::string("011Q255bNX_1!yd\xEF\xBF\xBD"
+                        "e+"),
+            cookie.value);
+  EXPECT_EQ(std::string(), cookie.path);
 }
 
 }  // namespace extensions

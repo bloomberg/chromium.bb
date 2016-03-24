@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "components/copresence/proto/enums.pb.h"
 
 namespace copresence {
@@ -34,7 +33,7 @@ typedef std::map<std::string, std::string> SubscriptionToAppMap;
 // Returns report request protocol buffer containing all the operations in the
 // given vector. If parsing any of the operations fails, we return false.
 bool PrepareReportRequestProto(
-    const std::vector<linked_ptr<api::copresence::Operation>>& operations,
+    const std::vector<api::copresence::Operation>& operations,
     const std::string& app_id,
     SubscriptionToAppMap* apps_by_subscription_id,
     copresence::ReportRequest* request);

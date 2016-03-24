@@ -13,8 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "chrome/common/extensions/api/cookies.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/canonical_cookie.h"
@@ -37,9 +35,6 @@ class Extension;
 
 namespace cookies_helpers {
 
-typedef std::vector<linked_ptr<extensions::api::cookies::Cookie> >
-    LinkedCookieVec;
-
 // Returns either the original profile or the incognito profile, based on the
 // given store ID.  Returns NULL if the profile doesn't exist or is not allowed
 // (e.g. if incognito mode is not enabled for the extension).
@@ -50,23 +45,21 @@ Profile* ChooseProfileFromStoreId(const std::string& store_id,
 // Returns the store ID for a particular user profile.
 const char* GetStoreIdFromProfile(Profile* profile);
 
-// Allocates and construct a new Cookie object representing a cookie as defined
-// by the cookies API.
-scoped_ptr<extensions::api::cookies::Cookie> CreateCookie(
-    const net::CanonicalCookie& cookie,
-    const std::string& store_id);
+// Constructs a new Cookie object representing a cookie as defined by the
+// cookies API.
+api::cookies::Cookie CreateCookie(const net::CanonicalCookie& cookie,
+                                  const std::string& store_id);
 
-// Allocates and constructs a new CookieStore object as defined by the cookies
-// API.
-scoped_ptr<extensions::api::cookies::CookieStore> CreateCookieStore(
-    Profile* profile,
-    base::ListValue* tab_ids);
+// Constructs a new CookieStore object as defined by the cookies API.
+api::cookies::CookieStore CreateCookieStore(Profile* profile,
+                                            base::ListValue* tab_ids);
 
 // Retrieves all cookies from the given cookie store corresponding to the given
 // URL. If the URL is empty, all cookies in the cookie store are retrieved.
 // This can only be called on the IO thread.
 void GetCookieListFromStore(
-    net::CookieStore* cookie_store, const GURL& url,
+    net::CookieStore* cookie_store,
+    const GURL& url,
     const net::CookieMonster::GetCookieListCallback& callback);
 
 // Constructs a URL from a cookie's information for use in checking
@@ -80,9 +73,11 @@ GURL GetURLFromCanonicalCookie(
 // match vector all the cookies that both match the given URL and cookie details
 // and are allowed by extension host permissions.
 void AppendMatchingCookiesToVector(
-    const net::CookieList& all_cookies, const GURL& url,
-    const extensions::api::cookies::GetAll::Params::Details* details,
-    const Extension* extension, LinkedCookieVec* match_vector);
+    const net::CookieList& all_cookies,
+    const GURL& url,
+    const api::cookies::GetAll::Params::Details* details,
+    const Extension* extension,
+    std::vector<api::cookies::Cookie>* match_vector);
 
 // Appends the IDs of all tabs belonging to the given browser to the
 // given list.
@@ -99,8 +94,7 @@ class MatchFilter {
   // Takes the details dictionary argument given by the user as input.
   // This class does not take ownership of the lifetime of the Details
   // object.
-  explicit MatchFilter(
-      const extensions::api::cookies::GetAll::Params::Details* details);
+  explicit MatchFilter(const api::cookies::GetAll::Params::Details* details);
 
   // Returns true if the given cookie matches the properties in the match
   // filter.
@@ -116,7 +110,7 @@ class MatchFilter {
   // 'foo.bar.com', '.foo.bar.com', and 'baz.foo.bar.com'.
   bool MatchesDomain(const std::string& domain);
 
-  const extensions::api::cookies::GetAll::Params::Details* details_;
+  const api::cookies::GetAll::Params::Details* details_;
 };
 
 }  // namespace cookies_helpers

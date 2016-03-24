@@ -8,7 +8,7 @@
 // It is used to configure the UDP transport used in Cast session.
 //
 // Valid transport IDs are positive and non-zero.
-namespace cast.streaming.udpTransport {
+[use_movable_types=true]namespace cast.streaming.udpTransport {
   // The UDP socket address and port.
   dictionary IPEndPoint {
     DOMString address;

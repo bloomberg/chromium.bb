@@ -143,9 +143,9 @@ void CookiesEventRouter::CookieChanged(
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetBoolean(keys::kRemovedKey, details->removed);
 
-  scoped_ptr<cookies::Cookie> cookie(cookies_helpers::CreateCookie(
-      *details->cookie, cookies_helpers::GetStoreIdFromProfile(profile)));
-  dict->Set(keys::kCookieKey, cookie->ToValue().release());
+  cookies::Cookie cookie = cookies_helpers::CreateCookie(
+      *details->cookie, cookies_helpers::GetStoreIdFromProfile(profile));
+  dict->Set(keys::kCookieKey, cookie.ToValue());
 
   // Map the internal cause to an external string.
   std::string cause;
@@ -243,21 +243,20 @@ void CookiesGetFunction::GetCookieOnIOThread() {
 }
 
 void CookiesGetFunction::GetCookieCallback(const net::CookieList& cookie_list) {
-  net::CookieList::const_iterator it;
-  for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
+  for (const net::CanonicalCookie& cookie : cookie_list) {
     // Return the first matching cookie. Relies on the fact that the
     // CookieMonster returns them in canonical order (longest path, then
     // earliest creation time).
-    if (it->Name() == parsed_args_->details.name) {
-      scoped_ptr<cookies::Cookie> cookie(
-          cookies_helpers::CreateCookie(*it, *parsed_args_->details.store_id));
-      results_ = Get::Results::Create(*cookie);
+    if (cookie.Name() == parsed_args_->details.name) {
+      cookies::Cookie api_cookie = cookies_helpers::CreateCookie(
+          cookie, *parsed_args_->details.store_id);
+      results_ = Get::Results::Create(api_cookie);
       break;
     }
   }
 
   // The cookie doesn't exist; return null.
-  if (it == cookie_list.end())
+  if (!results_)
     SetResult(base::Value::CreateNullValue());
 
   bool rv = BrowserThread::PostTask(
@@ -317,7 +316,7 @@ void CookiesGetAllFunction::GetAllCookiesOnIOThread() {
 void CookiesGetAllFunction::GetAllCookiesCallback(
     const net::CookieList& cookie_list) {
   if (extension()) {
-    std::vector<linked_ptr<cookies::Cookie>> match_vector;
+    std::vector<cookies::Cookie> match_vector;
     cookies_helpers::AppendMatchingCookiesToVector(
         cookie_list, url_, &parsed_args_->details, extension(), &match_vector);
 
@@ -436,18 +435,17 @@ void CookiesSetFunction::PullCookie(bool set_cookie_result) {
 
 void CookiesSetFunction::PullCookieCallback(
     const net::CookieList& cookie_list) {
-  net::CookieList::const_iterator it;
-  for (it = cookie_list.begin(); it != cookie_list.end(); ++it) {
+  for (const net::CanonicalCookie& cookie : cookie_list) {
     // Return the first matching cookie. Relies on the fact that the
     // CookieMonster returns them in canonical order (longest path, then
     // earliest creation time).
     std::string name =
         parsed_args_->details.name.get() ? *parsed_args_->details.name
                                          : std::string();
-    if (it->Name() == name) {
-      scoped_ptr<cookies::Cookie> cookie(
-          cookies_helpers::CreateCookie(*it, *parsed_args_->details.store_id));
-      results_ = Set::Results::Create(*cookie);
+    if (cookie.Name() == name) {
+      cookies::Cookie api_cookie = cookies_helpers::CreateCookie(
+          cookie, *parsed_args_->details.store_id);
+      results_ = Set::Results::Create(api_cookie);
       break;
     }
   }
@@ -559,17 +557,15 @@ bool CookiesGetAllCookieStoresFunction::RunSync() {
     }
   }
   // Return a list of all cookie stores with at least one open tab.
-  std::vector<linked_ptr<cookies::CookieStore>> cookie_stores;
+  std::vector<cookies::CookieStore> cookie_stores;
   if (original_tab_ids->GetSize() > 0) {
-    cookie_stores.push_back(make_linked_ptr(
-        cookies_helpers::CreateCookieStore(
-            original_profile, original_tab_ids.release()).release()));
+    cookie_stores.push_back(cookies_helpers::CreateCookieStore(
+        original_profile, original_tab_ids.release()));
   }
   if (incognito_tab_ids.get() && incognito_tab_ids->GetSize() > 0 &&
       incognito_profile) {
-    cookie_stores.push_back(make_linked_ptr(
-        cookies_helpers::CreateCookieStore(
-            incognito_profile, incognito_tab_ids.release()).release()));
+    cookie_stores.push_back(cookies_helpers::CreateCookieStore(
+        incognito_profile, incognito_tab_ids.release()));
   }
   results_ = GetAllCookieStores::Results::Create(cookie_stores);
   return true;

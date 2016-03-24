@@ -197,37 +197,33 @@ bool AddUnsubscribeToRequest(const std::string& app_id,
   return true;
 }
 
-bool PrepareReportRequestProto(
-    const std::vector<linked_ptr<Operation>>& operations,
-    const std::string& app_id,
-    SubscriptionToAppMap* apps_by_subscription_id,
-    ReportRequest* request) {
-  for (const linked_ptr<Operation>& op : operations) {
-    DCHECK(op.get());
-
+bool PrepareReportRequestProto(const std::vector<Operation>& operations,
+                               const std::string& app_id,
+                               SubscriptionToAppMap* apps_by_subscription_id,
+                               ReportRequest* request) {
+  for (const Operation& op : operations) {
     // Verify our object has exactly one operation.
-    if (static_cast<int>(op->publish != nullptr) +
-        static_cast<int>(op->subscribe != nullptr) +
-        static_cast<int>(op->unpublish != nullptr) +
-        static_cast<int>(op->unsubscribe != nullptr) != 1) {
+    if (static_cast<int>(op.publish != nullptr) +
+            static_cast<int>(op.subscribe != nullptr) +
+            static_cast<int>(op.unpublish != nullptr) +
+            static_cast<int>(op.unsubscribe != nullptr) !=
+        1) {
       return false;
     }
 
-    if (op->publish) {
-      if (!AddPublishToRequest(app_id, *(op->publish), request))
+    if (op.publish) {
+      if (!AddPublishToRequest(app_id, *(op.publish), request))
         return false;
-    } else if (op->subscribe) {
-      if (!AddSubscribeToRequest(
-              app_id, *(op->subscribe), apps_by_subscription_id, request))
+    } else if (op.subscribe) {
+      if (!AddSubscribeToRequest(app_id, *(op.subscribe),
+                                 apps_by_subscription_id, request))
         return false;
-    } else if (op->unpublish) {
-      if (!AddUnpublishToRequest(op->unpublish->unpublish_id, request))
+    } else if (op.unpublish) {
+      if (!AddUnpublishToRequest(op.unpublish->unpublish_id, request))
         return false;
-    } else {  // if (op->unsubscribe)
-      if (!AddUnsubscribeToRequest(app_id,
-                                   op->unsubscribe->unsubscribe_id,
-                                   apps_by_subscription_id,
-                                   request))
+    } else {  // if (op.unsubscribe)
+      if (!AddUnsubscribeToRequest(app_id, op.unsubscribe->unsubscribe_id,
+                                   apps_by_subscription_id, request))
         return false;
     }
   }

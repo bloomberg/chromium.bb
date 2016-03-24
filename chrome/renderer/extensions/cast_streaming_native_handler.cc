@@ -124,7 +124,7 @@ bool ToCastRtpPayloadParamsOrThrow(v8::Isolate* isolate,
   }
   for (size_t i = 0; i < ext_params.codec_specific_params.size(); ++i) {
     CastCodecSpecificParams cast_codec_params;
-    ToCastCodecSpecificParams(*ext_params.codec_specific_params[i],
+    ToCastCodecSpecificParams(ext_params.codec_specific_params[i],
                               &cast_codec_params);
     cast_params->codec_specific_params.push_back(cast_codec_params);
   }
@@ -151,11 +151,10 @@ void FromCastRtpPayloadParams(const CastRtpPayloadParams& cast_params,
   if (cast_params.max_frame_rate > 0.0)
     ext_params->max_frame_rate.reset(new double(cast_params.max_frame_rate));
   for (size_t i = 0; i < cast_params.codec_specific_params.size(); ++i) {
-    linked_ptr<CodecSpecificParams> ext_codec_params(
-        new CodecSpecificParams());
+    CodecSpecificParams ext_codec_params;
     FromCastCodecSpecificParams(cast_params.codec_specific_params[i],
-                                ext_codec_params.get());
-    ext_params->codec_specific_params.push_back(ext_codec_params);
+                                &ext_codec_params);
+    ext_params->codec_specific_params.push_back(std::move(ext_codec_params));
   }
 }
 

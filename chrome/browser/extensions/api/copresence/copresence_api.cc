@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/lazy_instance.h"
-#include "base/memory/linked_ptr.h"
 #include "chrome/browser/copresence/chrome_whispernet_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/services/gcm/gcm_profile_service_factory.h"
@@ -136,16 +135,16 @@ void CopresenceService::HandleMessages(
   }
 
   int message_count = messages.size();
-  std::vector<linked_ptr<api::copresence::Message>> api_messages(
-      message_count);
+  std::vector<api::copresence::Message> api_messages(message_count);
 
-  for (int m = 0; m < message_count; ++m) {
-    api_messages[m].reset(new api::copresence::Message);
-    api_messages[m]->type = messages[m].type().type();
-    api_messages[m]->payload.assign(messages[m].payload().begin(),
-                                    messages[m].payload().end());
-    DVLOG(2) << "Dispatching message of type " << api_messages[m]->type << ":\n"
-             << messages[m].payload();
+  for (const copresence::Message& message : messages) {
+    api::copresence::Message api_message;
+    api_message.type = message.type().type();
+    api_message.payload.assign(message.payload().begin(),
+                               message.payload().end());
+    api_messages.push_back(std::move(api_message));
+    DVLOG(2) << "Dispatching message of type " << api_message.type << ":\n"
+             << message.payload();
   }
 
   // Send the messages to the client app.

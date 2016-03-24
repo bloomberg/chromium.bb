@@ -5,7 +5,7 @@
 // The <code>chrome.cast.devicesPrivate</code> API manages starting and stopping
 // casts based on receiver names. It also provides a list of available
 // receivers.
-namespace cast.devicesPrivate {
+[use_movable_types=true] namespace cast.devicesPrivate {
   // A cast receiver is an actual cast device. It has a unique |id| and a
   // non-unique |name| which is how people identify it.
   dictionary Receiver {

@@ -11,8 +11,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -65,63 +63,62 @@ const char* GetStoreIdFromProfile(Profile* profile) {
       kOffTheRecordProfileStoreId : kOriginalProfileStoreId;
 }
 
-scoped_ptr<Cookie> CreateCookie(
-    const net::CanonicalCookie& canonical_cookie,
-    const std::string& store_id) {
-  scoped_ptr<Cookie> cookie(new Cookie());
+Cookie CreateCookie(const net::CanonicalCookie& canonical_cookie,
+                    const std::string& store_id) {
+  Cookie cookie;
 
   // A cookie is a raw byte sequence. By explicitly parsing it as UTF-8, we
   // apply error correction, so the string can be safely passed to the renderer.
-  cookie->name = base::UTF16ToUTF8(base::UTF8ToUTF16(canonical_cookie.Name()));
-  cookie->value =
-      base::UTF16ToUTF8(base::UTF8ToUTF16(canonical_cookie.Value()));
-  cookie->domain = canonical_cookie.Domain();
-  cookie->host_only = net::cookie_util::DomainIsHostOnly(
-      canonical_cookie.Domain());
+  cookie.name = base::UTF16ToUTF8(base::UTF8ToUTF16(canonical_cookie.Name()));
+  cookie.value = base::UTF16ToUTF8(base::UTF8ToUTF16(canonical_cookie.Value()));
+  cookie.domain = canonical_cookie.Domain();
+  cookie.host_only =
+      net::cookie_util::DomainIsHostOnly(canonical_cookie.Domain());
   // A non-UTF8 path is invalid, so we just replace it with an empty string.
-  cookie->path = base::IsStringUTF8(canonical_cookie.Path()) ?
-      canonical_cookie.Path() : std::string();
-  cookie->secure = canonical_cookie.IsSecure();
-  cookie->http_only = canonical_cookie.IsHttpOnly();
+  cookie.path = base::IsStringUTF8(canonical_cookie.Path())
+                    ? canonical_cookie.Path()
+                    : std::string();
+  cookie.secure = canonical_cookie.IsSecure();
+  cookie.http_only = canonical_cookie.IsHttpOnly();
 
   switch (canonical_cookie.SameSite()) {
   case net::CookieSameSite::DEFAULT_MODE:
-    cookie->same_site = api::cookies::SAME_SITE_STATUS_NO_RESTRICTION;
+    cookie.same_site = api::cookies::SAME_SITE_STATUS_NO_RESTRICTION;
     break;
   case net::CookieSameSite::LAX_MODE:
-    cookie->same_site = api::cookies::SAME_SITE_STATUS_LAX;
+    cookie.same_site = api::cookies::SAME_SITE_STATUS_LAX;
     break;
   case net::CookieSameSite::STRICT_MODE:
-    cookie->same_site = api::cookies::SAME_SITE_STATUS_STRICT;
+    cookie.same_site = api::cookies::SAME_SITE_STATUS_STRICT;
     break;
   }
 
-  cookie->session = !canonical_cookie.IsPersistent();
+  cookie.session = !canonical_cookie.IsPersistent();
   if (canonical_cookie.IsPersistent()) {
-    cookie->expiration_date.reset(
+    cookie.expiration_date.reset(
         new double(canonical_cookie.ExpiryDate().ToDoubleT()));
   }
-  cookie->store_id = store_id;
+  cookie.store_id = store_id;
 
   return cookie;
 }
 
-scoped_ptr<CookieStore> CreateCookieStore(Profile* profile,
-                                          base::ListValue* tab_ids) {
+CookieStore CreateCookieStore(Profile* profile, base::ListValue* tab_ids) {
   DCHECK(profile);
   DCHECK(tab_ids);
   base::DictionaryValue dict;
   dict.SetString(keys::kIdKey, GetStoreIdFromProfile(profile));
   dict.Set(keys::kTabIdsKey, tab_ids);
 
-  CookieStore* cookie_store = new CookieStore();
-  bool rv = CookieStore::Populate(dict, cookie_store);
+  CookieStore cookie_store;
+  bool rv = CookieStore::Populate(dict, &cookie_store);
   CHECK(rv);
-  return scoped_ptr<CookieStore>(cookie_store);
+  return cookie_store;
 }
 
 void GetCookieListFromStore(
-    net::CookieStore* cookie_store, const GURL& url,
+    net::CookieStore* cookie_store,
+    const GURL& url,
     const net::CookieMonster::GetCookieListCallback& callback) {
   DCHECK(cookie_store);
   if (!url.is_empty()) {
@@ -145,20 +142,17 @@ void AppendMatchingCookiesToVector(const net::CookieList& all_cookies,
                                    const GURL& url,
                                    const GetAll::Params::Details* details,
                                    const Extension* extension,
-                                   LinkedCookieVec* match_vector) {
-  net::CookieList::const_iterator it;
-  for (it = all_cookies.begin(); it != all_cookies.end(); ++it) {
+                                   std::vector<Cookie>* match_vector) {
+  for (const net::CanonicalCookie& cookie : all_cookies) {
     // Ignore any cookie whose domain doesn't match the extension's
     // host permissions.
-    GURL cookie_domain_url = GetURLFromCanonicalCookie(*it);
+    GURL cookie_domain_url = GetURLFromCanonicalCookie(cookie);
     if (!extension->permissions_data()->HasHostPermission(cookie_domain_url))
       continue;
     // Filter the cookie using the match filter.
     cookies_helpers::MatchFilter filter(details);
-    if (filter.MatchesCookie(*it)) {
-      match_vector->push_back(make_linked_ptr(
-          CreateCookie(*it, *details->store_id).release()));
-    }
+    if (filter.MatchesCookie(cookie))
+      match_vector->push_back(CreateCookie(cookie, *details->store_id));
   }
 }
 
