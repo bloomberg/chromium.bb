@@ -136,12 +136,8 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
         if (flipY)
             return StaticBitmapImage::create(flipSkImageVertically(skiaImage->newSubset(srcRect), premultiplyAlpha ? PremultiplyAlpha : DontPremultiplyAlpha));
         SkImage* croppedSkImage = skiaImage->newSubset(srcRect);
-        if (cropRect == imgRect) {
-            // Call readPixels to trigger image decoding. Only read 1*1 subregion to be efficient.
-            SkImageInfo info = SkImageInfo::MakeN32(1, 1, premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType);
-            OwnPtr<uint8_t[]> imagePixels = adoptArrayPtr(new uint8_t[info.bytesPerPixel()]);
-            croppedSkImage->readPixels(info, imagePixels.get(), info.bytesPerPixel(), 0, 0);
-        }
+        // Call preroll to trigger image decoding.
+        croppedSkImage->preroll();
         return StaticBitmapImage::create(adoptRef(croppedSkImage));
     }
 
