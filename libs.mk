@@ -340,6 +340,12 @@ $(filter %$(ASM).o,$(OBJS-yes)): $(BUILD_PFX)aom_config.asm
 $(shell $(SRC_PATH_BARE)/build/make/version.sh "$(SRC_PATH_BARE)" $(BUILD_PFX)aom_version.h)
 CLEAN-OBJS += $(BUILD_PFX)aom_version.h
 
+#
+# Add include path for libwebm sources.
+#
+ifeq ($(CONFIG_WEBM_IO),yes)
+  CXXFLAGS += -I$(SRC_PATH_BARE)/third_party/libwebm
+endif
 
 ##
 ## libaom test directives
@@ -415,6 +421,7 @@ test_libaom.$(VCPROJ_SFX): $(LIBAOM_TEST_SRCS) aom.$(VCPROJ_SFX) gtest.$(VCPROJ_
             $(if $(CONFIG_STATIC_MSVCRT),--static-crt) \
             --out=$@ $(INTERNAL_CFLAGS) $(CFLAGS) \
             -I. -I"$(SRC_PATH_BARE)/third_party/googletest/src/include" \
+            $(if $(CONFIG_WEBM_IO),-I"$(SRC_PATH_BARE)/third_party/libwebm") \
             -L. -l$(CODEC_LIB) -l$(GTEST_LIB) $^
 
 PROJECTS-$(CONFIG_MSVS) += test_libaom.$(VCPROJ_SFX)
