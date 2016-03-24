@@ -269,7 +269,7 @@ bool BlinkTestController::PrepareForLayoutTest(
   printer_->reset();
   frame_to_layout_dump_map_.clear();
   render_process_host_observer_.RemoveAll();
-  accumulated_layout_dump_flags_changes_.Clear();
+  accumulated_layout_test_runtime_flags_changes_.Clear();
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   if (test_url.spec().find("compositing/") != std::string::npos)
@@ -441,8 +441,8 @@ bool BlinkTestController::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(BlinkTestController, message,
                                    render_frame_host)
-    IPC_MESSAGE_HANDLER(ShellViewHostMsg_LayoutDumpFlagsChanged,
-                        OnLayoutDumpFlagsChanged)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_LayoutTestRuntimeFlagsChanged,
+                        OnLayoutTestRuntimeFlagsChanged)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_LayoutDumpResponse,
                         OnLayoutDumpResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -600,7 +600,8 @@ void BlinkTestController::HandleNewRenderFrameHost(RenderFrameHost* frame) {
 
   if (did_send_initial_test_configuration_) {
     frame->Send(new ShellViewMsg_ReplicateTestConfiguration(
-        frame->GetRoutingID(), params, accumulated_layout_dump_flags_changes_));
+        frame->GetRoutingID(), params,
+        accumulated_layout_test_runtime_flags_changes_));
   } else {
     did_send_initial_test_configuration_ = true;
     frame->Send(
@@ -675,12 +676,12 @@ void BlinkTestController::OnInitiateLayoutDump() {
       new ShellViewMsg_LayoutDumpRequest(MSG_ROUTING_NONE));
 }
 
-void BlinkTestController::OnLayoutDumpFlagsChanged(
+void BlinkTestController::OnLayoutTestRuntimeFlagsChanged(
     RenderFrameHost* sender,
-    const base::DictionaryValue& changed_layout_dump_flags) {
+    const base::DictionaryValue& changed_layout_test_runtime_flags) {
   // Stash the changes for future renderers.
-  accumulated_layout_dump_flags_changes_.MergeDictionary(
-      &changed_layout_dump_flags);
+  accumulated_layout_test_runtime_flags_changes_.MergeDictionary(
+      &changed_layout_test_runtime_flags);
 
   // Only need to send the propagation message once per renderer process.
   std::set<int> already_covered_process_ids;
@@ -696,8 +697,8 @@ void BlinkTestController::OnLayoutDumpFlagsChanged(
     bool inserted_new_item =
         already_covered_process_ids.insert(frame->GetProcess()->GetID()).second;
     if (inserted_new_item) {
-      frame->Send(new ShellViewMsg_ReplicateLayoutDumpFlagsChanges(
-          frame->GetRoutingID(), changed_layout_dump_flags));
+      frame->Send(new ShellViewMsg_ReplicateLayoutTestRuntimeFlagsChanges(
+          frame->GetRoutingID(), changed_layout_test_runtime_flags));
     }
   }
 }

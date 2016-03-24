@@ -53,7 +53,8 @@ std::string DumpFrameScrollPosition(WebFrame* frame) {
 
 }  // namespace
 
-std::string DumpLayout(WebLocalFrame* frame, const LayoutDumpFlags& flags) {
+std::string DumpLayout(WebLocalFrame* frame,
+                       const LayoutTestRuntimeFlags& flags) {
   DCHECK(frame);
   std::string result;
 

@@ -192,9 +192,9 @@ class BlinkTestController : public base::NonThreadSafe,
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
   void OnTextDump(const std::string& dump);
   void OnInitiateLayoutDump();
-  void OnLayoutDumpFlagsChanged(
+  void OnLayoutTestRuntimeFlagsChanged(
       RenderFrameHost* sender,
-      const base::DictionaryValue& changed_layout_dump_flags);
+      const base::DictionaryValue& changed_layout_test_runtime_flags);
   void OnLayoutDumpResponse(RenderFrameHost* sender, const std::string& dump);
   void OnPrintMessage(const std::string& message);
   void OnOverridePreferences(const WebPreferences& prefs);
@@ -266,10 +266,10 @@ class BlinkTestController : public base::NonThreadSafe,
   ScopedObserver<RenderProcessHost, RenderProcessHostObserver>
       render_process_host_observer_;
 
-  // Changes reported by OnLayoutDumpFlagsChanged that have accumulated since
-  // PrepareForLayoutTest (i.e. changes that need to be send to a fresh
+  // Changes reported by OnLayoutTestRuntimeFlagsChanged that have accumulated
+  // since PrepareForLayoutTest (i.e. changes that need to be send to a fresh
   // renderer created while test is in progress).
-  base::DictionaryValue accumulated_layout_dump_flags_changes_;
+  base::DictionaryValue accumulated_layout_test_runtime_flags_changes_;
 
 #if defined(OS_ANDROID)
   // Because of the nested message pump implementation, Android needs to allow

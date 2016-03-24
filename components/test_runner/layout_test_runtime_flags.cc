@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/test_runner/layout_dump_flags.h"
+#include "components/test_runner/layout_test_runtime_flags.h"
 
 namespace test_runner {
 
-LayoutDumpFlags::LayoutDumpFlags() {
+LayoutTestRuntimeFlags::LayoutTestRuntimeFlags() {
   Reset();
 }
 
-void LayoutDumpFlags::Reset() {
+void LayoutTestRuntimeFlags::Reset() {
   set_generate_pixel_results(true);
 
   set_dump_as_text(false);

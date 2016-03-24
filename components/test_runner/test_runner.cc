@@ -1616,7 +1616,7 @@ void TestRunner::WorkQueue::ProcessWorkSoon() {
   if (!queue_.empty()) {
     // We delay processing queued work to avoid recursion problems.
     controller_->delegate_->PostTask(new WorkQueueTask(this));
-  } else if (!controller_->layout_dump_flags_.wait_until_done()) {
+  } else if (!controller_->layout_test_runtime_flags_.wait_until_done()) {
     controller_->delegate_->TestFinished();
   }
 }
@@ -1648,7 +1648,7 @@ void TestRunner::WorkQueue::ProcessWork() {
       return;
   }
 
-  if (!controller_->layout_dump_flags_.wait_until_done() &&
+  if (!controller_->layout_test_runtime_flags_.wait_until_done() &&
       !controller_->topLoadingFrame())
     controller_->delegate_->TestFinished();
 }
@@ -1704,7 +1704,7 @@ void TestRunner::Reset() {
   }
 
   top_loading_frame_ = nullptr;
-  layout_dump_flags_.Reset();
+  layout_test_runtime_flags_.Reset();
   mock_screen_orientation_client_->ResetData();
   wait_until_external_url_load_ = false;
   policy_delegate_enabled_ = false;
@@ -1794,13 +1794,13 @@ bool TestRunner::shouldDumpEditingCallbacks() const {
 }
 
 void TestRunner::setShouldDumpAsText(bool value) {
-  layout_dump_flags_.set_dump_as_text(value);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_dump_as_text(value);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::setShouldDumpAsMarkup(bool value) {
-  layout_dump_flags_.set_dump_as_markup(value);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_dump_as_markup(value);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 bool TestRunner::shouldDumpAsCustomText() const {
@@ -1818,7 +1818,7 @@ void TestRunner::setCustomTextOutput(const std::string& text) {
 
 bool TestRunner::ShouldGeneratePixelResults() {
   CheckResponseMimeType();
-  return layout_dump_flags_.generate_pixel_results();
+  return layout_test_runtime_flags_.generate_pixel_results();
 }
 
 bool TestRunner::shouldStayOnPageAfterHandlingBeforeUnload() const {
@@ -1827,8 +1827,8 @@ bool TestRunner::shouldStayOnPageAfterHandlingBeforeUnload() const {
 
 
 void TestRunner::setShouldGeneratePixelResults(bool value) {
-  layout_dump_flags_.set_generate_pixel_results(value);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_generate_pixel_results(value);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 bool TestRunner::ShouldDumpAsAudio() const {
@@ -1841,17 +1841,18 @@ void TestRunner::GetAudioData(std::vector<unsigned char>* buffer_view) const {
 
 bool TestRunner::IsRecursiveLayoutDumpRequested() {
   CheckResponseMimeType();
-  return layout_dump_flags_.dump_child_frames();
+  return layout_test_runtime_flags_.dump_child_frames();
 }
 
 std::string TestRunner::DumpLayout(blink::WebLocalFrame* frame) {
   CheckResponseMimeType();
-  return ::test_runner::DumpLayout(frame, layout_dump_flags_);
+  return ::test_runner::DumpLayout(frame, layout_test_runtime_flags_);
 }
 
-void TestRunner::ReplicateLayoutDumpFlagsChanges(
+void TestRunner::ReplicateLayoutTestRuntimeFlagsChanges(
     const base::DictionaryValue& changed_values) {
-  layout_dump_flags_.tracked_dictionary().ApplyUntrackedChanges(changed_values);
+  layout_test_runtime_flags_.tracked_dictionary().ApplyUntrackedChanges(
+      changed_values);
 }
 
 bool TestRunner::HasCustomTextDump(std::string* custom_text_dump) const {
@@ -1936,7 +1937,7 @@ bool TestRunner::shouldDumpSelectionRect() const {
 }
 
 bool TestRunner::isPrinting() const {
-  return layout_dump_flags_.is_printing();
+  return layout_test_runtime_flags_.is_printing();
 }
 
 bool TestRunner::shouldWaitUntilExternalURLLoad() const {
@@ -1965,10 +1966,10 @@ WebFrame* TestRunner::topLoadingFrame() const {
 }
 
 void TestRunner::policyDelegateDone() {
-  DCHECK(layout_dump_flags_.wait_until_done());
+  DCHECK(layout_test_runtime_flags_.wait_until_done());
   delegate_->TestFinished();
-  layout_dump_flags_.set_wait_until_done(false);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_wait_until_done(false);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 bool TestRunner::policyDelegateEnabled() const {
@@ -2065,8 +2066,8 @@ void TestRunner::NotifyDone() {
 }
 
 void TestRunner::WaitUntilDone() {
-  layout_dump_flags_.set_wait_until_done(true);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_wait_until_done(true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::QueueBackNavigation(int how_far_back) {
@@ -2199,8 +2200,8 @@ void TestRunner::SetCustomPolicyDelegate(gin::Arguments* args) {
 void TestRunner::WaitForPolicyDelegate() {
   policy_delegate_enabled_ = true;
   policy_delegate_should_notify_done_ = true;
-  layout_dump_flags_.set_wait_until_done(true);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_wait_until_done(true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 int TestRunner::WindowCount() {
@@ -2653,36 +2654,36 @@ void TestRunner::DumpEditingCallbacks() {
 }
 
 void TestRunner::DumpAsMarkup() {
-  layout_dump_flags_.set_dump_as_markup(true);
-  layout_dump_flags_.set_generate_pixel_results(false);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_dump_as_markup(true);
+  layout_test_runtime_flags_.set_generate_pixel_results(false);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DumpAsText() {
-  layout_dump_flags_.set_dump_as_text(true);
-  layout_dump_flags_.set_generate_pixel_results(false);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_dump_as_text(true);
+  layout_test_runtime_flags_.set_generate_pixel_results(false);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DumpAsTextWithPixelResults() {
-  layout_dump_flags_.set_dump_as_text(true);
-  layout_dump_flags_.set_generate_pixel_results(true);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_dump_as_text(true);
+  layout_test_runtime_flags_.set_generate_pixel_results(true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DumpChildFrameScrollPositions() {
-  layout_dump_flags_.set_dump_child_frame_scroll_positions(true);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_dump_child_frame_scroll_positions(true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DumpChildFramesAsMarkup() {
-  layout_dump_flags_.set_dump_child_frames_as_markup(true);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_dump_child_frames_as_markup(true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DumpChildFramesAsText() {
-  layout_dump_flags_.set_dump_child_frames_as_text(true);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_dump_child_frames_as_text(true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DumpIconChanges() {
@@ -2781,13 +2782,13 @@ void TestRunner::DumpSelectionRect() {
 }
 
 void TestRunner::SetPrinting() {
-  layout_dump_flags_.set_is_printing(true);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_is_printing(true);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::ClearPrinting() {
-  layout_dump_flags_.set_is_printing(false);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_is_printing(false);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::SetShouldStayOnPageAfterHandlingBeforeUnload(bool value) {
@@ -3045,13 +3046,13 @@ void TestRunner::CapturePixelsAsyncThen(v8::Local<v8::Function> callback) {
                                         base::Passed(&task)));
 }
 
-void TestRunner::OnLayoutDumpFlagsChanged() {
-  if (layout_dump_flags_.tracked_dictionary().changed_values().empty())
+void TestRunner::OnLayoutTestRuntimeFlagsChanged() {
+  if (layout_test_runtime_flags_.tracked_dictionary().changed_values().empty())
     return;
 
-  delegate_->OnLayoutDumpFlagsChanged(
-      layout_dump_flags_.tracked_dictionary().changed_values());
-  layout_dump_flags_.tracked_dictionary().ResetChangeTracking();
+  delegate_->OnLayoutTestRuntimeFlagsChanged(
+      layout_test_runtime_flags_.tracked_dictionary().changed_values());
+  layout_test_runtime_flags_.tracked_dictionary().ResetChangeTracking();
 }
 
 void TestRunner::ForceNextWebGLContextCreationToFail() {
@@ -3171,7 +3172,7 @@ void TestRunner::LocationChangeDone() {
   // No more new work after the first complete load.
   work_queue_.set_frozen(true);
 
-  if (!layout_dump_flags_.wait_until_done())
+  if (!layout_test_runtime_flags_.wait_until_done())
     work_queue_.ProcessWorkSoon();
 }
 
@@ -3179,7 +3180,7 @@ void TestRunner::CheckResponseMimeType() {
   // Text output: the test page can request different types of output which we
   // handle here.
 
-  if (layout_dump_flags_.dump_as_text())
+  if (layout_test_runtime_flags_.dump_as_text())
     return;
 
   WebDataSource* data_source = web_view_->mainFrame()->dataSource();
@@ -3190,17 +3191,17 @@ void TestRunner::CheckResponseMimeType() {
   if (mimeType != "text/plain")
     return;
 
-  layout_dump_flags_.set_dump_as_text(true);
-  layout_dump_flags_.set_generate_pixel_results(false);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_dump_as_text(true);
+  layout_test_runtime_flags_.set_generate_pixel_results(false);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::CompleteNotifyDone() {
-  if (layout_dump_flags_.wait_until_done() && !topLoadingFrame() &&
+  if (layout_test_runtime_flags_.wait_until_done() && !topLoadingFrame() &&
       work_queue_.is_empty())
     delegate_->TestFinished();
-  layout_dump_flags_.set_wait_until_done(false);
-  OnLayoutDumpFlagsChanged();
+  layout_test_runtime_flags_.set_wait_until_done(false);
+  OnLayoutTestRuntimeFlagsChanged();
 }
 
 void TestRunner::DidAcquirePointerLockInternal() {

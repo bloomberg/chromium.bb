@@ -43,11 +43,12 @@ IPC_MESSAGE_ROUTED1(ShellViewMsg_SetTestConfiguration,
 IPC_MESSAGE_ROUTED2(
     ShellViewMsg_ReplicateTestConfiguration,
     content::ShellTestConfiguration,
-    base::DictionaryValue /* accumulated_layout_dump_flags_changes */)
+    base::DictionaryValue /* accumulated_layout_test_runtime_flags_changes */)
 
 // Used to broadcast changes happening in one renderer to all other renderers.
-IPC_MESSAGE_ROUTED1(ShellViewMsg_ReplicateLayoutDumpFlagsChanges,
-                    base::DictionaryValue /* changed_layout_dump_flags */)
+IPC_MESSAGE_ROUTED1(
+    ShellViewMsg_ReplicateLayoutTestRuntimeFlagsChanges,
+    base::DictionaryValue /* changed_layout_test_runtime_flags */)
 
 // Tells the main window that a secondary renderer in a different process thinks
 // the test is finished.
@@ -73,9 +74,11 @@ IPC_MESSAGE_ROUTED0(ShellViewMsg_LayoutDumpRequest)
 IPC_MESSAGE_ROUTED1(ShellViewMsg_LayoutDumpCompleted,
                     std::string /* completed/stitched layout dump */)
 
-// Notifies the browser that one of renderers has changed layout dump flags.
-IPC_MESSAGE_ROUTED1(ShellViewHostMsg_LayoutDumpFlagsChanged,
-                    base::DictionaryValue /* changed_layout_dump_flags */)
+// Notifies the browser that one of renderers has changed layout test runtime
+// flags (i.e. has set dump_as_text).
+IPC_MESSAGE_ROUTED1(
+    ShellViewHostMsg_LayoutTestRuntimeFlagsChanged,
+    base::DictionaryValue /* changed_layout_test_runtime_flags */)
 
 // Send a text dump of the WebContents to the render host.
 IPC_MESSAGE_ROUTED1(ShellViewHostMsg_TextDump,

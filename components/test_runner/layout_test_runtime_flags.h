@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_TEST_RUNNER_LAYOUT_DUMP_FLAGS_H_
-#define COMPONENTS_TEST_RUNNER_LAYOUT_DUMP_FLAGS_H_
+#ifndef COMPONENTS_TEST_RUNNER_LAYOUT_TEST_RUNTIME_FLAGS_H_
+#define COMPONENTS_TEST_RUNNER_LAYOUT_TEST_RUNTIME_FLAGS_H_
 
 #include <string>
 
@@ -15,11 +15,13 @@
 
 namespace test_runner {
 
-// TODO(lukasza): Rename to LayoutTestRuntimeFlags.
-class TEST_RUNNER_EXPORT LayoutDumpFlags {
+// LayoutTestRuntimeFlags stores flags controlled by layout tests at runtime
+// (i.e. by calling testRunner.dumpAsText() or testRunner.waitUntilDone()).
+// Changes to the flags are tracked (to help replicate them across renderers).
+class TEST_RUNNER_EXPORT LayoutTestRuntimeFlags {
  public:
   // Creates default flags (see also the Reset method).
-  LayoutDumpFlags();
+  LayoutTestRuntimeFlags();
 
   // Resets all the values to their defaults.
   void Reset();
@@ -27,7 +29,7 @@ class TEST_RUNNER_EXPORT LayoutDumpFlags {
   TrackedDictionary& tracked_dictionary() { return dict_; }
   const TrackedDictionary& tracked_dictionary() const { return dict_; }
 
-#define DEFINE_BOOL_LAYOUT_DUMP_FLAG(name)                          \
+#define DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(name)                  \
   bool name() const {                                               \
     bool result;                                                    \
     bool found = dict_.current_values().GetBoolean(#name, &result); \
@@ -37,36 +39,36 @@ class TEST_RUNNER_EXPORT LayoutDumpFlags {
   void set_##name(bool new_value) { dict_.SetBoolean(#name, new_value); }
 
   // If true, the test_shell will generate pixel results in DumpAsText mode.
-  DEFINE_BOOL_LAYOUT_DUMP_FLAG(generate_pixel_results)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(generate_pixel_results)
 
   // If true, the test_shell will produce a plain text dump rather than a
   // text representation of the renderer.
-  DEFINE_BOOL_LAYOUT_DUMP_FLAG(dump_as_text)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_as_text)
 
   // If true and if dump_as_text_ is true, the test_shell will recursively
   // dump all frames as plain text.
-  DEFINE_BOOL_LAYOUT_DUMP_FLAG(dump_child_frames_as_text)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_child_frames_as_text)
 
   // If true, the test_shell will produce a dump of the DOM rather than a text
   // representation of the renderer.
-  DEFINE_BOOL_LAYOUT_DUMP_FLAG(dump_as_markup)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_as_markup)
 
   // If true and if dump_as_markup_ is true, the test_shell will recursively
   // produce a dump of the DOM rather than a text representation of the
   // renderer.
-  DEFINE_BOOL_LAYOUT_DUMP_FLAG(dump_child_frames_as_markup)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_child_frames_as_markup)
 
   // If true, the test_shell will print out the child frame scroll offsets as
   // well.
-  DEFINE_BOOL_LAYOUT_DUMP_FLAG(dump_child_frame_scroll_positions)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(dump_child_frame_scroll_positions)
 
   // If true, layout is to target printed pages.
-  DEFINE_BOOL_LAYOUT_DUMP_FLAG(is_printing)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(is_printing)
 
   // If true, don't dump output until notifyDone is called.
-  DEFINE_BOOL_LAYOUT_DUMP_FLAG(wait_until_done)
+  DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG(wait_until_done)
 
-#undef DEFINE_BOOL_LAYOUT_DUMP_FLAG
+#undef DEFINE_BOOL_LAYOUT_TEST_RUNTIME_FLAG
 
   // Reports whether recursing over child frames is necessary.
   bool dump_child_frames() const {
@@ -81,9 +83,9 @@ class TEST_RUNNER_EXPORT LayoutDumpFlags {
  private:
   TrackedDictionary dict_;
 
-  DISALLOW_COPY_AND_ASSIGN(LayoutDumpFlags);
+  DISALLOW_COPY_AND_ASSIGN(LayoutTestRuntimeFlags);
 };
 
 }  // namespace test_runner
 
-#endif  // COMPONENTS_TEST_RUNNER_LAYOUT_DUMP_FLAGS_H_
+#endif  // COMPONENTS_TEST_RUNNER_LAYOUT_TEST_RUNTIME_FLAGS_H_

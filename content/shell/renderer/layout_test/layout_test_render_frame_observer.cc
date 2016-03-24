@@ -32,8 +32,8 @@ bool LayoutTestRenderFrameObserver::OnMessageReceived(
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(LayoutTestRenderFrameObserver, message)
     IPC_MESSAGE_HANDLER(ShellViewMsg_LayoutDumpRequest, OnLayoutDumpRequest)
-    IPC_MESSAGE_HANDLER(ShellViewMsg_ReplicateLayoutDumpFlagsChanges,
-                        OnReplicateLayoutDumpFlagsChanges)
+    IPC_MESSAGE_HANDLER(ShellViewMsg_ReplicateLayoutTestRuntimeFlagsChanges,
+                        OnReplicateLayoutTestRuntimeFlagsChanges)
     IPC_MESSAGE_HANDLER(ShellViewMsg_ReplicateTestConfiguration,
                         OnReplicateTestConfiguration)
     IPC_MESSAGE_HANDLER(ShellViewMsg_SetTestConfiguration,
@@ -53,22 +53,25 @@ void LayoutTestRenderFrameObserver::OnLayoutDumpRequest() {
   Send(new ShellViewHostMsg_LayoutDumpResponse(routing_id(), dump));
 }
 
-void LayoutTestRenderFrameObserver::OnReplicateLayoutDumpFlagsChanges(
-    const base::DictionaryValue& changed_layout_dump_flags) {
+void LayoutTestRenderFrameObserver::OnReplicateLayoutTestRuntimeFlagsChanges(
+    const base::DictionaryValue& changed_layout_test_runtime_flags) {
   LayoutTestRenderProcessObserver::GetInstance()
       ->test_interfaces()
       ->TestRunner()
-      ->ReplicateLayoutDumpFlagsChanges(changed_layout_dump_flags);
+      ->ReplicateLayoutTestRuntimeFlagsChanges(
+          changed_layout_test_runtime_flags);
 }
 
 void LayoutTestRenderFrameObserver::OnReplicateTestConfiguration(
     const ShellTestConfiguration& test_config,
-    const base::DictionaryValue& accumulated_layout_dump_flags_changes) {
+    const base::DictionaryValue&
+        accumulated_layout_test_runtime_flags_changes) {
   LayoutTestRenderProcessObserver::GetInstance()
       ->main_test_runner()
       ->OnReplicateTestConfiguration(test_config);
 
-  OnReplicateLayoutDumpFlagsChanges(accumulated_layout_dump_flags_changes);
+  OnReplicateLayoutTestRuntimeFlagsChanges(
+      accumulated_layout_test_runtime_flags_changes);
 }
 
 void LayoutTestRenderFrameObserver::OnSetTestConfiguration(

@@ -42,9 +42,10 @@ class WebTestRunner {
   // (i.e. text mode if testRunner.dumpAsText() was called from javascript).
   virtual std::string DumpLayout(blink::WebLocalFrame* frame) = 0;
 
-  // Replicates changes to layout dump flags (i.e. changes that happened in
-  // another renderer). See also WebTestDelegate::OnLayoutDumpFlagsChanged.
-  virtual void ReplicateLayoutDumpFlagsChanges(
+  // Replicates changes to layout test runtime flags
+  // (i.e. changes that happened in another renderer).
+  // See also WebTestDelegate::OnLayoutTestRuntimeFlagsChanged.
+  virtual void ReplicateLayoutTestRuntimeFlagsChanges(
       const base::DictionaryValue& changed_values) = 0;
 
   // If custom text dump is present (i.e. if testRunner.setCustomTextOutput has

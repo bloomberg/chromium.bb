@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "components/test_runner/layout_dump_flags.h"
+#include "components/test_runner/layout_test_runtime_flags.h"
 #include "components/test_runner/test_runner_export.h"
 #include "components/test_runner/web_task.h"
 #include "components/test_runner/web_test_runner.h"
@@ -75,7 +75,7 @@ class TestRunner : public WebTestRunner,
   void GetAudioData(std::vector<unsigned char>* buffer_view) const override;
   bool IsRecursiveLayoutDumpRequested() override;
   std::string DumpLayout(blink::WebLocalFrame* frame) override;
-  void ReplicateLayoutDumpFlagsChanges(
+  void ReplicateLayoutTestRuntimeFlagsChanges(
       const base::DictionaryValue& changed_values) override;
   bool HasCustomTextDump(std::string* custom_text_dump) const override;
   bool ShouldDumpBackForwardList() const override;
@@ -627,8 +627,9 @@ class TestRunner : public WebTestRunner,
 
   void GetManifestThen(v8::Local<v8::Function> callback);
 
-  // Takes care of notifying the delegate after a change to layout dump flags.
-  void OnLayoutDumpFlagsChanged();
+  // Takes care of notifying the delegate after a change to layout test runtime
+  // flags.
+  void OnLayoutTestRuntimeFlagsChanged();
 
   ///////////////////////////////////////////////////////////////////////////
   // Internal helpers
@@ -704,7 +705,7 @@ class TestRunner : public WebTestRunner,
   bool dump_editting_callbacks_;
 
   // Flags controlling what content gets dumped as a layout text result.
-  LayoutDumpFlags layout_dump_flags_;
+  LayoutTestRuntimeFlags layout_test_runtime_flags_;
 
   // If true, the test_shell will print out the icon change notifications.
   bool dump_icon_changes_;

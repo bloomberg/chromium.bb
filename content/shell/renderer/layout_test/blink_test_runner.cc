@@ -573,7 +573,7 @@ void BlinkTestRunner::SetLocale(const std::string& locale) {
   setlocale(LC_ALL, locale.c_str());
 }
 
-void BlinkTestRunner::OnLayoutDumpFlagsChanged(
+void BlinkTestRunner::OnLayoutTestRuntimeFlagsChanged(
     const base::DictionaryValue& changed_values) {
   // Ignore changes that happen before we got the initial, accumulated
   // layout flag changes in ShellViewMsg_ReplicateTestConfiguration.
@@ -592,8 +592,8 @@ void BlinkTestRunner::OnLayoutDumpFlagsChanged(
     }
   }
   DCHECK(local_frame);
-  Send(new ShellViewHostMsg_LayoutDumpFlagsChanged(local_frame->GetRoutingID(),
-                                                   changed_values));
+  Send(new ShellViewHostMsg_LayoutTestRuntimeFlagsChanged(
+      local_frame->GetRoutingID(), changed_values));
 }
 
 void BlinkTestRunner::TestFinished() {
