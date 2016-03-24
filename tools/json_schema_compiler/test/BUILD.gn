@@ -24,6 +24,7 @@ json_schema_api("api") {
     "idl_other_namespace_sub_namespace.idl",
     "objects.json",
     "objects_movable.idl",
+    "objects_movable_json.json",
     "simple_api.json",
   ]
 

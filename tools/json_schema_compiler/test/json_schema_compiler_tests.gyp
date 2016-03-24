@@ -26,6 +26,7 @@
           'idl_object_types.idl',
           'objects.json',
           'objects_movable.idl',
+          'objects_movable_json.json',
           'simple_api.json',
           'error_generation.json'
         ],

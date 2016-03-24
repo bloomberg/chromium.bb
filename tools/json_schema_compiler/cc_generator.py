@@ -213,14 +213,15 @@ class _Generator(object):
       t = prop.type_
 
       real_t = self._type_helper.FollowRef(t)
-      if (prop.optional or
-          t.property_type == PropertyType.ANY or
-          t.property_type == PropertyType.ARRAY or
-          t.property_type == PropertyType.BINARY or
-          t.property_type == PropertyType.CHOICES or
-          t.property_type == PropertyType.OBJECT or
-          t.property_type == PropertyType.REF or
-          t.property_type == PropertyType.STRING):
+      if (real_t.property_type != PropertyType.ENUM and
+          (prop.optional or
+           t.property_type == PropertyType.ANY or
+           t.property_type == PropertyType.ARRAY or
+           t.property_type == PropertyType.BINARY or
+           t.property_type == PropertyType.CHOICES or
+           t.property_type == PropertyType.OBJECT or
+           t.property_type == PropertyType.REF or
+           t.property_type == PropertyType.STRING)):
         props.append(move_str % (prop.unix_name, prop.unix_name))
       elif t.property_type == PropertyType.FUNCTION:
         dicts.append(prop.unix_name)
@@ -231,6 +232,14 @@ class _Generator(object):
         props.append(copy_str % (prop.unix_name, prop.unix_name))
       else:
         raise TypeError(t)
+
+    if (type_.property_type == PropertyType.OBJECT and
+        type_.additional_properties is not None):
+      if type_.additional_properties.property_type == PropertyType.ANY:
+        dicts.append('additional_properties')
+      else:
+        props.append(move_str % ('additional_properties',
+                                 'additional_properties'))
 
     return (props, dicts)
 
@@ -254,7 +263,7 @@ class _Generator(object):
     if props:
       s = s + '\n'.join(props)
     for item in dicts:
-      s = s + ('\n%s.Swap(&rhs.%s);' % (item, item))
+      s = s + ('%s.Swap(&rhs.%s);' % (item, item))
     s = s + '\nreturn *this;\n}'
 
     return Code().Append(s)
@@ -472,6 +481,7 @@ class _Generator(object):
         # Non-copyable types will be wrapped in a linked_ptr for inclusion in
         # maps, so we need to unwrap them.
         needs_unwrap = (
+            not 'use_movable_types' in type_.namespace.compiler_options and
             not self._type_helper.IsCopyable(type_.additional_properties))
         (c.Sblock('for (const auto& it : additional_properties) {')
           .Cblock(self._CreateValueFromType(

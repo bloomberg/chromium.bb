@@ -19,5 +19,6 @@
   dictionary MovableParent {
     MovablePod[] pods;
     DOMString[] strs;
+    [instanceOf=Blob]object blob;
   };
 };

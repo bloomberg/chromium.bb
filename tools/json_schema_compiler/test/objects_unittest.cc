@@ -8,9 +8,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "tools/json_schema_compiler/test/objects.h"
 #include "tools/json_schema_compiler/test/objects_movable.h"
+#include "tools/json_schema_compiler/test/objects_movable_json.h"
 
 using namespace test::api::objects;
 using namespace test::api::objects_movable;
+using namespace test::api::objects_movable_json;
 
 TEST(JsonSchemaCompilerObjectsTest, ObjectParamParamsCreate) {
   {
@@ -93,6 +95,7 @@ TEST(JsonSchemaCompilerMovableObjectsTest, MovableObjectsTest) {
   MovableParent parent;
   parent.pods = std::move(pods);
   parent.strs.push_back("pstr");
+  parent.blob.additional_properties.SetString("key", "val");
 
   MovableParent parent2(std::move(parent));
   ASSERT_EQ(2u, parent2.pods.size());
@@ -106,4 +109,25 @@ TEST(JsonSchemaCompilerMovableObjectsTest, MovableObjectsTest) {
   EXPECT_FALSE(parent2.pods[1].b);
   ASSERT_EQ(1u, parent2.strs.size());
   EXPECT_EQ("pstr", parent2.strs[0]);
+  std::string blob_string;
+  EXPECT_TRUE(
+      parent2.blob.additional_properties.GetString("key", &blob_string));
+  EXPECT_EQ("val", blob_string);
+
+  MovableWithAdditional with_additional;
+  with_additional.str = "str";
+  std::vector<std::string> vals1;
+  vals1.push_back("vals1a");
+  vals1.push_back("vals1b");
+  with_additional.additional_properties["key1"] = vals1;
+  std::vector<std::string> vals2;
+  vals2.push_back("vals2a");
+  vals2.push_back("vals2b");
+  with_additional.additional_properties["key2"] = vals2;
+
+  MovableWithAdditional with_additional2(std::move(with_additional));
+  EXPECT_EQ("str", with_additional2.str);
+  EXPECT_EQ(2u, with_additional2.additional_properties.size());
+  EXPECT_EQ(vals1, with_additional2.additional_properties["key1"]);
+  EXPECT_EQ(vals2, with_additional2.additional_properties["key2"]);
 }
