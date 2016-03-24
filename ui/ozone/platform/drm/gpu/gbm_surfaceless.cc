@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/khronos/EGL/egl.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -46,6 +47,7 @@ bool GbmSurfaceless::OnSwapBuffers() {
 
 void GbmSurfaceless::OnSwapBuffersAsync(
     const SwapCompletionCallback& callback) {
+  TRACE_EVENT0("drm", "GbmSurfaceless::OnSwapBuffersAsync");
   window_->SchedulePageFlip(planes_, callback);
   planes_.clear();
 }
