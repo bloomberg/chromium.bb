@@ -61,7 +61,7 @@ function test()
 {
     WebInspector.ArrayGroupingTreeElement._bucketThreshold = 20;
 
-    var messages = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    var messages = WebInspector.ConsoleView.instance()._visibleViewMessages;
     var sections = [];
     for (var i = 0; i < messages.length; ++i) {
         var consoleMessage = messages[i].consoleMessage();

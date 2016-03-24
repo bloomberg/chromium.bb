@@ -38,7 +38,7 @@ function initialize_testReloadInjectsCodeWithMessage()
 {
     InspectorTest.lastMessageScriptId = function(callback)
     {
-        var consoleView = WebInspector.ConsolePanel._view();
+        var consoleView = WebInspector.ConsoleView.instance();
         if (consoleView._needsFullUpdate)
             consoleView._updateMessageList();
         var viewMessages = consoleView._visibleViewMessages;

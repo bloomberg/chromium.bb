@@ -29,7 +29,7 @@ function test()
             return;
 
         InspectorTest.addResult("script was added");
-        var message = WebInspector.ConsolePanel._view()._visibleViewMessages[0];
+        var message = WebInspector.ConsoleView.instance()._visibleViewMessages[0];
         message._anchorElement.click();
     }
 

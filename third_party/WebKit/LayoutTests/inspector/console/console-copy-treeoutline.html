@@ -19,7 +19,7 @@ function prepareForTest()
 function test()
 {
     InspectorTest.fixConsoleViewportDimensions(600, 200);
-    var consoleView = WebInspector.ConsolePanel._view();
+    var consoleView = WebInspector.ConsoleView.instance();
     var viewport = consoleView._viewport;
 
     InspectorTest.runTestSuite([

@@ -7,7 +7,7 @@ InspectorTest.evaluateInConsole = function(code, callback)
 {
     callback = InspectorTest.safeWrap(callback);
 
-    var consoleView = WebInspector.ConsolePanel._view();
+    var consoleView = WebInspector.ConsoleView.instance();
     consoleView.visible = true;
     consoleView._prompt.setText(code);
     var event = document.createEvent("KeyboardEvent");
@@ -61,7 +61,7 @@ InspectorTest.disableConsoleViewport = function()
 
 InspectorTest.fixConsoleViewportDimensions = function(width, height)
 {
-    var viewport = WebInspector.ConsolePanel._view()._viewport;
+    var viewport = WebInspector.ConsoleView.instance()._viewport;
     viewport.element.style.width = width + "px";
     viewport.element.style.height = height + "px";
     viewport.element.style.position = "absolute";
@@ -70,7 +70,7 @@ InspectorTest.fixConsoleViewportDimensions = function(width, height)
 
 InspectorTest.consoleMessagesCount = function()
 {
-    var consoleView = WebInspector.ConsolePanel._view();
+    var consoleView = WebInspector.ConsoleView.instance();
     return consoleView._consoleMessages.length;
 }
 
@@ -84,7 +84,7 @@ InspectorTest.dumpConsoleMessagesIntoArray = function(printOriginatingCommand, d
     formatter = formatter || InspectorTest.prepareConsoleMessageText;
     var result = [];
     InspectorTest.disableConsoleViewport();
-    var consoleView = WebInspector.ConsolePanel._view();
+    var consoleView = WebInspector.ConsoleView.instance();
     if (consoleView._needsFullUpdate)
         consoleView._updateMessageList();
     var viewMessages = consoleView._visibleViewMessages;
@@ -147,7 +147,7 @@ InspectorTest.dumpConsoleMessagesIgnoreErrorStackFrames = function(printOriginat
 InspectorTest.dumpConsoleTableMessage = function(viewMessage, forceInvalidate, results)
 {
     if (forceInvalidate)
-        WebInspector.ConsolePanel._view()._viewport.invalidate();
+        WebInspector.ConsoleView.instance()._viewport.invalidate();
     var table = viewMessage.contentElement();
     var headers = table.querySelectorAll("th > div:first-child");
     if (!headers.length)
@@ -186,7 +186,7 @@ InspectorTest.dumpConsoleTableMessage = function(viewMessage, forceInvalidate, r
 InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 {
     var result = [];
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
         var element = messageViews[i].contentElement();
         var messageText = InspectorTest.prepareConsoleMessageText(element)
@@ -199,7 +199,7 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 
 InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
     var result = [];
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
         var element = messageViews[i].contentElement();
         var messageText = InspectorTest.prepareConsoleMessageText(element);
@@ -213,7 +213,7 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
 
 InspectorTest.dumpConsoleClassesBrief = function()
 {
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i)
         InspectorTest.addResult(messageViews[i].toMessageElement().className);
 }
@@ -228,7 +228,7 @@ InspectorTest.dumpConsoleCounters = function()
 
 InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilter)
 {
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
 
     // Initiate round-trips to fetch necessary data for further rendering.
     for (var i = 0; i < messageViews.length; ++i)
@@ -266,7 +266,7 @@ InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilt
 
 InspectorTest.expandGettersInConsoleMessages = function(callback)
 {
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
     var properties = [];
     var propertiesCount  = 0;
     InspectorTest.addSniffer(WebInspector.ObjectPropertyTreeElement.prototype, "_updateExpandable", propertyExpandableUpdated);
@@ -296,7 +296,7 @@ InspectorTest.expandGettersInConsoleMessages = function(callback)
 
 InspectorTest.expandConsoleMessagesErrorParameters = function(callback)
 {
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
     // Initiate round-trips to fetch necessary data for further rendering.
     for (var i = 0; i < messageViews.length; ++i)
         messageViews[i].contentElement();
@@ -321,7 +321,7 @@ InspectorTest.expandConsoleMessagesErrorParameters = function(callback)
 
 InspectorTest.waitForRemoteObjectsConsoleMessages = function(callback)
 {
-    var messages = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    var messages = WebInspector.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messages.length; ++i)
         messages[i].toMessageElement();
     InspectorTest.runAfterPendingDispatches(callback);
@@ -329,7 +329,7 @@ InspectorTest.waitForRemoteObjectsConsoleMessages = function(callback)
 
 InspectorTest.checkConsoleMessagesDontHaveParameters = function()
 {
-    var messageViews = WebInspector.ConsolePanel._view()._visibleViewMessages;
+    var messageViews = WebInspector.ConsoleView.instance()._visibleViewMessages;
     for (var i = 0; i < messageViews.length; ++i) {
         var m = messageViews[i].consoleMessage();
         InspectorTest.addResult("Message[" + i + "]:");
@@ -364,7 +364,7 @@ InspectorTest.waitUntilNthMessageReceived = function(count, callback)
 
 InspectorTest.changeExecutionContext = function(namePrefix)
 {
-    var selector = WebInspector.ConsolePanel._view()._executionContextModel._selectElement;
+    var selector = WebInspector.ConsoleView.instance()._executionContextModel._selectElement;
     var option = selector.firstChild;
     while (option) {
         if (option.textContent && option.textContent.startsWith(namePrefix))
@@ -376,12 +376,12 @@ InspectorTest.changeExecutionContext = function(namePrefix)
         return;
     }
     option.selected = true;
-    WebInspector.ConsolePanel._view()._executionContextModel._executionContextChanged();
+    WebInspector.ConsoleView.instance()._executionContextModel._executionContextChanged();
 }
 
 InspectorTest.waitForConsoleMessages = function(expectedCount, callback)
 {
-    var consoleView = WebInspector.ConsolePanel._view();
+    var consoleView = WebInspector.ConsoleView.instance();
     checkAndReturn();
 
     function checkAndReturn()

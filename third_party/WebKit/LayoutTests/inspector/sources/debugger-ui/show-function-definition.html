@@ -47,7 +47,7 @@ function test()
                 InspectorTest.runAfterPendingDispatches(function() {
                     var messages = [];
                     InspectorTest.disableConsoleViewport();
-                    var viewMessages = WebInspector.ConsolePanel._view()._visibleViewMessages;
+                    var viewMessages = WebInspector.ConsoleView.instance()._visibleViewMessages;
                     for (var i = 0; i < viewMessages.length; ++i) {
                         var uiMessage = viewMessages[i];
                         var element = uiMessage.contentElement();
