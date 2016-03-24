@@ -530,7 +530,7 @@ bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
 
 bool ShelfView::ShouldShowTooltipForView(const views::View* view) const {
   if (view == GetAppListButtonView() &&
-      Shell::GetInstance()->GetAppListWindow()) {
+      Shell::GetInstance()->GetAppListTargetVisibility()) {
     return false;
   }
   const ShelfItem* item = ShelfItemForView(view);
