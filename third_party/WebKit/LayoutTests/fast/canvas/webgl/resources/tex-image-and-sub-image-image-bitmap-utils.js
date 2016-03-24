@@ -57,9 +57,9 @@ function runOneIteration(useTexSubImage2D, bindingTarget, program, bitmap, flipY
     var bottom = flipY ? (height - halfHeight + quaterHeight) : quaterHeight;
 
     var tl = redColor;
-    var tr = premultiplyAlpha ? ((retVal.alpha == 0.5) ? halfRed : (retVal.alpha == 1) ? redColor : blackColor) : redColor;
+    var tr = premultiplyAlpha ? ((retVal.alpha == 0.5) ? darkRed : (retVal.alpha == 1) ? redColor : blackColor) : redColor;
     var bl = greenColor;
-    var br = premultiplyAlpha ? ((retVal.alpha == 0.5) ? halfGreen : (retVal.alpha == 1) ? greenColor : blackColor) : greenColor;
+    var br = premultiplyAlpha ? ((retVal.alpha == 0.5) ? darkGreen : (retVal.alpha == 1) ? greenColor : blackColor) : greenColor;
 
     var blueColor = [0, 0, 255];
     if (colorspace == 'none') {
@@ -73,7 +73,7 @@ function runOneIteration(useTexSubImage2D, bindingTarget, program, bitmap, flipY
         loc = gl.getUniformLocation(program, "face");
     }
 
-    var tolerance = (retVal.alpha == 0) ? 0 : 3;
+    var tolerance = (retVal.alpha == 0) ? 0 : 2;
     if (colorspace == 'default' || colorspace == 'none' || colorspace == 'notprovided')
         tolerance = 13; // For linux and win, the tolerance can be 8.
     for (var tt = 0; tt < targets.length; ++tt) {
