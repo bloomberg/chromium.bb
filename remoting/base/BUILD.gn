@@ -22,6 +22,7 @@ source_set("base") {
     "//third_party/libvpx",
     "//third_party/libyuv",
     "//third_party/webrtc/modules/desktop_capture:primitives",
+    "//url",
   ]
   if (is_nacl) {
     sources -= [

@@ -206,6 +206,7 @@
         '../ui/base/ui_base.gyp:ui_base',
         '../ui/gfx/gfx.gyp:gfx',
         '../ui/gfx/gfx.gyp:gfx_geometry',
+        '../url/url.gyp:url_lib',
         'proto/chromotocol.gyp:chromotocol_proto_lib',
         'remoting_resources',
       ],
