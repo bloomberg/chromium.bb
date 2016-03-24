@@ -124,4 +124,12 @@ void PaintInvalidationCapableScrollableArea::clearPreviousPaintInvalidationRects
     m_scrollCornerAndResizerPreviousPaintInvalidationRect = LayoutRect();
 }
 
+LayoutRect PaintInvalidationCapableScrollableArea::visualRectForScrollbarParts() const
+{
+    LayoutRect fullBounds(m_horizontalScrollbarPreviousPaintInvalidationRect);
+    fullBounds.unite(m_verticalScrollbarPreviousPaintInvalidationRect);
+    fullBounds.unite(m_scrollCornerAndResizerPreviousPaintInvalidationRect);
+    return fullBounds;
+}
+
 } // namespace blink

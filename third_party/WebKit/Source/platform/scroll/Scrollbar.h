@@ -160,8 +160,7 @@ public:
 
     // DisplayItemClient methods.
     String debugName() const final { return m_orientation == HorizontalScrollbar ? "HorizontalScrollbar" : "VerticalScrollbar"; }
-    // TODO(chrishtr): fix this.
-    LayoutRect visualRect() const override { return LayoutRect(); }
+    LayoutRect visualRect() const override;
 
     // Marks the scrollbar as needing to be redrawn.
     //

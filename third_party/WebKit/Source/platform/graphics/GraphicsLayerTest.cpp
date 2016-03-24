@@ -169,6 +169,7 @@ public:
         return adoptPtrWillBeNoop(new FakeScrollableArea);
     }
 
+    LayoutRect visualRectForScrollbarParts() const override { return LayoutRect(); }
     bool isActive() const override { return false; }
     int scrollSize(ScrollbarOrientation) const override { return 100; }
     bool isScrollCornerVisible() const override { return false; }

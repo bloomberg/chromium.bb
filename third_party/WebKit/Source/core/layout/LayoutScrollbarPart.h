@@ -77,6 +77,8 @@ public:
     // Must call setStyleWithWritingModeOfParent() instead.
     void setStyle(PassRefPtr<ComputedStyle>) = delete;
 
+    LayoutRect visualRect() const override;
+
 protected:
     void styleWillChange(StyleDifference, const ComputedStyle& newStyle) override;
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;

@@ -79,6 +79,7 @@ protected:
 
     void setScrollOffset(const DoublePoint& offset, ScrollType) override { m_scrollPosition = offset; }
     bool shouldUseIntegerScrollOffset() const override { return true; }
+    LayoutRect visualRectForScrollbarParts() const override { ASSERT_NOT_REACHED(); return LayoutRect(); }
     bool isActive() const override { return true; }
     bool isScrollCornerVisible() const override { return true; }
     IntRect scrollCornerRect() const override { return IntRect(); }

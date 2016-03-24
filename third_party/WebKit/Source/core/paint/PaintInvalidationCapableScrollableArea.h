@@ -34,6 +34,8 @@ public:
 
     virtual IntRect scrollCornerAndResizerRect() const { return scrollCornerRect(); }
 
+    LayoutRect visualRectForScrollbarParts() const override;
+
 private:
     virtual LayoutBox& boxForScrollControlPaintInvalidation() const = 0;
     virtual LayoutScrollbarPart* scrollCorner() const = 0;

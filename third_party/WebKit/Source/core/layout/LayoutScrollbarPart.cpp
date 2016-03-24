@@ -215,4 +215,11 @@ void LayoutScrollbarPart::setNeedsPaintInvalidation()
     toLayoutBox(parent())->getScrollableArea()->setScrollCornerNeedsPaintInvalidation();
 }
 
+LayoutRect LayoutScrollbarPart::visualRect() const
+{
+    // This returns the combined bounds of all scrollbar parts, which is sufficient for correctness
+    // but not as tight as it could be.
+    return m_scrollbar ? m_scrollbar->visualRect() : LayoutRect();
+}
+
 } // namespace blink

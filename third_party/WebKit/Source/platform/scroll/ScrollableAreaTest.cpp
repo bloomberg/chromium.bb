@@ -28,6 +28,7 @@ public:
         return adoptPtrWillBeNoop(new MockScrollableArea(maximumScrollPosition));
     }
 
+    MOCK_CONST_METHOD0(visualRectForScrollbarParts, LayoutRect());
     MOCK_CONST_METHOD0(isActive, bool());
     MOCK_CONST_METHOD1(scrollSize, int(ScrollbarOrientation));
     MOCK_CONST_METHOD0(isScrollCornerVisible, bool());
