@@ -151,14 +151,10 @@ void ManagePasswordsUIController::OnPasswordAutofilled(
     const autofill::PasswordFormMap& password_form_map,
     const GURL& origin,
     const std::vector<scoped_ptr<autofill::PasswordForm>>* federated_matches) {
-  // If we fill a form while a dialog is open, then skip the state change; we
-  // have
-  // the information we need, and the dialog will change its own state once the
-  // interaction is complete.
-  if (passwords_data_.state() !=
-          password_manager::ui::AUTO_SIGNIN_STATE &&
-      passwords_data_.state() !=
-          password_manager::ui::CREDENTIAL_REQUEST_STATE) {
+  // To change to managed state only when the managed state is more important
+  // for the user that the current state.
+  if (passwords_data_.state() == password_manager::ui::INACTIVE_STATE ||
+      passwords_data_.state() == password_manager::ui::MANAGE_STATE) {
     passwords_data_.OnPasswordAutofilled(password_form_map, origin,
                                          federated_matches);
     UpdateBubbleAndIconVisibility();

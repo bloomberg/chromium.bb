@@ -180,6 +180,10 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
 
   scoped_ptr<password_manager::PasswordFormManager> CreateFormManager();
 
+  // Tests that the state is not changed when the password is autofilled.
+  void TestNotChangingStateOnAutofill(
+      password_manager::ui::State state);
+
  private:
   password_manager::StubPasswordManagerClient client_;
   password_manager::StubPasswordManagerDriver driver_;
@@ -246,6 +250,39 @@ ManagePasswordsUIControllerTest::CreateFormManager() {
   stored_forms.push_back(new autofill::PasswordForm(test_local_form()));
   return CreateFormManagerWithBestMatches(test_local_form(),
                                           std::move(stored_forms));
+}
+
+void ManagePasswordsUIControllerTest::TestNotChangingStateOnAutofill(
+    password_manager::ui::State state) {
+  DCHECK(state == password_manager::ui::PENDING_PASSWORD_STATE ||
+         state == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
+         state == password_manager::ui::CONFIRMATION_STATE);
+
+  // Set the bubble state to |state|.
+  scoped_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManager());
+  test_form_manager->ProvisionallySave(
+      test_local_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  if (state == password_manager::ui::PENDING_PASSWORD_STATE)
+    controller()->OnPasswordSubmitted(std::move(test_form_manager));
+  else if (state == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE)
+    controller()->OnUpdatePasswordSubmitted(std::move(test_form_manager));
+  else // password_manager::ui::CONFIRMATION_STATE
+    controller()->OnAutomaticPasswordSave(std::move(test_form_manager));
+  ASSERT_EQ(state, controller()->GetState());
+
+  // Autofill happens.
+  scoped_ptr<autofill::PasswordForm> test_form(
+      new autofill::PasswordForm(test_local_form()));
+  autofill::PasswordFormMap map;
+  map.insert(
+      std::make_pair(test_local_form().username_value, std::move(test_form)));
+  controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
+
+  // State shouldn't changed.
+  EXPECT_EQ(state, controller()->GetState());
+  ExpectIconStateIs(state);
 }
 
 TEST_F(ManagePasswordsUIControllerTest, DefaultState) {
@@ -715,4 +752,17 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordUpdated) {
   ExpectIconStateIs(password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
   controller()->UpdatePassword(autofill::PasswordForm());
   ExpectIconStateIs(password_manager::ui::MANAGE_STATE);
+}
+
+TEST_F(ManagePasswordsUIControllerTest, SavePendingStatePasswordAutofilled) {
+  TestNotChangingStateOnAutofill(password_manager::ui::PENDING_PASSWORD_STATE);
+}
+
+TEST_F(ManagePasswordsUIControllerTest, UpdatePendingStatePasswordAutofilled) {
+  TestNotChangingStateOnAutofill(
+      password_manager::ui::PENDING_PASSWORD_UPDATE_STATE);
+}
+
+TEST_F(ManagePasswordsUIControllerTest, ConfirmationStatePasswordAutofilled) {
+  TestNotChangingStateOnAutofill(password_manager::ui::CONFIRMATION_STATE);
 }

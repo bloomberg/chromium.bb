@@ -265,15 +265,6 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnKey) {
   EXPECT_FALSE(IsBubbleShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, CloseOnChangedState) {
-  SetupPendingPassword();
-  EXPECT_TRUE(IsBubbleShowing());
-  // User navigated very fast and landed on another page with an autofilled
-  // password. The save password bubble should disappear.
-  SetupManagingPasswords();
-  EXPECT_FALSE(IsBubbleShowing());
-}
-
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubble) {
   // Set up the first tab with the bubble.
   SetupPendingPassword();
