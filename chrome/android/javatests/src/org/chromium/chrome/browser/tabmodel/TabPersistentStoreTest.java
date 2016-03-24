@@ -124,11 +124,11 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
     /**
      * Used when testing interactions of TabPersistentStore with real {@link TabModelImpl}s.
      */
-    private static class TestTabModelSelector extends TabModelSelectorBase
+    static class TestTabModelSelector extends TabModelSelectorBase
             implements TabModelDelegate {
+        final TabPersistentStore mTabPersistentStore;
+        final MockTabPersistentStoreObserver mTabPersistentStoreObserver;
         private final MockTabCreatorManager mTabCreatorManager;
-        private final MockTabPersistentStoreObserver mTabPersistentStoreObserver;
-        private final TabPersistentStore mTabPersistentStore;
         private final TabModelOrderController mTabModelOrderController;
 
         public TestTabModelSelector(Context context) throws Exception {
@@ -156,6 +156,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
             initialize(false, regularTabModel, incognitoTabModel);
         }
 
+        @Override
         public Tab openNewTab(
                 LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent, boolean incognito) {
             return mTabCreatorManager.getTabCreator(incognito).createNewTab(
@@ -187,7 +188,7 @@ public class TabPersistentStoreTest extends NativeLibraryTestBase {
         }
     }
 
-    private static class MockTabPersistentStoreObserver implements TabPersistentStoreObserver {
+    static class MockTabPersistentStoreObserver implements TabPersistentStoreObserver {
         public final CallbackHelper initializedCallback = new CallbackHelper();
         public final CallbackHelper detailsReadCallback = new CallbackHelper();
         public final CallbackHelper stateLoadedCallback = new CallbackHelper();
