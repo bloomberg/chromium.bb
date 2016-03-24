@@ -71180,6 +71180,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="4" label="OmniboxInteraction"/>
   <int value="5" label="VariationsSeedSignature"/>
   <int value="6" label="ResourceRequest"/>
+  <int value="7" label="SuspiciousModule"/>
 </enum>
 
 <enum name="Inconsistencies" type="int">
