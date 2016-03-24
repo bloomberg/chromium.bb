@@ -116,12 +116,16 @@ TEST(DiskCacheBasedQuicServerInfo, Update) {
   EXPECT_TRUE(state->certs.empty());
   const string server_config_a = "server_config_a";
   const string source_address_token_a = "source_address_token_a";
+  const string cert_sct_a = "cert_sct_a";
+  const string chlo_hash_a = "chlo_hash_a";
   const string server_config_sig_a = "server_config_sig_a";
   const string cert_a = "cert_a";
   const string cert_b = "cert_b";
 
   state->server_config = server_config_a;
   state->source_address_token = source_address_token_a;
+  state->cert_sct = cert_sct_a;
+  state->chlo_hash = chlo_hash_a;
   state->server_config_sig = server_config_sig_a;
   state->certs.push_back(cert_a);
   quic_server_info->Persist();
@@ -156,6 +160,8 @@ TEST(DiskCacheBasedQuicServerInfo, Update) {
   const QuicServerInfo::State& state1 = quic_server_info->state();
   EXPECT_EQ(server_config_a, state1.server_config);
   EXPECT_EQ(source_address_token_a, state1.source_address_token);
+  EXPECT_EQ(cert_sct_a, state1.cert_sct);
+  EXPECT_EQ(chlo_hash_a, state1.chlo_hash);
   EXPECT_EQ(server_config_sig_a, state1.server_config_sig);
   EXPECT_EQ(2U, state1.certs.size());
   EXPECT_EQ(cert_a, state1.certs[0]);
@@ -183,11 +189,15 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   EXPECT_TRUE(state1->certs.empty());
   const string server_config_a = "server_config_a";
   const string source_address_token_a = "source_address_token_a";
+  const string cert_sct_a = "cert_sct_a";
+  const string chlo_hash_a = "chlo_hash_a";
   const string server_config_sig_a = "server_config_sig_a";
   const string cert_a = "cert_a";
 
   state1->server_config = server_config_a;
   state1->source_address_token = source_address_token_a;
+  state1->cert_sct = cert_sct_a;
+  state1->chlo_hash = chlo_hash_a;
   state1->server_config_sig = server_config_sig_a;
   state1->certs.push_back(cert_a);
   quic_server_info1->Persist();
@@ -207,11 +217,15 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   EXPECT_TRUE(state2->certs.empty());
   const string server_config_b = "server_config_b";
   const string source_address_token_b = "source_address_token_b";
+  const string cert_sct_b = "cert_sct_b";
+  const string chlo_hash_b = "chlo_hash_b";
   const string server_config_sig_b = "server_config_sig_b";
   const string cert_b = "cert_b";
 
   state2->server_config = server_config_b;
   state2->source_address_token = source_address_token_b;
+  state2->cert_sct = cert_sct_b;
+  state2->chlo_hash = chlo_hash_b;
   state2->server_config_sig = server_config_sig_b;
   state2->certs.push_back(cert_b);
   quic_server_info2->Persist();
@@ -230,6 +244,8 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   const QuicServerInfo::State& state_a = quic_server_info->state();
   EXPECT_EQ(server_config_a, state_a.server_config);
   EXPECT_EQ(source_address_token_a, state_a.source_address_token);
+  EXPECT_EQ(cert_sct_a, state_a.cert_sct);
+  EXPECT_EQ(chlo_hash_a, state_a.chlo_hash);
   EXPECT_EQ(server_config_sig_a, state_a.server_config_sig);
   EXPECT_EQ(1U, state_a.certs.size());
   EXPECT_EQ(cert_a, state_a.certs[0]);
@@ -245,6 +261,8 @@ TEST(DiskCacheBasedQuicServerInfo, UpdateDifferentPorts) {
   const QuicServerInfo::State& state_b = quic_server_info->state();
   EXPECT_EQ(server_config_b, state_b.server_config);
   EXPECT_EQ(source_address_token_b, state_b.source_address_token);
+  EXPECT_EQ(cert_sct_b, state_b.cert_sct);
+  EXPECT_EQ(chlo_hash_b, state_b.chlo_hash);
   EXPECT_EQ(server_config_sig_b, state_b.server_config_sig);
   EXPECT_EQ(1U, state_b.certs.size());
   EXPECT_EQ(cert_b, state_b.certs[0]);
@@ -272,11 +290,15 @@ TEST(DiskCacheBasedQuicServerInfo, IsReadyToPersist) {
   EXPECT_TRUE(state->certs.empty());
   const string server_config_a = "server_config_a";
   const string source_address_token_a = "source_address_token_a";
+  const string cert_sct_a = "cert_sct_a";
+  const string chlo_hash_a = "chlo_hash_a";
   const string server_config_sig_a = "server_config_sig_a";
   const string cert_a = "cert_a";
 
   state->server_config = server_config_a;
   state->source_address_token = source_address_token_a;
+  state->cert_sct = cert_sct_a;
+  state->chlo_hash = chlo_hash_a;
   state->server_config_sig = server_config_sig_a;
   state->certs.push_back(cert_a);
   EXPECT_TRUE(quic_server_info->IsReadyToPersist());
@@ -302,6 +324,8 @@ TEST(DiskCacheBasedQuicServerInfo, IsReadyToPersist) {
   const QuicServerInfo::State& state1 = quic_server_info->state();
   EXPECT_EQ(server_config_a, state1.server_config);
   EXPECT_EQ(source_address_token_a, state1.source_address_token);
+  EXPECT_EQ(cert_sct_a, state1.cert_sct);
+  EXPECT_EQ(chlo_hash_a, state1.chlo_hash);
   EXPECT_EQ(server_config_sig_a, state1.server_config_sig);
   EXPECT_EQ(1U, state1.certs.size());
   EXPECT_EQ(cert_a, state1.certs[0]);
@@ -329,11 +353,15 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersist) {
   EXPECT_TRUE(state->certs.empty());
   const string server_config_init = "server_config_init";
   const string source_address_token_init = "source_address_token_init";
+  const string cert_sct_init = "cert_sct_init";
+  const string chlo_hash_init = "chlo_hash_init";
   const string server_config_sig_init = "server_config_sig_init";
   const string cert_init = "cert_init";
 
   state->server_config = server_config_init;
   state->source_address_token = source_address_token_init;
+  state->cert_sct = cert_sct_init;
+  state->chlo_hash = chlo_hash_init;
   state->server_config_sig = server_config_sig_init;
   state->certs.push_back(cert_init);
   EXPECT_TRUE(quic_server_info->IsReadyToPersist());
@@ -352,11 +380,15 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersist) {
   // doing another Start() and WaitForDataReady.
   const string server_config_a = "server_config_a";
   const string source_address_token_a = "source_address_token_a";
+  const string cert_sct_a = "cert_sct_a";
+  const string chlo_hash_a = "chlo_hash_a";
   const string server_config_sig_a = "server_config_sig_a";
   const string cert_a = "cert_a";
 
   state->server_config = server_config_a;
   state->source_address_token = source_address_token_a;
+  state->cert_sct = cert_sct_a;
+  state->chlo_hash = chlo_hash_a;
   state->server_config_sig = server_config_sig_a;
   state->certs.push_back(cert_a);
   EXPECT_TRUE(quic_server_info->IsReadyToPersist());
@@ -382,6 +414,8 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersist) {
   const QuicServerInfo::State& state1 = quic_server_info->state();
   EXPECT_EQ(server_config_a, state1.server_config);
   EXPECT_EQ(source_address_token_a, state1.source_address_token);
+  EXPECT_EQ(cert_sct_a, state1.cert_sct);
+  EXPECT_EQ(chlo_hash_a, state1.chlo_hash);
   EXPECT_EQ(server_config_sig_a, state1.server_config_sig);
   EXPECT_EQ(1U, state1.certs.size());
   EXPECT_EQ(cert_a, state1.certs[0]);
@@ -466,11 +500,15 @@ TEST(DiskCacheBasedQuicServerInfo, StartAndPersist) {
   EXPECT_TRUE(state->certs.empty());
   const string server_config_a = "server_config_a";
   const string source_address_token_a = "source_address_token_a";
+  const string cert_sct_a = "cert_sct_a";
+  const string chlo_hash_a = "chlo_hash_a";
   const string server_config_sig_a = "server_config_sig_a";
   const string cert_a = "cert_a";
 
   state->server_config = server_config_a;
   state->source_address_token = source_address_token_a;
+  state->cert_sct = cert_sct_a;
+  state->chlo_hash = chlo_hash_a;
   state->server_config_sig = server_config_sig_a;
   state->certs.push_back(cert_a);
   EXPECT_TRUE(quic_server_info->IsReadyToPersist());
@@ -498,6 +536,8 @@ TEST(DiskCacheBasedQuicServerInfo, StartAndPersist) {
   const QuicServerInfo::State& state1 = quic_server_info->state();
   EXPECT_EQ(server_config_a, state1.server_config);
   EXPECT_EQ(source_address_token_a, state1.source_address_token);
+  EXPECT_EQ(cert_sct_a, state1.cert_sct);
+  EXPECT_EQ(chlo_hash_a, state1.chlo_hash);
   EXPECT_EQ(server_config_sig_a, state1.server_config_sig);
   EXPECT_EQ(1U, state1.certs.size());
   EXPECT_EQ(cert_a, state1.certs[0]);
@@ -527,11 +567,15 @@ TEST(DiskCacheBasedQuicServerInfo, PersistWhenNotReadyToPersist) {
   EXPECT_TRUE(state->certs.empty());
   const string server_config_init = "server_config_init";
   const string source_address_token_init = "source_address_token_init";
+  const string cert_sct_init = "cert_sct_init";
+  const string chlo_hash_init = "chlo_hash_init";
   const string server_config_sig_init = "server_config_sig_init";
   const string cert_init = "cert_init";
 
   state->server_config = server_config_init;
   state->source_address_token = source_address_token_init;
+  state->cert_sct = cert_sct_init;
+  state->chlo_hash = chlo_hash_init;
   state->server_config_sig = server_config_sig_init;
   state->certs.push_back(cert_init);
   EXPECT_FALSE(quic_server_info->IsReadyToPersist());
@@ -556,6 +600,8 @@ TEST(DiskCacheBasedQuicServerInfo, PersistWhenNotReadyToPersist) {
   const QuicServerInfo::State& state1 = quic_server_info->state();
   EXPECT_EQ(server_config_init, state1.server_config);
   EXPECT_EQ(source_address_token_init, state1.source_address_token);
+  EXPECT_EQ(cert_sct_init, state1.cert_sct);
+  EXPECT_EQ(chlo_hash_init, state1.chlo_hash);
   EXPECT_EQ(server_config_sig_init, state1.server_config_sig);
   EXPECT_EQ(1U, state1.certs.size());
   EXPECT_EQ(cert_init, state1.certs[0]);
@@ -582,11 +628,15 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersistsWithoutWaiting) {
   EXPECT_TRUE(state->certs.empty());
   const string server_config_init = "server_config_init";
   const string source_address_token_init = "source_address_token_init";
+  const string cert_sct_init = "cert_sct_init";
+  const string chlo_hash_init = "chlo_hash_init";
   const string server_config_sig_init = "server_config_sig_init";
   const string cert_init = "cert_init";
 
   state->server_config = server_config_init;
   state->source_address_token = source_address_token_init;
+  state->cert_sct = cert_sct_init;
+  state->chlo_hash = chlo_hash_init;
   state->server_config_sig = server_config_sig_init;
   state->certs.push_back(cert_init);
   EXPECT_TRUE(quic_server_info->IsReadyToPersist());
@@ -600,11 +650,15 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersistsWithoutWaiting) {
   // doing another Start() and WaitForDataReady.
   const string server_config_a = "server_config_a";
   const string source_address_token_a = "source_address_token_a";
+  const string cert_sct_a = "cert_sct_a";
+  const string chlo_hash_a = "chlo_hash_a";
   const string server_config_sig_a = "server_config_sig_a";
   const string cert_a = "cert_a";
 
   state->server_config = server_config_a;
   state->source_address_token = source_address_token_a;
+  state->cert_sct = cert_sct_a;
+  state->chlo_hash = chlo_hash_a;
   state->server_config_sig = server_config_sig_a;
   state->certs.push_back(cert_a);
   EXPECT_FALSE(quic_server_info->IsReadyToPersist());
@@ -627,6 +681,8 @@ TEST(DiskCacheBasedQuicServerInfo, MultiplePersistsWithoutWaiting) {
   const QuicServerInfo::State& state1 = quic_server_info->state();
   EXPECT_EQ(server_config_a, state1.server_config);
   EXPECT_EQ(source_address_token_a, state1.source_address_token);
+  EXPECT_EQ(cert_sct_a, state1.cert_sct);
+  EXPECT_EQ(chlo_hash_a, state1.chlo_hash);
   EXPECT_EQ(server_config_sig_a, state1.server_config_sig);
   EXPECT_EQ(1U, state1.certs.size());
   EXPECT_EQ(cert_a, state1.certs[0]);

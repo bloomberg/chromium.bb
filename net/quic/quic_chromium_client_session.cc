@@ -915,6 +915,8 @@ void QuicChromiumClientSession::OnProofValid(
 
   state->server_config = cached.server_config();
   state->source_address_token = cached.source_address_token();
+  state->cert_sct = cached.cert_sct();
+  state->chlo_hash = cached.chlo_hash();
   state->server_config_sig = cached.signature();
   state->certs = cached.certs();
 

@@ -148,10 +148,10 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // SetProofVerifyDetails takes ownership of |details|.
     void SetProofVerifyDetails(ProofVerifyDetails* details);
 
-    // Copy the |server_config_|, |source_address_token_|, |certs_| and
-    // |server_config_sig_| from the |other|.  The remaining fields,
-    // |generation_counter_|, |proof_verify_details_|, and |scfg_| remain
-    // unchanged.
+    // Copy the |server_config_|, |source_address_token_|, |certs_|,
+    // |cert_sct_|, |chlo_hash_| and |server_config_sig_| from the |other|.  The
+    // remaining fields, |generation_counter_|, |proof_verify_details_|, and
+    // |scfg_| remain unchanged.
     void InitializeFrom(const CachedState& other);
 
     // Initializes this cached state based on the arguments provided.
@@ -159,7 +159,7 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     bool Initialize(base::StringPiece server_config,
                     base::StringPiece source_address_token,
                     const std::vector<std::string>& certs,
-                    const std::string& cert_sct,
+                    base::StringPiece cert_sct,
                     base::StringPiece chlo_hash,
                     base::StringPiece signature,
                     QuicWallTime now);

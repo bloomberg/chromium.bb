@@ -12,7 +12,10 @@ using std::string;
 
 namespace {
 
-const int kQuicCryptoConfigVersion = 1;
+// TODO(rtenneti): Delete kQuicCryptoConfigVersionNoChloHash after
+// QUIC_VERSION_31 becomes the default.
+const int kQuicCryptoConfigVersionNoChloHash = 1;
+const int kQuicCryptoConfigVersion = 2;
 
 }  // namespace
 
@@ -25,6 +28,8 @@ QuicServerInfo::State::~State() {}
 void QuicServerInfo::State::Clear() {
   server_config.clear();
   source_address_token.clear();
+  cert_sct.clear();
+  chlo_hash.clear();
   server_config_sig.clear();
   certs.clear();
 }
@@ -70,7 +75,10 @@ bool QuicServerInfo::ParseInner(const string& data) {
     return false;
   }
 
-  if (version != kQuicCryptoConfigVersion) {
+  // TODO(rtenneti): Delete kQuicCryptoConfigVersionNoChloHash after
+  // QUIC_VERSION_31 becomes the default.
+  if (!(version == kQuicCryptoConfigVersionNoChloHash ||
+        version == kQuicCryptoConfigVersion)) {
     DVLOG(1) << "Unsupported version";
     return false;
   }
@@ -82,6 +90,21 @@ bool QuicServerInfo::ParseInner(const string& data) {
   if (!iter.ReadString(&state->source_address_token)) {
     DVLOG(1) << "Malformed source_address_token";
     return false;
+  }
+  // TODO(rtenneti): Delete kQuicCryptoConfigVersionNoChloHash after
+  // QUIC_VERSION_31 becomes the default.
+  if (version == kQuicCryptoConfigVersionNoChloHash) {
+    state->cert_sct.clear();
+    state->chlo_hash.clear();
+  } else {
+    if (!iter.ReadString(&state->cert_sct)) {
+      DVLOG(1) << "Malformed cert_sct";
+      return false;
+    }
+    if (!iter.ReadString(&state->chlo_hash)) {
+      DVLOG(1) << "Malformed chlo_hash";
+      return false;
+    }
   }
   if (!iter.ReadString(&state->server_config_sig)) {
     DVLOG(1) << "Malformed server_config_sig";
@@ -119,6 +142,7 @@ string QuicServerInfo::SerializeInner() const {
   if (!p.WriteInt(kQuicCryptoConfigVersion) ||
       !p.WriteString(state_.server_config) ||
       !p.WriteString(state_.source_address_token) ||
+      !p.WriteString(state_.cert_sct) || !p.WriteString(state_.chlo_hash) ||
       !p.WriteString(state_.server_config_sig) ||
       state_.certs.size() > std::numeric_limits<uint32_t>::max() ||
       !p.WriteUInt32(state_.certs.size())) {

@@ -81,6 +81,8 @@ class NET_EXPORT_PRIVATE QuicServerInfo {
     // This class matches QuicClientCryptoConfig::CachedState.
     std::string server_config;         // A serialized handshake message.
     std::string source_address_token;  // An opaque proof of IP ownership.
+    std::string cert_sct;              // Signed timestamp of the leaf cert.
+    std::string chlo_hash;             // Hash of the CHLO message.
     std::vector<std::string> certs;    // A list of certificates in leaf-first
                                        // order.
     std::string server_config_sig;     // A signature of |server_config_|.

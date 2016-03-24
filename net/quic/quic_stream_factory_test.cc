@@ -3661,12 +3661,16 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   // Create temporary strings becasue Persist() clears string data in |state|.
   string server_config(reinterpret_cast<const char*>(&scfg), sizeof(scfg));
   string source_address_token("test_source_address_token");
+  string cert_sct("test_cert_sct");
+  string chlo_hash("test_chlo_hash");
   string signature("test_signature");
   string test_cert("test_cert");
   vector<string> certs;
   certs.push_back(test_cert);
   state->server_config = server_config;
   state->source_address_token = source_address_token;
+  state->cert_sct = cert_sct;
+  state->chlo_hash = chlo_hash;
   state->server_config_sig = signature;
   state->certs = certs;
 
@@ -3686,6 +3690,8 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
   EXPECT_TRUE(cached->GetServerConfig());
   EXPECT_EQ(server_config, cached->server_config());
   EXPECT_EQ(source_address_token, cached->source_address_token());
+  EXPECT_EQ(cert_sct, cached->cert_sct());
+  EXPECT_EQ(chlo_hash, cached->chlo_hash());
   EXPECT_EQ(signature, cached->signature());
   ASSERT_EQ(1U, cached->certs().size());
   EXPECT_EQ(test_cert, cached->certs()[0]);

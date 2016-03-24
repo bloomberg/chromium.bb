@@ -18,6 +18,8 @@ namespace test {
 namespace {
 const std::string kServerConfigA("server_config_a");
 const std::string kSourceAddressTokenA("source_address_token_a");
+const std::string kCertSCTA("cert_sct_a");
+const std::string kChloHashA("chlo_hash_a");
 const std::string kServerConfigSigA("server_config_sig_a");
 const std::string kCertA("cert_a");
 const std::string kCertB("cert_b");
@@ -39,6 +41,8 @@ class PropertiesBasedQuicServerInfoTest : public ::testing::Test {
     state->server_config = kServerConfigA;
     state->source_address_token = kSourceAddressTokenA;
     state->server_config_sig = kServerConfigSigA;
+    state->cert_sct = kCertSCTA;
+    state->chlo_hash = kChloHashA;
     state->certs.push_back(kCertA);
     EXPECT_TRUE(server_info_.IsReadyToPersist());
     server_info_.Persist();
@@ -51,6 +55,8 @@ class PropertiesBasedQuicServerInfoTest : public ::testing::Test {
   void VerifyInitialData(const QuicServerInfo::State& state) {
     EXPECT_EQ(kServerConfigA, state.server_config);
     EXPECT_EQ(kSourceAddressTokenA, state.source_address_token);
+    EXPECT_EQ(kCertSCTA, state.cert_sct);
+    EXPECT_EQ(kChloHashA, state.chlo_hash);
     EXPECT_EQ(kServerConfigSigA, state.server_config_sig);
     EXPECT_EQ(kCertA, state.certs[0]);
   }

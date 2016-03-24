@@ -253,7 +253,7 @@ bool QuicCryptoClientConfig::CachedState::Initialize(
     StringPiece server_config,
     StringPiece source_address_token,
     const vector<string>& certs,
-    const string& cert_sct,
+    StringPiece cert_sct,
     StringPiece chlo_hash,
     StringPiece signature,
     QuicWallTime now) {
@@ -272,11 +272,11 @@ bool QuicCryptoClientConfig::CachedState::Initialize(
     return false;
   }
 
-  chlo_hash.CopyToString(&chlo_hash_);
   signature.CopyToString(&server_config_sig_);
   source_address_token.CopyToString(&source_address_token_);
+  cert_sct.CopyToString(&cert_sct_);
+  chlo_hash.CopyToString(&chlo_hash_);
   certs_ = certs;
-  cert_sct_ = cert_sct;
   return true;
 }
 

@@ -1669,7 +1669,8 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
 
   cached->Initialize(server_info->state().server_config,
                      server_info->state().source_address_token,
-                     server_info->state().certs, "", "",
+                     server_info->state().certs, server_info->state().cert_sct,
+                     server_info->state().chlo_hash,
                      server_info->state().server_config_sig, clock_->WallNow());
 }
 
