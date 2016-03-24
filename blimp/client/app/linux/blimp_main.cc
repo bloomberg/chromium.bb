@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <X11/Xlib.h>
-
 #include <string>
 
 #include "base/at_exit.h"
@@ -16,6 +14,7 @@
 #include "blimp/client/feature/navigation_feature.h"
 #include "blimp/client/feature/tab_control_feature.h"
 #include "blimp/client/session/assignment_source.h"
+#include "ui/gfx/x/x11_connection.h"
 
 namespace {
 const char kDummyLoginToken[] = "";
@@ -27,7 +26,7 @@ int main(int argc, const char**argv) {
   base::AtExitManager at_exit;
   base::CommandLine::Init(argc, argv);
 
-  XInitThreads();
+  CHECK(gfx::InitializeThreadedX11());
 
   blimp::client::InitializeLogging();
   blimp::client::InitializeMainMessageLoop();
