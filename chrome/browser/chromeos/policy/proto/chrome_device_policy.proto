@@ -663,7 +663,7 @@ message LoginAuthenticationBehaviorProto {
     GAIA = 0;
     SAML_INTERSTITIAL = 1;
   };
-  
+
   optional LoginBehavior login_authentication_behavior = 1 [default = GAIA];
 }
 
