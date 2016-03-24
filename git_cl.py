@@ -909,7 +909,7 @@ class Changelist(object):
 
     # No issue is set for this branch, so decide based on repo-wide settings.
     return self._load_codereview_impl(
-          codereview='gerrit' if settings.GetIsGerrit() else 'rietveld')
+        codereview='gerrit' if settings.GetIsGerrit() else 'rietveld')
 
 
   def GetCCList(self):
