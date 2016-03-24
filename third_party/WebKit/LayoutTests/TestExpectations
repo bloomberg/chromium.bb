@@ -1356,10 +1356,6 @@ crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scro
 
 crbug.com/591825 [ Mac10.11 Debug ] fast/text/selection-multiple-runs.html [ Failure ]
 
-crbug.com/594230 [ Linux Debug ] fast/files/workers/worker-read-blob-async-crash.html [ Crash Pass ]
-crbug.com/594230 [ Linux Debug ] http/tests/fetch/serviceworker/fetch.html [ Crash Pass ]
-crbug.com/594230 [ Linux Debug ] http/tests/fetch/serviceworker/fetch-base-https-other-https.html [ Crash Pass ]
-
 crbug.com/596703 [ Linux ] http/tests/serviceworker/fetch-event-network-error.html [ Crash ]
 
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/layer-creation/compositing-reason-removed.html [ Failure ]
