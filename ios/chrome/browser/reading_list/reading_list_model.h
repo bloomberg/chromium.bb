@@ -99,7 +99,7 @@ class ReadingListModel {
 
   // Tells model that batch updates have completed. Called from
   // ReadingListBatchUpdateToken dtor.
-  void EndBatchUpdates();
+  virtual void EndBatchUpdates();
 
  private:
   unsigned int current_batch_updates_count_;

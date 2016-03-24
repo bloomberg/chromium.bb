@@ -3,11 +3,24 @@
 // found in the LICENSE file.
 
 #include "ios/chrome/browser/reading_list/reading_list_model_memory.h"
+#include "ios/chrome/browser/reading_list/reading_list_model_storage.h"
 
 #include "url/gurl.h"
 
 ReadingListModelMemory::ReadingListModelMemory()
-    : hasUnseen_(false), loaded_(true) {}
+    : ReadingListModelMemory(NULL) {}
+
+ReadingListModelMemory::ReadingListModelMemory(
+    std::unique_ptr<ReadingListModelStorage> storage)
+    : hasUnseen_(false) {
+  if (storage) {
+    storageLayer_ = std::move(storage);
+    read_ = storageLayer_->LoadPersistentReadList();
+    unread_ = storageLayer_->LoadPersistentUnreadList();
+    hasUnseen_ = storageLayer_->LoadPersistentHasUnseen();
+  }
+  loaded_ = true;
+}
 ReadingListModelMemory::~ReadingListModelMemory() {}
 
 void ReadingListModelMemory::Shutdown() {
@@ -38,6 +51,9 @@ bool ReadingListModelMemory::HasUnseenEntries() const {
 void ReadingListModelMemory::ResetUnseenEntries() {
   DCHECK(loaded());
   hasUnseen_ = false;
+  if (storageLayer_ && !IsPerformingBatchUpdates()) {
+    storageLayer_->SavePersistentHasUnseen(false);
+  }
 }
 
 // Returns a specific entry.
@@ -62,6 +78,9 @@ void ReadingListModelMemory::RemoveEntryByUrl(const GURL& url) {
                       ReadingListWillRemoveUnreadEntry(
                           this, std::distance(unread_.begin(), result)));
     unread_.erase(result);
+    if (storageLayer_ && !IsPerformingBatchUpdates()) {
+      storageLayer_->SavePersistentUnreadList(unread_);
+    }
     FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
                       ReadingListDidApplyChanges(this));
     return;
@@ -73,6 +92,9 @@ void ReadingListModelMemory::RemoveEntryByUrl(const GURL& url) {
                       ReadingListWillRemoveReadEntry(
                           this, std::distance(read_.begin(), result)));
     read_.erase(result);
+    if (storageLayer_ && !IsPerformingBatchUpdates()) {
+      storageLayer_->SavePersistentReadList(read_);
+    }
     FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
                       ReadingListDidApplyChanges(this));
     return;
@@ -89,6 +111,10 @@ const ReadingListEntry& ReadingListModelMemory::AddEntry(
                     ReadingListWillAddUnreadEntry(this, entry));
   unread_.insert(unread_.begin(), entry);
   hasUnseen_ = true;
+  if (storageLayer_ && !IsPerformingBatchUpdates()) {
+    storageLayer_->SavePersistentUnreadList(unread_);
+    storageLayer_->SavePersistentHasUnseen(true);
+  }
   FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
                     ReadingListDidApplyChanges(this));
 
@@ -111,7 +137,21 @@ void ReadingListModelMemory::MarkReadByURL(const GURL& url) {
 
   read_.insert(read_.begin(), *result);
   unread_.erase(result);
+  if (storageLayer_ && !IsPerformingBatchUpdates()) {
+    storageLayer_->SavePersistentUnreadList(unread_);
+    storageLayer_->SavePersistentReadList(read_);
+  }
 
   FOR_EACH_OBSERVER(ReadingListModelObserver, observers_,
                     ReadingListDidApplyChanges(this));
+}
+
+void ReadingListModelMemory::EndBatchUpdates() {
+  ReadingListModel::EndBatchUpdates();
+  if (IsPerformingBatchUpdates() || !storageLayer_) {
+    return;
+  }
+  storageLayer_->SavePersistentUnreadList(unread_);
+  storageLayer_->SavePersistentReadList(read_);
+  storageLayer_->SavePersistentHasUnseen(hasUnseen_);
 }
