@@ -197,11 +197,15 @@ void InsertNodesForRasterTask(TaskGraph* graph,
                        return node.task == decode_task;
                      });
 
-    // Tasks are inserted in priority order, so existing decode tasks should
-    // already be FOREGROUND if this is a high priority task.
-    DCHECK(decode_it == graph->nodes.end() || !high_priority ||
-           static_cast<uint16_t>(TASK_CATEGORY_FOREGROUND) ==
-               decode_it->category);
+    // In rare circumstances, a low priority task may come in before a high
+    // priority task. In these cases, upgrade any low-priority dependencies of
+    // the current task.
+    // TODO(ericrk): Task iterators should be updated to avoid this.
+    // crbug.com/594851
+    if (decode_it != graph->nodes.end() && high_priority &&
+        decode_it->category != decode_task_category) {
+      decode_it->category = decode_task_category;
+    }
 
     if (decode_it == graph->nodes.end()) {
       InsertNodeForTask(graph, decode_task, decode_task_category, priority, 0u);
@@ -772,8 +776,12 @@ void TileManager::ScheduleTasks(
     all_count++;
     graph_.edges.push_back(TaskGraph::Edge(task, all_done_task.get()));
 
+    // A tile is high priority if it is either blocking future compositing
+    // (required for draw or required for activation), or if it has a priority
+    // bin of NOW for another reason (low resolution tiles).
     bool high_priority =
-        tile->required_for_draw() || tile->required_for_activation();
+        tile->required_for_draw() || tile->required_for_activation() ||
+        prioritized_tile.priority().priority_bin == TilePriority::NOW;
     InsertNodesForRasterTask(&graph_, task, task->dependencies(), priority++,
                              use_gpu_rasterization_, high_priority);
   }
