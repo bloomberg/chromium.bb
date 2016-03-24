@@ -338,6 +338,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   bool intercepted_page_beforeunload_;
   base::Closure load_completed_callback_;
   base::Closure close_callback_;
+  bool ready_for_test_;
   base::Closure ready_for_test_callback_;
 
   base::TimeTicks inspect_element_start_time_;

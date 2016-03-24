@@ -137,6 +137,12 @@ InspectorTest.sendRawCommand = function(command, handler)
     return this._requestId;
 }
 
+InspectorTest.readyForTest = function()
+{
+    var embedderMessage = { "id": ++this._embedderRequestId, "method": "readyForTest" };
+    DevToolsHost.sendMessageToEmbedder(JSON.stringify(embedderMessage));
+}
+
 /**
  * @param {string|!Object} messageOrObject
  */
@@ -159,6 +165,20 @@ DevToolsAPI.dispatchMessage = function(messageOrObject)
         }
     } catch(e) {
         InspectorTest.log("Exception when dispatching message: " + e + "\n" + e.stack + "\n message = " + JSON.stringify(messageObject, null, 2));
+        InspectorTest.completeTest();
+    }
+}
+
+/**
+ * @param {number} callId
+ * @param {string} script
+ */
+DevToolsAPI.evaluateForTestInFrontend = function(callId, script)
+{
+    try {
+        eval(script);
+    } catch (e) {
+        InspectorTest.log("FAIL: exception in evaluateForTestInFrontend: " + e);
         InspectorTest.completeTest();
     }
 }
@@ -380,22 +400,7 @@ InspectorTest.didInvokePageFunctionPromise = function(callId, value, didResolve)
     callback(value);
 }
 
-InspectorTest.eventHandler["Inspector.evaluateForTestInFrontend"] = function(message)
-{
-    try {
-        eval(message.params.script);
-    } catch (e) {
-        InspectorTest.log("FAIL: exception in evaluateForTestInFrontend: " + e);
-        InspectorTest.completeTest();
-    }
-};
-
-function enableInspectorAgent()
-{
-    InspectorTest.sendCommand("Inspector.enable", { });
-}
-
-window.addEventListener("load", enableInspectorAgent, false);
+window.addEventListener("load", InspectorTest.readyForTest.bind(InspectorTest), false);
 
 </script>
 </head>

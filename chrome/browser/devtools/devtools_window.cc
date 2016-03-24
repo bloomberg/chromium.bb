@@ -716,7 +716,8 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
       // Passing "dockSide=undocked" parameter ensures proper UI.
       life_stage_(can_dock ? kNotLoaded : kIsDockedSet),
       action_on_load_(DevToolsToggleAction::NoOp()),
-      intercepted_page_beforeunload_(false) {
+      intercepted_page_beforeunload_(false),
+      ready_for_test_(false) {
   // Set up delegate, so we get fully-functional window immediately.
   // It will not appear in UI though until |life_stage_ == kLoadCompleted|.
   main_web_contents_->SetDelegate(this);
@@ -1175,6 +1176,7 @@ void DevToolsWindow::OnLoadCompleted() {
 }
 
 void DevToolsWindow::ReadyForTest() {
+  ready_for_test_ = true;
   if (!ready_for_test_callback_.is_null()) {
     ready_for_test_callback_.Run();
     ready_for_test_callback_ = base::Closure();

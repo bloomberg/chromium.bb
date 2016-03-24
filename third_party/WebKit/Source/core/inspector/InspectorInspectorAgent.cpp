@@ -57,33 +57,11 @@ InspectorInspectorAgent::~InspectorInspectorAgent()
 void InspectorInspectorAgent::enable(ErrorString*)
 {
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, true);
-    for (Vector<std::pair<long, String>>::iterator it = m_pendingEvaluateTestCommands.begin(); frontend() && it != m_pendingEvaluateTestCommands.end(); ++it)
-        frontend()->evaluateForTestInFrontend(static_cast<int>((*it).first), (*it).second);
-    m_pendingEvaluateTestCommands.clear();
 }
 
 void InspectorInspectorAgent::disable(ErrorString*)
 {
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, false);
-    m_pendingEvaluateTestCommands.clear();
-}
-
-void InspectorInspectorAgent::restore()
-{
-    if (m_state->booleanProperty(InspectorAgentState::inspectorAgentEnabled, false)) {
-        ErrorString error;
-        enable(&error);
-    }
-}
-
-void InspectorInspectorAgent::evaluateForTestInFrontend(long callId, const String& script)
-{
-    if (m_state->booleanProperty(InspectorAgentState::inspectorAgentEnabled, false)) {
-        frontend()->evaluateForTestInFrontend(static_cast<int>(callId), script);
-        frontend()->flush();
-    } else {
-        m_pendingEvaluateTestCommands.append(std::pair<long, String>(callId, script));
-    }
 }
 
 void InspectorInspectorAgent::inspect(PassOwnPtr<protocol::Runtime::RemoteObject> objectToInspect, PassOwnPtr<protocol::DictionaryValue> hints)

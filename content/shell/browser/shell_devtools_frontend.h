@@ -55,14 +55,13 @@ class ShellDevToolsFrontend : public WebContentsObserver,
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
                                const std::string& message) override;
   base::DictionaryValue* preferences() { return &preferences_; }
+  virtual void HandleMessageFromDevToolsFrontend(const std::string& message);
 
  private:
   // WebContentsObserver overrides
   void RenderViewCreated(RenderViewHost* render_view_host) override;
   void DocumentAvailableInMainFrame() override;
   void WebContentsDestroyed() override;
-
-  void HandleMessageFromDevToolsFrontend(const std::string& message);
 
   // net::URLFetcherDelegate overrides.
   void OnURLFetchComplete(const net::URLFetcher* source) override;

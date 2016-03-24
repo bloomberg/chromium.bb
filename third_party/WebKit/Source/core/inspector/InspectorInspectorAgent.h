@@ -37,8 +37,6 @@
 
 namespace blink {
 
-class LocalFrame;
-
 namespace protocol {
 class DictionaryValue;
 }
@@ -55,20 +53,12 @@ public:
 
     // Inspector front-end API.
     void enable(ErrorString*) override;
-
-    // InspectorAgent overrides.
     void disable(ErrorString*) override;
-    void restore() override;
-
-    // Generic code called from custom implementations.
-    void evaluateForTestInFrontend(long testCallId, const String& script);
 
     void inspect(PassOwnPtr<protocol::Runtime::RemoteObject> objectToInspect, PassOwnPtr<protocol::DictionaryValue> hints);
 
 private:
     InspectorInspectorAgent();
-
-    Vector<std::pair<long, String>> m_pendingEvaluateTestCommands;
 };
 
 } // namespace blink

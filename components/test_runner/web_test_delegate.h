@@ -136,7 +136,7 @@ class WebTestDelegate {
   virtual void CloseDevTools() = 0;
 
   // Evaluate the given script in the DevTools agent.
-  virtual void EvaluateInWebInspector(long call_id,
+  virtual void EvaluateInWebInspector(int call_id,
                                       const std::string& script) = 0;
 
   // Evaluate the given script in the inspector overlay page.
