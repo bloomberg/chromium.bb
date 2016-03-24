@@ -206,7 +206,7 @@ void SaveFileManager::SaveFinished(SaveItemId save_item_id,
             << " is_success = " << is_success;
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  int64_t bytes_so_far;
+  int64_t bytes_so_far = 0;
   SaveFile* save_file = LookupSaveFile(save_item_id);
   if (save_file != nullptr) {
     DCHECK(save_file->InProgress());
@@ -220,8 +220,6 @@ void SaveFileManager::SaveFinished(SaveItemId save_item_id,
     // ResourceHandler failed before it got a chance to parse headers
     // and metadata.
     DCHECK(!is_success);
-
-    bytes_so_far = 0;
   }
 
   BrowserThread::PostTask(
