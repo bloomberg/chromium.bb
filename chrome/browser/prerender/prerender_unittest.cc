@@ -1066,19 +1066,30 @@ TEST_F(PrerenderTest, OmniboxNotAllowedWhenDisabled) {
       GURL("http://www.example.com"), NULL, gfx::Size()));
 }
 
-TEST_F(PrerenderTest, LinkRelNotAllowedWhenDisabled) {
+TEST_F(PrerenderTest, LinkRelStillAllowedWhenDisabled) {
   DisablePrerender();
-  EXPECT_FALSE(AddSimplePrerender(
-      GURL("http://www.example.com")));
+  GURL url("http://www.google.com/");
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_USED);
+  EXPECT_TRUE(AddSimplePrerender(url));
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+  ASSERT_EQ(prerender_contents, prerender_manager()->FindAndUseEntry(url));
 }
 
-TEST_F(PrerenderTest, PrerenderNotAllowedOnCellular) {
+TEST_F(PrerenderTest, LinkRelAllowedOnCellular) {
   EnablePrerender();
+  GURL url("http://www.example.com");
   scoped_ptr<net::NetworkChangeNotifier> mock(
       new MockNetworkChangeNotifier4G);
   EXPECT_TRUE(net::NetworkChangeNotifier::IsConnectionCellular(
       net::NetworkChangeNotifier::GetConnectionType()));
-  EXPECT_FALSE(AddSimplePrerender(GURL("http://www.example.com")));
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN, FINAL_STATUS_USED);
+  EXPECT_TRUE(AddSimplePrerender(url));
+  EXPECT_TRUE(prerender_contents->prerendering_has_started());
+  ASSERT_EQ(prerender_contents, prerender_manager()->FindAndUseEntry(url));
 }
 
 TEST_F(PrerenderTest, PrerenderNotAllowedOnCellularWithExternalOrigin) {

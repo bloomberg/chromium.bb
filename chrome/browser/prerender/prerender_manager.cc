@@ -1315,11 +1315,21 @@ NetworkPredictionStatus PrerenderManager::GetPredictionStatus() const {
 NetworkPredictionStatus PrerenderManager::GetPredictionStatusForOrigin(
     Origin origin) const {
   DCHECK(CalledOnValidThread());
+
+  // LINK rel=prerender origins ignore the network state and the privacy
+  // settings.
+  if (origin == ORIGIN_LINK_REL_PRERENDER_SAMEDOMAIN ||
+      origin == ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN) {
+    return NetworkPredictionStatus::ENABLED;
+  }
+
+  // Prerendering forced for cellular networks still prevents navigation with
+  // the DISABLED_ALWAYS selected via privacy settings.
   NetworkPredictionStatus prediction_status =
       CanPrefetchAndPrerenderUI(profile_->GetPrefs());
-  if (prediction_status == NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK
-      && origin == ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR) {
-    prediction_status = NetworkPredictionStatus::ENABLED;
+  if (origin == ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR &&
+      prediction_status == NetworkPredictionStatus::DISABLED_DUE_TO_NETWORK) {
+    return NetworkPredictionStatus::ENABLED;
   }
   return prediction_status;
 }
