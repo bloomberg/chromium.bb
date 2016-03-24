@@ -37,10 +37,8 @@ _poly1305_init:
 	andq	8(%rsi),%rcx
 	movq	%rax,24(%rdi)
 	movq	%rcx,32(%rdi)
-
 	movq	%r10,0(%rdx)
 	movq	%r11,8(%rdx)
-
 	movl	$1,%eax
 L$no_key:
 	.byte	0xf3,0xc3

@@ -47,10 +47,8 @@ $L$SEH_begin_poly1305_init:
 	and	rcx,QWORD[8+rsi]
 	mov	QWORD[24+rdi],rax
 	mov	QWORD[32+rdi],rcx
-
 	mov	QWORD[rdx],r10
 	mov	QWORD[8+rdx],r11
-
 	mov	eax,1
 $L$no_key:
 	mov	rdi,QWORD[8+rsp]	;WIN64 epilogue

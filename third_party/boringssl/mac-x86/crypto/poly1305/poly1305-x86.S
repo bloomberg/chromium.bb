@@ -420,12 +420,12 @@ L005square:
 	movdqa	%xmm6,%xmm1
 	psrlq	$26,%xmm6
 	paddd	%xmm5,%xmm0
-	pand	%xmm7,%xmm1
-	paddq	%xmm2,%xmm6
 	psllq	$2,%xmm5
+	paddq	%xmm2,%xmm6
+	paddd	%xmm0,%xmm5
+	pand	%xmm7,%xmm1
 	movdqa	%xmm6,%xmm2
 	psrlq	$26,%xmm6
-	paddd	%xmm0,%xmm5
 	pand	%xmm7,%xmm2
 	paddd	%xmm3,%xmm6
 	movdqa	%xmm5,%xmm0
@@ -656,12 +656,12 @@ L011base2_32:
 	movdqa	%xmm6,%xmm1
 	psrlq	$26,%xmm6
 	paddd	%xmm5,%xmm0
-	pand	%xmm7,%xmm1
-	paddq	%xmm2,%xmm6
 	psllq	$2,%xmm5
+	paddq	%xmm2,%xmm6
+	paddd	%xmm0,%xmm5
+	pand	%xmm7,%xmm1
 	movdqa	%xmm6,%xmm2
 	psrlq	$26,%xmm6
-	paddd	%xmm0,%xmm5
 	pand	%xmm7,%xmm2
 	paddd	%xmm3,%xmm6
 	movdqa	%xmm5,%xmm0
@@ -952,12 +952,12 @@ L015loop:
 	movdqa	%xmm6,%xmm1
 	psrlq	$26,%xmm6
 	paddd	%xmm5,%xmm0
-	pand	%xmm7,%xmm1
-	paddq	%xmm2,%xmm6
 	psllq	$2,%xmm5
+	paddq	%xmm2,%xmm6
+	paddd	%xmm0,%xmm5
+	pand	%xmm7,%xmm1
 	movdqa	%xmm6,%xmm2
 	psrlq	$26,%xmm6
-	paddd	%xmm0,%xmm5
 	pand	%xmm7,%xmm2
 	paddd	%xmm3,%xmm6
 	movdqa	%xmm5,%xmm0
@@ -1215,12 +1215,12 @@ L017short_tail:
 	movdqa	%xmm6,%xmm1
 	psrlq	$26,%xmm6
 	paddd	%xmm5,%xmm0
-	pand	%xmm7,%xmm1
-	paddq	%xmm2,%xmm6
 	psllq	$2,%xmm5
+	paddq	%xmm2,%xmm6
+	paddq	%xmm0,%xmm5
+	pand	%xmm7,%xmm1
 	movdqa	%xmm6,%xmm2
 	psrlq	$26,%xmm6
-	paddd	%xmm0,%xmm5
 	pand	%xmm7,%xmm2
 	paddd	%xmm3,%xmm6
 	movdqa	%xmm5,%xmm0

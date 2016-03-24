@@ -427,12 +427,12 @@ _poly1305_init_sse2:
 	movdqa	%xmm6,%xmm1
 	psrlq	$26,%xmm6
 	paddd	%xmm5,%xmm0
-	pand	%xmm7,%xmm1
-	paddq	%xmm2,%xmm6
 	psllq	$2,%xmm5
+	paddq	%xmm2,%xmm6
+	paddd	%xmm0,%xmm5
+	pand	%xmm7,%xmm1
 	movdqa	%xmm6,%xmm2
 	psrlq	$26,%xmm6
-	paddd	%xmm0,%xmm5
 	pand	%xmm7,%xmm2
 	paddd	%xmm3,%xmm6
 	movdqa	%xmm5,%xmm0
@@ -665,12 +665,12 @@ _poly1305_blocks_sse2:
 	movdqa	%xmm6,%xmm1
 	psrlq	$26,%xmm6
 	paddd	%xmm5,%xmm0
-	pand	%xmm7,%xmm1
-	paddq	%xmm2,%xmm6
 	psllq	$2,%xmm5
+	paddq	%xmm2,%xmm6
+	paddd	%xmm0,%xmm5
+	pand	%xmm7,%xmm1
 	movdqa	%xmm6,%xmm2
 	psrlq	$26,%xmm6
-	paddd	%xmm0,%xmm5
 	pand	%xmm7,%xmm2
 	paddd	%xmm3,%xmm6
 	movdqa	%xmm5,%xmm0
@@ -961,12 +961,12 @@ _poly1305_blocks_sse2:
 	movdqa	%xmm6,%xmm1
 	psrlq	$26,%xmm6
 	paddd	%xmm5,%xmm0
-	pand	%xmm7,%xmm1
-	paddq	%xmm2,%xmm6
 	psllq	$2,%xmm5
+	paddq	%xmm2,%xmm6
+	paddd	%xmm0,%xmm5
+	pand	%xmm7,%xmm1
 	movdqa	%xmm6,%xmm2
 	psrlq	$26,%xmm6
-	paddd	%xmm0,%xmm5
 	pand	%xmm7,%xmm2
 	paddd	%xmm3,%xmm6
 	movdqa	%xmm5,%xmm0
@@ -1224,12 +1224,12 @@ _poly1305_blocks_sse2:
 	movdqa	%xmm6,%xmm1
 	psrlq	$26,%xmm6
 	paddd	%xmm5,%xmm0
-	pand	%xmm7,%xmm1
-	paddq	%xmm2,%xmm6
 	psllq	$2,%xmm5
+	paddq	%xmm2,%xmm6
+	paddq	%xmm0,%xmm5
+	pand	%xmm7,%xmm1
 	movdqa	%xmm6,%xmm2
 	psrlq	$26,%xmm6
-	paddd	%xmm0,%xmm5
 	pand	%xmm7,%xmm2
 	paddd	%xmm3,%xmm6
 	movdqa	%xmm5,%xmm0

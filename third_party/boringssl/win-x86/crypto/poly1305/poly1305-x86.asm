@@ -430,12 +430,12 @@ L$005square:
 	movdqa	xmm1,xmm6
 	psrlq	xmm6,26
 	paddd	xmm0,xmm5
-	pand	xmm1,xmm7
-	paddq	xmm6,xmm2
 	psllq	xmm5,2
+	paddq	xmm6,xmm2
+	paddd	xmm5,xmm0
+	pand	xmm1,xmm7
 	movdqa	xmm2,xmm6
 	psrlq	xmm6,26
-	paddd	xmm5,xmm0
 	pand	xmm2,xmm7
 	paddd	xmm6,xmm3
 	movdqa	xmm0,xmm5
@@ -665,12 +665,12 @@ L$011base2_32:
 	movdqa	xmm1,xmm6
 	psrlq	xmm6,26
 	paddd	xmm0,xmm5
-	pand	xmm1,xmm7
-	paddq	xmm6,xmm2
 	psllq	xmm5,2
+	paddq	xmm6,xmm2
+	paddd	xmm5,xmm0
+	pand	xmm1,xmm7
 	movdqa	xmm2,xmm6
 	psrlq	xmm6,26
-	paddd	xmm5,xmm0
 	pand	xmm2,xmm7
 	paddd	xmm6,xmm3
 	movdqa	xmm0,xmm5
@@ -961,12 +961,12 @@ L$015loop:
 	movdqa	xmm1,xmm6
 	psrlq	xmm6,26
 	paddd	xmm0,xmm5
-	pand	xmm1,xmm7
-	paddq	xmm6,xmm2
 	psllq	xmm5,2
+	paddq	xmm6,xmm2
+	paddd	xmm5,xmm0
+	pand	xmm1,xmm7
 	movdqa	xmm2,xmm6
 	psrlq	xmm6,26
-	paddd	xmm5,xmm0
 	pand	xmm2,xmm7
 	paddd	xmm6,xmm3
 	movdqa	xmm0,xmm5
@@ -1224,12 +1224,12 @@ L$017short_tail:
 	movdqa	xmm1,xmm6
 	psrlq	xmm6,26
 	paddd	xmm0,xmm5
-	pand	xmm1,xmm7
-	paddq	xmm6,xmm2
 	psllq	xmm5,2
+	paddq	xmm6,xmm2
+	paddq	xmm5,xmm0
+	pand	xmm1,xmm7
 	movdqa	xmm2,xmm6
 	psrlq	xmm6,26
-	paddd	xmm5,xmm0
 	pand	xmm2,xmm7
 	paddd	xmm6,xmm3
 	movdqa	xmm0,xmm5
