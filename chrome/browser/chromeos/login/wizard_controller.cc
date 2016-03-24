@@ -607,9 +607,9 @@ void WizardController::OnEulaAccepted() {
       usage_statistics_reporting_,
       base::Bind(&WizardController::InitiateMetricsReportingChangeCallback,
                  weak_factory_.GetWeakPtr()));
+  PerformPostEulaActions();
 
   if (skip_update_enroll_after_eula_) {
-    PerformPostEulaActions();
     ShowAutoEnrollmentCheckScreen();
   } else {
     InitiateOOBEUpdate();
@@ -770,8 +770,13 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
 }
 
 void WizardController::InitiateOOBEUpdate() {
+  if (IsRemoraRequisition()) {
+    VLOG(1) << "Skip OOBE Update for remora.";
+    OnUpdateCompleted();
+    return;
+  }
+
   VLOG(1) << "InitiateOOBEUpdate";
-  PerformPostEulaActions();
   SetCurrentScreenSmooth(GetScreen(kUpdateScreenName), true);
   UpdateScreen::Get(this)->StartNetworkCheck();
 }
