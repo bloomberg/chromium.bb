@@ -479,7 +479,7 @@ def GetChangeReview(host, change, revision=None):
 def AbandonChange(host, change, msg=''):
   """Abandon a gerrit change."""
   path = 'changes/%s/abandon' % change
-  body = {'message': msg} if msg else None
+  body = {'message': msg} if msg else {}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
   return ReadHttpJsonResponse(conn, ignore_404=False)
 
@@ -487,7 +487,7 @@ def AbandonChange(host, change, msg=''):
 def RestoreChange(host, change, msg=''):
   """Restore a previously abandoned change."""
   path = 'changes/%s/restore' % change
-  body = {'message': msg} if msg else None
+  body = {'message': msg} if msg else {}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
   return ReadHttpJsonResponse(conn, ignore_404=False)
 
