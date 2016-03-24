@@ -69,7 +69,6 @@ source_set("app") {
   deps = [
     ":app_ui",
     ":common",
-    ":crash",
     ":session",
     "//base",
     "//blimp/common/proto",
@@ -104,23 +103,6 @@ source_set("app_ui") {
     "//ui/platform_window",
     "//ui/platform_window",
     "//ui/platform_window/stub/",
-  ]
-}
-
-source_set("crash") {
-  sources = [
-    "app/blimp_engine_crash_keys.cc",
-    "app/blimp_engine_crash_keys.h",
-    "app/blimp_engine_crash_reporter_client.cc",
-    "app/blimp_engine_crash_reporter_client.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/crash/content/app:app_breakpad_mac_win_to_be_deleted",
-    "//components/crash/core/common",
-    "//components/version_info",
-    "//content/public/common",
   ]
 }
 

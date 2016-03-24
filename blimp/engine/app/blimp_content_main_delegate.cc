@@ -4,32 +4,17 @@
 
 #include "blimp/engine/app/blimp_content_main_delegate.h"
 
-#include <string>
-
-#include "base/base_switches.h"
-#include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "blimp/common/compositor/blimp_image_serialization_processor.h"
 #include "blimp/engine/app/blimp_content_browser_client.h"
 #include "blimp/engine/app/blimp_content_renderer_client.h"
-#include "blimp/engine/app/blimp_engine_crash_reporter_client.h"
-#include "components/crash/content/app/breakpad_linux.h"
-#include "components/crash/content/app/crash_reporter_client.h"
-#include "content/public/common/content_switches.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace blimp {
 namespace engine {
-
-// Blimp engine crash client. This should be available globally and should be
-// long lived.
-base::LazyInstance<BlimpEngineCrashReporterClient>
-    g_blimp_engine_crash_reporter_client = LAZY_INSTANCE_INITIALIZER;
-
 namespace {
 void InitLogging() {
   logging::LoggingSettings settings;
@@ -58,16 +43,6 @@ bool BlimpContentMainDelegate::BasicStartupComplete(int* exit_code) {
 }
 
 void BlimpContentMainDelegate::PreSandboxStartup() {
-  // Enable crash reporting for all processes, and initialize the crash
-  // reporter client.
-  crash_reporter::SetCrashReporterClient(
-      g_blimp_engine_crash_reporter_client.Pointer());
-  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  const std::string process_type =
-      cmd->GetSwitchValueASCII(::switches::kProcessType);
-  cmd->AppendSwitch(::switches::kEnableCrashReporter);
-  breakpad::InitCrashReporter(process_type);
-
   InitializeResourceBundle();
 }
 
