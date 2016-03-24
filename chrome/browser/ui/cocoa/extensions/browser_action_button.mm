@@ -169,14 +169,17 @@ void ToolbarActionViewDelegateBridge::DoShowContextMenu() {
   // to avoid the magic '5' here, but since it's built into Cocoa, it's not too
   // hopeful.
   NSPoint menuPoint = NSMakePoint(0, NSHeight([owner_ bounds]) + 5);
+  base::WeakPtr<ToolbarActionViewDelegateBridge> weak_this;
   [[owner_ cell] setHighlighted:YES];
   [[owner_ menu] popUpMenuPositioningItem:nil
                                atLocation:menuPoint
                                    inView:owner_];
+  // Since menus run in a blocking way, it's possible that the extension was
+  // unloaded since this point.
+  if (!weak_this)
+    return;
   [[owner_ cell] setHighlighted:NO];
   contextMenuRunning_ = false;
-  // When the menu closed, the ViewController should have popped itself back in.
-  DCHECK(![controller_ toolbarActionsBar]->popped_out_action());
 }
 
 @implementation BrowserActionButton
