@@ -15,7 +15,7 @@
 namespace web_cache {
 
 WebCacheRenderProcessObserver::WebCacheRenderProcessObserver()
-  : clear_cache_pending_(false) {
+    : clear_cache_state_(kInit) {
   content::ServiceRegistry* service_registry =
       content::RenderThread::Get()->GetServiceRegistry();
   service_registry->AddService(base::Bind(
@@ -31,9 +31,16 @@ void WebCacheRenderProcessObserver::BindRequest(
 }
 
 void WebCacheRenderProcessObserver::ExecutePendingClearCache() {
-  if (clear_cache_pending_) {
-    clear_cache_pending_ = false;
-    blink::WebCache::clear();
+  switch (clear_cache_state_) {
+    case kInit:
+      clear_cache_state_ = kNavigate_Pending;
+      break;
+    case kNavigate_Pending:
+      break;
+    case kClearCache_Pending:
+      blink::WebCache::clear();
+      clear_cache_state_ = kInit;
+      break;
   }
 }
 
@@ -50,10 +57,22 @@ void WebCacheRenderProcessObserver::SetCacheCapacities(
 }
 
 void WebCacheRenderProcessObserver::ClearCache(bool on_navigation) {
-  if (on_navigation)
-    clear_cache_pending_ = true;
-  else
+  if (!on_navigation) {
     blink::WebCache::clear();
+    return;
+  }
+
+  switch (clear_cache_state_) {
+    case kInit:
+      clear_cache_state_ = kClearCache_Pending;
+      break;
+    case kNavigate_Pending:
+      blink::WebCache::clear();
+      clear_cache_state_ = kInit;
+      break;
+    case kClearCache_Pending:
+      break;
+  }
 }
 
 }  // namespace web_cache

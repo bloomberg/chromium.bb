@@ -28,6 +28,12 @@ class WebCacheRenderProcessObserver : public mojom::WebCache {
   void ExecutePendingClearCache();
 
  private:
+  enum State {
+    kInit,
+    kNavigate_Pending,
+    kClearCache_Pending,
+  };
+
   // mojom::WebCache methods:
   void SetCacheCapacities(uint64_t min_dead_capacity,
                           uint64_t max_dead_capacity,
@@ -36,8 +42,10 @@ class WebCacheRenderProcessObserver : public mojom::WebCache {
   // navigation event.
   void ClearCache(bool on_navigation) override;
 
-  // If true, the web cache shall be cleared before the next navigation event.
-  bool clear_cache_pending_;
+  // Records status regarding the sequence of navigation event and
+  // ClearCache(true) call, to ensure delayed 'clear cache' command always
+  // get executed on navigation.
+  State clear_cache_state_;
 
   mojo::BindingSet<mojom::WebCache> bindings_;
 
