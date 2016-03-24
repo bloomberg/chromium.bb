@@ -21,17 +21,10 @@ SettingsChangePictureBrowserTest.prototype = {
 
   /** @override */
   preLoad: function() {
-    cr.define('settings_test', function() {
-      var changePictureOptions = {
-        /**
-         * True if property changes should fire events for testing purposes.
-         * @type {boolean}
-         */
-        notifyPropertyChangesForTest: true,
-      };
-      return {changePictureOptions: changePictureOptions};
-    });
-  }
+    SettingsPageBrowserTest.prototype.preLoad.call(this);
+
+    cr.exportPath('settings_test').changePictureNotifyForTest = true;
+  },
 };
 
 // Times out on debug builders and may time out on memory bots because

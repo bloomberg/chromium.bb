@@ -2,16 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-cr.define('settings_test', function() {
-  var changePictureOptions = settings_test.changePictureOptions || {
-    /**
-     * True if property changes should fire events for testing purposes.
-     * @type {boolean}
-     */
-    notifyPropertyChangesForTest: false,
-  };
-  return {changePictureOptions: changePictureOptions};
-});
+cr.exportPath('settings_test');
+
+/** @type {boolean} */
+settings_test.changePictureNotifyForTest;
 
 /**
  * An image element.
@@ -55,7 +49,7 @@ Polymer({
      */
     selectedItem_: {
       type: settings.ChangePictureImageElement,
-      notify: settings_test.changePictureOptions.notifyPropertyChangesForTest,
+      notify: !!settings_test.changePictureNotifyForTest,
     },
 
     /**
