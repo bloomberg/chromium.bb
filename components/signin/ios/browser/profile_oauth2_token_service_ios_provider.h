@@ -77,10 +77,6 @@ class ProfileOAuth2TokenServiceIOSProvider {
   virtual AuthenticationErrorCategory GetAuthenticationErrorCategory(
       const std::string& gaia_id,
       NSError* error) const;
-
-  // Returns the authentication error category of |error|.
-  virtual AuthenticationErrorCategory GetAuthenticationErrorCategory(
-      NSError* error) const;
 };
 
 #endif  // COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_PROVIDER_H_

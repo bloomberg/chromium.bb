@@ -93,6 +93,7 @@ void FakeProfileOAuth2TokenServiceIOSProvider::
 
 AuthenticationErrorCategory
 FakeProfileOAuth2TokenServiceIOSProvider::GetAuthenticationErrorCategory(
+    const std::string& gaia_id,
     NSError* error) const {
   DCHECK(error);
   return kAuthenticationErrorCategoryAuthorizationErrors;

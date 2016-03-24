@@ -30,6 +30,7 @@ class FakeProfileOAuth2TokenServiceIOSProvider
   AccountInfo GetAccountInfoForEmail(const std::string& email) const override;
   AccountInfo GetAccountInfoForGaia(const std::string& gaia) const override;
   AuthenticationErrorCategory GetAuthenticationErrorCategory(
+      const std::string& gaia_id,
       NSError* error) const override;
 
   // Methods to configure this fake provider.

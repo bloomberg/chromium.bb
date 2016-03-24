@@ -32,12 +32,6 @@ AuthenticationErrorCategory
 ProfileOAuth2TokenServiceIOSProvider::GetAuthenticationErrorCategory(
     const std::string& gaia_id,
     NSError* error) const {
-  return GetAuthenticationErrorCategory(error);
-}
-
-AuthenticationErrorCategory
-ProfileOAuth2TokenServiceIOSProvider::GetAuthenticationErrorCategory(
-    NSError* error) const {
   return kAuthenticationErrorCategoryUnknownErrors;
 }
 
