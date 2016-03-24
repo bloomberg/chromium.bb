@@ -345,16 +345,19 @@ public class NewTabPage
             return matchByHost ? UrlUtilities.sameHost(url1, url2) : url1.equals(url2);
         }
 
+        private String getLaunchUrl(String url) {
+            if (!isNtpOfflinePagesEnabled()) return url;
+
+            if (mOfflinePageBridge == null) {
+                mOfflinePageBridge = OfflinePageBridge.getForProfile(mProfile);
+            }
+            return mOfflinePageBridge.getLaunchUrlFromOnlineUrl(url);
+        }
+
         @Override
         public void open(String url) {
             if (mIsDestroyed) return;
-            if (isNtpOfflinePagesEnabled()) {
-                if (mOfflinePageBridge == null) {
-                    mOfflinePageBridge = OfflinePageBridge.getForProfile(mProfile);
-                }
-                url = mOfflinePageBridge.getLaunchUrlFromOnlineUrl(url);
-            }
-            mTab.loadUrl(new LoadUrlParams(url, PageTransition.AUTO_BOOKMARK));
+            mTab.loadUrl(new LoadUrlParams(getLaunchUrl(url), PageTransition.AUTO_BOOKMARK));
         }
 
         @Override
@@ -377,13 +380,13 @@ public class NewTabPage
             switch (menuId) {
                 case ID_OPEN_IN_NEW_TAB:
                     recordOpenedMostVisitedItem(item);
-                    mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl(),
+                    mTabModelSelector.openNewTab(new LoadUrlParams(getLaunchUrl(item.getUrl()),
                             PageTransition.AUTO_BOOKMARK), TabLaunchType.FROM_LONGPRESS_BACKGROUND,
                             mTab, false);
                     return true;
                 case ID_OPEN_IN_INCOGNITO_TAB:
                     recordOpenedMostVisitedItem(item);
-                    mTabModelSelector.openNewTab(new LoadUrlParams(item.getUrl(),
+                    mTabModelSelector.openNewTab(new LoadUrlParams(getLaunchUrl(item.getUrl()),
                             PageTransition.AUTO_BOOKMARK), TabLaunchType.FROM_LONGPRESS_FOREGROUND,
                             mTab, true);
                     return true;
