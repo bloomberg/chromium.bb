@@ -104,6 +104,27 @@ NavigatorImpl::NavigatorImpl(
 
 NavigatorImpl::~NavigatorImpl() {}
 
+// static
+void NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
+    RenderFrameHostImpl* render_frame_host,
+    const GURL& url) {
+  int enabled_bindings =
+      render_frame_host->render_view_host()->GetEnabledBindings();
+  bool is_allowed_in_web_ui_renderer =
+      WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
+          render_frame_host->frame_tree_node()
+              ->navigator()
+              ->GetController()
+              ->GetBrowserContext(),
+          url);
+  if ((enabled_bindings & BINDINGS_POLICY_WEB_UI) &&
+      !is_allowed_in_web_ui_renderer) {
+    // Log the URL to help us diagnose any future failures of this CHECK.
+    GetContentClient()->SetActiveURL(url);
+    CHECK(0);
+  }
+}
+
 NavigatorDelegate* NavigatorImpl::GetDelegate() {
   return delegate_;
 }
@@ -825,54 +846,6 @@ void NavigatorImpl::OnBeginNavigation(
 }
 
 // PlzNavigate
-void NavigatorImpl::CommitNavigation(NavigationRequest* navigation_request,
-                                     ResourceResponse* response,
-                                     scoped_ptr<StreamHandle> body) {
-  CHECK(IsBrowserSideNavigationEnabled());
-
-  DCHECK(navigation_request);
-  FrameTreeNode* frame_tree_node = navigation_request->frame_tree_node();
-  DCHECK(frame_tree_node);
-  DCHECK(response ||
-         !ShouldMakeNetworkRequestForURL(
-             navigation_request->common_params().url));
-
-  // HTTP 204 (No Content) and HTTP 205 (Reset Content) responses should not
-  // commit; they leave the frame showing the previous page.
-  if (response && response->head.headers.get() &&
-      (response->head.headers->response_code() == 204 ||
-       response->head.headers->response_code() == 205)) {
-    CancelNavigation(frame_tree_node);
-    return;
-  }
-
-  // Select an appropriate renderer to commit the navigation.
-  RenderFrameHostImpl* render_frame_host =
-      frame_tree_node->render_manager()->GetFrameHostForNavigation(
-          *navigation_request);
-
-  // The renderer can exit view source mode when any error or cancellation
-  // happen. When reusing the same renderer, overwrite to recover the mode.
-  if (navigation_request->is_view_source() &&
-      render_frame_host ==
-          frame_tree_node->render_manager()->current_frame_host()) {
-    DCHECK(!render_frame_host->GetParent());
-    render_frame_host->Send(
-        new FrameMsg_EnableViewSourceMode(render_frame_host->GetRoutingID()));
-  }
-
-  CheckWebUIRendererDoesNotDisplayNormalURL(
-      render_frame_host, navigation_request->common_params().url);
-
-  navigation_request->TransferNavigationHandleOwnership(render_frame_host);
-  render_frame_host->navigation_handle()->ReadyToCommitNavigation(
-      render_frame_host, response ? response->head.headers : nullptr);
-  render_frame_host->CommitNavigation(response, std::move(body),
-                                      navigation_request->common_params(),
-                                      navigation_request->request_params());
-}
-
-// PlzNavigate
 void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
                                      bool has_stale_copy_in_cache,
                                      int error_code) {
@@ -898,7 +871,7 @@ void NavigatorImpl::FailedNavigation(FrameTreeNode* frame_tree_node,
 
   navigation_request->TransferNavigationHandleOwnership(render_frame_host);
   render_frame_host->navigation_handle()->ReadyToCommitNavigation(
-      render_frame_host, scoped_refptr<net::HttpResponseHeaders>());
+      render_frame_host);
   render_frame_host->FailedNavigation(navigation_request->common_params(),
                                       navigation_request->request_params(),
                                       has_stale_copy_in_cache, error_code);
@@ -931,22 +904,6 @@ void NavigatorImpl::LogBeforeUnloadTime(
       renderer_before_unload_start_time > navigation_data_->start_time_) {
     navigation_data_->before_unload_delay_ =
         renderer_before_unload_end_time - renderer_before_unload_start_time;
-  }
-}
-
-void NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(
-    RenderFrameHostImpl* render_frame_host,
-    const GURL& url) {
-  int enabled_bindings =
-      render_frame_host->render_view_host()->GetEnabledBindings();
-  bool is_allowed_in_web_ui_renderer =
-      WebUIControllerFactoryRegistry::GetInstance()->IsURLAcceptableForWebUI(
-          controller_->GetBrowserContext(), url);
-  if ((enabled_bindings & BINDINGS_POLICY_WEB_UI) &&
-      !is_allowed_in_web_ui_renderer) {
-    // Log the URL to help us diagnose any future failures of this CHECK.
-    GetContentClient()->SetActiveURL(url);
-    CHECK(0);
   }
 }
 

@@ -164,6 +164,12 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // NavigationHandle.
   void OnStartChecksComplete(NavigationThrottle::ThrottleCheckResult result);
   void OnRedirectChecksComplete(NavigationThrottle::ThrottleCheckResult result);
+  void OnWillProcessResponseChecksComplete(
+      NavigationThrottle::ThrottleCheckResult result);
+
+  // Have a RenderFrameHost commit the navigation. The NavigationRequest will
+  // be destroyed after this call.
+  void CommitNavigation();
 
   // Called when the navigation is about to be sent to the IO thread.
   void InitializeServiceWorkerHandleIfNeeded();
@@ -203,6 +209,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   int bindings_;
 
   scoped_ptr<NavigationHandleImpl> navigation_handle_;
+
+  // Holds the ResourceResponse and the StreamHandle for the navigation while
+  // the WillProcessResponse checks are performed by the NavigationHandle.
+  scoped_refptr<ResourceResponse> response_;
+  scoped_ptr<StreamHandle> body_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationRequest);
 };

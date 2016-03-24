@@ -203,9 +203,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // Called when the navigation is ready to be committed in
   // |render_frame_host|. This will update the |state_| and inform the
   // delegate.
-  void ReadyToCommitNavigation(
-      RenderFrameHostImpl* render_frame_host,
-      scoped_refptr<net::HttpResponseHeaders> response_headers);
+  void ReadyToCommitNavigation(RenderFrameHostImpl* render_frame_host);
 
   // Called when the navigation was committed in |render_frame_host|. This will
   // update the |state_|.

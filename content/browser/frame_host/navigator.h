@@ -149,13 +149,6 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
       scoped_refptr<ResourceRequestBody> body);
 
   // PlzNavigate
-  // Signal |render_frame_host| that a navigation is ready to commit (the
-  // response to the navigation request has been received).
-  virtual void CommitNavigation(NavigationRequest* navigation_request,
-                                ResourceResponse* response,
-                                scoped_ptr<StreamHandle> body);
-
-  // PlzNavigate
   // Called when a NavigationRequest for |frame_tree_node| failed. An
   // appropriate RenderFrameHost should be selected and asked to show an error
   // page. |has_stale_copy_in_cache| is true if there is a stale copy of the

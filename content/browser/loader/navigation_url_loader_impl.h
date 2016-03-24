@@ -32,9 +32,9 @@ class NavigationURLLoaderImpl : public NavigationURLLoader {
                           NavigationURLLoaderDelegate* delegate);
   ~NavigationURLLoaderImpl() override;
 
-  // Called in response to OnRequestRedirected to continue processing the
-  // request.
+  // NavigationURLLoader implementation.
   void FollowRedirect() override;
+  void ProceedWithResponse() override;
 
  private:
   friend class NavigationURLLoaderImplCore;

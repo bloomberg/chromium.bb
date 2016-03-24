@@ -2006,8 +2006,8 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(), LOFI_OFF,
       base::TimeTicks::Now(), "GET");
   if (IsBrowserSideNavigationEnabled()) {
-    CommitNavigation(nullptr, nullptr, common_params,
-                     RequestNavigationParams());
+    CommitNavigation(nullptr, nullptr, common_params, RequestNavigationParams(),
+                     false);
   } else {
     Navigate(common_params, StartNavigationParams(), RequestNavigationParams());
   }
@@ -2137,7 +2137,8 @@ void RenderFrameHostImpl::CommitNavigation(
     ResourceResponse* response,
     scoped_ptr<StreamHandle> body,
     const CommonNavigationParams& common_params,
-    const RequestNavigationParams& request_params) {
+    const RequestNavigationParams& request_params,
+    bool is_view_source) {
   DCHECK((response && body.get()) ||
           !ShouldMakeNetworkRequestForURL(common_params.url));
   UpdatePermissionsForNavigation(common_params, request_params);
@@ -2145,6 +2146,14 @@ void RenderFrameHostImpl::CommitNavigation(
   // Get back to a clean state, in case we start a new navigation without
   // completing a RFH swap or unload handler.
   SetState(RenderFrameHostImpl::STATE_DEFAULT);
+
+  // The renderer can exit view source mode when any error or cancellation
+  // happen. When reusing the same renderer, overwrite to recover the mode.
+  if (is_view_source &&
+      this == frame_tree_node_->render_manager()->current_frame_host()) {
+    DCHECK(!GetParent());
+    render_view_host()->Send(new FrameMsg_EnableViewSourceMode(routing_id_));
+  }
 
   const GURL body_url = body.get() ? body->GetURL() : GURL();
   const ResourceResponseHead head = response ?
@@ -2163,7 +2172,6 @@ void RenderFrameHostImpl::CommitNavigation(
   if (!common_params.url.SchemeIs(url::kJavaScriptScheme)) {
     pending_commit_ = true;
     is_loading_ = true;
-    frame_tree_node_->ResetNavigationRequest(true);
   }
 }
 

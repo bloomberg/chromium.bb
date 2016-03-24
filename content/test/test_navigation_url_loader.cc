@@ -18,10 +18,15 @@ TestNavigationURLLoader::TestNavigationURLLoader(
     NavigationURLLoaderDelegate* delegate)
     : request_info_(std::move(request_info)),
       delegate_(delegate),
-      redirect_count_(0) {}
+      redirect_count_(0),
+      response_proceeded_(false) {}
 
 void TestNavigationURLLoader::FollowRedirect() {
   redirect_count_++;
+}
+
+void TestNavigationURLLoader::ProceedWithResponse() {
+  response_proceeded_ = true;
 }
 
 void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {

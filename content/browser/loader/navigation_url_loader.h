@@ -47,6 +47,9 @@ class CONTENT_EXPORT NavigationURLLoader {
   // request.
   virtual void FollowRedirect() = 0;
 
+  // Called in response to OnResponseStarted to process the response.
+  virtual void ProceedWithResponse() = 0;
+
  protected:
   NavigationURLLoader() {}
 

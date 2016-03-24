@@ -44,6 +44,13 @@ void NavigationResourceHandler::FollowRedirect() {
   controller()->Resume();
 }
 
+void NavigationResourceHandler::ProceedWithResponse() {
+  // Detach from the loader; at this point, the request is now owned by the
+  // StreamHandle sent in OnResponseStarted.
+  DetachFromCore();
+  controller()->Resume();
+}
+
 void NavigationResourceHandler::SetController(ResourceController* controller) {
   writer_.set_controller(controller);
   ResourceHandler::SetController(controller);
@@ -84,11 +91,9 @@ bool NavigationResourceHandler::OnResponseStarted(ResourceResponse* response,
   writer_.InitializeStream(stream_context->registry(),
                            request()->url().GetOrigin());
 
-  // Detach from the loader; at this point, the request is now owned by the
-  // StreamHandle.
   DevToolsNetLogObserver::PopulateResponseInfo(request(), response);
   core_->NotifyResponseStarted(response, writer_.stream()->CreateHandle());
-  DetachFromCore();
+  *defer = true;
   return true;
 }
 

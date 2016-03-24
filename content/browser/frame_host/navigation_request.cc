@@ -13,6 +13,7 @@
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/frame_host/navigator.h"
+#include "content/browser/frame_host/navigator_impl.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
@@ -224,8 +225,17 @@ void NavigationRequest::BeginNavigation() {
   // There is no need to make a network request for this navigation, so commit
   // it immediately.
   state_ = RESPONSE_STARTED;
-  frame_tree_node_->navigator()->CommitNavigation(
-      this, nullptr, scoped_ptr<StreamHandle>());
+
+  // Select an appropriate RenderFrameHost.
+  RenderFrameHostImpl* render_frame_host =
+      frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+  NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host,
+                                                           common_params_.url);
+
+  // Inform the NavigationHandle that the navigation will commit.
+  navigation_handle_->ReadyToCommitNavigation(render_frame_host);
+
+  CommitNavigation();
 }
 
 void NavigationRequest::CreateNavigationHandle(int pending_nav_entry_id) {
@@ -269,6 +279,16 @@ void NavigationRequest::OnResponseStarted(
   DCHECK(state_ == STARTED);
   state_ = RESPONSE_STARTED;
 
+  // HTTP 204 (No Content) and HTTP 205 (Reset Content) responses should not
+  // commit; they leave the frame showing the previous page.
+  DCHECK(response);
+  if (response->head.headers.get() &&
+      (response->head.headers->response_code() == 204 ||
+       response->head.headers->response_code() == 205)) {
+    frame_tree_node_->ResetNavigationRequest(false);
+    return;
+  }
+
   // Update the service worker params of the request params.
   request_params_.should_create_service_worker =
       (frame_tree_node_->pending_sandbox_flags() &
@@ -285,8 +305,21 @@ void NavigationRequest::OnResponseStarted(
   else
     common_params_.lofi_state = LOFI_OFF;
 
-  frame_tree_node_->navigator()->CommitNavigation(
-      this, response.get(), std::move(body));
+  // Select an appropriate renderer to commit the navigation.
+  RenderFrameHostImpl* render_frame_host =
+      frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+  NavigatorImpl::CheckWebUIRendererDoesNotDisplayNormalURL(render_frame_host,
+                                                           common_params_.url);
+
+  // Store the response and the StreamHandle until checks have been processed.
+  response_ = response;
+  body_ = std::move(body);
+
+  // Check if the navigation should be allowed to proceed.
+  navigation_handle_->WillProcessResponse(
+      render_frame_host, response->head.headers.get(),
+      base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
+                 base::Unretained(this)));
 }
 
 void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,
@@ -340,6 +373,50 @@ void NavigationRequest::OnRedirectChecksComplete(
   }
 
   loader_->FollowRedirect();
+}
+
+void NavigationRequest::OnWillProcessResponseChecksComplete(
+    NavigationThrottle::ThrottleCheckResult result) {
+  CHECK(result != NavigationThrottle::DEFER);
+
+  // Abort the request if needed. This will destroy the NavigationRequest.
+  if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
+      result == NavigationThrottle::CANCEL) {
+    // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
+    frame_tree_node_->ResetNavigationRequest(false);
+    return;
+  }
+
+  // Have the processing of the response resume in the network stack.
+  loader_->ProceedWithResponse();
+
+  CommitNavigation();
+
+  // DO NOT ADD CODE after this. The previous call to CommitNavigation caused
+  // the destruction of the NavigationRequest.
+}
+
+void NavigationRequest::CommitNavigation() {
+  DCHECK(response_ || !ShouldMakeNetworkRequestForURL(common_params_.url));
+
+  // Retrieve the RenderFrameHost that needs to commit the navigation.
+  RenderFrameHostImpl* render_frame_host =
+      navigation_handle_->GetRenderFrameHost();
+  DCHECK(render_frame_host ==
+             frame_tree_node_->render_manager()->current_frame_host() ||
+         render_frame_host ==
+             frame_tree_node_->render_manager()->speculative_frame_host());
+
+  TransferNavigationHandleOwnership(render_frame_host);
+  render_frame_host->CommitNavigation(response_.get(), std::move(body_),
+                                      common_params_, request_params_,
+                                      is_view_source_);
+
+  // When navigating to a Javascript url, the NavigationRequest is not stored
+  // in the FrameTreeNode. Therefore do not reset it, as this could cancel an
+  // existing pending navigation.
+  if (!common_params_.url.SchemeIs(url::kJavaScriptScheme))
+    frame_tree_node_->ResetNavigationRequest(true);
 }
 
 void NavigationRequest::InitializeServiceWorkerHandleIfNeeded() {

@@ -62,6 +62,15 @@ void NavigationURLLoaderImpl::FollowRedirect() {
                  base::Unretained(core_)));
 }
 
+void NavigationURLLoaderImpl::ProceedWithResponse() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&NavigationURLLoaderImplCore::ProceedWithResponse,
+                 base::Unretained(core_)));
+}
+
 void NavigationURLLoaderImpl::NotifyRequestRedirected(
     const net::RedirectInfo& redirect_info,
     const scoped_refptr<ResourceResponse>& response) {

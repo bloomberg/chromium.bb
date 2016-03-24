@@ -497,7 +497,8 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   void CommitNavigation(ResourceResponse* response,
                         scoped_ptr<StreamHandle> body,
                         const CommonNavigationParams& common_params,
-                        const RequestNavigationParams& request_params);
+                        const RequestNavigationParams& request_params,
+                        bool is_view_source);
 
   // PlzNavigate
   // Indicates that a navigation failed and that this RenderFrame should display

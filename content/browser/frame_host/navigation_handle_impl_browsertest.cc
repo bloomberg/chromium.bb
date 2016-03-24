@@ -9,6 +9,8 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/page_transition_types.h"
@@ -109,6 +111,157 @@ class NavigationHandleObserver : public WebContentsObserver {
   ui::PageTransition page_transition_;
   GURL expected_url_;
   GURL last_committed_url_;
+};
+
+// A test NavigationThrottle that will return pre-determined checks and run
+// callbacks when the various NavigationThrottle methods are called.
+class TestNavigationThrottle : public NavigationThrottle {
+ public:
+  TestNavigationThrottle(
+      NavigationHandle* handle,
+      NavigationThrottle::ThrottleCheckResult will_start_result,
+      NavigationThrottle::ThrottleCheckResult will_redirect_result,
+      NavigationThrottle::ThrottleCheckResult will_process_result,
+      base::Closure did_call_will_start,
+      base::Closure did_call_will_redirect,
+      base::Closure did_call_will_process)
+      : NavigationThrottle(handle),
+        will_start_result_(will_start_result),
+        will_redirect_result_(will_redirect_result),
+        will_process_result_(will_process_result),
+        did_call_will_start_(did_call_will_start),
+        did_call_will_redirect_(did_call_will_redirect),
+        did_call_will_process_(did_call_will_process) {}
+  ~TestNavigationThrottle() override {}
+
+  void Resume() { navigation_handle()->Resume(); }
+
+ private:
+  // NavigationThrottle implementation.
+  NavigationThrottle::ThrottleCheckResult WillStartRequest() override {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, did_call_will_start_);
+    return will_start_result_;
+  }
+
+  NavigationThrottle::ThrottleCheckResult WillRedirectRequest() override {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            did_call_will_redirect_);
+    return will_redirect_result_;
+  }
+
+  NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            did_call_will_process_);
+    return will_process_result_;
+  }
+
+  NavigationThrottle::ThrottleCheckResult will_start_result_;
+  NavigationThrottle::ThrottleCheckResult will_redirect_result_;
+  NavigationThrottle::ThrottleCheckResult will_process_result_;
+  base::Closure did_call_will_start_;
+  base::Closure did_call_will_redirect_;
+  base::Closure did_call_will_process_;
+};
+
+// Install a TestNavigationThrottle on all requests and allows waiting for
+// various NavigationThrottle related events.
+class TestNavigationThrottleInstaller : public WebContentsObserver {
+ public:
+  TestNavigationThrottleInstaller(
+      WebContents* web_contents,
+      NavigationThrottle::ThrottleCheckResult will_start_result,
+      NavigationThrottle::ThrottleCheckResult will_redirect_result,
+      NavigationThrottle::ThrottleCheckResult will_process_result)
+      : WebContentsObserver(web_contents),
+        will_start_result_(will_start_result),
+        will_redirect_result_(will_redirect_result),
+        will_process_result_(will_process_result),
+        will_start_called_(0),
+        will_redirect_called_(0),
+        will_process_called_(0),
+        navigation_throttle_(nullptr) {}
+  ~TestNavigationThrottleInstaller() override{};
+
+  TestNavigationThrottle* navigation_throttle() { return navigation_throttle_; }
+
+  void WaitForThrottleWillStart() {
+    if (will_start_called_)
+      return;
+    will_start_loop_runner_ = new MessageLoopRunner();
+    will_start_loop_runner_->Run();
+    will_start_loop_runner_ = nullptr;
+  }
+
+  void WaitForThrottleWillRedirect() {
+    if (will_redirect_called_)
+      return;
+    will_redirect_loop_runner_ = new MessageLoopRunner();
+    will_redirect_loop_runner_->Run();
+    will_redirect_loop_runner_ = nullptr;
+  }
+
+  void WaitForThrottleWillProcess() {
+    if (will_process_called_)
+      return;
+    will_process_loop_runner_ = new MessageLoopRunner();
+    will_process_loop_runner_->Run();
+    will_process_loop_runner_ = nullptr;
+  }
+
+  int will_start_called() { return will_start_called_; }
+  int will_redirect_called() { return will_redirect_called_; }
+  int will_process_called() { return will_process_called_; }
+
+ private:
+  void DidStartNavigation(NavigationHandle* handle) override {
+    scoped_ptr<NavigationThrottle> throttle(new TestNavigationThrottle(
+        handle, will_start_result_, will_redirect_result_, will_process_result_,
+        base::Bind(&TestNavigationThrottleInstaller::DidCallWillStartRequest,
+                   base::Unretained(this)),
+        base::Bind(&TestNavigationThrottleInstaller::DidCallWillRedirectRequest,
+                   base::Unretained(this)),
+        base::Bind(&TestNavigationThrottleInstaller::DidCallWillProcessResponse,
+                   base::Unretained(this))));
+    navigation_throttle_ = static_cast<TestNavigationThrottle*>(throttle.get());
+    handle->RegisterThrottleForTesting(std::move(throttle));
+  }
+
+  void DidFinishNavigation(NavigationHandle* handle) override {
+    if (!navigation_throttle_)
+      return;
+
+    if (handle == navigation_throttle_->navigation_handle())
+      navigation_throttle_ = nullptr;
+  }
+
+  void DidCallWillStartRequest() {
+    will_start_called_++;
+    if (will_start_loop_runner_)
+      will_start_loop_runner_->Quit();
+  }
+
+  void DidCallWillRedirectRequest() {
+    will_redirect_called_++;
+    if (will_redirect_loop_runner_)
+      will_redirect_loop_runner_->Quit();
+  }
+
+  void DidCallWillProcessResponse() {
+    will_process_called_++;
+    if (will_process_loop_runner_)
+      will_process_loop_runner_->Quit();
+  }
+
+  NavigationThrottle::ThrottleCheckResult will_start_result_;
+  NavigationThrottle::ThrottleCheckResult will_redirect_result_;
+  NavigationThrottle::ThrottleCheckResult will_process_result_;
+  int will_start_called_;
+  int will_redirect_called_;
+  int will_process_called_;
+  TestNavigationThrottle* navigation_throttle_;
+  scoped_refptr<MessageLoopRunner> will_start_loop_runner_;
+  scoped_refptr<MessageLoopRunner> will_redirect_loop_runner_;
+  scoped_refptr<MessageLoopRunner> will_process_loop_runner_;
 };
 
 }  // namespace
@@ -267,6 +420,141 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, VerifySynchronous) {
   EXPECT_TRUE(observer.has_committed());
   EXPECT_FALSE(observer.is_error());
   EXPECT_TRUE(observer.is_synchronous());
+}
+
+// Ensure that a NavigationThrottle can cancel the navigation at navigation
+// start.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleCancelStart) {
+  GURL start_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  GURL redirect_url(
+      embedded_test_server()->GetURL("/cross-site/bar.com/title2.html"));
+  NavigationHandleObserver observer(shell()->web_contents(), redirect_url);
+  TestNavigationThrottleInstaller installer(
+      shell()->web_contents(), NavigationThrottle::CANCEL,
+      NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+
+  EXPECT_FALSE(NavigateToURL(shell(), redirect_url));
+
+  EXPECT_FALSE(observer.has_committed());
+  EXPECT_TRUE(observer.is_error());
+
+  // The navigation should have been canceled before being redirected.
+  EXPECT_FALSE(observer.was_redirected());
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), start_url);
+}
+
+// Ensure that a NavigationThrottle can cancel the navigation when a navigation
+// is redirected.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       ThrottleCancelRedirect) {
+  GURL start_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  // A navigation with a redirect should be canceled.
+  {
+    GURL redirect_url(
+        embedded_test_server()->GetURL("/cross-site/bar.com/title2.html"));
+    NavigationHandleObserver observer(shell()->web_contents(), redirect_url);
+    TestNavigationThrottleInstaller installer(
+        shell()->web_contents(), NavigationThrottle::PROCEED,
+        NavigationThrottle::CANCEL, NavigationThrottle::PROCEED);
+
+    EXPECT_FALSE(NavigateToURL(shell(), redirect_url));
+
+    EXPECT_FALSE(observer.has_committed());
+    EXPECT_TRUE(observer.is_error());
+    EXPECT_TRUE(observer.was_redirected());
+    EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), start_url);
+  }
+
+  // A navigation without redirects should be successful.
+  {
+    GURL no_redirect_url(embedded_test_server()->GetURL("/title2.html"));
+    NavigationHandleObserver observer(shell()->web_contents(), no_redirect_url);
+    TestNavigationThrottleInstaller installer(
+        shell()->web_contents(), NavigationThrottle::PROCEED,
+        NavigationThrottle::CANCEL, NavigationThrottle::PROCEED);
+
+    EXPECT_TRUE(NavigateToURL(shell(), no_redirect_url));
+
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_FALSE(observer.is_error());
+    EXPECT_FALSE(observer.was_redirected());
+    EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), no_redirect_url);
+  }
+}
+
+// Ensure that a NavigationThrottle can cancel the navigation when the response
+// is received.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
+                       ThrottleCancelResponse) {
+  GURL start_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  GURL redirect_url(
+      embedded_test_server()->GetURL("/cross-site/bar.com/title2.html"));
+  NavigationHandleObserver observer(shell()->web_contents(), redirect_url);
+  TestNavigationThrottleInstaller installer(
+      shell()->web_contents(), NavigationThrottle::PROCEED,
+      NavigationThrottle::PROCEED, NavigationThrottle::CANCEL);
+
+  EXPECT_FALSE(NavigateToURL(shell(), redirect_url));
+
+  EXPECT_FALSE(observer.has_committed());
+  EXPECT_TRUE(observer.is_error());
+  // The navigation should have been redirected first, and then canceled when
+  // the response arrived.
+  EXPECT_TRUE(observer.was_redirected());
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), start_url);
+}
+
+// Ensure that a NavigationThrottle can defer and resume the navigation at
+// navigation start, navigation redirect and response received.
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, ThrottleDefer) {
+  GURL start_url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), start_url));
+
+  GURL redirect_url(
+      embedded_test_server()->GetURL("/cross-site/bar.com/title2.html"));
+  TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+  NavigationHandleObserver observer(shell()->web_contents(), redirect_url);
+  TestNavigationThrottleInstaller installer(
+      shell()->web_contents(), NavigationThrottle::DEFER,
+      NavigationThrottle::DEFER, NavigationThrottle::DEFER);
+
+  shell()->LoadURL(redirect_url);
+
+  // Wait for WillStartRequest.
+  installer.WaitForThrottleWillStart();
+  EXPECT_EQ(1, installer.will_start_called());
+  EXPECT_EQ(0, installer.will_redirect_called());
+  EXPECT_EQ(0, installer.will_process_called());
+  installer.navigation_throttle()->Resume();
+
+  // Wait for WillRedirectRequest.
+  installer.WaitForThrottleWillRedirect();
+  EXPECT_EQ(1, installer.will_start_called());
+  EXPECT_EQ(1, installer.will_redirect_called());
+  EXPECT_EQ(0, installer.will_process_called());
+  installer.navigation_throttle()->Resume();
+
+  // Wait for WillProcessResponse.
+  installer.WaitForThrottleWillProcess();
+  EXPECT_EQ(1, installer.will_start_called());
+  EXPECT_EQ(1, installer.will_redirect_called());
+  EXPECT_EQ(1, installer.will_process_called());
+  installer.navigation_throttle()->Resume();
+
+  // Wait for the end of the navigation.
+  navigation_observer.Wait();
+
+  EXPECT_TRUE(observer.has_committed());
+  EXPECT_TRUE(observer.was_redirected());
+  EXPECT_FALSE(observer.is_error());
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(),
+            GURL(embedded_test_server()->GetURL("bar.com", "/title2.html")));
 }
 
 }  // namespace content

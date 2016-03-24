@@ -46,6 +46,9 @@ class NavigationURLLoaderImplCore {
   // Follows the current pending redirect.
   void FollowRedirect();
 
+  // Proceeds with processing the response.
+  void ProceedWithResponse();
+
   void set_resource_handler(NavigationResourceHandler* resource_handler) {
     resource_handler_ = resource_handler;
   }

@@ -32,6 +32,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   NavigatorImpl(NavigationControllerImpl* navigation_controller,
                 NavigatorDelegate* delegate);
 
+  static void CheckWebUIRendererDoesNotDisplayNormalURL(
+      RenderFrameHostImpl* render_frame_host,
+      const GURL& url);
+
   // Navigator implementation.
   NavigatorDelegate* GetDelegate() override;
   NavigationController* GetController() override;
@@ -77,9 +81,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                          const CommonNavigationParams& common_params,
                          const BeginNavigationParams& begin_params,
                          scoped_refptr<ResourceRequestBody> body) override;
-  void CommitNavigation(NavigationRequest* navigation_request,
-                        ResourceResponse* response,
-                        scoped_ptr<StreamHandle> body) override;
   void FailedNavigation(FrameTreeNode* frame_tree_node,
                         bool has_stale_copy_in_cache,
                         int error_code) override;
@@ -108,10 +109,6 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
                        bool is_pending_entry);
 
   bool ShouldAssignSiteForURL(const GURL& url);
-
-  void CheckWebUIRendererDoesNotDisplayNormalURL(
-    RenderFrameHostImpl* render_frame_host,
-    const GURL& url);
 
   // PlzNavigate: if needed, sends a BeforeUnload IPC to the renderer to ask it
   // to execute the beforeUnload event. Otherwise, the navigation request will

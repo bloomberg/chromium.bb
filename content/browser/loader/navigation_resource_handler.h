@@ -26,6 +26,9 @@ class NavigationResourceHandler : public ResourceHandler {
   // Called to the loader to resume a paused redirect.
   void FollowRedirect();
 
+  // Called to proceed with the response.
+  void ProceedWithResponse();
+
   // ResourceHandler implementation.
   void SetController(ResourceController* controller) override;
   bool OnRequestRedirected(const net::RedirectInfo& redirect_info,

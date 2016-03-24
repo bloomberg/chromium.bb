@@ -205,7 +205,7 @@ void NavigationHandleImpl::Resume() {
     // If the navigation is about to proceed after processing the response, then
     // it's ready to commit.
     if (result == NavigationThrottle::PROCEED)
-      ReadyToCommitNavigation(render_frame_host_, response_headers_);
+      ReadyToCommitNavigation(render_frame_host_);
   }
 
   if (result != NavigationThrottle::DEFER)
@@ -346,7 +346,7 @@ void NavigationHandleImpl::WillProcessResponse(
 
   // If the navigation is about to proceed, then it's ready to commit.
   if (result == NavigationThrottle::PROCEED)
-    ReadyToCommitNavigation(render_frame_host, response_headers);
+    ReadyToCommitNavigation(render_frame_host);
 
   // If the navigation is not deferred, run the callback.
   if (result != NavigationThrottle::DEFER)
@@ -354,11 +354,9 @@ void NavigationHandleImpl::WillProcessResponse(
 }
 
 void NavigationHandleImpl::ReadyToCommitNavigation(
-    RenderFrameHostImpl* render_frame_host,
-    scoped_refptr<net::HttpResponseHeaders> response_headers) {
+    RenderFrameHostImpl* render_frame_host) {
   DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
   render_frame_host_ = render_frame_host;
-  response_headers_ = response_headers;
   state_ = READY_TO_COMMIT;
 
   // Only notify the WebContentsObservers when PlzNavigate is enabled, as

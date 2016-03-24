@@ -224,6 +224,9 @@ TEST_F(NavigationURLLoaderTest, Basic) {
   // Wait for the response to come back.
   delegate.WaitForResponseStarted();
 
+  // Proceed with the response.
+  loader->ProceedWithResponse();
+
   // Check the response is correct.
   EXPECT_EQ("text/html", delegate.response()->head.mime_type);
   EXPECT_EQ(200, delegate.response()->head.headers->response_code());
@@ -269,6 +272,9 @@ TEST_F(NavigationURLLoaderTest, RequestRedirected) {
   // Wait for the response to complete.
   loader->FollowRedirect();
   delegate.WaitForResponseStarted();
+
+  // Proceed with the response.
+  loader->ProceedWithResponse();
 
   // Check the response is correct.
   EXPECT_EQ("text/html", delegate.response()->head.mime_type);
@@ -371,6 +377,9 @@ TEST_F(NavigationURLLoaderTest, LoaderDetached) {
   // Wait for the response to come back.
   delegate.WaitForResponseStarted();
 
+  // Proceed with the response.
+  loader->ProceedWithResponse();
+
   // Check the response is correct.
   EXPECT_EQ("text/html", delegate.response()->head.mime_type);
   EXPECT_EQ(200, delegate.response()->head.headers->response_code());
@@ -394,6 +403,9 @@ TEST_F(NavigationURLLoaderTest, OwnedByHandle) {
 
   // Wait for the response to come back.
   delegate.WaitForResponseStarted();
+
+  // Proceed with the response.
+  loader->ProceedWithResponse();
 
   // Release the body.
   delegate.ReleaseBody();

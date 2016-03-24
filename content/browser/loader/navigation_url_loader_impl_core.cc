@@ -61,6 +61,13 @@ void NavigationURLLoaderImplCore::FollowRedirect() {
     resource_handler_->FollowRedirect();
 }
 
+void NavigationURLLoaderImplCore::ProceedWithResponse() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (resource_handler_)
+    resource_handler_->ProceedWithResponse();
+}
+
 void NavigationURLLoaderImplCore::NotifyRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response) {
