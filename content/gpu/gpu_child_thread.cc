@@ -517,8 +517,10 @@ void GpuChildThread::OnGpuSwitched() {
 
 #if defined(OS_MACOSX)
 void GpuChildThread::OnBufferPresented(const BufferPresentedParams& params) {
-  if (gpu_channel_manager_)
-    gpu_channel_manager_->BufferPresented(params);
+  if (gpu_channel_manager_) {
+    gpu_channel_manager_->BufferPresented(
+        params.surface_id, params.vsync_timebase, params.vsync_interval);
+  }
 }
 #endif
 

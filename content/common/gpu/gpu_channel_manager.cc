@@ -27,10 +27,6 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_share_group.h"
 
-#if defined(OS_MACOSX)
-#include "content/common/gpu/buffer_presented_params_mac.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -131,10 +127,12 @@ void GpuChannelManager::RemoveBufferPresentedCallback(int32_t surface_id) {
   buffer_presented_callback_map_.erase(it);
 }
 
-void GpuChannelManager::BufferPresented(const BufferPresentedParams& params) {
-  auto it = buffer_presented_callback_map_.find(params.surface_id);
+void GpuChannelManager::BufferPresented(int32_t surface_id,
+                                        const base::TimeTicks& vsync_timebase,
+                                        const base::TimeDelta& vsync_interval) {
+  auto it = buffer_presented_callback_map_.find(surface_id);
   if (it != buffer_presented_callback_map_.end())
-    it->second.Run(params);
+    it->second.Run(surface_id, vsync_timebase, vsync_interval);
 }
 #endif
 

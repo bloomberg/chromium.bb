@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/buffer_presented_params_mac.h"
+#include "content/common/buffer_presented_params_mac.h"
 
 namespace content {
 

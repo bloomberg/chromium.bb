@@ -43,6 +43,9 @@ class GpuProcessControlImpl;
 class GpuWatchdogThread;
 class MediaService;
 struct EstablishChannelParams;
+#if defined(OS_MACOSX)
+struct BufferPresentedParams;
+#endif
 
 // The main thread of the GPU child process. There will only ever be one of
 // these per process. It does process initialization and shutdown. It forwards

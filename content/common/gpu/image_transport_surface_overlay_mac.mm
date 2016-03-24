@@ -24,7 +24,6 @@ typedef void* GLeglImageOES;
 #include "base/bind_helpers.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/gpu/buffer_presented_params_mac.h"
 #include "content/common/gpu/ca_layer_partial_damage_tree_mac.h"
 #include "content/common/gpu/ca_layer_tree_mac.h"
 #include "content/common/gpu/gpu_channel_manager.h"
@@ -184,9 +183,11 @@ void ImageTransportSurfaceOverlayMac::SetLatencyInfo(
 }
 
 void ImageTransportSurfaceOverlayMac::BufferPresented(
-    const BufferPresentedParams& params) {
-  vsync_timebase_ = params.vsync_timebase;
-  vsync_interval_ = params.vsync_interval;
+    int32_t surface_id,
+    const base::TimeTicks& vsync_timebase,
+    const base::TimeDelta& vsync_interval) {
+  vsync_timebase_ = vsync_timebase;
+  vsync_interval_ = vsync_interval;
   vsync_parameters_valid_ = (vsync_interval_ != base::TimeDelta());
 
   // Compute |vsync_timebase_| to be the first vsync after time zero.

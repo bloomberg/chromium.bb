@@ -24,7 +24,6 @@ namespace content {
 
 class CALayerTree;
 class CALayerPartialDamageTree;
-struct BufferPresentedParams;
 
 class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
                                         public ui::GpuSwitchingObserver {
@@ -74,7 +73,9 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   ~ImageTransportSurfaceOverlayMac() override;
 
   void SetLatencyInfo(const std::vector<ui::LatencyInfo>& latency_info);
-  void BufferPresented(const BufferPresentedParams& params);
+  void BufferPresented(int32_t surface_id,
+                       const base::TimeTicks& vsync_timebase,
+                       const base::TimeDelta& vsync_interval);
   void SendAcceleratedSurfaceBuffersSwapped(
       int32_t surface_id,
       CAContextID ca_context_id,

@@ -62,9 +62,6 @@ class GpuChannel;
 class GpuChannelManagerDelegate;
 class GpuMemoryBufferFactory;
 class GpuWatchdog;
-#if defined(OS_MACOSX)
-struct BufferPresentedParams;
-#endif
 
 // A GpuChannelManager is a thread responsible for issuing rendering commands
 // managing the lifetimes of GPU channels and forwarding IPC requests from the
@@ -72,7 +69,8 @@ struct BufferPresentedParams;
 class CONTENT_EXPORT GpuChannelManager {
  public:
 #if defined(OS_MACOSX)
-  typedef base::Callback<void(const BufferPresentedParams&)>
+  typedef base::Callback<
+      void(int32_t, const base::TimeTicks&, const base::TimeDelta&)>
       BufferPresentedCallback;
 #endif
   GpuChannelManager(const gpu::GpuPreferences& gpu_preferences,
@@ -114,7 +112,9 @@ class CONTENT_EXPORT GpuChannelManager {
   void AddBufferPresentedCallback(int32_t routing_id,
                                   const BufferPresentedCallback& callback);
   void RemoveBufferPresentedCallback(int32_t routing_id);
-  void BufferPresented(const BufferPresentedParams& params);
+  void BufferPresented(int32_t surface_id,
+                       const base::TimeTicks& vsync_timebase,
+                       const base::TimeDelta& vsync_interval);
 #endif
 
   const gpu::GpuPreferences& gpu_preferences() const {
