@@ -74,12 +74,22 @@ bool DefaultComponentInstaller::InstallHelper(
     const base::DictionaryValue& manifest,
     const base::FilePath& unpack_path,
     const base::FilePath& install_path) {
-  if (!base::Move(unpack_path, install_path))
+  VLOG(1) << "InstallHelper: unpack_path=" << unpack_path.AsUTF8Unsafe()
+          << " install_path=" << install_path.AsUTF8Unsafe();
+
+  if (!base::Move(unpack_path, install_path)) {
+    PLOG(ERROR) << "Move failed.";
     return false;
-  if (!installer_traits_->OnCustomInstall(manifest, install_path))
+  }
+  if (!installer_traits_->OnCustomInstall(manifest, install_path)) {
+    PLOG(ERROR) << "CustomInstall failed.";
     return false;
-  if (!installer_traits_->VerifyInstallation(manifest, install_path))
+  }
+  if (!installer_traits_->VerifyInstallation(manifest, install_path)) {
+    PLOG(ERROR) << "VerifyInstallation failed.";
     return false;
+  }
+
   return true;
 }
 
@@ -88,6 +98,10 @@ bool DefaultComponentInstaller::Install(const base::DictionaryValue& manifest,
   std::string manifest_version;
   manifest.GetStringASCII("version", &manifest_version);
   base::Version version(manifest_version);
+
+  VLOG(1) << "Install: version=" << version.GetString()
+          << " current version=" << current_version_.GetString();
+
   if (!version.IsValid())
     return false;
   if (current_version_.CompareTo(version) > 0)
@@ -140,9 +154,9 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   base::FilePath base_dir = installer_traits_->GetBaseDirectory();
   if (!base::PathExists(base_dir) && !base::CreateDirectory(base_dir)) {
-    NOTREACHED() << "Could not create the base directory for "
-                 << installer_traits_->GetName() << " ("
-                 << base_dir.MaybeAsASCII() << ").";
+    PLOG(ERROR) << "Could not create the base directory for "
+                << installer_traits_->GetName() << " ("
+                << base_dir.MaybeAsASCII() << ").";
     return;
   }
 
@@ -173,9 +187,9 @@ void DefaultComponentInstaller::StartRegistration(ComponentUpdateService* cus) {
     scoped_ptr<base::DictionaryValue> manifest =
         update_client::ReadManifest(path);
     if (!manifest || !installer_traits_->VerifyInstallation(*manifest, path)) {
-      DLOG(ERROR) << "Failed to read manifest or verify installation for "
-                  << installer_traits_->GetName() << " ("
-                  << path.MaybeAsASCII() << ").";
+      PLOG(ERROR) << "Failed to read manifest or verify installation for "
+                  << installer_traits_->GetName() << " (" << path.MaybeAsASCII()
+                  << ").";
       older_paths.push_back(path);
       continue;
     }
@@ -270,6 +284,7 @@ void DefaultComponentInstaller::FinishRegistration(
 
 void DefaultComponentInstaller::ComponentReady(
     scoped_ptr<base::DictionaryValue> manifest) {
+  VLOG(1) << "ComponentReady";
   installer_traits_->ComponentReady(current_version_, GetInstallDirectory(),
                                     std::move(manifest));
 }
