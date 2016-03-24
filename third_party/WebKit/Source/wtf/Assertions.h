@@ -146,10 +146,7 @@ WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
             CRASH()) : \
         (void)0)
 
-#define ASSERT_AT(assertion, file, line, function) \
-    (!(assertion) ? \
-        (WTFReportAssertionFailure(file, line, function, #assertion), CRASH()) : \
-        (void)0)
+#define DCHECK_AT(assertion, file, line) LAZY_STREAM(logging::LogMessage(file, line, #assertion).stream(), !(assertion))
 
 #define ASSERT_NOT_REACHED() do { \
     WTFReportAssertionFailure(__FILE__, __LINE__, WTF_PRETTY_FUNCTION, 0); \
@@ -163,7 +160,7 @@ WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
 #else
 
 #define ASSERT(assertion) ((void)0)
-#define ASSERT_AT(assertion, file, line, function) ((void)0)
+#define DCHECK_AT(assertion, file, line) EAT_STREAM_PARAMETERS
 #define ASSERT_NOT_REACHED() ((void)0)
 #define NO_RETURN_DUE_TO_ASSERT
 

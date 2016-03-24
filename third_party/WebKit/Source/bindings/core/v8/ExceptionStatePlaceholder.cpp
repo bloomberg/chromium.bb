@@ -41,17 +41,17 @@ NoExceptionStateAssertionChecker::NoExceptionStateAssertionChecker(const char* f
 
 void NoExceptionStateAssertionChecker::throwDOMException(const ExceptionCode&, const String&)
 {
-    ASSERT_AT(false, m_file, m_line, "");
+    DCHECK_AT(false, m_file, m_line) << "DOMExeption should not be thrown.";
 }
 
 void NoExceptionStateAssertionChecker::throwTypeError(const String&)
 {
-    ASSERT_AT(false, m_file, m_line, "");
+    DCHECK_AT(false, m_file, m_line) << "TypeError should not be thrown.";
 }
 
 void NoExceptionStateAssertionChecker::throwSecurityError(const String&, const String&)
 {
-    ASSERT_AT(false, m_file, m_line, "");
+    DCHECK_AT(false, m_file, m_line) << "SecurityError should not be thrown.";
 }
 
 #endif
