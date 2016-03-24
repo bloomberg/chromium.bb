@@ -42,7 +42,10 @@ static_library("pdf") {
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   if (pdf_engine == 0) {
-    deps += [ "//third_party/pdfium" ]
+    deps += [
+      "//pdf/pdfium/fuzzers",
+      "//third_party/pdfium",
+    ]
 
     sources += [
       "pdfium/pdfium_api_string_buffer_adapter.cc",

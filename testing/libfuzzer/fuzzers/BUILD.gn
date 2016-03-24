@@ -7,7 +7,6 @@
 import("//build/config/features.gni")
 import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
-import("//third_party/pdfium/pdfium.gni")
 
 # root BUILD depenends on this target. Needed for package discovery
 group("fuzzers") {
@@ -169,41 +168,6 @@ fuzzer_test("zlib_uncompress_fuzzer") {
   deps = [
     "//third_party/zlib",
   ]
-}
-
-fuzzer_test("pdfium_fuzzer") {
-  sources = [
-    "pdfium_fuzzer.cc",
-  ]
-  deps = [
-    "//third_party/pdfium",
-    "//third_party/pdfium:test_support",
-    "//v8",
-    "//v8:v8_libplatform",
-  ]
-  additional_configs = [
-    "//third_party/pdfium:pdfium_config",
-    "//v8:external_startup_data",
-  ]
-  dict = "dicts/pdf.dict"
-}
-
-if (pdf_enable_xfa) {
-  fuzzer_test("pdf_fm2js_fuzzer") {
-    sources = []
-    deps = [
-      "//third_party/pdfium/testing/libfuzzer:pdf_fm2js_fuzzer",
-    ]
-    dict = "dicts/pdf_fm2js.dict"
-  }
-
-  fuzzer_test("pdf_xml_fuzzer") {
-    sources = []
-    deps = [
-      "//third_party/pdfium/testing/libfuzzer:pdf_xml_fuzzer",
-    ]
-    dict = "dicts/pdf_xml.dict"
-  }
 }
 
 fuzzer_test("sqlite3_prepare_v2_fuzzer") {

@@ -33,21 +33,23 @@
 
 #include "v8/include/v8.h"
 
-static int ExampleAppAlert(IPDF_JSPLATFORM*, FPDF_WIDESTRING, FPDF_WIDESTRING,
-    int, int) {
+static int ExampleAppAlert(IPDF_JSPLATFORM*,
+                           FPDF_WIDESTRING,
+                           FPDF_WIDESTRING,
+                           int,
+                           int) {
   return 0;
 }
 
-static void ExampleDocGotoPage(IPDF_JSPLATFORM*, int pageNumber) { }
+static void ExampleDocGotoPage(IPDF_JSPLATFORM*, int pageNumber) {}
 
-static void ExampleUnsupportedHandler(UNSUPPORT_INFO*, int type) { }
-
+static void ExampleUnsupportedHandler(UNSUPPORT_INFO*, int type) {}
 
 FPDF_BOOL Is_Data_Avail(FX_FILEAVAIL* pThis, size_t offset, size_t size) {
   return true;
 }
 
-static void Add_Segment(FX_DOWNLOADHINTS* pThis, size_t offset, size_t size) { }
+static void Add_Segment(FX_DOWNLOADHINTS* pThis, size_t offset, size_t size) {}
 
 static bool RenderPage(const FPDF_DOCUMENT& doc,
                        const FPDF_FORMHANDLE& form,
@@ -192,7 +194,7 @@ std::string ProgramPath() {
 struct TestCase {
   TestCase() {
     InitializeV8ForPDFium(ProgramPath(), "", &natives_blob, &snapshot_blob,
-        &platform);
+                          &platform);
 
     memset(&config, '\0', sizeof(config));
     config.version = 2;
