@@ -23,7 +23,6 @@ static const size_t kMaxUnacknowledgedBytesSent = 10 * 1024 * 1024;  // 10 MB.
 
 namespace content {
 
-// TODO(crbug.com/425389): Rewrite this class as a RenderFrameObserver.
 MidiMessageFilter::MidiMessageFilter(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : sender_(nullptr),

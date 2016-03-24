@@ -25,7 +25,13 @@ class SingleThreadTaskRunner;
 
 namespace content {
 
-// MessageFilter that handles MIDI messages.
+// MessageFilter that handles MIDI messages. Created on render thread, and
+// host multiple clients running on multiple frames on IO thread.
+// Web MIDI intentionally uses MessageFilter (in a renderer process) and
+// BrowserMessageFilter (in the browser process) to intercept MIDI messages and
+// process them on IO thread in the browser process since these messages are
+// time critical. Non-critical operations like permission management are
+// handled in MidiDispatcher.
 class CONTENT_EXPORT MidiMessageFilter : public IPC::MessageFilter {
  public:
   explicit MidiMessageFilter(
