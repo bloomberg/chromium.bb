@@ -79,15 +79,14 @@ static void* systemAllocPages(void* hint, size_t len, PageAccessibilityConfigura
 #if OS(WIN)
     DWORD accessFlag = pageAccessibility == PageAccessible ? PAGE_READWRITE : PAGE_NOACCESS;
     ret = VirtualAlloc(hint, len, MEM_RESERVE | MEM_COMMIT, accessFlag);
-    allocPageErrorCode = !ret ? GetLastError() : ERROR_SUCCESS;
+    if (!ret)
+        allocPageErrorCode = GetLastError();
 #else
     int accessFlag = pageAccessibility == PageAccessible ? (PROT_READ | PROT_WRITE) : PROT_NONE;
     ret = mmap(hint, len, accessFlag, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     if (ret == MAP_FAILED) {
         allocPageErrorCode = errno;
         ret = 0;
-    } else {
-        allocPageErrorCode = 0;
     }
 #endif
     return ret;
