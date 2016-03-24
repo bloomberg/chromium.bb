@@ -149,34 +149,6 @@ CanonicalCookie::CanonicalCookie(const GURL& url,
       same_site_(same_site),
       priority_(priority) {}
 
-CanonicalCookie::CanonicalCookie(const GURL& url, const ParsedCookie& pc)
-    : source_(url.SchemeIsFile() ? url : url.GetOrigin()),
-      name_(pc.Name()),
-      value_(pc.Value()),
-      path_(CanonPath(url, pc)),
-      creation_date_(Time::Now()),
-      last_access_date_(Time()),
-      secure_(pc.IsSecure()),
-      httponly_(pc.IsHttpOnly()),
-      same_site_(pc.SameSite()),
-      priority_(pc.Priority()) {
-  if (pc.HasExpires())
-    expiry_date_ = CanonExpiration(pc, creation_date_, creation_date_);
-
-  // Do the best we can with the domain.
-  std::string cookie_domain;
-  std::string domain_string;
-  if (pc.HasDomain()) {
-    domain_string = pc.Domain();
-  }
-  bool result
-      = cookie_util::GetCookieDomainWithString(url, domain_string,
-                                                &cookie_domain);
-  // Caller is responsible for passing in good arguments.
-  DCHECK(result);
-  domain_ = cookie_domain;
-}
-
 CanonicalCookie::CanonicalCookie(const CanonicalCookie& other) = default;
 
 CanonicalCookie::~CanonicalCookie() {

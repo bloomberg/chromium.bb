@@ -41,11 +41,6 @@ class NET_EXPORT CanonicalCookie {
                   CookieSameSite same_site,
                   CookiePriority priority);
 
-  // This constructor does canonicalization but not validation.
-  // The result of this constructor should not be relied on in contexts
-  // in which pre-validation of the ParsedCookie has not been done.
-  CanonicalCookie(const GURL& url, const ParsedCookie& pc);
-
   CanonicalCookie(const CanonicalCookie& other);
 
   ~CanonicalCookie();

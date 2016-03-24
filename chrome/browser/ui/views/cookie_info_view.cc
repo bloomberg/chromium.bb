@@ -14,7 +14,6 @@
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/parsed_cookie.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -68,14 +67,6 @@ void CookieInfoView::SetCookie(const std::string& domain,
   EnableCookieDisplay(true);
   Layout();
 }
-
-void CookieInfoView::SetCookieString(const GURL& url,
-                                     const std::string& cookie_line) {
-  net::ParsedCookie pc(cookie_line);
-  net::CanonicalCookie cookie(url, pc);
-  SetCookie(pc.HasDomain() ? pc.Domain() : url.host(), cookie);
-}
-
 
 void CookieInfoView::ClearCookieDisplay() {
   base::string16 no_cookie_string =

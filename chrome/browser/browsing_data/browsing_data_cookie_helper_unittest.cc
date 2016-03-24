@@ -6,10 +6,11 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "base/time/time.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/parsed_cookie.h"
+#include "net/cookies/cookie_options.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -395,9 +396,8 @@ TEST_F(BrowsingDataCookieHelperTest, CannedEmpty) {
   ASSERT_TRUE(helper->empty());
 
   net::CookieList cookies;
-  net::ParsedCookie pc("a=1");
-  scoped_ptr<net::CanonicalCookie> cookie(
-      new net::CanonicalCookie(url_google, pc));
+  scoped_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+      url_google, "a=1", base::Time::Now(), net::CookieOptions()));
   cookies.push_back(*cookie);
 
   helper->AddReadCookies(url_google, url_google, cookies);

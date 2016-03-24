@@ -4,11 +4,12 @@
 
 #include <stdint.h>
 #include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/parsed_cookie.h"
+#include "net/cookies/cookie_options.h"
 #import "testing/gtest_mac.h"
 #include "url/gurl.h"
 
@@ -29,9 +30,9 @@ TEST_F(CookiesDetailsTest, CreateForCookie) {
   GURL url("http://chromium.org");
   std::string cookieLine(
       "PHPSESSID=0123456789abcdef0123456789abcdef; path=/");
-  net::ParsedCookie pc(cookieLine);
-  net::CanonicalCookie cookie(url, pc);
-  details.reset([[CocoaCookieDetails alloc] initWithCookie:&cookie
+  scoped_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+      url, cookieLine, base::Time::Now(), net::CookieOptions()));
+  details.reset([[CocoaCookieDetails alloc] initWithCookie:cookie.get()
                                          canEditExpiration:NO]);
 
   EXPECT_EQ([details.get() type], kCocoaCookieDetailsTypeCookie);

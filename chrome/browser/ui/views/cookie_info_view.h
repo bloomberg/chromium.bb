@@ -36,9 +36,6 @@ class CookieInfoView : public views::View {
   void SetCookie(const std::string& domain,
                  const net::CanonicalCookie& cookie_node);
 
-  // Update the display from the specified cookie string.
-  void SetCookieString(const GURL& url, const std::string& cookie_line);
-
   // Clears the cookie display to indicate that no or multiple cookies are
   // selected.
   void ClearCookieDisplay();

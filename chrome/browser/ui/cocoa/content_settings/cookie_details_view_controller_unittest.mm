@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details.h"
 #include "chrome/browser/ui/cocoa/content_settings/cookie_details_view_controller.h"
 #include "net/cookies/canonical_cookie.h"
-#include "net/cookies/parsed_cookie.h"
+#include "net/cookies/cookie_options.h"
 
 namespace {
 
@@ -18,10 +19,10 @@ static CocoaCookieDetails* CreateTestCookieDetails(BOOL canEditExpiration) {
   GURL url("http://chromium.org");
   std::string cookieLine(
       "PHPSESSID=0123456789abcdef0123456789abcdef; path=/");
-  net::ParsedCookie pc(cookieLine);
-  net::CanonicalCookie cookie(url, pc);
+  scoped_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+      url, cookieLine, base::Time::Now(), net::CookieOptions()));
   CocoaCookieDetails* details = [CocoaCookieDetails alloc];
-  [details initWithCookie:&cookie
+  [details initWithCookie:cookie.get()
         canEditExpiration:canEditExpiration];
   return [details autorelease];
 }
