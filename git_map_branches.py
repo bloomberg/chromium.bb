@@ -174,7 +174,7 @@ class BranchMapper(object):
     return not parent or parent in self.__gone_branches
 
   def __color_for_branch(self, branch, branch_hash):
-    if branch.startswith('origin'):
+    if branch.startswith('origin/'):
       color = Fore.RED
     elif branch.startswith('branch-heads'):
       color = Fore.BLUE
