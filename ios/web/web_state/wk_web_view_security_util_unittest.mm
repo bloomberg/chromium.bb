@@ -237,6 +237,23 @@ TEST_F(WKWebViewSecurityUtilTest, SSLInfoFromErrorWithCert) {
   EXPECT_TRUE(info.unverified_cert->subject().GetDisplayName() == kTestSubject);
 }
 
+// Tests GetSSLInfoFromWKWebViewSSLCertError with NSError and empty chain.
+TEST_F(WKWebViewSecurityUtilTest, SSLInfoFromErrorWithoutCert) {
+  NSError* noCertChainError =
+      [NSError errorWithDomain:NSURLErrorDomain
+                          code:NSURLErrorServerCertificateHasBadDate
+                      userInfo:nil];
+
+  net::SSLInfo info;
+  GetSSLInfoFromWKWebViewSSLCertError(noCertChainError, &info);
+  EXPECT_FALSE(info.is_valid());
+  // If cert can not be parsed status should always be CERT_STATUS_INVALID,
+  // regardless of iOS error code. This is consistent with other platforms.
+  EXPECT_EQ(net::CERT_STATUS_INVALID, info.cert_status);
+  EXPECT_FALSE(info.cert);
+  EXPECT_FALSE(info.unverified_cert);
+}
+
 // Tests GetSecurityStyleFromTrustResult with bad SecTrustResultType result.
 TEST_F(WKWebViewSecurityUtilTest, GetSecurityStyleFromBadResult) {
   EXPECT_EQ(SECURITY_STYLE_AUTHENTICATION_BROKEN,

@@ -1005,7 +1005,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 }
 
 - (void)handleSSLCertError:(NSError*)error {
-  DCHECK(web::IsWKWebViewSSLCertError(error));
+  CHECK(web::IsWKWebViewSSLCertError(error));
 
   net::SSLInfo info;
   web::GetSSLInfoFromWKWebViewSSLCertError(error, &info);
@@ -1013,8 +1013,12 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   web::SSLStatus status;
   status.security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
   status.cert_status = info.cert_status;
-  status.cert_id = web::CertStore::GetInstance()->StoreCert(
-      info.cert.get(), self.certGroupID);
+  // |info.cert| can be null if certChain in NSError is empty or can not be
+  // parsed.
+  if (info.cert) {
+    status.cert_id = web::CertStore::GetInstance()->StoreCert(info.cert.get(),
+                                                              self.certGroupID);
+  }
 
   // Retrieve verification results from _certVerificationErrors cache to avoid
   // unnecessary recalculations. Verification results are cached for the leaf
