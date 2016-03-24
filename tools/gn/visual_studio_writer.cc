@@ -125,6 +125,8 @@ std::string GetConfigurationType(const Target* target, Err* err) {
     case Target::STATIC_LIBRARY:
     case Target::SOURCE_SET:
       return "StaticLibrary";
+    case Target::GROUP:
+      return "Utility";
 
     default:
       *err = Err(Location(),
@@ -259,9 +261,8 @@ bool VisualStudioWriter::RunAndWriteFiles(const BuildSettings* build_settings,
   writer.folders_.reserve(targets.size());
 
   for (const Target* target : targets) {
-    // Skip actions, groups and bundle targets.
-    if (target->output_type() == Target::GROUP ||
-        target->output_type() == Target::COPY_FILES ||
+    // Skip actions and bundle targets.
+    if (target->output_type() == Target::COPY_FILES ||
         target->output_type() == Target::ACTION ||
         target->output_type() == Target::ACTION_FOREACH ||
         target->output_type() == Target::BUNDLE_DATA) {
@@ -424,11 +425,13 @@ bool VisualStudioWriter::WriteProjectFileContents(
       scoped_ptr<XmlElementWriter> out_dir = properties->SubElement("OutDir");
       path_output.WriteDir(out_dir->StartContent(false),
                            build_settings_->build_dir(),
-                           PathOutput::DIR_INCLUDE_LAST_SLASH);
+                           PathOutput::DIR_NO_LAST_SLASH);
     }
     properties->SubElement("TargetName")->Text("$(ProjectName)");
-    properties->SubElement("TargetPath")
-        ->Text("$(OutDir)\\$(ProjectName)$(TargetExt)");
+    if (target->output_type() != Target::GROUP) {
+      properties->SubElement("TargetPath")
+          ->Text("$(OutDir)\\$(ProjectName)$(TargetExt)");
+    }
   }
 
   {
