@@ -374,6 +374,8 @@ public class MediaResourceGetterTest extends InstrumentationTestCase {
     public void testConfigure_Net_Allowed_LocalHost_WithNoNetwork() {
         String[] localHostUrls = {
             "http://LocalHost",
+            "http://LocalHost6",
+            "http://helloworld.localhost:8000",
             "https://127.0.0.1/",
             "http://[::1]:8888/",
         };

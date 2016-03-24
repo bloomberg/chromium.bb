@@ -26,6 +26,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -295,7 +296,11 @@ class MediaResourceGetter {
     // This method covers only typcial expressions for the loopback address
     // to resolve the hostname without a DNS loopup.
     private boolean isLoopbackAddress(String host) {
-        return host != null && (host.equalsIgnoreCase("localhost")  // typical hostname
+        return host != null && (host.equalsIgnoreCase("localhost")  // typical hostnames
+                || host.equalsIgnoreCase("localhost.localdomain")
+                || host.equalsIgnoreCase("localhost6")
+                || host.equalsIgnoreCase("localhost6.localdomain6")
+                || host.toLowerCase(Locale.US).endsWith(".localhost")
                 || host.equals("127.0.0.1")  // typical IP v4 expression
                 || host.equals("[::1]"));  // typical IP v6 expression
     }
