@@ -84,30 +84,25 @@ action("cpplib_stripped") {
   ]
 }
 
-group("devil_py") {
-  data = [
-    "devil_chromium.json",
-    "devil_chromium.py",
-    "//third_party/android_tools/sdk/build-tools/23.0.1/aapt",
-    "//third_party/android_tools/sdk/build-tools/23.0.1/dexdump",
-    "//third_party/android_tools/sdk/build-tools/23.0.1/lib/libc++.so",
-    "//third_party/android_tools/sdk/build-tools/23.0.1/split-select",
-    "//third_party/android_tools/sdk/platform-tools/adb",
-    "//third_party/catapult/catapult_base/catapult_base/",
-    "//third_party/catapult/dependency_manager/dependency_manager/",
-    "//third_party/catapult/third_party/gsutil/",
-    "//third_party/catapult/devil/devil/",
-  ]
-}
-
 group("test_runner_py") {
-  data = [
-    "test_runner.py",
-    "pylib/",
-    "//build/util/lib/common/",
-  ]
+  _py_files = read_file("test_runner.pydeps", "list lines")
+
+  # Filter out comments.
+  set_sources_assignment_filter([ "#*" ])
+  sources = _py_files
+
+  data = sources + [
+           "devil_chromium.json",
+           "//third_party/android_tools/sdk/build-tools/23.0.1/aapt",
+           "//third_party/android_tools/sdk/build-tools/23.0.1/dexdump",
+           "//third_party/android_tools/sdk/build-tools/23.0.1/lib/libc++.so",
+           "//third_party/android_tools/sdk/build-tools/23.0.1/split-select",
+           "//third_party/android_tools/sdk/platform-tools/adb",
+           "//third_party/catapult/third_party/gsutil/",
+           "//third_party/catapult/devil/devil/devil_dependencies.json",
+         ]
   data_deps = [
-    ":devil_py",
+    "//tools/swarming_client:isolate_py",
   ]
 }
 

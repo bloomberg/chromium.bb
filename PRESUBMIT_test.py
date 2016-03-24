@@ -3,12 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import glob
-import json
-import os
 import re
 import subprocess
-import sys
 import unittest
 
 import PRESUBMIT
@@ -834,6 +830,102 @@ class UserMetricsActionTest(unittest.TestCase):
        'tools/metrics/actions/extract_actions.py to update.'
        % (file_with_user_action, 1, 'NotInActionsXml')),
       output[0].message)
+
+
+class PydepsNeedsUpdatingTest(unittest.TestCase):
+
+  class MockSubprocess(object):
+    CalledProcessError = subprocess.CalledProcessError
+
+  def setUp(self):
+    self.old_PYDEPS_FILES = PRESUBMIT._PYDEPS_FILES
+    PRESUBMIT._PYDEPS_FILES = ['A.pydeps', 'B.pydeps']
+    self.mock_input_api = MockInputApi()
+    self.mock_output_api = MockOutputApi()
+    self.mock_input_api.subprocess = PydepsNeedsUpdatingTest.MockSubprocess()
+    self.checker = PRESUBMIT.PydepsChecker(self.mock_input_api)
+    self.checker._file_cache = {
+        'A.pydeps': '# target: //A.py\n# root: //\nA.py\nC.py\n',
+        'B.pydeps': '# target: //B.py\n# root: //\nB.py\nC.py\n',
+    }
+
+  def tearDown(self):
+    PRESUBMIT._PYDEPS_FILES = self.old_PYDEPS_FILES
+
+  def _RunCheck(self):
+    return PRESUBMIT._CheckPydepsNeedsUpdating(self.mock_input_api,
+                                               self.mock_output_api,
+                                               checker_for_tests=self.checker)
+
+  def testAddedPydep(self):
+    self.mock_input_api.files = [
+      MockAffectedFile('new.pydeps', [], action='A'),
+    ]
+
+    results = self._RunCheck()
+    self.assertEqual(1, len(results))
+    self.assertTrue('PYDEPS_FILES' in str(results[0]))
+
+  def testRemovedPydep(self):
+    self.mock_input_api.files = [
+      MockAffectedFile(PRESUBMIT._PYDEPS_FILES[0], [], action='D'),
+    ]
+
+    results = self._RunCheck()
+    self.assertEqual(1, len(results))
+    self.assertTrue('PYDEPS_FILES' in str(results[0]))
+
+  def testRandomPyIgnored(self):
+    self.mock_input_api.files = [
+      MockAffectedFile('random.py', []),
+    ]
+
+    results = self._RunCheck()
+    self.assertEqual(0, len(results), 'Unexpected results: %r' % results)
+
+  def testRelevantPyNoChange(self):
+    self.mock_input_api.files = [
+      MockAffectedFile('A.py', []),
+    ]
+
+    def mock_check_output(cmd):
+      self.assertEqual('A.py', cmd[3])
+      return self.checker._file_cache['A.pydeps']
+
+    self.mock_input_api.subprocess.check_output = mock_check_output
+
+    results = self._RunCheck()
+    self.assertEqual(0, len(results), 'Unexpected results: %r' % results)
+
+  def testRelevantPyOneChange(self):
+    self.mock_input_api.files = [
+      MockAffectedFile('A.py', []),
+    ]
+
+    def mock_check_output(cmd):
+      self.assertEqual('A.py', cmd[3])
+      return 'changed data'
+
+    self.mock_input_api.subprocess.check_output = mock_check_output
+
+    results = self._RunCheck()
+    self.assertEqual(1, len(results))
+    self.assertTrue('File is stale' in str(results[0]))
+
+  def testRelevantPyTwoChanges(self):
+    self.mock_input_api.files = [
+      MockAffectedFile('C.py', []),
+    ]
+
+    def mock_check_output(cmd):
+      return 'changed data'
+
+    self.mock_input_api.subprocess.check_output = mock_check_output
+
+    results = self._RunCheck()
+    self.assertEqual(2, len(results))
+    self.assertTrue('File is stale' in str(results[0]))
+    self.assertTrue('File is stale' in str(results[1]))
 
 
 class LogUsageTest(unittest.TestCase):
