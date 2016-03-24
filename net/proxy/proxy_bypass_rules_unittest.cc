@@ -97,6 +97,15 @@ TEST(ProxyBypassRulesTest, WildcardAtStart) {
   EXPECT_FALSE(rules.Matches(GURL("https://www.google.org.com")));
 }
 
+// Tests a codepath that parses hostnamepattern:port, where "port" is invalid
+// by containing a leading plus.
+TEST(ProxyBypassRulesTest, ParseInvalidPort) {
+  ProxyBypassRules rules;
+  EXPECT_TRUE(rules.AddRuleFromString("*.org:443"));
+  EXPECT_FALSE(rules.AddRuleFromString("*.com:+443"));
+  EXPECT_FALSE(rules.AddRuleFromString("*.com:-443"));
+}
+
 TEST(ProxyBypassRulesTest, IPV4Address) {
   ProxyBypassRules rules;
   rules.ParseFromString("192.168.1.1");

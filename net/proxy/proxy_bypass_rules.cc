@@ -6,13 +6,13 @@
 
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
+#include "net/base/parse_number.h"
 #include "net/base/url_util.h"
 
 namespace net {
@@ -317,13 +317,11 @@ bool ProxyBypassRules::AddRuleFromStringInternal(
 
   // Otherwise assume we have <hostname-pattern>[:port].
   std::string::size_type pos_colon = raw.rfind(':');
-  host = raw;
   port = -1;
   if (pos_colon != std::string::npos) {
-    if (!base::StringToInt(base::StringPiece(raw.begin() + pos_colon + 1,
-                                             raw.end()),
-                           &port) ||
-        (port < 0 || port > 0xFFFF)) {
+    if (!ParseNonNegativeDecimalInt(
+            base::StringPiece(raw.begin() + pos_colon + 1, raw.end()), &port) ||
+        port > 0xFFFF) {
       return false;  // Port was invalid.
     }
     raw = raw.substr(0, pos_colon);
