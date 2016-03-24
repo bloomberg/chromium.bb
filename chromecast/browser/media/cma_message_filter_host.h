@@ -14,6 +14,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "chromecast/common/media/cma_ipc_common.h"
+#include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/cma/pipeline/load_type.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,7 +43,6 @@ class BrowserCdmCast;
 class MediaPipelineBackend;
 struct MediaPipelineDeviceParams;
 class MediaPipelineHost;
-class CmaMediaPipelineClient;
 
 class CmaMessageFilterHost
     : public content::BrowserMessageFilter {
@@ -52,8 +52,9 @@ class CmaMessageFilterHost
       const MediaPipelineDeviceParams&)> CreateBackendCB;
 
   CmaMessageFilterHost(int render_process_id,
-                       scoped_refptr<CmaMediaPipelineClient> client,
-                       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+                       const CreateBackendCB& create_backend_cb,
+                       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                       MediaResourceTracker* resource_tracker);
 
   // content::BrowserMessageFilter implementation:
   void OnChannelClosing() override;
@@ -120,11 +121,12 @@ class CmaMessageFilterHost
 
   // Factory function for media pipeline backend.
   CreateBackendCB create_backend_cb_;
-  scoped_refptr<CmaMediaPipelineClient> client_;
 
   // List of media pipeline and message loop media pipelines are running on.
   MediaPipelineMap media_pipelines_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  MediaResourceTracker* resource_tracker_;
 
   base::WeakPtr<CmaMessageFilterHost> weak_this_;
   base::WeakPtrFactory<CmaMessageFilterHost> weak_factory_;

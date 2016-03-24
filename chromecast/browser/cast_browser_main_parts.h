@@ -22,6 +22,7 @@ class NetLog;
 namespace chromecast {
 
 namespace media {
+class MediaResourceTracker;
 class VideoPlaneController;
 }  // namespace media
 
@@ -37,6 +38,9 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   ~CastBrowserMainParts() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner() const;
+#if !defined(OS_ANDROID)
+  media::MediaResourceTracker* media_resource_tracker();
+#endif
 
   // content::BrowserMainParts implementation:
   void PreMainMessageLoopStart() override;
@@ -54,6 +58,11 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   URLRequestContextFactory* const url_request_context_factory_;
   scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<media::VideoPlaneController> video_plane_controller_;
+
+#if !defined(OS_ANDROID)
+  // Tracks usage of media resource by e.g. CMA pipeline, CDM.
+  media::MediaResourceTracker* media_resource_tracker_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(CastBrowserMainParts);
 };

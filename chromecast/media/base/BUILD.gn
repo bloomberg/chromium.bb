@@ -51,6 +51,8 @@ source_set("base") {
     "media_caps.h",
     "media_codec_support.cc",
     "media_codec_support.h",
+    "media_resource_tracker.cc",
+    "media_resource_tracker.h",
   ]
 
   public_deps = [
@@ -62,6 +64,7 @@ source_set("base") {
   deps = [
     ":libcast_media_1.0",
     "//base",
+    "//chromecast/base",
     "//crypto",
     "//crypto:platform",
     "//net",

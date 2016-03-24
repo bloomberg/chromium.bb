@@ -47,8 +47,6 @@ source_set("media") {
     deps += [ "//components/cdm/browser" ]
   } else {
     sources += [
-      "cma_media_pipeline_client.cc",
-      "cma_media_pipeline_client.h",
       "cma_message_filter_host.cc",
       "cma_message_filter_host.h",
     ]

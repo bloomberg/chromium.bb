@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chromecast/media/base/key_systems_common.h"
+#include "chromecast/media/base/media_resource_tracker.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_keys.h"
 
@@ -22,8 +23,8 @@ class BrowserCdmCast;
 class CastBrowserCdmFactory : public ::media::CdmFactory {
  public:
   // CDM factory will use |task_runner| to initialize the CDM.
-  explicit CastBrowserCdmFactory(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  CastBrowserCdmFactory(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                        MediaResourceTracker* media_resource_tracker);
   ~CastBrowserCdmFactory() override;
 
   // ::media::CdmFactory implementation:
@@ -41,6 +42,9 @@ class CastBrowserCdmFactory : public ::media::CdmFactory {
   // Provides a platform-specific BrowserCdm instance.
   virtual scoped_refptr<BrowserCdmCast> CreatePlatformBrowserCdm(
       const CastKeySystem& cast_key_system);
+
+ protected:
+  MediaResourceTracker* media_resource_tracker_;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

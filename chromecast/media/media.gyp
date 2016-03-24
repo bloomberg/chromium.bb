@@ -68,6 +68,8 @@
         'base/media_codec_support.h',
         'base/media_message_loop.cc',
         'base/media_message_loop.h',
+        'base/media_resource_tracker.cc',
+        'base/media_resource_tracker.h',
         'base/video_plane_controller.cc',
         'base/video_plane_controller.h',
       ],

@@ -16,10 +16,14 @@ namespace chromecast {
 namespace media {
 
 CastBrowserCdmFactory::CastBrowserCdmFactory(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    MediaResourceTracker* media_resource_tracker)
+    : media_resource_tracker_(media_resource_tracker),
+      task_runner_(task_runner) {
+  DCHECK(media_resource_tracker_);
   DCHECK(task_runner_);
 }
+
 CastBrowserCdmFactory::~CastBrowserCdmFactory() {}
 
 void CastBrowserCdmFactory::Create(

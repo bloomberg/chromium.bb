@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "chromecast/media/base/media_resource_tracker.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/cdm_promise.h"
 #include "media/cdm/player_tracker_impl.h"
@@ -77,7 +78,9 @@ scoped_ptr<CdmPromiseInternal<T...>> BindPromiseToCurrentLoop(
 
 }  // namespace
 
-BrowserCdmCast::BrowserCdmCast() {
+BrowserCdmCast::BrowserCdmCast(MediaResourceTracker* media_resource_tracker)
+    : media_resource_tracker_(media_resource_tracker) {
+  DCHECK(media_resource_tracker);
   thread_checker_.DetachFromThread();
 }
 
@@ -85,6 +88,7 @@ BrowserCdmCast::~BrowserCdmCast() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(player_tracker_impl_.get());
   player_tracker_impl_->NotifyCdmUnset();
+  media_resource_tracker_->DecrementUsageCount();
 }
 
 void BrowserCdmCast::Initialize(
@@ -95,6 +99,7 @@ void BrowserCdmCast::Initialize(
     const ::media::SessionExpirationUpdateCB& session_expiration_update_cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  media_resource_tracker_->IncrementUsageCount();
   player_tracker_impl_.reset(new ::media::PlayerTrackerImpl());
 
   session_message_cb_ = session_message_cb;

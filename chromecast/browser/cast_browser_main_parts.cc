@@ -37,7 +37,9 @@
 #include "chromecast/media/audio/cast_audio_manager_factory.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/media/base/media_message_loop.h"
+#include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/base/video_plane_controller.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/net/connectivity_checker.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/cast_sys_info.h"
@@ -246,6 +248,10 @@ CastBrowserMainParts::CastBrowserMainParts(
       net_log_(new CastNetLog()) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   AddDefaultCommandLineSwitches(command_line);
+
+#if !defined(OS_ANDROID)
+  media_resource_tracker_ = nullptr;
+#endif  // !defined(OS_ANDROID)
 }
 
 CastBrowserMainParts::~CastBrowserMainParts() {
@@ -256,6 +262,16 @@ CastBrowserMainParts::GetMediaTaskRunner() const {
   // TODO(alokp): Obtain task runner from a local thread or mojo media app.
   return media::MediaMessageLoop::GetTaskRunner();
 }
+
+#if !defined(OS_ANDROID)
+media::MediaResourceTracker* CastBrowserMainParts::media_resource_tracker() {
+  if (!media_resource_tracker_) {
+    media_resource_tracker_ = new media::MediaResourceTracker(
+        base::ThreadTaskRunnerHandle::Get(), GetMediaTaskRunner());
+  }
+  return media_resource_tracker_;
+}
+#endif
 
 void CastBrowserMainParts::PreMainMessageLoopStart() {
   // GroupedHistograms needs to be initialized before any threads are created
@@ -353,7 +369,6 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->SetPrefService(
       PrefServiceHelper::CreatePrefService(pref_registry.get()));
 
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
 #if defined(OS_ANDROID)
   ::media::SetMediaClientAndroid(new media::CastMediaClientAndroid());
 #endif  // defined(OS_ANDROID)
@@ -382,9 +397,6 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       new RemoteDebuggingServer(cast_browser_process_->browser_client()->
           EnableRemoteDebuggingImmediately())));
 
-  media::CastMediaShlib::Initialize(cmd_line->argv());
-  ::media::InitializeMediaLibrary();
-
 #if defined(USE_AURA) && !defined(DISABLE_DISPLAY)
   // TODO(halliwell) move audio builds to use ozone_platform_cast, then can
   // simplify this by removing DISABLE_DISPLAY condition.  Should then also
@@ -406,6 +418,11 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
           url_request_context_factory_->GetSystemGetter(),
           video_plane_controller_.get()));
   cast_browser_process_->cast_service()->Initialize();
+
+#if !defined(OS_ANDROID)
+  media_resource_tracker()->InitializeMediaLib();
+#endif
+  ::media::InitializeMediaLibrary();
 
   // Initializing metrics service and network delegates must happen after cast
   // service is intialized because CastMetricsServiceClient and
@@ -465,10 +482,10 @@ void CastBrowserMainParts::PostMainMessageLoopRun() {
 }
 
 void CastBrowserMainParts::PostDestroyThreads() {
-  // Finalize CastMediaShlib on media thread to ensure it's not accessed
-  // after Finalize.
-  GetMediaTaskRunner()->PostTask(FROM_HERE,
-                                 base::Bind(&media::CastMediaShlib::Finalize));
+#if !defined(OS_ANDROID)
+  media_resource_tracker_->FinalizeAndDestroy();
+  media_resource_tracker_ = nullptr;
+#endif
 }
 
 }  // namespace shell

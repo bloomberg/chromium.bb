@@ -13,7 +13,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/threading/thread_checker.h"
-#include "chromecast/browser/media/cma_media_pipeline_client.h"
 #include "chromecast/browser/media/media_pipeline_host.h"
 #include "chromecast/common/media/cma_messages.h"
 #include "chromecast/media/cdm/browser_cdm_cast.h"
@@ -132,12 +131,14 @@ void SetCdmOnUiThread(
 
 CmaMessageFilterHost::CmaMessageFilterHost(
     int render_process_id,
-    scoped_refptr<CmaMediaPipelineClient> client,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    const CreateBackendCB& create_backend_cb,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    MediaResourceTracker* resource_tracker)
     : content::BrowserMessageFilter(CastMediaMsgStart),
       process_id_(render_process_id),
-      client_(client),
+      create_backend_cb_(create_backend_cb),
       task_runner_(task_runner),
+      resource_tracker_(resource_tracker),
       weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
 }
@@ -214,21 +215,21 @@ void CmaMessageFilterHost::CreateMedia(int media_id, LoadType load_type) {
   client.error_cb = ::media::BindToCurrentLoop(
       base::Bind(&CmaMessageFilterHost::OnPlaybackError,
                  weak_this_, media_id, media::kNoTrackId));
-  client.pipeline_backend_created_cb = base::Bind(
-      &CmaMediaPipelineClient::OnMediaPipelineBackendCreated, client_);
-  client.pipeline_backend_destroyed_cb = base::Bind(
-      &CmaMediaPipelineClient::OnMediaPipelineBackendDestroyed, client_);
+  client.pipeline_backend_created_cb =
+      base::Bind(&MediaResourceTracker::IncrementUsageCount,
+                 base::Unretained(resource_tracker_));
+  client.pipeline_backend_destroyed_cb =
+      base::Bind(&MediaResourceTracker::DecrementUsageCount,
+                 base::Unretained(resource_tracker_));
 
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&MediaPipelineCmaMap::SetMediaPipeline,
                             base::Unretained(g_pipeline_map.Pointer()),
                             process_id_, media_id, media_pipeline_host.get()));
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&MediaPipelineHost::Initialize,
-                 base::Unretained(media_pipeline_host.get()), load_type, client,
-                 base::Bind(&CmaMediaPipelineClient::CreateMediaPipelineBackend,
-                            client_)));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&MediaPipelineHost::Initialize,
+                                    base::Unretained(media_pipeline_host.get()),
+                                    load_type, client, create_backend_cb_));
   std::pair<MediaPipelineMap::iterator, bool> ret =
     media_pipelines_.insert(
         std::make_pair(media_id, media_pipeline_host.release()));

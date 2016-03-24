@@ -26,11 +26,11 @@
 #include "chromecast/browser/cast_quota_permission_context.h"
 #include "chromecast/browser/cast_resource_dispatcher_host_delegate.h"
 #include "chromecast/browser/geolocation/cast_access_token_store.h"
-#include "chromecast/browser/media/cma_media_pipeline_client.h"
 #include "chromecast/browser/media/cma_message_filter_host.h"
 #include "chromecast/browser/service/cast_service_simple.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/common/global_descriptors.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "components/crash/content/app/breakpad_linux.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
@@ -105,11 +105,16 @@ scoped_ptr<CastService> CastContentBrowserClient::CreateCastService(
 }
 
 #if !defined(OS_ANDROID)
-scoped_refptr<media::CmaMediaPipelineClient>
-CastContentBrowserClient::GetCmaMediaPipelineClient() {
-  if (!cma_media_pipeline_client_.get())
-    cma_media_pipeline_client_ = CreateCmaMediaPipelineClient();
-  return cma_media_pipeline_client_;
+scoped_ptr<media::MediaPipelineBackend>
+CastContentBrowserClient::CreateMediaPipelineBackend(
+    const media::MediaPipelineDeviceParams& params) {
+  return make_scoped_ptr(
+      media::MediaPipelineBackendManager::CreateMediaPipelineBackend(params));
+}
+
+media::MediaResourceTracker*
+CastContentBrowserClient::media_resource_tracker() {
+  return cast_browser_main_parts_->media_resource_tracker();
 }
 #endif  // OS_ANDROID
 
@@ -139,7 +144,10 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
 #if !defined(OS_ANDROID)
   scoped_refptr<media::CmaMessageFilterHost> cma_message_filter(
       new media::CmaMessageFilterHost(
-          host->GetID(), GetCmaMediaPipelineClient(), GetMediaTaskRunner()));
+          host->GetID(),
+          base::Bind(&CastContentBrowserClient::CreateMediaPipelineBackend,
+                     base::Unretained(this)),
+          GetMediaTaskRunner(), media_resource_tracker()));
   host->AddFilter(cma_message_filter.get());
 #endif  // !defined(OS_ANDROID)
 
@@ -159,13 +167,6 @@ CastContentBrowserClient::GetMediaTaskRunner() {
   DCHECK(cast_browser_main_parts_);
   return cast_browser_main_parts_->GetMediaTaskRunner();
 }
-
-#if !defined(OS_ANDROID)
-scoped_refptr<media::CmaMediaPipelineClient>
-CastContentBrowserClient::CreateCmaMediaPipelineClient() {
-  return make_scoped_refptr(new media::CmaMediaPipelineClient());
-}
-#endif  // OS_ANDROID
 
 void CastContentBrowserClient::AddNetworkHintsMessageFilter(
     int render_process_id, net::URLRequestContext* context) {
@@ -421,8 +422,8 @@ void CastContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 scoped_ptr<::media::CdmFactory> CastContentBrowserClient::CreateCdmFactory() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCmaMediaPipeline)) {
-    return make_scoped_ptr(
-        new media::CastBrowserCdmFactory(GetMediaTaskRunner()));
+    return make_scoped_ptr(new media::CastBrowserCdmFactory(
+        GetMediaTaskRunner(), media_resource_tracker()));
   }
 
   return nullptr;

@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/threading/thread_checker.h"
+#include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/public/media/cast_key_status.h"
 #include "media/base/media_keys.h"
 #include "media/base/player_tracker.h"
@@ -43,7 +44,7 @@ class DecryptContextImpl;
 class BrowserCdmCast : public ::media::MediaKeys,
                        public ::media::PlayerTracker {
  public:
-  BrowserCdmCast();
+  explicit BrowserCdmCast(MediaResourceTracker* media_resource_tracker);
 
   void Initialize(
       const ::media::SessionMessageCB& session_message_cb,
@@ -97,6 +98,7 @@ class BrowserCdmCast : public ::media::MediaKeys,
   ::media::SessionKeysChangeCB session_keys_change_cb_;
   ::media::SessionExpirationUpdateCB session_expiration_update_cb_;
 
+  MediaResourceTracker* media_resource_tracker_;
   scoped_ptr<::media::PlayerTrackerImpl> player_tracker_impl_;
 
   base::ThreadChecker thread_checker_;

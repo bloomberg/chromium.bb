@@ -732,8 +732,6 @@
           'sources': [
             'browser/media/cast_browser_cdm_factory.cc',
             'browser/media/cast_browser_cdm_factory.h',
-            'browser/media/cma_media_pipeline_client.cc',
-            'browser/media/cma_media_pipeline_client.h',
             'browser/media/cma_message_filter_host.cc',
             'browser/media/cma_message_filter_host.h',
             'browser/media/media_pipeline_host.cc',
