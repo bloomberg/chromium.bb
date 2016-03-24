@@ -233,7 +233,15 @@ public class TabPersistentStore extends TabPersister {
      */
     public static File getStateDirectory(Context context, int index) {
         File file = new File(getBaseStateDirectory(context), Integer.toString(index));
-        if (!file.exists() && !file.mkdirs()) Log.e(TAG, "Failed to create state folder: " + file);
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
+        try {
+            if (!file.exists() && !file.mkdirs()) {
+                Log.e(TAG, "Failed to create state folder: " + file);
+            }
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
         return file;
     }
 

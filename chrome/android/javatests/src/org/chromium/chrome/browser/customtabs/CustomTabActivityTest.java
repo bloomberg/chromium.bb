@@ -10,6 +10,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
+import android.app.Instrumentation.ActivityResult;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -44,6 +45,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
@@ -59,6 +61,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.util.ChromeRestriction;
+import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.BrowserStartupController.StartupCallback;
@@ -104,6 +107,9 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             TEST_ACTION = "org.chromium.chrome.browser.customtabs.TEST_PENDING_INTENT_SENT";
     private static final String TEST_PAGE = "/chrome/test/data/android/google.html";
     private static final String TEST_PAGE_2 = "/chrome/test/data/android/test.html";
+    private static final String GEOLOCATION_PAGE =
+            "/chrome/test/data/geolocation/geolocation_on_load.html";
+    private static final String SELECT_POPUP_PAGE = "/chrome/test/data/android/select.html";
     private static final String FRAGMENT_TEST_PAGE = "/chrome/test/data/android/fragment.html";
     private static final String TEST_MENU_TITLE = "testMenuTitle";
     private static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
@@ -431,6 +437,86 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         });
     }
 
+    /**
+     * Test whether a custom tab can be reparented to a new activity.
+     */
+    @SmallTest
+    public void testTabReparentingBasic() throws InterruptedException {
+        startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
+        reparentAndVerifyTab();
+    }
+
+    /**
+     * Test whether a custom tab can be reparented to a new activity while showing an infobar.
+     */
+    @SmallTest
+    public void testTabReparentingInfoBar() throws InterruptedException {
+        LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
+        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                getInstrumentation().getTargetContext(),
+                        mTestServer.getURL(GEOLOCATION_PAGE), null));
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                Tab currentTab = getActivity().getActivityTab();
+                return currentTab != null
+                        && currentTab.getInfoBarContainer() != null
+                        && currentTab.getInfoBarContainer().getInfoBarsForTesting().size() == 1;
+            }
+        });
+        final ChromeActivity newActivity = reparentAndVerifyTab();
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                Tab currentTab = newActivity.getActivityTab();
+                return currentTab != null
+                        && currentTab.getInfoBarContainer() != null
+                        && currentTab.getInfoBarContainer().getInfoBarsForTesting().size() == 1;
+            }
+        });
+    }
+
+    /**
+     * Test whether a custom tab can be reparented to a new activity while showing a select popup.
+     */
+    @SmallTest
+    public void testTabReparentingSelectPopup() throws InterruptedException {
+        LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
+        startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
+                getInstrumentation().getTargetContext(),
+                        mTestServer.getURL(SELECT_POPUP_PAGE), null));
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                Tab currentTab = getActivity().getActivityTab();
+                return currentTab != null
+                        && currentTab.getContentViewCore() != null;
+            }
+        });
+        try {
+            DOMUtils.clickNode(CustomTabActivityTest.this,
+                    getActivity().getActivityTab().getContentViewCore(), "select");
+        } catch (TimeoutException e) {
+            fail();
+        }
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getActivityTab().getContentViewCore().getSelectPopupForTest()
+                        != null;
+            }
+        });
+        final ChromeActivity newActivity = reparentAndVerifyTab();
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                Tab currentTab = newActivity.getActivityTab();
+                return currentTab != null
+                        && currentTab.getContentViewCore() != null
+                        && currentTab.getContentViewCore().getSelectPopupForTest() == null;
+            }
+        });
+    }
     /**
      * Test whether the color of the toolbar is correctly customized. For L or later releases,
      * status bar color is also tested.
@@ -1037,6 +1123,46 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             fail();
         }
         return connection;
+    }
+
+    private ChromeActivity reparentAndVerifyTab() throws InterruptedException {
+        ActivityResult result = null;
+        final ActivityMonitor monitor = getInstrumentation().addMonitor(
+                ChromeTabbedActivity.class.getName(), result, false);
+        final Tab tabToBeReparented = mActivity.getActivityTab();
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mActivity.openCurrentUrlInBrowser(true);
+                assertNull(mActivity.getActivityTab());
+            }
+        });
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getInstrumentation().checkMonitorHit(monitor, 1);
+            }
+        });
+        assertTrue(monitor.getLastActivity() instanceof ChromeActivity);
+        final ChromeActivity newActivity = (ChromeActivity) monitor.getLastActivity();
+        CriteriaHelper.pollUiThread((new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return newActivity.getActivityTab() != null
+                        && newActivity.getActivityTab().equals(tabToBeReparented);
+            }
+        }));
+        CriteriaHelper.pollUiThread((new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mActivity.isActivityDestroyed();
+            }
+        }));
+        assertEquals(newActivity.getWindowAndroid(), tabToBeReparented.getWindowAndroid());
+        assertEquals(newActivity.getWindowAndroid(),
+                tabToBeReparented.getContentViewCore().getWindowAndroid());
+        assertFalse(tabToBeReparented.getDelegateFactory() instanceof CustomTabDelegateFactory);
+        return newActivity;
     }
 
     private IBinder warmUpAndLaunchUrlWithSession(ICustomTabsCallback cb)

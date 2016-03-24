@@ -577,7 +577,7 @@ public class CustomTabActivity extends ChromeActivity {
                                 && TextUtils.equals(getPackageName(), creatorPackage)) {
                             RecordUserAction.record(
                                     "TaskManagement.OpenInChromeActionButtonClicked");
-                            if (openCurrentUrlInBrowser()) finish();
+                            if (openCurrentUrlInBrowser(false)) finish();
                         } else {
                             mIntentDataProvider.sendButtonPendingIntentWithUrl(
                                     getApplicationContext(), getActivityTab().getUrl());
@@ -697,7 +697,7 @@ public class CustomTabActivity extends ChromeActivity {
                 && !mIntentDataProvider.shouldShowBookmarkMenuItem()) {
             return true;
         } else if (id == R.id.open_in_browser_id) {
-            openCurrentUrlInBrowser();
+            openCurrentUrlInBrowser(false);
             RecordUserAction.record("CustomTabsMenuOpenInChrome");
             return true;
         } else if (id == R.id.find_in_page_id) {
@@ -745,10 +745,11 @@ public class CustomTabActivity extends ChromeActivity {
 
     /**
      * Opens the URL currently being displayed in the Custom Tab in the regular browser.
+     * @param forceReparenting Whether tab reparenting should be forced for testing.
      *
      * @return Whether or not the tab was sent over successfully.
      */
-    boolean openCurrentUrlInBrowser() {
+    boolean openCurrentUrlInBrowser(boolean forceReparenting) {
         if (getActivityTab() == null) return false;
 
         String url = getTabModelSelector().getCurrentTab().getUrl();
@@ -769,12 +770,13 @@ public class CustomTabActivity extends ChromeActivity {
             StrictMode.setThreadPolicy(oldPolicy);
         }
 
-        if (willChromeHandleIntent) {
+        if (willChromeHandleIntent || forceReparenting) {
             intent.setPackage(getPackageName());
 
             boolean enableTabReparenting = ChromeVersionInfo.isLocalBuild()
                     || ChromeVersionInfo.isCanaryBuild() || ChromeVersionInfo.isDevBuild()
-                    || FieldTrialList.findFullName("TabReparenting").startsWith("Enabled");
+                    || FieldTrialList.findFullName("TabReparenting").startsWith("Enabled")
+                    || forceReparenting;
             if (enableTabReparenting) {
                 // Take the activity tab and set it aside for reparenting.
                 final Tab tab = getActivityTab();
