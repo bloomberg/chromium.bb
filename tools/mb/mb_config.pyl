@@ -638,7 +638,6 @@
       'android_blink_rel': 'tbd',
       'android_chromium_variable': 'tbd',
       'android_coverage': 'tbd',
-      'android_cronet_tester': 'tbd',
       'android_deterministic': 'tbd',
       'cast_shell_android': 'tbd',
 
@@ -652,6 +651,7 @@
       'android_compile_rel': 'swarming_android_gyp_release_trybot',
       'android_compile_x64_dbg': 'android_gn_debug_trybot_x64',
       'android_compile_x86_dbg': 'android_gn_debug_trybot_x86',
+      'android_cronet_tester': 'android_cronet_gyp_debug_trybot',
       'linux_android_dbg_ng': 'swarming_android_gyp_debug_trybot',
       'linux_android_rel_ng': 'swarming_android_gyp_release_trybot',
     },
@@ -829,7 +829,7 @@
     },
   },
 
-   
+
   # This is the list of configs that you can pass to mb; each config
   # represents a particular combination of GYP_DEFINES/gn args that
   # we must support. A given config *may* be platform-specific but
@@ -864,6 +864,10 @@
 
     'android_cronet_gyp_debug_static_bot_x86': [
       'android', 'cronet', 'gyp', 'debug_static_bot', 'x86'
+    ],
+
+    'android_cronet_gyp_debug_trybot': [
+      'android', 'cronet', 'gyp', 'debug_trybot'
     ],
 
     'android_cronet_gyp_release_bot_minimal_symbols': [
