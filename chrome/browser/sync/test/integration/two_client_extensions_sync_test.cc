@@ -37,6 +37,13 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
   ASSERT_TRUE(AwaitAllProfilesHaveSameExtensions());
 }
 
+// E2E tests flaky on Mac: https://crbug.com/597319
+#if defined(OS_MACOSX)
+#define MAYBE_E2E(test_name) test_name
+#else
+#define MAYBE_E2E(test_name) E2E_ENABLED(test_name)
+#endif
+
 // Flaky on Mac: http://crbug.com/535996
 #if defined(OS_MACOSX)
 #define MAYBE_StartWithSameExtensions DISABLED_StartWithSameExtensions
@@ -66,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
 #define MAYBE_StartWithDifferentExtensions StartWithDifferentExtensions
 #endif
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
-                       E2E_ENABLED(MAYBE_StartWithDifferentExtensions)) {
+                       MAYBE_E2E(MAYBE_StartWithDifferentExtensions)) {
   ASSERT_TRUE(SetupClients());
 
   int extension_index = 0;
@@ -126,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
 }
 
 // TCM ID - 3637311.
-IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, E2E_ENABLED(Add)) {
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, MAYBE_E2E(Add)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensions());
 
@@ -137,7 +144,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, E2E_ENABLED(Add)) {
 }
 
 // TCM ID - 3724281.
-IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, E2E_ENABLED(Uninstall)) {
+IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, MAYBE_E2E(Uninstall)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensions());
 
@@ -151,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest, E2E_ENABLED(Uninstall)) {
 
 // TCM ID - 3605300.
 IN_PROC_BROWSER_TEST_F(TwoClientExtensionsSyncTest,
-                       E2E_ENABLED(UpdateEnableDisableExtension)) {
+                       MAYBE_E2E(UpdateEnableDisableExtension)) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameExtensions());
 
