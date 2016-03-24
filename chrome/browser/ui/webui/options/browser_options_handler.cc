@@ -59,6 +59,7 @@
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/profile_helper.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -717,7 +718,7 @@ void BrowserOptionsHandler::GetLocalizedValues(base::DictionaryValue* values) {
                      Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
                          prefs::kResolveTimezoneByGeolocation));
   values->SetBoolean("enableLanguageOptionsImeMenu",
-                     chromeos::switches::IsImeMenuEnabled());
+                     base::FeatureList::IsEnabled(features::kOptInImeMenu));
   values->SetBoolean(
       "enableExperimentalAccessibilityFeatures",
       base::CommandLine::ForCurrentProcess()->HasSwitch(

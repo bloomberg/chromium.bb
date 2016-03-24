@@ -35,6 +35,10 @@ extern const base::Feature kSimplifiedFullscreenUI;
 extern const base::Feature kSyzyasanDeferredFree;
 #endif
 
+#if defined(OS_CHROMEOS)
+extern const base::Feature kOptInImeMenu;
+#endif  // defined(OS_CHROMEOS)
+
 // DON'T ADD RANDOM STUFF HERE. Put it in the main section above in
 // alphabetical order, or in one of the ifdefs (also in order in each section).
 

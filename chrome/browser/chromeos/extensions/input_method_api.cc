@@ -22,6 +22,7 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/input_method_private.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
@@ -71,11 +72,11 @@ InputMethodPrivateGetInputMethodConfigFunction::Run() {
       "isPhysicalKeyboardAutocorrectEnabled",
       !base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisablePhysicalKeyboardAutocorrect));
-  output->SetBoolean(
-      "isImeMenuActivated",
-      chromeos::switches::IsImeMenuEnabled() &&
-          Profile::FromBrowserContext(browser_context())->GetPrefs()
-          ->GetBoolean(prefs::kLanguageImeMenuActivated));
+  output->SetBoolean("isImeMenuActivated",
+                     base::FeatureList::IsEnabled(features::kOptInImeMenu) &&
+                         Profile::FromBrowserContext(browser_context())
+                             ->GetPrefs()
+                             ->GetBoolean(prefs::kLanguageImeMenuActivated));
   return RespondNow(OneArgument(output));
 #endif
 }

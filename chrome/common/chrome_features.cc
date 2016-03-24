@@ -56,4 +56,10 @@ const base::Feature kSyzyasanDeferredFree{"SyzyasanDeferredFree",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+#if defined(OS_CHROMEOS)
+// Enables or disables the opt-in IME menu in the language settings page.
+const base::Feature kOptInImeMenu{"OptInImeMenu",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace features

@@ -1822,6 +1822,9 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EXPERIMENTAL_ACCESSIBILITY_FEATURES_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(
          chromeos::switches::kEnableExperimentalAccessibilityFeatures)},
+     {"opt-in-ime-menu", IDS_FLAGS_ENABLE_IME_MENU_NAME,
+     IDS_FLAGS_ENABLE_IME_MENU_DESCRIPTION, kOsCrOS,
+     FEATURE_VALUE_TYPE(features::kOptInImeMenu)},
 #endif
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

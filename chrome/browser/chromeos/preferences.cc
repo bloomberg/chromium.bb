@@ -26,7 +26,7 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/system/statistics_provider.h"
@@ -335,7 +335,8 @@ void Preferences::InitUserPrefs(syncable_prefs::PrefServiceSyncable* prefs) {
                               prefs, callback);
   ime_menu_activated_.Init(prefs::kLanguageImeMenuActivated, prefs, callback);
   // Notifies the system tray to remove the IME items.
-  if (switches::IsImeMenuEnabled() && ime_menu_activated_.GetValue())
+  if (base::FeatureList::IsEnabled(features::kOptInImeMenu) &&
+      ime_menu_activated_.GetValue())
     input_method::InputMethodManager::Get()->ImeMenuActivationChanged(true);
 
   xkb_auto_repeat_enabled_.Init(
@@ -604,7 +605,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
 
   if (pref_name == prefs::kLanguageImeMenuActivated &&
       (reason == REASON_PREF_CHANGED || reason == REASON_ACTIVE_USER_CHANGED) &&
-      switches::IsImeMenuEnabled()) {
+      base::FeatureList::IsEnabled(features::kOptInImeMenu)) {
     const bool activated = ime_menu_activated_.GetValue();
     input_method::InputMethodManager::Get()->ImeMenuActivationChanged(
         activated);

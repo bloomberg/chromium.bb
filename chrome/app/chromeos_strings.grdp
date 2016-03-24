@@ -3633,8 +3633,8 @@ Press any key to continue exploring.
     This language doesn't have any input methods
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ACTIVATE_IME_MENU"
-           desc="The label for activating IME menu on the shelf.">
-    Show the input method menu on the shelf.
+           desc="The label for showing expanded IME menu in the shelf.">
+    Show expanded input options in the shelf.
   </message>
   <message name="IDS_OPTIONS_SETTINGS_LANGUAGES_ACTIVATE_IME_MENU_DESCRIPTION"
            desc="The label for the description of showing input method menu.">
@@ -6538,5 +6538,11 @@ All users must sign out to continue.
   </message>
   <message name="IDS_ARC_SERVER_COMMUNICATION_ERROR" desc="Android sign-in error because of server communication error">
     Server communication error
+  </message>
+  <message name="IDS_FLAGS_ENABLE_IME_MENU_NAME" desc="Name of the about: flag for enabling opt-in IME menu.">
+    Enable opt-in IME menu
+    </message>
+  <message name="IDS_FLAGS_ENABLE_IME_MENU_DESCRIPTION" desc="Description of the about: flag for enabling opt-in IME menu.">
+    Enable access to the new IME menu in the Language Settings page.
   </message>
 </grit-part>
