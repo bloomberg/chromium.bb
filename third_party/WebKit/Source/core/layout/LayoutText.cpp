@@ -904,7 +904,7 @@ void LayoutText::computePreferredLogicalWidths(float leadWidth, HashSet<const Si
     BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
     BidiCharacterRun* run;
     TextDirection textDirection = styleToUse.direction();
-    if (is8Bit() || isOverride(styleToUse.unicodeBidi())) {
+    if ((is8Bit() && textDirection == LTR) || isOverride(styleToUse.unicodeBidi())) {
         run = 0;
     } else {
         TextRun textRun(text());
