@@ -69,6 +69,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/misc/expando-loss-2.html', bug=483282)
 
+    self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=483282)
+
     # Windows / Mac.
     self.Fail('conformance2/textures/image_bitmap_from_image/' +
         'tex-image-and-sub-image-2d-with-image-bitmap-from-image-' +
