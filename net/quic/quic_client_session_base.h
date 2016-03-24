@@ -89,7 +89,7 @@ class NET_EXPORT_PRIVATE QuicClientSessionBase
 
   // Removes |promised| from the maps by url and id and destroys
   // promised.
-  void DeletePromised(QuicClientPromisedInfo* promised);
+  virtual void DeletePromised(QuicClientPromisedInfo* promised);
 
   // Sends Rst for the stream, and makes sure that future calls to
   // IsClosedStream(id) return true, which ensures that any subsequent

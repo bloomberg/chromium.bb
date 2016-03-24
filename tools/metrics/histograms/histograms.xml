@@ -27605,6 +27605,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.QuicSession.Pushed" units="count">
+  <owner>ckrasic@chromium.org</owner>
+  <summary>
+    The number of push streams received when the session is closed.
+  </summary>
+</histogram>
+
+<histogram name="Net.QuicSession.PushedAndClaimed" units="count">
+  <owner>ckrasic@chromium.org</owner>
+  <summary>
+    The number of pushed and used streams when the session is closed.
+  </summary>
+</histogram>
+
 <histogram name="Net.QuicSession.QuicVersion">
   <owner>rch@chromium.org</owner>
   <summary>Version of the QUIC protocol used for this connection.</summary>

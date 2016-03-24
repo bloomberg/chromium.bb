@@ -23,6 +23,7 @@
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_chromium_connection_helper.h"
+#include "net/quic/quic_client_promised_info.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_server_id.h"
@@ -234,6 +235,8 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       port_migration_detected_(false),
       disabled_reason_(QUIC_DISABLED_NOT),
       token_binding_signatures_(kTokenBindingSignatureMapSize),
+      streams_pushed_count_(0),
+      streams_pushed_and_claimed_count_(0),
       weak_factory_(this) {
   sockets_.push_back(std::move(socket));
   packet_readers_.push_back(make_scoped_ptr(new QuicChromiumPacketReader(
@@ -300,6 +303,9 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.NumTotalStreams", num_total_streams_);
   UMA_HISTOGRAM_COUNTS("Net.QuicNumSentClientHellos",
                        crypto_stream_->num_sent_client_hellos());
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.Pushed", streams_pushed_count_);
+  UMA_HISTOGRAM_COUNTS("Net.QuicSession.PushedAndClaimed",
+                       streams_pushed_and_claimed_count_);
   if (!IsCryptoHandshakeConfirmed())
     return;
 
@@ -1141,7 +1147,10 @@ const DatagramClientSocket* QuicChromiumClientSession::GetDefaultSocket()
 }
 
 bool QuicChromiumClientSession::IsAuthorized(const std::string& hostname) {
-  return CanPool(hostname, server_id_.privacy_mode());
+  bool result = CanPool(hostname, server_id_.privacy_mode());
+  if (result)
+    streams_pushed_count_++;
+  return result;
 }
 
 bool QuicChromiumClientSession::HasNonMigratableStreams() const {
@@ -1159,6 +1168,13 @@ void QuicChromiumClientSession::HandlePromised(QuicStreamId id,
   net_log_.AddEvent(NetLog::TYPE_QUIC_SESSION_PUSH_PROMISE_RECEIVED,
                     base::Bind(&NetLogQuicPushPromiseReceivedCallback, &headers,
                                id, promised_id));
+}
+
+void QuicChromiumClientSession::DeletePromised(
+    QuicClientPromisedInfo* promised) {
+  if (IsOpenStream(promised->id()))
+    streams_pushed_and_claimed_count_++;
+  QuicClientSessionBase::DeletePromised(promised);
 }
 
 }  // namespace net

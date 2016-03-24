@@ -266,6 +266,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                       QuicStreamId promised_id,
                       const SpdyHeaderBlock& headers) override;
 
+  void DeletePromised(QuicClientPromisedInfo* promised) override;
+
  protected:
   // QuicSession methods:
   QuicChromiumClientStream* CreateIncomingDynamicStream(
@@ -340,6 +342,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool port_migration_detected_;
   QuicDisabledReason disabled_reason_;
   TokenBindingSignatureMap token_binding_signatures_;
+  // UMA histogram counters for streams pushed to this session.
+  int streams_pushed_count_;
+  int streams_pushed_and_claimed_count_;
   base::WeakPtrFactory<QuicChromiumClientSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumClientSession);
