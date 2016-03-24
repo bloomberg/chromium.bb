@@ -4,6 +4,9 @@
 
 #include "components/leveldb/leveldb_database_impl.h"
 
+#include <map>
+#include <string>
+
 #include "base/rand_util.h"
 #include "components/leveldb/env_mojo.h"
 #include "components/leveldb/util.h"
@@ -107,8 +110,10 @@ void LevelDBDatabaseImpl::GetFromSnapshot(uint64_t snapshot_id,
                                           const GetCallback& callback) {
   // If the snapshot id is invalid, send back invalid argument
   auto it = snapshot_map_.find(snapshot_id);
-  if (it == snapshot_map_.end())
+  if (it == snapshot_map_.end()) {
     callback.Run(DatabaseError::INVALID_ARGUMENT, mojo::Array<uint8_t>());
+    return;
+  }
 
   std::string value;
   leveldb::ReadOptions options;

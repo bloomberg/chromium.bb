@@ -32,6 +32,12 @@ class LevelDBApptest : public mojo::test::ShellTest {
     connector()->ConnectToInterface("mojo:leveldb", &leveldb_);
   }
 
+  void TearDown() override {
+    leveldb_.reset();
+    files_.reset();
+    ShellTest::TearDown();
+  }
+
   // Note: This has an out parameter rather than returning the |DirectoryPtr|,
   // since |ASSERT_...()| doesn't work with return values.
   void GetUserDataDir(filesystem::DirectoryPtr* directory) {
@@ -52,13 +58,7 @@ class LevelDBApptest : public mojo::test::ShellTest {
   DISALLOW_COPY_AND_ASSIGN(LevelDBApptest);
 };
 
-#if defined(OS_LINUX)
-// Flaky on Linux: http://crbug.com/594977,
-#define MAYBE_Basic DISABLED_Basic
-#else
-#define MAYBE_Basic Basic
-#endif
-TEST_F(LevelDBApptest, MAYBE_Basic) {
+TEST_F(LevelDBApptest, Basic) {
   filesystem::DirectoryPtr directory;
   GetUserDataDir(&directory);
 
@@ -274,12 +274,6 @@ TEST_F(LevelDBApptest, GetFromSnapshots) {
   EXPECT_EQ("value", value.To<std::string>());
 }
 
-#if defined(OS_LINUX)
-// Flaky on Linux: http://crbug.com/594977,
-#define MAYBE_InvalidArgumentOnInvalidSnapshot DISABLED_InvalidArgumentOnInvalidSnapshot
-#else
-#define MAYBE_InvalidArgumentOnInvalidSnapshot InvalidArgumentOnInvalidSnapshot
-#endif
 TEST_F(LevelDBApptest, InvalidArgumentOnInvalidSnapshot) {
   filesystem::DirectoryPtr directory;
   GetUserDataDir(&directory);

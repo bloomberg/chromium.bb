@@ -5,7 +5,10 @@
 #ifndef COMPONENTS_LEVELDB_LEVELDB_FILE_THREAD_H_
 #define COMPONENTS_LEVELDB_LEVELDB_FILE_THREAD_H_
 
+#include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
@@ -95,6 +98,22 @@ class LevelDBFileThread : public base::Thread,
  private:
   friend class base::RefCountedThreadSafe<LevelDBFileThread>;
   ~LevelDBFileThread() override;
+
+  // Called from the beginning of most impls which take an OpaqueDir. Returns
+  // true if the directory was unbound between the time the task was posted and
+  // the task was run on this thread. If it was, no further processing should
+  // be done (and the waitable event will be Signal()ed).
+  bool RegisterDirAndWaitableEvent(OpaqueDir* dir,
+                                   base::WaitableEvent* done_event);
+
+  // Cleans up internal state related to the waitable event before Signal()ing
+  // it.
+  void CompleteWaitableEvent(base::WaitableEvent* done_event);
+
+  // Called when one of our directory or files has a connection error. This
+  // will find all the outstanding waitable events that depend on it and signal
+  // them.
+  void OnConnectionError();
 
   void RegisterDirectoryImpl(
       base::WaitableEvent* done_event,
@@ -216,6 +235,14 @@ class LevelDBFileThread : public base::Thread,
   void CleanUp() override;
 
   int outstanding_opaque_dirs_;
+
+  // When our public methods are called, we create a WaitableEvent on their
+  // thread so that we can block their thread on the LevelDBFileThread. We then
+  // need to track what DirectoryPtrs and FilePtrs, which if they get closed,
+  // should immediately trigger the waitable event.
+  struct WaitableEventDependencies;
+  std::map<base::WaitableEvent*, WaitableEventDependencies>
+      waitable_event_dependencies_;
 
   DISALLOW_COPY_AND_ASSIGN(LevelDBFileThread);
 };
