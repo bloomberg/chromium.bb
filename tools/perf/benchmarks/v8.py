@@ -30,6 +30,11 @@ class V8Top25(perf_benchmark.PerfBenchmark):
   page_set = page_sets.V8Top25SmoothPageSet
 
   @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
+    return (possible_browser.browser_type == 'reference' and
+            possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
+
+  @classmethod
   def Name(cls):
     return 'v8.top_25_smooth'
 
