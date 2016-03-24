@@ -358,6 +358,7 @@
                     'data/certificate_policies_unittest/',
                     'data/name_constraints_unittest/',
                     'data/parse_certificate_unittest/',
+                    'data/parse_ocsp_unittest/',
                     'data/ssl/certificates/',
                     'data/test.html',
                     'data/url_request_unittest/',

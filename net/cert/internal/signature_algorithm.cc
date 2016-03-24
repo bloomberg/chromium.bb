@@ -321,49 +321,6 @@ scoped_ptr<SignatureAlgorithm> ParseEcdsa(DigestAlgorithm digest,
   return SignatureAlgorithm::CreateEcdsa(digest);
 }
 
-// Parses a HashAlgorithm as defined by RFC 5912:
-//
-//     HashAlgorithm  ::=  AlgorithmIdentifier{DIGEST-ALGORITHM,
-//                             {HashAlgorithms}}
-//
-//     HashAlgorithms DIGEST-ALGORITHM ::=  {
-//         { IDENTIFIER id-sha1 PARAMS TYPE NULL ARE preferredPresent } |
-//         { IDENTIFIER id-sha224 PARAMS TYPE NULL ARE preferredPresent } |
-//         { IDENTIFIER id-sha256 PARAMS TYPE NULL ARE preferredPresent } |
-//         { IDENTIFIER id-sha384 PARAMS TYPE NULL ARE preferredPresent } |
-//         { IDENTIFIER id-sha512 PARAMS TYPE NULL ARE preferredPresent }
-//     }
-WARN_UNUSED_RESULT bool ParseHashAlgorithm(const der::Input input,
-                                           DigestAlgorithm* out) {
-  der::Input oid;
-  der::Input params;
-  if (!ParseAlgorithmIdentifier(input, &oid, &params))
-    return false;
-
-  DigestAlgorithm hash;
-
-  if (oid == der::Input(kOidSha1)) {
-    hash = DigestAlgorithm::Sha1;
-  } else if (oid == der::Input(kOidSha256)) {
-    hash = DigestAlgorithm::Sha256;
-  } else if (oid == der::Input(kOidSha384)) {
-    hash = DigestAlgorithm::Sha384;
-  } else if (oid == der::Input(kOidSha512)) {
-    hash = DigestAlgorithm::Sha512;
-  } else {
-    // Unsupported digest algorithm.
-    return false;
-  }
-
-  // From RFC 5912: "PARAMS TYPE NULL ARE preferredPresent". Which is to say
-  // the can either be absent, or NULL.
-  if (!IsEmpty(params) && !IsNull(params))
-    return false;
-
-  *out = hash;
-  return true;
-}
-
 // Parses a MaskGenAlgorithm as defined by RFC 5912:
 //
 //     MaskGenAlgorithm ::= AlgorithmIdentifier{ALGORITHM,
@@ -538,6 +495,37 @@ scoped_ptr<SignatureAlgorithm> ParseRsaPss(const der::Input& params) {
 }
 
 }  // namespace
+
+WARN_UNUSED_RESULT bool ParseHashAlgorithm(const der::Input input,
+                                           DigestAlgorithm* out) {
+  der::Input oid;
+  der::Input params;
+  if (!ParseAlgorithmIdentifier(input, &oid, &params))
+    return false;
+
+  DigestAlgorithm hash;
+
+  if (oid == der::Input(kOidSha1)) {
+    hash = DigestAlgorithm::Sha1;
+  } else if (oid == der::Input(kOidSha256)) {
+    hash = DigestAlgorithm::Sha256;
+  } else if (oid == der::Input(kOidSha384)) {
+    hash = DigestAlgorithm::Sha384;
+  } else if (oid == der::Input(kOidSha512)) {
+    hash = DigestAlgorithm::Sha512;
+  } else {
+    // Unsupported digest algorithm.
+    return false;
+  }
+
+  // From RFC 5912: "PARAMS TYPE NULL ARE preferredPresent". Which is to say
+  // the can either be absent, or NULL.
+  if (!IsEmpty(params) && !IsNull(params))
+    return false;
+
+  *out = hash;
+  return true;
+}
 
 RsaPssParameters::RsaPssParameters(DigestAlgorithm mgf1_hash,
                                    uint32_t salt_length)

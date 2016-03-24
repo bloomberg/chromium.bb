@@ -34,6 +34,21 @@ enum class SignatureAlgorithmId {
   Ecdsa,     // ECDSA
 };
 
+// Parses a HashAlgorithm as defined by RFC 5912:
+//
+//     HashAlgorithm  ::=  AlgorithmIdentifier{DIGEST-ALGORITHM,
+//                             {HashAlgorithms}}
+//
+//     HashAlgorithms DIGEST-ALGORITHM ::=  {
+//         { IDENTIFIER id-sha1 PARAMS TYPE NULL ARE preferredPresent } |
+//         { IDENTIFIER id-sha224 PARAMS TYPE NULL ARE preferredPresent } |
+//         { IDENTIFIER id-sha256 PARAMS TYPE NULL ARE preferredPresent } |
+//         { IDENTIFIER id-sha384 PARAMS TYPE NULL ARE preferredPresent } |
+//         { IDENTIFIER id-sha512 PARAMS TYPE NULL ARE preferredPresent }
+//     }
+WARN_UNUSED_RESULT bool ParseHashAlgorithm(const der::Input input,
+                                           DigestAlgorithm* out);
+
 // Base class for describing algorithm parameters.
 class NET_EXPORT SignatureAlgorithmParameters {
  public:

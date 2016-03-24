@@ -179,6 +179,13 @@ bool Parser::ReadSequence(Parser* out) {
   return ReadConstructed(kSequence, out);
 }
 
+bool Parser::ReadUint8(uint8_t* out) {
+  Input encoded_int;
+  if (!ReadTag(kInteger, &encoded_int))
+    return false;
+  return ParseUint8(encoded_int, out);
+}
+
 bool Parser::ReadUint64(uint64_t* out) {
   Input encoded_int;
   if (!ReadTag(kInteger, &encoded_int))
@@ -191,6 +198,13 @@ bool Parser::ReadBitString(BitString* bit_string) {
   if (!ReadTag(kBitString, &value))
     return false;
   return ParseBitString(value, bit_string);
+}
+
+bool Parser::ReadGeneralizedTime(GeneralizedTime* out) {
+  Input value;
+  if (!ReadTag(kGeneralizedTime, &value))
+    return false;
+  return ParseGeneralizedTime(value, out);
 }
 
 }  // namespace der

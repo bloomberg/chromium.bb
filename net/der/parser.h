@@ -19,6 +19,7 @@ namespace net {
 namespace der {
 
 class BitString;
+struct GeneralizedTime;
 
 // Parses a DER-encoded ASN.1 structure. DER (distinguished encoding rules)
 // encodes each data value with a tag, length, and value (TLV). The tag
@@ -146,10 +147,19 @@ class NET_EXPORT Parser {
   // to be 0x30 (SEQUENCE).
   bool ReadSequence(Parser* out) WARN_UNUSED_RESULT;
 
+  // Expects the current tag to be kInteger, and calls ParseUint8 on the
+  // current value. Note that DER-encoded integers are arbitrary precision,
+  // so this method will fail for valid input that represents an integer
+  // outside the range of an uint8_t.
+  //
+  // Note that on failure the Parser is left in an undefined state (the
+  // input may or may not have been advanced).
+  bool ReadUint8(uint8_t* out) WARN_UNUSED_RESULT;
+
   // Expects the current tag to be kInteger, and calls ParseUint64 on the
   // current value. Note that DER-encoded integers are arbitrary precision,
   // so this method will fail for valid input that represents an integer
-  // outside the range of an int64_t.
+  // outside the range of an uint64_t.
   //
   // Note that on failure the Parser is left in an undefined state (the
   // input may or may not have been advanced).
@@ -160,6 +170,12 @@ class NET_EXPORT Parser {
   // Note that on failure the Parser is left in an undefined state (the
   // input may or may not have been advanced).
   bool ReadBitString(BitString* out) WARN_UNUSED_RESULT;
+
+  // Reads a GeneralizeTime. On success fills |out| and returns true.
+  //
+  // Note that on failure the Parser is left in an undefined state (the
+  // input may or may not have been advanced).
+  bool ReadGeneralizedTime(GeneralizedTime* out) WARN_UNUSED_RESULT;
 
   // Lower level methods. The previous methods couple reading data from the
   // input with advancing the Parser's internal pointer to the next TLV; these
