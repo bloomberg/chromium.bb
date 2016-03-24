@@ -249,9 +249,7 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, ViewProfileUMA) {
       ProfileMetrics::PROFILE_AVATAR_MENU_UPGRADE_VIEW, 1);
 }
 
-// Fixed flaky test: http://crbug.com/450221
-// TODO(mlermann): enable the test.
-IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, DISABLED_LockProfile) {
+IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, LockProfile) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
 
   // Set up the message loop for the user manager.
@@ -279,10 +277,8 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest, DISABLED_LockProfile) {
   UserManager::Hide();
 }
 
-// Fixed flaky test: http://crbug.com/450221
-// TODO(mlermann): enable the test.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
-                       DISABLED_LockProfileBlockExtensions) {
+                       LockProfileBlockExtensions) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
   // Make sure we have at least one enabled extension.
   extensions::ExtensionRegistry* registry =
@@ -309,10 +305,8 @@ IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
   UserManager::Hide();
 }
 
-// Fixed flaky test: http://crbug.com/450221
-// TODO(mlermann): enable the test.
 IN_PROC_BROWSER_TEST_F(ProfileChooserViewExtensionsTest,
-                       DISABLED_LockProfileNoBlockOtherProfileExtensions) {
+                       LockProfileNoBlockOtherProfileExtensions) {
   ASSERT_TRUE(profiles::IsMultipleProfilesEnabled());
   // Make sure we have at least one enabled extension.
   extensions::ExtensionRegistry* registry =
