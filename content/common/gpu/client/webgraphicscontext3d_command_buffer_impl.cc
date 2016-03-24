@@ -92,7 +92,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     WebGraphicsContext3DCommandBufferImpl* share_context)
     : lose_context_when_out_of_memory_(lose_context_when_out_of_memory),
       attributes_(attributes),
-      visible_(false),
       host_(host),
       surface_handle_(surface_handle),
       active_url_(active_url),
@@ -156,7 +155,6 @@ bool WebGraphicsContext3DCommandBufferImpl::MaybeInitializeGL() {
   real_gl_->TraceBeginCHROMIUM("WebGraphicsContext3D",
                                "CommandBufferContext");
 
-  visible_ = true;
   initialized_ = true;
   return true;
 }
