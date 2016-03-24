@@ -128,7 +128,7 @@ class CommandBufferLocal : public gpu::CommandBuffer,
   bool DestroyImageOnGpuThread(int32_t id);
   bool MakeProgressOnGpuThread(base::WaitableEvent* event,
                                gpu::CommandBuffer::State* state);
-  bool DeleteOnGpuThread();
+  bool DeleteOnGpuThread(base::WaitableEvent* event);
   bool SignalQueryOnGpuThread(uint32_t query_id, const base::Closure& callback);
 
   // Helper functions are called in the client thread.

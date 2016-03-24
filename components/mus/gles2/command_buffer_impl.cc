@@ -280,15 +280,26 @@ void CommandBufferImpl::OnConnectionError() {
   binding_.reset();
 
   // Objects we own (such as CommandBufferDriver) need to be destroyed on the
-  // thread we were created on.
-  gpu_state_->command_buffer_task_runner()->PostTask(
-      driver_.get(), base::Bind(&CommandBufferImpl::DeleteOnGpuThread,
-                                base::Unretained(this)));
+  // thread we were created on. It's entirely possible we haven't or are in the
+  // process of creating |driver_|.
+  if (driver_) {
+    gpu_state_->command_buffer_task_runner()->PostTask(
+        driver_.get(), base::Bind(&CommandBufferImpl::DeleteOnGpuThread,
+                                  base::Unretained(this)));
+  } else {
+    gpu_state_->command_buffer_task_runner()->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&CommandBufferImpl::DeleteOnGpuThread2,
+                              base::Unretained(this)));
+  }
 }
 
 bool CommandBufferImpl::DeleteOnGpuThread() {
   delete this;
   return true;
+}
+
+void CommandBufferImpl::DeleteOnGpuThread2() {
+  delete this;
 }
 
 }  // namespace mus

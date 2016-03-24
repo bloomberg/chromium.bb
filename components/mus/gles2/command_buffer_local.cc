@@ -96,10 +96,14 @@ void CommandBufferLocal::Destroy() {
   weak_factory_.InvalidateWeakPtrs();
   // CommandBufferLocal is initialized on the GPU thread with
   // InitializeOnGpuThread(), so we need delete memebers on the GPU thread
-  // too.
+  // too. Additionally we need to make sure we are deleted before returning,
+  // otherwise we may attempt to use the AcceleratedWidget which has since been
+  // destroyed.
+  base::WaitableEvent event(true, false);
   gpu_state_->command_buffer_task_runner()->PostTask(
       driver_.get(), base::Bind(&CommandBufferLocal::DeleteOnGpuThread,
-                                base::Unretained(this)));
+                                base::Unretained(this), &event));
+  event.Wait();
 }
 
 bool CommandBufferLocal::Initialize() {
@@ -512,8 +516,9 @@ bool CommandBufferLocal::MakeProgressOnGpuThread(
   return true;
 }
 
-bool CommandBufferLocal::DeleteOnGpuThread() {
+bool CommandBufferLocal::DeleteOnGpuThread(base::WaitableEvent* event) {
   delete this;
+  event->Signal();
   return true;
 }
 

@@ -102,6 +102,7 @@ class CommandBufferImpl : public mojom::CommandBuffer {
 
   void OnConnectionError();
   bool DeleteOnGpuThread();
+  void DeleteOnGpuThread2();
 
   scoped_refptr<GpuState> gpu_state_;
   scoped_ptr<CommandBufferDriver> driver_;
