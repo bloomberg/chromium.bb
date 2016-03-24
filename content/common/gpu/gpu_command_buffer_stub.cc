@@ -243,7 +243,8 @@ GpuCommandBufferStub::GpuCommandBufferStub(
     surface_format_ = gfx::GLSurface::SURFACE_RGB565;
   gfx::GLSurface* defaultOffscreenSurface =
       channel_->gpu_channel_manager()->GetDefaultOffscreenSurface();
-  if (surface_format_ != defaultOffscreenSurface->GetFormat())
+  bool is_onscreen = (surface_handle_ != gpu::kNullSurfaceHandle);
+  if (surface_format_ != defaultOffscreenSurface->GetFormat() && is_onscreen)
     use_virtualized_gl_context_ = false;
 #endif
 
