@@ -47,7 +47,7 @@ def _ParseArgs(args):
   parser.add_option('--proguard-enabled-input-path',
                     help=('Path to dex in Release mode when proguard '
                           'is enabled.'))
-  parser.add_option('--no-locals',
+  parser.add_option('--no-locals', default='0',
                     help='Exclude locals list from the dex file.')
   parser.add_option('--incremental',
                     action='store_true',
