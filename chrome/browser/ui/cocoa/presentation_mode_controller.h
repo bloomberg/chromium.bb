@@ -142,6 +142,9 @@ enum SlidingStyle {
 // Ranges from 0 to -22.
 - (CGFloat)menubarOffset;
 
+// Returns true if the window is on the active space.
+- (BOOL)isOnActiveSpace;
+
 @end
 
 // Private methods exposed for testing.

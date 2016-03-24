@@ -31,6 +31,9 @@ const NSTimeInterval kMouseExitCheckDelay = 0.1;
 const NSTimeInterval kDropdownShowDelay = 0.3;
 const NSTimeInterval kDropdownHideDelay = 0.2;
 
+// The event kind value for a undocumented menubar show/hide Carbon event.
+const CGFloat kMenuBarRevealEventKind = 2004;
+
 // The amount by which the floating bar is offset downwards (to avoid the menu)
 // in presentation mode. (We can't use |-[NSMenu menuBarHeight]| since it
 // returns 0 when the menu bar is hidden.)
@@ -41,15 +44,28 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
                               void* context) {
   PresentationModeController* self =
       static_cast<PresentationModeController*>(context);
-  CGFloat revealFraction = 0;
-  GetEventParameter(event,
-                    FOUR_CHAR_CODE('rvlf'),
-                    typeCGFloat,
-                    NULL,
-                    sizeof(CGFloat),
-                    NULL,
-                    &revealFraction);
-  [self setMenuBarRevealProgress:revealFraction];
+
+  // If Chrome has multiple fullscreen windows in their own space, the Handler
+  // becomes flaky and might start receiving kMenuBarRevealEventKind events
+  // from another space. Since the menubar in the another space is in either a
+  // shown or hidden state, it will give us a reveal fraction of 0.0 or 1.0.
+  // As such, we should ignore the kMenuBarRevealEventKind event if it gives
+  // us a fraction of 0.0 or 1.0, and rely on kEventMenuBarShown and
+  // kEventMenuBarHidden to set these values.
+  if ([self isOnActiveSpace]) {
+    if (GetEventKind(event) == kMenuBarRevealEventKind) {
+      CGFloat revealFraction = 0;
+      GetEventParameter(event, FOUR_CHAR_CODE('rvlf'), typeCGFloat, NULL,
+                        sizeof(CGFloat), NULL, &revealFraction);
+      if (revealFraction > 0.0 && revealFraction < 1.0)
+        [self setMenuBarRevealProgress:revealFraction];
+    } else if (GetEventKind(event) == kEventMenuBarShown) {
+      [self setMenuBarRevealProgress:1.0];
+    } else {
+      [self setMenuBarRevealProgress:0.0];
+    }
+  }
+
   return CallNextEventHandler(handler, event);
 }
 
@@ -186,7 +202,6 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
 
 @end
 
-
 @implementation PresentationModeController
 
 @synthesize inPresentationMode = inPresentationMode_;
@@ -206,14 +221,22 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
     postNotificationName:kWillEnterFullscreenNotification
                   object:nil];
 
-  // Install the Carbon event handler for the undocumented menu bar show/hide
-  // event.
-  EventTypeSpec eventSpec = {kEventClassMenu, 2004};
-  InstallApplicationEventHandler(NewEventHandlerUPP(&MenuBarRevealHandler),
-                                 1,
-                                 &eventSpec,
-                                 self,
-                                 &menuBarTrackingHandler_);
+  // Install the Carbon event handler for the menubar show, hide and
+  // undocumented reveal event.
+  EventTypeSpec eventSpecs[3];
+
+  eventSpecs[0].eventClass = kEventClassMenu;
+  eventSpecs[0].eventKind = kMenuBarRevealEventKind;
+
+  eventSpecs[1].eventClass = kEventClassMenu;
+  eventSpecs[1].eventKind = kEventMenuBarShown;
+
+  eventSpecs[2].eventClass = kEventClassMenu;
+  eventSpecs[2].eventKind = kEventMenuBarHidden;
+
+  InstallApplicationEventHandler(NewEventHandlerUPP(&MenuBarRevealHandler), 3,
+                                 eventSpecs, self, &menuBarTrackingHandler_);
+
   return self;
 }
 
@@ -421,6 +444,10 @@ OSStatus MenuBarRevealHandler(EventHandlerCallRef handler,
   return [self shouldShowMenubarInImmersiveFullscreen]
              ? -[self floatingBarVerticalOffset]
              : 0;
+}
+
+- (BOOL)isOnActiveSpace {
+  return [browserController_ window].onActiveSpace;
 }
 
 // Used to activate the floating bar in presentation mode.
