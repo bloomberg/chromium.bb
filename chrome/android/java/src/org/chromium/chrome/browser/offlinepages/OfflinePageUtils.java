@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.offlinepages;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Environment;
 
@@ -221,6 +222,47 @@ public class OfflinePageUtils {
                                     .setAction(context.getString(R.string.reload), RELOAD_BUTTON);
         snackbar.setDuration(SNACKBAR_DURATION);
         snackbarManager.showSnackbar(snackbar);
+    }
+
+    /**
+     * Creates a snackbar controller for a case where "Free up space" button is shown to clean up
+     * space taken by the offline pages.
+     */
+    public static SnackbarController createSnackbarControllerForFreeUpSpaceButton(
+            final OfflinePageBridge offlinePageBridge, final SnackbarManager snackbarManager,
+            final Activity activity) {
+        return new SnackbarController() {
+            @Override
+            public void onDismissNoAction(Object actionData) {
+                // This method will be called only if the snackbar is dismissed by timeout.
+                RecordUserAction.record(
+                        "OfflinePages.SaveStatusSnackbar.FreeUpSpaceButtonNotClicked");
+            }
+
+            @Override
+            public void onAction(Object actionData) {
+                RecordUserAction.record("OfflinePages.SaveStatusSnackbar.FreeUpSpaceButtonClicked");
+                OfflinePageStorageSpacePolicy policy =
+                        new OfflinePageStorageSpacePolicy(offlinePageBridge);
+                if (policy.hasPagesToCleanUp()) {
+                    OfflinePageFreeUpSpaceCallback callback = new OfflinePageFreeUpSpaceCallback() {
+                        @Override
+                        public void onFreeUpSpaceDone() {
+                            snackbarManager.showSnackbar(
+                                    OfflinePageFreeUpSpaceDialog.createStorageClearedSnackbar(
+                                            activity));
+                        }
+                        @Override
+                        public void onFreeUpSpaceCancelled() {}
+                    };
+                    OfflinePageFreeUpSpaceDialog dialog =
+                            OfflinePageFreeUpSpaceDialog.newInstance(offlinePageBridge, callback);
+                    dialog.show(activity.getFragmentManager(), null);
+                } else {
+                    OfflinePageOpenStorageSettingsDialog.showDialog(activity);
+                }
+            }
+        };
     }
 
     /**
