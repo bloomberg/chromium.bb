@@ -38,6 +38,7 @@
             'remoting_client',
             'remoting_jni_headers',
             'remoting_protocol',
+            '../google_apis/google_apis.gyp:google_apis',
             '../ui/events/events.gyp:dom_keycode_converter',
             '../ui/gfx/gfx.gyp:gfx',
           ],

@@ -19,9 +19,9 @@
 #include "build/build_config.h"
 #include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "remoting/base/service_urls.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_exit_codes.h"
-#include "remoting/host/service_urls.h"
 #include "remoting/protocol/name_value_map.h"
 
 namespace remoting {

@@ -28,6 +28,8 @@
       'base/running_samples.cc',
       'base/running_samples.h',
       'base/scoped_sc_handle_win.h',
+      'base/service_urls.cc',
+      'base/service_urls.h',
       'base/socket_reader.cc',
       'base/socket_reader.h',
       'base/typed_buffer.h',
