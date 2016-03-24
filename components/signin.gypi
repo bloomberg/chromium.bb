@@ -235,6 +235,7 @@
             'signin/ios/browser/profile_oauth2_token_service_ios_delegate.h',
             'signin/ios/browser/profile_oauth2_token_service_ios_delegate.mm',
             'signin/ios/browser/profile_oauth2_token_service_ios_provider.h',
+            'signin/ios/browser/profile_oauth2_token_service_ios_provider.mm',
           ],
         },
         {

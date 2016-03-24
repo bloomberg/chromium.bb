@@ -54,16 +54,15 @@ class ProfileOAuth2TokenServiceIOSProvider {
   virtual ~ProfileOAuth2TokenServiceIOSProvider() {}
 
   // Returns the ids of all accounts.
-  virtual std::vector<AccountInfo> GetAllAccounts() const = 0;
+  virtual std::vector<AccountInfo> GetAllAccounts() const;
 
   // Returns the account info composed of a GAIA id and email corresponding to
   // email |email|.
-  virtual AccountInfo GetAccountInfoForEmail(
-      const std::string& email) const = 0;
+  virtual AccountInfo GetAccountInfoForEmail(const std::string& email) const;
 
   // Returns the account info composed of a GAIA id and email corresponding to
   // GAIA id |gaia|.
-  virtual AccountInfo GetAccountInfoForGaia(const std::string& gaia) const = 0;
+  virtual AccountInfo GetAccountInfoForGaia(const std::string& gaia) const;
 
   // Starts fetching an access token for the account with id |gaia_id| with
   // the given |scopes|. Once the token is obtained, |callback| is called.
@@ -71,11 +70,17 @@ class ProfileOAuth2TokenServiceIOSProvider {
                               const std::string& client_id,
                               const std::string& client_secret,
                               const std::set<std::string>& scopes,
-                              const AccessTokenCallback& callback) = 0;
+                              const AccessTokenCallback& callback);
+
+  // Returns the authentication error category of |error| associated with the
+  // account with id |gaia_id|.
+  virtual AuthenticationErrorCategory GetAuthenticationErrorCategory(
+      const std::string& gaia_id,
+      NSError* error) const;
 
   // Returns the authentication error category of |error|.
   virtual AuthenticationErrorCategory GetAuthenticationErrorCategory(
-      NSError* error) const = 0;
+      NSError* error) const;
 };
 
 #endif  // COMPONENTS_SIGNIN_IOS_BROWSER_PROFILE_OAUTH2_TOKEN_SERVICE_IOS_PROVIDER_H_
