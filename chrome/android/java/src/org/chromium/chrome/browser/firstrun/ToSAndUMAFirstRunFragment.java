@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -54,14 +55,19 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
             }
         });
 
-        int paddingStart = getResources().getDimensionPixelSize(R.dimen.fre_tos_checkbox_padding);
-        ApiCompatibilityUtils.setPaddingRelative(mSendReportCheckBox,
-                ApiCompatibilityUtils.getPaddingStart(mSendReportCheckBox) + paddingStart,
-                mSendReportCheckBox.getPaddingTop(),
-                ApiCompatibilityUtils.getPaddingEnd(mSendReportCheckBox),
-                mSendReportCheckBox.getPaddingBottom());
+        if (ChromeVersionInfo.isOfficialBuild()) {
+            int paddingStart = getResources().getDimensionPixelSize(
+                    R.dimen.fre_tos_checkbox_padding);
+            ApiCompatibilityUtils.setPaddingRelative(mSendReportCheckBox,
+                    ApiCompatibilityUtils.getPaddingStart(mSendReportCheckBox) + paddingStart,
+                    mSendReportCheckBox.getPaddingTop(),
+                    ApiCompatibilityUtils.getPaddingEnd(mSendReportCheckBox),
+                    mSendReportCheckBox.getPaddingBottom());
 
-        mSendReportCheckBox.setChecked(!getPageDelegate().isNeverUploadCrashDump());
+            mSendReportCheckBox.setChecked(!getPageDelegate().isNeverUploadCrashDump());
+        } else {
+            mSendReportCheckBox.setVisibility(View.GONE);
+        }
 
         mTosAndPrivacy.setMovementMethod(LinkMovementMethod.getInstance());
 
