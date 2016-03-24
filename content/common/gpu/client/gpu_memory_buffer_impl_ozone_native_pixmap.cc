@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "content/common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #include "ui/ozone/public/native_pixmap.h"
@@ -54,8 +54,7 @@ GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
 bool GpuMemoryBufferImplOzoneNativePixmap::IsConfigurationSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  return GpuMemoryBufferFactoryOzoneNativePixmap::
-      IsGpuMemoryBufferConfigurationSupported(format, usage);
+  return gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
 }
 
 // static

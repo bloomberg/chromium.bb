@@ -34,9 +34,6 @@ class CONTENT_EXPORT GpuMemoryBufferFactoryIOSurface
   GpuMemoryBufferFactoryIOSurface();
   ~GpuMemoryBufferFactoryIOSurface() override;
 
-  static bool IsGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
-                                                      gfx::BufferUsage usage);
-
   // Overridden from GpuMemoryBufferFactory:
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,

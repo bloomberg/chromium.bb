@@ -9,6 +9,7 @@
 #define CONTENT_COMMON_GPU_GPU_MEMORY_BUFFER_FACTORY_TEST_TEMPLATE_H_
 
 #include "content/common/gpu/gpu_memory_buffer_factory.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/buffer_format_util.h"
 
@@ -34,7 +35,7 @@ TYPED_TEST_P(GpuMemoryBufferFactoryTest, CreateGpuMemoryBuffer) {
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
     for (auto usage : usages) {
-      if (!TypeParam::IsGpuMemoryBufferConfigurationSupported(format, usage))
+      if (!gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
         continue;
 
       gfx::GpuMemoryBufferHandle handle =
@@ -64,7 +65,7 @@ TYPED_TEST_P(GpuMemoryBufferFactoryImportTest,
   gfx::Size buffer_size(2, 2);
 
   for (auto format : gfx::GetBufferFormatsForTesting()) {
-    if (!TypeParam::IsGpuMemoryBufferConfigurationSupported(
+    if (!gpu::IsNativeGpuMemoryBufferConfigurationSupported(
             format, gfx::BufferUsage::GPU_READ)) {
       continue;
     }

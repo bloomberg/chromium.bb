@@ -19,24 +19,12 @@
 #include "content/common/generic_shared_memory_id_generator.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl.h"
 #include "content/common/gpu/client/gpu_memory_buffer_impl_shared_memory.h"
-#include "content/common/gpu/gpu_memory_buffer_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/gl_switches.h"
-
-#if defined(OS_MACOSX)
-#include "content/common/gpu/gpu_memory_buffer_factory_io_surface.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include "content/common/gpu/gpu_memory_buffer_factory_surface_texture.h"
-#endif
-
-#if defined(USE_OZONE)
-#include "content/common/gpu/gpu_memory_buffer_factory_ozone_native_pixmap.h"
-#endif
 
 namespace content {
 namespace {
@@ -78,24 +66,13 @@ void GpuMemoryBufferDeleted(
 bool IsNativeGpuMemoryBufferFactoryConfigurationSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  switch (GpuMemoryBufferFactory::GetNativeType()) {
+  switch (gpu::GetNativeGpuMemoryBufferType()) {
     case gfx::SHARED_MEMORY_BUFFER:
       return false;
-#if defined(OS_MACOSX)
     case gfx::IO_SURFACE_BUFFER:
-      return GpuMemoryBufferFactoryIOSurface::
-          IsGpuMemoryBufferConfigurationSupported(format, usage);
-#endif
-#if defined(OS_ANDROID)
     case gfx::SURFACE_TEXTURE_BUFFER:
-      return GpuMemoryBufferFactorySurfaceTexture::
-          IsGpuMemoryBufferConfigurationSupported(format, usage);
-#endif
-#if defined(USE_OZONE)
     case gfx::OZONE_NATIVE_PIXMAP:
-      return GpuMemoryBufferFactoryOzoneNativePixmap::
-          IsGpuMemoryBufferConfigurationSupported(format, usage);
-#endif
+      return gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
     default:
       NOTREACHED();
       return false;
@@ -239,7 +216,7 @@ uint32_t BrowserGpuMemoryBufferManager::GetImageTextureTarget(
     return GL_TEXTURE_2D;
   }
 
-  switch (GpuMemoryBufferFactory::GetNativeType()) {
+  switch (gpu::GetNativeGpuMemoryBufferType()) {
     case gfx::SURFACE_TEXTURE_BUFFER:
     case gfx::OZONE_NATIVE_PIXMAP:
       // GPU memory buffers that are shared with the GL using EGLImages
@@ -517,7 +494,7 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferFromHandleOnIO(
   // Use service side allocation for native types.
   if (request->handle.type != gfx::SHARED_MEMORY_BUFFER) {
     // Early out if service side allocation is not supported.
-    if (request->handle.type != GpuMemoryBufferFactory::GetNativeType() ||
+    if (request->handle.type != gpu::GetNativeGpuMemoryBufferType() ||
         !IsNativeGpuMemoryBufferConfiguration(request->format,
                                               request->usage)) {
       request->event.Signal();

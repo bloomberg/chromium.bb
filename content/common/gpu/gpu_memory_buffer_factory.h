@@ -25,10 +25,6 @@ class CONTENT_EXPORT GpuMemoryBufferFactory {
  public:
   virtual ~GpuMemoryBufferFactory() {}
 
-  // Returns the native GPU memory buffer factory type. Returns EMPTY_BUFFER
-  // type if native buffers are not supported.
-  static gfx::GpuMemoryBufferType GetNativeType();
-
   // Creates a new factory instance for native GPU memory buffers.
   static scoped_ptr<GpuMemoryBufferFactory> CreateNativeType();
 

@@ -5,7 +5,7 @@
 #include "content/common/gpu/client/gpu_memory_buffer_impl_io_surface.h"
 
 #include "base/logging.h"
-#include "content/common/gpu/gpu_memory_buffer_factory_io_surface.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/mac/io_surface.h"
 
@@ -66,8 +66,7 @@ GpuMemoryBufferImplIOSurface::CreateFromHandle(
 bool GpuMemoryBufferImplIOSurface::IsConfigurationSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  return GpuMemoryBufferFactoryIOSurface::
-      IsGpuMemoryBufferConfigurationSupported(format, usage);
+  return gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
 }
 
 // static

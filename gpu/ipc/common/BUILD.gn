@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ui.gni")
+
 group("common") {
   if (is_component_build) {
     public_deps = [
@@ -52,6 +54,8 @@ source_set("ipc_common_sources") {
   visibility = [ "//gpu/*" ]
 
   sources = [
+    "gpu_memory_buffer_support.cc",
+    "gpu_memory_buffer_support.h",
     "gpu_memory_uma_stats.h",
     "gpu_message_generator.cc",
     "gpu_message_generator.h",
@@ -90,5 +94,9 @@ source_set("ipc_common_sources") {
       "android/surface_texture_peer.cc",
       "android/surface_texture_peer.h",
     ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 }

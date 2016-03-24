@@ -35,6 +35,7 @@
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -388,7 +389,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   logging::SetLogMessageHandler(NULL);
 
   scoped_ptr<GpuMemoryBufferFactory> gpu_memory_buffer_factory;
-  if (GpuMemoryBufferFactory::GetNativeType() != gfx::EMPTY_BUFFER)
+  if (gpu::GetNativeGpuMemoryBufferType() != gfx::EMPTY_BUFFER)
     gpu_memory_buffer_factory = GpuMemoryBufferFactory::CreateNativeType();
 
   gpu::SyncPointManager sync_point_manager(false);

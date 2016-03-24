@@ -22,20 +22,6 @@
 namespace content {
 
 // static
-gfx::GpuMemoryBufferType GpuMemoryBufferFactory::GetNativeType() {
-#if defined(OS_MACOSX)
-  return gfx::IO_SURFACE_BUFFER;
-#endif
-#if defined(OS_ANDROID)
-  return gfx::SURFACE_TEXTURE_BUFFER;
-#endif
-#if defined(USE_OZONE)
-  return gfx::OZONE_NATIVE_PIXMAP;
-#endif
-  return gfx::EMPTY_BUFFER;
-}
-
-// static
 scoped_ptr<GpuMemoryBufferFactory> GpuMemoryBufferFactory::CreateNativeType() {
 #if defined(OS_MACOSX)
   return make_scoped_ptr(new GpuMemoryBufferFactoryIOSurface);

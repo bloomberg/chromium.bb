@@ -18,18 +18,6 @@ GpuMemoryBufferFactoryOzoneNativePixmap::
 GpuMemoryBufferFactoryOzoneNativePixmap::
     ~GpuMemoryBufferFactoryOzoneNativePixmap() {}
 
-// static
-bool GpuMemoryBufferFactoryOzoneNativePixmap::
-    IsGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
-                                            gfx::BufferUsage usage) {
-  if (!ui::ClientNativePixmapFactory::GetInstance()) {
-    // unittests don't have to set ClientNativePixmapFactory.
-    return false;
-  }
-  return ui::ClientNativePixmapFactory::GetInstance()->IsConfigurationSupported(
-      format, usage);
-}
-
 gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactoryOzoneNativePixmap::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,

@@ -16,22 +16,6 @@ GpuMemoryBufferFactorySurfaceTexture::GpuMemoryBufferFactorySurfaceTexture() {
 GpuMemoryBufferFactorySurfaceTexture::~GpuMemoryBufferFactorySurfaceTexture() {
 }
 
-// static
-bool GpuMemoryBufferFactorySurfaceTexture::
-    IsGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
-                                            gfx::BufferUsage usage) {
-  switch (usage) {
-    case gfx::BufferUsage::GPU_READ:
-    case gfx::BufferUsage::SCANOUT:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
-      return false;
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-      return format == gfx::BufferFormat::RGBA_8888;
-  }
-  NOTREACHED();
-  return false;
-}
-
 gfx::GpuMemoryBufferHandle
 GpuMemoryBufferFactorySurfaceTexture::CreateGpuMemoryBuffer(
     gfx::GpuMemoryBufferId id,

@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/gpu/gpu_memory_buffer_factory_surface_texture.h"
 #include "gpu/ipc/common/android/surface_texture_manager.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
@@ -86,8 +86,7 @@ GpuMemoryBufferImplSurfaceTexture::CreateFromHandle(
 bool GpuMemoryBufferImplSurfaceTexture::IsConfigurationSupported(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  return GpuMemoryBufferFactorySurfaceTexture::
-      IsGpuMemoryBufferConfigurationSupported(format, usage);
+  return gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
 }
 
 // static

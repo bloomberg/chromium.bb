@@ -33,9 +33,6 @@ class CONTENT_EXPORT GpuMemoryBufferFactorySurfaceTexture
   GpuMemoryBufferFactorySurfaceTexture();
   ~GpuMemoryBufferFactorySurfaceTexture() override;
 
-  static bool IsGpuMemoryBufferConfigurationSupported(gfx::BufferFormat format,
-                                                      gfx::BufferUsage usage);
-
   // Overridden from GpuMemoryBufferFactory:
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,

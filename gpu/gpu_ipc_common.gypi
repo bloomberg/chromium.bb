@@ -20,16 +20,18 @@
     '..',
   ],
   'sources': [
-    "ipc/common/gpu_memory_uma_stats.h",
-    "ipc/common/gpu_message_generator.cc",
-    "ipc/common/gpu_message_generator.h",
-    "ipc/common/gpu_messages.h",
+    'ipc/common/gpu_memory_buffer_support.cc',
+    'ipc/common/gpu_memory_buffer_support.h',
+    'ipc/common/gpu_memory_uma_stats.h',
+    'ipc/common/gpu_message_generator.cc',
+    'ipc/common/gpu_message_generator.h',
+    'ipc/common/gpu_messages.h',
     'ipc/common/gpu_param_traits.cc',
     'ipc/common/gpu_param_traits.h',
     'ipc/common/gpu_param_traits_macros.h',
-    "ipc/common/gpu_stream_constants.h",
-    "ipc/common/gpu_surface_lookup.cc",
-    "ipc/common/gpu_surface_lookup.h",
+    'ipc/common/gpu_stream_constants.h',
+    'ipc/common/gpu_surface_lookup.cc',
+    'ipc/common/gpu_surface_lookup.h',
   ],
   'conditions': [
     # This section applies to gpu_ipc_win64, used by the NaCl Win64 helper
@@ -41,5 +43,10 @@
         '../ipc/ipc.gyp:ipc',
       ],
     }],
-	],
+    ['use_ozone==1', {
+      'dependencies': [
+        '../ui/ozone/ozone.gyp:ozone_platform',
+      ],
+    }],
+  ],
 }
