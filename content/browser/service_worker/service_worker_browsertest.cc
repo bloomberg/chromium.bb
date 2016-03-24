@@ -888,10 +888,7 @@ class WaitForLoaded : public EmbeddedWorkerInstance::Listener {
   base::Closure quit_;
 };
 
-// This test has started flaking somewhat consistently on Win, Mac and Linux.
-// Disabling for now, see http://crbug.com/496065.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
-                       DISABLED_TimeoutStartingWorker) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, TimeoutStartingWorker) {
   RunOnIOThread(base::Bind(&self::SetUpRegistrationOnIOThread, this,
                            "/service_worker/while_true_worker.js"));
 
