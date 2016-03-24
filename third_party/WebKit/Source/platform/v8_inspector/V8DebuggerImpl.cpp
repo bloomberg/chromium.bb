@@ -476,8 +476,10 @@ int V8DebuggerImpl::frameCount()
     return 0;
 }
 
-PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::wrapCallFrames()
+PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::currentCallFrames()
 {
+    if (!m_isolate->InContext())
+        return nullptr;
     v8::Local<v8::Value> currentCallFrameV8;
     if (m_executionState.IsEmpty()) {
         v8::Local<v8::Function> currentCallFrameFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.Get(m_isolate)->Get(v8InternalizedString("currentCallFrame")));
@@ -490,19 +492,6 @@ PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::wrapCallFrames()
     if (!currentCallFrameV8->IsObject())
         return nullptr;
     return JavaScriptCallFrame::create(debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
-}
-
-PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::currentCallFrames()
-{
-    if (!m_isolate->InContext())
-        return nullptr;
-
-    // Filter out stack traces entirely consisting of V8's internal scripts.
-    v8::Local<v8::StackTrace> stackTrace = v8::StackTrace::CurrentStackTrace(m_isolate, 1);
-    if (!stackTrace->GetFrameCount())
-        return nullptr;
-
-    return wrapCallFrames();
 }
 
 PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::callFrame(int index)
