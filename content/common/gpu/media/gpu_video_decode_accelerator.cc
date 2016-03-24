@@ -44,8 +44,6 @@
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
 #include "ui/gl/gl_implementation.h"
 #endif
-#elif defined(USE_OZONE)
-#include "media/ozone/media_ozone_platform.h"
 #elif defined(OS_ANDROID)
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 #endif
@@ -367,9 +365,6 @@ bool GpuVideoDecodeAccelerator::Initialize(
 #if defined(OS_MACOSX)
     &GpuVideoDecodeAccelerator::CreateVTVDA,
 #endif
-#if !defined(OS_CHROMEOS) && defined(USE_OZONE)
-    &GpuVideoDecodeAccelerator::CreateOzoneVDA,
-#endif
 #if defined(OS_ANDROID)
     &GpuVideoDecodeAccelerator::CreateAndroidVDA,
 #endif
@@ -482,16 +477,6 @@ GpuVideoDecodeAccelerator::CreateVTVDA() {
           make_context_current_,
           base::Bind(&GpuVideoDecodeAccelerator::BindImage,
                      base::Unretained(this))));
-}
-#endif
-
-#if !defined(OS_CHROMEOS) && defined(USE_OZONE)
-scoped_ptr<media::VideoDecodeAccelerator>
-GpuVideoDecodeAccelerator::CreateOzoneVDA() {
-  media::MediaOzonePlatform* platform =
-      media::MediaOzonePlatform::GetInstance();
-  return make_scoped_ptr<media::VideoDecodeAccelerator>(
-      platform->CreateVideoDecodeAccelerator(make_context_current_));
 }
 #endif
 
