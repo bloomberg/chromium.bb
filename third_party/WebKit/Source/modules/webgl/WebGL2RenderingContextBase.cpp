@@ -25,7 +25,6 @@
 #include "modules/webgl/WebGLUniformLocation.h"
 #include "modules/webgl/WebGLVertexArrayObject.h"
 #include "platform/CheckedInt.h"
-#include "platform/NotImplemented.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
 #include "wtf/OwnPtr.h"
@@ -979,7 +978,7 @@ void WebGL2RenderingContextBase::texImage3D(GLenum target, GLint level, GLint in
     Vector<uint8_t> tempData;
     if (data && (m_unpackFlipY || m_unpackPremultiplyAlpha)) {
         // FIXME: WebGLImageConversion needs to be updated to accept image depth.
-        notImplemented();
+        NOTIMPLEMENTED();
         return;
     }
 
@@ -1052,7 +1051,7 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
     bool changeUnpackParameters = false;
     if (data && (m_unpackFlipY || m_unpackPremultiplyAlpha)) {
         // FIXME: WebGLImageConversion needs to be updated to accept image depth.
-        notImplemented();
+        NOTIMPLEMENTED();
         changeUnpackParameters = true;
     }
     if (changeUnpackParameters)

@@ -87,7 +87,6 @@ typedef struct {
 WTF_EXPORT void WTFReportAssertionFailure(const char* file, int line, const char* function, const char* assertion);
 WTF_EXPORT void WTFReportArgumentAssertionFailure(const char* file, int line, const char* function, const char* argName, const char* assertion);
 WTF_EXPORT void WTFLog(WTFLogChannel*, const char* format, ...) WTF_ATTRIBUTE_PRINTF(2, 3);
-WTF_EXPORT void WTFLogVerbose(const char* file, int line, const char* function, WTFLogChannel*, const char* format, ...) WTF_ATTRIBUTE_PRINTF(5, 6);
 WTF_EXPORT void WTFLogAlways(const char* format, ...) WTF_ATTRIBUTE_PRINTF(1, 2);
 
 WTF_EXPORT void WTFGetBacktrace(void** stack, int* size);

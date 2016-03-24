@@ -12,7 +12,6 @@
 #include "core/workers/WorkerReportingProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "core/workers/WorkerThreadStartupData.h"
-#include "platform/NotImplemented.h"
 #include "platform/ThreadSafeFunctional.h"
 #include "platform/WaitableEvent.h"
 #include "platform/WebThreadSupportingGC.h"
@@ -38,12 +37,12 @@ public:
 
     void postTaskToLoader(PassOwnPtr<ExecutionContextTask>) override
     {
-        notImplemented();
+        NOTIMPLEMENTED();
     }
 
     bool postTaskToWorkerGlobalScope(PassOwnPtr<ExecutionContextTask>) override
     {
-        notImplemented();
+        NOTIMPLEMENTED();
         return false;
     }
 };

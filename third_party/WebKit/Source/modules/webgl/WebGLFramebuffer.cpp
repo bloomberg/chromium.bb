@@ -29,7 +29,6 @@
 #include "modules/webgl/WebGLRenderbuffer.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 #include "modules/webgl/WebGLTexture.h"
-#include "platform/NotImplemented.h"
 
 namespace blink {
 

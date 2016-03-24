@@ -35,7 +35,6 @@ WTFLogChannel LogFileAPI =            { WTFLogChannelOff };
 WTFLogChannel LogFonts =              { WTFLogChannelOff };
 WTFLogChannel LogMedia =              { WTFLogChannelOff };
 WTFLogChannel LogNetwork =            { WTFLogChannelOff };
-WTFLogChannel LogNotYetImplemented =  { WTFLogChannelOff };
 WTFLogChannel LogPlugins =            { WTFLogChannelOff };
 WTFLogChannel LogResourceLoading =    { WTFLogChannelOff };
 WTFLogChannel LogSQLDatabase =        { WTFLogChannelOff };
@@ -53,9 +52,6 @@ WTFLogChannel* getChannelFromName(const String& channelName)
 
     if (equalIgnoringCase(channelName, String("Network")))
         return &LogNetwork;
-
-    if (equalIgnoringCase(channelName, String("NotYetImplemented")))
-        return &LogNotYetImplemented;
 
     if (equalIgnoringCase(channelName, String("ResourceLoading")))
         return &LogResourceLoading;

@@ -33,7 +33,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/xml/parser/MarkupTokenizerInlines.h"
-#include "platform/NotImplemented.h"
 #include "wtf/ASCIICType.h"
 #include "wtf/text/Unicode.h"
 
@@ -1590,7 +1589,7 @@ inline bool HTMLTokenizer::isAppropriateEndTag()
 
 inline void HTMLTokenizer::parseError()
 {
-    notImplemented();
+    NOTIMPLEMENTED();
 }
 
 } // namespace blink

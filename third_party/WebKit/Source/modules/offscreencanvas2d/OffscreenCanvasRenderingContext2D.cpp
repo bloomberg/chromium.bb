@@ -6,7 +6,6 @@
 
 #include "bindings/modules/v8/UnionTypesModules.h"
 #include "core/frame/ImageBitmap.h"
-#include "platform/NotImplemented.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "wtf/Assertions.h"
@@ -44,7 +43,7 @@ void OffscreenCanvasRenderingContext2D::setOriginTainted()
 
 bool OffscreenCanvasRenderingContext2D::wouldTaintOrigin(CanvasImageSource* source)
 {
-    notImplemented();
+    NOTIMPLEMENTED();
     return false;
 }
 

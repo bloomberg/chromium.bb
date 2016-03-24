@@ -102,7 +102,6 @@
 #include "platform/Histogram.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/Logging.h"
-#include "platform/NotImplemented.h"
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/PlatformMouseEvent.h"
@@ -2703,7 +2702,7 @@ void WebViewImpl::setTextDirection(WebTextDirection direction)
         break;
 
     default:
-        notImplemented();
+        NOTIMPLEMENTED();
         break;
     }
 }

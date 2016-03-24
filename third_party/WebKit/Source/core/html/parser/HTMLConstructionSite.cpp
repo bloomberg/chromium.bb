@@ -48,7 +48,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/svg/SVGScriptElement.h"
-#include "platform/NotImplemented.h"
 #include "platform/text/TextBreakIterator.h"
 #include <limits>
 
@@ -665,7 +664,7 @@ void HTMLConstructionSite::insertScriptElement(AtomicHTMLToken* token)
 void HTMLConstructionSite::insertForeignElement(AtomicHTMLToken* token, const AtomicString& namespaceURI)
 {
     ASSERT(token->type() == HTMLToken::StartTag);
-    notImplemented(); // parseError when xmlns or xmlns:xlink are wrong.
+    NOTIMPLEMENTED(); // parseError when xmlns or xmlns:xlink are wrong.
 
     RefPtrWillBeRawPtr<Element> element = createElement(token, namespaceURI);
     if (scriptingContentIsAllowed(m_parserContentPolicy) || !toScriptLoaderIfPossible(element.get()))

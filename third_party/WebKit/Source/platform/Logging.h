@@ -42,7 +42,6 @@ PLATFORM_EXPORT extern WTFLogChannel LogFileAPI;
 PLATFORM_EXPORT extern WTFLogChannel LogFonts;
 PLATFORM_EXPORT extern WTFLogChannel LogMedia;
 PLATFORM_EXPORT extern WTFLogChannel LogNetwork;
-PLATFORM_EXPORT extern WTFLogChannel LogNotYetImplemented;
 PLATFORM_EXPORT extern WTFLogChannel LogPlugins;
 PLATFORM_EXPORT extern WTFLogChannel LogResourceLoading;
 PLATFORM_EXPORT extern WTFLogChannel LogSQLDatabase;
