@@ -98,6 +98,17 @@ void CreateContextMenuDownload(int render_process_id,
   dlm->DownloadUrl(std::move(dl_params));
 }
 
+// Check if an interrupted download item can be auto resumed.
+bool IsInterruptedDownloadAutoResumable(content::DownloadItem* download_item) {
+  int interrupt_reason = download_item->GetLastReason();
+  DCHECK_NE(interrupt_reason, content::DOWNLOAD_INTERRUPT_REASON_NONE);
+  return
+      interrupt_reason == content::DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT ||
+      interrupt_reason == content::DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED ||
+      interrupt_reason ==
+          content::DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED;
+}
+
 }  // namespace
 
 namespace content {
@@ -460,11 +471,10 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
       base::TimeDelta time_delta;
       item->TimeRemaining(&time_delta);
       Java_DownloadController_onDownloadUpdated(
-          env, GetJavaObject()->Controller(env).obj(),
-          jurl.obj(), jmime_type.obj(),
-          jfilename.obj(), jpath.obj(), item->GetReceivedBytes(), true,
-          item->GetId(), item->PercentComplete(), time_delta.InMilliseconds(),
-          item->HasUserGesture(), item->IsPaused(),
+          env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
+          jmime_type.obj(), jfilename.obj(), jpath.obj(),
+          item->GetReceivedBytes(), item->GetId(), item->PercentComplete(),
+          time_delta.InMilliseconds(), item->HasUserGesture(), item->IsPaused(),
           // Get all requirements that allows a download to be resumable.
           !item->GetBrowserContext()->IsOffTheRecord());
       break;
@@ -478,23 +488,22 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
       Java_DownloadController_onDownloadCompleted(
           env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
-          item->GetReceivedBytes(), true, item->GetId(),
+          item->GetReceivedBytes(), item->GetId(),
           joriginal_url.obj(), jreferrer_url.obj(), item->HasUserGesture());
       break;
     case DownloadItem::CANCELLED:
       Java_DownloadController_onDownloadCancelled(
           env, GetJavaObject()->Controller(env).obj(), item->GetId());
       break;
-    // TODO(shashishekhar): An interrupted download can be resumed. Android
-    // currently does not support resumable downloads. Add handling for
-    // interrupted case based on item->CanResume().
     case DownloadItem::INTERRUPTED:
-      // Call onDownloadCompleted with success = false.
-      Java_DownloadController_onDownloadCompleted(
+      // When device loses/changes network, we get a NETWORK_TIMEOUT,
+      // NETWORK_FAILED or NETWORK_DISCONNECTED error. Download should auto
+      // resume in this case.
+      Java_DownloadController_onDownloadInterrupted(
           env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
-          item->GetReceivedBytes(), false, item->GetId(),
-          joriginal_url.obj(), jreferrer_url.obj(), item->HasUserGesture());
+          item->GetReceivedBytes(), item->GetId(), item->CanResume(),
+          IsInterruptedDownloadAutoResumable(item));
       break;
     case DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();

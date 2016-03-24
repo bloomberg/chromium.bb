@@ -26,12 +26,20 @@ public interface DownloadNotifier {
     void notifyDownloadFailed(DownloadInfo downloadInfo);
 
     /**
+     * Update the download progress notification.
      * @param downloadInfo info about in progress download.
      * @param startTimeInMillis the startTime of the download, measured in milliseconds, between the
      *        current time and midnight, January 1, 1970 UTC. Useful to keep progress notifications
      *        sorted by time.
      */
     void notifyDownloadProgress(DownloadInfo downloadInfo, long startTimeInMillis);
+
+    /**
+     * Update the download notification to paused.
+     * @param downloadInfo info about in progress download.
+     * @param isAutoResumable Whether the download can be auto resumed when network is available.
+     */
+    void notifyDownloadPaused(DownloadInfo downloadInfo, boolean isAutoResumable);
 
     /**
      * Cancel the notification for a download.
