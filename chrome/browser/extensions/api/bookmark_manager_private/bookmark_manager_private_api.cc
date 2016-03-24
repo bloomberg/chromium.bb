@@ -104,22 +104,21 @@ bool GetNodesFromVector(BookmarkModel* model,
 // a bookmark node. This is by used |BookmarkNodeDataToJSON| when the data comes
 // from the current profile. In this case we have a BookmarkNode since we got
 // the data from the current profile.
-linked_ptr<bookmark_manager_private::BookmarkNodeDataElement>
+bookmark_manager_private::BookmarkNodeDataElement
 CreateNodeDataElementFromBookmarkNode(const BookmarkNode& node) {
-  linked_ptr<bookmark_manager_private::BookmarkNodeDataElement> element(
-      new bookmark_manager_private::BookmarkNodeDataElement);
+  bookmark_manager_private::BookmarkNodeDataElement element;
   // Add id and parentId so we can associate the data with existing nodes on the
   // client side.
-  element->id.reset(new std::string(base::Int64ToString(node.id())));
-  element->parent_id.reset(
+  element.id.reset(new std::string(base::Int64ToString(node.id())));
+  element.parent_id.reset(
       new std::string(base::Int64ToString(node.parent()->id())));
 
   if (node.is_url())
-    element->url.reset(new std::string(node.url().spec()));
+    element.url.reset(new std::string(node.url().spec()));
 
-  element->title = base::UTF16ToUTF8(node.GetTitle());
+  element.title = base::UTF16ToUTF8(node.GetTitle());
   for (int i = 0; i < node.child_count(); ++i) {
-    element->children.push_back(
+    element.children.push_back(
         CreateNodeDataElementFromBookmarkNode(*node.GetChild(i)));
   }
 
@@ -130,16 +129,15 @@ CreateNodeDataElementFromBookmarkNode(const BookmarkNode& node) {
 // a BookmarkNodeData::Element. This is used by |BookmarkNodeDataToJSON| when
 // the data comes from a different profile. When the data comes from a different
 // profile we do not have any IDs or parent IDs.
-linked_ptr<bookmark_manager_private::BookmarkNodeDataElement>
-CreateApiNodeDataElement(const BookmarkNodeData::Element& element) {
-  linked_ptr<bookmark_manager_private::BookmarkNodeDataElement> node_element(
-      new bookmark_manager_private::BookmarkNodeDataElement);
+bookmark_manager_private::BookmarkNodeDataElement CreateApiNodeDataElement(
+    const BookmarkNodeData::Element& element) {
+  bookmark_manager_private::BookmarkNodeDataElement node_element;
 
   if (element.is_url)
-    node_element->url.reset(new std::string(element.url.spec()));
-  node_element->title = base::UTF16ToUTF8(element.title);
+    node_element.url.reset(new std::string(element.url.spec()));
+  node_element.title = base::UTF16ToUTF8(element.title);
   for (size_t i = 0; i < element.children.size(); ++i) {
-    node_element->children.push_back(
+    node_element.children.push_back(
         CreateApiNodeDataElement(element.children[i]));
   }
 
@@ -147,25 +145,25 @@ CreateApiNodeDataElement(const BookmarkNodeData::Element& element) {
 }
 
 // Creates a bookmark_manager_private::BookmarkNodeData from a BookmarkNodeData.
-scoped_ptr<bookmark_manager_private::BookmarkNodeData>
-CreateApiBookmarkNodeData(Profile* profile, const BookmarkNodeData& data) {
+bookmark_manager_private::BookmarkNodeData CreateApiBookmarkNodeData(
+    Profile* profile,
+    const BookmarkNodeData& data) {
   const base::FilePath& profile_path = profile->GetPath();
 
-  scoped_ptr<bookmark_manager_private::BookmarkNodeData> node_data(
-      new bookmark_manager_private::BookmarkNodeData);
-  node_data->same_profile = data.IsFromProfilePath(profile_path);
+  bookmark_manager_private::BookmarkNodeData node_data;
+  node_data.same_profile = data.IsFromProfilePath(profile_path);
 
-  if (node_data->same_profile) {
+  if (node_data.same_profile) {
     std::vector<const BookmarkNode*> nodes = data.GetNodes(
         BookmarkModelFactory::GetForProfile(profile), profile_path);
     for (size_t i = 0; i < nodes.size(); ++i) {
-      node_data->elements.push_back(
+      node_data.elements.push_back(
           CreateNodeDataElementFromBookmarkNode(*nodes[i]));
     }
   } else {
     // We do not have a node IDs when the data comes from a different profile.
     for (size_t i = 0; i < data.size(); ++i)
-      node_data->elements.push_back(CreateApiNodeDataElement(data.elements[i]));
+      node_data.elements.push_back(CreateApiNodeDataElement(data.elements[i]));
   }
   return node_data;
 }
@@ -320,7 +318,7 @@ void BookmarkManagerPrivateDragEventRouter::OnDragEnter(
   DispatchEvent(events::BOOKMARK_MANAGER_PRIVATE_ON_DRAG_ENTER,
                 bookmark_manager_private::OnDragEnter::kEventName,
                 bookmark_manager_private::OnDragEnter::Create(
-                    *CreateApiBookmarkNodeData(profile_, data)));
+                    CreateApiBookmarkNodeData(profile_, data)));
 }
 
 void BookmarkManagerPrivateDragEventRouter::OnDragOver(
@@ -336,7 +334,7 @@ void BookmarkManagerPrivateDragEventRouter::OnDragLeave(
   DispatchEvent(events::BOOKMARK_MANAGER_PRIVATE_ON_DRAG_LEAVE,
                 bookmark_manager_private::OnDragLeave::kEventName,
                 bookmark_manager_private::OnDragLeave::Create(
-                    *CreateApiBookmarkNodeData(profile_, data)));
+                    CreateApiBookmarkNodeData(profile_, data)));
 }
 
 void BookmarkManagerPrivateDragEventRouter::OnDrop(
@@ -346,7 +344,7 @@ void BookmarkManagerPrivateDragEventRouter::OnDrop(
   DispatchEvent(events::BOOKMARK_MANAGER_PRIVATE_ON_DROP,
                 bookmark_manager_private::OnDrop::kEventName,
                 bookmark_manager_private::OnDrop::Create(
-                    *CreateApiBookmarkNodeData(profile_, data)));
+                    CreateApiBookmarkNodeData(profile_, data)));
 
   // Make a copy that is owned by this instance.
   ClearBookmarkNodeData();
@@ -634,7 +632,7 @@ bool BookmarkManagerPrivateGetSubtreeFunction::RunOnReady() {
       return false;
   }
 
-  std::vector<linked_ptr<api::bookmarks::BookmarkTreeNode> > nodes;
+  std::vector<api::bookmarks::BookmarkTreeNode> nodes;
   bookmarks::ManagedBookmarkService* managed = GetManagedBookmarkService();
   if (params->folders_only)
     bookmark_api_helpers::AddNodeFoldersOnly(managed, node, &nodes, true);
@@ -670,10 +668,10 @@ bool BookmarkManagerPrivateCreateWithMetaInfoFunction::RunOnReady() {
   if (!node)
     return false;
 
-  scoped_ptr<api::bookmarks::BookmarkTreeNode> result_node(
+  api::bookmarks::BookmarkTreeNode result_node =
       bookmark_api_helpers::GetBookmarkTreeNode(GetManagedBookmarkService(),
-                                                node, false, false));
-  results_ = CreateWithMetaInfo::Results::Create(*result_node);
+                                                node, false, false);
+  results_ = CreateWithMetaInfo::Results::Create(result_node);
 
   return true;
 }

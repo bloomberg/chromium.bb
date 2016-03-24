@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Braille display access private API.
-namespace brailleDisplayPrivate {
+[use_movable_types=true]namespace brailleDisplayPrivate {
   // Braille display keyboard command.
   enum KeyCommand {
     line_up,

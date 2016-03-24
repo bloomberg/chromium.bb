@@ -296,11 +296,11 @@ void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
                                             const BookmarkNode* parent,
                                             int index) {
   const BookmarkNode* node = parent->GetChild(index);
-  scoped_ptr<BookmarkTreeNode> tree_node(
-      bookmark_api_helpers::GetBookmarkTreeNode(managed_, node, false, false));
-  DispatchEvent(events::BOOKMARKS_ON_CREATED, bookmarks::OnCreated::kEventName,
-                bookmarks::OnCreated::Create(base::Int64ToString(node->id()),
-                                             *tree_node));
+  BookmarkTreeNode tree_node =
+      bookmark_api_helpers::GetBookmarkTreeNode(managed_, node, false, false);
+  DispatchEvent(
+      events::BOOKMARKS_ON_CREATED, bookmarks::OnCreated::kEventName,
+      bookmarks::OnCreated::Create(base::Int64ToString(node->id()), tree_node));
 }
 
 void BookmarkEventRouter::BookmarkNodeRemoved(
@@ -420,7 +420,7 @@ bool BookmarksGetFunction::RunOnReady() {
       bookmarks::Get::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  std::vector<linked_ptr<BookmarkTreeNode> > nodes;
+  std::vector<BookmarkTreeNode> nodes;
   ManagedBookmarkService* managed = GetManagedBookmarkService();
   if (params->id_or_id_list.as_strings) {
     std::vector<std::string>& ids = *params->id_or_id_list.as_strings;
@@ -453,7 +453,7 @@ bool BookmarksGetChildrenFunction::RunOnReady() {
   if (!node)
     return false;
 
-  std::vector<linked_ptr<BookmarkTreeNode> > nodes;
+  std::vector<BookmarkTreeNode> nodes;
   int child_count = node->child_count();
   for (int i = 0; i < child_count; ++i) {
     const BookmarkNode* child = node->GetChild(i);
@@ -478,10 +478,8 @@ bool BookmarksGetRecentFunction::RunOnReady() {
       params->number_of_items,
       &nodes);
 
-  std::vector<linked_ptr<BookmarkTreeNode> > tree_nodes;
-  std::vector<const BookmarkNode*>::iterator i = nodes.begin();
-  for (; i != nodes.end(); ++i) {
-    const BookmarkNode* node = *i;
+  std::vector<BookmarkTreeNode> tree_nodes;
+  for (const BookmarkNode* node : nodes) {
     bookmark_api_helpers::AddNode(GetManagedBookmarkService(), node,
                                   &tree_nodes, false);
   }
@@ -491,7 +489,7 @@ bool BookmarksGetRecentFunction::RunOnReady() {
 }
 
 bool BookmarksGetTreeFunction::RunOnReady() {
-  std::vector<linked_ptr<BookmarkTreeNode> > nodes;
+  std::vector<BookmarkTreeNode> nodes;
   const BookmarkNode* node =
       BookmarkModelFactory::GetForProfile(GetProfile())->root_node();
   bookmark_api_helpers::AddNode(GetManagedBookmarkService(), node, &nodes,
@@ -509,7 +507,7 @@ bool BookmarksGetSubTreeFunction::RunOnReady() {
   if (!node)
     return false;
 
-  std::vector<linked_ptr<BookmarkTreeNode> > nodes;
+  std::vector<BookmarkTreeNode> nodes;
   bookmark_api_helpers::AddNode(GetManagedBookmarkService(), node, &nodes,
                                 true);
   results_ = bookmarks::GetSubTree::Results::Create(nodes);
@@ -555,12 +553,10 @@ bool BookmarksSearchFunction::RunOnReady() {
         &nodes);
   }
 
-  std::vector<linked_ptr<BookmarkTreeNode> > tree_nodes;
+  std::vector<BookmarkTreeNode> tree_nodes;
   ManagedBookmarkService* managed = GetManagedBookmarkService();
-  for (std::vector<const BookmarkNode*>::iterator node_iter = nodes.begin();
-       node_iter != nodes.end(); ++node_iter) {
-    bookmark_api_helpers::AddNode(managed, *node_iter, &tree_nodes, false);
-  }
+  for (const BookmarkNode* node : nodes)
+    bookmark_api_helpers::AddNode(managed, node, &tree_nodes, false);
 
   results_ = bookmarks::Search::Results::Create(tree_nodes);
   return true;
@@ -618,9 +614,9 @@ bool BookmarksCreateFunction::RunOnReady() {
   if (!node)
     return false;
 
-  scoped_ptr<BookmarkTreeNode> ret(bookmark_api_helpers::GetBookmarkTreeNode(
-      GetManagedBookmarkService(), node, false, false));
-  results_ = bookmarks::Create::Results::Create(*ret);
+  BookmarkTreeNode ret = bookmark_api_helpers::GetBookmarkTreeNode(
+      GetManagedBookmarkService(), node, false, false);
+  results_ = bookmarks::Create::Results::Create(ret);
 
   return true;
 }
@@ -678,10 +674,9 @@ bool BookmarksMoveFunction::RunOnReady() {
 
   model->Move(node, parent, index);
 
-  scoped_ptr<BookmarkTreeNode> tree_node(
-      bookmark_api_helpers::GetBookmarkTreeNode(GetManagedBookmarkService(),
-                                                node, false, false));
-  results_ = bookmarks::Move::Results::Create(*tree_node);
+  BookmarkTreeNode tree_node = bookmark_api_helpers::GetBookmarkTreeNode(
+      GetManagedBookmarkService(), node, false, false);
+  results_ = bookmarks::Move::Results::Create(tree_node);
 
   return true;
 }
@@ -734,10 +729,9 @@ bool BookmarksUpdateFunction::RunOnReady() {
   if (!url.is_empty())
     model->SetURL(node, url);
 
-  scoped_ptr<BookmarkTreeNode> tree_node(
-      bookmark_api_helpers::GetBookmarkTreeNode(GetManagedBookmarkService(),
-                                                node, false, false));
-  results_ = bookmarks::Update::Results::Create(*tree_node);
+  BookmarkTreeNode tree_node = bookmark_api_helpers::GetBookmarkTreeNode(
+      GetManagedBookmarkService(), node, false, false);
+  results_ = bookmarks::Update::Results::Create(tree_node);
   return true;
 }
 
