@@ -155,7 +155,7 @@ struct expression
 	widechar prv;
 	widechar nxt;
 	widechar data[1];
-} __attribute__((__packed__)) ;
+};
 
 /*   gdb won't know what this is unless it is actually used   */
 #ifdef DEBUG
@@ -1021,7 +1021,7 @@ static int pattern_compile_1(const widechar *input,
                              widechar *expr_crs,
                              widechar *loop_cnts)
 {
-	int expr_crs_prv, i;
+	int expr_crs_prv;
 
 	if(*expr_crs + 6 >= expr_max)
 		return 0;
@@ -1680,12 +1680,14 @@ int pattern_check_hook(
 	widechar *hook_data,
 	const int hook_max)
 {
-	int input_crs, *loop_cnts;
+	int input_crs, ret, *loop_cnts;
 
 	input_crs = input_start;
-	loop_cnts = alloca(expr_data[1] * sizeof(int));
+	loop_cnts = malloc(expr_data[1] * sizeof(int));
 	memset(loop_cnts, 0, expr_data[1] * sizeof(int));
-	return pattern_check_expression(input, &input_crs, input_minmax, input_dir, expr_data, hook, hook_data, hook_max, 2, 0, 0, loop_cnts);
+	ret = pattern_check_expression(input, &input_crs, input_minmax, input_dir, expr_data, hook, hook_data, hook_max, 2, 0, 0, loop_cnts);
+	free(loop_cnts);
+	return ret;
 }
 
 int pattern_check(
