@@ -117,6 +117,8 @@ class NTPSnippetsService : public KeyedService, NTPSnippetsFetcher::Observer {
                     scoped_ptr<base::Value> parsed);
   void OnJsonError(const std::string& snippets_json, const std::string& error);
 
+  void FetchSnippetsImpl(const std::vector<std::string>& hosts);
+
   // Expects a top-level dictionary containing a "recos" list, which will be
   // passed to LoadFromListValue().
   bool LoadFromValue(const base::Value& value);

@@ -179,13 +179,12 @@ void NTPSnippetsService::Shutdown() {
 }
 
 void NTPSnippetsService::FetchSnippets() {
-  std::vector<std::string> hosts;
   // |suggestions_service_| can be null in tests.
-  if (suggestions_service_) {
-    hosts = GetSuggestionsHosts(
-        suggestions_service_->GetSuggestionsDataFromCache());
-  }
-  snippets_fetcher_->FetchSnippets(hosts);
+  if (!suggestions_service_)
+    return;
+
+  FetchSnippetsImpl(GetSuggestionsHosts(
+      suggestions_service_->GetSuggestionsDataFromCache()));
 }
 
 bool NTPSnippetsService::DiscardSnippet(const GURL& url) {
@@ -230,7 +229,7 @@ void NTPSnippetsService::OnSuggestionsChanged(
   FOR_EACH_OBSERVER(NTPSnippetsServiceObserver, observers_,
                     NTPSnippetsServiceLoaded(this));
 
-  snippets_fetcher_->FetchSnippets(hosts);
+  FetchSnippetsImpl(hosts);
 }
 
 void NTPSnippetsService::OnSnippetsDownloaded(
@@ -251,6 +250,12 @@ void NTPSnippetsService::OnJsonParsed(const std::string& snippets_json,
 void NTPSnippetsService::OnJsonError(const std::string& snippets_json,
                                      const std::string& error) {
   LOG(WARNING) << "Received invalid JSON (" << error << "): " << snippets_json;
+}
+
+void NTPSnippetsService::FetchSnippetsImpl(
+    const std::vector<std::string>& hosts) {
+  if (!hosts.empty())
+    snippets_fetcher_->FetchSnippets(hosts);
 }
 
 bool NTPSnippetsService::LoadFromValue(const base::Value& value) {
