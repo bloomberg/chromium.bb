@@ -71,16 +71,11 @@ cricket::CaptureState WebrtcVideoCapturerAdapter::Start(
   return cricket::CS_RUNNING;
 }
 
-// Similar to the base class implementation with some important differences:
-// 1. Does not call either Stop() or Start(), as those would affect the state of
-// |desktop_capturer_|.
-// 2. Does not support unpausing after stopping the capturer. It is unclear
-// if that flow needs to be supported.
-bool WebrtcVideoCapturerAdapter::Pause(bool pause) {
+bool WebrtcVideoCapturerAdapter::PauseCapturer(bool pause) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (pause) {
-    if (capture_state() == cricket::CS_PAUSED)
+    if (paused_)
       return true;
 
     bool running = capture_state() == cricket::CS_STARTING ||
@@ -94,28 +89,25 @@ bool WebrtcVideoCapturerAdapter::Pause(bool pause) {
       return false;
     }
 
-    // Stop |capture_timer_| and set capture state to cricket::CS_PAUSED.
     capture_timer_->Stop();
-    SetCaptureState(cricket::CS_PAUSED);
+    paused_ = true;
 
     VLOG(1) << "WebrtcVideoCapturerAdapter paused.";
 
     return true;
   } else {  // Unpausing.
-    if (capture_state() != cricket::CS_PAUSED || !GetCaptureFormat() ||
-        !capture_timer_) {
+    if (!paused_ || !GetCaptureFormat() || !capture_timer_) {
       LOG(ERROR) << "Cannot unpause WebrtcVideoCapturerAdapter.";
       return false;
     }
 
-    // Restart |capture_timer_| and set capture state to cricket::CS_RUNNING;
     capture_timer_->Start(FROM_HERE,
                           base::TimeDelta::FromMicroseconds(
                               GetCaptureFormat()->interval /
                               (base::Time::kNanosecondsPerMicrosecond)),
                           this,
                           &WebrtcVideoCapturerAdapter::CaptureNextFrame);
-    SetCaptureState(cricket::CS_RUNNING);
+    paused_ = false;
 
     VLOG(1) << "WebrtcVideoCapturerAdapter unpaused.";
   }
@@ -223,7 +215,7 @@ void WebrtcVideoCapturerAdapter::OnCaptureCompleted(
         yuv_frame_->GetVPitch(), width, height);
   }
 
-  SignalVideoFrame(this, yuv_frame_.get());
+  OnFrame(this, yuv_frame_.get());
 }
 
 void WebrtcVideoCapturerAdapter::CaptureNextFrame() {

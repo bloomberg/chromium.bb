@@ -68,7 +68,7 @@ bool WebrtcVideoStream::Start(
 
 void WebrtcVideoStream::Pause(bool pause) {
   if (capturer_adapter_)
-    capturer_adapter_->Pause(pause);
+    capturer_adapter_->PauseCapturer(pause);
 }
 
 void WebrtcVideoStream::OnInputEventReceived(int64_t event_timestamp) {

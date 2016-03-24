@@ -50,6 +50,7 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
   ~WebrtcVideoCapturerAdapter() override;
 
   void SetSizeCallback(const SizeCallback& size_callback);
+  bool PauseCapturer(bool pause);
   base::WeakPtr<WebrtcVideoCapturerAdapter> GetWeakPtr();
 
   // cricket::VideoCapturer implementation.
@@ -57,7 +58,6 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
                             cricket::VideoFormat* best_format) override;
   cricket::CaptureState Start(
       const cricket::VideoFormat& capture_format) override;
-  bool Pause(bool pause) override;
   void Stop() override;
   bool IsRunning() override;
   bool IsScreencast() const override;
@@ -86,6 +86,7 @@ class WebrtcVideoCapturerAdapter : public cricket::VideoCapturer,
   scoped_ptr<cricket::VideoFrame> yuv_frame_;
 
   bool capture_pending_ = false;
+  bool paused_ = false;
 
   base::WeakPtrFactory<WebrtcVideoCapturerAdapter> weak_factory_;
 
