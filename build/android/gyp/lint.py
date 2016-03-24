@@ -107,7 +107,6 @@ def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
       new_dir = os.path.join(temp_dir, str(len(src_dirs)))
       os.mkdir(new_dir)
       src_dirs.append(new_dir)
-      cmd.extend(['--sources', _RelativizePath(new_dir)])
       return new_dir
 
     def PathInDir(d, src):
@@ -121,10 +120,17 @@ def _OnStaleMd5(changes, lint_path, config_path, processed_config_path,
           break
       if not src_dir:
         src_dir = NewSourceDir()
+        cmd.extend(['--sources', _RelativizePath(src_dir)])
       os.symlink(os.path.abspath(src), PathInDir(src_dir, src))
 
+    # Put the manifest in a temporary directory in order to avoid lint detecting
+    # sibling res/ and src/ directories (which should be pass explicitly if they
+    # are to be included).
     if manifest_path:
-      cmd.append(_RelativizePath(os.path.join(manifest_path, os.pardir)))
+      src_dir = NewSourceDir()
+      os.symlink(os.path.abspath(manifest_path),
+                 PathInDir(src_dir, manifest_path))
+      cmd.append(src_dir)
 
     if os.path.exists(result_path):
       os.remove(result_path)
