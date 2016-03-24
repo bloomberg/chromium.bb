@@ -845,9 +845,6 @@ IPC_MESSAGE_CONTROL1(ViewMsg_PurgePluginListCache,
                      bool /* reload_pages */)
 #endif
 
-// Used to instruct the RenderView to go into "view source" mode.
-IPC_MESSAGE_ROUTED0(ViewMsg_EnableViewSourceMode)
-
 // An acknowledge to ViewHostMsg_MultipleTargetsTouched to notify the renderer
 // process to release the magnified image.
 IPC_MESSAGE_ROUTED1(ViewMsg_ReleaseDisambiguationPopupBitmap,

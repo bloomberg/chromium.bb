@@ -793,6 +793,7 @@ class CONTENT_EXPORT RenderFrameImpl
               const base::string16& search_text,
               const blink::WebFindOptions& options);
   void OnStopFinding(StopFindAction action);
+  void OnEnableViewSourceMode();
 #if defined(OS_ANDROID)
   void OnActivateNearestFindResult(int request_id, float x, float y);
   void OnFindMatchRects(int current_version);

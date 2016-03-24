@@ -894,7 +894,7 @@ TEST_F(RenderFrameHostManagerTest, AlwaysSendEnableViewSourceMode) {
 
   // New message should be sent out to make sure to enter view-source mode.
   EXPECT_TRUE(process()->sink().GetUniqueMessageMatching(
-      ViewMsg_EnableViewSourceMode::ID));
+      FrameMsg_EnableViewSourceMode::ID));
 }
 
 // Tests the Init function by checking the initial RenderViewHost.

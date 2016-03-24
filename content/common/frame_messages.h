@@ -879,6 +879,10 @@ IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginWhitelist,
                     std::set<url::Origin> /* origin_whitelist */)
 #endif  // defined(ENABLE_PLUGINS)
 
+// Used to instruct the RenderFrame to go into "view source" mode. This should
+// only be sent to the main frame.
+IPC_MESSAGE_ROUTED0(FrameMsg_EnableViewSourceMode)
+
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
 

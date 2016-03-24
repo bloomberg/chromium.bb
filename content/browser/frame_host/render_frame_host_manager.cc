@@ -2161,9 +2161,9 @@ RenderFrameHostImpl* RenderFrameHostManager::UpdateStateForNavigate(
   // The renderer can exit view source mode when any error or cancellation
   // happen. We must overwrite to recover the mode.
   if (dest_is_view_source_mode) {
-    render_frame_host_->render_view_host()->Send(
-        new ViewMsg_EnableViewSourceMode(
-            render_frame_host_->render_view_host()->GetRoutingID()));
+    DCHECK(!render_frame_host_->GetParent());
+    render_frame_host_->Send(
+        new FrameMsg_EnableViewSourceMode(render_frame_host_->GetRoutingID()));
   }
 
   return render_frame_host_.get();

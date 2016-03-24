@@ -3806,6 +3806,16 @@ void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
                     observers_,
                     RenderFrameCreated(render_frame_host));
   SetAccessibilityModeOnFrame(accessibility_mode_, render_frame_host);
+
+  if (!render_frame_host->IsRenderFrameLive() || render_frame_host->GetParent())
+    return;
+
+  NavigationEntry* entry = controller_.GetPendingEntry();
+  if (entry && entry->IsViewSourceMode()) {
+    // Put the renderer in view source mode.
+    render_frame_host->Send(
+        new FrameMsg_EnableViewSourceMode(render_frame_host->GetRoutingID()));
+  }
 }
 
 void WebContentsImpl::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
@@ -3942,13 +3952,6 @@ void WebContentsImpl::RenderViewCreated(RenderViewHost* render_view_host) {
       NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
       Source<WebContents>(this),
       Details<RenderViewHost>(render_view_host));
-
-  NavigationEntry* entry = controller_.GetPendingEntry();
-  if (entry && entry->IsViewSourceMode()) {
-    // Put the renderer in view source mode.
-    render_view_host->Send(
-        new ViewMsg_EnableViewSourceMode(render_view_host->GetRoutingID()));
-  }
 
   view_->RenderViewCreated(render_view_host);
 

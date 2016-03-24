@@ -857,9 +857,8 @@ void NavigatorImpl::CommitNavigation(NavigationRequest* navigation_request,
       render_frame_host ==
           frame_tree_node->render_manager()->current_frame_host()) {
     DCHECK(!render_frame_host->GetParent());
-    render_frame_host->render_view_host()->Send(
-        new ViewMsg_EnableViewSourceMode(
-            render_frame_host->render_view_host()->GetRoutingID()));
+    render_frame_host->Send(
+        new FrameMsg_EnableViewSourceMode(render_frame_host->GetRoutingID()));
   }
 
   CheckWebUIRendererDoesNotDisplayNormalURL(

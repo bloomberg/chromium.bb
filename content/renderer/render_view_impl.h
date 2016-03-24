@@ -674,7 +674,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnUpdateWebPreferences(const WebPreferences& prefs);
   void OnSetPageScale(float page_scale_factor);
   void OnZoom(PageZoom zoom);
-  void OnEnableViewSourceMode();
   void OnForceRedraw(int request_id);
   void OnSelectWordAroundCaret();
 #if defined(OS_ANDROID)

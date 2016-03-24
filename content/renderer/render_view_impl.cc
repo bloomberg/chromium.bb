@@ -1375,7 +1375,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     // TODO(viettrungluu): Move to a separate message filter.
     IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryOffsetAndLength,
                         OnSetHistoryOffsetAndLength)
-    IPC_MESSAGE_HANDLER(ViewMsg_EnableViewSourceMode, OnEnableViewSourceMode)
     IPC_MESSAGE_HANDLER(ViewMsg_ReleaseDisambiguationPopupBitmap,
                         OnReleaseDisambiguationPopupBitmap)
     IPC_MESSAGE_HANDLER(ViewMsg_ForceRedraw, OnForceRedraw)
@@ -3253,15 +3252,6 @@ void RenderViewImpl::OnShowContextMenu(
   if (webview())
     webview()->showContextMenu();
   has_host_context_menu_location_ = false;
-}
-
-void RenderViewImpl::OnEnableViewSourceMode() {
-  if (!webview())
-    return;
-  WebFrame* main_frame = webview()->mainFrame();
-  if (!main_frame)
-    return;
-  main_frame->enableViewSourceMode(true);
 }
 
 #if defined(OS_ANDROID) || defined(USE_AURA)

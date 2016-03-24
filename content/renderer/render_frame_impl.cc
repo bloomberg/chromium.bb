@@ -1422,6 +1422,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SerializeAsMHTML, OnSerializeAsMHTML)
     IPC_MESSAGE_HANDLER(FrameMsg_Find, OnFind)
     IPC_MESSAGE_HANDLER(FrameMsg_StopFinding, OnStopFinding)
+    IPC_MESSAGE_HANDLER(FrameMsg_EnableViewSourceMode, OnEnableViewSourceMode)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(InputMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
@@ -5091,6 +5092,12 @@ void RenderFrameImpl::OnStopFinding(StopFindAction action) {
       }
     }
   }
+}
+
+void RenderFrameImpl::OnEnableViewSourceMode() {
+  DCHECK(frame_);
+  DCHECK(!frame_->parent());
+  frame_->enableViewSourceMode(true);
 }
 
 #if defined(OS_ANDROID)

@@ -416,10 +416,9 @@ TEST_F(WebContentsImplTest, NTPViewSource) {
   cont.LoadURL(
       kGURL, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   int entry_id = cont.GetPendingEntry()->GetUniqueID();
-  rvh()->GetDelegate()->RenderViewCreated(rvh());
   // Did we get the expected message?
   EXPECT_TRUE(process()->sink().GetFirstMessageMatching(
-      ViewMsg_EnableViewSourceMode::ID));
+      FrameMsg_EnableViewSourceMode::ID));
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   InitNavigateParams(&params, 0, entry_id, true, kGURL,
