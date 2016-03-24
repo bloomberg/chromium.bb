@@ -22,7 +22,7 @@ class TabStackTraceTest(tab_test_case.TabTestCase):
 
   # Currently stack traces do not work on windows: http://crbug.com/476110
   # Linux stack traces depends on fission support: http://crbug.com/405623
-  @decorators.Enabled('mac')
+  @decorators.Enabled('mac', 'linux')
   @decorators.Disabled('snowleopard')
   def testCrashSymbols(self):
     try:

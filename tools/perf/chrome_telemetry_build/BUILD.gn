@@ -23,7 +23,10 @@ group("telemetry_chrome_test") {
   }
 
   if (is_linux) {
-    data_deps += [ "//tools/xdisplaycheck" ]
+    data_deps += [
+      "//tools/xdisplaycheck",
+      "//breakpad:dump_syms($host_toolchain)",
+    ]
     data += [ "//components/crash/content/tools/generate_breakpad_symbols.py" ]
   }
 
