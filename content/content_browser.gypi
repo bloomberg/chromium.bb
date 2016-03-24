@@ -1054,6 +1054,8 @@
       'browser/media/capture/cursor_renderer.h',
       'browser/media/capture/cursor_renderer_aura.cc',
       'browser/media/capture/cursor_renderer_aura.h',
+      'browser/media/capture/cursor_renderer_mac.mm',
+      'browser/media/capture/cursor_renderer_mac.h',
       'browser/media/capture/web_contents_audio_input_stream.cc',
       'browser/media/capture/web_contents_audio_input_stream.h',
       'browser/media/capture/web_contents_audio_muter.cc',

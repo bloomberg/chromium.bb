@@ -96,6 +96,8 @@
 #if defined(USE_AURA)
 #include "content/browser/media/capture/cursor_renderer_aura.h"
 #include "content/browser/media/capture/window_activity_tracker_aura.h"
+#elif defined(OS_MACOSX)
+#include "content/browser/media/capture/cursor_renderer_mac.h"
 #endif
 
 namespace content {
@@ -417,7 +419,7 @@ bool FrameSubscriber::IsUserInteractingWithContent() {
         base::TimeDelta::FromMilliseconds(kMinPeriodNoAnimationMillis);
     if (ui_activity && !animation_active) {
       interactive_mode = true;
-    } else if (animation_active) {
+    } else if (animation_active && window_activity_tracker_.get()) {
       window_activity_tracker_->Reset();
     }
   }
@@ -436,8 +438,7 @@ ContentCaptureSubscription::ContentCaptureSubscription(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderWidgetHostView* const view = source.GetView();
-// TODO(isheriff): Implement on a mac.
-// https://crbug.com/549182
+// TODO(isheriff): Implement activity tracker on mac.
 // https://crbug.com/567735
 #if defined(USE_AURA)
   if (view) {
@@ -445,6 +446,11 @@ ContentCaptureSubscription::ContentCaptureSubscription(
         view->GetNativeView(), kCursorEnabledOnMouseMovement));
     window_activity_tracker_.reset(
         new content::WindowActivityTrackerAura(view->GetNativeView()));
+  }
+#elif defined(OS_MACOSX)
+  if (view) {
+    cursor_renderer_.reset(
+        new content::CursorRendererMac(view->GetNativeView()));
   }
 #endif
   timer_subscriber_.reset(new FrameSubscriber(
