@@ -62,6 +62,8 @@ private:
     friend class LayoutRubyRun;
 };
 
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyBase, isRubyBase());
+
 } // namespace blink
 
 #endif // LayoutRubyBase_h

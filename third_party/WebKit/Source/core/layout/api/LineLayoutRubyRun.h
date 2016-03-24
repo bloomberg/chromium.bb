@@ -7,6 +7,7 @@
 
 #include "core/layout/LayoutRubyRun.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
+#include "core/layout/api/LineLayoutRubyBase.h"
 #include "core/layout/api/LineLayoutRubyText.h"
 
 namespace blink {
@@ -38,9 +39,9 @@ public:
         return LineLayoutRubyText(toRubyRun()->rubyText());
     }
 
-    LayoutRubyBase* rubyBase() const
+    LineLayoutRubyBase rubyBase() const
     {
-        return toRubyRun()->rubyBase();
+        return LineLayoutRubyBase(toRubyRun()->rubyBase());
     }
 
     bool canBreakBefore(const LazyLineBreakIterator& iterator) const

@@ -10,7 +10,6 @@ include_rules = [
     "!core/layout/HitTestLocation.h",
     "!core/layout/HitTestResult.h",
     "!core/layout/LayoutBlockFlow.h",
-    "!core/layout/LayoutRubyBase.h",
     "!core/layout/OverflowModel.h",
     "!core/layout/TextRunConstructor.h",
     "!core/layout/VerticalPositionCache.h",

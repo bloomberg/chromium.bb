@@ -22,11 +22,11 @@
 #include "core/CSSPropertyNames.h"
 #include "core/dom/Document.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutRubyBase.h"
 #include "core/layout/api/LineLayoutBlockFlow.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/api/LineLayoutInline.h"
 #include "core/layout/api/LineLayoutListMarker.h"
+#include "core/layout/api/LineLayoutRubyBase.h"
 #include "core/layout/api/LineLayoutRubyRun.h"
 #include "core/layout/api/LineLayoutRubyText.h"
 #include "core/layout/line/GlyphOverflow.h"
@@ -651,9 +651,9 @@ void InlineFlowBox::placeBoxesInBlockDirection(LayoutUnit top, LayoutUnit maxHei
                     hasAnnotationsAfter = true;
 
                 LineLayoutRubyRun rubyRun = LineLayoutRubyRun(curr->getLineLayoutItem());
-                if (LayoutRubyBase* rubyBase = rubyRun.rubyBase()) {
-                    LayoutUnit bottomRubyBaseLeading = (curr->logicalHeight() - rubyBase->logicalBottom()) + rubyBase->logicalHeight() - (rubyBase->lastRootBox() ? rubyBase->lastRootBox()->lineBottom() : LayoutUnit());
-                    LayoutUnit topRubyBaseLeading = rubyBase->logicalTop() + (rubyBase->firstRootBox() ? rubyBase->firstRootBox()->lineTop() : LayoutUnit());
+                if (LineLayoutRubyBase rubyBase = rubyRun.rubyBase()) {
+                    LayoutUnit bottomRubyBaseLeading = (curr->logicalHeight() - rubyBase.logicalBottom()) + rubyBase.logicalHeight() - (rubyBase.lastRootBox() ? rubyBase.lastRootBox()->lineBottom() : LayoutUnit());
+                    LayoutUnit topRubyBaseLeading = rubyBase.logicalTop() + (rubyBase.firstRootBox() ? rubyBase.firstRootBox()->lineTop() : LayoutUnit());
                     newLogicalTop += !getLineLayoutItem().style()->isFlippedLinesWritingMode() ? topRubyBaseLeading : bottomRubyBaseLeading;
                     boxHeight -= (topRubyBaseLeading + bottomRubyBaseLeading);
                 }

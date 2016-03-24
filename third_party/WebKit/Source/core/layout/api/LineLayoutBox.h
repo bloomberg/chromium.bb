@@ -56,6 +56,11 @@ public:
         return toBox()->logicalTop();
     }
 
+    LayoutUnit logicalBottom() const
+    {
+        return toBox()->logicalBottom();
+    }
+
     LayoutUnit flipForWritingMode(LayoutUnit unit) const
     {
         return toBox()->flipForWritingMode(unit);

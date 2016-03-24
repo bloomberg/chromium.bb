@@ -526,6 +526,7 @@
             'layout/api/LineLayoutInline.h',
             'layout/api/LineLayoutItem.h',
             'layout/api/LineLayoutListMarker.h',
+            'layout/api/LineLayoutRubyBase.h',
             'layout/api/LineLayoutRubyRun.h',
             'layout/api/LineLayoutRubyText.h',
             'layout/api/LineLayoutSVGInline.h',
