@@ -225,7 +225,7 @@ BINS-$(NOT_MSVS)           += $(addprefix $(BUILD_PFX),$(ALL_EXAMPLES:.c=$(EXE_S
 
 
 # Instantiate linker template for all examples.
-CODEC_LIB=$(if $(CONFIG_DEBUG_LIBS),vpx_g,vpx)
+CODEC_LIB=$(if $(CONFIG_DEBUG_LIBS),aom_g,aom)
 ifneq ($(filter darwin%,$(TGT_OS)),)
 SHARED_LIB_SUF=.dylib
 else

@@ -297,7 +297,7 @@ vpx.pc: config.mk libs.mk
 	$(qexec)echo 'Version: $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)' >> $@
 	$(qexec)echo 'Requires:' >> $@
 	$(qexec)echo 'Conflicts:' >> $@
-	$(qexec)echo 'Libs: -L$${libdir} -lvpx -lm' >> $@
+	$(qexec)echo 'Libs: -L$${libdir} -laom -lm' >> $@
 ifeq ($(HAVE_PTHREAD_H),yes)
 	$(qexec)echo 'Libs.private: -lm -lpthread' >> $@
 else
@@ -458,13 +458,13 @@ $(LIBAOM_TEST_OBJS) $(LIBAOM_TEST_OBJS:.o=.d): CXXFLAGS += $(GTEST_INCLUDES)
 OBJS-yes += $(LIBAOM_TEST_OBJS)
 BINS-yes += $(LIBAOM_TEST_BIN)
 
-CODEC_LIB=$(if $(CONFIG_DEBUG_LIBS),vpx_g,vpx)
+CODEC_LIB=$(if $(CONFIG_DEBUG_LIBS),aom_g,aom)
 CODEC_LIB_SUF=$(if $(CONFIG_SHARED),$(SHARED_LIB_SUF),.a)
 TEST_LIBS := lib$(CODEC_LIB)$(CODEC_LIB_SUF) libgtest.a
 $(LIBAOM_TEST_BIN): $(TEST_LIBS)
 $(eval $(call linkerxx_template,$(LIBAOM_TEST_BIN), \
               $(LIBAOM_TEST_OBJS) \
-              -L. -lvpx -lgtest $(extralibs) -lm))
+              -L. -laom -lgtest $(extralibs) -lm))
 
 ifneq ($(strip $(TEST_INTRA_PRED_SPEED_OBJS)),)
 $(TEST_INTRA_PRED_SPEED_OBJS) $(TEST_INTRA_PRED_SPEED_OBJS:.o=.d): CXXFLAGS += $(GTEST_INCLUDES)
@@ -474,7 +474,7 @@ BINS-yes += $(TEST_INTRA_PRED_SPEED_BIN)
 $(TEST_INTRA_PRED_SPEED_BIN): $(TEST_LIBS)
 $(eval $(call linkerxx_template,$(TEST_INTRA_PRED_SPEED_BIN), \
               $(TEST_INTRA_PRED_SPEED_OBJS) \
-              -L. -lvpx -lgtest $(extralibs) -lm))
+              -L. -laom -lgtest $(extralibs) -lm))
 endif  # TEST_INTRA_PRED_SPEED
 
 endif  # CONFIG_UNIT_TESTS
