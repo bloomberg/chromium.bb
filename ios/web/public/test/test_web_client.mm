@@ -15,18 +15,6 @@ TestWebClient::TestWebClient()
 TestWebClient::~TestWebClient() {
 }
 
-std::string TestWebClient::GetUserAgent(bool desktop_user_agent) const {
-  return desktop_user_agent ? desktop_user_agent_ : user_agent_;
-}
-
-void TestWebClient::SetUserAgent(const std::string& user_agent,
-                                 bool is_desktop_user_agent) {
-  if (is_desktop_user_agent)
-    desktop_user_agent_ = user_agent;
-  else
-    user_agent_ = user_agent;
-}
-
 NSString* TestWebClient::GetEarlyPageScript(
     web::WebViewType web_view_type) const {
   NSString* result = [early_page_scripts_ objectForKey:@(web_view_type)];

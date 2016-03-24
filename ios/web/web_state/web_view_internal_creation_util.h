@@ -15,15 +15,6 @@
 namespace web {
 class BrowserState;
 
-// Returns a new UIWebView for displaying regular web content and registers a
-// user agent for it. The returned UIWebView will have a user agent string that
-// includes the |request_group_id|.
-// Note: Callers are responsible for releasing the returned UIWebView.
-// DEPRECATED: Please use the WKWebView equivalent instead.
-UIWebView* CreateWebView(CGRect frame,
-                         NSString* request_group_id,
-                         BOOL use_desktop_user_agent);
-
 // Returns a new UIWebView for displaying regular web content.
 // Note: Callers are responsible for releasing the returned UIWebView.
 // DEPRECATED: Please use the WKWebView equivalent instead.

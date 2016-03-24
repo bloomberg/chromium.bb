@@ -224,7 +224,6 @@
         'web_state/credential.cc',
         'web_state/crw_pass_kit_downloader.h',
         'web_state/crw_pass_kit_downloader.mm',
-        'web_state/crw_recurring_task_delegate.h',
         'web_state/crw_web_view_proxy_impl.h',
         'web_state/crw_web_view_proxy_impl.mm',
         'web_state/crw_web_view_scroll_view_proxy.mm',

@@ -17,7 +17,6 @@
 #include "ios/web/public/web_client.h"
 #import "ios/web/public/web_view_counter.h"
 #import "ios/web/public/web_view_creation_util.h"
-#include "ios/web/ui_web_view_util.h"
 #import "ios/web/weak_nsobject_counter.h"
 #import "ios/web/web_state/ui/crw_wk_simple_web_view_controller.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
@@ -118,14 +117,6 @@ void PostWKWebViewCreation(WKWebView* web_view, BrowserState* browser_state) {
 }
 
 }  // namespace
-
-UIWebView* CreateWebView(CGRect frame,
-                         NSString* request_group_id,
-                         BOOL use_desktop_user_agent) {
-  web::BuildAndRegisterUserAgentForUIWebView(request_group_id,
-                                             use_desktop_user_agent);
-  return web::CreateWebView(frame);
-}
 
 UIWebView* CreateWebView(CGRect frame) {
   DCHECK(web::GetWebClient());

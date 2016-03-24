@@ -22,21 +22,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest_mac.h"
 
-@interface CRWStaticFileWebView (Testing)
-+ (BOOL)isStaticFileUserAgent:(NSString*)userAgent;
-@end
-
 namespace web {
 namespace {
 
 const CGRect kTestFrame = CGRectMake(5.0f, 10.0f, 15.0f, 20.0f);
-NSString* const kTestRequestGroupID = @"100042";
-
-// Returns user agent for given UIWebView.
-NSString* GetWebViewUserAgent(UIWebView* web_view) {
-  NSString* const kGetUserAgentJS = @"navigator.userAgent";
-  return [web_view stringByEvaluatingJavaScriptFromString:kGetUserAgentJS];
-}
 
 // A WebClient that stubs PreWebViewCreation/PostWebViewCreation calls for
 // testing purposes.
@@ -59,7 +48,6 @@ class WebViewCreationUtilsTest : public WebTest {
     WebTest::SetUp();
     logJavaScriptPref_ =
         [[NSUserDefaults standardUserDefaults] boolForKey:@"LogJavascript"];
-    creation_utils_web_client()->SetUserAgent("TestUA", false);
   }
   void TearDown() override {
     [[NSUserDefaults standardUserDefaults] setBool:logJavaScriptPref_
@@ -82,36 +70,6 @@ class WebViewCreationUtilsTest : public WebTest {
   // WebClient that stubs PreWebViewCreation/PostWebViewCreation.
   web::ScopedTestingWebClient web_client_;
 };
-
-// Tests that a web view created with a certain id returns the same
-// requestGroupID in the user agent string.
-TEST_F(WebViewCreationUtilsTest, CreationWithRequestGroupID) {
-  UIWebView* captured_web_view = nil;
-  ExpectWebClientCalls(&captured_web_view);
-
-  base::scoped_nsobject<UIWebView> web_view(
-      CreateWebView(kTestFrame, kTestRequestGroupID, NO));
-  EXPECT_TRUE([web_view isMemberOfClass:[UIWebView class]]);
-  EXPECT_TRUE(CGRectEqualToRect(kTestFrame, [web_view frame]));
-  EXPECT_NSEQ(web_view, captured_web_view);
-
-  NSString* const kExpectedUserAgent =
-      [NSString stringWithFormat:@"TestUA (%@)", kTestRequestGroupID];
-  NSString* const kActualUserAgent = GetWebViewUserAgent(web_view);
-  EXPECT_NSEQ(kExpectedUserAgent, kActualUserAgent);
-  EXPECT_TRUE([ExtractRequestGroupIDFromUserAgent(kActualUserAgent)
-      isEqualToString:kTestRequestGroupID]);
-}
-
-// Tests that a web view not created for displaying static file content from
-// the application bundle does not return a user agent that allows static file
-// content display.
-TEST_F(WebViewCreationUtilsTest, CRWStaticFileWebViewFalse) {
-  base::scoped_nsobject<UIWebView> web_view(
-      CreateWebView(CGRectZero, kTestRequestGroupID, NO));
-  EXPECT_FALSE([CRWStaticFileWebView
-      isStaticFileUserAgent:GetWebViewUserAgent(web_view)]);
-}
 
 // Tests web::CreateWebView function that it correctly returns a UIWebView with
 // the correct frame and calls WebClient::PreWebViewCreation/
