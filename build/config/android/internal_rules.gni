@@ -1572,9 +1572,8 @@ template("java_library_impl") {
   set_sources_assignment_filter([])
   forward_variables_from(invoker, [ "testonly" ])
 
-  assert(
-      defined(invoker.java_files) || defined(invoker.DEPRECATED_java_in_dir) ||
-      defined(invoker.srcjars) || defined(invoker.srcjar_deps))
+  assert(defined(invoker.java_files) || defined(invoker.srcjars) ||
+         defined(invoker.srcjar_deps))
   _base_path = "$target_gen_dir/$target_name"
 
   # Jar files can be needed at runtime (by Robolectric tests or java binaries),
@@ -1676,26 +1675,6 @@ template("java_library_impl") {
   }
 
   _java_files = []
-  if (defined(invoker.DEPRECATED_java_in_dir)) {
-    _src_dir = invoker.DEPRECATED_java_in_dir + "/src"
-    _src_dir_exists = exec_script("//build/dir_exists.py",
-                                  [ rebase_path(_src_dir, root_build_dir) ],
-                                  "string")
-    assert(_src_dir_exists == "False",
-           "In GN, java_in_dir should be the fully specified java directory " +
-               "(i.e. including the trailing \"/src\")")
-
-    _java_files_build_rel =
-        exec_script("//build/android/gyp/find.py",
-                    [
-                      "--pattern",
-                      "*.java",
-                      rebase_path(invoker.DEPRECATED_java_in_dir,
-                                  root_build_dir),
-                    ],
-                    "list lines")
-    _java_files = rebase_path(_java_files_build_rel, ".", root_build_dir)
-  }
   if (defined(invoker.java_files)) {
     _java_files += invoker.java_files
   }
