@@ -95,7 +95,7 @@ class GraphSack(object):
     appear with frequency at least CORE_THRESHOLD. For a collection of graph
     sets, for instance pulling the same page under different network
     connections, we intersect the core sets to produce a page core set that
-    describes the key resources used by the page. See https://goo.gl/F1BoEB for
+    describes the key resources used by the page. See https://goo.gl/LmqQRS for
     context and discussion.
 
     Args:
@@ -117,7 +117,7 @@ class GraphSack(object):
   def CoreSimilarity(cls, a, b):
     """Compute the similarity of two core sets.
 
-    We use the Jaccard index. See https://goo.gl/F1BoEB for discussion.
+    We use the Jaccard index. See https://goo.gl/LmqQRS for discussion.
 
     Args:
       a: The first core set, as a set of strings.
