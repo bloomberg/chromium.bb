@@ -21,6 +21,32 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/libyuv/include/libyuv.h"
 
+namespace {
+
+static void CopyAlphaChannelIntoVideoFrame(
+    const uint8_t* const source,
+    const scoped_refptr<media::VideoFrame>& dest_frame) {
+  const gfx::Size& size = dest_frame->coded_size();
+  const int stride = dest_frame->stride(media::VideoFrame::kAPlane);
+
+  if (stride == size.width()) {
+    for (int p = 0; p < size.GetArea(); ++p)
+      dest_frame->data(media::VideoFrame::kAPlane)[p] = source[p * 4 + 3];
+    return;
+  }
+
+  // Copy apha values one-by-one if the destination stride != source width.
+  for (int h = 0; h < size.height(); ++h) {
+    const uint8_t* const src_ptr = &source[4 * h * size.width()];
+    uint8_t* dest_ptr =
+        &dest_frame->data(media::VideoFrame::kAPlane)[h * stride];
+    for (int pixel_index = 0; pixel_index < 4 * size.width(); pixel_index += 4)
+      *(dest_ptr++) = src_ptr[pixel_index + 3];
+  }
+}
+
+}  // namespace
+
 namespace content {
 
 // Implementation VideoCapturerSource that is owned by
@@ -203,8 +229,6 @@ void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
       gfx::Rect(size), size, timestamp - base::TimeTicks());
   DCHECK(video_frame);
 
-  // TODO(emircan): Use https://code.google.com/p/libyuv/issues/detail?id=572
-  // when it becomes available.
   libyuv::ARGBToI420(temp_data_.data(), row_bytes_,
                      video_frame->data(media::VideoFrame::kYPlane),
                      video_frame->stride(media::VideoFrame::kYPlane),
@@ -214,8 +238,9 @@ void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
                      video_frame->stride(media::VideoFrame::kVPlane),
                      size.width(), size.height());
   if (!isOpaque) {
-    for (int p = 0; p < size.GetArea(); ++p)
-      video_frame->data(media::VideoFrame::kAPlane)[p] = temp_data_[p * 4 + 3];
+    // TODO(emircan): Use https://code.google.com/p/libyuv/issues/detail?id=572
+    // when it becomes available.
+    CopyAlphaChannelIntoVideoFrame(temp_data_.data(), video_frame);
   }
 
   io_task_runner_->PostTask(
