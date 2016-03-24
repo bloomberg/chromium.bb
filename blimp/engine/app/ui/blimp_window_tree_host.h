@@ -22,6 +22,10 @@ class BlimpWindowTreeHost : public aura::WindowTreeHostPlatform {
   ~BlimpWindowTreeHost() override;
 
  private:
+  // aura::WindowTreeHostPlatform overrides.
+  void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
+                                    float device_pixel_ratio) override;
+
   DISALLOW_COPY_AND_ASSIGN(BlimpWindowTreeHost);
 };
 

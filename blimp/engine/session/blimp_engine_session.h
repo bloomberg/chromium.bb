@@ -61,7 +61,6 @@ class BlimpBrowserContext;
 class BlimpEngineConfig;
 class BlimpFocusClient;
 class BlimpScreen;
-class BlimpUiContextFactory;
 class BlimpWindowTreeHost;
 class EngineNetworkComponents;
 
@@ -160,9 +159,6 @@ class BlimpEngineSession
 
   // Presents the client's single screen.
   scoped_ptr<BlimpScreen> screen_;
-
-  // Context factory for compositor.
-  scoped_ptr<BlimpUiContextFactory> context_factory_;
 
   // Represents the (currently single) browser window into which tab(s) will
   // be rendered.

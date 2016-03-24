@@ -13,7 +13,6 @@
 #include "blimp/engine/app/blimp_engine_config.h"
 #include "blimp/engine/app/ui/blimp_layout_manager.h"
 #include "blimp/engine/app/ui/blimp_screen.h"
-#include "blimp/engine/app/ui/blimp_ui_context_factory.h"
 #include "blimp/engine/app/ui/blimp_window_tree_host.h"
 #include "blimp/engine/common/blimp_browser_context.h"
 #include "blimp/net/blimp_connection.h"
@@ -207,8 +206,6 @@ void BlimpEngineSession::Initialize() {
   DCHECK(!gfx::Screen::GetScreen());
   gfx::Screen::SetScreenInstance(screen_.get());
 
-  context_factory_.reset(new BlimpUiContextFactory());
-  aura::Env::GetInstance()->set_context_factory(context_factory_.get());
   window_tree_host_.reset(new BlimpWindowTreeHost());
 
   screen_->set_window_tree_host(window_tree_host_.get());

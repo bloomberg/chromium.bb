@@ -15,5 +15,11 @@ BlimpWindowTreeHost::BlimpWindowTreeHost() : aura::WindowTreeHostPlatform() {
 
 BlimpWindowTreeHost::~BlimpWindowTreeHost() {}
 
+void BlimpWindowTreeHost::OnAcceleratedWidgetAvailable(
+    gfx::AcceleratedWidget widget,
+    float device_pixel_ratio) {
+  // Do nothing to avoid creating an output surface and gpu process.
+}
+
 }  // namespace engine
 }  // namespace blimp

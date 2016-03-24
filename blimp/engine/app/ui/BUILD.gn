@@ -10,8 +10,6 @@ source_set("ui") {
     "blimp_layout_manager.h",
     "blimp_screen.cc",
     "blimp_screen.h",
-    "blimp_ui_context_factory.cc",
-    "blimp_ui_context_factory.h",
     "blimp_window_tree_host.cc",
     "blimp_window_tree_host.h",
   ]
