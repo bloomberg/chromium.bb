@@ -62,6 +62,7 @@ public class RemoteMediaPlayerBridge {
 
         @Override
         public void onSeekCompleted() {
+            mSeekRequested = false;
             if (mActive && mNativeRemoteMediaPlayerBridge != 0) {
                 nativeOnSeekCompleted(mNativeRemoteMediaPlayerBridge);
             }
@@ -81,6 +82,7 @@ public class RemoteMediaPlayerBridge {
             } else if (newState == PlayerState.PLAYING) {
                 nativeOnPlaying(mNativeRemoteMediaPlayerBridge);
             } else if (newState == PlayerState.PAUSED) {
+                mPauseRequested = false;
                 nativeOnPaused(mNativeRemoteMediaPlayerBridge);
             }
         }
@@ -281,16 +283,20 @@ public class RemoteMediaPlayerBridge {
 
     @CalledByNative
     protected void pause() throws IllegalStateException {
-        mPauseRequested = true;
-        if (mRouteController != null && mRouteController.isBeingCast()) mRouteController.pause();
+        if (mRouteController != null && mRouteController.isBeingCast()) {
+            mRouteController.pause();
+        } else {
+            mPauseRequested = true;
+        }
     }
 
     @CalledByNative
     protected void seekTo(int msec) throws IllegalStateException {
-        mSeekRequested = true;
-        mSeekLocation = msec;
         if (mRouteController != null && mRouteController.isBeingCast()) {
             mRouteController.seekTo(msec);
+        } else {
+            mSeekRequested = true;
+            mSeekLocation = msec;
         }
     }
 

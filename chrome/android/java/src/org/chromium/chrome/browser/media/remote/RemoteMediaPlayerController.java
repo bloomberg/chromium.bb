@@ -183,9 +183,7 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
         }
 
         onStateReset(controller);
-        if (controller.shouldResetState(player)) {
-            showMediaRouteDialog(player, controller, currentActivity);
-        }
+        showMediaRouteDialog(player, controller, currentActivity);
 
     }
 
@@ -291,7 +289,7 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
     }
 
     @Override
-    public void onPlaybackStateChanged(PlayerState oldState, PlayerState newState) {
+    public void onPlaybackStateChanged(PlayerState newState) {
         if (newState == PlayerState.PLAYING || newState == PlayerState.LOADING
                 || newState == PlayerState.PAUSED) {
             CastNotificationControl notificationControl = getNotificationControl();

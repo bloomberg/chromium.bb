@@ -139,10 +139,9 @@ public interface MediaRouteController {
 
         /**
          * Called when the Playback state has changed (e.g. from playing to paused)
-         * @param oldState the old state
          * @param newState the new state
          */
-        void onPlaybackStateChanged(PlayerState oldState, PlayerState newState);
+        void onPlaybackStateChanged(PlayerState newState);
 
         /**
          * Called when the duration of the currently playing video changes.
@@ -303,12 +302,8 @@ public interface MediaRouteController {
      */
     MediaStateListener getMediaStateListener();
 
-    /**
-     * @return true if the video is new
-     */
-    boolean shouldResetState(MediaStateListener newListener);
-
-    @VisibleForTesting PlayerState getPlayerState();
+    @VisibleForTesting
+    PlayerState getDisplayedPlayerState();
 
     /**
      * Remove an existing media state listener

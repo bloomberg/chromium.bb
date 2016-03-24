@@ -58,7 +58,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         }
 
         @Override
-        public void onPlaybackStateChanged(PlayerState oldState, final PlayerState newState) {
+        public void onPlaybackStateChanged(final PlayerState newState) {
             // Use postOnUiThread to handling the latch until the current UI task has completed,
             // this makes sure that Cast has finished handling the event.
             ThreadUtils.postOnUiThread(new Runnable() {
@@ -173,7 +173,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
             @Override
             public void run() {
                 if (mMediaRouteController != null
-                        && states.contains(mMediaRouteController.getPlayerState())) {
+                        && states.contains(mMediaRouteController.getDisplayedPlayerState())) {
                     mLatch.countDown();
                 }
             }

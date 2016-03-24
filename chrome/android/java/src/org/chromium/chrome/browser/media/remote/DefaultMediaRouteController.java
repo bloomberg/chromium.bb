@@ -195,7 +195,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
             }
         });
 
-        updateState(MediaItemStatus.PLAYBACK_STATE_BUFFERING);
+        setDisplayedPlayerState(PlayerState.LOADING);
     }
 
     @Override
@@ -223,7 +223,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         // jump back in time discarding whatever we extrapolated from the last
         // time the position was updated.
         mLastKnownStreamPosition = getPosition();
-        updateState(MediaItemStatus.PLAYBACK_STATE_PAUSED);
+        setDisplayedPlayerState(PlayerState.PAUSED);
     }
 
     /**
@@ -353,7 +353,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
     @Override
     public long getPosition() {
-        boolean paused = (getPlayerState() != PlayerState.PLAYING);
+        boolean paused = (getDisplayedPlayerState() != PlayerState.PLAYING);
         if ((mStreamPositionTimestamp != 0) && !mSeeking && !paused
                 && (mLastKnownStreamPosition < mStreamDuration)) {
 
@@ -446,7 +446,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
                 }
 
                 for (UiListener listener : getUiListeners()) {
-                    listener.onPlaybackStateChanged(getPlayerState(), PlayerState.FINISHED);
+                    listener.onPlaybackStateChanged(PlayerState.FINISHED);
                 }
 
                 if (getMediaStateListener() != null) {
@@ -619,7 +619,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
             case MediaSessionStatus.SESSION_STATE_ENDED:
             case MediaSessionStatus.SESSION_STATE_INVALIDATED:
                 for (UiListener listener : getUiListeners()) {
-                    listener.onPlaybackStateChanged(getPlayerState(), PlayerState.INVALIDATED);
+                    listener.onPlaybackStateChanged(PlayerState.INVALIDATED);
                 }
                 if (getMediaStateListener() != null) {
                     getMediaStateListener().onPlaybackStateChanged(PlayerState.INVALIDATED);
@@ -659,10 +659,9 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
             updateState(itemStatus.getPlaybackState());
 
-            if ((getPlayerState() == PlayerState.PAUSED)
-                    || (getPlayerState() == PlayerState.PLAYING)
-                    || (getPlayerState() == PlayerState.LOADING)) {
-
+            if ((getRemotePlayerState() == PlayerState.PAUSED)
+                    || (getRemotePlayerState() == PlayerState.PLAYING)
+                    || (getRemotePlayerState() == PlayerState.LOADING)) {
                 this.mCurrentItemId = itemId;
 
                 long duration = itemStatus.getContentDuration();

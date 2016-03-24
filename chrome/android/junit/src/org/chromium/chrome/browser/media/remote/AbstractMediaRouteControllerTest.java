@@ -131,6 +131,8 @@ public class AbstractMediaRouteControllerTest {
         // Default
         assertFalse(mediaRouteCtrl.isBeingCast());
 
+        mediaRouteCtrl.setPreparedForTesting();
+
         mediaRouteCtrl.setPlayerStateForMediaItemState(MediaItemStatus.PLAYBACK_STATE_BUFFERING);
         assertTrue(mediaRouteCtrl.isBeingCast());
 
@@ -161,6 +163,9 @@ public class AbstractMediaRouteControllerTest {
 
         mediaRouteCtrl.setPlayerStateForMediaItemState(MediaItemStatus.PLAYBACK_STATE_PLAYING);
         assertTrue(mediaRouteCtrl.isBeingCast());
+
+        mediaRouteCtrl.setUnprepared();
+        assertFalse(mediaRouteCtrl.isBeingCast());
     }
 
     /** Test method for {@link AbstractMediaRouteController#isRemotePlaybackAvailable()}.*/
@@ -291,39 +296,6 @@ public class AbstractMediaRouteControllerTest {
         mediaRouteCtrl.prepareMediaRoute();
         verify(ShadowMediaRouter.sMediaRouter, times(1))
                 .addCallback(any(MediaRouteSelector.class), any(Callback.class), anyInt());
-    }
-
-    /**
-     * Test method for {@link AbstractMediaRouteController#shouldResetState(MediaStateListener)}.
-     */
-    @Test
-    @Feature({"MediaRemote"})
-    public void testShouldResetState() {
-        AbstractMediaRouteController mediaRouteCtrl = new DummyMediaRouteController();
-        MediaStateListener listener = mock(MediaStateListener.class);
-
-        mediaRouteCtrl.setMediaStateListener(null);
-
-        assertTrue(mediaRouteCtrl.shouldResetState(null));
-        assertTrue(mediaRouteCtrl.shouldResetState(mock(MediaStateListener.class)));
-
-        mediaRouteCtrl.setPlayerStateForMediaItemState(MediaItemStatus.PLAYBACK_STATE_PLAYING);
-
-        assertFalse(mediaRouteCtrl.shouldResetState(null));
-        assertTrue(mediaRouteCtrl.shouldResetState(mock(MediaStateListener.class)));
-
-        mediaRouteCtrl.setPlayerStateForMediaItemState(MediaItemStatus.PLAYBACK_STATE_FINISHED);
-        mediaRouteCtrl.setMediaStateListener(listener);
-
-        assertTrue(mediaRouteCtrl.shouldResetState(null));
-        assertTrue(mediaRouteCtrl.shouldResetState(mock(MediaStateListener.class)));
-        assertTrue(mediaRouteCtrl.shouldResetState(listener));
-
-        mediaRouteCtrl.setPlayerStateForMediaItemState(MediaItemStatus.PLAYBACK_STATE_PLAYING);
-
-        assertTrue(mediaRouteCtrl.shouldResetState(null));
-        assertTrue(mediaRouteCtrl.shouldResetState(mock(MediaStateListener.class)));
-        assertFalse(mediaRouteCtrl.shouldResetState(listener));
     }
 
     /**

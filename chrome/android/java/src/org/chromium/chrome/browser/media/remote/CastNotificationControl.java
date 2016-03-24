@@ -142,7 +142,7 @@ public class CastNotificationControl implements MediaRouteController.UiListener,
 
     // MediaRouteController.UiListener implementation.
     @Override
-    public void onPlaybackStateChanged(PlayerState oldState, PlayerState newState) {
+    public void onPlaybackStateChanged(PlayerState newState) {
         mState = newState;
         updateNotification();
     }

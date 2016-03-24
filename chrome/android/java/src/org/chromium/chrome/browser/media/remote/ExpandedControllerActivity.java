@@ -299,7 +299,7 @@ public class ExpandedControllerActivity
     }
 
     @Override
-    public void onPlaybackStateChanged(PlayerState oldState, PlayerState newState) {
+    public void onPlaybackStateChanged(PlayerState newState) {
         RemoteVideoInfo videoInfo = new RemoteVideoInfo(mVideoInfo);
         videoInfo.state = newState;
         setVideoInfo(videoInfo);
