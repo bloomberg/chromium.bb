@@ -3,16 +3,11 @@
 ?>
 <!DOCTYPE html>
 <script>
-    window.addEventListener("load", function() {
-        var entries = performance.getEntriesByType("resource");
-        var smallLoaded = false;
-        for (var i = 0; i < entries.length; ++i) {
-            top.console.log(entries[i].name);
-            if (entries[i].name.indexOf("square") != -1)
-                top.postMessage("squareloaded", "*");
-        }
-        top.postMessage("notloaded", "*");
-    });
+    if (window.internals) {
+        if (internals.isPreloaded("http://127.0.0.1:8000/resources/square.png"))
+            top.postMessage("squareloaded", "*");
+        else
+            top.postMessage("notloaded", "*");
+    }
 </script>
-<script src="../resources/slow-script.pl?delay=200"></script>
 
