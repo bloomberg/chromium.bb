@@ -50,6 +50,10 @@ void DisplayLayoutStore::SetDefaultDisplayPlacement(
 void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
     const DisplayIdList& list,
     scoped_ptr<DisplayLayout> layout) {
+  // A dev/beta channel may have a bad layout data saved in local state.
+  // TODO(oshima): Consider removing this a coulpe of milestones later.
+  if (list.size() == 2 && layout->placement_list.size() > 1)
+    return;
 
   // Do not overwrite the valid data with old invalid date.
   if (layouts_.count(list) && !CompareDisplayIds(list[0], list[1]))
@@ -67,7 +71,9 @@ void DisplayLayoutStore::RegisterLayoutForDisplayIdList(
       layout->placement_list[0].parent_display_id = list[0];
     }
   }
-  DCHECK(DisplayLayout::Validate(list, *layout.get())) << layout->ToString();
+  DCHECK(DisplayLayout::Validate(list, *layout.get()))
+      << "ids=" << DisplayIdListToString(list)
+      << ", layout=" << layout->ToString();
   layouts_[list] = std::move(layout);
 }
 

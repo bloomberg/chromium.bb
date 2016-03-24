@@ -63,7 +63,8 @@ ASH_EXPORT bool SetDisplayUIScale(int64_t display_id, float scale);
 bool HasDisplayModeForUIScale(const DisplayInfo& info, float ui_scale);
 
 // Computes the bounds that defines the bounds between two displays.
-void ComputeBoundary(const gfx::Display& primary_display,
+// Returns false if two displays does not intersect.
+bool ComputeBoundary(const gfx::Display& primary_display,
                      const gfx::Display& secondary_display,
                      gfx::Rect* primary_edge_in_screen,
                      gfx::Rect* secondary_edge_in_screen);

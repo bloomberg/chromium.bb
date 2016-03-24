@@ -1053,4 +1053,57 @@ TEST_F(DisplayPreferencesTest, RestoreUnifiedMode) {
   EXPECT_FALSE(display_manager->IsInUnifiedMode());
 }
 
+TEST_F(DisplayPreferencesTest, SaveThreeDisplays) {
+  LoggedInAsUser();
+  ash::DisplayManager* display_manager =
+      ash::Shell::GetInstance()->display_manager();
+  UpdateDisplay("200x200,200x200,300x300");
+
+  ash::DisplayIdList list = display_manager->GetCurrentDisplayIdList();
+  ASSERT_EQ(3u, list.size());
+
+  ash::DisplayLayoutBuilder builder(list[0]);
+  builder.AddDisplayPlacement(list[1], list[0], ash::DisplayPlacement::RIGHT,
+                              0);
+  builder.AddDisplayPlacement(list[2], list[0], ash::DisplayPlacement::BOTTOM,
+                              100);
+  display_manager->SetLayoutForCurrentDisplays(builder.Build());
+
+  const base::DictionaryValue* secondary_displays =
+      local_state()->GetDictionary(prefs::kSecondaryDisplays);
+  const base::DictionaryValue* new_value = nullptr;
+  EXPECT_TRUE(secondary_displays->GetDictionary(
+      ash::DisplayIdListToString(list), &new_value));
+}
+
+TEST_F(DisplayPreferencesTest, RestoreThreeDisplays) {
+  LoggedInAsUser();
+  ash::DisplayManager* display_manager =
+      ash::Shell::GetInstance()->display_manager();
+  int64_t id1 = gfx::Screen::GetScreen()->GetPrimaryDisplay().id();
+  ash::DisplayIdList list =
+      ash::test::CreateDisplayIdListN(3, id1, id1 + 1, id1 + 2);
+
+  ash::DisplayLayoutBuilder builder(list[0]);
+  builder.AddDisplayPlacement(list[1], list[0], ash::DisplayPlacement::LEFT, 0);
+  builder.AddDisplayPlacement(list[2], list[1], ash::DisplayPlacement::BOTTOM,
+                              100);
+  StoreDisplayLayoutPrefForTest(list, *builder.Build());
+  LoadDisplayPreferences(false);
+
+  UpdateDisplay("200x200,200x200,300x300");
+  ash::DisplayIdList new_list = display_manager->GetCurrentDisplayIdList();
+  ASSERT_EQ(3u, list.size());
+  ASSERT_EQ(list[0], new_list[0]);
+  ASSERT_EQ(list[1], new_list[1]);
+  ASSERT_EQ(list[2], new_list[2]);
+
+  EXPECT_EQ(gfx::Rect(0, 0, 200, 200),
+            display_manager->GetDisplayForId(list[0]).bounds());
+  EXPECT_EQ(gfx::Rect(-200, 0, 200, 200),
+            display_manager->GetDisplayForId(list[1]).bounds());
+  EXPECT_EQ(gfx::Rect(-100, 200, 300, 300),
+            display_manager->GetDisplayForId(list[2]).bounds());
+}
+
 }  // namespace chromeos

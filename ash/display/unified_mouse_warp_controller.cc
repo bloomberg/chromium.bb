@@ -131,8 +131,9 @@ void UnifiedMouseWarpController::ComputeBounds() {
 
   const gfx::Display& first = display_list[0];
   const gfx::Display& second = display_list[1];
-  ComputeBoundary(first, second, &first_edge_bounds_in_native_,
-                  &second_edge_bounds_in_native_);
+  bool success = ComputeBoundary(first, second, &first_edge_bounds_in_native_,
+                                 &second_edge_bounds_in_native_);
+  DCHECK(success);
 
   first_edge_bounds_in_native_ =
       GetNativeEdgeBounds(GetMirroringAshWindowTreeHostForDisplayId(first.id()),

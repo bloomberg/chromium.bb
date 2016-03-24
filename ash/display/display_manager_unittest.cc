@@ -1999,6 +1999,19 @@ TEST_F(DisplayManagerTest, DockMode) {
   EXPECT_FALSE(SetDisplayUIScale(gfx::Display::kInvalidDisplayID, 1.0f));
 }
 
+// Make sure that bad layout information is ignored and does not crash.
+TEST_F(DisplayManagerTest, DontRegisterBadConfig) {
+  if (!SupportsMultipleDisplays())
+    return;
+  DisplayIdList list = ash::test::CreateDisplayIdList2(1, 2);
+  DisplayLayoutBuilder builder(1);
+  builder.AddDisplayPlacement(2, 1, ash::DisplayPlacement::LEFT, 0);
+  builder.AddDisplayPlacement(3, 1, ash::DisplayPlacement::BOTTOM, 0);
+
+  display_manager()->layout_store()->RegisterLayoutForDisplayIdList(
+      list, builder.Build());
+}
+
 class ScreenShutdownTest : public test::AshTestBase {
  public:
   ScreenShutdownTest() {
@@ -2028,7 +2041,6 @@ TEST_F(ScreenShutdownTest, ScreenAfterShutdown) {
     return;
   UpdateDisplay("500x300,800x400");
 }
-
 
 #if defined(OS_CHROMEOS)
 namespace {

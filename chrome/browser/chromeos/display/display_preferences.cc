@@ -127,17 +127,15 @@ void LoadDisplayLayouts() {
     if (it.key().find(",") != std::string::npos) {
       std::vector<std::string> ids_str = base::SplitString(
           it.key(), ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-      int64_t id1 = gfx::Display::kInvalidDisplayID;
-      int64_t id2 = gfx::Display::kInvalidDisplayID;
-      if (!base::StringToInt64(ids_str[0], &id1) ||
-          !base::StringToInt64(ids_str[1], &id2) ||
-          id1 == gfx::Display::kInvalidDisplayID ||
-          id2 == gfx::Display::kInvalidDisplayID) {
-        continue;
+      std::vector<int64_t> ids;
+      for (std::string id_str : ids_str) {
+        int64_t id;
+        if (!base::StringToInt64(id_str, &id))
+          continue;
+        ids.push_back(id);
       }
-      int64_t ids[] = {id1, id2};
       ash::DisplayIdList list =
-          ash::GenerateDisplayIdList(std::begin(ids), std::end(ids));
+          ash::GenerateDisplayIdList(ids.begin(), ids.end());
       layout_store->RegisterLayoutForDisplayIdList(list, std::move(layout));
     }
   }

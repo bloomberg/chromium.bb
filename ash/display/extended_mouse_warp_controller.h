@@ -42,17 +42,16 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
 
  private:
   friend class test::DisplayManagerTestApi;
-  FRIEND_TEST_ALL_PREFIXES(ExtendedMouseWarpControllerTest,
-                           IndicatorBoundsTestOnRight);
-  FRIEND_TEST_ALL_PREFIXES(ExtendedMouseWarpControllerTest,
-                           IndicatorBoundsTestOnLeft);
-  FRIEND_TEST_ALL_PREFIXES(ExtendedMouseWarpControllerTest,
-                           IndicatorBoundsTestOnTopBottom);
+  friend class ExtendedMouseWarpControllerTest;
   FRIEND_TEST_ALL_PREFIXES(ExtendedMouseWarpControllerTest,
                            IndicatorBoundsTestThreeDisplays);
+  FRIEND_TEST_ALL_PREFIXES(ExtendedMouseWarpControllerTest,
+                           IndicatorBoundsTestThreeDisplaysWithLayout);
+  FRIEND_TEST_ALL_PREFIXES(ExtendedMouseWarpControllerTest,
+                           IndicatorBoundsTestThreeDisplaysWithLayout2);
 
   // Defined in header file because tests need access.
-  class WarpRegion {
+  class ASH_EXPORT WarpRegion {
    public:
     WarpRegion(int64_t a_display_id,
                int64_t b_display_id,
@@ -62,6 +61,8 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
 
     const gfx::Rect& a_indicator_bounds() { return a_indicator_bounds_; }
     const gfx::Rect& b_indicator_bounds() { return b_indicator_bounds_; }
+
+    const gfx::Rect& GetIndicatorBoundsForTest(int64_t id) const;
 
    private:
     friend class ExtendedMouseWarpController;
@@ -104,16 +105,14 @@ class ASH_EXPORT ExtendedMouseWarpController : public MouseWarpController {
                                      const gfx::Point& point_in_screen,
                                      bool update_mouse_location_now);
 
-  // Update the edge/indicator bounds based on the current
-  // display configuration.
-  scoped_ptr<WarpRegion> CreateHorizontalEdgeBounds(
-      const gfx::Display& a,
-      const gfx::Display& b,
-      DisplayPlacement::Position position);
-  scoped_ptr<WarpRegion> CreateVerticalEdgeBounds(
-      const gfx::Display& a,
-      const gfx::Display& b,
-      DisplayPlacement::Position position);
+  // Creates WarpRegion between display |a| and
+  // |b|. |drag_source_dispaly_id| is used to indicate in which
+  // display a drag is started, or invalid id passed if this is not
+  // for dragging. Returns null scoped_ptr if two displays do not
+  // share the edge.
+  scoped_ptr<WarpRegion> CreateWarpRegion(const gfx::Display& a,
+                                          const gfx::Display& b,
+                                          int64_t drag_source_dispay_id);
 
   void allow_non_native_event_for_test() { allow_non_native_event_ = true; }
 

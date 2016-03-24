@@ -222,7 +222,7 @@ bool HasDisplayModeForUIScale(const DisplayInfo& info, float ui_scale) {
   return std::find_if(modes.begin(), modes.end(), comparator) != modes.end();
 }
 
-void ComputeBoundary(const gfx::Display& a_display,
+bool ComputeBoundary(const gfx::Display& a_display,
                      const gfx::Display& b_display,
                      gfx::Rect* a_edge_in_screen,
                      gfx::Rect* b_edge_in_screen) {
@@ -240,18 +240,20 @@ void ComputeBoundary(const gfx::Display& a_display,
     // top bottom
     if (a_bounds.bottom() == b_bounds.y()) {
       position = DisplayPlacement::BOTTOM;
-    } else {
-      DCHECK_EQ(a_bounds.y(), b_bounds.bottom());
+    } else if (a_bounds.y() == b_bounds.bottom()) {
       position = DisplayPlacement::TOP;
+    } else {
+      return false;
     }
   } else {
-    DCHECK((rr - rx) == 0);
     // left right
     if (a_bounds.right() == b_bounds.x()) {
       position = DisplayPlacement::RIGHT;
-    } else {
-      DCHECK_EQ(a_bounds.x(), b_bounds.right());
+    } else if (a_bounds.x() == b_bounds.right()) {
       position = DisplayPlacement::LEFT;
+    } else {
+      DCHECK_NE(rr, rx);
+      return false;
     }
   }
 
@@ -278,11 +280,12 @@ void ComputeBoundary(const gfx::Display& a_display,
         b_edge_in_screen->SetRect(b_bounds.right() - 1, top, 1, bottom - top);
       } else {
         a_edge_in_screen->SetRect(a_bounds.right() - 1, top, 1, bottom - top);
-        b_edge_in_screen->SetRect(b_bounds.y(), top, 1, bottom - top);
+        b_edge_in_screen->SetRect(b_bounds.x(), top, 1, bottom - top);
       }
       break;
     }
   }
+  return true;
 }
 
 gfx::Rect GetNativeEdgeBounds(AshWindowTreeHost* ash_host,
@@ -383,7 +386,13 @@ void SortDisplayIdList(DisplayIdList* ids) {
 }
 
 std::string DisplayIdListToString(const ash::DisplayIdList& list) {
-  return base::Int64ToString(list[0]) + "," + base::Int64ToString(list[1]);
+  std::stringstream s;
+  const char* sep = "";
+  for (int64_t id : list) {
+    s << sep << id;
+    sep = ",";
+  }
+  return s.str();
 }
 
 bool CompareDisplayIds(int64_t id1, int64_t id2) {
