@@ -1597,10 +1597,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Navigate the second subframe to b.com to recreate the b.com process.
   GURL b_url = embedded_test_server()->GetURL("b.com", "/post_message.html");
   NavigateFrameToURL(root->child_at(1), b_url);
-  // TODO(alexmos): This can be removed once TestFrameNavigationObserver is
-  // fixed to use DidFinishLoad.
-  EXPECT_TRUE(
-      WaitForRenderFrameReady(root->child_at(1)->current_frame_host()));
   EXPECT_TRUE(observer.last_navigation_succeeded());
   EXPECT_EQ(b_url, observer.last_navigation_url());
   EXPECT_TRUE(root->child_at(1)->current_frame_host()->IsRenderFrameLive());
@@ -2390,11 +2386,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     set_scrolling_property(root->current_frame_host(), scrolling_values[i]);
     for (size_t j = 0; j < arraysize(urls); ++j) {
       NavigateFrameToURL(child, urls[j]);
-
-      // TODO(alexmos): This can be removed once TestFrameNavigationObserver is
-      // fixed to use DidFinishLoad.
-      EXPECT_TRUE(WaitForRenderFrameReady(child->current_frame_host()));
-
       EXPECT_EQ(expect_scrollbar, has_scrollbar(child->current_frame_host()));
     }
   }
@@ -2469,9 +2460,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             "    'marginheight', '%d');", current_margin_height)));
 
     NavigateFrameToURL(child, urls[i]);
-    // TODO(alexmos): This can be removed once TestFrameNavigationObserver is
-    // fixed to use DidFinishLoad.
-    EXPECT_TRUE(WaitForRenderFrameReady(child->current_frame_host()));
 
     std::string actual_margin_width;
     EXPECT_TRUE(ExecuteScriptAndExtractString(
@@ -3511,13 +3499,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, IndexedFrameAccess) {
   GURL c_url(embedded_test_server()->GetURL("c.com", "/post_message.html"));
   GURL d_url(embedded_test_server()->GetURL("d.com", "/post_message.html"));
   NavigateFrameToURL(child0, b_url);
-  // TODO(alexmos): The calls to WaitForRenderFrameReady can be removed once
-  // TestFrameNavigationObserver is fixed to use DidFinishLoad.
-  EXPECT_TRUE(WaitForRenderFrameReady(child0->current_frame_host()));
   NavigateFrameToURL(child1, c_url);
-  EXPECT_TRUE(WaitForRenderFrameReady(child1->current_frame_host()));
   NavigateFrameToURL(child2, d_url);
-  EXPECT_TRUE(WaitForRenderFrameReady(child2->current_frame_host()));
 
   EXPECT_EQ(
       " Site A ------------ proxies for B C D\n"
@@ -3947,8 +3930,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Navigate popup's subframe to another site.
   GURL frame_url(embedded_test_server()->GetURL("c.com", "/post_message.html"));
   NavigateFrameToURL(popup_root->child_at(0), frame_url);
-  EXPECT_TRUE(
-      WaitForRenderFrameReady(popup_root->child_at(0)->current_frame_host()));
 
   // Check that the new subframe process still sees correct opener for its
   // parent by sending a postMessage to subframe's parent.opener.
@@ -4089,8 +4070,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL frame_url(
       embedded_test_server()->GetURL("baz.com", "/post_message.html"));
   NavigateFrameToURL(popup_root->child_at(0), frame_url);
-  EXPECT_TRUE(
-      WaitForRenderFrameReady(popup_root->child_at(0)->current_frame_host()));
 
   // Check that the second subframe's opener is still correct in the first
   // subframe's new process.  Verify it both in JS and with a postMessage.
@@ -4616,7 +4595,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL frame_url(
       embedded_test_server()->GetURL("b.com", "/page_with_touch_handler.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
-  EXPECT_TRUE(WaitForRenderFrameReady(root->child_at(0)->current_frame_host()));
 
   // Synchronize with the child and parent renderers to guarantee that the
   // surface information required for event hit testing is ready.
@@ -4674,7 +4652,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       embedded_test_server()->GetURL("b.com", "/page_with_click_handler.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
   auto child_frame_host = root->child_at(0)->current_frame_host();
-  EXPECT_TRUE(WaitForRenderFrameReady(child_frame_host));
 
   // Synchronize with the child and parent renderers to guarantee that the
   // surface information required for event hit testing is ready.
@@ -4810,7 +4787,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       embedded_test_server()->GetURL("b.com", "/page_with_click_handler.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
   auto child_frame_host = root->child_at(0)->current_frame_host();
-  EXPECT_TRUE(WaitForRenderFrameReady(child_frame_host));
 
   // Synchronize with the child and parent renderers to guarantee that the
   // surface information required for event hit testing is ready.
@@ -4897,7 +4873,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL frame_url(
       embedded_test_server()->GetURL("b.com", "/page_with_input_field.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
-  EXPECT_TRUE(WaitForRenderFrameReady(root->child_at(0)->current_frame_host()));
 
   // Focus the subframe and then its input field.  The return value
   // "input-focus" will be sent once the input field's focus event fires.
