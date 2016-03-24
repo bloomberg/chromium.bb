@@ -19,10 +19,10 @@ var PNaClEvent = function() {
 
 
 /**
- * @param {HTMLElement} pnaclLog
- * @param {HTMLElement} textLog
- * @param {HTMLElement} pnaclPlugin
- * @param {HTMLElement} pnaclListener
+ * @param {Element} pnaclLog
+ * @param {Element} textLog
+ * @param {Element} pnaclPlugin
+ * @param {Element} pnaclListener
  * @constructor
  */
 var EventListeners = function(pnaclLog, textLog, pnaclPlugin, pnaclListener) {

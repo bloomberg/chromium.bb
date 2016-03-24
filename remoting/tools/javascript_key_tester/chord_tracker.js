@@ -5,14 +5,14 @@
 
 /**
  * @constructor
- * @param {HTMLElement} parentDiv
+ * @param {Element} parentDiv
  */
 var ChordTracker = function(parentDiv) {
-  /** @type {HTMLElement} */
+  /** @type {Element} */
   this.parentDiv_ = parentDiv;
-  /** @type {HTMLElement} */
+  /** @type {Element} */
   this.currentDiv_ = null;
-  /** @type {Object<HTMLElement>} */
+  /** @type {Object<Element>} */
   this.pressedKeys_ = {};
 };
 
@@ -64,11 +64,11 @@ ChordTracker.prototype.releaseAllKeys = function() {
  * @param {string} className
  * @param {string} text
  * @param {string} title
- * @return {HTMLElement}
+ * @return {Element}
  */
 ChordTracker.prototype.addSpanElement_ = function(className, text, title) {
   this.begin_();
-  var span = /** @type {HTMLElement} */ (document.createElement('span'));
+  var span = /** @type {Element} */ (document.createElement('span'));
   span.classList.add(className);
   span.classList.add('key-div');
   span.innerText = text;
@@ -84,7 +84,7 @@ ChordTracker.prototype.begin_ = function() {
   if (this.currentDiv_) {
     return;
   }
-  this.currentDiv_ = /** @type {HTMLElement} */ (document.createElement('div'));
+  this.currentDiv_ = /** @type {Element} */ (document.createElement('div'));
   this.currentDiv_.classList.add('chord-div');
   this.parentDiv_.appendChild(this.currentDiv_);
 };
