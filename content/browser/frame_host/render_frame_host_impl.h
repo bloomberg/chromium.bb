@@ -548,6 +548,12 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // in a non-loading state.
   void ResetLoadingState();
 
+  // PlzNavigate: returns the LoFi state of the last successful navigation that
+  // made a network request.
+  LoFiState last_navigation_lofi_state() const {
+    return last_navigation_lofi_state_;
+  }
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -933,6 +939,11 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // This is temporary to help pinpoint the cause of crbug.com/589365.
   // TODO(clamy): Remove once enough data has been gathered.
   bool is_in_commit_;
+
+  // PlzNavigate: The LoFi state of the last navigation. This is used during
+  // history navigation of subframes to ensure that subframes navigate with the
+  // same LoFi status as the top-level frame.
+  LoFiState last_navigation_lofi_state_;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

@@ -291,11 +291,19 @@ bool NavigatorImpl::NavigateToEntry(
       "navigation", "NavigationTiming navigationStart",
       TRACE_EVENT_SCOPE_GLOBAL, navigation_start.ToInternalValue());
 
-  LoFiState lofi_state =
-      (reload_type ==
-       NavigationController::ReloadType::RELOAD_DISABLE_LOFI_MODE)
-          ? LOFI_OFF
-          : LOFI_UNSPECIFIED;
+  // Determine if LoFi should be used for the navigation.
+  LoFiState lofi_state = LOFI_UNSPECIFIED;
+  if (!frame_tree_node->IsMainFrame()) {
+    // For subframes, use the state of the top-level frame.
+    lofi_state = frame_tree_node->frame_tree()
+                     ->root()
+                     ->current_frame_host()
+                     ->last_navigation_lofi_state();
+  } else if (reload_type ==
+             NavigationController::ReloadType::RELOAD_DISABLE_LOFI_MODE) {
+    // Disable LoFi when asked for it explicitly.
+    lofi_state = LOFI_OFF;
+  }
 
   // PlzNavigate: the RenderFrameHosts are no longer asked to navigate.
   if (IsBrowserSideNavigationEnabled()) {

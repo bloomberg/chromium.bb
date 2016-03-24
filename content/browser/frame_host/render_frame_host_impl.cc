@@ -210,6 +210,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       pending_web_ui_type_(WebUI::kNoWebUI),
       should_reuse_web_ui_(false),
       is_in_commit_(false),
+      last_navigation_lofi_state_(LOFI_UNSPECIFIED),
       weak_ptr_factory_(this) {
   bool hidden = !!(flags & CREATE_RF_HIDDEN);
   frame_tree_->AddRenderViewHostRef(render_view_host_);
@@ -2160,6 +2161,10 @@ void RenderFrameHostImpl::CommitNavigation(
       response->head : ResourceResponseHead();
   Send(new FrameMsg_CommitNavigation(routing_id_, head, body_url, common_params,
                                      request_params));
+
+  // If a network request was made, update the LoFi state.
+  if (ShouldMakeNetworkRequestForURL(common_params.url))
+    last_navigation_lofi_state_ = common_params.lofi_state;
 
   // TODO(clamy): Release the stream handle once the renderer has finished
   // reading it.
