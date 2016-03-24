@@ -4,7 +4,7 @@
 
 define('stash_client', [
     'async_waiter',
-    'content/public/renderer/service_provider',
+    'content/public/renderer/frame_service_registry',
     'extensions/common/mojo/stash.mojom',
     'mojo/public/js/buffer',
     'mojo/public/js/codec',

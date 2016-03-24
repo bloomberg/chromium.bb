@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 define('serial_service', [
-    'content/public/renderer/service_provider',
+    'content/public/renderer/frame_service_registry',
     'data_receiver',
     'data_sender',
     'device/serial/serial.mojom',

@@ -13,7 +13,7 @@ var NO_STREAM_ERROR =
 var STREAM_ABORTED_ERROR = 'Stream has been aborted.';
 
 var servicePromise = Promise.all([
-    requireAsync('content/public/renderer/service_provider'),
+    requireAsync('content/public/renderer/frame_service_registry'),
     requireAsync('extensions/common/api/mime_handler.mojom'),
     requireAsync('mojo/public/js/router'),
 ]).then(function(modules) {

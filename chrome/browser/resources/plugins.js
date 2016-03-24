@@ -276,7 +276,7 @@ var whenBrowserProxyReady = new Promise(function(resolve, reject) {
     'mojo/public/js/core',
     'mojo/public/js/connection',
     'chrome/browser/ui/webui/plugins/plugins.mojom',
-    'content/public/renderer/service_provider',
+    'content/public/renderer/frame_service_registry',
   ], function(bindings, core, connection, pluginsMojom, serviceProvider) {
     var browserProxy = connection.bindHandleToProxy(
         serviceProvider.connectToService(

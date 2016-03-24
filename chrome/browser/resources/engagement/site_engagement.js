@@ -7,7 +7,7 @@
 define('main', [
     'mojo/public/js/connection',
     'chrome/browser/ui/webui/engagement/site_engagement.mojom',
-    'content/public/renderer/service_provider',
+    'content/public/renderer/frame_service_registry',
 ], function(connection, siteEngagementMojom, serviceProvider) {
   return function() {
     var uiHandler = connection.bindHandleToProxy(

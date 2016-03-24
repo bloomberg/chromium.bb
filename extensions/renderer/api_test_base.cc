@@ -165,7 +165,7 @@ void ApiTestEnvironment::RegisterModules() {
   service_provider_ = service_provider.get();
   gin::ModuleRegistry::From(env()->context()->v8_context())
       ->AddBuiltinModule(env()->isolate(),
-                         "content/public/renderer/service_provider",
+                         "content/public/renderer/frame_service_registry",
                          service_provider.ToV8());
 }
 

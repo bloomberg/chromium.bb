@@ -2320,8 +2320,13 @@ void RenderFrameImpl::EnsureMojoBuiltinsAreAvailable(
   registry->AddBuiltinModule(isolate, mojo::edk::js::Support::kModuleName,
                              mojo::edk::js::Support::GetModule(isolate));
   registry->AddBuiltinModule(
-      isolate, ServiceRegistryJsWrapper::kModuleName,
+      isolate, ServiceRegistryJsWrapper::kPerFrameModuleName,
       ServiceRegistryJsWrapper::Create(isolate, context, &service_registry_)
+          .ToV8());
+  registry->AddBuiltinModule(
+      isolate, ServiceRegistryJsWrapper::kPerProcessModuleName,
+      ServiceRegistryJsWrapper::Create(
+          isolate, context, RenderThread::Get()->GetServiceRegistry())
           .ToV8());
 }
 

@@ -38,7 +38,7 @@ unittestBindings.exportTests([
     Promise.all([
       requireAsync('mojo/public/js/connection'),
       requireAsync('mojo/public/js/core'),
-      requireAsync('content/public/renderer/service_provider'),
+      requireAsync('content/public/renderer/frame_service_registry'),
     ]).then(test.callback(function(modules) {
       var connection = modules[0];
       var core = modules[1];

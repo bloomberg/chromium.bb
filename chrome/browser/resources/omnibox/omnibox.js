@@ -21,7 +21,7 @@ define('main', [
     'mojo/public/js/core',
     'mojo/public/js/connection',
     'chrome/browser/ui/webui/omnibox/omnibox.mojom',
-    'content/public/renderer/service_provider',
+    'content/public/renderer/frame_service_registry',
 ], function(bindings, core, connection, browser, serviceProvider) {
   'use strict';
 

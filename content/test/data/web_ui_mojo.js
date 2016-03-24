@@ -5,7 +5,7 @@
 define('main', [
     'mojo/public/js/router',
     'content/test/data/web_ui_test_mojo_bindings.mojom',
-    'content/public/renderer/service_provider',
+    'content/public/renderer/frame_service_registry',
 ], function (router, bindings, serviceProvider) {
   var browserTarget;
 

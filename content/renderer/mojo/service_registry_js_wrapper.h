@@ -41,7 +41,8 @@ class CONTENT_EXPORT ServiceRegistryJsWrapper
   mojo::Handle ConnectToService(const std::string& service_name);
 
   static gin::WrapperInfo kWrapperInfo;
-  static const char kModuleName[];
+  static const char kPerFrameModuleName[];
+  static const char kPerProcessModuleName[];
 
  private:
   using ScopedJsFactory =

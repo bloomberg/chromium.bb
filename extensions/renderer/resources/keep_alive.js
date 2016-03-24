@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 define('keep_alive', [
-    'content/public/renderer/service_provider',
+    'content/public/renderer/frame_service_registry',
     'extensions/common/mojo/keep_alive.mojom',
     'mojo/public/js/core',
 ], function(serviceProvider, mojom, core) {

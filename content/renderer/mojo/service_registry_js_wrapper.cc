@@ -16,8 +16,10 @@ namespace content {
 
 gin::WrapperInfo ServiceRegistryJsWrapper::kWrapperInfo = {
     gin::kEmbedderNativeGin};
-const char ServiceRegistryJsWrapper::kModuleName[] =
-    "content/public/renderer/service_provider";
+const char ServiceRegistryJsWrapper::kPerFrameModuleName[] =
+    "content/public/renderer/frame_service_registry";
+const char ServiceRegistryJsWrapper::kPerProcessModuleName[] =
+    "content/public/renderer/service_registry";
 
 ServiceRegistryJsWrapper::~ServiceRegistryJsWrapper() {
 }
@@ -57,8 +59,7 @@ mojo::Handle ServiceRegistryJsWrapper::ConnectToService(
 void ServiceRegistryJsWrapper::AddServiceOverrideForTesting(
     const std::string& service_name,
     v8::Local<v8::Function> service_factory) {
-  ServiceRegistryImpl* registry =
-      static_cast<ServiceRegistryImpl*>(service_registry_.get());
+  ServiceRegistry* registry = service_registry_.get();
   if (!registry)
     return;
   ScopedJsFactory factory(v8::Isolate::GetCurrent(), service_factory);

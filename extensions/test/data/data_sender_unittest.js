@@ -24,7 +24,7 @@ function generateData(size, pattern) {
 // Returns a promise to a newly created DataSender.
 function createSender() {
   return Promise.all([
-    requireAsync('content/public/renderer/service_provider'),
+    requireAsync('content/public/renderer/frame_service_registry'),
     requireAsync('data_sender'),
     requireAsync('device/serial/data_stream.mojom'),
   ]).then(function(modules) {
