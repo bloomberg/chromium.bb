@@ -36,7 +36,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   bool BindToClient(cc::OutputSurfaceClient* client) override;
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
 
-  // ui::CompositorOutputSurface::Observer implementation.
+  // ui::CompositorVSyncManager::Observer implementation.
   void OnUpdateVSyncParameters(base::TimeTicks timebase,
                                base::TimeDelta interval) override;
 
