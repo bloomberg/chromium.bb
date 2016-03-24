@@ -104,6 +104,9 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   // Pretends to receive update messages from the server.
   void TriggerTypeRootUpdateFromServer();
+  void TriggerPartialUpdateFromServer(int64_t version_offset,
+                                      const std::string& tag,
+                                      const std::string& value);
   void TriggerUpdateFromServer(int64_t version_offset,
                                const std::string& tag,
                                const std::string& value);
@@ -382,12 +385,13 @@ void ModelTypeWorkerTest::TriggerTypeRootUpdateFromServer() {
   worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
                                      mock_server_.GetContext(), entity_list,
                                      &dummy_status);
-  worker_->ApplyUpdates(&dummy_status);
+  worker_->PassiveApplyUpdates(&dummy_status);
 }
 
-void ModelTypeWorkerTest::TriggerUpdateFromServer(int64_t version_offset,
-                                                  const std::string& tag,
-                                                  const std::string& value) {
+void ModelTypeWorkerTest::TriggerPartialUpdateFromServer(
+    int64_t version_offset,
+    const std::string& tag,
+    const std::string& value) {
   sync_pb::SyncEntity entity = mock_server_.UpdateFromServer(
       version_offset, GenerateTagHash(tag), GenerateSpecifics(tag, value));
 
@@ -404,6 +408,13 @@ void ModelTypeWorkerTest::TriggerUpdateFromServer(int64_t version_offset,
   worker_->ProcessGetUpdatesResponse(mock_server_.GetProgress(),
                                      mock_server_.GetContext(), entity_list,
                                      &dummy_status);
+}
+
+void ModelTypeWorkerTest::TriggerUpdateFromServer(int64_t version_offset,
+                                                  const std::string& tag,
+                                                  const std::string& value) {
+  TriggerPartialUpdateFromServer(version_offset, tag, value);
+  StatusController dummy_status;
   worker_->ApplyUpdates(&dummy_status);
 }
 
@@ -754,17 +765,14 @@ TEST_F(ModelTypeWorkerTest, SendInitialSyncDone) {
   // Receive an update response that contains only the type root node.
   TriggerTypeRootUpdateFromServer();
 
-  // Two updates:
-  // - One triggered by process updates to forward the type root ID.
-  // - One triggered by apply updates, which the worker interprets to mean
-  //   "initial sync done".  This triggers a model thread update, too.
-  EXPECT_EQ(2U, GetNumModelThreadUpdateResponses());
+  // One update triggered by ApplyUpdates, which the worker interprets to mean
+  // "initial sync done". This triggers a model thread update, too.
+  EXPECT_EQ(1U, GetNumModelThreadUpdateResponses());
 
-  // The type root and initial sync done updates both contain no entities.
+  // The update contains no entities.
   EXPECT_EQ(0U, GetNthModelThreadUpdateResponse(0).size());
-  EXPECT_EQ(0U, GetNthModelThreadUpdateResponse(1).size());
 
-  const sync_pb::DataTypeState& state = GetNthModelThreadUpdateState(1);
+  const sync_pb::DataTypeState& state = GetNthModelThreadUpdateState(0);
   EXPECT_FALSE(state.progress_marker().token().empty());
   EXPECT_TRUE(state.initial_sync_done());
 }
@@ -834,6 +842,33 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
   EXPECT_FALSE(entity.is_deleted());
   EXPECT_EQ("tag1", entity.specifics.preference().name());
   EXPECT_EQ("value1", entity.specifics.preference().value());
+}
+
+// Test that an update download coming in multiple parts gets accumulated into
+// one call to the processor.
+TEST_F(ModelTypeWorkerTest, ReceiveMultiPartUpdates) {
+  NormalInitialize();
+
+  // A partial update response doesn't pass anything to the processor.
+  TriggerPartialUpdateFromServer(10, "tag1", "value1");
+  ASSERT_EQ(0U, GetNumModelThreadUpdateResponses());
+
+  // Trigger the completion of the update.
+  TriggerUpdateFromServer(10, "tag2", "value2");
+
+  // Processor received exactly one update with entities in the right order.
+  ASSERT_EQ(1U, GetNumModelThreadUpdateResponses());
+  UpdateResponseDataList updates = GetNthModelThreadUpdateResponse(0);
+  ASSERT_EQ(2U, updates.size());
+  EXPECT_EQ(GenerateTagHash("tag1"), updates[0].entity->client_tag_hash);
+  EXPECT_EQ(GenerateTagHash("tag2"), updates[1].entity->client_tag_hash);
+
+  // A subsequent update doesn't pass the same entities again.
+  TriggerUpdateFromServer(10, "tag3", "value3");
+  ASSERT_EQ(2U, GetNumModelThreadUpdateResponses());
+  updates = GetNthModelThreadUpdateResponse(1);
+  ASSERT_EQ(1U, updates.size());
+  EXPECT_EQ(GenerateTagHash("tag3"), updates[0].entity->client_tag_hash);
 }
 
 // Test commit of encrypted updates.

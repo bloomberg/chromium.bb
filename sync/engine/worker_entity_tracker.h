@@ -65,19 +65,19 @@ class SYNC_EXPORT WorkerEntityTracker {
   // Handles receipt of an update from the server.
   void ReceiveUpdate(int64_t version);
 
-  // Handles the receipt of an pending update from the server.
+  // Handles the receipt of an encrypted update from the server.
   //
   // Returns true if the tracker decides this item is worth keeping.  Returns
   // false if the item is discarded, which could happen if the version number
   // is out of date.
-  bool ReceivePendingUpdate(const UpdateResponseData& data);
+  bool ReceiveEncryptedUpdate(const UpdateResponseData& data);
 
-  // Functions to fetch the latest pending update.
-  bool HasPendingUpdate() const;
-  UpdateResponseData GetPendingUpdate() const;
+  // Functions to fetch the latest encrypted update.
+  bool HasEncryptedUpdate() const;
+  UpdateResponseData GetEncryptedUpdate() const;
 
-  // Clears the pending update.  Allows us to resume regular commit behavior.
-  void ClearPendingUpdate();
+  // Clears the encrypted update. Allows us to resume regular commit behavior.
+  void ClearEncryptedUpdate();
 
  private:
   // Checks if the current state indicates a conflict.
@@ -118,7 +118,7 @@ class SYNC_EXPORT WorkerEntityTracker {
   // An update for this entity which can't be applied right now. The presence
   // of an pending update prevents commits.  As of this writing, the only
   // source of pending updates is updates that can't currently be decrypted.
-  scoped_ptr<UpdateResponseData> pending_update_;
+  scoped_ptr<UpdateResponseData> encrypted_update_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerEntityTracker);
 };

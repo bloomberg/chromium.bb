@@ -136,8 +136,8 @@ void WorkerEntityTracker::ReceiveUpdate(int64_t version) {
   highest_gu_response_version_ = version;
 
   // Got an applicable update newer than any pending updates.  It must be safe
-  // to discard the old pending update, if there was one.
-  ClearPendingUpdate();
+  // to discard the old encrypted update, if there was one.
+  ClearEncryptedUpdate();
 
   if (IsInConflict()) {
     // Incoming update clobbers the pending commit on the sync thread.
@@ -146,33 +146,34 @@ void WorkerEntityTracker::ReceiveUpdate(int64_t version) {
   }
 }
 
-bool WorkerEntityTracker::ReceivePendingUpdate(const UpdateResponseData& data) {
+bool WorkerEntityTracker::ReceiveEncryptedUpdate(
+    const UpdateResponseData& data) {
   if (data.response_version < highest_gu_response_version_)
     return false;
 
   highest_gu_response_version_ = data.response_version;
-  pending_update_.reset(new UpdateResponseData(data));
+  encrypted_update_.reset(new UpdateResponseData(data));
   ClearPendingCommit();
   return true;
 }
 
-bool WorkerEntityTracker::HasPendingUpdate() const {
-  return !!pending_update_;
+bool WorkerEntityTracker::HasEncryptedUpdate() const {
+  return !!encrypted_update_;
 }
 
-UpdateResponseData WorkerEntityTracker::GetPendingUpdate() const {
-  return *pending_update_;
+UpdateResponseData WorkerEntityTracker::GetEncryptedUpdate() const {
+  return *encrypted_update_;
 }
 
-void WorkerEntityTracker::ClearPendingUpdate() {
-  pending_update_.reset();
+void WorkerEntityTracker::ClearEncryptedUpdate() {
+  encrypted_update_.reset();
 }
 
 bool WorkerEntityTracker::IsInConflict() const {
   if (!HasPendingCommit())
     return false;
 
-  if (HasPendingUpdate())
+  if (HasEncryptedUpdate())
     return true;
 
   if (highest_gu_response_version_ <= highest_commit_response_version_) {

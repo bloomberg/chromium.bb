@@ -39,18 +39,18 @@ class WorkerEntityTracker;
 // thread.
 //
 // When the non-blocking sync type wants to talk with the sync server, it will
-// send a message from its thread to this object on the sync thread.  This
+// send a message from its thread to this object on the sync thread. This
 // object ensures the appropriate sync server communication gets scheduled and
-// executed.  The response, if any, will be returned to the non-blocking sync
+// executed. The response, if any, will be returned to the non-blocking sync
 // type's thread eventually.
 //
 // This object also has a role to play in communications in the opposite
-// direction.  Sometimes the sync thread will receive changes from the sync
-// server and deliver them here.  This object will post this information back to
+// direction. Sometimes the sync thread will receive changes from the sync
+// server and deliver them here. This object will post this information back to
 // the appropriate component on the model type's thread.
 //
-// This object does more than just pass along messages.  It understands the sync
-// protocol, and it can make decisions when it sees conflicting messages.  For
+// This object does more than just pass along messages. It understands the sync
+// protocol, and it can make decisions when it sees conflicting messages. For
 // example, if the sync server sends down an update for a sync entity that is
 // currently pending for commit, this object will detect this condition and
 // cancel the pending commit.
@@ -98,36 +98,39 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
  private:
   using EntityMap = std::map<std::string, scoped_ptr<WorkerEntityTracker>>;
 
+  // Helper function to actually send |pending_updates_| to the processor.
+  void ApplyPendingUpdates();
+
   // Returns true if this type has successfully fetched all available updates
-  // from the server at least once.  Our state may or may not be stale, but at
+  // from the server at least once. Our state may or may not be stale, but at
   // least we know that it was valid at some point in the past.
   bool IsTypeInitialized() const;
 
-  // Returns true if this type is prepared to commit items.  Currently, this
+  // Returns true if this type is prepared to commit items. Currently, this
   // depends on having downloaded the initial data and having the encryption
   // settings in a good state.
   bool CanCommitItems() const;
 
   // Initializes the parts of a commit entity that are the responsibility of
-  // this class, and not the WorkerEntityTracker.  Some fields, like the
+  // this class, and not the WorkerEntityTracker. Some fields, like the
   // client-assigned ID, can only be set by an entity with knowledge of the
   // entire data type's state.
   void HelpInitializeCommitEntity(sync_pb::SyncEntity* commit_entity);
 
-  // Attempts to decrypt pending updates stored in the EntityMap.  If
+  // Attempts to decrypt encrypted updates stored in the EntityMap. If
   // successful, will remove the update from the its tracker and forward
-  // it to the proxy thread for application.  Will forward any new encryption
-  // keys to the proxy to trigger re-encryption if necessary.
+  // it to the processor for application. Will forward any new encryption
+  // keys to the processor to trigger re-encryption if necessary.
   void OnCryptographerUpdated();
 
   // Attempts to decrypt the given specifics and return them in the |out|
-  // parameter.  Assumes cryptographer->CanDecrypt(specifics) returned true.
+  // parameter. Assumes cryptographer->CanDecrypt(specifics) returned true.
   //
-  // Returns false if the decryption failed.  There are no guarantees about the
+  // Returns false if the decryption failed. There are no guarantees about the
   // contents of |out| when that happens.
   //
-  // In theory, this should never fail.  Only corrupt or invalid entries could
-  // cause this to fail, and no clients are known to create such entries.  The
+  // In theory, this should never fail. Only corrupt or invalid entries could
+  // cause this to fail, and no clients are known to create such entries. The
   // failure case is an attempt to be defensive against bad input.
   static bool DecryptSpecifics(syncer::Cryptographer* cryptographer,
                                const sync_pb::EntitySpecifics& in,
@@ -156,21 +159,25 @@ class SYNC_EXPORT ModelTypeWorker : public syncer::UpdateHandler,
   // NULL if encryption is not enabled for this type.
   scoped_ptr<syncer::Cryptographer> cryptographer_;
 
-  // Interface used to access and send nudges to the sync scheduler.  Not owned.
+  // Interface used to access and send nudges to the sync scheduler. Not owned.
   syncer::NudgeHandler* nudge_handler_;
 
   // A map of per-entity information known to this object.
   //
-  // When commits are pending, their information is stored here.  This
+  // When commits are pending, their information is stored here. This
   // information is dropped from memory when the commit succeeds or gets
   // cancelled.
   //
   // This also stores some information related to received server state in
-  // order to implement reflection blocking and conflict detection.  This
-  // information is kept in memory indefinitely.  With a bit more coordination
+  // order to implement reflection blocking and conflict detection. This
+  // information is kept in memory indefinitely. With a bit more coordination
   // with the model thread, we could optimize this to reduce memory usage in
   // the steady state.
   EntityMap entities_;
+
+  // Accumulates all the updates from a single GetUpdates cycle in memory so
+  // they can all be sent to the processor at once.
+  UpdateResponseDataList pending_updates_;
 
   base::WeakPtrFactory<ModelTypeWorker> weak_ptr_factory_;
 };

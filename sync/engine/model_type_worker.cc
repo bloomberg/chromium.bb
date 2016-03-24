@@ -105,9 +105,6 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
   *data_type_state_.mutable_type_context() = mutated_context;
   *data_type_state_.mutable_progress_marker() = progress_marker;
 
-  UpdateResponseDataList response_datas;
-  UpdateResponseDataList pending_updates;
-
   for (const sync_pb::SyncEntity* update_entity : applicable_updates) {
     // Skip updates for permanent folders.
     // TODO(stanisc): crbug.com/516866: might need to handle this for
@@ -142,7 +139,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
       entity->ReceiveUpdate(update_entity->version());
       data.specifics = specifics;
       response_data.entity = data.PassToPtr();
-      response_datas.push_back(response_data);
+      pending_updates_.push_back(response_data);
     } else if (specifics.has_encrypted() && cryptographer_ &&
                cryptographer_->CanDecrypt(specifics.encrypted())) {
       // Encrypted, but we know the key.
@@ -150,7 +147,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
         entity->ReceiveUpdate(update_entity->version());
         response_data.entity = data.PassToPtr();
         response_data.encryption_key_name = specifics.encrypted().key_name();
-        response_datas.push_back(response_data);
+        pending_updates_.push_back(response_data);
       }
     } else if (specifics.has_encrypted() &&
                (!cryptographer_ ||
@@ -158,46 +155,38 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
       // Can't decrypt right now.  Ask the entity tracker to handle it.
       data.specifics = specifics;
       response_data.entity = data.PassToPtr();
-      if (entity->ReceivePendingUpdate(response_data)) {
-        // Send to the model thread for safe-keeping across restarts if the
-        // tracker decides the update is worth keeping.
-        pending_updates.push_back(response_data);
-      }
+      entity->ReceiveEncryptedUpdate(response_data);
     }
   }
-
-  DVLOG(1) << ModelTypeToString(type_) << ": "
-           << base::StringPrintf("Delivering %" PRIuS " applicable and %" PRIuS
-                                 " pending updates.",
-                                 response_datas.size(), pending_updates.size());
-
-  // Forward these updates to the model thread so it can do the rest.
-  model_type_processor_->OnUpdateReceived(data_type_state_, response_datas);
 
   return syncer::SYNCER_OK;
 }
 
 void ModelTypeWorker::ApplyUpdates(syncer::sessions::StatusController* status) {
   DCHECK(CalledOnValidThread());
-  // This function is called only when we've finished a download cycle, ie. we
-  // got a response with changes_remaining == 0.  If this is our first download
-  // cycle, we should update our state so the ModelTypeProcessor knows that
-  // it's safe to commit items now.
-  if (!data_type_state_.initial_sync_done()) {
-    DVLOG(1) << "Delivering 'initial sync done' ping.";
-
-    data_type_state_.set_initial_sync_done(true);
-
-    model_type_processor_->OnUpdateReceived(data_type_state_,
-                                            UpdateResponseDataList());
-  }
+  // This should only ever be called after one PassiveApplyUpdates.
+  DCHECK(data_type_state_.initial_sync_done());
+  // Download cycle is done, pass all updates to the processor.
+  ApplyPendingUpdates();
 }
 
 void ModelTypeWorker::PassiveApplyUpdates(
     syncer::sessions::StatusController* status) {
-  NOTREACHED()
-      << "Non-blocking types should never apply updates on sync thread.  "
-      << "ModelType is: " << ModelTypeToString(type_);
+  // This should only be called at the end of the very first download cycle.
+  DCHECK(!data_type_state_.initial_sync_done());
+  // Indicate to the processor that the initial download is done. The initial
+  // sync technically isn't done yet but by the time this value is persisted to
+  // disk on the model thread it will be.
+  data_type_state_.set_initial_sync_done(true);
+  ApplyPendingUpdates();
+}
+
+void ModelTypeWorker::ApplyPendingUpdates() {
+  DVLOG(1) << ModelTypeToString(type_) << ": "
+           << base::StringPrintf("Delivering %" PRIuS " applicable updates.",
+                                 pending_updates_.size());
+  model_type_processor_->OnUpdateReceived(data_type_state_, pending_updates_);
+  pending_updates_.clear();
 }
 
 void ModelTypeWorker::EnqueueForCommit(const CommitRequestDataList& list) {
@@ -223,6 +212,8 @@ void ModelTypeWorker::EnqueueForCommit(const CommitRequestDataList& list) {
 scoped_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     size_t max_entries) {
   DCHECK(CalledOnValidThread());
+  // There shouldn't be a GetUpdates in progress when a commit is triggered.
+  DCHECK(pending_updates_.empty());
 
   size_t space_remaining = max_entries;
   std::vector<int64_t> sequence_numbers;
@@ -358,9 +349,10 @@ void ModelTypeWorker::OnCryptographerUpdated() {
 
   for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
        ++it) {
-    if (it->second->HasPendingUpdate()) {
-      const UpdateResponseData& saved_pending = it->second->GetPendingUpdate();
-      const EntityData& data = saved_pending.entity.value();
+    if (it->second->HasEncryptedUpdate()) {
+      const UpdateResponseData& encrypted_update =
+          it->second->GetEncryptedUpdate();
+      const EntityData& data = encrypted_update.entity.value();
 
       // We assume all pending updates are encrypted items for which we
       // don't have the key.
@@ -380,14 +372,14 @@ void ModelTypeWorker::OnCryptographerUpdated() {
           decrypted_data.creation_time = data.creation_time;
           decrypted_data.modification_time = data.modification_time;
 
-          UpdateResponseData decrypted_response;
-          decrypted_response.entity = decrypted_data.PassToPtr();
-          decrypted_response.response_version = saved_pending.response_version;
-          decrypted_response.encryption_key_name =
+          UpdateResponseData decrypted_update;
+          decrypted_update.entity = decrypted_data.PassToPtr();
+          decrypted_update.response_version = encrypted_update.response_version;
+          decrypted_update.encryption_key_name =
               data.specifics.encrypted().key_name();
-          response_datas.push_back(decrypted_response);
+          response_datas.push_back(decrypted_update);
 
-          it->second->ClearPendingUpdate();
+          it->second->ClearEncryptedUpdate();
         }
       }
     }
