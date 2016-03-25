@@ -54,8 +54,6 @@ class TestNonUIModelTypeController : public NonUIModelTypeController {
     return model_task_runner_->PostTask(from_here, task);
   }
 
-  void InitializeProcessorInTest() { InitializeProcessor(); }
-
  private:
   ~TestNonUIModelTypeController() override {}
 
@@ -167,7 +165,6 @@ class NonUIModelTypeControllerTest : public testing::Test,
     controller_ = new TestNonUIModelTypeController(
         ui_loop_.task_runner(), model_thread_runner_, base::Closure(),
         syncer::DICTIONARY, this);
-    controller_->InitializeProcessorInTest();
     InitializeTypeProcessor();
   }
 
@@ -186,7 +183,10 @@ class NonUIModelTypeControllerTest : public testing::Test,
   void InitializeTypeProcessor() {
     if (!model_thread_runner_ ||
         model_thread_runner_->BelongsToCurrentThread()) {
-      type_processor_ = controller_->get_type_processor();
+      // TODO(crbug.com/543407): Move the processor stuff out.
+      type_processor_ =
+          service_->SetUpProcessor(new syncer_v2::SharedModelTypeProcessor(
+              syncer::DICTIONARY, service_.get()));
     } else {
       model_thread_runner_->PostTask(
           FROM_HERE,

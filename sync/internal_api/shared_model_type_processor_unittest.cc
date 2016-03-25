@@ -146,14 +146,8 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
 
   ~SharedModelTypeProcessorTest() override {}
 
-  void CreateProcessor() {
-    ASSERT_FALSE(type_processor());
-    set_change_processor(
-        make_scoped_ptr(new SharedModelTypeProcessor(kModelType, this)));
-  }
-
   void InitializeToMetadataLoaded() {
-    CreateProcessor();
+    ASSERT_TRUE(GetOrCreateChangeProcessor());
     sync_pb::DataTypeState data_type_state(db_.data_type_state());
     data_type_state.set_initial_sync_done(true);
     db_.set_data_type_state(data_type_state);
@@ -391,6 +385,13 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
     return static_cast<SharedModelTypeProcessor*>(change_processor());
   }
 
+ protected:
+  syncer_v2::ModelTypeChangeProcessor* CreateProcessorForTest(
+      syncer::ModelType type,
+      ModelTypeService* service) override {
+    return new SharedModelTypeProcessor(kModelType, service);
+  }
+
  private:
   static std::string GenerateTagHash(const std::string& tag) {
     return syncer::syncable::GenerateSyncableHash(kModelType, tag);
@@ -545,7 +546,7 @@ class SharedModelTypeProcessorTest : public ::testing::Test,
 
 // Test that an initial sync handles local and remote items properly.
 TEST_F(SharedModelTypeProcessorTest, InitialSync) {
-  CreateProcessor();
+  GetOrCreateChangeProcessor();
   OnMetadataLoaded();
   OnSyncStarting();
 
@@ -1171,7 +1172,7 @@ TEST_F(SharedModelTypeProcessorTest, Disable) {
   WriteItem(kTag3, kValue3);
 
   // Now we re-enable.
-  CreateProcessor();
+  GetOrCreateChangeProcessor();
   OnMetadataLoaded();
   OnSyncStarting();
   OnInitialSyncDone();

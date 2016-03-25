@@ -13,6 +13,7 @@
 #include "sync/api/metadata_batch.h"
 #include "sync/api/metadata_change_list.h"
 #include "sync/api/model_type_service.h"
+#include "sync/internal_api/public/shared_model_type_processor.h"
 
 namespace syncer_v2 {
 
@@ -42,6 +43,23 @@ class FakeModelTypeService
   std::string GetClientTag(const EntityData& entity_data) override;
 
   void OnChangeProcessorSet() override;
+
+  // TODO(gangwu): remove this and use overload constructor.
+  base::WeakPtr<SharedModelTypeProcessor> SetUpProcessor(
+      ModelTypeChangeProcessor* processor);
+
+ protected:
+  // The function will create ModelTypeChangeProcessor.
+  virtual ModelTypeChangeProcessor* CreateProcessorForTest(
+      syncer::ModelType type,
+      ModelTypeService* service);
+
+ private:
+  scoped_ptr<ModelTypeChangeProcessor> CreateProcessorForTestWrapper(
+      syncer::ModelType type,
+      ModelTypeService* service);
+
+  syncer_v2::ModelTypeChangeProcessor* processor_;
 };
 
 }  // namespace syncer_v2

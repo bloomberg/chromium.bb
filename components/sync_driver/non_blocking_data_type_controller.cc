@@ -12,6 +12,8 @@
 #include "base/single_thread_task_runner.h"
 #include "components/sync_driver/backend_data_type_configurer.h"
 #include "components/sync_driver/sync_client.h"
+#include "sync/api/model_type_change_processor.h"
+#include "sync/api/model_type_service.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_merge_result.h"
 #include "sync/internal_api/public/activation_context.h"
@@ -59,16 +61,33 @@ void NonBlockingDataTypeController::LoadModels(
   // Start the type processor on the model thread.
   if (!RunOnModelThread(
           FROM_HERE,
-          base::Bind(
-              &syncer_v2::SharedModelTypeProcessor::OnSyncStarting,
-              type_processor(),
-              base::Bind(&NonBlockingDataTypeController::OnProcessorStarted,
-                         this)))) {
+          base::Bind(&NonBlockingDataTypeController::LoadModelsOnModelThread,
+                     this))) {
     LoadModelsDone(
         UNRECOVERABLE_ERROR,
         syncer::SyncError(FROM_HERE, syncer::SyncError::DATATYPE_ERROR,
                           "Failed to post model Start", type()));
   }
+}
+
+void NonBlockingDataTypeController::LoadModelsOnModelThread() {
+  base::WeakPtr<syncer_v2::ModelTypeService> model_type_service =
+      sync_client_->GetModelTypeServiceForType(type());
+  if (!model_type_service.get()) {
+    LOG(WARNING) << "ModelTypeService destroyed before "
+                    "ModelTypeController was started.";
+    // TODO(gangwu): Add SyncError and then call start_callback with it. also
+    // set an error state to |state_|.
+    return;
+  }
+
+  syncer_v2::ModelTypeChangeProcessor* model_type_change_processor =
+      model_type_service->OnSyncStarting(
+          base::Bind(&NonBlockingDataTypeController::OnProcessorStarted, this));
+  DCHECK(model_type_change_processor);
+  type_processor_ = static_cast<syncer_v2::SharedModelTypeProcessor*>(
+                        model_type_change_processor)
+                        ->AsWeakPtrForUI();
 }
 
 void NonBlockingDataTypeController::LoadModelsDone(
@@ -226,33 +245,6 @@ NonBlockingDataTypeController::type_processor() const {
 
 syncer::ModelType NonBlockingDataTypeController::type() const {
   return model_type_;
-}
-
-void NonBlockingDataTypeController::InitializeProcessorOnModelThread() {
-  base::WeakPtr<syncer_v2::ModelTypeService> model_type_service =
-      sync_client_->GetModelTypeServiceForType(type());
-  if (!model_type_service.get()) {
-    LOG(WARNING) << "ModelTypeService destroyed before "
-                    "ModelTypeController was started.";
-    // TODO(gangwu): Add SyncError and then call start_callback with it. also
-    // set an error state to |state_|.
-  }
-
-  scoped_ptr<syncer_v2::SharedModelTypeProcessor> shared_model_type_processor(
-      make_scoped_ptr(new syncer_v2::SharedModelTypeProcessor(
-          type(), model_type_service.get())));
-  type_processor_ = shared_model_type_processor->AsWeakPtrForUI();
-  model_type_service->set_change_processor(
-      std::move(shared_model_type_processor));
-}
-
-void NonBlockingDataTypeController::InitializeProcessor() {
-  DCHECK(BelongsToUIThread());
-  RunOnModelThread(
-      FROM_HERE,
-      base::Bind(
-          &NonBlockingDataTypeController::InitializeProcessorOnModelThread,
-          this));
 }
 
 }  // namespace sync_driver_v2

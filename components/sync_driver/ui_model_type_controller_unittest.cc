@@ -39,8 +39,6 @@ class TestUIModelTypeController : public UIModelTypeController {
                               model_type,
                               sync_client) {}
 
-  void InitializeProcessorInTest() { InitializeProcessor(); }
-
  private:
   ~TestUIModelTypeController() override {}
 };
@@ -145,10 +143,11 @@ class UIModelTypeControllerTest : public testing::Test,
   void SetUp() override {
     controller_ = new TestUIModelTypeController(
         ui_loop_.task_runner(), base::Closure(), syncer::DEVICE_INFO, this);
-    controller_->InitializeProcessorInTest();
+
+    // TODO(crbug.com/543407): Move the processor stuff out.
     type_processor_ =
-        ((syncer_v2::SharedModelTypeProcessor*)service_.change_processor())
-            ->AsWeakPtrForUI();
+        service_.SetUpProcessor(new syncer_v2::SharedModelTypeProcessor(
+            syncer::DEVICE_INFO, &service_));
   }
 
   void TearDown() override {

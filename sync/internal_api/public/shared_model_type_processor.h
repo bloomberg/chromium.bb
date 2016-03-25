@@ -38,15 +38,6 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   SharedModelTypeProcessor(syncer::ModelType type, ModelTypeService* service);
   ~SharedModelTypeProcessor() override;
 
-  typedef base::Callback<void(syncer::SyncError, scoped_ptr<ActivationContext>)>
-      StartCallback;
-
-  // Called by the DataTypeController to gather additional information needed
-  // before a CommitQueue object can be created for this model type. Once the
-  // metadata has been loaded, the info is collected and given to |callback|.
-  // Once called, this can only be called again if sync is disconnected.
-  void OnSyncStarting(StartCallback callback);
-
   // Disconnect this processor from the sync engine. Change metadata will
   // continue being processed and persisted, but no commits can be made until
   // the next time sync is connected.
@@ -72,6 +63,7 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   void Delete(const std::string& client_tag,
               MetadataChangeList* metadata_change_list) override;
   void OnMetadataLoaded(scoped_ptr<MetadataBatch> batch) override;
+  void OnSyncStarting(const StartCallback& callback) override;
 
   // Returns the long-lived WeakPtr that is intended to be registered with the
   // ProfileSyncService.

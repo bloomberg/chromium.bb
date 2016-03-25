@@ -135,6 +135,8 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
     std::swap(metadata_, batch);
   }
 
+  void OnSyncStarting(const StartCallback& callback) override {}
+
   const std::map<std::string, scoped_ptr<EntityData>>& put_map() const {
     return put_map_;
   }
@@ -163,7 +165,13 @@ class DeviceInfoServiceTest : public testing::Test,
 
   void OnDeviceInfoChange() override { change_count_++; }
 
- protected:
+  scoped_ptr<ModelTypeChangeProcessor> CreateModelTypeChangeProcessor(
+      syncer::ModelType type,
+      ModelTypeService* service) {
+    processor_ = new FakeModelTypeChangeProcessor();
+    return make_scoped_ptr(processor_);
+  }
+
   DeviceInfoServiceTest()
       : change_count_(0),
         store_(ModelTypeStoreTestUtil::CreateInMemoryStoreForTest()),
@@ -182,7 +190,9 @@ class DeviceInfoServiceTest : public testing::Test,
     service_.reset(new DeviceInfoService(
         local_device_.get(),
         base::Bind(&ModelTypeStoreTestUtil::MoveStoreToCallback,
-                   base::Passed(&store_))));
+                   base::Passed(&store_)),
+        base::Bind(&DeviceInfoServiceTest::CreateModelTypeChangeProcessor,
+                   base::Unretained(this))));
     service_->AddObserver(this);
   }
 
@@ -196,9 +206,10 @@ class DeviceInfoServiceTest : public testing::Test,
   // Creates a new processor and sets it on the service. We typically need to
   // pump in this scenario because metadata is going to need to be loading from
   // the store and given to the processor, which is async.
-  void SetProcessorAndPump() {
-    processor_ = new FakeModelTypeChangeProcessor();
-    service()->set_change_processor(make_scoped_ptr(processor_));
+  void CreateProcessorAndPump() {
+    // TODO(skym): Shouldn't need to directly force processor creation anymore.
+    EXPECT_EQ(processor_, service_->GetOrCreateChangeProcessor());
+    ASSERT_TRUE(processor_);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -380,7 +391,7 @@ TEST_F(DeviceInfoServiceTest, TestInitStoreThenProc) {
   AssertEqual(specifics, *all_device_info[0]);
   AssertEqual(specifics, *service()->GetDeviceInfo("tag").get());
 
-  SetProcessorAndPump();
+  CreateProcessorAndPump();
   ASSERT_TRUE(processor()->metadata());
   ASSERT_EQ(state.encryption_key_name(),
             processor()->metadata()->GetDataTypeState().encryption_key_name());
@@ -401,7 +412,7 @@ TEST_F(DeviceInfoServiceTest, TestInitProcBeforeStoreFinishes) {
   // processor is attached and ready before our store init is fully completed.
   ASSERT_EQ(0u, service()->GetAllDeviceInfo().size());
 
-  SetProcessorAndPump();
+  CreateProcessorAndPump();
   ASSERT_TRUE(processor()->metadata());
   ASSERT_EQ(state.encryption_key_name(),
             processor()->metadata()->GetDataTypeState().encryption_key_name());
@@ -534,7 +545,7 @@ TEST_F(DeviceInfoServiceTest, ApplySyncChangesStore) {
   base::RunLoop().RunUntilIdle();
   ShutdownService();
   InitializeAndPump();
-  SetProcessorAndPump();
+  CreateProcessorAndPump();
 
   scoped_ptr<DeviceInfo> info = service()->GetDeviceInfo(tag);
   ASSERT_TRUE(info);
@@ -585,7 +596,7 @@ TEST_F(DeviceInfoServiceTest, MergeBeforeInit) {
 
 TEST_F(DeviceInfoServiceTest, MergeEmpty) {
   InitializeAndPump();
-  SetProcessorAndPump();
+  CreateProcessorAndPump();
   const SyncError error = service()->MergeSyncData(
       service()->CreateMetadataChangeList(), EntityDataMap());
   EXPECT_FALSE(error.IsSet());
@@ -607,7 +618,7 @@ TEST_F(DeviceInfoServiceTest, MergeWithData) {
                             base::Bind(&AssertResultIsSuccess));
 
   InitializeAndPump();
-  SetProcessorAndPump();
+  CreateProcessorAndPump();
 
   EntityDataMap remote_input;
   remote_input[conflict_remote.cache_guid()] =
@@ -646,7 +657,7 @@ TEST_F(DeviceInfoServiceTest, MergeWithData) {
 
 TEST_F(DeviceInfoServiceTest, MergeLocalGuid) {
   InitializeAndPump();
-  SetProcessorAndPump();
+  CreateProcessorAndPump();
 
   // Service should ignore this because it uses the local device's guid.
   DeviceInfoSpecifics specifics(

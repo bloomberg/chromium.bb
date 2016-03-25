@@ -46,7 +46,8 @@ class DeviceInfoService : public syncer_v2::ModelTypeService,
 
   DeviceInfoService(
       sync_driver::LocalDeviceInfoProvider* local_device_info_provider,
-      const StoreFactoryFunction& callback);
+      const StoreFactoryFunction& callback,
+      const ChangeProcessorFactory& change_processor_factory);
   ~DeviceInfoService() override;
 
   // ModelTypeService implementation.

@@ -4,9 +4,17 @@
 
 #include "sync/internal_api/public/test/fake_model_type_service.h"
 
+#include "base/bind.h"
+#include "sync/internal_api/public/shared_model_type_processor.h"
+
 namespace syncer_v2 {
 
-FakeModelTypeService::FakeModelTypeService() {}
+FakeModelTypeService::FakeModelTypeService()
+    : ModelTypeService(
+          base::Bind(&FakeModelTypeService::CreateProcessorForTestWrapper,
+                     base::Unretained(this)),
+          syncer::PREFERENCES),
+      processor_(nullptr) {}
 
 FakeModelTypeService::~FakeModelTypeService() {}
 
@@ -37,5 +45,24 @@ std::string FakeModelTypeService::GetClientTag(const EntityData& entity_data) {
 }
 
 void FakeModelTypeService::OnChangeProcessorSet() {}
+
+ModelTypeChangeProcessor* FakeModelTypeService::CreateProcessorForTest(
+    syncer::ModelType type,
+    ModelTypeService* service) {
+  return processor_;
+}
+
+scoped_ptr<ModelTypeChangeProcessor>
+FakeModelTypeService::CreateProcessorForTestWrapper(syncer::ModelType type,
+                                                    ModelTypeService* service) {
+  return make_scoped_ptr(CreateProcessorForTest(type, service));
+}
+
+base::WeakPtr<SharedModelTypeProcessor> FakeModelTypeService::SetUpProcessor(
+    ModelTypeChangeProcessor* processor) {
+  processor_ = processor;
+  return static_cast<SharedModelTypeProcessor*>(GetOrCreateChangeProcessor())
+      ->AsWeakPtrForUI();
+}
 
 }  // namespace syncer_v2

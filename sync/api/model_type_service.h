@@ -15,6 +15,7 @@
 #include "sync/api/model_type_change_processor.h"
 #include "sync/api/sync_error.h"
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/activation_context.h"
 
 namespace syncer_v2 {
 
@@ -29,8 +30,13 @@ class SYNC_EXPORT ModelTypeService {
   typedef base::Callback<void(syncer::SyncError, scoped_ptr<DataBatch>)>
       DataCallback;
   typedef std::vector<std::string> ClientTagList;
+  typedef base::Callback<scoped_ptr<ModelTypeChangeProcessor>(
+      syncer::ModelType,
+      ModelTypeService* service)>
+      ChangeProcessorFactory;
 
-  ModelTypeService();
+  ModelTypeService(const ChangeProcessorFactory& change_processor_factory,
+                   syncer::ModelType type);
 
   virtual ~ModelTypeService();
 
@@ -78,17 +84,26 @@ class SYNC_EXPORT ModelTypeService {
   // it to the processor.
   virtual void OnChangeProcessorSet() = 0;
 
+  void clear_change_processor();
+
+  ModelTypeChangeProcessor* OnSyncStarting(
+      const ModelTypeChangeProcessor::StartCallback& callback);
+
+ protected:
   // TODO(skym): See crbug/547087, do we need all these accessors?
   ModelTypeChangeProcessor* change_processor() const;
 
-  void set_change_processor(
-      scoped_ptr<ModelTypeChangeProcessor> change_processor);
+  ModelTypeChangeProcessor* GetOrCreateChangeProcessor();
 
-  void clear_change_processor();
+  // Model type for this service.
+  syncer::ModelType type() const;
 
  private:
-  // Recieves ownership in set_change_processor(...).
   scoped_ptr<ModelTypeChangeProcessor> change_processor_;
+
+  ChangeProcessorFactory change_processor_factory_;
+
+  const syncer::ModelType type_;
 };
 
 }  // namespace syncer_v2

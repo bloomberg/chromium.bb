@@ -81,15 +81,11 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
   virtual void RunOnUIThread(const tracked_objects::Location& from_here,
                              const base::Closure& task) = 0;
 
-  // The function will create SharedModelTypeProcessor on model thread.
-  void InitializeProcessor();
-
  private:
   void RecordStartFailure(ConfigureResult result) const;
   void RecordUnrecoverableError();
   void ReportLoadModelError(ConfigureResult result,
                             const syncer::SyncError& error);
-  void InitializeProcessorOnModelThread();
 
   // If the DataType controller is waiting for models to load, once the models
   // are loaded this function should be called to let the base class
@@ -109,6 +105,10 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
       syncer::SyncError error,
       scoped_ptr<syncer_v2::ActivationContext> activation_context);
 
+  // The function LoadModels() will call this function to do some works which
+  // need to be done on model thread.
+  void LoadModelsOnModelThread();
+
   // Model Type for this controller
   syncer::ModelType model_type_;
 
@@ -125,6 +125,9 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
   // callback and must temporarily own it until ActivateDataType is called.
   scoped_ptr<syncer_v2::ActivationContext> activation_context_;
 
+  // TODO(gangwu): We can complete remove holding this pointer since the only
+  // place we use it is when we stop the data type. We can let ModelTypeService
+  // to stop the processor.
   // A weak pointer to the actual SharedModelTypeProcessor
   base::WeakPtr<syncer_v2::SharedModelTypeProcessor> type_processor_;
 

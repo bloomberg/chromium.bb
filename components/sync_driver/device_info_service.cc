@@ -42,8 +42,10 @@ using WriteBatch = ModelTypeStore::WriteBatch;
 
 DeviceInfoService::DeviceInfoService(
     sync_driver::LocalDeviceInfoProvider* local_device_info_provider,
-    const StoreFactoryFunction& callback)
-    : local_device_info_provider_(local_device_info_provider),
+    const StoreFactoryFunction& callback,
+    const ChangeProcessorFactory& change_processor_factory)
+    : ModelTypeService(change_processor_factory, syncer::DEVICE_INFO),
+      local_device_info_provider_(local_device_info_provider),
       weak_factory_(this) {
   DCHECK(local_device_info_provider);
 
@@ -370,6 +372,9 @@ void DeviceInfoService::OnReadAllMetadata(
     Result result,
     scoped_ptr<RecordList> metadata_records,
     const std::string& global_metadata) {
+  if (metadata_records->size() > 0 || !global_metadata.empty()) {
+    GetOrCreateChangeProcessor();
+  }
   if (!change_processor()) {
     // This datatype was disabled while this read was oustanding.
     return;
@@ -421,7 +426,8 @@ void DeviceInfoService::TryReconcileLocalAndStored() {
 }
 
 void DeviceInfoService::TryLoadAllMetadata() {
-  if (has_data_loaded_ && change_processor()) {
+  // TODO(skym): Fix the double load metadata issue.
+  if (has_data_loaded_) {
     store_->ReadAllMetadata(base::Bind(&DeviceInfoService::OnReadAllMetadata,
                                        weak_factory_.GetWeakPtr()));
   }

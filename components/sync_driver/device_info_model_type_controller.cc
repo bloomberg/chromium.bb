@@ -23,8 +23,6 @@ DeviceInfoModelTypeController::DeviceInfoModelTypeController(
                             syncer::DEVICE_INFO,
                             sync_client),
       local_device_info_provider_(local_device_info_provider) {
-  // TODO(gangwu): find a better place to initial processor.
-  InitializeProcessor();
 }
 
 DeviceInfoModelTypeController::~DeviceInfoModelTypeController() {}

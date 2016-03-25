@@ -10,6 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "sync/api/entity_data.h"
 #include "sync/base/sync_export.h"
+#include "sync/internal_api/public/activation_context.h"
 
 namespace syncer {
 class SyncError;
@@ -24,6 +25,9 @@ class MetadataChangeList;
 // changes.
 class SYNC_EXPORT ModelTypeChangeProcessor {
  public:
+  typedef base::Callback<void(syncer::SyncError, scoped_ptr<ActivationContext>)>
+      StartCallback;
+
   ModelTypeChangeProcessor();
   virtual ~ModelTypeChangeProcessor();
 
@@ -42,6 +46,12 @@ class SYNC_EXPORT ModelTypeChangeProcessor {
   // Accept the initial sync metadata loaded by the service. This should be
   // called as soon as the metadata is available to the service.
   virtual void OnMetadataLoaded(scoped_ptr<MetadataBatch> batch) = 0;
+
+  // Called by the DataTypeController to gather additional information needed
+  // before a CommitQueue object can be created for this model type. Once the
+  // metadata has been loaded, the info is collected and given to |callback|.
+  // Once called, this can only be called again if sync is disconnected.
+  virtual void OnSyncStarting(const StartCallback& callback) = 0;
 };
 
 }  // namespace syncer_v2

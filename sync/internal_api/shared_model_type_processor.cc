@@ -80,7 +80,8 @@ SharedModelTypeProcessor::SharedModelTypeProcessor(syncer::ModelType type,
 
 SharedModelTypeProcessor::~SharedModelTypeProcessor() {}
 
-void SharedModelTypeProcessor::OnSyncStarting(StartCallback start_callback) {
+void SharedModelTypeProcessor::OnSyncStarting(
+    const StartCallback& start_callback) {
   DCHECK(CalledOnValidThread());
   DCHECK(start_callback_.is_null());
   DCHECK(!IsConnected());
