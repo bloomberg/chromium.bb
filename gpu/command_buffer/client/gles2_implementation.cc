@@ -5923,8 +5923,8 @@ void GLES2Implementation::WaitSyncTokenCHROMIUM(const GLbyte* sync_token) {
 
 namespace {
 
-bool ValidImageFormat(GLenum internalformat,
-                      const Capabilities& capabilities) {
+bool CreateImageValidInternalFormat(GLenum internalformat,
+                                    const Capabilities& capabilities) {
   switch (internalformat) {
     case GL_ATC_RGB_AMD:
     case GL_ATC_RGBA_INTERPOLATED_ALPHA_AMD:
@@ -5941,6 +5941,16 @@ bool ValidImageFormat(GLenum internalformat,
     case GL_RGB_YCBCR_422_CHROMIUM:
     case GL_RGB_YCBCR_420V_CHROMIUM:
     case GL_BGRA_EXT:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool CreateGpuMemoryBufferValidInternalFormat(GLenum internalformat) {
+  switch (internalformat) {
+    case GL_RGB:
+    case GL_RGBA:
       return true;
     default:
       return false;
@@ -5967,7 +5977,7 @@ GLuint GLES2Implementation::CreateImageCHROMIUMHelper(ClientBuffer buffer,
     return 0;
   }
 
-  if (!ValidImageFormat(internalformat, capabilities_)) {
+  if (!CreateImageValidInternalFormat(internalformat, capabilities_)) {
     SetGLError(GL_INVALID_VALUE, "glCreateImageCHROMIUM", "invalid format");
     return 0;
   }
@@ -6033,7 +6043,7 @@ GLuint GLES2Implementation::CreateGpuMemoryBufferImageCHROMIUMHelper(
     return 0;
   }
 
-  if (!ValidImageFormat(internalformat, capabilities_)) {
+  if (!CreateGpuMemoryBufferValidInternalFormat(internalformat)) {
     SetGLError(GL_INVALID_VALUE,
                "glCreateGpuMemoryBufferImageCHROMIUM",
                "invalid format");

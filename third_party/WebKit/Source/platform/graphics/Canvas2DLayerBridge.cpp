@@ -253,7 +253,7 @@ Canvas2DLayerBridge::ImageInfo Canvas2DLayerBridge::createIOSurfaceBackedTexture
     }
 
     gpu::gles2::GLES2Interface* gl = contextGL();
-    GLuint imageId = gl->CreateGpuMemoryBufferImageCHROMIUM(m_size.width(), m_size.height(), GL_BGRA_EXT, GC3D_SCANOUT_CHROMIUM);
+    GLuint imageId = gl->CreateGpuMemoryBufferImageCHROMIUM(m_size.width(), m_size.height(), GL_RGBA, GC3D_SCANOUT_CHROMIUM);
     if (!imageId)
         return Canvas2DLayerBridge::ImageInfo();
 

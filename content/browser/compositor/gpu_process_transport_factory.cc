@@ -342,7 +342,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       GLenum format = GL_RGB;
 #if defined(OS_MACOSX)
       target = GL_TEXTURE_RECTANGLE_ARB;
-      format = GL_BGRA_EXT;
+      format = GL_RGBA;
 #endif
       surface =
           make_scoped_ptr(new GpuSurfacelessBrowserCompositorOutputSurface(

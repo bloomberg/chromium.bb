@@ -9,15 +9,8 @@
 
 namespace gpu {
 
-ImageFactory::ImageFactory() {
-}
-
-ImageFactory::~ImageFactory() {
-}
-
-// static
-gfx::BufferFormat ImageFactory::DefaultBufferFormatForImageFormat(
-    unsigned internalformat) {
+namespace {
+gfx::BufferFormat BufferFormatForInternalFormat(unsigned internalformat) {
   switch (internalformat) {
     case GL_RED:
       return gfx::BufferFormat::R_8;
@@ -49,6 +42,28 @@ gfx::BufferFormat ImageFactory::DefaultBufferFormatForImageFormat(
   }
 }
 
+}  // namespace
+
+ImageFactory::ImageFactory() {
+}
+
+ImageFactory::~ImageFactory() {
+}
+
+// static
+gfx::BufferFormat ImageFactory::DefaultBufferFormatForImageFormat(
+    unsigned internalformat) {
+  switch (internalformat) {
+    case GL_RGB:
+      return gfx::BufferFormat::BGRX_8888;
+    case GL_RGBA:
+      return gfx::BufferFormat::RGBA_8888;
+    default:
+      NOTREACHED();
+      return gfx::BufferFormat::RGBA_8888;
+  }
+}
+
 // static
 bool ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
     unsigned internalformat,
@@ -67,7 +82,7 @@ bool ImageFactory::IsImageFormatCompatibleWithGpuMemoryBufferFormat(
     case gfx::BufferFormat::YUV_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
     case gfx::BufferFormat::UYVY_422:
-      return format == DefaultBufferFormatForImageFormat(internalformat);
+      return format == BufferFormatForInternalFormat(internalformat);
     case gfx::BufferFormat::RGBA_4444:
       return internalformat == GL_RGBA;
   }
