@@ -1,0 +1,17 @@
+include_rules = [
+  # web shell must use only public API or own headers.
+  "-ios/web",
+  "+ios/web/public",
+  "+ios/web/shell",
+
+  # TODO(crbug.com/597997): Remove these exceptions. Web shell must not use
+  # any private APIs from web.
+  "+ios/web/navigation/crw_session_controller.h",
+  "+ios/web/navigation/web_load_params.h",
+  "+ios/web/net/crw_url_verifying_protocol_handler.h",
+  "+ios/web/net/request_tracker_factory_impl.h",
+  "+ios/web/net/web_http_protocol_handler_delegate.h",
+  "+ios/web/web_state/ui/crw_web_controller.h",
+  "+ios/web/web_state/web_state_impl.h",
+]
+
