@@ -99,6 +99,8 @@ TEST(X509CertificateModelTest, GetExtensions) {
   {
     scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
         net::GetTestCertsDirectory(), "subjectAltName_sanity_check.pem"));
+    ASSERT_TRUE(cert.get());
+
     x509_certificate_model::Extensions extensions;
     x509_certificate_model::GetExtensions(
         "critical", "notcrit", cert->os_cert_handle(), &extensions);
@@ -114,6 +116,8 @@ TEST(X509CertificateModelTest, GetExtensions) {
   {
     scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
         net::GetTestCertsDirectory(), "foaf.me.chromium-test-cert.der"));
+    ASSERT_TRUE(cert.get());
+
     x509_certificate_model::Extensions extensions;
     x509_certificate_model::GetExtensions(
         "critical", "notcrit", cert->os_cert_handle(), &extensions);
@@ -125,6 +129,8 @@ TEST(X509CertificateModelTest, GetExtensions) {
   {
     scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
         net::GetTestCertsDirectory(), "2029_globalsign_com_cert.pem"));
+    ASSERT_TRUE(cert.get());
+
     x509_certificate_model::Extensions extensions;
     x509_certificate_model::GetExtensions(
         "critical", "notcrit", cert->os_cert_handle(), &extensions);
@@ -183,6 +189,8 @@ TEST(X509CertificateModelTest, GetExtensions) {
   {
     scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
         net::GetTestCertsDirectory(), "diginotar_public_ca_2025.pem"));
+    ASSERT_TRUE(cert.get());
+
     x509_certificate_model::Extensions extensions;
     x509_certificate_model::GetExtensions(
         "critical", "notcrit", cert->os_cert_handle(), &extensions);
@@ -349,6 +357,7 @@ TEST(X509CertificateModelTest, ProcessSecAlgorithms) {
     scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
         net::GetTestCertsDirectory(), "root_ca_cert.pem"));
     ASSERT_TRUE(cert.get());
+
     EXPECT_EQ("PKCS #1 SHA-1 With RSA Encryption",
               x509_certificate_model::ProcessSecAlgorithmSignature(
                   cert->os_cert_handle()));
@@ -363,6 +372,7 @@ TEST(X509CertificateModelTest, ProcessSecAlgorithms) {
     scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
         net::GetTestCertsDirectory(), "weak_digest_md5_root.pem"));
     ASSERT_TRUE(cert.get());
+
     EXPECT_EQ("PKCS #1 MD5 With RSA Encryption",
               x509_certificate_model::ProcessSecAlgorithmSignature(
                   cert->os_cert_handle()));
@@ -380,6 +390,7 @@ TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
     scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
         net::GetTestCertsDirectory(), "root_ca_cert.pem"));
     ASSERT_TRUE(cert.get());
+
     EXPECT_EQ(
         "Modulus (2048 bits):\n"
         "  B6 49 41 E3 42 01 51 A8 7F 3C 7A 71 D3 FB CD 91\n"
@@ -412,6 +423,7 @@ TEST(X509CertificateModelTest, ProcessSubjectPublicKeyInfo) {
     scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
         net::GetTestCertsDirectory(), "prime256v1-ecdsa-intermediate.pem"));
     ASSERT_TRUE(cert.get());
+
     EXPECT_EQ(
         "04 DB 98 07 BC 61 DD 2D E6 B3 CC F7 D5 EA F7 A1\n"
         "0D 28 DE F2 7C 26 97 CA EB D1 DB A3 1E C1 8F E9\n"
@@ -427,6 +439,7 @@ TEST(X509CertificateModelTest, ProcessRawBitsSignatureWrap) {
   scoped_refptr<net::X509Certificate> cert(net::ImportCertFromFile(
       net::GetTestCertsDirectory(), "root_ca_cert.pem"));
   ASSERT_TRUE(cert.get());
+
   EXPECT_EQ(
       "57 07 29 FB 7F E8 FF B0 E6 D8 58 6A C3 90 A1 38\n"
       "1C B4 F3 68 B1 EC E8 89 23 24 D7 A8 F2 21 C3 60\n"
