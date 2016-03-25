@@ -61,12 +61,12 @@ class ProfileOAuth2TokenServiceIOSDelegate : public OAuth2TokenServiceDelegate {
   // |primary_account_id| must not be an empty string.
   void ReloadCredentials(const std::string& primary_account_id);
 
- protected:
   // Adds |account_id| to |accounts_| if it does not exist or udpates
   // the auth error state of |account_id| if it exists. Fires
   // |OnRefreshTokenAvailable| if the account info is updated.
   virtual void AddOrUpdateAccount(const std::string& account_id);
 
+ protected:
   // Removes |account_id| from |accounts_|. Fires |OnRefreshTokenRevoked|
   // if the account info is removed.
   virtual void RemoveAccount(const std::string& account_id);
