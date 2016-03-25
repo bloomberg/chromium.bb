@@ -17,7 +17,6 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_media_menu_model.h"
-#include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/plugin_service.h"
