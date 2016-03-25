@@ -15,6 +15,8 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -44,7 +46,24 @@ public class MultiWindowUtils {
      * @return Whether or not {@code activity} is currently in Android N+ multi-window mode.
      */
     public boolean isMultiWindow(Activity activity) {
-        // This logic is overridden in a subclass.
+        if (activity == null) return false;
+
+        if (Build.VERSION.CODENAME.equals("N")) {
+            try {
+                Method inMultiWindowMethod = Activity.class.getMethod("inMultiWindow");
+                boolean isInMultiWindow = (Boolean) inMultiWindowMethod.invoke(activity);
+                return isInMultiWindow;
+            } catch (NoSuchMethodException e) {
+                // Ignore.
+            } catch (IllegalAccessException e) {
+                // Ignore.
+            } catch (IllegalArgumentException e) {
+                // Ignore.
+            } catch (InvocationTargetException e) {
+                // Ignore.
+            }
+        }
+
         return false;
     }
 
