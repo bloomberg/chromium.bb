@@ -2704,6 +2704,39 @@ void HttpCache::Transaction::RecordHistograms() {
       cache_->mode() != NORMAL || request_->method != "GET") {
     return;
   }
+
+  std::string mime_type;
+  if (GetResponseInfo()->headers &&
+      GetResponseInfo()->headers->GetMimeType(&mime_type)) {
+    // Record the cache pattern by resource type. The type is inferred by
+    // response header mime type, which could be incorrect, so this is just an
+    // estimate.
+    if (mime_type == "text/html" && (request_->load_flags & LOAD_MAIN_FRAME)) {
+      UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.MainFrameHTML"),
+                                transaction_pattern_, PATTERN_MAX);
+    } else if (mime_type == "text/html") {
+      UMA_HISTOGRAM_ENUMERATION(
+          std::string("HttpCache.Pattern.NonMainFrameHTML"),
+          transaction_pattern_, PATTERN_MAX);
+    } else if (mime_type == "text/css") {
+      UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.CSS"),
+                                transaction_pattern_, PATTERN_MAX);
+    } else if (base::StartsWith(mime_type, "image/",
+                                base::CompareCase::SENSITIVE)) {
+      UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.Image"),
+                                transaction_pattern_, PATTERN_MAX);
+    } else if (base::EndsWith(mime_type, "javascript",
+                              base::CompareCase::SENSITIVE) ||
+               base::EndsWith(mime_type, "ecmascript",
+                              base::CompareCase::SENSITIVE)) {
+      UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.JavaScript"),
+                                transaction_pattern_, PATTERN_MAX);
+    } else if (mime_type.find("font") != std::string::npos) {
+      UMA_HISTOGRAM_ENUMERATION(std::string("HttpCache.Pattern.Font"),
+                                transaction_pattern_, PATTERN_MAX);
+    }
+  }
+
   UMA_HISTOGRAM_ENUMERATION(
       "HttpCache.Pattern", transaction_pattern_, PATTERN_MAX);
   if (transaction_pattern_ == PATTERN_NOT_COVERED)

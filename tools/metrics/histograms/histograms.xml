@@ -85413,6 +85413,20 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="BlinkGC.CollectionRate"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="CachedResourceType" separator=".">
+  <suffix name="JavaScript"
+      label="Showing cache patterns only for JavaScript resources."/>
+  <suffix name="CSS" label="Showing cache patterns only for CSS resources."/>
+  <suffix name="MainFrameHTML"
+      label="Showing cache patterns only for main-frame HTML resources."/>
+  <suffix name="NonMainFrameHTML"
+      label="Showing cache patterns only for non-main-frame HTML resources."/>
+  <suffix name="Image"
+      label="Showing cache patterns only for image resources."/>
+  <suffix name="Font" label="Showing cache patterns only for font resources."/>
+  <affected-histogram name="HttpCache.Pattern"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="CacheInstance" separator="." ordering="prefix">
   <suffix name="App"
       label="Collected from the HTML5 Application Cache instance."/>
