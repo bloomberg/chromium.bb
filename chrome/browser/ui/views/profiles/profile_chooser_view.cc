@@ -395,6 +395,7 @@ class EditableProfileName : public views::View,
     const gfx::FontList& medium_font_list =
         rb->GetFontList(ui::ResourceBundle::MediumFont);
     button_->SetFontList(medium_font_list);
+    AddChildView(button_);
 
     if (!is_editing_allowed) {
       button_->SetBorder(views::Border::CreateEmptyBorder(2, 0, 2, 0));
@@ -431,7 +432,6 @@ class EditableProfileName : public views::View,
 
     SetLayoutManager(
         new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
-    AddChildView(button_);
     AddChildView(profile_name_textfield_);
   }
 
