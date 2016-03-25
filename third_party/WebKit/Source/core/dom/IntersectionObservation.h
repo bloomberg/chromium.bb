@@ -24,6 +24,7 @@ public:
         LayoutRect targetRect;
         LayoutRect intersectionRect;
         LayoutRect rootRect;
+        bool doesIntersect;
     };
 
     IntersectionObserver& observer() const { return *m_observer; }
@@ -39,9 +40,10 @@ public:
 
 private:
     void applyRootMargin(LayoutRect&) const;
+    void initializeGeometry(IntersectionGeometry&) const;
     void initializeTargetRect(LayoutRect&) const;
     void initializeRootRect(LayoutRect&) const;
-    void clipToRoot(LayoutRect&, const LayoutRect&) const;
+    void clipToRoot(IntersectionGeometry&) const;
     void mapTargetRectToTargetFrameCoordinates(LayoutRect&) const;
     void mapRootRectToRootFrameCoordinates(LayoutRect&) const;
     void mapRootRectToTargetFrameCoordinates(LayoutRect&) const;

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<script src="../resources/js-test.js"></script>
+<script src="helper-functions.js"></script>
+<style>
+#root {
+  width: 200px;
+  height: 200px;
+  overflow: visible;
+}
+#target {
+  background-color: green;
+}
+</style>
+<div id="root">
+  <div id="target" style="width: 100px; height: 100px; transform: translateY(250px)"></div>
+</div>
+
+<script>
+description("Verifies that IntersectionObserver detects edge-inclusive intersections.");
+var root = document.getElementById('root');
+var target = document.getElementById('target');
+var entries = [];
+var observer = new IntersectionObserver(
+    changes => { entries.push(...changes) },
+    { root: root }
+);
+
+onload = function() {
+  observer.observe(target);
+  entries.push(...observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 0);
+  requestAnimationFrame(() => { requestAnimationFrame(step0) });
+};
+
+function step0() {
+  entries.push(...observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 0);
+  target.style.transform = "translateY(200px)";
+  requestAnimationFrame(step1);
+}
+
+function step1() {
+  entries.push(...observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 1);
+  if (entries.length > 0) {
+    shouldBeEqualToNumber("entries[0].boundingClientRect.left", 8);
+    shouldBeEqualToNumber("entries[0].boundingClientRect.right", 108);
+    shouldBeEqualToNumber("entries[0].boundingClientRect.top", 208);
+    shouldBeEqualToNumber("entries[0].boundingClientRect.bottom", 308);
+    shouldBeEqualToNumber("entries[0].intersectionRect.left", 8);
+    shouldBeEqualToNumber("entries[0].intersectionRect.right", 108);
+    shouldBeEqualToNumber("entries[0].intersectionRect.top", 208);
+    shouldBeEqualToNumber("entries[0].intersectionRect.bottom", 208);
+    shouldBeEqualToNumber("entries[0].rootBounds.left", 8);
+    shouldBeEqualToNumber("entries[0].rootBounds.right", 208);
+    shouldBeEqualToNumber("entries[0].rootBounds.top", 8);
+    shouldBeEqualToNumber("entries[0].rootBounds.bottom", 208);
+    shouldEvaluateToSameObject("entries[0].target", target);
+  }
+  target.style.transform = "translateY(201px)";
+  requestAnimationFrame(step2);
+}
+
+function step2() {
+  entries.push(...observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 2);
+  target.style.height = "0px";
+  target.style.width = "300px";
+  target.style.transform = "translateY(185px)";
+  requestAnimationFrame(step3);
+}
+
+function step3() {
+  entries.push(...observer.takeRecords());
+  shouldBeEqualToNumber("entries.length", 3);
+  if (entries.length > 2) {
+    shouldBeEqualToNumber("entries[2].boundingClientRect.left", 8);
+    shouldBeEqualToNumber("entries[2].boundingClientRect.right", 308);
+    shouldBeEqualToNumber("entries[2].boundingClientRect.top", 193);
+    shouldBeEqualToNumber("entries[2].boundingClientRect.bottom", 193);
+    shouldBeEqualToNumber("entries[2].intersectionRect.left", 8);
+    shouldBeEqualToNumber("entries[2].intersectionRect.right", 208);
+    shouldBeEqualToNumber("entries[2].intersectionRect.top", 193);
+    shouldBeEqualToNumber("entries[2].intersectionRect.bottom", 193);
+    shouldBeEqualToNumber("entries[2].rootBounds.left", 8);
+    shouldBeEqualToNumber("entries[2].rootBounds.right", 208);
+    shouldBeEqualToNumber("entries[2].rootBounds.top", 8);
+    shouldBeEqualToNumber("entries[2].rootBounds.bottom", 208);
+    shouldEvaluateToSameObject("entries[2].target", target);
+  }
+  finishJSTest();
+}
+</script>

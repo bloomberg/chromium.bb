@@ -34,19 +34,20 @@ void IntersectionObservation::applyRootMargin(LayoutRect& rect) const
         m_observer->applyRootMargin(rect);
 }
 
+void IntersectionObservation::initializeGeometry(IntersectionGeometry& geometry) const
+{
+    initializeTargetRect(geometry.targetRect);
+    geometry.intersectionRect = geometry.targetRect;
+    initializeRootRect(geometry.rootRect);
+    geometry.doesIntersect = true;
+}
+
 void IntersectionObservation::initializeTargetRect(LayoutRect& rect) const
 {
     ASSERT(m_target);
     LayoutObject* targetLayoutObject = target()->layoutObject();
     ASSERT(targetLayoutObject && targetLayoutObject->isBoxModelObject());
     rect = toLayoutBoxModelObject(targetLayoutObject)->visualOverflowRect();
-
-    // TODO(szager): Properly support intersection observations for zero-area targets
-    //   by using edge-inclusive geometry.
-    if (!rect.size().width())
-        rect.setWidth(LayoutUnit(1));
-    if (!rect.size().height())
-        rect.setHeight(LayoutUnit(1));
 }
 
 void IntersectionObservation::initializeRootRect(LayoutRect& rect) const
@@ -62,7 +63,7 @@ void IntersectionObservation::initializeRootRect(LayoutRect& rect) const
     applyRootMargin(rect);
 }
 
-void IntersectionObservation::clipToRoot(LayoutRect& rect, const LayoutRect& rootRect) const
+void IntersectionObservation::clipToRoot(IntersectionGeometry& geometry) const
 {
     // Map and clip rect into root element coordinates.
     // TODO(szager): the writing mode flipping needs a test.
@@ -70,10 +71,12 @@ void IntersectionObservation::clipToRoot(LayoutRect& rect, const LayoutRect& roo
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
     LayoutObject* targetLayoutObject = target()->layoutObject();
 
-    targetLayoutObject->mapToVisibleRectInAncestorSpace(toLayoutBoxModelObject(rootLayoutObject), rect, nullptr);
-    LayoutRect rootClipRect(rootRect);
+    geometry.doesIntersect = targetLayoutObject->mapToVisibleRectInAncestorSpace(toLayoutBoxModelObject(rootLayoutObject), geometry.intersectionRect, nullptr, EdgeInclusive);
+    if (!geometry.doesIntersect)
+        return;
+    LayoutRect rootClipRect(geometry.rootRect);
     toLayoutBox(rootLayoutObject)->flipForWritingMode(rootClipRect);
-    rect.intersect(rootClipRect);
+    geometry.doesIntersect &= geometry.intersectionRect.inclusiveIntersect(rootClipRect);
 }
 
 static void mapRectUpToDocument(LayoutRect& rect, const LayoutObject& layoutObject, const Document& document)
@@ -164,21 +167,21 @@ bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry) co
     if (!isContainingBlockChainDescendant(targetLayoutObject, rootLayoutObject))
         return false;
 
-    initializeTargetRect(geometry.targetRect);
-    geometry.intersectionRect = geometry.targetRect;
-    initializeRootRect(geometry.rootRect);
+    initializeGeometry(geometry);
 
-    clipToRoot(geometry.intersectionRect, geometry.rootRect);
+    clipToRoot(geometry);
 
-    // TODO(szager): there are some simple optimizations that can be done here:
-    //   - Don't transform rootRect if it's not going to be reported
-    //   - Don't transform intersectionRect if it's empty
     mapTargetRectToTargetFrameCoordinates(geometry.targetRect);
-    mapRootRectToTargetFrameCoordinates(geometry.intersectionRect);
-    mapRootRectToRootFrameCoordinates(geometry.rootRect);
 
-    if (geometry.intersectionRect.size().isZero())
+    if (geometry.doesIntersect)
+        mapRootRectToTargetFrameCoordinates(geometry.intersectionRect);
+    else
         geometry.intersectionRect = LayoutRect();
+
+    // Small optimization: if we're not going to report root bounds, don't bother
+    // transforming them to the frame.
+    if (m_shouldReportRootBounds)
+        mapRootRectToRootFrameCoordinates(geometry.rootRect);
 
     return true;
 }
@@ -189,15 +192,31 @@ void IntersectionObservation::computeIntersectionObservations(DOMHighResTimeStam
     if (!computeGeometry(geometry))
         return;
 
-    float intersectionArea = geometry.intersectionRect.size().width().toFloat() * geometry.intersectionRect.size().height().toFloat();
-    float targetArea = geometry.targetRect.size().width().toFloat() * geometry.targetRect.size().height().toFloat();
-    if (!targetArea)
-        return;
-    float newVisibleRatio = intersectionArea / targetArea;
-    unsigned newThresholdIndex = observer().firstThresholdGreaterThan(newVisibleRatio);
-    IntRect snappedRootBounds = pixelSnappedIntRect(geometry.rootRect);
-    IntRect* rootBoundsPointer = m_shouldReportRootBounds ? &snappedRootBounds : nullptr;
+    // Some corner cases for threshold index:
+    //   - If target rect is zero area, because it has zero width and/or zero height,
+    //     only two states are recognized:
+    //     - 0 means not intersecting.
+    //     - 1 means intersecting.
+    //     No other threshold crossings are possible.
+    //   - Otherwise:
+    //     - If root and target do not intersect, the threshold index is 0.
+    //     - If root and target intersect but the intersection has zero-area (i.e., they
+    //       have a coincident edge or corner), we consider the intersection to have
+    //       "crossed" a zero threshold, but not crossed any non-zero threshold.
+    unsigned newThresholdIndex;
+    if (geometry.targetRect.isEmpty()) {
+        newThresholdIndex = geometry.doesIntersect ? 1 : 0;
+    } else if (!geometry.doesIntersect) {
+        newThresholdIndex = 0;
+    } else {
+        float intersectionArea = geometry.intersectionRect.size().width().toFloat() * geometry.intersectionRect.size().height().toFloat();
+        float targetArea = geometry.targetRect.size().width().toFloat() * geometry.targetRect.size().height().toFloat();
+        float newVisibleRatio = intersectionArea / targetArea;
+        newThresholdIndex = observer().firstThresholdGreaterThan(newVisibleRatio);
+    }
     if (m_lastThresholdIndex != newThresholdIndex) {
+        IntRect snappedRootBounds = pixelSnappedIntRect(geometry.rootRect);
+        IntRect* rootBoundsPointer = m_shouldReportRootBounds ? &snappedRootBounds : nullptr;
         IntersectionObserverEntry* newEntry = new IntersectionObserverEntry(
             timestamp,
             pixelSnappedIntRect(geometry.targetRect),
