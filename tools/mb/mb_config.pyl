@@ -204,6 +204,7 @@
       'CrWinClang64(dbg)': 'win_clang_debug_bot',
       'Libfuzzer Upload Linux ASan': 'gn_release_libfuzzer_asan',
       'Libfuzzer Upload Linux MSan': 'gn_release_libfuzzer_msan',
+      'Libfuzzer Upload Linux UBSan': 'gn_release_libfuzzer_ubsan',
       'Linux ARM': 'swarming_gyp_release_bot_arm',
       'Site Isolation Linux': 'gn_release_trybot',
       'Site Isolation Win': 'gyp_release_trybot_x64',
@@ -1123,6 +1124,10 @@
     'gn_release_libfuzzer_msan': [
       'gn', 'release', 'libfuzzer', 'msan', 'proprietary_codecs', 'pdf_xfa',
     ],
+    'gn_release_libfuzzer_ubsan': [
+      'gn', 'release', 'libfuzzer', 'ubsan_security', 'proprietary_codecs', 
+      'pdf_xfa',
+    ],
 
     'gn_release_drmemory_drfuzz_x86': [
       'gn', 'release', 'drmemory', 'drfuzz', 'x86', 'proprietary_codecs',
@@ -1624,6 +1629,8 @@
     },
 
     'libfuzzer': { 'gn_args': 'use_libfuzzer=true' },
+
+    'ubsan_security': { 'gn_args': 'is_ubsan_security=true' },
 
     'lsan': {
       'gn_args': 'is_lsan=true',

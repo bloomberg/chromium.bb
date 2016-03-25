@@ -49,6 +49,10 @@ declare_args() {
   # See http://www.chromium.org/developers/testing/libfuzzer
   use_libfuzzer = false
 
+  # Enables core ubsan security features. Will later be removed once it matches
+  # is_ubsan.
+  is_ubsan_security = false
+
   # Compile for fuzzing with Dr. Fuzz
   # See http://www.chromium.org/developers/testing/dr-fuzz
   use_drfuzz = false

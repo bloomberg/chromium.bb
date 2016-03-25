@@ -246,6 +246,14 @@ config("default_sanitizer_flags") {
         "-fsanitize-blacklist=$ubsan_vptr_blacklist_path",
       ]
     }
+    if (is_ubsan_security) {
+      ubsan_blacklist_path =
+          rebase_path("//tools/ubsan/blacklist.txt", root_build_dir)
+      cflags += [
+        "-fsanitize=signed-integer-overflow",
+        "-fsanitize-blacklist=$ubsan_blacklist_path",
+      ]
+    }
     if (is_lto && !is_nacl) {
       cflags += [ "-flto" ]
 
