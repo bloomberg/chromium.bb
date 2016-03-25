@@ -46,6 +46,10 @@ typedef void (^GetHostedDomainCallback)(NSString* hosted_domain,
 // the device is blocked.
 typedef void (^MDMStatusCallback)(bool is_blocked);
 
+// Opaque type representing the MDM (Mobile Device Management) status of the
+// device. Checking for equality is guaranteed to be valid.
+typedef int MDMDeviceStatus;
+
 // ChromeIdentityService abstracts the signin flow on iOS.
 class ChromeIdentityService {
  public:
@@ -146,6 +150,9 @@ class ChromeIdentityService {
   // back on the main thread.
   virtual void GetHostedDomainForIdentity(ChromeIdentity* identity,
                                           GetHostedDomainCallback callback);
+
+  // Retuns the MDM device status associated with |user_info|.
+  virtual MDMDeviceStatus GetMDMDeviceStatus(NSDictionary* user_info);
 
   // Handles a potential MDM (Mobile Device Management) notification. Returns
   // true if the notification linked to |identity| and |user_info| was an MDM
