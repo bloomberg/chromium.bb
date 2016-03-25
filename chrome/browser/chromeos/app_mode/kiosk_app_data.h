@@ -50,7 +50,8 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
   KioskAppData(KioskAppDataDelegate* delegate,
                const std::string& app_id,
                const AccountId& account_id,
-               const GURL& update_url);
+               const GURL& update_url,
+               const base::FilePath& cached_crx);
   ~KioskAppData() override;
 
   // Loads app data from cache. If there is no cached data, fetches it
@@ -138,7 +139,7 @@ class KioskAppData : public base::SupportsWeakPtr<KioskAppData>,
 
   // Extracts meta data from crx file when loading from Webstore and local
   // cache fails.
-  void MaybeLoadFromCrx();
+  void LoadFromCrx();
 
   void OnCrxLoadFinished(const CrxLoader* crx_loader);
 

@@ -396,12 +396,14 @@ class KioskAppData::WebstoreDataParser
 KioskAppData::KioskAppData(KioskAppDataDelegate* delegate,
                            const std::string& app_id,
                            const AccountId& account_id,
-                           const GURL& update_url)
+                           const GURL& update_url,
+                           const base::FilePath& cached_crx)
     : delegate_(delegate),
       status_(STATUS_INIT),
       app_id_(app_id),
       account_id_(account_id),
-      update_url_(update_url) {}
+      update_url_(update_url),
+      crx_file_(cached_crx) {}
 
 KioskAppData::~KioskAppData() {}
 
@@ -459,7 +461,7 @@ void KioskAppData::SetCachedCrx(const base::FilePath& crx_file) {
     return;
 
   crx_file_ = crx_file;
-  MaybeLoadFromCrx();
+  LoadFromCrx();
 }
 
 bool KioskAppData::IsLoading() const {
@@ -612,7 +614,7 @@ void KioskAppData::OnWebstoreParseFailure() {
 
 void KioskAppData::StartFetch() {
   if (!IsFromWebStore()) {
-    MaybeLoadFromCrx();
+    LoadFromCrx();
     return;
   }
 
@@ -681,8 +683,8 @@ bool KioskAppData::CheckResponseKeyValue(const base::DictionaryValue* response,
   return true;
 }
 
-void KioskAppData::MaybeLoadFromCrx() {
-  if (status_ == STATUS_LOADED || crx_file_.empty())
+void KioskAppData::LoadFromCrx() {
+  if (crx_file_.empty())
     return;
 
   scoped_refptr<CrxLoader> crx_loader(new CrxLoader(AsWeakPtr(), crx_file_));

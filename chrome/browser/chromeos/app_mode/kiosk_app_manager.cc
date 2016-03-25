@@ -5,8 +5,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 
 #include <stddef.h>
-#include <map>
-#include <set>
 #include <utility>
 
 #include "base/barrier_closure.h"
@@ -612,10 +610,9 @@ void KioskAppManager::CleanUp() {
 
 const KioskAppData* KioskAppManager::GetAppData(
     const std::string& app_id) const {
-  for (size_t i = 0; i < apps_.size(); ++i) {
-    const KioskAppData* data = apps_[i];
-    if (data->app_id() == app_id)
-      return data;
+  for (const auto& app : apps_) {
+    if (app->app_id() == app_id)
+      return app.get();
   }
 
   return nullptr;
@@ -627,10 +624,10 @@ KioskAppData* KioskAppManager::GetAppDataMutable(const std::string& app_id) {
 
 void KioskAppManager::UpdateAppData() {
   // Gets app id to data mapping for existing apps.
-  std::map<std::string, KioskAppData*> old_apps;
-  for (size_t i = 0; i < apps_.size(); ++i)
-    old_apps[apps_[i]->app_id()] = apps_[i];
-  apps_.weak_clear();  // |old_apps| takes ownership
+  std::map<std::string, scoped_ptr<KioskAppData>> old_apps;
+  for (auto& app : apps_)
+    old_apps[app->app_id()] = std::move(app);
+  apps_.clear();
 
   auto_launch_app_id_.clear();
   std::string auto_login_account_id;
@@ -652,20 +649,33 @@ void KioskAppManager::UpdateAppData() {
     // Note that app ids are not canonical, i.e. they can contain upper
     // case letters.
     const AccountId account_id(AccountId::FromUserEmail(it->user_id));
-    std::map<std::string, KioskAppData*>::iterator old_it =
-        old_apps.find(it->kiosk_app_id);
+    auto old_it = old_apps.find(it->kiosk_app_id);
     if (old_it != old_apps.end()) {
-      apps_.push_back(old_it->second);
+      apps_.push_back(std::move(old_it->second));
       old_apps.erase(old_it);
     } else {
-      KioskAppData* new_app = new KioskAppData(
-          this, it->kiosk_app_id, account_id, GURL(it->kiosk_app_update_url));
-      apps_.push_back(new_app);  // Takes ownership of |new_app|.
-      new_app->Load();
+      base::FilePath cached_crx;
+      std::string version;
+      GetCachedCrx(it->kiosk_app_id, &cached_crx, &version);
+
+      apps_.push_back(make_scoped_ptr(
+          new KioskAppData(this, it->kiosk_app_id, account_id,
+                           GURL(it->kiosk_app_update_url), cached_crx)));
+      apps_.back()->Load();
     }
     CancelDelayedCryptohomeRemoval(cryptohome::Identification(account_id));
   }
 
+  ClearRemovedApps(old_apps);
+  UpdateExternalCachePrefs();
+  RetryFailedAppDataFetch();
+
+  FOR_EACH_OBSERVER(KioskAppManagerObserver, observers_,
+                    OnKioskAppsSettingsChanged());
+}
+
+void KioskAppManager::ClearRemovedApps(
+    const std::map<std::string, scoped_ptr<KioskAppData>>& old_apps) {
   base::Closure cryptohomes_barrier_closure;
 
   const user_manager::User* active_user =
@@ -684,20 +694,19 @@ void KioskAppManager::UpdateAppData() {
 
   // Clears cache and deletes the remaining old data.
   std::vector<std::string> apps_to_remove;
-  for (std::map<std::string, KioskAppData*>::iterator it = old_apps.begin();
-       it != old_apps.end(); ++it) {
-    it->second->ClearCache();
-    const cryptohome::Identification cryptohome_id(it->second->account_id());
+  for (auto& entry : old_apps) {
+    entry.second->ClearCache();
+    const cryptohome::Identification cryptohome_id(entry.second->account_id());
     cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
         cryptohome_id, base::Bind(&OnRemoveAppCryptohomeComplete, cryptohome_id,
-                                  it->first, cryptohomes_barrier_closure));
-    apps_to_remove.push_back(it->second->app_id());
+                                  entry.first, cryptohomes_barrier_closure));
+    apps_to_remove.push_back(entry.second->app_id());
   }
-  STLDeleteValues(&old_apps);
   external_cache_->RemoveExtensions(apps_to_remove);
+}
 
-  // Request external_cache_ to download new apps and update the existing
-  // apps.
+void KioskAppManager::UpdateExternalCachePrefs() {
+  // Request external_cache_ to download new apps and update the existing apps.
   scoped_ptr<base::DictionaryValue> prefs(new base::DictionaryValue);
   for (size_t i = 0; i < apps_.size(); ++i) {
     scoped_ptr<base::DictionaryValue> entry(new base::DictionaryValue);
@@ -713,11 +722,6 @@ void KioskAppManager::UpdateAppData() {
     prefs->Set(apps_[i]->app_id(), entry.release());
   }
   external_cache_->UpdateExtensionsList(std::move(prefs));
-
-  RetryFailedAppDataFetch();
-
-  FOR_EACH_OBSERVER(KioskAppManagerObserver, observers_,
-                    OnKioskAppsSettingsChanged());
 }
 
 void KioskAppManager::GetKioskAppIconCacheDir(base::FilePath* cache_dir) {
