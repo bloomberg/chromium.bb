@@ -24,12 +24,13 @@ cp -r tools/android/loading/gce $outdir/tools/android/loading
 # Copy other dependencies
 mkdir $outdir/third_party
 # Use rsync to exclude unwanted files (e.g. the .git directory).
-rsync -av --exclude=".*" --exclude "*.pyc" --delete \
-  third_party/catapult $outdir/third_party
+rsync -av --exclude=".*" --exclude "*.pyc" --exclude "*.html" --exclude "*.md" \
+  --delete third_party/catapult $outdir/third_party
 mkdir $outdir/tools/perf
 cp -r tools/perf/chrome_telemetry_build $outdir/tools/perf
 mkdir -p $outdir/build/android
 cp build/android/devil_chromium.py $outdir/build/android/
+cp build/android/video_recorder.py $outdir/build/android/
 cp build/android/devil_chromium.json $outdir/build/android/
 cp -r build/android/pylib $outdir/build/android/
 
@@ -38,7 +39,6 @@ chrome/tools/build/make_zip.py $builddir chrome/tools/build/linux/FILES.cfg \
   /tmp/linux.zip
 gsutil cp /tmp/linux.zip gs://$bucket/chrome/linux.zip
 rm /tmp/linux.zip
-gsutil cp $builddir/chrome_sandbox gs://$bucket/chrome/chrome_sandbox
 
 # Upload Chromium revision
 CHROMIUM_REV=$(git merge-base HEAD origin/master)

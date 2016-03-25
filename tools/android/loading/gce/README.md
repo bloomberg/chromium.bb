@@ -77,7 +77,8 @@ gcloud compute instances list
 
 ## Use the app
 
-Interact with the app on the port 8080 at `http://<instance-ip>:8080`.
+Check that `http://<instance-ip>:8080/test` prints `hello` when opened in a
+browser.
 
 To send a list of URLs to process:
 
@@ -116,13 +117,14 @@ source env/bin/activate
 pip install -r pip_requirements.txt
 ```
 
-Launch the app:
+Launch the app, passing the path to the Chrome executable on the host:
 
 ```shell
-gunicorn --workers=1 main:app --bind 127.0.0.1:8080
+gunicorn --workers=1 --bind 127.0.0.1:8080 \
+    'main:StartApp("/path/to/chrome")'
 ```
 
-In your browser, go to `http://localhost:8080` and use the app.
+You can now [use the app][2], which is located at http://localhost:8080.
 
 Tear down the local environment:
 
@@ -163,3 +165,4 @@ gcloud compute firewall-rules delete default-allow-http-8080
 ```
 
 [1]: https://cloud.google.com/sdk
+[2]: #Use-the-app

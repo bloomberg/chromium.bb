@@ -74,8 +74,12 @@ AUTO_START=$(curl -s \
     "http://metadata/computeMetadata/v1/instance/attributes/auto-start" \
     -H "Metadata-Flavor: Google")
 
+# TODO(droger): Figure out how to correctly restore check for auto-startup
+# as well as auto-startup code.
+exit 1
+
 # Exit early if auto start is not enabled.
-if [-z "$AUTO_START"]; then
+if [ -z "$AUTO_START" ]; then
   exit 1
 fi
 
@@ -84,8 +88,8 @@ fi
 cat >/etc/supervisor/conf.d/python-app.conf << EOF
 [program:pythonapp]
 directory=/opt/app/clovis/tools/android/loading/gce
-command=/opt/app/clovis/env/bin/gunicorn --workers=1 main:app \
-  --bind 0.0.0.0:8080
+command=/opt/app/clovis/env/bin/gunicorn --workers=1 --bind 0.0.0.0:8080 \
+    'main:StartApp("/opt/app/clovis/out/chrome")'
 autostart=true
 autorestart=true
 user=pythonapp
