@@ -67,6 +67,7 @@ PepperWebPluginImpl::PepperWebPluginImpl(
       throttler_(std::move(throttler)),
       instance_object_(PP_MakeUndefined()),
       container_(NULL),
+      destroyed_(false),
       weak_factory_(this) {
   DCHECK(plugin_module);
   init_data_->module = plugin_module;
@@ -150,6 +151,10 @@ bool PepperWebPluginImpl::initialize(WebPluginContainer* container) {
 }
 
 void PepperWebPluginImpl::destroy() {
+  // TODO(tommycli): Remove once we fix https://crbug.com/588624.
+  CHECK(!destroyed_);
+  destroyed_ = true;
+
   // Tell |container_| to clear references to this plugin's script objects.
   if (container_)
     container_->clearScriptObjects();
