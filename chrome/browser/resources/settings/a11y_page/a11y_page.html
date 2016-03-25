@@ -1,11 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<if expr="chromeos">
 <link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
+</if>
 <link rel="import" href="chrome://md-settings/settings_shared_css.html">
 
 <dom-module id="settings-a11y-page">
   <template>
     <style include="settings-shared"></style>
+<if expr="chromeos">
     <div class="settings-box row first">
       <span i18n-content="a11yExplanation"></span>
       <a i18n-values="href:a11yLearnMoreUrl" i18n-content="learnMore"
@@ -76,10 +79,16 @@
         </settings-checkbox>
       </template>
     </div>
+</if>
 
+<if expr="chromeos">
     <div class="settings-box">
+</if>
+<if expr="not chromeos">
+    <div class="settings-box first">
+</if>
       <div class="button-strip">
-        <paper-button i18n-content="moreFeaturesLink"
+        <paper-button i18n-content="moreFeaturesLink" class="primary-button"
             on-tap="onMoreFeaturesTap_"></paper-button>
       </div>
     </div>

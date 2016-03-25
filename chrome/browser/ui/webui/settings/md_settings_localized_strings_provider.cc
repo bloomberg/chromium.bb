@@ -79,8 +79,8 @@ void AddCommonStrings(content::WebUIDataSource* html_source) {
 void AddA11yStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
     {"a11yPageTitle", IDS_SETTINGS_ACCESSIBILITY},
-#if defined(OS_CHROMEOS)
     {"moreFeaturesLink", IDS_SETTINGS_MORE_FEATURES_LINK},
+#if defined(OS_CHROMEOS)
     {"optionsInMenuLabel", IDS_SETTINGS_OPTIONS_IN_MENU_LABEL},
     {"largeMouseCursorLabel", IDS_SETTINGS_LARGE_MOUSE_CURSOR_LABEL},
     {"highContrastLabel", IDS_SETTINGS_HIGH_CONTRAST_LABEL},

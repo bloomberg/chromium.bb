@@ -14,6 +14,7 @@
     <structures>
       <structure name="IDR_SETTINGS_A11Y_PAGE_JS"
                  file="a11y_page/a11y_page.js"
+                 flattenhtml="true"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_A11Y_PAGE_HTML"
                  file="a11y_page/a11y_page.html"

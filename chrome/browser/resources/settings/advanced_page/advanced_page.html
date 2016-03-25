@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://md-settings/a11y_page/a11y_page.html">
 <link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
 <link rel="import" href="chrome://md-settings/languages_page/languages_page.html">
 <link rel="import" href="chrome://md-settings/passwords_and_forms_page/passwords_and_forms_page.html">
@@ -12,7 +13,6 @@
 <link rel="import" href="chrome://md-settings/site_settings/site_settings_category.html">
 
 <if expr="chromeos">
-<link rel="import" href="chrome://md-settings/a11y_page/a11y_page.html">
 <link rel="import" href="chrome://md-settings/bluetooth_page/bluetooth_page.html">
 <link rel="import" href="chrome://md-settings/date_time_page/date_time_page.html">
 </if>
@@ -79,16 +79,12 @@
 
     <!-- TODO(dschuyler): Add Google Cloud Print section here. -->
 
-<if expr="chromeos">
-    <!-- TODO(dbeam): find somewhere to stuff "Add more accessibility features"
-         on desktop. -->
     <template is="dom-if" if="[[showPage(pageVisibility.a11y)]]" restamp>
       <settings-section page-title="[[i18n('a11yPageTitle')]]"
           current-route="[[currentRoute]]" section="a11y">
         <settings-a11y-page prefs="{{prefs}}"></settings-a11y-page>
       </settings-section>
     </template>
-</if>
 <if expr="not chromeos">
     <template is="dom-if" if="[[showPage(pageVisibility.system)]]" restamp>
       <settings-section page-title="[[i18n('systemPageTitle')]]"

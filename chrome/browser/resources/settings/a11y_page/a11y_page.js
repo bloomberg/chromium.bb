@@ -26,6 +26,7 @@ Polymer({
       notify: true,
     },
 
+<if expr="chromeos">
     /**
      * Whether to show experimental accessibility features.
      * @private {boolean}
@@ -36,6 +37,7 @@ Polymer({
         return loadTimeData.getBoolean('showExperimentalA11yFeatures');
       },
     }
+</if>
   },
 
   /** @private */
