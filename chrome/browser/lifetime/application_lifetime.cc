@@ -247,12 +247,6 @@ void SessionEnding() {
   // disk as we can as soon as we can, and where we must kill the
   // process within a hang timeout to avoid user prompts.
 
-  // Start watching for hang during shutdown, and crash it if takes too long.
-  // We disarm when |shutdown_watcher| object is destroyed, which is when we
-  // exit this function.
-  ShutdownWatcherHelper shutdown_watcher;
-  shutdown_watcher.Arm(base::TimeDelta::FromSeconds(90));
-
   // EndSession is invoked once per frame. Only do something the first time.
   static bool already_ended = false;
   // We may get called in the middle of shutdown, e.g. http://crbug.com/70852
@@ -260,6 +254,17 @@ void SessionEnding() {
   if (already_ended || !content::NotificationService::current())
     return;
   already_ended = true;
+
+  // ~ShutdownWatcherHelper uses IO (it joins a thread). We'll only trigger that
+  // if Terminate() fails, which leaves us in a weird state, or the OS is going
+  // to kill us soon. Either way we don't care about that here.
+  base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+  // Start watching for hang during shutdown, and crash it if takes too long.
+  // We disarm when |shutdown_watcher| object is destroyed, which is when we
+  // exit this function.
+  ShutdownWatcherHelper shutdown_watcher;
+  shutdown_watcher.Arm(base::TimeDelta::FromSeconds(90));
 
   browser_shutdown::OnShutdownStarting(browser_shutdown::END_SESSION);
 
