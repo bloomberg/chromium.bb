@@ -458,11 +458,8 @@ void LocationBarView::SelectAll() {
 
 gfx::Point LocationBarView::GetLocationBarAnchorPoint() const {
   const views::ImageView* image = location_icon_view_->GetImageView();
-  // The +1 in the next line creates a 1-px gap between icon and arrow tip.
-  int icon_bottom = image->GetImageBounds().bottom() -
-                    GetLayoutConstant(ICON_LABEL_VIEW_TRAILING_PADDING) + 1;
-  gfx::Point icon_center(image->GetImageBounds().CenterPoint());
-  gfx::Point point(icon_center.x(), icon_bottom);
+  const gfx::Rect image_bounds(image->GetImageBounds());
+  gfx::Point point(image_bounds.CenterPoint().x(), image_bounds.bottom());
   ConvertPointToTarget(image, this, &point);
   return point;
 }
