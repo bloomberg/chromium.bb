@@ -1054,8 +1054,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             public void run() {
                 // Gives up the bookmarking if the tab is being destroyed.
                 if (!tabToBookmark.isClosing() && tabToBookmark.isInitialized()) {
+                    // The BookmarkModel will be destroyed by BookmarkUtils#addOrEditBookmark() when
+                    // done.
                     BookmarkUtils.addOrEditBookmark(bookmarkId, bookmarkModel,
                             tabToBookmark, getSnackbarManager(), ChromeActivity.this);
+                } else {
+                    bookmarkModel.destroy();
                 }
             }
         });
