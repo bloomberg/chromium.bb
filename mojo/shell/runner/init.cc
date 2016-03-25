@@ -32,10 +32,10 @@ void InitializeLogging() {
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
   // To view log output with IDs and timestamps use "adb logcat -v threadtime".
-  logging::SetLogItems(false,   // Process ID
-                       false,   // Thread ID
-                       false,   // Timestamp
-                       false);  // Tick count
+  logging::SetLogItems(true,   // Process ID
+                       true,   // Thread ID
+                       true,   // Timestamp
+                       true);  // Tick count
 }
 
 void WaitForDebuggerIfNecessary() {
