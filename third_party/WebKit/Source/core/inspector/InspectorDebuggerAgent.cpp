@@ -259,26 +259,6 @@ void InspectorDebuggerAgent::setAsyncCallStackDepth(ErrorString* errorString, in
     setTrackingAsyncCalls(m_v8DebuggerAgent->trackingAsyncCalls());
 }
 
-void InspectorDebuggerAgent::enablePromiseTracker(ErrorString* errorString,
-    const Maybe<bool>& inCaptureStacks)
-{
-    m_v8DebuggerAgent->enablePromiseTracker(errorString, inCaptureStacks);
-}
-
-void InspectorDebuggerAgent::disablePromiseTracker(ErrorString* errorString)
-{
-    m_v8DebuggerAgent->disablePromiseTracker(errorString);
-}
-
-void InspectorDebuggerAgent::getPromiseById(
-    ErrorString* errorString,
-    int inPromiseId,
-    const Maybe<String16>& inObjectGroup,
-    OwnPtr<protocol::Runtime::RemoteObject>* outPromise)
-{
-    m_v8DebuggerAgent->getPromiseById(errorString, inPromiseId, inObjectGroup, outPromise);
-}
-
 void InspectorDebuggerAgent::flushAsyncOperationEvents(ErrorString* errorString)
 {
     m_v8DebuggerAgent->flushAsyncOperationEvents(errorString);

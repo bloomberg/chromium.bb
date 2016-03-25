@@ -73,9 +73,6 @@ public:
     void setVariableValue(ErrorString*, int scopeNumber, const String16& variableName, PassOwnPtr<protocol::Runtime::CallArgument> newValue, const String16& callFrameId) override;
     void getBacktrace(ErrorString*, OwnPtr<protocol::Array<protocol::Debugger::CallFrame>>* callFrames, Maybe<protocol::Runtime::StackTrace>* asyncStackTrace) override;
     void setAsyncCallStackDepth(ErrorString*, int maxDepth) override;
-    void enablePromiseTracker(ErrorString*, const Maybe<bool>& captureStacks) override;
-    void disablePromiseTracker(ErrorString*) override;
-    void getPromiseById(ErrorString*, int promiseId, const Maybe<String16>& objectGroup, OwnPtr<protocol::Runtime::RemoteObject>* promise) override;
     void flushAsyncOperationEvents(ErrorString*) override;
     void setAsyncOperationBreakpoint(ErrorString*, int operationId) override;
     void removeAsyncOperationBreakpoint(ErrorString*, int operationId) override;

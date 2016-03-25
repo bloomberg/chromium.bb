@@ -598,7 +598,7 @@ void V8DebuggerImpl::handleV8DebugEvent(const v8::Debug::EventDetails& eventDeta
     if (!enabled())
         return;
     v8::DebugEvent event = eventDetails.GetEvent();
-    if (event != v8::AsyncTaskEvent && event != v8::Break && event != v8::Exception && event != v8::AfterCompile && event != v8::BeforeCompile && event != v8::CompileError && event != v8::PromiseEvent)
+    if (event != v8::AsyncTaskEvent && event != v8::Break && event != v8::Exception && event != v8::AfterCompile && event != v8::BeforeCompile && event != v8::CompileError)
         return;
 
     v8::Local<v8::Context> eventContext = eventDetails.GetEventContext();
@@ -628,9 +628,6 @@ void V8DebuggerImpl::handleV8DebugEvent(const v8::Debug::EventDetails& eventDeta
         } else if (event == v8::AsyncTaskEvent) {
             if (agent->v8AsyncTaskEventsEnabled())
                 handleV8AsyncTaskEvent(agent, eventContext, eventDetails.GetExecutionState(), eventDetails.GetEventData());
-        } else if (event == v8::PromiseEvent) {
-            if (agent->v8PromiseEventsEnabled())
-                handleV8PromiseEvent(agent, eventContext, eventDetails.GetExecutionState(), eventDetails.GetEventData());
         }
     }
 }
@@ -644,23 +641,6 @@ void V8DebuggerImpl::handleV8AsyncTaskEvent(V8DebuggerAgentImpl* agent, v8::Loca
     m_pausedContext = context;
     m_executionState = executionState;
     agent->didReceiveV8AsyncTaskEvent(context, type, name, id);
-    m_pausedContext.Clear();
-    m_executionState.Clear();
-}
-
-void V8DebuggerImpl::handleV8PromiseEvent(V8DebuggerAgentImpl* agent, v8::Local<v8::Context> context, v8::Local<v8::Object> executionState, v8::Local<v8::Object> eventData)
-{
-    v8::Local<v8::Value> argv[] = { eventData };
-    v8::Local<v8::Value> value = callDebuggerMethod("getPromiseDetails", 1, argv).ToLocalChecked();
-    ASSERT(value->IsObject());
-    v8::Local<v8::Object> promiseDetails = v8::Local<v8::Object>::Cast(value);
-    v8::Local<v8::Object> promise = promiseDetails->Get(v8InternalizedString("promise"))->ToObject(m_isolate);
-    int status = promiseDetails->Get(v8InternalizedString("status"))->ToInteger(m_isolate)->Value();
-    v8::Local<v8::Value> parentPromise = promiseDetails->Get(v8InternalizedString("parentPromise"));
-
-    m_pausedContext = context;
-    m_executionState = executionState;
-    agent->didReceiveV8PromiseEvent(context, promise, parentPromise, status);
     m_pausedContext.Clear();
     m_executionState.Clear();
 }

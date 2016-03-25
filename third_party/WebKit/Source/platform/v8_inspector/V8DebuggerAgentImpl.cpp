@@ -11,7 +11,6 @@
 #include "platform/v8_inspector/InjectedScriptHost.h"
 #include "platform/v8_inspector/InjectedScriptManager.h"
 #include "platform/v8_inspector/JavaScriptCallFrame.h"
-#include "platform/v8_inspector/PromiseTracker.h"
 #include "platform/v8_inspector/RemoteObjectId.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8AsyncCallTracker.h"
@@ -33,7 +32,6 @@ using blink::protocol::Debugger::CollectionEntry;
 using blink::protocol::Runtime::ExceptionDetails;
 using blink::protocol::Debugger::FunctionDetails;
 using blink::protocol::Debugger::GeneratorObjectDetails;
-using blink::protocol::Debugger::PromiseDetails;
 using blink::protocol::Runtime::ScriptId;
 using blink::protocol::Runtime::StackTrace;
 using blink::protocol::Runtime::RemoteObject;
@@ -44,8 +42,6 @@ namespace DebuggerAgentState {
 static const char javaScriptBreakpoints[] = "javaScriptBreakopints";
 static const char pauseOnExceptionsState[] = "pauseOnExceptionsState";
 static const char asyncCallStackDepth[] = "asyncCallStackDepth";
-static const char promiseTrackerEnabled[] = "promiseTrackerEnabled";
-static const char promiseTrackerCaptureStacks[] = "promiseTrackerCaptureStacks";
 
 // Breakpoint properties.
 static const char url[] = "url";
@@ -196,7 +192,6 @@ V8DebuggerAgentImpl::V8DebuggerAgentImpl(InjectedScriptManager* injectedScriptMa
 
     // FIXME: remove once InjectedScriptManager moves to v8.
     m_v8AsyncCallTracker = V8AsyncCallTracker::create(this);
-    m_promiseTracker = PromiseTracker::create(this, m_isolate);
     clearBreakDetails();
 }
 
@@ -245,8 +240,6 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_state->setObject(DebuggerAgentState::javaScriptBreakpoints, protocol::DictionaryValue::create());
     m_state->setNumber(DebuggerAgentState::pauseOnExceptionsState, V8DebuggerImpl::DontPauseOnExceptions);
     m_state->setNumber(DebuggerAgentState::asyncCallStackDepth, 0);
-    m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
-    m_state->setBoolean(DebuggerAgentState::promiseTrackerCaptureStacks, false);
 
     debugger().removeDebuggerAgent(m_contextGroupId);
     m_pausedContext.Reset();
@@ -255,7 +248,6 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_blackboxedPositions.clear();
     m_breakpointIdToDebuggerBreakpointIds.clear();
     internalSetAsyncCallStackDepth(0);
-    m_promiseTracker->setEnabled(false, false);
     m_continueToLocationBreakpointId = String16();
     clearBreakDetails();
     m_scheduledDebuggerStep = NoStep;
@@ -310,8 +302,6 @@ void V8DebuggerAgentImpl::restore()
     int asyncCallStackDepth = 0;
     m_state->getNumber(DebuggerAgentState::asyncCallStackDepth, &asyncCallStackDepth);
     internalSetAsyncCallStackDepth(asyncCallStackDepth);
-
-    m_promiseTracker->setEnabled(m_state->booleanProperty(DebuggerAgentState::promiseTrackerEnabled, false), m_state->booleanProperty(DebuggerAgentState::promiseTrackerCaptureStacks, false));
 }
 
 void V8DebuggerAgentImpl::setBreakpointsActive(ErrorString* errorString, bool active)
@@ -872,17 +862,6 @@ void V8DebuggerAgentImpl::didReceiveV8AsyncTaskEvent(v8::Local<v8::Context> cont
     m_v8AsyncCallTracker->didReceiveV8AsyncTaskEvent(context, eventType, eventName, id);
 }
 
-bool V8DebuggerAgentImpl::v8PromiseEventsEnabled() const
-{
-    return m_promiseTracker->isEnabled();
-}
-
-void V8DebuggerAgentImpl::didReceiveV8PromiseEvent(v8::Local<v8::Context> context, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status)
-{
-    ASSERT(m_promiseTracker->isEnabled());
-    m_promiseTracker->didReceiveV8PromiseEvent(context, promise, parentPromise, status);
-}
-
 void V8DebuggerAgentImpl::pause(ErrorString* errorString)
 {
     if (!checkEnabled(errorString))
@@ -1092,48 +1071,6 @@ void V8DebuggerAgentImpl::setAsyncCallStackDepth(ErrorString* errorString, int d
         return;
     m_state->setNumber(DebuggerAgentState::asyncCallStackDepth, depth);
     internalSetAsyncCallStackDepth(depth);
-}
-
-void V8DebuggerAgentImpl::enablePromiseTracker(ErrorString* errorString,
-    const Maybe<bool>& captureStacks)
-{
-    if (!checkEnabled(errorString))
-        return;
-    m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, true);
-    m_state->setBoolean(DebuggerAgentState::promiseTrackerCaptureStacks, captureStacks.fromMaybe(false));
-    m_promiseTracker->setEnabled(true, captureStacks.fromMaybe(false));
-}
-
-void V8DebuggerAgentImpl::disablePromiseTracker(ErrorString* errorString)
-{
-    if (!checkEnabled(errorString))
-        return;
-    m_state->setBoolean(DebuggerAgentState::promiseTrackerEnabled, false);
-    m_promiseTracker->setEnabled(false, false);
-}
-
-void V8DebuggerAgentImpl::getPromiseById(ErrorString* errorString, int promiseId, const Maybe<String16>& objectGroup, OwnPtr<RemoteObject>* promise)
-{
-    if (!checkEnabled(errorString))
-        return;
-    if (!m_promiseTracker->isEnabled()) {
-        *errorString = "Promise tracking is disabled";
-        return;
-    }
-    v8::HandleScope handles(m_isolate);
-    v8::Local<v8::Object> value = m_promiseTracker->promiseById(promiseId);
-    if (value.IsEmpty()) {
-        *errorString = "Promise with specified ID not found.";
-        return;
-    }
-    InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(value->CreationContext());
-    *promise = injectedScript->wrapObject(errorString, value, objectGroup.fromMaybe(""));
-}
-
-void V8DebuggerAgentImpl::didUpdatePromise(const String16& eventType, PassOwnPtr<protocol::Debugger::PromiseDetails> promise)
-{
-    if (m_frontend)
-        m_frontend->promiseUpdated(eventType, promise);
 }
 
 int V8DebuggerAgentImpl::traceAsyncOperationStarting(const String16& description)
@@ -1702,7 +1639,6 @@ void V8DebuggerAgentImpl::reset()
     m_blackboxedPositions.clear();
     m_breakpointIdToDebuggerBreakpointIds.clear();
     resetAsyncCallTracker();
-    m_promiseTracker->clear();
 }
 
 } // namespace blink

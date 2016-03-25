@@ -1049,8 +1049,6 @@
       'v8_inspector/InjectedScriptManager.h',
       'v8_inspector/JavaScriptCallFrame.cpp',
       'v8_inspector/JavaScriptCallFrame.h',
-      'v8_inspector/PromiseTracker.cpp',
-      'v8_inspector/PromiseTracker.h',
       'v8_inspector/ScriptBreakpoint.h',
       'v8_inspector/RemoteObjectId.cpp',
       'v8_inspector/RemoteObjectId.h',

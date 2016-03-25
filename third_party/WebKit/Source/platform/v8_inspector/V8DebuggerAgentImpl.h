@@ -132,13 +132,6 @@ public:
         PassOwnPtr<protocol::Runtime::CallArgument> newValue,
         const String16& callFrame) override;
     void setAsyncCallStackDepth(ErrorString*, int depth) override;
-    void enablePromiseTracker(ErrorString*,
-        const Maybe<bool>& captureStacks) override;
-    void disablePromiseTracker(ErrorString*) override;
-    void getPromiseById(ErrorString*,
-        int promiseId,
-        const Maybe<String16>& objectGroup,
-        OwnPtr<protocol::Runtime::RemoteObject>* promise) override;
     void flushAsyncOperationEvents(ErrorString*) override;
     void setAsyncOperationBreakpoint(ErrorString*, int operationId) override;
     void removeAsyncOperationBreakpoint(ErrorString*, int operationId) override;
@@ -167,7 +160,6 @@ public:
     void traceAsyncOperationCompleted(int operationId) override;
     bool trackingAsyncCalls() const override { return m_maxAsyncCallStackDepth; }
 
-    void didUpdatePromise(const String16& eventType, PassOwnPtr<protocol::Debugger::PromiseDetails>);
     void reset();
 
     // Interface for V8DebuggerImpl
@@ -176,8 +168,6 @@ public:
     void didParseSource(const V8DebuggerParsedScript&);
     bool v8AsyncTaskEventsEnabled() const;
     void didReceiveV8AsyncTaskEvent(v8::Local<v8::Context>, const String16& eventType, const String16& eventName, int id);
-    bool v8PromiseEventsEnabled() const;
-    void didReceiveV8PromiseEvent(v8::Local<v8::Context>, v8::Local<v8::Object> promise, v8::Local<v8::Value> parentPromise, int status);
 
     v8::Isolate* isolate() { return m_isolate; }
     int maxAsyncCallChainDepth() { return m_maxAsyncCallStackDepth; }
@@ -256,7 +246,6 @@ private:
 
     // This field must be destroyed before the listeners set above.
     OwnPtr<V8AsyncCallTracker> m_v8AsyncCallTracker;
-    OwnPtr<PromiseTracker> m_promiseTracker;
 
     using AsyncOperationIdToStackTrace = protocol::HashMap<int, OwnPtr<V8StackTraceImpl>>;
     AsyncOperationIdToStackTrace m_asyncOperations;
