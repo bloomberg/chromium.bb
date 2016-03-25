@@ -10,6 +10,7 @@ import loading_trace
 import page_track
 import request_track
 import tracing
+import user_satisfied_lens
 
 
 class FakeRequestTrack(devtools_monitor.Track):
@@ -207,3 +208,9 @@ class MockConnection(object):
       del self._expected_responses[method]
     self._test_case.assertEqual(expected_params, params)
     return response
+
+
+class MockUserSatisfiedLens(user_satisfied_lens._UserSatisfiedLens):
+  def _CalculateTimes(self, _):
+    self._satisfied_msec = float('inf')
+    self._event_msec = float('inf')

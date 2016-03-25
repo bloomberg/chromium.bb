@@ -7,6 +7,8 @@ import unittest
 import prefetch_view
 import request_dependencies_lens
 from request_dependencies_lens_unittest import TestRequests
+import request_track
+import test_utils
 
 
 class PrefetchSimulationViewTestCase(unittest.TestCase):
@@ -54,8 +56,9 @@ class PrefetchSimulationViewTestCase(unittest.TestCase):
     self.trace = TestRequests.CreateLoadingTrace(trace_events)
     dependencies_lens = request_dependencies_lens.RequestDependencyLens(
         self.trace)
+    self.user_satisfied_lens = test_utils.MockUserSatisfiedLens(self.trace)
     self.prefetch_view = prefetch_view.PrefetchSimulationView(
-        self.trace, dependencies_lens)
+        self.trace, dependencies_lens, self.user_satisfied_lens)
 
 
 if __name__ == '__main__':

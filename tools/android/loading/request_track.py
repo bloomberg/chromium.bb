@@ -244,6 +244,14 @@ class Request(object):
       return int(age_match.group(1))
     return -1
 
+  def Cost(self):
+    """Returns the cost of this request in ms, defined as time between
+    request_time and the latest timing event.
+    """
+    # All fields in timing are millis relative to request_time.
+    return max([0] + [t for f, t in self.timing._asdict().iteritems()
+                      if f != 'request_time'])
+
   def __eq__(self, o):
     return self.__dict__ == o.__dict__
 

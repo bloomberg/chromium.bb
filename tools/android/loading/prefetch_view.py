@@ -14,20 +14,24 @@ how many requests were prefetched.
 import itertools
 import operator
 
+import dependency_graph
 import loading_trace
+import user_satisfied_lens
 import request_dependencies_lens
+import request_track
 
 
 class PrefetchSimulationView(object):
   """Simulates the effect of prefetching resources discoverable by the preload
   scanner.
   """
-  def __init__(self, trace, dependencies_lens):
+  def __init__(self, trace, dependencies_lens, user_lens):
     """Initializes an instance of PrefetchSimulationView.
 
     Args:
       trace: (LoadingTrace) a loading trace.
       dependencies_lens: (RequestDependencyLens) request dependencies.
+      user_lens: (UserSatisfiedLens) Lens used to compute costs.
     """
     self.trace = trace
     self.dependencies_lens = dependencies_lens
@@ -35,6 +39,13 @@ class PrefetchSimulationView(object):
         categories=set([u'blink.net']))
     assert len(self._resource_events.GetEvents()) > 0,\
             'Was the "blink.net" category enabled at trace collection time?"'
+    self._user_lens = user_lens
+    request_ids = self._user_lens.CriticalRequests()
+    all_requests = self.trace.request_track.GetEvents()
+    self._first_request_node = all_requests[0].request_id
+    requests = [r for r in all_requests if r.request_id in request_ids]
+    self.graph = dependency_graph.RequestDependencyGraph(
+        requests, self.dependencies_lens)
 
   def ParserDiscoverableRequests(self, request, recurse=False):
     """Returns a list of requests discovered by the parser from a given request.
@@ -93,7 +104,7 @@ class PrefetchSimulationView(object):
          for r in preloaded_root_requests]))
 
 
-def _PrintSummary(prefetch_view):
+def _PrintSummary(prefetch_view, user_lens):
   requests = prefetch_view.trace.request_track.GetEvents()
   first_request = prefetch_view.trace.request_track.GetEvents()[0]
   parser_requests = prefetch_view.ExpandRedirectChains(
@@ -102,13 +113,22 @@ def _PrintSummary(prefetch_view):
       prefetch_view.PreloadedRequests(first_request))
   print '%d requests, %d parser from the main request, %d preloaded' % (
       len(requests), len(parser_requests), len(preloaded_requests))
+  print 'Time to user satisfaction: %.02fms' % (
+      prefetch_view.graph.Cost() + user_lens.PostloadTimeMsec())
+
+  print 'With 0-cost prefetched resources...'
+  new_costs = {r.request_id: 0. for r in preloaded_requests}
+  prefetch_view.graph.UpdateRequestsCost(new_costs)
+  print 'Time to user satisfaction: %.02fms' % (
+      prefetch_view.graph.Cost() + user_lens.PostloadTimeMsec())
 
 
 def main(filename):
   trace = loading_trace.LoadingTrace.FromJsonFile(filename)
   dependencies_lens = request_dependencies_lens.RequestDependencyLens(trace)
-  prefetch_view = PrefetchSimulationView(trace, dependencies_lens)
-  _PrintSummary(prefetch_view)
+  user_lens = user_satisfied_lens.FirstContentfulPaintLens(trace)
+  prefetch_view = PrefetchSimulationView(trace, dependencies_lens, user_lens)
+  _PrintSummary(prefetch_view, user_lens)
 
 
 if __name__ == '__main__':
