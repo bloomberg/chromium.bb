@@ -6,6 +6,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/ios/block_types.h"
+
 @class CRUContextMenuHolder;
 
 // Abstracts displaying context menus for all device form factors, given a
@@ -24,6 +26,10 @@
 - (void)showWithHolder:(CRUContextMenuHolder*)menuHolder
                atPoint:(CGPoint)localPoint
                 inView:(UIView*)view;
+
+// Dismisses displayed context menu.
+- (void)dismissAnimated:(BOOL)animated
+      completionHandler:(ProceduralBlock)completionHandler;
 
 @end
 

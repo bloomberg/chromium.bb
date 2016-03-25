@@ -24,10 +24,18 @@
 - (void)showWithHolder:(CRUContextMenuHolder*)menuHolder
                atPoint:(CGPoint)localPoint
                 inView:(UIView*)view;
+
+// Dismisses displayed context menu.
+- (void)dismissAnimated:(BOOL)animated
+      completionHandler:(ProceduralBlock)completionHandler;
+
 @end
 
 // Backs up CRUContextMenuController by using UIAlertController.
-@interface CRUAlertController : NSObject<CRUContextMenuControllerImpl>
+@interface CRUAlertController : NSObject<CRUContextMenuControllerImpl> {
+  // Weak underlying UIAlertController.
+  base::WeakNSObject<UIAlertController> _alert;
+}
 // Redefined to readwrite.
 @property(nonatomic, readwrite, getter=isVisible) BOOL visible;
 @end
@@ -50,6 +58,11 @@
   return self;
 }
 
+- (void)dealloc {
+  [_impl dismissAnimated:NO completionHandler:nil];
+  [super dealloc];
+}
+
 - (void)showWithHolder:(CRUContextMenuHolder*)menuHolder
                atPoint:(CGPoint)point
                 inView:(UIView*)view {
@@ -59,6 +72,11 @@
   if (![view window] && ![view isKindOfClass:[UIWindow class]])
     return;
   [_impl showWithHolder:menuHolder atPoint:point inView:view];
+}
+
+- (void)dismissAnimated:(BOOL)animated
+      completionHandler:(ProceduralBlock)completionHandler {
+  [_impl dismissAnimated:animated completionHandler:completionHandler];
 }
 
 @end
@@ -122,6 +140,12 @@
     topController = topController.presentedViewController;
   [topController presentViewController:alert animated:YES completion:nil];
   self.visible = YES;
+  _alert.reset(alert);
+}
+
+- (void)dismissAnimated:(BOOL)animated
+      completionHandler:(ProceduralBlock)completionHandler {
+  [_alert dismissViewControllerAnimated:animated completion:completionHandler];
 }
 
 @end
