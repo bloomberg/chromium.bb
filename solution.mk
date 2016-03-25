@@ -9,14 +9,14 @@
 ##
 
 # libaom reverse dependencies (targets that depend on libaom)
-VPX_NONDEPS=$(addsuffix .$(VCPROJ_SFX),aom gtest)
-VPX_RDEPS=$(foreach vcp,\
-              $(filter-out $(VPX_NONDEPS),$^), --dep=$(vcp:.$(VCPROJ_SFX)=):aom)
+AOM_NONDEPS=$(addsuffix .$(VCPROJ_SFX),aom gtest)
+AOM_RDEPS=$(foreach vcp,\
+              $(filter-out $(AOM_NONDEPS),$^), --dep=$(vcp:.$(VCPROJ_SFX)=):aom)
 
 aom.sln: $(wildcard *.$(VCPROJ_SFX))
 	@echo "    [CREATE] $@"
 	$(SRC_PATH_BARE)/build/make/gen_msvs_sln.sh \
-            $(if $(filter aom.$(VCPROJ_SFX),$^),$(VPX_RDEPS)) \
+            $(if $(filter aom.$(VCPROJ_SFX),$^),$(AOM_RDEPS)) \
             --dep=test_libaom:gtest \
             --ver=$(CONFIG_VS_VERSION)\
             --out=$@ $^

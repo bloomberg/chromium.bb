@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_X86_INV_TXFM_SSE2_H_
-#define VPX_DSP_X86_INV_TXFM_SSE2_H_
+#ifndef AOM_DSP_X86_INV_TXFM_SSE2_H_
+#define AOM_DSP_X86_INV_TXFM_SSE2_H_
 
 #include <emmintrin.h>  // SSE2
 #include "./aom_config.h"
@@ -194,4 +194,4 @@ void iadst4_sse2(__m128i *in);
 void iadst8_sse2(__m128i *in);
 void iadst16_sse2(__m128i *in0, __m128i *in1);
 
-#endif  // VPX_DSP_X86_INV_TXFM_SSE2_H_
+#endif  // AOM_DSP_X86_INV_TXFM_SSE2_H_

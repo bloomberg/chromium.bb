@@ -9,10 +9,10 @@
 ##  be found in the AUTHORS file in the root of the source tree.
 ##
 ##
-## This script generates 'VPX.framework'. An iOS app can encode and decode VPx
-## video by including 'VPX.framework'.
+## This script generates 'AOM.framework'. An iOS app can encode and decode VPx
+## video by including 'AOM.framework'.
 ##
-## Run iosbuild.sh to create 'VPX.framework' in the current directory.
+## Run iosbuild.sh to create 'AOM.framework' in the current directory.
 ##
 set -e
 devnull='> /dev/null 2>&1'
@@ -23,7 +23,7 @@ CONFIGURE_ARGS="--disable-docs
                 --disable-libyuv
                 --disable-unit-tests"
 DIST_DIR="_dist"
-FRAMEWORK_DIR="VPX.framework"
+FRAMEWORK_DIR="AOM.framework"
 HEADER_DIR="${FRAMEWORK_DIR}/Headers/aom"
 SCRIPT_DIR=$(dirname "$0")
 LIBAOM_SOURCE_DIR=$(cd ${SCRIPT_DIR}/../..; pwd)
@@ -100,7 +100,7 @@ create_aom_framework_config_shim() {
   local config_file="${HEADER_DIR}/aom_config.h"
   local preproc_symbol=""
   local target=""
-  local include_guard="VPX_FRAMEWORK_HEADERS_VPX_VPX_CONFIG_H_"
+  local include_guard="AOM_FRAMEWORK_HEADERS_AOM_AOM_CONFIG_H_"
 
   local file_header="/*
  *  Copyright (c) $(date +%Y) The WebM project authors. All Rights Reserved.
@@ -123,8 +123,8 @@ create_aom_framework_config_shim() {
   for target in ${targets}; do
     preproc_symbol=$(target_to_preproc_symbol "${target}")
     printf " ${preproc_symbol}\n" >> "${config_file}"
-    printf "#define VPX_FRAMEWORK_TARGET \"${target}\"\n" >> "${config_file}"
-    printf "#include \"VPX/aom/${target}/aom_config.h\"\n" >> "${config_file}"
+    printf "#define AOM_FRAMEWORK_TARGET \"${target}\"\n" >> "${config_file}"
+    printf "#include \"AOM/aom/${target}/aom_config.h\"\n" >> "${config_file}"
     printf "#elif defined" >> "${config_file}"
     mkdir "${HEADER_DIR}/${target}"
     cp -p "${BUILD_ROOT}/${target}/aom_config.h" "${HEADER_DIR}/${target}"
@@ -138,7 +138,7 @@ create_aom_framework_config_shim() {
 }
 
 # Configures and builds each target specified by $1, and then builds
-# VPX.framework.
+# AOM.framework.
 build_framework() {
   local lib_list=""
   local targets="$1"
@@ -167,22 +167,22 @@ build_framework() {
   cp -p "${target_dist_dir}"/include/aom/* "${HEADER_DIR}"
 
   # Build the fat library.
-  ${LIPO} -create ${lib_list} -output ${FRAMEWORK_DIR}/VPX
+  ${LIPO} -create ${lib_list} -output ${FRAMEWORK_DIR}/AOM
 
   # Create the aom_config.h shim that allows usage of aom_config.h from
-  # within VPX.framework.
+  # within AOM.framework.
   create_aom_framework_config_shim "${targets}"
 
   # Copy in aom_version.h.
   cp -p "${BUILD_ROOT}/${target}/aom_version.h" "${HEADER_DIR}"
 
-  vlog "Created fat library ${FRAMEWORK_DIR}/VPX containing:"
+  vlog "Created fat library ${FRAMEWORK_DIR}/AOM containing:"
   for lib in ${lib_list}; do
     vlog "  $(echo ${lib} | awk -F / '{print $2, $NF}')"
   done
 
   # TODO(tomfinegan): Verify that expected targets are included within
-  # VPX.framework/VPX via lipo -info.
+  # AOM.framework/AOM via lipo -info.
 }
 
 # Trap function. Cleans up the subtree used to build all targets contained in

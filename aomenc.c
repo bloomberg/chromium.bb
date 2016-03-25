@@ -286,10 +286,10 @@ static const arg_def_t resize_up_thresh =
     ARG_DEF(NULL, "resize-up", 1, "Upscale threshold (buf %)");
 static const arg_def_t resize_down_thresh =
     ARG_DEF(NULL, "resize-down", 1, "Downscale threshold (buf %)");
-static const struct arg_enum_list end_usage_enum[] = { { "vbr", VPX_VBR },
-                                                       { "cbr", VPX_CBR },
-                                                       { "cq", VPX_CQ },
-                                                       { "q", VPX_Q },
+static const struct arg_enum_list end_usage_enum[] = { { "vbr", AOM_VBR },
+                                                       { "cbr", AOM_CBR },
+                                                       { "cq", AOM_CQ },
+                                                       { "q", AOM_Q },
                                                        { NULL, 0 } };
 static const arg_def_t end_usage =
     ARG_DEF_ENUM(NULL, "end-usage", 1, "Rate control mode", end_usage_enum);
@@ -348,7 +348,7 @@ static const arg_def_t arnr_strength =
     ARG_DEF(NULL, "arnr-strength", 1, "AltRef filter strength (0..6)");
 static const arg_def_t arnr_type = ARG_DEF(NULL, "arnr-type", 1, "AltRef type");
 static const struct arg_enum_list tuning_enum[] = {
-  { "psnr", VPX_TUNE_PSNR }, { "ssim", VPX_TUNE_SSIM }, { NULL, 0 }
+  { "psnr", AOM_TUNE_PSNR }, { "ssim", AOM_TUNE_SSIM }, { NULL, 0 }
 };
 static const arg_def_t tune_ssim =
     ARG_DEF_ENUM(NULL, "tune", 1, "Material to favor", tuning_enum);
@@ -396,14 +396,14 @@ static const arg_def_t max_gf_interval = ARG_DEF(
     "max gf/arf frame interval (default 0, indicating in-built behavior)");
 
 static const struct arg_enum_list color_space_enum[] = {
-  { "unknown", VPX_CS_UNKNOWN },
-  { "bt601", VPX_CS_BT_601 },
-  { "bt709", VPX_CS_BT_709 },
-  { "smpte170", VPX_CS_SMPTE_170 },
-  { "smpte240", VPX_CS_SMPTE_240 },
-  { "bt2020", VPX_CS_BT_2020 },
-  { "reserved", VPX_CS_RESERVED },
-  { "sRGB", VPX_CS_SRGB },
+  { "unknown", AOM_CS_UNKNOWN },
+  { "bt601", AOM_CS_BT_601 },
+  { "bt709", AOM_CS_BT_709 },
+  { "smpte170", AOM_CS_SMPTE_170 },
+  { "smpte240", AOM_CS_SMPTE_240 },
+  { "bt2020", AOM_CS_BT_2020 },
+  { "reserved", AOM_CS_RESERVED },
+  { "sRGB", AOM_CS_SRGB },
   { NULL, 0 }
 };
 
@@ -413,7 +413,7 @@ static const arg_def_t input_color_space =
 
 #if CONFIG_AOM_HIGHBITDEPTH
 static const struct arg_enum_list bitdepth_enum[] = {
-  { "8", VPX_BITS_8 }, { "10", VPX_BITS_10 }, { "12", VPX_BITS_12 }, { NULL, 0 }
+  { "8", AOM_BITS_8 }, { "10", AOM_BITS_10 }, { "12", AOM_BITS_12 }, { NULL, 0 }
 };
 
 static const arg_def_t bitdeptharg = ARG_DEF_ENUM(
@@ -425,8 +425,8 @@ static const arg_def_t inbitdeptharg =
 #endif
 
 static const struct arg_enum_list tune_content_enum[] = {
-  { "default", VPX_CONTENT_DEFAULT },
-  { "screen", VPX_CONTENT_SCREEN },
+  { "default", AOM_CONTENT_DEFAULT },
+  { "screen", AOM_CONTENT_SCREEN },
   { NULL, 0 }
 };
 
@@ -530,10 +530,10 @@ static void find_mismatch_high(const aom_image_t *const img1,
   int match = 1;
   uint32_t i, j;
   yloc[0] = yloc[1] = yloc[2] = yloc[3] = -1;
-  plane1 = (uint16_t *)img1->planes[VPX_PLANE_Y];
-  plane2 = (uint16_t *)img2->planes[VPX_PLANE_Y];
-  stride1 = img1->stride[VPX_PLANE_Y] / 2;
-  stride2 = img2->stride[VPX_PLANE_Y] / 2;
+  plane1 = (uint16_t *)img1->planes[AOM_PLANE_Y];
+  plane2 = (uint16_t *)img2->planes[AOM_PLANE_Y];
+  stride1 = img1->stride[AOM_PLANE_Y] / 2;
+  stride2 = img2->stride[AOM_PLANE_Y] / 2;
   for (i = 0, match = 1; match && i < img1->d_h; i += bsize) {
     for (j = 0; match && j < img1->d_w; j += bsize) {
       int k, l;
@@ -556,10 +556,10 @@ static void find_mismatch_high(const aom_image_t *const img1,
   }
 
   uloc[0] = uloc[1] = uloc[2] = uloc[3] = -1;
-  plane1 = (uint16_t *)img1->planes[VPX_PLANE_U];
-  plane2 = (uint16_t *)img2->planes[VPX_PLANE_U];
-  stride1 = img1->stride[VPX_PLANE_U] / 2;
-  stride2 = img2->stride[VPX_PLANE_U] / 2;
+  plane1 = (uint16_t *)img1->planes[AOM_PLANE_U];
+  plane2 = (uint16_t *)img2->planes[AOM_PLANE_U];
+  stride1 = img1->stride[AOM_PLANE_U] / 2;
+  stride2 = img2->stride[AOM_PLANE_U] / 2;
   for (i = 0, match = 1; match && i < c_h; i += bsizey) {
     for (j = 0; match && j < c_w; j += bsizex) {
       int k, l;
@@ -582,10 +582,10 @@ static void find_mismatch_high(const aom_image_t *const img1,
   }
 
   vloc[0] = vloc[1] = vloc[2] = vloc[3] = -1;
-  plane1 = (uint16_t *)img1->planes[VPX_PLANE_V];
-  plane2 = (uint16_t *)img2->planes[VPX_PLANE_V];
-  stride1 = img1->stride[VPX_PLANE_V] / 2;
-  stride2 = img2->stride[VPX_PLANE_V] / 2;
+  plane1 = (uint16_t *)img1->planes[AOM_PLANE_V];
+  plane2 = (uint16_t *)img2->planes[AOM_PLANE_V];
+  stride1 = img1->stride[AOM_PLANE_V] / 2;
+  stride2 = img2->stride[AOM_PLANE_V] / 2;
   for (i = 0, match = 1; match && i < c_h; i += bsizey) {
     for (j = 0; match && j < c_w; j += bsizex) {
       int k, l;
@@ -629,16 +629,16 @@ static void find_mismatch(const aom_image_t *const img1,
       const int sj = mmin(j + bsize, img1->d_w) - j;
       for (k = 0; match && k < si; ++k) {
         for (l = 0; match && l < sj; ++l) {
-          if (*(img1->planes[VPX_PLANE_Y] +
-                (i + k) * img1->stride[VPX_PLANE_Y] + j + l) !=
-              *(img2->planes[VPX_PLANE_Y] +
-                (i + k) * img2->stride[VPX_PLANE_Y] + j + l)) {
+          if (*(img1->planes[AOM_PLANE_Y] +
+                (i + k) * img1->stride[AOM_PLANE_Y] + j + l) !=
+              *(img2->planes[AOM_PLANE_Y] +
+                (i + k) * img2->stride[AOM_PLANE_Y] + j + l)) {
             yloc[0] = i + k;
             yloc[1] = j + l;
-            yloc[2] = *(img1->planes[VPX_PLANE_Y] +
-                        (i + k) * img1->stride[VPX_PLANE_Y] + j + l);
-            yloc[3] = *(img2->planes[VPX_PLANE_Y] +
-                        (i + k) * img2->stride[VPX_PLANE_Y] + j + l);
+            yloc[2] = *(img1->planes[AOM_PLANE_Y] +
+                        (i + k) * img1->stride[AOM_PLANE_Y] + j + l);
+            yloc[3] = *(img2->planes[AOM_PLANE_Y] +
+                        (i + k) * img2->stride[AOM_PLANE_Y] + j + l);
             match = 0;
             break;
           }
@@ -655,16 +655,16 @@ static void find_mismatch(const aom_image_t *const img1,
       const int sj = mmin(j + bsizex, c_w - j);
       for (k = 0; match && k < si; ++k) {
         for (l = 0; match && l < sj; ++l) {
-          if (*(img1->planes[VPX_PLANE_U] +
-                (i + k) * img1->stride[VPX_PLANE_U] + j + l) !=
-              *(img2->planes[VPX_PLANE_U] +
-                (i + k) * img2->stride[VPX_PLANE_U] + j + l)) {
+          if (*(img1->planes[AOM_PLANE_U] +
+                (i + k) * img1->stride[AOM_PLANE_U] + j + l) !=
+              *(img2->planes[AOM_PLANE_U] +
+                (i + k) * img2->stride[AOM_PLANE_U] + j + l)) {
             uloc[0] = i + k;
             uloc[1] = j + l;
-            uloc[2] = *(img1->planes[VPX_PLANE_U] +
-                        (i + k) * img1->stride[VPX_PLANE_U] + j + l);
-            uloc[3] = *(img2->planes[VPX_PLANE_U] +
-                        (i + k) * img2->stride[VPX_PLANE_U] + j + l);
+            uloc[2] = *(img1->planes[AOM_PLANE_U] +
+                        (i + k) * img1->stride[AOM_PLANE_U] + j + l);
+            uloc[3] = *(img2->planes[AOM_PLANE_U] +
+                        (i + k) * img2->stride[AOM_PLANE_U] + j + l);
             match = 0;
             break;
           }
@@ -680,16 +680,16 @@ static void find_mismatch(const aom_image_t *const img1,
       const int sj = mmin(j + bsizex, c_w - j);
       for (k = 0; match && k < si; ++k) {
         for (l = 0; match && l < sj; ++l) {
-          if (*(img1->planes[VPX_PLANE_V] +
-                (i + k) * img1->stride[VPX_PLANE_V] + j + l) !=
-              *(img2->planes[VPX_PLANE_V] +
-                (i + k) * img2->stride[VPX_PLANE_V] + j + l)) {
+          if (*(img1->planes[AOM_PLANE_V] +
+                (i + k) * img1->stride[AOM_PLANE_V] + j + l) !=
+              *(img2->planes[AOM_PLANE_V] +
+                (i + k) * img2->stride[AOM_PLANE_V] + j + l)) {
             vloc[0] = i + k;
             vloc[1] = j + l;
-            vloc[2] = *(img1->planes[VPX_PLANE_V] +
-                        (i + k) * img1->stride[VPX_PLANE_V] + j + l);
-            vloc[3] = *(img2->planes[VPX_PLANE_V] +
-                        (i + k) * img2->stride[VPX_PLANE_V] + j + l);
+            vloc[2] = *(img1->planes[AOM_PLANE_V] +
+                        (i + k) * img1->stride[AOM_PLANE_V] + j + l);
+            vloc[3] = *(img2->planes[AOM_PLANE_V] +
+                        (i + k) * img2->stride[AOM_PLANE_V] + j + l);
             match = 0;
             break;
           }
@@ -712,25 +712,25 @@ static int compare_img(const aom_image_t *const img1,
   match &= (img1->d_w == img2->d_w);
   match &= (img1->d_h == img2->d_h);
 #if CONFIG_AOM_HIGHBITDEPTH
-  if (img1->fmt & VPX_IMG_FMT_HIGHBITDEPTH) {
+  if (img1->fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
     l_w *= 2;
     c_w *= 2;
   }
 #endif
 
   for (i = 0; i < img1->d_h; ++i)
-    match &= (memcmp(img1->planes[VPX_PLANE_Y] + i * img1->stride[VPX_PLANE_Y],
-                     img2->planes[VPX_PLANE_Y] + i * img2->stride[VPX_PLANE_Y],
+    match &= (memcmp(img1->planes[AOM_PLANE_Y] + i * img1->stride[AOM_PLANE_Y],
+                     img2->planes[AOM_PLANE_Y] + i * img2->stride[AOM_PLANE_Y],
                      l_w) == 0);
 
   for (i = 0; i < c_h; ++i)
-    match &= (memcmp(img1->planes[VPX_PLANE_U] + i * img1->stride[VPX_PLANE_U],
-                     img2->planes[VPX_PLANE_U] + i * img2->stride[VPX_PLANE_U],
+    match &= (memcmp(img1->planes[AOM_PLANE_U] + i * img1->stride[AOM_PLANE_U],
+                     img2->planes[AOM_PLANE_U] + i * img2->stride[AOM_PLANE_U],
                      c_w) == 0);
 
   for (i = 0; i < c_h; ++i)
-    match &= (memcmp(img1->planes[VPX_PLANE_V] + i * img1->stride[VPX_PLANE_V],
-                     img2->planes[VPX_PLANE_V] + i * img2->stride[VPX_PLANE_V],
+    match &= (memcmp(img1->planes[AOM_PLANE_V] + i * img1->stride[AOM_PLANE_V],
+                     img2->planes[AOM_PLANE_V] + i * img2->stride[AOM_PLANE_V],
                      c_w) == 0);
 
   return match;
@@ -817,7 +817,7 @@ static void parse_global_config(struct VpxEncoderConfig *global, char **argv) {
   global->passes = 0;
   global->color_type = I420;
   /* Assign default deadline to good quality */
-  global->deadline = VPX_DL_GOOD_QUALITY;
+  global->deadline = AOM_DL_GOOD_QUALITY;
 
   for (argi = argj = argv; (*argj = *argi); argi += arg.argv_step) {
     arg.argv_step = 1;
@@ -841,11 +841,11 @@ static void parse_global_config(struct VpxEncoderConfig *global, char **argv) {
     else if (arg_match(&arg, &deadline, argi))
       global->deadline = arg_parse_uint(&arg);
     else if (arg_match(&arg, &best_dl, argi))
-      global->deadline = VPX_DL_BEST_QUALITY;
+      global->deadline = AOM_DL_BEST_QUALITY;
     else if (arg_match(&arg, &good_dl, argi))
-      global->deadline = VPX_DL_GOOD_QUALITY;
+      global->deadline = AOM_DL_GOOD_QUALITY;
     else if (arg_match(&arg, &rt_dl, argi))
-      global->deadline = VPX_DL_REALTIME;
+      global->deadline = AOM_DL_REALTIME;
     else if (arg_match(&arg, &use_yv12, argi))
       global->color_type = YV12;
     else if (arg_match(&arg, &use_i420, argi))
@@ -903,7 +903,7 @@ static void parse_global_config(struct VpxEncoderConfig *global, char **argv) {
     // encoder
     if (global->codec != NULL && global->codec->name != NULL)
       global->passes = (strcmp(global->codec->name, "vp9") == 0 &&
-                        global->deadline != VPX_DL_REALTIME)
+                        global->deadline != AOM_DL_REALTIME)
                            ? 2
                            : 1;
 #else
@@ -911,7 +911,7 @@ static void parse_global_config(struct VpxEncoderConfig *global, char **argv) {
 #endif
   }
 
-  if (global->deadline == VPX_DL_REALTIME && global->passes > 1) {
+  if (global->deadline == AOM_DL_REALTIME && global->passes > 1) {
     warn("Enforcing one-pass encoding in realtime mode\n");
     global->passes = 1;
   }
@@ -1013,7 +1013,7 @@ static struct stream_state *new_stream(struct VpxEncoderConfig *global,
     stream->ebml.debug = global->debug;
 
     /* Default lag_in_frames is 0 in realtime mode */
-    if (global->deadline == VPX_DL_REALTIME)
+    if (global->deadline == AOM_DL_REALTIME)
       stream->config.cfg.g_lag_in_frames = 0;
   }
 
@@ -1102,7 +1102,7 @@ static int parse_stream_params(struct VpxEncoderConfig *global,
       config->cfg.g_error_resilient = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &lag_in_frames, argi)) {
       config->cfg.g_lag_in_frames = arg_parse_uint(&arg);
-      if (global->deadline == VPX_DL_REALTIME &&
+      if (global->deadline == AOM_DL_REALTIME &&
           config->cfg.g_lag_in_frames != 0) {
         warn("non-zero %s option ignored in realtime mode.\n", arg.name);
         config->cfg.g_lag_in_frames = 0;
@@ -1157,7 +1157,7 @@ static int parse_stream_params(struct VpxEncoderConfig *global,
       config->cfg.kf_max_dist = arg_parse_uint(&arg);
       config->have_kf_max_dist = 1;
     } else if (arg_match(&arg, &kf_disabled, argi)) {
-      config->cfg.kf_mode = VPX_KF_DISABLED;
+      config->cfg.kf_mode = AOM_KF_DISABLED;
 #if CONFIG_AOM_HIGHBITDEPTH
     } else if (arg_match(&arg, &test16bitinternalarg, argi)) {
       if (strcmp(global->codec->name, "vp9") == 0 ||
@@ -1301,15 +1301,15 @@ static const char *file_type_to_string(enum VideoFileType t) {
 
 static const char *image_format_to_string(aom_img_fmt_t f) {
   switch (f) {
-    case VPX_IMG_FMT_I420: return "I420";
-    case VPX_IMG_FMT_I422: return "I422";
-    case VPX_IMG_FMT_I444: return "I444";
-    case VPX_IMG_FMT_I440: return "I440";
-    case VPX_IMG_FMT_YV12: return "YV12";
-    case VPX_IMG_FMT_I42016: return "I42016";
-    case VPX_IMG_FMT_I42216: return "I42216";
-    case VPX_IMG_FMT_I44416: return "I44416";
-    case VPX_IMG_FMT_I44016: return "I44016";
+    case AOM_IMG_FMT_I420: return "I420";
+    case AOM_IMG_FMT_I422: return "I422";
+    case AOM_IMG_FMT_I444: return "I444";
+    case AOM_IMG_FMT_I440: return "I440";
+    case AOM_IMG_FMT_YV12: return "YV12";
+    case AOM_IMG_FMT_I42016: return "I42016";
+    case AOM_IMG_FMT_I42216: return "I42216";
+    case AOM_IMG_FMT_I44416: return "I44416";
+    case AOM_IMG_FMT_I44016: return "I44016";
     default: return "Other";
   }
 }
@@ -1373,7 +1373,7 @@ static void open_output_file(struct stream_state *stream,
   const char *fn = stream->config.out_fn;
   const struct aom_codec_enc_cfg *const cfg = &stream->config.cfg;
 
-  if (cfg->g_pass == VPX_RC_FIRST_PASS) return;
+  if (cfg->g_pass == AOM_RC_FIRST_PASS) return;
 
   stream->file = strcmp(fn, "-") ? fopen(fn, "wb") : set_binary_mode(stdout);
 
@@ -1400,7 +1400,7 @@ static void close_output_file(struct stream_state *stream,
                               unsigned int fourcc) {
   const struct aom_codec_enc_cfg *const cfg = &stream->config.cfg;
 
-  if (cfg->g_pass == VPX_RC_FIRST_PASS) return;
+  if (cfg->g_pass == AOM_RC_FIRST_PASS) return;
 
 #if CONFIG_WEBM_IO
   if (stream->config.write_webm) {
@@ -1439,8 +1439,8 @@ static void setup_pass(struct stream_state *stream,
 #endif
 
   stream->config.cfg.g_pass = global->passes == 2
-                                  ? pass ? VPX_RC_LAST_PASS : VPX_RC_FIRST_PASS
-                                  : VPX_RC_ONE_PASS;
+                                  ? pass ? AOM_RC_LAST_PASS : AOM_RC_FIRST_PASS
+                                  : AOM_RC_ONE_PASS;
   if (pass) {
     stream->config.cfg.rc_twopass_stats_in = stats_get(&stream->stats);
 #if CONFIG_FP_MB_STATS
@@ -1459,10 +1459,10 @@ static void initialize_encoder(struct stream_state *stream,
   int i;
   int flags = 0;
 
-  flags |= global->show_psnr ? VPX_CODEC_USE_PSNR : 0;
-  flags |= global->out_part ? VPX_CODEC_USE_OUTPUT_PARTITION : 0;
+  flags |= global->show_psnr ? AOM_CODEC_USE_PSNR : 0;
+  flags |= global->out_part ? AOM_CODEC_USE_OUTPUT_PARTITION : 0;
 #if CONFIG_AOM_HIGHBITDEPTH
-  flags |= stream->config.use_16bit_internal ? VPX_CODEC_USE_HIGHBITDEPTH : 0;
+  flags |= stream->config.use_16bit_internal ? AOM_CODEC_USE_HIGHBITDEPTH : 0;
 #endif
 
   /* Construct Encoder Context */
@@ -1508,27 +1508,27 @@ static void encode_frame(struct stream_state *stream,
 /* Scale if necessary */
 #if CONFIG_AOM_HIGHBITDEPTH
   if (img) {
-    if ((img->fmt & VPX_IMG_FMT_HIGHBITDEPTH) &&
+    if ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) &&
         (img->d_w != cfg->g_w || img->d_h != cfg->g_h)) {
-      if (img->fmt != VPX_IMG_FMT_I42016) {
+      if (img->fmt != AOM_IMG_FMT_I42016) {
         fprintf(stderr, "%s can only scale 4:2:0 inputs\n", exec_name);
         exit(EXIT_FAILURE);
       }
 #if CONFIG_LIBYUV
       if (!stream->img) {
         stream->img =
-            aom_img_alloc(NULL, VPX_IMG_FMT_I42016, cfg->g_w, cfg->g_h, 16);
+            aom_img_alloc(NULL, AOM_IMG_FMT_I42016, cfg->g_w, cfg->g_h, 16);
       }
       I420Scale_16(
-          (uint16 *)img->planes[VPX_PLANE_Y], img->stride[VPX_PLANE_Y] / 2,
-          (uint16 *)img->planes[VPX_PLANE_U], img->stride[VPX_PLANE_U] / 2,
-          (uint16 *)img->planes[VPX_PLANE_V], img->stride[VPX_PLANE_V] / 2,
-          img->d_w, img->d_h, (uint16 *)stream->img->planes[VPX_PLANE_Y],
-          stream->img->stride[VPX_PLANE_Y] / 2,
-          (uint16 *)stream->img->planes[VPX_PLANE_U],
-          stream->img->stride[VPX_PLANE_U] / 2,
-          (uint16 *)stream->img->planes[VPX_PLANE_V],
-          stream->img->stride[VPX_PLANE_V] / 2, stream->img->d_w,
+          (uint16 *)img->planes[AOM_PLANE_Y], img->stride[AOM_PLANE_Y] / 2,
+          (uint16 *)img->planes[AOM_PLANE_U], img->stride[AOM_PLANE_U] / 2,
+          (uint16 *)img->planes[AOM_PLANE_V], img->stride[AOM_PLANE_V] / 2,
+          img->d_w, img->d_h, (uint16 *)stream->img->planes[AOM_PLANE_Y],
+          stream->img->stride[AOM_PLANE_Y] / 2,
+          (uint16 *)stream->img->planes[AOM_PLANE_U],
+          stream->img->stride[AOM_PLANE_U] / 2,
+          (uint16 *)stream->img->planes[AOM_PLANE_V],
+          stream->img->stride[AOM_PLANE_V] / 2, stream->img->d_w,
           stream->img->d_h, kFilterBox);
       img = stream->img;
 #else
@@ -1543,21 +1543,21 @@ static void encode_frame(struct stream_state *stream,
   }
 #endif
   if (img && (img->d_w != cfg->g_w || img->d_h != cfg->g_h)) {
-    if (img->fmt != VPX_IMG_FMT_I420 && img->fmt != VPX_IMG_FMT_YV12) {
+    if (img->fmt != AOM_IMG_FMT_I420 && img->fmt != AOM_IMG_FMT_YV12) {
       fprintf(stderr, "%s can only scale 4:2:0 8bpp inputs\n", exec_name);
       exit(EXIT_FAILURE);
     }
 #if CONFIG_LIBYUV
     if (!stream->img)
       stream->img =
-          aom_img_alloc(NULL, VPX_IMG_FMT_I420, cfg->g_w, cfg->g_h, 16);
+          aom_img_alloc(NULL, AOM_IMG_FMT_I420, cfg->g_w, cfg->g_h, 16);
     I420Scale(
-        img->planes[VPX_PLANE_Y], img->stride[VPX_PLANE_Y],
-        img->planes[VPX_PLANE_U], img->stride[VPX_PLANE_U],
-        img->planes[VPX_PLANE_V], img->stride[VPX_PLANE_V], img->d_w, img->d_h,
-        stream->img->planes[VPX_PLANE_Y], stream->img->stride[VPX_PLANE_Y],
-        stream->img->planes[VPX_PLANE_U], stream->img->stride[VPX_PLANE_U],
-        stream->img->planes[VPX_PLANE_V], stream->img->stride[VPX_PLANE_V],
+        img->planes[AOM_PLANE_Y], img->stride[AOM_PLANE_Y],
+        img->planes[AOM_PLANE_U], img->stride[AOM_PLANE_U],
+        img->planes[AOM_PLANE_V], img->stride[AOM_PLANE_V], img->d_w, img->d_h,
+        stream->img->planes[AOM_PLANE_Y], stream->img->stride[AOM_PLANE_Y],
+        stream->img->planes[AOM_PLANE_U], stream->img->stride[AOM_PLANE_U],
+        stream->img->planes[AOM_PLANE_V], stream->img->stride[AOM_PLANE_V],
         stream->img->d_w, stream->img->d_h, kFilterBox);
     img = stream->img;
 #else
@@ -1581,7 +1581,7 @@ static void encode_frame(struct stream_state *stream,
 }
 
 static void update_quantizer_histogram(struct stream_state *stream) {
-  if (stream->config.cfg.g_pass != VPX_RC_FIRST_PASS) {
+  if (stream->config.cfg.g_pass != AOM_RC_FIRST_PASS) {
     int q;
 
     aom_codec_control(&stream->encoder, VP8E_GET_LAST_QUANTIZER_64, &q);
@@ -1602,8 +1602,8 @@ static void get_cx_data(struct stream_state *stream,
     static int64_t ivf_header_pos = 0;
 
     switch (pkt->kind) {
-      case VPX_CODEC_CX_FRAME_PKT:
-        if (!(pkt->data.frame.flags & VPX_FRAME_IS_FRAGMENT)) {
+      case AOM_CODEC_CX_FRAME_PKT:
+        if (!(pkt->data.frame.flags & AOM_FRAME_IS_FRAGMENT)) {
           stream->frames_out++;
         }
         if (!global->quiet)
@@ -1624,7 +1624,7 @@ static void get_cx_data(struct stream_state *stream,
           } else {
             fsize += pkt->data.frame.sz;
 
-            if (!(pkt->data.frame.flags & VPX_FRAME_IS_FRAGMENT)) {
+            if (!(pkt->data.frame.flags & AOM_FRAME_IS_FRAGMENT)) {
               const int64_t currpos = ftello(stream->file);
               fseeko(stream->file, ivf_header_pos, SEEK_SET);
               ivf_write_frame_size(stream->file, fsize);
@@ -1652,20 +1652,20 @@ static void get_cx_data(struct stream_state *stream,
         }
 #endif
         break;
-      case VPX_CODEC_STATS_PKT:
+      case AOM_CODEC_STATS_PKT:
         stream->frames_out++;
         stats_write(&stream->stats, pkt->data.twopass_stats.buf,
                     pkt->data.twopass_stats.sz);
         stream->nbytes += pkt->data.raw.sz;
         break;
 #if CONFIG_FP_MB_STATS
-      case VPX_CODEC_FPMB_STATS_PKT:
+      case AOM_CODEC_FPMB_STATS_PKT:
         stats_write(&stream->fpmb_stats, pkt->data.firstpass_mb_stats.buf,
                     pkt->data.firstpass_mb_stats.sz);
         stream->nbytes += pkt->data.raw.sz;
         break;
 #endif
-      case VPX_CODEC_PSNR_PKT:
+      case AOM_CODEC_PSNR_PKT:
 
         if (global->show_psnr) {
           int i;
@@ -1722,15 +1722,15 @@ static void test_decode(struct stream_state *stream,
   aom_codec_control(&stream->decoder, VP9_GET_REFERENCE, &ref_dec);
   dec_img = ref_dec.img;
 #if CONFIG_AOM_HIGHBITDEPTH
-  if ((enc_img.fmt & VPX_IMG_FMT_HIGHBITDEPTH) !=
-      (dec_img.fmt & VPX_IMG_FMT_HIGHBITDEPTH)) {
-    if (enc_img.fmt & VPX_IMG_FMT_HIGHBITDEPTH) {
-      aom_img_alloc(&enc_img, enc_img.fmt - VPX_IMG_FMT_HIGHBITDEPTH,
+  if ((enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) !=
+      (dec_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH)) {
+    if (enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
+      aom_img_alloc(&enc_img, enc_img.fmt - AOM_IMG_FMT_HIGHBITDEPTH,
                     enc_img.d_w, enc_img.d_h, 16);
       aom_img_truncate_16_to_8(&enc_img, &ref_enc.img);
     }
-    if (dec_img.fmt & VPX_IMG_FMT_HIGHBITDEPTH) {
-      aom_img_alloc(&dec_img, dec_img.fmt - VPX_IMG_FMT_HIGHBITDEPTH,
+    if (dec_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
+      aom_img_alloc(&dec_img, dec_img.fmt - AOM_IMG_FMT_HIGHBITDEPTH,
                     dec_img.d_w, dec_img.d_h, 16);
       aom_img_truncate_16_to_8(&dec_img, &ref_dec.img);
     }
@@ -1742,7 +1742,7 @@ static void test_decode(struct stream_state *stream,
   if (!compare_img(&enc_img, &dec_img)) {
     int y[4], u[4], v[4];
 #if CONFIG_AOM_HIGHBITDEPTH
-    if (enc_img.fmt & VPX_IMG_FMT_HIGHBITDEPTH) {
+    if (enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
       find_mismatch_high(&enc_img, &dec_img, y, u, v);
     } else {
       find_mismatch(&enc_img, &dec_img, y, u, v);
@@ -1822,11 +1822,11 @@ int main(int argc, const char **argv_) {
   parse_global_config(&global, argv);
 
   switch (global.color_type) {
-    case I420: input.fmt = VPX_IMG_FMT_I420; break;
-    case I422: input.fmt = VPX_IMG_FMT_I422; break;
-    case I444: input.fmt = VPX_IMG_FMT_I444; break;
-    case I440: input.fmt = VPX_IMG_FMT_I440; break;
-    case YV12: input.fmt = VPX_IMG_FMT_YV12; break;
+    case I420: input.fmt = AOM_IMG_FMT_I420; break;
+    case I422: input.fmt = AOM_IMG_FMT_I422; break;
+    case I444: input.fmt = AOM_IMG_FMT_I444; break;
+    case I440: input.fmt = AOM_IMG_FMT_I440; break;
+    case YV12: input.fmt = AOM_IMG_FMT_YV12; break;
   }
 
   {
@@ -1900,7 +1900,7 @@ int main(int argc, const char **argv_) {
           input.bit_depth = stream->config.cfg.g_input_bit_depth =
               (int)stream->config.cfg.g_bit_depth;
       });
-      if (input.bit_depth > 8) input.fmt |= VPX_IMG_FMT_HIGHBITDEPTH;
+      if (input.bit_depth > 8) input.fmt |= AOM_IMG_FMT_HIGHBITDEPTH;
     } else {
       FOREACH_STREAM(
           { stream->config.cfg.g_input_bit_depth = input.bit_depth; });
@@ -2025,7 +2025,7 @@ int main(int argc, const char **argv_) {
           // Input bit depth and stream bit depth do not match, so up
           // shift frame to stream bit depth
           if (!allocated_raw_shift) {
-            aom_img_alloc(&raw_shift, raw.fmt | VPX_IMG_FMT_HIGHBITDEPTH,
+            aom_img_alloc(&raw_shift, raw.fmt | AOM_IMG_FMT_HIGHBITDEPTH,
                           input.width, input.height, 32);
             allocated_raw_shift = 1;
           }
@@ -2036,7 +2036,7 @@ int main(int argc, const char **argv_) {
         }
         aom_usec_timer_start(&timer);
         if (use_16bit_internal) {
-          assert(frame_to_encode->fmt & VPX_IMG_FMT_HIGHBITDEPTH);
+          assert(frame_to_encode->fmt & AOM_IMG_FMT_HIGHBITDEPTH);
           FOREACH_STREAM({
             if (stream->config.use_16bit_internal)
               encode_frame(stream, &global,
@@ -2045,7 +2045,7 @@ int main(int argc, const char **argv_) {
               assert(0);
           });
         } else {
-          assert((frame_to_encode->fmt & VPX_IMG_FMT_HIGHBITDEPTH) == 0);
+          assert((frame_to_encode->fmt & AOM_IMG_FMT_HIGHBITDEPTH) == 0);
           FOREACH_STREAM(encode_frame(stream, &global,
                                       frame_avail ? frame_to_encode : NULL,
                                       frames_in));

@@ -45,10 +45,10 @@ struct EncodeParameters {
 };
 
 const EncodeParameters kVP9EncodeParameterSet[] = {
-  { 0, 0, 0, 1, 0, VPX_CR_STUDIO_RANGE, VPX_CS_BT_601 },
-  { 0, 0, 0, 0, 0, VPX_CR_FULL_RANGE, VPX_CS_BT_709 },
-  { 0, 0, 1, 0, 0, VPX_CR_FULL_RANGE, VPX_CS_BT_2020 },
-  { 0, 2, 0, 0, 1, VPX_CR_STUDIO_RANGE, VPX_CS_UNKNOWN, { 640, 480 } },
+  { 0, 0, 0, 1, 0, AOM_CR_STUDIO_RANGE, AOM_CS_BT_601 },
+  { 0, 0, 0, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_709 },
+  { 0, 0, 1, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_2020 },
+  { 0, 2, 0, 0, 1, AOM_CR_STUDIO_RANGE, AOM_CS_UNKNOWN, { 640, 480 } },
   // TODO(JBB): Test profiles (requires more work).
 };
 
@@ -122,8 +122,8 @@ class VpxEncoderParmsGetToDecoder
     EXPECT_EQ(encode_parms.tile_cols, common->log2_tile_cols);
     EXPECT_EQ(encode_parms.tile_rows, common->log2_tile_rows);
 
-    EXPECT_EQ(VPX_CODEC_OK, res_dec) << decoder->DecodeError();
-    return VPX_CODEC_OK == res_dec;
+    EXPECT_EQ(AOM_CODEC_OK, res_dec) << decoder->DecodeError();
+    return AOM_CODEC_OK == res_dec;
   }
 
   EncodePerfTestVideo test_video_;
@@ -133,7 +133,7 @@ class VpxEncoderParmsGetToDecoder
 };
 
 TEST_P(VpxEncoderParmsGetToDecoder, BitstreamParms) {
-  init_flags_ = VPX_CODEC_USE_PSNR;
+  init_flags_ = AOM_CODEC_USE_PSNR;
 
   libaom_test::VideoSource *const video =
       new libaom_test::Y4mVideoSource(test_video_.name, 0, test_video_.frames);

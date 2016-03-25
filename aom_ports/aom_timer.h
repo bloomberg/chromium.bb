@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_PORTS_VPX_TIMER_H_
-#define VPX_PORTS_VPX_TIMER_H_
+#ifndef AOM_PORTS_AOM_TIMER_H_
+#define AOM_PORTS_AOM_TIMER_H_
 
 #include "./aom_config.h"
 
@@ -105,4 +105,4 @@ static INLINE int aom_usec_timer_elapsed(struct aom_usec_timer *t) { return 0; }
 
 #endif /* CONFIG_OS_SUPPORT */
 
-#endif  // VPX_PORTS_VPX_TIMER_H_
+#endif  // AOM_PORTS_AOM_TIMER_H_

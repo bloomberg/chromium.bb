@@ -133,7 +133,7 @@ class VP9NewEncodeDecodePerfTest
     cfg_.rc_buf_initial_sz = 500;
     cfg_.rc_buf_optimal_sz = 600;
     cfg_.rc_resize_allowed = 0;
-    cfg_.rc_end_usage = VPX_VBR;
+    cfg_.rc_end_usage = AOM_VBR;
   }
 
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
@@ -210,7 +210,7 @@ TEST_P(VP9NewEncodeDecodePerfTest, PerfTest) {
   cfg_.g_timebase = timebase;
   cfg_.rc_target_bitrate = kVP9EncodePerfTestVectors[i].bitrate;
 
-  init_flags_ = VPX_CODEC_USE_PSNR;
+  init_flags_ = AOM_CODEC_USE_PSNR;
 
   const char *video_name = kVP9EncodePerfTestVectors[i].name;
   libaom_test::I420VideoSource video(

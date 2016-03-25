@@ -93,8 +93,8 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   ss_err[filt_mid] = best_err;
 
   while (filter_step > 0) {
-    const int filt_high = VPXMIN(filt_mid + filter_step, max_filter_level);
-    const int filt_low = VPXMAX(filt_mid - filter_step, min_filter_level);
+    const int filt_high = AOMMIN(filt_mid + filter_step, max_filter_level);
+    const int filt_low = AOMMAX(filt_mid - filter_step, min_filter_level);
 
     // Bias against raising loop filter in favor of lowering it.
     int64_t bias = (best_err >> (15 - (filt_mid / 8))) * filter_step;
@@ -163,19 +163,19 @@ void av1_pick_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
 #if CONFIG_AOM_HIGHBITDEPTH
     int filt_guess;
     switch (cm->bit_depth) {
-      case VPX_BITS_8:
+      case AOM_BITS_8:
         filt_guess = ROUND_POWER_OF_TWO(q * 20723 + 1015158, 18);
         break;
-      case VPX_BITS_10:
+      case AOM_BITS_10:
         filt_guess = ROUND_POWER_OF_TWO(q * 20723 + 4060632, 20);
         break;
-      case VPX_BITS_12:
+      case AOM_BITS_12:
         filt_guess = ROUND_POWER_OF_TWO(q * 20723 + 16242526, 22);
         break;
       default:
         assert(0 &&
-               "bit_depth should be VPX_BITS_8, VPX_BITS_10 "
-               "or VPX_BITS_12");
+               "bit_depth should be AOM_BITS_8, AOM_BITS_10 "
+               "or AOM_BITS_12");
         return;
     }
 #else

@@ -129,14 +129,14 @@ static int encode_frame(aom_codec_ctx_t *codec, aom_image_t *img,
   aom_codec_iter_t iter = NULL;
   const aom_codec_cx_pkt_t *pkt = NULL;
   const aom_codec_err_t res =
-      aom_codec_encode(codec, img, frame_index, 1, 0, VPX_DL_GOOD_QUALITY);
-  if (res != VPX_CODEC_OK) die_codec(codec, "Failed to encode frame");
+      aom_codec_encode(codec, img, frame_index, 1, 0, AOM_DL_GOOD_QUALITY);
+  if (res != AOM_CODEC_OK) die_codec(codec, "Failed to encode frame");
 
   while ((pkt = aom_codec_get_cx_data(codec, &iter)) != NULL) {
     got_pkts = 1;
 
-    if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
-      const int keyframe = (pkt->data.frame.flags & VPX_FRAME_IS_KEY) != 0;
+    if (pkt->kind == AOM_CODEC_CX_FRAME_PKT) {
+      const int keyframe = (pkt->data.frame.flags & AOM_FRAME_IS_KEY) != 0;
       if (!aom_video_writer_write_frame(writer, pkt->data.frame.buf,
                                         pkt->data.frame.sz,
                                         pkt->data.frame.pts)) {
@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
     die("Invalid frame size: %dx%d", info.frame_width, info.frame_height);
   }
 
-  if (!aom_img_alloc(&raw, VPX_IMG_FMT_I420, info.frame_width,
+  if (!aom_img_alloc(&raw, AOM_IMG_FMT_I420, info.frame_width,
                      info.frame_height, 1)) {
     die("Failed to allocate image.");
   }

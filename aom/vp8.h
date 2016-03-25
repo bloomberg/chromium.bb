@@ -28,8 +28,8 @@
 /*!\file
  * \brief Provides controls common to both the VP8 encoder and decoder.
  */
-#ifndef VPX_VP8_H_
-#define VPX_VP8_H_
+#ifndef AOM_VP8_H_
+#define AOM_VP8_H_
 
 #include "./aom_codec.h"
 #include "./aom_image.h"
@@ -127,22 +127,22 @@ typedef struct vp9_ref_frame {
  *
  * defines the data type for each of VP8 decoder control function requires
  */
-VPX_CTRL_USE_TYPE(VP8_SET_REFERENCE, aom_ref_frame_t *)
-#define VPX_CTRL_VP8_SET_REFERENCE
-VPX_CTRL_USE_TYPE(VP8_COPY_REFERENCE, aom_ref_frame_t *)
-#define VPX_CTRL_VP8_COPY_REFERENCE
-VPX_CTRL_USE_TYPE(VP8_SET_POSTPROC, vp8_postproc_cfg_t *)
-#define VPX_CTRL_VP8_SET_POSTPROC
-VPX_CTRL_USE_TYPE(VP8_SET_DBG_COLOR_REF_FRAME, int)
-#define VPX_CTRL_VP8_SET_DBG_COLOR_REF_FRAME
-VPX_CTRL_USE_TYPE(VP8_SET_DBG_COLOR_MB_MODES, int)
-#define VPX_CTRL_VP8_SET_DBG_COLOR_MB_MODES
-VPX_CTRL_USE_TYPE(VP8_SET_DBG_COLOR_B_MODES, int)
-#define VPX_CTRL_VP8_SET_DBG_COLOR_B_MODES
-VPX_CTRL_USE_TYPE(VP8_SET_DBG_DISPLAY_MV, int)
-#define VPX_CTRL_VP8_SET_DBG_DISPLAY_MV
-VPX_CTRL_USE_TYPE(VP9_GET_REFERENCE, vp9_ref_frame_t *)
-#define VPX_CTRL_VP9_GET_REFERENCE
+AOM_CTRL_USE_TYPE(VP8_SET_REFERENCE, aom_ref_frame_t *)
+#define AOM_CTRL_VP8_SET_REFERENCE
+AOM_CTRL_USE_TYPE(VP8_COPY_REFERENCE, aom_ref_frame_t *)
+#define AOM_CTRL_VP8_COPY_REFERENCE
+AOM_CTRL_USE_TYPE(VP8_SET_POSTPROC, vp8_postproc_cfg_t *)
+#define AOM_CTRL_VP8_SET_POSTPROC
+AOM_CTRL_USE_TYPE(VP8_SET_DBG_COLOR_REF_FRAME, int)
+#define AOM_CTRL_VP8_SET_DBG_COLOR_REF_FRAME
+AOM_CTRL_USE_TYPE(VP8_SET_DBG_COLOR_MB_MODES, int)
+#define AOM_CTRL_VP8_SET_DBG_COLOR_MB_MODES
+AOM_CTRL_USE_TYPE(VP8_SET_DBG_COLOR_B_MODES, int)
+#define AOM_CTRL_VP8_SET_DBG_COLOR_B_MODES
+AOM_CTRL_USE_TYPE(VP8_SET_DBG_DISPLAY_MV, int)
+#define AOM_CTRL_VP8_SET_DBG_DISPLAY_MV
+AOM_CTRL_USE_TYPE(VP9_GET_REFERENCE, vp9_ref_frame_t *)
+#define AOM_CTRL_VP9_GET_REFERENCE
 
 /*!\endcond */
 /*! @} - end defgroup vp8 */
@@ -151,4 +151,4 @@ VPX_CTRL_USE_TYPE(VP9_GET_REFERENCE, vp9_ref_frame_t *)
 }  // extern "C"
 #endif
 
-#endif  // VPX_VP8_H_
+#endif  // AOM_VP8_H_

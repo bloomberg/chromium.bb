@@ -8,8 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#ifndef VPX_DSP_VPX_CONVOLVE_H_
-#define VPX_DSP_VPX_CONVOLVE_H_
+#ifndef AOM_DSP_AOM_CONVOLVE_H_
+#define AOM_DSP_AOM_CONVOLVE_H_
 
 #include "./aom_config.h"
 #include "aom/aom_integer.h"
@@ -36,4 +36,4 @@ typedef void (*highbd_convolve_fn_t)(const uint8_t *src, ptrdiff_t src_stride,
 }  // extern "C"
 #endif
 
-#endif  // VPX_DSP_VPX_CONVOLVE_H_
+#endif  // AOM_DSP_AOM_CONVOLVE_H_

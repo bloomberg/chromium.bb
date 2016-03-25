@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_PORTS_X86_H_
-#define VPX_PORTS_X86_H_
+#ifndef AOM_PORTS_X86_H_
+#define AOM_PORTS_X86_H_
 #include <stdlib.h>
 #include "aom_config.h"
 #include "aom/aom_integer.h"
@@ -20,22 +20,22 @@ extern "C" {
 #endif
 
 typedef enum {
-  VPX_CPU_UNKNOWN = -1,
-  VPX_CPU_AMD,
-  VPX_CPU_AMD_OLD,
-  VPX_CPU_CENTAUR,
-  VPX_CPU_CYRIX,
-  VPX_CPU_INTEL,
-  VPX_CPU_NEXGEN,
-  VPX_CPU_NSC,
-  VPX_CPU_RISE,
-  VPX_CPU_SIS,
-  VPX_CPU_TRANSMETA,
-  VPX_CPU_TRANSMETA_OLD,
-  VPX_CPU_UMC,
-  VPX_CPU_VIA,
+  AOM_CPU_UNKNOWN = -1,
+  AOM_CPU_AMD,
+  AOM_CPU_AMD_OLD,
+  AOM_CPU_CENTAUR,
+  AOM_CPU_CYRIX,
+  AOM_CPU_INTEL,
+  AOM_CPU_NEXGEN,
+  AOM_CPU_NSC,
+  AOM_CPU_RISE,
+  AOM_CPU_SIS,
+  AOM_CPU_TRANSMETA,
+  AOM_CPU_TRANSMETA_OLD,
+  AOM_CPU_UMC,
+  AOM_CPU_VIA,
 
-  VPX_CPU_LAST
+  AOM_CPU_LAST
 } aom_cpu_t;
 
 #if defined(__GNUC__) && __GNUC__ || defined(__ANDROID__)
@@ -173,11 +173,11 @@ static INLINE int x86_simd_caps(void) {
   (void)reg_ebx;
 
   /* See if the CPU capabilities are being overridden by the environment */
-  env = getenv("VPX_SIMD_CAPS");
+  env = getenv("AOM_SIMD_CAPS");
 
   if (env && *env) return (int)strtol(env, NULL, 0);
 
-  env = getenv("VPX_SIMD_CAPS_MASK");
+  env = getenv("AOM_SIMD_CAPS_MASK");
 
   if (env && *env) mask = strtol(env, NULL, 0);
 
@@ -299,4 +299,4 @@ extern void aom_reset_mmx_state(void);
 }  // extern "C"
 #endif
 
-#endif  // VPX_PORTS_X86_H_
+#endif  // AOM_PORTS_X86_H_

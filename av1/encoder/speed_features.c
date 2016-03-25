@@ -70,7 +70,7 @@ static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
   AV1_COMMON *const cm = &cpi->common;
 
   if (speed >= 1) {
-    if (VPXMIN(cm->width, cm->height) >= 720) {
+    if (AOMMIN(cm->width, cm->height) >= 720) {
       sf->disable_split_mask =
           cm->show_frame ? DISABLE_ALL_SPLIT : DISABLE_ALL_INTER_SPLIT;
       sf->partition_search_breakout_dist_thr = (1 << 23);
@@ -81,7 +81,7 @@ static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
   }
 
   if (speed >= 2) {
-    if (VPXMIN(cm->width, cm->height) >= 720) {
+    if (AOMMIN(cm->width, cm->height) >= 720) {
       sf->disable_split_mask =
           cm->show_frame ? DISABLE_ALL_SPLIT : DISABLE_ALL_INTER_SPLIT;
       sf->adaptive_pred_interp_filter = 0;
@@ -96,7 +96,7 @@ static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
   }
 
   if (speed >= 3) {
-    if (VPXMIN(cm->width, cm->height) >= 720) {
+    if (AOMMIN(cm->width, cm->height) >= 720) {
       sf->disable_split_mask = DISABLE_ALL_SPLIT;
       sf->schedule_mode_search = cm->base_qindex < 220 ? 1 : 0;
       sf->partition_search_breakout_dist_thr = (1 << 25);
@@ -120,7 +120,7 @@ static void set_good_speed_feature_framesize_dependent(AV1_COMP *cpi,
   }
 
   if (speed >= 4) {
-    if (VPXMIN(cm->width, cm->height) >= 720) {
+    if (AOMMIN(cm->width, cm->height) >= 720) {
       sf->partition_search_breakout_dist_thr = (1 << 26);
     } else {
       sf->partition_search_breakout_dist_thr = (1 << 24);
@@ -233,7 +233,7 @@ static void set_rt_speed_feature_framesize_dependent(AV1_COMP *cpi,
   AV1_COMMON *const cm = &cpi->common;
 
   if (speed >= 1) {
-    if (VPXMIN(cm->width, cm->height) >= 720) {
+    if (AOMMIN(cm->width, cm->height) >= 720) {
       sf->disable_split_mask =
           cm->show_frame ? DISABLE_ALL_SPLIT : DISABLE_ALL_INTER_SPLIT;
     } else {
@@ -242,7 +242,7 @@ static void set_rt_speed_feature_framesize_dependent(AV1_COMP *cpi,
   }
 
   if (speed >= 2) {
-    if (VPXMIN(cm->width, cm->height) >= 720) {
+    if (AOMMIN(cm->width, cm->height) >= 720) {
       sf->disable_split_mask =
           cm->show_frame ? DISABLE_ALL_SPLIT : DISABLE_ALL_INTER_SPLIT;
     } else {
@@ -251,7 +251,7 @@ static void set_rt_speed_feature_framesize_dependent(AV1_COMP *cpi,
   }
 
   if (speed >= 5) {
-    if (VPXMIN(cm->width, cm->height) >= 720) {
+    if (AOMMIN(cm->width, cm->height) >= 720) {
       sf->partition_search_breakout_dist_thr = (1 << 25);
     } else {
       sf->partition_search_breakout_dist_thr = (1 << 23);
@@ -260,7 +260,7 @@ static void set_rt_speed_feature_framesize_dependent(AV1_COMP *cpi,
 
   if (speed >= 7) {
     sf->encode_breakout_thresh =
-        (VPXMIN(cm->width, cm->height) >= 720) ? 800 : 300;
+        (AOMMIN(cm->width, cm->height) >= 720) ? 800 : 300;
   }
 }
 
@@ -377,7 +377,7 @@ static void set_rt_speed_feature(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed,
 
     if (!is_keyframe) {
       int i;
-      if (content == VPX_CONTENT_SCREEN) {
+      if (content == AOM_CONTENT_SCREEN) {
         for (i = 0; i < BLOCK_SIZES; ++i)
           sf->intra_y_mode_bsize_mask[i] = INTRA_DC_TM_H_V;
       } else {

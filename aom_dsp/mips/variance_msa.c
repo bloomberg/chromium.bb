@@ -528,7 +528,7 @@ uint32_t aom_get4x4sse_cs_msa(const uint8_t *src_ptr, int32_t src_stride,
 #define VARIANCE_64Wx32H(sse, diff) VARIANCE_LARGE_WxH(sse, diff, 11);
 #define VARIANCE_64Wx64H(sse, diff) VARIANCE_LARGE_WxH(sse, diff, 12);
 
-#define VPX_VARIANCE_WDXHT_MSA(wd, ht)                                         \
+#define AOM_VARIANCE_WDXHT_MSA(wd, ht)                                         \
   uint32_t aom_variance##wd##x##ht##_msa(                                      \
       const uint8_t *src, int32_t src_stride, const uint8_t *ref,              \
       int32_t ref_stride, uint32_t *sse) {                                     \
@@ -541,19 +541,19 @@ uint32_t aom_get4x4sse_cs_msa(const uint8_t *src_ptr, int32_t src_stride,
   }
 
 /* clang-format off */
-VPX_VARIANCE_WDXHT_MSA(4, 4)
-VPX_VARIANCE_WDXHT_MSA(4, 8)
+AOM_VARIANCE_WDXHT_MSA(4, 4)
+AOM_VARIANCE_WDXHT_MSA(4, 8)
 
-VPX_VARIANCE_WDXHT_MSA(8, 4)
-VPX_VARIANCE_WDXHT_MSA(8, 8)
-VPX_VARIANCE_WDXHT_MSA(8, 16)
+AOM_VARIANCE_WDXHT_MSA(8, 4)
+AOM_VARIANCE_WDXHT_MSA(8, 8)
+AOM_VARIANCE_WDXHT_MSA(8, 16)
 
-VPX_VARIANCE_WDXHT_MSA(16, 8)
-VPX_VARIANCE_WDXHT_MSA(16, 16)
-VPX_VARIANCE_WDXHT_MSA(16, 32)
+AOM_VARIANCE_WDXHT_MSA(16, 8)
+AOM_VARIANCE_WDXHT_MSA(16, 16)
+AOM_VARIANCE_WDXHT_MSA(16, 32)
 
-VPX_VARIANCE_WDXHT_MSA(32, 16)
-VPX_VARIANCE_WDXHT_MSA(32, 32)
+AOM_VARIANCE_WDXHT_MSA(32, 16)
+AOM_VARIANCE_WDXHT_MSA(32, 32)
 /* clang-format on */
 
 uint32_t aom_variance32x64_msa(const uint8_t *src, int32_t src_stride,

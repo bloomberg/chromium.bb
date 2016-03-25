@@ -8,8 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#ifndef VPX_VP8CX_H_
-#define VPX_VP8CX_H_
+#ifndef AOM_VP8CX_H_
+#define AOM_VP8CX_H_
 
 /*!\defgroup vp8_encoder WebM VP8/VP9 Encoder
  * \ingroup vp8
@@ -220,7 +220,7 @@ enum vp8e_enc_control_id {
   /*!\brief Codec control function to set constrained quality level.
    *
    * \attention For this value to be used aom_codec_enc_cfg_t::g_usage must be
-   *            set to #VPX_CQ.
+   *            set to #AOM_CQ.
    * \note Valid range: 0..63
    *
    * Supported in codecs: VP8, VP9
@@ -448,7 +448,7 @@ enum vp8e_enc_control_id {
   VP9E_SET_NOISE_SENSITIVITY,
 
   /*!\brief Codec control function to turn on/off SVC in encoder.
-   * \note Return value is VPX_CODEC_INVALID_PARAM if the encoder does not
+   * \note Return value is AOM_CODEC_INVALID_PARAM if the encoder does not
    *       support SVC in its current encoding mode
    *  0: off, 1: on
    *
@@ -475,8 +475,8 @@ enum vp8e_enc_control_id {
 
   /*!\brief Codec control function to set content type.
    * \note Valid parameter range:
-   *              VPX_CONTENT_DEFAULT = Regular video content (Default)
-   *              VPX_CONTENT_SCREEN  = Screen capture content
+   *              AOM_CONTENT_DEFAULT = Regular video content (Default)
+   *              AOM_CONTENT_SCREEN  = Screen capture content
    *
    * Supported in codecs: VP9
    */
@@ -582,7 +582,7 @@ typedef enum aom_scaling_mode_1d {
   VP8E_FOURFIVE = 1,
   VP8E_THREEFIVE = 2,
   VP8E_ONETWO = 3
-} VPX_SCALING_MODE;
+} AOM_SCALING_MODE;
 
 /*!\brief Temporal layering mode enum for VP9 SVC.
  *
@@ -651,8 +651,8 @@ typedef struct aom_active_map {
  *
  */
 typedef struct aom_scaling_mode {
-  VPX_SCALING_MODE h_scaling_mode; /**< horizontal scaling mode */
-  VPX_SCALING_MODE v_scaling_mode; /**< vertical scaling mode   */
+  AOM_SCALING_MODE h_scaling_mode; /**< horizontal scaling mode */
+  AOM_SCALING_MODE v_scaling_mode; /**< vertical scaling mode   */
 } aom_scaling_mode_t;
 
 /*!\brief VP8 token partition mode
@@ -671,9 +671,9 @@ typedef enum {
 
 /*!brief VP9 encoder content type */
 typedef enum {
-  VPX_CONTENT_DEFAULT,
-  VPX_CONTENT_SCREEN,
-  VPX_CONTENT_INVALID
+  AOM_CONTENT_DEFAULT,
+  AOM_CONTENT_SCREEN,
+  AOM_CONTENT_INVALID
 } aom_tune_content;
 
 /*!\brief VP8 model tuning parameters
@@ -681,7 +681,7 @@ typedef enum {
  * Changes the encoder to tune for certain types of input material.
  *
  */
-typedef enum { VPX_TUNE_PSNR, VPX_TUNE_SSIM } aom_tune_metric;
+typedef enum { AOM_TUNE_PSNR, AOM_TUNE_SSIM } aom_tune_metric;
 
 /*!\brief  vp9 svc layer parameters
  *
@@ -704,10 +704,10 @@ typedef struct aom_svc_layer_id {
  *
  */
 typedef struct aom_svc_ref_frame_config {
-  int frame_flags[VPX_TS_MAX_LAYERS]; /**< Frame flags. */
-  int lst_fb_idx[VPX_TS_MAX_LAYERS];  /**< Last buffer index. */
-  int gld_fb_idx[VPX_TS_MAX_LAYERS];  /**< Golden buffer index. */
-  int alt_fb_idx[VPX_TS_MAX_LAYERS];  /**< Altref buffer index. */
+  int frame_flags[AOM_TS_MAX_LAYERS]; /**< Frame flags. */
+  int lst_fb_idx[AOM_TS_MAX_LAYERS];  /**< Last buffer index. */
+  int gld_fb_idx[AOM_TS_MAX_LAYERS];  /**< Golden buffer index. */
+  int alt_fb_idx[AOM_TS_MAX_LAYERS];  /**< Altref buffer index. */
 } aom_svc_ref_frame_config_t;
 
 /*!\cond */
@@ -718,122 +718,122 @@ typedef struct aom_svc_ref_frame_config {
  *
  */
 
-VPX_CTRL_USE_TYPE(VP8E_SET_FRAME_FLAGS, int)
-#define VPX_CTRL_VP8E_SET_FRAME_FLAGS
-VPX_CTRL_USE_TYPE(VP8E_SET_TEMPORAL_LAYER_ID, int)
-#define VPX_CTRL_VP8E_SET_TEMPORAL_LAYER_ID
-VPX_CTRL_USE_TYPE(VP8E_SET_ROI_MAP, aom_roi_map_t *)
-#define VPX_CTRL_VP8E_SET_ROI_MAP
-VPX_CTRL_USE_TYPE(VP8E_SET_ACTIVEMAP, aom_active_map_t *)
-#define VPX_CTRL_VP8E_SET_ACTIVEMAP
-VPX_CTRL_USE_TYPE(VP8E_SET_SCALEMODE, aom_scaling_mode_t *)
-#define VPX_CTRL_VP8E_SET_SCALEMODE
+AOM_CTRL_USE_TYPE(VP8E_SET_FRAME_FLAGS, int)
+#define AOM_CTRL_VP8E_SET_FRAME_FLAGS
+AOM_CTRL_USE_TYPE(VP8E_SET_TEMPORAL_LAYER_ID, int)
+#define AOM_CTRL_VP8E_SET_TEMPORAL_LAYER_ID
+AOM_CTRL_USE_TYPE(VP8E_SET_ROI_MAP, aom_roi_map_t *)
+#define AOM_CTRL_VP8E_SET_ROI_MAP
+AOM_CTRL_USE_TYPE(VP8E_SET_ACTIVEMAP, aom_active_map_t *)
+#define AOM_CTRL_VP8E_SET_ACTIVEMAP
+AOM_CTRL_USE_TYPE(VP8E_SET_SCALEMODE, aom_scaling_mode_t *)
+#define AOM_CTRL_VP8E_SET_SCALEMODE
 
-VPX_CTRL_USE_TYPE(VP9E_SET_SVC, int)
-#define VPX_CTRL_VP9E_SET_SVC
-VPX_CTRL_USE_TYPE(VP9E_SET_SVC_PARAMETERS, void *)
-#define VPX_CTRL_VP9E_SET_SVC_PARAMETERS
-VPX_CTRL_USE_TYPE(VP9E_REGISTER_CX_CALLBACK, void *)
-#define VPX_CTRL_VP9E_REGISTER_CX_CALLBACK
-VPX_CTRL_USE_TYPE(VP9E_SET_SVC_LAYER_ID, aom_svc_layer_id_t *)
-#define VPX_CTRL_VP9E_SET_SVC_LAYER_ID
+AOM_CTRL_USE_TYPE(VP9E_SET_SVC, int)
+#define AOM_CTRL_VP9E_SET_SVC
+AOM_CTRL_USE_TYPE(VP9E_SET_SVC_PARAMETERS, void *)
+#define AOM_CTRL_VP9E_SET_SVC_PARAMETERS
+AOM_CTRL_USE_TYPE(VP9E_REGISTER_CX_CALLBACK, void *)
+#define AOM_CTRL_VP9E_REGISTER_CX_CALLBACK
+AOM_CTRL_USE_TYPE(VP9E_SET_SVC_LAYER_ID, aom_svc_layer_id_t *)
+#define AOM_CTRL_VP9E_SET_SVC_LAYER_ID
 
-VPX_CTRL_USE_TYPE(VP8E_SET_CPUUSED, int)
-#define VPX_CTRL_VP8E_SET_CPUUSED
-VPX_CTRL_USE_TYPE(VP8E_SET_ENABLEAUTOALTREF, unsigned int)
-#define VPX_CTRL_VP8E_SET_ENABLEAUTOALTREF
-VPX_CTRL_USE_TYPE(VP8E_SET_NOISE_SENSITIVITY, unsigned int)
-#define VPX_CTRL_VP8E_SET_NOISE_SENSITIVITY
-VPX_CTRL_USE_TYPE(VP8E_SET_SHARPNESS, unsigned int)
-#define VPX_CTRL_VP8E_SET_SHARPNESS
-VPX_CTRL_USE_TYPE(VP8E_SET_STATIC_THRESHOLD, unsigned int)
-#define VPX_CTRL_VP8E_SET_STATIC_THRESHOLD
-VPX_CTRL_USE_TYPE(VP8E_SET_TOKEN_PARTITIONS, int) /* vp8e_token_partitions */
-#define VPX_CTRL_VP8E_SET_TOKEN_PARTITIONS
+AOM_CTRL_USE_TYPE(VP8E_SET_CPUUSED, int)
+#define AOM_CTRL_VP8E_SET_CPUUSED
+AOM_CTRL_USE_TYPE(VP8E_SET_ENABLEAUTOALTREF, unsigned int)
+#define AOM_CTRL_VP8E_SET_ENABLEAUTOALTREF
+AOM_CTRL_USE_TYPE(VP8E_SET_NOISE_SENSITIVITY, unsigned int)
+#define AOM_CTRL_VP8E_SET_NOISE_SENSITIVITY
+AOM_CTRL_USE_TYPE(VP8E_SET_SHARPNESS, unsigned int)
+#define AOM_CTRL_VP8E_SET_SHARPNESS
+AOM_CTRL_USE_TYPE(VP8E_SET_STATIC_THRESHOLD, unsigned int)
+#define AOM_CTRL_VP8E_SET_STATIC_THRESHOLD
+AOM_CTRL_USE_TYPE(VP8E_SET_TOKEN_PARTITIONS, int) /* vp8e_token_partitions */
+#define AOM_CTRL_VP8E_SET_TOKEN_PARTITIONS
 
-VPX_CTRL_USE_TYPE(VP8E_SET_ARNR_MAXFRAMES, unsigned int)
-#define VPX_CTRL_VP8E_SET_ARNR_MAXFRAMES
-VPX_CTRL_USE_TYPE(VP8E_SET_ARNR_STRENGTH, unsigned int)
-#define VPX_CTRL_VP8E_SET_ARNR_STRENGTH
-VPX_CTRL_USE_TYPE_DEPRECATED(VP8E_SET_ARNR_TYPE, unsigned int)
-#define VPX_CTRL_VP8E_SET_ARNR_TYPE
-VPX_CTRL_USE_TYPE(VP8E_SET_TUNING, int) /* aom_tune_metric */
-#define VPX_CTRL_VP8E_SET_TUNING
-VPX_CTRL_USE_TYPE(VP8E_SET_CQ_LEVEL, unsigned int)
-#define VPX_CTRL_VP8E_SET_CQ_LEVEL
+AOM_CTRL_USE_TYPE(VP8E_SET_ARNR_MAXFRAMES, unsigned int)
+#define AOM_CTRL_VP8E_SET_ARNR_MAXFRAMES
+AOM_CTRL_USE_TYPE(VP8E_SET_ARNR_STRENGTH, unsigned int)
+#define AOM_CTRL_VP8E_SET_ARNR_STRENGTH
+AOM_CTRL_USE_TYPE_DEPRECATED(VP8E_SET_ARNR_TYPE, unsigned int)
+#define AOM_CTRL_VP8E_SET_ARNR_TYPE
+AOM_CTRL_USE_TYPE(VP8E_SET_TUNING, int) /* aom_tune_metric */
+#define AOM_CTRL_VP8E_SET_TUNING
+AOM_CTRL_USE_TYPE(VP8E_SET_CQ_LEVEL, unsigned int)
+#define AOM_CTRL_VP8E_SET_CQ_LEVEL
 
-VPX_CTRL_USE_TYPE(VP9E_SET_TILE_COLUMNS, int)
-#define VPX_CTRL_VP9E_SET_TILE_COLUMNS
-VPX_CTRL_USE_TYPE(VP9E_SET_TILE_ROWS, int)
-#define VPX_CTRL_VP9E_SET_TILE_ROWS
+AOM_CTRL_USE_TYPE(VP9E_SET_TILE_COLUMNS, int)
+#define AOM_CTRL_VP9E_SET_TILE_COLUMNS
+AOM_CTRL_USE_TYPE(VP9E_SET_TILE_ROWS, int)
+#define AOM_CTRL_VP9E_SET_TILE_ROWS
 
-VPX_CTRL_USE_TYPE(VP8E_GET_LAST_QUANTIZER, int *)
-#define VPX_CTRL_VP8E_GET_LAST_QUANTIZER
-VPX_CTRL_USE_TYPE(VP8E_GET_LAST_QUANTIZER_64, int *)
-#define VPX_CTRL_VP8E_GET_LAST_QUANTIZER_64
-VPX_CTRL_USE_TYPE(VP9E_GET_SVC_LAYER_ID, aom_svc_layer_id_t *)
-#define VPX_CTRL_VP9E_GET_SVC_LAYER_ID
+AOM_CTRL_USE_TYPE(VP8E_GET_LAST_QUANTIZER, int *)
+#define AOM_CTRL_VP8E_GET_LAST_QUANTIZER
+AOM_CTRL_USE_TYPE(VP8E_GET_LAST_QUANTIZER_64, int *)
+#define AOM_CTRL_VP8E_GET_LAST_QUANTIZER_64
+AOM_CTRL_USE_TYPE(VP9E_GET_SVC_LAYER_ID, aom_svc_layer_id_t *)
+#define AOM_CTRL_VP9E_GET_SVC_LAYER_ID
 
-VPX_CTRL_USE_TYPE(VP8E_SET_MAX_INTRA_BITRATE_PCT, unsigned int)
-#define VPX_CTRL_VP8E_SET_MAX_INTRA_BITRATE_PCT
-VPX_CTRL_USE_TYPE(VP8E_SET_MAX_INTER_BITRATE_PCT, unsigned int)
-#define VPX_CTRL_VP8E_SET_MAX_INTER_BITRATE_PCT
+AOM_CTRL_USE_TYPE(VP8E_SET_MAX_INTRA_BITRATE_PCT, unsigned int)
+#define AOM_CTRL_VP8E_SET_MAX_INTRA_BITRATE_PCT
+AOM_CTRL_USE_TYPE(VP8E_SET_MAX_INTER_BITRATE_PCT, unsigned int)
+#define AOM_CTRL_VP8E_SET_MAX_INTER_BITRATE_PCT
 
-VPX_CTRL_USE_TYPE(VP8E_SET_SCREEN_CONTENT_MODE, unsigned int)
-#define VPX_CTRL_VP8E_SET_SCREEN_CONTENT_MODE
+AOM_CTRL_USE_TYPE(VP8E_SET_SCREEN_CONTENT_MODE, unsigned int)
+#define AOM_CTRL_VP8E_SET_SCREEN_CONTENT_MODE
 
-VPX_CTRL_USE_TYPE(VP9E_SET_GF_CBR_BOOST_PCT, unsigned int)
-#define VPX_CTRL_VP9E_SET_GF_CBR_BOOST_PCT
+AOM_CTRL_USE_TYPE(VP9E_SET_GF_CBR_BOOST_PCT, unsigned int)
+#define AOM_CTRL_VP9E_SET_GF_CBR_BOOST_PCT
 
-VPX_CTRL_USE_TYPE(VP9E_SET_LOSSLESS, unsigned int)
-#define VPX_CTRL_VP9E_SET_LOSSLESS
+AOM_CTRL_USE_TYPE(VP9E_SET_LOSSLESS, unsigned int)
+#define AOM_CTRL_VP9E_SET_LOSSLESS
 
 #if CONFIG_AOM_QM
-VPX_CTRL_USE_TYPE(VP9E_SET_ENABLE_QM, unsigned int)
-#define VPX_CTRL_VP9E_SET_ENABLE_QM
+AOM_CTRL_USE_TYPE(VP9E_SET_ENABLE_QM, unsigned int)
+#define AOM_CTRL_VP9E_SET_ENABLE_QM
 
-VPX_CTRL_USE_TYPE(VP9E_SET_QM_MIN, unsigned int)
-#define VPX_CTRL_VP9E_SET_QM_MIN
+AOM_CTRL_USE_TYPE(VP9E_SET_QM_MIN, unsigned int)
+#define AOM_CTRL_VP9E_SET_QM_MIN
 
-VPX_CTRL_USE_TYPE(VP9E_SET_QM_MAX, unsigned int)
-#define VPX_CTRL_VP9E_SET_QM_MAX
+AOM_CTRL_USE_TYPE(VP9E_SET_QM_MAX, unsigned int)
+#define AOM_CTRL_VP9E_SET_QM_MAX
 #endif
 
-VPX_CTRL_USE_TYPE(VP9E_SET_FRAME_PARALLEL_DECODING, unsigned int)
-#define VPX_CTRL_VP9E_SET_FRAME_PARALLEL_DECODING
+AOM_CTRL_USE_TYPE(VP9E_SET_FRAME_PARALLEL_DECODING, unsigned int)
+#define AOM_CTRL_VP9E_SET_FRAME_PARALLEL_DECODING
 
-VPX_CTRL_USE_TYPE(VP9E_SET_AQ_MODE, unsigned int)
-#define VPX_CTRL_VP9E_SET_AQ_MODE
+AOM_CTRL_USE_TYPE(VP9E_SET_AQ_MODE, unsigned int)
+#define AOM_CTRL_VP9E_SET_AQ_MODE
 
-VPX_CTRL_USE_TYPE(VP9E_SET_FRAME_PERIODIC_BOOST, unsigned int)
-#define VPX_CTRL_VP9E_SET_FRAME_PERIODIC_BOOST
+AOM_CTRL_USE_TYPE(VP9E_SET_FRAME_PERIODIC_BOOST, unsigned int)
+#define AOM_CTRL_VP9E_SET_FRAME_PERIODIC_BOOST
 
-VPX_CTRL_USE_TYPE(VP9E_SET_NOISE_SENSITIVITY, unsigned int)
-#define VPX_CTRL_VP9E_SET_NOISE_SENSITIVITY
+AOM_CTRL_USE_TYPE(VP9E_SET_NOISE_SENSITIVITY, unsigned int)
+#define AOM_CTRL_VP9E_SET_NOISE_SENSITIVITY
 
-VPX_CTRL_USE_TYPE(VP9E_SET_TUNE_CONTENT, int) /* aom_tune_content */
-#define VPX_CTRL_VP9E_SET_TUNE_CONTENT
+AOM_CTRL_USE_TYPE(VP9E_SET_TUNE_CONTENT, int) /* aom_tune_content */
+#define AOM_CTRL_VP9E_SET_TUNE_CONTENT
 
-VPX_CTRL_USE_TYPE(VP9E_SET_COLOR_SPACE, int)
-#define VPX_CTRL_VP9E_SET_COLOR_SPACE
+AOM_CTRL_USE_TYPE(VP9E_SET_COLOR_SPACE, int)
+#define AOM_CTRL_VP9E_SET_COLOR_SPACE
 
-VPX_CTRL_USE_TYPE(VP9E_SET_MIN_GF_INTERVAL, unsigned int)
-#define VPX_CTRL_VP9E_SET_MIN_GF_INTERVAL
+AOM_CTRL_USE_TYPE(VP9E_SET_MIN_GF_INTERVAL, unsigned int)
+#define AOM_CTRL_VP9E_SET_MIN_GF_INTERVAL
 
-VPX_CTRL_USE_TYPE(VP9E_SET_MAX_GF_INTERVAL, unsigned int)
-#define VPX_CTRL_VP9E_SET_MAX_GF_INTERVAL
+AOM_CTRL_USE_TYPE(VP9E_SET_MAX_GF_INTERVAL, unsigned int)
+#define AOM_CTRL_VP9E_SET_MAX_GF_INTERVAL
 
-VPX_CTRL_USE_TYPE(VP9E_GET_ACTIVEMAP, aom_active_map_t *)
-#define VPX_CTRL_VP9E_GET_ACTIVEMAP
+AOM_CTRL_USE_TYPE(VP9E_GET_ACTIVEMAP, aom_active_map_t *)
+#define AOM_CTRL_VP9E_GET_ACTIVEMAP
 
-VPX_CTRL_USE_TYPE(VP9E_SET_COLOR_RANGE, int)
-#define VPX_CTRL_VP9E_SET_COLOR_RANGE
+AOM_CTRL_USE_TYPE(VP9E_SET_COLOR_RANGE, int)
+#define AOM_CTRL_VP9E_SET_COLOR_RANGE
 
-VPX_CTRL_USE_TYPE(VP9E_SET_SVC_REF_FRAME_CONFIG, aom_svc_ref_frame_config_t *)
-#define VPX_CTRL_VP9E_SET_SVC_REF_FRAME_CONFIG
+AOM_CTRL_USE_TYPE(VP9E_SET_SVC_REF_FRAME_CONFIG, aom_svc_ref_frame_config_t *)
+#define AOM_CTRL_VP9E_SET_SVC_REF_FRAME_CONFIG
 
-VPX_CTRL_USE_TYPE(VP9E_SET_RENDER_SIZE, int *)
-#define VPX_CTRL_VP9E_SET_RENDER_SIZE
+AOM_CTRL_USE_TYPE(VP9E_SET_RENDER_SIZE, int *)
+#define AOM_CTRL_VP9E_SET_RENDER_SIZE
 
 /*!\endcond */
 /*! @} - end defgroup vp8_encoder */
@@ -841,4 +841,4 @@ VPX_CTRL_USE_TYPE(VP9E_SET_RENDER_SIZE, int *)
 }  // extern "C"
 #endif
 
-#endif  // VPX_VP8CX_H_
+#endif  // AOM_VP8CX_H_

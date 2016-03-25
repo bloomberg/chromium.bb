@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_MIPS_LOOPFILTER_MACROS_DSPR2_H_
-#define VPX_DSP_MIPS_LOOPFILTER_MACROS_DSPR2_H_
+#ifndef AOM_DSP_MIPS_LOOPFILTER_MACROS_DSPR2_H_
+#define AOM_DSP_MIPS_LOOPFILTER_MACROS_DSPR2_H_
 
 #include <stdlib.h>
 
@@ -433,4 +433,4 @@ extern "C" {
 }  // extern "C"
 #endif
 
-#endif  // VPX_DSP_MIPS_LOOPFILTER_MACROS_DSPR2_H_
+#endif  // AOM_DSP_MIPS_LOOPFILTER_MACROS_DSPR2_H_

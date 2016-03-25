@@ -30,7 +30,7 @@ class YUVVideoSource : public VideoSource {
                  int rate_denominator, unsigned int start, int limit)
       : file_name_(file_name), input_file_(NULL), img_(NULL), start_(start),
         limit_(limit), frame_(0), width_(0), height_(0),
-        format_(VPX_IMG_FMT_NONE), framerate_numerator_(rate_numerator),
+        format_(AOM_IMG_FMT_NONE), framerate_numerator_(rate_numerator),
         framerate_denominator_(rate_denominator) {
     // This initializes format_, raw_size_, width_, height_ and allocates img.
     SetSize(width, height, format);
@@ -84,14 +84,14 @@ class YUVVideoSource : public VideoSource {
       height_ = height;
       format_ = format;
       switch (format) {
-        case VPX_IMG_FMT_I420: raw_size_ = width * height * 3 / 2; break;
-        case VPX_IMG_FMT_I422: raw_size_ = width * height * 2; break;
-        case VPX_IMG_FMT_I440: raw_size_ = width * height * 2; break;
-        case VPX_IMG_FMT_I444: raw_size_ = width * height * 3; break;
-        case VPX_IMG_FMT_I42016: raw_size_ = width * height * 3; break;
-        case VPX_IMG_FMT_I42216: raw_size_ = width * height * 4; break;
-        case VPX_IMG_FMT_I44016: raw_size_ = width * height * 4; break;
-        case VPX_IMG_FMT_I44416: raw_size_ = width * height * 6; break;
+        case AOM_IMG_FMT_I420: raw_size_ = width * height * 3 / 2; break;
+        case AOM_IMG_FMT_I422: raw_size_ = width * height * 2; break;
+        case AOM_IMG_FMT_I440: raw_size_ = width * height * 2; break;
+        case AOM_IMG_FMT_I444: raw_size_ = width * height * 3; break;
+        case AOM_IMG_FMT_I42016: raw_size_ = width * height * 3; break;
+        case AOM_IMG_FMT_I42216: raw_size_ = width * height * 4; break;
+        case AOM_IMG_FMT_I44016: raw_size_ = width * height * 4; break;
+        case AOM_IMG_FMT_I44416: raw_size_ = width * height * 6; break;
         default: ASSERT_TRUE(0);
       }
     }

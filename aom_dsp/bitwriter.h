@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_BITWRITER_H_
-#define VPX_DSP_BITWRITER_H_
+#ifndef AOM_DSP_BITWRITER_H_
+#define AOM_DSP_BITWRITER_H_
 
 #include "aom_ports/mem.h"
 
@@ -95,4 +95,4 @@ static INLINE void aom_write_literal(aom_writer *w, int data, int bits) {
 }  // extern "C"
 #endif
 
-#endif  // VPX_DSP_BITWRITER_H_
+#endif  // AOM_DSP_BITWRITER_H_

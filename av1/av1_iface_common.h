@@ -22,18 +22,18 @@ static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
   int bps;
   if (!yv12->subsampling_y) {
     if (!yv12->subsampling_x) {
-      img->fmt = VPX_IMG_FMT_I444;
+      img->fmt = AOM_IMG_FMT_I444;
       bps = 24;
     } else {
-      img->fmt = VPX_IMG_FMT_I422;
+      img->fmt = AOM_IMG_FMT_I422;
       bps = 16;
     }
   } else {
     if (!yv12->subsampling_x) {
-      img->fmt = VPX_IMG_FMT_I440;
+      img->fmt = AOM_IMG_FMT_I440;
       bps = 16;
     } else {
-      img->fmt = VPX_IMG_FMT_I420;
+      img->fmt = AOM_IMG_FMT_I420;
       bps = 12;
     }
   }
@@ -41,35 +41,35 @@ static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
   img->range = yv12->color_range;
   img->bit_depth = 8;
   img->w = yv12->y_stride;
-  img->h = ALIGN_POWER_OF_TWO(yv12->y_height + 2 * VPX_ENC_BORDER_IN_PIXELS, 3);
+  img->h = ALIGN_POWER_OF_TWO(yv12->y_height + 2 * AOM_ENC_BORDER_IN_PIXELS, 3);
   img->d_w = yv12->y_crop_width;
   img->d_h = yv12->y_crop_height;
   img->r_w = yv12->render_width;
   img->r_h = yv12->render_height;
   img->x_chroma_shift = yv12->subsampling_x;
   img->y_chroma_shift = yv12->subsampling_y;
-  img->planes[VPX_PLANE_Y] = yv12->y_buffer;
-  img->planes[VPX_PLANE_U] = yv12->u_buffer;
-  img->planes[VPX_PLANE_V] = yv12->v_buffer;
-  img->planes[VPX_PLANE_ALPHA] = NULL;
-  img->stride[VPX_PLANE_Y] = yv12->y_stride;
-  img->stride[VPX_PLANE_U] = yv12->uv_stride;
-  img->stride[VPX_PLANE_V] = yv12->uv_stride;
-  img->stride[VPX_PLANE_ALPHA] = yv12->y_stride;
+  img->planes[AOM_PLANE_Y] = yv12->y_buffer;
+  img->planes[AOM_PLANE_U] = yv12->u_buffer;
+  img->planes[AOM_PLANE_V] = yv12->v_buffer;
+  img->planes[AOM_PLANE_ALPHA] = NULL;
+  img->stride[AOM_PLANE_Y] = yv12->y_stride;
+  img->stride[AOM_PLANE_U] = yv12->uv_stride;
+  img->stride[AOM_PLANE_V] = yv12->uv_stride;
+  img->stride[AOM_PLANE_ALPHA] = yv12->y_stride;
 #if CONFIG_AOM_HIGHBITDEPTH
   if (yv12->flags & YV12_FLAG_HIGHBITDEPTH) {
     // aom_image_t uses byte strides and a pointer to the first byte
     // of the image.
-    img->fmt = (aom_img_fmt_t)(img->fmt | VPX_IMG_FMT_HIGHBITDEPTH);
+    img->fmt = (aom_img_fmt_t)(img->fmt | AOM_IMG_FMT_HIGHBITDEPTH);
     img->bit_depth = yv12->bit_depth;
-    img->planes[VPX_PLANE_Y] = (uint8_t *)CONVERT_TO_SHORTPTR(yv12->y_buffer);
-    img->planes[VPX_PLANE_U] = (uint8_t *)CONVERT_TO_SHORTPTR(yv12->u_buffer);
-    img->planes[VPX_PLANE_V] = (uint8_t *)CONVERT_TO_SHORTPTR(yv12->v_buffer);
-    img->planes[VPX_PLANE_ALPHA] = NULL;
-    img->stride[VPX_PLANE_Y] = 2 * yv12->y_stride;
-    img->stride[VPX_PLANE_U] = 2 * yv12->uv_stride;
-    img->stride[VPX_PLANE_V] = 2 * yv12->uv_stride;
-    img->stride[VPX_PLANE_ALPHA] = 2 * yv12->y_stride;
+    img->planes[AOM_PLANE_Y] = (uint8_t *)CONVERT_TO_SHORTPTR(yv12->y_buffer);
+    img->planes[AOM_PLANE_U] = (uint8_t *)CONVERT_TO_SHORTPTR(yv12->u_buffer);
+    img->planes[AOM_PLANE_V] = (uint8_t *)CONVERT_TO_SHORTPTR(yv12->v_buffer);
+    img->planes[AOM_PLANE_ALPHA] = NULL;
+    img->stride[AOM_PLANE_Y] = 2 * yv12->y_stride;
+    img->stride[AOM_PLANE_U] = 2 * yv12->uv_stride;
+    img->stride[AOM_PLANE_V] = 2 * yv12->uv_stride;
+    img->stride[AOM_PLANE_ALPHA] = 2 * yv12->y_stride;
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
   img->bps = bps;
@@ -81,9 +81,9 @@ static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
 
 static aom_codec_err_t image2yuvconfig(const aom_image_t *img,
                                        YV12_BUFFER_CONFIG *yv12) {
-  yv12->y_buffer = img->planes[VPX_PLANE_Y];
-  yv12->u_buffer = img->planes[VPX_PLANE_U];
-  yv12->v_buffer = img->planes[VPX_PLANE_V];
+  yv12->y_buffer = img->planes[AOM_PLANE_Y];
+  yv12->u_buffer = img->planes[AOM_PLANE_U];
+  yv12->v_buffer = img->planes[AOM_PLANE_V];
 
   yv12->y_crop_width = img->d_w;
   yv12->y_crop_height = img->d_h;
@@ -99,13 +99,13 @@ static aom_codec_err_t image2yuvconfig(const aom_image_t *img,
   yv12->uv_crop_width = yv12->uv_width;
   yv12->uv_crop_height = yv12->uv_height;
 
-  yv12->y_stride = img->stride[VPX_PLANE_Y];
-  yv12->uv_stride = img->stride[VPX_PLANE_U];
+  yv12->y_stride = img->stride[AOM_PLANE_Y];
+  yv12->uv_stride = img->stride[AOM_PLANE_U];
   yv12->color_space = img->cs;
   yv12->color_range = img->range;
 
 #if CONFIG_AOM_HIGHBITDEPTH
-  if (img->fmt & VPX_IMG_FMT_HIGHBITDEPTH) {
+  if (img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
     // In aom_image_t
     //     planes point to uint8 address of start of data
     //     stride counts uint8s to reach next row
@@ -127,11 +127,11 @@ static aom_codec_err_t image2yuvconfig(const aom_image_t *img,
   }
   yv12->border = (yv12->y_stride - img->w) / 2;
 #else
-  yv12->border = (img->stride[VPX_PLANE_Y] - img->w) / 2;
+  yv12->border = (img->stride[AOM_PLANE_Y] - img->w) / 2;
 #endif  // CONFIG_AOM_HIGHBITDEPTH
   yv12->subsampling_x = img->x_chroma_shift;
   yv12->subsampling_y = img->y_chroma_shift;
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 #endif  // AV1_AV1_IFACE_COMMON_H_

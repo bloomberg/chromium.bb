@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_COMMON_H_
-#define VPX_DSP_COMMON_H_
+#ifndef AOM_DSP_COMMON_H_
+#define AOM_DSP_COMMON_H_
 
 #include "./aom_config.h"
 #include "aom/aom_integer.h"
@@ -21,8 +21,8 @@
 extern "C" {
 #endif
 
-#define VPXMIN(x, y) (((x) < (y)) ? (x) : (y))
-#define VPXMAX(x, y) (((x) > (y)) ? (x) : (y))
+#define AOMMIN(x, y) (((x) < (y)) ? (x) : (y))
+#define AOMMAX(x, y) (((x) > (y)) ? (x) : (y))
 
 #if CONFIG_AOM_QM
 typedef uint16_t qm_val_t;
@@ -70,4 +70,4 @@ static INLINE uint16_t clip_pixel_highbd(int val, int bd) {
 }  // extern "C"
 #endif
 
-#endif  // VPX_DSP_COMMON_H_
+#endif  // AOM_DSP_COMMON_H_

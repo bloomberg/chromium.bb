@@ -143,7 +143,7 @@ class AV1CodecFactory : public CodecFactory {
 #if CONFIG_AV1_ENCODER
     return aom_codec_enc_config_default(&aom_codec_av1_cx_algo, cfg, usage);
 #else
-    return VPX_CODEC_INCAPABLE;
+    return AOM_CODEC_INCAPABLE;
 #endif
   }
 };

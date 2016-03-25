@@ -72,7 +72,7 @@ TEST_P(LosslessTest, TestLossLessEncoding) {
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 0;
 
-  init_flags_ = VPX_CODEC_USE_PSNR;
+  init_flags_ = AOM_CODEC_USE_PSNR;
 
   // intentionally changed the dimension for better testing coverage
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
@@ -92,7 +92,7 @@ TEST_P(LosslessTest, TestLossLessEncoding444) {
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 0;
 
-  init_flags_ = VPX_CODEC_USE_PSNR;
+  init_flags_ = AOM_CODEC_USE_PSNR;
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
   const double psnr_lossless = GetMinPsnr();
@@ -109,7 +109,7 @@ TEST_P(LosslessTest, TestLossLessEncodingCtrl) {
   cfg_.rc_min_quantizer = 10;
   cfg_.rc_max_quantizer = 20;
 
-  init_flags_ = VPX_CODEC_USE_PSNR;
+  init_flags_ = AOM_CODEC_USE_PSNR;
 
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      timebase.den, timebase.num, 0, 10);

@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_PORTS_MEM_OPS_ALIGNED_H_
-#define VPX_PORTS_MEM_OPS_ALIGNED_H_
+#ifndef AOM_PORTS_MEM_OPS_ALIGNED_H_
+#define AOM_PORTS_MEM_OPS_ALIGNED_H_
 
 #include "aom/aom_integer.h"
 
@@ -45,21 +45,21 @@
 #define swap_endian_32_se(val, raw) swap_endian_32(val, raw)
 
 #define mem_get_ne_aligned_generic(end, sz)                           \
-  static VPX_INLINE unsigned MEM_VALUE_T mem_get_##end##sz##_aligned( \
+  static AOM_INLINE unsigned MEM_VALUE_T mem_get_##end##sz##_aligned( \
       const void *vmem) {                                             \
     const uint##sz##_t *mem = (const uint##sz##_t *)vmem;             \
     return *mem;                                                      \
   }
 
 #define mem_get_sne_aligned_generic(end, sz)                         \
-  static VPX_INLINE signed MEM_VALUE_T mem_get_s##end##sz##_aligned( \
+  static AOM_INLINE signed MEM_VALUE_T mem_get_s##end##sz##_aligned( \
       const void *vmem) {                                            \
     const int##sz##_t *mem = (const int##sz##_t *)vmem;              \
     return *mem;                                                     \
   }
 
 #define mem_get_se_aligned_generic(end, sz)                           \
-  static VPX_INLINE unsigned MEM_VALUE_T mem_get_##end##sz##_aligned( \
+  static AOM_INLINE unsigned MEM_VALUE_T mem_get_##end##sz##_aligned( \
       const void *vmem) {                                             \
     const uint##sz##_t *mem = (const uint##sz##_t *)vmem;             \
     unsigned MEM_VALUE_T val, raw = *mem;                             \
@@ -68,7 +68,7 @@
   }
 
 #define mem_get_sse_aligned_generic(end, sz)                         \
-  static VPX_INLINE signed MEM_VALUE_T mem_get_s##end##sz##_aligned( \
+  static AOM_INLINE signed MEM_VALUE_T mem_get_s##end##sz##_aligned( \
       const void *vmem) {                                            \
     const int##sz##_t *mem = (const int##sz##_t *)vmem;              \
     unsigned MEM_VALUE_T val, raw = *mem;                            \
@@ -77,14 +77,14 @@
   }
 
 #define mem_put_ne_aligned_generic(end, sz)                             \
-  static VPX_INLINE void mem_put_##end##sz##_aligned(void *vmem,        \
+  static AOM_INLINE void mem_put_##end##sz##_aligned(void *vmem,        \
                                                      MEM_VALUE_T val) { \
     uint##sz##_t *mem = (uint##sz##_t *)vmem;                           \
     *mem = (uint##sz##_t)val;                                           \
   }
 
 #define mem_put_se_aligned_generic(end, sz)                             \
-  static VPX_INLINE void mem_put_##end##sz##_aligned(void *vmem,        \
+  static AOM_INLINE void mem_put_##end##sz##_aligned(void *vmem,        \
                                                      MEM_VALUE_T val) { \
     uint##sz##_t *mem = (uint##sz##_t *)vmem, raw;                      \
     swap_endian_##sz(raw, val);                                         \
@@ -167,4 +167,4 @@ mem_get_be_aligned_generic(16)
 #undef swap_endian_16_se
 #undef swap_endian_32_se
 
-#endif  // VPX_PORTS_MEM_OPS_ALIGNED_H_
+#endif  // AOM_PORTS_MEM_OPS_ALIGNED_H_

@@ -22,7 +22,7 @@
  *     my_codec.c:
  *       aom_codec_iface_t my_codec = {
  *           "My Codec v1.0",
- *           VPX_CODEC_ALG_ABI_VERSION,
+ *           AOM_CODEC_ALG_ABI_VERSION,
  *           ...
  *       };
  *     </pre>
@@ -41,8 +41,8 @@
  * Once initialized, the instance is manged using other functions from
  * the aom_codec_* family.
  */
-#ifndef VPX_INTERNAL_VPX_CODEC_INTERNAL_H_
-#define VPX_INTERNAL_VPX_CODEC_INTERNAL_H_
+#ifndef AOM_INTERNAL_AOM_CODEC_INTERNAL_H_
+#define AOM_INTERNAL_AOM_CODEC_INTERNAL_H_
 #include "../aom_decoder.h"
 #include "../aom_encoder.h"
 #include <stdarg.h>
@@ -59,7 +59,7 @@ extern "C" {
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures
  */
-#define VPX_CODEC_INTERNAL_ABI_VERSION (5) /**<\hideinitializer*/
+#define AOM_CODEC_INTERNAL_ABI_VERSION (5) /**<\hideinitializer*/
 
 typedef struct aom_codec_alg_priv aom_codec_alg_priv_t;
 typedef struct aom_codec_priv_enc_mr_cfg aom_codec_priv_enc_mr_cfg_t;
@@ -72,9 +72,9 @@ typedef struct aom_codec_priv_enc_mr_cfg aom_codec_priv_enc_mr_cfg_t;
  * properly initialized.
  *
  * \param[in] ctx   Pointer to this instance's context
- * \retval #VPX_CODEC_OK
+ * \retval #AOM_CODEC_OK
  *     The input stream was recognized and decoder initialized.
- * \retval #VPX_CODEC_MEM_ERROR
+ * \retval #AOM_CODEC_MEM_ERROR
  *     Memory operation failed.
  */
 typedef aom_codec_err_t (*aom_codec_init_fn_t)(
@@ -88,9 +88,9 @@ typedef aom_codec_err_t (*aom_codec_init_fn_t)(
  * to be properly initialized.
  *
  * \param[in] ctx   Pointer to this instance's context
- * \retval #VPX_CODEC_OK
+ * \retval #AOM_CODEC_OK
  *     The input stream was recognized and decoder initialized.
- * \retval #VPX_CODEC_MEM_ERROR
+ * \retval #AOM_CODEC_MEM_ERROR
  *     Memory operation failed.
  */
 typedef aom_codec_err_t (*aom_codec_destroy_fn_t)(aom_codec_alg_priv_t *ctx);
@@ -109,7 +109,7 @@ typedef aom_codec_err_t (*aom_codec_destroy_fn_t)(aom_codec_alg_priv_t *ctx);
  *                         clobbered by the algorithm. This parameter \ref MAY
  *                         be NULL.
  *
- * \retval #VPX_CODEC_OK
+ * \retval #AOM_CODEC_OK
  *     Bitstream is parsable and stream information updated
  */
 typedef aom_codec_err_t (*aom_codec_peek_si_fn_t)(const uint8_t *data,
@@ -126,7 +126,7 @@ typedef aom_codec_err_t (*aom_codec_peek_si_fn_t)(const uint8_t *data,
  *                         clobbered by the algorithm. This parameter \ref MAY
  *                         be NULL.
  *
- * \retval #VPX_CODEC_OK
+ * \retval #AOM_CODEC_OK
  *     Bitstream is parsable and stream information updated
  */
 typedef aom_codec_err_t (*aom_codec_get_si_fn_t)(aom_codec_alg_priv_t *ctx,
@@ -151,7 +151,7 @@ typedef aom_codec_err_t (*aom_codec_get_si_fn_t)(aom_codec_alg_priv_t *ctx,
  * \param[in]     ctrl_id          Algorithm specific control identifier
  * \param[in,out] data             Data to exchange with algorithm instance.
  *
- * \retval #VPX_CODEC_OK
+ * \retval #AOM_CODEC_OK
  *     The internal state data was deserialized.
  */
 typedef aom_codec_err_t (*aom_codec_control_fn_t)(aom_codec_alg_priv_t *ctx,
@@ -176,19 +176,19 @@ typedef const struct aom_codec_ctrl_fn_map {
 /*!\brief decode data function pointer prototype
  *
  * Processes a buffer of coded data. If the processing results in a new
- * decoded frame becoming available, #VPX_CODEC_CB_PUT_SLICE and
- * #VPX_CODEC_CB_PUT_FRAME events are generated as appropriate. This
+ * decoded frame becoming available, #AOM_CODEC_CB_PUT_SLICE and
+ * #AOM_CODEC_CB_PUT_FRAME events are generated as appropriate. This
  * function is called by the generic aom_codec_decode() wrapper function,
  * so plugins implementing this interface may trust the input parameters
  * to be properly initialized.
  *
  * \param[in] ctx          Pointer to this instance's context
  * \param[in] data         Pointer to this block of new coded data. If
- *                         NULL, a #VPX_CODEC_CB_PUT_FRAME event is posted
+ *                         NULL, a #AOM_CODEC_CB_PUT_FRAME event is posted
  *                         for the previously decoded frame.
  * \param[in] data_sz      Size of the coded data, in bytes.
  *
- * \return Returns #VPX_CODEC_OK if the coded data was processed completely
+ * \return Returns #AOM_CODEC_OK if the coded data was processed completely
  *         and future pictures can be decoded without error. Otherwise,
  *         see the descriptions of the other error codes in ::aom_codec_err_t
  *         for recoverability capabilities.
@@ -231,17 +231,17 @@ typedef aom_image_t *(*aom_codec_get_frame_fn_t)(aom_codec_alg_priv_t *ctx,
  * \param[in] cb_release   Pointer to the release callback function
  * \param[in] cb_priv      Callback's private data
  *
- * \retval #VPX_CODEC_OK
+ * \retval #AOM_CODEC_OK
  *     External frame buffers will be used by libaom.
- * \retval #VPX_CODEC_INVALID_PARAM
+ * \retval #AOM_CODEC_INVALID_PARAM
  *     One or more of the callbacks were NULL.
- * \retval #VPX_CODEC_ERROR
+ * \retval #AOM_CODEC_ERROR
  *     Decoder context not initialized, or algorithm not capable of
  *     using external frame buffers.
  *
  * \note
  * When decoding VP9, the application may be required to pass in at least
- * #VPX_MAXIMUM_WORK_BUFFERS external frame
+ * #AOM_MAXIMUM_WORK_BUFFERS external frame
  * buffers.
  */
 typedef aom_codec_err_t (*aom_codec_set_fb_fn_t)(
@@ -363,13 +363,13 @@ struct aom_codec_priv_enc_mr_cfg {
   void *mr_low_res_mode_info;
 };
 
-#undef VPX_CTRL_USE_TYPE
-#define VPX_CTRL_USE_TYPE(id, typ) \
-  static VPX_INLINE typ id##__value(va_list args) { return va_arg(args, typ); }
+#undef AOM_CTRL_USE_TYPE
+#define AOM_CTRL_USE_TYPE(id, typ) \
+  static AOM_INLINE typ id##__value(va_list args) { return va_arg(args, typ); }
 
-#undef VPX_CTRL_USE_TYPE_DEPRECATED
-#define VPX_CTRL_USE_TYPE_DEPRECATED(id, typ) \
-  static VPX_INLINE typ id##__value(va_list args) { return va_arg(args, typ); }
+#undef AOM_CTRL_USE_TYPE_DEPRECATED
+#define AOM_CTRL_USE_TYPE_DEPRECATED(id, typ) \
+  static AOM_INLINE typ id##__value(va_list args) { return va_arg(args, typ); }
 
 #define CAST(id, arg) id##__value(arg)
 
@@ -443,4 +443,4 @@ void aom_internal_error(struct aom_internal_error_info *info,
 }  // extern "C"
 #endif
 
-#endif  // VPX_INTERNAL_VPX_CODEC_INTERNAL_H_
+#endif  // AOM_INTERNAL_AOM_CODEC_INTERNAL_H_

@@ -55,7 +55,7 @@
     they are implemented, they conform to a common interface. The features, or
     capabilities, of an algorithm can be queried from it's interface by using
     the aom_codec_get_caps() method. Attempts to invoke features not supported
-    by an algorithm will generally result in #VPX_CODEC_INCAPABLE.
+    by an algorithm will generally result in #AOM_CODEC_INCAPABLE.
 
     \if decoder
     Currently defined decoder features include:
@@ -72,8 +72,8 @@
     the ABI is versioned. The ABI version number must be passed at
     initialization time to ensure the application is using a header file that
     matches the library. The current ABI version number is stored in the
-    preprocessor macros #VPX_CODEC_ABI_VERSION, #VPX_ENCODER_ABI_VERSION, and
-    #VPX_DECODER_ABI_VERSION. For convenience, each initialization function has
+    preprocessor macros #AOM_CODEC_ABI_VERSION, #AOM_ENCODER_ABI_VERSION, and
+    #AOM_DECODER_ABI_VERSION. For convenience, each initialization function has
     a wrapper macro that inserts the correct version number. These macros are
     named like the initialization methods, but without the _ver suffix.
 

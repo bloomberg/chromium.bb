@@ -32,9 +32,9 @@ set_maps_verify_environment() {
 set_maps() {
   local encoder="$(aom_tool_path set_maps)"
   local codec="$1"
-  local output_file="${VPX_TEST_OUTPUT_DIR}/set_maps_${codec}.ivf"
+  local output_file="${AOM_TEST_OUTPUT_DIR}/set_maps_${codec}.ivf"
 
-  eval "${VPX_TEST_PREFIX}" "${encoder}" "${codec}" "${YUV_RAW_INPUT_WIDTH}" \
+  eval "${AOM_TEST_PREFIX}" "${encoder}" "${codec}" "${YUV_RAW_INPUT_WIDTH}" \
       "${YUV_RAW_INPUT_HEIGHT}" "${YUV_RAW_INPUT}" "${output_file}" \
       ${devnull}
 

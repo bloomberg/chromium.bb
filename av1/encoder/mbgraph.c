@@ -40,7 +40,7 @@ static unsigned int do_16x16_motion_iteration(AV1_COMP *cpi, const MV *ref_mv,
 
   // Further step/diamond searches as necessary
   int step_param = mv_sf->reduce_first_step_size;
-  step_param = VPXMIN(step_param, MAX_MVSEARCH_STEPS - 2);
+  step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 2);
 
   av1_set_mv_search_range(x, ref_mv);
 

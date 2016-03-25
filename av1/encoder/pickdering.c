@@ -54,7 +54,7 @@ int av1_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int best_level;
   int global_level;
   double best_tot_mse = 1e15;
-  int coeff_shift = VPXMAX(cm->bit_depth - 8, 0);
+  int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
   src = aom_malloc(sizeof(*src)*cm->mi_rows*cm->mi_cols*64);
   ref_coeff = aom_malloc(sizeof(*ref_coeff)*cm->mi_rows*cm->mi_cols*64);
   bskip = aom_malloc(sizeof(*bskip)*cm->mi_rows*cm->mi_cols);
@@ -99,8 +99,8 @@ int av1_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       int nvb, nhb;
       int16_t dst[MI_BLOCK_SIZE*MI_BLOCK_SIZE*8*8];
       best_level = 0;
-      nhb = VPXMIN(MI_BLOCK_SIZE, cm->mi_cols - MI_BLOCK_SIZE*sbc);
-      nvb = VPXMIN(MI_BLOCK_SIZE, cm->mi_rows - MI_BLOCK_SIZE*sbr);
+      nhb = AOMMIN(MI_BLOCK_SIZE, cm->mi_cols - MI_BLOCK_SIZE*sbc);
+      nvb = AOMMIN(MI_BLOCK_SIZE, cm->mi_rows - MI_BLOCK_SIZE*sbr);
       for (level = 0; level < 64; level++) {
         int threshold;
         threshold = level << coeff_shift;

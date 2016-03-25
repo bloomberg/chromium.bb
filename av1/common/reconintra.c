@@ -685,8 +685,8 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
   const int x = aoff * 4;
   const int y = loff * 4;
 #if CONFIG_MISC_FIXES
-  const int bw = VPXMAX(2, 1 << bwl_in);
-  const int bh = VPXMAX(2, 1 << bhl_in);
+  const int bw = AOMMAX(2, 1 << bwl_in);
+  const int bh = AOMMAX(2, 1 << bhl_in);
   const int mi_row = -xd->mb_to_top_edge >> 6;
   const int mi_col = -xd->mb_to_left_edge >> 6;
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
@@ -714,19 +714,19 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
 #if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     build_intra_predictors_high(xd, ref, ref_stride, dst, dst_stride, mode,
-                                tx_size, have_top ? VPXMIN(txpx, xr + txpx) : 0,
-                                have_top && have_right ? VPXMIN(txpx, xr) : 0,
-                                have_left ? VPXMIN(txpx, yd + txpx) : 0,
-                                have_bottom && have_left ? VPXMIN(txpx, yd) : 0,
+                                tx_size, have_top ? AOMMIN(txpx, xr + txpx) : 0,
+                                have_top && have_right ? AOMMIN(txpx, xr) : 0,
+                                have_left ? AOMMIN(txpx, yd + txpx) : 0,
+                                have_bottom && have_left ? AOMMIN(txpx, yd) : 0,
                                 x, y, plane, xd->bd);
     return;
   }
 #endif
   build_intra_predictors(xd, ref, ref_stride, dst, dst_stride, mode, tx_size,
-                         have_top ? VPXMIN(txpx, xr + txpx) : 0,
-                         have_top && have_right ? VPXMIN(txpx, xr) : 0,
-                         have_left ? VPXMIN(txpx, yd + txpx) : 0,
-                         have_bottom && have_left ? VPXMIN(txpx, yd) : 0, x, y,
+                         have_top ? AOMMIN(txpx, xr + txpx) : 0,
+                         have_top && have_right ? AOMMIN(txpx, xr) : 0,
+                         have_left ? AOMMIN(txpx, yd + txpx) : 0,
+                         have_bottom && have_left ? AOMMIN(txpx, yd) : 0, x, y,
                          plane);
 #else  // CONFIG_MISC_FIXES
   (void)bhl_in;

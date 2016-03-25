@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_BITREADER_BUFFER_H_
-#define VPX_DSP_BITREADER_BUFFER_H_
+#ifndef AOM_DSP_BITREADER_BUFFER_H_
+#define AOM_DSP_BITREADER_BUFFER_H_
 
 #include <limits.h>
 
@@ -45,4 +45,4 @@ int aom_rb_read_inv_signed_literal(struct aom_read_bit_buffer *rb, int bits);
 }  // extern "C"
 #endif
 
-#endif  // VPX_DSP_BITREADER_BUFFER_H_
+#endif  // AOM_DSP_BITREADER_BUFFER_H_

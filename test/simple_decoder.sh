@@ -27,17 +27,17 @@ simple_decoder_verify_environment() {
 # Runs simple_decoder using $1 as input file. $2 is the codec name, and is used
 # solely to name the output file.
 simple_decoder() {
-  local decoder="${LIBAOM_BIN_PATH}/simple_decoder${VPX_TEST_EXE_SUFFIX}"
+  local decoder="${LIBAOM_BIN_PATH}/simple_decoder${AOM_TEST_EXE_SUFFIX}"
   local input_file="$1"
   local codec="$2"
-  local output_file="${VPX_TEST_OUTPUT_DIR}/simple_decoder_${codec}.raw"
+  local output_file="${AOM_TEST_OUTPUT_DIR}/simple_decoder_${codec}.raw"
 
   if [ ! -x "${decoder}" ]; then
     elog "${decoder} does not exist or is not executable."
     return 1
   fi
 
-  eval "${VPX_TEST_PREFIX}" "${decoder}" "${input_file}" "${output_file}" \
+  eval "${AOM_TEST_PREFIX}" "${decoder}" "${input_file}" "${output_file}" \
       ${devnull}
 
   [ -e "${output_file}" ] || return 1

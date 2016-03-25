@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_PORTS_VPX_ONCE_H_
-#define VPX_PORTS_VPX_ONCE_H_
+#ifndef AOM_PORTS_AOM_ONCE_H_
+#define AOM_PORTS_AOM_ONCE_H_
 
 #include "aom_config.h"
 
@@ -138,4 +138,4 @@ static void once(void (*func)(void)) {
 }
 #endif
 
-#endif  // VPX_PORTS_VPX_ONCE_H_
+#endif  // AOM_PORTS_AOM_ONCE_H_

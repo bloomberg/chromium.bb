@@ -47,7 +47,7 @@ void aom_reader_fill(aom_reader *r) {
   int shift = BD_VALUE_SIZE - CHAR_BIT - (count + CHAR_BIT);
 
   if (r->decrypt_cb) {
-    size_t n = VPXMIN(sizeof(r->clear_buffer), bytes_left);
+    size_t n = AOMMIN(sizeof(r->clear_buffer), bytes_left);
     r->decrypt_cb(r->decrypt_state, buffer, r->clear_buffer, (int)n);
     buffer = r->clear_buffer;
     buffer_start = r->clear_buffer;

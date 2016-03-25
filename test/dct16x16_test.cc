@@ -341,7 +341,7 @@ class Trans16x16TestBase {
 
       // Initialize a test block with input range [-mask_, mask_].
       for (int j = 0; j < kNumCoeffs; ++j) {
-        if (bit_depth_ == VPX_BITS_8) {
+        if (bit_depth_ == AOM_BITS_8) {
           src[j] = rnd.Rand8();
           dst[j] = rnd.Rand8();
           test_input_block[j] = src[j] - dst[j];
@@ -356,7 +356,7 @@ class Trans16x16TestBase {
 
       ASM_REGISTER_STATE_CHECK(
           RunFwdTxfm(test_input_block, test_temp_block, pitch_));
-      if (bit_depth_ == VPX_BITS_8) {
+      if (bit_depth_ == AOM_BITS_8) {
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(test_temp_block, dst, pitch_));
 #if CONFIG_AOM_HIGHBITDEPTH
       } else {
@@ -368,7 +368,7 @@ class Trans16x16TestBase {
       for (int j = 0; j < kNumCoeffs; ++j) {
 #if CONFIG_AOM_HIGHBITDEPTH
         const uint32_t diff =
-            bit_depth_ == VPX_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
+            bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
 #else
         const uint32_t diff = dst[j] - src[j];
 #endif
@@ -474,7 +474,7 @@ class Trans16x16TestBase {
       output_ref_block[0] = (output_ref_block[0] / dc_thred) * dc_thred;
       for (int j = 1; j < kNumCoeffs; ++j)
         output_ref_block[j] = (output_ref_block[j] / ac_thred) * ac_thred;
-      if (bit_depth_ == VPX_BITS_8) {
+      if (bit_depth_ == AOM_BITS_8) {
         inv_txfm_ref(output_ref_block, ref, pitch_, tx_type_);
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(output_ref_block, dst, pitch_));
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -485,7 +485,7 @@ class Trans16x16TestBase {
             RunInvTxfm(output_ref_block, CONVERT_TO_BYTEPTR(dst16), pitch_));
 #endif
       }
-      if (bit_depth_ == VPX_BITS_8) {
+      if (bit_depth_ == AOM_BITS_8) {
         for (int j = 0; j < kNumCoeffs; ++j) EXPECT_EQ(ref[j], dst[j]);
 #if CONFIG_AOM_HIGHBITDEPTH
       } else {
@@ -512,7 +512,7 @@ class Trans16x16TestBase {
 
       // Initialize a test block with input range [-255, 255].
       for (int j = 0; j < kNumCoeffs; ++j) {
-        if (bit_depth_ == VPX_BITS_8) {
+        if (bit_depth_ == AOM_BITS_8) {
           src[j] = rnd.Rand8();
           dst[j] = rnd.Rand8();
           in[j] = src[j] - dst[j];
@@ -529,7 +529,7 @@ class Trans16x16TestBase {
       for (int j = 0; j < kNumCoeffs; ++j)
         coeff[j] = static_cast<tran_low_t>(round(out_r[j]));
 
-      if (bit_depth_ == VPX_BITS_8) {
+      if (bit_depth_ == AOM_BITS_8) {
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(coeff, dst, 16));
 #if CONFIG_AOM_HIGHBITDEPTH
       } else {
@@ -541,7 +541,7 @@ class Trans16x16TestBase {
       for (int j = 0; j < kNumCoeffs; ++j) {
 #if CONFIG_AOM_HIGHBITDEPTH
         const uint32_t diff =
-            bit_depth_ == VPX_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
+            bit_depth_ == AOM_BITS_8 ? dst[j] - src[j] : dst16[j] - src16[j];
 #else
         const uint32_t diff = dst[j] - src[j];
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -573,7 +573,7 @@ class Trans16x16TestBase {
         } else {
           coeff[scan[j]] = 0;
         }
-        if (bit_depth_ == VPX_BITS_8) {
+        if (bit_depth_ == AOM_BITS_8) {
           dst[j] = 0;
           ref[j] = 0;
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -583,7 +583,7 @@ class Trans16x16TestBase {
 #endif  // CONFIG_AOM_HIGHBITDEPTH
         }
       }
-      if (bit_depth_ == VPX_BITS_8) {
+      if (bit_depth_ == AOM_BITS_8) {
         ref_txfm(coeff, ref, pitch_);
         ASM_REGISTER_STATE_CHECK(RunInvTxfm(coeff, dst, pitch_));
       } else {
@@ -597,7 +597,7 @@ class Trans16x16TestBase {
       for (int j = 0; j < kNumCoeffs; ++j) {
 #if CONFIG_AOM_HIGHBITDEPTH
         const uint32_t diff =
-            bit_depth_ == VPX_BITS_8 ? dst[j] - ref[j] : dst16[j] - ref16[j];
+            bit_depth_ == AOM_BITS_8 ? dst[j] - ref[j] : dst16[j] - ref16[j];
 #else
         const uint32_t diff = dst[j] - ref[j];
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -632,8 +632,8 @@ class Trans16x16DCT : public Trans16x16TestBase,
     mask_ = (1 << bit_depth_) - 1;
 #if CONFIG_AOM_HIGHBITDEPTH
     switch (bit_depth_) {
-      case VPX_BITS_10: inv_txfm_ref = idct16x16_10_ref; break;
-      case VPX_BITS_12: inv_txfm_ref = idct16x16_12_ref; break;
+      case AOM_BITS_10: inv_txfm_ref = idct16x16_10_ref; break;
+      case AOM_BITS_12: inv_txfm_ref = idct16x16_12_ref; break;
       default: inv_txfm_ref = idct16x16_ref; break;
     }
 #else
@@ -684,8 +684,8 @@ class Trans16x16HT : public Trans16x16TestBase,
     mask_ = (1 << bit_depth_) - 1;
 #if CONFIG_AOM_HIGHBITDEPTH
     switch (bit_depth_) {
-      case VPX_BITS_10: inv_txfm_ref = iht16x16_10; break;
-      case VPX_BITS_12: inv_txfm_ref = iht16x16_12; break;
+      case AOM_BITS_10: inv_txfm_ref = iht16x16_10; break;
+      case AOM_BITS_12: inv_txfm_ref = iht16x16_12; break;
       default: inv_txfm_ref = iht16x16_ref; break;
     }
 #else
@@ -754,116 +754,116 @@ using std::tr1::make_tuple;
 INSTANTIATE_TEST_CASE_P(
     C, Trans16x16DCT,
     ::testing::Values(
-        make_tuple(&aom_highbd_fdct16x16_c, &idct16x16_10, 0, VPX_BITS_10),
-        make_tuple(&aom_highbd_fdct16x16_c, &idct16x16_12, 0, VPX_BITS_12),
-        make_tuple(&aom_fdct16x16_c, &aom_idct16x16_256_add_c, 0, VPX_BITS_8)));
+        make_tuple(&aom_highbd_fdct16x16_c, &idct16x16_10, 0, AOM_BITS_10),
+        make_tuple(&aom_highbd_fdct16x16_c, &idct16x16_12, 0, AOM_BITS_12),
+        make_tuple(&aom_fdct16x16_c, &aom_idct16x16_256_add_c, 0, AOM_BITS_8)));
 #else
 INSTANTIATE_TEST_CASE_P(C, Trans16x16DCT,
                         ::testing::Values(make_tuple(&aom_fdct16x16_c,
                                                      &aom_idct16x16_256_add_c,
-                                                     0, VPX_BITS_8)));
+                                                     0, AOM_BITS_8)));
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #if CONFIG_AOM_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     C, Trans16x16HT,
     ::testing::Values(
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_10, 0, VPX_BITS_10),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_10, 1, VPX_BITS_10),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_10, 2, VPX_BITS_10),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_10, 3, VPX_BITS_10),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_12, 0, VPX_BITS_12),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_12, 1, VPX_BITS_12),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_12, 2, VPX_BITS_12),
-        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_12, 3, VPX_BITS_12),
-        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 0, VPX_BITS_8),
-        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 1, VPX_BITS_8),
-        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 2, VPX_BITS_8),
-        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 3, VPX_BITS_8)));
+        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_10, 0, AOM_BITS_10),
+        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_10, 1, AOM_BITS_10),
+        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_10, 2, AOM_BITS_10),
+        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_10, 3, AOM_BITS_10),
+        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_12, 0, AOM_BITS_12),
+        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_12, 1, AOM_BITS_12),
+        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_12, 2, AOM_BITS_12),
+        make_tuple(&av1_highbd_fht16x16_c, &iht16x16_12, 3, AOM_BITS_12),
+        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 0, AOM_BITS_8),
+        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 1, AOM_BITS_8),
+        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 2, AOM_BITS_8),
+        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 3, AOM_BITS_8)));
 #else
 INSTANTIATE_TEST_CASE_P(
     C, Trans16x16HT,
     ::testing::Values(
-        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 0, VPX_BITS_8),
-        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 1, VPX_BITS_8),
-        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 2, VPX_BITS_8),
-        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 3, VPX_BITS_8)));
+        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 0, AOM_BITS_8),
+        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 1, AOM_BITS_8),
+        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 2, AOM_BITS_8),
+        make_tuple(&av1_fht16x16_c, &av1_iht16x16_256_add_c, 3, AOM_BITS_8)));
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #if HAVE_NEON_ASM && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     NEON, Trans16x16DCT,
     ::testing::Values(make_tuple(&aom_fdct16x16_c, &aom_idct16x16_256_add_neon,
-                                 0, VPX_BITS_8)));
+                                 0, AOM_BITS_8)));
 #endif
 
 #if HAVE_SSE2 && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans16x16DCT,
     ::testing::Values(make_tuple(&aom_fdct16x16_sse2,
-                                 &aom_idct16x16_256_add_sse2, 0, VPX_BITS_8)));
+                                 &aom_idct16x16_256_add_sse2, 0, AOM_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans16x16HT,
     ::testing::Values(make_tuple(&av1_fht16x16_sse2,
-                                 &av1_iht16x16_256_add_sse2, 0, VPX_BITS_8),
+                                 &av1_iht16x16_256_add_sse2, 0, AOM_BITS_8),
                       make_tuple(&av1_fht16x16_sse2,
-                                 &av1_iht16x16_256_add_sse2, 1, VPX_BITS_8),
+                                 &av1_iht16x16_256_add_sse2, 1, AOM_BITS_8),
                       make_tuple(&av1_fht16x16_sse2,
-                                 &av1_iht16x16_256_add_sse2, 2, VPX_BITS_8),
+                                 &av1_iht16x16_256_add_sse2, 2, AOM_BITS_8),
                       make_tuple(&av1_fht16x16_sse2,
-                                 &av1_iht16x16_256_add_sse2, 3, VPX_BITS_8)));
+                                 &av1_iht16x16_256_add_sse2, 3, AOM_BITS_8)));
 #endif  // HAVE_SSE2 && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
 #if HAVE_SSE2 && CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans16x16DCT,
     ::testing::Values(
-        make_tuple(&aom_highbd_fdct16x16_sse2, &idct16x16_10, 0, VPX_BITS_10),
+        make_tuple(&aom_highbd_fdct16x16_sse2, &idct16x16_10, 0, AOM_BITS_10),
         make_tuple(&aom_highbd_fdct16x16_c, &idct16x16_256_add_10_sse2, 0,
-                   VPX_BITS_10),
-        make_tuple(&aom_highbd_fdct16x16_sse2, &idct16x16_12, 0, VPX_BITS_12),
+                   AOM_BITS_10),
+        make_tuple(&aom_highbd_fdct16x16_sse2, &idct16x16_12, 0, AOM_BITS_12),
         make_tuple(&aom_highbd_fdct16x16_c, &idct16x16_256_add_12_sse2, 0,
-                   VPX_BITS_12),
+                   AOM_BITS_12),
         make_tuple(&aom_fdct16x16_sse2, &aom_idct16x16_256_add_c, 0,
-                   VPX_BITS_8)));
+                   AOM_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans16x16HT,
     ::testing::Values(make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c,
-                                 0, VPX_BITS_8),
+                                 0, AOM_BITS_8),
                       make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c,
-                                 1, VPX_BITS_8),
+                                 1, AOM_BITS_8),
                       make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c,
-                                 2, VPX_BITS_8),
+                                 2, AOM_BITS_8),
                       make_tuple(&av1_fht16x16_sse2, &av1_iht16x16_256_add_c,
-                                 3, VPX_BITS_8)));
+                                 3, AOM_BITS_8)));
 // Optimizations take effect at a threshold of 3155, so we use a value close to
 // that to test both branches.
 INSTANTIATE_TEST_CASE_P(
     SSE2, InvTrans16x16DCT,
     ::testing::Values(make_tuple(&idct16x16_10_add_10_c,
-                                 &idct16x16_10_add_10_sse2, 3167, VPX_BITS_10),
+                                 &idct16x16_10_add_10_sse2, 3167, AOM_BITS_10),
                       make_tuple(&idct16x16_10, &idct16x16_256_add_10_sse2,
-                                 3167, VPX_BITS_10),
+                                 3167, AOM_BITS_10),
                       make_tuple(&idct16x16_10_add_12_c,
-                                 &idct16x16_10_add_12_sse2, 3167, VPX_BITS_12),
+                                 &idct16x16_10_add_12_sse2, 3167, AOM_BITS_12),
                       make_tuple(&idct16x16_12, &idct16x16_256_add_12_sse2,
-                                 3167, VPX_BITS_12)));
+                                 3167, AOM_BITS_12)));
 #endif  // HAVE_SSE2 && CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
 #if HAVE_MSA && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(MSA, Trans16x16DCT,
                         ::testing::Values(make_tuple(&aom_fdct16x16_msa,
                                                      &aom_idct16x16_256_add_msa,
-                                                     0, VPX_BITS_8)));
+                                                     0, AOM_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     MSA, Trans16x16HT,
     ::testing::Values(make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa,
-                                 0, VPX_BITS_8),
+                                 0, AOM_BITS_8),
                       make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa,
-                                 1, VPX_BITS_8),
+                                 1, AOM_BITS_8),
                       make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa,
-                                 2, VPX_BITS_8),
+                                 2, AOM_BITS_8),
                       make_tuple(&av1_fht16x16_msa, &av1_iht16x16_256_add_msa,
-                                 3, VPX_BITS_8)));
+                                 3, AOM_BITS_8)));
 #endif  // HAVE_MSA && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 }  // namespace

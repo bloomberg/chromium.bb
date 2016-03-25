@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_TXFM_COMMON_H_
-#define VPX_DSP_TXFM_COMMON_H_
+#ifndef AOM_DSP_TXFM_COMMON_H_
+#define AOM_DSP_TXFM_COMMON_H_
 
 #include "aom_dsp/aom_dsp_common.h"
 
@@ -64,4 +64,4 @@ static const tran_high_t sinpi_2_9 = 9929;
 static const tran_high_t sinpi_3_9 = 13377;
 static const tran_high_t sinpi_4_9 = 15212;
 
-#endif  // VPX_DSP_TXFM_COMMON_H_
+#endif  // AOM_DSP_TXFM_COMMON_H_

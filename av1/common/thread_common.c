@@ -161,7 +161,7 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   // Decoder may allocate more threads than number of tiles based on user's
   // input.
   const int tile_cols = 1 << cm->log2_tile_cols;
-  const int num_workers = VPXMIN(nworkers, tile_cols);
+  const int num_workers = AOMMIN(nworkers, tile_cols);
   int i;
 
   if (!lf_sync->sync_range || sb_rows != lf_sync->rows ||
@@ -223,7 +223,7 @@ void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   if (partial_frame && cm->mi_rows > 8) {
     start_mi_row = cm->mi_rows >> 1;
     start_mi_row &= 0xfffffff8;
-    mi_rows_to_filter = VPXMAX(cm->mi_rows / 8, 8);
+    mi_rows_to_filter = AOMMAX(cm->mi_rows / 8, 8);
   }
   end_mi_row = start_mi_row + mi_rows_to_filter;
   av1_loop_filter_frame_init(cm, frame_filter_level);

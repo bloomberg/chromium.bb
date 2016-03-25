@@ -107,24 +107,24 @@ extern "C" {
 #endif
 
 #if defined(__GNUC__)
-#define VPX_NO_RETURN __attribute__((noreturn))
+#define AOM_NO_RETURN __attribute__((noreturn))
 #else
-#define VPX_NO_RETURN
+#define AOM_NO_RETURN
 #endif
 
 /* Sets a stdio stream into binary mode */
 FILE *set_binary_mode(FILE *stream);
 
-void die(const char *fmt, ...) VPX_NO_RETURN;
-void fatal(const char *fmt, ...) VPX_NO_RETURN;
+void die(const char *fmt, ...) AOM_NO_RETURN;
+void fatal(const char *fmt, ...) AOM_NO_RETURN;
 void warn(const char *fmt, ...);
 
-void die_codec(aom_codec_ctx_t *ctx, const char *s) VPX_NO_RETURN;
+void die_codec(aom_codec_ctx_t *ctx, const char *s) AOM_NO_RETURN;
 
 /* The tool including this file must define usage_exit() */
-void usage_exit(void) VPX_NO_RETURN;
+void usage_exit(void) AOM_NO_RETURN;
 
-#undef VPX_NO_RETURN
+#undef AOM_NO_RETURN
 
 int read_yuv_frame(struct VpxInputContext *input_ctx, aom_image_t *yuv_frame);
 

@@ -218,8 +218,8 @@ void av1_cyclic_refresh_update_segment(AV1_COMP *const cpi,
   CYCLIC_REFRESH *const cr = cpi->cyclic_refresh;
   const int bw = num_8x8_blocks_wide_lookup[bsize];
   const int bh = num_8x8_blocks_high_lookup[bsize];
-  const int xmis = VPXMIN(cm->mi_cols - mi_col, bw);
-  const int ymis = VPXMIN(cm->mi_rows - mi_row, bh);
+  const int xmis = AOMMIN(cm->mi_cols - mi_col, bw);
+  const int ymis = AOMMIN(cm->mi_rows - mi_row, bh);
   const int block_index = mi_row * cm->mi_cols + mi_col;
   const int refresh_this_block =
       candidate_refresh_aq(cr, mbmi, rate, dist, bsize);
@@ -270,7 +270,7 @@ void av1_cyclic_refresh_update_segment(AV1_COMP *const cpi,
       } else if (is_inter_block(mbmi) && skip &&
                  mbmi->segment_id <= CR_SEGMENT_ID_BOOST2) {
         cr->last_coded_q_map[map_offset] =
-            VPXMIN(clamp(cm->base_qindex + cr->qindex_delta[mbmi->segment_id],
+            AOMMIN(clamp(cm->base_qindex + cr->qindex_delta[mbmi->segment_id],
                          0, MAXQ),
                    cr->last_coded_q_map[map_offset]);
       }
@@ -411,7 +411,7 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
     int mi_row = sb_row_index * MI_BLOCK_SIZE;
     int mi_col = sb_col_index * MI_BLOCK_SIZE;
     int qindex_thresh =
-        cpi->oxcf.content == VPX_CONTENT_SCREEN
+        cpi->oxcf.content == AOM_CONTENT_SCREEN
             ? av1_get_qindex(&cm->seg, CR_SEGMENT_ID_BOOST2, cm->base_qindex)
             : 0;
     assert(mi_row >= 0 && mi_row < cm->mi_rows);
@@ -419,9 +419,9 @@ static void cyclic_refresh_update_map(AV1_COMP *const cpi) {
     bl_index = mi_row * cm->mi_cols + mi_col;
     // Loop through all 8x8 blocks in superblock and update map.
     xmis =
-        VPXMIN(cm->mi_cols - mi_col, num_8x8_blocks_wide_lookup[BLOCK_64X64]);
+        AOMMIN(cm->mi_cols - mi_col, num_8x8_blocks_wide_lookup[BLOCK_64X64]);
     ymis =
-        VPXMIN(cm->mi_rows - mi_row, num_8x8_blocks_high_lookup[BLOCK_64X64]);
+        AOMMIN(cm->mi_rows - mi_row, num_8x8_blocks_high_lookup[BLOCK_64X64]);
     for (y = 0; y < ymis; y++) {
       for (x = 0; x < xmis; x++) {
         const int bl_index2 = bl_index + y * cm->mi_cols + x;
@@ -545,7 +545,7 @@ void av1_cyclic_refresh_setup(AV1_COMP *const cpi) {
     // Set a more aggressive (higher) q delta for segment BOOST2.
     qindex_delta = compute_deltaq(
         cpi, cm->base_qindex,
-        VPXMIN(CR_MAX_RATE_TARGET_RATIO,
+        AOMMIN(CR_MAX_RATE_TARGET_RATIO,
                0.1 * cr->rate_boost_fac * cr->rate_ratio_qdelta));
     cr->qindex_delta[2] = qindex_delta;
     av1_set_segdata(seg, CR_SEGMENT_ID_BOOST2, SEG_LVL_ALT_Q, qindex_delta);

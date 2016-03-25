@@ -118,8 +118,8 @@ void av1_caq_select_segment(AV1_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
   const int mi_offset = mi_row * cm->mi_cols + mi_col;
   const int bw = num_8x8_blocks_wide_lookup[BLOCK_64X64];
   const int bh = num_8x8_blocks_high_lookup[BLOCK_64X64];
-  const int xmis = VPXMIN(cm->mi_cols - mi_col, num_8x8_blocks_wide_lookup[bs]);
-  const int ymis = VPXMIN(cm->mi_rows - mi_row, num_8x8_blocks_high_lookup[bs]);
+  const int xmis = AOMMIN(cm->mi_cols - mi_col, num_8x8_blocks_wide_lookup[bs]);
+  const int ymis = AOMMIN(cm->mi_rows - mi_row, num_8x8_blocks_high_lookup[bs]);
   int x, y;
   int i;
   unsigned char segment;
@@ -136,7 +136,7 @@ void av1_caq_select_segment(AV1_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
     const int aq_strength = get_aq_c_strength(cm->base_qindex, cm->bit_depth);
 
     aom_clear_system_state();
-    low_var_thresh = (cpi->oxcf.pass == 2) ? VPXMAX(cpi->twopass.mb_av_energy,
+    low_var_thresh = (cpi->oxcf.pass == 2) ? AOMMAX(cpi->twopass.mb_av_energy,
                                                     MIN_DEFAULT_LV_THRESH)
                                            : DEFAULT_LV_THRESH;
 

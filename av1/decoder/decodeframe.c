@@ -602,14 +602,14 @@ static void dec_build_inter_predictors(
     int x_pad = 0, y_pad = 0;
 
     if (subpel_x || (sf->x_step_q4 != SUBPEL_SHIFTS)) {
-      x0 -= VPX_INTERP_EXTEND - 1;
-      x1 += VPX_INTERP_EXTEND;
+      x0 -= AOM_INTERP_EXTEND - 1;
+      x1 += AOM_INTERP_EXTEND;
       x_pad = 1;
     }
 
     if (subpel_y || (sf->y_step_q4 != SUBPEL_SHIFTS)) {
-      y0 -= VPX_INTERP_EXTEND - 1;
-      y1 += VPX_INTERP_EXTEND;
+      y0 -= AOM_INTERP_EXTEND - 1;
+      y1 += AOM_INTERP_EXTEND;
       y_pad = 1;
     }
 
@@ -617,7 +617,7 @@ static void dec_build_inter_predictors(
     // pixels of each superblock row can be changed by next superblock row.
     if (cm->frame_parallel_decode)
       av1_frameworker_wait(pbi->frame_worker_owner, ref_frame_buf,
-                            VPXMAX(0, (y1 + 7)) << (plane == 0 ? 0 : 1));
+                            AOMMAX(0, (y1 + 7)) << (plane == 0 ? 0 : 1));
 
     // Skip border extension if block is inside the frame.
     if (x0 < 0 || x0 > frame_width - 1 || x1 < 0 || x1 > frame_width - 1 ||
@@ -643,7 +643,7 @@ static void dec_build_inter_predictors(
     if (cm->frame_parallel_decode) {
       const int y1 = (y0_16 + (h - 1) * ys) >> SUBPEL_BITS;
       av1_frameworker_wait(pbi->frame_worker_owner, ref_frame_buf,
-                            VPXMAX(0, (y1 + 7)) << (plane == 0 ? 0 : 1));
+                            AOMMAX(0, (y1 + 7)) << (plane == 0 ? 0 : 1));
     }
   }
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -720,8 +720,8 @@ static void dec_build_inter_predictors_sb(AV1Decoder *const pbi,
 static INLINE TX_SIZE
     dec_get_uv_tx_size(const MB_MODE_INFO *mbmi, int n4_wl, int n4_hl) {
   // get minimum log2 num4x4s dimension
-  const int x = VPXMIN(n4_wl, n4_hl);
-  return VPXMIN(mbmi->tx_size, x);
+  const int x = AOMMIN(n4_wl, n4_hl);
+  return AOMMIN(mbmi->tx_size, x);
 }
 
 static INLINE void dec_reset_skip_context(MACROBLOCKD *xd) {
@@ -781,8 +781,8 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   const int less8x8 = bsize < BLOCK_8X8;
   const int bw = 1 << (bwl - 1);
   const int bh = 1 << (bhl - 1);
-  const int x_mis = VPXMIN(bw, cm->mi_cols - mi_col);
-  const int y_mis = VPXMIN(bh, cm->mi_rows - mi_row);
+  const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
+  const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
 
   MB_MODE_INFO *mbmi = set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis,
                                    y_mis, bwl, bhl);
@@ -791,7 +791,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     const BLOCK_SIZE uv_subsize =
         ss_size_lookup[bsize][cm->subsampling_x][cm->subsampling_y];
     if (uv_subsize == BLOCK_INVALID)
-      aom_internal_error(xd->error_info, VPX_CODEC_CORRUPT_FRAME,
+      aom_internal_error(xd->error_info, AOM_CODEC_CORRUPT_FRAME,
                          "Invalid block size.");
   }
 
@@ -994,11 +994,11 @@ static void setup_token_decoder(const uint8_t *data, const uint8_t *data_end,
   // described by the partition can't be fully read, then restrict
   // it to the portion that can be (for EC mode) or throw an error.
   if (!read_is_valid(data, read_size, data_end))
-    aom_internal_error(error_info, VPX_CODEC_CORRUPT_FRAME,
+    aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
                        "Truncated packet or corrupt tile length");
 
   if (aom_reader_init(r, data, read_size, decrypt_cb, decrypt_state))
-    aom_internal_error(error_info, VPX_CODEC_MEM_ERROR,
+    aom_internal_error(error_info, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate bool decoder %d", 1);
 }
 
@@ -1237,7 +1237,7 @@ static void resize_mv_buffer(AV1_COMMON *cm) {
 static void resize_context_buffers(AV1_COMMON *cm, int width, int height) {
 #if CONFIG_SIZE_LIMIT
   if (width > DECODE_WIDTH_LIMIT || height > DECODE_HEIGHT_LIMIT)
-    aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME,
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Dimensions of %dx%d beyond allowed size of %dx%d.",
                        width, height, DECODE_WIDTH_LIMIT, DECODE_HEIGHT_LIMIT);
 #endif
@@ -1251,7 +1251,7 @@ static void resize_context_buffers(AV1_COMMON *cm, int width, int height) {
     // dimensions as well as the overall size.
     if (new_mi_cols > cm->mi_cols || new_mi_rows > cm->mi_rows) {
       if (av1_alloc_context_buffers(cm, width, height))
-        aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,
+        aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                            "Failed to allocate context buffers");
     } else {
       av1_set_mb_mi(cm, width, height);
@@ -1280,11 +1280,11 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 #if CONFIG_AOM_HIGHBITDEPTH
           cm->use_highbitdepth,
 #endif
-          VPX_DEC_BORDER_IN_PIXELS, cm->byte_alignment,
+          AOM_DEC_BORDER_IN_PIXELS, cm->byte_alignment,
           &pool->frame_bufs[cm->new_fb_idx].raw_frame_buffer, pool->get_fb_cb,
           pool->cb_priv)) {
     unlock_buffer_pool(pool);
-    aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate frame buffer");
   }
   unlock_buffer_pool(pool);
@@ -1334,7 +1334,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   }
 
   if (width <= 0 || height <= 0)
-    aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME,
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Invalid frame size");
 
   // Check to make sure at least one of frames that this frame references
@@ -1346,7 +1346,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
                              ref_frame->buf->y_crop_height, width, height);
   }
   if (!has_valid_ref_frame)
-    aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME,
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Referenced frame has invalid size");
   for (i = 0; i < REFS_PER_FRAME; ++i) {
     RefBuffer *const ref_frame = &cm->frame_refs[i];
@@ -1354,7 +1354,7 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
                                  ref_frame->buf->subsampling_x,
                                  ref_frame->buf->subsampling_y, cm->bit_depth,
                                  cm->subsampling_x, cm->subsampling_y))
-      aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME,
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Referenced frame has incompatible color format");
   }
 
@@ -1370,11 +1370,11 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
 #if CONFIG_AOM_HIGHBITDEPTH
           cm->use_highbitdepth,
 #endif
-          VPX_DEC_BORDER_IN_PIXELS, cm->byte_alignment,
+          AOM_DEC_BORDER_IN_PIXELS, cm->byte_alignment,
           &pool->frame_bufs[cm->new_fb_idx].raw_frame_buffer, pool->get_fb_cb,
           pool->cb_priv)) {
     unlock_buffer_pool(pool);
-    aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate frame buffer");
   }
   unlock_buffer_pool(pool);
@@ -1398,7 +1398,7 @@ static void setup_tile_info(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   while (max_ones-- && aom_rb_read_bit(rb)) cm->log2_tile_cols++;
 
   if (cm->log2_tile_cols > 6)
-    aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME,
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Invalid number of tile columns");
 
   // rows
@@ -1445,7 +1445,7 @@ static void get_tile_buffer(const uint8_t *const data_end,
 
   if (!is_last) {
     if (!read_is_valid(*data, 4, data_end))
-      aom_internal_error(error_info, VPX_CODEC_CORRUPT_FRAME,
+      aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
                          "Truncated packet or corrupt tile length");
 
     if (decrypt_cb) {
@@ -1458,7 +1458,7 @@ static void get_tile_buffer(const uint8_t *const data_end,
     *data += tile_sz_mag + 1;
 
     if (size > (size_t)(data_end - *data))
-      aom_internal_error(error_info, VPX_CODEC_CORRUPT_FRAME,
+      aom_internal_error(error_info, AOM_CODEC_CORRUPT_FRAME,
                          "Truncated packet or corrupt tile size");
   } else {
     size = data_end - *data;
@@ -1506,7 +1506,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                     aom_memalign(32, sizeof(LFWorkerData)));
     pbi->lf_worker.hook = (VPxWorkerHook)av1_loop_filter_worker;
     if (pbi->max_threads > 1 && !winterface->reset(&pbi->lf_worker)) {
-      aom_internal_error(&cm->error, VPX_CODEC_ERROR,
+      aom_internal_error(&cm->error, AOM_CODEC_ERROR,
                          "Loop filter thread creation failed");
     }
   }
@@ -1582,7 +1582,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
         }
         pbi->mb.corrupted |= tile_data->xd.corrupted;
         if (pbi->mb.corrupted)
-          aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME,
+          aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                              "Failed to decode tile data");
       }
       // Loopfilter one row.
@@ -1680,7 +1680,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
   const int aligned_mi_cols = mi_cols_aligned_to_sb(cm->mi_cols);
   const int tile_cols = 1 << cm->log2_tile_cols;
   const int tile_rows = 1 << cm->log2_tile_rows;
-  const int num_workers = VPXMIN(pbi->max_threads & ~1, tile_cols);
+  const int num_workers = AOMMIN(pbi->max_threads & ~1, tile_cols);
   TileBuffer tile_buffers[1][1 << 6];
   int n;
   int final_worker = -1;
@@ -1710,7 +1710,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
 
       winterface->init(worker);
       if (i < num_threads - 1 && !winterface->reset(worker)) {
-        aom_internal_error(&cm->error, VPX_CODEC_ERROR,
+        aom_internal_error(&cm->error, AOM_CODEC_ERROR,
                            "Tile decoder thread creation failed");
       }
     }
@@ -1747,7 +1747,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
     int group_start = 0;
     while (group_start < tile_cols) {
       const TileBuffer largest = tile_buffers[0][group_start];
-      const int group_end = VPXMIN(group_start + num_workers, tile_cols) - 1;
+      const int group_end = AOMMIN(group_start + num_workers, tile_cols) - 1;
       memmove(tile_buffers[0] + group_start, tile_buffers[0] + group_start + 1,
               (group_end - group_start) * sizeof(tile_buffers[0][0]));
       tile_buffers[0][group_end] = largest;
@@ -1837,34 +1837,34 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
 
 static void error_handler(void *data) {
   AV1_COMMON *const cm = (AV1_COMMON *)data;
-  aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME, "Truncated packet");
+  aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME, "Truncated packet");
 }
 
 static void read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
                                               struct aom_read_bit_buffer *rb) {
   if (cm->profile >= PROFILE_2) {
-    cm->bit_depth = aom_rb_read_bit(rb) ? VPX_BITS_12 : VPX_BITS_10;
+    cm->bit_depth = aom_rb_read_bit(rb) ? AOM_BITS_12 : AOM_BITS_10;
 #if CONFIG_AOM_HIGHBITDEPTH
     cm->use_highbitdepth = 1;
 #endif
   } else {
-    cm->bit_depth = VPX_BITS_8;
+    cm->bit_depth = AOM_BITS_8;
 #if CONFIG_AOM_HIGHBITDEPTH
     cm->use_highbitdepth = 0;
 #endif
   }
   cm->color_space = aom_rb_read_literal(rb, 3);
-  if (cm->color_space != VPX_CS_SRGB) {
+  if (cm->color_space != AOM_CS_SRGB) {
     // [16,235] (including xvycc) vs [0,255] range
     cm->color_range = aom_rb_read_bit(rb);
     if (cm->profile == PROFILE_1 || cm->profile == PROFILE_3) {
       cm->subsampling_x = aom_rb_read_bit(rb);
       cm->subsampling_y = aom_rb_read_bit(rb);
       if (cm->subsampling_x == 1 && cm->subsampling_y == 1)
-        aom_internal_error(&cm->error, VPX_CODEC_UNSUP_BITSTREAM,
+        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                            "4:2:0 color not supported in profile 1 or 3");
       if (aom_rb_read_bit(rb))
-        aom_internal_error(&cm->error, VPX_CODEC_UNSUP_BITSTREAM,
+        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                            "Reserved bit set");
     } else {
       cm->subsampling_y = cm->subsampling_x = 1;
@@ -1875,10 +1875,10 @@ static void read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
       // 4:2:2 or 4:4:0 chroma sampling is not allowed.
       cm->subsampling_y = cm->subsampling_x = 0;
       if (aom_rb_read_bit(rb))
-        aom_internal_error(&cm->error, VPX_CODEC_UNSUP_BITSTREAM,
+        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                            "Reserved bit set");
     } else {
-      aom_internal_error(&cm->error, VPX_CODEC_UNSUP_BITSTREAM,
+      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                          "4:4:4 color not supported in profile 0 or 2");
     }
   }
@@ -1896,18 +1896,18 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   cm->last_frame_type = cm->frame_type;
   cm->last_intra_only = cm->intra_only;
 
-  if (aom_rb_read_literal(rb, 2) != VPX_FRAME_MARKER)
-    aom_internal_error(&cm->error, VPX_CODEC_UNSUP_BITSTREAM,
+  if (aom_rb_read_literal(rb, 2) != AOM_FRAME_MARKER)
+    aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Invalid frame marker");
 
   cm->profile = av1_read_profile(rb);
 #if CONFIG_AOM_HIGHBITDEPTH
   if (cm->profile >= MAX_PROFILES)
-    aom_internal_error(&cm->error, VPX_CODEC_UNSUP_BITSTREAM,
+    aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Unsupported bitstream profile");
 #else
   if (cm->profile >= PROFILE_2)
-    aom_internal_error(&cm->error, VPX_CODEC_UNSUP_BITSTREAM,
+    aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                        "Unsupported bitstream profile");
 #endif
 
@@ -1918,7 +1918,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     lock_buffer_pool(pool);
     if (frame_to_show < 0 || frame_bufs[frame_to_show].ref_count < 1) {
       unlock_buffer_pool(pool);
-      aom_internal_error(&cm->error, VPX_CODEC_UNSUP_BITSTREAM,
+      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                          "Buffer %d does not contain a decoded frame",
                          frame_to_show);
     }
@@ -1942,7 +1942,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
   if (cm->frame_type == KEY_FRAME) {
     if (!av1_read_sync_code(rb))
-      aom_internal_error(&cm->error, VPX_CODEC_UNSUP_BITSTREAM,
+      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                          "Invalid frame sync code");
 
     read_bitdepth_colorspace_sampling(cm, rb);
@@ -1991,7 +1991,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
     if (cm->intra_only) {
       if (!av1_read_sync_code(rb))
-        aom_internal_error(&cm->error, VPX_CODEC_UNSUP_BITSTREAM,
+        aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                            "Invalid frame sync code");
 #if CONFIG_MISC_FIXES
       read_bitdepth_colorspace_sampling(cm, rb);
@@ -2003,10 +2003,10 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
         // of either the color format or color sub-sampling in profile 0. AV1
         // specifies that the default color format should be YUV 4:2:0 in this
         // case (normative).
-        cm->color_space = VPX_CS_BT_601;
+        cm->color_space = AOM_CS_BT_601;
         cm->color_range = 0;
         cm->subsampling_y = cm->subsampling_x = 1;
-        cm->bit_depth = VPX_BITS_8;
+        cm->bit_depth = AOM_BITS_8;
 #if CONFIG_AOM_HIGHBITDEPTH
         cm->use_highbitdepth = 0;
 #endif
@@ -2059,7 +2059,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   get_frame_new_buffer(cm)->render_height = cm->render_height;
 
   if (pbi->need_resync) {
-    aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME,
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Keyframe / intra-only frame required to reset decoder"
                        " state");
   }
@@ -2148,7 +2148,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   sz = aom_rb_read_literal(rb, 16);
 
   if (sz == 0)
-    aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME,
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Invalid header size");
 
   return sz;
@@ -2183,7 +2183,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
   if (aom_reader_init(&r, data, partition_size, pbi->decrypt_cb,
                       pbi->decrypt_state))
-    aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate bool decoder 0");
 
 #if !CONFIG_MISC_FIXES
@@ -2304,7 +2304,7 @@ static struct aom_read_bit_buffer *init_read_bit_buffer(
   rb->error_handler = error_handler;
   rb->error_handler_data = &pbi->common;
   if (pbi->decrypt_cb) {
-    const int n = (int)VPXMIN(MAX_AV1_HEADER_SIZE, data_end - data);
+    const int n = (int)AOMMIN(MAX_AV1_HEADER_SIZE, data_end - data);
     pbi->decrypt_cb(pbi->decrypt_state, data, clear_data, n);
     rb->bit_buffer = clear_data;
     rb->bit_buffer_end = clear_data + n;
@@ -2358,7 +2358,7 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 
   data += aom_rb_bytes_read(&rb);
   if (!read_is_valid(data, first_partition_size, data_end))
-    aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME,
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Truncated packet or corrupt header length");
 
   cm->use_prev_frame_mvs =
@@ -2370,7 +2370,7 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 
   *cm->fc = cm->frame_contexts[cm->frame_context_idx];
   if (!cm->fc->initialized)
-    aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME,
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Uninitialized entropy context.");
 
   av1_zero(cm->counts);
@@ -2378,7 +2378,7 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   xd->corrupted = 0;
   new_fb->corrupted = read_compressed_header(pbi, data, first_partition_size);
   if (new_fb->corrupted)
-    aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME,
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Decode failed. Frame data header is corrupted.");
 
   if (cm->lf.filter_level && !cm->skip_loop_filter) {
@@ -2416,7 +2416,7 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
                                   pbi->num_tile_workers, &pbi->lf_row_sync);
       }
     } else {
-      aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME,
+      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                          "Decode failed. Frame data is corrupted.");
     }
   } else {
@@ -2441,7 +2441,7 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
       debug_check_frame_counts(cm);
     }
   } else {
-    aom_internal_error(&cm->error, VPX_CODEC_CORRUPT_FRAME,
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                        "Decode failed. Frame data is corrupted.");
   }
 

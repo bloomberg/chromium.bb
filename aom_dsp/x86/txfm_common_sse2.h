@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_X86_TXFM_COMMON_SSE2_H_
-#define VPX_DSP_X86_TXFM_COMMON_SSE2_H_
+#ifndef AOM_DSP_X86_TXFM_COMMON_SSE2_H_
+#define AOM_DSP_X86_TXFM_COMMON_SSE2_H_
 
 #include <emmintrin.h>
 #include "aom/aom_integer.h"
@@ -27,4 +27,4 @@
   _mm_setr_epi16((int16_t)(a), (int16_t)(b), (int16_t)(c), (int16_t)(d), \
                  (int16_t)(e), (int16_t)(f), (int16_t)(g), (int16_t)(h))
 
-#endif  // VPX_DSP_X86_TXFM_COMMON_SSE2_H_
+#endif  // AOM_DSP_X86_TXFM_COMMON_SSE2_H_

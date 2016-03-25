@@ -66,7 +66,7 @@ static void write_ivf_frame_header(const aom_codec_cx_pkt_t *const pkt,
   char header[12];
   aom_codec_pts_t pts;
 
-  if (pkt->kind != VPX_CODEC_CX_FRAME_PKT) return;
+  if (pkt->kind != AOM_CODEC_CX_FRAME_PKT) return;
 
   pts = pkt->data.frame.pts;
   mem_put_le32(header, static_cast<unsigned int>(pkt->data.frame.sz));
@@ -241,7 +241,7 @@ class ResizeInternalTest : public ResizeTest {
 TEST_P(ResizeInternalTest, TestInternalResizeWorks) {
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 10);
-  init_flags_ = VPX_CODEC_USE_PSNR;
+  init_flags_ = AOM_CODEC_USE_PSNR;
   change_config_ = false;
 
   // q picked such that initial keyframe on this clip is ~30dB PSNR
@@ -316,8 +316,8 @@ class ResizeRealtimeTest
     cfg_.rc_max_quantizer = 56;
     cfg_.rc_undershoot_pct = 50;
     cfg_.rc_overshoot_pct = 50;
-    cfg_.rc_end_usage = VPX_CBR;
-    cfg_.kf_mode = VPX_KF_AUTO;
+    cfg_.rc_end_usage = AOM_CBR;
+    cfg_.kf_mode = AOM_KF_AUTO;
     cfg_.g_lag_in_frames = 0;
     cfg_.kf_min_dist = cfg_.kf_max_dist = 3000;
     // Enable dropped frames.
@@ -427,9 +427,9 @@ TEST_P(ResizeRealtimeTest, TestInternalResizeDownUpChangeBitRate) {
 }
 
 aom_img_fmt_t CspForFrameNumber(int frame) {
-  if (frame < 10) return VPX_IMG_FMT_I420;
-  if (frame < 20) return VPX_IMG_FMT_I444;
-  return VPX_IMG_FMT_I420;
+  if (frame < 10) return AOM_IMG_FMT_I420;
+  if (frame < 20) return AOM_IMG_FMT_I444;
+  return AOM_IMG_FMT_I420;
 }
 
 class ResizeCspTest : public ResizeTest {
@@ -462,12 +462,12 @@ class ResizeCspTest : public ResizeTest {
 
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   libaom_test::Encoder *encoder) {
-    if (CspForFrameNumber(video->frame()) != VPX_IMG_FMT_I420 &&
+    if (CspForFrameNumber(video->frame()) != AOM_IMG_FMT_I420 &&
         cfg_.g_profile != 1) {
       cfg_.g_profile = 1;
       encoder->Config(&cfg_);
     }
-    if (CspForFrameNumber(video->frame()) == VPX_IMG_FMT_I420 &&
+    if (CspForFrameNumber(video->frame()) == AOM_IMG_FMT_I420 &&
         cfg_.g_profile != 0) {
       cfg_.g_profile = 0;
       encoder->Config(&cfg_);
@@ -518,7 +518,7 @@ class ResizingCspVideoSource : public ::libaom_test::DummyVideoSource {
 
 TEST_P(ResizeCspTest, TestResizeCspWorks) {
   ResizingCspVideoSource video;
-  init_flags_ = VPX_CODEC_USE_PSNR;
+  init_flags_ = AOM_CODEC_USE_PSNR;
   cfg_.rc_min_quantizer = cfg_.rc_max_quantizer = 48;
   cfg_.g_lag_in_frames = 0;
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));

@@ -35,33 +35,33 @@ TEST(EncodeAPI, InvalidParams) {
   aom_codec_ctx_t enc;
   aom_codec_enc_cfg_t cfg;
 
-  EXPECT_EQ(&img, aom_img_wrap(&img, VPX_IMG_FMT_I420, 1, 1, 1, buf));
+  EXPECT_EQ(&img, aom_img_wrap(&img, AOM_IMG_FMT_I420, 1, 1, 1, buf));
 
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM, aom_codec_enc_init(NULL, NULL, NULL, 0));
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM, aom_codec_enc_init(&enc, NULL, NULL, 0));
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM, aom_codec_encode(NULL, NULL, 0, 0, 0, 0));
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM, aom_codec_encode(NULL, &img, 0, 0, 0, 0));
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM, aom_codec_destroy(NULL));
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM,
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_enc_init(NULL, NULL, NULL, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_enc_init(&enc, NULL, NULL, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_encode(NULL, NULL, 0, 0, 0, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_encode(NULL, &img, 0, 0, 0, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_destroy(NULL));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
             aom_codec_enc_config_default(NULL, NULL, 0));
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM,
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
             aom_codec_enc_config_default(NULL, &cfg, 0));
   EXPECT_TRUE(aom_codec_error(NULL) != NULL);
 
   for (int i = 0; i < NELEMENTS(kCodecs); ++i) {
     SCOPED_TRACE(aom_codec_iface_name(kCodecs[i]));
-    EXPECT_EQ(VPX_CODEC_INVALID_PARAM,
+    EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
               aom_codec_enc_init(NULL, kCodecs[i], NULL, 0));
-    EXPECT_EQ(VPX_CODEC_INVALID_PARAM,
+    EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
               aom_codec_enc_init(&enc, kCodecs[i], NULL, 0));
-    EXPECT_EQ(VPX_CODEC_INVALID_PARAM,
+    EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
               aom_codec_enc_config_default(kCodecs[i], &cfg, 1));
 
-    EXPECT_EQ(VPX_CODEC_OK, aom_codec_enc_config_default(kCodecs[i], &cfg, 0));
-    EXPECT_EQ(VPX_CODEC_OK, aom_codec_enc_init(&enc, kCodecs[i], &cfg, 0));
-    EXPECT_EQ(VPX_CODEC_OK, aom_codec_encode(&enc, NULL, 0, 0, 0, 0));
+    EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_config_default(kCodecs[i], &cfg, 0));
+    EXPECT_EQ(AOM_CODEC_OK, aom_codec_enc_init(&enc, kCodecs[i], &cfg, 0));
+    EXPECT_EQ(AOM_CODEC_OK, aom_codec_encode(&enc, NULL, 0, 0, 0, 0));
 
-    EXPECT_EQ(VPX_CODEC_OK, aom_codec_destroy(&enc));
+    EXPECT_EQ(AOM_CODEC_OK, aom_codec_destroy(&enc));
   }
 }
 

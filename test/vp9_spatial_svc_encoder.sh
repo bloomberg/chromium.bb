@@ -26,10 +26,10 @@ vp9_spatial_svc_encoder_verify_environment() {
 # Runs vp9_spatial_svc_encoder. $1 is the test name.
 vp9_spatial_svc_encoder() {
   local readonly \
-    encoder="${LIBAOM_BIN_PATH}/vp9_spatial_svc_encoder${VPX_TEST_EXE_SUFFIX}"
+    encoder="${LIBAOM_BIN_PATH}/vp9_spatial_svc_encoder${AOM_TEST_EXE_SUFFIX}"
   local readonly test_name="$1"
   local readonly \
-    output_file="${VPX_TEST_OUTPUT_DIR}/vp9_ssvc_encoder${test_name}.ivf"
+    output_file="${AOM_TEST_OUTPUT_DIR}/vp9_ssvc_encoder${test_name}.ivf"
   local readonly frames_to_encode=10
   local readonly max_kf=9999
 
@@ -40,7 +40,7 @@ vp9_spatial_svc_encoder() {
     return 1
   fi
 
-  eval "${VPX_TEST_PREFIX}" "${encoder}" -w "${YUV_RAW_INPUT_WIDTH}" \
+  eval "${AOM_TEST_PREFIX}" "${encoder}" -w "${YUV_RAW_INPUT_WIDTH}" \
     -h "${YUV_RAW_INPUT_HEIGHT}" -k "${max_kf}" -f "${frames_to_encode}" \
     "$@" "${YUV_RAW_INPUT}" "${output_file}" ${devnull}
 

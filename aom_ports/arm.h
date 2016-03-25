@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_PORTS_ARM_H_
-#define VPX_PORTS_ARM_H_
+#ifndef AOM_PORTS_ARM_H_
+#define AOM_PORTS_ARM_H_
 #include <stdlib.h>
 #include "aom_config.h"
 
@@ -30,11 +30,11 @@ int arm_cpu_caps(void);
 // Earlier gcc compilers have issues with some neon intrinsics
 #if !defined(__clang__) && defined(__GNUC__) && __GNUC__ == 4 && \
     __GNUC_MINOR__ <= 6
-#define VPX_INCOMPATIBLE_GCC
+#define AOM_INCOMPATIBLE_GCC
 #endif
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // VPX_PORTS_ARM_H_
+#endif  // AOM_PORTS_ARM_H_

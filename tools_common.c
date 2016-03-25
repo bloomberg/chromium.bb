@@ -80,7 +80,7 @@ int read_yuv_frame(struct VpxInputContext *input_ctx, aom_image_t *yuv_frame) {
   struct FileTypeDetectionBuffer *detect = &input_ctx->detect;
   int plane = 0;
   int shortread = 0;
-  const int bytespp = (yuv_frame->fmt & VPX_IMG_FMT_HIGHBITDEPTH) ? 2 : 1;
+  const int bytespp = (yuv_frame->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1;
 
   for (plane = 0; plane < 3; ++plane) {
     uint8_t *ptr;
@@ -95,13 +95,13 @@ int read_yuv_frame(struct VpxInputContext *input_ctx, aom_image_t *yuv_frame) {
     switch (plane) {
       case 1:
         ptr =
-            yuv_frame->planes[yuv_frame->fmt == VPX_IMG_FMT_YV12 ? VPX_PLANE_V
-                                                                 : VPX_PLANE_U];
+            yuv_frame->planes[yuv_frame->fmt == AOM_IMG_FMT_YV12 ? AOM_PLANE_V
+                                                                 : AOM_PLANE_U];
         break;
       case 2:
         ptr =
-            yuv_frame->planes[yuv_frame->fmt == VPX_IMG_FMT_YV12 ? VPX_PLANE_U
-                                                                 : VPX_PLANE_V];
+            yuv_frame->planes[yuv_frame->fmt == AOM_IMG_FMT_YV12 ? AOM_PLANE_U
+                                                                 : AOM_PLANE_V];
         break;
       default: ptr = yuv_frame->planes[plane];
     }
@@ -216,7 +216,7 @@ void aom_img_write(const aom_image_t *img, FILE *file) {
     const unsigned char *buf = img->planes[plane];
     const int stride = img->stride[plane];
     const int w = aom_img_plane_width(img, plane) *
-                  ((img->fmt & VPX_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
+                  ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
     const int h = aom_img_plane_height(img, plane);
     int y;
 
@@ -234,7 +234,7 @@ int aom_img_read(aom_image_t *img, FILE *file) {
     unsigned char *buf = img->planes[plane];
     const int stride = img->stride[plane];
     const int w = aom_img_plane_width(img, plane) *
-                  ((img->fmt & VPX_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
+                  ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
     const int h = aom_img_plane_height(img, plane);
     int y;
 
@@ -273,10 +273,10 @@ static void highbd_img_upshift(aom_image_t *dst, aom_image_t *src,
     fatal("Unsupported image conversion");
   }
   switch (src->fmt) {
-    case VPX_IMG_FMT_I42016:
-    case VPX_IMG_FMT_I42216:
-    case VPX_IMG_FMT_I44416:
-    case VPX_IMG_FMT_I44016: break;
+    case AOM_IMG_FMT_I42016:
+    case AOM_IMG_FMT_I42216:
+    case AOM_IMG_FMT_I44416:
+    case AOM_IMG_FMT_I44016: break;
     default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
@@ -305,14 +305,14 @@ static void lowbd_img_upshift(aom_image_t *dst, aom_image_t *src,
   if (dst->d_w != src->d_w || dst->d_h != src->d_h ||
       dst->x_chroma_shift != src->x_chroma_shift ||
       dst->y_chroma_shift != src->y_chroma_shift ||
-      dst->fmt != src->fmt + VPX_IMG_FMT_HIGHBITDEPTH || input_shift < 0) {
+      dst->fmt != src->fmt + AOM_IMG_FMT_HIGHBITDEPTH || input_shift < 0) {
     fatal("Unsupported image conversion");
   }
   switch (src->fmt) {
-    case VPX_IMG_FMT_I420:
-    case VPX_IMG_FMT_I422:
-    case VPX_IMG_FMT_I444:
-    case VPX_IMG_FMT_I440: break;
+    case AOM_IMG_FMT_I420:
+    case AOM_IMG_FMT_I422:
+    case AOM_IMG_FMT_I444:
+    case AOM_IMG_FMT_I440: break;
     default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
@@ -335,7 +335,7 @@ static void lowbd_img_upshift(aom_image_t *dst, aom_image_t *src,
 }
 
 void aom_img_upshift(aom_image_t *dst, aom_image_t *src, int input_shift) {
-  if (src->fmt & VPX_IMG_FMT_HIGHBITDEPTH) {
+  if (src->fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
     highbd_img_upshift(dst, src, input_shift);
   } else {
     lowbd_img_upshift(dst, src, input_shift);
@@ -344,16 +344,16 @@ void aom_img_upshift(aom_image_t *dst, aom_image_t *src, int input_shift) {
 
 void aom_img_truncate_16_to_8(aom_image_t *dst, aom_image_t *src) {
   int plane;
-  if (dst->fmt + VPX_IMG_FMT_HIGHBITDEPTH != src->fmt || dst->d_w != src->d_w ||
+  if (dst->fmt + AOM_IMG_FMT_HIGHBITDEPTH != src->fmt || dst->d_w != src->d_w ||
       dst->d_h != src->d_h || dst->x_chroma_shift != src->x_chroma_shift ||
       dst->y_chroma_shift != src->y_chroma_shift) {
     fatal("Unsupported image conversion");
   }
   switch (dst->fmt) {
-    case VPX_IMG_FMT_I420:
-    case VPX_IMG_FMT_I422:
-    case VPX_IMG_FMT_I444:
-    case VPX_IMG_FMT_I440: break;
+    case AOM_IMG_FMT_I420:
+    case AOM_IMG_FMT_I422:
+    case AOM_IMG_FMT_I444:
+    case AOM_IMG_FMT_I440: break;
     default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
@@ -385,10 +385,10 @@ static void highbd_img_downshift(aom_image_t *dst, aom_image_t *src,
     fatal("Unsupported image conversion");
   }
   switch (src->fmt) {
-    case VPX_IMG_FMT_I42016:
-    case VPX_IMG_FMT_I42216:
-    case VPX_IMG_FMT_I44416:
-    case VPX_IMG_FMT_I44016: break;
+    case AOM_IMG_FMT_I42016:
+    case AOM_IMG_FMT_I42216:
+    case AOM_IMG_FMT_I44416:
+    case AOM_IMG_FMT_I44016: break;
     default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
@@ -415,14 +415,14 @@ static void lowbd_img_downshift(aom_image_t *dst, aom_image_t *src,
   if (dst->d_w != src->d_w || dst->d_h != src->d_h ||
       dst->x_chroma_shift != src->x_chroma_shift ||
       dst->y_chroma_shift != src->y_chroma_shift ||
-      src->fmt != dst->fmt + VPX_IMG_FMT_HIGHBITDEPTH || down_shift < 0) {
+      src->fmt != dst->fmt + AOM_IMG_FMT_HIGHBITDEPTH || down_shift < 0) {
     fatal("Unsupported image conversion");
   }
   switch (dst->fmt) {
-    case VPX_IMG_FMT_I420:
-    case VPX_IMG_FMT_I422:
-    case VPX_IMG_FMT_I444:
-    case VPX_IMG_FMT_I440: break;
+    case AOM_IMG_FMT_I420:
+    case AOM_IMG_FMT_I422:
+    case AOM_IMG_FMT_I444:
+    case AOM_IMG_FMT_I440: break;
     default: fatal("Unsupported image conversion"); break;
   }
   for (plane = 0; plane < 3; plane++) {
@@ -445,7 +445,7 @@ static void lowbd_img_downshift(aom_image_t *dst, aom_image_t *src,
 }
 
 void aom_img_downshift(aom_image_t *dst, aom_image_t *src, int down_shift) {
-  if (dst->fmt & VPX_IMG_FMT_HIGHBITDEPTH) {
+  if (dst->fmt & AOM_IMG_FMT_HIGHBITDEPTH) {
     highbd_img_downshift(dst, src, down_shift);
   } else {
     lowbd_img_downshift(dst, src, down_shift);

@@ -193,7 +193,7 @@ static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
   xd->plane[0].pre[0].stride = stride;
 
   step_param = mv_sf->reduce_first_step_size;
-  step_param = VPXMIN(step_param, MAX_MVSEARCH_STEPS - 2);
+  step_param = AOMMIN(step_param, MAX_MVSEARCH_STEPS - 2);
 
   // Ignore mv costing by sending NULL pointer instead of cost arrays
   av1_hex_search(x, &best_ref_mv1_full, step_param, sadpb, 1,
@@ -257,19 +257,19 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
 
   for (mb_row = 0; mb_row < mb_rows; mb_row++) {
     // Source frames are extended to 16 pixels. This is different than
-    //  L/A/G reference frames that have a border of 32 (VPXENCBORDERINPIXELS)
+    //  L/A/G reference frames that have a border of 32 (AOMENCBORDERINPIXELS)
     // A 6/8 tap filter is used for motion search.  This requires 2 pixels
     //  before and 3 pixels after.  So the largest Y mv on a border would
-    //  then be 16 - VPX_INTERP_EXTEND. The UV blocks are half the size of the
+    //  then be 16 - AOM_INTERP_EXTEND. The UV blocks are half the size of the
     //  Y and therefore only extended by 8.  The largest mv that a UV block
-    //  can support is 8 - VPX_INTERP_EXTEND.  A UV mv is half of a Y mv.
-    //  (16 - VPX_INTERP_EXTEND) >> 1 which is greater than
-    //  8 - VPX_INTERP_EXTEND.
+    //  can support is 8 - AOM_INTERP_EXTEND.  A UV mv is half of a Y mv.
+    //  (16 - AOM_INTERP_EXTEND) >> 1 which is greater than
+    //  8 - AOM_INTERP_EXTEND.
     // To keep the mv in play for both Y and UV planes the max that it
-    //  can be on a border is therefore 16 - (2*VPX_INTERP_EXTEND+1).
-    cpi->td.mb.mv_row_min = -((mb_row * 16) + (17 - 2 * VPX_INTERP_EXTEND));
+    //  can be on a border is therefore 16 - (2*AOM_INTERP_EXTEND+1).
+    cpi->td.mb.mv_row_min = -((mb_row * 16) + (17 - 2 * AOM_INTERP_EXTEND));
     cpi->td.mb.mv_row_max =
-        ((mb_rows - 1 - mb_row) * 16) + (17 - 2 * VPX_INTERP_EXTEND);
+        ((mb_rows - 1 - mb_row) * 16) + (17 - 2 * AOM_INTERP_EXTEND);
 
     for (mb_col = 0; mb_col < mb_cols; mb_col++) {
       int i, j, k;
@@ -278,9 +278,9 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
       memset(accumulator, 0, 16 * 16 * 3 * sizeof(accumulator[0]));
       memset(count, 0, 16 * 16 * 3 * sizeof(count[0]));
 
-      cpi->td.mb.mv_col_min = -((mb_col * 16) + (17 - 2 * VPX_INTERP_EXTEND));
+      cpi->td.mb.mv_col_min = -((mb_col * 16) + (17 - 2 * AOM_INTERP_EXTEND));
       cpi->td.mb.mv_col_max =
-          ((mb_cols - 1 - mb_col) * 16) + (17 - 2 * VPX_INTERP_EXTEND);
+          ((mb_cols - 1 - mb_col) * 16) + (17 - 2 * AOM_INTERP_EXTEND);
 
       for (frame = 0; frame < frame_count; frame++) {
         const int thresh_low = 10000;

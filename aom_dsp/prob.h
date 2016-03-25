@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_PROB_H_
-#define VPX_DSP_PROB_H_
+#ifndef AOM_DSP_PROB_H_
+#define AOM_DSP_PROB_H_
 
 #include "./aom_config.h"
 #include "./aom_dsp_common.h"
@@ -65,7 +65,7 @@ static INLINE aom_prob merge_probs(aom_prob pre_prob, const unsigned int ct[2],
                                    unsigned int count_sat,
                                    unsigned int max_update_factor) {
   const aom_prob prob = get_binary_prob(ct[0], ct[1]);
-  const unsigned int count = VPXMIN(ct[0] + ct[1], count_sat);
+  const unsigned int count = AOMMIN(ct[0] + ct[1], count_sat);
   const unsigned int factor = max_update_factor * count / count_sat;
   return weighted_prob(pre_prob, prob, factor);
 }
@@ -82,7 +82,7 @@ static INLINE aom_prob mode_mv_merge_probs(aom_prob pre_prob,
   if (den == 0) {
     return pre_prob;
   } else {
-    const unsigned int count = VPXMIN(den, MODE_MV_COUNT_SAT);
+    const unsigned int count = AOMMIN(den, MODE_MV_COUNT_SAT);
     const unsigned int factor = count_to_update_factor[count];
     const aom_prob prob =
         clip_prob(((int64_t)(ct[0]) * 256 + (den >> 1)) / den);
@@ -99,4 +99,4 @@ DECLARE_ALIGNED(16, extern const uint8_t, aom_norm[256]);
 }  // extern "C"
 #endif
 
-#endif  // VPX_DSP_PROB_H_
+#endif  // AOM_DSP_PROB_H_

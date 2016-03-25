@@ -197,10 +197,10 @@ static void set_offsets(AV1_COMP *cpi, const TileInfo *const tile,
 
   // Set up limit values for MV components.
   // Mv beyond the range do not produce new/different prediction block.
-  x->mv_row_min = -(((mi_row + mi_height) * MI_SIZE) + VPX_INTERP_EXTEND);
-  x->mv_col_min = -(((mi_col + mi_width) * MI_SIZE) + VPX_INTERP_EXTEND);
-  x->mv_row_max = (cm->mi_rows - mi_row) * MI_SIZE + VPX_INTERP_EXTEND;
-  x->mv_col_max = (cm->mi_cols - mi_col) * MI_SIZE + VPX_INTERP_EXTEND;
+  x->mv_row_min = -(((mi_row + mi_height) * MI_SIZE) + AOM_INTERP_EXTEND);
+  x->mv_col_min = -(((mi_col + mi_width) * MI_SIZE) + AOM_INTERP_EXTEND);
+  x->mv_row_max = (cm->mi_rows - mi_row) * MI_SIZE + AOM_INTERP_EXTEND;
+  x->mv_col_max = (cm->mi_cols - mi_col) * MI_SIZE + AOM_INTERP_EXTEND;
 
   // Set up distance of MB to edge of frame in 1/8th pel units.
   assert(!(mi_col & (mi_width - 1)) && !(mi_row & (mi_height - 1)));
@@ -907,8 +907,8 @@ static void update_state(AV1_COMP *cpi, ThreadData *td, PICK_MODE_CONTEXT *ctx,
   const struct segmentation *const seg = &cm->seg;
   const int bw = num_8x8_blocks_wide_lookup[mi->mbmi.sb_type];
   const int bh = num_8x8_blocks_high_lookup[mi->mbmi.sb_type];
-  const int x_mis = VPXMIN(bw, cm->mi_cols - mi_col);
-  const int y_mis = VPXMIN(bh, cm->mi_rows - mi_row);
+  const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
+  const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
   MV_REF *const frame_mvs = cm->cur_frame->mvs + mi_row * cm->mi_cols + mi_col;
   int w, h;
 
@@ -1367,7 +1367,7 @@ static void encode_sb(AV1_COMP *cpi, ThreadData *td,
 static BLOCK_SIZE find_partition_size(BLOCK_SIZE bsize, int rows_left,
                                       int cols_left, int *bh, int *bw) {
   if (rows_left <= 0 || cols_left <= 0) {
-    return VPXMIN(bsize, BLOCK_8X8);
+    return AOMMIN(bsize, BLOCK_8X8);
   } else {
     for (; bsize > 0; bsize -= 3) {
       *bh = num_8x8_blocks_high_lookup[bsize];
@@ -1724,8 +1724,8 @@ static void get_sb_partition_size_range(MACROBLOCKD *xd, MODE_INFO **mi_8x8,
       MODE_INFO *mi = mi_8x8[index + j];
       BLOCK_SIZE sb_type = mi ? mi->mbmi.sb_type : 0;
       bs_hist[sb_type]++;
-      *min_block_size = VPXMIN(*min_block_size, sb_type);
-      *max_block_size = VPXMAX(*max_block_size, sb_type);
+      *min_block_size = AOMMIN(*min_block_size, sb_type);
+      *max_block_size = AOMMAX(*max_block_size, sb_type);
     }
     index += xd->mi_stride;
   }
@@ -1799,7 +1799,7 @@ static void rd_auto_partition_range(AV1_COMP *cpi, const TileInfo *const tile,
     min_size = BLOCK_4X4;
   } else {
     min_size =
-        VPXMIN(cpi->sf.rd_auto_partition_min_limit, VPXMIN(min_size, max_size));
+        AOMMIN(cpi->sf.rd_auto_partition_min_limit, AOMMIN(min_size, max_size));
   }
 
   // When use_square_partition_only is true, make sure at least one square
@@ -1835,8 +1835,8 @@ static void set_partition_range(AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row,
       for (idx = 0; idx < mi_width; ++idx) {
         mi = prev_mi[idy * cm->mi_stride + idx];
         bs = mi ? mi->mbmi.sb_type : bsize;
-        min_size = VPXMIN(min_size, bs);
-        max_size = VPXMAX(max_size, bs);
+        min_size = AOMMIN(min_size, bs);
+        max_size = AOMMAX(max_size, bs);
       }
     }
   }
@@ -1845,8 +1845,8 @@ static void set_partition_range(AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row,
     for (idy = 0; idy < mi_height; ++idy) {
       mi = xd->mi[idy * cm->mi_stride - 1];
       bs = mi ? mi->mbmi.sb_type : bsize;
-      min_size = VPXMIN(min_size, bs);
-      max_size = VPXMAX(max_size, bs);
+      min_size = AOMMIN(min_size, bs);
+      max_size = AOMMAX(max_size, bs);
     }
   }
 
@@ -1854,8 +1854,8 @@ static void set_partition_range(AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row,
     for (idx = 0; idx < mi_width; ++idx) {
       mi = xd->mi[idx - cm->mi_stride];
       bs = mi ? mi->mbmi.sb_type : bsize;
-      min_size = VPXMIN(min_size, bs);
-      max_size = VPXMAX(max_size, bs);
+      min_size = AOMMIN(min_size, bs);
+      max_size = AOMMAX(max_size, bs);
     }
   }
 
@@ -2025,9 +2025,9 @@ static void rd_pick_partition(AV1_COMP *cpi, ThreadData *td,
     int mb_row = mi_row >> 1;
     int mb_col = mi_col >> 1;
     int mb_row_end =
-        VPXMIN(mb_row + num_16x16_blocks_high_lookup[bsize], cm->mb_rows);
+        AOMMIN(mb_row + num_16x16_blocks_high_lookup[bsize], cm->mb_rows);
     int mb_col_end =
-        VPXMIN(mb_col + num_16x16_blocks_wide_lookup[bsize], cm->mb_cols);
+        AOMMIN(mb_col + num_16x16_blocks_wide_lookup[bsize], cm->mb_cols);
     int r, c;
 
     // compute a complexity measure, basically measure inconsistency of motion
@@ -2115,9 +2115,9 @@ static void rd_pick_partition(AV1_COMP *cpi, ThreadData *td,
           int mb_row = mi_row >> 1;
           int mb_col = mi_col >> 1;
           int mb_row_end =
-              VPXMIN(mb_row + num_16x16_blocks_high_lookup[bsize], cm->mb_rows);
+              AOMMIN(mb_row + num_16x16_blocks_high_lookup[bsize], cm->mb_rows);
           int mb_col_end =
-              VPXMIN(mb_col + num_16x16_blocks_wide_lookup[bsize], cm->mb_cols);
+              AOMMIN(mb_col + num_16x16_blocks_wide_lookup[bsize], cm->mb_cols);
           int r, c;
 
           int skip = 1;
@@ -2431,8 +2431,8 @@ static int check_dual_ref_flags(AV1_COMP *cpi) {
   if (segfeature_active(&cpi->common.seg, 1, SEG_LVL_REF_FRAME)) {
     return 0;
   } else {
-    return (!!(ref_flags & VPX_GOLD_FLAG) + !!(ref_flags & VPX_LAST_FLAG) +
-            !!(ref_flags & VPX_ALT_FLAG)) >= 2;
+    return (!!(ref_flags & AOM_GOLD_FLAG) + !!(ref_flags & AOM_LAST_FLAG) +
+            !!(ref_flags & AOM_ALT_FLAG)) >= 2;
   }
 }
 
@@ -2620,7 +2620,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #endif
 
     // If allowed, encoding tiles in parallel with one thread handling one tile.
-    if (VPXMIN(cpi->oxcf.max_threads, 1 << cm->log2_tile_cols) > 1)
+    if (AOMMIN(cpi->oxcf.max_threads, 1 << cm->log2_tile_cols) > 1)
       av1_encode_tiles_mt(cpi);
     else
       encode_tiles(cpi);
@@ -2841,11 +2841,11 @@ static void encode_superblock(AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     int plane;
     mbmi->skip = 1;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane)
-      av1_encode_intra_block_plane(x, VPXMAX(bsize, BLOCK_8X8), plane);
+      av1_encode_intra_block_plane(x, AOMMAX(bsize, BLOCK_8X8), plane);
     if (output_enabled)
       sum_intra_stats(td->counts, mi, xd->above_mi, xd->left_mi,
                       frame_is_intra_only(cm));
-    av1_tokenize_sb(cpi, td, t, !output_enabled, VPXMAX(bsize, BLOCK_8X8));
+    av1_tokenize_sb(cpi, td, t, !output_enabled, AOMMAX(bsize, BLOCK_8X8));
   } else {
     int ref;
     const int is_compound = has_second_ref(mbmi);
@@ -2858,13 +2858,13 @@ static void encode_superblock(AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     }
     if (!(cpi->sf.reuse_inter_pred_sby && ctx->pred_pixel_ready) || seg_skip)
       av1_build_inter_predictors_sby(xd, mi_row, mi_col,
-                                      VPXMAX(bsize, BLOCK_8X8));
+                                      AOMMAX(bsize, BLOCK_8X8));
 
     av1_build_inter_predictors_sbuv(xd, mi_row, mi_col,
-                                     VPXMAX(bsize, BLOCK_8X8));
+                                     AOMMAX(bsize, BLOCK_8X8));
 
-    av1_encode_sb(x, VPXMAX(bsize, BLOCK_8X8));
-    av1_tokenize_sb(cpi, td, t, !output_enabled, VPXMAX(bsize, BLOCK_8X8));
+    av1_encode_sb(x, AOMMAX(bsize, BLOCK_8X8));
+    av1_tokenize_sb(cpi, td, t, !output_enabled, AOMMAX(bsize, BLOCK_8X8));
   }
 
   if (output_enabled) {
@@ -2877,7 +2877,7 @@ static void encode_superblock(AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
       TX_SIZE tx_size;
       // The new intra coding scheme requires no change of transform size
       if (is_inter_block(&mi->mbmi)) {
-        tx_size = VPXMIN(tx_mode_to_biggest_tx_size[cm->tx_mode],
+        tx_size = AOMMIN(tx_mode_to_biggest_tx_size[cm->tx_mode],
                          max_txsize_lookup[bsize]);
       } else {
         tx_size = (bsize >= BLOCK_8X8) ? mbmi->tx_size : TX_4X4;

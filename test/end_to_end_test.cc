@@ -40,19 +40,19 @@ typedef struct {
 } TestVideoParam;
 
 const TestVideoParam kTestVectors[] = {
-  { "park_joy_90p_8_420.y4m", 8, VPX_IMG_FMT_I420, VPX_BITS_8, 0 },
-  { "park_joy_90p_8_422.y4m", 8, VPX_IMG_FMT_I422, VPX_BITS_8, 1 },
-  { "park_joy_90p_8_444.y4m", 8, VPX_IMG_FMT_I444, VPX_BITS_8, 1 },
-  { "park_joy_90p_8_440.yuv", 8, VPX_IMG_FMT_I440, VPX_BITS_8, 1 },
+  { "park_joy_90p_8_420.y4m", 8, AOM_IMG_FMT_I420, AOM_BITS_8, 0 },
+  { "park_joy_90p_8_422.y4m", 8, AOM_IMG_FMT_I422, AOM_BITS_8, 1 },
+  { "park_joy_90p_8_444.y4m", 8, AOM_IMG_FMT_I444, AOM_BITS_8, 1 },
+  { "park_joy_90p_8_440.yuv", 8, AOM_IMG_FMT_I440, AOM_BITS_8, 1 },
 #if CONFIG_AOM_HIGHBITDEPTH
-  { "park_joy_90p_10_420.y4m", 10, VPX_IMG_FMT_I42016, VPX_BITS_10, 2 },
-  { "park_joy_90p_10_422.y4m", 10, VPX_IMG_FMT_I42216, VPX_BITS_10, 3 },
-  { "park_joy_90p_10_444.y4m", 10, VPX_IMG_FMT_I44416, VPX_BITS_10, 3 },
-  { "park_joy_90p_10_440.yuv", 10, VPX_IMG_FMT_I44016, VPX_BITS_10, 3 },
-  { "park_joy_90p_12_420.y4m", 12, VPX_IMG_FMT_I42016, VPX_BITS_12, 2 },
-  { "park_joy_90p_12_422.y4m", 12, VPX_IMG_FMT_I42216, VPX_BITS_12, 3 },
-  { "park_joy_90p_12_444.y4m", 12, VPX_IMG_FMT_I44416, VPX_BITS_12, 3 },
-  { "park_joy_90p_12_440.yuv", 12, VPX_IMG_FMT_I44016, VPX_BITS_12, 3 },
+  { "park_joy_90p_10_420.y4m", 10, AOM_IMG_FMT_I42016, AOM_BITS_10, 2 },
+  { "park_joy_90p_10_422.y4m", 10, AOM_IMG_FMT_I42216, AOM_BITS_10, 3 },
+  { "park_joy_90p_10_444.y4m", 10, AOM_IMG_FMT_I44416, AOM_BITS_10, 3 },
+  { "park_joy_90p_10_440.yuv", 10, AOM_IMG_FMT_I44016, AOM_BITS_10, 3 },
+  { "park_joy_90p_12_420.y4m", 12, AOM_IMG_FMT_I42016, AOM_BITS_12, 2 },
+  { "park_joy_90p_12_422.y4m", 12, AOM_IMG_FMT_I42216, AOM_BITS_12, 3 },
+  { "park_joy_90p_12_444.y4m", 12, AOM_IMG_FMT_I44416, AOM_BITS_12, 3 },
+  { "park_joy_90p_12_440.yuv", 12, AOM_IMG_FMT_I44016, AOM_BITS_12, 3 },
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 };
 
@@ -90,10 +90,10 @@ class EndToEndTestLarge
     SetMode(encoding_mode_);
     if (encoding_mode_ != ::libaom_test::kRealTime) {
       cfg_.g_lag_in_frames = 5;
-      cfg_.rc_end_usage = VPX_VBR;
+      cfg_.rc_end_usage = AOM_VBR;
     } else {
       cfg_.g_lag_in_frames = 0;
-      cfg_.rc_end_usage = VPX_CBR;
+      cfg_.rc_end_usage = AOM_CBR;
       cfg_.rc_buf_sz = 1000;
       cfg_.rc_buf_initial_sz = 500;
       cfg_.rc_buf_optimal_sz = 600;
@@ -150,8 +150,8 @@ TEST_P(EndToEndTestLarge, EndtoEndPSNRTest) {
   cfg_.g_profile = test_video_param_.profile;
   cfg_.g_input_bit_depth = test_video_param_.input_bit_depth;
   cfg_.g_bit_depth = test_video_param_.bit_depth;
-  init_flags_ = VPX_CODEC_USE_PSNR;
-  if (cfg_.g_bit_depth > 8) init_flags_ |= VPX_CODEC_USE_HIGHBITDEPTH;
+  init_flags_ = AOM_CODEC_USE_PSNR;
+  if (cfg_.g_bit_depth > 8) init_flags_ |= AOM_CODEC_USE_HIGHBITDEPTH;
 
   libaom_test::VideoSource *video;
   if (is_extension_y4m(test_video_param_.filename)) {

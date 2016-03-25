@@ -45,21 +45,21 @@ static int mode_to_num_layers[12] = { 1, 2, 2, 3, 3, 3, 3, 5, 2, 3, 3, 3 };
 // For rate control encoding stats.
 struct RateControlMetrics {
   // Number of input frames per layer.
-  int layer_input_frames[VPX_TS_MAX_LAYERS];
+  int layer_input_frames[AOM_TS_MAX_LAYERS];
   // Total (cumulative) number of encoded frames per layer.
-  int layer_tot_enc_frames[VPX_TS_MAX_LAYERS];
+  int layer_tot_enc_frames[AOM_TS_MAX_LAYERS];
   // Number of encoded non-key frames per layer.
-  int layer_enc_frames[VPX_TS_MAX_LAYERS];
+  int layer_enc_frames[AOM_TS_MAX_LAYERS];
   // Framerate per layer layer (cumulative).
-  double layer_framerate[VPX_TS_MAX_LAYERS];
+  double layer_framerate[AOM_TS_MAX_LAYERS];
   // Target average frame size per layer (per-frame-bandwidth per layer).
-  double layer_pfb[VPX_TS_MAX_LAYERS];
+  double layer_pfb[AOM_TS_MAX_LAYERS];
   // Actual average frame size per layer.
-  double layer_avg_frame_size[VPX_TS_MAX_LAYERS];
+  double layer_avg_frame_size[AOM_TS_MAX_LAYERS];
   // Average rate mismatch per layer (|target - actual| / target).
-  double layer_avg_rate_mismatch[VPX_TS_MAX_LAYERS];
+  double layer_avg_rate_mismatch[AOM_TS_MAX_LAYERS];
   // Actual encoding bitrate per layer (cumulative).
-  double layer_encoding_bitrate[VPX_TS_MAX_LAYERS];
+  double layer_encoding_bitrate[AOM_TS_MAX_LAYERS];
   // Average of the short-time encoder actual bitrate.
   // TODO(marpan): Should we add these short-time stats for each layer?
   double avg_st_encoding_bitrate;
@@ -69,7 +69,7 @@ struct RateControlMetrics {
   int window_size;
   // Number of window measurements.
   int window_count;
-  int layer_target_bitrate[VPX_MAX_LAYERS];
+  int layer_target_bitrate[AOM_MAX_LAYERS];
 };
 
 // Note: these rate control metrics assume only 1 key frame in the
@@ -175,7 +175,7 @@ static void set_temporal_layer_pattern(int layering_mode,
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // Update L only.
       layer_flags[0] =
-          VPX_EFLAG_FORCE_KF | VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF;
+          AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF;
       break;
     }
     case 1: {
@@ -189,14 +189,14 @@ static void set_temporal_layer_pattern(int layering_mode,
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
 #if 1
       // 0=L, 1=GF, Intra-layer prediction enabled.
-      layer_flags[0] = VPX_EFLAG_FORCE_KF | VP8_EFLAG_NO_UPD_GF |
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_UPD_GF |
                        VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_REF_GF |
                        VP8_EFLAG_NO_REF_ARF;
       layer_flags[1] =
           VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_REF_ARF;
 #else
       // 0=L, 1=GF, Intra-layer prediction disabled.
-      layer_flags[0] = VPX_EFLAG_FORCE_KF | VP8_EFLAG_NO_UPD_GF |
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_UPD_GF |
                        VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_REF_GF |
                        VP8_EFLAG_NO_REF_ARF;
       layer_flags[1] = VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST |
@@ -214,7 +214,7 @@ static void set_temporal_layer_pattern(int layering_mode,
       cfg->ts_rate_decimator[1] = 1;
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // 0=L, 1=GF, Intra-layer prediction enabled.
-      layer_flags[0] = VPX_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
                        VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_GF |
                        VP8_EFLAG_NO_UPD_ARF;
       layer_flags[1] = layer_flags[2] =
@@ -233,7 +233,7 @@ static void set_temporal_layer_pattern(int layering_mode,
       cfg->ts_rate_decimator[2] = 1;
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // 0=L, 1=GF, 2=ARF, Intra-layer prediction enabled.
-      layer_flags[0] = VPX_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
                        VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_GF |
                        VP8_EFLAG_NO_UPD_ARF;
       layer_flags[3] =
@@ -253,7 +253,7 @@ static void set_temporal_layer_pattern(int layering_mode,
       cfg->ts_rate_decimator[2] = 1;
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // 0=L, 1=GF, 2=ARF, Intra-layer prediction disabled.
-      layer_flags[0] = VPX_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
                        VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_GF |
                        VP8_EFLAG_NO_UPD_ARF;
       layer_flags[2] = VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_REF_ARF |
@@ -275,7 +275,7 @@ static void set_temporal_layer_pattern(int layering_mode,
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // 0=L, 1=GF, 2=ARF, Intra-layer prediction enabled in layer 1, disabled
       // in layer 2.
-      layer_flags[0] = VPX_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
                        VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_GF |
                        VP8_EFLAG_NO_UPD_ARF;
       layer_flags[2] =
@@ -296,7 +296,7 @@ static void set_temporal_layer_pattern(int layering_mode,
       cfg->ts_rate_decimator[2] = 1;
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // 0=L, 1=GF, 2=ARF, Intra-layer prediction enabled.
-      layer_flags[0] = VPX_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
                        VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_GF |
                        VP8_EFLAG_NO_UPD_ARF;
       layer_flags[2] =
@@ -318,7 +318,7 @@ static void set_temporal_layer_pattern(int layering_mode,
       cfg->ts_rate_decimator[3] = 2;
       cfg->ts_rate_decimator[4] = 1;
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
-      layer_flags[0] = VPX_EFLAG_FORCE_KF;
+      layer_flags[0] = AOM_EFLAG_FORCE_KF;
       layer_flags[1] = layer_flags[3] = layer_flags[5] = layer_flags[7] =
           layer_flags[9] = layer_flags[11] = layer_flags[13] = layer_flags[15] =
               VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_GF |
@@ -345,7 +345,7 @@ static void set_temporal_layer_pattern(int layering_mode,
 
       // Layer 0: predict from L and ARF, update L and G.
       layer_flags[0] =
-          VPX_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_UPD_ARF;
+          AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_UPD_ARF;
       // Layer 1: sync point: predict from L and ARF, and update G.
       layer_flags[1] =
           VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_ARF;
@@ -376,7 +376,7 @@ static void set_temporal_layer_pattern(int layering_mode,
       cfg->ts_rate_decimator[2] = 1;
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // 0=L, 1=GF, 2=ARF.
-      layer_flags[0] = VPX_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
                        VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_GF |
                        VP8_EFLAG_NO_UPD_ARF;
       layer_flags[1] = VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_REF_ARF |
@@ -409,7 +409,7 @@ static void set_temporal_layer_pattern(int layering_mode,
       // 0=L, 1=GF, 2=ARF.
       // Layer 0: predict from L and ARF; update L and G.
       layer_flags[0] =
-          VPX_EFLAG_FORCE_KF | VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_REF_GF;
+          AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_REF_GF;
       // Layer 2: sync point: predict from L and ARF; update none.
       layer_flags[1] = VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_UPD_GF |
                        VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST |
@@ -463,7 +463,7 @@ static void set_temporal_layer_pattern(int layering_mode,
 }
 
 int main(int argc, char **argv) {
-  VpxVideoWriter *outfile[VPX_TS_MAX_LAYERS] = { NULL };
+  VpxVideoWriter *outfile[AOM_TS_MAX_LAYERS] = { NULL };
   aom_codec_ctx_t codec;
   aom_codec_enc_cfg_t cfg;
   int frame_cnt = 0;
@@ -479,9 +479,9 @@ int main(int argc, char **argv) {
   int pts = 0;             // PTS starts at 0.
   int frame_duration = 1;  // 1 timebase tick per frame.
   int layering_mode = 0;
-  int layer_flags[VPX_TS_MAX_PERIODICITY] = { 0 };
+  int layer_flags[AOM_TS_MAX_PERIODICITY] = { 0 };
   int flag_periodicity = 1;
-#if VPX_ENCODER_ABI_VERSION > (4 + VPX_CODEC_ABI_VERSION)
+#if AOM_ENCODER_ABI_VERSION > (4 + AOM_CODEC_ABI_VERSION)
   aom_svc_layer_id_t layer_id = { 0, 0 };
 #else
   aom_svc_layer_id_t layer_id = { 0 };
@@ -492,7 +492,7 @@ int main(int argc, char **argv) {
   int64_t cx_time = 0;
   const int min_args_base = 11;
 #if CONFIG_AOM_HIGHBITDEPTH
-  aom_bit_depth_t bit_depth = VPX_BITS_8;
+  aom_bit_depth_t bit_depth = AOM_BITS_8;
   int input_bit_depth = 8;
   const int min_args = min_args_base + 1;
 #else
@@ -543,26 +543,26 @@ int main(int argc, char **argv) {
 #if CONFIG_AOM_HIGHBITDEPTH
   switch (strtol(argv[argc - 1], NULL, 0)) {
     case 8:
-      bit_depth = VPX_BITS_8;
+      bit_depth = AOM_BITS_8;
       input_bit_depth = 8;
       break;
     case 10:
-      bit_depth = VPX_BITS_10;
+      bit_depth = AOM_BITS_10;
       input_bit_depth = 10;
       break;
     case 12:
-      bit_depth = VPX_BITS_12;
+      bit_depth = AOM_BITS_12;
       input_bit_depth = 12;
       break;
     default: die("Invalid bit depth (8, 10, 12) %s", argv[argc - 1]);
   }
   if (!aom_img_alloc(
-          &raw, bit_depth == VPX_BITS_8 ? VPX_IMG_FMT_I420 : VPX_IMG_FMT_I42016,
+          &raw, bit_depth == AOM_BITS_8 ? AOM_IMG_FMT_I420 : AOM_IMG_FMT_I42016,
           width, height, 32)) {
     die("Failed to allocate image", width, height);
   }
 #else
-  if (!aom_img_alloc(&raw, VPX_IMG_FMT_I420, width, height, 32)) {
+  if (!aom_img_alloc(&raw, AOM_IMG_FMT_I420, width, height, 32)) {
     die("Failed to allocate image", width, height);
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -579,7 +579,7 @@ int main(int argc, char **argv) {
   cfg.g_h = height;
 
 #if CONFIG_AOM_HIGHBITDEPTH
-  if (bit_depth != VPX_BITS_8) {
+  if (bit_depth != AOM_BITS_8) {
     cfg.g_bit_depth = bit_depth;
     cfg.g_input_bit_depth = input_bit_depth;
     cfg.g_profile = 2;
@@ -606,7 +606,7 @@ int main(int argc, char **argv) {
 
   // Real time parameters.
   cfg.rc_dropframe_thresh = strtol(argv[9], NULL, 0);
-  cfg.rc_end_usage = VPX_CBR;
+  cfg.rc_end_usage = AOM_CBR;
   cfg.rc_min_quantizer = 2;
   cfg.rc_max_quantizer = 56;
   if (strncmp(encoder->name, "vp9", 3) == 0) cfg.rc_max_quantizer = 52;
@@ -625,7 +625,7 @@ int main(int argc, char **argv) {
   // Enable error resilient mode.
   cfg.g_error_resilient = 1;
   cfg.g_lag_in_frames = 0;
-  cfg.kf_mode = VPX_KF_AUTO;
+  cfg.kf_mode = AOM_KF_AUTO;
 
   // Disable automatic keyframe placement.
   cfg.kf_min_dist = cfg.kf_max_dist = 3000;
@@ -670,7 +670,7 @@ int main(int argc, char **argv) {
 #if CONFIG_AOM_HIGHBITDEPTH
   if (aom_codec_enc_init(
           &codec, encoder->codec_interface(), &cfg,
-          bit_depth == VPX_BITS_8 ? 0 : VPX_CODEC_USE_HIGHBITDEPTH))
+          bit_depth == AOM_BITS_8 ? 0 : AOM_CODEC_USE_HIGHBITDEPTH))
 #else
   if (aom_codec_enc_init(&codec, encoder->codec_interface(), &cfg, 0))
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -717,7 +717,7 @@ int main(int argc, char **argv) {
     struct aom_usec_timer timer;
     aom_codec_iter_t iter = NULL;
     const aom_codec_cx_pkt_t *pkt;
-#if VPX_ENCODER_ABI_VERSION > (4 + VPX_CODEC_ABI_VERSION)
+#if AOM_ENCODER_ABI_VERSION > (4 + AOM_CODEC_ABI_VERSION)
     // Update the temporal layer_id. No spatial layers in this test.
     layer_id.spatial_layer_id = 0;
 #endif
@@ -735,20 +735,20 @@ int main(int argc, char **argv) {
     if (frame_avail) ++rc.layer_input_frames[layer_id.temporal_layer_id];
     aom_usec_timer_start(&timer);
     if (aom_codec_encode(&codec, frame_avail ? &raw : NULL, pts, 1, flags,
-                         VPX_DL_REALTIME)) {
+                         AOM_DL_REALTIME)) {
       die_codec(&codec, "Failed to encode frame");
     }
     aom_usec_timer_mark(&timer);
     cx_time += aom_usec_timer_elapsed(&timer);
     // Reset KF flag.
     if (layering_mode != 7) {
-      layer_flags[0] &= ~VPX_EFLAG_FORCE_KF;
+      layer_flags[0] &= ~AOM_EFLAG_FORCE_KF;
     }
     got_data = 0;
     while ((pkt = aom_codec_get_cx_data(&codec, &iter))) {
       got_data = 1;
       switch (pkt->kind) {
-        case VPX_CODEC_CX_FRAME_PKT:
+        case AOM_CODEC_CX_FRAME_PKT:
           for (i = cfg.ts_layer_id[frame_cnt % cfg.ts_periodicity];
                i < cfg.ts_number_layers; ++i) {
             aom_video_writer_write_frame(outfile[i], pkt->data.frame.buf,
@@ -757,7 +757,7 @@ int main(int argc, char **argv) {
             rc.layer_encoding_bitrate[i] += 8.0 * pkt->data.frame.sz;
             // Keep count of rate control stats per layer (for non-key frames).
             if (i == cfg.ts_layer_id[frame_cnt % cfg.ts_periodicity] &&
-                !(pkt->data.frame.flags & VPX_FRAME_IS_KEY)) {
+                !(pkt->data.frame.flags & AOM_FRAME_IS_KEY)) {
               rc.layer_avg_frame_size[i] += 8.0 * pkt->data.frame.sz;
               rc.layer_avg_rate_mismatch[i] +=
                   fabs(8.0 * pkt->data.frame.sz - rc.layer_pfb[i]) /

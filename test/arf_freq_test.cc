@@ -44,11 +44,11 @@ typedef struct {
 
 const TestVideoParam kTestVectors[] = {
   // artificially increase framerate to trigger default check
-  { "hantro_collage_w352h288.yuv", 352, 288, 5000, 1, 8, VPX_IMG_FMT_I420,
-    VPX_BITS_8, 0 },
-  { "hantro_collage_w352h288.yuv", 352, 288, 30, 1, 8, VPX_IMG_FMT_I420,
-    VPX_BITS_8, 0 },
-  { "rush_hour_444.y4m", 352, 288, 30, 1, 8, VPX_IMG_FMT_I444, VPX_BITS_8, 1 },
+  { "hantro_collage_w352h288.yuv", 352, 288, 5000, 1, 8, AOM_IMG_FMT_I420,
+    AOM_BITS_8, 0 },
+  { "hantro_collage_w352h288.yuv", 352, 288, 30, 1, 8, AOM_IMG_FMT_I420,
+    AOM_BITS_8, 0 },
+  { "rush_hour_444.y4m", 352, 288, 30, 1, 8, AOM_IMG_FMT_I444, AOM_BITS_8, 1 },
 #if CONFIG_AOM_HIGHBITDEPTH
 // Add list of profile 2/3 test videos here ...
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -90,10 +90,10 @@ class ArfFreqTest
     SetMode(test_encode_param_.mode);
     if (test_encode_param_.mode != ::libaom_test::kRealTime) {
       cfg_.g_lag_in_frames = 25;
-      cfg_.rc_end_usage = VPX_VBR;
+      cfg_.rc_end_usage = AOM_VBR;
     } else {
       cfg_.g_lag_in_frames = 0;
-      cfg_.rc_end_usage = VPX_CBR;
+      cfg_.rc_end_usage = AOM_CBR;
       cfg_.rc_buf_sz = 1000;
       cfg_.rc_buf_initial_sz = 500;
       cfg_.rc_buf_optimal_sz = 600;
@@ -124,7 +124,7 @@ class ArfFreqTest
   }
 
   virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
-    if (pkt->kind != VPX_CODEC_CX_FRAME_PKT) return;
+    if (pkt->kind != AOM_CODEC_CX_FRAME_PKT) return;
     const int frames = GetNumFramesInPkt(pkt);
     if (frames == 1) {
       run_of_visible_frames_++;
@@ -185,8 +185,8 @@ TEST_P(ArfFreqTest, MinArfFreqTest) {
   cfg_.g_profile = test_video_param_.profile;
   cfg_.g_input_bit_depth = test_video_param_.input_bit_depth;
   cfg_.g_bit_depth = test_video_param_.bit_depth;
-  init_flags_ = VPX_CODEC_USE_PSNR;
-  if (cfg_.g_bit_depth > 8) init_flags_ |= VPX_CODEC_USE_HIGHBITDEPTH;
+  init_flags_ = AOM_CODEC_USE_PSNR;
+  if (cfg_.g_bit_depth > 8) init_flags_ |= AOM_CODEC_USE_HIGHBITDEPTH;
 
   libaom_test::VideoSource *video;
   if (is_extension_y4m(test_video_param_.filename)) {

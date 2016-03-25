@@ -36,8 +36,8 @@
  * Once initialized, the instance is manged using other functions from
  * the aom_codec_* family.
  */
-#ifndef VPX_VPX_CODEC_H_
-#define VPX_VPX_CODEC_H_
+#ifndef AOM_AOM_CODEC_H_
+#define AOM_AOM_CODEC_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,31 +84,31 @@ extern "C" {
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures
  */
-#define VPX_CODEC_ABI_VERSION (3 + VPX_IMAGE_ABI_VERSION) /**<\hideinitializer*/
+#define AOM_CODEC_ABI_VERSION (3 + AOM_IMAGE_ABI_VERSION) /**<\hideinitializer*/
 
 /*!\brief Algorithm return codes */
 typedef enum {
   /*!\brief Operation completed without error */
-  VPX_CODEC_OK,
+  AOM_CODEC_OK,
 
   /*!\brief Unspecified error */
-  VPX_CODEC_ERROR,
+  AOM_CODEC_ERROR,
 
   /*!\brief Memory operation failed */
-  VPX_CODEC_MEM_ERROR,
+  AOM_CODEC_MEM_ERROR,
 
   /*!\brief ABI version mismatch */
-  VPX_CODEC_ABI_MISMATCH,
+  AOM_CODEC_ABI_MISMATCH,
 
   /*!\brief Algorithm does not have required capability */
-  VPX_CODEC_INCAPABLE,
+  AOM_CODEC_INCAPABLE,
 
   /*!\brief The given bitstream is not supported.
    *
    * The bitstream was unable to be parsed at the highest level. The decoder
    * is unable to proceed. This error \ref SHOULD be treated as fatal to the
    * stream. */
-  VPX_CODEC_UNSUP_BITSTREAM,
+  AOM_CODEC_UNSUP_BITSTREAM,
 
   /*!\brief Encoded bitstream uses an unsupported feature
    *
@@ -117,7 +117,7 @@ typedef enum {
    * pictures from being properly decoded. This error \ref MAY be treated as
    * fatal to the stream or \ref MAY be treated as fatal to the current GOP.
    */
-  VPX_CODEC_UNSUP_FEATURE,
+  AOM_CODEC_UNSUP_FEATURE,
 
   /*!\brief The coded data for this stream is corrupt or incomplete
    *
@@ -127,17 +127,17 @@ typedef enum {
    * stream or \ref MAY be treated as fatal to the current GOP. If decoding
    * is continued for the current GOP, artifacts may be present.
    */
-  VPX_CODEC_CORRUPT_FRAME,
+  AOM_CODEC_CORRUPT_FRAME,
 
   /*!\brief An application-supplied parameter is not valid.
    *
    */
-  VPX_CODEC_INVALID_PARAM,
+  AOM_CODEC_INVALID_PARAM,
 
   /*!\brief An iterator reached the end of list.
    *
    */
-  VPX_CODEC_LIST_END
+  AOM_CODEC_LIST_END
 
 } aom_codec_err_t;
 
@@ -147,18 +147,18 @@ typedef enum {
  *  ::aom_codec_iface_t interface structure. Capabilities are extra interfaces
  *  or functionality, and are not required to be supported.
  *
- *  The available flags are specified by VPX_CODEC_CAP_* defines.
+ *  The available flags are specified by AOM_CODEC_CAP_* defines.
  */
 typedef long aom_codec_caps_t;
-#define VPX_CODEC_CAP_DECODER 0x1 /**< Is a decoder */
-#define VPX_CODEC_CAP_ENCODER 0x2 /**< Is an encoder */
+#define AOM_CODEC_CAP_DECODER 0x1 /**< Is a decoder */
+#define AOM_CODEC_CAP_ENCODER 0x2 /**< Is an encoder */
 
 /*! \brief Initialization-time Feature Enabling
  *
  *  Certain codec features must be known at initialization time, to allow for
  *  proper memory allocation.
  *
- *  The available flags are specified by VPX_CODEC_USE_* defines.
+ *  The available flags are specified by AOM_CODEC_USE_* defines.
  */
 typedef long aom_codec_flags_t;
 
@@ -211,9 +211,9 @@ typedef struct aom_codec_ctx {
  * This enumeration determines the bit depth of the codec.
  */
 typedef enum aom_bit_depth {
-  VPX_BITS_8 = 8,   /**<  8 bits */
-  VPX_BITS_10 = 10, /**< 10 bits */
-  VPX_BITS_12 = 12, /**< 12 bits */
+  AOM_BITS_8 = 8,   /**<  8 bits */
+  AOM_BITS_10 = 10, /**< 10 bits */
+  AOM_BITS_12 = 12, /**< 12 bits */
 } aom_bit_depth_t;
 
 /*
@@ -236,11 +236,11 @@ typedef enum aom_bit_depth {
  *
  */
 int aom_codec_version(void);
-#define VPX_VERSION_MAJOR(v) \
+#define AOM_VERSION_MAJOR(v) \
   ((v >> 16) & 0xff) /**< extract major from packed version */
-#define VPX_VERSION_MINOR(v) \
+#define AOM_VERSION_MINOR(v) \
   ((v >> 8) & 0xff) /**< extract minor from packed version */
-#define VPX_VERSION_PATCH(v) \
+#define AOM_VERSION_PATCH(v) \
   ((v >> 0) & 0xff) /**< extract patch from packed version */
 
 /*!\brief Return the version major number */
@@ -337,9 +337,9 @@ const char *aom_codec_error_detail(aom_codec_ctx_t *ctx);
  *
  * \param[in] ctx   Pointer to this instance's context
  *
- * \retval #VPX_CODEC_OK
+ * \retval #AOM_CODEC_OK
  *     The codec algorithm initialized.
- * \retval #VPX_CODEC_MEM_ERROR
+ * \retval #AOM_CODEC_MEM_ERROR
  *     Memory allocation failed.
  */
 aom_codec_err_t aom_codec_destroy(aom_codec_ctx_t *ctx);
@@ -361,7 +361,7 @@ aom_codec_caps_t aom_codec_get_caps(aom_codec_iface_t *iface);
  *
  * This wrapper function dispatches the request to the helper function
  * associated with the given ctrl_id. It tries to call this function
- * transparently, but will return #VPX_CODEC_ERROR if the request could not
+ * transparently, but will return #AOM_CODEC_ERROR if the request could not
  * be dispatched.
  *
  * Note that this function should not be used directly. Call the
@@ -370,19 +370,19 @@ aom_codec_caps_t aom_codec_get_caps(aom_codec_iface_t *iface);
  * \param[in]     ctx              Pointer to this instance's context
  * \param[in]     ctrl_id          Algorithm specific control identifier
  *
- * \retval #VPX_CODEC_OK
+ * \retval #AOM_CODEC_OK
  *     The control request was processed.
- * \retval #VPX_CODEC_ERROR
+ * \retval #AOM_CODEC_ERROR
  *     The control request was not processed.
- * \retval #VPX_CODEC_INVALID_PARAM
+ * \retval #AOM_CODEC_INVALID_PARAM
  *     The data was not valid.
  */
 aom_codec_err_t aom_codec_control_(aom_codec_ctx_t *ctx, int ctrl_id, ...);
-#if defined(VPX_DISABLE_CTRL_TYPECHECKS) && VPX_DISABLE_CTRL_TYPECHECKS
+#if defined(AOM_DISABLE_CTRL_TYPECHECKS) && AOM_DISABLE_CTRL_TYPECHECKS
 #define aom_codec_control(ctx, id, data) aom_codec_control_(ctx, id, data)
-#define VPX_CTRL_USE_TYPE(id, typ)
-#define VPX_CTRL_USE_TYPE_DEPRECATED(id, typ)
-#define VPX_CTRL_VOID(id, typ)
+#define AOM_CTRL_USE_TYPE(id, typ)
+#define AOM_CTRL_USE_TYPE_DEPRECATED(id, typ)
+#define AOM_CTRL_VOID(id, typ)
 
 #else
 /*!\brief aom_codec_control wrapper macro
@@ -408,7 +408,7 @@ aom_codec_err_t aom_codec_control_(aom_codec_ctx_t *ctx, int ctrl_id, ...);
  * the correctly typed arguments as a wrapper to the type-unsafe internal
  * function.
  */
-#define VPX_CTRL_USE_TYPE(id, typ)                                           \
+#define AOM_CTRL_USE_TYPE(id, typ)                                           \
   static aom_codec_err_t aom_codec_control_##id(aom_codec_ctx_t *, int, typ) \
       UNUSED;                                                                \
                                                                              \
@@ -419,7 +419,7 @@ aom_codec_err_t aom_codec_control_(aom_codec_ctx_t *ctx, int ctrl_id, ...);
 
 /*!\brief aom_codec_control deprecated type definition macro
  *
- * Like #VPX_CTRL_USE_TYPE, but indicates that the specified control is
+ * Like #AOM_CTRL_USE_TYPE, but indicates that the specified control is
  * deprecated and should not be used. Consult the documentation for your
  * codec for more information.
  *
@@ -427,7 +427,7 @@ aom_codec_err_t aom_codec_control_(aom_codec_ctx_t *ctx, int ctrl_id, ...);
  * It defines a static function with the correctly typed arguments as a
  * wrapper to the type-unsafe internal function.
  */
-#define VPX_CTRL_USE_TYPE_DEPRECATED(id, typ)                        \
+#define AOM_CTRL_USE_TYPE_DEPRECATED(id, typ)                        \
   DECLSPEC_DEPRECATED static aom_codec_err_t aom_codec_control_##id( \
       aom_codec_ctx_t *, int, typ) DEPRECATED UNUSED;                \
                                                                      \
@@ -446,7 +446,7 @@ aom_codec_err_t aom_codec_control_(aom_codec_ctx_t *ctx, int ctrl_id, ...);
  * It defines a static function without a data argument as a wrapper to the
  * type-unsafe internal function.
  */
-#define VPX_CTRL_VOID(id)                                               \
+#define AOM_CTRL_VOID(id)                                               \
   static aom_codec_err_t aom_codec_control_##id(aom_codec_ctx_t *, int) \
       UNUSED;                                                           \
                                                                         \
@@ -461,4 +461,4 @@ aom_codec_err_t aom_codec_control_(aom_codec_ctx_t *ctx, int ctrl_id, ...);
 #ifdef __cplusplus
 }
 #endif
-#endif  // VPX_VPX_CODEC_H_
+#endif  // AOM_AOM_CODEC_H_

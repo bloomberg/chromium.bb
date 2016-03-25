@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_MIPS_VPX_CONVOLVE_MSA_H_
-#define VPX_DSP_MIPS_VPX_CONVOLVE_MSA_H_
+#ifndef AOM_DSP_MIPS_AOM_CONVOLVE_MSA_H_
+#define AOM_DSP_MIPS_AOM_CONVOLVE_MSA_H_
 
 #include "aom_dsp/mips/macros_msa.h"
 #include "aom_dsp/aom_filter.h"
@@ -122,4 +122,4 @@ extern const uint8_t mc_filt_mask_arr[16 * 3];
     AVER_UB2_UB(tmp0_m, tmp2_m, tmp1_m, tmp3_m, tmp0_m, tmp1_m);             \
     ST8x4_UB(tmp0_m, tmp1_m, pdst_m, stride);                                \
   }
-#endif /* VPX_DSP_MIPS_VPX_CONVOLVE_MSA_H_ */
+#endif /* AOM_DSP_MIPS_AOM_CONVOLVE_MSA_H_ */

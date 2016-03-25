@@ -73,7 +73,7 @@ struct lookahead_ctx *av1_lookahead_init(unsigned int width,
 #if CONFIG_AOM_HIGHBITDEPTH
               use_highbitdepth,
 #endif
-              VPX_ENC_BORDER_IN_PIXELS, legacy_byte_alignment))
+              AOM_ENC_BORDER_IN_PIXELS, legacy_byte_alignment))
         goto bail;
   }
   return ctx;
@@ -165,7 +165,7 @@ int av1_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
 #if CONFIG_AOM_HIGHBITDEPTH
                                  use_highbitdepth,
 #endif
-                                 VPX_ENC_BORDER_IN_PIXELS, 0))
+                                 AOM_ENC_BORDER_IN_PIXELS, 0))
         return 1;
       aom_free_frame_buffer(&buf->img);
       buf->img = new_img;

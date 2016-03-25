@@ -32,10 +32,10 @@ class CpuSpeedTest
     SetMode(encoding_mode_);
     if (encoding_mode_ != ::libaom_test::kRealTime) {
       cfg_.g_lag_in_frames = 25;
-      cfg_.rc_end_usage = VPX_VBR;
+      cfg_.rc_end_usage = AOM_VBR;
     } else {
       cfg_.g_lag_in_frames = 0;
-      cfg_.rc_end_usage = VPX_CBR;
+      cfg_.rc_end_usage = AOM_CBR;
     }
   }
 
@@ -77,7 +77,7 @@ TEST_P(CpuSpeedTest, TestQ0) {
   ::libaom_test::I420VideoSource video("hantro_odd.yuv", 208, 144, 30, 1, 0,
                                        20);
 
-  init_flags_ = VPX_CODEC_USE_PSNR;
+  init_flags_ = AOM_CODEC_USE_PSNR;
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
   EXPECT_GE(min_psnr_, kMaxPSNR);
@@ -92,7 +92,7 @@ TEST_P(CpuSpeedTest, TestScreencastQ0) {
   cfg_.rc_max_quantizer = 0;
   cfg_.rc_min_quantizer = 0;
 
-  init_flags_ = VPX_CODEC_USE_PSNR;
+  init_flags_ = AOM_CODEC_USE_PSNR;
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
   EXPECT_GE(min_psnr_, kMaxPSNR);

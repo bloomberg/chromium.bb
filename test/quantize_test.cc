@@ -327,19 +327,19 @@ using std::tr1::make_tuple;
 INSTANTIATE_TEST_CASE_P(
     SSE2, VP9QuantizeTest,
     ::testing::Values(make_tuple(&aom_highbd_quantize_b_sse2,
-                                 &aom_highbd_quantize_b_c, VPX_BITS_8),
+                                 &aom_highbd_quantize_b_c, AOM_BITS_8),
                       make_tuple(&aom_highbd_quantize_b_sse2,
-                                 &aom_highbd_quantize_b_c, VPX_BITS_10),
+                                 &aom_highbd_quantize_b_c, AOM_BITS_10),
                       make_tuple(&aom_highbd_quantize_b_sse2,
-                                 &aom_highbd_quantize_b_c, VPX_BITS_12)));
+                                 &aom_highbd_quantize_b_c, AOM_BITS_12)));
 INSTANTIATE_TEST_CASE_P(
     SSE2, VP9Quantize32Test,
     ::testing::Values(make_tuple(&aom_highbd_quantize_b_32x32_sse2,
-                                 &aom_highbd_quantize_b_32x32_c, VPX_BITS_8),
+                                 &aom_highbd_quantize_b_32x32_c, AOM_BITS_8),
                       make_tuple(&aom_highbd_quantize_b_32x32_sse2,
-                                 &aom_highbd_quantize_b_32x32_c, VPX_BITS_10),
+                                 &aom_highbd_quantize_b_32x32_c, AOM_BITS_10),
                       make_tuple(&aom_highbd_quantize_b_32x32_sse2,
-                                 &aom_highbd_quantize_b_32x32_c, VPX_BITS_12)));
+                                 &aom_highbd_quantize_b_32x32_c, AOM_BITS_12)));
 #endif  // HAVE_SSE2
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif  // CONFIG_AOM_QM

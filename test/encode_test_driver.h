@@ -111,38 +111,38 @@ class Encoder {
 
   void Control(int ctrl_id, int arg) {
     const aom_codec_err_t res = aom_codec_control_(&encoder_, ctrl_id, arg);
-    ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
+    ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 
   void Control(int ctrl_id, int *arg) {
     const aom_codec_err_t res = aom_codec_control_(&encoder_, ctrl_id, arg);
-    ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
+    ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 
   void Control(int ctrl_id, struct aom_scaling_mode *arg) {
     const aom_codec_err_t res = aom_codec_control_(&encoder_, ctrl_id, arg);
-    ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
+    ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 
   void Control(int ctrl_id, struct aom_svc_layer_id *arg) {
     const aom_codec_err_t res = aom_codec_control_(&encoder_, ctrl_id, arg);
-    ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
+    ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 
   void Control(int ctrl_id, struct aom_svc_parameters *arg) {
     const aom_codec_err_t res = aom_codec_control_(&encoder_, ctrl_id, arg);
-    ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
+    ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 #if CONFIG_AV1_ENCODER
   void Control(int ctrl_id, aom_active_map_t *arg) {
     const aom_codec_err_t res = aom_codec_control_(&encoder_, ctrl_id, arg);
-    ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
+    ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 #endif
 
   void Config(const aom_codec_enc_cfg_t *cfg) {
     const aom_codec_err_t res = aom_codec_enc_config_set(&encoder_, cfg);
-    ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
+    ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
     cfg_ = *cfg;
   }
 
@@ -239,8 +239,8 @@ class EncoderTest {
   virtual bool HandleDecodeResult(const aom_codec_err_t res_dec,
                                   const VideoSource & /*video*/,
                                   Decoder *decoder) {
-    EXPECT_EQ(VPX_CODEC_OK, res_dec) << decoder->DecodeError();
-    return VPX_CODEC_OK == res_dec;
+    EXPECT_EQ(AOM_CODEC_OK, res_dec) << decoder->DecodeError();
+    return AOM_CODEC_OK == res_dec;
   }
 
   // Hook that can modify the encoder's output data

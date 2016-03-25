@@ -77,7 +77,7 @@ class VP9EncodePerfTest
     cfg_.rc_buf_initial_sz = 500;
     cfg_.rc_buf_optimal_sz = 600;
     cfg_.rc_resize_allowed = 0;
-    cfg_.rc_end_usage = VPX_CBR;
+    cfg_.rc_end_usage = AOM_CBR;
     cfg_.g_error_resilient = 1;
     cfg_.g_threads = threads_;
   }
@@ -139,7 +139,7 @@ TEST_P(VP9EncodePerfTest, PerfTest) {
         cfg_.g_timebase = timebase;
         cfg_.rc_target_bitrate = kVP9EncodePerfTestVectors[i].bitrate;
 
-        init_flags_ = VPX_CODEC_USE_PSNR;
+        init_flags_ = AOM_CODEC_USE_PSNR;
 
         const unsigned frames = kVP9EncodePerfTestVectors[i].frames;
         const char *video_name = kVP9EncodePerfTestVectors[i].name;

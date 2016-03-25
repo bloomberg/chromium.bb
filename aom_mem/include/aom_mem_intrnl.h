@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_MEM_INCLUDE_VPX_MEM_INTRNL_H_
-#define VPX_MEM_INCLUDE_VPX_MEM_INTRNL_H_
+#ifndef AOM_MEM_INCLUDE_AOM_MEM_INTRNL_H_
+#define AOM_MEM_INCLUDE_AOM_MEM_INTRNL_H_
 #include "./aom_config.h"
 
 #define ADDRESS_STORAGE_SIZE sizeof(size_t)
@@ -29,4 +29,4 @@
 #define align_addr(addr, align) \
   (void *)(((size_t)(addr) + ((align)-1)) & (size_t) - (align))
 
-#endif  // VPX_MEM_INCLUDE_VPX_MEM_INTRNL_H_
+#endif  // AOM_MEM_INCLUDE_AOM_MEM_INTRNL_H_

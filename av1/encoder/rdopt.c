@@ -190,8 +190,8 @@ static void model_rd_for_sb(AV1_COMP *cpi, BLOCK_SIZE bsize, MACROBLOCK *x,
     const int64_t ac_thr = p->quant_thred[1] >> shift;
     // The low thresholds are used to measure if the prediction errors are
     // low enough so that we can skip the mode search.
-    const int64_t low_dc_thr = VPXMIN(50, dc_thr >> 2);
-    const int64_t low_ac_thr = VPXMIN(80, ac_thr >> 2);
+    const int64_t low_dc_thr = AOMMIN(50, dc_thr >> 2);
+    const int64_t low_ac_thr = AOMMIN(80, ac_thr >> 2);
     int bw = 1 << (b_width_log2_lookup[bs] - b_width_log2_lookup[unit_size]);
     int bh = 1 << (b_height_log2_lookup[bs] - b_width_log2_lookup[unit_size]);
     int idx, idy;
@@ -481,7 +481,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #endif
         if (tx_size != TX_32X32) dc_correct >>= 2;
 
-        dist = VPXMAX(0, sse - dc_correct);
+        dist = AOMMAX(0, sse - dc_correct);
       }
     } else {
       // SKIP_TXFM_AC_DC
@@ -507,7 +507,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   rd2 = RDCOST(x->rdmult, x->rddiv, 0, sse);
 
   // TODO(jingning): temporarily enabled only for luma component
-  rd = VPXMIN(rd1, rd2);
+  rd = AOMMIN(rd1, rd2);
   if (plane == 0)
     x->zcoeff_blk[tx_size][block] =
         !x->plane[plane].eobs[block] ||
@@ -579,7 +579,7 @@ static void choose_largest_tx_size(AV1_COMP *cpi, MACROBLOCK *x, int *rate,
   int s1 = av1_cost_bit(skip_prob, 1);
   const int is_inter = is_inter_block(mbmi);
 
-  mbmi->tx_size = VPXMIN(max_tx_size, largest_tx_size);
+  mbmi->tx_size = AOMMIN(max_tx_size, largest_tx_size);
   if (mbmi->tx_size < TX_32X32 && !xd->lossless[mbmi->segment_id]) {
     for (tx_type = 0; tx_type < TX_TYPES; ++tx_type) {
       mbmi->tx_type = tx_type;
@@ -597,7 +597,7 @@ static void choose_largest_tx_size(AV1_COMP *cpi, MACROBLOCK *x, int *rate,
       else
         this_rd = RDCOST(x->rdmult, x->rddiv, r + s0, d);
       if (is_inter && !xd->lossless[mbmi->segment_id] && !s)
-        this_rd = VPXMIN(this_rd, RDCOST(x->rdmult, x->rddiv, s1, psse));
+        this_rd = AOMMIN(this_rd, RDCOST(x->rdmult, x->rddiv, s1, psse));
 
       if (this_rd < ((best_tx_type == DCT_DCT) ? ext_tx_th : 1) * best_rd) {
         best_rd = this_rd;
@@ -663,7 +663,7 @@ static void choose_tx_size_from_rd(AV1_COMP *cpi, MACROBLOCK *x, int *rate,
     end_tx = 0;
   } else {
     const TX_SIZE chosen_tx_size =
-        VPXMIN(max_tx_size, tx_mode_to_biggest_tx_size[cm->tx_mode]);
+        AOMMIN(max_tx_size, tx_mode_to_biggest_tx_size[cm->tx_mode]);
     start_tx = chosen_tx_size;
     end_tx = chosen_tx_size;
   }
@@ -715,7 +715,7 @@ static void choose_tx_size_from_rd(AV1_COMP *cpi, MACROBLOCK *x, int *rate,
       if (tx_select && !(s && is_inter)) r += r_tx_size;
 
       if (is_inter && !xd->lossless[xd->mi[0]->mbmi.segment_id] && !s)
-        rd = VPXMIN(rd, RDCOST(x->rdmult, x->rddiv, s1, sse));
+        rd = AOMMIN(rd, RDCOST(x->rdmult, x->rddiv, s1, sse));
 
       // Early termination in transform size search.
       if (cpi->sf.tx_size_search_breakout &&
@@ -1384,7 +1384,7 @@ static int64_t encode_inter_mb_segment(AV1_COMP *cpi, MACROBLOCK *x,
                       so->neighbors, cpi->sf.use_fast_coef_costing);
       rd1 = RDCOST(x->rdmult, x->rddiv, thisrate, thisdistortion >> 2);
       rd2 = RDCOST(x->rdmult, x->rddiv, 0, thissse >> 2);
-      rd = VPXMIN(rd1, rd2);
+      rd = AOMMIN(rd1, rd2);
       if (rd >= best_yrd) return INT64_MAX;
     }
   }
@@ -1771,7 +1771,7 @@ static int64_t rd_pick_best_sub8x8_mode(
             max_mv = x->max_mv_context[mbmi->ref_frame[0]];
           else
             max_mv =
-                VPXMAX(abs(bsi->mvp.as_mv.row), abs(bsi->mvp.as_mv.col)) >> 3;
+                AOMMAX(abs(bsi->mvp.as_mv.row), abs(bsi->mvp.as_mv.col)) >> 3;
 
           if (cpi->sf.mv.auto_mv_step_size && cm->show_frame) {
             // Take wtd average of the step_params based on the last frame's
@@ -1789,7 +1789,7 @@ static int64_t rd_pick_best_sub8x8_mode(
           if (cpi->sf.adaptive_motion_search) {
             mvp_full.row = x->pred_mv[mbmi->ref_frame[0]].row >> 3;
             mvp_full.col = x->pred_mv[mbmi->ref_frame[0]].col >> 3;
-            step_param = VPXMAX(step_param, 8);
+            step_param = AOMMAX(step_param, 8);
           }
 
           // adjust src pointer for this block
@@ -2151,7 +2151,7 @@ static void single_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   av1_set_mv_search_range(x, &ref_mv);
 
   // Work out the size of the first step in the mv step search.
-  // 0 here is maximum length first step. 1 is VPXMAX >> 1 etc.
+  // 0 here is maximum length first step. 1 is AOMMAX >> 1 etc.
   if (cpi->sf.mv.auto_mv_step_size && cm->show_frame) {
     // Take wtd average of the step_params based on the last frame's
     // max mv magnitude and that based on the best ref mvs of the current
@@ -2166,8 +2166,8 @@ static void single_motion_search(AV1_COMP *cpi, MACROBLOCK *x,
   if (cpi->sf.adaptive_motion_search && bsize < BLOCK_64X64) {
     int boffset =
         2 * (b_width_log2_lookup[BLOCK_64X64] -
-             VPXMIN(b_height_log2_lookup[bsize], b_width_log2_lookup[bsize]));
-    step_param = VPXMAX(step_param, boffset);
+             AOMMIN(b_height_log2_lookup[bsize], b_width_log2_lookup[bsize]));
+    step_param = AOMMAX(step_param, boffset);
   }
 
   if (cpi->sf.adaptive_motion_search) {
@@ -2259,9 +2259,9 @@ static int discount_newmv_test(const AV1_COMP *cpi, int this_mode,
            (mode_mv[NEARMV][ref_frame].as_int == INVALID_MV)));
 }
 
-#define LEFT_TOP_MARGIN ((VPX_ENC_BORDER_IN_PIXELS - VPX_INTERP_EXTEND) << 3)
+#define LEFT_TOP_MARGIN ((AOM_ENC_BORDER_IN_PIXELS - AOM_INTERP_EXTEND) << 3)
 #define RIGHT_BOTTOM_MARGIN \
-  ((VPX_ENC_BORDER_IN_PIXELS - VPX_INTERP_EXTEND) << 3)
+  ((AOM_ENC_BORDER_IN_PIXELS - AOM_INTERP_EXTEND) << 3)
 
 // TODO(jingning): this mv clamping function should be block size dependent.
 static INLINE void clamp_mv2(MV *mv, const MACROBLOCKD *xd) {
@@ -2380,7 +2380,7 @@ static int64_t handle_inter_mode(
       // motion field, where the distortion gain for a single block may not
       // be enough to overcome the cost of a new mv.
       if (discount_newmv_test(cpi, this_mode, tmp_mv, mode_mv, refs[0])) {
-        *rate2 += VPXMAX((rate_mv / NEW_MV_DISCOUNT_FACTOR), 1);
+        *rate2 += AOMMAX((rate_mv / NEW_MV_DISCOUNT_FACTOR), 1);
       } else {
         *rate2 += rate_mv;
       }
@@ -2416,7 +2416,7 @@ static int64_t handle_inter_mode(
   if (discount_newmv_test(cpi, this_mode, frame_mv[refs[0]], mode_mv,
                           refs[0])) {
     *rate2 +=
-        VPXMIN(cost_mv_ref(cpi, this_mode, mbmi_ext->mode_context[refs[0]]),
+        AOMMIN(cost_mv_ref(cpi, this_mode, mbmi_ext->mode_context[refs[0]]),
                cost_mv_ref(cpi, NEARESTMV, mbmi_ext->mode_context[refs[0]]));
   } else {
     *rate2 += cost_mv_ref(cpi, this_mode, mbmi_ext->mode_context[refs[0]]);
@@ -2457,9 +2457,9 @@ static int64_t handle_inter_mode(
           rd = RDCOST(x->rdmult, x->rddiv, tmp_rate_sum, tmp_dist_sum);
           filter_cache[i] = rd;
           filter_cache[SWITCHABLE_FILTERS] =
-              VPXMIN(filter_cache[SWITCHABLE_FILTERS], rd + rs_rd);
+              AOMMIN(filter_cache[SWITCHABLE_FILTERS], rd + rs_rd);
           if (cm->interp_filter == SWITCHABLE) rd += rs_rd;
-          *mask_filter = VPXMAX(*mask_filter, rd);
+          *mask_filter = AOMMAX(*mask_filter, rd);
         } else {
           int rate_sum = 0;
           int64_t dist_sum = 0;
@@ -2488,9 +2488,9 @@ static int64_t handle_inter_mode(
           rd = RDCOST(x->rdmult, x->rddiv, rate_sum, dist_sum);
           filter_cache[i] = rd;
           filter_cache[SWITCHABLE_FILTERS] =
-              VPXMIN(filter_cache[SWITCHABLE_FILTERS], rd + rs_rd);
+              AOMMIN(filter_cache[SWITCHABLE_FILTERS], rd + rs_rd);
           if (cm->interp_filter == SWITCHABLE) rd += rs_rd;
-          *mask_filter = VPXMAX(*mask_filter, rd);
+          *mask_filter = AOMMAX(*mask_filter, rd);
 
           if (i == 0 && intpel_mv) {
             tmp_rate_sum = rate_sum;
@@ -2599,7 +2599,7 @@ static int64_t handle_inter_mode(
     *distortion += distortion_y;
 
     rdcosty = RDCOST(x->rdmult, x->rddiv, *rate2, *distortion);
-    rdcosty = VPXMIN(rdcosty, RDCOST(x->rdmult, x->rddiv, 0, *psse));
+    rdcosty = AOMMIN(rdcosty, RDCOST(x->rdmult, x->rddiv, 0, *psse));
 
     if (!super_block_uvrd(cpi, x, rate_uv, &distortion_uv, &skippable_uv,
                           &sseuv, bsize, ref_best_rd - rdcosty)) {
@@ -2660,7 +2660,7 @@ void av1_rd_pick_intra_mode_sb(AV1_COMP *cpi, MACROBLOCK *x, RD_COST *rd_cost,
   max_uv_tx_size = get_uv_tx_size_impl(
       xd->mi[0]->mbmi.tx_size, bsize, pd[1].subsampling_x, pd[1].subsampling_y);
   rd_pick_intra_sbuv_mode(cpi, x, ctx, &rate_uv, &rate_uv_tokenonly, &dist_uv,
-                          &uv_skip, VPXMAX(BLOCK_8X8, bsize), max_uv_tx_size);
+                          &uv_skip, AOMMAX(BLOCK_8X8, bsize), max_uv_tx_size);
 
   if (y_skip && uv_skip) {
     rd_cost->rate = rate_y + rate_uv - rate_y_tokenonly - rate_uv_tokenonly +
@@ -2723,12 +2723,12 @@ static void rd_variance_adjustment(AV1_COMP *cpi, MACROBLOCK *x,
   // to a predictor with a low spatial complexity compared to the source.
   if ((source_variance > LOW_VAR_THRESH) && (ref_frame == INTRA_FRAME) &&
       (source_variance > recon_variance)) {
-    var_factor = VPXMIN(absvar_diff, VPXMIN(VLOW_ADJ_MAX, var_error));
+    var_factor = AOMMIN(absvar_diff, AOMMIN(VLOW_ADJ_MAX, var_error));
     // A second possible case of interest is where the source variance
     // is very low and we wish to discourage false texture or motion trails.
   } else if ((source_variance < (LOW_VAR_THRESH >> 1)) &&
              (recon_variance > source_variance)) {
-    var_factor = VPXMIN(absvar_diff, VPXMIN(VHIGH_ADJ_MAX, var_error));
+    var_factor = AOMMIN(absvar_diff, AOMMIN(VHIGH_ADJ_MAX, var_error));
   }
   *this_rd += (*this_rd * var_factor) / 100;
 }
@@ -2757,7 +2757,7 @@ int av1_active_h_edge(AV1_COMP *cpi, int mi_row, int mi_step) {
     top_edge += (int)(twopass->this_frame_stats.inactive_zone_rows * 2);
 
     bottom_edge -= (int)(twopass->this_frame_stats.inactive_zone_rows * 2);
-    bottom_edge = VPXMAX(top_edge, bottom_edge);
+    bottom_edge = AOMMAX(top_edge, bottom_edge);
   }
 
   if (((top_edge >= mi_row) && (top_edge < (mi_row + mi_step))) ||
@@ -2784,7 +2784,7 @@ int av1_active_v_edge(AV1_COMP *cpi, int mi_col, int mi_step) {
     left_edge += (int)(twopass->this_frame_stats.inactive_zone_cols * 2);
 
     right_edge -= (int)(twopass->this_frame_stats.inactive_zone_cols * 2);
-    right_edge = VPXMAX(left_edge, right_edge);
+    right_edge = AOMMAX(left_edge, right_edge);
   }
 
   if (((left_edge >= mi_col) && (left_edge < (mi_col + mi_step))) ||
@@ -2823,8 +2823,8 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
   int_mv single_newmv[MAX_REF_FRAMES] = { { 0 } };
   INTERP_FILTER single_inter_filter[MB_MODE_COUNT][MAX_REF_FRAMES];
   int single_skippable[MB_MODE_COUNT][MAX_REF_FRAMES];
-  static const int flag_list[4] = { 0, VPX_LAST_FLAG, VPX_GOLD_FLAG,
-                                    VPX_ALT_FLAG };
+  static const int flag_list[4] = { 0, AOM_LAST_FLAG, AOM_GOLD_FLAG,
+                                    AOM_ALT_FLAG };
   int64_t best_rd = best_rd_so_far;
   int64_t best_pred_diff[REFERENCE_MODES];
   int64_t best_pred_rd[REFERENCE_MODES];
@@ -3015,7 +3015,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     if ((ref_frame_skip_mask[0] & (1 << ref_frame)) &&
-        (ref_frame_skip_mask[1] & (1 << VPXMAX(0, second_ref_frame))))
+        (ref_frame_skip_mask[1] & (1 << AOMMAX(0, second_ref_frame))))
       continue;
 
     if (mode_skip_mask[ref_frame] & (1 << this_mode)) continue;
@@ -3187,9 +3187,9 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (!disable_skip && ref_frame == INTRA_FRAME) {
       for (i = 0; i < REFERENCE_MODES; ++i)
-        best_pred_rd[i] = VPXMIN(best_pred_rd[i], this_rd);
+        best_pred_rd[i] = AOMMIN(best_pred_rd[i], this_rd);
       for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; i++)
-        best_filter_rd[i] = VPXMIN(best_filter_rd[i], this_rd);
+        best_filter_rd[i] = AOMMIN(best_filter_rd[i], this_rd);
     }
 
     // Did this mode help.. i.e. is it the new best mode
@@ -3287,7 +3287,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
             adj_rd = filter_cache[i] - ref;
 
           adj_rd += this_rd;
-          best_filter_rd[i] = VPXMIN(best_filter_rd[i], adj_rd);
+          best_filter_rd[i] = AOMMIN(best_filter_rd[i], adj_rd);
         }
       }
     }
@@ -3510,8 +3510,8 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
   int comp_pred, i;
   int_mv frame_mv[MB_MODE_COUNT][MAX_REF_FRAMES];
   struct buf_2d yv12_mb[4][MAX_MB_PLANE];
-  static const int flag_list[4] = { 0, VPX_LAST_FLAG, VPX_GOLD_FLAG,
-                                    VPX_ALT_FLAG };
+  static const int flag_list[4] = { 0, AOM_LAST_FLAG, AOM_GOLD_FLAG,
+                                    AOM_ALT_FLAG };
   int64_t best_rd = best_rd_so_far;
   int64_t best_yrd = best_rd_so_far;  // FIXME(rbultje) more precise
   int64_t best_pred_diff[REFERENCE_MODES];
@@ -3610,7 +3610,7 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
     }
 
     if ((ref_frame_skip_mask[0] & (1 << ref_frame)) &&
-        (ref_frame_skip_mask[1] & (1 << VPXMAX(0, second_ref_frame))))
+        (ref_frame_skip_mask[1] & (1 << AOMMAX(0, second_ref_frame))))
       continue;
 
     // Test best rd so far against threshold for trying this mode.
@@ -3756,10 +3756,10 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
             rs_rd = RDCOST(x->rdmult, x->rddiv, rs, 0);
             filter_cache[switchable_filter_index] = tmp_rd;
             filter_cache[SWITCHABLE_FILTERS] =
-                VPXMIN(filter_cache[SWITCHABLE_FILTERS], tmp_rd + rs_rd);
+                AOMMIN(filter_cache[SWITCHABLE_FILTERS], tmp_rd + rs_rd);
             if (cm->interp_filter == SWITCHABLE) tmp_rd += rs_rd;
 
-            mask_filter = VPXMAX(mask_filter, tmp_rd);
+            mask_filter = AOMMAX(mask_filter, tmp_rd);
 
             newbest = (tmp_rd < tmp_best_rd);
             if (newbest) {
@@ -3832,7 +3832,7 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
       compmode_cost = av1_cost_bit(comp_mode_p, comp_pred);
 
       tmp_best_rdu =
-          best_rd - VPXMIN(RDCOST(x->rdmult, x->rddiv, rate2, distortion2),
+          best_rd - AOMMIN(RDCOST(x->rdmult, x->rddiv, rate2, distortion2),
                            RDCOST(x->rdmult, x->rddiv, 0, total_sse));
 
       if (tmp_best_rdu > 0) {
@@ -3891,9 +3891,9 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
 
     if (!disable_skip && ref_frame == INTRA_FRAME) {
       for (i = 0; i < REFERENCE_MODES; ++i)
-        best_pred_rd[i] = VPXMIN(best_pred_rd[i], this_rd);
+        best_pred_rd[i] = AOMMIN(best_pred_rd[i], this_rd);
       for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; i++)
-        best_filter_rd[i] = VPXMIN(best_filter_rd[i], this_rd);
+        best_filter_rd[i] = AOMMIN(best_filter_rd[i], this_rd);
     }
 
     // Did this mode help.. i.e. is it the new best mode
@@ -3990,7 +3990,7 @@ void av1_rd_pick_inter_mode_sub8x8(AV1_COMP *cpi, TileDataEnc *tile_data,
           adj_rd = filter_cache[i] - ref;
 
         adj_rd += this_rd;
-        best_filter_rd[i] = VPXMIN(best_filter_rd[i], adj_rd);
+        best_filter_rd[i] = AOMMIN(best_filter_rd[i], adj_rd);
       }
     }
 

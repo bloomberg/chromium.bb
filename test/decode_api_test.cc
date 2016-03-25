@@ -28,29 +28,29 @@ TEST(DecodeAPI, InvalidParams) {
   uint8_t buf[1] = { 0 };
   aom_codec_ctx_t dec;
 
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM, aom_codec_dec_init(NULL, NULL, NULL, 0));
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM, aom_codec_dec_init(&dec, NULL, NULL, 0));
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM, aom_codec_decode(NULL, NULL, 0, NULL, 0));
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM, aom_codec_decode(NULL, buf, 0, NULL, 0));
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM,
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_dec_init(NULL, NULL, NULL, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_dec_init(&dec, NULL, NULL, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_decode(NULL, NULL, 0, NULL, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_decode(NULL, buf, 0, NULL, 0));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
             aom_codec_decode(NULL, buf, NELEMENTS(buf), NULL, 0));
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM,
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
             aom_codec_decode(NULL, NULL, NELEMENTS(buf), NULL, 0));
-  EXPECT_EQ(VPX_CODEC_INVALID_PARAM, aom_codec_destroy(NULL));
+  EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_destroy(NULL));
   EXPECT_TRUE(aom_codec_error(NULL) != NULL);
 
   for (int i = 0; i < NELEMENTS(kCodecs); ++i) {
-    EXPECT_EQ(VPX_CODEC_INVALID_PARAM,
+    EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
               aom_codec_dec_init(NULL, kCodecs[i], NULL, 0));
 
-    EXPECT_EQ(VPX_CODEC_OK, aom_codec_dec_init(&dec, kCodecs[i], NULL, 0));
-    EXPECT_EQ(VPX_CODEC_UNSUP_BITSTREAM,
+    EXPECT_EQ(AOM_CODEC_OK, aom_codec_dec_init(&dec, kCodecs[i], NULL, 0));
+    EXPECT_EQ(AOM_CODEC_UNSUP_BITSTREAM,
               aom_codec_decode(&dec, buf, NELEMENTS(buf), NULL, 0));
-    EXPECT_EQ(VPX_CODEC_INVALID_PARAM,
+    EXPECT_EQ(AOM_CODEC_INVALID_PARAM,
               aom_codec_decode(&dec, NULL, NELEMENTS(buf), NULL, 0));
-    EXPECT_EQ(VPX_CODEC_INVALID_PARAM, aom_codec_decode(&dec, buf, 0, NULL, 0));
+    EXPECT_EQ(AOM_CODEC_INVALID_PARAM, aom_codec_decode(&dec, buf, 0, NULL, 0));
 
-    EXPECT_EQ(VPX_CODEC_OK, aom_codec_destroy(&dec));
+    EXPECT_EQ(AOM_CODEC_OK, aom_codec_destroy(&dec));
   }
 }
 

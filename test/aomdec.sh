@@ -36,7 +36,7 @@ aomdec_pipe() {
   local readonly decoder="$(aom_tool_path aomdec)"
   local readonly input="$1"
   shift
-  cat "${input}" | eval "${VPX_TEST_PREFIX}" "${decoder}" - "$@" ${devnull}
+  cat "${input}" | eval "${AOM_TEST_PREFIX}" "${decoder}" - "$@" ${devnull}
 }
 
 # Wrapper function for running aomdec. Requires that LIBAOM_BIN_PATH points to
@@ -46,7 +46,7 @@ aomdec() {
   local readonly decoder="$(aom_tool_path aomdec)"
   local readonly input="$1"
   shift
-  eval "${VPX_TEST_PREFIX}" "${decoder}" "$input" "$@" ${devnull}
+  eval "${AOM_TEST_PREFIX}" "${decoder}" "$input" "$@" ${devnull}
 }
 
 aomdec_can_decode_vp8() {
@@ -97,7 +97,7 @@ aomdec_vp9_webm_less_than_50_frames() {
      [ "$(webm_io_available)" = "yes" ]; then
     local readonly decoder="$(aom_tool_path aomdec)"
     local readonly expected=10
-    local readonly num_frames=$(${VPX_TEST_PREFIX} "${decoder}" \
+    local readonly num_frames=$(${AOM_TEST_PREFIX} "${decoder}" \
       "${VP9_LT_50_FRAMES_WEBM_FILE}" --summary --noblit 2>&1 \
       | awk '/^[0-9]+ decoded frames/ { print $1 }')
     if [ "$num_frames" -ne "$expected" ]; then

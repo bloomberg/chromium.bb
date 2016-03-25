@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_MIPS_TXFM_MACROS_MIPS_MSA_H_
-#define VPX_DSP_MIPS_TXFM_MACROS_MIPS_MSA_H_
+#ifndef AOM_DSP_MIPS_TXFM_MACROS_MIPS_MSA_H_
+#define AOM_DSP_MIPS_TXFM_MACROS_MIPS_MSA_H_
 
 #include "aom_dsp/mips/macros_msa.h"
 
@@ -94,4 +94,4 @@
     SRARI_W4_SW(m4_m, m5_m, tmp2_m, tmp3_m, DCT_CONST_BITS);                  \
     PCKEV_H2_SH(m5_m, m4_m, tmp3_m, tmp2_m, out2, out3);                      \
   }
-#endif  // VPX_DSP_MIPS_TXFM_MACROS_MIPS_MSA_H_
+#endif  // AOM_DSP_MIPS_TXFM_MACROS_MIPS_MSA_H_

@@ -29,9 +29,9 @@ vp8cx_set_ref_verify_environment() {
 # TODO(tomfinegan): Pass the codec param once the example is updated to support
 # VP9.
 aom_set_ref() {
-  local encoder="${LIBAOM_BIN_PATH}/vp8cx_set_ref${VPX_TEST_EXE_SUFFIX}"
+  local encoder="${LIBAOM_BIN_PATH}/vp8cx_set_ref${AOM_TEST_EXE_SUFFIX}"
   local codec="$1"
-  local output_file="${VPX_TEST_OUTPUT_DIR}/vp8cx_set_ref_${codec}.ivf"
+  local output_file="${AOM_TEST_OUTPUT_DIR}/vp8cx_set_ref_${codec}.ivf"
   local ref_frame_num=90
 
   if [ ! -x "${encoder}" ]; then
@@ -39,7 +39,7 @@ aom_set_ref() {
     return 1
   fi
 
-  eval "${VPX_TEST_PREFIX}" "${encoder}" "${YUV_RAW_INPUT_WIDTH}" \
+  eval "${AOM_TEST_PREFIX}" "${encoder}" "${YUV_RAW_INPUT_WIDTH}" \
       "${YUV_RAW_INPUT_HEIGHT}" "${YUV_RAW_INPUT}" "${output_file}" \
       "${ref_frame_num}" ${devnull}
 

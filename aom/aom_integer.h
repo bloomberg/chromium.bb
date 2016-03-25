@@ -9,22 +9,22 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_VPX_INTEGER_H_
-#define VPX_VPX_INTEGER_H_
+#ifndef AOM_AOM_INTEGER_H_
+#define AOM_AOM_INTEGER_H_
 
 /* get ptrdiff_t, size_t, wchar_t, NULL */
 #include <stddef.h>
 
 #if defined(_MSC_VER)
-#define VPX_FORCE_INLINE __forceinline
-#define VPX_INLINE __inline
+#define AOM_FORCE_INLINE __forceinline
+#define AOM_INLINE __inline
 #else
-#define VPX_FORCE_INLINE __inline__ __attribute__(always_inline)
+#define AOM_FORCE_INLINE __inline__ __attribute__(always_inline)
 // TODO(jbb): Allow a way to force inline off for older compilers.
-#define VPX_INLINE inline
+#define AOM_INLINE inline
 #endif
 
-#if (defined(_MSC_VER) && (_MSC_VER < 1600)) || defined(VPX_EMULATE_INTTYPES)
+#if (defined(_MSC_VER) && (_MSC_VER < 1600)) || defined(AOM_EMULATE_INTTYPES)
 typedef signed char int8_t;
 typedef signed short int16_t;
 typedef signed int int32_t;
@@ -71,4 +71,4 @@ typedef size_t uintptr_t;
 #include <inttypes.h>
 #endif
 
-#endif  // VPX_VPX_INTEGER_H_
+#endif  // AOM_AOM_INTEGER_H_

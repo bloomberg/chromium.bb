@@ -89,7 +89,7 @@ static aom_codec_err_t decoder_init(aom_codec_ctx_t *ctx,
   if (!ctx->priv) {
     aom_codec_alg_priv_t *const priv =
         (aom_codec_alg_priv_t *)aom_calloc(1, sizeof(*priv));
-    if (priv == NULL) return VPX_CODEC_MEM_ERROR;
+    if (priv == NULL) return AOM_CODEC_MEM_ERROR;
 
     ctx->priv = (aom_codec_priv_t *)priv;
     ctx->priv->init_flags = ctx->init_flags;
@@ -98,7 +98,7 @@ static aom_codec_err_t decoder_init(aom_codec_ctx_t *ctx,
     // Only do frame parallel decode when threads > 1.
     priv->frame_parallel_decode =
         (ctx->config.dec && (ctx->config.dec->threads > 1) &&
-         (ctx->init_flags & VPX_CODEC_USE_FRAME_THREADING))
+         (ctx->init_flags & AOM_CODEC_USE_FRAME_THREADING))
             ? 1
             : 0;
     if (ctx->config.dec) {
@@ -107,7 +107,7 @@ static aom_codec_err_t decoder_init(aom_codec_ctx_t *ctx,
     }
   }
 
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
@@ -140,7 +140,7 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
   aom_free(ctx->frame_workers);
   aom_free(ctx->buffer_pool);
   aom_free(ctx);
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
@@ -148,7 +148,7 @@ static int parse_bitdepth_colorspace_sampling(BITSTREAM_PROFILE profile,
   aom_color_space_t color_space;
   if (profile >= PROFILE_2) rb->bit_offset += 1;  // Bit-depth 10 or 12.
   color_space = (aom_color_space_t)aom_rb_read_literal(rb, 3);
-  if (color_space != VPX_CS_SRGB) {
+  if (color_space != AOM_CS_SRGB) {
     rb->bit_offset += 1;  // [16,235] (including xvycc) vs [0,255] range.
     if (profile == PROFILE_1 || profile == PROFILE_3) {
       rb->bit_offset += 2;  // subsampling x/y.
@@ -171,13 +171,13 @@ static aom_codec_err_t decoder_peek_si_internal(
   int intra_only_flag = 0;
   uint8_t clear_buffer[9];
 
-  if (data + data_sz <= data) return VPX_CODEC_INVALID_PARAM;
+  if (data + data_sz <= data) return AOM_CODEC_INVALID_PARAM;
 
   si->is_kf = 0;
   si->w = si->h = 0;
 
   if (decrypt_cb) {
-    data_sz = VPXMIN(sizeof(clear_buffer), data_sz);
+    data_sz = AOMMIN(sizeof(clear_buffer), data_sz);
     decrypt_cb(decrypt_state, data, clear_buffer, data_sz);
     data = clear_buffer;
   }
@@ -189,29 +189,29 @@ static aom_codec_err_t decoder_peek_si_internal(
     const int frame_marker = aom_rb_read_literal(&rb, 2);
     const BITSTREAM_PROFILE profile = av1_read_profile(&rb);
 
-    if (frame_marker != VPX_FRAME_MARKER) return VPX_CODEC_UNSUP_BITSTREAM;
+    if (frame_marker != AOM_FRAME_MARKER) return AOM_CODEC_UNSUP_BITSTREAM;
 
-    if (profile >= MAX_PROFILES) return VPX_CODEC_UNSUP_BITSTREAM;
+    if (profile >= MAX_PROFILES) return AOM_CODEC_UNSUP_BITSTREAM;
 
     if ((profile >= 2 && data_sz <= 1) || data_sz < 1)
-      return VPX_CODEC_UNSUP_BITSTREAM;
+      return AOM_CODEC_UNSUP_BITSTREAM;
 
     if (aom_rb_read_bit(&rb)) {     // show an existing frame
       aom_rb_read_literal(&rb, 3);  // Frame buffer to show.
-      return VPX_CODEC_OK;
+      return AOM_CODEC_OK;
     }
 
-    if (data_sz <= 8) return VPX_CODEC_UNSUP_BITSTREAM;
+    if (data_sz <= 8) return AOM_CODEC_UNSUP_BITSTREAM;
 
     si->is_kf = !aom_rb_read_bit(&rb);
     show_frame = aom_rb_read_bit(&rb);
     error_resilient = aom_rb_read_bit(&rb);
 
     if (si->is_kf) {
-      if (!av1_read_sync_code(&rb)) return VPX_CODEC_UNSUP_BITSTREAM;
+      if (!av1_read_sync_code(&rb)) return AOM_CODEC_UNSUP_BITSTREAM;
 
       if (!parse_bitdepth_colorspace_sampling(profile, &rb))
-        return VPX_CODEC_UNSUP_BITSTREAM;
+        return AOM_CODEC_UNSUP_BITSTREAM;
       av1_read_frame_size(&rb, (int *)&si->w, (int *)&si->h);
     } else {
       intra_only_flag = show_frame ? 0 : aom_rb_read_bit(&rb);
@@ -219,10 +219,10 @@ static aom_codec_err_t decoder_peek_si_internal(
       rb.bit_offset += error_resilient ? 0 : 2;  // reset_frame_context
 
       if (intra_only_flag) {
-        if (!av1_read_sync_code(&rb)) return VPX_CODEC_UNSUP_BITSTREAM;
+        if (!av1_read_sync_code(&rb)) return AOM_CODEC_UNSUP_BITSTREAM;
         if (profile > PROFILE_0) {
           if (!parse_bitdepth_colorspace_sampling(profile, &rb))
-            return VPX_CODEC_UNSUP_BITSTREAM;
+            return AOM_CODEC_UNSUP_BITSTREAM;
         }
         rb.bit_offset += REF_FRAMES;  // refresh_frame_flags
         av1_read_frame_size(&rb, (int *)&si->w, (int *)&si->h);
@@ -230,7 +230,7 @@ static aom_codec_err_t decoder_peek_si_internal(
     }
   }
   if (is_intra_only != NULL) *is_intra_only = intra_only_flag;
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static aom_codec_err_t decoder_peek_si(const uint8_t *data,
@@ -247,7 +247,7 @@ static aom_codec_err_t decoder_get_si(aom_codec_alg_priv_t *ctx,
   memcpy(si, &ctx->si, sz);
   si->sz = (unsigned int)sz;
 
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static void set_error_detail(aom_codec_alg_priv_t *ctx,
@@ -285,7 +285,7 @@ static void init_buffer_callbacks(aom_codec_alg_priv_t *ctx) {
       pool->release_fb_cb = av1_release_frame_buffer;
 
       if (av1_alloc_internal_frame_buffers(&pool->int_frame_buffers))
-        aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,
+        aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                            "Failed to initialize internal frame buffers");
 
       pool->cb_priv = &pool->int_frame_buffers;
@@ -354,12 +354,12 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
   ctx->flushed = 0;
 
   ctx->buffer_pool = (BufferPool *)aom_calloc(1, sizeof(BufferPool));
-  if (ctx->buffer_pool == NULL) return VPX_CODEC_MEM_ERROR;
+  if (ctx->buffer_pool == NULL) return AOM_CODEC_MEM_ERROR;
 
 #if CONFIG_MULTITHREAD
   if (pthread_mutex_init(&ctx->buffer_pool->pool_mutex, NULL)) {
     set_error_detail(ctx, "Failed to allocate buffer pool mutex");
-    return VPX_CODEC_MEM_ERROR;
+    return AOM_CODEC_MEM_ERROR;
   }
 #endif
 
@@ -367,7 +367,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
                                                sizeof(*ctx->frame_workers));
   if (ctx->frame_workers == NULL) {
     set_error_detail(ctx, "Failed to allocate frame_workers");
-    return VPX_CODEC_MEM_ERROR;
+    return AOM_CODEC_MEM_ERROR;
   }
 
   for (i = 0; i < ctx->num_frame_workers; ++i) {
@@ -377,13 +377,13 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
     worker->data1 = aom_memalign(32, sizeof(FrameWorkerData));
     if (worker->data1 == NULL) {
       set_error_detail(ctx, "Failed to allocate frame_worker_data");
-      return VPX_CODEC_MEM_ERROR;
+      return AOM_CODEC_MEM_ERROR;
     }
     frame_worker_data = (FrameWorkerData *)worker->data1;
     frame_worker_data->pbi = av1_decoder_create(ctx->buffer_pool);
     if (frame_worker_data->pbi == NULL) {
       set_error_detail(ctx, "Failed to allocate frame_worker_data");
-      return VPX_CODEC_MEM_ERROR;
+      return AOM_CODEC_MEM_ERROR;
     }
     frame_worker_data->pbi->frame_worker_owner = worker;
     frame_worker_data->worker_id = i;
@@ -394,12 +394,12 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
 #if CONFIG_MULTITHREAD
     if (pthread_mutex_init(&frame_worker_data->stats_mutex, NULL)) {
       set_error_detail(ctx, "Failed to allocate frame_worker_data mutex");
-      return VPX_CODEC_MEM_ERROR;
+      return AOM_CODEC_MEM_ERROR;
     }
 
     if (pthread_cond_init(&frame_worker_data->stats_cond, NULL)) {
       set_error_detail(ctx, "Failed to allocate frame_worker_data cond");
-      return VPX_CODEC_MEM_ERROR;
+      return AOM_CODEC_MEM_ERROR;
     }
 #endif
     // If decoding in serial mode, FrameWorker thread could create tile worker
@@ -413,18 +413,18 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
     worker->hook = (VPxWorkerHook)frame_worker_hook;
     if (!winterface->reset(worker)) {
       set_error_detail(ctx, "Frame Worker thread creation failed");
-      return VPX_CODEC_MEM_ERROR;
+      return AOM_CODEC_MEM_ERROR;
     }
   }
 
   // If postprocessing was enabled by the application and a
   // configuration has not been provided, default it.
-  if (!ctx->postproc_cfg_set && (ctx->base.init_flags & VPX_CODEC_USE_POSTPROC))
+  if (!ctx->postproc_cfg_set && (ctx->base.init_flags & AOM_CODEC_USE_POSTPROC))
     set_default_ppflags(&ctx->postproc_cfg);
 
   init_buffer_callbacks(ctx);
 
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static INLINE void check_resync(aom_codec_alg_priv_t *const ctx,
@@ -449,9 +449,9 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
     const aom_codec_err_t res =
         decoder_peek_si_internal(*data, data_sz, &ctx->si, &is_intra_only,
                                  ctx->decrypt_cb, ctx->decrypt_state);
-    if (res != VPX_CODEC_OK) return res;
+    if (res != AOM_CODEC_OK) return res;
 
-    if (!ctx->si.is_kf && !is_intra_only) return VPX_CODEC_ERROR;
+    if (!ctx->si.is_kf && !is_intra_only) return AOM_CODEC_ERROR;
   }
 
   if (!ctx->frame_parallel_decode) {
@@ -496,7 +496,7 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
           (uint8_t *)aom_realloc(frame_worker_data->scratch_buffer, data_sz);
       if (frame_worker_data->scratch_buffer == NULL) {
         set_error_detail(ctx, "Failed to reallocate scratch buffer");
-        return VPX_CODEC_MEM_ERROR;
+        return AOM_CODEC_MEM_ERROR;
       }
       frame_worker_data->scratch_buffer_size = data_sz;
     }
@@ -520,7 +520,7 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
     winterface->launch(worker);
   }
 
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static void wait_worker_and_cache_frame(aom_codec_alg_priv_t *ctx) {
@@ -561,7 +561,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
 
   if (data == NULL && data_sz == 0) {
     ctx->flushed = 1;
-    return VPX_CODEC_OK;
+    return AOM_CODEC_OK;
   }
 
   // Reset flushed when receiving a valid frame.
@@ -570,12 +570,12 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
   // Initialize the decoder workers on the first frame.
   if (ctx->frame_workers == NULL) {
     const aom_codec_err_t res = init_decoder(ctx);
-    if (res != VPX_CODEC_OK) return res;
+    if (res != AOM_CODEC_OK) return res;
   }
 
   res = av1_parse_superframe_index(data, data_sz, frame_sizes, &frame_count,
                                     ctx->decrypt_cb, ctx->decrypt_state);
-  if (res != VPX_CODEC_OK) return res;
+  if (res != AOM_CODEC_OK) return res;
 
   if (ctx->frame_parallel_decode) {
     // Decode in frame parallel mode. When decoding in this mode, the frame
@@ -591,7 +591,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
         if (data_start < data ||
             frame_size > (uint32_t)(data_end - data_start)) {
           set_error_detail(ctx, "Invalid frame size in index");
-          return VPX_CODEC_CORRUPT_FRAME;
+          return AOM_CODEC_CORRUPT_FRAME;
         }
 
         if (ctx->available_threads == 0) {
@@ -602,13 +602,13 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
           } else {
             // TODO(hkuang): Add unit test to test this path.
             set_error_detail(ctx, "Frame output cache is full.");
-            return VPX_CODEC_ERROR;
+            return AOM_CODEC_ERROR;
           }
         }
 
         res =
             decode_one(ctx, &data_start_copy, frame_size, user_priv, deadline);
-        if (res != VPX_CODEC_OK) return res;
+        if (res != AOM_CODEC_OK) return res;
         data_start += frame_size;
       }
     } else {
@@ -620,12 +620,12 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
         } else {
           // TODO(hkuang): Add unit test to test this path.
           set_error_detail(ctx, "Frame output cache is full.");
-          return VPX_CODEC_ERROR;
+          return AOM_CODEC_ERROR;
         }
       }
 
       res = decode_one(ctx, &data, data_sz, user_priv, deadline);
-      if (res != VPX_CODEC_OK) return res;
+      if (res != AOM_CODEC_OK) return res;
     }
   } else {
     // Decode in serial mode.
@@ -639,12 +639,12 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
         if (data_start < data ||
             frame_size > (uint32_t)(data_end - data_start)) {
           set_error_detail(ctx, "Invalid frame size in index");
-          return VPX_CODEC_CORRUPT_FRAME;
+          return AOM_CODEC_CORRUPT_FRAME;
         }
 
         res =
             decode_one(ctx, &data_start_copy, frame_size, user_priv, deadline);
-        if (res != VPX_CODEC_OK) return res;
+        if (res != AOM_CODEC_OK) return res;
 
         data_start += frame_size;
       }
@@ -653,7 +653,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
         const uint32_t frame_size = (uint32_t)(data_end - data_start);
         const aom_codec_err_t res =
             decode_one(ctx, &data_start, frame_size, user_priv, deadline);
-        if (res != VPX_CODEC_OK) return res;
+        if (res != AOM_CODEC_OK) return res;
 
         // Account for suboptimal termination by the encoder.
         while (data_start < data_end) {
@@ -748,17 +748,17 @@ static aom_codec_err_t decoder_set_fb_fn(
     aom_codec_alg_priv_t *ctx, aom_get_frame_buffer_cb_fn_t cb_get,
     aom_release_frame_buffer_cb_fn_t cb_release, void *cb_priv) {
   if (cb_get == NULL || cb_release == NULL) {
-    return VPX_CODEC_INVALID_PARAM;
+    return AOM_CODEC_INVALID_PARAM;
   } else if (ctx->frame_workers == NULL) {
     // If the decoder has already been initialized, do not accept changes to
     // the frame buffer functions.
     ctx->get_ext_fb_cb = cb_get;
     ctx->release_ext_fb_cb = cb_release;
     ctx->ext_priv = cb_priv;
-    return VPX_CODEC_OK;
+    return AOM_CODEC_OK;
   }
 
-  return VPX_CODEC_ERROR;
+  return AOM_CODEC_ERROR;
 }
 
 static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
@@ -768,7 +768,7 @@ static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
   // Only support this function in serial decode.
   if (ctx->frame_parallel_decode) {
     set_error_detail(ctx, "Not supported in frame parallel decode");
-    return VPX_CODEC_INCAPABLE;
+    return AOM_CODEC_INCAPABLE;
   }
 
   if (data) {
@@ -778,9 +778,9 @@ static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     image2yuvconfig(&frame->img, &sd);
     return av1_set_reference_dec(&frame_worker_data->pbi->common,
-                                  (VPX_REFFRAME)frame->frame_type, &sd);
+                                  (AOM_REFFRAME)frame->frame_type, &sd);
   } else {
-    return VPX_CODEC_INVALID_PARAM;
+    return AOM_CODEC_INVALID_PARAM;
   }
 }
 
@@ -791,7 +791,7 @@ static aom_codec_err_t ctrl_copy_reference(aom_codec_alg_priv_t *ctx,
   // Only support this function in serial decode.
   if (ctx->frame_parallel_decode) {
     set_error_detail(ctx, "Not supported in frame parallel decode");
-    return VPX_CODEC_INCAPABLE;
+    return AOM_CODEC_INCAPABLE;
   }
 
   if (data) {
@@ -801,9 +801,9 @@ static aom_codec_err_t ctrl_copy_reference(aom_codec_alg_priv_t *ctx,
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     image2yuvconfig(&frame->img, &sd);
     return av1_copy_reference_dec(frame_worker_data->pbi,
-                                   (VPX_REFFRAME)frame->frame_type, &sd);
+                                   (AOM_REFFRAME)frame->frame_type, &sd);
   } else {
-    return VPX_CODEC_INVALID_PARAM;
+    return AOM_CODEC_INVALID_PARAM;
   }
 }
 
@@ -814,7 +814,7 @@ static aom_codec_err_t ctrl_get_reference(aom_codec_alg_priv_t *ctx,
   // Only support this function in serial decode.
   if (ctx->frame_parallel_decode) {
     set_error_detail(ctx, "Not supported in frame parallel decode");
-    return VPX_CODEC_INCAPABLE;
+    return AOM_CODEC_INCAPABLE;
   }
 
   if (data) {
@@ -822,11 +822,11 @@ static aom_codec_err_t ctrl_get_reference(aom_codec_alg_priv_t *ctx,
     VPxWorker *const worker = ctx->frame_workers;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     fb = get_ref_frame(&frame_worker_data->pbi->common, data->idx);
-    if (fb == NULL) return VPX_CODEC_ERROR;
+    if (fb == NULL) return AOM_CODEC_ERROR;
     yuvconfig2image(&data->img, fb, NULL);
-    return VPX_CODEC_OK;
+    return AOM_CODEC_OK;
   } else {
-    return VPX_CODEC_INVALID_PARAM;
+    return AOM_CODEC_INVALID_PARAM;
   }
 }
 
@@ -834,14 +834,14 @@ static aom_codec_err_t ctrl_set_postproc(aom_codec_alg_priv_t *ctx,
                                          va_list args) {
   (void)ctx;
   (void)args;
-  return VPX_CODEC_INCAPABLE;
+  return AOM_CODEC_INCAPABLE;
 }
 
 static aom_codec_err_t ctrl_set_dbg_options(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   (void)ctx;
   (void)args;
-  return VPX_CODEC_INCAPABLE;
+  return AOM_CODEC_INCAPABLE;
 }
 
 static aom_codec_err_t ctrl_get_last_ref_updates(aom_codec_alg_priv_t *ctx,
@@ -851,7 +851,7 @@ static aom_codec_err_t ctrl_get_last_ref_updates(aom_codec_alg_priv_t *ctx,
   // Only support this function in serial decode.
   if (ctx->frame_parallel_decode) {
     set_error_detail(ctx, "Not supported in frame parallel decode");
-    return VPX_CODEC_INCAPABLE;
+    return AOM_CODEC_INCAPABLE;
   }
 
   if (update_info) {
@@ -860,13 +860,13 @@ static aom_codec_err_t ctrl_get_last_ref_updates(aom_codec_alg_priv_t *ctx,
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       *update_info = frame_worker_data->pbi->refresh_frame_flags;
-      return VPX_CODEC_OK;
+      return AOM_CODEC_OK;
     } else {
-      return VPX_CODEC_ERROR;
+      return AOM_CODEC_ERROR;
     }
   }
 
-  return VPX_CODEC_INVALID_PARAM;
+  return AOM_CODEC_INVALID_PARAM;
 }
 
 static aom_codec_err_t ctrl_get_frame_corrupted(aom_codec_alg_priv_t *ctx,
@@ -881,16 +881,16 @@ static aom_codec_err_t ctrl_get_frame_corrupted(aom_codec_alg_priv_t *ctx,
       RefCntBuffer *const frame_bufs =
           frame_worker_data->pbi->common.buffer_pool->frame_bufs;
       if (frame_worker_data->pbi->common.frame_to_show == NULL)
-        return VPX_CODEC_ERROR;
+        return AOM_CODEC_ERROR;
       if (ctx->last_show_frame >= 0)
         *corrupted = frame_bufs[ctx->last_show_frame].buf.corrupted;
-      return VPX_CODEC_OK;
+      return AOM_CODEC_OK;
     } else {
-      return VPX_CODEC_ERROR;
+      return AOM_CODEC_ERROR;
     }
   }
 
-  return VPX_CODEC_INVALID_PARAM;
+  return AOM_CODEC_INVALID_PARAM;
 }
 
 static aom_codec_err_t ctrl_get_frame_size(aom_codec_alg_priv_t *ctx,
@@ -900,7 +900,7 @@ static aom_codec_err_t ctrl_get_frame_size(aom_codec_alg_priv_t *ctx,
   // Only support this function in serial decode.
   if (ctx->frame_parallel_decode) {
     set_error_detail(ctx, "Not supported in frame parallel decode");
-    return VPX_CODEC_INCAPABLE;
+    return AOM_CODEC_INCAPABLE;
   }
 
   if (frame_size) {
@@ -911,13 +911,13 @@ static aom_codec_err_t ctrl_get_frame_size(aom_codec_alg_priv_t *ctx,
       const AV1_COMMON *const cm = &frame_worker_data->pbi->common;
       frame_size[0] = cm->width;
       frame_size[1] = cm->height;
-      return VPX_CODEC_OK;
+      return AOM_CODEC_OK;
     } else {
-      return VPX_CODEC_ERROR;
+      return AOM_CODEC_ERROR;
     }
   }
 
-  return VPX_CODEC_INVALID_PARAM;
+  return AOM_CODEC_INVALID_PARAM;
 }
 
 static aom_codec_err_t ctrl_get_render_size(aom_codec_alg_priv_t *ctx,
@@ -927,7 +927,7 @@ static aom_codec_err_t ctrl_get_render_size(aom_codec_alg_priv_t *ctx,
   // Only support this function in serial decode.
   if (ctx->frame_parallel_decode) {
     set_error_detail(ctx, "Not supported in frame parallel decode");
-    return VPX_CODEC_INCAPABLE;
+    return AOM_CODEC_INCAPABLE;
   }
 
   if (render_size) {
@@ -938,13 +938,13 @@ static aom_codec_err_t ctrl_get_render_size(aom_codec_alg_priv_t *ctx,
       const AV1_COMMON *const cm = &frame_worker_data->pbi->common;
       render_size[0] = cm->render_width;
       render_size[1] = cm->render_height;
-      return VPX_CODEC_OK;
+      return AOM_CODEC_OK;
     } else {
-      return VPX_CODEC_ERROR;
+      return AOM_CODEC_ERROR;
     }
   }
 
-  return VPX_CODEC_INVALID_PARAM;
+  return AOM_CODEC_INVALID_PARAM;
 }
 
 static aom_codec_err_t ctrl_get_bit_depth(aom_codec_alg_priv_t *ctx,
@@ -958,19 +958,19 @@ static aom_codec_err_t ctrl_get_bit_depth(aom_codec_alg_priv_t *ctx,
           (FrameWorkerData *)worker->data1;
       const AV1_COMMON *const cm = &frame_worker_data->pbi->common;
       *bit_depth = cm->bit_depth;
-      return VPX_CODEC_OK;
+      return AOM_CODEC_OK;
     } else {
-      return VPX_CODEC_ERROR;
+      return AOM_CODEC_ERROR;
     }
   }
 
-  return VPX_CODEC_INVALID_PARAM;
+  return AOM_CODEC_INVALID_PARAM;
 }
 
 static aom_codec_err_t ctrl_set_invert_tile_order(aom_codec_alg_priv_t *ctx,
                                                   va_list args) {
   ctx->invert_tile_order = va_arg(args, int);
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static aom_codec_err_t ctrl_set_decryptor(aom_codec_alg_priv_t *ctx,
@@ -978,7 +978,7 @@ static aom_codec_err_t ctrl_set_decryptor(aom_codec_alg_priv_t *ctx,
   aom_decrypt_init *init = va_arg(args, aom_decrypt_init *);
   ctx->decrypt_cb = init ? init->decrypt_cb : NULL;
   ctx->decrypt_state = init ? init->decrypt_state : NULL;
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static aom_codec_err_t ctrl_set_byte_alignment(aom_codec_alg_priv_t *ctx,
@@ -992,7 +992,7 @@ static aom_codec_err_t ctrl_set_byte_alignment(aom_codec_alg_priv_t *ctx,
       (byte_alignment < min_byte_alignment ||
        byte_alignment > max_byte_alignment ||
        (byte_alignment & (byte_alignment - 1)) != 0))
-    return VPX_CODEC_INVALID_PARAM;
+    return AOM_CODEC_INVALID_PARAM;
 
   ctx->byte_alignment = byte_alignment;
   if (ctx->frame_workers) {
@@ -1000,7 +1000,7 @@ static aom_codec_err_t ctrl_set_byte_alignment(aom_codec_alg_priv_t *ctx,
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     frame_worker_data->pbi->common.byte_alignment = byte_alignment;
   }
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static aom_codec_err_t ctrl_set_skip_loop_filter(aom_codec_alg_priv_t *ctx,
@@ -1013,7 +1013,7 @@ static aom_codec_err_t ctrl_set_skip_loop_filter(aom_codec_alg_priv_t *ctx,
     frame_worker_data->pbi->common.skip_loop_filter = ctx->skip_loop_filter;
   }
 
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
@@ -1027,7 +1027,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { VP8_SET_DBG_COLOR_B_MODES, ctrl_set_dbg_options },
   { VP8_SET_DBG_DISPLAY_MV, ctrl_set_dbg_options },
   { VP9_INVERT_TILE_DECODE_ORDER, ctrl_set_invert_tile_order },
-  { VPXD_SET_DECRYPTOR, ctrl_set_decryptor },
+  { AOMD_SET_DECRYPTOR, ctrl_set_decryptor },
   { VP9_SET_BYTE_ALIGNMENT, ctrl_set_byte_alignment },
   { VP9_SET_SKIP_LOOP_FILTER, ctrl_set_skip_loop_filter },
 
@@ -1047,9 +1047,9 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
 #endif
 CODEC_INTERFACE(aom_codec_av1_dx) = {
   "WebM Project AV1 Decoder" VERSION_STRING,
-  VPX_CODEC_INTERNAL_ABI_VERSION,
-  VPX_CODEC_CAP_DECODER |
-      VPX_CODEC_CAP_EXTERNAL_FRAME_BUFFER,  // aom_codec_caps_t
+  AOM_CODEC_INTERNAL_ABI_VERSION,
+  AOM_CODEC_CAP_DECODER |
+      AOM_CODEC_CAP_EXTERNAL_FRAME_BUFFER,  // aom_codec_caps_t
   decoder_init,                             // aom_codec_init_fn_t
   decoder_destroy,                          // aom_codec_destroy_fn_t
   decoder_ctrl_maps,                        // aom_codec_ctrl_fn_map_t

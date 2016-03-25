@@ -7,7 +7,7 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
-//  Test and time VPX intra-predictor functions
+//  Test and time AOM intra-predictor functions
 
 #include <stdio.h>
 #include <string.h>

@@ -50,15 +50,15 @@ void DecoderTest::HandlePeekResult(Decoder *const decoder,
   const bool is_vp8 = decoder->IsVP8();
   if (is_vp8) {
     /* Vp8's implementation of PeekStream returns an error if the frame you
-     * pass it is not a keyframe, so we only expect VPX_CODEC_OK on the first
+     * pass it is not a keyframe, so we only expect AOM_CODEC_OK on the first
      * frame, which must be a keyframe. */
     if (video->frame_number() == 0)
-      ASSERT_EQ(VPX_CODEC_OK, res_peek) << "Peek return failed: "
+      ASSERT_EQ(AOM_CODEC_OK, res_peek) << "Peek return failed: "
                                         << aom_codec_err_to_string(res_peek);
   } else {
     /* The Vp9 implementation of PeekStream returns an error only if the
      * data passed to it isn't a valid Vp9 chunk. */
-    ASSERT_EQ(VPX_CODEC_OK, res_peek) << "Peek return failed: "
+    ASSERT_EQ(AOM_CODEC_OK, res_peek) << "Peek return failed: "
                                       << aom_codec_err_to_string(res_peek);
   }
 }
@@ -89,7 +89,7 @@ void DecoderTest::RunLoop(CompressedVideoSource *video,
     } else {
       // Signal end of the file to the decoder.
       const aom_codec_err_t res_dec = decoder->DecodeFrame(NULL, 0);
-      ASSERT_EQ(VPX_CODEC_OK, res_dec) << decoder->DecodeError();
+      ASSERT_EQ(AOM_CODEC_OK, res_dec) << decoder->DecodeError();
       end_of_file = true;
     }
 

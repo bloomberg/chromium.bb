@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_PORTS_MSVC_H_
-#define VPX_PORTS_MSVC_H_
+#ifndef AOM_PORTS_MSVC_H_
+#define AOM_PORTS_MSVC_H_
 #ifdef _MSC_VER
 
 #include "./aom_config.h"
@@ -30,4 +30,4 @@ static INLINE double round(double x) {
 #endif  // _MSC_VER < 1800
 
 #endif  // _MSC_VER
-#endif  // VPX_PORTS_MSVC_H_
+#endif  // AOM_PORTS_MSVC_H_

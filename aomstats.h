@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPXSTATS_H_
-#define VPXSTATS_H_
+#ifndef AOMSTATS_H_
+#define AOMSTATS_H_
 
 #include <stdio.h>
 
@@ -41,4 +41,4 @@ aom_fixed_buf_t stats_get(stats_io_t *stats);
 }  // extern "C"
 #endif
 
-#endif  // VPXSTATS_H_
+#endif  // AOMSTATS_H_

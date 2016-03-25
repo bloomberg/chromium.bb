@@ -15,8 +15,8 @@
 //  http://git.chromium.org/webm/libwebp.git
 //  100644 blob 7bd451b124ae3b81596abfbcc823e3cb129d3a38  src/utils/thread.h
 
-#ifndef VPX_THREAD_H_
-#define VPX_THREAD_H_
+#ifndef AOM_THREAD_H_
+#define AOM_THREAD_H_
 
 #include "./aom_config.h"
 
@@ -218,4 +218,4 @@ const VPxWorkerInterface *aom_get_worker_interface(void);
 }  // extern "C"
 #endif
 
-#endif  // VPX_THREAD_H_
+#endif  // AOM_THREAD_H_

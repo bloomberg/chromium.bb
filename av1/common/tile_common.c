@@ -19,7 +19,7 @@
 static int get_tile_offset(int idx, int mis, int log2) {
   const int sb_cols = mi_cols_aligned_to_sb(mis) >> MI_BLOCK_SIZE_LOG2;
   const int offset = ((idx * sb_cols) >> log2) << MI_BLOCK_SIZE_LOG2;
-  return VPXMIN(offset, mis);
+  return AOMMIN(offset, mis);
 }
 
 void av1_tile_set_row(TileInfo *tile, const AV1_COMMON *cm, int row) {

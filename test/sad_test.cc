@@ -87,7 +87,7 @@ class SADTestBase : public ::testing::Test {
   virtual void SetUp() {
     if (bd_ == -1) {
       use_high_bit_depth_ = false;
-      bit_depth_ = VPX_BITS_8;
+      bit_depth_ = AOM_BITS_8;
       source_data_ = source_data8_;
       reference_data_ = reference_data8_;
       second_pred_ = second_pred8_;

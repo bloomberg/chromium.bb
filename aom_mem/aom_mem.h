@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_MEM_VPX_MEM_H_
-#define VPX_MEM_VPX_MEM_H_
+#ifndef AOM_MEM_AOM_MEM_H_
+#define AOM_MEM_AOM_MEM_H_
 
 #include "aom_config.h"
 #if defined(__uClinux__)
@@ -36,12 +36,12 @@ void *aom_memset16(void *dest, int val, size_t length);
 
 #include <string.h>
 
-#ifdef VPX_MEM_PLTFRM
-#include VPX_MEM_PLTFRM
+#ifdef AOM_MEM_PLTFRM
+#include AOM_MEM_PLTFRM
 #endif
 
 #if defined(__cplusplus)
 }
 #endif
 
-#endif  // VPX_MEM_VPX_MEM_H_
+#endif  // AOM_MEM_AOM_MEM_H_

@@ -106,7 +106,7 @@ class ErrorResilienceTestLarge
       }
     } else {
       if (droppable_nframes_ > 0 &&
-          (cfg_.g_pass == VPX_RC_LAST_PASS || cfg_.g_pass == VPX_RC_ONE_PASS)) {
+          (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
         for (unsigned int i = 0; i < droppable_nframes_; ++i) {
           if (droppable_frames_[i] == video->frame()) {
             std::cout << "Encoding droppable frame: " << droppable_frames_[i]
@@ -132,7 +132,7 @@ class ErrorResilienceTestLarge
 
   virtual bool DoDecode() const {
     if (error_nframes_ > 0 &&
-        (cfg_.g_pass == VPX_RC_LAST_PASS || cfg_.g_pass == VPX_RC_ONE_PASS)) {
+        (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
       for (unsigned int i = 0; i < error_nframes_; ++i) {
         if (error_frames_[i] == nframes_ - 1) {
           std::cout << "             Skipping decoding frame: "
@@ -196,7 +196,7 @@ TEST_P(ErrorResilienceTestLarge, OnVersusOff) {
   cfg_.rc_target_bitrate = 2000;
   cfg_.g_lag_in_frames = 10;
 
-  init_flags_ = VPX_CODEC_USE_PSNR;
+  init_flags_ = AOM_CODEC_USE_PSNR;
 
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      timebase.den, timebase.num, 0, 30);
@@ -233,14 +233,14 @@ TEST_P(ErrorResilienceTestLarge, DropFramesWithoutRecovery) {
   // Currently this test only works for lag = 0
   cfg_.g_lag_in_frames = 0;
 
-  init_flags_ = VPX_CODEC_USE_PSNR;
+  init_flags_ = AOM_CODEC_USE_PSNR;
 
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      timebase.den, timebase.num, 0, 40);
 
   // Error resilient mode ON.
   cfg_.g_error_resilient = 1;
-  cfg_.kf_mode = VPX_KF_DISABLED;
+  cfg_.kf_mode = AOM_KF_DISABLED;
 
   // Set an arbitrary set of error frames same as droppable frames.
   // In addition to isolated loss/drop, add a long consecutive series
@@ -293,7 +293,7 @@ TEST_P(ErrorResilienceTestLarge, 2LayersDropEnhancement) {
   cfg_.rc_target_bitrate = 500;
   cfg_.g_lag_in_frames = 0;
 
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   // 2 Temporal layers, no spatial layers, CBR mode.
   cfg_.ss_number_layers = 1;
   cfg_.ts_number_layers = 2;
@@ -303,14 +303,14 @@ TEST_P(ErrorResilienceTestLarge, 2LayersDropEnhancement) {
   cfg_.ts_target_bitrate[0] = 60 * cfg_.rc_target_bitrate / 100;
   cfg_.ts_target_bitrate[1] = cfg_.rc_target_bitrate;
 
-  init_flags_ = VPX_CODEC_USE_PSNR;
+  init_flags_ = AOM_CODEC_USE_PSNR;
 
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      timebase.den, timebase.num, 0, 40);
 
   // Error resilient mode ON.
   cfg_.g_error_resilient = 1;
-  cfg_.kf_mode = VPX_KF_DISABLED;
+  cfg_.kf_mode = AOM_KF_DISABLED;
   SetPatternSwitch(0);
 
   // The odd frames are the enhancement layer for 2 layer pattern, so set
@@ -340,7 +340,7 @@ TEST_P(ErrorResilienceTestLarge, 2LayersNoRefLast) {
   cfg_.rc_target_bitrate = 500;
   cfg_.g_lag_in_frames = 0;
 
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   // 2 Temporal layers, no spatial layers, CBR mode.
   cfg_.ss_number_layers = 1;
   cfg_.ts_number_layers = 2;
@@ -350,14 +350,14 @@ TEST_P(ErrorResilienceTestLarge, 2LayersNoRefLast) {
   cfg_.ts_target_bitrate[0] = 60 * cfg_.rc_target_bitrate / 100;
   cfg_.ts_target_bitrate[1] = cfg_.rc_target_bitrate;
 
-  init_flags_ = VPX_CODEC_USE_PSNR;
+  init_flags_ = AOM_CODEC_USE_PSNR;
 
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      timebase.den, timebase.num, 0, 100);
 
   // Error resilient mode ON.
   cfg_.g_error_resilient = 1;
-  cfg_.kf_mode = VPX_KF_DISABLED;
+  cfg_.kf_mode = AOM_KF_DISABLED;
   SetPatternSwitch(60);
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
@@ -530,10 +530,10 @@ TEST_P(ErrorResilienceTestLargeCodecControls, CodecControl3TemporalLayers) {
   cfg_.rc_dropframe_thresh = 1;
   cfg_.rc_min_quantizer = 2;
   cfg_.rc_max_quantizer = 56;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.rc_dropframe_thresh = 1;
   cfg_.g_lag_in_frames = 0;
-  cfg_.kf_mode = VPX_KF_DISABLED;
+  cfg_.kf_mode = AOM_KF_DISABLED;
   cfg_.g_error_resilient = 1;
 
   // 3 Temporal layers. Framerate decimation (4, 2, 1).

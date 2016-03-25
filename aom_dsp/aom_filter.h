@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_VPX_FILTER_H_
-#define VPX_DSP_VPX_FILTER_H_
+#ifndef AOM_DSP_AOM_FILTER_H_
+#define AOM_DSP_AOM_FILTER_H_
 
 #include "aom/aom_integer.h"
 
@@ -31,4 +31,4 @@ typedef int16_t InterpKernel[SUBPEL_TAPS];
 }  // extern "C"
 #endif
 
-#endif  // VPX_DSP_VPX_FILTER_H_
+#endif  // AOM_DSP_AOM_FILTER_H_

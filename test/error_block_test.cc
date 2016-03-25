@@ -178,14 +178,14 @@ int64_t wrap_av1_highbd_block_error_8bit_sse2(const tran_low_t *coeff,
 INSTANTIATE_TEST_CASE_P(
     SSE2, ErrorBlockTest,
     ::testing::Values(make_tuple(&av1_highbd_block_error_sse2,
-                                 &av1_highbd_block_error_c, VPX_BITS_10),
+                                 &av1_highbd_block_error_c, AOM_BITS_10),
                       make_tuple(&av1_highbd_block_error_sse2,
-                                 &av1_highbd_block_error_c, VPX_BITS_12),
+                                 &av1_highbd_block_error_c, AOM_BITS_12),
                       make_tuple(&av1_highbd_block_error_sse2,
-                                 &av1_highbd_block_error_c, VPX_BITS_8),
+                                 &av1_highbd_block_error_c, AOM_BITS_8),
                       make_tuple(&wrap_av1_highbd_block_error_8bit_sse2,
                                  &wrap_av1_highbd_block_error_8bit_c,
-                                 VPX_BITS_8)));
+                                 AOM_BITS_8)));
 #endif  // HAVE_SSE2
 
 #if HAVE_AVX
@@ -200,7 +200,7 @@ int64_t wrap_av1_highbd_block_error_8bit_avx(const tran_low_t *coeff,
 INSTANTIATE_TEST_CASE_P(AVX, ErrorBlockTest,
                         ::testing::Values(make_tuple(
                             &wrap_av1_highbd_block_error_8bit_avx,
-                            &wrap_av1_highbd_block_error_8bit_c, VPX_BITS_8)));
+                            &wrap_av1_highbd_block_error_8bit_c, AOM_BITS_8)));
 #endif  // HAVE_AVX
 
 #endif  // CONFIG_USE_X86INC

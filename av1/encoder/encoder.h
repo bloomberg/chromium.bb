@@ -79,7 +79,7 @@ typedef enum {
   FOURFIVE = 1,
   THREEFIVE = 2,
   ONETWO = 3
-} VPX_SCALING;
+} AOM_SCALING;
 
 typedef enum {
   // Good Quality Fast Encoding. The encoder balances quality with the amount of
@@ -511,10 +511,10 @@ int av1_use_as_reference(AV1_COMP *cpi, int ref_frame_flags);
 
 void av1_update_reference(AV1_COMP *cpi, int ref_frame_flags);
 
-int av1_copy_reference_enc(AV1_COMP *cpi, VPX_REFFRAME ref_frame_flag,
+int av1_copy_reference_enc(AV1_COMP *cpi, AOM_REFFRAME ref_frame_flag,
                             YV12_BUFFER_CONFIG *sd);
 
-int av1_set_reference_enc(AV1_COMP *cpi, VPX_REFFRAME ref_frame_flag,
+int av1_set_reference_enc(AV1_COMP *cpi, AOM_REFFRAME ref_frame_flag,
                            YV12_BUFFER_CONFIG *sd);
 
 int av1_update_entropy(AV1_COMP *cpi, int update);
@@ -523,8 +523,8 @@ int av1_set_active_map(AV1_COMP *cpi, unsigned char *map, int rows, int cols);
 
 int av1_get_active_map(AV1_COMP *cpi, unsigned char *map, int rows, int cols);
 
-int av1_set_internal_size(AV1_COMP *cpi, VPX_SCALING horiz_mode,
-                           VPX_SCALING vert_mode);
+int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
+                           AOM_SCALING vert_mode);
 
 int av1_set_size_literal(AV1_COMP *cpi, unsigned int width,
                           unsigned int height);

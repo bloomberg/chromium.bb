@@ -8,8 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#ifndef VPX_VPX_ENCODER_H_
-#define VPX_VPX_ENCODER_H_
+#ifndef AOM_AOM_ENCODER_H_
+#define AOM_AOM_ENCODER_H_
 
 /*!\defgroup encoder Encoder Algorithm Interface
  * \ingroup codec
@@ -35,25 +35,25 @@ extern "C" {
 /*! Temporal Scalability: Maximum length of the sequence defining frame
  * layer membership
  */
-#define VPX_TS_MAX_PERIODICITY 16
+#define AOM_TS_MAX_PERIODICITY 16
 
 /*! Temporal Scalability: Maximum number of coding layers */
-#define VPX_TS_MAX_LAYERS 5
+#define AOM_TS_MAX_LAYERS 5
 
-/*!\deprecated Use #VPX_TS_MAX_PERIODICITY instead. */
-#define MAX_PERIODICITY VPX_TS_MAX_PERIODICITY
+/*!\deprecated Use #AOM_TS_MAX_PERIODICITY instead. */
+#define MAX_PERIODICITY AOM_TS_MAX_PERIODICITY
 
 /*! Temporal+Spatial Scalability: Maximum number of coding layers */
-#define VPX_MAX_LAYERS 12  // 3 temporal + 4 spatial layers are allowed.
+#define AOM_MAX_LAYERS 12  // 3 temporal + 4 spatial layers are allowed.
 
-/*!\deprecated Use #VPX_MAX_LAYERS instead. */
-#define MAX_LAYERS VPX_MAX_LAYERS  // 3 temporal + 4 spatial layers allowed.
+/*!\deprecated Use #AOM_MAX_LAYERS instead. */
+#define MAX_LAYERS AOM_MAX_LAYERS  // 3 temporal + 4 spatial layers allowed.
 
 /*! Spatial Scalability: Maximum number of coding layers */
-#define VPX_SS_MAX_LAYERS 5
+#define AOM_SS_MAX_LAYERS 5
 
 /*! Spatial Scalability: Default number of coding layers */
-#define VPX_SS_DEFAULT_LAYERS 1
+#define AOM_SS_DEFAULT_LAYERS 1
 
 /*!\brief Current ABI version number
  *
@@ -63,8 +63,8 @@ extern "C" {
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures
  */
-#define VPX_ENCODER_ABI_VERSION \
-  (5 + VPX_CODEC_ABI_VERSION) /**<\hideinitializer*/
+#define AOM_ENCODER_ABI_VERSION \
+  (5 + AOM_CODEC_ABI_VERSION) /**<\hideinitializer*/
 
 /*! \brief Encoder capabilities bitfield
  *
@@ -73,32 +73,32 @@ extern "C" {
  *  interfaces or functionality, and are not required to be supported
  *  by an encoder.
  *
- *  The available flags are specified by VPX_CODEC_CAP_* defines.
+ *  The available flags are specified by AOM_CODEC_CAP_* defines.
  */
-#define VPX_CODEC_CAP_PSNR 0x10000 /**< Can issue PSNR packets */
+#define AOM_CODEC_CAP_PSNR 0x10000 /**< Can issue PSNR packets */
 
 /*! Can output one partition at a time. Each partition is returned in its
- *  own VPX_CODEC_CX_FRAME_PKT, with the FRAME_IS_FRAGMENT flag set for
+ *  own AOM_CODEC_CX_FRAME_PKT, with the FRAME_IS_FRAGMENT flag set for
  *  every partition but the last. In this mode all frames are always
  *  returned partition by partition.
  */
-#define VPX_CODEC_CAP_OUTPUT_PARTITION 0x20000
+#define AOM_CODEC_CAP_OUTPUT_PARTITION 0x20000
 
 /*! Can support input images at greater than 8 bitdepth.
  */
-#define VPX_CODEC_CAP_HIGHBITDEPTH 0x40000
+#define AOM_CODEC_CAP_HIGHBITDEPTH 0x40000
 
 /*! \brief Initialization-time Feature Enabling
  *
  *  Certain codec features must be known at initialization time, to allow
  *  for proper memory allocation.
  *
- *  The available flags are specified by VPX_CODEC_USE_* defines.
+ *  The available flags are specified by AOM_CODEC_USE_* defines.
  */
-#define VPX_CODEC_USE_PSNR 0x10000 /**< Calculate PSNR on each frame */
-#define VPX_CODEC_USE_OUTPUT_PARTITION 0x20000
+#define AOM_CODEC_USE_PSNR 0x10000 /**< Calculate PSNR on each frame */
+#define AOM_CODEC_USE_OUTPUT_PARTITION 0x20000
 /**< Make the encoder output one partition at a time. */
-#define VPX_CODEC_USE_HIGHBITDEPTH 0x40000 /**< Use high bitdepth */
+#define AOM_CODEC_USE_HIGHBITDEPTH 0x40000 /**< Use high bitdepth */
 
 /*!\brief Generic fixed size buffer structure
  *
@@ -124,13 +124,13 @@ typedef int64_t aom_codec_pts_t;
  * support frame types that are codec specific (MPEG-1 D-frames for example)
  */
 typedef uint32_t aom_codec_frame_flags_t;
-#define VPX_FRAME_IS_KEY 0x1 /**< frame is the start of a GOP */
-#define VPX_FRAME_IS_DROPPABLE 0x2
+#define AOM_FRAME_IS_KEY 0x1 /**< frame is the start of a GOP */
+#define AOM_FRAME_IS_DROPPABLE 0x2
 /**< frame can be dropped without affecting the stream (no future frame depends
  * on this one) */
-#define VPX_FRAME_IS_INVISIBLE 0x4
+#define AOM_FRAME_IS_INVISIBLE 0x4
 /**< frame should be decoded but will not be shown */
-#define VPX_FRAME_IS_FRAGMENT 0x8
+#define AOM_FRAME_IS_FRAGMENT 0x8
 /**< this is a fragment of the encoded frame */
 
 /*!\brief Error Resilient flags
@@ -140,9 +140,9 @@ typedef uint32_t aom_codec_frame_flags_t;
  * aom_codec_enc_cfg::g_error_resilient variable.
  */
 typedef uint32_t aom_codec_er_flags_t;
-#define VPX_ERROR_RESILIENT_DEFAULT 0x1
+#define AOM_ERROR_RESILIENT_DEFAULT 0x1
 /**< Improve resiliency against losses of whole frames */
-#define VPX_ERROR_RESILIENT_PARTITIONS 0x2
+#define AOM_ERROR_RESILIENT_PARTITIONS 0x2
 /**< The frame partitions are independently decodable by the bool decoder,
  * meaning that partitions can be decoded even though earlier partitions have
  * been lost. Note that intra prediction is still done over the partition
@@ -155,17 +155,17 @@ typedef uint32_t aom_codec_er_flags_t;
  * extend this list to provide additional functionality.
  */
 enum aom_codec_cx_pkt_kind {
-  VPX_CODEC_CX_FRAME_PKT,   /**< Compressed video frame */
-  VPX_CODEC_STATS_PKT,      /**< Two-pass statistics for this frame */
-  VPX_CODEC_FPMB_STATS_PKT, /**< first pass mb statistics for this frame */
-  VPX_CODEC_PSNR_PKT,       /**< PSNR statistics for this frame */
+  AOM_CODEC_CX_FRAME_PKT,   /**< Compressed video frame */
+  AOM_CODEC_STATS_PKT,      /**< Two-pass statistics for this frame */
+  AOM_CODEC_FPMB_STATS_PKT, /**< first pass mb statistics for this frame */
+  AOM_CODEC_PSNR_PKT,       /**< PSNR statistics for this frame */
 // Spatial SVC is still experimental and may be removed before the next ABI
 // bump.
-#if VPX_ENCODER_ABI_VERSION > (5 + VPX_CODEC_ABI_VERSION)
-  VPX_CODEC_SPATIAL_SVC_LAYER_SIZES, /**< Sizes for each layer in this frame*/
-  VPX_CODEC_SPATIAL_SVC_LAYER_PSNR,  /**< PSNR for each layer in this frame*/
+#if AOM_ENCODER_ABI_VERSION > (5 + AOM_CODEC_ABI_VERSION)
+  AOM_CODEC_SPATIAL_SVC_LAYER_SIZES, /**< Sizes for each layer in this frame*/
+  AOM_CODEC_SPATIAL_SVC_LAYER_PSNR,  /**< PSNR for each layer in this frame*/
 #endif
-  VPX_CODEC_CUSTOM_PKT = 256 /**< Algorithm extensions  */
+  AOM_CODEC_CUSTOM_PKT = 256 /**< Algorithm extensions  */
 };
 
 /*!\brief Encoder output packet
@@ -201,9 +201,9 @@ typedef struct aom_codec_cx_pkt {
     aom_fixed_buf_t raw;       /**< data for arbitrary packets */
 // Spatial SVC is still experimental and may be removed before the next
 // ABI bump.
-#if VPX_ENCODER_ABI_VERSION > (5 + VPX_CODEC_ABI_VERSION)
-    size_t layer_sizes[VPX_SS_MAX_LAYERS];
-    struct aom_psnr_pkt layer_psnr[VPX_SS_MAX_LAYERS];
+#if AOM_ENCODER_ABI_VERSION > (5 + AOM_CODEC_ABI_VERSION)
+    size_t layer_sizes[AOM_SS_MAX_LAYERS];
+    struct aom_psnr_pkt layer_psnr[AOM_SS_MAX_LAYERS];
 #endif
 
     /* This packet size is fixed to allow codecs to extend this
@@ -242,42 +242,42 @@ typedef struct aom_rational {
 
 /*!\brief Multi-pass Encoding Pass */
 enum aom_enc_pass {
-  VPX_RC_ONE_PASS,   /**< Single pass mode */
-  VPX_RC_FIRST_PASS, /**< First pass of multi-pass mode */
-  VPX_RC_LAST_PASS   /**< Final pass of multi-pass mode */
+  AOM_RC_ONE_PASS,   /**< Single pass mode */
+  AOM_RC_FIRST_PASS, /**< First pass of multi-pass mode */
+  AOM_RC_LAST_PASS   /**< Final pass of multi-pass mode */
 };
 
 /*!\brief Rate control mode */
 enum aom_rc_mode {
-  VPX_VBR, /**< Variable Bit Rate (VBR) mode */
-  VPX_CBR, /**< Constant Bit Rate (CBR) mode */
-  VPX_CQ,  /**< Constrained Quality (CQ)  mode */
-  VPX_Q,   /**< Constant Quality (Q) mode */
+  AOM_VBR, /**< Variable Bit Rate (VBR) mode */
+  AOM_CBR, /**< Constant Bit Rate (CBR) mode */
+  AOM_CQ,  /**< Constrained Quality (CQ)  mode */
+  AOM_Q,   /**< Constant Quality (Q) mode */
 };
 
 /*!\brief Keyframe placement mode.
  *
  * This enumeration determines whether keyframes are placed automatically by
  * the encoder or whether this behavior is disabled. Older releases of this
- * SDK were implemented such that VPX_KF_FIXED meant keyframes were disabled.
+ * SDK were implemented such that AOM_KF_FIXED meant keyframes were disabled.
  * This name is confusing for this behavior, so the new symbols to be used
- * are VPX_KF_AUTO and VPX_KF_DISABLED.
+ * are AOM_KF_AUTO and AOM_KF_DISABLED.
  */
 enum aom_kf_mode {
-  VPX_KF_FIXED,       /**< deprecated, implies VPX_KF_DISABLED */
-  VPX_KF_AUTO,        /**< Encoder determines optimal placement automatically */
-  VPX_KF_DISABLED = 0 /**< Encoder does not place keyframes. */
+  AOM_KF_FIXED,       /**< deprecated, implies AOM_KF_DISABLED */
+  AOM_KF_AUTO,        /**< Encoder determines optimal placement automatically */
+  AOM_KF_DISABLED = 0 /**< Encoder does not place keyframes. */
 };
 
 /*!\brief Encoded Frame Flags
  *
  * This type indicates a bitfield to be passed to aom_codec_encode(), defining
  * per-frame boolean values. By convention, bits common to all codecs will be
- * named VPX_EFLAG_*, and bits specific to an algorithm will be named
+ * named AOM_EFLAG_*, and bits specific to an algorithm will be named
  * /algo/_eflag_*. The lower order 16 bits are reserved for common use.
  */
 typedef long aom_enc_frame_flags_t;
-#define VPX_EFLAG_FORCE_KF (1 << 0) /**< Force this frame to be a keyframe */
+#define AOM_EFLAG_FORCE_KF (1 << 0) /**< Force this frame to be a keyframe */
 
 /*!\brief Encoder configuration structure
  *
@@ -376,7 +376,7 @@ typedef struct aom_codec_enc_cfg {
   /*!\brief Multi-pass Encoding Mode
    *
    * This value should be set to the current phase for multi-pass encoding.
-   * For single pass, set to #VPX_RC_ONE_PASS.
+   * For single pass, set to #AOM_RC_ONE_PASS.
    */
   enum aom_enc_pass g_pass;
 
@@ -644,14 +644,14 @@ typedef struct aom_codec_enc_cfg {
    * These values specify if auto alt reference frame is enabled for each
    * spatial layer.
    */
-  int ss_enable_auto_alt_ref[VPX_SS_MAX_LAYERS];
+  int ss_enable_auto_alt_ref[AOM_SS_MAX_LAYERS];
 
   /*!\brief Target bitrate for each spatial layer.
    *
    * These values specify the target coding bitrate to be used for each
    * spatial layer.
    */
-  unsigned int ss_target_bitrate[VPX_SS_MAX_LAYERS];
+  unsigned int ss_target_bitrate[AOM_SS_MAX_LAYERS];
 
   /*!\brief Number of temporal coding layers.
    *
@@ -664,14 +664,14 @@ typedef struct aom_codec_enc_cfg {
    * These values specify the target coding bitrate to be used for each
    * temporal layer.
    */
-  unsigned int ts_target_bitrate[VPX_TS_MAX_LAYERS];
+  unsigned int ts_target_bitrate[AOM_TS_MAX_LAYERS];
 
   /*!\brief Frame rate decimation factor for each temporal layer.
    *
    * These values specify the frame rate decimation factors to apply
    * to each temporal layer.
    */
-  unsigned int ts_rate_decimator[VPX_TS_MAX_LAYERS];
+  unsigned int ts_rate_decimator[AOM_TS_MAX_LAYERS];
 
   /*!\brief Length of the sequence defining frame temporal layer membership.
    *
@@ -689,7 +689,7 @@ typedef struct aom_codec_enc_cfg {
    * layer (0) and odd numbered frames to a second temporal layer (1) with
    * ts_periodicity=8, then ts_layer_id = (0,1,0,1,0,1,0,1).
   */
-  unsigned int ts_layer_id[VPX_TS_MAX_PERIODICITY];
+  unsigned int ts_layer_id[AOM_TS_MAX_PERIODICITY];
 
   /*!\brief Target bitrate for each spatial/temporal layer.
    *
@@ -697,7 +697,7 @@ typedef struct aom_codec_enc_cfg {
    * spatial/temporal layer.
    *
    */
-  unsigned int layer_target_bitrate[VPX_MAX_LAYERS];
+  unsigned int layer_target_bitrate[AOM_MAX_LAYERS];
 
   /*!\brief Temporal layering mode indicating which temporal layering scheme to
    * use.
@@ -715,10 +715,10 @@ typedef struct aom_codec_enc_cfg {
  *
  */
 typedef struct aom_svc_parameters {
-  int max_quantizers[VPX_MAX_LAYERS];     /**< Max Q for each layer */
-  int min_quantizers[VPX_MAX_LAYERS];     /**< Min Q for each layer */
-  int scaling_factor_num[VPX_MAX_LAYERS]; /**< Scaling factor-numerator */
-  int scaling_factor_den[VPX_MAX_LAYERS]; /**< Scaling factor-denominator */
+  int max_quantizers[AOM_MAX_LAYERS];     /**< Max Q for each layer */
+  int min_quantizers[AOM_MAX_LAYERS];     /**< Min Q for each layer */
+  int scaling_factor_num[AOM_MAX_LAYERS]; /**< Scaling factor-numerator */
+  int scaling_factor_den[AOM_MAX_LAYERS]; /**< Scaling factor-denominator */
   int temporal_layering_mode;             /**< Temporal layering mode */
 } aom_svc_extra_cfg_t;
 
@@ -736,12 +736,12 @@ typedef struct aom_svc_parameters {
  * \param[in]    ctx     Pointer to this instance's context.
  * \param[in]    iface   Pointer to the algorithm interface to use.
  * \param[in]    cfg     Configuration to use, if known. May be NULL.
- * \param[in]    flags   Bitfield of VPX_CODEC_USE_* flags
+ * \param[in]    flags   Bitfield of AOM_CODEC_USE_* flags
  * \param[in]    ver     ABI version number. Must be set to
- *                       VPX_ENCODER_ABI_VERSION
- * \retval #VPX_CODEC_OK
+ *                       AOM_ENCODER_ABI_VERSION
+ * \retval #AOM_CODEC_OK
  *     The decoder algorithm initialized.
- * \retval #VPX_CODEC_MEM_ERROR
+ * \retval #AOM_CODEC_MEM_ERROR
  *     Memory allocation failed.
  */
 aom_codec_err_t aom_codec_enc_init_ver(aom_codec_ctx_t *ctx,
@@ -754,7 +754,7 @@ aom_codec_err_t aom_codec_enc_init_ver(aom_codec_ctx_t *ctx,
  * Ensures the ABI version parameter is properly set.
  */
 #define aom_codec_enc_init(ctx, iface, cfg, flags) \
-  aom_codec_enc_init_ver(ctx, iface, cfg, flags, VPX_ENCODER_ABI_VERSION)
+  aom_codec_enc_init_ver(ctx, iface, cfg, flags, AOM_ENCODER_ABI_VERSION)
 
 /*!\brief Initialize multi-encoder instance
  *
@@ -767,13 +767,13 @@ aom_codec_err_t aom_codec_enc_init_ver(aom_codec_ctx_t *ctx,
  * \param[in]    iface   Pointer to the algorithm interface to use.
  * \param[in]    cfg     Configuration to use, if known. May be NULL.
  * \param[in]    num_enc Total number of encoders.
- * \param[in]    flags   Bitfield of VPX_CODEC_USE_* flags
+ * \param[in]    flags   Bitfield of AOM_CODEC_USE_* flags
  * \param[in]    dsf     Pointer to down-sampling factors.
  * \param[in]    ver     ABI version number. Must be set to
- *                       VPX_ENCODER_ABI_VERSION
- * \retval #VPX_CODEC_OK
+ *                       AOM_ENCODER_ABI_VERSION
+ * \retval #AOM_CODEC_OK
  *     The decoder algorithm initialized.
- * \retval #VPX_CODEC_MEM_ERROR
+ * \retval #AOM_CODEC_MEM_ERROR
  *     Memory allocation failed.
  */
 aom_codec_err_t aom_codec_enc_init_multi_ver(
@@ -786,7 +786,7 @@ aom_codec_err_t aom_codec_enc_init_multi_ver(
  */
 #define aom_codec_enc_init_multi(ctx, iface, cfg, num_enc, flags, dsf) \
   aom_codec_enc_init_multi_ver(ctx, iface, cfg, num_enc, flags, dsf,   \
-                               VPX_ENCODER_ABI_VERSION)
+                               AOM_ENCODER_ABI_VERSION)
 
 /*!\brief Get a default configuration
  *
@@ -800,11 +800,11 @@ aom_codec_err_t aom_codec_enc_init_multi_ver(
  * \param[out]   cfg       Configuration buffer to populate.
  * \param[in]    reserved  Must set to 0 for VP8 and VP9.
  *
- * \retval #VPX_CODEC_OK
+ * \retval #AOM_CODEC_OK
  *     The configuration was populated.
- * \retval #VPX_CODEC_INCAPABLE
+ * \retval #AOM_CODEC_INCAPABLE
  *     Interface is not an encoder interface.
- * \retval #VPX_CODEC_INVALID_PARAM
+ * \retval #AOM_CODEC_INVALID_PARAM
  *     A parameter was NULL, or the usage value was not recognized.
  */
 aom_codec_err_t aom_codec_enc_config_default(aom_codec_iface_t *iface,
@@ -818,11 +818,11 @@ aom_codec_err_t aom_codec_enc_config_default(aom_codec_iface_t *iface,
  * \param[in]    ctx     Pointer to this instance's context
  * \param[in]    cfg     Configuration buffer to use
  *
- * \retval #VPX_CODEC_OK
+ * \retval #AOM_CODEC_OK
  *     The configuration was populated.
- * \retval #VPX_CODEC_INCAPABLE
+ * \retval #AOM_CODEC_INCAPABLE
  *     Interface is not an encoder interface.
- * \retval #VPX_CODEC_INVALID_PARAM
+ * \retval #AOM_CODEC_INVALID_PARAM
  *     A parameter was NULL, or the usage value was not recognized.
  */
 aom_codec_err_t aom_codec_enc_config_set(aom_codec_ctx_t *ctx,
@@ -841,11 +841,11 @@ aom_codec_err_t aom_codec_enc_config_set(aom_codec_ctx_t *ctx,
  */
 aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
 
-#define VPX_DL_REALTIME (1)
+#define AOM_DL_REALTIME (1)
 /**< deadline parameter analogous to VPx REALTIME mode. */
-#define VPX_DL_GOOD_QUALITY (1000000)
+#define AOM_DL_GOOD_QUALITY (1000000)
 /**< deadline parameter analogous to VPx GOOD QUALITY mode. */
-#define VPX_DL_BEST_QUALITY (0)
+#define AOM_DL_BEST_QUALITY (0)
 /**< deadline parameter analogous to VPx BEST QUALITY mode. */
 /*!\brief Encode a frame
  *
@@ -860,8 +860,8 @@ aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
  * best possible frame by specifying a deadline of '0'. This deadline
  * supercedes the VPx notion of "best quality, good quality, realtime".
  * Applications that wish to map these former settings to the new deadline
- * based system can use the symbols #VPX_DL_REALTIME, #VPX_DL_GOOD_QUALITY,
- * and #VPX_DL_BEST_QUALITY.
+ * based system can use the symbols #AOM_DL_REALTIME, #AOM_DL_GOOD_QUALITY,
+ * and #AOM_DL_BEST_QUALITY.
  *
  * When the last frame has been passed to the encoder, this function should
  * continue to be called, with the img parameter set to NULL. This will
@@ -876,11 +876,11 @@ aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
  * \param[in]    flags     Flags to use for encoding this frame.
  * \param[in]    deadline  Time to spend encoding, in microseconds. (0=infinite)
  *
- * \retval #VPX_CODEC_OK
+ * \retval #AOM_CODEC_OK
  *     The configuration was populated.
- * \retval #VPX_CODEC_INCAPABLE
+ * \retval #AOM_CODEC_INCAPABLE
  *     Interface is not an encoder interface.
- * \retval #VPX_CODEC_INVALID_PARAM
+ * \retval #AOM_CODEC_INVALID_PARAM
  *     A parameter was NULL, the image format is unsupported, etc.
  */
 aom_codec_err_t aom_codec_encode(aom_codec_ctx_t *ctx, const aom_image_t *img,
@@ -892,7 +892,7 @@ aom_codec_err_t aom_codec_encode(aom_codec_ctx_t *ctx, const aom_image_t *img,
  *
  * Sets the buffer that the codec should output the compressed data
  * into. This call effectively sets the buffer pointer returned in the
- * next VPX_CODEC_CX_FRAME_PKT packet. Subsequent packets will be
+ * next AOM_CODEC_CX_FRAME_PKT packet. Subsequent packets will be
  * appended into this buffer. The buffer is preserved across frames,
  * so applications must periodically call this function after flushing
  * the accumulated compressed data to disk or to the network to reset
@@ -926,9 +926,9 @@ aom_codec_err_t aom_codec_encode(aom_codec_ctx_t *ctx, const aom_image_t *img,
  * \param[in]    pad_before  Bytes to skip before writing compressed data
  * \param[in]    pad_after   Bytes to skip after writing compressed data
  *
- * \retval #VPX_CODEC_OK
+ * \retval #AOM_CODEC_OK
  *     The buffer was set successfully.
- * \retval #VPX_CODEC_INVALID_PARAM
+ * \retval #AOM_CODEC_INVALID_PARAM
  *     A parameter was NULL, the image format is unsupported, etc.
  */
 aom_codec_err_t aom_codec_set_cx_data_buf(aom_codec_ctx_t *ctx,
@@ -942,9 +942,9 @@ aom_codec_err_t aom_codec_set_cx_data_buf(aom_codec_ctx_t *ctx,
  * application. The different kinds of packets available are enumerated in
  * #aom_codec_cx_pkt_kind.
  *
- * #VPX_CODEC_CX_FRAME_PKT packets should be passed to the application's
+ * #AOM_CODEC_CX_FRAME_PKT packets should be passed to the application's
  * muxer. Multiple compressed frames may be in the list.
- * #VPX_CODEC_STATS_PKT packets should be appended to a global buffer.
+ * #AOM_CODEC_STATS_PKT packets should be appended to a global buffer.
  *
  * The application \ref MUST silently ignore any packet kinds that it does
  * not recognize or support.
@@ -980,4 +980,4 @@ const aom_image_t *aom_codec_get_preview_frame(aom_codec_ctx_t *ctx);
 #ifdef __cplusplus
 }
 #endif
-#endif  // VPX_VPX_ENCODER_H_
+#endif  // AOM_AOM_ENCODER_H_

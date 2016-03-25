@@ -10,39 +10,39 @@
 ##
 ##  This file contains shell code shared by test scripts for libaom tools.
 
-# Use $VPX_TEST_TOOLS_COMMON_SH as a pseudo include guard.
-if [ -z "${VPX_TEST_TOOLS_COMMON_SH}" ]; then
-VPX_TEST_TOOLS_COMMON_SH=included
+# Use $AOM_TEST_TOOLS_COMMON_SH as a pseudo include guard.
+if [ -z "${AOM_TEST_TOOLS_COMMON_SH}" ]; then
+AOM_TEST_TOOLS_COMMON_SH=included
 
 set -e
 devnull='> /dev/null 2>&1'
-VPX_TEST_PREFIX=""
+AOM_TEST_PREFIX=""
 
 elog() {
   echo "$@" 1>&2
 }
 
 vlog() {
-  if [ "${VPX_TEST_VERBOSE_OUTPUT}" = "yes" ]; then
+  if [ "${AOM_TEST_VERBOSE_OUTPUT}" = "yes" ]; then
     echo "$@"
   fi
 }
 
-# Sets $VPX_TOOL_TEST to the name specified by positional parameter one.
+# Sets $AOM_TOOL_TEST to the name specified by positional parameter one.
 test_begin() {
-  VPX_TOOL_TEST="${1}"
+  AOM_TOOL_TEST="${1}"
 }
 
-# Clears the VPX_TOOL_TEST variable after confirming that $VPX_TOOL_TEST matches
+# Clears the AOM_TOOL_TEST variable after confirming that $AOM_TOOL_TEST matches
 # positional parameter one.
 test_end() {
-  if [ "$1" != "${VPX_TOOL_TEST}" ]; then
+  if [ "$1" != "${AOM_TOOL_TEST}" ]; then
     echo "FAIL completed test mismatch!."
     echo "  completed test: ${1}"
-    echo "  active test: ${VPX_TOOL_TEST}."
+    echo "  active test: ${AOM_TOOL_TEST}."
     return 1
   fi
-  VPX_TOOL_TEST='<unset>'
+  AOM_TOOL_TEST='<unset>'
 }
 
 # Echoes the target configuration being tested.
@@ -55,14 +55,14 @@ test_configuration_target() {
 }
 
 # Trap function used for failure reports and tool output directory removal.
-# When the contents of $VPX_TOOL_TEST do not match the string '<unset>', reports
-# failure of test stored in $VPX_TOOL_TEST.
+# When the contents of $AOM_TOOL_TEST do not match the string '<unset>', reports
+# failure of test stored in $AOM_TOOL_TEST.
 cleanup() {
-  if [ -n "${VPX_TOOL_TEST}" ] && [ "${VPX_TOOL_TEST}" != '<unset>' ]; then
-    echo "FAIL: $VPX_TOOL_TEST"
+  if [ -n "${AOM_TOOL_TEST}" ] && [ "${AOM_TOOL_TEST}" != '<unset>' ]; then
+    echo "FAIL: $AOM_TOOL_TEST"
   fi
-  if [ -n "${VPX_TEST_OUTPUT_DIR}" ] && [ -d "${VPX_TEST_OUTPUT_DIR}" ]; then
-    rm -rf "${VPX_TEST_OUTPUT_DIR}"
+  if [ -n "${AOM_TEST_OUTPUT_DIR}" ] && [ -d "${AOM_TEST_OUTPUT_DIR}" ]; then
+    rm -rf "${AOM_TEST_OUTPUT_DIR}"
   fi
 }
 
@@ -151,11 +151,11 @@ is_windows_target() {
 # returns.
 aom_tool_path() {
   local readonly tool_name="$1"
-  local tool_path="${LIBAOM_BIN_PATH}/${tool_name}${VPX_TEST_EXE_SUFFIX}"
+  local tool_path="${LIBAOM_BIN_PATH}/${tool_name}${AOM_TEST_EXE_SUFFIX}"
   if [ ! -x "${tool_path}" ]; then
     # Try one directory up: when running via examples.sh the tool could be in
     # the parent directory of $LIBAOM_BIN_PATH.
-    tool_path="${LIBAOM_BIN_PATH}/../${tool_name}${VPX_TEST_EXE_SUFFIX}"
+    tool_path="${LIBAOM_BIN_PATH}/../${tool_name}${AOM_TEST_EXE_SUFFIX}"
   fi
 
   if [ ! -x "${tool_path}" ]; then
@@ -168,7 +168,7 @@ aom_tool_path() {
 # in LIBAOM_BIN_PATH, and is executable.
 aom_tool_available() {
   local tool_name="$1"
-  local tool="${LIBAOM_BIN_PATH}/${tool_name}${VPX_TEST_EXE_SUFFIX}"
+  local tool="${LIBAOM_BIN_PATH}/${tool_name}${AOM_TEST_EXE_SUFFIX}"
   [ -x "${tool}" ] && echo yes
 }
 
@@ -225,24 +225,24 @@ filter_strings() {
 run_tests() {
   local env_tests="verify_aom_test_environment $1"
   local tests_to_filter="$2"
-  local test_name="${VPX_TEST_NAME}"
+  local test_name="${AOM_TEST_NAME}"
 
   if [ -z "${test_name}" ]; then
     test_name="$(basename "${0%.*}")"
   fi
 
-  if [ "${VPX_TEST_RUN_DISABLED_TESTS}" != "yes" ]; then
+  if [ "${AOM_TEST_RUN_DISABLED_TESTS}" != "yes" ]; then
     # Filter out DISABLED tests.
     tests_to_filter=$(filter_strings "${tests_to_filter}" ^DISABLED exclude)
   fi
 
-  if [ -n "${VPX_TEST_FILTER}" ]; then
+  if [ -n "${AOM_TEST_FILTER}" ]; then
     # Remove tests not matching the user's filter.
-    tests_to_filter=$(filter_strings "${tests_to_filter}" ${VPX_TEST_FILTER})
+    tests_to_filter=$(filter_strings "${tests_to_filter}" ${AOM_TEST_FILTER})
   fi
 
   # User requested test listing: Dump test names and return.
-  if [ "${VPX_TEST_LIST_TESTS}" = "yes" ]; then
+  if [ "${AOM_TEST_LIST_TESTS}" = "yes" ]; then
     for test_name in $tests_to_filter; do
       echo ${test_name}
     done
@@ -319,11 +319,11 @@ while [ -n "$1" ]; do
       shift
       ;;
     --filter)
-      VPX_TEST_FILTER="$2"
+      AOM_TEST_FILTER="$2"
       shift
       ;;
     --run-disabled-tests)
-      VPX_TEST_RUN_DISABLED_TESTS=yes
+      AOM_TEST_RUN_DISABLED_TESTS=yes
       ;;
     --help)
       aom_test_usage
@@ -334,17 +334,17 @@ while [ -n "$1" ]; do
       shift
       ;;
     --prefix)
-      VPX_TEST_PREFIX="$2"
+      AOM_TEST_PREFIX="$2"
       shift
       ;;
     --verbose)
-      VPX_TEST_VERBOSE_OUTPUT=yes
+      AOM_TEST_VERBOSE_OUTPUT=yes
       ;;
     --show-program-output)
       devnull=
       ;;
     --list-tests)
-      VPX_TEST_LIST_TESTS=yes
+      AOM_TEST_LIST_TESTS=yes
       ;;
     *)
       aom_test_usage
@@ -362,24 +362,24 @@ LIBAOM_TEST_DATA_PATH="${LIBAOM_TEST_DATA_PATH:-.}"
 
 # Create a temporary directory for output files, and a trap to clean it up.
 if [ -n "${TMPDIR}" ]; then
-  VPX_TEST_TEMP_ROOT="${TMPDIR}"
+  AOM_TEST_TEMP_ROOT="${TMPDIR}"
 elif [ -n "${TEMPDIR}" ]; then
-  VPX_TEST_TEMP_ROOT="${TEMPDIR}"
+  AOM_TEST_TEMP_ROOT="${TEMPDIR}"
 else
-  VPX_TEST_TEMP_ROOT=/tmp
+  AOM_TEST_TEMP_ROOT=/tmp
 fi
 
-VPX_TEST_OUTPUT_DIR="${VPX_TEST_TEMP_ROOT}/aom_test_$$"
+AOM_TEST_OUTPUT_DIR="${AOM_TEST_TEMP_ROOT}/aom_test_$$"
 
-if ! mkdir -p "${VPX_TEST_OUTPUT_DIR}" || \
-   [ ! -d "${VPX_TEST_OUTPUT_DIR}" ]; then
+if ! mkdir -p "${AOM_TEST_OUTPUT_DIR}" || \
+   [ ! -d "${AOM_TEST_OUTPUT_DIR}" ]; then
   echo "${0##*/}: Cannot create output directory, giving up."
-  echo "${0##*/}:   VPX_TEST_OUTPUT_DIR=${VPX_TEST_OUTPUT_DIR}"
+  echo "${0##*/}:   AOM_TEST_OUTPUT_DIR=${AOM_TEST_OUTPUT_DIR}"
   exit 1
 fi
 
 if [ "$(is_windows_target)" = "yes" ]; then
-  VPX_TEST_EXE_SUFFIX=".exe"
+  AOM_TEST_EXE_SUFFIX=".exe"
 fi
 
 # Variables shared by tests.
@@ -407,18 +407,18 @@ vlog "$(basename "${0%.*}") test configuration:
   VP8_IVF_FILE=${VP8_IVF_FILE}
   VP9_IVF_FILE=${VP9_IVF_FILE}
   VP9_WEBM_FILE=${VP9_WEBM_FILE}
-  VPX_TEST_EXE_SUFFIX=${VPX_TEST_EXE_SUFFIX}
-  VPX_TEST_FILTER=${VPX_TEST_FILTER}
-  VPX_TEST_LIST_TESTS=${VPX_TEST_LIST_TESTS}
-  VPX_TEST_OUTPUT_DIR=${VPX_TEST_OUTPUT_DIR}
-  VPX_TEST_PREFIX=${VPX_TEST_PREFIX}
-  VPX_TEST_RUN_DISABLED_TESTS=${VPX_TEST_RUN_DISABLED_TESTS}
-  VPX_TEST_SHOW_PROGRAM_OUTPUT=${VPX_TEST_SHOW_PROGRAM_OUTPUT}
-  VPX_TEST_TEMP_ROOT=${VPX_TEST_TEMP_ROOT}
-  VPX_TEST_VERBOSE_OUTPUT=${VPX_TEST_VERBOSE_OUTPUT}
+  AOM_TEST_EXE_SUFFIX=${AOM_TEST_EXE_SUFFIX}
+  AOM_TEST_FILTER=${AOM_TEST_FILTER}
+  AOM_TEST_LIST_TESTS=${AOM_TEST_LIST_TESTS}
+  AOM_TEST_OUTPUT_DIR=${AOM_TEST_OUTPUT_DIR}
+  AOM_TEST_PREFIX=${AOM_TEST_PREFIX}
+  AOM_TEST_RUN_DISABLED_TESTS=${AOM_TEST_RUN_DISABLED_TESTS}
+  AOM_TEST_SHOW_PROGRAM_OUTPUT=${AOM_TEST_SHOW_PROGRAM_OUTPUT}
+  AOM_TEST_TEMP_ROOT=${AOM_TEST_TEMP_ROOT}
+  AOM_TEST_VERBOSE_OUTPUT=${AOM_TEST_VERBOSE_OUTPUT}
   YUV_RAW_INPUT=${YUV_RAW_INPUT}
   YUV_RAW_INPUT_WIDTH=${YUV_RAW_INPUT_WIDTH}
   YUV_RAW_INPUT_HEIGHT=${YUV_RAW_INPUT_HEIGHT}
   Y4M_NOSQ_PAR_INPUT=${Y4M_NOSQ_PAR_INPUT}"
 
-fi  # End $VPX_TEST_TOOLS_COMMON_SH pseudo include guard.
+fi  # End $AOM_TEST_TOOLS_COMMON_SH pseudo include guard.

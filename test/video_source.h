@@ -133,7 +133,7 @@ class DummyVideoSource : public VideoSource {
  public:
   DummyVideoSource()
       : img_(NULL), limit_(100), width_(80), height_(64),
-        format_(VPX_IMG_FMT_I420) {
+        format_(AOM_IMG_FMT_I420) {
     ReallocImage();
   }
 

@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_INTERNAL_VPX_PSNR_H_
-#define VPX_INTERNAL_VPX_PSNR_H_
+#ifndef AOM_INTERNAL_AOM_PSNR_H_
+#define AOM_INTERNAL_AOM_PSNR_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,4 +32,4 @@ double aom_sse_to_psnr(double samples, double peak, double sse);
 }  // extern "C"
 #endif
 
-#endif  // VPX_INTERNAL_VPX_PSNR_H_
+#endif  // AOM_INTERNAL_AOM_PSNR_H_

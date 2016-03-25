@@ -80,7 +80,7 @@ void write_webm_block(struct EbmlGlobal *glob, const aom_codec_enc_cfg_t *cfg,
 
   segment->AddFrame(static_cast<uint8_t *>(pkt->data.frame.buf),
                     pkt->data.frame.sz, kVideoTrackNumber, pts_ns,
-                    pkt->data.frame.flags & VPX_FRAME_IS_KEY);
+                    pkt->data.frame.flags & AOM_FRAME_IS_KEY);
 }
 
 void write_webm_file_footer(struct EbmlGlobal *glob) {

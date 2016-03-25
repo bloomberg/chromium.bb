@@ -26,7 +26,7 @@ class TileIndependenceTest : public ::libaom_test::EncoderTest,
   TileIndependenceTest()
       : EncoderTest(GET_PARAM(0)), md5_fw_order_(), md5_inv_order_(),
         n_tiles_(GET_PARAM(1)) {
-    init_flags_ = VPX_CODEC_USE_PSNR;
+    init_flags_ = AOM_CODEC_USE_PSNR;
     aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
     cfg.w = 704;
     cfg.h = 144;
@@ -57,9 +57,9 @@ class TileIndependenceTest : public ::libaom_test::EncoderTest,
                  ::libaom_test::MD5 *md5) {
     const aom_codec_err_t res = dec->DecodeFrame(
         reinterpret_cast<uint8_t *>(pkt->data.frame.buf), pkt->data.frame.sz);
-    if (res != VPX_CODEC_OK) {
+    if (res != AOM_CODEC_OK) {
       abort_ = true;
-      ASSERT_EQ(VPX_CODEC_OK, res);
+      ASSERT_EQ(AOM_CODEC_OK, res);
     }
     const aom_image_t *img = dec->GetDxData().Next();
     md5->Add(img);
@@ -85,7 +85,7 @@ TEST_P(TileIndependenceTest, MD5Match) {
   cfg_.g_timebase = timebase;
   cfg_.rc_target_bitrate = 500;
   cfg_.g_lag_in_frames = 25;
-  cfg_.rc_end_usage = VPX_VBR;
+  cfg_.rc_end_usage = AOM_VBR;
 
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 704, 144,
                                      timebase.den, timebase.num, 0, 30);

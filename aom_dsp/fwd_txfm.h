@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_FWD_TXFM_H_
-#define VPX_DSP_FWD_TXFM_H_
+#ifndef AOM_DSP_FWD_TXFM_H_
+#define AOM_DSP_FWD_TXFM_H_
 
 #include "aom_dsp/txfm_common.h"
 
@@ -23,4 +23,4 @@ static INLINE tran_high_t fdct_round_shift(tran_high_t input) {
 }
 
 void aom_fdct32(const tran_high_t *input, tran_high_t *output, int round);
-#endif  // VPX_DSP_FWD_TXFM_H_
+#endif  // AOM_DSP_FWD_TXFM_H_

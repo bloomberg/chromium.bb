@@ -111,26 +111,26 @@ static const arg_def_t *all_args[] = {
 static INLINE int libyuv_scale(aom_image_t *src, aom_image_t *dst,
                                FilterModeEnum mode) {
 #if CONFIG_AOM_HIGHBITDEPTH
-  if (src->fmt == VPX_IMG_FMT_I42016) {
-    assert(dst->fmt == VPX_IMG_FMT_I42016);
+  if (src->fmt == AOM_IMG_FMT_I42016) {
+    assert(dst->fmt == AOM_IMG_FMT_I42016);
     return I420Scale_16(
-        (uint16_t *)src->planes[VPX_PLANE_Y], src->stride[VPX_PLANE_Y] / 2,
-        (uint16_t *)src->planes[VPX_PLANE_U], src->stride[VPX_PLANE_U] / 2,
-        (uint16_t *)src->planes[VPX_PLANE_V], src->stride[VPX_PLANE_V] / 2,
-        src->d_w, src->d_h, (uint16_t *)dst->planes[VPX_PLANE_Y],
-        dst->stride[VPX_PLANE_Y] / 2, (uint16_t *)dst->planes[VPX_PLANE_U],
-        dst->stride[VPX_PLANE_U] / 2, (uint16_t *)dst->planes[VPX_PLANE_V],
-        dst->stride[VPX_PLANE_V] / 2, dst->d_w, dst->d_h, mode);
+        (uint16_t *)src->planes[AOM_PLANE_Y], src->stride[AOM_PLANE_Y] / 2,
+        (uint16_t *)src->planes[AOM_PLANE_U], src->stride[AOM_PLANE_U] / 2,
+        (uint16_t *)src->planes[AOM_PLANE_V], src->stride[AOM_PLANE_V] / 2,
+        src->d_w, src->d_h, (uint16_t *)dst->planes[AOM_PLANE_Y],
+        dst->stride[AOM_PLANE_Y] / 2, (uint16_t *)dst->planes[AOM_PLANE_U],
+        dst->stride[AOM_PLANE_U] / 2, (uint16_t *)dst->planes[AOM_PLANE_V],
+        dst->stride[AOM_PLANE_V] / 2, dst->d_w, dst->d_h, mode);
   }
 #endif
-  assert(src->fmt == VPX_IMG_FMT_I420);
-  assert(dst->fmt == VPX_IMG_FMT_I420);
-  return I420Scale(src->planes[VPX_PLANE_Y], src->stride[VPX_PLANE_Y],
-                   src->planes[VPX_PLANE_U], src->stride[VPX_PLANE_U],
-                   src->planes[VPX_PLANE_V], src->stride[VPX_PLANE_V], src->d_w,
-                   src->d_h, dst->planes[VPX_PLANE_Y], dst->stride[VPX_PLANE_Y],
-                   dst->planes[VPX_PLANE_U], dst->stride[VPX_PLANE_U],
-                   dst->planes[VPX_PLANE_V], dst->stride[VPX_PLANE_V], dst->d_w,
+  assert(src->fmt == AOM_IMG_FMT_I420);
+  assert(dst->fmt == AOM_IMG_FMT_I420);
+  return I420Scale(src->planes[AOM_PLANE_Y], src->stride[AOM_PLANE_Y],
+                   src->planes[AOM_PLANE_U], src->stride[AOM_PLANE_U],
+                   src->planes[AOM_PLANE_V], src->stride[AOM_PLANE_V], src->d_w,
+                   src->d_h, dst->planes[AOM_PLANE_Y], dst->stride[AOM_PLANE_Y],
+                   dst->planes[AOM_PLANE_U], dst->stride[AOM_PLANE_U],
+                   dst->planes[AOM_PLANE_V], dst->stride[AOM_PLANE_V], dst->d_w,
                    dst->d_h, mode);
 }
 #endif
@@ -240,7 +240,7 @@ static void update_image_md5(const aom_image_t *img, const int planes[3],
     const unsigned char *buf = img->planes[plane];
     const int stride = img->stride[plane];
     const int w = aom_img_plane_width(img, plane) *
-                  ((img->fmt & VPX_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
+                  ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
     const int h = aom_img_plane_height(img, plane);
 
     for (y = 0; y < h; ++y) {
@@ -254,7 +254,7 @@ static void write_image_file(const aom_image_t *img, const int planes[3],
                              FILE *file) {
   int i, y;
 #if CONFIG_AOM_HIGHBITDEPTH
-  const int bytes_per_sample = ((img->fmt & VPX_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
+  const int bytes_per_sample = ((img->fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 2 : 1);
 #else
   const int bytes_per_sample = 1;
 #endif
@@ -666,9 +666,9 @@ static int main_loop(int argc, const char **argv_) {
 
   if (!interface) interface = get_aom_decoder_by_index(0);
 
-  dec_flags = (postproc ? VPX_CODEC_USE_POSTPROC : 0) |
-              (ec_enabled ? VPX_CODEC_USE_ERROR_CONCEALMENT : 0) |
-              (frame_parallel ? VPX_CODEC_USE_FRAME_THREADING : 0);
+  dec_flags = (postproc ? AOM_CODEC_USE_POSTPROC : 0) |
+              (ec_enabled ? AOM_CODEC_USE_ERROR_CONCEALMENT : 0) |
+              (frame_parallel ? AOM_CODEC_USE_FRAME_THREADING : 0);
   if (aom_codec_dec_init(&decoder, interface->codec_interface(), &cfg,
                          dec_flags)) {
     fprintf(stderr, "Failed to initialize decoder: %s\n",
@@ -762,8 +762,8 @@ static int main_loop(int argc, const char **argv_) {
     if (progress) show_progress(frame_in, frame_out, dx_time);
 
     if (!noblit && img) {
-      const int PLANES_YUV[] = { VPX_PLANE_Y, VPX_PLANE_U, VPX_PLANE_V };
-      const int PLANES_YVU[] = { VPX_PLANE_Y, VPX_PLANE_V, VPX_PLANE_U };
+      const int PLANES_YUV[] = { AOM_PLANE_Y, AOM_PLANE_U, AOM_PLANE_V };
+      const int PLANES_YVU[] = { AOM_PLANE_Y, AOM_PLANE_V, AOM_PLANE_U };
       const int *planes = flipuv ? PLANES_YVU : PLANES_YUV;
 
       if (do_scale) {
@@ -815,8 +815,8 @@ static int main_loop(int argc, const char **argv_) {
       if (output_bit_depth != 0 && output_bit_depth != img->bit_depth) {
         const aom_img_fmt_t shifted_fmt =
             output_bit_depth == 8
-                ? img->fmt ^ (img->fmt & VPX_IMG_FMT_HIGHBITDEPTH)
-                : img->fmt | VPX_IMG_FMT_HIGHBITDEPTH;
+                ? img->fmt ^ (img->fmt & AOM_IMG_FMT_HIGHBITDEPTH)
+                : img->fmt | AOM_IMG_FMT_HIGHBITDEPTH;
         if (img_shifted &&
             img_shifted_realloc_required(img, img_shifted, shifted_fmt)) {
           aom_img_free(img_shifted);
@@ -841,7 +841,7 @@ static int main_loop(int argc, const char **argv_) {
         if (use_y4m) {
           char buf[Y4M_BUFFER_SIZE] = { 0 };
           size_t len = 0;
-          if (img->fmt == VPX_IMG_FMT_I440 || img->fmt == VPX_IMG_FMT_I44016) {
+          if (img->fmt == AOM_IMG_FMT_I440 || img->fmt == AOM_IMG_FMT_I44016) {
             fprintf(stderr, "Cannot produce y4m output for 440 sampling.\n");
             goto fail;
           }
@@ -869,15 +869,15 @@ static int main_loop(int argc, const char **argv_) {
             // Check if --yv12 or --i420 options are consistent with the
             // bit-stream decoded
             if (opt_i420) {
-              if (img->fmt != VPX_IMG_FMT_I420 &&
-                  img->fmt != VPX_IMG_FMT_I42016) {
+              if (img->fmt != AOM_IMG_FMT_I420 &&
+                  img->fmt != AOM_IMG_FMT_I42016) {
                 fprintf(stderr, "Cannot produce i420 output for bit-stream.\n");
                 goto fail;
               }
             }
             if (opt_yv12) {
-              if ((img->fmt != VPX_IMG_FMT_I420 &&
-                   img->fmt != VPX_IMG_FMT_YV12) ||
+              if ((img->fmt != AOM_IMG_FMT_I420 &&
+                   img->fmt != AOM_IMG_FMT_YV12) ||
                   img->bit_depth != 8) {
                 fprintf(stderr, "Cannot produce yv12 output for bit-stream.\n");
                 goto fail;

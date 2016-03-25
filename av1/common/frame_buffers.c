@@ -19,7 +19,7 @@ int av1_alloc_internal_frame_buffers(InternalFrameBufferList *list) {
   av1_free_internal_frame_buffers(list);
 
   list->num_internal_frame_buffers =
-      VPX_MAXIMUM_REF_BUFFERS + VPX_MAXIMUM_WORK_BUFFERS;
+      AOM_MAXIMUM_REF_BUFFERS + AOM_MAXIMUM_WORK_BUFFERS;
   list->int_fb = (InternalFrameBuffer *)aom_calloc(
       list->num_internal_frame_buffers, sizeof(*list->int_fb));
   return (list->int_fb == NULL);

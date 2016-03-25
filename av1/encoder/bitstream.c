@@ -207,9 +207,9 @@ static void pack_mb_tokens(aom_writer *w, TOKENEXTRA **tp,
     int n = a->len;
 #if CONFIG_AOM_HIGHBITDEPTH
     const av1_extra_bit *b;
-    if (bit_depth == VPX_BITS_12)
+    if (bit_depth == AOM_BITS_12)
       b = &av1_extra_bits_high12[t];
-    else if (bit_depth == VPX_BITS_10)
+    else if (bit_depth == AOM_BITS_10)
       b = &av1_extra_bits_high10[t];
     else
       b = &av1_extra_bits[t];
@@ -993,7 +993,7 @@ static void write_txfm_mode(TX_MODE mode, struct aom_write_bit_buffer *wb) {
 }
 #else
 static void write_txfm_mode(TX_MODE mode, struct aom_writer *wb) {
-  aom_write_literal(wb, VPXMIN(mode, ALLOW_32X32), 2);
+  aom_write_literal(wb, AOMMIN(mode, ALLOW_32X32), 2);
   if (mode >= ALLOW_32X32) aom_write_bit(wb, mode == TX_MODE_SELECT);
 }
 #endif
@@ -1225,11 +1225,11 @@ static void write_profile(BITSTREAM_PROFILE profile,
 static void write_bitdepth_colorspace_sampling(
     AV1_COMMON *const cm, struct aom_write_bit_buffer *wb) {
   if (cm->profile >= PROFILE_2) {
-    assert(cm->bit_depth > VPX_BITS_8);
-    aom_wb_write_bit(wb, cm->bit_depth == VPX_BITS_10 ? 0 : 1);
+    assert(cm->bit_depth > AOM_BITS_8);
+    aom_wb_write_bit(wb, cm->bit_depth == AOM_BITS_10 ? 0 : 1);
   }
   aom_wb_write_literal(wb, cm->color_space, 3);
-  if (cm->color_space != VPX_CS_SRGB) {
+  if (cm->color_space != AOM_CS_SRGB) {
     // 0: [16, 235] (i.e. xvYCC), 1: [0, 255]
     aom_wb_write_bit(wb, cm->color_range);
     if (cm->profile == PROFILE_1 || cm->profile == PROFILE_3) {
@@ -1251,7 +1251,7 @@ static void write_uncompressed_header(AV1_COMP *cpi,
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
 
-  aom_wb_write_literal(wb, VPX_FRAME_MARKER, 2);
+  aom_wb_write_literal(wb, AOM_FRAME_MARKER, 2);
 
   write_profile(cm->profile, wb);
 

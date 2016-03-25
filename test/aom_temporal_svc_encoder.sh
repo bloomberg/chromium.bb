@@ -32,10 +32,10 @@ aom_tsvc_encoder_verify_environment() {
 # aom_temporal_svc_encoder.
 aom_tsvc_encoder() {
   local encoder="${LIBAOM_BIN_PATH}/aom_temporal_svc_encoder"
-  encoder="${encoder}${VPX_TEST_EXE_SUFFIX}"
+  encoder="${encoder}${AOM_TEST_EXE_SUFFIX}"
   local codec="$1"
   local output_file_base="$2"
-  local output_file="${VPX_TEST_OUTPUT_DIR}/${output_file_base}"
+  local output_file="${AOM_TEST_OUTPUT_DIR}/${output_file_base}"
   local timebase_num="1"
   local timebase_den="1000"
   local speed="6"
@@ -48,7 +48,7 @@ aom_tsvc_encoder() {
     return 1
   fi
 
-  eval "${VPX_TEST_PREFIX}" "${encoder}" "${YUV_RAW_INPUT}" "${output_file}" \
+  eval "${AOM_TEST_PREFIX}" "${encoder}" "${YUV_RAW_INPUT}" "${output_file}" \
       "${codec}" "${YUV_RAW_INPUT_WIDTH}" "${YUV_RAW_INPUT_HEIGHT}" \
       "${timebase_num}" "${timebase_den}" "${speed}" "${frame_drop_thresh}" \
       "$@" \
@@ -61,7 +61,7 @@ aom_tsvc_encoder() {
 # number and the extension .ivf to produce per stream output files.  Here $1 is
 # file name, and $2 is expected number of files.
 files_exist() {
-  local file_name="${VPX_TEST_OUTPUT_DIR}/$1"
+  local file_name="${AOM_TEST_OUTPUT_DIR}/$1"
   local num_files="$(($2 - 1))"
   for stream_num in $(seq 0 ${num_files}); do
     [ -e "${file_name}_${stream_num}.ivf" ] || return 1

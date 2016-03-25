@@ -52,7 +52,7 @@ static INLINE int get_unsigned_bits(unsigned int num_values) {
   do {                                                                      \
     lval = (expr);                                                          \
     if (!lval)                                                              \
-      aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,                   \
+      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,                   \
                          "Failed to allocate " #lval " at %s:%d", __FILE__, \
                          __LINE__);                                         \
   } while (0)
@@ -61,7 +61,7 @@ static INLINE int get_unsigned_bits(unsigned int num_values) {
   do {                                                    \
     lval = (expr);                                        \
     if (!lval)                                            \
-      aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR, \
+      aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR, \
                          "Failed to allocate " #lval);    \
   } while (0)
 #endif
@@ -70,7 +70,7 @@ static INLINE int get_unsigned_bits(unsigned int num_values) {
 #define AV1_SYNC_CODE_1 0x83
 #define AV1_SYNC_CODE_2 0x43
 
-#define VPX_FRAME_MARKER 0x2
+#define AOM_FRAME_MARKER 0x2
 
 #ifdef __cplusplus
 }  // extern "C"

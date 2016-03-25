@@ -30,11 +30,11 @@
 // ----------------
 // Encoding a frame in two pass mode is identical to the simple encoder
 // example. To increase the quality while sacrificing encoding speed,
-// VPX_DL_BEST_QUALITY can be used in place of VPX_DL_GOOD_QUALITY.
+// AOM_DL_BEST_QUALITY can be used in place of AOM_DL_GOOD_QUALITY.
 //
 // Processing Statistics Packets
 // -----------------------------
-// Each packet of type `VPX_CODEC_CX_FRAME_PKT` contains the encoded data
+// Each packet of type `AOM_CODEC_CX_FRAME_PKT` contains the encoded data
 // for this frame. We write a IVF frame header, followed by the raw data.
 //
 //
@@ -74,12 +74,12 @@ static int get_frame_stats(aom_codec_ctx_t *ctx, const aom_image_t *img,
   const aom_codec_cx_pkt_t *pkt = NULL;
   const aom_codec_err_t res =
       aom_codec_encode(ctx, img, pts, duration, flags, deadline);
-  if (res != VPX_CODEC_OK) die_codec(ctx, "Failed to get frame stats.");
+  if (res != AOM_CODEC_OK) die_codec(ctx, "Failed to get frame stats.");
 
   while ((pkt = aom_codec_get_cx_data(ctx, &iter)) != NULL) {
     got_pkts = 1;
 
-    if (pkt->kind == VPX_CODEC_STATS_PKT) {
+    if (pkt->kind == AOM_CODEC_STATS_PKT) {
       const uint8_t *const pkt_buf = pkt->data.twopass_stats.buf;
       const size_t pkt_size = pkt->data.twopass_stats.sz;
       stats->buf = realloc(stats->buf, stats->sz + pkt_size);
@@ -100,12 +100,12 @@ static int encode_frame(aom_codec_ctx_t *ctx, const aom_image_t *img,
   const aom_codec_cx_pkt_t *pkt = NULL;
   const aom_codec_err_t res =
       aom_codec_encode(ctx, img, pts, duration, flags, deadline);
-  if (res != VPX_CODEC_OK) die_codec(ctx, "Failed to encode frame.");
+  if (res != AOM_CODEC_OK) die_codec(ctx, "Failed to encode frame.");
 
   while ((pkt = aom_codec_get_cx_data(ctx, &iter)) != NULL) {
     got_pkts = 1;
-    if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
-      const int keyframe = (pkt->data.frame.flags & VPX_FRAME_IS_KEY) != 0;
+    if (pkt->kind == AOM_CODEC_CX_FRAME_PKT) {
+      const int keyframe = (pkt->data.frame.flags & AOM_FRAME_IS_KEY) != 0;
 
       if (!aom_video_writer_write_frame(writer, pkt->data.frame.buf,
                                         pkt->data.frame.sz,
@@ -132,12 +132,12 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
   // Calculate frame statistics.
   while (aom_img_read(raw, infile)) {
     ++frame_count;
-    get_frame_stats(&codec, raw, frame_count, 1, 0, VPX_DL_GOOD_QUALITY,
+    get_frame_stats(&codec, raw, frame_count, 1, 0, AOM_DL_GOOD_QUALITY,
                     &stats);
   }
 
   // Flush encoder.
-  while (get_frame_stats(&codec, NULL, frame_count, 1, 0, VPX_DL_GOOD_QUALITY,
+  while (get_frame_stats(&codec, NULL, frame_count, 1, 0, AOM_DL_GOOD_QUALITY,
                          &stats)) {
   }
 
@@ -166,11 +166,11 @@ static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
   // Encode frames.
   while (aom_img_read(raw, infile)) {
     ++frame_count;
-    encode_frame(&codec, raw, frame_count, 1, 0, VPX_DL_GOOD_QUALITY, writer);
+    encode_frame(&codec, raw, frame_count, 1, 0, AOM_DL_GOOD_QUALITY, writer);
   }
 
   // Flush encoder.
-  while (encode_frame(&codec, NULL, -1, 1, 0, VPX_DL_GOOD_QUALITY, writer)) {
+  while (encode_frame(&codec, NULL, -1, 1, 0, AOM_DL_GOOD_QUALITY, writer)) {
   }
 
   printf("\n");
@@ -212,7 +212,7 @@ int main(int argc, char **argv) {
   if (w <= 0 || h <= 0 || (w % 2) != 0 || (h % 2) != 0)
     die("Invalid frame size: %dx%d", w, h);
 
-  if (!aom_img_alloc(&raw, VPX_IMG_FMT_I420, w, h, 1))
+  if (!aom_img_alloc(&raw, AOM_IMG_FMT_I420, w, h, 1))
     die("Failed to allocate image", w, h);
 
   printf("Using %s\n", aom_codec_iface_name(encoder->codec_interface()));
@@ -231,12 +231,12 @@ int main(int argc, char **argv) {
     die("Failed to open %s for reading", infile_arg);
 
   // Pass 0
-  cfg.g_pass = VPX_RC_FIRST_PASS;
+  cfg.g_pass = AOM_RC_FIRST_PASS;
   stats = pass0(&raw, infile, encoder, &cfg);
 
   // Pass 1
   rewind(infile);
-  cfg.g_pass = VPX_RC_LAST_PASS;
+  cfg.g_pass = AOM_RC_LAST_PASS;
   cfg.rc_twopass_stats_in = stats;
   pass1(&raw, infile, outfile_arg, encoder, &cfg);
   free(stats.buf);

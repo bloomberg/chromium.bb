@@ -51,7 +51,7 @@ class SuperframeTest
 
   virtual const aom_codec_cx_pkt_t *MutateEncoderOutputHook(
       const aom_codec_cx_pkt_t *pkt) {
-    if (pkt->kind != VPX_CODEC_CX_FRAME_PKT) return pkt;
+    if (pkt->kind != AOM_CODEC_CX_FRAME_PKT) return pkt;
 
     const uint8_t *buffer = reinterpret_cast<uint8_t *>(pkt->data.frame.buf);
     const uint8_t marker = buffer[pkt->data.frame.sz - 1];

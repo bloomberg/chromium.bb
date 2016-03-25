@@ -91,7 +91,7 @@ FILE *kf_list;
 FILE *keyfile;
 #endif
 
-static INLINE void Scale2Ratio(VPX_SCALING mode, int *hr, int *hs) {
+static INLINE void Scale2Ratio(AOM_SCALING mode, int *hr, int *hs) {
   switch (mode) {
     case NORMAL:
       *hr = 1;
@@ -602,7 +602,7 @@ static void alloc_raw_frame_buffers(AV1_COMP *cpi) {
 #endif
                                          oxcf->lag_in_frames);
   if (!cpi->lookahead)
-    aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate lag buffers");
 
   // TODO(agrange) Check if ARF is enabled and skip allocation if not.
@@ -611,9 +611,9 @@ static void alloc_raw_frame_buffers(AV1_COMP *cpi) {
 #if CONFIG_AOM_HIGHBITDEPTH
                                cm->use_highbitdepth,
 #endif
-                               VPX_ENC_BORDER_IN_PIXELS, cm->byte_alignment,
+                               AOM_ENC_BORDER_IN_PIXELS, cm->byte_alignment,
                                NULL, NULL, NULL))
-    aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate altref buffer");
 }
 
@@ -624,9 +624,9 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
 #if CONFIG_AOM_HIGHBITDEPTH
                                cm->use_highbitdepth,
 #endif
-                               VPX_ENC_BORDER_IN_PIXELS, cm->byte_alignment,
+                               AOM_ENC_BORDER_IN_PIXELS, cm->byte_alignment,
                                NULL, NULL, NULL))
-    aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate last frame buffer");
 
   if (aom_realloc_frame_buffer(&cpi->scaled_source, cm->width, cm->height,
@@ -634,9 +634,9 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
 #if CONFIG_AOM_HIGHBITDEPTH
                                cm->use_highbitdepth,
 #endif
-                               VPX_ENC_BORDER_IN_PIXELS, cm->byte_alignment,
+                               AOM_ENC_BORDER_IN_PIXELS, cm->byte_alignment,
                                NULL, NULL, NULL))
-    aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate scaled source buffer");
 
   if (aom_realloc_frame_buffer(&cpi->scaled_last_source, cm->width, cm->height,
@@ -644,9 +644,9 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
 #if CONFIG_AOM_HIGHBITDEPTH
                                cm->use_highbitdepth,
 #endif
-                               VPX_ENC_BORDER_IN_PIXELS, cm->byte_alignment,
+                               AOM_ENC_BORDER_IN_PIXELS, cm->byte_alignment,
                                NULL, NULL, NULL))
-    aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate scaled last source buffer");
 }
 
@@ -928,7 +928,7 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
   AV1_COMMON *const cm = &cpi->common;
   if (cm->use_highbitdepth) {
     switch (cm->bit_depth) {
-      case VPX_BITS_8:
+      case AOM_BITS_8:
         HIGHBD_BFP(BLOCK_32X16, aom_highbd_sad32x16_bits8,
                    aom_highbd_sad32x16_avg_bits8, aom_highbd_8_variance32x16,
                    aom_highbd_8_sub_pixel_variance32x16,
@@ -1011,7 +1011,7 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
             aom_highbd_sad4x4x8_bits8, aom_highbd_sad4x4x4d_bits8)
         break;
 
-      case VPX_BITS_10:
+      case AOM_BITS_10:
         HIGHBD_BFP(BLOCK_32X16, aom_highbd_sad32x16_bits10,
                    aom_highbd_sad32x16_avg_bits10, aom_highbd_10_variance32x16,
                    aom_highbd_10_sub_pixel_variance32x16,
@@ -1096,7 +1096,7 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
             aom_highbd_sad4x4x8_bits10, aom_highbd_sad4x4x4d_bits10)
         break;
 
-      case VPX_BITS_12:
+      case AOM_BITS_12:
         HIGHBD_BFP(BLOCK_32X16, aom_highbd_sad32x16_bits12,
                    aom_highbd_sad32x16_avg_bits12, aom_highbd_12_variance32x16,
                    aom_highbd_12_sub_pixel_variance32x16,
@@ -1183,8 +1183,8 @@ static void highbd_set_var_fns(AV1_COMP *const cpi) {
 
       default:
         assert(0 &&
-               "cm->bit_depth should be VPX_BITS_8, "
-               "VPX_BITS_10 or VPX_BITS_12");
+               "cm->bit_depth should be AOM_BITS_8, "
+               "AOM_BITS_10 or AOM_BITS_12");
     }
   }
 }
@@ -1225,16 +1225,16 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cm->color_range = oxcf->color_range;
 
   if (cm->profile <= PROFILE_1)
-    assert(cm->bit_depth == VPX_BITS_8);
+    assert(cm->bit_depth == AOM_BITS_8);
   else
-    assert(cm->bit_depth > VPX_BITS_8);
+    assert(cm->bit_depth > AOM_BITS_8);
 
   cpi->oxcf = *oxcf;
 #if CONFIG_AOM_HIGHBITDEPTH
   cpi->td.mb.e_mbd.bd = (int)cm->bit_depth;
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-  if ((oxcf->pass == 0) && (oxcf->rc_mode == VPX_Q)) {
+  if ((oxcf->pass == 0) && (oxcf->rc_mode == AOM_Q)) {
     rc->baseline_gf_interval = FIXED_GF_INTERVAL;
   } else {
     rc->baseline_gf_interval = (MIN_GF_INTERVAL + MAX_GF_INTERVAL) / 2;
@@ -1264,8 +1264,8 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 
   // Under a configuration change, where maximum_buffer_size may change,
   // keep buffer level clipped to the maximum allowed buffer size.
-  rc->bits_off_target = VPXMIN(rc->bits_off_target, rc->maximum_buffer_size);
-  rc->buffer_level = VPXMIN(rc->buffer_level, rc->maximum_buffer_size);
+  rc->bits_off_target = AOMMIN(rc->bits_off_target, rc->maximum_buffer_size);
+  rc->buffer_level = AOMMIN(rc->buffer_level, rc->maximum_buffer_size);
 
   // Set up frame rate and related parameters rate control values.
   av1_new_framerate(cpi, cpi->framerate);
@@ -1668,7 +1668,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 
         snprintf(headings, sizeof(headings),
                  "Bitrate\tAVGPsnr\tGLBPsnr\tAVPsnrP\tGLPsnrP\t"
-                 "VPXSSIM\tVPSSIMP\tFASTSIM\tPSNRHVS\t"
+                 "AOMSSIM\tVPSSIMP\tFASTSIM\tPSNRHVS\t"
                  "WstPsnr\tWstSsim\tWstFast\tWstHVS");
         snprintf(results, sizeof(results),
                  "%7.2f\t%7.3f\t%7.3f\t%7.3f\t%7.3f\t"
@@ -2040,7 +2040,7 @@ static void generate_psnr_packet(AV1_COMP *cpi) {
     pkt.data.psnr.sse[i] = psnr.sse[i];
     pkt.data.psnr.psnr[i] = psnr.psnr[i];
   }
-  pkt.kind = VPX_CODEC_PSNR_PKT;
+  pkt.kind = AOM_CODEC_PSNR_PKT;
   aom_codec_pkt_list_add(cpi->output_pkt_list, &pkt);
 }
 
@@ -2052,26 +2052,26 @@ int av1_use_as_reference(AV1_COMP *cpi, int ref_frame_flags) {
 }
 
 void av1_update_reference(AV1_COMP *cpi, int ref_frame_flags) {
-  cpi->ext_refresh_golden_frame = (ref_frame_flags & VPX_GOLD_FLAG) != 0;
-  cpi->ext_refresh_alt_ref_frame = (ref_frame_flags & VPX_ALT_FLAG) != 0;
-  cpi->ext_refresh_last_frame = (ref_frame_flags & VPX_LAST_FLAG) != 0;
+  cpi->ext_refresh_golden_frame = (ref_frame_flags & AOM_GOLD_FLAG) != 0;
+  cpi->ext_refresh_alt_ref_frame = (ref_frame_flags & AOM_ALT_FLAG) != 0;
+  cpi->ext_refresh_last_frame = (ref_frame_flags & AOM_LAST_FLAG) != 0;
   cpi->ext_refresh_frame_flags_pending = 1;
 }
 
 static YV12_BUFFER_CONFIG *get_av1_ref_frame_buffer(
-    AV1_COMP *cpi, VPX_REFFRAME ref_frame_flag) {
+    AV1_COMP *cpi, AOM_REFFRAME ref_frame_flag) {
   MV_REFERENCE_FRAME ref_frame = NONE;
-  if (ref_frame_flag == VPX_LAST_FLAG)
+  if (ref_frame_flag == AOM_LAST_FLAG)
     ref_frame = LAST_FRAME;
-  else if (ref_frame_flag == VPX_GOLD_FLAG)
+  else if (ref_frame_flag == AOM_GOLD_FLAG)
     ref_frame = GOLDEN_FRAME;
-  else if (ref_frame_flag == VPX_ALT_FLAG)
+  else if (ref_frame_flag == AOM_ALT_FLAG)
     ref_frame = ALTREF_FRAME;
 
   return ref_frame == NONE ? NULL : get_ref_frame_buffer(cpi, ref_frame);
 }
 
-int av1_copy_reference_enc(AV1_COMP *cpi, VPX_REFFRAME ref_frame_flag,
+int av1_copy_reference_enc(AV1_COMP *cpi, AOM_REFFRAME ref_frame_flag,
                             YV12_BUFFER_CONFIG *sd) {
   YV12_BUFFER_CONFIG *cfg = get_av1_ref_frame_buffer(cpi, ref_frame_flag);
   if (cfg) {
@@ -2082,7 +2082,7 @@ int av1_copy_reference_enc(AV1_COMP *cpi, VPX_REFFRAME ref_frame_flag,
   }
 }
 
-int av1_set_reference_enc(AV1_COMP *cpi, VPX_REFFRAME ref_frame_flag,
+int av1_set_reference_enc(AV1_COMP *cpi, AOM_REFFRAME ref_frame_flag,
                            YV12_BUFFER_CONFIG *sd) {
   YV12_BUFFER_CONFIG *cfg = get_av1_ref_frame_buffer(cpi, ref_frame_flag);
   if (cfg) {
@@ -2301,7 +2301,7 @@ static int scale_down(AV1_COMP *cpi, int q) {
       q >= rc->rf_level_maxq[gf_group->rf_level[gf_group->index]]) {
     const int max_size_thresh =
         (int)(rate_thresh_mult[SCALE_STEP1] *
-              VPXMAX(rc->this_frame_target, rc->avg_frame_bandwidth));
+              AOMMAX(rc->this_frame_target, rc->avg_frame_bandwidth));
     scale = rc->projected_frame_size > max_size_thresh ? 1 : 0;
   }
   return scale;
@@ -2330,7 +2330,7 @@ static int recode_loop_test(AV1_COMP *cpi, int high_limit, int low_limit,
     if ((rc->projected_frame_size > high_limit && q < maxq) ||
         (rc->projected_frame_size < low_limit && q > minq)) {
       force_recode = 1;
-    } else if (cpi->oxcf.rc_mode == VPX_CQ) {
+    } else if (cpi->oxcf.rc_mode == AOM_CQ) {
       // Deal with frame undershoot and whether or not we are
       // below the automatically set cq level.
       if (q > oxcf->cq_level &&
@@ -2522,11 +2522,11 @@ static INLINE void alloc_frame_mvs(const AV1_COMMON *cm, int buffer_idx) {
 void av1_scale_references(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   MV_REFERENCE_FRAME ref_frame;
-  const VPX_REFFRAME ref_mask[3] = { VPX_LAST_FLAG, VPX_GOLD_FLAG,
-                                     VPX_ALT_FLAG };
+  const AOM_REFFRAME ref_mask[3] = { AOM_LAST_FLAG, AOM_GOLD_FLAG,
+                                     AOM_ALT_FLAG };
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    // Need to convert from VPX_REFFRAME to index into ref_mask (subtract 1).
+    // Need to convert from AOM_REFFRAME to index into ref_mask (subtract 1).
     if (cpi->ref_frame_flags & ref_mask[ref_frame - 1]) {
       BufferPool *const pool = cm->buffer_pool;
       const YV12_BUFFER_CONFIG *const ref =
@@ -2552,7 +2552,7 @@ void av1_scale_references(AV1_COMP *cpi) {
             new_fb_ptr->buf.y_crop_height != cm->height) {
           aom_realloc_frame_buffer(
               &new_fb_ptr->buf, cm->width, cm->height, cm->subsampling_x,
-              cm->subsampling_y, cm->use_highbitdepth, VPX_ENC_BORDER_IN_PIXELS,
+              cm->subsampling_y, cm->use_highbitdepth, AOM_ENC_BORDER_IN_PIXELS,
               cm->byte_alignment, NULL, NULL, NULL);
           scale_and_extend_frame(ref, &new_fb_ptr->buf, (int)cm->bit_depth);
           cpi->scaled_ref_idx[ref_frame - 1] = new_fb;
@@ -2573,7 +2573,7 @@ void av1_scale_references(AV1_COMP *cpi) {
             new_fb_ptr->buf.y_crop_height != cm->height) {
           aom_realloc_frame_buffer(&new_fb_ptr->buf, cm->width, cm->height,
                                    cm->subsampling_x, cm->subsampling_y,
-                                   VPX_ENC_BORDER_IN_PIXELS, cm->byte_alignment,
+                                   AOM_ENC_BORDER_IN_PIXELS, cm->byte_alignment,
                                    NULL, NULL, NULL);
           scale_and_extend_frame(ref, &new_fb_ptr->buf);
           cpi->scaled_ref_idx[ref_frame - 1] = new_fb;
@@ -2724,7 +2724,7 @@ static void output_frame_level_debug_stats(AV1_COMP *cpi) {
 
 static void set_mv_search_params(AV1_COMP *cpi) {
   const AV1_COMMON *const cm = &cpi->common;
-  const unsigned int max_mv_def = VPXMIN(cm->width, cm->height);
+  const unsigned int max_mv_def = AOMMIN(cm->width, cm->height);
 
   // Default based on max resolution.
   cpi->mv_step_param = av1_init_search_range(max_mv_def);
@@ -2740,7 +2740,7 @@ static void set_mv_search_params(AV1_COMP *cpi) {
         // in the previous frame, capped by the default max_mv_magnitude based
         // on resolution.
         cpi->mv_step_param = av1_init_search_range(
-            VPXMIN(max_mv_def, 2 * cpi->max_mv_magnitude));
+            AOMMIN(max_mv_def, 2 * cpi->max_mv_magnitude));
       }
       cpi->max_mv_magnitude = 0;
     }
@@ -2793,7 +2793,7 @@ static void set_frame_size(AV1_COMP *cpi) {
   AV1EncoderConfig *const oxcf = &cpi->oxcf;
   MACROBLOCKD *const xd = &cpi->td.mb.e_mbd;
 
-  if (oxcf->pass == 2 && oxcf->rc_mode == VPX_VBR &&
+  if (oxcf->pass == 2 && oxcf->rc_mode == AOM_VBR &&
       ((oxcf->resize_mode == RESIZE_FIXED && cm->current_video_frame == 0) ||
        (oxcf->resize_mode == RESIZE_DYNAMIC && cpi->resize_pending))) {
     av1_calculate_coded_size(cpi, &oxcf->scaled_frame_width,
@@ -2804,7 +2804,7 @@ static void set_frame_size(AV1_COMP *cpi) {
                           oxcf->scaled_frame_height);
   }
 
-  if (oxcf->pass == 0 && oxcf->rc_mode == VPX_CBR &&
+  if (oxcf->pass == 0 && oxcf->rc_mode == AOM_CBR &&
       oxcf->resize_mode == RESIZE_DYNAMIC) {
     if (cpi->resize_pending == 1) {
       oxcf->scaled_frame_width =
@@ -2838,7 +2838,7 @@ static void set_frame_size(AV1_COMP *cpi) {
 #if CONFIG_AOM_HIGHBITDEPTH
                            cm->use_highbitdepth,
 #endif
-                           VPX_ENC_BORDER_IN_PIXELS, cm->byte_alignment, NULL,
+                           AOM_ENC_BORDER_IN_PIXELS, cm->byte_alignment, NULL,
                            NULL, NULL);
 
   alloc_util_frame_buffers(cpi);
@@ -2881,7 +2881,7 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
 
   // For 1 pass CBR under dynamic resize mode: use faster scaling for source.
   // Only for 2x2 scaling for now.
-  if (cpi->oxcf.pass == 0 && cpi->oxcf.rc_mode == VPX_CBR &&
+  if (cpi->oxcf.pass == 0 && cpi->oxcf.rc_mode == AOM_CBR &&
       cpi->oxcf.resize_mode == RESIZE_DYNAMIC &&
       cpi->un_scaled_source->y_width == (cm->width << 1) &&
       cpi->un_scaled_source->y_height == (cm->height << 1)) {
@@ -2928,7 +2928,7 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   // Update some stats from cyclic refresh, and check if we should not update
   // golden reference, for 1 pass CBR.
   if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ && cm->frame_type != KEY_FRAME &&
-      (cpi->oxcf.pass == 0 && cpi->oxcf.rc_mode == VPX_CBR))
+      (cpi->oxcf.pass == 0 && cpi->oxcf.rc_mode == AOM_CBR))
     av1_cyclic_refresh_check_golden_update(cpi);
 
   // Update the skip mb flag probabilities based on the distribution
@@ -3032,7 +3032,7 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
       if (frame_over_shoot_limit == 0) frame_over_shoot_limit = 1;
     }
 
-    if (cpi->oxcf.rc_mode == VPX_Q) {
+    if (cpi->oxcf.rc_mode == AOM_Q) {
       loop = 0;
     } else {
       if ((cm->frame_type == KEY_FRAME) && rc->this_key_frame_forced &&
@@ -3067,7 +3067,7 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 
           // Adjust Q
           q = (int)((q * high_err_target) / kf_err);
-          q = VPXMIN(q, (q_high + q_low) >> 1);
+          q = AOMMIN(q, (q_high + q_low) >> 1);
         } else if (kf_err < low_err_target &&
                    rc->projected_frame_size >= frame_under_shoot_limit) {
           // The key frame is much better than the previous frame
@@ -3076,7 +3076,7 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 
           // Adjust Q
           q = (int)((q * low_err_target) / kf_err);
-          q = VPXMIN(q, (q_high + q_low + 1) >> 1);
+          q = AOMMIN(q, (q_high + q_low + 1) >> 1);
         }
 
         // Clamp Q to upper and lower limits:
@@ -3085,7 +3085,7 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
         loop = q != last_q;
       } else if (recode_loop_test(cpi, frame_over_shoot_limit,
                                   frame_under_shoot_limit, q,
-                                  VPXMAX(q_high, top_index), bottom_index)) {
+                                  AOMMAX(q_high, top_index), bottom_index)) {
         // Is the projected frame size out of range and are we allowed
         // to attempt to recode.
         int last_q = q;
@@ -3127,12 +3127,12 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
             av1_rc_update_rate_correction_factors(cpi);
 
             q = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
-                                   VPXMAX(q_high, top_index));
+                                   AOMMAX(q_high, top_index));
 
             while (q < q_low && retries < 10) {
               av1_rc_update_rate_correction_factors(cpi);
               q = av1_rc_regulate_q(cpi, rc->this_frame_target, bottom_index,
-                                     VPXMAX(q_high, top_index));
+                                     AOMMAX(q_high, top_index));
               retries++;
             }
           }
@@ -3153,7 +3153,7 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
             // This should only trigger where there is very substantial
             // undershoot on a frame and the auto cq level is above
             // the user passsed in value.
-            if (cpi->oxcf.rc_mode == VPX_CQ && q < q_low) {
+            if (cpi->oxcf.rc_mode == AOM_CQ && q < q_low) {
               q_low = q;
             }
 
@@ -3198,15 +3198,15 @@ static int get_ref_frame_flags(const AV1_COMP *cpi) {
   const int gold_is_last = map[cpi->gld_fb_idx] == map[cpi->lst_fb_idx];
   const int alt_is_last = map[cpi->alt_fb_idx] == map[cpi->lst_fb_idx];
   const int gold_is_alt = map[cpi->gld_fb_idx] == map[cpi->alt_fb_idx];
-  int flags = VPX_ALT_FLAG | VPX_GOLD_FLAG | VPX_LAST_FLAG;
+  int flags = AOM_ALT_FLAG | AOM_GOLD_FLAG | AOM_LAST_FLAG;
 
-  if (gold_is_last) flags &= ~VPX_GOLD_FLAG;
+  if (gold_is_last) flags &= ~AOM_GOLD_FLAG;
 
-  if (cpi->rc.frames_till_gf_update_due == INT_MAX) flags &= ~VPX_GOLD_FLAG;
+  if (cpi->rc.frames_till_gf_update_due == INT_MAX) flags &= ~AOM_GOLD_FLAG;
 
-  if (alt_is_last) flags &= ~VPX_ALT_FLAG;
+  if (alt_is_last) flags &= ~AOM_ALT_FLAG;
 
-  if (gold_is_alt) flags &= ~VPX_ALT_FLAG;
+  if (gold_is_alt) flags &= ~AOM_ALT_FLAG;
 
   return flags;
 }
@@ -3347,7 +3347,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   // For 1 pass CBR, check if we are dropping this frame.
   // Never drop on key frame.
-  if (oxcf->pass == 0 && oxcf->rc_mode == VPX_CBR &&
+  if (oxcf->pass == 0 && oxcf->rc_mode == AOM_CBR &&
       cm->frame_type != KEY_FRAME) {
     if (av1_rc_drop_frame(cpi)) {
       av1_rc_postencode_update_drop_frame(cpi);
@@ -3484,7 +3484,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
 static void Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,
                         unsigned int *frame_flags) {
-  if (cpi->oxcf.rc_mode == VPX_CBR) {
+  if (cpi->oxcf.rc_mode == AOM_CBR) {
     av1_rc_get_one_pass_cbr_params(cpi);
   } else {
     av1_rc_get_one_pass_vbr_params(cpi);
@@ -3569,13 +3569,13 @@ int av1_receive_raw_frame(AV1_COMP *cpi, unsigned int frame_flags,
 
   if ((cm->profile == PROFILE_0 || cm->profile == PROFILE_2) &&
       (subsampling_x != 1 || subsampling_y != 1)) {
-    aom_internal_error(&cm->error, VPX_CODEC_INVALID_PARAM,
+    aom_internal_error(&cm->error, AOM_CODEC_INVALID_PARAM,
                        "Non-4:2:0 color format requires profile 1 or 3");
     res = -1;
   }
   if ((cm->profile == PROFILE_1 || cm->profile == PROFILE_3) &&
       (subsampling_x == 1 && subsampling_y == 1)) {
-    aom_internal_error(&cm->error, VPX_CODEC_INVALID_PARAM,
+    aom_internal_error(&cm->error, AOM_CODEC_INVALID_PARAM,
                        "4:2:0 color format requires profile 0 or 2");
     res = -1;
   }
@@ -3619,7 +3619,7 @@ static void adjust_frame_rate(AV1_COMP *cpi,
       // Average this frame's rate into the last second's average
       // frame rate. If we haven't seen 1 second yet, then average
       // over the whole interval seen.
-      const double interval = VPXMIN(
+      const double interval = AOMMIN(
           (double)(source->ts_end - cpi->first_time_stamp_ever), 10000000.0);
       double avg_duration = 10000000.0 / cpi->framerate;
       avg_duration *= (interval - avg_duration + this_duration);
@@ -3684,7 +3684,7 @@ static void adjust_image_stat(double y, double u, double v, double all,
   s->stat[U] += u;
   s->stat[V] += v;
   s->stat[ALL] += all;
-  s->worst = VPXMIN(s->worst, all);
+  s->worst = AOMMIN(s->worst, all);
 }
 #endif  // CONFIG_INTERNAL_STATS
 
@@ -3780,7 +3780,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
     *time_stamp = source->ts_start;
     *time_end = source->ts_end;
-    *frame_flags = (source->flags & VPX_EFLAG_FORCE_KF) ? FRAMEFLAGS_KEY : 0;
+    *frame_flags = (source->flags & AOM_EFLAG_FORCE_KF) ? FRAMEFLAGS_KEY : 0;
 
   } else {
     *size = 0;
@@ -3914,7 +3914,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
           frame_ssim2 = aom_calc_ssim(orig, recon, &weight);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-          cpi->worst_ssim = VPXMIN(cpi->worst_ssim, frame_ssim2);
+          cpi->worst_ssim = AOMMIN(cpi->worst_ssim, frame_ssim2);
           cpi->summed_quality += frame_ssim2 * weight;
           cpi->summed_weights += weight;
 
@@ -3941,7 +3941,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
               cm->frame_to_show->y_buffer, cm->frame_to_show->y_stride,
               cpi->Source->y_width, cpi->Source->y_height);
           cpi->worst_blockiness =
-              VPXMAX(cpi->worst_blockiness, frame_blockiness);
+              AOMMAX(cpi->worst_blockiness, frame_blockiness);
           cpi->total_blockiness += frame_blockiness;
         }
       }
@@ -3962,7 +3962,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
               aom_sse_to_psnr(samples, peak, (double)cpi->total_inconsistency);
           if (consistency > 0.0)
             cpi->worst_consistency =
-                VPXMIN(cpi->worst_consistency, consistency);
+                AOMMIN(cpi->worst_consistency, consistency);
           cpi->total_inconsistency += this_inconsistency;
         }
       }
@@ -4030,8 +4030,8 @@ int av1_get_preview_raw_frame(AV1_COMP *cpi, YV12_BUFFER_CONFIG *dest) {
   }
 }
 
-int av1_set_internal_size(AV1_COMP *cpi, VPX_SCALING horiz_mode,
-                           VPX_SCALING vert_mode) {
+int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
+                           AOM_SCALING vert_mode) {
   AV1_COMMON *cm = &cpi->common;
   int hr = 0, hs = 0, vr = 0, vs = 0;
 
@@ -4112,11 +4112,11 @@ void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
       (VP8_EFLAG_NO_REF_LAST | VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_REF_ARF)) {
     int ref = 7;
 
-    if (flags & VP8_EFLAG_NO_REF_LAST) ref ^= VPX_LAST_FLAG;
+    if (flags & VP8_EFLAG_NO_REF_LAST) ref ^= AOM_LAST_FLAG;
 
-    if (flags & VP8_EFLAG_NO_REF_GF) ref ^= VPX_GOLD_FLAG;
+    if (flags & VP8_EFLAG_NO_REF_GF) ref ^= AOM_GOLD_FLAG;
 
-    if (flags & VP8_EFLAG_NO_REF_ARF) ref ^= VPX_ALT_FLAG;
+    if (flags & VP8_EFLAG_NO_REF_ARF) ref ^= AOM_ALT_FLAG;
 
     av1_use_as_reference(cpi, ref);
   }
@@ -4126,11 +4126,11 @@ void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
        VP8_EFLAG_FORCE_GF | VP8_EFLAG_FORCE_ARF)) {
     int upd = 7;
 
-    if (flags & VP8_EFLAG_NO_UPD_LAST) upd ^= VPX_LAST_FLAG;
+    if (flags & VP8_EFLAG_NO_UPD_LAST) upd ^= AOM_LAST_FLAG;
 
-    if (flags & VP8_EFLAG_NO_UPD_GF) upd ^= VPX_GOLD_FLAG;
+    if (flags & VP8_EFLAG_NO_UPD_GF) upd ^= AOM_GOLD_FLAG;
 
-    if (flags & VP8_EFLAG_NO_UPD_ARF) upd ^= VPX_ALT_FLAG;
+    if (flags & VP8_EFLAG_NO_UPD_ARF) upd ^= AOM_ALT_FLAG;
 
     av1_update_reference(cpi, upd);
   }

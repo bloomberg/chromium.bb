@@ -31,7 +31,7 @@ void Encoder::InitEncoder(VideoSource *video) {
     cfg_.rc_twopass_stats_in = stats_->buf();
 
     res = aom_codec_enc_init(&encoder_, CodecInterface(), &cfg_, init_flags_);
-    ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
+    ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
 
 #if CONFIG_AV1_ENCODER
     if (CodecInterface() == &aom_codec_av1_cx_algo) {
@@ -39,7 +39,7 @@ void Encoder::InitEncoder(VideoSource *video) {
       const int log2_tile_columns = 0;
       res = aom_codec_control_(&encoder_, VP9E_SET_TILE_COLUMNS,
                                log2_tile_columns);
-      ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
+      ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
     }
 #endif
   }
@@ -55,7 +55,7 @@ void Encoder::EncodeFrame(VideoSource *video, const unsigned long frame_flags) {
   CxDataIterator iter = GetCxData();
 
   while (const aom_codec_cx_pkt_t *pkt = iter.Next()) {
-    if (pkt->kind != VPX_CODEC_STATS_PKT) continue;
+    if (pkt->kind != AOM_CODEC_STATS_PKT) continue;
 
     stats_->Append(*pkt);
   }
@@ -71,40 +71,40 @@ void Encoder::EncodeFrameInternal(const VideoSource &video,
     cfg_.g_w = img->d_w;
     cfg_.g_h = img->d_h;
     res = aom_codec_enc_config_set(&encoder_, &cfg_);
-    ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
+    ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
   }
 
   // Encode the frame
   API_REGISTER_STATE_CHECK(res = aom_codec_encode(&encoder_, img, video.pts(),
                                                   video.duration(), frame_flags,
                                                   deadline_));
-  ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
+  ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
 }
 
 void Encoder::Flush() {
   const aom_codec_err_t res =
       aom_codec_encode(&encoder_, NULL, 0, 0, 0, deadline_);
   if (!encoder_.priv)
-    ASSERT_EQ(VPX_CODEC_ERROR, res) << EncoderError();
+    ASSERT_EQ(AOM_CODEC_ERROR, res) << EncoderError();
   else
-    ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
+    ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
 }
 
 void EncoderTest::InitializeConfig() {
   const aom_codec_err_t res = codec_->DefaultEncoderConfig(&cfg_, 0);
   dec_cfg_ = aom_codec_dec_cfg_t();
-  ASSERT_EQ(VPX_CODEC_OK, res);
+  ASSERT_EQ(AOM_CODEC_OK, res);
 }
 
 void EncoderTest::SetMode(TestMode mode) {
   switch (mode) {
-    case kRealTime: deadline_ = VPX_DL_REALTIME; break;
+    case kRealTime: deadline_ = AOM_DL_REALTIME; break;
 
     case kOnePassGood:
-    case kTwoPassGood: deadline_ = VPX_DL_GOOD_QUALITY; break;
+    case kTwoPassGood: deadline_ = AOM_DL_GOOD_QUALITY; break;
 
     case kOnePassBest:
-    case kTwoPassBest: deadline_ = VPX_DL_BEST_QUALITY; break;
+    case kTwoPassBest: deadline_ = AOM_DL_BEST_QUALITY; break;
 
     default: ASSERT_TRUE(false) << "Unexpected mode " << mode;
   }
@@ -124,20 +124,20 @@ static bool compare_img(const aom_image_t *img1, const aom_image_t *img2) {
   const unsigned int height_y = img1->d_h;
   unsigned int i;
   for (i = 0; i < height_y; ++i)
-    match = (memcmp(img1->planes[VPX_PLANE_Y] + i * img1->stride[VPX_PLANE_Y],
-                    img2->planes[VPX_PLANE_Y] + i * img2->stride[VPX_PLANE_Y],
+    match = (memcmp(img1->planes[AOM_PLANE_Y] + i * img1->stride[AOM_PLANE_Y],
+                    img2->planes[AOM_PLANE_Y] + i * img2->stride[AOM_PLANE_Y],
                     width_y) == 0) &&
             match;
   const unsigned int width_uv = (img1->d_w + 1) >> 1;
   const unsigned int height_uv = (img1->d_h + 1) >> 1;
   for (i = 0; i < height_uv; ++i)
-    match = (memcmp(img1->planes[VPX_PLANE_U] + i * img1->stride[VPX_PLANE_U],
-                    img2->planes[VPX_PLANE_U] + i * img2->stride[VPX_PLANE_U],
+    match = (memcmp(img1->planes[AOM_PLANE_U] + i * img1->stride[AOM_PLANE_U],
+                    img2->planes[AOM_PLANE_U] + i * img2->stride[AOM_PLANE_U],
                     width_uv) == 0) &&
             match;
   for (i = 0; i < height_uv; ++i)
-    match = (memcmp(img1->planes[VPX_PLANE_V] + i * img1->stride[VPX_PLANE_V],
-                    img2->planes[VPX_PLANE_V] + i * img2->stride[VPX_PLANE_V],
+    match = (memcmp(img1->planes[AOM_PLANE_V] + i * img1->stride[AOM_PLANE_V],
+                    img2->planes[AOM_PLANE_V] + i * img2->stride[AOM_PLANE_V],
                     width_uv) == 0) &&
             match;
   return match;
@@ -158,11 +158,11 @@ void EncoderTest::RunLoop(VideoSource *video) {
     last_pts_ = 0;
 
     if (passes_ == 1)
-      cfg_.g_pass = VPX_RC_ONE_PASS;
+      cfg_.g_pass = AOM_RC_ONE_PASS;
     else if (pass == 0)
-      cfg_.g_pass = VPX_RC_FIRST_PASS;
+      cfg_.g_pass = AOM_RC_FIRST_PASS;
     else
-      cfg_.g_pass = VPX_RC_LAST_PASS;
+      cfg_.g_pass = AOM_RC_LAST_PASS;
 
     BeginPassHook(pass);
     Encoder *const encoder =
@@ -176,8 +176,8 @@ void EncoderTest::RunLoop(VideoSource *video) {
     unsigned long dec_init_flags = 0;  // NOLINT
     // Use fragment decoder if encoder outputs partitions.
     // NOTE: fragment decoder and partition encoder are only supported by VP8.
-    if (init_flags_ & VPX_CODEC_USE_OUTPUT_PARTITION)
-      dec_init_flags |= VPX_CODEC_USE_INPUT_FRAGMENTS;
+    if (init_flags_ & AOM_CODEC_USE_OUTPUT_PARTITION)
+      dec_init_flags |= AOM_CODEC_USE_INPUT_FRAGMENTS;
     Decoder *const decoder = codec_->CreateDecoder(dec_cfg, dec_init_flags, 0);
     bool again;
     for (again = true; again; video->Next()) {
@@ -195,7 +195,7 @@ void EncoderTest::RunLoop(VideoSource *video) {
         pkt = MutateEncoderOutputHook(pkt);
         again = true;
         switch (pkt->kind) {
-          case VPX_CODEC_CX_FRAME_PKT:
+          case AOM_CODEC_CX_FRAME_PKT:
             has_cxdata = true;
             if (decoder && DoDecode()) {
               aom_codec_err_t res_dec = decoder->DecodeFrame(
@@ -210,14 +210,14 @@ void EncoderTest::RunLoop(VideoSource *video) {
             FramePktHook(pkt);
             break;
 
-          case VPX_CODEC_PSNR_PKT: PSNRPktHook(pkt); break;
+          case AOM_CODEC_PSNR_PKT: PSNRPktHook(pkt); break;
 
           default: break;
         }
       }
 
       // Flush the decoder when there are no more fragments.
-      if ((init_flags_ & VPX_CODEC_USE_OUTPUT_PARTITION) && has_dxdata) {
+      if ((init_flags_ & AOM_CODEC_USE_OUTPUT_PARTITION) && has_dxdata) {
         const aom_codec_err_t res_dec = decoder->DecodeFrame(NULL, 0);
         if (!HandleDecodeResult(res_dec, *video, decoder)) break;
       }

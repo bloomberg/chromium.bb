@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_PORTS_MEM_H_
-#define VPX_PORTS_MEM_H_
+#ifndef AOM_PORTS_MEM_H_
+#define AOM_PORTS_MEM_H_
 
 #include "aom_config.h"
 #include "aom/aom_integer.h"
@@ -49,4 +49,4 @@
 #define CONVERT_TO_BYTEPTR(x) ((uint8_t *)(((uintptr_t)x) >> 1))
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-#endif  // VPX_PORTS_MEM_H_
+#endif  // AOM_PORTS_MEM_H_

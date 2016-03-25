@@ -28,18 +28,18 @@ decode_to_md5_verify_environment() {
 # interpreted as codec name and used solely to name the output file. $3 is the
 # expected md5 sum: It must match that of the final frame.
 decode_to_md5() {
-  local decoder="${LIBAOM_BIN_PATH}/decode_to_md5${VPX_TEST_EXE_SUFFIX}"
+  local decoder="${LIBAOM_BIN_PATH}/decode_to_md5${AOM_TEST_EXE_SUFFIX}"
   local input_file="$1"
   local codec="$2"
   local expected_md5="$3"
-  local output_file="${VPX_TEST_OUTPUT_DIR}/decode_to_md5_${codec}"
+  local output_file="${AOM_TEST_OUTPUT_DIR}/decode_to_md5_${codec}"
 
   if [ ! -x "${decoder}" ]; then
     elog "${decoder} does not exist or is not executable."
     return 1
   fi
 
-  eval "${VPX_TEST_PREFIX}" "${decoder}" "${input_file}" "${output_file}" \
+  eval "${AOM_TEST_PREFIX}" "${decoder}" "${input_file}" "${output_file}" \
       ${devnull}
 
   [ -e "${output_file}" ] || return 1

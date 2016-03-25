@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_X86_FWD_TXFM_SSE2_H_
-#define VPX_DSP_X86_FWD_TXFM_SSE2_H_
+#ifndef AOM_DSP_X86_FWD_TXFM_SSE2_H_
+#define AOM_DSP_X86_FWD_TXFM_SSE2_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -369,4 +369,4 @@ static INLINE void transpose_and_output8x8(
 }  // extern "C"
 #endif
 
-#endif  // VPX_DSP_X86_FWD_TXFM_SSE2_H_
+#endif  // AOM_DSP_X86_FWD_TXFM_SSE2_H_

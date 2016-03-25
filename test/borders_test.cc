@@ -41,7 +41,7 @@ class BordersTest
   }
 
   virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
-    if (pkt->data.frame.flags & VPX_FRAME_IS_KEY) {
+    if (pkt->data.frame.flags & AOM_FRAME_IS_KEY) {
     }
   }
 };

@@ -13,8 +13,8 @@
  * \brief Describes the aom image descriptor and associated operations
  *
  */
-#ifndef VPX_VPX_IMAGE_H_
-#define VPX_VPX_IMAGE_H_
+#ifndef AOM_AOM_IMAGE_H_
+#define AOM_AOM_IMAGE_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,61 +28,61 @@ extern "C" {
  * types, removing or reassigning enums, adding/removing/rearranging
  * fields to structures
  */
-#define VPX_IMAGE_ABI_VERSION (4) /**<\hideinitializer*/
+#define AOM_IMAGE_ABI_VERSION (4) /**<\hideinitializer*/
 
-#define VPX_IMG_FMT_PLANAR 0x100       /**< Image is a planar format. */
-#define VPX_IMG_FMT_UV_FLIP 0x200      /**< V plane precedes U in memory. */
-#define VPX_IMG_FMT_HAS_ALPHA 0x400    /**< Image has an alpha channel. */
-#define VPX_IMG_FMT_HIGHBITDEPTH 0x800 /**< Image uses 16bit framebuffer. */
+#define AOM_IMG_FMT_PLANAR 0x100       /**< Image is a planar format. */
+#define AOM_IMG_FMT_UV_FLIP 0x200      /**< V plane precedes U in memory. */
+#define AOM_IMG_FMT_HAS_ALPHA 0x400    /**< Image has an alpha channel. */
+#define AOM_IMG_FMT_HIGHBITDEPTH 0x800 /**< Image uses 16bit framebuffer. */
 
 /*!\brief List of supported image formats */
 typedef enum aom_img_fmt {
-  VPX_IMG_FMT_NONE,
-  VPX_IMG_FMT_RGB24,     /**< 24 bit per pixel packed RGB */
-  VPX_IMG_FMT_RGB32,     /**< 32 bit per pixel packed 0RGB */
-  VPX_IMG_FMT_RGB565,    /**< 16 bit per pixel, 565 */
-  VPX_IMG_FMT_RGB555,    /**< 16 bit per pixel, 555 */
-  VPX_IMG_FMT_UYVY,      /**< UYVY packed YUV */
-  VPX_IMG_FMT_YUY2,      /**< YUYV packed YUV */
-  VPX_IMG_FMT_YVYU,      /**< YVYU packed YUV */
-  VPX_IMG_FMT_BGR24,     /**< 24 bit per pixel packed BGR */
-  VPX_IMG_FMT_RGB32_LE,  /**< 32 bit packed BGR0 */
-  VPX_IMG_FMT_ARGB,      /**< 32 bit packed ARGB, alpha=255 */
-  VPX_IMG_FMT_ARGB_LE,   /**< 32 bit packed BGRA, alpha=255 */
-  VPX_IMG_FMT_RGB565_LE, /**< 16 bit per pixel, gggbbbbb rrrrrggg */
-  VPX_IMG_FMT_RGB555_LE, /**< 16 bit per pixel, gggbbbbb 0rrrrrgg */
-  VPX_IMG_FMT_YV12 =
-      VPX_IMG_FMT_PLANAR | VPX_IMG_FMT_UV_FLIP | 1, /**< planar YVU */
-  VPX_IMG_FMT_I420 = VPX_IMG_FMT_PLANAR | 2,
-  VPX_IMG_FMT_VPXYV12 = VPX_IMG_FMT_PLANAR | VPX_IMG_FMT_UV_FLIP |
+  AOM_IMG_FMT_NONE,
+  AOM_IMG_FMT_RGB24,     /**< 24 bit per pixel packed RGB */
+  AOM_IMG_FMT_RGB32,     /**< 32 bit per pixel packed 0RGB */
+  AOM_IMG_FMT_RGB565,    /**< 16 bit per pixel, 565 */
+  AOM_IMG_FMT_RGB555,    /**< 16 bit per pixel, 555 */
+  AOM_IMG_FMT_UYVY,      /**< UYVY packed YUV */
+  AOM_IMG_FMT_YUY2,      /**< YUYV packed YUV */
+  AOM_IMG_FMT_YVYU,      /**< YVYU packed YUV */
+  AOM_IMG_FMT_BGR24,     /**< 24 bit per pixel packed BGR */
+  AOM_IMG_FMT_RGB32_LE,  /**< 32 bit packed BGR0 */
+  AOM_IMG_FMT_ARGB,      /**< 32 bit packed ARGB, alpha=255 */
+  AOM_IMG_FMT_ARGB_LE,   /**< 32 bit packed BGRA, alpha=255 */
+  AOM_IMG_FMT_RGB565_LE, /**< 16 bit per pixel, gggbbbbb rrrrrggg */
+  AOM_IMG_FMT_RGB555_LE, /**< 16 bit per pixel, gggbbbbb 0rrrrrgg */
+  AOM_IMG_FMT_YV12 =
+      AOM_IMG_FMT_PLANAR | AOM_IMG_FMT_UV_FLIP | 1, /**< planar YVU */
+  AOM_IMG_FMT_I420 = AOM_IMG_FMT_PLANAR | 2,
+  AOM_IMG_FMT_AOMYV12 = AOM_IMG_FMT_PLANAR | AOM_IMG_FMT_UV_FLIP |
                         3, /** < planar 4:2:0 format with aom color space */
-  VPX_IMG_FMT_VPXI420 = VPX_IMG_FMT_PLANAR | 4,
-  VPX_IMG_FMT_I422 = VPX_IMG_FMT_PLANAR | 5,
-  VPX_IMG_FMT_I444 = VPX_IMG_FMT_PLANAR | 6,
-  VPX_IMG_FMT_I440 = VPX_IMG_FMT_PLANAR | 7,
-  VPX_IMG_FMT_444A = VPX_IMG_FMT_PLANAR | VPX_IMG_FMT_HAS_ALPHA | 6,
-  VPX_IMG_FMT_I42016 = VPX_IMG_FMT_I420 | VPX_IMG_FMT_HIGHBITDEPTH,
-  VPX_IMG_FMT_I42216 = VPX_IMG_FMT_I422 | VPX_IMG_FMT_HIGHBITDEPTH,
-  VPX_IMG_FMT_I44416 = VPX_IMG_FMT_I444 | VPX_IMG_FMT_HIGHBITDEPTH,
-  VPX_IMG_FMT_I44016 = VPX_IMG_FMT_I440 | VPX_IMG_FMT_HIGHBITDEPTH
+  AOM_IMG_FMT_AOMI420 = AOM_IMG_FMT_PLANAR | 4,
+  AOM_IMG_FMT_I422 = AOM_IMG_FMT_PLANAR | 5,
+  AOM_IMG_FMT_I444 = AOM_IMG_FMT_PLANAR | 6,
+  AOM_IMG_FMT_I440 = AOM_IMG_FMT_PLANAR | 7,
+  AOM_IMG_FMT_444A = AOM_IMG_FMT_PLANAR | AOM_IMG_FMT_HAS_ALPHA | 6,
+  AOM_IMG_FMT_I42016 = AOM_IMG_FMT_I420 | AOM_IMG_FMT_HIGHBITDEPTH,
+  AOM_IMG_FMT_I42216 = AOM_IMG_FMT_I422 | AOM_IMG_FMT_HIGHBITDEPTH,
+  AOM_IMG_FMT_I44416 = AOM_IMG_FMT_I444 | AOM_IMG_FMT_HIGHBITDEPTH,
+  AOM_IMG_FMT_I44016 = AOM_IMG_FMT_I440 | AOM_IMG_FMT_HIGHBITDEPTH
 } aom_img_fmt_t; /**< alias for enum aom_img_fmt */
 
 /*!\brief List of supported color spaces */
 typedef enum aom_color_space {
-  VPX_CS_UNKNOWN = 0,   /**< Unknown */
-  VPX_CS_BT_601 = 1,    /**< BT.601 */
-  VPX_CS_BT_709 = 2,    /**< BT.709 */
-  VPX_CS_SMPTE_170 = 3, /**< SMPTE.170 */
-  VPX_CS_SMPTE_240 = 4, /**< SMPTE.240 */
-  VPX_CS_BT_2020 = 5,   /**< BT.2020 */
-  VPX_CS_RESERVED = 6,  /**< Reserved */
-  VPX_CS_SRGB = 7       /**< sRGB */
+  AOM_CS_UNKNOWN = 0,   /**< Unknown */
+  AOM_CS_BT_601 = 1,    /**< BT.601 */
+  AOM_CS_BT_709 = 2,    /**< BT.709 */
+  AOM_CS_SMPTE_170 = 3, /**< SMPTE.170 */
+  AOM_CS_SMPTE_240 = 4, /**< SMPTE.240 */
+  AOM_CS_BT_2020 = 5,   /**< BT.2020 */
+  AOM_CS_RESERVED = 6,  /**< Reserved */
+  AOM_CS_SRGB = 7       /**< sRGB */
 } aom_color_space_t;    /**< alias for enum aom_color_space */
 
 /*!\brief List of supported color range */
 typedef enum aom_color_range {
-  VPX_CR_STUDIO_RANGE = 0, /**< Y [16..235], UV [16..240] */
-  VPX_CR_FULL_RANGE = 1    /**< YUV/RGB [0..255] */
+  AOM_CR_STUDIO_RANGE = 0, /**< Y [16..235], UV [16..240] */
+  AOM_CR_FULL_RANGE = 1    /**< YUV/RGB [0..255] */
 } aom_color_range_t;       /**< alias for enum aom_color_range */
 
 /**\brief Image Descriptor */
@@ -109,11 +109,11 @@ typedef struct aom_image {
   unsigned int y_chroma_shift; /**< subsampling order, Y */
 
 /* Image data pointers. */
-#define VPX_PLANE_PACKED 0  /**< To be used for all packed formats */
-#define VPX_PLANE_Y 0       /**< Y (Luminance) plane */
-#define VPX_PLANE_U 1       /**< U (Chroma) plane */
-#define VPX_PLANE_V 2       /**< V (Chroma) plane */
-#define VPX_PLANE_ALPHA 3   /**< A (Transparency) plane */
+#define AOM_PLANE_PACKED 0  /**< To be used for all packed formats */
+#define AOM_PLANE_Y 0       /**< Y (Luminance) plane */
+#define AOM_PLANE_U 1       /**< U (Chroma) plane */
+#define AOM_PLANE_V 2       /**< V (Chroma) plane */
+#define AOM_PLANE_ALPHA 3   /**< A (Transparency) plane */
   unsigned char *planes[4]; /**< pointer to the top left pixel for each plane */
   int stride[4];            /**< stride between rows for each plane */
 
@@ -223,4 +223,4 @@ void aom_img_free(aom_image_t *img);
 }  // extern "C"
 #endif
 
-#endif  // VPX_VPX_IMAGE_H_
+#endif  // AOM_AOM_IMAGE_H_

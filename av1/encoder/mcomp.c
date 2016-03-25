@@ -39,10 +39,10 @@ void av1_set_mv_search_range(MACROBLOCK *x, const MV *mv) {
   int col_max = (mv->col >> 3) + MAX_FULL_PEL_VAL;
   int row_max = (mv->row >> 3) + MAX_FULL_PEL_VAL;
 
-  col_min = VPXMAX(col_min, (MV_LOW >> 3) + 1);
-  row_min = VPXMAX(row_min, (MV_LOW >> 3) + 1);
-  col_max = VPXMIN(col_max, (MV_UPP >> 3) - 1);
-  row_max = VPXMIN(row_max, (MV_UPP >> 3) - 1);
+  col_min = AOMMAX(col_min, (MV_LOW >> 3) + 1);
+  row_min = AOMMAX(row_min, (MV_LOW >> 3) + 1);
+  col_max = AOMMIN(col_max, (MV_UPP >> 3) - 1);
+  row_max = AOMMIN(row_max, (MV_UPP >> 3) - 1);
 
   // Get intersection of UMV window and valid MV window to reduce # of checks
   // in diamond search.
@@ -55,11 +55,11 @@ void av1_set_mv_search_range(MACROBLOCK *x, const MV *mv) {
 int av1_init_search_range(int size) {
   int sr = 0;
   // Minimum search size no matter what the passed in value.
-  size = VPXMAX(16, size);
+  size = AOMMAX(16, size);
 
   while ((size << sr) < MAX_FULL_PEL_VAL) sr++;
 
-  sr = VPXMIN(sr, MAX_MVSEARCH_STEPS - 2);
+  sr = AOMMIN(sr, MAX_MVSEARCH_STEPS - 2);
   return sr;
 }
 
@@ -279,10 +279,10 @@ static INLINE const uint8_t *pre(const uint8_t *buf, int stride, int r, int c) {
   int br = bestmv->row * 8;                                         \
   int bc = bestmv->col * 8;                                         \
   int hstep = 4;                                                    \
-  const int minc = VPXMAX(x->mv_col_min * 8, ref_mv->col - MV_MAX); \
-  const int maxc = VPXMIN(x->mv_col_max * 8, ref_mv->col + MV_MAX); \
-  const int minr = VPXMAX(x->mv_row_min * 8, ref_mv->row - MV_MAX); \
-  const int maxr = VPXMIN(x->mv_row_max * 8, ref_mv->row + MV_MAX); \
+  const int minc = AOMMAX(x->mv_col_min * 8, ref_mv->col - MV_MAX); \
+  const int maxc = AOMMIN(x->mv_col_max * 8, ref_mv->col + MV_MAX); \
+  const int minr = AOMMAX(x->mv_row_min * 8, ref_mv->row - MV_MAX); \
+  const int maxr = AOMMIN(x->mv_row_max * 8, ref_mv->row + MV_MAX); \
   int tr = br;                                                      \
   int tc = bc;                                                      \
                                                                     \
@@ -603,10 +603,10 @@ int av1_find_best_sub_pixel_tree(const MACROBLOCK *x, MV *bestmv,
   int bc = bestmv->col * 8;
   int hstep = 4;
   int iter, round = 3 - forced_stop;
-  const int minc = VPXMAX(x->mv_col_min * 8, ref_mv->col - MV_MAX);
-  const int maxc = VPXMIN(x->mv_col_max * 8, ref_mv->col + MV_MAX);
-  const int minr = VPXMAX(x->mv_row_min * 8, ref_mv->row - MV_MAX);
-  const int maxr = VPXMIN(x->mv_row_max * 8, ref_mv->row + MV_MAX);
+  const int minc = AOMMAX(x->mv_col_min * 8, ref_mv->col - MV_MAX);
+  const int maxc = AOMMIN(x->mv_col_max * 8, ref_mv->col + MV_MAX);
+  const int minr = AOMMAX(x->mv_row_min * 8, ref_mv->row - MV_MAX);
+  const int maxr = AOMMIN(x->mv_row_max * 8, ref_mv->row + MV_MAX);
   int tr = br;
   int tc = bc;
   const MV *search_step = search_step_table;
@@ -1552,7 +1552,7 @@ int av1_fast_hex_search(const MACROBLOCK *x, MV *ref_mv, int search_param,
                          int *cost_list, const aom_variance_fn_ptr_t *vfp,
                          int use_mvcost, const MV *center_mv, MV *best_mv) {
   return av1_hex_search(
-      x, ref_mv, VPXMAX(MAX_MVSEARCH_STEPS - 2, search_param), sad_per_bit,
+      x, ref_mv, AOMMAX(MAX_MVSEARCH_STEPS - 2, search_param), sad_per_bit,
       do_init_search, cost_list, vfp, use_mvcost, center_mv, best_mv);
 }
 
@@ -1561,7 +1561,7 @@ int av1_fast_dia_search(const MACROBLOCK *x, MV *ref_mv, int search_param,
                          const aom_variance_fn_ptr_t *vfp, int use_mvcost,
                          const MV *center_mv, MV *best_mv) {
   return av1_bigdia_search(
-      x, ref_mv, VPXMAX(MAX_MVSEARCH_STEPS - 2, search_param), sad_per_bit,
+      x, ref_mv, AOMMAX(MAX_MVSEARCH_STEPS - 2, search_param), sad_per_bit,
       do_init_search, cost_list, vfp, use_mvcost, center_mv, best_mv);
 }
 
@@ -1591,10 +1591,10 @@ static int exhuastive_mesh_search(const MACROBLOCK *x, MV *ref_mv, MV *best_mv,
       fn_ptr->sdf(what->buf, what->stride,
                   get_buf_from_mv(in_what, &fcenter_mv), in_what->stride) +
       mvsad_err_cost(x, &fcenter_mv, ref_mv, sad_per_bit);
-  start_row = VPXMAX(-range, x->mv_row_min - fcenter_mv.row);
-  start_col = VPXMAX(-range, x->mv_col_min - fcenter_mv.col);
-  end_row = VPXMIN(range, x->mv_row_max - fcenter_mv.row);
-  end_col = VPXMIN(range, x->mv_col_max - fcenter_mv.col);
+  start_row = AOMMAX(-range, x->mv_row_min - fcenter_mv.row);
+  start_col = AOMMAX(-range, x->mv_col_min - fcenter_mv.col);
+  end_row = AOMMIN(range, x->mv_row_max - fcenter_mv.row);
+  end_col = AOMMIN(range, x->mv_col_max - fcenter_mv.col);
 
   for (r = start_row; r <= end_row; r += step) {
     for (c = start_col; c <= end_col; c += col_step) {
@@ -2087,9 +2087,9 @@ static int full_pixel_exhaustive(AV1_COMP *cpi, MACROBLOCK *x,
 
   // Check size of proposed first range against magnitude of the centre
   // value used as a starting point.
-  range = VPXMAX(range, (5 * VPXMAX(abs(temp_mv.row), abs(temp_mv.col))) / 4);
-  range = VPXMIN(range, MAX_RANGE);
-  interval = VPXMAX(interval, range / baseline_interval_divisor);
+  range = AOMMAX(range, (5 * AOMMAX(abs(temp_mv.row), abs(temp_mv.col))) / 4);
+  range = AOMMIN(range, MAX_RANGE);
+  interval = AOMMAX(interval, range / baseline_interval_divisor);
 
   // initial search
   bestsme = exhuastive_mesh_search(x, &f_ref_mv, &temp_mv, range, interval,
@@ -2127,10 +2127,10 @@ int av1_full_search_sad_c(const MACROBLOCK *x, const MV *ref_mv,
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct buf_2d *const what = &x->plane[0].src;
   const struct buf_2d *const in_what = &xd->plane[0].pre[0];
-  const int row_min = VPXMAX(ref_mv->row - distance, x->mv_row_min);
-  const int row_max = VPXMIN(ref_mv->row + distance, x->mv_row_max);
-  const int col_min = VPXMAX(ref_mv->col - distance, x->mv_col_min);
-  const int col_max = VPXMIN(ref_mv->col + distance, x->mv_col_max);
+  const int row_min = AOMMAX(ref_mv->row - distance, x->mv_row_min);
+  const int row_max = AOMMIN(ref_mv->row + distance, x->mv_row_max);
+  const int col_min = AOMMAX(ref_mv->col - distance, x->mv_col_min);
+  const int col_max = AOMMIN(ref_mv->col + distance, x->mv_col_max);
   const MV fcenter_mv = { center_mv->row >> 3, center_mv->col >> 3 };
   int best_sad =
       fn_ptr->sdf(what->buf, what->stride, get_buf_from_mv(in_what, ref_mv),
@@ -2162,10 +2162,10 @@ int av1_full_search_sadx3(const MACROBLOCK *x, const MV *ref_mv,
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct buf_2d *const what = &x->plane[0].src;
   const struct buf_2d *const in_what = &xd->plane[0].pre[0];
-  const int row_min = VPXMAX(ref_mv->row - distance, x->mv_row_min);
-  const int row_max = VPXMIN(ref_mv->row + distance, x->mv_row_max);
-  const int col_min = VPXMAX(ref_mv->col - distance, x->mv_col_min);
-  const int col_max = VPXMIN(ref_mv->col + distance, x->mv_col_max);
+  const int row_min = AOMMAX(ref_mv->row - distance, x->mv_row_min);
+  const int row_max = AOMMIN(ref_mv->row + distance, x->mv_row_max);
+  const int col_min = AOMMAX(ref_mv->col - distance, x->mv_col_min);
+  const int col_max = AOMMIN(ref_mv->col + distance, x->mv_col_max);
   const MV fcenter_mv = { center_mv->row >> 3, center_mv->col >> 3 };
   unsigned int best_sad =
       fn_ptr->sdf(what->buf, what->stride, get_buf_from_mv(in_what, ref_mv),
@@ -2228,10 +2228,10 @@ int av1_full_search_sadx8(const MACROBLOCK *x, const MV *ref_mv,
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct buf_2d *const what = &x->plane[0].src;
   const struct buf_2d *const in_what = &xd->plane[0].pre[0];
-  const int row_min = VPXMAX(ref_mv->row - distance, x->mv_row_min);
-  const int row_max = VPXMIN(ref_mv->row + distance, x->mv_row_max);
-  const int col_min = VPXMAX(ref_mv->col - distance, x->mv_col_min);
-  const int col_max = VPXMIN(ref_mv->col + distance, x->mv_col_max);
+  const int row_min = AOMMAX(ref_mv->row - distance, x->mv_row_min);
+  const int row_max = AOMMIN(ref_mv->row + distance, x->mv_row_max);
+  const int col_min = AOMMAX(ref_mv->col - distance, x->mv_col_min);
+  const int col_max = AOMMIN(ref_mv->col + distance, x->mv_col_max);
   const MV fcenter_mv = { center_mv->row >> 3, center_mv->col >> 3 };
   unsigned int best_sad =
       fn_ptr->sdf(what->buf, what->stride, get_buf_from_mv(in_what, ref_mv),
@@ -2436,7 +2436,7 @@ int av1_refining_search_8p_c(const MACROBLOCK *x, MV *ref_mv,
 static int is_exhaustive_allowed(AV1_COMP *cpi, MACROBLOCK *x) {
   const SPEED_FEATURES *const sf = &cpi->sf;
   const int max_ex =
-      VPXMAX(MIN_EX_SEARCH_LIMIT,
+      AOMMAX(MIN_EX_SEARCH_LIMIT,
              (*x->m_search_count_ptr * sf->max_exaustive_pct) / 100);
 
   return sf->allow_exhaustive_searches &&

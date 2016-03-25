@@ -20,7 +20,7 @@
 
   - Upgrading:
     This release is ABI incompatible with 1.3.0. It drops the compatibility
-    layer, requiring VPX_IMG_FMT_* instead of IMG_FMT_*, and adds several codec
+    layer, requiring AOM_IMG_FMT_* instead of IMG_FMT_*, and adds several codec
     controls for VP9.
 
   - Enhancements:
@@ -302,7 +302,7 @@
           aomdec: test for frame corruption
           aomenc: add quantizer histogram display
           aomenc: add rate histogram display
-          Set VPX_FRAME_IS_DROPPABLE
+          Set AOM_FRAME_IS_DROPPABLE
           update configure for ios sdk 4.3
           Avoid text relocations in ARM vp8 decoder
           Generate a aom.pc file for pkg-config.

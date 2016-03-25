@@ -79,7 +79,7 @@ static void check_quantizer(int min_q, int max_q,
 
 static void check_lag_in_frames_realtime_deadline(
     int lag_in_frames, int deadline, struct WarningList *warning_list) {
-  if (deadline == VPX_DL_REALTIME && lag_in_frames != 0)
+  if (deadline == AOM_DL_REALTIME && lag_in_frames != 0)
     add_warning(lag_in_frames_with_realtime, warning_list);
 }
 

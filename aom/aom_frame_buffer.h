@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_VPX_FRAME_BUFFER_H_
-#define VPX_VPX_FRAME_BUFFER_H_
+#ifndef AOM_AOM_FRAME_BUFFER_H_
+#define AOM_AOM_FRAME_BUFFER_H_
 
 /*!\file
  * \brief Describes the decoder external frame buffer interface.
@@ -27,11 +27,11 @@ extern "C" {
  *  Each thread will use one work buffer.
  * TODO(hkuang): Add support to set number of worker threads dynamically.
  */
-#define VPX_MAXIMUM_WORK_BUFFERS 8
+#define AOM_MAXIMUM_WORK_BUFFERS 8
 
 /*!\brief The maximum number of reference buffers that a VP9 encoder may use.
  */
-#define VPX_MAXIMUM_REF_BUFFERS 8
+#define AOM_MAXIMUM_REF_BUFFERS 8
 
 /*!\brief External frame buffer
  *
@@ -81,4 +81,4 @@ typedef int (*aom_release_frame_buffer_cb_fn_t)(void *priv,
 }  // extern "C"
 #endif
 
-#endif  // VPX_VPX_FRAME_BUFFER_H_
+#endif  // AOM_AOM_FRAME_BUFFER_H_

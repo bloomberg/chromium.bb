@@ -191,8 +191,8 @@ void aom_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf) {
 }
 
 void aom_extend_frame_inner_borders_c(YV12_BUFFER_CONFIG *ybf) {
-  const int inner_bw = (ybf->border > VPXINNERBORDERINPIXELS)
-                           ? VPXINNERBORDERINPIXELS
+  const int inner_bw = (ybf->border > AOMINNERBORDERINPIXELS)
+                           ? AOMINNERBORDERINPIXELS
                            : ybf->border;
   extend_frame(ybf, inner_bw);
 }

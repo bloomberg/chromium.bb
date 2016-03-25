@@ -87,8 +87,8 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
   }
 
 #if CONFIG_AOM_HIGHBITDEPTH
-  if (xd->bd > VPX_BITS_8) {
-    if (xd->bd == VPX_BITS_10) {
+  if (xd->bd > AOM_BITS_8) {
+    if (xd->bd == AOM_BITS_10) {
       cat1_prob = av1_cat1_prob_high10;
       cat2_prob = av1_cat2_prob_high10;
       cat3_prob = av1_cat3_prob_high10;
@@ -177,13 +177,13 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
           const uint8_t *cat6p = cat6_prob + skip_bits;
 #if CONFIG_AOM_HIGHBITDEPTH
           switch (xd->bd) {
-            case VPX_BITS_8:
+            case AOM_BITS_8:
               val = CAT6_MIN_VAL + read_coeff(cat6p, 14 - skip_bits, r);
               break;
-            case VPX_BITS_10:
+            case AOM_BITS_10:
               val = CAT6_MIN_VAL + read_coeff(cat6p, 16 - skip_bits, r);
               break;
-            case VPX_BITS_12:
+            case AOM_BITS_12:
               val = CAT6_MIN_VAL + read_coeff(cat6p, 18 - skip_bits, r);
               break;
             default: assert(0); return -1;

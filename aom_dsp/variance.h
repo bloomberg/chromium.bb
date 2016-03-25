@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_VARIANCE_H_
-#define VPX_DSP_VARIANCE_H_
+#ifndef AOM_DSP_VARIANCE_H_
+#define AOM_DSP_VARIANCE_H_
 
 #include "./aom_config.h"
 
@@ -71,4 +71,4 @@ typedef struct aom_variance_vtable {
 }  // extern "C"
 #endif
 
-#endif  // VPX_DSP_VARIANCE_H_
+#endif  // AOM_DSP_VARIANCE_H_

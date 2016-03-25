@@ -69,8 +69,8 @@ TEST_P(ActiveMapTest, Test) {
   cfg_.g_lag_in_frames = 0;
   cfg_.rc_target_bitrate = 400;
   cfg_.rc_resize_allowed = 0;
-  cfg_.g_pass = VPX_RC_ONE_PASS;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.g_pass = AOM_RC_ONE_PASS;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.kf_max_dist = 90000;
 
   ::libaom_test::I420VideoSource video("hantro_odd.yuv", kWidth, kHeight, 30, 1,

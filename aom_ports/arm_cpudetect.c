@@ -23,7 +23,7 @@
 
 static int arm_cpu_env_flags(int *flags) {
   char *env;
-  env = getenv("VPX_SIMD_CAPS");
+  env = getenv("AOM_SIMD_CAPS");
   if (env && *env) {
     *flags = (int)strtol(env, NULL, 0);
     return 0;
@@ -34,7 +34,7 @@ static int arm_cpu_env_flags(int *flags) {
 
 static int arm_cpu_env_mask(void) {
   char *env;
-  env = getenv("VPX_SIMD_CAPS_MASK");
+  env = getenv("AOM_SIMD_CAPS_MASK");
   return env && *env ? (int)strtol(env, NULL, 0) : ~0;
 }
 

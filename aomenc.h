@@ -8,8 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#ifndef VPXENC_H_
-#define VPXENC_H_
+#ifndef AOMENC_H_
+#define AOMENC_H_
 
 #include "aom/aom_encoder.h"
 
@@ -62,4 +62,4 @@ struct VpxEncoderConfig {
 }  // extern "C"
 #endif
 
-#endif  // VPXENC_H_
+#endif  // AOMENC_H_

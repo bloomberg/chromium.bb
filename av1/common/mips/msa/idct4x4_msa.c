@@ -25,31 +25,31 @@ void av1_iht4x4_16_add_msa(const int16_t *input, uint8_t *dst,
   switch (tx_type) {
     case DCT_DCT:
       /* DCT in horizontal */
-      VPX_IDCT4x4(in0, in1, in2, in3, in0, in1, in2, in3);
+      AOM_IDCT4x4(in0, in1, in2, in3, in0, in1, in2, in3);
       /* DCT in vertical */
       TRANSPOSE4x4_SH_SH(in0, in1, in2, in3, in0, in1, in2, in3);
-      VPX_IDCT4x4(in0, in1, in2, in3, in0, in1, in2, in3);
+      AOM_IDCT4x4(in0, in1, in2, in3, in0, in1, in2, in3);
       break;
     case ADST_DCT:
       /* DCT in horizontal */
-      VPX_IDCT4x4(in0, in1, in2, in3, in0, in1, in2, in3);
+      AOM_IDCT4x4(in0, in1, in2, in3, in0, in1, in2, in3);
       /* ADST in vertical */
       TRANSPOSE4x4_SH_SH(in0, in1, in2, in3, in0, in1, in2, in3);
-      VPX_IADST4x4(in0, in1, in2, in3, in0, in1, in2, in3);
+      AOM_IADST4x4(in0, in1, in2, in3, in0, in1, in2, in3);
       break;
     case DCT_ADST:
       /* ADST in horizontal */
-      VPX_IADST4x4(in0, in1, in2, in3, in0, in1, in2, in3);
+      AOM_IADST4x4(in0, in1, in2, in3, in0, in1, in2, in3);
       /* DCT in vertical */
       TRANSPOSE4x4_SH_SH(in0, in1, in2, in3, in0, in1, in2, in3);
-      VPX_IDCT4x4(in0, in1, in2, in3, in0, in1, in2, in3);
+      AOM_IDCT4x4(in0, in1, in2, in3, in0, in1, in2, in3);
       break;
     case ADST_ADST:
       /* ADST in horizontal */
-      VPX_IADST4x4(in0, in1, in2, in3, in0, in1, in2, in3);
+      AOM_IADST4x4(in0, in1, in2, in3, in0, in1, in2, in3);
       /* ADST in vertical */
       TRANSPOSE4x4_SH_SH(in0, in1, in2, in3, in0, in1, in2, in3);
-      VPX_IADST4x4(in0, in1, in2, in3, in0, in1, in2, in3);
+      AOM_IADST4x4(in0, in1, in2, in3, in0, in1, in2, in3);
       break;
     default: assert(0); break;
   }

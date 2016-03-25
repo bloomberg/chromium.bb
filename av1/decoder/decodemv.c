@@ -88,7 +88,7 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int allow_select,
   if (allow_select && tx_mode == TX_MODE_SELECT && bsize >= BLOCK_8X8)
     return read_selected_tx_size(cm, xd, max_tx_size, r);
   else
-    return VPXMIN(max_tx_size, tx_mode_to_biggest_tx_size[tx_mode]);
+    return AOMMIN(max_tx_size, tx_mode_to_biggest_tx_size[tx_mode]);
 }
 
 static int dec_get_segment_id(const AV1_COMMON *cm, const uint8_t *segment_ids,
@@ -98,7 +98,7 @@ static int dec_get_segment_id(const AV1_COMMON *cm, const uint8_t *segment_ids,
   for (y = 0; y < y_mis; y++)
     for (x = 0; x < x_mis; x++)
       segment_id =
-          VPXMIN(segment_id, segment_ids[mi_offset + y * cm->mi_cols + x]);
+          AOMMIN(segment_id, segment_ids[mi_offset + y * cm->mi_cols + x]);
 
   assert(segment_id >= 0 && segment_id < MAX_SEGMENTS);
   return segment_id;
@@ -172,8 +172,8 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   const int bh = xd->plane[0].n4_h >> 1;
 
   // TODO(slavarnway): move x_mis, y_mis into xd ?????
-  const int x_mis = VPXMIN(cm->mi_cols - mi_col, bw);
-  const int y_mis = VPXMIN(cm->mi_rows - mi_row, bh);
+  const int x_mis = AOMMIN(cm->mi_cols - mi_col, bw);
+  const int y_mis = AOMMIN(cm->mi_rows - mi_row, bh);
 
   if (!seg->enabled) return 0;  // Default for disabled segmentation
 
@@ -240,8 +240,8 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   const int bh = xd->plane[0].n4_h >> 1;
 
   // TODO(slavarnway): move x_mis, y_mis into xd ?????
-  const int x_mis = VPXMIN(cm->mi_cols - mi_col, bw);
-  const int y_mis = VPXMIN(cm->mi_rows - mi_row, bh);
+  const int x_mis = AOMMIN(cm->mi_cols - mi_col, bw);
+  const int y_mis = AOMMIN(cm->mi_rows - mi_row, bh);
 
   mbmi->segment_id = read_intra_segment_id(cm, xd, mi_offset, x_mis, y_mis, r);
   mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
@@ -526,7 +526,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
     xd->block_refs[ref] = ref_buf;
     if ((!av1_is_valid_scale(&ref_buf->sf)))
-      aom_internal_error(xd->error_info, VPX_CODEC_UNSUP_BITSTREAM,
+      aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
                          "Reference frame has invalid dimensions");
     av1_setup_pre_planes(xd, ref, ref_buf->buf, mi_row, mi_col, &ref_buf->sf);
     av1_find_mv_refs(cm, xd, mi, frame, ref_mvs[frame], mi_row, mi_col,
@@ -536,7 +536,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   if (segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP)) {
     mbmi->mode = ZEROMV;
     if (bsize < BLOCK_8X8) {
-      aom_internal_error(xd->error_info, VPX_CODEC_UNSUP_BITSTREAM,
+      aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
                          "Invalid usage of segement feature on small blocks");
       return;
     }

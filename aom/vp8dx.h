@@ -18,8 +18,8 @@
  * \brief Provides definitions for using VP8 or VP9 within the aom Decoder
  *        interface.
  */
-#ifndef VPX_VP8DX_H_
-#define VPX_VP8DX_H_
+#ifndef AOM_VP8DX_H_
+#define AOM_VP8DX_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,8 +63,8 @@ enum vp8_dec_control_id {
    * before decoding. Takes a aom_decrypt_init, which contains
    * a callback function and opaque context pointer.
    */
-  VPXD_SET_DECRYPTOR,
-  VP8D_SET_DECRYPTOR = VPXD_SET_DECRYPTOR,
+  AOMD_SET_DECRYPTOR,
+  VP8D_SET_DECRYPTOR = AOMD_SET_DECRYPTOR,
 
   /** control function to get the dimensions that the current frame is decoded
    * at. This may be different to the intended display size for the frame as
@@ -107,7 +107,7 @@ enum vp8_dec_control_id {
 };
 
 /** Decrypt n bytes of data from input -> output, using the decrypt_state
- *  passed in VPXD_SET_DECRYPTOR.
+ *  passed in AOMD_SET_DECRYPTOR.
  */
 typedef void (*aom_decrypt_cb)(void *decrypt_state, const unsigned char *input,
                                unsigned char *output, int count);
@@ -136,24 +136,24 @@ typedef aom_decrypt_init vp8_decrypt_init;
  *
  */
 
-VPX_CTRL_USE_TYPE(VP8D_GET_LAST_REF_UPDATES, int *)
-#define VPX_CTRL_VP8D_GET_LAST_REF_UPDATES
-VPX_CTRL_USE_TYPE(VP8D_GET_FRAME_CORRUPTED, int *)
-#define VPX_CTRL_VP8D_GET_FRAME_CORRUPTED
-VPX_CTRL_USE_TYPE(VP8D_GET_LAST_REF_USED, int *)
-#define VPX_CTRL_VP8D_GET_LAST_REF_USED
-VPX_CTRL_USE_TYPE(VPXD_SET_DECRYPTOR, aom_decrypt_init *)
-#define VPX_CTRL_VPXD_SET_DECRYPTOR
-VPX_CTRL_USE_TYPE(VP8D_SET_DECRYPTOR, aom_decrypt_init *)
-#define VPX_CTRL_VP8D_SET_DECRYPTOR
-VPX_CTRL_USE_TYPE(VP9D_GET_DISPLAY_SIZE, int *)
-#define VPX_CTRL_VP9D_GET_DISPLAY_SIZE
-VPX_CTRL_USE_TYPE(VP9D_GET_BIT_DEPTH, unsigned int *)
-#define VPX_CTRL_VP9D_GET_BIT_DEPTH
-VPX_CTRL_USE_TYPE(VP9D_GET_FRAME_SIZE, int *)
-#define VPX_CTRL_VP9D_GET_FRAME_SIZE
-VPX_CTRL_USE_TYPE(VP9_INVERT_TILE_DECODE_ORDER, int)
-#define VPX_CTRL_VP9_INVERT_TILE_DECODE_ORDER
+AOM_CTRL_USE_TYPE(VP8D_GET_LAST_REF_UPDATES, int *)
+#define AOM_CTRL_VP8D_GET_LAST_REF_UPDATES
+AOM_CTRL_USE_TYPE(VP8D_GET_FRAME_CORRUPTED, int *)
+#define AOM_CTRL_VP8D_GET_FRAME_CORRUPTED
+AOM_CTRL_USE_TYPE(VP8D_GET_LAST_REF_USED, int *)
+#define AOM_CTRL_VP8D_GET_LAST_REF_USED
+AOM_CTRL_USE_TYPE(AOMD_SET_DECRYPTOR, aom_decrypt_init *)
+#define AOM_CTRL_AOMD_SET_DECRYPTOR
+AOM_CTRL_USE_TYPE(VP8D_SET_DECRYPTOR, aom_decrypt_init *)
+#define AOM_CTRL_VP8D_SET_DECRYPTOR
+AOM_CTRL_USE_TYPE(VP9D_GET_DISPLAY_SIZE, int *)
+#define AOM_CTRL_VP9D_GET_DISPLAY_SIZE
+AOM_CTRL_USE_TYPE(VP9D_GET_BIT_DEPTH, unsigned int *)
+#define AOM_CTRL_VP9D_GET_BIT_DEPTH
+AOM_CTRL_USE_TYPE(VP9D_GET_FRAME_SIZE, int *)
+#define AOM_CTRL_VP9D_GET_FRAME_SIZE
+AOM_CTRL_USE_TYPE(VP9_INVERT_TILE_DECODE_ORDER, int)
+#define AOM_CTRL_VP9_INVERT_TILE_DECODE_ORDER
 
 /*!\endcond */
 /*! @} - end defgroup vp8_decoder */
@@ -162,4 +162,4 @@ VPX_CTRL_USE_TYPE(VP9_INVERT_TILE_DECODE_ORDER, int)
 }  // extern "C"
 #endif
 
-#endif  // VPX_VP8DX_H_
+#endif  // AOM_VP8DX_H_

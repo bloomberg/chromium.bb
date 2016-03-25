@@ -171,11 +171,11 @@ static const int16_t ac_qlookup_12[QINDEX_RANGE] = {
 int16_t av1_dc_quant(int qindex, int delta, aom_bit_depth_t bit_depth) {
 #if CONFIG_AOM_HIGHBITDEPTH
   switch (bit_depth) {
-    case VPX_BITS_8: return dc_qlookup[clamp(qindex + delta, 0, MAXQ)];
-    case VPX_BITS_10: return dc_qlookup_10[clamp(qindex + delta, 0, MAXQ)];
-    case VPX_BITS_12: return dc_qlookup_12[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_8: return dc_qlookup[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_10: return dc_qlookup_10[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_12: return dc_qlookup_12[clamp(qindex + delta, 0, MAXQ)];
     default:
-      assert(0 && "bit_depth should be VPX_BITS_8, VPX_BITS_10 or VPX_BITS_12");
+      assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
 #else
@@ -187,11 +187,11 @@ int16_t av1_dc_quant(int qindex, int delta, aom_bit_depth_t bit_depth) {
 int16_t av1_ac_quant(int qindex, int delta, aom_bit_depth_t bit_depth) {
 #if CONFIG_AOM_HIGHBITDEPTH
   switch (bit_depth) {
-    case VPX_BITS_8: return ac_qlookup[clamp(qindex + delta, 0, MAXQ)];
-    case VPX_BITS_10: return ac_qlookup_10[clamp(qindex + delta, 0, MAXQ)];
-    case VPX_BITS_12: return ac_qlookup_12[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_8: return ac_qlookup[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_10: return ac_qlookup_10[clamp(qindex + delta, 0, MAXQ)];
+    case AOM_BITS_12: return ac_qlookup_12[clamp(qindex + delta, 0, MAXQ)];
     default:
-      assert(0 && "bit_depth should be VPX_BITS_8, VPX_BITS_10 or VPX_BITS_12");
+      assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
 #else

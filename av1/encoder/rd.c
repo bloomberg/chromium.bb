@@ -141,12 +141,12 @@ static void init_me_luts_bd(int *bit16lut, int *bit4lut, int range,
 
 void av1_init_me_luts(void) {
   init_me_luts_bd(sad_per_bit16lut_8, sad_per_bit4lut_8, QINDEX_RANGE,
-                  VPX_BITS_8);
+                  AOM_BITS_8);
 #if CONFIG_AOM_HIGHBITDEPTH
   init_me_luts_bd(sad_per_bit16lut_10, sad_per_bit4lut_10, QINDEX_RANGE,
-                  VPX_BITS_10);
+                  AOM_BITS_10);
   init_me_luts_bd(sad_per_bit16lut_12, sad_per_bit4lut_12, QINDEX_RANGE,
-                  VPX_BITS_12);
+                  AOM_BITS_12);
 #endif
 }
 
@@ -160,11 +160,11 @@ int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
 #if CONFIG_AOM_HIGHBITDEPTH
   int64_t rdmult = 0;
   switch (cpi->common.bit_depth) {
-    case VPX_BITS_8: rdmult = 88 * q * q / 24; break;
-    case VPX_BITS_10: rdmult = ROUND_POWER_OF_TWO(88 * q * q / 24, 4); break;
-    case VPX_BITS_12: rdmult = ROUND_POWER_OF_TWO(88 * q * q / 24, 8); break;
+    case AOM_BITS_8: rdmult = 88 * q * q / 24; break;
+    case AOM_BITS_10: rdmult = ROUND_POWER_OF_TWO(88 * q * q / 24, 4); break;
+    case AOM_BITS_12: rdmult = ROUND_POWER_OF_TWO(88 * q * q / 24, 8); break;
     default:
-      assert(0 && "bit_depth should be VPX_BITS_8, VPX_BITS_10 or VPX_BITS_12");
+      assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
 #else
@@ -173,7 +173,7 @@ int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
   if (cpi->oxcf.pass == 2 && (cpi->common.frame_type != KEY_FRAME)) {
     const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
     const FRAME_UPDATE_TYPE frame_type = gf_group->update_type[gf_group->index];
-    const int boost_index = VPXMIN(15, (cpi->rc.gfu_boost / 100));
+    const int boost_index = AOMMIN(15, (cpi->rc.gfu_boost / 100));
 
     rdmult = (rdmult * rd_frame_type_factor[frame_type]) >> 7;
     rdmult += ((rdmult * rd_boost_factor[boost_index]) >> 7);
@@ -186,38 +186,38 @@ static int compute_rd_thresh_factor(int qindex, aom_bit_depth_t bit_depth) {
   double q;
 #if CONFIG_AOM_HIGHBITDEPTH
   switch (bit_depth) {
-    case VPX_BITS_8: q = av1_dc_quant(qindex, 0, VPX_BITS_8) / 4.0; break;
-    case VPX_BITS_10: q = av1_dc_quant(qindex, 0, VPX_BITS_10) / 16.0; break;
-    case VPX_BITS_12: q = av1_dc_quant(qindex, 0, VPX_BITS_12) / 64.0; break;
+    case AOM_BITS_8: q = av1_dc_quant(qindex, 0, AOM_BITS_8) / 4.0; break;
+    case AOM_BITS_10: q = av1_dc_quant(qindex, 0, AOM_BITS_10) / 16.0; break;
+    case AOM_BITS_12: q = av1_dc_quant(qindex, 0, AOM_BITS_12) / 64.0; break;
     default:
-      assert(0 && "bit_depth should be VPX_BITS_8, VPX_BITS_10 or VPX_BITS_12");
+      assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
 #else
   (void)bit_depth;
-  q = av1_dc_quant(qindex, 0, VPX_BITS_8) / 4.0;
+  q = av1_dc_quant(qindex, 0, AOM_BITS_8) / 4.0;
 #endif  // CONFIG_AOM_HIGHBITDEPTH
   // TODO(debargha): Adjust the function below.
-  return VPXMAX((int)(pow(q, RD_THRESH_POW) * 5.12), 8);
+  return AOMMAX((int)(pow(q, RD_THRESH_POW) * 5.12), 8);
 }
 
 void av1_initialize_me_consts(AV1_COMP *cpi, MACROBLOCK *x, int qindex) {
 #if CONFIG_AOM_HIGHBITDEPTH
   switch (cpi->common.bit_depth) {
-    case VPX_BITS_8:
+    case AOM_BITS_8:
       x->sadperbit16 = sad_per_bit16lut_8[qindex];
       x->sadperbit4 = sad_per_bit4lut_8[qindex];
       break;
-    case VPX_BITS_10:
+    case AOM_BITS_10:
       x->sadperbit16 = sad_per_bit16lut_10[qindex];
       x->sadperbit4 = sad_per_bit4lut_10[qindex];
       break;
-    case VPX_BITS_12:
+    case AOM_BITS_12:
       x->sadperbit16 = sad_per_bit16lut_12[qindex];
       x->sadperbit4 = sad_per_bit4lut_12[qindex];
       break;
     default:
-      assert(0 && "bit_depth should be VPX_BITS_8, VPX_BITS_10 or VPX_BITS_12");
+      assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
   }
 #else
   (void)cpi;
@@ -384,7 +384,7 @@ void av1_model_rd_from_var_lapndz(unsigned int var, unsigned int n_log2,
     static const uint32_t MAX_XSQ_Q10 = 245727;
     const uint64_t xsq_q10_64 =
         (((uint64_t)qstep * qstep << (n_log2 + 10)) + (var >> 1)) / var;
-    const int xsq_q10 = (int)VPXMIN(xsq_q10_64, MAX_XSQ_Q10);
+    const int xsq_q10 = (int)AOMMIN(xsq_q10_64, MAX_XSQ_Q10);
     model_rd_norm(xsq_q10, &r_q10, &d_q10);
     *rate = ROUND_POWER_OF_TWO(r_q10 << n_log2, 10 - VP9_PROB_COST_SHIFT);
     *dist = (var * (int64_t)d_q10 + 512) >> 10;
@@ -460,7 +460,7 @@ void av1_mv_pred(AV1_COMP *cpi, MACROBLOCK *x, uint8_t *ref_y_buffer,
     if (i == 1 && near_same_nearest) continue;
     fp_row = (this_mv->row + 3 + (this_mv->row >= 0)) >> 3;
     fp_col = (this_mv->col + 3 + (this_mv->col >= 0)) >> 3;
-    max_mv = VPXMAX(max_mv, VPXMAX(abs(this_mv->row), abs(this_mv->col)) >> 3);
+    max_mv = AOMMAX(max_mv, AOMMAX(abs(this_mv->row), abs(this_mv->col)) >> 3);
 
     if (fp_row == 0 && fp_col == 0 && zero_seen) continue;
     zero_seen |= (fp_row == 0 && fp_col == 0);
@@ -604,15 +604,15 @@ void av1_update_rd_thresh_fact(int (*factor_buf)[MAX_MODES], int rd_thresh,
     const int top_mode = bsize < BLOCK_8X8 ? MAX_REFS : MAX_MODES;
     int mode;
     for (mode = 0; mode < top_mode; ++mode) {
-      const BLOCK_SIZE min_size = VPXMAX(bsize - 1, BLOCK_4X4);
-      const BLOCK_SIZE max_size = VPXMIN(bsize + 2, BLOCK_64X64);
+      const BLOCK_SIZE min_size = AOMMAX(bsize - 1, BLOCK_4X4);
+      const BLOCK_SIZE max_size = AOMMIN(bsize + 2, BLOCK_64X64);
       BLOCK_SIZE bs;
       for (bs = min_size; bs <= max_size; ++bs) {
         int *const fact = &factor_buf[bs][mode];
         if (mode == best_mode_index) {
           *fact -= (*fact >> 4);
         } else {
-          *fact = VPXMIN(*fact + RD_THRESH_INC, rd_thresh * RD_THRESH_MAX_FACT);
+          *fact = AOMMIN(*fact + RD_THRESH_INC, rd_thresh * RD_THRESH_MAX_FACT);
         }
       }
     }
@@ -624,11 +624,11 @@ int av1_get_intra_cost_penalty(int qindex, int qdelta,
   const int q = av1_dc_quant(qindex, qdelta, bit_depth);
 #if CONFIG_AOM_HIGHBITDEPTH
   switch (bit_depth) {
-    case VPX_BITS_8: return 20 * q;
-    case VPX_BITS_10: return 5 * q;
-    case VPX_BITS_12: return ROUND_POWER_OF_TWO(5 * q, 2);
+    case AOM_BITS_8: return 20 * q;
+    case AOM_BITS_10: return 5 * q;
+    case AOM_BITS_12: return ROUND_POWER_OF_TWO(5 * q, 2);
     default:
-      assert(0 && "bit_depth should be VPX_BITS_8, VPX_BITS_10 or VPX_BITS_12");
+      assert(0 && "bit_depth should be AOM_BITS_8, AOM_BITS_10 or AOM_BITS_12");
       return -1;
   }
 #else

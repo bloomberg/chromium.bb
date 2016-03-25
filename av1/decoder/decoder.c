@@ -101,8 +101,8 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   pbi->ready_for_new_data = 1;
   pbi->common.buffer_pool = pool;
 
-  cm->bit_depth = VPX_BITS_8;
-  cm->dequant_bit_depth = VPX_BITS_8;
+  cm->bit_depth = AOM_BITS_8;
+  cm->dequant_bit_depth = AOM_BITS_8;
 
   cm->alloc_mi = av1_dec_alloc_mi;
   cm->free_mi = av1_dec_free_mi;
@@ -151,7 +151,7 @@ static int equal_dimensions(const YV12_BUFFER_CONFIG *a,
 }
 
 aom_codec_err_t av1_copy_reference_dec(AV1Decoder *pbi,
-                                        VPX_REFFRAME ref_frame_flag,
+                                        AOM_REFFRAME ref_frame_flag,
                                         YV12_BUFFER_CONFIG *sd) {
   AV1_COMMON *cm = &pbi->common;
 
@@ -160,27 +160,27 @@ aom_codec_err_t av1_copy_reference_dec(AV1Decoder *pbi,
    * aomenc --test-decode functionality working, and will be replaced in a
    * later commit that adds AV1-specific controls for this functionality.
    */
-  if (ref_frame_flag == VPX_LAST_FLAG) {
+  if (ref_frame_flag == AOM_LAST_FLAG) {
     const YV12_BUFFER_CONFIG *const cfg = get_ref_frame(cm, 0);
     if (cfg == NULL) {
-      aom_internal_error(&cm->error, VPX_CODEC_ERROR,
+      aom_internal_error(&cm->error, AOM_CODEC_ERROR,
                          "No 'last' reference frame");
-      return VPX_CODEC_ERROR;
+      return AOM_CODEC_ERROR;
     }
     if (!equal_dimensions(cfg, sd))
-      aom_internal_error(&cm->error, VPX_CODEC_ERROR,
+      aom_internal_error(&cm->error, AOM_CODEC_ERROR,
                          "Incorrect buffer dimensions");
     else
       aom_yv12_copy_frame(cfg, sd);
   } else {
-    aom_internal_error(&cm->error, VPX_CODEC_ERROR, "Invalid reference frame");
+    aom_internal_error(&cm->error, AOM_CODEC_ERROR, "Invalid reference frame");
   }
 
   return cm->error.error_code;
 }
 
 aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm,
-                                       VPX_REFFRAME ref_frame_flag,
+                                       AOM_REFFRAME ref_frame_flag,
                                        YV12_BUFFER_CONFIG *sd) {
   RefBuffer *ref_buf = NULL;
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
@@ -189,26 +189,26 @@ aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm,
   // encoder is using the frame buffers for. This is just a stub to keep the
   // aomenc --test-decode functionality working, and will be replaced in a
   // later commit that adds AV1-specific controls for this functionality.
-  if (ref_frame_flag == VPX_LAST_FLAG) {
+  if (ref_frame_flag == AOM_LAST_FLAG) {
     ref_buf = &cm->frame_refs[0];
-  } else if (ref_frame_flag == VPX_GOLD_FLAG) {
+  } else if (ref_frame_flag == AOM_GOLD_FLAG) {
     ref_buf = &cm->frame_refs[1];
-  } else if (ref_frame_flag == VPX_ALT_FLAG) {
+  } else if (ref_frame_flag == AOM_ALT_FLAG) {
     ref_buf = &cm->frame_refs[2];
   } else {
-    aom_internal_error(&cm->error, VPX_CODEC_ERROR, "Invalid reference frame");
+    aom_internal_error(&cm->error, AOM_CODEC_ERROR, "Invalid reference frame");
     return cm->error.error_code;
   }
 
   if (!equal_dimensions(ref_buf->buf, sd)) {
-    aom_internal_error(&cm->error, VPX_CODEC_ERROR,
+    aom_internal_error(&cm->error, AOM_CODEC_ERROR,
                        "Incorrect buffer dimensions");
   } else {
     int *ref_fb_ptr = &ref_buf->idx;
 
     // Find an empty frame buffer.
     const int free_fb = get_free_fb(cm);
-    if (cm->new_fb_idx == INVALID_IDX) return VPX_CODEC_MEM_ERROR;
+    if (cm->new_fb_idx == INVALID_IDX) return AOM_CODEC_MEM_ERROR;
 
     // Decrease ref_count since it will be increased again in
     // ref_cnt_fb() below.
@@ -272,7 +272,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   RefCntBuffer *volatile const frame_bufs = cm->buffer_pool->frame_bufs;
   const uint8_t *source = *psource;
   int retcode = 0;
-  cm->error.error_code = VPX_CODEC_OK;
+  cm->error.error_code = AOM_CODEC_OK;
 
   if (size == 0) {
     // This is used to signal that we are missing frames.
@@ -299,7 +299,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
                         &frame_bufs[cm->new_fb_idx].raw_frame_buffer);
   // Find a free frame buffer. Return error if can not find any.
   cm->new_fb_idx = get_free_fb(cm);
-  if (cm->new_fb_idx == INVALID_IDX) return VPX_CODEC_MEM_ERROR;
+  if (cm->new_fb_idx == INVALID_IDX) return AOM_CODEC_MEM_ERROR;
 
   // Assign a MV array to the frame buffer.
   cm->cur_frame = &pool->frame_bufs[cm->new_fb_idx];
@@ -449,7 +449,7 @@ aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
 
     // This chunk is marked as having a superframe index but doesn't have
     // enough data for it, thus it's an invalid superframe index.
-    if (data_sz < index_sz) return VPX_CODEC_CORRUPT_FRAME;
+    if (data_sz < index_sz) return AOM_CODEC_CORRUPT_FRAME;
 
     {
       const uint8_t marker2 =
@@ -458,7 +458,7 @@ aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
       // This chunk is marked as having a superframe index but doesn't have
       // the matching marker byte at the front of the index therefore it's an
       // invalid chunk.
-      if (marker != marker2) return VPX_CODEC_CORRUPT_FRAME;
+      if (marker != marker2) return AOM_CODEC_CORRUPT_FRAME;
     }
 
     {
@@ -490,5 +490,5 @@ aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
       *count = frames;
     }
   }
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }

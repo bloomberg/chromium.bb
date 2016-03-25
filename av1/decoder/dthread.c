@@ -99,7 +99,7 @@ void av1_frameworker_wait(VPxWorker *const worker, RefCntBuffer *const ref_buf,
       FrameWorkerData *const worker_data = (FrameWorkerData *)worker->data1;
       av1_frameworker_unlock_stats(ref_worker);
       aom_internal_error(&worker_data->pbi->common.error,
-                         VPX_CODEC_CORRUPT_FRAME,
+                         AOM_CODEC_CORRUPT_FRAME,
                          "Worker %p failed to decode frame", worker);
     }
     av1_frameworker_unlock_stats(ref_worker);

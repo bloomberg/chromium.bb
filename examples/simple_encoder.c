@@ -61,21 +61,21 @@
 // is passed, indicating the End-Of-Stream condition to the encoder. The
 // `frame_cnt` is reused as the presentation time stamp (PTS) and each
 // frame is shown for one frame-time in duration. The flags parameter is
-// unused in this example. The deadline is set to VPX_DL_REALTIME to
+// unused in this example. The deadline is set to AOM_DL_REALTIME to
 // make the example run as quickly as possible.
 
 // Forced Keyframes
 // ----------------
-// Keyframes can be forced by setting the VPX_EFLAG_FORCE_KF bit of the
+// Keyframes can be forced by setting the AOM_EFLAG_FORCE_KF bit of the
 // flags passed to `aom_codec_control()`. In this example, we force a
 // keyframe every <keyframe-interval> frames. Note, the output stream can
 // contain additional keyframes beyond those that have been forced using the
-// VPX_EFLAG_FORCE_KF flag because of automatic keyframe placement by the
+// AOM_EFLAG_FORCE_KF flag because of automatic keyframe placement by the
 // encoder.
 //
 // Processing The Encoded Data
 // ---------------------------
-// Each packet of type `VPX_CODEC_CX_FRAME_PKT` contains the encoded data
+// Each packet of type `AOM_CODEC_CX_FRAME_PKT` contains the encoded data
 // for this frame. We write a IVF frame header, followed by the raw data.
 //
 // Cleanup
@@ -122,14 +122,14 @@ static int encode_frame(aom_codec_ctx_t *codec, aom_image_t *img,
   aom_codec_iter_t iter = NULL;
   const aom_codec_cx_pkt_t *pkt = NULL;
   const aom_codec_err_t res =
-      aom_codec_encode(codec, img, frame_index, 1, flags, VPX_DL_GOOD_QUALITY);
-  if (res != VPX_CODEC_OK) die_codec(codec, "Failed to encode frame");
+      aom_codec_encode(codec, img, frame_index, 1, flags, AOM_DL_GOOD_QUALITY);
+  if (res != AOM_CODEC_OK) die_codec(codec, "Failed to encode frame");
 
   while ((pkt = aom_codec_get_cx_data(codec, &iter)) != NULL) {
     got_pkts = 1;
 
-    if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
-      const int keyframe = (pkt->data.frame.flags & VPX_FRAME_IS_KEY) != 0;
+    if (pkt->kind == AOM_CODEC_CX_FRAME_PKT) {
+      const int keyframe = (pkt->data.frame.flags & AOM_FRAME_IS_KEY) != 0;
       if (!aom_video_writer_write_frame(writer, pkt->data.frame.buf,
                                         pkt->data.frame.sz,
                                         pkt->data.frame.pts)) {
@@ -191,7 +191,7 @@ int main(int argc, char **argv) {
     die("Invalid frame size: %dx%d", info.frame_width, info.frame_height);
   }
 
-  if (!aom_img_alloc(&raw, VPX_IMG_FMT_I420, info.frame_width,
+  if (!aom_img_alloc(&raw, AOM_IMG_FMT_I420, info.frame_width,
                      info.frame_height, 1)) {
     die("Failed to allocate image.");
   }
@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
   while (aom_img_read(&raw, infile)) {
     int flags = 0;
     if (keyframe_interval > 0 && frame_count % keyframe_interval == 0)
-      flags |= VPX_EFLAG_FORCE_KF;
+      flags |= AOM_EFLAG_FORCE_KF;
     encode_frame(&codec, &raw, frame_count++, flags, writer);
   }
 

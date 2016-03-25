@@ -47,7 +47,7 @@ int av1_get_qindex(const struct segmentation *seg, int segment_id,
 // different matrices may be defined
 static inline int aom_get_qmlevel(int qindex, int first, int last) {
   int qmlevel = (qindex * (last + 1 - first) + QINDEX_RANGE / 2) / QINDEX_RANGE;
-  qmlevel = VPXMIN(qmlevel + first, NUM_QM_LEVELS - 1);
+  qmlevel = AOMMIN(qmlevel + first, NUM_QM_LEVELS - 1);
   return qmlevel;
 }
 void aom_qm_init(struct AV1Common *cm);

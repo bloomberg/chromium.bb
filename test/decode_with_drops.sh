@@ -28,10 +28,10 @@ decode_with_drops_verify_environment() {
 # to name the output file. $3 is the drop mode, and is passed directly to
 # decode_with_drops.
 decode_with_drops() {
-  local decoder="${LIBAOM_BIN_PATH}/decode_with_drops${VPX_TEST_EXE_SUFFIX}"
+  local decoder="${LIBAOM_BIN_PATH}/decode_with_drops${AOM_TEST_EXE_SUFFIX}"
   local input_file="$1"
   local codec="$2"
-  local output_file="${VPX_TEST_OUTPUT_DIR}/decode_with_drops_${codec}"
+  local output_file="${AOM_TEST_OUTPUT_DIR}/decode_with_drops_${codec}"
   local drop_mode="$3"
 
   if [ ! -x "${decoder}" ]; then
@@ -39,7 +39,7 @@ decode_with_drops() {
     return 1
   fi
 
-  eval "${VPX_TEST_PREFIX}" "${decoder}" "${input_file}" "${output_file}" \
+  eval "${AOM_TEST_PREFIX}" "${decoder}" "${input_file}" "${output_file}" \
       "${drop_mode}" ${devnull}
 
   [ -e "${output_file}" ] || return 1

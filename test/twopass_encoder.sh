@@ -25,16 +25,16 @@ twopass_encoder_verify_environment() {
 
 # Runs twopass_encoder using the codec specified by $1.
 twopass_encoder() {
-  local encoder="${LIBAOM_BIN_PATH}/twopass_encoder${VPX_TEST_EXE_SUFFIX}"
+  local encoder="${LIBAOM_BIN_PATH}/twopass_encoder${AOM_TEST_EXE_SUFFIX}"
   local codec="$1"
-  local output_file="${VPX_TEST_OUTPUT_DIR}/twopass_encoder_${codec}.ivf"
+  local output_file="${AOM_TEST_OUTPUT_DIR}/twopass_encoder_${codec}.ivf"
 
   if [ ! -x "${encoder}" ]; then
     elog "${encoder} does not exist or is not executable."
     return 1
   fi
 
-  eval "${VPX_TEST_PREFIX}" "${encoder}" "${codec}" "${YUV_RAW_INPUT_WIDTH}" \
+  eval "${AOM_TEST_PREFIX}" "${encoder}" "${codec}" "${YUV_RAW_INPUT_WIDTH}" \
       "${YUV_RAW_INPUT_HEIGHT}" "${YUV_RAW_INPUT}" "${output_file}" \
       ${devnull}
 

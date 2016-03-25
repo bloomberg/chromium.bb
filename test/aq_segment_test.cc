@@ -47,7 +47,7 @@ class AqSegmentTest
 TEST_P(AqSegmentTest, TestNoMisMatchAQ1) {
   cfg_.rc_min_quantizer = 8;
   cfg_.rc_max_quantizer = 56;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.g_lag_in_frames = 0;
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
@@ -67,7 +67,7 @@ TEST_P(AqSegmentTest, TestNoMisMatchAQ1) {
 TEST_P(AqSegmentTest, TestNoMisMatchAQ2) {
   cfg_.rc_min_quantizer = 8;
   cfg_.rc_max_quantizer = 56;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.g_lag_in_frames = 0;
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
@@ -87,7 +87,7 @@ TEST_P(AqSegmentTest, TestNoMisMatchAQ2) {
 TEST_P(AqSegmentTest, TestNoMisMatchAQ3) {
   cfg_.rc_min_quantizer = 8;
   cfg_.rc_max_quantizer = 56;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.g_lag_in_frames = 0;
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;

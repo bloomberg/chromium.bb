@@ -84,7 +84,7 @@ class DatarateTestLarge
      * show one. As noted in comment below (issue 495), this does not currently
      * apply to key frames. For now exclude key frames in condition below. */
     const bool key_frame =
-        (pkt->data.frame.flags & VPX_FRAME_IS_KEY) ? true : false;
+        (pkt->data.frame.flags & AOM_FRAME_IS_KEY) ? true : false;
     if (!key_frame) {
       ASSERT_GE(bits_in_buffer_model_, 0) << "Buffer Underrun at frame "
                                           << pkt->data.frame.pts;
@@ -147,7 +147,7 @@ TEST_P(DatarateTestLarge, DenoiserLevels) {
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_dropframe_thresh = 1;
   cfg_.rc_max_quantizer = 56;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 140);
   for (int j = 1; j < 5; ++j) {
@@ -176,7 +176,7 @@ TEST_P(DatarateTestLarge, DenoiserOffOn) {
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_dropframe_thresh = 1;
   cfg_.rc_max_quantizer = 56;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 299);
   cfg_.rc_target_bitrate = 300;
@@ -199,7 +199,7 @@ TEST_P(DatarateTestLarge, BasicBufferModel) {
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_dropframe_thresh = 1;
   cfg_.rc_max_quantizer = 56;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   // 2 pass cbr datarate control has a bug hidden by the small # of
   // frames selected in this encode. The problem is that even if the buffer is
   // negative we produce a keyframe on a cutscene. Ignoring datarate
@@ -230,9 +230,9 @@ TEST_P(DatarateTestLarge, ChangingDropFrameThresh) {
   denoiser_on_ = 0;
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_max_quantizer = 36;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.rc_target_bitrate = 200;
-  cfg_.kf_mode = VPX_KF_DISABLED;
+  cfg_.kf_mode = AOM_KF_DISABLED;
 
   const int frame_count = 40;
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
@@ -455,7 +455,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting) {
   cfg_.rc_dropframe_thresh = 1;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.g_lag_in_frames = 0;
 
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
@@ -484,7 +484,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting444) {
   cfg_.rc_dropframe_thresh = 1;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
 
   for (int i = 250; i < 900; i += 200) {
     cfg_.rc_target_bitrate = i;
@@ -513,7 +513,7 @@ TEST_P(DatarateTestVP9Large, ChangingDropFrameThresh) {
   cfg_.rc_dropframe_thresh = 10;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 50;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.rc_target_bitrate = 200;
   cfg_.g_lag_in_frames = 0;
 
@@ -553,7 +553,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting2TemporalLayers) {
   cfg_.rc_dropframe_thresh = 1;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.g_lag_in_frames = 0;
 
   // 2 Temporal layers, no spatial layers: Framerate decimation (2, 1).
@@ -564,7 +564,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting2TemporalLayers) {
 
   cfg_.temporal_layering_mode = VP9E_TEMPORAL_LAYERING_MODE_BYPASS;
 
-  if (deadline_ == VPX_DL_REALTIME)
+  if (deadline_ == AOM_DL_REALTIME)
     cfg_.g_error_resilient = 1;
 
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
@@ -595,7 +595,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting3TemporalLayers) {
   cfg_.rc_dropframe_thresh = 1;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.g_lag_in_frames = 0;
 
   // 3 Temporal layers, no spatial layers: Framerate decimation (4, 2, 1).
@@ -643,7 +643,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting3TemporalLayersFrameDropping) {
   cfg_.rc_dropframe_thresh = 20;
   cfg_.rc_max_quantizer = 45;
   cfg_.rc_min_quantizer = 0;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.g_lag_in_frames = 0;
 
   // 3 Temporal layers, no spatial layers: Framerate decimation (4, 2, 1).
@@ -708,7 +708,7 @@ class DatarateOnePassCbrSvc
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 0) {
       int i;
-      for (i = 0; i < VPX_MAX_LAYERS; ++i) {
+      for (i = 0; i < AOM_MAX_LAYERS; ++i) {
         svc_params_.max_quantizers[i] = 63;
         svc_params_.min_quantizers[i] = 0;
       }
@@ -733,7 +733,7 @@ class DatarateOnePassCbrSvc
     bits_in_buffer_model_ += static_cast<int64_t>(
         duration * timebase_ * cfg_.rc_target_bitrate * 1000);
     const bool key_frame =
-        (pkt->data.frame.flags & VPX_FRAME_IS_KEY) ? true : false;
+        (pkt->data.frame.flags & AOM_FRAME_IS_KEY) ? true : false;
     if (!key_frame) {
       ASSERT_GE(bits_in_buffer_model_, 0) << "Buffer Underrun at frame "
                                           << pkt->data.frame.pts;
@@ -786,7 +786,7 @@ static void assign_layer_bitrates(aom_codec_enc_cfg_t *const enc_cfg,
                                   unsigned int total_rate) {
   int sl, spatial_layer_target;
   float total = 0;
-  float alloc_ratio[VPX_MAX_LAYERS] = { 0 };
+  float alloc_ratio[AOM_MAX_LAYERS] = { 0 };
   for (sl = 0; sl < spatial_layers; ++sl) {
     if (svc_params->scaling_factor_den[sl] > 0) {
       alloc_ratio[sl] = (float)(svc_params->scaling_factor_num[sl] * 1.0 /
@@ -818,7 +818,7 @@ TEST_P(DatarateOnePassCbrSvc, OnePassCbrSvc) {
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.g_lag_in_frames = 0;
   cfg_.ss_number_layers = 2;
   cfg_.ts_number_layers = 3;
@@ -862,7 +862,7 @@ TEST_P(DatarateOnePassCbrSvc, OnePassCbrSvc4threads) {
   cfg_.rc_buf_sz = 1000;
   cfg_.rc_min_quantizer = 0;
   cfg_.rc_max_quantizer = 63;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.g_lag_in_frames = 0;
   cfg_.ss_number_layers = 2;
   cfg_.ts_number_layers = 3;

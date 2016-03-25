@@ -39,13 +39,13 @@ vp8_mre() {
     return 1
   fi
 
-  eval "${VPX_TEST_PREFIX}" "${encoder}" "$@" ${devnull}
+  eval "${AOM_TEST_PREFIX}" "${encoder}" "$@" ${devnull}
 }
 
 vp8_multi_resolution_encoder_three_formats() {
-  local readonly output_files="${VPX_TEST_OUTPUT_DIR}/vp8_mre_0.ivf
-                               ${VPX_TEST_OUTPUT_DIR}/vp8_mre_1.ivf
-                               ${VPX_TEST_OUTPUT_DIR}/vp8_mre_2.ivf"
+  local readonly output_files="${AOM_TEST_OUTPUT_DIR}/vp8_mre_0.ivf
+                               ${AOM_TEST_OUTPUT_DIR}/vp8_mre_1.ivf
+                               ${AOM_TEST_OUTPUT_DIR}/vp8_mre_2.ivf"
 
   if [ "$(aom_config_option_enabled CONFIG_MULTI_RES_ENCODING)" = "yes" ]; then
     if [ "$(vp8_encode_available)" = "yes" ]; then

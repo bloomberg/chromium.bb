@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_INV_TXFM_H_
-#define VPX_DSP_INV_TXFM_H_
+#ifndef AOM_DSP_INV_TXFM_H_
+#define AOM_DSP_INV_TXFM_H_
 
 #include <assert.h>
 
@@ -120,4 +120,4 @@ static INLINE uint8_t clip_pixel_add(uint8_t dest, tran_high_t trans) {
 }  // extern "C"
 #endif
 
-#endif  // VPX_DSP_INV_TXFM_H_
+#endif  // AOM_DSP_INV_TXFM_H_

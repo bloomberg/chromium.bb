@@ -30,19 +30,19 @@ aom_codec_err_t aom_codec_enc_init_ver(aom_codec_ctx_t *ctx,
                                        aom_codec_flags_t flags, int ver) {
   aom_codec_err_t res;
 
-  if (ver != VPX_ENCODER_ABI_VERSION)
-    res = VPX_CODEC_ABI_MISMATCH;
+  if (ver != AOM_ENCODER_ABI_VERSION)
+    res = AOM_CODEC_ABI_MISMATCH;
   else if (!ctx || !iface || !cfg)
-    res = VPX_CODEC_INVALID_PARAM;
-  else if (iface->abi_version != VPX_CODEC_INTERNAL_ABI_VERSION)
-    res = VPX_CODEC_ABI_MISMATCH;
-  else if (!(iface->caps & VPX_CODEC_CAP_ENCODER))
-    res = VPX_CODEC_INCAPABLE;
-  else if ((flags & VPX_CODEC_USE_PSNR) && !(iface->caps & VPX_CODEC_CAP_PSNR))
-    res = VPX_CODEC_INCAPABLE;
-  else if ((flags & VPX_CODEC_USE_OUTPUT_PARTITION) &&
-           !(iface->caps & VPX_CODEC_CAP_OUTPUT_PARTITION))
-    res = VPX_CODEC_INCAPABLE;
+    res = AOM_CODEC_INVALID_PARAM;
+  else if (iface->abi_version != AOM_CODEC_INTERNAL_ABI_VERSION)
+    res = AOM_CODEC_ABI_MISMATCH;
+  else if (!(iface->caps & AOM_CODEC_CAP_ENCODER))
+    res = AOM_CODEC_INCAPABLE;
+  else if ((flags & AOM_CODEC_USE_PSNR) && !(iface->caps & AOM_CODEC_CAP_PSNR))
+    res = AOM_CODEC_INCAPABLE;
+  else if ((flags & AOM_CODEC_USE_OUTPUT_PARTITION) &&
+           !(iface->caps & AOM_CODEC_CAP_OUTPUT_PARTITION))
+    res = AOM_CODEC_INCAPABLE;
   else {
     ctx->iface = iface;
     ctx->name = iface->name;
@@ -63,21 +63,21 @@ aom_codec_err_t aom_codec_enc_init_ver(aom_codec_ctx_t *ctx,
 aom_codec_err_t aom_codec_enc_init_multi_ver(
     aom_codec_ctx_t *ctx, aom_codec_iface_t *iface, aom_codec_enc_cfg_t *cfg,
     int num_enc, aom_codec_flags_t flags, aom_rational_t *dsf, int ver) {
-  aom_codec_err_t res = VPX_CODEC_OK;
+  aom_codec_err_t res = AOM_CODEC_OK;
 
-  if (ver != VPX_ENCODER_ABI_VERSION)
-    res = VPX_CODEC_ABI_MISMATCH;
+  if (ver != AOM_ENCODER_ABI_VERSION)
+    res = AOM_CODEC_ABI_MISMATCH;
   else if (!ctx || !iface || !cfg || (num_enc > 16 || num_enc < 1))
-    res = VPX_CODEC_INVALID_PARAM;
-  else if (iface->abi_version != VPX_CODEC_INTERNAL_ABI_VERSION)
-    res = VPX_CODEC_ABI_MISMATCH;
-  else if (!(iface->caps & VPX_CODEC_CAP_ENCODER))
-    res = VPX_CODEC_INCAPABLE;
-  else if ((flags & VPX_CODEC_USE_PSNR) && !(iface->caps & VPX_CODEC_CAP_PSNR))
-    res = VPX_CODEC_INCAPABLE;
-  else if ((flags & VPX_CODEC_USE_OUTPUT_PARTITION) &&
-           !(iface->caps & VPX_CODEC_CAP_OUTPUT_PARTITION))
-    res = VPX_CODEC_INCAPABLE;
+    res = AOM_CODEC_INVALID_PARAM;
+  else if (iface->abi_version != AOM_CODEC_INTERNAL_ABI_VERSION)
+    res = AOM_CODEC_ABI_MISMATCH;
+  else if (!(iface->caps & AOM_CODEC_CAP_ENCODER))
+    res = AOM_CODEC_INCAPABLE;
+  else if ((flags & AOM_CODEC_USE_PSNR) && !(iface->caps & AOM_CODEC_CAP_PSNR))
+    res = AOM_CODEC_INCAPABLE;
+  else if ((flags & AOM_CODEC_USE_OUTPUT_PARTITION) &&
+           !(iface->caps & AOM_CODEC_CAP_OUTPUT_PARTITION))
+    res = AOM_CODEC_INCAPABLE;
   else {
     int i;
     void *mem_loc = NULL;
@@ -89,7 +89,7 @@ aom_codec_err_t aom_codec_enc_init_multi_ver(
         /* Validate down-sampling factor. */
         if (dsf->num < 1 || dsf->num > 4096 || dsf->den < 1 ||
             dsf->den > dsf->num) {
-          res = VPX_CODEC_INVALID_PARAM;
+          res = AOM_CODEC_INVALID_PARAM;
           break;
         }
 
@@ -103,7 +103,7 @@ aom_codec_err_t aom_codec_enc_init_multi_ver(
          * resolution always use the same frame_type chosen by the
          * lowest-resolution encoder.
          */
-        if (mr_cfg.mr_encoder_id) cfg->kf_mode = VPX_KF_DISABLED;
+        if (mr_cfg.mr_encoder_id) cfg->kf_mode = AOM_KF_DISABLED;
 
         ctx->iface = iface;
         ctx->name = iface->name;
@@ -148,18 +148,18 @@ aom_codec_err_t aom_codec_enc_config_default(aom_codec_iface_t *iface,
   int i;
 
   if (!iface || !cfg || usage > INT_MAX)
-    res = VPX_CODEC_INVALID_PARAM;
-  else if (!(iface->caps & VPX_CODEC_CAP_ENCODER))
-    res = VPX_CODEC_INCAPABLE;
+    res = AOM_CODEC_INVALID_PARAM;
+  else if (!(iface->caps & AOM_CODEC_CAP_ENCODER))
+    res = AOM_CODEC_INCAPABLE;
   else {
-    res = VPX_CODEC_INVALID_PARAM;
+    res = AOM_CODEC_INVALID_PARAM;
 
     for (i = 0; i < iface->enc.cfg_map_count; ++i) {
       map = iface->enc.cfg_maps + i;
       if (map->usage == (int)usage) {
         *cfg = map->cfg;
         cfg->g_usage = usage;
-        res = VPX_CODEC_OK;
+        res = AOM_CODEC_OK;
         break;
       }
     }
@@ -190,14 +190,14 @@ aom_codec_err_t aom_codec_encode(aom_codec_ctx_t *ctx, const aom_image_t *img,
                                  aom_codec_pts_t pts, unsigned long duration,
                                  aom_enc_frame_flags_t flags,
                                  unsigned long deadline) {
-  aom_codec_err_t res = VPX_CODEC_OK;
+  aom_codec_err_t res = AOM_CODEC_OK;
 
   if (!ctx || (img && !duration))
-    res = VPX_CODEC_INVALID_PARAM;
+    res = AOM_CODEC_INVALID_PARAM;
   else if (!ctx->iface || !ctx->priv)
-    res = VPX_CODEC_ERROR;
-  else if (!(ctx->iface->caps & VPX_CODEC_CAP_ENCODER))
-    res = VPX_CODEC_INCAPABLE;
+    res = AOM_CODEC_ERROR;
+  else if (!(ctx->iface->caps & AOM_CODEC_CAP_ENCODER))
+    res = AOM_CODEC_INCAPABLE;
   else {
     unsigned int num_enc = ctx->priv->enc.total_encoders;
 
@@ -243,16 +243,16 @@ const aom_codec_cx_pkt_t *aom_codec_get_cx_data(aom_codec_ctx_t *ctx,
 
   if (ctx) {
     if (!iter)
-      ctx->err = VPX_CODEC_INVALID_PARAM;
+      ctx->err = AOM_CODEC_INVALID_PARAM;
     else if (!ctx->iface || !ctx->priv)
-      ctx->err = VPX_CODEC_ERROR;
-    else if (!(ctx->iface->caps & VPX_CODEC_CAP_ENCODER))
-      ctx->err = VPX_CODEC_INCAPABLE;
+      ctx->err = AOM_CODEC_ERROR;
+    else if (!(ctx->iface->caps & AOM_CODEC_CAP_ENCODER))
+      ctx->err = AOM_CODEC_INCAPABLE;
     else
       pkt = ctx->iface->enc.get_cx_data(get_alg_priv(ctx), iter);
   }
 
-  if (pkt && pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
+  if (pkt && pkt->kind == AOM_CODEC_CX_FRAME_PKT) {
     // If the application has specified a destination area for the
     // compressed data, and the codec has not placed the data there,
     // and it fits, copy it.
@@ -287,7 +287,7 @@ aom_codec_err_t aom_codec_set_cx_data_buf(aom_codec_ctx_t *ctx,
                                           const aom_fixed_buf_t *buf,
                                           unsigned int pad_before,
                                           unsigned int pad_after) {
-  if (!ctx || !ctx->priv) return VPX_CODEC_INVALID_PARAM;
+  if (!ctx || !ctx->priv) return AOM_CODEC_INVALID_PARAM;
 
   if (buf) {
     ctx->priv->enc.cx_data_dst_buf = *buf;
@@ -300,7 +300,7 @@ aom_codec_err_t aom_codec_set_cx_data_buf(aom_codec_ctx_t *ctx,
     ctx->priv->enc.cx_data_pad_after = 0;
   }
 
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 const aom_image_t *aom_codec_get_preview_frame(aom_codec_ctx_t *ctx) {
@@ -308,11 +308,11 @@ const aom_image_t *aom_codec_get_preview_frame(aom_codec_ctx_t *ctx) {
 
   if (ctx) {
     if (!ctx->iface || !ctx->priv)
-      ctx->err = VPX_CODEC_ERROR;
-    else if (!(ctx->iface->caps & VPX_CODEC_CAP_ENCODER))
-      ctx->err = VPX_CODEC_INCAPABLE;
+      ctx->err = AOM_CODEC_ERROR;
+    else if (!(ctx->iface->caps & AOM_CODEC_CAP_ENCODER))
+      ctx->err = AOM_CODEC_INCAPABLE;
     else if (!ctx->iface->enc.get_preview)
-      ctx->err = VPX_CODEC_INCAPABLE;
+      ctx->err = AOM_CODEC_INCAPABLE;
     else
       img = ctx->iface->enc.get_preview(get_alg_priv(ctx));
   }
@@ -325,11 +325,11 @@ aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx) {
 
   if (ctx) {
     if (!ctx->iface || !ctx->priv)
-      ctx->err = VPX_CODEC_ERROR;
-    else if (!(ctx->iface->caps & VPX_CODEC_CAP_ENCODER))
-      ctx->err = VPX_CODEC_INCAPABLE;
+      ctx->err = AOM_CODEC_ERROR;
+    else if (!(ctx->iface->caps & AOM_CODEC_CAP_ENCODER))
+      ctx->err = AOM_CODEC_INCAPABLE;
     else if (!ctx->iface->enc.get_glob_hdrs)
-      ctx->err = VPX_CODEC_INCAPABLE;
+      ctx->err = AOM_CODEC_INCAPABLE;
     else
       buf = ctx->iface->enc.get_glob_hdrs(get_alg_priv(ctx));
   }
@@ -342,9 +342,9 @@ aom_codec_err_t aom_codec_enc_config_set(aom_codec_ctx_t *ctx,
   aom_codec_err_t res;
 
   if (!ctx || !ctx->iface || !ctx->priv || !cfg)
-    res = VPX_CODEC_INVALID_PARAM;
-  else if (!(ctx->iface->caps & VPX_CODEC_CAP_ENCODER))
-    res = VPX_CODEC_INCAPABLE;
+    res = AOM_CODEC_INVALID_PARAM;
+  else if (!(ctx->iface->caps & AOM_CODEC_CAP_ENCODER))
+    res = AOM_CODEC_INCAPABLE;
   else
     res = ctx->iface->enc.cfg_set(get_alg_priv(ctx), cfg);
 

@@ -67,12 +67,12 @@ class Decoder {
 
   void set_deadline(unsigned long deadline) { deadline_ = deadline; }
 
-  void Control(int ctrl_id, int arg) { Control(ctrl_id, arg, VPX_CODEC_OK); }
+  void Control(int ctrl_id, int arg) { Control(ctrl_id, arg, AOM_CODEC_OK); }
 
   void Control(int ctrl_id, const void *arg) {
     InitOnce();
     const aom_codec_err_t res = aom_codec_control_(&decoder_, ctrl_id, arg);
-    ASSERT_EQ(VPX_CODEC_OK, res) << DecodeError();
+    ASSERT_EQ(AOM_CODEC_OK, res) << DecodeError();
   }
 
   void Control(int ctrl_id, int arg, aom_codec_err_t expected_value) {
@@ -110,7 +110,7 @@ class Decoder {
     if (!init_done_) {
       const aom_codec_err_t res =
           aom_codec_dec_init(&decoder_, CodecInterface(), &cfg_, flags_);
-      ASSERT_EQ(VPX_CODEC_OK, res) << DecodeError();
+      ASSERT_EQ(AOM_CODEC_OK, res) << DecodeError();
       init_done_ = true;
     }
   }
@@ -141,8 +141,8 @@ class DecoderTest {
   virtual bool HandleDecodeResult(const aom_codec_err_t res_dec,
                                   const CompressedVideoSource & /*video*/,
                                   Decoder *decoder) {
-    EXPECT_EQ(VPX_CODEC_OK, res_dec) << decoder->DecodeError();
-    return VPX_CODEC_OK == res_dec;
+    EXPECT_EQ(AOM_CODEC_OK, res_dec) << decoder->DecodeError();
+    return AOM_CODEC_OK == res_dec;
   }
 
   // Hook to be called on every decompressed frame.

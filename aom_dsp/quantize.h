@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_QUANTIZE_H_
-#define VPX_DSP_QUANTIZE_H_
+#ifndef AOM_DSP_QUANTIZE_H_
+#define AOM_DSP_QUANTIZE_H_
 
 #include "./aom_config.h"
 #include "aom_dsp/aom_dsp_common.h"
@@ -101,4 +101,4 @@ void aom_highbd_quantize_b_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
 }  // extern "C"
 #endif
 
-#endif  // VPX_DSP_QUANTIZE_H_
+#endif  // AOM_DSP_QUANTIZE_H_

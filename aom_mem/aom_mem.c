@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#define __VPX_MEM_C__
+#define __AOM_MEM_C__
 
 #include "aom_mem.h"
 #include <stdio.h>

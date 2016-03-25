@@ -58,7 +58,7 @@ void av1_dering_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int bsize[3];
   int dec[3];
   int pli;
-  int coeff_shift = VPXMAX(cm->bit_depth - 8, 0);
+  int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
   nvsb = (cm->mi_rows + MI_BLOCK_SIZE - 1)/MI_BLOCK_SIZE;
   nhsb = (cm->mi_cols + MI_BLOCK_SIZE - 1)/MI_BLOCK_SIZE;
   bskip = aom_malloc(sizeof(*bskip)*cm->mi_rows*cm->mi_cols);
@@ -98,8 +98,8 @@ void av1_dering_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     for (sbc = 0; sbc < nhsb; sbc++) {
       int level;
       int nhb, nvb;
-      nhb = VPXMIN(MI_BLOCK_SIZE, cm->mi_cols - MI_BLOCK_SIZE*sbc);
-      nvb = VPXMIN(MI_BLOCK_SIZE, cm->mi_rows - MI_BLOCK_SIZE*sbr);
+      nhb = AOMMIN(MI_BLOCK_SIZE, cm->mi_cols - MI_BLOCK_SIZE*sbc);
+      nvb = AOMMIN(MI_BLOCK_SIZE, cm->mi_rows - MI_BLOCK_SIZE*sbr);
       for (pli = 0; pli < 3; pli++) {
         int16_t dst[MI_BLOCK_SIZE*MI_BLOCK_SIZE*8*8];
         int threshold;

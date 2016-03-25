@@ -61,7 +61,7 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const int tile_cols = 1 << cm->log2_tile_cols;
   const VPxWorkerInterface *const winterface = aom_get_worker_interface();
-  const int num_workers = VPXMIN(cpi->oxcf.max_threads, tile_cols);
+  const int num_workers = AOMMIN(cpi->oxcf.max_threads, tile_cols);
   int i;
 
   av1_init_tile_data(cpi);
@@ -102,7 +102,7 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
 
         // Create threads
         if (!winterface->reset(worker))
-          aom_internal_error(&cm->error, VPX_CODEC_ERROR,
+          aom_internal_error(&cm->error, AOM_CODEC_ERROR,
                              "Tile encoder thread creation failed");
       } else {
         // Main thread acts as a worker and uses the thread data in cpi.

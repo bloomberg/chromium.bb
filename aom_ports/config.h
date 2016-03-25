@@ -9,9 +9,9 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_PORTS_CONFIG_H_
-#define VPX_PORTS_CONFIG_H_
+#ifndef AOM_PORTS_CONFIG_H_
+#define AOM_PORTS_CONFIG_H_
 
 #include "aom_config.h"
 
-#endif  // VPX_PORTS_CONFIG_H_
+#endif  // AOM_PORTS_CONFIG_H_

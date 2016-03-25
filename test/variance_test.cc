@@ -51,15 +51,15 @@ using libaom_test::ACMRandom;
 // (bit_depth - 8) for se
 static void RoundHighBitDepth(int bit_depth, int64_t *se, uint64_t *sse) {
   switch (bit_depth) {
-    case VPX_BITS_12:
+    case AOM_BITS_12:
       *sse = (*sse + 128) >> 8;
       *se = (*se + 8) >> 4;
       break;
-    case VPX_BITS_10:
+    case AOM_BITS_10:
       *sse = (*sse + 8) >> 4;
       *se = (*se + 2) >> 2;
       break;
-    case VPX_BITS_8:
+    case AOM_BITS_8:
     default: break;
   }
 }
@@ -216,7 +216,7 @@ class VarianceTest : public ::testing::TestWithParam<
       bit_depth_ = static_cast<aom_bit_depth_t>(get<3>(params));
       use_high_bit_depth_ = true;
     } else {
-      bit_depth_ = VPX_BITS_8;
+      bit_depth_ = AOM_BITS_8;
       use_high_bit_depth_ = false;
     }
     mask_ = (1 << bit_depth_) - 1;
@@ -430,7 +430,7 @@ void MseTest<MseFunctionType>::RefTest_mse() {
     const int stride_coeff = 1;
     ASM_REGISTER_STATE_CHECK(mse_(src_, width_, ref_, width_, &sse1));
     variance_ref(src_, ref_, log2width_, log2height_, stride_coeff,
-                 stride_coeff, &sse2, false, VPX_BITS_8);
+                 stride_coeff, &sse2, false, AOM_BITS_8);
     EXPECT_EQ(sse1, sse2);
   }
 }
@@ -447,7 +447,7 @@ void MseTest<MseFunctionType>::RefTest_sse() {
     const int stride_coeff = 1;
     ASM_REGISTER_STATE_CHECK(var1 = mse_(src_, width_, ref_, width_));
     variance_ref(src_, ref_, log2width_, log2height_, stride_coeff,
-                 stride_coeff, &sse2, false, VPX_BITS_8);
+                 stride_coeff, &sse2, false, AOM_BITS_8);
     EXPECT_EQ(var1, sse2);
   }
 }
@@ -543,7 +543,7 @@ class SubpelVarianceTest
       bit_depth_ = (aom_bit_depth_t)get<3>(params);
       use_high_bit_depth_ = true;
     } else {
-      bit_depth_ = VPX_BITS_8;
+      bit_depth_ = AOM_BITS_8;
       use_high_bit_depth_ = false;
     }
     mask_ = (1 << bit_depth_) - 1;

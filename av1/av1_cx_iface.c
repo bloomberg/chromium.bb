@@ -68,7 +68,7 @@ static struct av1_extracfg default_extra_cfg = {
   5,              // arnr_strength
   0,              // min_gf_interval; 0 -> default decision
   0,              // max_gf_interval; 0 -> default decision
-  VPX_TUNE_PSNR,  // tuning
+  AOM_TUNE_PSNR,  // tuning
   10,             // cq_level
   0,              // rc_max_intra_bitrate_pct
   0,              // rc_max_inter_bitrate_pct
@@ -82,9 +82,9 @@ static struct av1_extracfg default_extra_cfg = {
   1,                    // frame_parallel_decoding_mode
   NO_AQ,                // aq_mode
   0,                    // frame_periodic_delta_q
-  VPX_BITS_8,           // Bit depth
-  VPX_CONTENT_DEFAULT,  // content
-  VPX_CS_UNKNOWN,       // color space
+  AOM_BITS_8,           // Bit depth
+  AOM_CONTENT_DEFAULT,  // content
+  AOM_CS_UNKNOWN,       // color space
   0,                    // color range
   0,                    // render width
   0,                    // render height
@@ -115,21 +115,21 @@ struct aom_codec_alg_priv {
   BufferPool *buffer_pool;
 };
 
-static VPX_REFFRAME ref_frame_to_av1_reframe(aom_ref_frame_type_t frame) {
+static AOM_REFFRAME ref_frame_to_av1_reframe(aom_ref_frame_type_t frame) {
   switch (frame) {
-    case VP8_LAST_FRAME: return VPX_LAST_FLAG;
-    case VP8_GOLD_FRAME: return VPX_GOLD_FLAG;
-    case VP8_ALTR_FRAME: return VPX_ALT_FLAG;
+    case VP8_LAST_FRAME: return AOM_LAST_FLAG;
+    case VP8_GOLD_FRAME: return AOM_GOLD_FLAG;
+    case VP8_ALTR_FRAME: return AOM_ALT_FLAG;
   }
   assert(0 && "Invalid Reference Frame");
-  return VPX_LAST_FLAG;
+  return AOM_LAST_FLAG;
 }
 
 static aom_codec_err_t update_error_state(
     aom_codec_alg_priv_t *ctx, const struct aom_internal_error_info *error) {
   const aom_codec_err_t res = error->error_code;
 
-  if (res != VPX_CODEC_OK)
+  if (res != AOM_CODEC_OK)
     ctx->base.err_detail = error->has_detail ? error->detail : NULL;
 
   return res;
@@ -139,7 +139,7 @@ static aom_codec_err_t update_error_state(
 #define ERROR(str)                  \
   do {                              \
     ctx->base.err_detail = str;     \
-    return VPX_CODEC_INVALID_PARAM; \
+    return AOM_CODEC_INVALID_PARAM; \
   } while (0)
 
 #define RANGE_CHECK(p, memb, lo, hi)                                 \
@@ -179,16 +179,16 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, frame_periodic_boost, 0, 1);
   RANGE_CHECK_HI(cfg, g_threads, 64);
   RANGE_CHECK_HI(cfg, g_lag_in_frames, MAX_LAG_BUFFERS);
-  RANGE_CHECK(cfg, rc_end_usage, VPX_VBR, VPX_Q);
+  RANGE_CHECK(cfg, rc_end_usage, AOM_VBR, AOM_Q);
   RANGE_CHECK_HI(cfg, rc_undershoot_pct, 100);
   RANGE_CHECK_HI(cfg, rc_overshoot_pct, 100);
   RANGE_CHECK_HI(cfg, rc_2pass_vbr_bias_pct, 100);
-  RANGE_CHECK(cfg, kf_mode, VPX_KF_DISABLED, VPX_KF_AUTO);
+  RANGE_CHECK(cfg, kf_mode, AOM_KF_DISABLED, AOM_KF_AUTO);
   RANGE_CHECK_BOOL(cfg, rc_resize_allowed);
   RANGE_CHECK_HI(cfg, rc_dropframe_thresh, 100);
   RANGE_CHECK_HI(cfg, rc_resize_up_thresh, 100);
   RANGE_CHECK_HI(cfg, rc_resize_down_thresh, 100);
-  RANGE_CHECK(cfg, g_pass, VPX_RC_ONE_PASS, VPX_RC_LAST_PASS);
+  RANGE_CHECK(cfg, g_pass, AOM_RC_ONE_PASS, AOM_RC_LAST_PASS);
   RANGE_CHECK(extra_cfg, min_gf_interval, 0, (MAX_LAG_BUFFERS - 1));
   RANGE_CHECK(extra_cfg, max_gf_interval, 0, (MAX_LAG_BUFFERS - 1));
   if (extra_cfg->max_gf_interval > 0) {
@@ -210,7 +210,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(cfg, ts_number_layers, 1, 1);
   // AV1 does not support a lower bound on the keyframe interval in
   // automatic keyframe placement mode.
-  if (cfg->kf_mode != VPX_KF_DISABLED && cfg->kf_min_dist != cfg->kf_max_dist &&
+  if (cfg->kf_mode != AOM_KF_DISABLED && cfg->kf_min_dist != cfg->kf_max_dist &&
       cfg->kf_min_dist > 0)
     ERROR(
         "kf_min_dist not supported in auto mode, use 0 "
@@ -225,15 +225,15 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK(extra_cfg, arnr_max_frames, 0, 15);
   RANGE_CHECK_HI(extra_cfg, arnr_strength, 6);
   RANGE_CHECK(extra_cfg, cq_level, 0, 63);
-  RANGE_CHECK(cfg, g_bit_depth, VPX_BITS_8, VPX_BITS_12);
+  RANGE_CHECK(cfg, g_bit_depth, AOM_BITS_8, AOM_BITS_12);
   RANGE_CHECK(cfg, g_input_bit_depth, 8, 12);
-  RANGE_CHECK(extra_cfg, content, VPX_CONTENT_DEFAULT, VPX_CONTENT_INVALID - 1);
+  RANGE_CHECK(extra_cfg, content, AOM_CONTENT_DEFAULT, AOM_CONTENT_INVALID - 1);
 
   // TODO(yaowu): remove this when ssim tuning is implemented for av1
-  if (extra_cfg->tuning == VPX_TUNE_SSIM)
+  if (extra_cfg->tuning == AOM_TUNE_SSIM)
     ERROR("Option --tune=ssim is not currently supported in AV1.");
 
-  if (cfg->g_pass == VPX_RC_LAST_PASS) {
+  if (cfg->g_pass == AOM_RC_LAST_PASS) {
     const size_t packet_sz = sizeof(FIRSTPASS_STATS);
     const int n_packets = (int)(cfg->rc_twopass_stats_in.sz / packet_sz);
     const FIRSTPASS_STATS *stats;
@@ -260,39 +260,39 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   }
 #endif
   if (cfg->g_profile <= (unsigned int)PROFILE_1 &&
-      cfg->g_bit_depth > VPX_BITS_8) {
+      cfg->g_bit_depth > AOM_BITS_8) {
     ERROR("Codec high bit-depth not supported in profile < 2");
   }
   if (cfg->g_profile <= (unsigned int)PROFILE_1 && cfg->g_input_bit_depth > 8) {
     ERROR("Source high bit-depth not supported in profile < 2");
   }
   if (cfg->g_profile > (unsigned int)PROFILE_1 &&
-      cfg->g_bit_depth == VPX_BITS_8) {
+      cfg->g_bit_depth == AOM_BITS_8) {
     ERROR("Codec bit-depth 8 not supported in profile > 1");
   }
-  RANGE_CHECK(extra_cfg, color_space, VPX_CS_UNKNOWN, VPX_CS_SRGB);
+  RANGE_CHECK(extra_cfg, color_space, AOM_CS_UNKNOWN, AOM_CS_SRGB);
   RANGE_CHECK(extra_cfg, color_range, 0, 1);
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static aom_codec_err_t validate_img(aom_codec_alg_priv_t *ctx,
                                     const aom_image_t *img) {
   switch (img->fmt) {
-    case VPX_IMG_FMT_YV12:
-    case VPX_IMG_FMT_I420:
-    case VPX_IMG_FMT_I42016: break;
-    case VPX_IMG_FMT_I422:
-    case VPX_IMG_FMT_I444:
-    case VPX_IMG_FMT_I440:
+    case AOM_IMG_FMT_YV12:
+    case AOM_IMG_FMT_I420:
+    case AOM_IMG_FMT_I42016: break;
+    case AOM_IMG_FMT_I422:
+    case AOM_IMG_FMT_I444:
+    case AOM_IMG_FMT_I440:
       if (ctx->cfg.g_profile != (unsigned int)PROFILE_1) {
         ERROR(
             "Invalid image format. I422, I444, I440 images are "
             "not supported in profile.");
       }
       break;
-    case VPX_IMG_FMT_I42216:
-    case VPX_IMG_FMT_I44416:
-    case VPX_IMG_FMT_I44016:
+    case AOM_IMG_FMT_I42216:
+    case AOM_IMG_FMT_I44416:
+    case AOM_IMG_FMT_I44016:
       if (ctx->cfg.g_profile != (unsigned int)PROFILE_1 &&
           ctx->cfg.g_profile != (unsigned int)PROFILE_3) {
         ERROR(
@@ -310,20 +310,20 @@ static aom_codec_err_t validate_img(aom_codec_alg_priv_t *ctx,
   if (img->d_w != ctx->cfg.g_w || img->d_h != ctx->cfg.g_h)
     ERROR("Image size must match encoder init configuration size");
 
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static int get_image_bps(const aom_image_t *img) {
   switch (img->fmt) {
-    case VPX_IMG_FMT_YV12:
-    case VPX_IMG_FMT_I420: return 12;
-    case VPX_IMG_FMT_I422: return 16;
-    case VPX_IMG_FMT_I444: return 24;
-    case VPX_IMG_FMT_I440: return 16;
-    case VPX_IMG_FMT_I42016: return 24;
-    case VPX_IMG_FMT_I42216: return 32;
-    case VPX_IMG_FMT_I44416: return 48;
-    case VPX_IMG_FMT_I44016: return 32;
+    case AOM_IMG_FMT_YV12:
+    case AOM_IMG_FMT_I420: return 12;
+    case AOM_IMG_FMT_I422: return 16;
+    case AOM_IMG_FMT_I444: return 24;
+    case AOM_IMG_FMT_I440: return 16;
+    case AOM_IMG_FMT_I42016: return 24;
+    case AOM_IMG_FMT_I42216: return 32;
+    case AOM_IMG_FMT_I44416: return 48;
+    case AOM_IMG_FMT_I44016: return 32;
     default: assert(0 && "Invalid image format"); break;
   }
   return 0;
@@ -332,7 +332,7 @@ static int get_image_bps(const aom_image_t *img) {
 static aom_codec_err_t set_encoder_config(
     AV1EncoderConfig *oxcf, const aom_codec_enc_cfg_t *cfg,
     const struct av1_extracfg *extra_cfg) {
-  const int is_vbr = cfg->rc_end_usage == VPX_VBR;
+  const int is_vbr = cfg->rc_end_usage == AOM_VBR;
   oxcf->profile = cfg->g_profile;
   oxcf->max_threads = (int)cfg->g_threads;
   oxcf->width = cfg->g_w;
@@ -346,13 +346,13 @@ static aom_codec_err_t set_encoder_config(
   oxcf->mode = GOOD;
 
   switch (cfg->g_pass) {
-    case VPX_RC_ONE_PASS: oxcf->pass = 0; break;
-    case VPX_RC_FIRST_PASS: oxcf->pass = 1; break;
-    case VPX_RC_LAST_PASS: oxcf->pass = 2; break;
+    case AOM_RC_ONE_PASS: oxcf->pass = 0; break;
+    case AOM_RC_FIRST_PASS: oxcf->pass = 1; break;
+    case AOM_RC_LAST_PASS: oxcf->pass = 2; break;
   }
 
   oxcf->lag_in_frames =
-      cfg->g_pass == VPX_RC_FIRST_PASS ? 0 : cfg->g_lag_in_frames;
+      cfg->g_pass == AOM_RC_FIRST_PASS ? 0 : cfg->g_lag_in_frames;
   oxcf->rc_mode = cfg->rc_end_usage;
 
   // Convert target bandwidth from Kbit/s to Bit/s
@@ -399,7 +399,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->two_pass_vbrmax_section = cfg->rc_2pass_vbr_maxsection_pct;
 
   oxcf->auto_key =
-      cfg->kf_mode == VPX_KF_AUTO && cfg->kf_min_dist != cfg->kf_max_dist;
+      cfg->kf_mode == AOM_KF_AUTO && cfg->kf_min_dist != cfg->kf_max_dist;
 
   oxcf->key_freq = cfg->kf_max_dist;
 
@@ -469,7 +469,7 @@ static aom_codec_err_t set_encoder_config(
   printf("frame parallel detokenization: %d\n",
          oxcf->frame_parallel_decoding_mode);
   */
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static aom_codec_err_t encoder_set_config(aom_codec_alg_priv_t *ctx,
@@ -478,7 +478,7 @@ static aom_codec_err_t encoder_set_config(aom_codec_alg_priv_t *ctx,
   int force_key = 0;
 
   if (cfg->g_w != ctx->cfg.g_w || cfg->g_h != ctx->cfg.g_h) {
-    if (cfg->g_lag_in_frames > 1 || cfg->g_pass != VPX_RC_ONE_PASS)
+    if (cfg->g_lag_in_frames > 1 || cfg->g_pass != AOM_RC_ONE_PASS)
       ERROR("Cannot change width or height after initialization");
     if (!valid_ref_frame_size(ctx->cfg.g_w, ctx->cfg.g_h, cfg->g_w, cfg->g_h) ||
         (ctx->cpi->initial_width && (int)cfg->g_w > ctx->cpi->initial_width) ||
@@ -495,7 +495,7 @@ static aom_codec_err_t encoder_set_config(aom_codec_alg_priv_t *ctx,
 
   res = validate_config(ctx, cfg, &ctx->extra_cfg);
 
-  if (res == VPX_CODEC_OK) {
+  if (res == AOM_CODEC_OK) {
     ctx->cfg = *cfg;
     set_encoder_config(&ctx->oxcf, &ctx->cfg, &ctx->extra_cfg);
     // On profile change, request a key frame
@@ -503,7 +503,7 @@ static aom_codec_err_t encoder_set_config(aom_codec_alg_priv_t *ctx,
     av1_change_config(ctx->cpi, &ctx->oxcf);
   }
 
-  if (force_key) ctx->next_frame_flags |= VPX_EFLAG_FORCE_KF;
+  if (force_key) ctx->next_frame_flags |= AOM_EFLAG_FORCE_KF;
 
   return res;
 }
@@ -511,23 +511,23 @@ static aom_codec_err_t encoder_set_config(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_get_quantizer(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   int *const arg = va_arg(args, int *);
-  if (arg == NULL) return VPX_CODEC_INVALID_PARAM;
+  if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
   *arg = av1_get_quantizer(ctx->cpi);
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static aom_codec_err_t ctrl_get_quantizer64(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   int *const arg = va_arg(args, int *);
-  if (arg == NULL) return VPX_CODEC_INVALID_PARAM;
+  if (arg == NULL) return AOM_CODEC_INVALID_PARAM;
   *arg = av1_qindex_to_quantizer(av1_get_quantizer(ctx->cpi));
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static aom_codec_err_t update_extra_cfg(aom_codec_alg_priv_t *ctx,
                                         const struct av1_extracfg *extra_cfg) {
   const aom_codec_err_t res = validate_config(ctx, &ctx->cfg, extra_cfg);
-  if (res == VPX_CODEC_OK) {
+  if (res == AOM_CODEC_OK) {
     ctx->extra_cfg = *extra_cfg;
     set_encoder_config(&ctx->oxcf, &ctx->cfg, &ctx->extra_cfg);
     av1_change_config(ctx->cpi, &ctx->oxcf);
@@ -602,7 +602,7 @@ static aom_codec_err_t ctrl_set_arnr_type(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   (void)ctx;
   (void)args;
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static aom_codec_err_t ctrl_set_tuning(aom_codec_alg_priv_t *ctx,
@@ -710,22 +710,22 @@ static aom_codec_err_t ctrl_set_frame_periodic_boost(aom_codec_alg_priv_t *ctx,
 
 static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
                                     aom_codec_priv_enc_mr_cfg_t *data) {
-  aom_codec_err_t res = VPX_CODEC_OK;
+  aom_codec_err_t res = AOM_CODEC_OK;
   (void)data;
 
   if (ctx->priv == NULL) {
     aom_codec_alg_priv_t *const priv = aom_calloc(1, sizeof(*priv));
-    if (priv == NULL) return VPX_CODEC_MEM_ERROR;
+    if (priv == NULL) return AOM_CODEC_MEM_ERROR;
 
     ctx->priv = (aom_codec_priv_t *)priv;
     ctx->priv->init_flags = ctx->init_flags;
     ctx->priv->enc.total_encoders = 1;
     priv->buffer_pool = (BufferPool *)aom_calloc(1, sizeof(BufferPool));
-    if (priv->buffer_pool == NULL) return VPX_CODEC_MEM_ERROR;
+    if (priv->buffer_pool == NULL) return AOM_CODEC_MEM_ERROR;
 
 #if CONFIG_MULTITHREAD
     if (pthread_mutex_init(&priv->buffer_pool->pool_mutex, NULL)) {
-      return VPX_CODEC_MEM_ERROR;
+      return AOM_CODEC_MEM_ERROR;
     }
 #endif
 
@@ -740,15 +740,15 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
 
     res = validate_config(priv, &priv->cfg, &priv->extra_cfg);
 
-    if (res == VPX_CODEC_OK) {
+    if (res == AOM_CODEC_OK) {
       set_encoder_config(&priv->oxcf, &priv->cfg, &priv->extra_cfg);
 #if CONFIG_AOM_HIGHBITDEPTH
       priv->oxcf.use_highbitdepth =
-          (ctx->init_flags & VPX_CODEC_USE_HIGHBITDEPTH) ? 1 : 0;
+          (ctx->init_flags & AOM_CODEC_USE_HIGHBITDEPTH) ? 1 : 0;
 #endif
       priv->cpi = av1_create_compressor(&priv->oxcf, priv->buffer_pool);
       if (priv->cpi == NULL)
-        res = VPX_CODEC_MEM_ERROR;
+        res = AOM_CODEC_MEM_ERROR;
       else
         priv->cpi->output_pkt_list = &priv->pkt_list.head;
     }
@@ -765,7 +765,7 @@ static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
 #endif
   aom_free(ctx->buffer_pool);
   aom_free(ctx);
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static void pick_quickcompress_mode(aom_codec_alg_priv_t *ctx,
@@ -774,7 +774,7 @@ static void pick_quickcompress_mode(aom_codec_alg_priv_t *ctx,
   MODE new_mode = BEST;
 
   switch (ctx->cfg.g_pass) {
-    case VPX_RC_ONE_PASS:
+    case AOM_RC_ONE_PASS:
       if (deadline > 0) {
         const aom_codec_enc_cfg_t *const cfg = &ctx->cfg;
 
@@ -790,8 +790,8 @@ static void pick_quickcompress_mode(aom_codec_alg_priv_t *ctx,
         new_mode = BEST;
       }
       break;
-    case VPX_RC_FIRST_PASS: break;
-    case VPX_RC_LAST_PASS: new_mode = deadline > 0 ? GOOD : BEST; break;
+    case AOM_RC_FIRST_PASS: break;
+    case AOM_RC_LAST_PASS: new_mode = deadline > 0 ? GOOD : BEST; break;
   }
 
   if (ctx->oxcf.mode != new_mode) {
@@ -893,9 +893,9 @@ static aom_codec_frame_flags_t get_frame_pkt_flags(const AV1_COMP *cpi,
                                                    unsigned int lib_flags) {
   aom_codec_frame_flags_t flags = lib_flags << 16;
 
-  if (lib_flags & FRAMEFLAGS_KEY) flags |= VPX_FRAME_IS_KEY;
+  if (lib_flags & FRAMEFLAGS_KEY) flags |= AOM_FRAME_IS_KEY;
 
-  if (cpi->droppable) flags |= VPX_FRAME_IS_DROPPABLE;
+  if (cpi->droppable) flags |= AOM_FRAME_IS_DROPPABLE;
 
   return flags;
 }
@@ -906,7 +906,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
                                       unsigned long duration,
                                       aom_enc_frame_flags_t flags,
                                       unsigned long deadline) {
-  aom_codec_err_t res = VPX_CODEC_OK;
+  aom_codec_err_t res = AOM_CODEC_OK;
   AV1_COMP *const cpi = ctx->cpi;
   const aom_rational_t *const timebase = &ctx->cfg.g_timebase;
   size_t data_sz;
@@ -915,7 +915,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
     res = validate_img(ctx, img);
     // TODO(jzern) the checks related to cpi's validity should be treated as a
     // failure condition, encoder setup is done fully in init() currently.
-    if (res == VPX_CODEC_OK && cpi != NULL) {
+    if (res == AOM_CODEC_OK && cpi != NULL) {
       // There's no codec control for multiple alt-refs so check the encoder
       // instance for its status to determine the compressed data size.
       data_sz = ctx->cfg.g_w * ctx->cfg.g_h * get_image_bps(img) / 8 *
@@ -926,7 +926,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
         free(ctx->cx_data);
         ctx->cx_data = (unsigned char *)malloc(ctx->cx_data_sz);
         if (ctx->cx_data == NULL) {
-          return VPX_CODEC_MEM_ERROR;
+          return AOM_CODEC_MEM_ERROR;
         }
       }
     }
@@ -939,22 +939,22 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
   if (((flags & VP8_EFLAG_NO_UPD_GF) && (flags & VP8_EFLAG_FORCE_GF)) ||
       ((flags & VP8_EFLAG_NO_UPD_ARF) && (flags & VP8_EFLAG_FORCE_ARF))) {
     ctx->base.err_detail = "Conflicting flags.";
-    return VPX_CODEC_INVALID_PARAM;
+    return AOM_CODEC_INVALID_PARAM;
   }
 
   av1_apply_encoding_flags(cpi, flags);
 
   // Handle fixed keyframe intervals
-  if (ctx->cfg.kf_mode == VPX_KF_AUTO &&
+  if (ctx->cfg.kf_mode == AOM_KF_AUTO &&
       ctx->cfg.kf_min_dist == ctx->cfg.kf_max_dist) {
     if (++ctx->fixed_kf_cntr > ctx->cfg.kf_min_dist) {
-      flags |= VPX_EFLAG_FORCE_KF;
+      flags |= AOM_EFLAG_FORCE_KF;
       ctx->fixed_kf_cntr = 1;
     }
   }
 
   // Initialize the encoder instance on the first frame.
-  if (res == VPX_CODEC_OK && cpi != NULL) {
+  if (res == AOM_CODEC_OK && cpi != NULL) {
     unsigned int lib_flags = 0;
     YV12_BUFFER_CONFIG sd;
     int64_t dst_time_stamp = timebase_units_to_ticks(timebase, pts);
@@ -964,7 +964,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
     unsigned char *cx_data;
 
     // Set up internal flags
-    if (ctx->base.init_flags & VPX_CODEC_USE_PSNR) cpi->b_calculate_psnr = 1;
+    if (ctx->base.init_flags & AOM_CODEC_USE_PSNR) cpi->b_calculate_psnr = 1;
 
     if (img != NULL) {
       res = image2yuvconfig(img, &sd);
@@ -993,7 +993,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
        */
       if (cx_data_sz < ctx->cx_data_sz / 2) {
         ctx->base.err_detail = "Compressed data buffer too small";
-        return VPX_CODEC_ERROR;
+        return AOM_CODEC_ERROR;
       }
     }
 
@@ -1016,7 +1016,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
           cx_data_sz -= size;
 
           if (ctx->output_cx_pkt_cb.output_cx_pkt) {
-            pkt.kind = VPX_CODEC_CX_FRAME_PKT;
+            pkt.kind = AOM_CODEC_CX_FRAME_PKT;
             pkt.data.frame.pts =
                 ticks_to_timebase_units(timebase, dst_time_stamp);
             pkt.data.frame.duration = (unsigned long)ticks_to_timebase_units(
@@ -1037,7 +1037,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
         }
 
         // Add the frame packet to the list of returned packets.
-        pkt.kind = VPX_CODEC_CX_FRAME_PKT;
+        pkt.kind = AOM_CODEC_CX_FRAME_PKT;
         pkt.data.frame.pts = ticks_to_timebase_units(timebase, dst_time_stamp);
         pkt.data.frame.duration = (unsigned long)ticks_to_timebase_units(
             timebase, dst_end_time_stamp - dst_time_stamp);
@@ -1096,9 +1096,9 @@ static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
     image2yuvconfig(&frame->img, &sd);
     av1_set_reference_enc(ctx->cpi,
                            ref_frame_to_av1_reframe(frame->frame_type), &sd);
-    return VPX_CODEC_OK;
+    return AOM_CODEC_OK;
   } else {
-    return VPX_CODEC_INVALID_PARAM;
+    return AOM_CODEC_INVALID_PARAM;
   }
 }
 
@@ -1112,9 +1112,9 @@ static aom_codec_err_t ctrl_copy_reference(aom_codec_alg_priv_t *ctx,
     image2yuvconfig(&frame->img, &sd);
     av1_copy_reference_enc(ctx->cpi,
                             ref_frame_to_av1_reframe(frame->frame_type), &sd);
-    return VPX_CODEC_OK;
+    return AOM_CODEC_OK;
   } else {
-    return VPX_CODEC_INVALID_PARAM;
+    return AOM_CODEC_INVALID_PARAM;
   }
 }
 
@@ -1124,12 +1124,12 @@ static aom_codec_err_t ctrl_get_reference(aom_codec_alg_priv_t *ctx,
 
   if (frame != NULL) {
     YV12_BUFFER_CONFIG *fb = get_ref_frame(&ctx->cpi->common, frame->idx);
-    if (fb == NULL) return VPX_CODEC_ERROR;
+    if (fb == NULL) return AOM_CODEC_ERROR;
 
     yuvconfig2image(&frame->img, fb, NULL);
-    return VPX_CODEC_OK;
+    return AOM_CODEC_OK;
   } else {
-    return VPX_CODEC_INVALID_PARAM;
+    return AOM_CODEC_INVALID_PARAM;
   }
 }
 
@@ -1137,7 +1137,7 @@ static aom_codec_err_t ctrl_set_previewpp(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   (void)ctx;
   (void)args;
-  return VPX_CODEC_INCAPABLE;
+  return AOM_CODEC_INCAPABLE;
 }
 
 static aom_image_t *encoder_get_preview(aom_codec_alg_priv_t *ctx) {
@@ -1157,7 +1157,7 @@ static aom_codec_err_t ctrl_set_roi_map(aom_codec_alg_priv_t *ctx,
   (void)args;
 
   // TODO(yaowu): Need to re-implement and test for AV1.
-  return VPX_CODEC_INVALID_PARAM;
+  return AOM_CODEC_INVALID_PARAM;
 }
 
 static aom_codec_err_t ctrl_set_active_map(aom_codec_alg_priv_t *ctx,
@@ -1167,11 +1167,11 @@ static aom_codec_err_t ctrl_set_active_map(aom_codec_alg_priv_t *ctx,
   if (map) {
     if (!av1_set_active_map(ctx->cpi, map->active_map, (int)map->rows,
                              (int)map->cols))
-      return VPX_CODEC_OK;
+      return AOM_CODEC_OK;
     else
-      return VPX_CODEC_INVALID_PARAM;
+      return AOM_CODEC_INVALID_PARAM;
   } else {
-    return VPX_CODEC_INVALID_PARAM;
+    return AOM_CODEC_INVALID_PARAM;
   }
 }
 
@@ -1182,11 +1182,11 @@ static aom_codec_err_t ctrl_get_active_map(aom_codec_alg_priv_t *ctx,
   if (map) {
     if (!av1_get_active_map(ctx->cpi, map->active_map, (int)map->rows,
                              (int)map->cols))
-      return VPX_CODEC_OK;
+      return AOM_CODEC_OK;
     else
-      return VPX_CODEC_INVALID_PARAM;
+      return AOM_CODEC_INVALID_PARAM;
   } else {
-    return VPX_CODEC_INVALID_PARAM;
+    return AOM_CODEC_INVALID_PARAM;
   }
 }
 
@@ -1196,11 +1196,11 @@ static aom_codec_err_t ctrl_set_scale_mode(aom_codec_alg_priv_t *ctx,
 
   if (mode) {
     const int res =
-        av1_set_internal_size(ctx->cpi, (VPX_SCALING)mode->h_scaling_mode,
-                               (VPX_SCALING)mode->v_scaling_mode);
-    return (res == 0) ? VPX_CODEC_OK : VPX_CODEC_INVALID_PARAM;
+        av1_set_internal_size(ctx->cpi, (AOM_SCALING)mode->h_scaling_mode,
+                               (AOM_SCALING)mode->v_scaling_mode);
+    return (res == 0) ? AOM_CODEC_OK : AOM_CODEC_INVALID_PARAM;
   } else {
-    return VPX_CODEC_INVALID_PARAM;
+    return AOM_CODEC_INVALID_PARAM;
   }
 }
 
@@ -1211,7 +1211,7 @@ static aom_codec_err_t ctrl_register_cx_callback(aom_codec_alg_priv_t *ctx,
   ctx->output_cx_pkt_cb.output_cx_pkt = cbp->output_cx_pkt;
   ctx->output_cx_pkt_cb.user_priv = cbp->user_priv;
 
-  return VPX_CODEC_OK;
+  return AOM_CODEC_OK;
 }
 
 static aom_codec_err_t ctrl_set_tune_content(aom_codec_alg_priv_t *ctx,
@@ -1304,14 +1304,14 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
 
         320,         // g_width
         240,         // g_height
-        VPX_BITS_8,  // g_bit_depth
+        AOM_BITS_8,  // g_bit_depth
         8,           // g_input_bit_depth
 
         { 1, 30 },  // g_timebase
 
         0,  // g_error_resilient
 
-        VPX_RC_ONE_PASS,  // g_pass
+        AOM_RC_ONE_PASS,  // g_pass
 
         25,  // g_lag_in_frames
 
@@ -1322,7 +1322,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         60,  // rc_resize_down_thresold
         30,  // rc_resize_up_thresold
 
-        VPX_VBR,      // rc_end_usage
+        AOM_VBR,      // rc_end_usage
         { NULL, 0 },  // rc_twopass_stats_in
         { NULL, 0 },  // rc_firstpass_mb_stats_in
         256,          // rc_target_bandwidth
@@ -1340,7 +1340,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         2000,  // rc_two_pass_vbrmax_section
 
         // keyframing settings (kf)
-        VPX_KF_AUTO,  // g_kfmode
+        AOM_KF_AUTO,  // g_kfmode
         0,            // kf_min_dist
         9999,         // kf_max_dist
 
@@ -1365,11 +1365,11 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
 #endif
 CODEC_INTERFACE(aom_codec_av1_cx) = {
   "WebM Project AV1 Encoder" VERSION_STRING,
-  VPX_CODEC_INTERNAL_ABI_VERSION,
+  AOM_CODEC_INTERNAL_ABI_VERSION,
 #if CONFIG_AOM_HIGHBITDEPTH
-  VPX_CODEC_CAP_HIGHBITDEPTH |
+  AOM_CODEC_CAP_HIGHBITDEPTH |
 #endif
-      VPX_CODEC_CAP_ENCODER | VPX_CODEC_CAP_PSNR,  // aom_codec_caps_t
+      AOM_CODEC_CAP_ENCODER | AOM_CODEC_CAP_PSNR,  // aom_codec_caps_t
   encoder_init,                                    // aom_codec_init_fn_t
   encoder_destroy,                                 // aom_codec_destroy_fn_t
   encoder_ctrl_maps,                               // aom_codec_ctrl_fn_map_t

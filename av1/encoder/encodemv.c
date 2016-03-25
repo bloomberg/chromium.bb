@@ -220,8 +220,8 @@ void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
   // If auto_mv_step_size is enabled then keep track of the largest
   // motion vector component used.
   if (cpi->sf.mv.auto_mv_step_size) {
-    unsigned int maxv = VPXMAX(abs(mv->row), abs(mv->col)) >> 3;
-    cpi->max_mv_magnitude = VPXMAX(maxv, cpi->max_mv_magnitude);
+    unsigned int maxv = AOMMAX(abs(mv->row), abs(mv->col)) >> 3;
+    cpi->max_mv_magnitude = AOMMAX(maxv, cpi->max_mv_magnitude);
   }
 }
 

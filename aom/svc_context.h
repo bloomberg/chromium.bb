@@ -14,8 +14,8 @@
  * spatial SVC frame
  */
 
-#ifndef VPX_SVC_CONTEXT_H_
-#define VPX_SVC_CONTEXT_H_
+#ifndef AOM_SVC_CONTEXT_H_
+#define AOM_SVC_CONTEXT_H_
 
 #include "./vp8cx.h"
 #include "./aom_encoder.h"
@@ -54,13 +54,13 @@ typedef struct SvcInternal {
 
   // values extracted from option, quantizers
   aom_svc_extra_cfg_t svc_params;
-  int enable_auto_alt_ref[VPX_SS_MAX_LAYERS];
-  int bitrates[VPX_SS_MAX_LAYERS];
+  int enable_auto_alt_ref[AOM_SS_MAX_LAYERS];
+  int bitrates[AOM_SS_MAX_LAYERS];
 
   // accumulated statistics
-  double psnr_sum[VPX_SS_MAX_LAYERS][COMPONENTS];  // total/Y/U/V
-  uint64_t sse_sum[VPX_SS_MAX_LAYERS][COMPONENTS];
-  uint32_t bytes_sum[VPX_SS_MAX_LAYERS];
+  double psnr_sum[AOM_SS_MAX_LAYERS][COMPONENTS];  // total/Y/U/V
+  uint64_t sse_sum[AOM_SS_MAX_LAYERS][COMPONENTS];
+  uint32_t bytes_sum[AOM_SS_MAX_LAYERS];
 
   // codec encoding values
   int width;    // width of highest layer
@@ -118,4 +118,4 @@ const char *aom_svc_get_message(const SvcContext *svc_ctx);
 }  // extern "C"
 #endif
 
-#endif  // VPX_SVC_CONTEXT_H_
+#endif  // AOM_SVC_CONTEXT_H_

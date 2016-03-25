@@ -283,7 +283,7 @@ typedef struct AV1Common {
   unsigned int current_video_frame;
   BITSTREAM_PROFILE profile;
 
-  // VPX_BITS_8 in profile 0 or 1, VPX_BITS_10 or VPX_BITS_12 in profile 2 or 3.
+  // AOM_BITS_8 in profile 0 or 1, AOM_BITS_10 or AOM_BITS_12 in profile 2 or 3.
   aom_bit_depth_t bit_depth;
   aom_bit_depth_t dequant_bit_depth;  // bit_depth of current dequantizer
 

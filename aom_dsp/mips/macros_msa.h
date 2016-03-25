@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_DSP_MIPS_MACROS_MSA_H_
-#define VPX_DSP_MIPS_MACROS_MSA_H_
+#ifndef AOM_DSP_MIPS_MACROS_MSA_H_
+#define AOM_DSP_MIPS_MACROS_MSA_H_
 
 #include <msa.h>
 
@@ -2051,4 +2051,4 @@
                                                                 \
     tmp1_m;                                                     \
   })
-#endif /* VPX_DSP_MIPS_MACROS_MSA_H_ */
+#endif /* AOM_DSP_MIPS_MACROS_MSA_H_ */

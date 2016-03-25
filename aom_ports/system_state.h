@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VPX_PORTS_SYSTEM_STATE_H_
-#define VPX_PORTS_SYSTEM_STATE_H_
+#ifndef AOM_PORTS_SYSTEM_STATE_H_
+#define AOM_PORTS_SYSTEM_STATE_H_
 
 #include "./aom_config.h"
 
@@ -20,4 +20,4 @@ void aom_reset_mmx_state(void);
 #else
 #define aom_clear_system_state()
 #endif  // ARCH_X86 || ARCH_X86_64
-#endif  // VPX_PORTS_SYSTEM_STATE_H_
+#endif  // AOM_PORTS_SYSTEM_STATE_H_

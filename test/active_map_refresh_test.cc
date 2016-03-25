@@ -109,8 +109,8 @@ TEST_P(ActiveMapRefreshTest, Test) {
   cfg_.rc_resize_allowed = 0;
   cfg_.rc_min_quantizer = 8;
   cfg_.rc_max_quantizer = 30;
-  cfg_.g_pass = VPX_RC_ONE_PASS;
-  cfg_.rc_end_usage = VPX_CBR;
+  cfg_.g_pass = AOM_RC_ONE_PASS;
+  cfg_.rc_end_usage = AOM_CBR;
   cfg_.kf_max_dist = 90000;
 
   ::libaom_test::Y4mVideoSource video("desktop_credits.y4m", 0, 30);
