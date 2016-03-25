@@ -160,7 +160,7 @@ static void convertTargetSpaceQuadToCompositedLayer(const FloatQuad& targetSpace
         point = targetLayoutObject->frame()->view()->contentsToRootFrame(point);
         point = paintInvalidationContainer.frame()->view()->rootFrameToContents(point);
         FloatPoint floatPoint = paintInvalidationContainer.absoluteToLocal(point, UseTransforms);
-        PaintLayer::mapPointToPaintBackingCoordinates(&paintInvalidationContainer, floatPoint);
+        PaintLayer::mapPointInPaintInvalidationContainerToBacking(&paintInvalidationContainer, floatPoint);
 
         switch (i) {
         case 0: compositedSpaceQuad.setP1(floatPoint); break;

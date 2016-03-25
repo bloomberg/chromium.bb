@@ -474,7 +474,7 @@ static void projectRectsToGraphicsLayerSpaceRecursive(
                 if (compositedLayer->layoutObject()->hasOverflowClip())
                     rect.move(compositedLayer->layoutBox()->scrolledContentOffset());
             }
-            PaintLayer::mapRectToPaintBackingCoordinates(compositedLayer->layoutObject(), rect);
+            PaintLayer::mapRectInPaintInvalidationContainerToBacking(compositedLayer->layoutObject(), rect);
             glRects->append(rect);
         }
     }

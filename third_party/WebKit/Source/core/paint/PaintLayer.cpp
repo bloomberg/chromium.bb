@@ -549,12 +549,12 @@ LayoutPoint PaintLayer::positionFromPaintInvalidationBacking(const LayoutObject*
 
     // FIXME: Eventually we are going to unify coordinates in GraphicsLayer space.
     if (paintInvalidationContainer && paintInvalidationContainer->layer()->groupedMapping())
-        mapPointToPaintBackingCoordinates(paintInvalidationContainer, point);
+        mapPointInPaintInvalidationContainerToBacking(paintInvalidationContainer, point);
 
     return LayoutPoint(point);
 }
 
-void PaintLayer::mapPointToPaintBackingCoordinates(const LayoutBoxModelObject* paintInvalidationContainer, FloatPoint& point)
+void PaintLayer::mapPointInPaintInvalidationContainerToBacking(const LayoutBoxModelObject* paintInvalidationContainer, FloatPoint& point)
 {
     PaintLayer* paintInvalidationLayer = paintInvalidationContainer->layer();
     if (!paintInvalidationLayer->groupedMapping()) {
@@ -573,7 +573,7 @@ void PaintLayer::mapPointToPaintBackingCoordinates(const LayoutBoxModelObject* p
     point.moveBy(-paintInvalidationLayer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 }
 
-void PaintLayer::mapRectToPaintBackingCoordinates(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect)
+void PaintLayer::mapRectInPaintInvalidationContainerToBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect)
 {
     PaintLayer* paintInvalidationLayer = paintInvalidationContainer->layer();
     if (!paintInvalidationLayer->groupedMapping()) {
@@ -605,7 +605,7 @@ void PaintLayer::mapRectToPaintInvalidationBacking(const LayoutObject* layoutObj
     // FIXME: remove this special-case code that works around the paint invalidation code structure.
     layoutObject->mapToVisibleRectInAncestorSpace(paintInvalidationContainer, rect, paintInvalidationState);
 
-    mapRectToPaintBackingCoordinates(paintInvalidationContainer, rect);
+    mapRectInPaintInvalidationContainerToBacking(paintInvalidationContainer, rect);
 }
 
 LayoutRect PaintLayer::computePaintInvalidationRect(const LayoutObject& layoutObject, const PaintLayer* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
@@ -614,7 +614,7 @@ LayoutRect PaintLayer::computePaintInvalidationRect(const LayoutObject& layoutOb
         return layoutObject.computePaintInvalidationRect(*paintInvalidationContainer->layoutObject(), paintInvalidationState);
 
     LayoutRect rect = layoutObject.clippedOverflowRectForPaintInvalidation(paintInvalidationContainer->layoutObject(), paintInvalidationState);
-    mapRectToPaintBackingCoordinates(paintInvalidationContainer->layoutObject(), rect);
+    mapRectInPaintInvalidationContainerToBacking(paintInvalidationContainer->layoutObject(), rect);
     return rect;
 }
 

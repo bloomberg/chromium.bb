@@ -2449,7 +2449,7 @@ FloatPoint LayoutObject::localToInvalidationBackingPoint(const LayoutPoint& loca
     if (paintInvalidationContainer.layer()->compositingState() == NotComposited)
         return containerPoint;
 
-    PaintLayer::mapPointToPaintBackingCoordinates(&paintInvalidationContainer, containerPoint);
+    PaintLayer::mapPointInPaintInvalidationContainerToBacking(&paintInvalidationContainer, containerPoint);
     return containerPoint;
 }
 
