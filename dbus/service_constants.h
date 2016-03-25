@@ -859,6 +859,7 @@ const char kRemoveActiveInputNode[] = "RemoveActiveInputNode";
 const char kGetNumberOfActiveStreams[] = "GetNumberOfActiveStreams";
 const char kGetNumberOfActiveInputStreams[] = "GetNumberOfActiveInputStreams";
 const char kGetNumberOfActiveOutputStreams[] = "GetNumberOfActiveOutputStreams";
+const char kSetGlobalOutputChannelRemix[] = "SetGlobalOutputChannelRemix";
 
 // Names of properties returned by GetNodes()
 const char kIsInputProperty[] = "IsInput";
