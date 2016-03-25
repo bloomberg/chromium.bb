@@ -69,7 +69,7 @@ void RemoteFontFaceSource::pruneTable()
 
 bool RemoteFontFaceSource::isLoading() const
 {
-    return !m_font->stillNeedsLoad() && !m_font->isLoaded();
+    return m_font->isLoading();
 }
 
 bool RemoteFontFaceSource::isLoaded() const

@@ -176,12 +176,12 @@ TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
 TEST(RawResourceTest, AddClientDuringCallback)
 {
     RefPtrWillBeRawPtr<Resource> raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
-    raw->setLoading(false);
 
     // Create a non-null response.
     ResourceResponse response = raw->response();
     response.setURL(KURL(ParsedURLString, "http://600.613/"));
     raw->setResponse(response);
+    raw->finish();
     EXPECT_FALSE(raw->response().isNull());
 
     OwnPtr<DummyClient> dummyClient = adoptPtr(new DummyClient());
@@ -215,12 +215,12 @@ private:
 TEST(RawResourceTest, RemoveClientDuringCallback)
 {
     RefPtrWillBeRawPtr<Resource> raw = RawResource::create(ResourceRequest("data:text/html,"), Resource::Raw);
-    raw->setLoading(false);
 
     // Create a non-null response.
     ResourceResponse response = raw->response();
     response.setURL(KURL(ParsedURLString, "http://600.613/"));
     raw->setResponse(response);
+    raw->finish();
     EXPECT_FALSE(raw->response().isNull());
 
     OwnPtr<DummyClient> dummyClient = adoptPtr(new DummyClient());

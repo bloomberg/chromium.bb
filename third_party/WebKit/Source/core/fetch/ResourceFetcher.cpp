@@ -263,6 +263,8 @@ bool ResourceFetcher::resourceNeedsLoad(Resource* resource, const FetchRequest& 
 {
     if (FetchRequest::DeferredByClient == request.defer())
         return false;
+    if (resource->isImage() && shouldDeferImageLoad(resource->url()))
+        return false;
     return policy != Use || resource->stillNeedsLoad();
 }
 
@@ -670,9 +672,22 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         return Reload;
     }
 
-    // Do not load from cache if images are not enabled. The load for this image will be blocked
-    // in ImageResource::load.
+    // Do not load from cache if images are not enabled.
+    // There are two general cases:
+    // 1. Images are disabled. Don't ever load images, even if the image is
+    //    cached or it is a data: url. In this case, we "Reload" the image,
+    //    then defer it with resourceNeedsLoad() so that it never actually
+    //    goes to the network.
+    // 2. Images are enabled, but not loaded automatically. In this case, we
+    //    will Use cached resources or data: urls, but will similarly fall back
+    //    to a deferred network load if we don't have the data available
+    //    without a network request. We check allowImage() here, which is
+    //    affected by m_imagesEnabled but not m_autoLoadImages, in order to
+    //    allow for this differing behavior.
+    // TODO(japhet): Can we get rid of one of these settings?
     if (FetchRequest::DeferredByClient == fetchRequest.defer())
+        return Reload;
+    if (existingResource->isImage() && !context().allowImage(m_imagesEnabled, existingResource->url()))
         return Reload;
 
     // Never use cache entries for downloadToFile / useStreamOnResponse
@@ -824,14 +839,9 @@ void ResourceFetcher::setImagesEnabled(bool enable)
     reloadImagesIfNotDeferred();
 }
 
-bool ResourceFetcher::clientDefersImage(const KURL& url) const
-{
-    return !context().allowImage(m_imagesEnabled, url);
-}
-
 bool ResourceFetcher::shouldDeferImageLoad(const KURL& url) const
 {
-    return clientDefersImage(url) || !m_autoLoadImages;
+    return !context().allowImage(m_imagesEnabled, url) || !m_autoLoadImages;
 }
 
 void ResourceFetcher::reloadImagesIfNotDeferred()
@@ -841,7 +851,7 @@ void ResourceFetcher::reloadImagesIfNotDeferred()
     // the resource probably won't be necesssary.
     for (const auto& documentResource : m_documentResources) {
         Resource* resource = documentResource.value.get();
-        if (resource && resource->getType() == Resource::Image && resource->stillNeedsLoad() && !clientDefersImage(resource->url()))
+        if (resource && resource->getType() == Resource::Image && resource->stillNeedsLoad() && !shouldDeferImageLoad(resource->url()))
             const_cast<Resource*>(resource)->load(this);
     }
 }

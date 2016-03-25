@@ -159,10 +159,8 @@ Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoad
     , m_preloadCount(0)
     , m_cacheIdentifier(MemoryCache::defaultCacheIdentifier())
     , m_preloadResult(PreloadNotReferenced)
-    , m_requestedFromNetworkingLayer(false)
-    , m_loading(false)
     , m_type(type)
-    , m_status(Pending)
+    , m_status(NotStarted)
     , m_needsSynchronousCacheHit(false)
     , m_linkPreload(false)
 {
@@ -203,7 +201,6 @@ DEFINE_TRACE(Resource)
 void Resource::load(ResourceFetcher* fetcher)
 {
     RELEASE_ASSERT(!m_loader);
-    m_loading = true;
     m_status = Pending;
 
     ResourceRequest& request(m_revalidatingRequest.isNull() ? m_resourceRequest : m_revalidatingRequest);
@@ -291,8 +288,6 @@ void Resource::error(Resource::Status status)
     setStatus(status);
     ASSERT(errorOccurred());
     m_data.clear();
-
-    setLoading(false);
     checkNotify();
     markClientsFinished();
 }
@@ -300,11 +295,10 @@ void Resource::error(Resource::Status status)
 void Resource::finish()
 {
     ASSERT(m_revalidatingRequest.isNull());
-    setLoading(false);
-    checkNotify();
-    markClientsFinished();
     if (!errorOccurred())
         m_status = Cached;
+    checkNotify();
+    markClientsFinished();
 }
 
 AtomicString Resource::httpContentType() const
@@ -422,7 +416,6 @@ void Resource::willFollowRedirect(ResourceRequest& newRequest, const ResourceRes
 {
     newRequest.setAllowStoredCredentials(m_options.allowCredentials == AllowStoredCredentials);
     m_redirectChain.append(RedirectPair(newRequest, redirectResponse));
-    m_requestedFromNetworkingLayer = true;
 }
 
 bool Resource::unlock()
@@ -560,7 +553,7 @@ void Resource::clearLoader()
 
 void Resource::didAddClient(ResourceClient* c)
 {
-    if (!isLoading() && !stillNeedsLoad()) {
+    if (isLoaded()) {
         c->notifyFinished(this);
         if (m_clients.contains(c)) {
             m_finishedClients.add(c);
@@ -595,7 +588,7 @@ void Resource::addClient(ResourceClient* client)
     if (m_preloadResult == PreloadNotReferenced) {
         if (isLoaded())
             m_preloadResult = PreloadReferencedWhileComplete;
-        else if (m_requestedFromNetworkingLayer)
+        else if (isLoading())
             m_preloadResult = PreloadReferencedWhileLoading;
         else
             m_preloadResult = PreloadReferenced;
@@ -673,8 +666,7 @@ void Resource::cancelTimerFired(Timer<Resource>* timer)
         return;
     RefPtrWillBeRawPtr<Resource> protect(this);
     m_loader->cancelIfNotFinishing();
-    if (m_status != Cached)
-        memoryCache()->remove(this);
+    memoryCache()->remove(this);
 }
 
 void Resource::setDecodedSize(size_t decodedSize)
@@ -865,7 +857,7 @@ bool Resource::mustRevalidateDueToCacheHeaders()
 
 bool Resource::canUseCacheValidator()
 {
-    if (m_loading || errorOccurred())
+    if (isLoading() || errorOccurred())
         return false;
 
     if (hasCacheControlNoStoreHeader())

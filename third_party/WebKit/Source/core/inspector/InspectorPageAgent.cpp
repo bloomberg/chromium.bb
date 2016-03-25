@@ -439,26 +439,12 @@ static void cachedResourcesForDocument(Document* document, WillBeHeapVector<RawP
         if (!cachedResource)
             continue;
 
-        switch (cachedResource->getType()) {
-        case Resource::Image:
-            // Skip images that were not auto loaded (images disabled in the user agent).
-            if (toImageResource(cachedResource)->stillNeedsLoad())
-                continue;
-            break;
-        case Resource::Font:
-            // Skip fonts that were referenced in CSS but never used/downloaded.
-            if (toFontResource(cachedResource)->stillNeedsLoad())
-                continue;
-            break;
-        case Resource::Raw:
-            if (skipXHRs)
-                continue;
-            break;
-        default:
-            // All other Resource types download immediately.
-            break;
-        }
-
+        // Skip images that were not auto loaded (images disabled in the user agent),
+        // fonts that were referenced in CSS but never used/downloaded, etc.
+        if (cachedResource->stillNeedsLoad())
+            continue;
+        if (cachedResource->getType() == Resource::Raw && skipXHRs)
+            continue;
         result.append(cachedResource);
     }
 }

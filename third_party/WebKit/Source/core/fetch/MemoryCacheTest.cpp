@@ -236,8 +236,10 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, Re
     memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
     const char data[6] = "abcde";
     cachedDeadResource->appendData(data, 3u);
+    cachedDeadResource->finish();
     MockImageResourceClient client(cachedLiveResource);
     cachedLiveResource->appendData(data, 4u);
+    cachedLiveResource->finish();
 
     Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask1, PassRefPtrWillBeRawPtr<Resource>(cachedLiveResource), PassRefPtrWillBeRawPtr<Resource>(cachedDeadResource)));
     Platform::current()->currentThread()->getWebTaskRunner()->postTask(BLINK_FROM_HERE, bind(&runTask2, cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));

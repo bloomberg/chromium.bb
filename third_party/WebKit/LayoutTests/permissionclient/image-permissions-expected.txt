@@ -1,6 +1,9 @@
 PERMISSION CLIENT: allowImage((file test):permissionclient/resources/boston.gif): true
 PERMISSION CLIENT: allowImage((file test):permissionclient/resources/boston.gif): false
+PERMISSION CLIENT: allowImage((file test):permissionclient/resources/boston.gif): false
 PERMISSION CLIENT: allowImage((file test):permissionclient/resources/boston.gif?nocache): false
+PERMISSION CLIENT: allowImage((file test):permissionclient/resources/boston.gif): false
+PERMISSION CLIENT: allowImage((file test):permissionclient/resources/boston.gif): false
 PERMISSION CLIENT: allowImage((file test):permissionclient/resources/boston.gif): false
 PERMISSION CLIENT: allowImage((file test):permissionclient/resources/boston.gif): false
 Blocked images can be reloaded, so neither onload nor onerror is called. Only check here that onload is never called when image is blocked.

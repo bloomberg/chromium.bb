@@ -52,9 +52,6 @@ PassRefPtrWillBeRawPtr<ImageResource> ImageResource::fetch(FetchRequest& request
         return nullptr;
     }
 
-    if (fetcher->clientDefersImage(request.resourceRequest().url()))
-        request.setDefer(FetchRequest::DeferredByClient);
-
     return toImageResource(fetcher->requestResource(request, ImageResourceFactory()));
 }
 
@@ -65,7 +62,6 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest, const Resou
     , m_hasDevicePixelRatioHeaderValue(false)
 {
     WTF_LOG(Timers, "new ImageResource(ResourceRequest) %p", this);
-    setStatus(Unknown);
     setCustomAcceptHeader();
 }
 
@@ -77,7 +73,6 @@ ImageResource::ImageResource(blink::Image* image, const ResourceLoaderOptions& o
 {
     WTF_LOG(Timers, "new ImageResource(Image) %p", this);
     setStatus(Cached);
-    setLoading(false);
     setCustomAcceptHeader();
 }
 
@@ -87,7 +82,6 @@ ImageResource::ImageResource(const ResourceRequest& resourceRequest, blink::Imag
 {
     WTF_LOG(Timers, "new ImageResource(ResourceRequest, Image) %p", this);
     setStatus(Cached);
-    setLoading(false);
     setCustomAcceptHeader();
 }
 
@@ -103,15 +97,6 @@ DEFINE_TRACE(ImageResource)
     Resource::trace(visitor);
     ImageObserver::trace(visitor);
     MultipartImageResourceParser::Client::trace(visitor);
-}
-
-void ImageResource::load(ResourceFetcher* fetcher)
-{
-    ASSERT(fetcher);
-    if (fetcher->autoLoadImages())
-        Resource::load(fetcher);
-    else
-        setLoading(false);
 }
 
 void ImageResource::didAddClient(ResourceClient* c)
@@ -483,7 +468,8 @@ void ImageResource::onePartInMultipartReceived(const ResourceResponse& response)
     if (m_multipartParsingState == MultipartParsingState::ParsingFirstPart) {
         m_multipartParsingState = MultipartParsingState::FinishedParsingFirstPart;
         // Notify finished when the first part ends.
-        setLoading(false);
+        if (!errorOccurred())
+            setStatus(Cached);
         checkNotify();
         if (m_loader)
             m_loader->didFinishLoadingOnePart(0, WebURLLoaderClient::kUnknownEncodedDataLength);

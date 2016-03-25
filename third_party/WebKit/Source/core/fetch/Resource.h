@@ -77,9 +77,10 @@ public:
     };
 
     enum Status {
-        Unknown, // let cache decide what to do with it
-        Pending, // only partially loaded
-        Cached, // regular case
+        NotStarted,
+        LoadStartScheduled, // scheduled but not yet started, only used by fonts.
+        Pending, // load in progress
+        Cached, // load completed successfully
         LoadError,
         DecodeError
     };
@@ -154,11 +155,10 @@ public:
     size_t decodedSize() const { return m_decodedSize; }
     size_t overheadSize() const;
 
-    bool isLoaded() const { return !m_loading; } // FIXME. Method name is inaccurate. Loading might not have started yet.
+    bool isLoaded() const { return m_status > Pending; }
 
-    bool isLoading() const { return m_loading; }
-    void setLoading(bool b) { m_loading = b; }
-    virtual bool stillNeedsLoad() const { return false; }
+    bool isLoading() const { return m_status == Pending; }
+    bool stillNeedsLoad() const { return m_status < Pending; }
 
     ResourceLoader* loader() const { return m_loader.get(); }
 
@@ -355,10 +355,6 @@ private:
     String m_cacheIdentifier;
 
     unsigned m_preloadResult : 2; // PreloadResult
-    unsigned m_requestedFromNetworkingLayer : 1;
-
-    unsigned m_loading : 1;
-
     unsigned m_type : 4; // Type
     unsigned m_status : 3; // Status
 

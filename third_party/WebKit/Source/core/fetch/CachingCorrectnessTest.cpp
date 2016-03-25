@@ -91,6 +91,12 @@ protected:
             return nullptr;
         }
         resource->setResponse(response);
+        resource->finish();
+        // Because we didn't give any real data, an image will have set its
+        // status to DecodeError. Override it so the resource is cacaheable
+        // for testing purposes.
+        if (type == Resource::Image)
+            resource->setStatus(Resource::Cached);
         memoryCache()->add(resource.get());
 
         return resource;
@@ -103,6 +109,7 @@ protected:
         RefPtrWillBeRawPtr<Resource> resource =
             Resource::create(request, type);
         resource->setResponse(ResourceResponse(KURL(ParsedURLString, kResourceURL), "text/html", 0, nullAtom, String()));
+        resource->finish();
         memoryCache()->add(resource.get());
 
         return resource;
@@ -392,6 +399,7 @@ TEST_F(CachingCorrectnessTest, FreshWithFreshRedirect)
     fresh200Response.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
 
     firstResource->setResponse(fresh200Response);
+    firstResource->finish();
     memoryCache()->add(firstResource.get());
 
     advanceClock(500.);
@@ -426,6 +434,7 @@ TEST_F(CachingCorrectnessTest, FreshWithStaleRedirect)
     fresh200Response.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
 
     firstResource->setResponse(fresh200Response);
+    firstResource->finish();
     memoryCache()->add(firstResource.get());
 
     advanceClock(500.);
@@ -439,7 +448,7 @@ TEST_F(CachingCorrectnessTest, PostToSameURLTwice)
     ResourceRequest request1(KURL(ParsedURLString, kResourceURL));
     request1.setHTTPMethod(HTTPNames::POST);
     RefPtrWillBeRawPtr<Resource> resource1 = Resource::create(ResourceRequest(request1.url()), Resource::Raw);
-    resource1->setLoading(true);
+    resource1->setStatus(Resource::Pending);
     memoryCache()->add(resource1.get());
 
     ResourceRequest request2(KURL(ParsedURLString, kResourceURL));
@@ -478,6 +487,7 @@ TEST_F(CachingCorrectnessTest, 302RedirectNotImplicitlyFresh)
     fresh200Response.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
 
     firstResource->setResponse(fresh200Response);
+    firstResource->finish();
     memoryCache()->add(firstResource.get());
 
     advanceClock(500.);
@@ -513,6 +523,7 @@ TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshMaxAge)
     fresh200Response.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
 
     firstResource->setResponse(fresh200Response);
+    firstResource->finish();
     memoryCache()->add(firstResource.get());
 
     advanceClock(500.);
@@ -548,6 +559,7 @@ TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshExpires)
     fresh200Response.setHTTPHeaderField(HTTPNames::Expires, kOneDayAfterOriginalRequest);
 
     firstResource->setResponse(fresh200Response);
+    firstResource->finish();
     memoryCache()->add(firstResource.get());
 
     advanceClock(500.);

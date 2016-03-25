@@ -80,12 +80,8 @@ public:
     using DocumentResourceMap = WillBeHeapHashMap<String, WeakPtrWillBeWeakMember<Resource>>;
     const DocumentResourceMap& allResources() const { return m_documentResources; }
 
-    bool autoLoadImages() const { return m_autoLoadImages; }
     void setAutoLoadImages(bool);
-
     void setImagesEnabled(bool);
-
-    bool shouldDeferImageLoad(const KURL&) const;
 
     FetchContext& context() const { return m_context ? *m_context.get() : FetchContext::nullInstance(); }
     void clearContext() { m_context.clear(); }
@@ -139,7 +135,6 @@ public:
 
     String getCacheIdentifier() const;
 
-    bool clientDefersImage(const KURL&) const;
     static void determineRequestContext(ResourceRequest&, Resource::Type, bool isMainFrame);
     void determineRequestContext(ResourceRequest&, Resource::Type);
 
@@ -171,7 +166,8 @@ private:
 
     void initializeResourceRequest(ResourceRequest&, Resource::Type);
 
-    static bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
+    bool resourceNeedsLoad(Resource*, const FetchRequest&, RevalidationPolicy);
+    bool shouldDeferImageLoad(const KURL&) const;
 
     void resourceTimingReportTimerFired(Timer<ResourceFetcher>*);
 

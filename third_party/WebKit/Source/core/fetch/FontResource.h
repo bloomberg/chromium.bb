@@ -53,9 +53,8 @@ public:
 
     void allClientsRemoved() override;
     void beginLoadIfNeeded(ResourceFetcher* dl);
-    bool stillNeedsLoad() const override { return m_state < LoadInitiated; }
 
-    bool loadScheduled() const { return m_state != Unloaded; }
+    bool loadScheduled() const { return getStatus() == LoadStartScheduled; }
     void didScheduleLoad();
     void didUnscheduleLoad();
 
@@ -86,11 +85,11 @@ private:
     void fontLoadShortLimitCallback(Timer<FontResource>*);
     void fontLoadLongLimitCallback(Timer<FontResource>*);
 
-    enum State { Unloaded, LoadScheduled, LoadInitiated, ShortLimitExceeded, LongLimitExceeded };
+    enum LoadLimitState { UnderLimit, ShortLimitExceeded, LongLimitExceeded };
 
     OwnPtr<FontCustomPlatformData> m_fontData;
     String m_otsParsingMessage;
-    State m_state;
+    LoadLimitState m_loadLimitState;
     bool m_corsFailed;
     Timer<FontResource> m_fontLoadShortLimitTimer;
     Timer<FontResource> m_fontLoadLongLimitTimer;

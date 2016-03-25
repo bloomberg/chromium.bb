@@ -177,7 +177,7 @@ TEST(ImageResourceTest, CancelOnDetach)
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
 {
     RefPtrWillBeRawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(), nullptr);
-    cachedImage->setLoading(true);
+    cachedImage->setStatus(Resource::Pending);
 
     MockImageResourceClient client(cachedImage);
 
@@ -210,7 +210,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
 TEST(ImageResourceTest, UpdateBitmapImages)
 {
     RefPtrWillBeRawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(), nullptr);
-    cachedImage->setLoading(true);
+    cachedImage->setStatus(Resource::Pending);
 
     MockImageResourceClient client(cachedImage);
 
@@ -232,7 +232,7 @@ TEST(ImageResourceTest, ReloadIfLoFi)
     KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
     URLTestHelpers::registerMockedURLLoad(testURL, "cancelTest.html", "text/html");
     RefPtrWillBeRawPtr<ImageResource> cachedImage = ImageResource::create(ResourceRequest(testURL), nullptr);
-    cachedImage->setLoading(true);
+    cachedImage->setStatus(Resource::Pending);
 
     MockImageResourceClient client(cachedImage);
     ResourceFetcher* fetcher = ResourceFetcher::create(nullptr);

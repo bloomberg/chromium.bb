@@ -34,7 +34,7 @@ public:
         , m_resource(ScriptResource::create(m_resourceRequest, "UTF-8"))
         , m_pendingScript(PendingScript::create(0, m_resource.get()))
     {
-        m_resource->setLoading(true);
+        m_resource->setStatus(Resource::Pending);
         m_pendingScript = PendingScript::create(0, m_resource.get());
         ScriptStreamer::setSmallScriptThresholdForTesting(0);
     }
@@ -68,7 +68,7 @@ protected:
     void finish()
     {
         m_resource->finish();
-        m_resource->setLoading(false);
+        m_resource->setStatus(Resource::Cached);
     }
 
     void processTasksUntilStreamingComplete()

@@ -326,7 +326,7 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
 
         newImage = ImageResource::fetch(request, document.fetcher());
         if (m_loadingImageDocument && newImage)
-            newImage->setLoading(true);
+            newImage->setStatus(Resource::Pending);
 
         if (!newImage && !pageIsBeingDismissed(&document)) {
             crossSiteOrCSPViolationOccurred(imageSourceURL);
