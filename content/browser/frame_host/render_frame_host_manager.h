@@ -339,7 +339,7 @@ class CONTENT_EXPORT RenderFrameHostManager
   // is not nullptr it will be set to the routing id of the view associated with
   // the frame.
   scoped_ptr<RenderFrameHostImpl> CreateRenderFrame(SiteInstance* instance,
-                                                    int flags,
+                                                    bool hidden,
                                                     int* view_routing_id_ptr);
 
   // Helper method to create and initialize a RenderFrameProxyHost and return
@@ -643,7 +643,7 @@ class CONTENT_EXPORT RenderFrameHostManager
       int32_t view_routing_id,
       int32_t frame_routing_id,
       int32_t widget_routing_id,
-      int flags);
+      bool hidden);
 
   // PlzNavigate
   // Create and initialize a speculative RenderFrameHost for an ongoing

@@ -88,12 +88,6 @@ struct GlobalRequestID;
 struct Referrer;
 struct ResourceResponse;
 
-// Flag arguments for RenderFrameHost creation.
-enum CreateRenderFrameFlags {
-  // The RenderFrame is initially hidden.
-  CREATE_RF_HIDDEN = 1 << 0,
-};
-
 class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
                                            public BrowserAccessibilityDelegate,
                                            public SiteInstanceImpl::Observer {
@@ -569,7 +563,7 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
                       FrameTreeNode* frame_tree_node,
                       int32_t routing_id,
                       int32_t widget_routing_id,
-                      int flags);
+                      bool hidden);
 
  private:
   friend class TestRenderFrameHost;

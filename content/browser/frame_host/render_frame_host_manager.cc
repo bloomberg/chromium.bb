@@ -94,10 +94,9 @@ void RenderFrameHostManager::Init(SiteInstance* site_instance,
   // https://crbug.com/545684
   DCHECK(!frame_tree_node_->IsMainFrame() ||
          view_routing_id == widget_routing_id);
-  int flags = delegate_->IsHidden() ? CREATE_RF_HIDDEN : 0;
   SetRenderFrameHost(CreateRenderFrameHost(site_instance, view_routing_id,
                                            frame_routing_id, widget_routing_id,
-                                           flags));
+                                           delegate_->IsHidden()));
 
   // Notify the delegate of the creation of the current RenderFrameHost.
   // Do this only for subframes, as the main frame case is taken care of by
@@ -1442,10 +1441,6 @@ const GURL& RenderFrameHostManager::GetCurrentURLForSiteInstance(
 void RenderFrameHostManager::CreatePendingRenderFrameHost(
     SiteInstance* old_instance,
     SiteInstance* new_instance) {
-  int create_render_frame_flags = 0;
-  if (delegate_->IsHidden())
-    create_render_frame_flags |= CREATE_RF_HIDDEN;
-
   if (pending_render_frame_host_)
     CancelPending();
 
@@ -1460,7 +1455,7 @@ void RenderFrameHostManager::CreatePendingRenderFrameHost(
 
   // Create a non-swapped-out RFH with the given opener.
   pending_render_frame_host_ =
-      CreateRenderFrame(new_instance, create_render_frame_flags, nullptr);
+      CreateRenderFrame(new_instance, delegate_->IsHidden(), nullptr);
 }
 
 void RenderFrameHostManager::CreateProxiesForNewRenderFrameHost(
@@ -1516,11 +1511,9 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
     int32_t view_routing_id,
     int32_t frame_routing_id,
     int32_t widget_routing_id,
-    int flags) {
+    bool hidden) {
   if (frame_routing_id == MSG_ROUTING_NONE)
     frame_routing_id = site_instance->GetProcess()->GetNextRoutingID();
-
-  bool hidden = !!(flags & CREATE_RF_HIDDEN);
 
   // Create a RVH for main frames, or find the existing one for subframes.
   FrameTree* frame_tree = frame_tree_node_->frame_tree();
@@ -1550,7 +1543,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrameHost(
   return RenderFrameHostFactory::Create(
       site_instance, render_view_host, render_frame_delegate_,
       render_widget_delegate_, frame_tree, frame_tree_node_, frame_routing_id,
-      widget_routing_id, flags);
+      widget_routing_id, hidden);
 }
 
 // PlzNavigate
@@ -1569,18 +1562,15 @@ bool RenderFrameHostManager::CreateSpeculativeRenderFrameHost(
 
   CreateProxiesForNewRenderFrameHost(old_instance, new_instance);
 
-  int create_render_frame_flags = 0;
-  if (delegate_->IsHidden())
-    create_render_frame_flags |= CREATE_RF_HIDDEN;
   speculative_render_frame_host_ =
-      CreateRenderFrame(new_instance, create_render_frame_flags, nullptr);
+      CreateRenderFrame(new_instance, delegate_->IsHidden(), nullptr);
 
   return !!speculative_render_frame_host_;
 }
 
 scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
     SiteInstance* instance,
-    int flags,
+    bool hidden,
     int* view_routing_id_ptr) {
   int32_t widget_routing_id = MSG_ROUTING_NONE;
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(instance);
@@ -1608,7 +1598,7 @@ scoped_ptr<RenderFrameHostImpl> RenderFrameHostManager::CreateRenderFrame(
   }
 
   new_render_frame_host = CreateRenderFrameHost(
-      instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, widget_routing_id, flags);
+      instance, MSG_ROUTING_NONE, MSG_ROUTING_NONE, widget_routing_id, hidden);
   RenderViewHostImpl* render_view_host =
       new_render_frame_host->render_view_host();
 

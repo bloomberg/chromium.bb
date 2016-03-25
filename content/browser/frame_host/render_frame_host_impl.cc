@@ -184,7 +184,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
                                          FrameTreeNode* frame_tree_node,
                                          int32_t routing_id,
                                          int32_t widget_routing_id,
-                                         int flags)
+                                         bool hidden)
     : render_view_host_(render_view_host),
       delegate_(delegate),
       site_instance_(static_cast<SiteInstanceImpl*>(site_instance)),
@@ -212,7 +212,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       is_in_commit_(false),
       last_navigation_lofi_state_(LOFI_UNSPECIFIED),
       weak_ptr_factory_(this) {
-  bool hidden = !!(flags & CREATE_RF_HIDDEN);
   frame_tree_->AddRenderViewHostRef(render_view_host_);
   GetProcess()->AddRoute(routing_id_, this);
   g_routing_id_frame_map.Get().insert(std::make_pair(
