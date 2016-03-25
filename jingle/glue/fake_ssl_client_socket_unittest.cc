@@ -15,6 +15,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log.h"
 #include "net/socket/socket_test_util.h"
@@ -279,7 +280,7 @@ TEST_F(FakeSSLClientSocketTest, PassThroughMethods) {
   scoped_ptr<MockClientSocket> mock_client_socket(new MockClientSocket());
   const int kReceiveBufferSize = 10;
   const int kSendBufferSize = 20;
-  net::IPEndPoint ip_endpoint(net::IPAddressNumber(net::kIPv4AddressSize), 80);
+  net::IPEndPoint ip_endpoint(net::IPAddress::IPv4AllZeros(), 80);
   const int kPeerAddress = 30;
   net::BoundNetLog net_log;
   EXPECT_CALL(*mock_client_socket, SetReceiveBufferSize(kReceiveBufferSize));

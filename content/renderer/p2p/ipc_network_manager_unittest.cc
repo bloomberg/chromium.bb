@@ -5,7 +5,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
 #include "content/renderer/p2p/network_list_manager.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,33 +53,23 @@ class IpcNetworkManagerTest : public testing::Test {
 // issue 19249005 integrated into chromium
 TEST_F(IpcNetworkManagerTest, TestMergeNetworkList) {
   net::NetworkInterfaceList list;
-  net::IPAddressNumber ip_number;
+  net::IPAddress ip;
   std::vector<rtc::Network*> networks;
   rtc::IPAddress ip_address;
 
   // Add 2 networks with the same prefix and prefix length.
-  EXPECT_TRUE(net::ParseIPLiteralToNumber(kIPv6PublicAddrString1, &ip_number));
-  list.push_back(
-      net::NetworkInterface("em1",
-                            "em1",
-                            0,
-                            net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                            ip_number,
-                            64,
-                            net::IP_ADDRESS_ATTRIBUTE_NONE));
+  EXPECT_TRUE(ip.AssignFromIPLiteral(kIPv6PublicAddrString1));
+  list.push_back(net::NetworkInterface(
+      "em1", "em1", 0, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, ip, 64,
+      net::IP_ADDRESS_ATTRIBUTE_NONE));
 
-  EXPECT_TRUE(net::ParseIPLiteralToNumber(kIPv6PublicAddrString2, &ip_number));
-  list.push_back(
-      net::NetworkInterface("em1",
-                            "em1",
-                            0,
-                            net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                            ip_number,
-                            64,
-                            net::IP_ADDRESS_ATTRIBUTE_NONE));
+  EXPECT_TRUE(ip.AssignFromIPLiteral(kIPv6PublicAddrString2));
+  list.push_back(net::NetworkInterface(
+      "em1", "em1", 0, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, ip, 64,
+      net::IP_ADDRESS_ATTRIBUTE_NONE));
 
-  network_manager_->OnNetworkListChanged(list, net::IPAddressNumber(),
-                                         net::IPAddressNumber());
+  network_manager_->OnNetworkListChanged(list, net::IPAddress(),
+                                         net::IPAddress());
   network_manager_->GetNetworks(&networks);
   EXPECT_EQ(1uL, networks.size());
   EXPECT_EQ(2uL, networks[0]->GetIPs().size());
@@ -87,19 +77,13 @@ TEST_F(IpcNetworkManagerTest, TestMergeNetworkList) {
   // Add another network with different prefix length, should result in
   // a different network.
   networks.clear();
-  list.push_back(
-      net::NetworkInterface("em1",
-                            "em1",
-                            0,
-                            net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
-                            ip_number,
-                            48,
-                            net::IP_ADDRESS_ATTRIBUTE_NONE));
+  list.push_back(net::NetworkInterface(
+      "em1", "em1", 0, net::NetworkChangeNotifier::CONNECTION_UNKNOWN, ip, 48,
+      net::IP_ADDRESS_ATTRIBUTE_NONE));
 
   // Push an unknown address as the default address.
-  EXPECT_TRUE(net::ParseIPLiteralToNumber(kIPv4MappedAddrString, &ip_number));
-  network_manager_->OnNetworkListChanged(list, net::IPAddressNumber(),
-                                         ip_number);
+  EXPECT_TRUE(ip.AssignFromIPLiteral(kIPv4MappedAddrString));
+  network_manager_->OnNetworkListChanged(list, net::IPAddress(), ip);
 
   // The unknown default address should be ignored.
   EXPECT_FALSE(network_manager_->GetDefaultLocalAddress(AF_INET6, &ip_address));

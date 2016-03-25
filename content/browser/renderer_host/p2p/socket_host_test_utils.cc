@@ -11,6 +11,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 
 const int kStunHeaderSize = 20;
 const uint16_t kStunBindingRequest = 0x0001;
@@ -213,7 +214,7 @@ void CreateStunError(std::vector<char>* packet) {
 }
 
 net::IPEndPoint ParseAddress(const std::string& ip_str, uint16_t port) {
-  net::IPAddressNumber ip;
-  EXPECT_TRUE(net::ParseIPLiteralToNumber(ip_str, &ip));
+  net::IPAddress ip;
+  EXPECT_TRUE(ip.AssignFromIPLiteral(ip_str));
   return net::IPEndPoint(ip, port);
 }

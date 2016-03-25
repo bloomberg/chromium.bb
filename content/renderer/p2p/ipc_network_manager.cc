@@ -14,7 +14,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/public/common/content_switches.h"
 #include "jingle/glue/utils.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "third_party/webrtc/base/socketaddress.h"
@@ -73,8 +73,8 @@ void IpcNetworkManager::StopUpdating() {
 
 void IpcNetworkManager::OnNetworkListChanged(
     const net::NetworkInterfaceList& list,
-    const net::IPAddressNumber& default_ipv4_local_address,
-    const net::IPAddressNumber& default_ipv6_local_address) {
+    const net::IPAddress& default_ipv4_local_address,
+    const net::IPAddress& default_ipv6_local_address) {
   // Update flag if network list received for the first time.
   if (!network_list_received_)
     network_list_received_ = true;
@@ -90,7 +90,7 @@ void IpcNetworkManager::OnNetworkListChanged(
   for (net::NetworkInterfaceList::const_iterator it = list.begin();
        it != list.end(); it++) {
     rtc::IPAddress ip_address =
-        jingle_glue::IPAddressNumberToIPAddress(it->address.bytes());
+        jingle_glue::NetIPAddressToRtcIPAddress(it->address);
     DCHECK(!ip_address.IsNil());
 
     rtc::IPAddress prefix = rtc::TruncateIP(ip_address, it->prefix_length);
@@ -101,8 +101,7 @@ void IpcNetworkManager::OnNetworkListChanged(
 
     rtc::InterfaceAddress iface_addr;
     if (it->address.IsIPv4()) {
-      use_default_ipv4_address |=
-          (default_ipv4_local_address == it->address.bytes());
+      use_default_ipv4_address |= (default_ipv4_local_address == it->address);
       iface_addr = rtc::InterfaceAddress(ip_address);
     } else {
       DCHECK(it->address.IsIPv6());
@@ -116,8 +115,7 @@ void IpcNetworkManager::OnNetworkListChanged(
         continue;
       }
 
-      use_default_ipv6_address |=
-          (default_ipv6_local_address == it->address.bytes());
+      use_default_ipv6_address |= (default_ipv6_local_address == it->address);
     }
     network->AddIP(iface_addr);
     networks.push_back(network.release());
@@ -128,11 +126,11 @@ void IpcNetworkManager::OnNetworkListChanged(
   rtc::IPAddress ipv6_defualt;
   if (use_default_ipv4_address) {
     ipv4_default =
-        jingle_glue::IPAddressNumberToIPAddress(default_ipv4_local_address);
+        jingle_glue::NetIPAddressToRtcIPAddress(default_ipv4_local_address);
   }
   if (use_default_ipv6_address) {
     ipv6_defualt =
-        jingle_glue::IPAddressNumberToIPAddress(default_ipv6_local_address);
+        jingle_glue::NetIPAddressToRtcIPAddress(default_ipv6_local_address);
   }
   set_default_local_addresses(ipv4_default, ipv6_defualt);
 

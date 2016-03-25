@@ -125,8 +125,8 @@ void P2PSocketDispatcher::UnregisterHostAddressRequest(int id) {
 
 void P2PSocketDispatcher::OnNetworkListChanged(
     const net::NetworkInterfaceList& networks,
-    const net::IPAddressNumber& default_ipv4_local_address,
-    const net::IPAddressNumber& default_ipv6_local_address) {
+    const net::IPAddress& default_ipv4_local_address,
+    const net::IPAddress& default_ipv6_local_address) {
   network_list_observers_->Notify(
       FROM_HERE, &NetworkListObserver::OnNetworkListChanged, networks,
       default_ipv4_local_address, default_ipv6_local_address);

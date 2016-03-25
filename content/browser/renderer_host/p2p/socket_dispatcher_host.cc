@@ -14,7 +14,6 @@
 #include "content/public/browser/resource_context.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
-#include "net/base/ip_address_number.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/sys_addrinfo.h"
@@ -346,14 +345,13 @@ void P2PSocketDispatcherHost::DoGetNetworkList() {
 
 void P2PSocketDispatcherHost::SendNetworkList(
     const net::NetworkInterfaceList& list,
-    const net::IPAddressNumber& default_ipv4_local_address,
-    const net::IPAddressNumber& default_ipv6_local_address) {
+    const net::IPAddress& default_ipv4_local_address,
+    const net::IPAddress& default_ipv6_local_address) {
   Send(new P2PMsg_NetworkListChanged(list, default_ipv4_local_address,
                                      default_ipv6_local_address));
 }
 
-net::IPAddressNumber P2PSocketDispatcherHost::GetDefaultLocalAddress(
-    int family) {
+net::IPAddress P2PSocketDispatcherHost::GetDefaultLocalAddress(int family) {
   DCHECK(family == AF_INET || family == AF_INET6);
 
   // Creation and connection of a UDP socket might be janky.
@@ -364,25 +362,22 @@ net::IPAddressNumber P2PSocketDispatcherHost::GetDefaultLocalAddress(
           net::DatagramSocket::DEFAULT_BIND, net::RandIntCallback(), NULL,
           net::NetLog::Source()));
 
-  net::IPAddressNumber ip_address_number;
+  net::IPAddress ip_address;
   if (family == AF_INET) {
-    ip_address_number.assign(kPublicIPv4Host,
-                             kPublicIPv4Host + net::kIPv4AddressSize);
+    ip_address = net::IPAddress(kPublicIPv4Host);
   } else {
-    ip_address_number.assign(kPublicIPv6Host,
-                             kPublicIPv6Host + net::kIPv6AddressSize);
+    ip_address = net::IPAddress(kPublicIPv6Host);
   }
 
-  if (socket->Connect(net::IPEndPoint(ip_address_number, kPublicPort)) !=
-      net::OK) {
-    return net::IPAddressNumber();
+  if (socket->Connect(net::IPEndPoint(ip_address, kPublicPort)) != net::OK) {
+    return net::IPAddress();
   }
 
   net::IPEndPoint local_address;
   if (socket->GetLocalAddress(&local_address) != net::OK)
-    return net::IPAddressNumber();
+    return net::IPAddress();
 
-  return local_address.address().bytes();
+  return local_address.address();
 }
 
 void P2PSocketDispatcherHost::OnAddressResolved(

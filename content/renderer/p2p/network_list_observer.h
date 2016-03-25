@@ -7,9 +7,8 @@
 
 #include <vector>
 
-#include "net/base/ip_address_number.h"
-
 namespace net {
+class IPAddress;
 struct NetworkInterface;
 typedef std::vector<NetworkInterface> NetworkInterfaceList;
 }  // namespace net
@@ -22,8 +21,8 @@ class NetworkListObserver {
 
   virtual void OnNetworkListChanged(
       const net::NetworkInterfaceList& list,
-      const net::IPAddressNumber& default_ipv4_local_address,
-      const net::IPAddressNumber& default_ipv6_local_address) = 0;
+      const net::IPAddress& default_ipv4_local_address,
+      const net::IPAddress& default_ipv6_local_address) = 0;
 
  protected:
   NetworkListObserver() {}

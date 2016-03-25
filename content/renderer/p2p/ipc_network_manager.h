@@ -14,6 +14,10 @@
 #include "content/renderer/p2p/network_list_observer.h"
 #include "third_party/webrtc/base/network.h"
 
+namespace net {
+class IPAddress;
+}
+
 namespace content {
 
 // IpcNetworkManager is a NetworkManager for libjingle that gets a
@@ -32,8 +36,8 @@ class IpcNetworkManager : public rtc::NetworkManagerBase,
   // P2PSocketDispatcher::NetworkListObserver interface.
   void OnNetworkListChanged(
       const net::NetworkInterfaceList& list,
-      const net::IPAddressNumber& default_ipv4_local_address,
-      const net::IPAddressNumber& default_ipv6_local_address) override;
+      const net::IPAddress& default_ipv4_local_address,
+      const net::IPAddress& default_ipv6_local_address) override;
 
  private:
   void SendNetworksChangedSignal();

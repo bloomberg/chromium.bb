@@ -7,10 +7,10 @@
 
 #include <string>
 
-#include "net/base/ip_address_number.h"
 #include "third_party/webrtc/base/ipaddress.h"
 
 namespace net {
+class IPAddress;
 class IPEndPoint;
 }  // namespace net
 
@@ -32,8 +32,7 @@ bool IPEndPointToSocketAddress(const net::IPEndPoint& ip_endpoint,
 bool SocketAddressToIPEndPoint(const rtc::SocketAddress& address,
                                net::IPEndPoint* ip_endpoint);
 
-rtc::IPAddress IPAddressNumberToIPAddress(
-    const net::IPAddressNumber& ip_address_number);
+rtc::IPAddress NetIPAddressToRtcIPAddress(const net::IPAddress& ip_address);
 
 // Helper functions to serialize and deserialize P2P candidates.
 std::string SerializeP2PCandidate(const cricket::Candidate& candidate);

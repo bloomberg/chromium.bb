@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_auth_controller.h"
@@ -354,13 +355,13 @@ int ProxyResolvingClientSocket::GetPeerAddress(
   if (proxy_info_.is_direct())
     return transport_->socket()->GetPeerAddress(address);
 
-  net::IPAddressNumber ip_number;
-  if (!net::ParseIPLiteralToNumber(dest_host_port_pair_.host(), &ip_number)) {
+  net::IPAddress ip_address;
+  if (!ip_address.AssignFromIPLiteral(dest_host_port_pair_.host())) {
     // Do not expose the proxy IP address to the caller.
     return net::ERR_NAME_NOT_RESOLVED;
   }
 
-  *address = net::IPEndPoint(ip_number, dest_host_port_pair_.port());
+  *address = net::IPEndPoint(ip_address, dest_host_port_pair_.port());
   return net::OK;
 }
 

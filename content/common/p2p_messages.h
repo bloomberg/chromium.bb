@@ -63,8 +63,8 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_MESSAGE_CONTROL3(P2PMsg_NetworkListChanged,
                      net::NetworkInterfaceList /* networks */,
-                     net::IPAddressNumber /* default_ipv4_local_address */,
-                     net::IPAddressNumber /* default_ipv6_local_address */)
+                     net::IPAddress /* default_ipv4_local_address */,
+                     net::IPAddress /* default_ipv6_local_address */)
 
 IPC_MESSAGE_CONTROL2(P2PMsg_GetHostAddressResult,
                      int32_t /* request_id */,

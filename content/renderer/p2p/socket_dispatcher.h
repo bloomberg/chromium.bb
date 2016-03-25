@@ -36,8 +36,6 @@
 #include "content/renderer/p2p/network_list_manager.h"
 #include "ipc/message_filter.h"
 #include "net/base/ip_address.h"
-#include "net/base/ip_address_number.h"
-#include "net/base/ip_endpoint.h"
 #include "net/base/network_interfaces.h"
 
 namespace base {
@@ -97,10 +95,9 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
   void UnregisterHostAddressRequest(int id);
 
   // Incoming message handlers.
-  void OnNetworkListChanged(
-      const net::NetworkInterfaceList& networks,
-      const net::IPAddressNumber& default_ipv4_local_address,
-      const net::IPAddressNumber& default_ipv6_local_address);
+  void OnNetworkListChanged(const net::NetworkInterfaceList& networks,
+                            const net::IPAddress& default_ipv4_local_address,
+                            const net::IPAddress& default_ipv6_local_address);
   void OnGetHostAddressResult(int32_t request_id,
                               const net::IPAddressList& addresses);
   void OnSocketCreated(int socket_id,

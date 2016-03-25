@@ -318,7 +318,7 @@ bool IpcPacketSocket::Init(P2PSocketType type,
 
     if (remote_address.IsUnresolvedIP()) {
       remote_endpoint =
-          net::IPEndPoint(net::IPAddressNumber(), remote_address.port());
+          net::IPEndPoint(net::IPAddress(), remote_address.port());
     } else {
       if (!jingle_glue::SocketAddressToIPEndPoint(remote_address,
                                                   &remote_endpoint)) {
@@ -421,7 +421,7 @@ int IpcPacketSocket::SendTo(const void *data, size_t data_size,
 
   net::IPEndPoint address_chrome;
   if (address.IsUnresolvedIP()) {
-    address_chrome = net::IPEndPoint(net::IPAddressNumber(), address.port());
+    address_chrome = net::IPEndPoint(net::IPAddress(), address.port());
   } else {
     if (!jingle_glue::SocketAddressToIPEndPoint(address, &address_chrome)) {
       LOG(WARNING) << "Failed to convert remote address to IPEndPoint: address="

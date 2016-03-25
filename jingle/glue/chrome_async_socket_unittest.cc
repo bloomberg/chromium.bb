@@ -16,6 +16,7 @@
 #include "base/message_loop/message_pump_default.h"
 #include "jingle/glue/resolving_client_socket_factory.h"
 #include "net/base/address_list.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/http/transport_security_state.h"
@@ -174,10 +175,8 @@ class ChromeAsyncSocketTest
         &ssl_socket_data_provider_);
 
     // Fake DNS resolution for |addr_| and pass it to the factory.
-    net::IPAddressNumber resolved_addr;
-    EXPECT_TRUE(net::ParseIPLiteralToNumber("127.0.0.1", &resolved_addr));
-    const net::AddressList address_list =
-        net::AddressList::CreateFromIPAddress(resolved_addr, addr_.port());
+    const net::AddressList address_list = net::AddressList::CreateFromIPAddress(
+        net::IPAddress::IPv4Localhost(), addr_.port());
     scoped_ptr<MockXmppClientSocketFactory> mock_xmpp_client_socket_factory(
         new MockXmppClientSocketFactory(
             mock_client_socket_factory.release(),
