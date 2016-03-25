@@ -247,37 +247,6 @@ executable("demo") {
   }
 }
 
-executable("bench") {
-  output_name = "aura_bench"
-  testonly = true
-
-  sources = [
-    "bench/bench_main.cc",
-  ]
-
-  deps = [
-    ":test_support",
-    "//base",
-    "//base:i18n",
-    "//build/config/sanitizers:deps",
-    "//cc",
-    "//gpu/command_buffer/client:gles2_interface",
-    "//skia",
-    "//third_party/icu",
-    "//ui/base",
-    "//ui/compositor",
-    "//ui/compositor:test_support",
-    "//ui/events",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//ui/gl",
-  ]
-
-  if (use_x11) {
-    deps += [ "//ui/gfx/x" ]
-  }
-}
-
 test("aura_unittests") {
   sources = [
     "gestures/gesture_recognizer_unittest.cc",

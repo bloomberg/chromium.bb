@@ -152,7 +152,6 @@
         }],
         ['use_aura==1', {
           'dependencies': [
-            '../ui/aura/aura.gyp:aura_bench',
             '../ui/aura/aura.gyp:aura_demo',
             '../ui/aura/aura.gyp:aura_unittests',
             '../ui/keyboard/keyboard.gyp:keyboard_unittests',

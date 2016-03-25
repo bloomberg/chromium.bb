@@ -235,7 +235,6 @@ group("both_gn_and_gyp") {
       "//ash:ash_shell_with_content",
       "//ash:ash_unittests",
       "//ui/aura:aura_unittests",
-      "//ui/aura:bench",
       "//ui/aura:demo",
       "//ui/wm:wm_unittests",
     ]

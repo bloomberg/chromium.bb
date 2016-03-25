@@ -234,40 +234,6 @@
       ]
     },
     {
-      'target_name': 'aura_bench',
-      'type': 'executable',
-      'dependencies': [
-        '../../base/base.gyp:base',
-        '../../base/base.gyp:base_i18n',
-        '../../cc/cc.gyp:cc',
-        '../../gpu/gpu.gyp:gles2_implementation',
-        '../../skia/skia.gyp:skia',
-        '../../third_party/icu/icu.gyp:icui18n',
-        '../../third_party/icu/icu.gyp:icuuc',
-        '../base/ui_base.gyp:ui_base',
-        '../compositor/compositor.gyp:compositor',
-        '../compositor/compositor.gyp:compositor_test_support',
-        '../events/events.gyp:events',
-        '../gfx/gfx.gyp:gfx',
-        '../gfx/gfx.gyp:gfx_geometry',
-        'aura',
-        'aura_test_support',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'bench/bench_main.cc',
-      ],
-      'conditions': [
-        ['use_x11==1', {
-          'dependencies': [
-            '../gfx/x/gfx_x11.gyp:gfx_x11',
-          ],
-        }],
-      ]
-    },
-    {
       'target_name': 'aura_unittests',
       'type': 'executable',
       'dependencies': [
