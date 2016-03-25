@@ -56,16 +56,10 @@ PageZoomState::~PageZoomState() {
 }
 
 bool PageZoomState::IsValid() const {
-  return IsLegacyFormat() ||
-         (!std::isnan(minimum_zoom_scale_) &&
+  return (!std::isnan(minimum_zoom_scale_) &&
           !std::isnan(maximum_zoom_scale_) && !std::isnan(zoom_scale_) &&
           zoom_scale_ >= minimum_zoom_scale_ &&
           zoom_scale_ <= maximum_zoom_scale_);
-}
-
-bool PageZoomState::IsLegacyFormat() const {
-  return std::isnan(minimum_zoom_scale_) && std::isnan(maximum_zoom_scale_) &&
-         zoom_scale_ > 0.0;
 }
 
 bool PageZoomState::operator==(const PageZoomState& other) const {

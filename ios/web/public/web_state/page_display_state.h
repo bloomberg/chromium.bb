@@ -53,12 +53,6 @@ class PageZoomState {
   // are NAN and the zoom scale is greater than zero.
   bool IsValid() const;
 
-  // PageScrollStates restored from the legacy serialization format make
-  // assumptions about the web view's implementation of zooming, and contain a
-  // non-NAN zoom scale and a NAN minimum and maximum scale.  Legacy zoom scales
-  // can only be applied to CRWUIWebViewWebControllers.
-  bool IsLegacyFormat() const;
-
   // Returns the allowed zoom scale range for this scroll state.
   double GetMinMaxZoomDifference() const {
     return maximum_zoom_scale_ - minimum_zoom_scale_;

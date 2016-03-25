@@ -699,9 +699,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   // meta tags of a page may have changed since the state was recorded, so clamp
   // the zoom scale to the current range if necessary.
   DCHECK(zoomState.IsValid());
-  // Legacy-format scroll states cannot be applied to WKWebViews.
-  if (zoomState.IsLegacyFormat())
-    return;
   CGFloat zoomScale = zoomState.zoom_scale();
   if (zoomScale < self.webScrollView.minimumZoomScale)
     zoomScale = self.webScrollView.minimumZoomScale;

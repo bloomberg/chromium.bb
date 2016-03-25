@@ -3250,7 +3250,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     _applyingPageState = YES;
     web::PageZoomState zoomState =
         currentItem->GetPageDisplayState().zoom_state();
-    if (!zoomState.IsValid() || zoomState.IsLegacyFormat())
+    if (!zoomState.IsValid())
       zoomState = web::PageZoomState(1.0, 1.0, 1.0);
     [self applyWebViewScrollZoomScaleFromZoomState:zoomState];
     _applyingPageState = NO;
