@@ -68,7 +68,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
 
     self.Fail('conformance2/misc/expando-loss-2.html', bug=483282)
-
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html', bug=483282)
     self.Fail('conformance2/vertex_arrays/vertex-array-object.html', bug=483282)
 
     self.Fail('conformance2/textures/image_bitmap_from_image/' +
@@ -312,8 +312,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderstruct.html',
         ['win'], bug=483282)
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['win'], bug=483282)
     self.Skip('conformance2/reading/read-pixels-pack-parameters.html',
         ['win'], bug=483282)
@@ -570,9 +568,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac'], bug=577144)
     self.Fail('conformance2/textures/misc/tex-storage-and-subimage-3d.html',
         ['mac'], bug=483282)
-    # The following failure is 10.10 only, but we don't have a keyword yet.
-    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
-        ['mac'], bug=584994)
     self.Fail('conformance2/state/gl-object-get-calls.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/image_bitmap_from_image/*',
@@ -597,14 +592,17 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', 'intel'], bug=483282)
 
     # Linux only.
+    self.Fail('deqp/functional/gles3/fbostatequery.html',
+        ['linux'], bug=483282)
+    self.Flaky('deqp/functional/gles3/negativeshaderapi.html',
+        ['linux'], bug=483282)
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
-
-    self.Flaky('deqp/functional/gles3/negativeshaderapi.html',
+    self.Fail('conformance2/textures/misc/tex-unpack-params.html',
         ['linux'], bug=483282)
 
     # Linux AMD only.
@@ -633,8 +631,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/samplerobject.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/misc/uninitialized-test-2.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
         ['linux', 'amd'], bug=483282)
