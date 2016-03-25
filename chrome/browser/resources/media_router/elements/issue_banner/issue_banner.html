@@ -15,12 +15,12 @@
       </div>
       <div id="buttons">
         <paper-button flat id="opt-button" class="button"
-            on-click="onClickOptAction_"
+            on-tap="onClickOptAction_"
             hidden$="[[computeOptionalActionHidden_(issue)]]">
           <span>[[secondaryActionButtonText_]]</span>
         </paper-button>
         <paper-button flat id="default-button"
-            class="button action" on-click="onClickDefaultAction_">
+            class="button action" on-tap="onClickDefaultAction_">
           <span>[[defaultActionButtonText_]]</span>
         </paper-button>
       </div>
