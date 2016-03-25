@@ -148,10 +148,7 @@ const std::string& TestWebContents::GetSaveFrameHeaders() {
 
 bool TestWebContents::CrossProcessNavigationPending() {
   if (IsBrowserSideNavigationEnabled()) {
-    return GetRenderManager()->speculative_render_frame_host_ &&
-           static_cast<TestRenderFrameHost*>(
-               GetRenderManager()->speculative_render_frame_host_.get())
-               ->pending_commit();
+    return GetRenderManager()->speculative_render_frame_host_ != nullptr;
   }
   return GetRenderManager()->pending_frame_host() != nullptr;
 }

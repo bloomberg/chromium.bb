@@ -361,7 +361,6 @@ TEST_F(WebContentsImplTest, UpdateTitle) {
   InitNavigateParams(&params, 0, 0, true, GURL(url::kAboutBlankURL),
                      ui::PAGE_TRANSITION_TYPED);
 
-  contents()->GetMainFrame()->PrepareForCommit();
   contents()->GetMainFrame()->SendNavigateWithParams(&params);
 
   contents()->UpdateTitle(contents()->GetMainFrame(), 0,
@@ -1395,6 +1394,7 @@ TEST_F(WebContentsImplTest, CrossSiteNotPreemptedDuringBeforeUnload) {
       url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   int entry1_id = controller().GetPendingEntry()->GetUniqueID();
   TestRenderFrameHost* orig_rfh = contents()->GetMainFrame();
+  orig_rfh->PrepareForCommit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
 
   // Navigate to new site, with the beforeunload request in flight.
@@ -3040,7 +3040,6 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   controller().LoadURL(
       main_url, Referrer(), ui::PAGE_TRANSITION_TYPED, std::string());
   int entry_id = controller().GetPendingEntry()->GetUniqueID();
-  orig_rfh->PrepareForCommit();
   orig_rfh->OnMessageReceived(
       FrameHostMsg_DidStartLoading(orig_rfh->GetRoutingID(), false));
   contents()->TestDidNavigate(orig_rfh, 1, entry_id, true, main_url,
@@ -3056,7 +3055,6 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   // Navigate the child frame to about:blank, which will send both
   // DidStartLoading and DidStopLoading messages.
   {
-    subframe->SendRendererInitiatedNavigationRequest(initial_url, false);
     subframe->OnMessageReceived(
         FrameHostMsg_DidStartLoading(subframe->GetRoutingID(), true));
     subframe->SendNavigateWithTransition(1, 0, false, initial_url,
