@@ -127,22 +127,28 @@ SVGTextMetricsCalculator::SVGTextMetricsCalculator(LayoutSVGInlineText* text)
 
 SVGTextMetricsCalculator::~SVGTextMetricsCalculator()
 {
-    if (m_bidiRun)
-        m_bidiResolver.runs().deleteRuns();
+    m_bidiResolver.runs().deleteRuns();
 }
 
 void SVGTextMetricsCalculator::setupBidiRuns()
 {
-    if (isOverride(m_text.styleRef().unicodeBidi()))
-        return;
-    BidiStatus status(LTR, false);
-    status.last = status.lastStrong = WTF::Unicode::OtherNeutral;
-    m_bidiResolver.setStatus(status);
-    m_bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&m_run, 0));
-    const bool hardLineBreak = false;
-    const bool reorderRuns = false;
-    m_bidiResolver.createBidiRunsForLine(TextRunIterator(&m_run, m_run.length()), NoVisualOverride, hardLineBreak, reorderRuns);
     BidiRunList<BidiCharacterRun>& bidiRuns = m_bidiResolver.runs();
+    bool bidiOverride = isOverride(m_text.styleRef().unicodeBidi());
+    BidiStatus status(LTR, bidiOverride);
+    if (m_run.is8Bit() || bidiOverride) {
+        WTF::Unicode::CharDirection direction = WTF::Unicode::LeftToRight;
+        // If BiDi override is in effect, use the specified direction.
+        if (bidiOverride && !m_text.styleRef().isLeftToRightDirection())
+            direction = WTF::Unicode::RightToLeft;
+        bidiRuns.addRun(new BidiCharacterRun(0, m_run.charactersLength(), status.context.get(), direction));
+    } else {
+        status.last = status.lastStrong = WTF::Unicode::OtherNeutral;
+        m_bidiResolver.setStatus(status);
+        m_bidiResolver.setPositionIgnoringNestedIsolates(TextRunIterator(&m_run, 0));
+        const bool hardLineBreak = false;
+        const bool reorderRuns = false;
+        m_bidiResolver.createBidiRunsForLine(TextRunIterator(&m_run, m_run.length()), NoVisualOverride, hardLineBreak, reorderRuns);
+    }
     m_bidiRun = bidiRuns.firstRun();
 }
 
@@ -154,22 +160,19 @@ bool SVGTextMetricsCalculator::advancePosition()
 
 unsigned SVGTextMetricsCalculator::updateSubrunRangesForCurrentPosition()
 {
-    if (m_bidiRun) {
-        if (m_currentPosition >= static_cast<unsigned>(m_bidiRun->stop())) {
-            m_bidiRun = m_bidiRun->next();
-            // Ensure new subrange ranges are computed below.
-            m_subrunRanges.clear();
-        }
-        ASSERT(m_bidiRun);
-        ASSERT(static_cast<int>(m_currentPosition) < m_bidiRun->stop());
+    ASSERT(m_bidiRun);
+    if (m_currentPosition >= static_cast<unsigned>(m_bidiRun->stop())) {
+        m_bidiRun = m_bidiRun->next();
+        // Ensure new subrange ranges are computed below.
+        m_subrunRanges.clear();
     }
+    ASSERT(m_bidiRun);
+    ASSERT(static_cast<int>(m_currentPosition) < m_bidiRun->stop());
 
-    unsigned positionInRun = m_bidiRun ? m_currentPosition - m_bidiRun->start() : m_currentPosition;
+    unsigned positionInRun = m_currentPosition - m_bidiRun->start();
     if (positionInRun >= m_subrunRanges.size()) {
-        unsigned subrunStart = m_bidiRun ? m_bidiRun->start() : 0;
-        unsigned subrunEnd = m_bidiRun ? m_bidiRun->stop() : m_run.charactersLength();
-        TextDirection subrunDirection = m_bidiRun ? m_bidiRun->direction() : m_text.styleRef().direction();
-        TextRun subRun = constructTextRun(m_text, subrunStart, subrunEnd - subrunStart, subrunDirection);
+        TextRun subRun = constructTextRun(m_text,
+            m_bidiRun->start(), m_bidiRun->stop() - m_bidiRun->start(), m_bidiRun->direction());
         m_subrunRanges = m_text.scaledFont().individualCharacterRanges(subRun);
 
         // TODO(pdr): We only have per-glyph data so we need to synthesize per-
