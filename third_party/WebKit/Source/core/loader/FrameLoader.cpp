@@ -505,11 +505,11 @@ void FrameLoader::finishedParsing()
 
     if (client()) {
         ScriptForbiddenScope forbidScripts;
-        client()->dispatchDidFinishDocumentLoad(m_documentLoader ? m_documentLoader->isCommittedButEmpty() : true);
+        client()->dispatchDidFinishDocumentLoad();
     }
 
     if (client())
-        client()->runScriptsAtDocumentReady();
+        client()->runScriptsAtDocumentReady(m_documentLoader ? m_documentLoader->isCommittedButEmpty() : true);
 
     checkCompleted();
 

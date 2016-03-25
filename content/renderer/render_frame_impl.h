@@ -495,9 +495,9 @@ class CONTENT_EXPORT RenderFrameImpl
                        blink::WebTextDirection direction) override;
   void didChangeIcon(blink::WebLocalFrame* frame,
                      blink::WebIconURL::Type icon_type) override;
-  void didFinishDocumentLoad(blink::WebLocalFrame* frame,
-                             bool document_is_empty) override;
-  void runScriptsAtDocumentReady(blink::WebLocalFrame* frame) override;
+  void didFinishDocumentLoad(blink::WebLocalFrame* frame) override;
+  void runScriptsAtDocumentReady(blink::WebLocalFrame* frame,
+                                 bool document_is_empty) override;
   void didHandleOnloadEvents(blink::WebLocalFrame* frame) override;
   void didFailLoad(blink::WebLocalFrame* frame,
                    const blink::WebURLError& error,

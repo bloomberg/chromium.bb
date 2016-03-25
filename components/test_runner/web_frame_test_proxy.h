@@ -113,9 +113,9 @@ class WebFrameTestProxy : public Base {
     Base::didChangeIcon(frame, icon_type);
   }
 
-  void didFinishDocumentLoad(blink::WebLocalFrame* frame, bool empty) override {
+  void didFinishDocumentLoad(blink::WebLocalFrame* frame) override {
     base_proxy_->DidFinishDocumentLoad(frame);
-    Base::didFinishDocumentLoad(frame, empty);
+    Base::didFinishDocumentLoad(frame);
   }
 
   void didHandleOnloadEvents(blink::WebLocalFrame* frame) override {

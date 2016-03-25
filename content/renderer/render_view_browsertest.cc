@@ -1861,7 +1861,8 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
 
   // Emulate a 4xx/5xx main resource response with an empty body.
   main_frame->didReceiveResponse(1, response);
-  main_frame->didFinishDocumentLoad(web_frame, true);
+  main_frame->didFinishDocumentLoad(web_frame);
+  main_frame->runScriptsAtDocumentReady(web_frame, true);
 
   // The error page itself is loaded asynchronously.
   FrameLoadWaiter(main_frame).Wait();

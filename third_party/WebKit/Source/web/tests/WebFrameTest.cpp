@@ -8415,7 +8415,7 @@ public:
     }
     void didStartProvisionalLoad(WebLocalFrame*, double) override { EXPECT_EQ(1, m_callbackCount++); }
     void didCommitProvisionalLoad(WebLocalFrame*, const WebHistoryItem&, WebHistoryCommitType) override { EXPECT_EQ(2, m_callbackCount++); }
-    void didFinishDocumentLoad(WebLocalFrame*, bool documentIsEmpty) override { EXPECT_EQ(3, m_callbackCount++); }
+    void didFinishDocumentLoad(WebLocalFrame*) override { EXPECT_EQ(3, m_callbackCount++); }
     void didHandleOnloadEvents(WebLocalFrame*) override { EXPECT_EQ(4, m_callbackCount++); }
     void didFinishLoad(WebLocalFrame*) override { EXPECT_EQ(5, m_callbackCount++); }
     void didStopLoading() override

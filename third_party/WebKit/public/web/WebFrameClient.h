@@ -321,11 +321,11 @@ public:
 
     // The frame's document finished loading.
     // This method may not execute JavaScript code.
-    virtual void didFinishDocumentLoad(WebLocalFrame*, bool documentIsEmpty) { }
+    virtual void didFinishDocumentLoad(WebLocalFrame*) { }
 
     // Like |didFinishDocumentLoad|, except this method may run JavaScript
     // code (and possibly invalidate the frame).
-    virtual void runScriptsAtDocumentReady(WebLocalFrame*) { }
+    virtual void runScriptsAtDocumentReady(WebLocalFrame*, bool documentIsEmpty) { }
 
     // The 'load' event was dispatched.
     virtual void didHandleOnloadEvents(WebLocalFrame*) { }

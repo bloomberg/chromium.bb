@@ -194,10 +194,10 @@ void FrameLoaderClientImpl::runScriptsAtDocumentElementAvailable()
     // The callback might have deleted the frame, do not use |this|!
 }
 
-void FrameLoaderClientImpl::runScriptsAtDocumentReady()
+void FrameLoaderClientImpl::runScriptsAtDocumentReady(bool documentIsEmpty)
 {
     if (m_webFrame->client())
-        m_webFrame->client()->runScriptsAtDocumentReady(m_webFrame);
+        m_webFrame->client()->runScriptsAtDocumentReady(m_webFrame, documentIsEmpty);
     // The callback might have deleted the frame, do not use |this|!
 }
 
@@ -437,7 +437,7 @@ void FrameLoaderClientImpl::dispatchDidFinishLoading(DocumentLoader* loader,
         m_webFrame->client()->didFinishResourceLoad(m_webFrame, identifier);
 }
 
-void FrameLoaderClientImpl::dispatchDidFinishDocumentLoad(bool documentIsEmpty)
+void FrameLoaderClientImpl::dispatchDidFinishDocumentLoad()
 {
     if (!m_webFrame->parent()) {
         if (WebViewImpl* webview = m_webFrame->viewImpl())
@@ -449,7 +449,7 @@ void FrameLoaderClientImpl::dispatchDidFinishDocumentLoad(bool documentIsEmpty)
     // the fake WebLocalFrame that they create, which means that you should not
     // put any code touching `this` after the two lines below.
     if (m_webFrame->client())
-        m_webFrame->client()->didFinishDocumentLoad(m_webFrame, documentIsEmpty);
+        m_webFrame->client()->didFinishDocumentLoad(m_webFrame);
 }
 
 void FrameLoaderClientImpl::dispatchDidLoadResourceFromMemoryCache(const ResourceRequest& request, const ResourceResponse& response)

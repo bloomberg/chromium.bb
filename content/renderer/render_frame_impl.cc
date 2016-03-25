@@ -3355,8 +3355,7 @@ void RenderFrameImpl::didChangeIcon(blink::WebLocalFrame* frame,
   render_view_->didChangeIcon(frame, icon_type);
 }
 
-void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame,
-                                            bool document_is_empty) {
+void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame) {
   TRACE_EVENT1("navigation,benchmark", "RenderFrameImpl::didFinishDocumentLoad",
                "id", routing_id_);
   DCHECK_EQ(frame_, frame);
@@ -3372,6 +3371,26 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame,
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame, frame->view()->pageEncoding().utf8());
+}
+
+void RenderFrameImpl::runScriptsAtDocumentReady(blink::WebLocalFrame* frame,
+                                                bool document_is_empty) {
+  DCHECK_EQ(frame_, frame);
+  base::WeakPtr<RenderFrameImpl> weak_self = weak_factory_.GetWeakPtr();
+
+  MojoBindingsController* mojo_bindings_controller =
+      MojoBindingsController::Get(this);
+  if (mojo_bindings_controller)
+    mojo_bindings_controller->RunScriptsAtDocumentReady();
+
+  if (!weak_self.get())
+    return;
+
+  GetContentClient()->renderer()->RunScriptsAtDocumentEnd(this);
+
+  // ContentClient might have deleted |frame| and |this| by now!
+  if (!weak_self.get())
+    return;
 
   // If this is an empty document with an http status code indicating an error,
   // we may want to display our own error page, so the user doesn't end up
@@ -3400,23 +3419,10 @@ void RenderFrameImpl::didFinishDocumentLoad(blink::WebLocalFrame* frame,
     error.unreachableURL = frame->document().url();
     error.domain = WebString::fromUTF8(error_domain);
     error.reason = http_status_code;
+    // This call may run scripts, e.g. via the beforeunload event.
     LoadNavigationErrorPage(frame->dataSource()->request(), error, true);
   }
-}
-
-void RenderFrameImpl::runScriptsAtDocumentReady(blink::WebLocalFrame* frame) {
-  base::WeakPtr<RenderFrameImpl> weak_self = weak_factory_.GetWeakPtr();
-
-  MojoBindingsController* mojo_bindings_controller =
-      MojoBindingsController::Get(this);
-  if (mojo_bindings_controller)
-    mojo_bindings_controller->RunScriptsAtDocumentReady();
-
-  if (!weak_self.get())
-    return;
-
-  GetContentClient()->renderer()->RunScriptsAtDocumentEnd(this);
-  // Do not use |this| or |frame|! ContentClient might have deleted them by now!
+  // Do not use |this| or |frame| here without checking |weak_self|.
 }
 
 void RenderFrameImpl::didHandleOnloadEvents(blink::WebLocalFrame* frame) {

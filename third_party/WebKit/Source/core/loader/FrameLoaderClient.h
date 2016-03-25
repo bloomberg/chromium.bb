@@ -96,7 +96,7 @@ public:
     virtual void dispatchDidCommitLoad(HistoryItem*, HistoryCommitType) = 0;
     virtual void dispatchDidFailProvisionalLoad(const ResourceError&, HistoryCommitType) = 0;
     virtual void dispatchDidFailLoad(const ResourceError&, HistoryCommitType) = 0;
-    virtual void dispatchDidFinishDocumentLoad(bool documentIsEmpty) = 0;
+    virtual void dispatchDidFinishDocumentLoad() = 0;
     virtual void dispatchDidFinishLoad() = 0;
     virtual void dispatchDidChangeThemeColor() = 0;
 
@@ -171,7 +171,7 @@ public:
     virtual void dispatchDidClearWindowObjectInMainWorld() = 0;
     virtual void documentElementAvailable() = 0;
     virtual void runScriptsAtDocumentElementAvailable() = 0;
-    virtual void runScriptsAtDocumentReady() = 0;
+    virtual void runScriptsAtDocumentReady(bool documentIsEmpty) = 0;
 
     virtual v8::Local<v8::Value> createTestInterface(const AtomicString& name) = 0;
 
