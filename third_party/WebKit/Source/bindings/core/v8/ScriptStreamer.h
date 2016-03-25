@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 #include <v8.h>
 
@@ -82,6 +83,9 @@ public:
 
     v8::ScriptCompiler::StreamedSource::Encoding encoding() const { return m_encoding; }
 
+    const String& scriptURLString() const { return m_scriptURLString; }
+    unsigned long scriptResourceIdentifier() const { return m_scriptResourceIdentifier; }
+
     static void setSmallScriptThresholdForTesting(size_t threshold)
     {
         s_smallScriptThreshold = threshold;
@@ -135,6 +139,12 @@ private:
 
     // For recording metrics for different types of scripts separately.
     Type m_scriptType;
+
+    // Keep the script URL string for event tracing.
+    const String m_scriptURLString;
+
+    // Keep the script resource dentifier for event tracing.
+    const unsigned long m_scriptResourceIdentifier;
 
     mutable Mutex m_mutex;
 

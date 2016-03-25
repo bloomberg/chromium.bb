@@ -5,6 +5,7 @@
 #include "bindings/core/v8/ScriptStreamerThread.h"
 
 #include "bindings/core/v8/ScriptStreamer.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTaskRunner.h"
@@ -77,7 +78,7 @@ WebThread& ScriptStreamerThread::platformThread()
 
 void ScriptStreamerThread::runScriptStreamingTask(WTF::PassOwnPtr<v8::ScriptCompiler::ScriptStreamingTask> task, ScriptStreamer* streamer)
 {
-    TRACE_EVENT0("v8", "v8.parseOnBackground");
+    TRACE_EVENT1("v8,devtools.timeline", "v8.parseOnBackground", "data", InspectorParseScriptEvent::data(streamer->scriptResourceIdentifier(), streamer->scriptURLString()));
     // Running the task can and will block: SourceStream::GetSomeData will get
     // called and it will block and wait for data from the network.
     task->Run();

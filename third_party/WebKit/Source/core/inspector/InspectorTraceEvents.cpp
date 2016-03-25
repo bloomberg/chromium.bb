@@ -679,6 +679,15 @@ PassOwnPtr<TracedValue> InspectorEvaluateScriptEvent::data(LocalFrame* frame, co
     return value.release();
 }
 
+PassOwnPtr<TracedValue> InspectorParseScriptEvent::data(unsigned long identifier, const String& url)
+{
+    String requestId = IdentifiersFactory::requestId(identifier);
+    OwnPtr<TracedValue> value = TracedValue::create();
+    value->setString("requestId", requestId);
+    value->setString("url", url);
+    return value.release();
+}
+
 PassOwnPtr<TracedValue> InspectorCompileScriptEvent::data(const String& url, const TextPosition& textPosition)
 {
     return fillLocation(url, textPosition);

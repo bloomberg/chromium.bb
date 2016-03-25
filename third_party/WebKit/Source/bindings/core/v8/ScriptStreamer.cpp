@@ -587,6 +587,8 @@ ScriptStreamer::ScriptStreamer(PendingScript* script, Type scriptType, ScriptSta
     , m_compileOptions(compileOptions)
     , m_scriptState(scriptState)
     , m_scriptType(scriptType)
+    , m_scriptURLString(m_resource->url().copy().getString())
+    , m_scriptResourceIdentifier(m_resource->identifier())
     , m_encoding(v8::ScriptCompiler::StreamedSource::TWO_BYTE) // Unfortunately there's no dummy encoding value in the enum; let's use one we don't stream.
     , m_loadingTaskRunner(adoptPtr(loadingTaskRunner->clone()))
 {

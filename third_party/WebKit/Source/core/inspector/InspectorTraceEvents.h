@@ -278,6 +278,10 @@ namespace InspectorEvaluateScriptEvent {
 PassOwnPtr<TracedValue> data(LocalFrame*, const String& url, const WTF::TextPosition&);
 }
 
+namespace InspectorParseScriptEvent {
+PassOwnPtr<TracedValue> data(unsigned long identifier, const String& url);
+}
+
 namespace InspectorCompileScriptEvent {
 PassOwnPtr<TracedValue> data(const String& url, const WTF::TextPosition&);
 }
