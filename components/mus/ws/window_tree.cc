@@ -267,6 +267,23 @@ bool WindowTree::SetWindowVisibility(const ClientWindowId& window_id,
   return true;
 }
 
+bool WindowTree::SetFocus(const ClientWindowId& window_id) {
+  ServerWindow* window = GetWindowByClientId(window_id);
+  // TODO(beng): consider shifting non-policy drawn check logic to VTH's
+  //             FocusController.
+  // TODO(sky): this doesn't work to clear focus. That is because if window is
+  // null, then |host| is null and we fail.
+  Display* display = GetDisplay(window);
+  if (!window || !display || !window->IsDrawn() || !window->can_focus() ||
+      !access_policy_->CanSetFocus(window)) {
+    return false;
+  }
+
+  Operation op(this, window_server_, OperationType::SET_FOCUS);
+  window_server_->SetFocusedWindow(window);
+  return true;
+}
+
 bool WindowTree::Embed(const ClientWindowId& window_id,
                        mojom::WindowTreeClientPtr client) {
   if (!client || !CanEmbed(window_id))
@@ -541,6 +558,10 @@ void WindowTree::ProcessCursorChanged(const ServerWindow* window,
 
 void WindowTree::ProcessFocusChanged(const ServerWindow* old_focused_window,
                                      const ServerWindow* new_focused_window) {
+  if (window_server_->current_operation_type() == OperationType::SET_FOCUS &&
+      window_server_->IsOperationSource(id_)) {
+    return;
+  }
   const ServerWindow* window =
       new_focused_window
           ? access_policy_->GetWindowForFocusChange(new_focused_window)
@@ -548,8 +569,6 @@ void WindowTree::ProcessFocusChanged(const ServerWindow* old_focused_window,
   ClientWindowId client_window_id;
   // If the window isn't known we'll supply null, which is ok.
   IsWindowKnown(window, &client_window_id);
-  // TODO(sky): this should only notify if this results in a change of focus
-  // for the client.
   client()->OnWindowFocused(client_window_id.id);
 }
 
@@ -1203,20 +1222,8 @@ void WindowTree::Embed(Id transport_window_id,
 }
 
 void WindowTree::SetFocus(uint32_t change_id, Id transport_window_id) {
-  ServerWindow* window =
-      GetWindowByClientId(ClientWindowId(transport_window_id));
-  // TODO(beng): consider shifting non-policy drawn check logic to VTH's
-  //             FocusController.
-  // TODO(sky): this doesn't work to clear focus. That is because if window is
-  // null, then |host| is null and we fail.
-  Display* display = GetDisplay(window);
-  const bool success = window && window->IsDrawn() && window->can_focus() &&
-                       access_policy_->CanSetFocus(window) && display;
-  if (success) {
-    Operation op(this, window_server_, OperationType::SET_FOCUS);
-    display->SetFocusedWindow(window);
-  }
-  client()->OnChangeCompleted(change_id, success);
+  client()->OnChangeCompleted(change_id,
+                              SetFocus(ClientWindowId(transport_window_id)));
 }
 
 void WindowTree::SetCanFocus(Id transport_window_id, bool can_focus) {
@@ -1290,10 +1297,10 @@ void WindowTree::RemoveActivationParent(Id transport_window_id) {
 }
 
 void WindowTree::ActivateNextWindow() {
-  Display* host = GetDisplayForWindowManager();
-  if (!host)
+  Display* display = GetDisplayForWindowManager();
+  if (!display)
     return;
-  host->focus_controller()->ActivateNextWindow();
+  display->ActivateNextWindow();
 }
 
 void WindowTree::SetUnderlaySurfaceOffsetAndExtendedHitArea(

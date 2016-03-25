@@ -51,14 +51,6 @@ ClientWindowId BuildClientWindowId(WindowTree* tree,
   return ClientWindowId(WindowIdToTransportId(WindowId(tree->id(), window_id)));
 }
 
-ClientWindowId ClientWindowIdForWindow(WindowTree* tree,
-                                       const ServerWindow* window) {
-  ClientWindowId client_window_id;
-  // If window isn't known we'll return 0, which should then error out.
-  tree->IsWindowKnown(window, &client_window_id);
-  return client_window_id;
-}
-
 // -----------------------------------------------------------------------------
 
 ui::PointerEvent CreatePointerDownEvent(int x, int y) {
@@ -89,16 +81,6 @@ ui::PointerEvent CreateMouseUpEvent(int x, int y) {
       ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(x, y), gfx::Point(x, y),
                      ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
                      ui::EF_LEFT_MOUSE_BUTTON));
-}
-
-const ServerWindow* FirstRoot(WindowTree* tree) {
-  return tree->roots().size() == 1u ? *(tree->roots().begin()) : nullptr;
-}
-
-ClientWindowId FirstRootId(WindowTree* tree) {
-  return tree->roots().size() == 1u
-             ? ClientWindowIdForWindow(tree, *(tree->roots().begin()))
-             : ClientWindowId();
 }
 
 ServerWindow* GetCaptureWindow(Display* display) {
@@ -170,7 +152,7 @@ class WindowTreeTest : public testing::Test {
                             TestWindowTreeBinding** binding) {
     WindowTree* tree = new WindowTree(window_server_.get(), user_id, nullptr,
                                       make_scoped_ptr(new DefaultAccessPolicy));
-    *binding = new TestWindowTreeBinding;
+    *binding = new TestWindowTreeBinding(tree);
     window_server_->AddTree(make_scoped_ptr(tree), make_scoped_ptr(*binding),
                             nullptr);
     return tree;

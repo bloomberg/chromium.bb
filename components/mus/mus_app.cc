@@ -184,16 +184,6 @@ void MandolineUIServicesApp::OnNoMoreDisplays() {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
-scoped_ptr<ws::WindowTreeBinding>
-MandolineUIServicesApp::CreateWindowTreeBindingForEmbedAtWindow(
-    ws::WindowServer* window_server,
-    ws::WindowTree* tree,
-    mojom::WindowTreeRequest tree_request,
-    mojom::WindowTreeClientPtr client) {
-  return make_scoped_ptr(new ws::DefaultWindowTreeBinding(
-      tree, window_server, std::move(tree_request), std::move(client)));
-}
-
 void MandolineUIServicesApp::CreateDefaultDisplays() {
   // Display manages its own lifetime.
   ws::Display* host_impl =

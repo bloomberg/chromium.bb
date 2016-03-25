@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "components/mus/public/interfaces/display.mojom.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/ws/display.h"
@@ -303,9 +305,10 @@ class TestWindowTreeClient : public mus::mojom::WindowTreeClient {
 // WindowTreeBinding implementation that vends TestWindowTreeBinding.
 class TestWindowTreeBinding : public WindowTreeBinding {
  public:
-  TestWindowTreeBinding();
+  explicit TestWindowTreeBinding(WindowTree* tree);
   ~TestWindowTreeBinding() override;
 
+  WindowTree* tree() { return tree_; }
   TestWindowTreeClient* client() { return &client_; }
 
   bool is_paused() const { return is_paused_; }
@@ -315,8 +318,10 @@ class TestWindowTreeBinding : public WindowTreeBinding {
   void SetIncomingMethodCallProcessingPaused(bool paused) override;
 
  private:
+  WindowTree* tree_;
   TestWindowTreeClient client_;
   bool is_paused_ = false;
+  scoped_ptr<TestWindowManager> window_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeBinding);
 };
@@ -338,32 +343,59 @@ class TestWindowServerDelegate : public WindowServerDelegate {
   }
 
   TestWindowTreeClient* last_client() {
-    return last_binding_ ? last_binding_->client() : nullptr;
+    return last_binding() ? last_binding()->client() : nullptr;
   }
-  TestWindowTreeBinding* last_binding() { return last_binding_; }
+  TestWindowTreeBinding* last_binding() {
+    return bindings_.empty() ? nullptr : bindings_.back();
+  }
+
+  std::vector<TestWindowTreeBinding*>* bindings() { return &bindings_; }
 
   bool got_on_no_more_displays() const { return got_on_no_more_displays_; }
 
+  Display* AddDisplay();
+
   // WindowServerDelegate:
   void OnNoMoreDisplays() override;
-  scoped_ptr<WindowTreeBinding> CreateWindowTreeBindingForEmbedAtWindow(
+  scoped_ptr<WindowTreeBinding> CreateWindowTreeBinding(
+      BindingType type,
       ws::WindowServer* window_server,
       ws::WindowTree* tree,
-      mojom::WindowTreeRequest tree_request,
-      mojom::WindowTreeClientPtr client) override;
+      mojom::WindowTreeRequest* tree_request,
+      mojom::WindowTreeClientPtr* client) override;
   void CreateDefaultDisplays() override;
 
  private:
   // If CreateDefaultDisplays() this is the number of Displays that are
   // created. The default is 0, which results in a DCHECK.
   int num_displays_to_create_ = 0;
-  TestWindowTreeBinding* last_binding_ = nullptr;
   Display* display_ = nullptr;
   WindowServer* window_server_ = nullptr;
   bool got_on_no_more_displays_ = false;
+  // All TestWindowTreeBinding objects created via CreateWindowTreeBinding.
+  // These are owned by the corresponding WindowTree.
+  std::vector<TestWindowTreeBinding*> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowServerDelegate);
 };
+
+// -----------------------------------------------------------------------------
+
+// Returns the first and only root of |tree|. If |tree| has zero or more than
+// one root returns null.
+ServerWindow* FirstRoot(WindowTree* tree);
+
+// Returns the ClientWindowId of the first root of |tree|, or an empty
+// ClientWindowId if |tree| has zero or more than one root.
+ClientWindowId FirstRootId(WindowTree* tree);
+
+// Returns |tree|s ClientWindowId for |window|.
+ClientWindowId ClientWindowIdForWindow(WindowTree* tree,
+                                       const ServerWindow* window);
+
+// Creates a new visible window as a child of the single root of |tree|.
+// |client_id| set to the ClientWindowId of the new window.
+ServerWindow* NewWindowInTree(WindowTree* tree, ClientWindowId* client_id);
 
 }  // namespace test
 }  // namespace ws

@@ -32,22 +32,28 @@ class WindowTreeBinding;
 
 class WindowServerDelegate {
  public:
+  enum BindingType {
+    EMBED,
+    WINDOW_MANAGER,
+  };
+
+  // Called if no Displays have been created, but a WindowManagerFactory has
+  // been set.
+  virtual void CreateDefaultDisplays() = 0;
+
   // Called once when the AcceleratedWidget of a Display is available.
   virtual void OnFirstDisplayReady();
 
   virtual void OnNoMoreDisplays() = 0;
 
-  // Creates a WindowTreeBinding in response to Embed() calls on the
-  // WindowServer.
-  virtual scoped_ptr<WindowTreeBinding> CreateWindowTreeBindingForEmbedAtWindow(
+  // Creates a WindowTreeBinding. Default implementation returns null, which
+  // creates DefaultBinding.
+  virtual scoped_ptr<WindowTreeBinding> CreateWindowTreeBinding(
+      BindingType type,
       ws::WindowServer* window_server,
       ws::WindowTree* tree,
-      mojom::WindowTreeRequest tree_request,
-      mojom::WindowTreeClientPtr client) = 0;
-
-  // Called if no Displays have been created, but a WindowManagerFactory has
-  // been set.
-  virtual void CreateDefaultDisplays() = 0;
+      mojom::WindowTreeRequest* tree_request,
+      mojom::WindowTreeClientPtr* client);
 
  protected:
   virtual ~WindowServerDelegate() {}

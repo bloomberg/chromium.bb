@@ -79,11 +79,6 @@ class MandolineUIServicesApp
   // WindowServerDelegate:
   void OnFirstDisplayReady() override;
   void OnNoMoreDisplays() override;
-  scoped_ptr<ws::WindowTreeBinding> CreateWindowTreeBindingForEmbedAtWindow(
-      ws::WindowServer* window_server,
-      ws::WindowTree* tree,
-      mojom::WindowTreeRequest tree_request,
-      mojom::WindowTreeClientPtr client) override;
   void CreateDefaultDisplays() override;
 
   // mojo::InterfaceFactory<mojom::DisplayManager> implementation.

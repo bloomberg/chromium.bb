@@ -61,6 +61,17 @@ class TestPlatformDisplay : public PlatformDisplay {
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplay);
 };
 
+ClientWindowId NextUnusedClientWindowId(WindowTree* tree) {
+  ClientWindowId client_id;
+  for (ConnectionSpecificId id = 1;; ++id) {
+    // Used the id of the connection in the upper bits to simplify things.
+    const ClientWindowId client_id =
+        ClientWindowId(WindowIdToTransportId(WindowId(tree->id(), id)));
+    if (!tree->GetWindowByClientId(client_id))
+      return client_id;
+  }
+}
+
 }  // namespace
 
 // WindowManagerFactoryRegistryTestApi ----------------------------------------
@@ -262,12 +273,14 @@ void TestWindowTreeClient::GetWindowManager(
 
 // TestWindowTreeBinding ------------------------------------------------------
 
-TestWindowTreeBinding::TestWindowTreeBinding() : WindowTreeBinding(&client_) {}
+TestWindowTreeBinding::TestWindowTreeBinding(WindowTree* tree)
+    : WindowTreeBinding(&client_), tree_(tree) {}
 TestWindowTreeBinding::~TestWindowTreeBinding() {}
 
 mojom::WindowManager* TestWindowTreeBinding::GetWindowManager() {
-  NOTREACHED();
-  return nullptr;
+  if (!window_manager_.get())
+    window_manager_.reset(new TestWindowManager);
+  return window_manager_.get();
 }
 void TestWindowTreeBinding::SetIncomingMethodCallProcessingPaused(bool paused) {
   is_paused_ = paused;
@@ -278,18 +291,25 @@ void TestWindowTreeBinding::SetIncomingMethodCallProcessingPaused(bool paused) {
 TestWindowServerDelegate::TestWindowServerDelegate() {}
 TestWindowServerDelegate::~TestWindowServerDelegate() {}
 
+Display* TestWindowServerDelegate::AddDisplay() {
+  // Display manages its own lifetime.
+  Display* display = new Display(window_server_, PlatformDisplayInitParams());
+  display->Init(nullptr);
+  return display;
+}
+
 void TestWindowServerDelegate::OnNoMoreDisplays() {
   got_on_no_more_displays_ = true;
 }
 
-scoped_ptr<WindowTreeBinding>
-TestWindowServerDelegate::CreateWindowTreeBindingForEmbedAtWindow(
+scoped_ptr<WindowTreeBinding> TestWindowServerDelegate::CreateWindowTreeBinding(
+    BindingType type,
     ws::WindowServer* window_server,
     ws::WindowTree* tree,
-    mojom::WindowTreeRequest tree_request,
-    mojom::WindowTreeClientPtr client) {
-  scoped_ptr<TestWindowTreeBinding> binding(new TestWindowTreeBinding);
-  last_binding_ = binding.get();
+    mojom::WindowTreeRequest* tree_request,
+    mojom::WindowTreeClientPtr* client) {
+  scoped_ptr<TestWindowTreeBinding> binding(new TestWindowTreeBinding(tree));
+  bindings_.push_back(binding.get());
   return std::move(binding);
 }
 
@@ -297,11 +317,46 @@ void TestWindowServerDelegate::CreateDefaultDisplays() {
   DCHECK(num_displays_to_create_);
   DCHECK(window_server_);
 
-  for (int i = 0; i < num_displays_to_create_; ++i) {
-    // Display manages its own lifetime.
-    Display* display = new Display(window_server_, PlatformDisplayInitParams());
-    display->Init(nullptr);
-  }
+  for (int i = 0; i < num_displays_to_create_; ++i)
+    AddDisplay();
+}
+
+ServerWindow* FirstRoot(WindowTree* tree) {
+  return tree->roots().size() == 1u
+             ? tree->GetWindow((*tree->roots().begin())->id())
+             : nullptr;
+}
+
+ClientWindowId FirstRootId(WindowTree* tree) {
+  ServerWindow* first_root = FirstRoot(tree);
+  return first_root ? ClientWindowIdForWindow(tree, first_root)
+                    : ClientWindowId();
+}
+
+ClientWindowId ClientWindowIdForWindow(WindowTree* tree,
+                                       const ServerWindow* window) {
+  ClientWindowId client_window_id;
+  // If window isn't known we'll return 0, which should then error out.
+  tree->IsWindowKnown(window, &client_window_id);
+  return client_window_id;
+}
+
+ServerWindow* NewWindowInTree(WindowTree* tree, ClientWindowId* client_id) {
+  ServerWindow* parent = FirstRoot(tree);
+  if (!parent)
+    return nullptr;
+  ClientWindowId parent_client_id;
+  if (!tree->IsWindowKnown(parent, &parent_client_id))
+    return nullptr;
+  ClientWindowId client_window_id = NextUnusedClientWindowId(tree);
+  if (!tree->NewWindow(client_window_id, ServerWindow::Properties()))
+    return nullptr;
+  if (!tree->SetWindowVisibility(client_window_id, true))
+    return nullptr;
+  if (!tree->AddWindow(parent_client_id, client_window_id))
+    return nullptr;
+  *client_id = client_window_id;
+  return tree->GetWindowByClientId(client_window_id);
 }
 
 }  // namespace test

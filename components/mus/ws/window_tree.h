@@ -138,6 +138,7 @@ class WindowTree : public mojom::WindowTree,
   std::vector<const ServerWindow*> GetWindowTree(
       const ClientWindowId& window_id) const;
   bool SetWindowVisibility(const ClientWindowId& window_id, bool visible);
+  bool SetFocus(const ClientWindowId& window_id);
   bool Embed(const ClientWindowId& window_id,
              mojom::WindowTreeClientPtr client);
   void DispatchInputEvent(ServerWindow* target, const ui::Event& event);

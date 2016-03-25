@@ -113,10 +113,14 @@ class Display : public PlatformDisplayDelegate,
     return window_manager_state_map_.size();
   }
 
+  // TODO(sky): this should only be called by WindowServer, move to interface
+  // used by WindowServer.
   void SetFocusedWindow(ServerWindow* window);
+  // NOTE: this returns the focused window only if the focused window is in this
+  // display. If this returns null focus may be in another display.
   ServerWindow* GetFocusedWindow();
-  void DestroyFocusController();
-  FocusController* focus_controller() { return focus_controller_.get(); }
+
+  void ActivateNextWindow();
 
   void AddActivationParent(ServerWindow* window);
   void RemoveActivationParent(ServerWindow* window);

@@ -42,7 +42,11 @@ Display::~Display() {
 
   window_server_->window_manager_factory_registry()->RemoveObserver(this);
 
-  DestroyFocusController();
+  if (!focus_controller_) {
+    focus_controller_->RemoveObserver(this);
+    focus_controller_.reset();
+  }
+
   for (ServerWindow* window : windows_needing_frame_destruction_)
     window->RemoveObserver(this);
 
@@ -154,11 +158,10 @@ const WindowManagerState* Display::GetActiveWindowManagerState() const {
 }
 
 void Display::SetFocusedWindow(ServerWindow* new_focused_window) {
-  // TODO(sky): this is wrong. Focus is global, not per Display.
   ServerWindow* old_focused_window = focus_controller_->GetFocusedWindow();
   if (old_focused_window == new_focused_window)
     return;
-  DCHECK(root_window()->Contains(new_focused_window));
+  DCHECK(!new_focused_window || root_window()->Contains(new_focused_window));
   focus_controller_->SetFocusedWindow(new_focused_window);
 }
 
@@ -166,12 +169,10 @@ ServerWindow* Display::GetFocusedWindow() {
   return focus_controller_->GetFocusedWindow();
 }
 
-void Display::DestroyFocusController() {
-  if (!focus_controller_)
-    return;
-
-  focus_controller_->RemoveObserver(this);
-  focus_controller_.reset();
+void Display::ActivateNextWindow() {
+  // TODO(sky): this is wrong, needs to figure out the next window to activate
+  // and then route setting through WindowServer.
+  focus_controller_->ActivateNextWindow();
 }
 
 void Display::AddActivationParent(ServerWindow* window) {

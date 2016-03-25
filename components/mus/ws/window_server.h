@@ -103,6 +103,12 @@ class WindowServer : public ServerWindowDelegate,
                               : OperationType::NONE;
   }
 
+  // Returns true if the specified connection issued the current operation.
+  bool IsOperationSource(ConnectionSpecificId tree_id) const {
+    return current_operation_ &&
+           current_operation_->source_tree_id() == tree_id;
+  }
+
   // Invoked when a connection messages a client about the change. This is used
   // to avoid sending ServerChangeIdAdvanced() unnecessarily.
   void OnTreeMessagedClient(ConnectionSpecificId id);
@@ -127,6 +133,9 @@ class WindowServer : public ServerWindowDelegate,
   WindowManagerFactoryRegistry* window_manager_factory_registry() {
     return &window_manager_factory_registry_;
   }
+
+  // Sets focus to the specified window.
+  void SetFocusedWindow(ServerWindow* window);
 
   // Returns a change id for the window manager that is associated with
   // |source| and |client_change_id|. When the window manager replies
@@ -204,12 +213,6 @@ class WindowServer : public ServerWindowDelegate,
 
   // Balances a call to PrepareForOperation().
   void FinishOperation();
-
-  // Returns true if the specified connection issued the current operation.
-  bool IsOperationSource(ConnectionSpecificId tree_id) const {
-    return current_operation_ &&
-           current_operation_->source_tree_id() == tree_id;
-  }
 
   // Run in response to events which may cause us to change the native cursor.
   void MaybeUpdateNativeCursor(ServerWindow* window);

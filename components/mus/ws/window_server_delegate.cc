@@ -4,10 +4,21 @@
 
 #include "components/mus/ws/window_server_delegate.h"
 
+#include "components/mus/ws/window_tree_binding.h"
+
 namespace mus {
 namespace ws {
 
 void WindowServerDelegate::OnFirstDisplayReady() {}
+
+scoped_ptr<WindowTreeBinding> WindowServerDelegate::CreateWindowTreeBinding(
+    BindingType type,
+    ws::WindowServer* window_server,
+    ws::WindowTree* tree,
+    mojom::WindowTreeRequest* tree_request,
+    mojom::WindowTreeClientPtr* client) {
+  return nullptr;
+}
 
 }  // namespace ws
 }  // namespace mus

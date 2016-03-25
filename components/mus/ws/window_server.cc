@@ -77,9 +77,14 @@ WindowTree* WindowServer::EmbedAtWindow(
   WindowTree* tree = tree_ptr.get();
 
   mojom::WindowTreePtr window_tree_ptr;
-  scoped_ptr<WindowTreeBinding> binding =
-      delegate_->CreateWindowTreeBindingForEmbedAtWindow(
-          this, tree, GetProxy(&window_tree_ptr), std::move(client));
+  mojom::WindowTreeRequest window_tree_request = GetProxy(&window_tree_ptr);
+  scoped_ptr<WindowTreeBinding> binding = delegate_->CreateWindowTreeBinding(
+      WindowServerDelegate::BindingType::EMBED, this, tree,
+      &window_tree_request, &client);
+  if (!binding) {
+    binding.reset(new ws::DefaultWindowTreeBinding(
+        tree, this, std::move(window_tree_request), std::move(client)));
+  }
 
   AddTree(std::move(tree_ptr), std::move(binding), std::move(window_tree_ptr));
   OnTreeMessagedClient(tree->id());
@@ -107,9 +112,17 @@ WindowTree* WindowServer::CreateTreeForWindowManager(
   scoped_ptr<WindowTree> tree_ptr(new WindowTree(
       this, user_id, root, make_scoped_ptr(new WindowManagerAccessPolicy)));
   WindowTree* tree = tree_ptr.get();
-  scoped_ptr<DefaultWindowTreeBinding> binding(new DefaultWindowTreeBinding(
-      tree_ptr.get(), this, std::move(tree_client)));
-  mojom::WindowTreePtr window_tree_ptr = binding->CreateInterfacePtrAndBind();
+  mojom::WindowTreePtr window_tree_ptr;
+  mojom::WindowTreeRequest tree_request;
+  scoped_ptr<WindowTreeBinding> binding = delegate_->CreateWindowTreeBinding(
+      WindowServerDelegate::BindingType::WINDOW_MANAGER, this, tree,
+      &tree_request, &tree_client);
+  if (!binding) {
+    DefaultWindowTreeBinding* default_binding = new DefaultWindowTreeBinding(
+        tree_ptr.get(), this, std::move(tree_client));
+    binding.reset(default_binding);
+    window_tree_ptr = default_binding->CreateInterfacePtrAndBind();
+  }
   AddTree(std::move(tree_ptr), std::move(binding), std::move(window_tree_ptr));
   tree->ConfigureWindowManager();
   return tree;
@@ -222,6 +235,28 @@ void WindowServer::OnFirstWindowManagerFactorySet() {
   // created yet. Treat this as a signal to create a Display.
   // TODO(sky): we need a better way to determine this, most likely a switch.
   delegate_->CreateDefaultDisplays();
+}
+
+void WindowServer::SetFocusedWindow(ServerWindow* window) {
+  // TODO(sky): this should fail if there is modal dialog active and |window|
+  // is outside that.
+  Display* focused_display = nullptr;
+  for (Display* display : display_manager_->displays()) {
+    if (display->GetFocusedWindow()) {
+      focused_display = display;
+      break;
+    }
+  }
+  Display* display = display_manager_->GetDisplayContaining(window);
+  DCHECK(display);  // It's assumed callers do validation before calling this.
+  display->SetFocusedWindow(window);
+  // If the focus actually changed, and focus was in another display, then we
+  // need to notify the previously focused display so that it cleans up state
+  // and notifies appropriately.
+  if (window && display->GetFocusedWindow() && display != focused_display &&
+      focused_display) {
+    focused_display->SetFocusedWindow(nullptr);
+  }
 }
 
 uint32_t WindowServer::GenerateWindowManagerChangeId(
