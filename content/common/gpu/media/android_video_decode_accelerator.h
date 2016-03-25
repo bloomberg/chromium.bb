@@ -164,7 +164,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // Does pending IO tasks if any. Once this is called, it polls |media_codec_|
   // until it finishes pending tasks. For the polling, |kDecodePollDelay| is
   // used.
-  void DoIOTask();
+  void DoIOTask(bool start_timer);
 
   // Feeds input data to |media_codec_|. This checks
   // |pending_bitstream_buffers_| and queues a buffer to |media_codec_|.
