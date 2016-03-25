@@ -15,17 +15,10 @@ On Mac or Windows, visit:
 
 ### Using ninja to compile the code
 
-We use GYP and ninja as our build system. To generate the ninja files from GYP:
+To compile the JavaScript, run this script:
 
 ```shell
-# notice the 2 in compiled_resources2.gyp
-GYP_GENERATORS=ninja tools/gyp/gyp --depth . third_party/closure_compiler/compiled_resources2.gyp
-```
-
-To compile the JavaScript:
-
-```shell
-ninja -C out/Default -j4
+third_party/closure_compiler/run_compiler
 ```
 
 The output should look something like this:
@@ -35,16 +28,10 @@ ninja: Entering directory `out/Default/'
 [30/106] ACTION Compiling chrome/browser/resources/md_history/constants.js
 ```
 
-To generate and run the **deprecated** v1 gyp format, remove the "2" from "compiled_resources2.gyp":
+To compile only a specific target, add an argument after the script name:
 
 ```shell
-$ GYP_GENERATORS=ninja tools/gyp/gyp --depth . third_party/closure_compiler/compiled_resources.gyp
-```
-
-Compiling works the same way for both v1 and v2 systems:
-
-```shell
-ninja -C out/Default -j4
+third_party/closure_compiler/run_compiler people_page
 ```
 
 ## Background

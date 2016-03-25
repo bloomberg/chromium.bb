@@ -11,7 +11,7 @@
 {
   'targets': [
     {
-      'target_name': 'compile_all_resources',
+      'target_name': 'compiled_resources2',
       'type': 'none',
       'dependencies': [
         '<(DEPTH)/chrome/browser/resources/chromeos/braille_ime/compiled_resources2.gyp:*',
