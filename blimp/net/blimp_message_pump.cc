@@ -53,9 +53,9 @@ void BlimpMessagePump::OnReadPacketComplete(int result) {
   DVLOG(2) << "OnReadPacketComplete, result=" << result;
   DCHECK(read_inflight_);
   read_inflight_ = false;
-  if (result == net::OK) {
+  if (result >= 0) {
     scoped_ptr<BlimpMessage> message(new BlimpMessage);
-    if (message->ParseFromArray(buffer_->StartOfBuffer(), buffer_->offset())) {
+    if (message->ParseFromArray(buffer_->data(), result)) {
       DVLOG(2) << "OnReadPacketComplete, result=" << *message;
       processor_->ProcessMessage(
           std::move(message),
@@ -66,7 +66,7 @@ void BlimpMessagePump::OnReadPacketComplete(int result) {
     }
   }
 
-  if (result != net::OK) {
+  if (result < 0) {
     error_observer_->OnConnectionError(result);
   }
 }
@@ -74,7 +74,7 @@ void BlimpMessagePump::OnReadPacketComplete(int result) {
 void BlimpMessagePump::OnProcessMessageComplete(int result) {
   DVLOG(2) << "OnProcessMessageComplete, result=" << result;
 
-  if (result != net::OK) {
+  if (result < 0) {
     error_observer_->OnConnectionError(result);
     return;
   }

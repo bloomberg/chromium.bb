@@ -98,6 +98,7 @@ TEST_F(TCPTransportTest, ExchangeMessages) {
   net::CompletionCallback engine_process_message_cb;
   scoped_ptr<BlimpMessage> client_message1 =
       CreateStartConnectionMessage("", 0);
+  int client_message1_size = client_message1->ByteSize();
   scoped_ptr<BlimpMessage> client_message2 = CreateCheckpointAckMessage(5);
   scoped_ptr<BlimpMessage> engine_message = CreateCheckpointAckMessage(10);
   EXPECT_CALL(engine_incoming_processor,
@@ -124,7 +125,7 @@ TEST_F(TCPTransportTest, ExchangeMessages) {
 
   // Engine finishes processing the client message.
   EXPECT_FALSE(engine_process_message_cb.is_null());
-  engine_process_message_cb.Run(net::OK);
+  engine_process_message_cb.Run(client_message1_size);
 
   // Engine sends one message.
   net::TestCompletionCallback engine_send_callback;

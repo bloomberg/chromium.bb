@@ -61,8 +61,9 @@ void StreamPacketReader::ReadPacket(
     payload_buffer_ = nullptr;
 
     // Adapt synchronous completion to an asynchronous style.
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, result));
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, result == net::OK ? payload_size_ : result));
   } else {
     callback_ = callback;
   }
@@ -136,7 +137,8 @@ int StreamPacketReader::DoReadPayload(int result) {
 
   // Finished reading the payload.
   read_state_ = ReadState::IDLE;
-  return net::OK;
+  payload_buffer_->set_offset(0);
+  return payload_size_;
 }
 
 void StreamPacketReader::OnReadComplete(int result) {
@@ -157,7 +159,8 @@ void StreamPacketReader::OnReadComplete(int result) {
   // caller.
   if (result != net::ERR_IO_PENDING) {
     payload_buffer_ = nullptr;
-    base::ResetAndReturn(&callback_).Run(result);
+    base::ResetAndReturn(&callback_)
+        .Run(result == net::OK ? payload_size_ : result);
   }
 }
 

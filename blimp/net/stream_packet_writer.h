@@ -35,7 +35,7 @@ class BLIMP_NET_EXPORT StreamPacketWriter : public PacketWriter {
   ~StreamPacketWriter() override;
 
   // PacketWriter implementation.
-  void WritePacket(scoped_refptr<net::DrainableIOBuffer> data,
+  void WritePacket(const scoped_refptr<net::DrainableIOBuffer>& data,
                    const net::CompletionCallback& callback) override;
 
  private:

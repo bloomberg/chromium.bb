@@ -24,7 +24,7 @@ class BLIMP_NET_EXPORT PacketWriter {
   // Invokes |cb| with net::OK if the write operation executed successfully.
   // All other values indicate unrecoverable errors.
   // |callback| must not be invoked if |this| is deleted.
-  virtual void WritePacket(scoped_refptr<net::DrainableIOBuffer> data,
+  virtual void WritePacket(const scoped_refptr<net::DrainableIOBuffer>& data,
                            const net::CompletionCallback& callback) = 0;
 };
 

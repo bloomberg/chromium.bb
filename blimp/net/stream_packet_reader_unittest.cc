@@ -68,8 +68,7 @@ TEST_F(StreamPacketReaderTest, ReadAsyncHeaderAsyncPayload) {
   ReadPacket();
   socket_cb.Run(kPacketHeaderSizeBytes);
   socket_cb.Run(test_msg_.size());
-  EXPECT_EQ(net::OK, callback_.WaitForResult());
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), buffer_->offset());
+  EXPECT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
   EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_));
 }
 
@@ -92,8 +91,7 @@ TEST_F(StreamPacketReaderTest, ReadAsyncHeaderSyncPayload) {
   EXPECT_FALSE(callback_.have_result());
 
   socket_cb.Run(kPacketHeaderSizeBytes);
-  EXPECT_EQ(net::OK, callback_.WaitForResult());
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), buffer_->offset());
+  EXPECT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
   EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_));
 }
 
@@ -110,8 +108,7 @@ TEST_F(StreamPacketReaderTest, ReadSyncHeaderAsyncPayload) {
 
   ReadPacket();
   socket_cb.Run(test_msg_.size());
-  EXPECT_EQ(net::OK, callback_.WaitForResult());
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), buffer_->offset());
+  EXPECT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
   EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_));
 }
 
@@ -127,8 +124,7 @@ TEST_F(StreamPacketReaderTest, ReadSyncHeaderSyncPayload) {
           DoAll(FillBufferFromString<0>(test_msg_), Return(test_msg_.size())));
 
   ReadPacket();
-  EXPECT_EQ(net::OK, callback_.WaitForResult());
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), buffer_->offset());
+  EXPECT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
   EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_));
 }
 
@@ -163,12 +159,10 @@ TEST_F(StreamPacketReaderTest, ReadMultipleMessagesSync) {
       .RetiresOnSaturation();
 
   ReadPacket();
-  EXPECT_EQ(net::OK, callback_.WaitForResult());
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), buffer_->offset());
+  EXPECT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
 
   ReadPacket();
-  EXPECT_EQ(net::OK, callback_.WaitForResult());
-  EXPECT_EQ(static_cast<int>(test_msg2.size()), buffer_->offset());
+  EXPECT_EQ(static_cast<int>(test_msg2.size()), callback_.WaitForResult());
 
   EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_));
   EXPECT_FALSE(callback_.have_result());
@@ -208,14 +202,12 @@ TEST_F(StreamPacketReaderTest, ReadMultipleMessagesAsync) {
   data_reader_.ReadPacket(buffer_, read_cb1.callback());
   socket_cb.Run(kPacketHeaderSizeBytes);
   socket_cb.Run(test_msg_.size());
-  EXPECT_EQ(net::OK, read_cb1.WaitForResult());
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), buffer_->offset());
+  EXPECT_EQ(static_cast<int>(test_msg_.size()), read_cb1.WaitForResult());
 
   data_reader_.ReadPacket(buffer_, read_cb2.callback());
   socket_cb.Run(kPacketHeaderSizeBytes);
   socket_cb.Run(test_msg_.size());
-  EXPECT_EQ(net::OK, read_cb2.WaitForResult());
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), buffer_->offset());
+  EXPECT_EQ(static_cast<int>(test_msg_.size()), read_cb2.WaitForResult());
   EXPECT_TRUE(BufferStartsWith(buffer_.get(), test_msg_));
 }
 
@@ -265,8 +257,7 @@ TEST_F(StreamPacketReaderTest, PartialPayloadReadAsync) {
 
   cb.Run(1);
   cb.Run(test_msg_.size() - 1);
-  EXPECT_EQ(net::OK, callback_.WaitForResult());
-  EXPECT_EQ(static_cast<int>(test_msg_.size()), buffer_->offset());
+  EXPECT_EQ(static_cast<int>(test_msg_.size()), callback_.WaitForResult());
 }
 
 // Verify that synchronous header read errors are reported correctly.

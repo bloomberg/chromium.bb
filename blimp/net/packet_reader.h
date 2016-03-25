@@ -18,9 +18,9 @@ class BLIMP_NET_EXPORT PacketReader {
   virtual ~PacketReader() {}
 
   // Reads a packet from the connection.
-  // Passes net::OK to |cb| if the read operation executed successfully.
-  // Sets |buf.offset()| to the received message's size, and invokes |cb| with
-  // net::OK result on success.
+  // Passes the packet size to |cb| if the read operation executed
+  // successfully.
+  // Passes the error code to |cb| if an error occurred.
   // All other values indicate errors.
   // |callback| will not be invoked if |this| is deleted.
   virtual void ReadPacket(const scoped_refptr<net::GrowableIOBuffer>& buf,

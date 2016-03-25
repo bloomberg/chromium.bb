@@ -47,8 +47,9 @@ StreamPacketWriter::StreamPacketWriter(net::StreamSocket* socket)
 
 StreamPacketWriter::~StreamPacketWriter() {}
 
-void StreamPacketWriter::WritePacket(scoped_refptr<net::DrainableIOBuffer> data,
-                                     const net::CompletionCallback& callback) {
+void StreamPacketWriter::WritePacket(
+    const scoped_refptr<net::DrainableIOBuffer>& data,
+    const net::CompletionCallback& callback) {
   DCHECK_EQ(WriteState::IDLE, write_state_);
   DCHECK(data);
   CHECK(data->BytesRemaining());

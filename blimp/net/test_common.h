@@ -84,7 +84,6 @@ ACTION_TEMPLATE(FillBufferFromMessage,
                 AND_1_VALUE_PARAMS(message)) {
   message->SerializeToArray(testing::get<buf_idx>(args)->data(),
                             message->ByteSize());
-  testing::get<buf_idx>(args)->set_offset(message->ByteSize());
 }
 
 // Calls |set_offset()| for a GrowableIOBuffer.
@@ -165,7 +164,7 @@ class MockPacketWriter : public PacketWriter {
   ~MockPacketWriter() override;
 
   MOCK_METHOD2(WritePacket,
-               void(scoped_refptr<net::DrainableIOBuffer>,
+               void(const scoped_refptr<net::DrainableIOBuffer>&,
                     const net::CompletionCallback&));
 };
 
