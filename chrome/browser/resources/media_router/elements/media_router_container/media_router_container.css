@@ -15,7 +15,6 @@
 }
 
 #cast-mode-list {
-  margin-top: var(--container-header-height);
   padding-bottom: 12px;
   padding-top: 4px;
 }
@@ -95,7 +94,6 @@
 }
 
 #issue-banner {
-  margin-top: var(--container-header-height);
   width: 100%;
 }
 
@@ -226,6 +224,3 @@ paper-menu {
   width: 250px;
 }
 
-#route-details {
-  margin-top: var(--container-header-height);
-}

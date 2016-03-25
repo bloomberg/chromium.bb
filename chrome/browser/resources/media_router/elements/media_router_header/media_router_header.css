@@ -56,7 +56,6 @@ paper-icon-button {
 
 paper-toolbar {
   -webkit-padding-start: 8px;
-  height: var(--container-header-height);
 }
 
 paper-toolbar::shadow .toolbar-tools {

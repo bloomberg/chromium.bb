@@ -1713,7 +1713,7 @@ Polymer({
       var searchHeight = this.$$('#sink-search').offsetHeight;
 
       this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
-      this.$['sink-list-view'].style.marginTop =
+      this.$['content'].style.marginTop =
           firstRunFlowHeight + headerHeight + 'px';
       this.$['sink-list'].style.maxHeight =
           this.dialogHeight_ - headerHeight - firstRunFlowHeight -

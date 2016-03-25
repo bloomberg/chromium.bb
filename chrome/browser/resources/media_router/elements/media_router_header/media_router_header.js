@@ -46,6 +46,16 @@ Polymer({
     },
 
     /**
+     * The height of the header when it doesn't show the user email.
+     * @private {number}
+     */
+    headerWithoutEmailHeight_: {
+      type: Number,
+      readOnly: true,
+      value: 52,
+    },
+
+    /**
      * Whether to show the user email in the header.
      * @type {boolean}
      */
@@ -216,7 +226,8 @@ Polymer({
 
       this.$$('#header-toolbar').style.height =
           this.showEmail && !this.isEmptyOrWhitespace_(this.userEmail) ?
-              this.headerWithEmailHeight_ + 'px' : undefined;
+              this.headerWithEmailHeight_ + 'px' :
+                  this.headerWithoutEmailHeight_ + 'px';
 
       // Only fire if height actually changed.
       if (currentHeight != this.offsetHeight) {

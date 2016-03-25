@@ -148,13 +148,28 @@ cr.define('media_router_header', function() {
       });
 
       // Tests for 'header-height-changed' event firing when the header changes
-      // if email is shown.
+      // and the email is shown.
       test('header height changed with email shown', function(done) {
         header.addEventListener('header-height-changed', function() {
+          assertEquals(header.headerWithEmailHeight_, header.offsetHeight);
           done();
         });
         header.userEmail = 'user@example.com';
         header.showEmail = true;
+      });
+
+      // Test for 'header-height-changed' event firing when the header changes
+      // and the email is not shown.
+      test('header height changed without email shown', function(done) {
+        header.userEmail = 'user@example.com';
+        header.showEmail = true;
+        setTimeout(function() {
+          header.addEventListener('header-height-changed', function() {
+            assertEquals(header.headerWithoutEmailHeight_, header.offsetHeight);
+            done();
+          });
+          header.showEmail = false;
+        });
       });
 
       // Tests the |computeArrowDropIcon_| function.
