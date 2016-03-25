@@ -61,10 +61,10 @@ endif
 
 ifeq ($(CONFIG_VP10_ENCODER),yes)
   VP10_PREFIX=av1/
-  include $(SRC_PATH_BARE)/$(VP10_PREFIX)vp10cx.mk
+  include $(SRC_PATH_BARE)/$(VP10_PREFIX)av1_cx.mk
   CODEC_SRCS-yes += $(addprefix $(VP10_PREFIX),$(call enabled,VP10_CX_SRCS))
   CODEC_EXPORTS-yes += $(addprefix $(VP10_PREFIX),$(VP10_CX_EXPORTS))
-  CODEC_SRCS-yes += $(VP10_PREFIX)vp10cx.mk aom/vp8.h aom/vp8cx.h
+  CODEC_SRCS-yes += $(VP10_PREFIX)av1_cx.mk aom/vp8.h aom/vp8cx.h
   INSTALL-LIBS-yes += include/aom/vp8.h include/aom/vp8cx.h
   INSTALL-LIBS-$(CONFIG_SPATIAL_SVC) += include/aom/svc_context.h
   INSTALL_MAPS += include/aom/% $(SRC_PATH_BARE)/$(VP10_PREFIX)/%
@@ -74,10 +74,10 @@ endif
 
 ifeq ($(CONFIG_VP10_DECODER),yes)
   VP10_PREFIX=av1/
-  include $(SRC_PATH_BARE)/$(VP10_PREFIX)vp10dx.mk
+  include $(SRC_PATH_BARE)/$(VP10_PREFIX)av1_dx.mk
   CODEC_SRCS-yes += $(addprefix $(VP10_PREFIX),$(call enabled,VP10_DX_SRCS))
   CODEC_EXPORTS-yes += $(addprefix $(VP10_PREFIX),$(VP10_DX_EXPORTS))
-  CODEC_SRCS-yes += $(VP10_PREFIX)vp10dx.mk aom/vp8.h aom/vp8dx.h
+  CODEC_SRCS-yes += $(VP10_PREFIX)av1_dx.mk aom/vp8.h aom/vp8dx.h
   INSTALL-LIBS-yes += include/aom/vp8.h include/aom/vp8dx.h
   INSTALL_MAPS += include/aom/% $(SRC_PATH_BARE)/$(VP10_PREFIX)/%
   CODEC_DOC_SRCS += aom/vp8.h aom/vp8dx.h
