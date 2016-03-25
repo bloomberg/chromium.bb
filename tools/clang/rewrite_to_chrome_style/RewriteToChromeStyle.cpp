@@ -84,7 +84,8 @@ AST_MATCHER_P(clang::OverloadExpr,
               allOverloadsMatch,
               clang::ast_matchers::internal::Matcher<clang::NamedDecl>,
               InnerMatcher) {
-  assert(Node.getNumDecls() > 0);
+  if (Node.getNumDecls() == 0)
+    return false;
 
   for (clang::NamedDecl* decl : Node.decls()) {
     if (!InnerMatcher.matches(*decl, Finder, Builder))
