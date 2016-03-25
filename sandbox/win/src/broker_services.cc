@@ -195,6 +195,7 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
   HANDLE no_targets = broker->no_targets_.Get();
 
   int target_counter = 0;
+  int untracked_target_counter = 0;
   ::ResetEvent(no_targets);
 
   while (true) {
@@ -226,6 +227,14 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
         }
 
         case JOB_OBJECT_MSG_NEW_PROCESS: {
+          DWORD handle = static_cast<DWORD>(reinterpret_cast<uintptr_t>(ovl));
+          {
+            AutoLock lock(&broker->lock_);
+            size_t count = broker->child_process_ids_.count(handle);
+            // Child process created from sandboxed process.
+            if (count == 0)
+              untracked_target_counter++;
+          }
           ++target_counter;
           if (1 == target_counter) {
             ::ResetEvent(no_targets);
@@ -235,10 +244,16 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
 
         case JOB_OBJECT_MSG_EXIT_PROCESS:
         case JOB_OBJECT_MSG_ABNORMAL_EXIT_PROCESS: {
+          size_t erase_result = 0;
           {
             AutoLock lock(&broker->lock_);
-            broker->child_process_ids_.erase(
+            erase_result = broker->child_process_ids_.erase(
                 static_cast<DWORD>(reinterpret_cast<uintptr_t>(ovl)));
+          }
+          if (erase_result != 1U) {
+            // The process was untracked e.g. a child process of the target.
+            --untracked_target_counter;
+            DCHECK(untracked_target_counter >= 0);
           }
           --target_counter;
           if (0 == target_counter)
@@ -249,6 +264,10 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
         }
 
         case JOB_OBJECT_MSG_ACTIVE_PROCESS_LIMIT: {
+          // A child process attempted and failed to create a child process.
+          // Windows does not reveal the process id.
+          untracked_target_counter++;
+          target_counter++;
           break;
         }
 

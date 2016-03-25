@@ -205,7 +205,8 @@ void TestWin10ImageLoadLowLabel(bool is_success_test) {
 namespace sandbox {
 
 // A shared helper test command that will attempt to CreateProcess
-// with a given command line.
+// with a given command line. The second parameter, if set to non-zero
+// will cause the child process to return exit code STATUS_ACCESS_VIOLATION.
 //
 // ***Make sure you've enabled basic process creation in the
 // test sandbox settings via:
@@ -213,15 +214,19 @@ namespace sandbox {
 // sandbox::TargetPolicy::SetTokenLevel(),
 // and TestRunner::SetDisableCsrss().
 SBOX_TESTS_COMMAND int TestChildProcess(int argc, wchar_t** argv) {
-  if (argc < 1)
+  if (argc < 2)
     return SBOX_TEST_INVALID_PARAMETER;
+
+  int desired_exit_code = _wtoi(argv[1]);
+  if (desired_exit_code)
+      desired_exit_code = STATUS_ACCESS_VIOLATION;
 
   std::wstring cmd = argv[0];
   base::LaunchOptions options = base::LaunchOptionsForTest();
   base::Process setup_proc = base::LaunchProcess(cmd.c_str(), options);
 
   if (setup_proc.IsValid()) {
-    setup_proc.Terminate(0, false);
+    setup_proc.Terminate(desired_exit_code, false);
     return SBOX_TEST_SUCCEEDED;
   }
   // Note: GetLastError from CreateProcess returns 5, "ERROR_ACCESS_DENIED".
@@ -672,6 +677,7 @@ TEST(ProcessMitigationsTest, CheckChildProcessSuccess) {
 
   std::wstring test_command = L"TestChildProcess ";
   test_command += cmd.value().c_str();
+  test_command += L" 0";
 
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(test_command.c_str()));
 }
@@ -695,9 +701,58 @@ TEST(ProcessMitigationsTest, CheckChildProcessFailure) {
 
   std::wstring test_command = L"TestChildProcess ";
   test_command += cmd.value().c_str();
+  test_command += L" 0";
+
+  EXPECT_EQ(SBOX_TEST_FAILED, runner.RunTest(test_command.c_str()));
+}
+
+// This test validates that we can spawn a child process if
+// MITIGATION_CHILD_PROCESS_CREATION_RESTRICTED mitigation is
+// not set. This also tests that a crashing child process is correctly handled
+// by the broker.
+TEST(ProcessMitigationsTest, CheckChildProcessSuccessAbnormalExit) {
+  TestRunner runner;
+  sandbox::TargetPolicy* policy = runner.GetPolicy();
+
+  // Set a policy that would normally allow for process creation.
+  policy->SetJobLevel(JOB_INTERACTIVE, 0);
+  policy->SetTokenLevel(USER_UNPROTECTED, USER_UNPROTECTED);
+  runner.SetDisableCsrss(false);
+
+  base::FilePath cmd;
+  EXPECT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &cmd));
+  cmd = cmd.Append(L"calc.exe");
+
+  std::wstring test_command = L"TestChildProcess ";
+  test_command += cmd.value().c_str();
+  test_command += L" 1";
+
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(test_command.c_str()));
+}
+
+// This test validates that setting the
+// MITIGATION_CHILD_PROCESS_CREATION_RESTRICTED mitigation prevents
+// the spawning of child processes.  This also tests that a crashing child
+// process is correctly handled by the broker.
+TEST(ProcessMitigationsTest, CheckChildProcessFailureAbnormalExit) {
+  TestRunner runner;
+  sandbox::TargetPolicy* policy = runner.GetPolicy();
+
+  // Now set the job level to be <= JOB_LIMITED_USER
+  // and ensure we can no longer create a child process.
+  policy->SetJobLevel(JOB_LIMITED_USER, 0);
+  policy->SetTokenLevel(USER_UNPROTECTED, USER_UNPROTECTED);
+  runner.SetDisableCsrss(false);
+
+  base::FilePath cmd;
+  EXPECT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &cmd));
+  cmd = cmd.Append(L"calc.exe");
+
+  std::wstring test_command = L"TestChildProcess ";
+  test_command += cmd.value().c_str();
+  test_command += L" 1";
 
   EXPECT_EQ(SBOX_TEST_FAILED, runner.RunTest(test_command.c_str()));
 }
 
 }  // namespace sandbox
-

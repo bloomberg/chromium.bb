@@ -270,6 +270,10 @@ SBOX_TESTS_COMMAND int Process_OpenToken(int argc, wchar_t **argv) {
   return SBOX_TEST_FAILED;
 }
 
+SBOX_TESTS_COMMAND int Process_Crash(int argc, wchar_t **argv) {
+  __debugbreak();
+  return SBOX_TEST_FAILED;
+}
 // Generate a event name, used to test thread creation.
 std::wstring GenerateEventName(DWORD pid) {
   wchar_t buff[30] = {0};
@@ -407,6 +411,12 @@ TEST(ProcessPolicyTest, CreateProcessAW) {
             runner.RunTest(L"Process_RunApp5 findstr.exe"));
   EXPECT_EQ(SBOX_TEST_SUCCEEDED,
             runner.RunTest(L"Process_RunApp6 findstr.exe"));
+}
+
+// Tests that the broker correctly handles a process crashing within the job.
+TEST(ProcessPolicyTest, CreateProcessCrashy) {
+  TestRunner runner;
+  EXPECT_EQ(STATUS_BREAKPOINT, runner.RunTest(L"Process_Crash"));
 }
 
 TEST(ProcessPolicyTest, OpenToken) {
