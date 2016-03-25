@@ -67,7 +67,7 @@ source_set("base") {
     "//chromecast/base",
     "//crypto",
     "//crypto:platform",
-    "//net",
+    "//media",
   ]
 
   if (chromecast_branding == "public") {

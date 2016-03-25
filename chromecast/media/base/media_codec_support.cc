@@ -8,7 +8,6 @@
 #include "base/strings/string_util.h"
 #include "chromecast/media/base/media_caps.h"
 #include "chromecast/public/media_codec_support_shlib.h"
-#include "net/base/mime_util.h"
 
 namespace chromecast {
 namespace media {
@@ -30,33 +29,19 @@ bool IsCodecSupported(const std::string& codec) {
   if (codec == "aac51") {
     return ::media::HdmiSinkSupportsPcmSurroundSound();
   }
-  if (codec == "ac-3" || codec == "mp4a.a5") {
+  if (codec == "ac-3" || codec == "mp4a.a5" || codec == "mp4a.A5") {
     return ::media::HdmiSinkSupportsAC3();
   }
-  if (codec == "ec-3" || codec == "mp4a.a6") {
+  if (codec == "ec-3" || codec == "mp4a.a6" || codec == "mp4a.A6") {
     return ::media::HdmiSinkSupportsEAC3();
   }
 
-  // TODO(erickung): This is the temporary solution to allow cast working
-  // properly when checking default codec type is supported on not. The change
-  // should be reverted once the function is able to call chrome media function
-  // directly.
-  if (codec == "1" /*PCM*/ || codec == "vorbis" || codec == "opus" ||
-      codec == "theora" || codec == "vp8" || codec == "vp8.0" ||
-      codec == "vp9" || codec == "vp9.0")
-    return true;
-
-  if (codec == "mp3" || codec == "mp4a.66" || codec == "mp4a.67" ||
-      codec == "mp4a.68" || codec == "mp4a.69" || codec == "mp4a.6B" ||
-      codec == "mp4a.40.2" || codec == "mp4a.40.02" || codec == "mp4a.40.29" ||
-      codec == "mp4a.40.5" || codec == "mp4a.40.05" || codec == "mp4a.40")
-    return true;
-
-  if (base::StartsWith(codec, "avc1", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(codec, "avc3", base::CompareCase::SENSITIVE))
-    return true;
-
-  return false;
+  // This function is invoked from MimeUtil::AreSupportedCodecs to check if a
+  // given codec id is supported by Chromecast or not. So by default we should
+  // return true by default to indicate we have no reasons to believe this codec
+  // is unsupported. This will allow the rest of MimeUtil checks to proceed as
+  // usual.
+  return true;
 }
 
 }  // namespace

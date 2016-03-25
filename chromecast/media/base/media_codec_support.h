@@ -8,9 +8,9 @@
 #include <string>
 
 #include "base/callback.h"
-#include "net/base/mime_util.h"
+#include "media/base/mime_util.h"
 
-// TODO(slan|servolk): remove when this definition exists upstream.
+// TODO(slan|servolk): remove when this definition exists in //media.
 namespace media {
 typedef base::Callback<bool(const std::string&)> IsCodecSupportedCB;
 }
