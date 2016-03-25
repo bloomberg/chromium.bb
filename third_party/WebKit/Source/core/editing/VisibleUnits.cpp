@@ -2268,7 +2268,7 @@ static bool inRenderedText(const PositionTemplate<Strategy>& position)
         }
         if (box->containsCaretOffset(textOffset)) {
             // Return false for offsets inside composed characters.
-            return textOffset == 0 || textOffset == textLayoutObject->nextOffset(textLayoutObject->previousOffset(textOffset));
+            return textOffset == 0 || textOffset == uncheckedNextOffset(anchorNode, uncheckedPreviousOffset(anchorNode, textOffset));
         }
     }
 
@@ -2851,7 +2851,7 @@ static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(const VisiblePos
                 continue;
             }
 
-            offset = box->isLeftToRightDirection() ? lineLayoutItem.previousOffset(offset) : lineLayoutItem.nextOffset(offset);
+            offset = box->isLeftToRightDirection() ? uncheckedPreviousOffset(lineLayoutItem.node(), offset) : uncheckedNextOffset(lineLayoutItem.node(), offset);
 
             int caretMinOffset = box->caretMinOffset();
             int caretMaxOffset = box->caretMaxOffset();
@@ -3026,7 +3026,7 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(const VisiblePo
                 continue;
             }
 
-            offset = box->isLeftToRightDirection() ? layoutObject->nextOffset(offset) : layoutObject->previousOffset(offset);
+            offset = box->isLeftToRightDirection() ? uncheckedNextOffset(layoutObject->node(), offset) : uncheckedPreviousOffset(layoutObject->node(), offset);
 
             int caretMinOffset = box->caretMinOffset();
             int caretMaxOffset = box->caretMaxOffset();

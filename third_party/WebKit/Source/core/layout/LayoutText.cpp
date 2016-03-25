@@ -1656,24 +1656,6 @@ unsigned LayoutText::resolvedTextLength() const
     return len;
 }
 
-int LayoutText::previousOffset(int current) const
-{
-    if (m_text.is8Bit())
-        return current - 1;
-
-    StringImpl* textImpl = m_text.impl();
-    TextBreakIterator* iterator = cursorMovementIterator(textImpl->characters16(), textImpl->length());
-    if (!iterator)
-        return current - 1;
-
-    long result = iterator->preceding(current);
-    if (result == TextBreakDone)
-        result = current - 1;
-
-
-    return result;
-}
-
 int LayoutText::previousOffsetForBackwardDeletion(int current) const
 {
     // Delete by one code point. Ideally we should delete grapheme where that
@@ -1683,23 +1665,6 @@ int LayoutText::previousOffsetForBackwardDeletion(int current) const
     if (current < 0)
         current = 0;
     return current;
-}
-
-int LayoutText::nextOffset(int current) const
-{
-    if (m_text.is8Bit())
-        return current + 1;
-
-    StringImpl* textImpl = m_text.impl();
-    TextBreakIterator* iterator = cursorMovementIterator(textImpl->characters16(), textImpl->length());
-    if (!iterator)
-        return current + 1;
-
-    long result = iterator->following(current);
-    if (result == TextBreakDone)
-        result = current + 1;
-
-    return result;
 }
 
 bool LayoutText::computeCanUseSimpleFontCodePath() const

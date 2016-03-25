@@ -1224,9 +1224,7 @@ public:
     virtual int caretMinOffset() const;
     virtual int caretMaxOffset() const;
 
-    virtual int previousOffset(int current) const;
     virtual int previousOffsetForBackwardDeletion(int current) const;
-    virtual int nextOffset(int current) const;
 
     // ImageResourceClient override.
     void imageChanged(ImageResource*, const IntRect* = nullptr) final;

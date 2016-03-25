@@ -38,9 +38,9 @@ PassRefPtrWillBeRawPtr<ShadowRoot> EditingTestBase::createShadowRootForElementWi
     return shadowRoot.release();
 }
 
-void EditingTestBase::setBodyContent(const char* bodyContent)
+void EditingTestBase::setBodyContent(const std::string& bodyContent)
 {
-    document().body()->setInnerHTML(String::fromUTF8(bodyContent), ASSERT_NO_EXCEPTION);
+    document().body()->setInnerHTML(String::fromUTF8(bodyContent.c_str()), ASSERT_NO_EXCEPTION);
 }
 
 PassRefPtrWillBeRawPtr<ShadowRoot> EditingTestBase::setShadowContent(const char* shadowContent, const char* host)

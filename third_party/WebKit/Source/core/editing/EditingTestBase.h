@@ -8,6 +8,7 @@
 #include "core/editing/Position.h"
 #include "wtf/Forward.h"
 #include <gtest/gtest.h>
+#include <string>
 
 namespace blink {
 
@@ -26,7 +27,7 @@ protected:
 
     static PassRefPtrWillBeRawPtr<ShadowRoot> createShadowRootForElementWithIDAndSetInnerHTML(TreeScope&, const char* hostElementID, const char* shadowRootContent);
 
-    void setBodyContent(const char*);
+    void setBodyContent(const std::string&);
     PassRefPtrWillBeRawPtr<ShadowRoot> setShadowContent(const char* shadowContent, const char* shadowHostId);
     void updateLayoutAndStyleForPainting();
 

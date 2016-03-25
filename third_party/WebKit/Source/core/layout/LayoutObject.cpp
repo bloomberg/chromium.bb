@@ -3245,19 +3245,9 @@ int LayoutObject::caretMaxOffset() const
     return 0;
 }
 
-int LayoutObject::previousOffset(int current) const
-{
-    return current - 1;
-}
-
 int LayoutObject::previousOffsetForBackwardDeletion(int current) const
 {
     return current - 1;
-}
-
-int LayoutObject::nextOffset(int current) const
-{
-    return current + 1;
 }
 
 bool LayoutObject::isInert() const

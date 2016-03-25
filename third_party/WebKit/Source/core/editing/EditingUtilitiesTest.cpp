@@ -200,4 +200,446 @@ TEST_F(EditingUtilitiesTest, AreaIdenticalElements)
     EXPECT_TRUE(areIdenticalElements(*items->item(1), *items->item(3)));
 }
 
+TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset_FirstLetter)
+{
+    setBodyContent("<style>p::first-letter {color:red;}</style><p id='target'>abc</p>");
+    Node* node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(2, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(2, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 2));
+
+    updateLayoutAndStyleForPainting();
+    EXPECT_NE(nullptr, node->layoutObject());
+    EXPECT_EQ(2, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(2, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 2));
+}
+
+TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset_textTransform)
+{
+    setBodyContent("<style>p {text-transform:uppercase}</style><p id='target'>abc</p>");
+    Node* node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(2, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(2, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 2));
+
+    updateLayoutAndStyleForPainting();
+    EXPECT_NE(nullptr, node->layoutObject());
+    EXPECT_EQ(2, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(2, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 2));
+}
+
+// Following breaking rules come from http://unicode.org/reports/tr29/
+// Note that some of rules are in draft. Also see
+// http://www.unicode.org/reports/tr29/proposed.html
+TEST_F(EditingUtilitiesTest, uncheckedPreviousNextOffset)
+{
+    // GB1: Break at the start of text.
+    setBodyContent("<p id='target'>a</p>");
+    Node* node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+
+    // GB2: Break at the end of text.
+    setBodyContent("<p id='target'>a</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+
+    // GB3: Do not break between CR and LF.
+    setBodyContent("<p id='target'>a&#x0D;&#x0A;b</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    // TODO(nona) : Enable following expectation.
+    // EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    // TODO(nona) : Enable following expectation.
+    // EXPECT_EQ(3, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+
+    // GB4,GB5: Break before and after CR/LF/Control.
+    setBodyContent("<p id='target'>a&#x0D;b</p>"); // CR
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(2, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(2, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 2));
+    setBodyContent("<p id='target'>a&#x0A;b</p>"); // LF
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(2, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(2, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 2));
+    setBodyContent("<p id='target'>a&#xAD;b</p>"); // U+00AD(SOFT HYPHEN) has Control property.
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(2, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(2, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 2));
+
+    // GB6: Don't break Hangul sequence.
+    const std::string L = "&#x1100;"; // U+1100 (HANGUL CHOSEONG KIYEOK) has L property.
+    const std::string V = "&#x1160;"; // U+1160 (HANGUL JUNGSEONG FILLER) has V property.
+    const std::string LV = "&#xAC00;"; // U+AC00 (HANGUL SYLLABLE GA) has LV property.
+    const std::string LVT = "&#xAC01;"; // U+AC01 (HANGUL SYLLABLE GAG) has LVT property.
+    const std::string T = "&#x11A8;"; // U+11A8 (HANGUL JONGSEONG KIYEOK) has T property.
+    setBodyContent("<p id='target'>a" + L + L + "b</p>"); // L x L
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+    setBodyContent("<p id='target'>a" + L + V +"b</p>"); // L x V
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+    setBodyContent("<p id='target'>a" + L + LV + "b</p>"); // L x LV
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+    setBodyContent("<p id='target'>a" + L + LVT + "b</p>"); // L x LVT
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+
+    // GB7: Don't break Hangul sequence.
+    setBodyContent("<p id='target'>a" + LV + V + "b</p>"); // LV x V
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+    setBodyContent("<p id='target'>a" + LV + T + "b</p>"); // LV x T
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+    setBodyContent("<p id='target'>a" + V + V + "b</p>"); // V x V
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+    setBodyContent("<p id='target'>a" + V + T + "b</p>"); // V x T
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+
+    // GB8: Don't break Hangul sequence.
+    setBodyContent("<p id='target'>a" + LVT + T + "b</p>"); // LVT x T
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+    setBodyContent("<p id='target'>a" + T + T + "b</p>"); // T x T
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+
+    // Break other Hangul syllable combination. See test of GB999.
+
+    // GB8a: Don't break between regional indicator if there are even numbered regional indicator symbols before.
+    // U+1F1FA is REGIONAL INDICATOR SYMBOL LETTER U.
+    // U+1F1F8 is REGIONAL INDICATOR SYMBOL LETTER S.
+    const std::string flag = "&#x1F1FA;&#x1F1F8;"; // US flag.
+    setBodyContent("<p id='target'>" + flag + flag + flag + flag + "a</p>"); // ^(RI RI)* RI x RI
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(16, uncheckedPreviousOffset(node, 17));
+    EXPECT_EQ(12, uncheckedPreviousOffset(node, 16));
+    // TODO(nona): Enable following expectations.
+    // EXPECT_EQ(8, uncheckedPreviousOffset(node, 12));
+    // EXPECT_EQ(4, uncheckedPreviousOffset(node, 8));
+    // EXPECT_EQ(0, uncheckedPreviousOffset(node, 4));
+    // EXPECT_EQ(4, uncheckedNextOffset(node, 0));
+    // EXPECT_EQ(8, uncheckedNextOffset(node, 4));
+    EXPECT_EQ(12, uncheckedNextOffset(node, 8));
+    EXPECT_EQ(16, uncheckedNextOffset(node, 12));
+    EXPECT_EQ(17, uncheckedNextOffset(node, 16));
+
+    // GB8c: Don't break between regional indicator if there are even numbered regional indicator symbols before.
+    setBodyContent("<p id='target'>a" + flag + flag + flag + flag + "b</p>"); // [^RI] (RI RI)* RI x RI
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(17, uncheckedPreviousOffset(node, 18));
+    EXPECT_EQ(13, uncheckedPreviousOffset(node, 17));
+    // TODO(nona): Enable following expectations.
+    // EXPECT_EQ(9, uncheckedPreviousOffset(node, 13));
+    // EXPECT_EQ(5, uncheckedPreviousOffset(node, 9));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 5));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    // TODO(nona): Enable following expectations.
+    // EXPECT_EQ(5, uncheckedNextOffset(node, 1));
+    // EXPECT_EQ(9, uncheckedNextOffset(node, 5));
+    EXPECT_EQ(13, uncheckedNextOffset(node, 9));
+    EXPECT_EQ(17, uncheckedNextOffset(node, 13));
+    EXPECT_EQ(18, uncheckedNextOffset(node, 17));
+
+    // GB8c: Break if there is an odd number of regional indicator symbols before.
+    setBodyContent("<p id='target'>a" + flag + flag + flag + flag + "&#x1F1F8;b</p>"); // RI ÷ RI
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(19, uncheckedPreviousOffset(node, 20));
+    // TODO(nona): Enable following expectations.
+    // EXPECT_EQ(17, uncheckedPreviousOffset(node, 19));
+    // EXPECT_EQ(13, uncheckedPreviousOffset(node, 17));
+    // EXPECT_EQ(9, uncheckedPreviousOffset(node, 13));
+    // EXPECT_EQ(5, uncheckedPreviousOffset(node, 9));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 5));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    // TODO(nona): Enable following expectations.
+    // EXPECT_EQ(5, uncheckedNextOffset(node, 1));
+    // EXPECT_EQ(9, uncheckedNextOffset(node, 5));
+    // EXPECT_EQ(13, uncheckedNextOffset(node, 9));
+    EXPECT_EQ(17, uncheckedNextOffset(node, 13));
+    EXPECT_EQ(19, uncheckedNextOffset(node, 17));
+    EXPECT_EQ(20, uncheckedNextOffset(node, 19));
+
+    // GB9: Do not break before extending characters or ZWJ.
+    // U+0300(COMBINING GRAVE ACCENT) has Extend property.
+    setBodyContent("<p id='target'>a&#x0300;b</p>"); // x Extend
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(2, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(2, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 2));
+    // U+200D is ZERO WIDTH JOINER.
+    setBodyContent("<p id='target'>a&#x200D;b</p>"); // x ZWJ
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(2, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(2, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 2));
+
+    // GB9a: Do not break before SpacingMarks.
+    // U+0903(DEVANAGARI SIGN VISARGA) has SpacingMark property.
+    setBodyContent("<p id='target'>a&#x0903;b</p>"); // x SpacingMark
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(2, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(2, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 2));
+
+    // GB9b: Do not break after Prepend but Blink breaks after Prepend char to address Bug 24342.
+    // U+0600(ARABIC NUMBER SIGN) has Prepend property.
+    setBodyContent("<p id='target'>a&#x0600;b</p>"); // Prepend x
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(2, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(2, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 2));
+
+    // Blink customization: Don't break before Japanese half-width katakana voiced marks.
+    setBodyContent("<p id='target'>a&#xFF76;&#xFF9E;b</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+
+    // Additional rule for Virama: Do not break after Virama except for Tamil.
+    // See http://www.unicode.org/Public/9.0.0/ucd/IndicSyllabicCategory-9.0.0d2.txt
+    // U+0905 is DEVANAGARI LETTER A. This has Extend property.
+    // U+094D is DEVANAGARI SIGN VIRAMA. This has Virama property.
+    // U+0915 is DEVANAGARI LETTER KA.
+    setBodyContent("<p id='target'>a&#x0905;&#x094D;&#x0915;b</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(4, uncheckedPreviousOffset(node, 5));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(5, uncheckedNextOffset(node, 4));
+    // U+0B85 is TAMIL LETTER A. This has Extend property.
+    // U+0BCD is TAMIL SIGN VIRAMA. This has Virama property.
+    // U+0B95 is TAMIL LETTER KA.
+    setBodyContent("<p id='target'>a&#x0B85;&#x0BCD;&#x0B95;b</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(4, uncheckedPreviousOffset(node, 5));
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(3, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+    EXPECT_EQ(5, uncheckedNextOffset(node, 4));
+    // TODO(nona): Consider to add Sinhala, Balinese, etc.
+
+    // GB10: Do not break within emoji modifier.
+    // U+1F385(FATHER CHRISTMAS) has E_Base property.
+    // U+1F3FB(EMOJI MODIFIER FITZPATRICK TYPE-1-2) has E_Modifier property.
+    setBodyContent("<p id='target'>a&#x1F385;&#x1F3FB;b</p>"); // E_Base x E_Modifier
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(5, uncheckedPreviousOffset(node, 6));
+    // TODO(nona): Enable following expectation.
+    // EXPECT_EQ(1, uncheckedPreviousOffset(node, 5));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    // TODO(nona): Enable following expectation.
+    // EXPECT_EQ(5, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(6, uncheckedNextOffset(node, 5));
+    // U+1F466(BOY) has EBG property.
+    setBodyContent("<p id='target'>a&#x1F466;&#x1F3FB;b</p>"); // EBG x E_Modifier
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(5, uncheckedPreviousOffset(node, 6));
+    // TODO(nona): Enable following expectation.
+    // EXPECT_EQ(1, uncheckedPreviousOffset(node, 5));
+    EXPECT_EQ(0, uncheckedPreviousOffset(node, 1));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    // TODO(nona): Enable following expectation.
+    // EXPECT_EQ(5, uncheckedNextOffset(node, 1));
+    EXPECT_EQ(6, uncheckedNextOffset(node, 5));
+
+    // GB11: Do not break within ZWJ emoji sequence.
+    // U+2764(HEAVY BLACK HEART) has Glue_After_Zwj property.
+    setBodyContent("<p id='target'>a&#x200D;&#x2764;b</p>"); // ZWJ x Glue_After_Zwj
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(3, uncheckedPreviousOffset(node, 4));
+    // TODO(nona): Enable following expectation.
+    // EXPECT_EQ(0, uncheckedPreviousOffset(node, 3));
+    // EXPECT_EQ(3, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(4, uncheckedNextOffset(node, 3));
+    setBodyContent("<p id='target'>a&#x200D;&#x1F466;b</p>"); // ZWJ x EBG
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(4, uncheckedPreviousOffset(node, 5));
+    // TODO(nona): Enable following expectation.
+    // EXPECT_EQ(0, uncheckedPreviousOffset(node, 4));
+    // EXPECT_EQ(4, uncheckedNextOffset(node, 0));
+    EXPECT_EQ(5, uncheckedNextOffset(node, 4));
+
+    // GB999: Otherwise break everywhere.
+    // Breaks between Hangul syllable except for GB6, GB7, GB8.
+    setBodyContent("<p id='target'>" + L + T + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + V + L + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + V + LV + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + V + LVT + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + LV + L + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + LV + LV + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + LV + LVT + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + LVT + L + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + LVT + V + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + LVT + LV + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + LVT + LVT + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + T + L + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + T + V + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + T + LV + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    setBodyContent("<p id='target'>" + T + LVT + "</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 2));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+
+    // For GB10, if base emoji character is not E_Base or EBG, break happens before E_Modifier.
+    setBodyContent("<p id='target'>a&#x1F3FB;</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+    // U+1F5FA(WORLD MAP) doesn't have either E_Base or EBG property.
+    setBodyContent("<p id='target'>&#x1F5FA;&#x1F3FB;</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(2, uncheckedPreviousOffset(node, 4));
+    EXPECT_EQ(2, uncheckedNextOffset(node, 0));
+
+    // For GB11, if trailing character is not Glue_After_Zwj or EBG, break happens after ZWJ.
+    // U+1F5FA(WORLD MAP) doesn't have either Glue_After_Zwj or EBG.
+    setBodyContent("<p id='target'>&#x200D;&#x1F5FA;</p>");
+    node = document().getElementById("target")->firstChild();
+    EXPECT_EQ(1, uncheckedPreviousOffset(node, 3));
+    EXPECT_EQ(1, uncheckedNextOffset(node, 0));
+}
+
 } // namespace blink

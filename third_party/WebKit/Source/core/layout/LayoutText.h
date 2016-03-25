@@ -161,9 +161,7 @@ public:
     int caretMaxOffset() const override;
     unsigned resolvedTextLength() const;
 
-    int previousOffset(int current) const final;
     int previousOffsetForBackwardDeletion(int current) const final;
-    int nextOffset(int current) const final;
 
     bool containsReversedText() const { return m_containsReversedText; }
 

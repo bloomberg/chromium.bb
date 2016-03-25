@@ -542,9 +542,18 @@ PositionInFlatTree lastEditablePositionBeforePositionInRoot(const PositionInFlat
     return lastEditablePositionBeforePositionInRootAlgorithm<EditingInFlatTreeStrategy>(position, highestRoot);
 }
 
-int uncheckedPreviousOffset(const Node* n, int current)
+int uncheckedPreviousOffset(const Node* node, int current)
 {
-    return n->layoutObject() ? n->layoutObject()->previousOffset(current) : current - 1;
+    if (!node->isTextNode())
+        return current - 1;
+    const String& text = toText(node)->data();
+    if (text.is8Bit())
+        return current - 1; // TODO(nona): Good to support CR x LF.
+    TextBreakIterator* iterator = cursorMovementIterator(text.characters16(), text.length());
+    if (!iterator)
+        return current - 1;
+    const int result = iterator->preceding(current);
+    return result == TextBreakDone ? current - 1 : result;
 }
 
 static int uncheckedPreviousOffsetForBackwardDeletion(const Node* n, int current)
@@ -552,9 +561,18 @@ static int uncheckedPreviousOffsetForBackwardDeletion(const Node* n, int current
     return n->layoutObject() ? n->layoutObject()->previousOffsetForBackwardDeletion(current) : current - 1;
 }
 
-int uncheckedNextOffset(const Node* n, int current)
+int uncheckedNextOffset(const Node* node, int current)
 {
-    return n->layoutObject() ? n->layoutObject()->nextOffset(current) : current + 1;
+    if (!node->isTextNode())
+        return current + 1;
+    const String& text = toText(node)->data();
+    if (text.is8Bit())
+        return current + 1; // TODO(nona): Good to support CR x LF.
+    TextBreakIterator* iterator = cursorMovementIterator(text.characters16(), text.length());
+    if (!iterator)
+        return current + 1;
+    const int result = iterator->following(current);
+    return result == TextBreakDone ? current + 1 : result;
 }
 
 template <typename Strategy>
