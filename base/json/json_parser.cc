@@ -309,7 +309,7 @@ JSONParser::StringBuilder::~StringBuilder() {
 
 void JSONParser::StringBuilder::Append(const char& c) {
   DCHECK_GE(c, 0);
-  DCHECK_LT(c, 128);
+  DCHECK_LT(static_cast<unsigned char>(c), 128);
 
   if (string_)
     string_->push_back(c);
