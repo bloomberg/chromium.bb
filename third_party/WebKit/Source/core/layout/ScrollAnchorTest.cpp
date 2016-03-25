@@ -180,6 +180,46 @@ TEST_F(ScrollAnchorTest, ExcludeFixedPosition)
         scrollAnchor(layoutViewport()).anchorObject());
 }
 
+TEST_F(ScrollAnchorTest, ExcludeAbsolutePosition)
+{
+    setBodyInnerHTML(
+        "<style>"
+        "    body { margin: 0; }"
+        "    #scroller { overflow: scroll; width: 500px; height: 400px; }"
+        "    #space { height: 1000px; }"
+        "    #abs {"
+        "        position: absolute; background-color: red;"
+        "        left: 200px; top: 100px; width: 100px; height: 100px;"
+        "    }"
+        "    #rel {"
+        "        position: relative; background-color: green;"
+        "        left: 50px; top: 100px; width: 100px; height: 75px;"
+        "    }"
+        "</style>"
+        "<div id='scroller'><div id='space'>"
+        "    <div id='abs'></div>"
+        "    <div id='rel'></div>"
+        "</div></div>");
+
+    Element* scrollerElement = document().getElementById("scroller");
+    ScrollableArea* scroller = scrollerForElement(scrollerElement);
+    Element* absPos = document().getElementById("abs");
+    Element* relPos = document().getElementById("rel");
+
+    scroller->scrollBy(DoubleSize(0, 25), UserScroll);
+    setHeight(relPos, 100);
+
+    // When the scroller is position:static, the anchor cannot be position:absolute.
+    EXPECT_EQ(relPos->layoutObject(), scrollAnchor(scroller).anchorObject());
+
+    scrollerElement->setAttribute(HTMLNames::styleAttr, "position: relative");
+    scroller->scrollBy(DoubleSize(0, 25), UserScroll);
+    setHeight(relPos, 125);
+
+    // When the scroller is position:relative, the anchor may be position:absolute.
+    EXPECT_EQ(absPos->layoutObject(), scrollAnchor(scroller).anchorObject());
+}
+
 class ScrollAnchorCornerTest : public ScrollAnchorTest {
 protected:
     void checkCorner(const AtomicString& id, Corner corner, DoublePoint startPos, DoubleSize expectedAdjustment)

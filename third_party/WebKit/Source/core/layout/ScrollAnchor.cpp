@@ -86,6 +86,16 @@ static LayoutPoint computeRelativeOffset(const LayoutObject* layoutObject, const
     return cornerPointOfRect(relativeBounds(layoutObject, scroller), corner);
 }
 
+static bool candidateMovesWithScroller(const LayoutObject* candidate, const ScrollableArea* scroller)
+{
+    if (candidate->style() && candidate->style()->hasViewportConstrainedPosition())
+        return false;
+
+    bool skippedByContainerLookup = false;
+    candidate->container(scrollerLayoutBox(scroller), &skippedByContainerLookup);
+    return !skippedByContainerLookup;
+}
+
 ScrollAnchor::ExamineResult ScrollAnchor::examine(const LayoutObject* candidate) const
 {
     if (candidate->isLayoutInline())
@@ -94,7 +104,7 @@ ScrollAnchor::ExamineResult ScrollAnchor::examine(const LayoutObject* candidate)
     if (!candidate->isText() && !candidate->isBox())
         return ExamineResult(Skip);
 
-    if (candidate->style() && candidate->style()->hasViewportConstrainedPosition())
+    if (!candidateMovesWithScroller(candidate, m_scroller))
         return ExamineResult(Skip);
 
     LayoutRect candidateRect = relativeBounds(candidate, m_scroller);
