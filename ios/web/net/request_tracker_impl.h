@@ -23,7 +23,6 @@
 
 @class SSLCarrier;
 @class CRWSSLCarrier;
-class SSLErrorInfo;
 struct TrackerCounts;
 
 namespace content {
