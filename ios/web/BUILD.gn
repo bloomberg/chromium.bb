@@ -456,7 +456,7 @@ js_compile_bundle("web_bundle") {
 }
 
 js_compile_checked("js_resources") {
-  deps = [
+  public_deps = [
     ":web_bundle",
   ]
 

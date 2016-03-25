@@ -39,38 +39,46 @@ template("js_compile_bundle") {
   assert(defined(invoker.closure_entry_point),
          "Need closure_entry_point in $target_name for generated js file.")
 
-  java_action(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "deps",
-                             "visibility",
-                           ])
+  _target_name = target_name
+  compile_js_target_name = target_name + "_compile_js"
 
+  java_action(compile_js_target_name) {
+    visibility = [ ":$_target_name" ]
     script = closure_compiler_path
     sources = invoker.sources
     outputs = [
-      "$target_gen_dir/$target_name.js",
+      "$target_gen_dir/$_target_name.js",
     ]
 
     args = [
              "--compilation_level",
              "SIMPLE_OPTIMIZATIONS",
              "--js_output_file",
-             rebase_path("$target_gen_dir/$target_name.js", root_build_dir),
+             rebase_path("$target_gen_dir/$_target_name.js", root_build_dir),
              "--only_closure_dependencies",
              "--closure_entry_point",
              invoker.closure_entry_point,
              "--js",
            ] + rebase_path(sources, root_build_dir)
+  }
 
-    # TODO(crbug.com/546283): add the generated bundle to the list of files to
-    # move in the application bundle, equivalent to the following gyp code:
-    #
-    # "link_settings": {
-    #   "mac_bundle_resources": [
-    #     "<(SHARED_INTERMEDIATE_DIR)/<(RULE_INPUT_NAME).js",
-    #   ],
-    # },
+  bundle_data(target_name) {
+    forward_variables_from(invoker,
+                           [
+                             "data_deps",
+                             "deps",
+                             "public_deps",
+                             "visibility",
+                           ])
+
+    if (!defined(public_deps)) {
+      public_deps = []
+    }
+    public_deps += [ ":$compile_js_target_name" ]
+    sources = get_target_outputs(":$compile_js_target_name")
+    outputs = [
+      "{{bundle_resources_dir}}/{{source_file_part}}",
+    ]
   }
 }
 
@@ -94,13 +102,11 @@ template("js_compile_checked") {
          "Need sources in $target_name listing the js files.")
 
   if (compile_javascript) {
-    java_action_foreach(target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "deps",
-                               "visibility",
-                             ])
+    _target_name = target_name
+    compile_js_target_name = target_name + "_compile_js"
 
+    java_action_foreach(compile_js_target_name) {
+      visibility = [ ":$_target_name" ]
       script = closure_compiler_path
       sources = invoker.sources
       outputs = [
@@ -136,37 +142,40 @@ template("js_compile_checked") {
         "--js_output_file",
         rebase_path("$target_gen_dir/{{source_file_part}}", root_build_dir),
       ]
-
-      # TODO(crbug.com/546283): add the generated bundle to the list of files
-      # to move in the application bundle, equivalent to the following gyp code:
-      #
-      # "link_settings": {
-      #   "mac_bundle_resources": [
-      #     "<(SHARED_INTERMEDIATE_DIR)/<(RULE_INPUT_NAME).js",
-      #   ],
-      # },
     }
-  } else {
-    copy(target_name) {
+
+    bundle_data(target_name) {
       forward_variables_from(invoker,
                              [
+                               "data_deps",
                                "deps",
+                               "public_deps",
+                               "visibility",
+                             ])
+
+      if (!defined(public_deps)) {
+        public_deps = []
+      }
+      public_deps += [ ":$compile_js_target_name" ]
+      sources = get_target_outputs(":$compile_js_target_name")
+      outputs = [
+        "{{bundle_resources_dir}}/{{source_file_part}}",
+      ]
+    }
+  } else {
+    bundle_data(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "data_deps",
+                               "deps",
+                               "public_deps",
                                "visibility",
                              ])
 
       sources = invoker.sources
       outputs = [
-        "$target_gen_dir/{{source_file_part}}",
+        "{{bundle_resources_dir}}/{{source_file_part}}",
       ]
-
-      # TODO(crbug.com/546283): add the generated bundle to the list of files
-      # to move in the application bundle, equivalent to the following gyp code:
-      #
-      # "link_settings": {
-      #   "mac_bundle_resources": [
-      #     "<(SHARED_INTERMEDIATE_DIR)/<(RULE_INPUT_NAME).js",
-      #   ],
-      # },
     }
   }
 }
@@ -191,13 +200,11 @@ template("js_compile_unchecked") {
          "Need sources in $target_name listing the js files.")
 
   if (compile_javascript) {
-    java_action_foreach(target_name) {
-      forward_variables_from(invoker,
-                             [
-                               "deps",
-                               "visibility",
-                             ])
+    _target_name = target_name
+    compile_js_target_name = target_name + "_compile_js"
 
+    java_action_foreach(compile_js_target_name) {
+      visibility = [ ":$_target_name" ]
       script = closure_compiler_path
       sources = invoker.sources
       outputs = [
@@ -212,37 +219,40 @@ template("js_compile_unchecked") {
         "--js_output_file",
         rebase_path("$target_gen_dir/{{source_file_part}}", root_build_dir),
       ]
-
-      # TODO(crbug.com/546283): add the generated bundle to the list of files
-      # to move in the application bundle, equivalent to the following gyp code:
-      #
-      # "link_settings": {
-      #   "mac_bundle_resources": [
-      #     "<(SHARED_INTERMEDIATE_DIR)/<(RULE_INPUT_NAME).js",
-      #   ],
-      # },
     }
-  } else {
-    copy(target_name) {
+
+    bundle_data(target_name) {
       forward_variables_from(invoker,
                              [
+                               "data_deps",
                                "deps",
+                               "public_deps",
+                               "visibility",
+                             ])
+
+      if (!defined(public_deps)) {
+        public_deps = []
+      }
+      public_deps += [ ":$compile_js_target_name" ]
+      sources = get_target_outputs(":$compile_js_target_name")
+      outputs = [
+        "{{bundle_resources_dir}}/{{source_file_part}}",
+      ]
+    }
+  } else {
+    bundle_data(target_name) {
+      forward_variables_from(invoker,
+                             [
+                               "data_deps",
+                               "deps",
+                               "public_deps",
                                "visibility",
                              ])
 
       sources = invoker.sources
       outputs = [
-        "$target_gen_dir/{{source_file_part}}",
+        "{{bundle_resources_dir}}/{{source_file_part}}",
       ]
-
-      # TODO(crbug.com/546283): add the generated bundle to the list of files
-      # to move in the application bundle, equivalent to the following gyp code:
-      #
-      # "link_settings": {
-      #   "mac_bundle_resources": [
-      #     "<(SHARED_INTERMEDIATE_DIR)/<(RULE_INPUT_NAME).js",
-      #   ],
-      # },
     }
   }
 }
