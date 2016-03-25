@@ -526,6 +526,7 @@ crbug.com/525889 imported/web-platform-tests/html/webappapis/scripting/processin
 crbug.com/525889 imported/web-platform-tests/html/webappapis/scripting/processing-model-2/runtime-error-in-setTimeout.html [ Failure ]
 
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/elements-and-dom-objects/extensions-to-element-interface/methods/elements-001.html [ Failure ]
+crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/elements-and-dom-objects/shadowroot-object/shadowroot-methods/test-010.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/events/event-dispatch/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/events/retargeting-relatedtarget/test-003.html [ Failure ]
 crbug.com/505364 imported/web-platform-tests/shadow-dom/untriaged/html-elements-and-their-shadow-trees/test-001.html [ Failure Crash ]

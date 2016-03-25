@@ -113,7 +113,7 @@ ShadowRoot* ShadowRoot::olderShadowRootForBindings() const
 
 PassRefPtrWillBeRawPtr<Node> ShadowRoot::cloneNode(bool, ExceptionState& exceptionState)
 {
-    exceptionState.throwDOMException(DataCloneError, "ShadowRoot nodes are not clonable.");
+    exceptionState.throwDOMException(NotSupportedError, "ShadowRoot nodes are not clonable.");
     return nullptr;
 }
 
