@@ -47,8 +47,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
-#include "third_party/skia/include/gpu/gl/SkNullGLContext.h"
 #include "wtf/RefPtr.h"
 
 using testing::AnyNumber;
@@ -75,9 +75,8 @@ public:
         : m_context3d(context3d)
         , m_gl(gl)
     {
-        scoped_ptr<SkGLContext> glContext(SkNullGLContext::Create());
-        glContext->makeCurrent();
-        m_grContext = adoptRef(GrContext::Create(kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(glContext->gl())));
+        RefPtr<const GrGLInterface> glInterface = adoptRef(GrGLCreateNullInterface());
+        m_grContext = adoptRef(GrContext::Create(kOpenGL_GrBackend, reinterpret_cast<GrBackendContext>(glInterface.get())));
     }
 
     WebGraphicsContext3D* context3d() override
