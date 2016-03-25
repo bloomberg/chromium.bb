@@ -692,6 +692,10 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
  protected:
   void SetupTree() override {
     scoped_refptr<Layer> root = Layer::Create();
+    scoped_refptr<Layer> child = Layer::Create();
+    // This is to force the child to create a transform and effect node.
+    child->SetForceRenderSurface(true);
+    root->AddChild(std::move(child));
     layer_tree_host()->SetRootLayer(root);
     LayerTreeHostTest::SetupTree();
   }
@@ -706,6 +710,18 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
   void BeginTest() override {
     index_ = OPACITY;
     PostSetNeedsCommitToMainThread();
+  }
+
+  void DidCommit() override {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 2:
+        // We rebuild property trees for this case to test the code path of
+        // damage status synchronization when property trees are different.
+        layer_tree_host()->property_trees()->needs_rebuild = true;
+        break;
+      default:
+        EXPECT_FALSE(layer_tree_host()->property_trees()->needs_rebuild);
+    }
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
@@ -725,6 +741,10 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
         impl->active_tree()->ResetAllChangeTracking(
             PropertyTrees::ResetFlags::EFFECT_TREE);
         EXPECT_FALSE(impl->active_tree()->root_layer()->LayerPropertyChanged());
+        EXPECT_FALSE(impl->active_tree()
+                         ->root_layer()
+                         ->child_at(0)
+                         ->LayerPropertyChanged());
         transform.Translate(10, 10);
         impl->active_tree()->root_layer()->OnTransformAnimated(transform);
         PostSetNeedsCommitToMainThread();
@@ -732,9 +752,17 @@ class LayerTreeHostTestPropertyTreesChangedSync : public LayerTreeHostTest {
       case FILTER:
         index_++;
         EXPECT_TRUE(impl->active_tree()->root_layer()->LayerPropertyChanged());
+        EXPECT_TRUE(impl->active_tree()
+                        ->root_layer()
+                        ->child_at(0)
+                        ->LayerPropertyChanged());
         impl->active_tree()->ResetAllChangeTracking(
             PropertyTrees::ResetFlags::TRANSFORM_TREE);
         EXPECT_FALSE(impl->active_tree()->root_layer()->LayerPropertyChanged());
+        EXPECT_FALSE(impl->active_tree()
+                         ->root_layer()
+                         ->child_at(0)
+                         ->LayerPropertyChanged());
         filters.Append(FilterOperation::CreateOpacityFilter(0.5f));
         impl->active_tree()->root_layer()->OnFilterAnimated(filters);
         PostSetNeedsCommitToMainThread();

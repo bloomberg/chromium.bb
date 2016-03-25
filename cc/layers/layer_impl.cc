@@ -693,8 +693,8 @@ void LayerImpl::PushLayerPropertyChangedForSubtree() {
   // We need to update property trees first as layer property can change
   // when its corresponsing property tree node changes.
   PropertyTrees* property_trees = layer_tree_impl()->property_trees();
-  EffectTree effect_tree = property_trees->effect_tree;
-  TransformTree transform_tree = property_trees->transform_tree;
+  EffectTree& effect_tree = property_trees->effect_tree;
+  TransformTree& transform_tree = property_trees->transform_tree;
   for (int i = 1; i < static_cast<int>(effect_tree.size()); ++i) {
     EffectNode* node = effect_tree.Node(i);
     EffectNode* parent_node = effect_tree.parent(node);
