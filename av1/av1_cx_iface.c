@@ -117,9 +117,9 @@ struct aom_codec_alg_priv {
 
 static AOM_REFFRAME ref_frame_to_av1_reframe(aom_ref_frame_type_t frame) {
   switch (frame) {
-    case VP8_LAST_FRAME: return AOM_LAST_FLAG;
-    case VP8_GOLD_FRAME: return AOM_GOLD_FLAG;
-    case VP8_ALTR_FRAME: return AOM_ALT_FLAG;
+    case AOM_LAST_FRAME: return AOM_LAST_FLAG;
+    case AOM_GOLD_FRAME: return AOM_GOLD_FLAG;
+    case AOM_ALTR_FRAME: return AOM_ALT_FLAG;
   }
   assert(0 && "Invalid Reference Frame");
   return AOM_LAST_FLAG;
@@ -538,14 +538,14 @@ static aom_codec_err_t update_extra_cfg(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_set_cpuused(aom_codec_alg_priv_t *ctx,
                                         va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.cpu_used = CAST(VP8E_SET_CPUUSED, args);
+  extra_cfg.cpu_used = CAST(AOME_SET_CPUUSED, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_enable_auto_alt_ref(aom_codec_alg_priv_t *ctx,
                                                     va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.enable_auto_alt_ref = CAST(VP8E_SET_ENABLEAUTOALTREF, args);
+  extra_cfg.enable_auto_alt_ref = CAST(AOME_SET_ENABLEAUTOALTREF, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -559,14 +559,14 @@ static aom_codec_err_t ctrl_set_noise_sensitivity(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_set_sharpness(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.sharpness = CAST(VP8E_SET_SHARPNESS, args);
+  extra_cfg.sharpness = CAST(AOME_SET_SHARPNESS, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_static_thresh(aom_codec_alg_priv_t *ctx,
                                               va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.static_thresh = CAST(VP8E_SET_STATIC_THRESHOLD, args);
+  extra_cfg.static_thresh = CAST(AOME_SET_STATIC_THRESHOLD, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -587,14 +587,14 @@ static aom_codec_err_t ctrl_set_tile_rows(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_set_arnr_max_frames(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.arnr_max_frames = CAST(VP8E_SET_ARNR_MAXFRAMES, args);
+  extra_cfg.arnr_max_frames = CAST(AOME_SET_ARNR_MAXFRAMES, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_arnr_strength(aom_codec_alg_priv_t *ctx,
                                               va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.arnr_strength = CAST(VP8E_SET_ARNR_STRENGTH, args);
+  extra_cfg.arnr_strength = CAST(AOME_SET_ARNR_STRENGTH, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -608,14 +608,14 @@ static aom_codec_err_t ctrl_set_arnr_type(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_set_tuning(aom_codec_alg_priv_t *ctx,
                                        va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.tuning = CAST(VP8E_SET_TUNING, args);
+  extra_cfg.tuning = CAST(AOME_SET_TUNING, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_cq_level(aom_codec_alg_priv_t *ctx,
                                          va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.cq_level = CAST(VP8E_SET_CQ_LEVEL, args);
+  extra_cfg.cq_level = CAST(AOME_SET_CQ_LEVEL, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -623,7 +623,7 @@ static aom_codec_err_t ctrl_set_rc_max_intra_bitrate_pct(
     aom_codec_alg_priv_t *ctx, va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.rc_max_intra_bitrate_pct =
-      CAST(VP8E_SET_MAX_INTRA_BITRATE_PCT, args);
+      CAST(AOME_SET_MAX_INTRA_BITRATE_PCT, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -631,7 +631,7 @@ static aom_codec_err_t ctrl_set_rc_max_inter_bitrate_pct(
     aom_codec_alg_priv_t *ctx, va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.rc_max_inter_bitrate_pct =
-      CAST(VP8E_SET_MAX_INTER_BITRATE_PCT, args);
+      CAST(AOME_SET_MAX_INTER_BITRATE_PCT, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -936,8 +936,8 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
   aom_codec_pkt_list_init(&ctx->pkt_list);
 
   // Handle Flags
-  if (((flags & VP8_EFLAG_NO_UPD_GF) && (flags & VP8_EFLAG_FORCE_GF)) ||
-      ((flags & VP8_EFLAG_NO_UPD_ARF) && (flags & VP8_EFLAG_FORCE_ARF))) {
+  if (((flags & AOM_EFLAG_NO_UPD_GF) && (flags & AOM_EFLAG_FORCE_GF)) ||
+      ((flags & AOM_EFLAG_NO_UPD_ARF) && (flags & AOM_EFLAG_FORCE_ARF))) {
     ctx->base.err_detail = "Conflicting flags.";
     return AOM_CODEC_INVALID_PARAM;
   }
@@ -1245,26 +1245,26 @@ static aom_codec_err_t ctrl_set_render_size(aom_codec_alg_priv_t *ctx,
 }
 
 static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
-  { VP8_COPY_REFERENCE, ctrl_copy_reference },
+  { AOM_COPY_REFERENCE, ctrl_copy_reference },
 
   // Setters
-  { VP8_SET_REFERENCE, ctrl_set_reference },
-  { VP8_SET_POSTPROC, ctrl_set_previewpp },
-  { VP8E_SET_ROI_MAP, ctrl_set_roi_map },
-  { VP8E_SET_ACTIVEMAP, ctrl_set_active_map },
-  { VP8E_SET_SCALEMODE, ctrl_set_scale_mode },
-  { VP8E_SET_CPUUSED, ctrl_set_cpuused },
-  { VP8E_SET_ENABLEAUTOALTREF, ctrl_set_enable_auto_alt_ref },
-  { VP8E_SET_SHARPNESS, ctrl_set_sharpness },
-  { VP8E_SET_STATIC_THRESHOLD, ctrl_set_static_thresh },
+  { AOM_SET_REFERENCE, ctrl_set_reference },
+  { AOM_SET_POSTPROC, ctrl_set_previewpp },
+  { AOME_SET_ROI_MAP, ctrl_set_roi_map },
+  { AOME_SET_ACTIVEMAP, ctrl_set_active_map },
+  { AOME_SET_SCALEMODE, ctrl_set_scale_mode },
+  { AOME_SET_CPUUSED, ctrl_set_cpuused },
+  { AOME_SET_ENABLEAUTOALTREF, ctrl_set_enable_auto_alt_ref },
+  { AOME_SET_SHARPNESS, ctrl_set_sharpness },
+  { AOME_SET_STATIC_THRESHOLD, ctrl_set_static_thresh },
   { VP9E_SET_TILE_COLUMNS, ctrl_set_tile_columns },
   { VP9E_SET_TILE_ROWS, ctrl_set_tile_rows },
-  { VP8E_SET_ARNR_MAXFRAMES, ctrl_set_arnr_max_frames },
-  { VP8E_SET_ARNR_STRENGTH, ctrl_set_arnr_strength },
-  { VP8E_SET_ARNR_TYPE, ctrl_set_arnr_type },
-  { VP8E_SET_TUNING, ctrl_set_tuning },
-  { VP8E_SET_CQ_LEVEL, ctrl_set_cq_level },
-  { VP8E_SET_MAX_INTRA_BITRATE_PCT, ctrl_set_rc_max_intra_bitrate_pct },
+  { AOME_SET_ARNR_MAXFRAMES, ctrl_set_arnr_max_frames },
+  { AOME_SET_ARNR_STRENGTH, ctrl_set_arnr_strength },
+  { AOME_SET_ARNR_TYPE, ctrl_set_arnr_type },
+  { AOME_SET_TUNING, ctrl_set_tuning },
+  { AOME_SET_CQ_LEVEL, ctrl_set_cq_level },
+  { AOME_SET_MAX_INTRA_BITRATE_PCT, ctrl_set_rc_max_intra_bitrate_pct },
   { VP9E_SET_MAX_INTER_BITRATE_PCT, ctrl_set_rc_max_inter_bitrate_pct },
   { VP9E_SET_GF_CBR_BOOST_PCT, ctrl_set_rc_gf_cbr_boost_pct },
   { VP9E_SET_LOSSLESS, ctrl_set_lossless },
@@ -1286,8 +1286,8 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { VP9E_SET_RENDER_SIZE, ctrl_set_render_size },
 
   // Getters
-  { VP8E_GET_LAST_QUANTIZER, ctrl_get_quantizer },
-  { VP8E_GET_LAST_QUANTIZER_64, ctrl_get_quantizer64 },
+  { AOME_GET_LAST_QUANTIZER, ctrl_get_quantizer },
+  { AOME_GET_LAST_QUANTIZER_64, ctrl_get_quantizer64 },
   { VP9_GET_REFERENCE, ctrl_get_reference },
   { VP9E_GET_ACTIVEMAP, ctrl_get_active_map },
 

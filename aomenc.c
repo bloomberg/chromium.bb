@@ -450,12 +450,12 @@ static const arg_def_t *av1_args[] = {
   &min_gf_interval,         &max_gf_interval,  NULL
 };
 static const int av1_arg_ctrl_map[] = {
-  VP8E_SET_CPUUSED,                 VP8E_SET_ENABLEAUTOALTREF,
-  VP8E_SET_SHARPNESS,               VP8E_SET_STATIC_THRESHOLD,
+  AOME_SET_CPUUSED,                 AOME_SET_ENABLEAUTOALTREF,
+  AOME_SET_SHARPNESS,               AOME_SET_STATIC_THRESHOLD,
   VP9E_SET_TILE_COLUMNS,            VP9E_SET_TILE_ROWS,
-  VP8E_SET_ARNR_MAXFRAMES,          VP8E_SET_ARNR_STRENGTH,
-  VP8E_SET_ARNR_TYPE,               VP8E_SET_TUNING,
-  VP8E_SET_CQ_LEVEL,                VP8E_SET_MAX_INTRA_BITRATE_PCT,
+  AOME_SET_ARNR_MAXFRAMES,          AOME_SET_ARNR_STRENGTH,
+  AOME_SET_ARNR_TYPE,               AOME_SET_TUNING,
+  AOME_SET_CQ_LEVEL,                AOME_SET_MAX_INTRA_BITRATE_PCT,
   VP9E_SET_MAX_INTER_BITRATE_PCT,   VP9E_SET_GF_CBR_BOOST_PCT,
   VP9E_SET_LOSSLESS,
 #if CONFIG_AOM_QM
@@ -1584,7 +1584,7 @@ static void update_quantizer_histogram(struct stream_state *stream) {
   if (stream->config.cfg.g_pass != AOM_RC_FIRST_PASS) {
     int q;
 
-    aom_codec_control(&stream->encoder, VP8E_GET_LAST_QUANTIZER_64, &q);
+    aom_codec_control(&stream->encoder, AOME_GET_LAST_QUANTIZER_64, &q);
     ctx_exit_on_error(&stream->encoder, "Failed to read quantizer");
     stream->counts[q]++;
   }

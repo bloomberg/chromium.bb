@@ -294,7 +294,7 @@ static void init_buffer_callbacks(aom_codec_alg_priv_t *ctx) {
 }
 
 static void set_default_ppflags(vp8_postproc_cfg_t *cfg) {
-  cfg->post_proc_flag = VP8_DEBLOCK | VP8_DEMACROBLOCK;
+  cfg->post_proc_flag = AOM_DEBLOCK | AOM_DEMACROBLOCK;
   cfg->deblocking_level = 4;
   cfg->noise_level = 0;
 }
@@ -1017,23 +1017,23 @@ static aom_codec_err_t ctrl_set_skip_loop_filter(aom_codec_alg_priv_t *ctx,
 }
 
 static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
-  { VP8_COPY_REFERENCE, ctrl_copy_reference },
+  { AOM_COPY_REFERENCE, ctrl_copy_reference },
 
   // Setters
-  { VP8_SET_REFERENCE, ctrl_set_reference },
-  { VP8_SET_POSTPROC, ctrl_set_postproc },
-  { VP8_SET_DBG_COLOR_REF_FRAME, ctrl_set_dbg_options },
-  { VP8_SET_DBG_COLOR_MB_MODES, ctrl_set_dbg_options },
-  { VP8_SET_DBG_COLOR_B_MODES, ctrl_set_dbg_options },
-  { VP8_SET_DBG_DISPLAY_MV, ctrl_set_dbg_options },
+  { AOM_SET_REFERENCE, ctrl_set_reference },
+  { AOM_SET_POSTPROC, ctrl_set_postproc },
+  { AOM_SET_DBG_COLOR_REF_FRAME, ctrl_set_dbg_options },
+  { AOM_SET_DBG_COLOR_MB_MODES, ctrl_set_dbg_options },
+  { AOM_SET_DBG_COLOR_B_MODES, ctrl_set_dbg_options },
+  { AOM_SET_DBG_DISPLAY_MV, ctrl_set_dbg_options },
   { VP9_INVERT_TILE_DECODE_ORDER, ctrl_set_invert_tile_order },
   { AOMD_SET_DECRYPTOR, ctrl_set_decryptor },
   { VP9_SET_BYTE_ALIGNMENT, ctrl_set_byte_alignment },
   { VP9_SET_SKIP_LOOP_FILTER, ctrl_set_skip_loop_filter },
 
   // Getters
-  { VP8D_GET_LAST_REF_UPDATES, ctrl_get_last_ref_updates },
-  { VP8D_GET_FRAME_CORRUPTED, ctrl_get_frame_corrupted },
+  { AOMD_GET_LAST_REF_UPDATES, ctrl_get_last_ref_updates },
+  { AOMD_GET_FRAME_CORRUPTED, ctrl_get_frame_corrupted },
   { VP9_GET_REFERENCE, ctrl_get_reference },
   { VP9D_GET_DISPLAY_SIZE, ctrl_get_render_size },
   { VP9D_GET_BIT_DEPTH, ctrl_get_bit_depth },

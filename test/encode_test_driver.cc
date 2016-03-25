@@ -175,7 +175,7 @@ void EncoderTest::RunLoop(VideoSource *video) {
 
     unsigned long dec_init_flags = 0;  // NOLINT
     // Use fragment decoder if encoder outputs partitions.
-    // NOTE: fragment decoder and partition encoder are only supported by VP8.
+    // NOTE: fragment decoder and partition encoder are only supported by AOM.
     if (init_flags_ & AOM_CODEC_USE_OUTPUT_PARTITION)
       dec_init_flags |= AOM_CODEC_USE_INPUT_FRAGMENTS;
     Decoder *const decoder = codec_->CreateDecoder(dec_cfg, dec_init_flags, 0);

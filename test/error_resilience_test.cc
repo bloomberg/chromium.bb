@@ -70,20 +70,20 @@ class ErrorResilienceTestLarge
         if (frame_num < pattern_switch || pattern_switch == 0) {
           // Layer 0: predict from LAST and ARF, update LAST.
           frame_flags =
-              VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF;
+              AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF;
         } else {
           // Layer 0: predict from GF and ARF, update GF.
-          frame_flags = VP8_EFLAG_NO_REF_LAST | VP8_EFLAG_NO_UPD_LAST |
-                        VP8_EFLAG_NO_UPD_ARF;
+          frame_flags = AOM_EFLAG_NO_REF_LAST | AOM_EFLAG_NO_UPD_LAST |
+                        AOM_EFLAG_NO_UPD_ARF;
         }
       } else {
         if (frame_num < pattern_switch || pattern_switch == 0) {
           // Layer 1: predict from L, GF, and ARF, update GF.
-          frame_flags = VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST;
+          frame_flags = AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST;
         } else {
           // Layer 1: predict from GF and ARF, update GF.
-          frame_flags = VP8_EFLAG_NO_REF_LAST | VP8_EFLAG_NO_UPD_LAST |
-                        VP8_EFLAG_NO_UPD_ARF;
+          frame_flags = AOM_EFLAG_NO_REF_LAST | AOM_EFLAG_NO_UPD_LAST |
+                        AOM_EFLAG_NO_UPD_ARF;
         }
       }
     }
@@ -93,7 +93,7 @@ class ErrorResilienceTestLarge
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   ::libaom_test::Encoder *encoder) {
     frame_flags_ &=
-        ~(VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF);
+        ~(AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF);
     // For temporal layer case.
     if (cfg_.ts_number_layers > 1) {
       frame_flags_ =
@@ -111,8 +111,8 @@ class ErrorResilienceTestLarge
           if (droppable_frames_[i] == video->frame()) {
             std::cout << "Encoding droppable frame: " << droppable_frames_[i]
                       << "\n";
-            frame_flags_ |= (VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_GF |
-                             VP8_EFLAG_NO_UPD_ARF);
+            frame_flags_ |= (AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
+                             AOM_EFLAG_NO_UPD_ARF);
             return;
           }
         }
@@ -414,24 +414,24 @@ class ErrorResilienceTestLargeCodecControls
       if (frame_num % 2 == 0) {
         // Layer 0: predict from L and ARF, update L.
         frame_flags =
-            VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF;
+            AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF;
       } else {
         // Layer 1: predict from L, G and ARF, and update G.
-        frame_flags = VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST |
-                      VP8_EFLAG_NO_UPD_ENTROPY;
+        frame_flags = AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST |
+                      AOM_EFLAG_NO_UPD_ENTROPY;
       }
     } else if (num_temp_layers == 3) {
       if (frame_num % 4 == 0) {
         // Layer 0: predict from L, update L.
-        frame_flags = VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF |
-                      VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_REF_ARF;
+        frame_flags = AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF |
+                      AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF;
       } else if ((frame_num - 2) % 4 == 0) {
         // Layer 1: predict from L, G,  update G.
         frame_flags =
-            VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_REF_ARF;
+            AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_REF_ARF;
       } else if ((frame_num - 1) % 2 == 0) {
         // Layer 2: predict from L, G, ARF; update ARG.
-        frame_flags = VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_LAST;
+        frame_flags = AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_LAST;
       }
     }
     return frame_flags;
@@ -463,8 +463,8 @@ class ErrorResilienceTestLargeCodecControls
       int layer_id = SetLayerId(video->frame(), cfg_.ts_number_layers);
       int frame_flags = SetFrameFlags(video->frame(), cfg_.ts_number_layers);
       if (video->frame() > 0) {
-        encoder->Control(VP8E_SET_TEMPORAL_LAYER_ID, layer_id);
-        encoder->Control(VP8E_SET_FRAME_FLAGS, frame_flags);
+        encoder->Control(AOME_SET_TEMPORAL_LAYER_ID, layer_id);
+        encoder->Control(AOME_SET_FRAME_FLAGS, frame_flags);
       }
       const aom_rational_t tb = video->timebase();
       timebase_ = static_cast<double>(tb.num) / tb.den;

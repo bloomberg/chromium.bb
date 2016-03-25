@@ -9,10 +9,10 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-// VP8 Set Active and ROI Maps
+// AOM Set Active and ROI Maps
 // ===========================
 //
-// This is an example demonstrating how to control the VP8 encoder's
+// This is an example demonstrating how to control the AOM encoder's
 // ROI and Active maps.
 //
 // ROI (Reigon of Interest) maps are a way for the application to assign
@@ -88,7 +88,7 @@ static void set_roi_map(const aom_codec_enc_cfg_t *cfg,
   roi.roi_map = (uint8_t *)malloc(roi.rows * roi.cols);
   for (i = 0; i < roi.rows * roi.cols; ++i) roi.roi_map[i] = i % 4;
 
-  if (aom_codec_control(codec, VP8E_SET_ROI_MAP, &roi))
+  if (aom_codec_control(codec, AOME_SET_ROI_MAP, &roi))
     die_codec(codec, "Failed to set ROI map");
 
   free(roi.roi_map);
@@ -105,7 +105,7 @@ static void set_active_map(const aom_codec_enc_cfg_t *cfg,
   map.active_map = (uint8_t *)malloc(map.rows * map.cols);
   for (i = 0; i < map.rows * map.cols; ++i) map.active_map[i] = i % 2;
 
-  if (aom_codec_control(codec, VP8E_SET_ACTIVEMAP, &map))
+  if (aom_codec_control(codec, AOME_SET_ACTIVEMAP, &map))
     die_codec(codec, "Failed to set active map");
 
   free(map.active_map);
@@ -119,7 +119,7 @@ static void unset_active_map(const aom_codec_enc_cfg_t *cfg,
   map.cols = (cfg->g_w + 15) / 16;
   map.active_map = NULL;
 
-  if (aom_codec_control(codec, VP8E_SET_ACTIVEMAP, &map))
+  if (aom_codec_control(codec, AOME_SET_ACTIVEMAP, &map))
     die_codec(codec, "Failed to set active map");
 }
 
@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
   while (aom_img_read(&raw, infile)) {
     ++frame_count;
 
-    if (frame_count == 22 && encoder->fourcc == VP8_FOURCC) {
+    if (frame_count == 22 && encoder->fourcc == AOM_FOURCC) {
       set_roi_map(&cfg, &codec);
     } else if (frame_count == 33) {
       set_active_map(&cfg, &codec);

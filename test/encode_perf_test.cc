@@ -86,10 +86,10 @@ class VP9EncodePerfTest
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 0) {
       const int log2_tile_columns = 3;
-      encoder->Control(VP8E_SET_CPUUSED, speed_);
+      encoder->Control(AOME_SET_CPUUSED, speed_);
       encoder->Control(VP9E_SET_TILE_COLUMNS, log2_tile_columns);
       encoder->Control(VP9E_SET_FRAME_PARALLEL_DECODING, 1);
-      encoder->Control(VP8E_SET_ENABLEAUTOALTREF, 0);
+      encoder->Control(AOME_SET_ENABLEAUTOALTREF, 0);
     }
   }
 

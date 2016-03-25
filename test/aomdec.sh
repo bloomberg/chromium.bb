@@ -16,7 +16,7 @@
 
 # Environment check: Make sure input is available.
 aomdec_verify_environment() {
-  if [ ! -e "${VP8_IVF_FILE}" ] || [ ! -e "${VP9_WEBM_FILE}" ] || \
+  if [ ! -e "${AOM_IVF_FILE}" ] || [ ! -e "${VP9_WEBM_FILE}" ] || \
     [ ! -e "${VP9_FPM_WEBM_FILE}" ] || \
     [ ! -e "${VP9_LT_50_FRAMES_WEBM_FILE}" ] ; then
     elog "Libaom test data must exist in LIBAOM_TEST_DATA_PATH."
@@ -63,13 +63,13 @@ aomdec_can_decode_vp9() {
 
 aomdec_vp8_ivf() {
   if [ "$(aomdec_can_decode_vp8)" = "yes" ]; then
-    aomdec "${VP8_IVF_FILE}" --summary --noblit
+    aomdec "${AOM_IVF_FILE}" --summary --noblit
   fi
 }
 
 aomdec_vp8_ivf_pipe_input() {
   if [ "$(aomdec_can_decode_vp8)" = "yes" ]; then
-    aomdec_pipe "${VP8_IVF_FILE}" --summary --noblit
+    aomdec_pipe "${AOM_IVF_FILE}" --summary --noblit
   fi
 }
 

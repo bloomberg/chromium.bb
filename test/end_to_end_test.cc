@@ -116,12 +116,12 @@ class EndToEndTestLarge
     if (video->frame() == 1) {
       encoder->Control(VP9E_SET_FRAME_PARALLEL_DECODING, 1);
       encoder->Control(VP9E_SET_TILE_COLUMNS, 4);
-      encoder->Control(VP8E_SET_CPUUSED, cpu_used_);
+      encoder->Control(AOME_SET_CPUUSED, cpu_used_);
       if (encoding_mode_ != ::libaom_test::kRealTime) {
-        encoder->Control(VP8E_SET_ENABLEAUTOALTREF, 1);
-        encoder->Control(VP8E_SET_ARNR_MAXFRAMES, 7);
-        encoder->Control(VP8E_SET_ARNR_STRENGTH, 5);
-        encoder->Control(VP8E_SET_ARNR_TYPE, 3);
+        encoder->Control(AOME_SET_ENABLEAUTOALTREF, 1);
+        encoder->Control(AOME_SET_ARNR_MAXFRAMES, 7);
+        encoder->Control(AOME_SET_ARNR_STRENGTH, 5);
+        encoder->Control(AOME_SET_ARNR_TYPE, 3);
       }
     }
   }

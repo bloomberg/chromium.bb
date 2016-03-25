@@ -383,7 +383,7 @@ if [ "$(is_windows_target)" = "yes" ]; then
 fi
 
 # Variables shared by tests.
-VP8_IVF_FILE="${LIBAOM_TEST_DATA_PATH}/vp80-00-comprehensive-001.ivf"
+AOM_IVF_FILE="${LIBAOM_TEST_DATA_PATH}/vp80-00-comprehensive-001.ivf"
 VP9_IVF_FILE="${LIBAOM_TEST_DATA_PATH}/vp90-2-09-subpixel-00.ivf"
 
 VP9_WEBM_FILE="${LIBAOM_TEST_DATA_PATH}/vp90-2-00-quantizer-00.webm"
@@ -404,7 +404,7 @@ vlog "$(basename "${0%.*}") test configuration:
   LIBAOM_BIN_PATH=${LIBAOM_BIN_PATH}
   LIBAOM_CONFIG_PATH=${LIBAOM_CONFIG_PATH}
   LIBAOM_TEST_DATA_PATH=${LIBAOM_TEST_DATA_PATH}
-  VP8_IVF_FILE=${VP8_IVF_FILE}
+  AOM_IVF_FILE=${AOM_IVF_FILE}
   VP9_IVF_FILE=${VP9_IVF_FILE}
   VP9_WEBM_FILE=${VP9_WEBM_FILE}
   AOM_TEST_EXE_SUFFIX=${AOM_TEST_EXE_SUFFIX}

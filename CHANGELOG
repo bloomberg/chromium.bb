@@ -3,14 +3,14 @@
   decoding processes.
 
   - Upgrading:
-    This release is ABI incompatible with 1.4.0. It drops deprecated VP8
+    This release is ABI incompatible with 1.4.0. It drops deprecated AOM
     controls and adds a variety of VP9 controls for testing.
 
     The aomenc utility now prefers VP9 by default.
 
   - Enhancements:
     Faster VP9 encoding and decoding
-    Smaller library size by combining functions used by VP8 and VP9
+    Smaller library size by combining functions used by AOM and VP9
 
   - Bug Fixes:
     A variety of fuzzing issues
@@ -40,8 +40,8 @@
 
 2013-11-15 v1.3.0 "Forest"
   This release introduces the VP9 codec in a backward-compatible way.
-  All existing users of VP8 can continue to use the library without
-  modification. However, some VP8 options do not map to VP9 in the same manner.
+  All existing users of AOM can continue to use the library without
+  modification. However, some AOM options do not map to VP9 in the same manner.
 
   The VP9 encoder in this release is not feature complete. Users interested in
   the encoder are advised to use the git master branch and discuss issues on
@@ -78,7 +78,7 @@
       Add encoding option --static-thresh
 
   - Speed:
-      Miscellaneous speed optimizations for VP8 and VP9.
+      Miscellaneous speed optimizations for AOM and VP9.
 
   - Quality:
       In general, quality is consistent with the Eider release.
@@ -99,7 +99,7 @@
     document for that release.
 
   - Enhancements:
-      VP8 optimizations for MIPS dspr2
+      AOM optimizations for MIPS dspr2
       aomenc: add -quiet option
 
   - Speed:
@@ -128,7 +128,7 @@
     document for that release.
 
     This release introduces a new temporal denoiser, controlled by the
-    VP8E_SET_NOISE_SENSITIVITY control. The temporal denoiser does not
+    AOME_SET_NOISE_SENSITIVITY control. The temporal denoiser does not
     currently take a strength parameter, so the control is effectively
     a boolean - zero (off) or non-zero (on). For compatibility with
     existing applications, the values accepted are the same as those
@@ -620,5 +620,5 @@
 
 
 2010-05-18 v0.9.0
-  - Initial open source release. Welcome to WebM and VP8!
+  - Initial open source release. Welcome to WebM and AOM!
 

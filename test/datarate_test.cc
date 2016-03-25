@@ -47,7 +47,7 @@ class DatarateTestLarge
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 0)
-      encoder->Control(VP8E_SET_NOISE_SENSITIVITY, denoiser_on_);
+      encoder->Control(AOME_SET_NOISE_SENSITIVITY, denoiser_on_);
 
     if (denoiser_offon_test_) {
       ASSERT_GT(denoiser_offon_period_, 0)
@@ -56,7 +56,7 @@ class DatarateTestLarge
         // Flip denoiser_on_ periodically
         denoiser_on_ ^= 1;
       }
-      encoder->Control(VP8E_SET_NOISE_SENSITIVITY, denoiser_on_);
+      encoder->Control(AOME_SET_NOISE_SENSITIVITY, denoiser_on_);
     }
 
     const aom_rational_t tb = video->timebase();
@@ -308,24 +308,24 @@ class DatarateTestVP9Large
       if (frame_num % 2 == 0) {
         // Layer 0: predict from L and ARF, update L.
         frame_flags =
-            VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF;
+            AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF;
       } else {
         // Layer 1: predict from L, G and ARF, and update G.
-        frame_flags = VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST |
-                      VP8_EFLAG_NO_UPD_ENTROPY;
+        frame_flags = AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST |
+                      AOM_EFLAG_NO_UPD_ENTROPY;
       }
     } else if (num_temp_layers == 3) {
       if (frame_num % 4 == 0) {
         // Layer 0: predict from L and ARF; update L.
         frame_flags =
-            VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_REF_GF;
+            AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_REF_GF;
       } else if ((frame_num - 2) % 4 == 0) {
         // Layer 1: predict from L, G, ARF; update G.
-        frame_flags = VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST;
+        frame_flags = AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST;
       } else if ((frame_num - 1) % 2 == 0) {
         // Layer 2: predict from L, G, ARF; update none.
         frame_flags =
-            VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST;
+            AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST;
       }
     }
     return frame_flags;
@@ -353,7 +353,7 @@ class DatarateTestVP9Large
 
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
                                   ::libaom_test::Encoder *encoder) {
-    if (video->frame() == 0) encoder->Control(VP8E_SET_CPUUSED, set_cpu_used_);
+    if (video->frame() == 0) encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
 
     if (denoiser_offon_test_) {
       ASSERT_GT(denoiser_offon_period_, 0)
@@ -718,9 +718,9 @@ class DatarateOnePassCbrSvc
       svc_params_.scaling_factor_den[1] = 288;
       encoder->Control(VP9E_SET_SVC, 1);
       encoder->Control(VP9E_SET_SVC_PARAMETERS, &svc_params_);
-      encoder->Control(VP8E_SET_CPUUSED, speed_setting_);
+      encoder->Control(AOME_SET_CPUUSED, speed_setting_);
       encoder->Control(VP9E_SET_TILE_COLUMNS, 0);
-      encoder->Control(VP8E_SET_MAX_INTRA_BITRATE_PCT, 300);
+      encoder->Control(AOME_SET_MAX_INTRA_BITRATE_PCT, 300);
       encoder->Control(VP9E_SET_TILE_COLUMNS, (cfg_.g_threads >> 1));
     }
     const aom_rational_t tb = video->timebase();

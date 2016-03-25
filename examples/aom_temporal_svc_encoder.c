@@ -175,7 +175,7 @@ static void set_temporal_layer_pattern(int layering_mode,
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // Update L only.
       layer_flags[0] =
-          AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF;
+          AOM_EFLAG_FORCE_KF | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF;
       break;
     }
     case 1: {
@@ -189,18 +189,18 @@ static void set_temporal_layer_pattern(int layering_mode,
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
 #if 1
       // 0=L, 1=GF, Intra-layer prediction enabled.
-      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_UPD_GF |
-                       VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_REF_GF |
-                       VP8_EFLAG_NO_REF_ARF;
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | AOM_EFLAG_NO_UPD_GF |
+                       AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_REF_GF |
+                       AOM_EFLAG_NO_REF_ARF;
       layer_flags[1] =
-          VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_REF_ARF;
+          AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_REF_ARF;
 #else
       // 0=L, 1=GF, Intra-layer prediction disabled.
-      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_UPD_GF |
-                       VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_REF_GF |
-                       VP8_EFLAG_NO_REF_ARF;
-      layer_flags[1] = VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST |
-                       VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_REF_LAST;
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | AOM_EFLAG_NO_UPD_GF |
+                       AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_REF_GF |
+                       AOM_EFLAG_NO_REF_ARF;
+      layer_flags[1] = AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST |
+                       AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_REF_LAST;
 #endif
       break;
     }
@@ -214,12 +214,12 @@ static void set_temporal_layer_pattern(int layering_mode,
       cfg->ts_rate_decimator[1] = 1;
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // 0=L, 1=GF, Intra-layer prediction enabled.
-      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
-                       VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_GF |
-                       VP8_EFLAG_NO_UPD_ARF;
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | AOM_EFLAG_NO_REF_GF |
+                       AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_UPD_GF |
+                       AOM_EFLAG_NO_UPD_ARF;
       layer_flags[1] = layer_flags[2] =
-          VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_ARF |
-          VP8_EFLAG_NO_UPD_LAST;
+          AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_UPD_ARF |
+          AOM_EFLAG_NO_UPD_LAST;
       break;
     }
     case 3: {
@@ -233,13 +233,13 @@ static void set_temporal_layer_pattern(int layering_mode,
       cfg->ts_rate_decimator[2] = 1;
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // 0=L, 1=GF, 2=ARF, Intra-layer prediction enabled.
-      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
-                       VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_GF |
-                       VP8_EFLAG_NO_UPD_ARF;
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | AOM_EFLAG_NO_REF_GF |
+                       AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_UPD_GF |
+                       AOM_EFLAG_NO_UPD_ARF;
       layer_flags[3] =
-          VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST;
+          AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST;
       layer_flags[1] = layer_flags[2] = layer_flags[4] = layer_flags[5] =
-          VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_LAST;
+          AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_LAST;
       break;
     }
     case 4: {
@@ -253,14 +253,14 @@ static void set_temporal_layer_pattern(int layering_mode,
       cfg->ts_rate_decimator[2] = 1;
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // 0=L, 1=GF, 2=ARF, Intra-layer prediction disabled.
-      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
-                       VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_GF |
-                       VP8_EFLAG_NO_UPD_ARF;
-      layer_flags[2] = VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_REF_ARF |
-                       VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST;
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | AOM_EFLAG_NO_REF_GF |
+                       AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_UPD_GF |
+                       AOM_EFLAG_NO_UPD_ARF;
+      layer_flags[2] = AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF |
+                       AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST;
       layer_flags[1] = layer_flags[3] =
-          VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_GF |
-          VP8_EFLAG_NO_UPD_ARF;
+          AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
+          AOM_EFLAG_NO_UPD_ARF;
       break;
     }
     case 5: {
@@ -275,14 +275,14 @@ static void set_temporal_layer_pattern(int layering_mode,
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // 0=L, 1=GF, 2=ARF, Intra-layer prediction enabled in layer 1, disabled
       // in layer 2.
-      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
-                       VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_GF |
-                       VP8_EFLAG_NO_UPD_ARF;
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | AOM_EFLAG_NO_REF_GF |
+                       AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_UPD_GF |
+                       AOM_EFLAG_NO_UPD_ARF;
       layer_flags[2] =
-          VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_ARF;
+          AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_ARF;
       layer_flags[1] = layer_flags[3] =
-          VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_GF |
-          VP8_EFLAG_NO_UPD_ARF;
+          AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
+          AOM_EFLAG_NO_UPD_ARF;
       break;
     }
     case 6: {
@@ -296,13 +296,13 @@ static void set_temporal_layer_pattern(int layering_mode,
       cfg->ts_rate_decimator[2] = 1;
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // 0=L, 1=GF, 2=ARF, Intra-layer prediction enabled.
-      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
-                       VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_GF |
-                       VP8_EFLAG_NO_UPD_ARF;
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | AOM_EFLAG_NO_REF_GF |
+                       AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_UPD_GF |
+                       AOM_EFLAG_NO_UPD_ARF;
       layer_flags[2] =
-          VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_ARF;
+          AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_ARF;
       layer_flags[1] = layer_flags[3] =
-          VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_GF;
+          AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF;
       break;
     }
     case 7: {
@@ -321,13 +321,13 @@ static void set_temporal_layer_pattern(int layering_mode,
       layer_flags[0] = AOM_EFLAG_FORCE_KF;
       layer_flags[1] = layer_flags[3] = layer_flags[5] = layer_flags[7] =
           layer_flags[9] = layer_flags[11] = layer_flags[13] = layer_flags[15] =
-              VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_GF |
-              VP8_EFLAG_NO_UPD_ARF;
+              AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
+              AOM_EFLAG_NO_UPD_ARF;
       layer_flags[2] = layer_flags[6] = layer_flags[10] = layer_flags[14] =
-          VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_GF;
+          AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_GF;
       layer_flags[4] = layer_flags[12] =
-          VP8_EFLAG_NO_REF_LAST | VP8_EFLAG_NO_UPD_ARF;
-      layer_flags[8] = VP8_EFLAG_NO_REF_LAST | VP8_EFLAG_NO_REF_GF;
+          AOM_EFLAG_NO_REF_LAST | AOM_EFLAG_NO_UPD_ARF;
+      layer_flags[8] = AOM_EFLAG_NO_REF_LAST | AOM_EFLAG_NO_REF_GF;
       break;
     }
     case 8: {
@@ -345,16 +345,16 @@ static void set_temporal_layer_pattern(int layering_mode,
 
       // Layer 0: predict from L and ARF, update L and G.
       layer_flags[0] =
-          AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_UPD_ARF;
+          AOM_EFLAG_FORCE_KF | AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_UPD_ARF;
       // Layer 1: sync point: predict from L and ARF, and update G.
       layer_flags[1] =
-          VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_ARF;
+          AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_ARF;
       // Layer 0, predict from L and ARF, update L.
       layer_flags[2] =
-          VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF;
+          AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF;
       // Layer 1: predict from L, G and ARF, and update G.
-      layer_flags[3] = VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST |
-                       VP8_EFLAG_NO_UPD_ENTROPY;
+      layer_flags[3] = AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST |
+                       AOM_EFLAG_NO_UPD_ENTROPY;
       // Layer 0.
       layer_flags[4] = layer_flags[2];
       // Layer 1.
@@ -376,21 +376,21 @@ static void set_temporal_layer_pattern(int layering_mode,
       cfg->ts_rate_decimator[2] = 1;
       memcpy(cfg->ts_layer_id, ids, sizeof(ids));
       // 0=L, 1=GF, 2=ARF.
-      layer_flags[0] = AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_REF_GF |
-                       VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_GF |
-                       VP8_EFLAG_NO_UPD_ARF;
-      layer_flags[1] = VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_REF_ARF |
-                       VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_GF;
-      layer_flags[2] = VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_REF_ARF |
-                       VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_ARF;
+      layer_flags[0] = AOM_EFLAG_FORCE_KF | AOM_EFLAG_NO_REF_GF |
+                       AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_UPD_GF |
+                       AOM_EFLAG_NO_UPD_ARF;
+      layer_flags[1] = AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF |
+                       AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF;
+      layer_flags[2] = AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF |
+                       AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_ARF;
       layer_flags[3] = layer_flags[5] =
-          VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_GF;
-      layer_flags[4] = VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_REF_ARF |
-                       VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF;
+          AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF;
+      layer_flags[4] = AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF |
+                       AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF;
       layer_flags[6] =
-          VP8_EFLAG_NO_REF_ARF | VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_ARF;
-      layer_flags[7] = VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_GF |
-                       VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_ENTROPY;
+          AOM_EFLAG_NO_REF_ARF | AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_ARF;
+      layer_flags[7] = AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
+                       AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_ENTROPY;
       break;
     }
     case 10: {
@@ -409,24 +409,24 @@ static void set_temporal_layer_pattern(int layering_mode,
       // 0=L, 1=GF, 2=ARF.
       // Layer 0: predict from L and ARF; update L and G.
       layer_flags[0] =
-          AOM_EFLAG_FORCE_KF | VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_REF_GF;
+          AOM_EFLAG_FORCE_KF | AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_REF_GF;
       // Layer 2: sync point: predict from L and ARF; update none.
-      layer_flags[1] = VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_UPD_GF |
-                       VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST |
-                       VP8_EFLAG_NO_UPD_ENTROPY;
+      layer_flags[1] = AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_UPD_GF |
+                       AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST |
+                       AOM_EFLAG_NO_UPD_ENTROPY;
       // Layer 1: sync point: predict from L and ARF; update G.
       layer_flags[2] =
-          VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST;
+          AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST;
       // Layer 2: predict from L, G, ARF; update none.
-      layer_flags[3] = VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF |
-                       VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_ENTROPY;
+      layer_flags[3] = AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF |
+                       AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_ENTROPY;
       // Layer 0: predict from L and ARF; update L.
       layer_flags[4] =
-          VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_REF_GF;
+          AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_REF_GF;
       // Layer 2: predict from L, G, ARF; update none.
       layer_flags[5] = layer_flags[3];
       // Layer 1: predict from L, G, ARF; update G.
-      layer_flags[6] = VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST;
+      layer_flags[6] = AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST;
       // Layer 2: predict from L, G, ARF; update none.
       layer_flags[7] = layer_flags[3];
       break;
@@ -446,14 +446,14 @@ static void set_temporal_layer_pattern(int layering_mode,
       // 0=L, 1=GF, 2=ARF.
       // Layer 0: predict from L and ARF; update L.
       layer_flags[0] =
-          VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_REF_GF;
+          AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_REF_GF;
       layer_flags[4] = layer_flags[0];
       // Layer 1: predict from L, G, ARF; update G.
-      layer_flags[2] = VP8_EFLAG_NO_UPD_ARF | VP8_EFLAG_NO_UPD_LAST;
+      layer_flags[2] = AOM_EFLAG_NO_UPD_ARF | AOM_EFLAG_NO_UPD_LAST;
       layer_flags[6] = layer_flags[2];
       // Layer 2: predict from L, G, ARF; update none.
-      layer_flags[1] = VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF |
-                       VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_ENTROPY;
+      layer_flags[1] = AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF |
+                       AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_ENTROPY;
       layer_flags[3] = layer_flags[1];
       layer_flags[5] = layer_flags[1];
       layer_flags[7] = layer_flags[1];
@@ -677,16 +677,16 @@ int main(int argc, char **argv) {
     die_codec(&codec, "Failed to initialize encoder");
 
   if (strncmp(encoder->name, "vp8", 3) == 0) {
-    aom_codec_control(&codec, VP8E_SET_CPUUSED, -speed);
-    aom_codec_control(&codec, VP8E_SET_NOISE_SENSITIVITY, kDenoiserOff);
-    aom_codec_control(&codec, VP8E_SET_STATIC_THRESHOLD, 1);
+    aom_codec_control(&codec, AOME_SET_CPUUSED, -speed);
+    aom_codec_control(&codec, AOME_SET_NOISE_SENSITIVITY, kDenoiserOff);
+    aom_codec_control(&codec, AOME_SET_STATIC_THRESHOLD, 1);
   } else if (strncmp(encoder->name, "vp9", 3) == 0) {
     aom_svc_extra_cfg_t svc_params;
-    aom_codec_control(&codec, VP8E_SET_CPUUSED, speed);
+    aom_codec_control(&codec, AOME_SET_CPUUSED, speed);
     aom_codec_control(&codec, VP9E_SET_AQ_MODE, 3);
     aom_codec_control(&codec, VP9E_SET_FRAME_PERIODIC_BOOST, 0);
     aom_codec_control(&codec, VP9E_SET_NOISE_SENSITIVITY, 0);
-    aom_codec_control(&codec, VP8E_SET_STATIC_THRESHOLD, 1);
+    aom_codec_control(&codec, AOME_SET_STATIC_THRESHOLD, 1);
     aom_codec_control(&codec, VP9E_SET_TUNE_CONTENT, 0);
     aom_codec_control(&codec, VP9E_SET_TILE_COLUMNS, (cfg.g_threads >> 1));
     if (aom_codec_control(&codec, VP9E_SET_SVC, layering_mode > 0 ? 1 : 0))
@@ -700,15 +700,15 @@ int main(int argc, char **argv) {
     aom_codec_control(&codec, VP9E_SET_SVC_PARAMETERS, &svc_params);
   }
   if (strncmp(encoder->name, "vp8", 3) == 0) {
-    aom_codec_control(&codec, VP8E_SET_SCREEN_CONTENT_MODE, 0);
+    aom_codec_control(&codec, AOME_SET_SCREEN_CONTENT_MODE, 0);
   }
-  aom_codec_control(&codec, VP8E_SET_TOKEN_PARTITIONS, 1);
+  aom_codec_control(&codec, AOME_SET_TOKEN_PARTITIONS, 1);
   // This controls the maximum target size of the key frame.
   // For generating smaller key frames, use a smaller max_intra_size_pct
   // value, like 100 or 200.
   {
     const int max_intra_size_pct = 900;
-    aom_codec_control(&codec, VP8E_SET_MAX_INTRA_BITRATE_PCT,
+    aom_codec_control(&codec, AOME_SET_MAX_INTRA_BITRATE_PCT,
                       max_intra_size_pct);
   }
 
@@ -726,7 +726,7 @@ int main(int argc, char **argv) {
     if (strncmp(encoder->name, "vp9", 3) == 0) {
       aom_codec_control(&codec, VP9E_SET_SVC_LAYER_ID, &layer_id);
     } else if (strncmp(encoder->name, "vp8", 3) == 0) {
-      aom_codec_control(&codec, VP8E_SET_TEMPORAL_LAYER_ID,
+      aom_codec_control(&codec, AOME_SET_TEMPORAL_LAYER_ID,
                         layer_id.temporal_layer_id);
     }
     flags = layer_flags[frame_cnt % flag_periodicity];

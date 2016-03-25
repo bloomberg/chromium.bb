@@ -1214,7 +1214,7 @@ class Segment {
   //   frame: frame object
   bool AddGenericFrame(const Frame* frame);
 
-  // Adds a VP8 video track to the segment. Returns the number of the track on
+  // Adds a AOM video track to the segment. Returns the number of the track on
   // success, 0 on error. |number| is the number to use for the video track.
   // |number| must be >= 0. If |number| == 0 then the muxer will decide on
   // the track number.

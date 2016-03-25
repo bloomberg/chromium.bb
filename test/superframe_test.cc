@@ -45,7 +45,7 @@ class SuperframeTest
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   libaom_test::Encoder *encoder) {
     if (video->frame() == 1) {
-      encoder->Control(VP8E_SET_ENABLEAUTOALTREF, 1);
+      encoder->Control(AOME_SET_ENABLEAUTOALTREF, 1);
     }
   }
 

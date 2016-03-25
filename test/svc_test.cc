@@ -75,7 +75,7 @@ class SvcTest : public ::testing::Test {
     const aom_codec_err_t res =
         aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
     EXPECT_EQ(AOM_CODEC_OK, res);
-    aom_codec_control(&codec_, VP8E_SET_CPUUSED, 4);  // Make the test faster
+    aom_codec_control(&codec_, AOME_SET_CPUUSED, 4);  // Make the test faster
     aom_codec_control(&codec_, VP9E_SET_TILE_COLUMNS, tile_columns_);
     aom_codec_control(&codec_, VP9E_SET_TILE_ROWS, tile_rows_);
     codec_initialized_ = true;

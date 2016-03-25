@@ -44,12 +44,12 @@ class CpuSpeedTest
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 1) {
-      encoder->Control(VP8E_SET_CPUUSED, set_cpu_used_);
+      encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
       if (encoding_mode_ != ::libaom_test::kRealTime) {
-        encoder->Control(VP8E_SET_ENABLEAUTOALTREF, 1);
-        encoder->Control(VP8E_SET_ARNR_MAXFRAMES, 7);
-        encoder->Control(VP8E_SET_ARNR_STRENGTH, 5);
-        encoder->Control(VP8E_SET_ARNR_TYPE, 3);
+        encoder->Control(AOME_SET_ENABLEAUTOALTREF, 1);
+        encoder->Control(AOME_SET_ARNR_MAXFRAMES, 7);
+        encoder->Control(AOME_SET_ARNR_STRENGTH, 5);
+        encoder->Control(AOME_SET_ARNR_TYPE, 3);
       }
     }
   }

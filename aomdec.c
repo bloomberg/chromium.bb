@@ -753,8 +753,8 @@ static int main_loop(int argc, const char **argv_) {
     dx_time += (unsigned int)aom_usec_timer_elapsed(&timer);
 
     if (!frame_parallel &&
-        aom_codec_control(&decoder, VP8D_GET_FRAME_CORRUPTED, &corrupted)) {
-      warn("Failed VP8_GET_FRAME_CORRUPTED: %s", aom_codec_error(&decoder));
+        aom_codec_control(&decoder, AOMD_GET_FRAME_CORRUPTED, &corrupted)) {
+      warn("Failed AOM_GET_FRAME_CORRUPTED: %s", aom_codec_error(&decoder));
       if (!keep_going) goto fail;
     }
     frames_corrupted += corrupted;

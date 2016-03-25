@@ -4109,33 +4109,33 @@ int av1_get_quantizer(AV1_COMP *cpi) { return cpi->common.base_qindex; }
 
 void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
   if (flags &
-      (VP8_EFLAG_NO_REF_LAST | VP8_EFLAG_NO_REF_GF | VP8_EFLAG_NO_REF_ARF)) {
+      (AOM_EFLAG_NO_REF_LAST | AOM_EFLAG_NO_REF_GF | AOM_EFLAG_NO_REF_ARF)) {
     int ref = 7;
 
-    if (flags & VP8_EFLAG_NO_REF_LAST) ref ^= AOM_LAST_FLAG;
+    if (flags & AOM_EFLAG_NO_REF_LAST) ref ^= AOM_LAST_FLAG;
 
-    if (flags & VP8_EFLAG_NO_REF_GF) ref ^= AOM_GOLD_FLAG;
+    if (flags & AOM_EFLAG_NO_REF_GF) ref ^= AOM_GOLD_FLAG;
 
-    if (flags & VP8_EFLAG_NO_REF_ARF) ref ^= AOM_ALT_FLAG;
+    if (flags & AOM_EFLAG_NO_REF_ARF) ref ^= AOM_ALT_FLAG;
 
     av1_use_as_reference(cpi, ref);
   }
 
   if (flags &
-      (VP8_EFLAG_NO_UPD_LAST | VP8_EFLAG_NO_UPD_GF | VP8_EFLAG_NO_UPD_ARF |
-       VP8_EFLAG_FORCE_GF | VP8_EFLAG_FORCE_ARF)) {
+      (AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF |
+       AOM_EFLAG_FORCE_GF | AOM_EFLAG_FORCE_ARF)) {
     int upd = 7;
 
-    if (flags & VP8_EFLAG_NO_UPD_LAST) upd ^= AOM_LAST_FLAG;
+    if (flags & AOM_EFLAG_NO_UPD_LAST) upd ^= AOM_LAST_FLAG;
 
-    if (flags & VP8_EFLAG_NO_UPD_GF) upd ^= AOM_GOLD_FLAG;
+    if (flags & AOM_EFLAG_NO_UPD_GF) upd ^= AOM_GOLD_FLAG;
 
-    if (flags & VP8_EFLAG_NO_UPD_ARF) upd ^= AOM_ALT_FLAG;
+    if (flags & AOM_EFLAG_NO_UPD_ARF) upd ^= AOM_ALT_FLAG;
 
     av1_update_reference(cpi, upd);
   }
 
-  if (flags & VP8_EFLAG_NO_UPD_ENTROPY) {
+  if (flags & AOM_EFLAG_NO_UPD_ENTROPY) {
     av1_update_entropy(cpi, 0);
   }
 }

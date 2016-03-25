@@ -9,17 +9,17 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-/*!\defgroup vp8_decoder WebM VP8/VP9 Decoder
+/*!\defgroup vp8_decoder WebM AOM/VP9 Decoder
  * \ingroup vp8
  *
  * @{
  */
 /*!\file
- * \brief Provides definitions for using VP8 or VP9 within the aom Decoder
+ * \brief Provides definitions for using AOM or VP9 within the aom Decoder
  *        interface.
  */
-#ifndef AOM_VP8DX_H_
-#define AOM_VP8DX_H_
+#ifndef AOM_AOMDX_H_
+#define AOM_AOMDX_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,9 +38,9 @@ extern aom_codec_iface_t *aom_codec_av1_dx(void);
 /*!@} - end algorithm interface member group*/
 
 /*!\enum vp8_dec_control_id
- * \brief VP8 decoder control functions
+ * \brief AOM decoder control functions
  *
- * This set of macros define the control functions available for the VP8
+ * This set of macros define the control functions available for the AOM
  * decoder interface.
  *
  * \sa #aom_codec_control
@@ -49,22 +49,22 @@ enum vp8_dec_control_id {
   /** control function to get info on which reference frames were updated
    *  by the last decode
    */
-  VP8D_GET_LAST_REF_UPDATES = VP8_DECODER_CTRL_ID_START,
+  AOMD_GET_LAST_REF_UPDATES = AOM_DECODER_CTRL_ID_START,
 
   /** check if the indicated frame is corrupted */
-  VP8D_GET_FRAME_CORRUPTED,
+  AOMD_GET_FRAME_CORRUPTED,
 
   /** control function to get info on which reference frames were used
    *  by the last decode
    */
-  VP8D_GET_LAST_REF_USED,
+  AOMD_GET_LAST_REF_USED,
 
   /** decryption function to decrypt encoded buffer data immediately
    * before decoding. Takes a aom_decrypt_init, which contains
    * a callback function and opaque context pointer.
    */
   AOMD_SET_DECRYPTOR,
-  VP8D_SET_DECRYPTOR = AOMD_SET_DECRYPTOR,
+ // AOMD_SET_DECRYPTOR = AOMD_SET_DECRYPTOR,
 
   /** control function to get the dimensions that the current frame is decoded
    * at. This may be different to the intended display size for the frame as
@@ -103,7 +103,7 @@ enum vp8_dec_control_id {
    */
   VP9_SET_SKIP_LOOP_FILTER,
 
-  VP8_DECODER_CTRL_ID_MAX
+  AOM_DECODER_CTRL_ID_MAX
 };
 
 /** Decrypt n bytes of data from input -> output, using the decrypt_state
@@ -129,23 +129,23 @@ typedef struct aom_decrypt_init {
 typedef aom_decrypt_init vp8_decrypt_init;
 
 /*!\cond */
-/*!\brief VP8 decoder control function parameter type
+/*!\brief AOM decoder control function parameter type
  *
- * Defines the data types that VP8D control functions take. Note that
+ * Defines the data types that AOMD control functions take. Note that
  * additional common controls are defined in vp8.h
  *
  */
 
-AOM_CTRL_USE_TYPE(VP8D_GET_LAST_REF_UPDATES, int *)
-#define AOM_CTRL_VP8D_GET_LAST_REF_UPDATES
-AOM_CTRL_USE_TYPE(VP8D_GET_FRAME_CORRUPTED, int *)
-#define AOM_CTRL_VP8D_GET_FRAME_CORRUPTED
-AOM_CTRL_USE_TYPE(VP8D_GET_LAST_REF_USED, int *)
-#define AOM_CTRL_VP8D_GET_LAST_REF_USED
+AOM_CTRL_USE_TYPE(AOMD_GET_LAST_REF_UPDATES, int *)
+#define AOM_CTRL_AOMD_GET_LAST_REF_UPDATES
+AOM_CTRL_USE_TYPE(AOMD_GET_FRAME_CORRUPTED, int *)
+#define AOM_CTRL_AOMD_GET_FRAME_CORRUPTED
+AOM_CTRL_USE_TYPE(AOMD_GET_LAST_REF_USED, int *)
+#define AOM_CTRL_AOMD_GET_LAST_REF_USED
 AOM_CTRL_USE_TYPE(AOMD_SET_DECRYPTOR, aom_decrypt_init *)
 #define AOM_CTRL_AOMD_SET_DECRYPTOR
-AOM_CTRL_USE_TYPE(VP8D_SET_DECRYPTOR, aom_decrypt_init *)
-#define AOM_CTRL_VP8D_SET_DECRYPTOR
+//AOM_CTRL_USE_TYPE(AOMD_SET_DECRYPTOR, aom_decrypt_init *)
+//#define AOM_CTRL_AOMD_SET_DECRYPTOR
 AOM_CTRL_USE_TYPE(VP9D_GET_DISPLAY_SIZE, int *)
 #define AOM_CTRL_VP9D_GET_DISPLAY_SIZE
 AOM_CTRL_USE_TYPE(VP9D_GET_BIT_DEPTH, unsigned int *)
@@ -162,4 +162,4 @@ AOM_CTRL_USE_TYPE(VP9_INVERT_TILE_DECODE_ORDER, int)
 }  // extern "C"
 #endif
 
-#endif  // AOM_VP8DX_H_
+#endif  // AOM_AOMDX_H_

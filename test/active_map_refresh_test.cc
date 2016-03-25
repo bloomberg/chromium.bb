@@ -74,7 +74,7 @@ class ActiveMapRefreshTest
     ::libaom_test::Y4mVideoSource *y4m_video =
         static_cast<libaom_test::Y4mVideoSource *>(video);
     if (video->frame() == 1) {
-      encoder->Control(VP8E_SET_CPUUSED, cpu_used_);
+      encoder->Control(AOME_SET_CPUUSED, cpu_used_);
       encoder->Control(VP9E_SET_AQ_MODE, kAqModeCyclicRefresh);
     } else if (video->frame() >= 2 && video->img()) {
       aom_image_t *current = video->img();
@@ -90,7 +90,7 @@ class ActiveMapRefreshTest
       map.cols = mb_width;
       map.rows = mb_height;
       map.active_map = active_map;
-      encoder->Control(VP8E_SET_ACTIVEMAP, &map);
+      encoder->Control(AOME_SET_ACTIVEMAP, &map);
       delete[] active_map;
     }
     if (video->img()) {

@@ -16,9 +16,9 @@
 . $(dirname $0)/tools_common.sh
 
 # Environment check: Make sure input is available:
-#   $VP8_IVF_FILE and $VP9_IVF_FILE are required.
+#   $AOM_IVF_FILE and $VP9_IVF_FILE are required.
 decode_to_md5_verify_environment() {
-  if [ ! -e "${VP8_IVF_FILE}" ] || [ ! -e "${VP9_IVF_FILE}" ]; then
+  if [ ! -e "${AOM_IVF_FILE}" ] || [ ! -e "${VP9_IVF_FILE}" ]; then
     echo "Libaom test data must exist in LIBAOM_TEST_DATA_PATH."
     return 1
   fi
@@ -54,7 +54,7 @@ decode_to_md5_vp8() {
   local expected_md5="56794d911b02190212bca92f88ad60c6"
 
   if [ "$(vp8_decode_available)" = "yes" ]; then
-    decode_to_md5 "${VP8_IVF_FILE}" "vp8" "${expected_md5}"
+    decode_to_md5 "${AOM_IVF_FILE}" "vp8" "${expected_md5}"
   fi
 }
 

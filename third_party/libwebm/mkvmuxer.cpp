@@ -1043,7 +1043,7 @@ bool AudioTrack::Write(IMkvWriter* writer) const {
 
 const char Tracks::kOpusCodecId[] = "A_OPUS";
 const char Tracks::kVorbisCodecId[] = "A_VORBIS";
-const char Tracks::kVp8CodecId[] = "V_VP8";
+const char Tracks::kVp8CodecId[] = "V_AOM";
 const char Tracks::kVp9CodecId[] = "V_VP9";
 const char Tracks::kAV1CodecId[] = "V_AV1";
 

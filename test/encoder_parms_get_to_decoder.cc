@@ -82,11 +82,11 @@ class VpxEncoderParmsGetToDecoder
                        encode_parms.frame_parallel);
       encoder->Control(VP9E_SET_TILE_ROWS, encode_parms.tile_rows);
       encoder->Control(VP9E_SET_TILE_COLUMNS, encode_parms.tile_cols);
-      encoder->Control(VP8E_SET_CPUUSED, kCpuUsed);
-      encoder->Control(VP8E_SET_ENABLEAUTOALTREF, 1);
-      encoder->Control(VP8E_SET_ARNR_MAXFRAMES, 7);
-      encoder->Control(VP8E_SET_ARNR_STRENGTH, 5);
-      encoder->Control(VP8E_SET_ARNR_TYPE, 3);
+      encoder->Control(AOME_SET_CPUUSED, kCpuUsed);
+      encoder->Control(AOME_SET_ENABLEAUTOALTREF, 1);
+      encoder->Control(AOME_SET_ARNR_MAXFRAMES, 7);
+      encoder->Control(AOME_SET_ARNR_STRENGTH, 5);
+      encoder->Control(AOME_SET_ARNR_TYPE, 3);
       if (encode_parms.render_size[0] > 0 && encode_parms.render_size[1] > 0)
         encoder->Control(VP9E_SET_RENDER_SIZE, encode_parms.render_size);
     }

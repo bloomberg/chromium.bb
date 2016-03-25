@@ -99,7 +99,7 @@ class Decoder {
     return aom_codec_iface_name(CodecInterface());
   }
 
-  bool IsVP8() const;
+  bool IsAOM() const;
 
   aom_codec_ctx_t *GetDecoder() { return &decoder_; }
 

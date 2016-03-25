@@ -8,10 +8,10 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#ifndef AOM_VP8CX_H_
-#define AOM_VP8CX_H_
+#ifndef AOM_AOMCX_H_
+#define AOM_AOMCX_H_
 
-/*!\defgroup vp8_encoder WebM VP8/VP9 Encoder
+/*!\defgroup vp8_encoder WebM AOM/VP9 Encoder
  * \ingroup vp8
  *
  * @{
@@ -20,7 +20,7 @@
 #include "./aom_encoder.h"
 
 /*!\file
- * \brief Provides definitions for using VP8 or VP9 encoder algorithm within the
+ * \brief Provides definitions for using AOM or VP9 encoder algorithm within the
  *        aom Codec Interface.
  */
 
@@ -47,7 +47,7 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  * predictor. When not set, the encoder will choose whether to use the
  * last frame or not automatically.
  */
-#define VP8_EFLAG_NO_REF_LAST (1 << 16)
+#define AOM_EFLAG_NO_REF_LAST (1 << 16)
 
 /*!\brief Don't reference the golden frame
  *
@@ -55,7 +55,7 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  * predictor. When not set, the encoder will choose whether to use the
  * golden frame or not automatically.
  */
-#define VP8_EFLAG_NO_REF_GF (1 << 17)
+#define AOM_EFLAG_NO_REF_GF (1 << 17)
 
 /*!\brief Don't reference the alternate reference frame
  *
@@ -63,49 +63,49 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  * predictor. When not set, the encoder will choose whether to use the
  * alt ref frame or not automatically.
  */
-#define VP8_EFLAG_NO_REF_ARF (1 << 21)
+#define AOM_EFLAG_NO_REF_ARF (1 << 21)
 
 /*!\brief Don't update the last frame
  *
  * When this flag is set, the encoder will not update the last frame with
  * the contents of the current frame.
  */
-#define VP8_EFLAG_NO_UPD_LAST (1 << 18)
+#define AOM_EFLAG_NO_UPD_LAST (1 << 18)
 
 /*!\brief Don't update the golden frame
  *
  * When this flag is set, the encoder will not update the golden frame with
  * the contents of the current frame.
  */
-#define VP8_EFLAG_NO_UPD_GF (1 << 22)
+#define AOM_EFLAG_NO_UPD_GF (1 << 22)
 
 /*!\brief Don't update the alternate reference frame
  *
  * When this flag is set, the encoder will not update the alt ref frame with
  * the contents of the current frame.
  */
-#define VP8_EFLAG_NO_UPD_ARF (1 << 23)
+#define AOM_EFLAG_NO_UPD_ARF (1 << 23)
 
 /*!\brief Force golden frame update
  *
  * When this flag is set, the encoder copy the contents of the current frame
  * to the golden frame buffer.
  */
-#define VP8_EFLAG_FORCE_GF (1 << 19)
+#define AOM_EFLAG_FORCE_GF (1 << 19)
 
 /*!\brief Force alternate reference frame update
  *
  * When this flag is set, the encoder copy the contents of the current frame
  * to the alternate reference frame buffer.
  */
-#define VP8_EFLAG_FORCE_ARF (1 << 24)
+#define AOM_EFLAG_FORCE_ARF (1 << 24)
 
 /*!\brief Disable entropy update
  *
  * When this flag is set, the encoder will not update its internal entropy
  * model based on the entropy of this frame.
  */
-#define VP8_EFLAG_NO_UPD_ENTROPY (1 << 20)
+#define AOM_EFLAG_NO_UPD_ENTROPY (1 << 20)
 
 /*!\brief VPx encoder control functions
  *
@@ -117,21 +117,21 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
 enum vp8e_enc_control_id {
   /*!\brief Codec control function to pass an ROI map to encoder.
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_SET_ROI_MAP = 8,
+  AOME_SET_ROI_MAP = 8,
 
   /*!\brief Codec control function to pass an Active map to encoder.
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_SET_ACTIVEMAP,
+  AOME_SET_ACTIVEMAP,
 
   /*!\brief Codec control function to set encoder scaling mode.
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_SET_SCALEMODE = 11,
+  AOME_SET_SCALEMODE = 11,
 
   /*!\brief Codec control function to set encoder internal speed settings.
    *
@@ -139,83 +139,83 @@ enum vp8e_enc_control_id {
    * of motion estimation methods. Values greater than 0 will increase encoder
    * speed at the expense of quality.
    *
-   * \note Valid range for VP8: -16..16
+   * \note Valid range for AOM: -16..16
    * \note Valid range for VP9: -8..8
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_SET_CPUUSED = 13,
+  AOME_SET_CPUUSED = 13,
 
   /*!\brief Codec control function to enable automatic set and use alf frames.
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_SET_ENABLEAUTOALTREF,
+  AOME_SET_ENABLEAUTOALTREF,
 
   /*!\brief control function to set noise sensitivity
    *
    * 0: off, 1: OnYOnly, 2: OnYUV,
    * 3: OnYUVAggressive, 4: Adaptive
    *
-   * Supported in codecs: VP8
+   * Supported in codecs: AOM
    */
-  VP8E_SET_NOISE_SENSITIVITY,
+  AOME_SET_NOISE_SENSITIVITY,
 
   /*!\brief Codec control function to set sharpness.
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_SET_SHARPNESS,
+  AOME_SET_SHARPNESS,
 
   /*!\brief Codec control function to set the threshold for MBs treated static.
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_SET_STATIC_THRESHOLD,
+  AOME_SET_STATIC_THRESHOLD,
 
   /*!\brief Codec control function to set the number of token partitions.
    *
-   * Supported in codecs: VP8
+   * Supported in codecs: AOM
    */
-  VP8E_SET_TOKEN_PARTITIONS,
+  AOME_SET_TOKEN_PARTITIONS,
 
   /*!\brief Codec control function to get last quantizer chosen by the encoder.
    *
    * Return value uses internal quantizer scale defined by the codec.
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_GET_LAST_QUANTIZER,
+  AOME_GET_LAST_QUANTIZER,
 
   /*!\brief Codec control function to get last quantizer chosen by the encoder.
    *
    * Return value uses the 0..63 scale as used by the rc_*_quantizer config
    * parameters.
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_GET_LAST_QUANTIZER_64,
+  AOME_GET_LAST_QUANTIZER_64,
 
   /*!\brief Codec control function to set the max no of frames to create arf.
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_SET_ARNR_MAXFRAMES,
+  AOME_SET_ARNR_MAXFRAMES,
 
   /*!\brief Codec control function to set the filter strength for the arf.
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_SET_ARNR_STRENGTH,
+  AOME_SET_ARNR_STRENGTH,
 
   /*!\deprecated control function to set the filter type to use for the arf. */
-  VP8E_SET_ARNR_TYPE,
+  AOME_SET_ARNR_TYPE,
 
   /*!\brief Codec control function to set visual tuning.
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_SET_TUNING,
+  AOME_SET_TUNING,
 
   /*!\brief Codec control function to set constrained quality level.
    *
@@ -223,9 +223,9 @@ enum vp8e_enc_control_id {
    *            set to #AOM_CQ.
    * \note Valid range: 0..63
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_SET_CQ_LEVEL,
+  AOME_SET_CQ_LEVEL,
 
   /*!\brief Codec control function to set Max data rate for Intra frames.
    *
@@ -238,15 +238,15 @@ enum vp8e_enc_control_id {
    * For example, to allocate no more than 4.5 frames worth of bitrate
    * to a keyframe, set this to 450.
    *
-   * Supported in codecs: VP8, VP9
+   * Supported in codecs: AOM, VP9
    */
-  VP8E_SET_MAX_INTRA_BITRATE_PCT,
+  AOME_SET_MAX_INTRA_BITRATE_PCT,
 
   /*!\brief Codec control function to set reference and update frame flags.
    *
-   *  Supported in codecs: VP8
+   *  Supported in codecs: AOM
    */
-  VP8E_SET_FRAME_FLAGS,
+  AOME_SET_FRAME_FLAGS,
 
   /*!\brief Codec control function to set max data rate for Inter frames.
    *
@@ -285,17 +285,17 @@ enum vp8e_enc_control_id {
    * for every frame prior to encoding. The usage of this control function
    * supersedes the internal temporal pattern counter, which is now deprecated.
    *
-   * Supported in codecs: VP8
+   * Supported in codecs: AOM
    */
-  VP8E_SET_TEMPORAL_LAYER_ID,
+  AOME_SET_TEMPORAL_LAYER_ID,
 
   /*!\brief Codec control function to set encoder screen content mode.
    *
    * 0: off, 1: On, 2: On with more aggressive rate control.
    *
-   * Supported in codecs: VP8
+   * Supported in codecs: AOM
    */
-  VP8E_SET_SCREEN_CONTENT_MODE,
+  AOME_SET_SCREEN_CONTENT_MODE,
 
   /*!\brief Codec control function to set lossless encoding mode.
    *
@@ -578,10 +578,10 @@ enum vp8e_enc_control_id {
  * This set of constants define 1-D aom scaling modes
  */
 typedef enum aom_scaling_mode_1d {
-  VP8E_NORMAL = 0,
-  VP8E_FOURFIVE = 1,
-  VP8E_THREEFIVE = 2,
-  VP8E_ONETWO = 3
+  AOME_NORMAL = 0,
+  AOME_FOURFIVE = 1,
+  AOME_THREEFIVE = 2,
+  AOME_ONETWO = 3
 } AOM_SCALING_MODE;
 
 /*!\brief Temporal layering mode enum for VP9 SVC.
@@ -655,18 +655,18 @@ typedef struct aom_scaling_mode {
   AOM_SCALING_MODE v_scaling_mode; /**< vertical scaling mode   */
 } aom_scaling_mode_t;
 
-/*!\brief VP8 token partition mode
+/*!\brief AOM token partition mode
  *
- * This defines VP8 partitioning mode for compressed data, i.e., the number of
+ * This defines AOM partitioning mode for compressed data, i.e., the number of
  * sub-streams in the bitstream. Used for parallelized decoding.
  *
  */
 
 typedef enum {
-  VP8_ONE_TOKENPARTITION = 0,
-  VP8_TWO_TOKENPARTITION = 1,
-  VP8_FOUR_TOKENPARTITION = 2,
-  VP8_EIGHT_TOKENPARTITION = 3
+  AOM_ONE_TOKENPARTITION = 0,
+  AOM_TWO_TOKENPARTITION = 1,
+  AOM_FOUR_TOKENPARTITION = 2,
+  AOM_EIGHT_TOKENPARTITION = 3
 } vp8e_token_partitions;
 
 /*!brief VP9 encoder content type */
@@ -676,7 +676,7 @@ typedef enum {
   AOM_CONTENT_INVALID
 } aom_tune_content;
 
-/*!\brief VP8 model tuning parameters
+/*!\brief AOM model tuning parameters
  *
  * Changes the encoder to tune for certain types of input material.
  *
@@ -711,23 +711,23 @@ typedef struct aom_svc_ref_frame_config {
 } aom_svc_ref_frame_config_t;
 
 /*!\cond */
-/*!\brief VP8 encoder control function parameter type
+/*!\brief AOM encoder control function parameter type
  *
- * Defines the data types that VP8E control functions take. Note that
+ * Defines the data types that AOME control functions take. Note that
  * additional common controls are defined in vp8.h
  *
  */
 
-AOM_CTRL_USE_TYPE(VP8E_SET_FRAME_FLAGS, int)
-#define AOM_CTRL_VP8E_SET_FRAME_FLAGS
-AOM_CTRL_USE_TYPE(VP8E_SET_TEMPORAL_LAYER_ID, int)
-#define AOM_CTRL_VP8E_SET_TEMPORAL_LAYER_ID
-AOM_CTRL_USE_TYPE(VP8E_SET_ROI_MAP, aom_roi_map_t *)
-#define AOM_CTRL_VP8E_SET_ROI_MAP
-AOM_CTRL_USE_TYPE(VP8E_SET_ACTIVEMAP, aom_active_map_t *)
-#define AOM_CTRL_VP8E_SET_ACTIVEMAP
-AOM_CTRL_USE_TYPE(VP8E_SET_SCALEMODE, aom_scaling_mode_t *)
-#define AOM_CTRL_VP8E_SET_SCALEMODE
+AOM_CTRL_USE_TYPE(AOME_SET_FRAME_FLAGS, int)
+#define AOM_CTRL_AOME_SET_FRAME_FLAGS
+AOM_CTRL_USE_TYPE(AOME_SET_TEMPORAL_LAYER_ID, int)
+#define AOM_CTRL_AOME_SET_TEMPORAL_LAYER_ID
+AOM_CTRL_USE_TYPE(AOME_SET_ROI_MAP, aom_roi_map_t *)
+#define AOM_CTRL_AOME_SET_ROI_MAP
+AOM_CTRL_USE_TYPE(AOME_SET_ACTIVEMAP, aom_active_map_t *)
+#define AOM_CTRL_AOME_SET_ACTIVEMAP
+AOM_CTRL_USE_TYPE(AOME_SET_SCALEMODE, aom_scaling_mode_t *)
+#define AOM_CTRL_AOME_SET_SCALEMODE
 
 AOM_CTRL_USE_TYPE(VP9E_SET_SVC, int)
 #define AOM_CTRL_VP9E_SET_SVC
@@ -738,49 +738,49 @@ AOM_CTRL_USE_TYPE(VP9E_REGISTER_CX_CALLBACK, void *)
 AOM_CTRL_USE_TYPE(VP9E_SET_SVC_LAYER_ID, aom_svc_layer_id_t *)
 #define AOM_CTRL_VP9E_SET_SVC_LAYER_ID
 
-AOM_CTRL_USE_TYPE(VP8E_SET_CPUUSED, int)
-#define AOM_CTRL_VP8E_SET_CPUUSED
-AOM_CTRL_USE_TYPE(VP8E_SET_ENABLEAUTOALTREF, unsigned int)
-#define AOM_CTRL_VP8E_SET_ENABLEAUTOALTREF
-AOM_CTRL_USE_TYPE(VP8E_SET_NOISE_SENSITIVITY, unsigned int)
-#define AOM_CTRL_VP8E_SET_NOISE_SENSITIVITY
-AOM_CTRL_USE_TYPE(VP8E_SET_SHARPNESS, unsigned int)
-#define AOM_CTRL_VP8E_SET_SHARPNESS
-AOM_CTRL_USE_TYPE(VP8E_SET_STATIC_THRESHOLD, unsigned int)
-#define AOM_CTRL_VP8E_SET_STATIC_THRESHOLD
-AOM_CTRL_USE_TYPE(VP8E_SET_TOKEN_PARTITIONS, int) /* vp8e_token_partitions */
-#define AOM_CTRL_VP8E_SET_TOKEN_PARTITIONS
+AOM_CTRL_USE_TYPE(AOME_SET_CPUUSED, int)
+#define AOM_CTRL_AOME_SET_CPUUSED
+AOM_CTRL_USE_TYPE(AOME_SET_ENABLEAUTOALTREF, unsigned int)
+#define AOM_CTRL_AOME_SET_ENABLEAUTOALTREF
+AOM_CTRL_USE_TYPE(AOME_SET_NOISE_SENSITIVITY, unsigned int)
+#define AOM_CTRL_AOME_SET_NOISE_SENSITIVITY
+AOM_CTRL_USE_TYPE(AOME_SET_SHARPNESS, unsigned int)
+#define AOM_CTRL_AOME_SET_SHARPNESS
+AOM_CTRL_USE_TYPE(AOME_SET_STATIC_THRESHOLD, unsigned int)
+#define AOM_CTRL_AOME_SET_STATIC_THRESHOLD
+AOM_CTRL_USE_TYPE(AOME_SET_TOKEN_PARTITIONS, int) /* vp8e_token_partitions */
+#define AOM_CTRL_AOME_SET_TOKEN_PARTITIONS
 
-AOM_CTRL_USE_TYPE(VP8E_SET_ARNR_MAXFRAMES, unsigned int)
-#define AOM_CTRL_VP8E_SET_ARNR_MAXFRAMES
-AOM_CTRL_USE_TYPE(VP8E_SET_ARNR_STRENGTH, unsigned int)
-#define AOM_CTRL_VP8E_SET_ARNR_STRENGTH
-AOM_CTRL_USE_TYPE_DEPRECATED(VP8E_SET_ARNR_TYPE, unsigned int)
-#define AOM_CTRL_VP8E_SET_ARNR_TYPE
-AOM_CTRL_USE_TYPE(VP8E_SET_TUNING, int) /* aom_tune_metric */
-#define AOM_CTRL_VP8E_SET_TUNING
-AOM_CTRL_USE_TYPE(VP8E_SET_CQ_LEVEL, unsigned int)
-#define AOM_CTRL_VP8E_SET_CQ_LEVEL
+AOM_CTRL_USE_TYPE(AOME_SET_ARNR_MAXFRAMES, unsigned int)
+#define AOM_CTRL_AOME_SET_ARNR_MAXFRAMES
+AOM_CTRL_USE_TYPE(AOME_SET_ARNR_STRENGTH, unsigned int)
+#define AOM_CTRL_AOME_SET_ARNR_STRENGTH
+AOM_CTRL_USE_TYPE_DEPRECATED(AOME_SET_ARNR_TYPE, unsigned int)
+#define AOM_CTRL_AOME_SET_ARNR_TYPE
+AOM_CTRL_USE_TYPE(AOME_SET_TUNING, int) /* aom_tune_metric */
+#define AOM_CTRL_AOME_SET_TUNING
+AOM_CTRL_USE_TYPE(AOME_SET_CQ_LEVEL, unsigned int)
+#define AOM_CTRL_AOME_SET_CQ_LEVEL
 
 AOM_CTRL_USE_TYPE(VP9E_SET_TILE_COLUMNS, int)
 #define AOM_CTRL_VP9E_SET_TILE_COLUMNS
 AOM_CTRL_USE_TYPE(VP9E_SET_TILE_ROWS, int)
 #define AOM_CTRL_VP9E_SET_TILE_ROWS
 
-AOM_CTRL_USE_TYPE(VP8E_GET_LAST_QUANTIZER, int *)
-#define AOM_CTRL_VP8E_GET_LAST_QUANTIZER
-AOM_CTRL_USE_TYPE(VP8E_GET_LAST_QUANTIZER_64, int *)
-#define AOM_CTRL_VP8E_GET_LAST_QUANTIZER_64
+AOM_CTRL_USE_TYPE(AOME_GET_LAST_QUANTIZER, int *)
+#define AOM_CTRL_AOME_GET_LAST_QUANTIZER
+AOM_CTRL_USE_TYPE(AOME_GET_LAST_QUANTIZER_64, int *)
+#define AOM_CTRL_AOME_GET_LAST_QUANTIZER_64
 AOM_CTRL_USE_TYPE(VP9E_GET_SVC_LAYER_ID, aom_svc_layer_id_t *)
 #define AOM_CTRL_VP9E_GET_SVC_LAYER_ID
 
-AOM_CTRL_USE_TYPE(VP8E_SET_MAX_INTRA_BITRATE_PCT, unsigned int)
-#define AOM_CTRL_VP8E_SET_MAX_INTRA_BITRATE_PCT
-AOM_CTRL_USE_TYPE(VP8E_SET_MAX_INTER_BITRATE_PCT, unsigned int)
-#define AOM_CTRL_VP8E_SET_MAX_INTER_BITRATE_PCT
+AOM_CTRL_USE_TYPE(AOME_SET_MAX_INTRA_BITRATE_PCT, unsigned int)
+#define AOM_CTRL_AOME_SET_MAX_INTRA_BITRATE_PCT
+AOM_CTRL_USE_TYPE(AOME_SET_MAX_INTER_BITRATE_PCT, unsigned int)
+#define AOM_CTRL_AOME_SET_MAX_INTER_BITRATE_PCT
 
-AOM_CTRL_USE_TYPE(VP8E_SET_SCREEN_CONTENT_MODE, unsigned int)
-#define AOM_CTRL_VP8E_SET_SCREEN_CONTENT_MODE
+AOM_CTRL_USE_TYPE(AOME_SET_SCREEN_CONTENT_MODE, unsigned int)
+#define AOM_CTRL_AOME_SET_SCREEN_CONTENT_MODE
 
 AOM_CTRL_USE_TYPE(VP9E_SET_GF_CBR_BOOST_PCT, unsigned int)
 #define AOM_CTRL_VP9E_SET_GF_CBR_BOOST_PCT
@@ -841,4 +841,4 @@ AOM_CTRL_USE_TYPE(VP9E_SET_RENDER_SIZE, int *)
 }  // extern "C"
 #endif
 
-#endif  // AOM_VP8CX_H_
+#endif  // AOM_AOMCX_H_

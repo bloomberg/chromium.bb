@@ -17,7 +17,7 @@
 
 namespace libaom_test {
 
-const char kVP8Name[] = "WebM Project VP8";
+const char kAOMName[] = "WebM Project AOM";
 
 aom_codec_err_t Decoder::PeekStream(const uint8_t *cxdata, size_t size,
                                     aom_codec_stream_info_t *stream_info) {
@@ -39,15 +39,15 @@ aom_codec_err_t Decoder::DecodeFrame(const uint8_t *cxdata, size_t size,
   return res_dec;
 }
 
-bool Decoder::IsVP8() const {
+bool Decoder::IsAOM() const {
   const char *codec_name = GetDecoderName();
-  return strncmp(kVP8Name, codec_name, sizeof(kVP8Name) - 1) == 0;
+  return strncmp(kAOMName, codec_name, sizeof(kAOMName) - 1) == 0;
 }
 
 void DecoderTest::HandlePeekResult(Decoder *const decoder,
                                    CompressedVideoSource *video,
                                    const aom_codec_err_t res_peek) {
-  const bool is_vp8 = decoder->IsVP8();
+  const bool is_vp8 = decoder->IsAOM();
   if (is_vp8) {
     /* Vp8's implementation of PeekStream returns an error if the frame you
      * pass it is not a keyframe, so we only expect AOM_CODEC_OK on the first

@@ -62,14 +62,14 @@ class VPxEncoderThreadTest
     if (!encoder_initialized_) {
       // Encode 4 column tiles.
       encoder->Control(VP9E_SET_TILE_COLUMNS, tiles_);
-      encoder->Control(VP8E_SET_CPUUSED, set_cpu_used_);
+      encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
       if (encoding_mode_ != ::libaom_test::kRealTime) {
-        encoder->Control(VP8E_SET_ENABLEAUTOALTREF, 1);
-        encoder->Control(VP8E_SET_ARNR_MAXFRAMES, 7);
-        encoder->Control(VP8E_SET_ARNR_STRENGTH, 5);
-        encoder->Control(VP8E_SET_ARNR_TYPE, 3);
+        encoder->Control(AOME_SET_ENABLEAUTOALTREF, 1);
+        encoder->Control(AOME_SET_ARNR_MAXFRAMES, 7);
+        encoder->Control(AOME_SET_ARNR_STRENGTH, 5);
+        encoder->Control(AOME_SET_ARNR_TYPE, 3);
       } else {
-        encoder->Control(VP8E_SET_ENABLEAUTOALTREF, 0);
+        encoder->Control(AOME_SET_ENABLEAUTOALTREF, 0);
         encoder->Control(VP9E_SET_AQ_MODE, 3);
       }
       encoder_initialized_ = true;

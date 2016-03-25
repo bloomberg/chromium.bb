@@ -191,23 +191,23 @@ class ResizeInternalTest : public ResizeTest {
     if (change_config_) {
       int new_q = 60;
       if (video->frame() == 0) {
-        struct aom_scaling_mode mode = { VP8E_ONETWO, VP8E_ONETWO };
-        encoder->Control(VP8E_SET_SCALEMODE, &mode);
+        struct aom_scaling_mode mode = { AOME_ONETWO, AOME_ONETWO };
+        encoder->Control(AOME_SET_SCALEMODE, &mode);
       }
       if (video->frame() == 1) {
-        struct aom_scaling_mode mode = { VP8E_NORMAL, VP8E_NORMAL };
-        encoder->Control(VP8E_SET_SCALEMODE, &mode);
+        struct aom_scaling_mode mode = { AOME_NORMAL, AOME_NORMAL };
+        encoder->Control(AOME_SET_SCALEMODE, &mode);
         cfg_.rc_min_quantizer = cfg_.rc_max_quantizer = new_q;
         encoder->Config(&cfg_);
       }
     } else {
       if (video->frame() == kStepDownFrame) {
-        struct aom_scaling_mode mode = { VP8E_FOURFIVE, VP8E_THREEFIVE };
-        encoder->Control(VP8E_SET_SCALEMODE, &mode);
+        struct aom_scaling_mode mode = { AOME_FOURFIVE, AOME_THREEFIVE };
+        encoder->Control(AOME_SET_SCALEMODE, &mode);
       }
       if (video->frame() == kStepUpFrame) {
-        struct aom_scaling_mode mode = { VP8E_NORMAL, VP8E_NORMAL };
-        encoder->Control(VP8E_SET_SCALEMODE, &mode);
+        struct aom_scaling_mode mode = { AOME_NORMAL, AOME_NORMAL };
+        encoder->Control(AOME_SET_SCALEMODE, &mode);
       }
     }
   }
@@ -287,7 +287,7 @@ class ResizeRealtimeTest
                                   libaom_test::Encoder *encoder) {
     if (video->frame() == 0) {
       encoder->Control(VP9E_SET_AQ_MODE, 3);
-      encoder->Control(VP8E_SET_CPUUSED, set_cpu_used_);
+      encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
     }
 
     if (change_bitrate_ && video->frame() == 120) {
