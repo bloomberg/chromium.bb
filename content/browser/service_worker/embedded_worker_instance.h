@@ -107,14 +107,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance {
 
   // Starts the worker. It is invalid to call this when the worker is not in
   // STOPPED status. |callback| is invoked after the worker script has been
-  // started and evaluated, or when an error occurs. If |pause_after_download|
-  // is true, the worker pauses after loading until ResumeAfterDownload() is
-  // called.
-  void Start(int64_t service_worker_version_id,
-             const GURL& scope,
-             const GURL& script_url,
-             const StatusCallback& callback,
-             bool pause_after_download = false);
+  // started and evaluated, or when an error occurs.
+  // |params| should be populated with service worker version info needed
+  // to start the worker.
+  void Start(scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
+             const StatusCallback& callback);
 
   // Stops the worker. It is invalid to call this when the worker is
   // not in STARTING or RUNNING status.

@@ -346,11 +346,9 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   process_handle_.reset();
 }
 
-void EmbeddedWorkerInstance::Start(int64_t service_worker_version_id,
-                                   const GURL& scope,
-                                   const GURL& script_url,
-                                   const StatusCallback& callback,
-                                   bool pause_after_download) {
+void EmbeddedWorkerInstance::Start(
+    scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params,
+    const StatusCallback& callback) {
   if (!context_) {
     callback.Run(SERVICE_WORKER_ERROR_ABORT);
     // |this| may be destroyed by the callback.
@@ -358,9 +356,7 @@ void EmbeddedWorkerInstance::Start(int64_t service_worker_version_id,
   }
   DCHECK(status_ == STOPPED);
 
-  // TODO(horo): If we will see crashes here, we have to find the root cause of
-  // the invalid version ID. Otherwise change CHECK to DCHECK.
-  CHECK_NE(service_worker_version_id, kInvalidServiceWorkerVersionId);
+  DCHECK_NE(kInvalidServiceWorkerVersionId, params->service_worker_version_id);
   start_timing_ = base::TimeTicks::Now();
   status_ = STARTING;
   starting_phase_ = ALLOCATING_PROCESS;
@@ -368,15 +364,9 @@ void EmbeddedWorkerInstance::Start(int64_t service_worker_version_id,
   service_registry_.reset(new ServiceRegistryImpl());
   FOR_EACH_OBSERVER(Listener, listener_list_, OnStarting());
 
-  scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
-      new EmbeddedWorkerMsg_StartWorker_Params());
   params->embedded_worker_id = embedded_worker_id_;
-  params->service_worker_version_id = service_worker_version_id;
-  params->scope = scope;
-  params->script_url = script_url;
   params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
   params->wait_for_debugger = false;
-  params->pause_after_download = pause_after_download;
   params->settings.v8_cache_options = GetV8CacheOptions();
 
   inflight_start_task_.reset(new StartTask(this));

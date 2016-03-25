@@ -33,6 +33,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_type_converters.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -1376,12 +1377,18 @@ void ServiceWorkerVersion::StartWorkerInternal() {
 
   StartTimeoutTimer();
 
+  scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
+      new EmbeddedWorkerMsg_StartWorker_Params());
+  params->service_worker_version_id = version_id_;
+  params->scope = scope_;
+  params->script_url = script_url_;
   DCHECK(!pause_after_download_ || !IsInstalled(status()));
+  params->pause_after_download = pause_after_download_;
+
   embedded_worker_->Start(
-      version_id_, scope_, script_url_,
+      std::move(params),
       base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
-                 weak_factory_.GetWeakPtr()),
-      pause_after_download_);
+                 weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerVersion::StartTimeoutTimer() {
