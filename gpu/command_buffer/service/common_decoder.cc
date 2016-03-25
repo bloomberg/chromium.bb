@@ -281,8 +281,8 @@ error::Error CommonDecoder::HandleGetBucketStart(uint32_t immediate_data_size,
   uint32_t data_memory_size = args.data_memory_size;
   uint8_t* data = NULL;
   if (data_memory_size != 0 || data_memory_id != 0 || data_memory_offset != 0) {
-    data = GetSharedMemoryAs<uint8_t*>(
-        args.data_memory_id, args.data_memory_offset, args.data_memory_size);
+    data = GetSharedMemoryAs<uint8_t*>(data_memory_id, data_memory_offset,
+                                       data_memory_size);
     if (!data) {
       return error::kInvalidArguments;
     }
