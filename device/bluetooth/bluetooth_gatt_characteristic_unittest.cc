@@ -309,6 +309,9 @@ TEST_F(BluetoothGattCharacteristicTest, WriteRemoteCharacteristic_Empty) {
   EXPECT_EQ(1, gatt_write_characteristic_attempts_);
   SimulateGattCharacteristicWrite(characteristic1_);
 
+  // Duplicate write reported from OS shouldn't cause a problem:
+  SimulateGattCharacteristicWrite(characteristic1_);
+
   EXPECT_EQ(empty_vector, last_write_value_);
 }
 #endif  // defined(OS_ANDROID) || defined(OS_WIN)
@@ -324,7 +327,7 @@ TEST_F(BluetoothGattCharacteristicTest, ReadRemoteCharacteristic_AfterDeleted) {
       GetGattErrorCallback(Call::NOT_EXPECTED));
 
   RememberCharacteristicForSubsequentAction(characteristic1_);
-  DeleteDevice(device_);
+  DeleteDevice(device_);  // TODO(576906) delete only the characteristic.
 
   std::vector<uint8_t> empty_vector;
   SimulateGattCharacteristicRead(/* use remembered characteristic */ nullptr,
@@ -346,7 +349,7 @@ TEST_F(BluetoothGattCharacteristicTest,
       GetGattErrorCallback(Call::NOT_EXPECTED));
 
   RememberCharacteristicForSubsequentAction(characteristic1_);
-  DeleteDevice(device_);
+  DeleteDevice(device_);  // TODO(576906) delete only the characteristic.
 
   SimulateGattCharacteristicWrite(/* use remembered characteristic */ nullptr);
   EXPECT_TRUE("Did not crash!");
@@ -538,7 +541,7 @@ TEST_F(BluetoothGattCharacteristicTest,
   EXPECT_EQ(2, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  // TODO(crbug.com/591740): Remove if define for OS_ANDROID in this test.
+  // TODO(591740): Remove if define for OS_ANDROID in this test.
 }
 #endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
@@ -916,6 +919,60 @@ TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_Multiple) {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
+// Tests multiple StartNotifySessions pending and then an error.
+TEST_F(BluetoothGattCharacteristicTest, StartNotifySessionError_Multiple) {
+  ASSERT_NO_FATAL_FAILURE(
+      FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
+  SimulateGattDescriptor(
+      characteristic1_,
+      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid()
+          .canonical_value());
+  ASSERT_EQ(1u, characteristic1_->GetDescriptors().size());
+
+  characteristic1_->StartNotifySession(GetNotifyCallback(Call::NOT_EXPECTED),
+                                       GetGattErrorCallback(Call::EXPECTED));
+  characteristic1_->StartNotifySession(GetNotifyCallback(Call::NOT_EXPECTED),
+                                       GetGattErrorCallback(Call::EXPECTED));
+  EXPECT_EQ(1, gatt_notify_characteristic_attempts_);
+  EXPECT_EQ(0, callback_count_);
+  SimulateGattNotifySessionStartError(characteristic1_,
+                                      BluetoothGattService::GATT_ERROR_FAILED);
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(2, error_callback_count_);
+  ASSERT_EQ(0u, notify_sessions_.size());
+  EXPECT_EQ(BluetoothGattService::GATT_ERROR_FAILED, last_gatt_error_code_);
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+// Tests StartNotifySession completing after chrome objects are deleted.
+TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_AfterDeleted) {
+  ASSERT_NO_FATAL_FAILURE(
+      FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
+  SimulateGattDescriptor(
+      characteristic1_,
+      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid()
+          .canonical_value());
+  ASSERT_EQ(1u, characteristic1_->GetDescriptors().size());
+
+  characteristic1_->StartNotifySession(GetNotifyCallback(Call::NOT_EXPECTED),
+                                       GetGattErrorCallback(Call::EXPECTED));
+  EXPECT_EQ(1, gatt_notify_characteristic_attempts_);
+  EXPECT_EQ(0, callback_count_);
+
+  RememberCharacteristicForSubsequentAction(characteristic1_);
+  RememberCCCDescriptorForSubsequentAction(characteristic1_);
+  DeleteDevice(device_);  // TODO(576906) delete only the characteristic.
+
+  SimulateGattNotifySessionStarted(/* use remembered characteristic */ nullptr);
+  EXPECT_EQ(0, callback_count_);
+  EXPECT_EQ(1, error_callback_count_);
+  ASSERT_EQ(0u, notify_sessions_.size());
+  EXPECT_EQ(BluetoothGattService::GATT_ERROR_FAILED, last_gatt_error_code_);
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
 // Tests Characteristic Value changes during a Notify Session.
 TEST_F(BluetoothGattCharacteristicTest, GattCharacteristicValueChanged) {
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
@@ -946,14 +1003,16 @@ TEST_F(BluetoothGattCharacteristicTest,
   ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
       /* properties: NOTIFY */ 0x10,
       /* expected_config_descriptor_value: NOTIFY */ 1));
+  TestBluetoothAdapterObserver observer(adapter_);
 
   RememberCharacteristicForSubsequentAction(characteristic1_);
-  DeleteDevice(device_);
+  DeleteDevice(device_);  // TODO(576906) delete only the characteristic.
 
   std::vector<uint8_t> empty_vector;
   SimulateGattCharacteristicChanged(/* use remembered characteristic */ nullptr,
                                     empty_vector);
   EXPECT_TRUE("Did not crash!");
+  EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
 }
 #endif  // defined(OS_ANDROID)
 

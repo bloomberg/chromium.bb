@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <queue>
-
 #include "base/android/jni_android.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
@@ -134,7 +132,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   // StartNotifySession callbacks and pending state.
   typedef std::pair<NotifySessionCallback, ErrorCallback>
       PendingStartNotifyCall;
-  std::queue<PendingStartNotifyCall> pending_start_notify_calls_;
+  std::vector<PendingStartNotifyCall> pending_start_notify_calls_;
 
   // ReadRemoteCharacteristic callbacks and pending state.
   bool read_pending_ = false;

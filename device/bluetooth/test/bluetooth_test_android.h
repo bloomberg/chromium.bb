@@ -44,8 +44,13 @@ class BluetoothTestAndroid : public BluetoothTestBase {
                                   int properties) override;
   void RememberCharacteristicForSubsequentAction(
       BluetoothGattCharacteristic* characteristic) override;
+  void RememberCCCDescriptorForSubsequentAction(
+      BluetoothGattCharacteristic* characteristic) override;
   void SimulateGattNotifySessionStarted(
       BluetoothGattCharacteristic* characteristic) override;
+  void SimulateGattNotifySessionStartError(
+      BluetoothGattCharacteristic* characteristic,
+      BluetoothGattService::GattErrorCode error_code) override;
   void SimulateGattCharacteristicSetNotifyWillFailSynchronouslyOnce(
       BluetoothGattCharacteristic* characteristic) override;
   void SimulateGattCharacteristicChanged(
@@ -151,6 +156,7 @@ class BluetoothTestAndroid : public BluetoothTestBase {
   base::android::ScopedJavaGlobalRef<jobject> j_fake_bluetooth_adapter_;
 
   int gatt_open_connections_ = 0;
+  BluetoothGattDescriptor* remembered_ccc_descriptor_ = nullptr;
 };
 
 // Defines common test fixture name. Use TEST_F(BluetoothTest, YourTestName).

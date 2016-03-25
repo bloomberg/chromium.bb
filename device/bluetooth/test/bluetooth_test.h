@@ -137,9 +137,28 @@ class BluetoothTestBase : public testing::Test {
   virtual void RememberCharacteristicForSubsequentAction(
       BluetoothGattCharacteristic* characteristic) {}
 
+  // Remembers |characteristic|'s Client Characteristic Configuration (CCC)
+  // descriptor's platform specific object to be used in a subsequent call to
+  // methods such as SimulateGattNotifySessionStarted. This enables tests where
+  // the platform attempts to reference descriptor objects after the Chrome
+  // objects have been deleted, e.g. with DeleteDevice.
+  virtual void RememberCCCDescriptorForSubsequentAction(
+      BluetoothGattCharacteristic* characteristic) {}
+
   // Simulates a Characteristic Set Notify success.
+  // If |characteristic| is null, acts upon the characteristic & CCC
+  // descriptor provided to RememberCharacteristicForSubsequentAction &
+  // RememberCCCDescriptorForSubsequentAction.
   virtual void SimulateGattNotifySessionStarted(
       BluetoothGattCharacteristic* characteristic) {}
+
+  // Simulates a Characteristic Set Notify error.
+  // If |characteristic| is null, acts upon the characteristic & CCC
+  // descriptor provided to RememberCharacteristicForSubsequentAction &
+  // RememberCCCDescriptorForSubsequentAction.
+  virtual void SimulateGattNotifySessionStartError(
+      BluetoothGattCharacteristic* characteristic,
+      BluetoothGattService::GattErrorCode error_code) {}
 
   // Simulates a Characteristic Set Notify operation failing synchronously once
   // for an unknown reason.

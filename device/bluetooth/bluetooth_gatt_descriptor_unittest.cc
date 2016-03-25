@@ -94,7 +94,7 @@ TEST_F(BluetoothGattDescriptorTest, GetIdentifier) {
   BluetoothGattCharacteristic* char5 = service3->GetCharacteristics()[0];
   BluetoothGattCharacteristic* char6 = service3->GetCharacteristics()[1];
   // 6 descriptors (same UUID), 1 on each characteristic
-  // TODO(crbug.com/576900) Test multiple descriptors with same UUID on one
+  // TODO(576900) Test multiple descriptors with same UUID on one
   // characteristic.
   SimulateGattDescriptor(char1, uuid);
   SimulateGattDescriptor(char2, uuid);
@@ -202,6 +202,9 @@ TEST_F(BluetoothGattDescriptorTest, WriteRemoteDescriptor_Empty) {
   EXPECT_EQ(1, gatt_write_descriptor_attempts_);
   SimulateGattDescriptorWrite(descriptor1_);
 
+  // Duplicate write reported from OS shouldn't cause a problem:
+  SimulateGattDescriptorWrite(descriptor1_);
+
   EXPECT_EQ(empty_vector, last_write_value_);
 }
 #endif  // defined(OS_ANDROID)
@@ -215,7 +218,7 @@ TEST_F(BluetoothGattDescriptorTest, ReadRemoteDescriptor_AfterDeleted) {
                                      GetGattErrorCallback(Call::NOT_EXPECTED));
 
   RememberDescriptorForSubsequentAction(descriptor1_);
-  DeleteDevice(device_);
+  DeleteDevice(device_);  // TODO(576906) delete only the descriptor.
 
   std::vector<uint8_t> empty_vector;
   SimulateGattDescriptorRead(/* use remembered descriptor */ nullptr,
@@ -235,7 +238,7 @@ TEST_F(BluetoothGattDescriptorTest, WriteRemoteDescriptor_AfterDeleted) {
                                       GetGattErrorCallback(Call::NOT_EXPECTED));
 
   RememberDescriptorForSubsequentAction(descriptor1_);
-  DeleteDevice(device_);
+  DeleteDevice(device_);  // TODO(576906) delete only the descriptor.
 
   SimulateGattDescriptorWrite(/* use remembered descriptor */ nullptr);
   EXPECT_TRUE("Did not crash!");

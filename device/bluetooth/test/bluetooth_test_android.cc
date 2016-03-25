@@ -174,19 +174,48 @@ void BluetoothTestAndroid::RememberCharacteristicForSubsequentAction(
       characteristic_android->GetJavaObject().obj());
 }
 
-void BluetoothTestAndroid::SimulateGattNotifySessionStarted(
+void BluetoothTestAndroid::RememberCCCDescriptorForSubsequentAction(
     BluetoothGattCharacteristic* characteristic) {
-  BluetoothGattDescriptor* descriptor =
+  remembered_ccc_descriptor_ =
       characteristic
           ->GetDescriptorsByUUID(
               BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid())
           .at(0);
-  BluetoothRemoteGattDescriptorAndroid* descriptor_android =
-      static_cast<BluetoothRemoteGattDescriptorAndroid*>(descriptor);
+  DCHECK(remembered_ccc_descriptor_);
+  RememberDescriptorForSubsequentAction(remembered_ccc_descriptor_);
+}
+
+void BluetoothTestAndroid::SimulateGattNotifySessionStarted(
+    BluetoothGattCharacteristic* characteristic) {
+  BluetoothRemoteGattDescriptorAndroid* descriptor_android = nullptr;
+  if (characteristic) {
+    descriptor_android = static_cast<BluetoothRemoteGattDescriptorAndroid*>(
+        characteristic
+            ->GetDescriptorsByUUID(BluetoothGattDescriptor::
+                                       ClientCharacteristicConfigurationUuid())
+            .at(0));
+  }
   Java_FakeBluetoothGattDescriptor_valueWrite(
       base::android::AttachCurrentThread(),
       descriptor_android ? descriptor_android->GetJavaObject().obj() : nullptr,
       0);  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
+}
+
+void BluetoothTestAndroid::SimulateGattNotifySessionStartError(
+    BluetoothGattCharacteristic* characteristic,
+    BluetoothGattService::GattErrorCode error_code) {
+  BluetoothRemoteGattDescriptorAndroid* descriptor_android = nullptr;
+  if (characteristic) {
+    descriptor_android = static_cast<BluetoothRemoteGattDescriptorAndroid*>(
+        characteristic
+            ->GetDescriptorsByUUID(BluetoothGattDescriptor::
+                                       ClientCharacteristicConfigurationUuid())
+            .at(0));
+  }
+  Java_FakeBluetoothGattDescriptor_valueWrite(
+      base::android::AttachCurrentThread(),
+      descriptor_android ? descriptor_android->GetJavaObject().obj() : nullptr,
+      BluetoothRemoteGattServiceAndroid::GetAndroidErrorCode(error_code));
 }
 
 void BluetoothTestAndroid::
