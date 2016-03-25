@@ -413,6 +413,8 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ClearDevToolsLocalStorage,
                         OnClearDevToolsLocalStorage)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_ShowDevTools, OnShowDevTools)
+    IPC_MESSAGE_HANDLER(ShellViewHostMsg_EvaluateInDevTools,
+                        OnEvaluateInDevTools)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_CloseDevTools, OnCloseDevTools)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_GoToOffset, OnGoToOffset)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_Reload, OnReload)
@@ -764,6 +766,12 @@ void BlinkTestController::OnShowDevTools(const std::string& settings,
   }
   devtools_frontend_->Activate();
   devtools_frontend_->Focus();
+}
+
+void BlinkTestController::OnEvaluateInDevTools(
+    int call_id, const std::string& script) {
+  if (devtools_frontend_)
+    devtools_frontend_->EvaluateInFrontend(call_id, script);
 }
 
 void BlinkTestController::OnCloseDevTools() {
