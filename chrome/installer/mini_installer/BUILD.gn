@@ -190,6 +190,7 @@ executable("mini_installer") {
   ldflags = [
     "/ENTRY:MainEntryPoint",
     "/FIXED:NO",
+    "/ignore:4199",
     "/NXCOMPAT",
   ]
 

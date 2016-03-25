@@ -244,7 +244,11 @@ config("common_linker_setup") {
     #   LINK : fatal error LNK1248: image size (80000000)
     #   exceeds maximum allowable size (80000000)
     # which started happening more regularly after VS2013 Update 4.
-    "/maxilksize:2147483647",
+    # Needs to be a bit lower for VS2015, or else errors out.
+    "/maxilksize:0x7ff00000",
+
+    # Tell the linker to crash on failures.
+    "/fastfail",
   ]
 
   # ASLR makes debugging with windbg difficult because Chrome.exe and
