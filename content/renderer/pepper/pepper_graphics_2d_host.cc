@@ -36,6 +36,7 @@
 #include "ppapi/thunk/enter.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkSwizzle.h"
 #include "ui/gfx/blit.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
@@ -89,21 +90,6 @@ bool ValidateAndConvertRect(const PP_Rect* rect,
   return true;
 }
 
-// Converts BGRA <-> RGBA.
-void ConvertBetweenBGRAandRGBA(const uint32_t* input,
-                               int pixel_length,
-                               uint32_t* output) {
-  for (int i = 0; i < pixel_length; i++) {
-    const unsigned char* pixel_in =
-        reinterpret_cast<const unsigned char*>(&input[i]);
-    unsigned char* pixel_out = reinterpret_cast<unsigned char*>(&output[i]);
-    pixel_out[0] = pixel_in[2];
-    pixel_out[1] = pixel_in[1];
-    pixel_out[2] = pixel_in[0];
-    pixel_out[3] = pixel_in[3];
-  }
-}
-
 // Converts ImageData from PP_IMAGEDATAFORMAT_BGRA_PREMUL to
 // PP_IMAGEDATAFORMAT_RGBA_PREMUL, or reverse. It's assumed that the
 // destination image is always mapped (so will have non-NULL data).
@@ -121,22 +107,22 @@ void ConvertImageData(PPB_ImageData_Impl* src_image,
   const SkBitmap* dest_bitmap = dest_image->GetMappedBitmap();
   if (src_rect.width() == src_image->width() &&
       dest_rect.width() == dest_image->width()) {
-    // Fast path if the full line needs to be converted.
-    ConvertBetweenBGRAandRGBA(
+    // Fast path if the full frame can be converted at once.
+    SkSwapRB(
+        dest_bitmap->getAddr32(static_cast<int>(dest_rect.fLeft),
+                               static_cast<int>(dest_rect.fTop)),
         src_bitmap->getAddr32(static_cast<int>(src_rect.fLeft),
                               static_cast<int>(src_rect.fTop)),
-        src_rect.width() * src_rect.height(),
-        dest_bitmap->getAddr32(static_cast<int>(dest_rect.fLeft),
-                               static_cast<int>(dest_rect.fTop)));
+        src_rect.width() * src_rect.height());
   } else {
     // Slow path where we convert line by line.
     for (int y = 0; y < src_rect.height(); y++) {
-      ConvertBetweenBGRAandRGBA(
+      SkSwapRB(
+          dest_bitmap->getAddr32(static_cast<int>(dest_rect.fLeft),
+                                 static_cast<int>(dest_rect.fTop + y)),
           src_bitmap->getAddr32(static_cast<int>(src_rect.fLeft),
                                 static_cast<int>(src_rect.fTop + y)),
-          src_rect.width(),
-          dest_bitmap->getAddr32(static_cast<int>(dest_rect.fLeft),
-                                 static_cast<int>(dest_rect.fTop + y)));
+          src_rect.width());
     }
   }
 }
