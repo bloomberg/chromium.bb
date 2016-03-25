@@ -8,11 +8,13 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 #include "url/gurl.h"
@@ -25,20 +27,55 @@ const char kDisplaySoruce[] = "arc_auth_source";
 const char kFirstRunNotificationId[] = "arc_auth/first_run";
 
 class ArcAuthNotificationDelegate
-    : public message_center::NotificationDelegate {
+    : public message_center::NotificationDelegate,
+      public message_center::MessageCenterObserver {
  public:
   ArcAuthNotificationDelegate() {}
 
-  // message_center::NotificationDelegate
-  void ButtonClick(int button_index) override {
-    if (button_index == 0)
-      arc::ArcAuthService::Get()->EnableArc();
-    else
-      arc::ArcAuthService::Get()->DisableArc();
+  // message_center::MessageCenterObserver
+  void OnNotificationUpdated(const std::string& notification_id) override {
+    if (notification_id != kFirstRunNotificationId)
+      return;
+
+    StopObserving();
+    message_center::Notification* notification =
+        message_center::MessageCenter::Get()->FindVisibleNotificationById(
+            notification_id);
+    if (!notification) {
+      NOTREACHED();
+      return;
+    }
+
+    if (!notification->IsRead())
+      UpdateOptInActionUMA(arc::OptInActionType::NOTIFICATION_TIMED_OUT);
   }
 
+  // message_center::NotificationDelegate
+  void Display() override { StartObserving(); }
+
+  void ButtonClick(int button_index) override {
+    StopObserving();
+    if (button_index == 0) {
+      UpdateOptInActionUMA(arc::OptInActionType::NOTIFICATION_ACCEPTED);
+      arc::ArcAuthService::Get()->EnableArc();
+    } else {
+      UpdateOptInActionUMA(arc::OptInActionType::NOTIFICATION_DECLINED);
+      arc::ArcAuthService::Get()->DisableArc();
+    }
+  }
+
+  void Close(bool by_user) override { StopObserving(); }
+
  private:
-  ~ArcAuthNotificationDelegate() override {}
+  ~ArcAuthNotificationDelegate() override { StopObserving(); }
+
+  void StartObserving() {
+    message_center::MessageCenter::Get()->AddObserver(this);
+  }
+
+  void StopObserving() {
+    message_center::MessageCenter::Get()->RemoveObserver(this);
+  }
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthNotificationDelegate);
 };

@@ -14,8 +14,8 @@
 #include "components/arc/arc_service.h"
 #include "components/arc/auth/arc_auth_fetcher.h"
 #include "components/arc/common/auth.mojom.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "components/syncable_prefs/pref_service_syncable_observer.h"
+#include "components/syncable_prefs/synced_pref_observer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/ubertoken_fetcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -45,7 +45,8 @@ class ArcAuthService : public ArcService,
                        public ArcAuthFetcher::Delegate,
                        public UbertokenConsumer,
                        public GaiaAuthConsumer,
-                       public syncable_prefs::PrefServiceSyncableObserver {
+                       public syncable_prefs::PrefServiceSyncableObserver,
+                       public syncable_prefs::SyncedPrefObserver {
  public:
   enum class State {
     STOPPED,        // ARC is not running.
@@ -141,6 +142,9 @@ class ArcAuthService : public ArcService,
   // syncable_prefs::PrefServiceSyncableObserver
   void OnIsSyncingChanged() override;
 
+  // syncable_prefs::SyncedPrefObserver
+  void OnSyncedPrefChanged(const std::string& path, bool from_sync) override;
+
   // Returns current page that has to be shown in OptIn UI.
   UIPage ui_page() const { return ui_page_; }
   // Returns current page status, relevant to the specific page.
@@ -165,9 +169,6 @@ class ArcAuthService : public ArcService,
   // Owned by content::BrowserContent. Used to isolate cookies for auth server
   // communication and shared with Arc OptIn UI platform app.
   content::StoragePartition* storage_partition_ = nullptr;
-
-  // Registrar used to monitor ARC opt-in state.
-  PrefChangeRegistrar pref_change_registrar_;
 
   mojo::Binding<AuthHost> binding_;
   base::ThreadChecker thread_checker_;

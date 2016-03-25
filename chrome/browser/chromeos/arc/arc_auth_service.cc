@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chromeos/arc/arc_auth_notification.h"
+#include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -149,21 +150,27 @@ void ArcAuthService::OnSignInFailed(arc::ArcSignInFailureReason reason) {
   switch (reason) {
     case arc::ArcSignInFailureReason::NETWORK_ERROR:
       error_message_id = IDS_ARC_SIGN_IN_NETWORK_ERROR;
+      UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
       break;
     case arc::ArcSignInFailureReason::SERVICE_UNAVAILABLE:
       error_message_id = IDS_ARC_SIGN_IN_SERVICE_UNAVAILABLE_ERROR;
+      UpdateOptInCancelUMA(OptInCancelReason::SERVICE_UNAVAILABLE);
       break;
     case arc::ArcSignInFailureReason::BAD_AUTHENTICATION:
       error_message_id = IDS_ARC_SIGN_IN_BAD_AUTHENTICATION_ERROR;
+      UpdateOptInCancelUMA(OptInCancelReason::BAD_AUTHENTICATION);
       break;
     case arc::ArcSignInFailureReason::GMS_CORE_NOT_AVAILABLE:
       error_message_id = IDS_ARC_SIGN_IN_GMS_NOT_AVAILABLE_ERROR;
+      UpdateOptInCancelUMA(OptInCancelReason::GMS_CORE_NOT_AVAILABLE);
       break;
     case arc::ArcSignInFailureReason::CLOUD_PROVISION_FLOW_FAIL:
       error_message_id = IDS_ARC_SIGN_IN_CLOUD_PROVISION_FLOW_FAIL_ERROR;
+      UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
       break;
     default:
       error_message_id = IDS_ARC_SIGN_IN_UNKNOWN_ERROR;
+      UpdateOptInCancelUMA(OptInCancelReason::UNKNOWN_ERROR);
   }
 
   profile_->GetPrefs()->SetBoolean(prefs::kArcSignedIn, false);
@@ -204,6 +211,9 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
   }
 
   profile_ = profile;
+  PrefServiceSyncableFromProfile(profile_)->AddSyncedPrefObserver(
+      prefs::kArcEnabled, this);
+
   // Reuse storage used in ARC OptIn platform app.
   const std::string site_url =
       base::StringPrintf("%s://%s/persist?%s", content::kGuestScheme,
@@ -214,11 +224,6 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
 
   // In case UI is disabled we assume that ARC is opted-in.
   if (!IsOptInVerificationDisabled()) {
-    pref_change_registrar_.Init(profile_->GetPrefs());
-    pref_change_registrar_.Add(
-        prefs::kArcEnabled,
-        base::Bind(&ArcAuthService::OnOptInPreferenceChanged,
-                   base::Unretained(this)));
     if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
       OnOptInPreferenceChanged();
     } else {
@@ -246,10 +251,13 @@ void ArcAuthService::OnIsSyncingChanged() {
 
 void ArcAuthService::Shutdown() {
   ShutdownBridgeAndCloseUI();
-  if (profile_)
-    PrefServiceSyncableFromProfile(profile_)->RemoveObserver(this);
+  if (profile_) {
+    syncable_prefs::PrefServiceSyncable* pref_service_syncable =
+        PrefServiceSyncableFromProfile(profile_);
+    pref_service_syncable->RemoveObserver(this);
+    pref_service_syncable->RemoveSyncedPrefObserver(prefs::kArcEnabled, this);
+  }
   profile_ = nullptr;
-  pref_change_registrar_.RemoveAll();
 }
 
 void ArcAuthService::ShowUI(UIPage page, const base::string16& status) {
@@ -300,6 +308,20 @@ void ArcAuthService::OnUbertokenFailure(const GoogleServiceAuthError& error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(2) << "Failed to get ubertoken " << error.ToString() << ".";
   OnAuthCodeFailed();
+}
+
+void ArcAuthService::OnSyncedPrefChanged(const std::string& path,
+                                         bool from_sync) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Update UMA only for local changes
+  if (!from_sync) {
+    UpdateOptInActionUMA(profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)
+                             ? OptInActionType::OPTED_IN
+                             : OptInActionType::OPTED_OUT);
+  }
+
+  OnOptInPreferenceChanged();
 }
 
 void ArcAuthService::OnOptInPreferenceChanged() {
@@ -400,6 +422,10 @@ void ArcAuthService::SetAuthCodeAndStartArc(const std::string& auth_code) {
 void ArcAuthService::CheckAuthCode() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // Update UMA only if error is currently shown.
+  if (ui_page_ == UIPage::ERROR)
+    UpdateOptInActionUMA(OptInActionType::RETRY);
+
   initial_opt_in_ = false;
   SetState(State::FETCHING_CODE);
   FetchAuthCode();
@@ -420,6 +446,10 @@ void ArcAuthService::CancelAuthCode() {
 
   if (state_ != State::FETCHING_CODE)
     return;
+
+  // Update UMA with user cancel only if error is not currently shown.
+  if (ui_page_ != UIPage::ERROR && ui_page_ != UIPage::NO_PAGE)
+    UpdateOptInCancelUMA(OptInCancelReason::USER_CANCEL);
 
   DisableArc();
 }
@@ -479,6 +509,7 @@ void ArcAuthService::OnAuthCodeFailed() {
     ShutdownBridgeAndShowUI(
         UIPage::ERROR,
         l10n_util::GetStringUTF16(IDS_ARC_SERVER_COMMUNICATION_ERROR));
+    UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);
   }
 }
 

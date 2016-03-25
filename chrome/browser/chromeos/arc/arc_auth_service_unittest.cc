@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -19,6 +20,7 @@
 #include "components/arc/auth/arc_auth_fetcher.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/syncable_prefs/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -26,6 +28,8 @@
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
+#include "sync/api/fake_sync_change_processor.h"
+#include "sync/api/sync_error_factory_mock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
@@ -55,6 +59,8 @@ class ArcAuthServiceTest : public testing::Test {
     profile_builder.SetPath(temp_dir_.path().AppendASCII("TestArcProfile"));
 
     profile_ = profile_builder.Build();
+    StartPreferenceSyncing();
+
     bridge_service_.reset(new FakeArcBridgeService());
     auth_service_.reset(new ArcAuthService(bridge_service_.get()));
 
@@ -101,6 +107,16 @@ class ArcAuthServiceTest : public testing::Test {
       rt_cookie_.clear();
     }
     return fetcher;
+  }
+
+  void StartPreferenceSyncing() const {
+    PrefServiceSyncableFromProfile(profile_.get())
+        ->GetSyncableService(syncer::PREFERENCES)
+        ->MergeDataAndStartSyncing(syncer::PREFERENCES, syncer::SyncDataList(),
+                                   scoped_ptr<syncer::SyncChangeProcessor>(
+                                       new syncer::FakeSyncChangeProcessor),
+                                   scoped_ptr<syncer::SyncErrorFactory>(
+                                       new syncer::SyncErrorFactoryMock()));
   }
 
   scoped_ptr<content::TestBrowserThreadBundle> thread_bundle_;

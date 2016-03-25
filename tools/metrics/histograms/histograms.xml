@@ -835,6 +835,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Arc.OptInAction" enum="ArcOptInAction">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
+  <summary>Arc OptIn action taken by user.</summary>
+</histogram>
+
+<histogram name="Arc.OptInCancel" enum="ArcOptInCancel">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
+  <summary>Arc OptIn cancelation reason.</summary>
+</histogram>
+
 <histogram name="ArcRuntime.LowMemoryKiller.FreedSize" units="KB">
   <owner>elijahtaylor@google.com</owner>
   <summary>The memory size freed by each low memory kill event.</summary>
@@ -59728,6 +59740,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="Most visited pane"/>
   <int value="3" label="Bookmarks pane"/>
   <int value="4" label="Outside of NTP (e.g. bookmarks bar)"/>
+</enum>
+
+<enum name="ArcOptInAction" type="int">
+  <summary>Defines Arc OptIn actions</summary>
+  <int value="0" label="Opted In"/>
+  <int value="1" label="Opted Out"/>
+  <int value="2" label="Notification accepted"/>
+  <int value="3" label="Notification declined"/>
+  <int value="4" label="Notification timed out"/>
+  <int value="5" label="Retry after OptIn failure"/>
+</enum>
+
+<enum name="ArcOptInCancel" type="int">
+  <summary>Defines Arc OptIn cancel reason</summary>
+  <int value="0" label="Canceled by user"/>
+  <int value="1" label="Unclassified failure"/>
+  <int value="2" label="Network failure"/>
+  <int value="3" label="GMS Services are not available"/>
+  <int value="4" label="Bad authentication returned by server"/>
+  <int value="5" label="GMS Core is not available"/>
+  <int value="6" label="Cloud provision flow failed"/>
 </enum>
 
 <enum name="AsyncDNSConfigParsePosix" type="int">
