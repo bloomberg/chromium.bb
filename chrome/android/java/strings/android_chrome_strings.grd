@@ -1319,6 +1319,9 @@ You are signing in with a managed account and giving its administrator control o
       <message name="IDS_CONTEXTMENU_SAVE_LINK" desc="Context sensitive menu item for saving the target of a link [CHAR-LIMIT=30]">
         Save link
       </message>
+      <message name="IDS_CONTEXTMENU_SAVE_OFFLINE" desc="Context sensitive menu item for saving an offline version of the page that this link is targeting [CHAR-LIMIT=30]">
+        Save linked page for later
+      </message>
       <message name="IDS_CONTEXTMENU_SAVE_IMAGE" desc="Context sensitive menu item for saving the selected image. [CHAR-LIMIT=30]">
         Save image
       </message>
