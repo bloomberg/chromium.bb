@@ -32,8 +32,6 @@
 #include "net/cert/cert_verify_proc_openssl.h"
 #elif defined(OS_ANDROID)
 #include "net/cert/cert_verify_proc_android.h"
-#elif defined(OS_IOS)
-#include "net/cert/cert_verify_proc_ios.h"
 #elif defined(OS_MACOSX)
 #include "net/cert/cert_verify_proc_mac.h"
 #elif defined(OS_WIN)
@@ -211,8 +209,6 @@ CertVerifyProc* CertVerifyProc::CreateDefault() {
   return new CertVerifyProcOpenSSL();
 #elif defined(OS_ANDROID)
   return new CertVerifyProcAndroid();
-#elif defined(OS_IOS)
-  return new CertVerifyProcIOS();
 #elif defined(OS_MACOSX)
   return new CertVerifyProcMac();
 #elif defined(OS_WIN)

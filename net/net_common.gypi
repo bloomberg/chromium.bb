@@ -309,13 +309,6 @@
           'cert/x509_util_ios.h',
         ],
     }],
-    [ 'OS == "ios" and use_nss_verifier == 1', {
-        'sources!': [
-          'cert/cert_verify_proc_ios.cc',
-          'cert/cert_verify_proc_ios.h',
-          'cert/x509_certificate_openssl_ios.cc',
-        ],
-    }],
     [ 'enable_websockets == 1', {
         'sources': ['<@(net_websockets_sources)']
     }],
@@ -431,11 +424,6 @@
         ['include', '^base/platform_mime_util_mac\\.mm$'],
         ['include', '^proxy/proxy_resolver_mac\\.cc$'],
         ['include', '^proxy/proxy_server_mac\\.cc$'],
-      ],
-    }],
-    ['OS == "ios" and <(use_nss_verifier) == 0', {
-      'sources/': [
-        ['include', '^cert/test_root_certs_mac\\.cc$'],
       ],
     }],
   ],
