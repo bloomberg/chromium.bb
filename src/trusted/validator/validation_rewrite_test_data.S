@@ -99,6 +99,16 @@ GLOBAL_SYM(prefetchnta_rip_relative_code_post_rewrite)
     nop
 GLOBAL_SYM(prefetchnta_rip_relative_code_post_rewrite_end)
 
+GLOBAL_SYM(movntq_code)
+    mov %ebx,%ebx
+    movntq %mm0,(%r15,%rbx,1)
+GLOBAL_SYM(movntq_code_end)
+
+GLOBAL_SYM(movntq_code_post_rewrite)
+    mov %ebx,%ebx
+    movq %mm0,(%r15,%rbx,1)
+GLOBAL_SYM(movntq_code_post_rewrite_end)
+
 GLOBAL_SYM(movntps_code)
     mov %ebx,%ebx
     movntps %xmm0,(%r15,%rbx,1)

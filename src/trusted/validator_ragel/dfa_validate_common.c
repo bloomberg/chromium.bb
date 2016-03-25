@@ -92,6 +92,10 @@ static Bool RewriteNonTemporal(uint8_t *ptr, uint8_t *end, uint32_t info) {
   if (size >= 3 && IsREXPrefix(ptr[0]) && ptr[1] == 0x0f) {
     uint8_t opcode_byte2 = ptr[2];
     switch (opcode_byte2) {
+      case 0xe7:
+        /* movntq => movq */
+        ptr[2] = 0x7f;
+        return TRUE;
       case 0x2b:
         /* movntps => movaps */
         ptr[2] = 0x29;

@@ -40,13 +40,11 @@ int main(void) {
   /* This compiles to prefetchnta on x86. */
   __builtin_prefetch(&g_dest, /* rw= */ 0, /* locality= */ 0);
 
-#if defined(__i386__)
   /* Test movntq. */
   reset_test_vars();
-  asm("movq g_src, %%mm0\n"
-      "movntq %%mm0, g_dest\n" : : : "mm0");
+  asm("movq g_src" MEM_SUFFIX ", %%mm0\n"
+      "movntq %%mm0, g_dest" MEM_SUFFIX "\n" : : : "mm0");
   ASSERT_EQ(memcmp(g_dest, g_src, 8), 0);
-#endif
 
 #if defined(__x86_64__)
   /* Test movntps. */

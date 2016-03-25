@@ -44,6 +44,7 @@ DECLARE_TEMPLATE(prefetchnta_code)
 DECLARE_TEMPLATE(off_webstore_movnt_code)
 DECLARE_TEMPLATE(prefetchnta_code)
 DECLARE_TEMPLATE(prefetchnta_rip_relative_code)
+DECLARE_TEMPLATE(movntq_code)
 DECLARE_TEMPLATE(movntps_code)
 DECLARE_TEMPLATE(movnti_code)
 DECLARE_TEMPLATE(movnti_code2)
@@ -136,6 +137,10 @@ TEST_F(ValidationMovntRewriteTests, RewritePrefetchnta) {
 
 TEST_F(ValidationMovntRewriteTests, RewritePrefetchntaRipRelative) {
   TestRewrite(&t_prefetchnta_rip_relative_code);
+}
+
+TEST_F(ValidationMovntRewriteTests, RewriteMovntq) {
+  TestRewrite(&t_movntq_code);
 }
 
 TEST_F(ValidationMovntRewriteTests, RewriteMovntps) {
