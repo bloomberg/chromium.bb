@@ -489,14 +489,10 @@ void WebPagePopupImpl::setFocus(bool enable)
 
 void WebPagePopupImpl::close()
 {
-    m_closing = true;
-    // In case closePopup() was not called.
-    if (m_page) {
-        destroyPage();
-        m_popupClient->didClosePopup();
-        m_webView->cleanupPagePopup();
-    }
     m_widgetClient = 0;
+    // In case closePopup() was not called.
+    if (m_page)
+        cancel();
     deref();
 }
 
