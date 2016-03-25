@@ -374,8 +374,8 @@ inline void InlineIterator::fastIncrementInTextNode()
 class InlineWalker {
     STACK_ALLOCATED();
 public:
-    InlineWalker(LayoutBlockFlow* root)
-        : m_root(LineLayoutBlockFlow(root))
+    InlineWalker(LineLayoutBlockFlow root)
+        : m_root(root)
         , m_current(nullptr)
         , m_atEndOfInline(false)
     {

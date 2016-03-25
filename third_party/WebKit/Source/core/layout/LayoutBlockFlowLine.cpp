@@ -1559,7 +1559,7 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren, LayoutUnit& pa
         // deleted and only dirtied. In that case, we can layout the replaced
         // elements at the same time.
         Vector<LayoutBox*> replacedChildren;
-        for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
+        for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.atEnd(); walker.advance()) {
             LayoutObject* o = walker.current().layoutObject();
 
             if (!layoutState.hasInlineChild() && o->isInline())
@@ -1895,7 +1895,7 @@ void LayoutBlockFlow::addOverflowFromInlineChildren()
 
     // Add outline rects of continuations of descendant inlines into visual overflow of this block.
     LayoutRect outlineBoundsOfAllContinuations;
-    for (InlineWalker walker(this); !walker.atEnd(); walker.advance()) {
+    for (InlineWalker walker(LineLayoutBlockFlow(this)); !walker.atEnd(); walker.advance()) {
         const LayoutObject& o = *walker.current().layoutObject();
         if (!isInlineWithOutlineAndContinuation(o))
             continue;
