@@ -28,12 +28,17 @@ group("deps") {
     }
     if (use_custom_libcxx) {
       deps += [ "//buildtools/third_party/libc++:libcxx_proxy" ]
+      if (is_mac) {
+        deps += [ ":copy_libclang_rt_dyn" ]
+      }
     }
   }
 }
 
 config("sanitizer_options_link_helper") {
-  ldflags = [ "-Wl,-u_sanitizer_options_link_helper" ]
+  if (!is_mac) {
+    ldflags = [ "-Wl,-u_sanitizer_options_link_helper" ]
+  }
 }
 
 source_set("options_sources") {
@@ -292,6 +297,10 @@ config("default_sanitizer_flags") {
       ]
     }
   }
+
+  if (is_mac && is_asan) {
+    libs = [ "clang_rt.asan_osx_dynamic" ]
+  }
 }
 
 config("default_sanitizer_coverage_flags") {
@@ -303,6 +312,20 @@ config("default_sanitizer_coverage_flags") {
       "-fsanitize-coverage=edge,indirect-calls,8bit-counters",
       "-mllvm",
       "-sanitizer-coverage-prune-blocks=1",
+    ]
+  }
+}
+
+# Copy dynamic clang_rt sanitizer libraries to output directory.
+if (is_mac) {
+  copy("copy_libclang_rt_dyn") {
+    sources = [
+      "//third_party/llvm-build/Release+Asserts/compiler-rt/lib/darwin/libclang_rt.asan_osx_dynamic.dylib",
+      "//third_party/llvm-build/Release+Asserts/compiler-rt/lib/darwin/libclang_rt.tsan_osx_dynamic.dylib",
+      "//third_party/llvm-build/Release+Asserts/compiler-rt/lib/darwin/libclang_rt.ubsan_osx_dynamic.dylib",
+    ]
+    outputs = [
+      "$root_build_dir/{{source_file_part}}",
     ]
   }
 }

@@ -37,6 +37,16 @@ static_library("libfuzzer_main") {
   }
 }
 
+# A config used by all fuzzer_tests.
+config("fuzzer_test_config") {
+  if (use_libfuzzer && is_mac) {
+    ldflags = [
+      "-Wl,-U,_LLVMFuzzerCustomMutator",
+      "-Wl,-U,_LLVMFuzzerInitialize",
+    ]
+  }
+}
+
 # Noop config used to tag fuzzer tests excluded from clusterfuzz.
 # Libfuzzer build bot uses this to filter out targets while
 # building an archive for clusterfuzz.

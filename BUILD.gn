@@ -644,8 +644,6 @@ group("gn_only") {
       "//media/cast:udp_proxy",
       "//native_client/src/trusted/debug_stub:gdb_rsp_unittest",
       "//storage/browser:dump_file_system",
-      "//testing/libfuzzer/fuzzers",
-      "//testing/libfuzzer/tests:libfuzzer_tests",
       "//third_party/angle:libANGLE",
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
@@ -711,6 +709,13 @@ group("gn_only") {
     if (is_linux && current_toolchain == host_toolchain) {
       deps += [ "//v8:d8" ]
     }
+  }
+
+  if ((is_linux && !is_chromeos && !is_chromecast) || is_mac) {
+    deps += [
+      "//testing/libfuzzer/fuzzers",
+      "//testing/libfuzzer/tests:libfuzzer_tests",
+    ]
   }
 
   if (enable_nacl) {
