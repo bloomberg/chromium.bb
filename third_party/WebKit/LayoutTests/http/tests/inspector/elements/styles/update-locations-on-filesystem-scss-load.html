@@ -35,7 +35,7 @@ function test()
         InspectorTest.addResult("Stylesheet was added, dumping location:");
         var header = event.data;
         var cssLocation = new WebInspector.CSSLocation(header, 0, 1);
-        liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(cssLocation, function() {});
+        liveLocation = WebInspector.cssWorkspaceBinding.createLiveLocation(cssLocation, function() {}, new WebInspector.LiveLocationPool());
         InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.SourceMapAttached, afterBind);
         dumpLiveLocation();
     }
