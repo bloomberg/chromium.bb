@@ -28,6 +28,15 @@ class DataTypeController;
 // those operations are passed back via this interface.
 class ModelAssociationManagerDelegate {
  public:
+  // Called when all desired types are ready to be configured with
+  // BackendDataTypeConfigurer. Data type is ready when its progress marker is
+  // available to configurer. Directory data types are always ready, their
+  // progress markers are read from directory. USS data type controllers need to
+  // load model and read data type context first.
+  // This function is called at most once after each call to
+  // ModelAssociationManager::Initialize().
+  virtual void OnAllDataTypesReadyForConfigure() = 0;
+
   // Called when model association (MergeDataAndStartSyncing) has completed
   // for |type|, regardless of success or failure.
   virtual void OnSingleDataTypeAssociationDone(
@@ -120,6 +129,13 @@ class ModelAssociationManager {
   // A helper to stop an individual datatype.
   void StopDatatype(const syncer::SyncError& error, DataTypeController* dtc);
 
+  // Calls delegate's OnAllDataTypesReadyForConfigure when all datatypes from
+  // desired_types_ are ready for configure. Ensures that for every call to
+  // Initialize callback is called at most once.
+  // Datatype is ready if either it doesn't require LoadModels before configure
+  // or LoadModels successfully finished.
+  void NotifyDelegateIfReadyForConfigure();
+
   State state_;
 
   // Data types that are enabled.
@@ -153,6 +169,8 @@ class ModelAssociationManager {
   base::OneShotTimer timer_;
 
   DataTypeManager::ConfigureStatus configure_status_;
+
+  bool notified_about_ready_for_configure_;
 
   base::WeakPtrFactory<ModelAssociationManager> weak_ptr_factory_;
 

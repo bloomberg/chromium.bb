@@ -52317,6 +52317,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Time taken during bookmark association.</summary>
 </histogram>
 
+<histogram name="Sync.USSLoadModelsTime" units="ms">
+  <owner>pavely@chromium.org</owner>
+  <summary>Time it took sync to load models for USS datatypes.</summary>
+</histogram>
+
 <histogram name="Sync.WifiCredentialsAssociationTime" units="ms">
   <owner>zea@chromium.org</owner>
   <summary>Time taken during WiFi credentials association.</summary>

@@ -125,6 +125,7 @@ ModelAssociationManager::ModelAssociationManager(
       controllers_(controllers),
       delegate_(processor),
       configure_status_(DataTypeManager::UNKNOWN),
+      notified_about_ready_for_configure_(false),
       weak_ptr_factory_(this) {
   // Ensure all data type controllers are stopped.
   for (DataTypeController::TypeMap::const_iterator it = controllers_->begin();
@@ -154,6 +155,7 @@ void ModelAssociationManager::Initialize(syncer::ModelTypeSet desired_types) {
            << syncer::ModelTypeSetToString(desired_types_);
 
   state_ = INITIALIZED;
+  notified_about_ready_for_configure_ = false;
 
   StopDisabledTypes();
   LoadEnabledTypes();
@@ -202,6 +204,7 @@ void ModelAssociationManager::LoadEnabledTypes() {
                                  weak_ptr_factory_.GetWeakPtr()));
     }
   }
+  NotifyDelegateIfReadyForConfigure();
 }
 
 void ModelAssociationManager::StartAssociationAsync(
@@ -309,12 +312,21 @@ void ModelAssociationManager::ModelLoadCallback(syncer::ModelType type,
 
   DCHECK(!loaded_types_.Has(type));
   loaded_types_.Put(type);
+  NotifyDelegateIfReadyForConfigure();
   if (associating_types_.Has(type)) {
     DataTypeController* dtc = controllers_->find(type)->second.get();
-    dtc->StartAssociating(
-        base::Bind(&ModelAssociationManager::TypeStartCallback,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   type, base::TimeTicks::Now()));
+    // If initial sync was done for this datatype then
+    // NotifyDelegateIfReadyForConfigure possibly already triggered model
+    // association and StartAssociating was already called for this type. To
+    // ensure StartAssociating is called only once only make a call if state is
+    // MODEL_LOADED.
+    // TODO(pavely): Add test for this scenario in DataTypeManagerImpl
+    // unittests.
+    if (dtc->state() == DataTypeController::MODEL_LOADED) {
+      dtc->StartAssociating(base::Bind(
+          &ModelAssociationManager::TypeStartCallback,
+          weak_ptr_factory_.GetWeakPtr(), type, base::TimeTicks::Now()));
+    }
   }
 }
 
@@ -330,6 +342,7 @@ void ModelAssociationManager::TypeStartCallback(
     desired_types_.Remove(type);
     DataTypeController* dtc = controllers_->find(type)->second.get();
     StopDatatype(local_merge_result.error(), dtc);
+    NotifyDelegateIfReadyForConfigure();
 
     // Update configuration result.
     if (start_result == DataTypeController::UNRECOVERABLE_ERROR)
@@ -425,6 +438,24 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
 
 base::OneShotTimer* ModelAssociationManager::GetTimerForTesting() {
   return &timer_;
+}
+
+void ModelAssociationManager::NotifyDelegateIfReadyForConfigure() {
+  if (notified_about_ready_for_configure_)
+    return;
+  for (const auto& type_dtc_pair : *controllers_) {
+    syncer::ModelType type = type_dtc_pair.first;
+    if (!desired_types_.Has(type))
+      continue;
+    DataTypeController* dtc = type_dtc_pair.second.get();
+    if (dtc->ShouldLoadModelBeforeConfigure() && !loaded_types_.Has(type)) {
+      // At least one type is not ready.
+      return;
+    }
+  }
+
+  notified_about_ready_for_configure_ = true;
+  delegate_->OnAllDataTypesReadyForConfigure();
 }
 
 }  // namespace sync_driver

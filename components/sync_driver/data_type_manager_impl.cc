@@ -63,6 +63,7 @@ DataTypeManagerImpl::DataTypeManagerImpl(
       observer_(observer),
       encryption_handler_(encryption_handler),
       catch_up_in_progress_(false),
+      download_started_(false),
       weak_ptr_factory_(this) {
   DCHECK(configurer_);
   DCHECK(observer_);
@@ -299,8 +300,18 @@ void DataTypeManagerImpl::Restart(syncer::ConfigureReason reason) {
   // call to Initialize triggers model association.
   if (catch_up_in_progress_)
     model_association_manager_.Stop();
+  download_started_ = false;
   model_association_manager_.Initialize(enabled_types);
+}
 
+void DataTypeManagerImpl::OnAllDataTypesReadyForConfigure() {
+  DCHECK(!download_started_);
+  download_started_ = true;
+  UMA_HISTOGRAM_LONG_TIMES("Sync.USSLoadModelsTime",
+                           base::Time::Now() - last_restart_time_);
+  // TODO(pavely): By now some of datatypes in download_types_queue_ could have
+  // failed loading and should be excluded from configuration. I need to adjust
+  // download_types_queue_ for such types.
   StartNextDownload(syncer::ModelTypeSet());
 }
 
@@ -482,7 +493,6 @@ void DataTypeManagerImpl::StartNextAssociation(AssociationGroup group) {
     // no-ops.
     types_to_associate = association_types_queue_.front().types;
   }
-
 
   DVLOG(1) << "Associating "
            << syncer::ModelTypeSetToString(types_to_associate);

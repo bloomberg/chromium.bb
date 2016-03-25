@@ -61,6 +61,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   State state() const override;
 
   // |ModelAssociationManagerDelegate| implementation.
+  void OnAllDataTypesReadyForConfigure() override;
   void OnSingleDataTypeAssociationDone(
       syncer::ModelType type,
       const syncer::DataTypeAssociationStats& association_stats) override;
@@ -146,7 +147,6 @@ class DataTypeManagerImpl : public DataTypeManager,
   // This list is determined at startup by various command line flags.
   const DataTypeController::TypeMap* controllers_;
   State state_;
-  std::map<syncer::ModelType, int> start_order_;
   syncer::ModelTypeSet last_requested_types_;
 
   // Whether an attempt to reconfigure was made while we were busy configuring.
@@ -224,6 +224,11 @@ class DataTypeManagerImpl : public DataTypeManager,
 
   // True iff we are in the process of catching up datatypes.
   bool catch_up_in_progress_;
+
+  // Configuration process is started when ModelAssociationManager notifies
+  // DataTypeManager that all types are ready for configure.
+  // This flag ensures that this process is started only once.
+  bool download_started_;
 
   base::WeakPtrFactory<DataTypeManagerImpl> weak_ptr_factory_;
 

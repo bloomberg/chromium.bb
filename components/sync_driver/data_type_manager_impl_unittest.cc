@@ -79,7 +79,7 @@ DataTypeStatusTable BuildStatusTable(ModelTypeSet crypto_errors,
 // callback passed into ConfigureDataTypes.
 class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
  public:
-  FakeBackendDataTypeConfigurer() {}
+  FakeBackendDataTypeConfigurer() : configure_call_count_(0) {}
   ~FakeBackendDataTypeConfigurer() override {}
 
   syncer::ModelTypeSet ConfigureDataTypes(
@@ -87,6 +87,7 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
       const DataTypeConfigStateMap& config_state_map,
       const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
       const base::Callback<void()>& retry_callback) override {
+    configure_call_count_++;
     last_ready_task_ = ready_task;
 
     for (auto iter = expected_configure_types_.begin();
@@ -137,11 +138,14 @@ class FakeBackendDataTypeConfigurer : public BackendDataTypeConfigurer {
 
   const ModelTypeSet activated_types() { return activated_types_; }
 
+  int configure_call_count() const { return configure_call_count_; }
+
  private:
   base::Callback<void(ModelTypeSet, ModelTypeSet)> last_ready_task_;
   std::map<DataTypeConfigState, ModelTypeSet> expected_configure_types_;
   ModelTypeSet activated_types_;
   ModelTypeSet ready_types_;
+  int configure_call_count_;
 };
 
 // DataTypeManagerObserver implementation.
@@ -1674,6 +1678,35 @@ TEST_F(SyncDataTypeManagerImplTest, CatchUpMultipleConfigureCalls) {
 
   dtm_->Stop();
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
+}
+
+// Test that DataTypeManagerImpl delays configuration until all datatypes for
+//  which ShouldLoadModelBeforeConfigure() returns true loaded their models.
+TEST_F(SyncDataTypeManagerImplTest, DelayConfigureForUSSTypes) {
+  AddController(BOOKMARKS);
+  GetController(BOOKMARKS)->SetShouldLoadModelBeforeConfigure(true);
+  GetController(BOOKMARKS)->SetDelayModelLoad();
+
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
+
+  Configure(dtm_.get(), ModelTypeSet(BOOKMARKS));
+  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  // Bookmarks model isn't loaded yet and it is required to complete before
+  // call to configure. Ensure that configure wasn't called.
+  EXPECT_EQ(0, configurer_.configure_call_count());
+
+  // Finishing model load should trigger configure.
+  GetController(BOOKMARKS)->SimulateModelLoadFinishing();
+  EXPECT_EQ(1, configurer_.configure_call_count());
+
+  FinishDownload(*dtm_, ModelTypeSet(), ModelTypeSet());
+  FinishDownload(*dtm_, ModelTypeSet(BOOKMARKS), ModelTypeSet());
+  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+
+  GetController(BOOKMARKS)->FinishStart(DataTypeController::OK);
+  EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+  EXPECT_EQ(1U, configurer_.activated_types().Size());
 }
 
 }  // namespace sync_driver

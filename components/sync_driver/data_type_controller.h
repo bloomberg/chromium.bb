@@ -86,6 +86,11 @@ class DataTypeController
   // Returns true if the datatype started successfully.
   static bool IsSuccessfulResult(ConfigureResult result);
 
+  // Returns true if DataTypeManager should wait for LoadModels to complete
+  // successfully before starting configuration. Directory based types should
+  // return false while USS datatypes should return true.
+  virtual bool ShouldLoadModelBeforeConfigure() const = 0;
+
   // Begins asynchronous operation of loading the model to get it ready for
   // model association. Once the models are loaded the callback will be invoked
   // with the result. If the models are already loaded it is safe to call the

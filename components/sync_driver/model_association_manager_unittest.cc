@@ -19,6 +19,7 @@ class MockModelAssociationManagerDelegate :
  public:
   MockModelAssociationManagerDelegate() {}
   ~MockModelAssociationManagerDelegate() {}
+  MOCK_METHOD0(OnAllDataTypesReadyForConfigure, void());
   MOCK_METHOD2(OnSingleDataTypeAssociationDone,
       void(syncer::ModelType type,
       const syncer::DataTypeAssociationStats& association_stats));
@@ -66,6 +67,7 @@ TEST_F(SyncModelAssociationManagerTest, SimpleModelStart) {
                                                     &delegate_);
   syncer::ModelTypeSet types(syncer::BOOKMARKS, syncer::APPS);
   DataTypeManager::ConfigureResult expected_result(DataTypeManager::OK, types);
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
   EXPECT_CALL(delegate_, OnModelAssociationDone(_)).
               WillOnce(VerifyResult(expected_result));
 
@@ -215,8 +217,6 @@ TEST_F(SyncModelAssociationManagerTest, SlowTypeAsFailedType) {
   types.Put(syncer::BOOKMARKS);
   types.Put(syncer::APPS);
 
-  syncer::ModelTypeSet expected_types_unfinished;
-  expected_types_unfinished.Put(syncer::BOOKMARKS);
   DataTypeManager::ConfigureResult expected_result_partially_done(
       DataTypeManager::OK, types);
 
@@ -382,6 +382,146 @@ TEST_F(SyncModelAssociationManagerTest, AbortDuringAssociation) {
 
   EXPECT_EQ(DataTypeController::NOT_RUNNING,
             GetController(controllers_, syncer::BOOKMARKS)->state());
+}
+
+// Test that OnAllDataTypesReadyForConfigure is called when all datatypes that
+// require LoadModels before configuration are loaded.
+TEST_F(SyncModelAssociationManagerTest, OnAllDataTypesReadyForConfigure) {
+  // Create two controllers with delayed model load.
+  controllers_[syncer::BOOKMARKS] =
+      new FakeDataTypeController(syncer::BOOKMARKS);
+  controllers_[syncer::APPS] = new FakeDataTypeController(syncer::APPS);
+  GetController(controllers_, syncer::BOOKMARKS)->SetDelayModelLoad();
+  GetController(controllers_, syncer::APPS)->SetDelayModelLoad();
+
+  // APPS controller requires LoadModels complete before configure.
+  GetController(controllers_, syncer::APPS)
+      ->SetShouldLoadModelBeforeConfigure(true);
+
+  ModelAssociationManager model_association_manager(&controllers_, &delegate_);
+  syncer::ModelTypeSet types(syncer::BOOKMARKS, syncer::APPS);
+  DataTypeManager::ConfigureResult expected_result(DataTypeManager::OK, types);
+  // OnAllDataTypesReadyForConfigure shouldn't be called, APPS data type is not
+  // loaded yet.
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure()).Times(0);
+
+  model_association_manager.Initialize(types);
+
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
+            DataTypeController::MODEL_STARTING);
+  EXPECT_EQ(GetController(controllers_, syncer::APPS)->state(),
+            DataTypeController::MODEL_STARTING);
+
+  testing::Mock::VerifyAndClearExpectations(&delegate_);
+
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
+  // Finish loading APPS. This should trigger OnAllDataTypesReadyForConfigure
+  // even though BOOKMARKS is not loaded yet.
+  GetController(controllers_, syncer::APPS)->SimulateModelLoadFinishing();
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
+            DataTypeController::MODEL_STARTING);
+  EXPECT_EQ(GetController(controllers_, syncer::APPS)->state(),
+            DataTypeController::MODEL_LOADED);
+
+  // Call ModelAssociationManager::Initialize with reduced set of datatypes.
+  // All datatypes in reduced set are already loaded.
+  // OnAllDataTypesReadyForConfigure() should be called.
+  testing::Mock::VerifyAndClearExpectations(&delegate_);
+
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
+  syncer::ModelTypeSet reduced_types(syncer::APPS);
+  model_association_manager.Initialize(reduced_types);
+}
+
+// Test that OnAllDataTypesReadyForConfigure() is called correctly after
+// LoadModels fails for one of datatypes.
+TEST_F(SyncModelAssociationManagerTest,
+       OnAllDataTypesReadyForConfigure_FailedLoadModels) {
+  controllers_[syncer::APPS] = new FakeDataTypeController(syncer::APPS);
+  GetController(controllers_, syncer::APPS)->SetDelayModelLoad();
+
+  // APPS controller requires LoadModels complete before configure.
+  GetController(controllers_, syncer::APPS)
+      ->SetShouldLoadModelBeforeConfigure(true);
+
+  ModelAssociationManager model_association_manager(&controllers_, &delegate_);
+  syncer::ModelTypeSet types(syncer::APPS);
+  DataTypeManager::ConfigureResult expected_result(DataTypeManager::OK, types);
+  // OnAllDataTypesReadyForConfigure shouldn't be called, APPS data type is not
+  // loaded yet.
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure()).Times(0);
+
+  model_association_manager.Initialize(types);
+
+  EXPECT_EQ(GetController(controllers_, syncer::APPS)->state(),
+            DataTypeController::MODEL_STARTING);
+
+  testing::Mock::VerifyAndClearExpectations(&delegate_);
+
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
+  // Simulate model load error for APPS and finish loading it. This should
+  // trigger OnAllDataTypesReadyForConfigure.
+  GetController(controllers_, syncer::APPS)
+      ->SetModelLoadError(syncer::SyncError(
+          FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "", syncer::APPS));
+  GetController(controllers_, syncer::APPS)->SimulateModelLoadFinishing();
+  EXPECT_EQ(GetController(controllers_, syncer::APPS)->state(),
+            DataTypeController::NOT_RUNNING);
+}
+
+// Test that if one of the types fails while another is still being loaded then
+// OnAllDataTypesReadyForConfgiure is still called correctly.
+TEST_F(SyncModelAssociationManagerTest,
+       OnAllDataTypesReadyForConfigure_TypeFailedAfterLoadModels) {
+  // Create two controllers with delayed model load. Both should block
+  // configuration.
+  controllers_[syncer::BOOKMARKS] =
+      new FakeDataTypeController(syncer::BOOKMARKS);
+  controllers_[syncer::APPS] = new FakeDataTypeController(syncer::APPS);
+  GetController(controllers_, syncer::BOOKMARKS)->SetDelayModelLoad();
+  GetController(controllers_, syncer::APPS)->SetDelayModelLoad();
+
+  GetController(controllers_, syncer::BOOKMARKS)
+      ->SetShouldLoadModelBeforeConfigure(true);
+  GetController(controllers_, syncer::APPS)
+      ->SetShouldLoadModelBeforeConfigure(true);
+
+  ModelAssociationManager model_association_manager(&controllers_, &delegate_);
+  syncer::ModelTypeSet types(syncer::BOOKMARKS, syncer::APPS);
+  DataTypeManager::ConfigureResult expected_result(DataTypeManager::OK, types);
+
+  // Apps will finish loading but bookmarks won't.
+  // OnAllDataTypesReadyForConfigure shouldn't be called.
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure()).Times(0);
+
+  model_association_manager.Initialize(types);
+
+  GetController(controllers_, syncer::APPS)->SimulateModelLoadFinishing();
+
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
+            DataTypeController::MODEL_STARTING);
+  EXPECT_EQ(GetController(controllers_, syncer::APPS)->state(),
+            DataTypeController::MODEL_LOADED);
+
+  testing::Mock::VerifyAndClearExpectations(&delegate_);
+
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure()).Times(0);
+
+  EXPECT_CALL(delegate_, OnSingleDataTypeWillStop(syncer::APPS, _));
+  // Apps datatype reports failure.
+  syncer::SyncError error(FROM_HERE, syncer::SyncError::DATATYPE_ERROR, "error",
+                          syncer::APPS);
+  GetController(controllers_, syncer::APPS)
+      ->OnSingleDataTypeUnrecoverableError(error);
+
+  testing::Mock::VerifyAndClearExpectations(&delegate_);
+
+  EXPECT_CALL(delegate_, OnAllDataTypesReadyForConfigure());
+  // Finish loading BOOKMARKS. This should trigger
+  // OnAllDataTypesReadyForConfigure().
+  GetController(controllers_, syncer::BOOKMARKS)->SimulateModelLoadFinishing();
+  EXPECT_EQ(GetController(controllers_, syncer::BOOKMARKS)->state(),
+            DataTypeController::MODEL_LOADED);
 }
 
 }  // namespace sync_driver

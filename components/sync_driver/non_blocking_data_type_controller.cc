@@ -34,6 +34,12 @@ NonBlockingDataTypeController::NonBlockingDataTypeController(
 
 NonBlockingDataTypeController::~NonBlockingDataTypeController() {}
 
+bool NonBlockingDataTypeController::ShouldLoadModelBeforeConfigure() const {
+  // USS datatypes require loading models because model contols storage where
+  // data type context and progress marker are persisted.
+  return true;
+}
+
 void NonBlockingDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
   DCHECK(ui_thread()->BelongsToCurrentThread());

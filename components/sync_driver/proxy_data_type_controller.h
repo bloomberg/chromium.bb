@@ -24,6 +24,7 @@ class ProxyDataTypeController : public DataTypeController {
       syncer::ModelType type);
 
   // DataTypeController interface.
+  bool ShouldLoadModelBeforeConfigure() const override;
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;

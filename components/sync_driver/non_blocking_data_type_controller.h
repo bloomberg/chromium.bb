@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
 #define COMPONENTS_SYNC_DRIVER_NON_BLOCKING_DATA_TYPE_CONTROLLER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync_driver/data_type_controller.h"
@@ -45,6 +47,7 @@ class NonBlockingDataTypeController : public sync_driver::DataTypeController {
       const syncer::SyncError& error) override;
 
   // DataTypeController interface.
+  bool ShouldLoadModelBeforeConfigure() const override;
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void ActivateDataType(

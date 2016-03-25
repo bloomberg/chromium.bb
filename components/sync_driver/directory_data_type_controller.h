@@ -15,6 +15,9 @@ class ChangeProcessor;
 // Base class for Directory based Data type controllers.
 class DirectoryDataTypeController : public DataTypeController {
  public:
+  // DataTypeController implementation.
+  bool ShouldLoadModelBeforeConfigure() const override;
+
   // Directory specific implementation of ActivateDataType with the
   // type specific ChangeProcessor and ModelSafeGroup.
   // Activates change processing on the controlled data type.

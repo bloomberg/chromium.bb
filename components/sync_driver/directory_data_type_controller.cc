@@ -15,6 +15,13 @@ DirectoryDataTypeController::DirectoryDataTypeController(
 
 DirectoryDataTypeController::~DirectoryDataTypeController() {}
 
+bool DirectoryDataTypeController::ShouldLoadModelBeforeConfigure() const {
+  // Directory datatypes don't require loading models before configure. Their
+  // progress markers are stored in directory and can be extracted without
+  // datatype participation.
+  return false;
+}
+
 void DirectoryDataTypeController::ActivateDataType(
     BackendDataTypeConfigurer* configurer) {
   // Tell the backend about the change processor for this type so it can
