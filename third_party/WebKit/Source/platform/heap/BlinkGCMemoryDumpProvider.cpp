@@ -117,7 +117,7 @@ BlinkGCMemoryDumpProvider::BlinkGCMemoryDumpProvider()
 
 void BlinkGCMemoryDumpProvider::insert(Address address, size_t size, const char* typeName)
 {
-    base::trace_event::AllocationContext context = base::trace_event::AllocationContextTracker::GetContextSnapshot();
+    base::trace_event::AllocationContext context = base::trace_event::AllocationContextTracker::GetInstanceForCurrentThread()->GetContextSnapshot();
     context.type_name = typeName;
     MutexLocker locker(m_allocationRegisterMutex);
     if (m_allocationRegister)
