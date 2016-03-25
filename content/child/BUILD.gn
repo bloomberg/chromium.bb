@@ -7,9 +7,18 @@ import("//build/config/ui.gni")
 import("//content/child/child.gni")
 
 source_set("child") {
-  # Only the public target should depend on this. All other targets (even
-  # internal content ones) should depend on the public one.
-  visibility = [ "//content/public/child:child_sources" ]
+  # Targets external to content should always link to the public API.
+  # Internal targets can link to this but only if they're child processes
+  # (i.e. not content/browser or content/common) and only if they're inside the
+  # content component (i.e. not content/test or content/shell).
+  visibility = [
+    "//content/gpu/*",
+    "//content/plugin/*",
+    "//content/ppapi_plugin/*",
+    "//content/public/child:child_sources",
+    "//content/renderer/*",
+    "//content/utility/*",
+  ]
 
   sources = rebase_path(content_child_gypi_values.private_child_sources,
                         ".",

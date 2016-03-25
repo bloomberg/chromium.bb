@@ -40,7 +40,7 @@ source_set("browser_sources") {
   ]
   deps = [
     "//cc",
-    "//content/browser",
+    "//content/browser",  # Must not be public_deps!
     "//content/public/common:common_sources",
     "//gpu",
     "//media",

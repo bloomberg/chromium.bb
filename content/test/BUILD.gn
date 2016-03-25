@@ -24,6 +24,12 @@ content_tests_gypi_values =
 source_set("test_support") {
   testonly = true
 
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
   configs += [
     "//build/config:precompiled_headers",
     "//v8:external_startup_data",
@@ -36,19 +42,26 @@ source_set("test_support") {
     "//third_party/WebKit/public:blink",
   ]
   deps = [
+    ":browsertest_base",
     ":content_test_mojo_bindings",
+    "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc:test_support",
     "//cc/blink",
+    "//cc/surfaces",
     "//components/scheduler:scheduler",
     "//components/scheduler:test_support",
+    "//content/app:both_for_content_tests",
     "//content/browser/speech/proto",
     "//content/gpu",
+    "//content/public/browser",
     "//content/public/child",
     "//content/public/plugin",
     "//content/public/renderer",
     "//content/public/utility",
+    "//content/renderer:for_content_tests",
     "//content/shell:pak",
+    "//content/utility:for_content_tests",
     "//ipc:test_support",
     "//ipc/mojo",
     "//media",
@@ -120,6 +133,7 @@ source_set("test_support") {
     deps += [
       "//third_party/libjingle:libjingle_webrtc",
       "//third_party/libjingle:libpeerconnection",
+      "//third_party/webrtc/base:rtc_base",
       "//third_party/webrtc/modules/video_capture",
     ]
   }
@@ -180,6 +194,12 @@ source_set("test_support") {
 source_set("browsertest_support") {
   testonly = true
 
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
   sources = [
     "../public/test/content_browser_test.cc",
     "../public/test/content_browser_test.h",
@@ -192,10 +212,24 @@ source_set("browsertest_support") {
   ]
 
   deps = [
+    ":browsertest_base",
+    ":test_support",
+    "//base",
+    "//base:i18n",
+    "//base/test:test_config",
+    "//base/test:test_support",
+    "//cc/surfaces",
+    "//content/app:both_for_content_tests",
+    "//content/browser:for_content_tests",
     "//content/shell:content_shell_lib",
+    "//gin",
+    "//media",
+    "//net",
     "//skia",
     "//testing/gtest",
     "//ui/accessibility:ax_gen",
+    "//ui/base",
+    "//ui/base/ime",
   ]
 
   if (is_android) {
@@ -220,12 +254,14 @@ source_set("browsertest_base") {
   ]
 
   public_deps = [
+    "//content/browser:for_content_tests",
     "//content/public/browser",
     "//content/public/common",
     "//third_party/WebKit/public:blink",
   ]
   deps = [
     "//base:base",
+    "//content/public/app:both",
     "//net:test_support",
     "//testing/gtest",
     "//ui/base",
@@ -253,6 +289,13 @@ mojom("web_ui_test_mojo_bindings") {
 # GYP version //content/content_tests.gypi:layouttest_support_content
 static_library("layouttest_support") {
   testonly = true
+
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
   sources =
       rebase_path(content_tests_gypi_values.layouttest_support_content_sources,
                   ".",
@@ -263,7 +306,11 @@ static_library("layouttest_support") {
     "//cc",
     "//cc/blink",
     "//components/test_runner:test_runner",
+    "//content/browser:for_content_tests",
     "//content/public/common",
+
+    #"//content/shell:content_shell_lib",
+    "//content/renderer:for_content_tests",
     "//mojo/edk/test:test_support",
     "//skia",
     "//ui/accessibility:ax_gen",
@@ -339,6 +386,12 @@ group("content_site_isolation_browsertests") {
 }
 
 test("content_browsertests") {
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
   sources = rebase_path(content_tests_gypi_values.content_browsertests_sources,
                         ".",
                         "//content")
@@ -389,15 +442,22 @@ test("content_browsertests") {
   deps = [
     ":browsertest_base",
     ":browsertest_support",
+    ":content_test_mojo_bindings",
     ":web_ui_test_mojo_bindings",
     "//base/test:test_support",
+    "//components/scheduler",
     "//content:resources",
+    "//content/app:both_for_content_tests",
+    "//content/browser:for_content_tests",
     "//content/browser/background_sync:background_sync_proto",
     "//content/common:mojo_bindings",
     "//content/gpu",
+    "//content/public/browser",
+    "//content/public/child",
     "//content/public/common",
     "//content/public/plugin",
     "//content/public/renderer",
+    "//content/renderer:for_content_tests",
     "//content/shell:content_shell_lib",
     "//content/shell:pak",
     "//content/test:test_support",
@@ -406,9 +466,9 @@ test("content_browsertests") {
     "//device/vibration:mojo_bindings",
     "//gin",
     "//gpu",
+    "//gpu/blink",
     "//ipc:test_support",
-    "//media:media_features",
-    "//media:shared_memory_support",
+    "//media",
     "//media:test_support",
     "//media/audio:test_support",
     "//media/base:test_support",
@@ -419,6 +479,7 @@ test("content_browsertests") {
     "//mojo/shell/public/cpp:cpp_for_chromium",
     "//mojo/test:test_support",
     "//net:test_support",
+    "//storage/browser",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",
@@ -427,8 +488,9 @@ test("content_browsertests") {
     "//third_party/zlib",
     "//ui/accessibility",
     "//ui/accessibility:ax_gen",
-    "//ui/base",
+    "//ui/base:test_support",
     "//ui/base/ime",
+    "//ui/compositor",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",
@@ -447,7 +509,7 @@ test("content_browsertests") {
       "//ppapi/host",
       "//ppapi/proxy",
       "//ppapi/proxy:ipc",
-      "//ppapi/shared_impl",
+      "//ppapi/shared_impl:test_support",
     ]
     data_deps += [ "//ppapi:ppapi_tests" ]
   }
@@ -524,6 +586,7 @@ test("content_browsertests") {
             content_tests_gypi_values.content_browsertests_plugins_sources,
             ".",
             "//content")
+    deps += [ "//ppapi/proxy:test_support" ]
     data_deps += [ "//ppapi:ppapi_tests" ]
   }
 
@@ -543,6 +606,7 @@ test("content_browsertests") {
 
   if (use_aura) {
     deps += [
+      "//ui/aura",
       "//ui/touch_selection:test_support",
       "//ui/touch_selection:touch_selection",
     ]
@@ -556,6 +620,12 @@ test("content_browsertests") {
 }
 
 test("content_unittests") {
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
   defines = []
   sources = rebase_path(content_tests_gypi_values.content_unittests_sources,
                         ".",
@@ -573,14 +643,17 @@ test("content_unittests") {
   configs += [ "//build/config:precompiled_headers" ]
 
   deps = [
+    ":content_test_mojo_bindings",
     ":test_support",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
     "//cc",
     "//cc:test_support",
     "//cc/surfaces",
+    "//components/scheduler",
     "//content:resources",
-    "//content/browser/background_sync:background_sync_proto",
+    "//content/app:both_for_content_tests",
+    "//content/browser:for_content_tests",
     "//content/browser/cache_storage:cache_storage_proto",
     "//content/browser/notifications:notification_proto",
     "//content/browser/service_worker:service_worker_proto",
@@ -593,6 +666,7 @@ test("content_unittests") {
     "//content/public/common:mojo_bindings",
     "//content/public/plugin",
     "//content/public/renderer",
+    "//content/renderer:for_content_tests",
     "//crypto",
     "//device/battery",
     "//device/battery:mojo_bindings",
@@ -610,6 +684,8 @@ test("content_unittests") {
     "//mojo/public/cpp/bindings",
     "//net:extras",
     "//net:test_support",
+    "//ppapi/c",
+    "//printing",
     "//skia",
     "//sql",
     "//sql:test_support",
@@ -622,11 +698,12 @@ test("content_unittests") {
     "//third_party/leveldatabase",
     "//third_party/libjingle",
     "//third_party/re2",
+    "//third_party/widevine/cdm:version_h",
     "//ui/accessibility",
-    "//ui/base",
+    "//ui/base:test_support",
     "//ui/compositor:test_support",
     "//ui/events/blink",
-    "//ui/gfx",
+    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",
     "//ui/gl",
@@ -646,6 +723,11 @@ test("content_unittests") {
         rebase_path(content_tests_gypi_values.content_unittests_plugins_sources,
                     ".",
                     "//content")
+    deps += [
+      "//ppapi/host",
+      "//ppapi/proxy:test_support",
+      "//ppapi/shared_impl:test_support",
+    ]
   }
 
   if (enable_webrtc) {
@@ -656,6 +738,8 @@ test("content_unittests") {
     deps += [
       "//third_party/libjingle:libjingle_webrtc",
       "//third_party/libjingle:libpeerconnection",
+      "//third_party/webrtc/base:rtc_base",
+      "//third_party/webrtc/modules/desktop_capture:primitives",
       "//third_party/webrtc/modules/video_capture",
       "//ui/shell_dialogs:shell_dialogs",
     ]
@@ -703,7 +787,10 @@ test("content_unittests") {
     # Search for comments about "xcode_settings" in chrome_tests.gypi.
     ldflags = [ "-Wl,-ObjC" ]
 
-    deps += [ "//third_party/ocmock" ]
+    deps += [
+      "//third_party/mozilla",
+      "//third_party/ocmock",
+    ]
   }
   if (is_chromeos) {
     sources -= [ "../browser/geolocation/wifi_data_provider_linux_unittest.cc" ]
@@ -738,7 +825,8 @@ test("content_unittests") {
   if (use_aura) {
     deps += [
       "//components/mus/public/cpp/tests:unittest_support",
-      "//ui/aura",
+      "//content/renderer/mus",
+      "//ui/aura:test_support",
       "//ui/aura_extra",
       "//ui/wm",
     ]
@@ -783,9 +871,19 @@ test("content_unittests") {
   if (is_mac && use_openssl) {
     deps += [ "//third_party/boringssl" ]
   }
+
+  if (use_x11) {
+    deps += [ "//ui/gfx/x" ]
+  }
 }
 
 test("content_perftests") {
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
   sources = [
     "../browser/renderer_host/input/input_router_impl_perftest.cc",
     "../common/cc_messages_perftest.cc",
@@ -794,6 +892,7 @@ test("content_perftests") {
   deps = [
     "//base/test:test_support",
     "//cc",
+    "//content/browser:for_content_tests",
     "//content/public/browser",
     "//content/public/common",
     "//content/test:test_support",
@@ -810,6 +909,12 @@ test("content_perftests") {
 }
 
 test("content_gl_tests") {
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
   sources = [
     "../browser/compositor/gl_helper_unittest.cc",
     "../common/gpu/client/gpu_in_process_context_tests.cc",
@@ -819,9 +924,13 @@ test("content_gl_tests") {
   deps = [
     ":test_support",
     "//base/test:test_support",
+    "//content/browser:for_content_tests",
     "//content/public/common",
     "//gpu/blink",
+    "//gpu/command_buffer/client:gl_in_process_context",
+    "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/common",
+    "//media",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",
     "//ui/base",
@@ -847,6 +956,12 @@ test("content_gl_tests") {
 }
 
 test("content_gl_benchmark") {
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
   sources = [
     "../browser/compositor/gl_helper_benchmark.cc",
     "run_gl_benchmark.cc",
@@ -855,8 +970,11 @@ test("content_gl_benchmark") {
   deps = [
     ":test_support",
     "//base/test:test_support",
+    "//content/browser:for_content_tests",
     "//content/public/common",
     "//gpu/blink",
+    "//gpu/command_buffer/client:gl_in_process_context",
+    "//gpu/command_buffer/client:gles2_implementation",
     "//testing/gtest",
     "//third_party/WebKit/public:blink",
     "//ui/base",

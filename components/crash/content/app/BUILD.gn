@@ -45,13 +45,13 @@ source_set("app") {
 
   public_deps = [
     ":app_non_mac_win",
+    ":lib",
     "//third_party/kasko",
   ]
   deps = [
     "//base",
   ]
 
-  deps += [ ":lib" ]
   if (is_win) {
     deps += [
       # TODO(fdoray): Remove this once the PreRead field trial has expired.
