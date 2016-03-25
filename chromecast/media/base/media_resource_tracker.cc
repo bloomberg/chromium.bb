@@ -29,7 +29,6 @@ MediaResourceTracker::MediaResourceTracker(
 MediaResourceTracker::~MediaResourceTracker() {}
 
 void MediaResourceTracker::SetDelegate(Delegate* delegate) {
-  DCHECK(!delegate_);
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
   delegate_ = delegate;
 }
