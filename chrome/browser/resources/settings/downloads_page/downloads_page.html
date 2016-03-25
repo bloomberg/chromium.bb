@@ -9,25 +9,23 @@
   <link rel="import" type="css" href="downloads_page.css">
   <template>
     <style include="settings-shared"></style>
-    <div class="settings-box first">
+    <div class="settings-box first two-line">
       <div class="start">
-        <settings-input id="downloadsPath" always-flow-label readonly
-            i18n-values="label:downloadLocation"
-            pref="{{prefs.download.default_directory}}"
-            aria-labelledby="locationLabel">
-        </settings-input>
+        <div>$i18n{downloadLocation}</div>
+        <div class="secondary">[[prefs.download.default_directory.value]]</div>
       </div>
-      <paper-button id="changeDownloadsPath" on-tap="selectDownloadLocation_"
-          i18n-content="changeDownloadLocation">
+      <paper-button class="secondary-action" id="changeDownloadsPath"
+          on-tap="selectDownloadLocation_">
+        $i18n{changeDownloadLocation}
       </paper-button>
     </div>
     <div class="settings-box block">
       <settings-checkbox pref="{{prefs.download.prompt_for_download}}"
-          i18n-values="label:promptForDownload">
+          label="$i18n{promptForDownload}">
       </settings-checkbox>
 <if expr="chromeos">
       <settings-checkbox pref="{{prefs.gdata.disabled}}"
-          i18n-values="label:disconnectGoogleDriveAccount">
+          label="$i18n{disconnectGoogleDriveAccount}">
       </settings-checkbox>
 </if>
     </div>
