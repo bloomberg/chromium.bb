@@ -27,6 +27,7 @@ beaglebone-paladin
 butterfly-paladin
 clapper-release
 cyan-cheets-android-pfq
+cyan-cheets-chrome-pfq
 daisy-chromium-pfq
 daisy-paladin
 [daisy-release-group]
@@ -203,6 +204,7 @@ tricky-paladin
   veyron_speedy-release
 veyron_mighty-paladin
 veyron_minnie-cheets-android-pfq
+veyron_minnie-cheets-chrome-pfq
 veyron_minnie-cheets-paladin
 veyron_minnie-chromium-pfq
 veyron_pinky-chrome-pfq

@@ -645,6 +645,10 @@ _waterfall_config_map = {
         'veyron_rialto-paladin',
         'veyron_minnie-cheets-paladin',
 
+        # Experimental PFQs.
+        'cyan-cheets-chrome-pfq',
+        'veyron_minnie-cheets-chrome-pfq',
+
         # Experimental Canaries (Group)
         'gale-release-group',
         'glados-release-group',
@@ -1280,6 +1284,13 @@ def GetConfig():
   )
 
   site_config.Add(
+      'cyan-cheets-chrome-pfq', chrome_pfq,
+      _base_configs['cyan-cheets'],
+      hw_tests=HWTestList.SharedPoolAndroidPFQ(),
+      important=False,
+  )
+
+  site_config.Add(
       'daisy_skate-chrome-pfq', chrome_pfq,
       _base_configs['daisy_skate'],
       hw_tests=HWTestList.SharedPoolPFQ(),
@@ -1289,6 +1300,13 @@ def GetConfig():
       'falco-chrome-pfq', chrome_pfq,
       _base_configs['falco'],
       hw_tests=HWTestList.SharedPoolPFQ(),
+  )
+
+  site_config.Add(
+      'veyron_minnie-cheets-chrome-pfq', chrome_pfq,
+      _base_configs['veyron_minnie-cheets'],
+      hw_tests=HWTestList.SharedPoolAndroidPFQ(),
+      important=False,
   )
 
   site_config.Add(
