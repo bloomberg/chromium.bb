@@ -2403,10 +2403,17 @@ void RenderFrameHostManager::CreateOpenerProxiesForFrameTree(
     // we should still create a proxy, which will allow communicating with the
     // opener until the pending RenderView commits, or if the pending navigation
     // is canceled.
+    // PlzNavigate: similarly, if a speculative RenderViewHost  is present, a
+    // proxy should be created.
     RenderViewHostImpl* rvh = frame_tree->GetRenderViewHost(instance);
     bool need_proxy_for_pending_rvh = (rvh == pending_render_view_host());
-    if (rvh && rvh->IsRenderViewLive() && !need_proxy_for_pending_rvh)
+    bool need_proxy_for_speculative_rvh =
+        IsBrowserSideNavigationEnabled() && speculative_render_frame_host_ &&
+        speculative_render_frame_host_->GetRenderViewHost() == rvh;
+    if (rvh && rvh->IsRenderViewLive() && !need_proxy_for_pending_rvh &&
+        !need_proxy_for_speculative_rvh) {
       return;
+    }
 
     if (rvh && !rvh->IsRenderViewLive()) {
       EnsureRenderViewInitialized(rvh, instance);
