@@ -23,7 +23,7 @@
 #include "av1/common/reconinter.h"
 #include "av1/common/reconintra.h"
 
-static unsigned int do_16x16_motion_iteration(VP10_COMP *cpi, const MV *ref_mv,
+static unsigned int do_16x16_motion_iteration(AV1_COMP *cpi, const MV *ref_mv,
                                               MV *dst_mv, int mb_row,
                                               int mb_col) {
   MACROBLOCK *const x = &cpi->td.mb;
@@ -42,13 +42,13 @@ static unsigned int do_16x16_motion_iteration(VP10_COMP *cpi, const MV *ref_mv,
   int step_param = mv_sf->reduce_first_step_size;
   step_param = VPXMIN(step_param, MAX_MVSEARCH_STEPS - 2);
 
-  vp10_set_mv_search_range(x, ref_mv);
+  av1_set_mv_search_range(x, ref_mv);
 
   ref_full.col = ref_mv->col >> 3;
   ref_full.row = ref_mv->row >> 3;
 
   /*cpi->sf.search_method == HEX*/
-  vp10_hex_search(x, &ref_full, step_param, x->errorperbit, 0,
+  av1_hex_search(x, &ref_full, step_param, x->errorperbit, 0,
                   cond_cost_list(cpi, cost_list), &v_fn_ptr, 0, ref_mv, dst_mv);
 
   // Try sub-pixel MC
@@ -66,7 +66,7 @@ static unsigned int do_16x16_motion_iteration(VP10_COMP *cpi, const MV *ref_mv,
   xd->mi[0]->mbmi.mode = NEWMV;
   xd->mi[0]->mbmi.mv[0].as_mv = *dst_mv;
 
-  vp10_build_inter_predictors_sby(xd, mb_row, mb_col, BLOCK_16X16);
+  av1_build_inter_predictors_sby(xd, mb_row, mb_col, BLOCK_16X16);
 
   /* restore UMV window */
   x->mv_col_min = tmp_col_min;
@@ -78,7 +78,7 @@ static unsigned int do_16x16_motion_iteration(VP10_COMP *cpi, const MV *ref_mv,
                       xd->plane[0].dst.buf, xd->plane[0].dst.stride);
 }
 
-static int do_16x16_motion_search(VP10_COMP *cpi, const MV *ref_mv,
+static int do_16x16_motion_search(AV1_COMP *cpi, const MV *ref_mv,
                                   int_mv *dst_mv, int mb_row, int mb_col) {
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -116,7 +116,7 @@ static int do_16x16_motion_search(VP10_COMP *cpi, const MV *ref_mv,
   return err;
 }
 
-static int do_16x16_zerozero_search(VP10_COMP *cpi, int_mv *dst_mv) {
+static int do_16x16_zerozero_search(AV1_COMP *cpi, int_mv *dst_mv) {
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   unsigned int err;
@@ -130,7 +130,7 @@ static int do_16x16_zerozero_search(VP10_COMP *cpi, int_mv *dst_mv) {
 
   return err;
 }
-static int find_best_16x16_intra(VP10_COMP *cpi, PREDICTION_MODE *pbest_mode) {
+static int find_best_16x16_intra(AV1_COMP *cpi, PREDICTION_MODE *pbest_mode) {
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   PREDICTION_MODE best_mode = -1, mode;
@@ -142,7 +142,7 @@ static int find_best_16x16_intra(VP10_COMP *cpi, PREDICTION_MODE *pbest_mode) {
     unsigned int err;
 
     xd->mi[0]->mbmi.mode = mode;
-    vp10_predict_intra_block(xd, 2, 2, TX_16X16, mode, x->plane[0].src.buf,
+    av1_predict_intra_block(xd, 2, 2, TX_16X16, mode, x->plane[0].src.buf,
                              x->plane[0].src.stride, xd->plane[0].dst.buf,
                              xd->plane[0].dst.stride, 0, 0, 0);
     err = aom_sad16x16(x->plane[0].src.buf, x->plane[0].src.stride,
@@ -160,7 +160,7 @@ static int find_best_16x16_intra(VP10_COMP *cpi, PREDICTION_MODE *pbest_mode) {
   return best_err;
 }
 
-static void update_mbgraph_mb_stats(VP10_COMP *cpi, MBGRAPH_MB_STATS *stats,
+static void update_mbgraph_mb_stats(AV1_COMP *cpi, MBGRAPH_MB_STATS *stats,
                                     YV12_BUFFER_CONFIG *buf, int mb_y_offset,
                                     YV12_BUFFER_CONFIG *golden_ref,
                                     const MV *prev_golden_ref_mv,
@@ -169,7 +169,7 @@ static void update_mbgraph_mb_stats(VP10_COMP *cpi, MBGRAPH_MB_STATS *stats,
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   int intra_error;
-  VP10_COMMON *cm = &cpi->common;
+  AV1_COMMON *cm = &cpi->common;
 
   // FIXME in practice we're completely ignoring chroma here
   x->plane[0].src.buf = buf->y_buffer + mb_y_offset;
@@ -213,21 +213,21 @@ static void update_mbgraph_mb_stats(VP10_COMP *cpi, MBGRAPH_MB_STATS *stats,
   }
 }
 
-static void update_mbgraph_frame_stats(VP10_COMP *cpi,
+static void update_mbgraph_frame_stats(AV1_COMP *cpi,
                                        MBGRAPH_FRAME_STATS *stats,
                                        YV12_BUFFER_CONFIG *buf,
                                        YV12_BUFFER_CONFIG *golden_ref,
                                        YV12_BUFFER_CONFIG *alt_ref) {
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
-  VP10_COMMON *const cm = &cpi->common;
+  AV1_COMMON *const cm = &cpi->common;
 
   int mb_col, mb_row, offset = 0;
   int mb_y_offset = 0, arf_y_offset = 0, gld_y_offset = 0;
   MV gld_top_mv = { 0, 0 };
   MODE_INFO mi_local;
 
-  vp10_zero(mi_local);
+  av1_zero(mi_local);
   // Set up limit values for motion vectors to prevent them extending outside
   // the UMV borders.
   x->mv_row_min = -BORDER_MV_PIXELS_B16;
@@ -280,8 +280,8 @@ static void update_mbgraph_frame_stats(VP10_COMP *cpi,
 }
 
 // void separate_arf_mbs_byzz
-static void separate_arf_mbs(VP10_COMP *cpi) {
-  VP10_COMMON *const cm = &cpi->common;
+static void separate_arf_mbs(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
   int mb_col, mb_row, offset, i;
   int mi_row, mi_col;
   int ncnt[4] = { 0 };
@@ -347,19 +347,19 @@ static void separate_arf_mbs(VP10_COMP *cpi) {
     else
       cpi->static_mb_pct = 0;
 
-    vp10_enable_segmentation(&cm->seg);
+    av1_enable_segmentation(&cm->seg);
   } else {
     cpi->static_mb_pct = 0;
-    vp10_disable_segmentation(&cm->seg);
+    av1_disable_segmentation(&cm->seg);
   }
 
   // Free localy allocated storage
   aom_free(arf_not_zz);
 }
 
-void vp10_update_mbgraph_stats(VP10_COMP *cpi) {
-  VP10_COMMON *const cm = &cpi->common;
-  int i, n_frames = vp10_lookahead_depth(cpi->lookahead);
+void av1_update_mbgraph_stats(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  int i, n_frames = av1_lookahead_depth(cpi->lookahead);
   YV12_BUFFER_CONFIG *golden_ref = get_ref_frame_buffer(cpi, GOLDEN_FRAME);
 
   assert(golden_ref != NULL);
@@ -383,7 +383,7 @@ void vp10_update_mbgraph_stats(VP10_COMP *cpi) {
   // the ARF MC search backwards, to get optimal results for MV caching
   for (i = 0; i < n_frames; i++) {
     MBGRAPH_FRAME_STATS *frame_stats = &cpi->mbgraph_stats[i];
-    struct lookahead_entry *q_cur = vp10_lookahead_peek(cpi->lookahead, i);
+    struct lookahead_entry *q_cur = av1_lookahead_peek(cpi->lookahead, i);
 
     assert(q_cur != NULL);
 

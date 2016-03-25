@@ -33,26 +33,26 @@ static const int segment_id[ENERGY_SPAN] = { 0, 1, 1, 2, 3, 4 };
 
 #define SEGMENT_ID(i) segment_id[(i)-ENERGY_MIN]
 
-DECLARE_ALIGNED(16, static const uint8_t, vp10_64_zeros[64]) = { 0 };
-#if CONFIG_VPX_HIGHBITDEPTH
-DECLARE_ALIGNED(16, static const uint16_t, vp10_highbd_64_zeros[64]) = { 0 };
+DECLARE_ALIGNED(16, static const uint8_t, av1_64_zeros[64]) = { 0 };
+#if CONFIG_AOM_HIGHBITDEPTH
+DECLARE_ALIGNED(16, static const uint16_t, av1_highbd_64_zeros[64]) = { 0 };
 #endif
 
-unsigned int vp10_vaq_segment_id(int energy) {
+unsigned int av1_vaq_segment_id(int energy) {
   ENERGY_IN_BOUNDS(energy);
   return SEGMENT_ID(energy);
 }
 
-void vp10_vaq_frame_setup(VP10_COMP *cpi) {
-  VP10_COMMON *cm = &cpi->common;
+void av1_vaq_frame_setup(AV1_COMP *cpi) {
+  AV1_COMMON *cm = &cpi->common;
   struct segmentation *seg = &cm->seg;
   int i;
 
   if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
       cpi->refresh_alt_ref_frame ||
       (cpi->refresh_golden_frame && !cpi->rc.is_src_frame_alt_ref)) {
-    vp10_enable_segmentation(seg);
-    vp10_clearall_segfeatures(seg);
+    av1_enable_segmentation(seg);
+    av1_clearall_segfeatures(seg);
 
     seg->abs_delta = SEGMENT_DELTADATA;
 
@@ -60,7 +60,7 @@ void vp10_vaq_frame_setup(VP10_COMP *cpi) {
 
     for (i = 0; i < MAX_SEGMENTS; ++i) {
       int qindex_delta =
-          vp10_compute_qdelta_by_rate(&cpi->rc, cm->frame_type, cm->base_qindex,
+          av1_compute_qdelta_by_rate(&cpi->rc, cm->frame_type, cm->base_qindex,
                                       rate_ratio[i], cm->bit_depth);
 
       // We don't allow qindex 0 in a segment if the base value is not 0.
@@ -76,8 +76,8 @@ void vp10_vaq_frame_setup(VP10_COMP *cpi) {
         continue;
       }
 
-      vp10_set_segdata(seg, i, SEG_LVL_ALT_Q, qindex_delta);
-      vp10_enable_segfeature(seg, i, SEG_LVL_ALT_Q);
+      av1_set_segdata(seg, i, SEG_LVL_ALT_Q, qindex_delta);
+      av1_enable_segfeature(seg, i, SEG_LVL_ALT_Q);
     }
   }
 }
@@ -105,7 +105,7 @@ static void aq_variance(const uint8_t *a, int a_stride, const uint8_t *b,
   }
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 static void aq_highbd_variance64(const uint8_t *a8, int a_stride,
                                  const uint8_t *b8, int b_stride, int w, int h,
                                  uint64_t *sse, uint64_t *sum) {
@@ -136,9 +136,9 @@ static void aq_highbd_8_variance(const uint8_t *a8, int a_stride,
   *sse = (unsigned int)sse_long;
   *sum = (int)sum_long;
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
-static unsigned int block_variance(VP10_COMP *cpi, MACROBLOCK *x,
+static unsigned int block_variance(AV1_COMP *cpi, MACROBLOCK *x,
                                    BLOCK_SIZE bs) {
   MACROBLOCKD *xd = &x->e_mbd;
   unsigned int var, sse;
@@ -151,54 +151,54 @@ static unsigned int block_variance(VP10_COMP *cpi, MACROBLOCK *x,
     const int bw = 8 * num_8x8_blocks_wide_lookup[bs] - right_overflow;
     const int bh = 8 * num_8x8_blocks_high_lookup[bs] - bottom_overflow;
     int avg;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       aq_highbd_8_variance(x->plane[0].src.buf, x->plane[0].src.stride,
-                           CONVERT_TO_BYTEPTR(vp10_highbd_64_zeros), 0, bw, bh,
+                           CONVERT_TO_BYTEPTR(av1_highbd_64_zeros), 0, bw, bh,
                            &sse, &avg);
       sse >>= 2 * (xd->bd - 8);
       avg >>= (xd->bd - 8);
     } else {
-      aq_variance(x->plane[0].src.buf, x->plane[0].src.stride, vp10_64_zeros, 0,
+      aq_variance(x->plane[0].src.buf, x->plane[0].src.stride, av1_64_zeros, 0,
                   bw, bh, &sse, &avg);
     }
 #else
-    aq_variance(x->plane[0].src.buf, x->plane[0].src.stride, vp10_64_zeros, 0,
+    aq_variance(x->plane[0].src.buf, x->plane[0].src.stride, av1_64_zeros, 0,
                 bw, bh, &sse, &avg);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     var = sse - (((int64_t)avg * avg) / (bw * bh));
     return (256 * var) / (bw * bh);
   } else {
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       var =
           cpi->fn_ptr[bs].vf(x->plane[0].src.buf, x->plane[0].src.stride,
-                             CONVERT_TO_BYTEPTR(vp10_highbd_64_zeros), 0, &sse);
+                             CONVERT_TO_BYTEPTR(av1_highbd_64_zeros), 0, &sse);
     } else {
       var = cpi->fn_ptr[bs].vf(x->plane[0].src.buf, x->plane[0].src.stride,
-                               vp10_64_zeros, 0, &sse);
+                               av1_64_zeros, 0, &sse);
     }
 #else
     var = cpi->fn_ptr[bs].vf(x->plane[0].src.buf, x->plane[0].src.stride,
-                             vp10_64_zeros, 0, &sse);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+                             av1_64_zeros, 0, &sse);
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     return (256 * var) >> num_pels_log2_lookup[bs];
   }
 }
 
-double vp10_log_block_var(VP10_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs) {
+double av1_log_block_var(AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs) {
   unsigned int var = block_variance(cpi, x, bs);
   aom_clear_system_state();
   return log(var + 1.0);
 }
 
 #define DEFAULT_E_MIDPOINT 10.0
-int vp10_block_energy(VP10_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs) {
+int av1_block_energy(AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs) {
   double energy;
   double energy_midpoint;
   aom_clear_system_state();
   energy_midpoint =
       (cpi->oxcf.pass == 2) ? cpi->twopass.mb_av_energy : DEFAULT_E_MIDPOINT;
-  energy = vp10_log_block_var(cpi, x, bs) - energy_midpoint;
+  energy = av1_log_block_var(cpi, x, bs) - energy_midpoint;
   return clamp((int)round(energy), ENERGY_MIN, ENERGY_MAX);
 }

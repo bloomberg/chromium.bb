@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_ENCODER_QUANTIZE_H_
-#define VP10_ENCODER_QUANTIZE_H_
+#ifndef AV1_ENCODER_QUANTIZE_H_
+#define AV1_ENCODER_QUANTIZE_H_
 
 #include "./aom_config.h"
 #include "av1/common/quant_common.h"
@@ -39,26 +39,26 @@ typedef struct {
   DECLARE_ALIGNED(16, int16_t, uv_round[QINDEX_RANGE][8]);
 } QUANTS;
 
-void vp10_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
+void av1_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
                                  const int16_t *scan, const int16_t *iscan);
 
-struct VP10_COMP;
-struct VP10Common;
+struct AV1_COMP;
+struct AV1Common;
 
-void vp10_frame_init_quantizer(struct VP10_COMP *cpi);
+void av1_frame_init_quantizer(struct AV1_COMP *cpi);
 
-void vp10_init_plane_quantizers(struct VP10_COMP *cpi, MACROBLOCK *x);
+void av1_init_plane_quantizers(struct AV1_COMP *cpi, MACROBLOCK *x);
 
-void vp10_init_quantizer(struct VP10_COMP *cpi);
+void av1_init_quantizer(struct AV1_COMP *cpi);
 
-void vp10_set_quantizer(struct VP10Common *cm, int q);
+void av1_set_quantizer(struct AV1Common *cm, int q);
 
-int vp10_quantizer_to_qindex(int quantizer);
+int av1_quantizer_to_qindex(int quantizer);
 
-int vp10_qindex_to_quantizer(int qindex);
+int av1_qindex_to_quantizer(int qindex);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // VP10_ENCODER_QUANTIZE_H_
+#endif  // AV1_ENCODER_QUANTIZE_H_

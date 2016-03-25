@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_DECODER_DECODER_H_
-#define VP10_DECODER_DECODER_H_
+#ifndef AV1_DECODER_DECODER_H_
+#define AV1_DECODER_DECODER_H_
 
 #include "./aom_config.h"
 
@@ -29,7 +29,7 @@ extern "C" {
 
 // TODO(hkuang): combine this with TileWorkerData.
 typedef struct TileData {
-  VP10_COMMON *cm;
+  AV1_COMMON *cm;
   aom_reader bit_reader;
   DECLARE_ALIGNED(16, MACROBLOCKD, xd);
   /* dqcoeff are shared by all the planes. So planes must be decoded serially */
@@ -38,7 +38,7 @@ typedef struct TileData {
 } TileData;
 
 typedef struct TileWorkerData {
-  struct VP10Decoder *pbi;
+  struct AV1Decoder *pbi;
   aom_reader bit_reader;
   FRAME_COUNTS counts;
   DECLARE_ALIGNED(16, MACROBLOCKD, xd);
@@ -48,10 +48,10 @@ typedef struct TileWorkerData {
   struct aom_internal_error_info error_info;
 } TileWorkerData;
 
-typedef struct VP10Decoder {
+typedef struct AV1Decoder {
   DECLARE_ALIGNED(16, MACROBLOCKD, mb);
 
-  DECLARE_ALIGNED(16, VP10_COMMON, common);
+  DECLARE_ALIGNED(16, AV1_COMMON, common);
 
   int ready_for_new_data;
 
@@ -71,7 +71,7 @@ typedef struct VP10Decoder {
   TileData *tile_data;
   int total_tiles;
 
-  VP10LfSync lf_row_sync;
+  AV1LfSync lf_row_sync;
 
   aom_decrypt_cb decrypt_cb;
   void *decrypt_state;
@@ -80,18 +80,18 @@ typedef struct VP10Decoder {
   int inv_tile_order;
   int need_resync;   // wait for key/intra-only frame.
   int hold_ref_buf;  // hold the reference buffer.
-} VP10Decoder;
+} AV1Decoder;
 
-int vp10_receive_compressed_data(struct VP10Decoder *pbi, size_t size,
+int av1_receive_compressed_data(struct AV1Decoder *pbi, size_t size,
                                  const uint8_t **dest);
 
-int vp10_get_raw_frame(struct VP10Decoder *pbi, YV12_BUFFER_CONFIG *sd);
+int av1_get_raw_frame(struct AV1Decoder *pbi, YV12_BUFFER_CONFIG *sd);
 
-aom_codec_err_t vp10_copy_reference_dec(struct VP10Decoder *pbi,
+aom_codec_err_t av1_copy_reference_dec(struct AV1Decoder *pbi,
                                         VPX_REFFRAME ref_frame_flag,
                                         YV12_BUFFER_CONFIG *sd);
 
-aom_codec_err_t vp10_set_reference_dec(VP10_COMMON *cm,
+aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm,
                                        VPX_REFFRAME ref_frame_flag,
                                        YV12_BUFFER_CONFIG *sd);
 
@@ -107,14 +107,14 @@ static INLINE uint8_t read_marker(aom_decrypt_cb decrypt_cb,
 
 // This function is exposed for use in tests, as well as the inlined function
 // "read_marker".
-aom_codec_err_t vp10_parse_superframe_index(const uint8_t *data, size_t data_sz,
+aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
                                             uint32_t sizes[8], int *count,
                                             aom_decrypt_cb decrypt_cb,
                                             void *decrypt_state);
 
-struct VP10Decoder *vp10_decoder_create(BufferPool *const pool);
+struct AV1Decoder *av1_decoder_create(BufferPool *const pool);
 
-void vp10_decoder_remove(struct VP10Decoder *pbi);
+void av1_decoder_remove(struct AV1Decoder *pbi);
 
 static INLINE void decrease_ref_count(int idx, RefCntBuffer *const frame_bufs,
                                       BufferPool *const pool) {
@@ -135,4 +135,4 @@ static INLINE void decrease_ref_count(int idx, RefCntBuffer *const frame_bufs,
 }  // extern "C"
 #endif
 
-#endif  // VP10_DECODER_DECODER_H_
+#endif  // AV1_DECODER_DECODER_H_

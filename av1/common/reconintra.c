@@ -12,9 +12,9 @@
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 #include "aom_dsp/aom_dsp_common.h"
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/aom_once.h"
@@ -100,7 +100,7 @@ static const uint8_t *const orders[BLOCK_SIZES] = {
   orders_32x64, orders_64x32, orders_64x64,
 };
 
-static int vp10_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
+static int av1_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
                           int right_available, TX_SIZE txsz, int y, int x,
                           int ss_x) {
   if (y == 0) {
@@ -133,7 +133,7 @@ static int vp10_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
   }
 }
 
-static int vp10_has_bottom(BLOCK_SIZE bsize, int mi_row, int mi_col,
+static int av1_has_bottom(BLOCK_SIZE bsize, int mi_row, int mi_col,
                            int bottom_available, TX_SIZE txsz, int y, int x,
                            int ss_y) {
   if (x == 0) {
@@ -171,15 +171,15 @@ typedef void (*intra_pred_fn)(uint8_t *dst, ptrdiff_t stride,
 static intra_pred_fn pred[INTRA_MODES][TX_SIZES];
 static intra_pred_fn dc_pred[2][2][TX_SIZES];
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 typedef void (*intra_high_pred_fn)(uint16_t *dst, ptrdiff_t stride,
                                    const uint16_t *above, const uint16_t *left,
                                    int bd);
 static intra_high_pred_fn pred_high[INTRA_MODES][4];
 static intra_high_pred_fn dc_pred_high[2][2][4];
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
-static void vp10_init_intra_predictors_internal(void) {
+static void av1_init_intra_predictors_internal(void) {
 #define INIT_NO_4X4(p, type)                  \
   p[TX_8X8] = aom_##type##_predictor_8x8;     \
   p[TX_16X16] = aom_##type##_predictor_16x16; \
@@ -210,7 +210,7 @@ static void vp10_init_intra_predictors_internal(void) {
   INIT_ALL_SIZES(dc_pred[1][0], dc_left);
   INIT_ALL_SIZES(dc_pred[1][1], dc);
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   INIT_ALL_SIZES(pred_high[V_PRED], highbd_v);
   INIT_ALL_SIZES(pred_high[H_PRED], highbd_h);
 #if CONFIG_MISC_FIXES
@@ -231,7 +231,7 @@ static void vp10_init_intra_predictors_internal(void) {
   INIT_ALL_SIZES(dc_pred_high[0][1], highbd_dc_top);
   INIT_ALL_SIZES(dc_pred_high[1][0], highbd_dc_left);
   INIT_ALL_SIZES(dc_pred_high[1][1], highbd_dc);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #undef intra_pred_allsizes
 }
@@ -242,7 +242,7 @@ static INLINE void memset16(uint16_t *dst, int val, int n) {
 }
 #endif
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 static void build_intra_predictors_high(const MACROBLOCKD *xd,
                                         const uint8_t *ref8, int ref_stride,
                                         uint8_t *dst8, int dst_stride,
@@ -465,7 +465,7 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
                              xd->bd);
   }
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
                                    int ref_stride, uint8_t *dst, int dst_stride,
@@ -675,7 +675,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   }
 }
 
-void vp10_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
+void av1_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
                               TX_SIZE tx_size, PREDICTION_MODE mode,
                               const uint8_t *ref, int ref_stride, uint8_t *dst,
                               int dst_stride, int aoff, int loff, int plane) {
@@ -693,10 +693,10 @@ void vp10_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int right_available =
       mi_col + (bw >> !pd->subsampling_x) < xd->tile.mi_col_end;
-  const int have_right = vp10_has_right(bsize, mi_row, mi_col, right_available,
+  const int have_right = av1_has_right(bsize, mi_row, mi_col, right_available,
                                         tx_size, loff, aoff, pd->subsampling_x);
   const int have_bottom =
-      vp10_has_bottom(bsize, mi_row, mi_col, xd->mb_to_bottom_edge > 0, tx_size,
+      av1_has_bottom(bsize, mi_row, mi_col, xd->mb_to_bottom_edge > 0, tx_size,
                       loff, aoff, pd->subsampling_y);
   const int wpx = 4 * bw;
   const int hpx = 4 * bh;
@@ -711,7 +711,7 @@ void vp10_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
 #endif  // CONFIG_MISC_FIXES
 
 #if CONFIG_MISC_FIXES
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     build_intra_predictors_high(xd, ref, ref_stride, dst, dst_stride, mode,
                                 tx_size, have_top ? VPXMIN(txpx, xr + txpx) : 0,
@@ -730,7 +730,7 @@ void vp10_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
                          plane);
 #else  // CONFIG_MISC_FIXES
   (void)bhl_in;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     build_intra_predictors_high(xd, ref, ref_stride, dst, dst_stride, mode,
                                 tx_size, have_top, have_left, have_right, x, y,
@@ -743,6 +743,6 @@ void vp10_predict_intra_block(const MACROBLOCKD *xd, int bwl_in, int bhl_in,
 #endif  // CONFIG_MISC_FIXES
 }
 
-void vp10_init_intra_predictors(void) {
-  once(vp10_init_intra_predictors_internal);
+void av1_init_intra_predictors(void) {
+  once(av1_init_intra_predictors_internal);
 }

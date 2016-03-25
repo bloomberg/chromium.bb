@@ -8,8 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#ifndef VP10_COMMON_ODINTRIN_H_
-#define VP10_COMMON_ODINTRIN_H_
+#ifndef AV1_COMMON_ODINTRIN_H_
+#define AV1_COMMON_ODINTRIN_H_
 
 #include "av1/common/enums.h"
 #include "aom/aom_integer.h"

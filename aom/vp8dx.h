@@ -28,13 +28,13 @@ extern "C" {
 /* Include controls common to both the encoder and decoder */
 #include "./vp8.h"
 
-/*!\name Algorithm interface for VP10
+/*!\name Algorithm interface for AV1
  *
- * This interface provides the capability to decode VP10 streams.
+ * This interface provides the capability to decode AV1 streams.
  * @{
  */
-extern aom_codec_iface_t aom_codec_vp10_dx_algo;
-extern aom_codec_iface_t *aom_codec_vp10_dx(void);
+extern aom_codec_iface_t aom_codec_av1_dx_algo;
+extern aom_codec_iface_t *aom_codec_av1_dx(void);
 /*!@} - end algorithm interface member group*/
 
 /*!\enum vp8_dec_control_id

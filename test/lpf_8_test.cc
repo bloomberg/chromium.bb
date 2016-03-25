@@ -34,7 +34,7 @@ const int kNumCoeffs = 1024;
 
 const int number_of_iterations = 10000;
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 typedef void (*loop_op_t)(uint16_t *s, int p, const uint8_t *blimit,
                           const uint8_t *limit, const uint8_t *thresh,
                           int count, int bd);
@@ -50,13 +50,13 @@ typedef void (*dual_loop_op_t)(uint8_t *s, int p, const uint8_t *blimit0,
                                const uint8_t *limit0, const uint8_t *thresh0,
                                const uint8_t *blimit1, const uint8_t *limit1,
                                const uint8_t *thresh1);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 typedef std::tr1::tuple<loop_op_t, loop_op_t, int, int> loop8_param_t;
 typedef std::tr1::tuple<dual_loop_op_t, dual_loop_op_t, int> dualloop8_param_t;
 
 #if HAVE_SSE2
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 void wrapper_vertical_16_sse2(uint16_t *s, int p, const uint8_t *blimit,
                               const uint8_t *limit, const uint8_t *thresh,
                               int count, int bd) {
@@ -104,11 +104,11 @@ void wrapper_vertical_16_dual_c(uint8_t *s, int p, const uint8_t *blimit,
                                 int count) {
   aom_lpf_vertical_16_dual_c(s, p, blimit, limit, thresh);
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif  // HAVE_SSE2
 
 #if HAVE_NEON_ASM
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 // No neon high bitdepth functions.
 #else
 void wrapper_vertical_16_neon(uint8_t *s, int p, const uint8_t *blimit,
@@ -134,10 +134,10 @@ void wrapper_vertical_16_dual_c(uint8_t *s, int p, const uint8_t *blimit,
                                 int count) {
   aom_lpf_vertical_16_dual_c(s, p, blimit, limit, thresh);
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif  // HAVE_NEON_ASM
 
-#if HAVE_MSA && (!CONFIG_VPX_HIGHBITDEPTH)
+#if HAVE_MSA && (!CONFIG_AOM_HIGHBITDEPTH)
 void wrapper_vertical_16_msa(uint8_t *s, int p, const uint8_t *blimit,
                              const uint8_t *limit, const uint8_t *thresh,
                              int count) {
@@ -149,7 +149,7 @@ void wrapper_vertical_16_c(uint8_t *s, int p, const uint8_t *blimit,
                            int count) {
   aom_lpf_vertical_16_c(s, p, blimit, limit, thresh);
 }
-#endif  // HAVE_MSA && (!CONFIG_VPX_HIGHBITDEPTH)
+#endif  // HAVE_MSA && (!CONFIG_AOM_HIGHBITDEPTH)
 
 class Loop8Test6Param : public ::testing::TestWithParam<loop8_param_t> {
  public:
@@ -194,14 +194,14 @@ class Loop8Test9Param : public ::testing::TestWithParam<dualloop8_param_t> {
 TEST_P(Loop8Test6Param, OperationCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   const int count_test_block = number_of_iterations;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   int32_t bd = bit_depth_;
   DECLARE_ALIGNED(16, uint16_t, s[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint16_t, ref_s[kNumCoeffs]);
 #else
   DECLARE_ALIGNED(8, uint8_t, s[kNumCoeffs]);
   DECLARE_ALIGNED(8, uint8_t, ref_s[kNumCoeffs]);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
   int err_count_total = 0;
   int first_failure = -1;
   for (int i = 0; i < count_test_block; ++i) {
@@ -249,7 +249,7 @@ TEST_P(Loop8Test6Param, OperationCheck) {
       }
       ref_s[j] = s[j];
     }
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit, limit, thresh, count_, bd);
     ASM_REGISTER_STATE_CHECK(
         loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh, count_, bd));
@@ -257,7 +257,7 @@ TEST_P(Loop8Test6Param, OperationCheck) {
     ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit, limit, thresh, count_);
     ASM_REGISTER_STATE_CHECK(
         loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh, count_));
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
     for (int j = 0; j < kNumCoeffs; ++j) {
       err_count += ref_s[j] != s[j];
@@ -276,14 +276,14 @@ TEST_P(Loop8Test6Param, OperationCheck) {
 TEST_P(Loop8Test6Param, ValueCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   const int count_test_block = number_of_iterations;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   const int32_t bd = bit_depth_;
   DECLARE_ALIGNED(16, uint16_t, s[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint16_t, ref_s[kNumCoeffs]);
 #else
   DECLARE_ALIGNED(8, uint8_t, s[kNumCoeffs]);
   DECLARE_ALIGNED(8, uint8_t, ref_s[kNumCoeffs]);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
   int err_count_total = 0;
   int first_failure = -1;
 
@@ -318,7 +318,7 @@ TEST_P(Loop8Test6Param, ValueCheck) {
       s[j] = rnd.Rand16() & mask_;
       ref_s[j] = s[j];
     }
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit, limit, thresh, count_, bd);
     ASM_REGISTER_STATE_CHECK(
         loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh, count_, bd));
@@ -326,7 +326,7 @@ TEST_P(Loop8Test6Param, ValueCheck) {
     ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit, limit, thresh, count_);
     ASM_REGISTER_STATE_CHECK(
         loopfilter_op_(s + 8 + p * 8, p, blimit, limit, thresh, count_));
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     for (int j = 0; j < kNumCoeffs; ++j) {
       err_count += ref_s[j] != s[j];
     }
@@ -344,14 +344,14 @@ TEST_P(Loop8Test6Param, ValueCheck) {
 TEST_P(Loop8Test9Param, OperationCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   const int count_test_block = number_of_iterations;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   const int32_t bd = bit_depth_;
   DECLARE_ALIGNED(16, uint16_t, s[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint16_t, ref_s[kNumCoeffs]);
 #else
   DECLARE_ALIGNED(8, uint8_t, s[kNumCoeffs]);
   DECLARE_ALIGNED(8, uint8_t, ref_s[kNumCoeffs]);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
   int err_count_total = 0;
   int first_failure = -1;
   for (int i = 0; i < count_test_block; ++i) {
@@ -411,7 +411,7 @@ TEST_P(Loop8Test9Param, OperationCheck) {
       }
       ref_s[j] = s[j];
     }
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,
                        limit1, thresh1, bd);
     ASM_REGISTER_STATE_CHECK(loopfilter_op_(s + 8 + p * 8, p, blimit0, limit0,
@@ -422,7 +422,7 @@ TEST_P(Loop8Test9Param, OperationCheck) {
                        limit1, thresh1);
     ASM_REGISTER_STATE_CHECK(loopfilter_op_(s + 8 + p * 8, p, blimit0, limit0,
                                             thresh0, blimit1, limit1, thresh1));
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     for (int j = 0; j < kNumCoeffs; ++j) {
       err_count += ref_s[j] != s[j];
     }
@@ -440,13 +440,13 @@ TEST_P(Loop8Test9Param, OperationCheck) {
 TEST_P(Loop8Test9Param, ValueCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   const int count_test_block = number_of_iterations;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint16_t, s[kNumCoeffs]);
   DECLARE_ALIGNED(16, uint16_t, ref_s[kNumCoeffs]);
 #else
   DECLARE_ALIGNED(8, uint8_t, s[kNumCoeffs]);
   DECLARE_ALIGNED(8, uint8_t, ref_s[kNumCoeffs]);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
   int err_count_total = 0;
   int first_failure = -1;
   for (int i = 0; i < count_test_block; ++i) {
@@ -480,7 +480,7 @@ TEST_P(Loop8Test9Param, ValueCheck) {
       s[j] = rnd.Rand16() & mask_;
       ref_s[j] = s[j];
     }
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     const int32_t bd = bit_depth_;
     ref_loopfilter_op_(ref_s + 8 + p * 8, p, blimit0, limit0, thresh0, blimit1,
                        limit1, thresh1, bd);
@@ -492,7 +492,7 @@ TEST_P(Loop8Test9Param, ValueCheck) {
                        limit1, thresh1);
     ASM_REGISTER_STATE_CHECK(loopfilter_op_(s + 8 + p * 8, p, blimit0, limit0,
                                             thresh0, blimit1, limit1, thresh1));
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     for (int j = 0; j < kNumCoeffs; ++j) {
       err_count += ref_s[j] != s[j];
     }
@@ -510,7 +510,7 @@ TEST_P(Loop8Test9Param, ValueCheck) {
 using std::tr1::make_tuple;
 
 #if HAVE_SSE2
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     SSE2, Loop8Test6Param,
     ::testing::Values(
@@ -570,10 +570,10 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&wrapper_vertical_16_sse2, &wrapper_vertical_16_c, 8, 1),
         make_tuple(&wrapper_vertical_16_dual_sse2, &wrapper_vertical_16_dual_c,
                    8, 1)));
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif
 
-#if HAVE_AVX2 && (!CONFIG_VPX_HIGHBITDEPTH)
+#if HAVE_AVX2 && (!CONFIG_AOM_HIGHBITDEPTH)
 INSTANTIATE_TEST_CASE_P(
     AVX2, Loop8Test6Param,
     ::testing::Values(make_tuple(&aom_lpf_horizontal_16_avx2,
@@ -583,7 +583,7 @@ INSTANTIATE_TEST_CASE_P(
 #endif
 
 #if HAVE_SSE2
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(
     SSE2, Loop8Test9Param,
     ::testing::Values(make_tuple(&aom_highbd_lpf_horizontal_4_dual_sse2,
@@ -621,11 +621,11 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_lpf_vertical_4_dual_c, 8),
                       make_tuple(&aom_lpf_vertical_8_dual_sse2,
                                  &aom_lpf_vertical_8_dual_c, 8)));
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif
 
 #if HAVE_NEON
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 // No neon high bitdepth functions.
 #else
 INSTANTIATE_TEST_CASE_P(
@@ -657,10 +657,10 @@ INSTANTIATE_TEST_CASE_P(NEON, Loop8Test9Param,
                                        &aom_lpf_horizontal_4_dual_c, 8),
                             make_tuple(&aom_lpf_vertical_4_dual_neon,
                                        &aom_lpf_vertical_4_dual_c, 8)));
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif  // HAVE_NEON
 
-#if HAVE_MSA && (!CONFIG_VPX_HIGHBITDEPTH)
+#if HAVE_MSA && (!CONFIG_AOM_HIGHBITDEPTH)
 INSTANTIATE_TEST_CASE_P(
     MSA, Loop8Test6Param,
     ::testing::Values(
@@ -680,6 +680,6 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_lpf_vertical_4_dual_c, 8),
                       make_tuple(&aom_lpf_vertical_8_dual_msa,
                                  &aom_lpf_vertical_8_dual_c, 8)));
-#endif  // HAVE_MSA && (!CONFIG_VPX_HIGHBITDEPTH)
+#endif  // HAVE_MSA && (!CONFIG_AOM_HIGHBITDEPTH)
 
 }  // namespace

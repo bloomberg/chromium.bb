@@ -21,7 +21,7 @@
 #include "av1/encoder/quantize.h"
 #include "av1/encoder/rd.h"
 
-void vp10_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
+void av1_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                         int skip_block, const int16_t *zbin_ptr,
                         const int16_t *round_ptr, const int16_t *quant_ptr,
                         const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
@@ -77,8 +77,8 @@ void vp10_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
   *eob_ptr = eob + 1;
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
-void vp10_highbd_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t count,
+#if CONFIG_AOM_HIGHBITDEPTH
+void av1_highbd_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t count,
                                int skip_block, const int16_t *zbin_ptr,
                                const int16_t *round_ptr,
                                const int16_t *quant_ptr,
@@ -137,7 +137,7 @@ void vp10_highbd_quantize_fp_c(const tran_low_t *coeff_ptr, intptr_t count,
 
 // TODO(jingning) Refactor this file and combine functions with similar
 // operations.
-void vp10_quantize_fp_32x32_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
+void av1_quantize_fp_32x32_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                               int skip_block, const int16_t *zbin_ptr,
                               const int16_t *round_ptr,
                               const int16_t *quant_ptr,
@@ -199,8 +199,8 @@ void vp10_quantize_fp_32x32_c(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
   *eob_ptr = eob + 1;
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
-void vp10_highbd_quantize_fp_32x32_c(
+#if CONFIG_AOM_HIGHBITDEPTH
+void av1_highbd_quantize_fp_32x32_c(
     const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,
     const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr,
     const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
@@ -259,7 +259,7 @@ void vp10_highbd_quantize_fp_32x32_c(
 }
 #endif
 
-void vp10_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
+void av1_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
                                  const int16_t *scan, const int16_t *iscan) {
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *p = &x->plane[plane];
@@ -271,7 +271,7 @@ void vp10_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
   const qm_val_t *iqmatrix = pd->seg_iqmatrix[seg_id][is_intra][0];
 #endif
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     aom_highbd_quantize_b(BLOCK_OFFSET(p->coeff, block), 16, x->skip_block,
                           p->zbin, p->round, p->quant, p->quant_shift,
@@ -309,8 +309,8 @@ static void invert_quant(int16_t *quant, int16_t *shift, int d) {
 }
 
 static int get_qzbin_factor(int q, aom_bit_depth_t bit_depth) {
-  const int quant = vp10_dc_quant(q, 0, bit_depth);
-#if CONFIG_VPX_HIGHBITDEPTH
+  const int quant = av1_dc_quant(q, 0, bit_depth);
+#if CONFIG_AOM_HIGHBITDEPTH
   switch (bit_depth) {
     case VPX_BITS_8:
       return q == 0 ? 64 : (quant < 148 ? 84 : 80);
@@ -328,8 +328,8 @@ static int get_qzbin_factor(int q, aom_bit_depth_t bit_depth) {
 #endif
 }
 
-void vp10_init_quantizer(VP10_COMP *cpi) {
-  VP10_COMMON *const cm = &cpi->common;
+void av1_init_quantizer(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
   QUANTS *const quants = &cpi->quants;
   int i, q, quant;
 
@@ -342,8 +342,8 @@ void vp10_init_quantizer(VP10_COMP *cpi) {
       if (q == 0) qrounding_factor_fp = 64;
 
       // y
-      quant = i == 0 ? vp10_dc_quant(q, cm->y_dc_delta_q, cm->bit_depth)
-                     : vp10_ac_quant(q, 0, cm->bit_depth);
+      quant = i == 0 ? av1_dc_quant(q, cm->y_dc_delta_q, cm->bit_depth)
+                     : av1_ac_quant(q, 0, cm->bit_depth);
       invert_quant(&quants->y_quant[q][i], &quants->y_quant_shift[q][i], quant);
       quants->y_quant_fp[q][i] = (1 << 16) / quant;
       quants->y_round_fp[q][i] = (qrounding_factor_fp * quant) >> 7;
@@ -352,8 +352,8 @@ void vp10_init_quantizer(VP10_COMP *cpi) {
       cpi->y_dequant[q][i] = quant;
 
       // uv
-      quant = i == 0 ? vp10_dc_quant(q, cm->uv_dc_delta_q, cm->bit_depth)
-                     : vp10_ac_quant(q, cm->uv_ac_delta_q, cm->bit_depth);
+      quant = i == 0 ? av1_dc_quant(q, cm->uv_dc_delta_q, cm->bit_depth)
+                     : av1_ac_quant(q, cm->uv_ac_delta_q, cm->bit_depth);
       invert_quant(&quants->uv_quant[q][i], &quants->uv_quant_shift[q][i],
                    quant);
       quants->uv_quant_fp[q][i] = (1 << 16) / quant;
@@ -383,13 +383,13 @@ void vp10_init_quantizer(VP10_COMP *cpi) {
   }
 }
 
-void vp10_init_plane_quantizers(VP10_COMP *cpi, MACROBLOCK *x) {
-  const VP10_COMMON *const cm = &cpi->common;
+void av1_init_plane_quantizers(AV1_COMP *cpi, MACROBLOCK *x) {
+  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   QUANTS *const quants = &cpi->quants;
   const int segment_id = xd->mi[0]->mbmi.segment_id;
-  const int qindex = vp10_get_qindex(&cm->seg, segment_id, cm->base_qindex);
-  const int rdmult = vp10_compute_rd_mult(cpi, qindex + cm->y_dc_delta_q);
+  const int qindex = av1_get_qindex(&cm->seg, segment_id, cm->base_qindex);
+  const int rdmult = av1_compute_rd_mult(cpi, qindex + cm->y_dc_delta_q);
   int i;
 #if CONFIG_AOM_QM
   int minqm = cm->min_qmlevel;
@@ -443,15 +443,15 @@ void vp10_init_plane_quantizers(VP10_COMP *cpi, MACROBLOCK *x) {
 
   set_error_per_bit(x, rdmult);
 
-  vp10_initialize_me_consts(cpi, x, x->q_index);
+  av1_initialize_me_consts(cpi, x, x->q_index);
 }
 
-void vp10_frame_init_quantizer(VP10_COMP *cpi) {
-  vp10_init_plane_quantizers(cpi, &cpi->td.mb);
+void av1_frame_init_quantizer(AV1_COMP *cpi) {
+  av1_init_plane_quantizers(cpi, &cpi->td.mb);
 }
 
-void vp10_set_quantizer(VP10_COMMON *cm, int q) {
-  // quantizer has to be reinitialized with vp10_init_quantizer() if any
+void av1_set_quantizer(AV1_COMMON *cm, int q) {
+  // quantizer has to be reinitialized with av1_init_quantizer() if any
   // delta_q changes.
   cm->base_qindex = q;
   cm->y_dc_delta_q = 0;
@@ -469,11 +469,11 @@ static const int quantizer_to_qindex[] = {
   208, 212, 216, 220, 224, 228, 232, 236, 240, 244, 249, 255,
 };
 
-int vp10_quantizer_to_qindex(int quantizer) {
+int av1_quantizer_to_qindex(int quantizer) {
   return quantizer_to_qindex[quantizer];
 }
 
-int vp10_qindex_to_quantizer(int qindex) {
+int av1_qindex_to_quantizer(int qindex) {
   int quantizer;
 
   for (quantizer = 0; quantizer < 64; ++quantizer)

@@ -22,7 +22,7 @@
 #include "aom_ports/mem.h"
 
 #if HAVE_DSPR2
-void vp10_iht4x4_16_add_dspr2(const int16_t *input, uint8_t *dest,
+void av1_iht4x4_16_add_dspr2(const int16_t *input, uint8_t *dest,
                               int dest_stride, int tx_type) {
   int i, j;
   DECLARE_ALIGNED(32, int16_t, out[4 * 4]);
@@ -85,7 +85,7 @@ void vp10_iht4x4_16_add_dspr2(const int16_t *input, uint8_t *dest,
               ROUND_POWER_OF_TWO(temp_out[j], 4) + dest[j * dest_stride + i]);
       }
       break;
-    default: printf("vp10_short_iht4x4_add_dspr2 : Invalid tx_type\n"); break;
+    default: printf("av1_short_iht4x4_add_dspr2 : Invalid tx_type\n"); break;
   }
 }
 #endif  // #if HAVE_DSPR2

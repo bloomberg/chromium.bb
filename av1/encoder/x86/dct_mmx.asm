@@ -8,7 +8,7 @@
 ;  be found in the AUTHORS file in the root of the source tree.
 ;
 
-%define private_prefix vp10
+%define private_prefix av1
 
 %include "third_party/x86inc/x86inc.asm"
 
@@ -65,7 +65,7 @@ cglobal fwht4x4, 3, 4, 8, input, output, stride
   psllw           m2,        2
   psllw           m3,        2
 
-%if CONFIG_VPX_HIGHBITDEPTH
+%if CONFIG_AOM_HIGHBITDEPTH
   pxor            m4,             m4
   pxor            m5,             m5
   pcmpgtw         m4,             m0

@@ -38,7 +38,7 @@ static void temporal_filter_predictors_mb_c(
   const int which_mv = 0;
   const MV mv = { mv_row, mv_col };
   const InterpKernel *const kernel =
-      vp10_filter_kernels[xd->mi[0]->mbmi.interp_filter];
+      av1_filter_kernels[xd->mi[0]->mbmi.interp_filter];
 
   enum mv_precision mv_precision_uv;
   int uv_stride;
@@ -50,37 +50,37 @@ static void temporal_filter_predictors_mb_c(
     mv_precision_uv = MV_PRECISION_Q3;
   }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    vp10_highbd_build_inter_predictor(y_mb_ptr, stride, &pred[0], 16, &mv,
+    av1_highbd_build_inter_predictor(y_mb_ptr, stride, &pred[0], 16, &mv,
                                       scale, 16, 16, which_mv, kernel,
                                       MV_PRECISION_Q3, x, y, xd->bd);
 
-    vp10_highbd_build_inter_predictor(u_mb_ptr, uv_stride, &pred[256],
+    av1_highbd_build_inter_predictor(u_mb_ptr, uv_stride, &pred[256],
                                       uv_block_width, &mv, scale,
                                       uv_block_width, uv_block_height, which_mv,
                                       kernel, mv_precision_uv, x, y, xd->bd);
 
-    vp10_highbd_build_inter_predictor(v_mb_ptr, uv_stride, &pred[512],
+    av1_highbd_build_inter_predictor(v_mb_ptr, uv_stride, &pred[512],
                                       uv_block_width, &mv, scale,
                                       uv_block_width, uv_block_height, which_mv,
                                       kernel, mv_precision_uv, x, y, xd->bd);
     return;
   }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
-  vp10_build_inter_predictor(y_mb_ptr, stride, &pred[0], 16, &mv, scale, 16, 16,
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+  av1_build_inter_predictor(y_mb_ptr, stride, &pred[0], 16, &mv, scale, 16, 16,
                              which_mv, kernel, MV_PRECISION_Q3, x, y);
 
-  vp10_build_inter_predictor(u_mb_ptr, uv_stride, &pred[256], uv_block_width,
+  av1_build_inter_predictor(u_mb_ptr, uv_stride, &pred[256], uv_block_width,
                              &mv, scale, uv_block_width, uv_block_height,
                              which_mv, kernel, mv_precision_uv, x, y);
 
-  vp10_build_inter_predictor(v_mb_ptr, uv_stride, &pred[512], uv_block_width,
+  av1_build_inter_predictor(v_mb_ptr, uv_stride, &pred[512], uv_block_width,
                              &mv, scale, uv_block_width, uv_block_height,
                              which_mv, kernel, mv_precision_uv, x, y);
 }
 
-void vp10_temporal_filter_apply_c(uint8_t *frame1, unsigned int stride,
+void av1_temporal_filter_apply_c(uint8_t *frame1, unsigned int stride,
                                   uint8_t *frame2, unsigned int block_width,
                                   unsigned int block_height, int strength,
                                   int filter_weight, unsigned int *accumulator,
@@ -119,8 +119,8 @@ void vp10_temporal_filter_apply_c(uint8_t *frame1, unsigned int stride,
   }
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
-void vp10_highbd_temporal_filter_apply_c(
+#if CONFIG_AOM_HIGHBITDEPTH
+void av1_highbd_temporal_filter_apply_c(
     uint8_t *frame1_8, unsigned int stride, uint8_t *frame2_8,
     unsigned int block_width, unsigned int block_height, int strength,
     int filter_weight, unsigned int *accumulator, uint16_t *count) {
@@ -159,9 +159,9 @@ void vp10_highbd_temporal_filter_apply_c(
     byte += stride - block_width;
   }
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
-static int temporal_filter_find_matching_mb_c(VP10_COMP *cpi,
+static int temporal_filter_find_matching_mb_c(AV1_COMP *cpi,
                                               uint8_t *arf_frame_buf,
                                               uint8_t *frame_ptr_buf,
                                               int stride) {
@@ -196,7 +196,7 @@ static int temporal_filter_find_matching_mb_c(VP10_COMP *cpi,
   step_param = VPXMIN(step_param, MAX_MVSEARCH_STEPS - 2);
 
   // Ignore mv costing by sending NULL pointer instead of cost arrays
-  vp10_hex_search(x, &best_ref_mv1_full, step_param, sadpb, 1,
+  av1_hex_search(x, &best_ref_mv1_full, step_param, sadpb, 1,
                   cond_cost_list(cpi, cost_list), &cpi->fn_ptr[BLOCK_16X16], 0,
                   &best_ref_mv1, ref_mv);
 
@@ -214,7 +214,7 @@ static int temporal_filter_find_matching_mb_c(VP10_COMP *cpi,
   return bestsme;
 }
 
-static void temporal_filter_iterate_c(VP10_COMP *cpi,
+static void temporal_filter_iterate_c(AV1_COMP *cpi,
                                       YV12_BUFFER_CONFIG **frames,
                                       int frame_count, int alt_ref_index,
                                       int strength,
@@ -232,7 +232,7 @@ static void temporal_filter_iterate_c(VP10_COMP *cpi,
   MACROBLOCKD *mbd = &cpi->td.mb.e_mbd;
   YV12_BUFFER_CONFIG *f = frames[alt_ref_index];
   uint8_t *dst1, *dst2;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint16_t, predictor16[16 * 16 * 3]);
   DECLARE_ALIGNED(16, uint8_t, predictor8[16 * 16 * 3]);
   uint8_t *predictor;
@@ -245,7 +245,7 @@ static void temporal_filter_iterate_c(VP10_COMP *cpi,
   // Save input state
   uint8_t *input_buffer[MAX_MB_PLANE];
   int i;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     predictor = CONVERT_TO_BYTEPTR(predictor16);
   } else {
@@ -315,53 +315,53 @@ static void temporal_filter_iterate_c(VP10_COMP *cpi,
               mbd->mi[0]->bmi[0].as_mv[0].as_mv.col, predictor, scale,
               mb_col * 16, mb_row * 16);
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
           if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
             int adj_strength = strength + 2 * (mbd->bd - 8);
             // Apply the filter (YUV)
-            vp10_highbd_temporal_filter_apply(
+            av1_highbd_temporal_filter_apply(
                 f->y_buffer + mb_y_offset, f->y_stride, predictor, 16, 16,
                 adj_strength, filter_weight, accumulator, count);
-            vp10_highbd_temporal_filter_apply(
+            av1_highbd_temporal_filter_apply(
                 f->u_buffer + mb_uv_offset, f->uv_stride, predictor + 256,
                 mb_uv_width, mb_uv_height, adj_strength, filter_weight,
                 accumulator + 256, count + 256);
-            vp10_highbd_temporal_filter_apply(
+            av1_highbd_temporal_filter_apply(
                 f->v_buffer + mb_uv_offset, f->uv_stride, predictor + 512,
                 mb_uv_width, mb_uv_height, adj_strength, filter_weight,
                 accumulator + 512, count + 512);
           } else {
             // Apply the filter (YUV)
-            vp10_temporal_filter_apply(f->y_buffer + mb_y_offset, f->y_stride,
+            av1_temporal_filter_apply(f->y_buffer + mb_y_offset, f->y_stride,
                                        predictor, 16, 16, strength,
                                        filter_weight, accumulator, count);
-            vp10_temporal_filter_apply(f->u_buffer + mb_uv_offset, f->uv_stride,
+            av1_temporal_filter_apply(f->u_buffer + mb_uv_offset, f->uv_stride,
                                        predictor + 256, mb_uv_width,
                                        mb_uv_height, strength, filter_weight,
                                        accumulator + 256, count + 256);
-            vp10_temporal_filter_apply(f->v_buffer + mb_uv_offset, f->uv_stride,
+            av1_temporal_filter_apply(f->v_buffer + mb_uv_offset, f->uv_stride,
                                        predictor + 512, mb_uv_width,
                                        mb_uv_height, strength, filter_weight,
                                        accumulator + 512, count + 512);
           }
 #else
           // Apply the filter (YUV)
-          vp10_temporal_filter_apply(f->y_buffer + mb_y_offset, f->y_stride,
+          av1_temporal_filter_apply(f->y_buffer + mb_y_offset, f->y_stride,
                                      predictor, 16, 16, strength, filter_weight,
                                      accumulator, count);
-          vp10_temporal_filter_apply(f->u_buffer + mb_uv_offset, f->uv_stride,
+          av1_temporal_filter_apply(f->u_buffer + mb_uv_offset, f->uv_stride,
                                      predictor + 256, mb_uv_width, mb_uv_height,
                                      strength, filter_weight, accumulator + 256,
                                      count + 256);
-          vp10_temporal_filter_apply(f->v_buffer + mb_uv_offset, f->uv_stride,
+          av1_temporal_filter_apply(f->v_buffer + mb_uv_offset, f->uv_stride,
                                      predictor + 512, mb_uv_width, mb_uv_height,
                                      strength, filter_weight, accumulator + 512,
                                      count + 512);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
         }
       }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
         uint16_t *dst1_16;
         uint16_t *dst2_16;
@@ -481,7 +481,7 @@ static void temporal_filter_iterate_c(VP10_COMP *cpi,
         }
         byte += stride - mb_uv_width;
       }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
       mb_y_offset += 16;
       mb_uv_offset += mb_uv_width;
     }
@@ -494,11 +494,11 @@ static void temporal_filter_iterate_c(VP10_COMP *cpi,
 }
 
 // Apply buffer limits and context specific adjustments to arnr filter.
-static void adjust_arnr_filter(VP10_COMP *cpi, int distance, int group_boost,
+static void adjust_arnr_filter(AV1_COMP *cpi, int distance, int group_boost,
                                int *arnr_frames, int *arnr_strength) {
-  const VP10EncoderConfig *const oxcf = &cpi->oxcf;
+  const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   const int frames_after_arf =
-      vp10_lookahead_depth(cpi->lookahead) - distance - 1;
+      av1_lookahead_depth(cpi->lookahead) - distance - 1;
   int frames_fwd = (cpi->oxcf.arnr_max_frames - 1) >> 1;
   int frames_bwd;
   int q, frames, strength;
@@ -518,10 +518,10 @@ static void adjust_arnr_filter(VP10_COMP *cpi, int distance, int group_boost,
 
   // Adjust the strength based on active max q.
   if (cpi->common.current_video_frame > 1)
-    q = ((int)vp10_convert_qindex_to_q(cpi->rc.avg_frame_qindex[INTER_FRAME],
+    q = ((int)av1_convert_qindex_to_q(cpi->rc.avg_frame_qindex[INTER_FRAME],
                                        cpi->common.bit_depth));
   else
-    q = ((int)vp10_convert_qindex_to_q(cpi->rc.avg_frame_qindex[KEY_FRAME],
+    q = ((int)av1_convert_qindex_to_q(cpi->rc.avg_frame_qindex[KEY_FRAME],
                                        cpi->common.bit_depth));
   if (q > 16) {
     strength = oxcf->arnr_strength;
@@ -552,7 +552,7 @@ static void adjust_arnr_filter(VP10_COMP *cpi, int distance, int group_boost,
   *arnr_strength = strength;
 }
 
-void vp10_temporal_filter(VP10_COMP *cpi, int distance) {
+void av1_temporal_filter(AV1_COMP *cpi, int distance) {
   RATE_CONTROL *const rc = &cpi->rc;
   int frame;
   int frames_to_blur;
@@ -573,7 +573,7 @@ void vp10_temporal_filter(VP10_COMP *cpi, int distance) {
   for (frame = 0; frame < frames_to_blur; ++frame) {
     const int which_buffer = start_frame - frame;
     struct lookahead_entry *buf =
-        vp10_lookahead_peek(cpi->lookahead, which_buffer);
+        av1_lookahead_peek(cpi->lookahead, which_buffer);
     frames[frames_to_blur - 1 - frame] = &buf->img;
   }
 
@@ -581,16 +581,16 @@ void vp10_temporal_filter(VP10_COMP *cpi, int distance) {
 // Setup scaling factors. Scaling on each of the arnr frames is not
 // supported.
 // ARF is produced at the native frame size and resized when coded.
-#if CONFIG_VPX_HIGHBITDEPTH
-    vp10_setup_scale_factors_for_frame(
+#if CONFIG_AOM_HIGHBITDEPTH
+    av1_setup_scale_factors_for_frame(
         &sf, frames[0]->y_crop_width, frames[0]->y_crop_height,
         frames[0]->y_crop_width, frames[0]->y_crop_height,
         cpi->common.use_highbitdepth);
 #else
-    vp10_setup_scale_factors_for_frame(
+    av1_setup_scale_factors_for_frame(
         &sf, frames[0]->y_crop_width, frames[0]->y_crop_height,
         frames[0]->y_crop_width, frames[0]->y_crop_height);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
   }
 
   temporal_filter_iterate_c(cpi, frames, frames_to_blur,

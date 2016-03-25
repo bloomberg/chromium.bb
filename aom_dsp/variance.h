@@ -54,7 +54,7 @@ typedef unsigned int (*aom_subp_avg_variance_fn_t)(
     const uint8_t *a_ptr, int a_stride, int xoffset, int yoffset,
     const uint8_t *b_ptr, int b_stride, unsigned int *sse,
     const uint8_t *second_pred);
-#if CONFIG_VP10
+#if CONFIG_AV1
 typedef struct aom_variance_vtable {
   aom_sad_fn_t sdf;
   aom_sad_avg_fn_t sdaf;
@@ -65,7 +65,7 @@ typedef struct aom_variance_vtable {
   aom_sad_multi_fn_t sdx8f;
   aom_sad_multi_d_fn_t sdx4df;
 } aom_variance_fn_ptr_t;
-#endif  // CONFIG_VP10
+#endif  // CONFIG_AV1
 
 #ifdef __cplusplus
 }  // extern "C"

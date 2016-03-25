@@ -8,26 +8,26 @@
 ##  be found in the AUTHORS file in the root of the source tree.
 ##
 
-VP10_DX_EXPORTS += exports_dec
+AV1_DX_EXPORTS += exports_dec
 
-VP10_DX_SRCS-yes += $(VP10_COMMON_SRCS-yes)
-VP10_DX_SRCS-no  += $(VP10_COMMON_SRCS-no)
-VP10_DX_SRCS_REMOVE-yes += $(VP10_COMMON_SRCS_REMOVE-yes)
-VP10_DX_SRCS_REMOVE-no  += $(VP10_COMMON_SRCS_REMOVE-no)
+AV1_DX_SRCS-yes += $(AV1_COMMON_SRCS-yes)
+AV1_DX_SRCS-no  += $(AV1_COMMON_SRCS-no)
+AV1_DX_SRCS_REMOVE-yes += $(AV1_COMMON_SRCS_REMOVE-yes)
+AV1_DX_SRCS_REMOVE-no  += $(AV1_COMMON_SRCS_REMOVE-no)
 
-VP10_DX_SRCS-yes += av1_dx_iface.c
+AV1_DX_SRCS-yes += av1_dx_iface.c
 
-VP10_DX_SRCS-yes += decoder/decodemv.c
-VP10_DX_SRCS-yes += decoder/decodeframe.c
-VP10_DX_SRCS-yes += decoder/decodeframe.h
-VP10_DX_SRCS-yes += decoder/detokenize.c
-VP10_DX_SRCS-yes += decoder/decodemv.h
-VP10_DX_SRCS-yes += decoder/detokenize.h
-VP10_DX_SRCS-yes += decoder/dthread.c
-VP10_DX_SRCS-yes += decoder/dthread.h
-VP10_DX_SRCS-yes += decoder/decoder.c
-VP10_DX_SRCS-yes += decoder/decoder.h
-VP10_DX_SRCS-yes += decoder/dsubexp.c
-VP10_DX_SRCS-yes += decoder/dsubexp.h
+AV1_DX_SRCS-yes += decoder/decodemv.c
+AV1_DX_SRCS-yes += decoder/decodeframe.c
+AV1_DX_SRCS-yes += decoder/decodeframe.h
+AV1_DX_SRCS-yes += decoder/detokenize.c
+AV1_DX_SRCS-yes += decoder/decodemv.h
+AV1_DX_SRCS-yes += decoder/detokenize.h
+AV1_DX_SRCS-yes += decoder/dthread.c
+AV1_DX_SRCS-yes += decoder/dthread.h
+AV1_DX_SRCS-yes += decoder/decoder.c
+AV1_DX_SRCS-yes += decoder/decoder.h
+AV1_DX_SRCS-yes += decoder/dsubexp.c
+AV1_DX_SRCS-yes += decoder/dsubexp.h
 
-VP10_DX_SRCS-yes := $(filter-out $(VP10_DX_SRCS_REMOVE-yes),$(VP10_DX_SRCS-yes))
+AV1_DX_SRCS-yes := $(filter-out $(AV1_DX_SRCS_REMOVE-yes),$(AV1_DX_SRCS-yes))

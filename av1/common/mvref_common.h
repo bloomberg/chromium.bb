@@ -8,8 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#ifndef VP10_COMMON_MVREF_COMMON_H_
-#define VP10_COMMON_MVREF_COMMON_H_
+#ifndef AV1_COMMON_MVREF_COMMON_H_
+#define AV1_COMMON_MVREF_COMMON_H_
 
 #include "av1/common/onyxc_int.h"
 #include "av1/common/blockd.h"
@@ -303,7 +303,7 @@ static INLINE int is_inside(const TileInfo *const tile, int mi_col, int mi_row,
 }
 
 typedef void (*find_mv_refs_sync)(void *const data, int mi_row);
-void vp10_find_mv_refs(const VP10_COMMON *cm, const MACROBLOCKD *xd,
+void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                        MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                        int_mv *mv_ref_list, int mi_row, int mi_col,
                        find_mv_refs_sync sync, void *const data,
@@ -312,10 +312,10 @@ void vp10_find_mv_refs(const VP10_COMMON *cm, const MACROBLOCKD *xd,
 // check a list of motion vectors by sad score using a number rows of pixels
 // above and a number cols of pixels in the left to select the one with best
 // score to use as ref motion vector
-void vp10_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
+void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
                             int_mv *near_mv);
 
-void vp10_append_sub8x8_mvs_for_idx(VP10_COMMON *cm, MACROBLOCKD *xd, int block,
+void av1_append_sub8x8_mvs_for_idx(AV1_COMMON *cm, MACROBLOCKD *xd, int block,
                                     int ref, int mi_row, int mi_col,
                                     int_mv *nearest_mv, int_mv *near_mv,
                                     uint8_t *mode_context);
@@ -324,4 +324,4 @@ void vp10_append_sub8x8_mvs_for_idx(VP10_COMMON *cm, MACROBLOCKD *xd, int block,
 }  // extern "C"
 #endif
 
-#endif  // VP10_COMMON_MVREF_COMMON_H_
+#endif  // AV1_COMMON_MVREF_COMMON_H_

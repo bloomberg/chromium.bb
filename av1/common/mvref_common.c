@@ -12,7 +12,7 @@
 
 // This function searches the neighbourhood of a given MB/SB
 // to try and find candidate reference vectors.
-static void find_mv_refs_idx(const VP10_COMMON *cm, const MACROBLOCKD *xd,
+static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                              int_mv *mv_ref_list, int block, int mi_row,
                              int mi_col, find_mv_refs_sync sync,
@@ -161,7 +161,7 @@ Done:
 #endif
 }
 
-void vp10_find_mv_refs(const VP10_COMMON *cm, const MACROBLOCKD *xd,
+void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                        MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                        int_mv *mv_ref_list, int mi_row, int mi_col,
                        find_mv_refs_sync sync, void *const data,
@@ -171,14 +171,14 @@ void vp10_find_mv_refs(const VP10_COMMON *cm, const MACROBLOCKD *xd,
 }
 
 static void lower_mv_precision(MV *mv, int allow_hp) {
-  const int use_hp = allow_hp && vp10_use_mv_hp(mv);
+  const int use_hp = allow_hp && av1_use_mv_hp(mv);
   if (!use_hp) {
     if (mv->row & 1) mv->row += (mv->row > 0 ? -1 : 1);
     if (mv->col & 1) mv->col += (mv->col > 0 ? -1 : 1);
   }
 }
 
-void vp10_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
+void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
                             int_mv *near_mv) {
   int i;
   // Make sure all the candidates are properly clamped etc
@@ -189,7 +189,7 @@ void vp10_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
   *near_mv = mvlist[1];
 }
 
-void vp10_append_sub8x8_mvs_for_idx(VP10_COMMON *cm, MACROBLOCKD *xd, int block,
+void av1_append_sub8x8_mvs_for_idx(AV1_COMMON *cm, MACROBLOCKD *xd, int block,
                                     int ref, int mi_row, int mi_col,
                                     int_mv *nearest_mv, int_mv *near_mv,
                                     uint8_t *mode_context) {

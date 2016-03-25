@@ -9,26 +9,26 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_ENCODER_ETHREAD_H_
-#define VP10_ENCODER_ETHREAD_H_
+#ifndef AV1_ENCODER_ETHREAD_H_
+#define AV1_ENCODER_ETHREAD_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct VP10_COMP;
+struct AV1_COMP;
 struct ThreadData;
 
 typedef struct EncWorkerData {
-  struct VP10_COMP *cpi;
+  struct AV1_COMP *cpi;
   struct ThreadData *td;
   int start;
 } EncWorkerData;
 
-void vp10_encode_tiles_mt(struct VP10_COMP *cpi);
+void av1_encode_tiles_mt(struct AV1_COMP *cpi);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // VP10_ENCODER_ETHREAD_H_
+#endif  // AV1_ENCODER_ETHREAD_H_

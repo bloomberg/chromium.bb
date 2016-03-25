@@ -103,8 +103,8 @@ int file_is_webm(struct WebmInputContext *webm_ctx,
     aom_ctx->fourcc = VP8_FOURCC;
   } else if (!strncmp(video_track->GetCodecId(), "V_VP9", 5)) {
     aom_ctx->fourcc = VP9_FOURCC;
-  } else if (!strncmp(video_track->GetCodecId(), "V_VP10", 6)) {
-    aom_ctx->fourcc = VP10_FOURCC;
+  } else if (!strncmp(video_track->GetCodecId(), "V_AV1", 6)) {
+    aom_ctx->fourcc = AV1_FOURCC;
   } else {
     rewind_and_reset(webm_ctx, aom_ctx);
     return 0;

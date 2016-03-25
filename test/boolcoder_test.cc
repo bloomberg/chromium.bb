@@ -25,7 +25,7 @@ namespace {
 const int num_tests = 10;
 }  // namespace
 
-TEST(VP10, TestBitIO) {
+TEST(AV1, TestBitIO) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   for (int n = 0; n < num_tests; ++n) {
     for (int method = 0; method <= 7; ++method) {  // we generate various proba

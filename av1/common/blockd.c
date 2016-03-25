@@ -11,7 +11,7 @@
 
 #include "av1/common/blockd.h"
 
-PREDICTION_MODE vp10_left_block_mode(const MODE_INFO *cur_mi,
+PREDICTION_MODE av1_left_block_mode(const MODE_INFO *cur_mi,
                                      const MODE_INFO *left_mi, int b) {
   if (b == 0 || b == 2) {
     if (!left_mi || is_inter_block(&left_mi->mbmi)) return DC_PRED;
@@ -23,7 +23,7 @@ PREDICTION_MODE vp10_left_block_mode(const MODE_INFO *cur_mi,
   }
 }
 
-PREDICTION_MODE vp10_above_block_mode(const MODE_INFO *cur_mi,
+PREDICTION_MODE av1_above_block_mode(const MODE_INFO *cur_mi,
                                       const MODE_INFO *above_mi, int b) {
   if (b == 0 || b == 1) {
     if (!above_mi || is_inter_block(&above_mi->mbmi)) return DC_PRED;
@@ -35,7 +35,7 @@ PREDICTION_MODE vp10_above_block_mode(const MODE_INFO *cur_mi,
   }
 }
 
-void vp10_foreach_transformed_block_in_plane(
+void av1_foreach_transformed_block_in_plane(
     const MACROBLOCKD *const xd, BLOCK_SIZE bsize, int plane,
     foreach_transformed_block_visitor visit, void *arg) {
   const struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -74,17 +74,17 @@ void vp10_foreach_transformed_block_in_plane(
   }
 }
 
-void vp10_foreach_transformed_block(const MACROBLOCKD *const xd,
+void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
                                     BLOCK_SIZE bsize,
                                     foreach_transformed_block_visitor visit,
                                     void *arg) {
   int plane;
 
   for (plane = 0; plane < MAX_MB_PLANE; ++plane)
-    vp10_foreach_transformed_block_in_plane(xd, bsize, plane, visit, arg);
+    av1_foreach_transformed_block_in_plane(xd, bsize, plane, visit, arg);
 }
 
-void vp10_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
+void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
                        BLOCK_SIZE plane_bsize, TX_SIZE tx_size, int has_eob,
                        int aoff, int loff) {
   ENTROPY_CONTEXT *const a = pd->above_context + aoff;
@@ -121,7 +121,7 @@ void vp10_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
   }
 }
 
-void vp10_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y) {
+void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y) {
   int i;
 
   for (i = 0; i < MAX_MB_PLANE; i++) {

@@ -14,7 +14,7 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/seg_common.h"
 
-const aom_prob vp10_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1] =
+const aom_prob av1_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1] =
     { {
           // above = dc
           { 137, 30, 42, 148, 151, 207, 70, 52, 91 },   // left = dc
@@ -147,7 +147,7 @@ const aom_prob vp10_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1] =
       } };
 
 #if !CONFIG_MISC_FIXES
-const aom_prob vp10_kf_uv_mode_prob[INTRA_MODES][INTRA_MODES - 1] = {
+const aom_prob av1_kf_uv_mode_prob[INTRA_MODES][INTRA_MODES - 1] = {
   { 144, 11, 54, 157, 195, 130, 46, 58, 108 },   // y = dc
   { 118, 15, 123, 148, 131, 101, 44, 93, 131 },  // y = v
   { 113, 12, 23, 188, 226, 142, 26, 32, 125 },   // y = h
@@ -183,7 +183,7 @@ static const aom_prob default_uv_probs[INTRA_MODES][INTRA_MODES - 1] = {
 
 #if !CONFIG_MISC_FIXES
 const aom_prob
-    vp10_kf_partition_probs[PARTITION_CONTEXTS][PARTITION_TYPES - 1] = {
+    av1_kf_partition_probs[PARTITION_CONTEXTS][PARTITION_TYPES - 1] = {
       // 8x8 -> 4x4
       { 158, 97, 94 },  // a/l both not split
       { 93, 24, 99 },   // a split, l not split
@@ -243,7 +243,7 @@ static const aom_prob
     };
 
 /* Array indices are identical to previously-existing INTRAMODECONTEXTNODES. */
-const aom_tree_index vp10_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
+const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
   -DC_PRED,   2,          /* 0 = DC_NODE */
   -TM_PRED,   4,          /* 1 = TM_NODE */
   -V_PRED,    6,          /* 2 = V_NODE */
@@ -255,12 +255,12 @@ const aom_tree_index vp10_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
   -D153_PRED, -D207_PRED  /* 8 = D153_NODE */
 };
 
-const aom_tree_index vp10_inter_mode_tree[TREE_SIZE(INTER_MODES)] = {
+const aom_tree_index av1_inter_mode_tree[TREE_SIZE(INTER_MODES)] = {
   -INTER_OFFSET(ZEROMV), 2, -INTER_OFFSET(NEARESTMV), 4, -INTER_OFFSET(NEARMV),
   -INTER_OFFSET(NEWMV)
 };
 
-const aom_tree_index vp10_partition_tree[TREE_SIZE(PARTITION_TYPES)] = {
+const aom_tree_index av1_partition_tree[TREE_SIZE(PARTITION_TYPES)] = {
   -PARTITION_NONE, 2, -PARTITION_HORZ, 4, -PARTITION_VERT, -PARTITION_SPLIT
 };
 
@@ -286,7 +286,7 @@ static const struct tx_probs default_tx_probs = { { { 3, 136, 37 },
 
                                                   { { 100 }, { 66 } } };
 
-void vp10_tx_counts_to_branch_counts_32x32(const unsigned int *tx_count_32x32p,
+void av1_tx_counts_to_branch_counts_32x32(const unsigned int *tx_count_32x32p,
                                            unsigned int (*ct_32x32p)[2]) {
   ct_32x32p[0][0] = tx_count_32x32p[TX_4X4];
   ct_32x32p[0][1] = tx_count_32x32p[TX_8X8] + tx_count_32x32p[TX_16X16] +
@@ -297,7 +297,7 @@ void vp10_tx_counts_to_branch_counts_32x32(const unsigned int *tx_count_32x32p,
   ct_32x32p[2][1] = tx_count_32x32p[TX_32X32];
 }
 
-void vp10_tx_counts_to_branch_counts_16x16(const unsigned int *tx_count_16x16p,
+void av1_tx_counts_to_branch_counts_16x16(const unsigned int *tx_count_16x16p,
                                            unsigned int (*ct_16x16p)[2]) {
   ct_16x16p[0][0] = tx_count_16x16p[TX_4X4];
   ct_16x16p[0][1] = tx_count_16x16p[TX_8X8] + tx_count_16x16p[TX_16X16];
@@ -305,7 +305,7 @@ void vp10_tx_counts_to_branch_counts_16x16(const unsigned int *tx_count_16x16p,
   ct_16x16p[1][1] = tx_count_16x16p[TX_16X16];
 }
 
-void vp10_tx_counts_to_branch_counts_8x8(const unsigned int *tx_count_8x8p,
+void av1_tx_counts_to_branch_counts_8x8(const unsigned int *tx_count_8x8p,
                                          unsigned int (*ct_8x8p)[2]) {
   ct_8x8p[0][0] = tx_count_8x8p[TX_4X4];
   ct_8x8p[0][1] = tx_count_8x8p[TX_8X8];
@@ -325,7 +325,7 @@ static const struct segmentation_probs default_seg_probs = {
 };
 #endif
 
-const aom_tree_index vp10_ext_tx_tree[TREE_SIZE(TX_TYPES)] = {
+const aom_tree_index av1_ext_tx_tree[TREE_SIZE(TX_TYPES)] = {
   -DCT_DCT, 2, -ADST_ADST, 4, -ADST_DCT, -DCT_ADST
 };
 
@@ -341,29 +341,29 @@ static const aom_prob default_inter_ext_tx_prob[EXT_TX_SIZES][TX_TYPES - 1] = {
 };
 
 static void init_mode_probs(FRAME_CONTEXT *fc) {
-  vp10_copy(fc->uv_mode_prob, default_uv_probs);
-  vp10_copy(fc->y_mode_prob, default_if_y_probs);
-  vp10_copy(fc->switchable_interp_prob, default_switchable_interp_prob);
-  vp10_copy(fc->partition_prob, default_partition_probs);
-  vp10_copy(fc->intra_inter_prob, default_intra_inter_p);
-  vp10_copy(fc->comp_inter_prob, default_comp_inter_p);
-  vp10_copy(fc->comp_ref_prob, default_comp_ref_p);
-  vp10_copy(fc->single_ref_prob, default_single_ref_p);
+  av1_copy(fc->uv_mode_prob, default_uv_probs);
+  av1_copy(fc->y_mode_prob, default_if_y_probs);
+  av1_copy(fc->switchable_interp_prob, default_switchable_interp_prob);
+  av1_copy(fc->partition_prob, default_partition_probs);
+  av1_copy(fc->intra_inter_prob, default_intra_inter_p);
+  av1_copy(fc->comp_inter_prob, default_comp_inter_p);
+  av1_copy(fc->comp_ref_prob, default_comp_ref_p);
+  av1_copy(fc->single_ref_prob, default_single_ref_p);
   fc->tx_probs = default_tx_probs;
-  vp10_copy(fc->skip_probs, default_skip_probs);
-  vp10_copy(fc->inter_mode_probs, default_inter_mode_probs);
+  av1_copy(fc->skip_probs, default_skip_probs);
+  av1_copy(fc->inter_mode_probs, default_inter_mode_probs);
 #if CONFIG_MISC_FIXES
-  vp10_copy(fc->seg.tree_probs, default_seg_probs.tree_probs);
-  vp10_copy(fc->seg.pred_probs, default_seg_probs.pred_probs);
+  av1_copy(fc->seg.tree_probs, default_seg_probs.tree_probs);
+  av1_copy(fc->seg.pred_probs, default_seg_probs.pred_probs);
 #endif
-  vp10_copy(fc->intra_ext_tx_prob, default_intra_ext_tx_prob);
-  vp10_copy(fc->inter_ext_tx_prob, default_inter_ext_tx_prob);
+  av1_copy(fc->intra_ext_tx_prob, default_intra_ext_tx_prob);
+  av1_copy(fc->inter_ext_tx_prob, default_inter_ext_tx_prob);
 }
 
-const aom_tree_index vp10_switchable_interp_tree[TREE_SIZE(
+const aom_tree_index av1_switchable_interp_tree[TREE_SIZE(
     SWITCHABLE_FILTERS)] = { -EIGHTTAP, 2, -EIGHTTAP_SMOOTH, -EIGHTTAP_SHARP };
 
-void vp10_adapt_inter_frame_probs(VP10_COMMON *cm) {
+void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
   int i, j;
   FRAME_CONTEXT *fc = cm->fc;
   const FRAME_CONTEXT *pre_fc = &cm->frame_contexts[cm->frame_context_idx];
@@ -384,32 +384,32 @@ void vp10_adapt_inter_frame_probs(VP10_COMMON *cm) {
           pre_fc->single_ref_prob[i][j], counts->single_ref[i][j]);
 
   for (i = 0; i < INTER_MODE_CONTEXTS; i++)
-    aom_tree_merge_probs(vp10_inter_mode_tree, pre_fc->inter_mode_probs[i],
+    aom_tree_merge_probs(av1_inter_mode_tree, pre_fc->inter_mode_probs[i],
                          counts->inter_mode[i], fc->inter_mode_probs[i]);
 
   for (i = 0; i < BLOCK_SIZE_GROUPS; i++)
-    aom_tree_merge_probs(vp10_intra_mode_tree, pre_fc->y_mode_prob[i],
+    aom_tree_merge_probs(av1_intra_mode_tree, pre_fc->y_mode_prob[i],
                          counts->y_mode[i], fc->y_mode_prob[i]);
 
 #if !CONFIG_MISC_FIXES
   for (i = 0; i < INTRA_MODES; ++i)
-    aom_tree_merge_probs(vp10_intra_mode_tree, pre_fc->uv_mode_prob[i],
+    aom_tree_merge_probs(av1_intra_mode_tree, pre_fc->uv_mode_prob[i],
                          counts->uv_mode[i], fc->uv_mode_prob[i]);
 
   for (i = 0; i < PARTITION_CONTEXTS; i++)
-    aom_tree_merge_probs(vp10_partition_tree, pre_fc->partition_prob[i],
+    aom_tree_merge_probs(av1_partition_tree, pre_fc->partition_prob[i],
                          counts->partition[i], fc->partition_prob[i]);
 #endif
 
   if (cm->interp_filter == SWITCHABLE) {
     for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; i++)
       aom_tree_merge_probs(
-          vp10_switchable_interp_tree, pre_fc->switchable_interp_prob[i],
+          av1_switchable_interp_tree, pre_fc->switchable_interp_prob[i],
           counts->switchable_interp[i], fc->switchable_interp_prob[i]);
   }
 }
 
-void vp10_adapt_intra_frame_probs(VP10_COMMON *cm) {
+void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
   int i;
   FRAME_CONTEXT *fc = cm->fc;
   const FRAME_CONTEXT *pre_fc = &cm->frame_contexts[cm->frame_context_idx];
@@ -422,18 +422,18 @@ void vp10_adapt_intra_frame_probs(VP10_COMMON *cm) {
     unsigned int branch_ct_32x32p[TX_SIZES - 1][2];
 
     for (i = 0; i < TX_SIZE_CONTEXTS; ++i) {
-      vp10_tx_counts_to_branch_counts_8x8(counts->tx.p8x8[i], branch_ct_8x8p);
+      av1_tx_counts_to_branch_counts_8x8(counts->tx.p8x8[i], branch_ct_8x8p);
       for (j = 0; j < TX_SIZES - 3; ++j)
         fc->tx_probs.p8x8[i][j] =
             mode_mv_merge_probs(pre_fc->tx_probs.p8x8[i][j], branch_ct_8x8p[j]);
 
-      vp10_tx_counts_to_branch_counts_16x16(counts->tx.p16x16[i],
+      av1_tx_counts_to_branch_counts_16x16(counts->tx.p16x16[i],
                                             branch_ct_16x16p);
       for (j = 0; j < TX_SIZES - 2; ++j)
         fc->tx_probs.p16x16[i][j] = mode_mv_merge_probs(
             pre_fc->tx_probs.p16x16[i][j], branch_ct_16x16p[j]);
 
-      vp10_tx_counts_to_branch_counts_32x32(counts->tx.p32x32[i],
+      av1_tx_counts_to_branch_counts_32x32(counts->tx.p32x32[i],
                                             branch_ct_32x32p);
       for (j = 0; j < TX_SIZES - 1; ++j)
         fc->tx_probs.p32x32[i][j] = mode_mv_merge_probs(
@@ -448,12 +448,12 @@ void vp10_adapt_intra_frame_probs(VP10_COMMON *cm) {
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
     int j;
     for (j = 0; j < TX_TYPES; ++j)
-      aom_tree_merge_probs(vp10_ext_tx_tree, pre_fc->intra_ext_tx_prob[i][j],
+      aom_tree_merge_probs(av1_ext_tx_tree, pre_fc->intra_ext_tx_prob[i][j],
                            counts->intra_ext_tx[i][j],
                            fc->intra_ext_tx_prob[i][j]);
   }
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
-    aom_tree_merge_probs(vp10_ext_tx_tree, pre_fc->inter_ext_tx_prob[i],
+    aom_tree_merge_probs(av1_ext_tx_tree, pre_fc->inter_ext_tx_prob[i],
                          counts->inter_ext_tx[i], fc->inter_ext_tx_prob[i]);
   }
 
@@ -463,19 +463,19 @@ void vp10_adapt_intra_frame_probs(VP10_COMMON *cm) {
       fc->seg.pred_probs[i] =
           mode_mv_merge_probs(pre_fc->seg.pred_probs[i], counts->seg.pred[i]);
 
-    aom_tree_merge_probs(vp10_segment_tree, pre_fc->seg.tree_probs,
+    aom_tree_merge_probs(av1_segment_tree, pre_fc->seg.tree_probs,
                          counts->seg.tree_mispred, fc->seg.tree_probs);
   } else {
-    aom_tree_merge_probs(vp10_segment_tree, pre_fc->seg.tree_probs,
+    aom_tree_merge_probs(av1_segment_tree, pre_fc->seg.tree_probs,
                          counts->seg.tree_total, fc->seg.tree_probs);
   }
 
   for (i = 0; i < INTRA_MODES; ++i)
-    aom_tree_merge_probs(vp10_intra_mode_tree, pre_fc->uv_mode_prob[i],
+    aom_tree_merge_probs(av1_intra_mode_tree, pre_fc->uv_mode_prob[i],
                          counts->uv_mode[i], fc->uv_mode_prob[i]);
 
   for (i = 0; i < PARTITION_CONTEXTS; i++)
-    aom_tree_merge_probs(vp10_partition_tree, pre_fc->partition_prob[i],
+    aom_tree_merge_probs(av1_partition_tree, pre_fc->partition_prob[i],
                          counts->partition[i], fc->partition_prob[i]);
 #endif
 }
@@ -493,13 +493,13 @@ static void set_default_lf_deltas(struct loopfilter *lf) {
   lf->mode_deltas[1] = 0;
 }
 
-void vp10_setup_past_independence(VP10_COMMON *cm) {
+void av1_setup_past_independence(AV1_COMMON *cm) {
   // Reset the segment feature data to the default stats:
   // Features disabled, 0, with delta coding (Default state).
   struct loopfilter *const lf = &cm->lf;
 
   int i;
-  vp10_clearall_segfeatures(&cm->seg);
+  av1_clearall_segfeatures(&cm->seg);
   cm->seg.abs_delta = SEGMENT_DELTADATA;
 
   if (cm->last_frame_seg_map && !cm->frame_parallel_decode)
@@ -509,16 +509,16 @@ void vp10_setup_past_independence(VP10_COMMON *cm) {
     memset(cm->current_frame_seg_map, 0, (cm->mi_rows * cm->mi_cols));
 
   // Reset the mode ref deltas for loop filter
-  vp10_zero(lf->last_ref_deltas);
-  vp10_zero(lf->last_mode_deltas);
+  av1_zero(lf->last_ref_deltas);
+  av1_zero(lf->last_mode_deltas);
   set_default_lf_deltas(lf);
 
   // To force update of the sharpness
   lf->last_sharpness_level = -1;
 
-  vp10_default_coef_probs(cm);
+  av1_default_coef_probs(cm);
   init_mode_probs(cm->fc);
-  vp10_init_mv_probs(cm);
+  av1_init_mv_probs(cm);
   cm->fc->initialized = 1;
 
   if (cm->frame_type == KEY_FRAME || cm->error_resilient_mode ||

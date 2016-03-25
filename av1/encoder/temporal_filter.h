@@ -9,17 +9,17 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_ENCODER_TEMPORAL_FILTER_H_
-#define VP10_ENCODER_TEMPORAL_FILTER_H_
+#ifndef AV1_ENCODER_TEMPORAL_FILTER_H_
+#define AV1_ENCODER_TEMPORAL_FILTER_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void vp10_temporal_filter(VP10_COMP *cpi, int distance);
+void av1_temporal_filter(AV1_COMP *cpi, int distance);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // VP10_ENCODER_TEMPORAL_FILTER_H_
+#endif  // AV1_ENCODER_TEMPORAL_FILTER_H_

@@ -8,8 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#ifndef VP10_COMMON_DERING_H_
-#define VP10_COMMON_DERING_H_
+#ifndef AV1_COMMON_DERING_H_
+#define AV1_COMMON_DERING_H_
 
 #include "av1/common/od_dering.h"
 #include "av1/common/onyxc_int.h"
@@ -29,15 +29,15 @@ extern "C" {
 #define DERING_REFINEMENT_LEVELS 4
 
 int compute_level_from_index(int global_level, int gi);
-int sb_all_skip(const VP10_COMMON *const cm, int mi_row, int mi_col);
-void vp10_dering_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
+int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col);
+void av1_dering_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                        MACROBLOCKD *xd, int global_level);
 
-int vp10_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
-                      VP10_COMMON *cm,
+int av1_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
+                      AV1_COMMON *cm,
                       MACROBLOCKD *xd);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
-#endif  // VP10_COMMON_DERING_H_
+#endif  // AV1_COMMON_DERING_H_

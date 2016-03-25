@@ -15,12 +15,12 @@
 // Integer pel reference mv threshold for use of high-precision 1/8 mv
 #define COMPANDED_MVREF_THRESH 8
 
-const aom_tree_index vp10_mv_joint_tree[TREE_SIZE(MV_JOINTS)] = {
+const aom_tree_index av1_mv_joint_tree[TREE_SIZE(MV_JOINTS)] = {
   -MV_JOINT_ZERO, 2, -MV_JOINT_HNZVZ, 4, -MV_JOINT_HZVNZ, -MV_JOINT_HNZVNZ
 };
 
 /* clang-format off */
-const aom_tree_index vp10_mv_class_tree[TREE_SIZE(MV_CLASSES)] = {
+const aom_tree_index av1_mv_class_tree[TREE_SIZE(MV_CLASSES)] = {
   -MV_CLASS_0, 2,
   -MV_CLASS_1, 4,
   6, 8,
@@ -34,11 +34,11 @@ const aom_tree_index vp10_mv_class_tree[TREE_SIZE(MV_CLASSES)] = {
 };
 /* clang-format on */
 
-const aom_tree_index vp10_mv_class0_tree[TREE_SIZE(CLASS0_SIZE)] = {
+const aom_tree_index av1_mv_class0_tree[TREE_SIZE(CLASS0_SIZE)] = {
   -0, -1,
 };
 
-const aom_tree_index vp10_mv_fp_tree[TREE_SIZE(MV_FP_SIZE)] = { -0, 2,  -1,
+const aom_tree_index av1_mv_fp_tree[TREE_SIZE(MV_FP_SIZE)] = { -0, 2,  -1,
                                                                 4,  -2, -3 };
 
 static const nmv_context default_nmv_context = {
@@ -114,7 +114,7 @@ static INLINE int mv_class_base(MV_CLASS_TYPE c) {
   return c ? CLASS0_SIZE << (c + 2) : 0;
 }
 
-MV_CLASS_TYPE vp10_get_mv_class(int z, int *offset) {
+MV_CLASS_TYPE av1_get_mv_class(int z, int *offset) {
   const MV_CLASS_TYPE c = (z >= CLASS0_SIZE * 4096)
                               ? MV_CLASS_10
                               : (MV_CLASS_TYPE)log_in_base_2[z >> 3];
@@ -122,7 +122,7 @@ MV_CLASS_TYPE vp10_get_mv_class(int z, int *offset) {
   return c;
 }
 
-int vp10_use_mv_hp(const MV *ref) {
+int av1_use_mv_hp(const MV *ref) {
 #if CONFIG_MISC_FIXES
   (void)ref;
   return 1;
@@ -140,7 +140,7 @@ static void inc_mv_component(int v, nmv_component_counts *comp_counts, int incr,
   comp_counts->sign[s] += incr;
   z = (s ? -v : v) - 1; /* magnitude - 1 */
 
-  c = vp10_get_mv_class(z, &o);
+  c = av1_get_mv_class(z, &o);
   comp_counts->classes[c] += incr;
 
   d = (o >> 3);     /* int mv data */
@@ -160,9 +160,9 @@ static void inc_mv_component(int v, nmv_component_counts *comp_counts, int incr,
   }
 }
 
-void vp10_inc_mv(const MV *mv, nmv_context_counts *counts, const int usehp) {
+void av1_inc_mv(const MV *mv, nmv_context_counts *counts, const int usehp) {
   if (counts != NULL) {
-    const MV_JOINT_TYPE j = vp10_get_mv_joint(mv);
+    const MV_JOINT_TYPE j = av1_get_mv_joint(mv);
     ++counts->joints[j];
 
     if (mv_joint_vertical(j)) {
@@ -177,14 +177,14 @@ void vp10_inc_mv(const MV *mv, nmv_context_counts *counts, const int usehp) {
   }
 }
 
-void vp10_adapt_mv_probs(VP10_COMMON *cm, int allow_hp) {
+void av1_adapt_mv_probs(AV1_COMMON *cm, int allow_hp) {
   int i, j;
 
   nmv_context *fc = &cm->fc->nmvc;
   const nmv_context *pre_fc = &cm->frame_contexts[cm->frame_context_idx].nmvc;
   const nmv_context_counts *counts = &cm->counts.mv;
 
-  aom_tree_merge_probs(vp10_mv_joint_tree, pre_fc->joints, counts->joints,
+  aom_tree_merge_probs(av1_mv_joint_tree, pre_fc->joints, counts->joints,
                        fc->joints);
 
   for (i = 0; i < 2; ++i) {
@@ -193,19 +193,19 @@ void vp10_adapt_mv_probs(VP10_COMMON *cm, int allow_hp) {
     const nmv_component_counts *c = &counts->comps[i];
 
     comp->sign = mode_mv_merge_probs(pre_comp->sign, c->sign);
-    aom_tree_merge_probs(vp10_mv_class_tree, pre_comp->classes, c->classes,
+    aom_tree_merge_probs(av1_mv_class_tree, pre_comp->classes, c->classes,
                          comp->classes);
-    aom_tree_merge_probs(vp10_mv_class0_tree, pre_comp->class0, c->class0,
+    aom_tree_merge_probs(av1_mv_class0_tree, pre_comp->class0, c->class0,
                          comp->class0);
 
     for (j = 0; j < MV_OFFSET_BITS; ++j)
       comp->bits[j] = mode_mv_merge_probs(pre_comp->bits[j], c->bits[j]);
 
     for (j = 0; j < CLASS0_SIZE; ++j)
-      aom_tree_merge_probs(vp10_mv_fp_tree, pre_comp->class0_fp[j],
+      aom_tree_merge_probs(av1_mv_fp_tree, pre_comp->class0_fp[j],
                            c->class0_fp[j], comp->class0_fp[j]);
 
-    aom_tree_merge_probs(vp10_mv_fp_tree, pre_comp->fp, c->fp, comp->fp);
+    aom_tree_merge_probs(av1_mv_fp_tree, pre_comp->fp, c->fp, comp->fp);
 
     if (allow_hp) {
       comp->class0_hp = mode_mv_merge_probs(pre_comp->class0_hp, c->class0_hp);
@@ -214,4 +214,4 @@ void vp10_adapt_mv_probs(VP10_COMMON *cm, int allow_hp) {
   }
 }
 
-void vp10_init_mv_probs(VP10_COMMON *cm) { cm->fc->nmvc = default_nmv_context; }
+void av1_init_mv_probs(AV1_COMMON *cm) { cm->fc->nmvc = default_nmv_context; }

@@ -9,11 +9,11 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_COMMON_VP10_FWD_TXFM_H_
-#define VP10_COMMON_VP10_FWD_TXFM_H_
+#ifndef AV1_COMMON_AV1_FWD_TXFM_H_
+#define AV1_COMMON_AV1_FWD_TXFM_H_
 
 #include "aom_dsp/txfm_common.h"
 #include "aom_dsp/fwd_txfm.h"
 
-void vp10_fdct32(const tran_high_t *input, tran_high_t *output, int round);
-#endif  // VP10_COMMON_VP10_FWD_TXFM_H_
+void av1_fdct32(const tran_high_t *input, tran_high_t *output, int round);
+#endif  // AV1_COMMON_AV1_FWD_TXFM_H_

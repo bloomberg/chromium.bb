@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_COMMON_FILTER_H_
-#define VP10_COMMON_FILTER_H_
+#ifndef AV1_COMMON_FILTER_H_
+#define AV1_COMMON_FILTER_H_
 
 #include "./aom_config.h"
 #include "aom/aom_integer.h"
@@ -33,10 +33,10 @@ extern "C" {
 
 typedef uint8_t INTERP_FILTER;
 
-extern const InterpKernel *vp10_filter_kernels[4];
+extern const InterpKernel *av1_filter_kernels[4];
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // VP10_COMMON_FILTER_H_
+#endif  // AV1_COMMON_FILTER_H_

@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_COMMON_COMMON_H_
-#define VP10_COMMON_COMMON_H_
+#ifndef AV1_COMMON_COMMON_H_
+#define AV1_COMMON_COMMON_H_
 
 /* Interface header for common constant data structures and lookup tables */
 
@@ -27,21 +27,21 @@ extern "C" {
 #endif
 
 // Only need this for fixed-size arrays, for structs just assign.
-#define vp10_copy(dest, src)             \
+#define av1_copy(dest, src)             \
   {                                      \
     assert(sizeof(dest) == sizeof(src)); \
     memcpy(dest, src, sizeof(src));      \
   }
 
 // Use this for variably-sized arrays.
-#define vp10_copy_array(dest, src, n)      \
+#define av1_copy_array(dest, src, n)      \
   {                                        \
     assert(sizeof(*dest) == sizeof(*src)); \
     memcpy(dest, src, n * sizeof(*src));   \
   }
 
-#define vp10_zero(dest) memset(&(dest), 0, sizeof(dest))
-#define vp10_zero_array(dest, n) memset(dest, 0, n * sizeof(*dest))
+#define av1_zero(dest) memset(&(dest), 0, sizeof(dest))
+#define av1_zero_array(dest, n) memset(dest, 0, n * sizeof(*dest))
 
 static INLINE int get_unsigned_bits(unsigned int num_values) {
   return num_values > 0 ? get_msb(num_values) + 1 : 0;
@@ -66,9 +66,9 @@ static INLINE int get_unsigned_bits(unsigned int num_values) {
   } while (0)
 #endif
 // TODO(yaowu: validate the usage of these codes or develop new ones.)
-#define VP10_SYNC_CODE_0 0x49
-#define VP10_SYNC_CODE_1 0x83
-#define VP10_SYNC_CODE_2 0x43
+#define AV1_SYNC_CODE_0 0x49
+#define AV1_SYNC_CODE_1 0x83
+#define AV1_SYNC_CODE_2 0x43
 
 #define VPX_FRAME_MARKER 0x2
 
@@ -76,4 +76,4 @@ static INLINE int get_unsigned_bits(unsigned int num_values) {
 }  // extern "C"
 #endif
 
-#endif  // VP10_COMMON_COMMON_H_
+#endif  // AV1_COMMON_COMMON_H_

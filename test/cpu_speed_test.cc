@@ -130,7 +130,7 @@ TEST_P(CpuSpeedTest, TestLowBitrate) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
-VP10_INSTANTIATE_TEST_CASE(CpuSpeedTest,
+AV1_INSTANTIATE_TEST_CASE(CpuSpeedTest,
                            ::testing::Values(::libaom_test::kTwoPassGood,
                                              ::libaom_test::kOnePassGood),
                            ::testing::Range(0, 3));

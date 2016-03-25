@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_COMMON_RECONINTER_H_
-#define VP10_COMMON_RECONINTER_H_
+#ifndef AV1_COMMON_RECONINTER_H_
+#define AV1_COMMON_RECONINTER_H_
 
 #include "av1/common/filter.h"
 #include "av1/common/onyxc_int.h"
@@ -32,7 +32,7 @@ static INLINE void inter_predictor(const uint8_t *src, int src_stride,
       ys, w, h);
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 static INLINE void high_inter_predictor(
     const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
     const int subpel_x, const int subpel_y, const struct scale_factors *sf,
@@ -41,7 +41,7 @@ static INLINE void high_inter_predictor(
       src, src_stride, dst, dst_stride, kernel[subpel_x], xs, kernel[subpel_y],
       ys, w, h, bd);
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 static INLINE int round_mv_comp_q4(int value) {
   return (value < 0 ? value - 2 : value + 2) / 4;
@@ -113,29 +113,29 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane, int block, int bw,
                             int bh, int x, int y, int w, int h, int mi_x,
                             int mi_y);
 
-void vp10_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i,
+void av1_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i,
                                        int ir, int ic, int mi_row, int mi_col);
 
-void vp10_build_inter_predictors_sby(MACROBLOCKD *xd, int mi_row, int mi_col,
+void av1_build_inter_predictors_sby(MACROBLOCKD *xd, int mi_row, int mi_col,
                                      BLOCK_SIZE bsize);
 
-void vp10_build_inter_predictors_sbp(MACROBLOCKD *xd, int mi_row, int mi_col,
+void av1_build_inter_predictors_sbp(MACROBLOCKD *xd, int mi_row, int mi_col,
                                      BLOCK_SIZE bsize, int plane);
 
-void vp10_build_inter_predictors_sbuv(MACROBLOCKD *xd, int mi_row, int mi_col,
+void av1_build_inter_predictors_sbuv(MACROBLOCKD *xd, int mi_row, int mi_col,
                                       BLOCK_SIZE bsize);
 
-void vp10_build_inter_predictors_sb(MACROBLOCKD *xd, int mi_row, int mi_col,
+void av1_build_inter_predictors_sb(MACROBLOCKD *xd, int mi_row, int mi_col,
                                     BLOCK_SIZE bsize);
 
-void vp10_build_inter_predictor(const uint8_t *src, int src_stride,
+void av1_build_inter_predictor(const uint8_t *src, int src_stride,
                                 uint8_t *dst, int dst_stride, const MV *mv_q3,
                                 const struct scale_factors *sf, int w, int h,
                                 int do_avg, const InterpKernel *kernel,
                                 enum mv_precision precision, int x, int y);
 
-#if CONFIG_VPX_HIGHBITDEPTH
-void vp10_highbd_build_inter_predictor(
+#if CONFIG_AOM_HIGHBITDEPTH
+void av1_highbd_build_inter_predictor(
     const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride,
     const MV *mv_q3, const struct scale_factors *sf, int w, int h, int do_avg,
     const InterpKernel *kernel, enum mv_precision precision, int x, int y,
@@ -159,11 +159,11 @@ static INLINE void setup_pred_plane(struct buf_2d *dst, uint8_t *src,
   dst->stride = stride;
 }
 
-void vp10_setup_dst_planes(struct macroblockd_plane planes[MAX_MB_PLANE],
+void av1_setup_dst_planes(struct macroblockd_plane planes[MAX_MB_PLANE],
                            const YV12_BUFFER_CONFIG *src, int mi_row,
                            int mi_col);
 
-void vp10_setup_pre_planes(MACROBLOCKD *xd, int idx,
+void av1_setup_pre_planes(MACROBLOCKD *xd, int idx,
                            const YV12_BUFFER_CONFIG *src, int mi_row,
                            int mi_col, const struct scale_factors *sf);
 
@@ -171,4 +171,4 @@ void vp10_setup_pre_planes(MACROBLOCKD *xd, int idx,
 }  // extern "C"
 #endif
 
-#endif  // VP10_COMMON_RECONINTER_H_
+#endif  // AV1_COMMON_RECONINTER_H_

@@ -3473,7 +3473,7 @@ void aom_idct32x32_1_add_sse2(const tran_low_t *input, uint8_t *dest,
   }
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 static INLINE __m128i clamp_high_sse2(__m128i value, int bd) {
   __m128i ubounded, retval;
   const __m128i zero = _mm_set1_epi16(0);
@@ -4035,4 +4035,4 @@ void aom_highbd_idct16x16_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
     }
   }
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH

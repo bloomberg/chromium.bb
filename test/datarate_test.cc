@@ -545,7 +545,7 @@ TEST_P(DatarateTestVP9Large, ChangingDropFrameThresh) {
 }
 
 // Check basic rate targeting for 2 temporal layers.
-#if 0  // VP10 does not support multiple layers yet
+#if 0  // AV1 does not support multiple layers yet
 TEST_P(DatarateTestVP9Large, BasicRateTargeting2TemporalLayers) {
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
@@ -894,13 +894,13 @@ TEST_P(DatarateOnePassCbrSvc, OnePassCbrSvc4threads) {
   EXPECT_EQ(GetMismatchFrames(), (unsigned int)0);
 }
 
-VP10_INSTANTIATE_TEST_CASE(DatarateTestVP9Large,
+AV1_INSTANTIATE_TEST_CASE(DatarateTestVP9Large,
                            ::testing::Values(::libaom_test::kOnePassGood,
                                              ::libaom_test::kRealTime),
                            ::testing::Range(2, 7));
 
-/* VP10 does not support multiple layers yet.
-VP10_INSTANTIATE_TEST_CASE(DatarateOnePassCbrSvc,
+/* AV1 does not support multiple layers yet.
+AV1_INSTANTIATE_TEST_CASE(DatarateOnePassCbrSvc,
                            ::testing::Values(::libaom_test::kRealTime),
                            ::testing::Range(5, 8));
                            */

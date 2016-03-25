@@ -293,7 +293,7 @@ static void fdct16(const tran_low_t in[16], tran_low_t out[16]) {
   out[15] = (tran_low_t)fdct_round_shift(temp2);
 }
 
-/* TODO(angiebird): Unify this with vp10_fwd_txfm.c: vp10_fdct32
+/* TODO(angiebird): Unify this with av1_fwd_txfm.c: av1_fdct32
 static void fdct32(const tran_low_t *input, tran_low_t *output) {
   tran_high_t temp;
   tran_low_t step[32];
@@ -988,7 +988,7 @@ static const transform_2d FHT_16[] = {
   { fadst16, fadst16 }  // ADST_ADST = 3
 };
 
-void vp10_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
+void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
                    int tx_type) {
   if (tx_type == DCT_DCT) {
     aom_fdct4x4_c(input, output, stride);
@@ -1015,7 +1015,7 @@ void vp10_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
   }
 }
 
-void vp10_fdct8x8_quant_c(const int16_t *input, int stride,
+void av1_fdct8x8_quant_c(const int16_t *input, int stride,
                           tran_low_t *coeff_ptr, intptr_t n_coeffs,
                           int skip_block, const int16_t *zbin_ptr,
                           const int16_t *round_ptr, const int16_t *quant_ptr,
@@ -1141,7 +1141,7 @@ void vp10_fdct8x8_quant_c(const int16_t *input, int stride,
   *eob_ptr = eob + 1;
 }
 
-void vp10_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
+void av1_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
                    int tx_type) {
   if (tx_type == DCT_DCT) {
     aom_fdct8x8_c(input, output, stride);
@@ -1170,7 +1170,7 @@ void vp10_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
 
 /* 4-point reversible, orthonormal Walsh-Hadamard in 3.5 adds, 0.5 shifts per
    pixel. */
-void vp10_fwht4x4_c(const int16_t *input, tran_low_t *output, int stride) {
+void av1_fwht4x4_c(const int16_t *input, tran_low_t *output, int stride) {
   int i;
   tran_high_t a1, b1, c1, d1, e1;
   const int16_t *ip_pass0 = input;
@@ -1224,7 +1224,7 @@ void vp10_fwht4x4_c(const int16_t *input, tran_low_t *output, int stride) {
   }
 }
 
-void vp10_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
+void av1_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
                      int tx_type) {
   if (tx_type == DCT_DCT) {
     aom_fdct16x16_c(input, output, stride);
@@ -1251,24 +1251,24 @@ void vp10_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
   }
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
-void vp10_highbd_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
+#if CONFIG_AOM_HIGHBITDEPTH
+void av1_highbd_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
                           int tx_type) {
-  vp10_fht4x4_c(input, output, stride, tx_type);
+  av1_fht4x4_c(input, output, stride, tx_type);
 }
 
-void vp10_highbd_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
+void av1_highbd_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
                           int tx_type) {
-  vp10_fht8x8_c(input, output, stride, tx_type);
+  av1_fht8x8_c(input, output, stride, tx_type);
 }
 
-void vp10_highbd_fwht4x4_c(const int16_t *input, tran_low_t *output,
+void av1_highbd_fwht4x4_c(const int16_t *input, tran_low_t *output,
                            int stride) {
-  vp10_fwht4x4_c(input, output, stride);
+  av1_fwht4x4_c(input, output, stride);
 }
 
-void vp10_highbd_fht16x16_c(const int16_t *input, tran_low_t *output,
+void av1_highbd_fht16x16_c(const int16_t *input, tran_low_t *output,
                             int stride, int tx_type) {
-  vp10_fht16x16_c(input, output, stride, tx_type);
+  av1_fht16x16_c(input, output, stride, tx_type);
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH

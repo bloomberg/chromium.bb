@@ -16,9 +16,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 #include "aom_dsp/aom_dsp_common.h"
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 #include "aom_ports/mem.h"
 #include "av1/common/common.h"
 #include "av1/encoder/resize.h"
@@ -133,8 +133,8 @@ static const interp_kernel filteredinterp_filters1000[(1 << SUBPEL_BITS)] = {
 };
 
 // Filters for factor of 2 downsampling.
-static const int16_t vp10_down2_symeven_half_filter[] = { 56, 12, -3, -1 };
-static const int16_t vp10_down2_symodd_half_filter[] = { 64, 35, 0, -3 };
+static const int16_t av1_down2_symeven_half_filter[] = { 56, 12, -3, -1 };
+static const int16_t av1_down2_symodd_half_filter[] = { 64, 35, 0, -3 };
 
 static const interp_kernel *choose_interp_filter(int inlength, int outlength) {
   int outlength16 = outlength * 16;
@@ -240,8 +240,8 @@ static void interpolate(const uint8_t *const input, int inlength,
 static void down2_symeven(const uint8_t *const input, int length,
                           uint8_t *output) {
   // Actual filter len = 2 * filter_len_half.
-  const int16_t *filter = vp10_down2_symeven_half_filter;
-  const int filter_len_half = sizeof(vp10_down2_symeven_half_filter) / 2;
+  const int16_t *filter = av1_down2_symeven_half_filter;
+  const int filter_len_half = sizeof(av1_down2_symeven_half_filter) / 2;
   int i, j;
   uint8_t *optr = output;
   int l1 = filter_len_half;
@@ -296,8 +296,8 @@ static void down2_symeven(const uint8_t *const input, int length,
 static void down2_symodd(const uint8_t *const input, int length,
                          uint8_t *output) {
   // Actual filter len = 2 * filter_len_half - 1.
-  const int16_t *filter = vp10_down2_symodd_half_filter;
-  const int filter_len_half = sizeof(vp10_down2_symodd_half_filter) / 2;
+  const int16_t *filter = av1_down2_symodd_half_filter;
+  const int filter_len_half = sizeof(av1_down2_symodd_half_filter) / 2;
   int i, j;
   uint8_t *optr = output;
   int l1 = filter_len_half - 1;
@@ -426,7 +426,7 @@ static void fill_arr_to_col(uint8_t *img, int stride, int len, uint8_t *arr) {
   }
 }
 
-void vp10_resize_plane(const uint8_t *const input, int height, int width,
+void av1_resize_plane(const uint8_t *const input, int height, int width,
                        int in_stride, uint8_t *output, int height2, int width2,
                        int out_stride) {
   int i;
@@ -451,7 +451,7 @@ void vp10_resize_plane(const uint8_t *const input, int height, int width,
   free(arrbuf);
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 static void highbd_interpolate(const uint16_t *const input, int inlength,
                                uint16_t *output, int outlength, int bd) {
   const int64_t delta =
@@ -542,8 +542,8 @@ static void highbd_interpolate(const uint16_t *const input, int inlength,
 static void highbd_down2_symeven(const uint16_t *const input, int length,
                                  uint16_t *output, int bd) {
   // Actual filter len = 2 * filter_len_half.
-  static const int16_t *filter = vp10_down2_symeven_half_filter;
-  const int filter_len_half = sizeof(vp10_down2_symeven_half_filter) / 2;
+  static const int16_t *filter = av1_down2_symeven_half_filter;
+  const int filter_len_half = sizeof(av1_down2_symeven_half_filter) / 2;
   int i, j;
   uint16_t *optr = output;
   int l1 = filter_len_half;
@@ -598,8 +598,8 @@ static void highbd_down2_symeven(const uint16_t *const input, int length,
 static void highbd_down2_symodd(const uint16_t *const input, int length,
                                 uint16_t *output, int bd) {
   // Actual filter len = 2 * filter_len_half - 1.
-  static const int16_t *filter = vp10_down2_symodd_half_filter;
-  const int filter_len_half = sizeof(vp10_down2_symodd_half_filter) / 2;
+  static const int16_t *filter = av1_down2_symodd_half_filter;
+  const int filter_len_half = sizeof(av1_down2_symodd_half_filter) / 2;
   int i, j;
   uint16_t *optr = output;
   int l1 = filter_len_half - 1;
@@ -715,7 +715,7 @@ static void highbd_fill_arr_to_col(uint16_t *img, int stride, int len,
   }
 }
 
-void vp10_highbd_resize_plane(const uint8_t *const input, int height, int width,
+void av1_highbd_resize_plane(const uint8_t *const input, int height, int width,
                               int in_stride, uint8_t *output, int height2,
                               int width2, int out_stride, int bd) {
   int i;
@@ -738,84 +738,84 @@ void vp10_highbd_resize_plane(const uint8_t *const input, int height, int width,
   free(tmpbuf);
   free(arrbuf);
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
-void vp10_resize_frame420(const uint8_t *const y, int y_stride,
+void av1_resize_frame420(const uint8_t *const y, int y_stride,
                           const uint8_t *const u, const uint8_t *const v,
                           int uv_stride, int height, int width, uint8_t *oy,
                           int oy_stride, uint8_t *ou, uint8_t *ov,
                           int ouv_stride, int oheight, int owidth) {
-  vp10_resize_plane(y, height, width, y_stride, oy, oheight, owidth, oy_stride);
-  vp10_resize_plane(u, height / 2, width / 2, uv_stride, ou, oheight / 2,
+  av1_resize_plane(y, height, width, y_stride, oy, oheight, owidth, oy_stride);
+  av1_resize_plane(u, height / 2, width / 2, uv_stride, ou, oheight / 2,
                     owidth / 2, ouv_stride);
-  vp10_resize_plane(v, height / 2, width / 2, uv_stride, ov, oheight / 2,
+  av1_resize_plane(v, height / 2, width / 2, uv_stride, ov, oheight / 2,
                     owidth / 2, ouv_stride);
 }
 
-void vp10_resize_frame422(const uint8_t *const y, int y_stride,
+void av1_resize_frame422(const uint8_t *const y, int y_stride,
                           const uint8_t *const u, const uint8_t *const v,
                           int uv_stride, int height, int width, uint8_t *oy,
                           int oy_stride, uint8_t *ou, uint8_t *ov,
                           int ouv_stride, int oheight, int owidth) {
-  vp10_resize_plane(y, height, width, y_stride, oy, oheight, owidth, oy_stride);
-  vp10_resize_plane(u, height, width / 2, uv_stride, ou, oheight, owidth / 2,
+  av1_resize_plane(y, height, width, y_stride, oy, oheight, owidth, oy_stride);
+  av1_resize_plane(u, height, width / 2, uv_stride, ou, oheight, owidth / 2,
                     ouv_stride);
-  vp10_resize_plane(v, height, width / 2, uv_stride, ov, oheight, owidth / 2,
+  av1_resize_plane(v, height, width / 2, uv_stride, ov, oheight, owidth / 2,
                     ouv_stride);
 }
 
-void vp10_resize_frame444(const uint8_t *const y, int y_stride,
+void av1_resize_frame444(const uint8_t *const y, int y_stride,
                           const uint8_t *const u, const uint8_t *const v,
                           int uv_stride, int height, int width, uint8_t *oy,
                           int oy_stride, uint8_t *ou, uint8_t *ov,
                           int ouv_stride, int oheight, int owidth) {
-  vp10_resize_plane(y, height, width, y_stride, oy, oheight, owidth, oy_stride);
-  vp10_resize_plane(u, height, width, uv_stride, ou, oheight, owidth,
+  av1_resize_plane(y, height, width, y_stride, oy, oheight, owidth, oy_stride);
+  av1_resize_plane(u, height, width, uv_stride, ou, oheight, owidth,
                     ouv_stride);
-  vp10_resize_plane(v, height, width, uv_stride, ov, oheight, owidth,
+  av1_resize_plane(v, height, width, uv_stride, ov, oheight, owidth,
                     ouv_stride);
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
-void vp10_highbd_resize_frame420(const uint8_t *const y, int y_stride,
+#if CONFIG_AOM_HIGHBITDEPTH
+void av1_highbd_resize_frame420(const uint8_t *const y, int y_stride,
                                  const uint8_t *const u, const uint8_t *const v,
                                  int uv_stride, int height, int width,
                                  uint8_t *oy, int oy_stride, uint8_t *ou,
                                  uint8_t *ov, int ouv_stride, int oheight,
                                  int owidth, int bd) {
-  vp10_highbd_resize_plane(y, height, width, y_stride, oy, oheight, owidth,
+  av1_highbd_resize_plane(y, height, width, y_stride, oy, oheight, owidth,
                            oy_stride, bd);
-  vp10_highbd_resize_plane(u, height / 2, width / 2, uv_stride, ou, oheight / 2,
+  av1_highbd_resize_plane(u, height / 2, width / 2, uv_stride, ou, oheight / 2,
                            owidth / 2, ouv_stride, bd);
-  vp10_highbd_resize_plane(v, height / 2, width / 2, uv_stride, ov, oheight / 2,
+  av1_highbd_resize_plane(v, height / 2, width / 2, uv_stride, ov, oheight / 2,
                            owidth / 2, ouv_stride, bd);
 }
 
-void vp10_highbd_resize_frame422(const uint8_t *const y, int y_stride,
+void av1_highbd_resize_frame422(const uint8_t *const y, int y_stride,
                                  const uint8_t *const u, const uint8_t *const v,
                                  int uv_stride, int height, int width,
                                  uint8_t *oy, int oy_stride, uint8_t *ou,
                                  uint8_t *ov, int ouv_stride, int oheight,
                                  int owidth, int bd) {
-  vp10_highbd_resize_plane(y, height, width, y_stride, oy, oheight, owidth,
+  av1_highbd_resize_plane(y, height, width, y_stride, oy, oheight, owidth,
                            oy_stride, bd);
-  vp10_highbd_resize_plane(u, height, width / 2, uv_stride, ou, oheight,
+  av1_highbd_resize_plane(u, height, width / 2, uv_stride, ou, oheight,
                            owidth / 2, ouv_stride, bd);
-  vp10_highbd_resize_plane(v, height, width / 2, uv_stride, ov, oheight,
+  av1_highbd_resize_plane(v, height, width / 2, uv_stride, ov, oheight,
                            owidth / 2, ouv_stride, bd);
 }
 
-void vp10_highbd_resize_frame444(const uint8_t *const y, int y_stride,
+void av1_highbd_resize_frame444(const uint8_t *const y, int y_stride,
                                  const uint8_t *const u, const uint8_t *const v,
                                  int uv_stride, int height, int width,
                                  uint8_t *oy, int oy_stride, uint8_t *ou,
                                  uint8_t *ov, int ouv_stride, int oheight,
                                  int owidth, int bd) {
-  vp10_highbd_resize_plane(y, height, width, y_stride, oy, oheight, owidth,
+  av1_highbd_resize_plane(y, height, width, y_stride, oy, oheight, owidth,
                            oy_stride, bd);
-  vp10_highbd_resize_plane(u, height, width, uv_stride, ou, oheight, owidth,
+  av1_highbd_resize_plane(u, height, width, uv_stride, ou, oheight, owidth,
                            ouv_stride, bd);
-  vp10_highbd_resize_plane(v, height, width, uv_stride, ov, oheight, owidth,
+  av1_highbd_resize_plane(v, height, width, uv_stride, ov, oheight, owidth,
                            ouv_stride, bd);
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH

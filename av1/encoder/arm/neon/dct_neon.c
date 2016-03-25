@@ -18,7 +18,7 @@
 #include "av1/common/blockd.h"
 #include "aom_dsp/txfm_common.h"
 
-void vp10_fdct8x8_quant_neon(
+void av1_fdct8x8_quant_neon(
     const int16_t* input, int stride, int16_t* coeff_ptr, intptr_t n_coeffs,
     int skip_block, const int16_t* zbin_ptr, const int16_t* round_ptr,
     const int16_t* quant_ptr, const int16_t* quant_shift_ptr,
@@ -28,7 +28,7 @@ void vp10_fdct8x8_quant_neon(
   (void)coeff_ptr;
 
   aom_fdct8x8_neon(input, temp_buffer, stride);
-  vp10_quantize_fp_neon(temp_buffer, n_coeffs, skip_block, zbin_ptr, round_ptr,
+  av1_quantize_fp_neon(temp_buffer, n_coeffs, skip_block, zbin_ptr, round_ptr,
                         quant_ptr, quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr,
                         dequant_ptr, eob_ptr, scan_ptr, iscan_ptr);
 }

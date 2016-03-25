@@ -256,7 +256,7 @@ add_proto qw/void aom_dc_128_predictor_32x32/, "uint8_t *dst, ptrdiff_t y_stride
 specialize qw/aom_dc_128_predictor_32x32 msa neon/, "$sse2_x86inc";
 
 # High bitdepth functions
-if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   add_proto qw/void aom_highbd_d207_predictor_4x4/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
   specialize qw/aom_highbd_d207_predictor_4x4/;
 
@@ -448,7 +448,7 @@ if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
 
   add_proto qw/void aom_highbd_dc_128_predictor_32x32/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
   specialize qw/aom_highbd_dc_128_predictor_32x32/;
-}  # CONFIG_VPX_HIGHBITDEPTH
+}  # CONFIG_AOM_HIGHBITDEPTH
 
 #
 # Sub Pixel Filters
@@ -495,7 +495,7 @@ specialize qw/aom_scaled_avg_horiz/;
 add_proto qw/void aom_scaled_avg_vert/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h";
 specialize qw/aom_scaled_avg_vert/;
 
-if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   #
   # Sub Pixel Filters
   #
@@ -522,7 +522,7 @@ if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
 
   add_proto qw/void aom_highbd_convolve8_avg_vert/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
   specialize qw/aom_highbd_convolve8_avg_vert/, "$sse2_x86_64";
-}  # CONFIG_VPX_HIGHBITDEPTH
+}  # CONFIG_AOM_HIGHBITDEPTH
 
 #
 # Loopfilter
@@ -565,7 +565,7 @@ specialize qw/aom_lpf_horizontal_4 mmx neon dspr2 msa/;
 add_proto qw/void aom_lpf_horizontal_4_dual/, "uint8_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1";
 specialize qw/aom_lpf_horizontal_4_dual sse2 neon dspr2 msa/;
 
-if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   add_proto qw/void aom_highbd_lpf_vertical_16/, "uint16_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh, int bd";
   specialize qw/aom_highbd_lpf_vertical_16 sse2/;
 
@@ -598,7 +598,7 @@ if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
 
   add_proto qw/void aom_highbd_lpf_horizontal_4_dual/, "uint16_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0, const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1, const uint8_t *thresh1, int bd";
   specialize qw/aom_highbd_lpf_horizontal_4_dual sse2/;
-}  # CONFIG_VPX_HIGHBITDEPTH
+}  # CONFIG_AOM_HIGHBITDEPTH
 
 #
 # Encoder functions.
@@ -607,8 +607,8 @@ if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
 #
 # Forward transform
 #
-if (aom_config("CONFIG_VP10_ENCODER") eq "yes") {
-if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
+if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   add_proto qw/void aom_fdct4x4/, "const int16_t *input, tran_low_t *output, int stride";
   specialize qw/aom_fdct4x4 sse2/;
 
@@ -686,13 +686,13 @@ if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
 
   add_proto qw/void aom_fdct32x32_1/, "const int16_t *input, tran_low_t *output, int stride";
   specialize qw/aom_fdct32x32_1 sse2 msa/;
-}  # CONFIG_VPX_HIGHBITDEPTH
-}  # CONFIG_VP10_ENCODER
+}  # CONFIG_AOM_HIGHBITDEPTH
+}  # CONFIG_AV1_ENCODER
 
 #
 # Inverse transform
-if (aom_config("CONFIG_VP10") eq "yes") {
-if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+if (aom_config("CONFIG_AV1") eq "yes") {
+if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   # Note as optimized versions of these functions are added we need to add a check to ensure
   # that when CONFIG_EMULATE_HARDWARE is on, it defaults to the C versions only.
   add_proto qw/void aom_iwht4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
@@ -925,40 +925,40 @@ if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void aom_iwht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/aom_iwht4x4_16_add msa/, "$sse2_x86inc";
   }  # CONFIG_EMULATE_HARDWARE
-}  # CONFIG_VPX_HIGHBITDEPTH
-}  # CONFIG_VP10
+}  # CONFIG_AOM_HIGHBITDEPTH
+}  # CONFIG_AV1
 
 #
 # Quantization
 #
 if (aom_config("CONFIG_AOM_QM") eq "yes") {
-  if (aom_config("CONFIG_VP10_ENCODER") eq "yes") {
+  if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     add_proto qw/void aom_quantize_b/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan, const qm_val_t * qm_ptr, const qm_val_t * iqm_ptr";
 
     add_proto qw/void aom_quantize_b_32x32/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan, const qm_val_t * qm_ptr, const qm_val_t * iqm_ptr";
 
-    if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+    if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
       add_proto qw/void aom_highbd_quantize_b/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan, const qm_val_t * qm_ptr, const qm_val_t * iqm_ptr";
 
       add_proto qw/void aom_highbd_quantize_b_32x32/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan, const qm_val_t * qm_ptr, const qm_val_t * iqm_ptr";
-    }  # CONFIG_VPX_HIGHBITDEPTH
-  }  # CONFIG_VP10_ENCODER
+    }  # CONFIG_AOM_HIGHBITDEPTH
+  }  # CONFIG_AV1_ENCODER
 } else {
-  if (aom_config("CONFIG_VP10_ENCODER") eq "yes") {
+  if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     add_proto qw/void aom_quantize_b/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
     specialize qw/aom_quantize_b sse2/, "$ssse3_x86_64_x86inc", "$avx_x86_64_x86inc";
 
     add_proto qw/void aom_quantize_b_32x32/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
     specialize qw/aom_quantize_b_32x32/, "$ssse3_x86_64_x86inc", "$avx_x86_64_x86inc";
 
-    if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+    if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
       add_proto qw/void aom_highbd_quantize_b/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
       specialize qw/aom_highbd_quantize_b sse2/;
 
       add_proto qw/void aom_highbd_quantize_b_32x32/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
       specialize qw/aom_highbd_quantize_b_32x32 sse2/;
-    }  # CONFIG_VPX_HIGHBITDEPTH
-  }  # CONFIG_VP10_ENCODER
+    }  # CONFIG_AOM_HIGHBITDEPTH
+  }  # CONFIG_AV1_ENCODER
 } # CONFIG_AOM_QM
 
 if (aom_config("CONFIG_ENCODERS") eq "yes") {
@@ -1013,7 +1013,7 @@ specialize qw/aom_sad4x4 mmx neon msa/, "$sse2_x86inc";
 #
 # Avg
 #
-if (aom_config("CONFIG_VP10_ENCODER") eq "yes") {
+if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   add_proto qw/unsigned int aom_avg_8x8/, "const uint8_t *, int p";
   specialize qw/aom_avg_8x8 sse2 neon msa/;
 
@@ -1040,7 +1040,7 @@ if (aom_config("CONFIG_VP10_ENCODER") eq "yes") {
 
   add_proto qw/int aom_vector_var/, "int16_t const *ref, int16_t const *src, const int bwl";
   specialize qw/aom_vector_var neon sse2/;
-}  # CONFIG_VP10_ENCODER
+}  # CONFIG_AV1_ENCODER
 
 add_proto qw/unsigned int aom_sad64x64_avg/, "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred";
 specialize qw/aom_sad64x64_avg avx2 msa/, "$sse2_x86inc";
@@ -1187,7 +1187,7 @@ if (aom_config("CONFIG_INTERNAL_STATS") eq "yes") {
     specialize qw/aom_ssim_parms_16x16/, "$sse2_x86_64";
 }
 
-if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   #
   # Block subtraction
   #
@@ -1387,7 +1387,7 @@ if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void aom_highbd_ssim_parms_8x8/, "const uint16_t *s, int sp, const uint16_t *r, int rp, uint32_t *sum_s, uint32_t *sum_r, uint32_t *sum_sq_s, uint32_t *sum_sq_r, uint32_t *sum_sxr";
     specialize qw/aom_highbd_ssim_parms_8x8/;
   }
-}  # CONFIG_VPX_HIGHBITDEPTH
+}  # CONFIG_AOM_HIGHBITDEPTH
 }  # CONFIG_ENCODERS
 
 if (aom_config("CONFIG_ENCODERS") eq "yes") {
@@ -1556,7 +1556,7 @@ add_proto qw/uint32_t aom_variance_halfpixvar16x16_v/, "const unsigned char *src
 add_proto qw/uint32_t aom_variance_halfpixvar16x16_hv/, "const unsigned char *src_ptr, int source_stride, const unsigned char *ref_ptr, int  ref_stride, uint32_t *sse";
   specialize qw/aom_variance_halfpixvar16x16_hv mmx sse2 media/;
 
-if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   add_proto qw/unsigned int aom_highbd_12_variance64x64/, "const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse";
   specialize qw/aom_highbd_12_variance64x64 sse2/;
 
@@ -1913,7 +1913,7 @@ if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
   add_proto qw/uint32_t aom_highbd_8_sub_pixel_avg_variance4x8/, "const uint8_t *src_ptr, int source_stride, int xoffset, int  yoffset, const uint8_t *ref_ptr, int ref_stride, uint32_t *sse, const uint8_t *second_pred";
   add_proto qw/uint32_t aom_highbd_8_sub_pixel_avg_variance4x4/, "const uint8_t *src_ptr, int source_stride, int xoffset, int  yoffset, const uint8_t *ref_ptr, int ref_stride, uint32_t *sse, const uint8_t *second_pred";
 
-}  # CONFIG_VPX_HIGHBITDEPTH
+}  # CONFIG_AOM_HIGHBITDEPTH
 }  # CONFIG_ENCODERS
 
 1;

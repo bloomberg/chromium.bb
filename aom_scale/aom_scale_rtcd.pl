@@ -22,7 +22,7 @@ add_proto qw/void aom_yv12_copy_frame/, "const struct yv12_buffer_config *src_yb
 
 add_proto qw/void aom_yv12_copy_y/, "const struct yv12_buffer_config *src_ybc, struct yv12_buffer_config *dst_ybc";
 
-if (aom_config("CONFIG_VP10") eq "yes") {
+if (aom_config("CONFIG_AV1") eq "yes") {
     add_proto qw/void aom_extend_frame_borders/, "struct yv12_buffer_config *ybf";
     specialize qw/aom_extend_frame_borders dspr2/;
 

@@ -33,9 +33,9 @@ void Encoder::InitEncoder(VideoSource *video) {
     res = aom_codec_enc_init(&encoder_, CodecInterface(), &cfg_, init_flags_);
     ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
 
-#if CONFIG_VP10_ENCODER
-    if (CodecInterface() == &aom_codec_vp10_cx_algo) {
-      // Default to 1 tile column for VP10.
+#if CONFIG_AV1_ENCODER
+    if (CodecInterface() == &aom_codec_av1_cx_algo) {
+      // Default to 1 tile column for AV1.
       const int log2_tile_columns = 0;
       res = aom_codec_control_(&encoder_, VP9E_SET_TILE_COLUMNS,
                                log2_tile_columns);

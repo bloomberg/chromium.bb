@@ -49,9 +49,9 @@ const TestVideoParam kTestVectors[] = {
   { "hantro_collage_w352h288.yuv", 352, 288, 30, 1, 8, VPX_IMG_FMT_I420,
     VPX_BITS_8, 0 },
   { "rush_hour_444.y4m", 352, 288, 30, 1, 8, VPX_IMG_FMT_I444, VPX_BITS_8, 1 },
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 // Add list of profile 2/3 test videos here ...
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 };
 
 const TestEncodeParam kEncodeVectors[] = {
@@ -62,7 +62,7 @@ const TestEncodeParam kEncodeVectors[] = {
 
 const int kMinArfVectors[] = {
   // NOTE: 0 refers to the default built-in logic in:
-  //       vp10_rc_get_default_min_gf_interval(...)
+  //       av1_rc_get_default_min_gf_interval(...)
   0, 4, 8, 12, 15
 };
 
@@ -164,7 +164,7 @@ class ArfFreqTest
     if (min_arf_requested_)
       return min_arf_requested_;
     else
-      return vp10_rc_get_default_min_gf_interval(
+      return av1_rc_get_default_min_gf_interval(
           test_video_param_.width, test_video_param_.height,
           (double)test_video_param_.framerate_num /
               test_video_param_.framerate_den);
@@ -210,20 +210,20 @@ TEST_P(ArfFreqTest, MinArfFreqTest) {
   delete (video);
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
-#if CONFIG_VP10_ENCODER
+#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_AV1_ENCODER
 // TODO(angiebird): 25-29 fail in high bitdepth mode.
 INSTANTIATE_TEST_CASE_P(
-    DISABLED_VP10, ArfFreqTest,
+    DISABLED_AV1, ArfFreqTest,
     ::testing::Combine(
         ::testing::Values(static_cast<const libaom_test::CodecFactory *>(
-            &libaom_test::kVP10)),
+            &libaom_test::kAV1)),
         ::testing::ValuesIn(kTestVectors), ::testing::ValuesIn(kEncodeVectors),
         ::testing::ValuesIn(kMinArfVectors)));
-#endif  // CONFIG_VP10_ENCODER
+#endif  // CONFIG_AV1_ENCODER
 #else
-VP10_INSTANTIATE_TEST_CASE(ArfFreqTest, ::testing::ValuesIn(kTestVectors),
+AV1_INSTANTIATE_TEST_CASE(ArfFreqTest, ::testing::ValuesIn(kTestVectors),
                            ::testing::ValuesIn(kEncodeVectors),
                            ::testing::ValuesIn(kMinArfVectors));
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 }  // namespace

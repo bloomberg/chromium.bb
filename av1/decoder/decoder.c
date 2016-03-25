@@ -41,19 +41,19 @@ static void initialize_dec(void) {
     av1_rtcd();
     aom_dsp_rtcd();
     aom_scale_rtcd();
-    vp10_init_intra_predictors();
+    av1_init_intra_predictors();
     init_done = 1;
   }
 }
 
-static void vp10_dec_setup_mi(VP10_COMMON *cm) {
+static void av1_dec_setup_mi(AV1_COMMON *cm) {
   cm->mi = cm->mip + cm->mi_stride + 1;
   cm->mi_grid_visible = cm->mi_grid_base + cm->mi_stride + 1;
   memset(cm->mi_grid_base, 0,
          cm->mi_stride * (cm->mi_rows + 1) * sizeof(*cm->mi_grid_base));
 }
 
-static int vp10_dec_alloc_mi(VP10_COMMON *cm, int mi_size) {
+static int av1_dec_alloc_mi(AV1_COMMON *cm, int mi_size) {
   cm->mip = aom_calloc(mi_size, sizeof(*cm->mip));
   if (!cm->mip) return 1;
   cm->mi_alloc_size = mi_size;
@@ -62,24 +62,24 @@ static int vp10_dec_alloc_mi(VP10_COMMON *cm, int mi_size) {
   return 0;
 }
 
-static void vp10_dec_free_mi(VP10_COMMON *cm) {
+static void av1_dec_free_mi(AV1_COMMON *cm) {
   aom_free(cm->mip);
   cm->mip = NULL;
   aom_free(cm->mi_grid_base);
   cm->mi_grid_base = NULL;
 }
 
-VP10Decoder *vp10_decoder_create(BufferPool *const pool) {
-  VP10Decoder *volatile const pbi = aom_memalign(32, sizeof(*pbi));
-  VP10_COMMON *volatile const cm = pbi ? &pbi->common : NULL;
+AV1Decoder *av1_decoder_create(BufferPool *const pool) {
+  AV1Decoder *volatile const pbi = aom_memalign(32, sizeof(*pbi));
+  AV1_COMMON *volatile const cm = pbi ? &pbi->common : NULL;
 
   if (!cm) return NULL;
 
-  vp10_zero(*pbi);
+  av1_zero(*pbi);
 
   if (setjmp(cm->error.jmp)) {
     cm->error.setjmp = 0;
-    vp10_decoder_remove(pbi);
+    av1_decoder_remove(pbi);
     return NULL;
   }
 
@@ -104,11 +104,11 @@ VP10Decoder *vp10_decoder_create(BufferPool *const pool) {
   cm->bit_depth = VPX_BITS_8;
   cm->dequant_bit_depth = VPX_BITS_8;
 
-  cm->alloc_mi = vp10_dec_alloc_mi;
-  cm->free_mi = vp10_dec_free_mi;
-  cm->setup_mi = vp10_dec_setup_mi;
+  cm->alloc_mi = av1_dec_alloc_mi;
+  cm->free_mi = av1_dec_free_mi;
+  cm->setup_mi = av1_dec_setup_mi;
 
-  vp10_loop_filter_init(cm);
+  av1_loop_filter_init(cm);
 
 #if CONFIG_AOM_QM
   aom_qm_init(cm);
@@ -121,7 +121,7 @@ VP10Decoder *vp10_decoder_create(BufferPool *const pool) {
   return pbi;
 }
 
-void vp10_decoder_remove(VP10Decoder *pbi) {
+void av1_decoder_remove(AV1Decoder *pbi) {
   int i;
 
   if (!pbi) return;
@@ -138,7 +138,7 @@ void vp10_decoder_remove(VP10Decoder *pbi) {
   aom_free(pbi->tile_workers);
 
   if (pbi->num_tile_workers > 0) {
-    vp10_loop_filter_dealloc(&pbi->lf_row_sync);
+    av1_loop_filter_dealloc(&pbi->lf_row_sync);
   }
 
   aom_free(pbi);
@@ -150,15 +150,15 @@ static int equal_dimensions(const YV12_BUFFER_CONFIG *a,
          a->uv_height == b->uv_height && a->uv_width == b->uv_width;
 }
 
-aom_codec_err_t vp10_copy_reference_dec(VP10Decoder *pbi,
+aom_codec_err_t av1_copy_reference_dec(AV1Decoder *pbi,
                                         VPX_REFFRAME ref_frame_flag,
                                         YV12_BUFFER_CONFIG *sd) {
-  VP10_COMMON *cm = &pbi->common;
+  AV1_COMMON *cm = &pbi->common;
 
   /* TODO(jkoleszar): The decoder doesn't have any real knowledge of what the
    * encoder is using the frame buffers for. This is just a stub to keep the
    * aomenc --test-decode functionality working, and will be replaced in a
-   * later commit that adds VP10-specific controls for this functionality.
+   * later commit that adds AV1-specific controls for this functionality.
    */
   if (ref_frame_flag == VPX_LAST_FLAG) {
     const YV12_BUFFER_CONFIG *const cfg = get_ref_frame(cm, 0);
@@ -179,7 +179,7 @@ aom_codec_err_t vp10_copy_reference_dec(VP10Decoder *pbi,
   return cm->error.error_code;
 }
 
-aom_codec_err_t vp10_set_reference_dec(VP10_COMMON *cm,
+aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm,
                                        VPX_REFFRAME ref_frame_flag,
                                        YV12_BUFFER_CONFIG *sd) {
   RefBuffer *ref_buf = NULL;
@@ -188,7 +188,7 @@ aom_codec_err_t vp10_set_reference_dec(VP10_COMMON *cm,
   // TODO(jkoleszar): The decoder doesn't have any real knowledge of what the
   // encoder is using the frame buffers for. This is just a stub to keep the
   // aomenc --test-decode functionality working, and will be replaced in a
-  // later commit that adds VP10-specific controls for this functionality.
+  // later commit that adds AV1-specific controls for this functionality.
   if (ref_frame_flag == VPX_LAST_FLAG) {
     ref_buf = &cm->frame_refs[0];
   } else if (ref_frame_flag == VPX_GOLD_FLAG) {
@@ -224,9 +224,9 @@ aom_codec_err_t vp10_set_reference_dec(VP10_COMMON *cm,
 }
 
 /* If any buffer updating is signaled it should be done here. */
-static void swap_frame_buffers(VP10Decoder *pbi) {
+static void swap_frame_buffers(AV1Decoder *pbi) {
   int ref_index = 0, mask;
-  VP10_COMMON *const cm = &pbi->common;
+  AV1_COMMON *const cm = &pbi->common;
   BufferPool *const pool = cm->buffer_pool;
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
 
@@ -265,9 +265,9 @@ static void swap_frame_buffers(VP10Decoder *pbi) {
     cm->frame_refs[ref_index].idx = -1;
 }
 
-int vp10_receive_compressed_data(VP10Decoder *pbi, size_t size,
+int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
                                  const uint8_t **psource) {
-  VP10_COMMON *volatile const cm = &pbi->common;
+  AV1_COMMON *volatile const cm = &pbi->common;
   BufferPool *volatile const pool = cm->buffer_pool;
   RefCntBuffer *volatile const frame_bufs = cm->buffer_pool->frame_bufs;
   const uint8_t *source = *psource;
@@ -307,13 +307,13 @@ int vp10_receive_compressed_data(VP10Decoder *pbi, size_t size,
   pbi->hold_ref_buf = 0;
   if (cm->frame_parallel_decode) {
     VPxWorker *const worker = pbi->frame_worker_owner;
-    vp10_frameworker_lock_stats(worker);
+    av1_frameworker_lock_stats(worker);
     frame_bufs[cm->new_fb_idx].frame_worker_owner = worker;
     // Reset decoding progress.
     pbi->cur_buf = &frame_bufs[cm->new_fb_idx];
     pbi->cur_buf->row = -1;
     pbi->cur_buf->col = -1;
-    vp10_frameworker_unlock_stats(worker);
+    av1_frameworker_unlock_stats(worker);
   } else {
     pbi->cur_buf = &frame_bufs[cm->new_fb_idx];
   }
@@ -364,7 +364,7 @@ int vp10_receive_compressed_data(VP10Decoder *pbi, size_t size,
   }
 
   cm->error.setjmp = 1;
-  vp10_decode_frame(pbi, source, source + size, psource);
+  av1_decode_frame(pbi, source, source + size, psource);
 
   swap_frame_buffers(pbi);
 
@@ -374,7 +374,7 @@ int vp10_receive_compressed_data(VP10Decoder *pbi, size_t size,
     cm->last_show_frame = cm->show_frame;
     cm->prev_frame = cm->cur_frame;
     if (cm->seg.enabled && !cm->frame_parallel_decode)
-      vp10_swap_current_and_last_seg_map(cm);
+      av1_swap_current_and_last_seg_map(cm);
   }
 
   // Update progress in frame parallel decode.
@@ -383,15 +383,15 @@ int vp10_receive_compressed_data(VP10Decoder *pbi, size_t size,
     // be accessing this buffer.
     VPxWorker *const worker = pbi->frame_worker_owner;
     FrameWorkerData *const frame_worker_data = worker->data1;
-    vp10_frameworker_lock_stats(worker);
+    av1_frameworker_lock_stats(worker);
 
     if (cm->show_frame) {
       cm->current_video_frame++;
     }
     frame_worker_data->frame_decoded = 1;
     frame_worker_data->frame_context_ready = 1;
-    vp10_frameworker_signal_stats(worker);
-    vp10_frameworker_unlock_stats(worker);
+    av1_frameworker_signal_stats(worker);
+    av1_frameworker_unlock_stats(worker);
   } else {
     cm->last_width = cm->width;
     cm->last_height = cm->height;
@@ -404,8 +404,8 @@ int vp10_receive_compressed_data(VP10Decoder *pbi, size_t size,
   return retcode;
 }
 
-int vp10_get_raw_frame(VP10Decoder *pbi, YV12_BUFFER_CONFIG *sd) {
-  VP10_COMMON *const cm = &pbi->common;
+int av1_get_raw_frame(AV1Decoder *pbi, YV12_BUFFER_CONFIG *sd) {
+  AV1_COMMON *const cm = &pbi->common;
   int ret = -1;
 
   if (pbi->ready_for_new_data == 1) return ret;
@@ -423,7 +423,7 @@ int vp10_get_raw_frame(VP10Decoder *pbi, YV12_BUFFER_CONFIG *sd) {
   return ret;
 }
 
-aom_codec_err_t vp10_parse_superframe_index(const uint8_t *data, size_t data_sz,
+aom_codec_err_t av1_parse_superframe_index(const uint8_t *data, size_t data_sz,
                                             uint32_t sizes[8], int *count,
                                             aom_decrypt_cb decrypt_cb,
                                             void *decrypt_state) {

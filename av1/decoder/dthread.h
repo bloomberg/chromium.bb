@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_DECODER_DTHREAD_H_
-#define VP10_DECODER_DTHREAD_H_
+#ifndef AV1_DECODER_DTHREAD_H_
+#define AV1_DECODER_DTHREAD_H_
 
 #include "./aom_config.h"
 #include "aom_util/aom_thread.h"
@@ -20,13 +20,13 @@
 extern "C" {
 #endif
 
-struct VP10Common;
-struct VP10Decoder;
+struct AV1Common;
+struct AV1Decoder;
 
 // WorkerData for the FrameWorker thread. It contains all the information of
 // the worker and decode structures for decoding a frame.
 typedef struct FrameWorkerData {
-  struct VP10Decoder *pbi;
+  struct AV1Decoder *pbi;
   const uint8_t *data;
   const uint8_t *data_end;
   size_t data_size;
@@ -49,27 +49,27 @@ typedef struct FrameWorkerData {
   int frame_decoded;        // Finished decoding current frame.
 } FrameWorkerData;
 
-void vp10_frameworker_lock_stats(VPxWorker *const worker);
-void vp10_frameworker_unlock_stats(VPxWorker *const worker);
-void vp10_frameworker_signal_stats(VPxWorker *const worker);
+void av1_frameworker_lock_stats(VPxWorker *const worker);
+void av1_frameworker_unlock_stats(VPxWorker *const worker);
+void av1_frameworker_signal_stats(VPxWorker *const worker);
 
 // Wait until ref_buf has been decoded to row in real pixel unit.
 // Note: worker may already finish decoding ref_buf and release it in order to
 // start decoding next frame. So need to check whether worker is still decoding
 // ref_buf.
-void vp10_frameworker_wait(VPxWorker *const worker, RefCntBuffer *const ref_buf,
+void av1_frameworker_wait(VPxWorker *const worker, RefCntBuffer *const ref_buf,
                            int row);
 
 // FrameWorker broadcasts its decoding progress so other workers that are
 // waiting on it can resume decoding.
-void vp10_frameworker_broadcast(RefCntBuffer *const buf, int row);
+void av1_frameworker_broadcast(RefCntBuffer *const buf, int row);
 
 // Copy necessary decoding context from src worker to dst worker.
-void vp10_frameworker_copy_context(VPxWorker *const dst_worker,
+void av1_frameworker_copy_context(VPxWorker *const dst_worker,
                                    VPxWorker *const src_worker);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // VP10_DECODER_DTHREAD_H_
+#endif  // AV1_DECODER_DTHREAD_H_

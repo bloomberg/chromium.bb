@@ -30,7 +30,7 @@ void *aom_calloc(size_t num, size_t size);
 void *aom_realloc(void *memblk, size_t size);
 void aom_free(void *memblk);
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 void *aom_memset16(void *dest, int val, size_t length);
 #endif
 

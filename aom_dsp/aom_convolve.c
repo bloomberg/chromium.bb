@@ -329,7 +329,7 @@ void aom_scaled_avg_2d_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
                       filter_y, y_step_q4, w, h);
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 static void highbd_convolve_horiz(const uint8_t *src8, ptrdiff_t src_stride,
                                   uint8_t *dst8, ptrdiff_t dst_stride,
                                   const InterpKernel *x_filters, int x0_q4,

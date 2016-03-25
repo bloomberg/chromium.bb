@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_DECODER_DSUBEXP_H_
-#define VP10_DECODER_DSUBEXP_H_
+#ifndef AV1_DECODER_DSUBEXP_H_
+#define AV1_DECODER_DSUBEXP_H_
 
 #include "aom_dsp/bitreader.h"
 
@@ -18,10 +18,10 @@
 extern "C" {
 #endif
 
-void vp10_diff_update_prob(aom_reader *r, aom_prob *p);
+void av1_diff_update_prob(aom_reader *r, aom_prob *p);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // VP10_DECODER_DSUBEXP_H_
+#endif  // AV1_DECODER_DSUBEXP_H_

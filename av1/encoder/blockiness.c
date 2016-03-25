@@ -120,7 +120,7 @@ static int blockiness_horizontal(const uint8_t *s, int sp, const uint8_t *r,
 
 // This function returns the blockiness for the entire frame currently by
 // looking at all borders in steps of 4.
-double vp10_get_blockiness(const unsigned char *img1, int img1_pitch,
+double av1_get_blockiness(const unsigned char *img1, int img1_pitch,
                            const unsigned char *img2, int img2_pitch, int width,
                            int height) {
   double blockiness = 0;

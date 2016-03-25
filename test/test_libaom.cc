@@ -16,9 +16,9 @@
 #include "aom_ports/x86.h"
 #endif
 extern "C" {
-#if CONFIG_VP10
+#if CONFIG_AV1
 extern void av1_rtcd();
-#endif  // CONFIG_VP10
+#endif  // CONFIG_AV1
 extern void aom_dsp_rtcd();
 extern void aom_scale_rtcd();
 }
@@ -54,9 +54,9 @@ int main(int argc, char **argv) {
 // Shared library builds don't support whitebox tests
 // that exercise internal symbols.
 
-#if CONFIG_VP10
+#if CONFIG_AV1
   av1_rtcd();
-#endif  // CONFIG_VP10
+#endif  // CONFIG_AV1
   aom_dsp_rtcd();
   aom_scale_rtcd();
 #endif  // !CONFIG_SHARED

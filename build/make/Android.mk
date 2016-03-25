@@ -168,7 +168,7 @@ endif
 define rtcd_dep_template
 rtcd_dep_template_SRCS := $(addprefix $(LOCAL_PATH)/, $(LOCAL_SRC_FILES))
 rtcd_dep_template_SRCS := $$(rtcd_dep_template_SRCS:.neon=)
-ifeq ($(CONFIG_VP10), yes)
+ifeq ($(CONFIG_AV1), yes)
 $$(rtcd_dep_template_SRCS): av1_rtcd.h
 endif
 $$(rtcd_dep_template_SRCS): aom_scale_rtcd.h

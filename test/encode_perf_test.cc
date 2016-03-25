@@ -182,6 +182,6 @@ TEST_P(VP9EncodePerfTest, PerfTest) {
   }
 }
 
-VP10_INSTANTIATE_TEST_CASE(VP9EncodePerfTest,
+AV1_INSTANTIATE_TEST_CASE(VP9EncodePerfTest,
                            ::testing::Values(::libaom_test::kRealTime));
 }  // namespace

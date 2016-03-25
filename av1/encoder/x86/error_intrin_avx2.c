@@ -14,7 +14,7 @@
 #include "./av1_rtcd.h"
 #include "aom/aom_integer.h"
 
-int64_t vp10_block_error_avx2(const int16_t *coeff, const int16_t *dqcoeff,
+int64_t av1_block_error_avx2(const int16_t *coeff, const int16_t *dqcoeff,
                               intptr_t block_size, int64_t *ssz) {
   __m256i sse_reg, ssz_reg, coeff_reg, dqcoeff_reg;
   __m256i exp_dqcoeff_lo, exp_dqcoeff_hi, exp_coeff_lo, exp_coeff_hi;

@@ -524,13 +524,13 @@ TEST_P(ResizeCspTest, TestResizeCspWorks) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
-VP10_INSTANTIATE_TEST_CASE(ResizeTest,
+AV1_INSTANTIATE_TEST_CASE(ResizeTest,
                            ::testing::Values(::libaom_test::kRealTime));
-VP10_INSTANTIATE_TEST_CASE(ResizeInternalTest,
+AV1_INSTANTIATE_TEST_CASE(ResizeInternalTest,
                            ::testing::Values(::libaom_test::kOnePassBest));
-VP10_INSTANTIATE_TEST_CASE(ResizeRealtimeTest,
+AV1_INSTANTIATE_TEST_CASE(ResizeRealtimeTest,
                            ::testing::Values(::libaom_test::kRealTime),
                            ::testing::Range(5, 9));
-VP10_INSTANTIATE_TEST_CASE(ResizeCspTest,
+AV1_INSTANTIATE_TEST_CASE(ResizeCspTest,
                            ::testing::Values(::libaom_test::kRealTime));
 }  // namespace

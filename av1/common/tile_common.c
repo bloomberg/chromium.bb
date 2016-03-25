@@ -22,19 +22,19 @@ static int get_tile_offset(int idx, int mis, int log2) {
   return VPXMIN(offset, mis);
 }
 
-void vp10_tile_set_row(TileInfo *tile, const VP10_COMMON *cm, int row) {
+void av1_tile_set_row(TileInfo *tile, const AV1_COMMON *cm, int row) {
   tile->mi_row_start = get_tile_offset(row, cm->mi_rows, cm->log2_tile_rows);
   tile->mi_row_end = get_tile_offset(row + 1, cm->mi_rows, cm->log2_tile_rows);
 }
 
-void vp10_tile_set_col(TileInfo *tile, const VP10_COMMON *cm, int col) {
+void av1_tile_set_col(TileInfo *tile, const AV1_COMMON *cm, int col) {
   tile->mi_col_start = get_tile_offset(col, cm->mi_cols, cm->log2_tile_cols);
   tile->mi_col_end = get_tile_offset(col + 1, cm->mi_cols, cm->log2_tile_cols);
 }
 
-void vp10_tile_init(TileInfo *tile, const VP10_COMMON *cm, int row, int col) {
-  vp10_tile_set_row(tile, cm, row);
-  vp10_tile_set_col(tile, cm, col);
+void av1_tile_init(TileInfo *tile, const AV1_COMMON *cm, int row, int col) {
+  av1_tile_set_row(tile, cm, row);
+  av1_tile_set_col(tile, cm, col);
 }
 
 static int get_min_log2_tile_cols(const int sb64_cols) {
@@ -49,7 +49,7 @@ static int get_max_log2_tile_cols(const int sb64_cols) {
   return max_log2 - 1;
 }
 
-void vp10_get_tile_n_bits(int mi_cols, int *min_log2_tile_cols,
+void av1_get_tile_n_bits(int mi_cols, int *min_log2_tile_cols,
                           int *max_log2_tile_cols) {
   const int sb64_cols = mi_cols_aligned_to_sb(mi_cols) >> MI_BLOCK_SIZE_LOG2;
   *min_log2_tile_cols = get_min_log2_tile_cols(sb64_cols);

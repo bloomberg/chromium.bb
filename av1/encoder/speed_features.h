@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_ENCODER_SPEED_FEATURES_H_
-#define VP10_ENCODER_SPEED_FEATURES_H_
+#ifndef AV1_ENCODER_SPEED_FEATURES_H_
+#define AV1_ENCODER_SPEED_FEATURES_H_
 
 #include "av1/common/enums.h"
 
@@ -415,17 +415,17 @@ typedef struct SPEED_FEATURES {
   // Allow skipping partition search for still image frame
   int allow_partition_search_skip;
 
-  // Fast approximation of vp10_model_rd_from_var_lapndz
+  // Fast approximation of av1_model_rd_from_var_lapndz
   int simple_model_rd_from_var;
 } SPEED_FEATURES;
 
-struct VP10_COMP;
+struct AV1_COMP;
 
-void vp10_set_speed_features_framesize_independent(struct VP10_COMP *cpi);
-void vp10_set_speed_features_framesize_dependent(struct VP10_COMP *cpi);
+void av1_set_speed_features_framesize_independent(struct AV1_COMP *cpi);
+void av1_set_speed_features_framesize_dependent(struct AV1_COMP *cpi);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // VP10_ENCODER_SPEED_FEATURES_H_
+#endif  // AV1_ENCODER_SPEED_FEATURES_H_

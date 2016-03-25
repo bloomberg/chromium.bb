@@ -96,7 +96,7 @@ class RegisterStateCheck {
 }  // namespace libaom_test
 
 #elif defined(CONFIG_SHARED) && defined(HAVE_NEON_ASM) && !CONFIG_SHARED && \
-    HAVE_NEON_ASM && CONFIG_VP10
+    HAVE_NEON_ASM && CONFIG_AV1
 
 extern "C" {
 // Save the d8-d15 registers into store.

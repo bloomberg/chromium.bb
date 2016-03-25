@@ -35,7 +35,7 @@ Advanced options:
   ${toggle_debug_libs}            in/exclude debug version of libraries
   ${toggle_static_msvcrt}         use static MSVCRT (VS builds only)
   ${toggle_aom_highbitdepth}      use high bit depth (10/12) profiles
-  ${toggle_vp10}                  VP10 codec support
+  ${toggle_av1}                  AV1 codec support
   ${toggle_internal_stats}        output of encoder internal stats for debug, if supported (encoders)
   ${toggle_multithread}           multithreaded encoding and decoding
   ${toggle_spatial_resampling}    spatial sampling (scaling) support
@@ -185,7 +185,7 @@ if [ ${doxy_major:-0} -ge 1 ]; then
 fi
 
 # disable codecs when their source directory does not exist
-[ -d "${source_path}/av1" ] || disable_feature vp10
+[ -d "${source_path}/av1" ] || disable_feature av1
 
 # install everything except the sources, by default. sources will have
 # to be enabled when doing dist builds, since that's no longer a common
@@ -203,11 +203,11 @@ enable_feature os_support
 enable_feature temporal_denoising
 
 CODECS="
-    vp10_encoder
-    vp10_decoder
+    av1_encoder
+    av1_decoder
 "
 CODEC_FAMILIES="
-    vp10
+    av1
 "
 
 ARCH_LIST="

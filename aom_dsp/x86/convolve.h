@@ -104,7 +104,7 @@ typedef void filter8_1dfunction(const uint8_t *src_ptr, ptrdiff_t src_pitch,
     }                                                                         \
   }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 
 typedef void highbd_filter8_1dfunction(const uint16_t *src_ptr,
                                        const ptrdiff_t src_pitch,
@@ -206,6 +206,6 @@ typedef void highbd_filter8_1dfunction(const uint16_t *src_ptr,
                                     w, h, bd);                                \
     }                                                                         \
   }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #endif  // VPX_DSP_X86_CONVOLVE_H_

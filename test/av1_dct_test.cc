@@ -84,7 +84,7 @@ class TransTestBase {
 };
 
 typedef std::tr1::tuple<FdctFunc, FdctFuncRef, int, int> FdctParam;
-class Vp10FwdTxfm : public TransTestBase,
+class AV1FwdTxfm : public TransTestBase,
                     public ::testing::TestWithParam<FdctParam> {
  public:
   virtual void SetUp() {
@@ -96,10 +96,10 @@ class Vp10FwdTxfm : public TransTestBase,
   virtual void TearDown() {}
 };
 
-TEST_P(Vp10FwdTxfm, RunFwdAccuracyCheck) { RunFwdAccuracyCheck(); }
+TEST_P(AV1FwdTxfm, RunFwdAccuracyCheck) { RunFwdAccuracyCheck(); }
 
 INSTANTIATE_TEST_CASE_P(
-    C, Vp10FwdTxfm,
+    C, AV1FwdTxfm,
     ::testing::Values(FdctParam(&fdct4, &reference_dct_1d, 4, 1),
                       FdctParam(&fdct8, &reference_dct_1d, 8, 1),
                       FdctParam(&fdct16, &reference_dct_1d, 16, 2)));

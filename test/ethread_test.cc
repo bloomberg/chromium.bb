@@ -124,7 +124,7 @@ TEST_P(VPxEncoderThreadTest, EncoderResultTest) {
   ASSERT_EQ(single_thr_md5, multi_thr_md5);
 }
 
-VP10_INSTANTIATE_TEST_CASE(VPxEncoderThreadTest,
+AV1_INSTANTIATE_TEST_CASE(VPxEncoderThreadTest,
                            ::testing::Values(::libaom_test::kTwoPassGood,
                                              ::libaom_test::kOnePassGood),
                            ::testing::Range(1, 3));

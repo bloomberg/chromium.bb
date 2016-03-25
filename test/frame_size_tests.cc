@@ -17,7 +17,7 @@ class VP9FrameSizeTestsLarge : public ::libaom_test::EncoderTest,
                                public ::testing::Test {
  protected:
   VP9FrameSizeTestsLarge()
-      : EncoderTest(&::libaom_test::kVP10), expected_res_(VPX_CODEC_OK) {}
+      : EncoderTest(&::libaom_test::kAV1), expected_res_(VPX_CODEC_OK) {}
   virtual ~VP9FrameSizeTestsLarge() {}
 
   virtual void SetUp() {

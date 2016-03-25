@@ -35,7 +35,7 @@ static int get_fixed_point_scale_factor(int other_size, int this_size) {
   return (other_size << REF_SCALE_SHIFT) / this_size;
 }
 
-MV32 vp10_scale_mv(const MV *mv, int x, int y, const struct scale_factors *sf) {
+MV32 av1_scale_mv(const MV *mv, int x, int y, const struct scale_factors *sf) {
   const int x_off_q4 = scaled_x(x << SUBPEL_BITS, sf) & SUBPEL_MASK;
   const int y_off_q4 = scaled_y(y << SUBPEL_BITS, sf) & SUBPEL_MASK;
   const MV32 res = { scaled_y(mv->row, sf) + y_off_q4,
@@ -43,12 +43,12 @@ MV32 vp10_scale_mv(const MV *mv, int x, int y, const struct scale_factors *sf) {
   return res;
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
-void vp10_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
+#if CONFIG_AOM_HIGHBITDEPTH
+void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
                                         int other_h, int this_w, int this_h,
                                         int use_highbd) {
 #else
-void vp10_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
+void av1_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
                                         int other_h, int this_w, int this_h) {
 #endif
   if (!valid_ref_frame_size(other_w, other_h, this_w, this_h)) {
@@ -62,7 +62,7 @@ void vp10_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
   sf->x_step_q4 = scaled_x(16, sf);
   sf->y_step_q4 = scaled_y(16, sf);
 
-  if (vp10_is_scaled(sf)) {
+  if (av1_is_scaled(sf)) {
     sf->scale_value_x = scaled_x;
     sf->scale_value_y = scaled_y;
   } else {
@@ -116,7 +116,7 @@ void vp10_setup_scale_factors_for_frame(struct scale_factors *sf, int other_w,
   // 2D subpel motion always gets filtered in both directions
   sf->predict[1][1][0] = aom_convolve8;
   sf->predict[1][1][1] = aom_convolve8_avg;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   if (use_highbd) {
     if (sf->x_step_q4 == 16) {
       if (sf->y_step_q4 == 16) {

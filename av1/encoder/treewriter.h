@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_ENCODER_TREEWRITER_H_
-#define VP10_ENCODER_TREEWRITER_H_
+#ifndef AV1_ENCODER_TREEWRITER_H_
+#define AV1_ENCODER_TREEWRITER_H_
 
 #include "aom_dsp/bitwriter.h"
 
@@ -18,18 +18,18 @@
 extern "C" {
 #endif
 
-void vp10_tree_probs_from_distribution(aom_tree tree,
+void av1_tree_probs_from_distribution(aom_tree tree,
                                        unsigned int branch_ct[/* n - 1 */][2],
                                        const unsigned int num_events[/* n */]);
 
-struct vp10_token {
+struct av1_token {
   int value;
   int len;
 };
 
-void vp10_tokens_from_tree(struct vp10_token *, const aom_tree_index *);
+void av1_tokens_from_tree(struct av1_token *, const aom_tree_index *);
 
-static INLINE void vp10_write_tree(aom_writer *w, const aom_tree_index *tree,
+static INLINE void av1_write_tree(aom_writer *w, const aom_tree_index *tree,
                                    const aom_prob *probs, int bits, int len,
                                    aom_tree_index i) {
   do {
@@ -39,14 +39,14 @@ static INLINE void vp10_write_tree(aom_writer *w, const aom_tree_index *tree,
   } while (len);
 }
 
-static INLINE void vp10_write_token(aom_writer *w, const aom_tree_index *tree,
+static INLINE void av1_write_token(aom_writer *w, const aom_tree_index *tree,
                                     const aom_prob *probs,
-                                    const struct vp10_token *token) {
-  vp10_write_tree(w, tree, probs, token->value, token->len, 0);
+                                    const struct av1_token *token) {
+  av1_write_tree(w, tree, probs, token->value, token->len, 0);
 }
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // VP10_ENCODER_TREEWRITER_H_
+#endif  // AV1_ENCODER_TREEWRITER_H_

@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_ENCODER_ENCODEMB_H_
-#define VP10_ENCODER_ENCODEMB_H_
+#ifndef AV1_ENCODER_ENCODEMB_H_
+#define AV1_ENCODER_ENCODEMB_H_
 
 #include "./aom_config.h"
 #include "av1/encoder/block.h"
@@ -24,33 +24,33 @@ struct encode_b_args {
   struct optimize_ctx *ctx;
   int8_t *skip;
 };
-void vp10_encode_sb(MACROBLOCK *x, BLOCK_SIZE bsize);
-void vp10_encode_sby_pass1(MACROBLOCK *x, BLOCK_SIZE bsize);
-void vp10_xform_quant_fp(MACROBLOCK *x, int plane, int block, int blk_row,
+void av1_encode_sb(MACROBLOCK *x, BLOCK_SIZE bsize);
+void av1_encode_sby_pass1(MACROBLOCK *x, BLOCK_SIZE bsize);
+void av1_xform_quant_fp(MACROBLOCK *x, int plane, int block, int blk_row,
                          int blk_col, BLOCK_SIZE plane_bsize, TX_SIZE tx_size);
-void vp10_xform_quant_dc(MACROBLOCK *x, int plane, int block, int blk_row,
+void av1_xform_quant_dc(MACROBLOCK *x, int plane, int block, int blk_row,
                          int blk_col, BLOCK_SIZE plane_bsize, TX_SIZE tx_size);
-void vp10_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
+void av1_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
                       int blk_col, BLOCK_SIZE plane_bsize, TX_SIZE tx_size);
 
-void vp10_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
+void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
 
-void vp10_encode_block_intra(int plane, int block, int blk_row, int blk_col,
+void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
                              BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
                              void *arg);
 
-void vp10_encode_intra_block_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
+void av1_encode_intra_block_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);
 
-void vp10_fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
+void av1_fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
                        int diff_stride, TX_TYPE tx_type, int lossless);
 
-#if CONFIG_VPX_HIGHBITDEPTH
-void vp10_highbd_fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
+#if CONFIG_AOM_HIGHBITDEPTH
+void av1_highbd_fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
                               int diff_stride, TX_TYPE tx_type, int lossless);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // VP10_ENCODER_ENCODEMB_H_
+#endif  // AV1_ENCODER_ENCODEMB_H_

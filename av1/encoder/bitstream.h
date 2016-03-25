@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_ENCODER_BITSTREAM_H_
-#define VP10_ENCODER_BITSTREAM_H_
+#ifndef AV1_ENCODER_BITSTREAM_H_
+#define AV1_ENCODER_BITSTREAM_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,10 +18,10 @@ extern "C" {
 
 #include "av1/encoder/encoder.h"
 
-void vp10_encode_token_init();
-void vp10_pack_bitstream(VP10_COMP *const cpi, uint8_t *dest, size_t *size);
+void av1_encode_token_init();
+void av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dest, size_t *size);
 
-static INLINE int vp10_preserve_existing_gf(VP10_COMP *cpi) {
+static INLINE int av1_preserve_existing_gf(AV1_COMP *cpi) {
   return !cpi->multi_arf_allowed && cpi->refresh_golden_frame &&
          cpi->rc.is_src_frame_alt_ref;
 }
@@ -30,4 +30,4 @@ static INLINE int vp10_preserve_existing_gf(VP10_COMP *cpi) {
 }  // extern "C"
 #endif
 
-#endif  // VP10_ENCODER_BITSTREAM_H_
+#endif  // AV1_ENCODER_BITSTREAM_H_

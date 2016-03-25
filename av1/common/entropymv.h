@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_COMMON_ENTROPYMV_H_
-#define VP10_COMMON_ENTROPYMV_H_
+#ifndef AV1_COMMON_ENTROPYMV_H_
+#define AV1_COMMON_ENTROPYMV_H_
 
 #include "./aom_config.h"
 
@@ -22,12 +22,12 @@
 extern "C" {
 #endif
 
-struct VP10Common;
+struct AV1Common;
 
-void vp10_init_mv_probs(struct VP10Common *cm);
+void av1_init_mv_probs(struct AV1Common *cm);
 
-void vp10_adapt_mv_probs(struct VP10Common *cm, int usehp);
-int vp10_use_mv_hp(const MV *ref);
+void av1_adapt_mv_probs(struct AV1Common *cm, int usehp);
+int av1_use_mv_hp(const MV *ref);
 
 #define MV_UPDATE_PROB 252
 
@@ -77,10 +77,10 @@ typedef enum {
 #define MV_UPP ((1 << MV_IN_USE_BITS) - 1)
 #define MV_LOW (-(1 << MV_IN_USE_BITS))
 
-extern const aom_tree_index vp10_mv_joint_tree[];
-extern const aom_tree_index vp10_mv_class_tree[];
-extern const aom_tree_index vp10_mv_class0_tree[];
-extern const aom_tree_index vp10_mv_fp_tree[];
+extern const aom_tree_index av1_mv_joint_tree[];
+extern const aom_tree_index av1_mv_class_tree[];
+extern const aom_tree_index av1_mv_class0_tree[];
+extern const aom_tree_index av1_mv_fp_tree[];
 
 typedef struct {
   aom_prob sign;
@@ -98,7 +98,7 @@ typedef struct {
   nmv_component comps[2];
 } nmv_context;
 
-static INLINE MV_JOINT_TYPE vp10_get_mv_joint(const MV *mv) {
+static INLINE MV_JOINT_TYPE av1_get_mv_joint(const MV *mv) {
   if (mv->row == 0) {
     return mv->col == 0 ? MV_JOINT_ZERO : MV_JOINT_HNZVZ;
   } else {
@@ -106,7 +106,7 @@ static INLINE MV_JOINT_TYPE vp10_get_mv_joint(const MV *mv) {
   }
 }
 
-MV_CLASS_TYPE vp10_get_mv_class(int z, int *offset);
+MV_CLASS_TYPE av1_get_mv_class(int z, int *offset);
 
 typedef struct {
   unsigned int sign[2];
@@ -124,10 +124,10 @@ typedef struct {
   nmv_component_counts comps[2];
 } nmv_context_counts;
 
-void vp10_inc_mv(const MV *mv, nmv_context_counts *mvctx, const int usehp);
+void av1_inc_mv(const MV *mv, nmv_context_counts *mvctx, const int usehp);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // VP10_COMMON_ENTROPYMV_H_
+#endif  // AV1_COMMON_ENTROPYMV_H_

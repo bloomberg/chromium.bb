@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_ENCODER_MCOMP_H_
-#define VP10_ENCODER_MCOMP_H_
+#ifndef AV1_ENCODER_MCOMP_H_
+#define AV1_ENCODER_MCOMP_H_
 
 #include "av1/encoder/block.h"
 #include "aom_dsp/variance.h"
@@ -43,40 +43,40 @@ typedef struct search_site_config {
   int searches_per_step;
 } search_site_config;
 
-void vp10_init_dsmotion_compensation(search_site_config *cfg, int stride);
-void vp10_init3smotion_compensation(search_site_config *cfg, int stride);
+void av1_init_dsmotion_compensation(search_site_config *cfg, int stride);
+void av1_init3smotion_compensation(search_site_config *cfg, int stride);
 
-void vp10_set_mv_search_range(MACROBLOCK *x, const MV *mv);
-int vp10_mv_bit_cost(const MV *mv, const MV *ref, const int *mvjcost,
+void av1_set_mv_search_range(MACROBLOCK *x, const MV *mv);
+int av1_mv_bit_cost(const MV *mv, const MV *ref, const int *mvjcost,
                      int *mvcost[2], int weight);
 
 // Utility to compute variance + MV rate cost for a given MV
-int vp10_get_mvpred_var(const MACROBLOCK *x, const MV *best_mv,
+int av1_get_mvpred_var(const MACROBLOCK *x, const MV *best_mv,
                         const MV *center_mv, const aom_variance_fn_ptr_t *vfp,
                         int use_mvcost);
-int vp10_get_mvpred_av_var(const MACROBLOCK *x, const MV *best_mv,
+int av1_get_mvpred_av_var(const MACROBLOCK *x, const MV *best_mv,
                            const MV *center_mv, const uint8_t *second_pred,
                            const aom_variance_fn_ptr_t *vfp, int use_mvcost);
 
-struct VP10_COMP;
+struct AV1_COMP;
 struct SPEED_FEATURES;
 
-int vp10_init_search_range(int size);
+int av1_init_search_range(int size);
 
-int vp10_refining_search_sad(const struct macroblock *x, struct mv *ref_mv,
+int av1_refining_search_sad(const struct macroblock *x, struct mv *ref_mv,
                              int sad_per_bit, int distance,
                              const struct aom_variance_vtable *fn_ptr,
                              const struct mv *center_mv);
 
 // Runs sequence of diamond searches in smaller steps for RD.
-int vp10_full_pixel_diamond(const struct VP10_COMP *cpi, MACROBLOCK *x,
+int av1_full_pixel_diamond(const struct AV1_COMP *cpi, MACROBLOCK *x,
                             MV *mvp_full, int step_param, int sadpb,
                             int further_steps, int do_refine, int *cost_list,
                             const aom_variance_fn_ptr_t *fn_ptr,
                             const MV *ref_mv, MV *dst_mv);
 
 // Perform integral projection based motion estimation.
-unsigned int vp10_int_pro_motion_estimation(const struct VP10_COMP *cpi,
+unsigned int av1_int_pro_motion_estimation(const struct AV1_COMP *cpi,
                                             MACROBLOCK *x, BLOCK_SIZE bsize,
                                             int mi_row, int mi_col);
 
@@ -87,11 +87,11 @@ typedef int(integer_mv_pattern_search_fn)(const MACROBLOCK *x, MV *ref_mv,
                                           int use_mvcost, const MV *center_mv,
                                           MV *best_mv);
 
-integer_mv_pattern_search_fn vp10_hex_search;
-integer_mv_pattern_search_fn vp10_bigdia_search;
-integer_mv_pattern_search_fn vp10_square_search;
-integer_mv_pattern_search_fn vp10_fast_hex_search;
-integer_mv_pattern_search_fn vp10_fast_dia_search;
+integer_mv_pattern_search_fn av1_hex_search;
+integer_mv_pattern_search_fn av1_bigdia_search;
+integer_mv_pattern_search_fn av1_square_search;
+integer_mv_pattern_search_fn av1_fast_hex_search;
+integer_mv_pattern_search_fn av1_fast_dia_search;
 
 typedef int(fractional_mv_step_fp)(
     const MACROBLOCK *x, MV *bestmv, const MV *ref_mv, int allow_hp,
@@ -101,34 +101,34 @@ typedef int(fractional_mv_step_fp)(
     int *distortion, unsigned int *sse1, const uint8_t *second_pred, int w,
     int h);
 
-extern fractional_mv_step_fp vp10_find_best_sub_pixel_tree;
-extern fractional_mv_step_fp vp10_find_best_sub_pixel_tree_pruned;
-extern fractional_mv_step_fp vp10_find_best_sub_pixel_tree_pruned_more;
-extern fractional_mv_step_fp vp10_find_best_sub_pixel_tree_pruned_evenmore;
+extern fractional_mv_step_fp av1_find_best_sub_pixel_tree;
+extern fractional_mv_step_fp av1_find_best_sub_pixel_tree_pruned;
+extern fractional_mv_step_fp av1_find_best_sub_pixel_tree_pruned_more;
+extern fractional_mv_step_fp av1_find_best_sub_pixel_tree_pruned_evenmore;
 
-typedef int (*vp10_full_search_fn_t)(const MACROBLOCK *x, const MV *ref_mv,
+typedef int (*av1_full_search_fn_t)(const MACROBLOCK *x, const MV *ref_mv,
                                      int sad_per_bit, int distance,
                                      const aom_variance_fn_ptr_t *fn_ptr,
                                      const MV *center_mv, MV *best_mv);
 
-typedef int (*vp10_refining_search_fn_t)(const MACROBLOCK *x, MV *ref_mv,
+typedef int (*av1_refining_search_fn_t)(const MACROBLOCK *x, MV *ref_mv,
                                          int sad_per_bit, int distance,
                                          const aom_variance_fn_ptr_t *fn_ptr,
                                          const MV *center_mv);
 
-typedef int (*vp10_diamond_search_fn_t)(
+typedef int (*av1_diamond_search_fn_t)(
     const MACROBLOCK *x, const search_site_config *cfg, MV *ref_mv, MV *best_mv,
     int search_param, int sad_per_bit, int *num00,
     const aom_variance_fn_ptr_t *fn_ptr, const MV *center_mv);
 
-int vp10_refining_search_8p_c(const MACROBLOCK *x, MV *ref_mv,
+int av1_refining_search_8p_c(const MACROBLOCK *x, MV *ref_mv,
                               int error_per_bit, int search_range,
                               const aom_variance_fn_ptr_t *fn_ptr,
                               const MV *center_mv, const uint8_t *second_pred);
 
-struct VP10_COMP;
+struct AV1_COMP;
 
-int vp10_full_pixel_search(struct VP10_COMP *cpi, MACROBLOCK *x,
+int av1_full_pixel_search(struct AV1_COMP *cpi, MACROBLOCK *x,
                            BLOCK_SIZE bsize, MV *mvp_full, int step_param,
                            int error_per_bit, int *cost_list, const MV *ref_mv,
                            MV *tmp_mv, int var_max, int rd);
@@ -137,4 +137,4 @@ int vp10_full_pixel_search(struct VP10_COMP *cpi, MACROBLOCK *x,
 }  // extern "C"
 #endif
 
-#endif  // VP10_ENCODER_MCOMP_H_
+#endif  // AV1_ENCODER_MCOMP_H_

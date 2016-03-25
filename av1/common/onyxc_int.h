@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_COMMON_ONYXC_INT_H_
-#define VP10_COMMON_ONYXC_INT_H_
+#ifndef AV1_COMMON_ONYXC_INT_H_
+#define AV1_COMMON_ONYXC_INT_H_
 
 #include "./aom_config.h"
 #include "aom/internal/aom_codec_internal.h"
@@ -122,7 +122,7 @@ typedef struct BufferPool {
   InternalFrameBufferList int_frame_buffers;
 } BufferPool;
 
-typedef struct VP10Common {
+typedef struct AV1Common {
   struct aom_internal_error_info error;
   aom_color_space_t color_space;
   int color_range;
@@ -139,7 +139,7 @@ typedef struct VP10Common {
   int subsampling_x;
   int subsampling_y;
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   int use_highbitdepth;  // Marks if we need to use 16bit frame buffers.
 #endif
 
@@ -229,9 +229,9 @@ typedef struct VP10Common {
   MODE_INFO *prev_mi;  /* 'mi' from last frame (points into prev_mip) */
 
   // Separate mi functions between encoder and decoder.
-  int (*alloc_mi)(struct VP10Common *cm, int mi_size);
-  void (*free_mi)(struct VP10Common *cm);
-  void (*setup_mi)(struct VP10Common *cm);
+  int (*alloc_mi)(struct AV1Common *cm, int mi_size);
+  void (*free_mi)(struct AV1Common *cm);
+  void (*setup_mi)(struct AV1Common *cm);
 
   // Grid of pointers to 8x8 MODE_INFO structs.  Any 8x8 not in the visible
   // area will be NULL.
@@ -316,7 +316,7 @@ typedef struct VP10Common {
 #if CONFIG_DERING
   int dering_level;
 #endif
-} VP10_COMMON;
+} AV1_COMMON;
 
 // TODO(hkuang): Don't need to lock the whole pool after implementing atomic
 // frame reference count.
@@ -336,18 +336,18 @@ static void unlock_buffer_pool(BufferPool *const pool) {
 #endif
 }
 
-static INLINE YV12_BUFFER_CONFIG *get_ref_frame(VP10_COMMON *cm, int index) {
+static INLINE YV12_BUFFER_CONFIG *get_ref_frame(AV1_COMMON *cm, int index) {
   if (index < 0 || index >= REF_FRAMES) return NULL;
   if (cm->ref_frame_map[index] < 0) return NULL;
   assert(cm->ref_frame_map[index] < FRAME_BUFFERS);
   return &cm->buffer_pool->frame_bufs[cm->ref_frame_map[index]].buf;
 }
 
-static INLINE YV12_BUFFER_CONFIG *get_frame_new_buffer(VP10_COMMON *cm) {
+static INLINE YV12_BUFFER_CONFIG *get_frame_new_buffer(AV1_COMMON *cm) {
   return &cm->buffer_pool->frame_bufs[cm->new_fb_idx].buf;
 }
 
-static INLINE int get_free_fb(VP10_COMMON *cm) {
+static INLINE int get_free_fb(AV1_COMMON *cm) {
   RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
   int i;
 
@@ -381,11 +381,11 @@ static INLINE int mi_cols_aligned_to_sb(int n_mis) {
   return ALIGN_POWER_OF_TWO(n_mis, MI_BLOCK_SIZE_LOG2);
 }
 
-static INLINE int frame_is_intra_only(const VP10_COMMON *const cm) {
+static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
   return cm->frame_type == KEY_FRAME || cm->intra_only;
 }
 
-static INLINE void vp10_init_macroblockd(VP10_COMMON *cm, MACROBLOCKD *xd,
+static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
                                          tran_low_t *dqcoeff) {
   int i;
 
@@ -461,13 +461,13 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
   }
 }
 
-static INLINE const aom_prob *get_y_mode_probs(const VP10_COMMON *cm,
+static INLINE const aom_prob *get_y_mode_probs(const AV1_COMMON *cm,
                                                const MODE_INFO *mi,
                                                const MODE_INFO *above_mi,
                                                const MODE_INFO *left_mi,
                                                int block) {
-  const PREDICTION_MODE above = vp10_above_block_mode(mi, above_mi, block);
-  const PREDICTION_MODE left = vp10_left_block_mode(mi, left_mi, block);
+  const PREDICTION_MODE above = av1_above_block_mode(mi, above_mi, block);
+  const PREDICTION_MODE left = av1_left_block_mode(mi, left_mi, block);
   return cm->kf_y_prob[above][left];
 }
 
@@ -504,4 +504,4 @@ static INLINE int partition_plane_context(const MACROBLOCKD *xd, int mi_row,
 }  // extern "C"
 #endif
 
-#endif  // VP10_COMMON_ONYXC_INT_H_
+#endif  // AV1_COMMON_ONYXC_INT_H_

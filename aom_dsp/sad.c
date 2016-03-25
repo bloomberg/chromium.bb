@@ -54,7 +54,7 @@ static INLINE void avg_pred(uint8_t *comp_pred, const uint8_t *pred, int width,
   }
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 static INLINE void highbd_avg_pred(uint16_t *comp_pred, const uint8_t *pred8,
                                    int width, int height, const uint8_t *ref8,
                                    int ref_stride) {
@@ -71,7 +71,7 @@ static INLINE void highbd_avg_pred(uint16_t *comp_pred, const uint8_t *pred8,
     ref += ref_stride;
   }
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #define sadMxN(m, n)                                                        \
   unsigned int aom_sad##m##x##n##_c(const uint8_t *src, int src_stride,     \
@@ -179,7 +179,7 @@ sadMxNxK(4, 4, 8)
 sadMxNx4D(4, 4)
 /* clang-format on */
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
         static INLINE
     unsigned int highbd_sad(const uint8_t *a8, int a_stride, const uint8_t *b8,
                             int b_stride, int width, int height) {
@@ -317,4 +317,4 @@ highbd_sadMxNxK(4, 4, 8)
 highbd_sadMxNx4D(4, 4)
 /* clang-format on */
 
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH

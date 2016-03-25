@@ -53,39 +53,39 @@ CODEC_SRCS-yes += $(addprefix aom_dsp/,$(call enabled,DSP_SRCS))
 include $(SRC_PATH_BARE)/aom_util/aom_util.mk
 CODEC_SRCS-yes += $(addprefix aom_util/,$(call enabled,UTIL_SRCS))
 
-#  VP10 make file
-ifeq ($(CONFIG_VP10),yes)
-  VP10_PREFIX=av1/
-  include $(SRC_PATH_BARE)/$(VP10_PREFIX)av1_common.mk
+#  AV1 make file
+ifeq ($(CONFIG_AV1),yes)
+  AV1_PREFIX=av1/
+  include $(SRC_PATH_BARE)/$(AV1_PREFIX)av1_common.mk
 endif
 
-ifeq ($(CONFIG_VP10_ENCODER),yes)
-  VP10_PREFIX=av1/
-  include $(SRC_PATH_BARE)/$(VP10_PREFIX)av1_cx.mk
-  CODEC_SRCS-yes += $(addprefix $(VP10_PREFIX),$(call enabled,VP10_CX_SRCS))
-  CODEC_EXPORTS-yes += $(addprefix $(VP10_PREFIX),$(VP10_CX_EXPORTS))
-  CODEC_SRCS-yes += $(VP10_PREFIX)av1_cx.mk aom/vp8.h aom/vp8cx.h
+ifeq ($(CONFIG_AV1_ENCODER),yes)
+  AV1_PREFIX=av1/
+  include $(SRC_PATH_BARE)/$(AV1_PREFIX)av1_cx.mk
+  CODEC_SRCS-yes += $(addprefix $(AV1_PREFIX),$(call enabled,AV1_CX_SRCS))
+  CODEC_EXPORTS-yes += $(addprefix $(AV1_PREFIX),$(AV1_CX_EXPORTS))
+  CODEC_SRCS-yes += $(AV1_PREFIX)av1_cx.mk aom/vp8.h aom/vp8cx.h
   INSTALL-LIBS-yes += include/aom/vp8.h include/aom/vp8cx.h
   INSTALL-LIBS-$(CONFIG_SPATIAL_SVC) += include/aom/svc_context.h
-  INSTALL_MAPS += include/aom/% $(SRC_PATH_BARE)/$(VP10_PREFIX)/%
+  INSTALL_MAPS += include/aom/% $(SRC_PATH_BARE)/$(AV1_PREFIX)/%
   CODEC_DOC_SRCS += aom/vp8.h aom/vp8cx.h
-  CODEC_DOC_SECTIONS += vp10 vp10_encoder
+  CODEC_DOC_SECTIONS += av1 av1_encoder
 endif
 
-ifeq ($(CONFIG_VP10_DECODER),yes)
-  VP10_PREFIX=av1/
-  include $(SRC_PATH_BARE)/$(VP10_PREFIX)av1_dx.mk
-  CODEC_SRCS-yes += $(addprefix $(VP10_PREFIX),$(call enabled,VP10_DX_SRCS))
-  CODEC_EXPORTS-yes += $(addprefix $(VP10_PREFIX),$(VP10_DX_EXPORTS))
-  CODEC_SRCS-yes += $(VP10_PREFIX)av1_dx.mk aom/vp8.h aom/vp8dx.h
+ifeq ($(CONFIG_AV1_DECODER),yes)
+  AV1_PREFIX=av1/
+  include $(SRC_PATH_BARE)/$(AV1_PREFIX)av1_dx.mk
+  CODEC_SRCS-yes += $(addprefix $(AV1_PREFIX),$(call enabled,AV1_DX_SRCS))
+  CODEC_EXPORTS-yes += $(addprefix $(AV1_PREFIX),$(AV1_DX_EXPORTS))
+  CODEC_SRCS-yes += $(AV1_PREFIX)av1_dx.mk aom/vp8.h aom/vp8dx.h
   INSTALL-LIBS-yes += include/aom/vp8.h include/aom/vp8dx.h
-  INSTALL_MAPS += include/aom/% $(SRC_PATH_BARE)/$(VP10_PREFIX)/%
+  INSTALL_MAPS += include/aom/% $(SRC_PATH_BARE)/$(AV1_PREFIX)/%
   CODEC_DOC_SRCS += aom/vp8.h aom/vp8dx.h
-  CODEC_DOC_SECTIONS += vp10 vp10_decoder
+  CODEC_DOC_SECTIONS += av1 av1_decoder
 endif
 
-VP10_PREFIX=av1/
-$(BUILD_PFX)$(VP10_PREFIX)%.c.o: CFLAGS += -Wextra
+AV1_PREFIX=av1/
+$(BUILD_PFX)$(AV1_PREFIX)%.c.o: CFLAGS += -Wextra
 
 ifeq ($(CONFIG_ENCODERS),yes)
   CODEC_DOC_SECTIONS += encoder

@@ -189,7 +189,7 @@ void aom_minmax_8x8_c(const uint8_t *s, int p, const uint8_t *d, int dp,
   }
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 unsigned int aom_highbd_avg_8x8_c(const uint8_t *s8, int p) {
   int i, j;
   int sum = 0;
@@ -227,4 +227,4 @@ void aom_highbd_minmax_8x8_c(const uint8_t *s8, int p, const uint8_t *d8,
     }
   }
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH

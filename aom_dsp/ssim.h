@@ -80,7 +80,7 @@ double aom_psnrhvs(const YV12_BUFFER_CONFIG *source,
                    const YV12_BUFFER_CONFIG *dest, double *ssim_y,
                    double *ssim_u, double *ssim_v);
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 double aom_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,
                             const YV12_BUFFER_CONFIG *dest, double *weight,
                             unsigned int bd);
@@ -88,7 +88,7 @@ double aom_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,
 double aom_highbd_calc_ssimg(const YV12_BUFFER_CONFIG *source,
                              const YV12_BUFFER_CONFIG *dest, double *ssim_y,
                              double *ssim_u, double *ssim_v, unsigned int bd);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #ifdef __cplusplus
 }  // extern "C"

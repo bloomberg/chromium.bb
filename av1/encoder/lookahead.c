@@ -31,7 +31,7 @@ static struct lookahead_entry *pop(struct lookahead_ctx *ctx,
   return buf;
 }
 
-void vp10_lookahead_destroy(struct lookahead_ctx *ctx) {
+void av1_lookahead_destroy(struct lookahead_ctx *ctx) {
   if (ctx) {
     if (ctx->buf) {
       unsigned int i;
@@ -43,11 +43,11 @@ void vp10_lookahead_destroy(struct lookahead_ctx *ctx) {
   }
 }
 
-struct lookahead_ctx *vp10_lookahead_init(unsigned int width,
+struct lookahead_ctx *av1_lookahead_init(unsigned int width,
                                           unsigned int height,
                                           unsigned int subsampling_x,
                                           unsigned int subsampling_y,
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
                                           int use_highbitdepth,
 #endif
                                           unsigned int depth) {
@@ -70,7 +70,7 @@ struct lookahead_ctx *vp10_lookahead_init(unsigned int width,
     for (i = 0; i < depth; i++)
       if (aom_alloc_frame_buffer(
               &ctx->buf[i].img, width, height, subsampling_x, subsampling_y,
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
               use_highbitdepth,
 #endif
               VPX_ENC_BORDER_IN_PIXELS, legacy_byte_alignment))
@@ -78,15 +78,15 @@ struct lookahead_ctx *vp10_lookahead_init(unsigned int width,
   }
   return ctx;
 bail:
-  vp10_lookahead_destroy(ctx);
+  av1_lookahead_destroy(ctx);
   return NULL;
 }
 
 #define USE_PARTIAL_COPY 0
 
-int vp10_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
+int av1_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
                         int64_t ts_start, int64_t ts_end,
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
                         int use_highbitdepth,
 #endif
                         unsigned int flags) {
@@ -119,7 +119,7 @@ int vp10_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
 
 #if USE_PARTIAL_COPY
   // TODO(jkoleszar): This is disabled for now, as
-  // vp10_copy_and_extend_frame_with_rect is not subsampling/alpha aware.
+  // av1_copy_and_extend_frame_with_rect is not subsampling/alpha aware.
 
   // Only do this partial copy if the following conditions are all met:
   // 1. Lookahead queue has has size of 1.
@@ -146,7 +146,7 @@ int vp10_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
         }
 
         // Only copy this active region.
-        vp10_copy_and_extend_frame_with_rect(src, &buf->img, row << 4, col << 4,
+        av1_copy_and_extend_frame_with_rect(src, &buf->img, row << 4, col << 4,
                                              16, (active_end - col) << 4);
 
         // Start again from the end of this active region.
@@ -162,7 +162,7 @@ int vp10_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
       memset(&new_img, 0, sizeof(new_img));
       if (aom_alloc_frame_buffer(&new_img, width, height, subsampling_x,
                                  subsampling_y,
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
                                  use_highbitdepth,
 #endif
                                  VPX_ENC_BORDER_IN_PIXELS, 0))
@@ -178,7 +178,7 @@ int vp10_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
       buf->img.subsampling_y = src->subsampling_y;
     }
     // Partial copy not implemented yet
-    vp10_copy_and_extend_frame(src, &buf->img);
+    av1_copy_and_extend_frame(src, &buf->img);
 #if USE_PARTIAL_COPY
   }
 #endif
@@ -189,7 +189,7 @@ int vp10_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
   return 0;
 }
 
-struct lookahead_entry *vp10_lookahead_pop(struct lookahead_ctx *ctx,
+struct lookahead_entry *av1_lookahead_pop(struct lookahead_ctx *ctx,
                                            int drain) {
   struct lookahead_entry *buf = NULL;
 
@@ -200,7 +200,7 @@ struct lookahead_entry *vp10_lookahead_pop(struct lookahead_ctx *ctx,
   return buf;
 }
 
-struct lookahead_entry *vp10_lookahead_peek(struct lookahead_ctx *ctx,
+struct lookahead_entry *av1_lookahead_peek(struct lookahead_ctx *ctx,
                                             int index) {
   struct lookahead_entry *buf = NULL;
 
@@ -223,4 +223,4 @@ struct lookahead_entry *vp10_lookahead_peek(struct lookahead_ctx *ctx,
   return buf;
 }
 
-unsigned int vp10_lookahead_depth(struct lookahead_ctx *ctx) { return ctx->sz; }
+unsigned int av1_lookahead_depth(struct lookahead_ctx *ctx) { return ctx->sz; }

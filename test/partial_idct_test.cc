@@ -101,7 +101,7 @@ TEST_P(PartialIDctTest, RunQuantCheck) {
       // quantization with maximum allowed step sizes
       test_coef_block1[0] = (output_ref_block[0] / 1336) * 1336;
       for (int j = 1; j < last_nonzero_; ++j)
-        test_coef_block1[vp10_default_scan_orders[tx_size_].scan[j]] =
+        test_coef_block1[av1_default_scan_orders[tx_size_].scan[j]] =
             (output_ref_block[j] / 1828) * 1828;
     }
 
@@ -152,7 +152,7 @@ TEST_P(PartialIDctTest, ResultsMatch) {
         max_energy_leftover = 0;
         coef = 0;
       }
-      test_coef_block1[vp10_default_scan_orders[tx_size_].scan[j]] = coef;
+      test_coef_block1[av1_default_scan_orders[tx_size_].scan[j]] = coef;
     }
 
     memcpy(test_coef_block2, test_coef_block1,
@@ -190,7 +190,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(&aom_fdct4x4_c, &aom_idct4x4_16_add_c,
                                  &aom_idct4x4_1_add_c, TX_4X4, 1)));
 
-#if HAVE_NEON && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_NEON && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     NEON, PartialIDctTest,
     ::testing::Values(make_tuple(&aom_fdct32x32_c, &aom_idct32x32_1024_add_c,
@@ -205,9 +205,9 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_idct8x8_1_add_neon, TX_8X8, 1),
                       make_tuple(&aom_fdct4x4_c, &aom_idct4x4_16_add_c,
                                  &aom_idct4x4_1_add_neon, TX_4X4, 1)));
-#endif  // HAVE_NEON && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_NEON && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
-#if HAVE_SSE2 && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_SSE2 && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     SSE2, PartialIDctTest,
     ::testing::Values(make_tuple(&aom_fdct32x32_c, &aom_idct32x32_1024_add_c,
@@ -227,14 +227,14 @@ INSTANTIATE_TEST_CASE_P(
 #endif
 
 #if HAVE_SSSE3 && CONFIG_USE_X86INC && ARCH_X86_64 && \
-    !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+    !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     SSSE3_64, PartialIDctTest,
     ::testing::Values(make_tuple(&aom_fdct8x8_c, &aom_idct8x8_64_add_c,
                                  &aom_idct8x8_12_add_ssse3, TX_8X8, 12)));
 #endif
 
-#if HAVE_MSA && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#if HAVE_MSA && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(
     MSA, PartialIDctTest,
     ::testing::Values(make_tuple(&aom_fdct32x32_c, &aom_idct32x32_1024_add_c,
@@ -251,6 +251,6 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_idct8x8_1_add_msa, TX_8X8, 1),
                       make_tuple(&aom_fdct4x4_c, &aom_idct4x4_16_add_c,
                                  &aom_idct4x4_1_add_msa, TX_4X4, 1)));
-#endif  // HAVE_MSA && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
+#endif  // HAVE_MSA && !CONFIG_AOM_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
 }  // namespace

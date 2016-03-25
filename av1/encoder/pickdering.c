@@ -33,8 +33,8 @@ static double compute_dist(int16_t *x, int xstride, int16_t *y, int ystride,
   return sum/(double)(1 << 2*coeff_shift);
 }
 
-int vp10_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
-                       VP10_COMMON *cm,
+int av1_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
+                       AV1_COMMON *cm,
                        MACROBLOCKD *xd) {
   int r, c;
   int sbr, sbc;
@@ -58,7 +58,7 @@ int vp10_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   src = aom_malloc(sizeof(*src)*cm->mi_rows*cm->mi_cols*64);
   ref_coeff = aom_malloc(sizeof(*ref_coeff)*cm->mi_rows*cm->mi_cols*64);
   bskip = aom_malloc(sizeof(*bskip)*cm->mi_rows*cm->mi_cols);
-  vp10_setup_dst_planes(xd->plane, frame, 0, 0);
+  av1_setup_dst_planes(xd->plane, frame, 0, 0);
   for (pli = 0; pli < 3; pli++) {
     dec[pli] = xd->plane[pli].subsampling_x;
     bsize[pli] = 8 >> dec[pli];
@@ -66,7 +66,7 @@ int vp10_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   stride = bsize[0]*cm->mi_cols;
   for (r = 0; r < bsize[0]*cm->mi_rows; ++r) {
     for (c = 0; c < bsize[0]*cm->mi_cols; ++c) {
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       if (cm->use_highbitdepth) {
         src[r * stride + c] =
             CONVERT_TO_SHORTPTR(xd->plane[0].dst.buf)
@@ -78,7 +78,7 @@ int vp10_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
         src[r * stride + c] =
             xd->plane[0].dst.buf[r*xd->plane[0].dst.stride + c];
         ref_coeff[r * stride + c] = ref->y_buffer[r * ref->y_stride + c];
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       }
 #endif
     }

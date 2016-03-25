@@ -16,7 +16,7 @@ static const BLOCK_SIZE square[] = {
   BLOCK_8X8, BLOCK_16X16, BLOCK_32X32, BLOCK_64X64,
 };
 
-static void alloc_mode_context(VP10_COMMON *cm, int num_4x4_blk,
+static void alloc_mode_context(AV1_COMMON *cm, int num_4x4_blk,
                                PICK_MODE_CONTEXT *ctx) {
   const int num_blk = (num_4x4_blk < 4 ? 4 : num_4x4_blk);
   const int num_pix = num_blk << 4;
@@ -65,7 +65,7 @@ static void free_mode_context(PICK_MODE_CONTEXT *ctx) {
   }
 }
 
-static void alloc_tree_contexts(VP10_COMMON *cm, PC_TREE *tree,
+static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree,
                                 int num_4x4_blk) {
   alloc_mode_context(cm, num_4x4_blk, &tree->none);
   alloc_mode_context(cm, num_4x4_blk / 2, &tree->horizontal[0]);
@@ -92,7 +92,7 @@ static void free_tree_contexts(PC_TREE *tree) {
 // partition level. There are contexts for none, horizontal, vertical, and
 // split.  Along with a block_size value and a selected block_size which
 // represents the state of our search.
-void vp10_setup_pc_tree(VP10_COMMON *cm, ThreadData *td) {
+void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
   int i, j;
   const int leaf_nodes = 64;
   const int tree_nodes = 64 + 16 + 4 + 1;
@@ -141,7 +141,7 @@ void vp10_setup_pc_tree(VP10_COMMON *cm, ThreadData *td) {
   td->pc_root[0].none.best_mode_index = 2;
 }
 
-void vp10_free_pc_tree(ThreadData *td) {
+void av1_free_pc_tree(ThreadData *td) {
   const int tree_nodes = 64 + 16 + 4 + 1;
   int i;
 

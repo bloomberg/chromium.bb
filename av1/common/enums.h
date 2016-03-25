@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_COMMON_ENUMS_H_
-#define VP10_COMMON_ENUMS_H_
+#ifndef AV1_COMMON_ENUMS_H_
+#define AV1_COMMON_ENUMS_H_
 
 #include "./aom_config.h"
 #include "aom/aom_integer.h"
@@ -143,4 +143,4 @@ typedef uint8_t PREDICTION_MODE;
 }  // extern "C"
 #endif
 
-#endif  // VP10_COMMON_ENUMS_H_
+#endif  // AV1_COMMON_ENUMS_H_

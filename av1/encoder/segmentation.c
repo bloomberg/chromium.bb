@@ -20,30 +20,30 @@
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/subexp.h"
 
-void vp10_enable_segmentation(struct segmentation *seg) {
+void av1_enable_segmentation(struct segmentation *seg) {
   seg->enabled = 1;
   seg->update_map = 1;
   seg->update_data = 1;
 }
 
-void vp10_disable_segmentation(struct segmentation *seg) {
+void av1_disable_segmentation(struct segmentation *seg) {
   seg->enabled = 0;
   seg->update_map = 0;
   seg->update_data = 0;
 }
 
-void vp10_set_segment_data(struct segmentation *seg, signed char *feature_data,
+void av1_set_segment_data(struct segmentation *seg, signed char *feature_data,
                            unsigned char abs_delta) {
   seg->abs_delta = abs_delta;
 
   memcpy(seg->feature_data, feature_data, sizeof(seg->feature_data));
 }
-void vp10_disable_segfeature(struct segmentation *seg, int segment_id,
+void av1_disable_segfeature(struct segmentation *seg, int segment_id,
                              SEG_LVL_FEATURES feature_id) {
   seg->feature_mask[segment_id] &= ~(1 << feature_id);
 }
 
-void vp10_clear_segdata(struct segmentation *seg, int segment_id,
+void av1_clear_segdata(struct segmentation *seg, int segment_id,
                         SEG_LVL_FEATURES feature_id) {
   seg->feature_data[segment_id][feature_id] = 0;
 }
@@ -74,7 +74,7 @@ static void calc_segtree_probs(unsigned *segcounts,
   for (i = 0; i < 7; i++) {
     const unsigned *ct =
         i == 0 ? ccc : i < 3 ? cc + (i & 2) : segcounts + (i - 3) * 2;
-    vp10_prob_diff_update_savings_search(
+    av1_prob_diff_update_savings_search(
         ct, cur_tree_probs[i], &segment_tree_probs[i], DIFF_UPDATE_PROB);
   }
 #else
@@ -92,35 +92,35 @@ static int cost_segmap(unsigned *segcounts, aom_prob *probs) {
   const int c4567 = c45 + c67;
 
   // Cost the top node of the tree
-  int cost = c0123 * vp10_cost_zero(probs[0]) + c4567 * vp10_cost_one(probs[0]);
+  int cost = c0123 * av1_cost_zero(probs[0]) + c4567 * av1_cost_one(probs[0]);
 
   // Cost subsequent levels
   if (c0123 > 0) {
-    cost += c01 * vp10_cost_zero(probs[1]) + c23 * vp10_cost_one(probs[1]);
+    cost += c01 * av1_cost_zero(probs[1]) + c23 * av1_cost_one(probs[1]);
 
     if (c01 > 0)
-      cost += segcounts[0] * vp10_cost_zero(probs[3]) +
-              segcounts[1] * vp10_cost_one(probs[3]);
+      cost += segcounts[0] * av1_cost_zero(probs[3]) +
+              segcounts[1] * av1_cost_one(probs[3]);
     if (c23 > 0)
-      cost += segcounts[2] * vp10_cost_zero(probs[4]) +
-              segcounts[3] * vp10_cost_one(probs[4]);
+      cost += segcounts[2] * av1_cost_zero(probs[4]) +
+              segcounts[3] * av1_cost_one(probs[4]);
   }
 
   if (c4567 > 0) {
-    cost += c45 * vp10_cost_zero(probs[2]) + c67 * vp10_cost_one(probs[2]);
+    cost += c45 * av1_cost_zero(probs[2]) + c67 * av1_cost_one(probs[2]);
 
     if (c45 > 0)
-      cost += segcounts[4] * vp10_cost_zero(probs[5]) +
-              segcounts[5] * vp10_cost_one(probs[5]);
+      cost += segcounts[4] * av1_cost_zero(probs[5]) +
+              segcounts[5] * av1_cost_one(probs[5]);
     if (c67 > 0)
-      cost += segcounts[6] * vp10_cost_zero(probs[6]) +
-              segcounts[7] * vp10_cost_one(probs[6]);
+      cost += segcounts[6] * av1_cost_zero(probs[6]) +
+              segcounts[7] * av1_cost_one(probs[6]);
   }
 
   return cost;
 }
 
-static void count_segs(const VP10_COMMON *cm, MACROBLOCKD *xd,
+static void count_segs(const AV1_COMMON *cm, MACROBLOCKD *xd,
                        const TileInfo *tile, MODE_INFO **mi,
                        unsigned *no_pred_segcounts,
                        unsigned (*temporal_predictor_count)[2],
@@ -145,7 +145,7 @@ static void count_segs(const VP10_COMMON *cm, MACROBLOCKD *xd,
     const int pred_segment_id =
         get_segment_id(cm, cm->last_frame_seg_map, bsize, mi_row, mi_col);
     const int pred_flag = pred_segment_id == segment_id;
-    const int pred_context = vp10_get_pred_context_seg_id(xd);
+    const int pred_context = av1_get_pred_context_seg_id(xd);
 
     // Store the prediction status for this mb and update counts
     // as appropriate
@@ -157,7 +157,7 @@ static void count_segs(const VP10_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-static void count_segs_sb(const VP10_COMMON *cm, MACROBLOCKD *xd,
+static void count_segs_sb(const AV1_COMMON *cm, MACROBLOCKD *xd,
                           const TileInfo *tile, MODE_INFO **mi,
                           unsigned *no_pred_segcounts,
                           unsigned (*temporal_predictor_count)[2],
@@ -204,7 +204,7 @@ static void count_segs_sb(const VP10_COMMON *cm, MACROBLOCKD *xd,
   }
 }
 
-void vp10_choose_segmap_coding_method(VP10_COMMON *cm, MACROBLOCKD *xd) {
+void av1_choose_segmap_coding_method(AV1_COMMON *cm, MACROBLOCKD *xd) {
   struct segmentation *seg = &cm->seg;
 #if CONFIG_MISC_FIXES
   struct segmentation_probs *segp = &cm->fc->seg;
@@ -245,7 +245,7 @@ void vp10_choose_segmap_coding_method(VP10_COMMON *cm, MACROBLOCKD *xd) {
   for (tile_col = 0; tile_col < 1 << cm->log2_tile_cols; tile_col++) {
     TileInfo tile;
     MODE_INFO **mi_ptr;
-    vp10_tile_init(&tile, cm, 0, tile_col);
+    av1_tile_init(&tile, cm, 0, tile_col);
 
     mi_ptr = cm->mi_grid_visible + tile.mi_col_start;
     for (mi_row = 0; mi_row < cm->mi_rows;
@@ -277,7 +277,7 @@ void vp10_choose_segmap_coding_method(VP10_COMMON *cm, MACROBLOCKD *xd) {
       const int count1 = temporal_predictor_count[i][1];
 
 #if CONFIG_MISC_FIXES
-      vp10_prob_diff_update_savings_search(temporal_predictor_count[i],
+      av1_prob_diff_update_savings_search(temporal_predictor_count[i],
                                            segp->pred_probs[i],
                                            &t_nopred_prob[i], DIFF_UPDATE_PROB);
 #else
@@ -285,8 +285,8 @@ void vp10_choose_segmap_coding_method(VP10_COMMON *cm, MACROBLOCKD *xd) {
 #endif
 
       // Add in the predictor signaling cost
-      t_pred_cost += count0 * vp10_cost_zero(t_nopred_prob[i]) +
-                     count1 * vp10_cost_one(t_nopred_prob[i]);
+      t_pred_cost += count0 * av1_cost_zero(t_nopred_prob[i]) +
+                     count1 * av1_cost_one(t_nopred_prob[i]);
     }
   }
 
@@ -306,7 +306,7 @@ void vp10_choose_segmap_coding_method(VP10_COMMON *cm, MACROBLOCKD *xd) {
   }
 }
 
-void vp10_reset_segment_features(VP10_COMMON *cm) {
+void av1_reset_segment_features(AV1_COMMON *cm) {
   struct segmentation *seg = &cm->seg;
 #if !CONFIG_MISC_FIXES
   struct segmentation_probs *segp = &cm->segp;
@@ -319,5 +319,5 @@ void vp10_reset_segment_features(VP10_COMMON *cm) {
 #if !CONFIG_MISC_FIXES
   memset(segp->tree_probs, 255, sizeof(segp->tree_probs));
 #endif
-  vp10_clearall_segfeatures(seg);
+  av1_clearall_segfeatures(seg);
 }

@@ -28,7 +28,7 @@ int compute_level_from_index(int global_level, int gi) {
   return clamp(level, gi, MAX_DERING_LEVEL-1);
 }
 
-int sb_all_skip(const VP10_COMMON *const cm, int mi_row, int mi_col) {
+int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col) {
   int r, c;
   int maxc, maxr;
   int skip = 1;
@@ -46,7 +46,7 @@ int sb_all_skip(const VP10_COMMON *const cm, int mi_row, int mi_col) {
   return skip;
 }
 
-void vp10_dering_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
+void av1_dering_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                        MACROBLOCKD *xd, int global_level) {
   int r, c;
   int sbr, sbc;
@@ -62,7 +62,7 @@ void vp10_dering_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
   nvsb = (cm->mi_rows + MI_BLOCK_SIZE - 1)/MI_BLOCK_SIZE;
   nhsb = (cm->mi_cols + MI_BLOCK_SIZE - 1)/MI_BLOCK_SIZE;
   bskip = aom_malloc(sizeof(*bskip)*cm->mi_rows*cm->mi_cols);
-  vp10_setup_dst_planes(xd->plane, frame, 0, 0);
+  av1_setup_dst_planes(xd->plane, frame, 0, 0);
   for (pli = 0; pli < 3; pli++) {
     dec[pli] = xd->plane[pli].subsampling_x;
     bsize[pli] = 8 >> dec[pli];
@@ -72,7 +72,7 @@ void vp10_dering_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
     src[pli] = aom_malloc(sizeof(*src)*cm->mi_rows*cm->mi_cols*64);
     for (r = 0; r < bsize[pli]*cm->mi_rows; ++r) {
       for (c = 0; c < bsize[pli]*cm->mi_cols; ++c) {
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
         if (cm->use_highbitdepth) {
           src[pli][r * stride + c] =
               CONVERT_TO_SHORTPTR(xd->plane[pli].dst.buf)
@@ -81,7 +81,7 @@ void vp10_dering_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
 #endif
           src[pli][r * stride + c] =
               xd->plane[pli].dst.buf[r * xd->plane[pli].dst.stride + c];
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
         }
 #endif
       }
@@ -127,7 +127,7 @@ void vp10_dering_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
             cm->mi_cols, threshold, OD_DERING_NO_CHECK_OVERLAP, coeff_shift);
         for (r = 0; r < bsize[pli]*nvb; ++r) {
           for (c = 0; c < bsize[pli]*nhb; ++c) {
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
             if (cm->use_highbitdepth) {
               CONVERT_TO_SHORTPTR(xd->plane[pli].dst.buf)
                   [xd->plane[pli].dst.stride*(bsize[pli]*MI_BLOCK_SIZE*sbr + r)
@@ -139,7 +139,7 @@ void vp10_dering_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
                   (bsize[pli]*MI_BLOCK_SIZE*sbr + r) +
                   sbc*bsize[pli]*MI_BLOCK_SIZE + c] =
                   dst[r * MI_BLOCK_SIZE * bsize[pli] + c];
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
             }
 #endif
           }

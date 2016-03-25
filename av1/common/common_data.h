@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_COMMON_COMMON_DATA_H_
-#define VP10_COMMON_COMMON_DATA_H_
+#ifndef AV1_COMMON_COMMON_DATA_H_
+#define AV1_COMMON_COMMON_DATA_H_
 
 #include "av1/common/enums.h"
 #include "aom/aom_integer.h"
@@ -175,4 +175,4 @@ static const struct {
 }  // extern "C"
 #endif
 
-#endif  // VP10_COMMON_COMMON_DATA_H_
+#endif  // AV1_COMMON_COMMON_DATA_H_

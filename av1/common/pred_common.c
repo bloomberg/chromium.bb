@@ -13,7 +13,7 @@
 #include "av1/common/seg_common.h"
 
 // Returns a context number for the given MB prediction signal
-int vp10_get_pred_context_switchable_interp(const MACROBLOCKD *xd) {
+int av1_get_pred_context_switchable_interp(const MACROBLOCKD *xd) {
   // Note:
   // The mode info data structure has a one element border above and to the
   // left of the entries correpsonding to real macroblocks.
@@ -44,7 +44,7 @@ int vp10_get_pred_context_switchable_interp(const MACROBLOCKD *xd) {
 // 1 - intra/inter, inter/intra
 // 2 - intra/--, --/intra
 // 3 - intra/intra
-int vp10_get_intra_inter_context(const MACROBLOCKD *xd) {
+int av1_get_intra_inter_context(const MACROBLOCKD *xd) {
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
   const int has_above = xd->up_available;
@@ -61,7 +61,7 @@ int vp10_get_intra_inter_context(const MACROBLOCKD *xd) {
   }
 }
 
-int vp10_get_reference_mode_context(const VP10_COMMON *cm,
+int av1_get_reference_mode_context(const AV1_COMMON *cm,
                                     const MACROBLOCKD *xd) {
   int ctx;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
@@ -104,7 +104,7 @@ int vp10_get_reference_mode_context(const VP10_COMMON *cm,
 }
 
 // Returns a context number for the given MB prediction signal
-int vp10_get_pred_context_comp_ref_p(const VP10_COMMON *cm,
+int av1_get_pred_context_comp_ref_p(const AV1_COMMON *cm,
                                      const MACROBLOCKD *xd) {
   int pred_context;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
@@ -186,7 +186,7 @@ int vp10_get_pred_context_comp_ref_p(const VP10_COMMON *cm,
   return pred_context;
 }
 
-int vp10_get_pred_context_single_ref_p1(const MACROBLOCKD *xd) {
+int av1_get_pred_context_single_ref_p1(const MACROBLOCKD *xd) {
   int pred_context;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;
@@ -252,7 +252,7 @@ int vp10_get_pred_context_single_ref_p1(const MACROBLOCKD *xd) {
   return pred_context;
 }
 
-int vp10_get_pred_context_single_ref_p2(const MACROBLOCKD *xd) {
+int av1_get_pred_context_single_ref_p2(const MACROBLOCKD *xd) {
   int pred_context;
   const MB_MODE_INFO *const above_mbmi = xd->above_mbmi;
   const MB_MODE_INFO *const left_mbmi = xd->left_mbmi;

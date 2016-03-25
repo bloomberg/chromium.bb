@@ -89,13 +89,13 @@ static uint32_t variance_ref(const uint8_t *src, const uint8_t *ref, int l2w,
                src[w * y * src_stride_coeff + x];
         se += diff;
         sse += diff * diff;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       } else {
         diff = CONVERT_TO_SHORTPTR(ref)[w * y * ref_stride_coeff + x] -
                CONVERT_TO_SHORTPTR(src)[w * y * src_stride_coeff + x];
         se += diff;
         sse += diff * diff;
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
       }
     }
   }
@@ -137,7 +137,7 @@ static uint32_t subpel_variance_ref(const uint8_t *ref, const uint8_t *src,
         const int diff = r - src[w * y + x];
         se += diff;
         sse += diff * diff;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       } else {
         uint16_t *ref16 = CONVERT_TO_SHORTPTR(ref);
         uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
@@ -151,7 +151,7 @@ static uint32_t subpel_variance_ref(const uint8_t *ref, const uint8_t *src,
         const int diff = r - src16[w * y + x];
         se += diff;
         sse += diff * diff;
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
       }
     }
   }
@@ -226,12 +226,12 @@ class VarianceTest : public ::testing::TestWithParam<
     if (!use_high_bit_depth_) {
       src_ = reinterpret_cast<uint8_t *>(aom_memalign(16, block_size_ * 2));
       ref_ = new uint8_t[block_size_ * 2];
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     } else {
       src_ = CONVERT_TO_BYTEPTR(reinterpret_cast<uint16_t *>(
           aom_memalign(16, block_size_ * 2 * sizeof(uint16_t))));
       ref_ = CONVERT_TO_BYTEPTR(new uint16_t[block_size_ * 2]);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     }
     ASSERT_TRUE(src_ != NULL);
     ASSERT_TRUE(ref_ != NULL);
@@ -241,11 +241,11 @@ class VarianceTest : public ::testing::TestWithParam<
     if (!use_high_bit_depth_) {
       aom_free(src_);
       delete[] ref_;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     } else {
       aom_free(CONVERT_TO_SHORTPTR(src_));
       delete[] CONVERT_TO_SHORTPTR(ref_);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     }
     libaom_test::ClearSystemState();
   }
@@ -273,20 +273,20 @@ void VarianceTest<VarianceFunctionType>::ZeroTest() {
   for (int i = 0; i <= 255; ++i) {
     if (!use_high_bit_depth_) {
       memset(src_, i, block_size_);
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     } else {
       aom_memset16(CONVERT_TO_SHORTPTR(src_), i << (bit_depth_ - 8),
                    block_size_);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     }
     for (int j = 0; j <= 255; ++j) {
       if (!use_high_bit_depth_) {
         memset(ref_, j, block_size_);
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       } else {
         aom_memset16(CONVERT_TO_SHORTPTR(ref_), j << (bit_depth_ - 8),
                      block_size_);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
       }
       unsigned int sse;
       unsigned int var;
@@ -304,11 +304,11 @@ void VarianceTest<VarianceFunctionType>::RefTest() {
       if (!use_high_bit_depth_) {
         src_[j] = rnd_.Rand8();
         ref_[j] = rnd_.Rand8();
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       } else {
         CONVERT_TO_SHORTPTR(src_)[j] = rnd_.Rand16() && mask_;
         CONVERT_TO_SHORTPTR(ref_)[j] = rnd_.Rand16() && mask_;
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
       }
     }
     unsigned int sse1, sse2;
@@ -335,11 +335,11 @@ void VarianceTest<VarianceFunctionType>::RefStrideTest() {
       if (!use_high_bit_depth_) {
         src_[src_ind] = rnd_.Rand8();
         ref_[ref_ind] = rnd_.Rand8();
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       } else {
         CONVERT_TO_SHORTPTR(src_)[src_ind] = rnd_.Rand16() && mask_;
         CONVERT_TO_SHORTPTR(ref_)[ref_ind] = rnd_.Rand16() && mask_;
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
       }
     }
     unsigned int sse1, sse2;
@@ -363,13 +363,13 @@ void VarianceTest<VarianceFunctionType>::OneQuarterTest() {
     memset(src_, 255, block_size_);
     memset(ref_, 255, half);
     memset(ref_ + half, 0, half);
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   } else {
     aom_memset16(CONVERT_TO_SHORTPTR(src_), 255 << (bit_depth_ - 8),
                  block_size_);
     aom_memset16(CONVERT_TO_SHORTPTR(ref_), 255 << (bit_depth_ - 8), half);
     aom_memset16(CONVERT_TO_SHORTPTR(ref_) + half, 0, half);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
   }
   unsigned int sse;
   unsigned int var;
@@ -501,7 +501,7 @@ static uint32_t subpel_avg_variance_ref(const uint8_t *ref, const uint8_t *src,
             ((r + second_pred[w * y + x] + 1) >> 1) - src[w * y + x];
         se += diff;
         sse += diff * diff;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       } else {
         uint16_t *ref16 = CONVERT_TO_SHORTPTR(ref);
         uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
@@ -516,7 +516,7 @@ static uint32_t subpel_avg_variance_ref(const uint8_t *ref, const uint8_t *src,
         const int diff = ((r + sec16[w * y + x] + 1) >> 1) - src16[w * y + x];
         se += diff;
         sse += diff * diff;
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
       }
     }
   }
@@ -554,7 +554,7 @@ class SubpelVarianceTest
       src_ = reinterpret_cast<uint8_t *>(aom_memalign(16, block_size_));
       sec_ = reinterpret_cast<uint8_t *>(aom_memalign(16, block_size_));
       ref_ = new uint8_t[block_size_ + width_ + height_ + 1];
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     } else {
       src_ = CONVERT_TO_BYTEPTR(reinterpret_cast<uint16_t *>(
           aom_memalign(16, block_size_ * sizeof(uint16_t))));
@@ -562,7 +562,7 @@ class SubpelVarianceTest
           aom_memalign(16, block_size_ * sizeof(uint16_t))));
       ref_ =
           CONVERT_TO_BYTEPTR(new uint16_t[block_size_ + width_ + height_ + 1]);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     }
     ASSERT_TRUE(src_ != NULL);
     ASSERT_TRUE(sec_ != NULL);
@@ -574,12 +574,12 @@ class SubpelVarianceTest
       aom_free(src_);
       delete[] ref_;
       aom_free(sec_);
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     } else {
       aom_free(CONVERT_TO_SHORTPTR(src_));
       delete[] CONVERT_TO_SHORTPTR(ref_);
       aom_free(CONVERT_TO_SHORTPTR(sec_));
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     }
     libaom_test::ClearSystemState();
   }
@@ -611,7 +611,7 @@ void SubpelVarianceTest<SubpelVarianceFunctionType>::RefTest() {
         for (int j = 0; j < block_size_ + width_ + height_ + 1; j++) {
           ref_[j] = rnd_.Rand8();
         }
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       } else {
         for (int j = 0; j < block_size_; j++) {
           CONVERT_TO_SHORTPTR(src_)[j] = rnd_.Rand16() & mask_;
@@ -619,7 +619,7 @@ void SubpelVarianceTest<SubpelVarianceFunctionType>::RefTest() {
         for (int j = 0; j < block_size_ + width_ + height_ + 1; j++) {
           CONVERT_TO_SHORTPTR(ref_)[j] = rnd_.Rand16() & mask_;
         }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
       }
       unsigned int sse1, sse2;
       unsigned int var1;
@@ -647,14 +647,14 @@ void SubpelVarianceTest<SubpelVarianceFunctionType>::ExtremeRefTest() {
         memset(src_ + half, 255, half);
         memset(ref_, 255, half);
         memset(ref_ + half, 0, half + width_ + height_ + 1);
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       } else {
         aom_memset16(CONVERT_TO_SHORTPTR(src_), mask_, half);
         aom_memset16(CONVERT_TO_SHORTPTR(src_) + half, 0, half);
         aom_memset16(CONVERT_TO_SHORTPTR(ref_), 0, half);
         aom_memset16(CONVERT_TO_SHORTPTR(ref_) + half, mask_,
                      half + width_ + height_ + 1);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
       }
       unsigned int sse1, sse2;
       unsigned int var1;
@@ -681,7 +681,7 @@ void SubpelVarianceTest<SubpixAvgVarMxNFunc>::RefTest() {
         for (int j = 0; j < block_size_ + width_ + height_ + 1; j++) {
           ref_[j] = rnd_.Rand8();
         }
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       } else {
         for (int j = 0; j < block_size_; j++) {
           CONVERT_TO_SHORTPTR(src_)[j] = rnd_.Rand16() & mask_;
@@ -690,7 +690,7 @@ void SubpelVarianceTest<SubpixAvgVarMxNFunc>::RefTest() {
         for (int j = 0; j < block_size_ + width_ + height_ + 1; j++) {
           CONVERT_TO_SHORTPTR(ref_)[j] = rnd_.Rand16() & mask_;
         }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
       }
       unsigned int sse1, sse2;
       unsigned int var1;
@@ -787,7 +787,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(2, 3, &aom_sub_pixel_avg_variance4x8_c, 0),
                       make_tuple(2, 2, &aom_sub_pixel_avg_variance4x4_c, 0)));
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 typedef MseTest<VarianceMxNFunc> VpxHBDMseTest;
 typedef VarianceTest<VarianceMxNFunc> VpxHBDVarianceTest;
 typedef SubpelVarianceTest<SubpixVarMxNFunc> VpxHBDSubpelVarianceTest;
@@ -947,7 +947,7 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(3, 2, &aom_highbd_12_sub_pixel_avg_variance8x4_c, 12),
         make_tuple(2, 3, &aom_highbd_12_sub_pixel_avg_variance4x8_c, 12),
         make_tuple(2, 2, &aom_highbd_12_sub_pixel_avg_variance4x4_c, 12)));
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #if HAVE_MMX
 INSTANTIATE_TEST_CASE_P(MMX, VpxMseTest,
@@ -1034,7 +1034,7 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(2, 2, &aom_sub_pixel_avg_variance4x4_sse, 0)));
 #endif  // CONFIG_USE_X86INC
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 /* TODO(debargha): This test does not support the highbd version
 INSTANTIATE_TEST_CASE_P(
     SSE2, VpxHBDMseTest,
@@ -1160,7 +1160,7 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(3, 3, &aom_highbd_8_sub_pixel_avg_variance8x8_sse2, 8),
         make_tuple(3, 2, &aom_highbd_8_sub_pixel_avg_variance8x4_sse2, 8)));
 #endif  // CONFIG_USE_X86INC
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 #endif  // HAVE_SSE2
 
 #if HAVE_SSSE3

@@ -173,15 +173,15 @@ aom_tool_available() {
 }
 
 # Echoes yes to stdout when aom_config_option_enabled() reports yes for
-# CONFIG_VP10_DECODER.
-vp10_decode_available() {
-  [ "$(aom_config_option_enabled CONFIG_VP10_DECODER)" = "yes" ] && echo yes
+# CONFIG_AV1_DECODER.
+av1_decode_available() {
+  [ "$(aom_config_option_enabled CONFIG_AV1_DECODER)" = "yes" ] && echo yes
 }
 
 # Echoes yes to stdout when aom_config_option_enabled() reports yes for
-# CONFIG_VP10_ENCODER.
-vp10_encode_available() {
-  [ "$(aom_config_option_enabled CONFIG_VP10_ENCODER)" = "yes" ] && echo yes
+# CONFIG_AV1_ENCODER.
+av1_encode_available() {
+  [ "$(aom_config_option_enabled CONFIG_AV1_ENCODER)" = "yes" ] && echo yes
 }
 # CONFIG_WEBM_IO.
 webm_io_available() {

@@ -237,7 +237,7 @@ static uint8_t get_filter_level(const loop_filter_info_n *lfi_n,
       ->lvl[mbmi->segment_id][mbmi->ref_frame[0]][mode_lf_lut[mbmi->mode]];
 }
 
-void vp10_loop_filter_init(VP10_COMMON *cm) {
+void av1_loop_filter_init(AV1_COMMON *cm) {
   loop_filter_info_n *lfi = &cm->lf_info;
   struct loopfilter *lf = &cm->lf;
   int lvl;
@@ -251,7 +251,7 @@ void vp10_loop_filter_init(VP10_COMMON *cm) {
     memset(lfi->lfthr[lvl].hev_thr, (lvl >> 4), SIMD_WIDTH);
 }
 
-void vp10_loop_filter_frame_init(VP10_COMMON *cm, int default_filt_lvl) {
+void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl) {
   int seg_id;
   // n_shift is the multiplier for lf_deltas
   // the multiplier is 1 for when filter_lvl is between 0 and 31;
@@ -393,7 +393,7 @@ static void filter_selectively_vert_row2(int subsampling_factor, uint8_t *s,
   }
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 static void highbd_filter_selectively_vert_row2(
     int subsampling_factor, uint16_t *s, int pitch, unsigned int mask_16x16_l,
     unsigned int mask_8x8_l, unsigned int mask_4x4_l,
@@ -489,7 +489,7 @@ static void highbd_filter_selectively_vert_row2(
     mask_4x4_int_1 >>= 1;
   }
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 static void filter_selectively_horiz(
     uint8_t *s, int pitch, unsigned int mask_16x16, unsigned int mask_8x8,
@@ -584,7 +584,7 @@ static void filter_selectively_horiz(
   }
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 static void highbd_filter_selectively_horiz(
     uint16_t *s, int pitch, unsigned int mask_16x16, unsigned int mask_8x8,
     unsigned int mask_4x4, unsigned int mask_4x4_int,
@@ -683,7 +683,7 @@ static void highbd_filter_selectively_horiz(
     mask_4x4_int >>= count;
   }
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 // This function ors into the current lfm structure, where to do loop
 // filters for the specific mi we are looking at. It uses information
@@ -825,7 +825,7 @@ static void build_y_mask(const loop_filter_info_n *const lfi_n,
 // This function sets up the bit masks for the entire 64x64 region represented
 // by mi_row, mi_col.
 // TODO(JBB): This function only works for yv12.
-void vp10_setup_mask(VP10_COMMON *const cm, const int mi_row, const int mi_col,
+void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
                      MODE_INFO **mi, const int mode_info_stride,
                      LOOP_FILTER_MASK *lfm) {
   int idx_32, idx_16, idx_8;
@@ -860,7 +860,7 @@ void vp10_setup_mask(VP10_COMMON *const cm, const int mi_row, const int mi_col,
       (mi_col + MI_BLOCK_SIZE > cm->mi_cols ? cm->mi_cols - mi_col
                                             : MI_BLOCK_SIZE);
 
-  vp10_zero(*lfm);
+  av1_zero(*lfm);
   assert(mip[0] != NULL);
 
   // TODO(jimbankoski): Try moving most of the following code into decode
@@ -1115,7 +1115,7 @@ static void filter_selectively_vert(
   }
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 static void highbd_filter_selectively_vert(
     uint16_t *s, int pitch, unsigned int mask_16x16, unsigned int mask_8x8,
     unsigned int mask_4x4, unsigned int mask_4x4_int,
@@ -1149,9 +1149,9 @@ static void highbd_filter_selectively_vert(
     mask_4x4_int >>= 1;
   }
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
-void vp10_filter_block_plane_non420(VP10_COMMON *cm,
+void av1_filter_block_plane_non420(AV1_COMMON *cm,
                                     struct macroblockd_plane *plane,
                                     MODE_INFO **mi_8x8, int mi_row,
                                     int mi_col) {
@@ -1253,7 +1253,7 @@ void vp10_filter_block_plane_non420(VP10_COMMON *cm,
 
     // Disable filtering on the leftmost column
     border_mask = ~(mi_col == 0);
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     if (cm->use_highbitdepth) {
       highbd_filter_selectively_vert(
           CONVERT_TO_SHORTPTR(dst->buf), dst->stride,
@@ -1270,7 +1270,7 @@ void vp10_filter_block_plane_non420(VP10_COMMON *cm,
     filter_selectively_vert(dst->buf, dst->stride, mask_16x16_c & border_mask,
                             mask_8x8_c & border_mask, mask_4x4_c & border_mask,
                             mask_4x4_int[r], &cm->lf_info, &lfl[r << 3]);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     dst->buf += 8 * dst->stride;
     mi_8x8 += row_step_stride;
   }
@@ -1294,7 +1294,7 @@ void vp10_filter_block_plane_non420(VP10_COMMON *cm,
       mask_8x8_r = mask_8x8[r];
       mask_4x4_r = mask_4x4[r];
     }
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     if (cm->use_highbitdepth) {
       highbd_filter_selectively_horiz(CONVERT_TO_SHORTPTR(dst->buf),
                                       dst->stride, mask_16x16_r, mask_8x8_r,
@@ -1309,12 +1309,12 @@ void vp10_filter_block_plane_non420(VP10_COMMON *cm,
     filter_selectively_horiz(dst->buf, dst->stride, mask_16x16_r, mask_8x8_r,
                              mask_4x4_r, mask_4x4_int_r, &cm->lf_info,
                              &lfl[r << 3]);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     dst->buf += 8 * dst->stride;
   }
 }
 
-void vp10_filter_block_plane_ss00(VP10_COMMON *const cm,
+void av1_filter_block_plane_ss00(AV1_COMMON *const cm,
                                   struct macroblockd_plane *const plane,
                                   int mi_row, LOOP_FILTER_MASK *lfm) {
   struct buf_2d *const dst = &plane->dst;
@@ -1335,7 +1335,7 @@ void vp10_filter_block_plane_ss00(VP10_COMMON *const cm,
     unsigned int mask_4x4_int_l = mask_4x4_int & 0xffff;
 
 // Disable filtering on the leftmost column.
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     if (cm->use_highbitdepth) {
       highbd_filter_selectively_vert_row2(
           plane->subsampling_x, CONVERT_TO_SHORTPTR(dst->buf), dst->stride,
@@ -1350,7 +1350,7 @@ void vp10_filter_block_plane_ss00(VP10_COMMON *const cm,
     filter_selectively_vert_row2(
         plane->subsampling_x, dst->buf, dst->stride, mask_16x16_l, mask_8x8_l,
         mask_4x4_l, mask_4x4_int_l, &cm->lf_info, &lfm->lfl_y[r << 3]);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
     dst->buf += 16 * dst->stride;
     mask_16x16 >>= 16;
     mask_8x8 >>= 16;
@@ -1380,7 +1380,7 @@ void vp10_filter_block_plane_ss00(VP10_COMMON *const cm,
       mask_4x4_r = mask_4x4 & 0xff;
     }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     if (cm->use_highbitdepth) {
       highbd_filter_selectively_horiz(
           CONVERT_TO_SHORTPTR(dst->buf), dst->stride, mask_16x16_r, mask_8x8_r,
@@ -1395,7 +1395,7 @@ void vp10_filter_block_plane_ss00(VP10_COMMON *const cm,
     filter_selectively_horiz(dst->buf, dst->stride, mask_16x16_r, mask_8x8_r,
                              mask_4x4_r, mask_4x4_int & 0xff, &cm->lf_info,
                              &lfm->lfl_y[r << 3]);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
     dst->buf += 8 * dst->stride;
     mask_16x16 >>= 8;
@@ -1405,7 +1405,7 @@ void vp10_filter_block_plane_ss00(VP10_COMMON *const cm,
   }
 }
 
-void vp10_filter_block_plane_ss11(VP10_COMMON *const cm,
+void av1_filter_block_plane_ss11(AV1_COMMON *const cm,
                                   struct macroblockd_plane *const plane,
                                   int mi_row, LOOP_FILTER_MASK *lfm) {
   struct buf_2d *const dst = &plane->dst;
@@ -1439,7 +1439,7 @@ void vp10_filter_block_plane_ss11(VP10_COMMON *const cm,
       unsigned int mask_4x4_int_l = mask_4x4_int & 0xff;
 
 // Disable filtering on the leftmost column.
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
       if (cm->use_highbitdepth) {
         highbd_filter_selectively_vert_row2(
             plane->subsampling_x, CONVERT_TO_SHORTPTR(dst->buf), dst->stride,
@@ -1455,7 +1455,7 @@ void vp10_filter_block_plane_ss11(VP10_COMMON *const cm,
       filter_selectively_vert_row2(
           plane->subsampling_x, dst->buf, dst->stride, mask_16x16_l, mask_8x8_l,
           mask_4x4_l, mask_4x4_int_l, &cm->lf_info, &lfm->lfl_uv[r << 1]);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
       dst->buf += 16 * dst->stride;
       mask_16x16 >>= 8;
@@ -1494,7 +1494,7 @@ void vp10_filter_block_plane_ss11(VP10_COMMON *const cm,
       mask_4x4_r = mask_4x4 & 0xf;
     }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     if (cm->use_highbitdepth) {
       highbd_filter_selectively_horiz(CONVERT_TO_SHORTPTR(dst->buf),
                                       dst->stride, mask_16x16_r, mask_8x8_r,
@@ -1509,7 +1509,7 @@ void vp10_filter_block_plane_ss11(VP10_COMMON *const cm,
     filter_selectively_horiz(dst->buf, dst->stride, mask_16x16_r, mask_8x8_r,
                              mask_4x4_r, mask_4x4_int_r, &cm->lf_info,
                              &lfm->lfl_uv[r << 1]);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
     dst->buf += 8 * dst->stride;
     mask_16x16 >>= 4;
@@ -1519,7 +1519,7 @@ void vp10_filter_block_plane_ss11(VP10_COMMON *const cm,
   }
 }
 
-void vp10_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, VP10_COMMON *cm,
+void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
                            struct macroblockd_plane planes[MAX_MB_PLANE],
                            int start, int stop, int y_only) {
   const int num_planes = y_only ? 1 : MAX_MB_PLANE;
@@ -1542,22 +1542,22 @@ void vp10_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, VP10_COMMON *cm,
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MI_BLOCK_SIZE) {
       int plane;
 
-      vp10_setup_dst_planes(planes, frame_buffer, mi_row, mi_col);
+      av1_setup_dst_planes(planes, frame_buffer, mi_row, mi_col);
 
       // TODO(JBB): Make setup_mask work for non 420.
-      vp10_setup_mask(cm, mi_row, mi_col, mi + mi_col, cm->mi_stride, &lfm);
+      av1_setup_mask(cm, mi_row, mi_col, mi + mi_col, cm->mi_stride, &lfm);
 
-      vp10_filter_block_plane_ss00(cm, &planes[0], mi_row, &lfm);
+      av1_filter_block_plane_ss00(cm, &planes[0], mi_row, &lfm);
       for (plane = 1; plane < num_planes; ++plane) {
         switch (path) {
           case LF_PATH_420:
-            vp10_filter_block_plane_ss11(cm, &planes[plane], mi_row, &lfm);
+            av1_filter_block_plane_ss11(cm, &planes[plane], mi_row, &lfm);
             break;
           case LF_PATH_444:
-            vp10_filter_block_plane_ss00(cm, &planes[plane], mi_row, &lfm);
+            av1_filter_block_plane_ss00(cm, &planes[plane], mi_row, &lfm);
             break;
           case LF_PATH_SLOW:
-            vp10_filter_block_plane_non420(cm, &planes[plane], mi + mi_col,
+            av1_filter_block_plane_non420(cm, &planes[plane], mi + mi_col,
                                            mi_row, mi_col);
             break;
         }
@@ -1566,7 +1566,7 @@ void vp10_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, VP10_COMMON *cm,
   }
 }
 
-void vp10_loop_filter_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
+void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                             MACROBLOCKD *xd, int frame_filter_level, int y_only,
                             int partial_frame) {
   int start_mi_row, end_mi_row, mi_rows_to_filter;
@@ -1579,13 +1579,13 @@ void vp10_loop_filter_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
     mi_rows_to_filter = VPXMAX(cm->mi_rows / 8, 8);
   }
   end_mi_row = start_mi_row + mi_rows_to_filter;
-  vp10_loop_filter_frame_init(cm, frame_filter_level);
-  vp10_loop_filter_rows(frame, cm, xd->plane, start_mi_row, end_mi_row, y_only);
+  av1_loop_filter_frame_init(cm, frame_filter_level);
+  av1_loop_filter_rows(frame, cm, xd->plane, start_mi_row, end_mi_row, y_only);
 }
 
-void vp10_loop_filter_data_reset(
+void av1_loop_filter_data_reset(
     LFWorkerData *lf_data, YV12_BUFFER_CONFIG *frame_buffer,
-    struct VP10Common *cm,
+    struct AV1Common *cm,
     const struct macroblockd_plane planes[MAX_MB_PLANE]) {
   lf_data->frame_buffer = frame_buffer;
   lf_data->cm = cm;
@@ -1595,9 +1595,9 @@ void vp10_loop_filter_data_reset(
   memcpy(lf_data->planes, planes, sizeof(lf_data->planes));
 }
 
-int vp10_loop_filter_worker(LFWorkerData *const lf_data, void *unused) {
+int av1_loop_filter_worker(LFWorkerData *const lf_data, void *unused) {
   (void)unused;
-  vp10_loop_filter_rows(lf_data->frame_buffer, lf_data->cm, lf_data->planes,
+  av1_loop_filter_rows(lf_data->frame_buffer, lf_data->cm, lf_data->planes,
                         lf_data->start, lf_data->stop, lf_data->y_only);
   return 1;
 }

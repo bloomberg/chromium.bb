@@ -50,8 +50,8 @@ void write_webm_file_header(struct EbmlGlobal *glob,
   switch (fourcc) {
     case VP8_FOURCC: codec_id = "V_VP8"; break;
     case VP9_FOURCC: codec_id = "V_VP9"; break;
-    case VP10_FOURCC: codec_id = "V_VP10"; break;
-    default: codec_id = "V_VP10"; break;
+    case AV1_FOURCC: codec_id = "V_AV1"; break;
+    default: codec_id = "V_AV1"; break;
   }
   video_track->set_codec_id(codec_id);
   if (par->numerator > 1 || par->denominator > 1) {

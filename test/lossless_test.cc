@@ -118,7 +118,7 @@ TEST_P(LosslessTest, TestLossLessEncodingCtrl) {
   EXPECT_GE(psnr_lossless, kMaxPsnr);
 }
 
-VP10_INSTANTIATE_TEST_CASE(LosslessTest,
+AV1_INSTANTIATE_TEST_CASE(LosslessTest,
                            ::testing::Values(::libaom_test::kOnePassGood,
                                              ::libaom_test::kTwoPassGood));
 }  // namespace

@@ -26,8 +26,8 @@ TEST(EncodeAPI, InvalidParams) {
 #if CONFIG_VP9_ENCODER
     &aom_codec_vp9_cx_algo,
 #endif
-#if CONFIG_VP10_ENCODER
-    &aom_codec_vp10_cx_algo,
+#if CONFIG_AV1_ENCODER
+    &aom_codec_av1_cx_algo,
 #endif
   };
   uint8_t buf[1] = { 0 };

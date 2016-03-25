@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_ENCODER_CONTEXT_TREE_H_
-#define VP10_ENCODER_CONTEXT_TREE_H_
+#ifndef AV1_ENCODER_CONTEXT_TREE_H_
+#define AV1_ENCODER_CONTEXT_TREE_H_
 
 #include "av1/common/blockd.h"
 #include "av1/encoder/block.h"
@@ -19,8 +19,8 @@
 extern "C" {
 #endif
 
-struct VP10_COMP;
-struct VP10Common;
+struct AV1_COMP;
+struct AV1Common;
 struct ThreadData;
 
 // Structure to hold snapshot of coding context during the mode picking process
@@ -78,11 +78,11 @@ typedef struct PC_TREE {
   };
 } PC_TREE;
 
-void vp10_setup_pc_tree(struct VP10Common *cm, struct ThreadData *td);
-void vp10_free_pc_tree(struct ThreadData *td);
+void av1_setup_pc_tree(struct AV1Common *cm, struct ThreadData *td);
+void av1_free_pc_tree(struct ThreadData *td);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif /* VP10_ENCODER_CONTEXT_TREE_H_ */
+#endif /* AV1_ENCODER_CONTEXT_TREE_H_ */

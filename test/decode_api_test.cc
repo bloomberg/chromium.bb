@@ -21,8 +21,8 @@ namespace {
 
 TEST(DecodeAPI, InvalidParams) {
   static const aom_codec_iface_t *kCodecs[] = {
-#if CONFIG_VP10_DECODER
-    &aom_codec_vp10_dx_algo,
+#if CONFIG_AV1_DECODER
+    &aom_codec_av1_dx_algo,
 #endif
   };
   uint8_t buf[1] = { 0 };

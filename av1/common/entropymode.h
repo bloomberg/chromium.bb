@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_COMMON_ENTROPYMODE_H_
-#define VP10_COMMON_ENTROPYMODE_H_
+#ifndef AV1_COMMON_ENTROPYMODE_H_
+#define AV1_COMMON_ENTROPYMODE_H_
 
 #include "av1/common/entropy.h"
 #include "av1/common/entropymv.h"
@@ -28,7 +28,7 @@ extern "C" {
 
 #define INTER_OFFSET(mode) ((mode)-NEARESTMV)
 
-struct VP10Common;
+struct AV1Common;
 
 struct tx_probs {
   aom_prob p32x32[TX_SIZE_CONTEXTS][TX_SIZES - 1];
@@ -53,7 +53,7 @@ typedef struct frame_contexts {
   aom_prob y_mode_prob[BLOCK_SIZE_GROUPS][INTRA_MODES - 1];
   aom_prob uv_mode_prob[INTRA_MODES][INTRA_MODES - 1];
   aom_prob partition_prob[PARTITION_CONTEXTS][PARTITION_TYPES - 1];
-  vp10_coeff_probs_model coef_probs[TX_SIZES][PLANE_TYPES];
+  av1_coeff_probs_model coef_probs[TX_SIZES][PLANE_TYPES];
   aom_prob
       switchable_interp_prob[SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS -
                                                          1];
@@ -78,7 +78,7 @@ typedef struct FRAME_COUNTS {
   unsigned int y_mode[BLOCK_SIZE_GROUPS][INTRA_MODES];
   unsigned int uv_mode[INTRA_MODES][INTRA_MODES];
   unsigned int partition[PARTITION_CONTEXTS][PARTITION_TYPES];
-  vp10_coeff_count_model coef[TX_SIZES][PLANE_TYPES];
+  av1_coeff_count_model coef[TX_SIZES][PLANE_TYPES];
   unsigned int
       eob_branch[TX_SIZES][PLANE_TYPES][REF_TYPES][COEF_BANDS][COEFF_CONTEXTS];
   unsigned int
@@ -99,34 +99,34 @@ typedef struct FRAME_COUNTS {
 } FRAME_COUNTS;
 
 extern const aom_prob
-    vp10_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1];
+    av1_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1];
 #if !CONFIG_MISC_FIXES
-extern const aom_prob vp10_kf_uv_mode_prob[INTRA_MODES][INTRA_MODES - 1];
+extern const aom_prob av1_kf_uv_mode_prob[INTRA_MODES][INTRA_MODES - 1];
 extern const aom_prob
-    vp10_kf_partition_probs[PARTITION_CONTEXTS][PARTITION_TYPES - 1];
+    av1_kf_partition_probs[PARTITION_CONTEXTS][PARTITION_TYPES - 1];
 #endif
 
-extern const aom_tree_index vp10_intra_mode_tree[TREE_SIZE(INTRA_MODES)];
-extern const aom_tree_index vp10_inter_mode_tree[TREE_SIZE(INTER_MODES)];
-extern const aom_tree_index vp10_partition_tree[TREE_SIZE(PARTITION_TYPES)];
+extern const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)];
+extern const aom_tree_index av1_inter_mode_tree[TREE_SIZE(INTER_MODES)];
+extern const aom_tree_index av1_partition_tree[TREE_SIZE(PARTITION_TYPES)];
 extern const aom_tree_index
-    vp10_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)];
+    av1_switchable_interp_tree[TREE_SIZE(SWITCHABLE_FILTERS)];
 
-void vp10_setup_past_independence(struct VP10Common *cm);
+void av1_setup_past_independence(struct AV1Common *cm);
 
-void vp10_adapt_intra_frame_probs(struct VP10Common *cm);
-void vp10_adapt_inter_frame_probs(struct VP10Common *cm);
+void av1_adapt_intra_frame_probs(struct AV1Common *cm);
+void av1_adapt_inter_frame_probs(struct AV1Common *cm);
 
-void vp10_tx_counts_to_branch_counts_32x32(const unsigned int *tx_count_32x32p,
+void av1_tx_counts_to_branch_counts_32x32(const unsigned int *tx_count_32x32p,
                                            unsigned int (*ct_32x32p)[2]);
-void vp10_tx_counts_to_branch_counts_16x16(const unsigned int *tx_count_16x16p,
+void av1_tx_counts_to_branch_counts_16x16(const unsigned int *tx_count_16x16p,
                                            unsigned int (*ct_16x16p)[2]);
-void vp10_tx_counts_to_branch_counts_8x8(const unsigned int *tx_count_8x8p,
+void av1_tx_counts_to_branch_counts_8x8(const unsigned int *tx_count_8x8p,
                                          unsigned int (*ct_8x8p)[2]);
 
-extern const aom_tree_index vp10_ext_tx_tree[TREE_SIZE(TX_TYPES)];
+extern const aom_tree_index av1_ext_tx_tree[TREE_SIZE(TX_TYPES)];
 
-static INLINE int vp10_ceil_log2(int n) {
+static INLINE int av1_ceil_log2(int n) {
   int i = 1, p = 2;
   while (p < n) {
     i++;
@@ -139,4 +139,4 @@ static INLINE int vp10_ceil_log2(int n) {
 }  // extern "C"
 #endif
 
-#endif  // VP10_COMMON_ENTROPYMODE_H_
+#endif  // AV1_COMMON_ENTROPYMODE_H_

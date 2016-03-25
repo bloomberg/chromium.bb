@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_COMMON_BLOCKD_H_
-#define VP10_COMMON_BLOCKD_H_
+#ifndef AV1_COMMON_BLOCKD_H_
+#define AV1_COMMON_BLOCKD_H_
 
 #include "./aom_config.h"
 
@@ -110,10 +110,10 @@ static INLINE int has_second_ref(const MB_MODE_INFO *mbmi) {
   return mbmi->ref_frame[1] > INTRA_FRAME;
 }
 
-PREDICTION_MODE vp10_left_block_mode(const MODE_INFO *cur_mi,
+PREDICTION_MODE av1_left_block_mode(const MODE_INFO *cur_mi,
                                      const MODE_INFO *left_mi, int b);
 
-PREDICTION_MODE vp10_above_block_mode(const MODE_INFO *cur_mi,
+PREDICTION_MODE av1_above_block_mode(const MODE_INFO *cur_mi,
                                       const MODE_INFO *above_mi, int b);
 
 enum mv_precision { MV_PRECISION_Q3, MV_PRECISION_Q4 };
@@ -154,7 +154,7 @@ struct macroblockd_plane {
 
 typedef struct RefBuffer {
   // TODO(dkovalev): idx is not really required and should be removed, now it
-  // is used in vp10_onyxd_if.c
+  // is used in av1_onyxd_if.c
   int idx;
   YV12_BUFFER_CONFIG *buf;
   struct scale_factors sf;
@@ -199,7 +199,7 @@ typedef struct macroblockd {
   PARTITION_CONTEXT *above_seg_context;
   PARTITION_CONTEXT left_seg_context[8];
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   /* Bit depth: 8, 10, 12 */
   int bd;
 #endif
@@ -241,7 +241,7 @@ static INLINE TX_TYPE get_tx_type(PLANE_TYPE plane_type, const MACROBLOCKD *xd,
   return mbmi->tx_type;
 }
 
-void vp10_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y);
+void av1_setup_block_planes(MACROBLOCKD *xd, int ss_x, int ss_y);
 
 static INLINE TX_SIZE get_uv_tx_size_impl(TX_SIZE y_tx_size, BLOCK_SIZE bsize,
                                           int xss, int yss) {
@@ -281,16 +281,16 @@ typedef void (*foreach_transformed_block_visitor)(int plane, int block,
                                                   BLOCK_SIZE plane_bsize,
                                                   TX_SIZE tx_size, void *arg);
 
-void vp10_foreach_transformed_block_in_plane(
+void av1_foreach_transformed_block_in_plane(
     const MACROBLOCKD *const xd, BLOCK_SIZE bsize, int plane,
     foreach_transformed_block_visitor visit, void *arg);
 
-void vp10_foreach_transformed_block(const MACROBLOCKD *const xd,
+void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
                                     BLOCK_SIZE bsize,
                                     foreach_transformed_block_visitor visit,
                                     void *arg);
 
-void vp10_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
+void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
                        BLOCK_SIZE plane_bsize, TX_SIZE tx_size, int has_eob,
                        int aoff, int loff);
 
@@ -298,4 +298,4 @@ void vp10_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
 }  // extern "C"
 #endif
 
-#endif  // VP10_COMMON_BLOCKD_H_
+#endif  // AV1_COMMON_BLOCKD_H_

@@ -570,7 +570,7 @@ TEST_P(ErrorResilienceTestLargeCodecControls, CodecControl3TemporalLayers) {
   }
 }
 
-// SVC-related tests don't run for VP10 since SVC is not supported.
-VP10_INSTANTIATE_TEST_CASE(ErrorResilienceTestLarge, ONE_PASS_TEST_MODES,
+// SVC-related tests don't run for AV1 since SVC is not supported.
+AV1_INSTANTIATE_TEST_CASE(ErrorResilienceTestLarge, ONE_PASS_TEST_MODES,
                            ::testing::Values(false));
 }  // namespace

@@ -22,7 +22,7 @@
     *(int *)(dest) = _mm_cvtsi128_si32(d0);               \
   }
 
-void vp10_idct4x4_16_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
+void av1_idct4x4_16_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
   const __m128i zero = _mm_setzero_si128();
   const __m128i eight = _mm_set1_epi16(8);
   const __m128i cst = _mm_setr_epi16(
@@ -152,7 +152,7 @@ void vp10_idct4x4_16_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
   }
 }
 
-void vp10_idct4x4_1_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
+void av1_idct4x4_1_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
   __m128i dc_value;
   const __m128i zero = _mm_setzero_si128();
   int a;
@@ -177,7 +177,7 @@ static INLINE void transpose_4x4(__m128i *res) {
   res[1] = _mm_unpackhi_epi16(tr0_0, tr0_1);
 }
 
-void vp10_idct4_sse2(__m128i *in) {
+void av1_idct4_sse2(__m128i *in) {
   const __m128i k__cospi_p16_p16 = pair_set_epi16(cospi_16_64, cospi_16_64);
   const __m128i k__cospi_p16_m16 = pair_set_epi16(cospi_16_64, -cospi_16_64);
   const __m128i k__cospi_p24_m08 = pair_set_epi16(cospi_24_64, -cospi_8_64);
@@ -213,7 +213,7 @@ void vp10_idct4_sse2(__m128i *in) {
   in[1] = _mm_shuffle_epi32(in[1], 0x4E);
 }
 
-void vp10_iadst4_sse2(__m128i *in) {
+void av1_iadst4_sse2(__m128i *in) {
   const __m128i k__sinpi_p01_p04 = pair_set_epi16(sinpi_1_9, sinpi_4_9);
   const __m128i k__sinpi_p03_p02 = pair_set_epi16(sinpi_3_9, sinpi_2_9);
   const __m128i k__sinpi_p02_m01 = pair_set_epi16(sinpi_2_9, -sinpi_1_9);
@@ -447,7 +447,7 @@ void vp10_iadst4_sse2(__m128i *in) {
     out7 = _mm_subs_epi16(stp1_0, stp2_7);                                    \
   }
 
-void vp10_idct8x8_64_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
+void av1_idct8x8_64_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
   const __m128i zero = _mm_setzero_si128();
   const __m128i rounding = _mm_set1_epi32(DCT_CONST_ROUNDING);
   const __m128i final_rounding = _mm_set1_epi16(1 << 4);
@@ -478,11 +478,11 @@ void vp10_idct8x8_64_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
 
   // 2-D
   for (i = 0; i < 2; i++) {
-    // 8x8 Transpose is copied from vp10_fdct8x8_sse2()
+    // 8x8 Transpose is copied from av1_fdct8x8_sse2()
     TRANSPOSE_8X8(in0, in1, in2, in3, in4, in5, in6, in7, in0, in1, in2, in3,
                   in4, in5, in6, in7);
 
-    // 4-stage 1D vp10_idct8x8
+    // 4-stage 1D av1_idct8x8
     IDCT8(in0, in1, in2, in3, in4, in5, in6, in7, in0, in1, in2, in3, in4, in5,
           in6, in7);
   }
@@ -516,7 +516,7 @@ void vp10_idct8x8_64_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
   RECON_AND_STORE(dest + 7 * stride, in7);
 }
 
-void vp10_idct8x8_1_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
+void av1_idct8x8_1_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
   __m128i dc_value;
   const __m128i zero = _mm_setzero_si128();
   int a;
@@ -537,7 +537,7 @@ void vp10_idct8x8_1_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
   RECON_AND_STORE(dest + 7 * stride, dc_value);
 }
 
-void vp10_idct8_sse2(__m128i *in) {
+void av1_idct8_sse2(__m128i *in) {
   const __m128i rounding = _mm_set1_epi32(DCT_CONST_ROUNDING);
   const __m128i stg1_0 = pair_set_epi16(cospi_28_64, -cospi_4_64);
   const __m128i stg1_1 = pair_set_epi16(cospi_4_64, cospi_28_64);
@@ -553,16 +553,16 @@ void vp10_idct8_sse2(__m128i *in) {
   __m128i stp2_0, stp2_1, stp2_2, stp2_3, stp2_4, stp2_5, stp2_6, stp2_7;
   __m128i tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7;
 
-  // 8x8 Transpose is copied from vp10_fdct8x8_sse2()
+  // 8x8 Transpose is copied from av1_fdct8x8_sse2()
   TRANSPOSE_8X8(in[0], in[1], in[2], in[3], in[4], in[5], in[6], in[7], in0,
                 in1, in2, in3, in4, in5, in6, in7);
 
-  // 4-stage 1D vp10_idct8x8
+  // 4-stage 1D av1_idct8x8
   IDCT8(in0, in1, in2, in3, in4, in5, in6, in7, in[0], in[1], in[2], in[3],
         in[4], in[5], in[6], in[7]);
 }
 
-void vp10_iadst8_sse2(__m128i *in) {
+void av1_iadst8_sse2(__m128i *in) {
   const __m128i k__cospi_p02_p30 = pair_set_epi16(cospi_2_64, cospi_30_64);
   const __m128i k__cospi_p30_m02 = pair_set_epi16(cospi_30_64, -cospi_2_64);
   const __m128i k__cospi_p10_p22 = pair_set_epi16(cospi_10_64, cospi_22_64);
@@ -790,7 +790,7 @@ void vp10_iadst8_sse2(__m128i *in) {
   in[7] = _mm_sub_epi16(k__const_0, s1);
 }
 
-void vp10_idct8x8_12_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
+void av1_idct8x8_12_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
   const __m128i zero = _mm_setzero_si128();
   const __m128i rounding = _mm_set1_epi32(DCT_CONST_ROUNDING);
   const __m128i final_rounding = _mm_set1_epi16(1 << 4);
@@ -1159,7 +1159,7 @@ void vp10_idct8x8_12_add_sse2(const int16_t *input, uint8_t *dest, int stride) {
                            stp2_12)                                            \
   }
 
-void vp10_idct16x16_256_add_sse2(const int16_t *input, uint8_t *dest,
+void av1_idct16x16_256_add_sse2(const int16_t *input, uint8_t *dest,
                                  int stride) {
   const __m128i rounding = _mm_set1_epi32(DCT_CONST_ROUNDING);
   const __m128i final_rounding = _mm_set1_epi16(1 << 5);
@@ -1201,7 +1201,7 @@ void vp10_idct16x16_256_add_sse2(const int16_t *input, uint8_t *dest,
 
   curr1 = l;
   for (i = 0; i < 2; i++) {
-    // 1-D vp10_idct
+    // 1-D av1_idct
 
     // Load input data.
     in[0] = _mm_load_si128((const __m128i *)input);
@@ -1249,7 +1249,7 @@ void vp10_idct16x16_256_add_sse2(const int16_t *input, uint8_t *dest,
   }
   for (i = 0; i < 2; i++) {
     int j;
-    // 1-D vp10_idct
+    // 1-D av1_idct
     array_transpose_8x8(l + i * 8, in);
     array_transpose_8x8(r + i * 8, in + 8);
 
@@ -1284,7 +1284,7 @@ void vp10_idct16x16_256_add_sse2(const int16_t *input, uint8_t *dest,
   }
 }
 
-void vp10_idct16x16_1_add_sse2(const int16_t *input, uint8_t *dest,
+void av1_idct16x16_1_add_sse2(const int16_t *input, uint8_t *dest,
                                int stride) {
   __m128i dc_value;
   const __m128i zero = _mm_setzero_si128();
@@ -1317,7 +1317,7 @@ void vp10_idct16x16_1_add_sse2(const int16_t *input, uint8_t *dest,
   }
 }
 
-static void vp10_iadst16_8col(__m128i *in) {
+static void av1_iadst16_8col(__m128i *in) {
   // perform 16x16 1-D ADST for 8 columns
   __m128i s[16], x[16], u[32], v[32];
   const __m128i k__cospi_p01_p31 = pair_set_epi16(cospi_1_64, cospi_31_64);
@@ -1787,7 +1787,7 @@ static void vp10_iadst16_8col(__m128i *in) {
   in[15] = _mm_sub_epi16(kZero, s[1]);
 }
 
-static void vp10_idct16_8col(__m128i *in) {
+static void av1_idct16_8col(__m128i *in) {
   const __m128i k__cospi_p30_m02 = pair_set_epi16(cospi_30_64, -cospi_2_64);
   const __m128i k__cospi_p02_p30 = pair_set_epi16(cospi_2_64, cospi_30_64);
   const __m128i k__cospi_p14_m18 = pair_set_epi16(cospi_14_64, -cospi_18_64);
@@ -2131,19 +2131,19 @@ static void vp10_idct16_8col(__m128i *in) {
   in[15] = _mm_sub_epi16(s[0], s[15]);
 }
 
-void vp10_idct16_sse2(__m128i *in0, __m128i *in1) {
+void av1_idct16_sse2(__m128i *in0, __m128i *in1) {
   array_transpose_16x16(in0, in1);
-  vp10_idct16_8col(in0);
-  vp10_idct16_8col(in1);
+  av1_idct16_8col(in0);
+  av1_idct16_8col(in1);
 }
 
-void vp10_iadst16_sse2(__m128i *in0, __m128i *in1) {
+void av1_iadst16_sse2(__m128i *in0, __m128i *in1) {
   array_transpose_16x16(in0, in1);
-  vp10_iadst16_8col(in0);
-  vp10_iadst16_8col(in1);
+  av1_iadst16_8col(in0);
+  av1_iadst16_8col(in1);
 }
 
-void vp10_idct16x16_10_add_sse2(const int16_t *input, uint8_t *dest,
+void av1_idct16x16_10_add_sse2(const int16_t *input, uint8_t *dest,
                                 int stride) {
   const __m128i rounding = _mm_set1_epi32(DCT_CONST_ROUNDING);
   const __m128i final_rounding = _mm_set1_epi16(1 << 5);
@@ -3017,12 +3017,12 @@ void vp10_idct16x16_10_add_sse2(const int16_t *input, uint8_t *dest,
   }
 
 // Only upper-left 8x8 has non-zero coeff
-void vp10_idct32x32_34_add_sse2(const int16_t *input, uint8_t *dest,
+void av1_idct32x32_34_add_sse2(const int16_t *input, uint8_t *dest,
                                 int stride) {
   const __m128i rounding = _mm_set1_epi32(DCT_CONST_ROUNDING);
   const __m128i final_rounding = _mm_set1_epi16(1 << 5);
 
-  // vp10_idct constants for each stage
+  // av1_idct constants for each stage
   const __m128i stg1_0 = pair_set_epi16(cospi_31_64, -cospi_1_64);
   const __m128i stg1_1 = pair_set_epi16(cospi_1_64, cospi_31_64);
   const __m128i stg1_6 = pair_set_epi16(cospi_7_64, -cospi_25_64);
@@ -3174,13 +3174,13 @@ void vp10_idct32x32_34_add_sse2(const int16_t *input, uint8_t *dest,
   }
 }
 
-void vp10_idct32x32_1024_add_sse2(const int16_t *input, uint8_t *dest,
+void av1_idct32x32_1024_add_sse2(const int16_t *input, uint8_t *dest,
                                   int stride) {
   const __m128i rounding = _mm_set1_epi32(DCT_CONST_ROUNDING);
   const __m128i final_rounding = _mm_set1_epi16(1 << 5);
   const __m128i zero = _mm_setzero_si128();
 
-  // vp10_idct constants for each stage
+  // av1_idct constants for each stage
   const __m128i stg1_0 = pair_set_epi16(cospi_31_64, -cospi_1_64);
   const __m128i stg1_1 = pair_set_epi16(cospi_1_64, cospi_31_64);
   const __m128i stg1_2 = pair_set_epi16(cospi_15_64, -cospi_17_64);
@@ -3242,7 +3242,7 @@ void vp10_idct32x32_1024_add_sse2(const int16_t *input, uint8_t *dest,
 
   for (i = 0; i < 4; i++) {
     i32 = (i << 5);
-    // First 1-D vp10_idct
+    // First 1-D av1_idct
     // Load input data.
     LOAD_DQCOEFF(in[0], input);
     LOAD_DQCOEFF(in[8], input);
@@ -3392,7 +3392,7 @@ void vp10_idct32x32_1024_add_sse2(const int16_t *input, uint8_t *dest,
     col[i32 + 31] = _mm_sub_epi16(stp1_0, stp1_31);
   }
   for (i = 0; i < 4; i++) {
-    // Second 1-D vp10_idct
+    // Second 1-D av1_idct
     j = i << 3;
 
     // Transpose 32x8 block to 8x32 block
@@ -3448,7 +3448,7 @@ void vp10_idct32x32_1024_add_sse2(const int16_t *input, uint8_t *dest,
   }
 }
 
-void vp10_idct32x32_1_add_sse2(const int16_t *input, uint8_t *dest,
+void av1_idct32x32_1_add_sse2(const int16_t *input, uint8_t *dest,
                                int stride) {
   __m128i dc_value;
   const __m128i zero = _mm_setzero_si128();
@@ -3469,7 +3469,7 @@ void vp10_idct32x32_1_add_sse2(const int16_t *input, uint8_t *dest,
   }
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 static INLINE __m128i clamp_high_sse2(__m128i value, int bd) {
   __m128i ubounded, retval;
   const __m128i zero = _mm_set1_epi16(0);
@@ -3483,7 +3483,7 @@ static INLINE __m128i clamp_high_sse2(__m128i value, int bd) {
   return retval;
 }
 
-void vp10_highbd_idct4x4_16_add_sse2(const tran_low_t *input, uint8_t *dest8,
+void av1_highbd_idct4x4_16_add_sse2(const tran_low_t *input, uint8_t *dest8,
                                      int stride, int bd) {
   tran_low_t out[4 * 4];
   tran_low_t *outptr = out;
@@ -3517,7 +3517,7 @@ void vp10_highbd_idct4x4_16_add_sse2(const tran_low_t *input, uint8_t *dest8,
 
   if (!test) {
     // Do the row transform
-    vp10_idct4_sse2(inptr);
+    av1_idct4_sse2(inptr);
 
     // Check the min & max values
     max_input = _mm_max_epi16(inptr[0], inptr[1]);
@@ -3546,14 +3546,14 @@ void vp10_highbd_idct4x4_16_add_sse2(const tran_low_t *input, uint8_t *dest8,
   } else {
     // Run the un-optimised row transform
     for (i = 0; i < 4; ++i) {
-      vp10_highbd_idct4_c(input, outptr, bd);
+      av1_highbd_idct4_c(input, outptr, bd);
       input += 4;
       outptr += 4;
     }
   }
 
   if (optimised_cols) {
-    vp10_idct4_sse2(inptr);
+    av1_idct4_sse2(inptr);
 
     // Final round and shift
     inptr[0] = _mm_add_epi16(inptr[0], eight);
@@ -3589,7 +3589,7 @@ void vp10_highbd_idct4x4_16_add_sse2(const tran_low_t *input, uint8_t *dest8,
     // Columns
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < 4; ++j) temp_in[j] = out[j * 4 + i];
-      vp10_highbd_idct4_c(temp_in, temp_out, bd);
+      av1_highbd_idct4_c(temp_in, temp_out, bd);
       for (j = 0; j < 4; ++j) {
         dest[j * stride + i] = highbd_clip_pixel_add(
             dest[j * stride + i], ROUND_POWER_OF_TWO(temp_out[j], 4), bd);
@@ -3598,7 +3598,7 @@ void vp10_highbd_idct4x4_16_add_sse2(const tran_low_t *input, uint8_t *dest8,
   }
 }
 
-void vp10_highbd_idct8x8_64_add_sse2(const tran_low_t *input, uint8_t *dest8,
+void av1_highbd_idct8x8_64_add_sse2(const tran_low_t *input, uint8_t *dest8,
                                      int stride, int bd) {
   tran_low_t out[8 * 8];
   tran_low_t *outptr = out;
@@ -3633,7 +3633,7 @@ void vp10_highbd_idct8x8_64_add_sse2(const tran_low_t *input, uint8_t *dest8,
 
   if (!test) {
     // Do the row transform
-    vp10_idct8_sse2(inptr);
+    av1_idct8_sse2(inptr);
 
     // Find the min & max for the column transform
     max_input = _mm_max_epi16(inptr[0], inptr[1]);
@@ -3663,14 +3663,14 @@ void vp10_highbd_idct8x8_64_add_sse2(const tran_low_t *input, uint8_t *dest8,
   } else {
     // Run the un-optimised row transform
     for (i = 0; i < 8; ++i) {
-      vp10_highbd_idct8_c(input, outptr, bd);
+      av1_highbd_idct8_c(input, outptr, bd);
       input += 8;
       outptr += 8;
     }
   }
 
   if (optimised_cols) {
-    vp10_idct8_sse2(inptr);
+    av1_idct8_sse2(inptr);
 
     // Final round & shift and Reconstruction and Store
     {
@@ -3689,7 +3689,7 @@ void vp10_highbd_idct8x8_64_add_sse2(const tran_low_t *input, uint8_t *dest8,
     tran_low_t temp_in[8], temp_out[8];
     for (i = 0; i < 8; ++i) {
       for (j = 0; j < 8; ++j) temp_in[j] = out[j * 8 + i];
-      vp10_highbd_idct8_c(temp_in, temp_out, bd);
+      av1_highbd_idct8_c(temp_in, temp_out, bd);
       for (j = 0; j < 8; ++j) {
         dest[j * stride + i] = highbd_clip_pixel_add(
             dest[j * stride + i], ROUND_POWER_OF_TWO(temp_out[j], 5), bd);
@@ -3698,7 +3698,7 @@ void vp10_highbd_idct8x8_64_add_sse2(const tran_low_t *input, uint8_t *dest8,
   }
 }
 
-void vp10_highbd_idct8x8_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
+void av1_highbd_idct8x8_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
                                      int stride, int bd) {
   tran_low_t out[8 * 8] = { 0 };
   tran_low_t *outptr = out;
@@ -3734,7 +3734,7 @@ void vp10_highbd_idct8x8_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
 
   if (!test) {
     // Do the row transform
-    vp10_idct8_sse2(inptr);
+    av1_idct8_sse2(inptr);
 
     // Find the min & max for the column transform
     // N.B. Only first 4 cols contain non-zero coeffs
@@ -3766,14 +3766,14 @@ void vp10_highbd_idct8x8_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
   } else {
     // Run the un-optimised row transform
     for (i = 0; i < 4; ++i) {
-      vp10_highbd_idct8_c(input, outptr, bd);
+      av1_highbd_idct8_c(input, outptr, bd);
       input += 8;
       outptr += 8;
     }
   }
 
   if (optimised_cols) {
-    vp10_idct8_sse2(inptr);
+    av1_idct8_sse2(inptr);
 
     // Final round & shift and Reconstruction and Store
     {
@@ -3792,7 +3792,7 @@ void vp10_highbd_idct8x8_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
     tran_low_t temp_in[8], temp_out[8];
     for (i = 0; i < 8; ++i) {
       for (j = 0; j < 8; ++j) temp_in[j] = out[j * 8 + i];
-      vp10_highbd_idct8_c(temp_in, temp_out, bd);
+      av1_highbd_idct8_c(temp_in, temp_out, bd);
       for (j = 0; j < 8; ++j) {
         dest[j * stride + i] = highbd_clip_pixel_add(
             dest[j * stride + i], ROUND_POWER_OF_TWO(temp_out[j], 5), bd);
@@ -3801,7 +3801,7 @@ void vp10_highbd_idct8x8_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
   }
 }
 
-void vp10_highbd_idct16x16_256_add_sse2(const tran_low_t *input, uint8_t *dest8,
+void av1_highbd_idct16x16_256_add_sse2(const tran_low_t *input, uint8_t *dest8,
                                         int stride, int bd) {
   tran_low_t out[16 * 16];
   tran_low_t *outptr = out;
@@ -3839,7 +3839,7 @@ void vp10_highbd_idct16x16_256_add_sse2(const tran_low_t *input, uint8_t *dest8,
 
   if (!test) {
     // Do the row transform
-    vp10_idct16_sse2(inptr, inptr + 16);
+    av1_idct16_sse2(inptr, inptr + 16);
 
     // Find the min & max for the column transform
     max_input = _mm_max_epi16(inptr[0], inptr[1]);
@@ -3874,14 +3874,14 @@ void vp10_highbd_idct16x16_256_add_sse2(const tran_low_t *input, uint8_t *dest8,
   } else {
     // Run the un-optimised row transform
     for (i = 0; i < 16; ++i) {
-      vp10_highbd_idct16_c(input, outptr, bd);
+      av1_highbd_idct16_c(input, outptr, bd);
       input += 16;
       outptr += 16;
     }
   }
 
   if (optimised_cols) {
-    vp10_idct16_sse2(inptr, inptr + 16);
+    av1_idct16_sse2(inptr, inptr + 16);
 
     // Final round & shift and Reconstruction and Store
     {
@@ -3905,7 +3905,7 @@ void vp10_highbd_idct16x16_256_add_sse2(const tran_low_t *input, uint8_t *dest8,
     tran_low_t temp_in[16], temp_out[16];
     for (i = 0; i < 16; ++i) {
       for (j = 0; j < 16; ++j) temp_in[j] = out[j * 16 + i];
-      vp10_highbd_idct16_c(temp_in, temp_out, bd);
+      av1_highbd_idct16_c(temp_in, temp_out, bd);
       for (j = 0; j < 16; ++j) {
         dest[j * stride + i] = highbd_clip_pixel_add(
             dest[j * stride + i], ROUND_POWER_OF_TWO(temp_out[j], 6), bd);
@@ -3914,7 +3914,7 @@ void vp10_highbd_idct16x16_256_add_sse2(const tran_low_t *input, uint8_t *dest8,
   }
 }
 
-void vp10_highbd_idct16x16_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
+void av1_highbd_idct16x16_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
                                        int stride, int bd) {
   tran_low_t out[16 * 16] = { 0 };
   tran_low_t *outptr = out;
@@ -3954,7 +3954,7 @@ void vp10_highbd_idct16x16_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
 
   if (!test) {
     // Do the row transform (N.B. This transposes inptr)
-    vp10_idct16_sse2(inptr, inptr + 16);
+    av1_idct16_sse2(inptr, inptr + 16);
 
     // Find the min & max for the column transform
     // N.B. Only first 4 cols contain non-zero coeffs
@@ -3992,14 +3992,14 @@ void vp10_highbd_idct16x16_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
   } else {
     // Run the un-optimised row transform
     for (i = 0; i < 4; ++i) {
-      vp10_highbd_idct16_c(input, outptr, bd);
+      av1_highbd_idct16_c(input, outptr, bd);
       input += 16;
       outptr += 16;
     }
   }
 
   if (optimised_cols) {
-    vp10_idct16_sse2(inptr, inptr + 16);
+    av1_idct16_sse2(inptr, inptr + 16);
 
     // Final round & shift and Reconstruction and Store
     {
@@ -4023,7 +4023,7 @@ void vp10_highbd_idct16x16_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
     tran_low_t temp_in[16], temp_out[16];
     for (i = 0; i < 16; ++i) {
       for (j = 0; j < 16; ++j) temp_in[j] = out[j * 16 + i];
-      vp10_highbd_idct16_c(temp_in, temp_out, bd);
+      av1_highbd_idct16_c(temp_in, temp_out, bd);
       for (j = 0; j < 16; ++j) {
         dest[j * stride + i] = highbd_clip_pixel_add(
             dest[j * stride + i], ROUND_POWER_OF_TWO(temp_out[j], 6), bd);
@@ -4031,4 +4031,4 @@ void vp10_highbd_idct16x16_10_add_sse2(const tran_low_t *input, uint8_t *dest8,
     }
   }
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH

@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_DECODER_DETOKENIZE_H_
-#define VP10_DECODER_DETOKENIZE_H_
+#ifndef AV1_DECODER_DETOKENIZE_H_
+#define AV1_DECODER_DETOKENIZE_H_
 
 #include "aom_dsp/bitreader.h"
 #include "av1/decoder/decoder.h"
@@ -20,7 +20,7 @@
 extern "C" {
 #endif
 
-int vp10_decode_block_tokens(MACROBLOCKD *xd, int plane, const scan_order *sc,
+int av1_decode_block_tokens(MACROBLOCKD *xd, int plane, const scan_order *sc,
                              int x, int y, TX_SIZE tx_size, aom_reader *r,
                              int seg_id);
 
@@ -28,4 +28,4 @@ int vp10_decode_block_tokens(MACROBLOCKD *xd, int plane, const scan_order *sc,
 }  // extern "C"
 #endif
 
-#endif  // VP10_DECODER_DETOKENIZE_H_
+#endif  // AV1_DECODER_DETOKENIZE_H_

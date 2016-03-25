@@ -100,7 +100,7 @@ class VpxEncoderParmsGetToDecoder
         reinterpret_cast<aom_codec_alg_priv_t *>(vp9_decoder->priv);
     FrameWorkerData *const worker_data =
         reinterpret_cast<FrameWorkerData *>(priv->frame_workers[0].data1);
-    VP10_COMMON *const common = &worker_data->pbi->common;
+    AV1_COMMON *const common = &worker_data->pbi->common;
 
     if (encode_parms.lossless) {
       EXPECT_EQ(0, common->base_qindex);
@@ -143,7 +143,7 @@ TEST_P(VpxEncoderParmsGetToDecoder, BitstreamParms) {
   delete video;
 }
 
-VP10_INSTANTIATE_TEST_CASE(VpxEncoderParmsGetToDecoder,
+AV1_INSTANTIATE_TEST_CASE(VpxEncoderParmsGetToDecoder,
                            ::testing::ValuesIn(kVP9EncodeParameterSet),
                            ::testing::ValuesIn(kVP9EncodePerfTestVectors));
 }  // namespace

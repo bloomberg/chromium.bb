@@ -168,10 +168,10 @@ set_maps.DESCRIPTION                = Set active and ROI maps
 # We should not link to math library (libm) on RVCT
 # when building for bare-metal targets
 ifeq ($(CONFIG_OS_SUPPORT), yes)
-CODEC_EXTRA_LIBS-$(CONFIG_VP10)            += m
+CODEC_EXTRA_LIBS-$(CONFIG_AV1)            += m
 else
     ifeq ($(CONFIG_GCC), yes)
-    CODEC_EXTRA_LIBS-$(CONFIG_VP10)        += m
+    CODEC_EXTRA_LIBS-$(CONFIG_AV1)        += m
     endif
 endif
 #
@@ -188,8 +188,8 @@ ifeq ($(HAVE_ALT_TREE_LAYOUT),yes)
     INC_PATH-yes := $(SRC_PATH_BARE)/../include
 else
     LIB_PATH-yes                     += $(if $(BUILD_PFX),$(BUILD_PFX),.)
-    INC_PATH-$(CONFIG_VP10_DECODER)   += $(SRC_PATH_BARE)/av1
-    INC_PATH-$(CONFIG_VP10_ENCODER)   += $(SRC_PATH_BARE)/av1
+    INC_PATH-$(CONFIG_AV1_DECODER)   += $(SRC_PATH_BARE)/av1
+    INC_PATH-$(CONFIG_AV1_ENCODER)   += $(SRC_PATH_BARE)/av1
 endif
 INC_PATH-$(CONFIG_LIBYUV) += $(SRC_PATH_BARE)/third_party/libyuv/include
 LIB_PATH := $(call enabled,LIB_PATH)

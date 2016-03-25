@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_COMMON_ENTROPY_H_
-#define VP10_COMMON_ENTROPY_H_
+#ifndef AV1_COMMON_ENTROPY_H_
+#define AV1_COMMON_ENTROPY_H_
 
 #include "aom/aom_integer.h"
 #include "aom_dsp/prob.h"
@@ -43,7 +43,7 @@ extern "C" {
 
 #define ENTROPY_NODES 11
 
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_pt_energy_class[ENTROPY_TOKENS]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_pt_energy_class[ENTROPY_TOKENS]);
 
 #define CAT1_MIN_VAL 5
 #define CAT2_MIN_VAL 7
@@ -53,27 +53,27 @@ DECLARE_ALIGNED(16, extern const uint8_t, vp10_pt_energy_class[ENTROPY_TOKENS]);
 #define CAT6_MIN_VAL 67
 
 // Extra bit probabilities.
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat1_prob[1]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat2_prob[2]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat3_prob[3]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat4_prob[4]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat5_prob[5]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat6_prob[14]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat1_prob[1]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat2_prob[2]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat3_prob[3]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat4_prob[4]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat5_prob[5]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat6_prob[14]);
 
-#if CONFIG_VPX_HIGHBITDEPTH
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat1_prob_high10[1]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat2_prob_high10[2]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat3_prob_high10[3]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat4_prob_high10[4]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat5_prob_high10[5]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat6_prob_high10[16]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat1_prob_high12[1]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat2_prob_high12[2]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat3_prob_high12[3]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat4_prob_high12[4]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat5_prob_high12[5]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat6_prob_high12[18]);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat1_prob_high10[1]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat2_prob_high10[2]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat3_prob_high10[3]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat4_prob_high10[4]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat5_prob_high10[5]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat6_prob_high10[16]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat1_prob_high12[1]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat2_prob_high12[2]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat3_prob_high12[3]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat4_prob_high12[4]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat5_prob_high12[5]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat6_prob_high12[18]);
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #define EOB_MODEL_TOKEN 3
 
@@ -83,20 +83,20 @@ typedef struct {
   int len;
   int base_val;
   const int16_t *cost;
-} vp10_extra_bit;
+} av1_extra_bit;
 
 // indexed by token value
-extern const vp10_extra_bit vp10_extra_bits[ENTROPY_TOKENS];
-#if CONFIG_VPX_HIGHBITDEPTH
-extern const vp10_extra_bit vp10_extra_bits_high10[ENTROPY_TOKENS];
-extern const vp10_extra_bit vp10_extra_bits_high12[ENTROPY_TOKENS];
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+extern const av1_extra_bit av1_extra_bits[ENTROPY_TOKENS];
+#if CONFIG_AOM_HIGHBITDEPTH
+extern const av1_extra_bit av1_extra_bits_high10[ENTROPY_TOKENS];
+extern const av1_extra_bit av1_extra_bits_high12[ENTROPY_TOKENS];
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #define DCT_MAX_VALUE 16384
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 #define DCT_MAX_VALUE_HIGH10 65536
 #define DCT_MAX_VALUE_HIGH12 262144
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 /* Coefficients are predicted via a 3-dimensional probability table. */
 
@@ -127,28 +127,28 @@ extern const vp10_extra_bit vp10_extra_bits_high12[ENTROPY_TOKENS];
 // #define ENTROPY_STATS
 
 typedef unsigned int
-    vp10_coeff_count[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS][ENTROPY_TOKENS];
+    av1_coeff_count[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS][ENTROPY_TOKENS];
 typedef unsigned int
-    vp10_coeff_stats[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS][ENTROPY_NODES][2];
+    av1_coeff_stats[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS][ENTROPY_NODES][2];
 
 #define SUBEXP_PARAM 4   /* Subexponential code parameter */
 #define MODULUS_PARAM 13 /* Modulus parameter */
 
-struct VP10Common;
-void vp10_default_coef_probs(struct VP10Common *cm);
-void vp10_adapt_coef_probs(struct VP10Common *cm);
+struct AV1Common;
+void av1_default_coef_probs(struct AV1Common *cm);
+void av1_adapt_coef_probs(struct AV1Common *cm);
 
 // This is the index in the scan order beyond which all coefficients for
 // 8x8 transform and above are in the top band.
 // This macro is currently unused but may be used by certain implementations
 #define MAXBAND_INDEX 21
 
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_coefband_trans_8x8plus[1024]);
-DECLARE_ALIGNED(16, extern const uint8_t, vp10_coefband_trans_4x4[16]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_coefband_trans_8x8plus[1024]);
+DECLARE_ALIGNED(16, extern const uint8_t, av1_coefband_trans_4x4[16]);
 
 static INLINE const uint8_t *get_band_translate(TX_SIZE tx_size) {
-  return tx_size == TX_4X4 ? vp10_coefband_trans_4x4
-                           : vp10_coefband_trans_8x8plus;
+  return tx_size == TX_4X4 ? av1_coefband_trans_4x4
+                           : av1_coefband_trans_8x8plus;
 }
 
 // 128 lists of probabilities are stored for the following ONE node probs:
@@ -162,16 +162,16 @@ static INLINE const uint8_t *get_band_translate(TX_SIZE tx_size) {
 #define PIVOT_NODE 2  // which node is pivot
 
 #define MODEL_NODES (ENTROPY_NODES - UNCONSTRAINED_NODES)
-extern const aom_tree_index vp10_coef_con_tree[TREE_SIZE(ENTROPY_TOKENS)];
-extern const aom_prob vp10_pareto8_full[COEFF_PROB_MODELS][MODEL_NODES];
+extern const aom_tree_index av1_coef_con_tree[TREE_SIZE(ENTROPY_TOKENS)];
+extern const aom_prob av1_pareto8_full[COEFF_PROB_MODELS][MODEL_NODES];
 
-typedef aom_prob vp10_coeff_probs_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
+typedef aom_prob av1_coeff_probs_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
                                        [UNCONSTRAINED_NODES];
 
-typedef unsigned int vp10_coeff_count_model
+typedef unsigned int av1_coeff_count_model
     [REF_TYPES][COEF_BANDS][COEFF_CONTEXTS][UNCONSTRAINED_NODES + 1];
 
-void vp10_model_to_full_probs(const aom_prob *model, aom_prob *full);
+void av1_model_to_full_probs(const aom_prob *model, aom_prob *full);
 
 typedef char ENTROPY_CONTEXT;
 
@@ -211,4 +211,4 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
 }  // extern "C"
 #endif
 
-#endif  // VP10_COMMON_ENTROPY_H_
+#endif  // AV1_COMMON_ENTROPY_H_

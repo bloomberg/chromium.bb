@@ -18,7 +18,7 @@
 #include "aom_dsp/inv_txfm.h"
 #include "aom_ports/mem.h"
 
-void vp10_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride,
                           int tx_type) {
   const transform_2d IHT_4[] = {
     { idct4_c, idct4_c },   // DCT_DCT  = 0
@@ -57,7 +57,7 @@ static const transform_2d IHT_8[] = {
   { iadst8_c, iadst8_c }  // ADST_ADST = 3
 };
 
-void vp10_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest, int stride,
                           int tx_type) {
   int i, j;
   tran_low_t out[8 * 8];
@@ -90,7 +90,7 @@ static const transform_2d IHT_16[] = {
   { iadst16_c, iadst16_c }  // ADST_ADST = 3
 };
 
-void vp10_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
                              int tx_type) {
   int i, j;
   tran_low_t out[16 * 16];
@@ -117,7 +117,7 @@ void vp10_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 }
 
 // idct
-void vp10_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
                       int eob) {
   if (eob > 1)
     aom_idct4x4_16_add(input, dest, stride);
@@ -125,7 +125,7 @@ void vp10_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
     aom_idct4x4_1_add(input, dest, stride);
 }
 
-void vp10_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
                       int eob) {
   if (eob > 1)
     aom_iwht4x4_16_add(input, dest, stride);
@@ -133,14 +133,14 @@ void vp10_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
     aom_iwht4x4_1_add(input, dest, stride);
 }
 
-void vp10_idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
                       int eob) {
   // If dc is 1, then input[0] is the reconstructed value, do not need
   // dequantization. Also, when dc is 1, dc is counted in eobs, namely eobs >=1.
 
   // The calculation can be simplified if there are not many non-zero dct
   // coefficients. Use eobs to decide what to do.
-  // TODO(yunqingwang): "eobs = 1" case is also handled in vp10_short_idct8x8_c.
+  // TODO(yunqingwang): "eobs = 1" case is also handled in av1_short_idct8x8_c.
   // Combine that with code here.
   if (eob == 1)
     // DC only DCT coefficient
@@ -151,7 +151,7 @@ void vp10_idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
     aom_idct8x8_64_add(input, dest, stride);
 }
 
-void vp10_idct16x16_add(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_idct16x16_add(const tran_low_t *input, uint8_t *dest, int stride,
                         int eob) {
   /* The calculation can be simplified if there are not many non-zero dct
    * coefficients. Use eobs to separate different cases. */
@@ -163,7 +163,7 @@ void vp10_idct16x16_add(const tran_low_t *input, uint8_t *dest, int stride,
     aom_idct16x16_256_add(input, dest, stride);
 }
 
-void vp10_idct32x32_add(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_idct32x32_add(const tran_low_t *input, uint8_t *dest, int stride,
                         int eob) {
   if (eob == 1)
     aom_idct32x32_1_add(input, dest, stride);
@@ -174,48 +174,48 @@ void vp10_idct32x32_add(const tran_low_t *input, uint8_t *dest, int stride,
     aom_idct32x32_1024_add(input, dest, stride);
 }
 
-void vp10_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest, int stride,
                            int eob, TX_TYPE tx_type, int lossless) {
   if (lossless) {
     assert(tx_type == DCT_DCT);
-    vp10_iwht4x4_add(input, dest, stride, eob);
+    av1_iwht4x4_add(input, dest, stride, eob);
   } else {
     switch (tx_type) {
-      case DCT_DCT: vp10_idct4x4_add(input, dest, stride, eob); break;
+      case DCT_DCT: av1_idct4x4_add(input, dest, stride, eob); break;
       case ADST_DCT:
       case DCT_ADST:
-      case ADST_ADST: vp10_iht4x4_16_add(input, dest, stride, tx_type); break;
+      case ADST_ADST: av1_iht4x4_16_add(input, dest, stride, tx_type); break;
       default: assert(0); break;
     }
   }
 }
 
-void vp10_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest, int stride,
                            int eob, TX_TYPE tx_type) {
   switch (tx_type) {
-    case DCT_DCT: vp10_idct8x8_add(input, dest, stride, eob); break;
+    case DCT_DCT: av1_idct8x8_add(input, dest, stride, eob); break;
     case ADST_DCT:
     case DCT_ADST:
-    case ADST_ADST: vp10_iht8x8_64_add(input, dest, stride, tx_type); break;
+    case ADST_ADST: av1_iht8x8_64_add(input, dest, stride, tx_type); break;
     default: assert(0); break;
   }
 }
 
-void vp10_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest, int stride,
                              int eob, TX_TYPE tx_type) {
   switch (tx_type) {
-    case DCT_DCT: vp10_idct16x16_add(input, dest, stride, eob); break;
+    case DCT_DCT: av1_idct16x16_add(input, dest, stride, eob); break;
     case ADST_DCT:
     case DCT_ADST:
-    case ADST_ADST: vp10_iht16x16_256_add(input, dest, stride, tx_type); break;
+    case ADST_ADST: av1_iht16x16_256_add(input, dest, stride, tx_type); break;
     default: assert(0); break;
   }
 }
 
-void vp10_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest, int stride,
                              int eob, TX_TYPE tx_type) {
   switch (tx_type) {
-    case DCT_DCT: vp10_idct32x32_add(input, dest, stride, eob); break;
+    case DCT_DCT: av1_idct32x32_add(input, dest, stride, eob); break;
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST: assert(0); break;
@@ -223,8 +223,8 @@ void vp10_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest, int stride,
   }
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
-void vp10_highbd_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest8,
+#if CONFIG_AOM_HIGHBITDEPTH
+void av1_highbd_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest8,
                                  int stride, int tx_type, int bd) {
   const highbd_transform_2d IHT_4[] = {
     { aom_highbd_idct4_c, aom_highbd_idct4_c },   // DCT_DCT  = 0
@@ -264,7 +264,7 @@ static const highbd_transform_2d HIGH_IHT_8[] = {
   { aom_highbd_iadst8_c, aom_highbd_iadst8_c }  // ADST_ADST = 3
 };
 
-void vp10_highbd_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest8,
+void av1_highbd_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest8,
                                  int stride, int tx_type, int bd) {
   int i, j;
   tran_low_t out[8 * 8];
@@ -298,7 +298,7 @@ static const highbd_transform_2d HIGH_IHT_16[] = {
   { aom_highbd_iadst16_c, aom_highbd_iadst16_c }  // ADST_ADST = 3
 };
 
-void vp10_highbd_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest8,
+void av1_highbd_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest8,
                                     int stride, int tx_type, int bd) {
   int i, j;
   tran_low_t out[16 * 16];
@@ -326,7 +326,7 @@ void vp10_highbd_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest8,
 }
 
 // idct
-void vp10_highbd_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_highbd_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
                              int eob, int bd) {
   if (eob > 1)
     aom_highbd_idct4x4_16_add(input, dest, stride, bd);
@@ -334,7 +334,7 @@ void vp10_highbd_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
     aom_highbd_idct4x4_1_add(input, dest, stride, bd);
 }
 
-void vp10_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
                              int eob, int bd) {
   if (eob > 1)
     aom_highbd_iwht4x4_16_add(input, dest, stride, bd);
@@ -342,14 +342,14 @@ void vp10_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
     aom_highbd_iwht4x4_1_add(input, dest, stride, bd);
 }
 
-void vp10_highbd_idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
+void av1_highbd_idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
                              int eob, int bd) {
   // If dc is 1, then input[0] is the reconstructed value, do not need
   // dequantization. Also, when dc is 1, dc is counted in eobs, namely eobs >=1.
 
   // The calculation can be simplified if there are not many non-zero dct
   // coefficients. Use eobs to decide what to do.
-  // TODO(yunqingwang): "eobs = 1" case is also handled in vp10_short_idct8x8_c.
+  // TODO(yunqingwang): "eobs = 1" case is also handled in av1_short_idct8x8_c.
   // Combine that with code here.
   // DC only DCT coefficient
   if (eob == 1) {
@@ -361,7 +361,7 @@ void vp10_highbd_idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
   }
 }
 
-void vp10_highbd_idct16x16_add(const tran_low_t *input, uint8_t *dest,
+void av1_highbd_idct16x16_add(const tran_low_t *input, uint8_t *dest,
                                int stride, int eob, int bd) {
   // The calculation can be simplified if there are not many non-zero dct
   // coefficients. Use eobs to separate different cases.
@@ -375,7 +375,7 @@ void vp10_highbd_idct16x16_add(const tran_low_t *input, uint8_t *dest,
   }
 }
 
-void vp10_highbd_idct32x32_add(const tran_low_t *input, uint8_t *dest,
+void av1_highbd_idct32x32_add(const tran_low_t *input, uint8_t *dest,
                                int stride, int eob, int bd) {
   // Non-zero coeff only in upper-left 8x8
   if (eob == 1) {
@@ -387,63 +387,63 @@ void vp10_highbd_idct32x32_add(const tran_low_t *input, uint8_t *dest,
   }
 }
 
-void vp10_highbd_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest,
+void av1_highbd_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest,
                                   int stride, int eob, int bd, TX_TYPE tx_type,
                                   int lossless) {
   if (lossless) {
     assert(tx_type == DCT_DCT);
-    vp10_highbd_iwht4x4_add(input, dest, stride, eob, bd);
+    av1_highbd_iwht4x4_add(input, dest, stride, eob, bd);
   } else {
     switch (tx_type) {
       case DCT_DCT:
-        vp10_highbd_idct4x4_add(input, dest, stride, eob, bd);
+        av1_highbd_idct4x4_add(input, dest, stride, eob, bd);
         break;
       case ADST_DCT:
       case DCT_ADST:
       case ADST_ADST:
-        vp10_highbd_iht4x4_16_add(input, dest, stride, tx_type, bd);
+        av1_highbd_iht4x4_16_add(input, dest, stride, tx_type, bd);
         break;
       default: assert(0); break;
     }
   }
 }
 
-void vp10_highbd_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest,
+void av1_highbd_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest,
                                   int stride, int eob, int bd,
                                   TX_TYPE tx_type) {
   switch (tx_type) {
-    case DCT_DCT: vp10_highbd_idct8x8_add(input, dest, stride, eob, bd); break;
+    case DCT_DCT: av1_highbd_idct8x8_add(input, dest, stride, eob, bd); break;
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
-      vp10_highbd_iht8x8_64_add(input, dest, stride, tx_type, bd);
+      av1_highbd_iht8x8_64_add(input, dest, stride, tx_type, bd);
       break;
     default: assert(0); break;
   }
 }
 
-void vp10_highbd_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
+void av1_highbd_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
                                     int stride, int eob, int bd,
                                     TX_TYPE tx_type) {
   switch (tx_type) {
     case DCT_DCT:
-      vp10_highbd_idct16x16_add(input, dest, stride, eob, bd);
+      av1_highbd_idct16x16_add(input, dest, stride, eob, bd);
       break;
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
-      vp10_highbd_iht16x16_256_add(input, dest, stride, tx_type, bd);
+      av1_highbd_iht16x16_256_add(input, dest, stride, tx_type, bd);
       break;
     default: assert(0); break;
   }
 }
 
-void vp10_highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
+void av1_highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
                                     int stride, int eob, int bd,
                                     TX_TYPE tx_type) {
   switch (tx_type) {
     case DCT_DCT:
-      vp10_highbd_idct32x32_add(input, dest, stride, eob, bd);
+      av1_highbd_idct32x32_add(input, dest, stride, eob, bd);
       break;
     case ADST_DCT:
     case DCT_ADST:
@@ -451,4 +451,4 @@ void vp10_highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
     default: assert(0); break;
   }
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH

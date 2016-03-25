@@ -86,38 +86,38 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
     eob_branch_count = counts->eob_branch[tx_size][type][ref];
   }
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   if (xd->bd > VPX_BITS_8) {
     if (xd->bd == VPX_BITS_10) {
-      cat1_prob = vp10_cat1_prob_high10;
-      cat2_prob = vp10_cat2_prob_high10;
-      cat3_prob = vp10_cat3_prob_high10;
-      cat4_prob = vp10_cat4_prob_high10;
-      cat5_prob = vp10_cat5_prob_high10;
-      cat6_prob = vp10_cat6_prob_high10;
+      cat1_prob = av1_cat1_prob_high10;
+      cat2_prob = av1_cat2_prob_high10;
+      cat3_prob = av1_cat3_prob_high10;
+      cat4_prob = av1_cat4_prob_high10;
+      cat5_prob = av1_cat5_prob_high10;
+      cat6_prob = av1_cat6_prob_high10;
     } else {
-      cat1_prob = vp10_cat1_prob_high12;
-      cat2_prob = vp10_cat2_prob_high12;
-      cat3_prob = vp10_cat3_prob_high12;
-      cat4_prob = vp10_cat4_prob_high12;
-      cat5_prob = vp10_cat5_prob_high12;
-      cat6_prob = vp10_cat6_prob_high12;
+      cat1_prob = av1_cat1_prob_high12;
+      cat2_prob = av1_cat2_prob_high12;
+      cat3_prob = av1_cat3_prob_high12;
+      cat4_prob = av1_cat4_prob_high12;
+      cat5_prob = av1_cat5_prob_high12;
+      cat6_prob = av1_cat6_prob_high12;
     }
   } else {
-    cat1_prob = vp10_cat1_prob;
-    cat2_prob = vp10_cat2_prob;
-    cat3_prob = vp10_cat3_prob;
-    cat4_prob = vp10_cat4_prob;
-    cat5_prob = vp10_cat5_prob;
-    cat6_prob = vp10_cat6_prob;
+    cat1_prob = av1_cat1_prob;
+    cat2_prob = av1_cat2_prob;
+    cat3_prob = av1_cat3_prob;
+    cat4_prob = av1_cat4_prob;
+    cat5_prob = av1_cat5_prob;
+    cat6_prob = av1_cat6_prob;
   }
 #else
-  cat1_prob = vp10_cat1_prob;
-  cat2_prob = vp10_cat2_prob;
-  cat3_prob = vp10_cat3_prob;
-  cat4_prob = vp10_cat4_prob;
-  cat5_prob = vp10_cat5_prob;
-  cat6_prob = vp10_cat6_prob;
+  cat1_prob = av1_cat1_prob;
+  cat2_prob = av1_cat2_prob;
+  cat3_prob = av1_cat3_prob;
+  cat4_prob = av1_cat4_prob;
+  cat5_prob = av1_cat5_prob;
+  cat6_prob = av1_cat6_prob;
 #endif
 
   while (c < max_eob) {
@@ -147,8 +147,8 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
       val = 1;
     } else {
       INCREMENT_COUNT(TWO_TOKEN);
-      token = aom_read_tree(r, vp10_coef_con_tree,
-                            vp10_pareto8_full[prob[PIVOT_NODE] - 1]);
+      token = aom_read_tree(r, av1_coef_con_tree,
+                            av1_pareto8_full[prob[PIVOT_NODE] - 1]);
       switch (token) {
         case TWO_TOKEN:
         case THREE_TOKEN:
@@ -175,7 +175,7 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
           const int skip_bits = 0;
 #endif
           const uint8_t *cat6p = cat6_prob + skip_bits;
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
           switch (xd->bd) {
             case VPX_BITS_8:
               val = CAT6_MIN_VAL + read_coeff(cat6p, 14 - skip_bits, r);
@@ -201,15 +201,15 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
 #endif
     v = (val * dqv) >> dq_shift;
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
     dqcoeff[scan[c]] = highbd_check_range((aom_read_bit(r) ? -v : v), xd->bd);
 #else
     dqcoeff[scan[c]] = check_range(aom_read_bit(r) ? -v : v);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 #else
     dqcoeff[scan[c]] = aom_read_bit(r) ? -v : v;
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING
-    token_cache[scan[c]] = vp10_pt_energy_class[token];
+    token_cache[scan[c]] = av1_pt_energy_class[token];
     ++c;
     ctx = get_coef_context(nb, token_cache, c);
     dqv = dq[1];
@@ -218,8 +218,8 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
   return c;
 }
 
-// TODO(slavarnway): Decode version of vp10_set_context.  Modify
-// vp10_set_context
+// TODO(slavarnway): Decode version of av1_set_context.  Modify
+// av1_set_context
 // after testing is complete, then delete this version.
 static void dec_set_contexts(const MACROBLOCKD *xd,
                              struct macroblockd_plane *pd, TX_SIZE tx_size,
@@ -258,7 +258,7 @@ static void dec_set_contexts(const MACROBLOCKD *xd,
   }
 }
 
-int vp10_decode_block_tokens(MACROBLOCKD *xd, int plane, const scan_order *sc,
+int av1_decode_block_tokens(MACROBLOCKD *xd, int plane, const scan_order *sc,
                              int x, int y, TX_SIZE tx_size, aom_reader *r,
                              int seg_id) {
   struct macroblockd_plane *const pd = &xd->plane[plane];

@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef VP10_ENCODER_MBGRAPH_H_
-#define VP10_ENCODER_MBGRAPH_H_
+#ifndef AV1_ENCODER_MBGRAPH_H_
+#define AV1_ENCODER_MBGRAPH_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,12 +28,12 @@ typedef struct {
 
 typedef struct { MBGRAPH_MB_STATS *mb_stats; } MBGRAPH_FRAME_STATS;
 
-struct VP10_COMP;
+struct AV1_COMP;
 
-void vp10_update_mbgraph_stats(struct VP10_COMP *cpi);
+void av1_update_mbgraph_stats(struct AV1_COMP *cpi);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // VP10_ENCODER_MBGRAPH_H_
+#endif  // AV1_ENCODER_MBGRAPH_H_

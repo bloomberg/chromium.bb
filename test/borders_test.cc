@@ -79,6 +79,6 @@ TEST_P(BordersTest, TestLowBitrate) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
-VP10_INSTANTIATE_TEST_CASE(BordersTest,
+AV1_INSTANTIATE_TEST_CASE(BordersTest,
                            ::testing::Values(::libaom_test::kTwoPassGood));
 }  // namespace

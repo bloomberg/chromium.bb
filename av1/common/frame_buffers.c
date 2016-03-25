@@ -14,9 +14,9 @@
 #include "av1/common/frame_buffers.h"
 #include "aom_mem/aom_mem.h"
 
-int vp10_alloc_internal_frame_buffers(InternalFrameBufferList *list) {
+int av1_alloc_internal_frame_buffers(InternalFrameBufferList *list) {
   assert(list != NULL);
-  vp10_free_internal_frame_buffers(list);
+  av1_free_internal_frame_buffers(list);
 
   list->num_internal_frame_buffers =
       VPX_MAXIMUM_REF_BUFFERS + VPX_MAXIMUM_WORK_BUFFERS;
@@ -25,7 +25,7 @@ int vp10_alloc_internal_frame_buffers(InternalFrameBufferList *list) {
   return (list->int_fb == NULL);
 }
 
-void vp10_free_internal_frame_buffers(InternalFrameBufferList *list) {
+void av1_free_internal_frame_buffers(InternalFrameBufferList *list) {
   int i;
 
   assert(list != NULL);
@@ -38,7 +38,7 @@ void vp10_free_internal_frame_buffers(InternalFrameBufferList *list) {
   list->int_fb = NULL;
 }
 
-int vp10_get_frame_buffer(void *cb_priv, size_t min_size,
+int av1_get_frame_buffer(void *cb_priv, size_t min_size,
                           aom_codec_frame_buffer_t *fb) {
   int i;
   InternalFrameBufferList *const int_fb_list =
@@ -73,7 +73,7 @@ int vp10_get_frame_buffer(void *cb_priv, size_t min_size,
   return 0;
 }
 
-int vp10_release_frame_buffer(void *cb_priv, aom_codec_frame_buffer_t *fb) {
+int av1_release_frame_buffer(void *cb_priv, aom_codec_frame_buffer_t *fb) {
   InternalFrameBuffer *const int_fb = (InternalFrameBuffer *)fb->priv;
   (void)cb_priv;
   if (int_fb) int_fb->in_use = 0;

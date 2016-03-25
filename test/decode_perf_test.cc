@@ -255,6 +255,6 @@ TEST_P(VP9NewEncodeDecodePerfTest, PerfTest) {
   printf("}\n");
 }
 
-VP10_INSTANTIATE_TEST_CASE(VP9NewEncodeDecodePerfTest,
+AV1_INSTANTIATE_TEST_CASE(VP9NewEncodeDecodePerfTest,
                            ::testing::Values(::libaom_test::kTwoPassGood));
 }  // namespace

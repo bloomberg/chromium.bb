@@ -41,7 +41,7 @@ static int evaluate_skin_color_difference(int cb, int cr) {
   return skin_diff;
 }
 
-int vp10_skin_pixel(const uint8_t y, const uint8_t cb, const uint8_t cr) {
+int av1_skin_pixel(const uint8_t y, const uint8_t cb, const uint8_t cr) {
   if (y < y_low || y > y_high)
     return 0;
   else
@@ -50,9 +50,9 @@ int vp10_skin_pixel(const uint8_t y, const uint8_t cb, const uint8_t cr) {
 
 #ifdef OUTPUT_YUV_SKINMAP
 // For viewing skin map on input source.
-void vp10_compute_skin_map(VP10_COMP *const cpi, FILE *yuv_skinmap_file) {
+void av1_compute_skin_map(AV1_COMP *const cpi, FILE *yuv_skinmap_file) {
   int i, j, mi_row, mi_col;
-  VP10_COMMON *const cm = &cpi->common;
+  AV1_COMMON *const cm = &cpi->common;
   uint8_t *y;
   const uint8_t *src_y = cpi->Source->y_buffer;
   const uint8_t *src_u = cpi->Source->u_buffer;
@@ -79,7 +79,7 @@ void vp10_compute_skin_map(VP10_COMP *const cpi, FILE *yuv_skinmap_file) {
       const uint8_t ysource = src_y[4 * src_ystride + 4];
       const uint8_t usource = src_u[2 * src_uvstride + 2];
       const uint8_t vsource = src_v[2 * src_uvstride + 2];
-      const int is_skin = vp10_skin_pixel(ysource, usource, vsource);
+      const int is_skin = av1_skin_pixel(ysource, usource, vsource);
       for (i = 0; i < 8; i++) {
         for (j = 0; j < 8; j++) {
           if (is_skin)
@@ -98,7 +98,7 @@ void vp10_compute_skin_map(VP10_COMP *const cpi, FILE *yuv_skinmap_file) {
     src_u += (src_uvstride << 2) - ((cm->mi_cols - 1) << 2);
     src_v += (src_uvstride << 2) - ((cm->mi_cols - 1) << 2);
   }
-  vp10_write_yuv_frame_420(&skinmap, yuv_skinmap_file);
+  av1_write_yuv_frame_420(&skinmap, yuv_skinmap_file);
   aom_free_frame_buffer(&skinmap);
 }
 #endif

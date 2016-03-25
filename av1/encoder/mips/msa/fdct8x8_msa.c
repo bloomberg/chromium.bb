@@ -14,7 +14,7 @@
 #include "av1/common/enums.h"
 #include "av1/encoder/mips/msa/fdct_msa.h"
 
-void vp10_fht8x8_msa(const int16_t *input, int16_t *output, int32_t stride,
+void av1_fht8x8_msa(const int16_t *input, int16_t *output, int32_t stride,
                      int32_t tx_type) {
   v8i16 in0, in1, in2, in3, in4, in5, in6, in7;
 

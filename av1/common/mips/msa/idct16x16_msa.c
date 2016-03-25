@@ -14,7 +14,7 @@
 #include "av1/common/enums.h"
 #include "aom_dsp/mips/inv_txfm_msa.h"
 
-void vp10_iht16x16_256_add_msa(const int16_t *input, uint8_t *dst,
+void av1_iht16x16_256_add_msa(const int16_t *input, uint8_t *dst,
                                int32_t dst_stride, int32_t tx_type) {
   int32_t i;
   DECLARE_ALIGNED(32, int16_t, out[16 * 16]);

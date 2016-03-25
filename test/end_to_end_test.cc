@@ -44,7 +44,7 @@ const TestVideoParam kTestVectors[] = {
   { "park_joy_90p_8_422.y4m", 8, VPX_IMG_FMT_I422, VPX_BITS_8, 1 },
   { "park_joy_90p_8_444.y4m", 8, VPX_IMG_FMT_I444, VPX_BITS_8, 1 },
   { "park_joy_90p_8_440.yuv", 8, VPX_IMG_FMT_I440, VPX_BITS_8, 1 },
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
   { "park_joy_90p_10_420.y4m", 10, VPX_IMG_FMT_I42016, VPX_BITS_10, 2 },
   { "park_joy_90p_10_422.y4m", 10, VPX_IMG_FMT_I42216, VPX_BITS_10, 3 },
   { "park_joy_90p_10_444.y4m", 10, VPX_IMG_FMT_I44416, VPX_BITS_10, 3 },
@@ -53,7 +53,7 @@ const TestVideoParam kTestVectors[] = {
   { "park_joy_90p_12_422.y4m", 12, VPX_IMG_FMT_I42216, VPX_BITS_12, 3 },
   { "park_joy_90p_12_444.y4m", 12, VPX_IMG_FMT_I44416, VPX_BITS_12, 3 },
   { "park_joy_90p_12_440.yuv", 12, VPX_IMG_FMT_I44016, VPX_BITS_12, 3 },
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 };
 
 // Encoding modes tested
@@ -169,22 +169,22 @@ TEST_P(EndToEndTestLarge, EndtoEndPSNRTest) {
   delete (video);
 }
 
-#if CONFIG_VPX_HIGHBITDEPTH
-#if CONFIG_VP10_ENCODER
+#if CONFIG_AOM_HIGHBITDEPTH
+#if CONFIG_AV1_ENCODER
 // TODO(angiebird): many fail in high bitdepth mode.
 INSTANTIATE_TEST_CASE_P(
-    DISABLED_VP10, EndToEndTestLarge,
+    DISABLED_AV1, EndToEndTestLarge,
     ::testing::Combine(
         ::testing::Values(static_cast<const libaom_test::CodecFactory *>(
-            &libaom_test::kVP10)),
+            &libaom_test::kAV1)),
         ::testing::ValuesIn(kEncodingModeVectors),
         ::testing::ValuesIn(kTestVectors),
         ::testing::ValuesIn(kCpuUsedVectors)));
-#endif  // CONFIG_VP10_ENCODER
+#endif  // CONFIG_AV1_ENCODER
 #else
-VP10_INSTANTIATE_TEST_CASE(EndToEndTestLarge,
+AV1_INSTANTIATE_TEST_CASE(EndToEndTestLarge,
                            ::testing::ValuesIn(kEncodingModeVectors),
                            ::testing::ValuesIn(kTestVectors),
                            ::testing::ValuesIn(kCpuUsedVectors));
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 }  // namespace

@@ -17,11 +17,11 @@
 
 #include "./tools_common.h"
 
-#if CONFIG_VP10_ENCODER
+#if CONFIG_AV1_ENCODER
 #include "aom/vp8cx.h"
 #endif
 
-#if CONFIG_VP10_DECODER
+#if CONFIG_AV1_DECODER
 #include "aom/vp8dx.h"
 #endif
 
@@ -131,8 +131,8 @@ int read_yuv_frame(struct VpxInputContext *input_ctx, aom_image_t *yuv_frame) {
 #if CONFIG_ENCODERS
 
 static const VpxInterface aom_encoders[] = {
-#if CONFIG_VP10_ENCODER
-  { "vp10", VP10_FOURCC, &aom_codec_vp10_cx },
+#if CONFIG_AV1_ENCODER
+  { "av1", AV1_FOURCC, &aom_codec_av1_cx },
 #endif
 };
 
@@ -158,8 +158,8 @@ const VpxInterface *get_aom_encoder_by_name(const char *name) {
 #if CONFIG_DECODERS
 
 static const VpxInterface aom_decoders[] = {
-#if CONFIG_VP10_DECODER
-  { "vp10", VP10_FOURCC, &aom_codec_vp10_dx },
+#if CONFIG_AV1_DECODER
+  { "av1", AV1_FOURCC, &aom_codec_av1_dx },
 #endif
 };
 
@@ -260,7 +260,7 @@ double sse_to_psnr(double samples, double peak, double sse) {
 }
 
 // TODO(debargha): Consolidate the functions below into a separate file.
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 static void highbd_img_upshift(aom_image_t *dst, aom_image_t *src,
                                int input_shift) {
   // Note the offset is 1 less than half.
@@ -451,4 +451,4 @@ void aom_img_downshift(aom_image_t *dst, aom_image_t *src, int down_shift) {
     lowbd_img_downshift(dst, src, down_shift);
   }
 }
-#endif  // CONFIG_VPX_HIGHBITDEPTH
+#endif  // CONFIG_AOM_HIGHBITDEPTH

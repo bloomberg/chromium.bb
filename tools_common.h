@@ -63,7 +63,7 @@
 
 #define VP8_FOURCC 0x30385056
 #define VP9_FOURCC 0x30395056
-#define VP10_FOURCC 0x303a5056
+#define AV1_FOURCC 0x303a5056
 
 enum VideoFileType {
   FILE_TYPE_RAW,
@@ -152,7 +152,7 @@ int aom_img_read(aom_image_t *img, FILE *file);
 
 double sse_to_psnr(double samples, double peak, double mse);
 
-#if CONFIG_VPX_HIGHBITDEPTH
+#if CONFIG_AOM_HIGHBITDEPTH
 void aom_img_upshift(aom_image_t *dst, aom_image_t *src, int input_shift);
 void aom_img_downshift(aom_image_t *dst, aom_image_t *src, int down_shift);
 void aom_img_truncate_16_to_8(aom_image_t *dst, aom_image_t *src);
