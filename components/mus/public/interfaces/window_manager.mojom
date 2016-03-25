@@ -32,6 +32,9 @@ interface WindowManager {
   const string kShowState_Property = "prop:show-state";
   // The window bounds as set by user input. Type: gfx::Rect.
   const string kUserSetBounds_Property = "prop:user-set-bounds";
+  // The window's app icon. Type: SkBitmap
+  const string kWindowAppIcon_Property = "prop:window-app-icon";
+  // The window type. Type: mojom::WindowType
   const string kWindowType_Property = "prop:window-type";
   // The window's title. Type: mojom::String
   const string kWindowTitle_Property = "prop:window-title";

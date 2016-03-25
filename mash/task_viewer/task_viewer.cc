@@ -19,6 +19,8 @@
 #include "mojo/shell/public/cpp/connector.h"
 #include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "ui/base/models/table_model.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/resources/grit/ui_resources.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/table/table_view.h"
@@ -85,6 +87,13 @@ class TaskViewerContents : public views::WidgetDelegateView,
   base::string16 GetWindowTitle() const override {
     // TODO(beng): use resources.
     return base::ASCIIToUTF16("Tasks");
+  }
+
+  gfx::ImageSkia GetWindowAppIcon() override {
+    // TODO(jamescook): Create a new .pak file for this app and make a custom
+    // icon, perhaps one that looks like the Chrome OS task viewer icon.
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    return *rb.GetImageSkiaNamed(IDR_NOTIFICATION_SETTINGS);
   }
 
   // Overridden from views::View:

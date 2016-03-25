@@ -125,6 +125,14 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
   void CenterWindow(const gfx::Size& size) override {
     // Do nothing. The client controls the size, not us.
   }
+  bool SetWindowTitle(const base::string16& title) override {
+    // Do nothing. The client controls the window title, not us.
+    return false;
+  }
+  void SetWindowIcons(const gfx::ImageSkia& window_icon,
+                      const gfx::ImageSkia& app_icon) override {
+    // Do nothing. The client controls window icons, not us.
+  }
   void UpdateClientArea() override {
     // This pushes the client area to the WS. We don't want to do that as
     // the client area should come from the client, not us.

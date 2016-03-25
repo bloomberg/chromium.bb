@@ -19,6 +19,7 @@
 #include "mojo/shell/public/cpp/connector.h"
 #include "ui/aura/mus/mus_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/mus/window_manager_connection.h"
 
@@ -77,6 +78,25 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(ShelfItemDelegateMus);
 };
+
+// Returns an icon image from a serialized SkBitmap, or the default shelf icon
+// image if the bitmap is empty. Assumes the bitmap is a 1x icon.
+// TODO(jamescook): Support other scale factors.
+gfx::ImageSkia GetShelfIconFromBitmap(
+    const mojo::Array<uint8_t>& serialized_bitmap) {
+  // Convert the data to an ImageSkia.
+  SkBitmap bitmap = mojo::ConvertTo<SkBitmap, const std::vector<uint8_t>>(
+      serialized_bitmap.storage());
+  gfx::ImageSkia icon_image;
+  if (!bitmap.isNull()) {
+    icon_image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+  } else {
+    // Use default icon.
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    icon_image = *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+  }
+  return icon_image;
+}
 
 }  // namespace
 
@@ -150,9 +170,7 @@ void ShelfDelegateMus::OnUserWindowAdded(
   ShelfItem item;
   item.type = TYPE_PLATFORM_APP;
   item.status = user_window->window_has_focus ? STATUS_ACTIVE : STATUS_RUNNING;
-  // TODO(msw): Support actual window icons.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  item.image = *rb.GetImageSkiaNamed(IDR_DEFAULT_FAVICON);
+  item.image = GetShelfIconFromBitmap(user_window->window_app_icon);
 
   ShelfID shelf_id = model_->next_id();
   window_id_to_shelf_id_.insert(
@@ -193,6 +211,22 @@ void ShelfDelegateMus::OnUserWindowTitleChanged(
   ShelfItems::const_iterator iter = model_->ItemByID(shelf_id);
   DCHECK(iter != model_->items().end());
   model_->Set(index, *iter);
+}
+
+void ShelfDelegateMus::OnUserWindowAppIconChanged(
+    uint32_t window_id,
+    mojo::Array<uint8_t> app_icon) {
+  // Find the shelf ID for this window.
+  DCHECK(window_id_to_shelf_id_.count(window_id));
+  ShelfID shelf_id = window_id_to_shelf_id_[window_id];
+  DCHECK_GT(shelf_id, 0);
+
+  // Update the icon in the ShelfItem.
+  int index = model_->ItemIndexByID(shelf_id);
+  DCHECK_GE(index, 0);
+  ShelfItem item = *model_->ItemByID(shelf_id);
+  item.image = GetShelfIconFromBitmap(app_icon);
+  model_->Set(index, item);
 }
 
 void ShelfDelegateMus::OnUserWindowFocusChanged(uint32_t window_id,

@@ -41,6 +41,8 @@ class ShelfDelegateMus : public ShelfDelegate,
   void OnUserWindowRemoved(uint32_t window_id) override;
   void OnUserWindowTitleChanged(uint32_t window_id,
                                 const mojo::String& window_title) override;
+  void OnUserWindowAppIconChanged(uint32_t window_id,
+                                  mojo::Array<uint8_t> app_icon) override;
   void OnUserWindowFocusChanged(uint32_t window_id, bool has_focus) override;
 
   ShelfModel* model_;

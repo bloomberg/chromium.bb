@@ -41,6 +41,7 @@ source_set("test_support") {
 
 test("mojo_view_manager_lib_unittests") {
   sources = [
+    "property_type_converters_unittest.cc",
     "run_all_unittests.cc",
     "test_window_tree.cc",
     "test_window_tree.h",

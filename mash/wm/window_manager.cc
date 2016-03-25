@@ -153,6 +153,7 @@ bool WindowManager::OnWmSetProperty(
   return name == mus::mojom::WindowManager::kShowState_Property ||
          name == mus::mojom::WindowManager::kPreferredSize_Property ||
          name == mus::mojom::WindowManager::kResizeBehavior_Property ||
+         name == mus::mojom::WindowManager::kWindowAppIcon_Property ||
          name == mus::mojom::WindowManager::kWindowTitle_Property;
 }
 

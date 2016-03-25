@@ -149,6 +149,7 @@ test("views_mus_unittests") {
     "../view_targeter_unittest.cc",
     "../widget/native_widget_unittest.cc",
     "../widget/widget_unittest.cc",
+    "native_widget_mus_unittest.cc",
     "platform_test_helper_mus.cc",
     "run_all_unittests_mus.cc",
   ]
@@ -159,6 +160,8 @@ test("views_mus_unittests") {
     "//base:i18n",
     "//base/test:test_support",
     "//cc",
+    "//components/mus/public/cpp",
+    "//components/mus/public/interfaces",
     "//mojo/shell/background:lib",
     "//mojo/shell/background:main",
     "//mojo/shell/background/tests:test_support",

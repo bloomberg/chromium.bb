@@ -21,6 +21,7 @@ source_set("lib") {
     "//mojo/shell/public/cpp",
     "//mojo/shell/public/cpp:sources",
     "//mojo/shell/public/interfaces",
+    "//ui/resources",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]

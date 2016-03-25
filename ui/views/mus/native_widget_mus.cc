@@ -196,6 +196,17 @@ int ResizeBehaviorFromDelegate(WidgetDelegate* delegate) {
   return behavior;
 }
 
+// Returns the 1x window app icon or an empty SkBitmap if no icon is available.
+// TODO(jamescook): Support other scale factors.
+SkBitmap AppIconFromDelegate(WidgetDelegate* delegate) {
+  if (!delegate)
+    return SkBitmap();
+  gfx::ImageSkia app_icon = delegate->GetWindowAppIcon();
+  if (app_icon.isNull())
+    return SkBitmap();
+  return app_icon.GetRepresentation(1.f).sk_bitmap();
+}
+
 }  // namespace
 
 class NativeWidgetMus::MusWindowObserver : public mus::WindowObserver {
@@ -352,6 +363,12 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
   (*properties)[mus::mojom::WindowManager::kResizeBehavior_Property] =
       mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
           ResizeBehaviorFromDelegate(init_params.delegate));
+  SkBitmap app_icon = AppIconFromDelegate(init_params.delegate);
+  if (!app_icon.isNull()) {
+    (*properties)[mus::mojom::WindowManager::kWindowAppIcon_Property] =
+        mojo::TypeConverter<const std::vector<uint8_t>, SkBitmap>::Convert(
+            app_icon);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -542,7 +559,18 @@ bool NativeWidgetMus::SetWindowTitle(const base::string16& title) {
 
 void NativeWidgetMus::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                      const gfx::ImageSkia& app_icon) {
-  // NOTIMPLEMENTED();
+  const char* const kWindowAppIcon_Property =
+      mus::mojom::WindowManager::kWindowAppIcon_Property;
+
+  if (!app_icon.isNull()) {
+    // Send the app icon 1x bitmap to the window manager.
+    // TODO(jamescook): Support other scale factors.
+    window_->SetSharedProperty<SkBitmap>(
+        kWindowAppIcon_Property, app_icon.GetRepresentation(1.f).sk_bitmap());
+  } else if (window_->HasSharedProperty(kWindowAppIcon_Property)) {
+    // Remove the existing icon.
+    window_->ClearSharedProperty(kWindowAppIcon_Property);
+  }
 }
 
 void NativeWidgetMus::InitModalType(ui::ModalType modal_type) {

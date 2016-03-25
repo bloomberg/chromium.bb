@@ -17,7 +17,7 @@ namespace mash {
 namespace wm {
 
 class RootWindowController;
-class WindowTitleObserver;
+class WindowPropertyObserver;
 
 class UserWindowControllerImpl : public mojom::UserWindowController,
                                  public mus::WindowObserver,
@@ -49,7 +49,7 @@ class UserWindowControllerImpl : public mojom::UserWindowController,
 
   RootWindowController* root_controller_;
   mojom::UserWindowObserverPtr user_window_observer_;
-  scoped_ptr<WindowTitleObserver> window_title_observer_;
+  scoped_ptr<WindowPropertyObserver> window_property_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(UserWindowControllerImpl);
 };
