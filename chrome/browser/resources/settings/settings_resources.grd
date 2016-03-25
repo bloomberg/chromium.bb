@@ -123,9 +123,6 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_SECTION_JS"
                  file="settings_page/settings_section.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CR_SETTINGS_SUBHEADER_CSS"
-                 file="settings_page/settings_subheader.css"
-                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CR_SETTINGS_SUBHEADER_HTML"
                  file="settings_page/settings_subheader.html"
                  type="chrome_html" />

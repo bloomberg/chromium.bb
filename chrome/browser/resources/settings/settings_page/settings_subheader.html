@@ -3,11 +3,27 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 
 <dom-module id="settings-subheader">
-  <link rel="import" type="css" href="settings_subheader.css">
   <template>
-    <paper-icon-button icon="arrow-back" on-tap="onTapBack_">
-    </paper-icon-button>
-    <h2>[[pageTitle]]</h2>
+    <style include="settings-shared">
+      :root {
+        --iron-icon-fill-color: var(--settings-side-nav-color);
+        --paper-icon-button: {
+          width: 36px;
+          height: 36px;
+          margin: 0 12px 0 -8px;
+        }
+      }
+
+      h2 {
+        color: var(--settings-side-nav-color);
+        font-size: 107.6923%; /* go to 14px from 13px */
+      }
+    </style>
+    <div class="settings-box first">
+      <paper-icon-button icon="arrow-back" on-tap="onTapBack_">
+      </paper-icon-button>
+      <h2>[[pageTitle]]</h2>
+    </div>
   </template>
   <script src="settings_subheader.js"></script>
 </dom-module>
