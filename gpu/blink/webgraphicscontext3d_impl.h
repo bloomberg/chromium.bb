@@ -52,7 +52,7 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
       blink::WebGLId shader) override;
 
   void setContextLostCallback(
-      WebGraphicsContext3D::WebGraphicsContextLostCallback* callback) override;
+      WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
 
   void setErrorMessageCallback(
       WebGraphicsContext3D::WebGraphicsErrorMessageCallback* callback) override;

@@ -96,7 +96,9 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "public/platform/callback/WebClosure.h"
 #include "wtf/ArrayBufferContents.h"
+#include "wtf/Functional.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/StringUTF8Adaptor.h"
@@ -488,29 +490,6 @@ public:
     }
 
 private:
-    RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
-};
-
-class WebGLRenderingContextLostCallback final : public GarbageCollectedFinalized<WebGLRenderingContextLostCallback>, public WebGraphicsContext3D::WebGraphicsContextLostCallback {
-public:
-    static WebGLRenderingContextLostCallback* create(WebGLRenderingContextBase* context)
-    {
-        return new WebGLRenderingContextLostCallback(context);
-    }
-
-    ~WebGLRenderingContextLostCallback() override { }
-
-    virtual void onContextLost() { m_context->forceLostContext(WebGLRenderingContextBase::RealLostContext, WebGLRenderingContextBase::Auto); }
-
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_context);
-    }
-
-private:
-    explicit WebGLRenderingContextLostCallback(WebGLRenderingContextBase* context)
-        : m_context(context) { }
-
     RawPtrWillBeMember<WebGLRenderingContextBase> m_context;
 };
 
@@ -993,10 +972,9 @@ void WebGLRenderingContextBase::initializeNewContext()
     contextGL()->Viewport(0, 0, drawingBufferWidth(), drawingBufferHeight());
     contextGL()->Scissor(0, 0, drawingBufferWidth(), drawingBufferHeight());
 
-    m_contextLostCallbackAdapter = WebGLRenderingContextLostCallback::create(this);
     m_errorMessageCallbackAdapter = WebGLRenderingContextErrorMessageCallback::create(this);
 
-    webContext()->setContextLostCallback(m_contextLostCallbackAdapter.get());
+    drawingBuffer()->contextProvider()->setLostContextCallback(WebClosure(WTF::bind(&WebGLRenderingContextBase::forceLostContext, createWeakThisPointer(), WebGLRenderingContextBase::RealLostContext, WebGLRenderingContextBase::Auto)));
     webContext()->setErrorMessageCallback(m_errorMessageCallbackAdapter.get());
 
     // This ensures that the context has a valid "lastFlushID" and won't be mistakenly identified as the "least recently used" context.
@@ -1112,7 +1090,7 @@ void WebGLRenderingContextBase::destroyContext()
 
     m_extensionsUtil.clear();
 
-    webContext()->setContextLostCallback(nullptr);
+    drawingBuffer()->contextProvider()->setLostContextCallback(WebClosure());
     webContext()->setErrorMessageCallback(nullptr);
 
     ASSERT(drawingBuffer());
@@ -6283,7 +6261,6 @@ DEFINE_TRACE(WebGLRenderingContextBase)
 #if ENABLE(OILPAN)
     visitor->trace(m_contextObjects);
 #endif
-    visitor->trace(m_contextLostCallbackAdapter);
     visitor->trace(m_errorMessageCallbackAdapter);
     visitor->trace(m_boundArrayBuffer);
     visitor->trace(m_defaultVertexArrayObject);

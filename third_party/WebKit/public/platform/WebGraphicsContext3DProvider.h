@@ -31,8 +31,6 @@
 #ifndef WebGraphicsContext3DProvider_h
 #define WebGraphicsContext3DProvider_h
 
-#include "WebCommon.h"
-
 class GrContext;
 
 namespace gpu {
@@ -42,7 +40,7 @@ class GLES2Interface;
 }
 
 namespace blink {
-
+class WebClosure;
 class WebGraphicsContext3D;
 
 class WebGraphicsContext3DProvider {
@@ -52,6 +50,8 @@ public:
     virtual WebGraphicsContext3D* context3d() = 0;
     virtual gpu::gles2::GLES2Interface* contextGL() = 0;
     virtual GrContext* grContext() = 0;
+
+    virtual void setLostContextCallback(WebClosure) = 0;
 };
 
 } // namespace blink

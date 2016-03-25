@@ -525,7 +525,6 @@ protected:
     HashSet<UntracedMember<WebGLContextObject>> m_contextObjects;
 #endif
 
-    PersistentWillBeMember<WebGLRenderingContextLostCallback> m_contextLostCallbackAdapter;
     PersistentWillBeMember<WebGLRenderingContextErrorMessageCallback> m_errorMessageCallbackAdapter;
 
     // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and stored values for ELEMENT_ARRAY_BUFFER

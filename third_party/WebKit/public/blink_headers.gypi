@@ -5,6 +5,7 @@
 {
   'variables': {
     'blink_public_sources': [
+      "platform/callback/WebClosure.h",
       "platform/Platform.h",
       "platform/FilePathConversion.h",
       "platform/URLConversion.h",

@@ -40,6 +40,7 @@
 #include "public/platform/WebExternalTextureMailbox.h"
 #include "public/platform/WebGraphicsContext3D.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"
+#include "public/platform/callback/WebClosure.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefPtr.h"
@@ -274,6 +275,7 @@ public:
     gpu::gles2::GLES2Interface* contextGL() override { return m_gl.get(); }
     // Not used by WebGL code.
     GrContext* grContext() override { return nullptr; }
+    void setLostContextCallback(WebClosure) {}
 
 private:
     OwnPtr<WebGraphicsContext3D> m_context;

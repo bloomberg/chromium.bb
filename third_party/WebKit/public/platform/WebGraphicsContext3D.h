@@ -145,7 +145,6 @@ public:
     virtual WebString getShaderInfoLog(WebGLId shader) = 0;
     virtual WebString getShaderSource(WebGLId shader) = 0;
 
-    virtual void setContextLostCallback(WebGraphicsContextLostCallback* callback) { }
     virtual void setErrorMessageCallback(WebGraphicsErrorMessageCallback* callback) { }
 
     virtual WebString getTranslatedShaderSourceANGLE(WebGLId shader) = 0;
