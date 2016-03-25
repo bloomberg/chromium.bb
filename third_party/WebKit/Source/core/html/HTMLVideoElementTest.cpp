@@ -63,7 +63,7 @@ public:
         return adoptPtrWillBeNoop(new StubFrameLoaderClient);
     }
 
-    PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, const WebURL&, WebMediaPlayerClient*) override
+    PassOwnPtr<WebMediaPlayer> createWebMediaPlayer(HTMLMediaElement&, WebMediaPlayer::LoadType, const WebURL&, WebMediaPlayerClient*) override
     {
         return adoptPtr(new MockWebMediaPlayer);
     }

@@ -214,10 +214,8 @@
 #endif
 
 #if defined(ENABLE_PEPPER_CDMS)
-#include "content/renderer/media/cdm/render_cdm_factory.h"
 #include "content/renderer/media/cdm/pepper_cdm_wrapper_impl.h"
 #elif defined(ENABLE_BROWSER_CDMS)
-#include "content/renderer/media/cdm/render_cdm_factory.h"
 #include "content/renderer/media/cdm/renderer_cdm_manager.h"
 #endif
 
@@ -227,6 +225,8 @@
 
 #if defined(ENABLE_MOJO_CDM)
 #include "media/mojo/services/mojo_cdm_factory.h"  // nogncheck
+#else
+#include "content/renderer/media/cdm/render_cdm_factory.h"
 #endif
 
 #if defined(ENABLE_MOJO_RENDERER)
@@ -755,13 +755,17 @@ bool IsContentWithCertificateErrorsRelevantToUI(
 //
 // Note that HLS and MP4 detection are pre-redirect and path-based. It is
 // possible to load such a URL and find different content.
-bool UseWebMediaPlayerImpl(const GURL& url) {
+bool UseWebMediaPlayerImpl(blink::WebMediaPlayer::LoadType load_type,
+                           const GURL& url) {
+  if (load_type == blink::WebMediaPlayer::LoadTypeMediaSource)
+    return media::IsUnifiedMediaPipelineEnabledForMse();
+
   // WMPI does not support HLS.
   if (media::MediaCodecUtil::IsHLSPath(url))
     return false;
 
   // Don't use WMPI if the container likely contains a codec we can't decode in
-  // software and platform decoders are not available.
+  // software and hardware decoders are not available.
   if (base::EndsWith(url.path(), ".mp4",
                      base::CompareCase::INSENSITIVE_ASCII) &&
       !media::HasPlatformDecoderSupport()) {
@@ -772,24 +776,6 @@ bool UseWebMediaPlayerImpl(const GURL& url) {
   return media::IsUnifiedMediaPipelineEnabled();
 }
 #endif  // defined(OS_ANDROID)
-
-#if defined(ENABLE_MOJO_CDM)
-// Returns whether mojo CDM should be used at runtime. Note that even when mojo
-// CDM is enabled at compile time (ENABLE_MOJO_CDM is defined), there are cases
-// where we want to choose other CDM types. For example, on Android when we use
-// WebMediaPlayerAndroid, we still want to use ProxyMediaKeys. In the future,
-// when we experiment mojo CDM on desktop, we will choose between mojo CDM and
-// pepper CDM at runtime.
-// TODO(xhwang): Remove this when we use mojo CDM for all remote CDM cases by
-// default.
-bool UseMojoCdm() {
-#if defined(OS_ANDROID)
-  return media::IsUnifiedMediaPipelineEnabled();
-#else
-  return true;
-#endif
-}
-#endif  // defined(ENABLE_MOJO_CDM)
 
 }  // namespace
 
@@ -2397,6 +2383,7 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
 }
 
 blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
+    blink::WebMediaPlayer::LoadType load_type,
     const blink::WebURL& url,
     WebMediaPlayerClient* client,
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
@@ -2443,7 +2430,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       initial_cdm, media_surface_manager_, media_session);
 
 #if defined(OS_ANDROID)
-  if (!UseWebMediaPlayerImpl(url))
+  if (!UseWebMediaPlayerImpl(load_type, url))
     return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
 #endif  // defined(OS_ANDROID)
 
@@ -5915,25 +5902,26 @@ bool RenderFrameImpl::AreSecureCodecsSupported() {
 }
 
 media::CdmFactory* RenderFrameImpl::GetCdmFactory() {
-  if (cdm_factory_)
-    return cdm_factory_.get();
-
-#if defined(ENABLE_MOJO_CDM)
-  if (UseMojoCdm()) {
-    cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceProvider()));
-    return cdm_factory_.get();
-  }
-#endif  //  defined(ENABLE_MOJO_CDM)
-
-#if defined(ENABLE_PEPPER_CDMS)
-  DCHECK(frame_);
-  cdm_factory_.reset(
-      new RenderCdmFactory(base::Bind(&PepperCdmWrapperImpl::Create, frame_)));
-#elif defined(ENABLE_BROWSER_CDMS)
+#if defined(ENABLE_BROWSER_CDMS)
   if (!cdm_manager_)
     cdm_manager_ = new RendererCdmManager(this);
-  cdm_factory_.reset(new RenderCdmFactory(cdm_manager_));
-#endif  // defined(ENABLE_PEPPER_CDMS)
+#endif  // defined(ENABLE_BROWSER_CDMS)
+
+  if (!cdm_factory_) {
+    DCHECK(frame_);
+
+#if defined(ENABLE_MOJO_CDM)
+    cdm_factory_.reset(new media::MojoCdmFactory(GetMediaInterfaceProvider()));
+#else
+    cdm_factory_.reset(new RenderCdmFactory(
+#if defined(ENABLE_PEPPER_CDMS)
+        base::Bind(&PepperCdmWrapperImpl::Create, frame_)
+#elif defined(ENABLE_BROWSER_CDMS)
+        cdm_manager_
+#endif
+            ));
+#endif  //  defined(ENABLE_MOJO_CDM)
+  }
 
   return cdm_factory_.get();
 }
