@@ -1017,8 +1017,10 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
         return;
       }
     }
-    LogChannelIDAndCookieStores(request_->url(), request_->context(),
-                                transaction_->GetResponseInfo()->ssl_info);
+    if (transaction_ && transaction_->GetResponseInfo()) {
+      LogChannelIDAndCookieStores(request_->url(), request_->context(),
+                                  transaction_->GetResponseInfo()->ssl_info);
+    }
 
     SaveCookiesAndNotifyHeadersComplete(OK);
   } else if (IsCertificateError(result)) {
