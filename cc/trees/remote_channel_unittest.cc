@@ -79,21 +79,32 @@ class RemoteChannelTestDeferCommits : public RemoteChannelTest {
 REMOTE_DIRECT_RENDERER_TEST_F(RemoteChannelTestDeferCommits);
 
 class RemoteChannelTestNeedsRedraw : public RemoteChannelTest {
+ public:
+  RemoteChannelTestNeedsRedraw()
+      : damaged_rect_(4, 5), device_viewport_size_(0, 0) {}
+
   void BeginChannelTest() override {
-    damaged_rect_.set_width(4);
-    damaged_rect_.set_height(5);
+    device_viewport_size_ =
+        gfx::Rect(remote_client_layer_tree_host()->device_viewport_size());
     layer_tree_host()->SetNeedsRedrawRect(damaged_rect_);
   }
 
   void SetNeedsRedrawOnImpl(const gfx::Rect& damage_rect) override {
-    EXPECT_EQ(damage_rect, damaged_rect_);
     calls_received_++;
-    EndTest();
+    if (calls_received_ == 1) {
+      EXPECT_EQ(damaged_rect_, damage_rect);
+    } else {
+      // The second call is received after the output surface is successfully
+      // initialized.
+      EXPECT_EQ(device_viewport_size_, damage_rect);
+      EndTest();
+    }
   }
 
-  void AfterTest() override { EXPECT_EQ(1, calls_received_); }
+  void AfterTest() override { EXPECT_EQ(2, calls_received_); }
 
   gfx::Rect damaged_rect_;
+  gfx::Rect device_viewport_size_;
 };
 
 REMOTE_DIRECT_RENDERER_TEST_F(RemoteChannelTestNeedsRedraw);

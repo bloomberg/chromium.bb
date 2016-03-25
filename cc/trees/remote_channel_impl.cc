@@ -139,9 +139,7 @@ void RemoteChannelImpl::HandleProto(
           proto.set_needs_redraw_message();
       gfx::Rect damaged_rect =
           ProtoToRect(set_needs_redraw_message.damaged_rect());
-      ImplThreadTaskRunner()->PostTask(
-          FROM_HERE, base::Bind(&ProxyImpl::SetNeedsRedrawOnImpl,
-                                proxy_impl_weak_ptr_, damaged_rect));
+      PostSetNeedsRedrawToImpl(damaged_rect);
     } break;
   }
 }
@@ -428,6 +426,11 @@ void RemoteChannelImpl::DidInitializeOutputSurfaceOnMain(
     HandleProto(main().pending_messages.front());
     main().pending_messages.pop();
   }
+
+  // The commit after a new output surface can early out, in which case we will
+  // never redraw. Schedule one just to be safe.
+  PostSetNeedsRedrawToImpl(
+      gfx::Rect(main().layer_tree_host->device_viewport_size()));
 }
 
 void RemoteChannelImpl::SendMessageProtoOnMain(
@@ -435,6 +438,15 @@ void RemoteChannelImpl::SendMessageProtoOnMain(
   DCHECK(task_runner_provider_->IsMainThread());
 
   main().remote_proto_channel->SendCompositorProto(*proto);
+}
+
+void RemoteChannelImpl::PostSetNeedsRedrawToImpl(
+    const gfx::Rect& damaged_rect) {
+  DCHECK(task_runner_provider_->IsMainThread());
+
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ProxyImpl::SetNeedsRedrawOnImpl,
+                            proxy_impl_weak_ptr_, damaged_rect));
 }
 
 void RemoteChannelImpl::InitializeImplOnImpl(CompletionEvent* completion,

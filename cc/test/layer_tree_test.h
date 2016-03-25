@@ -146,6 +146,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   bool TestEnded() const { return ended_; }
 
   LayerTreeHost* layer_tree_host();
+  LayerTreeHost* remote_client_layer_tree_host();
   bool delegating_renderer() const { return delegating_renderer_; }
   FakeOutputSurface* output_surface() { return output_surface_; }
 

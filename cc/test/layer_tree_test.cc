@@ -1000,6 +1000,13 @@ LayerTreeHost* LayerTreeTest::layer_tree_host() {
   return layer_tree_host_.get();
 }
 
+LayerTreeHost* LayerTreeTest::remote_client_layer_tree_host() {
+  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread() ||
+         task_runner_provider()->IsMainThreadBlocked());
+  DCHECK(IsRemoteTest());
+  return remote_client_layer_tree_host_.get();
+}
+
 ProxyMainForTest* LayerTreeTest::GetProxyMainForTest() const {
   DCHECK(HasImplThread());
   return static_cast<ProxyMainForTest*>(proxy());

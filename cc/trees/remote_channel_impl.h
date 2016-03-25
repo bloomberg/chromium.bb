@@ -196,6 +196,7 @@ class CC_EXPORT RemoteChannelImpl : public ChannelImpl,
       bool success,
       const RendererCapabilities& capabilities);
   void SendMessageProtoOnMain(scoped_ptr<proto::CompositorMessage> proto);
+  void PostSetNeedsRedrawToImpl(const gfx::Rect& damaged_rect);
 
   void InitializeImplOnImpl(CompletionEvent* completion,
                             LayerTreeHost* layer_tree_host);
