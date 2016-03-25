@@ -44,10 +44,8 @@ namespace blink {
 // For CSS Animations, used to synchronize the start of main-thread animations
 // with compositor animations when both classes of CSS Animations are triggered
 // by the same recalc
-class CORE_EXPORT CompositorPendingAnimations final {
-    DISALLOW_NEW();
+class CORE_EXPORT CompositorPendingAnimations final : public GarbageCollectedFinalized<CompositorPendingAnimations> {
 public:
-
     CompositorPendingAnimations()
         : m_timer(this, &CompositorPendingAnimations::timerFired)
         , m_compositorGroup(1)
@@ -64,8 +62,8 @@ public:
 private:
     void timerFired(Timer<CompositorPendingAnimations>*) { update(false); }
 
-    PersistentHeapVectorWillBeHeapVector<Member<Animation>> m_pending;
-    PersistentHeapVectorWillBeHeapVector<Member<Animation>> m_waitingForCompositorAnimationStart;
+    HeapVector<Member<Animation>> m_pending;
+    HeapVector<Member<Animation>> m_waitingForCompositorAnimationStart;
     Timer<CompositorPendingAnimations> m_timer;
     int m_compositorGroup;
 };
