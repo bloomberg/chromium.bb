@@ -85,6 +85,7 @@ class ImeWindow : public content::NotificationObserver,
   void OnWindowDestroyed();
 
   void AddObserver(ImeWindowObserver* observer);
+  void RemoveObserver(ImeWindowObserver* observer);
 
   // Getters.
   Mode mode() const { return mode_; }

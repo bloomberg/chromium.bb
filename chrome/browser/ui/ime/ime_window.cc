@@ -132,6 +132,10 @@ void ImeWindow::AddObserver(ImeWindowObserver* observer) {
   observers_.AddObserver(observer);
 }
 
+void ImeWindow::RemoveObserver(ImeWindowObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void ImeWindow::OnExtensionIconImageChanged(extensions::IconImage* image) {
   if (native_window_)
     native_window_->UpdateWindowIcon();

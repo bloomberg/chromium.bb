@@ -28,6 +28,12 @@ namespace input_method {
 InputMethodEngine::InputMethodEngine() : follow_cursor_window_(nullptr) {}
 
 InputMethodEngine::~InputMethodEngine() {
+  // Removes the listeners for OnWindowDestroyed.
+  if (follow_cursor_window_)
+    follow_cursor_window_->RemoveObserver(this);
+  for (auto window : normal_windows_)
+    window->RemoveObserver(this);
+
   CloseImeWindows();
 }
 
