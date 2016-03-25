@@ -15,6 +15,34 @@ if (is_ios) {
   import("//ios/build/config.gni")
 }
 
+if (is_ios || is_mac) {
+  bundle_data("components_tests_pak_bundle_data") {
+    public_deps = [
+      ":components_tests_pak",
+      "//ui/resources:ui_test_pak",
+    ]
+    sources = [
+      "$root_out_dir/components_tests_resources.pak",
+      "$root_out_dir/ui_test.pak",
+    ]
+    outputs = [
+      "{{bundle_resources_dir}}/{{source_file_part}}",
+    ]
+  }
+}
+
+bundle_data("components_unittests_bundle_data") {
+  sources = [
+    "//third_party/dom_distiller_js/dist/test/data",
+    "dom_distiller/core/javascript",
+    "test/data",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "{{source_root_relative_dir}}/{{source_file_part}}",
+  ]
+}
+
 # To add a unit test to this target, make a "unit_test" source_set in your
 # component (it's important to use a source_set instead of a static library or
 # no tests will run) and add a reference here. You can add more than one unit
@@ -39,6 +67,7 @@ test("components_unittests") {
   # test source set and not here.
 
   deps = [
+    ":components_unittests_bundle_data",
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/browser:unit_tests",
@@ -183,6 +212,10 @@ test("components_unittests") {
       "//ui/resources:ui_test_pak",
     ]
   }  # iOS/!iOS
+
+  if (is_ios || is_mac) {
+    deps += [ ":components_tests_pak_bundle_data" ]
+  }
 
   if (is_android) {
     isolate_file = "components_unittests.isolate"
