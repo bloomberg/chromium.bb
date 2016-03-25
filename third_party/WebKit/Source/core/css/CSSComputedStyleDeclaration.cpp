@@ -403,8 +403,8 @@ void CSSComputedStyleDeclaration::setCSSText(const String&, ExceptionState& exce
 
 static CSSValueID cssIdentifierForFontSizeKeyword(int keywordSize)
 {
-    ASSERT_ARG(keywordSize, keywordSize);
-    ASSERT_ARG(keywordSize, keywordSize <= 8);
+    DCHECK_NE(keywordSize, 0);
+    DCHECK_LE(keywordSize, 8);
     return static_cast<CSSValueID>(CSSValueXxSmall + keywordSize - 1);
 }
 

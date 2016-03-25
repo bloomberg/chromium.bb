@@ -120,7 +120,7 @@ CanvasRenderingContext2DState::~CanvasRenderingContext2DState()
 
 void CanvasRenderingContext2DState::fontsNeedUpdate(CSSFontSelector* fontSelector)
 {
-    ASSERT_ARG(fontSelector, fontSelector == m_font.getFontSelector());
+    DCHECK_EQ(fontSelector, m_font.getFontSelector());
     ASSERT(m_realizedFont);
 
     m_font.update(fontSelector);

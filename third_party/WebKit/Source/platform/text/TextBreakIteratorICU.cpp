@@ -82,7 +82,7 @@ public:
 
     void put(icu::BreakIterator* iterator)
     {
-        ASSERT_ARG(iterator, m_vendedIterators.contains(iterator));
+        DCHECK(m_vendedIterators.contains(iterator));
 
         if (m_pool.size() == capacity) {
             delete(m_pool[0].second);
@@ -594,8 +594,7 @@ TextBreakIterator* acquireLineBreakIterator(const UChar* string, int length, con
 
 void releaseLineBreakIterator(TextBreakIterator* iterator)
 {
-    ASSERT_ARG(iterator, iterator);
-
+    DCHECK(iterator);
     LineBreakIteratorPool::sharedPool().put(iterator);
 }
 

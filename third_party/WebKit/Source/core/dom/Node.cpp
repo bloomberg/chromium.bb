@@ -1518,8 +1518,6 @@ String Node::debugNodeName() const
     return nodeName();
 }
 
-#ifndef NDEBUG
-
 static void appendAttributeDesc(const Node* node, StringBuilder& stringBuilder, const QualifiedName& name, const char* attrDesc)
 {
     if (!node->isElementNode())
@@ -1534,6 +1532,28 @@ static void appendAttributeDesc(const Node* node, StringBuilder& stringBuilder, 
     stringBuilder.append(attr);
     stringBuilder.appendLiteral("\"");
 }
+
+// |std::ostream| version of |Node::showNode|
+std::ostream& operator<<(std::ostream& ostream, const Node& node)
+{
+    ostream << node.nodeName();
+    if (node.isTextNode())
+        return ostream << " " << node.nodeValue();
+    StringBuilder attrs;
+    appendAttributeDesc(&node, attrs, HTMLNames::idAttr, " ID");
+    appendAttributeDesc(&node, attrs, HTMLNames::classAttr, " CLASS");
+    appendAttributeDesc(&node, attrs, HTMLNames::styleAttr, " STYLE");
+    return ostream << attrs.toString();
+}
+
+std::ostream& operator<<(std::ostream& ostream, const Node* node)
+{
+    if (!node)
+        return ostream << "null";
+    return ostream << *node;
+}
+
+#ifndef NDEBUG
 
 void Node::showNode(const char* prefix) const
 {
