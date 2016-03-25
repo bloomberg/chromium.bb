@@ -2019,6 +2019,13 @@ willAnimateFromState:(BookmarkBar::State)oldState
   return shouldShowFullscreenToolbar_;
 }
 
+- (void)exitFullscreenAnimationFinished {
+  if (appKitDidExitFullscreen_) {
+    [self windowDidExitFullScreen:nil];
+    appKitDidExitFullscreen_ = NO;
+  }
+}
+
 - (void)resizeFullscreenWindow {
   DCHECK([self isInAnyFullscreenMode]);
   if (![self isInAnyFullscreenMode])
@@ -2101,6 +2108,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
 - (BOOL)isTabbedWindow {
   return browser_->is_type_tabbed();
+}
+
+- (NSRect)savedRegularWindowFrame {
+  return savedRegularWindowFrame_;
 }
 
 @end  // @implementation BrowserWindowController(WindowType)

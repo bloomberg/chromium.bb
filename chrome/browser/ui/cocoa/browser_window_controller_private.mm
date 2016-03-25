@@ -778,6 +778,15 @@ willPositionSheet:(NSWindow*)sheet
 - (void)windowDidExitFullScreen:(NSNotification*)notification {
   DCHECK(exitingAppKitFullscreen_);
 
+  // If the custom transition isn't complete, then just set the flag and
+  // return. Once the transition is completed, windowDidExitFullscreen will
+  // be called again.
+  if (isUsingCustomAnimation_ &&
+      ![fullscreenTransition_ isTransitionCompleted]) {
+    appKitDidExitFullscreen_ = YES;
+    return;
+  }
+
   if (notification)  // For System Fullscreen when non-nil.
     [self deregisterForContentViewResizeNotifications];
 
@@ -1175,10 +1184,8 @@ willPositionSheet:(NSWindow*)sheet
   if (![self shouldUseCustomAppKitFullscreenTransition:YES])
     return nil;
 
-  FramedBrowserWindow* framedBrowserWindow =
-      base::mac::ObjCCast<FramedBrowserWindow>([self window]);
-  fullscreenTransition_.reset([[BrowserWindowFullscreenTransition alloc]
-      initEnterWithWindow:framedBrowserWindow]);
+  fullscreenTransition_.reset(
+      [[BrowserWindowFullscreenTransition alloc] initEnterWithController:self]);
 
   NSArray* customWindows =
       [fullscreenTransition_ customWindowsForFullScreenTransition];
@@ -1192,12 +1199,8 @@ willPositionSheet:(NSWindow*)sheet
   if (![self shouldUseCustomAppKitFullscreenTransition:NO])
     return nil;
 
-  FramedBrowserWindow* framedBrowserWindow =
-      base::mac::ObjCCast<FramedBrowserWindow>([self window]);
-  fullscreenTransition_.reset([[BrowserWindowFullscreenTransition alloc]
-          initExitWithWindow:framedBrowserWindow
-                       frame:savedRegularWindowFrame_
-      tabStripBackgroundView:[self tabStripBackgroundView]]);
+  fullscreenTransition_.reset(
+      [[BrowserWindowFullscreenTransition alloc] initExitWithController:self]);
 
   NSArray* customWindows =
       [fullscreenTransition_ customWindowsForFullScreenTransition];

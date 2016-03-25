@@ -7,7 +7,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class FramedBrowserWindow;
+@class BrowserWindowController;
 
 // This class is responsible for managing the custom transition of a
 // BrowserWindow from its normal state into an AppKit Fullscreen state
@@ -94,19 +94,16 @@
 
 @interface BrowserWindowFullscreenTransition : NSObject
 
-// Designated initializers. |window| is the NSWindow that is going to be moved
-// into a fullscreen Space (virtual desktop), and resized to have the same size
-// as the screen. |window|'s root view must be layer backed.
-// initEnterWithWindow will create a BrowserWindowFullscreenTransition that
-// enters fullscreen. initExitWithWindow will create one that exits fullscreen,
-// using |frame| as the frame that |window| is going to transition into.
-- (instancetype)initEnterWithWindow:(FramedBrowserWindow*)window;
-- (instancetype)initExitWithWindow:(FramedBrowserWindow*)window
-                             frame:(NSRect)frame
-            tabStripBackgroundView:(NSView*)view;
+// Designated initializers. |controller| is the BrowserWindowController of the
+// window that's going to be moved into a fullscreen Space.
+- (instancetype)initEnterWithController:(BrowserWindowController*)controller;
+- (instancetype)initExitWithController:(BrowserWindowController*)controller;
 
 // Returns the windows to be used in the custom fullscreen transition.
 - (NSArray*)customWindowsForFullScreenTransition;
+
+// Returns true if the fullscreen transition is completed.
+- (BOOL)isTransitionCompleted;
 
 // This method begins animation for exit or enter fullscreen transition.
 // In this method, the following happens:
