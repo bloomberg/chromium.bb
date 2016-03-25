@@ -95,12 +95,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include <iosfwd>
 #include <memory>
-#include <type_traits>
 #include <utility>
 
-#include "base/logging.h"
 #include "base/macros.h"
 
 namespace base {

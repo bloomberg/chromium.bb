@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <cstring>
 
+#include "base/logging.h"
 #include "base/memory/discardable_memory.h"
 
 namespace base {
