@@ -360,7 +360,25 @@
         ],
       },
       'sources': [
+        'web_state/js/resources/base.js',
+        'web_state/js/resources/common.js',
+        'web_state/js/resources/console.js',
+        'web_state/js/resources/core.js',
+        'web_state/js/resources/dialog_overrides.js',
+        'web_state/js/resources/message.js',
         'web_state/js/resources/web_bundle.js',
+      ],
+      '!sources': [
+        # Remove all js files except web_bundle. Those files should not be
+        # copied with the rest of resources, as they just Closure dependencies
+        # for web_bundle.js. Dependencies were added as sources, so they get
+        # indexed by Xcode.
+        'web_state/js/resources/base.js',
+        'web_state/js/resources/common.js',
+        'web_state/js/resources/console.js',
+        'web_state/js/resources/core.js',
+        'web_state/js/resources/dialog_overrides.js',
+        'web_state/js/resources/message.js',
       ],
       'link_settings': {
         'mac_bundle_resources': [
