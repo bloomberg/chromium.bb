@@ -747,23 +747,6 @@ v8::Local<v8::Value> V8DebuggerImpl::collectionEntries(v8::Local<v8::Object>& ob
     return callDebuggerMethod("getCollectionEntries", 1, argv).ToLocalChecked();
 }
 
-v8::MaybeLocal<v8::Value> V8DebuggerImpl::setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String16& variableName, v8::Local<v8::Value> newValue)
-{
-    if (m_debuggerScript.IsEmpty()) {
-        ASSERT_NOT_REACHED();
-        return m_isolate->ThrowException(v8::String::NewFromUtf8(m_isolate, "Debugging is not enabled.", v8::NewStringType::kNormal).ToLocalChecked());
-    }
-
-    v8::Local<v8::Value> argv[] = {
-        functionValue,
-        v8::Local<v8::Value>(v8::Integer::New(m_isolate, scopeNumber)),
-        toV8String(m_isolate, variableName),
-        newValue
-    };
-    return callDebuggerMethod("setFunctionVariableValue", 4, argv);
-}
-
-
 bool V8DebuggerImpl::isPaused()
 {
     return !m_pausedContext.IsEmpty();

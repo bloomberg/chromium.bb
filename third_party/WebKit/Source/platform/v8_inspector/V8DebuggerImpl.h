@@ -94,7 +94,6 @@ public:
     v8::MaybeLocal<v8::Value> functionScopes(v8::Local<v8::Function>);
     v8::Local<v8::Value> generatorObjectDetails(v8::Local<v8::Object>&);
     v8::Local<v8::Value> collectionEntries(v8::Local<v8::Object>&);
-    v8::MaybeLocal<v8::Value> setFunctionVariableValue(v8::Local<v8::Value> functionValue, int scopeNumber, const String16& variableName, v8::Local<v8::Value> newValue);
 
     v8::Isolate* isolate() const { return m_isolate; }
     V8DebuggerClient* client() { return m_client; }

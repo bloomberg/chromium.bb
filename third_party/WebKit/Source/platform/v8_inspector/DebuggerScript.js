@@ -119,23 +119,6 @@ DebuggerScript.getCollectionEntries = function(object)
     }
 }
 
-DebuggerScript.setFunctionVariableValue = function(functionValue, scopeIndex, variableName, newValue)
-{
-    var mirror = MakeMirror(functionValue);
-    if (!mirror.isFunction())
-        throw new Error("Function value has incorrect type");
-    return DebuggerScript._setScopeVariableValue(mirror, scopeIndex, variableName, newValue);
-}
-
-DebuggerScript._setScopeVariableValue = function(scopeHolder, scopeIndex, variableName, newValue)
-{
-    var scopeMirror = scopeHolder.scope(scopeIndex);
-    if (!scopeMirror)
-        throw new Error("Incorrect scope index");
-    scopeMirror.setVariableValue(variableName, newValue);
-    return undefined;
-}
-
 DebuggerScript.getScripts = function(contextGroupId)
 {
     var result = [];
@@ -283,12 +266,12 @@ DebuggerScript.stepFrameStatement = function(execState)
     execState.prepareStep(Debug.StepAction.StepFrame);
 }
 
-DebuggerScript.stepOverStatement = function(execState, callFrame)
+DebuggerScript.stepOverStatement = function(execState)
 {
     execState.prepareStep(Debug.StepAction.StepNext);
 }
 
-DebuggerScript.stepOutOfFunction = function(execState, callFrame)
+DebuggerScript.stepOutOfFunction = function(execState)
 {
     execState.prepareStep(Debug.StepAction.StepOut);
 }
@@ -341,23 +324,6 @@ DebuggerScript.setBreakpointsActivated = function(execState, info)
     Debug.debuggerFlags().breakPointsActive.setValue(info.enabled);
 }
 
-DebuggerScript.getScriptSource = function(eventData)
-{
-    return eventData.script().source();
-}
-
-DebuggerScript.setScriptSource = function(eventData, source)
-{
-    if (eventData.script().data() === "injected-script")
-        return;
-    eventData.script().setSource(source);
-}
-
-DebuggerScript.getScriptName = function(eventData)
-{
-    return eventData.script().script_.nameOrSourceURL();
-}
-
 DebuggerScript.getBreakpointNumbers = function(eventData)
 {
     var breakpoints = eventData.breakPointsHit();
@@ -371,12 +337,6 @@ DebuggerScript.getBreakpointNumbers = function(eventData)
         numbers.push(scriptBreakPoint ? scriptBreakPoint.number() : breakpoint.number());
     }
     return numbers;
-}
-
-DebuggerScript.isEvalCompilation = function(eventData)
-{
-    var script = eventData.script();
-    return (script.compilationType() === Debug.ScriptCompilationType.Eval);
 }
 
 // NOTE: This function is performance critical, as it can be run on every
@@ -559,7 +519,10 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
 
     function setVariableValue(scopeNumber, variableName, newValue)
     {
-        return DebuggerScript._setScopeVariableValue(frameMirror, scopeNumber, variableName, newValue);
+        var scopeMirror = frameMirror.scope(scopeNumber);
+        if (!scopeMirror)
+            throw new Error("Incorrect scope index");
+        scopeMirror.setVariableValue(variableName, newValue);
     }
 
     return {
