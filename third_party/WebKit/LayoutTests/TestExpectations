@@ -188,6 +188,14 @@ crbug.com/448461 http/tests/loading/simple-subframe.html [ Failure Pass Timeout 
 crbug.com/339597 http/tests/navigation/back-to-redirect-with-frame.php [ Pass Timeout ]
 crbug.com/473718 http/tests/navigation/beacon-cross-origin-redirect.html [ Failure Pass ]
 
+crbug.com/583298 [ Android Win7 ] svg/W3C-SVG-1.1/text-spacing-01-b.svg [ NeedsRebaseline ]
+crbug.com/583298 [ Android Win7 ] svg/text/text-selection-spacing-01-b.svg [ NeedsRebaseline ]
+crbug.com/583298 [ Android Win7 ] svg/custom/text-letter-spacing.svg [ NeedsRebaseline ]
+crbug.com/583298 [ Android Win7 ] svg/batik/text/textOnPathSpaces.svg [ NeedsRebaseline ]
+crbug.com/583298 [ Android Win7 ] svg/batik/text/textLayout.svg [ NeedsRebaseline ]
+crbug.com/583298 [ Android Win7 ] svg/batik/text/textPosition2.svg [ NeedsRebaseline ]
+crbug.com/583298 [ Android Win7 ] svg/batik/text/textPosition.svg [ NeedsRebaseline ]
+
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-basic.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas.html [ Pass Failure ]
 crbug.com/410974 fast/scroll-behavior/scroll-customization/scrollstate-consume-deltas-throw.html [ Pass Failure ]
