@@ -921,7 +921,7 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
 
   ~TestNetworkQualityEstimator() override {}
 
-  bool GetRTTEstimate(base::TimeDelta* rtt) const override {
+  bool GetURLRequestRTTEstimate(base::TimeDelta* rtt) const override {
     DCHECK(rtt);
     *rtt = rtt_estimate_;
     return true;
@@ -935,8 +935,8 @@ class TestNetworkQualityEstimator : public net::NetworkQualityEstimator {
 
   void SetRTT(base::TimeDelta rtt) { rtt_estimate_ = rtt; }
 
-  bool GetRecentMedianRTT(const base::TimeTicks& begin_timestamp,
-                          base::TimeDelta* rtt) const override {
+  bool GetRecentURLRequestRTTMedian(const base::TimeTicks& begin_timestamp,
+                                    base::TimeDelta* rtt) const override {
     DCHECK(rtt);
     *rtt = rtt_since_;
     return true;

@@ -52,7 +52,6 @@
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
-#include "net/base/network_quality_estimator.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_data_directory.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -4610,49 +4609,6 @@ TEST_F(URLRequestTestHTTP, GetZippedTest) {
   }
 }
 #endif  // !defined(OS_IOS)
-
-TEST_F(URLRequestTestHTTP, NetworkQualityEstimator) {
-  ASSERT_TRUE(http_test_server()->Start());
-  // Enable requests to local host to be used for network quality estimation.
-  std::map<std::string, std::string> variation_params;
-  NetworkQualityEstimator estimator(scoped_ptr<net::ExternalEstimateProvider>(),
-                                    variation_params, true, true);
-
-  TestDelegate d;
-  TestNetworkDelegate network_delegate;  // Must outlive URLRequest.
-  TestURLRequestContext context(true);
-  context.set_network_quality_estimator(&estimator);
-  context.set_network_delegate(&network_delegate);
-  context.Init();
-
-  std::string url = "/defaultresponse";
-
-  scoped_ptr<URLRequest> r(context.CreateRequest(
-      http_test_server()->GetURL(url), DEFAULT_PRIORITY, &d));
-  r->Start();
-
-  base::RunLoop().Run();
-
-  base::TimeDelta rtt;
-  int32_t kbps;
-  EXPECT_TRUE(estimator.GetRTTEstimate(&rtt));
-  EXPECT_TRUE(estimator.GetDownlinkThroughputKbpsEstimate(&kbps));
-  EXPECT_GE(rtt, base::TimeDelta());
-  EXPECT_LT(rtt, base::TimeDelta::Max());
-  EXPECT_GT(kbps, 0);
-
-  // Verify that histograms are not populated. They should populate only when
-  // there is a change in ConnectionType.
-  base::HistogramTester histogram_tester;
-  histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 0);
-  histogram_tester.ExpectTotalCount("NQE.FastestRTT.Unknown", 0);
-
-  NetworkChangeNotifier::NotifyObserversOfConnectionTypeChangeForTests(
-      NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
-  base::MessageLoop::current()->RunUntilIdle();
-  histogram_tester.ExpectTotalCount("NQE.PeakKbps.Unknown", 1);
-  histogram_tester.ExpectTotalCount("NQE.FastestRTT.Unknown", 1);
-}
 
 TEST_F(URLRequestTestHTTP, RedirectLoadTiming) {
   ASSERT_TRUE(http_test_server()->Start());

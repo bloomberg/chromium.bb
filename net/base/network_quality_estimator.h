@@ -130,9 +130,12 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
 
   ~NetworkQualityEstimator() override;
 
-  // Returns true if RTT is available and sets |rtt| to estimated RTT.
-  // Virtualized for testing. |rtt| should not be null.
-  virtual bool GetRTTEstimate(base::TimeDelta* rtt) const;
+  // Returns true if RTT is available and sets |rtt| to estimated RTT at the
+  // HTTP layer. Virtualized for testing. |rtt| should not be null. The RTT at
+  // the HTTP layer measures the time from when the request was sent (this
+  // happens after the connection is established) to the time when the response
+  // headers were received.
+  virtual bool GetURLRequestRTTEstimate(base::TimeDelta* rtt) const;
 
   // Returns true if downlink throughput is available and sets |kbps| to
   // estimated downlink throughput (in kilobits per second).
@@ -147,11 +150,15 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // been received.
   void NotifyRequestCompleted(const URLRequest& request);
 
-  // Returns true if median RTT is available and sets |rtt| to the median of
-  // RTT observations since |begin_timestamp|.
-  // Virtualized for testing. |rtt| should not be null.
-  virtual bool GetRecentMedianRTT(const base::TimeTicks& begin_timestamp,
-                                  base::TimeDelta* rtt) const;
+  // Returns true if median RTT at the HTTP layer is available and sets |rtt|
+  // to the median of RTT observations since |begin_timestamp|.
+  // Virtualized for testing. |rtt| should not be null. The RTT at the HTTP
+  // layer measures the time from when the request was sent (this happens after
+  // the connection is established) to the time when the response headers were
+  // received.
+  virtual bool GetRecentURLRequestRTTMedian(
+      const base::TimeTicks& begin_timestamp,
+      base::TimeDelta* rtt) const;
 
   // Returns true if median downstream throughput is available and sets |kbps|
   // to the median of downstream throughput (in kilobits per second)
@@ -392,11 +399,14 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     // value among all observations since |begin_timestamp|. If the value is
     // unavailable, false is returned and |result| is not modified. Percentile
     // value is unavailable if all the values in observation buffer are older
-    // than |begin_timestamp|.
-    // |result| must not be null.
+    // than |begin_timestamp|. |result| must not be null.
+    // |disallowed_observation_sources| is the list of observation sources that
+    // should be excluded when computing the percentile.
     bool GetPercentile(const base::TimeTicks& begin_timestamp,
                        ValueType* result,
-                       int percentile) const;
+                       int percentile,
+                       const std::vector<ObservationSource>&
+                           disallowed_observation_sources) const;
 
    private:
     FRIEND_TEST_ALL_PREFIXES(NetworkQualityEstimatorTest, StoreObservations);
@@ -409,11 +419,15 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
     // Only the observations with timestamp later than |begin_timestamp| are
     // considered. Also, sets |total_weight| to the total weight of all
     // observations. Should be called only when there is at least one
-    // observation in the buffer.
+    // observation in the buffer. |disallowed_observation_sources| is the list
+    // of observation sources that should be excluded when computing the
+    // weighted observations.
     void ComputeWeightedObservations(
         const base::TimeTicks& begin_timestamp,
         std::vector<WeightedObservation<ValueType>>& weighted_observations,
-        double* total_weight) const;
+        double* total_weight,
+        const std::vector<ObservationSource>& disallowed_observation_sources)
+        const;
 
     // Holds observations sorted by time, with the oldest observation at the
     // front of the queue.
@@ -503,8 +517,9 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   // |percentile| is 90, then the network is expected to be faster than the
   // returned estimate with 0.9 probability. Similarly, network is expected to
   // be slower than the returned estimate with 0.1 probability.
-  base::TimeDelta GetRTTEstimateInternal(const base::TimeTicks& begin_timestamp,
-                                         int percentile) const;
+  base::TimeDelta GetURLRequestRTTEstimateInternal(
+      const base::TimeTicks& begin_timestamp,
+      int percentile) const;
   int32_t GetDownlinkThroughputKbpsEstimateInternal(
       const base::TimeTicks& begin_timestamp,
       int percentile) const;
@@ -576,7 +591,7 @@ class NET_EXPORT_PRIVATE NetworkQualityEstimator
   ThroughputObservationBuffer downstream_throughput_kbps_observations_;
 
   // Buffer that holds RTT observations sorted by timestamp.
-  RttObservationBuffer rtt_msec_observations_;
+  RttObservationBuffer rtt_observations_;
 
   // Default network quality observations obtained from the network quality
   // estimator field trial parameters. The observations are indexed by
