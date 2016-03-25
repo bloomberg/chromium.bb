@@ -384,6 +384,31 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-image-and-sub-image-2d-with-image-bitmap-from-video-' +
         'rgb5_a1-rgba-unsigned_byte.html',
         ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-canvas-' +
+        'rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-canvas-' +
+        'rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-blob-' +
+        'rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-blob-' +
+        'rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_image_bitmap/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-bitmap-' +
+        'rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_image_bitmap/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-bitmap-' +
+        'rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
+
     self.Fail('conformance2/textures/video/tex-image-and-sub-image-3d' +
         '-with-video-rgb5_a1-rgba-unsigned_byte.html',
         ['win8'], bug=560555)
@@ -444,6 +469,30 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-3d' +
         '-with-webgl-canvas-rgb565-rgb-unsigned_byte.html',
         ['win8'], bug=560555)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-canvas-' +
+        'rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_canvas/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-canvas-' +
+        'rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-blob-' +
+        'rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_blob/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-blob-' +
+        'rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_image_bitmap/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-bitmap-' +
+        'rgb565-rgb-unsigned_byte.html',
+        ['win8'], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_image_bitmap/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-bitmap-' +
+        'rgb5_a1-rgba-unsigned_byte.html',
+        ['win8'], bug=483282)
 
     # Windows Debug. Causing assertions in the GPU process which raise
     # a dialog box, so have to skip them rather than mark them as
@@ -462,6 +511,16 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Win / Intel
     self.Fail('conformance2/buffers/uniform-buffers.html',
         ['win', 'intel'], bug=483282)
+
+    # Win7 / NVidia / GeForce GT 730
+    self.Fail('conformance2/textures/image_bitmap_from_image_bitmap/' +
+        'tex-image-and-sub-image-2d-with-image-bitmap-from-image-bitmap-' +
+        'r11f_g11f_b10f-rgb-unsigned_int_10f_11f_11f_rev.html',
+        ['win7', ('nvidia', 0xf02)], bug=483282)
+    self.Fail('conformance2/textures/image_bitmap_from_image_bitmap/' +
+        'tex-image-and-sub-image-3d-with-image-bitmap-from-image-bitmap-' +
+        'r11f_g11f_b10f-rgb-unsigned_int_10f_11f_11f_rev.html',
+        ['win7', ('nvidia', 0xf02)], bug=483282)
 
     # Mac only.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
