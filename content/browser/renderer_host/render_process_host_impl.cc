@@ -2151,11 +2151,6 @@ void RenderProcessHostImpl::FilterURL(RenderProcessHost* rph,
   if (empty_allowed && url->is_empty())
     return;
 
-  // The browser process should never hear the swappedout:// URL from any
-  // of the renderer's messages.  Check for this in debug builds, but don't
-  // let it crash a release browser.
-  DCHECK(GURL(kSwappedOutURL) != *url);
-
   if (!url->is_valid()) {
     // Have to use about:blank for the denied case, instead of an empty GURL.
     // This is because the browser treats navigation to an empty GURL as a

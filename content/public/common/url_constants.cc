@@ -61,9 +61,4 @@ const char kChromeUINetworkViewCacheURL[] = "chrome://view-http-cache/";
 const char kChromeUIResourcesURL[] = "chrome://resources/";
 const char kChromeUIShorthangURL[] = "chrome://shorthang";
 
-// This URL is loaded when a page is swapped out and replaced by a page in a
-// different renderer process.  It must have a unique origin that cannot be
-// scripted by other pages in the process.
-const char kSwappedOutURL[] = "swappedout://";
-
 }  // namespace content

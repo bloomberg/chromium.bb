@@ -620,11 +620,6 @@ bool ContentSettingsObserver::IsWhitelistedForContentSettings(
     return true;
 #endif
 
-  // TODO(creis, fsamuel): Remove this once the concept of swapped out
-  // RenderFrames goes away.
-  if (document_url == GURL(content::kSwappedOutURL))
-    return true;
-
   // If the scheme is file:, an empty file name indicates a directory listing,
   // which requires JavaScript to function properly.
   if (base::EqualsASCII(protocol, url::kFileScheme)) {

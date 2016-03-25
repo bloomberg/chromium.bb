@@ -329,16 +329,11 @@ WebURLResponseExtraDataImpl* GetExtraDataFromResponse(
 }
 
 void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
-  // Replace any occurrences of swappedout:// with about:blank.
-  const WebURL& blank_url = GURL(url::kAboutBlankURL);
   WebVector<WebURL> urls;
   ds->redirectChain(urls);
   result->reserve(urls.size());
   for (size_t i = 0; i < urls.size(); ++i) {
-    if (urls[i] != GURL(kSwappedOutURL))
-      result->push_back(urls[i]);
-    else
-      result->push_back(blank_url);
+    result->push_back(urls[i]);
   }
 }
 
@@ -2977,9 +2972,6 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame,
                "url", ds->request().url().string().utf8());
   DocumentState* document_state = DocumentState::FromDataSource(ds);
 
-  // We should never navigate to swappedout://.
-  CHECK(ds->request().url() != GURL(kSwappedOutURL)) << "Heard swappedout://.";
-
   // Update the request time if WebKit has better knowledge of it.
   if (document_state->request_time().is_null() &&
           triggering_event_time != 0.0) {
@@ -3179,16 +3171,9 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // We bump our Page ID to correspond with the new session history entry.
     render_view_->page_id_ = render_view_->next_page_id_++;
 
-    // Don't update history list values for kSwappedOutURL, since
-    // we don't want to forget the entry that was there, and since we will
-    // never come back to kSwappedOutURL.  Note that we have to call
-    // SendUpdateState and update page_id_ even in this case, so that
-    // the current entry gets a state update and so that we don't send a
-    // state update to the wrong entry when we swap back in.
     DCHECK(!navigation_state->common_params().should_replace_current_entry ||
            render_view_->history_list_length_ > 0);
-    if (GetLoadingUrl() != GURL(kSwappedOutURL) &&
-        !navigation_state->common_params().should_replace_current_entry) {
+    if (!navigation_state->common_params().should_replace_current_entry) {
       // Advance our offset in session history, applying the length limit.
       // There is now no forward history.
       render_view_->history_list_offset_++;
@@ -4708,8 +4693,7 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
 #ifdef OS_ANDROID
   // The handlenavigation API is deprecated and will be removed once
   // crbug.com/325351 is resolved.
-  if (info.urlRequest.url() != GURL(kSwappedOutURL) &&
-      GetContentClient()->renderer()->HandleNavigation(
+  if (GetContentClient()->renderer()->HandleNavigation(
           this, is_content_initiated, render_view_->opener_id_, frame_,
           info.urlRequest, info.navigationType, info.defaultPolicy,
           is_redirect)) {
@@ -5325,10 +5309,6 @@ void RenderFrameImpl::NavigateInternal(
     scoped_ptr<HistoryEntry> entry =
         PageStateToHistoryEntry(request_params.page_state);
     if (entry) {
-      // Ensure we didn't save the swapped out URL in UpdateState, since the
-      // browser should never be telling us to navigate to swappedout://.
-      CHECK(entry->root().urlString() != kSwappedOutURL);
-
       if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
         // By default, tell the HistoryController to go the deserialized
         // HistoryEntry.  This only works if all frames are in the same

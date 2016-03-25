@@ -70,9 +70,6 @@ CONTENT_EXPORT extern const char kChromeUINetworkViewCacheURL[];
 CONTENT_EXPORT extern const char kChromeUIResourcesURL[];
 CONTENT_EXPORT extern const char kChromeUIShorthangURL[];
 
-// Special URL used to swap out a view being rendered by another process.
-CONTENT_EXPORT extern const char kSwappedOutURL[];
-
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_

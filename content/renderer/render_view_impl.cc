@@ -1501,10 +1501,6 @@ void RenderViewImpl::SendUpdateState() {
   if (!entry)
     return;
 
-  // Don't send state updates for kSwappedOutURL.
-  if (entry->root().urlString() == kSwappedOutURL)
-    return;
-
   Send(new ViewHostMsg_UpdateState(GetRoutingID(), page_id_,
                                    HistoryEntryToPageState(entry)));
 }
