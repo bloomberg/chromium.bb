@@ -11,7 +11,7 @@
 
 #include <immintrin.h>  // AVX2
 
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "aom/vpx_integer.h"
 
 int64_t vp10_block_error_avx2(const int16_t *coeff, const int16_t *dqcoeff,

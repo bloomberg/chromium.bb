@@ -8,8 +8,8 @@
 ##  be found in the AUTHORS file in the root of the source tree.
 ##
 
-VP10_COMMON_SRCS-yes += vp10_common.mk
-VP10_COMMON_SRCS-yes += vp10_iface_common.h
+VP10_COMMON_SRCS-yes += av1_common.mk
+VP10_COMMON_SRCS-yes += av1_iface_common.h
 VP10_COMMON_SRCS-yes += common/alloccommon.c
 VP10_COMMON_SRCS-yes += common/blockd.c
 VP10_COMMON_SRCS-yes += common/debugmodes.c
@@ -29,8 +29,8 @@ VP10_COMMON_SRCS-yes += common/filter.h
 VP10_COMMON_SRCS-yes += common/filter.c
 VP10_COMMON_SRCS-yes += common/idct.h
 VP10_COMMON_SRCS-yes += common/idct.c
-VP10_COMMON_SRCS-yes += common/vp10_inv_txfm.h
-VP10_COMMON_SRCS-yes += common/vp10_inv_txfm.c
+VP10_COMMON_SRCS-yes += common/av1_inv_txfm.h
+VP10_COMMON_SRCS-yes += common/av1_inv_txfm.c
 VP10_COMMON_SRCS-yes += common/loopfilter.h
 VP10_COMMON_SRCS-yes += common/thread_common.h
 VP10_COMMON_SRCS-yes += common/mv.h
@@ -40,8 +40,8 @@ VP10_COMMON_SRCS-yes += common/pred_common.c
 VP10_COMMON_SRCS-yes += common/quant_common.h
 VP10_COMMON_SRCS-yes += common/reconinter.h
 VP10_COMMON_SRCS-yes += common/reconintra.h
-VP10_COMMON_SRCS-yes += common/vp10_rtcd.c
-VP10_COMMON_SRCS-yes += common/vp10_rtcd_defs.pl
+VP10_COMMON_SRCS-yes += common/av1_rtcd.c
+VP10_COMMON_SRCS-yes += common/av1_rtcd_defs.pl
 VP10_COMMON_SRCS-yes += common/scale.h
 VP10_COMMON_SRCS-yes += common/scale.c
 VP10_COMMON_SRCS-yes += common/seg_common.h
@@ -58,8 +58,8 @@ VP10_COMMON_SRCS-yes += common/reconintra.c
 VP10_COMMON_SRCS-yes += common/common_data.h
 VP10_COMMON_SRCS-yes += common/scan.c
 VP10_COMMON_SRCS-yes += common/scan.h
-VP10_COMMON_SRCS-yes += common/vp10_fwd_txfm.h
-VP10_COMMON_SRCS-yes += common/vp10_fwd_txfm.c
+VP10_COMMON_SRCS-yes += common/av1_fwd_txfm.h
+VP10_COMMON_SRCS-yes += common/av1_fwd_txfm.c
 VP10_COMMON_SRCS-yes += common/clpf.c
 VP10_COMMON_SRCS-yes += common/clpf.h
 ifeq ($(CONFIG_DERING),yes)
@@ -83,16 +83,16 @@ VP10_COMMON_SRCS-$(HAVE_MSA) += common/mips/msa/idct8x8_msa.c
 VP10_COMMON_SRCS-$(HAVE_MSA) += common/mips/msa/idct16x16_msa.c
 
 VP10_COMMON_SRCS-$(HAVE_SSE2) += common/x86/idct_intrin_sse2.c
-VP10_COMMON_SRCS-$(HAVE_SSE2) += common/x86/vp10_fwd_txfm_sse2.c
-VP10_COMMON_SRCS-$(HAVE_SSE2) += common/x86/vp10_fwd_dct32x32_impl_sse2.h
-VP10_COMMON_SRCS-$(HAVE_SSE2) += common/x86/vp10_fwd_txfm_impl_sse2.h
+VP10_COMMON_SRCS-$(HAVE_SSE2) += common/x86/av1_fwd_txfm_sse2.c
+VP10_COMMON_SRCS-$(HAVE_SSE2) += common/x86/av1_fwd_dct32x32_impl_sse2.h
+VP10_COMMON_SRCS-$(HAVE_SSE2) += common/x86/av1_fwd_txfm_impl_sse2.h
 
 ifneq ($(CONFIG_VPX_HIGHBITDEPTH),yes)
 VP10_COMMON_SRCS-$(HAVE_NEON) += common/arm/neon/iht4x4_add_neon.c
 VP10_COMMON_SRCS-$(HAVE_NEON) += common/arm/neon/iht8x8_add_neon.c
 endif
 
-VP10_COMMON_SRCS-$(HAVE_SSE2) += common/x86/vp10_inv_txfm_sse2.c
-VP10_COMMON_SRCS-$(HAVE_SSE2) += common/x86/vp10_inv_txfm_sse2.h
+VP10_COMMON_SRCS-$(HAVE_SSE2) += common/x86/av1_inv_txfm_sse2.c
+VP10_COMMON_SRCS-$(HAVE_SSE2) += common/x86/av1_inv_txfm_sse2.h
 
-$(eval $(call rtcd_h_template,vp10_rtcd,av1/common/vp10_rtcd_defs.pl))
+$(eval $(call rtcd_h_template,av1_rtcd,av1/common/av1_rtcd_defs.pl))

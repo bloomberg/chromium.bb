@@ -28,7 +28,7 @@
 #include "av1/decoder/decoder.h"
 #include "av1/decoder/decodeframe.h"
 
-#include "av1/vp10_iface_common.h"
+#include "av1/av1_iface_common.h"
 
 typedef vpx_codec_stream_info_t vp10_stream_info_t;
 

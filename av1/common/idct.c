@@ -11,7 +11,7 @@
 
 #include <math.h>
 
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "./vpx_dsp_rtcd.h"
 #include "av1/common/blockd.h"
 #include "av1/common/idct.h"

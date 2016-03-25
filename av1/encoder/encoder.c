@@ -48,7 +48,7 @@
 #include "av1/encoder/speed_features.h"
 #include "av1/encoder/temporal_filter.h"
 
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "./vpx_dsp_rtcd.h"
 #include "./vpx_scale_rtcd.h"
 #include "aom/internal/vpx_psnr.h"
@@ -317,7 +317,7 @@ void vp10_initialize_enc(void) {
   static volatile int init_done = 0;
 
   if (!init_done) {
-    vp10_rtcd();
+    av1_rtcd();
     vpx_dsp_rtcd();
     vpx_scale_rtcd();
     vp10_init_intra_predictors();

@@ -15,7 +15,7 @@
 #include <emmintrin.h>  // SSE2
 #include "./vpx_config.h"
 #include "aom/vpx_integer.h"
-#include "av1/common/vp10_inv_txfm.h"
+#include "av1/common/av1_inv_txfm.h"
 
 // perform 8x8 transpose
 static INLINE void array_transpose_8x8(__m128i *in, __m128i *res) {

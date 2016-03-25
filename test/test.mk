@@ -116,8 +116,8 @@ LIBAOM_TEST_SRCS-$(HAVE_SSE2) += denoiser_sse2_test.cc
 endif
 LIBAOM_TEST_SRCS-$(CONFIG_VP10_ENCODER) += arf_freq_test.cc
 
-LIBAOM_TEST_SRCS-yes                    += vp10_inv_txfm_test.cc
-LIBAOM_TEST_SRCS-$(CONFIG_VP10_ENCODER) += vp10_dct_test.cc
+LIBAOM_TEST_SRCS-yes                    += av1_inv_txfm_test.cc
+LIBAOM_TEST_SRCS-$(CONFIG_VP10_ENCODER) += av1_dct_test.cc
 
 endif # VP10
 

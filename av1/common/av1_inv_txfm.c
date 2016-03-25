@@ -11,7 +11,7 @@
 #include <math.h>
 #include <string.h>
 
-#include "av1/common/vp10_inv_txfm.h"
+#include "av1/common/av1_inv_txfm.h"
 
 void vp10_iwht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride) {
   /* 4-point reversible, orthonormal inverse Walsh-Hadamard in 3.5 adds,

@@ -10,10 +10,10 @@
  */
 #include "./vpx_config.h"
 #define RTCD_C
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "aom_ports/vpx_once.h"
 
-void vp10_rtcd() {
+void av1_rtcd() {
   // TODO(JBB): Remove this once, by insuring that both the encoder and
   // decoder setup functions are protected by once();
   once(setup_rtcd_internal);

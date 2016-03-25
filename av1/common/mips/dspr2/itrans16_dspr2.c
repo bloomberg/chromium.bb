@@ -13,7 +13,7 @@
 #include <stdio.h>
 
 #include "./vpx_config.h"
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "av1/common/common.h"
 #include "av1/common/blockd.h"
 #include "av1/common/idct.h"

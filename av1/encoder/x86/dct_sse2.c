@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <emmintrin.h>  // SSE2
 
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "./vpx_dsp_rtcd.h"
 #include "aom_dsp/txfm_common.h"
 #include "aom_dsp/x86/fwd_txfm_sse2.h"

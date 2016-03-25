@@ -56,7 +56,7 @@ CODEC_SRCS-yes += $(addprefix aom_util/,$(call enabled,UTIL_SRCS))
 #  VP10 make file
 ifeq ($(CONFIG_VP10),yes)
   VP10_PREFIX=av1/
-  include $(SRC_PATH_BARE)/$(VP10_PREFIX)vp10_common.mk
+  include $(SRC_PATH_BARE)/$(VP10_PREFIX)av1_common.mk
 endif
 
 ifeq ($(CONFIG_VP10_ENCODER),yes)

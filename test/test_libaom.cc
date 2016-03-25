@@ -17,7 +17,7 @@
 #endif
 extern "C" {
 #if CONFIG_VP10
-extern void vp10_rtcd();
+extern void av1_rtcd();
 #endif  // CONFIG_VP10
 extern void vpx_dsp_rtcd();
 extern void vpx_scale_rtcd();
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 // that exercise internal symbols.
 
 #if CONFIG_VP10
-  vp10_rtcd();
+  av1_rtcd();
 #endif  // CONFIG_VP10
   vpx_dsp_rtcd();
   vpx_scale_rtcd();

@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <stdlib.h>  // qsort()
 
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "./vpx_dsp_rtcd.h"
 #include "./vpx_scale_rtcd.h"
 #include "./vpx_config.h"

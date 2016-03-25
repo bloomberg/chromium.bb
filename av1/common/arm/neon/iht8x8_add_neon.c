@@ -12,7 +12,7 @@
 #include <arm_neon.h>
 #include <assert.h>
 
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "./vpx_config.h"
 #include "av1/common/common.h"
 

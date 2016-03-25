@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <math.h>
 
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "./vpx_config.h"
 #include "./vpx_dsp_rtcd.h"
 

@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./vp10_rtcd.h"
-#include "av1/common/x86/vp10_inv_txfm_sse2.h"
+#include "./av1_rtcd.h"
+#include "av1/common/x86/av1_inv_txfm_sse2.h"
 #include "aom_dsp/x86/txfm_common_sse2.h"
 
 #define RECON_AND_STORE4X4(dest, in_x)                    \

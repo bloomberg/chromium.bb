@@ -12,7 +12,7 @@
 #include <emmintrin.h>
 #include <xmmintrin.h>
 
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "aom/vpx_integer.h"
 
 void vp10_quantize_fp_sse2(const int16_t* coeff_ptr, intptr_t n_coeffs,

@@ -17,7 +17,7 @@
 #endif
 #include <tmmintrin.h>  // SSSE3
 
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "aom_dsp/x86/inv_txfm_sse2.h"
 #include "aom_dsp/x86/txfm_common_sse2.h"
 

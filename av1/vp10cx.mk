@@ -15,7 +15,7 @@ VP10_CX_SRCS-no  += $(VP10_COMMON_SRCS-no)
 VP10_CX_SRCS_REMOVE-yes += $(VP10_COMMON_SRCS_REMOVE-yes)
 VP10_CX_SRCS_REMOVE-no  += $(VP10_COMMON_SRCS_REMOVE-no)
 
-VP10_CX_SRCS-yes += vp10_cx_iface.c
+VP10_CX_SRCS-yes += av1_cx_iface.c
 
 VP10_CX_SRCS-yes += encoder/bitstream.c
 VP10_CX_SRCS-yes += encoder/context_tree.c

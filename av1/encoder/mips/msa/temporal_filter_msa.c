@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "aom_dsp/mips/macros_msa.h"
 
 static void temporal_filter_apply_8size_msa(uint8_t *frm1_ptr, uint32_t stride,

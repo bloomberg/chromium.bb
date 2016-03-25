@@ -11,8 +11,8 @@
 
 #include <emmintrin.h>  // SSE2
 
-#include "./vp10_rtcd.h"
-#include "av1/common/vp10_fwd_txfm.h"
+#include "./av1_rtcd.h"
+#include "av1/common/av1_fwd_txfm.h"
 #include "aom_dsp/txfm_common.h"
 #include "aom_dsp/x86/txfm_common_sse2.h"
 

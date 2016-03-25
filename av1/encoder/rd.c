@@ -13,7 +13,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 
 #include "aom_dsp/vpx_dsp_common.h"
 #include "aom_mem/vpx_mem.h"

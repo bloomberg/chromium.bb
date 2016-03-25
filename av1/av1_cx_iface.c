@@ -20,7 +20,7 @@
 #include "av1/encoder/encoder.h"
 #include "aom/vp8cx.h"
 #include "av1/encoder/firstpass.h"
-#include "av1/vp10_iface_common.h"
+#include "av1/av1_iface_common.h"
 
 struct vp10_extracfg {
   int cpu_used;  // available cpu percentage in 1/16

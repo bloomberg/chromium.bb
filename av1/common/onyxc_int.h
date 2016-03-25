@@ -15,7 +15,7 @@
 #include "./vpx_config.h"
 #include "aom/internal/vpx_codec_internal.h"
 #include "aom_util/vpx_thread.h"
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "av1/common/alloccommon.h"
 #include "av1/common/loopfilter.h"
 #include "av1/common/entropymv.h"

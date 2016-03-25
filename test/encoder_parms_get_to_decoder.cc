@@ -14,7 +14,7 @@
 #include "test/encode_test_driver.h"
 #include "test/util.h"
 #include "test/y4m_video_source.h"
-#include "av1/vp10_dx_iface.c"
+#include "av1/av1_dx_iface.c"
 
 namespace {
 

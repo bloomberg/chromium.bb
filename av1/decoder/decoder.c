@@ -13,7 +13,7 @@
 #include <limits.h>
 #include <stdio.h>
 
-#include "./vp10_rtcd.h"
+#include "./av1_rtcd.h"
 #include "./vpx_dsp_rtcd.h"
 #include "./vpx_scale_rtcd.h"
 
@@ -38,7 +38,7 @@ static void initialize_dec(void) {
   static volatile int init_done = 0;
 
   if (!init_done) {
-    vp10_rtcd();
+    av1_rtcd();
     vpx_dsp_rtcd();
     vpx_scale_rtcd();
     vp10_init_intra_predictors();

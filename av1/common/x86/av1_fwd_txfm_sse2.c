@@ -229,20 +229,20 @@ void vp10_fdct32x32_1_sse2(const int16_t *input, tran_low_t *output,
 #define FDCT4x4_2D vp10_fdct4x4_sse2
 #define FDCT8x8_2D vp10_fdct8x8_sse2
 #define FDCT16x16_2D vp10_fdct16x16_sse2
-#include "av1/common/x86/vp10_fwd_txfm_impl_sse2.h"
+#include "av1/common/x86/av1_fwd_txfm_impl_sse2.h"
 #undef FDCT4x4_2D
 #undef FDCT8x8_2D
 #undef FDCT16x16_2D
 
 #define FDCT32x32_2D vp10_fdct32x32_rd_sse2
 #define FDCT32x32_HIGH_PRECISION 0
-#include "av1/common/x86/vp10_fwd_dct32x32_impl_sse2.h"
+#include "av1/common/x86/av1_fwd_dct32x32_impl_sse2.h"
 #undef FDCT32x32_2D
 #undef FDCT32x32_HIGH_PRECISION
 
 #define FDCT32x32_2D vp10_fdct32x32_sse2
 #define FDCT32x32_HIGH_PRECISION 1
-#include "av1/common/x86/vp10_fwd_dct32x32_impl_sse2.h"  // NOLINT
+#include "av1/common/x86/av1_fwd_dct32x32_impl_sse2.h"  // NOLINT
 #undef FDCT32x32_2D
 #undef FDCT32x32_HIGH_PRECISION
 #undef DCT_HIGH_BIT_DEPTH
@@ -252,20 +252,20 @@ void vp10_fdct32x32_1_sse2(const int16_t *input, tran_low_t *output,
 #define FDCT4x4_2D vp10_highbd_fdct4x4_sse2
 #define FDCT8x8_2D vp10_highbd_fdct8x8_sse2
 #define FDCT16x16_2D vp10_highbd_fdct16x16_sse2
-#include "av1/common/x86/vp10_fwd_txfm_impl_sse2.h"  // NOLINT
+#include "av1/common/x86/av1_fwd_txfm_impl_sse2.h"  // NOLINT
 #undef FDCT4x4_2D
 #undef FDCT8x8_2D
 #undef FDCT16x16_2D
 
 #define FDCT32x32_2D vp10_highbd_fdct32x32_rd_sse2
 #define FDCT32x32_HIGH_PRECISION 0
-#include "av1/common/x86/vp10_fwd_dct32x32_impl_sse2.h"  // NOLINT
+#include "av1/common/x86/av1_fwd_dct32x32_impl_sse2.h"  // NOLINT
 #undef FDCT32x32_2D
 #undef FDCT32x32_HIGH_PRECISION
 
 #define FDCT32x32_2D vp10_highbd_fdct32x32_sse2
 #define FDCT32x32_HIGH_PRECISION 1
-#include "av1/common/x86/vp10_fwd_dct32x32_impl_sse2.h"  // NOLINT
+#include "av1/common/x86/av1_fwd_dct32x32_impl_sse2.h"  // NOLINT
 #undef FDCT32x32_2D
 #undef FDCT32x32_HIGH_PRECISION
 #undef DCT_HIGH_BIT_DEPTH
