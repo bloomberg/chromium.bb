@@ -110,6 +110,8 @@ source_set("feature") {
     "feature/compositor/blimp_output_surface.h",
     "feature/compositor/decoding_image_generator.cc",
     "feature/compositor/decoding_image_generator.h",
+    "feature/ime_feature.cc",
+    "feature/ime_feature.h",
     "feature/navigation_feature.cc",
     "feature/navigation_feature.h",
     "feature/render_widget_feature.cc",
@@ -120,6 +122,7 @@ source_set("feature") {
 
   deps = [
     "//blimp/common:blimp_common",
+    "//blimp/net:blimp_net",
     "//cc",
     "//cc/proto",
     "//gpu/command_buffer/client",
@@ -127,6 +130,7 @@ source_set("feature") {
     "//gpu/command_buffer/common:gles2_utils",
     "//gpu/skia_bindings",
     "//skia",
+    "//ui/base/ime:text_input_types",
     "//ui/events/blink",
     "//ui/events/gestures/blink",
     "//ui/gl",
@@ -353,6 +357,7 @@ if (is_android) {
       "//blimp/net:blimp_net",
       "//components/safe_json/android:safe_json_jni_headers",
       "//skia",
+      "//ui/base/ime:text_input_types",
       "//ui/gfx/geometry",
       "//ui/gl",
       "//url:url",

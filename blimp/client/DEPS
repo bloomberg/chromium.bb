@@ -12,6 +12,7 @@ include_rules = [
   "+third_party/libwebp",
   "+third_party/skia",
   "+third_party/WebKit/public/web/WebInputEvent.h",
+  "+ui/base/ime/text_input_type.h",
   "+ui/events",
   "+ui/events/android",
   "+ui/events/blink",

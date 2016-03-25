@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/base/completion_callback.h"
+#include "ui/base/ime/input_method_observer.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace aura {
@@ -68,6 +69,7 @@ class BlimpEngineSession
     : public BlimpMessageProcessor,
       public content::WebContentsDelegate,
       public content::WebContentsObserver,
+      public ui::InputMethodObserver,
       public EngineRenderWidgetFeature::RenderWidgetMessageDelegate {
  public:
   BlimpEngineSession(scoped_ptr<BlimpBrowserContext> browser_context,
@@ -137,6 +139,15 @@ class BlimpEngineSession
                               content::InvalidateTypes changed_flags) override;
   void LoadProgressChanged(content::WebContents* source,
                            double progress) override;
+
+  // ui::InputMethodObserver overrides.
+  void OnTextInputTypeChanged(const ui::TextInputClient* client) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
+  void OnTextInputStateChanged(const ui::TextInputClient* client) override;
+  void OnInputMethodDestroyed(const ui::InputMethod* input_method) override;
+  void OnShowImeIfNeeded() override;
 
   // content::WebContentsObserver implementation.
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;

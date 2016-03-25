@@ -53,6 +53,16 @@ scoped_ptr<BlimpMessage> CreateBlimpMessage(
   return output;
 }
 
+scoped_ptr<BlimpMessage> CreateBlimpMessage(ImeMessage** ime_message,
+                                            int target_tab_id) {
+  DCHECK(ime_message);
+  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  output->set_type(BlimpMessage::IME);
+  output->set_target_tab_id(target_tab_id);
+  *ime_message = output->mutable_ime();
+  return output;
+}
+
 scoped_ptr<BlimpMessage> CreateBlimpMessage(
     RenderWidgetMessage** render_widget_message,
     int target_tab_id) {

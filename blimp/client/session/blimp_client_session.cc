@@ -12,6 +12,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "blimp/client/app/blimp_client_switches.h"
+#include "blimp/client/feature/ime_feature.h"
 #include "blimp/client/feature/navigation_feature.h"
 #include "blimp/client/feature/render_widget_feature.h"
 #include "blimp/client/feature/tab_control_feature.h"
@@ -149,6 +150,7 @@ BlimpClientSession::BlimpClientSession()
     : io_thread_("BlimpIOThread"),
       tab_control_feature_(new TabControlFeature),
       navigation_feature_(new NavigationFeature),
+      ime_feature_(new ImeFeature),
       render_widget_feature_(new RenderWidgetFeature),
       weak_factory_(this) {
   net_components_.reset(new ClientNetworkComponents(
@@ -222,6 +224,10 @@ void BlimpClientSession::RegisterFeatures() {
   // outgoing BlimpMessageProcessor in the RenderWidgetFeature.
   thread_pipe_manager_->RegisterFeature(BlimpMessage::RENDER_WIDGET,
                                         render_widget_feature_.get());
+
+  ime_feature_->set_outgoing_message_processor(
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::IME,
+                                            ime_feature_.get()));
 }
 
 void BlimpClientSession::OnConnected() {}
@@ -234,6 +240,10 @@ TabControlFeature* BlimpClientSession::GetTabControlFeature() const {
 
 NavigationFeature* BlimpClientSession::GetNavigationFeature() const {
   return navigation_feature_.get();
+}
+
+ImeFeature* BlimpClientSession::GetImeFeature() const {
+  return ime_feature_.get();
 }
 
 RenderWidgetFeature* BlimpClientSession::GetRenderWidgetFeature() const {

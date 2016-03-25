@@ -32,6 +32,7 @@ namespace client {
 
 class ClientNetworkComponents;
 class NavigationFeature;
+class ImeFeature;
 class RenderWidgetFeature;
 class TabControlFeature;
 
@@ -65,6 +66,7 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession : public NetworkEventObserver {
 
   TabControlFeature* GetTabControlFeature() const;
   NavigationFeature* GetNavigationFeature() const;
+  ImeFeature* GetImeFeature() const;
   RenderWidgetFeature* GetRenderWidgetFeature() const;
 
   // The AssignmentCallback for when an assignment is ready. This will trigger
@@ -89,6 +91,7 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession : public NetworkEventObserver {
   base::Thread io_thread_;
   scoped_ptr<TabControlFeature> tab_control_feature_;
   scoped_ptr<NavigationFeature> navigation_feature_;
+  scoped_ptr<ImeFeature> ime_feature_;
   scoped_ptr<RenderWidgetFeature> render_widget_feature_;
 
   // The AssignmentSource is used when the user of BlimpClientSession calls

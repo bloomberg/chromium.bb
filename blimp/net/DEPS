@@ -2,4 +2,5 @@ include_rules = [
   "+net",
   "+third_party/WebKit/public/platform/WebGestureDevice.h",
   "+third_party/WebKit/public/web/WebInputEvent.h",
+  "+ui/base/ime/text_input_type.h",
 ]

@@ -65,6 +65,7 @@ component("blimp_net") {
     "//blimp/common:blimp_common",
     "//blimp/common/proto",
     "//net",
+    "//ui/base/ime:text_input_types",
   ]
 }
 

@@ -6,6 +6,7 @@ package org.chromium.blimp.input;
 
 import android.app.Activity;
 import android.content.Context;
+import android.text.InputType;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.View;
@@ -18,6 +19,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blimp.session.BlimpClientSession;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.base.ime.TextInputType;
 
 /**
  * A {@link View} that allows users to enter text into a web page.
@@ -34,13 +36,17 @@ public class WebInputBox extends EditText {
         mContext = context;
         setOnEditorActionListener(new TextView.OnEditorActionListener() {
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_NEXT
-                        || actionId == EditorInfo.IME_ACTION_DONE) {
-                    onImeTextEntered(v.getText().toString());
-                    hideIme();
-                    return true;
+                switch (actionId) {
+                    case EditorInfo.IME_ACTION_NEXT:
+                    case EditorInfo.IME_ACTION_DONE:
+                    case EditorInfo.IME_ACTION_SEARCH:
+                    case EditorInfo.IME_ACTION_GO:
+                        onImeTextEntered(v.getText().toString());
+                        hideIme();
+                        return true;
+                    default:
+                        return false;
                 }
-                return false;
             }
         });
     }
@@ -82,7 +88,7 @@ public class WebInputBox extends EditText {
     /**
      *  Brings up the IME along with the edit text above it.
      */
-    public void showIme() {
+    private void showIme() {
         // TODO(shaktisahu): Find a better way to prevent resize (crbug/596653).
         ((Activity) mContext)
                 .getWindow()
@@ -115,11 +121,62 @@ public class WebInputBox extends EditText {
     }
 
     @CalledByNative
-    private void onImeRequested(boolean show) {
-        if (show) {
-            showIme();
-        } else {
-            hideIme();
+    private void onShowImeRequested(int inputType, String text) {
+        setEditorOptions(inputType);
+        setText(text);
+        // Set the cursor at the end.
+        setSelection(getText().length());
+        showIme();
+    }
+
+    @CalledByNative
+    private void onHideImeRequested() {
+        hideIme();
+    }
+
+    /**
+     * Set the IME options and input type based on the input type received from engine.
+     * @param inputType text input type.
+     */
+    private void setEditorOptions(int inputType) {
+        setImeOptions(EditorInfo.IME_FLAG_NO_FULLSCREEN | EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+        switch (inputType) {
+            case TextInputType.TEXT:
+                setInputType(InputType.TYPE_CLASS_TEXT);
+                setImeOptions(EditorInfo.IME_ACTION_GO);
+                break;
+            case TextInputType.PASSWORD:
+                setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                setImeOptions(EditorInfo.IME_ACTION_GO);
+                break;
+            case TextInputType.SEARCH:
+                setImeOptions(EditorInfo.IME_ACTION_SEARCH);
+                break;
+            case TextInputType.EMAIL:
+                setInputType(
+                        InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+                setImeOptions(EditorInfo.IME_ACTION_GO);
+                break;
+            case TextInputType.NUMBER:
+                setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL
+                        | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+                setImeOptions(EditorInfo.IME_ACTION_NEXT);
+                break;
+            case TextInputType.TELEPHONE:
+                setInputType(InputType.TYPE_CLASS_PHONE);
+                setImeOptions(EditorInfo.IME_ACTION_NEXT);
+                break;
+            case TextInputType.URL:
+                setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+                setImeOptions(EditorInfo.IME_ACTION_GO);
+                break;
+            case TextInputType.TEXT_AREA:
+            case TextInputType.CONTENT_EDITABLE:
+                setInputType(InputType.TYPE_TEXT_FLAG_MULTI_LINE);
+                setImeOptions(EditorInfo.IME_ACTION_NONE);
+                break;
+            default:
+                setInputType(InputType.TYPE_CLASS_TEXT);
         }
     }
 

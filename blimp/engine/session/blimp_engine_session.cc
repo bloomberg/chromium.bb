@@ -31,6 +31,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
@@ -38,6 +39,8 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/input_method.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/wm/core/base_focus_rules.h"
 #include "ui/wm/core/default_activation_client.h"
@@ -193,6 +196,8 @@ BlimpEngineSession::BlimpEngineSession(
 BlimpEngineSession::~BlimpEngineSession() {
   render_widget_feature_.RemoveDelegate(kDummyTabId);
 
+  window_tree_host_->GetInputMethod()->RemoveObserver(this);
+
   // Ensure that all WebContents are torn down first, since teardown will
   // trigger RenderViewDeleted callbacks to their observers.
   web_contents_.reset();
@@ -219,6 +224,8 @@ void BlimpEngineSession::Initialize() {
                                     focus_client_.get());
   capture_client_.reset(
       new aura::client::DefaultCaptureClient(window_tree_host_->window()));
+
+  window_tree_host_->GetInputMethod()->AddObserver(this);
 
   window_tree_host_->SetBounds(gfx::Rect(screen_->GetPrimaryDisplay().size()));
 
@@ -254,6 +261,9 @@ void BlimpEngineSession::RegisterFeatures() {
                                             &render_widget_feature_));
   render_widget_feature_.set_compositor_message_sender(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::COMPOSITOR,
+                                            &render_widget_feature_));
+  render_widget_feature_.set_ime_message_sender(
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::IME,
                                             &render_widget_feature_));
 }
 
@@ -337,6 +347,52 @@ void BlimpEngineSession::OnCompositorMessageReceived(
     const std::vector<uint8_t>& message) {
 
   render_widget_host->HandleCompositorProto(message);
+}
+
+void BlimpEngineSession::OnTextInputTypeChanged(
+    const ui::TextInputClient* client) {}
+
+void BlimpEngineSession::OnFocus() {}
+
+void BlimpEngineSession::OnBlur() {}
+
+void BlimpEngineSession::OnCaretBoundsChanged(
+    const ui::TextInputClient* client) {}
+
+// Called when either:
+//  - the TextInputClient is changed (e.g. by a change of focus)
+//  - the TextInputType of the TextInputClient changes
+void BlimpEngineSession::OnTextInputStateChanged(
+    const ui::TextInputClient* client) {
+  if (!web_contents_->GetRenderWidgetHostView())
+    return;
+
+  ui::TextInputType type =
+      client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
+
+  // TODO(shaktisahu): Propagate the new type to the client.
+  // Hide IME, when text input is out of focus, i.e. if the text input type
+  // changes to ui::TEXT_INPUT_TYPE_NONE. For other text input types,
+  // OnShowImeIfNeeded is used instead to send show IME request to client.
+  if (type == ui::TEXT_INPUT_TYPE_NONE)
+    render_widget_feature_.SendHideImeRequest(
+        kDummyTabId,
+        web_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost());
+}
+
+void BlimpEngineSession::OnInputMethodDestroyed(
+    const ui::InputMethod* input_method) {}
+
+// Called when a user input should trigger showing the IME.
+void BlimpEngineSession::OnShowImeIfNeeded() {
+  if (!web_contents_->GetRenderWidgetHostView() ||
+      !window_tree_host_->GetInputMethod()->GetTextInputClient())
+    return;
+
+  render_widget_feature_.SendShowImeRequest(
+      kDummyTabId,
+      web_contents_->GetRenderWidgetHostView()->GetRenderWidgetHost(),
+      window_tree_host_->GetInputMethod()->GetTextInputClient());
 }
 
 void BlimpEngineSession::ProcessMessage(
@@ -484,7 +540,7 @@ void BlimpEngineSession::LoadProgressChanged(
   if (source != web_contents_.get())
     return;
 
-  bool page_load_completed = progress == 1.0 ? true : false;
+  bool page_load_completed = (progress == 1.0);
 
   // If the client has been notified of a page load completed change, avoid
   // sending another message. For the first navigation, the initial value used
@@ -492,12 +548,12 @@ void BlimpEngineSession::LoadProgressChanged(
   if (last_page_load_completed_value_ == page_load_completed)
     return;
 
-  NavigationMessage* navigation_message;
+  NavigationMessage* navigation_message = nullptr;
   scoped_ptr<BlimpMessage> message =
         CreateBlimpMessage(&navigation_message, kDummyTabId);
   navigation_message->set_type(NavigationMessage::NAVIGATION_STATE_CHANGED);
-    NavigationStateChangeMessage* details =
-        navigation_message->mutable_navigation_state_changed();
+  NavigationStateChangeMessage* details =
+      navigation_message->mutable_navigation_state_changed();
   details->set_page_load_completed(page_load_completed);
 
   navigation_message_sender_->ProcessMessage(std::move(message),

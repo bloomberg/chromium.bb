@@ -178,4 +178,87 @@ scoped_ptr<blink::WebGestureEvent> InputMessageConverter::ProcessMessage(
   return event;
 }
 
+ui::TextInputType InputMessageConverter::TextInputTypeFromProto(
+    ImeMessage_InputType type) {
+  switch (type) {
+    case ImeMessage_InputType_NONE:
+      return ui::TEXT_INPUT_TYPE_NONE;
+    case ImeMessage_InputType_TEXT:
+      return ui::TEXT_INPUT_TYPE_TEXT;
+    case ImeMessage_InputType_PASSWORD:
+      return ui::TEXT_INPUT_TYPE_PASSWORD;
+    case ImeMessage_InputType_SEARCH:
+      return ui::TEXT_INPUT_TYPE_SEARCH;
+    case ImeMessage_InputType_EMAIL:
+      return ui::TEXT_INPUT_TYPE_EMAIL;
+    case ImeMessage_InputType_NUMBER:
+      return ui::TEXT_INPUT_TYPE_NUMBER;
+    case ImeMessage_InputType_TELEPHONE:
+      return ui::TEXT_INPUT_TYPE_TELEPHONE;
+    case ImeMessage_InputType_URL:
+      return ui::TEXT_INPUT_TYPE_URL;
+    case ImeMessage_InputType_DATE:
+      return ui::TEXT_INPUT_TYPE_DATE;
+    case ImeMessage_InputType_DATE_TIME:
+      return ui::TEXT_INPUT_TYPE_DATE_TIME;
+    case ImeMessage_InputType_DATE_TIME_LOCAL:
+      return ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL;
+    case ImeMessage_InputType_MONTH:
+      return ui::TEXT_INPUT_TYPE_MONTH;
+    case ImeMessage_InputType_TIME:
+      return ui::TEXT_INPUT_TYPE_TIME;
+    case ImeMessage_InputType_WEEK:
+      return ui::TEXT_INPUT_TYPE_WEEK;
+    case ImeMessage_InputType_TEXT_AREA:
+      return ui::TEXT_INPUT_TYPE_TEXT_AREA;
+    case ImeMessage_InputType_CONTENT_EDITABLE:
+      return ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE;
+    case ImeMessage_InputType_DATE_TIME_FIELD:
+      return ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD;
+  }
+  return ui::TEXT_INPUT_TYPE_NONE;
+}
+
+ImeMessage_InputType InputMessageConverter::TextInputTypeToProto(
+    ui::TextInputType type) {
+  switch (type) {
+    case ui::TEXT_INPUT_TYPE_NONE:
+      NOTREACHED() << "IME needs an editable TextInputType";
+      return ImeMessage_InputType_NONE;
+    case ui::TEXT_INPUT_TYPE_TEXT:
+      return ImeMessage_InputType_TEXT;
+    case ui::TEXT_INPUT_TYPE_PASSWORD:
+      return ImeMessage_InputType_PASSWORD;
+    case ui::TEXT_INPUT_TYPE_SEARCH:
+      return ImeMessage_InputType_SEARCH;
+    case ui::TEXT_INPUT_TYPE_EMAIL:
+      return ImeMessage_InputType_EMAIL;
+    case ui::TEXT_INPUT_TYPE_NUMBER:
+      return ImeMessage_InputType_NUMBER;
+    case ui::TEXT_INPUT_TYPE_TELEPHONE:
+      return ImeMessage_InputType_TELEPHONE;
+    case ui::TEXT_INPUT_TYPE_URL:
+      return ImeMessage_InputType_URL;
+    case ui::TEXT_INPUT_TYPE_DATE:
+      return ImeMessage_InputType_DATE;
+    case ui::TEXT_INPUT_TYPE_DATE_TIME:
+      return ImeMessage_InputType_DATE_TIME;
+    case ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL:
+      return ImeMessage_InputType_DATE_TIME_LOCAL;
+    case ui::TEXT_INPUT_TYPE_MONTH:
+      return ImeMessage_InputType_MONTH;
+    case ui::TEXT_INPUT_TYPE_TIME:
+      return ImeMessage_InputType_TIME;
+    case ui::TEXT_INPUT_TYPE_WEEK:
+      return ImeMessage_InputType_WEEK;
+    case ui::TEXT_INPUT_TYPE_TEXT_AREA:
+      return ImeMessage_InputType_TEXT_AREA;
+    case ui::TEXT_INPUT_TYPE_CONTENT_EDITABLE:
+      return ImeMessage_InputType_CONTENT_EDITABLE;
+    case ui::TEXT_INPUT_TYPE_DATE_TIME_FIELD:
+      return ImeMessage_InputType_DATE_TIME_FIELD;
+  }
+  return ImeMessage_InputType_NONE;
+}
+
 }  // namespace blimp

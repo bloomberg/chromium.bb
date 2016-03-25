@@ -16,12 +16,13 @@ namespace blimp {
 
 class BlimpMessage;
 class CompositorMessage;
-class TabControlMessage;
+class ImeMessage;
 class InputMessage;
 class NavigationMessage;
 class RenderWidgetMessage;
 class SizeMessage;
 class StartConnectionMessage;
+class TabControlMessage;
 
 // Suite of helper methods to simplify the repetitive task of creating
 // new BlimpMessages, initializing them, and extracting type-specific
@@ -47,6 +48,10 @@ BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
 
 BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
     NavigationMessage** navigation_message,
+    int target_tab_id);
+
+BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
+    ImeMessage** ime_message,
     int target_tab_id);
 
 BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(

@@ -130,4 +130,13 @@ TEST(InputMessageTest, TestUnsupportedInputEventSerializationFails) {
   EXPECT_EQ(nullptr, generator.GenerateMessage(event).get());
 }
 
+TEST(InputMessageConverterTest, TestTextInputTypeToProtoConversion) {
+  for (size_t i = ui::TextInputType::TEXT_INPUT_TYPE_TEXT;
+       i < ui::TextInputType::TEXT_INPUT_TYPE_MAX; i++) {
+    ui::TextInputType type = static_cast<ui::TextInputType>(i);
+    EXPECT_EQ(type, InputMessageConverter::TextInputTypeFromProto(
+                        InputMessageConverter::TextInputTypeToProto(type)));
+  }
+}
+
 }  // namespace blimp

@@ -24,6 +24,7 @@ syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
 import "compositor.proto";
+import "ime.proto";
 import "input.proto";
 import "navigation.proto";
 import "render_widget.proto";
@@ -41,6 +42,7 @@ message BlimpMessage {
     INPUT = 4;
     COMPOSITOR = 5;
     PROTOCOL_CONTROL = 6;
+    IME = 7;
   }
 
   // Sequence number of this message, used for message acknowledgement.
@@ -74,5 +76,6 @@ message BlimpMessage {
   optional InputMessage input = 1003;
   optional CompositorMessage compositor = 1004;
   optional ProtocolControlMessage protocol_control = 1005;
+  optional ImeMessage ime = 1006;
 }
 

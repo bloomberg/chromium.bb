@@ -5,12 +5,15 @@
 #include "blimp/engine/feature/engine_render_widget_feature.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/common/proto/compositor.pb.h"
 #include "blimp/common/proto/input.pb.h"
 #include "blimp/common/proto/render_widget.pb.h"
+#include "blimp/net/input_message_converter.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "net/base/net_errors.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
@@ -30,6 +33,12 @@ void EngineRenderWidgetFeature::set_input_message_sender(
     scoped_ptr<BlimpMessageProcessor> message_processor) {
   DCHECK(message_processor);
   input_message_sender_ = std::move(message_processor);
+}
+
+void EngineRenderWidgetFeature::set_ime_message_sender(
+    scoped_ptr<BlimpMessageProcessor> message_processor) {
+  DCHECK(message_processor);
+  ime_message_sender_ = std::move(message_processor);
 }
 
 void EngineRenderWidgetFeature::set_compositor_message_sender(
@@ -113,6 +122,49 @@ void EngineRenderWidgetFeature::SendCompositorMessage(
                                                 net::CompletionCallback());
 }
 
+void EngineRenderWidgetFeature::SendShowImeRequest(
+    const int tab_id,
+    content::RenderWidgetHost* render_widget_host,
+    const ui::TextInputClient* client) {
+  DCHECK(client);
+
+  ImeMessage* ime_message;
+  scoped_ptr<BlimpMessage> blimp_message =
+      CreateBlimpMessage(&ime_message, tab_id);
+
+  int render_widget_id = GetRenderWidgetId(tab_id, render_widget_host);
+  DCHECK_GT(render_widget_id, 0);
+  ime_message->set_render_widget_id(render_widget_id);
+  ime_message->set_type(ImeMessage::SHOW_IME);
+  ime_message->set_text_input_type(
+      InputMessageConverter::TextInputTypeToProto(client->GetTextInputType()));
+
+  gfx::Range text_range;
+  base::string16 existing_text;
+  client->GetTextRange(&text_range);
+  client->GetTextFromRange(text_range, &existing_text);
+  ime_message->set_ime_text(base::UTF16ToUTF8(existing_text));
+
+  ime_message_sender_->ProcessMessage(std::move(blimp_message),
+                                      net::CompletionCallback());
+}
+
+void EngineRenderWidgetFeature::SendHideImeRequest(
+    const int tab_id,
+    content::RenderWidgetHost* render_widget_host) {
+  ImeMessage* ime_message;
+  scoped_ptr<BlimpMessage> blimp_message =
+      CreateBlimpMessage(&ime_message, tab_id);
+
+  int render_widget_id = GetRenderWidgetId(tab_id, render_widget_host);
+  DCHECK_GT(render_widget_id, 0);
+  ime_message->set_render_widget_id(render_widget_id);
+  ime_message->set_type(ImeMessage::HIDE_IME);
+
+  ime_message_sender_->ProcessMessage(std::move(blimp_message),
+                                      net::CompletionCallback());
+}
+
 void EngineRenderWidgetFeature::SetDelegate(
     const int tab_id,
     RenderWidgetMessageDelegate* delegate) {
@@ -131,6 +183,7 @@ void EngineRenderWidgetFeature::ProcessMessage(
     const net::CompletionCallback& callback) {
   DCHECK(!callback.is_null());
   DCHECK(message->type() == BlimpMessage::RENDER_WIDGET ||
+         message->type() == BlimpMessage::IME ||
          message->type() == BlimpMessage::INPUT ||
          message->type() == BlimpMessage::COMPOSITOR);
 
@@ -163,11 +216,33 @@ void EngineRenderWidgetFeature::ProcessMessage(
         delegate->OnCompositorMessageReceived(render_widget_host, payload);
       }
       break;
+    case BlimpMessage::IME:
+      DCHECK(message->ime().type() == ImeMessage::SET_TEXT);
+      render_widget_host =
+          GetRenderWidgetHost(target_tab_id, message->ime().render_widget_id());
+      if (render_widget_host && render_widget_host->GetView()) {
+        SetTextFromIME(render_widget_host->GetView()->GetTextInputClient(),
+                       message->ime().ime_text());
+      }
+      break;
     default:
       NOTREACHED();
   }
 
   callback.Run(net::OK);
+}
+
+void EngineRenderWidgetFeature::SetTextFromIME(ui::TextInputClient* client,
+                                               std::string text) {
+  if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
+    // Clear out any existing text first and then insert new text entered
+    // through IME.
+    gfx::Range text_range;
+    client->GetTextRange(&text_range);
+    client->ExtendSelectionAndDelete(text_range.length(), text_range.length());
+
+    client->InsertText(base::UTF8ToUTF16(text));
+  }
 }
 
 EngineRenderWidgetFeature::RenderWidgetMessageDelegate*

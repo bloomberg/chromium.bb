@@ -16,6 +16,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/input_message_converter.h"
+#include "ui/base/ime/text_input_client.h"
 
 namespace blink {
 class WebGestureEvent;
@@ -63,6 +64,9 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor {
   void set_compositor_message_sender(
       scoped_ptr<BlimpMessageProcessor> message_processor);
 
+  void set_ime_message_sender(
+      scoped_ptr<BlimpMessageProcessor> message_processor);
+
   // Notifes the client that a new RenderWidget for a particular WebContents has
   // been created. This will trigger the creation of the BlimpCompositor for
   // this widget on the client.
@@ -82,6 +86,13 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor {
 
   void OnRenderWidgetDeleted(const int tab_id,
                              content::RenderWidgetHost* render_widget_host);
+
+  // Notifies the client to show/hide IME.
+  void SendShowImeRequest(const int tab_id,
+                          content::RenderWidgetHost* render_widget_host,
+                          const ui::TextInputClient* client);
+  void SendHideImeRequest(const int tab_id,
+                          content::RenderWidgetHost* render_widget_host);
 
   // Sends a CompositorMessage for |tab_id| to the client.
   void SendCompositorMessage(const int tab_id,
@@ -134,6 +145,10 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor {
   content::RenderWidgetHost* GetRenderWidgetHost(const int tab_id,
                                                  const int render_widget_id);
 
+  // Inserts the text entered by the user into the |client|.
+  // The existing text in the box gets replaced by the new text from IME.
+  void SetTextFromIME(ui::TextInputClient* client, std::string text);
+
   DelegateMap delegates_;
   TabMap tabs_;
 
@@ -155,6 +170,7 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor {
   scoped_ptr<BlimpMessageProcessor> render_widget_message_sender_;
   scoped_ptr<BlimpMessageProcessor> compositor_message_sender_;
   scoped_ptr<BlimpMessageProcessor> input_message_sender_;
+  scoped_ptr<BlimpMessageProcessor> ime_message_sender_;
 
   DISALLOW_COPY_AND_ASSIGN(EngineRenderWidgetFeature);
 };

@@ -9,19 +9,28 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
+#include "blimp/client/feature/ime_feature.h"
+#include "ui/base/ime/text_input_type.h"
 
 namespace blimp {
 namespace client {
 
 // The native component of org.chromium.blimp.input.WebInputBox.
-class WebInputBox {
+class WebInputBox : public ImeFeature::Delegate {
  public:
   static bool RegisterJni(JNIEnv* env);
 
-  WebInputBox(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
+  // |ime_feature| is expected to outlive the WebInputBox.
+  WebInputBox(JNIEnv* env,
+              const base::android::JavaParamRef<jobject>& jobj,
+              ImeFeature* ime_feature);
 
-  // Brings up or hides the IME for user to enter text.
-  void OnImeRequested(bool show);
+  // Brings up IME for user to enter text.
+  void OnShowImeRequested(ui::TextInputType input_type,
+                          const std::string& text) override;
+
+  // Hides IME.
+  void OnHideImeRequested() override;
 
   // Methods called from Java via JNI.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& jobj);
@@ -36,6 +45,10 @@ class WebInputBox {
 
   // Reference to the Java object which owns this class.
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
+
+  // A bridge to the network layer which does the work of (de)serializing the
+  // outgoing and incoming BlimpMessage::IME messages from the engine.
+  ImeFeature* ime_feature_;
 
   DISALLOW_COPY_AND_ASSIGN(WebInputBox);
 };
