@@ -96,10 +96,6 @@ class RenderFrameProxyHost
   RenderViewHostImpl* GetRenderViewHost();
   RenderWidgetHostView* GetRenderWidgetHostView();
 
-  void TakeFrameHostOwnership(
-      scoped_ptr<RenderFrameHostImpl> render_frame_host);
-  scoped_ptr<RenderFrameHostImpl> PassFrameHostOwnership();
-
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
 

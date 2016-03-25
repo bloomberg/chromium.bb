@@ -122,18 +122,6 @@ RenderWidgetHostView* RenderFrameProxyHost::GetRenderWidgetHostView() {
       ->GetRenderWidgetHostView();
 }
 
-void RenderFrameProxyHost::TakeFrameHostOwnership(
-    scoped_ptr<RenderFrameHostImpl> render_frame_host) {
-  CHECK(render_frame_host_ == nullptr);
-  render_frame_host_ = std::move(render_frame_host);
-  render_frame_host_->set_render_frame_proxy_host(this);
-}
-
-scoped_ptr<RenderFrameHostImpl> RenderFrameProxyHost::PassFrameHostOwnership() {
-  render_frame_host_->set_render_frame_proxy_host(NULL);
-  return std::move(render_frame_host_);
-}
-
 bool RenderFrameProxyHost::Send(IPC::Message *msg) {
   return GetProcess()->Send(msg);
 }
