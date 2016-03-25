@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "aom/vp8dx.h"
+#include "aom/aomdx.h"
 #include "aom/aom_decoder.h"
 
 #include "../md5_utils.h"

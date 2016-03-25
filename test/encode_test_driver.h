@@ -18,7 +18,7 @@
 
 #include "./aom_config.h"
 #if CONFIG_AV1_ENCODER
-#include "aom/vp8cx.h"
+#include "aom/aomcx.h"
 #endif
 #include "aom/aom_encoder.h"
 

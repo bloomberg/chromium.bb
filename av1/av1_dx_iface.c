@@ -16,7 +16,7 @@
 #include "./aom_version.h"
 
 #include "aom/internal/aom_codec_internal.h"
-#include "aom/vp8dx.h"
+#include "aom/aomdx.h"
 #include "aom/aom_decoder.h"
 #include "aom_dsp/bitreader_buffer.h"
 #include "aom_dsp/aom_dsp_common.h"

@@ -11,7 +11,7 @@
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
 #include "./aom_config.h"
-#include "aom/vp8cx.h"
+#include "aom/aomcx.h"
 #include "aom/aom_encoder.h"
 
 namespace {

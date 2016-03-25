@@ -30,7 +30,7 @@
 #include "aom_ports/aom_timer.h"
 
 #if CONFIG_AV1_DECODER
-#include "aom/vp8dx.h"
+#include "aom/aomdx.h"
 #endif
 
 #include "./md5_utils.h"

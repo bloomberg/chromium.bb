@@ -24,7 +24,7 @@
 #define AOM_DISABLE_CTRL_TYPECHECKS 1
 #include "./aom_config.h"
 #include "aom/svc_context.h"
-#include "aom/vp8cx.h"
+#include "aom/aomcx.h"
 #include "aom/aom_encoder.h"
 #include "aom_mem/aom_mem.h"
 #include "av1/common/onyxc_int.h"

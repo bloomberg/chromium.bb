@@ -17,7 +17,7 @@
 #include "av1/decoder/decoder.h"
 
 #include "aom/svc_context.h"
-#include "aom/vp8cx.h"
+#include "aom/aomcx.h"
 #include "aom/aom_encoder.h"
 
 namespace {

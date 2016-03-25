@@ -18,7 +18,7 @@
 #include "aom/internal/aom_codec_internal.h"
 #include "./aom_version.h"
 #include "av1/encoder/encoder.h"
-#include "aom/vp8cx.h"
+#include "aom/aomcx.h"
 #include "av1/encoder/firstpass.h"
 #include "av1/av1_iface_common.h"
 

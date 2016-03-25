@@ -47,7 +47,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "aom/vp8cx.h"
+#include "aom/aomcx.h"
 #include "aom/aom_encoder.h"
 
 #include "../tools_common.h"

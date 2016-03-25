@@ -34,10 +34,10 @@
 #include "./tools_common.h"
 
 #if CONFIG_AV1_ENCODER
-#include "aom/vp8cx.h"
+#include "aom/aomcx.h"
 #endif
 #if CONFIG_AV1_DECODER
-#include "aom/vp8dx.h"
+#include "aom/aomdx.h"
 #endif
 
 #include "aom/aom_integer.h"

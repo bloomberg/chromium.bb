@@ -21,7 +21,7 @@
 
 #include "./aom_config.h"
 #include "../aom_ports/aom_timer.h"
-#include "aom/vp8cx.h"
+#include "aom/aomcx.h"
 #include "aom/aom_encoder.h"
 
 #include "../tools_common.h"

@@ -15,7 +15,7 @@
 #include <stdio.h>
 
 #include "./aom_config.h"
-#include "aom/vp8cx.h"
+#include "aom/aomcx.h"
 
 #include "av1/common/alloccommon.h"
 #include "av1/common/entropymode.h"

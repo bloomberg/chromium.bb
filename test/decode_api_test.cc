@@ -12,7 +12,7 @@
 
 #include "./aom_config.h"
 #include "test/ivf_video_source.h"
-#include "aom/vp8dx.h"
+#include "aom/aomdx.h"
 #include "aom/aom_decoder.h"
 
 namespace {
