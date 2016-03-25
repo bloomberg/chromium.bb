@@ -23,7 +23,6 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -55,6 +54,7 @@ import org.chromium.chrome.browser.profiles.MostVisitedSites.MostVisitedURLsObse
 import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -395,17 +395,10 @@ public class NewTabPageView extends FrameLayout
         // Fill in opt-out text with Settings link
         TextView optOutText = (TextView) mOptOutView.findViewById(R.id.opt_out_text);
 
-        ClickableSpan settingsLink = new ClickableSpan() {
+        NoUnderlineClickableSpan settingsLink = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View view) {
                 mManager.optOutPromoClicked(true);
-            }
-
-            // Disable underline on the link text.
-            @Override
-            public void updateDrawState(android.text.TextPaint textPaint) {
-                super.updateDrawState(textPaint);
-                textPaint.setUnderlineText(false);
             }
         };
 

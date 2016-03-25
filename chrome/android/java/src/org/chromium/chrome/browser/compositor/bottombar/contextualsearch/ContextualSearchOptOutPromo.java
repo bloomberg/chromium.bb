@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.compositor.bottombar.contextualsearch;
 
 import android.content.Context;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
@@ -15,6 +14,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -85,17 +85,10 @@ public class ContextualSearchOptOutPromo extends RelativeLayout {
         // Fill in text with link to Settings.
         TextView optOutText = (TextView) findViewById(R.id.contextual_search_opt_out_text);
 
-        ClickableSpan settingsLink = new ClickableSpan() {
+        NoUnderlineClickableSpan settingsLink = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View view) {
                 mHost.onPromoPreferenceClick();
-            }
-
-            // Disable underline on the link text.
-            @Override
-            public void updateDrawState(android.text.TextPaint textPaint) {
-                super.updateDrawState(textPaint);
-                textPaint.setUnderlineText(false);
             }
         };
 

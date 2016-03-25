@@ -9,10 +9,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.AdapterView;
@@ -37,6 +35,7 @@ import org.chromium.chrome.browser.sync.ui.ConfirmImportSyncDataDialog;
 import org.chromium.chrome.browser.sync.ui.ConfirmImportSyncDataDialog.ImportSyncType;
 import org.chromium.signin.InvestigatedScenario;
 import org.chromium.sync.signin.AccountManagerHelper;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -494,16 +493,10 @@ public class AccountSigninView extends FirstRunView
         setUpUndoButton();
 
         if (mShowSettingsSpan) {
-            ClickableSpan settingsSpan = new ClickableSpan() {
+            NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
                 @Override
                 public void onClick(View widget) {
                     mListener.onAccountSelected(mAccountName, true);
-                }
-
-                @Override
-                public void updateDrawState(TextPaint textPaint) {
-                    textPaint.setColor(getResources().getColor(R.color.ui_link_text_color));
-                    textPaint.setUnderlineText(false);
                 }
             };
             mDescriptionText.setText(SpanApplier.applySpans(getSignedInDescription(mIsChildAccount),

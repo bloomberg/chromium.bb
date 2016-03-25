@@ -6,9 +6,7 @@ package org.chromium.chrome.browser.firstrun;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.text.TextPaint;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ClickableSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -21,6 +19,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
 
@@ -71,8 +70,7 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
 
         mTosAndPrivacy.setMovementMethod(LinkMovementMethod.getInstance());
 
-        int linkColor = getResources().getColor(R.color.ui_link_text_color);
-        ClickableSpan clickableTermsSpan = new FreClickableSpan(linkColor) {
+        NoUnderlineClickableSpan clickableTermsSpan = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View widget) {
                 if (!isAdded()) return;
@@ -81,7 +79,7 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
             }
         };
 
-        ClickableSpan clickablePrivacySpan = new FreClickableSpan(linkColor) {
+        NoUnderlineClickableSpan clickablePrivacySpan = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View widget) {
                 if (!isAdded()) return;
@@ -92,24 +90,6 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
         mTosAndPrivacy.setText(SpanApplier.applySpans(getString(R.string.fre_tos_and_privacy),
                 new SpanInfo("<LINK1>", "</LINK1>", clickableTermsSpan),
                 new SpanInfo("<LINK2>", "</LINK2>", clickablePrivacySpan)));
-    }
-
-    // TODO(peconn): Move this out into a more general class.
-    private abstract static class FreClickableSpan extends ClickableSpan {
-        private final int mColor;
-
-        /**
-         * Creates a clickable span that styles without an underline and uses the given color.
-         */
-        public FreClickableSpan(int color) {
-            mColor = color;
-        }
-
-        @Override
-        public void updateDrawState(TextPaint textPaint) {
-            textPaint.setColor(mColor);
-            textPaint.setUnderlineText(false);
-        }
     }
 
     @Override
