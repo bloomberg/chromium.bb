@@ -245,6 +245,10 @@ void DrawBorder(const NSRect& frame,
   [path stroke];
 }
 
+- (BOOL)canBecomeKeyView {
+  return YES;
+}
+
 @end
 
 @implementation ConstrainedWindowButtonCell

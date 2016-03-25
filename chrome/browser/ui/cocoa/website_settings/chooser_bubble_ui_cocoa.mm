@@ -330,7 +330,7 @@ scoped_ptr<BubbleUi> ChooserBubbleController::BuildBubbleUi() {
     [self setAnchorPoint:[self getExpectedAnchorPoint]];
     [self showWindow:nil];
     [[self window] makeFirstResponder:nil];
-    [[self window] setInitialFirstResponder:connectButton_.get()];
+    [[self window] setInitialFirstResponder:tableView_.get()];
   }
 }
 
