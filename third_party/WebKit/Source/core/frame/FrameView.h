@@ -32,6 +32,7 @@
 #include "core/frame/RootFrameViewport.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/ScrollAnchor.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/paint/PaintInvalidationCapableScrollableArea.h"
 #include "core/paint/PaintPhase.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -755,6 +756,11 @@ private:
     // PaintInvalidationCapableScrollableArea
     LayoutBox& boxForScrollControlPaintInvalidation() const override;
     LayoutScrollbarPart* resizer() const override { return nullptr; }
+
+    LayoutViewItem layoutViewItem() const
+    {
+        return LayoutViewItem(this->layoutView());
+    }
 
     LayoutSize m_size;
 

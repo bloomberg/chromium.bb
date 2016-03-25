@@ -30,9 +30,19 @@ public:
 
     LayoutViewItem() { }
 
+    bool usesCompositing() const
+    {
+        return toView()->usesCompositing();
+    }
+
     PaintLayerCompositor* compositor()
     {
         return toView()->compositor();
+    }
+
+    bool hasPendingSelection() const
+    {
+        return toView()->hasPendingSelection();
     }
 
     IntRect documentRect() const
