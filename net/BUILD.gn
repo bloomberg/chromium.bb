@@ -1448,7 +1448,7 @@ test("net_unittests") {
   ]
   data_deps = []
 
-  if (use_openssl) {
+  if (!is_ios) {
     data_deps += [ "third_party/nist-pkits/" ]
   }
 
