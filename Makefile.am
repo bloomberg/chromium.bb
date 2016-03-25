@@ -808,6 +808,9 @@ dist_westondata_DATA =				\
 	data/pattern.png			\
 	data/terminal.png			\
 	data/border.png				\
+	data/icon_editor.png			\
+	data/icon_flower.png			\
+	data/icon_terminal.png			\
 	data/icon_window.png			\
 	data/sign_close.png			\
 	data/sign_maximize.png			\

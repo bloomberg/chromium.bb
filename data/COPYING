@@ -35,3 +35,21 @@ icon_ivi_flower.png
 icon_ivi_simple-egl.png
 icon_ivi_simple-shm.png
 icon_ivi_smoke.png
+
+
+For the SVG icons:
+
+© 2016 Samsung Electronics Co., Ltd
+
+This work is dual-licenced under both the MIT "Expat" License and the
+Creative Commons Attribution-Share Alike 3.0 United States License, and
+may be redistributed under either (or both) licenses as desired.  See
+Weston's COPYING for details of the MIT license.  To view a copy of the
+CC-SA-3.0 licence, visit http://creativecommons.org/licenses/by-sa/3.0/
+or send a letter to Creative Commons, 171 Second Street, Suite 300, San
+Francisco, California 94105, USA.
+
+icons.svg
+icon_terminal.png
+icon_editor.png
+icon_flower.png
