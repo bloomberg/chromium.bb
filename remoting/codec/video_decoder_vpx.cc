@@ -117,26 +117,6 @@ bool VideoDecoderVpx::DecodePacket(const VideoPacket& packet,
     RenderRect(image, rect, frame);
   }
 
-  // Process the frame shape, if supplied.
-  if (packet.has_use_desktop_shape()) {
-    if (packet.use_desktop_shape()) {
-      if (!desktop_shape_)
-        desktop_shape_ = make_scoped_ptr(new webrtc::DesktopRegion);
-      desktop_shape_->Clear();
-      for (int i = 0; i < packet.desktop_shape_rects_size(); ++i) {
-        Rect proto_rect = packet.desktop_shape_rects(i);
-        desktop_shape_->AddRect(webrtc::DesktopRect::MakeXYWH(
-            proto_rect.x(), proto_rect.y(), proto_rect.width(),
-            proto_rect.height()));
-      }
-    } else {
-      desktop_shape_.reset();
-    }
-  }
-
-  if (desktop_shape_)
-    frame->set_shape(new webrtc::DesktopRegion(*desktop_shape_));
-
   return true;
 }
 

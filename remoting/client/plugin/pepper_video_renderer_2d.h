@@ -21,7 +21,6 @@
 #include "remoting/client/plugin/pepper_video_renderer.h"
 #include "remoting/protocol/frame_consumer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace base {
 class ScopedClosureRunner;
@@ -85,9 +84,6 @@ class PepperVideoRenderer2D : public PepperVideoRenderer,
 
   // Resolution of the most recent source frame dots-per-inch.
   webrtc::DesktopVector source_dpi_;
-
-  // Shape of the most recent source frame.
-  scoped_ptr<webrtc::DesktopRegion> source_shape_;
 
   // Done callbacks for the frames that have been painted but not flushed.
   ScopedVector<base::ScopedClosureRunner> pending_frames_done_callbacks_;

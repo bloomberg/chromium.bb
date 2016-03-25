@@ -132,7 +132,6 @@ class ChromotingInstance : public ClientUserInterface,
   void OnVideoFirstFrameReceived() override;
   void OnVideoSize(const webrtc::DesktopSize& size,
                       const webrtc::DesktopVector& dpi) override;
-  void OnVideoShape(const webrtc::DesktopRegion* shape) override;
   void OnVideoFrameDirtyRegion(
       const webrtc::DesktopRegion& dirty_region) override;
 

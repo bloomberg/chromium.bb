@@ -177,9 +177,6 @@ void TestVideoRenderer::Core::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
     }
   }
 
-  // To make life easier, assume that the desktop shape is a single rectangle.
-  packet->clear_use_desktop_shape();
-
   // Render the result into a new DesktopFrame instance that shares buffer with
   // |frame_|. updated_region() will be updated for |new_frame|, but not for
   // |frame_|.

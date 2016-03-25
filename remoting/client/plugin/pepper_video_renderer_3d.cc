@@ -19,6 +19,7 @@
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/performance_tracker.h"
 #include "remoting/protocol/session_config.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 namespace remoting {
 
@@ -219,26 +220,6 @@ void PepperVideoRenderer3D::ProcessVideoPacket(scoped_ptr<VideoPacket> packet,
 
   if (resolution_changed)
     event_handler_->OnVideoSize(frame_size_, frame_dpi_);
-
-  // Process the frame shape, if supplied.
-  if (packet->has_use_desktop_shape()) {
-    if (packet->use_desktop_shape()) {
-      scoped_ptr<webrtc::DesktopRegion> shape(new webrtc::DesktopRegion);
-      for (int i = 0; i < packet->desktop_shape_rects_size(); ++i) {
-        Rect remoting_rect = packet->desktop_shape_rects(i);
-        shape->AddRect(webrtc::DesktopRect::MakeXYWH(
-            remoting_rect.x(), remoting_rect.y(), remoting_rect.width(),
-            remoting_rect.height()));
-      }
-      if (!frame_shape_ || !frame_shape_->Equals(*shape)) {
-        frame_shape_ = std::move(shape);
-        event_handler_->OnVideoShape(frame_shape_.get());
-      }
-    } else if (frame_shape_) {
-      frame_shape_ = nullptr;
-      event_handler_->OnVideoShape(nullptr);
-    }
-  }
 
   // Report the dirty region, for debugging, if requested.
   if (debug_dirty_region_) {

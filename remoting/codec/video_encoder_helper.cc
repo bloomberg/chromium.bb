@@ -44,19 +44,6 @@ VideoEncoderHelper::CreateVideoPacketWithUpdatedRegion(
     dirty_rect->set_height(rect.height());
   }
 
-  // Record the shape of the frame, if specified.
-  if (frame.shape()) {
-    packet->set_use_desktop_shape(true);
-    for (webrtc::DesktopRegion::Iterator r(*frame.shape());
-         !r.IsAtEnd(); r.Advance()) {
-      Rect* rect = packet->add_desktop_shape_rects();
-      rect->set_x(r.rect().left());
-      rect->set_y(r.rect().top());
-      rect->set_width(r.rect().width());
-      rect->set_height(r.rect().height());
-    }
-  }
-
   // Store frame DPI.
   if (!frame.dpi().is_zero()) {
     packet->mutable_format()->set_x_dpi(frame.dpi().x());

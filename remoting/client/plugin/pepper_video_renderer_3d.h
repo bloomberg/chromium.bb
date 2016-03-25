@@ -20,7 +20,6 @@
 #include "remoting/client/plugin/pepper_video_renderer.h"
 #include "remoting/protocol/video_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
-#include "third_party/webrtc/modules/desktop_capture/desktop_region.h"
 
 struct PPB_OpenGLES2;
 
@@ -99,7 +98,6 @@ class PepperVideoRenderer3D : public PepperVideoRenderer,
 
   webrtc::DesktopSize frame_size_;
   webrtc::DesktopVector frame_dpi_;
-  scoped_ptr<webrtc::DesktopRegion> frame_shape_;
 
   webrtc::DesktopSize view_size_;
 

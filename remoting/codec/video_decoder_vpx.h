@@ -14,11 +14,6 @@
 typedef const struct vpx_codec_iface vpx_codec_iface_t;
 typedef struct vpx_image vpx_image_t;
 
-namespace webrtc {
-class DesktopRect;
-class DesktopRegion;
-}  // namespace webrtc
-
 namespace remoting {
 
 class VideoDecoderVpx : public VideoDecoder {
@@ -37,9 +32,6 @@ class VideoDecoderVpx : public VideoDecoder {
   explicit VideoDecoderVpx(vpx_codec_iface_t* codec);
 
   ScopedVpxCodec codec_;
-
-  // The shape of the most-recent frame, if any.
-  scoped_ptr<webrtc::DesktopRegion> desktop_shape_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderVpx);
 };

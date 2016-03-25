@@ -86,33 +86,4 @@ remoting.ClientPlugin.HostDesktopImpl.prototype.onSizeUpdated = function(
                   this.getDimensions());
 };
 
-/**
- * This function is called by |this.plugin_| when the shape of the host
- * desktop is changed.
- *
- * @param {remoting.ClientPluginMessage} message
- * @return {Array<{left:number, top:number, width:number, height:number}>}
- *    rectangles of the desktop shape.
- */
-remoting.ClientPlugin.HostDesktopImpl.prototype.onShapeUpdated =
-    function(message) {
-  var shapes = base.getArrayAttr(message.data, 'rects');
-  var rects = shapes.map(
-    /** @param {Array<number>} shape */
-    function(shape) {
-      if (!Array.isArray(shape) || shape.length != 4) {
-        throw 'Received invalid onDesktopShape message';
-      }
-      var rect = {};
-      rect.left = shape[0];
-      rect.top = shape[1];
-      rect.width = shape[2];
-      rect.height = shape[3];
-      return rect;
-  });
-
-  this.raiseEvent(remoting.HostDesktop.Events.shapeChanged, rects);
-  return rects;
-};
-
 }());

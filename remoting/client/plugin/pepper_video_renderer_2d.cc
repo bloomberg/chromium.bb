@@ -159,17 +159,6 @@ void PepperVideoRenderer2D::DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame,
     event_handler_->OnVideoSize(source_size_, source_dpi_);
   }
 
-  const webrtc::DesktopRegion* shape = frame->shape();
-  if (shape) {
-    if (!source_shape_ || !source_shape_->Equals(*shape)) {
-      source_shape_ = make_scoped_ptr(new webrtc::DesktopRegion(*shape));
-      event_handler_->OnVideoShape(source_shape_.get());
-    }
-  } else if (source_shape_) {
-    source_shape_ = nullptr;
-    event_handler_->OnVideoShape(nullptr);
-  }
-
   // If Debug dirty region is enabled then emit it.
   if (debug_dirty_region_)
     event_handler_->OnVideoFrameDirtyRegion(frame->updated_region());

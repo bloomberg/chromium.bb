@@ -22,9 +22,6 @@ TEST(VideoEncoderHelperTest, PropagatesCommonFields) {
   frame.set_dpi(DesktopVector(96, 97));
   frame.set_capture_time_ms(20);
   frame.mutable_updated_region()->SetRect(DesktopRect::MakeLTRB(0, 0, 16, 16));
-  scoped_ptr<DesktopRegion> shape(
-      new DesktopRegion(DesktopRect::MakeLTRB(16, 0, 32, 16)));
-  frame.set_shape(shape.release());
 
   VideoEncoderHelper helper;
   scoped_ptr<VideoPacket> packet(helper.CreateVideoPacket(frame));
@@ -37,11 +34,6 @@ TEST(VideoEncoderHelperTest, PropagatesCommonFields) {
   EXPECT_TRUE(packet->format().has_y_dpi());
 
   EXPECT_EQ(1, packet->dirty_rects().size());
-
-  ASSERT_TRUE(packet->has_use_desktop_shape());
-  EXPECT_TRUE(packet->use_desktop_shape());
-
-  EXPECT_EQ(1, packet->desktop_shape_rects().size());
 }
 
 TEST(VideoEncoderHelperTest, ZeroDpi) {
@@ -57,16 +49,6 @@ TEST(VideoEncoderHelperTest, ZeroDpi) {
   EXPECT_TRUE(packet->format().has_screen_height());
   EXPECT_FALSE(packet->format().has_x_dpi());
   EXPECT_FALSE(packet->format().has_y_dpi());
-}
-
-TEST(VideoEncoderHelperTest, NoShape) {
-  BasicDesktopFrame frame(DesktopSize(32, 32));
-
-  VideoEncoderHelper helper;
-  scoped_ptr<VideoPacket> packet(helper.CreateVideoPacket(frame));
-
-  EXPECT_FALSE(packet->use_desktop_shape());
-  EXPECT_EQ(0, packet->desktop_shape_rects().size());
 }
 
 TEST(VideoEncoderHelperTest, NoScreenSizeIfUnchanged) {

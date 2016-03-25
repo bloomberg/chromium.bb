@@ -24,10 +24,6 @@ remoting.HostDesktop.Events = {
   // Fired when the size of the host desktop changes with the desktop dimensions
   //  {{width:number, height:number, xDpi:number, yDpi:number}}
   sizeChanged: 'sizeChanged',
-  // Fired when the shape of the host desktop changes with an array of
-  // rectangles of desktop shapes as the event data.
-  //   Array<{left:number, top:number, width:number, height:number}>
-  shapeChanged: 'shapeChanged'
 };
 
 /**

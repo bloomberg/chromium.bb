@@ -264,8 +264,6 @@ remoting.ClientPluginImpl.prototype.handleMessageMethod_ = function(message) {
     this.onInitializedDeferred_.resolve();
   } else if (message.method == 'onDesktopSize') {
     this.hostDesktop_.onSizeUpdated(message);
-  } else if (message.method == 'onDesktopShape') {
-    this.hostDesktop_.onShapeUpdated(message);
   } else if (message.method == 'onPerfStats') {
     // Return value is ignored. These calls will throw an error if the value
     // is not a number.

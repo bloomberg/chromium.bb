@@ -11,6 +11,8 @@ option optimize_for = LITE_RUNTIME;
 package remoting;
 
 message VideoPacketFormat {
+  // Reserved fields IDs used for removed fields: 1 to 4.
+
   // Identifies how the image was encoded.
   enum Encoding {
     ENCODING_INVALID = -1;
@@ -41,6 +43,8 @@ message Rect {
 }
 
 message VideoPacket {
+  // Reserved fields IDs used for removed fields: 1 to 3, 10, 11.
+
   optional VideoPacketFormat format = 4;
 
   optional bytes data = 5;
@@ -57,14 +61,6 @@ message VideoPacket {
   // The client's timestamp of the latest event received by the host before
   // starting to capture this video frame.
   optional int64 latest_event_timestamp = 9;
-
-  // Provides the new shape for this frame, iff |use_desktop_shape| is true.
-  repeated Rect desktop_shape_rects = 10;
-
-  // True when |desktop_shape_rects| should be used, false to indicate that
-  // the frame is un-shaped. If the shape has not changed since the preceding
-  // frame then this field should be omitted.
-  optional bool use_desktop_shape = 11;
 
   // Optional frame timestamp. Used in tests to estimate frame latency.
   optional int64 timestamp = 12;
