@@ -1,0 +1,44 @@
+<html>
+<head>
+<script type="text/javascript" src="../../../http/tests/inspector/inspector-test.js"></script>
+<script type="text/javascript" src="../../../http/tests/inspector/debugger-test.js"></script>
+<link rel="stylesheet">
+<script>
+
+function addStyleSheet()
+{
+    var link = document.querySelector("link");
+    link.setAttribute("href", "./resources/styles-rerequest-sourcemap-on-watchdog.css");
+}
+
+function test()
+{
+    InspectorTest.cssModel.addEventListener(WebInspector.CSSModel.Events.SourceMapAttached, onInitialSourceMap);
+
+    InspectorTest.evaluateInPagePromise("addStyleSheet()");
+
+    function onInitialSourceMap()
+    {
+        InspectorTest.cssModel.removeEventListener(WebInspector.CSSModel.Events.SourceMapAttached, onInitialSourceMap);
+        InspectorTest.waitForScriptSource("styles-rerequest-sourcemap-on-watchdog.css", onCSSFile);
+    }
+
+    function onCSSFile(uiSourceCode)
+    {
+        InspectorTest.addSniffer(WebInspector.CSSModel.prototype, "_sourceMapLoadedForTest", onSourceMapRerequested);
+        uiSourceCode.addRevision("div { color: blue; } /*# sourceMappingURL=styles-rerequest-sourcemap-on-watchdog.css.map */");
+    }
+
+    function onSourceMapRerequested()
+    {
+        InspectorTest.addResult("SourceMap successfully re-requested.");
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onLoad="runTest();">
+<p>Verifies that the sourceMap is in fact re-requested from network as SASS watchdog updates the CSS file.</p>
+
+</body>
+</html>
