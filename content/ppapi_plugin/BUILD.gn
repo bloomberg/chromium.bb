@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 group("ppapi_plugin") {
-  visibility = [ "//content/*" ]
+  visibility = [ "//content/*" ]  # This is an internal content API.
 
   if (is_component_build) {
     public_deps = [
@@ -17,7 +17,11 @@ group("ppapi_plugin") {
 }
 
 source_set("ppapi_plugin_sources") {
-  visibility = [ "//content/*" ]
+  # Depend on via ":ppapi_plugin above.
+  visibility = [
+    ":ppapi_plugin",
+    "//content",  # For the component build.
+  ]
 
   sources = [
     "broker_process_dispatcher.cc",

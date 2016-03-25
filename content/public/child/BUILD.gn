@@ -24,6 +24,7 @@ group("child") {
 }
 
 source_set("child_sources") {
+  # External code should depend in via ":child" above.
   visibility = [ "//content/*" ]
 
   sources = rebase_path(content_child_gypi_values.public_child_sources,

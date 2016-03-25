@@ -29,6 +29,9 @@ group("command_buffer_traits") {
 }
 
 source_set("command_buffer_traits_sources") {
+  # External code should depend on this via
+  # //gpu/ipc/common:command_buffer_traits above rather than depending on this
+  # directly or the component build will break.
   visibility = [ "//gpu/*" ]
 
   sources = [
@@ -51,6 +54,8 @@ source_set("command_buffer_traits_sources") {
 }
 
 source_set("ipc_common_sources") {
+  # External code should depend on this via //gpu/ipc/common above rather than
+  # depending on this directly or the component build will break.
   visibility = [ "//gpu/*" ]
 
   sources = [
@@ -81,7 +86,7 @@ source_set("ipc_common_sources") {
     "//gpu/command_buffer/common:common_sources",
     "//gpu/config:config_sources",
     "//ipc",
-    "//ui/events/ipc:events_ipc",
+    "//ui/events/ipc",
     "//ui/gfx/ipc",
     "//ui/gl",
     "//url/ipc:url_ipc",

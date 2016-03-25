@@ -56,7 +56,7 @@ component("gles2") {
   ]
 
   if (!is_component_build) {
-    deps += [ "//gpu/command_buffer/service:service_sources" ]
+    deps += [ "//gpu/command_buffer/service" ]
   }
 
   include_dirs = [ ".." ]

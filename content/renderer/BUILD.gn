@@ -10,7 +10,10 @@ import("//media/media_options.gni")
 source_set("renderer") {
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
-  visibility = [ "//content/public/renderer:renderer_sources" ]
+  visibility = [
+    ":for_content_tests",
+    "//content/public/renderer:renderer_sources",
+  ]
 
   sources = rebase_path(content_renderer_gypi_values.private_renderer_sources,
                         ".",
@@ -23,6 +26,7 @@ source_set("renderer") {
   ]
   defines = []
 
+  public_deps = []
   deps = [
     "//base:i18n",
     "//cc",
@@ -33,7 +37,7 @@ source_set("renderer") {
     "//components/scheduler:scheduler",
     "//components/url_formatter",
     "//content:resources",
-    "//content/common:mojo_bindings",
+    "//content/common",
     "//content/gpu:gpu_sources",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
@@ -87,7 +91,7 @@ source_set("renderer") {
   allow_circular_includes_from = []
 
   if (use_aura) {
-    deps += [ "//content/renderer/mus" ]
+    public_deps += [ "//content/renderer/mus" ]
     allow_circular_includes_from += [ "//content/renderer/mus" ]
   }
 
@@ -245,5 +249,15 @@ source_set("renderer") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
+  }
+}
+
+# See comment at the top of //content/BUILD.gn for how this works.
+group("for_content_tests") {
+  visibility = [ "//content/test/*" ]
+  if (!is_component_build) {
+    public_deps = [
+      ":renderer",
+    ]
   }
 }

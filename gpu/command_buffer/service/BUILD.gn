@@ -18,10 +18,9 @@ group("service") {
 }
 
 source_set("service_sources") {
-  visibility = [
-    "//gpu/*",
-    "//mojo/gles2:gles2",
-  ]
+  # External code should depend on this via //gpu/command_buffer/service above
+  # rather than depending on this directly or the component build will break.
+  visibility = [ "//gpu/*" ]
 
   sources = [
     "buffer_manager.cc",

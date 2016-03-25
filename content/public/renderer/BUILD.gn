@@ -19,6 +19,7 @@ group("renderer") {
 }
 
 source_set("renderer_sources") {
+  # External code should depend on via ":renderer" above.
   visibility = [ "//content/*" ]
 
   sources = rebase_path(content_renderer_gypi_values.public_renderer_sources,

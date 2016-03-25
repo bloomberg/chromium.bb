@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 source_set("mus") {
+  # Depend on this only via //content/renderer.
+  visibility = [ "//content/renderer/*" ]
+
   sources = [
     "compositor_mus_connection.cc",
     "compositor_mus_connection.h",
@@ -19,7 +22,7 @@ source_set("mus") {
     "//cc",
     "//components/mus/public/cpp",
     "//components/mus/public/interfaces",
-    "//content/common:mojo_bindings",
+    "//content/common",
     "//content/public/common:common_sources",
     "//mojo/common",
     "//mojo/converters/blink",

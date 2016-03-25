@@ -126,9 +126,11 @@ if (is_mac) {
 }
 
 source_set("common") {
-  # Only the public target should depend on this. All other targets (even
-  # internal content ones) should depend on the public one.
-  visibility = [ "//content/public/common:common_sources" ]
+  # Targets external to content should always link to the public API.
+  # In addition, targets outside of the content component (shell and tests)
+  # must not link to this because it will duplicate the code in the component
+  # build.
+  visibility = [ "//content/*" ]
 
   sources = rebase_path(content_common_gypi_values.private_common_sources,
                         ".",
@@ -195,7 +197,7 @@ source_set("common") {
     "//ui/accessibility",
     "//ui/base",
     "//ui/base/ime",
-    "//ui/events/ipc:events_ipc",
+    "//ui/events/ipc",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",
@@ -519,7 +521,23 @@ source_set("common") {
   }
 }
 
+# See comment at the top of //content/BUILD.gn for how this works.
+group("for_content_tests") {
+  visibility = [ "//content/test/*" ]
+  if (!is_component_build) {
+    public_deps = [
+      ":common",
+    ]
+  }
+}
+
 mojom("mojo_bindings") {
+  # This interface is internal to content. However, this is not exported from
+  # the content component shared library. Code in content but outside of the
+  # content component (content/test or content/shell) should link to this
+  # directly.
+  visibility = [ "//content/*" ]
+
   sources = [
     "application_setup.mojom",
     "background_sync_service.mojom",

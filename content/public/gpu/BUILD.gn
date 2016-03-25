@@ -16,6 +16,8 @@ group("gpu") {
 }
 
 source_set("gpu_sources") {
+  # You must depend on this via //content/public/gpu above for the component
+  # build to work properly.
   visibility = [ "//content/*" ]
 
   configs += [ "//content:content_implementation" ]
@@ -30,4 +32,6 @@ source_set("gpu_sources") {
     "//content/gpu:gpu_sources",
     "//content/public/common:common_sources",
   ]
+
+  allow_circular_includes_from = [ "//content/gpu:gpu_sources" ]
 }

@@ -16,6 +16,7 @@ group("plugin") {
 }
 
 source_set("plugin_sources") {
+  # External code should depend on via ":plugin" above.
   visibility = [ "//content/*" ]
 
   sources = [
@@ -24,7 +25,13 @@ source_set("plugin_sources") {
 
   deps = [
     "//base",
-    "//content/plugin",
+    "//content/plugin",  # Must not be a public dep.
     "//content/public/common:common_sources",
+  ]
+
+  allow_circular_includes_from = [
+    # This target is a pair with content/plugin. They always go together and
+    # include headers from each other.
+    "//content/plugin",
   ]
 }

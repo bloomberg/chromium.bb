@@ -40,6 +40,8 @@ component("client_sources_for_ppapi") {
 }
 
 source_set("client_sources") {
+  # External code should depend on this via //gpu/client above rather than
+  # depending on this directly or the component build will break.
   visibility = [ "//gpu/*" ]
 
   sources = [

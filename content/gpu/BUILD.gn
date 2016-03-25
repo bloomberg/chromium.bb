@@ -8,7 +8,7 @@ import("//media/media_options.gni")
 
 # See //content/BUILD.gn for how this works.
 group("gpu") {
-  visibility = [ "//content/*" ]
+  visibility = [ "//content/*" ]  # This is an internal content API.
 
   if (is_component_build) {
     public_deps = [
@@ -22,6 +22,8 @@ group("gpu") {
 }
 
 source_set("gpu_sources") {
+  # This is an internal content API. Code outside of the content "component"
+  # (like content/test and content/shell) should depend on ":gpu" above.
   visibility = [ "//content/*" ]
 
   sources = [
@@ -42,19 +44,21 @@ source_set("gpu_sources") {
 
   deps = [
     "//base",
+    "//base/third_party/dynamic_annotations",
+    "//components/tracing",
     "//content:export",
+    "//content/common",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//gpu:gpu",
     "//gpu/ipc/common:command_buffer_traits",
     "//ipc",
+    "//media/mojo/services:application_factory",
     "//mojo/shell/public/interfaces",
     "//skia",
+    "//ui/events/ipc",
+    "//ui/gfx/ipc",
     "//ui/gl",
-  ]
-
-  public_deps = [
-    "//content/common:mojo_bindings",
   ]
 
   if (mojo_media_host == "gpu") {
@@ -68,6 +72,7 @@ source_set("gpu_sources") {
     ]
     libs = [ "setupapi.lib" ]
     deps += [
+      "//sandbox",
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
     ]
@@ -79,6 +84,10 @@ source_set("gpu_sources") {
 
   if (use_x11) {
     deps += [ "//ui/events/platform/x11" ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 
   if (enable_vulkan) {

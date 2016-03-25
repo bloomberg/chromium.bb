@@ -19,6 +19,7 @@ group("browser") {
 }
 
 source_set("browser_sources") {
+  # External code should depend on via ":browser" above.
   visibility = [ "//content/*" ]
 
   sources = rebase_path(content_browser_gypi_values.public_browser_sources,
@@ -40,7 +41,7 @@ source_set("browser_sources") {
   ]
   deps = [
     "//cc",
-    "//content/browser",
+    "//content/browser",  # Must not be public_deps!
     "//content/public/common:common_sources",
     "//gpu",
     "//media",

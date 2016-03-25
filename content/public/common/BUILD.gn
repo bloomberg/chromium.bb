@@ -78,6 +78,7 @@ source_set("static_switches") {
 }
 
 source_set("common_sources") {
+  # External code should depend on via ":common" above.
   visibility = [ "//content/*" ]
 
   sources = rebase_path(content_common_gypi_values.public_common_sources,
