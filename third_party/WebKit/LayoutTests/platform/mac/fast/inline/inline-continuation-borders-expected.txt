@@ -71,8 +71,8 @@ layer at (0,0) size 785x1230 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {DIV} at (0,616) size 769x582
         LayoutBlockFlow {DIV} at (0,0) size 769x120
           LayoutBlockFlow {P} at (0,0) size 769x18
-            LayoutText {#text} at (740,0) size 29x18
-              text run at (740,0) width 29: "RTL"
+            LayoutText {#text} at (739,0) size 30x18
+              text run at (739,0) width 30: "RTL"
           LayoutBlockFlow (anonymous) at (0,34) size 769x18
             LayoutInline {SPAN} at (0,0) size 44x22 [bgcolor=#008000] [border: (2px solid #FF0000)]
               LayoutText {#text} at (725,0) size 22x18

@@ -178,25 +178,25 @@ layer at (0,0) size 785x1219 backgroundClip at (0,0) size 785x600 clip at (0,0) 
       LayoutBlockFlow {P} at (0,914) size 769x18
         LayoutText {#text} at (0,0) size 426x17
           text run at (0,0) width 426: "The following 2 tables should be identical, ignorning whitespaces:"
-      LayoutTable {TABLE} at (1.42,948) size 85x66 [border: (1px solid #808080)]
-        LayoutBlockFlow {CAPTION} at (0,0) size 85x18
-          LayoutText {#text} at (0,0) size 86x17
-            text run at (0,0) width 85: "NormalTable"
-        LayoutTableSection {TBODY} at (1,19) size 83x46
-          LayoutTableRow {TR} at (0,2) size 83x20
-            LayoutTableCell {TD} at (44,2) size 37x20 [r=0 c=0 rs=1 cs=1]
+      LayoutTable {TABLE} at (1.42,948) size 84x66 [border: (1px solid #808080)]
+        LayoutBlockFlow {CAPTION} at (0,0) size 84x18
+          LayoutText {#text} at (0,0) size 85x17
+            text run at (0,0) width 84: "NormalTable"
+        LayoutTableSection {TBODY} at (1,19) size 82x46
+          LayoutTableRow {TR} at (0,2) size 82x20
+            LayoutTableCell {TD} at (43,2) size 37x20 [r=0 c=0 rs=1 cs=1]
               LayoutText {#text} at (13,1) size 23x17
                 text run at (13,1) width 23: "abc"
-            LayoutTableCell {TD} at (2,2) size 40x20 [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (18,1) size 21x17
-                text run at (18,1) width 21: "def"
-          LayoutTableRow {TR} at (0,24) size 83x20
-            LayoutTableCell {TD} at (44,24) size 37x20 [r=1 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,2) size 39x20 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (17,1) size 21x17
+                text run at (17,1) width 21: "def"
+          LayoutTableRow {TR} at (0,24) size 82x20
+            LayoutTableCell {TD} at (43,24) size 37x20 [r=1 c=0 rs=1 cs=1]
               LayoutText {#text} at (19,1) size 17x17
                 text run at (19,1) width 17: "hij"
-            LayoutTableCell {TD} at (2,24) size 40x20 [r=1 c=1 rs=1 cs=1]
-              LayoutText {#text} at (15,1) size 24x17
-                text run at (15,1) width 24: "opq"
+            LayoutTableCell {TD} at (2,24) size 39x20 [r=1 c=1 rs=1 cs=1]
+              LayoutText {#text} at (14,1) size 24x17
+                text run at (14,1) width 24: "opq"
       LayoutTable {DIV} at (1.42,1015.42) size 143x56 [border: (1px solid #000000)]
         LayoutBlockFlow {DIV} at (0,0) size 143x18
           LayoutText {#text} at (0,0) size 144x17

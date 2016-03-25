@@ -11,27 +11,24 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,0) size 800x0
       LayoutBlockFlow {DIV} at (0,0) size 800x0
       LayoutBlockFlow {DIV} at (0,0) size 800x0
-layer at (162,534) size 246x56
-  LayoutBlockFlow (positioned) {FONT} at (161.52,534) size 246.48x56
-    LayoutText {#text} at (46,0) size 154x56
-      text run at (46,0) width 154: "RTL-Center-"
-      text run at (75,28) width 96: "Aligned"
+layer at (161,562) size 247x28
+  LayoutBlockFlow (positioned) {FONT} at (160.73,562) size 247.27x28
+    LayoutText {#text} at (0,0) size 248x28
+      text run at (0,0) width 248: "RTL-Center-Aligned"
 layer at (-87,466) size 95x84 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
   LayoutBlockFlow (positioned) {FONT} at (-86.59,466) size 94.59x84
     LayoutText {#text} at (0,0) size 95x84
       text run at (0,0) width 60: "RTL-"
       text run at (0,28) width 63: "Left-"
       text run at (0,56) width 95: "Aligned"
-layer at (578,444) size 230x56 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
-  LayoutBlockFlow (positioned) {FONT} at (577.69,444) size 230.31x56
-    LayoutText {#text} at (93,0) size 138x56
-      text run at (93,0) width 138: "RTL-Right-"
-      text run at (135,28) width 96: "Aligned"
-layer at (611,394) size 197x56 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
-  LayoutBlockFlow (positioned) {FONT} at (610.69,394) size 197.31x56
-    LayoutText {#text} at (93,0) size 105x56
-      text run at (93,0) width 105: "RTL-No-"
-      text run at (102,28) width 96: "Aligned"
+layer at (577,472) size 231x28 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+  LayoutBlockFlow (positioned) {FONT} at (576.91,472) size 231.09x28
+    LayoutText {#text} at (0,0) size 232x28
+      text run at (0,0) width 232: "RTL-Right-Aligned"
+layer at (610,422) size 198x28 backgroundClip at (0,0) size 800x600 clip at (0,0) size 800x600
+  LayoutBlockFlow (positioned) {FONT} at (609.91,422) size 198.09x28
+    LayoutText {#text} at (0,0) size 199x28
+      text run at (0,0) width 199: "RTL-No-Aligned"
 layer at (408,372) size 246x28
   LayoutBlockFlow (positioned) {FONT} at (408,372) size 246.48x28
     LayoutText {#text} at (0,0) size 247x28

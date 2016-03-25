@@ -32,19 +32,19 @@ layer at (0,0) size 800x600
           LayoutInline {SPAN} at (0,0) size 44x17
             LayoutText {#text} at (46,0) size 44x17
               text run at (46,0) width 44: "ipsum "
-          LayoutInline {B} at (0,0) size 94x17
-            LayoutInline {SPAN} at (0,0) size 37x17
-              LayoutText {#text} at (89,0) size 37x17
-                text run at (89,0) width 37: "dolor"
-            LayoutText {#text} at (125,0) size 5x17
-              text run at (125,0) width 5: " "
-            LayoutInline {I} at (0,0) size 17x17
-              LayoutText {#text} at (129,0) size 17x17
-                text run at (129,0) width 17: "sit"
-            LayoutText {#text} at (145,0) size 38x17
-              text run at (145,0) width 38: " amet"
-          LayoutText {#text} at (182,0) size 5x17
-            text run at (182,0) width 5: "."
+          LayoutInline {B} at (0,0) size 95x17
+            LayoutInline {SPAN} at (0,0) size 38x17
+              LayoutText {#text} at (89,0) size 38x17
+                text run at (89,0) width 38: "dolor"
+            LayoutText {#text} at (126,0) size 5x17
+              text run at (126,0) width 5: " "
+            LayoutInline {I} at (0,0) size 16x17
+              LayoutText {#text} at (130,0) size 16x17
+                text run at (130,0) width 16: "sit"
+            LayoutText {#text} at (145,0) size 39x17
+              text run at (145,0) width 39: " amet"
+          LayoutText {#text} at (183,0) size 5x17
+            text run at (183,0) width 5: "."
       LayoutBlockFlow {DIV} at (8,106) size 768x64 [border: (1px solid #ADD8E6)]
         LayoutBlockFlow {DIV} at (5,5) size 758x18
           LayoutText {#text} at (0,0) size 47x17
