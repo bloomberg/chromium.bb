@@ -2603,6 +2603,10 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContextDetached) {
 // Test the cancelling of requests that are being transferred to a new renderer
 // due to a redirection.
 TEST_P(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
+  // PlzNavigate: there are no transferred requests in PlzNavigate.
+  if (IsBrowserSideNavigationEnabled())
+    return;
+
   EXPECT_EQ(0, host_.pending_requests());
 
   int request_id = 1;
