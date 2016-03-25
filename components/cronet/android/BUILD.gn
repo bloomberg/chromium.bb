@@ -629,6 +629,16 @@ instrumentation_test_apk("cronet_test_instrumentation_apk") {
   ]
   additional_apks = [ "//net/android:net_test_support_apk" ]
 
+  data = [
+    "//net/data/ssl/certificates/quic_test.example.com.crt",
+    "//net/data/ssl/certificates/quic_test.example.com.key",
+    "//net/data/ssl/certificates/quic_test.example.com.key.pkcs8",
+    "//net/data/ssl/certificates/quic_test.example.com.key.sct",
+  ]
+
+  # TODO(jbudorick): Remove this once GN uses the generated .isolate files.
+  isolate_file = "cronet_test_instrumentation_apk.isolate"
+
   run_findbugs = true
 }
 

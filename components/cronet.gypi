@@ -508,11 +508,16 @@
             'resource_dir': 'cronet/android/test/res',
             'is_test_apk': 1,
             'run_findbugs': 1,
+            'test_type': 'instrumentation',
+            'isolate_file': 'cronet/android/cronet_test_instrumentation_apk.isolate',
             'additional_apks': [
               '<(PRODUCT_DIR)/apks/ChromiumNetTestSupport.apk',
             ],
           },
-          'includes': [ '../build/java_apk.gypi' ],
+          'includes': [
+            '../build/java_apk.gypi',
+            '../build/android/test_runner.gypi',
+          ],
         },
         {
           'target_name': 'cronet_perf_test_apk',

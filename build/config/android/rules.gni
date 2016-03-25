@@ -1923,12 +1923,20 @@ template("android_apk") {
   }
 
   group(target_name) {
-    forward_variables_from(invoker, [ "data_deps" ])
+    forward_variables_from(invoker,
+                           [
+                             "data",
+                             "data_deps",
+                           ])
     public_deps = _final_deps
   }
   group("${target_name}_incremental") {
     data_deps = []
-    forward_variables_from(invoker, [ "data_deps" ])
+    forward_variables_from(invoker,
+                           [
+                             "data",
+                             "data_deps",
+                           ])
 
     # device/commands is used by the installer script to push files via .zip.
     data_deps += [ "//build/android/pylib/device/commands" ] +
