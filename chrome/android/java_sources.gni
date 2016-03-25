@@ -52,6 +52,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/TtsPlatformImpl.java",
   "java/src/org/chromium/chrome/browser/UpgradeActivity.java",
   "java/src/org/chromium/chrome/browser/UrlConstants.java",
+  "java/src/org/chromium/chrome/browser/UsbChooserDialog.java",
   "java/src/org/chromium/chrome/browser/WarmupManager.java",
   "java/src/org/chromium/chrome/browser/WebContentsFactory.java",
   "java/src/org/chromium/chrome/browser/WindowDelegate.java",
