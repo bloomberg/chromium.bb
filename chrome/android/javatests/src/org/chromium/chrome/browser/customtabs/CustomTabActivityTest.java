@@ -788,8 +788,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      * only one in the navigation history.
      */
     @SmallTest
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testPrecreatedRenderer() {
+    public void testPrecreatedRenderer() throws InterruptedException {
         CustomTabsConnection connection = warmUpAndWait();
         ICustomTabsCallback cb = new CustomTabsTestUtils.DummyCallback();
         assertTrue(connection.newSession(cb));
@@ -797,15 +796,21 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         extras.putBoolean(CustomTabsConnection.NO_PRERENDERING_KEY, true);
         assertTrue(connection.mayLaunchUrl(cb, Uri.parse(mTestPage), extras, null));
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        final Tab previousTab = getActivity().getActivityTab();
         try {
             startCustomTabActivityWithIntent(CustomTabsTestUtils.createMinimalCustomTabIntent(
                     context, mTestPage, cb.asBinder()));
         } catch (InterruptedException e) {
             fail();
         }
-        Tab tab = getActivity().getActivityTab();
-        assertEquals(mTestPage, tab.getUrl());
-        assertFalse(tab.canGoBack());
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                final Tab currentTab = getActivity().getActivityTab();
+                return currentTab != previousTab && mTestPage.equals(currentTab.getUrl());
+            }
+        });
+        assertFalse(getActivity().getActivityTab().canGoBack());
     }
 
     /** Tests that calling mayLaunchUrl() without warmup() succeeds. */
