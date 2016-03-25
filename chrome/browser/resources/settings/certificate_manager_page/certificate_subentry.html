@@ -34,28 +34,28 @@
     <div class="container">
       <paper-icon-button icon="image:brightness-1"></paper-icon-button>
       <div class="name">[[model.name]]</div>
-      <paper-icon-button icon="more-vert" toggles active="{{menuOpened}}">
-      </paper-icon-button>
+      <paper-icon-button id="dots" icon="more-vert" toggles
+          active="{{menuOpened}}"></paper-icon-button>
       <!-- TODO(dpapad): Figure out RTL for this menu -->
       <template is="dom-if" if="[[menuOpened]]">
         <iron-dropdown vertical-align="top" horizontal-align="right"
             opened="{{menuOpened}}">
           <div class="dropdown-content">
-            <paper-item on-tap="onViewTap_">
+            <paper-item id="view" on-tap="onViewTap_">
               $i18n{certificateManagerView}
             </paper-item>
-            <paper-item hidden$="[[!canEdit_(certificateType)]]"
+            <paper-item id="edit" hidden$="[[!canEdit_(certificateType)]]"
                 on-tap="onEditTap_">
               $i18n{certificateManagerEdit}
             </paper-item>
-            <paper-item on-tap="onExportTap_">
+            <paper-item id="export" on-tap="onExportTap_">
               $i18n{certificateManagerExport}
             </paper-item>
             <paper-item hidden$="[[!canImport_(certificateType)]]"
                 on-tap="onImportTap_">
               $i18n{certificateManagerImport}
             </paper-item>
-            <paper-item hidden$="[[model.readonly]]"
+            <paper-item id="delete" hidden$="[[model.readonly]]"
                 on-tap="onDeleteTap_">
               $i18n{certificateManagerDelete}
             </paper-item>

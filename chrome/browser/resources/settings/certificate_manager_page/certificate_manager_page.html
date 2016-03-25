@@ -8,6 +8,7 @@
 <link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_password_decryption_dialog.html">
 <link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_password_encryption_dialog.html">
 <link rel="import" href="chrome://md-settings/certificate_manager_page/certificates_browser_proxy.html">
+<link rel="import" href="chrome://md-settings/certificate_manager_page/certificates_error_dialog.html">
 
 <dom-module id="settings-certificate-manager-page">
   <template>
@@ -17,6 +18,31 @@
         --paper-tabs-selection-bar-color: blue;
       }
     </style>
+
+    <template is="dom-if" if="[[showCaTrustEditDialog_]]" restamp>
+      <settings-ca-trust-edit-dialog model="[[dialogModel_]]">
+      </settings-ca-trust-edit-dialog>
+    </template>
+    <template is="dom-if" if="[[showDeleteConfirmationDialog_]]" restamp>
+      <settings-certificate-delete-confirmation-dialog
+          model="[[dialogModel_]]"
+          certificate-type="[[dialogModelCertificateType_]]">
+      </settings-certificate-delete-confirmation-dialog>
+    </template>
+    <template is="dom-if" if="[[showPasswordEncryptionDialog_]]" restamp>
+      <settings-certificate-password-encryption-dialog
+          model="[[dialogModel_]]">
+      </settings-certificate-password-encryption-dialog>
+    </template>
+    <template is="dom-if" if="[[showPasswordDecryptionDialog_]]" restamp>
+      <settings-certificate-password-decryption-dialog>
+      </settings-certificate-password-decryption-dialog>
+    </template>
+    <template is="dom-if" if="[[showErrorDialog_]]" restamp>
+      <settings-certificates-error-dialog model="[[errorDialogModel_]]">
+      </settings-certificates-error-dialog>
+    </template>
+
     <paper-tabs selected="{{selected}}">
       <paper-tab>$i18n{certificateManagerYourCertificates}</paper-tab>
       <paper-tab>$i18n{certificateManagerServers}</paper-tab>

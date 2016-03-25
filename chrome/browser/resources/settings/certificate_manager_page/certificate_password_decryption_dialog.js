@@ -38,12 +38,14 @@ Polymer({
   /** @private */
   onOkTap_: function() {
     this.browserProxy_.importPersonalCertificatePasswordSelected(
-        this.password_).then(function() {
-      this.$.dialog.close();
-    }.bind(this),
-    /** @param {!CertificatesError} error */
-    function(error) {
-      // TODO(dpapad): Display error here.
-    });
+        this.password_).then(
+            function() {
+              this.$.dialog.close();
+            }.bind(this),
+            /** @param {!CertificatesError} error */
+            function(error) {
+              this.$.dialog.close();
+              this.fire('certificates-error', error);
+            }.bind(this));
   },
 });

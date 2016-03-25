@@ -6,6 +6,43 @@
  * @fileoverview settings-certificate-subentry represents an SSL certificate
  * sub-entry.
  */
+
+/**
+ * The payload of the certificate-action event that is emitted from this
+ * component.
+ * @typedef {{
+ *   action: !settings.CertificateAction,
+ *   subnode: !CertificateSubnode,
+ *   certificateType: !settings.CertificateType
+ * }}
+ */
+var CertificateActionEventDetail;
+
+cr.define('settings', function() {
+  /**
+   * Enumeration of actions that require a popup menu to be shown to the user.
+   * @enum {number}
+   */
+  var CertificateAction = {
+    DELETE: 0,
+    EDIT: 1,
+    EXPORT_PERSONAL: 2,
+    IMPORT_CA: 3,
+    IMPORT_PERSONAL: 4,
+  };
+
+  /**
+   * The name of the event that is fired when a menu item is tapped.
+   * @type {string}
+   */
+  var CertificateActionEvent = 'certificate-action';
+
+  return {
+    CertificateAction: CertificateAction,
+    CertificateActionEvent: CertificateActionEvent,
+  };
+});
+
 Polymer({
   is: 'settings-certificate-subentry',
 
@@ -21,8 +58,42 @@ Polymer({
   browserProxy_: null,
 
   /** @override */
-  ready: function() {
+  created: function() {
     this.browserProxy_ = settings.CertificatesBrowserProxyImpl.getInstance();
+  },
+
+  /**
+   * Dispatches an event indicating which certificate action was tapped. It is
+   * used by the parent of this element to display a modal dialog accordingly.
+   * @param {!settings.CertificateAction} action
+   * @private
+   */
+  dispatchCertificateActionEvent_: function(action) {
+    this.fire(
+        settings.CertificateActionEvent,
+        /** @type {!CertificateActionEventDetail} */ ({
+          action: action,
+          subnode: this.model,
+          certificateType: this.certificateType,
+        }));
+  },
+
+  /**
+   * Handles the case where a call to the browser resulted in a rejected
+   * promise.
+   * @param {null|!CertificatesError|!CertificatesImportError} error
+   * @private
+   */
+  onRejected_: function(error) {
+    if (error === null) {
+      // Nothing to do here. Null indicates that the user clicked "cancel" on
+      // the native file chooser dialog.
+      return;
+    }
+
+    // Otherwise propagate the error to the parents, such that a dialog
+    // displaying the error will be shown.
+    this.fire('certificates-error', error);
   },
 
   /**
@@ -40,7 +111,7 @@ Polymer({
    */
   onEditTap_: function(event) {
     this.closePopupMenu_();
-    // TODO(dpapad): Open edit dialog.
+    this.dispatchCertificateActionEvent_(settings.CertificateAction.EDIT);
   },
 
   /**
@@ -49,7 +120,7 @@ Polymer({
    */
   onDeleteTap_: function(event) {
     this.closePopupMenu_();
-    // TODO(dpapad): Open delete confirmation dialog.
+    this.dispatchCertificateActionEvent_(settings.CertificateAction.DELETE);
   },
 
   /**
@@ -59,7 +130,12 @@ Polymer({
   onExportTap_: function(event) {
     this.closePopupMenu_();
     if (this.certificateType == settings.CertificateType.PERSONAL) {
-      // TODO(dpapad): Open password encryption dialog.
+      this.browserProxy_.exportPersonalCertificate(this.model.id).then(
+          function() {
+            this.dispatchCertificateActionEvent_(
+                settings.CertificateAction.EXPORT_PERSONAL);
+          }.bind(this),
+          this.onRejected_.bind(this));
     } else {
       this.browserProxy_.exportCertificate(this.model.id);
     }
@@ -73,16 +149,21 @@ Polymer({
       this.browserProxy_.importPersonalCertificate(false).then(
           function(showPasswordPrompt) {
             if (showPasswordPrompt) {
-              // TODO(dpapad): Show password decryption dialog.
+              this.dispatchCertificateActionEvent_(
+                  settings.CertificateAction.IMPORT_PERSONAL);
             }
-          }.bind(this));
+          }.bind(this),
+          this.onRejected_.bind(this));
     } else if (this.certificateType == settings.CertificateType.CA) {
       this.browserProxy_.importCaCertificate().then(
           function(certificateName) {
-            // TODO(dpapad): Show import dialog.
-          }.bind(this));
+            this.dispatchCertificateActionEvent_(
+                settings.CertificateAction.IMPORT_CA);
+          }.bind(this),
+          this.onRejected_.bind(this));
     } else if (this.certificateType == settings.CertificateType.SERVER) {
-      this.browserProxy_.importServerCertificate();
+      this.browserProxy_.importServerCertificate().catch(
+          this.onRejected_.bind(this));
     }
   },
 

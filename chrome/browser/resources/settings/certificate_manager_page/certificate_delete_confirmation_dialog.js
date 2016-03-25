@@ -82,12 +82,14 @@ Polymer({
 
   /** @private */
   onOkTap_: function() {
-    this.browserProxy_.deleteCertificate(this.model.id).then(function() {
-      this.$.dialog.close();
-    }.bind(this),
-    /** @param {!CertificatesError} error */
-    function(error) {
-      // TODO(dpapad): Display error here.
-    });
+    this.browserProxy_.deleteCertificate(this.model.id).then(
+        function() {
+          this.$.dialog.close();
+        }.bind(this),
+        /** @param {!CertificatesError} error */
+        function(error) {
+          this.$.dialog.close();
+          this.fire('certificates-error', error);
+        }.bind(this));
   },
 });

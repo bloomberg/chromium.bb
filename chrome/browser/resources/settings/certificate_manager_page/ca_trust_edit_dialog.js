@@ -55,13 +55,15 @@ Polymer({
     this.$.spinner.active = true;
     this.browserProxy_.editCaCertificateTrust(
         this.model.id, this.$.ssl.checked,
-        this.$.email.checked, this.$.objSign.checked).then(function() {
-      this.$.spinner.active = false;
-      this.$.dialog.close();
-    }.bind(this),
-    /** @param {!CertificatesError} error */
-    function(error) {
-      // TODO(dpapad): Display error here.
-    });
+        this.$.email.checked, this.$.objSign.checked).then(
+            function() {
+              this.$.spinner.active = false;
+              this.$.dialog.close();
+            }.bind(this),
+            /** @param {!CertificatesError} error */
+            function(error) {
+              this.$.dialog.close();
+              this.fire('certificates-error', error);
+            }.bind(this));
   },
 });

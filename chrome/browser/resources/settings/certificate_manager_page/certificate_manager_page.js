@@ -48,6 +48,40 @@ Polymer({
       value: settings.CertificateType,
       readonly: true,
     },
+
+    /** @private */
+    showCaTrustEditDialog_: Boolean,
+
+    /** @private */
+    showDeleteConfirmationDialog_: Boolean,
+
+    /** @private */
+    showPasswordEncryptionDialog_: Boolean,
+
+    /** @private */
+    showPasswordDecryptionDialog_: Boolean,
+
+    /** @private */
+    showErrorDialog_: Boolean,
+
+    /**
+     * The model to be passed to dialogs that refer to a given certificate.
+     * @private {?CertificateSubnode}
+     */
+    dialogModel_: Object,
+
+    /**
+     * The certificate type to be passed to dialogs that refer to a given
+     * certificate.
+     * @private {?settings.CertificateType}
+     */
+    dialogModelCertificateType_: String,
+
+    /**
+     * The model to be passed to the error dialog.
+     * @private {null|!CertificatesError|!CertificatesImportError}
+     */
+    errorDialogModel_: Object,
   },
 
   /** @override */
@@ -64,5 +98,63 @@ Polymer({
    */
   isTabSelected_: function(selectedIndex, tabIndex) {
     return selectedIndex == tabIndex;
+  },
+
+  /** @override */
+  ready: function() {
+    this.addEventListener(settings.CertificateActionEvent, function(event) {
+      this.dialogModel_ = event.detail.subnode;
+      this.dialogModelCertificateType_ = event.detail.certificateType;
+      if (event.detail.action == settings.CertificateAction.EDIT) {
+        this.openDialog_(
+            'settings-ca-trust-edit-dialog',
+            'showCaTrustEditDialog_');
+      } else if (event.detail.action == settings.CertificateAction.DELETE) {
+        this.openDialog_(
+            'settings-certificate-delete-confirmation-dialog',
+            'showDeleteConfirmationDialog_');
+      } else if (event.detail.action ==
+          settings.CertificateAction.EXPORT_PERSONAL) {
+        this.openDialog_(
+            'settings-certificate-password-encryption-dialog',
+            'showPasswordEncryptionDialog_');
+      } else if (event.detail.action ==
+          settings.CertificateAction.IMPORT_PERSONAL) {
+        this.openDialog_(
+            'settings-certificate-password-decryption-dialog',
+            'showPasswordDecryptionDialog_');
+      } else if (event.detail.action == settings.CertificateAction.IMPORT_CA) {
+        // TODO(dpapad): Implement this.
+      }
+      event.stopPropagation();
+    }.bind(this));
+  },
+
+  /**
+   * Opens a dialog and registers listeners for
+   *  1) Removing the dialog from the DOM once is closed.
+   *  2) Showing an error dialog if necessary.
+   * The listeners are destroyed when the dialog is removed (because of
+   * 'restamp');
+   *
+   * @param {string} dialogTagName The tag name of the dialog to be shown.
+   * @param {string} domIfBooleanName The name of the boolean variable
+   *     corresponding to the dialog.
+   * @private
+   */
+  openDialog_: function(dialogTagName, domIfBooleanName) {
+    this.set(domIfBooleanName, true);
+    this.async(function() {
+      var dialog = this.$$(dialogTagName);
+      dialog.addEventListener('iron-overlay-closed', function() {
+        this.set(domIfBooleanName, false);
+      }.bind(this));
+      dialog.addEventListener('certificates-error', function(event) {
+        this.errorDialogModel_ = event.detail;
+        this.openDialog_(
+            'settings-certificates-error-dialog',
+            'showErrorDialog_');
+      }.bind(this));
+    }.bind(this));
   },
 });
