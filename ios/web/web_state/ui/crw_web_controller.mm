@@ -402,10 +402,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)shouldOpenURL:(const GURL&)url
       mainDocumentURL:(const GURL&)mainDocumentURL
           linkClicked:(BOOL)linkClicked;
-// Called when |url| needs to be opened in a matching native app.
+// Called when |URL| needs to be opened in a matching native app.
 // Returns YES if the url was succesfully opened in the native app.
-- (BOOL)urlTriggersNativeAppLaunch:(const GURL&)url
-                         sourceURL:(const GURL&)sourceURL;
+- (BOOL)urlTriggersNativeAppLaunch:(const GURL&)URL
+                         sourceURL:(const GURL&)sourceURL
+                       linkClicked:(BOOL)linkClicked;
 // Best guess as to whether the request is a main frame request. This method
 // should not be assumed correct for security evaluations, as it is possible to
 // spoof.
@@ -2714,7 +2715,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // also because there would be nothing shown in that new tab; it would
     // remain on about:blank (see crbug.com/240178)
     if ([CRWWebController webControllerCanShow:requestURL] ||
-        ![_delegate openExternalURL:requestURL]) {
+        ![_delegate openExternalURL:requestURL linkClicked:isLinkClick]) {
       web::NewWindowInfo windowInfo = *_externalRequest;
       dispatch_async(dispatch_get_main_queue(), ^{
         [self openPopupWithInfo:windowInfo];
@@ -2724,25 +2725,18 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return NO;
   }
 
-  BOOL shouldCheckNativeApp = [self shouldClosePageOnNativeApplicationLoad];
-
-  // Check if the link navigation leads to a launch of an external app.
-  // TODO(shreyasv): Change this such that handling/stealing of link navigations
-  // is delegated to the WebDelegate and the logic around external app launching
-  // is moved there as well.
-  if (shouldCheckNativeApp || isLinkClick) {
-    // Check If the URL is handled by a native app.
-    if ([self urlTriggersNativeAppLaunch:requestURL
-                               sourceURL:[self currentNavigationURL]]) {
-      // External app has been launched successfully. Stop the current page
-      // load operation (e.g. notifying all observers) and record the URL so
-      // that errors reported following the 'NO' reply can be safely ignored.
-      if ([self shouldClosePageOnNativeApplicationLoad])
-        [_delegate webPageOrderedClose];
-      [self stopLoading];
-      [_openedApplicationURL addObject:request.URL];
-      return NO;
-    }
+  // Check If the URL is handled by a native app.
+  if ([self urlTriggersNativeAppLaunch:requestURL
+                             sourceURL:[self currentNavigationURL]
+                           linkClicked:isLinkClick]) {
+    // External app has been launched successfully. Stop the current page
+    // load operation (e.g. notifying all observers) and record the URL so
+    // that errors reported following the 'NO' reply can be safely ignored.
+    if ([self shouldClosePageOnNativeApplicationLoad])
+      [_delegate webPageOrderedClose];
+    [self stopLoading];
+    [_openedApplicationURL addObject:request.URL];
+    return NO;
   }
 
   // The WebDelegate may instruct the CRWWebController to stop loading, and
@@ -2768,7 +2762,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     if ([self isPutativeMainFrameRequest:request targetFrame:targetFrame])
       [self stopLoading];
 
-    if ([_delegate openExternalURL:requestURL]) {
+    if ([_delegate openExternalURL:requestURL linkClicked:isLinkClick]) {
       // Record the URL so that errors reported following the 'NO' reply can be
       // safely ignored.
       [_openedApplicationURL addObject:request.URL];
@@ -3646,12 +3640,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
          [_delegate webController:self shouldOpenExternalURL:requestURL];
 }
 
-- (BOOL)urlTriggersNativeAppLaunch:(const GURL&)url
-                         sourceURL:(const GURL&)sourceURL {
-  return
-      [_delegate respondsToSelector:@selector(urlTriggersNativeAppLaunch:
-                                                               sourceURL:)] &&
-      [_delegate urlTriggersNativeAppLaunch:url sourceURL:sourceURL];
+- (BOOL)urlTriggersNativeAppLaunch:(const GURL&)URL
+                         sourceURL:(const GURL&)sourceURL
+                       linkClicked:(BOOL)linkClicked {
+  if (![_delegate respondsToSelector:@selector(urlTriggersNativeAppLaunch:
+                                                                sourceURL:
+                                                              linkClicked:)]) {
+    return NO;
+  }
+  return [_delegate urlTriggersNativeAppLaunch:URL
+                                     sourceURL:sourceURL
+                                   linkClicked:linkClicked];
 }
 
 - (CGFloat)headerHeight {

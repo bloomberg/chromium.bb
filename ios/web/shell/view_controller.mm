@@ -285,7 +285,7 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
 }
 - (void)openURLWithParams:(const web::WebState::OpenURLParams&)params {
 }
-- (BOOL)openExternalURL:(const GURL&)url {
+- (BOOL)openExternalURL:(const GURL&)URL linkClicked:(BOOL)linkClicked {
   return NO;
 }
 
