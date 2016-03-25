@@ -81442,9 +81442,9 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="SiteEngagementServiceEngagementType" type="int">
   <int value="0" label="Navigation"/>
   <int value="1" label="Keypress"/>
-  <int value="2" label="Mouse"/>
-  <int value="3" label="Touch gesture"/>
-  <int value="4" label="Mouse wheel"/>
+  <int value="2" label="Mouse down"/>
+  <int value="3" label="Tap gesture"/>
+  <int value="4" label="Scroll (mouse wheel or touch)"/>
   <int value="5" label="Media (foreground tab)"/>
   <int value="6" label="Media (background tab)"/>
   <int value="7" label="Webapp shortcut launch"/>

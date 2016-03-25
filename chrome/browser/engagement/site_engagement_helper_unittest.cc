@@ -146,8 +146,8 @@ TEST_F(SiteEngagementHelperTest, MouseDownEventEngagementAccumulation) {
   UserInputAccumulation(blink::WebInputEvent::MouseDown);
 }
 
-TEST_F(SiteEngagementHelperTest, MouseWheelEventEngagementAccumulation) {
-  UserInputAccumulation(blink::WebInputEvent::MouseWheel);
+TEST_F(SiteEngagementHelperTest, ScrollEventEngagementAccumulation) {
+  UserInputAccumulation(blink::WebInputEvent::GestureScrollBegin);
 }
 
 TEST_F(SiteEngagementHelperTest, GestureEngagementAccumulation) {
@@ -333,7 +333,8 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
       SiteEngagementMetrics::kEngagementTypeHistogram,
       SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT, 1);
 
-  HandleUserInputAndRestartTracking(helper, blink::WebInputEvent::MouseWheel);
+  HandleUserInputAndRestartTracking(helper,
+                                    blink::WebInputEvent::GestureScrollBegin);
   HandleUserInputAndRestartTracking(helper, blink::WebInputEvent::MouseDown);
   HandleMediaPlaying(helper, true);
   HandleUserInputAndRestartTracking(helper,
@@ -347,7 +348,7 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_MOUSE, 2);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                               SiteEngagementMetrics::ENGAGEMENT_WHEEL, 1);
+                               SiteEngagementMetrics::ENGAGEMENT_SCROLL, 1);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                                SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE,
                                3);

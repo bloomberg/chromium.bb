@@ -643,7 +643,7 @@ TEST_F(SiteEngagementServiceTest, GetTotalUserInputPoints) {
   EXPECT_DOUBLE_EQ(0.15, service->GetScore(url1));
   EXPECT_DOUBLE_EQ(0.3, service->GetTotalEngagementPoints());
 
-  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_WHEEL);
+  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_SCROLL);
   service->HandleUserInput(url3,
                            SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE);
   EXPECT_DOUBLE_EQ(0.15, service->GetScore(url2));
@@ -906,7 +906,7 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
 
   service->HandleNavigation(url1, ui::PAGE_TRANSITION_GENERATED);
   service->HandleNavigation(url1, ui::PAGE_TRANSITION_TYPED);
-  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_WHEEL);
+  service->HandleUserInput(url2, SiteEngagementMetrics::ENGAGEMENT_SCROLL);
   service->HandleUserInput(url1, SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
   service->HandleUserInput(url3, SiteEngagementMetrics::ENGAGEMENT_MOUSE);
 
@@ -922,7 +922,7 @@ TEST_F(SiteEngagementServiceTest, CheckHistograms) {
                                SiteEngagementMetrics::ENGAGEMENT_TOUCH_GESTURE,
                                1);
   histograms.ExpectBucketCount(SiteEngagementMetrics::kEngagementTypeHistogram,
-                               SiteEngagementMetrics::ENGAGEMENT_WHEEL, 1);
+                               SiteEngagementMetrics::ENGAGEMENT_SCROLL, 1);
   histograms.ExpectBucketCount(
       SiteEngagementMetrics::kEngagementTypeHistogram,
       SiteEngagementMetrics::ENGAGEMENT_FIRST_DAILY_ENGAGEMENT, 3);

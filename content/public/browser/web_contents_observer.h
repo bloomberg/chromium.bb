@@ -327,15 +327,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // The type argument specifies the kind of interaction. Direct user input
   // signalled through this callback includes:
   // 1) any mouse down event (blink::WebInputEvent::MouseDown);
-  // 2) the start of a mouse wheel scroll (blink::WebInputEvent::MouseWheel);
+  // 2) the start of a scroll (blink::WebInputEvent::GestureScrollBegin);
   // 3) any raw key down event (blink::WebInputEvent::RawKeyDown);
   // 4) any gesture tap event (blink::WebInputEvent::GestureTapDown); and
   // 5) a browser navigation or reload (blink::WebInputEvent::Undefined).
-  // The start of a mouse wheel scroll is heuristically detected: a mouse
-  // wheel event fired at least 0.1 seconds after any other wheel event is
-  // regarded as the beginning of a scroll. This matches the interval used by
-  // the Blink EventHandler to detect the end of scrolls.
-  // TODO(dominickn): replace MouseWheel with GestureScrollBegin.
   virtual void DidGetUserInteraction(const blink::WebInputEvent::Type type) {}
 
   // This method is invoked when a RenderViewHost of this WebContents was

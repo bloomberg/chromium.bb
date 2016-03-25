@@ -354,8 +354,8 @@ TEST_F(DownloadRequestLimiterTest, DownloadRequestLimiter_ResetOnUserGesture) {
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
-  // Do a user gesture with mouse scroll, which should be ignored.
-  OnUserInteraction(blink::WebInputEvent::MouseWheel);
+  // Do a user gesture with scroll, which should be ignored.
+  OnUserInteraction(blink::WebInputEvent::GestureScrollBegin);
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
   // Do a user gesture with mouse click, which should reset back to allow one.

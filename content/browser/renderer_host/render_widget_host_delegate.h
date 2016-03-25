@@ -78,11 +78,10 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // the event itself.
   virtual bool HandleWheelEvent(const blink::WebMouseWheelEvent& event);
 
-  // Notification the user has performed a direct interaction (mouse down, mouse
-  // wheel, raw key down, gesture tap, or browser-initiated navigation) while
+  // Notification the user has performed a direct interaction (mouse down,
+  // scroll, raw key down, gesture tap, or browser-initiated navigation) while
   // focus was on the page. Informs the delegate that a user is interacting with
-  // a site. Only the first mouse wheel event during a scroll will trigger this
-  // method.
+  // a site.
   virtual void OnUserInteraction(RenderWidgetHostImpl* render_widget_host,
                                  const blink::WebInputEvent::Type type) {}
 

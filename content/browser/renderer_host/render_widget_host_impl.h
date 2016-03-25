@@ -821,12 +821,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   // renderer process before clearing any previously displayed content.
   base::TimeDelta new_content_rendering_delay_;
 
-  // Timer used to batch together mouse wheel events for the delegate
-  // OnUserInteraction method. A wheel event is only dispatched when a wheel
-  // event has not been seen for kMouseWheelCoalesceInterval seconds prior.
-  // TODO(dominickn): remove this when GestureScrollBegin has landed.
-  scoped_ptr<base::ElapsedTimer> mouse_wheel_coalesce_timer_;
-
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);
