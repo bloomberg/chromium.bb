@@ -204,6 +204,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       suppress_destruction_errors_(false) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
+  DCHECK(client_);
 
   if (delegate_)
     delegate_id_ = delegate_->AddObserver(this);
@@ -826,6 +827,30 @@ void WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated(
   // WebSourceBufferImpl.
   DCHECK(demuxer_.get());
   DCHECK(!chunk_demuxer_);
+
+  // Report the media track information to blink.
+  for (const auto& track : tracks->tracks()) {
+    if (track->type() == MediaTrack::Audio) {
+      auto track_id = client_->addAudioTrack(
+          blink::WebString::fromUTF8(track->id()),
+          blink::WebMediaPlayerClient::AudioTrackKindMain,
+          blink::WebString::fromUTF8(track->label()),
+          blink::WebString::fromUTF8(track->language()),
+          /*enabled*/ true);
+      (void)track_id;
+    } else if (track->type() == MediaTrack::Video) {
+      auto track_id = client_->addVideoTrack(
+          blink::WebString::fromUTF8(track->id()),
+          blink::WebMediaPlayerClient::VideoTrackKindMain,
+          blink::WebString::fromUTF8(track->label()),
+          blink::WebString::fromUTF8(track->language()),
+          /*selected*/ true);
+      (void)track_id;
+    } else {
+      // Text tracks are not supported through this code path yet.
+      NOTREACHED();
+    }
+  }
 }
 
 void WebMediaPlayerImpl::OnWaitingForDecryptionKey() {
@@ -1305,8 +1330,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
 #if !defined(MEDIA_DISABLE_FFMPEG)
     Demuxer::MediaTracksUpdatedCB media_tracks_updated_cb =
-        base::Bind(&WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated,
-                   base::Unretained(this));
+        BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated);
 
     demuxer_.reset(new FFmpegDemuxer(media_task_runner_, data_source_.get(),
                                      encrypted_media_init_data_cb,

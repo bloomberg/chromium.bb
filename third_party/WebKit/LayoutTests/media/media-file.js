@@ -6,7 +6,8 @@ var audioCodecs = [
 
 var videoCodecs = [
     ["video/mp4", "mp4"],
-    ["video/ogg", "ogv"]
+    ["video/ogg", "ogv"],
+    ["video/webm","webm"]
 ];
 
 function findMediaFile(tagName, name) {
