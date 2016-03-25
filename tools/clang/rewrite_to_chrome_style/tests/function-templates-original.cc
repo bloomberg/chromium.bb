@@ -11,8 +11,6 @@ bool isInBounds(From value) {
 
 template<typename To, typename From>
 To safeCast(From value) {
-  // Note: this (incorrectly) doesn't get rewritten, because this template is
-  // never instantiated, so the AST is just an UnresolvedLookupExpr node.
   if (!isInBounds<To>(value))
     return 0;
   return static_cast<To>(value);
@@ -23,8 +21,8 @@ class Checked {
  public:
   template<typename U, typename V>
   Checked(const Checked<U, V>& rhs){
-    // Similarly, this (incorrectly) also doesn't get rewritten, since it's not
-    // instantiated. In this case, the AST representation contains a bunch of
+    // This (incorrectly) doesn't get rewritten, since it's not instantiated. In
+    // this case, the AST representation contains a bunch of
     // CXXDependentScopeMemberExpr nodes.
     if (rhs.hasOverflowed())
       this->overflowed();

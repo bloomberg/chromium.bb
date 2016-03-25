@@ -52,6 +52,10 @@ const char kBlinkFieldPrefix[] = "m_";
 const char kBlinkStaticMemberPrefix[] = "s_";
 const char kGeneratedFileRegex[] = "^gen/|/gen/";
 
+const clang::ast_matchers::internal::
+    VariadicDynCastAllOfMatcher<clang::Expr, clang::UnresolvedLookupExpr>
+        unresolvedLookupExpr;
+
 AST_MATCHER(clang::FunctionDecl, isOverloadedOperator) {
   return Node.isOverloadedOperator();
 }
@@ -73,6 +77,20 @@ AST_MATCHER_P(clang::CXXCtorInitializer,
   const clang::FieldDecl* NodeAsDecl = Node.getAnyMember();
   return (NodeAsDecl != nullptr &&
           InnerMatcher.matches(*NodeAsDecl, Finder, Builder));
+}
+
+// Matches if all the overloads in the lookup set match the provided matcher.
+AST_MATCHER_P(clang::OverloadExpr,
+              allOverloadsMatch,
+              clang::ast_matchers::internal::Matcher<clang::NamedDecl>,
+              InnerMatcher) {
+  assert(Node.getNumDecls() > 0);
+
+  for (clang::NamedDecl* decl : Node.decls()) {
+    if (!InnerMatcher.matches(*decl, Finder, Builder))
+      return false;
+  }
+  return true;
 }
 
 bool IsDeclContextInWTF(const clang::DeclContext* decl_context) {
@@ -144,6 +162,11 @@ bool IsMethodOverrideOf(const clang::CXXMethodDecl& decl,
   return false;
 }
 
+bool IsBlacklistedFunction(const clang::FunctionDecl& decl) {
+  // swap() functions should match the signature of std::swap for ADL tricks.
+  return decl.getName() == "swap";
+}
+
 bool IsBlacklistedMethod(const clang::CXXMethodDecl& decl) {
   if (decl.isStatic())
     return false;
@@ -179,6 +202,10 @@ bool IsBlacklistedMethod(const clang::CXXMethodDecl& decl) {
     return true;
 
   return false;
+}
+
+AST_MATCHER(clang::FunctionDecl, isBlacklistedFunction) {
+  return IsBlacklistedFunction(Node);
 }
 
 AST_MATCHER(clang::CXXMethodDecl, isBlacklistedMethod) {
@@ -258,17 +285,7 @@ bool IsProbablyConst(const clang::VarDecl& decl,
 bool GetNameForDecl(const clang::FunctionDecl& decl,
                     const clang::ASTContext& context,
                     std::string& name) {
-  StringRef original_name = decl.getName();
-
-  // Some functions shouldn't be renamed because reasons.
-  // - swap() methods should match the signature of std::swap for ADL tricks.
-  static const char* kBlacklist[] = {"swap"};
-  for (const auto& b : kBlacklist) {
-    if (original_name == b)
-      return false;
-  }
-
-  name = original_name.str();
+  name = decl.getName().str();
   name[0] = clang::toUppercase(name[0]);
   return true;
 }
@@ -297,14 +314,6 @@ bool GetNameForDecl(const clang::EnumConstantDecl& decl,
   name = 'k';  // k prefix on enum values.
   name += original_name;
   name[1] = clang::toUppercase(name[1]);
-  return true;
-}
-
-bool GetNameForDecl(const clang::CXXMethodDecl& decl,
-                    const clang::ASTContext& context,
-                    std::string& name) {
-  name = decl.getName().str();
-  name[0] = clang::toUppercase(name[0]);
   return true;
 }
 
@@ -380,18 +389,12 @@ bool GetNameForDecl(const clang::FunctionTemplateDecl& decl,
                     const clang::ASTContext& context,
                     std::string& name) {
   clang::FunctionDecl* templated_function = decl.getTemplatedDecl();
-  if (auto* method = clang::dyn_cast<clang::CXXMethodDecl>(templated_function))
-    return GetNameForDecl(*method, context, name);
   return GetNameForDecl(*templated_function, context, name);
 }
 
 bool GetNameForDecl(const clang::NamedDecl& decl,
                     const clang::ASTContext& context,
                     std::string& name) {
-  // Note: CXXMethodDecl must be checked before FunctionDecl, because
-  // CXXMethodDecl is derived from FunctionDecl.
-  if (auto* method = clang::dyn_cast<clang::CXXMethodDecl>(&decl))
-    return GetNameForDecl(*method, context, name);
   if (auto* function = clang::dyn_cast<clang::FunctionDecl>(&decl))
     return GetNameForDecl(*function, context, name);
   if (auto* var = clang::dyn_cast<clang::VarDecl>(&decl))
@@ -457,6 +460,15 @@ struct TargetNodeTraits<clang::CXXCtorInitializer> {
   }
   static const char* GetName() { return "initializer"; }
   static const char* GetType() { return "CXXCtorInitializer"; }
+};
+
+template <>
+struct TargetNodeTraits<clang::UnresolvedLookupExpr> {
+  static clang::SourceLocation GetLoc(const clang::UnresolvedLookupExpr& expr) {
+    return expr.getLocStart();
+  }
+  static const char* GetName() { return "expr"; }
+  static const char* GetType() { return "UnresolvedLookupExpr"; }
 };
 
 template <typename DeclNode, typename TargetNode>
@@ -530,6 +542,9 @@ using EnumConstantDeclRewriter =
     RewriterBase<clang::EnumConstantDecl, clang::NamedDecl>;
 using EnumConstantDeclRefRewriter =
     RewriterBase<clang::EnumConstantDecl, clang::DeclRefExpr>;
+
+using UnresolvedLookupRewriter =
+    RewriterBase<clang::NamedDecl, clang::UnresolvedLookupExpr>;
 
 using UsingDeclRewriter = RewriterBase<clang::UsingDecl, clang::NamedDecl>;
 
@@ -636,7 +651,10 @@ int main(int argc, const char* argv[]) {
               cxxMethodDecl(),
               // Out-of-line overloaded operators have special names and should
               // never be renamed.
-              isOverloadedOperator())),
+              isOverloadedOperator(),
+              // Must be checked after filtering out overloaded operators to
+              // prevent asserts about the identifier not being a simple name.
+              isBlacklistedFunction())),
           in_blink_namespace));
   FunctionDeclRewriter function_decl_rewriter(&replacements);
   match_finder.addMatcher(function_decl_matcher, &function_decl_rewriter);
@@ -726,22 +744,58 @@ int main(int argc, const char* argv[]) {
   match_finder.addMatcher(constructor_initializer_matcher,
                           &constructor_initializer_rewriter);
 
+  // Unresolved lookup expressions ========
+  // Given
+  //   template<typename T> void F(T) { }
+  //   template<void G(T)> H(T) { }
+  //   H<F<int>>(...);
+  // matches |F| in |H<F<int>>|.
+  //
+  // UnresolvedLookupExprs are similar to DeclRefExprs that reference a
+  // FunctionDecl, but are used when a candidate FunctionDecl can't be selected.
+  // This commonly happens inside uninstantiated template definitions for one of
+  // two reasons:
+  //
+  // 1. If the candidate declaration is a dependent FunctionTemplateDecl, the
+  //    actual overload can't be selected until template instantiation time.
+  // 2. Alternatively, there might be multiple declarations in the candidate set
+  //    if the candidate function has overloads. If any of the function
+  //    arguments has a dependent type, then the actual overload can't be
+  //    selected until instantiation time either.
+  //
+  // Another instance where UnresolvedLookupExprs can appear is in a template
+  // argument list, like the provided example.
+  auto function_template_decl_matcher =
+      id("decl", functionTemplateDecl(templatedDecl(function_decl_matcher)));
+  auto method_template_decl_matcher =
+      id("decl", functionTemplateDecl(templatedDecl(method_decl_matcher)));
+  auto unresolved_lookup_matcher = expr(id(
+      "expr",
+      unresolvedLookupExpr(anyOf(
+          // In order to automatically rename an unresolved lookup, the lookup
+          // candidates must either all be Blink functions/function templates or
+          // Blink methods/method templates. Otherwise, we might end up in a
+          // situation where the naming could change depending on the selected
+          // candidate.
+          allOverloadsMatch(
+              anyOf(function_decl_matcher, function_template_decl_matcher)),
+          allOverloadsMatch(
+              anyOf(method_decl_matcher, method_template_decl_matcher))))));
+  UnresolvedLookupRewriter unresolved_lookup_rewriter(&replacements);
+  match_finder.addMatcher(unresolved_lookup_matcher,
+                          &unresolved_lookup_rewriter);
+
   // Using declarations ========
   // Given
   //   using blink::X;
   // matches |using blink::X|.
-  auto function_template_decl_matcher =
-      id("decl", functionTemplateDecl(templatedDecl(anyOf(function_decl_matcher,
-                                                          method_decl_matcher)),
-                                      in_blink_namespace));
+  auto using_decl_matcher = id(
+      "decl", usingDecl(hasAnyUsingShadowDecl(hasTargetDecl(anyOf(
+                  var_decl_matcher, field_decl_matcher, function_decl_matcher,
+                  method_decl_matcher, function_template_decl_matcher,
+                  method_template_decl_matcher, enum_member_decl_matcher)))));
   UsingDeclRewriter using_decl_rewriter(&replacements);
-  match_finder.addMatcher(
-      id("decl",
-         usingDecl(hasAnyUsingShadowDecl(hasTargetDecl(
-             anyOf(var_decl_matcher, field_decl_matcher, function_decl_matcher,
-                   method_decl_matcher, function_template_decl_matcher,
-                   enum_member_decl_matcher))))),
-      &using_decl_rewriter);
+  match_finder.addMatcher(using_decl_matcher, &using_decl_rewriter);
 
   std::unique_ptr<clang::tooling::FrontendActionFactory> factory =
       clang::tooling::newFrontendActionFactory(&match_finder);

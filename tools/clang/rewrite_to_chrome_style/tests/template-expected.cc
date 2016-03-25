@@ -85,10 +85,7 @@ unsigned ReallyBadHash(const T* data, unsigned length) {
 
 struct StringHasher {
   static unsigned Hash(const char* data, unsigned length) {
-    // TODO(dcheng): For some reason, brokenFoldCase gets parsed as an
-    // UnresolvedLookupExpr, so this doesn't get rewritten. Meh. See
-    // https://crbug.com/584408.
-    return ReallyBadHash<char, brokenFoldCase<char>>(data, length);
+    return ReallyBadHash<char, BrokenFoldCase<char>>(data, length);
   }
 
  private:
