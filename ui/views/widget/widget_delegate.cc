@@ -84,7 +84,11 @@ bool WidgetDelegate::ShouldShowWindowTitle() const {
 }
 
 bool WidgetDelegate::ShouldShowCloseButton() const {
+#if defined(OS_MACOSX)
+  return false;
+#else
   return true;
+#endif
 }
 
 bool WidgetDelegate::ShouldHandleSystemCommands() const {
