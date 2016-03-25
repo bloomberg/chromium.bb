@@ -236,6 +236,7 @@ void ShelfLayoutManager::PrepareForShutdown() {
   // Stop observing window change, otherwise we can attempt to update a
   // partially destructed shelf.
   aura::client::GetActivationClient(root_window_)->RemoveObserver(this);
+  FOR_EACH_OBSERVER(ShelfLayoutManagerObserver, observers_, WillDeleteShelf());
 }
 
 bool ShelfLayoutManager::IsVisible() const {
