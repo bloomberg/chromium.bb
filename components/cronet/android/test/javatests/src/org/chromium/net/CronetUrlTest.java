@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.PathUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.File;
 import java.util.HashMap;
@@ -18,16 +19,29 @@ import java.util.HashMap;
  */
 @SuppressWarnings("deprecation")
 public class CronetUrlTest extends CronetTestBase {
-    // URL used for base tests.
-    private static final String URL = "http://127.0.0.1:8000";
+    private EmbeddedTestServer mTestServer;
+    private String mUrl;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartDefaultServer(getContext());
+        mUrl = mTestServer.getURL("/echo?status=200");
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testLoadUrl() throws Exception {
-        CronetTestFramework testFramework = startCronetTestFrameworkForLegacyApi(URL);
+        CronetTestFramework testFramework = startCronetTestFrameworkForLegacyApi(mUrl);
 
         // Make sure that the URL is set as expected.
-        assertEquals(URL, testFramework.getUrl());
+        assertEquals(mUrl, testFramework.getUrl());
         assertEquals(200, testFramework.getHttpStatusCode());
     }
 
@@ -46,10 +60,10 @@ public class CronetUrlTest extends CronetTestBase {
         String[] commandLineArgs = {CronetTestFramework.POST_DATA_KEY, "test",
                 CronetTestFramework.LIBRARY_INIT_KEY, CronetTestFramework.LibraryInitType.LEGACY};
         CronetTestFramework testFramework =
-                startCronetTestFrameworkWithUrlAndCommandLineArgs(URL, commandLineArgs);
+                startCronetTestFrameworkWithUrlAndCommandLineArgs(mUrl, commandLineArgs);
 
         // Make sure that the URL is set as expected.
-        assertEquals(URL, testFramework.getUrl());
+        assertEquals(mUrl, testFramework.getUrl());
         assertEquals(200, testFramework.getHttpStatusCode());
     }
 
@@ -71,7 +85,7 @@ public class CronetUrlTest extends CronetTestBase {
         HashMap<String, String> headers = new HashMap<String, String>();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
         HttpUrlRequest request = factory.createRequest(
-                URL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
+                mUrl, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
         request.start();
         listener.blockForComplete();
         factory.stopNetLog();
@@ -96,14 +110,14 @@ public class CronetUrlTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testCalledByNativeException() throws Exception {
-        CronetTestFramework testFramework = startCronetTestFrameworkForLegacyApi(URL);
+        CronetTestFramework testFramework = startCronetTestFrameworkForLegacyApi(mUrl);
 
         HashMap<String, String> headers = new HashMap<String, String>();
         BadHttpUrlRequestListener listener = new BadHttpUrlRequestListener();
 
         // Create request with bad listener to trigger an exception.
         HttpUrlRequest request = testFramework.mRequestFactory.createRequest(
-                URL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
+                mUrl, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
         request.start();
         listener.blockForComplete();
         assertTrue(request.isCanceled());
@@ -115,14 +129,14 @@ public class CronetUrlTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     public void testSetUploadDataWithNullContentType() throws Exception {
-        CronetTestFramework testFramework = startCronetTestFrameworkForLegacyApi(URL);
+        CronetTestFramework testFramework = startCronetTestFrameworkForLegacyApi(mUrl);
 
         HashMap<String, String> headers = new HashMap<String, String>();
         BadHttpUrlRequestListener listener = new BadHttpUrlRequestListener();
 
         // Create request.
         HttpUrlRequest request = testFramework.mRequestFactory.createRequest(
-                URL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
+                mUrl, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
         byte[] uploadData = new byte[] {1, 2, 3};
         try {
             request.setUploadData(null, uploadData);
@@ -138,24 +152,24 @@ public class CronetUrlTest extends CronetTestBase {
         CronetEngine.Builder builder = new CronetEngine.Builder(getContext());
         builder.enableLegacyMode(true);
 
-        CronetTestFramework testFramework = startCronetTestFrameworkForLegacyApi(URL);
+        CronetTestFramework testFramework = startCronetTestFrameworkForLegacyApi(mUrl);
 
         // Make sure that the URL is set as expected.
-        assertEquals(URL, testFramework.getUrl());
+        assertEquals(mUrl, testFramework.getUrl());
         assertEquals(200, testFramework.getHttpStatusCode());
     }
 
     @SmallTest
     @Feature({"Cronet"})
     public void testRequestHead() throws Exception {
-        CronetTestFramework testFramework = startCronetTestFrameworkForLegacyApi(URL);
+        CronetTestFramework testFramework = startCronetTestFrameworkForLegacyApi(mUrl);
 
         HashMap<String, String> headers = new HashMap<String, String>();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
 
         // Create request.
         HttpUrlRequest request = testFramework.mRequestFactory.createRequest(
-                URL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
+                mUrl, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
         request.setHttpMethod("HEAD");
         request.start();
         listener.blockForComplete();

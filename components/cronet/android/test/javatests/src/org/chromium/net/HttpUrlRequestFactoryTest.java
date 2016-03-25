@@ -9,6 +9,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase.OnlyRunNativeCronet;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.io.File;
 import java.util.HashMap;
@@ -19,8 +20,21 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings("deprecation")
 public class HttpUrlRequestFactoryTest extends CronetTestBase {
-    // URL used for base tests.
-    private static final String URL = "http://127.0.0.1:8000";
+    private EmbeddedTestServer mTestServer;
+    private String mUrl;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartDefaultServer(getContext());
+        mUrl = mTestServer.getURL("/echo?status=200");
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
 
     @SmallTest
     @Feature({"Cronet"})
@@ -54,8 +68,7 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
                            factory.getName()));
         HashMap<String, String> headers = new HashMap<String, String>();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
-        HttpUrlRequest request = factory.createRequest(
-                URL, 0, headers, listener);
+        HttpUrlRequest request = factory.createRequest(mUrl, 0, headers, listener);
         request.start();
         listener.blockForComplete();
         assertEquals(200, listener.mHttpStatusCode);
@@ -78,8 +91,7 @@ public class HttpUrlRequestFactoryTest extends CronetTestBase {
                            factory.getName()));
         HashMap<String, String> headers = new HashMap<String, String>();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
-        HttpUrlRequest request = factory.createRequest(
-                URL, 0, headers, listener);
+        HttpUrlRequest request = factory.createRequest(mUrl, 0, headers, listener);
         request.start();
         listener.blockForComplete();
         assertEquals(200, listener.mHttpStatusCode);

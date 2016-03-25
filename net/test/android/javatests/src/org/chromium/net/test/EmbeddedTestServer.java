@@ -221,7 +221,7 @@ public class EmbeddedTestServer {
             throws InterruptedException {
         EmbeddedTestServer server = new EmbeddedTestServer();
         server.initializeNative(context);
-        server.addDefaultHandlers("/");
+        server.addDefaultHandlers("");
         if (!server.start()) {
             throw new EmbeddedTestServerFailure("Failed to start serving using default handlers.");
         }

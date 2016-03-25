@@ -500,6 +500,7 @@
           'dependencies': [
             'cronet_test_apk_java',
             '../base/base.gyp:base_java_test_support',
+            '../net/net.gyp:net_java_test_support',
             '../net/net.gyp:require_net_test_support_apk',
           ],
           'variables': {

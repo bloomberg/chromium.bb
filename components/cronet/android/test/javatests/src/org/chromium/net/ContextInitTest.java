@@ -8,6 +8,7 @@ import android.content.ContextWrapper;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
+import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.HashMap;
 
@@ -17,10 +18,23 @@ import java.util.HashMap;
  */
 @SuppressWarnings("deprecation")
 public class ContextInitTest extends CronetTestBase {
-    // URL used for base tests.
-    private static final String URL = "http://127.0.0.1:8000";
-    // URL used for tests that return HTTP not found (404).
-    private static final String URL_404 = "http://127.0.0.1:8000/notfound404";
+    private EmbeddedTestServer mTestServer;
+    private String mUrl;
+    private String mUrl404;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        mTestServer = EmbeddedTestServer.createAndStartDefaultServer(getContext());
+        mUrl = mTestServer.getURL("/echo?status=200");
+        mUrl404 = mTestServer.getURL("/echo?status=404");
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        mTestServer.stopAndDestroyServer();
+        super.tearDown();
+    }
 
     @SmallTest
     @Feature({"Cronet"})
@@ -29,7 +43,7 @@ public class ContextInitTest extends CronetTestBase {
 
         // Immediately make a request after initializing the factory.
         HttpUrlRequestFactory factory = testFramework.initRequestFactory();
-        TestHttpUrlRequestListener listener = makeRequest(factory, URL);
+        TestHttpUrlRequestListener listener = makeRequest(factory, mUrl);
         listener.blockForComplete();
         assertEquals(200, listener.mHttpStatusCode);
     }
@@ -44,7 +58,7 @@ public class ContextInitTest extends CronetTestBase {
         HashMap<String, String> headers = new HashMap<String, String>();
         TestHttpUrlRequestListener listener = new TestHttpUrlRequestListener();
         HttpUrlRequest request = factory.createRequest(
-                URL, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
+                mUrl, HttpUrlRequest.REQUEST_PRIORITY_MEDIUM, headers, listener);
         request.start();
         request.cancel();
         listener.blockForComplete();
@@ -58,7 +72,7 @@ public class ContextInitTest extends CronetTestBase {
 
         // Make two request right after initializing the factory.
         int[] statusCodes = {0, 0};
-        String[] urls = {URL, URL_404};
+        String[] urls = {mUrl, mUrl404};
         HttpUrlRequestFactory factory = testFramework.initRequestFactory();
         for (int i = 0; i < 2; i++) {
             TestHttpUrlRequestListener listener = makeRequest(factory, urls[i]);
@@ -93,8 +107,8 @@ public class ContextInitTest extends CronetTestBase {
     public void testInitTwoFactoriesSimultaneously() throws Exception {
         final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
-        RequestThread thread1 = new RequestThread(testFramework, URL);
-        RequestThread thread2 = new RequestThread(testFramework, URL_404);
+        RequestThread thread1 = new RequestThread(testFramework, mUrl);
+        RequestThread thread2 = new RequestThread(testFramework, mUrl404);
 
         thread1.start();
         thread2.start();
@@ -109,8 +123,8 @@ public class ContextInitTest extends CronetTestBase {
     public void testInitTwoFactoriesInSequence() throws Exception {
         final CronetTestFramework testFramework = startCronetTestFrameworkAndSkipLibraryInit();
 
-        RequestThread thread1 = new RequestThread(testFramework, URL);
-        RequestThread thread2 = new RequestThread(testFramework, URL_404);
+        RequestThread thread1 = new RequestThread(testFramework, mUrl);
+        RequestThread thread2 = new RequestThread(testFramework, mUrl404);
 
         thread1.start();
         thread1.join();
