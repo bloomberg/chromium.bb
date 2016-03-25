@@ -82,7 +82,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
 
 /**
@@ -921,31 +920,16 @@ public class AwContents implements SmartClipProvider,
             return mWindowAndroid;
         }
     }
-    private static WindowAndroidWrapper sCachedWindowAndroid;
-    private static WeakHashMap<Context, WindowAndroidWrapper> sActivityContextWindowMap;
 
-    // getWindowAndroid is only called on UI thread, so there are no threading issues with lazy
-    // initialization.
-    @SuppressFBWarnings("LI_LAZY_INIT_STATIC")
-    private static WindowAndroidWrapper getWindowAndroid(Context context) {
+    private static WindowAndroidWrapper createWindowAndroid(Context context) {
         // TODO(boliu): WebView does not currently initialize ApplicationStatus, crbug.com/470582.
         boolean contextWrapsActivity = activityFromContext(context) != null;
         if (!contextWrapsActivity) {
-            if (sCachedWindowAndroid == null) {
-                sCachedWindowAndroid = new WindowAndroidWrapper(new WindowAndroid(context));
-            }
-            return sCachedWindowAndroid;
+            return new WindowAndroidWrapper(new WindowAndroid(context));
         }
 
-        if (sActivityContextWindowMap == null) sActivityContextWindowMap = new WeakHashMap<>();
-        WindowAndroidWrapper activityWindowAndroid = sActivityContextWindowMap.get(context);
-        if (activityWindowAndroid == null) {
-            final boolean listenToActivityState = false;
-            activityWindowAndroid = new WindowAndroidWrapper(
-                    new ActivityWindowAndroid(context, listenToActivityState));
-            sActivityContextWindowMap.put(context, activityWindowAndroid);
-        }
-        return activityWindowAndroid;
+        final boolean listenToActivityState = false;
+        return new WindowAndroidWrapper(new ActivityWindowAndroid(context, listenToActivityState));
     }
 
     @VisibleForTesting
@@ -979,7 +963,7 @@ public class AwContents implements SmartClipProvider,
 
         WebContents webContents = nativeGetWebContents(mNativeAwContents);
 
-        mWindowAndroid = getWindowAndroid(mContext);
+        mWindowAndroid = createWindowAndroid(mContext);
         mContentViewCore = createAndInitializeContentViewCore(mContainerView, mContext,
                 mInternalAccessAdapter, webContents, new AwGestureStateListener(),
                 mContentViewClient, mZoomControls, mWindowAndroid.getWindowAndroid());
