@@ -2409,6 +2409,18 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeInvalidURL) {
   EXPECT_FALSE(download->CanResume());
 }
 
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeBlobURL) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL document_url =
+      embedded_test_server()->GetURL("/download/download-attribute-blob.html");
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
+  WaitForCompletion(download);
+
+  EXPECT_STREQ(FILE_PATH_LITERAL("suggested-filename.txt"),
+               download->GetTargetFilePath().BaseName().value().c_str());
+}
+
 // The file empty.bin is served with a MIME type of application/octet-stream.
 // The content body is empty. Make sure this case is handled properly and we
 // don't regress on http://crbug.com/320394.

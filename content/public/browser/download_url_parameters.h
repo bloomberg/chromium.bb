@@ -16,6 +16,7 @@
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/common/referrer.h"
+#include "storage/browser/blob/blob_data_handle.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -180,6 +181,19 @@ class CONTENT_EXPORT DownloadUrlParameters {
     do_not_prompt_for_login_ = do_not_prompt;
   }
 
+  // For downloads of blob URLs, the caller can store a BlobDataHandle in the
+  // DownloadUrlParameters object so that the blob will remain valid until
+  // the download starts. The BlobDataHandle will be attached to the associated
+  // URLRequest.
+  //
+  // This is optional. If left unspecified, and the blob URL cannot be mapped to
+  // a blob by the time the download request starts, then the download will
+  // fail.
+  void set_blob_data_handle(
+      scoped_ptr<storage::BlobDataHandle> blob_data_handle) {
+    blob_data_handle_ = std::move(blob_data_handle);
+  }
+
   const OnStartedCallback& callback() const { return callback_; }
   bool content_initiated() const { return content_initiated_; }
   const std::string& last_modified() const { return last_modified_; }
@@ -211,6 +225,11 @@ class CONTENT_EXPORT DownloadUrlParameters {
   const GURL& url() const { return url_; }
   bool do_not_prompt_for_login() const { return do_not_prompt_for_login_; }
 
+  // STATE_CHANGING: Return the BlobDataHandle.
+  scoped_ptr<storage::BlobDataHandle> GetBlobDataHandle() {
+    return std::move(blob_data_handle_);
+  }
+
   // STATE CHANGING: All save_info_ sub-objects will be in an indeterminate
   // state following this call.
   DownloadSaveInfo GetSaveInfo() { return std::move(save_info_); }
@@ -234,6 +253,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   DownloadSaveInfo save_info_;
   GURL url_;
   bool do_not_prompt_for_login_;
+  scoped_ptr<storage::BlobDataHandle> blob_data_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadUrlParameters);
 };

@@ -792,7 +792,8 @@ DownloadInterruptReason ResourceDispatcherHostImpl::BeginDownload(
   extra_info->set_do_not_prompt_for_login(do_not_prompt_for_login);
   extra_info->AssociateWithRequest(request.get());  // Request takes ownership.
 
-  if (request->url().SchemeIs(url::kBlobScheme)) {
+  if (request->url().SchemeIs(url::kBlobScheme) &&
+      !storage::BlobProtocolHandler::GetRequestBlobDataHandle(request.get())) {
     ChromeBlobStorageContext* blob_context =
         GetChromeBlobStorageContextForResourceContext(context);
     storage::BlobProtocolHandler::SetRequestedBlobDataHandle(

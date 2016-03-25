@@ -45,6 +45,7 @@
 #include "net/base/request_priority.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/url_request/url_request_context.h"
+#include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "url/origin.h"
 
 namespace content {
@@ -58,6 +59,12 @@ scoped_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread> BeginDownload(
 
   scoped_ptr<net::URLRequest> url_request =
       DownloadRequestCore::CreateRequestOnIOThread(download_id, params.get());
+  scoped_ptr<storage::BlobDataHandle> blob_data_handle =
+      params->GetBlobDataHandle();
+  if (blob_data_handle) {
+    storage::BlobProtocolHandler::SetRequestedBlobDataHandle(
+        url_request.get(), std::move(blob_data_handle));
+  }
 
   // If there's a valid renderer process associated with the request, then the
   // request should be driven by the ResourceLoader. Pass it over to the

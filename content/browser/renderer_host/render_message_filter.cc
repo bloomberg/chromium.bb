@@ -24,6 +24,7 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/download/download_stats.h"
+#include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -33,6 +34,7 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_helper.h"
+#include "content/browser/resource_context_impl.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/content_constants_internal.h"
@@ -65,6 +67,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
+#include "storage/browser/blob/blob_storage_context.h"
 #include "ui/gfx/color_profile.h"
 #include "url/gurl.h"
 
@@ -403,6 +406,16 @@ void RenderMessageFilter::DownloadUrl(int render_view_id,
   parameters->set_suggested_name(suggested_name);
   parameters->set_prompt(use_prompt);
   parameters->set_referrer(referrer);
+
+  if (url.SchemeIsBlob()) {
+    ChromeBlobStorageContext* blob_context =
+        GetChromeBlobStorageContextForResourceContext(resource_context_);
+    parameters->set_blob_data_handle(
+        blob_context->context()->GetBlobDataFromPublicURL(url));
+    // Don't care if the above fails. We are going to let the download go
+    // through and allow it to be interrupted so that the embedder can deal.
+  }
+
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&DownloadUrlOnUIThread, base::Passed(&parameters)));
