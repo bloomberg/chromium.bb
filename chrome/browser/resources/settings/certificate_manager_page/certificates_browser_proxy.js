@@ -80,9 +80,9 @@ cr.define('settings', function() {
 
   CertificatesBrowserProxy.prototype = {
     /**
-     * Triggers two events in the following order
-     * 1) 'certificates-model-ready' event.
-     * 2) 'certificates-changed' event.
+     * Triggers 5 events in the following order
+     * 1x 'certificates-model-ready' event.
+     * 4x 'certificates-changed' event, one for each certificate category.
      */
     refreshCertificates: function() {},
 

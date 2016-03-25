@@ -1,0 +1,17 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_entry.html">
+
+<dom-module id="settings-certificate-list">
+  <template>
+    <template is="dom-repeat" items="[[certificates]]">
+      <settings-certificate-entry model="[[item]]"
+          certificate-type="[[certificateType]]">
+      </settings-certificate-entry>
+    </template>
+    <template is="dom-if" if="[[!certificates.length]]">
+      <!-- TODO(dpapad): Localize string -->
+      You have no certificates
+    </template>
+  </template>
+  <script src="certificate_list.js"></script>
+</dom-module>

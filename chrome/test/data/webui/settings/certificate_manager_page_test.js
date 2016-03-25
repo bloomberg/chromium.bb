@@ -19,6 +19,7 @@ cr.define('certificate_manager_page', function() {
       'exportPersonalCertificatePasswordSelected',
       'getCaCertificateTrust',
       'importPersonalCertificatePasswordSelected',
+      'refreshCertificates',
     ]);
 
     /** @private {!CaTrustInfo} */
@@ -68,14 +69,30 @@ cr.define('certificate_manager_page', function() {
           'importPersonalCertificatePasswordSelected').resolve(password);
       return Promise.resolve();
     },
+
+    /** @override */
+    refreshCertificates: function() {
+      this.methodCalled('refreshCertificates');
+    },
   };
+
+  /** @return {!Certificate} */
+  function createSampleCertificate() {
+    return {
+      id: 'dummyCertificateId',
+      name: 'dummyCertificateName',
+      subnodes: [
+        createSampleCertificateSubnode()
+      ],
+    };
+  }
 
   /** @return {!CertificateSubnode} */
   function createSampleCertificateSubnode() {
     return {
       extractable: false,
-      id: 'dummyId',
-      name: 'dummyName',
+      id: 'dummySubnodeId',
+      name: 'dummySubnodeName',
       policy: false,
       readonly: false,
       untrusted: false,
@@ -301,12 +318,91 @@ cr.define('certificate_manager_page', function() {
     });
   }
 
+  function registerPageTests() {
+    /** @type {?SettingsCertificateManagerPage} */
+    var page = null;
+
+    /** @type {?TestCertificatesBrowserProxy} */
+    var browserProxy = null;
+
+    /** @enum {number} */
+    var CertificateCategoryIndex = {
+      PERSONAL: 0,
+      SERVER: 1,
+      CA: 2,
+      OTHER: 3,
+    };
+
+    suite('CertificateManagerPageTests', function() {
+      setup(function() {
+        browserProxy = new TestCertificatesBrowserProxy();
+        settings.CertificatesBrowserProxyImpl.instance_ = browserProxy;
+        PolymerTest.clearBody();
+        page = document.createElement('settings-certificate-manager-page');
+        document.body.appendChild(page);
+      });
+
+      teardown(function() { page.remove(); });
+
+      /**
+       * Test that the page requests information from the browser on startup and
+       * that it gets populated accordingly.
+       */
+      test('Initialization', function() {
+        // Trigger all category tabs to be added to the DOM.
+        var paperTabsElement = page.shadowRoot.querySelector('paper-tabs');
+        paperTabsElement.selected = CertificateCategoryIndex.PERSONAL;
+        Polymer.dom.flush();
+        paperTabsElement.selected = CertificateCategoryIndex.SERVER;
+        Polymer.dom.flush();
+        paperTabsElement.selected = CertificateCategoryIndex.CA;
+        Polymer.dom.flush();
+        paperTabsElement.selected = CertificateCategoryIndex.OTHER;
+        Polymer.dom.flush();
+        var certificateLists = page.shadowRoot.querySelectorAll(
+            'settings-certificate-list');
+        assertEquals(4, certificateLists.length);
+
+        var assertCertificateListLength = function(
+            listIndex, expectedSize) {
+          var certificateEntries =
+              certificateLists[listIndex].shadowRoot.querySelectorAll(
+                  'settings-certificate-entry');
+          assertEquals(expectedSize, certificateEntries.length);
+        };
+
+        assertCertificateListLength(CertificateCategoryIndex.PERSONAL, 0);
+        assertCertificateListLength(CertificateCategoryIndex.SERVER, 0);
+        assertCertificateListLength(CertificateCategoryIndex.CA, 0);
+        assertCertificateListLength(CertificateCategoryIndex.OTHER, 0);
+
+        return browserProxy.whenCalled('refreshCertificates').then(
+            function() {
+              // Simulate response for personal and CA certificates.
+              cr.webUIListenerCallback(
+                  'certificates-changed', 'personalCerts',
+                  [createSampleCertificate()]);
+              cr.webUIListenerCallback(
+                  'certificates-changed', 'caCerts',
+                  [createSampleCertificate(), createSampleCertificate()]);
+              Polymer.dom.flush();
+
+              assertCertificateListLength(CertificateCategoryIndex.PERSONAL, 1);
+              assertCertificateListLength(CertificateCategoryIndex.SERVER, 0);
+              assertCertificateListLength(CertificateCategoryIndex.CA, 2);
+              assertCertificateListLength(CertificateCategoryIndex.OTHER, 0);
+            });
+      });
+    });
+  }
+
   return {
     registerTests: function() {
       registerCaTrustEditDialogTests();
       registerDeleteDialogTests();
       registerPasswordEncryptDialogTests();
       registerPasswordDecryptDialogTests();
+      registerPageTests();
     },
   };
 });

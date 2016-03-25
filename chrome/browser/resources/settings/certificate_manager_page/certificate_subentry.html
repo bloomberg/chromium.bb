@@ -1,0 +1,68 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://md-settings/certificate_manager_page/certificates_browser_proxy.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
+<link rel="import" href="chrome://md-settings/settings_shared_css.html">
+
+<dom-module id="settings-certificate-subentry">
+  <template>
+    <style include="settings-shared">
+      .dropdown-content {
+        background: white;
+        /* TODO(dpapad): Use a CSS variable for box-shadow and unify with other
+         *  such menus (like in search engines section) */
+        box-shadow: 0 2px 6px grey;
+      }
+
+      .container {
+        display: flex;
+        line-height: 30px;
+      }
+
+      .name {
+        flex: auto;
+        margin: auto;
+      }
+
+      paper-item:hover {
+        background-color: var(--google-grey-300);
+      }
+    </style>
+    <div class="container">
+      <paper-icon-button icon="image:brightness-1"></paper-icon-button>
+      <div class="name">[[model.name]]</div>
+      <paper-icon-button icon="more-vert" toggles active="{{menuOpened}}">
+      </paper-icon-button>
+      <!-- TODO(dpapad): Figure out RTL for this menu -->
+      <template is="dom-if" if="[[menuOpened]]">
+        <iron-dropdown vertical-align="top" horizontal-align="right"
+            opened="{{menuOpened}}">
+          <div class="dropdown-content">
+            <paper-item on-tap="onViewTap_">
+              $i18n{certificateManagerView}
+            </paper-item>
+            <paper-item hidden$="[[!canEdit_(certificateType)]]"
+                on-tap="onEditTap_">
+              $i18n{certificateManagerEdit}
+            </paper-item>
+            <paper-item on-tap="onExportTap_">
+              $i18n{certificateManagerExport}
+            </paper-item>
+            <paper-item hidden$="[[!canImport_(certificateType)]]"
+                on-tap="onImportTap_">
+              $i18n{certificateManagerImport}
+            </paper-item>
+            <paper-item hidden$="[[model.readonly]]"
+                on-tap="onDeleteTap_">
+              $i18n{certificateManagerDelete}
+            </paper-item>
+          </div>
+        </iron-dropdown>
+      </template>
+    <div>
+  </template>
+  <script src="certificate_subentry.js"></script>
+</dom-module>

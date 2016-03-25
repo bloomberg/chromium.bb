@@ -217,20 +217,14 @@
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_SERVERS" desc="Label for the servers tab in certificate manager.">
       Servers
     </message>
-    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_SERVERS_IDENTIFY" desc="Label for servers subtitle tab in certificate manager.">
-      You have certificates on file that identify these servers:
-    </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_AUTHORITIES" desc="Label for the authorities tab in certificate manager.">
       Authorities
     </message>
-    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_AUTHORITIES_YOU_HAVE_AUTHORITIES" desc="Label for authorities subtitle tab in certificate manager.">
-      You have certificates on file that identify these certificate authorities:
-    </message>
-    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_OTHERS_YOU_HAVE_OTHERS" desc="Label for others subtitle tab in certificate manager.">
-      You have certificates on file that do not fit in any of the other categories:
-    </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_VIEW" desc="Label for view button in certificate manager.">
       View
+    </message>
+    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_EDIT" desc="Label for the button in the certificate manager which allows you to edit certificate trust">
+      Edit
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT" desc="Label for import button in certificate manager.">
       Import
@@ -249,9 +243,6 @@
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_OTHERS" desc="Label for the others tab in certificate manager.">
       Others
-    </message>
-    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_YOU_HAVE_CERTIFICATES" desc="Label for your certificates subtitle tab in certificate manager.">
-      You have certificates from these organizations that identify you:
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_USAGE_SSL_CLIENT" desc="The description of a certificate that is verified for use as an SSL client">
       SSL Client Certificate
