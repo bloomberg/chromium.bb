@@ -53,8 +53,7 @@ Version MajorMinorBuildToVersion(int major, int minor, int build) {
     return VERSION_WIN_LAST;
   }
 
-  NOTREACHED();
-  return VERSION_WIN_LAST;
+  return VERSION_PRE_XP;
 }
 
 // Retrieve a version from kernel32. This is useful because when running in
