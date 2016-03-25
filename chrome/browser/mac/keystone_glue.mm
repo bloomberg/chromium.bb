@@ -19,6 +19,7 @@
 #include "base/mac/mac_logging.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
@@ -127,7 +128,9 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 // Called when an update check or update installation is complete.  Posts the
 // kAutoupdateStatusNotification notification to the default notification
 // center.
-- (void)updateStatus:(AutoupdateStatus)status version:(NSString*)version;
+- (void)updateStatus:(AutoupdateStatus)status
+             version:(NSString*)version
+               error:(NSString*)error;
 
 // Returns the version of the currently-installed application on disk.
 - (NSString*)currentlyInstalledVersion;
@@ -135,7 +138,7 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 // These three methods are used to determine the version of the application
 // currently installed on disk, compare that to the currently-running version,
 // decide whether any updates have been installed, and call
-// -updateStatus:version:.
+// -updateStatus:version:error:.
 //
 // In order to check the version on disk, the installed application's
 // Info.plist dictionary must be read; in order to see changes as updates are
@@ -153,8 +156,8 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 // CFBundleShortVersionString key, and performs
 // -determineUpdateStatusForVersion: on the main thread.
 // -determineUpdateStatusForVersion: does the actual comparison of the version
-// on disk with the running version and calls -updateStatus:version: with the
-// results of its analysis.
+// on disk with the running version and calls -updateStatus:version:error: with
+// the results of its analysis.
 - (void)determineUpdateStatusAsync;
 - (void)determineUpdateStatus;
 - (void)determineUpdateStatusForVersion:(NSString*)version;
@@ -208,6 +211,7 @@ class PerformBridge : public base::RefCountedThreadSafe<PerformBridge> {
 NSString* const kAutoupdateStatusNotification = @"AutoupdateStatusNotification";
 NSString* const kAutoupdateStatusStatus = @"status";
 NSString* const kAutoupdateStatusVersion = @"version";
+NSString* const kAutoupdateStatusErrorMessages = @"errormessages";
 
 namespace {
 
@@ -289,21 +293,25 @@ NSString* const kVersionKey = @"KSVersion";
   NSBundle* appBundle = base::mac::OuterBundle();
   NSDictionary* infoDictionary = [self infoDictionary];
 
-  NSString* productID = [infoDictionary objectForKey:@"KSProductID"];
+  NSString* productID = base::mac::ObjCCast<NSString>(
+      [infoDictionary objectForKey:@"KSProductID"]);
   if (productID == nil) {
     productID = [appBundle bundleIdentifier];
   }
 
   NSString* appPath = [appBundle bundlePath];
-  NSString* url = [infoDictionary objectForKey:@"KSUpdateURL"];
-  NSString* version = [infoDictionary objectForKey:kVersionKey];
+  NSString* url = base::mac::ObjCCast<NSString>(
+      [infoDictionary objectForKey:@"KSUpdateURL"]);
+  NSString* version = base::mac::ObjCCast<NSString>(
+      [infoDictionary objectForKey:kVersionKey]);
 
   if (!productID || !appPath || !url || !version) {
     // If parameters required for Keystone are missing, don't use it.
     return;
   }
 
-  NSString* channel = [infoDictionary objectForKey:kChannelKey];
+  NSString* channel = base::mac::ObjCCast<NSString>(
+      [infoDictionary objectForKey:kChannelKey]);
   // The stable channel has no tag.  If updating to stable, remove the
   // dev and beta tags since we've been "promoted".
   if (channel == nil)
@@ -365,13 +373,15 @@ NSString* const kVersionKey = @"KSVersion";
         // User
 
         NSDictionary* infoDictionary = [self infoDictionary];
-        NSString* appBundleBrandID = [infoDictionary objectForKey:kBrandKey];
+        NSString* appBundleBrandID = base::mac::ObjCCast<NSString>(
+            [infoDictionary objectForKey:kBrandKey]);
 
         NSString* storedBrandID = nil;
         if ([fm fileExistsAtPath:userBrandFile]) {
           NSDictionary* storedBrandDict =
               [NSDictionary dictionaryWithContentsOfFile:userBrandFile];
-          storedBrandID = [storedBrandDict objectForKey:kBrandKey];
+          storedBrandID = base::mac::ObjCCast<NSString>(
+              [storedBrandDict objectForKey:kBrandKey]);
         }
 
         if ((appBundleBrandID != nil) &&
@@ -494,8 +504,8 @@ NSString* const kVersionKey = @"KSVersion";
 }
 
 - (void)setRegistrationActive {
-  if (!registration_)
-    return;
+  DCHECK(registration_);
+
   registrationActive_ = YES;
 
   // Should never have zero profiles. Do not report this value.
@@ -536,12 +546,16 @@ NSString* const kVersionKey = @"KSVersion";
 }
 
 - (void)registerWithKeystone {
-  [self updateStatus:kAutoupdateRegistering version:nil];
+  DCHECK(registration_);
+
+  [self updateStatus:kAutoupdateRegistering version:nil error:nil];
 
   NSDictionary* parameters = [self keystoneParameters];
   BOOL result = [registration_ registerWithParameters:parameters];
   if (!result) {
-    [self updateStatus:kAutoupdateRegisterFailed version:nil];
+    // TODO: If Keystone ever makes a variant of this API with a withError:
+    // parameter, include the error message here in the call to updateStatus:.
+    [self updateStatus:kAutoupdateRegisterFailed version:nil error:nil];
     return;
   }
 
@@ -562,15 +576,26 @@ NSString* const kVersionKey = @"KSVersion";
 
 - (void)registrationComplete:(NSNotification*)notification {
   NSDictionary* userInfo = [notification userInfo];
-  if ([[userInfo objectForKey:ksr::KSRegistrationStatusKey] boolValue]) {
+  NSNumber* status = base::mac::ObjCCast<NSNumber>(
+     [userInfo objectForKey:ksr::KSRegistrationStatusKey]);
+  NSString* errorMessages = base::mac::ObjCCast<NSString>(
+     [userInfo objectForKey:ksr::KSRegistrationUpdateCheckRawErrorMessagesKey]);
+
+  if ([status boolValue]) {
     if ([self isSystemTicketDoomed]) {
-      [self updateStatus:kAutoupdateNeedsPromotion version:nil];
+      [self updateStatus:kAutoupdateNeedsPromotion
+                 version:nil
+                   error:errorMessages];
     } else {
-      [self updateStatus:kAutoupdateRegistered version:nil];
+      [self updateStatus:kAutoupdateRegistered
+                 version:nil
+                   error:errorMessages];
     }
   } else {
     // Dump registration_?
-    [self updateStatus:kAutoupdateRegisterFailed version:nil];
+    [self updateStatus:kAutoupdateRegisterFailed
+               version:nil
+                 error:errorMessages];
   }
 }
 
@@ -583,14 +608,14 @@ NSString* const kVersionKey = @"KSVersion";
 }
 
 - (void)checkForUpdate {
-  DCHECK(![self asyncOperationPending]);
+  DCHECK(registration_);
 
-  if (!registration_) {
-    [self updateStatus:kAutoupdateCheckFailed version:nil];
+  if ([self asyncOperationPending]) {
+    // Update check already in process; return without doing anything.
     return;
   }
 
-  [self updateStatus:kAutoupdateChecking version:nil];
+  [self updateStatus:kAutoupdateChecking version:nil error:nil];
 
   // All checks from inside Chrome are considered user-initiated, because they
   // only happen following a user action, such as visiting the about page.
@@ -604,15 +629,25 @@ NSString* const kVersionKey = @"KSVersion";
 
 - (void)checkForUpdateComplete:(NSNotification*)notification {
   NSDictionary* userInfo = [notification userInfo];
+  NSNumber* error = base::mac::ObjCCast<NSNumber>(
+      [userInfo objectForKey:ksr::KSRegistrationUpdateCheckErrorKey]);
+  NSNumber* status = base::mac::ObjCCast<NSNumber>(
+      [userInfo objectForKey:ksr::KSRegistrationStatusKey]);
+  NSString* errorMessages = base::mac::ObjCCast<NSString>(
+     [userInfo objectForKey:ksr::KSRegistrationUpdateCheckRawErrorMessagesKey]);
 
-  if ([[userInfo objectForKey:ksr::KSRegistrationUpdateCheckErrorKey]
-          boolValue]) {
-    [self updateStatus:kAutoupdateCheckFailed version:nil];
-  } else if ([[userInfo objectForKey:ksr::KSRegistrationStatusKey] boolValue]) {
+  if ([error boolValue]) {
+    [self updateStatus:kAutoupdateCheckFailed
+               version:nil
+                 error:errorMessages];
+  } else if ([status boolValue]) {
     // If an update is known to be available, go straight to
     // -updateStatus:version:.  It doesn't matter what's currently on disk.
-    NSString* version = [userInfo objectForKey:ksr::KSRegistrationVersionKey];
-    [self updateStatus:kAutoupdateAvailable version:version];
+    NSString* version = base::mac::ObjCCast<NSString>(
+        [userInfo objectForKey:ksr::KSRegistrationVersionKey]);
+    [self updateStatus:kAutoupdateAvailable
+               version:version
+                 error:errorMessages];
   } else {
     // If no updates are available, check what's on disk, because an update
     // may have already been installed.  This check happens on another thread,
@@ -622,14 +657,14 @@ NSString* const kVersionKey = @"KSVersion";
 }
 
 - (void)installUpdate {
-  DCHECK(![self asyncOperationPending]);
+  DCHECK(registration_);
 
-  if (!registration_) {
-    [self updateStatus:kAutoupdateInstallFailed version:nil];
+  if ([self asyncOperationPending]) {
+    // Update check already in process; return without doing anything.
     return;
   }
 
-  [self updateStatus:kAutoupdateInstalling version:nil];
+  [self updateStatus:kAutoupdateInstalling version:nil error:nil];
 
   [registration_ startUpdate];
 
@@ -639,14 +674,19 @@ NSString* const kVersionKey = @"KSVersion";
 
 - (void)installUpdateComplete:(NSNotification*)notification {
   NSDictionary* userInfo = [notification userInfo];
+  NSNumber* successfulInstall = base::mac::ObjCCast<NSNumber>(
+      [userInfo objectForKey:ksr::KSUpdateCheckSuccessfullyInstalledKey]);
+  NSString* errorMessages = base::mac::ObjCCast<NSString>(
+     [userInfo objectForKey:ksr::KSRegistrationUpdateCheckRawErrorMessagesKey]);
 
   // http://crbug.com/160308 and b/7517358: when using system Keystone and on
   // a user ticket, KSUpdateCheckSuccessfulKey will be NO even when an update
   // was installed correctly, so don't check it. It should be redudnant when
   // KSUpdateCheckSuccessfullyInstalledKey is checked.
-  if (![[userInfo objectForKey:ksr::KSUpdateCheckSuccessfullyInstalledKey]
-          intValue]) {
-    [self updateStatus:kAutoupdateInstallFailed version:nil];
+  if (![successfulInstall intValue]) {
+    [self updateStatus:kAutoupdateInstallFailed
+               version:nil
+                 error:errorMessages];
   } else {
     updateSuccessfullyInstalled_ = YES;
 
@@ -660,7 +700,8 @@ NSString* const kVersionKey = @"KSVersion";
   NSString* appInfoPlistPath = [self appInfoPlistPath];
   NSDictionary* infoPlist =
       [NSDictionary dictionaryWithContentsOfFile:appInfoPlistPath];
-  return [infoPlist objectForKey:@"CFBundleShortVersionString"];
+  return base::mac::ObjCCast<NSString>(
+      [infoPlist objectForKey:@"CFBundleShortVersionString"]);
 }
 
 // Runs on the main thread.
@@ -709,16 +750,21 @@ NSString* const kVersionKey = @"KSVersion";
     }
   }
 
-  [self updateStatus:status version:version];
+  [self updateStatus:status version:version error:nil];
 }
 
-- (void)updateStatus:(AutoupdateStatus)status version:(NSString*)version {
+- (void)updateStatus:(AutoupdateStatus)status
+             version:(NSString*)version
+               error:(NSString*)error {
   NSNumber* statusNumber = [NSNumber numberWithInt:status];
   NSMutableDictionary* dictionary =
       [NSMutableDictionary dictionaryWithObject:statusNumber
                                          forKey:kAutoupdateStatusStatus];
   if (version) {
     [dictionary setObject:version forKey:kAutoupdateStatusVersion];
+  }
+  if (error) {
+    [dictionary setObject:version forKey:kAutoupdateStatusErrorMessages];
   }
 
   NSNotification* notification =
@@ -736,8 +782,9 @@ NSString* const kVersionKey = @"KSVersion";
 
 - (AutoupdateStatus)recentStatus {
   NSDictionary* dictionary = [recentNotification_ userInfo];
-  return static_cast<AutoupdateStatus>(
-      [[dictionary objectForKey:kAutoupdateStatusStatus] intValue]);
+  NSNumber* status = base::mac::ObjCCastStrict<NSNumber>(
+      [dictionary objectForKey:kAutoupdateStatusStatus]);
+  return static_cast<AutoupdateStatus>([status intValue]);
 }
 
 - (BOOL)asyncOperationPending {
@@ -749,6 +796,7 @@ NSString* const kVersionKey = @"KSVersion";
 }
 
 - (BOOL)isUserTicket {
+  DCHECK(registration_);
   return [registration_ ticketType] == ksr::kKSRegistrationUserTicket;
 }
 
@@ -856,6 +904,8 @@ NSString* const kVersionKey = @"KSVersion";
 
 - (void)promoteTicketWithAuthorization:(AuthorizationRef)authorization_arg
                            synchronous:(BOOL)synchronous {
+  DCHECK(registration_);
+
   base::mac::ScopedAuthorizationRef authorization(authorization_arg);
   authorization_arg = NULL;
 
@@ -873,7 +923,7 @@ NSString* const kVersionKey = @"KSVersion";
 
   synchronousPromotion_ = synchronous;
 
-  [self updateStatus:kAutoupdatePromoting version:nil];
+  [self updateStatus:kAutoupdatePromoting version:nil error:nil];
 
   // TODO(mark): Remove when able!
   //
@@ -920,14 +970,24 @@ NSString* const kVersionKey = @"KSVersion";
       NULL,  // pipe
       &exit_status);
   if (status != errAuthorizationSuccess) {
-    OSSTATUS_LOG(ERROR, status)
-        << "AuthorizationExecuteWithPrivileges preflight";
-    [self updateStatus:kAutoupdatePromoteFailed version:nil];
+    // It's possible to get an OS-provided error string for this return code
+    // using base::mac::DescriptionFromOSStatus, but most of those strings are
+    // not useful/actionable for users, so we stick with the error code instead.
+    NSString* errorMessage =
+        l10n_util::GetNSStringFWithFixup(IDS_PROMOTE_PREFLIGHT_LAUNCH_ERROR,
+                                         base::IntToString16(status));
+    [self updateStatus:kAutoupdatePromoteFailed
+               version:nil
+                 error:errorMessage];
     return;
   }
   if (exit_status != 0) {
-    LOG(ERROR) << "keystone_promote_preflight status " << exit_status;
-    [self updateStatus:kAutoupdatePromoteFailed version:nil];
+    NSString* errorMessage =
+        l10n_util::GetNSStringFWithFixup(IDS_PROMOTE_PREFLIGHT_SCRIPT_ERROR,
+                                         base::IntToString16(status));
+    [self updateStatus:kAutoupdatePromoteFailed
+               version:nil
+                 error:errorMessage];
     return;
   }
 
@@ -951,7 +1011,9 @@ NSString* const kVersionKey = @"KSVersion";
 
   if (![registration_ promoteWithParameters:parameters
                               authorization:authorization_]) {
-    [self updateStatus:kAutoupdatePromoteFailed version:nil];
+    // TODO: If Keystone ever makes a variant of this API with a withError:
+    // parameter, include the error message here in the call to updateStatus:.
+    [self updateStatus:kAutoupdatePromoteFailed version:nil error:nil];
     authorization_.reset();
     return;
   }
@@ -968,7 +1030,10 @@ NSString* const kVersionKey = @"KSVersion";
 
 - (void)promotionComplete:(NSNotification*)notification {
   NSDictionary* userInfo = [notification userInfo];
-  if ([[userInfo objectForKey:ksr::KSRegistrationStatusKey] boolValue]) {
+  NSNumber* status = base::mac::ObjCCast<NSNumber>(
+      [userInfo objectForKey:ksr::KSRegistrationStatusKey]);
+
+  if ([status boolValue]) {
     if (synchronousPromotion_) {
       // Short-circuit: if performing a synchronous promotion, the promotion
       // came from the installer, which already set the permissions properly.
@@ -980,7 +1045,7 @@ NSString* const kVersionKey = @"KSVersion";
     }
   } else {
     authorization_.reset();
-    [self updateStatus:kAutoupdatePromoteFailed version:nil];
+    [self updateStatus:kAutoupdatePromoteFailed version:nil error:nil];
   }
 
   if (synchronousPromotion_) {
@@ -1036,7 +1101,7 @@ NSString* const kVersionKey = @"KSVersion";
 - (void)changePermissionsForPromotionComplete {
   authorization_.reset();
 
-  [self updateStatus:kAutoupdatePromoted version:nil];
+  [self updateStatus:kAutoupdatePromoted version:nil error:nil];
 }
 
 - (void)setAppPath:(NSString*)appPath {

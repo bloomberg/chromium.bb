@@ -43,6 +43,8 @@ extern NSString* KSRegistrationPromotionDidCompleteNotification;
 extern NSString* KSRegistrationCheckForUpdateNotification;
 extern NSString* KSRegistrationStatusKey;
 extern NSString* KSRegistrationUpdateCheckErrorKey;
+extern NSString* KSRegistrationUpdateCheckRawResultsKey;
+extern NSString* KSRegistrationUpdateCheckRawErrorMessagesKey;
 
 extern NSString* KSRegistrationStartUpdateNotification;
 extern NSString* KSUpdateCheckSuccessfulKey;

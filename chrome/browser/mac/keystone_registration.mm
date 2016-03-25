@@ -31,6 +31,8 @@ NSString* KSRegistrationCheckForUpdateNotification =
     @"KSRegistrationCheckForUpdateNotification";
 NSString* KSRegistrationStatusKey = @"Status";
 NSString* KSRegistrationUpdateCheckErrorKey = @"Error";
+NSString* KSRegistrationUpdateCheckRawResultsKey = @"RawResults";
+NSString* KSRegistrationUpdateCheckRawErrorMessagesKey = @"RawErrorMessages";
 
 NSString* KSRegistrationStartUpdateNotification =
     @"KSRegistrationStartUpdateNotification";

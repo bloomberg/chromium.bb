@@ -6,11 +6,17 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #import "chrome/browser/mac/keystone_glue.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "net/base/escape.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // KeystoneObserver is a simple notification observer for Keystone status
@@ -131,7 +137,11 @@ void VersionUpdaterMac::RelaunchBrowser() const {
 
 void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
   AutoupdateStatus keystone_status = static_cast<AutoupdateStatus>(
-      [[dictionary objectForKey:kAutoupdateStatusStatus] intValue]);
+      [base::mac::ObjCCastStrict<NSNumber>(
+          [dictionary objectForKey:kAutoupdateStatusStatus]) intValue]);
+  std::string error_messages = base::SysNSStringToUTF8(
+      base::mac::ObjCCastStrict<NSString>(
+          [dictionary objectForKey:kAutoupdateStatusErrorMessages]));
 
   bool enable_promote_button = true;
   base::string16 message;
@@ -211,6 +221,26 @@ void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
       NOTREACHED();
       return;
   }
+
+  // If there are any detailed error messages being passed along by Keystone,
+  // log them. If we have an error to display, include the detail messages
+  // below the error in a <pre> block. Don't bother displaying detail messages
+  // on a success/in-progress/indeterminate status.
+  if (!error_messages.empty()) {
+    VLOG(1) << "Update error messages: " << error_messages;
+
+    if (status == FAILED) {
+      if (!message.empty()) {
+        message += base::UTF8ToUTF16("<br/><br/>");
+      }
+
+      message += l10n_util::GetStringUTF16(IDS_UPGRADE_ERROR_DETAILS);
+      message += base::UTF8ToUTF16("<br/><pre>");
+      message += base::UTF8ToUTF16(net::EscapeForHTML(error_messages));
+      message += base::UTF8ToUTF16("</pre>");
+    }
+  }
+
   if (!status_callback_.is_null())
     status_callback_.Run(status, 0, message);
 
