@@ -40,6 +40,7 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
 
   base::mac::ObjCPropertyReleaser _propertyReleaser_ViewController;
 }
+@property(nonatomic, assign, readonly) web::WebState* webState;
 @property(nonatomic, readwrite, retain) UITextField* field;
 @end
 
@@ -118,12 +119,17 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
   [_webController setUIDelegate:self];
   [_webController setWebUsageEnabled:YES];
 
-  [[_webController view] setFrame:[_containerView bounds]];
-  [_containerView addSubview:[_webController view]];
+  UIView* view = self.webState->GetView();
+  [view setFrame:[_containerView bounds]];
+  [_containerView addSubview:view];
 
   web::WebLoadParams params(GURL("https://dev.chromium.org/"));
   params.transition_type = ui::PAGE_TRANSITION_TYPED;
   [_webController loadWithParams:params];
+}
+
+- (web::WebState*)webState {
+  return [_webController webState];
 }
 
 - (void)setUpNetworkStack {
@@ -159,14 +165,16 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
 }
 
 - (void)back {
-  if ([_webController canGoBack]) {
-    [_webController goBack];
+  web::NavigationManager* navManager = self.webState->GetNavigationManager();
+  if (navManager->CanGoBack()) {
+    navManager->GoBack();
   }
 }
 
 - (void)forward {
-  if ([_webController canGoForward]) {
-    [_webController goForward];
+  web::NavigationManager* navManager = self.webState->GetNavigationManager();
+  if (navManager->CanGoForward()) {
+    navManager->GoForward();
   }
 }
 
@@ -191,8 +199,8 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
     return;
   }
 
-  const GURL& url = [_webController webStateImpl]->GetVisibleURL();
-  [_field setText:base::SysUTF8ToNSString(url.spec())];
+  const GURL& visibleURL = self.webState->GetVisibleURL();
+  [_field setText:base::SysUTF8ToNSString(visibleURL.spec())];
 }
 
 // -----------------------------------------------------------------------
