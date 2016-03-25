@@ -5,25 +5,15 @@
 from telemetry import page
 from telemetry import story
 from telemetry.page import shared_page_state
+from telemetry.core import exceptions
 
-class SharedState(shared_page_state.SharedPageState):
-  """Shared state that restarts the browser for every single story."""
-
-  def __init__(self, test, finder_options, story_set):
-    super(SharedState, self).__init__(
-        test, finder_options, story_set)
-
-  def DidRunStory(self, results):
-    super(SharedState, self).DidRunStory(results)
-    self._StopBrowser()
 
 class CastPage(page.Page):
 
   def __init__(self, page_set):
     super(CastPage, self).__init__(
         url='file://basic_test.html',
-        page_set=page_set,
-        shared_page_state_class=SharedState)
+        page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
     with action_runner.CreateInteraction('LaunchDialog'):
@@ -31,6 +21,18 @@ class CastPage(page.Page):
       action_runner.Wait(5)
       action_runner.TapElement(selector='#start_session_button')
       action_runner.Wait(5)
+      for tab in action_runner.tab.browser.tabs:
+        # Close media router dialog
+        if tab.url == 'chrome://media-router/':
+          try:
+            tab.ExecuteJavaScript(
+                'window.document.getElementById("media-router-container").' +
+                'shadowRoot.getElementById("container-header").shadowRoot.' +
+                'getElementById("close-button").click();')
+          except exceptions.DevtoolsTargetCrashException:
+            # Ignore the crash exception, this exception is caused by the js
+            # code which closes the dialog, it is expected.
+            pass
 
 
 class MediaRouterPageSet(story.StorySet):

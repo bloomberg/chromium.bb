@@ -11,6 +11,11 @@ class MediaRouterPageTest(page_test.PageTest):
 
   def __init__(self):
     super(MediaRouterPageTest, self).__init__()
+    self._media_router_metric = media_router_metric.MediaRouterMetric()
+
+  def DidNavigateToPage(self, page, tab):
+    self._media_router_metric.Start(page, tab)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    media_router_metric.MediaRouterMetric().AddResults(tab, results)
+    self._media_router_metric.Stop(page, tab)
+    self._media_router_metric.AddResults(tab, results)
