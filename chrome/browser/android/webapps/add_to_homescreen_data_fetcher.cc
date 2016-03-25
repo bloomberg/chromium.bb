@@ -170,7 +170,8 @@ void AddToHomescreenDataFetcher::FetchSplashScreenImage(
       splash_screen_url_,
       ideal_splash_image_size_in_dp_,
       minimum_splash_image_size_in_dp_,
-      webapp_id);
+      webapp_id,
+      shortcut_info_.url.spec());
 }
 
 void AddToHomescreenDataFetcher::FetchFavicon() {

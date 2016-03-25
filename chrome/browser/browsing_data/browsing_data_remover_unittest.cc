@@ -274,6 +274,12 @@ class TestWebappRegistry : public WebappRegistry {
     BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE, callback,
                                    base::TimeDelta::FromMilliseconds(10));
   }
+
+  void ClearWebappHistory(const base::Closure& callback) override {
+    // Mocks out a JNI call and runs the callback as a delayed task.
+    BrowserThread::PostDelayedTask(BrowserThread::UI, FROM_HERE, callback,
+                                   base::TimeDelta::FromMilliseconds(10));
+  }
 };
 #endif
 

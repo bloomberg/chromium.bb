@@ -173,13 +173,15 @@ public class ShortcutHelper {
      * Creates a storage location and stores the data for a web app using {@link WebappDataStorage}.
      * @param context     Context to open the WebappDataStorage with.
      * @param id          ID of the webapp which is storing data.
+     * @param scope       scope of the webapp which is storing data.
      * @param splashImage Image which should be displayed on the splash screen of
      *                    the webapp. This can be null of there is no image to show.
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private static void storeWebappData(Context context, String id, Bitmap splashImage) {
-        WebappRegistry.registerWebapp(context, id);
+    private static void storeWebappData(Context context, String id, String scope,
+            Bitmap splashImage) {
+        WebappRegistry.registerWebapp(context, id, scope);
         WebappDataStorage.open(context, id).updateSplashScreenImage(splashImage);
     }
 

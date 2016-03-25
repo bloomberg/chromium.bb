@@ -71,7 +71,8 @@ void AppBannerDataFetcherAndroid::FetchWebappSplashScreenImage(
       image_url,
       ideal_splash_image_size_in_dp_,
       minimum_splash_image_size_in_dp_,
-      webapp_id);
+      webapp_id,
+      web_app_data().start_url.spec());
 }
 
 void AppBannerDataFetcherAndroid::ShowBanner(const SkBitmap* icon,

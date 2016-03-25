@@ -55,11 +55,13 @@ public class WebappModeTest extends MultiActivityTestBase {
             + "content='width=device-width initial-scale=0.5, maximum-scale=0.5'></head>"
             + "<body bgcolor='#011684'>Webapp 1</body></html>");
     private static final String WEBAPP_1_TITLE = "Web app #1";
+    private static final String WEBAPP_1_ORIGIN = "https://www.google.com";
 
     private static final String WEBAPP_2_ID = "webapp_id_2";
     private static final String WEBAPP_2_URL =
             UrlUtils.encodeHtmlDataUri("<html><body bgcolor='#840116'>Webapp 2</body></html>");
     private static final String WEBAPP_2_TITLE = "Web app #2";
+    private static final String WEBAPP_2_ORIGIN = "http://google.com";
 
     private static final String WEBAPP_ICON = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAACXB"
             + "IWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wQIFB4cxOfiSQAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdG"
@@ -96,8 +98,10 @@ public class WebappModeTest extends MultiActivityTestBase {
         // Register the webapps so when the data storage is opened, the test doesn't crash. There is
         // no race condition with the retrival as AsyncTasks are run sequentially on the background
         // thread.
-        WebappRegistry.registerWebapp(getInstrumentation().getTargetContext(), WEBAPP_1_ID);
-        WebappRegistry.registerWebapp(getInstrumentation().getTargetContext(), WEBAPP_2_ID);
+        WebappRegistry.registerWebapp(getInstrumentation().getTargetContext(), WEBAPP_1_ID,
+                WEBAPP_1_ORIGIN);
+        WebappRegistry.registerWebapp(getInstrumentation().getTargetContext(), WEBAPP_2_ID,
+                WEBAPP_2_ORIGIN);
     }
 
     /**

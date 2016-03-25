@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences.DialogOption;
+import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
@@ -47,7 +48,7 @@ public class ClearBrowsingDataPreferencesTest
      */
     @MediumTest
     public void testClearingSiteDataClearsWebapps() throws Exception {
-        WebappRegistry.registerWebapp(getActivity(), "first");
+        WebappRegistry.registerWebapp(getActivity(), "first", "https://www.google.com");
         WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
             @Override
             public void onWebappIdsRetrieved(Set<String> ids) {
@@ -94,6 +95,105 @@ public class ClearBrowsingDataPreferencesTest
                 mCallbackCalled = true;
             }
         });
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mCallbackCalled;
+            }
+        });
+    }
+
+    /**
+     * Tests that web app scopes and last launch times are cleared when the "history" option is
+     * selected. However, the web app is not removed from the registry.
+     */
+    @MediumTest
+    public void testClearingHistoryClearsWebappScopesAndLaunchTimes() throws Exception {
+        WebappRegistry.registerWebapp(getActivity(), "first", "https://www.google.com");
+        WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
+            @Override
+            public void onWebappIdsRetrieved(Set<String> ids) {
+                assertEquals(new HashSet<String>(Arrays.asList("first")), ids);
+                mCallbackCalled = true;
+            }
+        });
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mCallbackCalled;
+            }
+        });
+        mCallbackCalled = false;
+
+        setDataTypesToClear(Arrays.asList(DialogOption.CLEAR_HISTORY));
+        final Preferences preferences =
+                startPreferences(ClearBrowsingDataPreferences.class.getName());
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                ClearBrowsingDataPreferences fragment =
+                        (ClearBrowsingDataPreferences) preferences.getFragmentForTest();
+                PreferenceScreen screen = fragment.getPreferenceScreen();
+                ButtonPreference clearButton = (ButtonPreference) screen.findPreference(
+                        ClearBrowsingDataPreferences.PREF_CLEAR_BUTTON);
+                clearButton.getOnPreferenceClickListener().onPreferenceClick(clearButton);
+            }
+        });
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                ClearBrowsingDataPreferences fragment =
+                        (ClearBrowsingDataPreferences) preferences.getFragmentForTest();
+                return fragment.getProgressDialog() == null;
+            }
+        });
+
+        // The web app should still exist in the registry.
+        WebappRegistry.getRegisteredWebappIds(getActivity(), new WebappRegistry.FetchCallback() {
+            @Override
+            public void onWebappIdsRetrieved(Set<String> ids) {
+                assertEquals(new HashSet<String>(Arrays.asList("first")), ids);
+                mCallbackCalled = true;
+            }
+        });
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mCallbackCalled;
+            }
+        });
+        mCallbackCalled = false;
+
+        // Scope should be empty.
+        WebappDataStorage.getScope(getActivity(), "first",
+                new WebappDataStorage.FetchCallback<String>() {
+                    @Override
+                    public void onDataRetrieved(String readObject) {
+                        assertEquals(readObject, "");
+                        mCallbackCalled = true;
+                    }
+                }
+        );
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mCallbackCalled;
+            }
+        });
+        mCallbackCalled = false;
+
+        // The last used time should be 0.
+        WebappDataStorage.getLastUsedTime(getActivity(), "first",
+                new WebappDataStorage.FetchCallback<Long>() {
+                    @Override
+                    public void onDataRetrieved(Long readObject) {
+                        long lastUsed = readObject;
+                        assertEquals(lastUsed, 0);
+                        mCallbackCalled = true;
+                    }
+                }
+        );
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

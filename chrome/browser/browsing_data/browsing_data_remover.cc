@@ -561,6 +561,14 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
           base::Bind(&BrowsingDataRemover::OnClearedPrecacheHistory,
                      weak_ptr_factory_.GetWeakPtr()));
     }
+
+    // Clear the history information (last launch time and origin URL) of any
+    // registered webapps. The webapp_registry makes a JNI call into a Java-side
+    // AsyncTask, so don't wait for the reply.
+    waiting_for_clear_webapp_history_ = true;
+    webapp_registry_->ClearWebappHistory(
+        base::Bind(&BrowsingDataRemover::OnClearedWebappHistory,
+          weak_ptr_factory_.GetWeakPtr()));
 #endif
 
     data_reduction_proxy::DataReductionProxySettings*
@@ -930,6 +938,8 @@ void BrowsingDataRemover::RemoveImpl(const TimeRange& time_range,
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
   if (remove_mask & REMOVE_WEBAPP_DATA) {
+    // Clear all data associated with registered webapps. The webapp_registry
+    // makes a JNI call into a Java-side AsyncTask, so don't wait for the reply.
     waiting_for_clear_webapp_data_ = true;
     webapp_registry_->UnregisterWebapps(
         base::Bind(&BrowsingDataRemover::OnClearedWebappData,
@@ -1020,6 +1030,7 @@ bool BrowsingDataRemover::AllDone() {
 #if BUILDFLAG(ANDROID_JAVA_UI)
          !waiting_for_clear_precache_history_ &&
          !waiting_for_clear_webapp_data_ &&
+         !waiting_for_clear_webapp_history_ &&
          !waiting_for_clear_offline_page_data_ &&
 #endif
 #if defined(ENABLE_WEBRTC)
@@ -1216,6 +1227,12 @@ void BrowsingDataRemover::OnClearedPrecacheHistory() {
 void BrowsingDataRemover::OnClearedWebappData() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   waiting_for_clear_webapp_data_ = false;
+  NotifyIfDone();
+}
+
+void BrowsingDataRemover::OnClearedWebappHistory() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  waiting_for_clear_webapp_history_ = false;
   NotifyIfDone();
 }
 

@@ -28,6 +28,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
     static final String WEBAPP_ID = "webapp_id";
     static final String WEBAPP_NAME = "webapp name";
     static final String WEBAPP_SHORT_NAME = "webapp short name";
+    static final String WEBAPP_URL = "https://www.google.com";
 
     // Empty 192x192 image generated with:
     // ShortcutHelper.encodeBitmapAsString(Bitmap.createBitmap(192, 192, Bitmap.Config.ARGB_4444));
@@ -91,7 +92,8 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
         // Register the webapp so when the data storage is opened, the test doesn't crash. There is
         // no race condition with the retrival as AsyncTasks are run sequentially on the background
         // thread.
-        WebappRegistry.registerWebapp(getInstrumentation().getTargetContext(), WEBAPP_ID);
+        WebappRegistry.registerWebapp(getInstrumentation().getTargetContext(),
+                WEBAPP_ID, WEBAPP_URL);
     }
 
     /**

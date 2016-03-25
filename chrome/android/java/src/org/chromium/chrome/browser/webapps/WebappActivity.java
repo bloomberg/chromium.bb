@@ -219,7 +219,7 @@ public class WebappActivity extends FullScreenActivity {
 
     @Override
     public void postInflationStartup() {
-        initializeSplashScreen();
+        initializeWebappData();
 
         super.postInflationStartup();
         WebappControlContainer controlContainer =
@@ -234,7 +234,7 @@ public class WebappActivity extends FullScreenActivity {
         return mWebappInfo;
     }
 
-    private void initializeSplashScreen() {
+    private void initializeWebappData() {
         final int backgroundColor = ColorUtils.getOpaqueColor(mWebappInfo.backgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), R.color.webapp_default_bg)));
 
@@ -252,6 +252,13 @@ public class WebappActivity extends FullScreenActivity {
                 ? WebappUma.SPLASHSCREEN_COLOR_STATUS_CUSTOM
                 : WebappUma.SPLASHSCREEN_COLOR_STATUS_DEFAULT);
 
+        // The scope may have been purged by the user clearing their history. It is
+        // needed to be able to launch a webapp from a notification. Make sure that the
+        // scope exists by restoring it on webapp launch; this method will no-op if the
+        // scope does exist as it should not be possible to overwrite any set scope.
+        WebappDataStorage.setScope(this, mWebappInfo.id(), mWebappInfo.uri().toString());
+
+        // Retrieve the splash image if it exists.
         WebappDataStorage.open(this, mWebappInfo.id()).getSplashScreenImage(
                 new WebappDataStorage.FetchCallback<Bitmap>() {
                     @Override

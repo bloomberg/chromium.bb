@@ -128,20 +128,20 @@ void ShortcutHelper::FetchSplashScreenImage(
     const GURL& image_url,
     const int ideal_splash_image_size_in_dp,
     const int minimum_splash_image_size_in_dp,
-    const std::string& webapp_id) {
+    const std::string& webapp_id,
+    const std::string& webapp_scope) {
   // This is a fire and forget task. It is not vital for the splash screen image
   // to be downloaded so if the downloader returns false there is no fallback.
   ManifestIconDownloader::Download(
-      web_contents,
-      image_url,
-      ideal_splash_image_size_in_dp,
+      web_contents, image_url, ideal_splash_image_size_in_dp,
       minimum_splash_image_size_in_dp,
-      base::Bind(&ShortcutHelper::StoreWebappData, webapp_id));
+      base::Bind(&ShortcutHelper::StoreWebappData, webapp_id, webapp_scope));
 }
 
 // static
 void ShortcutHelper::StoreWebappData(
     const std::string& webapp_id,
+    const std::string& webapp_url,
     const SkBitmap& splash_image) {
   if (splash_image.drawsNothing())
     return;
@@ -149,6 +149,8 @@ void ShortcutHelper::StoreWebappData(
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> java_webapp_id =
       base::android::ConvertUTF8ToJavaString(env, webapp_id);
+  ScopedJavaLocalRef<jstring> java_webapp_url =
+      base::android::ConvertUTF8ToJavaString(env, webapp_url);
   ScopedJavaLocalRef<jobject> java_splash_image =
       gfx::ConvertToJavaBitmap(&splash_image);
 
@@ -156,6 +158,7 @@ void ShortcutHelper::StoreWebappData(
       env,
       base::android::GetApplicationContext(),
       java_webapp_id.obj(),
+      java_webapp_url.obj(),
       java_splash_image.obj());
 }
 

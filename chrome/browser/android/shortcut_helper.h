@@ -48,10 +48,12 @@ class ShortcutHelper {
                                      const GURL& image_url,
                                      const int ideal_splash_image_size_in_dp,
                                      const int minimum_splash_image_size_in_dp,
-                                     const std::string& webapp_id);
+                                     const std::string& webapp_id,
+                                     const std::string& webapp_scope);
 
   // Stores the data of the webapp which is not placed inside the shortcut.
   static void StoreWebappData(const std::string& webapp_id,
+                              const std::string& webapp_url,
                               const SkBitmap& splash_image);
 
   // Modify the given icon to matche the launcher requirements, then returns the

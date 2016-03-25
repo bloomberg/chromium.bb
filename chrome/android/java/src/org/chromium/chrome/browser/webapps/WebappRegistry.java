@@ -49,7 +49,8 @@ public class WebappRegistry {
      * @param context  Context to open the registry with.
      * @param webappId The id of the web app to register.
      */
-    public static void registerWebapp(final Context context, final String webappId) {
+    public static void registerWebapp(final Context context, final String webappId,
+            final String scope) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected final Void doInBackground(Void... nothing) {
@@ -58,10 +59,11 @@ public class WebappRegistry {
                 boolean added = webapps.add(webappId);
                 assert added;
 
-                // Update the last used time of the {@link WebappDataStorage} so we can guarantee
-                // that the used time will be set (ie. != WebappDataStorage.INVALID_LAST_USED) if a
-                // web app appears in the registry.
-                new WebappDataStorage(context, webappId).updateLastUsedTime();
+                // Update the last used time, so we can guarantee that a web app which appears in
+                // the registry will have a last used time != WebappDataStorage.LAST_USED_INVALID.
+                WebappDataStorage storage = new WebappDataStorage(context, webappId);
+                storage.setScope(scope);
+                storage.updateLastUsedTime();
                 preferences.edit().putStringSet(KEY_WEBAPP_SET, webapps).apply();
                 return null;
             }
@@ -89,8 +91,10 @@ public class WebappRegistry {
     }
 
     /**
-     * Deletes the data for all "old" web apps. i.e. web apps which have not been opened by the user
-     * in the last 3 months. Cleanup is run, at most, once a month.
+     * Deletes the data for all "old" web apps.
+     * "Old" web apps have not been opened by the user in the last 3 months, or have had their last
+     * used time set to 0 by the user clearing their history. Cleanup is run, at most, once a month.
+     *
      * @param context     Context to open the registry with.
      * @param currentTime The current time which will be checked to decide if the task should be run
      *                    and if a web app should be cleaned up.
@@ -140,7 +144,7 @@ public class WebappRegistry {
 
             @Override
             protected final void onPostExecute(Void nothing) {
-                if (callback == null) return;
+                assert callback != null;
                 callback.run();
             }
         }.execute();
@@ -152,6 +156,39 @@ public class WebappRegistry {
             @Override
             public void run() {
                 nativeOnWebappsUnregistered(callbackPointer);
+            }
+        });
+    }
+
+    /**
+     * Deletes the scope and sets the last used time to 0 for all web apps.
+     */
+    @VisibleForTesting
+    static void clearWebappHistory(final Context context, final Runnable callback) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected final Void doInBackground(Void... nothing) {
+                SharedPreferences preferences = openSharedPreferences(context);
+                for (String id : getRegisteredWebappIds(preferences)) {
+                    WebappDataStorage.clearHistory(context, id);
+                }
+                return null;
+            }
+
+            @Override
+            protected final void onPostExecute(Void nothing) {
+                assert callback != null;
+                callback.run();
+            }
+        }.execute();
+    }
+
+    @CalledByNative
+    static void clearWebappHistory(Context context, final long callbackPointer) {
+        clearWebappHistory(context, new Runnable() {
+            @Override
+            public void run() {
+                nativeOnClearedWebappHistory(callbackPointer);
             }
         });
     }
@@ -168,4 +205,5 @@ public class WebappRegistry {
     }
 
     private static native void nativeOnWebappsUnregistered(long callbackPointer);
+    private static native void nativeOnClearedWebappHistory(long callbackPointer);
 }

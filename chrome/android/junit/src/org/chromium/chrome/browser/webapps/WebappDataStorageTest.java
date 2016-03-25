@@ -32,6 +32,20 @@ public class WebappDataStorageTest {
     private SharedPreferences mSharedPreferences;
     private boolean mCallbackCalled;
 
+    private class FetchCallback<T> implements WebappDataStorage.FetchCallback<T> {
+        T mExpected;
+
+        FetchCallback(T expected) {
+            mExpected = expected;
+        }
+
+        @Override
+        public void onDataRetrieved(T readObject) {
+            mCallbackCalled = true;
+            assertEquals(mExpected, readObject);
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
         mSharedPreferences = Robolectric.application
@@ -49,6 +63,7 @@ public class WebappDataStorageTest {
         assertEquals("webapp_", WebappDataStorage.SHARED_PREFS_FILE_PREFIX);
         assertEquals("splash_icon", WebappDataStorage.KEY_SPLASH_ICON);
         assertEquals("last_used", WebappDataStorage.KEY_LAST_USED);
+        assertEquals("scope", WebappDataStorage.KEY_SCOPE);
     }
 
     @Test
@@ -59,13 +74,7 @@ public class WebappDataStorageTest {
                 .commit();
 
         WebappDataStorage.getLastUsedTime(Robolectric.application, "test",
-                new WebappDataStorage.FetchCallback<Long>() {
-                    @Override
-                    public void onDataRetrieved(Long readObject) {
-                        mCallbackCalled = true;
-                        assertEquals(100L, (long) readObject);
-                    }
-                });
+                new FetchCallback<Long>(new Long(100L)));
         BackgroundShadowAsyncTask.runBackgroundTasks();
         Robolectric.runUiThreadTasks();
 
@@ -142,5 +151,42 @@ public class WebappDataStorageTest {
 
     private static Bitmap createBitmap() {
         return Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_4444);
+    }
+
+    @Test
+    @Feature({"Webapp"})
+    public void testScopeRetrieval() throws Exception {
+        final String scope = "http://drive.google.com";
+        mSharedPreferences.edit()
+                .putString(WebappDataStorage.KEY_SCOPE, scope)
+                .commit();
+
+        WebappDataStorage.getScope(Robolectric.application, "test",
+                new FetchCallback<String>(scope));
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+
+        assertTrue(mCallbackCalled);
+    }
+
+    @Test
+    @Feature({"Webapp"})
+    public void testScopeUpdate() throws Exception {
+        final String scope1 = "http://maps.google.com";
+        final String scope2 = "http://drive.google.com";
+
+        WebappDataStorage.setScope(Robolectric.application, "test", scope1);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+
+        assertEquals(scope1, mSharedPreferences.getString(WebappDataStorage.KEY_SCOPE, null));
+
+        // Ensure that calling setScope with a different URL after it has been set
+        // doesn't change the scope stored.
+        WebappDataStorage.setScope(Robolectric.application, "test", scope2);
+        BackgroundShadowAsyncTask.runBackgroundTasks();
+        Robolectric.runUiThreadTasks();
+
+        assertEquals(scope1, mSharedPreferences.getString(WebappDataStorage.KEY_SCOPE, null));
     }
 }

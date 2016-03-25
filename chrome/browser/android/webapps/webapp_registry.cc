@@ -24,10 +24,30 @@ void WebappRegistry::UnregisterWebapps(const base::Closure& callback) {
       callback_pointer);
 }
 
+void WebappRegistry::ClearWebappHistory(const base::Closure& callback) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  uintptr_t callback_pointer = reinterpret_cast<uintptr_t>(
+      new base::Closure(callback));
+
+  Java_WebappRegistry_clearWebappHistory(
+      env,
+      base::android::GetApplicationContext(),
+      callback_pointer);
+}
+
 // Callback used by Java when all web apps have been unregistered.
 void OnWebappsUnregistered(JNIEnv* env,
                            const JavaParamRef<jclass>& clazz,
                            jlong jcallback) {
+  base::Closure* callback = reinterpret_cast<base::Closure*>(jcallback);
+  callback->Run();
+  delete callback;
+}
+
+// Callback used by Java when all web app last used times have been cleared.
+void OnClearedWebappHistory(JNIEnv* env,
+                            const JavaParamRef<jclass>& clazz,
+                            jlong jcallback) {
   base::Closure* callback = reinterpret_cast<base::Closure*>(jcallback);
   callback->Run();
   delete callback;

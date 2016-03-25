@@ -26,6 +26,10 @@ class WebappRegistry {
   // Cleans up data stored by web apps.
   virtual void UnregisterWebapps(const base::Closure& callback);
 
+  // Removes history data (last used time and URLs) stored by web apps, whilst
+  // leaving other data intact.
+  virtual void ClearWebappHistory(const base::Closure& callback);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebappRegistry);
 };

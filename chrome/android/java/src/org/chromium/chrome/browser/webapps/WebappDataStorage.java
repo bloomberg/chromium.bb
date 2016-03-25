@@ -31,7 +31,13 @@ public class WebappDataStorage {
     static final String SHARED_PREFS_FILE_PREFIX = "webapp_";
     static final String KEY_SPLASH_ICON = "splash_icon";
     static final String KEY_LAST_USED = "last_used";
-    static final long INVALID_LAST_USED = -1;
+    static final String KEY_SCOPE = "scope";
+
+    // Unset/invalid constants for last used times and scopes. 0 is used as the null last
+    // used time as WebappRegistry assumes that this is always a valid timestamp.
+    static final long LAST_USED_UNSET = 0;
+    static final long LAST_USED_INVALID = -1;
+    static final String SCOPE_INVALID = "";
 
     private static Factory sFactory = new Factory();
 
@@ -47,7 +53,7 @@ public class WebappDataStorage {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected final Void doInBackground(Void... nothing) {
-                if (storage.getLastUsedTime() == INVALID_LAST_USED) {
+                if (storage.getLastUsedTime() == LAST_USED_INVALID) {
                     // If the last used time is invalid then assert that there is no data
                     // in the WebappDataStorage which needs to be cleaned up.
                     assert storage.getAllData().isEmpty();
@@ -67,6 +73,7 @@ public class WebappDataStorage {
      * @param webappId The ID of the web app the used time is being read for.
      * @param callback Called when the last used time has been retrieved.
      */
+    @VisibleForTesting
     public static void getLastUsedTime(final Context context, final String webappId,
             final FetchCallback<Long> callback) {
         new AsyncTask<Void, Void, Long>() {
@@ -74,13 +81,56 @@ public class WebappDataStorage {
             protected final Long doInBackground(Void... nothing) {
                 long lastUsed = new WebappDataStorage(context.getApplicationContext(), webappId)
                         .getLastUsedTime();
-                assert lastUsed != INVALID_LAST_USED;
+                assert lastUsed != LAST_USED_INVALID;
                 return lastUsed;
             }
 
             @Override
             protected final void onPostExecute(Long lastUsed) {
                 callback.onDataRetrieved(lastUsed);
+            }
+        }.execute();
+    }
+
+    /**
+     * Asynchronously retrieves the scope stored in this WebappDataStorage. The scope is the URL
+     * over which the webapp data is applied to.
+     * @param context  The context to read the SharedPreferences file.
+     * @param webappId The ID of the web app the used time is being read for.
+     * @param callback Called when the scope has been retrieved.
+     */
+    @VisibleForTesting
+    public static void getScope(final Context context, final String webappId,
+            final FetchCallback<String> callback) {
+        new AsyncTask<Void, Void, String>() {
+            @Override
+            protected final String doInBackground(Void... nothing) {
+                return new WebappDataStorage(context.getApplicationContext(), webappId)
+                        .getScope();
+            }
+
+            @Override
+            protected final void onPostExecute(String scope) {
+                callback.onDataRetrieved(scope);
+            }
+        }.execute();
+    }
+
+    /**
+     * Asynchronously sets the scope stored in this WebappDataStorage. Does nothing if there
+     * is already a scope stored; since webapps added to homescreen cannot change the scope which
+     * they launch, it is not intended that a WebappDataStorage will be able to change the scope
+     * once it is set.
+     * @param context  The context to read the SharedPreferences file.
+     * @param webappId The ID of the web app the used time is being read for.
+     * @param scope The scope to set for the web app.
+     */
+    public static void setScope(final Context context, final String webappId, final String scope) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected final Void doInBackground(Void... nothing) {
+                new WebappDataStorage(context.getApplicationContext(), webappId).setScope(scope);
+                return null;
             }
         }.execute();
     }
@@ -94,6 +144,21 @@ public class WebappDataStorage {
     static void deleteDataForWebapp(final Context context, final String webappId) {
         assert !ThreadUtils.runningOnUiThread();
         openSharedPreferences(context, webappId).edit().clear().apply();
+    }
+
+    /**
+     * Deletes the scope and sets last used time to 0 this web app in SharedPreferences.
+     * This does not remove the stored splash screen image (if any) for the app.
+     * @param context  The context to read the SharedPreferences file.
+     * @param webappId The ID of the web app being deleted.
+     */
+    static void clearHistory(final Context context, final String webappId) {
+        // The last used time is set to 0 to ensure that a valid value is always present.
+        // If the webapp is not launched prior to the next cleanup, then its remaining data will be
+        // removed. Otherwise, the next launch will update the last used time.
+        assert !ThreadUtils.runningOnUiThread();
+        openSharedPreferences(context, webappId)
+                .edit().putLong(KEY_LAST_USED, LAST_USED_UNSET).remove(KEY_SCOPE).apply();
     }
 
     /**
@@ -119,26 +184,72 @@ public class WebappDataStorage {
      * @param callback Called when the splash screen image has been retrieved.
      *                 May be null if no image was found.
      */
-    public void getSplashScreenImage(FetchCallback<Bitmap> callback) {
-        new BitmapFetchTask(KEY_SPLASH_ICON, callback).execute();
+    public void getSplashScreenImage(final FetchCallback<Bitmap> callback) {
+        new AsyncTask<Void, Void, Bitmap>() {
+            @Override
+            protected final Bitmap doInBackground(Void... nothing) {
+                return ShortcutHelper.decodeBitmapFromString(
+                        mPreferences.getString(KEY_SPLASH_ICON, null));
+            }
+
+            @Override
+            protected final void onPostExecute(Bitmap result) {
+                callback.onDataRetrieved(result);
+            }
+        }.execute();
     }
 
     /*
      * Update the information associated with the web app with the specified data.
      * @param splashScreenImage The image which should be shown on the splash screen of the web app.
      */
-    public void updateSplashScreenImage(Bitmap splashScreenImage) {
-        new UpdateTask(splashScreenImage).execute();
+    public void updateSplashScreenImage(final Bitmap splashScreenImage) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected final Void doInBackground(Void... nothing) {
+                mPreferences.edit()
+                        .putString(KEY_SPLASH_ICON,
+                                ShortcutHelper.encodeBitmapAsString(splashScreenImage))
+                        .apply();
+                return null;
+            }
+        }.execute();
     }
 
+    /**
+     * Updates the scope stored in this object. Does nothing if there is already a scope stored.
+     * @param scope the scope to store.
+     */
+    void setScope(String scope) {
+        assert !ThreadUtils.runningOnUiThread();
+        if (mPreferences.getString(KEY_SCOPE, SCOPE_INVALID).equals(SCOPE_INVALID)) {
+            mPreferences.edit().putString(KEY_SCOPE, scope).apply();
+        }
+    }
+
+    /**
+     * Returns the scope stored in this object, or "" if it is not stored.
+     */
+    String getScope() {
+        assert !ThreadUtils.runningOnUiThread();
+        return mPreferences.getString(KEY_SCOPE, SCOPE_INVALID);
+    }
+
+    /**
+     * Updates the last used time of this object.
+     * @param lastUsedTime the new last used time.
+     */
     void updateLastUsedTime() {
         assert !ThreadUtils.runningOnUiThread();
         mPreferences.edit().putLong(KEY_LAST_USED, System.currentTimeMillis()).apply();
     }
 
+    /**
+     * Returns the last used time of this object, or -1 if it is not stored.
+     */
     long getLastUsedTime() {
         assert !ThreadUtils.runningOnUiThread();
-        return mPreferences.getLong(KEY_LAST_USED, INVALID_LAST_USED);
+        return mPreferences.getLong(KEY_LAST_USED, LAST_USED_INVALID);
     }
 
     private Map<String, ?> getAllData() {
@@ -164,44 +275,6 @@ public class WebappDataStorage {
          */
         public WebappDataStorage create(final Context context, final String webappId) {
             return new WebappDataStorage(context, webappId);
-        }
-    }
-
-    private final class BitmapFetchTask extends AsyncTask<Void, Void, Bitmap> {
-
-        private final String mKey;
-        private final FetchCallback<Bitmap> mCallback;
-
-        public BitmapFetchTask(String key, FetchCallback<Bitmap> callback) {
-            mKey = key;
-            mCallback = callback;
-        }
-
-        @Override
-        protected final Bitmap doInBackground(Void... nothing) {
-            return ShortcutHelper.decodeBitmapFromString(mPreferences.getString(mKey, null));
-        }
-
-        @Override
-        protected final void onPostExecute(Bitmap result) {
-            mCallback.onDataRetrieved(result);
-        }
-    }
-
-    private final class UpdateTask extends AsyncTask<Void, Void, Void> {
-
-        private final Bitmap mSplashImage;
-
-        public UpdateTask(Bitmap splashImage) {
-            mSplashImage = splashImage;
-        }
-
-        @Override
-        protected Void doInBackground(Void... nothing) {
-            mPreferences.edit()
-                    .putString(KEY_SPLASH_ICON, ShortcutHelper.encodeBitmapAsString(mSplashImage))
-                    .apply();
-            return null;
         }
     }
 }
