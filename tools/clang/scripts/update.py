@@ -437,7 +437,9 @@ def UpdateClang(args):
         [cxx, '-print-file-name=libstdc++.so.6']).rstrip()
     os.environ['LD_LIBRARY_PATH'] = os.path.dirname(libstdcpp)
 
-  cflags = cxxflags = ldflags = []
+  cflags = []
+  cxxflags = []
+  ldflags = []
 
   base_cmake_args = ['-GNinja',
                      '-DCMAKE_BUILD_TYPE=Release',
@@ -476,6 +478,10 @@ def UpdateClang(args):
       # https://stackoverflow.com/questions/13050827
       cc = cc.replace('\\', '/')
       cxx = cxx.replace('\\', '/')
+      # If we're using VS 2015, tell the stage 1 compiler to act like it.
+      if GetVSVersion().ShortName().startswith('2015'):
+        cflags += ['-fms-compatibility-version=19']
+        cxxflags += ['-fms-compatibility-version=19']
     else:
       cc = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang')
       cxx = os.path.join(LLVM_BOOTSTRAP_INSTALL_DIR, 'bin', 'clang++')
