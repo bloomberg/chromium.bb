@@ -6,6 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -14,8 +15,10 @@
 #include "base/trace_event/trace_event_argument.h"
 #include "components/exo/surface.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_targeter.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/path.h"
 #include "ui/views/widget/widget.h"
@@ -129,6 +132,8 @@ ShellSurface::~ShellSurface() {
   }
   if (parent_)
     parent_->RemoveObserver(this);
+  if (resizer_)
+    EndDrag(false /* revert */);
   if (widget_) {
     ash::wm::GetWindowState(widget_->GetNativeWindow())->RemoveObserver(this);
     if (widget_->IsVisible())
@@ -230,10 +235,15 @@ void ShellSurface::SetApplicationId(const std::string& application_id) {
 void ShellSurface::Move() {
   TRACE_EVENT0("exo", "ShellSurface::Move");
 
-  if (widget_) {
-    widget_->RunMoveLoop(gfx::Vector2d(), views::Widget::MOVE_LOOP_SOURCE_MOUSE,
-                         views::Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_DONT_HIDE);
-  }
+  if (widget_)
+    AttemptToStartDrag(HTCAPTION);
+}
+
+void ShellSurface::Resize(int component) {
+  TRACE_EVENT1("exo", "ShellSurface::Resize", "component", component);
+
+  if (widget_)
+    AttemptToStartDrag(component);
 }
 
 void ShellSurface::Close() {
@@ -281,12 +291,16 @@ void ShellSurface::OnSurfaceCommit() {
     CreateShellSurfaceWidget();
 
   if (widget_) {
-    // Update surface bounds and widget size.
     gfx::Rect visible_bounds = GetVisibleBounds();
+
+    // Update surface bounds.
     surface_->SetBounds(
         gfx::Rect(gfx::Point() - visible_bounds.OffsetFromOrigin(),
                   surface_->layer()->size()));
-    widget_->SetSize(visible_bounds.size());
+
+    // Update widget size unless resizing.
+    if (!IsResizing())
+      widget_->SetSize(visible_bounds.size());
 
     // Show widget if not already visible.
     if (!widget_->IsClosed() && !widget_->IsVisible())
@@ -303,6 +317,8 @@ bool ShellSurface::IsSurfaceSynchronized() const {
 // SurfaceObserver overrides:
 
 void ShellSurface::OnSurfaceDestroying(Surface* surface) {
+  if (resizer_)
+    EndDrag(false /* revert */);
   if (widget_)
     SetMainSurface(widget_->GetNativeWindow(), nullptr);
   surface->RemoveSurfaceObserver(this);
@@ -323,11 +339,21 @@ void ShellSurface::OnSurfaceDestroying(Surface* surface) {
 ////////////////////////////////////////////////////////////////////////////////
 // views::WidgetDelegate overrides:
 
+bool ShellSurface::CanMaximize() const {
+  return true;
+}
+
+bool ShellSurface::CanResize() const {
+  return true;
+}
+
 base::string16 ShellSurface::GetWindowTitle() const {
   return title_;
 }
 
 void ShellSurface::WindowClosing() {
+  if (resizer_)
+    EndDrag(true /* revert */);
   SetEnabled(false);
   widget_ = nullptr;
 }
@@ -414,6 +440,72 @@ void ShellSurface::OnWindowActivated(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ui::EventHandler overrides:
+
+void ShellSurface::OnKeyEvent(ui::KeyEvent* event) {
+  if (!resizer_) {
+    views::View::OnKeyEvent(event);
+    return;
+  }
+
+  if (event->type() == ui::ET_KEY_PRESSED &&
+      event->key_code() == ui::VKEY_ESCAPE) {
+    EndDrag(true /* revert */);
+  }
+}
+
+void ShellSurface::OnMouseEvent(ui::MouseEvent* event) {
+  if (!resizer_) {
+    views::View::OnMouseEvent(event);
+    return;
+  }
+
+  if (event->handled())
+    return;
+
+  if ((event->flags() &
+       (ui::EF_MIDDLE_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON)) != 0)
+    return;
+
+  if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED) {
+    // We complete the drag instead of reverting it, as reverting it will
+    // result in a weird behavior when a client produces a modal dialog
+    // while the drag is in progress.
+    EndDrag(false /* revert */);
+    return;
+  }
+
+  switch (event->type()) {
+    case ui::ET_MOUSE_DRAGGED: {
+      gfx::Point location(event->location());
+      aura::Window::ConvertPointToTarget(widget_->GetNativeWindow(),
+                                         widget_->GetNativeWindow()->parent(),
+                                         &location);
+      resizer_->Drag(location, event->flags());
+      event->StopPropagation();
+      // Ask client to configure its surface for the new size.
+      if (IsResizing())
+        Configure();
+
+      break;
+    }
+    case ui::ET_MOUSE_RELEASED:
+      EndDrag(false /* revert */);
+      break;
+    case ui::ET_MOUSE_MOVED:
+    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_ENTERED:
+    case ui::ET_MOUSE_EXITED:
+    case ui::ET_MOUSEWHEEL:
+    case ui::ET_MOUSE_CAPTURE_CHANGED:
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // ShellSurface, private:
 
 void ShellSurface::CreateShellSurfaceWidget() {
@@ -475,7 +567,95 @@ void ShellSurface::Configure() {
   configure_callback_.Run(
       widget_->GetWindowBoundsInScreen().size(),
       ash::wm::GetWindowState(widget_->GetNativeWindow())->GetStateType(),
-      widget_->IsActive());
+      IsResizing(), widget_->IsActive());
+}
+
+void ShellSurface::AttemptToStartDrag(int component) {
+  DCHECK(widget_);
+
+  // Cannot start another drag if one is already taking place.
+  if (resizer_)
+    return;
+
+  if (widget_->GetNativeWindow()->HasCapture())
+    return;
+
+  aura::Window* root_window = widget_->GetNativeWindow()->GetRootWindow();
+  gfx::Point drag_location =
+      root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot();
+  aura::Window::ConvertPointToTarget(
+      root_window, widget_->GetNativeWindow()->parent(), &drag_location);
+
+  // Set the cursor before calling CreateWindowResizer(), as that will
+  // eventually call LockCursor() and prevent the cursor from changing.
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(root_window);
+  DCHECK(cursor_client);
+
+  switch (component) {
+    case HTCAPTION:
+      cursor_client->SetCursor(ui::kCursorPointer);
+      break;
+    case HTBOTTOM:
+      cursor_client->SetCursor(ui::kCursorSouthResize);
+      break;
+    case HTRIGHT:
+      cursor_client->SetCursor(ui::kCursorEastResize);
+      break;
+    case HTBOTTOMRIGHT:
+      cursor_client->SetCursor(ui::kCursorSouthEastResize);
+      break;
+    case HTTOP:
+    case HTLEFT:
+    case HTTOPLEFT:
+      // TODO(reveman): Add support for resize in top-left direction after
+      // adding configure acks.
+      NOTIMPLEMENTED();
+      return;
+    default:
+      break;
+  }
+
+  resizer_ = ash::CreateWindowResizer(widget_->GetNativeWindow(), drag_location,
+                                      component,
+                                      aura::client::WINDOW_MOVE_SOURCE_MOUSE);
+  if (!resizer_)
+    return;
+
+  ash::Shell::GetInstance()->AddPreTargetHandler(this);
+  widget_->GetNativeWindow()->SetCapture();
+
+  // Notify client that resizing state has changed.
+  if (IsResizing())
+    Configure();
+}
+
+void ShellSurface::EndDrag(bool revert) {
+  DCHECK(widget_);
+  DCHECK(resizer_);
+
+  bool was_resizing = IsResizing();
+
+  if (revert)
+    resizer_->RevertDrag();
+  else
+    resizer_->CompleteDrag();
+
+  ash::Shell::GetInstance()->RemovePreTargetHandler(this);
+  widget_->GetNativeWindow()->ReleaseCapture();
+  resizer_.reset();
+
+  // Notify client that resizing state has changed.
+  if (was_resizing)
+    Configure();
+}
+
+bool ShellSurface::IsResizing() const {
+  if (!resizer_)
+    return false;
+
+  return resizer_->details().bounds_change &
+         ash::WindowResizer::kBoundsChange_Resizes;
 }
 
 gfx::Rect ShellSurface::GetVisibleBounds() const {

@@ -17,6 +17,10 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/public/activation_change_observer.h"
 
+namespace ash {
+class WindowResizer;
+}
+
 namespace base {
 namespace trace_event {
 class TracedValue;
@@ -63,6 +67,7 @@ class ShellSurface : public SurfaceDelegate,
   using ConfigureCallback =
       base::Callback<void(const gfx::Size& size,
                           ash::wm::WindowStateType state_type,
+                          bool resizing,
                           bool activated)>;
   void set_configure_callback(const ConfigureCallback& configure_callback) {
     configure_callback_ = configure_callback;
@@ -96,6 +101,11 @@ class ShellSurface : public SurfaceDelegate,
   // Start an interactive move of surface.
   void Move();
 
+  // Start an interactive resize of surface. |component| is one of the windows
+  // HT constants (see ui/base/hit_test.h) and describes in what direction the
+  // surface should be resized.
+  void Resize(int component);
+
   // Signal a request to close the window. It is up to the implementation to
   // actually decide to do so though.
   void Close();
@@ -119,6 +129,8 @@ class ShellSurface : public SurfaceDelegate,
   void OnSurfaceDestroying(Surface* surface) override;
 
   // Overridden from views::WidgetDelegate:
+  bool CanMaximize() const override;
+  bool CanResize() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
   views::Widget* GetWidget() override;
@@ -145,6 +157,10 @@ class ShellSurface : public SurfaceDelegate,
       aura::Window* gained_active,
       aura::Window* lost_active) override;
 
+  // Overridden from ui::EventHandler:
+  void OnKeyEvent(ui::KeyEvent* event) override;
+  void OnMouseEvent(ui::MouseEvent* event) override;
+
  private:
   // Creates the |widget_| for |surface_|.
   void CreateShellSurfaceWidget();
@@ -154,6 +170,16 @@ class ShellSurface : public SurfaceDelegate,
 
   // Returns the "visible bounds" for the surface from the user's perspective.
   gfx::Rect GetVisibleBounds() const;
+
+  // Attempt to start a drag operation. The type of drag operation to start is
+  // determined by |component|.
+  void AttemptToStartDrag(int component);
+
+  // End current drag operation.
+  void EndDrag(bool revert);
+
+  // Returns true if surface is currently being resized.
+  bool IsResizing() const;
 
   views::Widget* widget_;
   Surface* surface_;
@@ -166,6 +192,7 @@ class ShellSurface : public SurfaceDelegate,
   base::Closure close_callback_;
   base::Closure surface_destroyed_callback_;
   ConfigureCallback configure_callback_;
+  scoped_ptr<ash::WindowResizer> resizer_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };

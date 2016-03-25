@@ -44,6 +44,7 @@
 #include "ipc/unix_domain_socket_util.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window_property.h"
+#include "ui/base/hit_test.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/views/widget/widget.h"
@@ -763,6 +764,29 @@ void bind_subcompositor(wl_client* client,
 ////////////////////////////////////////////////////////////////////////////////
 // wl_shell_surface_interface:
 
+int ResizeComponent(uint32_t edges) {
+  switch (edges) {
+    case WL_SHELL_SURFACE_RESIZE_TOP:
+      return HTTOP;
+    case WL_SHELL_SURFACE_RESIZE_BOTTOM:
+      return HTBOTTOM;
+    case WL_SHELL_SURFACE_RESIZE_LEFT:
+      return HTLEFT;
+    case WL_SHELL_SURFACE_RESIZE_TOP_LEFT:
+      return HTTOPLEFT;
+    case WL_SHELL_SURFACE_RESIZE_BOTTOM_LEFT:
+      return HTBOTTOMLEFT;
+    case WL_SHELL_SURFACE_RESIZE_RIGHT:
+      return HTRIGHT;
+    case WL_SHELL_SURFACE_RESIZE_TOP_RIGHT:
+      return HTTOPRIGHT;
+    case WL_SHELL_SURFACE_RESIZE_BOTTOM_RIGHT:
+      return HTBOTTOMRIGHT;
+    default:
+      return HTNOWHERE;
+  }
+}
+
 void shell_surface_pong(wl_client* client,
                         wl_resource* resource,
                         uint32_t serial) {
@@ -781,7 +805,9 @@ void shell_surface_resize(wl_client* client,
                           wl_resource* seat_resource,
                           uint32_t serial,
                           uint32_t edges) {
-  NOTIMPLEMENTED();
+  int component = ResizeComponent(edges);
+  if (component != HTNOWHERE)
+    GetUserDataAs<ShellSurface>(resource)->Resize(component);
 }
 
 void shell_surface_set_toplevel(wl_client* client, wl_resource* resource) {
@@ -850,6 +876,7 @@ const struct wl_shell_surface_interface shell_surface_implementation = {
 void HandleShellSurfaceConfigureCallback(wl_resource* resource,
                                          const gfx::Size& size,
                                          ash::wm::WindowStateType state_type,
+                                         bool resizing,
                                          bool activated) {
   wl_shell_surface_send_configure(resource, WL_SHELL_SURFACE_RESIZE_NONE,
                                   size.width(), size.height());
@@ -1005,6 +1032,29 @@ void bind_output(wl_client* client, void* data, uint32_t version, uint32_t id) {
 ////////////////////////////////////////////////////////////////////////////////
 // xdg_surface_interface:
 
+int XdgResizeComponent(uint32_t edges) {
+  switch (edges) {
+    case XDG_SURFACE_RESIZE_EDGE_TOP:
+      return HTTOP;
+    case XDG_SURFACE_RESIZE_EDGE_BOTTOM:
+      return HTBOTTOM;
+    case XDG_SURFACE_RESIZE_EDGE_LEFT:
+      return HTLEFT;
+    case XDG_SURFACE_RESIZE_EDGE_TOP_LEFT:
+      return HTTOPLEFT;
+    case XDG_SURFACE_RESIZE_EDGE_BOTTOM_LEFT:
+      return HTBOTTOMLEFT;
+    case XDG_SURFACE_RESIZE_EDGE_RIGHT:
+      return HTRIGHT;
+    case XDG_SURFACE_RESIZE_EDGE_TOP_RIGHT:
+      return HTTOPRIGHT;
+    case XDG_SURFACE_RESIZE_EDGE_BOTTOM_RIGHT:
+      return HTBOTTOMRIGHT;
+    default:
+      return HTNOWHERE;
+  }
+}
+
 void xdg_surface_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
@@ -1057,7 +1107,9 @@ void xdg_surface_resize(wl_client* client,
                         wl_resource* seat,
                         uint32_t serial,
                         uint32_t edges) {
-  NOTIMPLEMENTED();
+  int component = XdgResizeComponent(edges);
+  if (component != HTNOWHERE)
+    GetUserDataAs<ShellSurface>(resource)->Resize(component);
 }
 
 void xdg_surface_ack_configure(wl_client* client,
@@ -1149,31 +1201,28 @@ void HandleXdgSurfaceCloseCallback(wl_resource* resource) {
   wl_client_flush(wl_resource_get_client(resource));
 }
 
+void AddXdgSurfaceState(wl_array* states, xdg_surface_state state) {
+  xdg_surface_state* value = static_cast<xdg_surface_state*>(
+      wl_array_add(states, sizeof(xdg_surface_state)));
+  DCHECK(value);
+  *value = state;
+}
+
 void HandleXdgSurfaceConfigureCallback(wl_resource* resource,
                                        const gfx::Size& size,
                                        ash::wm::WindowStateType state_type,
+                                       bool resizing,
                                        bool activated) {
-  // TODO(reveman): Implement XDG_SURFACE_STATE_RESIZING.
   wl_array states;
   wl_array_init(&states);
-  if (state_type == ash::wm::WINDOW_STATE_TYPE_MAXIMIZED) {
-    xdg_surface_state* value = static_cast<xdg_surface_state*>(
-        wl_array_add(&states, sizeof(xdg_surface_state)));
-    DCHECK(value);
-    *value = XDG_SURFACE_STATE_MAXIMIZED;
-  }
-  if (state_type == ash::wm::WINDOW_STATE_TYPE_FULLSCREEN) {
-    xdg_surface_state* value = static_cast<xdg_surface_state*>(
-        wl_array_add(&states, sizeof(xdg_surface_state)));
-    DCHECK(value);
-    *value = XDG_SURFACE_STATE_FULLSCREEN;
-  }
-  if (activated) {
-    xdg_surface_state* value = static_cast<xdg_surface_state*>(
-        wl_array_add(&states, sizeof(xdg_surface_state)));
-    DCHECK(value);
-    *value = XDG_SURFACE_STATE_ACTIVATED;
-  }
+  if (state_type == ash::wm::WINDOW_STATE_TYPE_MAXIMIZED)
+    AddXdgSurfaceState(&states, XDG_SURFACE_STATE_MAXIMIZED);
+  if (state_type == ash::wm::WINDOW_STATE_TYPE_FULLSCREEN)
+    AddXdgSurfaceState(&states, XDG_SURFACE_STATE_FULLSCREEN);
+  if (resizing)
+    AddXdgSurfaceState(&states, XDG_SURFACE_STATE_RESIZING);
+  if (activated)
+    AddXdgSurfaceState(&states, XDG_SURFACE_STATE_ACTIVATED);
   xdg_surface_send_configure(resource, size.width(), size.height(), &states,
                              wl_display_next_serial(wl_client_get_display(
                                  wl_resource_get_client(resource))));
