@@ -167,7 +167,6 @@ source_set("browser") {
   deps = [
     "//base",
     "//base:i18n",
-    "//components/autofill/core/browser/proto",
     "//components/autofill/core/common",
     "//components/data_use_measurement/core",
     "//components/infobars/core",
@@ -197,6 +196,10 @@ source_set("browser") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//url",
+  ]
+
+  public_deps = [
+    "//components/autofill/core/browser/proto",
   ]
 
   configs += [
@@ -235,7 +238,6 @@ source_set("test_support") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/browser",
-    "//components/autofill/core/browser/proto",
     "//components/autofill/core/common",
     "//components/os_crypt",
     "//components/pref_registry",
