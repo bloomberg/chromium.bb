@@ -436,6 +436,7 @@ _x86_internal_release_boards = frozenset([
     'auron_paine',
     'auron_yuna',
     'banjo',
+    'banon',
     'buddy',
     'butterfly',
     'candy',
@@ -656,6 +657,7 @@ _waterfall_config_map = {
         'gru-release-group',
         'oak-release-group',
         'storm-release-group',
+        'strago-c-release-group',
 
         # Experimental Canaries
         'amd64-generic-goofy-release',
@@ -2867,7 +2869,9 @@ def GetConfig():
       'strago-c', 'edgar', (
           'setzer',
           'umaro',
+          'banon',
       ),
+      important=False,
   )
 
   # oak-based boards
@@ -2986,6 +2990,7 @@ def GetConfig():
   _firmware_boards = frozenset([
       'auron',
       'banjo',
+      'banon',
       'butterfly',
       'candy',
       'cave',

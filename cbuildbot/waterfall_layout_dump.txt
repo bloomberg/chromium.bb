@@ -173,6 +173,7 @@ stout-paladin
   terra-release
   wizpig-release
 [strago-c-release-group]
+  banon-release
   edgar-release
   setzer-release
   umaro-release
