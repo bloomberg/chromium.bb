@@ -223,8 +223,7 @@ scoped_ptr<ChannelFactory> ChannelMojo::CreateClientFactory(
 ChannelMojo::ChannelMojo(mojo::ScopedMessagePipeHandle handle,
                          Mode mode,
                          Listener* listener)
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      pipe_(handle.get()),
+    : pipe_(handle.get()),
       listener_(listener),
       waiting_connect_(true),
       weak_factory_(this) {
@@ -239,6 +238,8 @@ ChannelMojo::~ChannelMojo() {
 
 bool ChannelMojo::Connect() {
   base::AutoLock lock(lock_);
+  DCHECK(!task_runner_);
+  task_runner_ = base::ThreadTaskRunnerHandle::Get();
   DCHECK(!message_reader_);
   bootstrap_->Connect();
   return true;
@@ -312,6 +313,7 @@ void ChannelMojo::InitMessageReader(mojom::ChannelAssociatedPtrInfo sender,
 }
 
 void ChannelMojo::OnPipeError() {
+  DCHECK(task_runner_);
   if (task_runner_->RunsTasksOnCurrentThread()) {
     listener_->OnChannelError();
   } else {
