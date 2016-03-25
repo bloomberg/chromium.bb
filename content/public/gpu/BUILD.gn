@@ -18,6 +18,8 @@ group("gpu") {
 source_set("gpu_sources") {
   visibility = [ "//content/*" ]
 
+  configs += [ "//content:content_implementation" ]
+
   sources = [
     "content_gpu_client.h",
   ]
