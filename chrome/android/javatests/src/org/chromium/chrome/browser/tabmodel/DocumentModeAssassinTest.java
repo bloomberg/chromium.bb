@@ -210,12 +210,13 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         int numFilesBefore = tabbedModeFilesBefore.length;
         assertEquals(0, writeStartedCallback.getCallCount());
         assertEquals(0, writeDoneCallback.getCallCount());
+        final Context context = getInstrumentation().getTargetContext();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 assassin.addObserver(observer);
-                assassin.writeTabModelMetadata(
-                        mTabbedModeDirectory.getDataDirectory(), testTabModel, migratedTabIds);
+                assassin.writeTabModelMetadata(testTabModel, migratedTabIds, context,
+                        mTabbedModeDirectory.getDataDirectory());
             }
         });
 
@@ -231,7 +232,6 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
         loadNativeLibraryAndInitBrowserProcess();
         TabPersistentStore.setBaseStateDirectory(mTabbedModeDirectory.getBaseDirectory());
 
-        Context context = getInstrumentation().getTargetContext();
         TestTabModelSelector selector = new TestTabModelSelector(context);
         TabPersistentStore store = selector.mTabPersistentStore;
         MockTabPersistentStoreObserver mockObserver = selector.mTabPersistentStoreObserver;
@@ -329,7 +329,8 @@ public class DocumentModeAssassinTest extends NativeLibraryTestBase {
                 assertEquals(0, copyStartedCallback.getCallCount());
                 assertEquals(0, copyDoneCallback.getCallCount());
                 assertEquals(0, copyCallback.getCallCount());
-                assassin.copyTabStateFiles(selectedTabId, mDocumentModeDirectory.getDataDirectory(),
+                assassin.copyTabStateFiles(selectedTabId, getInstrumentation().getTargetContext(),
+                        mDocumentModeDirectory.getDataDirectory(),
                         mTabbedModeDirectory.getDataDirectory());
             }
         });

@@ -725,6 +725,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                         if (tabIndex != TabModel.INVALID_TAB_INDEX) {
                             getTabModelSelector().selectModel(otherModel.isIncognito());
                             TabModelUtils.setIndex(otherModel, tabIndex);
+                        } else {
+                            Log.e(TAG, "Failed to bring tab to front because it doesn't exist.");
+                            return;
                         }
                     } else {
                         TabModelUtils.setIndex(tabModel, tabIndex);

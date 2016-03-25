@@ -201,6 +201,21 @@ by a child template that "extends" this file.
             <meta-data android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity-alias>
+
+        <!-- Upgrade related -->
+        <activity android:name="org.chromium.chrome.browser.UpgradeActivity"
+            android:excludeFromRecents="true"
+            android:theme="@style/MainTheme"
+            android:windowSoftInputMode="adjustResize"
+            android:taskAffinity=""
+            android:launchMode="singleInstance"
+            android:persistableMode="persistNever"
+            android:autoRemoveFromRecents="false"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+            android:hardwareAccelerated="false">
+        </activity>
+
+        <!-- Document mode Activities. -->
         <activity android:name="org.chromium.chrome.browser.document.DocumentActivity"
             android:exported="false"
             android:theme="@style/MainTheme"
@@ -228,6 +243,8 @@ by a child template that "extends" this file.
         <activity-alias android:name="com.google.android.apps.chrome.document.IncognitoDocumentActivity"
             android:targetActivity="org.chromium.chrome.browser.document.IncognitoDocumentActivity"
             android:exported="false"/>
+
+        <!-- Custom Tabs -->
         <activity android:name="org.chromium.chrome.browser.customtabs.CustomTabActivity"
             android:theme="@style/MainTheme"
             android:exported="false"
@@ -235,6 +252,8 @@ by a child template that "extends" this file.
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:hardwareAccelerated="false">
         </activity>
+        
+        <!-- ChromeTabbedActivity related -->
         <activity android:name="org.chromium.chrome.browser.ChromeTabbedActivity"
              android:theme="@style/MainTheme"
              android:exported="false"
@@ -252,6 +271,7 @@ by a child template that "extends" this file.
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
             android:hardwareAccelerated="false">
         </activity>
+
         <activity android:name="org.chromium.chrome.browser.sync.ui.PassphraseActivity"
             android:theme="@style/MainTheme"
             android:autoRemoveFromRecents="true">

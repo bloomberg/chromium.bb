@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
+import org.chromium.chrome.browser.UpgradeActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -59,6 +60,7 @@ import org.chromium.chrome.browser.preferences.DocumentModeManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
+import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.tabmodel.document.ActivityDelegate;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.DocumentTabModel;
@@ -217,13 +219,6 @@ public class ChromeLauncherActivity extends Activity
             return;
         }
 
-        // Check if we're just closing all of the Incognito tabs.
-        if (TextUtils.equals(intent.getAction(), ACTION_CLOSE_ALL_INCOGNITO)) {
-            ChromeApplication.getDocumentTabModelSelector().getModel(true).closeAllTabs();
-            ApiCompatibilityUtils.finishAndRemoveTask(this);
-            return;
-        }
-
         // Check if we should launch the FirstRunActivity.  This occurs after the check to launch
         // ChromeTabbedActivity because ChromeTabbedActivity handles FRE in its own way.
         if (launchFirstRunExperience()) return;
@@ -234,8 +229,23 @@ public class ChromeLauncherActivity extends Activity
             return;
         }
 
-        // Launch a DocumentActivity to handle the Intent.
-        handleDocumentActivityIntent();
+        if (DocumentModeAssassin.isMigrationNecessary()) {
+            Log.d(TAG, "Diverting to UpgradeActivity via ChromeLauncherActivity.");
+            UpgradeActivity.launchInstance(this, intent);
+            ApiCompatibilityUtils.finishAndRemoveTask(this);
+            return;
+        } else {
+            // Check if we're just closing all of the Incognito tabs.
+            if (TextUtils.equals(intent.getAction(), ACTION_CLOSE_ALL_INCOGNITO)) {
+                ChromeApplication.getDocumentTabModelSelector().getModel(true).closeAllTabs();
+                ApiCompatibilityUtils.finishAndRemoveTask(this);
+                return;
+            }
+
+            // Launch a DocumentActivity to handle the Intent.
+            handleDocumentActivityIntent();
+        }
+
         if (!mIsFinishDelayed) ApiCompatibilityUtils.finishAndRemoveTask(this);
     }
 

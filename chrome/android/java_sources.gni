@@ -50,6 +50,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/SwipeRefreshHandler.java",
   "java/src/org/chromium/chrome/browser/TabState.java",
   "java/src/org/chromium/chrome/browser/TtsPlatformImpl.java",
+  "java/src/org/chromium/chrome/browser/UpgradeActivity.java",
   "java/src/org/chromium/chrome/browser/UrlConstants.java",
   "java/src/org/chromium/chrome/browser/WarmupManager.java",
   "java/src/org/chromium/chrome/browser/WebContentsFactory.java",

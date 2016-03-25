@@ -11,6 +11,8 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.CommandLine;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.UrlConstants;
@@ -177,6 +179,6 @@ public class TabDelegate extends TabCreator {
      * @return Whether the TabDelegate is allowed to directly launch a DocumentActivity.
      */
     protected boolean isAllowedToLaunchDocumentActivity(Context context) {
-        return true;
+        return !CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_FORCED_MIGRATION);
     }
 }

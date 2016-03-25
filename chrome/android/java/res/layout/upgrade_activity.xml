@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2016 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<!-- Adapted from webapp_splash_screen_large.xml.
+     Actual layout pending UX review. -->
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/webapp_splash_screen_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginBottom="@dimen/webapp_splash_offset" >
+
+    <ImageView
+        android:id="@+id/logo_view"
+        android:layout_width="@dimen/signin_image_carousel_width"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:contentDescription="@null"
+        android:src="@drawable/fre_product_logo" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/webapp_splash_large_title_margin_bottom"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+        <ProgressBar
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="12dp"
+            android:layout_weight="0" />
+
+        <TextView
+            android:id="@+id/message_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:text="@string/updating_chrome"
+            android:textSize="20sp"
+            android:textColor="@color/default_text_color"
+            android:gravity="center"
+            android:fontFamily="sans-serif"
+            android:maxLines="1" />
+
+    </LinearLayout>
+
+</RelativeLayout>

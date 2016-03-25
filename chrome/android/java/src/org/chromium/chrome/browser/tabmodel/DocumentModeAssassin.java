@@ -12,6 +12,7 @@ import android.os.Build;
 import android.util.Pair;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.CommandLine;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -19,6 +20,7 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
@@ -42,6 +44,8 @@ import java.nio.channels.FileChannel;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 /**
  * Divorces Chrome's tabs from Android's Overview menu.  Assumes native libraries are unavailable.
  *
@@ -52,7 +56,6 @@ import java.util.Set;
  *    into the tabbed mode directory.  Incognito tabs are silently dropped, as with the previous
  *    migration pathway.
  *
- *    TODO(dfalcantara): Check what happens if a user last viewed an Incognito tab.
  *    TODO(dfalcantara): Check what happens on other launchers.
  *
  *    Once all TabState files are copied, a TabModel metadata file is written out for the tabbed
@@ -64,7 +67,6 @@ import java.util.Set;
  *    DocumentActivity tasks in Android's Recents are removed, TabState files in the document mode
  *    directory are deleted, and document mode preferences are cleared.
  *
- *    TODO(dfalcantara): Clean up the incognito notification, if possible.
  *    TODO(dfalcantara): Add histograms for tracking migration progress.
  *
  * TODO(dfalcantara): Potential pitfalls that need to be accounted for:
@@ -105,7 +107,7 @@ public class DocumentModeAssassin {
     static final int STAGE_CHANGE_SETTINGS_STARTED = 6;
     static final int STAGE_CHANGE_SETTINGS_DONE = 7;
     static final int STAGE_DELETION_STARTED = 8;
-    static final int STAGE_DONE = 9;
+    public static final int STAGE_DONE = 9;
 
     private static final String TAG = "DocumentModeAssassin";
 
@@ -137,7 +139,8 @@ public class DocumentModeAssassin {
 
     /** Returns whether or not a migration to tabbed mode from document mode is necessary. */
     public static boolean isMigrationNecessary() {
-        return FeatureUtilities.isDocumentMode(ApplicationStatus.getApplicationContext());
+        return CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_FORCED_MIGRATION)
+                && FeatureUtilities.isDocumentMode(ApplicationStatus.getApplicationContext());
     }
 
     /** Migrates the user from document mode to tabbed mode if necessary. */
@@ -165,18 +168,39 @@ public class DocumentModeAssassin {
      *
      * TODO(dfalcantara): Prevent migrating chrome:// pages?
      *
-     * @param selectedTabId     ID of the last viewed non-Incognito tab.
-     * @param documentDirectory File pointing at the DocumentTabModel TabState file directory.
-     * @param tabbedDirectory   File pointing at tabbed mode TabState file directory.
+     * @param selectedTabId             ID of the last viewed non-Incognito tab.
+     * @param context                   Context to use when accessing directories.
+     * @param documentDirectoryOverride Overrides the default location for where document mode's
+     *                                  TabState files are expected to be.
+     * @param tabbedDirectoryOverride   Overrides the default location for where tabbed mode's
+     *                                  TabState files are expected to be.
      */
-    void copyTabStateFiles(
-            final int selectedTabId, final File documentDirectory, final File tabbedDirectory) {
+    void copyTabStateFiles(final int selectedTabId, final Context context,
+            @Nullable final File documentDirectoryOverride,
+            @Nullable final File tabbedDirectoryOverride) {
         ThreadUtils.assertOnUiThread();
         if (!setStage(STAGE_INITIALIZED, STAGE_COPY_TAB_STATES_STARTED)) return;
 
         new AsyncTask<Void, Void, Void>() {
+            private DocumentTabModelImpl mNormalTabModel;
+
+            @Override
+            protected void onPreExecute() {
+                if (documentDirectoryOverride == null) {
+                    mNormalTabModel = (DocumentTabModelImpl)
+                            ChromeApplication.getDocumentTabModelSelector().getModel(false);
+                }
+            }
+
             @Override
             protected Void doInBackground(Void... params) {
+                File documentDirectory = documentDirectoryOverride == null
+                        ? mNormalTabModel.getStorageDelegate().getStateDirectory()
+                        : documentDirectoryOverride;
+                File tabbedDirectory = tabbedDirectoryOverride == null
+                        ? TabPersistentStore.getStateDirectory(context, TAB_MODEL_INDEX)
+                        : tabbedDirectoryOverride;
+
                 Log.d(TAG, "Copying TabState files from document to tabbed mode directory.");
                 assert mMigratedTabIds.size() == 0;
 
@@ -186,11 +210,12 @@ public class DocumentModeAssassin {
                     // before all the other ones to mitigate storage issues for devices with limited
                     // available storage.
                     if (selectedTabId != Tab.INVALID_TAB_ID) {
-                        copyTabStateFilesInternal(allTabStates, selectedTabId, true);
+                        copyTabStateFilesInternal(
+                                allTabStates, tabbedDirectory, selectedTabId, true);
                     }
 
                     // Copy over everything else.
-                    copyTabStateFilesInternal(allTabStates, selectedTabId, false);
+                    copyTabStateFilesInternal(allTabStates, tabbedDirectory, selectedTabId, false);
                 }
                 return null;
             }
@@ -205,12 +230,13 @@ public class DocumentModeAssassin {
              * Copies the files from the document mode directory to the tabbed mode directory.
              *
              * @param allTabStates        Listing of all files in the document mode directory.
+             * @param tabbedDirectory     Directory for the tabbed mode files.
              * @param selectedTabId       ID of the non-Incognito tab the user last viewed.  May be
              *                            {@link Tab#INVALID_TAB_ID} if the ID is unknown.
              * @param copyOnlySelectedTab Copy only the TabState file for the selectedTabId.
              */
-            private void copyTabStateFilesInternal(
-                    File[] allTabStates, int selectedTabId, boolean copyOnlySelectedTab) {
+            private void copyTabStateFilesInternal(File[] allTabStates, File tabbedDirectory,
+                    int selectedTabId, boolean copyOnlySelectedTab) {
                 assert !ThreadUtils.runningOnUiThread();
                 for (int i = 0; i < allTabStates.length; i++) {
                     // Trawl the directory for non-Incognito TabState files.
@@ -281,12 +307,15 @@ public class DocumentModeAssassin {
      *    means that the user loses some navigation history, but it's not a case document mode would
      *    have been able to recover from anyway because the TabState stores the URL data.
      *
-     * @param tabbedDirectory Directory containing all of the main TabModel's files.
-     * @param normalTabModel  DocumentTabModel containing information about non-Incognito tabs.
-     * @param migratedTabIds  IDs of Tabs whose TabState files were copied successfully.
+     * @param normalTabModel            DocumentTabModel containing info about non-Incognito tabs.
+     * @param migratedTabIds            IDs of Tabs whose TabState files were copied successfully.
+     * @param context                   Context to access Files from.
+     * @param tabbedDirectoryOverride   Overrides the default location for where tabbed mode's
+     *                                  TabState files are expected to be.
      */
-    void writeTabModelMetadata(final File tabbedDirectory, final DocumentTabModel normalTabModel,
-            final Set<Integer> migratedTabIds) {
+    void writeTabModelMetadata(final DocumentTabModel normalTabModel,
+            final Set<Integer> migratedTabIds, final Context context,
+            @Nullable final File tabbedDirectoryOverride) {
         ThreadUtils.assertOnUiThread();
         if (!setStage(STAGE_COPY_TAB_STATES_DONE, STAGE_WRITE_TABMODEL_METADATA_STARTED)) return;
 
@@ -329,6 +358,9 @@ public class DocumentModeAssassin {
             @Override
             protected Boolean doInBackground(Void... params) {
                 if (mSerializedMetadata != null) {
+                    File tabbedDirectory = tabbedDirectoryOverride == null
+                            ? TabPersistentStore.getStateDirectory(context, TAB_MODEL_INDEX)
+                            : tabbedDirectoryOverride;
                     TabPersistentStore.saveListToFile(tabbedDirectory, mSerializedMetadata);
                     return true;
                 } else {
@@ -440,22 +472,14 @@ public class DocumentModeAssassin {
         Context context = ApplicationStatus.getApplicationContext();
         if (newStage == STAGE_INITIALIZED) {
             Log.d(TAG, "Migrating user into tabbed mode.");
-            DocumentTabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
-            DocumentTabModelImpl normalTabModel =
-                    (DocumentTabModelImpl) selector.getModel(false);
             int selectedTabId = DocumentUtils.getLastShownTabIdFromPrefs(context, false);
-
-            File documentDirectory = normalTabModel.getStorageDelegate().getStateDirectory();
-            File tabbedDirectory = TabPersistentStore.getStateDirectory(context, TAB_MODEL_INDEX);
-            copyTabStateFiles(selectedTabId, documentDirectory, tabbedDirectory);
+            copyTabStateFiles(selectedTabId, context, null, null);
         } else if (newStage == STAGE_COPY_TAB_STATES_DONE) {
             Log.d(TAG, "Writing tabbed mode metadata file.");
             DocumentTabModelSelector selector = ChromeApplication.getDocumentTabModelSelector();
             DocumentTabModelImpl normalTabModel =
                     (DocumentTabModelImpl) selector.getModel(false);
-            File tabbedDirectory =
-                    TabPersistentStore.getStateDirectory(context, TAB_MODEL_INDEX);
-            writeTabModelMetadata(tabbedDirectory, normalTabModel, mMigratedTabIds);
+            writeTabModelMetadata(normalTabModel, mMigratedTabIds, context, null);
         } else if (newStage == STAGE_WRITE_TABMODEL_METADATA_DONE) {
             Log.d(TAG, "Changing user preference.");
             changePreferences(context);
@@ -471,6 +495,7 @@ public class DocumentModeAssassin {
      */
     @VisibleForTesting
     public int getStage() {
+        ThreadUtils.assertOnUiThread();
         return mStage;
     }
 

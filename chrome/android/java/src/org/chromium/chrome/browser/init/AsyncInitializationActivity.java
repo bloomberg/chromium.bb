@@ -27,10 +27,12 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.UpgradeActivity;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.MemoryUma;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.ui.base.DeviceFormFactor;
 
 import java.lang.reflect.Field;
@@ -189,6 +191,17 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
      */
     @Override
     protected final void onCreate(Bundle savedInstanceState) {
+        if (DocumentModeAssassin.isMigrationNecessary()) {
+            super.onCreate(null);
+
+            // Kick the user to the MigrationActivity.
+            UpgradeActivity.launchInstance(this, getIntent());
+
+            // Don't remove this task -- it may be a DocumentActivity that exists only in Recents.
+            finish();
+            return;
+        }
+
         if (!isStartedUpCorrectly(getIntent())) {
             sBadIntentMetric.recordHit();
             super.onCreate(null);

@@ -230,8 +230,30 @@ public class DocumentActivity extends ChromeActivity {
 
     @Override
     protected boolean isStartedUpCorrectly(Intent intent) {
-        int tabId = ActivityDelegate.getTabIdFromIntent(getIntent());
         boolean isDocumentMode = FeatureUtilities.isDocumentMode(this);
+        int tabId = ActivityDelegate.getTabIdFromIntent(getIntent());
+
+        if (!isDocumentMode) {
+            // Fire a MAIN Intent to send the user back through ChromeLauncherActivity.
+            Log.e(TAG, "User is not in document mode.  Sending back to ChromeLauncherActivity.");
+
+            // Try to bring this tab forward after migration.
+            Intent tabbedIntent = null;
+            if (tabId != Tab.INVALID_TAB_ID) tabbedIntent = Tab.createBringTabToFrontIntent(tabId);
+
+            if (tabbedIntent == null) {
+                tabbedIntent = new Intent(Intent.ACTION_MAIN);
+                tabbedIntent.setPackage(getPackageName());
+            }
+
+            // Launch the other Activity in its own task so it stays when this one finishes.
+            tabbedIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            tabbedIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+
+            startActivity(tabbedIntent);
+            overridePendingTransition(0, 0);
+        }
+
         boolean isStartedUpCorrectly = tabId != Tab.INVALID_TAB_ID && isDocumentMode;
         if (!isStartedUpCorrectly) {
             Log.e(TAG, "Discarding Intent: Tab = " + tabId + ", Document mode = " + isDocumentMode);
