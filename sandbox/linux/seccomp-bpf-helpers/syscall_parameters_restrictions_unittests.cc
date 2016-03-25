@@ -79,6 +79,9 @@ BPF_TEST_C(ParameterRestrictions,
   CheckClock(CLOCK_MONOTONIC);
   CheckClock(CLOCK_MONOTONIC_COARSE);
   CheckClock(CLOCK_PROCESS_CPUTIME_ID);
+#if defined(OS_ANDROID)
+  CheckClock(CLOCK_BOOTTIME);
+#endif
   CheckClock(CLOCK_REALTIME);
   CheckClock(CLOCK_REALTIME_COARSE);
   CheckClock(CLOCK_THREAD_CPUTIME_ID);

@@ -309,8 +309,16 @@ ResultExpr RestrictClockID() {
   static_assert(4 == sizeof(clockid_t), "clockid_t is not 32bit");
   const Arg<clockid_t> clockid(0);
   return Switch(clockid)
-      .CASES((CLOCK_MONOTONIC, CLOCK_MONOTONIC_COARSE, CLOCK_PROCESS_CPUTIME_ID,
-              CLOCK_REALTIME, CLOCK_REALTIME_COARSE, CLOCK_THREAD_CPUTIME_ID),
+      .CASES((
+#if defined(OS_ANDROID)
+              CLOCK_BOOTTIME,
+#endif
+              CLOCK_MONOTONIC,
+              CLOCK_MONOTONIC_COARSE,
+              CLOCK_PROCESS_CPUTIME_ID,
+              CLOCK_REALTIME,
+              CLOCK_REALTIME_COARSE,
+              CLOCK_THREAD_CPUTIME_ID),
              Allow())
       .Default(CrashSIGSYS());
 }
