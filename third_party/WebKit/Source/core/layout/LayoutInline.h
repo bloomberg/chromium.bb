@@ -236,12 +236,12 @@ private:
     LayoutUnit offsetHeight() const final { return LayoutUnit(linesBoundingBox().height()); }
 
     LayoutRect absoluteClippedOverflowRect() const override;
-    LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
+
     bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, const PaintInvalidationState*, VisibleRectFlags = DefaultVisibleRectFlags) const override;
 
-    // This method differs from clippedOverflowRectForPaintInvalidation in that it includes
-    // the rects for culled inline boxes, which aren't necessary for paint invalidation.
-    LayoutRect clippedOverflowRect(const LayoutBoxModelObject*, const PaintInvalidationState* = nullptr) const;
+    // This method differs from visualOverflowRect in that it doesn't include the rects
+    // for culled inline boxes, which aren't necessary for paint invalidation.
+    LayoutRect localOverflowRectForPaintInvalidation() const override;
 
     PositionWithAffinity positionForPoint(const LayoutPoint&) final;
 

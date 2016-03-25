@@ -638,7 +638,7 @@ public:
     bool hasForcedBreakBefore() const;
     bool hasForcedBreakAfter() const;
 
-    LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
+    LayoutRect localOverflowRectForPaintInvalidation() const override;
     bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, const PaintInvalidationState*, VisibleRectFlags = DefaultVisibleRectFlags) const override;
     virtual void invalidatePaintForOverhangingFloats(bool paintAllDescendants);
 

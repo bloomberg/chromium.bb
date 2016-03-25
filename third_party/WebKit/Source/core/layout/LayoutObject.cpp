@@ -1369,7 +1369,10 @@ static PassOwnPtr<TracedValue> jsonObjectForOldAndNewRects(const LayoutRect& old
 
 LayoutRect LayoutObject::selectionRectInViewCoordinates() const
 {
-    return selectionRectForPaintInvalidation(view());
+    LayoutRect selectionRect = localSelectionRect();
+    if (!selectionRect.isEmpty())
+        mapToVisibleRectInAncestorSpace(view(), selectionRect, nullptr);
+    return selectionRect;
 }
 
 LayoutRect LayoutObject::previousSelectionRectForPaintInvalidation() const
@@ -1404,13 +1407,16 @@ inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject
         return;
 
     LayoutRect oldSelectionRect = previousSelectionRectForPaintInvalidation();
-    LayoutRect newSelectionRect = selectionRectForPaintInvalidation(&paintInvalidationContainer);
+    LayoutRect newSelectionRect = localSelectionRect();
+    if (!newSelectionRect.isEmpty()) {
+        PaintLayer::mapRectToPaintInvalidationBacking(this, &paintInvalidationContainer, newSelectionRect, &paintInvalidationState);
 
-    // Composited scrolling should not be included in the bounds and position tracking, because the graphics layer backing the scroller
-    // does not move on scroll.
-    if (paintInvalidationContainer.usesCompositedScrolling() && &paintInvalidationContainer != this) {
-        LayoutSize inverseOffset(toLayoutBox(&paintInvalidationContainer)->scrolledContentOffset());
-        newSelectionRect.move(inverseOffset);
+        // Composited scrolling should not be included in the bounds and position tracking, because the graphics layer backing the scroller
+        // does not move on scroll.
+        if (paintInvalidationContainer.usesCompositedScrolling() && &paintInvalidationContainer != this) {
+            LayoutSize inverseOffset(toLayoutBox(&paintInvalidationContainer)->scrolledContentOffset());
+            newSelectionRect.move(inverseOffset);
+        }
     }
 
     setPreviousSelectionRectForPaintInvalidation(newSelectionRect);
@@ -1632,7 +1638,14 @@ LayoutRect LayoutObject::absoluteClippedOverflowRect() const
     return clippedOverflowRectForPaintInvalidation(view());
 }
 
-LayoutRect LayoutObject::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject*, const PaintInvalidationState*) const
+LayoutRect LayoutObject::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+{
+    LayoutRect rect = localOverflowRectForPaintInvalidation();
+    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, rect, paintInvalidationState);
+    return rect;
+}
+
+LayoutRect LayoutObject::localOverflowRectForPaintInvalidation() const
 {
     ASSERT_NOT_REACHED();
     return LayoutRect();

@@ -107,7 +107,7 @@ private:
     bool canHaveChildren() const override;
     PaintLayerType layerTypeRequired() const override { return NoPaintLayer; }
 
-    LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const override;
+    LayoutRect localOverflowRectForPaintInvalidation() const override;
     void imageChanged(WrappedImagePtr, const IntRect* = nullptr) override;
 
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;

@@ -108,7 +108,7 @@ bool LayoutTableCol::canHaveChildren() const
     return isTableColumnGroup();
 }
 
-LayoutRect LayoutTableCol::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutTableCol::localOverflowRectForPaintInvalidation() const
 {
     // Entire table gets invalidated, instead of invalidating
     // every cell in the column.
@@ -122,9 +122,7 @@ LayoutRect LayoutTableCol::clippedOverflowRectForPaintInvalidation(const LayoutB
     // location is always zero.
     ASSERT(this->location() == LayoutPoint());
 
-    LayoutRect r = table->visualOverflowRect();
-    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, r, paintInvalidationState);
-    return r;
+    return table->localOverflowRectForPaintInvalidation();
 }
 
 void LayoutTableCol::imageChanged(WrappedImagePtr, const IntRect*)

@@ -1103,11 +1103,6 @@ public:
 
     bool isPaintInvalidationContainer() const;
 
-    LayoutRect computePaintInvalidationRect()
-    {
-        return computePaintInvalidationRect(containerForPaintInvalidation());
-    }
-
     // Returns the paint invalidation rect for this LayoutObject in the coordinate space of the paint backing (typically a GraphicsLayer) for |paintInvalidationContainer|.
     LayoutRect computePaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
 
@@ -1142,6 +1137,10 @@ public:
     virtual LayoutRect absoluteClippedOverflowRect() const;
     virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
 
+    // Returns the rect that should have paint invalidated whenever this object changes. The rect is in the object's
+    // local coordinate space.
+    virtual LayoutRect localOverflowRectForPaintInvalidation() const;
+
     // Given a rect in the object's coordinate space, compute a rect in the coordinate space of |ancestor|.  If
     // intermediate containers have clipping or scrolling of any kind, it is applied; but overflow clipping is
     // *not* applied for |ancestor| itself. The output rect is suitable for purposes such as paint invalidation.
@@ -1174,8 +1173,8 @@ public:
     bool canUpdateSelectionOnRootLineBoxes() const;
 
     // A single rectangle that encompasses all of the selected objects within this object.  Used to determine the tightest
-    // possible bounding box for the selection. The rect returned is in the coordinate space of the paint invalidation container's backing.
-    virtual LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* /* paintInvalidationContainer */) const { return LayoutRect(); }
+    // possible bounding box for the selection. The rect returned is in the object's local coordinate space.
+    virtual LayoutRect localSelectionRect() const { return LayoutRect(); }
 
     // View coordinates means the coordinate space of |view()|.
     LayoutRect selectionRectInViewCoordinates() const;

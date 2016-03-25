@@ -1021,8 +1021,11 @@ LayoutRect LayoutInline::linesVisualOverflowBoundingBox() const
 
 LayoutRect LayoutInline::absoluteClippedOverflowRect() const
 {
-    if (!continuation())
-        return clippedOverflowRect(view());
+    if (!continuation()) {
+        LayoutRect rect = visualOverflowRect();
+        mapToVisibleRectInAncestorSpace(view(), rect, nullptr);
+        return rect;
+    }
 
     FloatRect floatResult;
     LinesBoundingBoxGeneratorContext context(floatResult);
@@ -1033,34 +1036,28 @@ LayoutRect LayoutInline::absoluteClippedOverflowRect() const
 
     for (LayoutBlock* currBlock = containingBlock(); currBlock && currBlock->isAnonymousBlock(); currBlock = toLayoutBlock(currBlock->nextSibling())) {
         for (LayoutObject* curr = currBlock->firstChild(); curr; curr = curr->nextSibling()) {
-            LayoutRect rect(curr->clippedOverflowRectForPaintInvalidation(view()));
+            LayoutRect rect(curr->localOverflowRectForPaintInvalidation());
             context(FloatRect(rect));
-            if (curr == endContinuation)
-                return LayoutRect(enclosingIntRect(floatResult));
+            if (curr == endContinuation) {
+                LayoutRect rect(enclosingIntRect(floatResult));
+                mapToVisibleRectInAncestorSpace(view(), rect, nullptr);
+                return rect;
+            }
         }
     }
     return LayoutRect();
 }
 
-LayoutRect LayoutInline::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutInline::localOverflowRectForPaintInvalidation() const
 {
     // If we don't create line boxes, we don't have any invalidations to do.
     if (!alwaysCreateLineBoxes())
         return LayoutRect();
-    return clippedOverflowRect(paintInvalidationContainer);
-}
 
-LayoutRect LayoutInline::clippedOverflowRect(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
-{
     if (style()->visibility() != VISIBLE)
         return LayoutRect();
 
-    LayoutRect overflowRect(visualOverflowRect());
-    if (overflowRect.isEmpty())
-        return overflowRect;
-
-    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, overflowRect, paintInvalidationState);
-    return overflowRect;
+    return visualOverflowRect();
 }
 
 LayoutRect LayoutInline::visualOverflowRect() const

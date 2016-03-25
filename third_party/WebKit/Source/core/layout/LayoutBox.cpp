@@ -1923,7 +1923,7 @@ bool LayoutBox::hasForcedBreakAfter() const
     return isForcedFragmentainerBreakValue(breakAfter());
 }
 
-LayoutRect LayoutBox::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutBox::localOverflowRectForPaintInvalidation() const
 {
     if (style()->visibility() != VISIBLE) {
         PaintLayer* layer = enclosingLayer();
@@ -1932,9 +1932,7 @@ LayoutRect LayoutBox::clippedOverflowRectForPaintInvalidation(const LayoutBoxMod
             return LayoutRect();
     }
 
-    LayoutRect r = visualOverflowRect();
-    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, r, paintInvalidationState);
-    return r;
+    return visualOverflowRect();
 }
 
 bool LayoutBox::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState, VisibleRectFlags visibleRectFlags) const
@@ -4450,7 +4448,7 @@ LayoutObject* LayoutBox::splitAnonymousBoxesAroundChild(LayoutObject* beforeChil
             LayoutBox* parentBox = toLayoutBox(boxToSplit->parent());
             // We need to invalidate the |parentBox| before inserting the new node
             // so that the table paint invalidation logic knows the structure is dirty.
-            // See for example LayoutTableCell:clippedOverflowRectForPaintInvalidation.
+            // See for example LayoutTableCell:localOverflowRectForPaintInvalidation.
             markBoxForRelayoutAfterSplit(parentBox);
             parentBox->virtualChildren()->insertChildNode(parentBox, postBox, boxToSplit->nextSibling());
             boxToSplit->moveChildrenTo(postBox, beforeChild, 0, true);

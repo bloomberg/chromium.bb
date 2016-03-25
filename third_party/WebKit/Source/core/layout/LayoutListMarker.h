@@ -54,7 +54,7 @@ public:
     void updateMarginsAndContent();
 
     IntRect getRelativeMarkerRect() const;
-    LayoutRect localSelectionRect() const;
+    LayoutRect localSelectionRect() const final;
     bool isImage() const override;
     const StyleImage* image() const { return m_image.get(); }
     const LayoutListItem* listItem() const { return m_listItem; }
@@ -88,7 +88,6 @@ private:
     bool isText() const { return !isImage(); }
 
     void setSelectionState(SelectionState) override;
-    LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const override;
     bool canBeSelectionLeaf() const override { return true; }
 
     LayoutUnit getWidthOfTextWithSuffix() const;

@@ -439,22 +439,6 @@ void LayoutListMarker::setSelectionState(SelectionState state)
         inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);
 }
 
-LayoutRect LayoutListMarker::selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const
-{
-    ASSERT(!needsLayout());
-
-    if (getSelectionState() == SelectionNone || !inlineBoxWrapper())
-        return LayoutRect();
-
-    RootInlineBox& root = inlineBoxWrapper()->root();
-    LayoutRect rect(LayoutUnit(), root.selectionTop() - location().y(), size().width(), root.selectionHeight());
-    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, rect, nullptr);
-    // FIXME: groupedMapping() leaks the squashing abstraction.
-    if (paintInvalidationContainer->layer()->groupedMapping())
-        PaintLayer::mapRectInPaintInvalidationContainerToBacking(paintInvalidationContainer, rect);
-    return rect;
-}
-
 void LayoutListMarker::listItemStyleDidChange()
 {
     RefPtr<ComputedStyle> newStyle = ComputedStyle::create();

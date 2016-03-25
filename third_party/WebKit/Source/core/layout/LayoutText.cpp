@@ -1573,17 +1573,15 @@ LayoutRect LayoutText::visualOverflowRect() const
     return rect;
 }
 
-LayoutRect LayoutText::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutText::localOverflowRectForPaintInvalidation() const
 {
     if (style()->visibility() != VISIBLE)
         return LayoutRect();
 
-    LayoutRect paintInvalidationRect(visualOverflowRect());
-    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, paintInvalidationRect, paintInvalidationState);
-    return paintInvalidationRect;
+    return visualOverflowRect();
 }
 
-LayoutRect LayoutText::selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const
+LayoutRect LayoutText::localSelectionRect() const
 {
     ASSERT(!needsLayout());
 
@@ -1618,10 +1616,6 @@ LayoutRect LayoutText::selectionRectForPaintInvalidation(const LayoutBoxModelObj
         rect.unite(LayoutRect(ellipsisRectForBox(box, startPos, endPos)));
     }
 
-    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, rect, 0);
-    // FIXME: groupedMapping() leaks the squashing abstraction.
-    if (paintInvalidationContainer->layer()->groupedMapping())
-        PaintLayer::mapRectInPaintInvalidationContainerToBacking(paintInvalidationContainer, rect);
     return rect;
 }
 

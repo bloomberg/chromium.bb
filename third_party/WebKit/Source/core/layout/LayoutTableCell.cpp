@@ -315,14 +315,14 @@ LayoutSize LayoutTableCell::offsetFromContainer(const LayoutObject* o) const
     return offset;
 }
 
-LayoutRect LayoutTableCell::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutTableCell::localOverflowRectForPaintInvalidation() const
 {
     // If the table grid is dirty, we cannot get reliable information about adjoining cells,
     // so we ignore outside borders. This should not be a problem because it means that
     // the table is going to recalculate the grid, relayout and issue a paint invalidation of its current rect, which
     // includes any outside borders of this cell.
     if (!table()->collapseBorders() || table()->needsSectionRecalc())
-        return LayoutBlockFlow::clippedOverflowRectForPaintInvalidation(paintInvalidationContainer, paintInvalidationState);
+        return LayoutBlockFlow::localOverflowRectForPaintInvalidation();
 
     bool rtl = !styleForCellFlow().isLeftToRightDirection();
     int outlineOutset = style()->outlineOutsetExtent();
@@ -355,17 +355,13 @@ LayoutRect LayoutTableCell::clippedOverflowRectForPaintInvalidation(const Layout
         }
     }
     LayoutPoint location(std::max(LayoutUnit(left), -visualOverflowRect().x()), std::max(LayoutUnit(top), -visualOverflowRect().y()));
-    LayoutRect r(-location.x(), -location.y(), location.x() + std::max(size().width() + right, visualOverflowRect().maxX()), location.y() + std::max(size().height() + bottom, visualOverflowRect().maxY()));
-
-    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, r, paintInvalidationState);
-    return r;
+    return LayoutRect(-location.x(), -location.y(), location.x() + std::max(size().width() + right, visualOverflowRect().maxX()), location.y() + std::max(size().height() + bottom, visualOverflowRect().maxY()));
 }
 
 bool LayoutTableCell::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& r, const PaintInvalidationState* paintInvalidationState, VisibleRectFlags visibleRectFlags) const
 {
     if (ancestor == this)
         return true;
-    r.setY(r.y());
     if ((!paintInvalidationState || !paintInvalidationState->canMapToAncestor(ancestor)) && parent())
         r.moveBy(-parentBox()->location()); // Rows are in the same coordinate space, so don't add their offset in.
     return LayoutBlockFlow::mapToVisibleRectInAncestorSpace(ancestor, r, paintInvalidationState, visibleRectFlags);

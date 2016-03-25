@@ -66,7 +66,7 @@ public:
     static const int defaultHeight;
     bool canHaveChildren() const override { return false; }
     virtual void paintReplaced(const PaintInfo&, const LayoutPoint&) const { }
-    LayoutRect localSelectionRect() const; // This is in local coordinates, but it's a physical rect (so the top left corner is physical top left).
+    LayoutRect localSelectionRect() const final;
 
     bool hasObjectFit() const { return style()->getObjectFit() != ComputedStyle::initialObjectFit(); }
 
@@ -123,7 +123,6 @@ private:
 
     bool canBeSelectionLeaf() const override { return true; }
 
-    LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const final;
     void computeIntrinsicSizingInfoForReplacedContent(LayoutReplaced*, IntrinsicSizingInfo&) const;
     FloatSize constrainIntrinsicSizeToMinMax(const IntrinsicSizingInfo&) const;
 

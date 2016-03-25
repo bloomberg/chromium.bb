@@ -709,21 +709,6 @@ PositionWithAffinity LayoutReplaced::positionForPoint(const LayoutPoint& point)
     return LayoutBox::positionForPoint(point);
 }
 
-LayoutRect LayoutReplaced::selectionRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer) const
-{
-    ASSERT(!needsLayout());
-
-    LayoutRect rect = localSelectionRect();
-    if (rect.isEmpty())
-        return rect;
-
-    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, rect, 0);
-    // FIXME: groupedMapping() leaks the squashing abstraction.
-    if (paintInvalidationContainer->layer()->groupedMapping())
-        PaintLayer::mapRectInPaintInvalidationContainerToBacking(paintInvalidationContainer, rect);
-    return rect;
-}
-
 LayoutRect LayoutReplaced::localSelectionRect() const
 {
     if (getSelectionState() == SelectionNone)
@@ -751,8 +736,11 @@ void LayoutReplaced::setSelectionState(SelectionState state)
 
     // We only include the space below the baseline in our layer's cached paint invalidation rect if the
     // image is selected. Since the selection state has changed update the rect.
-    if (hasLayer())
-        setPreviousPaintInvalidationRect(boundsRectForPaintInvalidation(containerForPaintInvalidation()));
+    if (hasLayer()) {
+        LayoutRect rect = localOverflowRectForPaintInvalidation();
+        PaintLayer::mapRectToPaintInvalidationBacking(this, &containerForPaintInvalidation(), rect);
+        setPreviousPaintInvalidationRect(rect);
+    }
 
     if (canUpdateSelectionOnRootLineBoxes())
         inlineBoxWrapper()->root().setHasSelectedChildren(state != SelectionNone);

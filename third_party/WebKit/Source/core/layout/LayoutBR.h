@@ -36,7 +36,9 @@ public:
 
     const char* name() const override { return "LayoutBR"; }
 
-    LayoutRect selectionRectForPaintInvalidation(const LayoutBoxModelObject* /* paintInvalidationContainer */) const override;
+    // Although line breaks contain no actual text, if we're selected we need
+    // to return a rect that includes space to illustrate a newline.
+    using LayoutText::localSelectionRect;
 
     float width(unsigned /* from */, unsigned /* len */, const Font&, LayoutUnit /* xpos */, TextDirection, HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */ , FloatRect* /* glyphBounds */ = nullptr) const override { return 0; }
     float width(unsigned /* from */, unsigned /* len */, LayoutUnit /* xpos */, TextDirection, bool = false /* firstLine */, HashSet<const SimpleFontData*>* = nullptr /* fallbackFonts */, FloatRect* /* glyphBounds */ = nullptr) const override { return 0; }
