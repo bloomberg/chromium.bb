@@ -291,6 +291,10 @@ config("default_sanitizer_coverage_flags") {
 
   if (use_sanitizer_coverage) {
     # FIXME: make this configurable.
-    cflags += [ "-fsanitize-coverage=edge,indirect-calls,8bit-counters" ]
+    cflags += [
+      "-fsanitize-coverage=edge,indirect-calls,8bit-counters",
+      "-mllvm",
+      "-sanitizer-coverage-prune-blocks=1",
+    ]
   }
 }
