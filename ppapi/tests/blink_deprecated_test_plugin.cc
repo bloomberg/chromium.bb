@@ -49,6 +49,8 @@
 // Properties:
 // * plugin.testObject (read-only): a TestObject instance (see below).
 //
+// * plugin.testGetUndefined (read-only): returns undefined.
+//
 //
 // TestObject exposes the following interface:
 // Properties:
@@ -199,6 +201,9 @@ class InstanceSO : public ScriptableBase {
     properties_.insert(std::make_pair(
         "testObject", base::Bind(&InstanceSO::TestObjectAccessor,
                                  base::Unretained(this))));
+    properties_.insert(std::make_pair(
+        "testGetUndefined", base::Bind(&InstanceSO::TestGetUndefinedAccessor,
+                                       base::Unretained(this))));
   }
   ~InstanceSO() override {}
 
@@ -272,6 +277,12 @@ class InstanceSO : public ScriptableBase {
     if (test_object_.is_undefined())
       test_object_ = pp::VarPrivate(instance_, new TestObjectSO(instance_));
     *var = test_object_;
+  }
+
+  void TestGetUndefinedAccessor(bool set, pp::Var* var) {
+    if (set)
+      return;
+    *var = pp::Var();
   }
 
   pp::VarPrivate test_object_;

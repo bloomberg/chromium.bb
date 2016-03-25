@@ -61,7 +61,7 @@ void getScriptableObjectProperty(PropertyType property, const v8::PropertyCallba
 
     // We quit here to allow the binding code to look up general HTMLObjectElement properties
     // if they are not overriden by plugin.
-    if (value->IsUndefined())
+    if (value->IsUndefined() && !v8CallBoolean(instance->Has(info.GetIsolate()->GetCurrentContext(), property)))
         return;
 
     v8SetReturnValue(info, value);
