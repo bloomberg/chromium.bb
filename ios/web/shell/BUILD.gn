@@ -23,17 +23,24 @@ app("ios_web_shell") {
     "-Xlinker",
     "2",
   ]
+}
 
-  # TODO(crbug.com/546283): once gn supports bundle resources, add support for
-  # the following gyp code:
-  #
-  # 'mac_bundle_resources': [
-  #   'shell/Default.png',
-  #   'shell/MainView.xib',
-  #   'shell/textfield_background@2x.png',
-  #   'shell/toolbar_back@2x.png',
-  #   'shell/toolbar_forward@2x.png',
-  # ],
+bundle_data_xib("main_view_bundle_data") {
+  visibility = [ ":shell" ]
+  source = "MainView.xib"
+}
+
+bundle_data("shell_bundle_data") {
+  visibility = [ ":shell" ]
+  sources = [
+    "Default.png",
+    "textfield_background@2x.png",
+    "toolbar_back@2x.png",
+    "toolbar_forward@2x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
 }
 
 source_set("shell") {
@@ -57,6 +64,8 @@ source_set("shell") {
   ]
 
   deps = [
+    ":main_view_bundle_data",
+    ":shell_bundle_data",
     "//base",
     "//ios/web",
     "//ios/web/public/app",

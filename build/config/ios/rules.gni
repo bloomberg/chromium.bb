@@ -167,3 +167,63 @@ template("app") {
   #   an alias to "ninja -C out/Default base_unittests" (for convenience
   #   and compatibility with gyp),
 }
+
+# Compile a xib or storyboard file and add it to a bundle_data so that it is
+# available at runtime in the bundle.
+#
+# Arguments
+#
+#   source:
+#       string, path of the xib or storyboard to compile.
+#
+# Forwards all variables to the bundle_data target.
+template("bundle_data_xib") {
+  assert(defined(invoker.source), "source needs to be defined for $target_name")
+
+  _source_extension = get_path_info(invoker.source, "extension")
+  assert(_source_extension == "xib" || _source_extension == "storyboard",
+         "source must be a .xib or .storyboard for $target_name")
+
+  _target_name = target_name
+  _compile_xib = target_name + "_compile_xib"
+
+  _nib_basename = get_path_info(invoker.source, "name")
+  _nib_filename = "$_nib_basename.nib"
+
+  action(_compile_xib) {
+    visibility = [ ":$_target_name" ]
+    script = "//build/config/ios/ios_compile_xib.py"
+    sources = [
+      invoker.source,
+    ]
+    outputs = [
+      "$target_gen_dir/$_nib_filename/objects.nib",
+      "$target_gen_dir/$_nib_filename/runtime.nib",
+    ]
+    args = [
+      "--minimum-deployment-target",
+      ios_deployment_target,
+      "--output",
+      rebase_path("$target_gen_dir/$_nib_filename"),
+      "--input",
+      rebase_path(invoker.source, root_build_dir),
+    ]
+  }
+
+  bundle_data(_target_name) {
+    forward_variables_from(invoker, "*", [ "source" ])
+
+    if (!defined(public_deps)) {
+      public_deps = []
+    }
+    public_deps += [ ":$_compile_xib" ]
+
+    sources = [
+      "$target_gen_dir/$_nib_filename/objects.nib",
+      "$target_gen_dir/$_nib_filename/runtime.nib",
+    ]
+    outputs = [
+      "{{bundle_resources_dir}}/$_nib_filename/{{source_file_part}}",
+    ]
+  }
+}
