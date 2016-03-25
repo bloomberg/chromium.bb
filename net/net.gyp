@@ -240,6 +240,13 @@
            'cert/x509_util_ios.h',
           ],
         }],
+        [ 'use_nss_verifier == 1 and OS == "ios"', {
+          'sources!': [
+            'cert/cert_verify_proc_ios.cc',
+            'cert/cert_verify_proc_ios.h',
+            'cert/x509_certificate_openssl_ios.cc',
+          ],
+        }],
         [ 'use_openssl==1', {
             'sources!': [
               'quic/test_tools/crypto_test_utils_nss.cc',
