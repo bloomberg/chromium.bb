@@ -29,14 +29,17 @@ static const unsigned int kNumBuffers = media::limits::kMaxVideoFrames +
     (media::limits::kMaxVideoFrames & 1u);
 
 FakeVideoDecodeAccelerator::FakeVideoDecodeAccelerator(
-    const gfx::Size& size,
-    const MakeGLContextCurrentCallback& make_context_current_cb)
+    gfx::GLContext* gl,
+    gfx::Size size,
+    const base::Callback<bool(void)>& make_context_current)
     : child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       client_(NULL),
-      make_context_current_cb_(make_context_current_cb),
+      make_context_current_(make_context_current),
+      gl_(gl),
       frame_buffer_size_(size),
       flushing_(false),
-      weak_this_factory_(this) {}
+      weak_this_factory_(this) {
+}
 
 FakeVideoDecodeAccelerator::~FakeVideoDecodeAccelerator() {
 }
@@ -100,7 +103,7 @@ void FakeVideoDecodeAccelerator::AssignPictureBuffers(
   memset(black_data.get(),
          0,
          frame_buffer_size_.width() * frame_buffer_size_.height() * 4);
-  if (!make_context_current_cb_.Run()) {
+  if (!make_context_current_.Run()) {
     LOG(ERROR) << "ReusePictureBuffer(): could not make context current";
     return;
   }
@@ -159,10 +162,8 @@ void FakeVideoDecodeAccelerator::Destroy() {
   delete this;
 }
 
-bool FakeVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
-    const base::WeakPtr<Client>& decode_client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner) {
-  return false;
+bool FakeVideoDecodeAccelerator::CanDecodeOnIOThread() {
+  return true;
 }
 
 void FakeVideoDecodeAccelerator::DoPictureReady() {

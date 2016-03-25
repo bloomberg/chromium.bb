@@ -47,10 +47,8 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "content/common/gpu/media/fake_video_decode_accelerator.h"
-#include "content/common/gpu/media/gpu_video_decode_accelerator_factory_impl.h"
 #include "content/common/gpu/media/rendering_helper.h"
 #include "content/common/gpu/media/video_accelerator_unittest_helpers.h"
-#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/filters/h264_parser.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -360,6 +358,17 @@ class GLRenderingVDAClient
  private:
   typedef std::map<int32_t, scoped_refptr<TextureRef>> TextureRefMap;
 
+  scoped_ptr<media::VideoDecodeAccelerator> CreateFakeVDA();
+  scoped_ptr<media::VideoDecodeAccelerator> CreateDXVAVDA();
+  scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2VDA();
+  scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2SliceVDA();
+  scoped_ptr<media::VideoDecodeAccelerator> CreateVaapiVDA();
+
+  void BindImage(uint32_t client_texture_id,
+                 uint32_t texture_target,
+                 scoped_refptr<gl::GLImage> image,
+                 bool can_bind_as_sampler);
+
   void SetState(ClientState new_state);
   void FinishInitialization();
   void ReturnPicture(int32_t picture_buffer_id);
@@ -392,10 +401,8 @@ class GLRenderingVDAClient
   int next_bitstream_buffer_id_;
   ClientStateNotification<ClientState>* note_;
   scoped_ptr<VideoDecodeAccelerator> decoder_;
-  base::WeakPtr<VideoDecodeAccelerator> weak_vda_;
-  scoped_ptr<base::WeakPtrFactory<VideoDecodeAccelerator>>
-      weak_vda_ptr_factory_;
-  scoped_ptr<GpuVideoDecodeAcceleratorFactoryImpl> vda_factory_;
+  scoped_ptr<base::WeakPtrFactory<VideoDecodeAccelerator> >
+      weak_decoder_factory_;
   int remaining_play_throughs_;
   int reset_after_frame_num_;
   int delete_decoder_state_;
@@ -433,22 +440,8 @@ class GLRenderingVDAClient
 
   int32_t next_picture_buffer_id_;
 
-  base::WeakPtr<GLRenderingVDAClient> weak_this_;
-  base::WeakPtrFactory<GLRenderingVDAClient> weak_this_factory_;
-
   DISALLOW_IMPLICIT_CONSTRUCTORS(GLRenderingVDAClient);
 };
-
-static bool DoNothingReturnTrue() {
-  return true;
-}
-
-static bool DummyBindImage(uint32_t client_texture_id,
-                           uint32_t texture_target,
-                           const scoped_refptr<gl::GLImage>& image,
-                           bool can_bind_to_sampler) {
-  return true;
-}
 
 GLRenderingVDAClient::GLRenderingVDAClient(
     size_t window_id,
@@ -490,8 +483,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       delay_reuse_after_frame_num_(delay_reuse_after_frame_num),
       decode_calls_per_second_(decode_calls_per_second),
       render_as_thumbnails_(render_as_thumbnails),
-      next_picture_buffer_id_(1),
-      weak_this_factory_(this) {
+      next_picture_buffer_id_(1) {
   LOG_ASSERT(num_in_flight_decodes > 0);
   LOG_ASSERT(num_play_throughs > 0);
   // |num_in_flight_decodes_| is unsupported if |decode_calls_per_second_| > 0.
@@ -502,8 +494,6 @@ GLRenderingVDAClient::GLRenderingVDAClient(
   profile_ = (profile != media::VIDEO_CODEC_PROFILE_UNKNOWN
                   ? profile
                   : media::H264PROFILE_BASELINE);
-
-  weak_this_ = weak_this_factory_.GetWeakPtr();
 }
 
 GLRenderingVDAClient::~GLRenderingVDAClient() {
@@ -512,35 +502,114 @@ GLRenderingVDAClient::~GLRenderingVDAClient() {
   SetState(CS_DESTROYED);
 }
 
+static bool DoNothingReturnTrue() { return true; }
+
+scoped_ptr<media::VideoDecodeAccelerator>
+GLRenderingVDAClient::CreateFakeVDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
+  if (fake_decoder_) {
+    decoder.reset(new FakeVideoDecodeAccelerator(
+        static_cast<gfx::GLContext*> (rendering_helper_->GetGLContextHandle()),
+        frame_size_,
+        base::Bind(&DoNothingReturnTrue)));
+  }
+  return decoder;
+}
+
+scoped_ptr<media::VideoDecodeAccelerator>
+GLRenderingVDAClient::CreateDXVAVDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
+    const bool enable_accelerated_vpx_decode = false;
+    decoder.reset(new DXVAVideoDecodeAccelerator(
+        base::Bind(&DoNothingReturnTrue),
+        rendering_helper_->GetGLContext().get(),
+        enable_accelerated_vpx_decode));
+  }
+#endif
+  return decoder;
+}
+
+scoped_ptr<media::VideoDecodeAccelerator>
+GLRenderingVDAClient::CreateV4L2VDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+  scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
+  if (device.get()) {
+    base::WeakPtr<VideoDecodeAccelerator::Client> weak_client = AsWeakPtr();
+    decoder.reset(new V4L2VideoDecodeAccelerator(
+        static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
+        static_cast<EGLContext>(rendering_helper_->GetGLContextHandle()),
+        weak_client, base::Bind(&DoNothingReturnTrue), device,
+        base::ThreadTaskRunnerHandle::Get()));
+  }
+#endif
+  return decoder;
+}
+
+scoped_ptr<media::VideoDecodeAccelerator>
+GLRenderingVDAClient::CreateV4L2SliceVDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+  scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
+  if (device.get()) {
+    base::WeakPtr<VideoDecodeAccelerator::Client> weak_client = AsWeakPtr();
+    decoder.reset(new V4L2SliceVideoDecodeAccelerator(
+        device, static_cast<EGLDisplay>(rendering_helper_->GetGLDisplay()),
+        static_cast<EGLContext>(rendering_helper_->GetGLContextHandle()),
+        weak_client, base::Bind(&DoNothingReturnTrue),
+        base::ThreadTaskRunnerHandle::Get()));
+  }
+#endif
+  return decoder;
+}
+
+scoped_ptr<media::VideoDecodeAccelerator>
+GLRenderingVDAClient::CreateVaapiVDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+  decoder.reset(new VaapiVideoDecodeAccelerator(
+      base::Bind(&DoNothingReturnTrue),
+      base::Bind(&GLRenderingVDAClient::BindImage, base::Unretained(this))));
+#endif
+  return decoder;
+}
+
+void GLRenderingVDAClient::BindImage(uint32_t client_texture_id,
+                                     uint32_t texture_target,
+                                     scoped_refptr<gl::GLImage> image,
+                                     bool can_bind_to_sampler) {}
+
 void GLRenderingVDAClient::CreateAndStartDecoder() {
   LOG_ASSERT(decoder_deleted());
   LOG_ASSERT(!decoder_.get());
 
-  if (fake_decoder_) {
-    decoder_.reset(new FakeVideoDecodeAccelerator(
-        frame_size_, base::Bind(&DoNothingReturnTrue)));
-    LOG_ASSERT(decoder_->Initialize(profile_, this));
-  } else {
-    if (!vda_factory_) {
-      vda_factory_ = GpuVideoDecodeAcceleratorFactoryImpl::Create(
-          base::Bind(&RenderingHelper::GetGLContext,
-                     base::Unretained(rendering_helper_)),
-          base::Bind(&DoNothingReturnTrue), base::Bind(&DummyBindImage));
-      LOG_ASSERT(vda_factory_);
+  VideoDecodeAccelerator::Client* client = this;
+
+  scoped_ptr<media::VideoDecodeAccelerator> decoders[] = {
+    CreateFakeVDA(),
+    CreateDXVAVDA(),
+    CreateV4L2VDA(),
+    CreateV4L2SliceVDA(),
+    CreateVaapiVDA(),
+  };
+
+  for (size_t i = 0; i < arraysize(decoders); ++i) {
+    if (!decoders[i])
+      continue;
+    decoder_ = std::move(decoders[i]);
+    weak_decoder_factory_.reset(
+        new base::WeakPtrFactory<VideoDecodeAccelerator>(decoder_.get()));
+    if (decoder_->Initialize(profile_, client)) {
+      SetState(CS_DECODER_SET);
+      FinishInitialization();
+      return;
     }
-
-    VideoDecodeAccelerator::Config config(profile_);
-    gpu::GpuPreferences gpu_preferences;
-    decoder_ = vda_factory_->CreateVDA(this, config, gpu_preferences);
   }
-
-  LOG_ASSERT(decoder_) << "Failed creating a VDA";
-
-  decoder_->TryToSetupDecodeOnSeparateThread(
-      weak_this_, base::ThreadTaskRunnerHandle::Get());
-
-  SetState(CS_DECODER_SET);
-  FinishInitialization();
+  // Decoders are all initialize failed.
+  LOG(ERROR) << "VideoDecodeAccelerator::Initialize() failed";
+  LOG_ASSERT(false);
 }
 
 void GLRenderingVDAClient::ProvidePictureBuffers(
@@ -644,8 +713,10 @@ void GLRenderingVDAClient::ReturnPicture(int32_t picture_buffer_id) {
 
   if (num_decoded_frames_ > delay_reuse_after_frame_num_) {
     base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, base::Bind(&VideoDecodeAccelerator::ReusePictureBuffer,
-                              weak_vda_, picture_buffer_id),
+        FROM_HERE,
+        base::Bind(&VideoDecodeAccelerator::ReusePictureBuffer,
+                   weak_decoder_factory_->GetWeakPtr(),
+                   picture_buffer_id),
         kReuseDelay);
   } else {
     decoder_->ReusePictureBuffer(picture_buffer_id);
@@ -767,7 +838,7 @@ void GLRenderingVDAClient::FinishInitialization() {
 void GLRenderingVDAClient::DeleteDecoder() {
   if (decoder_deleted())
     return;
-  weak_vda_ptr_factory_.reset();
+  weak_decoder_factory_.reset();
   decoder_.reset();
   STLClearObject(&encoded_data_);
   active_textures_.clear();

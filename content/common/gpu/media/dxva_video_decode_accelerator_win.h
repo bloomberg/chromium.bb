@@ -29,7 +29,6 @@
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/media/gpu_video_decode_accelerator_helpers.h"
 #include "media/video/video_decode_accelerator.h"
 
 interface IMFSample;
@@ -98,8 +97,8 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
 
   // Does not take ownership of |client| which must outlive |*this|.
   DXVAVideoDecodeAccelerator(
-      const GetGLContextCallback& get_gl_context_cb,
-      const MakeGLContextCurrentCallback& make_context_current_cb,
+      const base::Callback<bool(void)>& make_context_current,
+      gfx::GLContext* gl_context,
       bool enable_accelerated_vpx_decode);
   ~DXVAVideoDecodeAccelerator() override;
 
@@ -112,10 +111,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   void Flush() override;
   void Reset() override;
   void Destroy() override;
-  bool TryToSetupDecodeOnSeparateThread(
-      const base::WeakPtr<Client>& decode_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
-      override;
+  bool CanDecodeOnIOThread() override;
   GLenum GetSurfaceInternalFormat() const override;
 
   static media::VideoDecodeAccelerator::SupportedProfiles
@@ -395,10 +391,8 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   typedef std::list<base::win::ScopedComPtr<IMFSample>> PendingInputs;
   PendingInputs pending_input_buffers_;
 
-  // Callback to get current GLContext.
-  GetGLContextCallback get_gl_context_cb_;
   // Callback to set the correct gl context.
-  MakeGLContextCurrentCallback make_context_current_cb_;
+  base::Callback<bool(void)> make_context_current_;
 
   // Which codec we are decoding with hardware acceleration.
   media::VideoCodec codec_;
@@ -437,6 +431,9 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Set to true if the DX11 video format converter input media types need to
   // be initialized. Defaults to true.
   bool dx11_video_format_converter_media_type_needs_init_;
+
+  // The GLContext to be used by the decoder.
+  scoped_refptr<gfx::GLContext> gl_context_;
 
   // Set to true if we are sharing ANGLE's device.
   bool using_angle_device_;

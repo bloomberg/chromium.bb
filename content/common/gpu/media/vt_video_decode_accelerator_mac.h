@@ -17,7 +17,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
-#include "content/common/gpu/media/gpu_video_decode_accelerator_helpers.h"
 #include "content/common/gpu/media/vt_mac.h"
 #include "media/filters/h264_parser.h"
 #include "media/video/h264_poc.h"
@@ -36,9 +35,8 @@ bool InitializeVideoToolbox();
 class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
  public:
   explicit VTVideoDecodeAccelerator(
-      const MakeGLContextCurrentCallback& make_context_current_cb,
-      const BindGLImageCallback& bind_image_cb);
-
+      const MakeContextCurrentCallback& make_context_current,
+      const BindImageCallback& bind_image);
   ~VTVideoDecodeAccelerator() override;
 
   // VideoDecodeAccelerator implementation.
@@ -50,10 +48,7 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   void Flush() override;
   void Reset() override;
   void Destroy() override;
-  bool TryToSetupDecodeOnSeparateThread(
-      const base::WeakPtr<Client>& decode_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
-      override;
+  bool CanDecodeOnIOThread() override;
 
   // Called by OutputThunk() when VideoToolbox finishes decoding a frame.
   void Output(
@@ -193,8 +188,8 @@ class VTVideoDecodeAccelerator : public media::VideoDecodeAccelerator {
   //
   // GPU thread state.
   //
-  MakeGLContextCurrentCallback make_context_current_cb_;
-  BindGLImageCallback bind_image_cb_;
+  MakeContextCurrentCallback make_context_current_;
+  BindImageCallback bind_image_;
   media::VideoDecodeAccelerator::Client* client_;
   State state_;
 

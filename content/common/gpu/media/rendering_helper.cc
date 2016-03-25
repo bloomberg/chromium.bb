@@ -665,8 +665,12 @@ void RenderingHelper::DeleteTexture(uint32_t texture_id) {
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
 
-gfx::GLContext* RenderingHelper::GetGLContext() {
-  return gl_context_.get();
+scoped_refptr<gfx::GLContext> RenderingHelper::GetGLContext() {
+  return gl_context_;
+}
+
+void* RenderingHelper::GetGLContextHandle() {
+  return gl_context_->GetHandle();
 }
 
 void* RenderingHelper::GetGLDisplay() {

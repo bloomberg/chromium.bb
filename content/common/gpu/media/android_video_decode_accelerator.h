@@ -18,7 +18,6 @@
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/media/avda_state_provider.h"
-#include "content/common/gpu/media/gpu_video_decode_accelerator_helpers.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/android/media_drm_bridge_cdm_context.h"
@@ -111,8 +110,8 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   };
 
   AndroidVideoDecodeAccelerator(
-      const MakeGLContextCurrentCallback& make_context_current_cb,
-      const GetGLES2DecoderCallback& get_gles2_decoder_cb);
+      const base::WeakPtr<gpu::gles2::GLES2Decoder> decoder,
+      const base::Callback<bool(void)>& make_context_current);
 
   ~AndroidVideoDecodeAccelerator() override;
 
@@ -126,10 +125,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   void Flush() override;
   void Reset() override;
   void Destroy() override;
-  bool TryToSetupDecodeOnSeparateThread(
-      const base::WeakPtr<Client>& decode_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
-      override;
+  bool CanDecodeOnIOThread() override;
 
   // AVDAStateProvider implementation:
   const gfx::Size& GetSize() const override;
@@ -245,10 +241,7 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   Client* client_;
 
   // Callback to set the correct gl context.
-  MakeGLContextCurrentCallback make_context_current_cb_;
-
-  // Callback to get the GLES2Decoder instance.
-  GetGLES2DecoderCallback get_gles2_decoder_cb_;
+  base::Callback<bool(void)> make_context_current_;
 
   // Codec type. Used when we configure media codec.
   media::VideoCodec codec_;
@@ -305,6 +298,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // Keeps track of bitstream ids notified to the client with
   // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
   std::list<int32_t> bitstreams_notified_in_advance_;
+
+  // Owner of the GL context. Used to restore the context state.
+  base::WeakPtr<gpu::gles2::GLES2Decoder> gl_decoder_;
 
   // Backing strategy that we'll use to connect PictureBuffers to frames.
   scoped_ptr<BackingStrategy> strategy_;

@@ -251,22 +251,35 @@ static base::LazyInstance<AVDATimerManager>::Leaky g_avda_timer =
     LAZY_INSTANCE_INITIALIZER;
 
 AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
-    const MakeGLContextCurrentCallback& make_context_current_cb,
-    const GetGLES2DecoderCallback& get_gles2_decoder_cb)
+    const base::WeakPtr<gpu::gles2::GLES2Decoder> decoder,
+    const base::Callback<bool(void)>& make_context_current)
     : client_(NULL),
-      make_context_current_cb_(make_context_current_cb),
-      get_gles2_decoder_cb_(get_gles2_decoder_cb),
+      make_context_current_(make_context_current),
       codec_(media::kCodecH264),
       is_encrypted_(false),
       needs_protected_surface_(false),
       state_(NO_ERROR),
       picturebuffers_requested_(false),
+      gl_decoder_(decoder),
       media_drm_bridge_cdm_context_(nullptr),
       cdm_registration_id_(0),
       pending_input_buf_index_(-1),
       error_sequence_token_(0),
       defer_errors_(false),
-      weak_this_factory_(this) {}
+      weak_this_factory_(this) {
+  const gpu::GpuPreferences& gpu_preferences =
+      gl_decoder_->GetContextGroup()->gpu_preferences();
+  if (UseDeferredRenderingStrategy(gpu_preferences)) {
+    // TODO(liberato, watk): Figure out what we want to do about zero copy for
+    // fullscreen external SurfaceView in WebView.  http://crbug.com/582170.
+    DCHECK(!gl_decoder_->GetContextGroup()->mailbox_manager()->UsesSync());
+    DVLOG(1) << __FUNCTION__ << ", using deferred rendering strategy.";
+    strategy_.reset(new AndroidDeferredRenderingBackingStrategy(this));
+  } else {
+    DVLOG(1) << __FUNCTION__ << ", using copy back strategy.";
+    strategy_.reset(new AndroidCopyingBackingStrategy(this));
+  }
+}
 
 AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -288,11 +301,6 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   TRACE_EVENT0("media", "AVDA::Initialize");
 
   DVLOG(1) << __FUNCTION__ << ": " << config.AsHumanReadableString();
-
-  if (make_context_current_cb_.is_null() || get_gles2_decoder_cb_.is_null()) {
-    NOTREACHED() << "GL callbacks are required for this VDA";
-    return false;
-  }
 
   DCHECK(client);
   client_ = client;
@@ -316,28 +324,13 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
                codec_, media::MEDIA_CODEC_DECODER));
   }
 
-  auto gles_decoder = get_gles2_decoder_cb_.Run();
-  if (!gles_decoder) {
-    LOG(ERROR) << "Failed to get gles2 decoder instance.";
+  if (!make_context_current_.Run()) {
+    LOG(ERROR) << "Failed to make this decoder's GL context current.";
     return false;
   }
 
-  const gpu::GpuPreferences& gpu_preferences =
-      gles_decoder->GetContextGroup()->gpu_preferences();
-
-  if (UseDeferredRenderingStrategy(gpu_preferences)) {
-    // TODO(liberato, watk): Figure out what we want to do about zero copy for
-    // fullscreen external SurfaceView in WebView.  http://crbug.com/582170.
-    DCHECK(!gles_decoder->GetContextGroup()->mailbox_manager()->UsesSync());
-    DVLOG(1) << __FUNCTION__ << ", using deferred rendering strategy.";
-    strategy_.reset(new AndroidDeferredRenderingBackingStrategy(this));
-  } else {
-    DVLOG(1) << __FUNCTION__ << ", using copy back strategy.";
-    strategy_.reset(new AndroidCopyingBackingStrategy(this));
-  }
-
-  if (!make_context_current_cb_.Run()) {
-    LOG(ERROR) << "Failed to make this decoder's GL context current.";
+  if (!gl_decoder_) {
+    LOG(ERROR) << "Failed to get gles2 decoder instance.";
     return false;
   }
 
@@ -721,7 +714,7 @@ void AndroidVideoDecodeAccelerator::SendDecodedFrameToClient(
   DCHECK(!free_picture_ids_.empty());
   TRACE_EVENT0("media", "AVDA::SendDecodedFrameToClient");
 
-  if (!make_context_current_cb_.Run()) {
+  if (!make_context_current_.Run()) {
     POST_ERROR(PLATFORM_FAILURE, "Failed to make the GL context current.");
     return;
   }
@@ -999,7 +992,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
 void AndroidVideoDecodeAccelerator::Destroy() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  bool have_context = make_context_current_cb_.Run();
+  bool have_context = make_context_current_.Run();
   if (!have_context)
     LOG(WARNING) << "Failed make GL context current for Destroy, continuing.";
 
@@ -1019,9 +1012,7 @@ void AndroidVideoDecodeAccelerator::Destroy() {
   delete this;
 }
 
-bool AndroidVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
-    const base::WeakPtr<Client>& decode_client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner) {
+bool AndroidVideoDecodeAccelerator::CanDecodeOnIOThread() {
   return false;
 }
 
@@ -1036,19 +1027,18 @@ const base::ThreadChecker& AndroidVideoDecodeAccelerator::ThreadChecker()
 
 base::WeakPtr<gpu::gles2::GLES2Decoder>
 AndroidVideoDecodeAccelerator::GetGlDecoder() const {
-  return get_gles2_decoder_cb_.Run();
+  return gl_decoder_;
 }
 
 gpu::gles2::TextureRef* AndroidVideoDecodeAccelerator::GetTextureForPicture(
     const media::PictureBuffer& picture_buffer) {
-  auto gles_decoder = GetGlDecoder();
-  RETURN_ON_FAILURE(this, gles_decoder, "Failed to get GL decoder",
-                    ILLEGAL_STATE, nullptr);
-  RETURN_ON_FAILURE(this, gles_decoder->GetContextGroup(),
-                    "Null gles_decoder->GetContextGroup()", ILLEGAL_STATE,
+  RETURN_ON_FAILURE(this, gl_decoder_, "Null gl_decoder_", ILLEGAL_STATE,
+                    nullptr);
+  RETURN_ON_FAILURE(this, gl_decoder_->GetContextGroup(),
+                    "Null gl_decoder_->GetContextGroup()", ILLEGAL_STATE,
                     nullptr);
   gpu::gles2::TextureManager* texture_manager =
-      gles_decoder->GetContextGroup()->texture_manager();
+      gl_decoder_->GetContextGroup()->texture_manager();
   RETURN_ON_FAILURE(this, texture_manager, "Null texture_manager",
                     ILLEGAL_STATE, nullptr);
   gpu::gles2::TextureRef* texture_ref =

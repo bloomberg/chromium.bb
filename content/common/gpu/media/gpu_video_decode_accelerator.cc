@@ -18,32 +18,42 @@
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/media/gpu_video_accelerator_util.h"
-#include "content/common/gpu/media/gpu_video_decode_accelerator_factory_impl.h"
 #include "content/common/gpu/media/media_messages.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/service/gpu_preferences.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_utils.h"
 #include "ipc/message_filter.h"
 #include "media/base/limits.h"
-#include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
+#include "ui/gl/gl_surface_egl.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#include "content/common/gpu/media/dxva_video_decode_accelerator_win.h"
+#elif defined(OS_MACOSX)
+#include "content/common/gpu/media/vt_video_decode_accelerator_mac.h"
+#elif defined(OS_CHROMEOS)
+#if defined(USE_V4L2_CODEC)
+#include "content/common/gpu/media/v4l2_device.h"
+#include "content/common/gpu/media/v4l2_slice_video_decode_accelerator.h"
+#include "content/common/gpu/media/v4l2_video_decode_accelerator.h"
+#endif
+#if defined(ARCH_CPU_X86_FAMILY)
+#include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
+#include "ui/gl/gl_implementation.h"
+#endif
+#elif defined(OS_ANDROID)
+#include "content/common/gpu/media/android_video_decode_accelerator.h"
+#endif
+
+#include "ui/gfx/geometry/size.h"
 
 namespace content {
 
-namespace {
-static gfx::GLContext* GetGLContext(
-    const base::WeakPtr<GpuCommandBufferStub>& stub) {
-  if (!stub) {
-    DLOG(ERROR) << "Stub is gone; no GLContext.";
-    return nullptr;
-  }
-
-  return stub->decoder()->GetGLContext();
-}
-
 static bool MakeDecoderContextCurrent(
-    const base::WeakPtr<GpuCommandBufferStub>& stub) {
+    const base::WeakPtr<GpuCommandBufferStub> stub) {
   if (!stub) {
     DLOG(ERROR) << "Stub is gone; won't MakeCurrent().";
     return false;
@@ -56,43 +66,6 @@ static bool MakeDecoderContextCurrent(
 
   return true;
 }
-
-#if (defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)) || defined(OS_MACOSX)
-static bool BindImage(const base::WeakPtr<GpuCommandBufferStub>& stub,
-                      uint32_t client_texture_id,
-                      uint32_t texture_target,
-                      const scoped_refptr<gl::GLImage>& image,
-                      bool can_bind_to_sampler) {
-  if (!stub) {
-    DLOG(ERROR) << "Stub is gone; won't BindImage().";
-    return false;
-  }
-
-  gpu::gles2::GLES2Decoder* command_decoder = stub->decoder();
-  gpu::gles2::TextureManager* texture_manager =
-      command_decoder->GetContextGroup()->texture_manager();
-  gpu::gles2::TextureRef* ref = texture_manager->GetTexture(client_texture_id);
-  if (ref) {
-    texture_manager->SetLevelImage(ref, texture_target, 0, image.get(),
-                                   can_bind_to_sampler
-                                       ? gpu::gles2::Texture::BOUND
-                                       : gpu::gles2::Texture::UNBOUND);
-  }
-
-  return true;
-}
-#endif
-
-static base::WeakPtr<gpu::gles2::GLES2Decoder> GetGLES2Decoder(
-    const base::WeakPtr<GpuCommandBufferStub>& stub) {
-  if (!stub) {
-    DLOG(ERROR) << "Stub is gone; no GLES2Decoder.";
-    return base::WeakPtr<gpu::gles2::GLES2Decoder>();
-  }
-
-  return stub->decoder()->AsWeakPtr();
-}
-}  // anonymous namespace
 
 // DebugAutoLock works like AutoLock but only acquires the lock when
 // DCHECK is on.
@@ -165,13 +138,8 @@ GpuVideoDecodeAccelerator::GpuVideoDecodeAccelerator(
       weak_factory_for_io_(this) {
   DCHECK(stub_);
   stub_->AddDestructionObserver(this);
-  get_gl_context_cb_ = base::Bind(&GetGLContext, stub_->AsWeakPtr());
-  make_context_current_cb_ =
+  make_context_current_ =
       base::Bind(&MakeDecoderContextCurrent, stub_->AsWeakPtr());
-#if (defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)) || defined(OS_MACOSX)
-  bind_image_cb_ = base::Bind(&BindImage, stub_->AsWeakPtr());
-#endif
-  get_gles2_decoder_cb_ = base::Bind(&GetGLES2Decoder, stub_->AsWeakPtr());
 }
 
 GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
@@ -184,8 +152,40 @@ GpuVideoDecodeAccelerator::~GpuVideoDecodeAccelerator() {
 gpu::VideoDecodeAcceleratorCapabilities
 GpuVideoDecodeAccelerator::GetCapabilities(
     const gpu::GpuPreferences& gpu_preferences) {
-  return GpuVideoDecodeAcceleratorFactoryImpl::GetDecoderCapabilities(
-      gpu_preferences);
+  media::VideoDecodeAccelerator::Capabilities capabilities;
+  if (gpu_preferences.disable_accelerated_video_decode)
+    return gpu::VideoDecodeAcceleratorCapabilities();
+
+  // Query supported profiles for each VDA. The order of querying VDAs should
+  // be the same as the order of initializing VDAs. Then the returned profile
+  // can be initialized by corresponding VDA successfully.
+#if defined(OS_WIN)
+  capabilities.supported_profiles =
+      DXVAVideoDecodeAccelerator::GetSupportedProfiles();
+#elif defined(OS_CHROMEOS)
+  media::VideoDecodeAccelerator::SupportedProfiles vda_profiles;
+#if defined(USE_V4L2_CODEC)
+  vda_profiles = V4L2VideoDecodeAccelerator::GetSupportedProfiles();
+  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
+      vda_profiles, &capabilities.supported_profiles);
+  vda_profiles = V4L2SliceVideoDecodeAccelerator::GetSupportedProfiles();
+  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
+      vda_profiles, &capabilities.supported_profiles);
+#endif
+#if defined(ARCH_CPU_X86_FAMILY)
+  vda_profiles = VaapiVideoDecodeAccelerator::GetSupportedProfiles();
+  GpuVideoAcceleratorUtil::InsertUniqueDecodeProfiles(
+      vda_profiles, &capabilities.supported_profiles);
+#endif
+#elif defined(OS_MACOSX)
+  capabilities.supported_profiles =
+      VTVideoDecodeAccelerator::GetSupportedProfiles();
+#elif defined(OS_ANDROID)
+  capabilities =
+      AndroidVideoDecodeAccelerator::GetCapabilities(gpu_preferences);
+#endif
+  return GpuVideoAcceleratorUtil::ConvertMediaToGpuDecodeCapabilities(
+      capabilities);
 }
 
 bool GpuVideoDecodeAccelerator::OnMessageReceived(const IPC::Message& msg) {
@@ -328,6 +328,11 @@ bool GpuVideoDecodeAccelerator::Send(IPC::Message* message) {
 
 bool GpuVideoDecodeAccelerator::Initialize(
     const media::VideoDecodeAccelerator::Config& config) {
+  const gpu::GpuPreferences& gpu_preferences =
+      stub_->channel()->gpu_channel_manager()->gpu_preferences();
+  if (gpu_preferences.disable_accelerated_video_decode)
+    return false;
+
   DCHECK(!video_decode_accelerator_);
 
   if (!stub_->channel()->AddRoute(host_route_id_, stub_->stream_id(), this)) {
@@ -338,48 +343,159 @@ bool GpuVideoDecodeAccelerator::Initialize(
 #if !defined(OS_WIN)
   // Ensure we will be able to get a GL context at all before initializing
   // non-Windows VDAs.
-  if (!make_context_current_cb_.Run())
+  if (!make_context_current_.Run()) {
     return false;
+  }
 #endif
 
-  scoped_ptr<GpuVideoDecodeAcceleratorFactoryImpl> vda_factory =
-      GpuVideoDecodeAcceleratorFactoryImpl::CreateWithGLES2Decoder(
-          get_gl_context_cb_, make_context_current_cb_, bind_image_cb_,
-          get_gles2_decoder_cb_);
+  // Array of Create..VDA() function pointers, maybe applicable to the current
+  // platform. This list is ordered by priority of use and it should be the
+  // same as the order of querying supported profiles of VDAs.
+  const GpuVideoDecodeAccelerator::CreateVDAFp create_vda_fps[] = {
+#if defined(OS_WIN)
+    &GpuVideoDecodeAccelerator::CreateDXVAVDA,
+#endif
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+    &GpuVideoDecodeAccelerator::CreateV4L2VDA,
+    &GpuVideoDecodeAccelerator::CreateV4L2SliceVDA,
+#endif
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+    &GpuVideoDecodeAccelerator::CreateVaapiVDA,
+#endif
+#if defined(OS_MACOSX)
+    &GpuVideoDecodeAccelerator::CreateVTVDA,
+#endif
+#if defined(OS_ANDROID)
+    &GpuVideoDecodeAccelerator::CreateAndroidVDA,
+#endif
+  };
 
-  if (!vda_factory) {
-    LOG(ERROR) << "Failed creating the VDA factory";
-    return false;
+  for (const auto& create_vda_function : create_vda_fps) {
+    video_decode_accelerator_ = (this->*create_vda_function)();
+    if (!video_decode_accelerator_ ||
+        !video_decode_accelerator_->Initialize(config, this))
+      continue;
+
+    if (video_decode_accelerator_->CanDecodeOnIOThread()) {
+      filter_ = new MessageFilter(this, host_route_id_);
+      stub_->channel()->AddFilter(filter_.get());
+    }
+    return true;
   }
+  video_decode_accelerator_.reset();
+  LOG(ERROR) << "HW video decode not available for profile " << config.profile
+             << (config.is_encrypted ? " with encryption" : "");
+  return false;
+}
 
+#if defined(OS_WIN)
+scoped_ptr<media::VideoDecodeAccelerator>
+GpuVideoDecodeAccelerator::CreateDXVAVDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
   const gpu::GpuPreferences& gpu_preferences =
       stub_->channel()->gpu_channel_manager()->gpu_preferences();
-  video_decode_accelerator_ =
-      vda_factory->CreateVDA(this, config, gpu_preferences);
-  if (!video_decode_accelerator_) {
-    LOG(ERROR) << "HW video decode not available for profile " << config.profile
-               << (config.is_encrypted ? " with encryption" : "");
-    return false;
+  if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
+    DVLOG(0) << "Initializing DXVA HW decoder for windows.";
+    decoder.reset(new DXVAVideoDecodeAccelerator(
+        make_context_current_, stub_->decoder()->GetGLContext(),
+        gpu_preferences.enable_accelerated_vpx_decode));
+  } else {
+    NOTIMPLEMENTED() << "HW video decode acceleration not available.";
   }
-
-  // Attempt to set up performing decoding tasks on IO thread, if supported by
-  // the VDA.
-  if (video_decode_accelerator_->TryToSetupDecodeOnSeparateThread(
-          weak_factory_for_io_.GetWeakPtr(), io_task_runner_)) {
-    filter_ = new MessageFilter(this, host_route_id_);
-    stub_->channel()->AddFilter(filter_.get());
-  }
-
-  return true;
+  return decoder;
 }
+#endif
+
+#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
+scoped_ptr<media::VideoDecodeAccelerator>
+GpuVideoDecodeAccelerator::CreateV4L2VDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
+  scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
+  if (device.get()) {
+    decoder.reset(new V4L2VideoDecodeAccelerator(
+        gfx::GLSurfaceEGL::GetHardwareDisplay(),
+        stub_->decoder()->GetGLContext()->GetHandle(),
+        weak_factory_for_io_.GetWeakPtr(),
+        make_context_current_,
+        device,
+        io_task_runner_));
+  }
+  return decoder;
+}
+
+scoped_ptr<media::VideoDecodeAccelerator>
+GpuVideoDecodeAccelerator::CreateV4L2SliceVDA() {
+  scoped_ptr<media::VideoDecodeAccelerator> decoder;
+  scoped_refptr<V4L2Device> device = V4L2Device::Create(V4L2Device::kDecoder);
+  if (device.get()) {
+    decoder.reset(new V4L2SliceVideoDecodeAccelerator(
+        device,
+        gfx::GLSurfaceEGL::GetHardwareDisplay(),
+        stub_->decoder()->GetGLContext()->GetHandle(),
+        weak_factory_for_io_.GetWeakPtr(),
+        make_context_current_,
+        io_task_runner_));
+  }
+  return decoder;
+}
+#endif
+
+#if (defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)) || defined(OS_MACOSX)
+void GpuVideoDecodeAccelerator::BindImage(uint32_t client_texture_id,
+                                          uint32_t texture_target,
+                                          scoped_refptr<gl::GLImage> image,
+                                          bool can_bind_to_sampler) {
+  gpu::gles2::GLES2Decoder* command_decoder = stub_->decoder();
+  gpu::gles2::TextureManager* texture_manager =
+      command_decoder->GetContextGroup()->texture_manager();
+  gpu::gles2::TextureRef* ref = texture_manager->GetTexture(client_texture_id);
+  if (ref) {
+    texture_manager->SetLevelImage(ref, texture_target, 0, image.get(),
+                                   can_bind_to_sampler
+                                       ? gpu::gles2::Texture::BOUND
+                                       : gpu::gles2::Texture::UNBOUND);
+  }
+}
+#endif
+
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+scoped_ptr<media::VideoDecodeAccelerator>
+GpuVideoDecodeAccelerator::CreateVaapiVDA() {
+  return make_scoped_ptr<media::VideoDecodeAccelerator>(
+      new VaapiVideoDecodeAccelerator(
+          make_context_current_,
+          base::Bind(&GpuVideoDecodeAccelerator::BindImage,
+                     base::Unretained(this))));
+}
+#endif
+
+#if defined(OS_MACOSX)
+scoped_ptr<media::VideoDecodeAccelerator>
+GpuVideoDecodeAccelerator::CreateVTVDA() {
+  return make_scoped_ptr<media::VideoDecodeAccelerator>(
+      new VTVideoDecodeAccelerator(
+          make_context_current_,
+          base::Bind(&GpuVideoDecodeAccelerator::BindImage,
+                     base::Unretained(this))));
+}
+#endif
+
+#if defined(OS_ANDROID)
+scoped_ptr<media::VideoDecodeAccelerator>
+GpuVideoDecodeAccelerator::CreateAndroidVDA() {
+  return make_scoped_ptr<media::VideoDecodeAccelerator>(
+      new AndroidVideoDecodeAccelerator(stub_->decoder()->AsWeakPtr(),
+                                        make_context_current_));
+}
+#endif
 
 void GpuVideoDecodeAccelerator::OnSetCdm(int cdm_id) {
   DCHECK(video_decode_accelerator_);
   video_decode_accelerator_->SetCdm(cdm_id);
 }
 
-// Runs on IO thread if VDA::TryToSetupDecodeOnSeparateThread() succeeded,
-// otherwise on the main thread.
+// Runs on IO thread if video_decode_accelerator_->CanDecodeOnIOThread() is
+// true, otherwise on the main thread.
 void GpuVideoDecodeAccelerator::OnDecode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK(video_decode_accelerator_);

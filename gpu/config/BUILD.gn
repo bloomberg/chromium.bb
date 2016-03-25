@@ -25,7 +25,6 @@ group("config") {
 source_set("config_sources") {
   visibility = [
     "//components/mus/gles2:*",
-    "//content/public/gpu/*",
     "//gpu/*",
   ]
 

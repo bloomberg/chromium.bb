@@ -20,8 +20,6 @@ source_set("gpu_sources") {
 
   sources = [
     "content_gpu_client.h",
-    "gpu_video_decode_accelerator_factory.cc",
-    "gpu_video_decode_accelerator_factory.h",
   ]
 
   deps = [
@@ -29,8 +27,5 @@ source_set("gpu_sources") {
     "//content:export",
     "//content/gpu:gpu_sources",
     "//content/public/common:common_sources",
-    "//gpu/command_buffer/service:service_sources",
-    "//gpu/config:config_sources",
-    "//media:media",
   ]
 }

@@ -18,16 +18,16 @@ namespace content {
 // static
 linked_ptr<VaapiPicture> VaapiPicture::CreatePicture(
     const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
-    const MakeGLContextCurrentCallback& make_context_current_cb,
+    const base::Callback<bool(void)> make_context_current,
     int32_t picture_buffer_id,
     uint32_t texture_id,
     const gfx::Size& size) {
   linked_ptr<VaapiPicture> picture;
 #if defined(USE_X11)
-  picture.reset(new VaapiTFPPicture(vaapi_wrapper, make_context_current_cb,
+  picture.reset(new VaapiTFPPicture(vaapi_wrapper, make_context_current,
                                     picture_buffer_id, texture_id, size));
 #elif defined(USE_OZONE)
-  picture.reset(new VaapiDrmPicture(vaapi_wrapper, make_context_current_cb,
+  picture.reset(new VaapiDrmPicture(vaapi_wrapper, make_context_current,
                                     picture_buffer_id, texture_id, size));
 #endif  // USE_X11
 

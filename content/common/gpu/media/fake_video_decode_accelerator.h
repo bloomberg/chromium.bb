@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/media/gpu_video_decode_accelerator_helpers.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gl/gl_context.h"
@@ -24,8 +23,9 @@ class CONTENT_EXPORT FakeVideoDecodeAccelerator
     : public media::VideoDecodeAccelerator {
  public:
   FakeVideoDecodeAccelerator(
-      const gfx::Size& size,
-      const MakeGLContextCurrentCallback& make_context_current_cb);
+      gfx::GLContext* gl,
+      gfx::Size size,
+      const base::Callback<bool(void)>& make_context_current);
   ~FakeVideoDecodeAccelerator() override;
 
   bool Initialize(const Config& config, Client* client) override;
@@ -36,10 +36,7 @@ class CONTENT_EXPORT FakeVideoDecodeAccelerator
   void Flush() override;
   void Reset() override;
   void Destroy() override;
-  bool TryToSetupDecodeOnSeparateThread(
-      const base::WeakPtr<Client>& decode_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
-      override;
+  bool CanDecodeOnIOThread() override;
 
  private:
   void DoPictureReady();
@@ -52,7 +49,8 @@ class CONTENT_EXPORT FakeVideoDecodeAccelerator
   Client* client_;
 
   // Make our context current before running any GL entry points.
-  MakeGLContextCurrentCallback make_context_current_cb_;
+  base::Callback<bool(void)> make_context_current_;
+  gfx::GLContext* gl_;
 
   // Output picture size.
   gfx::Size frame_buffer_size_;
