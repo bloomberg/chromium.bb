@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
@@ -169,6 +170,15 @@ public class UrlContainer extends ViewGroup {
             changed |= true;
         }
         return changed;
+    }
+
+    /**
+     * Return the complete text shown in the URL container.  Even if the trailing text has faded
+     * away, this will be included in the returned string.
+     */
+    @VisibleForTesting
+    public String getText() {
+        return mUrlBarView.getText().toString() + mTrailingTextView.getText().toString();
     }
 
     /**

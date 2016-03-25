@@ -20,6 +20,7 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.omnibox.UrlContainer;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -74,10 +75,11 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                final UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
-                assertNotNull("urlBar is null", urlBar);
+                final UrlContainer urlContainer =
+                        (UrlContainer) getActivity().findViewById(R.id.url_container);
+                assertNotNull("URL Container is null", urlContainer);
 
-                return TextUtils.equals(expectedLocation(endUrl), urlBar.getText().toString())
+                return TextUtils.equals(expectedLocation(endUrl), urlContainer.getText())
                         && TextUtils.equals(endUrl, getActivity().getActivityTab().getUrl());
             }
         });
@@ -115,7 +117,9 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
         observer.assertLoaded();
 
         // The URL has been set before the page notification was broadcast, so it is safe to access.
-        return urlBar.getText().toString();
+        final UrlContainer urlContainer =
+                (UrlContainer) getActivity().findViewById(R.id.url_container);
+        return urlContainer.getText();
     }
 
     /**

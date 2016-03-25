@@ -1256,22 +1256,6 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     @Override
-    protected void onNavigatedToDifferentPage() {
-        super.onNavigatedToDifferentPage();
-        if (FeatureUtilities.isDocumentMode(getContext())) {
-            mUrlContainer.setTrailingTextVisible(true);
-        }
-    }
-
-    @Override
-    public void finishLoadProgress(boolean delayed) {
-        super.finishLoadProgress(delayed);
-        if (FeatureUtilities.isDocumentMode(getContext())) {
-            mUrlContainer.setTrailingTextVisible(false);
-        }
-    }
-
-    @Override
     public void finishAnimations() {
         mClipRect = null;
         if (mTabSwitcherModeAnimation != null) {

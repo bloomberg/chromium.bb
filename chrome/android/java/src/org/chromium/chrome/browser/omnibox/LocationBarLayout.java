@@ -827,9 +827,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
     public void onUrlPreFocusChanged(boolean gainFocus) {
         if (mToolbarDataProvider == null || mToolbarDataProvider.getTab() == null) return;
 
-        if (!mQueryInTheOmnibox
-                && FeatureUtilities.isDocumentMode(getContext())
-                && !TextUtils.isEmpty(mUrlBar.getText())) {
+        if (!mQueryInTheOmnibox && !TextUtils.isEmpty(mUrlBar.getText())) {
             mUrlBar.setUrl(getOnlineUrlFromTab(), null);
         }
     }
@@ -1976,7 +1974,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
             }
         }
         String path = null;
-        if (!showingQuery && FeatureUtilities.isDocumentMode(getContext())) {
+        if (!showingQuery) {
             Pair<String, String> urlText = splitPathFromUrlDisplayText(displayText);
             displayText = urlText.first;
             path = urlText.second;

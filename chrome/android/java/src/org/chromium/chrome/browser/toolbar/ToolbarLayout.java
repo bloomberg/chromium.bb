@@ -31,12 +31,15 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.omnibox.LocationBar;
+import org.chromium.chrome.browser.omnibox.UrlContainer;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.ToolbarProgressBar;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.widget.Toast;
+
+import javax.annotation.Nullable;
 
 /**
  * Layout class that contains the base shared logic for manipulating the toolbar component. For
@@ -56,6 +59,8 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected TintedImageButton mMenuButton;
     protected ImageView mMenuBadge;
     protected View mMenuButtonWrapper;
+    @Nullable
+    private UrlContainer mUrlContainer;
     private AppMenuButtonHelper mAppMenuButtonHelper;
 
     protected final ColorStateList mDarkModeTint;
@@ -63,6 +68,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
     private ToolbarDataProvider mToolbarDataProvider;
     private ToolbarTabController mToolbarTabController;
+    @Nullable
     private ToolbarProgressBar mProgressBar;
 
     private boolean mNativeLibraryReady;
@@ -106,6 +112,8 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         mMenuButton = (TintedImageButton) findViewById(R.id.menu_button);
         mMenuBadge = (ImageView) findViewById(R.id.menu_badge);
         mMenuButtonWrapper = findViewById(R.id.menu_button_wrapper);
+
+        mUrlContainer = (UrlContainer) findViewById(R.id.url_container);
 
         // Initialize the provider to an empty version to avoid null checking everywhere.
         mToolbarDataProvider = new ToolbarDataProvider() {
@@ -546,6 +554,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * Notified when a navigation to a different page has occurred.
      */
     protected void onNavigatedToDifferentPage() {
+        if (mUrlContainer != null) mUrlContainer.setTrailingTextVisible(true);
     }
 
     /**
@@ -576,6 +585,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         if (mProgressBar != null) {
             mProgressBar.finish(delayed);
         }
+        if (mUrlContainer != null) mUrlContainer.setTrailingTextVisible(false);
     }
 
     /**
