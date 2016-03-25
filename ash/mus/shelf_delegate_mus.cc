@@ -85,8 +85,7 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
 gfx::ImageSkia GetShelfIconFromBitmap(
     const mojo::Array<uint8_t>& serialized_bitmap) {
   // Convert the data to an ImageSkia.
-  SkBitmap bitmap = mojo::ConvertTo<SkBitmap, const std::vector<uint8_t>>(
-      serialized_bitmap.storage());
+  SkBitmap bitmap = mojo::ConvertTo<SkBitmap>(serialized_bitmap.storage());
   gfx::ImageSkia icon_image;
   if (!bitmap.isNull()) {
     icon_image = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);

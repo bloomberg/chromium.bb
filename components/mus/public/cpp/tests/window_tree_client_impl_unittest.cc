@@ -37,7 +37,7 @@ namespace mus {
 
 mojo::Array<uint8_t> Int32ToPropertyTransportValue(int32_t value) {
   const std::vector<uint8_t> bytes =
-      mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(value);
+      mojo::ConvertTo<std::vector<uint8_t>>(value);
   mojo::Array<uint8_t> transport_value;
   transport_value.resize(bytes.size());
   memcpy(&transport_value.front(), &(bytes.front()), bytes.size());

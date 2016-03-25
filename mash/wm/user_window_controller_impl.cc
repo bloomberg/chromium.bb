@@ -32,7 +32,7 @@ mojo::Array<uint8_t> GetWindowAppIcon(mus::Window* window) {
   if (window->HasSharedProperty(
           mus::mojom::WindowManager::kWindowAppIcon_Property)) {
     return mojo::Array<uint8_t>::From(
-        window->GetSharedProperty<const std::vector<uint8_t>>(
+        window->GetSharedProperty<std::vector<uint8_t>>(
             mus::mojom::WindowManager::kWindowAppIcon_Property));
   }
   return mojo::Array<uint8_t>();

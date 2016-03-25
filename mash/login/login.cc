@@ -48,7 +48,7 @@ class UI : public views::WidgetDelegateView,
 
     std::map<std::string, std::vector<uint8_t>> properties;
     properties[mash::wm::mojom::kWindowContainer_Property] =
-        mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
+        mojo::ConvertTo<std::vector<uint8_t>>(
             static_cast<int32_t>(mash::wm::mojom::Container::LOGIN_WINDOWS));
     mus::Window* window =
         views::WindowManagerConnection::Get()->NewWindow(properties);

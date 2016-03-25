@@ -131,14 +131,13 @@ class NativeWidgetFactory {
       mash::wm::mojom::Container container = GetContainerId(params);
       if (container != mash::wm::mojom::Container::COUNT) {
         properties[mash::wm::mojom::kWindowContainer_Property] =
-            mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
+            mojo::ConvertTo<std::vector<uint8_t>>(
                 static_cast<int32_t>(container));
       }
       mash::wm::mojom::AshWindowType type = GetAshWindowType(params.parent);
       if (type != mash::wm::mojom::AshWindowType::COUNT) {
         properties[mash::wm::mojom::kAshWindowType_Property] =
-            mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
-                static_cast<int32_t>(type));
+            mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(type));
       }
     }
 

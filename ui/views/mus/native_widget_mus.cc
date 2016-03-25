@@ -349,25 +349,22 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
     std::map<std::string, std::vector<uint8_t>>* properties) {
   if (!init_params.bounds.IsEmpty()) {
     (*properties)[mus::mojom::WindowManager::kUserSetBounds_Property] =
-        mojo::TypeConverter<const std::vector<uint8_t>, gfx::Rect>::Convert(
-            init_params.bounds);
+        mojo::ConvertTo<std::vector<uint8_t>>(init_params.bounds);
   }
 
   if (!Widget::RequiresNonClientView(init_params.type))
     return;
 
   (*properties)[mus::mojom::WindowManager::kWindowType_Property] =
-      mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
-          static_cast<int32_t>(
-              mojo::ConvertTo<mus::mojom::WindowType>(init_params.type)));
+      mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(
+          mojo::ConvertTo<mus::mojom::WindowType>(init_params.type)));
   (*properties)[mus::mojom::WindowManager::kResizeBehavior_Property] =
-      mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
+      mojo::ConvertTo<std::vector<uint8_t>>(
           ResizeBehaviorFromDelegate(init_params.delegate));
   SkBitmap app_icon = AppIconFromDelegate(init_params.delegate);
   if (!app_icon.isNull()) {
     (*properties)[mus::mojom::WindowManager::kWindowAppIcon_Property] =
-        mojo::TypeConverter<const std::vector<uint8_t>, SkBitmap>::Convert(
-            app_icon);
+        mojo::ConvertTo<std::vector<uint8_t>>(app_icon);
   }
 }
 

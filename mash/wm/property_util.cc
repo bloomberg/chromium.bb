@@ -112,8 +112,7 @@ mus::mojom::WindowType GetWindowType(
       properties.find(mus::mojom::WindowManager::kWindowType_Property);
   if (iter != properties.end()) {
     return static_cast<mus::mojom::WindowType>(
-        mojo::TypeConverter<int32_t, const std::vector<uint8_t>>::Convert(
-            iter->second));
+        mojo::ConvertTo<int32_t>(iter->second));
   }
   return mus::mojom::WindowType::POPUP;
 }

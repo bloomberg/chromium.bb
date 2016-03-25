@@ -31,7 +31,7 @@ SkBitmap MakeBitmap() {
 TEST(PropertyTypeConvertersTest, SkBitmapSerialize) {
   SkBitmap bitmap = MakeBitmap();
   std::vector<uint8_t> bytes =
-      TypeConverter<const std::vector<uint8_t>, SkBitmap>::Convert(bitmap);
+      TypeConverter<std::vector<uint8_t>, SkBitmap>::Convert(bitmap);
 
   // Size should be 4 bytes of header plus size of RGBA pixels.
   ASSERT_EQ(4 + bitmap.getSize(), bytes.size());
@@ -51,7 +51,7 @@ TEST(PropertyTypeConvertersTest, SkBitmapDeserialize) {
   // Make a 1x2 pixel bitmap.
   std::vector<uint8_t> bytes = {0, 1, 0, 2, 11, 22, 33, 44, 55, 66, 77, 88};
   SkBitmap bitmap =
-      TypeConverter<SkBitmap, const std::vector<uint8_t>>::Convert(bytes);
+      TypeConverter<SkBitmap, std::vector<uint8_t>>::Convert(bytes);
   EXPECT_EQ(1, bitmap.width());
   EXPECT_EQ(2, bitmap.height());
   // The image pixels match the vector bytes.
@@ -63,9 +63,9 @@ TEST(PropertyTypeConvertersTest, SkBitmapDeserialize) {
 TEST(PropertyTypeConvertersTest, SkBitmapRoundTrip) {
   SkBitmap bitmap1 = MakeBitmap();
   std::vector<uint8_t> bytes =
-      TypeConverter<const std::vector<uint8_t>, SkBitmap>::Convert(bitmap1);
+      TypeConverter<std::vector<uint8_t>, SkBitmap>::Convert(bitmap1);
   SkBitmap bitmap2 =
-      TypeConverter<SkBitmap, const std::vector<uint8_t>>::Convert(bytes);
+      TypeConverter<SkBitmap, std::vector<uint8_t>>::Convert(bytes);
   EXPECT_TRUE(gfx::BitmapsAreEqual(bitmap1, bitmap2));
 }
 
@@ -73,7 +73,7 @@ TEST(PropertyTypeConvertersTest, SkBitmapRoundTrip) {
 TEST(PropertyTypeConvertersTest, SkBitmapSerializeEmpty) {
   SkBitmap bitmap;
   std::vector<uint8_t> bytes =
-      TypeConverter<const std::vector<uint8_t>, SkBitmap>::Convert(bitmap);
+      TypeConverter<std::vector<uint8_t>, SkBitmap>::Convert(bitmap);
   EXPECT_TRUE(bytes.empty());
 }
 
@@ -81,7 +81,7 @@ TEST(PropertyTypeConvertersTest, SkBitmapSerializeEmpty) {
 TEST(PropertyTypeConvertersTest, SkBitmapDeserializeEmpty) {
   std::vector<uint8_t> bytes;
   SkBitmap bitmap =
-      TypeConverter<SkBitmap, const std::vector<uint8_t>>::Convert(bytes);
+      TypeConverter<SkBitmap, std::vector<uint8_t>>::Convert(bytes);
   EXPECT_TRUE(bitmap.isNull());
 }
 

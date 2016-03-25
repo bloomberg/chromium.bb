@@ -27,58 +27,58 @@ namespace mojo {
 //             replaced with the skia.Bitmap mojom struct serialization.
 
 template <>
-struct TypeConverter<const std::vector<uint8_t>, gfx::Rect> {
-  static const std::vector<uint8_t> Convert(const gfx::Rect& input);
+struct TypeConverter<std::vector<uint8_t>, gfx::Rect> {
+  static std::vector<uint8_t> Convert(const gfx::Rect& input);
 };
 template <>
-struct TypeConverter<gfx::Rect, const std::vector<uint8_t>> {
+struct TypeConverter<gfx::Rect, std::vector<uint8_t>> {
   static gfx::Rect Convert(const std::vector<uint8_t>& input);
 };
 
 template <>
-struct TypeConverter<const std::vector<uint8_t>, gfx::Size> {
-  static const std::vector<uint8_t> Convert(const gfx::Size& input);
+struct TypeConverter<std::vector<uint8_t>, gfx::Size> {
+  static std::vector<uint8_t> Convert(const gfx::Size& input);
 };
 template <>
-struct TypeConverter<gfx::Size, const std::vector<uint8_t>> {
+struct TypeConverter<gfx::Size, std::vector<uint8_t>> {
   static gfx::Size Convert(const std::vector<uint8_t>& input);
 };
 
 template <>
-struct TypeConverter<const std::vector<uint8_t>, int32_t> {
-  static const std::vector<uint8_t> Convert(const int32_t& input);
+struct TypeConverter<std::vector<uint8_t>, int32_t> {
+  static std::vector<uint8_t> Convert(const int32_t& input);
 };
 template <>
-struct TypeConverter<int32_t, const std::vector<uint8_t>> {
+struct TypeConverter<int32_t, std::vector<uint8_t>> {
   static int32_t Convert(const std::vector<uint8_t>& input);
 };
 
 template <>
-struct TypeConverter<const std::vector<uint8_t>, base::string16> {
-  static const std::vector<uint8_t> Convert(const base::string16& input);
+struct TypeConverter<std::vector<uint8_t>, base::string16> {
+  static std::vector<uint8_t> Convert(const base::string16& input);
 };
 template <>
-struct TypeConverter<base::string16, const std::vector<uint8_t>> {
+struct TypeConverter<base::string16, std::vector<uint8_t>> {
   static base::string16 Convert(const std::vector<uint8_t>& input);
 };
 
 template <>
-struct TypeConverter<const std::vector<uint8_t>, std::string> {
-  static const std::vector<uint8_t> Convert(const std::string& input);
+struct TypeConverter<std::vector<uint8_t>, std::string> {
+  static std::vector<uint8_t> Convert(const std::string& input);
 };
 template <>
-struct TypeConverter<std::string, const std::vector<uint8_t>> {
+struct TypeConverter<std::string, std::vector<uint8_t>> {
   static std::string Convert(const std::vector<uint8_t>& input);
 };
 
 // NOTE: These methods only serialize and deserialize the common case of RGBA
 // 8888 bitmaps with premultiplied alpha.
 template <>
-struct TypeConverter<const std::vector<uint8_t>, SkBitmap> {
-  static const std::vector<uint8_t> Convert(const SkBitmap& input);
+struct TypeConverter<std::vector<uint8_t>, SkBitmap> {
+  static std::vector<uint8_t> Convert(const SkBitmap& input);
 };
 template <>
-struct TypeConverter<SkBitmap, const std::vector<uint8_t>> {
+struct TypeConverter<SkBitmap, std::vector<uint8_t>> {
   static SkBitmap Convert(const std::vector<uint8_t>& input);
 };
 

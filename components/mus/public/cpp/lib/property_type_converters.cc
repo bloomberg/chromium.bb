@@ -23,8 +23,7 @@ const int kMaxBitmapSize = 4096;
 namespace mojo {
 
 // static
-const std::vector<uint8_t>
-TypeConverter<const std::vector<uint8_t>, gfx::Rect>::Convert(
+std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, gfx::Rect>::Convert(
     const gfx::Rect& input) {
   std::vector<uint8_t> vec(16);
   vec[0] = (input.x() >> 24) & 0xFF;
@@ -47,7 +46,7 @@ TypeConverter<const std::vector<uint8_t>, gfx::Rect>::Convert(
 }
 
 // static
-gfx::Rect TypeConverter<gfx::Rect, const std::vector<uint8_t>>::Convert(
+gfx::Rect TypeConverter<gfx::Rect, std::vector<uint8_t>>::Convert(
     const std::vector<uint8_t>& input) {
   return gfx::Rect(
       input[0] << 24 | input[1] << 16 | input[2] << 8 | input[3],
@@ -57,8 +56,7 @@ gfx::Rect TypeConverter<gfx::Rect, const std::vector<uint8_t>>::Convert(
 }
 
 // static
-const std::vector<uint8_t>
-TypeConverter<const std::vector<uint8_t>, gfx::Size>::Convert(
+std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, gfx::Size>::Convert(
     const gfx::Size& input) {
   std::vector<uint8_t> vec(8);
   vec[0] = (input.width() >> 24) & 0xFF;
@@ -73,16 +71,15 @@ TypeConverter<const std::vector<uint8_t>, gfx::Size>::Convert(
 }
 
 // static
-gfx::Size TypeConverter<gfx::Size, const std::vector<uint8_t>>::Convert(
+gfx::Size TypeConverter<gfx::Size, std::vector<uint8_t>>::Convert(
     const std::vector<uint8_t>& input) {
   return gfx::Size(input[0] << 24 | input[1] << 16 | input[2] << 8 | input[3],
                    input[4] << 24 | input[5] << 16 | input[6] << 8 | input[7]);
 }
 
 // static
-const std::vector<uint8_t>
-    TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
-        const int32_t& input) {
+std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, int32_t>::Convert(
+    const int32_t& input) {
   std::vector<uint8_t> vec(4);
   vec[0] = (input >> 24) & 0xFF;
   vec[1] = (input >> 16) & 0xFF;
@@ -92,45 +89,38 @@ const std::vector<uint8_t>
 }
 
 // static
-int32_t TypeConverter<int32_t, const std::vector<uint8_t>>::Convert(
+int32_t TypeConverter<int32_t, std::vector<uint8_t>>::Convert(
     const std::vector<uint8_t>& input) {
   return input[0] << 24 | input[1] << 16 | input[2] << 8 | input[3];
 }
 
 // static
-const std::vector<uint8_t>
-TypeConverter<const std::vector<uint8_t>, base::string16>::Convert(
+std::vector<uint8_t>
+TypeConverter<std::vector<uint8_t>, base::string16>::Convert(
     const base::string16& input) {
-  return TypeConverter<const std::vector<uint8_t>, std::string>::Convert(
-      base::UTF16ToUTF8(input));
+  return ConvertTo<std::vector<uint8_t>>(base::UTF16ToUTF8(input));
 }
 
 // static
-base::string16
-TypeConverter<base::string16, const std::vector<uint8_t>>::Convert(
+base::string16 TypeConverter<base::string16, std::vector<uint8_t>>::Convert(
     const std::vector<uint8_t>& input) {
-  return base::UTF8ToUTF16(
-      TypeConverter<std::string, const std::vector<uint8_t>>::Convert(
-          input));
+  return base::UTF8ToUTF16(ConvertTo<std::string>(input));
 }
 
 // static
-const std::vector<uint8_t>
-TypeConverter<const std::vector<uint8_t>, std::string>::Convert(
+std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, std::string>::Convert(
     const std::string& input) {
   return std::vector<uint8_t>(input.begin(), input.end());
 }
 
 // static
-std::string
-TypeConverter<std::string, const std::vector<uint8_t>>::Convert(
+std::string TypeConverter<std::string, std::vector<uint8_t>>::Convert(
     const std::vector<uint8_t>& input) {
   return std::string(input.begin(), input.end());
 }
 
 // static
-const std::vector<uint8_t>
-TypeConverter<const std::vector<uint8_t>, SkBitmap>::Convert(
+std::vector<uint8_t> TypeConverter<std::vector<uint8_t>, SkBitmap>::Convert(
     const SkBitmap& input) {
   // Empty images are valid to serialize and are represented by an empty vector.
   if (input.isNull())
@@ -165,7 +155,7 @@ TypeConverter<const std::vector<uint8_t>, SkBitmap>::Convert(
 }
 
 // static
-SkBitmap TypeConverter<SkBitmap, const std::vector<uint8_t>>::Convert(
+SkBitmap TypeConverter<SkBitmap, std::vector<uint8_t>>::Convert(
     const std::vector<uint8_t>& input) {
   // Empty images are represented by empty vectors.
   if (input.empty())

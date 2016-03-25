@@ -791,9 +791,7 @@ class SharedPropertyChangeObserver : public WindowObserver {
   std::string VectorToString(const std::vector<uint8_t>* data) {
     if (!data)
       return "NULL";
-    gfx::Size size =
-        mojo::TypeConverter<gfx::Size, const std::vector<uint8_t>>::Convert(
-            *data);
+    gfx::Size size = mojo::ConvertTo<gfx::Size>(*data);
     return base::StringPrintf("%d,%d", size.width(), size.height());
   }
 
