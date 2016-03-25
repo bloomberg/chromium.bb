@@ -236,7 +236,10 @@ class BASE_EXPORT ProcessMetrics {
 // Returns 0 if it can't compute the commit charge.
 BASE_EXPORT size_t GetSystemCommitCharge();
 
-// Returns the number of bytes in a memory page.
+// Returns the number of bytes in a memory page. Do not use this to compute
+// the number of pages in a block of memory for calling mincore(). On some
+// platforms, e.g. iOS, mincore() uses a different page size from what is
+// returned by GetPageSize().
 BASE_EXPORT size_t GetPageSize();
 
 #if defined(OS_POSIX)
