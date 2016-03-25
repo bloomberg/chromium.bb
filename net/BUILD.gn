@@ -320,6 +320,14 @@ if (!is_nacl) {
     ]
   }
 
+  if (is_ios && use_nss_verifier) {
+    net_shared_sources -= [
+      "cert/cert_verify_proc_ios.cc",
+      "cert/cert_verify_proc_ios.h",
+      "cert/x509_certificate_openssl_ios.cc",
+    ]
+  }
+
   if (is_chromecast && use_nss_certs) {
     net_shared_sources += [ "ssl/ssl_platform_key_chromecast.cc" ]
     net_shared_sources -= [ "ssl/ssl_platform_key_nss.cc" ]
@@ -374,6 +382,10 @@ if (!is_nacl) {
       "//third_party/nss",
       "//net/third_party/nss/ssl:libssl",
     ]
+  }
+
+  if (is_ios && !use_nss_verifier) {
+    net_shared_sources += [ "cert/test_root_certs_mac.cc" ]
   }
 
   if (is_ios || is_mac) {
@@ -1436,7 +1448,7 @@ test("net_unittests") {
   ]
   data_deps = []
 
-  if (!is_ios) {
+  if (use_openssl) {
     data_deps += [ "third_party/nist-pkits/" ]
   }
 
