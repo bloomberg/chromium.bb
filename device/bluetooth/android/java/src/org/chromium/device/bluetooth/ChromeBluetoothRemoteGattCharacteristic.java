@@ -148,10 +148,15 @@ final class ChromeBluetoothRemoteGattCharacteristic {
     private void createDescriptors() {
         List<Wrappers.BluetoothGattDescriptorWrapper> descriptors =
                 mCharacteristic.getDescriptors();
+        // descriptorInstanceId ensures duplicate UUIDs have unique instance
+        // IDs. BluetoothGattDescriptor does not offer getInstanceId the way
+        // BluetoothGattCharacteristic does.
+        //
+        // TODO(crbug.com/576906) Do not reuse IDs upon onServicesDiscovered.
+        int instanceIdCounter = 0;
         for (Wrappers.BluetoothGattDescriptorWrapper descriptor : descriptors) {
-            // Create an adapter unique descriptor ID.
-            // TODO(crbug.com/576900) Unique descriptorInstanceId duplicate UUID values.
-            String descriptorInstanceId = mInstanceId + "/" + descriptor.getUuid().toString();
+            String descriptorInstanceId =
+                    mInstanceId + "/" + descriptor.getUuid().toString() + ";" + instanceIdCounter++;
             nativeCreateGattRemoteDescriptor(mNativeBluetoothRemoteGattCharacteristicAndroid,
                     descriptorInstanceId, descriptor, mChromeDevice);
         }

@@ -632,31 +632,12 @@ class Fakes {
                     (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
             UUID uuid = UUID.fromString(uuidString);
 
-            // Check for duplicates
-            for (Wrappers.BluetoothGattDescriptorWrapper descriptor :
-                    fakeCharacteristic.mDescriptors) {
-                if (descriptor.getUuid().equals(uuid)) {
-                    throw new IllegalArgumentException(
-                            "FakeBluetoothGattCharacteristic addDescriptor called with uuid '"
-                            + uuidString + "' that has already been added to this characteristic.");
-                }
-            }
             fakeCharacteristic.mDescriptors.add(
                     new FakeBluetoothGattDescriptor(fakeCharacteristic, uuid));
         }
 
         // -----------------------------------------------------------------------------------------
         // Wrappers.BluetoothGattCharacteristicWrapper overrides:
-
-        @Override
-        public Wrappers.BluetoothGattDescriptorWrapper getDescriptor(UUID uuid) {
-            for (Wrappers.BluetoothGattDescriptorWrapper descriptor : mDescriptors) {
-                if (descriptor.getUuid().equals(uuid)) {
-                    return descriptor;
-                }
-            }
-            return null;
-        }
 
         @Override
         public List<Wrappers.BluetoothGattDescriptorWrapper> getDescriptors() {

@@ -176,8 +176,11 @@ void BluetoothTestAndroid::RememberCharacteristicForSubsequentAction(
 
 void BluetoothTestAndroid::SimulateGattNotifySessionStarted(
     BluetoothGattCharacteristic* characteristic) {
-  BluetoothGattDescriptor* descriptor = characteristic->GetDescriptorForUUID(
-      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid());
+  BluetoothGattDescriptor* descriptor =
+      characteristic
+          ->GetDescriptorsByUUID(
+              BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid())
+          .at(0);
   BluetoothRemoteGattDescriptorAndroid* descriptor_android =
       static_cast<BluetoothRemoteGattDescriptorAndroid*>(descriptor);
   Java_FakeBluetoothGattDescriptor_valueWrite(

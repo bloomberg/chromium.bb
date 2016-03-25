@@ -25,14 +25,15 @@ BluetoothGattCharacteristic* BluetoothGattCharacteristic::Create(
   return NULL;
 }
 
-BluetoothGattDescriptor* BluetoothGattCharacteristic::GetDescriptorForUUID(
-    const BluetoothUUID& uuid) {
+std::vector<BluetoothGattDescriptor*>
+BluetoothGattCharacteristic::GetDescriptorsByUUID(const BluetoothUUID& uuid) {
+  std::vector<BluetoothGattDescriptor*> descriptors;
   for (BluetoothGattDescriptor* descriptor : GetDescriptors()) {
     if (descriptor->GetUUID() == uuid) {
-      return descriptor;
+      descriptors.push_back(descriptor);
     }
   }
-  return NULL;
+  return descriptors;
 }
 
 }  // namespace device

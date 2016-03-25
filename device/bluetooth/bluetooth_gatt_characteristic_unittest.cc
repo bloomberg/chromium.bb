@@ -52,6 +52,7 @@ class BluetoothGattCharacteristicTest : public BluetoothTest {
   enum class StartNotifySetupError {
     CHARACTERISTIC_PROPERTIES,
     CONFIG_DESCRIPTOR_MISSING,
+    CONFIG_DESCRIPTOR_DUPLICATE,
     SET_NOTIFY,
     WRITE_DESCRIPTOR,
     NONE
@@ -69,13 +70,23 @@ class BluetoothGattCharacteristicTest : public BluetoothTest {
     }
     ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate(properties));
 
+    size_t expected_descriptors_count = 0;
     if (error != StartNotifySetupError::CONFIG_DESCRIPTOR_MISSING) {
       SimulateGattDescriptor(
           characteristic1_,
-          /* Client Characteristic Configuration descriptor's standard UUID: */
-          "00002902-0000-1000-8000-00805F9B34FB");
-      ASSERT_EQ(1u, characteristic1_->GetDescriptors().size());
+          BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid()
+              .canonical_value());
+      expected_descriptors_count++;
     }
+    if (error == StartNotifySetupError::CONFIG_DESCRIPTOR_DUPLICATE) {
+      SimulateGattDescriptor(
+          characteristic1_,
+          BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid()
+              .canonical_value());
+      expected_descriptors_count++;
+    }
+    ASSERT_EQ(expected_descriptors_count,
+              characteristic1_->GetDescriptors().size());
 
     if (error == StartNotifySetupError::SET_NOTIFY) {
       SimulateGattCharacteristicSetNotifyWillFailSynchronouslyOnce(
@@ -776,6 +787,28 @@ TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_NoConfigDescriptor) {
   EXPECT_EQ(0, error_callback_count_);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, error_callback_count_);
+  EXPECT_EQ(BluetoothGattService::GATT_ERROR_NOT_SUPPORTED,
+            last_gatt_error_code_);
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+// StartNotifySession fails if the characteristic has multiple Client
+// Characteristic Configuration descriptors.
+TEST_F(BluetoothGattCharacteristicTest,
+       StartNotifySession_MultipleConfigDescriptor) {
+  ASSERT_NO_FATAL_FAILURE(StartNotifyBoilerplate(
+      /* properties: NOTIFY */ 0x10,
+      /* expected_config_descriptor_value: NOTIFY */ 1,
+      StartNotifySetupError::CONFIG_DESCRIPTOR_DUPLICATE));
+
+  EXPECT_EQ(0, gatt_notify_characteristic_attempts_);
+
+  // The expected error callback is asynchronous:
+  EXPECT_EQ(0, error_callback_count_);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, error_callback_count_);
+  EXPECT_EQ(BluetoothGattService::GATT_ERROR_FAILED, last_gatt_error_code_);
 }
 #endif  // defined(OS_ANDROID)
 
@@ -855,8 +888,8 @@ TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_Multiple) {
       FakeCharacteristicBoilerplate(/* properties: NOTIFY */ 0x10));
   SimulateGattDescriptor(
       characteristic1_,
-      /* Client Characteristic Configuration descriptor's standard UUID: */
-      "00002902-0000-1000-8000-00805F9B34FB");
+      BluetoothGattDescriptor::ClientCharacteristicConfigurationUuid()
+          .canonical_value());
   ASSERT_EQ(1u, characteristic1_->GetDescriptors().size());
 
   characteristic1_->StartNotifySession(
@@ -974,6 +1007,36 @@ TEST_F(BluetoothGattCharacteristicTest, GetDescriptors_and_GetDescriptor) {
   EXPECT_TRUE(c1_uuid1 == uuid2 || c1_uuid2 == uuid2);
   // ... but not uuid 3
   EXPECT_FALSE(c1_uuid1 == uuid3 || c1_uuid2 == uuid3);
+}
+#endif  // defined(OS_ANDROID) || defined(OS_WIN)
+
+#if defined(OS_ANDROID) || defined(OS_WIN)
+TEST_F(BluetoothGattCharacteristicTest, GetDescriptorsByUUID) {
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
+
+  // Add several Descriptors:
+  BluetoothUUID id1("11111111-0000-1000-8000-00805f9b34fb");
+  BluetoothUUID id2("22222222-0000-1000-8000-00805f9b34fb");
+  BluetoothUUID id3("33333333-0000-1000-8000-00805f9b34fb");
+  SimulateGattDescriptor(characteristic1_, id1.canonical_value());
+  SimulateGattDescriptor(characteristic1_, id2.canonical_value());
+  SimulateGattDescriptor(characteristic2_, id3.canonical_value());
+  SimulateGattDescriptor(characteristic2_, id3.canonical_value());
+
+  EXPECT_NE(characteristic2_->GetDescriptorsByUUID(id3).at(0)->GetIdentifier(),
+            characteristic2_->GetDescriptorsByUUID(id3).at(1)->GetIdentifier());
+
+  EXPECT_EQ(id1, characteristic1_->GetDescriptorsByUUID(id1).at(0)->GetUUID());
+  EXPECT_EQ(id2, characteristic1_->GetDescriptorsByUUID(id2).at(0)->GetUUID());
+  EXPECT_EQ(id3, characteristic2_->GetDescriptorsByUUID(id3).at(0)->GetUUID());
+  EXPECT_EQ(id3, characteristic2_->GetDescriptorsByUUID(id3).at(1)->GetUUID());
+  EXPECT_EQ(1u, characteristic1_->GetDescriptorsByUUID(id1).size());
+  EXPECT_EQ(1u, characteristic1_->GetDescriptorsByUUID(id2).size());
+  EXPECT_EQ(2u, characteristic2_->GetDescriptorsByUUID(id3).size());
+
+  EXPECT_EQ(0u, characteristic2_->GetDescriptorsByUUID(id1).size());
+  EXPECT_EQ(0u, characteristic2_->GetDescriptorsByUUID(id2).size());
+  EXPECT_EQ(0u, characteristic1_->GetDescriptorsByUUID(id3).size());
 }
 #endif  // defined(OS_ANDROID) || defined(OS_WIN)
 
