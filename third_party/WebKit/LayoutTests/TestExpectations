@@ -1365,8 +1365,6 @@ crbug.com/593568 [ Win Debug ] virtual/threaded/fast/scroll-behavior/smooth-scro
 
 crbug.com/591825 [ Mac10.11 Debug ] fast/text/selection-multiple-runs.html [ Failure ]
 
-crbug.com/596703 [ Linux ] http/tests/serviceworker/fetch-event-network-error.html [ Crash ]
-
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/layer-creation/compositing-reason-removed.html [ Failure ]
 crbug.com/591832 [ Mac10.11 Retina ] compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]
 crbug.com/591832 [ Mac10.10 Mac10.11 Retina ] compositing/overflow/fixed-scroll-in-empty-root-layer.html [ Failure ]
