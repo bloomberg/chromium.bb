@@ -221,14 +221,12 @@ static_library("content_shell_lib") {
     "//content/app/strings",
     "//content/gpu",
     "//content/test:layouttest_support",
-    "//content/test:test_support",
     "//device/bluetooth",
     "//device/bluetooth:mocks",
     "//gin",
     "//gpu",
     "//ipc",
     "//media",
-    "//media/mojo/services:application_factory",
     "//net",
     "//net:net_resources",
     "//skia",
@@ -257,7 +255,6 @@ static_library("content_shell_lib") {
       "//content/ppapi_plugin",
       "//ppapi:blink_deprecated_test_plugin",
       "//ppapi:blink_test_plugin",
-      "//ppapi/shared_impl",
     ]
   }
   if (mojo_media_host == "browser") {
@@ -273,10 +270,7 @@ static_library("content_shell_lib") {
   }
 
   if (is_linux) {
-    deps += [
-      "//build/linux:fontconfig",
-      "//ui/gfx:test_support",
-    ]
+    deps += [ "//build/linux:fontconfig" ]
   }
 
   if (use_x11) {
@@ -295,10 +289,7 @@ static_library("content_shell_lib") {
   }
 
   if (is_posix && !is_mac) {
-    deps += [
-      "//components/crash/content/app",
-      "//components/crash/content/browser",
-    ]
+    deps += [ "//components/crash/content/browser" ]
   }
 
   if (use_aura) {
@@ -317,7 +308,6 @@ static_library("content_shell_lib") {
         "//ui/views",
         "//ui/views:test_support",
         "//ui/views/controls/webview",
-        "//ui/wm:test_support",
       ]
     } else {
       sources += [ "browser/shell_aura.cc" ]

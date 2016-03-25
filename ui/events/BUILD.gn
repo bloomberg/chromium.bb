@@ -404,7 +404,7 @@ test("events_unittests") {
       "//third_party/WebKit/public:blink_headers",
       "//ui/events/blink",
       "//ui/events/gestures/blink",
-      "//ui/events/ipc",
+      "//ui/events/ipc:events_ipc",
     ]
   }
 

@@ -67,24 +67,11 @@ if (!is_multi_dll_chrome) {
 source_set("both") {
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
-  visibility = [
-    ":*",
-    "//content/public/app:*",
-  ]
+  visibility = [ "//content/public/app:*" ]
 
   sources = content_app_sources
   configs += content_app_extra_configs
   deps = content_app_deps
-}
-
-# See comment at the top of //content/BUILD.gn for how this works.
-group("both_for_content_tests") {
-  visibility = [ "//content/test/*" ]
-  if (!is_component_build) {
-    public_deps = [
-      ":both",
-    ]
-  }
 }
 
 if (is_multi_dll_chrome) {

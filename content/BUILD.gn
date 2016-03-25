@@ -37,23 +37,6 @@ config("content_implementation") {
 # //content/public/browser and similar targets to avoid double-linking (these
 # targets make sure the dependency goes through the content shared library
 # when doing a component build).
-#
-# TESTS
-# -----
-# Tests are a challenge. The content tests need to access internals of
-# content/browser, for example, but the tests themselves are outside of the
-# content component (which is a shared library in the component build). To
-# prevent external-to-content targets from depending on private headers,
-# the non-public content/browser target is not a public dep of the content
-# component. But this means there is also no public path for the content
-# tests and no way to restrict that just to //content/test/* if we added one.
-#
-# As a result, we check deps for //content/test/* only in non-component builds
-# (which should verify the dependencies are correct for both component and
-# non-component cases equally). There are targets like
-# //content/browser:for_content_tests that allow content/test to depend on the
-# //content/browser target only in non-component builds (when there are no
-# linking problems) for when check is enabled.
 
 if (!is_nacl_nonsfi) {
   content_shared_components = [

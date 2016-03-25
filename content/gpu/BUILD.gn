@@ -42,19 +42,14 @@ source_set("gpu_sources") {
 
   deps = [
     "//base",
-    "//base/third_party/dynamic_annotations",
-    "//components/tracing",
     "//content:export",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//gpu:gpu",
     "//gpu/ipc/common:command_buffer_traits",
     "//ipc",
-    "//media/mojo/services:application_factory",
     "//mojo/shell/public/interfaces",
     "//skia",
-    "//ui/events/ipc",
-    "//ui/gfx/ipc",
     "//ui/gl",
   ]
 
@@ -73,7 +68,6 @@ source_set("gpu_sources") {
     ]
     libs = [ "setupapi.lib" ]
     deps += [
-      "//sandbox",
       "//third_party/angle:libEGL",
       "//third_party/angle:libGLESv2",
     ]
@@ -85,10 +79,6 @@ source_set("gpu_sources") {
 
   if (use_x11) {
     deps += [ "//ui/events/platform/x11" ]
-  }
-
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
   }
 
   if (enable_vulkan) {

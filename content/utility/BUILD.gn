@@ -7,11 +7,8 @@ import("//media/media_options.gni")
 
 source_set("utility") {
   # Only the public target should depend on this. All other targets (even
-  # internal content ones other than test) should depend on the public one.
-  visibility = [
-    ":for_content_tests",
-    "//content/public/utility:utility_sources",
-  ]
+  # internal content ones) should depend on the public one.
+  visibility = [ "//content/public/utility:utility_sources" ]
 
   sources =
       rebase_path(content_utility_gypi_values.utility_sources, ".", "//content")
@@ -20,13 +17,11 @@ source_set("utility") {
 
   deps = [
     "//base",
-    "//components/scheduler",
     "//content:export",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
     "//content/public/common:mojo_bindings",
     "//courgette:courgette_lib",
-    "//media/mojo/services:application_factory",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//mojo/shell",
@@ -38,15 +33,5 @@ source_set("utility") {
 
   if (mojo_media_host == "utility") {
     deps += [ "//media/mojo/services:application_factory" ]
-  }
-}
-
-# See comment at the top of //content/BUILD.gn for how this works.
-group("for_content_tests") {
-  visibility = [ "//content/test/*" ]
-  if (!is_component_build) {
-    public_deps = [
-      ":utility",
-    ]
   }
 }

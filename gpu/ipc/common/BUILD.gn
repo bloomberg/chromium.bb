@@ -81,7 +81,7 @@ source_set("ipc_common_sources") {
     "//gpu/command_buffer/common:common_sources",
     "//gpu/config:config_sources",
     "//ipc",
-    "//ui/events/ipc",
+    "//ui/events/ipc:events_ipc",
     "//ui/gfx/ipc",
     "//ui/gl",
     "//url/ipc:url_ipc",

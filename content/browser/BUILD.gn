@@ -11,10 +11,7 @@ import("//mojo/public/mojo_application_manifest.gni")
 source_set("browser") {
   # Only the public target should depend on this. All other targets (even
   # internal content ones) should depend on the public one.
-  visibility = [
-    ":for_content_tests",
-    "//content/public/browser:browser_sources",
-  ]
+  visibility = [ "//content/public/browser:browser_sources" ]
 
   configs += [
     "//build/config:precompiled_headers",
@@ -525,16 +522,6 @@ source_set("browser") {
       "vr/android/cardboard/cardboard_vr_device.h",
       "vr/android/cardboard/cardboard_vr_device_provider.cc",
       "vr/android/cardboard/cardboard_vr_device_provider.h",
-    ]
-  }
-}
-
-# See comment at the top of //content/BUILD.gn for how this works.
-group("for_content_tests") {
-  visibility = [ "//content/test/*" ]
-  if (!is_component_build) {
-    public_deps = [
-      ":browser",
     ]
   }
 }

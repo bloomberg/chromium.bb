@@ -32,19 +32,12 @@ if (enable_plugins && !is_linux) {
 
     deps = [
       "//content:export",
-      "//content/child",
       "//content/public/common:common_sources",
       "//mojo/shell/public/interfaces",
       "//skia",
       "//third_party/WebKit/public:blink",
       "//third_party/npapi",
-      "//ui/gfx",
-      "//ui/surface",
     ]
-
-    if (is_win) {
-      deps += [ "//sandbox" ]
-    }
   }
 } else {
   # This way it can be unconditionally depended on.

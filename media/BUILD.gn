@@ -722,11 +722,9 @@ source_set("test_support") {
     "video/mock_video_decode_accelerator.cc",
     "video/mock_video_decode_accelerator.h",
   ]
-  public_deps = [
+  deps = [
     ":media",
     ":shared_memory_support",
-  ]
-  deps = [
     "//base",
     "//skia",
     "//testing/gmock",
