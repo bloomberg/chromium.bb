@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/banners/app_banner_debug_log.h"
@@ -349,8 +350,16 @@ void AppBannerDataFetcher::OnHasServiceWorker(
   GURL icon_url = ManifestIconSelector::FindBestMatchingIcon(
       web_app_data_.icons, ideal_icon_size_in_dp_, minimum_icon_size_in_dp_);
 
-  if (!FetchAppIcon(web_contents, icon_url)) {
-    OutputDeveloperNotShownMessage(web_contents, kCannotDetermineBestIcon,
+  if (icon_url.is_empty()) {
+    OutputDeveloperNotShownMessage(
+        web_contents,
+        base::IntToString(ManifestIconSelector::ConvertIconSizeFromDpToPx(
+            minimum_icon_size_in_dp_)) +
+            kNoIconMatchingRequirements,
+        is_debug_mode_);
+    Cancel();
+  } else if (!FetchAppIcon(web_contents, icon_url)) {
+    OutputDeveloperNotShownMessage(web_contents, kCannotDownloadIcon,
                                    is_debug_mode_);
     Cancel();
   }

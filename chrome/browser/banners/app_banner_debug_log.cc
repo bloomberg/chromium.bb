@@ -14,8 +14,10 @@ const char kRendererRequestCancel[] =
 const char kManifestEmpty[] =
     "manifest could not be fetched, is empty, or could not be parsed";
 const char kNoManifest[] = "site has no manifest <link> URL";
-const char kCannotDetermineBestIcon[] =
-    "could not determine the best icon to use";
+// The required size is prepended.
+const char kNoIconMatchingRequirements[] =
+    "px square icon is required, but no supplied icon is at least this size";
+const char kCannotDownloadIcon[] = "could not download the specified icon";
 const char kNoMatchingServiceWorker[] =
     "no matching service worker detected. You may need to reload the page, or "
     "check that the service worker for the current page also controls the "

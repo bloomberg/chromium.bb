@@ -17,7 +17,8 @@ namespace banners {
 extern const char kRendererRequestCancel[];
 extern const char kManifestEmpty[];
 extern const char kNoManifest[];
-extern const char kCannotDetermineBestIcon[];
+extern const char kNoIconMatchingRequirements[];
+extern const char kCannotDownloadIcon[];
 extern const char kNoMatchingServiceWorker[];
 extern const char kNoIconAvailable[];
 extern const char kUserNavigatedBeforeBannerShown[];
