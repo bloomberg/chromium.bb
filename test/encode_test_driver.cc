@@ -12,7 +12,7 @@
 
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "test/codec_factory.h"
 #include "test/decode_test_driver.h"
 #include "test/encode_test_driver.h"
@@ -21,8 +21,8 @@
 
 namespace libaom_test {
 void Encoder::InitEncoder(VideoSource *video) {
-  vpx_codec_err_t res;
-  const vpx_image_t *img = video->img();
+  aom_codec_err_t res;
+  const aom_image_t *img = video->img();
 
   if (video->img() && !encoder_.priv) {
     cfg_.g_w = img->d_w;
@@ -30,14 +30,14 @@ void Encoder::InitEncoder(VideoSource *video) {
     cfg_.g_timebase = video->timebase();
     cfg_.rc_twopass_stats_in = stats_->buf();
 
-    res = vpx_codec_enc_init(&encoder_, CodecInterface(), &cfg_, init_flags_);
+    res = aom_codec_enc_init(&encoder_, CodecInterface(), &cfg_, init_flags_);
     ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
 
 #if CONFIG_VP10_ENCODER
-    if (CodecInterface() == &vpx_codec_vp10_cx_algo) {
+    if (CodecInterface() == &aom_codec_vp10_cx_algo) {
       // Default to 1 tile column for VP10.
       const int log2_tile_columns = 0;
-      res = vpx_codec_control_(&encoder_, VP9E_SET_TILE_COLUMNS,
+      res = aom_codec_control_(&encoder_, VP9E_SET_TILE_COLUMNS,
                                log2_tile_columns);
       ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
     }
@@ -54,7 +54,7 @@ void Encoder::EncodeFrame(VideoSource *video, const unsigned long frame_flags) {
   // Handle twopass stats
   CxDataIterator iter = GetCxData();
 
-  while (const vpx_codec_cx_pkt_t *pkt = iter.Next()) {
+  while (const aom_codec_cx_pkt_t *pkt = iter.Next()) {
     if (pkt->kind != VPX_CODEC_STATS_PKT) continue;
 
     stats_->Append(*pkt);
@@ -63,27 +63,27 @@ void Encoder::EncodeFrame(VideoSource *video, const unsigned long frame_flags) {
 
 void Encoder::EncodeFrameInternal(const VideoSource &video,
                                   const unsigned long frame_flags) {
-  vpx_codec_err_t res;
-  const vpx_image_t *img = video.img();
+  aom_codec_err_t res;
+  const aom_image_t *img = video.img();
 
   // Handle frame resizing
   if (cfg_.g_w != img->d_w || cfg_.g_h != img->d_h) {
     cfg_.g_w = img->d_w;
     cfg_.g_h = img->d_h;
-    res = vpx_codec_enc_config_set(&encoder_, &cfg_);
+    res = aom_codec_enc_config_set(&encoder_, &cfg_);
     ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
   }
 
   // Encode the frame
-  API_REGISTER_STATE_CHECK(res = vpx_codec_encode(&encoder_, img, video.pts(),
+  API_REGISTER_STATE_CHECK(res = aom_codec_encode(&encoder_, img, video.pts(),
                                                   video.duration(), frame_flags,
                                                   deadline_));
   ASSERT_EQ(VPX_CODEC_OK, res) << EncoderError();
 }
 
 void Encoder::Flush() {
-  const vpx_codec_err_t res =
-      vpx_codec_encode(&encoder_, NULL, 0, 0, 0, deadline_);
+  const aom_codec_err_t res =
+      aom_codec_encode(&encoder_, NULL, 0, 0, 0, deadline_);
   if (!encoder_.priv)
     ASSERT_EQ(VPX_CODEC_ERROR, res) << EncoderError();
   else
@@ -91,8 +91,8 @@ void Encoder::Flush() {
 }
 
 void EncoderTest::InitializeConfig() {
-  const vpx_codec_err_t res = codec_->DefaultEncoderConfig(&cfg_, 0);
-  dec_cfg_ = vpx_codec_dec_cfg_t();
+  const aom_codec_err_t res = codec_->DefaultEncoderConfig(&cfg_, 0);
+  dec_cfg_ = aom_codec_dec_cfg_t();
   ASSERT_EQ(VPX_CODEC_OK, res);
 }
 
@@ -116,7 +116,7 @@ void EncoderTest::SetMode(TestMode mode) {
 }
 // The function should return "true" most of the time, therefore no early
 // break-out is implemented within the match checking process.
-static bool compare_img(const vpx_image_t *img1, const vpx_image_t *img2) {
+static bool compare_img(const aom_image_t *img1, const aom_image_t *img2) {
   bool match = (img1->fmt == img2->fmt) && (img1->cs == img2->cs) &&
                (img1->d_w == img2->d_w) && (img1->d_h == img2->d_h);
 
@@ -143,13 +143,13 @@ static bool compare_img(const vpx_image_t *img1, const vpx_image_t *img2) {
   return match;
 }
 
-void EncoderTest::MismatchHook(const vpx_image_t * /*img1*/,
-                               const vpx_image_t * /*img2*/) {
+void EncoderTest::MismatchHook(const aom_image_t * /*img1*/,
+                               const aom_image_t * /*img2*/) {
   ASSERT_TRUE(0) << "Encode/Decode mismatch found";
 }
 
 void EncoderTest::RunLoop(VideoSource *video) {
-  vpx_codec_dec_cfg_t dec_cfg = vpx_codec_dec_cfg_t();
+  aom_codec_dec_cfg_t dec_cfg = aom_codec_dec_cfg_t();
 
   stats_.Reset();
 
@@ -191,14 +191,14 @@ void EncoderTest::RunLoop(VideoSource *video) {
 
       bool has_cxdata = false;
       bool has_dxdata = false;
-      while (const vpx_codec_cx_pkt_t *pkt = iter.Next()) {
+      while (const aom_codec_cx_pkt_t *pkt = iter.Next()) {
         pkt = MutateEncoderOutputHook(pkt);
         again = true;
         switch (pkt->kind) {
           case VPX_CODEC_CX_FRAME_PKT:
             has_cxdata = true;
             if (decoder && DoDecode()) {
-              vpx_codec_err_t res_dec = decoder->DecodeFrame(
+              aom_codec_err_t res_dec = decoder->DecodeFrame(
                   (const uint8_t *)pkt->data.frame.buf, pkt->data.frame.sz);
 
               if (!HandleDecodeResult(res_dec, *video, decoder)) break;
@@ -218,14 +218,14 @@ void EncoderTest::RunLoop(VideoSource *video) {
 
       // Flush the decoder when there are no more fragments.
       if ((init_flags_ & VPX_CODEC_USE_OUTPUT_PARTITION) && has_dxdata) {
-        const vpx_codec_err_t res_dec = decoder->DecodeFrame(NULL, 0);
+        const aom_codec_err_t res_dec = decoder->DecodeFrame(NULL, 0);
         if (!HandleDecodeResult(res_dec, *video, decoder)) break;
       }
 
       if (has_dxdata && has_cxdata) {
-        const vpx_image_t *img_enc = encoder->GetPreviewFrame();
+        const aom_image_t *img_enc = encoder->GetPreviewFrame();
         DxDataIterator dec_iter = decoder->GetDxData();
-        const vpx_image_t *img_dec = dec_iter.Next();
+        const aom_image_t *img_dec = dec_iter.Next();
         if (img_enc && img_dec) {
           const bool res = compare_img(img_enc, img_dec);
           if (!res) {  // Mismatch

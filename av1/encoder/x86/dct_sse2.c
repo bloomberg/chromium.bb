@@ -13,7 +13,7 @@
 #include <emmintrin.h>  // SSE2
 
 #include "./av1_rtcd.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 #include "aom_dsp/txfm_common.h"
 #include "aom_dsp/x86/fwd_txfm_sse2.h"
 #include "aom_dsp/x86/txfm_common_sse2.h"
@@ -157,7 +157,7 @@ void vp10_fht4x4_sse2(const int16_t *input, tran_low_t *output, int stride,
   __m128i in[4];
 
   switch (tx_type) {
-    case DCT_DCT: vpx_fdct4x4_sse2(input, output, stride); break;
+    case DCT_DCT: aom_fdct4x4_sse2(input, output, stride); break;
     case ADST_DCT:
       load_buffer_4x4(input, in, stride);
       fadst4_sse2(in);
@@ -1134,7 +1134,7 @@ void vp10_fht8x8_sse2(const int16_t *input, tran_low_t *output, int stride,
   __m128i in[8];
 
   switch (tx_type) {
-    case DCT_DCT: vpx_fdct8x8_sse2(input, output, stride); break;
+    case DCT_DCT: aom_fdct8x8_sse2(input, output, stride); break;
     case ADST_DCT:
       load_buffer_8x8(input, in, stride);
       fadst8_sse2(in);
@@ -2017,7 +2017,7 @@ void vp10_fht16x16_sse2(const int16_t *input, tran_low_t *output, int stride,
   __m128i in0[16], in1[16];
 
   switch (tx_type) {
-    case DCT_DCT: vpx_fdct16x16_sse2(input, output, stride); break;
+    case DCT_DCT: aom_fdct16x16_sse2(input, output, stride); break;
     case ADST_DCT:
       load_buffer_16x16(input, in0, in1, stride);
       fadst16_sse2(in0, in1);

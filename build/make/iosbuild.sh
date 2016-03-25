@@ -24,7 +24,7 @@ CONFIGURE_ARGS="--disable-docs
                 --disable-unit-tests"
 DIST_DIR="_dist"
 FRAMEWORK_DIR="VPX.framework"
-HEADER_DIR="${FRAMEWORK_DIR}/Headers/vpx"
+HEADER_DIR="${FRAMEWORK_DIR}/Headers/aom"
 SCRIPT_DIR=$(dirname "$0")
 LIBAOM_SOURCE_DIR=$(cd ${SCRIPT_DIR}/../..; pwd)
 LIPO=$(xcrun -sdk iphoneos${SDK} -find lipo)
@@ -92,12 +92,12 @@ target_to_preproc_symbol() {
   esac
 }
 
-# Create a vpx_config.h shim that, based on preprocessor settings for the
-# current target CPU, includes the real vpx_config.h for the current target.
+# Create a aom_config.h shim that, based on preprocessor settings for the
+# current target CPU, includes the real aom_config.h for the current target.
 # $1 is the list of targets.
-create_vpx_framework_config_shim() {
+create_aom_framework_config_shim() {
   local targets="$1"
-  local config_file="${HEADER_DIR}/vpx_config.h"
+  local config_file="${HEADER_DIR}/aom_config.h"
   local preproc_symbol=""
   local target=""
   local include_guard="VPX_FRAMEWORK_HEADERS_VPX_VPX_CONFIG_H_"
@@ -124,10 +124,10 @@ create_vpx_framework_config_shim() {
     preproc_symbol=$(target_to_preproc_symbol "${target}")
     printf " ${preproc_symbol}\n" >> "${config_file}"
     printf "#define VPX_FRAMEWORK_TARGET \"${target}\"\n" >> "${config_file}"
-    printf "#include \"VPX/vpx/${target}/vpx_config.h\"\n" >> "${config_file}"
+    printf "#include \"VPX/aom/${target}/aom_config.h\"\n" >> "${config_file}"
     printf "#elif defined" >> "${config_file}"
     mkdir "${HEADER_DIR}/${target}"
-    cp -p "${BUILD_ROOT}/${target}/vpx_config.h" "${HEADER_DIR}/${target}"
+    cp -p "${BUILD_ROOT}/${target}/aom_config.h" "${HEADER_DIR}/${target}"
   done
 
   # Consume the last line of output from the loop: We don't want it.
@@ -164,17 +164,17 @@ build_framework() {
 
   # The basic libaom API includes are all the same; just grab the most recent
   # set.
-  cp -p "${target_dist_dir}"/include/vpx/* "${HEADER_DIR}"
+  cp -p "${target_dist_dir}"/include/aom/* "${HEADER_DIR}"
 
   # Build the fat library.
   ${LIPO} -create ${lib_list} -output ${FRAMEWORK_DIR}/VPX
 
-  # Create the vpx_config.h shim that allows usage of vpx_config.h from
+  # Create the aom_config.h shim that allows usage of aom_config.h from
   # within VPX.framework.
-  create_vpx_framework_config_shim "${targets}"
+  create_aom_framework_config_shim "${targets}"
 
-  # Copy in vpx_version.h.
-  cp -p "${BUILD_ROOT}/${target}/vpx_version.h" "${HEADER_DIR}"
+  # Copy in aom_version.h.
+  cp -p "${BUILD_ROOT}/${target}/aom_version.h" "${HEADER_DIR}"
 
   vlog "Created fat library ${FRAMEWORK_DIR}/VPX containing:"
   for lib in ${lib_list}; do

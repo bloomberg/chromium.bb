@@ -19,7 +19,7 @@
 #include "test/util.h"
 
 #include "aom_scale/yv12config.h"
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 #include "av1/common/reconinter.h"
 #include "av1/encoder/context_tree.h"
 #include "av1/encoder/denoiser.h"

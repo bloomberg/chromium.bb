@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "./av1_rtcd.h"
 #include "av1/common/common.h"
 #include "av1/common/blockd.h"

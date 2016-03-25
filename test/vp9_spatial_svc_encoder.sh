@@ -18,7 +18,7 @@
 # Environment check: $YUV_RAW_INPUT is required.
 vp9_spatial_svc_encoder_verify_environment() {
   if [ ! -e "${YUV_RAW_INPUT}" ]; then
-    echo "Libvpx test data must exist in LIBAOM_TEST_DATA_PATH."
+    echo "Libaom test data must exist in LIBAOM_TEST_DATA_PATH."
     return 1
   fi
 }
@@ -65,7 +65,7 @@ readonly vp9_spatial_svc_tests="DISABLED_vp9_spatial_svc_mode_i
                                 DISABLED_vp9_spatial_svc_mode_gf
                                 vp9_spatial_svc"
 
-if [ "$(vpx_config_option_enabled CONFIG_SPATIAL_SVC)" = "yes" ]; then
+if [ "$(aom_config_option_enabled CONFIG_SPATIAL_SVC)" = "yes" ]; then
   run_tests \
     vp9_spatial_svc_encoder_verify_environment \
     "${vp9_spatial_svc_tests}"

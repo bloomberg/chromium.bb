@@ -12,7 +12,7 @@
 #ifndef VPX_PORTS_ARM_H_
 #define VPX_PORTS_ARM_H_
 #include <stdlib.h>
-#include "vpx_config.h"
+#include "aom_config.h"
 
 #ifdef __cplusplus
 extern "C" {

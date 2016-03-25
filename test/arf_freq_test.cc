@@ -32,8 +32,8 @@ typedef struct {
   unsigned int framerate_num;
   unsigned int framerate_den;
   unsigned int input_bit_depth;
-  vpx_img_fmt fmt;
-  vpx_bit_depth_t bit_depth;
+  aom_img_fmt fmt;
+  aom_bit_depth_t bit_depth;
   unsigned int profile;
 } TestVideoParam;
 
@@ -106,7 +106,7 @@ class ArfFreqTest
     run_of_visible_frames_ = 0;
   }
 
-  int GetNumFramesInPkt(const vpx_codec_cx_pkt_t *pkt) {
+  int GetNumFramesInPkt(const aom_codec_cx_pkt_t *pkt) {
     const uint8_t *buffer = reinterpret_cast<uint8_t *>(pkt->data.frame.buf);
     const uint8_t marker = buffer[pkt->data.frame.sz - 1];
     const int mag = ((marker >> 3) & 3) + 1;
@@ -123,7 +123,7 @@ class ArfFreqTest
     return frames;
   }
 
-  virtual void FramePktHook(const vpx_codec_cx_pkt_t *pkt) {
+  virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
     if (pkt->kind != VPX_CODEC_CX_FRAME_PKT) return;
     const int frames = GetNumFramesInPkt(pkt);
     if (frames == 1) {

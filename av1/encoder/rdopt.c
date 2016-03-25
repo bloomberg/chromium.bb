@@ -13,10 +13,10 @@
 #include <math.h>
 
 #include "./av1_rtcd.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 
-#include "aom_dsp/vpx_dsp_common.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
 
@@ -574,7 +574,7 @@ static void choose_largest_tx_size(VP10_COMP *cpi, MACROBLOCK *x, int *rate,
   TX_TYPE tx_type, best_tx_type = DCT_DCT;
   int r, s;
   int64_t d, psse, this_rd, best_rd = INT64_MAX;
-  vpx_prob skip_prob = vp10_get_skip_prob(cm, xd);
+  aom_prob skip_prob = vp10_get_skip_prob(cm, xd);
   int s0 = vp10_cost_bit(skip_prob, 0);
   int s1 = vp10_cost_bit(skip_prob, 1);
   const int is_inter = is_inter_block(mbmi);
@@ -640,7 +640,7 @@ static void choose_tx_size_from_rd(VP10_COMP *cpi, MACROBLOCK *x, int *rate,
   VP10_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  vpx_prob skip_prob = vp10_get_skip_prob(cm, xd);
+  aom_prob skip_prob = vp10_get_skip_prob(cm, xd);
   int r, s;
   int64_t d, sse;
   int64_t rd = INT64_MAX;
@@ -653,7 +653,7 @@ static void choose_tx_size_from_rd(VP10_COMP *cpi, MACROBLOCK *x, int *rate,
   TX_TYPE tx_type, best_tx_type = DCT_DCT;
   const int is_inter = is_inter_block(mbmi);
 
-  const vpx_prob *tx_probs = get_tx_probs2(max_tx_size, xd, &cm->fc->tx_probs);
+  const aom_prob *tx_probs = get_tx_probs2(max_tx_size, xd, &cm->fc->tx_probs);
   assert(skip_prob > 0);
   s0 = vp10_cost_bit(skip_prob, 0);
   s1 = vp10_cost_bit(skip_prob, 1);
@@ -842,7 +842,7 @@ static int64_t rd_pick_intra4x4block(VP10_COMP *cpi, MACROBLOCK *x, int row,
           xd->mi[0]->bmi[block].as_mode = mode;
           vp10_predict_intra_block(xd, 1, 1, TX_4X4, mode, dst, dst_stride, dst,
                                    dst_stride, col + idx, row + idy, 0);
-          vpx_highbd_subtract_block(4, 4, src_diff, 8, src, src_stride, dst,
+          aom_highbd_subtract_block(4, 4, src_diff, 8, src, src_stride, dst,
                                     dst_stride, xd->bd);
           if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
             TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block);
@@ -937,7 +937,7 @@ static int64_t rd_pick_intra4x4block(VP10_COMP *cpi, MACROBLOCK *x, int row,
         xd->mi[0]->bmi[block].as_mode = mode;
         vp10_predict_intra_block(xd, 1, 1, TX_4X4, mode, dst, dst_stride, dst,
                                  dst_stride, col + idx, row + idy, 0);
-        vpx_subtract_block(4, 4, src_diff, 8, src, src_stride, dst, dst_stride);
+        aom_subtract_block(4, 4, src_diff, 8, src, src_stride, dst, dst_stride);
 
         if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
           TX_TYPE tx_type = get_tx_type(PLANE_TYPE_Y, xd, block);
@@ -1330,27 +1330,27 @@ static int64_t encode_inter_mb_segment(VP10_COMP *cpi, MACROBLOCK *x,
 #if CONFIG_VPX_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     fwd_txm4x4 = xd->lossless[mi->mbmi.segment_id] ? vp10_highbd_fwht4x4
-                                                   : vpx_highbd_fdct4x4;
+                                                   : aom_highbd_fdct4x4;
   } else {
-    fwd_txm4x4 = xd->lossless[mi->mbmi.segment_id] ? vp10_fwht4x4 : vpx_fdct4x4;
+    fwd_txm4x4 = xd->lossless[mi->mbmi.segment_id] ? vp10_fwht4x4 : aom_fdct4x4;
   }
 #else
-  fwd_txm4x4 = xd->lossless[mi->mbmi.segment_id] ? vp10_fwht4x4 : vpx_fdct4x4;
+  fwd_txm4x4 = xd->lossless[mi->mbmi.segment_id] ? vp10_fwht4x4 : aom_fdct4x4;
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
 #if CONFIG_VPX_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    vpx_highbd_subtract_block(
+    aom_highbd_subtract_block(
         height, width,
         vp10_raster_block_offset_int16(BLOCK_8X8, i, p->src_diff), 8, src,
         p->src.stride, dst, pd->dst.stride, xd->bd);
   } else {
-    vpx_subtract_block(height, width, vp10_raster_block_offset_int16(
+    aom_subtract_block(height, width, vp10_raster_block_offset_int16(
                                           BLOCK_8X8, i, p->src_diff),
                        8, src, p->src.stride, dst, pd->dst.stride);
   }
 #else
-  vpx_subtract_block(height, width,
+  aom_subtract_block(height, width,
                      vp10_raster_block_offset_int16(BLOCK_8X8, i, p->src_diff),
                      8, src, p->src.stride, dst, pd->dst.stride);
 #endif  // CONFIG_VPX_HIGHBITDEPTH
@@ -1996,7 +1996,7 @@ static void estimate_ref_frame_costs(const VP10_COMMON *cm,
                                      const MACROBLOCKD *xd, int segment_id,
                                      unsigned int *ref_costs_single,
                                      unsigned int *ref_costs_comp,
-                                     vpx_prob *comp_mode_p) {
+                                     aom_prob *comp_mode_p) {
   int seg_ref_active =
       segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME);
   if (seg_ref_active) {
@@ -2004,8 +2004,8 @@ static void estimate_ref_frame_costs(const VP10_COMMON *cm,
     memset(ref_costs_comp, 0, MAX_REF_FRAMES * sizeof(*ref_costs_comp));
     *comp_mode_p = 128;
   } else {
-    vpx_prob intra_inter_p = vp10_get_intra_inter_prob(cm, xd);
-    vpx_prob comp_inter_p = 128;
+    aom_prob intra_inter_p = vp10_get_intra_inter_prob(cm, xd);
+    aom_prob comp_inter_p = 128;
 
     if (cm->reference_mode == REFERENCE_MODE_SELECT) {
       comp_inter_p = vp10_get_reference_mode_prob(cm, xd);
@@ -2017,8 +2017,8 @@ static void estimate_ref_frame_costs(const VP10_COMMON *cm,
     ref_costs_single[INTRA_FRAME] = vp10_cost_bit(intra_inter_p, 0);
 
     if (cm->reference_mode != COMPOUND_REFERENCE) {
-      vpx_prob ref_single_p1 = vp10_get_pred_prob_single_ref_p1(cm, xd);
-      vpx_prob ref_single_p2 = vp10_get_pred_prob_single_ref_p2(cm, xd);
+      aom_prob ref_single_p1 = vp10_get_pred_prob_single_ref_p1(cm, xd);
+      aom_prob ref_single_p2 = vp10_get_pred_prob_single_ref_p2(cm, xd);
       unsigned int base_cost = vp10_cost_bit(intra_inter_p, 1);
 
       if (cm->reference_mode == REFERENCE_MODE_SELECT)
@@ -2037,7 +2037,7 @@ static void estimate_ref_frame_costs(const VP10_COMMON *cm,
       ref_costs_single[ALTREF_FRAME] = 512;
     }
     if (cm->reference_mode != SINGLE_REFERENCE) {
-      vpx_prob ref_comp_p = vp10_get_pred_prob_comp_ref_p(cm, xd);
+      aom_prob ref_comp_p = vp10_get_pred_prob_comp_ref_p(cm, xd);
       unsigned int base_cost = vp10_cost_bit(intra_inter_p, 1);
 
       if (cm->reference_mode == REFERENCE_MODE_SELECT)
@@ -2834,7 +2834,7 @@ void vp10_rd_pick_inter_mode_sb(VP10_COMP *cpi, TileDataEnc *tile_data,
   int best_mode_skippable = 0;
   int midx, best_mode_index = -1;
   unsigned int ref_costs_single[MAX_REF_FRAMES], ref_costs_comp[MAX_REF_FRAMES];
-  vpx_prob comp_mode_p;
+  aom_prob comp_mode_p;
   int64_t best_intra_rd = INT64_MAX;
   unsigned int best_pred_sse = UINT_MAX;
   PREDICTION_MODE best_intra_mode = DC_PRED;
@@ -3416,7 +3416,7 @@ void vp10_rd_pick_inter_mode_sb_seg_skip(VP10_COMP *cpi, TileDataEnc *tile_data,
   int64_t best_pred_diff[REFERENCE_MODES];
   int64_t best_filter_diff[SWITCHABLE_FILTER_CONTEXTS];
   unsigned int ref_costs_single[MAX_REF_FRAMES], ref_costs_comp[MAX_REF_FRAMES];
-  vpx_prob comp_mode_p;
+  aom_prob comp_mode_p;
   INTERP_FILTER best_filter = SWITCHABLE;
   int64_t this_rd = INT64_MAX;
   int rate2 = 0;
@@ -3521,7 +3521,7 @@ void vp10_rd_pick_inter_mode_sub8x8(VP10_COMP *cpi, TileDataEnc *tile_data,
   MB_MODE_INFO best_mbmode;
   int ref_index, best_ref_index = 0;
   unsigned int ref_costs_single[MAX_REF_FRAMES], ref_costs_comp[MAX_REF_FRAMES];
-  vpx_prob comp_mode_p;
+  aom_prob comp_mode_p;
   INTERP_FILTER tmp_best_filter = SWITCHABLE;
   int rate_uv_intra, rate_uv_tokenonly;
   int64_t dist_uv;

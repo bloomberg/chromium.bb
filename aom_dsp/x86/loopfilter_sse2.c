@@ -11,7 +11,7 @@
 
 #include <emmintrin.h>  // SSE2
 
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/emmintrin_compat.h"
 
@@ -99,7 +99,7 @@ static void mb_lpf_horizontal_edge_w_sse2_8(unsigned char *s, int p,
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
-    // (vpx_filter + 3 * (qs0 - ps0)) & mask
+    // (aom_filter + 3 * (qs0 - ps0)) & mask
     filt = _mm_and_si128(filt, mask);
 
     filter1 = _mm_adds_epi8(filt, t4);
@@ -492,7 +492,7 @@ static void mb_lpf_horizontal_edge_w_sse2_16(unsigned char *s, int p,
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
-    // (vpx_filter + 3 * (qs0 - ps0)) & mask
+    // (aom_filter + 3 * (qs0 - ps0)) & mask
     filt = _mm_and_si128(filt, mask);
     filter1 = _mm_adds_epi8(filt, t4);
     filter2 = _mm_adds_epi8(filt, t3);
@@ -714,7 +714,7 @@ static void mb_lpf_horizontal_edge_w_sse2_16(unsigned char *s, int p,
 }
 
 // TODO(yunqingwang): remove count and call these 2 functions(8 or 16) directly.
-void vpx_lpf_horizontal_16_sse2(unsigned char *s, int p,
+void aom_lpf_horizontal_16_sse2(unsigned char *s, int p,
                                 const unsigned char *_blimit,
                                 const unsigned char *_limit,
                                 const unsigned char *_thresh, int count) {
@@ -724,7 +724,7 @@ void vpx_lpf_horizontal_16_sse2(unsigned char *s, int p,
     mb_lpf_horizontal_edge_w_sse2_16(s, p, _blimit, _limit, _thresh);
 }
 
-void vpx_lpf_horizontal_8_sse2(unsigned char *s, int p,
+void aom_lpf_horizontal_8_sse2(unsigned char *s, int p,
                                const unsigned char *_blimit,
                                const unsigned char *_limit,
                                const unsigned char *_thresh, int count) {
@@ -869,7 +869,7 @@ void vpx_lpf_horizontal_8_sse2(unsigned char *s, int p,
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
-    // (vpx_filter + 3 * (qs0 - ps0)) & mask
+    // (aom_filter + 3 * (qs0 - ps0)) & mask
     filt = _mm_and_si128(filt, mask);
 
     filter1 = _mm_adds_epi8(filt, t4);
@@ -938,7 +938,7 @@ void vpx_lpf_horizontal_8_sse2(unsigned char *s, int p,
   }
 }
 
-void vpx_lpf_horizontal_8_dual_sse2(uint8_t *s, int p, const uint8_t *_blimit0,
+void aom_lpf_horizontal_8_dual_sse2(uint8_t *s, int p, const uint8_t *_blimit0,
                                     const uint8_t *_limit0,
                                     const uint8_t *_thresh0,
                                     const uint8_t *_blimit1,
@@ -1105,7 +1105,7 @@ void vpx_lpf_horizontal_8_dual_sse2(uint8_t *s, int p, const uint8_t *_blimit0,
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
-    // (vpx_filter + 3 * (qs0 - ps0)) & mask
+    // (aom_filter + 3 * (qs0 - ps0)) & mask
     filt = _mm_and_si128(filt, mask);
 
     filter1 = _mm_adds_epi8(filt, t4);
@@ -1180,7 +1180,7 @@ void vpx_lpf_horizontal_8_dual_sse2(uint8_t *s, int p, const uint8_t *_blimit0,
   }
 }
 
-void vpx_lpf_horizontal_4_dual_sse2(unsigned char *s, int p,
+void aom_lpf_horizontal_4_dual_sse2(unsigned char *s, int p,
                                     const unsigned char *_blimit0,
                                     const unsigned char *_limit0,
                                     const unsigned char *_thresh0,
@@ -1274,7 +1274,7 @@ void vpx_lpf_horizontal_4_dual_sse2(unsigned char *s, int p,
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
-    // (vpx_filter + 3 * (qs0 - ps0)) & mask
+    // (aom_filter + 3 * (qs0 - ps0)) & mask
     filt = _mm_and_si128(filt, mask);
 
     filter1 = _mm_adds_epi8(filt, t4);
@@ -1460,7 +1460,7 @@ static INLINE void transpose(unsigned char *src[], int in_p,
   } while (++idx8x8 < num_8x8_to_transpose);
 }
 
-void vpx_lpf_vertical_4_dual_sse2(uint8_t *s, int p, const uint8_t *blimit0,
+void aom_lpf_vertical_4_dual_sse2(uint8_t *s, int p, const uint8_t *blimit0,
                                   const uint8_t *limit0, const uint8_t *thresh0,
                                   const uint8_t *blimit1, const uint8_t *limit1,
                                   const uint8_t *thresh1) {
@@ -1472,7 +1472,7 @@ void vpx_lpf_vertical_4_dual_sse2(uint8_t *s, int p, const uint8_t *blimit0,
   transpose8x16(s - 4, s - 4 + p * 8, p, t_dst, 16);
 
   // Loop filtering
-  vpx_lpf_horizontal_4_dual_sse2(t_dst + 4 * 16, 16, blimit0, limit0, thresh0,
+  aom_lpf_horizontal_4_dual_sse2(t_dst + 4 * 16, 16, blimit0, limit0, thresh0,
                                  blimit1, limit1, thresh1);
   src[0] = t_dst;
   src[1] = t_dst + 8;
@@ -1483,7 +1483,7 @@ void vpx_lpf_vertical_4_dual_sse2(uint8_t *s, int p, const uint8_t *blimit0,
   transpose(src, 16, dst, p, 2);
 }
 
-void vpx_lpf_vertical_8_sse2(unsigned char *s, int p,
+void aom_lpf_vertical_8_sse2(unsigned char *s, int p,
                              const unsigned char *blimit,
                              const unsigned char *limit,
                              const unsigned char *thresh, int count) {
@@ -1499,7 +1499,7 @@ void vpx_lpf_vertical_8_sse2(unsigned char *s, int p,
   transpose(src, p, dst, 8, 1);
 
   // Loop filtering
-  vpx_lpf_horizontal_8_sse2(t_dst + 4 * 8, 8, blimit, limit, thresh, 1);
+  aom_lpf_horizontal_8_sse2(t_dst + 4 * 8, 8, blimit, limit, thresh, 1);
 
   src[0] = t_dst;
   dst[0] = s - 4;
@@ -1508,7 +1508,7 @@ void vpx_lpf_vertical_8_sse2(unsigned char *s, int p,
   transpose(src, 8, dst, p, 1);
 }
 
-void vpx_lpf_vertical_8_dual_sse2(uint8_t *s, int p, const uint8_t *blimit0,
+void aom_lpf_vertical_8_dual_sse2(uint8_t *s, int p, const uint8_t *blimit0,
                                   const uint8_t *limit0, const uint8_t *thresh0,
                                   const uint8_t *blimit1, const uint8_t *limit1,
                                   const uint8_t *thresh1) {
@@ -1520,7 +1520,7 @@ void vpx_lpf_vertical_8_dual_sse2(uint8_t *s, int p, const uint8_t *blimit0,
   transpose8x16(s - 4, s - 4 + p * 8, p, t_dst, 16);
 
   // Loop filtering
-  vpx_lpf_horizontal_8_dual_sse2(t_dst + 4 * 16, 16, blimit0, limit0, thresh0,
+  aom_lpf_horizontal_8_dual_sse2(t_dst + 4 * 16, 16, blimit0, limit0, thresh0,
                                  blimit1, limit1, thresh1);
   src[0] = t_dst;
   src[1] = t_dst + 8;
@@ -1532,7 +1532,7 @@ void vpx_lpf_vertical_8_dual_sse2(uint8_t *s, int p, const uint8_t *blimit0,
   transpose(src, 16, dst, p, 2);
 }
 
-void vpx_lpf_vertical_16_sse2(unsigned char *s, int p,
+void aom_lpf_vertical_16_sse2(unsigned char *s, int p,
                               const unsigned char *blimit,
                               const unsigned char *limit,
                               const unsigned char *thresh) {
@@ -1560,7 +1560,7 @@ void vpx_lpf_vertical_16_sse2(unsigned char *s, int p,
   transpose(src, 8, dst, p, 2);
 }
 
-void vpx_lpf_vertical_16_dual_sse2(unsigned char *s, int p,
+void aom_lpf_vertical_16_dual_sse2(unsigned char *s, int p,
                                    const uint8_t *blimit, const uint8_t *limit,
                                    const uint8_t *thresh) {
   DECLARE_ALIGNED(16, unsigned char, t_dst[256]);

@@ -23,17 +23,17 @@ static void alloc_mode_context(VP10_COMMON *cm, int num_4x4_blk,
   int i, k;
   ctx->num_4x4_blk = num_blk;
 
-  CHECK_MEM_ERROR(cm, ctx->zcoeff_blk, vpx_calloc(num_blk, sizeof(uint8_t)));
+  CHECK_MEM_ERROR(cm, ctx->zcoeff_blk, aom_calloc(num_blk, sizeof(uint8_t)));
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     for (k = 0; k < 3; ++k) {
       CHECK_MEM_ERROR(cm, ctx->coeff[i][k],
-                      vpx_memalign(32, num_pix * sizeof(*ctx->coeff[i][k])));
+                      aom_memalign(32, num_pix * sizeof(*ctx->coeff[i][k])));
       CHECK_MEM_ERROR(cm, ctx->qcoeff[i][k],
-                      vpx_memalign(32, num_pix * sizeof(*ctx->qcoeff[i][k])));
+                      aom_memalign(32, num_pix * sizeof(*ctx->qcoeff[i][k])));
       CHECK_MEM_ERROR(cm, ctx->dqcoeff[i][k],
-                      vpx_memalign(32, num_pix * sizeof(*ctx->dqcoeff[i][k])));
+                      aom_memalign(32, num_pix * sizeof(*ctx->dqcoeff[i][k])));
       CHECK_MEM_ERROR(cm, ctx->eobs[i][k],
-                      vpx_memalign(32, num_blk * sizeof(*ctx->eobs[i][k])));
+                      aom_memalign(32, num_blk * sizeof(*ctx->eobs[i][k])));
       ctx->coeff_pbuf[i][k] = ctx->coeff[i][k];
       ctx->qcoeff_pbuf[i][k] = ctx->qcoeff[i][k];
       ctx->dqcoeff_pbuf[i][k] = ctx->dqcoeff[i][k];
@@ -44,23 +44,23 @@ static void alloc_mode_context(VP10_COMMON *cm, int num_4x4_blk,
 
 static void free_mode_context(PICK_MODE_CONTEXT *ctx) {
   int i, k;
-  vpx_free(ctx->zcoeff_blk);
+  aom_free(ctx->zcoeff_blk);
   ctx->zcoeff_blk = 0;
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     for (k = 0; k < 3; ++k) {
-      vpx_free(ctx->coeff[i][k]);
+      aom_free(ctx->coeff[i][k]);
       ctx->coeff[i][k] = 0;
-      vpx_free(ctx->qcoeff[i][k]);
+      aom_free(ctx->qcoeff[i][k]);
       ctx->qcoeff[i][k] = 0;
-      vpx_free(ctx->dqcoeff[i][k]);
+      aom_free(ctx->dqcoeff[i][k]);
       ctx->dqcoeff[i][k] = 0;
-      vpx_free(ctx->eobs[i][k]);
+      aom_free(ctx->eobs[i][k]);
       ctx->eobs[i][k] = 0;
     }
   }
 
   for (i = 0; i < 2; ++i) {
-    vpx_free(ctx->color_index_map[i]);
+    aom_free(ctx->color_index_map[i]);
     ctx->color_index_map[i] = 0;
   }
 }
@@ -102,12 +102,12 @@ void vp10_setup_pc_tree(VP10_COMMON *cm, ThreadData *td) {
   int square_index = 1;
   int nodes;
 
-  vpx_free(td->leaf_tree);
+  aom_free(td->leaf_tree);
   CHECK_MEM_ERROR(cm, td->leaf_tree,
-                  vpx_calloc(leaf_nodes, sizeof(*td->leaf_tree)));
-  vpx_free(td->pc_tree);
+                  aom_calloc(leaf_nodes, sizeof(*td->leaf_tree)));
+  aom_free(td->pc_tree);
   CHECK_MEM_ERROR(cm, td->pc_tree,
-                  vpx_calloc(tree_nodes, sizeof(*td->pc_tree)));
+                  aom_calloc(tree_nodes, sizeof(*td->pc_tree)));
 
   this_pc = &td->pc_tree[0];
   this_leaf = &td->leaf_tree[0];
@@ -151,8 +151,8 @@ void vp10_free_pc_tree(ThreadData *td) {
   // Sets up all the leaf nodes in the tree.
   for (i = 0; i < tree_nodes; ++i) free_tree_contexts(&td->pc_tree[i]);
 
-  vpx_free(td->pc_tree);
+  aom_free(td->pc_tree);
   td->pc_tree = NULL;
-  vpx_free(td->leaf_tree);
+  aom_free(td->leaf_tree);
   td->leaf_tree = NULL;
 }

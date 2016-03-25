@@ -11,7 +11,7 @@
 
 #include <limits.h>
 
-#include "aom_mem/vpx_mem.h"
+#include "aom_mem/aom_mem.h"
 
 #include "av1/common/pred_common.h"
 #include "av1/common/tile_common.h"
@@ -50,8 +50,8 @@ void vp10_clear_segdata(struct segmentation *seg, int segment_id,
 
 // Based on set of segment counts calculate a probability tree
 static void calc_segtree_probs(unsigned *segcounts,
-                               vpx_prob *segment_tree_probs,
-                               const vpx_prob *cur_tree_probs) {
+                               aom_prob *segment_tree_probs,
+                               const aom_prob *cur_tree_probs) {
   // Work out probabilities of each segment
   const unsigned cc[4] = { segcounts[0] + segcounts[1],
                            segcounts[2] + segcounts[3],
@@ -83,7 +83,7 @@ static void calc_segtree_probs(unsigned *segcounts,
 }
 
 // Based on set of segment counts and probabilities calculate a cost estimate
-static int cost_segmap(unsigned *segcounts, vpx_prob *probs) {
+static int cost_segmap(unsigned *segcounts, aom_prob *probs) {
   const int c01 = segcounts[0] + segcounts[1];
   const int c23 = segcounts[2] + segcounts[3];
   const int c45 = segcounts[4] + segcounts[5];
@@ -227,9 +227,9 @@ void vp10_choose_segmap_coding_method(VP10_COMMON *cm, MACROBLOCKD *xd) {
   unsigned t_unpred_seg_counts[MAX_SEGMENTS] = { 0 };
 #endif
 
-  vpx_prob no_pred_tree[SEG_TREE_PROBS];
-  vpx_prob t_pred_tree[SEG_TREE_PROBS];
-  vpx_prob t_nopred_prob[PREDICTION_PROBS];
+  aom_prob no_pred_tree[SEG_TREE_PROBS];
+  aom_prob t_pred_tree[SEG_TREE_PROBS];
+  aom_prob t_nopred_prob[PREDICTION_PROBS];
 
 #if CONFIG_MISC_FIXES
   (void)xd;

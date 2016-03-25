@@ -11,9 +11,9 @@
 
 #ifndef VP10_COMMON_LOOPFILTER_THREAD_H_
 #define VP10_COMMON_LOOPFILTER_THREAD_H_
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "av1/common/loopfilter.h"
-#include "aom_util/vpx_thread.h"
+#include "aom_util/aom_thread.h"
 
 #ifdef __cplusplus
 extern "C" {

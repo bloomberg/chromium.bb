@@ -14,7 +14,7 @@
 
 #include <assert.h>
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "av1/common/common.h"
 #include "av1/common/enums.h"
 #include "aom_dsp/inv_txfm.h"

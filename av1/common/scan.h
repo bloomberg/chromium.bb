@@ -12,7 +12,7 @@
 #ifndef VP10_COMMON_SCAN_H_
 #define VP10_COMMON_SCAN_H_
 
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 #include "aom_ports/mem.h"
 
 #include "av1/common/enums.h"

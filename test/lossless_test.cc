@@ -10,7 +10,7 @@
 
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "test/codec_factory.h"
 #include "test/encode_test_driver.h"
 #include "test/i420_video_source.h"
@@ -52,7 +52,7 @@ class LosslessTest
     nframes_ = 0;
   }
 
-  virtual void PSNRPktHook(const vpx_codec_cx_pkt_t *pkt) {
+  virtual void PSNRPktHook(const aom_codec_cx_pkt_t *pkt) {
     if (pkt->data.psnr.psnr[0] < psnr_) psnr_ = pkt->data.psnr.psnr[0];
   }
 
@@ -65,7 +65,7 @@ class LosslessTest
 };
 
 TEST_P(LosslessTest, TestLossLessEncoding) {
-  const vpx_rational timebase = { 33333333, 1000000000 };
+  const aom_rational timebase = { 33333333, 1000000000 };
   cfg_.g_timebase = timebase;
   cfg_.rc_target_bitrate = 2000;
   cfg_.g_lag_in_frames = 25;
@@ -100,7 +100,7 @@ TEST_P(LosslessTest, TestLossLessEncoding444) {
 }
 
 TEST_P(LosslessTest, TestLossLessEncodingCtrl) {
-  const vpx_rational timebase = { 33333333, 1000000000 };
+  const aom_rational timebase = { 33333333, 1000000000 };
   cfg_.g_timebase = timebase;
   cfg_.rc_target_bitrate = 2000;
   cfg_.g_lag_in_frames = 25;

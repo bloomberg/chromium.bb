@@ -26,7 +26,7 @@ class VPxEncoderThreadTest
       : EncoderTest(GET_PARAM(0)), encoder_initialized_(false), tiles_(2),
         encoding_mode_(GET_PARAM(1)), set_cpu_used_(GET_PARAM(2)) {
     init_flags_ = VPX_CODEC_USE_PSNR;
-    vpx_codec_dec_cfg_t cfg = vpx_codec_dec_cfg_t();
+    aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
     cfg.w = 1280;
     cfg.h = 720;
     decoder_ = codec_->CreateDecoder(cfg, 0);
@@ -76,14 +76,14 @@ class VPxEncoderThreadTest
     }
   }
 
-  virtual void FramePktHook(const vpx_codec_cx_pkt_t *pkt) {
-    const vpx_codec_err_t res = decoder_->DecodeFrame(
+  virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
+    const aom_codec_err_t res = decoder_->DecodeFrame(
         reinterpret_cast<uint8_t *>(pkt->data.frame.buf), pkt->data.frame.sz);
     if (res != VPX_CODEC_OK) {
       abort_ = true;
       ASSERT_EQ(VPX_CODEC_OK, res);
     }
-    const vpx_image_t *img = decoder_->GetDxData().Next();
+    const aom_image_t *img = decoder_->GetDxData().Next();
 
     if (img) {
       ::libaom_test::MD5 md5_res;

@@ -11,7 +11,7 @@
 
 #include <arm_neon.h>
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 
 #include "aom_dsp/inv_txfm.h"
 #include "aom_ports/mem.h"
@@ -94,7 +94,7 @@ static INLINE void ST_16x8(uint8_t *d, int d_stride, uint8x16_t *q8u8,
   return;
 }
 
-void vpx_idct32x32_1_add_neon(int16_t *input, uint8_t *dest, int dest_stride) {
+void aom_idct32x32_1_add_neon(int16_t *input, uint8_t *dest, int dest_stride) {
   uint8x16_t q0u8, q8u8, q9u8, q10u8, q11u8, q12u8, q13u8, q14u8, q15u8;
   int i, j, dest_stride8;
   uint8_t *d;

@@ -12,7 +12,7 @@
 #ifndef VP10_COMMON_QUANT_COMMON_H_
 #define VP10_COMMON_QUANT_COMMON_H_
 
-#include "aom/vpx_codec.h"
+#include "aom/aom_codec.h"
 #include "av1/common/seg_common.h"
 #include "av1/common/enums.h"
 
@@ -37,8 +37,8 @@ extern "C" {
 
 struct VP10Common;
 
-int16_t vp10_dc_quant(int qindex, int delta, vpx_bit_depth_t bit_depth);
-int16_t vp10_ac_quant(int qindex, int delta, vpx_bit_depth_t bit_depth);
+int16_t vp10_dc_quant(int qindex, int delta, aom_bit_depth_t bit_depth);
+int16_t vp10_ac_quant(int qindex, int delta, aom_bit_depth_t bit_depth);
 
 int vp10_get_qindex(const struct segmentation *seg, int segment_id,
                     int base_qindex);

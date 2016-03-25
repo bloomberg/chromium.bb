@@ -11,7 +11,7 @@
 
 #include <arm_neon.h>
 
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 
 static INLINE void loop_filter_neon(uint8x8_t dblimit,   // flimit
                                     uint8x8_t dlimit,    // limit
@@ -108,7 +108,7 @@ static INLINE void loop_filter_neon(uint8x8_t dblimit,   // flimit
   return;
 }
 
-void vpx_lpf_horizontal_4_neon(uint8_t *src, int pitch, const uint8_t *blimit,
+void aom_lpf_horizontal_4_neon(uint8_t *src, int pitch, const uint8_t *blimit,
                                const uint8_t *limit, const uint8_t *thresh,
                                int count) {
   int i;
@@ -116,7 +116,7 @@ void vpx_lpf_horizontal_4_neon(uint8_t *src, int pitch, const uint8_t *blimit,
   uint8x8_t dblimit, dlimit, dthresh;
   uint8x8_t d3u8, d4u8, d5u8, d6u8, d7u8, d16u8, d17u8, d18u8;
 
-  if (count == 0)  // end_vpx_lf_h_edge
+  if (count == 0)  // end_aom_lf_h_edge
     return;
 
   dblimit = vld1_u8(blimit);
@@ -158,7 +158,7 @@ void vpx_lpf_horizontal_4_neon(uint8_t *src, int pitch, const uint8_t *blimit,
   return;
 }
 
-void vpx_lpf_vertical_4_neon(uint8_t *src, int pitch, const uint8_t *blimit,
+void aom_lpf_vertical_4_neon(uint8_t *src, int pitch, const uint8_t *blimit,
                              const uint8_t *limit, const uint8_t *thresh,
                              int count) {
   int i, pitch8;
@@ -170,7 +170,7 @@ void vpx_lpf_vertical_4_neon(uint8_t *src, int pitch, const uint8_t *blimit,
   uint8x8x2_t d2tmp8, d2tmp9, d2tmp10, d2tmp11;
   uint8x8x4_t d4Result;
 
-  if (count == 0)  // end_vpx_lf_h_edge
+  if (count == 0)  // end_aom_lf_h_edge
     return;
 
   dblimit = vld1_u8(blimit);

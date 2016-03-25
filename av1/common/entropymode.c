@@ -9,12 +9,12 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "aom_mem/vpx_mem.h"
+#include "aom_mem/aom_mem.h"
 
 #include "av1/common/onyxc_int.h"
 #include "av1/common/seg_common.h"
 
-const vpx_prob vp10_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1] =
+const aom_prob vp10_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1] =
     { {
           // above = dc
           { 137, 30, 42, 148, 151, 207, 70, 52, 91 },   // left = dc
@@ -147,7 +147,7 @@ const vpx_prob vp10_kf_y_mode_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1] =
       } };
 
 #if !CONFIG_MISC_FIXES
-const vpx_prob vp10_kf_uv_mode_prob[INTRA_MODES][INTRA_MODES - 1] = {
+const aom_prob vp10_kf_uv_mode_prob[INTRA_MODES][INTRA_MODES - 1] = {
   { 144, 11, 54, 157, 195, 130, 46, 58, 108 },   // y = dc
   { 118, 15, 123, 148, 131, 101, 44, 93, 131 },  // y = v
   { 113, 12, 23, 188, 226, 142, 26, 32, 125 },   // y = h
@@ -161,14 +161,14 @@ const vpx_prob vp10_kf_uv_mode_prob[INTRA_MODES][INTRA_MODES - 1] = {
 };
 #endif
 
-static const vpx_prob default_if_y_probs[BLOCK_SIZE_GROUPS][INTRA_MODES - 1] = {
+static const aom_prob default_if_y_probs[BLOCK_SIZE_GROUPS][INTRA_MODES - 1] = {
   { 65, 32, 18, 144, 162, 194, 41, 51, 98 },   // block_size < 8x8
   { 132, 68, 18, 165, 217, 196, 45, 40, 78 },  // block_size < 16x16
   { 173, 80, 19, 176, 240, 193, 64, 35, 46 },  // block_size < 32x32
   { 221, 135, 38, 194, 248, 121, 96, 85, 29 }  // block_size >= 32x32
 };
 
-static const vpx_prob default_uv_probs[INTRA_MODES][INTRA_MODES - 1] = {
+static const aom_prob default_uv_probs[INTRA_MODES][INTRA_MODES - 1] = {
   { 120, 7, 76, 176, 208, 126, 28, 54, 103 },   // y = dc
   { 48, 12, 154, 155, 139, 90, 34, 117, 119 },  // y = v
   { 67, 6, 25, 204, 243, 158, 13, 21, 96 },     // y = h
@@ -182,7 +182,7 @@ static const vpx_prob default_uv_probs[INTRA_MODES][INTRA_MODES - 1] = {
 };
 
 #if !CONFIG_MISC_FIXES
-const vpx_prob
+const aom_prob
     vp10_kf_partition_probs[PARTITION_CONTEXTS][PARTITION_TYPES - 1] = {
       // 8x8 -> 4x4
       { 158, 97, 94 },  // a/l both not split
@@ -207,7 +207,7 @@ const vpx_prob
     };
 #endif
 
-static const vpx_prob
+static const aom_prob
     default_partition_probs[PARTITION_CONTEXTS][PARTITION_TYPES - 1] = {
       // 8x8 -> 4x4
       { 199, 122, 141 },  // a/l both not split
@@ -231,7 +231,7 @@ static const vpx_prob
       { 10, 7, 6 },     // a/l both split
     };
 
-static const vpx_prob
+static const aom_prob
     default_inter_mode_probs[INTER_MODE_CONTEXTS][INTER_MODES - 1] = {
       { 2, 173, 34 },  // 0 = both zero mv
       { 7, 145, 85 },  // 1 = one zero mv + one a predicted mv
@@ -243,7 +243,7 @@ static const vpx_prob
     };
 
 /* Array indices are identical to previously-existing INTRAMODECONTEXTNODES. */
-const vpx_tree_index vp10_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
+const aom_tree_index vp10_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
   -DC_PRED,   2,          /* 0 = DC_NODE */
   -TM_PRED,   4,          /* 1 = TM_NODE */
   -V_PRED,    6,          /* 2 = V_NODE */
@@ -255,27 +255,27 @@ const vpx_tree_index vp10_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
   -D153_PRED, -D207_PRED  /* 8 = D153_NODE */
 };
 
-const vpx_tree_index vp10_inter_mode_tree[TREE_SIZE(INTER_MODES)] = {
+const aom_tree_index vp10_inter_mode_tree[TREE_SIZE(INTER_MODES)] = {
   -INTER_OFFSET(ZEROMV), 2, -INTER_OFFSET(NEARESTMV), 4, -INTER_OFFSET(NEARMV),
   -INTER_OFFSET(NEWMV)
 };
 
-const vpx_tree_index vp10_partition_tree[TREE_SIZE(PARTITION_TYPES)] = {
+const aom_tree_index vp10_partition_tree[TREE_SIZE(PARTITION_TYPES)] = {
   -PARTITION_NONE, 2, -PARTITION_HORZ, 4, -PARTITION_VERT, -PARTITION_SPLIT
 };
 
-static const vpx_prob default_intra_inter_p[INTRA_INTER_CONTEXTS] = {
+static const aom_prob default_intra_inter_p[INTRA_INTER_CONTEXTS] = {
   9, 102, 187, 225
 };
 
-static const vpx_prob default_comp_inter_p[COMP_INTER_CONTEXTS] = {
+static const aom_prob default_comp_inter_p[COMP_INTER_CONTEXTS] = {
   239, 183, 119, 96, 41
 };
 
-static const vpx_prob default_comp_ref_p[REF_CONTEXTS] = { 50, 126, 123, 221,
+static const aom_prob default_comp_ref_p[REF_CONTEXTS] = { 50, 126, 123, 221,
                                                            226 };
 
-static const vpx_prob default_single_ref_p[REF_CONTEXTS][2] = {
+static const aom_prob default_single_ref_p[REF_CONTEXTS][2] = {
   { 33, 16 }, { 77, 74 }, { 142, 142 }, { 172, 170 }, { 238, 247 }
 };
 
@@ -311,9 +311,9 @@ void vp10_tx_counts_to_branch_counts_8x8(const unsigned int *tx_count_8x8p,
   ct_8x8p[0][1] = tx_count_8x8p[TX_8X8];
 }
 
-static const vpx_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
+static const aom_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
 
-static const vpx_prob default_switchable_interp_prob
+static const aom_prob default_switchable_interp_prob
     [SWITCHABLE_FILTER_CONTEXTS][SWITCHABLE_FILTERS - 1] = {
       { 235, 162 }, { 36, 255 }, { 34, 3 }, { 149, 144 },
     };
@@ -325,18 +325,18 @@ static const struct segmentation_probs default_seg_probs = {
 };
 #endif
 
-const vpx_tree_index vp10_ext_tx_tree[TREE_SIZE(TX_TYPES)] = {
+const aom_tree_index vp10_ext_tx_tree[TREE_SIZE(TX_TYPES)] = {
   -DCT_DCT, 2, -ADST_ADST, 4, -ADST_DCT, -DCT_ADST
 };
 
-static const vpx_prob
+static const aom_prob
     default_intra_ext_tx_prob[EXT_TX_SIZES][TX_TYPES][TX_TYPES - 1] = {
       { { 240, 85, 128 }, { 4, 1, 248 }, { 4, 1, 8 }, { 4, 248, 128 } },
       { { 244, 85, 128 }, { 8, 2, 248 }, { 8, 2, 8 }, { 8, 248, 128 } },
       { { 248, 85, 128 }, { 16, 4, 248 }, { 16, 4, 8 }, { 16, 248, 128 } },
     };
 
-static const vpx_prob default_inter_ext_tx_prob[EXT_TX_SIZES][TX_TYPES - 1] = {
+static const aom_prob default_inter_ext_tx_prob[EXT_TX_SIZES][TX_TYPES - 1] = {
   { 160, 85, 128 }, { 176, 85, 128 }, { 192, 85, 128 },
 };
 
@@ -360,7 +360,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   vp10_copy(fc->inter_ext_tx_prob, default_inter_ext_tx_prob);
 }
 
-const vpx_tree_index vp10_switchable_interp_tree[TREE_SIZE(
+const aom_tree_index vp10_switchable_interp_tree[TREE_SIZE(
     SWITCHABLE_FILTERS)] = { -EIGHTTAP, 2, -EIGHTTAP_SMOOTH, -EIGHTTAP_SHARP };
 
 void vp10_adapt_inter_frame_probs(VP10_COMMON *cm) {
@@ -384,26 +384,26 @@ void vp10_adapt_inter_frame_probs(VP10_COMMON *cm) {
           pre_fc->single_ref_prob[i][j], counts->single_ref[i][j]);
 
   for (i = 0; i < INTER_MODE_CONTEXTS; i++)
-    vpx_tree_merge_probs(vp10_inter_mode_tree, pre_fc->inter_mode_probs[i],
+    aom_tree_merge_probs(vp10_inter_mode_tree, pre_fc->inter_mode_probs[i],
                          counts->inter_mode[i], fc->inter_mode_probs[i]);
 
   for (i = 0; i < BLOCK_SIZE_GROUPS; i++)
-    vpx_tree_merge_probs(vp10_intra_mode_tree, pre_fc->y_mode_prob[i],
+    aom_tree_merge_probs(vp10_intra_mode_tree, pre_fc->y_mode_prob[i],
                          counts->y_mode[i], fc->y_mode_prob[i]);
 
 #if !CONFIG_MISC_FIXES
   for (i = 0; i < INTRA_MODES; ++i)
-    vpx_tree_merge_probs(vp10_intra_mode_tree, pre_fc->uv_mode_prob[i],
+    aom_tree_merge_probs(vp10_intra_mode_tree, pre_fc->uv_mode_prob[i],
                          counts->uv_mode[i], fc->uv_mode_prob[i]);
 
   for (i = 0; i < PARTITION_CONTEXTS; i++)
-    vpx_tree_merge_probs(vp10_partition_tree, pre_fc->partition_prob[i],
+    aom_tree_merge_probs(vp10_partition_tree, pre_fc->partition_prob[i],
                          counts->partition[i], fc->partition_prob[i]);
 #endif
 
   if (cm->interp_filter == SWITCHABLE) {
     for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; i++)
-      vpx_tree_merge_probs(
+      aom_tree_merge_probs(
           vp10_switchable_interp_tree, pre_fc->switchable_interp_prob[i],
           counts->switchable_interp[i], fc->switchable_interp_prob[i]);
   }
@@ -448,12 +448,12 @@ void vp10_adapt_intra_frame_probs(VP10_COMMON *cm) {
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
     int j;
     for (j = 0; j < TX_TYPES; ++j)
-      vpx_tree_merge_probs(vp10_ext_tx_tree, pre_fc->intra_ext_tx_prob[i][j],
+      aom_tree_merge_probs(vp10_ext_tx_tree, pre_fc->intra_ext_tx_prob[i][j],
                            counts->intra_ext_tx[i][j],
                            fc->intra_ext_tx_prob[i][j]);
   }
   for (i = TX_4X4; i < EXT_TX_SIZES; ++i) {
-    vpx_tree_merge_probs(vp10_ext_tx_tree, pre_fc->inter_ext_tx_prob[i],
+    aom_tree_merge_probs(vp10_ext_tx_tree, pre_fc->inter_ext_tx_prob[i],
                          counts->inter_ext_tx[i], fc->inter_ext_tx_prob[i]);
   }
 
@@ -463,19 +463,19 @@ void vp10_adapt_intra_frame_probs(VP10_COMMON *cm) {
       fc->seg.pred_probs[i] =
           mode_mv_merge_probs(pre_fc->seg.pred_probs[i], counts->seg.pred[i]);
 
-    vpx_tree_merge_probs(vp10_segment_tree, pre_fc->seg.tree_probs,
+    aom_tree_merge_probs(vp10_segment_tree, pre_fc->seg.tree_probs,
                          counts->seg.tree_mispred, fc->seg.tree_probs);
   } else {
-    vpx_tree_merge_probs(vp10_segment_tree, pre_fc->seg.tree_probs,
+    aom_tree_merge_probs(vp10_segment_tree, pre_fc->seg.tree_probs,
                          counts->seg.tree_total, fc->seg.tree_probs);
   }
 
   for (i = 0; i < INTRA_MODES; ++i)
-    vpx_tree_merge_probs(vp10_intra_mode_tree, pre_fc->uv_mode_prob[i],
+    aom_tree_merge_probs(vp10_intra_mode_tree, pre_fc->uv_mode_prob[i],
                          counts->uv_mode[i], fc->uv_mode_prob[i]);
 
   for (i = 0; i < PARTITION_CONTEXTS; i++)
-    vpx_tree_merge_probs(vp10_partition_tree, pre_fc->partition_prob[i],
+    aom_tree_merge_probs(vp10_partition_tree, pre_fc->partition_prob[i],
                          counts->partition[i], fc->partition_prob[i]);
 #endif
 }

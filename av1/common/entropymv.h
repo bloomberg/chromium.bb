@@ -12,7 +12,7 @@
 #ifndef VP10_COMMON_ENTROPYMV_H_
 #define VP10_COMMON_ENTROPYMV_H_
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 
 #include "aom_dsp/prob.h"
 
@@ -77,24 +77,24 @@ typedef enum {
 #define MV_UPP ((1 << MV_IN_USE_BITS) - 1)
 #define MV_LOW (-(1 << MV_IN_USE_BITS))
 
-extern const vpx_tree_index vp10_mv_joint_tree[];
-extern const vpx_tree_index vp10_mv_class_tree[];
-extern const vpx_tree_index vp10_mv_class0_tree[];
-extern const vpx_tree_index vp10_mv_fp_tree[];
+extern const aom_tree_index vp10_mv_joint_tree[];
+extern const aom_tree_index vp10_mv_class_tree[];
+extern const aom_tree_index vp10_mv_class0_tree[];
+extern const aom_tree_index vp10_mv_fp_tree[];
 
 typedef struct {
-  vpx_prob sign;
-  vpx_prob classes[MV_CLASSES - 1];
-  vpx_prob class0[CLASS0_SIZE - 1];
-  vpx_prob bits[MV_OFFSET_BITS];
-  vpx_prob class0_fp[CLASS0_SIZE][MV_FP_SIZE - 1];
-  vpx_prob fp[MV_FP_SIZE - 1];
-  vpx_prob class0_hp;
-  vpx_prob hp;
+  aom_prob sign;
+  aom_prob classes[MV_CLASSES - 1];
+  aom_prob class0[CLASS0_SIZE - 1];
+  aom_prob bits[MV_OFFSET_BITS];
+  aom_prob class0_fp[CLASS0_SIZE][MV_FP_SIZE - 1];
+  aom_prob fp[MV_FP_SIZE - 1];
+  aom_prob class0_hp;
+  aom_prob hp;
 } nmv_component;
 
 typedef struct {
-  vpx_prob joints[MV_JOINTS - 1];
+  aom_prob joints[MV_JOINTS - 1];
   nmv_component comps[2];
 } nmv_context;
 

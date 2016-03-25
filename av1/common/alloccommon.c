@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./vpx_config.h"
-#include "aom_mem/vpx_mem.h"
+#include "./aom_config.h"
+#include "aom_mem/aom_mem.h"
 
 #include "av1/common/alloccommon.h"
 #include "av1/common/blockd.h"
@@ -35,7 +35,7 @@ static int alloc_seg_map(VP10_COMMON *cm, int seg_map_size) {
   int i;
 
   for (i = 0; i < NUM_PING_PONG_BUFFERS; ++i) {
-    cm->seg_map_array[i] = (uint8_t *)vpx_calloc(seg_map_size, 1);
+    cm->seg_map_array[i] = (uint8_t *)aom_calloc(seg_map_size, 1);
     if (cm->seg_map_array[i] == NULL) return 1;
   }
   cm->seg_map_alloc_size = seg_map_size;
@@ -55,7 +55,7 @@ static void free_seg_map(VP10_COMMON *cm) {
   int i;
 
   for (i = 0; i < NUM_PING_PONG_BUFFERS; ++i) {
-    vpx_free(cm->seg_map_array[i]);
+    aom_free(cm->seg_map_array[i]);
     cm->seg_map_array[i] = NULL;
   }
 
@@ -75,18 +75,18 @@ void vp10_free_ref_frame_buffers(BufferPool *pool) {
       pool->release_fb_cb(pool->cb_priv, &pool->frame_bufs[i].raw_frame_buffer);
       pool->frame_bufs[i].ref_count = 0;
     }
-    vpx_free(pool->frame_bufs[i].mvs);
+    aom_free(pool->frame_bufs[i].mvs);
     pool->frame_bufs[i].mvs = NULL;
-    vpx_free_frame_buffer(&pool->frame_bufs[i].buf);
+    aom_free_frame_buffer(&pool->frame_bufs[i].buf);
   }
 }
 
 void vp10_free_context_buffers(VP10_COMMON *cm) {
   cm->free_mi(cm);
   free_seg_map(cm);
-  vpx_free(cm->above_context);
+  aom_free(cm->above_context);
   cm->above_context = NULL;
-  vpx_free(cm->above_seg_context);
+  aom_free(cm->above_seg_context);
   cm->above_seg_context = NULL;
 }
 
@@ -107,14 +107,14 @@ int vp10_alloc_context_buffers(VP10_COMMON *cm, int width, int height) {
   }
 
   if (cm->above_context_alloc_cols < cm->mi_cols) {
-    vpx_free(cm->above_context);
-    cm->above_context = (ENTROPY_CONTEXT *)vpx_calloc(
+    aom_free(cm->above_context);
+    cm->above_context = (ENTROPY_CONTEXT *)aom_calloc(
         2 * mi_cols_aligned_to_sb(cm->mi_cols) * MAX_MB_PLANE,
         sizeof(*cm->above_context));
     if (!cm->above_context) goto fail;
 
-    vpx_free(cm->above_seg_context);
-    cm->above_seg_context = (PARTITION_CONTEXT *)vpx_calloc(
+    aom_free(cm->above_seg_context);
+    cm->above_seg_context = (PARTITION_CONTEXT *)aom_calloc(
         mi_cols_aligned_to_sb(cm->mi_cols), sizeof(*cm->above_seg_context));
     if (!cm->above_seg_context) goto fail;
     cm->above_context_alloc_cols = cm->mi_cols;
@@ -130,9 +130,9 @@ fail:
 void vp10_remove_common(VP10_COMMON *cm) {
   vp10_free_context_buffers(cm);
 
-  vpx_free(cm->fc);
+  aom_free(cm->fc);
   cm->fc = NULL;
-  vpx_free(cm->frame_contexts);
+  aom_free(cm->frame_contexts);
   cm->frame_contexts = NULL;
 }
 

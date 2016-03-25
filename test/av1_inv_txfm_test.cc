@@ -15,14 +15,14 @@
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
 #include "./av1_rtcd.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 #include "test/acm_random.h"
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "av1/common/blockd.h"
 #include "av1/common/scan.h"
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 #include "av1/common/av1_inv_txfm.h"
 
 using libaom_test::ACMRandom;
@@ -258,18 +258,18 @@ using std::tr1::make_tuple;
 
 INSTANTIATE_TEST_CASE_P(
     C, Vp10PartialIDctTest,
-    ::testing::Values(make_tuple(&vpx_fdct32x32_c, &vp10_idct32x32_1024_add_c,
+    ::testing::Values(make_tuple(&aom_fdct32x32_c, &vp10_idct32x32_1024_add_c,
                                  &vp10_idct32x32_34_add_c, TX_32X32, 34),
-                      make_tuple(&vpx_fdct32x32_c, &vp10_idct32x32_1024_add_c,
+                      make_tuple(&aom_fdct32x32_c, &vp10_idct32x32_1024_add_c,
                                  &vp10_idct32x32_1_add_c, TX_32X32, 1),
-                      make_tuple(&vpx_fdct16x16_c, &vp10_idct16x16_256_add_c,
+                      make_tuple(&aom_fdct16x16_c, &vp10_idct16x16_256_add_c,
                                  &vp10_idct16x16_10_add_c, TX_16X16, 10),
-                      make_tuple(&vpx_fdct16x16_c, &vp10_idct16x16_256_add_c,
+                      make_tuple(&aom_fdct16x16_c, &vp10_idct16x16_256_add_c,
                                  &vp10_idct16x16_1_add_c, TX_16X16, 1),
-                      make_tuple(&vpx_fdct8x8_c, &vp10_idct8x8_64_add_c,
+                      make_tuple(&aom_fdct8x8_c, &vp10_idct8x8_64_add_c,
                                  &vp10_idct8x8_12_add_c, TX_8X8, 12),
-                      make_tuple(&vpx_fdct8x8_c, &vp10_idct8x8_64_add_c,
+                      make_tuple(&aom_fdct8x8_c, &vp10_idct8x8_64_add_c,
                                  &vp10_idct8x8_1_add_c, TX_8X8, 1),
-                      make_tuple(&vpx_fdct4x4_c, &vp10_idct4x4_16_add_c,
+                      make_tuple(&aom_fdct4x4_c, &vp10_idct4x4_16_add_c,
                                  &vp10_idct4x4_1_add_c, TX_4X4, 1)));
 }  // namespace

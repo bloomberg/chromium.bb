@@ -17,7 +17,7 @@
 namespace {
 
 // Check if any pixel in a 16x16 macroblock varies between frames.
-int CheckMb(const vpx_image_t &current, const vpx_image_t &previous, int mb_r,
+int CheckMb(const aom_image_t &current, const aom_image_t &previous, int mb_r,
             int mb_c) {
   for (int plane = 0; plane < 3; plane++) {
     int r = 16 * mb_r;
@@ -45,8 +45,8 @@ int CheckMb(const vpx_image_t &current, const vpx_image_t &previous, int mb_r,
   return 0;
 }
 
-void GenerateMap(int mb_rows, int mb_cols, const vpx_image_t &current,
-                 const vpx_image_t &previous, uint8_t *map) {
+void GenerateMap(int mb_rows, int mb_cols, const aom_image_t &current,
+                 const aom_image_t &previous, uint8_t *map) {
   for (int mb_r = 0; mb_r < mb_rows; ++mb_r) {
     for (int mb_c = 0; mb_c < mb_cols; ++mb_c) {
       map[mb_r * mb_cols + mb_c] = CheckMb(current, previous, mb_r, mb_c);
@@ -77,10 +77,10 @@ class ActiveMapRefreshTest
       encoder->Control(VP8E_SET_CPUUSED, cpu_used_);
       encoder->Control(VP9E_SET_AQ_MODE, kAqModeCyclicRefresh);
     } else if (video->frame() >= 2 && video->img()) {
-      vpx_image_t *current = video->img();
-      vpx_image_t *previous = y4m_holder_->img();
+      aom_image_t *current = video->img();
+      aom_image_t *previous = y4m_holder_->img();
       ASSERT_TRUE(previous != NULL);
-      vpx_active_map_t map = vpx_active_map_t();
+      aom_active_map_t map = aom_active_map_t();
       const int width = static_cast<int>(current->d_w);
       const int height = static_cast<int>(current->d_h);
       const int mb_width = (width + 15) / 16;

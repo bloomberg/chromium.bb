@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "aom_scale/yv12config.h"
 
 // metrics used for calculating ssim, ssim2, dssim, and ssimc
@@ -61,31 +61,31 @@ typedef struct {
   double ssimcd;
 } Metrics;
 
-double vpx_get_ssim_metrics(uint8_t *img1, int img1_pitch, uint8_t *img2,
+double aom_get_ssim_metrics(uint8_t *img1, int img1_pitch, uint8_t *img2,
                             int img2_pitch, int width, int height, Ssimv *sv2,
                             Metrics *m, int do_inconsistency);
 
-double vpx_calc_ssim(const YV12_BUFFER_CONFIG *source,
+double aom_calc_ssim(const YV12_BUFFER_CONFIG *source,
                      const YV12_BUFFER_CONFIG *dest, double *weight);
 
-double vpx_calc_ssimg(const YV12_BUFFER_CONFIG *source,
+double aom_calc_ssimg(const YV12_BUFFER_CONFIG *source,
                       const YV12_BUFFER_CONFIG *dest, double *ssim_y,
                       double *ssim_u, double *ssim_v);
 
-double vpx_calc_fastssim(const YV12_BUFFER_CONFIG *source,
+double aom_calc_fastssim(const YV12_BUFFER_CONFIG *source,
                          const YV12_BUFFER_CONFIG *dest, double *ssim_y,
                          double *ssim_u, double *ssim_v);
 
-double vpx_psnrhvs(const YV12_BUFFER_CONFIG *source,
+double aom_psnrhvs(const YV12_BUFFER_CONFIG *source,
                    const YV12_BUFFER_CONFIG *dest, double *ssim_y,
                    double *ssim_u, double *ssim_v);
 
 #if CONFIG_VPX_HIGHBITDEPTH
-double vpx_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,
+double aom_highbd_calc_ssim(const YV12_BUFFER_CONFIG *source,
                             const YV12_BUFFER_CONFIG *dest, double *weight,
                             unsigned int bd);
 
-double vpx_highbd_calc_ssimg(const YV12_BUFFER_CONFIG *source,
+double aom_highbd_calc_ssimg(const YV12_BUFFER_CONFIG *source,
                              const YV12_BUFFER_CONFIG *dest, double *ssim_y,
                              double *ssim_u, double *ssim_v, unsigned int bd);
 #endif  // CONFIG_VPX_HIGHBITDEPTH

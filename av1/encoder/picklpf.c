@@ -12,10 +12,10 @@
 #include <assert.h>
 #include <limits.h>
 
-#include "./vpx_scale_rtcd.h"
+#include "./aom_scale_rtcd.h"
 
-#include "aom_dsp/vpx_dsp_common.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
 #include "av1/common/loopfilter.h"
@@ -60,7 +60,7 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
   // Re-instate the unfiltered frame
-  vpx_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
+  aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
 
   return filt_err;
 }
@@ -86,7 +86,7 @@ static int search_filter_level(const YV12_BUFFER_CONFIG *sd, VP10_COMP *cpi,
   memset(ss_err, 0xFF, sizeof(ss_err));
 
   //  Make a copy of the unfiltered / processed recon buffer
-  vpx_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_uf);
+  aom_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_uf);
 
   best_err = try_filter_frame(sd, cpi, filt_mid, partial_frame);
   filt_best = filt_mid;

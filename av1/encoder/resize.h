@@ -13,7 +13,7 @@
 #define VP10_ENCODER_RESIZE_H_
 
 #include <stdio.h>
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 
 #ifdef __cplusplus
 extern "C" {

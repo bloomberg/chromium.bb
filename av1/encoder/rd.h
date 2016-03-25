@@ -186,7 +186,7 @@ void vp10_setup_pred_block(const MACROBLOCKD *xd,
                            const struct scale_factors *scale_uv);
 
 int vp10_get_intra_cost_penalty(int qindex, int qdelta,
-                                vpx_bit_depth_t bit_depth);
+                                aom_bit_depth_t bit_depth);
 
 #ifdef __cplusplus
 }  // extern "C"

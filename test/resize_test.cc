@@ -34,7 +34,7 @@ static void mem_put_le32(char *const mem, const unsigned int val) {
   mem[3] = val >> 24;
 }
 
-static void write_ivf_file_header(const vpx_codec_enc_cfg_t *const cfg,
+static void write_ivf_file_header(const aom_codec_enc_cfg_t *const cfg,
                                   int frame_cnt, FILE *const outfile) {
   char header[32];
 
@@ -61,10 +61,10 @@ static void write_ivf_frame_size(FILE *const outfile, const size_t size) {
   (void)fwrite(header, 1, 4, outfile);
 }
 
-static void write_ivf_frame_header(const vpx_codec_cx_pkt_t *const pkt,
+static void write_ivf_frame_header(const aom_codec_cx_pkt_t *const pkt,
                                    FILE *const outfile) {
   char header[12];
-  vpx_codec_pts_t pts;
+  aom_codec_pts_t pts;
 
   if (pkt->kind != VPX_CODEC_CX_FRAME_PKT) return;
 
@@ -81,10 +81,10 @@ const unsigned int kInitialWidth = 320;
 const unsigned int kInitialHeight = 240;
 
 struct FrameInfo {
-  FrameInfo(vpx_codec_pts_t _pts, unsigned int _w, unsigned int _h)
+  FrameInfo(aom_codec_pts_t _pts, unsigned int _w, unsigned int _h)
       : pts(_pts), w(_w), h(_h) {}
 
-  vpx_codec_pts_t pts;
+  aom_codec_pts_t pts;
   unsigned int w;
   unsigned int h;
 };
@@ -129,8 +129,8 @@ class ResizeTest
     SetMode(GET_PARAM(1));
   }
 
-  virtual void DecompressedFrameHook(const vpx_image_t &img,
-                                     vpx_codec_pts_t pts) {
+  virtual void DecompressedFrameHook(const aom_image_t &img,
+                                     aom_codec_pts_t pts) {
     frame_info_list_.push_back(FrameInfo(pts, img.d_w, img.d_h));
   }
 
@@ -191,34 +191,34 @@ class ResizeInternalTest : public ResizeTest {
     if (change_config_) {
       int new_q = 60;
       if (video->frame() == 0) {
-        struct vpx_scaling_mode mode = { VP8E_ONETWO, VP8E_ONETWO };
+        struct aom_scaling_mode mode = { VP8E_ONETWO, VP8E_ONETWO };
         encoder->Control(VP8E_SET_SCALEMODE, &mode);
       }
       if (video->frame() == 1) {
-        struct vpx_scaling_mode mode = { VP8E_NORMAL, VP8E_NORMAL };
+        struct aom_scaling_mode mode = { VP8E_NORMAL, VP8E_NORMAL };
         encoder->Control(VP8E_SET_SCALEMODE, &mode);
         cfg_.rc_min_quantizer = cfg_.rc_max_quantizer = new_q;
         encoder->Config(&cfg_);
       }
     } else {
       if (video->frame() == kStepDownFrame) {
-        struct vpx_scaling_mode mode = { VP8E_FOURFIVE, VP8E_THREEFIVE };
+        struct aom_scaling_mode mode = { VP8E_FOURFIVE, VP8E_THREEFIVE };
         encoder->Control(VP8E_SET_SCALEMODE, &mode);
       }
       if (video->frame() == kStepUpFrame) {
-        struct vpx_scaling_mode mode = { VP8E_NORMAL, VP8E_NORMAL };
+        struct aom_scaling_mode mode = { VP8E_NORMAL, VP8E_NORMAL };
         encoder->Control(VP8E_SET_SCALEMODE, &mode);
       }
     }
   }
 
-  virtual void PSNRPktHook(const vpx_codec_cx_pkt_t *pkt) {
+  virtual void PSNRPktHook(const aom_codec_cx_pkt_t *pkt) {
     if (!frame0_psnr_) frame0_psnr_ = pkt->data.psnr.psnr[0];
     EXPECT_NEAR(pkt->data.psnr.psnr[0], frame0_psnr_, 2.0);
   }
 
 #if WRITE_COMPRESSED_STREAM
-  virtual void FramePktHook(const vpx_codec_cx_pkt_t *pkt) {
+  virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
     ++out_frames_;
 
     // Write initial file header if first frame.
@@ -256,7 +256,7 @@ TEST_P(ResizeInternalTest, TestInternalResizeWorks) {
 
   for (std::vector<FrameInfo>::const_iterator info = frame_info_list_.begin();
        info != frame_info_list_.end(); ++info) {
-    const vpx_codec_pts_t pts = info->pts;
+    const aom_codec_pts_t pts = info->pts;
     if (pts >= kStepDownFrame && pts < kStepUpFrame) {
       ASSERT_EQ(282U, info->w) << "Frame " << pts << " had unexpected width";
       ASSERT_EQ(173U, info->h) << "Frame " << pts << " had unexpected height";
@@ -303,8 +303,8 @@ class ResizeRealtimeTest
     set_cpu_used_ = GET_PARAM(2);
   }
 
-  virtual void DecompressedFrameHook(const vpx_image_t &img,
-                                     vpx_codec_pts_t pts) {
+  virtual void DecompressedFrameHook(const aom_image_t &img,
+                                     aom_codec_pts_t pts) {
     frame_info_list_.push_back(FrameInfo(pts, img.d_w, img.d_h));
   }
 
@@ -426,7 +426,7 @@ TEST_P(ResizeRealtimeTest, TestInternalResizeDownUpChangeBitRate) {
   ASSERT_EQ(resize_count, 2) << "Resizing should occur twice.";
 }
 
-vpx_img_fmt_t CspForFrameNumber(int frame) {
+aom_img_fmt_t CspForFrameNumber(int frame) {
   if (frame < 10) return VPX_IMG_FMT_I420;
   if (frame < 20) return VPX_IMG_FMT_I444;
   return VPX_IMG_FMT_I420;
@@ -474,13 +474,13 @@ class ResizeCspTest : public ResizeTest {
     }
   }
 
-  virtual void PSNRPktHook(const vpx_codec_cx_pkt_t *pkt) {
+  virtual void PSNRPktHook(const aom_codec_cx_pkt_t *pkt) {
     if (!frame0_psnr_) frame0_psnr_ = pkt->data.psnr.psnr[0];
     EXPECT_NEAR(pkt->data.psnr.psnr[0], frame0_psnr_, 2.0);
   }
 
 #if WRITE_COMPRESSED_STREAM
-  virtual void FramePktHook(const vpx_codec_cx_pkt_t *pkt) {
+  virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
     ++out_frames_;
 
     // Write initial file header if first frame.

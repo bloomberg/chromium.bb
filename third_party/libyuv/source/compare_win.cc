@@ -67,8 +67,8 @@ uint32 SumSquareError_AVX2(const uint8* src_a, const uint8* src_b, int count) {
     mov        eax, [esp + 4]    // src_a
     mov        edx, [esp + 8]    // src_b
     mov        ecx, [esp + 12]   // count
-    vpxor      ymm0, ymm0, ymm0  // sum
-    vpxor      ymm5, ymm5, ymm5  // constant 0 for unpck
+    aomor      ymm0, ymm0, ymm0  // sum
+    aomor      ymm5, ymm5, ymm5  // constant 0 for unpck
     sub        edx, eax
 
   wloop:

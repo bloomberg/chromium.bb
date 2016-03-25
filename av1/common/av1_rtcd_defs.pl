@@ -4,7 +4,7 @@ print <<EOF
  * VP10
  */
 
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 #include "av1/common/common.h"
 #include "av1/common/enums.h"
 
@@ -12,7 +12,7 @@ struct macroblockd;
 
 /* Encoder forward decls */
 struct macroblock;
-struct vpx_variance_vtable;
+struct aom_variance_vtable;
 struct search_site_config;
 struct mv;
 union int_mv;
@@ -27,7 +27,7 @@ $mmx_x86inc = $sse_x86inc = $sse2_x86inc = $ssse3_x86inc = $avx_x86inc =
   $avx2_x86inc = '';
 $mmx_x86_64_x86inc = $sse_x86_64_x86inc = $sse2_x86_64_x86inc =
   $ssse3_x86_64_x86inc = $avx_x86_64_x86inc = $avx2_x86_64_x86inc = '';
-if (vpx_config("CONFIG_USE_X86INC") eq "yes") {
+if (aom_config("CONFIG_USE_X86INC") eq "yes") {
   $mmx_x86inc = 'mmx';
   $sse_x86inc = 'sse';
   $sse2_x86inc = 'sse2';
@@ -57,10 +57,10 @@ if ($opts{arch} eq "x86_64") {
 #
 # dct
 #
-if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
   # Note as optimized versions of these functions are added we need to add a check to ensure
   # that when CONFIG_EMULATE_HARDWARE is on, it defaults to the C versions only.
-  if (vpx_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
+  if (aom_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
     add_proto qw/void vp10_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
     specialize qw/vp10_iht4x4_16_add/;
 
@@ -183,7 +183,7 @@ if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
   }
 } else {
   # Force C versions if CONFIG_EMULATE_HARDWARE is 1
-  if (vpx_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
+  if (aom_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
     add_proto qw/void vp10_iht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int tx_type";
     specialize qw/vp10_iht4x4_16_add/;
 
@@ -259,7 +259,7 @@ if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
 }
 
 # High bitdepth functions
-if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
   #
   # Sub Pixel Filters
   #
@@ -305,12 +305,12 @@ if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
 #
 # Encoder functions below this point.
 #
-if (vpx_config("CONFIG_VP10_ENCODER") eq "yes") {
+if (aom_config("CONFIG_VP10_ENCODER") eq "yes") {
 
 # ENCODEMB INVOKE
 
-if (vpx_config("CONFIG_AOM_QM") eq "yes") {
-  if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+if (aom_config("CONFIG_AOM_QM") eq "yes") {
+  if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
     # the transform coefficients are held in 32-bit
     # values, so the assembler code for  vp10_block_error can no longer be used.
     add_proto qw/int64_t vp10_block_error/, "const tran_low_t *coeff, const tran_low_t *dqcoeff, intptr_t block_size, int64_t *ssz";
@@ -336,7 +336,7 @@ if (vpx_config("CONFIG_AOM_QM") eq "yes") {
     add_proto qw/void vp10_fdct8x8_quant/, "const int16_t *input, int stride, tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan, const qm_val_t * qm_ptr, const qm_val_t *iqm_ptr";
   }
 } else {
-  if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+  if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
     # the transform coefficients are held in 32-bit
     # values, so the assembler code for  vp10_block_error can no longer be used.
     add_proto qw/int64_t vp10_block_error/, "const tran_low_t *coeff, const tran_low_t *dqcoeff, intptr_t block_size, int64_t *ssz";
@@ -372,7 +372,7 @@ if (vpx_config("CONFIG_AOM_QM") eq "yes") {
 
 # fdct functions
 
-if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
   add_proto qw/void vp10_fht4x4/, "const int16_t *input, tran_low_t *output, int stride, int tx_type";
   specialize qw/vp10_fht4x4 sse2/;
 
@@ -399,7 +399,7 @@ if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
 }
 
 # Inverse transform
-if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
   # Note as optimized versions of these functions are added we need to add a check to ensure
   # that when CONFIG_EMULATE_HARDWARE is on, it defaults to the C versions only.
   add_proto qw/void vp10_idct4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
@@ -466,7 +466,7 @@ if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
   specialize qw/vp10_highbd_iwht4x4_16_add/;
 
   # Force C versions if CONFIG_EMULATE_HARDWARE is 1
-  if (vpx_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
+  if (aom_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
     add_proto qw/void vp10_highbd_idct4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
     specialize qw/vp10_highbd_idct4x4_16_add/;
 
@@ -499,7 +499,7 @@ if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
   }  # CONFIG_EMULATE_HARDWARE
 } else {
   # Force C versions if CONFIG_EMULATE_HARDWARE is 1
-  if (vpx_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
+  if (aom_config("CONFIG_EMULATE_HARDWARE") eq "yes") {
     add_proto qw/void vp10_idct4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
     specialize qw/vp10_idct4x4_1_add/;
 
@@ -583,28 +583,28 @@ if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
 #
 # Motion search
 #
-add_proto qw/int vp10_full_search_sad/, "const struct macroblock *x, const struct mv *ref_mv, int sad_per_bit, int distance, const struct vpx_variance_vtable *fn_ptr, const struct mv *center_mv, struct mv *best_mv";
+add_proto qw/int vp10_full_search_sad/, "const struct macroblock *x, const struct mv *ref_mv, int sad_per_bit, int distance, const struct aom_variance_vtable *fn_ptr, const struct mv *center_mv, struct mv *best_mv";
 specialize qw/vp10_full_search_sad sse3 sse4_1/;
 $vp10_full_search_sad_sse3=vp10_full_search_sadx3;
 $vp10_full_search_sad_sse4_1=vp10_full_search_sadx8;
 
-add_proto qw/int vp10_diamond_search_sad/, "const struct macroblock *x, const struct search_site_config *cfg,  struct mv *ref_mv, struct mv *best_mv, int search_param, int sad_per_bit, int *num00, const struct vpx_variance_vtable *fn_ptr, const struct mv *center_mv";
+add_proto qw/int vp10_diamond_search_sad/, "const struct macroblock *x, const struct search_site_config *cfg,  struct mv *ref_mv, struct mv *best_mv, int search_param, int sad_per_bit, int *num00, const struct aom_variance_vtable *fn_ptr, const struct mv *center_mv";
 specialize qw/vp10_diamond_search_sad/;
 
-add_proto qw/int vp10_full_range_search/, "const struct macroblock *x, const struct search_site_config *cfg, struct mv *ref_mv, struct mv *best_mv, int search_param, int sad_per_bit, int *num00, const struct vpx_variance_vtable *fn_ptr, const struct mv *center_mv";
+add_proto qw/int vp10_full_range_search/, "const struct macroblock *x, const struct search_site_config *cfg, struct mv *ref_mv, struct mv *best_mv, int search_param, int sad_per_bit, int *num00, const struct aom_variance_vtable *fn_ptr, const struct mv *center_mv";
 specialize qw/vp10_full_range_search/;
 
 add_proto qw/void vp10_temporal_filter_apply/, "uint8_t *frame1, unsigned int stride, uint8_t *frame2, unsigned int block_width, unsigned int block_height, int strength, int filter_weight, unsigned int *accumulator, uint16_t *count";
 specialize qw/vp10_temporal_filter_apply sse2 msa/;
 
-if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
+if (aom_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
 
   # ENCODEMB INVOKE
 
   add_proto qw/int64_t vp10_highbd_block_error/, "const tran_low_t *coeff, const tran_low_t *dqcoeff, intptr_t block_size, int64_t *ssz, int bd";
   specialize qw/vp10_highbd_block_error sse2/;
 
-  if (vpx_config("CONFIG_AOM_QM") eq "yes") {
+  if (aom_config("CONFIG_AOM_QM") eq "yes") {
     add_proto qw/void vp10_highbd_quantize_fp/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan, const qm_val_t * qm_ptr, const qm_val_t * iqm_ptr";
 
     add_proto qw/void vp10_highbd_quantize_fp_32x32/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan, const qm_val_t * qm_ptr, const qm_val_t * iqm_ptr";

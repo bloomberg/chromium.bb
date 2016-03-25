@@ -12,7 +12,7 @@
 #ifndef VP10_ENCODER_ENCODEFRAME_H_
 #define VP10_ENCODER_ENCODEFRAME_H_
 
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 
 #ifdef __cplusplus
 extern "C" {

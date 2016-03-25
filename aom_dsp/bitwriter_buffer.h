@@ -12,24 +12,24 @@
 #ifndef VPX_DSP_BITWRITER_BUFFER_H_
 #define VPX_DSP_BITWRITER_BUFFER_H_
 
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct vpx_write_bit_buffer {
+struct aom_write_bit_buffer {
   uint8_t *bit_buffer;
   size_t bit_offset;
 };
 
-size_t vpx_wb_bytes_written(const struct vpx_write_bit_buffer *wb);
+size_t aom_wb_bytes_written(const struct aom_write_bit_buffer *wb);
 
-void vpx_wb_write_bit(struct vpx_write_bit_buffer *wb, int bit);
+void aom_wb_write_bit(struct aom_write_bit_buffer *wb, int bit);
 
-void vpx_wb_write_literal(struct vpx_write_bit_buffer *wb, int data, int bits);
+void aom_wb_write_literal(struct aom_write_bit_buffer *wb, int data, int bits);
 
-void vpx_wb_write_inv_signed_literal(struct vpx_write_bit_buffer *wb, int data,
+void aom_wb_write_inv_signed_literal(struct aom_write_bit_buffer *wb, int data,
                                      int bits);
 
 #ifdef __cplusplus

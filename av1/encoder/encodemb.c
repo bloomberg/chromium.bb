@@ -10,11 +10,11 @@
  */
 
 #include "./av1_rtcd.h"
-#include "./vpx_config.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_config.h"
+#include "./aom_dsp_rtcd.h"
 
 #include "aom_dsp/quantize.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
 #include "av1/common/idct.h"
@@ -40,13 +40,13 @@ void vp10_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
 
 #if CONFIG_VPX_HIGHBITDEPTH
   if (x->e_mbd.cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    vpx_highbd_subtract_block(bh, bw, p->src_diff, bw, p->src.buf,
+    aom_highbd_subtract_block(bh, bw, p->src_diff, bw, p->src.buf,
                               p->src.stride, pd->dst.buf, pd->dst.stride,
                               x->e_mbd.bd);
     return;
   }
 #endif  // CONFIG_VPX_HIGHBITDEPTH
-  vpx_subtract_block(bh, bw, p->src_diff, bw, p->src.buf, p->src.stride,
+  aom_subtract_block(bh, bw, p->src_diff, bw, p->src.buf, p->src.stride,
                      pd->dst.buf, pd->dst.stride);
 }
 
@@ -336,18 +336,18 @@ static int optimize_b(MACROBLOCK *mb, int plane, int block, TX_SIZE tx_size,
 static INLINE void fdct32x32(int rd_transform, const int16_t *src,
                              tran_low_t *dst, int src_stride) {
   if (rd_transform)
-    vpx_fdct32x32_rd(src, dst, src_stride);
+    aom_fdct32x32_rd(src, dst, src_stride);
   else
-    vpx_fdct32x32(src, dst, src_stride);
+    aom_fdct32x32(src, dst, src_stride);
 }
 
 #if CONFIG_VPX_HIGHBITDEPTH
 static INLINE void highbd_fdct32x32(int rd_transform, const int16_t *src,
                                     tran_low_t *dst, int src_stride) {
   if (rd_transform)
-    vpx_highbd_fdct32x32_rd(src, dst, src_stride);
+    aom_highbd_fdct32x32_rd(src, dst, src_stride);
   else
-    vpx_highbd_fdct32x32(src, dst, src_stride);
+    aom_highbd_fdct32x32(src, dst, src_stride);
 }
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
@@ -358,7 +358,7 @@ void vp10_fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
   } else {
     switch (tx_type) {
       case DCT_DCT:
-        vpx_fdct4x4(src_diff, coeff, diff_stride);
+        aom_fdct4x4(src_diff, coeff, diff_stride);
         break;
       case ADST_DCT:
       case DCT_ADST:
@@ -429,7 +429,7 @@ void vp10_highbd_fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
   } else {
     switch (tx_type) {
       case DCT_DCT:
-        vpx_highbd_fdct4x4(src_diff, coeff, diff_stride);
+        aom_highbd_fdct4x4(src_diff, coeff, diff_stride);
         break;
       case ADST_DCT:
       case DCT_ADST:
@@ -447,7 +447,7 @@ static void highbd_fwd_txfm_8x8(const int16_t *src_diff, tran_low_t *coeff,
                                 int diff_stride, TX_TYPE tx_type) {
   switch (tx_type) {
     case DCT_DCT:
-      vpx_highbd_fdct8x8(src_diff, coeff, diff_stride);
+      aom_highbd_fdct8x8(src_diff, coeff, diff_stride);
       break;
     case ADST_DCT:
     case DCT_ADST:
@@ -464,7 +464,7 @@ static void highbd_fwd_txfm_16x16(const int16_t *src_diff, tran_low_t *coeff,
                                   int diff_stride, TX_TYPE tx_type) {
   switch (tx_type) {
     case DCT_DCT:
-      vpx_highbd_fdct16x16(src_diff, coeff, diff_stride);
+      aom_highbd_fdct16x16(src_diff, coeff, diff_stride);
       break;
     case ADST_DCT:
     case DCT_ADST:
@@ -534,7 +534,7 @@ void vp10_xform_quant_fp(MACROBLOCK *x, int plane, int block, int blk_row,
 #endif
         break;
       case TX_16X16:
-        vpx_highbd_fdct16x16(src_diff, coeff, diff_stride);
+        aom_highbd_fdct16x16(src_diff, coeff, diff_stride);
         vp10_highbd_quantize_fp(coeff, 256, x->skip_block, p->zbin, p->round_fp,
                                 p->quant_fp, p->quant_shift, qcoeff, dqcoeff,
                                 pd->dequant, eob, scan_order->scan,
@@ -545,7 +545,7 @@ void vp10_xform_quant_fp(MACROBLOCK *x, int plane, int block, int blk_row,
 #endif
         break;
       case TX_8X8:
-        vpx_highbd_fdct8x8(src_diff, coeff, diff_stride);
+        aom_highbd_fdct8x8(src_diff, coeff, diff_stride);
         vp10_highbd_quantize_fp(coeff, 64, x->skip_block, p->zbin, p->round_fp,
                                 p->quant_fp, p->quant_shift, qcoeff, dqcoeff,
                                 pd->dequant, eob, scan_order->scan,
@@ -559,7 +559,7 @@ void vp10_xform_quant_fp(MACROBLOCK *x, int plane, int block, int blk_row,
         if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
           vp10_highbd_fwht4x4(src_diff, coeff, diff_stride);
         } else {
-          vpx_highbd_fdct4x4(src_diff, coeff, diff_stride);
+          aom_highbd_fdct4x4(src_diff, coeff, diff_stride);
         }
         vp10_highbd_quantize_fp(coeff, 16, x->skip_block, p->zbin, p->round_fp,
                                 p->quant_fp, p->quant_shift, qcoeff, dqcoeff,
@@ -590,7 +590,7 @@ void vp10_xform_quant_fp(MACROBLOCK *x, int plane, int block, int blk_row,
 #endif
       break;
     case TX_16X16:
-      vpx_fdct16x16(src_diff, coeff, diff_stride);
+      aom_fdct16x16(src_diff, coeff, diff_stride);
       vp10_quantize_fp(coeff, 256, x->skip_block, p->zbin, p->round_fp,
                        p->quant_fp, p->quant_shift, qcoeff, dqcoeff,
                        pd->dequant, eob, scan_order->scan,
@@ -614,7 +614,7 @@ void vp10_xform_quant_fp(MACROBLOCK *x, int plane, int block, int blk_row,
       if (xd->lossless[xd->mi[0]->mbmi.segment_id]) {
         vp10_fwht4x4(src_diff, coeff, diff_stride);
       } else {
-        vpx_fdct4x4(src_diff, coeff, diff_stride);
+        aom_fdct4x4(src_diff, coeff, diff_stride);
       }
       vp10_quantize_fp(coeff, 16, x->skip_block, p->zbin, p->round_fp,
                        p->quant_fp, p->quant_shift, qcoeff, dqcoeff,
@@ -654,8 +654,8 @@ void vp10_xform_quant_dc(MACROBLOCK *x, int plane, int block, int blk_row,
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     switch (tx_size) {
       case TX_32X32:
-        vpx_highbd_fdct32x32_1(src_diff, coeff, diff_stride);
-        vpx_highbd_quantize_dc_32x32(coeff, x->skip_block, p->round,
+        aom_highbd_fdct32x32_1(src_diff, coeff, diff_stride);
+        aom_highbd_quantize_dc_32x32(coeff, x->skip_block, p->round,
                                      p->quant_fp[0], qcoeff, dqcoeff,
                                      pd->dequant[0],
 #if !CONFIG_AOM_QM
@@ -665,8 +665,8 @@ void vp10_xform_quant_dc(MACROBLOCK *x, int plane, int block, int blk_row,
 #endif
         break;
       case TX_16X16:
-        vpx_highbd_fdct16x16_1(src_diff, coeff, diff_stride);
-        vpx_highbd_quantize_dc(coeff, 256, x->skip_block, p->round,
+        aom_highbd_fdct16x16_1(src_diff, coeff, diff_stride);
+        aom_highbd_quantize_dc(coeff, 256, x->skip_block, p->round,
                                p->quant_fp[0], qcoeff, dqcoeff, pd->dequant[0],
 #if !CONFIG_AOM_QM
                                eob);
@@ -675,8 +675,8 @@ void vp10_xform_quant_dc(MACROBLOCK *x, int plane, int block, int blk_row,
 #endif
         break;
       case TX_8X8:
-        vpx_highbd_fdct8x8_1(src_diff, coeff, diff_stride);
-        vpx_highbd_quantize_dc(coeff, 64, x->skip_block, p->round,
+        aom_highbd_fdct8x8_1(src_diff, coeff, diff_stride);
+        aom_highbd_quantize_dc(coeff, 64, x->skip_block, p->round,
                                p->quant_fp[0], qcoeff, dqcoeff, pd->dequant[0],
 #if !CONFIG_AOM_QM
                                eob);
@@ -688,9 +688,9 @@ void vp10_xform_quant_dc(MACROBLOCK *x, int plane, int block, int blk_row,
         if (xd->lossless[seg_id]) {
           vp10_highbd_fwht4x4(src_diff, coeff, diff_stride);
         } else {
-          vpx_highbd_fdct4x4(src_diff, coeff, diff_stride);
+          aom_highbd_fdct4x4(src_diff, coeff, diff_stride);
         }
-        vpx_highbd_quantize_dc(coeff, 16, x->skip_block, p->round,
+        aom_highbd_quantize_dc(coeff, 16, x->skip_block, p->round,
                                p->quant_fp[0], qcoeff, dqcoeff, pd->dequant[0],
 #if !CONFIG_AOM_QM
                                eob);
@@ -707,8 +707,8 @@ void vp10_xform_quant_dc(MACROBLOCK *x, int plane, int block, int blk_row,
 
   switch (tx_size) {
     case TX_32X32:
-      vpx_fdct32x32_1(src_diff, coeff, diff_stride);
-      vpx_quantize_dc_32x32(coeff, x->skip_block, p->round, p->quant_fp[0],
+      aom_fdct32x32_1(src_diff, coeff, diff_stride);
+      aom_quantize_dc_32x32(coeff, x->skip_block, p->round, p->quant_fp[0],
                             qcoeff, dqcoeff, pd->dequant[0],
 #if !CONFIG_AOM_QM
                             eob);
@@ -717,8 +717,8 @@ void vp10_xform_quant_dc(MACROBLOCK *x, int plane, int block, int blk_row,
 #endif
       break;
     case TX_16X16:
-      vpx_fdct16x16_1(src_diff, coeff, diff_stride);
-      vpx_quantize_dc(coeff, 256, x->skip_block, p->round, p->quant_fp[0],
+      aom_fdct16x16_1(src_diff, coeff, diff_stride);
+      aom_quantize_dc(coeff, 256, x->skip_block, p->round, p->quant_fp[0],
                       qcoeff, dqcoeff, pd->dequant[0],
 #if !CONFIG_AOM_QM
                       eob);
@@ -727,8 +727,8 @@ void vp10_xform_quant_dc(MACROBLOCK *x, int plane, int block, int blk_row,
 #endif
       break;
     case TX_8X8:
-      vpx_fdct8x8_1(src_diff, coeff, diff_stride);
-      vpx_quantize_dc(coeff, 64, x->skip_block, p->round, p->quant_fp[0],
+      aom_fdct8x8_1(src_diff, coeff, diff_stride);
+      aom_quantize_dc(coeff, 64, x->skip_block, p->round, p->quant_fp[0],
                       qcoeff, dqcoeff, pd->dequant[0],
 #if !CONFIG_AOM_QM
                       eob);
@@ -740,9 +740,9 @@ void vp10_xform_quant_dc(MACROBLOCK *x, int plane, int block, int blk_row,
       if (xd->lossless[seg_id]) {
         vp10_fwht4x4(src_diff, coeff, diff_stride);
       } else {
-        vpx_fdct4x4(src_diff, coeff, diff_stride);
+        aom_fdct4x4(src_diff, coeff, diff_stride);
       }
-      vpx_quantize_dc(coeff, 16, x->skip_block, p->round, p->quant_fp[0],
+      aom_quantize_dc(coeff, 16, x->skip_block, p->round, p->quant_fp[0],
                       qcoeff, dqcoeff, pd->dequant[0],
 #if !CONFIG_AOM_QM
                       eob);
@@ -784,7 +784,7 @@ void vp10_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
       case TX_32X32:
         highbd_fwd_txfm_32x32(x->use_lp32x32fdct, src_diff, coeff, diff_stride,
                               tx_type);
-        vpx_highbd_quantize_b_32x32(coeff, 1024, x->skip_block, p->zbin,
+        aom_highbd_quantize_b_32x32(coeff, 1024, x->skip_block, p->zbin,
                                     p->round, p->quant, p->quant_shift, qcoeff,
                                     dqcoeff, pd->dequant, eob, scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -795,7 +795,7 @@ void vp10_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
         break;
       case TX_16X16:
         highbd_fwd_txfm_16x16(src_diff, coeff, diff_stride, tx_type);
-        vpx_highbd_quantize_b(coeff, 256, x->skip_block, p->zbin, p->round,
+        aom_highbd_quantize_b(coeff, 256, x->skip_block, p->zbin, p->round,
                               p->quant, p->quant_shift, qcoeff, dqcoeff,
                               pd->dequant, eob, scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -806,7 +806,7 @@ void vp10_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
         break;
       case TX_8X8:
         highbd_fwd_txfm_8x8(src_diff, coeff, diff_stride, tx_type);
-        vpx_highbd_quantize_b(coeff, 64, x->skip_block, p->zbin, p->round,
+        aom_highbd_quantize_b(coeff, 64, x->skip_block, p->zbin, p->round,
                               p->quant, p->quant_shift, qcoeff, dqcoeff,
                               pd->dequant, eob, scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -818,7 +818,7 @@ void vp10_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
       case TX_4X4:
         vp10_highbd_fwd_txfm_4x4(src_diff, coeff, diff_stride, tx_type,
                                  xd->lossless[seg_id]);
-        vpx_highbd_quantize_b(coeff, 16, x->skip_block, p->zbin, p->round,
+        aom_highbd_quantize_b(coeff, 16, x->skip_block, p->zbin, p->round,
                               p->quant, p->quant_shift, qcoeff, dqcoeff,
                               pd->dequant, eob, scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -837,7 +837,7 @@ void vp10_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
   switch (tx_size) {
     case TX_32X32:
       fwd_txfm_32x32(x->use_lp32x32fdct, src_diff, coeff, diff_stride, tx_type);
-      vpx_quantize_b_32x32(coeff, 1024, x->skip_block, p->zbin, p->round,
+      aom_quantize_b_32x32(coeff, 1024, x->skip_block, p->zbin, p->round,
                            p->quant, p->quant_shift, qcoeff, dqcoeff,
                            pd->dequant, eob, scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -848,7 +848,7 @@ void vp10_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
       break;
     case TX_16X16:
       fwd_txfm_16x16(src_diff, coeff, diff_stride, tx_type);
-      vpx_quantize_b(coeff, 256, x->skip_block, p->zbin, p->round, p->quant,
+      aom_quantize_b(coeff, 256, x->skip_block, p->zbin, p->round, p->quant,
                      p->quant_shift, qcoeff, dqcoeff, pd->dequant, eob,
                      scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -859,7 +859,7 @@ void vp10_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
       break;
     case TX_8X8:
       fwd_txfm_8x8(src_diff, coeff, diff_stride, tx_type);
-      vpx_quantize_b(coeff, 64, x->skip_block, p->zbin, p->round, p->quant,
+      aom_quantize_b(coeff, 64, x->skip_block, p->zbin, p->round, p->quant,
                      p->quant_shift, qcoeff, dqcoeff, pd->dequant, eob,
                      scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -871,7 +871,7 @@ void vp10_xform_quant(MACROBLOCK *x, int plane, int block, int blk_row,
     case TX_4X4:
       vp10_fwd_txfm_4x4(src_diff, coeff, diff_stride, tx_type,
                         xd->lossless[seg_id]);
-      vpx_quantize_b(coeff, 16, x->skip_block, p->zbin, p->round, p->quant,
+      aom_quantize_b(coeff, 16, x->skip_block, p->zbin, p->round, p->quant,
                      p->quant_shift, qcoeff, dqcoeff, pd->dequant, eob,
                      scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -1123,11 +1123,11 @@ void vp10_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     switch (tx_size) {
       case TX_32X32:
         if (!x->skip_recode) {
-          vpx_highbd_subtract_block(32, 32, src_diff, diff_stride, src,
+          aom_highbd_subtract_block(32, 32, src_diff, diff_stride, src,
                                     src_stride, dst, dst_stride, xd->bd);
           highbd_fwd_txfm_32x32(x->use_lp32x32fdct, src_diff, coeff,
                                 diff_stride, tx_type);
-          vpx_highbd_quantize_b_32x32(coeff, 1024, x->skip_block, p->zbin,
+          aom_highbd_quantize_b_32x32(coeff, 1024, x->skip_block, p->zbin,
                                       p->round, p->quant, p->quant_shift,
                                       qcoeff, dqcoeff, pd->dequant, eob,
                                       scan_order->scan,
@@ -1143,10 +1143,10 @@ void vp10_encode_block_intra(int plane, int block, int blk_row, int blk_col,
         break;
       case TX_16X16:
         if (!x->skip_recode) {
-          vpx_highbd_subtract_block(16, 16, src_diff, diff_stride, src,
+          aom_highbd_subtract_block(16, 16, src_diff, diff_stride, src,
                                     src_stride, dst, dst_stride, xd->bd);
           highbd_fwd_txfm_16x16(src_diff, coeff, diff_stride, tx_type);
-          vpx_highbd_quantize_b(coeff, 256, x->skip_block, p->zbin, p->round,
+          aom_highbd_quantize_b(coeff, 256, x->skip_block, p->zbin, p->round,
                                 p->quant, p->quant_shift, qcoeff, dqcoeff,
                                 pd->dequant, eob, scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -1161,10 +1161,10 @@ void vp10_encode_block_intra(int plane, int block, int blk_row, int blk_col,
         break;
       case TX_8X8:
         if (!x->skip_recode) {
-          vpx_highbd_subtract_block(8, 8, src_diff, diff_stride, src,
+          aom_highbd_subtract_block(8, 8, src_diff, diff_stride, src,
                                     src_stride, dst, dst_stride, xd->bd);
           highbd_fwd_txfm_8x8(src_diff, coeff, diff_stride, tx_type);
-          vpx_highbd_quantize_b(coeff, 64, x->skip_block, p->zbin, p->round,
+          aom_highbd_quantize_b(coeff, 64, x->skip_block, p->zbin, p->round,
                                 p->quant, p->quant_shift, qcoeff, dqcoeff,
                                 pd->dequant, eob, scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -1179,11 +1179,11 @@ void vp10_encode_block_intra(int plane, int block, int blk_row, int blk_col,
         break;
       case TX_4X4:
         if (!x->skip_recode) {
-          vpx_highbd_subtract_block(4, 4, src_diff, diff_stride, src,
+          aom_highbd_subtract_block(4, 4, src_diff, diff_stride, src,
                                     src_stride, dst, dst_stride, xd->bd);
           vp10_highbd_fwd_txfm_4x4(src_diff, coeff, diff_stride, tx_type,
                                    xd->lossless[seg_id]);
-          vpx_highbd_quantize_b(coeff, 16, x->skip_block, p->zbin, p->round,
+          aom_highbd_quantize_b(coeff, 16, x->skip_block, p->zbin, p->round,
                                 p->quant, p->quant_shift, qcoeff, dqcoeff,
                                 pd->dequant, eob, scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -1212,11 +1212,11 @@ void vp10_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   switch (tx_size) {
     case TX_32X32:
       if (!x->skip_recode) {
-        vpx_subtract_block(32, 32, src_diff, diff_stride, src, src_stride, dst,
+        aom_subtract_block(32, 32, src_diff, diff_stride, src, src_stride, dst,
                            dst_stride);
         fwd_txfm_32x32(x->use_lp32x32fdct, src_diff, coeff, diff_stride,
                        tx_type);
-        vpx_quantize_b_32x32(coeff, 1024, x->skip_block, p->zbin, p->round,
+        aom_quantize_b_32x32(coeff, 1024, x->skip_block, p->zbin, p->round,
                              p->quant, p->quant_shift, qcoeff, dqcoeff,
                              pd->dequant, eob, scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -1230,10 +1230,10 @@ void vp10_encode_block_intra(int plane, int block, int blk_row, int blk_col,
       break;
     case TX_16X16:
       if (!x->skip_recode) {
-        vpx_subtract_block(16, 16, src_diff, diff_stride, src, src_stride, dst,
+        aom_subtract_block(16, 16, src_diff, diff_stride, src, src_stride, dst,
                            dst_stride);
         fwd_txfm_16x16(src_diff, coeff, diff_stride, tx_type);
-        vpx_quantize_b(coeff, 256, x->skip_block, p->zbin, p->round, p->quant,
+        aom_quantize_b(coeff, 256, x->skip_block, p->zbin, p->round, p->quant,
                        p->quant_shift, qcoeff, dqcoeff, pd->dequant, eob,
                        scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -1247,10 +1247,10 @@ void vp10_encode_block_intra(int plane, int block, int blk_row, int blk_col,
       break;
     case TX_8X8:
       if (!x->skip_recode) {
-        vpx_subtract_block(8, 8, src_diff, diff_stride, src, src_stride, dst,
+        aom_subtract_block(8, 8, src_diff, diff_stride, src, src_stride, dst,
                            dst_stride);
         fwd_txfm_8x8(src_diff, coeff, diff_stride, tx_type);
-        vpx_quantize_b(coeff, 64, x->skip_block, p->zbin, p->round, p->quant,
+        aom_quantize_b(coeff, 64, x->skip_block, p->zbin, p->round, p->quant,
                        p->quant_shift, qcoeff, dqcoeff, pd->dequant, eob,
                        scan_order->scan,
 #if !CONFIG_AOM_QM
@@ -1263,11 +1263,11 @@ void vp10_encode_block_intra(int plane, int block, int blk_row, int blk_col,
       break;
     case TX_4X4:
       if (!x->skip_recode) {
-        vpx_subtract_block(4, 4, src_diff, diff_stride, src, src_stride, dst,
+        aom_subtract_block(4, 4, src_diff, diff_stride, src, src_stride, dst,
                            dst_stride);
         vp10_fwd_txfm_4x4(src_diff, coeff, diff_stride, tx_type,
                           xd->lossless[seg_id]);
-        vpx_quantize_b(coeff, 16, x->skip_block, p->zbin, p->round, p->quant,
+        aom_quantize_b(coeff, 16, x->skip_block, p->zbin, p->round, p->quant,
                        p->quant_shift, qcoeff, dqcoeff, pd->dequant, eob,
                        scan_order->scan,
 #if !CONFIG_AOM_QM

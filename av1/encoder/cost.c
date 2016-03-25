@@ -38,14 +38,14 @@ const uint16_t vp10_prob_cost[257] = {
   26,   23,   20,   18,   15,   12,   9,    6,    3,    3
 };
 
-static void cost(int *costs, vpx_tree tree, const vpx_prob *probs, int i,
+static void cost(int *costs, aom_tree tree, const aom_prob *probs, int i,
                  int c) {
-  const vpx_prob prob = probs[i / 2];
+  const aom_prob prob = probs[i / 2];
   int b;
 
   for (b = 0; b <= 1; ++b) {
     const int cc = c + vp10_cost_bit(prob, b);
-    const vpx_tree_index ii = tree[i + b];
+    const aom_tree_index ii = tree[i + b];
 
     if (ii <= 0)
       costs[-ii] = cc;
@@ -54,11 +54,11 @@ static void cost(int *costs, vpx_tree tree, const vpx_prob *probs, int i,
   }
 }
 
-void vp10_cost_tokens(int *costs, const vpx_prob *probs, vpx_tree tree) {
+void vp10_cost_tokens(int *costs, const aom_prob *probs, aom_tree tree) {
   cost(costs, tree, probs, 0, 0);
 }
 
-void vp10_cost_tokens_skip(int *costs, const vpx_prob *probs, vpx_tree tree) {
+void vp10_cost_tokens_skip(int *costs, const aom_prob *probs, aom_tree tree) {
   assert(tree[0] <= 0 && tree[1] > 0);
 
   costs[-tree[0]] = vp10_cost_bit(probs[0], 0);

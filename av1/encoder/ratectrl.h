@@ -12,8 +12,8 @@
 #ifndef VP10_ENCODER_RATECTRL_H_
 #define VP10_ENCODER_RATECTRL_H_
 
-#include "aom/vpx_codec.h"
-#include "aom/vpx_integer.h"
+#include "aom/aom_codec.h"
+#include "aom/aom_integer.h"
 
 #include "av1/common/blockd.h"
 
@@ -153,9 +153,9 @@ void vp10_rc_init(const struct VP10EncoderConfig *oxcf, int pass,
 
 int vp10_estimate_bits_at_q(FRAME_TYPE frame_kind, int q, int mbs,
                             double correction_factor,
-                            vpx_bit_depth_t bit_depth);
+                            aom_bit_depth_t bit_depth);
 
-double vp10_convert_qindex_to_q(int qindex, vpx_bit_depth_t bit_depth);
+double vp10_convert_qindex_to_q(int qindex, aom_bit_depth_t bit_depth);
 
 void vp10_rc_init_minq_luts(void);
 
@@ -222,7 +222,7 @@ int vp10_rc_regulate_q(const struct VP10_COMP *cpi, int target_bits_per_frame,
 
 // Estimates bits per mb for a given qindex and correction factor.
 int vp10_rc_bits_per_mb(FRAME_TYPE frame_type, int qindex,
-                        double correction_factor, vpx_bit_depth_t bit_depth);
+                        double correction_factor, aom_bit_depth_t bit_depth);
 
 // Clamping utilities for bitrate targets for iframes and pframes.
 int vp10_rc_clamp_iframe_target_size(const struct VP10_COMP *const cpi,
@@ -236,13 +236,13 @@ void vp10_rc_set_frame_target(struct VP10_COMP *cpi, int target);
 // Computes a q delta (in "q index" terms) to get from a starting q value
 // to a target q value
 int vp10_compute_qdelta(const RATE_CONTROL *rc, double qstart, double qtarget,
-                        vpx_bit_depth_t bit_depth);
+                        aom_bit_depth_t bit_depth);
 
 // Computes a q delta (in "q index" terms) to get from a starting q value
 // to a value that should equate to the given rate ratio.
 int vp10_compute_qdelta_by_rate(const RATE_CONTROL *rc, FRAME_TYPE frame_type,
                                 int qindex, double rate_target_ratio,
-                                vpx_bit_depth_t bit_depth);
+                                aom_bit_depth_t bit_depth);
 
 int vp10_frame_type_qdelta(const struct VP10_COMP *cpi, int rf_level, int q);
 

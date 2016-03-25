@@ -14,8 +14,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include "./vpx_config.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_config.h"
+#include "./aom_dsp_rtcd.h"
 #include "aom_dsp/ssim.h"
 #include "aom_ports/system_state.h"
 /* TODO(jbb): High bit depth version of this code needed */
@@ -428,11 +428,11 @@ static double convert_ssim_db(double _ssim, double _weight) {
   return 10 * (log10(_weight) - log10(_weight - _ssim));
 }
 
-double vpx_calc_fastssim(const YV12_BUFFER_CONFIG *source,
+double aom_calc_fastssim(const YV12_BUFFER_CONFIG *source,
                          const YV12_BUFFER_CONFIG *dest, double *ssim_y,
                          double *ssim_u, double *ssim_v) {
   double ssimv;
-  vpx_clear_system_state();
+  aom_clear_system_state();
 
   *ssim_y =
       calc_ssim(source->y_buffer, source->y_stride, dest->y_buffer,

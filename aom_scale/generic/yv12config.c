@@ -12,7 +12,7 @@
 #include <assert.h>
 
 #include "aom_scale/yv12config.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
 /****************************************************************************
@@ -25,12 +25,12 @@
 #define yv12_align_addr(addr, align) \
   (void *)(((size_t)(addr) + ((align)-1)) & (size_t) - (align))
 
-int vpx_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
+int aom_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
   if (ybf) {
     // If libaom is using frame buffer callbacks then buffer_alloc_sz must
     // not be set.
     if (ybf->buffer_alloc_sz > 0) {
-      vpx_free(ybf->buffer_alloc);
+      aom_free(ybf->buffer_alloc);
     }
 
     /* buffer_alloc isn't accessed by most functions.  Rather y_buffer,
@@ -44,7 +44,7 @@ int vpx_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
   return 0;
 }
 
-int vpx_yv12_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width,
+int aom_yv12_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width,
                                   int height, int border) {
   if (ybf) {
     int aligned_width = (width + 15) & ~15;
@@ -60,7 +60,7 @@ int vpx_yv12_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width,
     const int frame_size = yplane_size + 2 * uvplane_size;
 
     if (!ybf->buffer_alloc) {
-      ybf->buffer_alloc = (uint8_t *)vpx_memalign(32, frame_size);
+      ybf->buffer_alloc = (uint8_t *)aom_memalign(32, frame_size);
       ybf->buffer_alloc_sz = frame_size;
     }
 
@@ -70,7 +70,7 @@ int vpx_yv12_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width,
      * of 32. The border restriction is required to get 16-byte alignment of
      * the start of the chroma rows without introducing an arbitrary gap
      * between planes, which would break the semantics of things like
-     * vpx_img_set_rect(). */
+     * aom_img_set_rect(). */
     if (border & 0x1f) return -3;
 
     ybf->y_crop_width = width;
@@ -105,22 +105,22 @@ int vpx_yv12_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width,
   return -2;
 }
 
-int vpx_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
+int aom_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                                 int border) {
   if (ybf) {
-    vpx_yv12_de_alloc_frame_buffer(ybf);
-    return vpx_yv12_realloc_frame_buffer(ybf, width, height, border);
+    aom_yv12_de_alloc_frame_buffer(ybf);
+    return aom_yv12_realloc_frame_buffer(ybf, width, height, border);
   }
   return -2;
 }
 
 #if CONFIG_VP10
-// TODO(jkoleszar): Maybe replace this with struct vpx_image
+// TODO(jkoleszar): Maybe replace this with struct aom_image
 
-int vpx_free_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
+int aom_free_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
   if (ybf) {
     if (ybf->buffer_alloc_sz > 0) {
-      vpx_free(ybf->buffer_alloc);
+      aom_free(ybf->buffer_alloc);
     }
 
     /* buffer_alloc isn't accessed by most functions.  Rather y_buffer,
@@ -134,16 +134,16 @@ int vpx_free_frame_buffer(YV12_BUFFER_CONFIG *ybf) {
   return 0;
 }
 
-int vpx_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
+int aom_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                              int ss_x, int ss_y,
 #if CONFIG_VPX_HIGHBITDEPTH
                              int use_highbitdepth,
 #endif
                              int border, int byte_alignment,
-                             vpx_codec_frame_buffer_t *fb,
-                             vpx_get_frame_buffer_cb_fn_t cb, void *cb_priv) {
+                             aom_codec_frame_buffer_t *fb,
+                             aom_get_frame_buffer_cb_fn_t cb, void *cb_priv) {
   if (ybf) {
-    const int vpx_byte_align = (byte_alignment == 0) ? 1 : byte_alignment;
+    const int aom_byte_align = (byte_alignment == 0) ? 1 : byte_alignment;
     const int aligned_width = (width + 7) & ~7;
     const int aligned_height = (height + 7) & ~7;
     const int y_stride = ((aligned_width + 2 * border) + 31) & ~31;
@@ -210,12 +210,12 @@ int vpx_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
 #endif
     } else if (frame_size > (size_t)ybf->buffer_alloc_sz) {
       // Allocation to hold larger frame, or first allocation.
-      vpx_free(ybf->buffer_alloc);
+      aom_free(ybf->buffer_alloc);
       ybf->buffer_alloc = NULL;
 
       if (frame_size != (size_t)frame_size) return -1;
 
-      ybf->buffer_alloc = (uint8_t *)vpx_memalign(32, (size_t)frame_size);
+      ybf->buffer_alloc = (uint8_t *)aom_memalign(32, (size_t)frame_size);
       if (!ybf->buffer_alloc) return -1;
 
       ybf->buffer_alloc_sz = (int)frame_size;
@@ -230,7 +230,7 @@ int vpx_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
      * of 32. The border restriction is required to get 16-byte alignment of
      * the start of the chroma rows without introducing an arbitrary gap
      * between planes, which would break the semantics of things like
-     * vpx_img_set_rect(). */
+     * aom_img_set_rect(). */
     if (border & 0x1f) return -3;
 
     ybf->y_crop_width = width;
@@ -262,14 +262,14 @@ int vpx_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
     ybf->y_buffer = (uint8_t *)yv12_align_addr(
-        buf + (border * y_stride) + border, vpx_byte_align);
+        buf + (border * y_stride) + border, aom_byte_align);
     ybf->u_buffer = (uint8_t *)yv12_align_addr(
         buf + yplane_size + (uv_border_h * uv_stride) + uv_border_w,
-        vpx_byte_align);
+        aom_byte_align);
     ybf->v_buffer =
         (uint8_t *)yv12_align_addr(buf + yplane_size + uvplane_size +
                                        (uv_border_h * uv_stride) + uv_border_w,
-                                   vpx_byte_align);
+                                   aom_byte_align);
 
 #if CONFIG_ALPHA
     ybf->alpha_width = alpha_width;
@@ -278,7 +278,7 @@ int vpx_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
     ybf->alpha_buffer = (uint8_t *)yv12_align_addr(
         buf + yplane_size + 2 * uvplane_size + (alpha_border_h * alpha_stride) +
             alpha_border_w,
-        vpx_byte_align);
+        aom_byte_align);
 #endif
     ybf->corrupted = 0; /* assume not corrupted by errors */
     return 0;
@@ -286,15 +286,15 @@ int vpx_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
   return -2;
 }
 
-int vpx_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
+int aom_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                            int ss_x, int ss_y,
 #if CONFIG_VPX_HIGHBITDEPTH
                            int use_highbitdepth,
 #endif
                            int border, int byte_alignment) {
   if (ybf) {
-    vpx_free_frame_buffer(ybf);
-    return vpx_realloc_frame_buffer(ybf, width, height, ss_x, ss_y,
+    aom_free_frame_buffer(ybf);
+    return aom_realloc_frame_buffer(ybf, width, height, ss_x, ss_y,
 #if CONFIG_VPX_HIGHBITDEPTH
                                     use_highbitdepth,
 #endif

@@ -52,11 +52,11 @@ int vp10_mv_bit_cost(const MV *mv, const MV *ref, const int *mvjcost,
 
 // Utility to compute variance + MV rate cost for a given MV
 int vp10_get_mvpred_var(const MACROBLOCK *x, const MV *best_mv,
-                        const MV *center_mv, const vpx_variance_fn_ptr_t *vfp,
+                        const MV *center_mv, const aom_variance_fn_ptr_t *vfp,
                         int use_mvcost);
 int vp10_get_mvpred_av_var(const MACROBLOCK *x, const MV *best_mv,
                            const MV *center_mv, const uint8_t *second_pred,
-                           const vpx_variance_fn_ptr_t *vfp, int use_mvcost);
+                           const aom_variance_fn_ptr_t *vfp, int use_mvcost);
 
 struct VP10_COMP;
 struct SPEED_FEATURES;
@@ -65,14 +65,14 @@ int vp10_init_search_range(int size);
 
 int vp10_refining_search_sad(const struct macroblock *x, struct mv *ref_mv,
                              int sad_per_bit, int distance,
-                             const struct vpx_variance_vtable *fn_ptr,
+                             const struct aom_variance_vtable *fn_ptr,
                              const struct mv *center_mv);
 
 // Runs sequence of diamond searches in smaller steps for RD.
 int vp10_full_pixel_diamond(const struct VP10_COMP *cpi, MACROBLOCK *x,
                             MV *mvp_full, int step_param, int sadpb,
                             int further_steps, int do_refine, int *cost_list,
-                            const vpx_variance_fn_ptr_t *fn_ptr,
+                            const aom_variance_fn_ptr_t *fn_ptr,
                             const MV *ref_mv, MV *dst_mv);
 
 // Perform integral projection based motion estimation.
@@ -83,7 +83,7 @@ unsigned int vp10_int_pro_motion_estimation(const struct VP10_COMP *cpi,
 typedef int(integer_mv_pattern_search_fn)(const MACROBLOCK *x, MV *ref_mv,
                                           int search_param, int error_per_bit,
                                           int do_init_search, int *cost_list,
-                                          const vpx_variance_fn_ptr_t *vf,
+                                          const aom_variance_fn_ptr_t *vf,
                                           int use_mvcost, const MV *center_mv,
                                           MV *best_mv);
 
@@ -95,7 +95,7 @@ integer_mv_pattern_search_fn vp10_fast_dia_search;
 
 typedef int(fractional_mv_step_fp)(
     const MACROBLOCK *x, MV *bestmv, const MV *ref_mv, int allow_hp,
-    int error_per_bit, const vpx_variance_fn_ptr_t *vfp,
+    int error_per_bit, const aom_variance_fn_ptr_t *vfp,
     int forced_stop,  // 0 - full, 1 - qtr only, 2 - half only
     int iters_per_step, int *cost_list, int *mvjcost, int *mvcost[2],
     int *distortion, unsigned int *sse1, const uint8_t *second_pred, int w,
@@ -108,22 +108,22 @@ extern fractional_mv_step_fp vp10_find_best_sub_pixel_tree_pruned_evenmore;
 
 typedef int (*vp10_full_search_fn_t)(const MACROBLOCK *x, const MV *ref_mv,
                                      int sad_per_bit, int distance,
-                                     const vpx_variance_fn_ptr_t *fn_ptr,
+                                     const aom_variance_fn_ptr_t *fn_ptr,
                                      const MV *center_mv, MV *best_mv);
 
 typedef int (*vp10_refining_search_fn_t)(const MACROBLOCK *x, MV *ref_mv,
                                          int sad_per_bit, int distance,
-                                         const vpx_variance_fn_ptr_t *fn_ptr,
+                                         const aom_variance_fn_ptr_t *fn_ptr,
                                          const MV *center_mv);
 
 typedef int (*vp10_diamond_search_fn_t)(
     const MACROBLOCK *x, const search_site_config *cfg, MV *ref_mv, MV *best_mv,
     int search_param, int sad_per_bit, int *num00,
-    const vpx_variance_fn_ptr_t *fn_ptr, const MV *center_mv);
+    const aom_variance_fn_ptr_t *fn_ptr, const MV *center_mv);
 
 int vp10_refining_search_8p_c(const MACROBLOCK *x, MV *ref_mv,
                               int error_per_bit, int search_range,
-                              const vpx_variance_fn_ptr_t *fn_ptr,
+                              const aom_variance_fn_ptr_t *fn_ptr,
                               const MV *center_mv, const uint8_t *second_pred);
 
 struct VP10_COMP;

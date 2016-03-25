@@ -13,8 +13,8 @@
 #define VPX_DSP_X86_INV_TXFM_SSE2_H_
 
 #include <emmintrin.h>  // SSE2
-#include "./vpx_config.h"
-#include "aom/vpx_integer.h"
+#include "./aom_config.h"
+#include "aom/aom_integer.h"
 #include "aom_dsp/inv_txfm.h"
 #include "aom_dsp/x86/txfm_common_sse2.h"
 

@@ -14,8 +14,8 @@
 
 #include "av1/common/filter.h"
 #include "av1/common/onyxc_int.h"
-#include "aom/vpx_integer.h"
-#include "aom_dsp/vpx_filter.h"
+#include "aom/aom_integer.h"
+#include "aom_dsp/aom_filter.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -9,14 +9,14 @@
  */
 #include <string>
 #include "third_party/googletest/src/include/gtest/gtest.h"
-#include "./vpx_config.h"
-#include "./vpx_version.h"
+#include "./aom_config.h"
+#include "./aom_version.h"
 #include "test/codec_factory.h"
 #include "test/encode_test_driver.h"
 #include "test/i420_video_source.h"
 #include "test/util.h"
 #include "test/y4m_video_source.h"
-#include "aom_ports/vpx_timer.h"
+#include "aom_ports/aom_timer.h"
 
 namespace {
 
@@ -98,7 +98,7 @@ class VP9EncodePerfTest
     nframes_ = 0;
   }
 
-  virtual void PSNRPktHook(const vpx_codec_cx_pkt_t *pkt) {
+  virtual void PSNRPktHook(const aom_codec_cx_pkt_t *pkt) {
     if (pkt->data.psnr.psnr[0] < min_psnr_) {
       min_psnr_ = pkt->data.psnr.psnr[0];
     }
@@ -135,7 +135,7 @@ TEST_P(VP9EncodePerfTest, PerfTest) {
         set_threads(kEncodePerfTestThreads[k]);
         SetUp();
 
-        const vpx_rational timebase = { 33333333, 1000000000 };
+        const aom_rational timebase = { 33333333, 1000000000 };
         cfg_.g_timebase = timebase;
         cfg_.rc_target_bitrate = kVP9EncodePerfTestVectors[i].bitrate;
 
@@ -149,13 +149,13 @@ TEST_P(VP9EncodePerfTest, PerfTest) {
             kVP9EncodePerfTestVectors[i].frames);
         set_speed(kEncodePerfTestSpeeds[j]);
 
-        vpx_usec_timer t;
-        vpx_usec_timer_start(&t);
+        aom_usec_timer t;
+        aom_usec_timer_start(&t);
 
         ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 
-        vpx_usec_timer_mark(&t);
-        const double elapsed_secs = vpx_usec_timer_elapsed(&t) / kUsecsInSec;
+        aom_usec_timer_mark(&t);
+        const double elapsed_secs = aom_usec_timer_elapsed(&t) / kUsecsInSec;
         const double fps = frames / elapsed_secs;
         const double minimum_psnr = min_psnr();
         std::string display_name(video_name);

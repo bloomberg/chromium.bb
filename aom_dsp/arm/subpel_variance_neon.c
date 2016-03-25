@@ -10,11 +10,11 @@
  */
 
 #include <arm_neon.h>
-#include "./vpx_dsp_rtcd.h"
-#include "./vpx_config.h"
+#include "./aom_dsp_rtcd.h"
+#include "./aom_config.h"
 
 #include "aom_ports/mem.h"
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 
 #include "aom_dsp/variance.h"
 
@@ -74,7 +74,7 @@ static void var_filter_block2d_bil_w16(const uint8_t *src_ptr,
   }
 }
 
-unsigned int vpx_sub_pixel_variance8x8_neon(const uint8_t *src, int src_stride,
+unsigned int aom_sub_pixel_variance8x8_neon(const uint8_t *src, int src_stride,
                                             int xoffset, int yoffset,
                                             const uint8_t *dst, int dst_stride,
                                             unsigned int *sse) {
@@ -85,10 +85,10 @@ unsigned int vpx_sub_pixel_variance8x8_neon(const uint8_t *src, int src_stride,
                             bilinear_filters[xoffset]);
   var_filter_block2d_bil_w8(fdata3, temp2, 8, 8, 8, 8,
                             bilinear_filters[yoffset]);
-  return vpx_variance8x8_neon(temp2, 8, dst, dst_stride, sse);
+  return aom_variance8x8_neon(temp2, 8, dst, dst_stride, sse);
 }
 
-unsigned int vpx_sub_pixel_variance16x16_neon(const uint8_t *src,
+unsigned int aom_sub_pixel_variance16x16_neon(const uint8_t *src,
                                               int src_stride, int xoffset,
                                               int yoffset, const uint8_t *dst,
                                               int dst_stride,
@@ -100,10 +100,10 @@ unsigned int vpx_sub_pixel_variance16x16_neon(const uint8_t *src,
                              bilinear_filters[xoffset]);
   var_filter_block2d_bil_w16(fdata3, temp2, 16, 16, 16, 16,
                              bilinear_filters[yoffset]);
-  return vpx_variance16x16_neon(temp2, 16, dst, dst_stride, sse);
+  return aom_variance16x16_neon(temp2, 16, dst, dst_stride, sse);
 }
 
-unsigned int vpx_sub_pixel_variance32x32_neon(const uint8_t *src,
+unsigned int aom_sub_pixel_variance32x32_neon(const uint8_t *src,
                                               int src_stride, int xoffset,
                                               int yoffset, const uint8_t *dst,
                                               int dst_stride,
@@ -115,10 +115,10 @@ unsigned int vpx_sub_pixel_variance32x32_neon(const uint8_t *src,
                              bilinear_filters[xoffset]);
   var_filter_block2d_bil_w16(fdata3, temp2, 32, 32, 32, 32,
                              bilinear_filters[yoffset]);
-  return vpx_variance32x32_neon(temp2, 32, dst, dst_stride, sse);
+  return aom_variance32x32_neon(temp2, 32, dst, dst_stride, sse);
 }
 
-unsigned int vpx_sub_pixel_variance64x64_neon(const uint8_t *src,
+unsigned int aom_sub_pixel_variance64x64_neon(const uint8_t *src,
                                               int src_stride, int xoffset,
                                               int yoffset, const uint8_t *dst,
                                               int dst_stride,
@@ -130,5 +130,5 @@ unsigned int vpx_sub_pixel_variance64x64_neon(const uint8_t *src,
                              bilinear_filters[xoffset]);
   var_filter_block2d_bil_w16(fdata3, temp2, 64, 64, 64, 64,
                              bilinear_filters[yoffset]);
-  return vpx_variance64x64_neon(temp2, 64, dst, dst_stride, sse);
+  return aom_variance64x64_neon(temp2, 64, dst, dst_stride, sse);
 }

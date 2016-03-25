@@ -54,58 +54,58 @@ LIBWEBM_PARSER_SRCS = third_party/libwebm/mkvparser.cpp \
 
 # List of examples to build. UTILS are tools meant for distribution
 # while EXAMPLES demonstrate specific portions of the API.
-UTILS-$(CONFIG_DECODERS)    += vpxdec.c
-vpxdec.SRCS                 += md5_utils.c md5_utils.h
-vpxdec.SRCS                 += aom_ports/mem_ops.h
-vpxdec.SRCS                 += aom_ports/mem_ops_aligned.h
-vpxdec.SRCS                 += aom_ports/msvc.h
-vpxdec.SRCS                 += aom_ports/vpx_timer.h
-vpxdec.SRCS                 += aom/vpx_integer.h
-vpxdec.SRCS                 += args.c args.h
-vpxdec.SRCS                 += ivfdec.c ivfdec.h
-vpxdec.SRCS                 += tools_common.c tools_common.h
-vpxdec.SRCS                 += y4menc.c y4menc.h
+UTILS-$(CONFIG_DECODERS)    += aomdec.c
+aomdec.SRCS                 += md5_utils.c md5_utils.h
+aomdec.SRCS                 += aom_ports/mem_ops.h
+aomdec.SRCS                 += aom_ports/mem_ops_aligned.h
+aomdec.SRCS                 += aom_ports/msvc.h
+aomdec.SRCS                 += aom_ports/aom_timer.h
+aomdec.SRCS                 += aom/aom_integer.h
+aomdec.SRCS                 += args.c args.h
+aomdec.SRCS                 += ivfdec.c ivfdec.h
+aomdec.SRCS                 += tools_common.c tools_common.h
+aomdec.SRCS                 += y4menc.c y4menc.h
 ifeq ($(CONFIG_LIBYUV),yes)
-  vpxdec.SRCS                 += $(LIBYUV_SRCS)
+  aomdec.SRCS                 += $(LIBYUV_SRCS)
 endif
 ifeq ($(CONFIG_WEBM_IO),yes)
-  vpxdec.SRCS                 += $(LIBWEBM_COMMON_SRCS)
-  vpxdec.SRCS                 += $(LIBWEBM_PARSER_SRCS)
-  vpxdec.SRCS                 += webmdec.cc webmdec.h
+  aomdec.SRCS                 += $(LIBWEBM_COMMON_SRCS)
+  aomdec.SRCS                 += $(LIBWEBM_PARSER_SRCS)
+  aomdec.SRCS                 += webmdec.cc webmdec.h
 endif
-vpxdec.GUID                  = BA5FE66F-38DD-E034-F542-B1578C5FB950
-vpxdec.DESCRIPTION           = Full featured decoder
-UTILS-$(CONFIG_ENCODERS)    += vpxenc.c
-vpxenc.SRCS                 += args.c args.h y4minput.c y4minput.h vpxenc.h
-vpxenc.SRCS                 += ivfdec.c ivfdec.h
-vpxenc.SRCS                 += ivfenc.c ivfenc.h
-vpxenc.SRCS                 += rate_hist.c rate_hist.h
-vpxenc.SRCS                 += tools_common.c tools_common.h
-vpxenc.SRCS                 += warnings.c warnings.h
-vpxenc.SRCS                 += aom_ports/mem_ops.h
-vpxenc.SRCS                 += aom_ports/mem_ops_aligned.h
-vpxenc.SRCS                 += aom_ports/msvc.h
-vpxenc.SRCS                 += aom_ports/vpx_timer.h
-vpxenc.SRCS                 += vpxstats.c vpxstats.h
+aomdec.GUID                  = BA5FE66F-38DD-E034-F542-B1578C5FB950
+aomdec.DESCRIPTION           = Full featured decoder
+UTILS-$(CONFIG_ENCODERS)    += aomenc.c
+aomenc.SRCS                 += args.c args.h y4minput.c y4minput.h aomenc.h
+aomenc.SRCS                 += ivfdec.c ivfdec.h
+aomenc.SRCS                 += ivfenc.c ivfenc.h
+aomenc.SRCS                 += rate_hist.c rate_hist.h
+aomenc.SRCS                 += tools_common.c tools_common.h
+aomenc.SRCS                 += warnings.c warnings.h
+aomenc.SRCS                 += aom_ports/mem_ops.h
+aomenc.SRCS                 += aom_ports/mem_ops_aligned.h
+aomenc.SRCS                 += aom_ports/msvc.h
+aomenc.SRCS                 += aom_ports/aom_timer.h
+aomenc.SRCS                 += aomstats.c aomstats.h
 ifeq ($(CONFIG_LIBYUV),yes)
-  vpxenc.SRCS                 += $(LIBYUV_SRCS)
+  aomenc.SRCS                 += $(LIBYUV_SRCS)
 endif
 ifeq ($(CONFIG_WEBM_IO),yes)
-  vpxenc.SRCS                 += $(LIBWEBM_COMMON_SRCS)
-  vpxenc.SRCS                 += $(LIBWEBM_MUXER_SRCS)
-  vpxenc.SRCS                 += webmenc.cc webmenc.h
+  aomenc.SRCS                 += $(LIBWEBM_COMMON_SRCS)
+  aomenc.SRCS                 += $(LIBWEBM_MUXER_SRCS)
+  aomenc.SRCS                 += webmenc.cc webmenc.h
 endif
-vpxenc.GUID                  = 548DEC74-7A15-4B2B-AFC3-AA102E7C25C1
-vpxenc.DESCRIPTION           = Full featured encoder
+aomenc.GUID                  = 548DEC74-7A15-4B2B-AFC3-AA102E7C25C1
+aomenc.DESCRIPTION           = Full featured encoder
 
-EXAMPLES-$(CONFIG_ENCODERS)          += vpx_temporal_svc_encoder.c
-vpx_temporal_svc_encoder.SRCS        += ivfenc.c ivfenc.h
-vpx_temporal_svc_encoder.SRCS        += tools_common.c tools_common.h
-vpx_temporal_svc_encoder.SRCS        += video_common.h
-vpx_temporal_svc_encoder.SRCS        += video_writer.h video_writer.c
-vpx_temporal_svc_encoder.SRCS        += aom_ports/msvc.h
-vpx_temporal_svc_encoder.GUID        = B18C08F2-A439-4502-A78E-849BE3D60947
-vpx_temporal_svc_encoder.DESCRIPTION = Temporal SVC Encoder
+EXAMPLES-$(CONFIG_ENCODERS)          += aom_temporal_svc_encoder.c
+aom_temporal_svc_encoder.SRCS        += ivfenc.c ivfenc.h
+aom_temporal_svc_encoder.SRCS        += tools_common.c tools_common.h
+aom_temporal_svc_encoder.SRCS        += video_common.h
+aom_temporal_svc_encoder.SRCS        += video_writer.h video_writer.c
+aom_temporal_svc_encoder.SRCS        += aom_ports/msvc.h
+aom_temporal_svc_encoder.GUID        = B18C08F2-A439-4502-A78E-849BE3D60947
+aom_temporal_svc_encoder.DESCRIPTION = Temporal SVC Encoder
 EXAMPLES-$(CONFIG_DECODERS)        += simple_decoder.c
 simple_decoder.GUID                 = D3BBF1E9-2427-450D-BBFF-B2843C1D44CC
 simple_decoder.SRCS                += ivfdec.h ivfdec.c
@@ -268,7 +268,7 @@ endif
 # even though there is no real dependency there (the dependency is on
 # the makefiles). We may want to revisit this.
 define vcproj_template
-$(1): $($(1:.$(VCPROJ_SFX)=).SRCS) vpx.$(VCPROJ_SFX)
+$(1): $($(1:.$(VCPROJ_SFX)=).SRCS) aom.$(VCPROJ_SFX)
 	$(if $(quiet),@echo "    [vcproj] $$@")
 	$(qexec)$$(GEN_VCPROJ)\
             --exe\

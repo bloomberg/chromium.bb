@@ -13,7 +13,7 @@
 #include <xmmintrin.h>
 
 #include "./av1_rtcd.h"
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 
 void vp10_quantize_fp_sse2(const int16_t* coeff_ptr, intptr_t n_coeffs,
                            int skip_block, const int16_t* zbin_ptr,

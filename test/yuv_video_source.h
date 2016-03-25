@@ -16,7 +16,7 @@
 #include <string>
 
 #include "test/video_source.h"
-#include "aom/vpx_image.h"
+#include "aom/aom_image.h"
 
 namespace libaom_test {
 
@@ -25,7 +25,7 @@ namespace libaom_test {
 // do actual file encodes.
 class YUVVideoSource : public VideoSource {
  public:
-  YUVVideoSource(const std::string &file_name, vpx_img_fmt format,
+  YUVVideoSource(const std::string &file_name, aom_img_fmt format,
                  unsigned int width, unsigned int height, int rate_numerator,
                  int rate_denominator, unsigned int start, int limit)
       : file_name_(file_name), input_file_(NULL), img_(NULL), start_(start),
@@ -37,7 +37,7 @@ class YUVVideoSource : public VideoSource {
   }
 
   virtual ~YUVVideoSource() {
-    vpx_img_free(img_);
+    aom_img_free(img_);
     if (input_file_) fclose(input_file_);
   }
 
@@ -58,15 +58,15 @@ class YUVVideoSource : public VideoSource {
     FillFrame();
   }
 
-  virtual vpx_image_t *img() const { return (frame_ < limit_) ? img_ : NULL; }
+  virtual aom_image_t *img() const { return (frame_ < limit_) ? img_ : NULL; }
 
   // Models a stream where Timebase = 1/FPS, so pts == frame.
-  virtual vpx_codec_pts_t pts() const { return frame_; }
+  virtual aom_codec_pts_t pts() const { return frame_; }
 
   virtual unsigned long duration() const { return 1; }
 
-  virtual vpx_rational_t timebase() const {
-    const vpx_rational_t t = { framerate_denominator_, framerate_numerator_ };
+  virtual aom_rational_t timebase() const {
+    const aom_rational_t t = { framerate_denominator_, framerate_numerator_ };
     return t;
   }
 
@@ -75,10 +75,10 @@ class YUVVideoSource : public VideoSource {
   virtual unsigned int limit() const { return limit_; }
 
   virtual void SetSize(unsigned int width, unsigned int height,
-                       vpx_img_fmt format) {
+                       aom_img_fmt format) {
     if (width != width_ || height != height_ || format != format_) {
-      vpx_img_free(img_);
-      img_ = vpx_img_alloc(NULL, format, width, height, 1);
+      aom_img_free(img_);
+      img_ = aom_img_alloc(NULL, format, width, height, 1);
       ASSERT_TRUE(img_ != NULL);
       width_ = width;
       height_ = height;
@@ -108,14 +108,14 @@ class YUVVideoSource : public VideoSource {
  protected:
   std::string file_name_;
   FILE *input_file_;
-  vpx_image_t *img_;
+  aom_image_t *img_;
   size_t raw_size_;
   unsigned int start_;
   unsigned int limit_;
   unsigned int frame_;
   unsigned int width_;
   unsigned int height_;
-  vpx_img_fmt format_;
+  aom_img_fmt format_;
   int framerate_numerator_;
   int framerate_denominator_;
 };

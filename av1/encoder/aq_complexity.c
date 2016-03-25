@@ -17,7 +17,7 @@
 #include "av1/encoder/encodeframe.h"
 #include "av1/common/seg_common.h"
 #include "av1/encoder/segmentation.h"
-#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/system_state.h"
 
 #define AQ_C_SEGMENTS 5
@@ -41,7 +41,7 @@ static const double aq_c_var_thresholds[AQ_C_STRENGTHS][AQ_C_SEGMENTS] = {
 
 #define DEFAULT_COMPLEXITY 64
 
-static int get_aq_c_strength(int q_index, vpx_bit_depth_t bit_depth) {
+static int get_aq_c_strength(int q_index, aom_bit_depth_t bit_depth) {
   // Approximate base quatizer (truncated to int)
   const int base_quant = vp10_ac_quant(q_index, 0, bit_depth) / 4;
   return (base_quant > 10) + (base_quant > 25);
@@ -52,7 +52,7 @@ void vp10_setup_in_frame_q_adj(VP10_COMP *cpi) {
   struct segmentation *const seg = &cm->seg;
 
   // Make SURE use of floating point in this function is safe.
-  vpx_clear_system_state();
+  aom_clear_system_state();
 
   if (frame_is_intra_only(cm) || cm->error_resilient_mode ||
       cpi->refresh_alt_ref_frame ||
@@ -135,7 +135,7 @@ void vp10_caq_select_segment(VP10_COMP *cpi, MACROBLOCK *mb, BLOCK_SIZE bs,
     double low_var_thresh;
     const int aq_strength = get_aq_c_strength(cm->base_qindex, cm->bit_depth);
 
-    vpx_clear_system_state();
+    aom_clear_system_state();
     low_var_thresh = (cpi->oxcf.pass == 2) ? VPXMAX(cpi->twopass.mb_av_energy,
                                                     MIN_DEFAULT_LV_THRESH)
                                            : DEFAULT_LV_THRESH;

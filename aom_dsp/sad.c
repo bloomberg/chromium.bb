@@ -11,10 +11,10 @@
 
 #include <stdlib.h>
 
-#include "./vpx_config.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_config.h"
+#include "./aom_dsp_rtcd.h"
 
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 #include "aom_ports/mem.h"
 
 /* Sum the difference between every corresponding element of the buffers. */
@@ -32,7 +32,7 @@ static INLINE unsigned int sad(const uint8_t *a, int a_stride, const uint8_t *b,
   return sad;
 }
 
-// TODO(johannkoenig): this moved to vpx_dsp, should be able to clean this up.
+// TODO(johannkoenig): this moved to aom_dsp, should be able to clean this up.
 /* Remove dependency on vp9 variance function by duplicating vp9_comp_avg_pred.
  * The function averages every corresponding element of the buffers and stores
  * the value in a third buffer, comp_pred.
@@ -74,11 +74,11 @@ static INLINE void highbd_avg_pred(uint16_t *comp_pred, const uint8_t *pred8,
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
 #define sadMxN(m, n)                                                        \
-  unsigned int vpx_sad##m##x##n##_c(const uint8_t *src, int src_stride,     \
+  unsigned int aom_sad##m##x##n##_c(const uint8_t *src, int src_stride,     \
                                     const uint8_t *ref, int ref_stride) {   \
     return sad(src, src_stride, ref, ref_stride, m, n);                     \
   }                                                                         \
-  unsigned int vpx_sad##m##x##n##_avg_c(const uint8_t *src, int src_stride, \
+  unsigned int aom_sad##m##x##n##_avg_c(const uint8_t *src, int src_stride, \
                                         const uint8_t *ref, int ref_stride, \
                                         const uint8_t *second_pred) {       \
     uint8_t comp_pred[m * n];                                               \
@@ -89,24 +89,24 @@ static INLINE void highbd_avg_pred(uint16_t *comp_pred, const uint8_t *pred8,
 // depending on call sites, pass **ref_array to avoid & in subsequent call and
 // de-dup with 4D below.
 #define sadMxNxK(m, n, k)                                                   \
-  void vpx_sad##m##x##n##x##k##_c(const uint8_t *src, int src_stride,       \
+  void aom_sad##m##x##n##x##k##_c(const uint8_t *src, int src_stride,       \
                                   const uint8_t *ref_array, int ref_stride, \
                                   uint32_t *sad_array) {                    \
     int i;                                                                  \
     for (i = 0; i < k; ++i)                                                 \
       sad_array[i] =                                                        \
-          vpx_sad##m##x##n##_c(src, src_stride, &ref_array[i], ref_stride); \
+          aom_sad##m##x##n##_c(src, src_stride, &ref_array[i], ref_stride); \
   }
 
 // This appears to be equivalent to the above when k == 4 and refs is const
 #define sadMxNx4D(m, n)                                                    \
-  void vpx_sad##m##x##n##x4d_c(const uint8_t *src, int src_stride,         \
+  void aom_sad##m##x##n##x4d_c(const uint8_t *src, int src_stride,         \
                                const uint8_t *const ref_array[],           \
                                int ref_stride, uint32_t *sad_array) {      \
     int i;                                                                 \
     for (i = 0; i < 4; ++i)                                                \
       sad_array[i] =                                                       \
-          vpx_sad##m##x##n##_c(src, src_stride, ref_array[i], ref_stride); \
+          aom_sad##m##x##n##_c(src, src_stride, ref_array[i], ref_stride); \
   }
 
 /* clang-format off */
@@ -212,12 +212,12 @@ static INLINE unsigned int highbd_sadb(const uint8_t *a8, int a_stride,
 }
 
 #define highbd_sadMxN(m, n)                                                    \
-  unsigned int vpx_highbd_sad##m##x##n##_c(const uint8_t *src, int src_stride, \
+  unsigned int aom_highbd_sad##m##x##n##_c(const uint8_t *src, int src_stride, \
                                            const uint8_t *ref,                 \
                                            int ref_stride) {                   \
     return highbd_sad(src, src_stride, ref, ref_stride, m, n);                 \
   }                                                                            \
-  unsigned int vpx_highbd_sad##m##x##n##_avg_c(                                \
+  unsigned int aom_highbd_sad##m##x##n##_avg_c(                                \
       const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride,  \
       const uint8_t *second_pred) {                                            \
     uint16_t comp_pred[m * n];                                                 \
@@ -226,23 +226,23 @@ static INLINE unsigned int highbd_sadb(const uint8_t *a8, int a_stride,
   }
 
 #define highbd_sadMxNxK(m, n, k)                                             \
-  void vpx_highbd_sad##m##x##n##x##k##_c(                                    \
+  void aom_highbd_sad##m##x##n##x##k##_c(                                    \
       const uint8_t *src, int src_stride, const uint8_t *ref_array,          \
       int ref_stride, uint32_t *sad_array) {                                 \
     int i;                                                                   \
     for (i = 0; i < k; ++i) {                                                \
-      sad_array[i] = vpx_highbd_sad##m##x##n##_c(src, src_stride,            \
+      sad_array[i] = aom_highbd_sad##m##x##n##_c(src, src_stride,            \
                                                  &ref_array[i], ref_stride); \
     }                                                                        \
   }
 
 #define highbd_sadMxNx4D(m, n)                                               \
-  void vpx_highbd_sad##m##x##n##x4d_c(const uint8_t *src, int src_stride,    \
+  void aom_highbd_sad##m##x##n##x4d_c(const uint8_t *src, int src_stride,    \
                                       const uint8_t *const ref_array[],      \
                                       int ref_stride, uint32_t *sad_array) { \
     int i;                                                                   \
     for (i = 0; i < 4; ++i) {                                                \
-      sad_array[i] = vpx_highbd_sad##m##x##n##_c(src, src_stride,            \
+      sad_array[i] = aom_highbd_sad##m##x##n##_c(src, src_stride,            \
                                                  ref_array[i], ref_stride);  \
     }                                                                        \
   }

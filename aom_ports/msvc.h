@@ -13,7 +13,7 @@
 #define VPX_PORTS_MSVC_H_
 #ifdef _MSC_VER
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 
 #if _MSC_VER < 1900  // VS2015 provides snprintf
 #define snprintf _snprintf

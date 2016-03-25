@@ -17,7 +17,7 @@
 #include <string.h>
 
 #if CONFIG_VPX_HIGHBITDEPTH
-#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/aom_dsp_common.h"
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 #include "aom_ports/mem.h"
 #include "av1/common/common.h"

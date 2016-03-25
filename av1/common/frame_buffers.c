@@ -12,7 +12,7 @@
 #include <assert.h>
 
 #include "av1/common/frame_buffers.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom_mem/aom_mem.h"
 
 int vp10_alloc_internal_frame_buffers(InternalFrameBufferList *list) {
   assert(list != NULL);
@@ -20,7 +20,7 @@ int vp10_alloc_internal_frame_buffers(InternalFrameBufferList *list) {
 
   list->num_internal_frame_buffers =
       VPX_MAXIMUM_REF_BUFFERS + VPX_MAXIMUM_WORK_BUFFERS;
-  list->int_fb = (InternalFrameBuffer *)vpx_calloc(
+  list->int_fb = (InternalFrameBuffer *)aom_calloc(
       list->num_internal_frame_buffers, sizeof(*list->int_fb));
   return (list->int_fb == NULL);
 }
@@ -31,15 +31,15 @@ void vp10_free_internal_frame_buffers(InternalFrameBufferList *list) {
   assert(list != NULL);
 
   for (i = 0; i < list->num_internal_frame_buffers; ++i) {
-    vpx_free(list->int_fb[i].data);
+    aom_free(list->int_fb[i].data);
     list->int_fb[i].data = NULL;
   }
-  vpx_free(list->int_fb);
+  aom_free(list->int_fb);
   list->int_fb = NULL;
 }
 
 int vp10_get_frame_buffer(void *cb_priv, size_t min_size,
-                          vpx_codec_frame_buffer_t *fb) {
+                          aom_codec_frame_buffer_t *fb) {
   int i;
   InternalFrameBufferList *const int_fb_list =
       (InternalFrameBufferList *)cb_priv;
@@ -54,7 +54,7 @@ int vp10_get_frame_buffer(void *cb_priv, size_t min_size,
 
   if (int_fb_list->int_fb[i].size < min_size) {
     int_fb_list->int_fb[i].data =
-        (uint8_t *)vpx_realloc(int_fb_list->int_fb[i].data, min_size);
+        (uint8_t *)aom_realloc(int_fb_list->int_fb[i].data, min_size);
     if (!int_fb_list->int_fb[i].data) return -1;
 
     // This memset is needed for fixing valgrind error from C loop filter
@@ -73,7 +73,7 @@ int vp10_get_frame_buffer(void *cb_priv, size_t min_size,
   return 0;
 }
 
-int vp10_release_frame_buffer(void *cb_priv, vpx_codec_frame_buffer_t *fb) {
+int vp10_release_frame_buffer(void *cb_priv, aom_codec_frame_buffer_t *fb) {
   InternalFrameBuffer *const int_fb = (InternalFrameBuffer *)fb->priv;
   (void)cb_priv;
   if (int_fb) int_fb->in_use = 0;

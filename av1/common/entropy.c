@@ -13,11 +13,11 @@
 #include "av1/common/blockd.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/entropymode.h"
-#include "aom_mem/vpx_mem.h"
-#include "aom/vpx_integer.h"
+#include "aom_mem/aom_mem.h"
+#include "aom/aom_integer.h"
 
 // Unconstrained Node Tree
-const vpx_tree_index vp10_coef_con_tree[TREE_SIZE(ENTROPY_TOKENS)] = {
+const aom_tree_index vp10_coef_con_tree[TREE_SIZE(ENTROPY_TOKENS)] = {
   2,
   6,  // 0 = LOW_VAL
   -TWO_TOKEN,
@@ -36,28 +36,28 @@ const vpx_tree_index vp10_coef_con_tree[TREE_SIZE(ENTROPY_TOKENS)] = {
   -CATEGORY6_TOKEN  // 7 = CAT_FIVE
 };
 
-const vpx_prob vp10_cat1_prob[] = { 159 };
-const vpx_prob vp10_cat2_prob[] = { 165, 145 };
-const vpx_prob vp10_cat3_prob[] = { 173, 148, 140 };
-const vpx_prob vp10_cat4_prob[] = { 176, 155, 140, 135 };
-const vpx_prob vp10_cat5_prob[] = { 180, 157, 141, 134, 130 };
-const vpx_prob vp10_cat6_prob[] = { 254, 254, 254, 252, 249, 243, 230,
+const aom_prob vp10_cat1_prob[] = { 159 };
+const aom_prob vp10_cat2_prob[] = { 165, 145 };
+const aom_prob vp10_cat3_prob[] = { 173, 148, 140 };
+const aom_prob vp10_cat4_prob[] = { 176, 155, 140, 135 };
+const aom_prob vp10_cat5_prob[] = { 180, 157, 141, 134, 130 };
+const aom_prob vp10_cat6_prob[] = { 254, 254, 254, 252, 249, 243, 230,
                                     196, 177, 153, 140, 133, 130, 129 };
 #if CONFIG_VPX_HIGHBITDEPTH
-const vpx_prob vp10_cat1_prob_high10[] = { 159 };
-const vpx_prob vp10_cat2_prob_high10[] = { 165, 145 };
-const vpx_prob vp10_cat3_prob_high10[] = { 173, 148, 140 };
-const vpx_prob vp10_cat4_prob_high10[] = { 176, 155, 140, 135 };
-const vpx_prob vp10_cat5_prob_high10[] = { 180, 157, 141, 134, 130 };
-const vpx_prob vp10_cat6_prob_high10[] = {
+const aom_prob vp10_cat1_prob_high10[] = { 159 };
+const aom_prob vp10_cat2_prob_high10[] = { 165, 145 };
+const aom_prob vp10_cat3_prob_high10[] = { 173, 148, 140 };
+const aom_prob vp10_cat4_prob_high10[] = { 176, 155, 140, 135 };
+const aom_prob vp10_cat5_prob_high10[] = { 180, 157, 141, 134, 130 };
+const aom_prob vp10_cat6_prob_high10[] = {
   255, 255, 254, 254, 254, 252, 249, 243, 230, 196, 177, 153, 140, 133, 130, 129
 };
-const vpx_prob vp10_cat1_prob_high12[] = { 159 };
-const vpx_prob vp10_cat2_prob_high12[] = { 165, 145 };
-const vpx_prob vp10_cat3_prob_high12[] = { 173, 148, 140 };
-const vpx_prob vp10_cat4_prob_high12[] = { 176, 155, 140, 135 };
-const vpx_prob vp10_cat5_prob_high12[] = { 180, 157, 141, 134, 130 };
-const vpx_prob vp10_cat6_prob_high12[] = { 255, 255, 255, 255, 254, 254,
+const aom_prob vp10_cat1_prob_high12[] = { 159 };
+const aom_prob vp10_cat2_prob_high12[] = { 165, 145 };
+const aom_prob vp10_cat3_prob_high12[] = { 173, 148, 140 };
+const aom_prob vp10_cat4_prob_high12[] = { 176, 155, 140, 135 };
+const aom_prob vp10_cat5_prob_high12[] = { 180, 157, 141, 134, 130 };
+const aom_prob vp10_cat6_prob_high12[] = { 255, 255, 255, 255, 254, 254,
                                            254, 252, 249, 243, 230, 196,
                                            177, 153, 140, 133, 130, 129 };
 #endif
@@ -127,7 +127,7 @@ const uint8_t vp10_pt_energy_class[ENTROPY_TOKENS] = { 0, 1, 2, 3, 3, 4,
 // by averaging :
 // vp10_pareto8_full[l][node] = (vp10_pareto8_full[l-1][node] +
 //                              vp10_pareto8_full[l+1][node] ) >> 1;
-const vpx_prob vp10_pareto8_full[COEFF_PROB_MODELS][MODEL_NODES] = {
+const aom_prob vp10_pareto8_full[COEFF_PROB_MODELS][MODEL_NODES] = {
   { 3, 86, 128, 6, 86, 23, 88, 29 },
   { 6, 86, 128, 11, 87, 42, 91, 52 },
   { 9, 86, 129, 17, 88, 61, 94, 76 },
@@ -1045,16 +1045,16 @@ static const vp10_coeff_probs_model default_coef_probs_32x32[PLANE_TYPES] = {
         { 1, 16, 6 } } } }
 };
 
-static void extend_to_full_distribution(vpx_prob *probs, vpx_prob p) {
+static void extend_to_full_distribution(aom_prob *probs, aom_prob p) {
   // TODO(aconverse): model[PIVOT_NODE] should never be zero.
   // https://code.google.com/p/webm/issues/detail?id=1089
   memcpy(probs, vp10_pareto8_full[p == 0 ? 254 : p - 1],
-         MODEL_NODES * sizeof(vpx_prob));
+         MODEL_NODES * sizeof(aom_prob));
 }
 
-void vp10_model_to_full_probs(const vpx_prob *model, vpx_prob *full) {
+void vp10_model_to_full_probs(const aom_prob *model, aom_prob *full) {
   if (full != model)
-    memcpy(full, model, sizeof(vpx_prob) * UNCONSTRAINED_NODES);
+    memcpy(full, model, sizeof(aom_prob) * UNCONSTRAINED_NODES);
   extend_to_full_distribution(&full[UNCONSTRAINED_NODES], model[PIVOT_NODE]);
 }
 

@@ -11,7 +11,7 @@
 
 /*!\defgroup vp8 VP8
  * \ingroup codecs
- * VP8 is vpx's newest video compression algorithm that uses motion
+ * VP8 is aom's newest video compression algorithm that uses motion
  * compensated prediction, Discrete Cosine Transform (DCT) coding of the
  * prediction error signal and context dependent entropy coding techniques
  * based on arithmetic principles. It features:
@@ -31,8 +31,8 @@
 #ifndef VPX_VP8_H_
 #define VPX_VP8_H_
 
-#include "./vpx_codec.h"
-#include "./vpx_image.h"
+#include "./aom_codec.h"
+#include "./aom_image.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -98,20 +98,20 @@ typedef struct vp8_postproc_cfg {
  *
  * The set of macros define the type of VP8 reference frames
  */
-typedef enum vpx_ref_frame_type {
+typedef enum aom_ref_frame_type {
   VP8_LAST_FRAME = 1,
   VP8_GOLD_FRAME = 2,
   VP8_ALTR_FRAME = 4
-} vpx_ref_frame_type_t;
+} aom_ref_frame_type_t;
 
 /*!\brief reference frame data struct
  *
  * Define the data struct to access vp8 reference frames.
  */
-typedef struct vpx_ref_frame {
-  vpx_ref_frame_type_t frame_type; /**< which reference frame */
-  vpx_image_t img;                 /**< reference frame data in image format */
-} vpx_ref_frame_t;
+typedef struct aom_ref_frame {
+  aom_ref_frame_type_t frame_type; /**< which reference frame */
+  aom_image_t img;                 /**< reference frame data in image format */
+} aom_ref_frame_t;
 
 /*!\brief VP9 specific reference frame data struct
  *
@@ -119,7 +119,7 @@ typedef struct vpx_ref_frame {
  */
 typedef struct vp9_ref_frame {
   int idx;         /**< frame index to get (input) */
-  vpx_image_t img; /**< img structure to populate (output) */
+  aom_image_t img; /**< img structure to populate (output) */
 } vp9_ref_frame_t;
 
 /*!\cond */
@@ -127,9 +127,9 @@ typedef struct vp9_ref_frame {
  *
  * defines the data type for each of VP8 decoder control function requires
  */
-VPX_CTRL_USE_TYPE(VP8_SET_REFERENCE, vpx_ref_frame_t *)
+VPX_CTRL_USE_TYPE(VP8_SET_REFERENCE, aom_ref_frame_t *)
 #define VPX_CTRL_VP8_SET_REFERENCE
-VPX_CTRL_USE_TYPE(VP8_COPY_REFERENCE, vpx_ref_frame_t *)
+VPX_CTRL_USE_TYPE(VP8_COPY_REFERENCE, aom_ref_frame_t *)
 #define VPX_CTRL_VP8_COPY_REFERENCE
 VPX_CTRL_USE_TYPE(VP8_SET_POSTPROC, vp8_postproc_cfg_t *)
 #define VPX_CTRL_VP8_SET_POSTPROC

@@ -18,7 +18,7 @@
 #define VPX_SVC_CONTEXT_H_
 
 #include "./vp8cx.h"
-#include "./vpx_encoder.h"
+#include "./aom_encoder.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,7 +42,7 @@ typedef struct {
   int speed;           // speed setting for codec
   int threads;
   int aqmode;  // turns on aq-mode=3 (cyclic_refresh): 0=off, 1=on.
-  // private storage for vpx_svc_encode
+  // private storage for aom_svc_encode
   void *internal;
 } SvcContext;
 
@@ -50,10 +50,10 @@ typedef struct {
 #define COMPONENTS 4  // psnr & sse statistics maintained for total, y, u, v
 
 typedef struct SvcInternal {
-  char options[OPTION_BUFFER_SIZE];  // set by vpx_svc_set_options
+  char options[OPTION_BUFFER_SIZE];  // set by aom_svc_set_options
 
   // values extracted from option, quantizers
-  vpx_svc_extra_cfg_t svc_params;
+  aom_svc_extra_cfg_t svc_params;
   int enable_auto_alt_ref[VPX_SS_MAX_LAYERS];
   int bitrates[VPX_SS_MAX_LAYERS];
 
@@ -73,7 +73,7 @@ typedef struct SvcInternal {
   int use_multiple_frame_contexts;
 
   char message_buffer[2048];
-  vpx_codec_ctx_t *codec_ctx;
+  aom_codec_ctx_t *codec_ctx;
 } SvcInternal_t;
 
 /**
@@ -84,35 +84,35 @@ typedef struct SvcInternal {
  *         scaling-factors=<n1>/<d1>,<n2>/<d2>,...
  *         quantizers=<q1>,<q2>,...
  */
-vpx_codec_err_t vpx_svc_set_options(SvcContext *svc_ctx, const char *options);
+aom_codec_err_t aom_svc_set_options(SvcContext *svc_ctx, const char *options);
 
 /**
  * initialize SVC encoding
  */
-vpx_codec_err_t vpx_svc_init(SvcContext *svc_ctx, vpx_codec_ctx_t *codec_ctx,
-                             vpx_codec_iface_t *iface,
-                             vpx_codec_enc_cfg_t *cfg);
+aom_codec_err_t aom_svc_init(SvcContext *svc_ctx, aom_codec_ctx_t *codec_ctx,
+                             aom_codec_iface_t *iface,
+                             aom_codec_enc_cfg_t *cfg);
 /**
  * encode a frame of video with multiple layers
  */
-vpx_codec_err_t vpx_svc_encode(SvcContext *svc_ctx, vpx_codec_ctx_t *codec_ctx,
-                               struct vpx_image *rawimg, vpx_codec_pts_t pts,
+aom_codec_err_t aom_svc_encode(SvcContext *svc_ctx, aom_codec_ctx_t *codec_ctx,
+                               struct aom_image *rawimg, aom_codec_pts_t pts,
                                int64_t duration, int deadline);
 
 /**
  * finished with svc encoding, release allocated resources
  */
-void vpx_svc_release(SvcContext *svc_ctx);
+void aom_svc_release(SvcContext *svc_ctx);
 
 /**
  * dump accumulated statistics and reset accumulated values
  */
-const char *vpx_svc_dump_statistics(SvcContext *svc_ctx);
+const char *aom_svc_dump_statistics(SvcContext *svc_ctx);
 
 /**
  *  get status message from previous encode
  */
-const char *vpx_svc_get_message(const SvcContext *svc_ctx);
+const char *aom_svc_get_message(const SvcContext *svc_ctx);
 
 #ifdef __cplusplus
 }  // extern "C"

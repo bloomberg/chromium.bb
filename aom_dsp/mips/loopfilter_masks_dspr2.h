@@ -14,9 +14,9 @@
 
 #include <stdlib.h>
 
-#include "./vpx_dsp_rtcd.h"
-#include "aom/vpx_integer.h"
-#include "aom_mem/vpx_mem.h"
+#include "./aom_dsp_rtcd.h"
+#include "aom/aom_integer.h"
+#include "aom_mem/aom_mem.h"
 
 #ifdef __cplusplus
 extern "C" {

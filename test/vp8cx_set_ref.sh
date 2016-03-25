@@ -18,7 +18,7 @@
 # Environment check: $YUV_RAW_INPUT is required.
 vp8cx_set_ref_verify_environment() {
   if [ ! -e "${YUV_RAW_INPUT}" ]; then
-    echo "Libvpx test data must exist in LIBAOM_TEST_DATA_PATH."
+    echo "Libaom test data must exist in LIBAOM_TEST_DATA_PATH."
     return 1
   fi
 }
@@ -28,7 +28,7 @@ vp8cx_set_ref_verify_environment() {
 # currently used only to name the output file.
 # TODO(tomfinegan): Pass the codec param once the example is updated to support
 # VP9.
-vpx_set_ref() {
+aom_set_ref() {
   local encoder="${LIBAOM_BIN_PATH}/vp8cx_set_ref${VPX_TEST_EXE_SUFFIX}"
   local codec="$1"
   local output_file="${VPX_TEST_OUTPUT_DIR}/vp8cx_set_ref_${codec}.ivf"
@@ -48,7 +48,7 @@ vpx_set_ref() {
 
 vp8cx_set_ref_vp8() {
   if [ "$(vp8_encode_available)" = "yes" ]; then
-    vpx_set_ref vp8 || return 1
+    aom_set_ref vp8 || return 1
   fi
 }
 

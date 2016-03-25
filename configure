@@ -34,7 +34,7 @@ Advanced options:
   ${toggle_codec_srcs}            in/exclude codec library source code
   ${toggle_debug_libs}            in/exclude debug version of libraries
   ${toggle_static_msvcrt}         use static MSVCRT (VS builds only)
-  ${toggle_vpx_highbitdepth}      use high bit depth (10/12) profiles
+  ${toggle_aom_highbitdepth}      use high bit depth (10/12) profiles
   ${toggle_vp10}                  VP10 codec support
   ${toggle_internal_stats}        output of encoder internal stats for debug, if supported (encoders)
   ${toggle_multithread}           multithreaded encoding and decoding
@@ -166,7 +166,7 @@ fi
 
 if [ "`cd \"${source_path}\" && pwd`" != "`pwd`" ]; then
   # test to see if source_path already configured
-  if [ -f "${source_path}/vpx_config.h" ]; then
+  if [ -f "${source_path}/aom_config.h" ]; then
     die "source directory already configured; run 'make distclean' there first"
   fi
 fi
@@ -241,7 +241,7 @@ ARCH_EXT_LIST="
 "
 HAVE_LIST="
     ${ARCH_EXT_LIST}
-    vpx_ports
+    aom_ports
     pthread_h
     unistd_h
 "
@@ -299,7 +299,7 @@ CONFIG_LIST="
     multi_res_encoding
     temporal_denoising
     coefficient_range_checking
-    vpx_highbitdepth
+    aom_highbitdepth
     experimental
     size_limit
     aom_qm
@@ -355,7 +355,7 @@ CMDLINE_SELECT="
     multi_res_encoding
     temporal_denoising
     coefficient_range_checking
-    vpx_highbitdepth
+    aom_highbitdepth
     experimental
     aom_qm
 "
@@ -411,12 +411,12 @@ post_process_cmdline() {
 
 process_targets() {
     enabled child || write_common_config_banner
-    write_common_target_config_h ${BUILD_PFX}vpx_config.h
+    write_common_target_config_h ${BUILD_PFX}aom_config.h
     write_common_config_targets
 
     # Calculate the default distribution name, based on the enabled features
     cf=""
-    DIST_DIR=vpx
+    DIST_DIR=aom
     for cf in $CODEC_FAMILIES; do
         if enabled ${cf}_encoder && enabled ${cf}_decoder; then
             DIST_DIR="${DIST_DIR}-${cf}"
@@ -475,7 +475,7 @@ EOF
 
         if enabled $tgt; then
             echo "Creating makefiles for ${toolchain} ${tgt}"
-            write_common_target_config_mk $tgt_fn ${BUILD_PFX}vpx_config.h
+            write_common_target_config_mk $tgt_fn ${BUILD_PFX}aom_config.h
             #write_${tgt}_config
         fi
     done
@@ -544,7 +544,7 @@ EOF
     check_header pthread.h
     check_header unistd.h # for sysconf(3) and friends.
 
-    check_header aom/vpx_integer.h -I${source_path} && enable_feature vpx_ports
+    check_header aom/aom_integer.h -I${source_path} && enable_feature aom_ports
 }
 
 process_toolchain() {
@@ -565,7 +565,7 @@ process_toolchain() {
         check_add_cflags -Wunused-variable
         case ${CC} in
           *clang*)
-              # libvpx and/or clang have issues with aliasing:
+              # libaom and/or clang have issues with aliasing:
               # https://code.google.com/p/webm/issues/detail?id=603
               # work around them until they are fixed
               check_add_cflags -fno-strict-aliasing
@@ -698,9 +698,9 @@ EOF
 ##
 CONFIGURE_ARGS="$@"
 process "$@"
-print_webm_license ${BUILD_PFX}vpx_config.c "/*" " */"
-cat <<EOF >> ${BUILD_PFX}vpx_config.c
-#include "aom/vpx_codec.h"
+print_webm_license ${BUILD_PFX}aom_config.c "/*" " */"
+cat <<EOF >> ${BUILD_PFX}aom_config.c
+#include "aom/aom_codec.h"
 static const char* const cfg = "$CONFIGURE_ARGS";
-const char *vpx_codec_build_config(void) {return cfg;}
+const char *aom_codec_build_config(void) {return cfg;}
 EOF

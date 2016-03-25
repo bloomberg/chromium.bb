@@ -28,11 +28,11 @@ log() {
 }
 
 
-vpx_style() {
+aom_style() {
   for f; do
     case "$f" in
       *.h|*.c|*.cc)
-        "${dirname_self}"/vpx-astyle.sh "$f"
+        "${dirname_self}"/aom-astyle.sh "$f"
         ;;
     esac
   done
@@ -124,7 +124,7 @@ for f in $(git diff HEAD^ --name-only -M90 --diff-filter=AM); do
   case "$f" in
     third_party/*) continue;;
   esac
-  vpx_style "$f"
+  aom_style "$f"
 done
 git diff --no-color --no-ext-diff > "${MODIFIED_DIFF}"
 

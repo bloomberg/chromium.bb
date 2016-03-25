@@ -13,9 +13,9 @@
 
 #include "aom_ports/mem.h"
 
-static void yuvconfig2image(vpx_image_t *img, const YV12_BUFFER_CONFIG *yv12,
+static void yuvconfig2image(aom_image_t *img, const YV12_BUFFER_CONFIG *yv12,
                             void *user_priv) {
-  /** vpx_img_wrap() doesn't allow specifying independent strides for
+  /** aom_img_wrap() doesn't allow specifying independent strides for
     * the Y, U, and V planes, nor other alignment adjustments that
     * might be representable by a YV12_BUFFER_CONFIG, so we just
     * initialize all the fields.*/
@@ -58,9 +58,9 @@ static void yuvconfig2image(vpx_image_t *img, const YV12_BUFFER_CONFIG *yv12,
   img->stride[VPX_PLANE_ALPHA] = yv12->y_stride;
 #if CONFIG_VPX_HIGHBITDEPTH
   if (yv12->flags & YV12_FLAG_HIGHBITDEPTH) {
-    // vpx_image_t uses byte strides and a pointer to the first byte
+    // aom_image_t uses byte strides and a pointer to the first byte
     // of the image.
-    img->fmt = (vpx_img_fmt_t)(img->fmt | VPX_IMG_FMT_HIGHBITDEPTH);
+    img->fmt = (aom_img_fmt_t)(img->fmt | VPX_IMG_FMT_HIGHBITDEPTH);
     img->bit_depth = yv12->bit_depth;
     img->planes[VPX_PLANE_Y] = (uint8_t *)CONVERT_TO_SHORTPTR(yv12->y_buffer);
     img->planes[VPX_PLANE_U] = (uint8_t *)CONVERT_TO_SHORTPTR(yv12->u_buffer);
@@ -79,7 +79,7 @@ static void yuvconfig2image(vpx_image_t *img, const YV12_BUFFER_CONFIG *yv12,
   img->self_allocd = 0;
 }
 
-static vpx_codec_err_t image2yuvconfig(const vpx_image_t *img,
+static aom_codec_err_t image2yuvconfig(const aom_image_t *img,
                                        YV12_BUFFER_CONFIG *yv12) {
   yv12->y_buffer = img->planes[VPX_PLANE_Y];
   yv12->u_buffer = img->planes[VPX_PLANE_U];
@@ -106,7 +106,7 @@ static vpx_codec_err_t image2yuvconfig(const vpx_image_t *img,
 
 #if CONFIG_VPX_HIGHBITDEPTH
   if (img->fmt & VPX_IMG_FMT_HIGHBITDEPTH) {
-    // In vpx_image_t
+    // In aom_image_t
     //     planes point to uint8 address of start of data
     //     stride counts uint8s to reach next row
     // In YV12_BUFFER_CONFIG

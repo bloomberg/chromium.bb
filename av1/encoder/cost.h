@@ -13,7 +13,7 @@
 #define VP10_ENCODER_COST_H_
 
 #include "aom_dsp/prob.h"
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,14 +31,14 @@ extern const uint16_t vp10_prob_cost[257];
 #define vp10_cost_bit(prob, bit) vp10_cost_zero((bit) ? 256 - (prob) : (prob))
 
 static INLINE unsigned int cost_branch256(const unsigned int ct[2],
-                                          vpx_prob p) {
+                                          aom_prob p) {
   return ct[0] * vp10_cost_zero(p) + ct[1] * vp10_cost_one(p);
 }
 
-static INLINE int treed_cost(vpx_tree tree, const vpx_prob *probs, int bits,
+static INLINE int treed_cost(aom_tree tree, const aom_prob *probs, int bits,
                              int len) {
   int cost = 0;
-  vpx_tree_index i = 0;
+  aom_tree_index i = 0;
 
   do {
     const int bit = (bits >> --len) & 1;
@@ -49,8 +49,8 @@ static INLINE int treed_cost(vpx_tree tree, const vpx_prob *probs, int bits,
   return cost;
 }
 
-void vp10_cost_tokens(int *costs, const vpx_prob *probs, vpx_tree tree);
-void vp10_cost_tokens_skip(int *costs, const vpx_prob *probs, vpx_tree tree);
+void vp10_cost_tokens(int *costs, const aom_prob *probs, aom_tree tree);
+void vp10_cost_tokens_skip(int *costs, const aom_prob *probs, aom_tree tree);
 
 #ifdef __cplusplus
 }  // extern "C"

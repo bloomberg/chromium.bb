@@ -50,7 +50,7 @@ class ErrorResilienceTestLarge
     mismatch_nframes_ = 0;
   }
 
-  virtual void PSNRPktHook(const vpx_codec_cx_pkt_t *pkt) {
+  virtual void PSNRPktHook(const aom_codec_cx_pkt_t *pkt) {
     psnr_ += pkt->data.psnr.psnr[0];
     nframes_++;
   }
@@ -144,7 +144,7 @@ class ErrorResilienceTestLarge
     return 1;
   }
 
-  virtual void MismatchHook(const vpx_image_t *img1, const vpx_image_t *img2) {
+  virtual void MismatchHook(const aom_image_t *img1, const aom_image_t *img2) {
     double mismatch_psnr = compute_psnr(img1, img2);
     mismatch_psnr_ += mismatch_psnr;
     ++mismatch_nframes_;
@@ -191,7 +191,7 @@ class ErrorResilienceTestLarge
 };
 
 TEST_P(ErrorResilienceTestLarge, OnVersusOff) {
-  const vpx_rational timebase = { 33333333, 1000000000 };
+  const aom_rational timebase = { 33333333, 1000000000 };
   cfg_.g_timebase = timebase;
   cfg_.rc_target_bitrate = 2000;
   cfg_.g_lag_in_frames = 10;
@@ -226,7 +226,7 @@ TEST_P(ErrorResilienceTestLarge, OnVersusOff) {
 // frames (i.e., frames that don't update any reference buffers).
 // Check both isolated and consecutive loss.
 TEST_P(ErrorResilienceTestLarge, DropFramesWithoutRecovery) {
-  const vpx_rational timebase = { 33333333, 1000000000 };
+  const aom_rational timebase = { 33333333, 1000000000 };
   cfg_.g_timebase = timebase;
   cfg_.rc_target_bitrate = 500;
   // FIXME(debargha): Fix this to work for any lag.
@@ -288,7 +288,7 @@ TEST_P(ErrorResilienceTestLarge, 2LayersDropEnhancement) {
   // This test doesn't run if SVC is not supported.
   if (!svc_support_) return;
 
-  const vpx_rational timebase = { 33333333, 1000000000 };
+  const aom_rational timebase = { 33333333, 1000000000 };
   cfg_.g_timebase = timebase;
   cfg_.rc_target_bitrate = 500;
   cfg_.g_lag_in_frames = 0;
@@ -335,7 +335,7 @@ TEST_P(ErrorResilienceTestLarge, 2LayersNoRefLast) {
   // This test doesn't run if SVC is not supported.
   if (!svc_support_) return;
 
-  const vpx_rational timebase = { 33333333, 1000000000 };
+  const aom_rational timebase = { 33333333, 1000000000 };
   cfg_.g_timebase = timebase;
   cfg_.rc_target_bitrate = 500;
   cfg_.g_lag_in_frames = 0;
@@ -466,16 +466,16 @@ class ErrorResilienceTestLargeCodecControls
         encoder->Control(VP8E_SET_TEMPORAL_LAYER_ID, layer_id);
         encoder->Control(VP8E_SET_FRAME_FLAGS, frame_flags);
       }
-      const vpx_rational_t tb = video->timebase();
+      const aom_rational_t tb = video->timebase();
       timebase_ = static_cast<double>(tb.num) / tb.den;
       duration_ = 0;
       return;
     }
   }
 
-  virtual void FramePktHook(const vpx_codec_cx_pkt_t *pkt) {
+  virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
     // Time since last timestamp = duration.
-    vpx_codec_pts_t duration = pkt->data.frame.pts - last_pts_;
+    aom_codec_pts_t duration = pkt->data.frame.pts - last_pts_;
     if (duration > 1) {
       // Update counter for total number of frames (#frames input to encoder).
       // Needed for setting the proper layer_id below.
@@ -511,7 +511,7 @@ class ErrorResilienceTestLargeCodecControls
 
  private:
   libaom_test::TestMode encoding_mode_;
-  vpx_codec_pts_t last_pts_;
+  aom_codec_pts_t last_pts_;
   double timebase_;
   int64_t bits_total_[3];
   double duration_;

@@ -20,7 +20,7 @@
 static const char *IVF_SIGNATURE = "DKIF";
 
 static void fix_framerate(int *num, int *den) {
-  // Some versions of vpxenc used 1/(2*fps) for the timebase, so
+  // Some versions of aomenc used 1/(2*fps) for the timebase, so
   // we can guess the framerate using only the timebase in this
   // case. Other files would require reading ahead to guess the
   // timebase, like we do for webm.

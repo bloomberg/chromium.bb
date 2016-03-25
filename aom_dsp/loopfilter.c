@@ -11,8 +11,8 @@
 
 #include <stdlib.h>
 
-#include "./vpx_config.h"
-#include "aom_dsp/vpx_dsp_common.h"
+#include "./aom_config.h"
+#include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/mem.h"
 
 static INLINE int8_t signed_char_clamp(int t) {
@@ -109,7 +109,7 @@ static INLINE void filter4(int8_t mask, uint8_t thresh, uint8_t *op1,
   *op1 = signed_char_clamp(ps1 + filter) ^ 0x80;
 }
 
-void vpx_lpf_horizontal_4_c(uint8_t *s, int p /* pitch */,
+void aom_lpf_horizontal_4_c(uint8_t *s, int p /* pitch */,
                             const uint8_t *blimit, const uint8_t *limit,
                             const uint8_t *thresh, int count) {
   int i;
@@ -126,15 +126,15 @@ void vpx_lpf_horizontal_4_c(uint8_t *s, int p /* pitch */,
   }
 }
 
-void vpx_lpf_horizontal_4_dual_c(uint8_t *s, int p, const uint8_t *blimit0,
+void aom_lpf_horizontal_4_dual_c(uint8_t *s, int p, const uint8_t *blimit0,
                                  const uint8_t *limit0, const uint8_t *thresh0,
                                  const uint8_t *blimit1, const uint8_t *limit1,
                                  const uint8_t *thresh1) {
-  vpx_lpf_horizontal_4_c(s, p, blimit0, limit0, thresh0, 1);
-  vpx_lpf_horizontal_4_c(s + 8, p, blimit1, limit1, thresh1, 1);
+  aom_lpf_horizontal_4_c(s, p, blimit0, limit0, thresh0, 1);
+  aom_lpf_horizontal_4_c(s + 8, p, blimit1, limit1, thresh1, 1);
 }
 
-void vpx_lpf_vertical_4_c(uint8_t *s, int pitch, const uint8_t *blimit,
+void aom_lpf_vertical_4_c(uint8_t *s, int pitch, const uint8_t *blimit,
                           const uint8_t *limit, const uint8_t *thresh,
                           int count) {
   int i;
@@ -151,12 +151,12 @@ void vpx_lpf_vertical_4_c(uint8_t *s, int pitch, const uint8_t *blimit,
   }
 }
 
-void vpx_lpf_vertical_4_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
+void aom_lpf_vertical_4_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
                                const uint8_t *limit0, const uint8_t *thresh0,
                                const uint8_t *blimit1, const uint8_t *limit1,
                                const uint8_t *thresh1) {
-  vpx_lpf_vertical_4_c(s, pitch, blimit0, limit0, thresh0, 1);
-  vpx_lpf_vertical_4_c(s + 8 * pitch, pitch, blimit1, limit1, thresh1, 1);
+  aom_lpf_vertical_4_c(s, pitch, blimit0, limit0, thresh0, 1);
+  aom_lpf_vertical_4_c(s + 8 * pitch, pitch, blimit1, limit1, thresh1, 1);
 }
 
 static INLINE void filter8(int8_t mask, uint8_t thresh, uint8_t flat,
@@ -179,7 +179,7 @@ static INLINE void filter8(int8_t mask, uint8_t thresh, uint8_t flat,
   }
 }
 
-void vpx_lpf_horizontal_8_c(uint8_t *s, int p, const uint8_t *blimit,
+void aom_lpf_horizontal_8_c(uint8_t *s, int p, const uint8_t *blimit,
                             const uint8_t *limit, const uint8_t *thresh,
                             int count) {
   int i;
@@ -199,15 +199,15 @@ void vpx_lpf_horizontal_8_c(uint8_t *s, int p, const uint8_t *blimit,
   }
 }
 
-void vpx_lpf_horizontal_8_dual_c(uint8_t *s, int p, const uint8_t *blimit0,
+void aom_lpf_horizontal_8_dual_c(uint8_t *s, int p, const uint8_t *blimit0,
                                  const uint8_t *limit0, const uint8_t *thresh0,
                                  const uint8_t *blimit1, const uint8_t *limit1,
                                  const uint8_t *thresh1) {
-  vpx_lpf_horizontal_8_c(s, p, blimit0, limit0, thresh0, 1);
-  vpx_lpf_horizontal_8_c(s + 8, p, blimit1, limit1, thresh1, 1);
+  aom_lpf_horizontal_8_c(s, p, blimit0, limit0, thresh0, 1);
+  aom_lpf_horizontal_8_c(s + 8, p, blimit1, limit1, thresh1, 1);
 }
 
-void vpx_lpf_vertical_8_c(uint8_t *s, int pitch, const uint8_t *blimit,
+void aom_lpf_vertical_8_c(uint8_t *s, int pitch, const uint8_t *blimit,
                           const uint8_t *limit, const uint8_t *thresh,
                           int count) {
   int i;
@@ -224,12 +224,12 @@ void vpx_lpf_vertical_8_c(uint8_t *s, int pitch, const uint8_t *blimit,
   }
 }
 
-void vpx_lpf_vertical_8_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
+void aom_lpf_vertical_8_dual_c(uint8_t *s, int pitch, const uint8_t *blimit0,
                                const uint8_t *limit0, const uint8_t *thresh0,
                                const uint8_t *blimit1, const uint8_t *limit1,
                                const uint8_t *thresh1) {
-  vpx_lpf_vertical_8_c(s, pitch, blimit0, limit0, thresh0, 1);
-  vpx_lpf_vertical_8_c(s + 8 * pitch, pitch, blimit1, limit1, thresh1, 1);
+  aom_lpf_vertical_8_c(s, pitch, blimit0, limit0, thresh0, 1);
+  aom_lpf_vertical_8_c(s + 8 * pitch, pitch, blimit1, limit1, thresh1, 1);
 }
 
 static INLINE void filter16(int8_t mask, uint8_t thresh, uint8_t flat,
@@ -286,7 +286,7 @@ static INLINE void filter16(int8_t mask, uint8_t thresh, uint8_t flat,
   }
 }
 
-void vpx_lpf_horizontal_16_c(uint8_t *s, int p, const uint8_t *blimit,
+void aom_lpf_horizontal_16_c(uint8_t *s, int p, const uint8_t *blimit,
                              const uint8_t *limit, const uint8_t *thresh,
                              int count) {
   int i;
@@ -332,12 +332,12 @@ static void mb_lpf_vertical_edge_w(uint8_t *s, int p, const uint8_t *blimit,
   }
 }
 
-void vpx_lpf_vertical_16_c(uint8_t *s, int p, const uint8_t *blimit,
+void aom_lpf_vertical_16_c(uint8_t *s, int p, const uint8_t *blimit,
                            const uint8_t *limit, const uint8_t *thresh) {
   mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 8);
 }
 
-void vpx_lpf_vertical_16_dual_c(uint8_t *s, int p, const uint8_t *blimit,
+void aom_lpf_vertical_16_dual_c(uint8_t *s, int p, const uint8_t *blimit,
                                 const uint8_t *limit, const uint8_t *thresh) {
   mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 16);
 }
@@ -433,7 +433,7 @@ static INLINE void highbd_filter4(int8_t mask, uint8_t thresh, uint16_t *op1,
   *op1 = signed_char_clamp_high(ps1 + filter, bd) + (0x80 << shift);
 }
 
-void vpx_highbd_lpf_horizontal_4_c(uint16_t *s, int p /* pitch */,
+void aom_highbd_lpf_horizontal_4_c(uint16_t *s, int p /* pitch */,
                                    const uint8_t *blimit, const uint8_t *limit,
                                    const uint8_t *thresh, int count, int bd) {
   int i;
@@ -456,15 +456,15 @@ void vpx_highbd_lpf_horizontal_4_c(uint16_t *s, int p /* pitch */,
   }
 }
 
-void vpx_highbd_lpf_horizontal_4_dual_c(
+void aom_highbd_lpf_horizontal_4_dual_c(
     uint16_t *s, int p, const uint8_t *blimit0, const uint8_t *limit0,
     const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1,
     const uint8_t *thresh1, int bd) {
-  vpx_highbd_lpf_horizontal_4_c(s, p, blimit0, limit0, thresh0, 1, bd);
-  vpx_highbd_lpf_horizontal_4_c(s + 8, p, blimit1, limit1, thresh1, 1, bd);
+  aom_highbd_lpf_horizontal_4_c(s, p, blimit0, limit0, thresh0, 1, bd);
+  aom_highbd_lpf_horizontal_4_c(s + 8, p, blimit1, limit1, thresh1, 1, bd);
 }
 
-void vpx_highbd_lpf_vertical_4_c(uint16_t *s, int pitch, const uint8_t *blimit,
+void aom_highbd_lpf_vertical_4_c(uint16_t *s, int pitch, const uint8_t *blimit,
                                  const uint8_t *limit, const uint8_t *thresh,
                                  int count, int bd) {
   int i;
@@ -481,12 +481,12 @@ void vpx_highbd_lpf_vertical_4_c(uint16_t *s, int pitch, const uint8_t *blimit,
   }
 }
 
-void vpx_highbd_lpf_vertical_4_dual_c(
+void aom_highbd_lpf_vertical_4_dual_c(
     uint16_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0,
     const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1,
     const uint8_t *thresh1, int bd) {
-  vpx_highbd_lpf_vertical_4_c(s, pitch, blimit0, limit0, thresh0, 1, bd);
-  vpx_highbd_lpf_vertical_4_c(s + 8 * pitch, pitch, blimit1, limit1, thresh1, 1,
+  aom_highbd_lpf_vertical_4_c(s, pitch, blimit0, limit0, thresh0, 1, bd);
+  aom_highbd_lpf_vertical_4_c(s + 8 * pitch, pitch, blimit1, limit1, thresh1, 1,
                               bd);
 }
 
@@ -510,7 +510,7 @@ static INLINE void highbd_filter8(int8_t mask, uint8_t thresh, uint8_t flat,
   }
 }
 
-void vpx_highbd_lpf_horizontal_8_c(uint16_t *s, int p, const uint8_t *blimit,
+void aom_highbd_lpf_horizontal_8_c(uint16_t *s, int p, const uint8_t *blimit,
                                    const uint8_t *limit, const uint8_t *thresh,
                                    int count, int bd) {
   int i;
@@ -531,15 +531,15 @@ void vpx_highbd_lpf_horizontal_8_c(uint16_t *s, int p, const uint8_t *blimit,
   }
 }
 
-void vpx_highbd_lpf_horizontal_8_dual_c(
+void aom_highbd_lpf_horizontal_8_dual_c(
     uint16_t *s, int p, const uint8_t *blimit0, const uint8_t *limit0,
     const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1,
     const uint8_t *thresh1, int bd) {
-  vpx_highbd_lpf_horizontal_8_c(s, p, blimit0, limit0, thresh0, 1, bd);
-  vpx_highbd_lpf_horizontal_8_c(s + 8, p, blimit1, limit1, thresh1, 1, bd);
+  aom_highbd_lpf_horizontal_8_c(s, p, blimit0, limit0, thresh0, 1, bd);
+  aom_highbd_lpf_horizontal_8_c(s + 8, p, blimit1, limit1, thresh1, 1, bd);
 }
 
-void vpx_highbd_lpf_vertical_8_c(uint16_t *s, int pitch, const uint8_t *blimit,
+void aom_highbd_lpf_vertical_8_c(uint16_t *s, int pitch, const uint8_t *blimit,
                                  const uint8_t *limit, const uint8_t *thresh,
                                  int count, int bd) {
   int i;
@@ -557,12 +557,12 @@ void vpx_highbd_lpf_vertical_8_c(uint16_t *s, int pitch, const uint8_t *blimit,
   }
 }
 
-void vpx_highbd_lpf_vertical_8_dual_c(
+void aom_highbd_lpf_vertical_8_dual_c(
     uint16_t *s, int pitch, const uint8_t *blimit0, const uint8_t *limit0,
     const uint8_t *thresh0, const uint8_t *blimit1, const uint8_t *limit1,
     const uint8_t *thresh1, int bd) {
-  vpx_highbd_lpf_vertical_8_c(s, pitch, blimit0, limit0, thresh0, 1, bd);
-  vpx_highbd_lpf_vertical_8_c(s + 8 * pitch, pitch, blimit1, limit1, thresh1, 1,
+  aom_highbd_lpf_vertical_8_c(s, pitch, blimit0, limit0, thresh0, 1, bd);
+  aom_highbd_lpf_vertical_8_c(s + 8 * pitch, pitch, blimit1, limit1, thresh1, 1,
                               bd);
 }
 
@@ -632,7 +632,7 @@ static INLINE void highbd_filter16(int8_t mask, uint8_t thresh, uint8_t flat,
   }
 }
 
-void vpx_highbd_lpf_horizontal_16_c(uint16_t *s, int p, const uint8_t *blimit,
+void aom_highbd_lpf_horizontal_16_c(uint16_t *s, int p, const uint8_t *blimit,
                                     const uint8_t *limit, const uint8_t *thresh,
                                     int count, int bd) {
   int i;
@@ -694,13 +694,13 @@ static void highbd_mb_lpf_vertical_edge_w(uint16_t *s, int p,
   }
 }
 
-void vpx_highbd_lpf_vertical_16_c(uint16_t *s, int p, const uint8_t *blimit,
+void aom_highbd_lpf_vertical_16_c(uint16_t *s, int p, const uint8_t *blimit,
                                   const uint8_t *limit, const uint8_t *thresh,
                                   int bd) {
   highbd_mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 8, bd);
 }
 
-void vpx_highbd_lpf_vertical_16_dual_c(uint16_t *s, int p,
+void aom_highbd_lpf_vertical_16_dual_c(uint16_t *s, int p,
                                        const uint8_t *blimit,
                                        const uint8_t *limit,
                                        const uint8_t *thresh, int bd) {

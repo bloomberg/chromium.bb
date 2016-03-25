@@ -16,7 +16,7 @@
 #include "av1/encoder/aq_cyclicrefresh.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/segmentation.h"
-#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/system_state.h"
 
 struct CYCLIC_REFRESH {
@@ -59,18 +59,18 @@ struct CYCLIC_REFRESH {
 
 CYCLIC_REFRESH *vp10_cyclic_refresh_alloc(int mi_rows, int mi_cols) {
   size_t last_coded_q_map_size;
-  CYCLIC_REFRESH *const cr = vpx_calloc(1, sizeof(*cr));
+  CYCLIC_REFRESH *const cr = aom_calloc(1, sizeof(*cr));
   if (cr == NULL) return NULL;
 
-  cr->map = vpx_calloc(mi_rows * mi_cols, sizeof(*cr->map));
+  cr->map = aom_calloc(mi_rows * mi_cols, sizeof(*cr->map));
   if (cr->map == NULL) {
-    vpx_free(cr);
+    aom_free(cr);
     return NULL;
   }
   last_coded_q_map_size = mi_rows * mi_cols * sizeof(*cr->last_coded_q_map);
-  cr->last_coded_q_map = vpx_malloc(last_coded_q_map_size);
+  cr->last_coded_q_map = aom_malloc(last_coded_q_map_size);
   if (cr->last_coded_q_map == NULL) {
-    vpx_free(cr);
+    aom_free(cr);
     return NULL;
   }
   assert(MAXQ <= 255);
@@ -80,9 +80,9 @@ CYCLIC_REFRESH *vp10_cyclic_refresh_alloc(int mi_rows, int mi_cols) {
 }
 
 void vp10_cyclic_refresh_free(CYCLIC_REFRESH *cr) {
-  vpx_free(cr->map);
-  vpx_free(cr->last_coded_q_map);
-  vpx_free(cr);
+  aom_free(cr->map);
+  aom_free(cr->last_coded_q_map);
+  aom_free(cr);
 }
 
 // Check if we should turn off cyclic refresh based on bitrate condition.
@@ -500,7 +500,7 @@ void vp10_cyclic_refresh_setup(VP10_COMP *const cpi) {
     int qindex_delta = 0;
     int qindex2;
     const double q = vp10_convert_qindex_to_q(cm->base_qindex, cm->bit_depth);
-    vpx_clear_system_state();
+    aom_clear_system_state();
     // Set rate threshold to some multiple (set to 2 for now) of the target
     // rate (target is given by sb64_target_rate and scaled by 256).
     cr->thresh_rate_sb = ((int64_t)(rc->sb64_target_rate) << 8) << 2;

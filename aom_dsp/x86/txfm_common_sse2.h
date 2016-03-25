@@ -13,7 +13,7 @@
 #define VPX_DSP_X86_TXFM_COMMON_SSE2_H_
 
 #include <emmintrin.h>
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 
 #define pair_set_epi16(a, b)                                            \
   _mm_set_epi16((int16_t)(b), (int16_t)(a), (int16_t)(b), (int16_t)(a), \

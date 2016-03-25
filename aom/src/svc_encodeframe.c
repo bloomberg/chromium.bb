@@ -22,11 +22,11 @@
 #include <stdlib.h>
 #include <string.h>
 #define VPX_DISABLE_CTRL_TYPECHECKS 1
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "aom/svc_context.h"
 #include "aom/vp8cx.h"
-#include "aom/vpx_encoder.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom/aom_encoder.h"
+#include "aom_mem/aom_mem.h"
 #include "av1/common/onyxc_int.h"
 
 #ifdef __MINGW32__
@@ -71,7 +71,7 @@ static const int option_min_values[ALL_OPTION_TYPES] = { 0, 0, 1, 0 };
 typedef struct FrameData {
   void *buf;                     // compressed data buffer
   size_t size;                   // length of compressed data
-  vpx_codec_frame_flags_t flags; /**< flags for this frame */
+  aom_codec_frame_flags_t flags; /**< flags for this frame */
   struct FrameData *next;
 } FrameData;
 
@@ -125,7 +125,7 @@ static int svc_log(SvcContext *svc_ctx, SVC_LOG_LEVEL level, const char *fmt,
   return retval;
 }
 
-static vpx_codec_err_t extract_option(LAYER_OPTION_TYPE type, char *input,
+static aom_codec_err_t extract_option(LAYER_OPTION_TYPE type, char *input,
                                       int *value0, int *value1) {
   if (type == SCALE_FACTOR) {
     *value0 = strtol(input, &input, 10);
@@ -146,13 +146,13 @@ static vpx_codec_err_t extract_option(LAYER_OPTION_TYPE type, char *input,
   return VPX_CODEC_OK;
 }
 
-static vpx_codec_err_t parse_layer_options_from_string(SvcContext *svc_ctx,
+static aom_codec_err_t parse_layer_options_from_string(SvcContext *svc_ctx,
                                                        LAYER_OPTION_TYPE type,
                                                        const char *input,
                                                        int *option0,
                                                        int *option1) {
   int i;
-  vpx_codec_err_t res = VPX_CODEC_OK;
+  aom_codec_err_t res = VPX_CODEC_OK;
   char *input_string;
   char *token;
   const char *delim = ",";
@@ -191,13 +191,13 @@ static vpx_codec_err_t parse_layer_options_from_string(SvcContext *svc_ctx,
  *         quantizers=<q1>,<q2>,...
  * svc_mode = [i|ip|alt_ip|gf]
  */
-static vpx_codec_err_t parse_options(SvcContext *svc_ctx, const char *options) {
+static aom_codec_err_t parse_options(SvcContext *svc_ctx, const char *options) {
   char *input_string;
   char *option_name;
   char *option_value;
   char *input_ptr;
   SvcInternal_t *const si = get_svc_internal(svc_ctx);
-  vpx_codec_err_t res = VPX_CODEC_OK;
+  aom_codec_err_t res = VPX_CODEC_OK;
   int i, alt_ref_enabled = 0;
 
   if (options == NULL) return VPX_CODEC_OK;
@@ -278,7 +278,7 @@ static vpx_codec_err_t parse_options(SvcContext *svc_ctx, const char *options) {
   return res;
 }
 
-vpx_codec_err_t vpx_svc_set_options(SvcContext *svc_ctx, const char *options) {
+aom_codec_err_t aom_svc_set_options(SvcContext *svc_ctx, const char *options) {
   SvcInternal_t *const si = get_svc_internal(svc_ctx);
   if (svc_ctx == NULL || options == NULL || si == NULL) {
     return VPX_CODEC_INVALID_PARAM;
@@ -289,7 +289,7 @@ vpx_codec_err_t vpx_svc_set_options(SvcContext *svc_ctx, const char *options) {
 }
 
 void assign_layer_bitrates(const SvcContext *svc_ctx,
-                           vpx_codec_enc_cfg_t *const enc_cfg) {
+                           aom_codec_enc_cfg_t *const enc_cfg) {
   int i;
   const SvcInternal_t *const si = get_const_svc_internal(svc_ctx);
   int sl, tl, spatial_layer_target;
@@ -373,10 +373,10 @@ void assign_layer_bitrates(const SvcContext *svc_ctx,
   }
 }
 
-vpx_codec_err_t vpx_svc_init(SvcContext *svc_ctx, vpx_codec_ctx_t *codec_ctx,
-                             vpx_codec_iface_t *iface,
-                             vpx_codec_enc_cfg_t *enc_cfg) {
-  vpx_codec_err_t res;
+aom_codec_err_t aom_svc_init(SvcContext *svc_ctx, aom_codec_ctx_t *codec_ctx,
+                             aom_codec_iface_t *iface,
+                             aom_codec_enc_cfg_t *enc_cfg) {
+  aom_codec_err_t res;
   int i, sl, tl;
   SvcInternal_t *const si = get_svc_internal(svc_ctx);
   if (svc_ctx == NULL || codec_ctx == NULL || iface == NULL ||
@@ -486,14 +486,14 @@ vpx_codec_err_t vpx_svc_init(SvcContext *svc_ctx, vpx_codec_ctx_t *codec_ctx,
     enc_cfg->g_error_resilient = 1;
 
   // Initialize codec
-  res = vpx_codec_enc_init(codec_ctx, iface, enc_cfg, VPX_CODEC_USE_PSNR);
+  res = aom_codec_enc_init(codec_ctx, iface, enc_cfg, VPX_CODEC_USE_PSNR);
   if (res != VPX_CODEC_OK) {
     svc_log(svc_ctx, SVC_LOG_ERROR, "svc_enc_init error\n");
     return res;
   }
   if (svc_ctx->spatial_layers > 1 || svc_ctx->temporal_layers > 1) {
-    vpx_codec_control(codec_ctx, VP9E_SET_SVC, 1);
-    vpx_codec_control(codec_ctx, VP9E_SET_SVC_PARAMETERS, &si->svc_params);
+    aom_codec_control(codec_ctx, VP9E_SET_SVC, 1);
+    aom_codec_control(codec_ctx, VP9E_SET_SVC_PARAMETERS, &si->svc_params);
   }
   return VPX_CODEC_OK;
 }
@@ -502,12 +502,12 @@ vpx_codec_err_t vpx_svc_init(SvcContext *svc_ctx, vpx_codec_ctx_t *codec_ctx,
  * Encode a frame into multiple layers
  * Create a superframe containing the individual layers
  */
-vpx_codec_err_t vpx_svc_encode(SvcContext *svc_ctx, vpx_codec_ctx_t *codec_ctx,
-                               struct vpx_image *rawimg, vpx_codec_pts_t pts,
+aom_codec_err_t aom_svc_encode(SvcContext *svc_ctx, aom_codec_ctx_t *codec_ctx,
+                               struct aom_image *rawimg, aom_codec_pts_t pts,
                                int64_t duration, int deadline) {
-  vpx_codec_err_t res;
-  vpx_codec_iter_t iter;
-  const vpx_codec_cx_pkt_t *cx_pkt;
+  aom_codec_err_t res;
+  aom_codec_iter_t iter;
+  const aom_codec_cx_pkt_t *cx_pkt;
   SvcInternal_t *const si = get_svc_internal(svc_ctx);
   if (svc_ctx == NULL || codec_ctx == NULL || si == NULL) {
     return VPX_CODEC_INVALID_PARAM;
@@ -516,13 +516,13 @@ vpx_codec_err_t vpx_svc_encode(SvcContext *svc_ctx, vpx_codec_ctx_t *codec_ctx,
   svc_log_reset(svc_ctx);
 
   res =
-      vpx_codec_encode(codec_ctx, rawimg, pts, (uint32_t)duration, 0, deadline);
+      aom_codec_encode(codec_ctx, rawimg, pts, (uint32_t)duration, 0, deadline);
   if (res != VPX_CODEC_OK) {
     return res;
   }
   // save compressed data
   iter = NULL;
-  while ((cx_pkt = vpx_codec_get_cx_data(codec_ctx, &iter))) {
+  while ((cx_pkt = aom_codec_get_cx_data(codec_ctx, &iter))) {
     switch (cx_pkt->kind) {
 #if VPX_ENCODER_ABI_VERSION > (5 + VPX_CODEC_ABI_VERSION)
 #if CONFIG_SPATIAL_SVC
@@ -568,7 +568,7 @@ vpx_codec_err_t vpx_svc_encode(SvcContext *svc_ctx, vpx_codec_ctx_t *codec_ctx,
   return VPX_CODEC_OK;
 }
 
-const char *vpx_svc_get_message(const SvcContext *svc_ctx) {
+const char *aom_svc_get_message(const SvcContext *svc_ctx) {
   const SvcInternal_t *const si = get_const_svc_internal(svc_ctx);
   if (svc_ctx == NULL || si == NULL) return NULL;
   return si->message_buffer;
@@ -580,7 +580,7 @@ static double calc_psnr(double d) {
 }
 
 // dump accumulated statistics and reset accumulated values
-const char *vpx_svc_dump_statistics(SvcContext *svc_ctx) {
+const char *aom_svc_dump_statistics(SvcContext *svc_ctx) {
   int number_of_frames;
   int i, j;
   uint32_t bytes_total = 0;
@@ -595,7 +595,7 @@ const char *vpx_svc_dump_statistics(SvcContext *svc_ctx) {
   svc_log_reset(svc_ctx);
 
   number_of_frames = si->psnr_pkt_received;
-  if (number_of_frames <= 0) return vpx_svc_get_message(svc_ctx);
+  if (number_of_frames <= 0) return aom_svc_get_message(svc_ctx);
 
   svc_log(svc_ctx, SVC_LOG_INFO, "\n");
   for (i = 0; i < svc_ctx->spatial_layers; ++i) {
@@ -635,10 +635,10 @@ const char *vpx_svc_dump_statistics(SvcContext *svc_ctx) {
   si->psnr_pkt_received = 0;
 
   svc_log(svc_ctx, SVC_LOG_INFO, "Total Bytes=[%u]\n", bytes_total);
-  return vpx_svc_get_message(svc_ctx);
+  return aom_svc_get_message(svc_ctx);
 }
 
-void vpx_svc_release(SvcContext *svc_ctx) {
+void aom_svc_release(SvcContext *svc_ctx) {
   SvcInternal_t *si;
   if (svc_ctx == NULL) return;
   // do not use get_svc_internal as it will unnecessarily allocate an

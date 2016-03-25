@@ -14,8 +14,8 @@
 
 #include <msa.h>
 
-#include "./vpx_config.h"
-#include "aom/vpx_integer.h"
+#include "./aom_config.h"
+#include "aom/aom_integer.h"
 
 #define LD_B(RTYPE, psrc) *((const RTYPE *)(psrc))
 #define LD_UB(...) LD_B(v16u8, __VA_ARGS__)

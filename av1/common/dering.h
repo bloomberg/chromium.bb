@@ -13,8 +13,8 @@
 
 #include "av1/common/od_dering.h"
 #include "av1/common/onyxc_int.h"
-#include "aom/vpx_integer.h"
-#include "./vpx_config.h"
+#include "aom/aom_integer.h"
+#include "./aom_config.h"
 #include "aom_ports/mem.h"
 
 #ifdef __cplusplus

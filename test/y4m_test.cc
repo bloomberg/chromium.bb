@@ -12,7 +12,7 @@
 
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "./y4menc.h"
 #include "test/md5_helper.h"
 #include "test/util.h"
@@ -29,7 +29,7 @@ static const unsigned int kFrames = 10;
 struct Y4mTestParam {
   const char *filename;
   unsigned int bit_depth;
-  vpx_img_fmt format;
+  aom_img_fmt format;
   const char *md5raw;
 };
 
@@ -54,7 +54,7 @@ const Y4mTestParam kY4mTestVectors[] = {
     "5a6481a550821dab6d0192f5c63845e9" },
 };
 
-static void write_image_file(const vpx_image_t *img, FILE *file) {
+static void write_image_file(const aom_image_t *img, FILE *file) {
   int plane, y;
   for (plane = 0; plane < 3; ++plane) {
     const unsigned char *buf = img->planes[plane];
@@ -89,14 +89,14 @@ class Y4mVideoSourceTest : public ::testing::TestWithParam<Y4mTestParam>,
   }
 
   // Checks y4m header information
-  void HeaderChecks(unsigned int bit_depth, vpx_img_fmt_t fmt) {
+  void HeaderChecks(unsigned int bit_depth, aom_img_fmt_t fmt) {
     ASSERT_TRUE(input_file_ != NULL);
     ASSERT_EQ(y4m_.pic_w, (int)kWidth);
     ASSERT_EQ(y4m_.pic_h, (int)kHeight);
     ASSERT_EQ(img()->d_w, kWidth);
     ASSERT_EQ(img()->d_h, kHeight);
     ASSERT_EQ(y4m_.bit_depth, bit_depth);
-    ASSERT_EQ(y4m_.vpx_fmt, fmt);
+    ASSERT_EQ(y4m_.aom_fmt, fmt);
     if (fmt == VPX_IMG_FMT_I420 || fmt == VPX_IMG_FMT_I42016) {
       ASSERT_EQ(y4m_.bps, (int)y4m_.bit_depth * 3 / 2);
       ASSERT_EQ(img()->x_chroma_shift, 1U);
@@ -161,7 +161,7 @@ class Y4mVideoWriteTest : public Y4mVideoSourceTest {
     tmpfile_ = new libaom_test::TempOutFile;
     ASSERT_TRUE(tmpfile_->file() != NULL);
     y4m_write_file_header(buf, sizeof(buf), kWidth, kHeight, &framerate,
-                          y4m_.vpx_fmt, y4m_.bit_depth);
+                          y4m_.aom_fmt, y4m_.bit_depth);
     fputs(buf, tmpfile_->file());
     for (unsigned int i = start_; i < limit_; i++) {
       y4m_write_frame_header(buf, sizeof(buf));

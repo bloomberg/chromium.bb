@@ -12,7 +12,7 @@
 #ifndef VP10_ENCODER_ENCODEMB_H_
 #define VP10_ENCODER_ENCODEMB_H_
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "av1/encoder/block.h"
 
 #ifdef __cplusplus

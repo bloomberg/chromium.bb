@@ -11,7 +11,7 @@
 
 #include <emmintrin.h>  // SSE2
 
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 #include "aom_dsp/txfm_common.h"
 #include "aom_dsp/x86/fwd_txfm_sse2.h"
 #include "aom_dsp/x86/txfm_common_sse2.h"
@@ -99,7 +99,7 @@ void FDCT4x4_2D(const int16_t *input, tran_low_t *output, int stride) {
                        _mm_cmplt_epi16(in1, _mm_set1_epi16(0xfc00)));
   test = _mm_movemask_epi8(_mm_or_si128(cmp0, cmp1));
   if (test) {
-    vpx_highbd_fdct4x4_c(input, output, stride);
+    aom_highbd_fdct4x4_c(input, output, stride);
     return;
   }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -170,7 +170,7 @@ void FDCT4x4_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
     overflow = check_epi16_overflow_x2(&x0, &x1);
     if (overflow) {
-      vpx_highbd_fdct4x4_c(input, output, stride);
+      aom_highbd_fdct4x4_c(input, output, stride);
       return;
     }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -192,7 +192,7 @@ void FDCT4x4_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
     overflow = check_epi16_overflow_x2(&t0, &t1);
     if (overflow) {
-      vpx_highbd_fdct4x4_c(input, output, stride);
+      aom_highbd_fdct4x4_c(input, output, stride);
       return;
     }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -231,7 +231,7 @@ void FDCT4x4_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
       overflow = check_epi16_overflow_x2(&x0, &x1);
       if (overflow) {
-        vpx_highbd_fdct4x4_c(input, output, stride);
+        aom_highbd_fdct4x4_c(input, output, stride);
         return;
       }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -314,7 +314,7 @@ void FDCT8x8_2D(const int16_t *input, tran_low_t *output, int stride) {
       overflow =
           check_epi16_overflow_x8(&q0, &q1, &q2, &q3, &q4, &q5, &q6, &q7);
       if (overflow) {
-        vpx_highbd_fdct8x8_c(input, output, stride);
+        aom_highbd_fdct8x8_c(input, output, stride);
         return;
       }
     }
@@ -329,7 +329,7 @@ void FDCT8x8_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
       overflow = check_epi16_overflow_x4(&r0, &r1, &r2, &r3);
       if (overflow) {
-        vpx_highbd_fdct8x8_c(input, output, stride);
+        aom_highbd_fdct8x8_c(input, output, stride);
         return;
       }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -372,7 +372,7 @@ void FDCT8x8_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
         overflow = check_epi16_overflow_x4(&res0, &res4, &res2, &res6);
         if (overflow) {
-          vpx_highbd_fdct8x8_c(input, output, stride);
+          aom_highbd_fdct8x8_c(input, output, stride);
           return;
         }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -402,7 +402,7 @@ void FDCT8x8_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
       overflow = check_epi16_overflow_x2(&r0, &r1);
       if (overflow) {
-        vpx_highbd_fdct8x8_c(input, output, stride);
+        aom_highbd_fdct8x8_c(input, output, stride);
         return;
       }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -415,7 +415,7 @@ void FDCT8x8_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
         overflow = check_epi16_overflow_x4(&x0, &x1, &x2, &x3);
         if (overflow) {
-          vpx_highbd_fdct8x8_c(input, output, stride);
+          aom_highbd_fdct8x8_c(input, output, stride);
           return;
         }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -458,7 +458,7 @@ void FDCT8x8_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
           overflow = check_epi16_overflow_x4(&res1, &res7, &res5, &res3);
           if (overflow) {
-            vpx_highbd_fdct8x8_c(input, output, stride);
+            aom_highbd_fdct8x8_c(input, output, stride);
             return;
           }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -721,7 +721,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
         overflow = check_epi16_overflow_x8(&input0, &input1, &input2, &input3,
                                            &input4, &input5, &input6, &input7);
         if (overflow) {
-          vpx_highbd_fdct16x16_c(input, output, stride);
+          aom_highbd_fdct16x16_c(input, output, stride);
           return;
         }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -741,7 +741,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
             check_epi16_overflow_x8(&step1_0, &step1_1, &step1_2, &step1_3,
                                     &step1_4, &step1_5, &step1_6, &step1_7);
         if (overflow) {
-          vpx_highbd_fdct16x16_c(input, output, stride);
+          aom_highbd_fdct16x16_c(input, output, stride);
           return;
         }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -761,7 +761,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
         overflow =
             check_epi16_overflow_x8(&q0, &q1, &q2, &q3, &q4, &q5, &q6, &q7);
         if (overflow) {
-          vpx_highbd_fdct16x16_c(input, output, stride);
+          aom_highbd_fdct16x16_c(input, output, stride);
           return;
         }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -775,7 +775,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
           overflow = check_epi16_overflow_x4(&r0, &r1, &r2, &r3);
           if (overflow) {
-            vpx_highbd_fdct16x16_c(input, output, stride);
+            aom_highbd_fdct16x16_c(input, output, stride);
             return;
           }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -797,7 +797,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
             overflow = check_epi16_overflow_x4(&res00, &res08, &res04, &res12);
             if (overflow) {
-              vpx_highbd_fdct16x16_c(input, output, stride);
+              aom_highbd_fdct16x16_c(input, output, stride);
               return;
             }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -818,7 +818,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
           overflow = check_epi16_overflow_x2(&r0, &r1);
           if (overflow) {
-            vpx_highbd_fdct16x16_c(input, output, stride);
+            aom_highbd_fdct16x16_c(input, output, stride);
             return;
           }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -831,7 +831,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
             overflow = check_epi16_overflow_x4(&x0, &x1, &x2, &x3);
             if (overflow) {
-              vpx_highbd_fdct16x16_c(input, output, stride);
+              aom_highbd_fdct16x16_c(input, output, stride);
               return;
             }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -854,7 +854,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
               overflow =
                   check_epi16_overflow_x4(&res02, &res14, &res10, &res06);
               if (overflow) {
-                vpx_highbd_fdct16x16_c(input, output, stride);
+                aom_highbd_fdct16x16_c(input, output, stride);
                 return;
               }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -882,7 +882,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
           overflow =
               check_epi16_overflow_x4(&step2_2, &step2_3, &step2_5, &step2_4);
           if (overflow) {
-            vpx_highbd_fdct16x16_c(input, output, stride);
+            aom_highbd_fdct16x16_c(input, output, stride);
             return;
           }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -902,7 +902,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
               check_epi16_overflow_x8(&step3_0, &step3_1, &step3_2, &step3_3,
                                       &step3_4, &step3_5, &step3_6, &step3_7);
           if (overflow) {
-            vpx_highbd_fdct16x16_c(input, output, stride);
+            aom_highbd_fdct16x16_c(input, output, stride);
             return;
           }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -925,7 +925,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
           overflow =
               check_epi16_overflow_x4(&step2_1, &step2_2, &step2_6, &step2_5);
           if (overflow) {
-            vpx_highbd_fdct16x16_c(input, output, stride);
+            aom_highbd_fdct16x16_c(input, output, stride);
             return;
           }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -945,7 +945,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
               check_epi16_overflow_x8(&step1_0, &step1_1, &step1_2, &step1_3,
                                       &step1_4, &step1_5, &step1_6, &step1_7);
           if (overflow) {
-            vpx_highbd_fdct16x16_c(input, output, stride);
+            aom_highbd_fdct16x16_c(input, output, stride);
             return;
           }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -967,7 +967,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
           overflow = check_epi16_overflow_x4(&res01, &res09, &res15, &res07);
           if (overflow) {
-            vpx_highbd_fdct16x16_c(input, output, stride);
+            aom_highbd_fdct16x16_c(input, output, stride);
             return;
           }
 #endif  // DCT_HIGH_BIT_DEPTH
@@ -988,7 +988,7 @@ void FDCT16x16_2D(const int16_t *input, tran_low_t *output, int stride) {
 #if DCT_HIGH_BIT_DEPTH
           overflow = check_epi16_overflow_x4(&res05, &res13, &res11, &res03);
           if (overflow) {
-            vpx_highbd_fdct16x16_c(input, output, stride);
+            aom_highbd_fdct16x16_c(input, output, stride);
             return;
           }
 #endif  // DCT_HIGH_BIT_DEPTH

@@ -12,7 +12,7 @@
 #ifndef VP10_COMMON_RECONINTRA_H_
 #define VP10_COMMON_RECONINTRA_H_
 
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 #include "av1/common/blockd.h"
 
 #ifdef __cplusplus

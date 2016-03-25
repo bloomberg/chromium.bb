@@ -49,8 +49,8 @@ class SuperframeTest
     }
   }
 
-  virtual const vpx_codec_cx_pkt_t *MutateEncoderOutputHook(
-      const vpx_codec_cx_pkt_t *pkt) {
+  virtual const aom_codec_cx_pkt_t *MutateEncoderOutputHook(
+      const aom_codec_cx_pkt_t *pkt) {
     if (pkt->kind != VPX_CODEC_CX_FRAME_PKT) return pkt;
 
     const uint8_t *buffer = reinterpret_cast<uint8_t *>(pkt->data.frame.buf);
@@ -83,9 +83,9 @@ class SuperframeTest
   int is_vp10_style_superframe_;
   int sf_count_;
   int sf_count_max_;
-  vpx_codec_cx_pkt_t modified_pkt_;
+  aom_codec_cx_pkt_t modified_pkt_;
   uint8_t *modified_buf_;
-  vpx_codec_pts_t last_sf_pts_;
+  aom_codec_pts_t last_sf_pts_;
 };
 
 TEST_P(SuperframeTest, TestSuperframeIndexIsOptional) {

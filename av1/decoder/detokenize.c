@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "aom_mem/vpx_mem.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
 #include "av1/common/blockd.h"
@@ -38,9 +38,9 @@
     if (counts) ++coef_counts[band][ctx][token]; \
   } while (0)
 
-static INLINE int read_coeff(const vpx_prob *probs, int n, vpx_reader *r) {
+static INLINE int read_coeff(const aom_prob *probs, int n, aom_reader *r) {
   int i, val = 0;
-  for (i = 0; i < n; ++i) val = (val << 1) | vpx_read(r, probs[i]);
+  for (i = 0; i < n; ++i) val = (val << 1) | aom_read(r, probs[i]);
   return val;
 }
 
@@ -48,12 +48,12 @@ static INLINE int read_coeff(const vpx_prob *probs, int n, vpx_reader *r) {
 static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
                         tran_low_t *dqcoeff, TX_SIZE tx_size, const int16_t *dq,
                         int ctx, const int16_t *scan, const int16_t *nb,
-                        vpx_reader *r, const qm_val_t *iqm[2][TX_SIZES])
+                        aom_reader *r, const qm_val_t *iqm[2][TX_SIZES])
 #else
 static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
                         tran_low_t *dqcoeff, TX_SIZE tx_size, const int16_t *dq,
                         int ctx, const int16_t *scan, const int16_t *nb,
-                        vpx_reader *r)
+                        aom_reader *r)
 #endif
 {
   FRAME_COUNTS *counts = xd->counts;
@@ -64,9 +64,9 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
   const qm_val_t *iqmatrix = iqm[!ref][tx_size];
 #endif
   int band, c = 0;
-  const vpx_prob(*coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
+  const aom_prob(*coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       fc->coef_probs[tx_size][type][ref];
-  const vpx_prob *prob;
+  const aom_prob *prob;
   unsigned int(*coef_counts)[COEFF_CONTEXTS][UNCONSTRAINED_NODES + 1];
   unsigned int(*eob_branch_count)[COEFF_CONTEXTS];
   uint8_t token_cache[32 * 32];
@@ -125,12 +125,12 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
     band = *band_translate++;
     prob = coef_probs[band][ctx];
     if (counts) ++eob_branch_count[band][ctx];
-    if (!vpx_read(r, prob[EOB_CONTEXT_NODE])) {
+    if (!aom_read(r, prob[EOB_CONTEXT_NODE])) {
       INCREMENT_COUNT(EOB_MODEL_TOKEN);
       break;
     }
 
-    while (!vpx_read(r, prob[ZERO_CONTEXT_NODE])) {
+    while (!aom_read(r, prob[ZERO_CONTEXT_NODE])) {
       INCREMENT_COUNT(ZERO_TOKEN);
       dqv = dq[1];
       token_cache[scan[c]] = 0;
@@ -141,13 +141,13 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
       prob = coef_probs[band][ctx];
     }
 
-    if (!vpx_read(r, prob[ONE_CONTEXT_NODE])) {
+    if (!aom_read(r, prob[ONE_CONTEXT_NODE])) {
       INCREMENT_COUNT(ONE_TOKEN);
       token = ONE_TOKEN;
       val = 1;
     } else {
       INCREMENT_COUNT(TWO_TOKEN);
-      token = vpx_read_tree(r, vp10_coef_con_tree,
+      token = aom_read_tree(r, vp10_coef_con_tree,
                             vp10_pareto8_full[prob[PIVOT_NODE] - 1]);
       switch (token) {
         case TWO_TOKEN:
@@ -202,12 +202,12 @@ static int decode_coefs(const MACROBLOCKD *xd, PLANE_TYPE type,
     v = (val * dqv) >> dq_shift;
 #if CONFIG_COEFFICIENT_RANGE_CHECKING
 #if CONFIG_VPX_HIGHBITDEPTH
-    dqcoeff[scan[c]] = highbd_check_range((vpx_read_bit(r) ? -v : v), xd->bd);
+    dqcoeff[scan[c]] = highbd_check_range((aom_read_bit(r) ? -v : v), xd->bd);
 #else
-    dqcoeff[scan[c]] = check_range(vpx_read_bit(r) ? -v : v);
+    dqcoeff[scan[c]] = check_range(aom_read_bit(r) ? -v : v);
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 #else
-    dqcoeff[scan[c]] = vpx_read_bit(r) ? -v : v;
+    dqcoeff[scan[c]] = aom_read_bit(r) ? -v : v;
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING
     token_cache[scan[c]] = vp10_pt_energy_class[token];
     ++c;
@@ -259,7 +259,7 @@ static void dec_set_contexts(const MACROBLOCKD *xd,
 }
 
 int vp10_decode_block_tokens(MACROBLOCKD *xd, int plane, const scan_order *sc,
-                             int x, int y, TX_SIZE tx_size, vpx_reader *r,
+                             int x, int y, TX_SIZE tx_size, aom_reader *r,
                              int seg_id) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   const int16_t *const dequant = pd->seg_dequant[seg_id];

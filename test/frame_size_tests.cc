@@ -25,7 +25,7 @@ class VP9FrameSizeTestsLarge : public ::libaom_test::EncoderTest,
     SetMode(::libaom_test::kRealTime);
   }
 
-  virtual bool HandleDecodeResult(const vpx_codec_err_t res_dec,
+  virtual bool HandleDecodeResult(const aom_codec_err_t res_dec,
                                   const libaom_test::VideoSource & /*video*/,
                                   libaom_test::Decoder *decoder) {
     EXPECT_EQ(expected_res_, res_dec) << decoder->DecodeError();

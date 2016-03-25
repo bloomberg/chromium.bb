@@ -256,12 +256,12 @@ else
   TMPDIRx="/tmp"
 fi
 RAND=$(awk 'BEGIN { srand(); printf "%d\n",(rand() * 32768)}')
-TMP_H="${TMPDIRx}/vpx-conf-$$-${RAND}.h"
-TMP_C="${TMPDIRx}/vpx-conf-$$-${RAND}.c"
-TMP_CC="${TMPDIRx}/vpx-conf-$$-${RAND}.cc"
-TMP_O="${TMPDIRx}/vpx-conf-$$-${RAND}.o"
-TMP_X="${TMPDIRx}/vpx-conf-$$-${RAND}.x"
-TMP_ASM="${TMPDIRx}/vpx-conf-$$-${RAND}.asm"
+TMP_H="${TMPDIRx}/aom-conf-$$-${RAND}.h"
+TMP_C="${TMPDIRx}/aom-conf-$$-${RAND}.c"
+TMP_CC="${TMPDIRx}/aom-conf-$$-${RAND}.cc"
+TMP_O="${TMPDIRx}/aom-conf-$$-${RAND}.o"
+TMP_X="${TMPDIRx}/aom-conf-$$-${RAND}.x"
+TMP_ASM="${TMPDIRx}/aom-conf-$$-${RAND}.asm"
 
 clean_temp_files() {
   rm -f ${TMP_C} ${TMP_CC} ${TMP_H} ${TMP_O} ${TMP_X} ${TMP_ASM}

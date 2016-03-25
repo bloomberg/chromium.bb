@@ -11,10 +11,10 @@
 
 #include <assert.h>
 
-#include "./vpx_scale_rtcd.h"
-#include "./vpx_config.h"
+#include "./aom_scale_rtcd.h"
+#include "./aom_config.h"
 
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 
 #include "av1/common/blockd.h"
 #include "av1/common/reconinter.h"

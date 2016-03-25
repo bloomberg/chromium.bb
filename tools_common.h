@@ -13,10 +13,10 @@
 
 #include <stdio.h>
 
-#include "./vpx_config.h"
-#include "aom/vpx_codec.h"
-#include "aom/vpx_image.h"
-#include "aom/vpx_integer.h"
+#include "./aom_config.h"
+#include "aom/aom_codec.h"
+#include "aom/aom_image.h"
+#include "aom/aom_integer.h"
 #include "aom_ports/msvc.h"
 
 #if CONFIG_ENCODERS
@@ -92,8 +92,8 @@ struct VpxInputContext {
   uint32_t width;
   uint32_t height;
   struct VpxRational pixel_aspect_ratio;
-  vpx_img_fmt_t fmt;
-  vpx_bit_depth_t bit_depth;
+  aom_img_fmt_t fmt;
+  aom_bit_depth_t bit_depth;
   int only_i420;
   uint32_t fourcc;
   struct VpxRational framerate;
@@ -119,43 +119,43 @@ void die(const char *fmt, ...) VPX_NO_RETURN;
 void fatal(const char *fmt, ...) VPX_NO_RETURN;
 void warn(const char *fmt, ...);
 
-void die_codec(vpx_codec_ctx_t *ctx, const char *s) VPX_NO_RETURN;
+void die_codec(aom_codec_ctx_t *ctx, const char *s) VPX_NO_RETURN;
 
 /* The tool including this file must define usage_exit() */
 void usage_exit(void) VPX_NO_RETURN;
 
 #undef VPX_NO_RETURN
 
-int read_yuv_frame(struct VpxInputContext *input_ctx, vpx_image_t *yuv_frame);
+int read_yuv_frame(struct VpxInputContext *input_ctx, aom_image_t *yuv_frame);
 
 typedef struct VpxInterface {
   const char *const name;
   const uint32_t fourcc;
-  vpx_codec_iface_t *(*const codec_interface)();
+  aom_codec_iface_t *(*const codec_interface)();
 } VpxInterface;
 
-int get_vpx_encoder_count(void);
-const VpxInterface *get_vpx_encoder_by_index(int i);
-const VpxInterface *get_vpx_encoder_by_name(const char *name);
+int get_aom_encoder_count(void);
+const VpxInterface *get_aom_encoder_by_index(int i);
+const VpxInterface *get_aom_encoder_by_name(const char *name);
 
-int get_vpx_decoder_count(void);
-const VpxInterface *get_vpx_decoder_by_index(int i);
-const VpxInterface *get_vpx_decoder_by_name(const char *name);
-const VpxInterface *get_vpx_decoder_by_fourcc(uint32_t fourcc);
+int get_aom_decoder_count(void);
+const VpxInterface *get_aom_decoder_by_index(int i);
+const VpxInterface *get_aom_decoder_by_name(const char *name);
+const VpxInterface *get_aom_decoder_by_fourcc(uint32_t fourcc);
 
-// TODO(dkovalev): move this function to vpx_image.{c, h}, so it will be part
-// of vpx_image_t support
-int vpx_img_plane_width(const vpx_image_t *img, int plane);
-int vpx_img_plane_height(const vpx_image_t *img, int plane);
-void vpx_img_write(const vpx_image_t *img, FILE *file);
-int vpx_img_read(vpx_image_t *img, FILE *file);
+// TODO(dkovalev): move this function to aom_image.{c, h}, so it will be part
+// of aom_image_t support
+int aom_img_plane_width(const aom_image_t *img, int plane);
+int aom_img_plane_height(const aom_image_t *img, int plane);
+void aom_img_write(const aom_image_t *img, FILE *file);
+int aom_img_read(aom_image_t *img, FILE *file);
 
 double sse_to_psnr(double samples, double peak, double mse);
 
 #if CONFIG_VPX_HIGHBITDEPTH
-void vpx_img_upshift(vpx_image_t *dst, vpx_image_t *src, int input_shift);
-void vpx_img_downshift(vpx_image_t *dst, vpx_image_t *src, int down_shift);
-void vpx_img_truncate_16_to_8(vpx_image_t *dst, vpx_image_t *src);
+void aom_img_upshift(aom_image_t *dst, aom_image_t *src, int input_shift);
+void aom_img_downshift(aom_image_t *dst, aom_image_t *src, int down_shift);
+void aom_img_truncate_16_to_8(aom_image_t *dst, aom_image_t *src);
 #endif
 
 #ifdef __cplusplus

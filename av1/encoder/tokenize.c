@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "aom_mem/vpx_mem.h"
+#include "aom_mem/aom_mem.h"
 
 #include "av1/common/entropy.h"
 #include "av1/common/pred_common.h"
@@ -52,7 +52,7 @@ const TOKENVALUE *vp10_dct_cat_lt_10_value_tokens =
         2;
 
 // Array indices are identical to previously-existing CONTEXT_NODE indices
-const vpx_tree_index vp10_coef_tree[TREE_SIZE(ENTROPY_TOKENS)] = {
+const aom_tree_index vp10_coef_tree[TREE_SIZE(ENTROPY_TOKENS)] = {
   -EOB_TOKEN,
   2,  // 0  = EOB
   -ZERO_TOKEN,
@@ -77,12 +77,12 @@ const vpx_tree_index vp10_coef_tree[TREE_SIZE(ENTROPY_TOKENS)] = {
   -CATEGORY6_TOKEN  // 10 = CAT_FIVE
 };
 
-static const vpx_tree_index cat1[2] = { 0, 0 };
-static const vpx_tree_index cat2[4] = { 2, 2, 0, 0 };
-static const vpx_tree_index cat3[6] = { 2, 2, 4, 4, 0, 0 };
-static const vpx_tree_index cat4[8] = { 2, 2, 4, 4, 6, 6, 0, 0 };
-static const vpx_tree_index cat5[10] = { 2, 2, 4, 4, 6, 6, 8, 8, 0, 0 };
-static const vpx_tree_index cat6[28] = { 2,  2,  4,  4,  6,  6,  8,  8,  10, 10,
+static const aom_tree_index cat1[2] = { 0, 0 };
+static const aom_tree_index cat2[4] = { 2, 2, 0, 0 };
+static const aom_tree_index cat3[6] = { 2, 2, 4, 4, 0, 0 };
+static const aom_tree_index cat4[8] = { 2, 2, 4, 4, 6, 6, 0, 0 };
+static const aom_tree_index cat5[10] = { 2, 2, 4, 4, 6, 6, 8, 8, 0, 0 };
+static const aom_tree_index cat6[28] = { 2,  2,  4,  4,  6,  6,  8,  8,  10, 10,
                                          12, 12, 14, 14, 16, 16, 18, 18, 20, 20,
                                          22, 22, 24, 24, 26, 26, 0,  0 };
 
@@ -257,21 +257,21 @@ const int vp10_cat6_high12_high_cost[1024] = {
 #endif
 
 #if CONFIG_VPX_HIGHBITDEPTH
-static const vpx_tree_index cat1_high10[2] = { 0, 0 };
-static const vpx_tree_index cat2_high10[4] = { 2, 2, 0, 0 };
-static const vpx_tree_index cat3_high10[6] = { 2, 2, 4, 4, 0, 0 };
-static const vpx_tree_index cat4_high10[8] = { 2, 2, 4, 4, 6, 6, 0, 0 };
-static const vpx_tree_index cat5_high10[10] = { 2, 2, 4, 4, 6, 6, 8, 8, 0, 0 };
-static const vpx_tree_index cat6_high10[32] = { 2,  2,  4,  4,  6,  6,  8,  8,
+static const aom_tree_index cat1_high10[2] = { 0, 0 };
+static const aom_tree_index cat2_high10[4] = { 2, 2, 0, 0 };
+static const aom_tree_index cat3_high10[6] = { 2, 2, 4, 4, 0, 0 };
+static const aom_tree_index cat4_high10[8] = { 2, 2, 4, 4, 6, 6, 0, 0 };
+static const aom_tree_index cat5_high10[10] = { 2, 2, 4, 4, 6, 6, 8, 8, 0, 0 };
+static const aom_tree_index cat6_high10[32] = { 2,  2,  4,  4,  6,  6,  8,  8,
                                                 10, 10, 12, 12, 14, 14, 16, 16,
                                                 18, 18, 20, 20, 22, 22, 24, 24,
                                                 26, 26, 28, 28, 30, 30, 0,  0 };
-static const vpx_tree_index cat1_high12[2] = { 0, 0 };
-static const vpx_tree_index cat2_high12[4] = { 2, 2, 0, 0 };
-static const vpx_tree_index cat3_high12[6] = { 2, 2, 4, 4, 0, 0 };
-static const vpx_tree_index cat4_high12[8] = { 2, 2, 4, 4, 6, 6, 0, 0 };
-static const vpx_tree_index cat5_high12[10] = { 2, 2, 4, 4, 6, 6, 8, 8, 0, 0 };
-static const vpx_tree_index cat6_high12[36] = {
+static const aom_tree_index cat1_high12[2] = { 0, 0 };
+static const aom_tree_index cat2_high12[4] = { 2, 2, 0, 0 };
+static const aom_tree_index cat3_high12[6] = { 2, 2, 4, 4, 0, 0 };
+static const aom_tree_index cat4_high12[8] = { 2, 2, 4, 4, 6, 6, 0, 0 };
+static const aom_tree_index cat5_high12[10] = { 2, 2, 4, 4, 6, 6, 8, 8, 0, 0 };
+static const aom_tree_index cat6_high12[36] = {
   2,  2,  4,  4,  6,  6,  8,  8,  10, 10, 12, 12, 14, 14, 16, 16, 18, 18,
   20, 20, 22, 22, 24, 24, 26, 26, 28, 28, 30, 30, 32, 32, 34, 34, 0,  0
 };
@@ -347,7 +347,7 @@ static void set_entropy_context_b(int plane, int block, int blk_row,
                     blk_row);
 }
 
-static INLINE void add_token(TOKENEXTRA **t, const vpx_prob *context_tree,
+static INLINE void add_token(TOKENEXTRA **t, const aom_prob *context_tree,
                              int32_t extra, uint8_t token,
                              uint8_t skip_eob_node, unsigned int *counts) {
   (*t)->token = token;
@@ -359,7 +359,7 @@ static INLINE void add_token(TOKENEXTRA **t, const vpx_prob *context_tree,
 }
 
 static INLINE void add_token_no_extra(TOKENEXTRA **t,
-                                      const vpx_prob *context_tree,
+                                      const aom_prob *context_tree,
                                       uint8_t token, uint8_t skip_eob_node,
                                       unsigned int *counts) {
   (*t)->token = token;
@@ -400,7 +400,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   const int ref = is_inter_block(mbmi);
   unsigned int (*const counts)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       td->rd_counts.coef_counts[tx_size][type][ref];
-  vpx_prob (*const coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
+  aom_prob (*const coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       cpi->common.fc->coef_probs[tx_size][type][ref];
   unsigned int (*const eob_branch)[COEFF_CONTEXTS] =
       td->counts->eob_branch[tx_size][type][ref];

@@ -16,8 +16,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "aom_dsp/vpx_dsp_common.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
 
@@ -101,7 +101,7 @@ static int kf_low = 400;
 // The formulae were derived from computing a 3rd order polynomial best
 // fit to the original data (after plotting real maxq vs minq (not q index))
 static int get_minq_index(double maxq, double x3, double x2, double x1,
-                          vpx_bit_depth_t bit_depth) {
+                          aom_bit_depth_t bit_depth) {
   int i;
   const double minqtarget = VPXMIN(((x3 * maxq + x2) * maxq + x1) * maxq, maxq);
 
@@ -118,7 +118,7 @@ static int get_minq_index(double maxq, double x3, double x2, double x1,
 
 static void init_minq_luts(int *kf_low_m, int *kf_high_m, int *arfgf_low,
                            int *arfgf_high, int *inter, int *rtc,
-                           vpx_bit_depth_t bit_depth) {
+                           aom_bit_depth_t bit_depth) {
   int i;
   for (i = 0; i < QINDEX_RANGE; i++) {
     const double maxq = vp10_convert_qindex_to_q(i, bit_depth);
@@ -148,7 +148,7 @@ void vp10_rc_init_minq_luts(void) {
 // These functions use formulaic calculations to make playing with the
 // quantizer tables easier. If necessary they can be replaced by lookup
 // tables if and when things settle down in the experimental bitstream
-double vp10_convert_qindex_to_q(int qindex, vpx_bit_depth_t bit_depth) {
+double vp10_convert_qindex_to_q(int qindex, aom_bit_depth_t bit_depth) {
 // Convert the index to a real Q value (scaled down to match old Q values)
 #if CONFIG_VPX_HIGHBITDEPTH
   switch (bit_depth) {
@@ -165,7 +165,7 @@ double vp10_convert_qindex_to_q(int qindex, vpx_bit_depth_t bit_depth) {
 }
 
 int vp10_rc_bits_per_mb(FRAME_TYPE frame_type, int qindex,
-                        double correction_factor, vpx_bit_depth_t bit_depth) {
+                        double correction_factor, aom_bit_depth_t bit_depth) {
   const double q = vp10_convert_qindex_to_q(qindex, bit_depth);
   int enumerator = frame_type == KEY_FRAME ? 2700000 : 1800000;
 
@@ -179,7 +179,7 @@ int vp10_rc_bits_per_mb(FRAME_TYPE frame_type, int qindex,
 
 int vp10_estimate_bits_at_q(FRAME_TYPE frame_type, int q, int mbs,
                             double correction_factor,
-                            vpx_bit_depth_t bit_depth) {
+                            aom_bit_depth_t bit_depth) {
   const int bpm =
       (int)(vp10_rc_bits_per_mb(frame_type, q, correction_factor, bit_depth));
   return VPXMAX(FRAME_OVERHEAD_BITS,
@@ -414,7 +414,7 @@ void vp10_rc_update_rate_correction_factors(VP10_COMP *cpi) {
   if (cpi->rc.is_src_frame_alt_ref) return;
 
   // Clear down mmx registers to allow floating point in what follows
-  vpx_clear_system_state();
+  aom_clear_system_state();
 
   // Work out how big we would have expected the frame to be at this Q given
   // the current correction factor.
@@ -532,7 +532,7 @@ static int get_active_quality(int q, int gfu_boost, int low, int high,
 }
 
 static int get_kf_active_quality(const RATE_CONTROL *const rc, int q,
-                                 vpx_bit_depth_t bit_depth) {
+                                 aom_bit_depth_t bit_depth) {
   int *kf_low_motion_minq;
   int *kf_high_motion_minq;
   ASSIGN_MINQ_TABLE(bit_depth, kf_low_motion_minq);
@@ -542,7 +542,7 @@ static int get_kf_active_quality(const RATE_CONTROL *const rc, int q,
 }
 
 static int get_gf_active_quality(const RATE_CONTROL *const rc, int q,
-                                 vpx_bit_depth_t bit_depth) {
+                                 aom_bit_depth_t bit_depth) {
   int *arfgf_low_motion_minq;
   int *arfgf_high_motion_minq;
   ASSIGN_MINQ_TABLE(bit_depth, arfgf_low_motion_minq);
@@ -710,7 +710,7 @@ static int rc_pick_q_and_bounds_one_pass_cbr(const VP10_COMP *cpi,
   if (cm->frame_type == KEY_FRAME && !rc->this_key_frame_forced &&
       !(cm->current_video_frame == 0)) {
     int qdelta = 0;
-    vpx_clear_system_state();
+    aom_clear_system_state();
     qdelta = vp10_compute_qdelta_by_rate(
         &cpi->rc, cm->frame_type, active_worst_quality, 2.0, cm->bit_depth);
     *top_index = active_worst_quality + qdelta;
@@ -864,7 +864,7 @@ static int rc_pick_q_and_bounds_one_pass_vbr(const VP10_COMP *cpi,
 #if LIMIT_QRANGE_FOR_ALTREF_AND_KEY
   {
     int qdelta = 0;
-    vpx_clear_system_state();
+    aom_clear_system_state();
 
     // Limit Q range for the adaptive loop.
     if (cm->frame_type == KEY_FRAME && !rc->this_key_frame_forced &&
@@ -1049,7 +1049,7 @@ static int rc_pick_q_and_bounds_two_pass(const VP10_COMP *cpi,
   }
 
 #if LIMIT_QRANGE_FOR_ALTREF_AND_KEY
-  vpx_clear_system_state();
+  aom_clear_system_state();
   // Static forced key frames Q restrictions dealt with elsewhere.
   if (!(frame_is_intra_only(cm)) || !rc->this_key_frame_forced ||
       (cpi->twopass.last_kfgroup_zeromotion_pct < STATIC_MOTION_THRESH)) {
@@ -1470,7 +1470,7 @@ void vp10_rc_get_one_pass_cbr_params(VP10_COMP *cpi) {
 }
 
 int vp10_compute_qdelta(const RATE_CONTROL *rc, double qstart, double qtarget,
-                        vpx_bit_depth_t bit_depth) {
+                        aom_bit_depth_t bit_depth) {
   int start_index = rc->worst_quality;
   int target_index = rc->worst_quality;
   int i;
@@ -1492,7 +1492,7 @@ int vp10_compute_qdelta(const RATE_CONTROL *rc, double qstart, double qtarget,
 
 int vp10_compute_qdelta_by_rate(const RATE_CONTROL *rc, FRAME_TYPE frame_type,
                                 int qindex, double rate_target_ratio,
-                                vpx_bit_depth_t bit_depth) {
+                                aom_bit_depth_t bit_depth) {
   int target_index = rc->worst_quality;
   int i;
 

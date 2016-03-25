@@ -12,7 +12,7 @@
 #ifndef VPX_PORTS_MEM_OPS_ALIGNED_H_
 #define VPX_PORTS_MEM_OPS_ALIGNED_H_
 
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 
 /* \file
  * \brief Provides portable memory access primitives for operating on aligned
@@ -91,7 +91,7 @@
     *mem = (uint##sz##_t)raw;                                           \
   }
 
-#include "vpx_config.h"
+#include "aom_config.h"
 #if CONFIG_BIG_ENDIAN
 #define mem_get_be_aligned_generic(sz) mem_get_ne_aligned_generic(be, sz)
 #define mem_get_sbe_aligned_generic(sz) mem_get_sne_aligned_generic(be, sz)

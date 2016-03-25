@@ -12,8 +12,8 @@
 #ifndef VP10_COMMON_ENUMS_H_
 #define VP10_COMMON_ENUMS_H_
 
-#include "./vpx_config.h"
-#include "aom/vpx_integer.h"
+#include "./aom_config.h"
+#include "aom/aom_integer.h"
 
 #ifdef __cplusplus
 extern "C" {

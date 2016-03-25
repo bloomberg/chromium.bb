@@ -16,10 +16,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "aom/vpx_encoder.h"
+#include "aom/aom_encoder.h"
 
 #include "./tools_common.h"
-#include "./vpxenc.h"
+#include "./aomenc.h"
 
 static const char quantizer_warning_string[] =
     "Bad quantizer values. Quantizer values should not be equal, and should "
@@ -85,7 +85,7 @@ static void check_lag_in_frames_realtime_deadline(
 
 void check_encoder_config(int disable_prompt,
                           const struct VpxEncoderConfig *global_config,
-                          const struct vpx_codec_enc_cfg *stream_config) {
+                          const struct aom_codec_enc_cfg *stream_config) {
   int num_warnings = 0;
   struct WarningListNode *warning = NULL;
   struct WarningList warning_list = { 0 };

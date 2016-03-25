@@ -13,9 +13,9 @@
 
 %define mmx_filter_shift            7
 
-;unsigned int vpx_get_mb_ss_mmx( short *src_ptr )
-global sym(vpx_get_mb_ss_mmx) PRIVATE
-sym(vpx_get_mb_ss_mmx):
+;unsigned int aom_get_mb_ss_mmx( short *src_ptr )
+global sym(aom_get_mb_ss_mmx) PRIVATE
+sym(aom_get_mb_ss_mmx):
     push        rbp
     mov         rbp, rsp
     SHADOW_ARGS_TO_STACK 7
@@ -63,7 +63,7 @@ sym(vpx_get_mb_ss_mmx):
     pop         rbp
     ret
 
-;void vpx_get8x8var_mmx
+;void aom_get8x8var_mmx
 ;(
 ;    unsigned char *src_ptr,
 ;    int  source_stride,
@@ -72,8 +72,8 @@ sym(vpx_get_mb_ss_mmx):
 ;    unsigned int *SSE,
 ;    int *Sum
 ;)
-global sym(vpx_get8x8var_mmx) PRIVATE
-sym(vpx_get8x8var_mmx):
+global sym(aom_get8x8var_mmx) PRIVATE
+sym(aom_get8x8var_mmx):
     push        rbp
     mov         rbp, rsp
     SHADOW_ARGS_TO_STACK 6
@@ -306,7 +306,7 @@ sym(vpx_get8x8var_mmx):
     ret
 
 ;void
-;vpx_get4x4var_mmx
+;aom_get4x4var_mmx
 ;(
 ;    unsigned char *src_ptr,
 ;    int  source_stride,
@@ -315,8 +315,8 @@ sym(vpx_get8x8var_mmx):
 ;    unsigned int *SSE,
 ;    int *Sum
 ;)
-global sym(vpx_get4x4var_mmx) PRIVATE
-sym(vpx_get4x4var_mmx):
+global sym(aom_get4x4var_mmx) PRIVATE
+sym(aom_get4x4var_mmx):
     push        rbp
     mov         rbp, rsp
     SHADOW_ARGS_TO_STACK 6
@@ -414,7 +414,7 @@ sym(vpx_get4x4var_mmx):
     pop         rbp
     ret
 
-;void vpx_filter_block2d_bil4x4_var_mmx
+;void aom_filter_block2d_bil4x4_var_mmx
 ;(
 ;    unsigned char *ref_ptr,
 ;    int ref_pixels_per_line,
@@ -425,8 +425,8 @@ sym(vpx_get4x4var_mmx):
 ;    int *sum,
 ;    unsigned int *sumsquared
 ;)
-global sym(vpx_filter_block2d_bil4x4_var_mmx) PRIVATE
-sym(vpx_filter_block2d_bil4x4_var_mmx):
+global sym(aom_filter_block2d_bil4x4_var_mmx) PRIVATE
+sym(aom_filter_block2d_bil4x4_var_mmx):
     push        rbp
     mov         rbp, rsp
     SHADOW_ARGS_TO_STACK 8
@@ -550,7 +550,7 @@ sym(vpx_filter_block2d_bil4x4_var_mmx):
     pop         rbp
     ret
 
-;void vpx_filter_block2d_bil_var_mmx
+;void aom_filter_block2d_bil_var_mmx
 ;(
 ;    unsigned char *ref_ptr,
 ;    int ref_pixels_per_line,
@@ -562,8 +562,8 @@ sym(vpx_filter_block2d_bil4x4_var_mmx):
 ;    int *sum,
 ;    unsigned int *sumsquared
 ;)
-global sym(vpx_filter_block2d_bil_var_mmx) PRIVATE
-sym(vpx_filter_block2d_bil_var_mmx):
+global sym(aom_filter_block2d_bil_var_mmx) PRIVATE
+sym(aom_filter_block2d_bil_var_mmx):
     push        rbp
     mov         rbp, rsp
     SHADOW_ARGS_TO_STACK 9

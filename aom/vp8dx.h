@@ -15,7 +15,7 @@
  * @{
  */
 /*!\file
- * \brief Provides definitions for using VP8 or VP9 within the vpx Decoder
+ * \brief Provides definitions for using VP8 or VP9 within the aom Decoder
  *        interface.
  */
 #ifndef VPX_VP8DX_H_
@@ -33,8 +33,8 @@ extern "C" {
  * This interface provides the capability to decode VP10 streams.
  * @{
  */
-extern vpx_codec_iface_t vpx_codec_vp10_dx_algo;
-extern vpx_codec_iface_t *vpx_codec_vp10_dx(void);
+extern aom_codec_iface_t aom_codec_vp10_dx_algo;
+extern aom_codec_iface_t *aom_codec_vp10_dx(void);
 /*!@} - end algorithm interface member group*/
 
 /*!\enum vp8_dec_control_id
@@ -43,7 +43,7 @@ extern vpx_codec_iface_t *vpx_codec_vp10_dx(void);
  * This set of macros define the control functions available for the VP8
  * decoder interface.
  *
- * \sa #vpx_codec_control
+ * \sa #aom_codec_control
  */
 enum vp8_dec_control_id {
   /** control function to get info on which reference frames were updated
@@ -60,7 +60,7 @@ enum vp8_dec_control_id {
   VP8D_GET_LAST_REF_USED,
 
   /** decryption function to decrypt encoded buffer data immediately
-   * before decoding. Takes a vpx_decrypt_init, which contains
+   * before decoding. Takes a aom_decrypt_init, which contains
    * a callback function and opaque context pointer.
    */
   VPXD_SET_DECRYPTOR,
@@ -109,24 +109,24 @@ enum vp8_dec_control_id {
 /** Decrypt n bytes of data from input -> output, using the decrypt_state
  *  passed in VPXD_SET_DECRYPTOR.
  */
-typedef void (*vpx_decrypt_cb)(void *decrypt_state, const unsigned char *input,
+typedef void (*aom_decrypt_cb)(void *decrypt_state, const unsigned char *input,
                                unsigned char *output, int count);
 
 /*!\brief Structure to hold decryption state
  *
  * Defines a structure to hold the decryption state and access function.
  */
-typedef struct vpx_decrypt_init {
+typedef struct aom_decrypt_init {
   /*! Decrypt callback. */
-  vpx_decrypt_cb decrypt_cb;
+  aom_decrypt_cb decrypt_cb;
 
   /*! Decryption state. */
   void *decrypt_state;
-} vpx_decrypt_init;
+} aom_decrypt_init;
 
-/*!\brief A deprecated alias for vpx_decrypt_init.
+/*!\brief A deprecated alias for aom_decrypt_init.
  */
-typedef vpx_decrypt_init vp8_decrypt_init;
+typedef aom_decrypt_init vp8_decrypt_init;
 
 /*!\cond */
 /*!\brief VP8 decoder control function parameter type
@@ -142,9 +142,9 @@ VPX_CTRL_USE_TYPE(VP8D_GET_FRAME_CORRUPTED, int *)
 #define VPX_CTRL_VP8D_GET_FRAME_CORRUPTED
 VPX_CTRL_USE_TYPE(VP8D_GET_LAST_REF_USED, int *)
 #define VPX_CTRL_VP8D_GET_LAST_REF_USED
-VPX_CTRL_USE_TYPE(VPXD_SET_DECRYPTOR, vpx_decrypt_init *)
+VPX_CTRL_USE_TYPE(VPXD_SET_DECRYPTOR, aom_decrypt_init *)
 #define VPX_CTRL_VPXD_SET_DECRYPTOR
-VPX_CTRL_USE_TYPE(VP8D_SET_DECRYPTOR, vpx_decrypt_init *)
+VPX_CTRL_USE_TYPE(VP8D_SET_DECRYPTOR, aom_decrypt_init *)
 #define VPX_CTRL_VP8D_SET_DECRYPTOR
 VPX_CTRL_USE_TYPE(VP9D_GET_DISPLAY_SIZE, int *)
 #define VPX_CTRL_VP9D_GET_DISPLAY_SIZE

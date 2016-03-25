@@ -9,10 +9,10 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 #include <immintrin.h>  // AVX2
-#include "./vpx_dsp_rtcd.h"
-#include "aom/vpx_integer.h"
+#include "./aom_dsp_rtcd.h"
+#include "aom/aom_integer.h"
 
-void vpx_sad32x32x4d_avx2(const uint8_t *src, int src_stride,
+void aom_sad32x32x4d_avx2(const uint8_t *src, int src_stride,
                           const uint8_t *const ref[4], int ref_stride,
                           uint32_t res[4]) {
   __m256i src_reg, ref0_reg, ref1_reg, ref2_reg, ref3_reg;
@@ -80,7 +80,7 @@ void vpx_sad32x32x4d_avx2(const uint8_t *src, int src_stride,
   }
 }
 
-void vpx_sad64x64x4d_avx2(const uint8_t *src, int src_stride,
+void aom_sad64x64x4d_avx2(const uint8_t *src, int src_stride,
                           const uint8_t *const ref[4], int ref_stride,
                           uint32_t res[4]) {
   __m256i src_reg, srcnext_reg, ref0_reg, ref0next_reg;

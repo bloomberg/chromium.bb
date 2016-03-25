@@ -13,14 +13,14 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "./vpx_dsp_rtcd.h"
-#include "./vpx_scale_rtcd.h"
+#include "./aom_dsp_rtcd.h"
+#include "./aom_scale_rtcd.h"
 
-#include "aom_dsp/vpx_dsp_common.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
-#include "aom_scale/vpx_scale.h"
+#include "aom_scale/aom_scale.h"
 #include "aom_scale/yv12config.h"
 
 #include "av1/common/entropymv.h"
@@ -97,12 +97,12 @@ static int input_stats(TWO_PASS *p, FIRSTPASS_STATS *fps) {
 }
 
 static void output_stats(FIRSTPASS_STATS *stats,
-                         struct vpx_codec_pkt_list *pktlist) {
-  struct vpx_codec_cx_pkt pkt;
+                         struct aom_codec_pkt_list *pktlist) {
+  struct aom_codec_cx_pkt pkt;
   pkt.kind = VPX_CODEC_STATS_PKT;
   pkt.data.twopass_stats.buf = stats;
   pkt.data.twopass_stats.sz = sizeof(FIRSTPASS_STATS);
-  vpx_codec_pkt_list_add(pktlist, &pkt);
+  aom_codec_pkt_list_add(pktlist, &pkt);
 
 // TEMP debug code
 #if OUTPUT_FPF
@@ -128,12 +128,12 @@ static void output_stats(FIRSTPASS_STATS *stats,
 
 #if CONFIG_FP_MB_STATS
 static void output_fpmb_stats(uint8_t *this_frame_mb_stats, VP10_COMMON *cm,
-                              struct vpx_codec_pkt_list *pktlist) {
-  struct vpx_codec_cx_pkt pkt;
+                              struct aom_codec_pkt_list *pktlist) {
+  struct aom_codec_cx_pkt pkt;
   pkt.kind = VPX_CODEC_FPMB_STATS_PKT;
   pkt.data.firstpass_mb_stats.buf = this_frame_mb_stats;
   pkt.data.firstpass_mb_stats.sz = cm->initial_mbs * sizeof(uint8_t);
-  vpx_codec_pkt_list_add(pktlist, &pkt);
+  aom_codec_pkt_list_add(pktlist, &pkt);
 }
 #endif
 
@@ -278,12 +278,12 @@ void vp10_end_first_pass(VP10_COMP *cpi) {
   output_stats(&cpi->twopass.total_stats, cpi->output_pkt_list);
 }
 
-static vpx_variance_fn_t get_block_variance_fn(BLOCK_SIZE bsize) {
+static aom_variance_fn_t get_block_variance_fn(BLOCK_SIZE bsize) {
   switch (bsize) {
-    case BLOCK_8X8: return vpx_mse8x8;
-    case BLOCK_16X8: return vpx_mse16x8;
-    case BLOCK_8X16: return vpx_mse8x16;
-    default: return vpx_mse16x16;
+    case BLOCK_8X8: return aom_mse8x8;
+    case BLOCK_16X8: return aom_mse16x8;
+    case BLOCK_8X16: return aom_mse8x16;
+    default: return aom_mse16x16;
   }
 }
 
@@ -291,37 +291,37 @@ static unsigned int get_prediction_error(BLOCK_SIZE bsize,
                                          const struct buf_2d *src,
                                          const struct buf_2d *ref) {
   unsigned int sse;
-  const vpx_variance_fn_t fn = get_block_variance_fn(bsize);
+  const aom_variance_fn_t fn = get_block_variance_fn(bsize);
   fn(src->buf, src->stride, ref->buf, ref->stride, &sse);
   return sse;
 }
 
 #if CONFIG_VPX_HIGHBITDEPTH
-static vpx_variance_fn_t highbd_get_block_variance_fn(BLOCK_SIZE bsize,
+static aom_variance_fn_t highbd_get_block_variance_fn(BLOCK_SIZE bsize,
                                                       int bd) {
   switch (bd) {
     default:
       switch (bsize) {
-        case BLOCK_8X8: return vpx_highbd_8_mse8x8;
-        case BLOCK_16X8: return vpx_highbd_8_mse16x8;
-        case BLOCK_8X16: return vpx_highbd_8_mse8x16;
-        default: return vpx_highbd_8_mse16x16;
+        case BLOCK_8X8: return aom_highbd_8_mse8x8;
+        case BLOCK_16X8: return aom_highbd_8_mse16x8;
+        case BLOCK_8X16: return aom_highbd_8_mse8x16;
+        default: return aom_highbd_8_mse16x16;
       }
       break;
     case 10:
       switch (bsize) {
-        case BLOCK_8X8: return vpx_highbd_10_mse8x8;
-        case BLOCK_16X8: return vpx_highbd_10_mse16x8;
-        case BLOCK_8X16: return vpx_highbd_10_mse8x16;
-        default: return vpx_highbd_10_mse16x16;
+        case BLOCK_8X8: return aom_highbd_10_mse8x8;
+        case BLOCK_16X8: return aom_highbd_10_mse16x8;
+        case BLOCK_8X16: return aom_highbd_10_mse8x16;
+        default: return aom_highbd_10_mse16x16;
       }
       break;
     case 12:
       switch (bsize) {
-        case BLOCK_8X8: return vpx_highbd_12_mse8x8;
-        case BLOCK_16X8: return vpx_highbd_12_mse16x8;
-        case BLOCK_8X16: return vpx_highbd_12_mse8x16;
-        default: return vpx_highbd_12_mse16x16;
+        case BLOCK_8X8: return aom_highbd_12_mse8x8;
+        case BLOCK_16X8: return aom_highbd_12_mse16x8;
+        case BLOCK_8X16: return aom_highbd_12_mse8x16;
+        default: return aom_highbd_12_mse16x16;
       }
       break;
   }
@@ -332,7 +332,7 @@ static unsigned int highbd_get_prediction_error(BLOCK_SIZE bsize,
                                                 const struct buf_2d *ref,
                                                 int bd) {
   unsigned int sse;
-  const vpx_variance_fn_t fn = highbd_get_block_variance_fn(bsize, bd);
+  const aom_variance_fn_t fn = highbd_get_block_variance_fn(bsize, bd);
   fn(src->buf, src->stride, ref->buf, ref->stride, &sse);
   return sse;
 }
@@ -356,7 +356,7 @@ static void first_pass_motion_search(VP10_COMP *cpi, MACROBLOCK *x,
   MV ref_mv_full = { ref_mv->row >> 3, ref_mv->col >> 3 };
   int num00, tmp_err, n;
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
-  vpx_variance_fn_ptr_t v_fn_ptr = cpi->fn_ptr[bsize];
+  aom_variance_fn_ptr_t v_fn_ptr = cpi->fn_ptr[bsize];
   const int new_mv_mode_penalty = NEW_MV_MODE_PENALTY;
 
   int step_param = 3;
@@ -420,7 +420,7 @@ static BLOCK_SIZE get_bsize(const VP10_COMMON *cm, int mb_row, int mb_col) {
   }
 }
 
-static int find_fp_qindex(vpx_bit_depth_t bit_depth) {
+static int find_fp_qindex(aom_bit_depth_t bit_depth) {
   int i;
 
   for (i = 0; i < QINDEX_RANGE; ++i)
@@ -496,7 +496,7 @@ void vp10_first_pass(VP10_COMP *cpi, const struct lookahead_entry *source) {
   }
 #endif
 
-  vpx_clear_system_state();
+  aom_clear_system_state();
 
   intra_factor = 0.0;
   brightness_factor = 0.0;
@@ -561,7 +561,7 @@ void vp10_first_pass(VP10_COMP *cpi, const struct lookahead_entry *source) {
       const int mb_index = mb_row * cm->mb_cols + mb_col;
 #endif
 
-      vpx_clear_system_state();
+      aom_clear_system_state();
 
       xd->plane[0].dst.buf = new_yv12->y_buffer + recon_yoffset;
       xd->plane[1].dst.buf = new_yv12->u_buffer + recon_uvoffset;
@@ -579,7 +579,7 @@ void vp10_first_pass(VP10_COMP *cpi, const struct lookahead_entry *source) {
       xd->mi[0]->mbmi.tx_size =
           use_dc_pred ? (bsize >= BLOCK_16X16 ? TX_16X16 : TX_8X8) : TX_4X4;
       vp10_encode_intra_block_plane(x, bsize, 0);
-      this_error = vpx_get_mb_ss(x->plane[0].src_diff);
+      this_error = aom_get_mb_ss(x->plane[0].src_diff);
 
       // Keep a record of blocks that have almost no intra error residual
       // (i.e. are in effect completely flat and untextured in the intra
@@ -607,7 +607,7 @@ void vp10_first_pass(VP10_COMP *cpi, const struct lookahead_entry *source) {
       }
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
-      vpx_clear_system_state();
+      aom_clear_system_state();
       log_intra = log(this_error + 1.0);
       if (log_intra < 10.0)
         intra_factor += 1.0 + ((10.0 - log_intra) * 0.05);
@@ -774,7 +774,7 @@ void vp10_first_pass(VP10_COMP *cpi, const struct lookahead_entry *source) {
 #endif
 
         if (motion_error <= this_error) {
-          vpx_clear_system_state();
+          aom_clear_system_state();
 
           // Keep a count of cases where the inter and intra were very close
           // and very low. This helps with scene cut detection for example in
@@ -908,7 +908,7 @@ void vp10_first_pass(VP10_COMP *cpi, const struct lookahead_entry *source) {
     x->plane[2].src.buf +=
         uv_mb_height * x->plane[1].src.stride - uv_mb_height * cm->mb_cols;
 
-    vpx_clear_system_state();
+    aom_clear_system_state();
   }
 
   // Clamp the image start to rows/2. This number of rows is discarded top
@@ -1008,7 +1008,7 @@ void vp10_first_pass(VP10_COMP *cpi, const struct lookahead_entry *source) {
     ++twopass->sr_update_lag;
   }
 
-  vpx_extend_frame_borders(new_yv12);
+  aom_extend_frame_borders(new_yv12);
 
   // The frame we just compressed now becomes the last frame.
   ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->lst_fb_idx],
@@ -1042,7 +1042,7 @@ void vp10_first_pass(VP10_COMP *cpi, const struct lookahead_entry *source) {
 
 static double calc_correction_factor(double err_per_mb, double err_divisor,
                                      double pt_low, double pt_high, int q,
-                                     vpx_bit_depth_t bit_depth) {
+                                     aom_bit_depth_t bit_depth) {
   const double error_term = err_per_mb / err_divisor;
 
   // Adjustment based on actual quantizer to power term.
@@ -1720,7 +1720,7 @@ static void define_gf_group(VP10_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     vp10_zero(twopass->gf_group);
   }
 
-  vpx_clear_system_state();
+  aom_clear_system_state();
   vp10_zero(next_frame);
 
   // Load stats for the current frame.
@@ -2381,7 +2381,7 @@ void vp10_rc_get_second_pass_params(VP10_COMP *cpi) {
     return;
   }
 
-  vpx_clear_system_state();
+  aom_clear_system_state();
 
   if (cpi->oxcf.rc_mode == VPX_Q) {
     twopass->active_worst_quality = cpi->oxcf.cq_level;

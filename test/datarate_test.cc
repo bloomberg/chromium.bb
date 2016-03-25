@@ -7,14 +7,14 @@
  *  in the file PATENTS.  All contributing project authors may
  *  be found in the AUTHORS file in the root of the source tree.
  */
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "third_party/googletest/src/include/gtest/gtest.h"
 #include "test/codec_factory.h"
 #include "test/encode_test_driver.h"
 #include "test/i420_video_source.h"
 #include "test/util.h"
 #include "test/y4m_video_source.h"
-#include "aom/vpx_codec.h"
+#include "aom/aom_codec.h"
 
 namespace {
 
@@ -59,14 +59,14 @@ class DatarateTestLarge
       encoder->Control(VP8E_SET_NOISE_SENSITIVITY, denoiser_on_);
     }
 
-    const vpx_rational_t tb = video->timebase();
+    const aom_rational_t tb = video->timebase();
     timebase_ = static_cast<double>(tb.num) / tb.den;
     duration_ = 0;
   }
 
-  virtual void FramePktHook(const vpx_codec_cx_pkt_t *pkt) {
+  virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
     // Time since last timestamp = duration.
-    vpx_codec_pts_t duration = pkt->data.frame.pts - last_pts_;
+    aom_codec_pts_t duration = pkt->data.frame.pts - last_pts_;
 
     // TODO(jimbankoski): Remove these lines when the issue:
     // http://code.google.com/p/webm/issues/detail?id=496 is fixed.
@@ -125,11 +125,11 @@ class DatarateTestLarge
     }
   }
 
-  vpx_codec_pts_t last_pts_;
+  aom_codec_pts_t last_pts_;
   int64_t bits_in_buffer_model_;
   double timebase_;
   int frame_number_;
-  vpx_codec_pts_t first_drop_;
+  aom_codec_pts_t first_drop_;
   int64_t bits_total_;
   double duration_;
   double file_datarate_;
@@ -242,7 +242,7 @@ TEST_P(DatarateTestLarge, ChangingDropFrameThresh) {
   // as the drop frame threshold is increased.
 
   const int kDropFrameThreshTestStep = 30;
-  vpx_codec_pts_t last_drop = frame_count;
+  aom_codec_pts_t last_drop = frame_count;
   for (int i = 1; i < 91; i += kDropFrameThreshTestStep) {
     cfg_.rc_dropframe_thresh = i;
     ResetModel();
@@ -370,21 +370,21 @@ class DatarateTestVP9Large
       if (video->frame() == 0) {
         encoder->Control(VP9E_SET_SVC, 1);
       }
-      vpx_svc_layer_id_t layer_id;
+      aom_svc_layer_id_t layer_id;
       layer_id.spatial_layer_id = 0;
       frame_flags_ = SetFrameFlags(video->frame(), cfg_.ts_number_layers);
       layer_id.temporal_layer_id =
           SetLayerId(video->frame(), cfg_.ts_number_layers);
       encoder->Control(VP9E_SET_SVC_LAYER_ID, &layer_id);
     }
-    const vpx_rational_t tb = video->timebase();
+    const aom_rational_t tb = video->timebase();
     timebase_ = static_cast<double>(tb.num) / tb.den;
     duration_ = 0;
   }
 
-  virtual void FramePktHook(const vpx_codec_cx_pkt_t *pkt) {
+  virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
     // Time since last timestamp = duration.
-    vpx_codec_pts_t duration = pkt->data.frame.pts - last_pts_;
+    aom_codec_pts_t duration = pkt->data.frame.pts - last_pts_;
 
     if (duration > 1) {
       // If first drop not set and we have a drop set it to this time.
@@ -431,7 +431,7 @@ class DatarateTestVP9Large
     }
   }
 
-  vpx_codec_pts_t last_pts_;
+  aom_codec_pts_t last_pts_;
   double timebase_;
   int frame_number_;      // Counter for number of non-dropped/encoded frames.
   int tot_frame_number_;  // Counter for total number of input frames.
@@ -440,7 +440,7 @@ class DatarateTestVP9Large
   double effective_datarate_[3];
   int set_cpu_used_;
   int64_t bits_in_buffer_model_;
-  vpx_codec_pts_t first_drop_;
+  aom_codec_pts_t first_drop_;
   int num_drops_;
   int denoiser_on_;
   int denoiser_offon_test_;
@@ -521,7 +521,7 @@ TEST_P(DatarateTestVP9Large, ChangingDropFrameThresh) {
                                        30, 1, 0, 140);
 
   const int kDropFrameThreshTestStep = 30;
-  vpx_codec_pts_t last_drop = 140;
+  aom_codec_pts_t last_drop = 140;
   int last_num_drops = 0;
   for (int i = 10; i < 100; i += kDropFrameThreshTestStep) {
     cfg_.rc_dropframe_thresh = i;
@@ -723,12 +723,12 @@ class DatarateOnePassCbrSvc
       encoder->Control(VP8E_SET_MAX_INTRA_BITRATE_PCT, 300);
       encoder->Control(VP9E_SET_TILE_COLUMNS, (cfg_.g_threads >> 1));
     }
-    const vpx_rational_t tb = video->timebase();
+    const aom_rational_t tb = video->timebase();
     timebase_ = static_cast<double>(tb.num) / tb.den;
     duration_ = 0;
   }
-  virtual void FramePktHook(const vpx_codec_cx_pkt_t *pkt) {
-    vpx_codec_pts_t duration = pkt->data.frame.pts - last_pts_;
+  virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
+    aom_codec_pts_t duration = pkt->data.frame.pts - last_pts_;
     if (last_pts_ == 0) duration = 1;
     bits_in_buffer_model_ += static_cast<int64_t>(
         duration * timebase_ * cfg_.rc_target_bitrate * 1000);
@@ -756,7 +756,7 @@ class DatarateOnePassCbrSvc
     }
   }
 
-  virtual void MismatchHook(const vpx_image_t *img1, const vpx_image_t *img2) {
+  virtual void MismatchHook(const aom_image_t *img1, const aom_image_t *img2) {
     double mismatch_psnr = compute_psnr(img1, img2);
     mismatch_psnr_ += mismatch_psnr;
     ++mismatch_nframes_;
@@ -764,23 +764,23 @@ class DatarateOnePassCbrSvc
 
   unsigned int GetMismatchFrames() { return mismatch_nframes_; }
 
-  vpx_codec_pts_t last_pts_;
+  aom_codec_pts_t last_pts_;
   int64_t bits_in_buffer_model_;
   double timebase_;
   int frame_number_;
-  vpx_codec_pts_t first_drop_;
+  aom_codec_pts_t first_drop_;
   int64_t bits_total_;
   double duration_;
   double file_datarate_;
   double effective_datarate_;
   size_t bits_in_last_frame_;
-  vpx_svc_extra_cfg_t svc_params_;
+  aom_svc_extra_cfg_t svc_params_;
   int speed_setting_;
   double mismatch_psnr_;
   int mismatch_nframes_;
 };
-static void assign_layer_bitrates(vpx_codec_enc_cfg_t *const enc_cfg,
-                                  const vpx_svc_extra_cfg_t *svc_params,
+static void assign_layer_bitrates(aom_codec_enc_cfg_t *const enc_cfg,
+                                  const aom_svc_extra_cfg_t *svc_params,
                                   int spatial_layers, int temporal_layers,
                                   int temporal_layering_mode,
                                   unsigned int total_rate) {

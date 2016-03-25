@@ -6,7 +6,7 @@
     This release is ABI incompatible with 1.4.0. It drops deprecated VP8
     controls and adds a variety of VP9 controls for testing.
 
-    The vpxenc utility now prefers VP9 by default.
+    The aomenc utility now prefers VP9 by default.
 
   - Enhancements:
     Faster VP9 encoding and decoding
@@ -45,7 +45,7 @@
 
   The VP9 encoder in this release is not feature complete. Users interested in
   the encoder are advised to use the git master branch and discuss issues on
-  libvpx mailing lists.
+  libaom mailing lists.
 
   - Upgrading:
     This release is ABI and API compatible with Duclair (v1.0.0). Users
@@ -56,7 +56,7 @@
       Get rid of bashisms in the main build scripts
       Added usage info on command line options
       Add lossless compression mode
-      Dll build of libvpx
+      Dll build of libaom
       Add additional Mac OS X targets: 10.7, 10.8 and 10.9 (darwin11-13)
       Add option to disable documentation
       configure: add --enable-external-build support
@@ -64,11 +64,11 @@
       configure: support mingw-w64
       configure: support hardfloat armv7 CHOSTS
       configure: add support for android x86
-      Add estimated completion time to vpxenc
-      Don't exit on decode errors in vpxenc
-      vpxenc: support scaling prior to encoding
-      vpxdec: support scaling output
-      vpxenc: improve progress indicators with --skip
+      Add estimated completion time to aomenc
+      Don't exit on decode errors in aomenc
+      aomenc: support scaling prior to encoding
+      aomdec: support scaling output
+      aomenc: improve progress indicators with --skip
       msvs: Don't link to winmm.lib
       Add a new script for producing vcxproj files
       Produce Visual Studio 10 and 11 project files
@@ -100,7 +100,7 @@
 
   - Enhancements:
       VP8 optimizations for MIPS dspr2
-      vpxenc: add -quiet option
+      aomenc: add -quiet option
 
   - Speed:
       Encoder and decoder speed is consistent with the Eider release.
@@ -138,10 +138,10 @@
     is more computationally intensive than the spatial one.
 
     This release removes support for a legacy, decode only API that was
-    supported, but deprecated, at the initial release of libvpx
+    supported, but deprecated, at the initial release of libaom
     (v0.9.0). This is not expected to have any impact. If you are
     impacted, you can apply a reversion to commit 2bf8fb58 locally.
-    Please update to the latest libvpx API if you are affected.
+    Please update to the latest libaom API if you are affected.
 
   - Enhancements:
       Adds a motion compensated temporal denoiser to the encoder, which
@@ -155,17 +155,17 @@
         OS/2 support
         SunCC support
 
-      Changing resolution with vpx_codec_enc_config_set() is now
+      Changing resolution with aom_codec_enc_config_set() is now
       supported. Previously, reinitializing the codec was required to
       change the input resolution.
 
-      The vpxenc application has initial support for producing multiple
+      The aomenc application has initial support for producing multiple
       encodes from the same input in one call. Resizing is not yet
       supported, but varying other codec parameters is. Use -- to
       delineate output streams. Options persist from one stream to the
       next.
 
-      Also, the vpxenc application will now use a keyframe interval of
+      Also, the aomenc application will now use a keyframe interval of
       5 seconds by default. Use the --kf-max-dist option to override.
 
   - Speed:
@@ -202,7 +202,7 @@
       enhancement (MFQE) in sections of the frame where there is motion.
       (#392)
 
-      Fixed corruption issues when vpx_codec_enc_config_set() was called
+      Fixed corruption issues when aom_codec_enc_config_set() was called
       with spatial resampling enabled.
 
       Fixed a decoder error introduced in Duclair where the segmentation
@@ -215,9 +215,9 @@
   v0.9.7, so all users of that release are encouraged to upgrade.
 
   - Upgrading:
-      This release is ABI incompatible with prior releases of libvpx, so the
+      This release is ABI incompatible with prior releases of libaom, so the
       "major" version number has been bumped to 1. You must recompile your
-      applications against the latest version of the libvpx headers. The
+      applications against the latest version of the libaom headers. The
       API remains compatible, and this should not require code changes in most
       applications.
 
@@ -268,7 +268,7 @@
           Cayuga) given a frame with corrupt partition sizes.
 
           A bounded out of bounds read was discovered affecting all
-          versions of libvpx. Given an multipartition input frame that
+          versions of libaom. Given an multipartition input frame that
           is truncated between the mode/mv partition and the first
           residiual paritition (in the block of partition offsets), up
           to 3 extra bytes could have been read from the source buffer.
@@ -296,16 +296,16 @@
     notes in this document for that release.
 
   - Enhancements:
-          Stereo 3D format support for vpxenc
+          Stereo 3D format support for aomenc
           Runtime detection of available processor cores.
           Allow specifying --end-usage by enum name
-          vpxdec: test for frame corruption
-          vpxenc: add quantizer histogram display
-          vpxenc: add rate histogram display
+          aomdec: test for frame corruption
+          aomenc: add quantizer histogram display
+          aomenc: add rate histogram display
           Set VPX_FRAME_IS_DROPPABLE
           update configure for ios sdk 4.3
           Avoid text relocations in ARM vp8 decoder
-          Generate a vpx.pc file for pkg-config.
+          Generate a aom.pc file for pkg-config.
           New ways of passing encoded data between encoder and decoder.
 
   - Speed:
@@ -366,7 +366,7 @@
           Fix semaphore emulation, spin-wait intrinsics on Windows
           Fix build with xcode4 and simplify GLOBAL.
           Mark ARM asm objects as allowing a non-executable stack.
-          Fix vpxenc encoding incorrect webm file header on big endian
+          Fix aomenc encoding incorrect webm file header on big endian
 
 
 2011-03-07 v0.9.6 "Bali"
@@ -378,7 +378,7 @@
     document for that release.
 
   - Enhancements:
-      vpxenc --psnr shows a summary when encode completes
+      aomenc --psnr shows a summary when encode completes
       --tune=ssim option to enable activity masking
       improved postproc visualizations for development
       updated support for Apple iOS to SDK 4.2
@@ -451,9 +451,9 @@
 
   - Upgrading:
     This release incorporates backwards-incompatible changes to the
-    ivfenc and ivfdec tools. These tools are now called vpxenc and vpxdec.
+    ivfenc and ivfdec tools. These tools are now called aomenc and aomdec.
 
-    vpxdec
+    aomdec
       * the -q (quiet) option has been removed, and replaced with
         -v (verbose). the output is quiet by default. Use -v to see
         the version number of the binary.
@@ -466,13 +466,13 @@
         options must be specified.
 
           $ ivfdec -o OUTPUT INPUT
-          $ vpxdec --i420 -o OUTPUT INPUT
+          $ aomdec --i420 -o OUTPUT INPUT
 
       * If an output file is not specified, the default is to write
         Y4M to stdout. This makes piping more natural.
 
           $ ivfdec -y -o - INPUT | ...
-          $ vpxdec INPUT | ...
+          $ aomdec INPUT | ...
 
       * The output file has additional flexibility for formatting the
         filename. It supports escape characters for constructing a
@@ -480,33 +480,33 @@
         replaces the -p option. To get the equivalent:
 
           $ ivfdec -p frame INPUT
-          $ vpxdec --i420 -o frame-%wx%h-%4.i420 INPUT
+          $ aomdec --i420 -o frame-%wx%h-%4.i420 INPUT
 
-    vpxenc
+    aomenc
       * The output file must be specified with -o, rather than as the
         last argument.
 
           $ ivfenc <options> INPUT OUTPUT
-          $ vpxenc <options> -o OUTPUT INPUT
+          $ aomenc <options> -o OUTPUT INPUT
 
       * The output defaults to webm. To get IVF output, use the --ivf
         option.
 
           $ ivfenc <options> INPUT OUTPUT.ivf
-          $ vpxenc <options> -o OUTPUT.ivf --ivf INPUT
+          $ aomenc <options> -o OUTPUT.ivf --ivf INPUT
 
 
   - Enhancements:
-      ivfenc and ivfdec have been renamed to vpxenc, vpxdec.
-      vpxdec supports .webm input
-      vpxdec writes .y4m by default
-      vpxenc writes .webm output by default
-      vpxenc --psnr now shows the average/overall PSNR at the end
+      ivfenc and ivfdec have been renamed to aomenc, aomdec.
+      aomdec supports .webm input
+      aomdec writes .y4m by default
+      aomenc writes .webm output by default
+      aomenc --psnr now shows the average/overall PSNR at the end
       ARM platforms now support runtime cpu detection
-      vpxdec visualizations added for motion vectors, block modes, references
-      vpxdec now silent by default
-      vpxdec --progress shows frame-by-frame timing information
-      vpxenc supports the distinction between --fps and --timebase
+      aomdec visualizations added for motion vectors, block modes, references
+      aomdec now silent by default
+      aomdec --progress shows frame-by-frame timing information
+      aomenc supports the distinction between --fps and --timebase
       NASM is now a supported assembler
       configure: enable PIC for shared libs by default
       configure: add --enable-small
@@ -521,7 +521,7 @@
       Build fixes for darwin-icc
 
   - Speed:
-      20-40% (average 28%) improvement in libvpx decoder speed,
+      20-40% (average 28%) improvement in libaom decoder speed,
       including:
         Rewrite vp8_short_walsh4x4_sse2()
         Optimizations on the loopfilters.

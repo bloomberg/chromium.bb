@@ -17,11 +17,11 @@
  * @{
  */
 #include "./vp8.h"
-#include "./vpx_encoder.h"
+#include "./aom_encoder.h"
 
 /*!\file
  * \brief Provides definitions for using VP8 or VP9 encoder algorithm within the
- *        vpx Codec Interface.
+ *        aom Codec Interface.
  */
 
 #ifdef __cplusplus
@@ -33,8 +33,8 @@ extern "C" {
  * This interface provides the capability to encode raw VP10 streams.
  * @{
  */
-extern vpx_codec_iface_t vpx_codec_vp10_cx_algo;
-extern vpx_codec_iface_t *vpx_codec_vp10_cx(void);
+extern aom_codec_iface_t aom_codec_vp10_cx_algo;
+extern aom_codec_iface_t *aom_codec_vp10_cx(void);
 /*!@} - end algorithm interface member group*/
 
 /*
@@ -112,7 +112,7 @@ extern vpx_codec_iface_t *vpx_codec_vp10_cx(void);
  * This set of macros define the control functions available for VPx
  * encoder interface.
  *
- * \sa #vpx_codec_control
+ * \sa #aom_codec_control
  */
 enum vp8e_enc_control_id {
   /*!\brief Codec control function to pass an ROI map to encoder.
@@ -219,7 +219,7 @@ enum vp8e_enc_control_id {
 
   /*!\brief Codec control function to set constrained quality level.
    *
-   * \attention For this value to be used vpx_codec_enc_cfg_t::g_usage must be
+   * \attention For this value to be used aom_codec_enc_cfg_t::g_usage must be
    *            set to #VPX_CQ.
    * \note Valid range: 0..63
    *
@@ -465,8 +465,8 @@ enum vp8e_enc_control_id {
   VP9E_SET_SVC_PARAMETERS,
 
   /*!\brief Codec control function to set svc layer for spatial and temporal.
-   * \note Valid ranges: 0..#vpx_codec_enc_cfg::ss_number_layers for spatial
-   *                     layer and 0..#vpx_codec_enc_cfg::ts_number_layers for
+   * \note Valid ranges: 0..#aom_codec_enc_cfg::ss_number_layers for spatial
+   *                     layer and 0..#aom_codec_enc_cfg::ts_number_layers for
    *                     temporal layer.
    *
    * Supported in codecs: VP9
@@ -558,7 +558,7 @@ enum vp8e_enc_control_id {
 
   /*!\brief Codec control function to set the frame flags and buffer indices
    * for spatial layers. The frame flags and buffer indices are set using the
-   * struct #vpx_svc_ref_frame_config defined below.
+   * struct #aom_svc_ref_frame_config defined below.
    *
    * Supported in codecs: VP9
   */
@@ -573,11 +573,11 @@ enum vp8e_enc_control_id {
   VP9E_SET_RENDER_SIZE,
 };
 
-/*!\brief vpx 1-D scaling mode
+/*!\brief aom 1-D scaling mode
  *
- * This set of constants define 1-D vpx scaling modes
+ * This set of constants define 1-D aom scaling modes
  */
-typedef enum vpx_scaling_mode_1d {
+typedef enum aom_scaling_mode_1d {
   VP8E_NORMAL = 0,
   VP8E_FOURFIVE = 1,
   VP8E_THREEFIVE = 2,
@@ -611,13 +611,13 @@ typedef enum vp9e_temporal_layering_mode {
   VP9E_TEMPORAL_LAYERING_MODE_0212 = 3
 } VP9E_TEMPORAL_LAYERING_MODE;
 
-/*!\brief  vpx region of interest map
+/*!\brief  aom region of interest map
  *
  * These defines the data structures for the region of interest map
  *
  */
 
-typedef struct vpx_roi_map {
+typedef struct aom_roi_map {
   /*! An id between 0 and 3 for each 16x16 region within a frame. */
   unsigned char *roi_map;
   unsigned int rows; /**< Number of rows. */
@@ -629,31 +629,31 @@ typedef struct vpx_roi_map {
   int delta_lf[4]; /**< Loop filter deltas. */
   /*! Static breakout threshold for each segment. */
   unsigned int static_threshold[4];
-} vpx_roi_map_t;
+} aom_roi_map_t;
 
-/*!\brief  vpx active region map
+/*!\brief  aom active region map
  *
  * These defines the data structures for active region map
  *
  */
 
-typedef struct vpx_active_map {
+typedef struct aom_active_map {
   unsigned char
       *active_map; /**< specify an on (1) or off (0) each 16x16 region within a
                       frame */
   unsigned int rows; /**< number of rows */
   unsigned int cols; /**< number of cols */
-} vpx_active_map_t;
+} aom_active_map_t;
 
-/*!\brief  vpx image scaling mode
+/*!\brief  aom image scaling mode
  *
  * This defines the data structure for image scaling mode
  *
  */
-typedef struct vpx_scaling_mode {
+typedef struct aom_scaling_mode {
   VPX_SCALING_MODE h_scaling_mode; /**< horizontal scaling mode */
   VPX_SCALING_MODE v_scaling_mode; /**< vertical scaling mode   */
-} vpx_scaling_mode_t;
+} aom_scaling_mode_t;
 
 /*!\brief VP8 token partition mode
  *
@@ -674,14 +674,14 @@ typedef enum {
   VPX_CONTENT_DEFAULT,
   VPX_CONTENT_SCREEN,
   VPX_CONTENT_INVALID
-} vpx_tune_content;
+} aom_tune_content;
 
 /*!\brief VP8 model tuning parameters
  *
  * Changes the encoder to tune for certain types of input material.
  *
  */
-typedef enum { VPX_TUNE_PSNR, VPX_TUNE_SSIM } vpx_tune_metric;
+typedef enum { VPX_TUNE_PSNR, VPX_TUNE_SSIM } aom_tune_metric;
 
 /*!\brief  vp9 svc layer parameters
  *
@@ -690,10 +690,10 @@ typedef enum { VPX_TUNE_PSNR, VPX_TUNE_SSIM } vpx_tune_metric;
  * temporal layer id for the current frame.
  *
  */
-typedef struct vpx_svc_layer_id {
+typedef struct aom_svc_layer_id {
   int spatial_layer_id;  /**< Spatial layer id number. */
   int temporal_layer_id; /**< Temporal layer id number. */
-} vpx_svc_layer_id_t;
+} aom_svc_layer_id_t;
 
 /*!\brief  vp9 svc frame flag parameters.
  *
@@ -703,12 +703,12 @@ typedef struct vpx_svc_layer_id {
  * flags and buffer indices for each spatial layer for the current (super)frame.
  *
  */
-typedef struct vpx_svc_ref_frame_config {
+typedef struct aom_svc_ref_frame_config {
   int frame_flags[VPX_TS_MAX_LAYERS]; /**< Frame flags. */
   int lst_fb_idx[VPX_TS_MAX_LAYERS];  /**< Last buffer index. */
   int gld_fb_idx[VPX_TS_MAX_LAYERS];  /**< Golden buffer index. */
   int alt_fb_idx[VPX_TS_MAX_LAYERS];  /**< Altref buffer index. */
-} vpx_svc_ref_frame_config_t;
+} aom_svc_ref_frame_config_t;
 
 /*!\cond */
 /*!\brief VP8 encoder control function parameter type
@@ -722,11 +722,11 @@ VPX_CTRL_USE_TYPE(VP8E_SET_FRAME_FLAGS, int)
 #define VPX_CTRL_VP8E_SET_FRAME_FLAGS
 VPX_CTRL_USE_TYPE(VP8E_SET_TEMPORAL_LAYER_ID, int)
 #define VPX_CTRL_VP8E_SET_TEMPORAL_LAYER_ID
-VPX_CTRL_USE_TYPE(VP8E_SET_ROI_MAP, vpx_roi_map_t *)
+VPX_CTRL_USE_TYPE(VP8E_SET_ROI_MAP, aom_roi_map_t *)
 #define VPX_CTRL_VP8E_SET_ROI_MAP
-VPX_CTRL_USE_TYPE(VP8E_SET_ACTIVEMAP, vpx_active_map_t *)
+VPX_CTRL_USE_TYPE(VP8E_SET_ACTIVEMAP, aom_active_map_t *)
 #define VPX_CTRL_VP8E_SET_ACTIVEMAP
-VPX_CTRL_USE_TYPE(VP8E_SET_SCALEMODE, vpx_scaling_mode_t *)
+VPX_CTRL_USE_TYPE(VP8E_SET_SCALEMODE, aom_scaling_mode_t *)
 #define VPX_CTRL_VP8E_SET_SCALEMODE
 
 VPX_CTRL_USE_TYPE(VP9E_SET_SVC, int)
@@ -735,7 +735,7 @@ VPX_CTRL_USE_TYPE(VP9E_SET_SVC_PARAMETERS, void *)
 #define VPX_CTRL_VP9E_SET_SVC_PARAMETERS
 VPX_CTRL_USE_TYPE(VP9E_REGISTER_CX_CALLBACK, void *)
 #define VPX_CTRL_VP9E_REGISTER_CX_CALLBACK
-VPX_CTRL_USE_TYPE(VP9E_SET_SVC_LAYER_ID, vpx_svc_layer_id_t *)
+VPX_CTRL_USE_TYPE(VP9E_SET_SVC_LAYER_ID, aom_svc_layer_id_t *)
 #define VPX_CTRL_VP9E_SET_SVC_LAYER_ID
 
 VPX_CTRL_USE_TYPE(VP8E_SET_CPUUSED, int)
@@ -757,7 +757,7 @@ VPX_CTRL_USE_TYPE(VP8E_SET_ARNR_STRENGTH, unsigned int)
 #define VPX_CTRL_VP8E_SET_ARNR_STRENGTH
 VPX_CTRL_USE_TYPE_DEPRECATED(VP8E_SET_ARNR_TYPE, unsigned int)
 #define VPX_CTRL_VP8E_SET_ARNR_TYPE
-VPX_CTRL_USE_TYPE(VP8E_SET_TUNING, int) /* vpx_tune_metric */
+VPX_CTRL_USE_TYPE(VP8E_SET_TUNING, int) /* aom_tune_metric */
 #define VPX_CTRL_VP8E_SET_TUNING
 VPX_CTRL_USE_TYPE(VP8E_SET_CQ_LEVEL, unsigned int)
 #define VPX_CTRL_VP8E_SET_CQ_LEVEL
@@ -771,7 +771,7 @@ VPX_CTRL_USE_TYPE(VP8E_GET_LAST_QUANTIZER, int *)
 #define VPX_CTRL_VP8E_GET_LAST_QUANTIZER
 VPX_CTRL_USE_TYPE(VP8E_GET_LAST_QUANTIZER_64, int *)
 #define VPX_CTRL_VP8E_GET_LAST_QUANTIZER_64
-VPX_CTRL_USE_TYPE(VP9E_GET_SVC_LAYER_ID, vpx_svc_layer_id_t *)
+VPX_CTRL_USE_TYPE(VP9E_GET_SVC_LAYER_ID, aom_svc_layer_id_t *)
 #define VPX_CTRL_VP9E_GET_SVC_LAYER_ID
 
 VPX_CTRL_USE_TYPE(VP8E_SET_MAX_INTRA_BITRATE_PCT, unsigned int)
@@ -811,7 +811,7 @@ VPX_CTRL_USE_TYPE(VP9E_SET_FRAME_PERIODIC_BOOST, unsigned int)
 VPX_CTRL_USE_TYPE(VP9E_SET_NOISE_SENSITIVITY, unsigned int)
 #define VPX_CTRL_VP9E_SET_NOISE_SENSITIVITY
 
-VPX_CTRL_USE_TYPE(VP9E_SET_TUNE_CONTENT, int) /* vpx_tune_content */
+VPX_CTRL_USE_TYPE(VP9E_SET_TUNE_CONTENT, int) /* aom_tune_content */
 #define VPX_CTRL_VP9E_SET_TUNE_CONTENT
 
 VPX_CTRL_USE_TYPE(VP9E_SET_COLOR_SPACE, int)
@@ -823,13 +823,13 @@ VPX_CTRL_USE_TYPE(VP9E_SET_MIN_GF_INTERVAL, unsigned int)
 VPX_CTRL_USE_TYPE(VP9E_SET_MAX_GF_INTERVAL, unsigned int)
 #define VPX_CTRL_VP9E_SET_MAX_GF_INTERVAL
 
-VPX_CTRL_USE_TYPE(VP9E_GET_ACTIVEMAP, vpx_active_map_t *)
+VPX_CTRL_USE_TYPE(VP9E_GET_ACTIVEMAP, aom_active_map_t *)
 #define VPX_CTRL_VP9E_GET_ACTIVEMAP
 
 VPX_CTRL_USE_TYPE(VP9E_SET_COLOR_RANGE, int)
 #define VPX_CTRL_VP9E_SET_COLOR_RANGE
 
-VPX_CTRL_USE_TYPE(VP9E_SET_SVC_REF_FRAME_CONFIG, vpx_svc_ref_frame_config_t *)
+VPX_CTRL_USE_TYPE(VP9E_SET_SVC_REF_FRAME_CONFIG, aom_svc_ref_frame_config_t *)
 #define VPX_CTRL_VP9E_SET_SVC_REF_FRAME_CONFIG
 
 VPX_CTRL_USE_TYPE(VP9E_SET_RENDER_SIZE, int *)

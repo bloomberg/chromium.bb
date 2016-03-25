@@ -11,7 +11,7 @@
 
 #include <immintrin.h> /* AVX2 */
 
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 #include "aom_ports/mem.h"
 
 static void mb_lpf_horizontal_edge_w_avx2_8(unsigned char *s, int p,
@@ -102,7 +102,7 @@ static void mb_lpf_horizontal_edge_w_avx2_8(unsigned char *s, int p,
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
-    /* (vpx_filter + 3 * (qs0 - ps0)) & mask */
+    /* (aom_filter + 3 * (qs0 - ps0)) & mask */
     filt = _mm_and_si128(filt, mask);
 
     filter1 = _mm_adds_epi8(filt, t4);
@@ -481,7 +481,7 @@ static void mb_lpf_horizontal_edge_w_avx2_16(unsigned char *s, int p,
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
     filt = _mm_adds_epi8(filt, work_a);
-    /* (vpx_filter + 3 * (qs0 - ps0)) & mask */
+    /* (aom_filter + 3 * (qs0 - ps0)) & mask */
     filt = _mm_and_si128(filt, mask);
 
     filter1 = _mm_adds_epi8(filt, t4);
@@ -913,7 +913,7 @@ static void mb_lpf_horizontal_edge_w_avx2_16(unsigned char *s, int p,
   }
 }
 
-void vpx_lpf_horizontal_16_avx2(unsigned char *s, int p,
+void aom_lpf_horizontal_16_avx2(unsigned char *s, int p,
                                 const unsigned char *_blimit,
                                 const unsigned char *_limit,
                                 const unsigned char *_thresh, int count) {

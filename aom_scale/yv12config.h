@@ -16,10 +16,10 @@
 extern "C" {
 #endif
 
-#include "./vpx_config.h"
-#include "aom/vpx_codec.h"
-#include "aom/vpx_frame_buffer.h"
-#include "aom/vpx_integer.h"
+#include "./aom_config.h"
+#include "aom/aom_codec.h"
+#include "aom/aom_frame_buffer.h"
+#include "aom/aom_integer.h"
 
 #define VP8BORDERINPIXELS 32
 #define VPXINNERBORDERINPIXELS 96
@@ -56,8 +56,8 @@ typedef struct yv12_buffer_config {
   int subsampling_x;
   int subsampling_y;
   unsigned int bit_depth;
-  vpx_color_space_t color_space;
-  vpx_color_range_t color_range;
+  aom_color_space_t color_space;
+  aom_color_range_t color_range;
   int render_width;
   int render_height;
 
@@ -67,13 +67,13 @@ typedef struct yv12_buffer_config {
 
 #define YV12_FLAG_HIGHBITDEPTH 8
 
-int vpx_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
+int aom_yv12_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                                 int border);
-int vpx_yv12_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width,
+int aom_yv12_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width,
                                   int height, int border);
-int vpx_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf);
+int aom_yv12_de_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf);
 
-int vpx_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
+int aom_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                            int ss_x, int ss_y,
 #if CONFIG_VPX_HIGHBITDEPTH
                            int use_highbitdepth,
@@ -87,15 +87,15 @@ int vpx_alloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
 // to decode the current frame. If cb is NULL, libaom will allocate memory
 // internally to decode the current frame. Returns 0 on success. Returns < 0
 // on failure.
-int vpx_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
+int aom_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                              int ss_x, int ss_y,
 #if CONFIG_VPX_HIGHBITDEPTH
                              int use_highbitdepth,
 #endif
                              int border, int byte_alignment,
-                             vpx_codec_frame_buffer_t *fb,
-                             vpx_get_frame_buffer_cb_fn_t cb, void *cb_priv);
-int vpx_free_frame_buffer(YV12_BUFFER_CONFIG *ybf);
+                             aom_codec_frame_buffer_t *fb,
+                             aom_get_frame_buffer_cb_fn_t cb, void *cb_priv);
+int aom_free_frame_buffer(YV12_BUFFER_CONFIG *ybf);
 
 #ifdef __cplusplus
 }

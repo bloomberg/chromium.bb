@@ -13,7 +13,7 @@
 #include <assert.h>
 
 #include "./av1_rtcd.h"
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "av1/common/common.h"
 
 static int16_t cospi_2_64 = 16305;

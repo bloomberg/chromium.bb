@@ -27,7 +27,7 @@ struct VpxVideoReaderStruct {
   size_t frame_size;
 };
 
-VpxVideoReader *vpx_video_reader_open(const char *filename) {
+VpxVideoReader *aom_video_reader_open(const char *filename) {
   char header[32];
   VpxVideoReader *reader = NULL;
   FILE *const file = fopen(filename, "rb");
@@ -53,7 +53,7 @@ VpxVideoReader *vpx_video_reader_open(const char *filename) {
   return reader;
 }
 
-void vpx_video_reader_close(VpxVideoReader *reader) {
+void aom_video_reader_close(VpxVideoReader *reader) {
   if (reader) {
     fclose(reader->file);
     free(reader->buffer);
@@ -61,18 +61,18 @@ void vpx_video_reader_close(VpxVideoReader *reader) {
   }
 }
 
-int vpx_video_reader_read_frame(VpxVideoReader *reader) {
+int aom_video_reader_read_frame(VpxVideoReader *reader) {
   return !ivf_read_frame(reader->file, &reader->buffer, &reader->frame_size,
                          &reader->buffer_size);
 }
 
-const uint8_t *vpx_video_reader_get_frame(VpxVideoReader *reader,
+const uint8_t *aom_video_reader_get_frame(VpxVideoReader *reader,
                                           size_t *size) {
   if (size) *size = reader->frame_size;
 
   return reader->buffer;
 }
 
-const VpxVideoInfo *vpx_video_reader_get_info(VpxVideoReader *reader) {
+const VpxVideoInfo *aom_video_reader_get_info(VpxVideoReader *reader) {
   return &reader->info;
 }

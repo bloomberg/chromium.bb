@@ -38,8 +38,8 @@ struct EncodeParameters {
   int32_t lossless;
   int32_t error_resilient;
   int32_t frame_parallel;
-  vpx_color_range_t color_range;
-  vpx_color_space_t cs;
+  aom_color_range_t color_range;
+  aom_color_space_t cs;
   int render_size[2];
   // TODO(JBB): quantizers / bitrate
 };
@@ -92,12 +92,12 @@ class VpxEncoderParmsGetToDecoder
     }
   }
 
-  virtual bool HandleDecodeResult(const vpx_codec_err_t res_dec,
+  virtual bool HandleDecodeResult(const aom_codec_err_t res_dec,
                                   const libaom_test::VideoSource &video,
                                   libaom_test::Decoder *decoder) {
-    vpx_codec_ctx_t *const vp9_decoder = decoder->GetDecoder();
-    vpx_codec_alg_priv_t *const priv =
-        reinterpret_cast<vpx_codec_alg_priv_t *>(vp9_decoder->priv);
+    aom_codec_ctx_t *const vp9_decoder = decoder->GetDecoder();
+    aom_codec_alg_priv_t *const priv =
+        reinterpret_cast<aom_codec_alg_priv_t *>(vp9_decoder->priv);
     FrameWorkerData *const worker_data =
         reinterpret_cast<FrameWorkerData *>(priv->frame_workers[0].data1);
     VP10_COMMON *const common = &worker_data->pbi->common;

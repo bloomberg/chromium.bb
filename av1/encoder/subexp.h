@@ -18,23 +18,23 @@ extern "C" {
 
 #include "aom_dsp/prob.h"
 
-struct vpx_writer;
+struct aom_writer;
 
-void vp10_write_prob_diff_update(struct vpx_writer *w, vpx_prob newp,
-                                 vpx_prob oldp);
+void vp10_write_prob_diff_update(struct aom_writer *w, aom_prob newp,
+                                 aom_prob oldp);
 
-void vp10_cond_prob_diff_update(struct vpx_writer *w, vpx_prob *oldp,
+void vp10_cond_prob_diff_update(struct aom_writer *w, aom_prob *oldp,
                                 const unsigned int ct[2]);
 
-int vp10_prob_diff_update_savings_search(const unsigned int *ct, vpx_prob oldp,
-                                         vpx_prob *bestp, vpx_prob upd);
+int vp10_prob_diff_update_savings_search(const unsigned int *ct, aom_prob oldp,
+                                         aom_prob *bestp, aom_prob upd);
 
 int vp10_prob_diff_update_savings_search_model(const unsigned int *ct,
-                                               const vpx_prob *oldp,
-                                               vpx_prob *bestp, vpx_prob upd,
+                                               const aom_prob *oldp,
+                                               aom_prob *bestp, aom_prob upd,
                                                int stepsize);
 
-int vp10_cond_prob_diff_update_savings(vpx_prob *oldp,
+int vp10_cond_prob_diff_update_savings(aom_prob *oldp,
                                        const unsigned int ct[2]);
 #ifdef __cplusplus
 }  // extern "C"

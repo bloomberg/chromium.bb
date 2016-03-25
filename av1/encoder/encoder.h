@@ -14,7 +14,7 @@
 
 #include <stdio.h>
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "aom/vp8cx.h"
 
 #include "av1/common/alloccommon.h"
@@ -39,8 +39,8 @@
 #include "aom_dsp/ssim.h"
 #endif
 #include "aom_dsp/variance.h"
-#include "aom/internal/vpx_codec_internal.h"
-#include "aom_util/vpx_thread.h"
+#include "aom/internal/aom_codec_internal.h"
+#include "aom_util/aom_thread.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,7 +52,7 @@ typedef struct {
   int nmvcosts_hp[2][MV_VALS];
 
 #if !CONFIG_MISC_FIXES
-  vpx_prob segment_pred_probs[PREDICTION_PROBS];
+  aom_prob segment_pred_probs[PREDICTION_PROBS];
 #endif
 
   unsigned char *last_frame_seg_map_copy;
@@ -119,7 +119,7 @@ typedef enum {
 
 typedef struct VP10EncoderConfig {
   BITSTREAM_PROFILE profile;
-  vpx_bit_depth_t bit_depth;     // Codec bit-depth.
+  aom_bit_depth_t bit_depth;     // Codec bit-depth.
   int width;                     // width of data passed to the compressor
   int height;                    // height of data passed to the compressor
   unsigned int input_bit_depth;  // Input bit depth.
@@ -149,7 +149,7 @@ typedef struct VP10EncoderConfig {
   // DATARATE CONTROL OPTIONS
 
   // vbr, cbr, constrained quality or constant quality
-  enum vpx_rc_mode rc_mode;
+  enum aom_rc_mode rc_mode;
 
   // buffer targeting aggressiveness
   int under_shoot_pct;
@@ -217,19 +217,19 @@ typedef struct VP10EncoderConfig {
 
   int max_threads;
 
-  vpx_fixed_buf_t two_pass_stats_in;
-  struct vpx_codec_pkt_list *output_pkt_list;
+  aom_fixed_buf_t two_pass_stats_in;
+  struct aom_codec_pkt_list *output_pkt_list;
 
 #if CONFIG_FP_MB_STATS
-  vpx_fixed_buf_t firstpass_mb_stats_in;
+  aom_fixed_buf_t firstpass_mb_stats_in;
 #endif
 
-  vpx_tune_metric tuning;
-  vpx_tune_content content;
+  aom_tune_metric tuning;
+  aom_tune_content content;
 #if CONFIG_VPX_HIGHBITDEPTH
   int use_highbitdepth;
 #endif
-  vpx_color_space_t color_space;
+  aom_color_space_t color_space;
   int color_range;
   int render_width;
   int render_height;
@@ -346,7 +346,7 @@ typedef struct VP10_COMP {
 
   int interp_filter_selected[MAX_REF_FRAMES][SWITCHABLE];
 
-  struct vpx_codec_pkt_list *output_pkt_list;
+  struct aom_codec_pkt_list *output_pkt_list;
 
   MBGRAPH_FRAME_STATS mbgraph_stats[MAX_LAG_BUFFERS];
   int mbgraph_n_frames;  // number of frames filled in the above
@@ -378,7 +378,7 @@ typedef struct VP10_COMP {
   fractional_mv_step_fp *find_fractional_mv_step;
   vp10_full_search_fn_t full_search_sad;
   vp10_diamond_search_fn_t diamond_search_sad;
-  vpx_variance_fn_ptr_t fn_ptr[BLOCK_SIZES];
+  aom_variance_fn_ptr_t fn_ptr[BLOCK_SIZES];
   uint64_t time_receive_data;
   uint64_t time_compress_data;
   uint64_t time_pick_lpf;
@@ -603,7 +603,7 @@ YV12_BUFFER_CONFIG *vp10_scale_if_required(VP10_COMMON *cm,
                                            YV12_BUFFER_CONFIG *unscaled,
                                            YV12_BUFFER_CONFIG *scaled);
 
-void vp10_apply_encoding_flags(VP10_COMP *cpi, vpx_enc_frame_flags_t flags);
+void vp10_apply_encoding_flags(VP10_COMP *cpi, aom_enc_frame_flags_t flags);
 
 static INLINE int is_altref_enabled(const VP10_COMP *const cpi) {
   return cpi->oxcf.mode != REALTIME && cpi->oxcf.lag_in_frames > 0 &&

@@ -12,18 +12,18 @@
 
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "./av1_rtcd.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 #include "test/acm_random.h"
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "av1/common/common.h"
 #include "av1/common/filter.h"
-#include "aom_dsp/vpx_dsp_common.h"
-#include "aom_dsp/vpx_filter.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/aom_filter.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
 namespace {
@@ -273,38 +273,38 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
   static void SetUpTestCase() {
     // Force input_ to be unaligned, output to be 16 byte aligned.
     input_ = reinterpret_cast<uint8_t *>(
-                 vpx_memalign(kDataAlignment, kInputBufferSize + 1)) +
+                 aom_memalign(kDataAlignment, kInputBufferSize + 1)) +
              1;
     output_ = reinterpret_cast<uint8_t *>(
-        vpx_memalign(kDataAlignment, kOutputBufferSize));
+        aom_memalign(kDataAlignment, kOutputBufferSize));
     output_ref_ = reinterpret_cast<uint8_t *>(
-        vpx_memalign(kDataAlignment, kOutputBufferSize));
+        aom_memalign(kDataAlignment, kOutputBufferSize));
 #if CONFIG_VPX_HIGHBITDEPTH
-    input16_ = reinterpret_cast<uint16_t *>(vpx_memalign(
+    input16_ = reinterpret_cast<uint16_t *>(aom_memalign(
                    kDataAlignment, (kInputBufferSize + 1) * sizeof(uint16_t))) +
                1;
     output16_ = reinterpret_cast<uint16_t *>(
-        vpx_memalign(kDataAlignment, (kOutputBufferSize) * sizeof(uint16_t)));
+        aom_memalign(kDataAlignment, (kOutputBufferSize) * sizeof(uint16_t)));
     output16_ref_ = reinterpret_cast<uint16_t *>(
-        vpx_memalign(kDataAlignment, (kOutputBufferSize) * sizeof(uint16_t)));
+        aom_memalign(kDataAlignment, (kOutputBufferSize) * sizeof(uint16_t)));
 #endif
   }
 
   virtual void TearDown() { libaom_test::ClearSystemState(); }
 
   static void TearDownTestCase() {
-    vpx_free(input_ - 1);
+    aom_free(input_ - 1);
     input_ = NULL;
-    vpx_free(output_);
+    aom_free(output_);
     output_ = NULL;
-    vpx_free(output_ref_);
+    aom_free(output_ref_);
     output_ref_ = NULL;
 #if CONFIG_VPX_HIGHBITDEPTH
-    vpx_free(input16_ - 1);
+    aom_free(input16_ - 1);
     input16_ = NULL;
-    vpx_free(output16_);
+    aom_free(output16_);
     output16_ = NULL;
-    vpx_free(output16_ref_);
+    aom_free(output16_ref_);
     output16_ref_ = NULL;
 #endif
   }
@@ -367,7 +367,7 @@ class ConvolveTest : public ::testing::TestWithParam<ConvolveParam> {
   void SetConstantInput(int value) {
     memset(input_, value, kInputBufferSize);
 #if CONFIG_VPX_HIGHBITDEPTH
-    vpx_memset16(input16_, value, kInputBufferSize);
+    aom_memset16(input16_, value, kInputBufferSize);
 #endif
   }
 
@@ -900,7 +900,7 @@ using std::tr1::make_tuple;
       const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,                \
       ptrdiff_t dst_stride, const int16_t *filter_x, int filter_x_stride,    \
       const int16_t *filter_y, int filter_y_stride, int w, int h) {          \
-    vpx_highbd_##func(src, src_stride, dst, dst_stride, filter_x,            \
+    aom_highbd_##func(src, src_stride, dst, dst_stride, filter_x,            \
                       filter_x_stride, filter_y, filter_y_stride, w, h, bd); \
   }
 #if HAVE_SSE2 && ARCH_X86_64
@@ -1013,11 +1013,11 @@ INSTANTIATE_TEST_CASE_P(
 #else
 
 const ConvolveFunctions convolve8_c(
-    vpx_convolve_copy_c, vpx_convolve_avg_c, vpx_convolve8_horiz_c,
-    vpx_convolve8_avg_horiz_c, vpx_convolve8_vert_c, vpx_convolve8_avg_vert_c,
-    vpx_convolve8_c, vpx_convolve8_avg_c, vpx_scaled_horiz_c,
-    vpx_scaled_avg_horiz_c, vpx_scaled_vert_c, vpx_scaled_avg_vert_c,
-    vpx_scaled_2d_c, vpx_scaled_avg_2d_c, 0);
+    aom_convolve_copy_c, aom_convolve_avg_c, aom_convolve8_horiz_c,
+    aom_convolve8_avg_horiz_c, aom_convolve8_vert_c, aom_convolve8_avg_vert_c,
+    aom_convolve8_c, aom_convolve8_avg_c, aom_scaled_horiz_c,
+    aom_scaled_avg_horiz_c, aom_scaled_vert_c, aom_scaled_avg_vert_c,
+    aom_scaled_2d_c, aom_scaled_avg_2d_c, 0);
 
 INSTANTIATE_TEST_CASE_P(
     C, ConvolveTest,
@@ -1106,15 +1106,15 @@ INSTANTIATE_TEST_CASE_P(
 #else
 const ConvolveFunctions convolve8_sse2(
 #if CONFIG_USE_X86INC
-    vpx_convolve_copy_sse2, vpx_convolve_avg_sse2,
+    aom_convolve_copy_sse2, aom_convolve_avg_sse2,
 #else
-    vpx_convolve_copy_c, vpx_convolve_avg_c,
+    aom_convolve_copy_c, aom_convolve_avg_c,
 #endif  // CONFIG_USE_X86INC
-    vpx_convolve8_horiz_sse2, vpx_convolve8_avg_horiz_sse2,
-    vpx_convolve8_vert_sse2, vpx_convolve8_avg_vert_sse2, vpx_convolve8_sse2,
-    vpx_convolve8_avg_sse2, vpx_scaled_horiz_c, vpx_scaled_avg_horiz_c,
-    vpx_scaled_vert_c, vpx_scaled_avg_vert_c, vpx_scaled_2d_c,
-    vpx_scaled_avg_2d_c, 0);
+    aom_convolve8_horiz_sse2, aom_convolve8_avg_horiz_sse2,
+    aom_convolve8_vert_sse2, aom_convolve8_avg_vert_sse2, aom_convolve8_sse2,
+    aom_convolve8_avg_sse2, aom_scaled_horiz_c, aom_scaled_avg_horiz_c,
+    aom_scaled_vert_c, aom_scaled_avg_vert_c, aom_scaled_2d_c,
+    aom_scaled_avg_2d_c, 0);
 
 INSTANTIATE_TEST_CASE_P(SSE2, ConvolveTest,
                         ::testing::Values(make_tuple(4, 4, &convolve8_sse2),
@@ -1135,11 +1135,11 @@ INSTANTIATE_TEST_CASE_P(SSE2, ConvolveTest,
 
 #if HAVE_SSSE3
 const ConvolveFunctions convolve8_ssse3(
-    vpx_convolve_copy_c, vpx_convolve_avg_c, vpx_convolve8_horiz_ssse3,
-    vpx_convolve8_avg_horiz_ssse3, vpx_convolve8_vert_ssse3,
-    vpx_convolve8_avg_vert_ssse3, vpx_convolve8_ssse3, vpx_convolve8_avg_ssse3,
-    vpx_scaled_horiz_c, vpx_scaled_avg_horiz_c, vpx_scaled_vert_c,
-    vpx_scaled_avg_vert_c, vpx_scaled_2d_c, vpx_scaled_avg_2d_c, 0);
+    aom_convolve_copy_c, aom_convolve_avg_c, aom_convolve8_horiz_ssse3,
+    aom_convolve8_avg_horiz_ssse3, aom_convolve8_vert_ssse3,
+    aom_convolve8_avg_vert_ssse3, aom_convolve8_ssse3, aom_convolve8_avg_ssse3,
+    aom_scaled_horiz_c, aom_scaled_avg_horiz_c, aom_scaled_vert_c,
+    aom_scaled_avg_vert_c, aom_scaled_2d_c, aom_scaled_avg_2d_c, 0);
 
 INSTANTIATE_TEST_CASE_P(SSSE3, ConvolveTest,
                         ::testing::Values(make_tuple(4, 4, &convolve8_ssse3),
@@ -1160,11 +1160,11 @@ INSTANTIATE_TEST_CASE_P(SSSE3, ConvolveTest,
 
 #if HAVE_AVX2 && HAVE_SSSE3
 const ConvolveFunctions convolve8_avx2(
-    vpx_convolve_copy_c, vpx_convolve_avg_c, vpx_convolve8_horiz_avx2,
-    vpx_convolve8_avg_horiz_ssse3, vpx_convolve8_vert_avx2,
-    vpx_convolve8_avg_vert_ssse3, vpx_convolve8_avx2, vpx_convolve8_avg_ssse3,
-    vpx_scaled_horiz_c, vpx_scaled_avg_horiz_c, vpx_scaled_vert_c,
-    vpx_scaled_avg_vert_c, vpx_scaled_2d_c, vpx_scaled_avg_2d_c, 0);
+    aom_convolve_copy_c, aom_convolve_avg_c, aom_convolve8_horiz_avx2,
+    aom_convolve8_avg_horiz_ssse3, aom_convolve8_vert_avx2,
+    aom_convolve8_avg_vert_ssse3, aom_convolve8_avx2, aom_convolve8_avg_ssse3,
+    aom_scaled_horiz_c, aom_scaled_avg_horiz_c, aom_scaled_vert_c,
+    aom_scaled_avg_vert_c, aom_scaled_2d_c, aom_scaled_avg_2d_c, 0);
 
 INSTANTIATE_TEST_CASE_P(AVX2, ConvolveTest,
                         ::testing::Values(make_tuple(4, 4, &convolve8_avx2),
@@ -1185,18 +1185,18 @@ INSTANTIATE_TEST_CASE_P(AVX2, ConvolveTest,
 #if HAVE_NEON
 #if HAVE_NEON_ASM
 const ConvolveFunctions convolve8_neon(
-    vpx_convolve_copy_neon, vpx_convolve_avg_neon, vpx_convolve8_horiz_neon,
-    vpx_convolve8_avg_horiz_neon, vpx_convolve8_vert_neon,
-    vpx_convolve8_avg_vert_neon, vpx_convolve8_neon, vpx_convolve8_avg_neon,
-    vpx_scaled_horiz_c, vpx_scaled_avg_horiz_c, vpx_scaled_vert_c,
-    vpx_scaled_avg_vert_c, vpx_scaled_2d_c, vpx_scaled_avg_2d_c, 0);
+    aom_convolve_copy_neon, aom_convolve_avg_neon, aom_convolve8_horiz_neon,
+    aom_convolve8_avg_horiz_neon, aom_convolve8_vert_neon,
+    aom_convolve8_avg_vert_neon, aom_convolve8_neon, aom_convolve8_avg_neon,
+    aom_scaled_horiz_c, aom_scaled_avg_horiz_c, aom_scaled_vert_c,
+    aom_scaled_avg_vert_c, aom_scaled_2d_c, aom_scaled_avg_2d_c, 0);
 #else   // HAVE_NEON
 const ConvolveFunctions convolve8_neon(
-    vpx_convolve_copy_neon, vpx_convolve_avg_neon, vpx_convolve8_horiz_neon,
-    vpx_convolve8_avg_horiz_neon, vpx_convolve8_vert_neon,
-    vpx_convolve8_avg_vert_neon, vpx_convolve8_neon, vpx_convolve8_avg_neon,
-    vpx_scaled_horiz_c, vpx_scaled_avg_horiz_c, vpx_scaled_vert_c,
-    vpx_scaled_avg_vert_c, vpx_scaled_2d_c, vpx_scaled_avg_2d_c, 0);
+    aom_convolve_copy_neon, aom_convolve_avg_neon, aom_convolve8_horiz_neon,
+    aom_convolve8_avg_horiz_neon, aom_convolve8_vert_neon,
+    aom_convolve8_avg_vert_neon, aom_convolve8_neon, aom_convolve8_avg_neon,
+    aom_scaled_horiz_c, aom_scaled_avg_horiz_c, aom_scaled_vert_c,
+    aom_scaled_avg_vert_c, aom_scaled_2d_c, aom_scaled_avg_2d_c, 0);
 #endif  // HAVE_NEON_ASM
 
 INSTANTIATE_TEST_CASE_P(NEON, ConvolveTest,
@@ -1217,11 +1217,11 @@ INSTANTIATE_TEST_CASE_P(NEON, ConvolveTest,
 
 #if HAVE_DSPR2
 const ConvolveFunctions convolve8_dspr2(
-    vpx_convolve_copy_dspr2, vpx_convolve_avg_dspr2, vpx_convolve8_horiz_dspr2,
-    vpx_convolve8_avg_horiz_dspr2, vpx_convolve8_vert_dspr2,
-    vpx_convolve8_avg_vert_dspr2, vpx_convolve8_dspr2, vpx_convolve8_avg_dspr2,
-    vpx_scaled_horiz_c, vpx_scaled_avg_horiz_c, vpx_scaled_vert_c,
-    vpx_scaled_avg_vert_c, vpx_scaled_2d_c, vpx_scaled_avg_2d_c, 0);
+    aom_convolve_copy_dspr2, aom_convolve_avg_dspr2, aom_convolve8_horiz_dspr2,
+    aom_convolve8_avg_horiz_dspr2, aom_convolve8_vert_dspr2,
+    aom_convolve8_avg_vert_dspr2, aom_convolve8_dspr2, aom_convolve8_avg_dspr2,
+    aom_scaled_horiz_c, aom_scaled_avg_horiz_c, aom_scaled_vert_c,
+    aom_scaled_avg_vert_c, aom_scaled_2d_c, aom_scaled_avg_2d_c, 0);
 
 INSTANTIATE_TEST_CASE_P(DSPR2, ConvolveTest,
                         ::testing::Values(make_tuple(4, 4, &convolve8_dspr2),
@@ -1242,11 +1242,11 @@ INSTANTIATE_TEST_CASE_P(DSPR2, ConvolveTest,
 
 #if HAVE_MSA
 const ConvolveFunctions convolve8_msa(
-    vpx_convolve_copy_msa, vpx_convolve_avg_msa, vpx_convolve8_horiz_msa,
-    vpx_convolve8_avg_horiz_msa, vpx_convolve8_vert_msa,
-    vpx_convolve8_avg_vert_msa, vpx_convolve8_msa, vpx_convolve8_avg_msa,
-    vpx_scaled_horiz_c, vpx_scaled_avg_horiz_c, vpx_scaled_vert_c,
-    vpx_scaled_avg_vert_c, vpx_scaled_2d_c, vpx_scaled_avg_2d_c, 0);
+    aom_convolve_copy_msa, aom_convolve_avg_msa, aom_convolve8_horiz_msa,
+    aom_convolve8_avg_horiz_msa, aom_convolve8_vert_msa,
+    aom_convolve8_avg_vert_msa, aom_convolve8_msa, aom_convolve8_avg_msa,
+    aom_scaled_horiz_c, aom_scaled_avg_horiz_c, aom_scaled_vert_c,
+    aom_scaled_avg_vert_c, aom_scaled_2d_c, aom_scaled_avg_2d_c, 0);
 
 INSTANTIATE_TEST_CASE_P(
     MSA, ConvolveTest,

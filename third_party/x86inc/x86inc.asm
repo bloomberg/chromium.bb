@@ -34,10 +34,10 @@
 ; as this feature might be useful for others as well.  Send patches or ideas
 ; to x264-devel@videolan.org .
 
-%include "vpx_config.asm"
+%include "aom_config.asm"
 
 %ifndef private_prefix
-    %define private_prefix vpx
+    %define private_prefix aom
 %endif
 
 %ifndef public_prefix
@@ -102,7 +102,7 @@
     %endif
 %endmacro
 
-; PIC macros are copied from vpx_ports/x86_abi_support.asm. The "define PIC"
+; PIC macros are copied from aom_ports/x86_abi_support.asm. The "define PIC"
 ; from original code is added in for 64bit.
 %ifidn __OUTPUT_FORMAT__,elf32
 %define ABI_IS_32BIT 1

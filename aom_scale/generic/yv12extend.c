@@ -10,10 +10,10 @@
  */
 
 #include <assert.h>
-#include "./vpx_config.h"
-#include "./vpx_scale_rtcd.h"
-#include "aom/vpx_integer.h"
-#include "aom_mem/vpx_mem.h"
+#include "./aom_config.h"
+#include "./aom_scale_rtcd.h"
+#include "aom/aom_integer.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "aom_scale/yv12config.h"
 #if CONFIG_VPX_HIGHBITDEPTH
@@ -75,8 +75,8 @@ static void extend_plane_high(uint8_t *const src8, int src_stride, int width,
   uint16_t *dst_ptr2 = src + width;
 
   for (i = 0; i < height; ++i) {
-    vpx_memset16(dst_ptr1, src_ptr1[0], extend_left);
-    vpx_memset16(dst_ptr2, src_ptr2[0], extend_right);
+    aom_memset16(dst_ptr1, src_ptr1[0], extend_left);
+    aom_memset16(dst_ptr2, src_ptr2[0], extend_right);
     src_ptr1 += src_stride;
     src_ptr2 += src_stride;
     dst_ptr1 += src_stride;
@@ -103,7 +103,7 @@ static void extend_plane_high(uint8_t *const src8, int src_stride, int width,
 }
 #endif
 
-void vpx_yv12_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf) {
+void aom_yv12_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf) {
   const int uv_border = ybf->border / 2;
 
   assert(ybf->border % 2 == 0);
@@ -186,11 +186,11 @@ static void extend_frame(YV12_BUFFER_CONFIG *const ybf, int ext_size) {
   extend_plane(ybf->v_buffer, ybf->uv_stride, c_w, c_h, c_et, c_el, c_eb, c_er);
 }
 
-void vpx_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf) {
+void aom_extend_frame_borders_c(YV12_BUFFER_CONFIG *ybf) {
   extend_frame(ybf, ybf->border);
 }
 
-void vpx_extend_frame_inner_borders_c(YV12_BUFFER_CONFIG *ybf) {
+void aom_extend_frame_inner_borders_c(YV12_BUFFER_CONFIG *ybf) {
   const int inner_bw = (ybf->border > VPXINNERBORDERINPIXELS)
                            ? VPXINNERBORDERINPIXELS
                            : ybf->border;
@@ -209,7 +209,7 @@ void memcpy_short_addr(uint8_t *dst8, const uint8_t *src8, int num) {
 // Copies the source image into the destination image and updates the
 // destination's UMV borders.
 // Note: The frames are assumed to be identical in size.
-void vpx_yv12_copy_frame_c(const YV12_BUFFER_CONFIG *src_ybc,
+void aom_yv12_copy_frame_c(const YV12_BUFFER_CONFIG *src_ybc,
                            YV12_BUFFER_CONFIG *dst_ybc) {
   int row;
   const uint8_t *src = src_ybc->y_buffer;
@@ -250,7 +250,7 @@ void vpx_yv12_copy_frame_c(const YV12_BUFFER_CONFIG *src_ybc,
       dst += dst_ybc->uv_stride;
     }
 
-    vpx_yv12_extend_frame_borders_c(dst_ybc);
+    aom_yv12_extend_frame_borders_c(dst_ybc);
     return;
   } else {
     assert(!(dst_ybc->flags & YV12_FLAG_HIGHBITDEPTH));
@@ -281,10 +281,10 @@ void vpx_yv12_copy_frame_c(const YV12_BUFFER_CONFIG *src_ybc,
     dst += dst_ybc->uv_stride;
   }
 
-  vpx_yv12_extend_frame_borders_c(dst_ybc);
+  aom_yv12_extend_frame_borders_c(dst_ybc);
 }
 
-void vpx_yv12_copy_y_c(const YV12_BUFFER_CONFIG *src_ybc,
+void aom_yv12_copy_y_c(const YV12_BUFFER_CONFIG *src_ybc,
                        YV12_BUFFER_CONFIG *dst_ybc) {
   int row;
   const uint8_t *src = src_ybc->y_buffer;

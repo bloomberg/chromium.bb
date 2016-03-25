@@ -15,12 +15,12 @@
 // Integer pel reference mv threshold for use of high-precision 1/8 mv
 #define COMPANDED_MVREF_THRESH 8
 
-const vpx_tree_index vp10_mv_joint_tree[TREE_SIZE(MV_JOINTS)] = {
+const aom_tree_index vp10_mv_joint_tree[TREE_SIZE(MV_JOINTS)] = {
   -MV_JOINT_ZERO, 2, -MV_JOINT_HNZVZ, 4, -MV_JOINT_HZVNZ, -MV_JOINT_HNZVNZ
 };
 
 /* clang-format off */
-const vpx_tree_index vp10_mv_class_tree[TREE_SIZE(MV_CLASSES)] = {
+const aom_tree_index vp10_mv_class_tree[TREE_SIZE(MV_CLASSES)] = {
   -MV_CLASS_0, 2,
   -MV_CLASS_1, 4,
   6, 8,
@@ -34,11 +34,11 @@ const vpx_tree_index vp10_mv_class_tree[TREE_SIZE(MV_CLASSES)] = {
 };
 /* clang-format on */
 
-const vpx_tree_index vp10_mv_class0_tree[TREE_SIZE(CLASS0_SIZE)] = {
+const aom_tree_index vp10_mv_class0_tree[TREE_SIZE(CLASS0_SIZE)] = {
   -0, -1,
 };
 
-const vpx_tree_index vp10_mv_fp_tree[TREE_SIZE(MV_FP_SIZE)] = { -0, 2,  -1,
+const aom_tree_index vp10_mv_fp_tree[TREE_SIZE(MV_FP_SIZE)] = { -0, 2,  -1,
                                                                 4,  -2, -3 };
 
 static const nmv_context default_nmv_context = {
@@ -184,7 +184,7 @@ void vp10_adapt_mv_probs(VP10_COMMON *cm, int allow_hp) {
   const nmv_context *pre_fc = &cm->frame_contexts[cm->frame_context_idx].nmvc;
   const nmv_context_counts *counts = &cm->counts.mv;
 
-  vpx_tree_merge_probs(vp10_mv_joint_tree, pre_fc->joints, counts->joints,
+  aom_tree_merge_probs(vp10_mv_joint_tree, pre_fc->joints, counts->joints,
                        fc->joints);
 
   for (i = 0; i < 2; ++i) {
@@ -193,19 +193,19 @@ void vp10_adapt_mv_probs(VP10_COMMON *cm, int allow_hp) {
     const nmv_component_counts *c = &counts->comps[i];
 
     comp->sign = mode_mv_merge_probs(pre_comp->sign, c->sign);
-    vpx_tree_merge_probs(vp10_mv_class_tree, pre_comp->classes, c->classes,
+    aom_tree_merge_probs(vp10_mv_class_tree, pre_comp->classes, c->classes,
                          comp->classes);
-    vpx_tree_merge_probs(vp10_mv_class0_tree, pre_comp->class0, c->class0,
+    aom_tree_merge_probs(vp10_mv_class0_tree, pre_comp->class0, c->class0,
                          comp->class0);
 
     for (j = 0; j < MV_OFFSET_BITS; ++j)
       comp->bits[j] = mode_mv_merge_probs(pre_comp->bits[j], c->bits[j]);
 
     for (j = 0; j < CLASS0_SIZE; ++j)
-      vpx_tree_merge_probs(vp10_mv_fp_tree, pre_comp->class0_fp[j],
+      aom_tree_merge_probs(vp10_mv_fp_tree, pre_comp->class0_fp[j],
                            c->class0_fp[j], comp->class0_fp[j]);
 
-    vpx_tree_merge_probs(vp10_mv_fp_tree, pre_comp->fp, c->fp, comp->fp);
+    aom_tree_merge_probs(vp10_mv_fp_tree, pre_comp->fp, c->fp, comp->fp);
 
     if (allow_hp) {
       comp->class0_hp = mode_mv_merge_probs(pre_comp->class0_hp, c->class0_hp);

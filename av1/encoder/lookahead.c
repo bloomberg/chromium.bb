@@ -11,7 +11,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 
 #include "av1/common/common.h"
 
@@ -36,7 +36,7 @@ void vp10_lookahead_destroy(struct lookahead_ctx *ctx) {
     if (ctx->buf) {
       unsigned int i;
 
-      for (i = 0; i < ctx->max_sz; i++) vpx_free_frame_buffer(&ctx->buf[i].img);
+      for (i = 0; i < ctx->max_sz; i++) aom_free_frame_buffer(&ctx->buf[i].img);
       free(ctx->buf);
     }
     free(ctx);
@@ -68,7 +68,7 @@ struct lookahead_ctx *vp10_lookahead_init(unsigned int width,
     ctx->buf = calloc(depth, sizeof(*ctx->buf));
     if (!ctx->buf) goto bail;
     for (i = 0; i < depth; i++)
-      if (vpx_alloc_frame_buffer(
+      if (aom_alloc_frame_buffer(
               &ctx->buf[i].img, width, height, subsampling_x, subsampling_y,
 #if CONFIG_VPX_HIGHBITDEPTH
               use_highbitdepth,
@@ -160,14 +160,14 @@ int vp10_lookahead_push(struct lookahead_ctx *ctx, YV12_BUFFER_CONFIG *src,
     if (larger_dimensions) {
       YV12_BUFFER_CONFIG new_img;
       memset(&new_img, 0, sizeof(new_img));
-      if (vpx_alloc_frame_buffer(&new_img, width, height, subsampling_x,
+      if (aom_alloc_frame_buffer(&new_img, width, height, subsampling_x,
                                  subsampling_y,
 #if CONFIG_VPX_HIGHBITDEPTH
                                  use_highbitdepth,
 #endif
                                  VPX_ENC_BORDER_IN_PIXELS, 0))
         return 1;
-      vpx_free_frame_buffer(&buf->img);
+      aom_free_frame_buffer(&buf->img);
       buf->img = new_img;
     } else if (new_dimensions) {
       buf->img.y_crop_width = src->y_crop_width;

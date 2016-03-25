@@ -15,8 +15,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "./vpx_config.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_config.h"
+#include "./aom_dsp_rtcd.h"
 #include "aom_dsp/ssim.h"
 #include "aom_ports/system_state.h"
 
@@ -28,7 +28,7 @@
 static void od_bin_fdct8x8(tran_low_t *y, int ystride, const int16_t *x,
                            int xstride) {
   (void)xstride;
-  vpx_fdct8x8(x, y, ystride);
+  aom_fdct8x8(x, y, ystride);
 }
 
 /* Normalized inverse quantization matrix for 8x8 DCT at the point of
@@ -202,13 +202,13 @@ static double calc_psnrhvs(const unsigned char *_src, int _systride,
   ret /= pixels;
   return ret;
 }
-double vpx_psnrhvs(const YV12_BUFFER_CONFIG *source,
+double aom_psnrhvs(const YV12_BUFFER_CONFIG *source,
                    const YV12_BUFFER_CONFIG *dest, double *y_psnrhvs,
                    double *u_psnrhvs, double *v_psnrhvs) {
   double psnrhvs;
   const double par = 1.0;
   const int step = 7;
-  vpx_clear_system_state();
+  aom_clear_system_state();
   *y_psnrhvs = calc_psnrhvs(source->y_buffer, source->y_stride, dest->y_buffer,
                             dest->y_stride, par, source->y_crop_width,
                             source->y_crop_height, step, csf_y);

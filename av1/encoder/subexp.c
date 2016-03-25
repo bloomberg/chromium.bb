@@ -83,49 +83,49 @@ static int remap_prob(int v, int m) {
   return i;
 }
 
-static int prob_diff_update_cost(vpx_prob newp, vpx_prob oldp) {
+static int prob_diff_update_cost(aom_prob newp, aom_prob oldp) {
   int delp = remap_prob(newp, oldp);
   return update_bits[delp] << VP9_PROB_COST_SHIFT;
 }
 
-static void encode_uniform(vpx_writer *w, int v) {
+static void encode_uniform(aom_writer *w, int v) {
   const int l = 8;
   const int m = (1 << l) - 191 + CONFIG_MISC_FIXES;
   if (v < m) {
-    vpx_write_literal(w, v, l - 1);
+    aom_write_literal(w, v, l - 1);
   } else {
-    vpx_write_literal(w, m + ((v - m) >> 1), l - 1);
-    vpx_write_literal(w, (v - m) & 1, 1);
+    aom_write_literal(w, m + ((v - m) >> 1), l - 1);
+    aom_write_literal(w, (v - m) & 1, 1);
   }
 }
 
-static INLINE int write_bit_gte(vpx_writer *w, int word, int test) {
-  vpx_write_literal(w, word >= test, 1);
+static INLINE int write_bit_gte(aom_writer *w, int word, int test) {
+  aom_write_literal(w, word >= test, 1);
   return word >= test;
 }
 
-static void encode_term_subexp(vpx_writer *w, int word) {
+static void encode_term_subexp(aom_writer *w, int word) {
   if (!write_bit_gte(w, word, 16)) {
-    vpx_write_literal(w, word, 4);
+    aom_write_literal(w, word, 4);
   } else if (!write_bit_gte(w, word, 32)) {
-    vpx_write_literal(w, word - 16, 4);
+    aom_write_literal(w, word - 16, 4);
   } else if (!write_bit_gte(w, word, 64)) {
-    vpx_write_literal(w, word - 32, 5);
+    aom_write_literal(w, word - 32, 5);
   } else {
     encode_uniform(w, word - 64);
   }
 }
 
-void vp10_write_prob_diff_update(vpx_writer *w, vpx_prob newp, vpx_prob oldp) {
+void vp10_write_prob_diff_update(aom_writer *w, aom_prob newp, aom_prob oldp) {
   const int delp = remap_prob(newp, oldp);
   encode_term_subexp(w, delp);
 }
 
-int vp10_prob_diff_update_savings_search(const unsigned int *ct, vpx_prob oldp,
-                                         vpx_prob *bestp, vpx_prob upd) {
+int vp10_prob_diff_update_savings_search(const unsigned int *ct, aom_prob oldp,
+                                         aom_prob *bestp, aom_prob upd) {
   const int old_b = cost_branch256(ct, oldp);
   int bestsavings = 0;
-  vpx_prob newp, bestnewp = oldp;
+  aom_prob newp, bestnewp = oldp;
   const int step = *bestp > oldp ? -1 : 1;
 
   for (newp = *bestp; newp != oldp; newp += step) {
@@ -142,14 +142,14 @@ int vp10_prob_diff_update_savings_search(const unsigned int *ct, vpx_prob oldp,
 }
 
 int vp10_prob_diff_update_savings_search_model(const unsigned int *ct,
-                                               const vpx_prob *oldp,
-                                               vpx_prob *bestp, vpx_prob upd,
+                                               const aom_prob *oldp,
+                                               aom_prob *bestp, aom_prob upd,
                                                int stepsize) {
   int i, old_b, new_b, update_b, savings, bestsavings, step;
   int newp;
-  vpx_prob bestnewp, newplist[ENTROPY_NODES], oldplist[ENTROPY_NODES];
+  aom_prob bestnewp, newplist[ENTROPY_NODES], oldplist[ENTROPY_NODES];
   vp10_model_to_full_probs(oldp, oldplist);
-  memcpy(newplist, oldp, sizeof(vpx_prob) * UNCONSTRAINED_NODES);
+  memcpy(newplist, oldp, sizeof(aom_prob) * UNCONSTRAINED_NODES);
   for (i = UNCONSTRAINED_NODES, old_b = 0; i < ENTROPY_NODES; ++i)
     old_b += cost_branch256(ct + 2 * i, oldplist[i]);
   old_b += cost_branch256(ct + 2 * PIVOT_NODE, oldplist[PIVOT_NODE]);
@@ -197,26 +197,26 @@ int vp10_prob_diff_update_savings_search_model(const unsigned int *ct,
   return bestsavings;
 }
 
-void vp10_cond_prob_diff_update(vpx_writer *w, vpx_prob *oldp,
+void vp10_cond_prob_diff_update(aom_writer *w, aom_prob *oldp,
                                 const unsigned int ct[2]) {
-  const vpx_prob upd = DIFF_UPDATE_PROB;
-  vpx_prob newp = get_binary_prob(ct[0], ct[1]);
+  const aom_prob upd = DIFF_UPDATE_PROB;
+  aom_prob newp = get_binary_prob(ct[0], ct[1]);
   const int savings =
       vp10_prob_diff_update_savings_search(ct, *oldp, &newp, upd);
   assert(newp >= 1);
   if (savings > 0) {
-    vpx_write(w, 1, upd);
+    aom_write(w, 1, upd);
     vp10_write_prob_diff_update(w, newp, *oldp);
     *oldp = newp;
   } else {
-    vpx_write(w, 0, upd);
+    aom_write(w, 0, upd);
   }
 }
 
-int vp10_cond_prob_diff_update_savings(vpx_prob *oldp,
+int vp10_cond_prob_diff_update_savings(aom_prob *oldp,
                                        const unsigned int ct[2]) {
-  const vpx_prob upd = DIFF_UPDATE_PROB;
-  vpx_prob newp = get_binary_prob(ct[0], ct[1]);
+  const aom_prob upd = DIFF_UPDATE_PROB;
+  aom_prob newp = get_binary_prob(ct[0], ct[1]);
   const int savings =
       vp10_prob_diff_update_savings_search(ct, *oldp, &newp, upd);
   return savings;

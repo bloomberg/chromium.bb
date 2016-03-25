@@ -14,9 +14,9 @@
 
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 #include "test/acm_random.h"
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 
 using libaom_test::ACMRandom;
 
@@ -79,7 +79,7 @@ TEST(VP9Idct8x8Test, AccuracyCheck) {
 
     reference_dct_2d(input, output_r);
     for (int j = 0; j < 64; ++j) coeff[j] = round(output_r[j]);
-    vpx_idct8x8_64_add_c(coeff, dst, 8);
+    aom_idct8x8_64_add_c(coeff, dst, 8);
     for (int j = 0; j < 64; ++j) {
       const int diff = dst[j] - src[j];
       const int error = diff * diff;

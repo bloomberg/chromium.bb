@@ -16,10 +16,10 @@
 
 #include <assert.h>
 
-#include "./vpx_config.h"
-#include "aom_dsp/vpx_dsp_common.h"
-#include "aom_mem/vpx_mem.h"
-#include "aom/vpx_integer.h"
+#include "./aom_config.h"
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_mem/aom_mem.h"
+#include "aom/aom_integer.h"
 #include "aom_ports/bitops.h"
 
 #ifdef __cplusplus
@@ -52,7 +52,7 @@ static INLINE int get_unsigned_bits(unsigned int num_values) {
   do {                                                                      \
     lval = (expr);                                                          \
     if (!lval)                                                              \
-      vpx_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,                   \
+      aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR,                   \
                          "Failed to allocate " #lval " at %s:%d", __FILE__, \
                          __LINE__);                                         \
   } while (0)
@@ -61,7 +61,7 @@ static INLINE int get_unsigned_bits(unsigned int num_values) {
   do {                                                    \
     lval = (expr);                                        \
     if (!lval)                                            \
-      vpx_internal_error(&cm->error, VPX_CODEC_MEM_ERROR, \
+      aom_internal_error(&cm->error, VPX_CODEC_MEM_ERROR, \
                          "Failed to allocate " #lval);    \
   } while (0)
 #endif

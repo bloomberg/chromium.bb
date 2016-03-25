@@ -11,18 +11,18 @@
 
 %include "aom_ports/x86_abi_support.asm"
 
-global sym(vpx_sad16x16_mmx) PRIVATE
-global sym(vpx_sad8x16_mmx) PRIVATE
-global sym(vpx_sad8x8_mmx) PRIVATE
-global sym(vpx_sad4x4_mmx) PRIVATE
-global sym(vpx_sad16x8_mmx) PRIVATE
+global sym(aom_sad16x16_mmx) PRIVATE
+global sym(aom_sad8x16_mmx) PRIVATE
+global sym(aom_sad8x8_mmx) PRIVATE
+global sym(aom_sad4x4_mmx) PRIVATE
+global sym(aom_sad16x8_mmx) PRIVATE
 
-;unsigned int vpx_sad16x16_mmx(
+;unsigned int aom_sad16x16_mmx(
 ;    unsigned char *src_ptr,
 ;    int  src_stride,
 ;    unsigned char *ref_ptr,
 ;    int  ref_stride)
-sym(vpx_sad16x16_mmx):
+sym(aom_sad16x16_mmx):
     push        rbp
     mov         rbp, rsp
     SHADOW_ARGS_TO_STACK 4
@@ -109,12 +109,12 @@ sym(vpx_sad16x16_mmx):
     ret
 
 
-;unsigned int vpx_sad8x16_mmx(
+;unsigned int aom_sad8x16_mmx(
 ;    unsigned char *src_ptr,
 ;    int  src_stride,
 ;    unsigned char *ref_ptr,
 ;    int  ref_stride)
-sym(vpx_sad8x16_mmx):
+sym(aom_sad8x16_mmx):
     push        rbp
     mov         rbp, rsp
     SHADOW_ARGS_TO_STACK 4
@@ -181,12 +181,12 @@ sym(vpx_sad8x16_mmx):
     ret
 
 
-;unsigned int vpx_sad8x8_mmx(
+;unsigned int aom_sad8x8_mmx(
 ;    unsigned char *src_ptr,
 ;    int  src_stride,
 ;    unsigned char *ref_ptr,
 ;    int  ref_stride)
-sym(vpx_sad8x8_mmx):
+sym(aom_sad8x8_mmx):
     push        rbp
     mov         rbp, rsp
     SHADOW_ARGS_TO_STACK 4
@@ -251,12 +251,12 @@ sym(vpx_sad8x8_mmx):
     ret
 
 
-;unsigned int vpx_sad4x4_mmx(
+;unsigned int aom_sad4x4_mmx(
 ;    unsigned char *src_ptr,
 ;    int  src_stride,
 ;    unsigned char *ref_ptr,
 ;    int  ref_stride)
-sym(vpx_sad4x4_mmx):
+sym(aom_sad4x4_mmx):
     push        rbp
     mov         rbp, rsp
     SHADOW_ARGS_TO_STACK 4
@@ -340,12 +340,12 @@ sym(vpx_sad4x4_mmx):
     ret
 
 
-;unsigned int vpx_sad16x8_mmx(
+;unsigned int aom_sad16x8_mmx(
 ;    unsigned char *src_ptr,
 ;    int  src_stride,
 ;    unsigned char *ref_ptr,
 ;    int  ref_stride)
-sym(vpx_sad16x8_mmx):
+sym(aom_sad16x8_mmx):
     push        rbp
     mov         rbp, rsp
     SHADOW_ARGS_TO_STACK 4

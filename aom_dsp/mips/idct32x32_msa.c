@@ -630,7 +630,7 @@ static void idct8x32_1d_columns_addblk_msa(int16_t *input, uint8_t *dst,
                                    dst_stride);
 }
 
-void vpx_idct32x32_1024_add_msa(const int16_t *input, uint8_t *dst,
+void aom_idct32x32_1024_add_msa(const int16_t *input, uint8_t *dst,
                                 int32_t dst_stride) {
   int32_t i;
   DECLARE_ALIGNED(32, int16_t, out_arr[32 * 32]);
@@ -650,7 +650,7 @@ void vpx_idct32x32_1024_add_msa(const int16_t *input, uint8_t *dst,
   }
 }
 
-void vpx_idct32x32_34_add_msa(const int16_t *input, uint8_t *dst,
+void aom_idct32x32_34_add_msa(const int16_t *input, uint8_t *dst,
                               int32_t dst_stride) {
   int32_t i;
   DECLARE_ALIGNED(32, int16_t, out_arr[32 * 32]);
@@ -694,7 +694,7 @@ void vpx_idct32x32_34_add_msa(const int16_t *input, uint8_t *dst,
   }
 }
 
-void vpx_idct32x32_1_add_msa(const int16_t *input, uint8_t *dst,
+void aom_idct32x32_1_add_msa(const int16_t *input, uint8_t *dst,
                              int32_t dst_stride) {
   int32_t i;
   int16_t out;

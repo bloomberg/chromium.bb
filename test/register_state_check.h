@@ -13,8 +13,8 @@
 #define TEST_REGISTER_STATE_CHECK_H_
 
 #include "third_party/googletest/src/include/gtest/gtest.h"
-#include "./vpx_config.h"
-#include "aom/vpx_integer.h"
+#include "./aom_config.h"
+#include "aom/aom_integer.h"
 
 // ASM_REGISTER_STATE_CHECK(asm_function)
 //   Minimally validates the environment pre & post function execution. This
@@ -100,7 +100,7 @@ class RegisterStateCheck {
 
 extern "C" {
 // Save the d8-d15 registers into store.
-void vpx_push_neon(int64_t *store);
+void aom_push_neon(int64_t *store);
 }
 
 namespace libaom_test {
@@ -115,7 +115,7 @@ class RegisterStateCheck {
 
  private:
   static bool StoreRegisters(int64_t store[8]) {
-    vpx_push_neon(store);
+    aom_push_neon(store);
     return true;
   }
 
@@ -123,7 +123,7 @@ class RegisterStateCheck {
   bool Check() const {
     if (!initialized_) return false;
     int64_t post_store[8];
-    vpx_push_neon(post_store);
+    aom_push_neon(post_store);
     for (int i = 0; i < 8; ++i) {
       EXPECT_EQ(pre_store_[i], post_store[i]) << "d" << i + 8
                                               << " has been modified";

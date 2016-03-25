@@ -12,9 +12,9 @@
 #ifndef VP10_DECODER_DTHREAD_H_
 #define VP10_DECODER_DTHREAD_H_
 
-#include "./vpx_config.h"
-#include "aom_util/vpx_thread.h"
-#include "aom/internal/vpx_codec_internal.h"
+#include "./aom_config.h"
+#include "aom_util/aom_thread.h"
+#include "aom/internal/aom_codec_internal.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -12,8 +12,8 @@
 #ifndef VPX_PORTS_X86_H_
 #define VPX_PORTS_X86_H_
 #include <stdlib.h>
-#include "vpx_config.h"
-#include "aom/vpx_integer.h"
+#include "aom_config.h"
+#include "aom/aom_integer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,7 +36,7 @@ typedef enum {
   VPX_CPU_VIA,
 
   VPX_CPU_LAST
-} vpx_cpu_t;
+} aom_cpu_t;
 
 #if defined(__GNUC__) && __GNUC__ || defined(__ANDROID__)
 #if ARCH_X86_64
@@ -272,10 +272,10 @@ static unsigned short x87_get_control_word(void) {
 }
 #elif ARCH_X86_64
 /* No fldcw intrinsics on Windows x64, punt to external asm */
-extern void vpx_winx64_fldcw(unsigned short mode);
-extern unsigned short vpx_winx64_fstcw(void);
-#define x87_set_control_word vpx_winx64_fldcw
-#define x87_get_control_word vpx_winx64_fstcw
+extern void aom_winx64_fldcw(unsigned short mode);
+extern unsigned short aom_winx64_fstcw(void);
+#define x87_set_control_word aom_winx64_fldcw
+#define x87_get_control_word aom_winx64_fstcw
 #else
 static void x87_set_control_word(unsigned short mode) {
   __asm { fldcw mode }
@@ -293,7 +293,7 @@ static INLINE unsigned int x87_set_double_precision(void) {
   return mode;
 }
 
-extern void vpx_reset_mmx_state(void);
+extern void aom_reset_mmx_state(void);
 
 #ifdef __cplusplus
 }  // extern "C"

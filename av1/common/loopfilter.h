@@ -13,7 +13,7 @@
 #define VP10_COMMON_LOOPFILTER_H_
 
 #include "aom_ports/mem.h"
-#include "./vpx_config.h"
+#include "./aom_config.h"
 
 #include "av1/common/blockd.h"
 #include "av1/common/seg_common.h"

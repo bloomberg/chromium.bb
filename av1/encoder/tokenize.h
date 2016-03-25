@@ -35,14 +35,14 @@ typedef struct {
 } TOKENVALUE;
 
 typedef struct {
-  const vpx_prob *context_tree;
+  const aom_prob *context_tree;
   EXTRABIT extra;
   uint8_t token;
   uint8_t skip_eob_node;
 } TOKENEXTRA;
 
-extern const vpx_tree_index vp10_coef_tree[];
-extern const vpx_tree_index vp10_coef_con_tree[];
+extern const aom_tree_index vp10_coef_tree[];
+extern const aom_tree_index vp10_coef_con_tree[];
 extern const struct vp10_token vp10_coef_encodings[];
 
 int vp10_is_skippable_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane);

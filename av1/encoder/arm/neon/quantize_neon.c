@@ -13,7 +13,7 @@
 
 #include <math.h>
 
-#include "aom_mem/vpx_mem.h"
+#include "aom_mem/aom_mem.h"
 
 #include "av1/common/quant_common.h"
 #include "av1/common/seg_common.h"

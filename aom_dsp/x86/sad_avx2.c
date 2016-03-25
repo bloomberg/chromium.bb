@@ -9,11 +9,11 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 #include <immintrin.h>
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 #include "aom_ports/mem.h"
 
 #define FSAD64_H(h)                                                           \
-  unsigned int vpx_sad64x##h##_avx2(const uint8_t *src_ptr, int src_stride,   \
+  unsigned int aom_sad64x##h##_avx2(const uint8_t *src_ptr, int src_stride,   \
                                     const uint8_t *ref_ptr, int ref_stride) { \
     int i, res;                                                               \
     __m256i sad1_reg, sad2_reg, ref1_reg, ref2_reg;                           \
@@ -41,7 +41,7 @@
   }
 
 #define FSAD32_H(h)                                                           \
-  unsigned int vpx_sad32x##h##_avx2(const uint8_t *src_ptr, int src_stride,   \
+  unsigned int aom_sad32x##h##_avx2(const uint8_t *src_ptr, int src_stride,   \
                                     const uint8_t *ref_ptr, int ref_stride) { \
     int i, res;                                                               \
     __m256i sad1_reg, sad2_reg, ref1_reg, ref2_reg;                           \
@@ -92,7 +92,7 @@ FSAD32
 #undef FSAD32_H
 
 #define FSADAVG64_H(h)                                                        \
-  unsigned int vpx_sad64x##h##_avg_avx2(                                      \
+  unsigned int aom_sad64x##h##_avg_avx2(                                      \
       const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr,         \
       int ref_stride, const uint8_t *second_pred) {                           \
     int i, res;                                                               \
@@ -126,7 +126,7 @@ FSAD32
   }
 
 #define FSADAVG32_H(h)                                                        \
-  unsigned int vpx_sad32x##h##_avg_avx2(                                      \
+  unsigned int aom_sad32x##h##_avg_avx2(                                      \
       const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr,         \
       int ref_stride, const uint8_t *second_pred) {                           \
     int i, res;                                                               \

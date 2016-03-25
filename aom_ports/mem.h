@@ -12,8 +12,8 @@
 #ifndef VPX_PORTS_MEM_H_
 #define VPX_PORTS_MEM_H_
 
-#include "vpx_config.h"
-#include "aom/vpx_integer.h"
+#include "aom_config.h"
+#include "aom/aom_integer.h"
 
 #if (defined(__GNUC__) && __GNUC__) || defined(__SUNPRO_C)
 #define DECLARE_ALIGNED(n, typ, val) typ val __attribute__((aligned(n)))

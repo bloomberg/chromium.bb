@@ -9,22 +9,22 @@
 ##
 
 # libaom reverse dependencies (targets that depend on libaom)
-VPX_NONDEPS=$(addsuffix .$(VCPROJ_SFX),vpx gtest)
+VPX_NONDEPS=$(addsuffix .$(VCPROJ_SFX),aom gtest)
 VPX_RDEPS=$(foreach vcp,\
-              $(filter-out $(VPX_NONDEPS),$^), --dep=$(vcp:.$(VCPROJ_SFX)=):vpx)
+              $(filter-out $(VPX_NONDEPS),$^), --dep=$(vcp:.$(VCPROJ_SFX)=):aom)
 
-vpx.sln: $(wildcard *.$(VCPROJ_SFX))
+aom.sln: $(wildcard *.$(VCPROJ_SFX))
 	@echo "    [CREATE] $@"
 	$(SRC_PATH_BARE)/build/make/gen_msvs_sln.sh \
-            $(if $(filter vpx.$(VCPROJ_SFX),$^),$(VPX_RDEPS)) \
+            $(if $(filter aom.$(VCPROJ_SFX),$^),$(VPX_RDEPS)) \
             --dep=test_libaom:gtest \
             --ver=$(CONFIG_VS_VERSION)\
             --out=$@ $^
-vpx.sln.mk: vpx.sln
+aom.sln.mk: aom.sln
 	@true
 
-PROJECTS-yes += vpx.sln vpx.sln.mk
--include vpx.sln.mk
+PROJECTS-yes += aom.sln aom.sln.mk
+-include aom.sln.mk
 
 # Always install this file, as it is an unconditional post-build rule.
 INSTALL_MAPS += src/%     $(SRC_PATH_BARE)/%

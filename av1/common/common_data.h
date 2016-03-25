@@ -13,8 +13,8 @@
 #define VP10_COMMON_COMMON_DATA_H_
 
 #include "av1/common/enums.h"
-#include "aom/vpx_integer.h"
-#include "aom_dsp/vpx_dsp_common.h"
+#include "aom/aom_integer.h"
+#include "aom_dsp/aom_dsp_common.h"
 
 #ifdef __cplusplus
 extern "C" {

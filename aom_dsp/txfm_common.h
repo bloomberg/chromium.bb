@@ -12,7 +12,7 @@
 #ifndef VPX_DSP_TXFM_COMMON_H_
 #define VPX_DSP_TXFM_COMMON_H_
 
-#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/aom_dsp_common.h"
 
 // Constants and Macros used by all idct/dct functions
 #define DCT_CONST_BITS 14

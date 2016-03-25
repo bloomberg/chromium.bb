@@ -13,8 +13,8 @@
 #include <math.h>
 
 #include "./av1_rtcd.h"
-#include "./vpx_config.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_config.h"
+#include "./aom_dsp_rtcd.h"
 
 #include "av1/common/blockd.h"
 #include "av1/common/idct.h"
@@ -991,7 +991,7 @@ static const transform_2d FHT_16[] = {
 void vp10_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
                    int tx_type) {
   if (tx_type == DCT_DCT) {
-    vpx_fdct4x4_c(input, output, stride);
+    aom_fdct4x4_c(input, output, stride);
   } else {
     tran_low_t out[4 * 4];
     int i, j;
@@ -1144,7 +1144,7 @@ void vp10_fdct8x8_quant_c(const int16_t *input, int stride,
 void vp10_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
                    int tx_type) {
   if (tx_type == DCT_DCT) {
-    vpx_fdct8x8_c(input, output, stride);
+    aom_fdct8x8_c(input, output, stride);
   } else {
     tran_low_t out[64];
     int i, j;
@@ -1227,7 +1227,7 @@ void vp10_fwht4x4_c(const int16_t *input, tran_low_t *output, int stride) {
 void vp10_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
                      int tx_type) {
   if (tx_type == DCT_DCT) {
-    vpx_fdct16x16_c(input, output, stride);
+    aom_fdct16x16_c(input, output, stride);
   } else {
     tran_low_t out[256];
     int i, j;

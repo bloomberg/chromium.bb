@@ -12,9 +12,9 @@
 #ifndef VP10_COMMON_FILTER_H_
 #define VP10_COMMON_FILTER_H_
 
-#include "./vpx_config.h"
-#include "aom/vpx_integer.h"
-#include "aom_dsp/vpx_filter.h"
+#include "./aom_config.h"
+#include "aom/aom_integer.h"
+#include "aom_dsp/aom_filter.h"
 #include "aom_ports/mem.h"
 
 #ifdef __cplusplus

@@ -12,9 +12,9 @@
 #ifndef VP10_COMMON_ONYXC_INT_H_
 #define VP10_COMMON_ONYXC_INT_H_
 
-#include "./vpx_config.h"
-#include "aom/internal/vpx_codec_internal.h"
-#include "aom_util/vpx_thread.h"
+#include "./aom_config.h"
+#include "aom/internal/aom_codec_internal.h"
+#include "aom_util/aom_thread.h"
 #include "./av1_rtcd.h"
 #include "av1/common/alloccommon.h"
 #include "av1/common/loopfilter.h"
@@ -86,7 +86,7 @@ typedef struct {
   MV_REF *mvs;
   int mi_rows;
   int mi_cols;
-  vpx_codec_frame_buffer_t raw_frame_buffer;
+  aom_codec_frame_buffer_t raw_frame_buffer;
   YV12_BUFFER_CONFIG buf;
 
   // The Following variables will only be used in frame parallel decode.
@@ -113,8 +113,8 @@ typedef struct BufferPool {
   // Private data associated with the frame buffer callbacks.
   void *cb_priv;
 
-  vpx_get_frame_buffer_cb_fn_t get_fb_cb;
-  vpx_release_frame_buffer_cb_fn_t release_fb_cb;
+  aom_get_frame_buffer_cb_fn_t get_fb_cb;
+  aom_release_frame_buffer_cb_fn_t release_fb_cb;
 
   RefCntBuffer frame_bufs[FRAME_BUFFERS];
 
@@ -123,8 +123,8 @@ typedef struct BufferPool {
 } BufferPool;
 
 typedef struct VP10Common {
-  struct vpx_internal_error_info error;
-  vpx_color_space_t color_space;
+  struct aom_internal_error_info error;
+  aom_color_space_t color_space;
   int color_range;
   int width;
   int height;
@@ -284,8 +284,8 @@ typedef struct VP10Common {
   BITSTREAM_PROFILE profile;
 
   // VPX_BITS_8 in profile 0 or 1, VPX_BITS_10 or VPX_BITS_12 in profile 2 or 3.
-  vpx_bit_depth_t bit_depth;
-  vpx_bit_depth_t dequant_bit_depth;  // bit_depth of current dequantizer
+  aom_bit_depth_t bit_depth;
+  aom_bit_depth_t dequant_bit_depth;  // bit_depth of current dequantizer
 
   int error_resilient_mode;
 
@@ -296,8 +296,8 @@ typedef struct VP10Common {
 
   // Private data associated with the frame buffer callbacks.
   void *cb_priv;
-  vpx_get_frame_buffer_cb_fn_t get_fb_cb;
-  vpx_release_frame_buffer_cb_fn_t release_fb_cb;
+  aom_get_frame_buffer_cb_fn_t get_fb_cb;
+  aom_release_frame_buffer_cb_fn_t release_fb_cb;
 
   // Handles memory for the codec.
   InternalFrameBufferList int_frame_buffers;
@@ -312,7 +312,7 @@ typedef struct VP10Common {
   // scratch memory for intraonly/keyframe forward updates from default tables
   // - this is intentionally not placed in FRAME_CONTEXT since it's reset upon
   // each keyframe and not used afterwards
-  vpx_prob kf_y_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1];
+  aom_prob kf_y_prob[INTRA_MODES][INTRA_MODES][INTRA_MODES - 1];
 #if CONFIG_DERING
   int dering_level;
 #endif
@@ -461,7 +461,7 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
   }
 }
 
-static INLINE const vpx_prob *get_y_mode_probs(const VP10_COMMON *cm,
+static INLINE const aom_prob *get_y_mode_probs(const VP10_COMMON *cm,
                                                const MODE_INFO *mi,
                                                const MODE_INFO *above_mi,
                                                const MODE_INFO *left_mi,

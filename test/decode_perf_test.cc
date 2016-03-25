@@ -17,9 +17,9 @@
 #include "test/md5_helper.h"
 #include "test/util.h"
 #include "test/webm_video_source.h"
-#include "aom_ports/vpx_timer.h"
+#include "aom_ports/aom_timer.h"
 #include "./ivfenc.h"
-#include "./vpx_version.h"
+#include "./aom_version.h"
 
 using std::tr1::make_tuple;
 
@@ -79,19 +79,19 @@ TEST_P(DecodePerfTest, PerfTest) {
   libaom_test::WebMVideoSource video(video_name);
   video.Init();
 
-  vpx_codec_dec_cfg_t cfg = vpx_codec_dec_cfg_t();
+  aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
   cfg.threads = threads;
   libaom_test::VP9Decoder decoder(cfg, 0);
 
-  vpx_usec_timer t;
-  vpx_usec_timer_start(&t);
+  aom_usec_timer t;
+  aom_usec_timer_start(&t);
 
   for (video.Begin(); video.cxdata() != NULL; video.Next()) {
     decoder.DecodeFrame(video.cxdata(), video.frame_size());
   }
 
-  vpx_usec_timer_mark(&t);
-  const double elapsed_secs = double(vpx_usec_timer_elapsed(&t)) / kUsecsInSec;
+  aom_usec_timer_mark(&t);
+  const double elapsed_secs = double(aom_usec_timer_elapsed(&t)) / kUsecsInSec;
   const unsigned frames = video.frame_number();
   const double fps = double(frames) / elapsed_secs;
 
@@ -161,7 +161,7 @@ class VP9NewEncodeDecodePerfTest
     }
   }
 
-  virtual void FramePktHook(const vpx_codec_cx_pkt_t *pkt) {
+  virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
     ++out_frames_;
 
     // Write initial file header if first frame.
@@ -206,7 +206,7 @@ TEST_P(VP9NewEncodeDecodePerfTest, PerfTest) {
 
   // TODO(JBB): Make this work by going through the set of given files.
   const int i = 0;
-  const vpx_rational timebase = { 33333333, 1000000000 };
+  const aom_rational timebase = { 33333333, 1000000000 };
   cfg_.g_timebase = timebase;
   cfg_.rc_target_bitrate = kVP9EncodePerfTestVectors[i].bitrate;
 
@@ -226,21 +226,21 @@ TEST_P(VP9NewEncodeDecodePerfTest, PerfTest) {
   libaom_test::IVFVideoSource decode_video(kNewEncodeOutputFile);
   decode_video.Init();
 
-  vpx_codec_dec_cfg_t cfg = vpx_codec_dec_cfg_t();
+  aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
   cfg.threads = threads;
   libaom_test::VP9Decoder decoder(cfg, 0);
 
-  vpx_usec_timer t;
-  vpx_usec_timer_start(&t);
+  aom_usec_timer t;
+  aom_usec_timer_start(&t);
 
   for (decode_video.Begin(); decode_video.cxdata() != NULL;
        decode_video.Next()) {
     decoder.DecodeFrame(decode_video.cxdata(), decode_video.frame_size());
   }
 
-  vpx_usec_timer_mark(&t);
+  aom_usec_timer_mark(&t);
   const double elapsed_secs =
-      static_cast<double>(vpx_usec_timer_elapsed(&t)) / kUsecsInSec;
+      static_cast<double>(aom_usec_timer_elapsed(&t)) / kUsecsInSec;
   const unsigned decode_frames = decode_video.frame_number();
   const double fps = static_cast<double>(decode_frames) / elapsed_secs;
 

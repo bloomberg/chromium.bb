@@ -21,7 +21,7 @@ extern "C" {
 #endif
 
 void vp10_read_mode_info(VP10Decoder *const pbi, MACROBLOCKD *xd, int mi_row,
-                         int mi_col, vpx_reader *r, int x_mis, int y_mis);
+                         int mi_col, aom_reader *r, int x_mis, int y_mis);
 
 #ifdef __cplusplus
 }  // extern "C"

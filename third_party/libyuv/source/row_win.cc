@@ -4855,7 +4855,7 @@ void ARGBMultiplyRow_AVX2(const uint8* src_argb0, const uint8* src_argb1,
     mov        esi, [esp + 4 + 8]   // src_argb1
     mov        edx, [esp + 4 + 12]  // dst_argb
     mov        ecx, [esp + 4 + 16]  // width
-    vpxor      ymm5, ymm5, ymm5     // constant 0
+    aomor      ymm5, ymm5, ymm5     // constant 0
 
  convertloop:
     vmovdqu    ymm1, [eax]        // read 8 pixels from src_argb0
@@ -5535,7 +5535,7 @@ void InterpolateRow_AVX2(uint8* dst_ptr, const uint8* src_ptr,
     vmovd      xmm5, eax  // low fraction 128..1
     vpunpcklbw xmm5, xmm5, xmm0
     vpunpcklwd xmm5, xmm5, xmm5
-    vpxor      ymm0, ymm0, ymm0
+    aomor      ymm0, ymm0, ymm0
     vpermd     ymm5, ymm0, ymm5
 
   xloop:

@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./vpx_config.h"
-#include "aom_mem/vpx_mem.h"
+#include "./aom_config.h"
+#include "aom_mem/aom_mem.h"
 #include "av1/common/reconinter.h"
 #include "av1/decoder/dthread.h"
 #include "av1/decoder/decoder.h"
@@ -98,7 +98,7 @@ void vp10_frameworker_wait(VPxWorker *const worker, RefCntBuffer *const ref_buf,
     if (ref_buf->buf.corrupted == 1) {
       FrameWorkerData *const worker_data = (FrameWorkerData *)worker->data1;
       vp10_frameworker_unlock_stats(ref_worker);
-      vpx_internal_error(&worker_data->pbi->common.error,
+      aom_internal_error(&worker_data->pbi->common.error,
                          VPX_CODEC_CORRUPT_FRAME,
                          "Worker %p failed to decode frame", worker);
     }

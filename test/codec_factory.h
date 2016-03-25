@@ -11,9 +11,9 @@
 #ifndef TEST_CODEC_FACTORY_H_
 #define TEST_CODEC_FACTORY_H_
 
-#include "./vpx_config.h"
-#include "aom/vpx_decoder.h"
-#include "aom/vpx_encoder.h"
+#include "./aom_config.h"
+#include "aom/aom_decoder.h"
+#include "aom/aom_encoder.h"
 #if CONFIG_VP10_ENCODER
 #include "aom/vp8cx.h"
 #endif
@@ -33,20 +33,20 @@ class CodecFactory {
 
   virtual ~CodecFactory() {}
 
-  virtual Decoder* CreateDecoder(vpx_codec_dec_cfg_t cfg,
+  virtual Decoder* CreateDecoder(aom_codec_dec_cfg_t cfg,
                                  unsigned long deadline) const = 0;
 
-  virtual Decoder* CreateDecoder(vpx_codec_dec_cfg_t cfg,
-                                 const vpx_codec_flags_t flags,
+  virtual Decoder* CreateDecoder(aom_codec_dec_cfg_t cfg,
+                                 const aom_codec_flags_t flags,
                                  unsigned long deadline)  // NOLINT(runtime/int)
       const = 0;
 
-  virtual Encoder* CreateEncoder(vpx_codec_enc_cfg_t cfg,
+  virtual Encoder* CreateEncoder(aom_codec_enc_cfg_t cfg,
                                  unsigned long deadline,
                                  const unsigned long init_flags,
                                  TwopassStatsStore* stats) const = 0;
 
-  virtual vpx_codec_err_t DefaultEncoderConfig(vpx_codec_enc_cfg_t* cfg,
+  virtual aom_codec_err_t DefaultEncoderConfig(aom_codec_enc_cfg_t* cfg,
                                                int usage) const = 0;
 };
 
@@ -75,17 +75,17 @@ class CodecTestWith3Params
 #if CONFIG_VP10
 class VP10Decoder : public Decoder {
  public:
-  VP10Decoder(vpx_codec_dec_cfg_t cfg, unsigned long deadline)
+  VP10Decoder(aom_codec_dec_cfg_t cfg, unsigned long deadline)
       : Decoder(cfg, deadline) {}
 
-  VP10Decoder(vpx_codec_dec_cfg_t cfg, const vpx_codec_flags_t flag,
+  VP10Decoder(aom_codec_dec_cfg_t cfg, const aom_codec_flags_t flag,
               unsigned long deadline)  // NOLINT
       : Decoder(cfg, flag, deadline) {}
 
  protected:
-  virtual vpx_codec_iface_t* CodecInterface() const {
+  virtual aom_codec_iface_t* CodecInterface() const {
 #if CONFIG_VP10_DECODER
-    return &vpx_codec_vp10_dx_algo;
+    return &aom_codec_vp10_dx_algo;
 #else
     return NULL;
 #endif
@@ -94,14 +94,14 @@ class VP10Decoder : public Decoder {
 
 class VP10Encoder : public Encoder {
  public:
-  VP10Encoder(vpx_codec_enc_cfg_t cfg, unsigned long deadline,
+  VP10Encoder(aom_codec_enc_cfg_t cfg, unsigned long deadline,
               const unsigned long init_flags, TwopassStatsStore* stats)
       : Encoder(cfg, deadline, init_flags, stats) {}
 
  protected:
-  virtual vpx_codec_iface_t* CodecInterface() const {
+  virtual aom_codec_iface_t* CodecInterface() const {
 #if CONFIG_VP10_ENCODER
-    return &vpx_codec_vp10_cx_algo;
+    return &aom_codec_vp10_cx_algo;
 #else
     return NULL;
 #endif
@@ -112,13 +112,13 @@ class VP10CodecFactory : public CodecFactory {
  public:
   VP10CodecFactory() : CodecFactory() {}
 
-  virtual Decoder* CreateDecoder(vpx_codec_dec_cfg_t cfg,
+  virtual Decoder* CreateDecoder(aom_codec_dec_cfg_t cfg,
                                  unsigned long deadline) const {
     return CreateDecoder(cfg, 0, deadline);
   }
 
-  virtual Decoder* CreateDecoder(vpx_codec_dec_cfg_t cfg,
-                                 const vpx_codec_flags_t flags,
+  virtual Decoder* CreateDecoder(aom_codec_dec_cfg_t cfg,
+                                 const aom_codec_flags_t flags,
                                  unsigned long deadline) const {  // NOLINT
 #if CONFIG_VP10_DECODER
     return new VP10Decoder(cfg, flags, deadline);
@@ -127,7 +127,7 @@ class VP10CodecFactory : public CodecFactory {
 #endif
   }
 
-  virtual Encoder* CreateEncoder(vpx_codec_enc_cfg_t cfg,
+  virtual Encoder* CreateEncoder(aom_codec_enc_cfg_t cfg,
                                  unsigned long deadline,
                                  const unsigned long init_flags,
                                  TwopassStatsStore* stats) const {
@@ -138,10 +138,10 @@ class VP10CodecFactory : public CodecFactory {
 #endif
   }
 
-  virtual vpx_codec_err_t DefaultEncoderConfig(vpx_codec_enc_cfg_t* cfg,
+  virtual aom_codec_err_t DefaultEncoderConfig(aom_codec_enc_cfg_t* cfg,
                                                int usage) const {
 #if CONFIG_VP10_ENCODER
-    return vpx_codec_enc_config_default(&vpx_codec_vp10_cx_algo, cfg, usage);
+    return aom_codec_enc_config_default(&aom_codec_vp10_cx_algo, cfg, usage);
 #else
     return VPX_CODEC_INCAPABLE;
 #endif

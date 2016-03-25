@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "aom_ports/arm.h"
-#include "./vpx_config.h"
+#include "./aom_config.h"
 
 #ifdef WINAPI_FAMILY
 #include <winapifamily.h>

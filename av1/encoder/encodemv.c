@@ -18,7 +18,7 @@
 #include "av1/encoder/encodemv.h"
 #include "av1/encoder/subexp.h"
 
-#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/aom_dsp_common.h"
 
 static struct vp10_token mv_joint_encodings[MV_JOINTS];
 static struct vp10_token mv_class_encodings[MV_CLASSES];
@@ -32,7 +32,7 @@ void vp10_entropy_mv_init(void) {
   vp10_tokens_from_tree(mv_fp_encodings, vp10_mv_fp_tree);
 }
 
-static void encode_mv_component(vpx_writer *w, int comp,
+static void encode_mv_component(aom_writer *w, int comp,
                                 const nmv_component *mvcomp, int usehp) {
   int offset;
   const int sign = comp < 0;
@@ -45,7 +45,7 @@ static void encode_mv_component(vpx_writer *w, int comp,
   assert(comp != 0);
 
   // Sign
-  vpx_write(w, sign, mvcomp->sign);
+  aom_write(w, sign, mvcomp->sign);
 
   // Class
   vp10_write_token(w, vp10_mv_class_tree, mvcomp->classes,
@@ -58,7 +58,7 @@ static void encode_mv_component(vpx_writer *w, int comp,
   } else {
     int i;
     const int n = mv_class + CLASS0_BITS - 1;  // number of bits
-    for (i = 0; i < n; ++i) vpx_write(w, (d >> i) & 1, mvcomp->bits[i]);
+    for (i = 0; i < n; ++i) aom_write(w, (d >> i) & 1, mvcomp->bits[i]);
   }
 
   // Fractional bits
@@ -68,7 +68,7 @@ static void encode_mv_component(vpx_writer *w, int comp,
 
   // High precision bit
   if (usehp)
-    vpx_write(w, hp, mv_class == MV_CLASS_0 ? mvcomp->class0_hp : mvcomp->hp);
+    aom_write(w, hp, mv_class == MV_CLASS_0 ? mvcomp->class0_hp : mvcomp->hp);
 }
 
 static void build_nmv_component_cost_table(int *mvcost,
@@ -132,27 +132,27 @@ static void build_nmv_component_cost_table(int *mvcost,
   }
 }
 
-static void update_mv(vpx_writer *w, const unsigned int ct[2], vpx_prob *cur_p,
-                      vpx_prob upd_p) {
+static void update_mv(aom_writer *w, const unsigned int ct[2], aom_prob *cur_p,
+                      aom_prob upd_p) {
 #if CONFIG_MISC_FIXES
   (void)upd_p;
   vp10_cond_prob_diff_update(w, cur_p, ct);
 #else
-  const vpx_prob new_p = get_binary_prob(ct[0], ct[1]) | 1;
+  const aom_prob new_p = get_binary_prob(ct[0], ct[1]) | 1;
   const int update = cost_branch256(ct, *cur_p) + vp10_cost_zero(upd_p) >
                      cost_branch256(ct, new_p) + vp10_cost_one(upd_p) + 7 * 256;
-  vpx_write(w, update, upd_p);
+  aom_write(w, update, upd_p);
   if (update) {
     *cur_p = new_p;
-    vpx_write_literal(w, new_p >> 1, 7);
+    aom_write_literal(w, new_p >> 1, 7);
   }
 #endif
 }
 
-static void write_mv_update(const vpx_tree_index *tree,
-                            vpx_prob probs[/*n - 1*/],
+static void write_mv_update(const aom_tree_index *tree,
+                            aom_prob probs[/*n - 1*/],
                             const unsigned int counts[/*n - 1*/], int n,
-                            vpx_writer *w) {
+                            aom_writer *w) {
   int i;
   unsigned int branch_ct[32][2];
 
@@ -164,7 +164,7 @@ static void write_mv_update(const vpx_tree_index *tree,
     update_mv(w, branch_ct[i], &probs[i], MV_UPDATE_PROB);
 }
 
-void vp10_write_nmv_probs(VP10_COMMON *cm, int usehp, vpx_writer *w,
+void vp10_write_nmv_probs(VP10_COMMON *cm, int usehp, aom_writer *w,
                           nmv_context_counts *const counts) {
   int i, j;
   nmv_context *const mvc = &cm->fc->nmvc;
@@ -203,7 +203,7 @@ void vp10_write_nmv_probs(VP10_COMMON *cm, int usehp, vpx_writer *w,
   }
 }
 
-void vp10_encode_mv(VP10_COMP *cpi, vpx_writer *w, const MV *mv, const MV *ref,
+void vp10_encode_mv(VP10_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
                     const nmv_context *mvctx, int usehp) {
   const MV diff = { mv->row - ref->row, mv->col - ref->col };
   const MV_JOINT_TYPE j = vp10_get_mv_joint(&diff);

@@ -12,8 +12,8 @@
 #ifndef VP10_COMMON_FRAME_BUFFERS_H_
 #define VP10_COMMON_FRAME_BUFFERS_H_
 
-#include "aom/vpx_frame_buffer.h"
-#include "aom/vpx_integer.h"
+#include "aom/aom_frame_buffer.h"
+#include "aom/aom_integer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,11 +41,11 @@ void vp10_free_internal_frame_buffers(InternalFrameBufferList *list);
 // |min_size| is the minimum size in bytes needed to decode the next frame.
 // |fb| pointer to the frame buffer.
 int vp10_get_frame_buffer(void *cb_priv, size_t min_size,
-                          vpx_codec_frame_buffer_t *fb);
+                          aom_codec_frame_buffer_t *fb);
 
 // Callback used by libaom when there are no references to the frame buffer.
 // |cb_priv| is not used. |fb| pointer to the frame buffer.
-int vp10_release_frame_buffer(void *cb_priv, vpx_codec_frame_buffer_t *fb);
+int vp10_release_frame_buffer(void *cb_priv, aom_codec_frame_buffer_t *fb);
 
 #ifdef __cplusplus
 }  // extern "C"

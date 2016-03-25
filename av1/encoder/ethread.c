@@ -12,7 +12,7 @@
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/ethread.h"
-#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/aom_dsp_common.h"
 
 static void accumulate_rd_opt(ThreadData *td, ThreadData *td_t) {
   int i, j, k, l, m, n;
@@ -60,7 +60,7 @@ static int enc_worker_hook(EncWorkerData *const thread_data, void *unused) {
 void vp10_encode_tiles_mt(VP10_COMP *cpi) {
   VP10_COMMON *const cm = &cpi->common;
   const int tile_cols = 1 << cm->log2_tile_cols;
-  const VPxWorkerInterface *const winterface = vpx_get_worker_interface();
+  const VPxWorkerInterface *const winterface = aom_get_worker_interface();
   const int num_workers = VPXMIN(cpi->oxcf.max_threads, tile_cols);
   int i;
 
@@ -71,10 +71,10 @@ void vp10_encode_tiles_mt(VP10_COMP *cpi) {
     int allocated_workers = num_workers;
 
     CHECK_MEM_ERROR(cm, cpi->workers,
-                    vpx_malloc(allocated_workers * sizeof(*cpi->workers)));
+                    aom_malloc(allocated_workers * sizeof(*cpi->workers)));
 
     CHECK_MEM_ERROR(cm, cpi->tile_thr_data,
-                    vpx_calloc(allocated_workers, sizeof(*cpi->tile_thr_data)));
+                    aom_calloc(allocated_workers, sizeof(*cpi->tile_thr_data)));
 
     for (i = 0; i < allocated_workers; i++) {
       VPxWorker *const worker = &cpi->workers[i];
@@ -88,7 +88,7 @@ void vp10_encode_tiles_mt(VP10_COMP *cpi) {
 
         // Allocate thread data.
         CHECK_MEM_ERROR(cm, thread_data->td,
-                        vpx_memalign(32, sizeof(*thread_data->td)));
+                        aom_memalign(32, sizeof(*thread_data->td)));
         vp10_zero(*thread_data->td);
 
         // Set up pc_tree.
@@ -98,11 +98,11 @@ void vp10_encode_tiles_mt(VP10_COMP *cpi) {
 
         // Allocate frame counters in thread data.
         CHECK_MEM_ERROR(cm, thread_data->td->counts,
-                        vpx_calloc(1, sizeof(*thread_data->td->counts)));
+                        aom_calloc(1, sizeof(*thread_data->td->counts)));
 
         // Create threads
         if (!winterface->reset(worker))
-          vpx_internal_error(&cm->error, VPX_CODEC_ERROR,
+          aom_internal_error(&cm->error, VPX_CODEC_ERROR,
                              "Tile encoder thread creation failed");
       } else {
         // Main thread acts as a worker and uses the thread data in cpi.

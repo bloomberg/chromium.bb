@@ -21,8 +21,8 @@ const int kVideoTrackNumber = 1;
 }  // namespace
 
 void write_webm_file_header(struct EbmlGlobal *glob,
-                            const vpx_codec_enc_cfg_t *cfg,
-                            const struct vpx_rational *fps,
+                            const aom_codec_enc_cfg_t *cfg,
+                            const struct aom_rational *fps,
                             stereo_format_t stereo_fmt, unsigned int fourcc,
                             const struct VpxRational *par) {
   mkvmuxer::MkvWriter *const writer = new mkvmuxer::MkvWriter(glob->stream);
@@ -34,9 +34,9 @@ void write_webm_file_header(struct EbmlGlobal *glob,
   mkvmuxer::SegmentInfo *const info = segment->GetSegmentInfo();
   const uint64_t kTimecodeScale = 1000000;
   info->set_timecode_scale(kTimecodeScale);
-  std::string version = "vpxenc";
+  std::string version = "aomenc";
   if (!glob->debug) {
-    version.append(std::string(" ") + vpx_codec_version_str());
+    version.append(std::string(" ") + aom_codec_version_str());
   }
   info->set_writing_app(version.c_str());
 
@@ -69,8 +69,8 @@ void write_webm_file_header(struct EbmlGlobal *glob,
   glob->segment = segment;
 }
 
-void write_webm_block(struct EbmlGlobal *glob, const vpx_codec_enc_cfg_t *cfg,
-                      const vpx_codec_cx_pkt_t *pkt) {
+void write_webm_block(struct EbmlGlobal *glob, const aom_codec_enc_cfg_t *cfg,
+                      const aom_codec_cx_pkt_t *pkt) {
   mkvmuxer::Segment *const segment =
       reinterpret_cast<mkvmuxer::Segment *>(glob->segment);
   int64_t pts_ns = pkt->data.frame.pts * 1000000000ll * cfg->g_timebase.num /

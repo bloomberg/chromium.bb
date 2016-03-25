@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 #include "aom_dsp/mips/macros_msa.h"
 
 #define IPRED_SUBS_UH2_UH(in0, in1, out0, out1) \
@@ -552,125 +552,125 @@ static void intra_predict_tm_32x32_msa(const uint8_t *src_top,
   }
 }
 
-void vpx_v_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_v_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
                              const uint8_t *above, const uint8_t *left) {
   (void)left;
 
   intra_predict_vert_4x4_msa(above, dst, y_stride);
 }
 
-void vpx_v_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_v_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
                              const uint8_t *above, const uint8_t *left) {
   (void)left;
 
   intra_predict_vert_8x8_msa(above, dst, y_stride);
 }
 
-void vpx_v_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_v_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
                                const uint8_t *above, const uint8_t *left) {
   (void)left;
 
   intra_predict_vert_16x16_msa(above, dst, y_stride);
 }
 
-void vpx_v_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_v_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
                                const uint8_t *above, const uint8_t *left) {
   (void)left;
 
   intra_predict_vert_32x32_msa(above, dst, y_stride);
 }
 
-void vpx_h_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_h_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
                              const uint8_t *above, const uint8_t *left) {
   (void)above;
 
   intra_predict_horiz_4x4_msa(left, dst, y_stride);
 }
 
-void vpx_h_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_h_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
                              const uint8_t *above, const uint8_t *left) {
   (void)above;
 
   intra_predict_horiz_8x8_msa(left, dst, y_stride);
 }
 
-void vpx_h_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_h_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
                                const uint8_t *above, const uint8_t *left) {
   (void)above;
 
   intra_predict_horiz_16x16_msa(left, dst, y_stride);
 }
 
-void vpx_h_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_h_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
                                const uint8_t *above, const uint8_t *left) {
   (void)above;
 
   intra_predict_horiz_32x32_msa(left, dst, y_stride);
 }
 
-void vpx_dc_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
                               const uint8_t *above, const uint8_t *left) {
   intra_predict_dc_4x4_msa(above, left, dst, y_stride);
 }
 
-void vpx_dc_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
                               const uint8_t *above, const uint8_t *left) {
   intra_predict_dc_8x8_msa(above, left, dst, y_stride);
 }
 
-void vpx_dc_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
                                 const uint8_t *above, const uint8_t *left) {
   intra_predict_dc_16x16_msa(above, left, dst, y_stride);
 }
 
-void vpx_dc_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
                                 const uint8_t *above, const uint8_t *left) {
   intra_predict_dc_32x32_msa(above, left, dst, y_stride);
 }
 
-void vpx_dc_top_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_top_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
                                   const uint8_t *above, const uint8_t *left) {
   (void)left;
 
   intra_predict_dc_tl_4x4_msa(above, dst, y_stride);
 }
 
-void vpx_dc_top_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_top_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
                                   const uint8_t *above, const uint8_t *left) {
   (void)left;
 
   intra_predict_dc_tl_8x8_msa(above, dst, y_stride);
 }
 
-void vpx_dc_top_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_top_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
                                     const uint8_t *above, const uint8_t *left) {
   (void)left;
 
   intra_predict_dc_tl_16x16_msa(above, dst, y_stride);
 }
 
-void vpx_dc_top_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_top_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
                                     const uint8_t *above, const uint8_t *left) {
   (void)left;
 
   intra_predict_dc_tl_32x32_msa(above, dst, y_stride);
 }
 
-void vpx_dc_left_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_left_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
                                    const uint8_t *above, const uint8_t *left) {
   (void)above;
 
   intra_predict_dc_tl_4x4_msa(left, dst, y_stride);
 }
 
-void vpx_dc_left_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_left_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
                                    const uint8_t *above, const uint8_t *left) {
   (void)above;
 
   intra_predict_dc_tl_8x8_msa(left, dst, y_stride);
 }
 
-void vpx_dc_left_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_left_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
                                      const uint8_t *above,
                                      const uint8_t *left) {
   (void)above;
@@ -678,7 +678,7 @@ void vpx_dc_left_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
   intra_predict_dc_tl_16x16_msa(left, dst, y_stride);
 }
 
-void vpx_dc_left_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_left_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
                                      const uint8_t *above,
                                      const uint8_t *left) {
   (void)above;
@@ -686,7 +686,7 @@ void vpx_dc_left_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
   intra_predict_dc_tl_32x32_msa(left, dst, y_stride);
 }
 
-void vpx_dc_128_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_128_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
                                   const uint8_t *above, const uint8_t *left) {
   (void)above;
   (void)left;
@@ -694,7 +694,7 @@ void vpx_dc_128_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
   intra_predict_128dc_4x4_msa(dst, y_stride);
 }
 
-void vpx_dc_128_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_128_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
                                   const uint8_t *above, const uint8_t *left) {
   (void)above;
   (void)left;
@@ -702,7 +702,7 @@ void vpx_dc_128_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
   intra_predict_128dc_8x8_msa(dst, y_stride);
 }
 
-void vpx_dc_128_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_128_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
                                     const uint8_t *above, const uint8_t *left) {
   (void)above;
   (void)left;
@@ -710,7 +710,7 @@ void vpx_dc_128_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
   intra_predict_128dc_16x16_msa(dst, y_stride);
 }
 
-void vpx_dc_128_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_dc_128_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
                                     const uint8_t *above, const uint8_t *left) {
   (void)above;
   (void)left;
@@ -718,22 +718,22 @@ void vpx_dc_128_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
   intra_predict_128dc_32x32_msa(dst, y_stride);
 }
 
-void vpx_tm_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_tm_predictor_4x4_msa(uint8_t *dst, ptrdiff_t y_stride,
                               const uint8_t *above, const uint8_t *left) {
   intra_predict_tm_4x4_msa(above, left, dst, y_stride);
 }
 
-void vpx_tm_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_tm_predictor_8x8_msa(uint8_t *dst, ptrdiff_t y_stride,
                               const uint8_t *above, const uint8_t *left) {
   intra_predict_tm_8x8_msa(above, left, dst, y_stride);
 }
 
-void vpx_tm_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_tm_predictor_16x16_msa(uint8_t *dst, ptrdiff_t y_stride,
                                 const uint8_t *above, const uint8_t *left) {
   intra_predict_tm_16x16_msa(above, left, dst, y_stride);
 }
 
-void vpx_tm_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
+void aom_tm_predictor_32x32_msa(uint8_t *dst, ptrdiff_t y_stride,
                                 const uint8_t *above, const uint8_t *left) {
   intra_predict_tm_32x32_msa(above, left, dst, y_stride);
 }

@@ -12,7 +12,7 @@
 #include <math.h>
 
 #include "./av1_rtcd.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 #include "av1/common/blockd.h"
 #include "av1/common/idct.h"
 #include "aom_dsp/inv_txfm.h"
@@ -120,17 +120,17 @@ void vp10_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest, int stride,
 void vp10_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
                       int eob) {
   if (eob > 1)
-    vpx_idct4x4_16_add(input, dest, stride);
+    aom_idct4x4_16_add(input, dest, stride);
   else
-    vpx_idct4x4_1_add(input, dest, stride);
+    aom_idct4x4_1_add(input, dest, stride);
 }
 
 void vp10_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
                       int eob) {
   if (eob > 1)
-    vpx_iwht4x4_16_add(input, dest, stride);
+    aom_iwht4x4_16_add(input, dest, stride);
   else
-    vpx_iwht4x4_1_add(input, dest, stride);
+    aom_iwht4x4_1_add(input, dest, stride);
 }
 
 void vp10_idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
@@ -144,11 +144,11 @@ void vp10_idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
   // Combine that with code here.
   if (eob == 1)
     // DC only DCT coefficient
-    vpx_idct8x8_1_add(input, dest, stride);
+    aom_idct8x8_1_add(input, dest, stride);
   else if (eob <= 12)
-    vpx_idct8x8_12_add(input, dest, stride);
+    aom_idct8x8_12_add(input, dest, stride);
   else
-    vpx_idct8x8_64_add(input, dest, stride);
+    aom_idct8x8_64_add(input, dest, stride);
 }
 
 void vp10_idct16x16_add(const tran_low_t *input, uint8_t *dest, int stride,
@@ -156,22 +156,22 @@ void vp10_idct16x16_add(const tran_low_t *input, uint8_t *dest, int stride,
   /* The calculation can be simplified if there are not many non-zero dct
    * coefficients. Use eobs to separate different cases. */
   if (eob == 1) /* DC only DCT coefficient. */
-    vpx_idct16x16_1_add(input, dest, stride);
+    aom_idct16x16_1_add(input, dest, stride);
   else if (eob <= 10)
-    vpx_idct16x16_10_add(input, dest, stride);
+    aom_idct16x16_10_add(input, dest, stride);
   else
-    vpx_idct16x16_256_add(input, dest, stride);
+    aom_idct16x16_256_add(input, dest, stride);
 }
 
 void vp10_idct32x32_add(const tran_low_t *input, uint8_t *dest, int stride,
                         int eob) {
   if (eob == 1)
-    vpx_idct32x32_1_add(input, dest, stride);
+    aom_idct32x32_1_add(input, dest, stride);
   else if (eob <= 34)
     // non-zero coeff only in upper-left 8x8
-    vpx_idct32x32_34_add(input, dest, stride);
+    aom_idct32x32_34_add(input, dest, stride);
   else
-    vpx_idct32x32_1024_add(input, dest, stride);
+    aom_idct32x32_1024_add(input, dest, stride);
 }
 
 void vp10_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest, int stride,
@@ -227,10 +227,10 @@ void vp10_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest, int stride,
 void vp10_highbd_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest8,
                                  int stride, int tx_type, int bd) {
   const highbd_transform_2d IHT_4[] = {
-    { vpx_highbd_idct4_c, vpx_highbd_idct4_c },   // DCT_DCT  = 0
-    { vpx_highbd_iadst4_c, vpx_highbd_idct4_c },  // ADST_DCT = 1
-    { vpx_highbd_idct4_c, vpx_highbd_iadst4_c },  // DCT_ADST = 2
-    { vpx_highbd_iadst4_c, vpx_highbd_iadst4_c }  // ADST_ADST = 3
+    { aom_highbd_idct4_c, aom_highbd_idct4_c },   // DCT_DCT  = 0
+    { aom_highbd_iadst4_c, aom_highbd_idct4_c },  // ADST_DCT = 1
+    { aom_highbd_idct4_c, aom_highbd_iadst4_c },  // DCT_ADST = 2
+    { aom_highbd_iadst4_c, aom_highbd_iadst4_c }  // ADST_ADST = 3
   };
   uint16_t *dest = CONVERT_TO_SHORTPTR(dest8);
 
@@ -258,10 +258,10 @@ void vp10_highbd_iht4x4_16_add_c(const tran_low_t *input, uint8_t *dest8,
 }
 
 static const highbd_transform_2d HIGH_IHT_8[] = {
-  { vpx_highbd_idct8_c, vpx_highbd_idct8_c },   // DCT_DCT  = 0
-  { vpx_highbd_iadst8_c, vpx_highbd_idct8_c },  // ADST_DCT = 1
-  { vpx_highbd_idct8_c, vpx_highbd_iadst8_c },  // DCT_ADST = 2
-  { vpx_highbd_iadst8_c, vpx_highbd_iadst8_c }  // ADST_ADST = 3
+  { aom_highbd_idct8_c, aom_highbd_idct8_c },   // DCT_DCT  = 0
+  { aom_highbd_iadst8_c, aom_highbd_idct8_c },  // ADST_DCT = 1
+  { aom_highbd_idct8_c, aom_highbd_iadst8_c },  // DCT_ADST = 2
+  { aom_highbd_iadst8_c, aom_highbd_iadst8_c }  // ADST_ADST = 3
 };
 
 void vp10_highbd_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest8,
@@ -292,10 +292,10 @@ void vp10_highbd_iht8x8_64_add_c(const tran_low_t *input, uint8_t *dest8,
 }
 
 static const highbd_transform_2d HIGH_IHT_16[] = {
-  { vpx_highbd_idct16_c, vpx_highbd_idct16_c },   // DCT_DCT  = 0
-  { vpx_highbd_iadst16_c, vpx_highbd_idct16_c },  // ADST_DCT = 1
-  { vpx_highbd_idct16_c, vpx_highbd_iadst16_c },  // DCT_ADST = 2
-  { vpx_highbd_iadst16_c, vpx_highbd_iadst16_c }  // ADST_ADST = 3
+  { aom_highbd_idct16_c, aom_highbd_idct16_c },   // DCT_DCT  = 0
+  { aom_highbd_iadst16_c, aom_highbd_idct16_c },  // ADST_DCT = 1
+  { aom_highbd_idct16_c, aom_highbd_iadst16_c },  // DCT_ADST = 2
+  { aom_highbd_iadst16_c, aom_highbd_iadst16_c }  // ADST_ADST = 3
 };
 
 void vp10_highbd_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest8,
@@ -329,17 +329,17 @@ void vp10_highbd_iht16x16_256_add_c(const tran_low_t *input, uint8_t *dest8,
 void vp10_highbd_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
                              int eob, int bd) {
   if (eob > 1)
-    vpx_highbd_idct4x4_16_add(input, dest, stride, bd);
+    aom_highbd_idct4x4_16_add(input, dest, stride, bd);
   else
-    vpx_highbd_idct4x4_1_add(input, dest, stride, bd);
+    aom_highbd_idct4x4_1_add(input, dest, stride, bd);
 }
 
 void vp10_highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
                              int eob, int bd) {
   if (eob > 1)
-    vpx_highbd_iwht4x4_16_add(input, dest, stride, bd);
+    aom_highbd_iwht4x4_16_add(input, dest, stride, bd);
   else
-    vpx_highbd_iwht4x4_1_add(input, dest, stride, bd);
+    aom_highbd_iwht4x4_1_add(input, dest, stride, bd);
 }
 
 void vp10_highbd_idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
@@ -353,11 +353,11 @@ void vp10_highbd_idct8x8_add(const tran_low_t *input, uint8_t *dest, int stride,
   // Combine that with code here.
   // DC only DCT coefficient
   if (eob == 1) {
-    vpx_highbd_idct8x8_1_add(input, dest, stride, bd);
+    aom_highbd_idct8x8_1_add(input, dest, stride, bd);
   } else if (eob <= 10) {
-    vpx_highbd_idct8x8_10_add(input, dest, stride, bd);
+    aom_highbd_idct8x8_10_add(input, dest, stride, bd);
   } else {
-    vpx_highbd_idct8x8_64_add(input, dest, stride, bd);
+    aom_highbd_idct8x8_64_add(input, dest, stride, bd);
   }
 }
 
@@ -367,11 +367,11 @@ void vp10_highbd_idct16x16_add(const tran_low_t *input, uint8_t *dest,
   // coefficients. Use eobs to separate different cases.
   // DC only DCT coefficient.
   if (eob == 1) {
-    vpx_highbd_idct16x16_1_add(input, dest, stride, bd);
+    aom_highbd_idct16x16_1_add(input, dest, stride, bd);
   } else if (eob <= 10) {
-    vpx_highbd_idct16x16_10_add(input, dest, stride, bd);
+    aom_highbd_idct16x16_10_add(input, dest, stride, bd);
   } else {
-    vpx_highbd_idct16x16_256_add(input, dest, stride, bd);
+    aom_highbd_idct16x16_256_add(input, dest, stride, bd);
   }
 }
 
@@ -379,11 +379,11 @@ void vp10_highbd_idct32x32_add(const tran_low_t *input, uint8_t *dest,
                                int stride, int eob, int bd) {
   // Non-zero coeff only in upper-left 8x8
   if (eob == 1) {
-    vpx_highbd_idct32x32_1_add(input, dest, stride, bd);
+    aom_highbd_idct32x32_1_add(input, dest, stride, bd);
   } else if (eob <= 34) {
-    vpx_highbd_idct32x32_34_add(input, dest, stride, bd);
+    aom_highbd_idct32x32_34_add(input, dest, stride, bd);
   } else {
-    vpx_highbd_idct32x32_1024_add(input, dest, stride, bd);
+    aom_highbd_idct32x32_1024_add(input, dest, stride, bd);
   }
 }
 

@@ -240,7 +240,7 @@ void ScaleRowDown2Linear_AVX2(const uint8* src_ptr, ptrdiff_t src_stride,
     vpcmpeqb    ymm4, ymm4, ymm4      // '1' constant, 8b
     vpsrlw      ymm4, ymm4, 15
     vpackuswb   ymm4, ymm4, ymm4
-    vpxor       ymm5, ymm5, ymm5      // constant 0
+    aomor       ymm5, ymm5, ymm5      // constant 0
 
   wloop:
     vmovdqu     ymm0, [eax]
@@ -278,7 +278,7 @@ void ScaleRowDown2Box_AVX2(const uint8* src_ptr, ptrdiff_t src_stride,
     vpcmpeqb    ymm4, ymm4, ymm4      // '1' constant, 8b
     vpsrlw      ymm4, ymm4, 15
     vpackuswb   ymm4, ymm4, ymm4
-    vpxor       ymm5, ymm5, ymm5      // constant 0
+    aomor       ymm5, ymm5, ymm5      // constant 0
 
   wloop:
     vmovdqu     ymm0, [eax]           // average rows
@@ -834,7 +834,7 @@ void ScaleAddRow_AVX2(const uint8* src_ptr, uint16* dst_ptr, int src_width) {
     mov         eax, [esp + 4]   // src_ptr
     mov         edx, [esp + 8]   // dst_ptr
     mov         ecx, [esp + 12]  // src_width
-    vpxor       ymm5, ymm5, ymm5
+    aomor       ymm5, ymm5, ymm5
 
   // sum rows
   xloop:

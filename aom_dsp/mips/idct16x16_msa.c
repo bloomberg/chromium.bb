@@ -11,7 +11,7 @@
 
 #include "aom_dsp/mips/inv_txfm_msa.h"
 
-void vpx_idct16_1d_rows_msa(const int16_t *input, int16_t *output) {
+void aom_idct16_1d_rows_msa(const int16_t *input, int16_t *output) {
   v8i16 loc0, loc1, loc2, loc3;
   v8i16 reg0, reg2, reg4, reg6, reg8, reg10, reg12, reg14;
   v8i16 reg3, reg13, reg11, reg5, reg7, reg9, reg1, reg15;
@@ -104,7 +104,7 @@ void vpx_idct16_1d_rows_msa(const int16_t *input, int16_t *output) {
   ST_SH8(reg3, reg13, reg11, reg5, reg7, reg9, reg1, reg15, (output + 8), 16);
 }
 
-void vpx_idct16_1d_columns_addblk_msa(int16_t *input, uint8_t *dst,
+void aom_idct16_1d_columns_addblk_msa(int16_t *input, uint8_t *dst,
                                       int32_t dst_stride) {
   v8i16 loc0, loc1, loc2, loc3;
   v8i16 reg0, reg2, reg4, reg6, reg8, reg10, reg12, reg14;
@@ -202,7 +202,7 @@ void vpx_idct16_1d_columns_addblk_msa(int16_t *input, uint8_t *dst,
   VPX_ADDBLK_ST8x4_UB(dst, dst_stride, reg7, reg9, reg1, reg15);
 }
 
-void vpx_idct16x16_256_add_msa(const int16_t *input, uint8_t *dst,
+void aom_idct16x16_256_add_msa(const int16_t *input, uint8_t *dst,
                                int32_t dst_stride) {
   int32_t i;
   DECLARE_ALIGNED(32, int16_t, out_arr[16 * 16]);
@@ -211,25 +211,25 @@ void vpx_idct16x16_256_add_msa(const int16_t *input, uint8_t *dst,
   /* transform rows */
   for (i = 0; i < 2; ++i) {
     /* process 16 * 8 block */
-    vpx_idct16_1d_rows_msa((input + (i << 7)), (out + (i << 7)));
+    aom_idct16_1d_rows_msa((input + (i << 7)), (out + (i << 7)));
   }
 
   /* transform columns */
   for (i = 0; i < 2; ++i) {
     /* process 8 * 16 block */
-    vpx_idct16_1d_columns_addblk_msa((out + (i << 3)), (dst + (i << 3)),
+    aom_idct16_1d_columns_addblk_msa((out + (i << 3)), (dst + (i << 3)),
                                      dst_stride);
   }
 }
 
-void vpx_idct16x16_10_add_msa(const int16_t *input, uint8_t *dst,
+void aom_idct16x16_10_add_msa(const int16_t *input, uint8_t *dst,
                               int32_t dst_stride) {
   uint8_t i;
   DECLARE_ALIGNED(32, int16_t, out_arr[16 * 16]);
   int16_t *out = out_arr;
 
   /* process 16 * 8 block */
-  vpx_idct16_1d_rows_msa(input, out);
+  aom_idct16_1d_rows_msa(input, out);
 
   /* short case just considers top 4 rows as valid output */
   out += 4 * 16;
@@ -255,12 +255,12 @@ void vpx_idct16x16_10_add_msa(const int16_t *input, uint8_t *dst,
   /* transform columns */
   for (i = 0; i < 2; ++i) {
     /* process 8 * 16 block */
-    vpx_idct16_1d_columns_addblk_msa((out + (i << 3)), (dst + (i << 3)),
+    aom_idct16_1d_columns_addblk_msa((out + (i << 3)), (dst + (i << 3)),
                                      dst_stride);
   }
 }
 
-void vpx_idct16x16_1_add_msa(const int16_t *input, uint8_t *dst,
+void aom_idct16x16_1_add_msa(const int16_t *input, uint8_t *dst,
                              int32_t dst_stride) {
   uint8_t i;
   int16_t out;
@@ -290,7 +290,7 @@ void vpx_idct16x16_1_add_msa(const int16_t *input, uint8_t *dst,
   }
 }
 
-void vpx_iadst16_1d_rows_msa(const int16_t *input, int16_t *output) {
+void aom_iadst16_1d_rows_msa(const int16_t *input, int16_t *output) {
   v8i16 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;
   v8i16 l0, l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13, l14, l15;
 
@@ -320,7 +320,7 @@ void vpx_iadst16_1d_rows_msa(const int16_t *input, int16_t *output) {
   ST_SH8(l8, l9, l10, l11, l12, l13, l14, l15, (output + 8), 16);
 }
 
-void vpx_iadst16_1d_columns_addblk_msa(int16_t *input, uint8_t *dst,
+void aom_iadst16_1d_columns_addblk_msa(int16_t *input, uint8_t *dst,
                                        int32_t dst_stride) {
   v8i16 v0, v2, v4, v6, k0, k1, k2, k3;
   v8i16 r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15;

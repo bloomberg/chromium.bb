@@ -12,7 +12,7 @@
 #ifndef VP10_COMMON_ENTROPY_H_
 #define VP10_COMMON_ENTROPY_H_
 
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 #include "aom_dsp/prob.h"
 
 #include "av1/common/common.h"
@@ -78,8 +78,8 @@ DECLARE_ALIGNED(16, extern const uint8_t, vp10_cat6_prob_high12[18]);
 #define EOB_MODEL_TOKEN 3
 
 typedef struct {
-  const vpx_tree_index *tree;
-  const vpx_prob *prob;
+  const aom_tree_index *tree;
+  const aom_prob *prob;
   int len;
   int base_val;
   const int16_t *cost;
@@ -162,16 +162,16 @@ static INLINE const uint8_t *get_band_translate(TX_SIZE tx_size) {
 #define PIVOT_NODE 2  // which node is pivot
 
 #define MODEL_NODES (ENTROPY_NODES - UNCONSTRAINED_NODES)
-extern const vpx_tree_index vp10_coef_con_tree[TREE_SIZE(ENTROPY_TOKENS)];
-extern const vpx_prob vp10_pareto8_full[COEFF_PROB_MODELS][MODEL_NODES];
+extern const aom_tree_index vp10_coef_con_tree[TREE_SIZE(ENTROPY_TOKENS)];
+extern const aom_prob vp10_pareto8_full[COEFF_PROB_MODELS][MODEL_NODES];
 
-typedef vpx_prob vp10_coeff_probs_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
+typedef aom_prob vp10_coeff_probs_model[REF_TYPES][COEF_BANDS][COEFF_CONTEXTS]
                                        [UNCONSTRAINED_NODES];
 
 typedef unsigned int vp10_coeff_count_model
     [REF_TYPES][COEF_BANDS][COEFF_CONTEXTS][UNCONSTRAINED_NODES + 1];
 
-void vp10_model_to_full_probs(const vpx_prob *model, vpx_prob *full);
+void vp10_model_to_full_probs(const aom_prob *model, aom_prob *full);
 
 typedef char ENTROPY_CONTEXT;
 

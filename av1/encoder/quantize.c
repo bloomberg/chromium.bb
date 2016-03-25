@@ -10,8 +10,8 @@
  */
 
 #include <math.h>
-#include "./vpx_dsp_rtcd.h"
-#include "aom_mem/vpx_mem.h"
+#include "./aom_dsp_rtcd.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
 #include "av1/common/quant_common.h"
@@ -273,7 +273,7 @@ void vp10_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
 
 #if CONFIG_VPX_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    vpx_highbd_quantize_b(BLOCK_OFFSET(p->coeff, block), 16, x->skip_block,
+    aom_highbd_quantize_b(BLOCK_OFFSET(p->coeff, block), 16, x->skip_block,
                           p->zbin, p->round, p->quant, p->quant_shift,
                           BLOCK_OFFSET(p->qcoeff, block),
                           BLOCK_OFFSET(pd->dqcoeff, block), pd->dequant,
@@ -286,7 +286,7 @@ void vp10_regular_quantize_b_4x4(MACROBLOCK *x, int plane, int block,
     return;
   }
 #endif
-  vpx_quantize_b(BLOCK_OFFSET(p->coeff, block), 16, x->skip_block, p->zbin,
+  aom_quantize_b(BLOCK_OFFSET(p->coeff, block), 16, x->skip_block, p->zbin,
                  p->round, p->quant, p->quant_shift,
                  BLOCK_OFFSET(p->qcoeff, block),
                  BLOCK_OFFSET(pd->dqcoeff, block), pd->dequant, &p->eobs[block],
@@ -308,7 +308,7 @@ static void invert_quant(int16_t *quant, int16_t *shift, int d) {
   *shift = 1 << (16 - l);
 }
 
-static int get_qzbin_factor(int q, vpx_bit_depth_t bit_depth) {
+static int get_qzbin_factor(int q, aom_bit_depth_t bit_depth) {
   const int quant = vp10_dc_quant(q, 0, bit_depth);
 #if CONFIG_VPX_HIGHBITDEPTH
   switch (bit_depth) {

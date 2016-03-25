@@ -15,14 +15,14 @@
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
 #include "./av1_rtcd.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 #include "test/acm_random.h"
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "av1/common/entropy.h"
-#include "aom/vpx_codec.h"
-#include "aom/vpx_integer.h"
+#include "aom/aom_codec.h"
+#include "aom/aom_integer.h"
 #include "aom_ports/mem.h"
 
 using libaom_test::ACMRandom;
@@ -36,11 +36,11 @@ typedef void (*FhtFunc)(const int16_t *in, tran_low_t *out, int stride,
 typedef void (*IhtFunc)(const tran_low_t *in, uint8_t *out, int stride,
                         int tx_type);
 
-typedef std::tr1::tuple<FdctFunc, IdctFunc, int, vpx_bit_depth_t> Dct4x4Param;
-typedef std::tr1::tuple<FhtFunc, IhtFunc, int, vpx_bit_depth_t> Ht4x4Param;
+typedef std::tr1::tuple<FdctFunc, IdctFunc, int, aom_bit_depth_t> Dct4x4Param;
+typedef std::tr1::tuple<FhtFunc, IhtFunc, int, aom_bit_depth_t> Ht4x4Param;
 
 void fdct4x4_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
-  vpx_fdct4x4_c(in, out, stride);
+  aom_fdct4x4_c(in, out, stride);
 }
 
 void fht4x4_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
@@ -53,11 +53,11 @@ void fwht4x4_ref(const int16_t *in, tran_low_t *out, int stride, int tx_type) {
 
 #if CONFIG_VPX_HIGHBITDEPTH
 void idct4x4_10(const tran_low_t *in, uint8_t *out, int stride) {
-  vpx_highbd_idct4x4_16_add_c(in, out, stride, 10);
+  aom_highbd_idct4x4_16_add_c(in, out, stride, 10);
 }
 
 void idct4x4_12(const tran_low_t *in, uint8_t *out, int stride) {
-  vpx_highbd_idct4x4_16_add_c(in, out, stride, 12);
+  aom_highbd_idct4x4_16_add_c(in, out, stride, 12);
 }
 
 void iht4x4_10(const tran_low_t *in, uint8_t *out, int stride, int tx_type) {
@@ -69,20 +69,20 @@ void iht4x4_12(const tran_low_t *in, uint8_t *out, int stride, int tx_type) {
 }
 
 void iwht4x4_10(const tran_low_t *in, uint8_t *out, int stride) {
-  vpx_highbd_iwht4x4_16_add_c(in, out, stride, 10);
+  aom_highbd_iwht4x4_16_add_c(in, out, stride, 10);
 }
 
 void iwht4x4_12(const tran_low_t *in, uint8_t *out, int stride) {
-  vpx_highbd_iwht4x4_16_add_c(in, out, stride, 12);
+  aom_highbd_iwht4x4_16_add_c(in, out, stride, 12);
 }
 
 #if HAVE_SSE2
 void idct4x4_10_sse2(const tran_low_t *in, uint8_t *out, int stride) {
-  vpx_highbd_idct4x4_16_add_sse2(in, out, stride, 10);
+  aom_highbd_idct4x4_16_add_sse2(in, out, stride, 10);
 }
 
 void idct4x4_12_sse2(const tran_low_t *in, uint8_t *out, int stride) {
-  vpx_highbd_idct4x4_16_add_sse2(in, out, stride, 12);
+  aom_highbd_idct4x4_16_add_sse2(in, out, stride, 12);
 }
 #endif  // HAVE_SSE2
 #endif  // CONFIG_VPX_HIGHBITDEPTH
@@ -267,7 +267,7 @@ class Trans4x4TestBase {
   int pitch_;
   int tx_type_;
   FhtFunc fwd_txfm_ref;
-  vpx_bit_depth_t bit_depth_;
+  aom_bit_depth_t bit_depth_;
   int mask_;
 };
 
@@ -385,13 +385,13 @@ using std::tr1::make_tuple;
 INSTANTIATE_TEST_CASE_P(
     C, Trans4x4DCT,
     ::testing::Values(
-        make_tuple(&vpx_highbd_fdct4x4_c, &idct4x4_10, 0, VPX_BITS_10),
-        make_tuple(&vpx_highbd_fdct4x4_c, &idct4x4_12, 0, VPX_BITS_12),
-        make_tuple(&vpx_fdct4x4_c, &vpx_idct4x4_16_add_c, 0, VPX_BITS_8)));
+        make_tuple(&aom_highbd_fdct4x4_c, &idct4x4_10, 0, VPX_BITS_10),
+        make_tuple(&aom_highbd_fdct4x4_c, &idct4x4_12, 0, VPX_BITS_12),
+        make_tuple(&aom_fdct4x4_c, &aom_idct4x4_16_add_c, 0, VPX_BITS_8)));
 #else
 INSTANTIATE_TEST_CASE_P(C, Trans4x4DCT,
-                        ::testing::Values(make_tuple(&vpx_fdct4x4_c,
-                                                     &vpx_idct4x4_16_add_c, 0,
+                        ::testing::Values(make_tuple(&aom_fdct4x4_c,
+                                                     &aom_idct4x4_16_add_c, 0,
                                                      VPX_BITS_8)));
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
@@ -427,18 +427,18 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         make_tuple(&vp10_highbd_fwht4x4_c, &iwht4x4_10, 0, VPX_BITS_10),
         make_tuple(&vp10_highbd_fwht4x4_c, &iwht4x4_12, 0, VPX_BITS_12),
-        make_tuple(&vp10_fwht4x4_c, &vpx_iwht4x4_16_add_c, 0, VPX_BITS_8)));
+        make_tuple(&vp10_fwht4x4_c, &aom_iwht4x4_16_add_c, 0, VPX_BITS_8)));
 #else
 INSTANTIATE_TEST_CASE_P(C, Trans4x4WHT,
                         ::testing::Values(make_tuple(&vp10_fwht4x4_c,
-                                                     &vpx_iwht4x4_16_add_c, 0,
+                                                     &aom_iwht4x4_16_add_c, 0,
                                                      VPX_BITS_8)));
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 
 #if HAVE_NEON_ASM && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(NEON, Trans4x4DCT,
-                        ::testing::Values(make_tuple(&vpx_fdct4x4_c,
-                                                     &vpx_idct4x4_16_add_neon,
+                        ::testing::Values(make_tuple(&aom_fdct4x4_c,
+                                                     &aom_idct4x4_16_add_neon,
                                                      0, VPX_BITS_8)));
 #endif  // HAVE_NEON_ASM && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 
@@ -456,7 +456,7 @@ INSTANTIATE_TEST_CASE_P(
     !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(MMX, Trans4x4WHT,
                         ::testing::Values(make_tuple(&vp10_fwht4x4_mmx,
-                                                     &vpx_iwht4x4_16_add_c, 0,
+                                                     &aom_iwht4x4_16_add_c, 0,
                                                      VPX_BITS_8)));
 #endif
 
@@ -464,14 +464,14 @@ INSTANTIATE_TEST_CASE_P(MMX, Trans4x4WHT,
     !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(SSE2, Trans4x4WHT,
                         ::testing::Values(make_tuple(&vp10_fwht4x4_c,
-                                                     &vpx_iwht4x4_16_add_sse2,
+                                                     &aom_iwht4x4_16_add_sse2,
                                                      0, VPX_BITS_8)));
 #endif
 
 #if HAVE_SSE2 && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(SSE2, Trans4x4DCT,
-                        ::testing::Values(make_tuple(&vpx_fdct4x4_sse2,
-                                                     &vpx_idct4x4_16_add_sse2,
+                        ::testing::Values(make_tuple(&aom_fdct4x4_sse2,
+                                                     &aom_idct4x4_16_add_sse2,
                                                      0, VPX_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans4x4HT,
@@ -487,11 +487,11 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans4x4DCT,
     ::testing::Values(
-        make_tuple(&vpx_highbd_fdct4x4_c, &idct4x4_10_sse2, 0, VPX_BITS_10),
-        make_tuple(&vpx_highbd_fdct4x4_sse2, &idct4x4_10_sse2, 0, VPX_BITS_10),
-        make_tuple(&vpx_highbd_fdct4x4_c, &idct4x4_12_sse2, 0, VPX_BITS_12),
-        make_tuple(&vpx_highbd_fdct4x4_sse2, &idct4x4_12_sse2, 0, VPX_BITS_12),
-        make_tuple(&vpx_fdct4x4_sse2, &vpx_idct4x4_16_add_c, 0, VPX_BITS_8)));
+        make_tuple(&aom_highbd_fdct4x4_c, &idct4x4_10_sse2, 0, VPX_BITS_10),
+        make_tuple(&aom_highbd_fdct4x4_sse2, &idct4x4_10_sse2, 0, VPX_BITS_10),
+        make_tuple(&aom_highbd_fdct4x4_c, &idct4x4_12_sse2, 0, VPX_BITS_12),
+        make_tuple(&aom_highbd_fdct4x4_sse2, &idct4x4_12_sse2, 0, VPX_BITS_12),
+        make_tuple(&aom_fdct4x4_sse2, &aom_idct4x4_16_add_c, 0, VPX_BITS_8)));
 
 INSTANTIATE_TEST_CASE_P(
     SSE2, Trans4x4HT,
@@ -504,8 +504,8 @@ INSTANTIATE_TEST_CASE_P(
 
 #if HAVE_MSA && !CONFIG_VPX_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 INSTANTIATE_TEST_CASE_P(MSA, Trans4x4DCT,
-                        ::testing::Values(make_tuple(&vpx_fdct4x4_msa,
-                                                     &vpx_idct4x4_16_add_msa, 0,
+                        ::testing::Values(make_tuple(&aom_fdct4x4_msa,
+                                                     &aom_idct4x4_16_add_msa, 0,
                                                      VPX_BITS_8)));
 INSTANTIATE_TEST_CASE_P(
     MSA, Trans4x4HT,

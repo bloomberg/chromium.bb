@@ -26,16 +26,16 @@ extern "C" {
 // Finds and opens writer for specified container format.
 // Returns an opaque VpxVideoWriter* upon success, or NULL upon failure.
 // Right now only IVF format is supported.
-VpxVideoWriter *vpx_video_writer_open(const char *filename,
+VpxVideoWriter *aom_video_writer_open(const char *filename,
                                       VpxContainer container,
                                       const VpxVideoInfo *info);
 
 // Frees all resources associated with VpxVideoWriter* returned from
-// vpx_video_writer_open() call.
-void vpx_video_writer_close(VpxVideoWriter *writer);
+// aom_video_writer_open() call.
+void aom_video_writer_close(VpxVideoWriter *writer);
 
 // Writes frame bytes to the file.
-int vpx_video_writer_write_frame(VpxVideoWriter *writer, const uint8_t *buffer,
+int aom_video_writer_write_frame(VpxVideoWriter *writer, const uint8_t *buffer,
                                  size_t size, int64_t pts);
 
 #ifdef __cplusplus

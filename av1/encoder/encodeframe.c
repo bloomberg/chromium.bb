@@ -14,12 +14,12 @@
 #include <stdio.h>
 
 #include "./av1_rtcd.h"
-#include "./vpx_dsp_rtcd.h"
-#include "./vpx_config.h"
+#include "./aom_dsp_rtcd.h"
+#include "./aom_config.h"
 
-#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/mem.h"
-#include "aom_ports/vpx_timer.h"
+#include "aom_ports/aom_timer.h"
 #include "aom_ports/system_state.h"
 
 #include "av1/common/common.h"
@@ -523,14 +523,14 @@ static int compute_minmax_8x8(const uint8_t *s, int sp, const uint8_t *d,
     if (x8_idx < pixels_wide && y8_idx < pixels_high) {
 #if CONFIG_VPX_HIGHBITDEPTH
       if (highbd_flag & YV12_FLAG_HIGHBITDEPTH) {
-        vpx_highbd_minmax_8x8(s + y8_idx * sp + x8_idx, sp,
+        aom_highbd_minmax_8x8(s + y8_idx * sp + x8_idx, sp,
                               d + y8_idx * dp + x8_idx, dp, &min, &max);
       } else {
-        vpx_minmax_8x8(s + y8_idx * sp + x8_idx, sp, d + y8_idx * dp + x8_idx,
+        aom_minmax_8x8(s + y8_idx * sp + x8_idx, sp, d + y8_idx * dp + x8_idx,
                        dp, &min, &max);
       }
 #else
-      vpx_minmax_8x8(s + y8_idx * sp + x8_idx, sp, d + y8_idx * dp + x8_idx, dp,
+      aom_minmax_8x8(s + y8_idx * sp + x8_idx, sp, d + y8_idx * dp + x8_idx, dp,
                      &min, &max);
 #endif
       if ((max - min) > minmax_max) minmax_max = (max - min);
@@ -558,16 +558,16 @@ static void fill_variance_4x4avg(const uint8_t *s, int sp, const uint8_t *d,
       int d_avg = 128;
 #if CONFIG_VPX_HIGHBITDEPTH
       if (highbd_flag & YV12_FLAG_HIGHBITDEPTH) {
-        s_avg = vpx_highbd_avg_4x4(s + y4_idx * sp + x4_idx, sp);
+        s_avg = aom_highbd_avg_4x4(s + y4_idx * sp + x4_idx, sp);
         if (!is_key_frame)
-          d_avg = vpx_highbd_avg_4x4(d + y4_idx * dp + x4_idx, dp);
+          d_avg = aom_highbd_avg_4x4(d + y4_idx * dp + x4_idx, dp);
       } else {
-        s_avg = vpx_avg_4x4(s + y4_idx * sp + x4_idx, sp);
-        if (!is_key_frame) d_avg = vpx_avg_4x4(d + y4_idx * dp + x4_idx, dp);
+        s_avg = aom_avg_4x4(s + y4_idx * sp + x4_idx, sp);
+        if (!is_key_frame) d_avg = aom_avg_4x4(d + y4_idx * dp + x4_idx, dp);
       }
 #else
-      s_avg = vpx_avg_4x4(s + y4_idx * sp + x4_idx, sp);
-      if (!is_key_frame) d_avg = vpx_avg_4x4(d + y4_idx * dp + x4_idx, dp);
+      s_avg = aom_avg_4x4(s + y4_idx * sp + x4_idx, sp);
+      if (!is_key_frame) d_avg = aom_avg_4x4(d + y4_idx * dp + x4_idx, dp);
 #endif
       sum = s_avg - d_avg;
       sse = sum * sum;
@@ -594,16 +594,16 @@ static void fill_variance_8x8avg(const uint8_t *s, int sp, const uint8_t *d,
       int d_avg = 128;
 #if CONFIG_VPX_HIGHBITDEPTH
       if (highbd_flag & YV12_FLAG_HIGHBITDEPTH) {
-        s_avg = vpx_highbd_avg_8x8(s + y8_idx * sp + x8_idx, sp);
+        s_avg = aom_highbd_avg_8x8(s + y8_idx * sp + x8_idx, sp);
         if (!is_key_frame)
-          d_avg = vpx_highbd_avg_8x8(d + y8_idx * dp + x8_idx, dp);
+          d_avg = aom_highbd_avg_8x8(d + y8_idx * dp + x8_idx, dp);
       } else {
-        s_avg = vpx_avg_8x8(s + y8_idx * sp + x8_idx, sp);
-        if (!is_key_frame) d_avg = vpx_avg_8x8(d + y8_idx * dp + x8_idx, dp);
+        s_avg = aom_avg_8x8(s + y8_idx * sp + x8_idx, sp);
+        if (!is_key_frame) d_avg = aom_avg_8x8(d + y8_idx * dp + x8_idx, dp);
       }
 #else
-      s_avg = vpx_avg_8x8(s + y8_idx * sp + x8_idx, sp);
-      if (!is_key_frame) d_avg = vpx_avg_8x8(d + y8_idx * dp + x8_idx, dp);
+      s_avg = aom_avg_8x8(s + y8_idx * sp + x8_idx, sp);
+      if (!is_key_frame) d_avg = aom_avg_8x8(d + y8_idx * dp + x8_idx, dp);
 #endif
       sum = s_avg - d_avg;
       sse = sum * sum;
@@ -1042,7 +1042,7 @@ static int set_segment_rdmult(VP10_COMP *const cpi, MACROBLOCK *const x,
   int segment_qindex;
   VP10_COMMON *const cm = &cpi->common;
   vp10_init_plane_quantizers(cpi, x);
-  vpx_clear_system_state();
+  aom_clear_system_state();
   segment_qindex = vp10_get_qindex(&cm->seg, segment_id, cm->base_qindex);
   return vp10_compute_rd_mult(cpi, segment_qindex + cm->y_dc_delta_q);
 }
@@ -1060,7 +1060,7 @@ static void rd_pick_sb_modes(VP10_COMP *cpi, TileDataEnc *tile_data,
   const AQ_MODE aq_mode = cpi->oxcf.aq_mode;
   int i, orig_rdmult;
 
-  vpx_clear_system_state();
+  aom_clear_system_state();
 
   // Use the lower precision, but faster, 32x32 fdct for mode selection.
   x->use_lp32x32fdct = 1;
@@ -2480,8 +2480,8 @@ void vp10_init_tile_data(VP10_COMP *cpi) {
   int tile_tok = 0;
 
   if (cpi->tile_data == NULL || cpi->allocated_tiles < tile_cols * tile_rows) {
-    if (cpi->tile_data != NULL) vpx_free(cpi->tile_data);
-    CHECK_MEM_ERROR(cm, cpi->tile_data, vpx_malloc(tile_cols * tile_rows *
+    if (cpi->tile_data != NULL) aom_free(cpi->tile_data);
+    CHECK_MEM_ERROR(cm, cpi->tile_data, aom_malloc(tile_cols * tile_rows *
                                                    sizeof(*cpi->tile_data)));
     cpi->allocated_tiles = tile_cols * tile_rows;
 
@@ -2609,8 +2609,8 @@ static void encode_frame_internal(VP10_COMP *cpi) {
   vp10_zero(x->skip_txfm);
 
   {
-    struct vpx_usec_timer emr_timer;
-    vpx_usec_timer_start(&emr_timer);
+    struct aom_usec_timer emr_timer;
+    aom_usec_timer_start(&emr_timer);
 
 #if CONFIG_FP_MB_STATS
     if (cpi->use_fp_mb_stats) {
@@ -2625,8 +2625,8 @@ static void encode_frame_internal(VP10_COMP *cpi) {
     else
       encode_tiles(cpi);
 
-    vpx_usec_timer_mark(&emr_timer);
-    cpi->time_encode_sb_row += vpx_usec_timer_elapsed(&emr_timer);
+    aom_usec_timer_mark(&emr_timer);
+    cpi->time_encode_sb_row += aom_usec_timer_elapsed(&emr_timer);
   }
 
 #if 0

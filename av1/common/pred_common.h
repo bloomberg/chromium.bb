@@ -14,7 +14,7 @@
 
 #include "av1/common/blockd.h"
 #include "av1/common/onyxc_int.h"
-#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/aom_dsp_common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,7 +49,7 @@ static INLINE int vp10_get_pred_context_seg_id(const MACROBLOCKD *xd) {
   return above_sip + left_sip;
 }
 
-static INLINE vpx_prob vp10_get_pred_prob_seg_id(
+static INLINE aom_prob vp10_get_pred_prob_seg_id(
     const struct segmentation_probs *segp, const MACROBLOCKD *xd) {
   return segp->pred_probs[vp10_get_pred_context_seg_id(xd)];
 }
@@ -62,7 +62,7 @@ static INLINE int vp10_get_skip_context(const MACROBLOCKD *xd) {
   return above_skip + left_skip;
 }
 
-static INLINE vpx_prob vp10_get_skip_prob(const VP10_COMMON *cm,
+static INLINE aom_prob vp10_get_skip_prob(const VP10_COMMON *cm,
                                           const MACROBLOCKD *xd) {
   return cm->fc->skip_probs[vp10_get_skip_context(xd)];
 }
@@ -71,7 +71,7 @@ int vp10_get_pred_context_switchable_interp(const MACROBLOCKD *xd);
 
 int vp10_get_intra_inter_context(const MACROBLOCKD *xd);
 
-static INLINE vpx_prob vp10_get_intra_inter_prob(const VP10_COMMON *cm,
+static INLINE aom_prob vp10_get_intra_inter_prob(const VP10_COMMON *cm,
                                                  const MACROBLOCKD *xd) {
   return cm->fc->intra_inter_prob[vp10_get_intra_inter_context(xd)];
 }
@@ -79,7 +79,7 @@ static INLINE vpx_prob vp10_get_intra_inter_prob(const VP10_COMMON *cm,
 int vp10_get_reference_mode_context(const VP10_COMMON *cm,
                                     const MACROBLOCKD *xd);
 
-static INLINE vpx_prob vp10_get_reference_mode_prob(const VP10_COMMON *cm,
+static INLINE aom_prob vp10_get_reference_mode_prob(const VP10_COMMON *cm,
                                                     const MACROBLOCKD *xd) {
   return cm->fc->comp_inter_prob[vp10_get_reference_mode_context(cm, xd)];
 }
@@ -87,7 +87,7 @@ static INLINE vpx_prob vp10_get_reference_mode_prob(const VP10_COMMON *cm,
 int vp10_get_pred_context_comp_ref_p(const VP10_COMMON *cm,
                                      const MACROBLOCKD *xd);
 
-static INLINE vpx_prob vp10_get_pred_prob_comp_ref_p(const VP10_COMMON *cm,
+static INLINE aom_prob vp10_get_pred_prob_comp_ref_p(const VP10_COMMON *cm,
                                                      const MACROBLOCKD *xd) {
   const int pred_context = vp10_get_pred_context_comp_ref_p(cm, xd);
   return cm->fc->comp_ref_prob[pred_context];
@@ -95,14 +95,14 @@ static INLINE vpx_prob vp10_get_pred_prob_comp_ref_p(const VP10_COMMON *cm,
 
 int vp10_get_pred_context_single_ref_p1(const MACROBLOCKD *xd);
 
-static INLINE vpx_prob vp10_get_pred_prob_single_ref_p1(const VP10_COMMON *cm,
+static INLINE aom_prob vp10_get_pred_prob_single_ref_p1(const VP10_COMMON *cm,
                                                         const MACROBLOCKD *xd) {
   return cm->fc->single_ref_prob[vp10_get_pred_context_single_ref_p1(xd)][0];
 }
 
 int vp10_get_pred_context_single_ref_p2(const MACROBLOCKD *xd);
 
-static INLINE vpx_prob vp10_get_pred_prob_single_ref_p2(const VP10_COMMON *cm,
+static INLINE aom_prob vp10_get_pred_prob_single_ref_p2(const VP10_COMMON *cm,
                                                         const MACROBLOCKD *xd) {
   return cm->fc->single_ref_prob[vp10_get_pred_context_single_ref_p2(xd)][1];
 }
@@ -128,7 +128,7 @@ static INLINE int get_tx_size_context(const MACROBLOCKD *xd) {
   return (above_ctx + left_ctx) > max_tx_size;
 }
 
-static INLINE const vpx_prob *get_tx_probs(TX_SIZE max_tx_size, int ctx,
+static INLINE const aom_prob *get_tx_probs(TX_SIZE max_tx_size, int ctx,
                                            const struct tx_probs *tx_probs) {
   switch (max_tx_size) {
     case TX_8X8: return tx_probs->p8x8[ctx];
@@ -138,7 +138,7 @@ static INLINE const vpx_prob *get_tx_probs(TX_SIZE max_tx_size, int ctx,
   }
 }
 
-static INLINE const vpx_prob *get_tx_probs2(TX_SIZE max_tx_size,
+static INLINE const aom_prob *get_tx_probs2(TX_SIZE max_tx_size,
                                             const MACROBLOCKD *xd,
                                             const struct tx_probs *tx_probs) {
   return get_tx_probs(max_tx_size, get_tx_size_context(xd), tx_probs);

@@ -19,7 +19,7 @@
 #   $VP8_IVF_FILE and $VP9_IVF_FILE are required.
 decode_with_drops_verify_environment() {
   if [ ! -e "${VP8_IVF_FILE}" ] || [ ! -e "${VP9_IVF_FILE}" ]; then
-    echo "Libvpx test data must exist in LIBAOM_TEST_DATA_PATH."
+    echo "Libaom test data must exist in LIBAOM_TEST_DATA_PATH."
     return 1
   fi
 }

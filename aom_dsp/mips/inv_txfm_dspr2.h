@@ -14,8 +14,8 @@
 
 #include <assert.h>
 
-#include "./vpx_config.h"
-#include "aom/vpx_integer.h"
+#include "./aom_config.h"
+#include "aom/aom_integer.h"
 #include "aom_dsp/inv_txfm.h"
 #include "aom_dsp/mips/common_dspr2.h"
 
@@ -59,10 +59,10 @@ extern "C" {
     out;                                                                       \
   })
 
-void vpx_idct32_cols_add_blk_dspr2(int16_t *input, uint8_t *dest,
+void aom_idct32_cols_add_blk_dspr2(int16_t *input, uint8_t *dest,
                                    int dest_stride);
-void vpx_idct4_rows_dspr2(const int16_t *input, int16_t *output);
-void vpx_idct4_columns_add_blk_dspr2(int16_t *input, uint8_t *dest,
+void aom_idct4_rows_dspr2(const int16_t *input, int16_t *output);
+void aom_idct4_columns_add_blk_dspr2(int16_t *input, uint8_t *dest,
                                      int dest_stride);
 void iadst4_dspr2(const int16_t *input, int16_t *output);
 void idct8_rows_dspr2(const int16_t *input, int16_t *output, uint32_t no_rows);

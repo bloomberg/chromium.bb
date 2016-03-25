@@ -14,15 +14,15 @@
 
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "./av1_rtcd.h"
 #include "test/acm_random.h"
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "av1/common/entropy.h"
-#include "aom/vpx_codec.h"
-#include "aom/vpx_integer.h"
+#include "aom/aom_codec.h"
+#include "aom/aom_integer.h"
 
 using libaom_test::ACMRandom;
 
@@ -34,7 +34,7 @@ typedef int64_t (*ErrorBlockFunc)(const tran_low_t *coeff,
                                   const tran_low_t *dqcoeff,
                                   intptr_t block_size, int64_t *ssz, int bps);
 
-typedef std::tr1::tuple<ErrorBlockFunc, ErrorBlockFunc, vpx_bit_depth_t>
+typedef std::tr1::tuple<ErrorBlockFunc, ErrorBlockFunc, aom_bit_depth_t>
     ErrorBlockParam;
 
 class ErrorBlockTest : public ::testing::TestWithParam<ErrorBlockParam> {
@@ -49,7 +49,7 @@ class ErrorBlockTest : public ::testing::TestWithParam<ErrorBlockParam> {
   virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
-  vpx_bit_depth_t bit_depth_;
+  aom_bit_depth_t bit_depth_;
   ErrorBlockFunc error_block_op_;
   ErrorBlockFunc ref_error_block_op_;
 };

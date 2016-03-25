@@ -17,7 +17,7 @@
 #include "test/i420_video_source.h"
 #include "test/util.h"
 #include "test/md5_helper.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom_mem/aom_mem.h"
 
 namespace {
 class TileIndependenceTest : public ::libaom_test::EncoderTest,
@@ -27,7 +27,7 @@ class TileIndependenceTest : public ::libaom_test::EncoderTest,
       : EncoderTest(GET_PARAM(0)), md5_fw_order_(), md5_inv_order_(),
         n_tiles_(GET_PARAM(1)) {
     init_flags_ = VPX_CODEC_USE_PSNR;
-    vpx_codec_dec_cfg_t cfg = vpx_codec_dec_cfg_t();
+    aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
     cfg.w = 704;
     cfg.h = 144;
     cfg.threads = 1;
@@ -53,19 +53,19 @@ class TileIndependenceTest : public ::libaom_test::EncoderTest,
     }
   }
 
-  void UpdateMD5(::libaom_test::Decoder *dec, const vpx_codec_cx_pkt_t *pkt,
+  void UpdateMD5(::libaom_test::Decoder *dec, const aom_codec_cx_pkt_t *pkt,
                  ::libaom_test::MD5 *md5) {
-    const vpx_codec_err_t res = dec->DecodeFrame(
+    const aom_codec_err_t res = dec->DecodeFrame(
         reinterpret_cast<uint8_t *>(pkt->data.frame.buf), pkt->data.frame.sz);
     if (res != VPX_CODEC_OK) {
       abort_ = true;
       ASSERT_EQ(VPX_CODEC_OK, res);
     }
-    const vpx_image_t *img = dec->GetDxData().Next();
+    const aom_image_t *img = dec->GetDxData().Next();
     md5->Add(img);
   }
 
-  virtual void FramePktHook(const vpx_codec_cx_pkt_t *pkt) {
+  virtual void FramePktHook(const aom_codec_cx_pkt_t *pkt) {
     UpdateMD5(fw_dec_, pkt, &md5_fw_order_);
     UpdateMD5(inv_dec_, pkt, &md5_inv_order_);
   }
@@ -81,7 +81,7 @@ class TileIndependenceTest : public ::libaom_test::EncoderTest,
 // inverted tile ordering. Ensure that the MD5 of the output in both cases
 // is identical. If so, tiles are considered independent and the test passes.
 TEST_P(TileIndependenceTest, MD5Match) {
-  const vpx_rational timebase = { 33333333, 1000000000 };
+  const aom_rational timebase = { 33333333, 1000000000 };
   cfg_.g_timebase = timebase;
   cfg_.rc_target_bitrate = 500;
   cfg_.g_lag_in_frames = 25;

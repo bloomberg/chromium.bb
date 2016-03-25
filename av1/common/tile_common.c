@@ -11,7 +11,7 @@
 
 #include "av1/common/tile_common.h"
 #include "av1/common/onyxc_int.h"
-#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/aom_dsp_common.h"
 
 #define MIN_TILE_WIDTH_B64 4
 #define MAX_TILE_WIDTH_B64 64

@@ -15,8 +15,8 @@
 #define VPX_UTIL_ENDIAN_INL_H_
 
 #include <stdlib.h>
-#include "./vpx_config.h"
-#include "aom/vpx_integer.h"
+#include "./aom_config.h"
+#include "aom/aom_integer.h"
 
 #if defined(__GNUC__)
 #define LOCAL_GCC_VERSION ((__GNUC__ << 8) | __GNUC_MINOR__)

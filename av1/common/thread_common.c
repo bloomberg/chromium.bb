@@ -9,9 +9,9 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./vpx_config.h"
-#include "aom_dsp/vpx_dsp_common.h"
-#include "aom_mem/vpx_mem.h"
+#include "./aom_config.h"
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_mem/aom_mem.h"
 #include "av1/common/entropymode.h"
 #include "av1/common/thread_common.h"
 #include "av1/common/reconinter.h"
@@ -155,7 +155,7 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
                                 int start, int stop, int y_only,
                                 VPxWorker *workers, int nworkers,
                                 VP10LfSync *lf_sync) {
-  const VPxWorkerInterface *const winterface = vpx_get_worker_interface();
+  const VPxWorkerInterface *const winterface = aom_get_worker_interface();
   // Number of superblock rows and cols
   const int sb_rows = mi_cols_aligned_to_sb(cm->mi_rows) >> MI_BLOCK_SIZE_LOG2;
   // Decoder may allocate more threads than number of tiles based on user's
@@ -255,7 +255,7 @@ void vp10_loop_filter_alloc(VP10LfSync *lf_sync, VP10_COMMON *cm, int rows,
     int i;
 
     CHECK_MEM_ERROR(cm, lf_sync->mutex_,
-                    vpx_malloc(sizeof(*lf_sync->mutex_) * rows));
+                    aom_malloc(sizeof(*lf_sync->mutex_) * rows));
     if (lf_sync->mutex_) {
       for (i = 0; i < rows; ++i) {
         pthread_mutex_init(&lf_sync->mutex_[i], NULL);
@@ -263,7 +263,7 @@ void vp10_loop_filter_alloc(VP10LfSync *lf_sync, VP10_COMMON *cm, int rows,
     }
 
     CHECK_MEM_ERROR(cm, lf_sync->cond_,
-                    vpx_malloc(sizeof(*lf_sync->cond_) * rows));
+                    aom_malloc(sizeof(*lf_sync->cond_) * rows));
     if (lf_sync->cond_) {
       for (i = 0; i < rows; ++i) {
         pthread_cond_init(&lf_sync->cond_[i], NULL);
@@ -273,11 +273,11 @@ void vp10_loop_filter_alloc(VP10LfSync *lf_sync, VP10_COMMON *cm, int rows,
 #endif  // CONFIG_MULTITHREAD
 
   CHECK_MEM_ERROR(cm, lf_sync->lfdata,
-                  vpx_malloc(num_workers * sizeof(*lf_sync->lfdata)));
+                  aom_malloc(num_workers * sizeof(*lf_sync->lfdata)));
   lf_sync->num_workers = num_workers;
 
   CHECK_MEM_ERROR(cm, lf_sync->cur_sb_col,
-                  vpx_malloc(sizeof(*lf_sync->cur_sb_col) * rows));
+                  aom_malloc(sizeof(*lf_sync->cur_sb_col) * rows));
 
   // Set up nsync.
   lf_sync->sync_range = get_sync_range(width);
@@ -293,17 +293,17 @@ void vp10_loop_filter_dealloc(VP10LfSync *lf_sync) {
       for (i = 0; i < lf_sync->rows; ++i) {
         pthread_mutex_destroy(&lf_sync->mutex_[i]);
       }
-      vpx_free(lf_sync->mutex_);
+      aom_free(lf_sync->mutex_);
     }
     if (lf_sync->cond_ != NULL) {
       for (i = 0; i < lf_sync->rows; ++i) {
         pthread_cond_destroy(&lf_sync->cond_[i]);
       }
-      vpx_free(lf_sync->cond_);
+      aom_free(lf_sync->cond_);
     }
 #endif  // CONFIG_MULTITHREAD
-    vpx_free(lf_sync->lfdata);
-    vpx_free(lf_sync->cur_sb_col);
+    aom_free(lf_sync->lfdata);
+    aom_free(lf_sync->cur_sb_col);
     // clear the structure as the source of this call may be a resize in which
     // case this call will be followed by an _alloc() which may fail.
     vp10_zero(*lf_sync);

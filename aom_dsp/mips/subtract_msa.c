@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 #include "aom_dsp/mips/macros_msa.h"
 
 static void sub_blk_4x4_msa(const uint8_t *src_ptr, int32_t src_stride,
@@ -227,7 +227,7 @@ static void sub_blk_64x64_msa(const uint8_t *src, int32_t src_stride,
   }
 }
 
-void vpx_subtract_block_msa(int32_t rows, int32_t cols, int16_t *diff_ptr,
+void aom_subtract_block_msa(int32_t rows, int32_t cols, int16_t *diff_ptr,
                             ptrdiff_t diff_stride, const uint8_t *src_ptr,
                             ptrdiff_t src_stride, const uint8_t *pred_ptr,
                             ptrdiff_t pred_stride) {
@@ -254,12 +254,12 @@ void vpx_subtract_block_msa(int32_t rows, int32_t cols, int16_t *diff_ptr,
                           diff_stride);
         break;
       default:
-        vpx_subtract_block_c(rows, cols, diff_ptr, diff_stride, src_ptr,
+        aom_subtract_block_c(rows, cols, diff_ptr, diff_stride, src_ptr,
                              src_stride, pred_ptr, pred_stride);
         break;
     }
   } else {
-    vpx_subtract_block_c(rows, cols, diff_ptr, diff_stride, src_ptr, src_stride,
+    aom_subtract_block_c(rows, cols, diff_ptr, diff_stride, src_ptr, src_stride,
                          pred_ptr, pred_stride);
   }
 }

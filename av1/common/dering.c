@@ -12,8 +12,8 @@
 #include <string.h>
 #include <math.h>
 
-#include "./vpx_scale_rtcd.h"
-#include "aom/vpx_integer.h"
+#include "./aom_scale_rtcd.h"
+#include "aom/aom_integer.h"
 #include "av1/common/dering.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/reconinter.h"
@@ -61,7 +61,7 @@ void vp10_dering_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
   int coeff_shift = VPXMAX(cm->bit_depth - 8, 0);
   nvsb = (cm->mi_rows + MI_BLOCK_SIZE - 1)/MI_BLOCK_SIZE;
   nhsb = (cm->mi_cols + MI_BLOCK_SIZE - 1)/MI_BLOCK_SIZE;
-  bskip = vpx_malloc(sizeof(*bskip)*cm->mi_rows*cm->mi_cols);
+  bskip = aom_malloc(sizeof(*bskip)*cm->mi_rows*cm->mi_cols);
   vp10_setup_dst_planes(xd->plane, frame, 0, 0);
   for (pli = 0; pli < 3; pli++) {
     dec[pli] = xd->plane[pli].subsampling_x;
@@ -69,7 +69,7 @@ void vp10_dering_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
   }
   stride = bsize[0]*cm->mi_cols;
   for (pli = 0; pli < 3; pli++) {
-    src[pli] = vpx_malloc(sizeof(*src)*cm->mi_rows*cm->mi_cols*64);
+    src[pli] = aom_malloc(sizeof(*src)*cm->mi_rows*cm->mi_cols*64);
     for (r = 0; r < bsize[pli]*cm->mi_rows; ++r) {
       for (c = 0; c < bsize[pli]*cm->mi_cols; ++c) {
 #if CONFIG_VPX_HIGHBITDEPTH
@@ -148,7 +148,7 @@ void vp10_dering_frame(YV12_BUFFER_CONFIG *frame, VP10_COMMON *cm,
     }
   }
   for (pli = 0; pli < 3; pli++) {
-    vpx_free(src[pli]);
+    aom_free(src[pli]);
   }
-  vpx_free(bskip);
+  aom_free(bskip);
 }

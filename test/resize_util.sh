@@ -18,7 +18,7 @@
 # Environment check: $YUV_RAW_INPUT is required.
 resize_util_verify_environment() {
   if [ ! -e "${YUV_RAW_INPUT}" ]; then
-    echo "Libvpx test data must exist in LIBAOM_TEST_DATA_PATH."
+    echo "Libaom test data must exist in LIBAOM_TEST_DATA_PATH."
     return 1
   fi
 }
@@ -32,7 +32,7 @@ resize_util() {
   local target_dimensions="$1"
 
   # resize_util is available only when CONFIG_SHARED is disabled.
-  if [ -z "$(vpx_config_option_enabled CONFIG_SHARED)" ]; then
+  if [ -z "$(aom_config_option_enabled CONFIG_SHARED)" ]; then
     if [ ! -x "${resizer}" ]; then
       elog "${resizer} does not exist or is not executable."
       return 1

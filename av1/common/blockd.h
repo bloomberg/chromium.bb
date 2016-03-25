@@ -12,9 +12,9 @@
 #ifndef VP10_COMMON_BLOCKD_H_
 #define VP10_COMMON_BLOCKD_H_
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 
-#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/mem.h"
 #include "aom_scale/yv12config.h"
 
@@ -207,7 +207,7 @@ typedef struct macroblockd {
   int lossless[MAX_SEGMENTS];
   int corrupted;
 
-  struct vpx_internal_error_info *error_info;
+  struct aom_internal_error_info *error_info;
 } MACROBLOCKD;
 
 static INLINE BLOCK_SIZE get_subsize(BLOCK_SIZE bsize,

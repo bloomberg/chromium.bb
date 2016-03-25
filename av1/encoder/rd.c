@@ -15,8 +15,8 @@
 
 #include "./av1_rtcd.h"
 
-#include "aom_dsp/vpx_dsp_common.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/bitops.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/system_state.h"
@@ -105,7 +105,7 @@ static void fill_token_costs(vp10_coeff_cost *c,
       for (j = 0; j < REF_TYPES; ++j)
         for (k = 0; k < COEF_BANDS; ++k)
           for (l = 0; l < BAND_COEFF_CONTEXTS(k); ++l) {
-            vpx_prob probs[ENTROPY_NODES];
+            aom_prob probs[ENTROPY_NODES];
             vp10_model_to_full_probs(p[t][i][j][k][l], probs);
             vp10_cost_tokens((int *)c[t][i][j][k][0][l], probs, vp10_coef_tree);
             vp10_cost_tokens_skip((int *)c[t][i][j][k][1][l], probs,
@@ -127,7 +127,7 @@ static int sad_per_bit4lut_12[QINDEX_RANGE];
 #endif
 
 static void init_me_luts_bd(int *bit16lut, int *bit4lut, int range,
-                            vpx_bit_depth_t bit_depth) {
+                            aom_bit_depth_t bit_depth) {
   int i;
   // Initialize the sad lut tables using a formulaic calculation for now.
   // This is to make it easier to resolve the impact of experimental changes
@@ -182,7 +182,7 @@ int vp10_compute_rd_mult(const VP10_COMP *cpi, int qindex) {
   return (int)rdmult;
 }
 
-static int compute_rd_thresh_factor(int qindex, vpx_bit_depth_t bit_depth) {
+static int compute_rd_thresh_factor(int qindex, aom_bit_depth_t bit_depth) {
   double q;
 #if CONFIG_VPX_HIGHBITDEPTH
   switch (bit_depth) {
@@ -264,7 +264,7 @@ void vp10_initialize_rd_consts(VP10_COMP *cpi) {
   RD_OPT *const rd = &cpi->rd;
   int i;
 
-  vpx_clear_system_state();
+  aom_clear_system_state();
 
   rd->RDDIV = RDDIV_BITS;  // In bits (to multiply D by 128).
   rd->RDMULT = vp10_compute_rd_mult(cpi, cm->base_qindex + cm->y_dc_delta_q);
@@ -620,7 +620,7 @@ void vp10_update_rd_thresh_fact(int (*factor_buf)[MAX_MODES], int rd_thresh,
 }
 
 int vp10_get_intra_cost_penalty(int qindex, int qdelta,
-                                vpx_bit_depth_t bit_depth) {
+                                aom_bit_depth_t bit_depth) {
   const int q = vp10_dc_quant(qindex, qdelta, bit_depth);
 #if CONFIG_VPX_HIGHBITDEPTH
   switch (bit_depth) {

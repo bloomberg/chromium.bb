@@ -12,10 +12,10 @@
 #include <limits.h>
 
 #include "./av1_rtcd.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 
-#include "aom_dsp/vpx_dsp_common.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/system_state.h"
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/mcomp.h"
@@ -29,7 +29,7 @@ static unsigned int do_16x16_motion_iteration(VP10_COMP *cpi, const MV *ref_mv,
   MACROBLOCK *const x = &cpi->td.mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   const MV_SPEED_FEATURES *const mv_sf = &cpi->sf.mv;
-  const vpx_variance_fn_ptr_t v_fn_ptr = cpi->fn_ptr[BLOCK_16X16];
+  const aom_variance_fn_ptr_t v_fn_ptr = cpi->fn_ptr[BLOCK_16X16];
 
   const int tmp_col_min = x->mv_col_min;
   const int tmp_col_max = x->mv_col_max;
@@ -74,7 +74,7 @@ static unsigned int do_16x16_motion_iteration(VP10_COMP *cpi, const MV *ref_mv,
   x->mv_row_min = tmp_row_min;
   x->mv_row_max = tmp_row_max;
 
-  return vpx_sad16x16(x->plane[0].src.buf, x->plane[0].src.stride,
+  return aom_sad16x16(x->plane[0].src.buf, x->plane[0].src.stride,
                       xd->plane[0].dst.buf, xd->plane[0].dst.stride);
 }
 
@@ -87,7 +87,7 @@ static int do_16x16_motion_search(VP10_COMP *cpi, const MV *ref_mv,
 
   // Try zero MV first
   // FIXME should really use something like near/nearest MV and/or MV prediction
-  err = vpx_sad16x16(x->plane[0].src.buf, x->plane[0].src.stride,
+  err = aom_sad16x16(x->plane[0].src.buf, x->plane[0].src.stride,
                      xd->plane[0].pre[0].buf, xd->plane[0].pre[0].stride);
   dst_mv->as_int = 0;
 
@@ -123,7 +123,7 @@ static int do_16x16_zerozero_search(VP10_COMP *cpi, int_mv *dst_mv) {
 
   // Try zero MV first
   // FIXME should really use something like near/nearest MV and/or MV prediction
-  err = vpx_sad16x16(x->plane[0].src.buf, x->plane[0].src.stride,
+  err = aom_sad16x16(x->plane[0].src.buf, x->plane[0].src.stride,
                      xd->plane[0].pre[0].buf, xd->plane[0].pre[0].stride);
 
   dst_mv->as_int = 0;
@@ -145,7 +145,7 @@ static int find_best_16x16_intra(VP10_COMP *cpi, PREDICTION_MODE *pbest_mode) {
     vp10_predict_intra_block(xd, 2, 2, TX_16X16, mode, x->plane[0].src.buf,
                              x->plane[0].src.stride, xd->plane[0].dst.buf,
                              xd->plane[0].dst.stride, 0, 0, 0);
-    err = vpx_sad16x16(x->plane[0].src.buf, x->plane[0].src.stride,
+    err = aom_sad16x16(x->plane[0].src.buf, x->plane[0].src.stride,
                        xd->plane[0].dst.buf, xd->plane[0].dst.stride);
 
     // find best
@@ -291,7 +291,7 @@ static void separate_arf_mbs(VP10_COMP *cpi) {
 
   CHECK_MEM_ERROR(
       cm, arf_not_zz,
-      vpx_calloc(cm->mb_rows * cm->mb_cols * sizeof(*arf_not_zz), 1));
+      aom_calloc(cm->mb_rows * cm->mb_cols * sizeof(*arf_not_zz), 1));
 
   // We are not interested in results beyond the alt ref itself.
   if (n_frames > cpi->rc.frames_till_gf_update_due)
@@ -354,7 +354,7 @@ static void separate_arf_mbs(VP10_COMP *cpi) {
   }
 
   // Free localy allocated storage
-  vpx_free(arf_not_zz);
+  aom_free(arf_not_zz);
 }
 
 void vp10_update_mbgraph_stats(VP10_COMP *cpi) {
@@ -391,7 +391,7 @@ void vp10_update_mbgraph_stats(VP10_COMP *cpi) {
                                cpi->Source);
   }
 
-  vpx_clear_system_state();
+  aom_clear_system_state();
 
   separate_arf_mbs(cpi);
 }

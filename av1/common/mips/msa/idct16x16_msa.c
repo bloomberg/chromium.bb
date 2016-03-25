@@ -25,13 +25,13 @@ void vp10_iht16x16_256_add_msa(const int16_t *input, uint8_t *dst,
       /* transform rows */
       for (i = 0; i < 2; ++i) {
         /* process 16 * 8 block */
-        vpx_idct16_1d_rows_msa((input + (i << 7)), (out_ptr + (i << 7)));
+        aom_idct16_1d_rows_msa((input + (i << 7)), (out_ptr + (i << 7)));
       }
 
       /* transform columns */
       for (i = 0; i < 2; ++i) {
         /* process 8 * 16 block */
-        vpx_idct16_1d_columns_addblk_msa((out_ptr + (i << 3)), (dst + (i << 3)),
+        aom_idct16_1d_columns_addblk_msa((out_ptr + (i << 3)), (dst + (i << 3)),
                                          dst_stride);
       }
       break;
@@ -39,12 +39,12 @@ void vp10_iht16x16_256_add_msa(const int16_t *input, uint8_t *dst,
       /* transform rows */
       for (i = 0; i < 2; ++i) {
         /* process 16 * 8 block */
-        vpx_idct16_1d_rows_msa((input + (i << 7)), (out_ptr + (i << 7)));
+        aom_idct16_1d_rows_msa((input + (i << 7)), (out_ptr + (i << 7)));
       }
 
       /* transform columns */
       for (i = 0; i < 2; ++i) {
-        vpx_iadst16_1d_columns_addblk_msa((out_ptr + (i << 3)),
+        aom_iadst16_1d_columns_addblk_msa((out_ptr + (i << 3)),
                                           (dst + (i << 3)), dst_stride);
       }
       break;
@@ -52,13 +52,13 @@ void vp10_iht16x16_256_add_msa(const int16_t *input, uint8_t *dst,
       /* transform rows */
       for (i = 0; i < 2; ++i) {
         /* process 16 * 8 block */
-        vpx_iadst16_1d_rows_msa((input + (i << 7)), (out_ptr + (i << 7)));
+        aom_iadst16_1d_rows_msa((input + (i << 7)), (out_ptr + (i << 7)));
       }
 
       /* transform columns */
       for (i = 0; i < 2; ++i) {
         /* process 8 * 16 block */
-        vpx_idct16_1d_columns_addblk_msa((out_ptr + (i << 3)), (dst + (i << 3)),
+        aom_idct16_1d_columns_addblk_msa((out_ptr + (i << 3)), (dst + (i << 3)),
                                          dst_stride);
       }
       break;
@@ -66,12 +66,12 @@ void vp10_iht16x16_256_add_msa(const int16_t *input, uint8_t *dst,
       /* transform rows */
       for (i = 0; i < 2; ++i) {
         /* process 16 * 8 block */
-        vpx_iadst16_1d_rows_msa((input + (i << 7)), (out_ptr + (i << 7)));
+        aom_iadst16_1d_rows_msa((input + (i << 7)), (out_ptr + (i << 7)));
       }
 
       /* transform columns */
       for (i = 0; i < 2; ++i) {
-        vpx_iadst16_1d_columns_addblk_msa((out_ptr + (i << 3)),
+        aom_iadst16_1d_columns_addblk_msa((out_ptr + (i << 3)),
                                           (dst + (i << 3)), dst_stride);
       }
       break;

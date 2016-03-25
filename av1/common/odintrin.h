@@ -12,8 +12,8 @@
 #define VP10_COMMON_ODINTRIN_H_
 
 #include "av1/common/enums.h"
-#include "aom/vpx_integer.h"
-#include "aom_dsp/vpx_dsp_common.h"
+#include "aom/aom_integer.h"
+#include "aom_dsp/aom_dsp_common.h"
 #include "aom_ports/bitops.h"
 
 #ifdef __cplusplus

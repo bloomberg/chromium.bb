@@ -25,11 +25,11 @@
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/temporal_filter.h"
-#include "aom_dsp/vpx_dsp_common.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
-#include "aom_ports/vpx_timer.h"
-#include "aom_scale/vpx_scale.h"
+#include "aom_ports/aom_timer.h"
+#include "aom_scale/aom_scale.h"
 
 static void temporal_filter_predictors_mb_c(
     MACROBLOCKD *xd, uint8_t *y_mb_ptr, uint8_t *u_mb_ptr, uint8_t *v_mb_ptr,

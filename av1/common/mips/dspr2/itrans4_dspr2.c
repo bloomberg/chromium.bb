@@ -12,7 +12,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "./vpx_config.h"
+#include "./aom_config.h"
 #include "./av1_rtcd.h"
 #include "av1/common/common.h"
 #include "av1/common/blockd.h"
@@ -37,11 +37,11 @@ void vp10_iht4x4_16_add_dspr2(const int16_t *input, uint8_t *dest,
 
   switch (tx_type) {
     case DCT_DCT:  // DCT in both horizontal and vertical
-      vpx_idct4_rows_dspr2(input, outptr);
-      vpx_idct4_columns_add_blk_dspr2(&out[0], dest, dest_stride);
+      aom_idct4_rows_dspr2(input, outptr);
+      aom_idct4_columns_add_blk_dspr2(&out[0], dest, dest_stride);
       break;
     case ADST_DCT:  // ADST in vertical, DCT in horizontal
-      vpx_idct4_rows_dspr2(input, outptr);
+      aom_idct4_rows_dspr2(input, outptr);
 
       outptr = out;
 
@@ -67,7 +67,7 @@ void vp10_iht4x4_16_add_dspr2(const int16_t *input, uint8_t *dest,
           temp_in[i * 4 + j] = out[j * 4 + i];
         }
       }
-      vpx_idct4_columns_add_blk_dspr2(&temp_in[0], dest, dest_stride);
+      aom_idct4_columns_add_blk_dspr2(&temp_in[0], dest, dest_stride);
       break;
     case ADST_ADST:  // ADST in both directions
       for (i = 0; i < 4; ++i) {

@@ -9,15 +9,15 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "./vpx_config.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_config.h"
+#include "./aom_dsp_rtcd.h"
 
 #if CONFIG_VPX_HIGHBITDEPTH
-#include "aom_dsp/vpx_dsp_common.h"
+#include "aom_dsp/aom_dsp_common.h"
 #endif  // CONFIG_VPX_HIGHBITDEPTH
-#include "aom_mem/vpx_mem.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
-#include "aom_ports/vpx_once.h"
+#include "aom_ports/aom_once.h"
 
 #include "av1/common/reconintra.h"
 #include "av1/common/onyxc_int.h"
@@ -181,12 +181,12 @@ static intra_high_pred_fn dc_pred_high[2][2][4];
 
 static void vp10_init_intra_predictors_internal(void) {
 #define INIT_NO_4X4(p, type)                  \
-  p[TX_8X8] = vpx_##type##_predictor_8x8;     \
-  p[TX_16X16] = vpx_##type##_predictor_16x16; \
-  p[TX_32X32] = vpx_##type##_predictor_32x32
+  p[TX_8X8] = aom_##type##_predictor_8x8;     \
+  p[TX_16X16] = aom_##type##_predictor_16x16; \
+  p[TX_32X32] = aom_##type##_predictor_32x32
 
 #define INIT_ALL_SIZES(p, type)           \
-  p[TX_4X4] = vpx_##type##_predictor_4x4; \
+  p[TX_4X4] = aom_##type##_predictor_4x4; \
   INIT_NO_4X4(p, type)
 
   INIT_ALL_SIZES(pred[V_PRED], v);
@@ -366,7 +366,7 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
       }
     } else {
       // TODO(Peter): this value should probably change for high bitdepth
-      vpx_memset16(left_col, base + 1, bs);
+      aom_memset16(left_col, base + 1, bs);
     }
   }
 
@@ -381,7 +381,7 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
         } else if (x0 <= frame_width) {
           const int r = frame_width - x0;
           memcpy(above_row, above_ref, r * sizeof(above_row[0]));
-          vpx_memset16(above_row + r, above_row[r - 1], x0 + bs - frame_width);
+          aom_memset16(above_row + r, above_row[r - 1], x0 + bs - frame_width);
         }
       } else {
         /* faster path if the block does not need extension */
@@ -393,7 +393,7 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
       }
       above_row[-1] = left_available ? above_ref[-1] : (base + 1);
     } else {
-      vpx_memset16(above_row, base - 1, bs);
+      aom_memset16(above_row, base - 1, bs);
       above_row[-1] = base - 1;
     }
   }
@@ -409,22 +409,22 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
             memcpy(above_row, above_ref, 2 * bs * sizeof(above_row[0]));
           } else {
             memcpy(above_row, above_ref, bs * sizeof(above_row[0]));
-            vpx_memset16(above_row + bs, above_row[bs - 1], bs);
+            aom_memset16(above_row + bs, above_row[bs - 1], bs);
           }
         } else if (x0 + bs <= frame_width) {
           const int r = frame_width - x0;
           if (right_available && bs == 4) {
             memcpy(above_row, above_ref, r * sizeof(above_row[0]));
-            vpx_memset16(above_row + r, above_row[r - 1],
+            aom_memset16(above_row + r, above_row[r - 1],
                          x0 + 2 * bs - frame_width);
           } else {
             memcpy(above_row, above_ref, bs * sizeof(above_row[0]));
-            vpx_memset16(above_row + bs, above_row[bs - 1], bs);
+            aom_memset16(above_row + bs, above_row[bs - 1], bs);
           }
         } else if (x0 <= frame_width) {
           const int r = frame_width - x0;
           memcpy(above_row, above_ref, r * sizeof(above_row[0]));
-          vpx_memset16(above_row + r, above_row[r - 1],
+          aom_memset16(above_row + r, above_row[r - 1],
                        x0 + 2 * bs - frame_width);
         }
         // TODO(Peter) this value should probably change for high bitdepth
@@ -438,13 +438,13 @@ static void build_intra_predictors_high(const MACROBLOCKD *xd,
           if (bs == 4 && right_available)
             memcpy(above_row + bs, above_ref + bs, bs * sizeof(above_row[0]));
           else
-            vpx_memset16(above_row + bs, above_row[bs - 1], bs);
+            aom_memset16(above_row + bs, above_row[bs - 1], bs);
           // TODO(Peter): this value should probably change for high bitdepth
           above_row[-1] = left_available ? above_ref[-1] : (base + 1);
         }
       }
     } else {
-      vpx_memset16(above_row, base - 1, bs * 2);
+      aom_memset16(above_row, base - 1, bs * 2);
       // TODO(Peter): this value should probably change for high bitdepth
       above_row[-1] = base - 1;
     }

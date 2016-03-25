@@ -11,7 +11,7 @@
 
 #include "aom_dsp/mips/loopfilter_msa.h"
 
-void vpx_lpf_horizontal_4_msa(uint8_t *src, int32_t pitch,
+void aom_lpf_horizontal_4_msa(uint8_t *src, int32_t pitch,
                               const uint8_t *b_limit_ptr,
                               const uint8_t *limit_ptr,
                               const uint8_t *thresh_ptr, int32_t count) {
@@ -39,7 +39,7 @@ void vpx_lpf_horizontal_4_msa(uint8_t *src, int32_t pitch,
   SD4(p1_d, p0_d, q0_d, q1_d, (src - 2 * pitch), pitch);
 }
 
-void vpx_lpf_horizontal_4_dual_msa(uint8_t *src, int32_t pitch,
+void aom_lpf_horizontal_4_dual_msa(uint8_t *src, int32_t pitch,
                                    const uint8_t *b_limit0_ptr,
                                    const uint8_t *limit0_ptr,
                                    const uint8_t *thresh0_ptr,
@@ -71,7 +71,7 @@ void vpx_lpf_horizontal_4_dual_msa(uint8_t *src, int32_t pitch,
   ST_UB4(p1, p0, q0, q1, (src - 2 * pitch), pitch);
 }
 
-void vpx_lpf_vertical_4_msa(uint8_t *src, int32_t pitch,
+void aom_lpf_vertical_4_msa(uint8_t *src, int32_t pitch,
                             const uint8_t *b_limit_ptr,
                             const uint8_t *limit_ptr, const uint8_t *thresh_ptr,
                             int32_t count) {
@@ -101,7 +101,7 @@ void vpx_lpf_vertical_4_msa(uint8_t *src, int32_t pitch,
   ST4x4_UB(vec3, vec3, 0, 1, 2, 3, src, pitch);
 }
 
-void vpx_lpf_vertical_4_dual_msa(uint8_t *src, int32_t pitch,
+void aom_lpf_vertical_4_dual_msa(uint8_t *src, int32_t pitch,
                                  const uint8_t *b_limit0_ptr,
                                  const uint8_t *limit0_ptr,
                                  const uint8_t *thresh0_ptr,

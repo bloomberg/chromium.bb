@@ -11,12 +11,12 @@
 
 #include <string.h>
 
-#include "./vpx_scale_rtcd.h"
+#include "./aom_scale_rtcd.h"
 #include "av1/common/dering.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/reconinter.h"
 #include "av1/encoder/encoder.h"
-#include "aom/vpx_integer.h"
+#include "aom/aom_integer.h"
 
 static double compute_dist(int16_t *x, int xstride, int16_t *y, int ystride,
     int nhb, int nvb, int coeff_shift) {
@@ -55,9 +55,9 @@ int vp10_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int global_level;
   double best_tot_mse = 1e15;
   int coeff_shift = VPXMAX(cm->bit_depth - 8, 0);
-  src = vpx_malloc(sizeof(*src)*cm->mi_rows*cm->mi_cols*64);
-  ref_coeff = vpx_malloc(sizeof(*ref_coeff)*cm->mi_rows*cm->mi_cols*64);
-  bskip = vpx_malloc(sizeof(*bskip)*cm->mi_rows*cm->mi_cols);
+  src = aom_malloc(sizeof(*src)*cm->mi_rows*cm->mi_cols*64);
+  ref_coeff = aom_malloc(sizeof(*ref_coeff)*cm->mi_rows*cm->mi_cols*64);
+  bskip = aom_malloc(sizeof(*bskip)*cm->mi_rows*cm->mi_cols);
   vp10_setup_dst_planes(xd->plane, frame, 0, 0);
   for (pli = 0; pli < 3; pli++) {
     dec[pli] = xd->plane[pli].subsampling_x;
@@ -92,7 +92,7 @@ int vp10_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   }
   nvsb = (cm->mi_rows + MI_BLOCK_SIZE - 1)/MI_BLOCK_SIZE;
   nhsb = (cm->mi_cols + MI_BLOCK_SIZE - 1)/MI_BLOCK_SIZE;
-  mse = vpx_malloc(nvsb*nhsb*sizeof(*mse));
+  mse = aom_malloc(nvsb*nhsb*sizeof(*mse));
   for (sbr = 0; sbr < nvsb; sbr++) {
     for (sbc = 0; sbc < nhsb; sbc++) {
       int best_mse = 1000000000;
@@ -173,9 +173,9 @@ int vp10_dering_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
     if (tot_mse[level] < tot_mse[best_level]) best_level = level;
   }
 #endif
-  vpx_free(src);
-  vpx_free(ref_coeff);
-  vpx_free(bskip);
-  vpx_free(mse);
+  aom_free(src);
+  aom_free(ref_coeff);
+  aom_free(bskip);
+  aom_free(mse);
   return best_level;
 }

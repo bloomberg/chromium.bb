@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include "aom_dsp/vpx_dsp_common.h"
-#include "aom_mem/vpx_mem.h"
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 
 #include "av1/common/common.h"
@@ -73,9 +73,9 @@ static void highbd_copy_and_extend_plane(const uint8_t *src8, int src_pitch,
   uint16_t *dst_ptr2 = dst + w;
 
   for (i = 0; i < h; i++) {
-    vpx_memset16(dst_ptr1, src_ptr1[0], extend_left);
+    aom_memset16(dst_ptr1, src_ptr1[0], extend_left);
     memcpy(dst_ptr1 + extend_left, src_ptr1, w * sizeof(src_ptr1[0]));
-    vpx_memset16(dst_ptr2, src_ptr2[0], extend_right);
+    aom_memset16(dst_ptr2, src_ptr2[0], extend_right);
     src_ptr1 += src_pitch;
     src_ptr2 += src_pitch;
     dst_ptr1 += dst_pitch;

@@ -56,7 +56,7 @@ void vp10_vaq_frame_setup(VP10_COMP *cpi) {
 
     seg->abs_delta = SEGMENT_DELTADATA;
 
-    vpx_clear_system_state();
+    aom_clear_system_state();
 
     for (i = 0; i < MAX_SEGMENTS; ++i) {
       int qindex_delta =
@@ -188,7 +188,7 @@ static unsigned int block_variance(VP10_COMP *cpi, MACROBLOCK *x,
 
 double vp10_log_block_var(VP10_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs) {
   unsigned int var = block_variance(cpi, x, bs);
-  vpx_clear_system_state();
+  aom_clear_system_state();
   return log(var + 1.0);
 }
 
@@ -196,7 +196,7 @@ double vp10_log_block_var(VP10_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs) {
 int vp10_block_energy(VP10_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bs) {
   double energy;
   double energy_midpoint;
-  vpx_clear_system_state();
+  aom_clear_system_state();
   energy_midpoint =
       (cpi->oxcf.pass == 2) ? cpi->twopass.mb_av_energy : DEFAULT_E_MIDPOINT;
   energy = vp10_log_block_var(cpi, x, bs) - energy_midpoint;

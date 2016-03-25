@@ -14,16 +14,16 @@
 
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
-#include "./vpx_config.h"
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_config.h"
+#include "./aom_dsp_rtcd.h"
 #include "test/acm_random.h"
 #include "test/clear_system_state.h"
 #include "test/register_state_check.h"
 #include "test/util.h"
 #include "av1/common/entropy.h"
 #include "av1/common/scan.h"
-#include "aom/vpx_codec.h"
-#include "aom/vpx_integer.h"
+#include "aom/aom_codec.h"
+#include "aom/aom_integer.h"
 
 using libaom_test::ACMRandom;
 
@@ -39,7 +39,7 @@ typedef void (*QuantizeFunc)(const tran_low_t *coeff, intptr_t count,
                              tran_low_t *dqcoeff, const int16_t *dequant,
                              uint16_t *eob, const int16_t *scan,
                              const int16_t *iscan);
-typedef std::tr1::tuple<QuantizeFunc, QuantizeFunc, vpx_bit_depth_t>
+typedef std::tr1::tuple<QuantizeFunc, QuantizeFunc, aom_bit_depth_t>
     QuantizeParam;
 
 class VP9QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
@@ -55,7 +55,7 @@ class VP9QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
   virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
-  vpx_bit_depth_t bit_depth_;
+  aom_bit_depth_t bit_depth_;
   int mask_;
   QuantizeFunc quantize_op_;
   QuantizeFunc ref_quantize_op_;
@@ -74,7 +74,7 @@ class VP9Quantize32Test : public ::testing::TestWithParam<QuantizeParam> {
   virtual void TearDown() { libaom_test::ClearSystemState(); }
 
  protected:
-  vpx_bit_depth_t bit_depth_;
+  aom_bit_depth_t bit_depth_;
   int mask_;
   QuantizeFunc quantize_op_;
   QuantizeFunc ref_quantize_op_;
@@ -326,20 +326,20 @@ using std::tr1::make_tuple;
 #if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(
     SSE2, VP9QuantizeTest,
-    ::testing::Values(make_tuple(&vpx_highbd_quantize_b_sse2,
-                                 &vpx_highbd_quantize_b_c, VPX_BITS_8),
-                      make_tuple(&vpx_highbd_quantize_b_sse2,
-                                 &vpx_highbd_quantize_b_c, VPX_BITS_10),
-                      make_tuple(&vpx_highbd_quantize_b_sse2,
-                                 &vpx_highbd_quantize_b_c, VPX_BITS_12)));
+    ::testing::Values(make_tuple(&aom_highbd_quantize_b_sse2,
+                                 &aom_highbd_quantize_b_c, VPX_BITS_8),
+                      make_tuple(&aom_highbd_quantize_b_sse2,
+                                 &aom_highbd_quantize_b_c, VPX_BITS_10),
+                      make_tuple(&aom_highbd_quantize_b_sse2,
+                                 &aom_highbd_quantize_b_c, VPX_BITS_12)));
 INSTANTIATE_TEST_CASE_P(
     SSE2, VP9Quantize32Test,
-    ::testing::Values(make_tuple(&vpx_highbd_quantize_b_32x32_sse2,
-                                 &vpx_highbd_quantize_b_32x32_c, VPX_BITS_8),
-                      make_tuple(&vpx_highbd_quantize_b_32x32_sse2,
-                                 &vpx_highbd_quantize_b_32x32_c, VPX_BITS_10),
-                      make_tuple(&vpx_highbd_quantize_b_32x32_sse2,
-                                 &vpx_highbd_quantize_b_32x32_c, VPX_BITS_12)));
+    ::testing::Values(make_tuple(&aom_highbd_quantize_b_32x32_sse2,
+                                 &aom_highbd_quantize_b_32x32_c, VPX_BITS_8),
+                      make_tuple(&aom_highbd_quantize_b_32x32_sse2,
+                                 &aom_highbd_quantize_b_32x32_c, VPX_BITS_10),
+                      make_tuple(&aom_highbd_quantize_b_32x32_sse2,
+                                 &aom_highbd_quantize_b_32x32_c, VPX_BITS_12)));
 #endif  // HAVE_SSE2
 #endif  // CONFIG_VPX_HIGHBITDEPTH
 #endif  // CONFIG_AOM_QM

@@ -12,10 +12,10 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include "./vpx_dsp_rtcd.h"
+#include "./aom_dsp_rtcd.h"
 #include "aom_dsp/mips/convolve_common_dspr2.h"
-#include "aom_dsp/vpx_dsp_common.h"
-#include "aom_dsp/vpx_filter.h"
+#include "aom_dsp/aom_dsp_common.h"
+#include "aom_dsp/aom_filter.h"
 #include "aom_ports/mem.h"
 
 #if HAVE_DSPR2
@@ -23,7 +23,7 @@ static void convolve_bi_horiz_4_transposed_dspr2(
     const uint8_t *src, int32_t src_stride, uint8_t *dst, int32_t dst_stride,
     const int16_t *filter_x0, int32_t h) {
   int32_t y;
-  uint8_t *cm = vpx_ff_cropTbl;
+  uint8_t *cm = aom_ff_cropTbl;
   uint8_t *dst_ptr;
   int32_t Temp1, Temp2;
   uint32_t vector4a = 64;
@@ -107,7 +107,7 @@ static void convolve_bi_horiz_8_transposed_dspr2(
     const uint8_t *src, int32_t src_stride, uint8_t *dst, int32_t dst_stride,
     const int16_t *filter_x0, int32_t h) {
   int32_t y;
-  uint8_t *cm = vpx_ff_cropTbl;
+  uint8_t *cm = aom_ff_cropTbl;
   uint8_t *dst_ptr;
   uint32_t vector4a = 64;
   int32_t Temp1, Temp2, Temp3;
@@ -243,7 +243,7 @@ static void convolve_bi_horiz_16_transposed_dspr2(
   int32_t c, y;
   const uint8_t *src;
   uint8_t *dst;
-  uint8_t *cm = vpx_ff_cropTbl;
+  uint8_t *cm = aom_ff_cropTbl;
   uint32_t vector_64 = 64;
   int32_t Temp1, Temp2, Temp3;
   uint32_t qload1, qload2;
@@ -608,7 +608,7 @@ static void convolve_bi_horiz_64_transposed_dspr2(
   int32_t c, y;
   const uint8_t *src;
   uint8_t *dst;
-  uint8_t *cm = vpx_ff_cropTbl;
+  uint8_t *cm = aom_ff_cropTbl;
   uint32_t vector_64 = 64;
   int32_t Temp1, Temp2, Temp3;
   uint32_t qload1, qload2;
@@ -988,7 +988,7 @@ void convolve_bi_horiz_transposed(const uint8_t *src, ptrdiff_t src_stride,
   }
 }
 
-void vpx_convolve2_dspr2(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
+void aom_convolve2_dspr2(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
                          ptrdiff_t dst_stride, const int16_t *filter, int w,
                          int h) {
   uint32_t pos = 38;
