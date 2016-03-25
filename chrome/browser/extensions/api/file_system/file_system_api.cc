@@ -256,19 +256,18 @@ content::WebContents* GetWebContentsForAppId(Profile* profile,
 
 // Fills a list of volumes mounted in the system.
 void FillVolumeList(Profile* profile,
-                    std::vector<linked_ptr<api::file_system::Volume>>* result) {
-  using file_manager::VolumeManager;
-  VolumeManager* const volume_manager = VolumeManager::Get(profile);
+                    std::vector<api::file_system::Volume>* result) {
+  file_manager::VolumeManager* const volume_manager =
+      file_manager::VolumeManager::Get(profile);
   DCHECK(volume_manager);
 
-  using api::file_system::Volume;
   const auto& volume_list = volume_manager->GetVolumeList();
   // Convert volume_list to result_volume_list.
   for (const auto& volume : volume_list) {
-    const linked_ptr<Volume> result_volume(new Volume);
-    result_volume->volume_id = volume->volume_id();
-    result_volume->writable = !volume->is_read_only();
-    result->push_back(result_volume);
+    api::file_system::Volume result_volume;
+    result_volume.volume_id = volume->volume_id();
+    result_volume.writable = !volume->is_read_only();
+    result->push_back(std::move(result_volume));
   }
 }
 #endif
@@ -979,13 +978,11 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
                          !suggested_extension.empty();
 
   if (accepts) {
-    typedef file_system::AcceptOption AcceptOption;
-    for (std::vector<linked_ptr<AcceptOption> >::const_iterator iter =
-            accepts->begin(); iter != accepts->end(); ++iter) {
+    for (const file_system::AcceptOption& option : *accepts) {
       base::string16 description;
       std::vector<base::FilePath::StringType> extensions;
 
-      if (!GetFileTypesFromAcceptOption(**iter, &extensions, &description))
+      if (!GetFileTypesFromAcceptOption(option, &extensions, &description))
         continue;  // No extensions were found.
 
       file_type_info->extensions.push_back(extensions);
@@ -1448,8 +1445,7 @@ ExtensionFunction::ResponseAction FileSystemGetVolumeListFunction::Run() {
 
   if (!consent_provider.IsGrantable(*extension()))
     return RespondNow(Error(kNotSupportedOnNonKioskSessionError));
-  using api::file_system::Volume;
-  std::vector<linked_ptr<Volume>> result_volume_list;
+  std::vector<api::file_system::Volume> result_volume_list;
   FillVolumeList(chrome_details_.GetProfile(), &result_volume_list);
 
   return RespondNow(ArgumentList(

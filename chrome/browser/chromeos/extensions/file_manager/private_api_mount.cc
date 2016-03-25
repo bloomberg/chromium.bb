@@ -227,13 +227,12 @@ bool FileManagerPrivateGetVolumeMetadataListFunction::RunAsync() {
       file_manager::VolumeManager::Get(GetProfile())->GetVolumeList();
 
   std::string log_string;
-  std::vector<linked_ptr<file_manager_private::VolumeMetadata> > result;
+  std::vector<file_manager_private::VolumeMetadata> result;
   for (const auto& volume : volume_list) {
-    linked_ptr<file_manager_private::VolumeMetadata> volume_metadata(
-        new file_manager_private::VolumeMetadata);
-    file_manager::util::VolumeToVolumeMetadata(GetProfile(), *volume.get(),
-                                               volume_metadata.get());
-    result.push_back(volume_metadata);
+    file_manager_private::VolumeMetadata volume_metadata;
+    file_manager::util::VolumeToVolumeMetadata(GetProfile(), *volume,
+                                               &volume_metadata);
+    result.push_back(std::move(volume_metadata));
     if (!log_string.empty())
       log_string += ", ";
     log_string += volume->mount_path().AsUTF8Unsafe();

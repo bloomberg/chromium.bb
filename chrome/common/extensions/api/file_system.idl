@@ -7,7 +7,7 @@
 // read and write to a user-selected location. For example, a text editor app
 // can use the API to read and write local documents. All failures are notified
 // via chrome.runtime.lastError.
-namespace fileSystem {
+[use_movable_types=true] namespace fileSystem {
   dictionary AcceptOption {
     // This is the optional text description for this option. If not present,
     // a description will be automatically generated; typically containing an

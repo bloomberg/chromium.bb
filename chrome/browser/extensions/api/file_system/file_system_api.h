@@ -237,7 +237,7 @@ class FileSystemChooseEntryFunction : public FileSystemEntryFunction {
                                                     const base::FilePath& path);
   DECLARE_EXTENSION_FUNCTION("fileSystem.chooseEntry", FILESYSTEM_CHOOSEENTRY)
 
-  typedef std::vector<linked_ptr<api::file_system::AcceptOption>> AcceptOptions;
+  typedef std::vector<api::file_system::AcceptOption> AcceptOptions;
 
   static void BuildFileTypeInfo(
       ui::SelectFileDialog::FileTypeInfo* file_type_info,

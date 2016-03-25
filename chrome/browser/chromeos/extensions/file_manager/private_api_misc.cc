@@ -58,6 +58,8 @@
 namespace extensions {
 namespace {
 
+using api::file_manager_private::ProfileInfo;
+
 const char kCWSScope[] = "https://www.googleapis.com/auth/chromewebstore";
 
 // Obtains the current app window.
@@ -68,18 +70,16 @@ AppWindow* GetCurrentAppWindow(ChromeSyncExtensionFunction* function) {
           GetAppWindowForWebContents(contents) : nullptr;
 }
 
-std::vector<linked_ptr<api::file_manager_private::ProfileInfo> >
-GetLoggedInProfileInfoList() {
+std::vector<ProfileInfo> GetLoggedInProfileInfoList() {
   DCHECK(user_manager::UserManager::IsInitialized());
   const std::vector<Profile*>& profiles =
       g_browser_process->profile_manager()->GetLoadedProfiles();
   std::set<Profile*> original_profiles;
-  std::vector<linked_ptr<api::file_manager_private::ProfileInfo> >
-      result_profiles;
+  std::vector<ProfileInfo> result_profiles;
 
-  for (size_t i = 0; i < profiles.size(); ++i) {
+  for (Profile* profile : profiles) {
     // Filter the profile.
-    Profile* const profile = profiles[i]->GetOriginalProfile();
+    profile = profile->GetOriginalProfile();
     if (original_profiles.count(profile))
       continue;
     original_profiles.insert(profile);
@@ -89,15 +89,14 @@ GetLoggedInProfileInfoList() {
       continue;
 
     // Make a ProfileInfo.
-    linked_ptr<api::file_manager_private::ProfileInfo> profile_info(
-        new api::file_manager_private::ProfileInfo());
-    profile_info->profile_id =
+    ProfileInfo profile_info;
+    profile_info.profile_id =
         multi_user_util::GetAccountIdFromProfile(profile).GetUserEmail();
-    profile_info->display_name = UTF16ToUTF8(user->GetDisplayName());
+    profile_info.display_name = UTF16ToUTF8(user->GetDisplayName());
     // TODO(hirono): Remove the property from the profile_info.
-    profile_info->is_current_profile = true;
+    profile_info.is_current_profile = true;
 
-    result_profiles.push_back(profile_info);
+    result_profiles.push_back(std::move(profile_info));
   }
 
   return result_profiles;
@@ -373,8 +372,7 @@ void FileManagerPrivateRequestWebStoreAccessTokenFunction::OnAccessTokenFetched(
 }
 
 bool FileManagerPrivateGetProfilesFunction::RunSync() {
-  const std::vector<linked_ptr<api::file_manager_private::ProfileInfo> >&
-      profiles = GetLoggedInProfileInfoList();
+  const std::vector<ProfileInfo>& profiles = GetLoggedInProfileInfoList();
 
   // Obtains the display profile ID.
   AppWindow* const app_window = GetCurrentAppWindow(this);
@@ -488,30 +486,29 @@ FileManagerPrivateGetProvidingExtensionsFunction::Run() {
       service->GetProvidingExtensionInfoList();
 
   using api::file_manager_private::ProvidingExtension;
-  std::vector<linked_ptr<ProvidingExtension>> providing_extensions;
+  std::vector<ProvidingExtension> providing_extensions;
   for (const auto& info : info_list) {
-    const linked_ptr<ProvidingExtension> providing_extension(
-        new ProvidingExtension);
-    providing_extension->extension_id = info.extension_id;
-    providing_extension->name = info.name;
-    providing_extension->configurable = info.capabilities.configurable();
-    providing_extension->watchable = info.capabilities.watchable();
-    providing_extension->multiple_mounts = info.capabilities.multiple_mounts();
+    ProvidingExtension providing_extension;
+    providing_extension.extension_id = info.extension_id;
+    providing_extension.name = info.name;
+    providing_extension.configurable = info.capabilities.configurable();
+    providing_extension.watchable = info.capabilities.watchable();
+    providing_extension.multiple_mounts = info.capabilities.multiple_mounts();
     switch (info.capabilities.source()) {
       case SOURCE_FILE:
-        providing_extension->source =
+        providing_extension.source =
             api::manifest_types::FILE_SYSTEM_PROVIDER_SOURCE_FILE;
         break;
       case SOURCE_DEVICE:
-        providing_extension->source =
+        providing_extension.source =
             api::manifest_types::FILE_SYSTEM_PROVIDER_SOURCE_DEVICE;
         break;
       case SOURCE_NETWORK:
-        providing_extension->source =
+        providing_extension.source =
             api::manifest_types::FILE_SYSTEM_PROVIDER_SOURCE_NETWORK;
         break;
     }
-    providing_extensions.push_back(providing_extension);
+    providing_extensions.push_back(std::move(providing_extension));
   }
 
   return RespondNow(ArgumentList(
@@ -637,12 +634,12 @@ void FileManagerPrivateInternalGetCustomActionsFunction::OnCompleted(
   }
 
   using api::file_system_provider::Action;
-  std::vector<linked_ptr<Action>> items;
+  std::vector<Action> items;
   for (const auto& action : actions) {
-    const linked_ptr<Action> item(new Action);
-    item->id = action.id;
-    item->title.reset(new std::string(action.title));
-    items.push_back(item);
+    Action item;
+    item.id = action.id;
+    item.title.reset(new std::string(action.title));
+    items.push_back(std::move(item));
   }
 
   Respond(ArgumentList(

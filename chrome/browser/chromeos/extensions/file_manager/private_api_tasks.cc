@@ -190,18 +190,17 @@ void FileManagerPrivateInternalGetFileTasksFunction::
 
   // Convert the tasks into JSON compatible objects.
   using api::file_manager_private::FileTask;
-  std::vector<linked_ptr<FileTask> > results;
-  for (size_t i = 0; i < tasks.size(); ++i) {
-    const file_manager::file_tasks::FullTaskDescriptor& task = tasks[i];
-    const linked_ptr<FileTask> converted(new FileTask);
-    converted->task_id = file_manager::file_tasks::TaskDescriptorToId(
-        task.task_descriptor());
+  std::vector<FileTask> results;
+  for (const file_manager::file_tasks::FullTaskDescriptor& task : tasks) {
+    FileTask converted;
+    converted.task_id =
+        file_manager::file_tasks::TaskDescriptorToId(task.task_descriptor());
     if (!task.icon_url().is_empty())
-      converted->icon_url = task.icon_url().spec();
-    converted->title = task.task_title();
-    converted->is_default = task.is_default();
-    converted->is_generic_file_handler = task.is_generic_file_handler();
-    results.push_back(converted);
+      converted.icon_url = task.icon_url().spec();
+    converted.title = task.task_title();
+    converted.is_default = task.is_default();
+    converted.is_generic_file_handler = task.is_generic_file_handler();
+    results.push_back(std::move(converted));
   }
 
   results_ = extensions::api::file_manager_private_internal::GetFileTasks::

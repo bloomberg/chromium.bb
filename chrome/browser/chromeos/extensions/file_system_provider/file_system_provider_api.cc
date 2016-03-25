@@ -33,8 +33,6 @@ using chromeos::file_system_provider::Watchers;
 namespace extensions {
 namespace {
 
-typedef std::vector<linked_ptr<api::file_system_provider::Change>> IDLChanges;
-
 // Converts the change type from the IDL type to a native type. |changed_type|
 // must be specified (not CHANGE_TYPE_NONE).
 storage::WatcherManager::ChangeType ParseChangeType(
@@ -63,11 +61,11 @@ ProvidedFileSystemObserver::Change ParseChange(
 
 // Converts a list of child changes from the IDL type to a native type.
 scoped_ptr<ProvidedFileSystemObserver::Changes> ParseChanges(
-    const IDLChanges& changes) {
+    const std::vector<api::file_system_provider::Change>& changes) {
   scoped_ptr<ProvidedFileSystemObserver::Changes> results(
       new ProvidedFileSystemObserver::Changes);
   for (const auto& change : changes) {
-    results->push_back(ParseChange(*change));
+    results->push_back(ParseChange(change));
   }
   return results;
 }
@@ -86,35 +84,31 @@ void FillFileSystemInfo(const ProvidedFileSystemInfo& file_system_info,
   output->writable = file_system_info.writable();
   output->opened_files_limit = file_system_info.opened_files_limit();
 
-  std::vector<linked_ptr<Watcher>> watcher_items;
   for (const auto& watcher : watchers) {
-    const linked_ptr<Watcher> watcher_item(new Watcher);
-    watcher_item->entry_path = watcher.second.entry_path.value();
-    watcher_item->recursive = watcher.second.recursive;
+    Watcher watcher_item;
+    watcher_item.entry_path = watcher.second.entry_path.value();
+    watcher_item.recursive = watcher.second.recursive;
     if (!watcher.second.last_tag.empty())
-      watcher_item->last_tag.reset(new std::string(watcher.second.last_tag));
-    watcher_items.push_back(watcher_item);
+      watcher_item.last_tag.reset(new std::string(watcher.second.last_tag));
+    output->watchers.push_back(std::move(watcher_item));
   }
-  output->watchers = watcher_items;
 
-  std::vector<linked_ptr<OpenedFile>> opened_file_items;
   for (const auto& opened_file : opened_files) {
-    const linked_ptr<OpenedFile> opened_file_item(new OpenedFile);
-    opened_file_item->open_request_id = opened_file.first;
-    opened_file_item->file_path = opened_file.second.file_path.value();
+    OpenedFile opened_file_item;
+    opened_file_item.open_request_id = opened_file.first;
+    opened_file_item.file_path = opened_file.second.file_path.value();
     switch (opened_file.second.mode) {
       case chromeos::file_system_provider::OPEN_FILE_MODE_READ:
-        opened_file_item->mode =
+        opened_file_item.mode =
             extensions::api::file_system_provider::OPEN_FILE_MODE_READ;
         break;
       case chromeos::file_system_provider::OPEN_FILE_MODE_WRITE:
-        opened_file_item->mode =
+        opened_file_item.mode =
             extensions::api::file_system_provider::OPEN_FILE_MODE_WRITE;
         break;
     }
-    opened_file_items.push_back(opened_file_item);
+    output->opened_files.push_back(std::move(opened_file_item));
   }
-  output->opened_files = opened_file_items;
 }
 
 }  // namespace
@@ -191,11 +185,11 @@ bool FileSystemProviderGetAllFunction::RunSync() {
 
   const std::vector<ProvidedFileSystemInfo> file_systems =
       service->GetProvidedFileSystemInfoList();
-  std::vector<linked_ptr<FileSystemInfo>> items;
+  std::vector<FileSystemInfo> items;
 
   for (const auto& file_system_info : file_systems) {
     if (file_system_info.extension_id() == extension_id()) {
-      const linked_ptr<FileSystemInfo> item(new FileSystemInfo);
+      FileSystemInfo item;
 
       chromeos::file_system_provider::ProvidedFileSystemInterface* const
           file_system =
@@ -204,8 +198,8 @@ bool FileSystemProviderGetAllFunction::RunSync() {
       DCHECK(file_system);
 
       FillFileSystemInfo(file_system_info, *file_system->GetWatchers(),
-                         file_system->GetOpenedFiles(), item.get());
-      items.push_back(item);
+                         file_system->GetOpenedFiles(), &item);
+      items.push_back(std::move(item));
     }
   }
 

@@ -586,11 +586,11 @@ void FileManagerPrivateInternalGetEntryPropertiesFunction::
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(0 <= processed_count_ && processed_count_ < properties_list_.size());
 
-  properties_list_[index] = make_linked_ptr(properties.release());
   if (error == base::File::FILE_OK) {
-    properties_list_[index]->external_file_url.reset(
+    properties->external_file_url.reset(
         new std::string(chromeos::FileSystemURLToExternalFileURL(url).spec()));
   }
+  properties_list_[index] = std::move(*properties);
 
   processed_count_++;
   if (processed_count_ < properties_list_.size())

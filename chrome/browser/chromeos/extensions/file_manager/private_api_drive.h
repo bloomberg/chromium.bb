@@ -62,8 +62,7 @@ class FileManagerPrivateInternalGetEntryPropertiesFunction
       base::File::Error error);
 
   size_t processed_count_;
-  std::vector<linked_ptr<api::file_manager_private::EntryProperties> >
-      properties_list_;
+  std::vector<api::file_manager_private::EntryProperties> properties_list_;
 };
 
 // Implements the chrome.fileManagerPrivate.pinDriveFile method.

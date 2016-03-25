@@ -27,8 +27,8 @@ Actions ConvertRequestValueToActions(scoped_ptr<RequestValue> value) {
   Actions result;
   for (const auto& idl_action : params->actions) {
     Action action;
-    action.id = idl_action->id;
-    action.title = idl_action->title.get() ? *idl_action->title : std::string();
+    action.id = idl_action.id;
+    action.title = idl_action.title.get() ? *idl_action.title : std::string();
     result.push_back(action);
   }
 

@@ -804,18 +804,17 @@ void FileManagerPrivateInternalResolveIsolatedEntriesFunction::
     RunAsyncAfterConvertFileDefinitionListToEntryDefinitionList(scoped_ptr<
         file_manager::util::EntryDefinitionList> entry_definition_list) {
   using extensions::api::file_manager_private_internal::EntryDescription;
-  std::vector<linked_ptr<EntryDescription> > entries;
+  std::vector<EntryDescription> entries;
 
-  for (size_t i = 0; i < entry_definition_list->size(); ++i) {
-    if (entry_definition_list->at(i).error != base::File::FILE_OK)
+  for (const auto& definition : *entry_definition_list) {
+    if (definition.error != base::File::FILE_OK)
       continue;
-    linked_ptr<EntryDescription> entry(new EntryDescription);
-    entry->file_system_name = entry_definition_list->at(i).file_system_name;
-    entry->file_system_root = entry_definition_list->at(i).file_system_root_url;
-    entry->file_full_path =
-        "/" + entry_definition_list->at(i).full_path.AsUTF8Unsafe();
-    entry->file_is_directory = entry_definition_list->at(i).is_directory;
-    entries.push_back(entry);
+    EntryDescription entry;
+    entry.file_system_name = definition.file_system_name;
+    entry.file_system_root = definition.file_system_root_url;
+    entry.file_full_path = "/" + definition.full_path.AsUTF8Unsafe();
+    entry.file_is_directory = definition.is_directory;
+    entries.push_back(std::move(entry));
   }
 
   results_ = extensions::api::file_manager_private_internal::

@@ -852,7 +852,7 @@ void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
   // Detailed information is available.
   if (list.get()) {
     event.changed_files.reset(
-        new std::vector<linked_ptr<file_manager_private::FileChange> >);
+        new std::vector<file_manager_private::FileChange>());
 
     if (list->map().empty())
       return;
@@ -860,22 +860,21 @@ void EventRouter::DispatchDirectoryChangeEventWithEntryDefinition(
     for (drive::FileChange::Map::const_iterator it = list->map().begin();
          it != list->map().end();
          it++) {
-      linked_ptr<file_manager_private::FileChange> change_list(
-          new file_manager_private::FileChange);
+      file_manager_private::FileChange change_list;
 
       GURL url = util::ConvertDrivePathToFileSystemUrl(
           profile_, it->first, *extension_id);
-      change_list->url = url.spec();
+      change_list.url = url.spec();
 
       for (drive::FileChange::ChangeList::List::const_iterator change =
                it->second.list().begin();
            change != it->second.list().end();
            change++) {
-        change_list->changes.push_back(
+        change_list.changes.push_back(
             ConvertChangeTypeFromDriveToApi(change->change()));
       }
 
-      event.changed_files->push_back(change_list);
+      event.changed_files->push_back(std::move(change_list));
     }
   }
 
