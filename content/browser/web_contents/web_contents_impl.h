@@ -814,7 +814,7 @@ class CONTENT_EXPORT WebContentsImpl
                           int id,
                           const GURL& image_url,
                           int32_t http_status_code,
-                          mojo::Array<skia::BitmapPtr> images,
+                          mojo::Array<skia::mojom::BitmapPtr> images,
                           mojo::Array<mojo::SizePtr> original_image_sizes);
 
   // Callback function when showing JavaScript dialogs.  Takes in a routing ID

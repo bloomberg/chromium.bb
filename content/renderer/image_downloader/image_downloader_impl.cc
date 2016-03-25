@@ -212,7 +212,7 @@ void ImageDownloaderImpl::ReplyDownloadResult(
     const std::vector<gfx::Size>& result_original_image_sizes,
     const DownloadImageCallback& callback) {
   callback.Run(http_status_code,
-               mojo::Array<skia::BitmapPtr>::From(result_images),
+               mojo::Array<skia::mojom::BitmapPtr>::From(result_images),
                mojo::Array<mojo::SizePtr>::From(result_original_image_sizes));
 }
 

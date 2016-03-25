@@ -4657,7 +4657,7 @@ void WebContentsImpl::OnDidDownloadImage(
     int id,
     const GURL& image_url,
     int32_t http_status_code,
-    mojo::Array<skia::BitmapPtr> images,
+    mojo::Array<skia::mojom::BitmapPtr> images,
     mojo::Array<mojo::SizePtr> original_image_sizes) {
   const std::vector<SkBitmap> bitmaps = images.To<std::vector<SkBitmap>>();
   const std::vector<gfx::Size> sizes =

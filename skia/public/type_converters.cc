@@ -15,23 +15,23 @@ namespace mojo {
 
 namespace {
 
-SkColorType MojoColorTypeToSk(skia::ColorType type) {
+SkColorType MojoColorTypeToSk(skia::mojom::ColorType type) {
   switch (type) {
-    case skia::ColorType::UNKNOWN:
+    case skia::mojom::ColorType::UNKNOWN:
       return kUnknown_SkColorType;
-    case skia::ColorType::ALPHA_8:
+    case skia::mojom::ColorType::ALPHA_8:
       return kAlpha_8_SkColorType;
-    case skia::ColorType::RGB_565:
+    case skia::mojom::ColorType::RGB_565:
       return kRGB_565_SkColorType;
-    case skia::ColorType::ARGB_4444:
+    case skia::mojom::ColorType::ARGB_4444:
       return kARGB_4444_SkColorType;
-    case skia::ColorType::RGBA_8888:
+    case skia::mojom::ColorType::RGBA_8888:
       return kRGBA_8888_SkColorType;
-    case skia::ColorType::BGRA_8888:
+    case skia::mojom::ColorType::BGRA_8888:
       return kBGRA_8888_SkColorType;
-    case skia::ColorType::INDEX_8:
+    case skia::mojom::ColorType::INDEX_8:
       return kIndex_8_SkColorType;
-    case skia::ColorType::GRAY_8:
+    case skia::mojom::ColorType::GRAY_8:
       return kGray_8_SkColorType;
     default:
       NOTREACHED();
@@ -39,15 +39,15 @@ SkColorType MojoColorTypeToSk(skia::ColorType type) {
   return kUnknown_SkColorType;
 }
 
-SkAlphaType MojoAlphaTypeToSk(skia::AlphaType type) {
+SkAlphaType MojoAlphaTypeToSk(skia::mojom::AlphaType type) {
   switch (type) {
-    case skia::AlphaType::UNKNOWN:
+    case skia::mojom::AlphaType::UNKNOWN:
       return kUnknown_SkAlphaType;
-    case skia::AlphaType::ALPHA_TYPE_OPAQUE:
+    case skia::mojom::AlphaType::ALPHA_TYPE_OPAQUE:
       return kOpaque_SkAlphaType;
-    case skia::AlphaType::PREMUL:
+    case skia::mojom::AlphaType::PREMUL:
       return kPremul_SkAlphaType;
-    case skia::AlphaType::UNPREMUL:
+    case skia::mojom::AlphaType::UNPREMUL:
       return kUnpremul_SkAlphaType;
     default:
       NOTREACHED();
@@ -55,50 +55,50 @@ SkAlphaType MojoAlphaTypeToSk(skia::AlphaType type) {
   return kUnknown_SkAlphaType;
 }
 
-skia::ColorType SkColorTypeToMojo(SkColorType type) {
+skia::mojom::ColorType SkColorTypeToMojo(SkColorType type) {
   switch (type) {
     case kUnknown_SkColorType:
-      return skia::ColorType::UNKNOWN;
+      return skia::mojom::ColorType::UNKNOWN;
     case kAlpha_8_SkColorType:
-      return skia::ColorType::ALPHA_8;
+      return skia::mojom::ColorType::ALPHA_8;
     case kRGB_565_SkColorType:
-      return skia::ColorType::RGB_565;
+      return skia::mojom::ColorType::RGB_565;
     case kARGB_4444_SkColorType:
-      return skia::ColorType::ARGB_4444;
+      return skia::mojom::ColorType::ARGB_4444;
     case kRGBA_8888_SkColorType:
-      return skia::ColorType::RGBA_8888;
+      return skia::mojom::ColorType::RGBA_8888;
     case kBGRA_8888_SkColorType:
-      return skia::ColorType::BGRA_8888;
+      return skia::mojom::ColorType::BGRA_8888;
     case kIndex_8_SkColorType:
-      return skia::ColorType::INDEX_8;
+      return skia::mojom::ColorType::INDEX_8;
     case kGray_8_SkColorType:
-      return skia::ColorType::GRAY_8;
+      return skia::mojom::ColorType::GRAY_8;
     default:
       NOTREACHED();
   }
-  return skia::ColorType::UNKNOWN;
+  return skia::mojom::ColorType::UNKNOWN;
 }
 
-skia::AlphaType SkAlphaTypeToMojo(SkAlphaType type) {
+skia::mojom::AlphaType SkAlphaTypeToMojo(SkAlphaType type) {
   switch (type) {
     case kUnknown_SkAlphaType:
-      return skia::AlphaType::UNKNOWN;
+      return skia::mojom::AlphaType::UNKNOWN;
     case kOpaque_SkAlphaType:
-      return skia::AlphaType::ALPHA_TYPE_OPAQUE;
+      return skia::mojom::AlphaType::ALPHA_TYPE_OPAQUE;
     case kPremul_SkAlphaType:
-      return skia::AlphaType::PREMUL;
+      return skia::mojom::AlphaType::PREMUL;
     case kUnpremul_SkAlphaType:
-      return skia::AlphaType::UNPREMUL;
+      return skia::mojom::AlphaType::UNPREMUL;
     default:
       NOTREACHED();
   }
-  return skia::AlphaType::UNKNOWN;
+  return skia::mojom::AlphaType::UNKNOWN;
 }
 
 }  // namespace
 
-SkBitmap TypeConverter<SkBitmap, skia::BitmapPtr>::Convert(
-    const skia::BitmapPtr& image) {
+SkBitmap TypeConverter<SkBitmap, skia::mojom::BitmapPtr>::Convert(
+    const skia::mojom::BitmapPtr& image) {
   SkBitmap bitmap;
   if (image.is_null())
     return bitmap;
@@ -115,7 +115,7 @@ SkBitmap TypeConverter<SkBitmap, skia::BitmapPtr>::Convert(
   return bitmap;
 }
 
-skia::BitmapPtr TypeConverter<skia::BitmapPtr, SkBitmap>::Convert(
+skia::mojom::BitmapPtr TypeConverter<skia::mojom::BitmapPtr, SkBitmap>::Convert(
     const SkBitmap& bitmap) {
   if (bitmap.isNull())
     return nullptr;
@@ -125,7 +125,7 @@ skia::BitmapPtr TypeConverter<skia::BitmapPtr, SkBitmap>::Convert(
   DCHECK_NE(info.colorType(), kIndex_8_SkColorType);
   if (info.colorType() == kIndex_8_SkColorType)
     return nullptr;
-  skia::BitmapPtr result = skia::Bitmap::New();
+  skia::mojom::BitmapPtr result = skia::mojom::Bitmap::New();
   result->color_type = SkColorTypeToMojo(info.colorType());
   result->alpha_type = SkAlphaTypeToMojo(info.alphaType());
   result->width = info.width();

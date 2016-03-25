@@ -16,6 +16,6 @@ interface ImageDownloader {
                 uint32 max_bitmap_size,
                 bool bypass_cache)
       => (int32 http_status_code,
-          array<skia.Bitmap> images,
+          array<skia.mojom.Bitmap> images,
           array<mojo.Size> original_image_sizes);
 };

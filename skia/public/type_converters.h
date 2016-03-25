@@ -12,13 +12,13 @@ class SkBitmap;
 namespace mojo {
 
 template <>
-struct TypeConverter<SkBitmap, skia::BitmapPtr> {
-  static SkBitmap Convert(const skia::BitmapPtr& image);
+struct TypeConverter<SkBitmap, skia::mojom::BitmapPtr> {
+  static SkBitmap Convert(const skia::mojom::BitmapPtr& image);
 };
 
 template <>
-struct TypeConverter<skia::BitmapPtr, SkBitmap> {
-  static skia::BitmapPtr Convert(const SkBitmap& bitmap);
+struct TypeConverter<skia::mojom::BitmapPtr, SkBitmap> {
+  static skia::mojom::BitmapPtr Convert(const SkBitmap& bitmap);
 };
 
 }  // namespace mojo
