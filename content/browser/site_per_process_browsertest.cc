@@ -5095,13 +5095,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CreateContextMenuTest) {
 class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
  public:
   ShowWidgetMessageFilter()
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+      : content::BrowserMessageFilter(FrameMsgStart),
+#else
       : content::BrowserMessageFilter(ViewMsgStart),
-        message_loop_runner_(new content::MessageLoopRunner),
-        message_received_(false) {}
+#endif
+        message_loop_runner_(new content::MessageLoopRunner) {
+  }
 
   bool OnMessageReceived(const IPC::Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(ShowWidgetMessageFilter, message)
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+      IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
+#else
       IPC_MESSAGE_HANDLER(ViewHostMsg_ShowWidget, OnShowWidget)
+#endif
     IPC_END_MESSAGE_MAP()
     return false;
   }
@@ -5109,14 +5117,11 @@ class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
   gfx::Rect last_initial_rect() const { return initial_rect_; }
 
   void Wait() {
-    if (!message_received_) {
-      initial_rect_ = gfx::Rect();
-      message_loop_runner_->Run();
-    }
+    initial_rect_ = gfx::Rect();
+    message_loop_runner_->Run();
   }
 
   void Reset() {
-    message_received_ = false;
     initial_rect_ = gfx::Rect();
     message_loop_runner_ = new content::MessageLoopRunner;
   }
@@ -5131,24 +5136,31 @@ class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
                    initial_rect));
   }
 
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
+  void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&ShowWidgetMessageFilter::OnShowWidgetOnUI, this,
+                   MSG_ROUTING_NONE, params.bounds));
+  }
+#endif
+
   void OnShowWidgetOnUI(int route_id, const gfx::Rect& initial_rect) {
     initial_rect_ = initial_rect;
-    message_received_ = true;
     message_loop_runner_->Quit();
   }
 
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   gfx::Rect initial_rect_;
-  bool message_received_;
 
   DISALLOW_COPY_AND_ASSIGN(ShowWidgetMessageFilter);
 };
 
 // Test that clicking a select element in an out-of-process iframe creates
 // a popup menu in the correct position.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
-// Page Popups work differently on Aura than on Android and Mac. This tests
-// only the Aura mechanism.
+#if defined(OS_ANDROID)
+// Surface-based hit testing and coordinate translation is not yet available
+// on Android.
 #define MAYBE_PopupMenuTest DISABLED_PopupMenuTest
 #else
 #define MAYBE_PopupMenuTest PopupMenuTest
@@ -5162,9 +5174,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_PopupMenuTest) {
                             ->GetFrameTree()
                             ->root();
 
-  // Position main window to ensure consistent screen coordinates.
+#if !defined(OS_MACOSX)
+  // Unused variable on Mac.
   RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
+#endif
   static_cast<WebContentsImpl*>(shell()->web_contents())->SendScreenRects();
 
   content::TestNavigationObserver navigation_observer(shell()->web_contents());
@@ -5192,21 +5206,31 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_PopupMenuTest) {
   click_event.clickCount = 1;
   rwhv_child->ProcessMouseEvent(click_event);
 
+  // Dismiss the popup.
+  click_event.x = 1;
+  click_event.y = 1;
+  rwhv_child->ProcessMouseEvent(click_event);
+
   filter->Wait();
-
   gfx::Rect popup_rect = filter->last_initial_rect();
-
+#if defined(OS_MACOSX)
+  // On Mac we receive the coordinates before they are transformed, so they
+  // are still relative to the out-of-process iframe origin.
+  EXPECT_EQ(popup_rect.x(), 9);
+  EXPECT_EQ(popup_rect.y(), 9);
+#else
   EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 354);
   EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 94);
+#endif
 }
 
 // Test that clicking a select element in a nested out-of-process iframe creates
 // a popup menu in the correct position, even if the top-level page repositions
 // its out-of-process iframe. This verifies that screen positioning information
 // is propagating down the frame tree correctly.
-#if defined(OS_ANDROID) || defined(OS_MACOSX)
-// Page Popups work differently on Aura than on Android and Mac. This tests
-// only the Aura mechanism.
+#if defined(OS_ANDROID)
+// Surface-based hit testing and coordinate translation is not yet avaiable on
+// Android.
 #define MAYBE_NestedPopupMenuTest DISABLED_NestedPopupMenuTest
 #else
 #define MAYBE_NestedPopupMenuTest NestedPopupMenuTest
@@ -5220,9 +5244,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NestedPopupMenuTest) {
                             ->GetFrameTree()
                             ->root();
 
-  // Position main window to ensure consistent screen coordinates.
+#if !defined(OS_MACOSX)
+  // Undefined variable on Mac.
   RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
       root->current_frame_host()->GetRenderWidgetHost()->GetView());
+#endif
   static_cast<WebContentsImpl*>(shell()->web_contents())->SendScreenRects();
 
   // For clarity, we are labeling the frame tree nodes as:
@@ -5256,19 +5282,22 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NestedPopupMenuTest) {
   click_event.clickCount = 1;
   rwhv_c_node->ProcessMouseEvent(click_event);
 
+  // Prompt the WebContents to dismiss the popup by clicking elsewhere.
+  click_event.x = 1;
+  click_event.y = 1;
+  rwhv_c_node->ProcessMouseEvent(click_event);
+
   filter->Wait();
 
   gfx::Rect popup_rect = filter->last_initial_rect();
 
+#if defined(OS_MACOSX)
+  EXPECT_EQ(popup_rect.x(), 9);
+  EXPECT_EQ(popup_rect.y(), 9);
+#else
   EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 354);
   EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 154);
-
-  // Prompt the WebContents to dismiss the popup by clicking elsewhere.
-  click_event.button = blink::WebPointerProperties::ButtonLeft;
-  click_event.x = 1;
-  click_event.y = 1;
-  click_event.clickCount = 1;
-  rwhv_c_node->ProcessMouseEvent(click_event);
+#endif
 
   // Save the screen rect for b_node. Since it updates asynchronously from
   // the script command that changes it, we need to wait for it to change
@@ -5303,12 +5332,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_NestedPopupMenuTest) {
   click_event.clickCount = 1;
   rwhv_c_node->ProcessMouseEvent(click_event);
 
+  click_event.x = 1;
+  click_event.y = 1;
+  rwhv_c_node->ProcessMouseEvent(click_event);
+
   filter->Wait();
 
   popup_rect = filter->last_initial_rect();
 
+#if defined(OS_MACOSX)
+  EXPECT_EQ(popup_rect.x(), 9);
+  EXPECT_EQ(popup_rect.y(), 9);
+#else
   EXPECT_EQ(popup_rect.x() - rwhv_root->GetViewBounds().x(), 203);
   EXPECT_EQ(popup_rect.y() - rwhv_root->GetViewBounds().y(), 248);
+#endif
 }
 
 // Test for https://crbug.com/526304, where a parent frame executes a

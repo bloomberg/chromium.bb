@@ -1619,8 +1619,15 @@ void RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
     const gfx::Point& point,
     cc::SurfaceId original_surface,
     gfx::Point* transformed_point) {
+  // Transformations use physical pixels rather than DIP, so conversion
+  // is necessary.
+  float scale_factor = gfx::Screen::GetScreen()
+                           ->GetDisplayNearestWindow(cocoa_view_)
+                           .device_scale_factor();
+  gfx::Point point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
   delegated_frame_host_->TransformPointToLocalCoordSpace(
-      point, original_surface, transformed_point);
+      point_in_pixels, original_surface, transformed_point);
+  *transformed_point = gfx::ConvertPointToDIP(scale_factor, *transformed_point);
 }
 
 bool RenderWidgetHostViewMac::Send(IPC::Message* message) {
