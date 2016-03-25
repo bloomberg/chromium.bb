@@ -3018,15 +3018,6 @@ bool GLES2DecoderImpl::Initialize(const scoped_refptr<gfx::GLSurface>& surface,
     glEnable(GL_PROGRAM_POINT_SIZE);
   }
 
-  // ES3 requires seamless cubemap. ES2 does not.
-  // However, when ES2 is implemented on top of DX11, seamless cubemap is
-  // always enabled and there is no way to disable it.
-  // Therefore, it seems OK to also always enable it on top of Desktop GL for
-  // both ES2 and ES3 contexts.
-  if (feature_info_->gl_version_info().IsAtLeastGL(3, 2)) {
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-  }
-
   has_robustness_extension_ =
       context->HasExtension("GL_ARB_robustness") ||
       context->HasExtension("GL_KHR_robustness") ||

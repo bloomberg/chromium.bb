@@ -351,12 +351,6 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
         .RetiresOnSaturation();
   }
 
-  if (group_->feature_info()->gl_version_info().IsAtLeastGL(3, 2)) {
-    EXPECT_CALL(*gl_, Enable(GL_TEXTURE_CUBE_MAP_SEAMLESS))
-        .Times(1)
-        .RetiresOnSaturation();
-  }
-
   static GLint max_viewport_dims[] = {
     kMaxViewportWidth,
     kMaxViewportHeight
