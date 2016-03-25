@@ -198,7 +198,9 @@ public class WebappRegistry {
     }
 
     private static Set<String> getRegisteredWebappIds(SharedPreferences preferences) {
-        return preferences.getStringSet(KEY_WEBAPP_SET, Collections.<String>emptySet());
+        // Wrap with unmodifiableSet to ensure it's never modified. See crbug.com/568369.
+        return Collections.unmodifiableSet(
+                preferences.getStringSet(KEY_WEBAPP_SET, Collections.<String>emptySet()));
     }
 
     private WebappRegistry() {

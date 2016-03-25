@@ -91,7 +91,9 @@ public class DelayedInvalidationsController {
     void addPendingInvalidation(Context context, String account, PendingInvalidation invalidation) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         String oldAccount = prefs.getString(DELAYED_ACCOUNT_NAME, null);
-        Set<String> invals = prefs.getStringSet(DELAYED_INVALIDATIONS, new HashSet<String>(1));
+        // Make sure to construct a new set so it can be modified safely. See crbug.com/568369.
+        Set<String> invals = new HashSet<String>(
+                prefs.getStringSet(DELAYED_INVALIDATIONS, new HashSet<String>(1)));
         assert invals.isEmpty() || oldAccount != null;
         if (oldAccount != null && !oldAccount.equals(account)) {
             invals.clear();

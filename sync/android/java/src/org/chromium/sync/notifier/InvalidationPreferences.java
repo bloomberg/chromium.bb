@@ -16,6 +16,7 @@ import com.google.ipc.invalidation.external.client.types.ObjectId;
 import org.chromium.base.VisibleForTesting;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -111,7 +112,9 @@ public class InvalidationPreferences {
     /** Returns the saved sync types, or {@code null} if none exist. */
     @Nullable public Set<String> getSavedSyncedTypes() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(mContext);
-        return preferences.getStringSet(PrefKeys.SYNC_TANGO_TYPES, null);
+        Set<String> syncedTypes = preferences.getStringSet(PrefKeys.SYNC_TANGO_TYPES, null);
+        // Wrap with unmodifiableSet to ensure it's never modified. See crbug.com/568369.
+        return syncedTypes == null ? null : Collections.unmodifiableSet(syncedTypes);
     }
 
     /** Sets the saved sync types to {@code syncTypes} in {@code editContext}. */

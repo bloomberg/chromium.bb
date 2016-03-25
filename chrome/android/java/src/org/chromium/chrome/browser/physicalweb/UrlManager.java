@@ -278,7 +278,8 @@ class UrlManager {
     private Set<String> getStringSetFromSharedPreferences(String preferenceName) {
         // Check the version.
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        return prefs.getStringSet(preferenceName, new HashSet<String>());
+        // Make sure to construct a new set so it can be modified safely. See crbug.com/568369.
+        return new HashSet<String>(prefs.getStringSet(preferenceName, new HashSet<String>()));
     }
 
     private void setStringSetInSharedPreferences(String preferenceName,

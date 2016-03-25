@@ -15,6 +15,7 @@ import org.chromium.sync.signin.AccountManagerHelper;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * This receiver is notified when a user goes through the Setup Wizard and acknowledges
@@ -32,8 +33,9 @@ public class ToSAckedReceiver extends BroadcastReceiver {
         if (accountName == null) return;
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        HashSet<String> accounts = (HashSet<String>) prefs.getStringSet(
-                TOS_ACKED_ACCOUNTS, new HashSet<String>());
+        // Make sure to construct a new set so it can be modified safely. See crbug.com/568369.
+        Set<String> accounts =
+                new HashSet<String>(prefs.getStringSet(TOS_ACKED_ACCOUNTS, new HashSet<String>()));
         accounts.add(accountName);
         prefs.edit().remove(TOS_ACKED_ACCOUNTS).apply();
         prefs.edit().putStringSet(TOS_ACKED_ACCOUNTS, accounts).apply();
@@ -45,8 +47,9 @@ public class ToSAckedReceiver extends BroadcastReceiver {
      * @return Whether or not the the ToS has been seen.
      */
     public static boolean checkAnyUserHasSeenToS(Context context) {
-        HashSet<String> toSAckedAccounts = (HashSet<String>) PreferenceManager
-                .getDefaultSharedPreferences(context).getStringSet(TOS_ACKED_ACCOUNTS, null);
+        Set<String> toSAckedAccounts =
+                PreferenceManager.getDefaultSharedPreferences(context).getStringSet(
+                        TOS_ACKED_ACCOUNTS, null);
         if (toSAckedAccounts == null || toSAckedAccounts.isEmpty()) return false;
         AccountManagerHelper accountHelper = AccountManagerHelper.get(context);
         List<String> accountNames = accountHelper.getGoogleAccountNames();
