@@ -92,13 +92,9 @@
 
 // TODO(dcheng): Clean up these headers, but there are likely lots of existing
 // IWYU violations.
-#include <stddef.h>
 #include <stdlib.h>
 
 #include <memory>
-#include <utility>
-
-#include "base/macros.h"
 
 namespace base {
 

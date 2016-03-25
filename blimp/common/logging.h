@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "blimp/common/blimp_common_export.h"
 #include "blimp/common/proto/blimp_message.pb.h"
