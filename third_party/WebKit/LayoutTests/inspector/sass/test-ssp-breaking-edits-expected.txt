@@ -1,0 +1,13 @@
+Tests that incremental breaking change doesn't detach sourcemap.
+
+$color: red;
+div {
+    font-family: "Times New Roman";
+    color: $color;
+}
+
+body {
+    padding: 0;
+}
+
+

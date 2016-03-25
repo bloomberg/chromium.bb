@@ -1,0 +1,9 @@
+Tests that editing a CSS property value results in updated SASS file.
+
+$color: blue;
+div {
+    color: $color;
+}
+
+
+
