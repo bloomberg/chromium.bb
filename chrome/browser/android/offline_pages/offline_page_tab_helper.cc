@@ -115,7 +115,6 @@ void OfflinePageTabHelper::RedirectFromOfflineToOnline(const GURL& online_url) {
   UMA_HISTOGRAM_COUNTS("OfflinePages.RedirectToOnlineCount", 1);
   content::NavigationController::LoadURLParams load_params(online_url);
   load_params.transition_type = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
-  load_params.should_replace_current_entry = true;
   web_contents()->GetController().LoadURLWithParams(load_params);
 }
 
@@ -124,7 +123,6 @@ void OfflinePageTabHelper::RedirectFromOnlineToOffline(
   UMA_HISTOGRAM_COUNTS("OfflinePages.RedirectToOfflineCount", 1);
   content::NavigationController::LoadURLParams load_params(offline_url);
   load_params.transition_type = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
-  load_params.should_replace_current_entry = true;
   web_contents()->GetController().LoadURLWithParams(load_params);
 }
 
