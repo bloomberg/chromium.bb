@@ -40,7 +40,7 @@ ar{
                 minusSign{"‏-"}
                 nan{"ليس رقم"}
                 perMille{"؉"}
-                percentSign{"٪"}
+                percentSign{"‏٪"}
                 plusSign{"‏+"}
                 superscriptingExponent{"×"}
                 timeSeparator{":"}

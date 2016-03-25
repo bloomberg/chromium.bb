@@ -99,7 +99,7 @@
                 ],
               } , { # else: OS != android
                 'files': [
-                  'source/data/in/icudtl.dat',
+                  'common/icudtl.dat',
                 ],
               }],
             ],
@@ -155,7 +155,7 @@
                 } , { # else: OS=="ios"
                   'link_settings': {
                     'mac_bundle_resources': [
-                      'source/data/in/icudtl.dat',
+                      'common/icudtl.dat',
                     ],
                   },
                 }], # OS!=ios

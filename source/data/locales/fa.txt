@@ -52,7 +52,7 @@ fa{
                 minusSign{"‎−"}
                 nan{"ناعدد"}
                 perMille{"؉"}
-                percentSign{"٪"}
+                percentSign{"‏٪"}
                 plusSign{"‎+‎"}
                 superscriptingExponent{"×"}
                 timeSeparator{":"}

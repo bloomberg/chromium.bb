@@ -969,8 +969,13 @@ tr{
             "Eski Türk Lirası",
         }
         TRY{
-            "TL",
+            "₺",
             "Türk Lirası",
+            {
+                "¤#,##0.00",
+                ",",
+                ".",
+            }
         }
         TTD{
             "TTD",

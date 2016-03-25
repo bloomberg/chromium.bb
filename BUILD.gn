@@ -563,7 +563,7 @@ if (is_android) {
 if (icu_use_data_file) {
   if (is_ios) {
     bundle_data("icudata") {
-      sources = [ "source/data/in/icudtl.dat" ]
+      sources = [ "common/icudtl.dat" ]
       outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
     }
   } else {
@@ -574,7 +574,7 @@ if (icu_use_data_file) {
         ]
       } else {
         sources = [
-          "source/data/in/icudtl.dat",
+          "common/icudtl.dat",
         ]
       }
 

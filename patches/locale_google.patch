@@ -32,25 +32,6 @@ index 01744eb..38596ae 100644
      }
      CurrencyPlurals{
          ADP{
-diff --git a/source/data/curr/tr.txt b/source/data/curr/tr.txt
-index 8e3f6a7..de81a65 100644
---- a/source/data/curr/tr.txt
-+++ b/source/data/curr/tr.txt
-@@ -969,13 +969,8 @@ tr{
-             "Eski Türk Lirası",
-         }
-         TRY{
--            "₺",
-+            "TL",
-             "Türk Lirası",
--            {
--                "¤#,##0.00",
--                ",",
--                ".",
--            }
-         }
-         TTD{
-             "TTD",
 diff --git a/source/data/curr/uk.txt b/source/data/curr/uk.txt
 index fe52f50..2dac7df 100644
 --- a/source/data/curr/uk.txt

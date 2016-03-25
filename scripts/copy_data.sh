@@ -10,7 +10,7 @@ TOPSRC="$(dirname "$0")/.."
 source "${TOPSRC}/scripts/data_common.sh"
 
 echo "Copying icudtl.dat and the corresponding assembly source for Linux"
-cp "data/out/tmp/icudt${VERSION}l.dat" "${TOPSRC}/source/data/in/icudtl.dat"
+cp "data/out/tmp/icudt${VERSION}l.dat" "${TOPSRC}/common/icudtl.dat"
 cp "data/out/tmp/icudt${VERSION}l_dat.S" "${TOPSRC}/linux/icudtl_dat.S"
 
 "${TOPSRC}/scripts/make_mac_assembly.sh"
