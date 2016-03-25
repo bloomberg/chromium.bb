@@ -12,11 +12,11 @@
 
 #include <stdint.h>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/non_thread_safe.h"
+#include "content/common/gpu/media/gpu_video_decode_accelerator_helpers.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gl {
@@ -52,10 +52,10 @@ class VaapiPicture : public base::NonThreadSafe {
 
   // Create a VaapiPicture of |size| to be associated with
   // |picture_buffer_id| and bound to |texture_id|.
-  // |make_context_current| is provided for the GL operations.
+  // |make_context_current_cb| is provided for the GL operations.
   static linked_ptr<VaapiPicture> CreatePicture(
       const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
-      const base::Callback<bool(void)> make_context_current,
+      const MakeGLContextCurrentCallback& make_context_current_cb,
       int32_t picture_buffer_id,
       uint32_t texture_id,
       const gfx::Size& size);

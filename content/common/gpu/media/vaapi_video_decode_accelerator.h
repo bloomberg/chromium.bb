@@ -26,6 +26,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/media/gpu_video_decode_accelerator_helpers.h"
 #include "content/common/gpu/media/shared_memory_region.h"
 #include "content/common/gpu/media/vaapi_wrapper.h"
 #include "media/base/bitstream_buffer.h"
@@ -55,8 +56,9 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   class VaapiDecodeSurface;
 
   VaapiVideoDecodeAccelerator(
-      const MakeContextCurrentCallback& make_context_current,
-      const BindImageCallback& bind_image);
+      const MakeGLContextCurrentCallback& make_context_current_cb,
+      const BindGLImageCallback& bind_image_cb);
+
   ~VaapiVideoDecodeAccelerator() override;
 
   // media::VideoDecodeAccelerator implementation.
@@ -68,7 +70,10 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   void Flush() override;
   void Reset() override;
   void Destroy() override;
-  bool CanDecodeOnIOThread() override;
+  bool TryToSetupDecodeOnSeparateThread(
+      const base::WeakPtr<Client>& decode_client,
+      const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
+      override;
 
   static media::VideoDecodeAccelerator::SupportedProfiles
       GetSupportedProfiles();
@@ -178,10 +183,6 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   // Return a new VaapiDecodeSurface for decoding into, or nullptr if not
   // available.
   scoped_refptr<VaapiDecodeSurface> CreateSurface();
-
-
-  // Client-provided GL state.
-  MakeContextCurrentCallback make_context_current_;
 
   // VAVDA state.
   enum State {
@@ -303,9 +304,11 @@ class CONTENT_EXPORT VaapiVideoDecodeAccelerator
   size_t requested_num_pics_;
   gfx::Size requested_pic_size_;
 
-  // Binds the provided GLImage to a givenr client texture ID & texture target
-  // combination in GLES.
-  BindImageCallback bind_image_;
+  // Callback to make GL context current.
+  MakeGLContextCurrentCallback make_context_current_cb_;
+
+  // Callback to bind a GLImage to a given texture.
+  BindGLImageCallback bind_image_cb_;
 
   // The WeakPtrFactory for |weak_this_|.
   base::WeakPtrFactory<VaapiVideoDecodeAccelerator> weak_this_factory_;

@@ -11,7 +11,6 @@
 
 #include <stdint.h>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -35,7 +34,7 @@ class VaapiWrapper;
 class VaapiDrmPicture : public VaapiPicture {
  public:
   VaapiDrmPicture(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
-                  const base::Callback<bool(void)>& make_context_current,
+                  const MakeGLContextCurrentCallback& make_context_current_cb,
                   int32_t picture_buffer_id,
                   uint32_t texture_id,
                   const gfx::Size& size);
@@ -52,7 +51,7 @@ class VaapiDrmPicture : public VaapiPicture {
 
  private:
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
-  base::Callback<bool(void)> make_context_current_;
+  MakeGLContextCurrentCallback make_context_current_cb_;
 
   // Ozone buffer, the storage of the EGLImage and the VASurface.
   scoped_refptr<ui::NativePixmap> pixmap_;

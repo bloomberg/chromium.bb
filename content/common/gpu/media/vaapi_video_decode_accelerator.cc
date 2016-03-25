@@ -292,10 +292,9 @@ VaapiPicture* VaapiVideoDecodeAccelerator::PictureById(
 }
 
 VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
-    const MakeContextCurrentCallback& make_context_current,
-    const BindImageCallback& bind_image)
-    : make_context_current_(make_context_current),
-      state_(kUninitialized),
+    const MakeGLContextCurrentCallback& make_context_current_cb,
+    const BindGLImageCallback& bind_image_cb)
+    : state_(kUninitialized),
       input_ready_(&lock_),
       surfaces_available_(&lock_),
       message_loop_(base::MessageLoop::current()),
@@ -305,7 +304,8 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       finish_flush_pending_(false),
       awaiting_va_surfaces_recycle_(false),
       requested_num_pics_(0),
-      bind_image_(bind_image),
+      make_context_current_cb_(make_context_current_cb),
+      bind_image_cb_(bind_image_cb),
       weak_this_factory_(this) {
   weak_this_ = weak_this_factory_.GetWeakPtr();
   va_surface_release_cb_ = media::BindToCurrentLoop(
@@ -319,6 +319,11 @@ VaapiVideoDecodeAccelerator::~VaapiVideoDecodeAccelerator() {
 bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
                                              Client* client) {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
+
+  if (make_context_current_cb_.is_null() || bind_image_cb_.is_null()) {
+    NOTREACHED() << "GL callbacks are required for this VDA";
+    return false;
+  }
 
   if (config.is_encrypted) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
@@ -741,13 +746,15 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
              << " VASurfaceID: " << va_surface_ids[i];
 
     linked_ptr<VaapiPicture> picture(VaapiPicture::CreatePicture(
-        vaapi_wrapper_, make_context_current_, buffers[i].id(),
+        vaapi_wrapper_, make_context_current_cb_, buffers[i].id(),
         buffers[i].texture_id(), requested_pic_size_));
 
     scoped_refptr<gl::GLImage> image = picture->GetImageToBind();
     if (image) {
-      bind_image_.Run(buffers[i].internal_texture_id(),
-                      VaapiPicture::GetGLTextureTarget(), image, true);
+      RETURN_AND_NOTIFY_ON_FAILURE(
+          bind_image_cb_.Run(buffers[i].internal_texture_id(),
+                             VaapiPicture::GetGLTextureTarget(), image, true),
+          "Failed to bind image", PLATFORM_FAILURE, );
     }
 
     RETURN_AND_NOTIFY_ON_FAILURE(
@@ -962,7 +969,9 @@ void VaapiVideoDecodeAccelerator::Destroy() {
   delete this;
 }
 
-bool VaapiVideoDecodeAccelerator::CanDecodeOnIOThread() {
+bool VaapiVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
+    const base::WeakPtr<Client>& decode_client,
+    const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner) {
   return false;
 }
 

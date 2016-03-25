@@ -16,6 +16,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/waitable_event.h"
 #include "content/common/gpu/gpu_command_buffer_stub.h"
+#include "content/common/gpu/media/gpu_video_decode_accelerator_helpers.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_listener.h"
@@ -77,30 +78,7 @@ class GpuVideoDecodeAccelerator
   bool Initialize(const media::VideoDecodeAccelerator::Config& config);
 
  private:
-  typedef scoped_ptr<media::VideoDecodeAccelerator> (
-      GpuVideoDecodeAccelerator::*CreateVDAFp)();
-
   class MessageFilter;
-
-#if defined(OS_WIN)
-  scoped_ptr<media::VideoDecodeAccelerator> CreateDXVAVDA();
-#endif
-#if defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-  scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2VDA();
-  scoped_ptr<media::VideoDecodeAccelerator> CreateV4L2SliceVDA();
-#endif
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  scoped_ptr<media::VideoDecodeAccelerator> CreateVaapiVDA();
-#endif
-#if defined(OS_MACOSX)
-  scoped_ptr<media::VideoDecodeAccelerator> CreateVTVDA();
-#endif
-#if !defined(OS_CHROMEOS) && defined(USE_OZONE)
-  scoped_ptr<media::VideoDecodeAccelerator> CreateOzoneVDA();
-#endif
-#if defined(OS_ANDROID)
-  scoped_ptr<media::VideoDecodeAccelerator> CreateAndroidVDA();
-#endif
 
   // We only allow self-delete, from OnWillDestroyStub(), after cleanup there.
   ~GpuVideoDecodeAccelerator() override;
@@ -121,16 +99,6 @@ class GpuVideoDecodeAccelerator
   // Sets the texture to cleared.
   void SetTextureCleared(const media::Picture& picture);
 
-#if (defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)) || defined(OS_MACOSX)
-  // Helper to bind |image| to the texture specified by |client_texture_id|. If
-  // |can_bind_to_sampler| is true, then the image may be used as a sampler
-  // directly, otherwise a copy to a staging buffer is required.
-  void BindImage(uint32_t client_texture_id,
-                 uint32_t texture_target,
-                 scoped_refptr<gl::GLImage> image,
-                 bool can_bind_to_sampler);
-#endif
-
   // Route ID to communicate with the host.
   const int32_t host_route_id_;
 
@@ -142,9 +110,17 @@ class GpuVideoDecodeAccelerator
   // The underlying VideoDecodeAccelerator.
   scoped_ptr<media::VideoDecodeAccelerator> video_decode_accelerator_;
 
+  // Callback to return current GLContext, if available.
+  GetGLContextCallback get_gl_context_cb_;
+
   // Callback for making the relevant context current for GL calls.
-  // Returns false if failed.
-  base::Callback<bool(void)> make_context_current_;
+  MakeGLContextCurrentCallback make_context_current_cb_;
+
+  // Callback to bind a GLImage to a given texture id and target.
+  BindGLImageCallback bind_image_cb_;
+
+  // Callback to return a WeakPtr to GLES2Decoder.
+  GetGLES2DecoderCallback get_gles2_decoder_cb_;
 
   // The texture dimensions as requested by ProvidePictureBuffers().
   gfx::Size texture_dimensions_;

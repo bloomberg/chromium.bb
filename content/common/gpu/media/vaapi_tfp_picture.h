@@ -11,7 +11,6 @@
 
 #include <stdint.h>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/gpu/media/vaapi_picture.h"
@@ -34,7 +33,7 @@ class VaapiWrapper;
 class VaapiTFPPicture : public VaapiPicture {
  public:
   VaapiTFPPicture(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
-                  const base::Callback<bool(void)> make_context_current,
+                  const MakeGLContextCurrentCallback& make_context_current_cb,
                   int32_t picture_buffer_id,
                   uint32_t texture_id,
                   const gfx::Size& size);
@@ -50,7 +49,7 @@ class VaapiTFPPicture : public VaapiPicture {
  private:
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
-  base::Callback<bool(void)> make_context_current_;
+  MakeGLContextCurrentCallback make_context_current_cb_;
   Display* x_display_;
 
   Pixmap x_pixmap_;

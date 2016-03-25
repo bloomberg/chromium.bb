@@ -19,6 +19,7 @@ group("service") {
 
 source_set("service_sources") {
   visibility = [
+    "//content/public/gpu/*",
     "//gpu/*",
     "//mojo/gles2:gles2",
   ]

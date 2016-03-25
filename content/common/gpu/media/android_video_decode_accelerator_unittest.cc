@@ -27,6 +27,11 @@ bool MockMakeContextCurrent() {
   return true;
 }
 
+static base::WeakPtr<gpu::gles2::GLES2Decoder> MockGetGLES2Decoder(
+    const base::WeakPtr<gpu::gles2::GLES2Decoder>& decoder) {
+  return decoder;
+}
+
 }  // namespace
 
 namespace content {
@@ -67,7 +72,8 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     scoped_ptr<MockVideoDecodeAcceleratorClient> client(
         new MockVideoDecodeAcceleratorClient());
     accelerator_.reset(new AndroidVideoDecodeAccelerator(
-        decoder->AsWeakPtr(), base::Bind(&MockMakeContextCurrent)));
+        base::Bind(&MockMakeContextCurrent),
+        base::Bind(&MockGetGLES2Decoder, decoder->AsWeakPtr())));
   }
 
   bool Configure(media::VideoCodec codec) {

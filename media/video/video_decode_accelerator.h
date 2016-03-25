@@ -10,14 +10,19 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/surface_manager.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gl/gl_image.h"
 
 typedef unsigned int GLenum;
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace media {
 
@@ -37,10 +42,6 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     bool encrypted_only;
   };
   using SupportedProfiles = std::vector<SupportedProfile>;
-
-  using MakeContextCurrentCallback = base::Callback<bool(void)>;
-  using BindImageCallback = base::Callback<
-      void(uint32_t, uint32_t, scoped_refptr<gl::GLImage>, bool)>;
 
   struct MEDIA_EXPORT Capabilities {
     Capabilities();
@@ -229,16 +230,39 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // unconditionally, so make sure to drop all pointers to it!
   virtual void Destroy() = 0;
 
-  // GPU PROCESS ONLY.  Implementations of this interface in the
-  // content/common/gpu/media should implement this, and implementations in
-  // other processes should not override the default implementation.
-  // Returns true if VDA::Decode and VDA::Client callbacks can run on the IO
-  // thread. Otherwise they will run on the GPU child thread. The purpose of
-  // running Decode on the IO thread is to reduce decode latency. Note Decode
-  // should return as soon as possible and not block on the IO thread. Also,
-  // PictureReady should be run on the child thread if a picture is delivered
-  // the first time so it can be cleared.
-  virtual bool CanDecodeOnIOThread();
+  // TO BE CALLED IN THE SAME PROCESS AS THE VDA IMPLEMENTATION ONLY.
+  //
+  // A decode "task" is a sequence that includes a Decode() call from Client,
+  // as well as corresponding callbacks to return the input BitstreamBuffer
+  // after use, and the resulting output Picture(s).
+  //
+  // If the Client can support running these three calls on a separate thread,
+  // it may call this method to try to set up the VDA implementation to do so.
+  // If the VDA can support this as well, return true, otherwise return false.
+  // If true is returned, the client may submit each Decode() call (but no other
+  // calls) on |decode_task_runner|, and should then expect that
+  // NotifyEndOfBitstreamBuffer() and PictureReady() callbacks may come on
+  // |decode_task_runner| as well, called on |decode_client|, instead of client
+  // provided to Initialize().
+  //
+  // This method may be called at any time.
+  //
+  // NOTE 1: some callbacks may still have to come on the main thread and the
+  // Client should handle both callbacks coming on main and |decode_task_runner|
+  // thread.
+  //
+  // NOTE 2: VDA implementations of Decode() must return as soon as possible and
+  // never block, as |decode_task_runner| may be a latency critical thread
+  // (such as the GPU IO thread).
+  //
+  // One application of this is offloading the GPU Child thread. In general,
+  // calls to VDA in GPU process have to be done on the GPU Child thread, as
+  // they may require GL context to be current. However, some VDAs may be able
+  // to run decode operations without GL context, which helps reduce latency and
+  // offloads the GPU Child thread.
+  virtual bool TryToSetupDecodeOnSeparateThread(
+      const base::WeakPtr<Client>& decode_client,
+      const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner);
 
   // Windows creates a BGRA texture.
   // TODO(dshwang): after moving to D3D11, remove this. crbug.com/438691

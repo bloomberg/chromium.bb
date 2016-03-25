@@ -25,6 +25,7 @@
 #include "media/base/media_switches.h"
 #include "media/filters/h264_parser.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/scoped_binders.h"
 
 #define NOTIFY_ERROR(x)                        \
@@ -153,14 +154,10 @@ V4L2VideoDecodeAccelerator::PictureRecord::~PictureRecord() {}
 
 V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
     EGLDisplay egl_display,
-    EGLContext egl_context,
-    const base::WeakPtr<Client>& io_client,
-    const base::Callback<bool(void)>& make_context_current,
-    const scoped_refptr<V4L2Device>& device,
-    const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
+    const GetGLContextCallback& get_gl_context_cb,
+    const MakeGLContextCurrentCallback& make_context_current_cb,
+    const scoped_refptr<V4L2Device>& device)
     : child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      io_task_runner_(io_task_runner),
-      io_client_(io_client),
       decoder_thread_("V4L2DecoderThread"),
       decoder_state_(kUninitialized),
       device_(device),
@@ -180,9 +177,9 @@ V4L2VideoDecodeAccelerator::V4L2VideoDecodeAccelerator(
       picture_clearing_count_(0),
       pictures_assigned_(false, false),
       device_poll_thread_("V4L2DevicePollThread"),
-      make_context_current_(make_context_current),
       egl_display_(egl_display),
-      egl_context_(egl_context),
+      get_gl_context_cb_(get_gl_context_cb),
+      make_context_current_cb_(make_context_current_cb),
       video_profile_(media::VIDEO_CODEC_PROFILE_UNKNOWN),
       output_format_fourcc_(0),
       weak_this_factory_(this) {
@@ -208,6 +205,11 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(decoder_state_, kUninitialized);
 
+  if (get_gl_context_cb_.is_null() || make_context_current_cb_.is_null()) {
+    NOTREACHED() << "GL callbacks are required for this VDA";
+    return false;
+  }
+
   if (config.is_encrypted) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
     return false;
@@ -222,6 +224,14 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
 
   client_ptr_factory_.reset(new base::WeakPtrFactory<Client>(client));
   client_ = client_ptr_factory_->GetWeakPtr();
+  // If we haven't been set up to decode on separate thread via
+  // TryToSetupDecodeOnSeparateThread(), use the main thread/client for
+  // decode tasks.
+  if (!decode_task_runner_) {
+    decode_task_runner_ = child_task_runner_;
+    DCHECK(!decode_client_);
+    decode_client_ = client_;
+  }
 
   video_profile_ = config.profile;
 
@@ -231,7 +241,7 @@ bool V4L2VideoDecodeAccelerator::Initialize(const Config& config,
   }
 
   // We need the context to be initialized to query extensions.
-  if (!make_context_current_.Run()) {
+  if (!make_context_current_cb_.Run()) {
     LOG(ERROR) << "Initialize(): could not make context current";
     return false;
   }
@@ -292,7 +302,7 @@ void V4L2VideoDecodeAccelerator::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DVLOG(1) << "Decode(): input_id=" << bitstream_buffer.id()
            << ", size=" << bitstream_buffer.size();
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  DCHECK(decode_task_runner_->BelongsToCurrentThread());
 
   if (bitstream_buffer.id() < 0) {
     LOG(ERROR) << "Invalid bitstream_buffer, id: " << bitstream_buffer.id();
@@ -324,7 +334,8 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
     return;
   }
 
-  if (!make_context_current_.Run()) {
+  gfx::GLContext* gl_context = get_gl_context_cb_.Run();
+  if (!gl_context || !make_context_current_cb_.Run()) {
     LOG(ERROR) << "AssignPictureBuffers(): could not make context current";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
@@ -364,7 +375,7 @@ void V4L2VideoDecodeAccelerator::AssignPictureBuffers(
     DCHECK_EQ(output_record.cleared, false);
 
     EGLImageKHR egl_image = device_->CreateEGLImage(egl_display_,
-                                                    egl_context_,
+                                                    gl_context->GetHandle(),
                                                     buffers[i].texture_id(),
                                                     coded_size_,
                                                     i,
@@ -394,7 +405,7 @@ void V4L2VideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_buffer_id) {
   // Must be run on child thread, as we'll insert a sync in the EGL context.
   DCHECK(child_task_runner_->BelongsToCurrentThread());
 
-  if (!make_context_current_.Run()) {
+  if (!make_context_current_cb_.Run()) {
     LOG(ERROR) << "ReusePictureBuffer(): could not make context current";
     NOTIFY_ERROR(PLATFORM_FAILURE);
     return;
@@ -455,7 +466,13 @@ void V4L2VideoDecodeAccelerator::Destroy() {
   delete this;
 }
 
-bool V4L2VideoDecodeAccelerator::CanDecodeOnIOThread() { return true; }
+bool V4L2VideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
+    const base::WeakPtr<Client>& decode_client,
+    const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner) {
+  decode_client_ = decode_client_;
+  decode_task_runner_ = decode_task_runner;
+  return true;
+}
 
 // static
 media::VideoDecodeAccelerator::SupportedProfiles
@@ -477,7 +494,7 @@ void V4L2VideoDecodeAccelerator::DecodeTask(
                bitstream_buffer.id());
 
   scoped_ptr<BitstreamBufferRef> bitstream_record(new BitstreamBufferRef(
-      io_client_, io_task_runner_,
+      decode_client_, decode_task_runner_,
       scoped_ptr<SharedMemoryRegion>(
           new SharedMemoryRegion(bitstream_buffer, true)),
       bitstream_buffer.id()));
@@ -1270,7 +1287,7 @@ void V4L2VideoDecodeAccelerator::FlushTask() {
   // Queue up an empty buffer -- this triggers the flush.
   decoder_input_queue_.push(
       linked_ptr<BitstreamBufferRef>(new BitstreamBufferRef(
-          io_client_, io_task_runner_, nullptr, kFlushBufferId)));
+          decode_client_, decode_task_runner_, nullptr, kFlushBufferId)));
   decoder_flushing_ = true;
   SendPictureReady();  // Send all pending PictureReady.
 
@@ -1993,10 +2010,12 @@ void V4L2VideoDecodeAccelerator::SendPictureReady() {
     bool cleared = pending_picture_ready_.front().cleared;
     const media::Picture& picture = pending_picture_ready_.front().picture;
     if (cleared && picture_clearing_count_ == 0) {
-      // This picture is cleared. Post it to IO thread to reduce latency. This
-      // should be the case after all pictures are cleared at the beginning.
-      io_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&Client::PictureReady, io_client_, picture));
+      // This picture is cleared. It can be posted to a thread different than
+      // the main GPU thread to reduce latency. This should be the case after
+      // all pictures are cleared at the beginning.
+      decode_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&Client::PictureReady, decode_client_, picture));
       pending_picture_ready_.pop();
     } else if (!cleared || resetting_or_flushing) {
       DVLOG(3) << "SendPictureReady()"

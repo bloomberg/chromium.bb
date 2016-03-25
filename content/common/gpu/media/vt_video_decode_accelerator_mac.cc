@@ -283,10 +283,10 @@ bool VTVideoDecodeAccelerator::FrameOrder::operator()(
 }
 
 VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
-    const MakeContextCurrentCallback& make_context_current,
-    const BindImageCallback& bind_image)
-    : make_context_current_(make_context_current),
-      bind_image_(bind_image),
+    const MakeGLContextCurrentCallback& make_context_current_cb,
+    const BindGLImageCallback& bind_image_cb)
+    : make_context_current_cb_(make_context_current_cb),
+      bind_image_cb_(bind_image_cb),
       client_(nullptr),
       state_(STATE_DECODING),
       format_(nullptr),
@@ -298,7 +298,6 @@ VTVideoDecodeAccelerator::VTVideoDecodeAccelerator(
       gpu_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       decoder_thread_("VTDecoderThread"),
       weak_this_factory_(this) {
-  DCHECK(!make_context_current_.is_null());
   callback_.decompressionOutputCallback = OutputThunk;
   callback_.decompressionOutputRefCon = this;
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -311,6 +310,11 @@ VTVideoDecodeAccelerator::~VTVideoDecodeAccelerator() {
 bool VTVideoDecodeAccelerator::Initialize(const Config& config,
                                           Client* client) {
   DCHECK(gpu_thread_checker_.CalledOnValidThread());
+
+  if (make_context_current_cb_.is_null() || bind_image_cb_.is_null()) {
+    NOTREACHED() << "GL callbacks are required for this VDA";
+    return false;
+  }
 
   if (config.is_encrypted) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
@@ -1022,7 +1026,7 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   DCHECK(!picture_info->cv_image);
   DCHECK(!picture_info->gl_image);
 
-  if (!make_context_current_.Run()) {
+  if (!make_context_current_cb_.Run()) {
     DLOG(ERROR) << "Failed to make GL context current";
     NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
     return false;
@@ -1041,8 +1045,12 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
 
   // Mark that the image is not bound for sampling. 4:2:0 images need to
   // undergo a separate copy to be displayed.
-  bind_image_.Run(picture_info->client_texture_id, GL_TEXTURE_RECTANGLE_ARB,
-                  gl_image, false);
+  if (!bind_image_cb_.Run(picture_info->client_texture_id,
+                          GL_TEXTURE_RECTANGLE_ARB, gl_image, false)) {
+    DLOG(ERROR) << "Failed to bind image";
+    NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
+    return false;
+  }
 
   // Assign the new image(s) to the the picture info.
   picture_info->gl_image = gl_image;
@@ -1118,7 +1126,9 @@ void VTVideoDecodeAccelerator::Destroy() {
   QueueFlush(TASK_DESTROY);
 }
 
-bool VTVideoDecodeAccelerator::CanDecodeOnIOThread() {
+bool VTVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
+    const base::WeakPtr<Client>& decode_client,
+    const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner) {
   return false;
 }
 

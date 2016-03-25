@@ -34,9 +34,11 @@ void VideoDecodeAccelerator::SetCdm(int cdm_id) {
   NOTREACHED() << "By default CDM is not supported.";
 }
 
-bool VideoDecodeAccelerator::CanDecodeOnIOThread() {
-  // GPU process subclasses must override this.
-  LOG(FATAL) << "This should only get called in the GPU process";
+bool VideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
+    const base::WeakPtr<Client>& decode_client,
+    const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner) {
+  // Implementations in the process that VDA runs in must override this.
+  LOG(FATAL) << "This may only be called in the same process as VDA impl.";
   return false;  // not reached
 }
 

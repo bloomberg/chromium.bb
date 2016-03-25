@@ -19,6 +19,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
+#include "content/common/gpu/media/gpu_video_decode_accelerator_helpers.h"
 #include "content/common/gpu/media/h264_decoder.h"
 #include "content/common/gpu/media/v4l2_device.h"
 #include "content/common/gpu/media/vp8_decoder.h"
@@ -38,10 +39,8 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   V4L2SliceVideoDecodeAccelerator(
       const scoped_refptr<V4L2Device>& device,
       EGLDisplay egl_display,
-      EGLContext egl_context,
-      const base::WeakPtr<Client>& io_client_,
-      const base::Callback<bool(void)>& make_context_current,
-      const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner);
+      const GetGLContextCallback& get_gl_context_cb,
+      const MakeGLContextCurrentCallback& make_context_current_cb);
   ~V4L2SliceVideoDecodeAccelerator() override;
 
   // media::VideoDecodeAccelerator implementation.
@@ -53,7 +52,10 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   void Flush() override;
   void Reset() override;
   void Destroy() override;
-  bool CanDecodeOnIOThread() override;
+  bool TryToSetupDecodeOnSeparateThread(
+      const base::WeakPtr<Client>& decode_client,
+      const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
+      override;
 
   static media::VideoDecodeAccelerator::SupportedProfiles
       GetSupportedProfiles();
@@ -303,8 +305,8 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   // GPU Child thread task runner.
   const scoped_refptr<base::SingleThreadTaskRunner> child_task_runner_;
 
-  // IO thread task runner.
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  // Task runner Decode() and PictureReady() run on.
+  scoped_refptr<base::SingleThreadTaskRunner> decode_task_runner_;
 
   // WeakPtr<> pointing to |this| for use in posting tasks from the decoder or
   // device worker threads back to the child thread.
@@ -316,8 +318,8 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   scoped_ptr<base::WeakPtrFactory<VideoDecodeAccelerator::Client>>
       client_ptr_factory_;
   base::WeakPtr<VideoDecodeAccelerator::Client> client_;
-  // Callbacks to |io_client_| must be executed on |io_task_runner_|.
-  base::WeakPtr<Client> io_client_;
+  // Callbacks to |decode_client_| must be executed on |decode_task_runner_|.
+  base::WeakPtr<Client> decode_client_;
 
   // V4L2 device in use.
   scoped_refptr<V4L2Device> device_;
@@ -398,12 +400,13 @@ class CONTENT_EXPORT V4L2SliceVideoDecodeAccelerator
   // The number of pictures that are sent to PictureReady and will be cleared.
   int picture_clearing_count_;
 
-  // Make the GL context current callback.
-  base::Callback<bool(void)> make_context_current_;
-
   // EGL state
   EGLDisplay egl_display_;
-  EGLContext egl_context_;
+
+  // Callback to get current GLContext.
+  GetGLContextCallback get_gl_context_cb_;
+  // Callback to set the correct gl context.
+  MakeGLContextCurrentCallback make_context_current_cb_;
 
   // The WeakPtrFactory for |weak_this_|.
   base::WeakPtrFactory<V4L2SliceVideoDecodeAccelerator> weak_this_factory_;
