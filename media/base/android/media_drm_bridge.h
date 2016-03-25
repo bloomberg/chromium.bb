@@ -288,6 +288,9 @@ class MEDIA_EXPORT MediaDrmBridge : public MediaKeys, public PlayerTracker {
   // Process the data received by provisioning server.
   void ProcessProvisionResponse(bool success, const std::string& response);
 
+  // Called on the |task_runner_| when there is additional usable key.
+  void OnHasAdditionalUsableKey();
+
   // UUID of the key system.
   std::vector<uint8_t> scheme_uuid_;
 

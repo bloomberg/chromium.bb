@@ -346,6 +346,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
 void MediaDrmBridge::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     scoped_ptr<media::SimpleCdmPromise> promise) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__ << "(" << certificate.size() << " bytes)";
 
   DCHECK(!certificate.empty());
@@ -366,6 +367,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
     media::EmeInitDataType init_data_type,
     const std::vector<uint8_t>& init_data,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
 
   if (session_type != media::MediaKeys::TEMPORARY_SESSION) {
@@ -421,6 +423,7 @@ void MediaDrmBridge::LoadSession(
     SessionType session_type,
     const std::string& session_id,
     scoped_ptr<media::NewSessionCdmPromise> promise) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
 
   NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
@@ -431,6 +434,7 @@ void MediaDrmBridge::UpdateSession(
     const std::string& session_id,
     const std::vector<uint8_t>& response,
     scoped_ptr<media::SimpleCdmPromise> promise) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
 
   JNIEnv* env = AttachCurrentThread();
@@ -446,6 +450,7 @@ void MediaDrmBridge::UpdateSession(
 
 void MediaDrmBridge::CloseSession(const std::string& session_id,
                                   scoped_ptr<media::SimpleCdmPromise> promise) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
 
   JNIEnv* env = AttachCurrentThread();
@@ -460,6 +465,7 @@ void MediaDrmBridge::CloseSession(const std::string& session_id,
 void MediaDrmBridge::RemoveSession(
     const std::string& session_id,
     scoped_ptr<media::SimpleCdmPromise> promise) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
 
   NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
@@ -664,9 +670,6 @@ void MediaDrmBridge::OnSessionKeysChange(
     bool has_additional_usable_key) {
   DVLOG(2) << __FUNCTION__;
 
-  if (has_additional_usable_key)
-    player_tracker_.NotifyNewKey();
-
   CdmKeysInfo cdm_keys_info;
 
   size_t size = env->GetArrayLength(j_keys_info);
@@ -697,6 +700,12 @@ void MediaDrmBridge::OnSessionKeysChange(
       FROM_HERE,
       base::Bind(session_keys_change_cb_, AsString(env, j_session_id),
                  has_additional_usable_key, base::Passed(&cdm_keys_info)));
+
+  if (has_additional_usable_key) {
+    task_runner_->PostTask(FROM_HERE,
+                           base::Bind(&MediaDrmBridge::OnHasAdditionalUsableKey,
+                                      weak_factory_.GetWeakPtr()));
+  }
 }
 
 // According to MeidaDrm documentation [1], zero |expiry_time_ms| means the keys
@@ -885,6 +894,13 @@ void MediaDrmBridge::ProcessProvisionResponse(bool success,
 
   Java_MediaDrmBridge_processProvisionResponse(env, j_media_drm_.obj(), success,
                                                j_response.obj());
+}
+
+void MediaDrmBridge::OnHasAdditionalUsableKey() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DVLOG(1) << __FUNCTION__;
+
+  player_tracker_.NotifyNewKey();
 }
 
 }  // namespace media
