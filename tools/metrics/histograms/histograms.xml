@@ -43782,20 +43782,62 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.DmgFileFailureByType"
+    enum="SBClientDownloadExtensions">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Counts of DMG-like file types that failed to be successfully analyzed by the
+    SafeBrowsing download service.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.DmgFileHasExecutable" enum="Boolean">
   <owner>rsesek@chromium.org</owner>
+  <obsolete>
+    Replaced by SBClientDownload.DmgFileHas[No]ExecutableByType in M51.
+  </obsolete>
   <summary>
     For each DMG file analyzed by the SafeBrowsing download service, records if
     the DMG contained an executable file.
   </summary>
 </histogram>
 
+<histogram name="SBClientDownload.DmgFileHasExecutableByType"
+    enum="SBClientDownloadExtensions">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Counts of DMG-like file types which were analyzed by the SafeBrowsing
+    download service that contained an executable file.
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.DmgFileHasNoExecutableByType"
+    enum="SBClientDownloadExtensions">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Counts of DMG-like file types which were analyzed by the SafeBrowsing
+    download service that did NOT contain an executable file.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.DmgFileSuccess" enum="BooleanSuccess">
   <owner>rsesek@chromium.org</owner>
+  <obsolete>
+    Replaced by SBClientDownload.DmgFile{Success,Failure}ByType in M51.
+  </obsolete>
   <summary>
     For each DMG file analyzed by the SafeBrowsing download service, records
     true if the analysis was successful, or false if there was an error
     analyzing the file.
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.DmgFileSuccessByType"
+    enum="SBClientDownloadExtensions">
+  <owner>nparker@chromium.org</owner>
+  <summary>
+    Counts of DMG-like file types that were successfully analyzed by the
+    SafeBrowsing download service.
   </summary>
 </histogram>
 
@@ -80352,6 +80394,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="244" label="RTF"/>
   <int value="245" label="VHDX"/>
   <int value="246" label="SEARCH_MS"/>
+  <int value="247" label="IMG"/>
+  <int value="248" label="SMI"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary" type="int">

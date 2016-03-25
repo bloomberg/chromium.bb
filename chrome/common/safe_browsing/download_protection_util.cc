@@ -268,6 +268,8 @@ enum SBClientDownloadExtensions {
   EXTENSION_RTF,
   EXTENSION_VHDX,
   EXTENSION_SEARCH_MS,
+  EXTENSION_IMG,
+  EXTENSION_SMI,
 
   // New values go above this one.
   EXTENSION_MAX
@@ -339,6 +341,7 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".hqx"), EXTENSION_HQX, true, true},
     {FILE_PATH_LITERAL(".hta"), EXTENSION_HTA, true, false},
     {FILE_PATH_LITERAL(".htt"), EXTENSION_HTT, true, false},
+    {FILE_PATH_LITERAL(".img"), EXTENSION_IMG, true, false},
     {FILE_PATH_LITERAL(".inf"), EXTENSION_INF, true, false},
     {FILE_PATH_LITERAL(".ini"), EXTENSION_INI, true, false},
     {FILE_PATH_LITERAL(".ins"), EXTENSION_INS, true, false},
@@ -474,6 +477,7 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".shb"), EXTENSION_SHB, true, false},
     {FILE_PATH_LITERAL(".shs"), EXTENSION_SHS, true, false},
     {FILE_PATH_LITERAL(".slp"), EXTENSION_SLP, true, true},
+    {FILE_PATH_LITERAL(".smi"), EXTENSION_SMI, true, false},
     {FILE_PATH_LITERAL(".spl"), EXTENSION_SPL, true, false},
     {FILE_PATH_LITERAL(".squashfs"), EXTENSION_SQUASHFS, true, true},
     {FILE_PATH_LITERAL(".svg"), EXTENSION_SVG, true, false},
@@ -592,7 +596,10 @@ ClientDownloadRequest::DownloadType GetDownloadType(
     // result of analyzing the ZIP file.
     return ClientDownloadRequest::ZIPPED_EXECUTABLE;
   else if (file.MatchesExtension(FILE_PATH_LITERAL(".dmg")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".img")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".iso")) ||
            file.MatchesExtension(FILE_PATH_LITERAL(".pkg")) ||
+           file.MatchesExtension(FILE_PATH_LITERAL(".smi")) ||
            file.MatchesExtension(FILE_PATH_LITERAL(".osx")) ||
            file.MatchesExtension(FILE_PATH_LITERAL(".app")))
     return ClientDownloadRequest::MAC_EXECUTABLE;

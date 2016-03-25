@@ -335,7 +335,13 @@ class DownloadProtectionService::CheckClientDownloadRequest
       StartExtractZipFeatures();
 #if defined(OS_MACOSX)
     } else if (item_->GetTargetFilePath().MatchesExtension(
-                  FILE_PATH_LITERAL(".dmg"))) {
+                   FILE_PATH_LITERAL(".dmg")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".img")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".iso")) ||
+               item_->GetTargetFilePath().MatchesExtension(
+                   FILE_PATH_LITERAL(".smi"))) {
       StartExtractDmgFeatures();
 #endif
     } else {
@@ -625,6 +631,8 @@ class DownloadProtectionService::CheckClientDownloadRequest
   }
 
 #if defined(OS_MACOSX)
+  // This is called for .DMGs and other files that can be parsed by
+  // SandboxedDMGAnalyzer.
   void StartExtractDmgFeatures() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(item_);
@@ -651,9 +659,26 @@ class DownloadProtectionService::CheckClientDownloadRequest
              << ", has_executable=" << results.has_executable
              << ", success=" << results.success;
 
-    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DmgFileSuccess", results.success);
-    UMA_HISTOGRAM_BOOLEAN("SBClientDownload.DmgFileHasExecutable",
-                          archived_executable_);
+    int uma_file_type =
+        download_protection_util::GetSBClientDownloadExtensionValueForUMA(
+            item_->GetTargetFilePath());
+
+    if (results.success) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("SBClientDownload.DmgFileSuccessByType",
+                                  uma_file_type);
+    } else {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("SBClientDownload.DmgFileFailureByType",
+                                  uma_file_type);
+    }
+
+    if (archived_executable_) {
+      UMA_HISTOGRAM_SPARSE_SLOWLY("SBClientDownload.DmgFileHasExecutableByType",
+                                  uma_file_type);
+    } else {
+      UMA_HISTOGRAM_SPARSE_SLOWLY(
+          "SBClientDownload.DmgFileHasNoExecutableByType", uma_file_type);
+    }
+
     UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractDmgFeaturesTime",
                         base::TimeTicks::Now() - dmg_analysis_start_time_);
 
