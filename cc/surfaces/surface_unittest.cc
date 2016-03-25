@@ -5,6 +5,7 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_factory_client.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -42,6 +43,19 @@ TEST(SurfaceTest, SurfaceLifetime) {
   }
 
   EXPECT_EQ(NULL, manager.GetSurfaceForId(surface_id));
+}
+
+TEST(SurfaceTest, SurfaceIds) {
+  uint32_t namespaces[] = {0u, 37u, ~0u};
+  for (size_t i = 0; i < 3; ++i) {
+    uint32_t id_namespace = namespaces[i];
+    SurfaceIdAllocator allocator(id_namespace);
+    SurfaceId id1 = allocator.GenerateId();
+    EXPECT_EQ(id1.id_namespace(), id_namespace);
+    SurfaceId id2 = allocator.GenerateId();
+    EXPECT_EQ(id2.id_namespace(), id_namespace);
+    EXPECT_NE(id1.id, id2.id);
+  }
 }
 
 }  // namespace

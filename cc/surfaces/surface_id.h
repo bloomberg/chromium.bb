@@ -18,6 +18,9 @@ struct SurfaceId {
 
   bool is_null() const { return id == 0; }
 
+  // See SurfaceIdAllocator::GenerateId.
+  uint32_t id_namespace() const { return id >> 32; }
+
   uint64_t id;
 };
 
