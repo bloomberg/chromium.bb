@@ -1,6 +1,8 @@
 # Blink GC API reference
 
-This document is work in progress.
+This is a through document for Oilpan API usage.
+If you want to learn the API usage quickly, look at
+[this tutorial](https://docs.google.com/presentation/d/1XPu03ymz8W295mCftEC9KshH9Icxfq81YwIJQzQrvxo/edit#slide=id.p).
 
 [TOC]
 
