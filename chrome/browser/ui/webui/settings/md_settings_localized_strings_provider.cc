@@ -197,6 +197,7 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
 }
 #endif
 
+#if defined(USE_NSS_CERTS)
 void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"certificateManagerPageTitle", IDS_SETTINGS_CERTIFICATE_MANAGER},
@@ -266,6 +267,7 @@ void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 }
+#endif
 
 void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
@@ -866,7 +868,9 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 #if defined(OS_CHROMEOS)
   AddBluetoothStrings(html_source);
 #endif
+#if defined(USE_NSS_CERTS)
   AddCertificateManagerStrings(html_source);
+#endif
   AddClearBrowsingDataStrings(html_source);
   AddCloudPrintStrings(html_source);
 #if !defined(OS_CHROMEOS)

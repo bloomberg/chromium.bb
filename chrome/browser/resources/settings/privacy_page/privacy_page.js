@@ -42,7 +42,12 @@ Polymer({
 
   /** @private */
   onManageCertificatesTap_: function() {
+<if expr="use_nss_certs">
     this.$.pages.setSubpageChain(['manage-certificates']);
+</if>
+<if expr="not use_nss_certs">
+    // TODO(dpapad): Launch native certificate manager here.
+</if>
   },
 
   /** @private */

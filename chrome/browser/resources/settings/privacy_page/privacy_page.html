@@ -2,7 +2,9 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<if expr="use_nss_certs">
 <link rel="import" href="chrome://md-settings/certificate_manager_page/certificate_manager_page.html">
+</if>
 <link rel="import" href="chrome://md-settings/clear_browsing_data_dialog/clear_browsing_data_dialog.html">
 <link rel="import" href="chrome://md-settings/controls/settings_checkbox.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
@@ -95,12 +97,14 @@
           </paper-button>
         </div>
       </neon-animatable>
+<if expr="use_nss_certs">
       <neon-animatable id="manage-certificates">
         <settings-subheader i18n-values="page-title:manageCertificates">
         </settings-subheader>
         <settings-certificate-manager-page>
         </settings-certificate-manager-page>
       </neon-animatable>
+</if>
       <neon-animatable id="site-settings">
         <settings-subheader i18n-values="page-title:siteSettings">
         </settings-subheader>

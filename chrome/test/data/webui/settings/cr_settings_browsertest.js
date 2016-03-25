@@ -127,6 +127,7 @@ TEST_F('CrSettingsSearchEnginesTest', 'SearchEngines', function() {
   mocha.run();
 });
 
+GEN('#if defined(USE_NSS_CERTS)');
 /**
  * Test fixture for chrome/browser/resources/settings/certificate_manager_page/.
  * @constructor
@@ -153,6 +154,7 @@ TEST_F('CrSettingsCertificateManagerTest', 'CertificateManager', function() {
   certificate_manager_page.registerTests();
   mocha.run();
 });
+GEN('#endif');
 
 /**
  * Test fixture for chrome/browser/resources/settings/site_settings/.
