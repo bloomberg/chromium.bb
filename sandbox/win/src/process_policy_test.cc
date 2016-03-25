@@ -416,7 +416,8 @@ TEST(ProcessPolicyTest, CreateProcessAW) {
 // Tests that the broker correctly handles a process crashing within the job.
 TEST(ProcessPolicyTest, CreateProcessCrashy) {
   TestRunner runner;
-  EXPECT_EQ(STATUS_BREAKPOINT, runner.RunTest(L"Process_Crash"));
+  EXPECT_EQ(static_cast<int>(STATUS_BREAKPOINT),
+            runner.RunTest(L"Process_Crash"));
 }
 
 TEST(ProcessPolicyTest, OpenToken) {
