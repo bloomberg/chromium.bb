@@ -52,20 +52,10 @@ TEST_F('OnStartupSettingsBrowserTest', 'uiTests', function() {
   };
 
   suite('OnStartupHandler', function() {
-    var fakePrefs = [{
-      key: 'session.restore_on_startup',
-      type: chrome.settingsPrivate.PrefType.NUMBER,
-      value: 1234,
-    }];
-
     suiteSetup(function() {
       settingsPrefs = document.querySelector('cr-settings').$$(
           'settings-prefs');
       assertTrue(!!settingsPrefs);
-      CrSettingsPrefs.resetForTesting();
-      settingsPrefs.resetForTesting();
-      var fakeApi = new settings.FakeSettingsPrivate(fakePrefs);
-      settingsPrefs.initializeForTesting(fakeApi);
       return CrSettingsPrefs.initialized;
     });
 

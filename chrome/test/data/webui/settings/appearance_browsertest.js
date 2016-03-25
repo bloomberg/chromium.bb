@@ -42,20 +42,10 @@ TEST_F('AppearanceSettingsBrowserTest', 'uiTests', function() {
   };
 
   suite('AppearanceHandler', function() {
-    var fakePrefs = [{
-      key: 'webkit.webprefs.default_font_size',
-      type: chrome.settingsPrivate.PrefType.NUMBER,
-      value: 1234,
-    }];
-
     suiteSetup(function() {
       settingsPrefs = document.querySelector(
           'cr-settings').$$('settings-prefs');
       assertTrue(!!settingsPrefs);
-      CrSettingsPrefs.resetForTesting();
-      settingsPrefs.resetForTesting();
-      var fakeApi = new settings.FakeSettingsPrivate(fakePrefs);
-      settingsPrefs.initializeForTesting(fakeApi);
       return CrSettingsPrefs.initialized;
     });
 
@@ -76,7 +66,7 @@ TEST_F('AppearanceSettingsBrowserTest', 'uiTests', function() {
      */
     test('custom font size', function() {
       settingsPrefs.set(
-          'prefs.webkit.webprefs.default_font_size', 19);
+          'prefs.webkit.webprefs.default_font_size.value', 19);
       assertEquals('Custom', fontSize());
     });
   });
