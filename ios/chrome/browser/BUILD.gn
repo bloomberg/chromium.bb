@@ -608,6 +608,7 @@ source_set("browser") {
 
     # TODO(crbug.com/459705): add support for resource packing and change the
     # dependency to be on the packed resources instead of the unpacked ones.
+    "//ios/chrome/app/resources",
     "//ios/chrome/app/strings",
     "//ios/chrome/app/theme",
   ]
