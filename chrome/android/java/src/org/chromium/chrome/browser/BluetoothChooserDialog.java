@@ -8,11 +8,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.text.SpannableString;
-import android.text.TextPaint;
 import android.text.TextUtils;
-import android.text.style.ClickableSpan;
 import android.view.View;
 
 import org.chromium.base.VisibleForTesting;
@@ -21,11 +18,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A dialog for picking available Bluetooth devices. This dialog is shown when a website requests to
@@ -76,9 +71,7 @@ public class BluetoothChooserDialog
     }
 
     /**
-     * Creates the BluetoothChooserDialog and displays it (and starts waiting for data).
-     *
-     * @param context Context which is used for launching a dialog.
+     * Creates the BluetoothChooserDialog.
      */
     @VisibleForTesting
     BluetoothChooserDialog(WindowAndroid windowAndroid, String origin, int securityLevel,
@@ -110,34 +103,29 @@ public class BluetoothChooserDialog
         String message = mContext.getString(R.string.bluetooth_not_found);
         SpannableString noneFound = SpanApplier.applySpans(
                 message, new SpanInfo("<link>", "</link>",
-                        new NoUnderlineClickableSpan(LinkType.RESTART_SEARCH, mContext)));
+                        new BluetoothClickableSpan(LinkType.RESTART_SEARCH, mContext)));
 
         SpannableString searching = SpanApplier.applySpans(
                 mContext.getString(R.string.bluetooth_searching),
                 new SpanInfo("<link>", "</link>",
-                        new NoUnderlineClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)));
+                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)));
 
         String positiveButton = mContext.getString(R.string.bluetooth_confirm_button);
-
-        SpannableString statusActive = SpanApplier.applySpans(
-                mContext.getString(R.string.bluetooth_not_seeing_it),
-                new SpanInfo("<link>", "</link>",
-                        new NoUnderlineClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)));
 
         SpannableString statusIdleNoneFound = SpanApplier.applySpans(
                 mContext.getString(R.string.bluetooth_not_seeing_it_idle_none_found),
                 new SpanInfo("<link>", "</link>",
-                        new NoUnderlineClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)));
+                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)));
 
         SpannableString statusIdleSomeFound = SpanApplier.applySpans(
                 mContext.getString(R.string.bluetooth_not_seeing_it_idle_some_found),
                 new SpanInfo("<link1>", "</link1>",
-                        new NoUnderlineClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)),
+                        new BluetoothClickableSpan(LinkType.EXPLAIN_BLUETOOTH, mContext)),
                 new SpanInfo("<link2>", "</link2>",
-                        new NoUnderlineClickableSpan(LinkType.RESTART_SEARCH, mContext)));
+                        new BluetoothClickableSpan(LinkType.RESTART_SEARCH, mContext)));
 
         ItemChooserDialog.ItemChooserLabels labels =
-                new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound, statusActive,
+                new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound,
                         statusIdleNoneFound, statusIdleSomeFound, positiveButton);
         mItemChooserDialog = new ItemChooserDialog(mContext, this, labels);
     }
@@ -188,28 +176,25 @@ public class BluetoothChooserDialog
         SpannableString needLocationMessage = SpanApplier.applySpans(
                 mContext.getString(R.string.bluetooth_need_location_permission),
                 new SpanInfo("<link>", "</link>",
-                        new NoUnderlineClickableSpan(
+                        new BluetoothClickableSpan(
                                      LinkType.REQUEST_LOCATION_PERMISSION, mContext)));
 
         SpannableString needLocationStatus = SpanApplier.applySpans(
                 mContext.getString(R.string.bluetooth_need_location_permission_help),
                 new SpanInfo("<link>", "</link>",
-                        new NoUnderlineClickableSpan(
+                        new BluetoothClickableSpan(
                                      LinkType.NEED_LOCATION_PERMISSION_HELP, mContext)));
 
         mItemChooserDialog.setErrorState(needLocationMessage, needLocationStatus);
     }
 
-    /**
-     * A helper class to show a clickable link with underlines turned off.
-     */
-    private class NoUnderlineClickableSpan extends ClickableSpan {
+    private class BluetoothClickableSpan extends NoUnderlineClickableSpan {
         // The type of link this span represents.
         private LinkType mLinkType;
 
         private Context mContext;
 
-        NoUnderlineClickableSpan(LinkType linkType, Context context) {
+        BluetoothClickableSpan(LinkType linkType, Context context) {
             mLinkType = linkType;
             mContext = context;
         }
@@ -264,13 +249,6 @@ public class BluetoothChooserDialog
             // Get rid of the highlight background on selection.
             view.invalidate();
         }
-
-        @Override
-        public void updateDrawState(TextPaint textPaint) {
-            super.updateDrawState(textPaint);
-            textPaint.bgColor = Color.TRANSPARENT;
-            textPaint.setUnderlineText(false);
-        }
     }
 
     @CalledByNative
@@ -293,10 +271,8 @@ public class BluetoothChooserDialog
     @VisibleForTesting
     @CalledByNative
     void addDevice(String deviceId, String deviceName) {
-        List<ItemChooserDialog.ItemChooserRow> devices =
-                new ArrayList<ItemChooserDialog.ItemChooserRow>();
-        devices.add(new ItemChooserDialog.ItemChooserRow(deviceId, deviceName));
-        mItemChooserDialog.addItemsToList(devices);
+        mItemChooserDialog.addItemToList(
+                new ItemChooserDialog.ItemChooserRow(deviceId, deviceName));
     }
 
     @VisibleForTesting
@@ -318,11 +294,11 @@ public class BluetoothChooserDialog
         SpannableString adapterOffMessage = SpanApplier.applySpans(
                 mContext.getString(R.string.bluetooth_adapter_off),
                 new SpanInfo("<link>", "</link>",
-                        new NoUnderlineClickableSpan(LinkType.ADAPTER_OFF, mContext)));
+                        new BluetoothClickableSpan(LinkType.ADAPTER_OFF, mContext)));
         SpannableString adapterOffStatus = SpanApplier.applySpans(
                 mContext.getString(R.string.bluetooth_adapter_off_help),
                 new SpanInfo("<link>", "</link>",
-                        new NoUnderlineClickableSpan(LinkType.ADAPTER_OFF_HELP, mContext)));
+                        new BluetoothClickableSpan(LinkType.ADAPTER_OFF_HELP, mContext)));
 
         mItemChooserDialog.setErrorState(adapterOffMessage, adapterOffStatus);
     }

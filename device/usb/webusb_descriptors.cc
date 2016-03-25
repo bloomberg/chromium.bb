@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "device/usb/webusb_descriptors.h"
+
 #include <stddef.h>
 
 #include <iterator>
@@ -12,9 +14,9 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/usb/usb_device_handle.h"
-#include "device/usb/webusb_descriptors.h"
 #include "net/base/io_buffer.h"
 
 using net::IOBufferWithSize;
@@ -565,6 +567,28 @@ void ReadWebUsbDescriptors(scoped_refptr<UsbDeviceHandle> device_handle,
       kGetDescriptorRequest, kBosDescriptorType << 8, 0, buffer, buffer->size(),
       kControlTransferTimeout,
       base::Bind(&OnReadBosDescriptorHeader, device_handle, callback));
+}
+
+bool FindInWebUsbAllowedOrigins(
+    const device::WebUsbAllowedOrigins* allowed_origins,
+    const GURL& origin) {
+  if (!allowed_origins)
+    return false;
+
+  if (ContainsValue(allowed_origins->origins, origin))
+    return true;
+
+  for (const auto& config : allowed_origins->configurations) {
+    if (ContainsValue(config.origins, origin))
+      return true;
+
+    for (const auto& function : config.functions) {
+      if (ContainsValue(function.origins, origin))
+        return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace device

@@ -34,7 +34,6 @@ import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -66,6 +65,19 @@ public class ItemChooserDialog {
             mKey = key;
             mDescription = description;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof ItemChooserRow)) return false;
+            if (this == obj) return true;
+            ItemChooserRow item = (ItemChooserRow) obj;
+            return mKey.equals(item.mKey) && mDescription.equals(item.mDescription);
+        }
+
+        @Override
+        public int hashCode() {
+            return mKey.hashCode() + mDescription.hashCode();
+        }
     }
 
     /**
@@ -73,31 +85,26 @@ public class ItemChooserDialog {
      */
     public static class ItemChooserLabels {
         // The title at the top of the dialog.
-        public final SpannableString mTitle;
+        public final CharSequence mTitle;
         // The message to show while there are no results.
-        public final SpannableString mSearching;
+        public final CharSequence mSearching;
         // The message to show when no results were produced.
-        public final SpannableString mNoneFound;
-        // A status message to show above the button row after an item has
-        // been added and discovery is still ongoing.
-        public final SpannableString mStatusActive;
+        public final CharSequence mNoneFound;
         // A status message to show above the button row after discovery has
         // stopped and no devices have been found.
-        public final SpannableString mStatusIdleNoneFound;
+        public final CharSequence mStatusIdleNoneFound;
         // A status message to show above the button row after an item has
         // been added and discovery has stopped.
-        public final SpannableString mStatusIdleSomeFound;
+        public final CharSequence mStatusIdleSomeFound;
         // The label for the positive button (e.g. Select/Pair).
-        public final String mPositiveButton;
+        public final CharSequence mPositiveButton;
 
-        public ItemChooserLabels(SpannableString title, SpannableString searching,
-                SpannableString noneFound, SpannableString statusActive,
-                SpannableString statusIdleNoneFound, SpannableString statusIdleSomeFound,
-                String positiveButton) {
+        public ItemChooserLabels(CharSequence title, CharSequence searching, CharSequence noneFound,
+                CharSequence statusIdleNoneFound, CharSequence statusIdleSomeFound,
+                CharSequence positiveButton) {
             mTitle = title;
             mSearching = searching;
             mNoneFound = noneFound;
-            mStatusActive = statusActive;
             mStatusIdleNoneFound = statusIdleNoneFound;
             mStatusIdleSomeFound = statusIdleSomeFound;
             mPositiveButton = positiveButton;
@@ -107,7 +114,7 @@ public class ItemChooserDialog {
     /**
      * The various states the dialog can represent.
      */
-    private enum State { STARTING, PROGRESS_UPDATE_AVAILABLE, DISCOVERY_IDLE }
+    private enum State { STARTING, DISCOVERY_IDLE }
 
     /**
      * An adapter for keeping track of which items to show in the dialog.
@@ -352,19 +359,24 @@ public class ItemChooserDialog {
     }
 
     /**
-     * Add items to show in the dialog.
-     *
-     * @param list The list of items to add to the chooser. This function can be
-     * called multiple times to add more items and new items will be appended to
-     * the end of the list.
-     */
-    public void addItemsToList(List<ItemChooserRow> list) {
+    * Add an item to the end of the list to show in the dialog.
+    *
+    * @param item The item to be added to the end of the chooser.
+    */
+    public void addItemToList(ItemChooserRow item) {
         mProgressBar.setVisibility(View.GONE);
+        mItemAdapter.add(item);
+        setState(State.DISCOVERY_IDLE);
+    }
 
-        if (!list.isEmpty()) {
-            mItemAdapter.addAll(list);
-        }
-        setState(State.PROGRESS_UPDATE_AVAILABLE);
+    /**
+    * Remove an item that is shown in the dialog.
+    *
+    * @param item The item to be removed in the chooser.
+    */
+    public void removeItemFromList(ItemChooserRow item) {
+        mItemAdapter.remove(item);
+        setState(State.DISCOVERY_IDLE);
     }
 
     /**
@@ -411,11 +423,6 @@ public class ItemChooserDialog {
                 mProgressBar.setVisibility(View.VISIBLE);
                 mEmptyMessage.setVisibility(View.GONE);
                 break;
-            case PROGRESS_UPDATE_AVAILABLE:
-                mStatus.setText(mLabels.mStatusActive);
-                mProgressBar.setVisibility(View.GONE);
-                mListView.setVisibility(View.VISIBLE);
-                break;
             case DISCOVERY_IDLE:
                 boolean showEmptyMessage = mItemAdapter.isEmpty();
                 mStatus.setText(showEmptyMessage
@@ -432,5 +439,13 @@ public class ItemChooserDialog {
     @VisibleForTesting
     public Dialog getDialogForTesting() {
         return mDialog;
+    }
+
+    /**
+     * Returns the ItemAdapter associated with this class. For use with tests only.
+     */
+    @VisibleForTesting
+    public ItemAdapter getItemAdapterForTesting() {
+        return mItemAdapter;
     }
 }

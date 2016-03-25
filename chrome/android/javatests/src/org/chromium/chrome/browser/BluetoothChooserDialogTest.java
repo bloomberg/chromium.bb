@@ -140,12 +140,13 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
     }
 
     /**
-     * The messages include <link> ... </link> sections that are used to create
-     * clickable spans. For testing the messages, this function returns the raw
-     * string without the tags.
+     * The messages include <link> ... </link> or <link1> ... </link1>, <link2> ... </link2>
+     * sections that are used to create clickable spans. For testing the messages, this function
+     * returns the raw string without the tags.
      */
     private static String removeLinkTags(String message) {
-        return message.replaceAll("</?link>", "");
+        return message.replaceAll("</?link1>", "").replaceAll(
+                "</?link2>", "").replaceAll("</?link>", "");
     }
 
     @SmallTest
@@ -202,7 +203,8 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
         // the progress spinner should disappear, the Commit button should still
         // be disabled (since nothing's selected), and the list view should
         // show.
-        assertEquals(removeLinkTags(getActivity().getString(R.string.bluetooth_not_seeing_it)),
+        assertEquals(removeLinkTags(getActivity().getString(
+                R.string.bluetooth_not_seeing_it_idle_some_found)),
                 statusView.getText().toString());
         assertFalse(button.isEnabled());
         assertEquals(View.VISIBLE, items.getVisibility());

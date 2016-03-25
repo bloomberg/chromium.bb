@@ -38,11 +38,9 @@ class UsbTabHelper : public content::WebContentsObserver,
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<device::usb::DeviceManager> request);
 
-#if !defined(OS_ANDROID)
   void CreateChooserService(
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<device::usb::ChooserService> request);
-#endif  // !defined(OS_ANDROID)
 
  private:
   explicit UsbTabHelper(content::WebContents* web_contents);
@@ -57,11 +55,9 @@ class UsbTabHelper : public content::WebContentsObserver,
   base::WeakPtr<device::usb::PermissionProvider> GetPermissionProvider(
       content::RenderFrameHost* render_frame_host);
 
-#if !defined(OS_ANDROID)
   void GetChooserService(
       content::RenderFrameHost* render_frame_host,
       mojo::InterfaceRequest<device::usb::ChooserService> request);
-#endif  // !defined(OS_ANDROID)
 
   FrameUsbServicesMap frame_usb_services_;
 

@@ -67,6 +67,11 @@ void ReadWebUsbDescriptors(
     const base::Callback<void(scoped_ptr<WebUsbAllowedOrigins> allowed_origins,
                               const GURL& landing_page)>& callback);
 
+// Check if the origin is allowed.
+bool FindInWebUsbAllowedOrigins(
+    const device::WebUsbAllowedOrigins* allowed_origins,
+    const GURL& origin);
+
 }  // device
 
 #endif  // DEVICE_USB_WEBUSB_DESCRIPTORS_H_

@@ -8,6 +8,7 @@ import android.app.Dialog;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.SpannableString;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
@@ -19,8 +20,6 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.Callable;
 
 /**
@@ -61,12 +60,11 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         SpannableString title = new SpannableString("title");
         SpannableString searching = new SpannableString("searching");
         SpannableString noneFound = new SpannableString("noneFound");
-        SpannableString statusActive = new SpannableString("statusActive");
         SpannableString statusIdleNoneFound = new SpannableString("statusIdleNoneFound");
         SpannableString statusIdleSomeFound = new SpannableString("statusIdleSomeFound");
         String positiveButton = new String("positiveButton");
         final ItemChooserDialog.ItemChooserLabels labels =
-                new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound, statusActive,
+                new ItemChooserDialog.ItemChooserLabels(title, searching, noneFound,
                         statusIdleNoneFound, statusIdleSomeFound, positiveButton);
         ItemChooserDialog dialog = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<ItemChooserDialog>() {
@@ -132,21 +130,10 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         assertFalse(button.isEnabled());
         assertEquals(View.GONE, items.getVisibility());
 
-        List<ItemChooserDialog.ItemChooserRow> devices =
-                new ArrayList<ItemChooserDialog.ItemChooserRow>();
-        devices.add(new ItemChooserDialog.ItemChooserRow("key", "key"));
-        devices.add(new ItemChooserDialog.ItemChooserRow("key2", "key2"));
-        mChooserDialog.addItemsToList(devices);
+        mChooserDialog.addItemToList(new ItemChooserDialog.ItemChooserRow("key", "key"));
+        mChooserDialog.addItemToList(new ItemChooserDialog.ItemChooserRow("key2", "key2"));
 
-        // Two items showing, the empty view should be no more and the button
-        // should now be enabled.
-        assertEquals(View.VISIBLE, items.getVisibility());
-        assertEquals(View.GONE, items.getEmptyView().getVisibility());
-        assertEquals("statusActive", statusView.getText().toString());
-        assertFalse(button.isEnabled());
-
-        mChooserDialog.setIdleState();
-        // After discovery stops the list should still be visible,
+        // After discovery stops the list should be visible with two items,
         // it should not show the empty view and the button should not be enabled.
         // The chooser should show the status idle text.
         assertEquals(View.VISIBLE, items.getVisibility());
@@ -193,17 +180,83 @@ public class ItemChooserDialogTest extends ChromeActivityTestCaseBase<ChromeActi
         Dialog dialog = mChooserDialog.getDialogForTesting();
         assertTrue(dialog.isShowing());
 
-        List<ItemChooserDialog.ItemChooserRow> devices =
-                new ArrayList<ItemChooserDialog.ItemChooserRow>();
-        devices.add(new ItemChooserDialog.ItemChooserRow("key", "key"));
-        devices.add(new ItemChooserDialog.ItemChooserRow("key2", "key2"));
-        mChooserDialog.addItemsToList(devices);
+        mChooserDialog.addItemToList(new ItemChooserDialog.ItemChooserRow("key", "key"));
+        mChooserDialog.addItemToList(new ItemChooserDialog.ItemChooserRow("key2", "key2"));
 
         // Disable one item and try to select it.
         mChooserDialog.setEnabled("key", false);
         selectItem(dialog, 1, "None", false);
         // The other is still selectable.
         selectItem(dialog, 2, "key2", true);
+
+        mChooserDialog.dismiss();
+    }
+
+    @SmallTest
+    public void testAddItemToListAndRemoveItemFromList() throws InterruptedException {
+        Dialog dialog = mChooserDialog.getDialogForTesting();
+        assertTrue(dialog.isShowing());
+
+        TextViewWithClickableSpans statusView = (TextViewWithClickableSpans)
+                dialog.findViewById(R.id.status);
+        final ListView items = (ListView) dialog.findViewById(R.id.items);
+        final Button button = (Button) dialog.findViewById(R.id.positive);
+
+        ArrayAdapter itemAdapter = mChooserDialog.getItemAdapterForTesting();
+        ItemChooserDialog.ItemChooserRow nonExistentItem =
+                new ItemChooserDialog.ItemChooserRow("key", "key");
+
+        // Initially the itemAdapter is empty.
+        assertTrue(itemAdapter.isEmpty());
+
+        // Try removing an item from an empty itemAdapter.
+        mChooserDialog.removeItemFromList(nonExistentItem);
+        assertTrue(itemAdapter.isEmpty());
+
+        // Add item 1.
+        ItemChooserDialog.ItemChooserRow item1 =
+                new ItemChooserDialog.ItemChooserRow("key1", "key1");
+        mChooserDialog.addItemToList(item1);
+        assertEquals(1, itemAdapter.getCount());
+        assertEquals(itemAdapter.getItem(0), item1);
+
+        // Add item 2.
+        ItemChooserDialog.ItemChooserRow item2 =
+                new ItemChooserDialog.ItemChooserRow("key2", "key2");
+        mChooserDialog.addItemToList(item2);
+        assertEquals(2, itemAdapter.getCount());
+        assertEquals(itemAdapter.getItem(0), item1);
+        assertEquals(itemAdapter.getItem(1), item2);
+
+        // Try removing an item that doesn't exist.
+        mChooserDialog.removeItemFromList(nonExistentItem);
+        assertEquals(2, itemAdapter.getCount());
+
+        // Remove item 2.
+        mChooserDialog.removeItemFromList(item2);
+        assertEquals(1, itemAdapter.getCount());
+        // Make sure the remaining item is item 1.
+        assertEquals(itemAdapter.getItem(0), item1);
+
+        // The list should be visible with one item, it should not show
+        // the empty view and the button should not be enabled.
+        // The chooser should show a status message at the bottom.
+        assertEquals(View.VISIBLE, items.getVisibility());
+        assertEquals(View.GONE, items.getEmptyView().getVisibility());
+        assertEquals("statusIdleSomeFound", statusView.getText().toString());
+        assertFalse(button.isEnabled());
+
+        // Remove item 1.
+        mChooserDialog.removeItemFromList(item1);
+        assertTrue(itemAdapter.isEmpty());
+
+        // Listview should now be showing empty, with an empty view visible
+        // and the button should not be enabled.
+        // The chooser should show a status message at the bottom.
+        assertEquals(View.GONE, items.getVisibility());
+        assertEquals(View.VISIBLE, items.getEmptyView().getVisibility());
+        assertEquals("statusIdleNoneFound", statusView.getText().toString());
+        assertFalse(button.isEnabled());
 
         mChooserDialog.dismiss();
     }

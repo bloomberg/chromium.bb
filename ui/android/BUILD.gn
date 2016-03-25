@@ -194,6 +194,7 @@ android_library("ui_java") {
     "java/src/org/chromium/ui/resources/statics/StaticResource.java",
     "java/src/org/chromium/ui/resources/statics/StaticResourceLoader.java",
     "java/src/org/chromium/ui/resources/system/SystemResourceLoader.java",
+    "java/src/org/chromium/ui/text/NoUnderlineClickableSpan.java",
     "java/src/org/chromium/ui/text/SpanApplier.java",
     "java/src/org/chromium/ui/widget/ButtonCompat.java",
     "java/src/org/chromium/ui/widget/TextViewWithClickableSpans.java",

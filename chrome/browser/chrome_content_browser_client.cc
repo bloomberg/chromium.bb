@@ -155,6 +155,7 @@
 #include "content/public/common/service_registry.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
+#include "device/usb/public/interfaces/chooser_service.mojom.h"
 #include "device/usb/public/interfaces/device_manager.mojom.h"
 #include "gin/v8_initializer.h"
 #include "mojo/shell/public/cpp/shell_client.h"
@@ -292,10 +293,6 @@
 #if defined(ENABLE_MEDIA_ROUTER)
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/presentation_service_delegate_impl.h"
-#endif
-
-#if !defined(OS_ANDROID)
-#include "device/usb/public/interfaces/chooser_service.mojom.h"
 #endif
 
 #if defined(ENABLE_WAYLAND_SERVER)
@@ -694,7 +691,6 @@ void CreateUsbDeviceManager(
   tab_helper->CreateDeviceManager(render_frame_host, std::move(request));
 }
 
-#if !defined(OS_ANDROID)
 void CreateWebUsbChooserService(
     RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<device::usb::ChooserService> request) {
@@ -709,7 +705,6 @@ void CreateWebUsbChooserService(
       UsbTabHelper::GetOrCreateForWebContents(web_contents);
   tab_helper->CreateChooserService(render_frame_host, std::move(request));
 }
-#endif  // !defined(OS_ANDROID)
 
 bool GetDataSaverEnabledPref(const PrefService* prefs) {
   // Enable data saver only when data saver pref is enabled and not part of
@@ -2808,10 +2803,8 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoServices(
       base::FeatureList::IsEnabled(features::kWebUsb)) {
     registry->AddService(
         base::Bind(&CreateUsbDeviceManager, render_frame_host));
-#if !defined(OS_ANDROID)
     registry->AddService(
         base::Bind(&CreateWebUsbChooserService, render_frame_host));
-#endif  // !defined(OS_ANDROID)
   }
 }
 

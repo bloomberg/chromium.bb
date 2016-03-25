@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_security_state_model_client.h"
-#include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"

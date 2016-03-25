@@ -7,9 +7,14 @@
 #include <utility>
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/usb/web_usb_chooser_service.h"
 #include "chrome/browser/usb/web_usb_permission_provider.h"
 #include "device/usb/mojo/device_manager_impl.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/usb/web_usb_chooser_service_android.h"
+#else
+#include "chrome/browser/usb/web_usb_chooser_service.h"
+#endif  // defined(OS_ANDROID)
 
 using content::RenderFrameHost;
 using content::WebContents;
@@ -18,7 +23,11 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(UsbTabHelper);
 
 struct FrameUsbServices {
   scoped_ptr<WebUSBPermissionProvider> permission_provider;
+#if defined(OS_ANDROID)
+  scoped_ptr<WebUsbChooserServiceAndroid> chooser_service;
+#else
   scoped_ptr<WebUsbChooserService> chooser_service;
+#endif  // defined(OS_ANDROID)
 };
 
 // static
@@ -42,13 +51,11 @@ void UsbTabHelper::CreateDeviceManager(
       GetPermissionProvider(render_frame_host), std::move(request));
 }
 
-#if !defined(OS_ANDROID)
 void UsbTabHelper::CreateChooserService(
     content::RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<device::usb::ChooserService> request) {
   GetChooserService(render_frame_host, std::move(request));
 }
-#endif  // !defined(OS_ANDROID)
 
 UsbTabHelper::UsbTabHelper(WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
@@ -80,15 +87,17 @@ UsbTabHelper::GetPermissionProvider(RenderFrameHost* render_frame_host) {
   return frame_usb_services->permission_provider->GetWeakPtr();
 }
 
-#if !defined(OS_ANDROID)
 void UsbTabHelper::GetChooserService(
     content::RenderFrameHost* render_frame_host,
     mojo::InterfaceRequest<device::usb::ChooserService> request) {
   FrameUsbServices* frame_usb_services = GetFrameUsbService(render_frame_host);
   if (!frame_usb_services->chooser_service) {
     frame_usb_services->chooser_service.reset(
+#if defined(OS_ANDROID)
+        new WebUsbChooserServiceAndroid(render_frame_host));
+#else
         new WebUsbChooserService(render_frame_host));
+#endif  // defined(OS_ANDROID)
   }
   frame_usb_services->chooser_service->Bind(std::move(request));
 }
-#endif  // !defined(OS_ANDROID)

@@ -489,6 +489,8 @@
       'browser/ui/android/tab_model/tab_model_list.h',
       'browser/ui/android/toolbar/toolbar_model_android.cc',
       'browser/ui/android/toolbar/toolbar_model_android.h',
+      'browser/ui/android/usb_chooser_dialog_android.cc',
+      'browser/ui/android/usb_chooser_dialog_android.h',
       'browser/ui/android/view_android_helper.cc',
       'browser/ui/android/view_android_helper.h',
       'browser/ui/android/website_settings_popup_android.cc',

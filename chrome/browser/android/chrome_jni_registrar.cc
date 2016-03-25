@@ -157,6 +157,7 @@
 #include "chrome/browser/ui/android/tab_model/single_tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
 #include "chrome/browser/ui/android/toolbar/toolbar_model_android.h"
+#include "chrome/browser/ui/android/usb_chooser_dialog_android.h"
 #include "chrome/browser/ui/android/website_settings_popup_android.h"
 #include "components/bookmarks/common/android/component_jni_registrar.h"
 #include "components/dom_distiller/android/component_jni_registrar.h"
@@ -375,6 +376,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"UmaSessionStats", RegisterUmaSessionStats},
     {"UpdatePasswordInfoBar", UpdatePasswordInfoBar::Register},
     {"UrlUtilities", RegisterUrlUtilities},
+    {"UsbChooserDialogAndroid", UsbChooserDialogAndroid::Register},
     {"Variations", variations::android::RegisterVariations},
     {"VariationsSeedBridge", variations::android::RegisterVariationsSeedBridge},
     {"VariationsSession", chrome::android::RegisterVariationsSession},
