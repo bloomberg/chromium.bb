@@ -126,11 +126,11 @@ CSSCrossfadeValue::~CSSCrossfadeValue()
 void CSSCrossfadeValue::dispose()
 {
     if (m_cachedFromImage) {
-        m_cachedFromImage->removeClient(&m_crossfadeSubimageObserver);
+        m_cachedFromImage->removeObserver(&m_crossfadeSubimageObserver);
         m_cachedFromImage = nullptr;
     }
     if (m_cachedToImage) {
-        m_cachedToImage->removeClient(&m_crossfadeSubimageObserver);
+        m_cachedToImage->removeObserver(&m_crossfadeSubimageObserver);
         m_cachedToImage = nullptr;
     }
 }
@@ -208,16 +208,16 @@ void CSSCrossfadeValue::loadSubimages(Document* document)
 
     if (m_cachedFromImage != oldCachedFromImage) {
         if (oldCachedFromImage)
-            oldCachedFromImage->removeClient(&m_crossfadeSubimageObserver);
+            oldCachedFromImage->removeObserver(&m_crossfadeSubimageObserver);
         if (m_cachedFromImage)
-            m_cachedFromImage->addClient(&m_crossfadeSubimageObserver);
+            m_cachedFromImage->addObserver(&m_crossfadeSubimageObserver);
     }
 
     if (m_cachedToImage != oldCachedToImage) {
         if (oldCachedToImage)
-            oldCachedToImage->removeClient(&m_crossfadeSubimageObserver);
+            oldCachedToImage->removeObserver(&m_crossfadeSubimageObserver);
         if (m_cachedToImage)
-            m_cachedToImage->addClient(&m_crossfadeSubimageObserver);
+            m_cachedToImage->addObserver(&m_crossfadeSubimageObserver);
     }
 
     m_crossfadeSubimageObserver.setReady(true);

@@ -51,7 +51,7 @@ public:
 
     void didAddClient(ResourceClient*) override;
 
-    void allClientsRemoved() override;
+    void allClientsAndObserversRemoved() override;
     void beginLoadIfNeeded(ResourceFetcher* dl);
 
     bool loadScheduled() const { return getStatus() == LoadStartScheduled; }

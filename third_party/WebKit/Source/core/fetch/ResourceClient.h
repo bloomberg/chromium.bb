@@ -26,7 +26,6 @@
 #define ResourceClient_h
 
 #include "core/CoreExport.h"
-#include "platform/network/ResourceLoadPriority.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
@@ -37,7 +36,6 @@ class CORE_EXPORT ResourceClient {
 public:
     enum ResourceClientType {
         BaseResourceType,
-        ImageType,
         FontType,
         StyleSheetType,
         DocumentType,
@@ -50,8 +48,6 @@ public:
 
     static bool isExpectedType(ResourceClient*) { return true; }
     virtual ResourceClientType getResourceClientType() const { return BaseResourceType; }
-
-    virtual ResourcePriority computeResourcePriority() const { return ResourcePriority(); }
 
     // Name for debugging, e.g. shown in memory-infra.
     virtual String debugName() const = 0;

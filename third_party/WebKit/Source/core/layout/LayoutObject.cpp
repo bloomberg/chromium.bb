@@ -245,8 +245,7 @@ static WTF::RefCountedLeakCounter& layoutObjectCounter()
 #endif
 
 LayoutObject::LayoutObject(Node* node)
-    : ImageResourceClient()
-    , m_style(nullptr)
+    : m_style(nullptr)
     , m_node(node)
     , m_parent(nullptr)
     , m_previous(nullptr)
@@ -3221,7 +3220,7 @@ void LayoutObject::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     regions.append(region);
 }
 
-bool LayoutObject::willRenderImage(ImageResource*)
+bool LayoutObject::willRenderImage()
 {
     // Without visibility we won't render (and therefore don't care about animation).
     if (style()->visibility() != VISIBLE)
@@ -3236,7 +3235,7 @@ bool LayoutObject::willRenderImage(ImageResource*)
     return document().view()->isVisible();
 }
 
-bool LayoutObject::getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy& policy)
+bool LayoutObject::getImageAnimationPolicy(ImageAnimationPolicy& policy)
 {
     if (!document().settings())
         return false;

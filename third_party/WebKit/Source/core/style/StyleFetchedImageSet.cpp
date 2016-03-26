@@ -120,12 +120,12 @@ bool StyleFetchedImageSet::usesImageContainerSize() const
 
 void StyleFetchedImageSet::addClient(LayoutObject* layoutObject)
 {
-    m_bestFitImage->addClient(layoutObject);
+    m_bestFitImage->addObserver(layoutObject);
 }
 
 void StyleFetchedImageSet::removeClient(LayoutObject* layoutObject)
 {
-    m_bestFitImage->removeClient(layoutObject);
+    m_bestFitImage->removeObserver(layoutObject);
 }
 
 PassRefPtr<Image> StyleFetchedImageSet::image(const LayoutObject&, const IntSize& containerSize, float zoom) const

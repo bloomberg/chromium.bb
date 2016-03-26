@@ -391,7 +391,7 @@ void ResourceFetcher::updateMemoryCacheStats(Resource* resource, RevalidationPol
     // would be dead if MemoryCache holds weak references to Resource).
     // Currently we check references to Resource from ResourceClient and
     // |m_preloads| only, because they are major sources of references.
-    if (resource && !resource->hasClients() && (!m_preloads || !m_preloads->contains(resource))) {
+    if (resource && !resource->hasClientsOrObservers() && (!m_preloads || !m_preloads->contains(resource))) {
         DEFINE_RESOURCE_HISTOGRAM("Dead.");
     }
 }
@@ -470,7 +470,7 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::requestResource(FetchRequest& 
         return nullptr;
     }
 
-    if (!resource->hasClients())
+    if (!resource->hasClientsOrObservers())
         m_deadStatsRecorder.update(policy);
 
     if (policy != Use)
@@ -1089,7 +1089,7 @@ void ResourceFetcher::updateAllImageResourcePriorities()
         if (!resource->isImage())
             continue;
 
-        ResourcePriority resourcePriority = resource->priorityFromClients();
+        ResourcePriority resourcePriority = resource->priorityFromObservers();
         ResourceLoadPriority resourceLoadPriority = loadPriority(Resource::Image, FetchRequest(resource->resourceRequest(), FetchInitiatorInfo()), resourcePriority.visibility);
         if (resourceLoadPriority == resource->resourceRequest().priority())
             continue;

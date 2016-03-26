@@ -30,9 +30,7 @@
 
 #include "core/fetch/RawResource.h"
 
-#include "core/fetch/ImageResourceClient.h"
 #include "core/fetch/MemoryCache.h"
-#include "core/fetch/MockImageResourceClient.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/SharedBuffer.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -138,7 +136,7 @@ TEST(RawResourceTest, RevalidationSucceeded)
     memoryCache()->remove(resource.get());
 
     resource->removeClient(client.get());
-    EXPECT_FALSE(resource->hasClients());
+    EXPECT_FALSE(resource->hasClientsOrObservers());
     EXPECT_FALSE(client->called());
     EXPECT_EQ("abcd", String(client->data().data(), client->data().size()));
 }
@@ -168,7 +166,7 @@ TEST(RawResourceTest, RevalidationSucceededForResourceWithoutBody)
     memoryCache()->remove(resource.get());
 
     resource->removeClient(client.get());
-    EXPECT_FALSE(resource->hasClients());
+    EXPECT_FALSE(resource->hasClientsOrObservers());
     EXPECT_FALSE(client->called());
     EXPECT_EQ(0u, client->data().size());
 }
@@ -190,7 +188,7 @@ TEST(RawResourceTest, AddClientDuringCallback)
     testing::runPendingTasks();
     raw->removeClient(addingClient.get());
     EXPECT_FALSE(dummyClient->called());
-    EXPECT_FALSE(raw->hasClients());
+    EXPECT_FALSE(raw->hasClientsOrObservers());
 }
 
 // This client removes another client when notified.
@@ -228,7 +226,7 @@ TEST(RawResourceTest, RemoveClientDuringCallback)
     raw->addClient(dummyClient.get());
     raw->addClient(removingClient.get());
     testing::runPendingTasks();
-    EXPECT_FALSE(raw->hasClients());
+    EXPECT_FALSE(raw->hasClientsOrObservers());
 }
 
 } // namespace blink

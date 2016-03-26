@@ -28,40 +28,50 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MockImageResourceClient_h
-#define MockImageResourceClient_h
+#ifndef MockResourceClients_h
+#define MockResourceClients_h
 
-#include "core/fetch/ImageResourceClient.h"
+#include "core/fetch/ImageResourceObserver.h"
 #include "core/fetch/Resource.h"
+#include "core/fetch/ResourceClient.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class MockImageResourceClient final : public ImageResourceClient {
+class MockResourceClient : public ResourceClient {
 public:
-    explicit MockImageResourceClient(const PassRefPtrWillBeRawPtr<Resource>);
-    ~MockImageResourceClient() override;
-
-    void imageChanged(ImageResource*, const IntRect*) override
-    {
-        m_imageChangedCount++;
-    }
+    explicit MockResourceClient(const PassRefPtrWillBeRawPtr<Resource>);
+    ~MockResourceClient() override;
 
     void notifyFinished(Resource*) override;
-    String debugName() const override { return "MockImageResourceClient"; }
-
-    int imageChangedCount() const { return m_imageChangedCount; }
+    String debugName() const override { return "MockResourceClient"; }
     bool notifyFinishedCalled() const { return m_notifyFinishedCalled; }
 
-    void removeAsClient();
+    virtual void removeAsClient();
+
+protected:
+    // TODO(Oilpan): properly trace when ResourceClient is on the heap.
+    RawPtrWillBeUntracedMember<Resource> m_resource;
+    bool m_notifyFinishedCalled;
+};
+
+class MockImageResourceClient final : public MockResourceClient, public ImageResourceObserver {
+public:
+    explicit MockImageResourceClient(const PassRefPtrWillBeRawPtr<ImageResource>);
+    ~MockImageResourceClient() override;
+
+    void imageChanged(ImageResource*, const IntRect*) override;
+
+    String debugName() const override { return "MockImageResourceClient"; }
+
+    void removeAsClient() override;
+
+    int imageChangedCount() const { return m_imageChangedCount; }
 
 private:
-    // TODO(Oilpan): properly trace when ImageResourceClient is on the heap.
-    RawPtrWillBeUntracedMember<Resource> m_resource;
     int m_imageChangedCount;
-    bool m_notifyFinishedCalled;
 };
 
 } // namespace blink
 
-#endif // MockImageResourceClient_h
+#endif // MockResourceClients_h

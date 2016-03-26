@@ -35,7 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
-#include "core/fetch/MockImageResourceClient.h"
+#include "core/fetch/MockResourceClients.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"

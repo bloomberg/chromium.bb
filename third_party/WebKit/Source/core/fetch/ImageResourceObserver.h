@@ -20,23 +20,22 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef ImageResourceClient_h
-#define ImageResourceClient_h
+#ifndef ImageResourceObserver_h
+#define ImageResourceObserver_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/ResourceClient.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
+#include "platform/network/ResourceLoadPriority.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
 class ImageResource;
 class IntRect;
 
-class CORE_EXPORT ImageResourceClient : public ResourceClient {
+class CORE_EXPORT ImageResourceObserver {
 public:
-    ~ImageResourceClient() override {}
-    static bool isExpectedType(ResourceClient* client) { return client->getResourceClientType() == ImageType; }
-    ResourceClientType getResourceClientType() const final { return ImageType; }
+    virtual ~ImageResourceObserver() {}
 
     // Called whenever a frame of an image changes, either because we got more data from the network or
     // because we are animating. If not null, the IntRect is the changed rect of the image.
@@ -46,10 +45,17 @@ public:
     // can halt animation. Content nodes that hold image refs for example would not render the image,
     // but LayoutImages would (assuming they have visibility: visible and their layout tree isn't hidden
     // e.g., in the b/f cache or in a background tab).
-    virtual bool willRenderImage(ImageResource*) { return false; }
+    virtual bool willRenderImage() { return false; }
 
     // Called to get imageAnimation policy from settings
-    virtual bool getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy&) { return false; }
+    virtual bool getImageAnimationPolicy(ImageAnimationPolicy&) { return false; }
+
+    virtual ResourcePriority computeResourcePriority() const { return ResourcePriority(); }
+
+    // Name for debugging, e.g. shown in memory-infra.
+    virtual String debugName() const = 0;
+
+    static bool isExpectedType(ImageResourceObserver*) { return true; }
 };
 
 } // namespace blink

@@ -30,7 +30,7 @@
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/fetch/ImageResource.h"
-#include "core/fetch/ImageResourceClient.h"
+#include "core/fetch/ImageResourceObserver.h"
 #include "platform/graphics/Image.h"
 
 namespace blink {
@@ -74,7 +74,7 @@ private:
 
     void dispose();
 
-    class CrossfadeSubimageObserverProxy final : public ImageResourceClient {
+    class CrossfadeSubimageObserverProxy final : public ImageResourceObserver {
         DISALLOW_NEW();
     public:
         explicit CrossfadeSubimageObserverProxy(CSSCrossfadeValue* ownerValue)

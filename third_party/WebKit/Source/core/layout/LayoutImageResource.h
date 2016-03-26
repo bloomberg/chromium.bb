@@ -44,7 +44,7 @@ public:
         return adoptPtrWillBeNoop(new LayoutImageResource);
     }
 
-    virtual void initialize(LayoutObject*);
+    virtual void initialize(LayoutObject*, ResourceClient*);
     virtual void shutdown();
 
     void setImageResource(ImageResource*);
@@ -69,6 +69,7 @@ protected:
     LayoutImageResource();
     LayoutObject* m_layoutObject;
     RefPtrWillBeMember<ImageResource> m_cachedImage;
+    ResourceClient* m_client;
 };
 
 } // namespace blink

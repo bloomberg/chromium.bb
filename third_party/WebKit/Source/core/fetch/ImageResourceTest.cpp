@@ -30,9 +30,8 @@
 
 #include "core/fetch/ImageResource.h"
 
-#include "core/fetch/ImageResourceClient.h"
 #include "core/fetch/MemoryCache.h"
-#include "core/fetch/MockImageResourceClient.h"
+#include "core/fetch/MockResourceClients.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/UniqueIdentifier.h"
@@ -195,14 +194,14 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients)
 
     // The prune comes when the ImageResource still has clients. The image should not be deleted.
     cachedImage->prune();
-    ASSERT_TRUE(cachedImage->hasClients());
+    ASSERT_TRUE(cachedImage->hasClientsOrObservers());
     ASSERT_TRUE(cachedImage->hasImage());
     ASSERT_FALSE(cachedImage->getImage()->isNull());
 
     // The ImageResource no longer has clients. The image should be deleted by prune.
     client.removeAsClient();
     cachedImage->prune();
-    ASSERT_FALSE(cachedImage->hasClients());
+    ASSERT_FALSE(cachedImage->hasClientsOrObservers());
     ASSERT_FALSE(cachedImage->hasImage());
     ASSERT_TRUE(cachedImage->getImage()->isNull());
 }

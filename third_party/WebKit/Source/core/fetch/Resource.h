@@ -127,11 +127,11 @@ public:
     ResourceLoaderOptions& mutableOptions() { return m_options; }
 
     void didChangePriority(ResourceLoadPriority, int intraPriorityValue);
-    ResourcePriority priorityFromClients();
+    virtual ResourcePriority priorityFromObservers() { return ResourcePriority(); }
 
     void addClient(ResourceClient*);
     void removeClient(ResourceClient*);
-    bool hasClients() const { return !m_clients.isEmpty() || !m_clientsAwaitingCallback.isEmpty() || !m_finishedClients.isEmpty(); }
+    virtual bool hasClientsOrObservers() const { return !m_clients.isEmpty() || !m_clientsAwaitingCallback.isEmpty() || !m_finishedClients.isEmpty(); }
 
     enum PreloadResult {
         PreloadNotReferenced,
@@ -140,10 +140,6 @@ public:
         PreloadReferencedWhileComplete
     };
     PreloadResult getPreloadResult() const { return static_cast<PreloadResult>(m_preloadResult); }
-
-    virtual void didAddClient(ResourceClient*);
-    virtual void didRemoveClient(ResourceClient*) { }
-    virtual void allClientsRemoved();
 
     unsigned count() const { return m_clients.size(); }
 
@@ -265,6 +261,13 @@ protected:
     void didAccessDecodedData();
 
     void finishPendingClients();
+
+    virtual void didAddClient(ResourceClient*);
+    void willAddClientOrObserver();
+
+    // |this| object may be dead after didRemoveClientOrObserver().
+    void didRemoveClientOrObserver();
+    virtual void allClientsAndObserversRemoved();
 
     HashCountedSet<ResourceClient*> m_clients;
     HashCountedSet<ResourceClient*> m_clientsAwaitingCallback;

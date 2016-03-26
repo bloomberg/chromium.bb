@@ -8,7 +8,6 @@
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/FontResource.h"
 #include "core/fetch/ImageResource.h"
-#include "core/fetch/ImageResourceClient.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceOwner.h"
@@ -110,7 +109,7 @@ private:
     }
 };
 
-class LinkPreloadImageResourceClient: public LinkPreloadResourceClient, public ResourceOwner<ImageResource, ImageResourceClient> {
+class LinkPreloadImageResourceClient: public LinkPreloadResourceClient, public ResourceOwner<ImageResource> {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LinkPreloadImageResourceClient);
     USING_FAST_MALLOC_WILL_BE_REMOVED(LinkPreloadImageResourceClient);
 public:
@@ -133,7 +132,7 @@ public:
     DEFINE_INLINE_VIRTUAL_TRACE()
     {
         LinkPreloadResourceClient::trace(visitor);
-        ResourceOwner<ImageResource, ImageResourceClient>::trace(visitor);
+        ResourceOwner<ImageResource>::trace(visitor);
     }
 
 private:

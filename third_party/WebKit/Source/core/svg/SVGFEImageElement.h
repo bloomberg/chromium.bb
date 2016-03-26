@@ -23,7 +23,7 @@
 
 #include "core/SVGNames.h"
 #include "core/fetch/ImageResource.h"
-#include "core/fetch/ImageResourceClient.h"
+#include "core/fetch/ResourceClient.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "core/svg/SVGURIReference.h"
@@ -33,7 +33,7 @@ namespace blink {
 
 class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
                                 public SVGURIReference,
-                                public ImageResourceClient {
+                                public ResourceClient {
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(SVGFEImageElement);
 public:

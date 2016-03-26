@@ -181,6 +181,7 @@ void ImageLoader::dispose()
 
     if (m_image) {
         m_image->removeClient(this);
+        m_image->removeObserver(this);
         m_image = nullptr;
     }
 
@@ -225,10 +226,14 @@ void ImageLoader::setImageWithoutConsideringPendingLoadEvent(ImageResource* newI
             m_hasPendingErrorEvent = false;
         }
         m_imageComplete = true;
-        if (newImage)
+        if (newImage) {
             newImage->addClient(this);
-        if (oldImage)
+            newImage->addObserver(this);
+        }
+        if (oldImage) {
             oldImage->removeClient(this);
+            oldImage->removeObserver(this);
+        }
     }
 
     if (LayoutImageResource* imageResource = layoutImageResource())
@@ -367,11 +372,14 @@ void ImageLoader::doUpdateFromElement(BypassMainWorldBehavior bypassBehavior, Up
         updateLayoutObject();
         // If newImage exists and is cached, addClient() will result in the load event
         // being queued to fire. Ensure this happens after beforeload is dispatched.
-        if (newImage)
+        if (newImage) {
             newImage->addClient(this);
-
-        if (oldImage)
+            newImage->addObserver(this);
+        }
+        if (oldImage) {
             oldImage->removeClient(this);
+            oldImage->removeObserver(this);
+        }
     }
 
     if (LayoutImageResource* imageResource = layoutImageResource())
@@ -409,8 +417,10 @@ void ImageLoader::updateFromElement(UpdateFromElementBehavior updateBehavior, Re
     // an asynchronous load completes.
     if (imageSourceURL.isEmpty()) {
         ImageResource* image = m_image.get();
-        if (image)
+        if (image) {
             image->removeClient(this);
+            image->removeObserver(this);
+        }
         m_image = nullptr;
     }
 
@@ -605,7 +615,7 @@ void ImageLoader::dispatchPendingErrorEvent()
     updatedHasPendingEvent();
 }
 
-bool ImageLoader::getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy& policy)
+bool ImageLoader::getImageAnimationPolicy(ImageAnimationPolicy& policy)
 {
     if (!element()->document().settings())
         return false;

@@ -35,19 +35,20 @@
 
 namespace blink {
 
-class ImageResourceClient;
 class FetchRequest;
-class ResourceFetcher;
 class FloatSize;
+class ImageResourceObserver;
 class Length;
 class MemoryCache;
+class ResourceClient;
+class ResourceFetcher;
 class SecurityOrigin;
 
 class CORE_EXPORT ImageResource final : public Resource, public ImageObserver, public MultipartImageResourceParser::Client {
     friend class MemoryCache;
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageResource);
 public:
-    using ClientType = ImageResourceClient;
+    using ClientType = ResourceClient;
 
     static PassRefPtrWillBeRawPtr<ImageResource> fetch(FetchRequest&, ResourceFetcher*);
 
@@ -91,10 +92,13 @@ public:
     // the Lo-Fi state set to off and bypassing the cache.
     void reloadIfLoFi(ResourceFetcher*);
 
-    void didAddClient(ResourceClient*) override;
-    void didRemoveClient(ResourceClient*) override;
+    void addObserver(ImageResourceObserver*);
+    void removeObserver(ImageResourceObserver*);
+    bool hasClientsOrObservers() const override { return Resource::hasClientsOrObservers() || !m_observers.isEmpty(); }
 
-    void allClientsRemoved() override;
+    ResourcePriority priorityFromObservers() override;
+
+    void allClientsAndObserversRemoved() override;
 
     void appendData(const char*, size_t) override;
     void error(Resource::Status) override;
@@ -162,6 +166,7 @@ private:
     RefPtr<blink::Image> m_image;
     MultipartParsingState m_multipartParsingState = MultipartParsingState::WaitingForFirstPart;
     bool m_hasDevicePixelRatioHeaderValue;
+    HashCountedSet<ImageResourceObserver*> m_observers;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Image);

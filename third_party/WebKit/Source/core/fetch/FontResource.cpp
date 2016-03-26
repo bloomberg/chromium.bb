@@ -27,7 +27,7 @@
 #include "core/fetch/FontResource.h"
 
 #include "core/fetch/FetchRequest.h"
-#include "core/fetch/ResourceClientWalker.h"
+#include "core/fetch/ResourceClientOrObserverWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
@@ -183,10 +183,10 @@ void FontResource::fontLoadLongLimitCallback(Timer<FontResource>*)
         client->fontLoadLongLimitExceeded(this);
 }
 
-void FontResource::allClientsRemoved()
+void FontResource::allClientsAndObserversRemoved()
 {
     m_fontData.clear();
-    Resource::allClientsRemoved();
+    Resource::allClientsAndObserversRemoved();
 }
 
 void FontResource::checkNotify()

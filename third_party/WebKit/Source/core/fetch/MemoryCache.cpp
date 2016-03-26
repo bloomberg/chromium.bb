@@ -253,7 +253,7 @@ void MemoryCache::pruneLiveResources(PruneStrategy strategy)
     MemoryCacheEntry* current = m_liveDecodedResources.m_tail;
     while (current) {
         MemoryCacheEntry* previous = current->m_previousInLiveResourcesList;
-        ASSERT(current->m_resource->hasClients());
+        ASSERT(current->m_resource->hasClientsOrObservers());
         if (current->m_resource->isLoaded() && current->m_resource->decodedSize()) {
             // Check to see if the remaining resources are too new to prune.
             double elapsedTime = m_pruneFrameTimeStamp - current->m_lastDecodedAccessTime;
@@ -301,7 +301,7 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy)
             // TODO(leon.han@intel.com): We shouldn't be hitting the case
             // that current->m_resource is null here, would turn the case into
             // ASSERT(current->m_resource) after crbug.com/594644 got resolved.
-            if (current->m_resource && !current->m_resource->hasClients() && !current->m_resource->isPreloaded() && current->m_resource->isLoaded()) {
+            if (current->m_resource && !current->m_resource->hasClientsOrObservers() && !current->m_resource->isPreloaded() && current->m_resource->isLoaded()) {
                 // Destroy our decoded data. This will remove us from
                 // m_liveDecodedResources, and possibly move us to a different
                 // LRU list in m_allResources.
@@ -328,7 +328,7 @@ void MemoryCache::pruneDeadResources(PruneStrategy strategy)
             // TODO(leon.han@intel.com): We shouldn't be hitting the case
             // that current->m_resource is null here, would turn the case into
             // ASSERT(current->m_resource) after crbug.com/594644 got resolved.
-            if (current->m_resource && !current->m_resource->hasClients() && !current->m_resource->isPreloaded()) {
+            if (current->m_resource && !current->m_resource->hasClientsOrObservers() && !current->m_resource->isPreloaded()) {
                 evict(current);
                 if (targetSize && m_deadSize <= targetSize)
                     return;
@@ -540,7 +540,7 @@ void MemoryCache::update(Resource* resource, size_t oldSize, size_t newSize, boo
         insertInLRUList(entry, lruListFor(entry->m_accessCount, newSize));
 
     ptrdiff_t delta = newSize - oldSize;
-    if (resource->hasClients()) {
+    if (resource->hasClientsOrObservers()) {
         ASSERT(delta >= 0 || m_liveSize >= static_cast<size_t>(-delta) );
         m_liveSize += delta;
     } else {
@@ -556,7 +556,7 @@ void MemoryCache::updateDecodedResource(Resource* resource, UpdateReason reason)
         return;
 
     removeFromLiveDecodedResourcesList(entry);
-    if (resource->decodedSize() && resource->hasClients())
+    if (resource->decodedSize() && resource->hasClientsOrObservers())
         insertInLiveDecodedResourcesList(entry);
 
     if (reason != UpdateForAccess)
@@ -581,7 +581,7 @@ void MemoryCache::TypeStatistic::addResource(Resource* o)
     size_t pageSize = (o->encodedSize() + o->overheadSize() + 4095) & ~4095;
     count++;
     size += o->size();
-    liveSize += o->hasClients() ? o->size() : 0;
+    liveSize += o->hasClientsOrObservers() ? o->size() : 0;
     decodedSize += o->decodedSize();
     encodedSize += o->encodedSize();
     encodedSizeDuplicatedInDataURLs += o->url().protocolIsData() ? o->encodedSize() : 0;
@@ -772,8 +772,8 @@ void MemoryCache::dumpLRULists(bool includeLive) const
         MemoryCacheEntry* current = m_allResources[i].m_tail;
         while (current) {
             RefPtrWillBeRawPtr<Resource> currentResource = current->m_resource;
-            if (includeLive || !currentResource->hasClients())
-                printf("(%.1fK, %.1fK, %uA, %dR, %d); ", currentResource->decodedSize() / 1024.0f, (currentResource->encodedSize() + currentResource->overheadSize()) / 1024.0f, current->m_accessCount, currentResource->hasClients(), currentResource->isPurgeable());
+            if (includeLive || !currentResource->hasClientsOrObservers())
+                printf("(%.1fK, %.1fK, %uA, %dR, %d); ", currentResource->decodedSize() / 1024.0f, (currentResource->encodedSize() + currentResource->overheadSize()) / 1024.0f, current->m_accessCount, currentResource->hasClientsOrObservers(), currentResource->isPurgeable());
 
             current = current->m_previousInAllResourcesList;
         }

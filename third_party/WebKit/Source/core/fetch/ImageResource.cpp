@@ -23,10 +23,10 @@
 
 #include "core/fetch/ImageResource.h"
 
-#include "core/fetch/ImageResourceClient.h"
+#include "core/fetch/ImageResourceObserver.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceClient.h"
-#include "core/fetch/ResourceClientWalker.h"
+#include "core/fetch/ResourceClientOrObserverWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/svg/graphics/SVGImage.h"
@@ -40,6 +40,8 @@
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
+
+using ImageResourceObserverWalker = ResourceClientOrObserverWalker<ImageResourceObserver, ImageResourceObserver>;
 
 PassRefPtrWillBeRawPtr<ImageResource> ImageResource::fetch(FetchRequest& request, ResourceFetcher* fetcher)
 {
@@ -99,26 +101,44 @@ DEFINE_TRACE(ImageResource)
     MultipartImageResourceParser::Client::trace(visitor);
 }
 
-void ImageResource::didAddClient(ResourceClient* c)
+void ImageResource::addObserver(ImageResourceObserver* observer)
 {
+    willAddClientOrObserver();
+
+    m_observers.add(observer);
+
+    if (!m_revalidatingRequest.isNull())
+        return;
+
     if (m_data && !m_image && !errorOccurred()) {
         createImage();
         m_image->setData(m_data, true);
     }
 
-    ASSERT(ImageResourceClient::isExpectedType(c));
     if (m_image && !m_image->isNull())
-        static_cast<ImageResourceClient*>(c)->imageChanged(this);
-
-    Resource::didAddClient(c);
+        observer->imageChanged(this);
 }
 
-void ImageResource::didRemoveClient(ResourceClient* c)
+void ImageResource::removeObserver(ImageResourceObserver* observer)
 {
-    ASSERT(c);
-    ASSERT(ImageResourceClient::isExpectedType(c));
+    ASSERT(observer);
+    ASSERT(m_observers.contains(observer));
+    m_observers.remove(observer);
+    didRemoveClientOrObserver();
+}
 
-    Resource::didRemoveClient(c);
+ResourcePriority ImageResource::priorityFromObservers()
+{
+    ResourcePriority priority;
+    ImageResourceObserverWalker w(m_observers);
+    while (const auto* observer = w.next()) {
+        ResourcePriority nextPriority = observer->computeResourcePriority();
+        if (nextPriority.visibility == ResourcePriority::NotVisible)
+            continue;
+        priority.visibility = ResourcePriority::Visible;
+        priority.intraPriorityValue += nextPriority.intraPriorityValue;
+    }
+    return priority;
 }
 
 bool ImageResource::isSafeToUnlock() const
@@ -135,7 +155,7 @@ void ImageResource::destroyDecodedDataForFailedRevalidation()
 
 void ImageResource::destroyDecodedDataIfPossible()
 {
-    if (!hasClients() && !isLoading() && (!m_image || (m_image->hasOneRef() && m_image->isBitmapImage()))) {
+    if (!hasClientsOrObservers() && !isLoading() && (!m_image || (m_image->hasOneRef() && m_image->isBitmapImage()))) {
         m_image = nullptr;
         setDecodedSize(0);
     } else if (m_image && !errorOccurred()) {
@@ -143,13 +163,13 @@ void ImageResource::destroyDecodedDataIfPossible()
     }
 }
 
-void ImageResource::allClientsRemoved()
+void ImageResource::allClientsAndObserversRemoved()
 {
     if (m_image && !errorOccurred())
         m_image->resetAnimation();
     if (m_multipartParser)
         m_multipartParser->cancel();
-    Resource::allClientsRemoved();
+    Resource::allClientsAndObserversRemoved();
 }
 
 void ImageResource::appendData(const char* data, size_t length)
@@ -241,13 +261,10 @@ LayoutSize ImageResource::imageSize(RespectImageOrientationEnum shouldRespectIma
 
 void ImageResource::notifyObservers(const IntRect* changeRect)
 {
-    ResourceClientWalker<ImageResourceClient> w(m_clients);
-    while (ImageResourceClient* c = w.next())
-        c->imageChanged(this, changeRect);
-
-    ResourceClientWalker<ImageResourceClient> w2(m_finishedClients);
-    while (ImageResourceClient* c = w2.next())
-        c->imageChanged(this, changeRect);
+    ImageResourceObserverWalker w(m_observers);
+    while (auto* observer = w.next()) {
+        observer->imageChanged(this, changeRect);
+    }
 }
 
 void ImageResource::clear()
@@ -388,18 +405,11 @@ bool ImageResource::shouldPauseAnimation(const blink::Image* image)
     if (!image || image != m_image)
         return false;
 
-    ResourceClientWalker<ImageResourceClient> w(m_clients);
-    while (ImageResourceClient* c = w.next()) {
-        if (c->willRenderImage(this))
+    ImageResourceObserverWalker w(m_observers);
+    while (auto* observer = w.next()) {
+        if (observer->willRenderImage())
             return false;
     }
-
-    ResourceClientWalker<ImageResourceClient> w2(m_finishedClients);
-    while (ImageResourceClient* c = w2.next()) {
-        if (c->willRenderImage(this))
-            return false;
-    }
-
     return true;
 }
 
@@ -416,15 +426,9 @@ void ImageResource::updateImageAnimationPolicy()
         return;
 
     ImageAnimationPolicy newPolicy = ImageAnimationPolicyAllowed;
-    ResourceClientWalker<ImageResourceClient> w(m_clients);
-    while (ImageResourceClient* c = w.next()) {
-        if (c->getImageAnimationPolicy(this, newPolicy))
-            break;
-    }
-
-    ResourceClientWalker<ImageResourceClient> w2(m_finishedClients);
-    while (ImageResourceClient* c = w2.next()) {
-        if (c->getImageAnimationPolicy(this, newPolicy))
+    ImageResourceObserverWalker w(m_observers);
+    while (auto* observer = w.next()) {
+        if (observer->getImageAnimationPolicy(newPolicy))
             break;
     }
 

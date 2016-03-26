@@ -26,6 +26,7 @@
 #define LayoutImage_h
 
 #include "core/CoreExport.h"
+#include "core/fetch/ResourceClient.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/LayoutReplaced.h"
 
@@ -43,7 +44,7 @@ class HTMLMapElement;
 //
 // The class is image type agnostic as it only manipulates decoded images.
 // See LayoutImageResource that holds this image.
-class CORE_EXPORT LayoutImage : public LayoutReplaced {
+class CORE_EXPORT LayoutImage : public LayoutReplaced, public ResourceClient {
 public:
     // These are the paddings to use when displaying either alt text or an image.
     static const unsigned short paddingWidth = 4;
@@ -77,6 +78,7 @@ public:
     }
 
     const char* name() const override { return "LayoutImage"; }
+    String debugName() const final { return LayoutObject::debugName(); }
 
 protected:
     bool needsPreferredWidthsRecalculation() const final;

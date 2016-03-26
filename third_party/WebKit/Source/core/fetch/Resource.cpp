@@ -28,7 +28,7 @@
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceClient.h"
-#include "core/fetch/ResourceClientWalker.h"
+#include "core/fetch/ResourceClientOrObserverWalker.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -426,7 +426,7 @@ bool Resource::unlock()
     if (!m_data->isLocked())
         return true;
 
-    if (!memoryCache()->contains(this) || hasClients() || !m_revalidatingRequest.isNull() || !m_loadFinishTime || !isSafeToUnlock())
+    if (!memoryCache()->contains(this) || hasClientsOrObservers() || !m_revalidatingRequest.isNull() || !m_loadFinishTime || !isSafeToUnlock())
         return false;
 
     m_data->unlock();
@@ -506,7 +506,7 @@ WeakPtrWillBeRawPtr<Resource> Resource::asWeakPtr()
 String Resource::reasonNotDeletable() const
 {
     StringBuilder builder;
-    if (hasClients()) {
+    if (hasClientsOrObservers()) {
         builder.append("hasClients(");
         builder.appendNumber(m_clients.size());
         if (!m_clientsAwaitingCallback.isEmpty()) {
@@ -581,10 +581,9 @@ static bool shouldSendCachedDataSynchronouslyForType(Resource::Type type)
     return false;
 }
 
-void Resource::addClient(ResourceClient* client)
+void Resource::willAddClientOrObserver()
 {
     ASSERT(!isPurgeable());
-
     if (m_preloadResult == PreloadNotReferenced) {
         if (isLoaded())
             m_preloadResult = PreloadReferencedWhileComplete;
@@ -593,8 +592,13 @@ void Resource::addClient(ResourceClient* client)
         else
             m_preloadResult = PreloadReferenced;
     }
-    if (!hasClients())
+    if (!hasClientsOrObservers())
         memoryCache()->makeLive(this);
+}
+
+void Resource::addClient(ResourceClient* client)
+{
+    willAddClientOrObserver();
 
     if (!m_revalidatingRequest.isNull()) {
         m_clients.add(client);
@@ -623,15 +627,19 @@ void Resource::removeClient(ResourceClient* client)
     else
         m_clients.remove(client);
 
-    didRemoveClient(client);
-
     if (m_clientsAwaitingCallback.isEmpty())
         ResourceCallback::callbackHandler()->cancel(this);
 
-    if (!hasClients()) {
+    didRemoveClientOrObserver();
+    // This object may be dead here.
+}
+
+void Resource::didRemoveClientOrObserver()
+{
+    if (!hasClientsOrObservers()) {
         RefPtrWillBeRawPtr<Resource> protect(this);
         memoryCache()->makeDead(this);
-        allClientsRemoved();
+        allClientsAndObserversRemoved();
 
         // RFC2616 14.9.2:
         // "no-store: ... MUST make a best-effort attempt to remove the information from volatile storage as promptly as possible"
@@ -647,7 +655,7 @@ void Resource::removeClient(ResourceClient* client)
     // This object may be dead here.
 }
 
-void Resource::allClientsRemoved()
+void Resource::allClientsAndObserversRemoved()
 {
     if (!m_loader)
         return;
@@ -662,7 +670,7 @@ void Resource::allClientsRemoved()
 void Resource::cancelTimerFired(Timer<Resource>* timer)
 {
     ASSERT_UNUSED(timer, timer == &m_cancelTimer);
-    if (hasClients() || !m_loader)
+    if (hasClientsOrObservers() || !m_loader)
         return;
     RefPtrWillBeRawPtr<Resource> protect(this);
     m_loader->cancelIfNotFinishing();
@@ -877,7 +885,7 @@ bool Resource::lock()
     if (m_data->isLocked())
         return true;
 
-    ASSERT(!hasClients());
+    ASSERT(!hasClientsOrObservers());
 
     // If locking fails, our buffer has been purged. There's no point
     // in leaving a purged resource in MemoryCache.
@@ -901,20 +909,6 @@ void Resource::didChangePriority(ResourceLoadPriority loadPriority, int intraPri
     m_resourceRequest.setPriority(loadPriority, intraPriorityValue);
     if (m_loader)
         m_loader->didChangePriority(loadPriority, intraPriorityValue);
-}
-
-ResourcePriority Resource::priorityFromClients()
-{
-    ResourcePriority priority;
-    ResourceClientWalker<ResourceClient> walker(m_clients);
-    while (ResourceClient* c = walker.next()) {
-        ResourcePriority nextPriority = c->computeResourcePriority();
-        if (nextPriority.visibility == ResourcePriority::NotVisible)
-            continue;
-        priority.visibility = ResourcePriority::Visible;
-        priority.intraPriorityValue += nextPriority.intraPriorityValue;
-    }
-    return priority;
 }
 
 Resource::ResourceCallback* Resource::ResourceCallback::callbackHandler()

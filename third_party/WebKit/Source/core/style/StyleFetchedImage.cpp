@@ -116,12 +116,12 @@ bool StyleFetchedImage::usesImageContainerSize() const
 
 void StyleFetchedImage::addClient(LayoutObject* layoutObject)
 {
-    m_image->addClient(layoutObject);
+    m_image->addObserver(layoutObject);
 }
 
 void StyleFetchedImage::removeClient(LayoutObject* layoutObject)
 {
-    m_image->removeClient(layoutObject);
+    m_image->removeObserver(layoutObject);
 }
 
 void StyleFetchedImage::notifyFinished(Resource* resource)

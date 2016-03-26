@@ -31,7 +31,7 @@
 #include "core/dom/DocumentLifecycle.h"
 #include "core/dom/Element.h"
 #include "core/editing/PositionWithAffinity.h"
-#include "core/fetch/ImageResourceClient.h"
+#include "core/fetch/ImageResourceObserver.h"
 #include "core/html/HTMLElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/layout/HitTestRequest.h"
@@ -155,7 +155,7 @@ const int showTreeCharacterOffset = 39;
 // storage for children. Descendant classes that do allow children have to have a LayoutObjectChildList
 // member that stores the actual children and override virtualChildren().
 //
-// LayoutObject is an ImageResourceClient, which means that it gets notified when associated images
+// LayoutObject is an ImageResourceObserver, which means that it gets notified when associated images
 // are changed. This is used for 2 main use cases:
 // - reply to 'background-image' as we need to invalidate the background in this case.
 //   (See https://drafts.csswg.org/css-backgrounds-3/#the-background-image)
@@ -209,7 +209,7 @@ const int showTreeCharacterOffset = 39;
 // preferredLogicalWidthsDirty.
 //
 // See the individual getters below for more details about what each width is.
-class CORE_EXPORT LayoutObject : public ImageResourceClient, public DisplayItemClient {
+class CORE_EXPORT LayoutObject : public ImageResourceObserver, public DisplayItemClient {
     friend class LayoutObjectChildList;
     WTF_MAKE_NONCOPYABLE(LayoutObject);
 public:
@@ -227,7 +227,7 @@ public:
 
     // DisplayItemClient methods.
     LayoutRect visualRect() const override;
-    String debugName() const final;
+    String debugName() const override;
 
     LayoutObject* parent() const { return m_parent; }
     bool isDescendantOf(const LayoutObject*) const;
@@ -1225,10 +1225,10 @@ public:
 
     virtual int previousOffsetForBackwardDeletion(int current) const;
 
-    // ImageResourceClient override.
+    // ImageResourceObserver override.
     void imageChanged(ImageResource*, const IntRect* = nullptr) final;
-    bool willRenderImage(ImageResource*) final;
-    bool getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy&) final;
+    bool willRenderImage() final;
+    bool getImageAnimationPolicy(ImageAnimationPolicy&) final;
 
     // Sub-classes that have an associated image need to override this function
     // to get notified of any image change.

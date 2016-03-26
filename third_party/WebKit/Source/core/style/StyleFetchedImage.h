@@ -24,7 +24,7 @@
 #ifndef StyleFetchedImage_h
 #define StyleFetchedImage_h
 
-#include "core/fetch/ImageResourceClient.h"
+#include "core/fetch/ResourceClient.h"
 #include "core/style/StyleImage.h"
 
 namespace blink {
@@ -32,7 +32,7 @@ namespace blink {
 class Document;
 class ImageResource;
 
-class StyleFetchedImage final : public StyleImage, private ImageResourceClient {
+class StyleFetchedImage final : public StyleImage, private ResourceClient {
     USING_FAST_MALLOC_WILL_BE_REMOVED(StyleFetchedImage);
     WILL_BE_USING_PRE_FINALIZER(StyleFetchedImage, dispose);
 public:

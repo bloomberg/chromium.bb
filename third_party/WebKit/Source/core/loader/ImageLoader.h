@@ -25,7 +25,8 @@
 
 #include "core/CoreExport.h"
 #include "core/fetch/ImageResource.h"
-#include "core/fetch/ImageResourceClient.h"
+#include "core/fetch/ImageResourceObserver.h"
+#include "core/fetch/ResourceClient.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/WeakPtr.h"
@@ -43,7 +44,7 @@ class LayoutImageResource;
 template<typename T> class EventSender;
 using ImageEventSender = EventSender<ImageLoader>;
 
-class CORE_EXPORT ImageLoader : public NoBaseWillBeGarbageCollectedFinalized<ImageLoader>, public ImageResourceClient {
+class CORE_EXPORT ImageLoader : public NoBaseWillBeGarbageCollectedFinalized<ImageLoader>, public ResourceClient, public ImageResourceObserver {
     WILL_BE_USING_PRE_FINALIZER(ImageLoader, dispose);
     USING_FAST_MALLOC_WILL_BE_REMOVED(ImageLoader);
 public:
@@ -101,7 +102,7 @@ public:
     static void dispatchPendingLoadEvents();
     static void dispatchPendingErrorEvents();
 
-    bool getImageAnimationPolicy(ImageResource*, ImageAnimationPolicy&) final;
+    bool getImageAnimationPolicy(ImageAnimationPolicy&) final;
 protected:
     void notifyFinished(Resource*) override;
 

@@ -30,7 +30,7 @@
 
 #include "core/fetch/MemoryCache.h"
 
-#include "core/fetch/MockImageResourceClient.h"
+#include "core/fetch/MockResourceClients.h"
 #include "core/fetch/RawResource.h"
 #include "platform/network/ResourceRequest.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -133,7 +133,7 @@ TEST_F(MemoryCacheTest, VeryLargeResourceAccounting)
     ASSERT_EQ(cachedResource->size(), memoryCache()->deadSize());
     ASSERT_EQ(0u, memoryCache()->liveSize());
 
-    MockImageResourceClient client(cachedResource);
+    MockResourceClient client(cachedResource);
     ASSERT_EQ(0u, memoryCache()->deadSize());
     ASSERT_EQ(cachedResource->size(), memoryCache()->liveSize());
 
@@ -237,7 +237,7 @@ static void TestLiveResourceEvictionAtEndOfTask(Resource* cachedDeadResource, Re
     const char data[6] = "abcde";
     cachedDeadResource->appendData(data, 3u);
     cachedDeadResource->finish();
-    MockImageResourceClient client(cachedLiveResource);
+    MockResourceClient client(cachedLiveResource);
     cachedLiveResource->appendData(data, 4u);
     cachedLiveResource->finish();
 
@@ -294,9 +294,9 @@ TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask_MultipleResourceMaps)
 static void TestClientRemoval(Resource* resource1, Resource* resource2)
 {
     const char data[6] = "abcde";
-    MockImageResourceClient client1(resource1);
+    MockResourceClient client1(resource1);
     resource1->appendData(data, 4u);
-    MockImageResourceClient client2(resource2);
+    MockResourceClient client2(resource2);
     resource2->appendData(data, 4u);
 
     const unsigned minDeadCapacity = 0;

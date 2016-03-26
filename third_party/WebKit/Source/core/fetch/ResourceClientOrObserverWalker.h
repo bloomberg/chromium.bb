@@ -22,8 +22,8 @@
     pages from the web. It has a memory cache for these objects.
 */
 
-#ifndef ResourceClientWalker_h
-#define ResourceClientWalker_h
+#ifndef ResourceClientOrObserverWalker_h
+#define ResourceClientOrObserverWalker_h
 
 #include "core/fetch/ResourceClient.h"
 #include "wtf/Allocator.h"
@@ -34,10 +34,13 @@ namespace blink {
 
 // Call this "walker" instead of iterator so people won't expect Qt or STL-style iterator interface.
 // Just keep calling next() on this. It's safe from deletions of items.
-template<typename T> class ResourceClientWalker {
+// ClientOrObserver is either ResourceClient or ImageResourceObserver, so that
+// this walker can be used both for ResourceClient and ImageResourceObserver.
+template<typename ClientOrObserver, typename T>
+class ResourceClientOrObserverWalker {
     STACK_ALLOCATED();
 public:
-    ResourceClientWalker(const HashCountedSet<ResourceClient*>& set)
+    explicit ResourceClientOrObserverWalker(const HashCountedSet<ClientOrObserver*>& set)
         : m_clientSet(set), m_clientVector(set.size()), m_index(0)
     {
         size_t clientIndex = 0;
@@ -49,7 +52,7 @@ public:
     {
         size_t size = m_clientVector.size();
         while (m_index < size) {
-            ResourceClient* next = m_clientVector[m_index++];
+            ClientOrObserver* next = m_clientVector[m_index++];
             if (m_clientSet.contains(next)) {
                 ASSERT(T::isExpectedType(next));
                 return static_cast<T*>(next);
@@ -59,9 +62,16 @@ public:
         return 0;
     }
 private:
-    const HashCountedSet<ResourceClient*>& m_clientSet;
-    Vector<ResourceClient*> m_clientVector;
+    const HashCountedSet<ClientOrObserver*>& m_clientSet;
+    Vector<ClientOrObserver*> m_clientVector;
     size_t m_index;
+};
+
+template<typename T>
+struct ResourceClientWalker : public ResourceClientOrObserverWalker<ResourceClient, T> {
+public:
+    explicit ResourceClientWalker(const HashCountedSet<ResourceClient*>& set)
+        : ResourceClientOrObserverWalker<ResourceClient, T>(set) { }
 };
 
 } // namespace blink

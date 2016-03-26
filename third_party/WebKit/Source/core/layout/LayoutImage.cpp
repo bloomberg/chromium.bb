@@ -89,7 +89,7 @@ void LayoutImage::setImageResource(PassOwnPtrWillBeRawPtr<LayoutImageResource> i
 {
     ASSERT(!m_imageResource);
     m_imageResource = imageResource;
-    m_imageResource->initialize(this);
+    m_imageResource->initialize(this, this);
 }
 
 void LayoutImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)

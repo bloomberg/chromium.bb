@@ -36,6 +36,7 @@ namespace blink {
 LayoutImageResource::LayoutImageResource()
     : m_layoutObject(nullptr)
     , m_cachedImage(nullptr)
+    , m_client(nullptr)
 {
 }
 
@@ -43,19 +44,23 @@ LayoutImageResource::~LayoutImageResource()
 {
 }
 
-void LayoutImageResource::initialize(LayoutObject* layoutObject)
+void LayoutImageResource::initialize(LayoutObject* layoutObject, ResourceClient* client)
 {
     ASSERT(!m_layoutObject);
     ASSERT(layoutObject);
     m_layoutObject = layoutObject;
+    m_client = client;
 }
 
 void LayoutImageResource::shutdown()
 {
     ASSERT(m_layoutObject);
 
-    if (m_cachedImage)
-        m_cachedImage->removeClient(m_layoutObject);
+    if (!m_cachedImage)
+        return;
+    if (m_client)
+        m_cachedImage->removeClient(m_client);
+    m_cachedImage->removeObserver(m_layoutObject);
 }
 
 void LayoutImageResource::setImageResource(ImageResource* newImage)
@@ -65,11 +70,16 @@ void LayoutImageResource::setImageResource(ImageResource* newImage)
     if (m_cachedImage == newImage)
         return;
 
-    if (m_cachedImage)
-        m_cachedImage->removeClient(m_layoutObject);
+    if (m_cachedImage) {
+        if (m_client)
+            m_cachedImage->removeClient(m_client);
+        m_cachedImage->removeObserver(m_layoutObject);
+    }
     m_cachedImage = newImage;
     if (m_cachedImage) {
-        m_cachedImage->addClient(m_layoutObject);
+        if (m_client)
+            m_cachedImage->addClient(m_client);
+        m_cachedImage->addObserver(m_layoutObject);
         if (m_cachedImage->errorOccurred())
             m_layoutObject->imageChanged(m_cachedImage.get());
     } else {

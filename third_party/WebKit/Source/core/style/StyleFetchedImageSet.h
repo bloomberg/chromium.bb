@@ -26,7 +26,7 @@
 #ifndef StyleFetchedImageSet_h
 #define StyleFetchedImageSet_h
 
-#include "core/fetch/ImageResourceClient.h"
+#include "core/fetch/ResourceClient.h"
 #include "core/style/StyleImage.h"
 #include "platform/geometry/LayoutSize.h"
 
@@ -37,7 +37,7 @@ class CSSImageSetValue;
 
 // This class keeps one cached image and has access to a set of alternatives.
 
-class StyleFetchedImageSet final : public StyleImage, private ImageResourceClient {
+class StyleFetchedImageSet final : public StyleImage, private ResourceClient {
     USING_FAST_MALLOC_WILL_BE_REMOVED(StyleFetchedImageSet);
     WILL_BE_USING_PRE_FINALIZER(StyleFetchedImageSet, dispose);
 public:
