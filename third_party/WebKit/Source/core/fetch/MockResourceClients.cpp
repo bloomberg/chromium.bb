@@ -36,6 +36,7 @@ void MockResourceClient::removeAsClient()
 MockImageResourceClient::MockImageResourceClient(PassRefPtrWillBeRawPtr<ImageResource> resource)
     : MockResourceClient(resource)
     , m_imageChangedCount(0)
+    , m_imageNotifyFinishedCount(0)
 {
     toImageResource(m_resource.get())->addObserver(this);
 }
@@ -55,6 +56,19 @@ void MockImageResourceClient::removeAsClient()
 void MockImageResourceClient::imageChanged(ImageResource*, const IntRect*)
 {
     m_imageChangedCount++;
+}
+
+void MockImageResourceClient::imageNotifyFinished(ImageResource*)
+{
+    ASSERT_EQ(0, m_imageNotifyFinishedCount);
+    m_imageNotifyFinishedCount++;
+}
+
+bool MockImageResourceClient::notifyFinishedCalled() const
+{
+    EXPECT_EQ(m_notifyFinishedCalled ? 1 : 0, m_imageNotifyFinishedCount);
+
+    return m_notifyFinishedCalled;
 }
 
 } // namespace blink

@@ -233,7 +233,7 @@ public:
 
     // DisplayItemClient methods.
     LayoutRect visualRect() const override;
-    String debugName() const override;
+    String debugName() const final;
 
     LayoutObject* parent() const { return m_parent; }
     bool isDescendantOf(const LayoutObject*) const;

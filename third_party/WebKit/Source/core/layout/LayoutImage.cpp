@@ -89,7 +89,7 @@ void LayoutImage::setImageResource(PassOwnPtrWillBeRawPtr<LayoutImageResource> i
 {
     ASSERT(!m_imageResource);
     m_imageResource = imageResource;
-    m_imageResource->initialize(this, this);
+    m_imageResource->initialize(this);
 }
 
 void LayoutImage::imageChanged(WrappedImagePtr newImage, const IntRect* rect)
@@ -175,7 +175,7 @@ void LayoutImage::invalidatePaintAndMarkForLayoutIfNeeded()
     contentChanged(ImageChanged);
 }
 
-void LayoutImage::notifyFinished(Resource* newImage)
+void LayoutImage::imageNotifyFinished(ImageResource* newImage)
 {
     if (!m_imageResource)
         return;

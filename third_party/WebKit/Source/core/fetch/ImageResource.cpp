@@ -101,6 +101,19 @@ DEFINE_TRACE(ImageResource)
     MultipartImageResourceParser::Client::trace(visitor);
 }
 
+void ImageResource::notifyObserver(ImageResourceObserver* observer, bool isNotifyingFinish, const IntRect* changeRect)
+{
+    if (isNotifyingFinish) {
+        observer->imageNotifyFinished(this);
+        if (m_observers.contains(observer)) {
+            m_finishedObservers.add(observer);
+            m_observers.remove(observer);
+        }
+    }
+
+    observer->imageChanged(this, changeRect);
+}
+
 void ImageResource::addObserver(ImageResourceObserver* observer)
 {
     willAddClientOrObserver();
@@ -115,29 +128,49 @@ void ImageResource::addObserver(ImageResourceObserver* observer)
         m_image->setData(m_data, true);
     }
 
-    if (m_image && !m_image->isNull())
-        observer->imageChanged(this);
+    if (m_image && !m_image->isNull()) {
+        bool isNotifyingFinish = !isLoading() && !stillNeedsLoad();
+        notifyObserver(observer, isNotifyingFinish);
+    }
 }
 
 void ImageResource::removeObserver(ImageResourceObserver* observer)
 {
     ASSERT(observer);
-    ASSERT(m_observers.contains(observer));
-    m_observers.remove(observer);
+
+    if (m_observers.contains(observer))
+        m_observers.remove(observer);
+    else if (m_finishedObservers.contains(observer))
+        m_finishedObservers.remove(observer);
+    else
+        ASSERT_NOT_REACHED();
+
     didRemoveClientOrObserver();
+}
+
+static void priorityFromObserver(const ImageResourceObserver* observer, ResourcePriority& priority)
+{
+    ResourcePriority nextPriority = observer->computeResourcePriority();
+    if (nextPriority.visibility == ResourcePriority::NotVisible)
+        return;
+    priority.visibility = ResourcePriority::Visible;
+    priority.intraPriorityValue += nextPriority.intraPriorityValue;
 }
 
 ResourcePriority ImageResource::priorityFromObservers()
 {
     ResourcePriority priority;
-    ImageResourceObserverWalker w(m_observers);
-    while (const auto* observer = w.next()) {
-        ResourcePriority nextPriority = observer->computeResourcePriority();
-        if (nextPriority.visibility == ResourcePriority::NotVisible)
-            continue;
-        priority.visibility = ResourcePriority::Visible;
-        priority.intraPriorityValue += nextPriority.intraPriorityValue;
+
+    ImageResourceObserverWalker finishedWalker(m_finishedObservers);
+    while (const auto* observer = finishedWalker.next()) {
+        priorityFromObserver(observer, priority);
     }
+
+    ImageResourceObserverWalker walker(m_observers);
+    while (const auto* observer = walker.next()) {
+        priorityFromObserver(observer, priority);
+    }
+
     return priority;
 }
 
@@ -259,11 +292,16 @@ LayoutSize ImageResource::imageSize(RespectImageOrientationEnum shouldRespectIma
     return size;
 }
 
-void ImageResource::notifyObservers(const IntRect* changeRect)
+void ImageResource::notifyObservers(bool isNotifyingFinish, const IntRect* changeRect)
 {
-    ImageResourceObserverWalker w(m_observers);
-    while (auto* observer = w.next()) {
-        observer->imageChanged(this, changeRect);
+    ImageResourceObserverWalker finishedWalker(m_finishedObservers);
+    while (auto* observer = finishedWalker.next()) {
+        notifyObserver(observer, false, changeRect);
+    }
+
+    ImageResourceObserverWalker walker(m_observers);
+    while (auto* observer = walker.next()) {
+        notifyObserver(observer, isNotifyingFinish, changeRect);
     }
 }
 
@@ -333,7 +371,7 @@ void ImageResource::updateImage(bool allDataReceived)
 
         // It would be nice to only redraw the decoded band of the image, but with the current design
         // (decoding delayed until painting) that seems hard.
-        notifyObservers();
+        notifyObservers(allDataReceived);
     }
 }
 
@@ -358,7 +396,7 @@ void ImageResource::error(Resource::Status status)
         m_multipartParser->cancel();
     clear();
     Resource::error(status);
-    notifyObservers();
+    notifyObservers(true);
 }
 
 void ImageResource::responseReceived(const ResourceResponse& response, PassOwnPtr<WebDataConsumerHandle> handle)
@@ -405,11 +443,18 @@ bool ImageResource::shouldPauseAnimation(const blink::Image* image)
     if (!image || image != m_image)
         return false;
 
-    ImageResourceObserverWalker w(m_observers);
-    while (auto* observer = w.next()) {
+    ImageResourceObserverWalker finishedWalker(m_finishedObservers);
+    while (auto* observer = finishedWalker.next()) {
         if (observer->willRenderImage())
             return false;
     }
+
+    ImageResourceObserverWalker walker(m_observers);
+    while (auto* observer = walker.next()) {
+        if (observer->willRenderImage())
+            return false;
+    }
+
     return true;
 }
 
@@ -417,7 +462,7 @@ void ImageResource::animationAdvanced(const blink::Image* image)
 {
     if (!image || image != m_image)
         return;
-    notifyObservers();
+    notifyObservers(false);
 }
 
 void ImageResource::updateImageAnimationPolicy()
@@ -426,8 +471,15 @@ void ImageResource::updateImageAnimationPolicy()
         return;
 
     ImageAnimationPolicy newPolicy = ImageAnimationPolicyAllowed;
-    ImageResourceObserverWalker w(m_observers);
-    while (auto* observer = w.next()) {
+
+    ImageResourceObserverWalker finishedWalker(m_finishedObservers);
+    while (auto* observer = finishedWalker.next()) {
+        if (observer->getImageAnimationPolicy(newPolicy))
+            break;
+    }
+
+    ImageResourceObserverWalker walker(m_observers);
+    while (auto* observer = walker.next()) {
         if (observer->getImageAnimationPolicy(newPolicy))
             break;
     }
@@ -452,7 +504,7 @@ void ImageResource::changedInRect(const blink::Image* image, const IntRect& rect
 {
     if (!image || image != m_image)
         return;
-    notifyObservers(&rect);
+    notifyObservers(false, &rect);
 }
 
 void ImageResource::onePartInMultipartReceived(const ResourceResponse& response)

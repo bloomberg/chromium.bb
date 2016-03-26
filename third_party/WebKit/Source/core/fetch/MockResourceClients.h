@@ -45,7 +45,7 @@ public:
 
     void notifyFinished(Resource*) override;
     String debugName() const override { return "MockResourceClient"; }
-    bool notifyFinishedCalled() const { return m_notifyFinishedCalled; }
+    virtual bool notifyFinishedCalled() const { return m_notifyFinishedCalled; }
 
     virtual void removeAsClient();
 
@@ -60,9 +60,12 @@ public:
     explicit MockImageResourceClient(const PassRefPtrWillBeRawPtr<ImageResource>);
     ~MockImageResourceClient() override;
 
+    void imageNotifyFinished(ImageResource*) override;
     void imageChanged(ImageResource*, const IntRect*) override;
 
     String debugName() const override { return "MockImageResourceClient"; }
+
+    bool notifyFinishedCalled() const override;
 
     void removeAsClient() override;
 
@@ -70,6 +73,7 @@ public:
 
 private:
     int m_imageChangedCount;
+    int m_imageNotifyFinishedCount;
 };
 
 } // namespace blink

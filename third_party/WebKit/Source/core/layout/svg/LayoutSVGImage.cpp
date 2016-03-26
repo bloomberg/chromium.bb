@@ -47,7 +47,7 @@ LayoutSVGImage::LayoutSVGImage(SVGImageElement* impl)
     , m_needsTransformUpdate(true)
     , m_imageResource(LayoutImageResource::create())
 {
-    m_imageResource->initialize(this, nullptr);
+    m_imageResource->initialize(this);
 }
 
 LayoutSVGImage::~LayoutSVGImage()

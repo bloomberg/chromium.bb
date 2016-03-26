@@ -38,7 +38,6 @@ namespace blink {
 class FetchRequest;
 class FloatSize;
 class ImageResourceObserver;
-class Length;
 class MemoryCache;
 class ResourceClient;
 class ResourceFetcher;
@@ -94,7 +93,7 @@ public:
 
     void addObserver(ImageResourceObserver*);
     void removeObserver(ImageResourceObserver*);
-    bool hasClientsOrObservers() const override { return Resource::hasClientsOrObservers() || !m_observers.isEmpty(); }
+    bool hasClientsOrObservers() const override { return Resource::hasClientsOrObservers() || !m_observers.isEmpty() || !m_finishedObservers.isEmpty(); }
 
     ResourcePriority priorityFromObservers() override;
 
@@ -158,7 +157,8 @@ private:
     void updateImage(bool allDataReceived);
     void clearImage();
     // If not null, changeRect is the changed part of the image.
-    void notifyObservers(const IntRect* changeRect = nullptr);
+    void notifyObservers(bool isNotifyingFinish, const IntRect* changeRect = nullptr);
+    void notifyObserver(ImageResourceObserver*, bool isNotifyingFinish, const IntRect* changeRect = nullptr);
 
     float m_devicePixelRatioHeaderValue;
 
@@ -167,6 +167,7 @@ private:
     MultipartParsingState m_multipartParsingState = MultipartParsingState::WaitingForFirstPart;
     bool m_hasDevicePixelRatioHeaderValue;
     HashCountedSet<ImageResourceObserver*> m_observers;
+    HashCountedSet<ImageResourceObserver*> m_finishedObservers;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Image);

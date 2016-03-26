@@ -42,7 +42,7 @@ public:
     {
         return adoptPtrWillBeNoop(new LayoutImageResourceStyleImage(styleImage));
     }
-    void initialize(LayoutObject*, ResourceClient*) override;
+    void initialize(LayoutObject*) override;
     void shutdown() override;
 
     bool hasImage() const override { return true; }

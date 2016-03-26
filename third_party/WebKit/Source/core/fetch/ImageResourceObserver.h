@@ -41,6 +41,11 @@ public:
     // because we are animating. If not null, the IntRect is the changed rect of the image.
     virtual void imageChanged(ImageResource*, const IntRect* = 0) { }
 
+    // Similar to ResourceClient::notifyFinished(), except for a slight call
+    // order difference. This is to avoid an ImageResourceObserver from being
+    // also a ResourceClient just to be notified for load finish.
+    virtual void imageNotifyFinished(ImageResource*) { }
+
     // Called to find out if this client wants to actually display the image. Used to tell when we
     // can halt animation. Content nodes that hold image refs for example would not render the image,
     // but LayoutImages would (assuming they have visibility: visible and their layout tree isn't hidden

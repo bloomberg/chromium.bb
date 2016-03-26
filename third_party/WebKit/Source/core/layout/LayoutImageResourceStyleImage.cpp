@@ -44,9 +44,9 @@ LayoutImageResourceStyleImage::~LayoutImageResourceStyleImage()
     ASSERT(!m_cachedImage);
 }
 
-void LayoutImageResourceStyleImage::initialize(LayoutObject* layoutObject, ResourceClient* client)
+void LayoutImageResourceStyleImage::initialize(LayoutObject* layoutObject)
 {
-    LayoutImageResource::initialize(layoutObject, client);
+    LayoutImageResource::initialize(layoutObject);
 
     if (m_styleImage->isImageResource())
         m_cachedImage = toStyleFetchedImage(m_styleImage)->cachedImage();
