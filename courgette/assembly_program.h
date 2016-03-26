@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/free_deleter.h"
 #include "base/memory/scoped_ptr.h"
 #include "courgette/courgette.h"
 #include "courgette/image_utils.h"

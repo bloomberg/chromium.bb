@@ -5,6 +5,7 @@
 #include "net/dns/dns_config_service_win.h"
 
 #include "base/logging.h"
+#include "base/memory/free_deleter.h"
 #include "base/win/windows_version.h"
 #include "net/base/ip_address.h"
 #include "net/dns/dns_protocol.h"

@@ -6,6 +6,7 @@
 #include <sddl.h>
 
 #include "base/command_line.h"
+#include "base/memory/free_deleter.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"

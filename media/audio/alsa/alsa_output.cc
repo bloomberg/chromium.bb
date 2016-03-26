@@ -40,6 +40,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/free_deleter.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "media/audio/alsa/alsa_util.h"

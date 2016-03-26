@@ -5,9 +5,11 @@
 #ifndef CHROME_SERVICE_CLOUD_PRINT_CDD_CONVERSION_WIN_H_
 #define CHROME_SERVICE_CLOUD_PRINT_CDD_CONVERSION_WIN_H_
 
-#include <string>
 #include <windows.h>
 
+#include <string>
+
+#include "base/memory/free_deleter.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 

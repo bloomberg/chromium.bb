@@ -15,6 +15,7 @@
 
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/free_deleter.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"

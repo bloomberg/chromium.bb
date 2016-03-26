@@ -8,6 +8,7 @@
 #include <AccCtrl.h>
 #include <windows.h>
 
+#include "base/memory/free_deleter.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/win/src/sid.h"
 

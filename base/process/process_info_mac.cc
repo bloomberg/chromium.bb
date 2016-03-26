@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "base/macros.h"
+#include "base/memory/free_deleter.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 

@@ -96,21 +96,6 @@
 
 #include <memory>
 
-namespace base {
-
-// Function object which invokes 'free' on its parameter, which must be
-// a pointer. Can be used to store malloc-allocated pointers in scoped_ptr:
-//
-// scoped_ptr<int, base::FreeDeleter> foo_ptr(
-//     static_cast<int*>(malloc(sizeof(int))));
-struct FreeDeleter {
-  inline void operator()(void* ptr) const {
-    free(ptr);
-  }
-};
-
-}  // namespace base
-
 template <typename T, typename D = std::default_delete<T>>
 using scoped_ptr = std::unique_ptr<T, D>;
 

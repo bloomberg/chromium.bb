@@ -14,6 +14,7 @@
 #include "base/files/file_path_watcher.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/free_deleter.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"

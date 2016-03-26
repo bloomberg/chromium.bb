@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/memory/free_deleter.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/win/src/ipc_tags.h"
 #include "sandbox/win/src/nt_internals.h"

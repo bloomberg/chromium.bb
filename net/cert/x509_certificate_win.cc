@@ -5,6 +5,7 @@
 #include "net/cert/x509_certificate.h"
 
 #include "base/logging.h"
+#include "base/memory/free_deleter.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"

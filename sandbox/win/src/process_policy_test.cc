@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/free_deleter.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"

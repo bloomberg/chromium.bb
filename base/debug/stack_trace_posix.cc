@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/free_deleter.h"
+
 #if defined(__GLIBCXX__)
 #include <cxxabi.h>
 #endif

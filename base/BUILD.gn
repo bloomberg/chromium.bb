@@ -457,6 +457,7 @@ component("base") {
     "memory/discardable_memory_allocator.h",
     "memory/discardable_shared_memory.cc",
     "memory/discardable_shared_memory.h",
+    "memory/free_deleter.h",
     "memory/linked_ptr.h",
     "memory/manual_constructor.h",
     "memory/memory_pressure_listener.cc",

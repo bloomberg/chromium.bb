@@ -27,6 +27,7 @@
 #include <winioctl.h>
 #include <wlanapi.h>
 
+#include "base/memory/free_deleter.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"

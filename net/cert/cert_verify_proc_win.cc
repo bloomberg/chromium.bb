@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/free_deleter.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/sha1.h"
 #include "base/strings/string_util.h"

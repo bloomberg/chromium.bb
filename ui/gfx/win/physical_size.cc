@@ -10,6 +10,7 @@
 #include <iostream>
 
 #include "base/logging.h"
+#include "base/memory/free_deleter.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/scoped_generic.h"
 #include "base/strings/utf_string_conversions.h"

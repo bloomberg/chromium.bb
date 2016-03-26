@@ -7,9 +7,11 @@
 
 #include <stdint.h>
 #include <xkbcommon/xkbcommon.h>
+
 #include <vector>
 
 #include "base/containers/hash_tables.h"
+#include "base/memory/free_deleter.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"

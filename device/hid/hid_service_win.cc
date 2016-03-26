@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/location.h"
+#include "base/memory/free_deleter.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"

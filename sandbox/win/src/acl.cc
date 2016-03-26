@@ -8,6 +8,7 @@
 #include <sddl.h>
 
 #include "base/logging.h"
+#include "base/memory/free_deleter.h"
 
 namespace sandbox {
 
