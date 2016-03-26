@@ -385,6 +385,10 @@ class NinjaWriter(object):
     self.xcode_settings = self.msvs_settings = None
     if self.flavor == 'mac':
       self.xcode_settings = gyp.xcode_emulation.XcodeSettings(spec)
+      mac_toolchain_dir = generator_flags.get('mac_toolchain_dir', None)
+      if mac_toolchain_dir:
+        self.xcode_settings.mac_toolchain_dir = mac_toolchain_dir
+
     if self.flavor == 'win':
       self.msvs_settings = gyp.msvs_emulation.MsvsSettings(spec,
                                                            generator_flags)
@@ -1856,7 +1860,7 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   master_ninja = ninja_syntax.Writer(master_ninja_file, width=120)
 
   # Put build-time support tools in out/{config_name}.
-  gyp.common.CopyTool(flavor, toplevel_build)
+  gyp.common.CopyTool(flavor, toplevel_build, generator_flags)
 
   # Grab make settings for CC/CXX.
   # The rules are
@@ -1936,6 +1940,10 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
       key_prefix = key[:-len('_wrapper')]
       key_prefix = re.sub(r'\.HOST$', '.host', key_prefix)
       wrappers[key_prefix] = os.path.join(build_to_root, value)
+
+  mac_toolchain_dir = generator_flags.get('mac_toolchain_dir', None)
+  if mac_toolchain_dir:
+    wrappers['LINK'] = "export DEVELOPER_DIR='%s' &&" % mac_toolchain_dir
 
   if flavor == 'win':
     configs = [target_dicts[qualified_target]['configurations'][config_name]

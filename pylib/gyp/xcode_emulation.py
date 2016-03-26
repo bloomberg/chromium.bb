@@ -162,6 +162,7 @@ class XcodeSettings(object):
     self.spec = spec
 
     self.isIOS = False
+    self.mac_toolchain_dir = None
     self.header_map_path = None
 
     # Per-target 'xcode_settings' are pushed down into configs earlier by gyp.
@@ -1514,6 +1515,9 @@ def _GetXcodeEnv(xcode_settings, built_products_dir, srcroot, configuration,
     env['SDKROOT'] = xcode_settings._SdkPath(configuration)
   else:
     env['SDKROOT'] = ''
+
+  if xcode_settings.mac_toolchain_dir:
+    env['DEVELOPER_DIR'] = xcode_settings.mac_toolchain_dir
 
   if spec['type'] in (
       'executable', 'static_library', 'shared_library', 'loadable_module'):
