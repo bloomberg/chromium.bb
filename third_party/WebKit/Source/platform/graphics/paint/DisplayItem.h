@@ -92,7 +92,6 @@ public:
         ScrollbarThumb,
         ScrollbarTickmarks,
         ScrollbarTrackBackground,
-        ScrollbarCompositedScrollbar,
         SelectionTint,
         TableCellBackgroundFromColumnGroup,
         TableCellBackgroundFromColumn,
