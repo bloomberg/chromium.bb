@@ -270,21 +270,17 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
   // it's a ShMem GMB or a DmaBuf GMB.
   int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;
   const int buffer_id = buffer_pool_->ReserveForProducer(
-      pixel_format, pixel_storage, frame_size, &buffer_id_to_drop);
-  if (buffer_id == VideoCaptureBufferPool::kInvalidId)
-    return NULL;
-
-  scoped_ptr<media::VideoCaptureDevice::Client::Buffer> output_buffer(
-      new AutoReleaseBuffer(buffer_pool_, buffer_id));
-
+      frame_size, pixel_format, pixel_storage, &buffer_id_to_drop);
   if (buffer_id_to_drop != VideoCaptureBufferPool::kInvalidId) {
     BrowserThread::PostTask(BrowserThread::IO,
         FROM_HERE,
         base::Bind(&VideoCaptureController::DoBufferDestroyedOnIOThread,
                    controller_, buffer_id_to_drop));
   }
-
-  return output_buffer;
+  if (buffer_id == VideoCaptureBufferPool::kInvalidId)
+    return nullptr;
+  return make_scoped_ptr<Buffer>(
+      new AutoReleaseBuffer(buffer_pool_, buffer_id));
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
@@ -338,6 +334,19 @@ void VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
           base::Passed(&buffer),
           frame,
           timestamp));
+}
+
+scoped_ptr<media::VideoCaptureDevice::Client::Buffer>
+VideoCaptureDeviceClient::ResurrectLastOutputBuffer(
+    const gfx::Size& dimensions,
+    media::VideoPixelFormat format,
+    media::VideoPixelStorage storage) {
+  const int buffer_id =
+      buffer_pool_->ResurrectLastForProducer(dimensions, format, storage);
+  if (buffer_id == VideoCaptureBufferPool::kInvalidId)
+    return nullptr;
+  return make_scoped_ptr<Buffer>(
+      new AutoReleaseBuffer(buffer_pool_, buffer_id));
 }
 
 void VideoCaptureDeviceClient::OnError(

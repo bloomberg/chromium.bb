@@ -60,6 +60,10 @@ class CONTENT_EXPORT VideoCaptureDeviceClient
       scoped_ptr<Buffer> buffer,
       const scoped_refptr<media::VideoFrame>& frame,
       const base::TimeTicks& timestamp) override;
+  scoped_ptr<Buffer> ResurrectLastOutputBuffer(
+      const gfx::Size& dimensions,
+      media::VideoPixelFormat format,
+      media::VideoPixelStorage storage) override;
   void OnError(const tracked_objects::Location& from_here,
                const std::string& reason) override;
   void OnLog(const std::string& message) override;

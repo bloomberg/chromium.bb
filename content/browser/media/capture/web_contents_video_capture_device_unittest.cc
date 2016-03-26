@@ -375,7 +375,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
     CHECK_EQ(format, media::PIXEL_FORMAT_I420);
     int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;  // Ignored.
     const int buffer_id = buffer_pool_->ReserveForProducer(
-        format, storage, dimensions, &buffer_id_to_drop);
+        dimensions, format, storage, &buffer_id_to_drop);
     if (buffer_id == VideoCaptureBufferPool::kInvalidId)
       return NULL;
 
@@ -383,6 +383,7 @@ class StubClient : public media::VideoCaptureDevice::Client {
         new AutoReleaseBuffer(
             buffer_pool_, buffer_pool_->GetBufferHandle(buffer_id), buffer_id));
   }
+
   // Trampoline method to workaround GMOCK problems with scoped_ptr<>.
   void OnIncomingCapturedBuffer(scoped_ptr<Buffer> buffer,
                                 const media::VideoCaptureFormat& frame_format,
@@ -419,6 +420,20 @@ class StubClient : public media::VideoCaptureDevice::Client {
         frame->visible_rect().size());
   }
 
+  scoped_ptr<media::VideoCaptureDevice::Client::Buffer>
+  ResurrectLastOutputBuffer(const gfx::Size& dimensions,
+                            media::VideoPixelFormat format,
+                            media::VideoPixelStorage storage) override {
+    CHECK_EQ(format, media::PIXEL_FORMAT_I420);
+    const int buffer_id =
+        buffer_pool_->ResurrectLastForProducer(dimensions, format, storage);
+    if (buffer_id == VideoCaptureBufferPool::kInvalidId)
+      return nullptr;
+    return scoped_ptr<media::VideoCaptureDevice::Client::Buffer>(
+        new AutoReleaseBuffer(
+            buffer_pool_, buffer_pool_->GetBufferHandle(buffer_id), buffer_id));
+  }
+
   void OnError(const tracked_objects::Location& from_here,
                const std::string& reason) override {
     error_callback_.Run();
@@ -439,7 +454,9 @@ class StubClient : public media::VideoCaptureDevice::Client {
       DCHECK(pool_);
     }
     int id() const override { return id_; }
-    gfx::Size dimensions() const override { return gfx::Size(); }
+    gfx::Size dimensions() const override {
+      return buffer_handle_->dimensions();
+    }
     size_t mapped_size() const override {
       return buffer_handle_->mapped_size();
     }

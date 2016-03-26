@@ -101,7 +101,12 @@ class MockClient : public VideoCaptureDevice::Client {
                               PIXEL_FORMAT_I420);
     frame_cb_.Run(format);
   }
-
+  scoped_ptr<Buffer> ResurrectLastOutputBuffer(
+      const gfx::Size& dimensions,
+      media::VideoPixelFormat format,
+      media::VideoPixelStorage storage) {
+    return scoped_ptr<Buffer>();
+  }
   double GetBufferPoolUtilization() const override { return 0.0; }
 
  private:

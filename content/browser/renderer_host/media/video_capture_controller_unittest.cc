@@ -331,6 +331,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
+
   // Expect VideoCaptureController set the metadata in |video_frame| to hold a
   // resource utilization of 0.5 (the largest of all reported values).
   double resource_utilization_in_metadata = -1.0;
@@ -359,15 +360,27 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                         base::TimeTicks());
 
   // The buffer should be delivered to the clients in any order.
-  EXPECT_CALL(*client_a_,
-              DoI420BufferReady(client_a_route_1, capture_resolution))
-      .Times(1);
-  EXPECT_CALL(*client_b_,
-              DoI420BufferReady(client_b_route_1, capture_resolution))
-      .Times(1);
-  EXPECT_CALL(*client_a_,
-              DoI420BufferReady(client_a_route_2, capture_resolution))
-      .Times(1);
+  {
+    InSequence s;
+    EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_1)).Times(1);
+    EXPECT_CALL(*client_a_,
+                DoI420BufferReady(client_a_route_1, capture_resolution))
+        .Times(1);
+  }
+  {
+    InSequence s;
+    EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_1)).Times(1);
+    EXPECT_CALL(*client_b_,
+                DoI420BufferReady(client_b_route_1, capture_resolution))
+        .Times(1);
+  }
+  {
+    InSequence s;
+    EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_2)).Times(1);
+    EXPECT_CALL(*client_a_,
+                DoI420BufferReady(client_a_route_2, capture_resolution))
+        .Times(1);
+  }
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
   Mock::VerifyAndClearExpectations(client_b_.get());
@@ -407,23 +420,24 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
                                    media::PIXEL_FORMAT_I420,
                                    media::PIXEL_STORAGE_CPU).get());
 
-  // The new client needs to be told of 3 buffers; the old clients only 2.
+  // The new client needs to be notified of the creation of |kPoolSize| buffers;
+  // the old clients only |kPoolSize - 2|.
   EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_2)).Times(kPoolSize);
   EXPECT_CALL(*client_b_,
               DoI420BufferReady(client_b_route_2, capture_resolution))
       .Times(kPoolSize);
   EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_1))
-      .Times(kPoolSize - 1);
+      .Times(kPoolSize - 2);
   EXPECT_CALL(*client_a_,
               DoI420BufferReady(client_a_route_1, capture_resolution))
       .Times(kPoolSize);
   EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_2))
-      .Times(kPoolSize - 1);
+      .Times(kPoolSize - 2);
   EXPECT_CALL(*client_a_,
               DoI420BufferReady(client_a_route_2, capture_resolution))
       .Times(kPoolSize);
   EXPECT_CALL(*client_b_, DoBufferCreated(client_b_route_1))
-      .Times(kPoolSize - 1);
+      .Times(kPoolSize - 2);
   EXPECT_CALL(*client_b_,
               DoI420BufferReady(client_b_route_1, capture_resolution))
       .Times(kPoolSize);

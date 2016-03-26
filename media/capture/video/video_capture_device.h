@@ -242,6 +242,16 @@ class MEDIA_EXPORT VideoCaptureDevice {
         const scoped_refptr<VideoFrame>& frame,
         const base::TimeTicks& timestamp) = 0;
 
+    // Attempts to reserve the same Buffer provided in the last call to one of
+    // the OnIncomingCapturedXXX() methods. This will fail if the content of the
+    // Buffer has not been preserved, or if the |dimensions|, |format|, or
+    // |storage| disagree with how it was reserved via ReserveOutputBuffer().
+    // When this operation fails, nullptr will be returned.
+    virtual scoped_ptr<Buffer> ResurrectLastOutputBuffer(
+        const gfx::Size& dimensions,
+        VideoPixelFormat format,
+        VideoPixelStorage storage) = 0;
+
     // An error has occurred that cannot be handled and VideoCaptureDevice must
     // be StopAndDeAllocate()-ed. |reason| is a text description of the error.
     virtual void OnError(const tracked_objects::Location& from_here,
@@ -257,18 +267,36 @@ class MEDIA_EXPORT VideoCaptureDevice {
 
   virtual ~VideoCaptureDevice();
 
-  // Prepares the camera for use. After this function has been called no other
-  // applications can use the camera. StopAndDeAllocate() must be called before
-  // the object is deleted.
+  // Prepares the video capturer for use. StopAndDeAllocate() must be called
+  // before the object is deleted.
   virtual void AllocateAndStart(const VideoCaptureParams& params,
                                 scoped_ptr<Client> client) = 0;
 
-  // Deallocates the camera, possibly asynchronously.
+  // In cases where the video capturer self-pauses (e.g., a screen capturer
+  // where the screen's content has not changed in a while), consumers may call
+  // this to request a "refresh frame" be delivered to the Client.  This is used
+  // in a number of circumstances, such as:
+  //
+  //   1. An additional consumer of video frames is starting up and requires a
+  //      first frame (as opposed to not receiving a frame for an indeterminate
+  //      amount of time).
+  //   2. A few repeats of the same frame would allow a lossy video encoder to
+  //      improve the video quality of unchanging content.
+  //
+  // The default implementation is a no-op. VideoCaptureDevice implementations
+  // are not required to honor this request, especially if they do not
+  // self-pause and/or if honoring the request would cause them to exceed their
+  // configured maximum frame rate. Any VideoCaptureDevice that does self-pause,
+  // however, should provide an implementation of this method that makes
+  // reasonable attempts to honor these requests.
+  virtual void RequestRefreshFrame() {}
+
+  // Deallocates the video capturer, possibly asynchronously.
   //
   // This call requires the device to do the following things, eventually: put
-  // camera hardware into a state where other applications could use it, free
-  // the memory associated with capture, and delete the |client| pointer passed
-  // into AllocateAndStart.
+  // hardware into a state where other applications could use it, free the
+  // memory associated with capture, and delete the |client| pointer passed into
+  // AllocateAndStart.
   //
   // If deallocation is done asynchronously, then the device implementation must
   // ensure that a subsequent AllocateAndStart() operation targeting the same ID

@@ -9,7 +9,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -175,8 +177,8 @@ class VideoCaptureBufferPoolTest
              << media::VideoPixelFormatToString(format_and_storage.pixel_format)
              << " " << dimensions.ToString();
     const int buffer_id = pool_->ReserveForProducer(
-        format_and_storage.pixel_format, format_and_storage.pixel_storage,
-        dimensions, &buffer_id_to_drop);
+        dimensions, format_and_storage.pixel_format,
+        format_and_storage.pixel_storage, &buffer_id_to_drop);
     if (buffer_id == VideoCaptureBufferPool::kInvalidId)
       return scoped_ptr<Buffer>();
     EXPECT_EQ(expected_dropped_id_, buffer_id_to_drop);
@@ -185,6 +187,18 @@ class VideoCaptureBufferPoolTest
         pool_->GetBufferHandle(buffer_id);
     return scoped_ptr<Buffer>(
         new Buffer(pool_, std::move(buffer_handle), buffer_id));
+  }
+
+  scoped_ptr<Buffer> ResurrectLastBuffer(
+      const gfx::Size& dimensions,
+      PixelFormatAndStorage format_and_storage) {
+    const int buffer_id = pool_->ResurrectLastForProducer(
+        dimensions, format_and_storage.pixel_format,
+        format_and_storage.pixel_storage);
+    if (buffer_id == VideoCaptureBufferPool::kInvalidId)
+      return scoped_ptr<Buffer>();
+    return scoped_ptr<Buffer>(
+        new Buffer(pool_, pool_->GetBufferHandle(buffer_id), buffer_id));
   }
 
   base::MessageLoop loop_;
@@ -369,6 +383,135 @@ TEST_P(VideoCaptureBufferPoolTest, BufferPool) {
   if (buffer4->data() != nullptr)
     memset(buffer4->data(), 0x77, buffer4->mapped_size());
   buffer4.reset();
+}
+
+// Tests that a previously-released buffer can be immediately resurrected under
+// normal conditions.
+TEST_P(VideoCaptureBufferPoolTest, ResurrectsLastBuffer) {
+  ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
+
+  // At the start, there should be nothing to resurrect.
+  scoped_ptr<Buffer> resurrected =
+      ResurrectLastBuffer(gfx::Size(10, 10), GetParam());
+  ASSERT_EQ(nullptr, resurrected.get());
+
+  // Reserve a 10x10 buffer and fill it with 0xab values.
+  scoped_ptr<Buffer> original = ReserveBuffer(gfx::Size(10, 10), GetParam());
+  ASSERT_NE(nullptr, original.get());
+  const size_t original_mapped_size = original->mapped_size();
+  memset(original->data(), 0xab, original_mapped_size);
+
+  // Try to resurrect a buffer BEFORE releasing |original|.  This should fail.
+  resurrected = ResurrectLastBuffer(gfx::Size(10, 10), GetParam());
+  ASSERT_EQ(nullptr, resurrected.get());
+
+  // Release |original| and then try to resurrect it.  Confirm the content of
+  // the resurrected buffer is a fill of 0xab values.
+  original.reset();
+  resurrected = ResurrectLastBuffer(gfx::Size(10, 10), GetParam());
+  ASSERT_NE(nullptr, resurrected.get());
+  ASSERT_EQ(original_mapped_size, resurrected->mapped_size());
+  uint8_t* resurrected_memory = reinterpret_cast<uint8_t*>(resurrected->data());
+  for (size_t i = 0; i < original_mapped_size; ++i)
+    EXPECT_EQ(0xab, resurrected_memory[i]) << "Mismatch at byte offset: " << i;
+
+  // Now, fill the resurrected buffer with 0xbc values and release it.
+  memset(resurrected_memory, 0xbc, original_mapped_size);
+  resurrected.reset();
+
+  // Finally, resurrect the buffer again, and confirm it contains a fill of 0xbc
+  // values.
+  resurrected = ResurrectLastBuffer(gfx::Size(10, 10), GetParam());
+  ASSERT_NE(nullptr, resurrected.get());
+  ASSERT_EQ(original_mapped_size, resurrected->mapped_size());
+  resurrected_memory = reinterpret_cast<uint8_t*>(resurrected->data());
+  for (size_t i = 0; i < original_mapped_size; ++i)
+    EXPECT_EQ(0xbc, resurrected_memory[i]) << "Mismatch at byte offset: " << i;
+}
+
+// Tests that a buffer cannot be resurrected if its properties do not match.
+TEST_P(VideoCaptureBufferPoolTest, DoesNotResurrectIfPropertiesNotMatched) {
+  ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
+
+  // Reserve a 10x10 buffer, fill it with 0xcd values, and release it.
+  scoped_ptr<Buffer> original = ReserveBuffer(gfx::Size(10, 10), GetParam());
+  ASSERT_NE(nullptr, original.get());
+  const size_t original_mapped_size = original->mapped_size();
+  memset(original->data(), 0xcd, original_mapped_size);
+  original.reset();
+
+  // Expect that the buffer cannot be resurrected if the dimensions do not
+  // match.
+  scoped_ptr<Buffer> resurrected =
+      ResurrectLastBuffer(gfx::Size(8, 8), GetParam());
+  ASSERT_EQ(nullptr, resurrected.get());
+
+  // Expect that the buffer cannot be resurrected if the pixel format does not
+  // match.
+  PixelFormatAndStorage altered_format_or_storage = GetParam();
+  altered_format_or_storage.pixel_format =
+      (altered_format_or_storage.pixel_format == media::PIXEL_FORMAT_I420
+           ? media::PIXEL_FORMAT_ARGB
+           : media::PIXEL_FORMAT_I420);
+  resurrected =
+      ResurrectLastBuffer(gfx::Size(10, 10), altered_format_or_storage);
+  ASSERT_EQ(nullptr, resurrected.get());
+
+  // Expect that the buffer cannot be resurrected if the pixel storage does not
+  // match.
+  altered_format_or_storage = GetParam();
+  altered_format_or_storage.pixel_storage =
+      (altered_format_or_storage.pixel_storage == media::PIXEL_STORAGE_CPU)
+          ? media::PIXEL_STORAGE_GPUMEMORYBUFFER
+          : media::PIXEL_STORAGE_CPU;
+  resurrected =
+      ResurrectLastBuffer(gfx::Size(10, 10), altered_format_or_storage);
+  ASSERT_EQ(nullptr, resurrected.get());
+
+  // Finally, check that the buffer CAN be resurrected if all properties match.
+  resurrected = ResurrectLastBuffer(gfx::Size(10, 10), GetParam());
+  ASSERT_NE(nullptr, resurrected.get());
+  ASSERT_EQ(original_mapped_size, resurrected->mapped_size());
+  uint8_t* resurrected_memory = reinterpret_cast<uint8_t*>(resurrected->data());
+  for (size_t i = 0; i < original_mapped_size; ++i)
+    EXPECT_EQ(0xcd, resurrected_memory[i]) << "Mismatch at byte offset: " << i;
+}
+
+// Tests that the buffers are managed by the pool such that the last-released
+// buffer is kept around as long as possible (for successful resurrection).
+TEST_P(VideoCaptureBufferPoolTest, AvoidsClobberingForResurrectingLastBuffer) {
+  ExpectDroppedId(VideoCaptureBufferPool::kInvalidId);
+
+  // Reserve a 10x10 buffer, fill it with 0xde values, and release it.
+  scoped_ptr<Buffer> original = ReserveBuffer(gfx::Size(10, 10), GetParam());
+  ASSERT_NE(nullptr, original.get());
+  const size_t original_mapped_size = original->mapped_size();
+  memset(original->data(), 0xde, original_mapped_size);
+  original.reset();
+
+  // Reserve all but one of the pool's buffers.
+  std::vector<scoped_ptr<Buffer>> held_buffers;
+  for (int i = 0; i < kTestBufferPoolSize - 1; ++i) {
+    held_buffers.push_back(ReserveBuffer(gfx::Size(10, 10), GetParam()));
+    ASSERT_NE(nullptr, held_buffers.back().get());
+  }
+
+  // Now, attempt to resurrect the original buffer.  This should succeed.
+  scoped_ptr<Buffer> resurrected =
+      ResurrectLastBuffer(gfx::Size(10, 10), GetParam());
+  ASSERT_NE(nullptr, resurrected.get());
+  ASSERT_EQ(original_mapped_size, resurrected->mapped_size());
+  uint8_t* resurrected_memory = reinterpret_cast<uint8_t*>(resurrected->data());
+  for (size_t i = 0; i < original_mapped_size; ++i)
+    EXPECT_EQ(0xde, resurrected_memory[i]) << "Mismatch at byte offset: " << i;
+  resurrected.reset();
+
+  // Reserve the final buffer in the pool, and then confirm resurrection does
+  // not succeed.
+  held_buffers.push_back(ReserveBuffer(gfx::Size(10, 10), GetParam()));
+  ASSERT_NE(nullptr, held_buffers.back().get());
+  resurrected = ResurrectLastBuffer(gfx::Size(10, 10), GetParam());
+  ASSERT_EQ(nullptr, resurrected.get());
 }
 
 INSTANTIATE_TEST_CASE_P(,

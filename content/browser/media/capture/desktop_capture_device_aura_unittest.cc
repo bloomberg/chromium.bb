@@ -60,6 +60,7 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   MOCK_METHOD0(DoReserveOutputBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
+  MOCK_METHOD0(DoResurrectLastOutputBuffer, void(void));
   MOCK_METHOD2(OnError,
                void(const tracked_objects::Location& from_here,
                     const std::string& reason));
@@ -85,7 +86,15 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
       const base::TimeTicks& timestamp) override {
     DoOnIncomingCapturedVideoFrame();
   }
-
+  scoped_ptr<Buffer> ResurrectLastOutputBuffer(
+      const gfx::Size& dimensions,
+      media::VideoPixelFormat format,
+      media::VideoPixelStorage storage) override {
+    EXPECT_EQ(media::PIXEL_FORMAT_I420, format);
+    EXPECT_EQ(media::PIXEL_STORAGE_CPU, storage);
+    DoResurrectLastOutputBuffer();
+    return scoped_ptr<Buffer>();
+  }
   double GetBufferPoolUtilization() const override { return 0.0; }
 };
 

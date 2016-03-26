@@ -85,6 +85,7 @@ class MockClient : public VideoCaptureDevice::Client {
   MOCK_METHOD0(DoReserveOutputBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
+  MOCK_METHOD0(DoResurrectLastOutputBuffer, void(void));
   MOCK_METHOD2(OnError,
                void(const tracked_objects::Location& from_here,
                     const std::string& reason));
@@ -122,6 +123,14 @@ class MockClient : public VideoCaptureDevice::Client {
                                     const scoped_refptr<VideoFrame>& frame,
                                     const base::TimeTicks& timestamp) override {
     DoOnIncomingCapturedVideoFrame();
+  }
+  scoped_ptr<Buffer> ResurrectLastOutputBuffer(
+      const gfx::Size& dimensions,
+      media::VideoPixelFormat format,
+      media::VideoPixelStorage storage) {
+    DoResurrectLastOutputBuffer();
+    NOTREACHED() << "This should never be called";
+    return scoped_ptr<Buffer>();
   }
 
  private:
