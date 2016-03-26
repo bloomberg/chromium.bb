@@ -6,14 +6,6 @@
  * @fileoverview
  * 'settings-site-settings-page' is the settings page containing privacy and
  * security site settings.
- *
- * Example:
- *
- *    <iron-animated-pages>
- *      <settings-site-settings-page prefs="{{prefs}}">
- *      </settings-site-settings-page>
- *      ... other pages ...
- *    </iron-animated-pages>
  */
 Polymer({
   is: 'settings-site-settings-page',
@@ -21,14 +13,6 @@ Polymer({
   behaviors: [SiteSettingsBehavior],
 
   properties: {
-    /**
-     * Preferences state.
-     */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
-
     /**
      * The current active route.
      */
@@ -47,18 +31,16 @@ Polymer({
   },
 
   ready: function() {
-    CrSettingsPrefs.initialized.then(function() {
-      this.addAllSitesCategory_();
-      this.addCategory_(settings.ContentSettingsTypes.COOKIES);
-      this.addCategory_(settings.ContentSettingsTypes.GEOLOCATION);
-      this.addCategory_(settings.ContentSettingsTypes.CAMERA);
-      this.addCategory_(settings.ContentSettingsTypes.MIC);
-      this.addCategory_(settings.ContentSettingsTypes.JAVASCRIPT);
-      this.addCategory_(settings.ContentSettingsTypes.POPUPS);
-      this.addCategory_(settings.ContentSettingsTypes.FULLSCREEN);
-      this.addCategory_(settings.ContentSettingsTypes.NOTIFICATIONS);
-      this.addCategory_(settings.ContentSettingsTypes.IMAGES);
-    }.bind(this));
+    this.addAllSitesCategory_();
+    this.addCategory_(settings.ContentSettingsTypes.COOKIES);
+    this.addCategory_(settings.ContentSettingsTypes.GEOLOCATION);
+    this.addCategory_(settings.ContentSettingsTypes.CAMERA);
+    this.addCategory_(settings.ContentSettingsTypes.MIC);
+    this.addCategory_(settings.ContentSettingsTypes.JAVASCRIPT);
+    this.addCategory_(settings.ContentSettingsTypes.POPUPS);
+    this.addCategory_(settings.ContentSettingsTypes.FULLSCREEN);
+    this.addCategory_(settings.ContentSettingsTypes.NOTIFICATIONS);
+    this.addCategory_(settings.ContentSettingsTypes.IMAGES);
   },
 
   /**

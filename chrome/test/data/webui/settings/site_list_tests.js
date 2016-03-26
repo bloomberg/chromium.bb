@@ -19,12 +19,17 @@ cr.define('site_list', function() {
       var browserProxy = null;
 
       /**
-       * An example pref with 2 blocked location items and 2 allowed.
+       * An example pref with 2 blocked location items and 2 allowed. This pref
+       * is also used for the All Sites category and therefore needs values for
+       * all types, even though some might be blank.
        * @type {SiteSettingsPref}
        */
       var prefs = {
         exceptions: {
-          location: [
+          media_stream_camera: [],
+          cookies: [],
+          fullscreen: [],
+          geolocation: [
             {
               embeddingOrigin: 'https://foo-allow.com:443',
               origin: 'https://foo-allow.com:443',
@@ -49,7 +54,12 @@ cr.define('site_list', function() {
               setting: 'block',
               source: 'preference',
             },
-          ]
+          ],
+          images: [],
+          javascript: [],
+          media_stream_mic: [],
+          notifications: [],
+          popups: [],
         }
       };
 
@@ -59,7 +69,7 @@ cr.define('site_list', function() {
        */
       var prefsMixedSchemes = {
         exceptions: {
-          location: [
+          geolocation: [
             {
               embeddingOrigin: 'https://foo-allow.com',
               origin: 'https://foo-allow.com',
@@ -83,7 +93,10 @@ cr.define('site_list', function() {
        */
       var prefsVarious = {
         exceptions: {
-          location: [
+          media_stream_camera: [],
+          cookies: [],
+          fullscreen: [],
+          geolocation: [
             {
               embeddingOrigin: 'https://foo.com',
               origin: 'https://foo.com',
@@ -97,6 +110,9 @@ cr.define('site_list', function() {
               source: 'preference',
             },
           ],
+          images: [],
+          javascript: [],
+          media_stream_mic: [],
           notifications: [
             {
               embeddingOrigin: 'https://google.com',
@@ -116,7 +132,8 @@ cr.define('site_list', function() {
               setting: 'block',
               source: 'preference',
             },
-          ]
+          ],
+          popups: [],
         }
       };
 
@@ -126,7 +143,7 @@ cr.define('site_list', function() {
        */
       var prefsOneEnabled = {
         exceptions: {
-          location: [
+          geolocation: [
             {
               embeddingOrigin: 'https://foo-allow.com:443',
               origin: 'https://foo-allow.com:443',
@@ -143,7 +160,7 @@ cr.define('site_list', function() {
        */
       var prefsOneDisabled = {
         exceptions: {
-          location: [
+          geolocation: [
             {
               embeddingOrigin: 'https://foo-block.com:443',
               origin: 'https://foo-block.com:443',
@@ -156,9 +173,6 @@ cr.define('site_list', function() {
 
       // Import necessary html before running suite.
       suiteSetup(function() {
-        cr.exportPath('settings_test');
-        settings_test.siteListNotifyForTest = true;
-
         CrSettingsPrefs.setInitialized();
         return PolymerTest.importHtml(
             'chrome://md-settings/site_settings/site_list.html');
@@ -278,7 +292,7 @@ cr.define('site_list', function() {
           setupLocationCategory(settings.PermissionValues.ALLOW, prefs);
         }).then(function() {
           assertEquals(2, testElement.sites.length);
-          assertEquals('https://bar-allow.com:443', testElement.sites[0]);
+          assertEquals('https://bar-allow.com:443', testElement.sites[0].origin);
           assertTrue(testElement.isAllowList_());
           assertMenuActionHidden(testElement, 'Allow');
           // Site list should show, no matter what category default is set to.
@@ -296,7 +310,7 @@ cr.define('site_list', function() {
           setupLocationCategory(settings.PermissionValues.BLOCK, prefs);
         }).then(function() {
           assertEquals(2, testElement.sites.length);
-          assertEquals('https://bar-block.com:443', testElement.sites[0]);
+          assertEquals('https://bar-block.com:443', testElement.sites[0].origin);
 
           assertFalse(testElement.isAllowList_());
           assertMenuActionHidden(testElement, 'Block');
@@ -317,15 +331,16 @@ cr.define('site_list', function() {
 
           // Validate that the sites gets populated from pre-canned prefs.
           assertEquals(2, testElement.sites.length);
-          assertEquals('https://bar-allow.com:443', testElement.sites[0]);
+          assertEquals('https://bar-allow.com:443', testElement.sites[0].origin);
           assertEquals(undefined, testElement.selectedOrigin);
 
           // Validate that the sites are shown in UI and can be selected.
           var firstItem = testElement.$.listContainer.items[0];
-          var clickable = firstItem.querySelector('.flex paper-item');
+          var clickable = firstItem.querySelector('.flex paper-item-body');
           assertNotEquals(undefined, clickable);
           MockInteractions.tap(clickable);
-          assertEquals('https://bar-allow.com:443', testElement.selectedOrigin);
+          assertEquals(
+              'https://bar-allow.com:443', testElement.selectedSite.origin);
         }.bind(this));
       });
 
@@ -404,19 +419,21 @@ cr.define('site_list', function() {
           Polymer.dom.flush();
 
           assertFalse(testElement.$.category.hidden);
-          // Validate that the sites gets populated from pre-canned prefs.
+          // Validate that the sites gets populated from pre-canned prefs. If
+          // this fails with 5 instead of the expected 3, then the de-duping of
+          // sites is not working for site_list.
           assertEquals(3, testElement.sites.length);
-          assertEquals('https://bar.com', testElement.sites[0]);
-          assertEquals('https://foo.com', testElement.sites[1]);
-          assertEquals('https://google.com', testElement.sites[2]);
+          assertEquals('https://bar.com', testElement.sites[0].origin);
+          assertEquals('https://foo.com', testElement.sites[1].origin);
+          assertEquals('https://google.com', testElement.sites[2].origin);
           assertEquals(undefined, testElement.selectedOrigin);
 
           // Validate that the sites are shown in UI and can be selected.
           var firstItem = testElement.$.listContainer.items[1];
-          var clickable = firstItem.querySelector('.flex paper-item');
+          var clickable = firstItem.querySelector('.flex paper-item-body');
           assertNotEquals(undefined, clickable);
           MockInteractions.tap(clickable);
-          assertEquals('https://foo.com', testElement.selectedOrigin);
+          assertEquals('https://foo.com', testElement.selectedSite.origin);
         }.bind(this));
       });
 

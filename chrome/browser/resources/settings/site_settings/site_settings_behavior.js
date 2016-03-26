@@ -14,41 +14,49 @@ var SiteSettingsBehaviorImpl = {
      * See site_settings/constants.js for possible values.
      */
     category: Number,
+
+    /**
+     * The browser proxy used to retrieve and change information about site
+     * settings categories and the sites within.
+     * @type {settings.SiteSettingsPrefsBrowserProxyImpl}
+     */
+    browserProxy: Object,
+  },
+
+  created: function() {
+    this.browserProxy =
+        settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
   },
 
   /**
    * Re-sets the category permission for a given origin.
-   * @param {string} origin The origin to change the permission for.
+   * @param {string} primaryPattern The primary pattern to reset the permission
+   *     for.
+   * @param {string} secondaryPattern The secondary pattern to reset the
+   *     permission for.
    * @param {number} category The category permission to change.
    * @protected
    */
-  resetCategoryPermissionForOrigin: function(origin, category) {
-    var pref = JSON.parse(JSON.stringify(this.getPref(
-        this.computeCategoryExceptionsPrefName(category))));
-    delete pref.value[origin + ',' + origin];
-    delete pref.value[origin + ',*'];
-    this.setPrefValue(
-        this.computeCategoryExceptionsPrefName(category), pref.value);
+  resetCategoryPermissionForOrigin: function(
+        primaryPattern, secondaryPattern, category) {
+    this.browserProxy.resetCategoryPermissionForOrigin(
+        primaryPattern, secondaryPattern, category);
   },
 
   /**
    * Sets the category permission for a given origin.
-   * @param {string} origin The origin to change the permission for.
+   * @param {string} primaryPattern The primary pattern to change the permission
+   *     for.
+   * @param {string} secondaryPattern The secondary pattern to change the
+   *     permission for.
    * @param {number} value What value to set the permission to.
    * @param {number} category The category permission to change.
    * @protected
    */
-  setCategoryPermissionForOrigin: function(origin, value, category) {
-    var pref = JSON.parse(JSON.stringify(this.getPref(
-        this.computeCategoryExceptionsPrefName(category))));
-    var key1 = origin + ',' + origin;
-    var key2 = origin + ',*';
-    if (pref.value[key1] != undefined)
-      pref.value[key1].setting = value;
-    if (pref.value[key2] != undefined)
-      pref.value[key2].setting = value;
-    this.setPrefValue(
-        this.computeCategoryExceptionsPrefName(category), pref.value);
+  setCategoryPermissionForOrigin: function(
+        primaryPattern, secondaryPattern, value, category) {
+    this.browserProxy.setCategoryPermissionForOrigin(
+        primaryPattern, secondaryPattern, category, value);
   },
 
   /**
@@ -109,7 +117,7 @@ var SiteSettingsBehaviorImpl = {
       case settings.ContentSettingsTypes.POPUPS:
         return 'icons:open-in-new';
       default:
-        assertNotReached();
+        assertNotReached('Invalid category: ' + category);
         return '';
     }
   },
@@ -141,7 +149,7 @@ var SiteSettingsBehaviorImpl = {
       case settings.ContentSettingsTypes.POPUPS:
         return loadTimeData.getString('siteSettingsPopups');
       default:
-        assertNotReached();
+        assertNotReached('Invalid category: ' + category);
         return '';
     }
   },
@@ -279,4 +287,4 @@ var SiteSettingsBehaviorImpl = {
 };
 
 /** @polymerBehavior */
-var SiteSettingsBehavior = [PrefsBehavior, SiteSettingsBehaviorImpl];
+var SiteSettingsBehavior = [SiteSettingsBehaviorImpl];

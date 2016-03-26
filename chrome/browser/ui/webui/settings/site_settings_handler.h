@@ -54,6 +54,10 @@ class SiteSettingsHandler : public SettingsPageUIHandler,
   // Returns the list of site exceptions for a given content settings type;
   void HandleGetExceptionList(const base::ListValue* args);
 
+  // Handles setting and resetting of an origin permission;
+  void HandleResetCategoryPermissionForOrigin(const base::ListValue* args);
+  void HandleSetCategoryPermissionForOrigin(const base::ListValue* args);
+
   Profile* profile_;
 
   // The host for which to fetch usage.

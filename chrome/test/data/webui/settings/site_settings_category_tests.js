@@ -24,10 +24,10 @@ cr.define('site_settings_category', function() {
        */
       var prefsLocationDisabled = {
         defaults: {
-          location: 'block',
+          geolocation: 'block',
         },
         exceptions: {
-          location: [],
+          geolocation: [],
         },
       };
 
@@ -37,18 +37,15 @@ cr.define('site_settings_category', function() {
        */
       var prefsLocationEnabled = {
         defaults: {
-          location: 'allow',
+          geolocation: 'allow',
         },
         exceptions: {
-          location: [],
+          geolocation: [],
         },
       };
 
       // Import necessary html before running suite.
       suiteSetup(function() {
-        cr.exportPath('settings_test');
-        settings_test.siteCategoryNotifyForTest = true;
-
         return PolymerTest.importHtml(
            'chrome://md-settings/site_settings/site_settings_category.html');
       });

@@ -12,27 +12,14 @@ settings_test.siteListNotifyForTest;
  * @fileoverview
  * 'settings-site-list' shows a list of Allowed and Blocked sites for a given
  * category.
- *
- * Example:
- *    <settings-site-list prefs="{{prefs}}"
- *        category="[[category]]">
- *    </settings-site-list>
  */
 Polymer({
 
   is: 'settings-site-list',
 
-  behaviors: [PrefsBehavior, SiteSettingsBehavior, WebUIListenerBehavior],
+  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
   properties: {
-    /**
-     * Preferences state.
-     */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
-
     /**
      * The current active route.
      */
@@ -42,10 +29,11 @@ Polymer({
     },
 
     /**
-     * The origin that was selected by the user in the dropdown list.
+     * The site that was selected by the user in the dropdown list.
+     * @type {SiteException}
      */
-    selectedOrigin: {
-      type: String,
+    selectedSite: {
+      type: Object,
       notify: true,
     },
 
@@ -55,7 +43,7 @@ Polymer({
     sites: {
       type: Array,
       value: function() { return []; },
-      notify: settings_test.siteListNotifyForTest,
+      notify: true,  // !!settings_test.siteListNotifyForTest,
     },
 
     /**
@@ -134,9 +122,10 @@ Polymer({
   /**
    * Called when a site changes permission.
    * @param {number} category The category of the site that changed.
+   * @param {string} site The site that changed.
    * @private
    */
-  siteWithinCategoryChanged_: function(category) {
+  siteWithinCategoryChanged_: function(category, site) {
     if (category == this.category)
       this.configureWidget_();
   },
@@ -221,7 +210,7 @@ Polymer({
    * @private
    */
   processExceptions_: function(data) {
-    var sites = new Set();
+    var sites = [];
     for (var i = 0; i < data.length; ++i)
       sites = this.appendSiteList_(sites, data[i]);
     this.sites = this.toSiteArray_(sites);
@@ -229,12 +218,11 @@ Polymer({
   },
 
   /**
-   * Retrieves a set of all known sites (any category/setting).
+   * Retrieves a list of all known sites (any category/setting).
    * @return {!Promise}
    * @private
    */
   getAllSitesList_: function() {
-    var sites = new Set();
     var prefsProxy = settings.SiteSettingsPrefsBrowserProxyImpl.getInstance();
     var promiseList = [];
     for (var type in settings.ContentSettingsTypes) {
@@ -247,10 +235,10 @@ Polymer({
 
   /**
    * Appends to |list| the sites for a given category and subtype.
-   * @param {!Set<string>} sites The site list to add to.
+   * @param {!Array<SiteException>} sites The site list to add to.
    * @param {!Array<SiteException>} exceptionList List of sites (exceptions) to
    *     add.
-   * @return {!Set<string>} The list of sites.
+   * @return {!Array<SiteException>} The list of sites.
    * @private
    */
   appendSiteList_: function(sites, exceptionList) {
@@ -268,30 +256,76 @@ Polymer({
         }
       }
 
-      sites.add(exceptionList[i].origin);
+      sites.push(exceptionList[i]);
     }
     return sites;
   },
 
   /**
-   * Converts a set of sites to an ordered array, sorted by site name then
-   * protocol.
-   * @param {!Set<string>} sites A set of sites to sort and convert to an array.
+   * Ensures the URL has a scheme (assumes http if omitted).
+   */
+  ensureUrlHasScheme_: function(url) {
+    if (url.length == 0) return url;
+    return url.indexOf('://') != -1 ? url : 'http://' + url;
+  },
+
+  /**
+   * Converts an unordered site list to an ordered array, sorted by site name
+   * then protocol and de-duped (by origin).
+   * @param {!Array<SiteException>} sites A list of sites to sort and de-dup.
    * @private
    */
   toSiteArray_: function(sites) {
-    var list = [...sites];
-    list.sort(function(a, b) {
-      if (a.indexOf('://') == -1) a = 'http://' + a;
-      if (b.indexOf('://') == -1) b = 'http://' + b;
-      var url1 = /** @type {{host: string}} */(new URL(a));
-      var url2 = /** @type {{host: string}} */(new URL(b));
-      var result = url1.host.localeCompare(url2.host);
-      if (result == 0)
-        return url1.protocol.localeCompare(url2.protocol);
-      return result;
+    var self = this;
+    sites.sort(function(a, b) {
+      // TODO(finnur): Hmm, it would probably be better to ensure scheme on the
+      //     JS/C++ boundary.
+      var originA = self.ensureUrlHasScheme_(a.origin);
+      var originB = self.ensureUrlHasScheme_(b.origin);
+      var embeddingOriginA = self.ensureUrlHasScheme_(a.embeddingOrigin);
+      var embeddingOriginB = self.ensureUrlHasScheme_(b.embeddingOrigin);
+      var url1 = new URL(originA);
+      var url2 = new URL(originB);
+      var embeddingUrl1 = embeddingOriginA.length == 0 ? '' :
+          new URL(embeddingOriginA);
+      var embeddingUrl2 = embeddingOriginB.length == 0 ? '' :
+          new URL(embeddingOriginB);
+      var comparison = url1.host.localeCompare(url2.host);
+      if (comparison == 0) {
+        comparison = url1.protocol.localeCompare(url2.protocol);
+        if (comparison == 0) {
+          comparison = url1.port.localeCompare(url2.port);
+          if (comparison == 0)
+            return embeddingUrl1.host.localeCompare(embeddingUrl2.host);
+        }
+      }
+      return comparison;
     });
-    return list;
+    var results = [];
+    var lastOrigin = '';
+    var lastEmbeddingOrigin = '';
+    for (var i = 0; i < sites.length; ++i) {
+      var origin = sites[i].origin;
+      var embeddingOrigin = sites[i].embeddingOrigin;
+
+      // The All Sites category can contain duplicates (from other categories).
+      if (origin == lastOrigin && embeddingOrigin == lastEmbeddingOrigin)
+        continue;
+
+      var embeddingOriginForDisplay = '';
+      if (embeddingOrigin != '*' && origin != embeddingOrigin)
+        embeddingOriginForDisplay = embeddingOrigin;
+
+      results.push({
+         origin: origin,
+         embeddingOrigin: embeddingOrigin,
+         embeddingOriginForDisplay: embeddingOriginForDisplay,
+      });
+
+      lastOrigin = origin;
+      lastEmbeddingOrigin = embeddingOrigin;
+    }
+    return results;
   },
 
   /**
@@ -311,7 +345,7 @@ Polymer({
    * @private
    */
   onOriginTap_: function(event) {
-    this.selectedOrigin = event.model.item;
+    this.selectedSite = event.model.item;
     var categorySelected =
         this.allSites ?
         'all-sites' :
@@ -325,20 +359,23 @@ Polymer({
 
   /**
    * A handler for activating one of the menu action items.
-   * @param {!{model: !{item: string},
-   *           target: !{selectedItems: !{textContent: string}}}} event
+   * @param {!{model: !{item: !{origin: string}},
+   *           detail: !{item: !{textContent: string}}}} event
    * @private
    */
-  onActionMenuIronSelect_: function(event) {
-    var origin = event.model.item;
-    var action = event.target.selectedItems[0].textContent;
+  onActionMenuIronActivate_: function(event) {
+    var origin = event.model.item.origin;
+    var embeddingOrigin = event.model.item.embeddingOrigin;
+    var action = event.detail.item.textContent;
     if (action == this.i18n_.resetAction) {
-      this.resetCategoryPermissionForOrigin(origin, this.category);
+      this.resetCategoryPermissionForOrigin(
+          origin, embeddingOrigin, this.category);
     } else {
       var value = (action == this.i18n_.allowAction) ?
           settings.PermissionValues.ALLOW :
           settings.PermissionValues.BLOCK;
-      this.setCategoryPermissionForOrigin(origin, value, this.category);
+      this.setCategoryPermissionForOrigin(
+          origin, embeddingOrigin, value, this.category);
     }
   },
 

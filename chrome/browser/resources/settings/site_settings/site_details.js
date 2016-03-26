@@ -6,31 +6,20 @@
  * @fileoverview
  * 'site-details' show the details (permissions and usage) for a given origin
  * under Site Settings.
- *
- * Example:
- *
- *      <site-details prefs="{{prefs}}" origin="{{origin}}">
- *      </site-details>
- *      ... other pages ...
  */
 Polymer({
   is: 'site-details',
 
+  behaviors: [SiteSettingsBehavior],
+
   properties: {
     /**
-     * Preferences state.
+     * The site that this widget is showing details for.
+     * @type {SiteException}
      */
-    prefs: {
+    site: {
       type: Object,
-      notify: true,
-    },
-
-    /**
-     * The origin that this widget is showing details for.
-     */
-    origin: {
-      type: String,
-      observer: 'onOriginChanged_',
+      observer: 'onSiteChanged_',
     },
 
     /**
@@ -47,11 +36,6 @@ Polymer({
     storageType_: Number,
 
     /**
-     * The category the user selected to get to this page.
-     */
-    categorySelected: String,
-
-    /**
      * The current active route.
      */
     currentRoute: {
@@ -65,21 +49,14 @@ Polymer({
   },
 
   ready: function() {
-    this.$.cookies.category = settings.ContentSettingsTypes.COOKIES;
-    this.$.javascript.category = settings.ContentSettingsTypes.JAVASCRIPT;
-    this.$.popups.category = settings.ContentSettingsTypes.POPUPS;
-    this.$.geolocation.category = settings.ContentSettingsTypes.GEOLOCATION;
-    this.$.notification.category = settings.ContentSettingsTypes.NOTIFICATIONS;
-    this.$.fullscreen.category = settings.ContentSettingsTypes.FULLSCREEN;
-    this.$.camera.category = settings.ContentSettingsTypes.CAMERA;
-    this.$.mic.category = settings.ContentSettingsTypes.MIC;
+    this.ContentSettingsTypes = settings.ContentSettingsTypes;
   },
 
   /**
    * Handler for when the origin changes.
    */
-  onOriginChanged_: function() {
-    var url = /** @type {{hostname: string}} */(new URL(this.origin));
+  onSiteChanged_: function() {
+    var url = new URL(this.site.origin);
     this.$.usageApi.fetchUsageTotal(url.hostname);
   },
 
@@ -87,14 +64,14 @@ Polymer({
    * Clears all data stored for the current origin.
    */
   onClearStorage_: function() {
-    this.$.usageApi.clearUsage(this.origin, this.storageType_);
+    this.$.usageApi.clearUsage(this.site.origin, this.storageType_);
   },
 
   /**
    * Called when usage has been deleted for an origin.
    */
   onUsageDeleted: function(event) {
-    if (event.detail.origin == this.origin) {
+    if (event.detail.origin == this.site.origin) {
       this.storedData_ = '';
       this.navigateBackIfNoData_();
     }

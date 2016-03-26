@@ -11,5 +11,10 @@
 }
 
 .site-list {
-  -webkit-margin-start: 16px;
+  -webkit-margin-end: -16px;
+}
+
+.origin {
+  --paper-item-body-two-line-min-height: 0;
+  -webkit-margin-start: 12px;
 }

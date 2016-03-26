@@ -109,7 +109,7 @@
         <settings-subheader i18n-values="page-title:siteSettings">
         </settings-subheader>
         <settings-site-settings-page current-route="{{currentRoute}}"
-            prefs="{{prefs}}" category-selected="{{categorySelected}}">
+            category-selected="{{categorySelected}}">
         </settings-site-settings-page>
       </neon-animatable>
 
@@ -118,7 +118,7 @@
             i18n-values="page-title:siteSettingsCategoryAllSites">
         </settings-subheader>
         <all-sites
-            selected-origin="{{originSelected}}" prefs="{{prefs}}"
+            selected-site="{{selectedSite}}"
             current-route="{{currentRoute}}">
         </all-sites>
       </neon-animatable>
@@ -126,7 +126,7 @@
         <settings-subheader i18n-values="page-title:siteSettingsCategoryCamera">
         </settings-subheader>
         <site-settings-category
-            selected-origin="{{originSelected}}" prefs="{{prefs}}"
+            selected-site="{{selectedSite}}"
             current-route="{{currentRoute}}"
             category="{{ContentSettingsTypes.CAMERA}}">
         </site-settings-category>
@@ -136,7 +136,7 @@
             i18n-values="page-title:siteSettingsCategoryCookies">
         </settings-subheader>
         <site-settings-category
-            selected-origin="{{originSelected}}" prefs="{{prefs}}"
+            selected-site="{{selectedSite}}"
             current-route="{{currentRoute}}"
             category="{{ContentSettingsTypes.COOKIES}}">
         </site-settings-category>
@@ -146,7 +146,7 @@
             i18n-values="page-title:siteSettingsCategoryFullscreen">
         </settings-subheader>
         <site-settings-category
-            selected-origin="{{originSelected}}" prefs="{{prefs}}"
+            selected-site="{{selectedSite}}"
             current-route="{{currentRoute}}"
             category="{{ContentSettingsTypes.FULLSCREEN}}">
         </site-settings-category>
@@ -155,7 +155,7 @@
         <settings-subheader i18n-values="page-title:siteSettingsCategoryImages">
         </settings-subheader>
         <site-settings-category
-            selected-origin="{{originSelected}}" prefs="{{prefs}}"
+            selected-site="{{selectedSite}}"
             current-route="{{currentRoute}}"
             category="{{ContentSettingsTypes.IMAGES}}">
         </site-settings-category>
@@ -165,7 +165,7 @@
             i18n-values="page-title:siteSettingsCategoryLocation">
         </settings-subheader>
         <site-settings-category
-            selected-origin="{{originSelected}}" prefs="{{prefs}}"
+            selected-site="{{selectedSite}}"
             current-route="{{currentRoute}}"
             category="{{ContentSettingsTypes.GEOLOCATION}}">
         </site-settings-category>
@@ -175,7 +175,7 @@
             i18n-values="page-title:siteSettingsCategoryJavascript">
         </settings-subheader>
         <site-settings-category
-            selected-origin="{{originSelected}}" prefs="{{prefs}}"
+            selected-site="{{selectedSite}}"
             current-route="{{currentRoute}}"
             category="{{ContentSettingsTypes.JAVASCRIPT}}">
         </site-settings-category>
@@ -185,7 +185,7 @@
             i18n-values="page-title:siteSettingsCategoryMicrophone">
         </settings-subheader>
         <site-settings-category
-            selected-origin="{{originSelected}}" prefs="{{prefs}}"
+            selected-site="{{selectedSite}}"
             current-route="{{currentRoute}}"
             category="{{ContentSettingsTypes.MIC}}">
         </site-settings-category>
@@ -195,7 +195,7 @@
             i18n-values="page-title:siteSettingsCategoryNotifications">
         </settings-subheader>
         <site-settings-category
-            selected-origin="{{originSelected}}" prefs="{{prefs}}"
+            selected-site="{{selectedSite}}"
             current-route="{{currentRoute}}"
             category="{{ContentSettingsTypes.NOTIFICATIONS}}">
         </site-settings-category>
@@ -205,16 +205,16 @@
             i18n-values="page-title:siteSettingsCategoryPopups">
         </settings-subheader>
         <site-settings-category
-            selected-origin="{{originSelected}}" prefs="{{prefs}}"
+            selected-site="{{selectedSite}}"
             current-route="{{currentRoute}}"
             category="{{ContentSettingsTypes.POPUPS}}">
         </site-settings-category>
       </neon-animatable>
 
       <neon-animatable id="site-details">
-        <site-details prefs="{{prefs}}" origin="{{originSelected}}"
-            current-route="{{currentRoute}}"
-            category-selected="{{categorySelected}}">
+        <site-details
+            site="{{selectedSite}}"
+            current-route="{{currentRoute}}">
         </site-details>
       </neon-animatable>
     </settings-animated-pages>

@@ -12,12 +12,6 @@ settings_test.siteCategoryNotifyForTest;
  * @fileoverview
  * 'site-settings-category' is the polymer element for showing a certain
  * category under Site Settings.
- *
- * Example:
- *
- *   <site-settings-category prefs="{{prefs}}">
- *   </site-settings-category>
- *   ... other pages ...
  */
 Polymer({
   is: 'site-settings-category',
@@ -25,14 +19,6 @@ Polymer({
   behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
   properties: {
-    /**
-     * Preferences state.
-     */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
-
     /**
      * The current active route.
      */
@@ -48,14 +34,15 @@ Polymer({
      */
     categoryEnabled: {
       type: Boolean,
-      notify: settings_test.siteCategoryNotifyForTest,
+      notify: true,  // !!settings_test.siteCategoryNotifyForTest,
     },
 
     /**
-     * The origin that was selected by the user in the dropdown list.
+     * The site that was selected by the user in the dropdown list.
+     * @type {SiteException}
      */
-    selectedOrigin: {
-      type: String,
+    selectedSite: {
+      type: Object,
       notify: true,
     },
 

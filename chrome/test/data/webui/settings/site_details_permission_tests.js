@@ -16,30 +16,16 @@ cr.define('site_details_permission', function() {
        * An example pref with only camera allowed.
        */
       var prefs = {
-        profile: {
-          content_settings: {
-            exceptions: {
-              media_stream_camera: {
-                value: {
-                  'https:\/\/foo-allow.com:443,https:\/\/foo-allow.com:443': {
-                    setting: 1,
-                  }
-                },
-              },
+        exceptions: {
+          media_stream_camera: [
+            {
+              embeddingOrigin: 'https://foo-allow.com:443',
+              origin: 'https://foo-allow.com:443',
+              setting: 'allow',
+              source: 'preference',
             },
-          },
-        },
-      };
-
-      /**
-       * An example empty pref.
-       */
-      var prefsEmpty = {
-        profile: {
-          content_settings: {
-            exceptions: {},
-          },
-        },
+          ]
+        }
       };
 
       // Import necessary html before running suite.
@@ -51,6 +37,8 @@ cr.define('site_details_permission', function() {
 
       // Initialize a site-details-permission before each test.
       setup(function() {
+        browserProxy = new TestSiteSettingsPrefsBrowserProxy();
+        settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
         testElement = document.createElement('site-details-permission');
         document.body.appendChild(testElement);
@@ -58,46 +46,86 @@ cr.define('site_details_permission', function() {
 
       // Tests that the given value is converted to the expected value, for a
       // given prefType.
-      var isAllowed = function(permission, prefs, origin) {
-        var pref =
-            testElement.prefs.profile.content_settings.exceptions[permission];
-        var permissionPref = pref.value[origin + ',' + origin];
-        return permissionPref.setting == settings.PermissionValues.ALLOW;
+      function isAllowed(origin, exceptionList) {
+        for (var i = 0; i < exceptionList.length; ++i) {
+          if (exceptionList[i].origin == origin)
+            return exceptionList[i].setting == 'allow';
+        }
+        return false;
+      };
+
+      function validatePermissionFlipWorks(origin, allow) {
+        MockInteractions.tap(allow ? testElement.$.allow : testElement.$.block);
+        return browserProxy.whenCalled('setCategoryPermissionForOrigin').then(
+            function(arguments) {
+              assertEquals(origin, arguments[0]);
+              assertEquals('', arguments[1]);
+              assertEquals(testElement.category, arguments[2]);
+              assertEquals(allow ?
+                  settings.PermissionValues.ALLOW :
+                  settings.PermissionValues.BLOCK, arguments[3]);
+            });
       };
 
       test('empty state', function() {
-        testElement.prefs = prefsEmpty;
+        browserProxy.setPrefs(prefsEmpty);
         testElement.category = settings.ContentSettingsTypes.CAMERA;
-        testElement.origin = "http://www.google.com";
+        testElement.site = {
+          origin: 'http://www.google.com',
+          embeddingOrigin: '',
+        };
 
-        assertEquals(0, testElement.offsetHeight,
-            'No prefs, widget should not be visible, height');
+        return browserProxy.whenCalled('getExceptionList').then(function() {
+          assertTrue(testElement.$.details.hidden);
+        }.bind(this));
       });
 
       test('camera category', function() {
-        testElement.prefs = prefs;
-        testElement.category = settings.ContentSettingsTypes.CAMERA;
         var origin = "https://foo-allow.com:443";
-        testElement.origin = origin;
+        browserProxy.setPrefs(prefs);
+        testElement.category = settings.ContentSettingsTypes.CAMERA;
+        testElement.site = {
+          origin: origin,
+          embeddingOrigin: '',
+        };
 
-        assertNotEquals(0, testElement.offsetHeight,
-            'Prefs loaded, widget should be visible, height');
+        return browserProxy.whenCalled('getExceptionList').then(function() {
+          assertFalse(testElement.$.details.hidden);
 
-        var header = testElement.$.details.querySelector('.permission-header');
-        assertEquals('Camera', header.innerText.trim(),
-            'Widget should be labelled correctly');
+          var header = testElement.$.details.querySelector(
+              '.permission-header');
+          assertEquals('Camera', header.innerText.trim(),
+              'Widget should be labelled correctly');
 
-        // Flip the permission and validate that prefs stay in sync.
-        assertTrue(isAllowed('media_stream_camera', prefs, origin));
-        MockInteractions.tap(testElement.$.block);
-        assertFalse(isAllowed('media_stream_camera', prefs, origin));
-        MockInteractions.tap(testElement.$.allow);
-        assertTrue(isAllowed('media_stream_camera', prefs, origin));
+          // Flip the permission and validate that prefs stay in sync.
+          return validatePermissionFlipWorks(origin, true).then(function() {
+            browserProxy.resetResolver('setCategoryPermissionForOrigin');
+            return validatePermissionFlipWorks(origin, false).then(function() {
+              browserProxy.resetResolver('setCategoryPermissionForOrigin');
+              return validatePermissionFlipWorks(origin, true).then(function() {
+              }.bind(this));
+            }.bind(this));
+          }.bind(this));
+        }.bind(this));
+      });
 
-        // When the pref gets deleted, the widget should disappear.
-        testElement.prefs = prefsEmpty;
-        assertEquals(0, testElement.offsetHeight,
-            'Widget should not be visible, height');
+      test('disappear on empty', function() {
+        var origin = "https://foo-allow.com:443";
+        browserProxy.setPrefs(prefs);
+        testElement.category = settings.ContentSettingsTypes.CAMERA;
+        testElement.site = {
+          origin: origin,
+          embeddingOrigin: '',
+        };
+
+        return browserProxy.whenCalled('getExceptionList').then(function() {
+          assertFalse(testElement.$.details.hidden);
+
+          browserProxy.setPrefs(prefsEmpty);
+          browserProxy.whenCalled('getExceptionList').then(function() {
+            assertTrue(testElement.$.details.hidden);
+          }.bind(this));
+        }.bind(this));
       });
     });
   }

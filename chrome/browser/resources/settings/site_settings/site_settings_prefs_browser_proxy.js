@@ -58,6 +58,29 @@ cr.define('settings', function() {
      * @return {Promise<Array<SiteException>>}
      */
     getExceptionList: function(contentType) {},
+
+    /**
+     * Resets the category permission for a given origin (expressed as primary
+     *    and secondary patterns).
+     * @param {!string} primaryPattern The origin to change (primary pattern).
+     * @param {!string} secondaryPattern The embedding origin to change
+     *    (secondary pattern).
+     * @param {!number} contentType The category to change.
+     */
+    resetCategoryPermissionForOrigin: function(
+        primaryPattern, secondaryPattern, contentType) {},
+
+    /**
+     * Sets the category permission for a given origin (expressed as primary
+     *    and secondary patterns).
+     * @param {!string} primaryPattern The origin to change (primary pattern).
+     * @param {!string} secondaryPattern The embedding origin to change
+     *    (secondary pattern).
+     * @param {!number} contentType The category to change.
+     * @param {!number} value The value to change the permission to.
+     */
+    setCategoryPermissionForOrigin: function(
+        primaryPattern, secondaryPattern, contentType, value) {},
   };
 
   /**
@@ -84,6 +107,20 @@ cr.define('settings', function() {
     /** @override */
     getExceptionList: function(contentType) {
       return cr.sendWithPromise('getExceptionList', contentType);
+    },
+
+    /** @override */
+    resetCategoryPermissionForOrigin: function(
+        primaryPattern, secondaryPattern, contentType) {
+      chrome.send('resetCategoryPermissionForOrigin',
+          [primaryPattern, secondaryPattern, contentType]);
+    },
+
+    /** @override */
+    setCategoryPermissionForOrigin: function(
+        primaryPattern, secondaryPattern, contentType, value) {
+      chrome.send('setCategoryPermissionForOrigin',
+          [primaryPattern, secondaryPattern, contentType, value]);
     },
   };
 

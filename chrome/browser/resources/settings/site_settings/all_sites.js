@@ -14,14 +14,6 @@ Polymer({
 
   properties: {
     /**
-     * Preferences state.
-     */
-    prefs: {
-      type: Object,
-      notify: true,
-    },
-
-    /**
      * The current active route.
      */
     currentRoute: {
@@ -30,10 +22,11 @@ Polymer({
     },
 
     /**
-     * The origin that was selected by the user in the dropdown list.
+     * The site that was selected by the user in the dropdown list.
+     * @type {SiteException}
      */
-    selectedOrigin: {
-      type: String,
+    selectedSite: {
+      type: Object,
       notify: true,
     },
   },

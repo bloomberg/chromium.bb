@@ -54,6 +54,14 @@ void SiteSettingsHandler::RegisterMessages() {
       "getExceptionList",
       base::Bind(&SiteSettingsHandler::HandleGetExceptionList,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "resetCategoryPermissionForOrigin",
+      base::Bind(&SiteSettingsHandler::HandleResetCategoryPermissionForOrigin,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setCategoryPermissionForOrigin",
+      base::Bind(&SiteSettingsHandler::HandleSetCategoryPermissionForOrigin,
+                 base::Unretained(this)));
 }
 
 void SiteSettingsHandler::OnGetUsageInfo(
@@ -86,12 +94,18 @@ void SiteSettingsHandler::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     std::string resource_identifier) {
-  web_ui()->CallJavascriptFunction(
-      "cr.webUIListenerCallback",
-      primary_pattern.ToString().empty() ?
-          base::StringValue("contentSettingCategoryChanged") :
-          base::StringValue("contentSettingSitePermissionChanged"),
-      base::FundamentalValue(content_type));
+  if (primary_pattern.ToString().empty()) {
+    web_ui()->CallJavascriptFunction(
+        "cr.webUIListenerCallback",
+        base::StringValue("contentSettingCategoryChanged"),
+        base::FundamentalValue(content_type));
+  } else {
+    web_ui()->CallJavascriptFunction(
+        "cr.webUIListenerCallback",
+        base::StringValue("contentSettingSitePermissionChanged"),
+        base::FundamentalValue(content_type),
+        base::StringValue(primary_pattern.ToString()));
+  }
 }
 
 void SiteSettingsHandler::HandleFetchUsageTotal(
@@ -189,6 +203,55 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
   site_settings::GetExceptionsFromHostContentSettingsMap(
       map, content_type, web_ui(), exceptions.get());
   ResolveJavascriptCallback(*callback_id, *exceptions.get());
+}
+
+void SiteSettingsHandler::HandleResetCategoryPermissionForOrigin(
+    const base::ListValue* args) {
+  CHECK_EQ(3U, args->GetSize());
+  std::string primary_pattern;
+  CHECK(args->GetString(0, &primary_pattern));
+  std::string secondary_pattern;
+  CHECK(args->GetString(1, &secondary_pattern));
+  double type;
+  CHECK(args->GetDouble(2, &type));
+
+  ContentSettingsType content_type =
+      static_cast<ContentSettingsType>(static_cast<int>(type));
+
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  map->SetContentSetting(
+      ContentSettingsPattern::FromString(primary_pattern),
+      secondary_pattern.empty() ?
+          ContentSettingsPattern::Wildcard() :
+          ContentSettingsPattern::FromString(secondary_pattern),
+      content_type, "", CONTENT_SETTING_DEFAULT);
+}
+
+void SiteSettingsHandler::HandleSetCategoryPermissionForOrigin(
+    const base::ListValue* args) {
+  CHECK_EQ(4U, args->GetSize());
+  std::string primary_pattern;
+  CHECK(args->GetString(0, &primary_pattern));
+  std::string secondary_pattern;
+  CHECK(args->GetString(1, &secondary_pattern));
+  double type;
+  CHECK(args->GetDouble(2, &type));
+  double value;
+  CHECK(args->GetDouble(3, &value));
+
+  ContentSettingsType content_type =
+      static_cast<ContentSettingsType>(static_cast<int>(type));
+  ContentSetting setting = static_cast<ContentSetting>(static_cast<int>(value));
+
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  map->SetContentSetting(
+      ContentSettingsPattern::FromString(primary_pattern),
+      secondary_pattern.empty() ?
+          ContentSettingsPattern::Wildcard() :
+          ContentSettingsPattern::FromString(secondary_pattern),
+      content_type, "", setting);
 }
 
 }  // namespace settings
