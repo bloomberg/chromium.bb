@@ -30,6 +30,11 @@ inline int alpha_blend(int alpha, int src, int dst) {
 
 }  // namespace
 
+// static
+scoped_ptr<CursorRenderer> CursorRenderer::Create(gfx::NativeView view) {
+  return scoped_ptr<CursorRenderer>(new CursorRendererMac(view));
+}
+
 CursorRendererMac::CursorRendererMac(NSView* view)
     : view_(view), weak_factory_(this) {
   Clear();

@@ -11,21 +11,15 @@
 
 namespace content {
 
-namespace {
-// The time period within which a triggered UI event is considered
-// currently active.
-const int kTimePeriodUiEventMicros = 100000;  // 100 ms
-
-// Minimum number of user interactions before we consider the user to be in
-// interactive mode. The goal is to prevent user interactions to launch
-// animated content from causing target playout time flip-flop.
-const int kMinUserInteractions = 5;
-}  // namespace
+// static
+scoped_ptr<WindowActivityTracker> WindowActivityTracker::Create(
+    gfx::NativeView window) {
+  return scoped_ptr<WindowActivityTracker>(
+      new WindowActivityTrackerAura(window));
+}
 
 WindowActivityTrackerAura::WindowActivityTrackerAura(aura::Window* window)
     : window_(window),
-      last_time_ui_event_detected_(base::TimeTicks()),
-      ui_events_count_(0),
       weak_factory_(this) {
   if (window_) {
     window_->AddObserver(this);
@@ -44,28 +38,16 @@ base::WeakPtr<WindowActivityTracker> WindowActivityTrackerAura::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-bool WindowActivityTrackerAura::IsUiInteractionActive() const {
-  return ui_events_count_ > kMinUserInteractions;
-}
-
-void WindowActivityTrackerAura::RegisterMouseInteractionObserver(
-    const base::Closure& observer) {
-  mouse_interaction_observer_ = observer;
-}
-
-void WindowActivityTrackerAura::Reset() {
-  ui_events_count_ = 0;
-  last_time_ui_event_detected_ = base::TimeTicks();
-}
-
 void WindowActivityTrackerAura::OnEvent(ui::Event* event) {
-  if (!mouse_interaction_observer_.is_null() && event->IsMouseEvent())
-    mouse_interaction_observer_.Run();
-  if (base::TimeTicks::Now() - last_time_ui_event_detected_ >
-      base::TimeDelta::FromMicroseconds(kTimePeriodUiEventMicros)) {
-    ui_events_count_++;
+  switch (event->type()) {
+    case ui::ET_MOUSE_PRESSED:
+    case ui::ET_MOUSE_RELEASED:
+    case ui::ET_MOUSE_MOVED:
+      WindowActivityTracker::OnMouseActivity();
+      break;
+    default:
+      break;
   }
-  last_time_ui_event_detected_ = base::TimeTicks::Now();
 }
 
 void WindowActivityTrackerAura::OnWindowDestroying(aura::Window* window) {

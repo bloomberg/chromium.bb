@@ -93,13 +93,6 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
-#if defined(USE_AURA)
-#include "content/browser/media/capture/cursor_renderer_aura.h"
-#include "content/browser/media/capture/window_activity_tracker_aura.h"
-#elif defined(OS_MACOSX)
-#include "content/browser/media/capture/cursor_renderer_mac.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -199,10 +192,10 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
 // autonomously on some other thread.
 class ContentCaptureSubscription {
  public:
-  typedef base::Callback<
-      void(const base::TimeTicks&,
-           const scoped_refptr<media::VideoFrame>&,
-           const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&)>
+  typedef base::Callback<void(
+      const base::TimeTicks&,
+      const scoped_refptr<media::VideoFrame>&,
+      const RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback&)>
       CaptureCallback;
 
   // Create a subscription. Whenever a manual capture is required, the
@@ -360,8 +353,8 @@ bool FrameSubscriber::ShouldCaptureFrame(
     base::TimeTicks present_time,
     scoped_refptr<media::VideoFrame>* storage,
     DeliverFrameCallback* deliver_frame_cb) {
-  TRACE_EVENT1("gpu.capture", "FrameSubscriber::ShouldCaptureFrame",
-               "instance", this);
+  TRACE_EVENT1("gpu.capture", "FrameSubscriber::ShouldCaptureFrame", "instance",
+               this);
 
   media::ThreadSafeCaptureOracle::CaptureFrameCallback capture_frame_cb;
 
@@ -438,19 +431,11 @@ ContentCaptureSubscription::ContentCaptureSubscription(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderWidgetHostView* const view = source.GetView();
-// TODO(isheriff): Implement activity tracker on mac.
-// https://crbug.com/567735
-#if defined(USE_AURA)
+#if defined(USE_AURA) || defined(OS_MACOSX)
   if (view) {
-    cursor_renderer_.reset(new content::CursorRendererAura(
-        view->GetNativeView(), kCursorEnabledOnMouseMovement));
-    window_activity_tracker_.reset(
-        new content::WindowActivityTrackerAura(view->GetNativeView()));
-  }
-#elif defined(OS_MACOSX)
-  if (view) {
-    cursor_renderer_.reset(
-        new content::CursorRendererMac(view->GetNativeView()));
+    cursor_renderer_ = CursorRenderer::Create(view->GetNativeView());
+    window_activity_tracker_ =
+        WindowActivityTracker::Create(view->GetNativeView());
   }
 #endif
   timer_subscriber_.reset(new FrameSubscriber(
@@ -536,12 +521,10 @@ void RenderVideoFrame(
   SkAutoLockPixels locker(input);
 
   // Sanity-check the captured bitmap.
-  if (input.empty() ||
-      !input.readyToDraw() ||
-      input.colorType() != kN32_SkColorType ||
-      input.width() < 2 || input.height() < 2) {
-    DVLOG(1) << "input unacceptable (size="
-             << input.getSize()
+  if (input.empty() || !input.readyToDraw() ||
+      input.colorType() != kN32_SkColorType || input.width() < 2 ||
+      input.height() < 2) {
+    DVLOG(1) << "input unacceptable (size=" << input.getSize()
              << ", ready=" << input.readyToDraw()
              << ", colorType=" << input.colorType() << ')';
     return;
@@ -572,11 +555,10 @@ void RenderVideoFrame(
       method = skia::ImageOperations::RESIZE_BOX;
     }
 
-    TRACE_EVENT_ASYNC_STEP_INTO0("gpu.capture",
-                                 "Capture", output.get(), "Scale");
-    scaled_bitmap = skia::ImageOperations::Resize(input, method,
-                                                  region_in_frame.width(),
-                                                  region_in_frame.height());
+    TRACE_EVENT_ASYNC_STEP_INTO0("gpu.capture", "Capture", output.get(),
+                                 "Scale");
+    scaled_bitmap = skia::ImageOperations::Resize(
+        input, method, region_in_frame.width(), region_in_frame.height());
   } else {
     scaled_bitmap = input;
   }
@@ -585,10 +567,9 @@ void RenderVideoFrame(
   {
     // Align to 2x2 pixel boundaries, as required by
     // media::CopyRGBToVideoFrame().
-    const gfx::Rect region_in_yv12_frame(region_in_frame.x() & ~1,
-                                         region_in_frame.y() & ~1,
-                                         region_in_frame.width() & ~1,
-                                         region_in_frame.height() & ~1);
+    const gfx::Rect region_in_yv12_frame(
+        region_in_frame.x() & ~1, region_in_frame.y() & ~1,
+        region_in_frame.width() & ~1, region_in_frame.height() & ~1);
     if (region_in_yv12_frame.IsEmpty())
       return;
 
@@ -604,9 +585,7 @@ void RenderVideoFrame(
 }
 
 VideoFrameDeliveryLog::VideoFrameDeliveryLog()
-    : last_frame_rate_log_time_(),
-      count_frames_rendered_(0) {
-}
+    : last_frame_rate_log_time_(), count_frames_rendered_(0) {}
 
 void VideoFrameDeliveryLog::ChronicleFrameDelivery(base::TimeTicks frame_time) {
   // Log frame rate, if verbose logging is turned on.
@@ -619,11 +598,9 @@ void VideoFrameDeliveryLog::ChronicleFrameDelivery(base::TimeTicks frame_time) {
     ++count_frames_rendered_;
     const base::TimeDelta elapsed = frame_time - last_frame_rate_log_time_;
     if (elapsed >= kFrameRateLogInterval) {
-      const double measured_fps =
-          count_frames_rendered_ / elapsed.InSecondsF();
-      UMA_HISTOGRAM_COUNTS(
-          "TabCapture.FrameRate",
-          static_cast<int>(measured_fps));
+      const double measured_fps = count_frames_rendered_ / elapsed.InSecondsF();
+      UMA_HISTOGRAM_COUNTS("TabCapture.FrameRate",
+                           static_cast<int>(measured_fps));
       VLOG(1) << "Current measured frame rate for "
               << "WebContentsVideoCaptureDevice is " << measured_fps << " FPS.";
       last_frame_rate_log_time_ = frame_time;
@@ -641,8 +618,8 @@ WebContentsCaptureMachine::WebContentsCaptureMachine(
       tracker_(new WebContentsTracker(true)),
       auto_throttling_enabled_(enable_auto_throttling),
       weak_ptr_factory_(this) {
-  DVLOG(1) << "Created WebContentsCaptureMachine for "
-           << render_process_id << ':' << main_render_frame_id
+  DVLOG(1) << "Created WebContentsCaptureMachine for " << render_process_id
+           << ':' << main_render_frame_id
            << (auto_throttling_enabled_ ? " with auto-throttling enabled" : "");
 }
 
@@ -659,12 +636,9 @@ void WebContentsCaptureMachine::Start(
     const base::Callback<void(bool)> callback) {
   // Starts the capture machine asynchronously.
   BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI,
-      FROM_HERE,
+      BrowserThread::UI, FROM_HERE,
       base::Bind(&WebContentsCaptureMachine::InternalStart,
-                 base::Unretained(this),
-                 oracle_proxy,
-                 params),
+                 base::Unretained(this), oracle_proxy, params),
       callback);
 }
 
@@ -699,11 +673,9 @@ bool WebContentsCaptureMachine::InternalStart(
 
 void WebContentsCaptureMachine::Stop(const base::Closure& callback) {
   // Stops the capture machine asynchronously.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE, base::Bind(
-          &WebContentsCaptureMachine::InternalStop,
-          base::Unretained(this),
-          callback));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::Bind(&WebContentsCaptureMachine::InternalStop,
+                                     base::Unretained(this), callback));
 }
 
 void WebContentsCaptureMachine::InternalStop(const base::Closure& callback) {
@@ -727,9 +699,8 @@ void WebContentsCaptureMachine::InternalStop(const base::Closure& callback) {
   // to the thread pool used for blocking operations.
   if (render_thread_) {
     BrowserThread::PostBlockingPoolTask(
-        FROM_HERE,
-        base::Bind(&DeleteOnWorkerThread, base::Passed(&render_thread_),
-                   callback));
+        FROM_HERE, base::Bind(&DeleteOnWorkerThread,
+                              base::Passed(&render_thread_), callback));
   }
 }
 
@@ -753,29 +724,28 @@ void WebContentsCaptureMachine::Capture(
     last_view_size_ = view_size;
 
     // Measure the number of kilopixels.
-    UMA_HISTOGRAM_COUNTS_10000(
-        "TabCapture.ViewChangeKiloPixels",
-        view_size.width() * view_size.height() / 1024);
+    UMA_HISTOGRAM_COUNTS_10000("TabCapture.ViewChangeKiloPixels",
+                               view_size.width() * view_size.height() / 1024);
   }
 
   if (view->CanCopyToVideoFrame()) {
     view->CopyFromCompositingSurfaceToVideoFrame(
-        gfx::Rect(view_size),
-        target,
+        gfx::Rect(view_size), target,
         base::Bind(&WebContentsCaptureMachine::
-                        DidCopyFromCompositingSurfaceToVideoFrame,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   start_time, deliver_frame_cb));
+                       DidCopyFromCompositingSurfaceToVideoFrame,
+                   weak_ptr_factory_.GetWeakPtr(), start_time,
+                   deliver_frame_cb));
   } else {
-    const gfx::Size fitted_size = view_size.IsEmpty() ? gfx::Size() :
-        media::ComputeLetterboxRegion(target->visible_rect(), view_size).size();
+    const gfx::Size fitted_size =
+        view_size.IsEmpty()
+            ? gfx::Size()
+            : media::ComputeLetterboxRegion(target->visible_rect(), view_size)
+                  .size();
     rwh->CopyFromBackingStore(
         gfx::Rect(),
         fitted_size,  // Size here is a request not always honored.
         base::Bind(&WebContentsCaptureMachine::DidCopyFromBackingStore,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   start_time,
-                   target,
+                   weak_ptr_factory_.GetWeakPtr(), start_time, target,
                    deliver_frame_cb),
         kN32_SkColorType);
   }
@@ -801,18 +771,17 @@ gfx::Size WebContentsCaptureMachine::ComputeOptimalViewSize() const {
       // issues caused by "one pixel stretching" and/or odd-to-even dimension
       // scaling, and to improve the performance of consumers of the captured
       // video.
-      const auto HasIntendedAspectRatio =
-          [](const gfx::Size& size, int width_units, int height_units) {
+      const auto HasIntendedAspectRatio = [](
+          const gfx::Size& size, int width_units, int height_units) {
         const int a = height_units * size.width();
         const int b = width_units * size.height();
         const int percentage_diff = 100 * std::abs((a - b)) / b;
         return percentage_diff <= 1;  // Effectively, anything strictly <2%.
       };
-      const auto RoundToExactAspectRatio =
-          [](const gfx::Size& size, int width_step, int height_step) {
-        const int adjusted_height =
-            std::max(size.height() - (size.height() % height_step),
-                     height_step);
+      const auto RoundToExactAspectRatio = [](const gfx::Size& size,
+                                              int width_step, int height_step) {
+        const int adjusted_height = std::max(
+            size.height() - (size.height() % height_step), height_step);
         DCHECK_EQ((adjusted_height * width_step) % height_step, 0);
         return gfx::Size(adjusted_height * width_step / height_step,
                          adjusted_height);
@@ -865,8 +834,8 @@ void WebContentsCaptureMachine::DidCopyFromBackingStore(
                                  "Render");
     render_thread_->task_runner()->PostTask(
         FROM_HERE, media::BindToCurrentLoop(
-            base::Bind(&RenderVideoFrame, bitmap, target,
-                              base::Bind(deliver_frame_cb, start_time))));
+                       base::Bind(&RenderVideoFrame, bitmap, target,
+                                  base::Bind(deliver_frame_cb, start_time))));
   } else {
     // Capture can fail due to transient issues, so just skip this frame.
     DVLOG(1) << "CopyFromBackingStore failed; skipping frame.";
@@ -920,9 +889,9 @@ void WebContentsCaptureMachine::RenewFrameSubscription(bool had_target) {
   if (!had_subscription && tracker_->web_contents())
     tracker_->web_contents()->IncrementCapturerCount(ComputeOptimalViewSize());
 
-  subscription_.reset(new ContentCaptureSubscription(*rwh, oracle_proxy_,
-      base::Bind(&WebContentsCaptureMachine::Capture,
-                 weak_ptr_factory_.GetWeakPtr())));
+  subscription_.reset(new ContentCaptureSubscription(
+      *rwh, oracle_proxy_, base::Bind(&WebContentsCaptureMachine::Capture,
+                                      weak_ptr_factory_.GetWeakPtr())));
 }
 
 void WebContentsCaptureMachine::UpdateCaptureSize() {
@@ -955,10 +924,10 @@ WebContentsVideoCaptureDevice::WebContentsVideoCaptureDevice(
     int main_render_frame_id,
     bool enable_auto_throttling)
     : core_(new media::ScreenCaptureDeviceCore(
-          scoped_ptr<media::VideoCaptureMachine>(new WebContentsCaptureMachine(
-              render_process_id,
-              main_render_frame_id,
-              enable_auto_throttling)))) {}
+          scoped_ptr<media::VideoCaptureMachine>(
+              new WebContentsCaptureMachine(render_process_id,
+                                            main_render_frame_id,
+                                            enable_auto_throttling)))) {}
 
 WebContentsVideoCaptureDevice::~WebContentsVideoCaptureDevice() {
   DVLOG(2) << "WebContentsVideoCaptureDevice@" << this << " destroying.";

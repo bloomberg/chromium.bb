@@ -35,6 +35,12 @@ inline int alpha_blend(int alpha, int src, int dst) {
 
 }  // namespace
 
+// static
+scoped_ptr<CursorRenderer> CursorRenderer::Create(gfx::NativeWindow window) {
+  return scoped_ptr<CursorRenderer>(
+      new CursorRendererAura(window, kCursorEnabledOnMouseMovement));
+}
+
 CursorRendererAura::CursorRendererAura(
     aura::Window* window,
     CursorDisplaySetting cursor_display_setting)
