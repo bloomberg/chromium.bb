@@ -23,8 +23,8 @@ PassOwnPtr<ResourceTimingInfo> ResourceTimingInfo::adopt(PassOwnPtr<CrossThreadR
 PassOwnPtr<CrossThreadResourceTimingInfoData> ResourceTimingInfo::copyData() const
 {
     OwnPtr<CrossThreadResourceTimingInfoData> data = adoptPtr(new CrossThreadResourceTimingInfoData);
-    data->m_type = m_type.string().isolatedCopy();
-    data->m_originalTimingAllowOrigin = m_originalTimingAllowOrigin.string().isolatedCopy();
+    data->m_type = m_type.getString().isolatedCopy();
+    data->m_originalTimingAllowOrigin = m_originalTimingAllowOrigin.getString().isolatedCopy();
     data->m_initialTime = m_initialTime;
     data->m_loadFinishTime = m_loadFinishTime;
     data->m_initialRequest = m_initialRequest.copyData();

@@ -123,7 +123,7 @@ bool CrossOriginPreflightResultCacheItem::allowsCrossOriginHeaders(const HTTPHea
 {
     for (const auto& header : requestHeaders) {
         if (!m_headers.contains(header.key) && !FetchUtils::isSimpleHeader(header.key, header.value) && !FetchUtils::isForbiddenHeaderName(header.key)) {
-            errorDescription = "Request header field " + header.key.string() + " is not allowed by Access-Control-Allow-Headers in preflight response.";
+            errorDescription = "Request header field " + header.key.getString() + " is not allowed by Access-Control-Allow-Headers in preflight response.";
             return false;
         }
     }

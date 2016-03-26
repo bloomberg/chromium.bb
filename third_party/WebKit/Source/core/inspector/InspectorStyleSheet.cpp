@@ -1772,7 +1772,7 @@ CSSStyleDeclaration* InspectorStyleSheetForInlineStyle::inlineStyle()
 
 const String& InspectorStyleSheetForInlineStyle::elementStyleText()
 {
-    return m_element->getAttribute("style").string();
+    return m_element->getAttribute("style").getString();
 }
 
 DEFINE_TRACE(InspectorStyleSheetForInlineStyle)

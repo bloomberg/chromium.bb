@@ -149,7 +149,7 @@ const AtomicString& getPropertyNameAtomicString(CSSPropertyID id)
 String getPropertyNameString(CSSPropertyID id)
 {
     // We share the StringImpl with the AtomicStrings.
-    return getPropertyNameAtomicString(id).string();
+    return getPropertyNameAtomicString(id).getString();
 }
 
 String getJSPropertyName(CSSPropertyID id)

@@ -84,7 +84,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     data->m_timeoutInterval = timeoutInterval();
     data->m_firstPartyForCookies = firstPartyForCookies().copy();
     data->m_requestorOrigin = requestorOrigin() ? requestorOrigin()->isolatedCopy() : nullptr;
-    data->m_httpMethod = httpMethod().string().isolatedCopy();
+    data->m_httpMethod = httpMethod().getString().isolatedCopy();
     data->m_httpHeaders = httpHeaderFields().copyData();
     data->m_priority = priority();
     data->m_intraPriorityValue = m_intraPriorityValue;

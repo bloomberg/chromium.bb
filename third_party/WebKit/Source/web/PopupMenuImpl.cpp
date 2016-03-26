@@ -193,7 +193,7 @@ public:
 
         PagePopupClient::addString("fontFamily: [", m_buffer);
         for (const FontFamily* f = &baseFont().family(); f; f = f->next()) {
-            addJavaScriptString(f->family().string(), m_buffer);
+            addJavaScriptString(f->family().getString(), m_buffer);
             if (f->next())
                 PagePopupClient::addString(",", m_buffer);
         }
@@ -337,7 +337,7 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context, HTMLElement& 
     if (baseFont.family() != fontDescription.family()) {
         PagePopupClient::addString("fontFamily: [\n", data);
         for (const FontFamily* f = &fontDescription.family(); f; f = f->next()) {
-            addJavaScriptString(f->family().string(), data);
+            addJavaScriptString(f->family().getString(), data);
             if (f->next())
                 PagePopupClient::addString(",\n", data);
         }

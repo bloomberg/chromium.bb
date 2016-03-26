@@ -454,7 +454,7 @@ void HTMLInputElement::initializeTypeInParsing()
 
     setNeedsWillValidateCheck();
 
-    m_inputType->warnIfValueIsInvalid(fastGetAttribute(valueAttr).string());
+    m_inputType->warnIfValueIsInvalid(fastGetAttribute(valueAttr).getString());
 
     m_inputTypeView->updateView();
     setTextAsOfLastFormControlChangeEvent(value());
@@ -503,7 +503,7 @@ void HTMLInputElement::updateType()
         m_valueIfDirty = sanitizeValue(valueString);
     } else {
         if (!hasDirtyValue())
-            m_inputType->warnIfValueIsInvalid(fastGetAttribute(valueAttr).string());
+            m_inputType->warnIfValueIsInvalid(fastGetAttribute(valueAttr).getString());
         updateValueIfNeeded();
     }
 

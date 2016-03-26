@@ -422,7 +422,7 @@ PassOwnPtrWillBeRawPtr<DOMPatchSupport::Digest> DOMPatchSupport::createDigest(No
             OwnPtr<WebCryptoDigestor> attrsDigestor = createDigestor(HashAlgorithmSha1);
             for (auto& attribute : attributes) {
                 addStringToDigestor(attrsDigestor.get(), attribute.name().toString());
-                addStringToDigestor(attrsDigestor.get(), attribute.value().string());
+                addStringToDigestor(attrsDigestor.get(), attribute.value().getString());
             }
             finishDigestor(attrsDigestor.get(), digestResult);
             digest->m_attrsSHA1 = base64Encode(reinterpret_cast<const char*>(digestResult.data()), 10);

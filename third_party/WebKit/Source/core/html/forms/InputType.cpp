@@ -386,7 +386,7 @@ std::pair<String, String> InputType::validationMessage() const
         //   should include a title attribute to give a description of the
         //   pattern. User agents may use the contents of this attribute, if it
         //   is present, when informing the user that the pattern is not matched
-        return std::make_pair(locale().queryString(WebLocalizedString::ValidationPatternMismatch), element().fastGetAttribute(titleAttr).string());
+        return std::make_pair(locale().queryString(WebLocalizedString::ValidationPatternMismatch), element().fastGetAttribute(titleAttr).getString());
     }
 
     if (element().tooLong())

@@ -221,7 +221,7 @@ static String atomizeIfAllWhitespace(const String& string, WhitespaceMode whites
     // Strings composed entirely of whitespace are likely to be repeated.
     // Turn them into AtomicString so we share a single string for each.
     if (whitespaceMode == AllWhitespace || (whitespaceMode == WhitespaceUnknown && isAllWhitespace(string)))
-        return AtomicString(string).string();
+        return AtomicString(string).getString();
     return string;
 }
 

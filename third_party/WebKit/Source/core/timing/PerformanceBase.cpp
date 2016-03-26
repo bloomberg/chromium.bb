@@ -200,7 +200,7 @@ static bool passesTimingAllowCheck(const ResourceResponse& response, const Secur
 
     const String& securityOrigin = initiatorSecurityOrigin.toString();
     Vector<String> timingAllowOrigins;
-    timingAllowOriginString.string().split(' ', timingAllowOrigins);
+    timingAllowOriginString.getString().split(' ', timingAllowOrigins);
     for (const String& allowOrigin : timingAllowOrigins) {
         if (allowOrigin == securityOrigin)
             return true;

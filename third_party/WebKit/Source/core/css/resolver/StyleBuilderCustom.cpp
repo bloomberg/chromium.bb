@@ -696,7 +696,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
                 state.parentStyle()->setUnique();
             QualifiedName attr(nullAtom, AtomicString(toCSSCustomIdentValue(functionValue->item(0))->value()), nullAtom);
             const AtomicString& value = state.element()->getAttribute(attr);
-            state.style()->setContent(value.isNull() ? emptyString() : value.string(), didSet);
+            state.style()->setContent(value.isNull() ? emptyString() : value.getString(), didSet);
             didSet = true;
         }
 

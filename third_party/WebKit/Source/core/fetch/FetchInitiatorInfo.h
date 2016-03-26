@@ -52,7 +52,7 @@ struct FetchInitiatorInfo {
 struct CrossThreadFetchInitiatorInfoData {
     DISALLOW_NEW();
     explicit CrossThreadFetchInitiatorInfoData(const FetchInitiatorInfo& info)
-        : name(info.name.string().isolatedCopy())
+        : name(info.name.getString().isolatedCopy())
         , position(info.position)
         , startTime(info.startTime)
     {

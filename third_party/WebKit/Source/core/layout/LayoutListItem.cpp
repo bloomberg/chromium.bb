@@ -435,7 +435,7 @@ const String& LayoutListItem::markerText() const
 {
     if (m_marker)
         return m_marker->text();
-    return nullAtom.string();
+    return nullAtom.getString();
 }
 
 void LayoutListItem::explicitValueChanged()

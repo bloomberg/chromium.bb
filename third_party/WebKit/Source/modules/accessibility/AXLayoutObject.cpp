@@ -717,7 +717,7 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
             Element* elt = toElement(node);
             const AtomicString& alt = elt->getAttribute(altAttr);
             // don't ignore an image that has an alt tag
-            if (!alt.string().containsOnlyWhitespace())
+            if (!alt.getString().containsOnlyWhitespace())
                 return false;
             // informal standard is to ignore images with zero-length alt strings
             if (!alt.isNull()) {

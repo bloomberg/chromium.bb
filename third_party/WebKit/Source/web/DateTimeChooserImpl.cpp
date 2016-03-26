@@ -136,7 +136,7 @@ void DateTimeChooserImpl::writeDocument(SharedBuffer* data)
     addProperty("stepBase", stepBaseString, data);
     addProperty("required", m_parameters.required, data);
     addProperty("currentValue", valueToDateTimeString(m_parameters.doubleValue, m_parameters.type), data);
-    addProperty("locale", m_parameters.locale.string(), data);
+    addProperty("locale", m_parameters.locale.getString(), data);
     addProperty("todayLabel", todayLabelString, data);
     addProperty("clearLabel", locale().queryString(WebLocalizedString::CalendarClear), data);
     addProperty("weekLabel", locale().queryString(WebLocalizedString::WeekNumberLabel), data);
@@ -148,7 +148,7 @@ void DateTimeChooserImpl::writeDocument(SharedBuffer* data)
     addProperty("dayLabels", m_locale->weekDayShortLabels(), data);
     addProperty("isLocaleRTL", m_locale->isRTL(), data);
     addProperty("isRTL", m_parameters.isAnchorElementRTL, data);
-    addProperty("mode", m_parameters.type.string(), data);
+    addProperty("mode", m_parameters.type.getString(), data);
     if (m_parameters.suggestions.size()) {
         Vector<String> suggestionValues;
         Vector<String> localizedSuggestionValues;

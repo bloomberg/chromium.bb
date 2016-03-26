@@ -80,7 +80,7 @@ void HTMLAreaElement::parseAttribute(const QualifiedName& name, const AtomicStri
         }
         invalidateCachedRegion();
     } else if (name == coordsAttr) {
-        m_coords = parseHTMLListOfFloatingPointNumbers(value.string());
+        m_coords = parseHTMLListOfFloatingPointNumbers(value.getString());
         invalidateCachedRegion();
     } else if (name == altAttr || name == accesskeyAttr) {
         // Do nothing.

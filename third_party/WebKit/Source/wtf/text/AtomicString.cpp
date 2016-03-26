@@ -532,7 +532,7 @@ AtomicString AtomicString::number(double number, unsigned precision, TrailingZer
 
 std::ostream& operator<<(std::ostream& out, const AtomicString& s)
 {
-    return out << s.string();
+    return out << s.getString();
 }
 
 #ifndef NDEBUG

@@ -362,7 +362,7 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
         // Set the attribute value to a number.
         // This is important since the style rules for this attribute can
         // determine the appearance property.
-        unsigned size = value.string().toUInt();
+        unsigned size = value.getString().toUInt();
         AtomicString attrSize = AtomicString::number(size);
         if (attrSize != value) {
             // FIXME: This is horribly factored.

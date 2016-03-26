@@ -432,7 +432,7 @@ PassOwnPtr<TracedValue> InspectorReceiveResponseEvent::data(unsigned long identi
     value->setString("requestId", requestId);
     value->setString("frame", toHexString(frame));
     value->setInteger("statusCode", response.httpStatusCode());
-    value->setString("mimeType", response.mimeType().string().isolatedCopy());
+    value->setString("mimeType", response.mimeType().getString().isolatedCopy());
     return value.release();
 }
 

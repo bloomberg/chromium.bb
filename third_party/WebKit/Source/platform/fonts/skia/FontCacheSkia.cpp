@@ -204,7 +204,7 @@ PassRefPtr<SkTypeface> FontCache::createTypeface(const FontDescription& fontDesc
     // If we're creating a fallback font (e.g. "-webkit-monospace"), convert the name into
     // the fallback name (like "monospace") that fontconfig understands.
     if (!family.length() || family.startsWith("-webkit-")) {
-        name = getFallbackFontFamily(fontDescription).string().utf8();
+        name = getFallbackFontFamily(fontDescription).getString().utf8();
     } else {
         // convert the name to utf8
         name = family.utf8();

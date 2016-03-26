@@ -139,7 +139,7 @@ static bool hasName(const HTMLToken& token, const QualifiedName& name)
 static bool findAttributeWithName(const HTMLToken& token, const QualifiedName& name, size_t& indexOfMatchingAttribute)
 {
     // Notice that we're careful not to ref the StringImpl here because we might be on a background thread.
-    const String& attrName = name.namespaceURI() == XLinkNames::xlinkNamespaceURI ? "xlink:" + name.localName().string() : name.localName().string();
+    const String& attrName = name.namespaceURI() == XLinkNames::xlinkNamespaceURI ? "xlink:" + name.localName().getString() : name.localName().getString();
 
     for (size_t i = 0; i < token.attributes().size(); ++i) {
         if (equalIgnoringNullity(token.attributes().at(i).nameAsVector(), attrName)) {

@@ -526,7 +526,7 @@ void SVGSMILElement::parseAttribute(const QualifiedName& name, const AtomicStrin
             clearConditions();
             parseBeginOrEnd(fastGetAttribute(SVGNames::endAttr), End);
         }
-        parseBeginOrEnd(value.string(), Begin);
+        parseBeginOrEnd(value.getString(), Begin);
         if (inDocument())
             connectSyncBaseConditions();
     } else if (name == SVGNames::endAttr) {
@@ -534,7 +534,7 @@ void SVGSMILElement::parseAttribute(const QualifiedName& name, const AtomicStrin
             clearConditions();
             parseBeginOrEnd(fastGetAttribute(SVGNames::beginAttr), Begin);
         }
-        parseBeginOrEnd(value.string(), End);
+        parseBeginOrEnd(value.getString(), End);
         if (inDocument())
             connectSyncBaseConditions();
     } else if (name == SVGNames::onbeginAttr) {

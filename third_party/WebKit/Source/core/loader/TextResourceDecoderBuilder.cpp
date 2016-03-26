@@ -147,7 +147,7 @@ inline void TextResourceDecoderBuilder::setupEncoding(TextResourceDecoder* decod
         parentFrame = toLocalFrame(frame->tree().parent());
 
     if (!m_encoding.isEmpty())
-        decoder->setEncoding(m_encoding.string(), TextResourceDecoder::EncodingFromHTTPHeader);
+        decoder->setEncoding(m_encoding.getString(), TextResourceDecoder::EncodingFromHTTPHeader);
 
     // Set the hint encoding to the parent frame encoding only if
     // the parent and the current frames share the security origin.

@@ -80,7 +80,7 @@ public:
     static StringImpl* find(const StringImpl*);
 
     operator const String&() const { return m_string; }
-    const String& string() const { return m_string; }
+    const String& getString() const { return m_string; }
 
     StringImpl* impl() const { return m_string.impl(); }
 

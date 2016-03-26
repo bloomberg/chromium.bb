@@ -70,7 +70,7 @@ static inline bool isValidNCName(const AtomicString& name)
     if (kNotFound != name.find(':'))
         return false;
 
-    if (!name.string().is8Bit()) {
+    if (!name.getString().is8Bit()) {
         const UChar32 c = name.characters16()[0];
         // These characters comes under CombiningChar in NCName and according to
         // NCName only BaseChar and Ideodgraphic can come as first chars.
@@ -80,7 +80,7 @@ static inline bool isValidNCName(const AtomicString& name)
             return false;
     }
 
-    return Document::isValidName(name.string());
+    return Document::isValidName(name.getString());
 }
 
 bool CustomElement::isValidName(const AtomicString& name, NameSet validNames)

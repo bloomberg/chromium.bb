@@ -489,7 +489,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> valueForFamily(const AtomicString& famil
 {
     if (CSSValueID familyIdentifier = identifierForFamily(family))
         return cssValuePool().createIdentifierValue(familyIdentifier);
-    return cssValuePool().createFontFamilyValue(family.string());
+    return cssValuePool().createFontFamilyValue(family.getString());
 }
 
 static PassRefPtrWillBeRawPtr<CSSValueList> valueForFontFamily(const ComputedStyle& style)

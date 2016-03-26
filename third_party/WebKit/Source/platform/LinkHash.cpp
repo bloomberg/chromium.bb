@@ -54,7 +54,7 @@ LinkHash visitedLinkHash(const KURL& base, const AtomicString& relative)
     if (relative.isNull())
         return 0;
     url::RawCanonOutput<2048> buffer;
-    if (!resolveRelative(base, relative.string(), &buffer))
+    if (!resolveRelative(base, relative.getString(), &buffer))
         return 0;
     return Platform::current()->visitedLinkHash(buffer.data(), buffer.length());
 }

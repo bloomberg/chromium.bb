@@ -114,7 +114,7 @@ String SVGScriptElement::charsetAttributeValue() const
 
 String SVGScriptElement::typeAttributeValue() const
 {
-    return getAttribute(SVGNames::typeAttr).string();
+    return getAttribute(SVGNames::typeAttr).getString();
 }
 
 String SVGScriptElement::languageAttributeValue() const

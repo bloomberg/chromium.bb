@@ -858,7 +858,7 @@ void AXObject::tokenVectorFromAttribute(Vector<String>& tokens, const QualifiedN
     if (!node || !node->isElementNode())
         return;
 
-    String attributeValue = getAttribute(attribute).string();
+    String attributeValue = getAttribute(attribute).getString();
     if (attributeValue.isEmpty())
         return;
 

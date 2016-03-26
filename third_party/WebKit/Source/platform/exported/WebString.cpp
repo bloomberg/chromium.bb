@@ -135,12 +135,12 @@ WebString::operator WTF::String() const
 
 WebString::WebString(const WTF::AtomicString& s)
 {
-    assign(s.string());
+    assign(s.getString());
 }
 
 WebString& WebString::operator=(const WTF::AtomicString& s)
 {
-    assign(s.string());
+    assign(s.getString());
     return *this;
 }
 

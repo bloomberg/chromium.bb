@@ -54,7 +54,7 @@ bool SVGTests::isValid() const
 
         const Vector<String>& systemLanguage = m_systemLanguage->value()->values();
         for (const auto& value : systemLanguage) {
-            if (value == defaultLanguage().string().substring(0, 2)) {
+            if (value == defaultLanguage().getString().substring(0, 2)) {
                 matchFound = true;
                 break;
             }

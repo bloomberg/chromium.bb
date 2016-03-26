@@ -403,7 +403,7 @@ static CSSSelector::PseudoType nameToPseudoType(const AtomicString& name, bool h
     }
     NameToPseudoStruct dummyKey = { 0, CSSSelector::PseudoUnknown };
     const NameToPseudoStruct* match = std::lower_bound(pseudoTypeMap, pseudoTypeMapEnd, dummyKey, NameToPseudoCompare(name));
-    if (match == pseudoTypeMapEnd || match->string != name.string())
+    if (match == pseudoTypeMapEnd || match->string != name.getString())
         return CSSSelector::PseudoUnknown;
 
     return static_cast<CSSSelector::PseudoType>(match->type);
@@ -595,7 +595,7 @@ String CSSSelector::selectorText(const String& rightSide) const
         if (tagQName().prefix().isNull()) {
             str.append(tagQName().localName());
         } else {
-            str.append(tagQName().prefix().string());
+            str.append(tagQName().prefix().getString());
             str.append('|');
             str.append(tagQName().localName());
         }

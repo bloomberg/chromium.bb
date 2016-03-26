@@ -50,7 +50,7 @@ static String stripLeadingAndTrailingHTMLSpaces(String string, const CharType* c
     }
 
     if (numLeadingSpaces == length)
-        return string.isNull() ? string : emptyAtom.string();
+        return string.isNull() ? string : emptyAtom.getString();
 
     for (; numTrailingSpaces < length; ++numTrailingSpaces) {
         if (isNotHTMLSpace<CharType>(characters[length - numTrailingSpaces - 1]))
@@ -70,7 +70,7 @@ String stripLeadingAndTrailingHTMLSpaces(const String& string)
     unsigned length = string.length();
 
     if (!length)
-        return string.isNull() ? string : emptyAtom.string();
+        return string.isNull() ? string : emptyAtom.getString();
 
     if (string.is8Bit())
         return stripLeadingAndTrailingHTMLSpaces<LChar>(string, string.characters8(), length);

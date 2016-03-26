@@ -189,8 +189,8 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames, Vector<S
     for (const Attribute& attribute : attributes) {
         const AtomicString& name = attribute.name().localName();
         if (!uniqueParamNames.contains(name.impl())) {
-            paramNames.append(name.string());
-            paramValues.append(attribute.value().string());
+            paramNames.append(name.getString());
+            paramValues.append(attribute.value().getString());
         }
     }
 
@@ -406,7 +406,7 @@ bool HTMLObjectElement::containsJavaApplet() const
     for (HTMLElement& child : Traversal<HTMLElement>::childrenOf(*this)) {
         if (isHTMLParamElement(child)
             && equalIgnoringCase(child.getNameAttribute(), "type")
-            && MIMETypeRegistry::isJavaAppletMIMEType(child.getAttribute(valueAttr).string()))
+            && MIMETypeRegistry::isJavaAppletMIMEType(child.getAttribute(valueAttr).getString()))
             return true;
         if (isHTMLObjectElement(child) && toHTMLObjectElement(child).containsJavaApplet())
             return true;

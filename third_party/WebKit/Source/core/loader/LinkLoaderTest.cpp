@@ -168,7 +168,7 @@ TEST(LinkLoaderTest, Preload)
                     Resource* resource = preloads->begin().get()->get();
                     ASSERT_EQ(testCase.priority, resource->resourceRequest().priority());
                     ASSERT_EQ(testCase.context, resource->resourceRequest().requestContext());
-                    ASSERT_STREQ(testCase.accept, resource->accept().string().ascii().data());
+                    ASSERT_STREQ(testCase.accept, resource->accept().getString().ascii().data());
                 }
             }
             dummyPageHolder->document().fetcher()->clearPreloads();

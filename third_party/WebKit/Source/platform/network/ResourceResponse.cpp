@@ -151,12 +151,12 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
 {
     OwnPtr<CrossThreadResourceResponseData> data = adoptPtr(new CrossThreadResourceResponseData);
     data->m_url = url().copy();
-    data->m_mimeType = mimeType().string().isolatedCopy();
+    data->m_mimeType = mimeType().getString().isolatedCopy();
     data->m_expectedContentLength = expectedContentLength();
-    data->m_textEncodingName = textEncodingName().string().isolatedCopy();
+    data->m_textEncodingName = textEncodingName().getString().isolatedCopy();
     data->m_suggestedFilename = suggestedFilename().isolatedCopy();
     data->m_httpStatusCode = httpStatusCode();
-    data->m_httpStatusText = httpStatusText().string().isolatedCopy();
+    data->m_httpStatusText = httpStatusText().getString().isolatedCopy();
     data->m_httpHeaders = httpHeaderFields().copyData();
     data->m_lastModifiedDate = lastModifiedDate();
     if (m_resourceLoadTiming)
@@ -185,7 +185,7 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
     data->m_serviceWorkerResponseType = m_serviceWorkerResponseType;
     data->m_originalURLViaServiceWorker = m_originalURLViaServiceWorker.copy();
     data->m_responseTime = m_responseTime;
-    data->m_remoteIPAddress = m_remoteIPAddress.string().isolatedCopy();
+    data->m_remoteIPAddress = m_remoteIPAddress.getString().isolatedCopy();
     data->m_remotePort = m_remotePort;
     data->m_downloadedFilePath = m_downloadedFilePath.isolatedCopy();
     data->m_downloadedFileHandle = m_downloadedFileHandle;

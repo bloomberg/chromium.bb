@@ -1453,7 +1453,7 @@ static bool findDropZone(Node* target, DataTransfer* dataTransfer)
                 if (dragOperation == DragOperationNone)
                     dragOperation = op;
             } else {
-                matched = matched || dataTransfer->hasDropZoneType(keywords[i].string());
+                matched = matched || dataTransfer->hasDropZoneType(keywords[i].getString());
             }
 
             if (matched && dragOperation != DragOperationNone)

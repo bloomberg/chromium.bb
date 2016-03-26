@@ -228,7 +228,7 @@ void MarkupFormatter::appendNamespace(StringBuilder& result, const AtomicString&
     if (foundURI != namespaceURI) {
         namespaces.set(lookupKey, namespaceURI);
         result.append(' ');
-        result.append(xmlnsAtom.string());
+        result.append(xmlnsAtom.getString());
         if (!prefix.isEmpty()) {
             result.append(':');
             result.append(prefix);

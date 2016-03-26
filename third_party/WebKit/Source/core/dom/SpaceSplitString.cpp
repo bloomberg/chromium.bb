@@ -157,8 +157,8 @@ void SpaceSplitString::set(const AtomicString& inputString, CaseFolding caseFold
         return;
     }
 
-    if (caseFolding == ShouldFoldCase && hasNonASCIIOrUpper(inputString.string())) {
-        String string(inputString.string());
+    if (caseFolding == ShouldFoldCase && hasNonASCIIOrUpper(inputString.getString())) {
+        String string(inputString.getString());
         string = string.foldCase();
         m_data = Data::create(AtomicString(string));
     } else {

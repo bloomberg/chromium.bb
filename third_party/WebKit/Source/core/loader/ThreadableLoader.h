@@ -84,7 +84,7 @@ struct CrossThreadThreadableLoaderOptionsData {
     explicit CrossThreadThreadableLoaderOptionsData(const ThreadableLoaderOptions& options)
         : preflightPolicy(options.preflightPolicy)
         , crossOriginRequestPolicy(options.crossOriginRequestPolicy)
-        , initiator(options.initiator.string().isolatedCopy())
+        , initiator(options.initiator.getString().isolatedCopy())
         , contentSecurityPolicyEnforcement(options.contentSecurityPolicyEnforcement)
         , timeoutMilliseconds(options.timeoutMilliseconds) { }
 

@@ -170,7 +170,7 @@ AtomicString FrameTree::calculateUniqueNameForChildFrame(
     StringBuilder uniqueName;
     uniqueName.append(framePathPrefix);
     if (frame) {
-        uniqueName.append(frame->tree().uniqueName().string().substring(framePathPrefixLength,
+        uniqueName.append(frame->tree().uniqueName().getString().substring(framePathPrefixLength,
             frame->tree().uniqueName().length() - framePathPrefixLength - framePathSuffixLength));
     }
     for (int i = chain.size() - 1; i >= 0; --i) {

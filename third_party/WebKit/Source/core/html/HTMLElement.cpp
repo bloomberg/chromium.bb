@@ -166,7 +166,7 @@ void HTMLElement::mapLanguageAttributeToLocale(const AtomicString& value, Mutabl
             UseCounter::count(document(), UseCounter::LangAttributeOnHTML);
         else if (isHTMLBodyElement(*this))
             UseCounter::count(document(), UseCounter::LangAttributeOnBody);
-        String htmlLanguage = value.string();
+        String htmlLanguage = value.getString();
         size_t firstSeparator = htmlLanguage.find('-');
         if (firstSeparator != kNotFound)
             htmlLanguage = htmlLanguage.left(firstSeparator);

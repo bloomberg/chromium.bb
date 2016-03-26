@@ -123,7 +123,7 @@ static PassOwnPtr<protocol::Network::Headers> buildObjectForHeaders(const HTTPHe
 {
     OwnPtr<protocol::DictionaryValue> headersObject = protocol::DictionaryValue::create();
     for (const auto& header : headers)
-        headersObject->setString(header.key.string(), header.value);
+        headersObject->setString(header.key.getString(), header.value);
     protocol::ErrorSupport errors;
     return protocol::Network::Headers::parse(headersObject.get(), &errors);
 }
@@ -748,7 +748,7 @@ void InspectorResourceAgent::willDispatchEventSourceEvent(ThreadableLoaderClient
     ThreadableLoaderClientRequestIdMap::iterator it = m_knownRequestIdMap.find(eventSource);
     if (it == m_knownRequestIdMap.end())
         return;
-    frontend()->eventSourceMessageReceived(IdentifiersFactory::requestId(it->value), monotonicallyIncreasingTime(), eventName.string(), eventId.string(), data);
+    frontend()->eventSourceMessageReceived(IdentifiersFactory::requestId(it->value), monotonicallyIncreasingTime(), eventName.getString(), eventId.getString(), data);
 }
 
 void InspectorResourceAgent::didFinishEventSourceRequest(ThreadableLoaderClient* eventSource)

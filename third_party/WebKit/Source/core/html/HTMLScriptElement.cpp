@@ -125,32 +125,32 @@ KURL HTMLScriptElement::src() const
 
 String HTMLScriptElement::sourceAttributeValue() const
 {
-    return getAttribute(srcAttr).string();
+    return getAttribute(srcAttr).getString();
 }
 
 String HTMLScriptElement::charsetAttributeValue() const
 {
-    return getAttribute(charsetAttr).string();
+    return getAttribute(charsetAttr).getString();
 }
 
 String HTMLScriptElement::typeAttributeValue() const
 {
-    return getAttribute(typeAttr).string();
+    return getAttribute(typeAttr).getString();
 }
 
 String HTMLScriptElement::languageAttributeValue() const
 {
-    return getAttribute(languageAttr).string();
+    return getAttribute(languageAttr).getString();
 }
 
 String HTMLScriptElement::forAttributeValue() const
 {
-    return getAttribute(forAttr).string();
+    return getAttribute(forAttr).getString();
 }
 
 String HTMLScriptElement::eventAttributeValue() const
 {
-    return getAttribute(eventAttr).string();
+    return getAttribute(eventAttr).getString();
 }
 
 bool HTMLScriptElement::asyncAttributeValue() const

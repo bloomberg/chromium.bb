@@ -289,7 +289,7 @@ class StringTypeAdapter<AtomicString> {
     DISALLOW_NEW();
 public:
     StringTypeAdapter<AtomicString>(const AtomicString& string)
-        : m_adapter(string.string())
+        : m_adapter(string.getString())
     {
     }
 

@@ -73,12 +73,12 @@ void HTMLFrameSetElement::parseAttribute(const QualifiedName& name, const Atomic
 {
     if (name == rowsAttr) {
         if (!value.isNull()) {
-            m_rowLengths = parseListOfDimensions(value.string());
+            m_rowLengths = parseListOfDimensions(value.getString());
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
         }
     } else if (name == colsAttr) {
         if (!value.isNull()) {
-            m_colLengths = parseListOfDimensions(value.string());
+            m_colLengths = parseListOfDimensions(value.getString());
             setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::fromAttribute(name));
         }
     } else if (name == frameborderAttr) {

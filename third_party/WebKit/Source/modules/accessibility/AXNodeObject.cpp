@@ -1349,7 +1349,7 @@ String AXNodeObject::valueDescription() const
     if (!supportsRangeValue())
         return String();
 
-    return getAttribute(aria_valuetextAttr).string();
+    return getAttribute(aria_valuetextAttr).getString();
 }
 
 float AXNodeObject::valueForRange() const
@@ -1528,7 +1528,7 @@ String AXNodeObject::textAlternative(bool recursive, bool inAriaLabelledByTraver
         if (isRange()) {
             const AtomicString& ariaValuetext = getAttribute(aria_valuetextAttr);
             if (!ariaValuetext.isNull())
-                return ariaValuetext.string();
+                return ariaValuetext.getString();
             return String::number(valueForRange());
         }
 

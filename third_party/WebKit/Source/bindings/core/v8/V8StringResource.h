@@ -53,7 +53,7 @@ public:
     }
 
     explicit WebCoreStringResourceBase(const AtomicString& string)
-        : m_plainString(string.string())
+        : m_plainString(string.getString())
         , m_atomicString(string)
     {
 #if ENABLE(ASSERT)
@@ -82,7 +82,7 @@ public:
         if (LIKELY(m_compressibleString.isNull())) {
             reducedExternalMemory = -memoryConsumption(m_plainString);
             if (m_plainString.impl() != m_atomicString.impl() && !m_atomicString.isNull())
-                reducedExternalMemory -= memoryConsumption(m_atomicString.string());
+                reducedExternalMemory -= memoryConsumption(m_atomicString.getString());
         } else {
             reducedExternalMemory = -memoryConsumption(m_compressibleString);
         }
@@ -113,7 +113,7 @@ public:
             m_atomicString = AtomicString(m_plainString);
             ASSERT(!m_atomicString.isNull());
             if (m_plainString.impl() != m_atomicString.impl())
-                v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(memoryConsumption(m_atomicString.string()));
+                v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(memoryConsumption(m_atomicString.getString()));
         }
         return m_atomicString;
     }

@@ -180,7 +180,7 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
         }
 
         String detail;
-        if (allowOriginHeaderValue.string().find(isOriginSeparator, 0) != kNotFound) {
+        if (allowOriginHeaderValue.getString().find(isOriginSeparator, 0) != kNotFound) {
             detail = "The 'Access-Control-Allow-Origin' header contains multiple values '" + allowOriginHeaderValue + "', but only one is allowed.";
         } else {
             KURL headerOrigin(KURL(), allowOriginHeaderValue);
