@@ -10,6 +10,7 @@ import argparse
 import gc
 import glob
 import gyp_environment
+import mac_toolchain
 import os
 import re
 import shlex
@@ -314,6 +315,10 @@ def main():
       ['-I' + i for i in additional_include_files(supplemental_includes, args)])
 
   args.extend(['-D', 'gyp_output_dir=' + GetOutputDirectory()])
+
+  mac_toolchain_dir = mac_toolchain.GetToolchainDirectory()
+  if mac_toolchain_dir:
+    args.append('-Gmac_toolchain_dir=' + mac_toolchain_dir)
 
   if not use_analyzer:
     print 'Updating projects from gyp files...'

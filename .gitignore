@@ -74,6 +74,7 @@ vs-chromium-project.txt
 /build/x64/
 /build/linux/bin/eu-strip
 /build/linux/debian_*-sysroot/
+/build/mac_files
 /buildtools
 # The Chrome OS build creates a /c symlink due to http://crbug.com/54866.
 /c
