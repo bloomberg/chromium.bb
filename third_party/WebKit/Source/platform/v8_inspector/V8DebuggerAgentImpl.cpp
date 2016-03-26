@@ -243,7 +243,8 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
 
     debugger().removeDebuggerAgent(m_contextGroupId);
     m_pausedContext.Reset();
-    m_currentCallStack.clear();
+    JavaScriptCallFrames emptyCallFrames;
+    m_pausedCallFrames.swap(emptyCallFrames);
     m_scripts.clear();
     m_blackboxedPositions.clear();
     m_breakpointIdToDebuggerBreakpointIds.clear();
@@ -484,30 +485,28 @@ void V8DebuggerAgentImpl::getBacktrace(ErrorString* errorString, OwnPtr<Array<Ca
 {
     if (!assertPaused(errorString))
         return;
-    m_currentCallStack = debugger().currentCallFrames();
+    m_pausedCallFrames = debugger().currentCallFrames();
     *callFrames = currentCallFrames(errorString);
     if (!*callFrames)
         return;
     *asyncStackTrace = currentAsyncStackTrace();
 }
 
-bool V8DebuggerAgentImpl::isCallStackEmptyOrBlackboxed()
+bool V8DebuggerAgentImpl::isCurrentCallStackEmptyOrBlackboxed()
 {
     ASSERT(enabled());
-    for (int index = 0; ; ++index) {
-        OwnPtr<JavaScriptCallFrame> frame = debugger().callFrame(index);
-        if (!frame)
-            break;
-        if (!isCallFrameWithUnknownScriptOrBlackboxed(frame.get()))
+    JavaScriptCallFrames callFrames = debugger().currentCallFrames();
+    for (size_t index = 0; index < callFrames.size(); ++index) {
+        if (!isCallFrameWithUnknownScriptOrBlackboxed(callFrames[index].get()))
             return false;
     }
     return true;
 }
 
-bool V8DebuggerAgentImpl::isTopCallFrameBlackboxed()
+bool V8DebuggerAgentImpl::isTopPausedCallFrameBlackboxed()
 {
     ASSERT(enabled());
-    return isCallFrameWithUnknownScriptOrBlackboxed(debugger().callFrame(0).get());
+    return isCallFrameWithUnknownScriptOrBlackboxed(m_pausedCallFrames.size() ? m_pausedCallFrames[0].get() : nullptr);
 }
 
 bool V8DebuggerAgentImpl::isCallFrameWithUnknownScriptOrBlackboxed(JavaScriptCallFrame* frame)
@@ -530,16 +529,16 @@ bool V8DebuggerAgentImpl::isCallFrameWithUnknownScriptOrBlackboxed(JavaScriptCal
     return std::distance(ranges->begin(), itRange) % 2;
 }
 
-V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::shouldSkipExceptionPause()
+V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::shouldSkipExceptionPause(JavaScriptCallFrame* topCallFrame)
 {
     if (m_steppingFromFramework)
         return RequestNoSkip;
-    if (isTopCallFrameBlackboxed())
+    if (isCallFrameWithUnknownScriptOrBlackboxed(topCallFrame))
         return RequestContinue;
     return RequestNoSkip;
 }
 
-V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::shouldSkipStepPause()
+V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::shouldSkipStepPause(JavaScriptCallFrame* topCallFrame)
 {
     if (m_steppingFromFramework)
         return RequestNoSkip;
@@ -550,7 +549,7 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::shouldSkipStepPause()
             return RequestStepOut;
     }
 
-    if (!isTopCallFrameBlackboxed())
+    if (!isCallFrameWithUnknownScriptOrBlackboxed(topCallFrame))
         return RequestNoSkip;
 
     if (m_skippedStepFrameCount >= maxSkipStepFrameCount)
@@ -616,7 +615,7 @@ void V8DebuggerAgentImpl::setScriptSource(ErrorString* errorString,
 {
     if (!checkEnabled(errorString))
         return;
-    if (!debugger().setScriptSource(scriptId, newContent, preview.fromMaybe(false), errorString, optOutCompileError, &m_currentCallStack, stackChanged))
+    if (!debugger().setScriptSource(scriptId, newContent, preview.fromMaybe(false), errorString, optOutCompileError, &m_pausedCallFrames, stackChanged))
         return;
 
     OwnPtr<Array<CallFrame>> callFrames = currentCallFrames(errorString);
@@ -636,10 +635,8 @@ void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString,
     OwnPtr<Array<CallFrame>>* newCallFrames,
     Maybe<StackTrace>* asyncStackTrace)
 {
-    if (!isPaused() || !m_currentCallStack) {
-        *errorString = "Attempt to access call frame when debugger is not on pause";
+    if (!assertPaused(errorString))
         return;
-    }
     OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(errorString, callFrameId);
     if (!remoteId)
         return;
@@ -652,19 +649,19 @@ void V8DebuggerAgentImpl::restartFrame(ErrorString* errorString,
 
     v8::TryCatch tryCatch(m_isolate);
 
-    OwnPtr<JavaScriptCallFrame> javaScriptCallFrame = debugger().callFrame(remoteId->frameOrdinal());
-    if (!javaScriptCallFrame) {
+    size_t frameOrdinal = static_cast<size_t>(remoteId->frameOrdinal());
+    if (frameOrdinal >= m_pausedCallFrames.size()) {
         *errorString = "Could not find call frame with given id";
         return;
     }
     v8::Local<v8::Value> resultValue;
     v8::Local<v8::Boolean> result;
-    if (!javaScriptCallFrame->restart().ToLocal(&resultValue) || tryCatch.HasCaught() || !resultValue->ToBoolean(localContext).ToLocal(&result) || !result->Value()) {
+    if (!m_pausedCallFrames[frameOrdinal].get()->restart().ToLocal(&resultValue) || tryCatch.HasCaught() || !resultValue->ToBoolean(localContext).ToLocal(&result) || !result->Value()) {
         *errorString = "Internal error";
         return;
     }
 
-    m_currentCallStack = debugger().currentCallFrames();
+    m_pausedCallFrames = debugger().currentCallFrames();
 
     *newCallFrames = currentCallFrames(errorString);
     if (!*newCallFrames)
@@ -892,13 +889,13 @@ void V8DebuggerAgentImpl::stepOver(ErrorString* errorString)
     if (!assertPaused(errorString))
         return;
     // StepOver at function return point should fallback to StepInto.
-    OwnPtr<JavaScriptCallFrame> frame = debugger().callFrame(0);
+    JavaScriptCallFrame* frame = m_pausedCallFrames.size() ? m_pausedCallFrames[0].get() : nullptr;
     if (frame && frame->isAtReturn()) {
         stepInto(errorString);
         return;
     }
     m_scheduledDebuggerStep = StepOver;
-    m_steppingFromFramework = isTopCallFrameBlackboxed();
+    m_steppingFromFramework = isTopPausedCallFrameBlackboxed();
     m_injectedScriptManager->releaseObjectGroup(V8DebuggerAgentImpl::backtraceObjectGroup);
     debugger().stepOverStatement();
 }
@@ -908,7 +905,7 @@ void V8DebuggerAgentImpl::stepInto(ErrorString* errorString)
     if (!assertPaused(errorString))
         return;
     m_scheduledDebuggerStep = StepInto;
-    m_steppingFromFramework = isTopCallFrameBlackboxed();
+    m_steppingFromFramework = isTopPausedCallFrameBlackboxed();
     m_injectedScriptManager->releaseObjectGroup(V8DebuggerAgentImpl::backtraceObjectGroup);
     debugger().stepIntoStatement();
 }
@@ -920,7 +917,7 @@ void V8DebuggerAgentImpl::stepOut(ErrorString* errorString)
     m_scheduledDebuggerStep = StepOut;
     m_skipNextDebuggerStepOut = false;
     m_recursionLevelForStepOut = 1;
-    m_steppingFromFramework = isTopCallFrameBlackboxed();
+    m_steppingFromFramework = isTopPausedCallFrameBlackboxed();
     m_injectedScriptManager->releaseObjectGroup(V8DebuggerAgentImpl::backtraceObjectGroup);
     debugger().stepOutOfFunction();
 }
@@ -977,10 +974,8 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
     Maybe<bool>* wasThrown,
     Maybe<protocol::Runtime::ExceptionDetails>* exceptionDetails)
 {
-    if (!isPaused() || !m_currentCallStack) {
-        *errorString = "Attempt to access callframe when debugger is not on pause";
+    if (!assertPaused(errorString))
         return;
-    }
     OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(errorString, callFrameId);
     if (!remoteId)
         return;
@@ -995,8 +990,8 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
         return;
     }
 
-    OwnPtr<JavaScriptCallFrame> javaScriptCallFrame = debugger().callFrame(remoteId->frameOrdinal());
-    if (!javaScriptCallFrame) {
+    size_t frameOrdinal = static_cast<size_t>(remoteId->frameOrdinal());
+    if (frameOrdinal >= m_pausedCallFrames.size()) {
         *errorString = "Could not find call frame with given id";
         return;
     }
@@ -1009,7 +1004,7 @@ void V8DebuggerAgentImpl::evaluateOnCallFrame(ErrorString* errorString,
 
     v8::TryCatch tryCatch(injectedScript->isolate());
 
-    v8::MaybeLocal<v8::Value> maybeResultValue = javaScriptCallFrame->evaluate(toV8String(injectedScript->isolate(), expression));
+    v8::MaybeLocal<v8::Value> maybeResultValue = m_pausedCallFrames[frameOrdinal].get()->evaluate(toV8String(injectedScript->isolate(), expression));
 
     // InjectedScript may be gone after any evaluate call - find it again.
     injectedScript = m_injectedScriptManager->findInjectedScript(errorString, remoteId.get());
@@ -1035,10 +1030,8 @@ void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString,
 {
     if (!checkEnabled(errorString))
         return;
-    if (!isPaused() || !m_currentCallStack) {
-        *errorString = "Attempt to access callframe when debugger is not on pause";
+    if (!assertPaused(errorString))
         return;
-    }
     OwnPtr<RemoteCallFrameId> remoteId = RemoteCallFrameId::parse(errorString, callFrameId);
     if (!remoteId)
         return;
@@ -1053,12 +1046,12 @@ void V8DebuggerAgentImpl::setVariableValue(ErrorString* errorString,
     if (!injectedScript->resolveCallArgument(errorString, newValueArgument.get()).ToLocal(&newValue))
         return;
 
-    OwnPtr<JavaScriptCallFrame> javaScriptCallFrame = debugger().callFrame(remoteId->frameOrdinal());
-    if (!javaScriptCallFrame) {
+    size_t frameOrdinal = static_cast<size_t>(remoteId->frameOrdinal());
+    if (frameOrdinal >= m_pausedCallFrames.size()) {
         *errorString = "Could not find call frame with given id";
         return;
     }
-    v8::MaybeLocal<v8::Value> result = javaScriptCallFrame->setVariableValue(scopeNumber, toV8String(m_isolate, variableName), newValue);
+    v8::MaybeLocal<v8::Value> result = m_pausedCallFrames[frameOrdinal].get()->setVariableValue(scopeNumber, toV8String(m_isolate, variableName), newValue);
     if (tryCatch.HasCaught() || result.IsEmpty()) {
         *errorString = "Internal error";
         return;
@@ -1351,7 +1344,7 @@ void V8DebuggerAgentImpl::changeJavaScriptRecursionLevel(int step)
 
 PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString* errorString)
 {
-    if (m_pausedContext.IsEmpty() || !m_currentCallStack)
+    if (m_pausedContext.IsEmpty() || !m_pausedCallFrames.size())
         return Array<CallFrame>::create();
     InjectedScript* injectedScript = m_injectedScriptManager->injectedScriptFor(m_pausedContext.Get(m_isolate));
     if (!injectedScript) {
@@ -1364,16 +1357,15 @@ PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString*
     v8::Local<v8::Context> context = injectedScript->context();
     v8::Context::Scope contextScope(context);
 
-    JavaScriptCallFrame* currentCallFrame = m_currentCallStack.get();
-    int callFrameIndex = 0;
-    OwnPtr<JavaScriptCallFrame> currentCallFrameOwner;
     v8::Local<v8::Array> objects = v8::Array::New(isolate);
-    while (currentCallFrame) {
+    for (size_t frameOrdinal = 0; frameOrdinal < m_pausedCallFrames.size(); ++frameOrdinal) {
+        JavaScriptCallFrame* currentCallFrame = m_pausedCallFrames[frameOrdinal].get();
+
         v8::Local<v8::Object> details = currentCallFrame->details();
         if (hasInternalError(errorString, details.IsEmpty()))
             return Array<CallFrame>::create();
 
-        String16 callFrameId = RemoteCallFrameId::serialize(injectedScript->contextId(), callFrameIndex);
+        String16 callFrameId = RemoteCallFrameId::serialize(injectedScript->contextId(), frameOrdinal);
         if (hasInternalError(errorString, !details->Set(context, toV8StringInternalized(isolate, "callFrameId"), toV8String(isolate, callFrameId)).FromMaybe(false)))
             return Array<CallFrame>::create();
 
@@ -1392,12 +1384,8 @@ PassOwnPtr<Array<CallFrame>> V8DebuggerAgentImpl::currentCallFrames(ErrorString*
                 return Array<CallFrame>::create();
         }
 
-        if (hasInternalError(errorString, !objects->Set(context, callFrameIndex, details).FromMaybe(false)))
+        if (hasInternalError(errorString, !objects->Set(context, frameOrdinal, details).FromMaybe(false)))
             return Array<CallFrame>::create();
-
-        currentCallFrameOwner = currentCallFrame->caller();
-        currentCallFrame = currentCallFrameOwner.get();
-        ++callFrameIndex;
     }
 
     protocol::ErrorSupport errorSupport;
@@ -1486,31 +1474,34 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
     }
 }
 
-V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8::Context> context, PassOwnPtr<JavaScriptCallFrame> callFrames, v8::Local<v8::Value> exception, const protocol::Vector<String16>& hitBreakpoints, bool isPromiseRejection)
+V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8::Context> context, v8::Local<v8::Value> exception, const protocol::Vector<String16>& hitBreakpoints, bool isPromiseRejection)
 {
+    JavaScriptCallFrames callFrames = debugger().currentCallFrames(1);
+    JavaScriptCallFrame* topCallFrame = callFrames.size() > 0 ? callFrames[0].get() : nullptr;
+
     V8DebuggerAgentImpl::SkipPauseRequest result;
     if (m_skipAllPauses)
         result = RequestContinue;
     else if (!hitBreakpoints.isEmpty())
         result = RequestNoSkip; // Don't skip explicit breakpoints even if set in frameworks.
     else if (!exception.IsEmpty())
-        result = shouldSkipExceptionPause();
+        result = shouldSkipExceptionPause(topCallFrame);
     else if (m_scheduledDebuggerStep != NoStep || m_javaScriptPauseScheduled || m_pausingOnNativeEvent)
-        result = shouldSkipStepPause();
+        result = shouldSkipStepPause(topCallFrame);
     else
         result = RequestNoSkip;
 
     m_skipNextDebuggerStepOut = false;
     if (result != RequestNoSkip)
         return result;
-
     // Skip pauses inside V8 internal scripts and on syntax errors.
-    if (!callFrames)
+    if (!topCallFrame)
         return RequestContinue;
 
     ASSERT(m_pausedContext.IsEmpty());
+    callFrames = debugger().currentCallFrames();
+    m_pausedCallFrames.swap(callFrames);
     m_pausedContext.Reset(m_isolate, context);
-    m_currentCallStack = callFrames;
     v8::HandleScope handles(m_isolate);
 
     if (!exception.IsEmpty()) {
@@ -1565,7 +1556,8 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
 void V8DebuggerAgentImpl::didContinue()
 {
     m_pausedContext.Reset();
-    m_currentCallStack.clear();
+    JavaScriptCallFrames emptyCallFrames;
+    m_pausedCallFrames.swap(emptyCallFrames);
     clearBreakDetails();
     m_frontend->resumed();
 }
@@ -1578,7 +1570,7 @@ bool V8DebuggerAgentImpl::canBreakProgram()
 void V8DebuggerAgentImpl::breakProgram(const String16& breakReason, PassOwnPtr<protocol::DictionaryValue> data)
 {
     ASSERT(enabled());
-    if (m_skipAllPauses || !m_pausedContext.IsEmpty() || isCallStackEmptyOrBlackboxed() || !debugger().breakpointsActivated())
+    if (m_skipAllPauses || !m_pausedContext.IsEmpty() || isCurrentCallStackEmptyOrBlackboxed() || !debugger().breakpointsActivated())
         return;
     m_breakReason = breakReason;
     m_breakAuxData = data;

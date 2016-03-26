@@ -60,7 +60,7 @@ function test()
     function logErrorResponse(response)
     {
         if (response.error) {
-            if (response.error.message.indexOf("debugger is not on pause") != -1) {
+            if (response.error.message.indexOf("Can only perform operation while paused.") != -1) {
                 InspectorTest.log("PASS, error message as expected");
                 return;
             }

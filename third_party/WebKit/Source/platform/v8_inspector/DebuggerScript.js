@@ -274,41 +274,15 @@ DebuggerScript.setPauseOnExceptionsState = function(newState)
 
 /**
  * @param {!ExecutionState} execState
- * @return {number}
+ * @param {number} limit
+ * @return {!Array<!JavaScriptCallFrame>}
  */
-DebuggerScript.frameCount = function(execState)
+DebuggerScript.currentCallFrames = function(execState, limit)
 {
-    return execState.frameCount();
-}
-
-/**
- * @param {!ExecutionState} execState
- * @return {!JavaScriptCallFrame|undefined}
- */
-DebuggerScript.currentCallFrame = function(execState)
-{
-    var frameCount = execState.frameCount();
-    var topFrame = undefined;
-    for (var i = frameCount - 1; i >= 0; i--) {
-        var frameMirror = execState.frame(i);
-        topFrame = DebuggerScript._frameMirrorToJSCallFrame(frameMirror, topFrame);
-    }
-    return topFrame;
-}
-
-/**
- * @param {!ExecutionState} execState
- * @param {number} index
- * @return {!JavaScriptCallFrame|undefined}
- */
-DebuggerScript.currentCallFrameByIndex = function(execState, index)
-{
-    if (index < 0)
-        return undefined;
-    var frameCount = execState.frameCount();
-    if (index >= frameCount)
-        return undefined;
-    return DebuggerScript._frameMirrorToJSCallFrame(execState.frame(index), undefined);
+    var frames = [];
+    for (var i = 0; i < execState.frameCount() && (!limit || i < limit); ++i)
+        frames.push(DebuggerScript._frameMirrorToJSCallFrame(execState.frame(i)));
+    return frames;
 }
 
 /**
@@ -427,10 +401,9 @@ DebuggerScript.getBreakpointNumbers = function(eventData)
 // asynchronous call stacks. Thus, when possible, initialize the data lazily.
 /**
  * @param {!FrameMirror} frameMirror
- * @param {!JavaScriptCallFrame|undefined} callerFrame
  * @return {!JavaScriptCallFrame}
  */
-DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
+DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror)
 {
     // Stuff that can not be initialized lazily (i.e. valid while paused with a valid break_id).
     // The frameMirror and scopeMirror can be accessed only while paused on the debugger.
@@ -664,7 +637,6 @@ DebuggerScript._frameMirrorToJSCallFrame = function(frameMirror, callerFrame)
         "column": column,
         "thisObject": thisObject,
         "evaluate": evaluate,
-        "caller": callerFrame,
         "restart": restart,
         "setVariableValue": setVariableValue,
         "isAtReturn": isAtReturn,

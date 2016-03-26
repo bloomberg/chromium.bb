@@ -163,7 +163,7 @@ public:
     void reset();
 
     // Interface for V8DebuggerImpl
-    SkipPauseRequest didPause(v8::Local<v8::Context>, PassOwnPtr<JavaScriptCallFrame> callFrames, v8::Local<v8::Value> exception, const protocol::Vector<String16>& hitBreakpoints, bool isPromiseRejection);
+    SkipPauseRequest didPause(v8::Local<v8::Context>, v8::Local<v8::Value> exception, const protocol::Vector<String16>& hitBreakpoints, bool isPromiseRejection);
     void didContinue();
     void didParseSource(const V8DebuggerParsedScript&);
     bool v8AsyncTaskEventsEnabled() const;
@@ -177,8 +177,8 @@ private:
     bool checkEnabled(ErrorString*);
     void enable();
 
-    SkipPauseRequest shouldSkipExceptionPause();
-    SkipPauseRequest shouldSkipStepPause();
+    SkipPauseRequest shouldSkipExceptionPause(JavaScriptCallFrame* topCallFrame);
+    SkipPauseRequest shouldSkipStepPause(JavaScriptCallFrame* topCallFrame);
 
     void schedulePauseOnNextStatementIfSteppingInto();
 
@@ -198,8 +198,8 @@ private:
     bool assertPaused(ErrorString*);
     void clearBreakDetails();
 
-    bool isCallStackEmptyOrBlackboxed();
-    bool isTopCallFrameBlackboxed();
+    bool isCurrentCallStackEmptyOrBlackboxed();
+    bool isTopPausedCallFrameBlackboxed();
     bool isCallFrameWithUnknownScriptOrBlackboxed(JavaScriptCallFrame*);
 
     void internalSetAsyncCallStackDepth(int);
@@ -225,7 +225,7 @@ private:
     protocol::Frontend::Debugger* m_frontend;
     v8::Isolate* m_isolate;
     v8::Global<v8::Context> m_pausedContext;
-    OwnPtr<JavaScriptCallFrame> m_currentCallStack;
+    JavaScriptCallFrames m_pausedCallFrames;
     ScriptsMap m_scripts;
     BreakpointIdToDebuggerBreakpointIdsMap m_breakpointIdToDebuggerBreakpointIds;
     DebugServerBreakpointToBreakpointIdAndSourceMap m_serverBreakpoints;

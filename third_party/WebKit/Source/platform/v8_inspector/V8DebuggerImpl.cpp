@@ -33,7 +33,6 @@
 #include "platform/inspector_protocol/Values.h"
 #include "platform/v8_inspector/Atomics.h"
 #include "platform/v8_inspector/DebuggerScript.h"
-#include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/ScriptBreakpoint.h"
 #include "platform/v8_inspector/V8DebuggerAgentImpl.h"
 #include "platform/v8_inspector/V8RuntimeAgentImpl.h"
@@ -396,7 +395,7 @@ void V8DebuggerImpl::clearStepping()
     callDebuggerMethod("clearStepping", 0, argv);
 }
 
-bool V8DebuggerImpl::setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString* error, Maybe<protocol::Debugger::SetScriptSourceError>* errorData, OwnPtr<JavaScriptCallFrame>* newCallFrames, Maybe<bool>* stackChanged)
+bool V8DebuggerImpl::setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString* error, Maybe<protocol::Debugger::SetScriptSourceError>* errorData, JavaScriptCallFrames* newCallFrames, Maybe<bool>* stackChanged)
 {
     class EnableLiveEditScope {
     public:
@@ -465,53 +464,33 @@ bool V8DebuggerImpl::setScriptSource(const String16& sourceID, const String16& n
     return false;
 }
 
-int V8DebuggerImpl::frameCount()
-{
-    ASSERT(isPaused());
-    ASSERT(!m_executionState.IsEmpty());
-    v8::Local<v8::Value> argv[] = { m_executionState };
-    v8::Local<v8::Value> result = callDebuggerMethod("frameCount", WTF_ARRAY_LENGTH(argv), argv).ToLocalChecked();
-    if (result->IsInt32())
-        return result->Int32Value();
-    return 0;
-}
-
-PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::currentCallFrames()
+JavaScriptCallFrames V8DebuggerImpl::currentCallFrames(int limit)
 {
     if (!m_isolate->InContext())
-        return nullptr;
-    v8::Local<v8::Value> currentCallFrameV8;
+        return JavaScriptCallFrames();
+    v8::Local<v8::Value> currentCallFramesV8;
     if (m_executionState.IsEmpty()) {
-        v8::Local<v8::Function> currentCallFrameFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.Get(m_isolate)->Get(v8InternalizedString("currentCallFrame")));
-        currentCallFrameV8 = v8::Debug::Call(debuggerContext(), currentCallFrameFunction).ToLocalChecked();
+        v8::Local<v8::Function> currentCallFramesFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.Get(m_isolate)->Get(v8InternalizedString("currentCallFrames")));
+        currentCallFramesV8 = v8::Debug::Call(debuggerContext(), currentCallFramesFunction, v8::Integer::New(m_isolate, limit)).ToLocalChecked();
     } else {
-        v8::Local<v8::Value> argv[] = { m_executionState };
-        currentCallFrameV8 = callDebuggerMethod("currentCallFrame", WTF_ARRAY_LENGTH(argv), argv).ToLocalChecked();
+        v8::Local<v8::Value> argv[] = { m_executionState, v8::Integer::New(m_isolate, limit) };
+        currentCallFramesV8 = callDebuggerMethod("currentCallFrames", WTF_ARRAY_LENGTH(argv), argv).ToLocalChecked();
     }
-    ASSERT(!currentCallFrameV8.IsEmpty());
-    if (!currentCallFrameV8->IsObject())
-        return nullptr;
-    return JavaScriptCallFrame::create(debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
-}
-
-PassOwnPtr<JavaScriptCallFrame> V8DebuggerImpl::callFrame(int index)
-{
-    if (!m_isolate->InContext())
-        return nullptr;
-    v8::HandleScope handleScope(m_isolate);
-
-    v8::Local<v8::Value> currentCallFrameV8;
-    if (m_executionState.IsEmpty()) {
-        v8::Local<v8::Function> currentCallFrameFunction = v8::Local<v8::Function>::Cast(m_debuggerScript.Get(m_isolate)->Get(v8InternalizedString("currentCallFrameByIndex")));
-        currentCallFrameV8 = v8::Debug::Call(debuggerContext(), currentCallFrameFunction, v8::Integer::New(m_isolate, index)).ToLocalChecked();
-    } else {
-        v8::Local<v8::Value> argv[] = { m_executionState, v8::Integer::New(m_isolate, index) };
-        currentCallFrameV8 = callDebuggerMethod("currentCallFrameByIndex", WTF_ARRAY_LENGTH(argv), argv).ToLocalChecked();
+    ASSERT(!currentCallFramesV8.IsEmpty());
+    if (!currentCallFramesV8->IsArray())
+        return JavaScriptCallFrames();
+    v8::Local<v8::Array> callFramesArray = currentCallFramesV8.As<v8::Array>();
+    JavaScriptCallFrames callFrames;
+    for (size_t i = 0; i < callFramesArray->Length(); ++i) {
+        v8::Local<v8::Value> callFrameValue;
+        if (!callFramesArray->Get(debuggerContext(), i).ToLocal(&callFrameValue))
+            return JavaScriptCallFrames();
+        if (!callFrameValue->IsObject())
+            return JavaScriptCallFrames();
+        v8::Local<v8::Object> callFrameObject = callFrameValue.As<v8::Object>();
+        callFrames.append(JavaScriptCallFrame::create(debuggerContext(), v8::Local<v8::Object>::Cast(callFrameObject)));
     }
-    ASSERT(!currentCallFrameV8.IsEmpty());
-    if (!currentCallFrameV8->IsObject())
-        return nullptr;
-    return JavaScriptCallFrame::create(debuggerContext(), v8::Local<v8::Object>::Cast(currentCallFrameV8));
+    return callFrames;
 }
 
 static V8DebuggerImpl* toV8DebuggerImpl(v8::Local<v8::Value> data)
@@ -552,7 +531,7 @@ void V8DebuggerImpl::handleProgramBreak(v8::Local<v8::Context> pausedContext, v8
 
     m_pausedContext = pausedContext;
     m_executionState = executionState;
-    V8DebuggerAgentImpl::SkipPauseRequest result = agent->didPause(pausedContext, currentCallFrames(), exception, breakpointIds, isPromiseRejection);
+    V8DebuggerAgentImpl::SkipPauseRequest result = agent->didPause(pausedContext, exception, breakpointIds, isPromiseRejection);
     if (result == V8DebuggerAgentImpl::RequestNoSkip) {
         m_runningNestedMessageLoop = true;
         int groupId = getGroupId(pausedContext);

@@ -32,6 +32,7 @@
 #define V8DebuggerImpl_h
 
 #include "platform/inspector_protocol/TypeBuilder.h"
+#include "platform/v8_inspector/JavaScriptCallFrame.h"
 #include "platform/v8_inspector/V8DebuggerScript.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
 #include "wtf/PassOwnPtr.h"
@@ -43,7 +44,6 @@ namespace blink {
 
 using protocol::Maybe;
 
-class JavaScriptCallFrame;
 struct ScriptBreakpoint;
 class V8DebuggerAgentImpl;
 class V8RuntimeAgentImpl;
@@ -83,10 +83,8 @@ public:
     void stepOutOfFunction();
     void clearStepping();
 
-    bool setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString*, Maybe<protocol::Debugger::SetScriptSourceError>*, OwnPtr<JavaScriptCallFrame>* newCallFrames, Maybe<bool>* stackChanged);
-    PassOwnPtr<JavaScriptCallFrame> currentCallFrames();
-    PassOwnPtr<JavaScriptCallFrame> callFrame(int index);
-    int frameCount();
+    bool setScriptSource(const String16& sourceID, const String16& newContent, bool preview, ErrorString*, Maybe<protocol::Debugger::SetScriptSourceError>*, JavaScriptCallFrames* newCallFrames, Maybe<bool>* stackChanged);
+    JavaScriptCallFrames currentCallFrames(int limit = 0);
 
     bool isPaused();
     v8::Local<v8::Context> pausedContext() { return m_pausedContext; }

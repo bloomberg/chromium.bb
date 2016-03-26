@@ -47,16 +47,6 @@ JavaScriptCallFrame::~JavaScriptCallFrame()
 {
 }
 
-PassOwnPtr<JavaScriptCallFrame> JavaScriptCallFrame::caller()
-{
-    v8::HandleScope handleScope(m_isolate);
-    v8::Local<v8::Context> debuggerContext = v8::Local<v8::Context>::New(m_isolate, m_debuggerContext);
-    v8::Local<v8::Value> callerFrame = v8::Local<v8::Object>::New(m_isolate, m_callFrame)->Get(toV8StringInternalized(m_isolate, "caller"));
-    if (callerFrame.IsEmpty() || !callerFrame->IsObject())
-        return 0;
-    return JavaScriptCallFrame::create(debuggerContext, v8::Local<v8::Object>::Cast(callerFrame));
-}
-
 int JavaScriptCallFrame::callV8FunctionReturnInt(const char* name) const
 {
     v8::HandleScope handleScope(m_isolate);

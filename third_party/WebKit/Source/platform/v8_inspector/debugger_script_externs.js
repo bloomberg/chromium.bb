@@ -58,7 +58,6 @@ var JavaScriptCallFrameDetails;
         column: function():number,
         thisObject: !Object,
         evaluate: function(string):*,
-        caller: *,
         restart: function():undefined,
         setVariableValue: function(number, string, *):undefined,
         isAtReturn: boolean,

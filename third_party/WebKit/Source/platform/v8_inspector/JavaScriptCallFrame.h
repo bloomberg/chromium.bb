@@ -46,8 +46,6 @@ public:
     }
     ~JavaScriptCallFrame();
 
-    PassOwnPtr<JavaScriptCallFrame> caller();
-
     int sourceID() const;
     int line() const;
     int column() const;
@@ -69,6 +67,8 @@ private:
     v8::Global<v8::Object> m_callFrame;
     v8::Global<v8::FunctionTemplate> m_wrapperTemplate;
 };
+
+using JavaScriptCallFrames = Vector<OwnPtr<JavaScriptCallFrame>>;
 
 } // namespace blink
 
