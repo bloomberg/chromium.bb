@@ -8,18 +8,16 @@
 #import <Foundation/Foundation.h>
 
 #import "base/mac/scoped_nsobject.h"
-#include "ios/net/request_tracker.h"
 #include "ios/web/public/referrer.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 
 namespace web {
 
-// Parameters for creating a tab. Most paramaters are optional, and
-// can be left at the default values set by the constructor.
-// TODO(stuartmorgan): Remove the dependency on RequestTracker, then move
-// this into NavigationManager to parallel NavigationController's
-// LoadURLParams (which this is modeled after).
+// Parameters for URL loading. Most parameters are optional, and can be left at
+// the default values set by the constructor.
+// TODO(crbug.com/597990): Move this into NavigationManager to parallel
+// NavigationController's LoadURLParams (which this is modeled after).
 struct WebLoadParams {
  public:
   // The URL to load. Must be set.
@@ -34,9 +32,6 @@ struct WebLoadParams {
   // True for renderer-initiated navigations. This is
   // important for tracking whether to display pending URLs.
   bool is_renderer_initiated;
-
-  // The cache mode to load with. Defaults to CACHE_NORMAL.
-  net::RequestTracker::CacheMode cache_mode;
 
   // Any extra HTTP headers to add to the load.
   base::scoped_nsobject<NSDictionary> extra_headers;

@@ -208,12 +208,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Returns the tracker for this WebStateImpl.
   RequestTrackerImpl* GetRequestTracker();
 
-  // Gets and sets the mode controlling the HTTP cache behavior.
-  // TODO(rohitrao): As with the other RequestTracker-related methods, this
-  // should become an internal detail of this class.
-  net::RequestTracker::CacheMode GetCacheMode();
-  void SetCacheMode(net::RequestTracker::CacheMode mode);
-
   // Lazily creates (if necessary) and returns |request_group_id_|.
   // IMPORTANT: This should not be used for anything other than associating this
   // instance to network requests.
@@ -329,9 +323,6 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Request tracker associted with this object.
   scoped_refptr<RequestTrackerImpl> request_tracker_;
-
-  // Mode controlling the HTTP cache behavior.
-  net::RequestTracker::CacheMode cache_mode_;
 
   // A number identifying this object. This number is injected into the user
   // agent to allow the network layer to know which web view requests originated

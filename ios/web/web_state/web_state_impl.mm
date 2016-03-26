@@ -38,7 +38,6 @@ WebStateImpl::WebStateImpl(BrowserState* browser_state)
       web_controller_(nil),
       navigation_manager_(this, browser_state),
       interstitial_(nullptr),
-      cache_mode_(net::RequestTracker::CACHE_NORMAL),
       weak_factory_(this) {
   GlobalWebStateEventTracker::GetInstance()->OnWebStateCreated(this);
 }
@@ -437,14 +436,6 @@ void WebStateImpl::CloseRequestTracker() {
 RequestTrackerImpl* WebStateImpl::GetRequestTracker() {
   DCHECK(request_tracker_.get());
   return request_tracker_.get();
-}
-
-net::RequestTracker::CacheMode WebStateImpl::GetCacheMode() {
-  return cache_mode_;
-}
-
-void WebStateImpl::SetCacheMode(net::RequestTracker::CacheMode mode) {
-  cache_mode_ = mode;
 }
 
 NSString* WebStateImpl::GetRequestGroupID() {

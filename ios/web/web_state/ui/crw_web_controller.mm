@@ -1222,11 +1222,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self recordStateInHistory];
   }
 
-  // If the web view had been discarded, and this request is to load that
-  // URL again, then it's a rebuild and should use the cache.
-  BOOL preferCache = _expectedReconstructionURL.is_valid() &&
-                     _expectedReconstructionURL == requestURL;
-
   [_delegate webWillAddPendingURL:requestURL transition:transition];
   // Add or update pending url.
   if (_webStateImpl->GetNavigationManagerImpl().GetPendingItem()) {
@@ -1239,15 +1234,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                                      referrer:referrer
                                    transition:transition
                             rendererInitiated:YES];
-  }
-  // Update the cache mode for all the network requests issued by this web view.
-  // The mode is reset to CACHE_NORMAL after each page load.
-  if (_webStateImpl->GetCacheMode() != net::RequestTracker::CACHE_NORMAL) {
-    _webStateImpl->GetRequestTracker()->SetCacheModeFromUIThread(
-        _webStateImpl->GetCacheMode());
-  } else if (preferCache) {
-    _webStateImpl->GetRequestTracker()->SetCacheModeFromUIThread(
-        net::RequestTracker::CACHE_HISTORY);
   }
   _webStateImpl->SetIsLoading(true);
   [_delegate webDidAddPendingURL];
@@ -1456,19 +1442,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [_delegate webDidUpdateSessionForLoadWithParams:params
                              wasInitialNavigation:initialNavigation];
 
-  // If a non-default cache mode is passed in, it takes precedence over
-  // |reload|.
-  const BOOL reload = [self shouldReload:navUrl transition:transition];
-  if (params.cache_mode != net::RequestTracker::CACHE_NORMAL) {
-    _webStateImpl->SetCacheMode(params.cache_mode);
-  } else if (reload) {
-    _webStateImpl->SetCacheMode(net::RequestTracker::CACHE_RELOAD);
-  }
-
   [self loadCurrentURL];
-
-  // Change the cache mode back to CACHE_NORMAL after a reload.
-  _webStateImpl->SetCacheMode(net::RequestTracker::CACHE_NORMAL);
 }
 
 - (void)loadCurrentURL {
@@ -1617,10 +1591,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)reload {
   [_delegate webWillReload];
-
-  _webStateImpl->SetCacheMode(net::RequestTracker::CACHE_RELOAD);
   [self reloadInternal];
-  _webStateImpl->SetCacheMode(net::RequestTracker::CACHE_NORMAL);
 }
 
 - (void)loadCancelled {
@@ -1710,9 +1681,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [[sessionController currentEntry] retain]);
   [sessionController goDelta:delta];
   if (fromEntry) {
-    _webStateImpl->SetCacheMode(net::RequestTracker::CACHE_HISTORY);
     [self finishHistoryNavigationFromEntry:fromEntry];
-    _webStateImpl->SetCacheMode(net::RequestTracker::CACHE_NORMAL);
   }
 }
 
@@ -1761,9 +1730,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // (some of) the requests of the next page. It's expected to be an edge case,
   // but if it becomes a problem it should be possible to notice it afterwards
   // and react to it (by warning the user or reloading the page for example).
-  _webStateImpl->SetCacheMode(net::RequestTracker::CACHE_NORMAL);
   _webStateImpl->GetRequestTracker()->SetCacheModeFromUIThread(
-      _webStateImpl->GetCacheMode());
+      net::RequestTracker::CACHE_NORMAL);
 
   [self restoreStateFromHistory];
   [self loadCompletedForURL:currentURL];
