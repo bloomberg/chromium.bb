@@ -5,6 +5,7 @@
 #include "wtf/RefPtr.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/StringImpl.h"
 
 namespace WTF {
@@ -27,5 +28,16 @@ TEST(RefPtrTest, MoveAssignmentOperator)
     EXPECT_TRUE(!!b);
     EXPECT_TRUE(!a);
 }
+
+class RefCountedClass : public RefCounted<RefCountedClass> {
+};
+
+TEST(RefPtrTest, ConstObject)
+{
+    // This test is only to ensure we force the compilation of a const RefCounted
+    // object to ensure the generated code compiles.
+    RefPtr<const RefCountedClass> ptrToConst = adoptRef(new RefCountedClass());
+}
+
 
 } // namespace WTF
