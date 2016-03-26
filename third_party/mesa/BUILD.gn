@@ -713,6 +713,11 @@ loadable_module("osmesa") {
   if (is_win) {
     ldflags = [ "/DEF:" + rebase_path("src/src/mesa/drivers/osmesa/osmesa.def",
                                       root_build_dir) ]
+
+    # TODO(brucedawson) : remove when crbug.com/482671 is resolved by
+    # Microsoft.
+    configs -= [ "//build/config/win:default_incremental_linking" ]
+    configs += [ "//build/config/win:no_incremental_linking" ]
   }
 
   deps = [
