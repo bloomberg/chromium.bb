@@ -25,7 +25,7 @@
   ],
 
   'sources': [
-    '../third_party/skia/src/ports/SkImageDecoder_empty.cpp',
+    '../third_party/skia/src/ports/SkImageEncoder_none.cpp',
 
     '../third_party/skia/src/ports/SkFontConfigInterface_direct.cpp',
     '../third_party/skia/src/ports/SkFontConfigInterface_direct_factory.cpp',
