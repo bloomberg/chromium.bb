@@ -789,6 +789,25 @@ if (!is_android) {
     ]
   }
 
+  # TODO(GYP): Delete this after we've converted everything to GN.
+  # The _run targets exist only for compatibility w/ GYP.
+  group("mash_browser_tests_run") {
+    testonly = true
+    deps = [
+      ":mash_browser_tests",
+    ]
+  }
+
+  group("mash_browser_tests") {
+    testonly = true
+    data = [
+      "//testing/buildbot/filters/mojo.fyi.browser_tests.filter",
+    ]
+    data_deps = [
+      ":browser_tests",
+    ]
+  }
+
   test("browser_tests") {
     sources = [
       "base/browser_tests_main.cc",

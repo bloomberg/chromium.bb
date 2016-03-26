@@ -125,9 +125,28 @@ class MetaBuildWrapper(object):
     AddCommonOptions(subp)
     subp.set_defaults(func=self.CmdLookup)
 
-    subp = subps.add_parser('run',
-                            help='build and run the isolated version of a '
-                                 'binary')
+    subp = subps.add_parser(
+        'run',
+        help='build and run the isolated version of a '
+             'binary',
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    subp.description = (
+        'Build, isolate, and run the given binary with the command line\n'
+        'listed in the isolate. You may pass extra arguments after the\n'
+        'target; use "--" if the extra arguments need to include switches.\n'
+        '\n'
+        'Examples:\n'
+        '\n'
+        '  % tools/mb/mb.py run -m chromium.linux -b "Linux Builder" \\\n'
+        '    //out/Default content_browsertests\n'
+        '\n'
+        '  % tools/mb/mb.py run out/Default content_browsertests\n'
+        '\n'
+        '  % tools/mb/mb.py run out/Default content_browsertests -- \\\n'
+        '    --test-launcher-retry-limit=0'
+        '\n'
+    )
+
     AddCommonOptions(subp)
     subp.add_argument('-j', '--jobs', dest='jobs', type=int,
                       help='Number of jobs to pass to ninja')
@@ -135,9 +154,16 @@ class MetaBuildWrapper(object):
                       action='store_false',
                       help='Do not build, just isolate and run')
     subp.add_argument('path', nargs=1,
-                      help='path to generate build into')
+                      help=('path to generate build into (or use).'
+                            ' This can be either a regular path or a '
+                            'GN-style source-relative path like '
+                            '//out/Default.'))
     subp.add_argument('target', nargs=1,
                       help='ninja target to build and run')
+    subp.add_argument('extra_args', nargs='*',
+                      help=('extra args to pass to the isolate to run. Use '
+                            '"--" as the first arg if you need to pass '
+                            'switches'))
     subp.set_defaults(func=self.CmdRun)
 
     subp = subps.add_parser('validate',
@@ -253,13 +279,17 @@ class MetaBuildWrapper(object):
       if ret:
         return ret
 
-    ret, _, _ = self.Run([
+    cmd = [
         self.executable,
         self.PathJoin('tools', 'swarming_client', 'isolate.py'),
         'run',
         '-s',
-        self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target))],
-        force_verbose=False, buffer_output=False)
+        self.ToSrcRelPath('%s/%s.isolated' % (build_dir, target)),
+    ]
+    if self.args.extra_args:
+        cmd += ['--'] + self.args.extra_args
+
+    ret, _, _ = self.Run(cmd, force_verbose=False, buffer_output=False)
 
     return ret
 
@@ -756,6 +786,8 @@ class MetaBuildWrapper(object):
     cmd = self.GNCmd('desc', build_dir, extra_args=[label, 'runtime_deps'])
     ret, out, _ = self.Call(cmd)
     if ret:
+      if out:
+        self.Print(out)
       return ret
 
     runtime_deps = out.splitlines()
@@ -947,9 +979,9 @@ class MetaBuildWrapper(object):
 
   def ToSrcRelPath(self, path):
     """Returns a relative path from the top of the repo."""
-    # TODO: Support normal paths in addition to source-absolute paths.
-    assert(path.startswith('//'))
-    return path[2:].replace('/', self.sep)
+    if path.startswith('//'):
+      return path[2:].replace('/', self.sep)
+    return self.RelPath(path, self.chromium_src_dir)
 
   def ParseGYPConfigPath(self, path):
     rpath = self.ToSrcRelPath(path)
@@ -1151,9 +1183,8 @@ class MetaBuildWrapper(object):
   def PrintJSON(self, obj):
     self.Print(json.dumps(obj, indent=2, sort_keys=True))
 
-  def Print(self, *args, **kwargs):
-    # This function largely exists so it can be overridden for testing.
-    print(*args, **kwargs)
+  def GNTargetName(self, target):
+    return target[:-len('_apk')] if target.endswith('_apk') else target
 
   def Build(self, target):
     build_dir = self.ToSrcRelPath(self.args.path[0])
@@ -1203,14 +1234,11 @@ class MetaBuildWrapper(object):
     return os.path.exists(path)
 
   def Fetch(self, url):
-
+    # This function largely exists so it can be overridden for testing.
     f = urllib2.urlopen(url)
     contents = f.read()
     f.close()
     return contents
-
-  def GNTargetName(self, target):
-    return target[:-len('_apk')] if target.endswith('_apk') else target
 
   def MaybeMakeDirectory(self, path):
     try:
@@ -1223,10 +1251,18 @@ class MetaBuildWrapper(object):
     # This function largely exists so it can be overriden for testing.
     return os.path.join(*comps)
 
+  def Print(self, *args, **kwargs):
+    # This function largely exists so it can be overridden for testing.
+    print(*args, **kwargs)
+
   def ReadFile(self, path):
     # This function largely exists so it can be overriden for testing.
     with open(path) as fp:
       return fp.read()
+
+  def RelPath(self, path, start='.'):
+    # This function largely exists so it can be overriden for testing.
+    return os.path.relpath(path, start)
 
   def RemoveFile(self, path):
     # This function largely exists so it can be overriden for testing.

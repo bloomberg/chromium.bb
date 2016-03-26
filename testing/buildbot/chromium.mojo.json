@@ -16,11 +16,13 @@
     ],
     "gtest_tests": [
       {
-        "args": [
-          "--run-in-mash",
-          "--test-launcher-filter-file=src/testing/buildbot/filters/mojo.fyi.browser_tests.filter"
+        "override_compile_targets": [
+          "mash_browser_tests"
         ],
-        "test": "browser_tests"
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mash_browser_tests"
       },
       {
         "test": "mus_ws_unittests"
