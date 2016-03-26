@@ -97,8 +97,8 @@ class RootView;
 //      The Widget instance owns its NativeWidget. This state implies someone
 //      else wants to control the lifetime of this object. When they destroy
 //      the Widget it is responsible for destroying the NativeWidget (from its
-//      destructor).
-//
+//      destructor). This is often used to place a Widget in a scoped_ptr<> or
+//      on the stack in a test.
 class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                             public ui::EventSource,
                             public FocusTraversable,
@@ -206,7 +206,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     ~InitParams();
 
     Type type;
-    // If NULL, a default implementation will be constructed.
+    // If null, a default implementation will be constructed. The default
+    // implementation deletes itself when the Widget closes.
     WidgetDelegate* delegate;
     bool child;
     // If TRANSLUCENT_WINDOW, the widget may be fully or partially transparent.
@@ -221,6 +222,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     Activatable activatable;
     bool keep_on_top;
     bool visible_on_all_workspaces;
+    // See Widget class comment above.
     Ownership ownership;
     bool mirror_origin_in_rtl;
     ShadowType shadow_type;
@@ -287,11 +289,16 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // If you have any parenting or context information, or can pass that
   // information, prefer the WithParent or WithContext versions of these
   // methods.
+  //
+  // The returned Widget is owned by its NativeWidget; see Widget class comment
+  // for details.
   static Widget* CreateWindow(WidgetDelegate* delegate);
   static Widget* CreateWindowWithBounds(WidgetDelegate* delegate,
                                         const gfx::Rect& bounds);
 
-  // Creates a decorated window Widget with the specified properties.
+  // Creates a decorated window Widget with the specified properties. The
+  // returned Widget is owned by its NativeWidget; see Widget class comment for
+  // details.
   static Widget* CreateWindowWithParent(WidgetDelegate* delegate,
                                         gfx::NativeView parent);
   static Widget* CreateWindowWithParentAndBounds(WidgetDelegate* delegate,
@@ -299,6 +306,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
                                                  const gfx::Rect& bounds);
 
   // Creates a decorated window Widget in the same desktop context as |context|.
+  // The returned Widget is owned by its NativeWidget; see Widget class comment
+  // for details.
   static Widget* CreateWindowWithContext(WidgetDelegate* delegate,
                                          gfx::NativeWindow context);
   static Widget* CreateWindowWithContextAndBounds(WidgetDelegate* delegate,
