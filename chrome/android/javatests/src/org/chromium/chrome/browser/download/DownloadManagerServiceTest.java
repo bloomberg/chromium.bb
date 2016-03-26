@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -131,8 +132,8 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void cancelNotification(int downloadId) {
-            assertCorrectExpectedCall(MethodID.CANCEL_DOWNLOAD_ID, downloadId);
+        public void cancelNotification(int notificationId) {
+            assertCorrectExpectedCall(MethodID.CANCEL_DOWNLOAD_ID, notificationId);
         }
 
         @Override
@@ -225,7 +226,6 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
     static class MockOMADownloadHandler extends OMADownloadHandler {
         protected boolean mSuccess;
         protected String mNofityURI;
-        protected DownloadInfo mDownloadInfo;
         protected long mDownloadId;
 
         MockOMADownloadHandler(Context context) {
@@ -237,7 +237,8 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         }
 
         @Override
-        public void onDownloadCompleted(DownloadInfo downloadInfo, String notifyURI) {
+        public void onDownloadCompleted(
+                DownloadInfo downloadInfo, long downloadId, String notifyURI) {
             mSuccess = true;
             mNofityURI = notifyURI;
         }
@@ -248,13 +249,8 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         }
 
         @Override
-        public DownloadInfo updateDownloadInfo(DownloadInfo downloadInfo, long newDownloadId) {
-            mDownloadInfo = downloadInfo;
+        public void updateDownloadInfo(long oldDownloadId, long newDownloadId) {
             mDownloadId = newDownloadId;
-            mDownloadInfo = DownloadInfo.Builder.fromDownloadInfo(downloadInfo)
-                      .setDownloadId((int) newDownloadId)
-                      .build();
-            return mDownloadInfo;
         }
 
         @Override
@@ -273,8 +269,9 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         }
 
         @Override
-        protected long addCompletedDownload(DownloadInfo downloadInfo) {
-            return 1L;
+        protected boolean addCompletedDownload(DownloadItem downloadItem) {
+            downloadItem.setSystemDownloadId(1L);
+            return true;
         }
 
         @Override
@@ -286,7 +283,8 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         protected void init() {}
 
         @Override
-        protected void resumeDownload(int downloadId, String fileName, boolean hasUserGesture) {
+        protected void resumeDownload(int notificationId, String downloadGuid, String fileName,
+                boolean hasUserGesture) {
             mResumed = true;
         }
     }
@@ -298,9 +296,9 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
     }
 
     private DownloadInfo getDownloadInfo() {
-        return new Builder().setContentLength(100)
-                .setDownloadId(mRandom.nextInt(1000))
-                .setHasDownloadId(true)
+        return new Builder()
+                .setContentLength(100)
+                .setDownloadGuid(UUID.randomUUID().toString())
                 .build();
     }
 
@@ -534,7 +532,6 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
 
         try {
             DownloadInfo info = new DownloadInfo.Builder()
-                    .setDownloadId(0)
                     .setMimeType(OMADownloadHandler.OMA_DRM_MESSAGE_MIME)
                     .setFileName("test.gzip")
                     .setUrl(testServer.getURL("/chrome/test/data/android/download/test.gzip"))
@@ -546,14 +543,15 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
             final MockOMADownloadHandler handler = new MockOMADownloadHandler(context);
             dService.setOMADownloadHandler(handler);
             handler.setDownloadId(0);
-            dService.enqueueDownloadManagerRequest(info, true);
+            DownloadItem item = new DownloadItem(true, info);
+            item.setSystemDownloadId(0);
+            dService.enqueueDownloadManagerRequest(item, true);
             CriteriaHelper.pollUiThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
                     return handler.mDownloadId != 0;
                 }
             });
-            handler.mDownloadId = handler.mDownloadInfo.getDownloadId();
             Set<String> downloads = dService.getStoredDownloadInfo(
                     PreferenceManager.getDefaultSharedPreferences(context),
                     DownloadManagerService.PENDING_OMA_DOWNLOADS);

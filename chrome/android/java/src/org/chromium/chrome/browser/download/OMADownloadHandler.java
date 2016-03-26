@@ -244,13 +244,15 @@ public class OMADownloadHandler {
             // Send notification if required attributes are missing.
             if (omaInfo.getTypes().isEmpty() || getSize(omaInfo) <= 0
                     || omaInfo.isValueEmpty(OMA_OBJECT_URI)) {
-                sendNotification(omaInfo, mDownloadInfo, DOWNLOAD_STATUS_INVALID_DESCRIPTOR);
+                sendNotification(omaInfo, mDownloadInfo, DownloadItem.INVALID_DOWNLOAD_ID,
+                        DOWNLOAD_STATUS_INVALID_DESCRIPTOR);
                 return;
             }
             // Check version. Null version are treated as 1.0.
             String version = omaInfo.getValue(OMA_DD_VERSION);
             if (version != null && !version.startsWith("1.")) {
-                sendNotification(omaInfo, mDownloadInfo, DOWNLOAD_STATUS_INVALID_DDVERSION);
+                sendNotification(omaInfo, mDownloadInfo, DownloadItem.INVALID_DOWNLOAD_ID,
+                        DOWNLOAD_STATUS_INVALID_DDVERSION);
                 return;
             }
             // Check device capabilities.
@@ -274,16 +276,17 @@ public class OMADownloadHandler {
      * Called when the content is successfully downloaded by the Android DownloadManager.
      *
      * @param downloadInfo The information about the download.
+     * @param downloadId Download Id from the Android DownloadManager.
      * @param notifyURI The previously saved installNotifyURI attribute.
      */
-    public void onDownloadCompleted(DownloadInfo downloadInfo, String notifyURI) {
-        long downloadId = downloadInfo.getDownloadId();
+    public void onDownloadCompleted(DownloadInfo downloadInfo, long downloadId, String notifyURI) {
         OMAInfo omaInfo = mPendingOMADownloads.get(downloadId);
         if (omaInfo == null) {
             omaInfo = new OMAInfo();
             omaInfo.addAttributeValue(OMA_INSTALL_NOTIFY_URI, notifyURI);
         }
-        sendInstallNotificationAndNextStep(omaInfo, downloadInfo, DOWNLOAD_STATUS_SUCCESS);
+        sendInstallNotificationAndNextStep(
+                omaInfo, downloadInfo, downloadId, DOWNLOAD_STATUS_SUCCESS);
         mPendingOMADownloads.remove(downloadId);
     }
 
@@ -291,10 +294,12 @@ public class OMADownloadHandler {
      * Called when android DownloadManager fails to download the content.
      *
      * @param downloadInfo The information about the download.
+     * @param downloadId Download Id from the Android DownloadManager.
      * @param reason The reason of failure.
      * @param notifyURI The previously saved installNotifyURI attribute.
      */
-    public void onDownloadFailed(DownloadInfo downloadInfo, int reason, String notifyURI) {
+    public void onDownloadFailed(
+            DownloadInfo downloadInfo, long downloadId, int reason, String notifyURI) {
         String status = DOWNLOAD_STATUS_DEVICE_ABORTED;
         switch (reason) {
             case DownloadManager.ERROR_CANNOT_RESUME:
@@ -311,13 +316,12 @@ public class OMADownloadHandler {
             default:
                 break;
         }
-        long downloadId = downloadInfo.getDownloadId();
         OMAInfo omaInfo = mPendingOMADownloads.get(downloadId);
         if (omaInfo == null) {
             // Just send the notification in this case.
             omaInfo = new OMAInfo();
             omaInfo.addAttributeValue(OMA_INSTALL_NOTIFY_URI, notifyURI);
-            sendInstallNotificationAndNextStep(omaInfo, downloadInfo, status);
+            sendInstallNotificationAndNextStep(omaInfo, downloadInfo, downloadId, status);
             return;
         }
         showDownloadWarningDialog(
@@ -332,11 +336,12 @@ public class OMADownloadHandler {
      *
      * @param omaInfo Information about the OMA content.
      * @param downloadInfo Information about the download.
+     * @param downloadId Id of the download in Android DownloadManager.
      * @param statusMessage The message to send to the notification server.
      */
     private void sendInstallNotificationAndNextStep(
-            OMAInfo omaInfo, DownloadInfo downloadInfo, String statusMessage) {
-        if (!sendNotification(omaInfo, downloadInfo, statusMessage)) {
+            OMAInfo omaInfo, DownloadInfo downloadInfo, long downloadId, String statusMessage) {
+        if (!sendNotification(omaInfo, downloadInfo, downloadId, statusMessage)) {
             showNextUrlDialog(omaInfo);
         }
     }
@@ -346,14 +351,15 @@ public class OMADownloadHandler {
      *
      * @param omaInfo Information about the OMA content.
      * @param downloadInfo Information about the download.
+     * @param downloadId Id of the download in Android DownloadManager.
      * @param statusMessage The message to send to the notification server.
      * @return true if the notification ise sent, or false otherwise.
      */
     private boolean sendNotification(
-            OMAInfo omaInfo, DownloadInfo downloadInfo, String statusMessage) {
+            OMAInfo omaInfo, DownloadInfo downloadInfo, long downloadId, String statusMessage) {
         if (omaInfo == null) return false;
         if (omaInfo.isValueEmpty(OMA_INSTALL_NOTIFY_URI)) return false;
-        PostStatusTask task = new PostStatusTask(omaInfo, downloadInfo, statusMessage);
+        PostStatusTask task = new PostStatusTask(omaInfo, downloadInfo, downloadId, statusMessage);
         task.execute();
         return true;
     }
@@ -388,7 +394,9 @@ public class OMADownloadHandler {
                 if (which == AlertDialog.BUTTON_POSITIVE) {
                     downloadOMAContent(downloadId, downloadInfo, omaInfo);
                 } else {
-                    sendNotification(omaInfo, downloadInfo, DOWNLOAD_STATUS_USER_CANCELLED);
+                    sendNotification(omaInfo, downloadInfo,
+                            DownloadItem.INVALID_DOWNLOAD_ID,
+                            DOWNLOAD_STATUS_USER_CANCELLED);
                 }
             }
         };
@@ -419,7 +427,8 @@ public class OMADownloadHandler {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if (which == AlertDialog.BUTTON_POSITIVE) {
-                    sendInstallNotificationAndNextStep(omaInfo, downloadInfo, statusMessage);
+                    sendInstallNotificationAndNextStep(omaInfo, downloadInfo,
+                            DownloadItem.INVALID_DOWNLOAD_ID, statusMessage);
                 }
             }
         };
@@ -592,16 +601,16 @@ public class OMADownloadHandler {
                 .setFileName(fileName)
                 .setUrl(url)
                 .setMimeType(mimeType)
-                .setDownloadId((int) downloadId)
                 .setDescription(omaInfo.getValue(OMA_DESCRIPTION))
                 .setContentLength(getSize(omaInfo))
                 .build();
         // If installNotifyURI is not empty, the downloaded content cannot
         // be used until the PostStatusTask gets a 200-series response.
         // Don't show complete notification until that happens.
-        DownloadManagerService.getDownloadManagerService(mContext)
-                .enqueueDownloadManagerRequest(
-                        newInfo, omaInfo.isValueEmpty(OMA_INSTALL_NOTIFY_URI));
+        DownloadItem item = new DownloadItem(true, newInfo);
+        item.setSystemDownloadId(downloadId);
+        DownloadManagerService.getDownloadManagerService(mContext).enqueueDownloadManagerRequest(
+                item, omaInfo.isValueEmpty(OMA_INSTALL_NOTIFY_URI));
         mPendingOMADownloads.put(downloadId, omaInfo);
     }
 
@@ -618,18 +627,13 @@ public class OMADownloadHandler {
     /**
      * Updates the download information with the new download Id.
      *
-     * @param downloadInfo Information about the download.
+     * @param oldDownloadId Old download Id from the DownloadManager.
      * @param newDownloadId New download Id from the DownloadManager.
-     * @return the new download information with the new Id.
      */
-    public DownloadInfo updateDownloadInfo(DownloadInfo downloadInfo, long newDownloadId) {
-        long oldDownloadId = downloadInfo.getDownloadId();
+    public void updateDownloadInfo(long oldDownloadId, long newDownloadId) {
         OMAInfo omaInfo = mPendingOMADownloads.get(oldDownloadId);
         mPendingOMADownloads.remove(oldDownloadId);
         mPendingOMADownloads.put(newDownloadId, omaInfo);
-        return DownloadInfo.Builder.fromDownloadInfo(downloadInfo)
-                .setDownloadId((int) newDownloadId)
-                .build();
     }
 
     /**
@@ -651,12 +655,14 @@ public class OMADownloadHandler {
         private final OMAInfo mOMAInfo;
         private final DownloadInfo mDownloadInfo;
         private final String mStatusMessage;
+        private final long mDownloadId;
 
         public PostStatusTask(
-                OMAInfo omaInfo, DownloadInfo downloadInfo, String statusMessage) {
+                OMAInfo omaInfo, DownloadInfo downloadInfo, long downloadId, String statusMessage) {
             mOMAInfo = omaInfo;
             mDownloadInfo = downloadInfo;
             mStatusMessage = statusMessage;
+            mDownloadId = downloadId;
         }
 
         @Override
@@ -726,9 +732,9 @@ public class OMADownloadHandler {
                     }
                 }
                 showNextUrlDialog(mOMAInfo);
-            } else if (mDownloadInfo.getDownloadId() > 0) {
+            } else if (mDownloadId != DownloadItem.INVALID_DOWNLOAD_ID) {
                 // Remove the downloaded content.
-                manager.remove(mDownloadInfo.getDownloadId());
+                manager.remove(mDownloadId);
             }
         }
     }

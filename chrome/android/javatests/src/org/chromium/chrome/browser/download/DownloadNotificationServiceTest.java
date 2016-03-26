@@ -18,6 +18,7 @@ import org.chromium.base.test.util.Feature;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Tests of {@link DownloadNotificationService}.
@@ -73,10 +74,10 @@ public class DownloadNotificationServiceTest extends
         Context mockContext = new AdvancedMockContext(getSystemContext());
         getService().setContext(mockContext);
         Set<String> notifications = new HashSet<String>();
-        notifications.add(new DownloadNotificationService.PendingNotification(1, "test1", true)
-                .getNotificationString());
-        notifications.add(new DownloadNotificationService.PendingNotification(2, "test2", true)
-                .getNotificationString());
+        notifications.add(new DownloadSharedPreferenceEntry(1, true, true,
+                UUID.randomUUID().toString(), "test1").getSharedPreferenceString());
+        notifications.add(new DownloadSharedPreferenceEntry(2, true, true,
+                UUID.randomUUID().toString(), "test2").getSharedPreferenceString());
         SharedPreferences sharedPrefs =
                 PreferenceManager.getDefaultSharedPreferences(mockContext);
         SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -103,7 +104,7 @@ public class DownloadNotificationServiceTest extends
         getService().setContext(mockContext);
         startNotificationService();
         DownloadNotificationService service = bindNotificationService();
-        service.notifyDownloadProgress(1, "test", -1, 1L, 1L, true);
+        service.notifyDownloadProgress(1, UUID.randomUUID().toString(), "test", -1, 1L, 1L, true);
         assertEquals(1, getService().getNotificationIds().size());
         assertTrue(getService().getNotificationIds().contains(1));
 
@@ -123,18 +124,21 @@ public class DownloadNotificationServiceTest extends
     @SmallTest
     @Feature({"Download"})
     public void testParseDownloadNotifications() {
-        String notification = "1,0,test.pdf";
-        DownloadNotificationService.PendingNotification pendingNotification =
-                DownloadNotificationService.PendingNotification.parseFromString(notification);
-        assertEquals(1, pendingNotification.downloadId);
-        assertEquals("test.pdf", pendingNotification.fileName);
-        assertFalse(pendingNotification.isResumable);
+        String uuid = UUID.randomUUID().toString();
+        String notification =
+                DownloadSharedPreferenceEntry.VERSION + ",1,0,1," + uuid + ",test.pdf";
+        DownloadSharedPreferenceEntry entry =
+                DownloadSharedPreferenceEntry.parseFromString(notification);
+        assertEquals(1, entry.notificationId);
+        assertEquals("test.pdf", entry.fileName);
+        assertFalse(entry.isResumable);
+        assertEquals(uuid, entry.downloadGuid);
 
-        notification = "2,1,test,2.pdf";
-        pendingNotification =
-                DownloadNotificationService.PendingNotification.parseFromString(notification);
-        assertEquals(2, pendingNotification.downloadId);
-        assertEquals("test,2.pdf", pendingNotification.fileName);
-        assertTrue(pendingNotification.isResumable);
+        notification = DownloadSharedPreferenceEntry.VERSION + ",2,1,1," + uuid + ",test,2.pdf";
+        entry = DownloadSharedPreferenceEntry.parseFromString(notification);
+        assertEquals(2, entry.notificationId);
+        assertEquals("test,2.pdf", entry.fileName);
+        assertTrue(entry.isResumable);
+        assertEquals(uuid, entry.downloadGuid);
     }
 }

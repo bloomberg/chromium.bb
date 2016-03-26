@@ -225,10 +225,11 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
 
         @Override
         public void enqueueDownloadManagerRequest(
-                final DownloadInfo info, boolean notifyCompleted) {
+                final DownloadItem item, boolean notifyCompleted) {
             // Intentionally do not call super, since DownloadManager does not work in test
             // environment.
-            mEnqueueHttpGetDownloadCallbackHelper.notifyCalled(info, notifyCompleted);
+            mEnqueueHttpGetDownloadCallbackHelper.notifyCalled(
+                    item.getDownloadInfo(), notifyCompleted);
         }
     }
 

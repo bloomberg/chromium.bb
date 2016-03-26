@@ -57,26 +57,34 @@ DownloadManagerService::~DownloadManagerService() {
     manager_->RemoveObserver(this);
 }
 
-void DownloadManagerService::ResumeDownload(JNIEnv* env,
-                                            jobject obj,
-                                            uint32_t download_id,
-                                            jstring fileName) {
-  ResumeDownloadInternal(download_id, ConvertJavaStringToUTF8(env, fileName),
-                         true);
+void DownloadManagerService::ResumeDownload(
+    JNIEnv* env,
+    jobject obj,
+    uint32_t download_id,
+    const JavaParamRef<jstring>& jdownload_guid,
+    jstring fileName) {
+  std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
+  ResumeDownloadInternal(download_id, download_guid,
+                         ConvertJavaStringToUTF8(env, fileName), true);
 }
 
-void DownloadManagerService::CancelDownload(JNIEnv* env,
-                                            jobject obj,
-                                            uint32_t download_id) {
-  CancelDownloadInternal(download_id, true);
+void DownloadManagerService::CancelDownload(
+    JNIEnv* env,
+    jobject obj,
+    const JavaParamRef<jstring>& jdownload_guid) {
+  std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
+  CancelDownloadInternal(download_guid, true);
 }
 
-void DownloadManagerService::PauseDownload(JNIEnv* env,
-                                            jobject obj,
-                                            uint32_t download_id) {
-  content::DownloadItem* item = manager_->GetDownload(download_id);
+void DownloadManagerService::PauseDownload(
+    JNIEnv* env,
+    jobject obj,
+    const JavaParamRef<jstring>& jdownload_guid) {
+  std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
+  content::DownloadItem* item = manager_->GetDownloadByGuid(download_guid);
   if (item)
     item->Pause();
+  item->RemoveObserver(content::DownloadControllerAndroid::Get());
 }
 
 void DownloadManagerService::ManagerGoingDown(
@@ -96,14 +104,16 @@ void DownloadManagerService::ResumeDownloadItem(content::DownloadItem* item,
     resume_callback_for_testing_.Run(true);
 }
 
-void DownloadManagerService::ResumeDownloadInternal(uint32_t download_id,
-                                                    const std::string& fileName,
-                                                    bool retry) {
+void DownloadManagerService::ResumeDownloadInternal(
+    uint32_t download_id,
+    const std::string& download_guid,
+    const std::string& fileName,
+    bool retry) {
   if (!manager_) {
     OnResumptionFailed(download_id, fileName);
     return;
   }
-  content::DownloadItem* item = manager_->GetDownload(download_id);
+  content::DownloadItem* item = manager_->GetDownloadByGuid(download_guid);
   if (item) {
     ResumeDownloadItem(item, fileName);
     return;
@@ -120,25 +130,27 @@ void DownloadManagerService::ResumeDownloadInternal(uint32_t download_id,
   // created item might not be loaded from download history. So user might wait
   // indefinitely to see the failed notification. See http://crbug.com/577893.
   base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&DownloadManagerService::ResumeDownloadInternal,
-                 base::Unretained(this), download_id, fileName, false),
+      FROM_HERE, base::Bind(&DownloadManagerService::ResumeDownloadInternal,
+                            base::Unretained(this), download_id, download_guid,
+                            fileName, false),
       base::TimeDelta::FromMilliseconds(kRetryIntervalInMilliseconds));
 }
 
-void DownloadManagerService::CancelDownloadInternal(uint32_t download_id,
-                                                    bool retry) {
+void DownloadManagerService::CancelDownloadInternal(
+    const std::string& download_guid,
+    bool retry) {
   if (!manager_)
     return;
-  content::DownloadItem* item = manager_->GetDownload(download_id);
+  content::DownloadItem* item = manager_->GetDownloadByGuid(download_guid);
   if (item) {
     item->Cancel(true);
+    item->RemoveObserver(content::DownloadControllerAndroid::Get());
     return;
   }
   if (retry) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE, base::Bind(&DownloadManagerService::CancelDownloadInternal,
-                              base::Unretained(this), download_id, false),
+                              base::Unretained(this), download_guid, false),
         base::TimeDelta::FromMilliseconds(kRetryIntervalInMilliseconds));
   }
 }

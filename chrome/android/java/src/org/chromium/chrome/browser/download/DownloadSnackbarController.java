@@ -35,7 +35,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
         Pair<DownloadInfo, Long> download = (Pair<DownloadInfo, Long>) actionData;
         DownloadManagerService manager = DownloadManagerService.getDownloadManagerService(mContext);
         manager.openDownloadedContent(download.second);
-        manager.cancelNotification(download.first.getDownloadId());
+        manager.cancelNotification(download.first.getNotificationId());
     }
 
     @Override
@@ -46,7 +46,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
      * Called to display the download succeeded snackbar.
      *
      * @param downloadInfo Info of the download.
-     * @param downloadId Id of the download.
+     * @param downloadId Id of the download from Android DownloadManager.
      * @param canBeResolved Whether the download can be resolved to any activity.
      */
     public void onDownloadSucceeded(

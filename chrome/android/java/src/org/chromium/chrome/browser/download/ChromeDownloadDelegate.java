@@ -58,8 +58,8 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
         public void onInfoBarButtonClicked(boolean confirm) {
             assert mTab != null;
             if (mPendingRequest == null) return;
-            if (mPendingRequest.hasDownloadId()) {
-                nativeDangerousDownloadValidated(mTab, mPendingRequest.getDownloadId(), confirm);
+            if (mPendingRequest.getDownloadGuid() != null) {
+                nativeDangerousDownloadValidated(mTab, mPendingRequest.getDownloadGuid(), confirm);
                 if (confirm) {
                     showDownloadStartNotification();
                 }
@@ -107,9 +107,10 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
         @Override
         public void onInfoBarDismissed() {
             if (mPendingRequest != null) {
-                if (mPendingRequest.hasDownloadId()) {
+                if (mPendingRequest.getDownloadGuid() != null) {
                     assert mTab != null;
-                    nativeDangerousDownloadValidated(mTab, mPendingRequest.getDownloadId(), false);
+                    nativeDangerousDownloadValidated(
+                            mTab, mPendingRequest.getDownloadGuid(), false);
                 } else if (!mPendingRequest.isGETRequest()) {
                     // Infobar was dismissed, discard the file if a POST download is pending.
                     discardFile(mPendingRequest.getFilePath());
@@ -269,15 +270,14 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
      * Called when a danagerous download is about to start.
      *
      * @param filename File name of the download item.
-     * @param downloadId ID of the download.
+     * @param downloadGuid GUID of the download.
      */
     @Override
-    public void onDangerousDownload(String filename, int downloadId) {
+    public void onDangerousDownload(String filename, String downloadGuid) {
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                 .setFileName(filename)
                 .setDescription(filename)
-                .setHasDownloadId(true)
-                .setDownloadId(downloadId).build();
+                .setDownloadGuid(downloadGuid).build();
         confirmDangerousDownload(downloadInfo);
     }
 
@@ -416,7 +416,8 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
      */
     private void enqueueDownloadManagerRequest(final DownloadInfo info) {
         DownloadManagerService.getDownloadManagerService(
-                mContext.getApplicationContext()).enqueueDownloadManagerRequest(info, true);
+                mContext.getApplicationContext()).enqueueDownloadManagerRequest(
+                        new DownloadItem(true, info), true);
         closeBlankTab();
     }
 
@@ -630,7 +631,7 @@ public class ChromeDownloadDelegate implements ContentViewDownloadDelegate {
     private static native String nativeGetDownloadWarningText(String filename);
     private static native boolean nativeIsDownloadDangerous(String filename);
     private static native void nativeDangerousDownloadValidated(
-            Object tab, int downloadId, boolean accept);
+            Object tab, String downloadGuid, boolean accept);
     private static native void nativeLaunchDownloadOverwriteInfoBar(ChromeDownloadDelegate delegate,
             Tab tab, DownloadInfo downloadInfo, String fileName, String dirName,
             String dirFullPath);

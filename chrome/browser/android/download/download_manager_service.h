@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "content/public/browser/download_manager.h"
 
+using base::android::JavaParamRef;
+
 namespace content {
 class DownloadItem;
 }
@@ -29,20 +31,26 @@ class DownloadManagerService : public content::DownloadManager::Observer {
                          content::DownloadManager* manager);
   ~DownloadManagerService() override;
 
-  // Called to resume downloading the item that has ID equal to |download_id|.
-  // If the DownloadItem is not yet created, retry after a while.
+  // Called to resume downloading the item that has GUID equal to
+  // |jdownload_guid|. If the DownloadItem is not yet created, retry after
+  // a while.
   void ResumeDownload(JNIEnv* env,
                       jobject obj,
                       uint32_t download_id,
+                      const JavaParamRef<jstring>& jdownload_guid,
                       jstring fileName);
 
-  // Called to cancel a download item that has ID equal to |download_id|.
+  // Called to cancel a download item that has GUID equal to |jdownload_guid|.
   // If the DownloadItem is not yet created, retry after a while.
-  void CancelDownload(JNIEnv* env, jobject obj, uint32_t download_id);
+  void CancelDownload(JNIEnv* env,
+                      jobject obj,
+                      const JavaParamRef<jstring>& jdownload_guid);
 
-  // Called to pause a download item that has ID equal to |download_id|.
+  // Called to pause a download item that has GUID equal to |jdownload_guid|.
   // If the DownloadItem is not yet created, do nothing as it is already paused.
-  void PauseDownload(JNIEnv* env, jobject obj, uint32_t download_id);
+  void PauseDownload(JNIEnv* env,
+                     jobject obj,
+                     const JavaParamRef<jstring>& jdownload_guid);
 
   // content::DownloadManager::Observer methods.
   void ManagerGoingDown(content::DownloadManager* manager) override;
@@ -58,12 +66,13 @@ class DownloadManagerService : public content::DownloadManager::Observer {
   // Helper function to start the download resumption. If |retry| is true,
   // chrome will retry the resumption if the download item is not loaded.
   void ResumeDownloadInternal(uint32_t download_id,
+                              const std::string& download_guid,
                               const std::string& fileName,
                               bool retry);
 
   // Helper function to cancel a download. If |retry| is true,
   // chrome will retry the cancellation if the download item is not loaded.
-  void CancelDownloadInternal(uint32_t download_id, bool retry);
+  void CancelDownloadInternal(const std::string& download_guid, bool retry);
 
   // Called to notify the java side that download resumption failed.
   void OnResumptionFailed(uint32_t download_id, const std::string& fileName);

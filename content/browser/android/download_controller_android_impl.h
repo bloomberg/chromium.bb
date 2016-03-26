@@ -102,7 +102,7 @@ class DownloadControllerAndroidImpl : public DownloadControllerAndroid {
                                 bool is_link,
                                 const std::string& extra_headers) override;
   void DangerousDownloadValidated(WebContents* web_contents,
-                                  int download_id,
+                                  const std::string& download_guid,
                                   bool accept) override;
 
   // DownloadItem::Observer interface.

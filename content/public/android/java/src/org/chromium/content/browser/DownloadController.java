@@ -118,11 +118,13 @@ public class DownloadController {
     /**
      * Notifies the download delegate that a download completed and passes along info about the
      * download. This can be either a POST download or a GET download with authentication.
+     * TODO(qinmin): Generate the notificationId in the java side, the native downloadId is going
+     * to be deprecated.
      */
     @CalledByNative
     private void onDownloadCompleted(String url, String mimeType, String filename, String path,
-            long contentLength, int downloadId, String originalUrl, String refererUrl,
-            boolean hasUserGesture) {
+            long contentLength, int notificationId, String downloadGuid, String originalUrl,
+            String refererUrl, boolean hasUserGesture) {
         if (sDownloadNotificationService == null) return;
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                 .setUrl(url)
@@ -131,8 +133,8 @@ public class DownloadController {
                 .setFilePath(path)
                 .setContentLength(contentLength)
                 .setDescription(filename)
-                .setDownloadId(downloadId)
-                .setHasDownloadId(true)
+                .setNotificationId(notificationId)
+                .setDownloadGuid(downloadGuid)
                 .setOriginalUrl(originalUrl)
                 .setReferer(refererUrl)
                 .setHasUserGesture(hasUserGesture)
@@ -146,7 +148,8 @@ public class DownloadController {
      */
     @CalledByNative
     private void onDownloadInterrupted(String url, String mimeType, String filename, String path,
-            long contentLength, int downloadId, boolean isResumable, boolean isAutoResumable) {
+            long contentLength, int notificationId, String downloadGuid, boolean isResumable,
+            boolean isAutoResumable) {
         if (sDownloadNotificationService == null) return;
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                 .setUrl(url)
@@ -155,8 +158,8 @@ public class DownloadController {
                 .setFilePath(path)
                 .setContentLength(contentLength)
                 .setDescription(filename)
-                .setDownloadId(downloadId)
-                .setHasDownloadId(true)
+                .setNotificationId(notificationId)
+                .setDownloadGuid(downloadGuid)
                 .setIsResumable(isResumable)
                 .build();
         sDownloadNotificationService.onDownloadInterrupted(downloadInfo, isAutoResumable);
@@ -164,14 +167,17 @@ public class DownloadController {
 
     /**
      * Called when a download was cancelled.
-     * @param downloadId Id of the download item.
+     * @param notificationId Notification Id of the download item.
+     * @param downloadGuid GUID of the download item.
+     * TODO(qinmin): Generate the notificationId in the java side, the native downloadId is going
+     * to be deprecated.
      */
     @CalledByNative
-    private void onDownloadCancelled(int downloadId) {
+    private void onDownloadCancelled(int notificationId, String downloadGuid) {
         if (sDownloadNotificationService == null) return;
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
-                .setDownloadId(downloadId)
-                .setHasDownloadId(true)
+                .setNotificationId(notificationId)
+                .setDownloadGuid(downloadGuid)
                 .build();
         sDownloadNotificationService.onDownloadCancelled(downloadInfo);
     }
@@ -179,10 +185,12 @@ public class DownloadController {
     /**
      * Notifies the download delegate about progress of a download. Downloads that use Chrome
      * network stack use custom notification to display the progress of downloads.
+     * TODO(qinmin): Generate the notificationId in the java side, the native downloadId is going
+     * to be deprecated.
      */
     @CalledByNative
-    private void onDownloadUpdated(String url, String mimeType, String filename,
-            String path, long contentLength, int downloadId, int percentCompleted,
+    private void onDownloadUpdated(String url, String mimeType, String filename, String path,
+            long contentLength, int notificationId, String downloadGuid, int percentCompleted,
             long timeRemainingInMs, boolean hasUserGesture, boolean isPaused, boolean isResumable) {
         if (sDownloadNotificationService == null) return;
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
@@ -192,8 +200,8 @@ public class DownloadController {
                 .setFilePath(path)
                 .setContentLength(contentLength)
                 .setDescription(filename)
-                .setDownloadId(downloadId)
-                .setHasDownloadId(true)
+                .setNotificationId(notificationId)
+                .setDownloadGuid(downloadGuid)
                 .setPercentCompleted(percentCompleted)
                 .setTimeRemainingInMillis(timeRemainingInMs)
                 .setHasUserGesture(hasUserGesture)
@@ -207,11 +215,10 @@ public class DownloadController {
      * Notifies the download delegate that a dangerous download started.
      */
     @CalledByNative
-    private void onDangerousDownload(ContentViewCore view, String filename,
-            int downloadId) {
+    private void onDangerousDownload(ContentViewCore view, String filename, String downloadGuid) {
         ContentViewDownloadDelegate downloadDelegate = downloadDelegateFromView(view);
         if (downloadDelegate != null) {
-            downloadDelegate.onDangerousDownload(filename, downloadId);
+            downloadDelegate.onDangerousDownload(filename, downloadGuid);
         }
     }
 

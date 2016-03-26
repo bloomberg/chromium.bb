@@ -453,6 +453,8 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
     OnDangerousDownload(item);
 
   JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jguid =
+      ConvertUTF8ToJavaString(env, item->GetGuid());
   ScopedJavaLocalRef<jstring> jurl =
       ConvertUTF8ToJavaString(env, item->GetURL().spec());
   ScopedJavaLocalRef<jstring> jmime_type =
@@ -473,8 +475,9 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
       Java_DownloadController_onDownloadUpdated(
           env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
-          item->GetReceivedBytes(), item->GetId(), item->PercentComplete(),
-          time_delta.InMilliseconds(), item->HasUserGesture(), item->IsPaused(),
+          item->GetReceivedBytes(), item->GetId(), jguid.obj(),
+          item->PercentComplete(), time_delta.InMilliseconds(),
+          item->HasUserGesture(), item->IsPaused(),
           // Get all requirements that allows a download to be resumable.
           !item->GetBrowserContext()->IsOffTheRecord());
       break;
@@ -488,12 +491,13 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
       Java_DownloadController_onDownloadCompleted(
           env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
-          item->GetReceivedBytes(), item->GetId(),
+          item->GetReceivedBytes(), item->GetId(), jguid.obj(),
           joriginal_url.obj(), jreferrer_url.obj(), item->HasUserGesture());
       break;
     case DownloadItem::CANCELLED:
       Java_DownloadController_onDownloadCancelled(
-          env, GetJavaObject()->Controller(env).obj(), item->GetId());
+          env, GetJavaObject()->Controller(env).obj(), item->GetId(),
+          jguid.obj());
       break;
     case DownloadItem::INTERRUPTED:
       // When device loses/changes network, we get a NETWORK_TIMEOUT,
@@ -502,8 +506,9 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
       Java_DownloadController_onDownloadInterrupted(
           env, GetJavaObject()->Controller(env).obj(), jurl.obj(),
           jmime_type.obj(), jfilename.obj(), jpath.obj(),
-          item->GetReceivedBytes(), item->GetId(), item->CanResume(),
-          IsInterruptedDownloadAutoResumable(item));
+          item->GetReceivedBytes(), item->GetId(), jguid.obj(),
+          item->CanResume(), IsInterruptedDownloadAutoResumable(item));
+      item->RemoveObserver(this);
       break;
     case DownloadItem::MAX_DOWNLOAD_STATE:
       NOTREACHED();
@@ -514,12 +519,14 @@ void DownloadControllerAndroidImpl::OnDangerousDownload(DownloadItem* item) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jfilename = ConvertUTF8ToJavaString(
       env, item->GetTargetFilePath().BaseName().value());
+  ScopedJavaLocalRef<jstring> jguid =
+      ConvertUTF8ToJavaString(env, item->GetGuid());
   ScopedJavaLocalRef<jobject> view_core = GetContentViewCoreFromWebContents(
       item->GetWebContents());
   if (!view_core.is_null()) {
     Java_DownloadController_onDangerousDownload(
         env, GetJavaObject()->Controller(env).obj(), view_core.obj(),
-        jfilename.obj(), item->GetId());
+        jfilename.obj(), jguid.obj());
   }
 }
 
@@ -559,12 +566,14 @@ void DownloadControllerAndroidImpl::StartContextMenuDownload(
 }
 
 void DownloadControllerAndroidImpl::DangerousDownloadValidated(
-    WebContents* web_contents, int download_id, bool accept) {
+    WebContents* web_contents,
+    const std::string& download_guid,
+    bool accept) {
   if (!web_contents)
     return;
   DownloadManagerImpl* dlm = static_cast<DownloadManagerImpl*>(
       BrowserContext::GetDownloadManager(web_contents->GetBrowserContext()));
-  DownloadItem* item = dlm->GetDownload(download_id);
+  DownloadItem* item = dlm->GetDownloadByGuid(download_guid);
   if (!item)
     return;
   if (accept)

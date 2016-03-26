@@ -42,8 +42,8 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     }
 
     @Override
-    public void cancelNotification(int downloadId) {
-        mNotificationIds.remove(Integer.valueOf(downloadId));
+    public void cancelNotification(int notificationId) {
+        mNotificationIds.remove(Integer.valueOf(notificationId));
     }
 
     @Override

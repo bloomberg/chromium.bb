@@ -39,7 +39,8 @@ import java.util.Set;
  * Chrome gets killed.
  */
 public class DownloadNotificationService extends Service {
-    static final String EXTRA_DOWNLOAD_ID = "DownloadId";
+    static final String EXTRA_DOWNLOAD_NOTIFICATION_ID = "DownloadNotificationId";
+    static final String EXTRA_DOWNLOAD_GUID = "DownloadGuid";
     static final String EXTRA_DOWNLOAD_FILE_NAME = "DownloadFileName";
     static final String ACTION_DOWNLOAD_CANCEL =
             "org.chromium.chrome.browser.download.DOWNLOAD_CANCEL";
@@ -56,50 +57,6 @@ public class DownloadNotificationService extends Service {
     private NotificationManager mNotificationManager;
     private SharedPreferences mSharedPrefs;
     private Context mContext;
-
-    /**
-     * Class representing a pending notification entry.
-     */
-    @VisibleForTesting
-    static class PendingNotification {
-        public final int downloadId;
-        public final String fileName;
-        public final boolean isResumable;
-
-        PendingNotification(int downloadId, String fileName, boolean isResumable) {
-            this.downloadId = downloadId;
-            this.fileName = fileName;
-            this.isResumable = isResumable;
-        }
-
-        /**
-         * Parse the pending notification from a String object in SharedPrefs.
-         *
-         * @param notification String containing the notification ID, file name and whether it is
-         *        resumable.
-         * @return a PendingNotification object.
-         */
-        static PendingNotification parseFromString(String notification) {
-            String[] values = notification.split(",", 3);
-            if (values.length == 3) {
-                try {
-                    int id = Integer.parseInt(values[0]);
-                    boolean isResumable = "1".equals(values[1]);
-                    return new PendingNotification(id, values[2], isResumable);
-                } catch (NumberFormatException nfe) {
-                    Log.w(TAG, "Exception while parsing pending download:" + notification);
-                }
-            }
-            return new PendingNotification(-1, "", false);
-        }
-
-        /**
-         * Generate a string for the PendingNotification instance to be inserted into SharedPrefs.
-         */
-        String getNotificationString() {
-            return downloadId + "," + (isResumable ? "1" : "0") + "," + fileName;
-        }
-    }
 
     /**
      * Class for clients to access.
@@ -157,7 +114,8 @@ public class DownloadNotificationService extends Service {
 
     /**
      * Add a in-progress download notification.
-     * @param downloadId ID of the download.
+     * @param notificationId Notification ID of the download.
+     * @param downloadGuid GUID of the download.
      * @param fileName File name of the download.
      * @param percentage Percentage completed. Value should be between 0 to 100 if
      *        the percentage can be determined, or -1 if it is unknown.
@@ -165,9 +123,8 @@ public class DownloadNotificationService extends Service {
      * @param startTime Time when download started.
      * @param isResumable whether the download can be resumed.
      */
-    public void notifyDownloadProgress(
-            int downloadId, String fileName, int percentage, long timeRemainingInMillis,
-            long startTime, boolean isResumable) {
+    public void notifyDownloadProgress(int notificationId, String downloadGuid, String fileName,
+            int percentage, long timeRemainingInMillis, long startTime, boolean isResumable) {
         boolean indeterminate = percentage == INVALID_DOWNLOAD_PERCENTAGE;
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.stat_sys_download, fileName, null);
@@ -181,40 +138,43 @@ public class DownloadNotificationService extends Service {
         if (startTime > 0) builder.setWhen(startTime);
         builder.addAction(android.R.drawable.ic_menu_close_clear_cancel,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
-                buildPendingIntent(ACTION_DOWNLOAD_CANCEL, downloadId, fileName));
+                buildPendingIntent(ACTION_DOWNLOAD_CANCEL, notificationId, downloadGuid, fileName));
         if (isResumable) {
             builder.addAction(android.R.drawable.ic_media_pause,
                     mContext.getResources().getString(R.string.download_notification_pause_button),
-                    buildPendingIntent(ACTION_DOWNLOAD_PAUSE, downloadId, fileName));
+                    buildPendingIntent(ACTION_DOWNLOAD_PAUSE, notificationId, downloadGuid,
+                            fileName));
         }
-        updateNotification(downloadId, builder.build());
-        addPendingDownloadToSharedPrefs(new PendingNotification(downloadId, fileName, isResumable));
+        updateNotification(notificationId, builder.build());
+        addEntryToSharedPrefs(new DownloadSharedPreferenceEntry(
+                notificationId, isResumable, true, downloadGuid, fileName));
     }
 
     /**
      * Cancel a download notification.
-     * @param downloadId ID of the download.
+     * @param notificationId Notification ID of the download.
      */
-    public void cancelNotification(int downloadId) {
-        mNotificationManager.cancel(NOTIFICATION_NAMESPACE, downloadId);
-        removePendingDownloadFromSharedPrefs(downloadId);
+    public void cancelNotification(int notificationId) {
+        mNotificationManager.cancel(NOTIFICATION_NAMESPACE, notificationId);
+        removeEntryFromSharedPrefs(notificationId);
     }
 
     /**
      * Change a download notification to paused state.
-     * @param downloadId ID of the download.
+     * @param notificationId Notification ID of the download.
+     * @param downloadGuid GUID of the download.
      * @param fileName File name of the download.
      * @param isResumable whether download is resumable.
      * @param isAutoResumable whether download is can be resumed automatically.
      */
-    public void notifyDownloadPaused(
-            int downloadId, String fileName, boolean isResumable, boolean isAutoResumable) {
+    public void notifyDownloadPaused(int notificationId, String downloadGuid, String fileName,
+            boolean isResumable, boolean isAutoResumable) {
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.ic_media_pause,
                 fileName,
                 mContext.getResources().getString(R.string.download_notification_paused));
         PendingIntent cancelIntent =
-                buildPendingIntent(ACTION_DOWNLOAD_CANCEL, downloadId, fileName);
+                buildPendingIntent(ACTION_DOWNLOAD_CANCEL, notificationId, downloadGuid, fileName);
         builder.setDeleteIntent(cancelIntent);
         builder.addAction(android.R.drawable.ic_menu_close_clear_cancel,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
@@ -222,22 +182,23 @@ public class DownloadNotificationService extends Service {
         if (isResumable) {
             builder.addAction(android.R.drawable.stat_sys_download_done,
                     mContext.getResources().getString(R.string.download_notification_resume_button),
-                    buildPendingIntent(ACTION_DOWNLOAD_RESUME, downloadId, fileName));
+                    buildPendingIntent(ACTION_DOWNLOAD_RESUME, notificationId, downloadGuid,
+                            fileName));
         }
-        updateNotification(downloadId, builder.build());
+        updateNotification(notificationId, builder.build());
         // If download is not auto resumable, there is no need to keep it in SharedPreferences.
         if (!isResumable || !isAutoResumable) {
-            removePendingDownloadFromSharedPrefs(downloadId);
+            removeEntryFromSharedPrefs(notificationId);
         }
     }
 
     /**
      * Add a download successful notification.
-     * @param downloadId ID of the download.
+     * @param notificationId Notification ID of the download.
      * @param fileName File name of the download.
      * @param intent Intent to launch when clicking the notification.
      */
-    public void notifyDownloadSuccessful(int downloadId, String fileName, Intent intent) {
+    public void notifyDownloadSuccessful(int notificationId, String fileName, Intent intent) {
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.stat_sys_download_done,
                 fileName,
@@ -246,23 +207,23 @@ public class DownloadNotificationService extends Service {
             builder.setContentIntent(PendingIntent.getActivity(
                     mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
         }
-        updateNotification(downloadId, builder.build());
-        removePendingDownloadFromSharedPrefs(downloadId);
+        updateNotification(notificationId, builder.build());
+        removeEntryFromSharedPrefs(notificationId);
     }
 
     /**
      * Add a download failed notification.
-     * @param downloadId ID of the download.
+     * @param notificationId Notification ID of the download.
      * @param fileName File name of the download.
      * @param intent Intent to launch when clicking the notification.
      */
-    public void notifyDownloadFailed(int downloadId, String fileName) {
+    public void notifyDownloadFailed(int notificationId, String fileName) {
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.stat_sys_download_done,
                 fileName,
                 mContext.getResources().getString(R.string.download_notification_failed));
-        updateNotification(downloadId, builder.build());
-        removePendingDownloadFromSharedPrefs(downloadId);
+        updateNotification(notificationId, builder.build());
+        removeEntryFromSharedPrefs(notificationId);
     }
 
     /**
@@ -270,26 +231,27 @@ public class DownloadNotificationService extends Service {
      */
     @VisibleForTesting
     void pauseAllDownloads() {
-        List<PendingNotification> notifications =
-                parseDownloadNotificationsFromSharedPrefs(mSharedPrefs);
-        for (int i = 0; i < notifications.size(); ++i) {
-            PendingNotification notification = notifications.get(i);
-            if (notification.downloadId > 0) {
-                notifyDownloadPaused(notification.downloadId, notification.fileName,
-                        notification.isResumable, true);
+        List<DownloadSharedPreferenceEntry> entries = parseDownloadSharedPrefs(mSharedPrefs);
+        for (int i = 0; i < entries.size(); ++i) {
+            DownloadSharedPreferenceEntry entry = entries.get(i);
+            if (entry.notificationId > 0) {
+                notifyDownloadPaused(entry.notificationId, entry.downloadGuid, entry.fileName,
+                        entry.isResumable, true);
             }
         }
     }
 
-    private PendingIntent buildPendingIntent(String action, int downloadId, String fileName) {
+    private PendingIntent buildPendingIntent(
+            String action, int notificationId, String downloadGuid, String fileName) {
         ComponentName component = new ComponentName(
                 mContext.getPackageName(), DownloadBroadcastReceiver.class.getName());
         Intent intent = new Intent(action);
         intent.setComponent(component);
-        intent.putExtra(EXTRA_DOWNLOAD_ID, downloadId);
+        intent.putExtra(EXTRA_DOWNLOAD_NOTIFICATION_ID, notificationId);
+        intent.putExtra(EXTRA_DOWNLOAD_GUID, downloadGuid);
         intent.putExtra(EXTRA_DOWNLOAD_FILE_NAME, fileName);
         return PendingIntent.getBroadcast(
-                mContext, downloadId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+                mContext, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
     /**
@@ -316,8 +278,10 @@ public class DownloadNotificationService extends Service {
      * @param intent Intent with the download operation.
      */
     private void handleDownloadOperation(final Intent intent) {
-        final int downloadId = IntentUtils.safeGetIntExtra(
-                intent, DownloadNotificationService.EXTRA_DOWNLOAD_ID, -1);
+        final int notificationId = IntentUtils.safeGetIntExtra(
+                intent, DownloadNotificationService.EXTRA_DOWNLOAD_NOTIFICATION_ID, -1);
+        final String guid = IntentUtils.safeGetStringExtra(
+                intent, DownloadNotificationService.EXTRA_DOWNLOAD_GUID);
         final String fileName = IntentUtils.safeGetStringExtra(
                 intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME);
         // If browser process already goes away, the download should have already paused. Do nothing
@@ -336,16 +300,16 @@ public class DownloadNotificationService extends Service {
                         // TODO(qinmin): Alternatively, we can delete the downloaded content on
                         // SD card, and remove the download ID from the SharedPreferences so we
                         // don't need to restart the browser process. http://crbug.com/579643.
-                        service.cancelDownload(downloadId);
-                        cancelNotification(downloadId);
+                        service.cancelDownload(guid);
+                        cancelNotification(notificationId);
                         break;
                     case ACTION_DOWNLOAD_PAUSE:
-                        service.pauseDownload(downloadId);
+                        service.pauseDownload(guid);
                         break;
                     case ACTION_DOWNLOAD_RESUME:
-                        service.resumeDownload(downloadId, fileName, true);
-                        notifyDownloadProgress(
-                                downloadId, fileName, INVALID_DOWNLOAD_PERCENTAGE, 0, 0, true);
+                        service.resumeDownload(notificationId, guid, fileName, true);
+                        notifyDownloadProgress(notificationId, guid, fileName,
+                                INVALID_DOWNLOAD_PERCENTAGE, 0, 0, true);
                         break;
                     default:
                         Log.e(TAG, "Unrecognized intent action.", intent);
@@ -384,52 +348,56 @@ public class DownloadNotificationService extends Service {
                 && !ACTION_DOWNLOAD_PAUSE.equals(intent.getAction())) {
             return false;
         }
-        if (!intent.hasExtra(DownloadNotificationService.EXTRA_DOWNLOAD_ID)
-                || !intent.hasExtra(DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME)) {
+        if (!intent.hasExtra(EXTRA_DOWNLOAD_NOTIFICATION_ID)
+                || !intent.hasExtra(EXTRA_DOWNLOAD_FILE_NAME)
+                || !intent.hasExtra(EXTRA_DOWNLOAD_GUID)) {
             return false;
         }
-        final int downloadId = IntentUtils.safeGetIntExtra(
-                intent, DownloadNotificationService.EXTRA_DOWNLOAD_ID, -1);
-        if (downloadId == -1) return false;
-        final String fileName = IntentUtils.safeGetStringExtra(
-                intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME);
+        final int notificationId =
+                IntentUtils.safeGetIntExtra(intent, EXTRA_DOWNLOAD_NOTIFICATION_ID, -1);
+        if (notificationId == -1) return false;
+        final String fileName = IntentUtils.safeGetStringExtra(intent, EXTRA_DOWNLOAD_FILE_NAME);
         if (fileName == null) return false;
+        final String guid = IntentUtils.safeGetStringExtra(intent, EXTRA_DOWNLOAD_GUID);
+        if (!DownloadSharedPreferenceEntry.isValidGUID(guid)) return false;
         return true;
     }
 
     /**
-     * Add a pending download to SharedPrefs, the string consists of the download ID, file name and
-     * whether it is resumable. If the download ID already exists in SharedPrefs, do nothing.
-     * @param pendingNotification Pending download entry.
+     * Add a DownloadSharedPreferenceEntry to SharedPrefs. If the notification ID already exists
+     * in SharedPrefs, do nothing.
+     * @param DownloadSharedPreferenceEntry A DownloadSharedPreferenceEntry to be added.
      */
-    private void addPendingDownloadToSharedPrefs(PendingNotification pendingNotification) {
-        Set<String> pendingDownloads = DownloadManagerService.getStoredDownloadInfo(
+    private void addEntryToSharedPrefs(DownloadSharedPreferenceEntry pendingEntry) {
+        Set<String> entries = DownloadManagerService.getStoredDownloadInfo(
                 mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS);
-        for (String download : pendingDownloads) {
-            PendingNotification notification = PendingNotification.parseFromString(download);
-            if (notification.downloadId == pendingNotification.downloadId) return;
+        for (String entryString : entries) {
+            DownloadSharedPreferenceEntry entry =
+                    DownloadSharedPreferenceEntry.parseFromString(entryString);
+            if (entry.notificationId == pendingEntry.notificationId) return;
         }
-        pendingDownloads.add(pendingNotification.getNotificationString());
+        entries.add(pendingEntry.getSharedPreferenceString());
         DownloadManagerService.storeDownloadInfo(
-                mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS, pendingDownloads);
+                mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS, entries);
     }
 
     /**
-     * Removes a pending donwload from SharedPrefs.
-     * @param downloadId ID to be removed.
+     * Removes a DownloadSharedPreferenceEntry from SharedPrefs.
+     * @param notificationId Notification ID to be removed.
      */
-    private void removePendingDownloadFromSharedPrefs(int downloadId) {
-        Set<String> pendingDownloads = DownloadManagerService.getStoredDownloadInfo(
+    private void removeEntryFromSharedPrefs(int notificationId) {
+        Set<String> entries = DownloadManagerService.getStoredDownloadInfo(
                 mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS);
-        for (String download : pendingDownloads) {
-            PendingNotification notification = PendingNotification.parseFromString(download);
-            if (notification.downloadId == downloadId) {
-                pendingDownloads.remove(download);
-                if (pendingDownloads.isEmpty()) {
+        for (String entryString : entries) {
+            DownloadSharedPreferenceEntry entry =
+                    DownloadSharedPreferenceEntry.parseFromString(entryString);
+            if (entry.notificationId == notificationId) {
+                entries.remove(entryString);
+                if (entries.isEmpty()) {
                     mSharedPrefs.edit().remove(PENDING_DOWNLOAD_NOTIFICATIONS).apply();
                 } else {
                     DownloadManagerService.storeDownloadInfo(
-                            mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS, pendingDownloads);
+                            mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS, entries);
                 }
                 break;
             }
@@ -444,17 +412,17 @@ public class DownloadNotificationService extends Service {
     }
 
     /**
-     * Parse the download notifications from the shared preference and return a list of them.
-     * @return a list of parsed notifications.
+     * Parse the DownloadSharedPreferenceEntry from the shared preference and return a list of them.
+     * @return a list of parsed DownloadSharedPreferenceEntry.
      */
-    static List<PendingNotification> parseDownloadNotificationsFromSharedPrefs(
+    static List<DownloadSharedPreferenceEntry> parseDownloadSharedPrefs(
             SharedPreferences prefs) {
-        List<PendingNotification> result = new ArrayList<PendingNotification>();
+        List<DownloadSharedPreferenceEntry> result = new ArrayList<DownloadSharedPreferenceEntry>();
         if (prefs.contains(PENDING_DOWNLOAD_NOTIFICATIONS)) {
-            Set<String> pendingDownloads = DownloadManagerService.getStoredDownloadInfo(
+            Set<String> entries = DownloadManagerService.getStoredDownloadInfo(
                     prefs, PENDING_DOWNLOAD_NOTIFICATIONS);
-            for (String download : pendingDownloads) {
-                result.add(PendingNotification.parseFromString(download));
+            for (String entryString : entries) {
+                result.add(DownloadSharedPreferenceEntry.parseFromString(entryString));
             }
         }
         return result;

@@ -26,9 +26,9 @@ public interface ContentViewDownloadDelegate {
      * Notify the host application that a download has an extension indicating
      * a dangerous file type.
      * @param filename File name of the downloaded file.
-     * @param downloadId The download id.
+     * @param downloadGuid The download GUID.
      */
-    void onDangerousDownload(String filename, int downloadId);
+    void onDangerousDownload(String filename, String downloadGuid);
 
     /**
      * Called when file access has been requested to complete a download.

@@ -18,8 +18,8 @@ public final class DownloadInfo {
     private final String mReferer;
     private final String mOriginalUrl;
     private final long mContentLength;
-    private final boolean mHasDownloadId;
-    private final int mDownloadId;
+    private final int mNotificationId;
+    private final String mDownloadGuid;
     private final boolean mHasUserGesture;
     private final String mContentDisposition;
     private final boolean mIsGETRequest;
@@ -39,8 +39,8 @@ public final class DownloadInfo {
         mReferer = builder.mReferer;
         mOriginalUrl = builder.mOriginalUrl;
         mContentLength = builder.mContentLength;
-        mHasDownloadId = builder.mHasDownloadId;
-        mDownloadId = builder.mDownloadId;
+        mNotificationId = builder.mNotificationId;
+        mDownloadGuid = builder.mDownloadGuid;
         mHasUserGesture = builder.mHasUserGesture;
         mIsGETRequest = builder.mIsGETRequest;
         mContentDisposition = builder.mContentDisposition;
@@ -94,12 +94,12 @@ public final class DownloadInfo {
         return mIsGETRequest;
     }
 
-    public boolean hasDownloadId() {
-        return mHasDownloadId;
+    public int getNotificationId() {
+        return mNotificationId;
     }
 
-    public int getDownloadId() {
-        return mDownloadId;
+    public String getDownloadGuid() {
+        return mDownloadGuid;
     }
 
     public boolean hasUserGesture() {
@@ -144,8 +144,8 @@ public final class DownloadInfo {
         private String mOriginalUrl;
         private long mContentLength;
         private boolean mIsGETRequest;
-        private boolean mHasDownloadId;
-        private int mDownloadId;
+        private int mNotificationId;
+        private String mDownloadGuid;
         private boolean mHasUserGesture;
         private String mContentDisposition;
         private int mPercentCompleted = -1;
@@ -208,13 +208,13 @@ public final class DownloadInfo {
             return this;
         }
 
-        public Builder setHasDownloadId(boolean hasDownloadId) {
-            mHasDownloadId = hasDownloadId;
+        public Builder setNotificationId(int notificationId) {
+            mNotificationId = notificationId;
             return this;
         }
 
-        public Builder setDownloadId(int downloadId) {
-            mDownloadId = downloadId;
+        public Builder setDownloadGuid(String downloadGuid) {
+            mDownloadGuid = downloadGuid;
             return this;
         }
 
@@ -270,8 +270,8 @@ public final class DownloadInfo {
                     .setReferer(downloadInfo.getReferer())
                     .setOriginalUrl(downloadInfo.getOriginalUrl())
                     .setContentLength(downloadInfo.getContentLength())
-                    .setHasDownloadId(downloadInfo.hasDownloadId())
-                    .setDownloadId(downloadInfo.getDownloadId())
+                    .setNotificationId(downloadInfo.getNotificationId())
+                    .setDownloadGuid(downloadInfo.getDownloadGuid())
                     .setHasUserGesture(downloadInfo.hasUserGesture())
                     .setContentDisposition(downloadInfo.getContentDisposition())
                     .setIsGETRequest(downloadInfo.isGETRequest())

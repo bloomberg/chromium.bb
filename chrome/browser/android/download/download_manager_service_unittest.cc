@@ -36,9 +36,10 @@ class DownloadManagerServiceTest : public testing::Test {
                                        &manager_)),
         finished_(false),
         success_(false) {
-    ON_CALL(manager_, GetDownload(_))
+    ON_CALL(manager_, GetDownloadByGuid(_))
         .WillByDefault(
-            ::testing::Invoke(this, &DownloadManagerServiceTest::GetDownload));
+            ::testing::Invoke(this,
+                              &DownloadManagerServiceTest::GetDownloadByGuid));
   }
 
   void OnResumptionDone(bool success) {
@@ -46,12 +47,14 @@ class DownloadManagerServiceTest : public testing::Test {
     success_ = success;
   }
 
-  void StartDownload(int download_id) {
+  void StartDownload(const std::string& download_guid) {
     JNIEnv* env = base::android::AttachCurrentThread();
     service_->set_resume_callback_for_testing(base::Bind(
         &DownloadManagerServiceTest::OnResumptionDone, base::Unretained(this)));
     service_->ResumeDownload(
-        env, nullptr, download_id,
+        env, nullptr, 0, JavaParamRef<jstring>(
+            env, base::android::ConvertUTF8ToJavaString(
+                env, download_guid).obj()),
         base::android::ConvertUTF8ToJavaString(env, "test").obj());
     while (!finished_)
       message_loop_.RunUntilIdle();
@@ -64,7 +67,9 @@ class DownloadManagerServiceTest : public testing::Test {
   }
 
  protected:
-  content::DownloadItem* GetDownload(uint32_t) { return download_.get(); }
+  content::DownloadItem* GetDownloadByGuid(const std::string&) {
+    return download_.get();
+  }
 
   base::MessageLoop message_loop_;
   scoped_ptr<content::MockDownloadItem> download_;
@@ -78,7 +83,7 @@ class DownloadManagerServiceTest : public testing::Test {
 
 // Test that resumption will fail if no download item is found before times out.
 TEST_F(DownloadManagerServiceTest, ResumptionTimeOut) {
-  StartDownload(1);
+  StartDownload("0000");
   EXPECT_FALSE(success_);
 }
 
@@ -86,13 +91,13 @@ TEST_F(DownloadManagerServiceTest, ResumptionTimeOut) {
 // resumed.
 TEST_F(DownloadManagerServiceTest, ResumptionWithResumableItem) {
   CreateDownloadItem(true);
-  StartDownload(1);
+  StartDownload("0000");
   EXPECT_TRUE(success_);
 }
 
 // Test that resumption fails if the target download item is not resumable.
 TEST_F(DownloadManagerServiceTest, ResumptionWithNonResumableItem) {
   CreateDownloadItem(false);
-  StartDownload(1);
+  StartDownload("0000");
   EXPECT_FALSE(success_);
 }

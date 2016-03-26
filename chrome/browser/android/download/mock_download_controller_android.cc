@@ -34,8 +34,9 @@ void MockDownloadControllerAndroid::StartContextMenuDownload(
 }
 
 void MockDownloadControllerAndroid::DangerousDownloadValidated(
-    content::WebContents* web_contents, int download_id, bool accept) {
-}
+    content::WebContents* web_contents,
+    const std::string& download_guid,
+    bool accept) {}
 
 void MockDownloadControllerAndroid::AcquireFileAccessPermission(
     content::WebContents* web_contents,
