@@ -28,6 +28,7 @@ butterfly-paladin
 clapper-release
 cyan-cheets-android-pfq
 cyan-cheets-chrome-pfq
+cyan-cheets-paladin
 daisy-chromium-pfq
 daisy-paladin
 [daisy-release-group]

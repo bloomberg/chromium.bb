@@ -641,9 +641,10 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
+        'cyan-cheets-paladin',
         'lakitu_next-paladin',
-        'veyron_rialto-paladin',
         'veyron_minnie-cheets-paladin',
+        'veyron_rialto-paladin',
 
         # Experimental PFQs.
         'cyan-cheets-chrome-pfq',

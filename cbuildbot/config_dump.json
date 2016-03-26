@@ -5101,6 +5101,7 @@
     },
     "cyan-cheets-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "cyan-cheets"
         ],
