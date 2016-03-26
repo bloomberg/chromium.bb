@@ -20,8 +20,12 @@
       ],
       'xcode_settings': {
         'INFOPLIST_FILE': 'shell/Info.plist',
+        'STRIPFLAGS': '-S',
         'OTHER_LDFLAGS': [
-          '-Xlinker -objc_abi_version -Xlinker 2'
+          '-Xlinker -objc_abi_version',
+          '-Xlinker 2',
+          '-exported_symbols_list',
+          '../../ios/web/ios_web_shell_exported_symbols_list'
         ]
       },
       'sources': [
@@ -68,6 +72,9 @@
         'shell/view_controller.h',
         'shell/view_controller.mm',
       ],
+      'xcode_settings': {
+        'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
+      },
       'link_settings': {
         'libraries': [
           '$(SDKROOT)/System/Library/Frameworks/CoreGraphics.framework',

@@ -4,9 +4,12 @@
 
 {
   'chromium_sources': 0,
-  'variables': {
-    'ochamcrest_copy_dir': '<(SHARED_INTERMEDIATE_DIR)/ios/third_party/ochamcrest',
-    'ochamcrest_sources': [
+  'targets': [
+    {
+      'target_name': 'OCHamcrest',
+      'type': 'shared_library',
+      'mac_bundle': 1,
+      'sources': [
         'src/Source/Core/HCAssertThat.h',
         'src/Source/Core/HCAssertThat.m',
         'src/Source/Core/HCBaseDescription.h',
@@ -159,75 +162,83 @@
         'src/Source/Library/Text/HCSubstringMatcher.h',
         'src/Source/Library/Text/HCSubstringMatcher.m',
         'src/Source/OCHamcrest.h',
-    ],
-  },
-  'targets': [
-    # OCHamcrest sources contains import rules using relative file names
-    # ("HCAssertThat.h") and other using paths in an installed framework
-    # (<OCHamcrest/HCMatcher.h>). In order to build, copy all the sources
-    # to <(SHARED_INTERMEDIATE_DIR)/ios/third_party/ochmacrest/OCHamcrest
-    # so that both type of import work (another option considered was to
-    # build forwarding headers but this required duplicating the list of
-    # files in GN build and was ruled out).
-    #
-    # To avoid ODR violation, direct import of ios/third_party/ochamcrest
-    # is forbidden in ios/DEPS and code should instead use import as if
-    # OCHamcrest was in a framework (i.e. #import <OCHamcrest/OCHamcrest.h>).
-    {
-      'target_name': 'ochamcrest_copy_sources',
-      'hard_dependency': 1,
-      'type': 'none',
-      'actions': [
-        {
-          'action_name': 'copy_ochamcrest_sources',
-          'inputs': [
-            '../../chrome/tools/build/ios_copy_files.py',
-            '<@(ochamcrest_sources)',
-          ],
-          'outputs': [
-            '<!@pymod_do_main(ios_copy_files -o '
-                '--dest-dir <(ochamcrest_copy_dir)/OCHamcrest '
-                '<(ochamcrest_sources))',
-          ],
-          'action': [
-            'python',
-            '../../chrome/tools/build/ios_copy_files.py',
-            '--dest-dir',
-            '<(ochamcrest_copy_dir)/OCHamcrest/',
-            '<@(ochamcrest_sources)',
-          ],
-          'message': 'Copying OCHamcrest sources files',
-        },
       ],
-    },
-    {
-      'target_name': 'ochamcrest',
-      'type': 'static_library',
-      'sources': [
-        '<!@pymod_do_main(ios_copy_files -o '
-            '--dest-dir <(ochamcrest_copy_dir)/OCHamcrest '
-            '<(ochamcrest_sources))',
-      ],
-      'include_dirs': [
-        '<(ochamcrest_copy_dir)',
+      'mac_framework_headers': [
+        'src/Source/Core/HCAssertThat.h',
+        'src/Source/Core/HCBaseDescription.h',
+        'src/Source/Core/HCBaseMatcher.h',
+        'src/Source/Core/HCDescription.h',
+        'src/Source/Core/HCDiagnosingMatcher.h',
+        'src/Source/Core/HCMatcher.h',
+        'src/Source/Core/HCSelfDescribing.h',
+        'src/Source/Core/HCStringDescription.h',
+        'src/Source/Core/Helpers/HCCollect.h',
+        'src/Source/Core/Helpers/HCInvocationMatcher.h',
+        'src/Source/Core/Helpers/HCRequireNonNilObject.h',
+        'src/Source/Core/Helpers/HCWrapInMatcher.h',
+        'src/Source/Core/Helpers/TestFailureReporters/HCTestFailure.h',
+        'src/Source/Core/Helpers/TestFailureReporters/HCTestFailureReporter.h',
+        'src/Source/Core/Helpers/TestFailureReporters/HCTestFailureReporterChain.h',
+        'src/Source/Library/Collection/HCEvery.h',
+        'src/Source/Library/Collection/HCHasCount.h',
+        'src/Source/Library/Collection/HCIsCollectionContaining.h',
+        'src/Source/Library/Collection/HCIsCollectionContainingInAnyOrder.h',
+        'src/Source/Library/Collection/HCIsCollectionContainingInOrder.h',
+        'src/Source/Library/Collection/HCIsCollectionContainingInRelativeOrder.h',
+        'src/Source/Library/Collection/HCIsCollectionOnlyContaining.h',
+        'src/Source/Library/Collection/HCIsDictionaryContaining.h',
+        'src/Source/Library/Collection/HCIsDictionaryContainingEntries.h',
+        'src/Source/Library/Collection/HCIsDictionaryContainingKey.h',
+        'src/Source/Library/Collection/HCIsDictionaryContainingValue.h',
+        'src/Source/Library/Collection/HCIsEmptyCollection.h',
+        'src/Source/Library/Collection/HCIsIn.h',
+        'src/Source/Library/Decorator/HCDescribedAs.h',
+        'src/Source/Library/Decorator/HCIs.h',
+        'src/Source/Library/Logical/HCAllOf.h',
+        'src/Source/Library/Logical/HCAnyOf.h',
+        'src/Source/Library/Logical/HCIsAnything.h',
+        'src/Source/Library/Logical/HCIsNot.h',
+        'src/Source/Library/Number/HCIsCloseTo.h',
+        'src/Source/Library/Number/HCIsEqualToNumber.h',
+        'src/Source/Library/Number/HCIsTrueFalse.h',
+        'src/Source/Library/Number/HCNumberAssert.h',
+        'src/Source/Library/Number/HCOrderingComparison.h',
+        'src/Source/Library/Object/HCArgumentCaptor.h',
+        'src/Source/Library/Object/HCClassMatcher.h',
+        'src/Source/Library/Object/HCConformsToProtocol.h',
+        'src/Source/Library/Object/HCHasDescription.h',
+        'src/Source/Library/Object/HCHasProperty.h',
+        'src/Source/Library/Object/HCIsEqual.h',
+        'src/Source/Library/Object/HCIsInstanceOf.h',
+        'src/Source/Library/Object/HCIsNil.h',
+        'src/Source/Library/Object/HCIsSame.h',
+        'src/Source/Library/Object/HCIsTypeOf.h',
+        'src/Source/Library/Object/HCThrowsException.h',
+        'src/Source/Library/Text/HCIsEqualIgnoringCase.h',
+        'src/Source/Library/Text/HCIsEqualIgnoringWhiteSpace.h',
+        'src/Source/Library/Text/HCStringContains.h',
+        'src/Source/Library/Text/HCStringContainsInOrder.h',
+        'src/Source/Library/Text/HCStringEndsWith.h',
+        'src/Source/Library/Text/HCStringStartsWith.h',
+        'src/Source/Library/Text/HCSubstringMatcher.h',
+        'src/Source/OCHamcrest.h',
       ],
       'xcode_settings': {
-        'CLANG_ENABLE_OBJC_ARC': 'YES',
+        'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
+        'USE_HEADERMAP': 'YES',
+        'CLANG_ENABLE_ARC': 'YES',
       },
+      'include_dirs': [
+        'src',
+        'src/Source',
+      ],
+      'mac_framework_dirs': [
+        '$(SDKROOT)/../../Library/Frameworks',
+      ],
       'link_settings': {
         'libraries': [
-          'XCTest.framework',
-        ],
-      },
-      'dependencies': [
-        'ochamcrest_copy_sources',
-      ],
-      'export_dependent_settings': [
-        'ochamcrest_copy_sources',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(ochamcrest_copy_dir)',
+          'Foundation.framework',
+          'UIKit.framework',
         ],
       },
     },
