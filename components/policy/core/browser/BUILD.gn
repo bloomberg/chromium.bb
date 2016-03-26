@@ -27,6 +27,7 @@ source_set("browser") {
     "//components/prefs",
     "//components/strings",
     "//components/url_matcher",
+    "//net",
     "//ui/base",
   ]
 

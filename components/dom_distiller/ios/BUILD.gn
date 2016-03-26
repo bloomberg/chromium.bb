@@ -11,8 +11,11 @@ source_set("ios") {
   ]
 
   deps = [
+    "//base",
     "//components/dom_distiller/core",
     "//components/dom_distiller/core/proto",
     "//ios/public/provider/web",
+    "//ios/web",
+    "//url",
   ]
 }

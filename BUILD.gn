@@ -197,9 +197,9 @@ group("both_gn_and_gyp") {
     ]
   } else {
     deps += [
-      #"//ios/chrome:ios_chrome_unittests", TODO(GYP)
-      #"//ios/chrome/app", TODO(GYP)
-      #"//ios/chrome/browser", TODO(GYP)
+      "//ios/chrome:ios_chrome_unittests",
+      "//ios/chrome/app",
+      "//ios/chrome/browser",
       "//ios/chrome/common",
       "//ios/net:ios_net_unittests",
       "//ios/public/provider/chrome/browser",

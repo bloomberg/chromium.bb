@@ -23,7 +23,6 @@ source_set("test") {
     "//components/network_time",
     "//components/prefs",
     "//ios/chrome/browser",
-    "//ios/chrome/browser:test_support",
     "//ios/public/provider/chrome/browser",
     "//ios/web",
     "//testing/gmock",

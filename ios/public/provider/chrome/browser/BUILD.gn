@@ -4,6 +4,8 @@
 
 source_set("browser") {
   sources = [
+    "browser_constants.cc",
+    "browser_constants.h",
     "chrome_browser_provider.h",
     "chrome_browser_provider.mm",
     "geolocation_updater_provider.h",

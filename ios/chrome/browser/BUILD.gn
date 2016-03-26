@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//ios/web/js_compile.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 declare_args() {
   google_test_gaia_client_id = ""
@@ -16,6 +17,12 @@ declare_args() {
   google_test_oauth_client_secret = ""
   google_test_oauth_url = ""
   google_test_sync_url = ""
+}
+
+proto_library("metadata_proto") {
+  sources = [
+    "safe_browsing/metadata.proto",
+  ]
 }
 
 source_set("browser") {
@@ -57,8 +64,12 @@ source_set("browser") {
     "bookmarks/bookmark_client_impl.h",
     "bookmarks/bookmark_model_factory.cc",
     "bookmarks/bookmark_model_factory.h",
+    "bookmarks/bookmarks_utils.cc",
+    "bookmarks/bookmarks_utils.h",
     "bookmarks/startup_task_runner_service_factory.cc",
     "bookmarks/startup_task_runner_service_factory.h",
+    "browser_state/bookmark_model_loaded_observer.cc",
+    "browser_state/bookmark_model_loaded_observer.h",
     "browser_state/browser_state_info_cache.cc",
     "browser_state/browser_state_info_cache.h",
     "browser_state/browser_state_info_cache_observer.h",
@@ -202,8 +213,8 @@ source_set("browser") {
     "install_time_util.mm",
     "installation_notifier.h",
     "installation_notifier.mm",
-    "interstitials/ios_chrome_controller_client.cc",
     "interstitials/ios_chrome_controller_client.h",
+    "interstitials/ios_chrome_controller_client.mm",
     "interstitials/ios_chrome_metrics_helper.h",
     "interstitials/ios_chrome_metrics_helper.mm",
     "interstitials/ios_security_interstitial_page.h",
@@ -212,6 +223,8 @@ source_set("browser") {
     "invalidation/ios_chrome_profile_invalidation_provider_factory.mm",
     "ios_chrome_field_trials.cc",
     "ios_chrome_field_trials.h",
+    "ios_chrome_io_thread.h",
+    "ios_chrome_io_thread.mm",
     "ios_chrome_main_parts.h",
     "ios_chrome_main_parts.mm",
     "memory/memory_debugger.h",
@@ -240,6 +253,8 @@ source_set("browser") {
     "net/connection_type_observer_bridge.mm",
     "net/cookie_util.h",
     "net/cookie_util.mm",
+    "net/crl_set_fetcher.cc",
+    "net/crl_set_fetcher.h",
     "net/http_server_properties_manager_factory.cc",
     "net/http_server_properties_manager_factory.h",
     "net/image_fetcher.h",
@@ -271,10 +286,16 @@ source_set("browser") {
     "passwords/ios_chrome_password_store_factory.h",
     "passwords/ios_chrome_save_password_infobar_delegate.h",
     "passwords/ios_chrome_save_password_infobar_delegate.mm",
+    "passwords/js_password_manager.h",
+    "passwords/js_password_manager.mm",
     "passwords/password_controller.h",
     "passwords/password_controller.mm",
     "passwords/password_generation_agent.h",
     "passwords/password_generation_agent.mm",
+    "passwords/password_generation_edit_view.h",
+    "passwords/password_generation_edit_view.mm",
+    "passwords/password_generation_offer_view.h",
+    "passwords/password_generation_offer_view.mm",
     "passwords/password_generation_prompt_delegate.h",
     "passwords/password_generation_utils.h",
     "passwords/password_generation_utils.mm",
@@ -299,6 +320,23 @@ source_set("browser") {
     "reading_list/reading_list_model_memory.cc",
     "reading_list/reading_list_model_memory.h",
     "reading_list/reading_list_model_observer.h",
+    "reading_list/reading_list_model_storage.h",
+    "reading_list/reading_list_model_storage_defaults.h",
+    "reading_list/reading_list_model_storage_defaults.mm",
+    "safe_browsing/hit_report.cc",
+    "safe_browsing/hit_report.h",
+    "safe_browsing/ping_manager.cc",
+    "safe_browsing/ping_manager.h",
+    "safe_browsing/protocol_manager_helper.cc",
+    "safe_browsing/protocol_manager_helper.h",
+    "safe_browsing/safe_browsing_blocking_page.h",
+    "safe_browsing/safe_browsing_blocking_page.mm",
+    "safe_browsing/safe_browsing_service.cc",
+    "safe_browsing/safe_browsing_service.h",
+    "safe_browsing/ui_manager.h",
+    "safe_browsing/ui_manager.mm",
+    "safe_browsing/util.cc",
+    "safe_browsing/util.h",
     "search/search_util.h",
     "search/search_util.mm",
     "search_engines/search_engines_util.cc",
@@ -515,6 +553,7 @@ source_set("browser") {
   deps = [
     ":about_flags",
     ":injected_js",
+    ":metadata_proto",
     "//base",
     "//breakpad:client",
     "//components/about_handler",
@@ -548,6 +587,7 @@ source_set("browser") {
     "//components/metrics",
     "//components/metrics:net",
     "//components/metrics:profiler",
+    "//components/metrics:profiler_ios",
     "//components/metrics:ui",
     "//components/metrics_services_manager",
     "//components/net_log",
@@ -564,7 +604,6 @@ source_set("browser") {
     "//components/proxy_config",
     "//components/rappor",
     "//components/resources",
-    "//components/safe_browsing_db",
     "//components/search",
     "//components/search_engines",
     "//components/security_interstitials/core",
@@ -573,6 +612,7 @@ source_set("browser") {
     "//components/signin/core/browser",
     "//components/signin/core/common",
     "//components/signin/ios/browser",
+    "//components/ssl_config",
     "//components/strings",
     "//components/suggestions",
     "//components/sync_driver",
@@ -626,13 +666,6 @@ source_set("browser") {
     deps += [
       ":rlz",
       "//components/rlz",
-    ]
-  }
-
-  if (enable_configuration_policy) {
-    deps += [
-      "//components/policy/core/browser",
-      "//components/policy/core/common",
     ]
   }
 }
@@ -704,13 +737,12 @@ source_set("test_support") {
     "browser_state/test_chrome_browser_state.mm",
     "browser_state/test_chrome_browser_state_isolated_context.h",
     "browser_state/test_chrome_browser_state_isolated_context.mm",
-    "browser_state/test_chrome_browser_state_manager.c",
-    "browser_state/test_chrome_browser_state_manager.h",
     "geolocation/location_manager+Testing.h",
     "geolocation/test_location_manager.h",
     "geolocation/test_location_manager.mm",
     "net/mock_image_fetcher.h",
     "net/mock_image_fetcher.mm",
+    "safe_browsing/util_unittest.cc",
     "signin/fake_oauth2_token_service_builder.h",
     "signin/fake_oauth2_token_service_builder.mm",
     "signin/fake_signin_manager_builder.cc",
@@ -726,9 +758,10 @@ source_set("test_support") {
   deps = [
     ":browser",
     "//base",
-    "//components/browser_sync/browser",
+    "//components/browser_sync/browser:test_support",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
+    "//components/pref_registry:test_support",
     "//components/signin/core/browser",
     "//components/signin/ios/browser",
     "//components/sync_driver",

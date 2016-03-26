@@ -29,6 +29,7 @@ source_set("browser") {
     "//components/autofill/core/common",
     "//ios/public/provider/web",
     "//ios/web",
+    "//ui/gfx/geometry",
   ]
 }
 

@@ -289,8 +289,35 @@ mac_toolchain("clang_arm") {
 }
 
 mac_toolchain("ios_clang_arm") {
-  # TODO(GYP): Do we need ios_clang_armv7 and ios_clang_arm64 ?
   toolchain_cpu = "arm"
+  toolchain_os = "mac"
+
+  # TODO(GYP): We need to support being able to use the version of clang
+  # shipped w/ XCode instead of the one pulled from upstream.
+  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                       root_build_dir)
+  cc = "${goma_prefix}$prefix/clang"
+  cxx = "${goma_prefix}$prefix/clang++"
+  ld = cxx
+  is_clang = true
+}
+
+mac_toolchain("ios_clang_armv7") {
+  toolchain_cpu = "armv7"
+  toolchain_os = "mac"
+
+  # TODO(GYP): We need to support being able to use the version of clang
+  # shipped w/ XCode instead of the one pulled from upstream.
+  prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
+                       root_build_dir)
+  cc = "${goma_prefix}$prefix/clang"
+  cxx = "${goma_prefix}$prefix/clang++"
+  ld = cxx
+  is_clang = true
+}
+
+mac_toolchain("ios_clang_arm64") {
+  toolchain_cpu = "arm64"
   toolchain_os = "mac"
 
   # TODO(GYP): We need to support being able to use the version of clang
