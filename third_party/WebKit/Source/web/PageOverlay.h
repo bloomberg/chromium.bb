@@ -69,8 +69,7 @@ public:
 
     // DisplayItemClient methods.
     String debugName() const final { return "PageOverlay"; }
-    // TODO(chrishtr): fix this.
-    LayoutRect visualRect() const override { return LayoutRect(); }
+    LayoutRect visualRect() const override;
 
     // GraphicsLayerClient implementation
     IntRect computeInterestRect(const GraphicsLayer*, const IntRect&) const override;

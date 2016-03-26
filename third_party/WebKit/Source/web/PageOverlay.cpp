@@ -97,6 +97,12 @@ void PageOverlay::update()
     m_layer->setNeedsDisplay();
 }
 
+LayoutRect PageOverlay::visualRect() const
+{
+    ASSERT(m_layer.get());
+    return LayoutRect(FloatPoint(), m_layer->size());
+}
+
 IntRect PageOverlay::computeInterestRect(const GraphicsLayer* graphicsLayer, const IntRect&) const
 {
     return IntRect(IntPoint(), expandedIntSize(m_layer->size()));

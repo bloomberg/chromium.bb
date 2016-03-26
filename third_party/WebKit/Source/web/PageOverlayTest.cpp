@@ -46,29 +46,6 @@ void disableAcceleratedCompositing(WebSettings* settings)
     settings->setAcceleratedCompositingEnabled(false);
 }
 
-class PageOverlayTest : public ::testing::Test {
-protected:
-    enum CompositingMode { AcceleratedCompositing, UnacceleratedCompositing };
-
-    void initialize(CompositingMode compositingMode)
-    {
-        m_helper.initialize(
-            false /* enableJavascript */, nullptr /* webFrameClient */, nullptr /* webViewClient */,
-            compositingMode == AcceleratedCompositing ? enableAcceleratedCompositing : disableAcceleratedCompositing);
-        webViewImpl()->resize(WebSize(viewportWidth, viewportHeight));
-        webViewImpl()->updateAllLifecyclePhases();
-        ASSERT_EQ(compositingMode == AcceleratedCompositing, webViewImpl()->isAcceleratedCompositingActive());
-    }
-
-    WebViewImpl* webViewImpl() const { return m_helper.webViewImpl(); }
-
-    template <typename OverlayType>
-    void runPageOverlayTestWithAcceleratedCompositing();
-
-private:
-    FrameTestHelpers::WebViewHelper m_helper;
-};
-
 // PageOverlay that paints a solid color.
 class SolidColorOverlay : public PageOverlay::Delegate {
 public:
@@ -85,6 +62,34 @@ public:
 
 private:
     Color m_color;
+};
+
+class PageOverlayTest : public ::testing::Test {
+protected:
+    enum CompositingMode { AcceleratedCompositing, UnacceleratedCompositing };
+
+    void initialize(CompositingMode compositingMode)
+    {
+        m_helper.initialize(
+            false /* enableJavascript */, nullptr /* webFrameClient */, nullptr /* webViewClient */,
+            compositingMode == AcceleratedCompositing ? enableAcceleratedCompositing : disableAcceleratedCompositing);
+        webViewImpl()->resize(WebSize(viewportWidth, viewportHeight));
+        webViewImpl()->updateAllLifecyclePhases();
+        ASSERT_EQ(compositingMode == AcceleratedCompositing, webViewImpl()->isAcceleratedCompositingActive());
+    }
+
+    WebViewImpl* webViewImpl() const { return m_helper.webViewImpl(); }
+
+    PassOwnPtr<PageOverlay> createSolidYellowOverlay()
+    {
+        return PageOverlay::create(webViewImpl(), new SolidColorOverlay(SK_ColorYELLOW));
+    }
+
+    template <typename OverlayType>
+    void runPageOverlayTestWithAcceleratedCompositing();
+
+private:
+    FrameTestHelpers::WebViewHelper m_helper;
 };
 
 template <bool(*getter)(), void(*setter)(bool)>
@@ -107,7 +112,7 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing)
     initialize(AcceleratedCompositing);
     webViewImpl()->layerTreeView()->setViewportSize(WebSize(viewportWidth, viewportHeight));
 
-    OwnPtr<PageOverlay> pageOverlay = PageOverlay::create(webViewImpl(), new SolidColorOverlay(SK_ColorYELLOW));
+    OwnPtr<PageOverlay> pageOverlay = createSolidYellowOverlay();
     pageOverlay->update();
     webViewImpl()->updateAllLifecyclePhases();
 
@@ -132,6 +137,15 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing)
     graphicsContext.beginRecording(intRect);
     paintController.paintArtifact().replay(graphicsContext);
     graphicsContext.endRecording()->playback(&canvas);
+}
+
+TEST_F(PageOverlayTest, PageOverlay_VisualRect)
+{
+    initialize(AcceleratedCompositing);
+    OwnPtr<PageOverlay> pageOverlay = createSolidYellowOverlay();
+    pageOverlay->update();
+    webViewImpl()->updateAllLifecyclePhases();
+    EXPECT_EQ(LayoutRect(0, 0, viewportWidth, viewportHeight), pageOverlay->visualRect());
 }
 
 } // namespace
