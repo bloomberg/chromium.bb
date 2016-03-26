@@ -416,11 +416,6 @@
       <structure name="IDR_SETTINGS_PASSWORDS_SECTION_JS"
                  file="passwords_and_forms_page/passwords_section.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_PEOPLE_PAGE_CSS"
-                 file="people_page/people_page.css"
-                 type="chrome_html"
-                 flattenhtml="true"
-                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_PEOPLE_PAGE_HTML"
                  file="people_page/people_page.html"
                  type="chrome_html"

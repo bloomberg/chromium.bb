@@ -23,9 +23,27 @@
 </if>
 
 <dom-module id="settings-people-page">
-  <link rel="import" type="css" href="people_page.css">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      #account-picture {
+        -webkit-margin-end: 4px;
+        border-radius: 20px;
+        height: 40px;
+        object-fit: cover;
+        vertical-align: middle;
+        width: 40px;
+      }
+
+      #account-picture:hover {
+        cursor: pointer;
+      }
+
+<if expr="not chromeos">
+      #profile-name:hover {
+        cursor: pointer;
+      }
+</if>
+    </style>
     <settings-animated-pages id="pages" current-route="{{currentRoute}}"
         section="people">
       <neon-animatable id="main">
