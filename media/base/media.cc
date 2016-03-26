@@ -107,15 +107,6 @@ bool IsUnifiedMediaPipelineEnabled() {
          base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
 }
 
-bool IsUnifiedMediaPipelineEnabledForMse() {
-  // Don't check IsUnifiedMediaPipelineEnabled() here since we don't want MSE to
-  // be enabled via experiment yet; only when the existing implementation can't
-  // be used (i.e. MediaCodec unavailable).
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableUnifiedMediaPipeline) ||
-         !MediaCodecUtil::IsMediaCodecAvailable();
-}
-
 bool ArePlatformDecodersAvailable() {
   return IsUnifiedMediaPipelineEnabled()
              ? HasPlatformDecoderSupport()

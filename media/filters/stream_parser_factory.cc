@@ -334,7 +334,7 @@ static bool VerifyCodec(
       // TODO(wolenetz, dalecurtis): This should instead use MimeUtil() to avoid
       // duplication of subtle Android behavior.  http://crbug.com/587303.
       if (codec_info->tag == CodecInfo::HISTOGRAM_H264) {
-        if (media::IsUnifiedMediaPipelineEnabledForMse() &&
+        if (media::IsUnifiedMediaPipelineEnabled() &&
             !media::HasPlatformDecoderSupport()) {
           return false;
         }
@@ -344,17 +344,17 @@ static bool VerifyCodec(
       }
       if (codec_info->tag == CodecInfo::HISTOGRAM_VP8 &&
           !media::MediaCodecUtil::IsVp8DecoderAvailable() &&
-          !media::IsUnifiedMediaPipelineEnabledForMse()) {
+          !media::IsUnifiedMediaPipelineEnabled()) {
         return false;
       }
       if (codec_info->tag == CodecInfo::HISTOGRAM_VP9 &&
           !media::PlatformHasVp9Support() &&
-          !media::IsUnifiedMediaPipelineEnabledForMse()) {
+          !media::IsUnifiedMediaPipelineEnabled()) {
         return false;
       }
       if (codec_info->tag == CodecInfo::HISTOGRAM_OPUS &&
           !media::PlatformHasOpusSupport() &&
-          !media::IsUnifiedMediaPipelineEnabledForMse()) {
+          !media::IsUnifiedMediaPipelineEnabled()) {
         return false;
       }
 #endif

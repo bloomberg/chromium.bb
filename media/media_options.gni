@@ -72,7 +72,7 @@ declare_args() {
   # |mojo_media_services|). When enabled, selected mojo paths will be enabled in
   # the media pipeline and corresponding services will hosted in the selected
   # remote process (e.g. "utility" process, see |mojo_media_host|).
-  enable_mojo_media = false
+  enable_mojo_media = is_android
 
   # Enable the TestMojoMediaClient to be used in MojoMediaApplication. This is
   # for testing only and will override the default platform MojoMediaClient.
