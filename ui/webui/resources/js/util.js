@@ -374,10 +374,19 @@ function createElementWithClassName(type, className) {
  * or when no paint happens during the animation). This function sets up
  * a timer and emulate the event if it is not fired when the timer expires.
  * @param {!HTMLElement} el The element to watch for webkitTransitionEnd.
- * @param {number} timeOut The maximum wait time in milliseconds for the
- *     webkitTransitionEnd to happen.
+ * @param {number=} opt_timeOut The maximum wait time in milliseconds for the
+ *     webkitTransitionEnd to happen. If not specified, it is fetched from |el|
+ *     using the transitionDuration style value.
  */
-function ensureTransitionEndEvent(el, timeOut) {
+function ensureTransitionEndEvent(el, opt_timeOut) {
+  if (opt_timeOut === undefined) {
+    var style = getComputedStyle(el);
+    opt_timeOut = parseFloat(style.transitionDuration) * 1000;
+
+    // Give an additional 50ms buffer for the animation to complete.
+    opt_timeOut += 50;
+  }
+
   var fired = false;
   el.addEventListener('webkitTransitionEnd', function f(e) {
     el.removeEventListener('webkitTransitionEnd', f);
@@ -386,7 +395,7 @@ function ensureTransitionEndEvent(el, timeOut) {
   window.setTimeout(function() {
     if (!fired)
       cr.dispatchSimpleEvent(el, 'webkitTransitionEnd', true);
-  }, timeOut);
+  }, opt_timeOut);
 }
 
 /**

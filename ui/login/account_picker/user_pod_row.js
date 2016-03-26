@@ -3243,14 +3243,18 @@ cr.define('login', function() {
      * Called right after the pod row is shown.
      */
     handleAfterShow: function() {
+      var focusedPod = this.focusedPod_;
+
       // Without timeout changes in pods positions will be animated even though
       // it happened when 'flying-pods' class was disabled.
       setTimeout(function() {
         Oobe.getInstance().toggleClass('flying-pods', true);
+        if (focusedPod)
+          ensureTransitionEndEvent(focusedPod);
       }, 0);
+
       // Force input focus for user pod on show and once transition ends.
-      if (this.focusedPod_) {
-        var focusedPod = this.focusedPod_;
+      if (focusedPod) {
         var screen = this.parentNode;
         var self = this;
         focusedPod.addEventListener('webkitTransitionEnd', function f(e) {
@@ -3259,8 +3263,6 @@ cr.define('login', function() {
           // Notify screen that it is ready.
           screen.onShow();
         });
-        // Guard timer for 1 second -- it would conver all possible animations.
-        ensureTransitionEndEvent(focusedPod, 1000);
       }
     },
 
