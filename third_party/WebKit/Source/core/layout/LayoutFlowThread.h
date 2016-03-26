@@ -54,8 +54,6 @@ public:
     virtual bool isLayoutMultiColumnFlowThread() const { return false; }
     virtual bool isLayoutPagedFlowThread() const { return false; }
 
-    bool supportsPaintInvalidationStateCachedOffsets() const override { return false; }
-
     static LayoutFlowThread* locateFlowThreadContainingBlockOf(const LayoutObject&);
 
     void layout() override;
@@ -82,7 +80,7 @@ public:
     void invalidateColumnSets();
     bool hasValidColumnSetInfo() const { return !m_columnSetsInvalidated && !m_multiColumnSetList.isEmpty(); }
 
-    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, const PaintInvalidationState*, VisibleRectFlags = DefaultVisibleRectFlags) const override;
+    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const override;
 
     LayoutUnit pageLogicalHeightForOffset(LayoutUnit);
     LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule);

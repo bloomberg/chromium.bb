@@ -543,20 +543,9 @@ void PaintLayer::clearPaginationRecursive()
         child->clearPaginationRecursive();
 }
 
-LayoutPoint PaintLayer::positionFromPaintInvalidationBacking(const LayoutObject* layoutObject, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
+void PaintLayer::mapPointInPaintInvalidationContainerToBacking(const LayoutBoxModelObject& paintInvalidationContainer, FloatPoint& point)
 {
-    FloatPoint point = layoutObject->localToAncestorPoint(FloatPoint(), paintInvalidationContainer, 0, 0, paintInvalidationState);
-
-    // FIXME: Eventually we are going to unify coordinates in GraphicsLayer space.
-    if (paintInvalidationContainer && paintInvalidationContainer->layer()->groupedMapping())
-        mapPointInPaintInvalidationContainerToBacking(paintInvalidationContainer, point);
-
-    return LayoutPoint(point);
-}
-
-void PaintLayer::mapPointInPaintInvalidationContainerToBacking(const LayoutBoxModelObject* paintInvalidationContainer, FloatPoint& point)
-{
-    PaintLayer* paintInvalidationLayer = paintInvalidationContainer->layer();
+    PaintLayer* paintInvalidationLayer = paintInvalidationContainer.layer();
     if (!paintInvalidationLayer->groupedMapping()) {
         point.move(paintInvalidationLayer->compositedLayerMapping()->contentOffsetInCompositingLayer());
         return;
@@ -568,14 +557,14 @@ void PaintLayer::mapPointInPaintInvalidationContainerToBacking(const LayoutBoxMo
 
     // |paintInvalidationContainer| may have a local 2D transform on it, so take that into account when mapping into the space of the
     // transformed ancestor.
-    point = paintInvalidationContainer->localToAncestorPoint(point, transformedAncestor);
+    point = paintInvalidationContainer.localToAncestorPoint(point, transformedAncestor);
 
     point.moveBy(-paintInvalidationLayer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 }
 
-void PaintLayer::mapRectInPaintInvalidationContainerToBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect)
+void PaintLayer::mapRectInPaintInvalidationContainerToBacking(const LayoutBoxModelObject& paintInvalidationContainer, LayoutRect& rect)
 {
-    PaintLayer* paintInvalidationLayer = paintInvalidationContainer->layer();
+    PaintLayer* paintInvalidationLayer = paintInvalidationContainer.layer();
     if (!paintInvalidationLayer->groupedMapping()) {
         rect.move(paintInvalidationLayer->compositedLayerMapping()->contentOffsetInCompositingLayer());
         return;
@@ -587,15 +576,15 @@ void PaintLayer::mapRectInPaintInvalidationContainerToBacking(const LayoutBoxMod
 
     // |paintInvalidationContainer| may have a local 2D transform on it, so take that into account when mapping into the space of the
     // transformed ancestor.
-    rect = LayoutRect(paintInvalidationContainer->localToAncestorQuad(FloatRect(rect), transformedAncestor).boundingBox());
+    rect = LayoutRect(paintInvalidationContainer.localToAncestorQuad(FloatRect(rect), transformedAncestor).boundingBox());
 
     rect.moveBy(-paintInvalidationLayer->groupedMapping()->squashingOffsetFromTransformedAncestor());
 }
 
-void PaintLayer::mapRectToPaintInvalidationBacking(const LayoutObject* layoutObject, const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState)
+void PaintLayer::mapRectToPaintInvalidationBacking(const LayoutObject& layoutObject, const LayoutBoxModelObject& paintInvalidationContainer, LayoutRect& rect)
 {
-    if (!paintInvalidationContainer->layer()->groupedMapping()) {
-        layoutObject->mapToVisibleRectInAncestorSpace(paintInvalidationContainer, rect, paintInvalidationState);
+    if (!paintInvalidationContainer.layer()->groupedMapping()) {
+        layoutObject.mapToVisibleRectInAncestorSpace(&paintInvalidationContainer, rect);
         return;
     }
 
@@ -603,19 +592,9 @@ void PaintLayer::mapRectToPaintInvalidationBacking(const LayoutObject* layoutObj
     // layer. This is because all layers that squash together need to issue paint invalidations w.r.t. a single container that is
     // an ancestor of all of them, in order to properly take into account any local transforms etc.
     // FIXME: remove this special-case code that works around the paint invalidation code structure.
-    layoutObject->mapToVisibleRectInAncestorSpace(paintInvalidationContainer, rect, paintInvalidationState);
+    layoutObject.mapToVisibleRectInAncestorSpace(&paintInvalidationContainer, rect);
 
     mapRectInPaintInvalidationContainerToBacking(paintInvalidationContainer, rect);
-}
-
-LayoutRect PaintLayer::computePaintInvalidationRect(const LayoutObject& layoutObject, const PaintLayer* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState)
-{
-    if (!paintInvalidationContainer->groupedMapping())
-        return layoutObject.computePaintInvalidationRect(*paintInvalidationContainer->layoutObject(), paintInvalidationState);
-
-    LayoutRect rect = layoutObject.clippedOverflowRectForPaintInvalidation(paintInvalidationContainer->layoutObject(), paintInvalidationState);
-    mapRectInPaintInvalidationContainerToBacking(paintInvalidationContainer->layoutObject(), rect);
-    return rect;
 }
 
 void PaintLayer::dirtyVisibleContentStatus()

@@ -943,7 +943,7 @@ void WebPluginContainerImpl::computeClipRectsForPlugin(
     FloatRect frameRectInOwnerElementSpace = box->absoluteToLocalQuad(FloatRect(frameRect()), UseTransforms).boundingBox();
 
     LayoutRect unclippedAbsoluteRect(frameRectInOwnerElementSpace);
-    box->mapToVisibleRectInAncestorSpace(rootView, unclippedAbsoluteRect, nullptr);
+    box->mapToVisibleRectInAncestorSpace(rootView, unclippedAbsoluteRect);
 
     // The frameRect is already in absolute space of the local frame to the plugin.
     windowRect = frameRect();

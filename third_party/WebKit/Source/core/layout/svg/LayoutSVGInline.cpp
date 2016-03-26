@@ -21,6 +21,7 @@
 
 #include "core/layout/svg/LayoutSVGInline.h"
 
+#include "core/layout/LayoutView.h"
 #include "core/layout/svg/LayoutSVGText.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
 #include "core/layout/svg/SVGResourcesCache.h"
@@ -83,14 +84,14 @@ FloatRect LayoutSVGInline::paintInvalidationRectInLocalSVGCoordinates() const
     return FloatRect();
 }
 
-LayoutRect LayoutSVGInline::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutSVGInline::absoluteClippedOverflowRect() const
 {
-    return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this, paintInvalidationContainer, paintInvalidationState);
+    return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this, *view());
 }
 
-void LayoutSVGInline::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGInline::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed) const
 {
-    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, wasFixed, paintInvalidationState);
+    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, wasFixed);
 }
 
 const LayoutObject* LayoutSVGInline::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
@@ -165,7 +166,7 @@ void LayoutSVGInline::invalidateTreeIfNeeded(const PaintInvalidationState& paint
     if (reason == PaintInvalidationSVGResourceChange)
         newPaintInvalidationState.setForceSubtreeInvalidationWithinContainer();
 
-    newPaintInvalidationState.updatePaintOffsetAndClipForChildren();
+    newPaintInvalidationState.updateForChildren();
     invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 

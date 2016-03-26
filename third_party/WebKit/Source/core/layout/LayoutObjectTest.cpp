@@ -123,11 +123,11 @@ TEST_F(LayoutObjectTest, LayoutTextMapToVisibleRectInAncestorSpace)
 
     container->setScrollTop(LayoutUnit(50));
     LayoutRect rect(0, 60, 20, 80);
-    EXPECT_TRUE(text->mapToVisibleRectInAncestorSpace(container, rect, nullptr));
+    EXPECT_TRUE(text->mapToVisibleRectInAncestorSpace(container, rect));
     EXPECT_EQ(rect, LayoutRect(0, 10, 20, 80));
 
     rect = LayoutRect(0, 60, 80, 0);
-    EXPECT_TRUE(text->mapToVisibleRectInAncestorSpace(container, rect, nullptr, EdgeInclusive));
+    EXPECT_TRUE(text->mapToVisibleRectInAncestorSpace(container, rect, EdgeInclusive));
     EXPECT_EQ(rect, LayoutRect(0, 10, 80, 0));
 }
 
@@ -145,11 +145,11 @@ TEST_F(LayoutObjectTest, LayoutInlineMapToVisibleRectInAncestorSpace)
 
     container->setScrollTop(LayoutUnit(50));
     LayoutRect rect(0, 60, 20, 80);
-    EXPECT_TRUE(leaf->mapToVisibleRectInAncestorSpace(container, rect, nullptr));
+    EXPECT_TRUE(leaf->mapToVisibleRectInAncestorSpace(container, rect));
     EXPECT_EQ(rect, LayoutRect(0, 10, 20, 80));
 
     rect = LayoutRect(0, 60, 80, 0);
-    EXPECT_TRUE(leaf->mapToVisibleRectInAncestorSpace(container, rect, nullptr, EdgeInclusive));
+    EXPECT_TRUE(leaf->mapToVisibleRectInAncestorSpace(container, rect, EdgeInclusive));
     EXPECT_EQ(rect, LayoutRect(0, 10, 80, 0));
 }
 
@@ -173,11 +173,11 @@ TEST_F(LayoutObjectTest, LayoutViewMapToVisibleRectInAncestorSpace)
     // so height should be clipped to (50 - 13) == 37.
     frameDocument.view()->setScrollPosition(DoublePoint(0, 47), ProgrammaticScroll);
     LayoutRect rect(4, 60, 20, 80);
-    EXPECT_TRUE(frameText->mapToVisibleRectInAncestorSpace(frameContainer, rect, nullptr));
+    EXPECT_TRUE(frameText->mapToVisibleRectInAncestorSpace(frameContainer, rect));
     EXPECT_EQ(rect, LayoutRect(4, 13, 20, 37));
 
     rect = LayoutRect(4, 60, 0, 80);
-    EXPECT_TRUE(frameText->mapToVisibleRectInAncestorSpace(frameContainer, rect, nullptr, EdgeInclusive));
+    EXPECT_TRUE(frameText->mapToVisibleRectInAncestorSpace(frameContainer, rect, EdgeInclusive));
     EXPECT_EQ(rect, LayoutRect(4, 13, 0, 37));
 }
 

@@ -1099,14 +1099,11 @@ void FrameView::invalidateTreeIfNeeded(PaintInvalidationState& paintInvalidation
 
     rootForPaintInvalidation.invalidateTreeIfNeeded(paintInvalidationState);
 
-    if (!m_frame->settings() || !m_frame->settings()->rootLayerScrolls()) {
-        paintInvalidationState.setViewClippingAndScrollOffsetDisabled(true);
+    if (!m_frame->settings() || !m_frame->settings()->rootLayerScrolls())
         invalidatePaintOfScrollControlsIfNeeded(paintInvalidationState);
-        paintInvalidationState.setViewClippingAndScrollOffsetDisabled(false);
-    }
 
 #if ENABLE(ASSERT)
-    layoutView()->assertSubtreeClearedPaintInvalidationState();
+    layoutView()->assertSubtreeClearedPaintInvalidationFlags();
 #endif
 
     if (m_frame->selection().isCaretBoundsDirty())
@@ -2114,7 +2111,7 @@ IntRect FrameView::windowClipRect(IncludeScrollbarsInRect scrollbarInclusion) co
     ASSERT(m_frame->view() == this);
 
     LayoutRect clipRect(LayoutPoint(), LayoutSize(visibleContentSize(scrollbarInclusion)));
-    layoutView()->mapToVisibleRectInAncestorSpace(&layoutView()->containerForPaintInvalidation(), clipRect, nullptr);
+    layoutView()->mapToVisibleRectInAncestorSpace(&layoutView()->containerForPaintInvalidation(), clipRect);
     return enclosingIntRect(clipRect);
 }
 
@@ -3972,7 +3969,7 @@ void FrameView::collectFrameTimingRequests(GraphicsLayerFrameTimingRequests& gra
     if (!graphicsLayer)
         return;
 
-    PaintLayer::mapRectToPaintInvalidationBacking(localFrame->contentLayoutObject(), &paintInvalidationContainer, viewRect);
+    PaintLayer::mapRectToPaintInvalidationBacking(*localFrame->contentLayoutObject(), paintInvalidationContainer, viewRect);
 
     graphicsLayerTimingRequests.add(graphicsLayer, Vector<std::pair<int64_t, WebRect>>()).storedValue->value.append(std::make_pair(m_frame->frameID(), enclosingIntRect(viewRect)));
 }

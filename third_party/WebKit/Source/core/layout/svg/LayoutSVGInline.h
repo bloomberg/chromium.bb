@@ -44,8 +44,8 @@ public:
     FloatRect strokeBoundingBox() const final;
     FloatRect paintInvalidationRectInLocalSVGCoordinates() const final;
 
-    LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const final;
-    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const final;
+    LayoutRect absoluteClippedOverflowRect() const final;
+    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr) const final;
     const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const final;
     void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const final;
 

@@ -1023,7 +1023,7 @@ LayoutRect LayoutInline::absoluteClippedOverflowRect() const
 {
     if (!continuation()) {
         LayoutRect rect = visualOverflowRect();
-        mapToVisibleRectInAncestorSpace(view(), rect, nullptr);
+        mapToVisibleRectInAncestorSpace(view(), rect);
         return rect;
     }
 
@@ -1040,7 +1040,7 @@ LayoutRect LayoutInline::absoluteClippedOverflowRect() const
             context(FloatRect(rect));
             if (curr == endContinuation) {
                 LayoutRect rect(enclosingIntRect(floatResult));
-                mapToVisibleRectInAncestorSpace(view(), rect, nullptr);
+                mapToVisibleRectInAncestorSpace(view(), rect);
                 return rect;
             }
         }
@@ -1078,11 +1078,8 @@ LayoutRect LayoutInline::visualOverflowRect() const
     return overflowRect;
 }
 
-bool LayoutInline::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState, VisibleRectFlags visibleRectFlags) const
+bool LayoutInline::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
 {
-    if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor))
-        return paintInvalidationState->mapObjectRectToAncestor(*this, ancestor, rect, visibleRectFlags);
-
     if (ancestor == this)
         return true;
 
@@ -1118,7 +1115,7 @@ bool LayoutInline::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* a
         return true;
     }
 
-    return container->mapToVisibleRectInAncestorSpace(ancestor, rect, nullptr, visibleRectFlags);
+    return container->mapToVisibleRectInAncestorSpace(ancestor, rect, visibleRectFlags);
 }
 
 LayoutSize LayoutInline::offsetFromContainer(const LayoutObject* container) const

@@ -28,7 +28,7 @@ static LayoutRect scrollControlPaintInvalidationRect(const IntRect& scrollContro
 {
     LayoutRect paintInvalidationRect(scrollControlRect);
     if (!paintInvalidationRect.isEmpty())
-        PaintLayer::mapRectToPaintInvalidationBacking(&box, &paintInvalidationState.paintInvalidationContainer(), paintInvalidationRect, &paintInvalidationState);
+        paintInvalidationState.mapLocalRectToPaintInvalidationBacking(paintInvalidationRect);
     return paintInvalidationRect;
 }
 

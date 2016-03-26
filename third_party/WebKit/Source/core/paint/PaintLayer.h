@@ -438,20 +438,12 @@ public:
     bool hasCompositedClippingMask() const;
     bool needsCompositedScrolling() const { return m_scrollableArea && m_scrollableArea->needsCompositedScrolling(); }
 
-    // Computes the position of the given layout object in the space of |paintInvalidationContainer|.
-    // FIXME: invert the logic to have paint invalidation containers take care of painting objects into them, rather than the reverse.
-    // This will allow us to clean up this static method messiness.
-    static LayoutPoint positionFromPaintInvalidationBacking(const LayoutObject*, const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = 0);
-
-    static void mapPointInPaintInvalidationContainerToBacking(const LayoutBoxModelObject* paintInvalidationContainer, FloatPoint&);
-    static void mapRectInPaintInvalidationContainerToBacking(const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&);
+    static void mapPointInPaintInvalidationContainerToBacking(const LayoutBoxModelObject& paintInvalidationContainer, FloatPoint&);
+    static void mapRectInPaintInvalidationContainerToBacking(const LayoutBoxModelObject& paintInvalidationContainer, LayoutRect&);
 
     // Adjusts the given rect (in the coordinate space of the LayoutObject) to the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
-    static void mapRectToPaintInvalidationBacking(const LayoutObject*, const LayoutBoxModelObject* paintInvalidationContainer, LayoutRect&, const PaintInvalidationState* = 0);
-
-    // Computes the bounding paint invalidation rect for |layoutObject|, in the coordinate space of |paintInvalidationContainer|'s GraphicsLayer backing.
-    // TODO(jchaffraix): |paintInvalidationContainer| should be a reference.
-    static LayoutRect computePaintInvalidationRect(const LayoutObject&, const PaintLayer* paintInvalidationContainer, const PaintInvalidationState* = 0);
+    // Should use PaintInvalidationState::mapRectToPaintInvalidationBacking() instead if PaintInvalidationState is available.
+    static void mapRectToPaintInvalidationBacking(const LayoutObject&, const LayoutBoxModelObject& paintInvalidationContainer, LayoutRect&);
 
     bool paintsWithTransparency(GlobalPaintFlags globalPaintFlags) const
     {

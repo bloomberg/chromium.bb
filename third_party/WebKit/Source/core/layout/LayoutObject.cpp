@@ -1191,12 +1191,6 @@ static PassOwnPtr<TracedValue> jsonObjectForPaintInvalidationInfo(const LayoutRe
     return value.release();
 }
 
-LayoutRect LayoutObject::computePaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
-{
-    return clippedOverflowRectForPaintInvalidation(&paintInvalidationContainer, paintInvalidationState);
-}
-
-
 static void invalidatePaintRectangleOnWindow(const LayoutBoxModelObject& paintInvalidationContainer, const IntRect& dirtyRect)
 {
     FrameView* frameView = paintInvalidationContainer.frameView();
@@ -1294,11 +1288,6 @@ void LayoutObject::invalidateDisplayItemClientsWithPaintInvalidationState(const 
     invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason);
 }
 
-LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
-{
-    return PaintLayer::computePaintInvalidationRect(*this, paintInvalidationContainer.layer(), paintInvalidationState);
-}
-
 const LayoutBoxModelObject* LayoutObject::invalidatePaintRectangleInternal(const LayoutRect& dirtyRect) const
 {
     RELEASE_ASSERT(isRooted());
@@ -1311,7 +1300,7 @@ const LayoutBoxModelObject* LayoutObject::invalidatePaintRectangleInternal(const
 
     const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidation();
     LayoutRect dirtyRectOnBacking = dirtyRect;
-    PaintLayer::mapRectToPaintInvalidationBacking(this, &paintInvalidationContainer, dirtyRectOnBacking);
+    PaintLayer::mapRectToPaintInvalidationBacking(*this, paintInvalidationContainer, dirtyRectOnBacking);
     invalidatePaintUsingContainer(paintInvalidationContainer, dirtyRectOnBacking, PaintInvalidationRectangle);
     return &paintInvalidationContainer;
 }
@@ -1339,13 +1328,15 @@ void LayoutObject::invalidateTreeIfNeeded(const PaintInvalidationState& paintInv
     if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
-    PaintInvalidationReason reason = invalidatePaintIfNeeded(paintInvalidationState);
-    clearPaintInvalidationFlags(paintInvalidationState);
+    PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this);
+    PaintInvalidationReason reason = invalidatePaintIfNeeded(newPaintInvalidationState);
+    clearPaintInvalidationFlags(newPaintInvalidationState);
 
     if (reason == PaintInvalidationDelayedFull)
-        paintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
+        newPaintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
 
-    invalidatePaintOfSubtreesIfNeeded(paintInvalidationState);
+    newPaintInvalidationState.updateForChildren();
+    invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 
 void LayoutObject::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& childPaintInvalidationState)
@@ -1370,7 +1361,7 @@ LayoutRect LayoutObject::selectionRectInViewCoordinates() const
 {
     LayoutRect selectionRect = localSelectionRect();
     if (!selectionRect.isEmpty())
-        mapToVisibleRectInAncestorSpace(view(), selectionRect, nullptr);
+        mapToVisibleRectInAncestorSpace(view(), selectionRect);
     return selectionRect;
 }
 
@@ -1408,7 +1399,7 @@ inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject
     LayoutRect oldSelectionRect = previousSelectionRectForPaintInvalidation();
     LayoutRect newSelectionRect = localSelectionRect();
     if (!newSelectionRect.isEmpty()) {
-        PaintLayer::mapRectToPaintInvalidationBacking(this, &paintInvalidationContainer, newSelectionRect, &paintInvalidationState);
+        paintInvalidationState.mapLocalRectToPaintInvalidationBacking(newSelectionRect);
 
         // Composited scrolling should not be included in the bounds and position tracking, because the graphics layer backing the scroller
         // does not move on scroll.
@@ -1431,6 +1422,8 @@ inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject
 
 PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
+    ASSERT(&paintInvalidationState.currentObject() == this);
+
     if (styleRef().hasOutline()) {
         PaintLayer& layer = paintInvalidationState.enclosingSelfPaintingLayer(*this);
         if (layer.layoutObject() != this)
@@ -1447,8 +1440,8 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(const PaintInvalid
 
     const LayoutRect oldBounds = previousPaintInvalidationRect();
     const LayoutPoint oldLocation = RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ? LayoutPoint() : previousPositionFromPaintInvalidationBacking();
-    LayoutRect newBounds = boundsRectForPaintInvalidation(paintInvalidationContainer, &paintInvalidationState);
-    LayoutPoint newLocation = RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ? LayoutPoint() : PaintLayer::positionFromPaintInvalidationBacking(this, &paintInvalidationContainer, &paintInvalidationState);
+    LayoutRect newBounds = paintInvalidationState.computePaintInvalidationRectInBacking();
+    LayoutPoint newLocation = RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() ? LayoutPoint() : paintInvalidationState.computePositionFromPaintInvalidationBacking();
 
     // Composited scrolling should not be included in the bounds and position tracking, because the graphics layer backing the scroller
     // does not move on scroll.
@@ -1634,13 +1627,8 @@ void LayoutObject::invalidatePaintForOverflowIfNeeded()
 
 LayoutRect LayoutObject::absoluteClippedOverflowRect() const
 {
-    return clippedOverflowRectForPaintInvalidation(view());
-}
-
-LayoutRect LayoutObject::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
-{
     LayoutRect rect = localOverflowRectForPaintInvalidation();
-    mapToVisibleRectInAncestorSpace(paintInvalidationContainer, rect, paintInvalidationState);
+    mapToVisibleRectInAncestorSpace(view(), rect);
     return rect;
 }
 
@@ -1650,16 +1638,13 @@ LayoutRect LayoutObject::localOverflowRectForPaintInvalidation() const
     return LayoutRect();
 }
 
-bool LayoutObject::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState, VisibleRectFlags visibleRectFlags) const
+bool LayoutObject::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
 {
     // For any layout object that doesn't override this method (the main example is LayoutText),
     // the rect is assumed to be in the coordinate space of the object's parent.
 
     if (ancestor == this)
         return true;
-
-    if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor))
-        return paintInvalidationState->mapObjectRectToAncestor(*this, ancestor, rect, visibleRectFlags);
 
     if (LayoutObject* parent = this->parent()) {
         if (parent->hasOverflowClip()) {
@@ -1669,7 +1654,7 @@ bool LayoutObject::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* a
                 return false;
         }
 
-        return parent->mapToVisibleRectInAncestorSpace(ancestor, rect, nullptr, visibleRectFlags);
+        return parent->mapToVisibleRectInAncestorSpace(ancestor, rect, visibleRectFlags);
     }
     return true;
 }
@@ -2255,20 +2240,10 @@ FloatQuad LayoutObject::ancestorToLocalQuad(LayoutBoxModelObject* ancestor, cons
     return transformState.lastPlanarQuad();
 }
 
-void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed) const
 {
     if (ancestor == this)
         return;
-
-    if (paintInvalidationState && paintInvalidationState->canMapToAncestor(ancestor)) {
-        LayoutSize offset = paintInvalidationState->paintOffset();
-        if (const LayoutBox* layoutBox = isBox() ? toLayoutBox(this) : nullptr)
-            offset += layoutBox->locationOffset();
-        if (const PaintLayer* layer = style()->hasInFlowPosition() && hasLayer() ? toLayoutBoxModelObject(this)->layer() : nullptr)
-            offset += layer->offsetForInFlowPosition();
-        transformState.move(offset);
-        return;
-    }
 
     if (wasFixed)
         *wasFixed = mode & IsFixed;
@@ -2316,7 +2291,7 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Tran
         return;
     }
 
-    o->mapLocalToAncestor(ancestor, transformState, mode, wasFixed, paintInvalidationState);
+    o->mapLocalToAncestor(ancestor, transformState, mode, wasFixed);
 }
 
 const LayoutObject* LayoutObject::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
@@ -2415,10 +2390,10 @@ FloatQuad LayoutObject::localToAncestorQuad(const FloatQuad& localQuad, const La
     return transformState.lastPlanarQuad();
 }
 
-FloatPoint LayoutObject::localToAncestorPoint(const FloatPoint& localPoint, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+FloatPoint LayoutObject::localToAncestorPoint(const FloatPoint& localPoint, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags mode, bool* wasFixed) const
 {
     TransformState transformState(TransformState::ApplyTransformDirection, localPoint);
-    mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip | UseTransforms, wasFixed, paintInvalidationState);
+    mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip | UseTransforms, wasFixed);
     transformState.flatten();
 
     return transformState.lastPlanarPoint();
@@ -2461,7 +2436,7 @@ FloatPoint LayoutObject::localToInvalidationBackingPoint(const LayoutPoint& loca
     if (paintInvalidationContainer.layer()->compositingState() == NotComposited)
         return containerPoint;
 
-    PaintLayer::mapPointInPaintInvalidationContainerToBacking(&paintInvalidationContainer, containerPoint);
+    PaintLayer::mapPointInPaintInvalidationContainerToBacking(paintInvalidationContainer, containerPoint);
     return containerPoint;
 }
 

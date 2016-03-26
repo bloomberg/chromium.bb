@@ -360,12 +360,12 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
 {
     ASSERT(!needsLayout());
 
-    if (!shouldCheckForPaintInvalidation(paintInvalidationState))
+    PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this);
+    if (!shouldCheckForPaintInvalidation(newPaintInvalidationState))
         return;
 
     LayoutRect previousPaintInvalidationRect = this->previousPaintInvalidationRect();
 
-    PaintInvalidationState newPaintInvalidationState(paintInvalidationState, *this);
     // TODO(wangxianzhu): Enable this assert after we fix all paintInvalidationContainer mismatch issues. crbug.com/360286
     // ASSERT(&newPaintInvalidationState.paintInvalidationContainer() == &containerForPaintInvalidation());
 
@@ -377,6 +377,8 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
 
     if (reason == PaintInvalidationLocationChange)
         newPaintInvalidationState.setForceSubtreeInvalidationWithinContainer();
+
+    // TODO(wangxianzhu): Combine this function into LayoutObject::invalidateTreeIfNeeded() when removing the following workarounds.
 
     // TODO(wangxianzhu): This is a workaround for crbug.com/533277. Will remove when we enable paint offset caching.
     if (reason != PaintInvalidationNone && hasPercentageTransform(styleRef()))
@@ -390,7 +392,7 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
         && hasOverflowClip())
         newPaintInvalidationState.setForceSubtreeInvalidationRectUpdateWithinContainer();
 
-    newPaintInvalidationState.updatePaintOffsetAndClipForChildren();
+    newPaintInvalidationState.updateForChildren();
     invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 

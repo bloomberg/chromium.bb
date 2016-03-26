@@ -104,15 +104,9 @@ public:
 
     FrameView* frameView() const { return m_frameView; }
 
-    enum ViewportConstrainedPosition {
-        IsNotFixedPosition,
-        IsFixedPosition,
-    };
-
-    static ViewportConstrainedPosition toViewportConstrainedPosition(EPosition position) { return position == FixedPosition ? IsFixedPosition : IsNotFixedPosition; }
-    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, ViewportConstrainedPosition, const PaintInvalidationState*, VisibleRectFlags = DefaultVisibleRectFlags) const;
-    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, const PaintInvalidationState*, VisibleRectFlags = DefaultVisibleRectFlags) const override;
-    void adjustViewportConstrainedOffset(LayoutRect&, ViewportConstrainedPosition) const;
+    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, MapCoordinatesFlags, VisibleRectFlags) const;
+    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const override;
+    void adjustOffsetForFixedPosition(LayoutRect&) const;
 
     void invalidatePaintForViewAndCompositedLayers();
 
@@ -215,7 +209,7 @@ public:
     ScrollResult scroll(ScrollGranularity, const FloatSize&) override;
 
 private:
-    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
+    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr) const override;
 
     const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
     void mapAncestorToLocal(const LayoutBoxModelObject*, TransformState&, MapCoordinatesFlags) const override;

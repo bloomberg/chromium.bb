@@ -2224,7 +2224,7 @@ IntRect CompositedLayerMapping::recomputeInterestRect(const GraphicsLayer* graph
     LayoutView* rootView = anchorLayoutObject->view();
     while (rootView->frame()->ownerLayoutObject())
         rootView = rootView->frame()->ownerLayoutObject()->view();
-    anchorLayoutObject->mapToVisibleRectInAncestorSpace(rootView, visibleContentRect, 0);
+    anchorLayoutObject->mapToVisibleRectInAncestorSpace(rootView, visibleContentRect);
     visibleContentRect.intersect(LayoutRect(rootView->frameView()->visibleContentRect()));
 
     IntRect enclosingGraphicsLayerBounds(enclosingIntRect(graphicsLayerBounds));

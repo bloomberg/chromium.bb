@@ -295,15 +295,6 @@ float LayoutSVGShape::strokeWidth() const
     return lengthContext.valueForLength(style()->svgStyle().strokeWidth());
 }
 
-LayoutRect LayoutSVGShape::clippedOverflowRectForPaintInvalidation(
-    const LayoutBoxModelObject* paintInvalidationContainer,
-    const PaintInvalidationState* paintInvalidationState) const
-{
-    const float strokeWidthForHairlinePadding = style()->svgStyle().hasStroke() ? strokeWidth() : 0;
-    return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this,
-        paintInvalidationContainer, paintInvalidationState, strokeWidthForHairlinePadding);
-}
-
 LayoutSVGShapeRareData& LayoutSVGShape::ensureRareData() const
 {
     if (!m_rareData)

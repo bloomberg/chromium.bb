@@ -42,28 +42,16 @@ public:
     // the one we find during tree walk. Remove this after we fix the issue with tree walk in DOM-order.
     PaintInvalidationState(const PaintInvalidationState& parentState, const LayoutBoxModelObject&, const LayoutBoxModelObject& paintInvalidationContainer);
 
-    // For root LayoutView.
-    PaintInvalidationState(const LayoutView& layoutView, Vector<LayoutObject*>& pendingDelayedPaintInvalidations)
-        : PaintInvalidationState(layoutView, pendingDelayedPaintInvalidations, nullptr) { }
-    // For LayoutView in a sub-frame.
-    PaintInvalidationState(const LayoutView& layoutView, const PaintInvalidationState& ownerPaintInvalidationState)
-        : PaintInvalidationState(layoutView, ownerPaintInvalidationState.m_pendingDelayedPaintInvalidations, &ownerPaintInvalidationState) { }
+    // For root LayoutView, or when sub-frame LayoutView's invalidateTreeIfNeeded() is called directly from
+    // FrameView::invalidateTreeIfNeededRecursive() instead of the owner LayoutPart.
+    // TODO(wangxianzhu): Eliminate the latter case.
+    PaintInvalidationState(const LayoutView&, Vector<LayoutObject*>& pendingDelayedPaintInvalidations);
 
-    // When a PaintInvalidationState is constructed, it just updates paintInvalidationContainer and
-    // copy cached paintOffset and clip from the parent PaintInvalidationContainer.
-    // This PaintInvalidationContainer can be used to invalidate the current object.
-    //
-    // After invalidation of the current object, before invalidation of the subtrees,
-    // this method must be called to make this PaintInvalidationState suitable for
-    // paint invalidation of children.
-    void updatePaintOffsetAndClipForChildren();
-
-    const LayoutRect& clipRect() const { return m_clipRect; }
-    const LayoutSize& paintOffset() const { return m_paintOffset; }
-    const AffineTransform& svgTransform() const { return m_svgTransform; }
-
-    bool cachedOffsetsEnabled() const { return m_cachedOffsetsEnabled; }
-    bool isClipped() const { return m_clipped; }
+    // When a PaintInvalidationState is constructed, it can be used to map points/rects in the object's
+    // local space (border box space for LayoutBoxes). After invalidation of the current object,
+    // before invalidation of the subtrees, this method must be called to apply clip and scroll offset
+    // etc. for creating child PaintInvalidationStates.
+    void updateForChildren();
 
     bool forcedSubtreeInvalidationWithinContainer() const { return m_forcedSubtreeInvalidationWithinContainer; }
     void setForceSubtreeInvalidationWithinContainer() { m_forcedSubtreeInvalidationWithinContainer = true; }
@@ -73,28 +61,30 @@ public:
 
     const LayoutBoxModelObject& paintInvalidationContainer() const { return m_paintInvalidationContainer; }
 
-    bool canMapToAncestor(const LayoutBoxModelObject* ancestor) const
-    {
-        return m_cachedOffsetsEnabled && ancestor == &m_paintInvalidationContainer;
-    }
-    bool mapObjectRectToAncestor(const LayoutObject&, const LayoutBoxModelObject* ancestor, LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const;
+    // Computes the position of the current object ((0,0) in the space of the object)
+    // in the space of paint invalidation backing.
+    LayoutPoint computePositionFromPaintInvalidationBacking() const;
+
+    // Returns the rect bounds needed to invalidate paint of this object,
+    // in the space of paint invalidation backing.
+    LayoutRect computePaintInvalidationRectInBacking() const;
+
+    void mapLocalRectToPaintInvalidationBacking(LayoutRect&) const;
 
     // Records |obj| as needing paint invalidation on the next frame. See the definition of PaintInvalidationDelayedFull for more details.
     void pushDelayedPaintInvalidationTarget(LayoutObject& obj) const { m_pendingDelayedPaintInvalidations.append(&obj); }
     Vector<LayoutObject*>& pendingDelayedPaintInvalidationTargets() const { return m_pendingDelayedPaintInvalidations; }
 
-    // Disable view clipping and scroll offset adjustment for paint invalidation of FrameView scrollbars.
-    // TODO(wangxianzhu): Remove this when root-layer-scrolls launches.
-    bool viewClippingAndScrollOffsetDisabled() const { return m_viewClippingAndScrollOffsetDisabled; }
-    void setViewClippingAndScrollOffsetDisabled(bool b) { m_viewClippingAndScrollOffsetDisabled = b; }
-
     PaintLayer& enclosingSelfPaintingLayer(const LayoutObject&) const;
 
-private:
-    PaintInvalidationState(const LayoutView&, Vector<LayoutObject*>& pendingDelayedPaintInvalidations, const PaintInvalidationState* ownerPaintInvalidationState);
+#if ENABLE(ASSERT)
+    const LayoutObject& currentObject() const { return m_currentObject; }
+#endif
 
-    void applyClipIfNeeded();
-    void addClipRectRelativeToPaintOffset(const LayoutSize& clipSize);
+private:
+    LayoutRect computePaintInvalidationRectInBackingForSVG() const;
+
+    void addClipRectRelativeToPaintOffset(const LayoutRect& localClipRect);
 
     friend class ForceHorriblySlowRectMapping;
 
@@ -104,7 +94,6 @@ private:
     mutable bool m_cachedOffsetsEnabled;
     bool m_forcedSubtreeInvalidationWithinContainer;
     bool m_forcedSubtreeInvalidationRectUpdateWithinContainer;
-    bool m_viewClippingAndScrollOffsetDisabled;
 
     LayoutRect m_clipRect;
 
@@ -126,7 +115,7 @@ private:
     PaintLayer& m_enclosingSelfPaintingLayer;
 
 #if ENABLE(ASSERT)
-    bool m_didUpdatePaintOffsetAndClipForChildren;
+    bool m_didUpdateForChildren;
 #endif
 };
 
@@ -140,7 +129,7 @@ class ForceHorriblySlowRectMapping {
 public:
     ForceHorriblySlowRectMapping(const PaintInvalidationState* paintInvalidationState)
         : m_paintInvalidationState(paintInvalidationState)
-        , m_didDisable(m_paintInvalidationState && m_paintInvalidationState->cachedOffsetsEnabled())
+        , m_didDisable(m_paintInvalidationState && m_paintInvalidationState->m_cachedOffsetsEnabled)
     {
         if (m_paintInvalidationState)
             m_paintInvalidationState->m_cachedOffsetsEnabled = false;

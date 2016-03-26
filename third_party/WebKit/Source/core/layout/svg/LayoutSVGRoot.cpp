@@ -318,12 +318,13 @@ const AffineTransform& LayoutSVGRoot::localToSVGParentTransform() const
     return m_localToParentTransform;
 }
 
-LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutSVGRoot::localOverflowRectForPaintInvalidation() const
 {
-    // This is an open-coded aggregate of SVGLayoutSupport::clippedOverflowRectForPaintInvalidation,
-    // LayoutSVGRoot::mapToVisibleRectInAncestorSpace and LayoutReplaced::clippedOverflowRectForPaintInvalidation.
+    // This is an open-coded aggregate of SVGLayoutSupport::localOverflowRectForPaintInvalidation,
+    // and LayoutReplaced::localOverflowRectForPaintInvalidation.
     // The reason for this is to optimize/minimize the paint invalidation rect when the box is not "decorated"
     // (does not have background/border/etc.)
+    // TODO(wangxianzhu): Verify if the optimization is still needed.
 
     // Return early for any cases where we don't actually paint.
     if (style()->visibility() != VISIBLE && !enclosingLayer()->hasVisibleContent())
@@ -346,18 +347,17 @@ LayoutRect LayoutSVGRoot::clippedOverflowRectForPaintInvalidation(const LayoutBo
         paintInvalidationRect.unite(decoratedPaintInvalidationRect);
     }
 
-    // Compute the paint invalidation rect in the parent coordinate space.
-    LayoutRect rect(enclosingIntRect(paintInvalidationRect));
-    LayoutReplaced::mapToVisibleRectInAncestorSpace(paintInvalidationContainer, rect, paintInvalidationState);
-    return rect;
+    return LayoutRect(enclosingIntRect(paintInvalidationRect));
 }
 
-bool LayoutSVGRoot::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState, VisibleRectFlags visibleRectFlags) const
+bool LayoutSVGRoot::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
 {
     // Note that we don't apply the border-box transform here - it's assumed
     // that whoever called us has done that already.
 
     // Apply initial viewport clip
+    // TODO(crbug.com/597813): We should not apply clip on LayoutSVGRoot's own rect. This clip should
+    // be applied in children's mapToVisibleRectInAncestorSpace().
     if (shouldApplyViewportClip()) {
         if (visibleRectFlags & EdgeInclusive) {
             if (!rect.inclusiveIntersect(LayoutRect(pixelSnappedBorderBoxRect())))
@@ -367,17 +367,17 @@ bool LayoutSVGRoot::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* 
         }
     }
 
-    return LayoutReplaced::mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState, visibleRectFlags);
+    return LayoutReplaced::mapToVisibleRectInAncestorSpace(ancestor, rect, visibleRectFlags);
 }
 
 // This method expects local CSS box coordinates.
 // Callers with local SVG viewport coordinates should first apply the localToBorderBoxTransform
 // to convert from SVG viewport coordinates to local CSS box coordinates.
-void LayoutSVGRoot::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGRoot::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed) const
 {
     ASSERT(!(mode & IsFixed)); // We should have no fixed content in the SVG layout tree.
 
-    LayoutReplaced::mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip, wasFixed, paintInvalidationState);
+    LayoutReplaced::mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip, wasFixed);
 }
 
 const LayoutObject* LayoutSVGRoot::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const

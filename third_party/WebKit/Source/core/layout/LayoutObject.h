@@ -95,6 +95,12 @@ enum MapCoordinatesMode {
     UseTransforms = 1 << 1,
     ApplyContainerFlip = 1 << 2,
     TraverseDocumentBoundaries = 1 << 3,
+
+    // Applies to LayoutView::mapLocalToAncestor() and LayoutView::mapToVisibleRectInAncestorSpace()
+    // only, to indicate the input point or rect is in frame coordinates instead of frame contents
+    // coordinates. This disables view clipping and scroll offset adjustment.
+    // TODO(wangxianzhu): Remove this when root-layer-scrolls launches.
+    InputIsInFrameCoordinates = 1 << 4,
 };
 typedef unsigned MapCoordinatesFlags;
 
@@ -323,7 +329,7 @@ public:
             layoutObject->assertLaidOut();
     }
 
-    void assertClearedPaintInvalidationState() const
+    void assertClearedPaintInvalidationFlags() const
     {
 #ifndef NDEBUG
         if (paintInvalidationStateIsDirty()) {
@@ -333,10 +339,10 @@ public:
 #endif
     }
 
-    void assertSubtreeClearedPaintInvalidationState() const
+    void assertSubtreeClearedPaintInvalidationFlags() const
     {
         for (const LayoutObject* layoutObject = this; layoutObject; layoutObject = layoutObject->nextInPreOrder())
-            layoutObject->assertClearedPaintInvalidationState();
+            layoutObject->assertClearedPaintInvalidationFlags();
     }
 
 #endif
@@ -991,7 +997,7 @@ public:
     //   If TraverseDocumentBoundaries is specified, the result will be in the space of the local root frame.
     //   Otherwise, the result will be in the space of the containing frame.
     FloatQuad localToAncestorQuad(const FloatQuad&, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags = 0, bool* wasFixed = nullptr) const;
-    FloatPoint localToAncestorPoint(const FloatPoint&, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags = 0, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const;
+    FloatPoint localToAncestorPoint(const FloatPoint&, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags = 0, bool* wasFixed = nullptr) const;
     void localToAncestorRects(Vector<LayoutRect>&, const LayoutBoxModelObject* ancestor, const LayoutPoint& preOffset, const LayoutPoint& postOffset) const;
 
     // Return the transformation matrix to map points from local to the coordinate system of a container, taking transforms into account.
@@ -1103,12 +1109,6 @@ public:
 
     bool isPaintInvalidationContainer() const;
 
-    // Returns the paint invalidation rect for this LayoutObject in the coordinate space of the paint backing (typically a GraphicsLayer) for |paintInvalidationContainer|.
-    LayoutRect computePaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
-
-    // Returns the rect bounds needed to invalidate the paint of this object, in the coordinate space of the layoutObject backing of |paintInvalidationContainer|
-    LayoutRect boundsRectForPaintInvalidation(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
-
     // Actually do the paint invalidate of rect r for this object which has been computed in the coordinate space
     // of the GraphicsLayer backing of |paintInvalidationContainer|. Note that this coordinaten space is not the same
     // as the local coordinate space of |paintInvalidationContainer| in the presence of layer squashing.
@@ -1135,10 +1135,10 @@ public:
     // Returns the rect that should have paint invalidated whenever this object changes. The rect is in the view's
     // coordinate space. This method deals with outlines and overflow.
     virtual LayoutRect absoluteClippedOverflowRect() const;
-    virtual LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* = nullptr) const;
 
     // Returns the rect that should have paint invalidated whenever this object changes. The rect is in the object's
-    // local coordinate space.
+    // local coordinate space. This is for non-SVG objects and LayoutSVGRoot only. SVG objects (except LayoutSVGRoot)
+    // should use paintInvalidationRectInLocalSVGCoordinates() and map with SVG transforms instead.
     virtual LayoutRect localOverflowRectForPaintInvalidation() const;
 
     // Given a rect in the object's coordinate space, compute a rect in the coordinate space of |ancestor|.  If
@@ -1150,7 +1150,7 @@ public:
     // to the return value of this method.  Otherwise, clipping operations will use LayoutRect::intersect,
     // and the return value will be true only if the clipped rect has non-zero area.
     // See the documentation for LayoutRect::inclusiveIntersect for more information.
-    virtual bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, const PaintInvalidationState*, VisibleRectFlags = DefaultVisibleRectFlags) const;
+    virtual bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const;
 
     // Return the offset to the column in which the specified point (in flow-thread coordinates)
     // lives. This is used to convert a flow-thread point to a visual point.
@@ -1248,7 +1248,7 @@ public:
 
     // Map points and quads through elements, potentially via 3d transforms. You should never need to call these directly; use
     // localToAbsolute/absoluteToLocal methods instead.
-    virtual void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const;
+    virtual void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr) const;
     // If the LayoutBoxModelObject ancestor is non-null, the input quad is in the space of the ancestor.
     // Otherwise:
     //   If TraverseDocumentBoundaries is specified, the input quad is in the space of the local root frame.
@@ -1364,8 +1364,6 @@ public:
     {
         return mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() || shouldInvalidateSelection() || m_bitfields.childShouldCheckForPaintInvalidation();
     }
-
-    virtual bool supportsPaintInvalidationStateCachedOffsets() const { return !hasTransformRelatedProperty() && !hasReflection() && !style()->isFlippedBlocksWritingMode(); }
 
     virtual LayoutRect viewRect() const;
 

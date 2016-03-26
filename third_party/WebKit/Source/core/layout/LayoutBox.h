@@ -639,7 +639,7 @@ public:
     bool hasForcedBreakAfter() const;
 
     LayoutRect localOverflowRectForPaintInvalidation() const override;
-    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, const PaintInvalidationState*, VisibleRectFlags = DefaultVisibleRectFlags) const override;
+    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const override;
     virtual void invalidatePaintForOverhangingFloats(bool paintAllDescendants);
 
     LayoutUnit containingBlockLogicalHeightForGetComputedStyle() const;
@@ -891,7 +891,7 @@ public:
 
     bool canRenderBorderImage() const;
 
-    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr, const PaintInvalidationState* = nullptr) const override;
+    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr) const override;
     void mapAncestorToLocal(const LayoutBoxModelObject*, TransformState&, MapCoordinatesFlags) const override;
 
     void clearPreviousPaintInvalidationRects() override;

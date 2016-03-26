@@ -738,7 +738,7 @@ void LayoutReplaced::setSelectionState(SelectionState state)
     // image is selected. Since the selection state has changed update the rect.
     if (hasLayer()) {
         LayoutRect rect = localOverflowRectForPaintInvalidation();
-        PaintLayer::mapRectToPaintInvalidationBacking(this, &containerForPaintInvalidation(), rect);
+        PaintLayer::mapRectToPaintInvalidationBacking(*this, containerForPaintInvalidation(), rect);
         setPreviousPaintInvalidationRect(rect);
     }
 

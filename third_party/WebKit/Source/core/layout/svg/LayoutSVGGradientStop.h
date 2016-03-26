@@ -42,7 +42,7 @@ public:
     // This overrides are needed to prevent ASSERTs on <svg><stop /></svg>
     // LayoutObject's default implementations ASSERT_NOT_REACHED()
     // https://bugs.webkit.org/show_bug.cgi?id=20400
-    LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject*, const PaintInvalidationState* = nullptr) const override { return LayoutRect(); }
+    LayoutRect localOverflowRectForPaintInvalidation() const override { return LayoutRect(); }
     FloatRect objectBoundingBox() const override { return FloatRect(); }
     FloatRect strokeBoundingBox() const override { return FloatRect(); }
     FloatRect paintInvalidationRectInLocalSVGCoordinates() const override { return FloatRect(); }

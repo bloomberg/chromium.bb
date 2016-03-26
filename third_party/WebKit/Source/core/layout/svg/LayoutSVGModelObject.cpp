@@ -50,14 +50,14 @@ bool LayoutSVGModelObject::isChildAllowed(LayoutObject* child, const ComputedSty
     return child->isSVG() && !(child->isSVGInline() || child->isSVGInlineText() || child->isSVGGradientStop());
 }
 
-LayoutRect LayoutSVGModelObject::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGModelObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed) const
 {
-    return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this, paintInvalidationContainer, paintInvalidationState);
+    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, wasFixed);
 }
 
-void LayoutSVGModelObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutSVGModelObject::absoluteClippedOverflowRect() const
 {
-    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, wasFixed, paintInvalidationState);
+    return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this, *view());
 }
 
 void LayoutSVGModelObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags) const
@@ -143,7 +143,7 @@ void LayoutSVGModelObject::invalidateTreeIfNeeded(const PaintInvalidationState& 
     invalidatePaintIfNeeded(newPaintInvalidationState);
     clearPaintInvalidationFlags(newPaintInvalidationState);
 
-    newPaintInvalidationState.updatePaintOffsetAndClipForChildren();
+    newPaintInvalidationState.updateForChildren();
     invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 

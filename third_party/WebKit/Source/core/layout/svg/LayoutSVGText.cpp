@@ -516,11 +516,12 @@ void LayoutSVGText::invalidateTreeIfNeeded(const PaintInvalidationState& paintIn
     if (reason == PaintInvalidationDelayedFull)
         paintInvalidationState.pushDelayedPaintInvalidationTarget(*this);
 
+    // TODO(wangxianzhu): Move this to fast path if possible. crbug.com/391054.
     ForceHorriblySlowRectMapping slowRectMapping(&newPaintInvalidationState);
     if (reason == PaintInvalidationSVGResourceChange)
         newPaintInvalidationState.setForceSubtreeInvalidationWithinContainer();
 
-    newPaintInvalidationState.updatePaintOffsetAndClipForChildren();
+    newPaintInvalidationState.updateForChildren();
     invalidatePaintOfSubtreesIfNeeded(newPaintInvalidationState);
 }
 

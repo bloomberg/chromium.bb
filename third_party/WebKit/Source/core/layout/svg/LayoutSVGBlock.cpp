@@ -82,9 +82,9 @@ void LayoutSVGBlock::styleDidChange(StyleDifference diff, const ComputedStyle* o
     SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
 }
 
-void LayoutSVGBlock::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed, const PaintInvalidationState* paintInvalidationState) const
+void LayoutSVGBlock::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed) const
 {
-    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, wasFixed, paintInvalidationState);
+    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, wasFixed);
 }
 
 void LayoutSVGBlock::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags) const
@@ -99,16 +99,14 @@ const LayoutObject* LayoutSVGBlock::pushMappingToContainer(const LayoutBoxModelO
     return SVGLayoutSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
 }
 
-LayoutRect LayoutSVGBlock::clippedOverflowRectForPaintInvalidation(const LayoutBoxModelObject* paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
+LayoutRect LayoutSVGBlock::absoluteClippedOverflowRect() const
 {
-    return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this, paintInvalidationContainer, paintInvalidationState);
+    return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this, *view());
 }
 
-bool LayoutSVGBlock::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, const PaintInvalidationState* paintInvalidationState, VisibleRectFlags visibleRectFlags) const
+bool LayoutSVGBlock::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect& rect, VisibleRectFlags visibleRectFlags) const
 {
-    FloatRect paintInvalidationRect(rect);
-    const LayoutSVGRoot& svgRoot = SVGLayoutSupport::mapRectToSVGRootForPaintInvalidation(*this, paintInvalidationRect, rect);
-    return svgRoot.mapToVisibleRectInAncestorSpace(ancestor, rect, paintInvalidationState, visibleRectFlags);
+    return SVGLayoutSupport::mapToVisibleRectInAncestorSpace(*this, ancestor, FloatRect(rect), rect);
 }
 
 bool LayoutSVGBlock::nodeAtPoint(HitTestResult&, const HitTestLocation&, const LayoutPoint&, HitTestAction)
@@ -122,6 +120,7 @@ void LayoutSVGBlock::invalidateTreeIfNeeded(const PaintInvalidationState& paintI
     if (!shouldCheckForPaintInvalidation(paintInvalidationState))
         return;
 
+    // TODO(wangxianzhu): Move this to fast path if possible. crbug.com/391054.
     ForceHorriblySlowRectMapping slowRectMapping(&paintInvalidationState);
     LayoutBlockFlow::invalidateTreeIfNeeded(paintInvalidationState);
 }

@@ -237,11 +237,11 @@ private:
 
     LayoutRect absoluteClippedOverflowRect() const override;
 
-    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, const PaintInvalidationState*, VisibleRectFlags = DefaultVisibleRectFlags) const override;
-
     // This method differs from visualOverflowRect in that it doesn't include the rects
     // for culled inline boxes, which aren't necessary for paint invalidation.
     LayoutRect localOverflowRectForPaintInvalidation() const override;
+
+    bool mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* ancestor, LayoutRect&, VisibleRectFlags = DefaultVisibleRectFlags) const final;
 
     PositionWithAffinity positionForPoint(const LayoutPoint&) final;
 

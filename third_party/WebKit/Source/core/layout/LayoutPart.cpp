@@ -349,13 +349,13 @@ bool LayoutPart::setWidgetGeometry(const LayoutRect& frame)
 
 void LayoutPart::invalidatePaintOfSubtreesIfNeeded(const PaintInvalidationState& paintInvalidationState)
 {
-    if (widget() && widget()->isFrameView()) {
+    if (widget() && widget()->isFrameView() && !isThrottledFrameView()) {
         FrameView* childFrameView = toFrameView(widget());
         // |childFrameView| is in another document, which could be
         // missing its LayoutView. TODO(jchaffraix): Ideally we should
         // not need this code.
         if (LayoutView* childLayoutView = childFrameView->layoutView()) {
-            PaintInvalidationState childViewPaintInvalidationState(*childLayoutView, paintInvalidationState);
+            PaintInvalidationState childViewPaintInvalidationState(paintInvalidationState, *childLayoutView);
             childFrameView->invalidateTreeIfNeeded(childViewPaintInvalidationState);
         }
     }
