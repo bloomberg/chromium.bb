@@ -4,121 +4,74 @@
 
 #include "mojo/public/cpp/bindings/lib/sync_handle_watcher.h"
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
-#include "base/threading/thread_local.h"
-#include "mojo/public/c/system/core.h"
 
 namespace mojo {
 namespace internal {
-namespace {
 
-base::LazyInstance<base::ThreadLocalPointer<SyncHandleWatcher>>
-    g_current_sync_handle_watcher = LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
-
-// static
-SyncHandleWatcher* SyncHandleWatcher::current() {
-  SyncHandleWatcher* result = g_current_sync_handle_watcher.Pointer()->Get();
-  if (!result) {
-    // This object will be destroyed when the current message loop goes away.
-    result = new SyncHandleWatcher();
-    DCHECK_EQ(result, g_current_sync_handle_watcher.Pointer()->Get());
-  }
-  return result;
-}
-
-bool SyncHandleWatcher::RegisterHandle(const Handle& handle,
-                                       MojoHandleSignals handle_signals,
-                                       const HandleCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (ContainsKey(handles_, handle))
-    return false;
-
-  MojoResult result = MojoAddHandle(wait_set_handle_.get().value(),
-                                    handle.value(), handle_signals);
-  if (result != MOJO_RESULT_OK)
-    return false;
-
-  handles_[handle] = callback;
-  return true;
-}
-
-void SyncHandleWatcher::UnregisterHandle(const Handle& handle) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(ContainsKey(handles_, handle));
-
-  MojoResult result =
-      MojoRemoveHandle(wait_set_handle_.get().value(), handle.value());
-  DCHECK_EQ(MOJO_RESULT_OK, result);
-
-  handles_.erase(handle);
-}
-
-bool SyncHandleWatcher::WatchAllHandles(const bool* should_stop[],
-                                        size_t count) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  MojoResult result;
-  uint32_t num_ready_handles;
-  MojoHandle ready_handle;
-  MojoResult ready_handle_result;
-
-  while (true) {
-    for (size_t i = 0; i < count; ++i)
-      if (*should_stop[i])
-        return true;
-    do {
-      result = Wait(wait_set_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                    MOJO_DEADLINE_INDEFINITE, nullptr);
-      if (result != MOJO_RESULT_OK)
-        return false;
-
-      // TODO(yzshen): Theoretically it can reduce sync call re-entrancy if we
-      // give priority to the handle that is waiting for sync response.
-      num_ready_handles = 1;
-      result = MojoGetReadyHandles(wait_set_handle_.get().value(),
-                                   &num_ready_handles, &ready_handle,
-                                   &ready_handle_result, nullptr);
-      if (result != MOJO_RESULT_OK && result != MOJO_RESULT_SHOULD_WAIT)
-        return false;
-    } while (result == MOJO_RESULT_SHOULD_WAIT);
-
-    const auto iter = handles_.find(Handle(ready_handle));
-    iter->second.Run(ready_handle_result);
-  };
-
-  return true;
-}
-
-SyncHandleWatcher::SyncHandleWatcher() {
-  MojoHandle handle;
-  MojoResult result = MojoCreateWaitSet(&handle);
-  CHECK_EQ(MOJO_RESULT_OK, result);
-  wait_set_handle_.reset(Handle(handle));
-  CHECK(wait_set_handle_.is_valid());
-
-  DCHECK(!g_current_sync_handle_watcher.Pointer()->Get());
-  g_current_sync_handle_watcher.Pointer()->Set(this);
-
-  base::MessageLoop::current()->AddDestructionObserver(this);
-}
+SyncHandleWatcher::SyncHandleWatcher(
+    const Handle& handle,
+    MojoHandleSignals handle_signals,
+    const SyncHandleRegistry::HandleCallback& callback)
+    : handle_(handle),
+      handle_signals_(handle_signals),
+      callback_(callback),
+      registered_(false),
+      register_request_count_(0),
+      destroyed_(new base::RefCountedData<bool>(false)) {}
 
 SyncHandleWatcher::~SyncHandleWatcher() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(handles_.empty());
-  g_current_sync_handle_watcher.Pointer()->Set(nullptr);
+  if (registered_)
+    SyncHandleRegistry::current()->UnregisterHandle(handle_);
+
+  destroyed_->data = true;
 }
 
-void SyncHandleWatcher::WillDestroyCurrentMessageLoop() {
+void SyncHandleWatcher::AllowWokenUpBySyncWatchOnSameThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(this, g_current_sync_handle_watcher.Pointer()->Get());
+  IncrementRegisterCount();
+}
 
-  base::MessageLoop::current()->RemoveDestructionObserver(this);
-  delete this;
+bool SyncHandleWatcher::SyncWatch(const bool* should_stop) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  IncrementRegisterCount();
+  if (!registered_) {
+    DecrementRegisterCount();
+    return false;
+  }
+
+  // This object may be destroyed during the WatchAllHandles() call. So we have
+  // to preserve the boolean that WatchAllHandles uses.
+  auto destroyed = destroyed_;
+  const bool* should_stop_array[] = {should_stop, &destroyed->data};
+  bool result =
+      SyncHandleRegistry::current()->WatchAllHandles(should_stop_array, 2);
+
+  // This object has been destroyed.
+  if (destroyed->data)
+    return false;
+
+  DecrementRegisterCount();
+  return result;
+}
+
+void SyncHandleWatcher::IncrementRegisterCount() {
+  register_request_count_++;
+  if (!registered_) {
+    registered_ = SyncHandleRegistry::current()->RegisterHandle(
+        handle_, handle_signals_, callback_);
+  }
+}
+
+void SyncHandleWatcher::DecrementRegisterCount() {
+  DCHECK_GT(register_request_count_, 0u);
+
+  register_request_count_--;
+  if (register_request_count_ == 0 && registered_) {
+    SyncHandleRegistry::current()->UnregisterHandle(handle_);
+    registered_ = false;
+  }
 }
 
 }  // namespace internal

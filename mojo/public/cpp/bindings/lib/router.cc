@@ -124,7 +124,7 @@ Router::Router(ScopedMessagePipeHandle message_pipe,
       weak_factory_(this) {
   filters_.SetSink(&thunk_);
   if (expects_sync_requests)
-    connector_.RegisterSyncHandleWatch();
+    connector_.AllowWokenUpBySyncWatchOnSameThread();
   connector_.set_incoming_receiver(filters_.GetHead());
   connector_.set_connection_error_handler([this]() { OnConnectionError(); });
 }
@@ -156,16 +156,13 @@ bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
     return true;
   }
 
-  if (!connector_.RegisterSyncHandleWatch())
-    return false;
-
   bool response_received = false;
   scoped_ptr<MessageReceiver> sync_responder(responder);
   sync_responses_.insert(std::make_pair(
       request_id, make_scoped_ptr(new SyncResponseInfo(&response_received))));
 
   base::WeakPtr<Router> weak_self = weak_factory_.GetWeakPtr();
-  bool result = connector_.RunSyncHandleWatch(&response_received);
+  bool result = connector_.SyncWatch(&response_received);
   // Make sure that this instance hasn't been destroyed.
   if (weak_self) {
     DCHECK(ContainsKey(sync_responses_, request_id));
@@ -176,8 +173,6 @@ bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
       ignore_result(sync_responder->Accept(response.get()));
     }
     sync_responses_.erase(iter);
-
-    connector_.UnregisterSyncHandleWatch();
   }
 
   // Return true means that we take ownership of |responder|.
@@ -286,13 +281,22 @@ bool Router::HandleMessageInternal(Message* message) {
 }
 
 void Router::OnConnectionError() {
-  DCHECK(!encountered_error_);
+  if (encountered_error_)
+    return;
 
   if (!pending_messages_.empty()) {
     // After all the pending messages are processed, we will check whether an
     // error has been encountered and run the user's connection error handler
     // if necessary.
     DCHECK(pending_task_for_messages_);
+    return;
+  }
+
+  if (connector_.during_sync_handle_watcher_callback()) {
+    // We don't want the error handler to reenter an ongoing sync call.
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&Router::OnConnectionError, weak_factory_.GetWeakPtr()));
     return;
   }
 

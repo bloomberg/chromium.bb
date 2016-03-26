@@ -72,6 +72,8 @@ source_set("bindings") {
     "lib/serialization_forward.h",
     "lib/string_serialization.cc",
     "lib/string_serialization.h",
+    "lib/sync_handle_registry.cc",
+    "lib/sync_handle_registry.h",
     "lib/sync_handle_watcher.cc",
     "lib/sync_handle_watcher.h",
     "lib/union_accessor.h",

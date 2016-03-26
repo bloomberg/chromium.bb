@@ -5,61 +5,63 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_SYNC_HANDLE_WATCHER_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_SYNC_HANDLE_WATCHER_H_
 
-#include <unordered_map>
-
-#include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/lib/sync_handle_registry.h"
 #include "mojo/public/cpp/system/core.h"
 
 namespace mojo {
 namespace internal {
 
-// SyncHandleWatcher is used to support sync methods. While a sync call is
-// waiting for response, we would like incoming sync method requests on the same
-// thread to be able to reenter. We also would like master endpoints to continue
-// dispatching messages for associated endpoints on different threads.
-// Therefore, SyncHandleWatcher is used as thread-local storage to register all
-// handles that need to be watched while waiting for sync call responses.
+// SyncHandleWatcher supports watching a handle synchronously. It also supports
+// registering the handle with a thread-local storage (SyncHandleRegistry), so
+// that when other SyncHandleWatcher instances on the same thread perform sync
+// handle watching, this handle will be watched together.
+//
+// SyncHandleWatcher is used for sync methods. While a sync call is waiting for
+// response, we would like to block the thread. On the other hand, we need
+// incoming sync method requests on the same thread to be able to reenter. We
+// also need master interface endpoints to continue dispatching messages for
+// associated endpoints on different threads.
 //
 // This class is not thread safe.
-class SyncHandleWatcher : public base::MessageLoop::DestructionObserver {
+class SyncHandleWatcher {
  public:
-  // Returns a thread-local object.
-  static SyncHandleWatcher* current();
+  // Note: |handle| must outlive this object.
+  SyncHandleWatcher(const Handle& handle,
+                    MojoHandleSignals handle_signals,
+                    const SyncHandleRegistry::HandleCallback& callback);
 
-  using HandleCallback = base::Callback<void(MojoResult)>;
-  bool RegisterHandle(const Handle& handle,
-                      MojoHandleSignals handle_signals,
-                      const HandleCallback& callback);
+  ~SyncHandleWatcher();
 
-  void UnregisterHandle(const Handle& handle);
+  // Registers |handle_| with SyncHandleRegistry, so that when others perform
+  // sync handle watching on the same thread, |handle_| will be watched
+  // together.
+  void AllowWokenUpBySyncWatchOnSameThread();
 
-  // Waits on all the registered handles and runs callbacks synchronously for
-  // those ready handles.
-  // The method:
-  //   - returns true when any element of |should_stop| is set to true;
-  //   - returns false when any error occurs.
-  bool WatchAllHandles(const bool* should_stop[], size_t count);
+  // Waits on |handle_| plus all handles registered with SyncHandleRegistry and
+  // runs callbacks synchronously for those ready handles.
+  // This method:
+  //   - returns true when |should_stop| is set to true;
+  //   - return false when any error occurs, including this object being
+  //     destroyed during a callback.
+  bool SyncWatch(const bool* should_stop);
 
  private:
-  struct HandleHasher {
-    size_t operator()(const Handle& handle) const {
-      return std::hash<uint32_t>()(static_cast<uint32_t>(handle.value()));
-    }
-  };
-  using HandleMap = std::unordered_map<Handle, HandleCallback, HandleHasher>;
+  void IncrementRegisterCount();
+  void DecrementRegisterCount();
 
-  SyncHandleWatcher();
-  ~SyncHandleWatcher() override;
+  const Handle handle_;
+  const MojoHandleSignals handle_signals_;
+  SyncHandleRegistry::HandleCallback callback_;
 
-  // base::MessageLoop::DestructionObserver implementation:
-  void WillDestroyCurrentMessageLoop() override;
+  // Whether |handle_| has been registered with SyncHandleRegistry.
+  bool registered_;
+  // If non-zero, |handle_| should be registered with SyncHandleRegistry.
+  size_t register_request_count_;
 
-  HandleMap handles_;
-
-  ScopedHandle wait_set_handle_;
+  scoped_refptr<base::RefCountedData<bool>> destroyed_;
 
   base::ThreadChecker thread_checker_;
 

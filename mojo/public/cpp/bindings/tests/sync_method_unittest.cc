@@ -366,13 +366,19 @@ TEST_F(SyncMethodTest, QueuedMessagesProcessedBeforeErrorNotification) {
       });
 
   bool async_echo_response_dispatched = false;
+  bool connection_error_dispatched = false;
   base::RunLoop run_loop2;
-  ptr->AsyncEcho(123,
-                 [&async_echo_response_dispatched, &run_loop2](int32_t result) {
-                   async_echo_response_dispatched = true;
-                   EXPECT_EQ(123, result);
-                   run_loop2.Quit();
-                 });
+  ptr->AsyncEcho(
+      123, [&async_echo_response_dispatched, &connection_error_dispatched, &ptr,
+            &run_loop2](int32_t result) {
+        async_echo_response_dispatched = true;
+        // At this point, error notification should not be dispatched
+        // yet.
+        EXPECT_FALSE(connection_error_dispatched);
+        EXPECT_FALSE(ptr.encountered_error());
+        EXPECT_EQ(123, result);
+        run_loop2.Quit();
+      });
   // Run until the AsyncEcho request reaches the service side.
   run_loop1.Run();
 
@@ -386,7 +392,6 @@ TEST_F(SyncMethodTest, QueuedMessagesProcessedBeforeErrorNotification) {
         impl.binding()->Close();
       });
 
-  bool connection_error_dispatched = false;
   base::RunLoop run_loop3;
   ptr.set_connection_error_handler(
       [&connection_error_dispatched, &run_loop3]() {
@@ -408,8 +413,6 @@ TEST_F(SyncMethodTest, QueuedMessagesProcessedBeforeErrorNotification) {
   run_loop2.Run();
 
   EXPECT_TRUE(async_echo_response_dispatched);
-  ASSERT_FALSE(connection_error_dispatched);
-  EXPECT_FALSE(ptr.encountered_error());
 
   // Run until the error notification is dispatched.
   run_loop3.Run();
