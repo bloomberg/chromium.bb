@@ -46,7 +46,7 @@ class MojoShellTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(MojoShellTest, TestBrowserConnection) {
   auto test_app = MojoAppConnection::Create(
       GetUserId(), kInProcessTestMojoAppName, kBrowserMojoAppUrl);
-  TestMojoServicePtr test_service;
+  mojom::TestMojoServicePtr test_service;
   test_app->GetInterface(&test_service);
 
   base::RunLoop run_loop;
@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(MojoShellTest, TestUtilityConnection) {
   // a TestMojoApp at |kTestMojoAppUrl|.
   auto test_app = MojoAppConnection::Create(GetUserId(), kTestMojoAppUrl,
                                             kBrowserMojoAppUrl);
-  TestMojoServicePtr test_service;
+  mojom::TestMojoServicePtr test_service;
   test_app->GetInterface(&test_service);
 
   base::RunLoop run_loop;

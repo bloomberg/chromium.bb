@@ -62,7 +62,7 @@ class LayoutTestMessageFilter : public BrowserMessageFilter {
   void OnAcceptAllCookies(bool accept);
   void OnDeleteAllCookies();
   void OnSetPermission(const std::string& name,
-                       PermissionStatus status,
+                       mojom::PermissionStatus status,
                        const GURL& origin,
                        const GURL& embedding_origin);
   void OnResetPermissions();

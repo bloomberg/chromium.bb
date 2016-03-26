@@ -1108,7 +1108,7 @@ void RenderProcessHostImpl::RegisterMojoServices() {
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(
-    mojo::InterfaceRequest<StoragePartitionService> request) {
+    mojo::InterfaceRequest<mojom::StoragePartitionService> request) {
   // DO NOT REMOVE THIS COMMAND LINE CHECK WITHOUT SECURITY REVIEW!
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kMojoLocalStorage)) {

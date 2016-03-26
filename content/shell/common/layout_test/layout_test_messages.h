@@ -14,9 +14,9 @@
 
 #define IPC_MESSAGE_START LayoutTestMsgStart
 
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::PermissionStatus,
-                              content::PermissionStatus::GRANTED,
-                              content::PermissionStatus::ASK)
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::mojom::PermissionStatus,
+                              content::mojom::PermissionStatus::GRANTED,
+                              content::mojom::PermissionStatus::ASK)
 
 IPC_SYNC_MESSAGE_ROUTED1_1(LayoutTestHostMsg_ReadFileToString,
                            base::FilePath /* local path */,
@@ -38,9 +38,9 @@ IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_AcceptAllCookies,
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_DeleteAllCookies)
 IPC_MESSAGE_ROUTED4(LayoutTestHostMsg_SetPermission,
                     std::string /* name */,
-                    content::PermissionStatus /* status */,
+                    content::mojom::PermissionStatus /* status */,
                     GURL /* origin */,
-                    GURL /* embedding_origin */ )
+                    GURL /* embedding_origin */)
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_ResetPermissions)
 IPC_MESSAGE_CONTROL1(LayoutTestHostMsg_SetBluetoothAdapter,
                      std::string /* name */)

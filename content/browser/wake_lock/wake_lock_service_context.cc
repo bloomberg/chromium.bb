@@ -25,7 +25,7 @@ WakeLockServiceContext::~WakeLockServiceContext() {}
 void WakeLockServiceContext::CreateService(
     int render_process_id,
     int render_frame_id,
-    mojo::InterfaceRequest<WakeLockService> request) {
+    mojo::InterfaceRequest<mojom::WakeLockService> request) {
   new WakeLockServiceImpl(weak_factory_.GetWeakPtr(), render_process_id,
                           render_frame_id, std::move(request));
 }

@@ -22,16 +22,16 @@
 
 namespace content {
 
-class VRDeviceManager : public VRService {
+class VRDeviceManager : public mojom::VRService {
  public:
   ~VRDeviceManager() override;
 
-  static void BindRequest(mojo::InterfaceRequest<VRService> request);
+  static void BindRequest(mojo::InterfaceRequest<mojom::VRService> request);
 
   // Returns the VRDeviceManager singleton.
   static VRDeviceManager* GetInstance();
 
-  mojo::Array<VRDeviceInfoPtr> GetVRDevices();
+  mojo::Array<mojom::VRDeviceInfoPtr> GetVRDevices();
   VRDevice* GetDevice(unsigned int index);
 
  private:
@@ -47,7 +47,7 @@ class VRDeviceManager : public VRService {
   void InitializeProviders();
   void RegisterProvider(scoped_ptr<VRDeviceProvider> provider);
 
-  // VRService implementation
+  // mojom::VRService implementation
   void GetDevices(const GetDevicesCallback& callback) override;
   void GetSensorState(uint32_t index,
                       const GetSensorStateCallback& callback) override;
@@ -65,7 +65,7 @@ class VRDeviceManager : public VRService {
 
   bool vr_initialized_;
 
-  mojo::BindingSet<VRService> bindings_;
+  mojo::BindingSet<mojom::VRService> bindings_;
 
   // For testing. If true will not delete self when consumer count reaches 0.
   bool keep_alive_;

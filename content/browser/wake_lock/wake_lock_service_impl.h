@@ -15,12 +15,12 @@ namespace content {
 
 class WakeLockServiceContext;
 
-class WakeLockServiceImpl : public WakeLockService {
+class WakeLockServiceImpl : public mojom::WakeLockService {
  public:
   WakeLockServiceImpl(base::WeakPtr<WakeLockServiceContext> context,
                       int render_process_id,
                       int render_frame_id,
-                      mojo::InterfaceRequest<WakeLockService> request);
+                      mojo::InterfaceRequest<mojom::WakeLockService> request);
   ~WakeLockServiceImpl() override;
 
   // WakeLockSevice implementation.
@@ -31,7 +31,7 @@ class WakeLockServiceImpl : public WakeLockService {
   base::WeakPtr<WakeLockServiceContext> context_;
   const int render_process_id_;
   const int render_frame_id_;
-  mojo::StrongBinding<WakeLockService> binding_;
+  mojo::StrongBinding<mojom::WakeLockService> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WakeLockServiceImpl);
 };

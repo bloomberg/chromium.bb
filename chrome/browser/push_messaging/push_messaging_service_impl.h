@@ -166,7 +166,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
       const PushMessagingAppIdentifier& app_identifier,
       const content::PushSubscriptionOptions& options,
       const content::PushMessagingService::RegisterCallback& callback,
-      content::PermissionStatus permission_status);
+      content::mojom::PermissionStatus permission_status);
 
   // GetEncryptionInfo method --------------------------------------------------
 

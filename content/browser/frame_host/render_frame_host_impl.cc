@@ -1851,7 +1851,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
     // WakeLockServiceContext is owned by WebContentsImpl so it will outlive
     // this RenderFrameHostImpl, hence a raw pointer can be bound to service
     // factory callback.
-    GetServiceRegistry()->AddService<WakeLockService>(
+    GetServiceRegistry()->AddService<mojom::WakeLockService>(
         base::Bind(&WakeLockServiceContext::CreateService,
                    base::Unretained(wake_lock_service_context),
                    GetProcess()->GetID(), GetRoutingID()));
@@ -1860,7 +1860,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
   if (!permission_service_context_)
     permission_service_context_.reset(new PermissionServiceContext(this));
 
-  GetServiceRegistry()->AddService<PermissionService>(
+  GetServiceRegistry()->AddService<mojom::PermissionService>(
       base::Bind(&PermissionServiceContext::CreateService,
                  base::Unretained(permission_service_context_.get())));
 
@@ -1878,8 +1878,7 @@ void RenderFrameHostImpl::RegisterMojoServices() {
       *base::CommandLine::ForCurrentProcess();
 
   if (browser_command_line.HasSwitch(switches::kEnableWebVR)) {
-    GetServiceRegistry()->AddService<VRService>(
-        base::Bind(&VRDeviceManager::BindRequest));
+    GetServiceRegistry()->AddService(base::Bind(&VRDeviceManager::BindRequest));
   }
 #endif
 

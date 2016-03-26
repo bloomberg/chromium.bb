@@ -18,7 +18,7 @@ VRDispatcher::VRDispatcher(ServiceRegistry* service_registry)
 VRDispatcher::~VRDispatcher() {
 }
 
-VRServicePtr& VRDispatcher::GetVRServicePtr() {
+mojom::VRServicePtr& VRDispatcher::GetVRServicePtr() {
   if (!vr_service_) {
     service_registry_->ConnectToRemoteService(mojo::GetProxy(&vr_service_));
   }
@@ -46,8 +46,9 @@ void VRDispatcher::resetSensor(unsigned int index) {
   GetVRServicePtr()->ResetSensor(index);
 }
 
-void VRDispatcher::OnGetDevices(int request_id,
-                                const mojo::Array<VRDeviceInfoPtr>& devices) {
+void VRDispatcher::OnGetDevices(
+    int request_id,
+    const mojo::Array<mojom::VRDeviceInfoPtr>& devices) {
   blink::WebVector<blink::WebVRDevice> web_devices(devices.size());
 
   blink::WebVRGetDevicesCallback* callback =
@@ -64,7 +65,7 @@ void VRDispatcher::OnGetDevices(int request_id,
 }
 
 void VRDispatcher::OnGetSensorState(blink::WebHMDSensorState* state,
-                                    const VRSensorStatePtr& mojo_state) {
+                                    const mojom::VRSensorStatePtr& mojo_state) {
   *state = mojo_state.To<blink::WebHMDSensorState>();
 }
 

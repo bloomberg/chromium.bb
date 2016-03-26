@@ -597,7 +597,7 @@ BackgroundSyncContextImpl* StoragePartitionImpl::GetBackgroundSyncContext() {
 
 void StoragePartitionImpl::OpenLocalStorage(
     const url::Origin& origin,
-    mojo::InterfaceRequest<LevelDBWrapper> request) {
+    mojo::InterfaceRequest<mojom::LevelDBWrapper> request) {
   dom_storage_context_->OpenLocalStorage(origin, std::move(request));
 }
 
@@ -891,7 +891,7 @@ BrowserContext* StoragePartitionImpl::browser_context() const {
 }
 
 void StoragePartitionImpl::Bind(
-    mojo::InterfaceRequest<StoragePartitionService> request) {
+    mojo::InterfaceRequest<mojom::StoragePartitionService> request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

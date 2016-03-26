@@ -8,14 +8,14 @@
 
 #include <algorithm>
 
-using content::VRVector3Ptr;
-using content::VRVector4Ptr;
-using content::VRRectPtr;
-using content::VRFieldOfViewPtr;
-using content::VREyeParametersPtr;
-using content::VRHMDInfoPtr;
-using content::VRDeviceInfoPtr;
-using content::VRSensorStatePtr;
+using content::mojom::VRVector3Ptr;
+using content::mojom::VRVector4Ptr;
+using content::mojom::VRRectPtr;
+using content::mojom::VRFieldOfViewPtr;
+using content::mojom::VREyeParametersPtr;
+using content::mojom::VRHMDInfoPtr;
+using content::mojom::VRDeviceInfoPtr;
+using content::mojom::VRSensorStatePtr;
 
 namespace mojo {
 

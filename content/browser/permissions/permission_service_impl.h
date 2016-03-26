@@ -16,14 +16,14 @@ namespace content {
 
 enum class PermissionType;
 
-// Implements the PermissionService Mojo interface.
+// Implements the mojom::PermissionService Mojo interface.
 // This service can be created from a RenderFrameHost or a RenderProcessHost.
 // It is owned by a PermissionServiceContext.
 // It receives at PermissionServiceContext instance when created which allows it
 // to have some information about the current context. That enables the service
 // to know whether it can show UI and have knowledge of the associated
 // WebContents for example.
-class PermissionServiceImpl : public PermissionService {
+class PermissionServiceImpl : public mojom::PermissionService {
  public:
   ~PermissionServiceImpl() override;
 
@@ -35,13 +35,15 @@ class PermissionServiceImpl : public PermissionService {
  protected:
   friend PermissionServiceContext;
 
-  PermissionServiceImpl(PermissionServiceContext* context,
-                        mojo::InterfaceRequest<PermissionService> request);
+  PermissionServiceImpl(
+      PermissionServiceContext* context,
+      mojo::InterfaceRequest<mojom::PermissionService> request);
 
  private:
-  using PermissionStatusCallback = mojo::Callback<void(PermissionStatus)>;
+  using PermissionStatusCallback =
+      mojo::Callback<void(mojom::PermissionStatus)>;
   using PermissionsStatusCallback =
-      mojo::Callback<void(mojo::Array<PermissionStatus>)>;
+      mojo::Callback<void(mojo::Array<mojom::PermissionStatus>)>;
 
   struct PendingRequest {
     PendingRequest(const PermissionsStatusCallback& callback,
@@ -69,47 +71,47 @@ class PermissionServiceImpl : public PermissionService {
   using SubscriptionsMap = IDMap<PendingSubscription, IDMapOwnPointer>;
 
   // PermissionService.
-  void HasPermission(PermissionName permission,
+  void HasPermission(mojom::PermissionName permission,
                      const mojo::String& origin,
                      const PermissionStatusCallback& callback) override;
-  void RequestPermission(PermissionName permission,
+  void RequestPermission(mojom::PermissionName permission,
                          const mojo::String& origin,
                          const PermissionStatusCallback& callback) override;
-  void RequestPermissions(mojo::Array<PermissionName> permissions,
+  void RequestPermissions(mojo::Array<mojom::PermissionName> permissions,
                           const mojo::String& origin,
                           const PermissionsStatusCallback& callback) override;
-  void RevokePermission(PermissionName permission,
+  void RevokePermission(mojom::PermissionName permission,
                         const mojo::String& origin,
                         const PermissionStatusCallback& callback) override;
   void GetNextPermissionChange(
-      PermissionName permission,
+      mojom::PermissionName permission,
       const mojo::String& origin,
-      PermissionStatus last_known_status,
+      mojom::PermissionStatus last_known_status,
       const PermissionStatusCallback& callback) override;
 
   void OnConnectionError();
 
-  void OnRequestPermissionResponse(
-      int pending_request_id,
-      PermissionStatus status);
+  void OnRequestPermissionResponse(int pending_request_id,
+                                   mojom::PermissionStatus status);
   void OnRequestPermissionsResponse(
       int pending_request_id,
-      const std::vector<PermissionStatus>& result);
+      const std::vector<mojom::PermissionStatus>& result);
 
-  PermissionStatus GetPermissionStatusFromName(PermissionName permission,
-                                               const GURL& origin);
-  PermissionStatus GetPermissionStatusFromType(PermissionType type,
-                                               const GURL& origin);
+  mojom::PermissionStatus GetPermissionStatusFromName(
+      mojom::PermissionName permission,
+      const GURL& origin);
+  mojom::PermissionStatus GetPermissionStatusFromType(PermissionType type,
+                                                      const GURL& origin);
   void ResetPermissionStatus(PermissionType type, const GURL& origin);
 
   void OnPermissionStatusChanged(int pending_subscription_id,
-                                 PermissionStatus status);
+                                 mojom::PermissionStatus status);
 
   RequestsMap pending_requests_;
   SubscriptionsMap pending_subscriptions_;
   // context_ owns |this|.
   PermissionServiceContext* context_;
-  mojo::Binding<PermissionService> binding_;
+  mojo::Binding<mojom::PermissionService> binding_;
   base::WeakPtrFactory<PermissionServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionServiceImpl);

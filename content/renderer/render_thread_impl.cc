@@ -1131,7 +1131,7 @@ void RenderThreadImpl::RegisterPendingRenderFrameConnect(
   CHECK(result.second) << "Inserting a duplicate item.";
 }
 
-StoragePartitionService* RenderThreadImpl::GetStoragePartitionService() {
+mojom::StoragePartitionService* RenderThreadImpl::GetStoragePartitionService() {
   return storage_partition_service_.get();
 }
 

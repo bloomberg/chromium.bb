@@ -897,7 +897,8 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // response once it has started.
   scoped_ptr<StreamHandle> stream_handle_;
 
-  // Context shared for each PermissionService instance created for this RFH.
+  // Context shared for each mojom::PermissionService instance created for this
+  // RFH.
   scoped_ptr<PermissionServiceContext> permission_service_context_;
 
   // The frame's Mojo Shell service.

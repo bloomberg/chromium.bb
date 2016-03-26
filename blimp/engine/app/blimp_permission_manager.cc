@@ -21,8 +21,8 @@ int BlimpPermissionManager::RequestPermission(
     content::PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& origin,
-    const base::Callback<void(content::PermissionStatus)>& callback) {
-  callback.Run(content::PermissionStatus::DENIED);
+    const base::Callback<void(content::mojom::PermissionStatus)>& callback) {
+  callback.Run(content::mojom::PermissionStatus::DENIED);
   return kNoPendingOperation;
 }
 
@@ -30,10 +30,10 @@ int BlimpPermissionManager::RequestPermissions(
     const std::vector<content::PermissionType>& permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<void(const std::vector<content::PermissionStatus>&)>&
-        callback) {
-  callback.Run(std::vector<content::PermissionStatus>(
-      permission.size(), content::PermissionStatus::DENIED));
+    const base::Callback<
+        void(const std::vector<content::mojom::PermissionStatus>&)>& callback) {
+  callback.Run(std::vector<content::mojom::PermissionStatus>(
+      permission.size(), content::mojom::PermissionStatus::DENIED));
   return kNoPendingOperation;
 }
 
@@ -43,11 +43,11 @@ void BlimpPermissionManager::ResetPermission(content::PermissionType permission,
                                              const GURL& requesting_origin,
                                              const GURL& embedding_origin) {}
 
-content::PermissionStatus BlimpPermissionManager::GetPermissionStatus(
+content::mojom::PermissionStatus BlimpPermissionManager::GetPermissionStatus(
     content::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
-  return content::PermissionStatus::DENIED;
+  return content::mojom::PermissionStatus::DENIED;
 }
 
 void BlimpPermissionManager::RegisterPermissionUsage(
@@ -59,7 +59,7 @@ int BlimpPermissionManager::SubscribePermissionStatusChange(
     content::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    const base::Callback<void(content::PermissionStatus)>& callback) {
+    const base::Callback<void(content::mojom::PermissionStatus)>& callback) {
   return -1;
 }
 

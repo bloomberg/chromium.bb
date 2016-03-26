@@ -35,7 +35,7 @@ class MidiDispatcher : public RenderFrameObserver,
       const blink::WebMIDIPermissionRequest& request) override;
 
   // Permission for using MIDI system has been set.
-  void OnPermissionSet(int request_id, PermissionStatus status);
+  void OnPermissionSet(int request_id, mojom::PermissionStatus status);
 
   // Each WebMIDIPermissionRequest object is valid until
   // cancelSysexPermissionRequest() is called with the object, or used to call
@@ -43,7 +43,7 @@ class MidiDispatcher : public RenderFrameObserver,
   typedef IDMap<blink::WebMIDIPermissionRequest, IDMapOwnPointer> Requests;
   Requests requests_;
 
-  PermissionServicePtr permission_service_;
+  mojom::PermissionServicePtr permission_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiDispatcher);
 };

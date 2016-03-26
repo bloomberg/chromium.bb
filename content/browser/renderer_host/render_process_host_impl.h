@@ -70,7 +70,10 @@ class RenderWidgetHostImpl;
 class RenderWidgetHostViewFrameSubscriber;
 class StoragePartition;
 class StoragePartitionImpl;
+
+namespace mojom {
 class StoragePartitionService;
+}
 
 typedef base::Thread* (*RendererMainThreadFactoryFunction)(
     const InProcessChildThreadParams& params);
@@ -304,7 +307,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void RegisterMojoServices();
 
   void CreateStoragePartitionService(
-      mojo::InterfaceRequest<StoragePartitionService> request);
+      mojo::InterfaceRequest<mojom::StoragePartitionService> request);
 
   // Control message handlers.
   void OnShutdownRequest();
@@ -488,7 +491,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // for UMA.
   int max_worker_count_;
 
-  // Context shared for each PermissionService instance created for this RPH.
+  // Context shared for each mojom::PermissionService instance created for this
+  // RPH.
   scoped_ptr<PermissionServiceContext> permission_service_context_;
 
   // This is a set of all subscription targets valuebuffers in the GPU process

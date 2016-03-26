@@ -39,13 +39,13 @@ static_assert(sizeof(kAuthentication) == 12,
               "The fake authentication key must be at least 12 bytes in size.");
 
 blink::WebPushPermissionStatus ToWebPushPermissionStatus(
-    PermissionStatus status) {
+    mojom::PermissionStatus status) {
   switch (status) {
-    case PermissionStatus::GRANTED:
+    case mojom::PermissionStatus::GRANTED:
       return blink::WebPushPermissionStatusGranted;
-    case PermissionStatus::DENIED:
+    case mojom::PermissionStatus::DENIED:
       return blink::WebPushPermissionStatusDenied;
-    case PermissionStatus::ASK:
+    case mojom::PermissionStatus::ASK:
       return blink::WebPushPermissionStatusPrompt;
   }
 

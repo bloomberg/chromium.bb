@@ -13,7 +13,10 @@
 
 namespace content {
 class LocalStorageCachedArea;
+
+namespace mojom {
 class StoragePartitionService;
+}
 
 // Keeps a map of all the LocalStorageCachedArea objects in a renderer. This is
 // needed because we can have n LocalStorageArea objects for the same origin but
@@ -22,7 +25,7 @@ class StoragePartitionService;
 class LocalStorageCachedAreas {
  public:
   explicit LocalStorageCachedAreas(
-      StoragePartitionService* storage_partition_service);
+      mojom::StoragePartitionService* storage_partition_service);
   ~LocalStorageCachedAreas();
 
   // Returns, creating if necessary, a cached storage area for the given origin.
@@ -33,7 +36,7 @@ class LocalStorageCachedAreas {
   void CacheAreaClosed(LocalStorageCachedArea* cached_area);
 
  private:
-  StoragePartitionService* const storage_partition_service_;
+  mojom::StoragePartitionService* const storage_partition_service_;
 
   // Maps from an origin to its LocalStorageCachedArea object. The object owns
   // itself.

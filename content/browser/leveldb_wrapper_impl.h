@@ -20,7 +20,7 @@ namespace content {
 // 2) Informs an observer when the given prefix' values are modified by another
 //    process.
 // 3) Throttles requests to avoid overwhelming the disk.
-class LevelDBWrapperImpl : public LevelDBWrapper {
+class LevelDBWrapperImpl : public mojom::LevelDBWrapper {
  public:
   // |no_bindings_callback| will be called when this object has no more
   // bindings.
@@ -29,7 +29,7 @@ class LevelDBWrapperImpl : public LevelDBWrapper {
                      const base::Closure& no_bindings_callback);
   ~LevelDBWrapperImpl() override;
 
-  void Bind(LevelDBWrapperRequest request);
+  void Bind(mojom::LevelDBWrapperRequest request);
 
  private:
   // LevelDBWrapperImpl:
@@ -40,17 +40,17 @@ class LevelDBWrapperImpl : public LevelDBWrapper {
   void Delete(mojo::Array<uint8_t> key,
               const mojo::String& source,
               const DeleteCallback& callback) override;
-  void DeleteAll(LevelDBObserverPtr observer,
+  void DeleteAll(mojom::LevelDBObserverPtr observer,
                  const mojo::String& source,
                  const DeleteAllCallback& callback) override;
   void Get(mojo::Array<uint8_t> key, const GetCallback& callback) override;
-  void GetAll(LevelDBObserverPtr observer,
+  void GetAll(mojom::LevelDBObserverPtr observer,
               const GetAllCallback& callback) override;
 
   void OnConnectionError();
 
   std::string prefix_;
-  mojo::BindingSet<LevelDBWrapper> bindings_;
+  mojo::BindingSet<mojom::LevelDBWrapper> bindings_;
   base::Closure no_bindings_callback_;
   leveldb::LevelDBDatabase* database_;
 

@@ -18,8 +18,8 @@ namespace content {
 
 struct LayoutTestPermissionManager::Subscription {
   PermissionDescription permission;
-  base::Callback<void(content::PermissionStatus)> callback;
-  PermissionStatus current_value;
+  base::Callback<void(content::mojom::PermissionStatus)> callback;
+  mojom::PermissionStatus current_value;
 };
 
 LayoutTestPermissionManager::PermissionDescription::PermissionDescription(
@@ -65,7 +65,7 @@ int LayoutTestPermissionManager::RequestPermission(
     PermissionType permission,
     RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<void(PermissionStatus)>& callback) {
+    const base::Callback<void(mojom::PermissionStatus)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   callback.Run(GetPermissionStatus(
@@ -79,11 +79,11 @@ int LayoutTestPermissionManager::RequestPermissions(
     const std::vector<PermissionType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<void(
-        const std::vector<PermissionStatus>&)>& callback) {
+    const base::Callback<void(const std::vector<mojom::PermissionStatus>&)>&
+        callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  std::vector<PermissionStatus> result(permissions.size());
+  std::vector<mojom::PermissionStatus> result(permissions.size());
   const GURL& embedding_origin =
       WebContents::FromRenderFrameHost(render_frame_host)
           ->GetLastCommittedURL().GetOrigin();
@@ -115,7 +115,7 @@ void LayoutTestPermissionManager::ResetPermission(
   permissions_.erase(it);
 }
 
-PermissionStatus LayoutTestPermissionManager::GetPermissionStatus(
+mojom::PermissionStatus LayoutTestPermissionManager::GetPermissionStatus(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
@@ -127,7 +127,7 @@ PermissionStatus LayoutTestPermissionManager::GetPermissionStatus(
   auto it = permissions_.find(
       PermissionDescription(permission, requesting_origin, embedding_origin));
   if (it == permissions_.end())
-    return PermissionStatus::DENIED;
+    return mojom::PermissionStatus::DENIED;
   return it->second;
 }
 
@@ -142,7 +142,7 @@ int LayoutTestPermissionManager::SubscribePermissionStatusChange(
     PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    const base::Callback<void(PermissionStatus)>& callback) {
+    const base::Callback<void(mojom::PermissionStatus)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Subscription* subscription = new Subscription();
@@ -166,7 +166,7 @@ void LayoutTestPermissionManager::UnsubscribePermissionStatusChange(
 }
 
 void LayoutTestPermissionManager::SetPermission(PermissionType permission,
-                                                PermissionStatus status,
+                                                mojom::PermissionStatus status,
                                                 const GURL& origin,
                                                 const GURL& embedding_origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -177,8 +177,9 @@ void LayoutTestPermissionManager::SetPermission(PermissionType permission,
 
   auto it = permissions_.find(description);
   if (it == permissions_.end()) {
-    permissions_.insert(std::pair<PermissionDescription, PermissionStatus>(
-        description, status));
+    permissions_.insert(
+        std::pair<PermissionDescription, mojom::PermissionStatus>(description,
+                                                                  status));
   } else {
     it->second = status;
   }
@@ -195,7 +196,7 @@ void LayoutTestPermissionManager::ResetPermissions() {
 
 void LayoutTestPermissionManager::OnPermissionChanged(
     const PermissionDescription& permission,
-    PermissionStatus status) {
+    mojom::PermissionStatus status) {
   std::list<base::Closure> callbacks;
 
   for (SubscriptionsMap::iterator iter(&subscriptions_);

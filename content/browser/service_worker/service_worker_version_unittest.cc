@@ -162,9 +162,9 @@ base::Time GetYesterday() {
          base::TimeDelta::FromSeconds(1);
 }
 
-class TestMojoServiceImpl : public TestMojoService {
+class TestMojoServiceImpl : public mojom::TestMojoService {
  public:
-  static void Create(mojo::InterfaceRequest<TestMojoService> request) {
+  static void Create(mojo::InterfaceRequest<mojom::TestMojoService> request) {
     new TestMojoServiceImpl(std::move(request));
   }
 
@@ -177,10 +177,11 @@ class TestMojoServiceImpl : public TestMojoService {
   }
 
  private:
-  explicit TestMojoServiceImpl(mojo::InterfaceRequest<TestMojoService> request)
+  explicit TestMojoServiceImpl(
+      mojo::InterfaceRequest<mojom::TestMojoService> request)
       : binding_(this, std::move(request)) {}
 
-  mojo::StrongBinding<TestMojoService> binding_;
+  mojo::StrongBinding<mojom::TestMojoService> binding_;
 };
 
 }  // namespace
@@ -1198,8 +1199,8 @@ TEST_F(ServiceWorkerVersionWithMojoTest, MojoService) {
   int request_id = version_->StartRequest(
       ServiceWorkerMetrics::EventType::SYNC,
       CreateReceiverOnCurrentThread(&status, runner->QuitClosure()));
-  base::WeakPtr<TestMojoService> service =
-      version_->GetMojoServiceForRequest<TestMojoService>(request_id);
+  base::WeakPtr<mojom::TestMojoService> service =
+      version_->GetMojoServiceForRequest<mojom::TestMojoService>(request_id);
   service->DoSomething(runner->QuitClosure());
   runner->Run();
 
@@ -1223,8 +1224,8 @@ TEST_F(ServiceWorkerVersionTest, NonExistentMojoService) {
   int request_id = version_->StartRequest(
       ServiceWorkerMetrics::EventType::SYNC,
       CreateReceiverOnCurrentThread(&status, runner->QuitClosure()));
-  base::WeakPtr<TestMojoService> service =
-      version_->GetMojoServiceForRequest<TestMojoService>(request_id);
+  base::WeakPtr<mojom::TestMojoService> service =
+      version_->GetMojoServiceForRequest<mojom::TestMojoService>(request_id);
   service->DoSomething(runner->QuitClosure());
   runner->Run();
 

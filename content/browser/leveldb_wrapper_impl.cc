@@ -19,7 +19,7 @@ LevelDBWrapperImpl::LevelDBWrapperImpl(
       &LevelDBWrapperImpl::OnConnectionError, base::Unretained(this)));
 }
 
-void LevelDBWrapperImpl::Bind(LevelDBWrapperRequest request) {
+void LevelDBWrapperImpl::Bind(mojom::LevelDBWrapperRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
@@ -40,7 +40,7 @@ void LevelDBWrapperImpl::Delete(mojo::Array<uint8_t> key,
   callback.Run(leveldb::DatabaseError::NOT_SUPPORTED);
 }
 
-void LevelDBWrapperImpl::DeleteAll(LevelDBObserverPtr observer,
+void LevelDBWrapperImpl::DeleteAll(mojom::LevelDBObserverPtr observer,
                                    const mojo::String& source,
                                    const DeleteAllCallback& callback) {
   // TODO(jam): store observer and call it when changes occur.
@@ -54,12 +54,12 @@ void LevelDBWrapperImpl::Get(mojo::Array<uint8_t> key,
   callback.Run(leveldb::DatabaseError::NOT_SUPPORTED, mojo::Array<uint8_t>());
 }
 
-void LevelDBWrapperImpl::GetAll(LevelDBObserverPtr observer,
+void LevelDBWrapperImpl::GetAll(mojom::LevelDBObserverPtr observer,
                                 const GetAllCallback& callback) {
   // TODO(jam): store observer and call it when changes occur.
   NOTIMPLEMENTED();
   callback.Run(leveldb::DatabaseError::NOT_SUPPORTED,
-               mojo::Array<KeyValuePtr>());
+               mojo::Array<mojom::KeyValuePtr>());
 }
 
 void LevelDBWrapperImpl::OnConnectionError() {

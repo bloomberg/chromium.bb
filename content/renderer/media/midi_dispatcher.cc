@@ -34,10 +34,10 @@ void MidiDispatcher::requestPermission(const WebMIDIPermissionRequest& request,
   int permission_request_id =
       requests_.Add(new WebMIDIPermissionRequest(request));
 
-  PermissionName permission_name =
+  mojom::PermissionName permission_name =
       (options.sysex == WebMIDIOptions::SysexPermission::WithSysex)
-          ? PermissionName::MIDI_SYSEX
-          : PermissionName::MIDI;
+          ? mojom::PermissionName::MIDI_SYSEX
+          : mojom::PermissionName::MIDI;
 
   permission_service_->RequestPermission(
       permission_name, request.getSecurityOrigin().toString().utf8(),
@@ -56,12 +56,13 @@ void MidiDispatcher::cancelPermissionRequest(
   }
 }
 
-void MidiDispatcher::OnPermissionSet(int request_id, PermissionStatus status) {
+void MidiDispatcher::OnPermissionSet(int request_id,
+                                     mojom::PermissionStatus status) {
   // |request| can be NULL when the request is canceled.
   WebMIDIPermissionRequest* request = requests_.Lookup(request_id);
   if (!request)
     return;
-  request->setIsAllowed(status == PermissionStatus::GRANTED);
+  request->setIsAllowed(status == mojom::PermissionStatus::GRANTED);
   requests_.Remove(request_id);
 }
 

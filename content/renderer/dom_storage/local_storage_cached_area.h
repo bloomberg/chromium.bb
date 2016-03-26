@@ -19,21 +19,26 @@ namespace content {
 class DOMStorageMap;
 class LocalStorageArea;
 class LocalStorageCachedAreas;
+
+namespace mojom {
 class StoragePartitionService;
+}
 
 // An in-process implementation of LocalStorage using a LevelDB Mojo service.
 // Maintains a complete cache of the origin's Map of key/value pairs for fast
 // access. The cache is primed on first access and changes are written to the
 // backend through the level db interface pointer. Mutations originating in
-// other processes are applied to the cache via LevelDBObserver callbacks.
+// other processes are applied to the cache via mojom::LevelDBObserver
+// callbacks.
 // There is one LocalStorageCachedArea for potentially many LocalStorageArea
 // objects.
-class LocalStorageCachedArea : public LevelDBObserver,
+class LocalStorageCachedArea : public mojom::LevelDBObserver,
                                public base::RefCounted<LocalStorageCachedArea> {
  public:
-  LocalStorageCachedArea(const url::Origin& origin,
-                         StoragePartitionService* storage_partition_service,
-                         LocalStorageCachedAreas* cached_areas);
+  LocalStorageCachedArea(
+      const url::Origin& origin,
+      mojom::StoragePartitionService* storage_partition_service,
+      LocalStorageCachedAreas* cached_areas);
 
   // These correspond to blink::WebStorageArea.
   unsigned GetLength();
@@ -85,8 +90,8 @@ class LocalStorageCachedArea : public LevelDBObserver,
   url::Origin origin_;
   scoped_refptr<DOMStorageMap> map_;
   std::map<base::string16, int> ignore_key_mutations_;
-  LevelDBWrapperPtr leveldb_;
-  mojo::Binding<LevelDBObserver> binding_;
+  mojom::LevelDBWrapperPtr leveldb_;
+  mojo::Binding<mojom::LevelDBObserver> binding_;
   LocalStorageCachedAreas* cached_areas_;
   std::map<std::string, LocalStorageArea*> areas_;
 

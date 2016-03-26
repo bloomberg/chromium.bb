@@ -31,7 +31,7 @@
 namespace content {
 
 class StoragePartitionImpl : public StoragePartition,
-                             public StoragePartitionService {
+                             public mojom::StoragePartitionService {
  public:
   CONTENT_EXPORT ~StoragePartitionImpl() override;
 
@@ -64,10 +64,10 @@ class StoragePartitionImpl : public StoragePartition,
   PlatformNotificationContextImpl* GetPlatformNotificationContext() override;
   BackgroundSyncContextImpl* GetBackgroundSyncContext() override;
 
-  // StoragePartitionService interface.
+  // mojom::StoragePartitionService interface.
   void OpenLocalStorage(
       const url::Origin& origin,
-      mojo::InterfaceRequest<LevelDBWrapper> request) override;
+      mojo::InterfaceRequest<mojom::LevelDBWrapper> request) override;
 
   void ClearDataForOrigin(uint32_t remove_mask,
                           uint32_t quota_storage_remove_mask,
@@ -90,7 +90,7 @@ class StoragePartitionImpl : public StoragePartition,
   BrowserContext* browser_context() const;
 
   // Called by each renderer process once.
-  void Bind(mojo::InterfaceRequest<StoragePartitionService> request);
+  void Bind(mojo::InterfaceRequest<mojom::StoragePartitionService> request);
 
   struct DataDeletionHelper;
   struct QuotaManagedDataDeletionHelper;
@@ -206,7 +206,7 @@ class StoragePartitionImpl : public StoragePartition,
   scoped_refptr<PlatformNotificationContextImpl> platform_notification_context_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
 
-  mojo::BindingSet<StoragePartitionService> bindings_;
+  mojo::BindingSet<mojom::StoragePartitionService> bindings_;
 
   // Raw pointer that should always be valid. The BrowserContext owns the
   // StoragePartitionImplMap which then owns StoragePartitionImpl. When the

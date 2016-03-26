@@ -28,7 +28,7 @@
 namespace {
 
 void DoNothing(ContentSetting content_setting) {}
-void DoNothing2(content::PermissionStatus status) {}
+void DoNothing2(content::mojom::PermissionStatus status) {}
 
 class TestNotificationPermissionContext : public NotificationPermissionContext {
  public:

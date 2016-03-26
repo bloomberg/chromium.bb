@@ -39,10 +39,9 @@ void UnpackSource(const mojo::String& source,
 
 LocalStorageCachedArea::LocalStorageCachedArea(
     const url::Origin& origin,
-    StoragePartitionService* storage_partition_service,
+    mojom::StoragePartitionService* storage_partition_service,
     LocalStorageCachedAreas* cached_areas)
-    : origin_(origin), binding_(this),
-      cached_areas_(cached_areas) {
+    : origin_(origin), binding_(this), cached_areas_(cached_areas) {
   storage_partition_service->OpenLocalStorage(
       origin_, mojo::GetProxy(&leveldb_));
 }
@@ -230,7 +229,7 @@ void LocalStorageCachedArea::EnsureLoaded() {
 
   base::TimeTicks before = base::TimeTicks::Now();
   leveldb::DatabaseError status = leveldb::DatabaseError::OK;
-  mojo::Array<content::KeyValuePtr> data;
+  mojo::Array<content::mojom::KeyValuePtr> data;
   leveldb_->GetAll(binding_.CreateInterfacePtrAndBind(), &status, &data);
 
   DOMStorageValuesMap values;

@@ -34,9 +34,9 @@ class NotificationPermissionDispatcher : public RenderFrameObserver {
  private:
   void OnPermissionRequestComplete(
       scoped_ptr<blink::WebNotificationPermissionCallback> callback,
-      PermissionStatus status);
+      mojom::PermissionStatus status);
 
-  PermissionServicePtr permission_service_;
+  mojom::PermissionServicePtr permission_service_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPermissionDispatcher);
 };

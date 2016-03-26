@@ -80,7 +80,7 @@ void GeolocationDispatcher::requestPermission(
   int permission_request_id = pending_permissions_->add(permissionRequest);
 
   permission_service_->RequestPermission(
-      PermissionName::GEOLOCATION,
+      mojom::PermissionName::GEOLOCATION,
       permissionRequest.getSecurityOrigin().toString().utf8(),
       base::Bind(&GeolocationDispatcher::OnPermissionSet,
                  base::Unretained(this), permission_request_id));
@@ -93,14 +93,13 @@ void GeolocationDispatcher::cancelPermissionRequest(
 }
 
 // Permission for using geolocation has been set.
-void GeolocationDispatcher::OnPermissionSet(
-    int permission_request_id,
-    PermissionStatus status) {
+void GeolocationDispatcher::OnPermissionSet(int permission_request_id,
+                                            mojom::PermissionStatus status) {
   WebGeolocationPermissionRequest permissionRequest;
   if (!pending_permissions_->remove(permission_request_id, permissionRequest))
     return;
 
-  permissionRequest.setIsAllowed(status == PermissionStatus::GRANTED);
+  permissionRequest.setIsAllowed(status == mojom::PermissionStatus::GRANTED);
 }
 
 void GeolocationDispatcher::QueryNextPosition() {

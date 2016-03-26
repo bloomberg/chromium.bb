@@ -12,24 +12,28 @@
 
 namespace content {
 
+namespace mojom {
 class PermissionService;
+}
+
 class PermissionServiceImpl;
 class RenderFrameHost;
 class RenderProcessHost;
 
 // Provides information to a PermissionService. It is used by the
-// PermissionService to handle request permission UI.
+// mojom::PermissionService to handle request permission UI.
 // There is one PermissionServiceContext per RenderFrameHost/RenderProcessHost
-// which owns it. It then owns all PermissionService associated to their owner.
+// which owns it. It then owns all mojom::PermissionService associated to their
+// owner.
 class PermissionServiceContext : public WebContentsObserver {
  public:
   explicit PermissionServiceContext(RenderFrameHost* render_frame_host);
   explicit PermissionServiceContext(RenderProcessHost* render_process_host);
   ~PermissionServiceContext() override;
 
-  void CreateService(mojo::InterfaceRequest<PermissionService> request);
+  void CreateService(mojo::InterfaceRequest<mojom::PermissionService> request);
 
-  // Called by a PermissionService identified as |service| when it has a
+  // Called by a mojom::PermissionService identified as |service| when it has a
   // connection error in order to get unregistered and killed.
   void ServiceHadConnectionError(PermissionServiceImpl* service);
 

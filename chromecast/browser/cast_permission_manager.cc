@@ -22,9 +22,9 @@ int CastPermissionManager::RequestPermission(
     content::PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& origin,
-    const base::Callback<void(content::PermissionStatus)>& callback) {
+    const base::Callback<void(content::mojom::PermissionStatus)>& callback) {
   LOG(INFO) << __FUNCTION__ << ": " << static_cast<int>(permission);
-  callback.Run(content::PermissionStatus::GRANTED);
+  callback.Run(content::mojom::PermissionStatus::GRANTED);
   return kNoPendingOperation;
 }
 
@@ -32,10 +32,10 @@ int CastPermissionManager::RequestPermissions(
     const std::vector<content::PermissionType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
-    const base::Callback<void(
-        const std::vector<content::PermissionStatus>&)>& callback) {
-  callback.Run(std::vector<content::PermissionStatus>(
-      permissions.size(), content::PermissionStatus::GRANTED));
+    const base::Callback<
+        void(const std::vector<content::mojom::PermissionStatus>&)>& callback) {
+  callback.Run(std::vector<content::mojom::PermissionStatus>(
+      permissions.size(), content::mojom::PermissionStatus::GRANTED));
   return kNoPendingOperation;
 }
 
@@ -48,12 +48,12 @@ void CastPermissionManager::ResetPermission(
     const GURL& embedding_origin) {
 }
 
-content::PermissionStatus CastPermissionManager::GetPermissionStatus(
+content::mojom::PermissionStatus CastPermissionManager::GetPermissionStatus(
     content::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
   LOG(INFO) << __FUNCTION__ << ": " << static_cast<int>(permission);
-  return content::PermissionStatus::GRANTED;
+  return content::mojom::PermissionStatus::GRANTED;
 }
 
 void CastPermissionManager::RegisterPermissionUsage(
@@ -66,7 +66,7 @@ int CastPermissionManager::SubscribePermissionStatusChange(
     content::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    const base::Callback<void(content::PermissionStatus)>& callback) {
+    const base::Callback<void(content::mojom::PermissionStatus)>& callback) {
   return kNoPendingOperation;
 }
 

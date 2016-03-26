@@ -15,46 +15,50 @@ namespace mojo {
 // and vice versa.
 
 template <>
-struct TypeConverter<blink::WebVRVector3, content::VRVector3Ptr> {
-  static blink::WebVRVector3 Convert(const content::VRVector3Ptr& input);
+struct TypeConverter<blink::WebVRVector3, content::mojom::VRVector3Ptr> {
+  static blink::WebVRVector3 Convert(const content::mojom::VRVector3Ptr& input);
 };
 
 template <>
-struct TypeConverter<blink::WebVRVector4, content::VRVector4Ptr> {
-  static blink::WebVRVector4 Convert(const content::VRVector4Ptr& input);
+struct TypeConverter<blink::WebVRVector4, content::mojom::VRVector4Ptr> {
+  static blink::WebVRVector4 Convert(const content::mojom::VRVector4Ptr& input);
 };
 
 template <>
-struct TypeConverter<blink::WebVRRect, content::VRRectPtr> {
-  static blink::WebVRRect Convert(const content::VRRectPtr& input);
+struct TypeConverter<blink::WebVRRect, content::mojom::VRRectPtr> {
+  static blink::WebVRRect Convert(const content::mojom::VRRectPtr& input);
 };
 
 template <>
-struct TypeConverter<blink::WebVRFieldOfView, content::VRFieldOfViewPtr> {
+struct TypeConverter<blink::WebVRFieldOfView,
+                     content::mojom::VRFieldOfViewPtr> {
   static blink::WebVRFieldOfView Convert(
-      const content::VRFieldOfViewPtr& input);
+      const content::mojom::VRFieldOfViewPtr& input);
 };
 
 template <>
-struct TypeConverter<blink::WebVREyeParameters, content::VREyeParametersPtr> {
+struct TypeConverter<blink::WebVREyeParameters,
+                     content::mojom::VREyeParametersPtr> {
   static blink::WebVREyeParameters Convert(
-      const content::VREyeParametersPtr& input);
+      const content::mojom::VREyeParametersPtr& input);
 };
 
 template <>
-struct TypeConverter<blink::WebVRHMDInfo, content::VRHMDInfoPtr> {
-  static blink::WebVRHMDInfo Convert(const content::VRHMDInfoPtr& input);
+struct TypeConverter<blink::WebVRHMDInfo, content::mojom::VRHMDInfoPtr> {
+  static blink::WebVRHMDInfo Convert(const content::mojom::VRHMDInfoPtr& input);
 };
 
 template <>
-struct TypeConverter<blink::WebVRDevice, content::VRDeviceInfoPtr> {
-  static blink::WebVRDevice Convert(const content::VRDeviceInfoPtr& input);
+struct TypeConverter<blink::WebVRDevice, content::mojom::VRDeviceInfoPtr> {
+  static blink::WebVRDevice Convert(
+      const content::mojom::VRDeviceInfoPtr& input);
 };
 
 template <>
-struct TypeConverter<blink::WebHMDSensorState, content::VRSensorStatePtr> {
+struct TypeConverter<blink::WebHMDSensorState,
+                     content::mojom::VRSensorStatePtr> {
   static blink::WebHMDSensorState Convert(
-      const content::VRSensorStatePtr& input);
+      const content::mojom::VRSensorStatePtr& input);
 };
 
 }  // namespace mojo

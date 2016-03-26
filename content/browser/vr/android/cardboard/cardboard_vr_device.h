@@ -20,8 +20,8 @@ class CardboardVRDevice : public VRDevice {
   explicit CardboardVRDevice(VRDeviceProvider* provider);
   ~CardboardVRDevice() override;
 
-  VRDeviceInfoPtr GetVRDevice() override;
-  VRSensorStatePtr GetSensorState() override;
+  mojom::VRDeviceInfoPtr GetVRDevice() override;
+  mojom::VRSensorStatePtr GetSensorState() override;
   void ResetSensor() override;
 
  private:

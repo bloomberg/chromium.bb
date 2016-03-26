@@ -101,7 +101,7 @@ class PermissionDispatcher : public blink::WebPermissionClient,
       scoped_ptr<blink::WebVector<blink::WebPermissionStatus>> statuses);
 
   // Helper method that returns an initialized PermissionServicePtr.
-  PermissionServicePtr& GetPermissionServicePtr();
+  mojom::PermissionServicePtr& GetPermissionServicePtr();
 
   void QueryPermissionInternal(blink::WebPermissionType type,
                                const std::string& origin,
@@ -124,24 +124,24 @@ class PermissionDispatcher : public blink::WebPermissionClient,
   // This is the callback function used for query, request and revoke.
   void OnPermissionResponse(int worker_thread_id,
                             uintptr_t callback_key,
-                            PermissionStatus status);
+                            mojom::PermissionStatus status);
   void OnRequestPermissionsResponse(
       int worker_thread_id,
       uintptr_t callback_key,
-      const mojo::Array<PermissionStatus>& status);
+      const mojo::Array<mojom::PermissionStatus>& status);
   void OnPermissionChanged(blink::WebPermissionType type,
                            const std::string& origin,
                            blink::WebPermissionObserver* observer,
-                           PermissionStatus status);
+                           mojom::PermissionStatus status);
   void OnPermissionChangedForWorker(
       int worker_thread_id,
       const base::Callback<void(blink::WebPermissionStatus)>& callback,
-      PermissionStatus status);
+      mojom::PermissionStatus status);
 
   void GetNextPermissionChange(blink::WebPermissionType type,
                                const std::string& origin,
                                blink::WebPermissionObserver* observer,
-                               PermissionStatus current_status);
+                               mojom::PermissionStatus current_status);
 
   // Pending callbacks for query(), revoke() and request() single permission.
   PermissionCallbackMap permission_callbacks_;
@@ -150,7 +150,7 @@ class PermissionDispatcher : public blink::WebPermissionClient,
   PermissionsCallbackMap permissions_callbacks_;
 
   ServiceRegistry* service_registry_;
-  PermissionServicePtr permission_service_;
+  mojom::PermissionServicePtr permission_service_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionDispatcher);
 };

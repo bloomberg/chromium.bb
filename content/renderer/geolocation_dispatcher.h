@@ -48,7 +48,8 @@ class GeolocationDispatcher
   void OnPositionUpdate(mojom::MojoGeopositionPtr geoposition);
 
   // Permission for using geolocation has been set.
-  void OnPermissionSet(int permission_request_id, PermissionStatus status);
+  void OnPermissionSet(int permission_request_id,
+                       mojom::PermissionStatus status);
 
   scoped_ptr<blink::WebGeolocationController> controller_;
 
@@ -56,7 +57,7 @@ class GeolocationDispatcher
       pending_permissions_;
   mojom::GeolocationServicePtr geolocation_service_;
   bool enable_high_accuracy_;
-  PermissionServicePtr permission_service_;
+  mojom::PermissionServicePtr permission_service_;
 };
 
 }  // namespace content

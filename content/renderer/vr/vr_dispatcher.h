@@ -33,20 +33,20 @@ class VRDispatcher : NON_EXPORTED_BASE(public blink::WebVRClient) {
 
  private:
   // Helper method that returns an initialized PermissionServicePtr.
-  VRServicePtr& GetVRServicePtr();
+  mojom::VRServicePtr& GetVRServicePtr();
 
   // Callback handlers
   void OnGetDevices(int request_id,
-                    const mojo::Array<VRDeviceInfoPtr>& devices);
+                    const mojo::Array<mojom::VRDeviceInfoPtr>& devices);
   static void OnGetSensorState(blink::WebHMDSensorState* state,
-                               const VRSensorStatePtr& mojo_state);
+                               const mojom::VRSensorStatePtr& mojo_state);
 
   // Tracks requests sent to browser to match replies with callbacks.
   // Owns callback objects.
   IDMap<blink::WebVRGetDevicesCallback, IDMapOwnPointer> pending_requests_;
 
   ServiceRegistry* service_registry_;
-  VRServicePtr vr_service_;
+  mojom::VRServicePtr vr_service_;
 
   DISALLOW_COPY_AND_ASSIGN(VRDispatcher);
 };

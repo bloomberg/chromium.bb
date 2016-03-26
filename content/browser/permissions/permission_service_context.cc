@@ -32,7 +32,7 @@ PermissionServiceContext::~PermissionServiceContext() {
 }
 
 void PermissionServiceContext::CreateService(
-    mojo::InterfaceRequest<PermissionService> request) {
+    mojo::InterfaceRequest<mojom::PermissionService> request) {
   services_.push_back(new PermissionServiceImpl(this, std::move(request)));
 }
 

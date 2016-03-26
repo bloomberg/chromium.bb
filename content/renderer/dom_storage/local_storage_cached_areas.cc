@@ -9,9 +9,8 @@
 namespace content {
 
 LocalStorageCachedAreas::LocalStorageCachedAreas(
-    StoragePartitionService* storage_partition_service)
-    : storage_partition_service_(storage_partition_service) {
-}
+    mojom::StoragePartitionService* storage_partition_service)
+    : storage_partition_service_(storage_partition_service) {}
 
 LocalStorageCachedAreas::~LocalStorageCachedAreas() {
 }

@@ -27,20 +27,21 @@ class LayoutTestPermissionManager : public PermissionManager {
       PermissionType permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      const base::Callback<void(PermissionStatus)>& callback) override;
+      const base::Callback<void(mojom::PermissionStatus)>& callback) override;
   int RequestPermissions(
       const std::vector<PermissionType>& permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      const base::Callback<void(
-          const std::vector<PermissionStatus>&)>& callback) override;
+      const base::Callback<void(const std::vector<mojom::PermissionStatus>&)>&
+          callback) override;
   void CancelPermissionRequest(int request_id) override;
   void ResetPermission(PermissionType permission,
                        const GURL& requesting_origin,
                        const GURL& embedding_origin) override;
-  PermissionStatus GetPermissionStatus(PermissionType permission,
-                                       const GURL& requesting_origin,
-                                       const GURL& embedding_origin) override;
+  mojom::PermissionStatus GetPermissionStatus(
+      PermissionType permission,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) override;
   void RegisterPermissionUsage(PermissionType permission,
                                const GURL& requesting_origin,
                                const GURL& embedding_origin) override;
@@ -48,11 +49,11 @@ class LayoutTestPermissionManager : public PermissionManager {
       PermissionType permission,
       const GURL& requesting_origin,
       const GURL& embedding_origin,
-      const base::Callback<void(PermissionStatus)>& callback) override;
+      const base::Callback<void(mojom::PermissionStatus)>& callback) override;
   void UnsubscribePermissionStatusChange(int subscription_id) override;
 
   void SetPermission(PermissionType permission,
-                     PermissionStatus status,
+                     mojom::PermissionStatus status,
                      const GURL& origin,
                      const GURL& embedding_origin);
   void ResetPermissions();
@@ -80,11 +81,11 @@ class LayoutTestPermissionManager : public PermissionManager {
   struct Subscription;
   using SubscriptionsMap = IDMap<Subscription, IDMapOwnPointer>;
   using PermissionsMap = base::hash_map<PermissionDescription,
-                                        PermissionStatus,
+                                        mojom::PermissionStatus,
                                         PermissionDescription::Hash>;
 
   void OnPermissionChanged(const PermissionDescription& permission,
-                           PermissionStatus status);
+                           mojom::PermissionStatus status);
 
   // Mutex for permissions access. Unfortunately, the permissions can be
   // accessed from the IO thread because of Notifications' synchronous IPC.

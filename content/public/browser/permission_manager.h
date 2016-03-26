@@ -37,7 +37,7 @@ class CONTENT_EXPORT PermissionManager {
       PermissionType permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      const base::Callback<void(PermissionStatus)>& callback) = 0;
+      const base::Callback<void(mojom::PermissionStatus)>& callback) = 0;
 
   // Requests multiple permissions on behalf of a frame identified by
   // render_frame_host.
@@ -53,8 +53,8 @@ class CONTENT_EXPORT PermissionManager {
       const std::vector<PermissionType>& permission,
       RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
-      const base::Callback<void(
-          const std::vector<PermissionStatus>&)>& callback) = 0;
+      const base::Callback<void(const std::vector<mojom::PermissionStatus>&)>&
+          callback) = 0;
 
   // Cancels a previous permission request specified by |request_id|. Cancelling
   // an already cancelled request or providing the |request_id|
@@ -64,7 +64,7 @@ class CONTENT_EXPORT PermissionManager {
   // Returns the permission status of a given requesting_origin/embedding_origin
   // tuple. This is not taking a RenderFrameHost because the call might happen
   // outside of a frame context.
-  virtual PermissionStatus GetPermissionStatus(
+  virtual mojom::PermissionStatus GetPermissionStatus(
       PermissionType permission,
       const GURL& requesting_origin,
       const GURL& embedding_origin) = 0;
@@ -89,7 +89,7 @@ class CONTENT_EXPORT PermissionManager {
       PermissionType permission,
       const GURL& requesting_origin,
       const GURL& embedding_origin,
-      const base::Callback<void(PermissionStatus)>& callback) = 0;
+      const base::Callback<void(mojom::PermissionStatus)>& callback) = 0;
 
   // Unregisters from permission status change notifications.
   // The |subscription_id| must match the value returned by the

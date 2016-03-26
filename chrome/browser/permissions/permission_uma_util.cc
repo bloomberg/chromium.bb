@@ -228,15 +228,15 @@ void RecordPermissionRequest(PermissionType permission,
     content::PermissionManager* manager = profile->GetPermissionManager();
     if (!manager)
       return;
-    content::PermissionStatus embedding_permission_status =
+    content::mojom::PermissionStatus embedding_permission_status =
         manager->GetPermissionStatus(permission, embedding_origin,
                                      embedding_origin);
 
     base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
         "Permissions.Requested.CrossOrigin_" +
             PermissionUtil::GetPermissionString(permission),
-        1, static_cast<int>(content::PermissionStatus::LAST),
-        static_cast<int>(content::PermissionStatus::LAST) + 1,
+        1, static_cast<int>(content::mojom::PermissionStatus::LAST),
+        static_cast<int>(content::mojom::PermissionStatus::LAST) + 1,
         base::HistogramBase::kUmaTargetedHistogramFlag);
     histogram->Add(static_cast<int>(embedding_permission_status));
   } else {

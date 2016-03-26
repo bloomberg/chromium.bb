@@ -454,7 +454,7 @@ class CONTENT_EXPORT RenderThreadImpl
       mojo::shell::mojom::InterfaceProviderRequest services,
       mojo::shell::mojom::InterfaceProviderPtr exposed_services);
 
-  StoragePartitionService* GetStoragePartitionService();
+  mojom::StoragePartitionService* GetStoragePartitionService();
 
  protected:
   RenderThreadImpl(
@@ -708,7 +708,7 @@ class CONTENT_EXPORT RenderThreadImpl
       PendingRenderFrameConnectMap;
   PendingRenderFrameConnectMap pending_render_frame_connects_;
 
-  StoragePartitionServicePtr storage_partition_service_;
+  mojom::StoragePartitionServicePtr storage_partition_service_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };

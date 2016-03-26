@@ -65,15 +65,15 @@ bool GetResource(const std::string& id,
   return true;
 }
 
-class BrowserTargetImpl : public BrowserTarget {
+class BrowserTargetImpl : public mojom::BrowserTarget {
  public:
   BrowserTargetImpl(base::RunLoop* run_loop,
-                    mojo::InterfaceRequest<BrowserTarget> request)
+                    mojo::InterfaceRequest<mojom::BrowserTarget> request)
       : run_loop_(run_loop), binding_(this, std::move(request)) {}
 
   ~BrowserTargetImpl() override {}
 
-  // BrowserTarget overrides:
+  // mojom::BrowserTarget overrides:
   void Start(const mojo::Closure& closure) override {
     closure.Run();
   }
@@ -86,7 +86,7 @@ class BrowserTargetImpl : public BrowserTarget {
   base::RunLoop* run_loop_;
 
  private:
-  mojo::Binding<BrowserTarget> binding_;
+  mojo::Binding<mojom::BrowserTarget> binding_;
   DISALLOW_COPY_AND_ASSIGN(BrowserTargetImpl);
 };
 
@@ -121,12 +121,12 @@ class PingTestWebUIController : public TestWebUIController {
 
   // WebUIController overrides:
   void RenderViewCreated(RenderViewHost* render_view_host) override {
-    render_view_host->GetMainFrame()->GetServiceRegistry()->
-        AddService<BrowserTarget>(base::Bind(
-            &PingTestWebUIController::CreateHandler, base::Unretained(this)));
+    render_view_host->GetMainFrame()->GetServiceRegistry()->AddService(
+        base::Bind(&PingTestWebUIController::CreateHandler,
+                   base::Unretained(this)));
   }
 
-  void CreateHandler(mojo::InterfaceRequest<BrowserTarget> request) {
+  void CreateHandler(mojo::InterfaceRequest<mojom::BrowserTarget> request) {
     browser_target_.reset(new BrowserTargetImpl(run_loop_, std::move(request)));
   }
 

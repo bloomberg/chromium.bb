@@ -23,7 +23,7 @@ class WakeLockDispatcher : public RenderFrameObserver,
   // WebWakeLockClient implementation.
   void requestKeepScreenAwake(bool keepScreenAwake) override;
 
-  WakeLockServicePtr wake_lock_service_;
+  mojom::WakeLockServicePtr wake_lock_service_;
 };
 
 }  // namespace content

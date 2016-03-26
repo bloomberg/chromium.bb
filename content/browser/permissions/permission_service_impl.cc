@@ -16,25 +16,25 @@ namespace content {
 
 namespace {
 
-PermissionType PermissionNameToPermissionType(PermissionName name) {
+PermissionType PermissionNameToPermissionType(mojom::PermissionName name) {
   switch(name) {
-    case PermissionName::GEOLOCATION:
+    case mojom::PermissionName::GEOLOCATION:
       return PermissionType::GEOLOCATION;
-    case PermissionName::NOTIFICATIONS:
+    case mojom::PermissionName::NOTIFICATIONS:
       return PermissionType::NOTIFICATIONS;
-    case PermissionName::PUSH_NOTIFICATIONS:
+    case mojom::PermissionName::PUSH_NOTIFICATIONS:
       return PermissionType::PUSH_MESSAGING;
-    case PermissionName::MIDI:
+    case mojom::PermissionName::MIDI:
       return PermissionType::MIDI;
-    case PermissionName::MIDI_SYSEX:
+    case mojom::PermissionName::MIDI_SYSEX:
       return PermissionType::MIDI_SYSEX;
-    case PermissionName::PROTECTED_MEDIA_IDENTIFIER:
+    case mojom::PermissionName::PROTECTED_MEDIA_IDENTIFIER:
       return PermissionType::PROTECTED_MEDIA_IDENTIFIER;
-    case PermissionName::DURABLE_STORAGE:
+    case mojom::PermissionName::DURABLE_STORAGE:
       return PermissionType::DURABLE_STORAGE;
-    case PermissionName::AUDIO_CAPTURE:
+    case mojom::PermissionName::AUDIO_CAPTURE:
       return PermissionType::AUDIO_CAPTURE;
-    case PermissionName::VIDEO_CAPTURE:
+    case mojom::PermissionName::VIDEO_CAPTURE:
       return PermissionType::VIDEO_CAPTURE;
   }
 
@@ -45,8 +45,8 @@ PermissionType PermissionNameToPermissionType(PermissionName name) {
 // This function allows the usage of the the multiple request map
 // with single requests.
 void PermissionRequestResponseCallbackWrapper(
-    const mojo::Callback<void(PermissionStatus)>& callback,
-    const mojo::Array<PermissionStatus>& vector) {
+    const mojo::Callback<void(mojom::PermissionStatus)>& callback,
+    const mojo::Array<mojom::PermissionStatus>& vector) {
   DCHECK_EQ(vector.size(), 1ul);
   callback.Run(vector[0]);
 }
@@ -64,10 +64,10 @@ PermissionServiceImpl::PendingRequest::~PendingRequest() {
   if (callback.is_null())
     return;
 
-  mojo::Array<PermissionStatus> result =
-      mojo::Array<PermissionStatus>::New(request_count);
+  mojo::Array<mojom::PermissionStatus> result =
+      mojo::Array<mojom::PermissionStatus>::New(request_count);
   for (int i = 0; i < request_count; ++i)
-    result[i] = PermissionStatus::DENIED;
+    result[i] = mojom::PermissionStatus::DENIED;
   callback.Run(std::move(result));
 }
 
@@ -83,12 +83,12 @@ PermissionServiceImpl::PendingSubscription::PendingSubscription(
 
 PermissionServiceImpl::PendingSubscription::~PendingSubscription() {
   if (!callback.is_null())
-    callback.Run(PermissionStatus::ASK);
+    callback.Run(mojom::PermissionStatus::ASK);
 }
 
 PermissionServiceImpl::PermissionServiceImpl(
     PermissionServiceContext* context,
-    mojo::InterfaceRequest<PermissionService> request)
+    mojo::InterfaceRequest<mojom::PermissionService> request)
     : context_(context),
       binding_(this, std::move(request)),
       weak_factory_(this) {
@@ -107,7 +107,7 @@ void PermissionServiceImpl::OnConnectionError() {
 }
 
 void PermissionServiceImpl::RequestPermission(
-    PermissionName permission,
+    mojom::PermissionName permission,
     const mojo::String& origin,
     const PermissionStatusCallback& callback) {
   // This condition is valid if the call is coming from a ChildThread instead of
@@ -146,17 +146,17 @@ void PermissionServiceImpl::RequestPermission(
 
 void PermissionServiceImpl::OnRequestPermissionResponse(
     int pending_request_id,
-    PermissionStatus status) {
+    mojom::PermissionStatus status) {
   OnRequestPermissionsResponse(pending_request_id,
-      std::vector<PermissionStatus>(1, status));
+                               std::vector<mojom::PermissionStatus>(1, status));
 }
 
 void PermissionServiceImpl::RequestPermissions(
-    mojo::Array<PermissionName> permissions,
+    mojo::Array<mojom::PermissionName> permissions,
     const mojo::String& origin,
     const PermissionsStatusCallback& callback) {
   if (permissions.is_null()) {
-    callback.Run(mojo::Array<PermissionStatus>());
+    callback.Run(mojo::Array<mojom::PermissionStatus>());
     return;
   }
 
@@ -171,7 +171,7 @@ void PermissionServiceImpl::RequestPermissions(
   DCHECK(browser_context);
   if (!context_->render_frame_host() ||
       !browser_context->GetPermissionManager()) {
-    mojo::Array<PermissionStatus> result(permissions.size());
+    mojo::Array<mojom::PermissionStatus> result(permissions.size());
     for (size_t i = 0; i < permissions.size(); ++i) {
       result[i] =
           GetPermissionStatusFromName(permissions[i], GURL(origin.get()));
@@ -205,12 +205,12 @@ void PermissionServiceImpl::RequestPermissions(
 
 void PermissionServiceImpl::OnRequestPermissionsResponse(
     int pending_request_id,
-    const std::vector<PermissionStatus>& result) {
+    const std::vector<mojom::PermissionStatus>& result) {
   PendingRequest* request = pending_requests_.Lookup(pending_request_id);
   PermissionsStatusCallback callback(request->callback);
   request->callback.reset();
   pending_requests_.Remove(pending_request_id);
-  callback.Run(mojo::Array<PermissionStatus>::From(result));
+  callback.Run(mojo::Array<mojom::PermissionStatus>::From(result));
 }
 
 void PermissionServiceImpl::CancelPendingOperations() {
@@ -242,24 +242,24 @@ void PermissionServiceImpl::CancelPendingOperations() {
 }
 
 void PermissionServiceImpl::HasPermission(
-    PermissionName permission,
+    mojom::PermissionName permission,
     const mojo::String& origin,
     const PermissionStatusCallback& callback) {
   callback.Run(GetPermissionStatusFromName(permission, GURL(origin.get())));
 }
 
 void PermissionServiceImpl::RevokePermission(
-    PermissionName permission,
+    mojom::PermissionName permission,
     const mojo::String& origin,
     const PermissionStatusCallback& callback) {
   GURL origin_url(origin.get());
   PermissionType permission_type = PermissionNameToPermissionType(permission);
-  PermissionStatus status = GetPermissionStatusFromType(permission_type,
-                                                        origin_url);
+  mojom::PermissionStatus status =
+      GetPermissionStatusFromType(permission_type, origin_url);
 
   // Resetting the permission should only be possible if the permission is
   // already granted.
-  if (status != PermissionStatus::GRANTED) {
+  if (status != mojom::PermissionStatus::GRANTED) {
     callback.Run(status);
     return;
   }
@@ -270,12 +270,12 @@ void PermissionServiceImpl::RevokePermission(
 }
 
 void PermissionServiceImpl::GetNextPermissionChange(
-    PermissionName permission,
+    mojom::PermissionName permission,
     const mojo::String& mojo_origin,
-    PermissionStatus last_known_status,
+    mojom::PermissionStatus last_known_status,
     const PermissionStatusCallback& callback) {
   GURL origin(mojo_origin.get());
-  PermissionStatus current_status =
+  mojom::PermissionStatus current_status =
       GetPermissionStatusFromName(permission, origin);
   if (current_status != last_known_status) {
     callback.Run(current_status);
@@ -310,18 +310,20 @@ void PermissionServiceImpl::GetNextPermissionChange(
                      pending_subscription_id));
 }
 
-PermissionStatus PermissionServiceImpl::GetPermissionStatusFromName(
-    PermissionName permission, const GURL& origin) {
+mojom::PermissionStatus PermissionServiceImpl::GetPermissionStatusFromName(
+    mojom::PermissionName permission,
+    const GURL& origin) {
   return GetPermissionStatusFromType(PermissionNameToPermissionType(permission),
                                      origin);
 }
 
-PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(
-    PermissionType type, const GURL& origin) {
+mojom::PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(
+    PermissionType type,
+    const GURL& origin) {
   BrowserContext* browser_context = context_->GetBrowserContext();
   DCHECK(browser_context);
   if (!browser_context->GetPermissionManager())
-    return PermissionStatus::DENIED;
+    return mojom::PermissionStatus::DENIED;
 
   // If the embedding_origin is empty we'll use |origin| instead.
   GURL embedding_origin = context_->GetEmbeddingOrigin();
@@ -344,7 +346,7 @@ void PermissionServiceImpl::ResetPermissionStatus(PermissionType type,
 
 void PermissionServiceImpl::OnPermissionStatusChanged(
     int pending_subscription_id,
-    PermissionStatus status) {
+    mojom::PermissionStatus status) {
   PendingSubscription* subscription =
       pending_subscriptions_.Lookup(pending_subscription_id);
 

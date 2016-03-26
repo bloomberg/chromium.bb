@@ -84,7 +84,7 @@ class DOMStorageContextWrapper::MojoState {
         weak_ptr_factory_(this) {}
 
   void OpenLocalStorage(const url::Origin& origin,
-                        LevelDBWrapperRequest request);
+                        mojom::LevelDBWrapperRequest request);
 
  private:
   void LevelDBWrapperImplHasNoBindings(const url::Origin& origin) {
@@ -99,7 +99,7 @@ class DOMStorageContextWrapper::MojoState {
   // The (possibly delayed) implementation of OpenLocalStorage(). Can be called
   // directly from that function, or through |on_database_open_callbacks_|.
   void BindLocalStorage(const url::Origin& origin,
-                        LevelDBWrapperRequest request);
+                        mojom::LevelDBWrapperRequest request);
 
   // Maps between an origin and its prefixed LevelDB view.
   std::map<url::Origin, scoped_ptr<LevelDBWrapperImpl>> level_db_wrappers_;
@@ -127,7 +127,7 @@ class DOMStorageContextWrapper::MojoState {
 
 void DOMStorageContextWrapper::MojoState::OpenLocalStorage(
     const url::Origin& origin,
-    LevelDBWrapperRequest request) {
+    mojom::LevelDBWrapperRequest request) {
   // If we don't have a filesystem_connection_, we'll need to establish one.
   if (connection_state_ == NO_CONNECTION) {
     profile_app_connection_ = MojoAppConnection::Create(
@@ -208,7 +208,7 @@ void DOMStorageContextWrapper::MojoState::OnDatabaseOpened(
 
 void DOMStorageContextWrapper::MojoState::BindLocalStorage(
     const url::Origin& origin,
-    LevelDBWrapperRequest request) {
+    mojom::LevelDBWrapperRequest request) {
   if (level_db_wrappers_.find(origin) == level_db_wrappers_.end()) {
     level_db_wrappers_[origin] = make_scoped_ptr(new LevelDBWrapperImpl(
         database_.get(),
@@ -334,8 +334,9 @@ void DOMStorageContextWrapper::Flush() {
       base::Bind(&DOMStorageContextImpl::Flush, context_));
 }
 
-void DOMStorageContextWrapper::OpenLocalStorage(const url::Origin& origin,
-                                                LevelDBWrapperRequest request) {
+void DOMStorageContextWrapper::OpenLocalStorage(
+    const url::Origin& origin,
+    mojom::LevelDBWrapperRequest request) {
   mojo_state_->OpenLocalStorage(origin, std::move(request));
 }
 

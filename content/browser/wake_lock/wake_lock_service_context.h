@@ -30,7 +30,7 @@ class CONTENT_EXPORT WakeLockServiceContext : public WebContentsObserver {
   // Creates a WakeLockServiceImpl that is strongly bound to |request|.
   void CreateService(int render_process_id,
                      int render_frame_id,
-                     mojo::InterfaceRequest<WakeLockService> request);
+                     mojo::InterfaceRequest<mojom::WakeLockService> request);
 
   // WebContentsObserver implementation.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
