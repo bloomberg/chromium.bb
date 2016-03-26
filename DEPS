@@ -100,7 +100,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '497a60ed10d607885613ffbfb660ea4355604c69',
+  'catapult_revision': 'a8a6fb7ea065c2df8ae129ad05ac80ba6ae7cc3a',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
