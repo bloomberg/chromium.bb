@@ -611,7 +611,7 @@ float Scrollbar::scrollableAreaTargetPos() const
 
 LayoutRect Scrollbar::visualRect() const
 {
-    return getScrollableArea()->visualRectForScrollbarParts();
+    return m_scrollableArea ? m_scrollableArea->visualRectForScrollbarParts() : LayoutRect();
 }
 
 void Scrollbar::setNeedsPaintInvalidation(ScrollbarPart invalidParts)
