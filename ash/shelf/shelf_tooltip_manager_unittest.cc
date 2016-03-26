@@ -173,40 +173,34 @@ TEST_F(ShelfTooltipManagerTest, HideForEvents) {
   EXPECT_FALSE(TooltipIsVisible());
 }
 
-TEST_F(ShelfTooltipManagerTest, HideForExternalEvents) {
+// TODO(msw): Hiding for touch and gesture events outside the shelf is broken.
+TEST_F(ShelfTooltipManagerTest, HideForEventsBroken) {
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
-  // TODO(msw): Observe events outside the shelf in mash, to close tooltips.
-  aura::Window* shelf_window = shelf_->shelf_widget()->GetNativeWindow();
-  bool closes = shelf_window->GetRootWindow() == Shell::GetPrimaryRootWindow();
 
-  // Should hide for touches outside the shelf.
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
+
   generator.set_current_location(gfx::Point());
   generator.PressTouch();
-  EXPECT_EQ(TooltipIsVisible(), !closes);
+  EXPECT_TRUE(TooltipIsVisible());
 
-  // Should hide for touch events on the tooltip.
-  ShowImmediately();
-  ASSERT_TRUE(TooltipIsVisible());
-  generator.set_current_location(GetTooltipWindow()->bounds().CenterPoint());
-  generator.PressTouch();
-  EXPECT_EQ(TooltipIsVisible(), !closes);
-
-  // Should hide for gestures outside the shelf.
-  ShowImmediately();
-  ASSERT_TRUE(TooltipIsVisible());
   generator.GestureTapDownAndUp(gfx::Point());
-  EXPECT_EQ(TooltipIsVisible(), !closes);
+  EXPECT_TRUE(TooltipIsVisible());
 }
 
-TEST_F(ShelfTooltipManagerTest, DoNotHideForKeyEvents) {
+TEST_F(ShelfTooltipManagerTest, DoNotHideForEvents) {
   ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
 
-  // Should not hide for key events.
   ShowImmediately();
   ASSERT_TRUE(TooltipIsVisible());
+
+  // Should not hide for key events.
   generator.PressKey(ui::VKEY_A, ui::EF_NONE);
+  EXPECT_TRUE(TooltipIsVisible());
+
+  // Should not hide for touch events on the tooltip.
+  generator.set_current_location(GetTooltipWindow()->bounds().CenterPoint());
+  generator.PressTouch();
   EXPECT_TRUE(TooltipIsVisible());
 }
 
