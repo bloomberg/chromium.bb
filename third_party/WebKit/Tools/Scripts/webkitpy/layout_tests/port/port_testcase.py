@@ -320,8 +320,6 @@ class PortTestCase(unittest.TestCase):
         never_fix_tests_path = port._filesystem.join(port.layout_tests_dir(), 'NeverFixTests')
         stale_tests_path = port._filesystem.join(port.layout_tests_dir(), 'StaleTestExpectations')
         slow_tests_path = port._filesystem.join(port.layout_tests_dir(), 'SlowTests')
-        skia_overrides_path = port.path_from_chromium_base(
-            'skia', 'skia_test_expectations.txt')
 
         port._filesystem.write_text_file(skia_overrides_path, 'dummy text')
 
