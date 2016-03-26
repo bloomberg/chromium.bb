@@ -142,6 +142,7 @@ class V8TodoMVC(perf_benchmark.PerfBenchmark):
     return True
 
 
+@benchmark.Disabled('reference')  # https://crbug.com/598096
 class V8TodoMVCIgnition(perf_benchmark.PerfBenchmark):
   """Measures V8 Execution metrics on the TodoMVC examples using ignition."""
   page_set = page_sets.TodoMVCPageSet
