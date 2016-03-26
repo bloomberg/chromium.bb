@@ -836,7 +836,6 @@ private:
 
     using Base::m_size;
     using Base::buffer;
-    using Base::capacity;
     using Base::swapVectorBuffer;
     using Base::allocateBuffer;
     using Base::allocationSize;
