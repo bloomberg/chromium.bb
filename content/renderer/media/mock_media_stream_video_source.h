@@ -15,6 +15,8 @@ namespace content {
 class MockMediaStreamVideoSource : public MediaStreamVideoSource {
  public:
   explicit MockMediaStreamVideoSource(bool manual_get_supported_formats);
+  MockMediaStreamVideoSource(bool manual_get_supported_formats,
+                             bool respond_to_request_refresh_frame);
   virtual ~MockMediaStreamVideoSource();
 
   MOCK_METHOD1(DoSetMutedState, void(bool muted_state));
@@ -50,6 +52,9 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
     DoSetMutedState(muted_state);
   }
 
+  // Implements MediaStreamVideoSource.
+  void RequestRefreshFrame() override;
+
  protected:
   // Implements MediaStreamVideoSource.
   void GetCurrentSupportedFormats(
@@ -67,6 +72,7 @@ class MockMediaStreamVideoSource : public MediaStreamVideoSource {
   media::VideoCaptureFormat format_;
   media::VideoCaptureFormats supported_formats_;
   bool manual_get_supported_formats_;
+  bool respond_to_request_refresh_frame_;
   int max_requested_height_;
   int max_requested_width_;
   double max_requested_frame_rate_;

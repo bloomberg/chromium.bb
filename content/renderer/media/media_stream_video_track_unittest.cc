@@ -82,6 +82,16 @@ class MediaStreamVideoTrackTest : public ::testing::Test {
     return track;
   }
 
+  void UpdateVideoSourceToRespondToRequestRefreshFrame() {
+    blink_source_.reset();
+    mock_source_ = new MockMediaStreamVideoSource(false, true);
+    blink_source_.initialize(base::UTF8ToUTF16("dummy_source_id"),
+                             blink::WebMediaStreamSource::TypeVideo,
+                             base::UTF8ToUTF16("dummy_source_name"),
+                             false /* remote */, true /* readonly */);
+    blink_source_.setExtraData(mock_source_);
+  }
+
   MockMediaStreamVideoSource* mock_source() { return mock_source_; }
   const blink::WebMediaStreamSource& blink_source() const {
     return blink_source_;
@@ -230,6 +240,22 @@ TEST_F(MediaStreamVideoTrackTest, StopLastTrack) {
   EXPECT_EQ(blink::WebMediaStreamSource::ReadyStateEnded,
             blink_source().getReadyState());
   MediaStreamVideoSink::RemoveFromVideoTrack(&sink2, track2);
+}
+
+TEST_F(MediaStreamVideoTrackTest, CheckTrackRequestsFrame) {
+  UpdateVideoSourceToRespondToRequestRefreshFrame();
+  blink::WebMediaStreamTrack track = CreateTrack();
+
+  // Add sink and expect to get a frame.
+  MockMediaStreamVideoSink sink;
+  base::RunLoop run_loop;
+  base::Closure quit_closure = run_loop.QuitClosure();
+  EXPECT_CALL(sink, OnVideoFrame()).WillOnce(RunClosure(quit_closure));
+  MediaStreamVideoSink::AddToVideoTrack(&sink, sink.GetDeliverFrameCB(), track);
+  run_loop.Run();
+  EXPECT_EQ(1, sink.number_of_frames());
+
+  MediaStreamVideoSink::RemoveFromVideoTrack(&sink, track);
 }
 
 }  // namespace content

@@ -76,6 +76,16 @@ class MEDIA_EXPORT VideoCapturerSource {
       const VideoCaptureDeliverFrameCB& new_frame_callback,
       const RunningCallback& running_callback) = 0;
 
+  // Asks source to send a refresh frame. In cases where source does not provide
+  // a continuous rate of new frames (e.g. canvas capture, screen capture where
+  // the screen's content has not changed in a while), consumers may request a
+  // "refresh frame" to be delivered. For instance, this would be needed when
+  // a new sink is added to a MediaStreamTrack.
+  // The default implementation is a no-op and implementations are not required
+  // to honor this request. If they decide to and capturing is started
+  // successfully, then |new_frame_callback| should be called with a frame.
+  virtual void RequestRefreshFrame() {}
+
   // Stops capturing frames and clears all callbacks including the
   // SupportedFormatsCallback callback. Note that queued frame callbacks
   // may still occur after this call, so the caller must take care to

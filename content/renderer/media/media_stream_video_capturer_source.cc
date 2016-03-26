@@ -398,6 +398,10 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
 MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
 }
 
+void MediaStreamVideoCapturerSource::RequestRefreshFrame() {
+  source_->RequestRefreshFrame();
+}
+
 void MediaStreamVideoCapturerSource::GetCurrentSupportedFormats(
     int max_requested_width,
     int max_requested_height,

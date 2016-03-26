@@ -31,6 +31,9 @@ class CONTENT_EXPORT MediaStreamVideoCapturerSource
                                  const StreamDeviceInfo& device_info);
   ~MediaStreamVideoCapturerSource() override;
 
+  // Implements MediaStreamVideoSource.
+  void RequestRefreshFrame() override;
+
  private:
   friend class CanvasCaptureHandlerTest;
   friend class MediaStreamVideoCapturerSourceTest;

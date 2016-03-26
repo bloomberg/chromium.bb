@@ -53,6 +53,7 @@ class CONTENT_EXPORT CanvasCaptureHandler final
       const media::VideoCapturerSource::VideoCaptureDeliverFrameCB&
           new_frame_callback,
       const media::VideoCapturerSource::RunningCallback& running_callback);
+  void RequestRefreshFrame();
   void StopVideoCapture();
   blink::WebSize GetSourceSize() const { return size_; }
 
@@ -85,6 +86,8 @@ class CONTENT_EXPORT CanvasCaptureHandler final
   size_t row_bytes_;
   SkImageInfo image_info_;
   media::VideoFramePool frame_pool_;
+
+  scoped_refptr<media::VideoFrame> last_frame_;
 
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   scoped_ptr<CanvasCaptureHandlerDelegate> delegate_;

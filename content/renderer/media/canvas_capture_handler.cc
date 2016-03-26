@@ -85,6 +85,10 @@ class VideoCapturerSource : public media::VideoCapturerSource {
     canvas_handler_->StartVideoCapture(params, frame_callback,
                                        running_callback);
   }
+  void RequestRefreshFrame() override {
+    DCHECK(main_render_thread_checker_.CalledOnValidThread());
+    canvas_handler_->RequestRefreshFrame();
+  }
   void StopCapture() override {
     DCHECK(main_render_thread_checker_.CalledOnValidThread());
     if (canvas_handler_.get())
@@ -194,6 +198,19 @@ void CanvasCaptureHandler::StartVideoCapture(
   running_callback.Run(true);
 }
 
+void CanvasCaptureHandler::RequestRefreshFrame() {
+  DVLOG(3) << __FUNCTION__;
+  DCHECK(main_render_thread_checker_.CalledOnValidThread());
+  if (last_frame_ && delegate_) {
+    io_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&CanvasCaptureHandler::CanvasCaptureHandlerDelegate::
+                       SendNewFrameOnIOThread,
+                   delegate_->GetWeakPtrForIOThread(), last_frame_,
+                   base::TimeTicks::Now()));
+  }
+}
+
 void CanvasCaptureHandler::StopVideoCapture() {
   DVLOG(3) << __FUNCTION__;
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
@@ -202,6 +219,7 @@ void CanvasCaptureHandler::StopVideoCapture() {
 }
 
 void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
+  DVLOG(4) << __FUNCTION__;
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(image);
 
@@ -243,6 +261,7 @@ void CanvasCaptureHandler::CreateNewFrame(const SkImage* image) {
     CopyAlphaChannelIntoVideoFrame(temp_data_.data(), video_frame);
   }
 
+  last_frame_ = video_frame;
   io_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&CanvasCaptureHandler::CanvasCaptureHandlerDelegate::

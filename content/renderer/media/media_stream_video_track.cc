@@ -247,6 +247,9 @@ void MediaStreamVideoTrack::AddSink(
   DCHECK(std::find(sinks_.begin(), sinks_.end(), sink) == sinks_.end());
   sinks_.push_back(sink);
   frame_deliverer_->AddCallback(sink, callback);
+  // Request source to deliver a frame because a new sink is added.
+  if (source_)
+    source_->RequestRefreshFrame();
 }
 
 void MediaStreamVideoTrack::RemoveSink(MediaStreamVideoSink* sink) {

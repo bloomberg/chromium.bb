@@ -12,7 +12,13 @@ namespace content {
 
 MockMediaStreamVideoSource::MockMediaStreamVideoSource(
     bool manual_get_supported_formats)
+    : MockMediaStreamVideoSource(manual_get_supported_formats, false) {}
+
+MockMediaStreamVideoSource::MockMediaStreamVideoSource(
+    bool manual_get_supported_formats,
+    bool respond_to_request_refresh_frame)
     : manual_get_supported_formats_(manual_get_supported_formats),
+      respond_to_request_refresh_frame_(respond_to_request_refresh_frame),
       max_requested_height_(0),
       max_requested_width_(0),
       max_requested_frame_rate_(0.0),
@@ -20,8 +26,7 @@ MockMediaStreamVideoSource::MockMediaStreamVideoSource(
   supported_formats_.push_back(media::VideoCaptureFormat(
       gfx::Size(MediaStreamVideoSource::kDefaultWidth,
                 MediaStreamVideoSource::kDefaultHeight),
-      MediaStreamVideoSource::kDefaultFrameRate,
-      media::PIXEL_FORMAT_I420));
+      MediaStreamVideoSource::kDefaultFrameRate, media::PIXEL_FORMAT_I420));
 }
 
 MockMediaStreamVideoSource::~MockMediaStreamVideoSource() {}
@@ -41,6 +46,17 @@ void MockMediaStreamVideoSource::FailToStartMockedSource() {
 void MockMediaStreamVideoSource::CompleteGetSupportedFormats() {
   DCHECK(!formats_callback_.is_null());
   base::ResetAndReturn(&formats_callback_).Run(supported_formats_);
+}
+
+void MockMediaStreamVideoSource::RequestRefreshFrame() {
+  DCHECK(!frame_callback_.is_null());
+  if (respond_to_request_refresh_frame_) {
+    const scoped_refptr<media::VideoFrame> frame =
+        media::VideoFrame::CreateColorFrame(format_.frame_size, 0, 0, 0,
+                                            base::TimeDelta());
+    io_task_runner()->PostTask(
+        FROM_HERE, base::Bind(frame_callback_, frame, base::TimeTicks()));
+  }
 }
 
 void MockMediaStreamVideoSource::GetCurrentSupportedFormats(

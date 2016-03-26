@@ -36,6 +36,7 @@ class MockVideoCapturerSource : public media::VideoCapturerSource {
             Invoke(this, &MockVideoCapturerSource::EnumerateDeviceFormats)));
   }
 
+  MOCK_METHOD0(RequestRefreshFrame, void());
   MOCK_METHOD4(GetCurrentSupportedFormats,
               void(int max_requested_width,
                    int max_requested_height,
@@ -363,6 +364,7 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
   EXPECT_CALL(mock_delegate(), StartCapture(_, _, _))
       .WillOnce(testing::DoAll(testing::SaveArg<1>(&deliver_frame_cb),
                                testing::SaveArg<2>(&running_cb)));
+  EXPECT_CALL(mock_delegate(), RequestRefreshFrame());
   EXPECT_CALL(mock_delegate(), StopCapture());
   blink::WebMediaStreamTrack track = StartSource();
   running_cb.Run(true);
