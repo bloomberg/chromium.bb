@@ -18,6 +18,25 @@ namespace safe_browsing {
 // The Safe Browsing V4 server URL prefix.
 const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
 
+bool UpdateListIdentifier::operator==(const UpdateListIdentifier& other) const {
+  return platform_type == other.platform_type &&
+         threat_entry_type == other.threat_entry_type &&
+         threat_type == other.threat_type;
+}
+
+bool UpdateListIdentifier::operator!=(const UpdateListIdentifier& other) const {
+  return !operator==(other);
+}
+
+size_t UpdateListIdentifier::hash() const {
+  std::size_t first = std::hash<unsigned int>()(platform_type);
+  std::size_t second = std::hash<unsigned int>()(threat_entry_type);
+  std::size_t third = std::hash<unsigned int>()(threat_type);
+
+  std::size_t interim = base::HashInts(first, second);
+  return base::HashInts(interim, third);
+}
+
 // static
 // Backoff interval is MIN(((2^(n-1))*15 minutes) * (RAND + 1), 24 hours) where
 // n is the number of consecutive errors.

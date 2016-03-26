@@ -55,6 +55,13 @@ void RecordParseGetHashResult(ParseResultType result_type) {
                             PARSE_RESULT_TYPE_MAX);
 }
 
+// Record a GetHash result.
+void RecordGetHashResult(safe_browsing::V4OperationResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "SafeBrowsing.GetV4HashResult", result,
+      safe_browsing::V4OperationResult::OPERATION_RESULT_MAX);
+}
+
 }  // namespace
 
 namespace safe_browsing {
@@ -106,12 +113,6 @@ V4GetHashProtocolManager::V4GetHashProtocolManager(
       config_(config),
       request_context_getter_(request_context_getter),
       url_fetcher_id_(0) {
-}
-
-// static
-void V4GetHashProtocolManager::RecordGetHashResult(ResultType result_type) {
-  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.GetV4HashResult", result_type,
-                            GET_HASH_RESULT_MAX);
 }
 
 V4GetHashProtocolManager::~V4GetHashProtocolManager() {
@@ -248,9 +249,9 @@ void V4GetHashProtocolManager::GetFullHashes(
   // (i.e. treat the page as safe).
   if (Time::Now() <= next_gethash_time_) {
     if (gethash_error_count_) {
-      RecordGetHashResult(GET_HASH_BACKOFF_ERROR);
+      RecordGetHashResult(V4OperationResult::BACKOFF_ERROR);
     } else {
-      RecordGetHashResult(GET_HASH_MIN_WAIT_DURATION_ERROR);
+      RecordGetHashResult(V4OperationResult::MIN_WAIT_DURATION_ERROR);
     }
     std::vector<SBFullHashResult> full_hashes;
     callback.Run(full_hashes, base::TimeDelta());
@@ -301,13 +302,13 @@ void V4GetHashProtocolManager::OnURLFetchComplete(
   std::vector<SBFullHashResult> full_hashes;
   base::TimeDelta negative_cache_duration;
   if (status.is_success() && response_code == net::HTTP_OK) {
-    RecordGetHashResult(GET_HASH_STATUS_200);
+    RecordGetHashResult(V4OperationResult::STATUS_200);
     ResetGetHashErrors();
     std::string data;
     source->GetResponseAsString(&data);
     if (!ParseHashResponse(data, &full_hashes, &negative_cache_duration)) {
       full_hashes.clear();
-      RecordGetHashResult(GET_HASH_PARSE_ERROR);
+      RecordGetHashResult(V4OperationResult::PARSE_ERROR);
     }
   } else {
     HandleGetHashError(Time::Now());
@@ -317,9 +318,9 @@ void V4GetHashProtocolManager::OnURLFetchComplete(
              << " and response code: " << response_code;
 
     if (status.status() == net::URLRequestStatus::FAILED) {
-      RecordGetHashResult(GET_HASH_NETWORK_ERROR);
+      RecordGetHashResult(V4OperationResult::NETWORK_ERROR);
     } else {
-      RecordGetHashResult(GET_HASH_HTTP_ERROR);
+      RecordGetHashResult(V4OperationResult::HTTP_ERROR);
     }
   }
 

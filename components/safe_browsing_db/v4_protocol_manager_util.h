@@ -11,11 +11,12 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "base/hash.h"
+#include "components/safe_browsing_db/safebrowsing.pb.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
-
 // Config passed to the constructor of a V4 protocol manager.
 struct V4ProtocolConfig {
   // The safe browsing client name sent in each request.
@@ -28,6 +29,52 @@ struct V4ProtocolConfig {
   std::string key_param;
 };
 
+// The information required to uniquely identify each list the client is
+// interested in maintaining and downloading from the SafeBrowsing servers.
+// For example, for digests of Malware binaries on Windows:
+// platform_type = WINDOWS,
+// threat_entry_type = BINARY_DIGEST,
+// threat_type = MALWARE
+struct UpdateListIdentifier {
+  PlatformType platform_type;
+  ThreatEntryType threat_entry_type;
+  ThreatType threat_type;
+
+  bool operator==(const UpdateListIdentifier& other) const;
+  bool operator!=(const UpdateListIdentifier& other) const;
+  size_t hash() const;
+};
+
+// Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
+// ORDERING OF THESE VALUES.
+enum V4OperationResult {
+  // 200 response code means that the server recognized the request.
+  STATUS_200 = 0,
+
+  // Subset of successful responses where the response body wasn't parsable.
+  PARSE_ERROR = 1,
+
+  // Operation request failed (network error).
+  NETWORK_ERROR = 2,
+
+  // Operation request returned HTTP result code other than 200.
+  HTTP_ERROR = 3,
+
+  // Operation attempted during error backoff, no request sent.
+  BACKOFF_ERROR = 4,
+
+  // Operation attempted before min wait duration elapsed, no request sent.
+  MIN_WAIT_DURATION_ERROR = 5,
+
+  // Identical operation already pending.
+  ALREADY_PENDING_ERROR = 6,
+
+  // Memory space for histograms is determined by the max.  ALWAYS
+  // ADD NEW VALUES BEFORE THIS ONE.
+  OPERATION_RESULT_MAX = 7
+};
+
+// A class that provides static methods related to the Pver4 protocol.
 class V4ProtocolManagerUtil {
  public:
   // Record HTTP response code when there's no error in fetching an HTTP
@@ -75,5 +122,14 @@ class V4ProtocolManagerUtil {
 };
 
 }  // namespace safe_browsing
+
+namespace std {
+template <>
+struct hash<safe_browsing::UpdateListIdentifier> {
+  std::size_t operator()(const safe_browsing::UpdateListIdentifier& s) const {
+    return s.hash();
+  }
+};
+}
 
 #endif  // COMPONENTS_SAFE_BROWSING_DB_V4_PROTOCOL_MANAGER_UTIL_H_

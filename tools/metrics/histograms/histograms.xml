@@ -42578,7 +42578,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SafeBrowsing.GetV4HashResult"
-    enum="SafeBrowsingGetV4HashResult">
+    enum="SafeBrowsingV4OperationResult">
   <owner>kcarattini@chromium.org</owner>
   <summary>
     Track return status from V4 GetHash attempts. The buckets of this histogram
@@ -42600,6 +42600,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>kcarattini@chromium.org</owner>
   <summary>
     Track the parsing results of a status 200 GetV4Hash request.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.ParseV4UpdateResult"
+    enum="SafeBrowsingParseV4UpdateResult">
+  <owner>vakh@chromium.org</owner>
+  <summary>
+    Track the parsing results of a status 200 GetV4Update request.
   </summary>
 </histogram>
 
@@ -42665,6 +42673,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     File types that were blocked from downloaded without verifying their content
     nor their source URLs with Safe Browsing.
+  </summary>
+</histogram>
+
+<histogram name="SafeBrowsing.V4UpdateResult"
+    enum="SafeBrowsingV4OperationResult">
+  <owner>vakh@chromium.org</owner>
+  <summary>
+    Track return status from V4 update attempts. The buckets of this histogram
+    overlap, so the counts cannot be used as percentages.
   </summary>
 </histogram>
 
@@ -79861,15 +79878,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Kill (He's dead, Jim!)"/>
 </enum>
 
-<enum name="SafeBrowsingGetV4HashResult" type="int">
-  <int value="0" label="STATUS_200"/>
-  <int value="1" label="PARSE_ERROR (subset of STATUS_200)"/>
-  <int value="2" label="NETWORK_ERROR"/>
-  <int value="3" label="HTTP_ERROR"/>
-  <int value="4" label="BACKOFF_ERROR"/>
-  <int value="5" label="MIN_WAIT_DURATION_ERROR"/>
-</enum>
-
 <enum name="SafeBrowsingParseV4HashResult" type="int">
   <int value="0" label="PARSE_FROM_STRING_ERROR"/>
   <int value="1" label="UNEXPECTED_THREAT_ENTRY_TYPE_ERROR"/>
@@ -79877,6 +79885,24 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="3" label="UNEXPECTED_PLATFORM_TYPE_ERROR"/>
   <int value="4" label="NO_METADATA_ERROR"/>
   <int value="5" label="INCONSISTENT_THREAT_TYPE_ERROR"/>
+</enum>
+
+<enum name="SafeBrowsingParseV4UpdateResult" type="int">
+  <int value="0" label="PARSE_FROM_STRING_ERROR"/>
+  <int value="1" label="NO_PLATFORM_TYPE_ERROR"/>
+  <int value="2" label="NO_THREAT_ENTRY_TYPE_ERROR"/>
+  <int value="3" label="NO_THREAT_TYPE_ERROR"/>
+  <int value="4" label="NO_STATE_ERROR"/>
+</enum>
+
+<enum name="SafeBrowsingV4OperationResult" type="int">
+  <int value="0" label="STATUS_200"/>
+  <int value="1" label="PARSE_ERROR (subset of STATUS_200)"/>
+  <int value="2" label="NETWORK_ERROR"/>
+  <int value="3" label="HTTP_ERROR"/>
+  <int value="4" label="BACKOFF_ERROR"/>
+  <int value="5" label="MIN_WAIT_DURATION_ERROR"/>
+  <int value="6" label="ALREADY_PENDING_ERROR"/>
 </enum>
 
 <enum name="SavePasswordPromptResponseType" type="int">

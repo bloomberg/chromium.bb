@@ -28,6 +28,8 @@
         'safe_browsing_db/v4_protocol_manager_util.cc',
         'safe_browsing_db/v4_get_hash_protocol_manager.h',
         'safe_browsing_db/v4_get_hash_protocol_manager.cc',
+        'safe_browsing_db/v4_update_protocol_manager.h',
+        'safe_browsing_db/v4_update_protocol_manager.cc',
       ],
       'include_dirs': [
         '..',

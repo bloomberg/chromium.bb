@@ -78,36 +78,6 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate,
   virtual void GetFullHashesWithApis(const std::vector<SBPrefix>& prefixes,
                                      FullHashCallback callback);
 
-  // Enumerate failures for histogramming purposes.  DO NOT CHANGE THE
-  // ORDERING OF THESE VALUES.
-  enum ResultType {
-    // 200 response code means that the server recognized the hash
-    // prefix.
-    GET_HASH_STATUS_200 = 0,
-
-    // Subset of successful responses where the response body wasn't parsable.
-    GET_HASH_PARSE_ERROR = 1,
-
-    // Gethash request failed (network error).
-    GET_HASH_NETWORK_ERROR = 2,
-
-    // Gethash request returned HTTP result code other than 200.
-    GET_HASH_HTTP_ERROR = 3,
-
-    // Gethash attempted during error backoff, no request sent.
-    GET_HASH_BACKOFF_ERROR = 4,
-
-    // Gethash attempted before min wait duration elapsed, no request sent.
-    GET_HASH_MIN_WAIT_DURATION_ERROR = 5,
-
-    // Memory space for histograms is determined by the max.  ALWAYS
-    // ADD NEW VALUES BEFORE THIS ONE.
-    GET_HASH_RESULT_MAX = 6
-  };
-
-  // Record a GetHash result.
-  static void RecordGetHashResult(ResultType result_type);
-
  protected:
   // Constructs a V4GetHashProtocolManager that issues
   // network requests using |request_context_getter|.
