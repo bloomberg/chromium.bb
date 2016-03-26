@@ -71,10 +71,10 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Apple Inc."
             VALUE "FileDescription", "Simple Netscape plug-in that handles test content for WebKit"
-            VALUE "FileExtents", "testnetscape|png"
-            VALUE "FileOpenName", "test netscape content|PNG image"
+            VALUE "FileExtents", "testnetscape"
+            VALUE "FileOpenName", "test netscape content"
             VALUE "LegalCopyright", "Copyright Apple Inc. 2007-2009"
-            VALUE "MIMEType", "application/x-webkit-test-netscape|image/png"
+            VALUE "MIMEType", "application/x-webkit-test-netscape"
             VALUE "OriginalFilename", "np_test_netscape_plugin.dll"
             VALUE "ProductName", "WebKit Test PlugIn"
         END

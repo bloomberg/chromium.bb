@@ -44,15 +44,6 @@
 	<string>Simple Netscape plug-in that handles test content for WebKit</string>
 	<key>WebPluginMIMETypes</key>
 	<dict>
-		<key>image/png</key>
-		<dict>
-			<key>WebPluginExtensions</key>
-			<array>
-				<string>png</string>
-			</array>
-			<key>WebPluginTypeDescription</key>
-			<string>PNG image</string>
-		</dict>
 		<key>application/x-webkit-test-netscape</key>
 		<dict>
 			<key>WebPluginExtensions</key>
