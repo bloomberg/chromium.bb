@@ -9,6 +9,7 @@
         "android_rev": null,
         "archive": true,
         "archive_build_debug": false,
+        "auto_reboot": true,
         "binhost_base_url": null,
         "binhost_bucket": null,
         "binhost_key": null,
@@ -12652,6 +12653,7 @@
     "master-paladin": {
         "_template": "paladin",
         "active_waterfall": "chromeos",
+        "auto_reboot": false,
         "binhost_test": true,
         "boards": [],
         "description": "Commit Queue master (all others are slaves)",

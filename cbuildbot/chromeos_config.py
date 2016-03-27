@@ -1625,6 +1625,7 @@ def GetConfig():
                                'tree'],
       sanity_check_slaves=['wolf-tot-paladin'],
       trybot_list=False,
+      auto_reboot=False,
   )
 
   ### Other paladins (CQ builders).

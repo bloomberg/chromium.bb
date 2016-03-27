@@ -809,6 +809,9 @@ def DefaultSettings():
 
       # If true, skip package retries in BuildPackages step.
       nobuildretry=False,
+
+      # If false, turn off rebooting between builds
+      auto_reboot=True,
   )
 
 
@@ -992,13 +995,13 @@ class SiteConfig(dict):
         DefaultSiteParameters() if site_params is None else site_params)
 
   def GetDefault(self):
-    """Create the cannonical default build configuration."""
+    """Create the canonical default build configuration."""
     # Enumeration of valid settings; any/all config settings must be in this.
     # All settings must be documented.
     return BuildConfig(**self._defaults)
 
   def GetTemplates(self):
-    """Create the cannonical default build configuration."""
+    """Create the canonical default build configuration."""
     return self._templates
 
   @property
