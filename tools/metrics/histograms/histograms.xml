@@ -65164,6 +65164,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="321" label="Configure the login authentication behavior"/>
   <int value="322" label="Whitelist of USB detachable devices"/>
   <int value="323" label="Allow bluetooth on device"/>
+  <int value="324" label="Suppress the unsupported OS warning"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

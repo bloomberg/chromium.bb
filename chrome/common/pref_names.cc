@@ -1444,6 +1444,12 @@ const char kShutdownNumProcessesSlow[] = "shutdown.num_processes_slow";
 const char kRestartLastSessionOnShutdown[] = "restart.last.session.on.shutdown";
 
 #if !defined(OS_ANDROID)
+// Boolean that specifies whether or not showing the unsupported OS warning is
+// suppressed. False by default. Controlled by the SuppressUnsupportedOSWarning
+// policy setting.
+const char kSuppressUnsupportedOSWarning[] =
+    "browser.suppress_unsupported_os_warning";
+
 // Set before autorestarting Chrome, cleared on clean exit.
 const char kWasRestarted[] = "was.restarted";
 #endif

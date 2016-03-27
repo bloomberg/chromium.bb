@@ -1881,6 +1881,16 @@
     ]
   },
 
+  "SuppressUnsupportedOSWarning": {
+    "os": ["chromeos", "linux", "mac", "win"],
+    "test_policy": { "SuppressUnsupportedOSWarning": true },
+    "pref_mappings": [
+      { "pref": "browser.suppress_unsupported_os_warning",
+        "local_state": true
+      }
+    ]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {

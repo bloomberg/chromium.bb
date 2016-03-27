@@ -547,6 +547,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kWelcomePageOnOSUpgradeEnabled,
     base::Value::TYPE_BOOLEAN },
 #endif  // OS_WIN
+
+#if !defined(OS_ANDROID)
+  { key::kSuppressUnsupportedOSWarning,
+    prefs::kSuppressUnsupportedOSWarning,
+    base::Value::TYPE_BOOLEAN },
+#endif  // !OS_ANDROID
 };
 
 class ForceSafeSearchPolicyHandler : public TypeCheckingPolicyHandler {
