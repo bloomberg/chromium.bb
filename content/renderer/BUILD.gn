@@ -161,7 +161,6 @@ source_set("renderer") {
     deps += [
       "//crypto",
       "//third_party/libjingle:libjingle_webrtc",
-      "//third_party/libjingle:libpeerconnection",
       "//third_party/libjingle:libstunprober",
       "//third_party/libvpx",
       "//third_party/webrtc/base:rtc_base",

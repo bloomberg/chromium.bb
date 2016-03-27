@@ -6,12 +6,6 @@
   'includes': [
     '../../build/win_precompile.gypi',
   ],
-  'variables': {
-    'libjingle_additional_deps%': [],
-    'libjingle_peerconnection_additional_deps%': [],
-    'libjingle_source%': "source",
-    'webrtc_xmpp': "../webrtc/libjingle/xmpp",
-  },
   # Most of these settings have been split according to their scope into
   # :jingle_unexported_configs and :jingle_public_config in the GN build.
   'target_defaults': {
@@ -36,7 +30,7 @@
     'include_dirs': [
       './overrides',
       '../../third_party/webrtc_overrides',
-      './<(libjingle_source)',
+      './source',
       '../..',
       '../../testing/gtest/include',
       '../../third_party',
@@ -57,7 +51,7 @@
       'include_dirs': [
         '../../third_party/webrtc_overrides',
         './overrides',
-        './<(libjingle_source)',
+        './source',
         '../..',
         '../../testing/gtest/include',
         '../../third_party',
@@ -220,7 +214,6 @@
       'dependencies': [
         '<(DEPTH)/third_party/webrtc/base/base.gyp:rtc_base',
         '<(DEPTH)/third_party/webrtc/libjingle/xmllite/xmllite.gyp:rtc_xmllite',
-        '<@(libjingle_additional_deps)',
       ],
     },  # target libjingle
   ],
@@ -335,12 +328,20 @@
             '<(DEPTH)/third_party/webrtc/media/base/videoframefactory.h',
             '<(DEPTH)/third_party/webrtc/media/base/videosourcebase.cc',
             '<(DEPTH)/third_party/webrtc/media/base/videosourcebase.h',
+            '<(DEPTH)/third_party/webrtc/media/engine/simulcast.cc',
+            '<(DEPTH)/third_party/webrtc/media/engine/simulcast.h',
             '<(DEPTH)/third_party/webrtc/media/engine/webrtccommon.h',
+            '<(DEPTH)/third_party/webrtc/media/engine/webrtcmediaengine.cc',
+            '<(DEPTH)/third_party/webrtc/media/engine/webrtcmediaengine.h',
+            '<(DEPTH)/third_party/webrtc/media/engine/webrtcvideoengine2.cc',
+            '<(DEPTH)/third_party/webrtc/media/engine/webrtcvideoengine2.h',
             '<(DEPTH)/third_party/webrtc/media/engine/webrtcvideoframe.cc',
             '<(DEPTH)/third_party/webrtc/media/engine/webrtcvideoframe.h',
             '<(DEPTH)/third_party/webrtc/media/engine/webrtcvideoframefactory.cc',
             '<(DEPTH)/third_party/webrtc/media/engine/webrtcvideoframefactory.h',
             '<(DEPTH)/third_party/webrtc/media/engine/webrtcvoe.h',
+            '<(DEPTH)/third_party/webrtc/media/engine/webrtcvoiceengine.cc',
+            '<(DEPTH)/third_party/webrtc/media/engine/webrtcvoiceengine.h',
             '<(DEPTH)/third_party/webrtc/media/sctp/sctpdataengine.cc',
             '<(DEPTH)/third_party/webrtc/media/sctp/sctpdataengine.h',
             '<(DEPTH)/third_party/webrtc/pc/audiomonitor.cc',
@@ -372,6 +373,8 @@
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:media_file',
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_capture',
             '<(DEPTH)/third_party/webrtc/modules/modules.gyp:video_render',
+            '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine',
+            '<(DEPTH)/third_party/webrtc/webrtc.gyp:webrtc',
             'libjingle',
           ],
         },  # target libjingle_webrtc_common
@@ -388,28 +391,6 @@
             'libjingle_webrtc_common',
           ],
         },
-        {
-          # GN version: //third_party/libjingle:libpeerconnection
-          'target_name': 'libpeerconnection',
-          'type': 'static_library',
-          'sources': [
-            # Note: sources list duplicated in GN build.
-            '<(DEPTH)/third_party/webrtc/media/engine/simulcast.cc',
-            '<(DEPTH)/third_party/webrtc/media/engine/simulcast.h',
-            '<(DEPTH)/third_party/webrtc/media/engine/webrtcmediaengine.cc',
-            '<(DEPTH)/third_party/webrtc/media/engine/webrtcmediaengine.h',
-            '<(DEPTH)/third_party/webrtc/media/engine/webrtcvideoengine2.cc',
-            '<(DEPTH)/third_party/webrtc/media/engine/webrtcvideoengine2.h',
-            '<(DEPTH)/third_party/webrtc/media/engine/webrtcvoiceengine.cc',
-            '<(DEPTH)/third_party/webrtc/media/engine/webrtcvoiceengine.h',
-          ],
-          'dependencies': [
-            '<(DEPTH)/third_party/webrtc/voice_engine/voice_engine.gyp:voice_engine',
-            '<(DEPTH)/third_party/webrtc/webrtc.gyp:webrtc',
-            '<@(libjingle_peerconnection_additional_deps)',
-            'libjingle_webrtc_common',
-          ],
-        },  # target libpeerconnection
       ],
     }],
   ],
