@@ -20,19 +20,17 @@ declare_args() {
 # This "allocator" meta-target will forward to the default allocator according
 # to the build settings.
 group("allocator") {
-  if (!is_nacl) {
-    deps = []
+  deps = []
 
-    if (use_allocator == "tcmalloc") {
-      deps += [ ":tcmalloc" ]
-    }
+  if (use_allocator == "tcmalloc") {
+    deps += [ ":tcmalloc" ]
+  }
 
-    # This condition expresses the win_use_allocator_shim in the GYP build.
-    if (is_win && !is_component_build && visual_studio_version != "2015") {
-      deps += [ ":allocator_shim" ]
-      all_dependent_configs = [ ":nocmt" ]
-    }
-  }  # !is_nacl
+  # This condition expresses the win_use_allocator_shim in the GYP build.
+  if (is_win && !is_component_build && visual_studio_version != "2015") {
+    deps += [ ":allocator_shim" ]
+    all_dependent_configs = [ ":nocmt" ]
+  }
 }
 
 # This config defines ALLOCATOR_SHIM in the same conditions that the allocator

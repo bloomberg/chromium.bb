@@ -406,6 +406,7 @@ template("gcc_toolchain") {
                                "is_clang",
                                "is_component_build",
                                "is_nacl_glibc",
+                               "use_allocator",
                                "use_gold",
                                "symbol_level",
                              ])
