@@ -106,6 +106,7 @@ ImageFrameGenerator::ImageFrameGenerator(const SkISize& fullSize, PassRefPtr<Sha
     , m_data(adoptRef(new ThreadSafeDataTransport()))
     , m_isMultiFrame(isMultiFrame)
     , m_decodeFailed(false)
+    , m_yuvDecodingFailed(false)
     , m_frameCount(0)
     , m_encodedData(nullptr)
 {
@@ -248,7 +249,7 @@ bool ImageFrameGenerator::decodeToYUV(size_t index, const SkISize componentSizes
     }
 
     ASSERT(decoder->failed());
-    m_decodeFailed = true;
+    m_yuvDecodingFailed = true;
     return false;
 }
 
@@ -394,6 +395,9 @@ bool ImageFrameGenerator::hasAlpha(size_t index)
 bool ImageFrameGenerator::getYUVComponentSizes(SkYUVSizeInfo* sizeInfo)
 {
     TRACE_EVENT2("blink", "ImageFrameGenerator::getYUVComponentSizes", "width", m_fullSize.width(), "height", m_fullSize.height());
+
+    if (m_yuvDecodingFailed)
+        return false;
 
     SharedBuffer* data = 0;
     bool allDataReceived = false;
