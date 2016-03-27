@@ -8,8 +8,13 @@
 
 #include "native_client/src/include/nacl_assert.h"
 
-char g_src[16];
-char g_dest[16];
+/*
+ * Require 16-byte alignment because some of the instructions used
+ * below require it.  This includes movdqa and movntdq; the latter is
+ * rewritten to movdqa.
+ */
+char g_src[16] __attribute__((aligned(16)));
+char g_dest[16] __attribute__((aligned(16)));
 
 void reset_test_vars(void) {
   memset(g_src, 0xff, sizeof(g_src));
