@@ -40,6 +40,8 @@ TOOLCHAIN_URL = 'gs://chrome-mac-sdk/'
 def GetToolchainDirectory():
   if sys.platform == 'darwin' and not UseLocalMacSDK():
     return TOOLCHAIN_BUILD_DIR
+  else:
+    return None
 
 
 def ReadStampFile():
