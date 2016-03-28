@@ -56,6 +56,10 @@ const clang::ast_matchers::internal::
     VariadicDynCastAllOfMatcher<clang::Expr, clang::UnresolvedLookupExpr>
         unresolvedLookupExpr;
 
+const clang::ast_matchers::internal::
+    VariadicDynCastAllOfMatcher<clang::Expr, clang::UnresolvedMemberExpr>
+        unresolvedMemberExpr;
+
 AST_MATCHER(clang::FunctionDecl, isOverloadedOperator) {
   return Node.isOverloadedOperator();
 }
@@ -466,10 +470,19 @@ struct TargetNodeTraits<clang::CXXCtorInitializer> {
 template <>
 struct TargetNodeTraits<clang::UnresolvedLookupExpr> {
   static clang::SourceLocation GetLoc(const clang::UnresolvedLookupExpr& expr) {
-    return expr.getLocStart();
+    return expr.getNameLoc();
   }
   static const char* GetName() { return "expr"; }
   static const char* GetType() { return "UnresolvedLookupExpr"; }
+};
+
+template <>
+struct TargetNodeTraits<clang::UnresolvedMemberExpr> {
+  static clang::SourceLocation GetLoc(const clang::UnresolvedMemberExpr& expr) {
+    return expr.getMemberLoc();
+  }
+  static const char* GetName() { return "expr"; }
+  static const char* GetType() { return "UnresolvedMemberExpr"; }
 };
 
 template <typename DeclNode, typename TargetNode>
@@ -546,6 +559,8 @@ using EnumConstantDeclRefRewriter =
 
 using UnresolvedLookupRewriter =
     RewriterBase<clang::NamedDecl, clang::UnresolvedLookupExpr>;
+using UnresolvedMemberRewriter =
+    RewriterBase<clang::NamedDecl, clang::UnresolvedMemberExpr>;
 
 using UsingDeclRewriter = RewriterBase<clang::UsingDecl, clang::NamedDecl>;
 
@@ -772,19 +787,39 @@ int main(int argc, const char* argv[]) {
       id("decl", functionTemplateDecl(templatedDecl(method_decl_matcher)));
   auto unresolved_lookup_matcher = expr(id(
       "expr",
-      unresolvedLookupExpr(anyOf(
+      unresolvedLookupExpr(
           // In order to automatically rename an unresolved lookup, the lookup
           // candidates must either all be Blink functions/function templates or
-          // Blink methods/method templates. Otherwise, we might end up in a
-          // situation where the naming could change depending on the selected
-          // candidate.
-          allOverloadsMatch(
-              anyOf(function_decl_matcher, function_template_decl_matcher)),
-          allOverloadsMatch(
-              anyOf(method_decl_matcher, method_template_decl_matcher))))));
+          // all be Blink methods/method templates. Otherwise, we might end up
+          // in a situation where the naming could change depending on the
+          // selected candidate.
+          anyOf(allOverloadsMatch(anyOf(function_decl_matcher,
+                                        function_template_decl_matcher)),
+                // Note: this matches references to methods in a non-member
+                // context, e.g. Template<&Class::Method>. This and the
+                // UnresolvedMemberExpr matcher below are analogous to how the
+                // rewriter has both a MemberRefRewriter matcher to rewrite
+                // &T::method and a MethodMemberRewriter matcher to rewriter
+                // t.method().
+                allOverloadsMatch(anyOf(method_decl_matcher,
+                                        method_template_decl_matcher))))));
   UnresolvedLookupRewriter unresolved_lookup_rewriter(&replacements);
   match_finder.addMatcher(unresolved_lookup_matcher,
                           &unresolved_lookup_rewriter);
+
+  // Unresolved member expressions ========
+  // Similar to unresolved lookup expressions, but for methods in a member
+  // context, e.g. var_with_templated_type.Method().
+  auto unresolved_member_matcher = expr(id(
+      "expr",
+      unresolvedMemberExpr(
+          // Similar to UnresolvedLookupExprs, all the candidate methods must be
+          // Blink methods/method templates.
+          allOverloadsMatch(
+              anyOf(method_decl_matcher, method_template_decl_matcher)))));
+  UnresolvedMemberRewriter unresolved_member_rewriter(&replacements);
+  match_finder.addMatcher(unresolved_member_matcher,
+                          &unresolved_member_rewriter);
 
   // Using declarations ========
   // Given

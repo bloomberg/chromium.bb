@@ -4,15 +4,19 @@
 
 namespace not_blink {
 
-void notBlinkFunction(int x) {}
+void function(int x) {}
 
-class NotBlinkClass {
+class Class {
  public:
-  void notBlinkMethod() {}
+  void method() {}
+  template <typename T>
+  void methodTemplate(T) {}
+  template <typename T>
+  static void staticMethodTemplate(T) {}
 };
 
 template <typename T>
-void notBlinkFunctionTemplate(T x) {}
+void functionTemplate(T x) {}
 
 }  // not_blink
 
@@ -46,15 +50,15 @@ void h(T x) {
 void test() {
   // f should be rewritten.
   h<int, f>(0);
-  // notBlinkFunction should stay the same.
-  h<int, not_blink::notBlinkFunction>(1);
+  // Non-Blink should stay the same.
+  h<int, not_blink::function>(1);
 }
 
 }  // namespace test_template_arg_is_function
 
 namespace test_template_arg_is_method {
 
-class BlinkClass {
+class Class {
  public:
   void method() {}
 };
@@ -66,33 +70,74 @@ void h(T&& x) {
 
 void test() {
   // method should be rewritten.
-  h<BlinkClass, &BlinkClass::method>(BlinkClass());
-  h<not_blink::NotBlinkClass, &not_blink::NotBlinkClass::notBlinkMethod>(
-      not_blink::NotBlinkClass());
+  h<Class, &Class::method>(Class());
+  // Non-Blink should stay the same.
+  h<not_blink::Class, &not_blink::Class::method>(not_blink::Class());
 }
 
 }  // namespace test_template_arg_is_method
 
-// Test template arguments that are function templates.
-template <typename T, char converter(T)>
-unsigned reallyBadHash(const T* data, unsigned length) {
-  unsigned hash = 1;
-  for (unsigned i = 0; i < length; ++i) {
-    hash *= converter(data[i]);
-  }
-  return hash;
+namespace test_template_arg_is_function_template {
+
+namespace nested {
+template <typename T>
+void f(T) {}
 }
 
-struct StringHasher {
-  static unsigned Hash(const char* data, unsigned length) {
-    return reallyBadHash<char, brokenFoldCase<char>>(data, length);
-  }
+template <typename T, void g(T)>
+void h(T x) {
+  g(x);
+}
 
- private:
+void test() {
+  // f should be rewritten.
+  h<int, nested::f>(0);
+  // Non-Blink should stay the same.
+  h<int, not_blink::functionTemplate>(1);
+}
+
+}  // namespace test_template_arg_is_function_template
+
+namespace test_template_arg_is_method_template_in_non_member_context {
+
+struct Class {
   template <typename T>
-  static char brokenFoldCase(T input) {
-    return input - ('a' - 'A');
+  static void f(T) {}
+};
+
+template <typename T, void g(T)>
+void h(T x) {
+  g(x);
+}
+
+void test() {
+  // f should be rewritten.
+  h<int, Class::f>(0);
+  // Non-Blink should stay the same.
+  h<int, not_blink::Class::staticMethodTemplate>(1);
+}
+
+}  // test_template_arg_is_method_template_in_non_member_context
+
+namespace test_template_arg_is_method_template_in_member_context {
+
+struct Class {
+  template <typename T>
+  static void f(T) {}
+};
+
+struct Class2 {
+  template <typename T>
+  void f(T x) {
+    // f should be rewritten.
+    Class c;
+    c.f(x);
+    // Non-Blink should stay the same.
+    not_blink::Class c2;
+    c2.method(x);
   }
 };
+
+}  // namespace test_template_arg_is_method_template_in_member_context
 
 }  // namespace blink
