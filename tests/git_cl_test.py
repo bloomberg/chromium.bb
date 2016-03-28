@@ -163,21 +163,20 @@ class TestGitCl(TestCase):
                    '-M'+similarity, 'fake_ancestor_sha', 'HEAD'],), '+dat')
 
     return [
+      ((['git', 'config', 'rietveld.autoupdate'],), ''),
+      ((['git', 'config', 'rietveld.server'],),
+       'codereview.example.com'),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       similarity_call,
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       find_copies_call,
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ((['git', 'config', 'branch.master.rietveldissue'],), ''),
-      ((['git', 'config', 'branch.master.gerritissue'],), ''),
-      ((['git', 'config', 'rietveld.autoupdate'],), ''),
-      ((['git', 'config', 'gerrit.host'],), ''),
-      ((['git', 'config', 'rietveld.server'],),
-       'codereview.example.com'),
       ((['git', 'config', 'branch.master.merge'],), 'master'),
       ((['git', 'config', 'branch.master.remote'],), 'origin'),
       ((['get_or_create_merge_base', 'master', 'master'],),
        'fake_ancestor_sha'),
+      ((['git', 'config', 'gerrit.host'],), ''),
+      ((['git', 'config', 'branch.master.rietveldissue'],), ''),
       ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
       ((['git', 'rev-parse', '--show-cdup'],), ''),
       ((['git', 'rev-parse', 'HEAD'],), '12345'),
@@ -280,6 +279,8 @@ class TestGitCl(TestCase):
           'svn-remote.svn.fetch trunk/src:refs/remotes/origin/master'),
          None),
         0)),
+      ((['git',
+         'config', 'rietveld.server'],), 'codereview.example.com'),
       ((['git', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
       ((['git', 'config', '--int', '--get',
         'branch.working.git-cl-similarity'],), ''),
@@ -287,10 +288,6 @@ class TestGitCl(TestCase):
       ((['git', 'config', '--int', '--get',
         'branch.working.git-find-copies'],), ''),
       ((['git', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
-      ((['git',
-         'config', 'branch.working.rietveldissue'],), '12345'),
-      ((['git',
-         'config', 'rietveld.server'],), 'codereview.example.com'),
       ((['git',
          'config', 'branch.working.merge'],), 'refs/heads/master'),
       ((['git', 'config', 'branch.working.remote'],), 'origin'),
@@ -325,6 +322,8 @@ class TestGitCl(TestCase):
          '.'],),
         'M\tPRESUBMIT.py'),
       ((['git',
+         'config', 'branch.working.rietveldissue'],), '12345'),
+      ((['git',
          'config', 'branch.working.rietveldpatchset'],), '31137'),
       ((['git', 'config', 'branch.working.rietveldserver'],),
          'codereview.example.com'),
@@ -335,6 +334,8 @@ class TestGitCl(TestCase):
   @classmethod
   def _dcommit_calls_bypassed(cls):
     return [
+      ((['git',
+         'config', 'branch.working.rietveldissue'],), '12345'),
       ((['git', 'config', 'branch.working.rietveldserver'],),
          'codereview.example.com'),
   ]
@@ -342,6 +343,7 @@ class TestGitCl(TestCase):
   @classmethod
   def _dcommit_calls_3(cls):
     return [
+      ((['git', 'config', 'gerrit.host'],), ''),
       ((['git',
          'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
          '-l100000', '-C50', 'fake_ancestor_sha',
@@ -544,6 +546,10 @@ class TestGitCl(TestCase):
   @classmethod
   def _gerrit_base_calls(cls):
     return [
+        ((['git', 'config', 'rietveld.autoupdate'],),
+         ''),
+        ((['git',
+           'config', 'rietveld.server'],), 'codereview.example.com'),
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
         ((['git', 'config', '--int', '--get',
           'branch.master.git-cl-similarity'],), ''),
@@ -551,22 +557,21 @@ class TestGitCl(TestCase):
         ((['git', 'config', '--int', '--get',
           'branch.master.git-find-copies'],), ''),
         ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-        ((['git', 'config', 'branch.master.rietveldissue'],), ''),
-        ((['git', 'config', 'branch.master.gerritissue'],), ''),
-        ((['git', 'config', 'rietveld.autoupdate'],), ''),
-        ((['git', 'config', 'gerrit.host'],), 'True'),
         ((['git', 'config', 'branch.master.merge'],), 'master'),
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
         ((['get_or_create_merge_base', 'master', 'master'],),
          'fake_ancestor_sha'),
-      ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
+        ((['git', 'config', 'gerrit.host'],), 'True'),
+        ] + cls._git_sanity_checks('fake_ancestor_sha', 'master') + [
         ((['git', 'rev-parse', '--show-cdup'],), ''),
         ((['git', 'rev-parse', 'HEAD'],), '12345'),
         ((['git',
            'diff', '--name-status', '--no-renames', '-r',
            'fake_ancestor_sha...', '.'],),
          'M\t.gitignore\n'),
-        ((['git', 'config', 'branch.master.gerritpatchset'],), ''),
+        ((['git', 'config', 'branch.master.rietveldissue'],), ''),
+        ((['git',
+           'config', 'branch.master.rietveldpatchset'],), ''),
         ((['git',
            'log', '--pretty=format:%s%n%n%b', 'fake_ancestor_sha...'],),
          'foo'),
@@ -575,7 +580,7 @@ class TestGitCl(TestCase):
            'diff', '--no-ext-diff', '--stat', '--find-copies-harder',
            '-l100000', '-C50', 'fake_ancestor_sha', 'HEAD'],),
          '+dat'),
-      ]
+        ]
 
   @classmethod
   def _gerrit_upload_calls(cls, description, reviewers, squash,
@@ -657,12 +662,7 @@ class TestGitCl(TestCase):
         ]
     if squash:
       calls += [
-          ((['git', 'config', 'branch.master.gerritissue', '123456'],), ''),
-          ((['git', 'config', 'branch.master.gerritserver'],), ''),
-          ((['git', 'config', 'remote.origin.url'],),
-            'https://chromium.googlesource.com/my/repo.git'),
-          ((['git', 'config', 'branch.master.gerritserver',
-          'https://chromium-review.googlesource.com'],), ''),
+          ((['git', 'config', 'branch.master.rietveldissue', '123456'],), ''),
           ((['git', 'rev-parse', 'HEAD'],), 'abcdef0123456789'),
           ((['git', 'update-ref', '-m', 'Uploaded abcdef0123456789',
             'refs/heads/git_cl_uploads/master', 'abcdef0123456789'],),
@@ -886,12 +886,9 @@ class TestGitCl(TestCase):
     self.assertNotEqual(git_cl.main(['diff']), 0)
 
   def _patch_common(self):
-    self.mock(git_cl._RietveldChangelistImpl, 'GetMostRecentPatchset',
-              lambda x: '60001')
-    self.mock(git_cl._RietveldChangelistImpl, 'GetPatchSetDiff',
-              lambda *args: None)
-    self.mock(git_cl.Changelist, 'GetDescription',
-              lambda *args: 'Description')
+    self.mock(git_cl.Changelist, 'GetMostRecentPatchset', lambda x: '60001')
+    self.mock(git_cl.Changelist, 'GetPatchSetDiff', lambda *args: None)
+    self.mock(git_cl.Changelist, 'GetDescription', lambda *args: 'Description')
     self.mock(git_cl.Changelist, 'SetIssue', lambda *args: None)
     self.mock(git_cl.Changelist, 'SetPatchset', lambda *args: None)
     self.mock(git_cl, 'IsGitVersionAtLeast', lambda *args: True)
@@ -911,8 +908,6 @@ class TestGitCl(TestCase):
          'Description\n\n' +
          'patch from issue 123456 at patchset 60001 ' +
          '(http://crrev.com/123456#ps60001)'],), ''),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
-      ((['git', 'config', 'branch.master.rietveldserver'],), ''),
     ]
     self.assertEqual(git_cl.main(['patch', '123456']), 0)
 
