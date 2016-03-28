@@ -64,8 +64,6 @@ badbraces {
 
 Running: testNonZeroLineMapping
 ====== 8< ------
-
-
 div {
     color: red;
 }
