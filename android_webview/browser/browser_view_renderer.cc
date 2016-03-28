@@ -260,7 +260,10 @@ bool BrowserViewRenderer::OnDrawHardware() {
   if (!frame.frame.get()) {
     TRACE_EVENT_INSTANT0("android_webview", "NoNewFrame",
                          TRACE_EVENT_SCOPE_THREAD);
-    return shared_renderer_state_.HasFrameOnUI();
+    hardware_enabled_ = shared_renderer_state_.HasFrameOnUI();
+    if (!hardware_enabled_)
+      UpdateMemoryPolicy();
+    return hardware_enabled_;
   }
 
   scoped_ptr<ChildFrame> child_frame = make_scoped_ptr(new ChildFrame(
