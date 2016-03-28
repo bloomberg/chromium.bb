@@ -128,6 +128,15 @@ public class ViewResourceInflater {
      * Invalidate the inflated View, causing a snapshot of the View to be captured.
      */
     public void invalidate() {
+        invalidate(false);
+    }
+
+    /**
+     * Invalidate the inflated View, causing a snapshot of the View to be captured.
+     *
+     * @param didViewSizeChange Whether the View's size has changed..
+     */
+    public void invalidate(boolean didViewSizeChange) {
         // View must be inflated at this point. If it's not, do it now.
         if (mView == null) {
             inflate();
@@ -135,22 +144,26 @@ public class ViewResourceInflater {
 
         mIsInvalidated = true;
 
-        // If the View is already attached, we don't need to do anything because the
-        // snapshot will be captured automatically when the View is drawn.
-        if (!mIsAttached) {
-            if (shouldAttachView()) {
-                // TODO(pedrosimonetti): investigate if complex views can be rendered offline.
-                // NOTE(pedrosimonetti): it seems that complex views don't get rendered
-                // properly if not attached to the hierarchy. The problem seem to be related
-                // to the use of the property "layout_gravity: end", possibly in combination
-                // of other things like elastic views (layout_weight: 1) and/or fading edges.
-                attachView();
-            } else {
-                // When the View is not attached, we need to manually layout the View
-                // and invalidate the resource in order to capture a new snapshot.
-                layout();
-                invalidateResource();
+        if (!mIsAttached && shouldAttachView()) {
+            // TODO(pedrosimonetti): investigate if complex views can be rendered offline.
+            // NOTE(pedrosimonetti): it seems that complex views don't get rendered
+            // properly if not attached to the hierarchy. The problem seem to be related
+            // to the use of the property "layout_gravity: end", possibly in combination
+            // of other things like elastic views (layout_weight: 1) and/or fading edges.
+            attachView();
+        }
+
+        if (mIsAttached) {
+            // Update the View's layout params, which will trigger a re-layout.
+            if (didViewSizeChange) {
+                updateLayoutParams();
             }
+        } else {
+            // When the View is not attached, we need to manually layout the View and
+            // invalidate the resource in order to capture a new snapshot.
+            mView.measure(getWidthMeasureSpec(), getHeightMeasureSpec());
+            mView.layout(0, 0, getMeasuredWidth(), getMeasuredHeight());
+            invalidateResource();
         }
     }
 
@@ -283,14 +296,29 @@ public class ViewResourceInflater {
     }
 
     /**
-     * Layout the View. This is to be used when the View is not attached to the hierarchy.
+     * Lay out the view according to the current width and height measure specs.
      */
-    private void layout() {
+    private void updateLayoutParams() {
         // View must be inflated at this point.
         assert mView != null;
 
-        mView.measure(getWidthMeasureSpec(), getHeightMeasureSpec());
-        mView.layout(0, 0, getMeasuredWidth(), getMeasuredHeight());
+        // Update LayoutParams according to the current measure spec.
+        final int widthMeasureSpec = getWidthMeasureSpec();
+        int width = ViewGroup.LayoutParams.WRAP_CONTENT;
+        if (View.MeasureSpec.getMode(widthMeasureSpec) == View.MeasureSpec.EXACTLY) {
+            width = View.MeasureSpec.getSize(widthMeasureSpec);
+        }
+
+        final int heightMeasureSpec = getHeightMeasureSpec();
+        int height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        if (View.MeasureSpec.getMode(heightMeasureSpec) == View.MeasureSpec.EXACTLY) {
+            height = View.MeasureSpec.getSize(heightMeasureSpec);
+        }
+
+        ViewGroup.LayoutParams params = mView.getLayoutParams();
+        params.width = width;
+        params.height = height;
+        mView.setLayoutParams(params);
     }
 
     /**
