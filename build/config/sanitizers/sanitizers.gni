@@ -70,7 +70,7 @@ declare_args() {
   # buildtools/third_party/libc++abi) instead of stdlibc++ as standard library.
   # This is intended to be used for instrumented builds.
   use_custom_libcxx = (is_asan && (is_linux || is_mac)) || is_tsan || is_msan ||
-                      is_ubsan || use_libfuzzer
+                      is_ubsan || is_ubsan_security || use_libfuzzer
 
   # Enable Link Time Optimization (output programs runs faster,
   # but linking is up to 5-20x slower.
@@ -79,8 +79,8 @@ declare_args() {
   use_sanitizer_coverage = use_libfuzzer
 }
 
-using_sanitizer =
-    is_asan || is_lsan || is_tsan || is_msan || is_ubsan || is_ubsan_vptr
+using_sanitizer = is_asan || is_lsan || is_tsan || is_msan || is_ubsan ||
+                  is_ubsan_vptr || is_ubsan_security
 
 assert(!using_sanitizer || is_clang,
        "Sanitizers (is_*san) require setting is_clang = true in 'gn args'")
