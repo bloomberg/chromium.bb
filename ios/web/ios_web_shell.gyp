@@ -16,30 +16,6 @@
         '../..',
       ],
       'dependencies': [
-        'ios_web_shell_lib',
-      ],
-      'xcode_settings': {
-        'INFOPLIST_FILE': 'shell/Info.plist',
-        'STRIPFLAGS': '-S',
-        'OTHER_LDFLAGS': [
-          '-Xlinker -objc_abi_version',
-          '-Xlinker 2',
-          '-exported_symbols_list',
-          '../../ios/web/ios_web_shell_exported_symbols_list'
-        ]
-      },
-      'sources': [
-        'shell/web_exe_main.mm',
-      ],
-    },
-    {
-      # GN version: //ios/web/shell:shell
-      'target_name': 'ios_web_shell_lib',
-      'type': 'static_library',
-      'include_dirs': [
-        '../..',
-      ],
-      'dependencies': [
         'ios_web.gyp:ios_web',
         'ios_web.gyp:ios_web_app',
         '../../base/base.gyp:base',
@@ -54,6 +30,24 @@
         '../../net/net.gyp:net',
         '../../ui/base/ui_base.gyp:ui_base',
       ],
+      'xcode_settings': {
+        'INFOPLIST_FILE': 'shell/Info.plist',
+        'STRIPFLAGS': '-S',
+        # For XCTests a test bundle is injected into the application. Some
+        # symbols are required by the tests, and should be included in
+        # the file 'ios_web_shell_exported_symbols_list'. The use of
+        # -exported_symbols_list ensures that the symbols in this file are
+        # exposed. GCC_SYMBOLS_PRIVATE_EXTERN must also be set to 'NO', to
+        # ensure symbols aren't hidden and not able to be exposed with
+        # -exported_symbols_list. For more information see 'man ld'.
+        'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
+        'OTHER_LDFLAGS': [
+          '-Xlinker -objc_abi_version',
+          '-Xlinker 2',
+          '-exported_symbols_list',
+          '../../ios/web/ios_web_shell_exported_symbols_list',
+        ]
+      },
       'sources': [
         'shell/app_delegate.h',
         'shell/app_delegate.mm',
@@ -71,10 +65,8 @@
         'shell/shell_web_main_parts.mm',
         'shell/view_controller.h',
         'shell/view_controller.mm',
+        'shell/web_exe_main.mm',
       ],
-      'xcode_settings': {
-        'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
-      },
       'link_settings': {
         'libraries': [
           '$(SDKROOT)/System/Library/Frameworks/CoreGraphics.framework',
