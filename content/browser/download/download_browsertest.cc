@@ -1071,7 +1071,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, StrongValidators) {
 
 // Resumption should only attempt to contact the final URL if the download has a
 // URL chain.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, DISABLED_RedirectBeforeResume) {
+// Fails on Win x64 GN (dbg).  https://crbug.com/598360
+#if defined(OS_WIN)
+#define MAYBE_RedirectBeforeResume DISABLED_RedirectBeforeResume
+#else
+#define MAYBE_RedirectBeforeResume RedirectBeforeResume
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_RedirectBeforeResume) {
   TestDownloadRequestHandler request_handler_1(
       GURL("http://example.com/first-url"));
   request_handler_1.StartServingStaticResponse(
@@ -1125,7 +1131,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DISABLED_RedirectBeforeResume) {
 
 // If a resumption request results in a redirect, the response should be ignored
 // and the download should be marked as interrupted again.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectWhileResume) {
+// Fails on Win x64 GN (dbg).  https://crbug.com/598360
+#if defined(OS_WIN)
+#define MAYBE_RedirectWhileResume DISABLED_RedirectWhileResume
+#else
+#define MAYBE_RedirectWhileResume RedirectWhileResume
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_RedirectWhileResume) {
   TestDownloadRequestHandler request_handler(
       GURL("http://example.com/first-url"));
   TestDownloadRequestHandler::Parameters parameters =
@@ -1187,7 +1199,13 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectWhileResume) {
 // not the range that was requested or an invalid or missing Content-Range
 // header), then the download should be marked as interrupted again without
 // discarding the partial state.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, BadRangeHeader) {
+// Fails on Win x64 GN (dbg).  https://crbug.com/598360
+#if defined(OS_WIN)
+#define MAYBE_BadRangeHeader DISABLED_BadRangeHeader
+#else
+#define MAYBE_BadRangeHeader BadRangeHeader
+#endif
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, MAYBE_BadRangeHeader) {
   TestDownloadRequestHandler request_handler;
   TestDownloadRequestHandler::Parameters parameters =
       TestDownloadRequestHandler::Parameters::WithSingleInterruption();
