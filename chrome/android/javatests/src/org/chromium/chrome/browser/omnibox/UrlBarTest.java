@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.view.inputmethod.BaseInputConnection;
 
 import org.chromium.base.ThreadUtils;
@@ -290,6 +291,55 @@ public class UrlBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         assertEquals("Has autocomplete", true, state.hasAutocomplete);
         assertEquals("Text w/o Autocomplete", "test", state.textWithoutAutocomplete);
         assertEquals("Text w/ Autocomplete", "testing is fun", state.textWithAutocomplete);
+    }
+
+    /**
+     * Ensure that we allow inline autocomplete when the text gets shorter but is not an explicit
+     * delete action by the user.
+     *
+     * If you focus the omnibox and there is the selected text "[about:blank]", then typing new text
+     * should clear that entirely and allow autocomplete on the newly entered text.
+     *
+     * If we assume deletes happen any time the text gets shorter, then this would be prevented.
+     */
+    @SmallTest
+    @Feature({"Omnibox"})
+    public void testAutocompleteAllowedWhenReplacingText()
+            throws InterruptedException, TimeoutException {
+        startMainActivityOnBlankPage();
+
+        final String textToBeEntered = "c";
+
+        final CallbackHelper autocompleteHelper = new CallbackHelper();
+        final AtomicBoolean didPreventInlineAutocomplete = new AtomicBoolean();
+        final StubAutocompleteController controller = new StubAutocompleteController() {
+            @Override
+            public void start(Profile profile, String url, String text, int cursorPosition,
+                    boolean preventInlineAutocomplete) {
+                if (!TextUtils.equals(textToBeEntered, text)) return;
+                if (autocompleteHelper.getCallCount() != 0) return;
+
+                didPreventInlineAutocomplete.set(preventInlineAutocomplete);
+                autocompleteHelper.notifyCalled();
+            }
+        };
+        setAutocompleteController(controller);
+
+        final UrlBar urlBar = getUrlBar();
+        OmniboxTestUtils.toggleUrlBarFocus(urlBar, true);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                urlBar.beginBatchEdit();
+                urlBar.setText(textToBeEntered);
+                urlBar.setSelection(textToBeEntered.length());
+                urlBar.endBatchEdit();
+            }
+        });
+        autocompleteHelper.waitForCallback(0);
+        assertFalse("Inline autocomplete incorrectly prevented.",
+                didPreventInlineAutocomplete.get());
     }
 
     @SmallTest

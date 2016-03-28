@@ -117,8 +117,9 @@ public class UrlBar extends VerticallyFixedEditText {
     private long mFirstFocusTimeMs;
 
     private boolean mInBatchEditMode;
-    private int mBeforeBatchEditLength;
+    private String mBeforeBatchEditAutocompleteText;
     private boolean mSelectionChangedInBatchMode;
+    private boolean mTextDeletedInBatchMode;
 
     private boolean mIsPastedText;
     // Used as a hint to indicate the text may contain an ellipsize span.  This will be true if an
@@ -359,9 +360,11 @@ public class UrlBar extends VerticallyFixedEditText {
 
     @Override
     public void onBeginBatchEdit() {
-        mBeforeBatchEditLength = getText().length();
+        mBeforeBatchEditAutocompleteText = getTextWithoutAutocomplete();
+
         super.onBeginBatchEdit();
         mInBatchEditMode = true;
+        mTextDeletedInBatchMode = false;
     }
 
     @Override
@@ -374,12 +377,12 @@ public class UrlBar extends VerticallyFixedEditText {
             mSelectionChangedInBatchMode = false;
         }
 
-        int currentTextLength = getText().length();
-        if (currentTextLength != 0 || mBeforeBatchEditLength != 0) {
-            boolean textDeleted = currentTextLength < mBeforeBatchEditLength;
-            notifyAutocompleteTextStateChanged(textDeleted);
+        if (!TextUtils.equals(mBeforeBatchEditAutocompleteText, getTextWithoutAutocomplete())) {
+            notifyAutocompleteTextStateChanged(mTextDeletedInBatchMode);
         }
-        mBeforeBatchEditLength = 0;
+
+        mTextDeletedInBatchMode = false;
+        mBeforeBatchEditAutocompleteText = null;
     }
 
     @Override
@@ -836,6 +839,8 @@ public class UrlBar extends VerticallyFixedEditText {
         if (!mInBatchEditMode) {
             limitDisplayableLength();
             notifyAutocompleteTextStateChanged(lengthAfter == 0);
+        } else {
+            mTextDeletedInBatchMode = lengthAfter == 0;
         }
         mIsPastedText = false;
     }
