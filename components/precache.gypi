@@ -18,7 +18,6 @@
         '..',
       ],
       'sources': [
-        'precache/core/fetcher_pool.h',
         'precache/core/precache_database.cc',
         'precache/core/precache_database.h',
         'precache/core/precache_fetcher.cc',
