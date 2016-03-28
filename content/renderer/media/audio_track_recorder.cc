@@ -240,7 +240,7 @@ void AudioTrackRecorder::AudioEncoder::OnSetFormat(
 void AudioTrackRecorder::AudioEncoder::EncodeAudio(
     scoped_ptr<media::AudioBus> input_bus,
     const base::TimeTicks& capture_time) {
-  DVLOG(1) << __FUNCTION__ << ", #frames " << input_bus->frames();
+  DVLOG(3) << __FUNCTION__ << ", #frames " << input_bus->frames();
   DCHECK(encoder_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(input_bus->channels(), input_params_.channels());
   DCHECK(!capture_time.is_null());

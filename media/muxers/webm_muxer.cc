@@ -147,7 +147,7 @@ void WebmMuxer::OnEncodedVideo(const scoped_refptr<VideoFrame>& video_frame,
 void WebmMuxer::OnEncodedAudio(const media::AudioParameters& params,
                                scoped_ptr<std::string> encoded_data,
                                base::TimeTicks timestamp) {
-  DVLOG(1) << __FUNCTION__ << " - " << encoded_data->size() << "B";
+  DVLOG(2) << __FUNCTION__ << " - " << encoded_data->size() << "B";
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!audio_track_index_) {
@@ -173,6 +173,22 @@ void WebmMuxer::OnEncodedAudio(const media::AudioParameters& params,
 
   AddFrame(std::move(encoded_data), audio_track_index_, timestamp,
            true /* is_key_frame -- always true for audio */);
+}
+
+void WebmMuxer::Pause() {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!elapsed_time_in_pause_)
+    elapsed_time_in_pause_.reset(new base::ElapsedTimer());
+}
+
+void WebmMuxer::Resume() {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (elapsed_time_in_pause_) {
+    total_time_in_pause_ += elapsed_time_in_pause_->Elapsed();
+    elapsed_time_in_pause_.reset();
+  }
 }
 
 void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
@@ -204,6 +220,7 @@ void WebmMuxer::AddVideoTrack(const gfx::Size& frame_size, double frame_rate) {
 }
 
 void WebmMuxer::AddAudioTrack(const media::AudioParameters& params) {
+  DVLOG(1) << __FUNCTION__ << " " << params.AsHumanReadableString();
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(0u, audio_track_index_)
       << "WebmMuxer audio can only be initialised once.";
@@ -270,7 +287,8 @@ void WebmMuxer::AddFrame(scoped_ptr<std::string> encoded_data,
   DCHECK(!has_audio_ || audio_track_index_);
 
   most_recent_timestamp_ =
-      std::max(most_recent_timestamp_, timestamp - first_frame_timestamp_);
+      std::max(most_recent_timestamp_,
+               timestamp - total_time_in_pause_ - first_frame_timestamp_);
 
   segment_.AddFrame(reinterpret_cast<const uint8_t*>(encoded_data->data()),
                     encoded_data->size(), track_index,

@@ -209,6 +209,7 @@ void MediaRecorderHandler::pause() {
     video_recorder->Pause();
   for (const auto& audio_recorder : audio_recorders_)
     audio_recorder->Pause();
+  webm_muxer_->Pause();
 }
 
 void MediaRecorderHandler::resume() {
@@ -219,6 +220,7 @@ void MediaRecorderHandler::resume() {
     video_recorder->Resume();
   for (const auto& audio_recorder : audio_recorders_)
     audio_recorder->Resume();
+  webm_muxer_->Resume();
 }
 
 void MediaRecorderHandler::OnEncodedVideo(
