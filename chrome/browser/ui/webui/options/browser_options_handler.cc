@@ -1419,6 +1419,9 @@ void BrowserOptionsHandler::UpdateAccountPicture() {
     base::StringValue email_value(email);
     web_ui()->CallJavascriptFunction("BrowserOptions.updateAccountPicture",
                                      email_value);
+    web_ui()->CallJavascriptFunction(
+        "AccountsOptions.getInstance().updateAccountPicture",
+        email_value);
   }
 }
 

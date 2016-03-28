@@ -129,6 +129,15 @@ cr.define('options', function() {
       chrome.send('unwhitelistUser', [e.user.username]);
       chrome.send('coreOptionsUserMetricsAction',
                   ['Options_WhitelistedUser_Remove']);
+    },
+
+    /**
+     * Update account picture.
+     * @param {string} username User for which to update the image.
+     */
+    updateAccountPicture: function(username) {
+      if (this.showWhitelist_)
+        $('userList').updateAccountPicture(username);
     }
   };
 
@@ -140,14 +149,6 @@ cr.define('options', function() {
     return loadTimeData.getBoolean('whitelist_is_managed');
   };
 
-  /**
-   * Update account picture.
-   * @param {string} username User for which to update the image.
-   */
-  AccountsOptions.updateAccountPicture = function(username) {
-    if (this.showWhitelist_)
-      $('userList').updateAccountPicture(username);
-  };
 
   // Export
   return {
