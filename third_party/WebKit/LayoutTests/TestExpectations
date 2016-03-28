@@ -366,8 +366,6 @@ crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/dom/length-list-parser.html [ Fail
 crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/transforms/text-with-pattern-with-svg-transform.svg [ Failure Pass ]
 crbug.com/552433 [ Linux Mac Win10 Win7 ] svg/hixie/perf/006.xml [ Failure Pass ]
 
-crbug.com/591199 fast/repaint/repaint-during-scroll-with-zoom.html [ NeedsRebaseline ]
-
 crbug.com/581661 svg/hixie/perf/002.xml [ NeedsManualRebaseline ]
 crbug.com/581661 svg/batik/text/textOnPath.svg [ NeedsManualRebaseline ]
 crbug.com/581661 svg/hixie/perf/001.xml [ NeedsManualRebaseline ]
