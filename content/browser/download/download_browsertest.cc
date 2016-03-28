@@ -1071,7 +1071,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, StrongValidators) {
 
 // Resumption should only attempt to contact the final URL if the download has a
 // URL chain.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectBeforeResume) {
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DISABLED_RedirectBeforeResume) {
   TestDownloadRequestHandler request_handler_1(
       GURL("http://example.com/first-url"));
   request_handler_1.StartServingStaticResponse(
