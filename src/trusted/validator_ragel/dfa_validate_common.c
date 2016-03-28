@@ -83,6 +83,10 @@ static Bool RewriteNonTemporal(uint8_t *ptr, uint8_t *end, uint32_t info) {
     /* movntq => movq */
     ptr[1] = 0x7f;
     return TRUE;
+  } else if (size >= 2 && memcmp(ptr, "\x0f\x2b", 2) == 0) {
+    /* movntps => movaps */
+    ptr[1] = 0x29;
+    return TRUE;
   } else if (size >= 3 && memcmp(ptr, "\x66\x0f\xe7", 3) == 0) {
     /* movntdq => movdqa */
     ptr[2] = 0x7f;

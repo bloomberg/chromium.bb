@@ -29,6 +29,14 @@ GLOBAL_SYM(movntq_code_post_rewrite)
     movq %mm0, (%ebx)
 GLOBAL_SYM(movntq_code_post_rewrite_end)
 
+GLOBAL_SYM(movntps_code)
+    movntps %xmm0, (%ebx)
+GLOBAL_SYM(movntps_code_end)
+
+GLOBAL_SYM(movntps_code_post_rewrite)
+    movaps %xmm0, (%ebx)
+GLOBAL_SYM(movntps_code_post_rewrite_end)
+
 GLOBAL_SYM(movntdq_code)
     movntdq %xmm0, (%edx)
 GLOBAL_SYM(movntdq_code_end)

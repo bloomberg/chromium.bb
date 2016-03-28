@@ -38,6 +38,7 @@ struct TestCode {
 DECLARE_TEMPLATE(no_rewrite_code)
 #if NACL_BUILD_SUBARCH == 32
 DECLARE_TEMPLATE(movntq_code)
+DECLARE_TEMPLATE(movntps_code)
 DECLARE_TEMPLATE(movntdq_code)
 DECLARE_TEMPLATE(prefetchnta_code)
 #else
@@ -112,6 +113,10 @@ TEST_F(ValidationMovntRewriteTests, DisableNonTemporalsNoRewrite) {
 
 TEST_F(ValidationMovntRewriteTests, RewriteMovntq) {
   TestRewrite(&t_movntq_code);
+}
+
+TEST_F(ValidationMovntRewriteTests, RewriteMovntps) {
+  TestRewrite(&t_movntps_code);
 }
 
 TEST_F(ValidationMovntRewriteTests, RewriteMovntdq) {
