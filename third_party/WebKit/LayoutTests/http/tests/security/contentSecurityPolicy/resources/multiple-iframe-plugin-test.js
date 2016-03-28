@@ -30,13 +30,13 @@ function testImpl(experimental) {
     if (current[2])
         iframe.src += "&plugin=" + escape(current[2]);
     else {
-        iframe.src += "&plugin=data:application/x-webkit-test-netscape,logifloaded";
+        iframe.src += "&plugin=data:application/x-blink-test-plugin,";
     }
 
     if (current[3] !== undefined)
         iframe.src += "&type=" + escape(current[3]);
     else
-        iframe.src += "&type=application/x-webkit-test-netscape";
+        iframe.src += "&type=application/x-blink-test-plugin";
 
     iframe.onload = function() {
         if (window.internals)

@@ -1,19 +1,45 @@
 #!/usr/bin/perl -wT
 use strict;
+use warnings;
 use CGI;
 
 my $cgi = new CGI;
+my $csp = $cgi->param('csp');
+my $plugin = $cgi->param('plugin');
+my $log = $cgi->param('log');
+my $type = $cgi->param('type');
 
-print "Content-Type: text/html; charset=UTF-8\n";
-print "Content-Security-Policy: ".$cgi->param('csp')."\n\n";
+if ($type) {
+  $type = qq/type="$type"/;
+}
 
-print "<!DOCTYPE html>\n";
-print "<html>\n";
-print "<body>\n";
-print "<script src=\"/plugins/resources/mock-plugin-logger.js\"></script>\n";
-print "<object data=\"".$cgi->param('plugin')."\"\n";
-print "        log=\"".$cgi->param('log')."\"\n" if $cgi->param('log');
-print "        type=\"".$cgi->param('type')."\"\n" if $cgi->param('type');
-print "></object>\n";
-print "</body>\n";
-print "</html>\n";
+print qq,Content-Type: text/html; charset=UTF-8
+Content-Security-Policy: $csp
+
+<!DOCTYPE html>
+<html>
+<body>
+<object data="$plugin" $type></object>
+,;
+
+if ($log) {
+  print qq@<script>
+function log(s) {
+  var console = document.querySelector('#console');
+  if (!console) {
+    console = document.body.appendChild(document.createElement('div'));
+    console.id = 'console';
+  }
+  console.appendChild(
+      document.createElement('p')).appendChild(
+          document.createTextNode(s));
+}
+if (document.querySelector('object').postMessage)
+  log("$log");
+</script>@;
+}
+
+print qq,
+</body>
+</html>
+,;

@@ -6,7 +6,7 @@ if (window.testRunner) {
 function appendObjectElement(type) {
     window.onload = function () {
         var o = document.createElement('object');
-        o.setAttribute('type', 'application/x-webkit-test-netscape');
+        o.setAttribute('type', 'application/x-blink-test-plugin');
         o.addEventListener('load', function () {
             console.log('FAIL: The object should have been blocked.');
             if (window.testRunner)

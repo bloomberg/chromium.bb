@@ -582,12 +582,6 @@ crbug.com/517840 imported/web-platform-tests/webrtc/rtcpeerconnection/rtcpeercon
 
 # Linux Aura doesn't support NPAPI plugins (yet?)
 crbug.com/318978 [ Linux ] compositing/plugins/invalidate_rect.html [ Skip ]
-crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-affects-child.html [ Skip ]
-crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-invalid.html [ Skip ]
-crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/1.1/plugintypes-url-01.html [ Skip ]
-crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/object-src-does-not-affect-child.html [ Skip ]
-crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/object-src-none-allowed.html [ Skip ]
-crbug.com/318978 [ Linux ] http/tests/security/contentSecurityPolicy/plugin-in-iframe-with-csp.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/form-value.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/refcount-leaks.html [ Skip ]
@@ -875,6 +869,8 @@ crbug.com/368946 virtual/stable/web-animations-api/eased-keyframes.html [ Pass ]
 # These tests *only* run in stable, to verify that these features are unsupported and throw exceptions.
 crbug.com/441559 virtual/stable/web-animations-api/partial-keyframes-unsupported.html [ Pass ]
 crbug.com/437696 virtual/stable/web-animations-api/additive-animations-unsupported.html [ Pass ]
+
+crbug.com/474535 http/tests/security/contentSecurityPolicy/image-blocked-alt-content.html [ NeedsRebaseline ]
 
 # switching to apache-win32: needs triaging.
 crbug.com/528062 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ Failure ]

@@ -56,7 +56,6 @@ enum ObjectContentType {
     ObjectContentImage,
     ObjectContentFrame,
     ObjectContentNetscapePlugin,
-    ObjectContentOtherPlugin
 };
 
 enum ShouldSendReferrer {
