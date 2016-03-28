@@ -2465,6 +2465,10 @@ def GenerateGerritChangeId(message):
 
 def GerritUpload(options, args, cl, change):
   """upload the current branch to gerrit."""
+  # We assume the remote called "origin" is the one we want.
+  # It is probably not worthwhile to support different workflows.
+  gerrit_remote = 'origin'
+
   remote, remote_branch = cl.GetRemoteBranch()
   branch = GetTargetRef(remote, remote_branch, options.target_branch,
                         pending_prefix='')
@@ -2526,7 +2530,7 @@ def GerritUpload(options, args, cl, change):
       DownloadGerritHook(False)
       change_desc.set_description(AddChangeIdToCommitMessage(options, args))
     ref_to_push = 'HEAD'
-    parent = '%s/%s' % (remote, branch)
+    parent = '%s/%s' % (gerrit_remote, branch)
     change_id = git_footers.get_footer_change_id(change_desc.description)[0]
 
   commits = RunGitSilent(['rev-list', '%s..%s' % (parent,
@@ -2557,7 +2561,7 @@ def GerritUpload(options, args, cl, change):
   if receive_options:
     git_command.append('--receive-pack=git receive-pack %s' %
                        ' '.join(receive_options))
-  git_command += [remote, ref_to_push + ':refs/for/' + branch]
+  git_command += [gerrit_remote, ref_to_push + ':refs/for/' + branch]
   push_stdout = gclient_utils.CheckCallAndFilter(
       ['git'] + git_command,
       print_stdout=True,
