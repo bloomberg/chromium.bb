@@ -841,6 +841,7 @@
     ['enable_webrtc==1', {
       'dependencies': [
         '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
+        '../third_party/libjingle/libjingle.gyp:libpeerconnection',
         '../third_party/webrtc/modules/modules.gyp:audio_device',
         '../third_party/webrtc/modules/modules.gyp:audio_processing',
         '../third_party/webrtc/p2p/p2p.gyp:libstunprober',

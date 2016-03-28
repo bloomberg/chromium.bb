@@ -158,7 +158,10 @@ if (!is_mac) {
     }
 
     if (enable_webrtc) {
-      deps += [ "//third_party/libjingle:libjingle_webrtc" ]
+      deps += [
+        "//third_party/libjingle:libjingle_webrtc",
+        "//third_party/libjingle:libpeerconnection",
+      ]
     }
 
     if (is_android) {

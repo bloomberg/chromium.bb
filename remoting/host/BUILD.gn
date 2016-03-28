@@ -239,7 +239,7 @@ if (is_mac) {  # TODO(GYP) Mac build of remoting host.
 
     if (enable_webrtc) {
       public_deps += [
-        "//third_party/libjingle:libjingle_webrtc",
+        "//third_party/libjingle:libpeerconnection",
         "//third_party/webrtc/modules/desktop_capture",
       ]
     }

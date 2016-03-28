@@ -860,7 +860,7 @@
         '../mojo/mojo_base.gyp:mojo_application_base',
         '../mojo/mojo_edk.gyp:mojo_system_impl',
         '../mojo/mojo_public.gyp:mojo_cpp_bindings',
-        '../net/net.gyp:net_test_support',
+        '../net/net.gyp:net_test_support',  
         '../ppapi/ppapi_internal.gyp:ppapi_host',
         '../ppapi/ppapi_internal.gyp:ppapi_proxy',
         '../ppapi/ppapi_internal.gyp:ppapi_shared',
@@ -886,7 +886,7 @@
         '../ui/surface/surface.gyp:surface',
         '../url/url.gyp:url_lib',
         '../v8/tools/gyp/v8.gyp:v8',
-        'browser/speech/proto/speech_proto.gyp:speech_proto',
+        'browser/speech/proto/speech_proto.gyp:speech_proto', 
         'content_test_mojo_bindings',
         'content.gyp:content_app_both',
         'content.gyp:content_browser',
@@ -949,6 +949,7 @@
           ],
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
+            '../third_party/libjingle/libjingle.gyp:libpeerconnection',
             '../third_party/webrtc/modules/modules.gyp:video_capture_module',
           ],
         }],
@@ -1108,6 +1109,7 @@
           'sources': [ '<@(content_unittests_webrtc_sources)' ],
           'dependencies': [
             '../third_party/libjingle/libjingle.gyp:libjingle_webrtc',
+            '../third_party/libjingle/libjingle.gyp:libpeerconnection',
             '../third_party/webrtc/modules/modules.gyp:video_capture_module',
             '../ui/shell_dialogs/shell_dialogs.gyp:shell_dialogs',
           ],
