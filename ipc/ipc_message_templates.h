@@ -11,6 +11,7 @@
 #include <type_traits>
 
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 #include "base/tuple.h"
 #include "build/build_config.h"
 #include "ipc/ipc_message.h"
@@ -114,6 +115,7 @@ class MessageT<Meta, std::tuple<Ins...>, void> : public Message {
                        S* sender,
                        P* parameter,
                        Method func) {
+    TRACE_EVENT0("ipc", Meta::kName);
     Param p;
     if (Read(msg, &p)) {
       DispatchToMethod(obj, func, parameter, p);
@@ -162,6 +164,7 @@ class MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>
                        S* sender,
                        P* parameter,
                        Method func) {
+    TRACE_EVENT0("ipc", Meta::kName);
     SendParam send_params;
     bool ok = ReadSendParam(msg, &send_params);
     Message* reply = SyncMessage::GenerateReply(msg);
@@ -183,6 +186,7 @@ class MessageT<Meta, std::tuple<Ins...>, std::tuple<Outs...>>
                                  T* obj,
                                  P* parameter,
                                  Method func) {
+    TRACE_EVENT0("ipc", Meta::kName);
     SendParam send_params;
     bool ok = ReadSendParam(msg, &send_params);
     Message* reply = SyncMessage::GenerateReply(msg);
