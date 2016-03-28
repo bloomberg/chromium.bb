@@ -22,32 +22,36 @@ void CheckTlsVar(ModuleSet *modset, const char *name_of_getter,
 }  // namespace
 
 int main(int argc, char **argv) {
-  if (argc != 4) {
-    fprintf(stderr, "Usage: pll_loader_test <3 ELF files>\n");
+  if (argc != 5) {
+    fprintf(stderr, "Usage: pll_loader_test <Directory path> <3 ELF files>\n");
     return 1;
   }
 
-  const char *module_a_filename = argv[1];
-  const char *module_b_filename = argv[2];
-  const char *module_tls_filename = argv[3];
+  const char *module_directory = argv[1];
+  const char *module_a_soname = argv[2];
+  const char *module_b_soname = argv[3];
+  const char *module_tls_soname = argv[4];
 
   ModuleSet modset;
+  std::vector<std::string> search_path;
+  search_path.push_back(module_directory);
+  modset.SetSonameSearchPath(search_path);
 
   // "module_a_var" should only be resolvable after we load module A.
   int *module_a_var = (int *) modset.GetSym("module_a_var");
   ASSERT_EQ(module_a_var, NULL);
 
-  modset.AddByFilename(module_a_filename);
+  modset.AddBySoname(module_a_soname);
   module_a_var = (int *) modset.GetSym("module_a_var");
   ASSERT_NE(module_a_var, NULL);
   ASSERT_EQ(*module_a_var, 2345);
 
-  modset.AddByFilename(module_b_filename);
+  modset.AddBySoname(module_b_soname);
   int *module_b_var = (int *) modset.GetSym("module_b_var");
   ASSERT_NE(module_b_var, NULL);
   ASSERT_EQ(*module_b_var, 1234);
 
-  modset.AddByFilename(module_tls_filename);
+  modset.AddBySoname(module_tls_soname);
 
   modset.ResolveRefs();
 

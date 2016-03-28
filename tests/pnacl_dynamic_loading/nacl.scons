@@ -112,9 +112,10 @@ pll_loader_test = env.ComponentProgram(
 
 node = env.CommandSelLdrTestNacl(
     'pll_loader_test.out', pll_loader_test,
-    [test_pll_a, test_pll_b, test_pll_tls],
+    [Dir('.').abspath, 'test_pll_a.so', 'test_pll_b.so', 'test_pll_tls.so'],
     # Add '-a' to enable filesystem access for opening DSOs.
-    sel_ldr_flags=['-a'])
+    sel_ldr_flags=['-a'],
+    extra_deps=[test_pll_a, test_pll_b, test_pll_tls])
 env.AddNodeToTestSuite(
     node, ['small_tests', 'toolchain_tests'],
     'run_pll_loader_test', is_broken=is_broken)

@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include <algorithm>
 
@@ -82,6 +83,33 @@ void *PLLModule::InstantiateTLSBlock() {
                      root_->tls_template_data_size);
   memset((char *) base + root_->tls_template_data_size, 0, bss_size);
   return base;
+}
+
+void ModuleSet::SetSonameSearchPath(const std::vector<std::string> &dir_list) {
+  search_path_ = dir_list;
+}
+
+void ModuleSet::AddBySoname(const char *soname) {
+  // TODO(smklein): Deduplicate rather than failing once dependencies are added.
+  if (sonames_.count(soname) != 0) {
+    NaClLog(LOG_FATAL, "PLL Loader found duplicate soname: %s\n", soname);
+  }
+  sonames_.insert(soname);
+
+  // Actually load the module implied by the soname.
+  for (auto path : search_path_) {
+    // Appending "/" might be unnecessary, but "foo/bar" and "foo//bar" should
+    // point to the same file.
+    path.append("/");
+    path.append(soname);
+    struct stat buf;
+    if (stat(path.c_str(), &buf) == 0) {
+      AddByFilename(path.c_str());
+      return;
+    }
+  }
+
+  NaClLog(LOG_FATAL, "PLL Loader cannot find shared object file: %s\n", soname);
 }
 
 void ModuleSet::AddByFilename(const char *filename) {
