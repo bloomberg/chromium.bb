@@ -2658,6 +2658,9 @@ class BisectOptions(object):
                             'If this number is given, bisect will attempt to ' +
                             'verify that the bug is not closed before '
                             'starting.')
+    group.add_argument('--try_job_id', default=None,
+                       help='The id assigned by Perf Dashboard when sending ' +
+                            'try jobs.')
     group.add_argument('--required_initial_confidence', type=float,
                        default=80.0,
                        help='The required confidence score for the initial '

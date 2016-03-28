@@ -220,6 +220,9 @@ def _CreateBisectOptionsFromConfig(config):
   if config.has_key('bug_id') and str(config['bug_id']).isdigit():
     opts_dict['bug_id'] = config['bug_id']
 
+  if config.has_key('try_job_id'):
+    opts_dict['try_job_id'] = config['try_job_id']
+
   opts_dict['build_preference'] = 'ninja'
   opts_dict['output_buildbot_annotations'] = True
 
@@ -527,6 +530,7 @@ def _RunBisectionScript(
       ('bisect_mode', '--bisect_mode'),
       ('improvement_direction', '--improvement_direction'),
       ('bug_id', '--bug_id'),
+      ('try_job_id', '--try_job_id'),
       ('builder_type', '--builder_type'),
       ('target_arch', '--target_arch'),
       ('required_initial_confidence', '--required_initial_confidence'),
