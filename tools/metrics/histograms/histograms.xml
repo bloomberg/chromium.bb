@@ -835,6 +835,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Arc.LowMemoryKiller.Count">
+  <owner>elijahtaylor@google.com</owner>
+  <summary>Cumulative count of low memory kills in one user session.</summary>
+</histogram>
+
+<histogram name="Arc.LowMemoryKiller.FreedSize" units="KB">
+  <owner>elijahtaylor@google.com</owner>
+  <summary>The memory size freed by each low memory kill event.</summary>
+</histogram>
+
+<histogram name="Arc.LowMemoryKiller.TimeDelta" units="ms">
+  <owner>elijahtaylor@google.com</owner>
+  <summary>The elapsed time to last low memory kill event.</summary>
+</histogram>
+
 <histogram name="Arc.OptInAction" enum="ArcOptInAction">
   <owner>elijahtaylor@google.com</owner>
   <owner>mitsuji@google.com</owner>
@@ -848,11 +863,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ArcRuntime.LowMemoryKiller.FreedSize" units="KB">
+  <obsolete>
+    Renamed to Arc.LowMemoryKiller.FreedSize on 2016/03/24.
+  </obsolete>
   <owner>elijahtaylor@google.com</owner>
   <summary>The memory size freed by each low memory kill event.</summary>
 </histogram>
 
 <histogram name="ArcRuntime.LowMemoryKiller.TimeDelta" units="ms">
+  <obsolete>
+    Renamed to Arc.LowMemoryKiller.TimeDelta on 2016/03/24.
+  </obsolete>
   <owner>elijahtaylor@google.com</owner>
   <summary>The elapsed time to last low memory kill event.</summary>
 </histogram>

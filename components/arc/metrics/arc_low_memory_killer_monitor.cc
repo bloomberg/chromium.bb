@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/arc_low_memory_killer_monitor.h"
+#include "components/arc/metrics/arc_low_memory_killer_monitor.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -72,6 +72,7 @@ void ArcLowMemoryKillerMonitor::Run(
   int64_t timestamp, last_timestamp = -1;
   const TimeDelta kMaxTimeDelta =
       TimeDelta::FromSeconds(MAX_LOWMEMORYKILL_TIME_SECS);
+  int oom_kills = 0;
 
   while (fgets(buf, kMaxBufSize, kmsg_handle)) {
     if (worker_pool->IsShutdownInProgress()) {
@@ -99,11 +100,17 @@ void ArcLowMemoryKillerMonitor::Run(
           time_delta = TimeDelta::FromMicroseconds(timestamp - last_timestamp);
         }
         last_timestamp = timestamp;
-
-        UMA_HISTOGRAM_MEMORY_KB("ArcRuntime.LowMemoryKiller.FreedSize",
-                                freed_size);
         UMA_HISTOGRAM_LOWMEMORYKILL_TIMES(
-            "ArcRuntime.LowMemoryKiller.TimeDelta", time_delta);
+            "Arc.LowMemoryKiller.TimeDelta", time_delta);
+
+        ++oom_kills;
+        // Use cumulative count here. Partly because the loop may not exit when
+        // shutting down chrome due to the blocking fgets() call.
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Arc.LowMemoryKiller.Count", oom_kills, 1, 1000, 1001);
+
+        UMA_HISTOGRAM_MEMORY_KB("Arc.LowMemoryKiller.FreedSize",
+                                freed_size);
       }
     }
   }

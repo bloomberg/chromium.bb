@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_LOW_MEMORY_KILLER_MONITOR_H_
-#define CHROME_BROWSER_CHROMEOS_ARC_ARC_LOW_MEMORY_KILLER_MONITOR_H_
+#ifndef COMPONENTS_ARC_METRICS_ARC_LOW_MEMORY_KILLER_MONITOR_H_
+#define COMPONENTS_ARC_METRICS_ARC_LOW_MEMORY_KILLER_MONITOR_H_
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -41,4 +41,4 @@ class ArcLowMemoryKillerMonitor {
 
 }  // namespace arc
 
-#endif  // CHROME_BROWSER_CHROMEOS_ARC_ARC_LOW_MEMORY_KILLER_MONITOR_H_"
+#endif  // COMPONENTS_ARC_METRICS_ARC_LOW_MEMORY_KILLER_MONITOR_H_
