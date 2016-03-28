@@ -424,33 +424,32 @@ bool X509Certificate::IsIssuedByEncoded(
     sk_X509_NAME_push(issuer_names.get(), ca_name);
   }
 
-  // Create a temporary list of X509_NAME objects corresponding
-  // to the certificate chain. It doesn't own the object it points to.
-  std::vector<X509_NAME*> cert_names;
   ScopedX509 x509_cert = OSCertHandleToOpenSSL(cert_handle_);
   if (!x509_cert)
     return false;
-  X509_NAME* issuer = X509_get_issuer_name(x509_cert.get());
-  if (issuer == nullptr)
+  X509_NAME* cert_issuer = X509_get_issuer_name(x509_cert.get());
+  if (cert_issuer == nullptr)
     return false;
 
-  cert_names.push_back(issuer);
+  for (size_t m = 0; m < sk_X509_NAME_num(issuer_names.get()); ++m) {
+    X509_NAME* issuer = sk_X509_NAME_value(issuer_names.get(), m);
+    if (X509_NAME_cmp(issuer, cert_issuer) == 0) {
+      return true;
+    }
+  }
+
   for (OSCertHandles::iterator it = intermediate_ca_certs_.begin();
        it != intermediate_ca_certs_.end(); ++it) {
     ScopedX509 intermediate_cert = OSCertHandleToOpenSSL(*it);
     if (!intermediate_cert)
       return false;
-    issuer = X509_get_issuer_name(intermediate_cert.get());
-    if (issuer == nullptr)
+    cert_issuer = X509_get_issuer_name(intermediate_cert.get());
+    if (cert_issuer == nullptr)
       return false;
-    cert_names.push_back(issuer);
-  }
 
-  // and 'cert_names'.
-  for (size_t n = 0; n < cert_names.size(); ++n) {
     for (size_t m = 0; m < sk_X509_NAME_num(issuer_names.get()); ++m) {
       X509_NAME* issuer = sk_X509_NAME_value(issuer_names.get(), m);
-      if (X509_NAME_cmp(issuer, cert_names[n]) == 0) {
+      if (X509_NAME_cmp(issuer, cert_issuer) == 0) {
         return true;
       }
     }
