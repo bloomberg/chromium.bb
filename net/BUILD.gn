@@ -1766,6 +1766,17 @@ source_set("net_fuzzer_test_support") {
   ]
 }
 
+fuzzer_test("net_mime_sniffer_fuzzer") {
+  sources = [
+    "base/mime_sniffer_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+  ]
+}
+
 fuzzer_test("net_parse_proxy_list_pac_fuzzer") {
   sources = [
     "proxy/parse_proxy_list_pac_fuzzer.cc",
@@ -1809,17 +1820,6 @@ fuzzer_test("net_parse_proxy_rules_fuzzer") {
 fuzzer_test("net_parse_data_url_fuzzer") {
   sources = [
     "base/parse_data_url_fuzzer.cc",
-  ]
-  deps = [
-    ":net_fuzzer_test_support",
-    "//base",
-    "//net",
-  ]
-}
-
-fuzzer_test("net_sniff_mime_type_fuzzer") {
-  sources = [
-    "base/sniff_mime_type_fuzzer.cc",
   ]
   deps = [
     ":net_fuzzer_test_support",
