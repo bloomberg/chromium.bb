@@ -85,7 +85,7 @@ void MediaResourceTracker::DecrementUsageCount() {
         FROM_HERE, base::Bind(&MediaResourceTracker::CallDelegateStopOnUiThread,
                               base::Unretained(this)));
 
-    if (!finalize_completion_cb_.is_null())
+    if (delete_on_finalize_ || !finalize_completion_cb_.is_null())
       CallFinalizeOnMediaThread();
   }
 }
@@ -107,8 +107,7 @@ void MediaResourceTracker::CallInitializeOnMediaThread() {
   if (media_lib_initialized_)
     return;
 
-  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  media::CastMediaShlib::Initialize(cmd_line->argv());
+  DoInitializeMediaLib();
   media_lib_initialized_ = true;
 }
 
@@ -153,7 +152,7 @@ void MediaResourceTracker::CallFinalizeOnMediaThread() {
   DCHECK_EQ(media_use_count_, 0ul);
   DCHECK(media_lib_initialized_);
 
-  CastMediaShlib::Finalize();
+  DoFinalizeMediaLib();
   media_lib_initialized_ = false;
 
   if (!finalize_completion_cb_.is_null())
@@ -161,6 +160,15 @@ void MediaResourceTracker::CallFinalizeOnMediaThread() {
 
   if (delete_on_finalize_)
     ui_task_runner_->DeleteSoon(FROM_HERE, this);
+}
+
+void MediaResourceTracker::DoInitializeMediaLib() {
+  base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  media::CastMediaShlib::Initialize(cmd_line->argv());
+}
+
+void MediaResourceTracker::DoFinalizeMediaLib() {
+  CastMediaShlib::Finalize();
 }
 
 }  // namespace media

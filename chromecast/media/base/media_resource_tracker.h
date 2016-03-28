@@ -83,7 +83,8 @@ class MediaResourceTracker {
 
  private:
   friend class base::DeleteHelper<MediaResourceTracker>;
-  ~MediaResourceTracker();
+  friend class TestMediaResourceTracker;
+  virtual ~MediaResourceTracker();
 
   // Tasks posted to UI thread
   void CallDelegateStartOnUiThread();
@@ -94,6 +95,10 @@ class MediaResourceTracker {
   void MaybeCallFinalizeOnMediaThread(const base::Closure& completion_cb);
   void MaybeCallFinalizeOnMediaThreadAndDeleteSelf();
   void CallFinalizeOnMediaThread();
+
+  // Hooks for testing
+  virtual void DoInitializeMediaLib();
+  virtual void DoFinalizeMediaLib();
 
   // Accessed on UI thread
   Delegate* delegate_;
