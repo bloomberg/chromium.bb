@@ -379,6 +379,13 @@ bool GetNameForDecl(const clang::VarDecl& decl,
     name[1] = clang::toUppercase(name[1]);
   } else {
     name = CamelCaseToUnderscoreCase(original_name);
+
+    // Non-const variables with static storage duration at namespace scope are
+    // prefixed with `g_' to reduce the likelihood of a naming collision.
+    const clang::DeclContext* decl_context = decl.getDeclContext();
+    if (name.find("g_") != 0 && decl.hasGlobalStorage() &&
+        decl_context->isNamespace())
+      name.insert(0, "g_");
   }
 
   // Static members end with _ just like other members, but constants should
