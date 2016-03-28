@@ -46,4 +46,8 @@ public class EmptyBrowserParts implements BrowserParts {
         return false;
     }
 
+    @Override
+    public boolean isActivityFinishing() {
+        return false;
+    }
 }

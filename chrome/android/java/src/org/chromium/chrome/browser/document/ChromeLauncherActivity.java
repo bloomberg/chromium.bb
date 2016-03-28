@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
@@ -76,6 +77,7 @@ import org.chromium.ui.base.PageTransition;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Dispatches incoming intents to the appropriate activity based on the current configuration and
@@ -349,6 +351,16 @@ public class ChromeLauncherActivity extends Activity
         if (TextUtils.isEmpty(flavor)
                 || TextUtils.equals(ChromeSwitches.HERB_FLAVOR_DISABLED, flavor)) {
             return false;
+        } else if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_ELDERBERRY)) {
+            boolean isAllowedToReturnToExternalApp = IntentUtils.safeGetBooleanExtra(getIntent(),
+                    ChromeLauncherActivity.EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, true);
+
+            if (isAllowedToReturnToExternalApp
+                    && (getIntent().getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0
+                        || (getIntent().getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0) {
+                getIntent().addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            }
+            return isAllowedToReturnToExternalApp;
         } else if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_ANISE)
                 || TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_BASIL)
                 || TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_DILL)) {
@@ -371,12 +383,30 @@ public class ChromeLauncherActivity extends Activity
     /**
      * Adds extras to the Intent that are needed by Herb.
      */
-    public static void addHerbIntentExtras(Context context, Intent newIntent, Uri uri) {
-        Bundle herbBundle = new Bundle();
+    public static void updateHerbIntent(Context context, Intent newIntent, Uri uri) {
+        // For Elderberry flavored Herbs that are to be launched in a separate task, add a random
+        // UUID to try and prevent Android from refocusing/clobbering items that share the same
+        // base intent.  If we do support refocusing of existing Herbs, we need to do it on the
+        // current URL and not the URL that it was triggered with.
+        if (TextUtils.equals(
+                FeatureUtilities.getHerbFlavor(), ChromeSwitches.HERB_FLAVOR_ELDERBERRY)
+                && (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0
+                        || (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0) {
+            newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
+
+            String url = IntentHandler.getUrlFromIntent(newIntent);
+            assert url != null;
+
+            newIntent.setData(new Uri.Builder().scheme(UrlConstants.CUSTOM_TAB_SCHEME)
+                    .authority(UUID.randomUUID().toString())
+                    .query(url).build());
+        }
+
+        Bundle herbActionButtonBundle = new Bundle();
 
         Bitmap herbIcon =
                 BitmapFactory.decodeResource(context.getResources(), R.drawable.btn_open_in_chrome);
-        herbBundle.putParcelable(CustomTabsIntent.KEY_ICON, herbIcon);
+        herbActionButtonBundle.putParcelable(CustomTabsIntent.KEY_ICON, herbIcon);
 
         // Fallback in case the Custom Tab fails to trigger opening in Chrome.
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
@@ -385,13 +415,14 @@ public class ChromeLauncherActivity extends Activity
 
         PendingIntent pendingIntent =
                 PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_ONE_SHOT);
-        herbBundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pendingIntent);
+        herbActionButtonBundle.putParcelable(CustomTabsIntent.KEY_PENDING_INTENT, pendingIntent);
 
         String openString = context.getString(
                 R.string.menu_open_in_product, BuildInfo.getPackageLabel(context));
-        herbBundle.putString(CustomTabsIntent.KEY_DESCRIPTION, openString);
+        herbActionButtonBundle.putString(CustomTabsIntent.KEY_DESCRIPTION, openString);
 
-        newIntent.putExtra(CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE, herbBundle);
+        newIntent.putExtra(CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE, herbActionButtonBundle);
+        newIntent.putExtra(CustomTabsIntent.EXTRA_TINT_ACTION_BUTTON, true);
         newIntent.putExtra(CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, true);
         newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME, true);
         newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_SHOW_STAR_ICON, true);
@@ -427,7 +458,7 @@ public class ChromeLauncherActivity extends Activity
         newIntent.setAction(Intent.ACTION_VIEW);
         newIntent.setClassName(context, CustomTabActivity.class.getName());
         newIntent.setData(uri);
-        if (addHerbExtras) addHerbIntentExtras(context, newIntent, uri);
+        if (addHerbExtras) updateHerbIntent(context, newIntent, uri);
 
         return newIntent;
     }

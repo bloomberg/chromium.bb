@@ -73277,6 +73277,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-861678473" label="disable-offer-upload-credit-cards"/>
   <int value="-853594220" label="disable-new-avatar-menu"/>
   <int value="-836123854" label="wallet-service-use-sandbox"/>
+  <int value="-825942229" label="tab-management-experiment-type-elderberry"/>
   <int value="-820041355" label="enable-transition-compositing"/>
   <int value="-814097014" label="disable-session-crashed-bubble"/>
   <int value="-813474479" label="site-per-process"/>

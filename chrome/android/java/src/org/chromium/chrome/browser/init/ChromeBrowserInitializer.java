@@ -138,6 +138,8 @@ public class ChromeBrowserInitializer {
 
         preInflationStartup();
         parts.preInflationStartup();
+        if (parts.isActivityFinishing()) return;
+
         preInflationStartupDone();
         parts.setContentViewAndLoadLibrary();
         postInflationStartup();

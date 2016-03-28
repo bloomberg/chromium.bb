@@ -256,6 +256,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabsConnection.java",
   "java/src/org/chromium/chrome/browser/customtabs/CustomTabsConnectionService.java",
   "java/src/org/chromium/chrome/browser/customtabs/RequestThrottler.java",
+  "java/src/org/chromium/chrome/browser/customtabs/SeparateTaskCustomTabActivity.java",
   "java/src/org/chromium/chrome/browser/database/SQLiteCursor.java",
   "java/src/org/chromium/chrome/browser/datausage/DataUseTabUIManager.java",
   "java/src/org/chromium/chrome/browser/datausage/ExternalDataUseObserver.java",

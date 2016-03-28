@@ -231,6 +231,9 @@ public class CustomTabActivity extends ChromeActivity {
         }
         int toolbarColor = mIntentDataProvider.getToolbarColor();
         getToolbarManager().updatePrimaryColor(toolbarColor);
+        if (!mIntentDataProvider.isOpenedByChrome()) {
+            getToolbarManager().setShouldUpdateToolbarPrimaryColor(false);
+        }
         if (toolbarColor != ApiCompatibilityUtils.getColor(
                 getResources(), R.color.default_primary_color)) {
             ApiCompatibilityUtils.setStatusBarColor(getWindow(),
@@ -530,12 +533,19 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     public void finish() {
         super.finish();
-        if (mIntentDataProvider.shouldAnimateOnFinish()) {
+        if (mIntentDataProvider != null && mIntentDataProvider.shouldAnimateOnFinish()) {
             mShouldOverridePackage = true;
             overridePendingTransition(mIntentDataProvider.getAnimationEnterRes(),
                     mIntentDataProvider.getAnimationExitRes());
             mShouldOverridePackage = false;
         }
+    }
+
+    /**
+     * Finishes the activity after the tab has been reparented.
+     */
+    public void finishForReparenting() {
+        finish();
     }
 
     @Override
@@ -577,7 +587,7 @@ public class CustomTabActivity extends ChromeActivity {
                                 && TextUtils.equals(getPackageName(), creatorPackage)) {
                             RecordUserAction.record(
                                     "TaskManagement.OpenInChromeActionButtonClicked");
-                            if (openCurrentUrlInBrowser(false)) finish();
+                            if (openCurrentUrlInBrowser(false)) finishForReparenting();
                         } else {
                             mIntentDataProvider.sendButtonPendingIntentWithUrl(
                                     getApplicationContext(), getActivityTab().getUrl());
@@ -717,7 +727,9 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     protected void setStatusBarColor(Tab tab, int color) {
-        // Intentionally do nothing as CustomTabActivity explicitly sets status bar color.
+        // Intentionally do nothing as CustomTabActivity explicitly sets status bar color.  Except
+        // for Custom Tabs opened by Chrome.
+        if (mIntentDataProvider.isOpenedByChrome()) super.setStatusBarColor(tab, color);
     }
 
     /**
@@ -791,7 +803,7 @@ public class CustomTabActivity extends ChromeActivity {
                 Runnable finalizeCallback = new Runnable() {
                     @Override
                     public void run() {
-                        finish();
+                        finishForReparenting();
                     }
                 };
                 AsyncTabParamsManager.add(

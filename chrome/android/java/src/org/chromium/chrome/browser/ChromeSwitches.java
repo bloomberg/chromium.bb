@@ -245,6 +245,8 @@ public abstract class ChromeSwitches {
     public static final String HERB_FLAVOR_BASIL_SWITCH = "tab-management-experiment-type-basil";
     public static final String HERB_FLAVOR_CHIVE_SWITCH = "tab-management-experiment-type-chive";
     public static final String HERB_FLAVOR_DILL_SWITCH = "tab-management-experiment-type-dill";
+    public static final String HERB_FLAVOR_ELDERBERRY_SWITCH =
+            "tab-management-experiment-type-elderberry";
 
     public static final String HERB_FLAVOR_DEFAULT = "Default";
     public static final String HERB_FLAVOR_CONTROL = "Control";
@@ -253,6 +255,7 @@ public abstract class ChromeSwitches {
     public static final String HERB_FLAVOR_BASIL = "Basil";
     public static final String HERB_FLAVOR_CHIVE = "Chive";
     public static final String HERB_FLAVOR_DILL = "Dill";
+    public static final String HERB_FLAVOR_ELDERBERRY = "Elderberry";
 
     /**
      * Enable tab switcher in document mode (merged tabs and apps option).

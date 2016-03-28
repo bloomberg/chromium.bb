@@ -815,7 +815,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 newIntent.putExtra(Browser.EXTRA_APPLICATION_ID, getPackageName());
                 newIntent.putExtra(
                         CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME, true);
-                ChromeLauncherActivity.addHerbIntentExtras(ChromeTabbedActivity.this,
+                ChromeLauncherActivity.updateHerbIntent(ChromeTabbedActivity.this,
                         newIntent, Uri.parse(IntentHandler.getUrlFromIntent(newIntent)));
 
                 // Launch the Activity on top of this task.

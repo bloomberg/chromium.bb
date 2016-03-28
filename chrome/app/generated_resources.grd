@@ -14544,6 +14544,9 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_DILL" desc="CCT everywhere" translateable="false">
         DILL: All View Intents in CCT
       </message>
+      <message name="IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_ELDERBERRY" desc="CCT everywhere" translateable="false">
+        ELDERBERRY: All View Intents in CCT v2
+      </message>
       <message name="IDS_FLAGS_TAB_SWITCHER_IN_DOCUMENT_MODE_NAME" desc="Name for the flag to enable tab switcher in document mode.">
         Enable tab switcher in document mode.
       </message>

@@ -529,6 +529,8 @@ const FeatureEntry::Choice kHerbPrototypeChoices[] = {
      switches::kTabManagementExperimentTypeChive, ""},
     {IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_DILL,
      switches::kTabManagementExperimentTypeDill, ""},
+    {IDS_FLAGS_HERB_PROTOTYPE_FLAVOR_ELDERBERRY,
+     switches::kTabManagementExperimentTypeElderberry, ""},
 };
 #endif  // defined(OS_ANDROID)
 

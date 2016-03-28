@@ -66,4 +66,9 @@ public interface BrowserParts {
      * @return Whether the activity this delegate represents has been destoyed.
      */
     boolean isActivityDestroyed();
+
+    /**
+     * @return Whether the activity is marked itself to be closed.
+     */
+    boolean isActivityFinishing();
 }

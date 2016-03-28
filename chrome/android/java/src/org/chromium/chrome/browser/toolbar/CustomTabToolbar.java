@@ -67,10 +67,9 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     private ImageButton mCloseButton;
 
     // Whether dark tint should be applied to icons and text.
-    private boolean mUseDarkColors;
+    private boolean mUseDarkColors = true;
 
     private CustomTabToolbarAnimationDelegate mAnimDelegate;
-    private boolean mBackgroundColorSet;
     private long mInitializeTimeStamp;
     private int mState = STATE_DOMAIN_ONLY;
     private String mFirstUrl;
@@ -358,14 +357,13 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
         mTitleBar.setTextColor(titleTextColor);
 
         if (getProgressBar() != null) {
-            if (mBackgroundColorSet && !mUseDarkColors) {
+            if (!mUseDarkColors) {
                 getProgressBar().setBackgroundColor(ColorUtils
                         .getLightProgressbarBackground(getToolbarDataProvider().getPrimaryColor()));
                 getProgressBar().setForegroundColor(ApiCompatibilityUtils.getColor(resources,
                         R.color.progress_bar_foreground_white));
             } else {
-                int progressBarBackgroundColorResource = mUseDarkColors
-                        ? R.color.progress_bar_background : R.color.progress_bar_background_white;
+                int progressBarBackgroundColorResource = R.color.progress_bar_background;
                 getProgressBar().setBackgroundColor(ApiCompatibilityUtils.getColor(resources,
                         progressBarBackgroundColorResource));
             }
@@ -483,8 +481,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
      */
     @Override
     protected void onPrimaryColorChanged(boolean shouldAnimate) {
-        if (mBackgroundColorSet) return;
-        mBackgroundColorSet = true;
         int primaryColor = getToolbarDataProvider().getPrimaryColor();
         getBackground().setColor(primaryColor);
         mUseDarkColors = !ColorUtils.shoudUseLightForegroundOnBackground(primaryColor);

@@ -1311,6 +1311,8 @@ const char kTabManagementExperimentTypeChive[] =
     "tab-management-experiment-type-chive";
 const char kTabManagementExperimentTypeDill[] =
     "tab-management-experiment-type-dill";
+const char kTabManagementExperimentTypeElderberry[] =
+    "tab-management-experiment-type-elderberry";
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_WIN) || defined(OS_LINUX)

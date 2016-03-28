@@ -318,6 +318,11 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     @Override
+    public boolean isActivityFinishing() {
+        return isFinishing();
+    }
+
+    @Override
     public final void onFirstDrawComplete() {
         mHandler.post(new Runnable() {
             @Override

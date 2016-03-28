@@ -243,6 +243,8 @@ public class FeatureUtilities {
             newFlavor = ChromeSwitches.HERB_FLAVOR_CHIVE;
         } else if (newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_DILL)) {
             newFlavor = ChromeSwitches.HERB_FLAVOR_DILL;
+        } else if (newFlavor.startsWith(ChromeSwitches.HERB_FLAVOR_ELDERBERRY)) {
+            newFlavor = ChromeSwitches.HERB_FLAVOR_ELDERBERRY;
         }
 
         CommandLine instance = CommandLine.getInstance();
@@ -256,6 +258,8 @@ public class FeatureUtilities {
             newFlavor = ChromeSwitches.HERB_FLAVOR_CHIVE;
         } else if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_DILL_SWITCH)) {
             newFlavor = ChromeSwitches.HERB_FLAVOR_DILL;
+        } else if (instance.hasSwitch(ChromeSwitches.HERB_FLAVOR_ELDERBERRY_SWITCH)) {
+            newFlavor = ChromeSwitches.HERB_FLAVOR_ELDERBERRY;
         }
 
         Log.d(TAG, "Caching flavor: " + newFlavor);

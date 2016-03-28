@@ -805,6 +805,7 @@ public class IntentHandler {
 
         String url = getUrlFromVoiceSearchResult(intent);
         if (url == null) url = ActivityDelegate.getInitialUrlForDocument(intent);
+        if (url == null) url = getUrlForCustomTab(intent);
         if (url == null) url = intent.getDataString();
         if (url == null) return null;
 
@@ -813,6 +814,13 @@ public class IntentHandler {
             url = getUrlFromGoogleChromeSchemeUrl(url);
         }
         return TextUtils.isEmpty(url) ? null : url;
+    }
+
+    private static String getUrlForCustomTab(Intent intent) {
+        if (intent == null || intent.getData() == null) return null;
+        Uri data = intent.getData();
+        return TextUtils.equals(data.getScheme(), UrlConstants.CUSTOM_TAB_SCHEME)
+                ? data.getQuery() : null;
     }
 
     /**
