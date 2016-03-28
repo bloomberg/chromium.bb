@@ -221,7 +221,6 @@ public:
     // (i.e. a draw looper is set if and only if there is a shadow).
     // The builder passed into this method will be destroyed.
     void setDrawLooper(PassOwnPtr<DrawLooperBuilder>);
-    void clearDrawLooper();
 
     void drawFocusRing(const Vector<IntRect>&, int width, int offset, const Color&);
     void drawFocusRing(const Path&, int width, int offset, const Color&);

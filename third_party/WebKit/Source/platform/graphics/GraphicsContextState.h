@@ -93,7 +93,6 @@ public:
     // Shadow. (This will need tweaking if we use draw loopers for other things.)
     SkDrawLooper* drawLooper() const { return m_looper.get(); }
     void setDrawLooper(PassRefPtr<SkDrawLooper>);
-    void clearDrawLooper();
 
     // Text. (See TextModeFill & friends.)
     TextDrawingModeFlags textDrawingMode() const { return m_textDrawingMode; }

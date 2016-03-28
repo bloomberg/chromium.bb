@@ -143,13 +143,6 @@ void GraphicsContextState::setDrawLooper(PassRefPtr<SkDrawLooper> drawLooper)
     m_fillPaint.setLooper(m_looper.get());
 }
 
-void GraphicsContextState::clearDrawLooper()
-{
-    m_looper.clear();
-    m_strokePaint.setLooper(0);
-    m_fillPaint.setLooper(0);
-}
-
 void GraphicsContextState::setLineDash(const DashArray& dashes, float dashOffset)
 {
     m_strokeData.setLineDash(dashes, dashOffset);
