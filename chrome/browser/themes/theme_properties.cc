@@ -150,7 +150,7 @@ const SkColor kDefaultColorToolbarStroke[] = {
     SkColorSetRGB(103, 103, 103), SkColorSetARGB(37, 0, 0, 0)};
 const SkColor kDefaultColorToolbarStrokeInactive = SkColorSetRGB(163, 163, 163);
 const SkColor kDefaultColorToolbarIncognitoStroke[] = {
-    SkColorSetRGB(255, 0, 0), SkColorSetARGB(63, 0, 0, 0)};
+    SkColorSetRGB(103, 103, 103), SkColorSetARGB(63, 0, 0, 0)};
 const SkColor kDefaultColorToolbarStrokeTheme =
     SkColorSetARGB(102, 255, 255, 255);
 const SkColor kDefaultColorToolbarStrokeThemeInactive =
