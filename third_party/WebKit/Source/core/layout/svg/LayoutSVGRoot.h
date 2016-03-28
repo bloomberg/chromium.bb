@@ -103,7 +103,7 @@ private:
 
     LayoutRect localOverflowRectForPaintInvalidation() const override;
 
-    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr) const override;
+    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const override;
     const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
 
     bool canBeSelectionLeaf() const override { return false; }

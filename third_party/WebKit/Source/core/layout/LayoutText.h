@@ -97,13 +97,13 @@ public:
     void dirtyLineBoxes();
 
     void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const final;
-    void absoluteRectsForRange(Vector<IntRect>&, unsigned startOffset = 0, unsigned endOffset = INT_MAX, bool useSelectionHeight = false, bool* wasFixed = nullptr);
+    void absoluteRectsForRange(Vector<IntRect>&, unsigned startOffset = 0, unsigned endOffset = INT_MAX, bool useSelectionHeight = false);
 
-    void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const final;
-    void absoluteQuadsForRange(Vector<FloatQuad>&, unsigned startOffset = 0, unsigned endOffset = INT_MAX, bool useSelectionHeight = false, bool* wasFixed = nullptr);
+    void absoluteQuads(Vector<FloatQuad>&) const final;
+    void absoluteQuadsForRange(Vector<FloatQuad>&, unsigned startOffset = 0, unsigned endOffset = INT_MAX, bool useSelectionHeight = false);
 
     enum ClippingOption { NoClipping, ClipToEllipsis };
-    void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed = nullptr, ClippingOption = NoClipping) const;
+    void absoluteQuads(Vector<FloatQuad>&, ClippingOption = NoClipping) const;
 
     PositionWithAffinity positionForPoint(const LayoutPoint&) override;
 

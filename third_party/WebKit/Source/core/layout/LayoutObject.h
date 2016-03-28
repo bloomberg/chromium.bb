@@ -975,9 +975,9 @@ public:
     }
 
     // Convert a local quad to absolute coordinates, taking transforms into account.
-    FloatQuad localToAbsoluteQuad(const FloatQuad& quad, MapCoordinatesFlags mode = 0, bool* wasFixed = nullptr) const
+    FloatQuad localToAbsoluteQuad(const FloatQuad& quad, MapCoordinatesFlags mode = 0) const
     {
-        return localToAncestorQuad(quad, nullptr, mode, wasFixed);
+        return localToAncestorQuad(quad, nullptr, mode);
     }
 
     // Convert a quad in ancestor coordinates to local coordinates.
@@ -996,16 +996,16 @@ public:
     // Otherwise:
     //   If TraverseDocumentBoundaries is specified, the result will be in the space of the local root frame.
     //   Otherwise, the result will be in the space of the containing frame.
-    FloatQuad localToAncestorQuad(const FloatQuad&, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags = 0, bool* wasFixed = nullptr) const;
-    FloatPoint localToAncestorPoint(const FloatPoint&, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags = 0, bool* wasFixed = nullptr) const;
+    FloatQuad localToAncestorQuad(const FloatQuad&, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags = 0) const;
+    FloatPoint localToAncestorPoint(const FloatPoint&, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags = 0) const;
     void localToAncestorRects(Vector<LayoutRect>&, const LayoutBoxModelObject* ancestor, const LayoutPoint& preOffset, const LayoutPoint& postOffset) const;
 
     // Return the transformation matrix to map points from local to the coordinate system of a container, taking transforms into account.
     // Passing null for |ancestor| behaves the same as localToAncestorQuad.
-    TransformationMatrix localToAncestorTransform(const LayoutBoxModelObject* ancestor, MapCoordinatesFlags = 0, bool* wasFixed = nullptr) const;
-    TransformationMatrix localToAbsoluteTransform(MapCoordinatesFlags mode = 0, bool* wasFixed = nullptr) const
+    TransformationMatrix localToAncestorTransform(const LayoutBoxModelObject* ancestor, MapCoordinatesFlags = 0) const;
+    TransformationMatrix localToAbsoluteTransform(MapCoordinatesFlags mode = 0) const
     {
-        return localToAncestorTransform(nullptr, mode, wasFixed);
+        return localToAncestorTransform(nullptr, mode);
     }
 
     // Convert a local point into the coordinate system of backing coordinates. Also returns the backing layer if needed.
@@ -1027,7 +1027,7 @@ public:
     IntRect absoluteBoundingBoxRectIgnoringTransforms() const;
 
     // Build an array of quads in absolute coords for line boxes
-    virtual void absoluteQuads(Vector<FloatQuad>&, bool* /* wasFixed */ = nullptr) const { }
+    virtual void absoluteQuads(Vector<FloatQuad>&) const { }
 
     static FloatRect absoluteBoundingBoxRectForRange(const Range*);
 
@@ -1248,7 +1248,7 @@ public:
 
     // Map points and quads through elements, potentially via 3d transforms. You should never need to call these directly; use
     // localToAbsolute/absoluteToLocal methods instead.
-    virtual void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr) const;
+    virtual void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const;
     // If the LayoutBoxModelObject ancestor is non-null, the input quad is in the space of the ancestor.
     // Otherwise:
     //   If TraverseDocumentBoundaries is specified, the input quad is in the space of the local root frame.

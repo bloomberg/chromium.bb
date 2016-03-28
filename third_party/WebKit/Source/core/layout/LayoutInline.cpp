@@ -679,7 +679,7 @@ private:
 
 } // unnamed namespace
 
-void LayoutInline::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
+void LayoutInline::absoluteQuads(Vector<FloatQuad>& quads) const
 {
     AbsoluteQuadsGeneratorContext context(this, quads);
     generateLineBoxRects(context);
@@ -687,7 +687,7 @@ void LayoutInline::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
         context(FloatRect());
 
     if (const LayoutBoxModelObject* continuation = this->continuation())
-        continuation->absoluteQuads(quads, wasFixed);
+        continuation->absoluteQuads(quads);
 }
 
 LayoutUnit LayoutInline::offsetLeft() const

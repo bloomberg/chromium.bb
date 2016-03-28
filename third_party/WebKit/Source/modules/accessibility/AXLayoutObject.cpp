@@ -2499,7 +2499,7 @@ LayoutRect AXLayoutObject::computeElementRect() const
     LayoutRect result;
     if (obj->isText()) {
         Vector<FloatQuad> quads;
-        toLayoutText(obj)->absoluteQuads(quads, 0, LayoutText::ClipToEllipsis);
+        toLayoutText(obj)->absoluteQuads(quads, LayoutText::ClipToEllipsis);
         result = LayoutRect(boundingBoxForQuads(obj, quads));
     } else if (isWebArea() || obj->isSVGRoot()) {
         result = LayoutRect(obj->absoluteBoundingBoxRect());

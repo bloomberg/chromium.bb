@@ -43,7 +43,7 @@ private:
     void paint(const PaintInfo&, const LayoutPoint&) const final;
     LayoutRect absoluteClippedOverflowRect() const final { return LayoutRect(); }
     FloatRect paintInvalidationRectInLocalSVGCoordinates() const final { return FloatRect(); }
-    void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const final;
+    void absoluteQuads(Vector<FloatQuad>&) const final;
 
     bool nodeAtFloatPoint(HitTestResult&, const FloatPoint& pointInParent, HitTestAction) final;
 };

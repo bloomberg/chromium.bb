@@ -442,9 +442,9 @@ PositionWithAffinity LayoutSVGText::positionForPoint(const LayoutPoint& pointInC
     return closestBox->getLineLayoutItem().positionForPoint(LayoutPoint(clippedPointInContents.x(), closestBox->y()));
 }
 
-void LayoutSVGText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
+void LayoutSVGText::absoluteQuads(Vector<FloatQuad>& quads) const
 {
-    quads.append(localToAbsoluteQuad(strokeBoundingBox(), 0 /* mode */, wasFixed));
+    quads.append(localToAbsoluteQuad(strokeBoundingBox()));
 }
 
 void LayoutSVGText::paint(const PaintInfo& paintInfo, const LayoutPoint&) const

@@ -579,9 +579,9 @@ void LayoutBox::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumul
     rects.append(pixelSnappedIntRect(accumulatedOffset, size()));
 }
 
-void LayoutBox::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
+void LayoutBox::absoluteQuads(Vector<FloatQuad>& quads) const
 {
-    quads.append(localToAbsoluteQuad(FloatRect(0, 0, m_frameRect.width().toFloat(), m_frameRect.height().toFloat()), 0 /* mode */, wasFixed));
+    quads.append(localToAbsoluteQuad(FloatRect(0, 0, m_frameRect.width().toFloat(), m_frameRect.height().toFloat())));
 }
 
 void LayoutBox::updateLayerTransformAfterLayout()
@@ -1683,7 +1683,7 @@ LayoutUnit LayoutBox::perpendicularContainingBlockLogicalHeight() const
     return cb->adjustContentBoxLogicalHeightForBoxSizing(LayoutUnit(logicalHeightLength.value()));
 }
 
-void LayoutBox::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed) const
+void LayoutBox::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode) const
 {
     bool isFixedPos = style()->position() == FixedPosition;
     bool hasTransform = hasLayer() && layer()->transform();
@@ -1694,7 +1694,7 @@ void LayoutBox::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Transfo
     else if (isFixedPos)
         mode |= IsFixed;
 
-    LayoutBoxModelObject::mapLocalToAncestor(ancestor, transformState, mode, wasFixed);
+    LayoutBoxModelObject::mapLocalToAncestor(ancestor, transformState, mode);
 }
 
 void LayoutBox::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode) const

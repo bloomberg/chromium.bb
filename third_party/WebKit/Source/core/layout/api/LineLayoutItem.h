@@ -385,9 +385,9 @@ public:
         return LineLayoutItem(m_layoutObject->previousInPreOrder(stayWithin));
     }
 
-    FloatQuad localToAbsoluteQuad(const FloatQuad& quad, MapCoordinatesFlags mode = 0, bool* wasFixed = nullptr) const
+    FloatQuad localToAbsoluteQuad(const FloatQuad& quad, MapCoordinatesFlags mode = 0) const
     {
-        return m_layoutObject->localToAbsoluteQuad(quad, mode, wasFixed);
+        return m_layoutObject->localToAbsoluteQuad(quad, mode);
     }
 
     FloatPoint localToAbsolute(const FloatPoint& localPoint = FloatPoint(), MapCoordinatesFlags flags = 0) const

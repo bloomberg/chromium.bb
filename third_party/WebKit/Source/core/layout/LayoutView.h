@@ -125,7 +125,7 @@ public:
     void invalidatePaintForSelection();
 
     void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override;
-    void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
+    void absoluteQuads(Vector<FloatQuad>&) const override;
 
     LayoutRect viewRect() const override;
     LayoutRect overflowClipRect(const LayoutPoint& location, OverlayScrollbarSizeRelevancy = IgnoreOverlayScrollbarSize) const override;
@@ -209,7 +209,7 @@ public:
     ScrollResult scroll(ScrollGranularity, const FloatSize&) override;
 
 private:
-    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr) const override;
+    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const override;
 
     const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const override;
     void mapAncestorToLocal(const LayoutBoxModelObject*, TransformState&, MapCoordinatesFlags) const override;

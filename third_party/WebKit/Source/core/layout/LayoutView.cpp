@@ -323,10 +323,8 @@ LayoutRect LayoutView::visualOverflowRect() const
     return LayoutRect(documentRect());
 }
 
-void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed) const
+void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode) const
 {
-    ASSERT_UNUSED(wasFixed, !wasFixed || *wasFixed == static_cast<bool>(mode & IsFixed));
-
     if (!ancestor && mode & UseTransforms && shouldUseTransformFromContainer(0)) {
         TransformationMatrix t;
         getTransformFromContainer(0, LayoutSize(), t);
@@ -355,7 +353,7 @@ void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Transf
 
             transformState.move(parentDocLayoutObject->contentBoxOffset());
 
-            parentDocLayoutObject->mapLocalToAncestor(ancestor, transformState, mode, wasFixed);
+            parentDocLayoutObject->mapLocalToAncestor(ancestor, transformState, mode);
         }
     }
 }
@@ -559,10 +557,8 @@ void LayoutView::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accumu
     rects.append(pixelSnappedIntRect(accumulatedOffset, LayoutSize(layer()->size())));
 }
 
-void LayoutView::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
+void LayoutView::absoluteQuads(Vector<FloatQuad>& quads) const
 {
-    if (wasFixed)
-        *wasFixed = false;
     quads.append(FloatRect(FloatPoint(), FloatSize(layer()->size())));
 }
 

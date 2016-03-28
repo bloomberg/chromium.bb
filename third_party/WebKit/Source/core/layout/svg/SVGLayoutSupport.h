@@ -79,7 +79,7 @@ public:
     static LayoutRect clippedOverflowRectForPaintInvalidation(const LayoutObject&, const LayoutBoxModelObject& paintInvalidationContainer);
     static LayoutRect transformPaintInvalidationRect(const LayoutObject&, const AffineTransform&, const FloatRect&);
     static bool mapToVisibleRectInAncestorSpace(const LayoutObject&, const LayoutBoxModelObject* ancestor, const FloatRect& localPaintInvalidationRect, LayoutRect& resultRect, VisibleRectFlags = DefaultVisibleRectFlags);
-    static void mapLocalToAncestor(const LayoutObject*, const LayoutBoxModelObject* ancestor, TransformState&, bool* wasFixed = nullptr);
+    static void mapLocalToAncestor(const LayoutObject*, const LayoutBoxModelObject* ancestor, TransformState&);
     static void mapAncestorToLocal(const LayoutObject&, const LayoutBoxModelObject* ancestor, TransformState&);
     static const LayoutObject* pushMappingToContainer(const LayoutObject*, const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&);
 

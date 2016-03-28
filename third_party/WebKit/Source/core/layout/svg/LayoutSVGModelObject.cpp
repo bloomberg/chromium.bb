@@ -50,9 +50,9 @@ bool LayoutSVGModelObject::isChildAllowed(LayoutObject* child, const ComputedSty
     return child->isSVG() && !(child->isSVGInline() || child->isSVGInlineText() || child->isSVGGradientStop());
 }
 
-void LayoutSVGModelObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed) const
+void LayoutSVGModelObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags) const
 {
-    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, wasFixed);
+    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState);
 }
 
 LayoutRect LayoutSVGModelObject::absoluteClippedOverflowRect() const
@@ -77,9 +77,9 @@ void LayoutSVGModelObject::absoluteRects(Vector<IntRect>& rects, const LayoutPoi
     rects.append(rect);
 }
 
-void LayoutSVGModelObject::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
+void LayoutSVGModelObject::absoluteQuads(Vector<FloatQuad>& quads) const
 {
-    quads.append(localToAbsoluteQuad(strokeBoundingBox(), 0 /* mode */, wasFixed));
+    quads.append(localToAbsoluteQuad(strokeBoundingBox()));
 }
 
 void LayoutSVGModelObject::willBeDestroyed()

@@ -51,9 +51,9 @@ public:
     FloatRect paintInvalidationRectInLocalSVGCoordinates() const override { return m_paintInvalidationBoundingBox; }
 
     void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const final;
-    void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
+    void absoluteQuads(Vector<FloatQuad>&) const override;
 
-    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr) const final;
+    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const final;
     void mapAncestorToLocal(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const final;
     const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const final;
     void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;

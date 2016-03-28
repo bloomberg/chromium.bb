@@ -138,7 +138,7 @@ public:
     LayoutUnit marginUnder() const final;
 
     void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const final;
-    void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
+    void absoluteQuads(Vector<FloatQuad>&) const override;
 
     LayoutSize offsetFromContainer(const LayoutObject*) const final;
 

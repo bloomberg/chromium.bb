@@ -82,9 +82,9 @@ void LayoutSVGBlock::styleDidChange(StyleDifference diff, const ComputedStyle* o
     SVGResourcesCache::clientStyleChanged(this, diff, styleRef());
 }
 
-void LayoutSVGBlock::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed) const
+void LayoutSVGBlock::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags) const
 {
-    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, wasFixed);
+    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState);
 }
 
 void LayoutSVGBlock::mapAncestorToLocal(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags) const

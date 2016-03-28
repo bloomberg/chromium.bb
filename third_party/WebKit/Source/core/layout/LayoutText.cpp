@@ -347,7 +347,7 @@ static FloatRect localQuadForTextBox(InlineTextBox* box, unsigned start, unsigne
     return FloatRect();
 }
 
-void LayoutText::absoluteRectsForRange(Vector<IntRect>& rects, unsigned start, unsigned end, bool useSelectionHeight, bool* wasFixed)
+void LayoutText::absoluteRectsForRange(Vector<IntRect>& rects, unsigned start, unsigned end, bool useSelectionHeight)
 {
     // Work around signed/unsigned issues. This function takes unsigneds, and is often passed UINT_MAX
     // to mean "all the way to the end". InlineTextBox coordinates are unsigneds, so changing this
@@ -373,12 +373,12 @@ void LayoutText::absoluteRectsForRange(Vector<IntRect>& rects, unsigned start, u
                     r.setX(selectionRect.x().toFloat());
                 }
             }
-            rects.append(localToAbsoluteQuad(r, 0, wasFixed).enclosingBoundingBox());
+            rects.append(localToAbsoluteQuad(r).enclosingBoundingBox());
         } else {
             // FIXME: This code is wrong. It's converting local to absolute twice. http://webkit.org/b/65722
             FloatRect rect = localQuadForTextBox(box, start, end, useSelectionHeight);
             if (!rect.isZero())
-                rects.append(localToAbsoluteQuad(rect, 0, wasFixed).enclosingBoundingBox());
+                rects.append(localToAbsoluteQuad(rect).enclosingBoundingBox());
         }
     }
 }
@@ -407,7 +407,7 @@ static IntRect ellipsisRectForBox(InlineTextBox* box, unsigned startPos, unsigne
     return IntRect();
 }
 
-void LayoutText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed, ClippingOption option) const
+void LayoutText::absoluteQuads(Vector<FloatQuad>& quads, ClippingOption option) const
 {
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
         FloatRect boundaries(box->calculateBoundaries());
@@ -421,16 +421,16 @@ void LayoutText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed, Clippin
             else
                 boundaries.setHeight(ellipsisRect.maxY() - boundaries.y());
         }
-        quads.append(localToAbsoluteQuad(boundaries, 0, wasFixed));
+        quads.append(localToAbsoluteQuad(boundaries));
     }
 }
 
-void LayoutText::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
+void LayoutText::absoluteQuads(Vector<FloatQuad>& quads) const
 {
-    absoluteQuads(quads, wasFixed, NoClipping);
+    absoluteQuads(quads, NoClipping);
 }
 
-void LayoutText::absoluteQuadsForRange(Vector<FloatQuad>& quads, unsigned start, unsigned end, bool useSelectionHeight, bool* wasFixed)
+void LayoutText::absoluteQuadsForRange(Vector<FloatQuad>& quads, unsigned start, unsigned end, bool useSelectionHeight)
 {
     // Work around signed/unsigned issues. This function takes unsigneds, and is often passed UINT_MAX
     // to mean "all the way to the end". InlineTextBox coordinates are unsigneds, so changing this
@@ -464,11 +464,11 @@ void LayoutText::absoluteQuadsForRange(Vector<FloatQuad>& quads, unsigned start,
                     r.setX(selectionRect.x());
                 }
             }
-            quads.append(localToAbsoluteQuad(FloatRect(r), 0, wasFixed));
+            quads.append(localToAbsoluteQuad(FloatRect(r)));
         } else {
             FloatRect rect = localQuadForTextBox(box, start, end, useSelectionHeight);
             if (!rect.isZero())
-                quads.append(localToAbsoluteQuad(rect, 0, wasFixed));
+                quads.append(localToAbsoluteQuad(rect));
         }
     }
 }

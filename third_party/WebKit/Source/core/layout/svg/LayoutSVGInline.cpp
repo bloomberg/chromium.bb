@@ -89,9 +89,9 @@ LayoutRect LayoutSVGInline::absoluteClippedOverflowRect() const
     return SVGLayoutSupport::clippedOverflowRectForPaintInvalidation(*this, *view());
 }
 
-void LayoutSVGInline::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags, bool* wasFixed) const
+void LayoutSVGInline::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags) const
 {
-    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState, wasFixed);
+    SVGLayoutSupport::mapLocalToAncestor(this, ancestor, transformState);
 }
 
 const LayoutObject* LayoutSVGInline::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
@@ -99,7 +99,7 @@ const LayoutObject* LayoutSVGInline::pushMappingToContainer(const LayoutBoxModel
     return SVGLayoutSupport::pushMappingToContainer(this, ancestorToStopAt, geometryMap);
 }
 
-void LayoutSVGInline::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
+void LayoutSVGInline::absoluteQuads(Vector<FloatQuad>& quads) const
 {
     const LayoutSVGText* textRoot = LayoutSVGText::locateLayoutSVGTextAncestor(this);
     if (!textRoot)
@@ -107,7 +107,7 @@ void LayoutSVGInline::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) co
 
     FloatRect textBoundingBox = textRoot->strokeBoundingBox();
     for (InlineFlowBox* box = firstLineBox(); box; box = box->nextLineBox())
-        quads.append(localToAbsoluteQuad(FloatRect(textBoundingBox.x() + box->x().toFloat(), textBoundingBox.y() + box->y().toFloat(), box->logicalWidth().toFloat(), box->logicalHeight().toFloat()), false, wasFixed));
+        quads.append(localToAbsoluteQuad(FloatRect(textBoundingBox.x() + box->x().toFloat(), textBoundingBox.y() + box->y().toFloat(), box->logicalWidth().toFloat(), box->logicalHeight().toFloat()), false));
 }
 
 void LayoutSVGInline::willBeDestroyed()

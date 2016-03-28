@@ -2432,7 +2432,7 @@ void LayoutBlock::absoluteRects(Vector<IntRect>& rects, const LayoutPoint& accum
     }
 }
 
-void LayoutBlock::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
+void LayoutBlock::absoluteQuads(Vector<FloatQuad>& quads) const
 {
     // For blocks inside inlines, we go ahead and include margins so that we run right up to the
     // inline boxes above and below us (thus getting merged with them to form a single irregular
@@ -2442,10 +2442,10 @@ void LayoutBlock::absoluteQuads(Vector<FloatQuad>& quads, bool* wasFixed) const
         // https://bugs.webkit.org/show_bug.cgi?id=46781
         LayoutRect localRect(LayoutPoint(), size());
         localRect.expand(collapsedMarginBoxLogicalOutsets());
-        quads.append(localToAbsoluteQuad(FloatRect(localRect), 0 /* mode */, wasFixed));
-        continuation()->absoluteQuads(quads, wasFixed);
+        quads.append(localToAbsoluteQuad(FloatRect(localRect)));
+        continuation()->absoluteQuads(quads);
     } else {
-        quads.append(LayoutBox::localToAbsoluteQuad(FloatRect(0, 0, size().width().toFloat(), size().height().toFloat()), 0 /* mode */, wasFixed));
+        quads.append(LayoutBox::localToAbsoluteQuad(FloatRect(0, 0, size().width().toFloat(), size().height().toFloat())));
     }
 }
 

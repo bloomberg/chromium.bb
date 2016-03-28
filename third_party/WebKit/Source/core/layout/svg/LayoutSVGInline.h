@@ -45,9 +45,9 @@ public:
     FloatRect paintInvalidationRectInLocalSVGCoordinates() const final;
 
     LayoutRect absoluteClippedOverflowRect() const final;
-    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr) const final;
+    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const final;
     const LayoutObject* pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap&) const final;
-    void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const final;
+    void absoluteQuads(Vector<FloatQuad>&) const final;
 
 private:
     InlineFlowBox* createInlineFlowBox() final;

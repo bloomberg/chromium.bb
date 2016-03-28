@@ -127,7 +127,7 @@ bool SVGLayoutSupport::mapToVisibleRectInAncestorSpace(const LayoutObject& objec
     return svgRoot.mapToVisibleRectInAncestorSpace(ancestor, resultRect, visibleRectFlags);
 }
 
-void SVGLayoutSupport::mapLocalToAncestor(const LayoutObject* object, const LayoutBoxModelObject* ancestor, TransformState& transformState, bool* wasFixed)
+void SVGLayoutSupport::mapLocalToAncestor(const LayoutObject* object, const LayoutBoxModelObject* ancestor, TransformState& transformState)
 {
     transformState.applyTransform(object->localToSVGParentTransform());
 
@@ -140,7 +140,7 @@ void SVGLayoutSupport::mapLocalToAncestor(const LayoutObject* object, const Layo
         transformState.applyTransform(toLayoutSVGRoot(parent)->localToBorderBoxTransform());
 
     MapCoordinatesFlags mode = UseTransforms;
-    parent->mapLocalToAncestor(ancestor, transformState, mode, wasFixed);
+    parent->mapLocalToAncestor(ancestor, transformState, mode);
 }
 
 void SVGLayoutSupport::mapAncestorToLocal(const LayoutObject& object, const LayoutBoxModelObject* ancestor, TransformState& transformState)

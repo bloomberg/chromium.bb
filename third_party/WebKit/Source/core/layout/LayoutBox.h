@@ -489,7 +489,7 @@ public:
     }
 
     void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const override;
-    void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
+    void absoluteQuads(Vector<FloatQuad>&) const override;
 
     int reflectionOffset() const;
     // Given a rect in the object's coordinate space, returns the corresponding rect in the reflection.
@@ -891,7 +891,7 @@ public:
 
     bool canRenderBorderImage() const;
 
-    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip, bool* wasFixed = nullptr) const override;
+    void mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState&, MapCoordinatesFlags = ApplyContainerFlip) const override;
     void mapAncestorToLocal(const LayoutBoxModelObject*, TransformState&, MapCoordinatesFlags) const override;
 
     void clearPreviousPaintInvalidationRects() override;

@@ -70,7 +70,7 @@ private:
 
     void layout() override;
 
-    void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const override;
+    void absoluteQuads(Vector<FloatQuad>&) const override;
 
     void addChild(LayoutObject* child, LayoutObject* beforeChild = nullptr) override;
     void removeChild(LayoutObject*) override;

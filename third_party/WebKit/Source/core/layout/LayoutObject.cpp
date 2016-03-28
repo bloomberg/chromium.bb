@@ -2240,13 +2240,10 @@ FloatQuad LayoutObject::ancestorToLocalQuad(LayoutBoxModelObject* ancestor, cons
     return transformState.lastPlanarQuad();
 }
 
-void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode, bool* wasFixed) const
+void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, TransformState& transformState, MapCoordinatesFlags mode) const
 {
     if (ancestor == this)
         return;
-
-    if (wasFixed)
-        *wasFixed = mode & IsFixed;
 
     bool containerSkipped;
     const LayoutObject* o = container(ancestor, &containerSkipped);
@@ -2291,7 +2288,7 @@ void LayoutObject::mapLocalToAncestor(const LayoutBoxModelObject* ancestor, Tran
         return;
     }
 
-    o->mapLocalToAncestor(ancestor, transformState, mode, wasFixed);
+    o->mapLocalToAncestor(ancestor, transformState, mode);
 }
 
 const LayoutObject* LayoutObject::pushMappingToContainer(const LayoutBoxModelObject* ancestorToStopAt, LayoutGeometryMap& geometryMap) const
@@ -2379,21 +2376,21 @@ void LayoutObject::getTransformFromContainer(const LayoutObject* containerObject
     }
 }
 
-FloatQuad LayoutObject::localToAncestorQuad(const FloatQuad& localQuad, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags mode, bool* wasFixed) const
+FloatQuad LayoutObject::localToAncestorQuad(const FloatQuad& localQuad, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags mode) const
 {
     // Track the point at the center of the quad's bounding box. As mapLocalToAncestor() calls offsetFromContainer(),
     // it will use that point as the reference point to decide which column's transform to apply in multiple-column blocks.
     TransformState transformState(TransformState::ApplyTransformDirection, localQuad.boundingBox().center(), localQuad);
-    mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip | UseTransforms, wasFixed);
+    mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip | UseTransforms);
     transformState.flatten();
 
     return transformState.lastPlanarQuad();
 }
 
-FloatPoint LayoutObject::localToAncestorPoint(const FloatPoint& localPoint, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags mode, bool* wasFixed) const
+FloatPoint LayoutObject::localToAncestorPoint(const FloatPoint& localPoint, const LayoutBoxModelObject* ancestor, MapCoordinatesFlags mode) const
 {
     TransformState transformState(TransformState::ApplyTransformDirection, localPoint);
-    mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip | UseTransforms, wasFixed);
+    mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip | UseTransforms);
     transformState.flatten();
 
     return transformState.lastPlanarPoint();
@@ -2415,10 +2412,10 @@ void LayoutObject::localToAncestorRects(Vector<LayoutRect>& rects, const LayoutB
     }
 }
 
-TransformationMatrix LayoutObject::localToAncestorTransform(const LayoutBoxModelObject* ancestor, MapCoordinatesFlags mode, bool* wasFixed) const
+TransformationMatrix LayoutObject::localToAncestorTransform(const LayoutBoxModelObject* ancestor, MapCoordinatesFlags mode) const
 {
     TransformState transformState(TransformState::ApplyTransformDirection);
-    mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip | UseTransforms, wasFixed);
+    mapLocalToAncestor(ancestor, transformState, mode | ApplyContainerFlip | UseTransforms);
     return transformState.accumulatedTransform();
 }
 

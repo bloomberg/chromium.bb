@@ -43,7 +43,7 @@ void LayoutSVGHiddenContainer::paint(const PaintInfo&, const LayoutPoint&) const
     // This subtree does not paint.
 }
 
-void LayoutSVGHiddenContainer::absoluteQuads(Vector<FloatQuad>&, bool*) const
+void LayoutSVGHiddenContainer::absoluteQuads(Vector<FloatQuad>&) const
 {
     // This subtree does not take up space or paint
 }
