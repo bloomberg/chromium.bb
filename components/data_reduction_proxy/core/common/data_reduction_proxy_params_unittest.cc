@@ -20,13 +20,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace {
-
-const char kConfigServiceFieldTrial[] = "DataReductionProxyConfigService";
-const char kConfigServiceURLParam[] = "url";
-
-}  // namespace
-
 namespace data_reduction_proxy {
 class DataReductionProxyParamsTest : public testing::Test {
  public:
@@ -236,52 +229,6 @@ TEST_F(DataReductionProxyParamsTest, AndroidOnePromoFieldTrial) {
       "google/hammerhead/hammerhead:5.0/LRX210/1570415:user/release-keys"));
 }
 
-TEST_F(DataReductionProxyParamsTest, IsClientConfigEnabled) {
-  const struct {
-    std::string test_case;
-    bool command_line_set;
-    std::string trial_group_value;
-    bool expected;
-  } tests[] = {
-      {
-       "Nothing set", false, "", false,
-      },
-      {
-       "Command line set", true, "", true,
-      },
-      {
-       "Enabled in experiment", false, "Enabled", true,
-      },
-      {
-       "Alternate enabled in experiment", false, "EnabledOther", true,
-      },
-      {
-       "Disabled in experiment", false, "Disabled", false,
-      },
-      {
-       "Command line set, enabled in experiment", true, "Enabled", true,
-      },
-      {
-       "Command line set, disabled in experiment", true, "Disabled", true,
-      },
-  };
-
-  for (const auto& test : tests) {
-    // Reset all flags.
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-    if (test.command_line_set) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kEnableDataReductionProxyConfigClient, "");
-    }
-    base::FieldTrialList field_trial_list(nullptr);
-    if (!test.trial_group_value.empty()) {
-      base::FieldTrialList::CreateFieldTrial(kConfigServiceFieldTrial,
-                                             test.trial_group_value);
-    }
-    EXPECT_EQ(test.expected, params::IsConfigClientEnabled()) << test.test_case;
-  }
-}
-
 TEST_F(DataReductionProxyParamsTest, SecureProxyCheckDefault) {
   struct {
     bool command_line_set;
@@ -428,58 +375,17 @@ TEST_F(DataReductionProxyParamsTest, LoFiPreviewFieldTrial) {
 
 TEST_F(DataReductionProxyParamsTest, GetConfigServiceURL) {
   const struct {
-    std::string trial_group_value;
-    std::string trial_url_param;
-  } variations[] = {
-      {
-       "Enabled", "http://enabled.config-service/",
-      },
-      {
-       "Disabled", "http://disabled.config-service/",
-      },
-      {
-       "EnabledOther", "http://other.config-service/",
-      },
-  };
-
-  variations::testing::ClearAllVariationParams();
-  for (const auto& variation : variations) {
-    std::map<std::string, std::string> variation_params;
-    variation_params[kConfigServiceURLParam] = variation.trial_url_param;
-    ASSERT_TRUE(variations::AssociateVariationParams(
-        kConfigServiceFieldTrial, variation.trial_group_value,
-        variation_params));
-  }
-
-  const struct {
     std::string test_case;
     std::string flag_value;
-    std::string trial_group_value;
     GURL expected;
   } tests[] = {
       {
-          "Nothing set", "", "",
+          "Nothing set", "",
           GURL("https://datasaver.googleapis.com/v1/clientConfigs"),
       },
       {
-          "Only command line set", "http://commandline.config-service/", "",
+          "Only command line set", "http://commandline.config-service/",
           GURL("http://commandline.config-service/"),
-      },
-      {
-          "Enabled group", "", "Enabled",
-          GURL("http://enabled.config-service/"),
-      },
-      {
-          "Disabled group", "", "Disabled",
-          GURL("http://disabled.config-service/"),
-      },
-      {
-          "Alternate enabled group", "", "EnabledOther",
-          GURL("http://other.config-service/"),
-      },
-      {
-          "Command line precedence", "http://commandline.config-service/",
-          "Enabled", GURL("http://commandline.config-service/"),
       },
   };
 
@@ -489,11 +395,6 @@ TEST_F(DataReductionProxyParamsTest, GetConfigServiceURL) {
     if (!test.flag_value.empty()) {
       base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
           switches::kDataReductionProxyConfigURL, test.flag_value);
-    }
-    base::FieldTrialList field_trial_list(nullptr);
-    if (!test.trial_group_value.empty()) {
-      base::FieldTrialList::CreateFieldTrial(kConfigServiceFieldTrial,
-                                             test.trial_group_value);
     }
     EXPECT_EQ(test.expected, params::GetConfigServiceURL()) << test.test_case;
   }

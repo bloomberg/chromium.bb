@@ -47,9 +47,6 @@ const char kDevRolloutFieldTrial[] = "DataCompressionProxyDevRollout";
 const char kLoFiFieldTrial[] = "DataCompressionProxyLoFi";
 const char kLoFiFlagFieldTrial[] = "DataCompressionProxyLoFiFlag";
 
-const char kConfigServiceFieldTrial[] = "DataReductionProxyConfigService";
-const char kConfigServiceURLParam[] = "url";
-
 const char kTrustedSpdyProxyFieldTrialName[] = "DataReductionTrustedSpdyProxy";
 
 // Default URL for retrieving the Data Reduction Proxy configuration.
@@ -186,18 +183,10 @@ bool IsDevRolloutEnabled() {
          (FieldTrialList::FindFullName(kDevRolloutFieldTrial) == kEnabled);
 }
 
-std::string GetClientConfigFieldTrialName() {
-  return kConfigServiceFieldTrial;
-}
-
 bool IsConfigClientEnabled() {
-  std::string group_value =
-      base::FieldTrialList::FindFullName(kConfigServiceFieldTrial);
-  base::StringPiece group = group_value;
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             data_reduction_proxy::switches::
-                 kEnableDataReductionProxyConfigClient) ||
-         group.starts_with(kEnabled);
+  // TODO(tbansal): crbug.com/597768 Remove the data reduction proxy deprecated
+  // code which was used when config client is not enabled.
+  return true;
 }
 
 GURL GetConfigServiceURL() {
@@ -206,11 +195,6 @@ GURL GetConfigServiceURL() {
   if (command_line->HasSwitch(switches::kDataReductionProxyConfigURL)) {
     url = command_line->GetSwitchValueASCII(
         switches::kDataReductionProxyConfigURL);
-  }
-
-  if (url.empty()) {
-    url = variations::GetVariationParamValue(kConfigServiceFieldTrial,
-                                             kConfigServiceURLParam);
   }
 
   if (url.empty())

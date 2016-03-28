@@ -1472,11 +1472,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_DATA_REDUCTION_PROXY_RESET_SAVINGS_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(
          data_reduction_proxy::switches::kClearDataReductionProxyDataSavings)},
-    {"enable-data-reduction-proxy-config-client",
-     IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_NAME,
-     IDS_FLAGS_DATA_REDUCTION_PROXY_CONFIG_CLIENT_DESCRIPTION, kOsAll,
-     SINGLE_VALUE_TYPE(data_reduction_proxy::switches::
-                           kEnableDataReductionProxyConfigClient)},
     {"allow-insecure-localhost", IDS_ALLOW_INSECURE_LOCALHOST,
      IDS_ALLOW_INSECURE_LOCALHOST_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},
@@ -1904,16 +1899,6 @@ bool SkipConditionalFeatureEntry(const FeatureEntry& entry) {
        !strcmp("enable-data-reduction-proxy-lo-fi-preview",
                entry.internal_name)) &&
       channel != version_info::Channel::BETA &&
-      channel != version_info::Channel::DEV &&
-      channel != version_info::Channel::CANARY &&
-      channel != version_info::Channel::UNKNOWN) {
-    return true;
-  }
-
-  // enable-data-reduction-proxy-config-client is only available for Chromium
-  // builds and the Canary/Dev channels.
-  if (!strcmp("enable-data-reduction-proxy-config-client",
-              entry.internal_name) &&
       channel != version_info::Channel::DEV &&
       channel != version_info::Channel::CANARY &&
       channel != version_info::Channel::UNKNOWN) {
