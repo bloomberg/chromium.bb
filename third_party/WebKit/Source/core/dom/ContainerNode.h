@@ -260,9 +260,6 @@ private:
     inline bool containsConsideringHostElements(const Node&) const;
     inline bool isChildTypeAllowed(const Node& child) const;
 
-    void attachChildren(const AttachContext& = AttachContext());
-    void detachChildren(const AttachContext& = AttachContext());
-
     bool getUpperLeftCorner(FloatPoint&) const;
     bool getLowerRightCorner(FloatPoint&) const;
 
