@@ -12,7 +12,7 @@ option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
-// Next tag: 6
+// Next tag: 7
 message CastLogsProto {
   // Cast specific device information.
   // Next tag: 5
@@ -172,4 +172,11 @@ message CastLogsProto {
     optional RebootType last_reboot_type = 1;
   }
   optional CastDeviceMutableInfo cast_device_mutable_info = 5;
+
+  // Unique identifier that is randomly generated on first setup, on re-setup
+  // (FDR), and when user opted-in from opted-out status. If user is opted-out
+  // then this field should not be set.
+  // This is used for joining logs from Cast sender SDK to evaluate Cast
+  // sender/receiver communication quality.
+  optional fixed64 receiver_metrics_id = 6;
 }
