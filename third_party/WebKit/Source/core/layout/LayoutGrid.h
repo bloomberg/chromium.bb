@@ -137,8 +137,8 @@ private:
     void populateGridPositions(GridSizingData&);
 
     typedef struct GridItemsSpanGroupRange GridItemsSpanGroupRange;
-    LayoutUnit currentItemSizeForTrackSizeComputationPhase(TrackSizeComputationPhase, LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
-    void resolveContentBasedTrackSizingFunctionsForNonSpanningItems(GridTrackSizingDirection, const GridSpan&, LayoutBox& gridItem, GridTrack&, Vector<GridTrack>& columnTracks);
+    LayoutUnit currentItemSizeForTrackSizeComputationPhase(TrackSizeComputationPhase, LayoutBox&, GridTrackSizingDirection, GridSizingData&);
+    void resolveContentBasedTrackSizingFunctionsForNonSpanningItems(GridTrackSizingDirection, const GridSpan&, LayoutBox& gridItem, GridTrack&, GridSizingData&);
     template <TrackSizeComputationPhase> void resolveContentBasedTrackSizingFunctionsForItems(GridTrackSizingDirection, GridSizingData&, const GridItemsSpanGroupRange&);
     template <TrackSizeComputationPhase> void distributeSpaceToTracks(Vector<GridTrack*>&, const Vector<GridTrack*>* growBeyondGrowthLimitsTracks, GridSizingData&, LayoutUnit& availableLogicalSpace);
 
@@ -148,10 +148,10 @@ private:
 
     GridTrackSize gridTrackSize(GridTrackSizingDirection, size_t) const;
 
-    LayoutUnit logicalHeightForChild(LayoutBox&, Vector<GridTrack>&);
-    LayoutUnit minSizeForChild(LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
-    LayoutUnit minContentForChild(LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
-    LayoutUnit maxContentForChild(LayoutBox&, GridTrackSizingDirection, Vector<GridTrack>& columnTracks);
+    LayoutUnit logicalHeightForChild(LayoutBox&, GridSizingData&);
+    LayoutUnit minSizeForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&);
+    LayoutUnit minContentForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&);
+    LayoutUnit maxContentForChild(LayoutBox&, GridTrackSizingDirection, GridSizingData&);
     GridAxisPosition columnAxisPositionForChild(const LayoutBox&) const;
     GridAxisPosition rowAxisPositionForChild(const LayoutBox&) const;
     LayoutUnit rowAxisOffsetForChild(const LayoutBox&, GridSizingData&) const;
