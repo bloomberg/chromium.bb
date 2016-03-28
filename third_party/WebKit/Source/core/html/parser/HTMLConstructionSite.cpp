@@ -665,7 +665,7 @@ void HTMLConstructionSite::insertScriptElement(AtomicHTMLToken* token)
 void HTMLConstructionSite::insertForeignElement(AtomicHTMLToken* token, const AtomicString& namespaceURI)
 {
     ASSERT(token->type() == HTMLToken::StartTag);
-    notImplemented(); // parseError when xmlns or xmlns:xlink are wrong.
+    DVLOG(1) << "Not implemented."; // parseError when xmlns or xmlns:xlink are wrong.
 
     RefPtrWillBeRawPtr<Element> element = createElement(token, namespaceURI);
     if (scriptingContentIsAllowed(m_parserContentPolicy) || !toScriptLoaderIfPossible(element.get()))

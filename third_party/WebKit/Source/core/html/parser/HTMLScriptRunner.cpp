@@ -383,7 +383,7 @@ bool HTMLScriptRunner::requestPendingScript(PendingScript* pendingScript, Elemen
     // This should correctly return 0 for empty or invalid srcValues.
     ScriptResource* resource = toScriptLoaderIfPossible(script)->resource();
     if (!resource) {
-        notImplemented(); // Dispatch error event.
+        DVLOG(1) << "Not implemented."; // Dispatch error event.
         return false;
     }
     pendingScript->setScriptResource(resource);
