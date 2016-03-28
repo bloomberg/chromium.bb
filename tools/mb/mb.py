@@ -202,18 +202,20 @@ class MetaBuildWrapper(object):
 
   def DumpInputFiles(self):
 
-    def DumpContentsOfFilePassedTo(arg):
-      attr = arg.replace('--', '').replace('-', '_')
-      path = getattr(self.args, attr, '')
+    def DumpContentsOfFilePassedTo(arg_name, path):
       if path and self.Exists(path):
-        print("\n# To recreate the file passed to %s:" % arg)
-        print("%% cat > %s <<EOF)" % path)
+        self.Print("\n# To recreate the file passed to %s:" % arg_name)
+        self.Print("%% cat > %s <<EOF)" % path)
         contents = self.ReadFile(path)
-        print(contents)
-        print("EOF\n%\n")
+        self.Print(contents)
+        self.Print("EOF\n%\n")
 
-    DumpContentsOfFilePassedTo('input_path')
-    DumpContentsOfFilePassedTo('--swarming-targets-file')
+    if getattr(self.args, 'input_path', None):
+      DumpContentsOfFilePassedTo(
+          'argv[0] (input_path)', self.args.input_path[0])
+    if getattr(self.args, 'swarming_targets_file', None):
+      DumpContentsOfFilePassedTo(
+          '--swarming-targets-file', self.args.swarming_targets_file)
 
   def CmdAnalyze(self):
     vals = self.Lookup()

@@ -245,6 +245,19 @@ class UnitTest(unittest.TestCase):
       'test_targets': ['foo_unittests']
     })
 
+  def test_gn_analyze_fails(self):
+    files = {'/tmp/in.json': """{\
+               "files": ["foo/foo_unittest.cc"],
+               "test_targets": ["foo_unittests", "bar_unittests"],
+               "additional_compile_targets": []
+             }"""}
+
+    mbw = self.fake_mbw(files)
+    mbw.Call = lambda cmd, env=None, buffer_output=True: (1, '', '')
+
+    self.check(['analyze', '-c', 'gn_debug_goma', '//out/Default',
+                '/tmp/in.json', '/tmp/out.json'], mbw=mbw, ret=1)
+
   def test_gn_analyze_all(self):
     files = {'/tmp/in.json': """{\
                "files": ["foo/foo_unittest.cc"],
