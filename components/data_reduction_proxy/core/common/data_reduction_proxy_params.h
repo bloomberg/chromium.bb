@@ -113,6 +113,9 @@ bool IsDevRolloutEnabled();
 
 std::string GetQuicFieldTrialName();
 
+// Returns the name of the client config field trial.
+std::string GetClientConfigFieldTrialName();
+
 // Returns true if the Data Reduction Proxy config client should be used.
 bool IsConfigClientEnabled();
 
