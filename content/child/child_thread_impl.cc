@@ -69,10 +69,6 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 
-#if defined(USE_OZONE)
-#include "ui/ozone/public/client_native_pixmap_factory.h"
-#endif
-
 #if defined(OS_POSIX)
 #include "base/posix/global_descriptors.h"
 #include "content/public/common/content_descriptors.h"
@@ -174,31 +170,6 @@ class SuicideOnChannelErrorFilter : public IPC::MessageFilter {
 };
 
 #endif  // OS(POSIX)
-
-#if defined(USE_OZONE)
-class ClientNativePixmapFactoryFilter : public IPC::MessageFilter {
- public:
-  // Overridden from IPC::MessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(ClientNativePixmapFactoryFilter, message)
-      IPC_MESSAGE_HANDLER(ChildProcessMsg_InitializeClientNativePixmapFactory,
-                          OnInitializeClientNativePixmapFactory)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
-  }
-
- protected:
-  ~ClientNativePixmapFactoryFilter() override {}
-
-  void OnInitializeClientNativePixmapFactory(
-      const base::FileDescriptor& device_fd) {
-    ui::ClientNativePixmapFactory::GetInstance()->Initialize(
-        base::ScopedFD(device_fd.fd));
-  }
-};
-#endif
 
 #if defined(OS_ANDROID)
 // A class that allows for triggering a clean shutdown from another
@@ -476,10 +447,6 @@ void ChildThreadImpl::Init(const Options& options) {
   // and single-process mode.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kProcessType))
     channel_->AddFilter(new SuicideOnChannelErrorFilter());
-#endif
-
-#if defined(USE_OZONE)
-  channel_->AddFilter(new ClientNativePixmapFactoryFilter());
 #endif
 
   // Add filters passed here via options.

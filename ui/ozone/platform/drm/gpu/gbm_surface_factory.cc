@@ -96,7 +96,7 @@ scoped_refptr<ui::NativePixmap> GbmSurfaceFactory::CreateNativePixmap(
     gfx::BufferUsage usage) {
 #if !defined(OS_CHROMEOS)
   // Support for memory mapping accelerated buffers requires some
-  // CrOS-specific patches (using vgem).
+  // CrOS-specific patches (using dma-buf mmap API).
   DCHECK(gfx::BufferUsage::SCANOUT == usage);
 #endif
 

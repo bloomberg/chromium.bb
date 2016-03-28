@@ -26,6 +26,8 @@ source_set("gbm") {
   sources = [
     "client_native_pixmap_factory_gbm.cc",
     "client_native_pixmap_factory_gbm.h",
+    "common/client_native_pixmap_dmabuf.cc",
+    "common/client_native_pixmap_dmabuf.h",
     "common/drm_util.cc",
     "common/drm_util.h",
     "common/scoped_drm_types.cc",
@@ -151,15 +153,6 @@ source_set("gbm") {
       "gpu/hardware_display_plane_atomic.h",
       "gpu/hardware_display_plane_manager_atomic.cc",
       "gpu/hardware_display_plane_manager_atomic.h",
-    ]
-  }
-
-  if (use_vgem_map) {
-    configs += [ "//ui/ozone:vgem_map" ]
-
-    sources += [
-      "common/client_native_pixmap_vgem.cc",
-      "common/client_native_pixmap_vgem.h",
     ]
   }
 }

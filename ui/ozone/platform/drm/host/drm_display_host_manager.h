@@ -106,9 +106,6 @@ class DrmDisplayHostManager : public DeviceEventObserver, GpuThreadObserver {
   // with the GPU process trying to open it and aquire DRM master.
   base::FilePath primary_graphics_card_path_;
 
-  // File path for virtual gem (VGEM) device.
-  base::FilePath vgem_card_path_;
-
   // Keeps track if there is a dummy display. This happens on initialization
   // when there is no connection to the GPU to update the displays.
   bool has_dummy_display_ = false;

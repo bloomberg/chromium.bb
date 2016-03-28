@@ -15,7 +15,6 @@ class StubClientNativePixmapFactory : public ClientNativePixmapFactory {
   ~StubClientNativePixmapFactory() override {}
 
   // ClientNativePixmapFactory:
-  void Initialize(base::ScopedFD device_fd) override {}
   bool IsConfigurationSupported(gfx::BufferFormat format,
                                 gfx::BufferUsage usage) const override {
     return false;

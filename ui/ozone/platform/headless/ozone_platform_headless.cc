@@ -78,9 +78,6 @@ class OzonePlatformHeadless : public OzonePlatform {
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return make_scoped_ptr(new NativeDisplayDelegateOzone());
   }
-  base::ScopedFD OpenClientNativePixmapDevice() const override {
-    return base::ScopedFD();
-  }
 
   void InitializeUI() override {
     window_manager_.reset(new HeadlessWindowManager(file_path_));

@@ -29,8 +29,6 @@ class ClientNativePixmapCast : public ClientNativePixmap {
 class ClientNativePixmapFactoryCast : public ClientNativePixmapFactory {
  public:
   // ClientNativePixmapFactoryCast implementation:
-  void Initialize(base::ScopedFD device_fd) override {}
-
   bool IsConfigurationSupported(gfx::BufferFormat format,
                                 gfx::BufferUsage usage) const override {
     return format == gfx::BufferFormat::RGBA_8888 &&

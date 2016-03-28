@@ -15,10 +15,6 @@
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_sets.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
 
-#if defined(USE_VGEM_MAP)
-#include <libdrm/vgem_drm.h>
-#endif
-
 using sandbox::SyscallSets;
 using sandbox::bpf_dsl::Allow;
 using sandbox::bpf_dsl::Arg;
@@ -34,13 +30,6 @@ ResultExpr RestrictIoctl() {
   return Switch(request)
       .SANDBOX_BPF_DSL_CASES((static_cast<unsigned long>(TCGETS), FIONREAD),
                              Allow())
-#if defined(USE_VGEM_MAP)
-      // Type of DRM_IOCTL_XXX is unsigned long on IA and unsigned int on ARM.
-      .SANDBOX_BPF_DSL_CASES(
-          (static_cast<unsigned long>(DRM_IOCTL_GEM_CLOSE),
-           DRM_IOCTL_VGEM_MODE_MAP_DUMB, DRM_IOCTL_PRIME_FD_TO_HANDLE),
-          Allow())
-#endif
       .Default(sandbox::CrashSIGSYSIoctl());
 }
 

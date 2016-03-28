@@ -74,10 +74,6 @@ class OzonePlatformX11 : public OzonePlatform {
     return make_scoped_ptr(new NativeDisplayDelegateOzone());
   }
 
-  base::ScopedFD OpenClientNativePixmapDevice() const override {
-    return base::ScopedFD();
-  }
-
   void InitializeUI() override {
     window_manager_.reset(new X11WindowManagerOzone);
     event_source_.reset(new X11EventSourceLibevent(gfx::GetXDisplay()));

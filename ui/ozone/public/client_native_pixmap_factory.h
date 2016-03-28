@@ -32,9 +32,6 @@ class OZONE_EXPORT ClientNativePixmapFactory {
 
   virtual ~ClientNativePixmapFactory();
 
-  // Initialize with the given client native pixmap |device_fd|.
-  virtual void Initialize(base::ScopedFD device_fd) = 0;
-
   // Returns true if format/usage configuration is supported.
   virtual bool IsConfigurationSupported(gfx::BufferFormat format,
                                         gfx::BufferUsage usage) const = 0;

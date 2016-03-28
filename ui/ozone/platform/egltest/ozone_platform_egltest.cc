@@ -374,9 +374,6 @@ class OzonePlatformEgltest : public OzonePlatform {
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return make_scoped_ptr(new NativeDisplayDelegateOzone());
   }
-  base::ScopedFD OpenClientNativePixmapDevice() const override {
-    return base::ScopedFD();
-  }
 
   void InitializeUI() override {
     device_manager_ = CreateDeviceManager();

@@ -121,17 +121,6 @@ class OzonePlatformGbm : public OzonePlatform {
     return make_scoped_ptr(
         new DrmNativeDisplayDelegate(display_manager_.get()));
   }
-  base::ScopedFD OpenClientNativePixmapDevice() const override {
-#if defined(USE_VGEM_MAP)
-    int vgem_fd = drmOpenWithType("vgem", nullptr, DRM_NODE_RENDER);
-    if (vgem_fd < 0) {
-      PLOG(ERROR) << "Failed to find vgem device";
-      vgem_fd = -1;
-    }
-    return base::ScopedFD(vgem_fd);
-#endif
-    return base::ScopedFD();
-  }
   void InitializeUI() override {
     device_manager_ = CreateDeviceManager();
     window_manager_.reset(new DrmWindowHostManager());

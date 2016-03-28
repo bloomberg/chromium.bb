@@ -1092,7 +1092,6 @@
       'dependencies': [
         '../ui/ozone/ozone.gyp:ozone',
         '../ui/ozone/ozone.gyp:ozone_base',
-        '../ui/ozone/ozone.gyp:vgem_map',
       ],
       'sources!': [
         'common/gpu/client/gpu_memory_buffer_impl_linux.cc',

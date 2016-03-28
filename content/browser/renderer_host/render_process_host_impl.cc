@@ -209,8 +209,6 @@
 #endif  // defined(OS_POSIX)
 
 #if defined(USE_OZONE)
-#include "ui/ozone/public/client_native_pixmap_factory.h"
-#include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 #endif
 
@@ -1821,12 +1819,6 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
   tracked_objects::ThreadData::Status status =
       tracked_objects::ThreadData::status();
   Send(new ChildProcessMsg_SetProfilerStatus(status));
-
-#if defined(USE_OZONE)
-  Send(new ChildProcessMsg_InitializeClientNativePixmapFactory(
-      base::FileDescriptor(
-          ui::OzonePlatform::GetInstance()->OpenClientNativePixmapDevice())));
-#endif
 
   // Inform AudioInputRendererHost about the new render process PID.
   // AudioInputRendererHost is reference counted, so its lifetime is

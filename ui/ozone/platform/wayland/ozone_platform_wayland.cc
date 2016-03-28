@@ -68,11 +68,6 @@ class OzonePlatformWayland : public OzonePlatform {
     return make_scoped_ptr(new NativeDisplayDelegateOzone);
   }
 
-  base::ScopedFD OpenClientNativePixmapDevice() const override {
-    NOTIMPLEMENTED();
-    return base::ScopedFD();
-  }
-
   void InitializeUI() override {
     display_.reset(new WaylandDisplay);
     if (!display_->Initialize())
