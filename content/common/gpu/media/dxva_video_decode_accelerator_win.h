@@ -29,6 +29,7 @@
 #include "base/threading/thread.h"
 #include "base/win/scoped_comptr.h"
 #include "content/common/content_export.h"
+#include "media/filters/h264_parser.h"
 #include "media/video/video_decode_accelerator.h"
 
 interface IMFSample;
@@ -74,6 +75,8 @@ class H264ConfigChangeDetector {
   // This flag tracks that we potentially have a configuration change which
   // we want to honor after we see an IDR slice.
   bool pending_config_changed_;
+
+  scoped_ptr<media::H264Parser> parser_;
 
   DISALLOW_COPY_AND_ASSIGN(H264ConfigChangeDetector);
 };
@@ -446,7 +449,7 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // when these changes occur then, the decoder works fine. The
   // H264ConfigChangeDetector class provides functionality to check if the
   // stream configuration changed.
-  H264ConfigChangeDetector config_change_detector_;
+  scoped_ptr<H264ConfigChangeDetector> config_change_detector_;
 
   // Contains the initialization parameters for the video.
   Config config_;

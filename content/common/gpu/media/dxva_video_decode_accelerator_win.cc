@@ -34,7 +34,6 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "media/base/win/mf_initializer.h"
-#include "media/filters/h264_parser.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -384,12 +383,14 @@ bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
   media::H264NALU nalu;
   bool idr_seen = false;
 
-  media::H264Parser parser;
-  parser.SetStream(stream, size);
+  if (!parser_.get())
+    parser_.reset(new media::H264Parser);
+
+  parser_->SetStream(stream, size);
   config_changed_ = false;
 
   while (true) {
-    media::H264Parser::Result result = parser.AdvanceToNextNALU(&nalu);
+    media::H264Parser::Result result = parser_->AdvanceToNextNALU(&nalu);
 
     if (result == media::H264Parser::kEOStream)
       break;
@@ -406,7 +407,7 @@ bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
 
     switch (nalu.nal_unit_type) {
       case media::H264NALU::kSPS:
-        result = parser.ParseSPS(&last_sps_id_);
+        result = parser_->ParseSPS(&last_sps_id_);
         if (result == media::H264Parser::kUnsupportedStream) {
           DLOG(ERROR) << "Unsupported SPS";
           return false;
@@ -421,7 +422,7 @@ bool H264ConfigChangeDetector::DetectConfig(const uint8_t* stream,
         break;
 
       case media::H264NALU::kPPS:
-        result = parser.ParsePPS(&last_pps_id_);
+        result = parser_->ParsePPS(&last_pps_id_);
         if (result == media::H264Parser::kUnsupportedStream) {
           DLOG(ERROR) << "Unsupported PPS";
           return false;
@@ -931,6 +932,8 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
       PLATFORM_FAILURE, false);
 
   config_ = config;
+
+  config_change_detector_.reset(new H264ConfigChangeDetector);
 
   SetState(kNormal);
 
@@ -1830,6 +1833,8 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
   decoder_.Release();
   pictures_requested_ = false;
 
+  config_change_detector_.reset();
+
   if (use_dx11_) {
     if (video_format_converter_mft_.get()) {
       video_format_converter_mft_->ProcessMessage(
@@ -2634,13 +2639,13 @@ HRESULT DXVAVideoDecodeAccelerator::CheckConfigChanged(
 
   MediaBufferScopedPointer scoped_media_buffer(buffer.get());
 
-  if (!config_change_detector_.DetectConfig(
+  if (!config_change_detector_->DetectConfig(
           scoped_media_buffer.get(),
           scoped_media_buffer.current_length())) {
     RETURN_ON_HR_FAILURE(E_FAIL, "Failed to detect H.264 stream config",
         E_FAIL);
   }
-  *config_changed = config_change_detector_.config_changed();
+  *config_changed = config_change_detector_->config_changed();
   return S_OK;
 }
 
