@@ -110,11 +110,11 @@ public:
 
     // The DrawingBuffer needs to track the texture bound to texture unit 0.
     // The bound texture is tracked to avoid costly queries during rendering.
-    void setTexture2DBinding(Platform3DObject texture) { m_texture2DBinding = texture; }
+    void setTexture2DBinding(GLuint texture) { m_texture2DBinding = texture; }
 
     // The DrawingBuffer needs to track the currently bound framebuffer so it
     // restore the binding when needed.
-    void setFramebufferBinding(GLenum target, Platform3DObject fbo)
+    void setFramebufferBinding(GLenum target, GLuint fbo)
     {
         switch (target) {
         case GL_FRAMEBUFFER:
@@ -138,7 +138,7 @@ public:
 
     bool multisample() const;
 
-    Platform3DObject framebuffer() const;
+    GLuint framebuffer() const;
 
     bool discardFramebufferSupported() const { return m_discardFramebufferSupported; }
 
@@ -163,7 +163,7 @@ public:
     void mailboxReleased(const WebExternalTextureMailbox&, bool lostResource = false) override;
 
     // Destroys the TEXTURE_2D binding for the owned context
-    bool copyToPlatformTexture(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*, Platform3DObject texture, GLenum internalFormat,
+    bool copyToPlatformTexture(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*, GLuint texture, GLenum internalFormat,
         GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, SourceDrawingBuffer);
 
     void setPackAlignment(GLint param);
@@ -193,10 +193,10 @@ protected: // For unittests
 private:
     struct TextureParameters {
         DISALLOW_NEW();
-        WGC3Denum target;
-        WGC3Denum internalColorFormat;
-        WGC3Denum colorFormat;
-        WGC3Denum internalRenderbufferFormat;
+        GLenum target;
+        GLenum internalColorFormat;
+        GLenum colorFormat;
+        GLenum internalRenderbufferFormat;
 
         TextureParameters()
             : target(0)
@@ -211,8 +211,8 @@ private:
     // we need to know the mapping from texture id to image.
     struct TextureInfo {
         DISALLOW_NEW();
-        Platform3DObject textureId;
-        WGC3Duint imageId;
+        GLuint textureId;
+        GLuint imageId;
         TextureParameters parameters;
 
         TextureInfo()
@@ -249,7 +249,7 @@ private:
     // Creates and binds a texture with the given parameters. Returns 0 on
     // failure, or the newly created texture id on success. The caller takes
     // ownership of the newly created texture.
-    WebGLId createColorTexture(const TextureParameters&);
+    GLuint createColorTexture(const TextureParameters&);
 
     // Create the depth/stencil and multisample buffers, if needed.
     void createSecondaryBuffers();
@@ -300,9 +300,9 @@ private:
 
     PreserveDrawingBuffer m_preserveDrawingBuffer;
     bool m_scissorEnabled;
-    Platform3DObject m_texture2DBinding;
-    Platform3DObject m_drawFramebufferBinding;
-    Platform3DObject m_readFramebufferBinding;
+    GLuint m_texture2DBinding;
+    GLuint m_drawFramebufferBinding;
+    GLuint m_readFramebufferBinding;
     GLenum m_activeTextureUnit;
 
     OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;

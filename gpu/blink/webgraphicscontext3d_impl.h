@@ -74,9 +74,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   scoped_ptr<WebGraphicsContext3DErrorMessageCallback>
       client_error_message_callback_;
 
-  // Errors raised by synthesizeGLError().
-  std::vector<blink::WGC3Denum> synthetic_errors_;
-
   ::gpu::gles2::GLES2Interface* gl_;
   bool lose_context_when_out_of_memory_;
 };

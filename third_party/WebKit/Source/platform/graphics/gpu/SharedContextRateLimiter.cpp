@@ -4,7 +4,6 @@
 
 #include "platform/graphics/gpu/SharedContextRateLimiter.h"
 
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebGraphicsContext3D.h"
@@ -55,7 +54,7 @@ void SharedContextRateLimiter::tick()
     }
     if (m_queries.size() > m_maxPendingTicks) {
         if (m_canUseSyncQueries) {
-            WGC3Duint result;
+            GLuint result;
             gl->GetQueryObjectuivEXT(m_queries.first(), GL_QUERY_RESULT_EXT, &result);
             gl->DeleteQueriesEXT(1, &m_queries.first());
             m_queries.removeFirst();

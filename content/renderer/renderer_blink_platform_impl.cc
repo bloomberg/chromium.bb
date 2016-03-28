@@ -960,7 +960,7 @@ blink::WebSpeechSynthesizer* RendererBlinkPlatformImpl::createSpeechSynthesizer(
 //------------------------------------------------------------------------------
 
 static void Collect3DContextInformationOnFailure(
-    blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info,
+    blink::Platform::GraphicsInfo* gl_info,
     GpuChannelHost* host) {
   DCHECK(gl_info);
   std::string error_message("OffscreenContext Creation failed, ");
@@ -1001,7 +1001,7 @@ blink::WebGraphicsContext3DProvider*
 RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
     const blink::WebGraphicsContext3D::Attributes& attributes,
     blink::WebGraphicsContext3DProvider* share_provider,
-    blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info) {
+    blink::Platform::GraphicsInfo* gl_info) {
   DCHECK(gl_info);
   if (!RenderThreadImpl::current()) {
     std::string error_message("Failed to run in Current RenderThreadImpl");

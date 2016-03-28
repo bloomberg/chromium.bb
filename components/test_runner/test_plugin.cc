@@ -174,7 +174,7 @@ TestPlugin::~TestPlugin() {
 
 bool TestPlugin::initialize(blink::WebPluginContainer* container) {
   blink::WebGraphicsContext3D::Attributes attrs;
-  blink::WebGraphicsContext3D::WebGraphicsInfo gl_info;
+  blink::Platform::GraphicsInfo gl_info;
   context_provider_ = make_scoped_ptr(
       blink::Platform::current()->createOffscreenGraphicsContext3DProvider(
           attrs, nullptr, &gl_info));

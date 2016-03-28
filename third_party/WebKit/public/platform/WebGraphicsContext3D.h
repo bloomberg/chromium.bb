@@ -45,29 +45,6 @@ struct GrGLInterface;
 
 namespace blink {
 
-// WGC3D types match the corresponding GL types as defined in OpenGL ES 2.0
-// header file gl2.h from khronos.org.
-typedef char WGC3Dchar;
-typedef unsigned WGC3Denum;
-typedef unsigned char WGC3Dboolean;
-typedef unsigned WGC3Dbitfield;
-typedef signed char WGC3Dbyte;
-typedef unsigned char WGC3Dubyte;
-typedef short WGC3Dshort;
-typedef unsigned short WGC3Dushort;
-typedef int WGC3Dint;
-typedef int WGC3Dsizei;
-typedef unsigned WGC3Duint;
-typedef float WGC3Dfloat;
-typedef float WGC3Dclampf;
-typedef signed long int WGC3Dintptr;
-typedef signed long int WGC3Dsizeiptr;
-typedef int64_t WGC3Dint64;
-typedef uint64_t WGC3Duint64;
-
-// Typedef for server-side objects like OpenGL textures and program objects.
-typedef WGC3Duint WebGLId;
-
 // This interface abstracts the operations performed by the
 // GraphicsContext3D in order to implement WebGL. Nearly all of the
 // methods exposed on this interface map directly to entry points in
@@ -95,21 +72,6 @@ public:
         WebString topDocumentURL;
     };
 
-    struct WebGraphicsInfo {
-        unsigned vendorId = 0;
-        unsigned deviceId = 0;
-        unsigned processCrashCount = 0;
-        unsigned resetNotificationStrategy = 0;
-        bool sandboxed = false;
-        bool testFailContext = false;
-        bool amdSwitchable = false;
-        bool optimus = false;
-        WebString vendorInfo;
-        WebString rendererInfo;
-        WebString driverVersion;
-        WebString errorMessage;
-    };
-
     class WebGraphicsContextLostCallback {
     public:
         virtual void onContextLost() = 0;
@@ -120,7 +82,7 @@ public:
 
     class WebGraphicsErrorMessageCallback {
     public:
-        virtual void onErrorMessage(const WebString&, WGC3Dint) = 0;
+        virtual void onErrorMessage(const WebString&, int) = 0;
 
     protected:
         virtual ~WebGraphicsErrorMessageCallback() { }

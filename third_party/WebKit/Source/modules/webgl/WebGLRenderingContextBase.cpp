@@ -503,7 +503,7 @@ public:
 
     ~WebGLRenderingContextErrorMessageCallback() override { }
 
-    virtual void onErrorMessage(const WebString& message, WGC3Dint)
+    virtual void onErrorMessage(const WebString& message, GLint)
     {
         if (m_context->m_synthesizedErrorsToConsole)
             m_context->printGLErrorToConsole(message);
@@ -528,7 +528,7 @@ static void formatWebGLStatusString(const String& glInfo, const String& infostri
         statusMessage.append(", " + glInfo + " = " + infostring);
 }
 
-static String extractWebGLContextCreationError(const WebGraphicsContext3D::WebGraphicsInfo& info)
+static String extractWebGLContextCreationError(const Platform::GraphicsInfo& info)
 {
     String statusMessage("Could not create a WebGL context");
     formatWebGLStatusString("VENDOR", info.vendorId ? String::format("0x%04x", info.vendorId).utf8().data() : "0xffff", statusMessage);
@@ -564,7 +564,7 @@ PassOwnPtr<WebGraphicsContext3DProvider> WebGLRenderingContextBase::createWebGra
     }
 
     WebGraphicsContext3D::Attributes wgc3dAttributes = toWebGraphicsContext3DAttributes(attributes, document.topDocument().url().getString(), settings, webGLVersion);
-    WebGraphicsContext3D::WebGraphicsInfo glInfo;
+    Platform::GraphicsInfo glInfo;
     glInfo.testFailContext = shouldFailContextCreationForTesting;
     OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(wgc3dAttributes, 0, &glInfo));
     if (!contextProvider || shouldFailContextCreationForTesting) {
@@ -5996,7 +5996,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     }
 
     WebGraphicsContext3D::Attributes attributes = toWebGraphicsContext3DAttributes(m_requestedAttributes, canvas()->document().topDocument().url().getString(), settings, version());
-    blink::WebGraphicsContext3D::WebGraphicsInfo glInfo;
+    Platform::GraphicsInfo glInfo;
     OwnPtr<WebGraphicsContext3DProvider> contextProvider = adoptPtr(Platform::current()->createOffscreenGraphicsContext3DProvider(attributes, 0, &glInfo));
     RefPtr<DrawingBuffer> buffer;
     if (contextProvider) {

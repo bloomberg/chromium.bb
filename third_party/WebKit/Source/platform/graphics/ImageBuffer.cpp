@@ -231,7 +231,7 @@ bool ImageBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gles
 
     gl->Flush();
 
-    WGC3Dbyte syncToken[24];
+    GLbyte syncToken[24];
     gl->GenSyncTokenCHROMIUM(contextFenceSync, syncToken);
     sharedGL->WaitSyncTokenCHROMIUM(syncToken);
 

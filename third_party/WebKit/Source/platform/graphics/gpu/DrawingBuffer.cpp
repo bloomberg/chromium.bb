@@ -67,7 +67,7 @@ class ScopedTextureUnit0BindingRestorer {
     STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(ScopedTextureUnit0BindingRestorer);
 public:
-    ScopedTextureUnit0BindingRestorer(gpu::gles2::GLES2Interface* gl, GLenum activeTextureUnit, Platform3DObject textureUnitZeroId)
+    ScopedTextureUnit0BindingRestorer(gpu::gles2::GLES2Interface* gl, GLenum activeTextureUnit, GLuint textureUnitZeroId)
         : m_gl(gl)
         , m_oldActiveTextureUnit(activeTextureUnit)
         , m_oldTextureUnitZeroId(textureUnitZeroId)
@@ -83,7 +83,7 @@ public:
 private:
     gpu::gles2::GLES2Interface* m_gl;
     GLenum m_oldActiveTextureUnit;
-    Platform3DObject m_oldTextureUnitZeroId;
+    GLuint m_oldTextureUnitZeroId;
 };
 
 static bool shouldFailDrawingBufferCreationForTesting = false;
@@ -296,7 +296,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
 
         if (m_discardFramebufferSupported) {
             // Explicitly discard framebuffer to save GPU memory bandwidth for tile-based GPU arch.
-            const WGC3Denum attachments[3] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
+            const GLenum attachments[3] = { GL_COLOR_ATTACHMENT0, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT};
             m_gl->DiscardFramebufferEXT(GL_FRAMEBUFFER, 3, attachments);
         }
     } else {
@@ -480,17 +480,17 @@ bool DrawingBuffer::initialize(const IntSize& size)
     // If that succeeds, we then see what we actually got and update our actual attributes to reflect that.
     m_actualAttributes = m_requestedAttributes;
     if (m_requestedAttributes.alpha) {
-        WGC3Dint alphaBits = 0;
+        GLint alphaBits = 0;
         m_gl->GetIntegerv(GL_ALPHA_BITS, &alphaBits);
         m_actualAttributes.alpha = alphaBits > 0;
     }
     if (m_requestedAttributes.depth) {
-        WGC3Dint depthBits = 0;
+        GLint depthBits = 0;
         m_gl->GetIntegerv(GL_DEPTH_BITS, &depthBits);
         m_actualAttributes.depth = depthBits > 0;
     }
     if (m_requestedAttributes.stencil) {
-        WGC3Dint stencilBits = 0;
+        GLint stencilBits = 0;
         m_gl->GetIntegerv(GL_STENCIL_BITS, &stencilBits);
         m_actualAttributes.stencil = stencilBits > 0;
     }
@@ -504,7 +504,7 @@ bool DrawingBuffer::initialize(const IntSize& size)
     return true;
 }
 
-bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gles2::GLES2Interface* gl, Platform3DObject texture, GLenum internalFormat,
+bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gles2::GLES2Interface* gl, GLuint texture, GLenum internalFormat,
     GLenum destType, GLint level, bool premultiplyAlpha, bool flipY, SourceDrawingBuffer sourceBuffer)
 {
     if (m_contentsChanged) {
@@ -540,7 +540,7 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gl
 
     if (mailbox.validSyncToken)
         gl->WaitSyncTokenCHROMIUM(mailbox.syncToken);
-    Platform3DObject sourceTexture = gl->CreateAndConsumeTextureCHROMIUM(target, mailbox.name);
+    GLuint sourceTexture = gl->CreateAndConsumeTextureCHROMIUM(target, mailbox.name);
 
     GLboolean unpackPremultiplyAlphaNeeded = GL_FALSE;
     GLboolean unpackUnpremultiplyAlphaNeeded = GL_FALSE;
@@ -563,7 +563,7 @@ bool DrawingBuffer::copyToPlatformTexture(WebGraphicsContext3D* context, gpu::gl
     return true;
 }
 
-Platform3DObject DrawingBuffer::framebuffer() const
+GLuint DrawingBuffer::framebuffer() const
 {
     return m_fbo;
 }
@@ -631,7 +631,7 @@ void DrawingBuffer::beginDestruction()
         GraphicsLayer::unregisterContentsLayer(m_layer->layer());
 }
 
-WebGLId DrawingBuffer::createColorTexture(const TextureParameters& parameters)
+GLuint DrawingBuffer::createColorTexture(const TextureParameters& parameters)
 {
     GLuint offscreenColorTexture;
     m_gl->GenTextures(1, &offscreenColorTexture);
@@ -975,11 +975,11 @@ DrawingBuffer::TextureInfo DrawingBuffer::createTextureAndAllocateMemory(const I
     // First, try to allocate a CHROMIUM_image. This always has the potential to
     // fail.
     TextureParameters parameters = chromiumImageTextureParameters();
-    WGC3Duint imageId = m_gl->CreateGpuMemoryBufferImageCHROMIUM(size.width(), size.height(), parameters.internalColorFormat, GC3D_SCANOUT_CHROMIUM);
+    GLuint imageId = m_gl->CreateGpuMemoryBufferImageCHROMIUM(size.width(), size.height(), parameters.internalColorFormat, GC3D_SCANOUT_CHROMIUM);
     if (!imageId)
         return createDefaultTextureAndAllocateMemory(size);
 
-    WebGLId textureId = createColorTexture(parameters);
+    GLuint textureId = createColorTexture(parameters);
     m_gl->BindTexImage2DCHROMIUM(parameters.target, imageId);
 
     TextureInfo info;
@@ -992,7 +992,7 @@ DrawingBuffer::TextureInfo DrawingBuffer::createTextureAndAllocateMemory(const I
 DrawingBuffer::TextureInfo DrawingBuffer::createDefaultTextureAndAllocateMemory(const IntSize& size)
 {
     TextureParameters parameters = defaultTextureParameters();
-    WebGLId textureId = createColorTexture(parameters);
+    GLuint textureId = createColorTexture(parameters);
     texImage2DResourceSafe(parameters.target, 0, parameters.internalColorFormat, size.width(), size.height(), 0, parameters.colorFormat, GL_UNSIGNED_BYTE);
 
     DrawingBuffer::TextureInfo info;
@@ -1025,7 +1025,7 @@ void DrawingBuffer::resizeTextureMemory(TextureInfo* info, const IntSize& size)
 
 void DrawingBuffer::attachColorBufferToCurrentFBO()
 {
-    WGC3Denum target = m_colorBuffer.parameters.target;
+    GLenum target = m_colorBuffer.parameters.target;
 
     m_gl->BindTexture(target, m_colorBuffer.textureId);
 

@@ -227,7 +227,7 @@ bool Canvas2DLayerBridge::prepareIOSurfaceMailboxFromImage(SkImage* image, WebEx
     gl->ProduceTextureDirectCHROMIUM(imageInfo.m_textureId, info.m_mailbox.textureTarget, info.m_mailbox.name);
     info.m_mailbox.allowOverlay = true;
 
-    const WGC3Duint64 fenceSync = gl->InsertFenceSyncCHROMIUM();
+    const GLuint64 fenceSync = gl->InsertFenceSyncCHROMIUM();
     gl->Flush();
     gl->GenSyncTokenCHROMIUM(fenceSync, info.m_mailbox.syncToken);
     info.m_mailbox.validSyncToken = true;

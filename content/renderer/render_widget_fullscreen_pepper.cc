@@ -43,7 +43,6 @@ using blink::WebTextDirection;
 using blink::WebTextInputType;
 using blink::WebVector;
 using blink::WebWidget;
-using blink::WGC3Dintptr;
 
 namespace content {
 

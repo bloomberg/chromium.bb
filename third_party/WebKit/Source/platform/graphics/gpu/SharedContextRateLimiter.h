@@ -5,11 +5,12 @@
 #ifndef SharedContextRateLimiter_h
 #define SharedContextRateLimiter_h
 
-#include "public/platform/WebGraphicsContext3D.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "wtf/Allocator.h"
 #include "wtf/Deque.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace blink {
 
@@ -46,7 +47,7 @@ private:
     SharedContextRateLimiter(unsigned maxPendingTicks);
 
     OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
-    Deque<WebGLId> m_queries;
+    Deque<GLuint> m_queries;
     unsigned m_maxPendingTicks;
     bool m_canUseSyncQueries;
 };

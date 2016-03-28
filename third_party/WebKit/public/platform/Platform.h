@@ -455,12 +455,26 @@ public:
 
     // GPU ----------------------------------------------------------------
     //
+    struct GraphicsInfo {
+        unsigned vendorId = 0;
+        unsigned deviceId = 0;
+        unsigned processCrashCount = 0;
+        unsigned resetNotificationStrategy = 0;
+        bool sandboxed = false;
+        bool testFailContext = false;
+        bool amdSwitchable = false;
+        bool optimus = false;
+        WebString vendorInfo;
+        WebString rendererInfo;
+        WebString driverVersion;
+        WebString errorMessage;
+    };
     // Returns a newly allocated and initialized offscreen context provider,
     // backed by an independent context. Returns null if the context cannot be
     // created or initialized.
     // Passing an existing provider to shareContext will create the new context
     // in the same share group as the one passed.
-    virtual WebGraphicsContext3DProvider* createOffscreenGraphicsContext3DProvider(const WebGraphicsContext3D::Attributes&, WebGraphicsContext3DProvider* shareContext, WebGraphicsContext3D::WebGraphicsInfo* glInfo) { return nullptr; }
+    virtual WebGraphicsContext3DProvider* createOffscreenGraphicsContext3DProvider(const WebGraphicsContext3D::Attributes&, WebGraphicsContext3DProvider* shareContext, GraphicsInfo* glInfo) { return nullptr; }
 
     // Returns a newly allocated and initialized offscreen context provider,
     // backed by the process-wide shared main thread context. Returns null if

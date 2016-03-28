@@ -53,7 +53,7 @@ namespace blink {
 namespace {
 
 // The target to use when binding a texture to a Chromium image.
-WGC3Denum imageTextureTarget()
+GLenum imageTextureTarget()
 {
 #if OS(MACOSX)
     return GC3D_TEXTURE_RECTANGLE_ARB;
@@ -63,7 +63,7 @@ WGC3Denum imageTextureTarget()
 }
 
 // The target to use when preparing a mailbox texture.
-WGC3Denum drawingBufferTextureTarget(bool allowImageChromium)
+GLenum drawingBufferTextureTarget(bool allowImageChromium)
 {
     if (RuntimeEnabledFeatures::webGLImageChromiumEnabled() && allowImageChromium)
         return imageTextureTarget();
@@ -87,7 +87,7 @@ public:
 
     GLuint64 InsertFenceSyncCHROMIUM() override
     {
-        static WGC3Duint64 syncPointGenerator = 0;
+        static GLuint64 syncPointGenerator = 0;
         return ++syncPointGenerator;
     }
 
@@ -128,7 +128,7 @@ public:
         }
     }
 
-    WGC3Duint CreateGpuMemoryBufferImageCHROMIUM(GLsizei width, GLsizei height, GLenum internalformat, GLenum usage) override
+    GLuint CreateGpuMemoryBufferImageCHROMIUM(GLsizei width, GLsizei height, GLenum internalformat, GLenum usage) override
     {
         if (!m_allowImageChromium)
             return false;
@@ -191,7 +191,7 @@ private:
     GLuint m_boundTexture = 0;
     GLuint m_boundTextureTarget = 0;
     GLuint m_mostRecentlyWaitedSyncToken = 0;
-    WGC3Dbyte m_currentMailboxByte = 0;
+    GLbyte m_currentMailboxByte = 0;
     IntSize m_mostRecentlyProducedSize;
     bool m_allowImageChromium = true;
     GLuint m_currentImageId = 1;
@@ -207,7 +207,7 @@ public:
     {
     }
 
-    WGC3Duint mostRecentlyWaitedSyncToken()
+    GLuint mostRecentlyWaitedSyncToken()
     {
         return m_contextGL->mostRecentlyWaitedSyncToken();
     }
@@ -218,7 +218,7 @@ public:
     }
 
 
-    WGC3Duint nextImageIdToBeCreated()
+    GLuint nextImageIdToBeCreated()
     {
         return m_contextGL->currentImageId();
     }
@@ -484,8 +484,8 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly)
     // prepareMailbox() does not wait for any sync point.
     EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncToken());
 
-    WGC3Duint64 waitSyncToken = 0;
-    m_gl->GenSyncTokenCHROMIUM(m_gl->InsertFenceSyncCHROMIUM(), reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
+    GLuint64 waitSyncToken = 0;
+    m_gl->GenSyncTokenCHROMIUM(m_gl->InsertFenceSyncCHROMIUM(), reinterpret_cast<GLbyte*>(&waitSyncToken));
     memcpy(mailbox.syncToken, &waitSyncToken, sizeof(waitSyncToken));
     mailbox.validSyncToken = true;
     m_drawingBuffer->mailboxReleased(mailbox, false);
@@ -498,7 +498,7 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly)
     EXPECT_EQ(waitSyncToken, webContext()->mostRecentlyWaitedSyncToken());
 
     m_drawingBuffer->beginDestruction();
-    m_gl->GenSyncTokenCHROMIUM(m_gl->InsertFenceSyncCHROMIUM(), reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
+    m_gl->GenSyncTokenCHROMIUM(m_gl->InsertFenceSyncCHROMIUM(), reinterpret_cast<GLbyte*>(&waitSyncToken));
     memcpy(mailbox.syncToken, &waitSyncToken, sizeof(waitSyncToken));
     mailbox.validSyncToken = true;
     m_drawingBuffer->mailboxReleased(mailbox, false);
@@ -538,7 +538,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     IntSize initialSize(initialWidth, initialHeight);
     IntSize alternateSize(initialWidth, alternateHeight);
 
-    WGC3Duint m_imageId1 = webContext()->nextImageIdToBeCreated();
+    GLuint m_imageId1 = webContext()->nextImageIdToBeCreated();
     EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId1)).Times(1);
     // Produce one mailbox at size 100x100.
     m_drawingBuffer->markContentsChanged();
@@ -547,7 +547,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     EXPECT_TRUE(mailbox.allowOverlay);
     testing::Mock::VerifyAndClearExpectations(webContext());
 
-    WGC3Duint m_imageId2 = webContext()->nextImageIdToBeCreated();
+    GLuint m_imageId2 = webContext()->nextImageIdToBeCreated();
     EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId2)).Times(1);
     EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId0)).Times(1);
     EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId0)).Times(1);
@@ -556,7 +556,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     m_drawingBuffer->mailboxReleased(mailbox, false);
     testing::Mock::VerifyAndClearExpectations(webContext());
 
-    WGC3Duint m_imageId3 = webContext()->nextImageIdToBeCreated();
+    GLuint m_imageId3 = webContext()->nextImageIdToBeCreated();
     EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId3)).Times(1);
     EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId1)).Times(1);
     EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId1)).Times(1);
@@ -567,7 +567,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     EXPECT_TRUE(mailbox.allowOverlay);
     testing::Mock::VerifyAndClearExpectations(webContext());
 
-    WGC3Duint m_imageId4 = webContext()->nextImageIdToBeCreated();
+    GLuint m_imageId4 = webContext()->nextImageIdToBeCreated();
     EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId4)).Times(1);
     EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId2)).Times(1);
     EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId2)).Times(1);
@@ -576,7 +576,7 @@ TEST_F(DrawingBufferImageChromiumTest, verifyResizingReallocatesImages)
     m_drawingBuffer->mailboxReleased(mailbox, false);
     testing::Mock::VerifyAndClearExpectations(webContext());
 
-    WGC3Duint m_imageId5 = webContext()->nextImageIdToBeCreated();
+    GLuint m_imageId5 = webContext()->nextImageIdToBeCreated();
     EXPECT_CALL(*m_gl, BindTexImage2DMock(m_imageId5)).Times(1);
     EXPECT_CALL(*m_gl, DestroyImageMock(m_imageId3)).Times(1);
     EXPECT_CALL(*m_gl, ReleaseTexImage2DMock(m_imageId3)).Times(1);
@@ -677,9 +677,9 @@ public:
     ~DepthStencilTrackingContext() override {}
 
     size_t numAllocatedRenderBuffer() const { return m_contextGL->numAllocatedRenderBuffer(); }
-    WebGLId stencilAttachment() const { return m_contextGL->stencilAttachment(); }
-    WebGLId depthAttachment() const { return m_contextGL->depthAttachment(); }
-    WebGLId depthStencilAttachment() const { return m_contextGL->depthStencilAttachment(); }
+    GLuint stencilAttachment() const { return m_contextGL->stencilAttachment(); }
+    GLuint depthAttachment() const { return m_contextGL->depthAttachment(); }
+    GLuint depthStencilAttachment() const { return m_contextGL->depthStencilAttachment(); }
 
 private:
     DepthStencilTrackingGLES2Interface* m_contextGL;
@@ -771,7 +771,7 @@ TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes)
     m_drawingBuffer->mailboxReleased(mailbox);
     // m_drawingBuffer deletes mailbox immediately when hidden.
 
-    WGC3Duint waitSyncToken = 0;
+    GLuint waitSyncToken = 0;
     memcpy(&waitSyncToken, mailbox.syncToken, sizeof(waitSyncToken));
     EXPECT_EQ(waitSyncToken, webContext()->mostRecentlyWaitedSyncToken());
 
