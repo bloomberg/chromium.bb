@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">ขอแสดงความยินดี! บริการข้อมูล "<ph name="NAME" />" ของคุณได้เปิดใช้งานและพร้อมใช้งานแล้ว</translation>
 <translation id="2649120831653069427">ปลาเรนโบว์</translation>
 <translation id="2670531586141364277">การเปิดใช้งานของ "<ph name="NAME" />" จำเป็นต้องมีการเชื่อมต่อเครือข่าย</translation>
+<translation id="277257480934873581">กำลังเชื่อมต่อ <ph name="NAME" /> อีกครั้ง</translation>
 <translation id="2894654529758326923">ข้อมูล</translation>
 <translation id="2951236788251446349">แมงกะพรุน</translation>
 <translation id="2966449113954629791">คุณอาจใช้ข้อมูลมือถือตามปริมาณที่อนุญาตหมดแล้ว ไปที่พอร์ทัลการเปิดใช้งาน <ph name="NAME" /> เพื่อซื้อข้อมูลเพิ่มเติม</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP ล้มเหลว</translation>
 <translation id="8372369524088641025">คีย์ WEP ไม่ถูกต้อง</translation>
 <translation id="8454013096329229812">WiFi เปิดอยู่</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: กำลังเชื่อมต่อใหม่...</translation>
 <translation id="8688591111840995413">รหัสผ่านไม่ถูกต้อง</translation>
 <translation id="8714406895390098252">จักรยาน</translation>
 <translation id="8808686172382650546">แมว</translation>

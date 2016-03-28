@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Čestitamo! Podatkovna usluga "<ph name="NAME" />" aktivirana je i spremna za pokret.</translation>
 <translation id="2649120831653069427">Dugina riba</translation>
 <translation id="2670531586141364277">Za aktivaciju mreže "<ph name="NAME" />" potrebna je mrežna veza.</translation>
+<translation id="277257480934873581">Ponovno povezivanje s mrežom <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Informacije</translation>
 <translation id="2951236788251446349">Meduza</translation>
 <translation id="2966449113954629791">Vjerojatno ste potrošili dopuštenu količinu mobilnih podataka. Posjetite aktivacijski portal <ph name="NAME" /> kako biste kupili još podataka.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP nije uspio</translation>
 <translation id="8372369524088641025">Neispravan WEP ključ</translation>
 <translation id="8454013096329229812">Wi-Fi je uključen.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: ponovno povezivanje...</translation>
 <translation id="8688591111840995413">Pogrešna zaporka</translation>
 <translation id="8714406895390098252">Bicikl</translation>
 <translation id="8808686172382650546">Mačka</translation>

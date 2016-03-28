@@ -6,6 +6,7 @@
 <translation id="2023631438558435272">Přidružení se nezdařilo. Neplatná odpověď.</translation>
 <translation id="2353984724370197742">Přidružení se nezdařilo. Síťový požadavek se nezdařil.</translation>
 <translation id="3046825211487065480">Přidružení se nezdařilo. Druhý požadavek byl odeslán ještě před přijetím odpovědi na první požadavek.</translation>
+<translation id="3346106862344060497">Vyhledávač byl připojen.</translation>
 <translation id="3407245330823033366">Vyberte účet, který chcete použít se službou Blimp.</translation>
 <translation id="3775180005489871350">Přidružení se nezdařilo. Chyba 400 (BAD_REQUEST).</translation>
 <translation id="4542350224991263059">Přidružení se nezdařilo. Platnost přístupového tokenu uživatele vypršela.</translation>
@@ -13,6 +14,7 @@
 <translation id="4641972508298030550">Uživatele nelze ověřit.</translation>
 <translation id="5860346505531085166">Přidružení se nezdařilo. Účet nemá přístup.</translation>
 <translation id="704835510384979817">Přidružení se nezdařilo. Není k dispozici odpovídající verze modulu.</translation>
+<translation id="7536363920335771251">Vyhledávač byl odpojen. Důvod: %1$s</translation>
 <translation id="7961542533680218955">Přidružení bylo úspěšné.</translation>
 <translation id="8514856595257368555">Token byl načten.</translation>
 </translationbundle>

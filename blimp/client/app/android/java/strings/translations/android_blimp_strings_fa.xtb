@@ -6,6 +6,7 @@
 <translation id="2023631438558435272">واگذاری ناموفق بود. پاسخ نامعتبر.</translation>
 <translation id="2353984724370197742">واگذاری ناموفق بود. درخواست شبکه انجام نشد.</translation>
 <translation id="3046825211487065480">واگذاری ناموفق بود. قبل از اینکه به درخواست اول پاسخ داده شود، درخواست دوم ارسال شد.</translation>
+<translation id="3346106862344060497">موتور متصل شد.</translation>
 <translation id="3407245330823033366">‏لطفاً حسابی برای استفاده با Blimp انتخاب کنید.</translation>
 <translation id="3775180005489871350">‏واگذاری ناموفق بود. خطای 400‎ (BAD_REQUEST)‎.</translation>
 <translation id="4542350224991263059">واگذاری ناموفق بود. اعتبار کد دسترسی کاربر به پایان رسیده است.</translation>
@@ -13,6 +14,7 @@
 <translation id="4641972508298030550">کاربر احراز هویت نشد.</translation>
 <translation id="5860346505531085166">واگذاری ناموفق بود.  حساب دسترسی ندارد.</translation>
 <translation id="704835510384979817">واگذاری ناموفق بود.  نسخه موتور مطابقی وجود ندارد.</translation>
+<translation id="7536363920335771251">‏ارتباط موتور قطع شد، دلیل: %1$s</translation>
 <translation id="7961542533680218955">واگذاری با موفقیت انجام شد.</translation>
 <translation id="8514856595257368555">کد بازیابی شد.</translation>
 </translationbundle>

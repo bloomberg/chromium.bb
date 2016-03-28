@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Parabéns! O serviço de dados "<ph name="NAME" />" foi ativado e está pronto a funcionar.</translation>
 <translation id="2649120831653069427">Peixe arco-íris</translation>
 <translation id="2670531586141364277">A ativação de "<ph name="NAME" />" necessita de uma ligação de rede.</translation>
+<translation id="277257480934873581">A restabelecer ligação a <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Informações</translation>
 <translation id="2951236788251446349">Medusa</translation>
 <translation id="2966449113954629791">Poderá ter atingido o limite de utilização dos dados móveis. Visite o portal de ativação <ph name="NAME" /> para comprar mais dados.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">O OTASP falhou</translation>
 <translation id="8372369524088641025">Chave WEP incorrecta</translation>
 <translation id="8454013096329229812">A ligação Wi-Fi está ativada.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: a restabelecer ligação...</translation>
 <translation id="8688591111840995413">Palavra-passe incorreta</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
 <translation id="8808686172382650546">Gato</translation>

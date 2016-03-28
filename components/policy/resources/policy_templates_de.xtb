@@ -2,9 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="101438888985615157">Bildschirm um 180 Grad drehen</translation>
-<translation id="1015272884520659144">Definiert die Liste mit USB-Geräten, die vom jeweiligen Kerneltreiber getrennt werden und so mithilfe der chrome.usb API direkt in einer Webanwendung eingesetzt werden können. Die Einträge bestehen aus Paaren aus USB Vendor Identifier und USB Product Identifier. Anhand dieser Paare kann bestimmte Hardware identifiziert werden.
+<translation id="1015272884520659144">Definiert die Liste der USB-Geräte, die vom jeweiligen Kerneltreiber getrennt werden können, um über die chrome.usb API direkt in einer Webanwendung eingesetzt zu werden. Die Einträge bestehen aus der USB-Hersteller-ID und der Produkt-ID, über die die Hardware identifiziert werden kann.
 
-      Wenn diese Richtlinie nicht konfiguriert ist, wird die Liste mit trennbaren USB-Geräten als leer betrachtet.</translation>
+      Wenn diese Richtlinie nicht konfiguriert ist, wird die Liste der trennbaren USB-Geräte als leer betrachtet.</translation>
 <translation id="1017967144265860778">Energieverwaltung auf dem Anmeldebildschirm</translation>
 <translation id="1019101089073227242">Verzeichnis für Nutzerdaten festlegen</translation>
 <translation id="1022361784792428773">Erweiterungs-IDs, die der Nutzer nicht installieren darf ("*" für alle)</translation>
@@ -1397,6 +1397,7 @@ Ist diese Richtlinie aktiviert oder deaktiviert, können Nutzer sie in <ph name=
       Wird diese Einstellung deaktiviert, können Nutzer Smart Lock nicht verwenden.
 
       Falls die Richtlinie nicht konfiguriert ist, kommt die Standardeinstellung zum Einsatz, bei der die Funktion von nicht verwalteten Nutzern verwendet und durch von Unternehmen verwaltete Nutzer nicht verwendet werden kann.</translation>
+<translation id="6491139795995924304">Bluetooth auf Gerät zulassen</translation>
 <translation id="6513756852541213407">Ermöglicht Ihnen festzulegen, welchen Proxy <ph name="PRODUCT_NAME" /> verwendet, und verhindert, dass Nutzer Proxy-Einstellungen ändern. Wenn Sie festlegen, dass kein Proxyserver verwendet, sondern immer eine direkte Verbindung hergestellt werden soll, werden alle anderen Optionen ignoriert. Sollten Sie festlegen, dass die Proxy-Einstellungen des Systems verwendet werden sollen oder der Proxyserver automatisch erkannt werden soll, werden alle anderen Optionen ebenfalls ignoriert. Bei Auswahl der Methode mit festem Proxyserver können Sie in "Adresse oder URL des Proxyservers" und "Durch Komma getrennte Liste der Proxy-Umgehungsregeln" weitere Optionen angeben. Zur Verwendung eines PAC-Proxy-Skripts müssen Sie die URL des Skripts im Feld "URL einer PAC-Proxy-Datei" angeben. Ausführliche Beispiele finden Sie unter <ph name="PROXY_HELP_URL" />. Wenn Sie diese Einstellung aktivieren, ignoriert <ph name="PRODUCT_NAME" /> alle Proxy-Optionen, die in der Eingabeaufforderung angegeben werden. Wenn die Richtlinie nicht konfiguriert ist, so können Nutzer die Proxy-Einstellungen selbst konfigurieren.</translation>
 <translation id="6520802717075138474">Suchmaschinen bei erster Ausführung aus Standardbrowser importieren</translation>
 <translation id="653608967792832033">Hiermit wird angegeben, nach welchem Zeitraum ohne Nutzereingabe der Bildschirm im Akkubetrieb gesperrt wird.
@@ -1624,6 +1625,11 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 
           Falls die Richtlinie "RestoreOnStartup" zur Wiederherstellung von URLs aus vorherigen Sitzungen festgelegt ist, wird diese Richtlinie ignoriert und Cookies werden dauerhaft für die jeweiligen Websites gespeichert.</translation>
 <translation id="7207095846245296855">Google SafeSearch erzwingen</translation>
+<translation id="7213425178181578730">Wenn diese Richtlinie auf "falsch" gesetzt ist, wird Bluetooth von <ph name="PRODUCT_OS_NAME" /> deaktiviert und der Nutzer kann es nicht wieder aktivieren.
+
+      Wenn diese Richtlinie auf "wahr" gesetzt oder gar nicht eingestellt wird, kann der Nutzer Bluetooth nach Belieben aktivieren und deaktivieren.
+
+      Wenn diese Richtlinie eingestellt ist, kann der Nutzer dies nicht außer Kraft setzen.</translation>
 <translation id="7216442368414164495">Ermöglicht Nutzern die Aktivierung erweiterter Berichterstellung bei Verwendung von Safe Browsing</translation>
 <translation id="7227967227357489766">Definiert eine Liste mit Nutzern, die sich auf dem Gerät anmelden dürfen. Die Einträge haben das Format <ph name="USER_WHITELIST_ENTRY_FORMAT" />, zum Beispiel <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Um allen Nutzern in einer Domain die Anmeldung zu erlauben, verwenden Sie Einträge im Format <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

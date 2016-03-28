@@ -6,6 +6,7 @@
 <translation id="2023631438558435272">Gán không thành công.  Phản hồi không hợp lệ.</translation>
 <translation id="2353984724370197742">Gán không thành công.  Yêu cầu mạng không thành công.</translation>
 <translation id="3046825211487065480">Gán không thành công.  Yêu cầu thứ hai đã được gửi trước khi yêu cầu thứ nhất được phản hồi.</translation>
+<translation id="3346106862344060497">Đã kết nối công cụ.</translation>
 <translation id="3407245330823033366">Vui lòng chọn tài khoản để sử dụng với Blimp.</translation>
 <translation id="3775180005489871350">Gán không thành công.  Lỗi 400 (BAD_REQUEST).</translation>
 <translation id="4542350224991263059">Gán không thành công.  Mã truy cập người dùng đã hết hạn.</translation>
@@ -13,6 +14,7 @@
 <translation id="4641972508298030550">Không thể xác thực được người dùng.</translation>
 <translation id="5860346505531085166">Gán không thành công.  Tài khoản không có quyền truy cập.</translation>
 <translation id="704835510384979817">Gán không thành công.  Không có phiên bản công cụ phù hợp.</translation>
+<translation id="7536363920335771251">Đã ngắt kết nối công cụ, lí do: %1$s</translation>
 <translation id="7961542533680218955">Đã gán thành công.</translation>
 <translation id="8514856595257368555">Đã truy xuất mã thông báo.</translation>
 </translationbundle>

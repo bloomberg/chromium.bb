@@ -1404,6 +1404,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
       Jos asetus ei ole käytössä, Smart Lockia ei voi käyttää.
 
       Jos tätä käytäntöä ei aseteta, oletusarvo on yrityksen hallinnoimilla käyttäjillä Ei sallittu ja muilla kuin hallinnoiduilla käyttäjillä Sallittu.</translation>
+<translation id="6491139795995924304">Salli Bluetoothin käyttäminen laitteella</translation>
 <translation id="6513756852541213407">Voit määrittää tuotteen <ph name="PRODUCT_NAME" /> käyttämään välityspalvelinta ja estää käyttäjiä muuttamasta välityspalvelimen asetuksia. Jos et halua käyttää välityspalvelinta ja haluat muodostaa aina suoran yhteyden, kaikki muut vaihtoehdot ohitetaan. Jos haluat käyttää järjestelmän välityspalvelinasetuksia tai etsiä välityspalvelimen automaattisesti, kaikki muut vaihtoehdot ohitetaan. Jos haluat käyttää kiinteää välityspalvelinta, voit määrittää lisää vaihtoehtoja kentissä "Välityspalvelimen osoite tai URL-osoite" ja "Välityspalvelimen ohitussääntöjen pilkuilla erotettu luettelo". Jos haluat käyttää .pac-välityspalvelinkoodia, sinun tulee kirjoittaa koodin URL-osoite kenttään "Välityspalvelimen .pac-tiedoston URL-osoite". Näet esimerkkejä osoitteessa <ph name="PROXY_HELP_URL" /> Jos otat tämän asetuksen käyttöön, <ph name="PRODUCT_NAME" /> ohittaa kaikki komentorivillä annetut välityspalvelimiin liittyvät käskyt.</translation>
 <translation id="6520802717075138474">Tuo hakukoneet oletusselaimesta ensimmäisellä käyttökerralla</translation>
 <translation id="653608967792832033">Määrittää käyttämättömyysajan, jonka kuluttua näyttö lukitaan, kun laitetta käytetään akkuvirralla.
@@ -1631,6 +1632,11 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
           Jos RestoreOnStartup-käytäntö on määritetty palauttamaan aiempien käyttökertojen URL-osoitteet, tätä käytäntöä ei noudateta, vaan kyseisten sivustojen evästeet tallennetaan pysyvästi.</translation>
 <translation id="7207095846245296855">Pakota Googlen SafeSearch</translation>
+<translation id="7213425178181578730">Jos käytännön arvo on epätosi, <ph name="PRODUCT_OS_NAME" /> poistaa Bluetoothin käytöstä, eikä käyttäjä voi ottaa sitä käyttöön.
+
+      Jos käytännön arvo on tosi tai sitä ei aseteta, käyttäjä voi halutessaan ottaa Bluetoothin käyttöön tai poistaa sen käytöstä.
+
+      Jos käytäntö on asetettu, käyttäjä ei voi muuttaa tai ohittaa sitä.</translation>
 <translation id="7216442368414164495">Anna käyttäjien sallia Selaussuojan laajempi raportointi</translation>
 <translation id="7227967227357489766">Määrittää luettelon käyttäjistä, jotka voivat kirjautua laitteeseen. Merkinnät määritetään muodossa <ph name="USER_WHITELIST_ENTRY_FORMAT" />, esimerkiksi <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Voit sallia toimialueen kaikkien käyttäjien kirjautumisen merkintätavalla <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

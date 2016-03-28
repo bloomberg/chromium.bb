@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Complimenti, il tuo servizio dati "<ph name="NAME" />" è stato attivato ed è pronto all'uso.</translation>
 <translation id="2649120831653069427">Pesce arcobaleno</translation>
 <translation id="2670531586141364277">L'attivazione di "<ph name="NAME" />" richiede una connessione di rete.</translation>
+<translation id="277257480934873581">Riconnessione a <ph name="NAME" /> in corso</translation>
 <translation id="2894654529758326923">Informazioni</translation>
 <translation id="2951236788251446349">Medusa</translation>
 <translation id="2966449113954629791">Potresti avere esaurito la tua quota di dati mobili. Visita il portale di attivazione <ph name="NAME" /> per acquistare altri dati.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP non riuscito</translation>
 <translation id="8372369524088641025">Chiave WEP non valida</translation>
 <translation id="8454013096329229812">Wi-Fi attivo.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: riconnessione in corso...</translation>
 <translation id="8688591111840995413">Password non valida</translation>
 <translation id="8714406895390098252">Bicicletta</translation>
 <translation id="8808686172382650546">Gatto</translation>

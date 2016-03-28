@@ -269,6 +269,8 @@
 <translation id="3609138628363401169">Servern stöder inte tillägget för TLS-omförhandling.</translation>
 <translation id="362276910939193118">Visa fullständig historik</translation>
 <translation id="3623476034248543066">Visa värde</translation>
+<translation id="3630155396527302611">Om den redan finns med på listan över program som har tillgång till nätverket 
+        kan du prova att ta bort den från listan och sedan lägga till den igen.</translation>
 <translation id="3648607100222897006">Dessa experimentella funktioner kan ändras, avbrytas eller försvinna när som helst. Vi lämnar inga som helst garantier om vad som kan ske om du aktiverar något av dessa experiment. Webbläsaren kanske t.o.m. går upp i rök. Skämt åsido, alla data i webbläsaren kan raderas och säkerheten och sekretessen kan äventyras på oväntade sätt. Experiment som du aktiverar kommer att aktiveras för alla som använder webbläsaren. Var försiktig.</translation>
 <translation id="3650584904733503804">Valideringen har genomförts</translation>
 <translation id="3651020361689274926">Den begärda resursen finns inte längre och vidarebefordringsadress saknas. Det är förmodligen ett permanent fel.</translation>

@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Xin chúc mừng! Dịch vụ dữ liệu '<ph name="NAME" />' của bạn đã được kích hoạt và sẵn sàng sử dụng.</translation>
 <translation id="2649120831653069427">Cá cầu vồng</translation>
 <translation id="2670531586141364277">Cần phải có kết nối mạng để kích hoạt '<ph name="NAME" />'</translation>
+<translation id="277257480934873581">Đang kết nối lại với <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Thông tin</translation>
 <translation id="2951236788251446349">Sứa</translation>
 <translation id="2966449113954629791">Bạn có thể đã sử dụng hết dung lượng dữ liệu di động cho phép. Hãy truy cập cổng kích hoạt <ph name="NAME" /> để mua thêm dữ liệu.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP không thành công</translation>
 <translation id="8372369524088641025">Khóa WEP sai</translation>
 <translation id="8454013096329229812">Wi-Fi đang bật.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Đang kết nối lại...</translation>
 <translation id="8688591111840995413">Mật khẩu yếu</translation>
 <translation id="8714406895390098252">Xe đạp</translation>
 <translation id="8808686172382650546">Mèo</translation>

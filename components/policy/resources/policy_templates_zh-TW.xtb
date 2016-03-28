@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
 <translation id="101438888985615157">將畫面旋轉 180 度</translation>
-<translation id="1015272884520659144">定義可從核心驅動程式卸離 (以便直接在網路應用程式中透過 chrome.usb API 使用) 的 USB 裝置清單。清單中的項目必須是一組 USB 供應商識別碼和產品識別碼，用於識別特定硬體。
+<translation id="1015272884520659144">定義可從核心驅動程式卸離的 USB 裝置 (以便直接在網路應用程式中透過 chrome.usb API 使用) 清單。清單中的項目必須是一組 USB 供應商識別碼和產品識別碼，用於識別特定硬體。
 
       如果未設定這項政策，系統會認定卸離式 USB 裝置清單中沒有任何項目。</translation>
 <translation id="1017967144265860778">位於登入畫面中的電源管理設定</translation>
@@ -1403,6 +1403,7 @@
       如果您停用這項設定，使用者將無法使用 Smart Lock。
 
       如未設定這項政策，則預設情況下，受到企業管理的使用者無法使用這項功能，未受管理的使用者則能使用這項功能。</translation>
+<translation id="6491139795995924304">允許在裝置上使用藍牙功能</translation>
 <translation id="6513756852541213407">允許您指定「<ph name="PRODUCT_NAME" />」使用的 Proxy 伺服器並禁止使用者變更 Proxy 設定。如果您選擇不要使用 Proxy 伺服器且一律直接連線，那麼系統就會忽視其他選項。如果您選擇使用系統 Proxy 設定或自動偵測 Proxy 伺服器，那麼系統就會忽視其他選項。如果您選擇固定的伺服器 Proxy 模式，就能進一步指定 [Proxy 伺服器的地址或網址] 和 [以逗號間隔的 Proxy 略過規則清單]。如果您選擇使用 .pac Proxy 指令碼，則必須在 [Proxy .pac 檔案的網址] 中指定指令碼網址。如需詳例，請造訪：<ph name="PROXY_HELP_URL" />。如果您啟用這項設定，那麼 「<ph name="PRODUCT_NAME" />」就會略過所有從命令列指定的 Proxy 相關選項。如果您不設定這項政策，則可讓使用者自行選擇 Proxy 設定。</translation>
 <translation id="6520802717075138474">第一次執行時從預設瀏覽器匯入搜尋引擎</translation>
 <translation id="653608967792832033">指定時間長度，如果系統在電池供電環境下執行且未偵測到使用者輸入行為，就會在這段時間過後鎖定螢幕。
@@ -1629,6 +1630,11 @@
 
           如果將「RestoreOnStartup」政策設為還原先前工作階段的網址，系統就不會遵循這項政策，並且會為這些網站永久儲存 Cookie。</translation>
 <translation id="7207095846245296855">強制啟用 Google 安全搜尋模式</translation>
+<translation id="7213425178181578730">如果將這項政策設為 false，<ph name="PRODUCT_OS_NAME" /> 會停用藍牙功能，且使用者無法重新啟用。
+
+      如果將這項政策設為 true 或不予設定，使用者可以視需求啟用或停用藍牙功能。
+
+      設定這項政策後，使用者無法變更或覆寫政策。</translation>
 <translation id="7216442368414164495">允許使用者採用安全瀏覽模式的進階回報功能</translation>
 <translation id="7227967227357489766">定義可登入裝置的使用者允許清單，項目格式為「<ph name="USER_WHITELIST_ENTRY_FORMAT" />」(例如「<ph name="USER_WHITELIST_ENTRY_EXAMPLE" />」)。如要允許網域的任意使用者，請使用格式為「<ph name="USER_WHITELIST_ENTRY_WILDCARD" />」的項目。
 

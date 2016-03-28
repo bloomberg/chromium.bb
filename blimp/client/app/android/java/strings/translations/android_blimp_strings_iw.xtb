@@ -6,6 +6,7 @@
 <translation id="2023631438558435272">ההקצאה נכשלה. תגובה לא חוקית.</translation>
 <translation id="2353984724370197742">ההקצאה נכשלה. בקשת הרשת נכשלה.</translation>
 <translation id="3046825211487065480">ההקצאה נכשלה. הבקשה השנייה נשלחה לפני התגובה לבקשה הראשונה.</translation>
+<translation id="3346106862344060497">המנוע מחובר.</translation>
 <translation id="3407245330823033366">‏בחר חשבון לשימוש עם Blimp.</translation>
 <translation id="3775180005489871350">‏ההקצאה נכשלה. שגיאה 400 (BAD_REQUEST).</translation>
 <translation id="4542350224991263059">ההקצאה נכשלה. פג תוקף אסימון הגישה של המשתמש.</translation>
@@ -13,6 +14,7 @@
 <translation id="4641972508298030550">לא ניתן לאמת את המשתמש.</translation>
 <translation id="5860346505531085166">ההקצאה נכשלה. אין לחשבון הרשאת גישה.</translation>
 <translation id="704835510384979817">ההקצאה נכשלה. לא נמצאה גירסת מנוע תואמת.</translation>
+<translation id="7536363920335771251">‏המנוע מנותק. סיבה: %1$s</translation>
 <translation id="7961542533680218955">ההקצאה הצליחה.</translation>
 <translation id="8514856595257368555">האסימון אוחזר.</translation>
 </translationbundle>

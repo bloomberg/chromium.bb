@@ -47,7 +47,6 @@ Puedes controlar la Web física en la configuración de privacidad de Chrome.</t
 <translation id="1477626028522505441">No se ha podido descargar <ph name="FILE_NAME" /> debido a problemas con el servidor.</translation>
 <translation id="1506061864768559482">Motor de búsqueda</translation>
 <translation id="1513352483775369820">Historial web y marcadores</translation>
-<translation id="1546112724822176246">¿No aparece tu dispositivo? <ph name="BEGIN_LINK" />Obtén ayuda<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Actualizar Chrome</translation>
 <translation id="1557201757634521564">Autodetectar codificación</translation>
 <translation id="1592483623187843893">Marcador guardado sin conexión</translation>
@@ -137,6 +136,7 @@ Puedes controlar la Web física en la configuración de privacidad de Chrome.</t
 <translation id="2762000892062317888">ahora mismo</translation>
 <translation id="2770465223704140727">Eliminar de la lista</translation>
 <translation id="278029852808208386">No se han encontrado dispositivos Bluetooth. <ph name="BEGIN_LINK" />Repite la búsqueda<ph name="END_LINK" />.</translation>
+<translation id="2836148919159985482">Toca el botón de retroceso para salir de la pantalla completa.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2888126860611144412">Información de Chrome</translation>
@@ -313,10 +313,12 @@ Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar "Iniciar
 <translation id="5233638681132016545">Nueva pestaña</translation>
 <translation id="5271967389191913893">El dispositivo no puede abrir el contenido para descargarlo.</translation>
 <translation id="5275558766013849309">Las pestañas aparecerán junto a aplicaciones recientes.</translation>
+<translation id="528192093759286357">Arrastra el dedo desde la parte superior y toca el botón de retroceso para salir de la pantalla completa.</translation>
 <translation id="5284584623296338184">Los cambios que realices en los marcadores, el historial, las contraseñas y otras opciones no se sincronizarán con tu cuenta de Google. Sin embargo, tus datos actuales seguirán almacenados en tu cuenta.</translation>
 <translation id="5301954838959518834">Entendido</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5304593522240415983">Este campo no puede estar vacío</translation>
+<translation id="5308380583665731573">Conexiones</translation>
 <translation id="5308933389783727448">Buscar páginas guardadas</translation>
 <translation id="5313967007315987356">Añadir sitio</translation>
 <translation id="5317780077021120954">Guardar</translation>
@@ -341,6 +343,7 @@ Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar "Iniciar
 <translation id="5556459405103347317">Cargar de nuevo</translation>
 <translation id="5565871407246142825">Tarjetas de crédito</translation>
 <translation id="5578795271662203820">Buscar esta imagen en <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5579997910517802656">No se ha encontrado ningún dispositivo.</translation>
 <translation id="5595485650161345191">Editar dirección</translation>
 <translation id="5596627076506792578">Más opciones</translation>
 <translation id="5626134646977739690">Nombre:</translation>
@@ -635,6 +638,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="917685106653909562">Páginas de la Web física cercanas</translation>
 <translation id="9187199695613236444">Vista optimizada para móviles</translation>
 <translation id="9192643434065497760">Activa el Bluetooth en los <ph name="BEGIN_LINK" />ajustes del dispositivo<ph name="END_LINK" /> para permitir la vinculación.</translation>
+<translation id="9198708126133947749">Sustituye los datos de este dispositivo por los de <ph name="TO_ACCOUNT" />. Para recuperar tus datos, cambia a <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="932327136139879170">Página principal</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>

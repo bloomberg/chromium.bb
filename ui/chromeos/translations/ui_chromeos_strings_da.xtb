@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Datatjenesten "<ph name="NAME" />" er blevet aktiveret og er klar til brug.</translation>
 <translation id="2649120831653069427">Regnbuefisk</translation>
 <translation id="2670531586141364277">Aktivering af "<ph name="NAME" />" kræver en netværksforbindelse.</translation>
+<translation id="277257480934873581">Genopretter forbindelsen til <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Oplysninger</translation>
 <translation id="2951236788251446349">Vandmand</translation>
 <translation id="2966449113954629791">Du har muligvis opbrugt den tilladte mobildatamængde. Gå til aktiveringsportalen for <ph name="NAME" /> for at købe mere data.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP mislykkedes</translation>
 <translation id="8372369524088641025">Ugyldig WEP-nøgle</translation>
 <translation id="8454013096329229812">Wi-Fi er slået til.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Genopretter forbindelsen...</translation>
 <translation id="8688591111840995413">Forkert adgangskode</translation>
 <translation id="8714406895390098252">Cykel</translation>
 <translation id="8808686172382650546">Kat</translation>

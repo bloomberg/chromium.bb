@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="101438888985615157">Otočiť obrazovku o 180 stupňov</translation>
-<translation id="1015272884520659144">Definuje zoznam zariadení USB, ktoré je možné odpojiť od ovládača jadra, aby sa dali použiť prostredníctvom rozhrania chrome.usb API priamo vo webovej aplikácii. Záznamy predstavujú páry identifikátor dodávateľa USB – identifikátor produktu na identifikáciu konkrétneho hardvéru.
+<translation id="1015272884520659144">Definuje zoznam zariadení USB, ktoré je možné odpojiť od ovládača jadra, aby sa dali použiť prostredníctvom rozhrania chrome.usb API priamo vo webovej aplikácii. Záznamy predstavujú páry identifikátor dodávateľa USB – identifikátor produktu na určenie konkrétneho hardvéru.
 
       Ak toto pravidlo nie je nakonfigurované, zoznam odpojiteľných zariadení USB sa považuje za prázdny.</translation>
 <translation id="1017967144265860778">Správa možností napájania na prihlasovacej obrazovke</translation>
@@ -1566,6 +1566,7 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
       Ak toto nastavenie zakážete, používatelia nebudú môcť používať funkciu Smart Lock.
 
       Ak toto pravidlo zostane nenastavené, použije sa predvolená možnosť – funkcia bude zakázaná pre používateľov spravovaných podnikom a povolená pre nespravovaných používateľov.</translation>
+<translation id="6491139795995924304">Povoliť Bluetooth na zariadení</translation>
 <translation id="6513756852541213407">Umožňuje určiť server proxy, ktorý bude prehliadač <ph name="PRODUCT_NAME" /> používať, a bráni používateľom zmeniť nastavenia servera proxy.
 
           Ak sa rozhodnete server proxy vôbec nepoužívať a vždy sa pripájať priamo, všetky ostatné možnosti budú ignorované.
@@ -1841,6 +1842,11 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 
           Ak nastavíte pravidlo RestoreOnStartup, aby obnovilo webové adresy z predchádzajúcich relácií, nebude dodržané a súbory cookie budú pre dané stránky uložené natrvalo.</translation>
 <translation id="7207095846245296855">Vynútiť Bezpečné vyhľadávanie Google</translation>
+<translation id="7213425178181578730">Ak je toto pravidlo nastavené na možnosť False, <ph name="PRODUCT_OS_NAME" /> vypne Bluetooth a používateľ ho nebude môcť zapnúť späť.
+
+      Ak je toto pravidlo nastavené na možnosť True alebo je ponechané nenastavené, používateľ bude môcť Bluetooth zapnúť či vypnúť podľa potreby.
+
+      Keď je toto pravidlo nastavené, používateľ ho nemôže zmeniť ani prepísať.</translation>
 <translation id="7216442368414164495">Umožniť používateľom prihlásenie do rozšírených prehľadov Bezpečného prehliadania</translation>
 <translation id="7227967227357489766">Definuje zoznam používateľov, ktorí majú povolenie prihlásiť sa do zariadenia. Položky majú formát <ph name="USER_WHITELIST_ENTRY_FORMAT" />, napríklad <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Ak chcete povoliť všetkých používateľov z niektorej domény, použite položky vo formáte <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

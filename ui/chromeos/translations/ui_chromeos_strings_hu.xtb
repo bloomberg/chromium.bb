@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Gratulálunk! „<ph name="NAME" />” adatszolgáltatása aktív, és készen áll a használatra.</translation>
 <translation id="2649120831653069427">Szivárványhal</translation>
 <translation id="2670531586141364277">A(z) „<ph name="NAME" />” aktiválásához hálózati kapcsolatra van szükség.</translation>
+<translation id="277257480934873581">Újracsatlakozás a következőhöz: <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Információ</translation>
 <translation id="2951236788251446349">Medúza</translation>
 <translation id="2966449113954629791">Valószínűleg elérte a mobiladat-használatra vonatkozó korlátozást. További adatforgalom vásárlásához keresse fel a(z) <ph name="NAME" /> aktiválási portált.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP sikertelen</translation>
 <translation id="8372369524088641025">Hibás WEP kulcs</translation>
 <translation id="8454013096329229812">Wi-Fi bekapcsolva.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Újracsatlakozás…</translation>
 <translation id="8688591111840995413">Helytelen jelszó</translation>
 <translation id="8714406895390098252">Kerékpár</translation>
 <translation id="8808686172382650546">Macska</translation>

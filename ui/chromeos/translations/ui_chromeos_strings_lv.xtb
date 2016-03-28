@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Jūsu “<ph name="NAME" />” datu pakalpojums ir veiksmīgi aktivizēts, un to var izmantot.</translation>
 <translation id="2649120831653069427">Varavīksnes zivs</translation>
 <translation id="2670531586141364277"><ph name="NAME" /> aktivizācijai ir nepieciešams tīkla savienojums.</translation>
+<translation id="277257480934873581">Notiek atkārtota savienojuma izveide ar <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Informācija</translation>
 <translation id="2951236788251446349">Medūza</translation>
 <translation id="2966449113954629791">Iespējams, esat jau izmantojis savu mobilo datu atļauju. Lai iegādātos citus datus, apmeklējiet <ph name="NAME" /> aktivizācijas portālu.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP neizdevās</translation>
 <translation id="8372369524088641025">Neatbilstoša WEP atslēga</translation>
 <translation id="8454013096329229812">Wi-Fi tīkls ir ieslēgts.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: notiek atkārtota savienojuma izveide…</translation>
 <translation id="8688591111840995413">Nepareiza parole</translation>
 <translation id="8714406895390098252">Velosipēds</translation>
 <translation id="8808686172382650546">Kaķis</translation>

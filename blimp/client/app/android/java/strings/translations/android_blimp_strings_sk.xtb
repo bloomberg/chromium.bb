@@ -6,6 +6,7 @@
 <translation id="2023631438558435272">Priradenie zlyhalo. Neplatná odpoveď.</translation>
 <translation id="2353984724370197742">Priradenie zlyhalo. Zlyhala žiadosť do siete.</translation>
 <translation id="3046825211487065480">Priradenie zlyhalo. Druhá žiadosť bola odoslaná ešte pred odpoveďou na prvú žiadosť.</translation>
+<translation id="3346106862344060497">Nástroj bol pripojený.</translation>
 <translation id="3407245330823033366">Vyberte účet, ktorý chcete použiť so službou Blimp.</translation>
 <translation id="3775180005489871350">Priradenie zlyhalo. Chyba typu 400 (BAD_REQUEST).</translation>
 <translation id="4542350224991263059">Priradenie zlyhalo. Vypršala platnosť prístupového tokenu používateľa.</translation>
@@ -13,6 +14,7 @@
 <translation id="4641972508298030550">Používateľa sa nepodarilo overiť.</translation>
 <translation id="5860346505531085166">Priradenie zlyhalo. Účet nemá prístup.</translation>
 <translation id="704835510384979817">Priradenie zlyhalo. Žiadna zodpovedajúca verzia nástroja.</translation>
+<translation id="7536363920335771251">Nástroj bol odpojený. Dôvod: %1$s</translation>
 <translation id="7961542533680218955">Priradenie bolo úspešné.</translation>
 <translation id="8514856595257368555">Token bol načítaný.</translation>
 </translationbundle>

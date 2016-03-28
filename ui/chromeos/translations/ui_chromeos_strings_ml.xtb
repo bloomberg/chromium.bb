@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">അഭിനന്ദനങ്ങൾ! നിങ്ങളുടെ '<ph name="NAME" />' ഡാറ്റ സേവനം സജീവമായി, ഇത് പ്രവർത്തിക്കാൻ തയ്യാറാണ്.</translation>
 <translation id="2649120831653069427">റെയിൻബോഫിഷ്</translation>
 <translation id="2670531586141364277">'<ph name="NAME" />' സജീവമാക്കുന്നതിന് ഒരു നെറ്റ്‌വർക്ക് കണക്ഷൻ ആവശ്യമാണ്.</translation>
+<translation id="277257480934873581"><ph name="NAME" /> നെറ്റ്‌വർക്കിലേക്ക് വീണ്ടും കണക്‌റ്റുചെയ്യുന്നു</translation>
 <translation id="2894654529758326923">വിവരം</translation>
 <translation id="2951236788251446349">ജെല്ലിഫിഷ്</translation>
 <translation id="2966449113954629791">നിങ്ങളുടെ മൊബൈൽ ഡാറ്റ അലവൻസ് പരമാവധി ഉപയോഗിച്ചിരിക്കാനിടയുണ്ട്. കൂടുതൽ ഡാറ്റ വാങ്ങാൻ <ph name="NAME" /> സജീവമാക്കൽ പോർട്ടൽ സന്ദർശിക്കുക.</translation>
@@ -28,7 +29,7 @@
 <translation id="4274292172790327596">തിരിച്ചറിയാത്ത പിശക്</translation>
 <translation id="4326192123064055915">കോഫി</translation>
 <translation id="4387004326333427325">പ്രാമാണീകരണ സർട്ടിഫിക്കറ്റ് വിദൂരമായി നിരസിച്ചു</translation>
-<translation id="4442424173763614572">DNS തിരയല്‍ പരാജയപ്പെട്ടു</translation>
+<translation id="4442424173763614572">DNS തിരയൽ പരാജയപ്പെട്ടു</translation>
 <translation id="4448844063988177157">Wi-Fi ശൃംഖലകള്‍ക്കായി തിരയുന്നു...</translation>
 <translation id="4479639480957787382">എതെര്‍‌നെറ്റ്</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: കണക്റ്റുചെയ്യുന്നു...</translation>
@@ -40,7 +41,7 @@
 <translation id="515594325917491223">ചെസ്സ്</translation>
 <translation id="5257456363153333584">തുമ്പി</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
-<translation id="5864471791310927901">DHCP തിരയല്‍ പരാജയപ്പെട്ടു</translation>
+<translation id="5864471791310927901">DHCP തിരയൽ പരാജയപ്പെട്ടു</translation>
 <translation id="6232116551750539448"><ph name="NAME" /> എന്നതിലേക്കുള്ള കണക്ഷൻ നഷ്‌ടമായി</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: സജീവമാക്കുന്നു...</translation>
 <translation id="6312403991423642364">അറിയാത്ത നെറ്റ്‌വര്‍ക്ക് പിശക്</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP പരാജയപ്പെട്ടു</translation>
 <translation id="8372369524088641025">മോശം WEP കീ</translation>
 <translation id="8454013096329229812">Wi-Fi ഓൺ ചെയ്‌തു.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: വീണ്ടും കണക്‌റ്റുചെയ്യുന്നു...</translation>
 <translation id="8688591111840995413">പാസ്‌വേഡ് മോശമാണ്</translation>
 <translation id="8714406895390098252">സൈക്കിള്‍</translation>
 <translation id="8808686172382650546">പൂച്ച</translation>

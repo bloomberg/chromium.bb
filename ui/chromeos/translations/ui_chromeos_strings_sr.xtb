@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Честитамо! Услуга преноса података „<ph name="NAME" />“ је активирана и спремна за коришћење.</translation>
 <translation id="2649120831653069427">Риба</translation>
 <translation id="2670531586141364277">Активација мреже „<ph name="NAME" />“ захтева мрежну везу.</translation>
+<translation id="277257480934873581">Поново се повезујете са мрежом <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Информације</translation>
 <translation id="2951236788251446349">Медуза</translation>
 <translation id="2966449113954629791">Можда сте искористили дозвољену количину података за мобилне уређаје. Посетите портал за активацију за <ph name="NAME" /> да бисте купили још података.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP није успео</translation>
 <translation id="8372369524088641025">Неисправна WEP шифра</translation>
 <translation id="8454013096329229812">Wi-Fi је укључен.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Поново се повезујете...</translation>
 <translation id="8688591111840995413">Погрешна лозинка</translation>
 <translation id="8714406895390098252">Бицикл</translation>
 <translation id="8808686172382650546">Мачка</translation>

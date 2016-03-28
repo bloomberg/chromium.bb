@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">تبریک می‌گوییم! خدمات داده «<ph name="NAME" />» شما فعال شده است و آماده استفاده است.</translation>
 <translation id="2649120831653069427">ماهی رنگین‌مکان</translation>
 <translation id="2670531586141364277">فعال‌سازی «<ph name="NAME" />» به اتصال شبکه نیاز دارد.</translation>
+<translation id="277257480934873581">اتصال مجدد به <ph name="NAME" /></translation>
 <translation id="2894654529758326923">اطلاعات</translation>
 <translation id="2951236788251446349">عروس دریایی</translation>
 <translation id="2966449113954629791">ممکن است کلیه میزان مجاز داده‌‌های دستگاه همراهتان را مصرف کرده باشید. برای خرید داده بیشتر از پورتال فعال‌سازی <ph name="NAME" /> بازدید کنید.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">‏OTASP انجام نشد</translation>
 <translation id="8372369524088641025">‏کلید WEP نادرست</translation>
 <translation id="8454013096329229812">‏Wi-Fi روشن است.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: درحال اتصال مجدد...</translation>
 <translation id="8688591111840995413">گذرواژه بد</translation>
 <translation id="8714406895390098252">دوچرخه</translation>
 <translation id="8808686172382650546">گربه</translation>

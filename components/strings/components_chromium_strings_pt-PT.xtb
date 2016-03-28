@@ -16,6 +16,8 @@
           &gt;
           Definições de LAN
           e desmarque a caixa de verificação "Utilizar um servidor proxy para a rede local".</translation>
+<translation id="48558539577516920">Permita que o Chromium aceda à rede nas definições da sua firewall ou
+          do antivírus.</translation>
 <translation id="580822234363523061">Aceda ao
           menu Chromium &gt;
           <ph name="SETTINGS_TITLE" />

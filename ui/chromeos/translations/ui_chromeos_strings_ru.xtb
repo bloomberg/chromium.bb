@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Поздравляем! Служба передачи данных "<ph name="NAME" />" активирована и готова к работе.</translation>
 <translation id="2649120831653069427">Рыбка</translation>
 <translation id="2670531586141364277">Для активации "<ph name="NAME" />" требуется подключение к сети.</translation>
+<translation id="277257480934873581">Повторное подключение к сети <ph name="NAME" />…</translation>
 <translation id="2894654529758326923">Подробные сведения</translation>
 <translation id="2951236788251446349">Медуза</translation>
 <translation id="2966449113954629791">Возможно, вы использовали свой лимит мобильных данных. Зайдите на портал активации <ph name="NAME" />, чтобы приобрести дополнительный объем данных.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">Сбой OTASP</translation>
 <translation id="8372369524088641025">Недопустимый ключ WEP</translation>
 <translation id="8454013096329229812">Wi-Fi включен</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: повторное подключение...</translation>
 <translation id="8688591111840995413">Неверный пароль</translation>
 <translation id="8714406895390098252">Велосипед</translation>
 <translation id="8808686172382650546">Кот</translation>

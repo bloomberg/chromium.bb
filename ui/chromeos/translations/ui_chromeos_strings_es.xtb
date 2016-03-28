@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">¡Enhorabuena! Tu servicio de datos <ph name="NAME" /> se ha activado y está listo para que lo uses.</translation>
 <translation id="2649120831653069427">Pez arcoíris</translation>
 <translation id="2670531586141364277">La activación de <ph name="NAME" /> requiere una conexión de red.</translation>
+<translation id="277257480934873581">Volviendo a conectar con <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Información</translation>
 <translation id="2951236788251446349">Medusa</translation>
 <translation id="2966449113954629791">Es posible que hayas agotado los datos de tu plan de datos móviles. Accede al portal de activación de <ph name="NAME" /> para comprar más datos.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">Error de OTASP</translation>
 <translation id="8372369524088641025">Clave WEP incorrecta</translation>
 <translation id="8454013096329229812">La conexión Wi-Fi está activada.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: volviendo a conectar...</translation>
 <translation id="8688591111840995413">Contraseña incorrecta</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
 <translation id="8808686172382650546">Gato</translation>

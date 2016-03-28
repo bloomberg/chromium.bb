@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Συγχαρητήρια! Η υπηρεσία δεδομένων "<ph name="NAME" />" έχει ενεργοποιηθεί και είναι έτοιμη για χρήση.</translation>
 <translation id="2649120831653069427">Πέστροφες</translation>
 <translation id="2670531586141364277">Η ενεργοποίηση του "<ph name="NAME" />" απαιτεί σύνδεση δικτύου.</translation>
+<translation id="277257480934873581">Επανασύνδεση στο δίκτυο <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Πληροφορίες</translation>
 <translation id="2951236788251446349">Μέδουσα</translation>
 <translation id="2966449113954629791">Ενδέχεται να έχετε εξαντλήσει τα διαθέσιμα δεδομένα κινητής τηλεφωνίας. Επισκεφτείτε την πύλη ενεργοποίησης <ph name="NAME" />, για να αγοράσετε περισσότερα δεδομένα.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">Αποτυχία OTASP</translation>
 <translation id="8372369524088641025">Εσφαλμένο κλειδί WEP</translation>
 <translation id="8454013096329229812">Το Wi-Fi έχει ενεργοποιηθεί.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Επανασύνδεση…</translation>
 <translation id="8688591111840995413">Μη αποδεκτός κωδικός πρόσβασης</translation>
 <translation id="8714406895390098252">Ποδήλατο</translation>
 <translation id="8808686172382650546">Γάτα</translation>

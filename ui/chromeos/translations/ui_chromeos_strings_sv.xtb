@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Grattis! Datatjänsten <ph name="NAME" /> har aktiverats och är klar att använda.</translation>
 <translation id="2649120831653069427">Regnbågsfisk</translation>
 <translation id="2670531586141364277">Aktivering av <ph name="NAME" /> kräver en nätverksanslutning.</translation>
+<translation id="277257480934873581">Återansluter till <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Information</translation>
 <translation id="2951236788251446349">Manet</translation>
 <translation id="2966449113954629791">Du kan ha använt din tillåtna mängd mobildata. Besök aktiveringsportalen <ph name="NAME" /> om du vill köpa mer data.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">Det gick inte att etablera tjänsten over-the-air.</translation>
 <translation id="8372369524088641025">Felaktig WEP-nyckel</translation>
 <translation id="8454013096329229812">Wi-Fi är aktiverat.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: återansluter …</translation>
 <translation id="8688591111840995413">Felaktigt lösenord</translation>
 <translation id="8714406895390098252">Cykel</translation>
 <translation id="8808686172382650546">Katt</translation>

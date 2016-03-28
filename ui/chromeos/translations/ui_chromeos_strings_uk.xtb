@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Вітаємо! Вашу службу передавання даних "<ph name="NAME" />" активовано. Нею можна користуватися.</translation>
 <translation id="2649120831653069427">Золота рибка</translation>
 <translation id="2670531586141364277">Для активації "<ph name="NAME" />" потрібне з’єднання з мережею.</translation>
+<translation id="277257480934873581">Під’єднання до мережі <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Інформація</translation>
 <translation id="2951236788251446349">Медуза</translation>
 <translation id="2966449113954629791">Можливо, ви використали свій ліміт мобільного передавання даних. Перейдіть на портал активації <ph name="NAME" />, щоб придбати більший обсяг даних.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">Помилка OTASP</translation>
 <translation id="8372369524088641025">Поганий WEP-ключ</translation>
 <translation id="8454013096329229812">Wi-Fi увімкнено.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: під’єднання…</translation>
 <translation id="8688591111840995413">Неправильний пароль</translation>
 <translation id="8714406895390098252">Велосипед</translation>
 <translation id="8808686172382650546">Кіт</translation>

@@ -1415,6 +1415,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis du deaktiverer denne indstilling, kan brugerne ikke bruge Smart Lock.
 
       Hvis denne politik ikke angives, er det som standard ikke tilladt for virksomhedsadministrerede brugere og tilladt for ikke-administrerede brugere.</translation>
+<translation id="6491139795995924304">Tillad Bluetooth på enheden</translation>
 <translation id="6513756852541213407">Giver dig mulighed for at angive den proxyserver, der anvendes af <ph name="PRODUCT_NAME" /> og forhindrer brugerne i at skifte proxyindstillinger.
 
           Hvis du vælger aldrig at anvende en proxyserver og altid tilslutte direkte, vil alle andre indstillinger blive ignoreret.
@@ -1659,6 +1660,11 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
           Hvis politikken "RestoreOnStartup" er indstillet til at gendanne webadresser fra tidligere sessioner, overholdes denne politik ikke, og cookies gemmes permanent for disse websites.</translation>
 <translation id="7207095846245296855">Gennemtving Google Beskyttet søgning</translation>
+<translation id="7213425178181578730">Hvis denne politik angives som falsk, deaktiverer <ph name="PRODUCT_OS_NAME" /> Bluetooth, og brugeren kan ikke aktivere det igen.
+
+      Hvis denne politik er angivet til sand eller ikke angives, kan brugeren aktivere og deaktivere Bluetooth efter forgodtbefindende.
+
+      Hvis denne politik er angivet, kan brugeren ikke ændre eller tilsidesætte den.</translation>
 <translation id="7216442368414164495">Giv brugerne tilladelse til at vælge udvidet rapportering af Beskyttet browsing</translation>
 <translation id="7227967227357489766">Definerer en liste over brugere, der kan logge på enheden. Indtastningerne er i formatet <ph name="USER_WHITELIST_ENTRY_FORMAT" /> som f.eks. <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Hvis du vil tillade vilkårlige brugere på et domæne, skal du bruge indtastninger med formatet <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

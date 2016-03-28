@@ -6,6 +6,7 @@
 <translation id="2023631438558435272">Penugasan gagal.  Tanggapan tidak valid.</translation>
 <translation id="2353984724370197742">Penugasan gagal.  Permintaan jaringan gagal.</translation>
 <translation id="3046825211487065480">Penugasan gagal.  Permintaan kedua dikirim sebelum permintaan pertama ditanggapi.</translation>
+<translation id="3346106862344060497">Komputer tersambung.</translation>
 <translation id="3407245330823033366">Pilih akun untuk digunakan dengan Blimp.</translation>
 <translation id="3775180005489871350">Penugasan gagal.  Kesalahan 400 (BAD_REQUEST).</translation>
 <translation id="4542350224991263059">Penugasan gagal.  Masa berlaku token akses pengguna habis.</translation>
@@ -13,6 +14,7 @@
 <translation id="4641972508298030550">Tidak dapat mengautentikasi pengguna.</translation>
 <translation id="5860346505531085166">Penugasan gagal.  Akun tidak memiliki akses.</translation>
 <translation id="704835510384979817">Penugasan gagal.  Tidak ada versi mesin yang sesuai.</translation>
+<translation id="7536363920335771251">Sambungan komputer terputus, alasan: %1$s</translation>
 <translation id="7961542533680218955">Penugasan berhasil.</translation>
 <translation id="8514856595257368555">Token telah diambil.</translation>
 </translationbundle>

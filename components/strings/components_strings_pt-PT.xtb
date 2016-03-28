@@ -269,6 +269,8 @@
 <translation id="3609138628363401169">O servidor não suporta a extensão de renegociação TLS.</translation>
 <translation id="362276910939193118">Mostrar histórico completo</translation>
 <translation id="3623476034248543066">Apresentar o valor</translation>
+<translation id="3630155396527302611">Se já estiver indicado na lista como sendo um programa com permissão para aceder à rede, experimente
+    removê-lo da lista e adicioná-lo novamente.</translation>
 <translation id="3648607100222897006">Estas funcionalidades experimentais podem mudar, deixar de funcionar ou desaparecer a qualquer momento. Não nos responsabilizamos pelo que possa acontecer se ativar uma destas funcionalidades experimentais e o navegador pode até entrar em combustão espontânea. Brincadeiras à parte, o navegador pode eliminar todos os dados ou a sua segurança e privacidade podem ficar comprometidas de formas inesperadas. Todas as experiências que ativar serão ativadas para todos os utilizadores deste navegador. Continue com cuidado.</translation>
 <translation id="3650584904733503804">Validação com êxito</translation>
 <translation id="3651020361689274926">O recurso solicitado já não existe e não existe um endereço de encaminhamento. Espera-se que se trate de uma situação definitiva.</translation>
@@ -321,7 +323,7 @@
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Verificar as configurações da firewall e de antivírus<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Erros</translation>
 <translation id="4250680216510889253">Não</translation>
-<translation id="425582637250725228">Não é possível guardar as alterações efetuadas.</translation>
+<translation id="425582637250725228">É possível que as alterações não tenham sido efetuadas.</translation>
 <translation id="4258748452823770588">Assinatura incorreta</translation>
 <translation id="4268298190799576220">Desta vez, o Chrome não conseguiu validar o seu cartão. Tente novamente mais tarde.</translation>
 <translation id="4269787794583293679">(Sem nome de utilizador)</translation>

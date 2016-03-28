@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">恭喜您！您的「<ph name="NAME" />」數據服務已啟用，隨時可供使用。</translation>
 <translation id="2649120831653069427">彩虹魚</translation>
 <translation id="2670531586141364277">必須連上網路才能啟用「<ph name="NAME" />」。</translation>
+<translation id="277257480934873581">正在重新連線至 <ph name="NAME" /></translation>
 <translation id="2894654529758326923">資訊</translation>
 <translation id="2951236788251446349">水母</translation>
 <translation id="2966449113954629791">您可能已用盡行動數據配額。造訪 <ph name="NAME" /> 啟用入口網站即可購買更多數據量。</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP 失敗</translation>
 <translation id="8372369524088641025">WEP 金鑰有誤</translation>
 <translation id="8454013096329229812">Wi-Fi 已開啟。</translation>
+<translation id="8484916590211895857"><ph name="NAME" />：正在重新連線...</translation>
 <translation id="8688591111840995413">密碼錯誤</translation>
 <translation id="8714406895390098252">單車</translation>
 <translation id="8808686172382650546">貓咪</translation>

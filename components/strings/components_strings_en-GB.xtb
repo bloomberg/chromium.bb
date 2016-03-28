@@ -269,6 +269,8 @@
 <translation id="3609138628363401169">The server does not support the TLS renegotiation extension.</translation>
 <translation id="362276910939193118">Show Full History</translation>
 <translation id="3623476034248543066">Show value</translation>
+<translation id="3630155396527302611">If it is already listed as a program allowed to access the network, try
+      removing it from the list and adding it again.</translation>
 <translation id="3648607100222897006">These experimental features may change, break or disappear at any time. We make absolutely no guarantees about what may happen if you turn one of these experiments on, and your browser may even spontaneously combust. Jokes aside, your browser may delete all your data or your security and privacy could be compromised in unexpected ways. Any experiments that you enable will be enabled for all users of this browser. Please proceed with caution.</translation>
 <translation id="3650584904733503804">Validation successful</translation>
 <translation id="3651020361689274926">The resource requested no longer exists and there is no forwarding address.  This is expected to be a permanent condition.</translation>

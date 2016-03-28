@@ -1562,6 +1562,7 @@
       Kui selle seade keelate, ei lubata kasutajatel Smart Locki kasutada.
 
       Kui seda reeglit ei määrata, ei ole vaikeseade lubatud ettevõtte hallatud kasutajatele ja on lubatud mittehallatud kasutajatele.</translation>
+<translation id="6491139795995924304">Luba Bluetooth seadmes</translation>
 <translation id="6513756852541213407">Võimaldab teil määrata rakenduse <ph name="PRODUCT_NAME" /> kasutatava puhverserveri ja takistab kasutajatel puhverserveri seadete muutmist.
 
           Kui otsustate puhverserverit mitte kasutada ja alati vahetult ühenduse luua, siis ignoreeritakse kõiki muid valikuid.
@@ -1838,6 +1839,11 @@
 
           Kui reegel „RestoreOnStartup” on seadistatud nii, et eelmiste seansside URL-id taastatakse, ei järgita seda reeglit ja nende saitide küpsisefailid talletatakse jäädavalt.</translation>
 <translation id="7207095846245296855">Google SafeSearchi jõustamine</translation>
+<translation id="7213425178181578730">Kui reegli väärtuseks määratakse Väär, keelab operatsioonisüsteem <ph name="PRODUCT_OS_NAME" /> Bluetoothi ja kasutaja ei saa seda enam uuesti lubada.
+
+      Kui reegli väärtuseks määratakse Tõene või seda ei määrata, saab kasutaja Bluetoothi lubada või keelata oma soovi järgi.
+
+      Kui see reegel määratakse, ei saa kasutaja seda muuta ega alistada.</translation>
 <translation id="7216442368414164495">Kasutajatel lubatakse ohutu sirvimise laiendatud aruannete lubamine</translation>
 <translation id="7227967227357489766">Määrab loendi kasutajatest, kellel on luba seadmesse sisse logida. Kirjete vorming on <ph name="USER_WHITELIST_ENTRY_FORMAT" />, näiteks <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Kui soovite juhukasutajaid domeeni lubada, siis kasutage kirjete vormingut <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

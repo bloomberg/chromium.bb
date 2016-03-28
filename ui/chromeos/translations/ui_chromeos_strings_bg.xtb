@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Поздравления! Услугата ви за данни „<ph name="NAME" />“ е активирана и е готова за работа.</translation>
 <translation id="2649120831653069427">Риба дъга</translation>
 <translation id="2670531586141364277">За активирането на „<ph name="NAME" />“ се изисква връзка с мрежата.</translation>
+<translation id="277257480934873581">Установява се повторна връзка с мрежата „<ph name="NAME" />“</translation>
 <translation id="2894654529758326923">Информация</translation>
 <translation id="2951236788251446349">Медуза</translation>
 <translation id="2966449113954629791">Възможно е да сте изразходвали отпуснатите ви мобилни данни. Посетете портала за активиране „<ph name="NAME" />“, за да купите още данни.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">Безжичното осигуряване на услуга не бе успешно</translation>
 <translation id="8372369524088641025">Ключът за WEP е неправилен</translation>
 <translation id="8454013096329229812">Wi-Fi е включен.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Установява се повторна връзка...</translation>
 <translation id="8688591111840995413">Неправилна парола</translation>
 <translation id="8714406895390098252">Велосипед</translation>
 <translation id="8808686172382650546">Котка</translation>

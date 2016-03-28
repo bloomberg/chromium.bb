@@ -1518,6 +1518,7 @@
       Hvis du slår av denne regelen, har brukerne ikke lov til å bruke Smart Lock.
 
       Hvis denne regelen ikke spesifiseres, er standardverdien «ikke tillatt» for bedriftsadministrerte brukere og «tillatt» for brukere som ikke er administrert.</translation>
+<translation id="6491139795995924304">Tillat Bluetooth på enheten</translation>
 <translation id="6513756852541213407">Gjør at du kan angi proxytjeneren som brukes av <ph name="PRODUCT_NAME" />, og hindrer brukerne i å endre innstillinger for mellomtjener.
 
           Hvis du velger aldri å bruke en proxytjener og alltid koble til direkte, ignoreres alle andre alternativer.
@@ -1780,6 +1781,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis «RestoreOnStartup»-regelen er konfigurert til å gjenopprette nettadressene fra forrige økt, overstyrer den denne regelen, og informasjonskapslene for slike nettsteder lagres permanent.</translation>
 <translation id="7207095846245296855">Fremtving bruk av Google Sikkert Søk</translation>
+<translation id="7213425178181578730">Hvis denne regelen er satt til «false» (usann), slår <ph name="PRODUCT_OS_NAME" /> av Bluetooth, og brukeren kan ikke slå det på igjen.
+
+      Hvis denne regelen settes til «true» (sann) eller ikke angis, kan brukeren slå Bluetooth på eller av etter eget ønske.
+
+      Hvis denne regelen er angitt, kan ikke brukeren endre den eller overstyre den.</translation>
 <translation id="7216442368414164495">Tillat at brukere velger utvidet rapportering for sikker surfing</translation>
 <translation id="7227967227357489766">Definerer listen over brukere som kan logge seg på enheten. Oppføringer har formatet <ph name="USER_WHITELIST_ENTRY_FORMAT" />, som for eksempel <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Hvis du vil tillate vilkårlige brukere på domenet, må oppføringer bruke formatet <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

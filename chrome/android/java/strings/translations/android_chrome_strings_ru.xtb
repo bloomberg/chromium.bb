@@ -47,7 +47,6 @@
 <translation id="1477626028522505441">Не удалось скачать файл <ph name="FILE_NAME" /> из-за неполадок на сервере.</translation>
 <translation id="1506061864768559482">Поисковая система</translation>
 <translation id="1513352483775369820">Закладки и история поиска</translation>
-<translation id="1546112724822176246">Не можете найти свое устройство? <ph name="BEGIN_LINK" />Узнайте<ph name="END_LINK" />, как это исправить.</translation>
 <translation id="1553358976309200471">Обновить Chrome</translation>
 <translation id="1557201757634521564">Определять кодировку</translation>
 <translation id="1592483623187843893">Закладка доступна в офлайн-режиме</translation>
@@ -137,6 +136,7 @@
 <translation id="2762000892062317888">только что</translation>
 <translation id="2770465223704140727">Удалить из списка</translation>
 <translation id="278029852808208386">Устройства Bluetooth не обнаружены. <ph name="BEGIN_LINK" />Повторите попытку<ph name="END_LINK" />.</translation>
+<translation id="2836148919159985482">Чтобы выйти из полноэкранного режима, нажмите кнопку "Назад".</translation>
 <translation id="2842985007712546952">Родительская папка</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="2888126860611144412">О браузере Chrome</translation>
@@ -198,7 +198,7 @@
 <translation id="3661699943263275414">Сторонние веб-сайты могут сохранять и читать файлы cookie</translation>
 <translation id="3672452749423051839">Подсказки при ошибке навигации</translation>
 <translation id="3732088672634061408">Не удалось получить данные об интересах</translation>
-<translation id="3738139272394829648">Нажмите для поиска</translation>
+<translation id="3738139272394829648">Быстрый поиск</translation>
 <translation id="3774280986422214650">Это экспериментальная функция. Когда она включена, серверы Google сжимают HTTP-страницы.</translation>
 <translation id="3809549525127675114">Воспроизведение видео "<ph name="VIDEO_TITLE" />" завершено</translation>
 <translation id="3828029223314399057">Искать в закладках</translation>
@@ -313,10 +313,12 @@
 <translation id="5233638681132016545">Новая вкладка</translation>
 <translation id="5271967389191913893">Не удается открыть скачанный контент.</translation>
 <translation id="5275558766013849309">Каждая вкладка будет отображаться в виде отдельного окна в списке открытых приложений.</translation>
+<translation id="528192093759286357">Чтобы выйти из полноэкранного режима, проведите по экрану сверху вниз и нажмите кнопку "Назад".</translation>
 <translation id="5284584623296338184">Изменения в ваших закладках, паролях, истории и других настройках больше не будут синхронизироваться с аккаунтом Google. Это изменение не затронет данные, сохраненные в аккаунте ранее.</translation>
 <translation id="5301954838959518834">ОК</translation>
 <translation id="5302048478445481009">Язык</translation>
 <translation id="5304593522240415983">Это поле нужно заполнить</translation>
+<translation id="5308380583665731573">Подключение</translation>
 <translation id="5308933389783727448">Искать по сохраненным страницам</translation>
 <translation id="5313967007315987356">Добавить сайт</translation>
 <translation id="5317780077021120954">Сохранить</translation>
@@ -341,6 +343,7 @@
 <translation id="5556459405103347317">Перезагрузить</translation>
 <translation id="5565871407246142825">Банковские карты</translation>
 <translation id="5578795271662203820">Найти это изображение в <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5579997910517802656">Устройства не найдены.</translation>
 <translation id="5595485650161345191">Изменить адрес</translation>
 <translation id="5596627076506792578">Ещё</translation>
 <translation id="5626134646977739690">Имя:</translation>
@@ -635,6 +638,7 @@
 <translation id="917685106653909562">Веб-страницы из Интернета вокруг нас</translation>
 <translation id="9187199695613236444">Адаптировано для мобильных устройств</translation>
 <translation id="9192643434065497760">Чтобы разрешить соединение, включите Bluetooth в <ph name="BEGIN_LINK" />настройках устройства<ph name="END_LINK" />.</translation>
+<translation id="9198708126133947749">Данные на устройстве будут заменены данными из аккаунта <ph name="TO_ACCOUNT" />. Чтобы скачать текущие данные, войдите в аккаунт <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">А</translation>
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="938850635132480979">Ошибка <ph name="ERROR_CODE" /></translation>

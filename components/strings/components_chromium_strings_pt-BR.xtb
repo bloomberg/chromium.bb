@@ -16,6 +16,8 @@
           &gt;
           Configurações da LAN
           e desmarque a caixa de seleção "Usar um servidor proxy para a rede local".</translation>
+<translation id="48558539577516920">Permitir que o Chromium acesse a rede nas configurações do seu
+          firewall ou antivírus.</translation>
 <translation id="580822234363523061">Vá para
           o menu do Chromium &gt;
           <ph name="SETTINGS_TITLE" />

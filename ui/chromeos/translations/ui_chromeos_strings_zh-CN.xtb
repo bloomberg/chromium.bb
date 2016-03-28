@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">恭喜！“<ph name="NAME" />”数据服务已激活，您可以开始使用了。</translation>
 <translation id="2649120831653069427">彩虹鱼</translation>
 <translation id="2670531586141364277">激活“<ph name="NAME" />”需要连接网络。</translation>
+<translation id="277257480934873581">正在重新连接到 <ph name="NAME" /></translation>
 <translation id="2894654529758326923">信息</translation>
 <translation id="2951236788251446349">海蜇</translation>
 <translation id="2966449113954629791">您的移动数据量可能已用完。请访问“<ph name="NAME" />”激活门户网站，购买更多数据。</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP 失败</translation>
 <translation id="8372369524088641025">WEP 密钥错误</translation>
 <translation id="8454013096329229812">Wi-Fi 已打开。</translation>
+<translation id="8484916590211895857"><ph name="NAME" />：正在重新连接…</translation>
 <translation id="8688591111840995413">密码错误</translation>
 <translation id="8714406895390098252">自行车</translation>
 <translation id="8808686172382650546">猫</translation>

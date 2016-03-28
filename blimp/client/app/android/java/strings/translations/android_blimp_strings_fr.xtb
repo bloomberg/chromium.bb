@@ -6,6 +6,7 @@
 <translation id="2023631438558435272">Échec de l'attribution. Réponse incorrecte.</translation>
 <translation id="2353984724370197742">Échec de l'attribution. Échec de la demande réseau.</translation>
 <translation id="3046825211487065480">Échec de l'attribution. Deuxième demande envoyée avant la réponse de la première demande.</translation>
+<translation id="3346106862344060497">Moteur connecté.</translation>
 <translation id="3407245330823033366">Sélectionnez un compte à utiliser avec Blimp.</translation>
 <translation id="3775180005489871350">Échec de l'attribution. Erreur 400 (BAD_REQUEST).</translation>
 <translation id="4542350224991263059">Échec de l'attribution. Le jeton d'accès utilisateur a expiré.</translation>
@@ -13,6 +14,7 @@
 <translation id="4641972508298030550">Impossible d'authentifier l'utilisateur.</translation>
 <translation id="5860346505531085166">Échec de l'attribution. Le compte ne dispose pas de l'accès.</translation>
 <translation id="704835510384979817">Échec de l'attribution. Aucune version de moteur correspondante.</translation>
+<translation id="7536363920335771251">Moteur déconnecté. Motif : %1$s</translation>
 <translation id="7961542533680218955">L'attribution a bien été effectuée.</translation>
 <translation id="8514856595257368555">Le jeton a bien été récupéré.</translation>
 </translationbundle>

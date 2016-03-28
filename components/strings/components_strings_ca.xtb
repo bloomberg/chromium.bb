@@ -266,6 +266,8 @@
 <translation id="3609138628363401169">El servidor no admet l'extensió de renegociació TLS.</translation>
 <translation id="362276910939193118">Mostra l'historial complet</translation>
 <translation id="3623476034248543066">Mostra el valor</translation>
+<translation id="3630155396527302611">Si ja està inclòs com un programa amb autorització per accedir a la xarxa, proveu
+      de suprimir-lo de la llista i torneu-lo a afegir.</translation>
 <translation id="3648607100222897006">Aquestes funcions experimentals poden canviar, trencar-se o desaparèixer en qualsevol moment. No donem cap garantia sobre què pot passar si activeu algun d'aquests experiments, i fins i tot el vostre navegador es podria fregir de sobte. Bromes a part,és possible que el vostre navegador suprimeixi totes les vostres dades, o bé la seguretat i la privadesa poden estar compromeses de maneres inesperades. Qualsevol experiment que activeu s'activaran per a tots els usuaris d'aquest navegador. Continueu amb precaució.</translation>
 <translation id="3650584904733503804">Validació correcta</translation>
 <translation id="3651020361689274926">El recurs sol·licitat ja no existeix, i no hi ha cap adreça de reenviament. Està previst que sigui una condició permanent.</translation>

@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="101438888985615157">Scherm 180 graden draaien</translation>
-<translation id="1015272884520659144">Hiermee wordt de lijst met USB-apparaten gedefinieerd die mogen worden ontkoppeld van hun kernel-driver zodat ze via de chrome.usb-API rechtstreeks kunnen worden gebruikt in een web-app. Items zijn paren van de ID van de USB-leverancier en de ID van het product, zodat specifieke hardware kan worden geïdentificeerd.
+<translation id="1015272884520659144">Hiermee wordt de lijst met USB-apparaten gedefinieerd die mogen worden ontkoppeld van hun kernel-driver, zodat ze via de chrome.usb-API rechtstreeks kunnen worden gebruikt in een web-app. Items zijn paren van de ID van de USB-leverancier en de ID van het product, zodat specifieke hardware kan worden geïdentificeerd.
 
       Als dit beleid niet is geconfigureerd, wordt aangenomen dat de lijst met USB-apparaten die kunnen worden ontkoppeld, leeg is.</translation>
 <translation id="1017967144265860778">Energiebeheer op het inlogscherm</translation>
@@ -1562,6 +1562,7 @@
       Als je deze instelling uitschakelt, mogen gebruikers Smart Lock niet gebruiken.
 
       Als er geen waarde voor dit beleid is opgegeven, geldt de standaardwaarde 'niet toegestaan' voor beheerde Enterprise-gebruikers en 'toegestaan' voor niet-beheerde gebruikers.</translation>
+<translation id="6491139795995924304">Bluetooth toestaan op apparaat</translation>
 <translation id="6513756852541213407">Hiermee kun je de proxyserver specificeren die door <ph name="PRODUCT_NAME" /> wordt gebruikt en wordt voorkomen dat gebruikers proxyinstellingen kunnen aanpassen.
 
           Als je ervoor kiest nooit een proxyserver te gebruiken en altijd rechtstreeks verbinding te maken, worden alle andere opties genegeerd.
@@ -1835,6 +1836,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als het beleid 'RestoreOnStartup' zo is ingesteld dat URL's van eerdere sessies worden hersteld, geldt dit beleid niet en worden cookies voor deze sites permanent opgeslagen.</translation>
 <translation id="7207095846245296855">Google SafeSearch afdwingen</translation>
+<translation id="7213425178181578730">Bluetooth wordt uitgeschakeld in <ph name="PRODUCT_OS_NAME" /> als dit beleid is ingesteld op 'onwaar' en de gebruiker kan deze niet opnieuw inschakelen.
+
+      De gebruiker kan Bluetooth naar wens in- en uitschakelen als dit beleid is ingesteld op 'waar' of niet is ingesteld.
+
+      De gebruiker kan dit beleid niet wijzigen of overschrijven als dit is ingesteld.</translation>
 <translation id="7216442368414164495">Hiermee kunnen gebruikers zich aanmelden voor uitgebreide rapportage van Safe Browsing</translation>
 <translation id="7227967227357489766">Hiermee definieer je de lijst met gebruikers die toestemming hebben om in te loggen bij het apparaat. Vermeldingen hebben de vorm <ph name="USER_WHITELIST_ENTRY_FORMAT" />, zoals <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Als je willekeurige gebruikers toegang wilt verlenen tot een domein, gebruik je vermeldingen in de vorm <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

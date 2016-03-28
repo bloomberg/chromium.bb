@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Enhorabona. El servei de dades "<ph name="NAME" />" s'ha activat i ja es pot fer servir.</translation>
 <translation id="2649120831653069427">Peix arc iris</translation>
 <translation id="2670531586141364277">Per activar "<ph name="NAME" />" cal una connexió a la xarxa.</translation>
+<translation id="277257480934873581">S'està tornant a connectar amb la xarxa <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Informació</translation>
 <translation id="2951236788251446349">Medusa</translation>
 <translation id="2966449113954629791">És possible que hàgiu esgotat la quantitat assignada de dades mòbils. Visiteu el portal d'activació <ph name="NAME" /> per comprar més dades.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">Error d'OTASP</translation>
 <translation id="8372369524088641025">Clau WEP no vàlida</translation>
 <translation id="8454013096329229812">La Wi-Fi està activada.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: s'està tornant a connectar…</translation>
 <translation id="8688591111840995413">Contrasenya incorrecta</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
 <translation id="8808686172382650546">Gat</translation>

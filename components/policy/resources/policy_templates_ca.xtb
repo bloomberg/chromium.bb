@@ -2,9 +2,9 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="101438888985615157">Gira la pantalla 180 graus</translation>
-<translation id="1015272884520659144">Defineix la llista de dispositius USB que està permès separar del programa de control de kernel per tal d'utilitzar-los mitjançant l'API de chrome.usb directament dins d'una aplicació web. Els elements que s'inclouen a la llista són parells identificador del producte i identificador del proveïdor dels USB, que permeten identificar un maquinari concret.
+<translation id="1015272884520659144">Defineix la llista de dispositius USB que està permès separar del programa de control de kernel per tal d'utilitzar-los mitjançant l'API de chrome.usb directament dins d'una aplicació web. Les entrades són parells de l'identificador del producte i de l'identificador del proveïdor dels USB, que permeten identificar un maquinari concret.
 
-      Si aquesta política no està configurada, la llista de dispositius USB separables es considera buida.</translation>
+      Si aquesta política no està configurada, la llista de dispositius USB que es poden separar es considera buida.</translation>
 <translation id="1017967144265860778">Gestió de l'alimentació a la pantalla d'inici de sessió</translation>
 <translation id="1019101089073227242">Estableix el directori de dades de l'usuari</translation>
 <translation id="1022361784792428773">ID de les extensions que l'usuari no pot instal·lar (o bé * per a totes)</translation>
@@ -214,7 +214,7 @@
 <translation id="186719019195685253">Acció que s'ha d'emprendre quan s'està inactiu mentre s'està connectat al CA</translation>
 <translation id="187819629719252111">Permet que <ph name="PRODUCT_NAME" /> mostri diàlegs de selecció de fitxers per permetre l'accés als fitxers locals de l'equip. Si activeu aquest paràmetre, els usuaris podran obrir els diàlegs de selecció de fitxers de la manera habitual. Si el desactiveu, cada vegada que un usuari dugui a terme una acció que provoqui l'obertura d'un diàleg de selecció de fitxers (com ara la importació d'adreces d'interès, la càrrega de fitxers, el desament d'enllaços, etc.), li apareixerà un missatge que serà com si l'usuari fes clic a Cancel·la al diàleg de selecció de fitxers. Si no definiu aquest paràmetre, els usuaris podran obrir diàlegs de selecció de fitxers de la manera habitual.</translation>
 <translation id="1897365952389968758">Permet que tots els llocs executin JavaScript</translation>
-<translation id="193259052151668190">Llista blanca de dispositius USB separables</translation>
+<translation id="193259052151668190">Llista blanca de dispositius USB que es poden separar</translation>
 <translation id="1933378685401357864">Imatge de fons de pantalla</translation>
 <translation id="193900697589383153">Afegeix un botó de tancament de sessió a la safata del sistema.
 
@@ -1409,6 +1409,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si desactiveu aquesta opció, els usuaris no podran utilitzar Smart Lock.
 
       Si aquesta política no s'estableix, el valor predeterminat no es permet als usuaris gestionats per l'empresa i es permet als usuaris no gestionats.</translation>
+<translation id="6491139795995924304">Permet el Bluetooth al dispositiu</translation>
 <translation id="6513756852541213407">Permet especificar el servidor intermediari utilitzat per <ph name="PRODUCT_NAME" /> i impedeix que els usuaris en canviïn la configuració. Si decidiu no utilitzar mai un servidor intermediari i connectar-vos sempre directament, s'ignoraran totes les altres opcions. Si decidiu utilitzar la configuració del servidor intermediari del sistema o la detecció automàtica del servidor intermediari, s'ignoraran totes les altres opcions. Si escolliu el mode fix de servidor intermediari, podreu especificar més opcions a "l'adreça o URL del servidor intermediari" i a la "Llista de regles d'evitació de servidors intermediaris separada per comes". Si escolliu utilitzar un script de servidor intermediari .pac, haureu d'especificar l'URL de l'script a "URL a un fitxer de servidor intermediari .pac". Per consultar exemples més detallats, visiteu: <ph name="PROXY_HELP_URL" /> Si activeu aquest paràmetre, <ph name="PRODUCT_NAME" /> ignorarà totes les opcions relacionades amb el servidor intermediari especificades a la línia d'ordres. Si no es defineix aquesta política, els usuaris podran escollir la configuració del servidor intermediari.</translation>
 <translation id="6520802717075138474">Importació dels motors de cerca des del navegador predeterminat en la primera execució</translation>
 <translation id="653608967792832033">Indica el temps sense activitat per part de l'usuari després del qual la pantalla es bloqueja quan el dispositiu funciona amb bateria.
@@ -1634,6 +1635,11 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 
           Si la política RestoreOnStartup s'estableix per restaurar els URL de les sessions anteriors, aquesta política no es respectarà i les galetes s'emmagatzemaran permanentment per a aquests llocs.</translation>
 <translation id="7207095846245296855">Força l'aplicació de Google SafeSearch</translation>
+<translation id="7213425178181578730">Si aquesta política s'estableix en false, <ph name="PRODUCT_OS_NAME" /> desactivarà el Bluetooth i l'usuari no el podrà tornar a activar.
+
+      Si aquesta política s'estableix en true o es deixa sense establir, l'usuari podrà activar o desactivar el Bluetooth com vulgui.
+
+      Si aquesta política s'estableix, l'usuari no la podrà canviar ni substituir.</translation>
 <translation id="7216442368414164495">Permet que els usuaris activin els informes ampliats de la Navegació segura</translation>
 <translation id="7227967227357489766">Defineix la llista d'usuaris que poden iniciar la sessió al dispositiu. El text introduït té el format <ph name="USER_WHITELIST_ENTRY_FORMAT" />, com ara <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Perquè els usuaris arbitraris puguin accedir a un domini, utilitzeu text que tingui el format <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

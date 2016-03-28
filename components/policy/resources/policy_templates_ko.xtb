@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="101438888985615157">180도 화면 회전</translation>
-<translation id="1015272884520659144">웹 애플리케이션 내에서 chrome.usb API를 통해 사용하기 위해 커널 드라이버에서 분리될 수 있는 USB 기기 목록을 정의합니다. 항목은 특정 하드웨어를 판별하기 위한 USB 공급업체 식별자 및 제품 식별자의 쌍입니다.
+<translation id="1015272884520659144">웹 애플리케이션 내에서 chrome.usb API를 통해 사용하기 위해 커널 드라이버에서 분리될 수 있는 USB 기기 목록을 정의합니다. 항목은 특정 하드웨어를 판별하기 위한 USB 공급업체 식별자 및 제품 식별자 페어입니다.
 
       이 정책이 구성되지 않은 경우 분리 가능한 USB 기기 목록은 빈 것으로 간주됩니다.</translation>
 <translation id="1017967144265860778">로그인 화면의 전원 관리</translation>
@@ -1572,6 +1572,7 @@
       이 설정을 사용 중지하면 사용자가 Smart Lock을 사용할 수 없습니다.
 
       정책이 설정되지 않으면 기본적으로 엔터프라이즈 관리 사용자에게는 허용되지 않고 관리 사용자가 아닌 경우에는 허용됩니다.</translation>
+<translation id="6491139795995924304">기기에서 블루투스 허용</translation>
 <translation id="6513756852541213407"><ph name="PRODUCT_NAME" />이(가) 사용하는 프록시 서버를 지정하도록 하며 사용자가 프록시 설정을 변경하지 못하게 합니다.
 
           프록시 서버를 사용하지 않고 항상 직접 연결하도록 선택하면 다른 옵션은 모두 무시됩니다.
@@ -1846,6 +1847,11 @@
 
           이전 세션에서 URL을 복원하도록 'RestoreOnStartup' 정책이 설정된 경우 이 정책이 지켜지지 않으며 해당 사이트의 쿠키는 영구적으로 저장됩니다.</translation>
 <translation id="7207095846245296855">Google 세이프서치 강제 실행</translation>
+<translation id="7213425178181578730">이 정책이 false로 설정되는 경우 <ph name="PRODUCT_OS_NAME" />에서 블루투스를 사용하지 않도록 설정하며 사용자가 블루투스를 다시 사용하도록 설정할 수 없습니다.
+
+      이 정책이 true로 설정되거나 설정되지 않은 경우 사용자는 블루투스를 사용 또는 사용 중지할 수 있습니다.
+
+      이 정책이 설정되면 사용자가 변경하거나 무시할 수 없습니다.</translation>
 <translation id="7216442368414164495">사용자가 세이프 브라우징 확장 보고를 선택하도록 허용</translation>
 <translation id="7227967227357489766">기기에 로그인할 수 있는 사용자 목록을 정의합니다. 항목은 <ph name="USER_WHITELIST_ENTRY_FORMAT" /> 형식(예: <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />)입니다. 도메인에 임의의 사용자를 허용하려면 <ph name="USER_WHITELIST_ENTRY_WILDCARD" /> 형식의 항목을 사용합니다.
 

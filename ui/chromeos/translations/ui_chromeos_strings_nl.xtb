@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Gefeliciteerd! Je gegevensservice '<ph name="NAME" />' is geactiveerd en kan worden gebruikt.</translation>
 <translation id="2649120831653069427">Regenboogvis</translation>
 <translation id="2670531586141364277">Voor activering van '<ph name="NAME" />' is een netwerkverbinding vereist.</translation>
+<translation id="277257480934873581">Opnieuw verbinding maken met <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Informatie</translation>
 <translation id="2951236788251446349">Kwal</translation>
 <translation id="2966449113954629791">Je hebt misschien je mobiele gegevensquotum verbruikt. Ga naar de activeringsportal van <ph name="NAME" /> om meer gegevens te kopen.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP mislukt</translation>
 <translation id="8372369524088641025">Slechte WEP-sleutel</translation>
 <translation id="8454013096329229812">Wifi is ingeschakeld.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Opnieuw verbinding maken...</translation>
 <translation id="8688591111840995413">Slecht wachtwoord</translation>
 <translation id="8714406895390098252">Fiets</translation>
 <translation id="8808686172382650546">Kat</translation>

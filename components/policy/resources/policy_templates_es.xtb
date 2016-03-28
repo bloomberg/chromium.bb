@@ -1574,6 +1574,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
       Si inhabilitas esta opción, los usuarios no podrán utilizar Smart Lock.
 
       Si no se selecciona ningún valor para esta política, Smart Lock no estará disponible de forma predeterminada para los usuarios administrados por empresas, aunque sí lo estará para aquellos no administrados por empresas.</translation>
+<translation id="6491139795995924304">Permitir Bluetooth en el dispositivo</translation>
 <translation id="6513756852541213407">Permite especificar el servidor proxy que usa <ph name="PRODUCT_NAME" /> e impide que los usuarios modifiquen la configuración del proxy.
 
           Si eliges la opción de establecer siempre conexión directamente en lugar de utilizar un servidor proxy, se ignorarán las demás opciones.
@@ -1843,6 +1844,11 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
           Si la política RestoreOnStartup se configura para restaurar las URL de sesiones anteriores, esta política no se respetará y las cookies se almacenarán de forma permanente para estos sitios web.</translation>
 <translation id="7207095846245296855">Forzar Google SafeSearch</translation>
+<translation id="7213425178181578730">Si se asigna el valor False a esta política, <ph name="PRODUCT_OS_NAME" /> inhabilitará la conexión Bluetooth y el usuario no podrá volver a habilitarla.
+
+      Si se asigna el valor true a esta política o si esta no se configura, el usuario podrá habilitar o inhabilitar la conexión Bluetooth cuando lo desee.
+
+      Si se establece esta política, el usuario no podrá cambiar esta opción ni anularla.</translation>
 <translation id="7216442368414164495">Permitir a los usuarios habilitar los informes ampliados de la función de navegación segura</translation>
 <translation id="7227967227357489766">Permite definir la lista de usuarios con permiso para iniciar sesión en el dispositivo. Las entradas tienen el formato <ph name="USER_WHITELIST_ENTRY_FORMAT" /> (por ejemplo, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />). Para permitir usuarios arbitrarios en un dominio, utiliza entradas del formulario <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

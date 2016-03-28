@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">እንኳን ደስ አለዎት! የእርስዎ «<ph name="NAME" />» ውሂብ አገልግሎት ገባሪ ሆኖ ለመሄድ ዝግጁ ነው።</translation>
 <translation id="2649120831653069427">የቀስተዳመና አሳ</translation>
 <translation id="2670531586141364277">«<ph name="NAME" />»ን ማግበር የአውታረ መረብ ግንኙነት ያስፈልገዋል።</translation>
+<translation id="277257480934873581">ከ<ph name="NAME" /> ጋር ዳግም በማገናኘት ላይ</translation>
 <translation id="2894654529758326923">መረጃ</translation>
 <translation id="2951236788251446349">ዝልግልግ አሳ</translation>
 <translation id="2966449113954629791">የተሰጠዎት ሞባይል ውሂብ ጨርሰው ሊሆኑ ይችላሉ። ተጨማሪ ውሂብ ለመግዛት የ<ph name="NAME" /> ማስገበሪያ በር ይጎብኙ።</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP አልተሳካም</translation>
 <translation id="8372369524088641025">መጥፎ የWEP ቁልፍ</translation>
 <translation id="8454013096329229812">Wi-Fi በርቷል።</translation>
+<translation id="8484916590211895857"><ph name="NAME" />፦ ዳግም በማገናኘት ላይ...</translation>
 <translation id="8688591111840995413">መጥፎ የይለፍ ቃል</translation>
 <translation id="8714406895390098252">ቢስክሌት</translation>
 <translation id="8808686172382650546">ድመት</translation>

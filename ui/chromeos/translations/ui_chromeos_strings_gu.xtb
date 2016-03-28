@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">અભિનંદન! તમારી '<ph name="NAME" />' ડેટા સેવાને સક્રિય કરવામાં આવી છે અને આગળ વધવા માટે તૈયાર છે.</translation>
 <translation id="2649120831653069427">રેન્બોફીશ</translation>
 <translation id="2670531586141364277"><ph name="NAME" /> ના સક્રિયકરણને નેટવર્ક કનેક્શનની જરૂર છે.</translation>
+<translation id="277257480934873581"><ph name="NAME" /> થી ફરીથી કનેક્ટ કરી રહ્યાં છે</translation>
 <translation id="2894654529758326923">માહિતી</translation>
 <translation id="2951236788251446349">જેલીફીશ</translation>
 <translation id="2966449113954629791">તમે તમારા મોબાઇલ ડેટા ભથ્થાનો ઉપયોગ કર્યો હોઈ શકે છે. વધુ ડેટા ખરીદવા માટે <ph name="NAME" /> સક્રિયતા પોર્ટલની મુલાકાત લો.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP નિષ્ફળ</translation>
 <translation id="8372369524088641025">ખરાબ WEP કી</translation>
 <translation id="8454013096329229812">Wi-Fi ચાલુ છે.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: ફરીથી કનેક્ટ કરી રહ્યાં છે...</translation>
 <translation id="8688591111840995413">ખોટો પાસવર્ડ</translation>
 <translation id="8714406895390098252">સાયકલ</translation>
 <translation id="8808686172382650546">બિલાડી</translation>

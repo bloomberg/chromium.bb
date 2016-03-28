@@ -16,6 +16,8 @@
           &gt;
           Paramètres réseau
           et décochez l'option "Utiliser un serveur proxy pour votre réseau local".</translation>
+<translation id="48558539577516920">Autorisez Chromium à accéder au réseau depuis les paramètres du pare-feu ou
+        de l'antivirus.</translation>
 <translation id="580822234363523061">Accédez au
           menu Chromium &gt;
           <ph name="SETTINGS_TITLE" />

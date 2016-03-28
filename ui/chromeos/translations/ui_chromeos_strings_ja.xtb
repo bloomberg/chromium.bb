@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">「<ph name="NAME" />」データ サービスが有効になり、使用できるようになりました。</translation>
 <translation id="2649120831653069427">熱帯魚</translation>
 <translation id="2670531586141364277">「<ph name="NAME" />」を有効にするにはネットワークに接続する必要があります。</translation>
+<translation id="277257480934873581"><ph name="NAME" /> に再接続しています</translation>
 <translation id="2894654529758326923">情報</translation>
 <translation id="2951236788251446349">クラゲ</translation>
 <translation id="2966449113954629791">モバイル データの割り当て量をすべて使用している可能性があります。データを追加購入するには、<ph name="NAME" /> の有効化ポータルにアクセスしてください。</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP に失敗しました</translation>
 <translation id="8372369524088641025">WEP キーが正しくありません</translation>
 <translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: 再接続しています...</translation>
 <translation id="8688591111840995413">不正なパスワード</translation>
 <translation id="8714406895390098252">自転車</translation>
 <translation id="8808686172382650546">ネコ</translation>

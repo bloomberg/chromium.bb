@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Binabati kita! Na-activate ang iyong serbisyo ng data ng '<ph name="NAME" />' at handa nang gamitin.</translation>
 <translation id="2649120831653069427">Rainbowfish</translation>
 <translation id="2670531586141364277">Nangangailangan ng koneksyon sa network ang pag-activate ng '<ph name="NAME" />.'</translation>
+<translation id="277257480934873581">Muling kumokonekta sa <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Impormasyon</translation>
 <translation id="2951236788251446349">Jellyfish</translation>
 <translation id="2966449113954629791">Maaaring naubos mo na ang iyong allowance sa mobile data. Bisitahin ang activation portal ng <ph name="NAME" /> upang bumili ng higit pang data.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">Nabigo ang OTASP</translation>
 <translation id="8372369524088641025">Mahinang WEP key</translation>
 <translation id="8454013096329229812">Naka-on ang Wi-Fi.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Muling kumokonekta...</translation>
 <translation id="8688591111840995413">Hindi magandang password</translation>
 <translation id="8714406895390098252">Bisikleta</translation>
 <translation id="8808686172382650546">Pusa</translation>

@@ -269,6 +269,8 @@
 <translation id="3609138628363401169">O servidor não é compatível com a extensão de renegociação TLS.</translation>
 <translation id="362276910939193118">Mostrar histórico completo</translation>
 <translation id="3623476034248543066">Mostrar valor</translation>
+<translation id="3630155396527302611">Se ele já estiver listado como um programa que tem permissão para acessar a rede, tente
+      removê-lo da lista e adicioná-lo novamente.</translation>
 <translation id="3648607100222897006">Estes recursos experimentais podem ser alterados, cancelados ou desaparecer a qualquer momento. Não oferecemos qualquer garantia sobre o que possa acontecer ao ativar algum desses experimentos: seu navegador pode inclusive entrar em combustão espontânea. Brincadeiras à parte, o navegador pode excluir todos seus dados ou comprometer sua segurança e privacidade de maneira inesperada. Experimentos ativados serão habilitados para todos os usuários do navegador, portanto tenha cautela ao prosseguir.</translation>
 <translation id="3650584904733503804">Validação bem-sucedida</translation>
 <translation id="3651020361689274926">O recurso solicitado não existe mais e não há um endereço de encaminhamento. Essa deve ser uma condição permanente.</translation>

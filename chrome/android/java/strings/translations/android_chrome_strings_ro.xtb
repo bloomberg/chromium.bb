@@ -47,7 +47,6 @@ Poți să controlezi Webul material din setările de confidențialitate Chrome.<
 <translation id="1477626028522505441">Descărcarea fișierului <ph name="FILE_NAME" /> nu a reușit din cauza unor probleme de server.</translation>
 <translation id="1506061864768559482">Motor de căutare</translation>
 <translation id="1513352483775369820">Marcaje și istoric web</translation>
-<translation id="1546112724822176246">Dispozitivul nu apare? <ph name="BEGIN_LINK" />Obține ajutor<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Actualizează Chrome</translation>
 <translation id="1557201757634521564">Detectează automat codificarea</translation>
 <translation id="1592483623187843893">Marcaj salvat offline</translation>
@@ -317,6 +316,7 @@ Deschide Chrome pe computer, accesează meniul și selectează „Conectează-te
 <translation id="5301954838959518834">OK, am înțeles</translation>
 <translation id="5302048478445481009">Limbă</translation>
 <translation id="5304593522240415983">Acest câmp trebuie completat</translation>
+<translation id="5308380583665731573">Conectează-te</translation>
 <translation id="5308933389783727448">Caută în paginile salvate</translation>
 <translation id="5313967007315987356">Adaugă un site</translation>
 <translation id="5317780077021120954">Salvează</translation>
@@ -341,6 +341,7 @@ Deschide Chrome pe computer, accesează meniul și selectează „Conectează-te
 <translation id="5556459405103347317">Reîncarcă</translation>
 <translation id="5565871407246142825">Carduri de credit</translation>
 <translation id="5578795271662203820">Căutați imaginea cu <ph name="SEARCH_ENGINE" /></translation>
+<translation id="5579997910517802656">Nu s-a găsit niciun dispozitiv.</translation>
 <translation id="5595485650161345191">Editează adresa</translation>
 <translation id="5596627076506792578">Mai multe opțiuni</translation>
 <translation id="5626134646977739690">Nume:</translation>

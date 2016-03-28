@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">축하합니다. '<ph name="NAME" />' 데이터 서비스가 활성화되어 사용할 수 있습니다.</translation>
 <translation id="2649120831653069427">구피</translation>
 <translation id="2670531586141364277">네트워크를 연결하려면 '<ph name="NAME" />' 활성화가 필수입니다.</translation>
+<translation id="277257480934873581"><ph name="NAME" />에 다시 연결</translation>
 <translation id="2894654529758326923">정보</translation>
 <translation id="2951236788251446349">해파리</translation>
 <translation id="2966449113954629791">할당되 모바일 데이터를 모두 사용한 것 같습니다. 추가 데이터를 구입하려면 <ph name="NAME" /> 활성화 포털을 방문하세요.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP 실패</translation>
 <translation id="8372369524088641025">잘못된 WEP 키</translation>
 <translation id="8454013096329229812">Wi-Fi가 켜져 있습니다.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: 다시 연결하는 중...</translation>
 <translation id="8688591111840995413">비밀번호가 잘못됨</translation>
 <translation id="8714406895390098252">자전거</translation>
 <translation id="8808686172382650546">고양이</translation>

@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">تم تنشيط خدمة البيانات '<ph name="NAME" />' وهي جاهزة للعمل.</translation>
 <translation id="2649120831653069427">أسماك رينبو فيش</translation>
 <translation id="2670531586141364277">يتطلب تنشيط '<ph name="NAME" />' اتصالاً بالشبكة.</translation>
+<translation id="277257480934873581">إعادة الاتصال بـ <ph name="NAME" /></translation>
 <translation id="2894654529758326923">المعلومات</translation>
 <translation id="2951236788251446349">قنديل البحر</translation>
 <translation id="2966449113954629791">يبدو أنك قد استنفدت القدر المتاح لك من بيانات الجوّال. يُمكنك الانتقال إلى منفذ تنشيط <ph name="NAME" /> لشراء مزيد من البيانات.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">‏أخفقت OTASP</translation>
 <translation id="8372369524088641025">‏مفتاح WEP غير صالح</translation>
 <translation id="8454013096329229812">‏تم تشغيل Wi-Fi.</translation>
+<translation id="8484916590211895857"><ph name="NAME" /> : جارٍ إعادة الاتصال ...</translation>
 <translation id="8688591111840995413">كلمة مرور سيئة</translation>
 <translation id="8714406895390098252">دراجة</translation>
 <translation id="8808686172382650546">قط</translation>

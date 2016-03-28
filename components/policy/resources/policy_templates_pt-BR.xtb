@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
 <translation id="101438888985615157">Girar a tela em 180 graus</translation>
-<translation id="1015272884520659144">Define a lista de dispositivos USB que estão autorizados a serem removidos do seu driver de kernel para uso pela API chrome.usb diretamente dentro de um aplicativo da Web. As entradas são pares de identificador de fornecedor e identificador do produto USB para identificar um hardware específico.
+<translation id="1015272884520659144">Define a lista de dispositivos USB que estão autorizados a serem removidos do seu driver de kernel para uso pela API chrome.usb diretamente dentro de um aplicativo da Web. As entradas são pares de um identificador de fornecedor e um identificador do produto USB, para identificar um hardware específico.
 
       Se esta política não é configurada, a lista de dispositivos USB removíveis é considerada como vazia.</translation>
 <translation id="1017967144265860778">Gerenciamento de energia na tela de login</translation>
@@ -1376,6 +1376,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se você desativa esta configuração, os usuários não têm permissão para usar o Smart Lock.
 
       Se esta política não é configurada, o padrão não é permitido para usuários gerenciados por empresa, mas é permitido para usuários não gerenciados.</translation>
+<translation id="6491139795995924304">Permitir o Bluetooth no dispositivo</translation>
 <translation id="6513756852541213407">Permite que você especifique o servidor proxy usado por <ph name="PRODUCT_NAME" /> e impede que os usuários alterem as configurações de proxy. Se optar por nunca utilizar um servidor proxy e sempre conectar-se diretamente, todas as outras opções serão ignoradas. Se você optar por usar as configurações de proxy do sistema ou permitir a detecção automática do servidor proxy, todas as outras opções serão ignoradas. Se escolher o modo de proxy de servidor fixo, você pode especificar outras opções em "Endereço ou URL do servidor proxy" e "Lista separada por vírgulas das regras de proxys ignoráveis". Se optar por usar um script de proxy .pac, você deve especificar o URL para o script em "URL para um arquivo de proxy .pac". Para obter exemplos detalhados, visite <ph name="PROXY_HELP_URL" />. Se você ativar esta configuração, <ph name="PRODUCT_NAME" /> ignora todas as opções relacionadas a proxy especificadas na linha de comando. Caso deixe esta política sem definição, você permitirá aos usuários escolher as configurações de proxy por conta própria.</translation>
 <translation id="6520802717075138474">Importar mecanismos de pesquisa do navegador padrão na primeira execução</translation>
 <translation id="653608967792832033">Especifica após quanto tempo de inatividade do usuário a tela é bloqueada no funcionamento com a energia da bateria.
@@ -1605,6 +1606,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Se a política "RestoreOnStartup" é definida para recuperar URLs de sessões anteriores, ela não é respeitada, e os cookies desses sites são armazenados permanentemente.</translation>
 <translation id="7207095846245296855">Forçar o Google SafeSearch</translation>
+<translation id="7213425178181578730">Se esta política for definida como false, o <ph name="PRODUCT_OS_NAME" /> desativará o Bluetooth, e o usuário não poderá habilitá-lo novamente.
+
+      Se esta política for definida como true ou não for definida, o usuário conseguirá ativar ou desativar o Bluetooth conforme desejar.
+
+      Se esta política for definida, o usuário não poderá alterar ou modificá-la.</translation>
 <translation id="7216442368414164495">Permitir que os usuários ativem os relatórios estendidos do Navegação segura</translation>
 <translation id="7227967227357489766">Define a lista de usuários que têm permissão para fazer login no dispositivo. As entradas são feitas no formato <ph name="USER_WHITELIST_ENTRY_FORMAT" />, como, por exemplo, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Para permitir usuários arbitrários em um domínio, use entradas no formato <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

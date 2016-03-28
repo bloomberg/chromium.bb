@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Õnnitleme! Teie võrgu „<ph name="NAME" />” andmeteenus on aktiveeritud ja kasutamiseks valmis.</translation>
 <translation id="2649120831653069427">Vikerkaarekala</translation>
 <translation id="2670531586141364277">Võrgu „<ph name="NAME" />” aktiveerimine nõuab võrguühendust.</translation>
+<translation id="277257480934873581">Võrguga <ph name="NAME" /> uuesti ühendamine</translation>
 <translation id="2894654529758326923">Teave</translation>
 <translation id="2951236788251446349">Millimallikas</translation>
 <translation id="2966449113954629791">Võimalik, et olete oma mobiilse andmeside ära kasutanud. Andmesidet saate juurde osta aktiveerimisportaalis <ph name="NAME" />.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP nurjus</translation>
 <translation id="8372369524088641025">Halb WEP-võti</translation>
 <translation id="8454013096329229812">WiFi on sisse lülitatud.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: uuesti ühendamine …</translation>
 <translation id="8688591111840995413">Sobimatu parool</translation>
 <translation id="8714406895390098252">Jalgratas</translation>
 <translation id="8808686172382650546">Kass</translation>

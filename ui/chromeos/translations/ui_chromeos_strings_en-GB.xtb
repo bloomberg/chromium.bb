@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Congratulations! Your '<ph name="NAME" />' data service has been activated and is ready to go.</translation>
 <translation id="2649120831653069427">Rainbowfish</translation>
 <translation id="2670531586141364277">Activation of '<ph name="NAME" />' requires a network connection.</translation>
+<translation id="277257480934873581">Reconnecting to <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Information</translation>
 <translation id="2951236788251446349">Jellyfish</translation>
 <translation id="2966449113954629791">You may have used up your mobile data allowance. Visit the <ph name="NAME" /> activation portal to buy more data.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP failed</translation>
 <translation id="8372369524088641025">Bad WEP key</translation>
 <translation id="8454013096329229812">Wi-Fi is turned on.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Reconnecting...</translation>
 <translation id="8688591111840995413">Bad password</translation>
 <translation id="8714406895390098252">Bicycle</translation>
 <translation id="8808686172382650546">Cat</translation>

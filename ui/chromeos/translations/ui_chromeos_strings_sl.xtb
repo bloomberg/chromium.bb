@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Čestitamo. Podatkovna storitev omrežja »<ph name="NAME" />« je aktivirana in lahko jo začnete uporabljati.</translation>
 <translation id="2649120831653069427">Riba mavričarka</translation>
 <translation id="2670531586141364277">Če želite aktivirati omrežje »<ph name="NAME" />«, mora biti vzpostavljena omrežna povezava.</translation>
+<translation id="277257480934873581">Vnovično vzpostavljanje povezave z omrežjem <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Podatki</translation>
 <translation id="2951236788251446349">Meduza</translation>
 <translation id="2966449113954629791">Morda ste porabili dovoljeno količino prenosa podatkov v mobilnem omrežju. Večjo količino podatkov lahko kupite na portalu za aktiviranje <ph name="NAME" />.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">Storitev OTASP ni uspela</translation>
 <translation id="8372369524088641025">Napačen ključ WEP</translation>
 <translation id="8454013096329229812">Wi-Fi je vklopljen.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Vnovično vzpostavljanje povezave ...</translation>
 <translation id="8688591111840995413">Napačno geslo</translation>
 <translation id="8714406895390098252">Kolo</translation>
 <translation id="8808686172382650546">Mačka</translation>

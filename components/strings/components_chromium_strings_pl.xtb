@@ -16,6 +16,8 @@
           &gt;
           Ustawienia sieci LAN
           i usuń zaznaczenie pola wyboru „Użyj serwera proxy dla sieci LAN”.</translation>
+<translation id="48558539577516920">Zezwalaj Chromium na korzystanie z sieci w ustawieniach zapory sieciowej
+        lub oprogramowania antywirusowego.</translation>
 <translation id="580822234363523061">Wybierz
           menu Chromium &gt;
           <ph name="SETTINGS_TITLE" />

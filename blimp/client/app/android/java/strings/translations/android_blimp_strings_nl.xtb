@@ -6,6 +6,7 @@
 <translation id="2023631438558435272">Toewijzing mislukt. Ongeldige reactie.</translation>
 <translation id="2353984724370197742">Toewijzing mislukt. Netwerkverzoek mislukt.</translation>
 <translation id="3046825211487065480">Toewijzing mislukt. Het tweede verzoek is verzonden voordat er op het eerste verzoek is gereageerd.</translation>
+<translation id="3346106862344060497">Engine verbonden.</translation>
 <translation id="3407245330823033366">Kies een account om te gebruiken met Blimp.</translation>
 <translation id="3775180005489871350">Toewijzing mislukt. 400-fout (BAD_REQUEST).</translation>
 <translation id="4542350224991263059">Toewijzing mislukt. Toegangstoken van gebruiker is verlopen.</translation>
@@ -13,6 +14,7 @@
 <translation id="4641972508298030550">Kan gebruiker niet verifiëren.</translation>
 <translation id="5860346505531085166">Toewijzing mislukt. Account heeft geen toegang.</translation>
 <translation id="704835510384979817">Toewijzing mislukt. Geen overeenkomende engine-versie.</translation>
+<translation id="7536363920335771251">Verbinding met engine verbroken, reden: %1$s</translation>
 <translation id="7961542533680218955">Toewijzing voltooid.</translation>
 <translation id="8514856595257368555">Token opgehaald.</translation>
 </translationbundle>

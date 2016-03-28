@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Herzlichen Glückwunsch! Ihr Datendienst "<ph name="NAME" />" wurde aktiviert und ist einsatzbereit.</translation>
 <translation id="2649120831653069427">Regenbogenfisch</translation>
 <translation id="2670531586141364277">Zum Aktivieren von "<ph name="NAME" />" ist eine Netzwerkverbindung erforderlich.</translation>
+<translation id="277257480934873581">Verbindung zu <ph name="NAME" /> wird wiederhergestellt</translation>
 <translation id="2894654529758326923">Informationen</translation>
 <translation id="2951236788251446349">Qualle</translation>
 <translation id="2966449113954629791">Sie haben möglicherweise Ihr mobiles Datenkontingent aufgebraucht. Besuchen Sie das <ph name="NAME" />-Aktivierungsportal, um weiteres Datenkontingent zu kaufen.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP fehlgeschlagen</translation>
 <translation id="8372369524088641025">Ungültiger WEP-Schlüssel</translation>
 <translation id="8454013096329229812">WLAN ist aktiviert.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Verbindung wird wiederhergestellt...</translation>
 <translation id="8688591111840995413">Passwort ungültig</translation>
 <translation id="8714406895390098252">Fahrrad</translation>
 <translation id="8808686172382650546">Katze</translation>

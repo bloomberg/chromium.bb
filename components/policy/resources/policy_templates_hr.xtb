@@ -1404,6 +1404,7 @@
       Ako onemogućite tu postavku, korisnici neće moći upotrebljavati Smart Lock.
 
       Ako se pravilo ne postavi, zadana postavka nije dopuštena korisnicima kojima upravlja organizacija, a dopuštena je neupravljanim korisnicima.</translation>
+<translation id="6491139795995924304">Omogući Bluetooth na uređaju</translation>
 <translation id="6513756852541213407">Omogućuje određivanje proxy poslužitelja koji <ph name="PRODUCT_NAME" /> upotrebljava i sprječava korisnike da promijene postavke proxy poslužitelja. Ako odaberete da se proxy poslužitelj nikad ne upotrebljava i da se veza uvijek uspostavlja izravno, sve se ostale opcije zanemaruju. Ako odaberete upotrebu sistemskih postavki proxy poslužitelja ili automatsko otkrivanje proxy poslužitelja, sve se ostale opcije zanemaruju. Ako odaberete način fiksnog proxy poslužitelja, možete odrediti dodatne opcije pod "Adresa ili URL proxy poslužitelja" i "Popis pravila proxy zaobilaženja odvojenih zarezima". Ako odaberete upotrebu .pac skripte proxy proslužitelja, morate navesti URL prema skripti pod "URL prema .pac datoteci proxy poslužitelja". Za podrobne primjere posjetite: <ph name="PROXY_HELP_URL" /> Ako omogućite ovu postavku, <ph name="PRODUCT_NAME" /> zanemaruje sve opcije u vezi s proxy poslužiteljem određene naredbenim retkom. Ako ovo pravilo nije postavljeno, korisnici će moći sami odabrati postavke proxy poslužitelja.</translation>
 <translation id="6520802717075138474">Uvoz tražilica iz zadanog preglednika pri prvom pokretanju</translation>
 <translation id="653608967792832033">Određuje koliko vremena treba proteći bez aktivnosti korisnika da bi se zaslon zaključao tijekom rada s baterijskim napajanjem.
@@ -1630,6 +1631,11 @@
 
           Ako se pravilo "RestoreOnStartup" postavi na vraćanje URL-ova iz prethodnih sesija, ovo se pravilo neće poštovati i za te će se web-lokacije kolačići trajno pohranjivati.</translation>
 <translation id="7207095846245296855">Nametni Google sigurno pretraživanje</translation>
+<translation id="7213425178181578730">Ako se to pravilo postavi na False, <ph name="PRODUCT_OS_NAME" /> onemogućit će Bluetooth i korisnik ga neće moći omogućiti.
+
+      Ako se to pravilo postavi na True ili se ne postavi, korisnik će moći omogućiti ili onemogućiti Bluetooth prema želji.
+
+      Ako se to pravilo postavi, korisnik ga ne može promijeniti niti nadjačati.</translation>
 <translation id="7216442368414164495">Omogućivanje korisnicima da se uključe u prošireno izvješćivanje Sigurnog pregledavanja</translation>
 <translation id="7227967227357489766">Definira popis korisnika kojima je dopuštena prijava na uređaj. Unosi su u obliku <ph name="USER_WHITELIST_ENTRY_FORMAT" />, na primjer, <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. Da bi slučajnim korisnicima bio dopušten pristup domeni, upotrijebite unose u obliku <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

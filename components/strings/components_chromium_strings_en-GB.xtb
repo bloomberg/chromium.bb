@@ -16,6 +16,8 @@
           &gt;
           LAN Settings
           and deselect the "Use a proxy server for your LAN" checkbox.</translation>
+<translation id="48558539577516920">Allow Chromium to access the network in your firewall or antivirus
+          settings.</translation>
 <translation id="580822234363523061">Go to
           the Chromium menu &gt;
           <ph name="SETTINGS_TITLE" />

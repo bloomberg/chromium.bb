@@ -15,7 +15,7 @@
 <translation id="1781701194097416995">শব্দকে বামদিকে সরান</translation>
 <translation id="1801827354178857021">পূর্ণচ্ছেদ</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY" /> MB/s</translation>
-<translation id="1830179671306812954">{HOURS,plural, =1{১ ঘন্টা এবং }one{# ঘন্টা এবং }other{# ঘন্টা এবং }}</translation>
+<translation id="1830179671306812954">{HOURS,plural, =1{১ ঘণ্টা এবং }one{# ঘণ্টা এবং }other{# ঘণ্টা এবং }}</translation>
 <translation id="1860796786778352021">বিজ্ঞপ্তি বন্ধ করা হয়েছে</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1901303067676059328">&amp;সকল নির্বাচন করুন</translation>
@@ -32,7 +32,7 @@
 <translation id="2557207087669398617">লাইনের শুরু পর্যন্ত সরান</translation>
 <translation id="2666092431469916601">শীর্ষ</translation>
 <translation id="2704295676501803339">বামদিকে সরান</translation>
-<translation id="2743387203779672305">ক্লিপবোর্ডে অনুলিপি করুন</translation>
+<translation id="2743387203779672305">ক্লিপবোর্ডে কপি করুন</translation>
 <translation id="2803313416453193357">ফোল্ডার খুলুন</translation>
 <translation id="2983818520079887040">সেটিংস...</translation>
 <translation id="3036649622769666520">খোলা ফাইল</translation>
@@ -78,7 +78,7 @@
 <translation id="5768079895599174203">{DAYS,plural, =1{১ দিন এবং }one{# দিন এবং }other{# দিন এবং }}</translation>
 <translation id="5906667377645263094">{SECONDS,plural, =1{১ সেকেন্ড বাকি}one{# সেকেন্ড বাকি}other{# সেকেন্ড বাকি}}</translation>
 <translation id="5941711191222866238">ছোট করুন</translation>
-<translation id="5943826764092288734">{HOURS,plural, =1{১ ঘণ্টা}one{# ঘন্টা}other{# ঘন্টা}}</translation>
+<translation id="5943826764092288734">{HOURS,plural, =1{১ ঘণ্টা}one{# ঘণ্টা}other{# ঘণ্টা}}</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME" /></translation>
 <translation id="598033046487663418">সমস্ত অ্যাপ্লিকেশান</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
@@ -98,7 +98,7 @@
 <translation id="6808150112686056157">মিডিয়া থামান</translation>
 <translation id="6829324100069873704">বিজ্ঞপ্তিগুলিতে ফিরে যান</translation>
 <translation id="6845383723252244143">ফোল্ডার নির্বাচন করুন</translation>
-<translation id="6863590663815976734">{HOURS,plural, =1{১ ঘন্টা বাকি}one{# ঘন্টা বাকি}other{# ঘন্টা বাকি}}</translation>
+<translation id="6863590663815976734">{HOURS,plural, =1{১ ঘণ্টা বাকি}one{# ঘণ্টা বাকি}other{# ঘণ্টা বাকি}}</translation>
 <translation id="688711909580084195">শিরোনামহীন ওয়েবপৃষ্ঠা</translation>
 <translation id="6903282483217634857">ডানদিকে সরান</translation>
 <translation id="6907759265145635167"><ph name="QUANTITY" /> PB/s</translation>
@@ -121,7 +121,7 @@
 <translation id="7850320739366109486">বিরক্ত করবেন না</translation>
 <translation id="7907591526440419938">খোলা ফাইল</translation>
 <translation id="7960078400008666149">এক ঘন্টার জন্য বিরক্ত করবেন না</translation>
-<translation id="8106081041558092062">{HOURS,plural, =1{১ ঘন্টা পূর্বে}one{# ঘন্টা পূর্বে}other{# ঘন্টা পূর্বে}}</translation>
+<translation id="8106081041558092062">{HOURS,plural, =1{১ ঘণ্টা পূর্বে}one{# ঘণ্টা পূর্বে}other{# ঘণ্টা পূর্বে}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{১ সেকেন্ড বাকি}one{# সেকেন্ড বাকি}other{# সেকেন্ড বাকি}}</translation>
 <translation id="815598010540052116">নীচে স্ক্রোল করুন</translation>
 <translation id="8179976553408161302">Enter</translation>

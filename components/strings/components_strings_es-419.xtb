@@ -269,6 +269,8 @@
 <translation id="3609138628363401169">El servidor no admite la extensión de negociación TLS.</translation>
 <translation id="362276910939193118">Mostrar historial completo</translation>
 <translation id="3623476034248543066">Mostrar valor</translation>
+<translation id="3630155396527302611">Si ya está incluido como un programa con permiso para acceder a la red, intenta
+      quitarlo de la lista y agregarlo de nuevo.</translation>
 <translation id="3648607100222897006">Estas funciones experimentales pueden modificarse, dejar de funcionar o desaparecer en cualquier momento. No ofrecemos ninguna garantía para lo que pueda ocurrir si activas alguno de estos experimentos, y es posible que tu navegador se bloquee repentinamente. Bromas aparte, ten en cuenta que el navegador puede eliminar todos tus datos y que tu seguridad y tu privacidad se podrían ver comprometidas de forma inesperada. Cualquier experimento que actives, se activará  para todos los usuarios de este navegador, así que te recomendamos que actúes con precaución.</translation>
 <translation id="3650584904733503804">Validación correcta</translation>
 <translation id="3651020361689274926">El recurso solicitado ya no existe y no hay una dirección de reenvío. Se espera que sea una condición permanente.</translation>
@@ -501,7 +503,7 @@
 <translation id="6550675742724504774">Opciones</translation>
 <translation id="6596325263575161958">Opciones de encriptación</translation>
 <translation id="6610562986279010327">Chrome no puede abrir esta URL</translation>
-<translation id="662080504995468778">Quedarme</translation>
+<translation id="662080504995468778">Permanecer aquí</translation>
 <translation id="6626108645084335023">Esperando el sondeo del DNS</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Búsqueda</translation>
 <translation id="6634865548447745291">No puedes visitar <ph name="SITE" /> ahora porque <ph name="BEGIN_LINK" />este certificado se revocó<ph name="END_LINK" />. Los ataques y errores de red suelen ser temporales, por lo que es posible que esta página funcione más tarde.</translation>

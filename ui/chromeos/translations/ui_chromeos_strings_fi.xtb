@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Onnittelut! Tiedonsiirtopalvelusi <ph name="NAME" /> on aktivoitu ja käyttövalmis.</translation>
 <translation id="2649120831653069427">Kala</translation>
 <translation id="2670531586141364277">Verkon <ph name="NAME" /> aktivointi vaatii verkkoyhteyden.</translation>
+<translation id="277257480934873581">Yhdistetään uudelleen verkkoon <ph name="NAME" /></translation>
 <translation id="2894654529758326923">Tiedot</translation>
 <translation id="2951236788251446349">Meduusa</translation>
 <translation id="2966449113954629791">Olet saattanut käyttää tiedonsiirtosaldosi loppuun. Käy <ph name="NAME" />-aktivointiportaalissa ostamassa lisää saldoa.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">OTASP epäonnistui</translation>
 <translation id="8372369524088641025">Väärä WEP-avain</translation>
 <translation id="8454013096329229812">Wi-Fi on käytössä.</translation>
+<translation id="8484916590211895857"><ph name="NAME" />: Yhdistetään uudelleen…</translation>
 <translation id="8688591111840995413">Virheellinen salasana</translation>
 <translation id="8714406895390098252">Polkupyörä</translation>
 <translation id="8808686172382650546">Kissa</translation>

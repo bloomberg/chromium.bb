@@ -1579,6 +1579,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you disable this setting, users will not be allowed to use Smart Lock.
 
       If this policy is left not set, the default is not allowed for enterprise-managed users and allowed for non-managed users.</translation>
+<translation id="6491139795995924304">Allow bluetooth on device</translation>
 <translation id="6513756852541213407">Allows you to specify the proxy server used by <ph name="PRODUCT_NAME" /> and prevents users from changing proxy settings.
 
           If you choose to never use a proxy server and always connect directly, all other options are ignored.
@@ -1854,6 +1855,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If the "RestoreOnStartup" policy is set to restore URLs from previous sessions this policy will not be respected and cookies will be stored permanently for those sites.</translation>
 <translation id="7207095846245296855">Force Google SafeSearch</translation>
+<translation id="7213425178181578730">If this policy is set to false, <ph name="PRODUCT_OS_NAME" /> will disable Bluetooth and the user cannot enable it back.
+
+      If this policy is set to true or left unset, the user will be able to enable or disable Bluetooth as he wishes.
+
+      If this policy is set, the user cannot change or override it.</translation>
 <translation id="7216442368414164495">Allow users to opt in to Safe Browsing extended reporting</translation>
 <translation id="7227967227357489766">Defines the list of users that are allowed to login to the device. Entries are of the form <ph name="USER_WHITELIST_ENTRY_FORMAT" />, such as <ph name="USER_WHITELIST_ENTRY_EXAMPLE" />. To allow arbitrary users on a domain, use entries of the form <ph name="USER_WHITELIST_ENTRY_WILDCARD" />.
 

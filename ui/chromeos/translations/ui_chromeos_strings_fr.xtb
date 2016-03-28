@@ -15,6 +15,7 @@
 <translation id="2563856802393254086">Félicitations ! Votre service de données "<ph name="NAME" />" a été activé et est prêt à être utilisé.</translation>
 <translation id="2649120831653069427">Poisson arc-en-ciel</translation>
 <translation id="2670531586141364277">L'activation de "<ph name="NAME" />" nécessite une connexion réseau.</translation>
+<translation id="277257480934873581">Reconnexion à <ph name="NAME" />…</translation>
 <translation id="2894654529758326923">Informations</translation>
 <translation id="2951236788251446349">Méduse</translation>
 <translation id="2966449113954629791">Il semble que vous ayez utilisé l'intégralité de votre quota de données mobiles. Accédez au portail d'activation <ph name="NAME" /> pour acheter des données supplémentaires.</translation>
@@ -67,6 +68,7 @@
 <translation id="8300849813060516376">Échec de l'opération OTASP</translation>
 <translation id="8372369524088641025">Clé WEP incorrecte</translation>
 <translation id="8454013096329229812">Le Wi-Fi est activé.</translation>
+<translation id="8484916590211895857"><ph name="NAME" /> : reconnexion…</translation>
 <translation id="8688591111840995413">Mot de passe incorrect.</translation>
 <translation id="8714406895390098252">Vélo</translation>
 <translation id="8808686172382650546">Chat</translation>

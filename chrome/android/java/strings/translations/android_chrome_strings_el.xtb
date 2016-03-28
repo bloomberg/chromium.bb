@@ -47,7 +47,6 @@
 <translation id="1477626028522505441">Η λήψη του αρχείου <ph name="FILE_NAME" /> απέτυχε λόγω προβλημάτων στον διακομιστή.</translation>
 <translation id="1506061864768559482">Μηχανή αναζήτησης</translation>
 <translation id="1513352483775369820">Σελιδοδείκτες και ιστορικό ιστού</translation>
-<translation id="1546112724822176246">Δεν βλέπετε τη συσκευή σας; <ph name="BEGIN_LINK" />Λάβετε βοήθεια<ph name="END_LINK" />.</translation>
 <translation id="1553358976309200471">Ενημερώστε το Chrome</translation>
 <translation id="1557201757634521564">Αυτόματος εντοπισμός κωδικοποίησης</translation>
 <translation id="1592483623187843893">Ο σελιδοδείκτης αποθηκεύτηκε εκτός σύνδεσης</translation>
@@ -137,6 +136,7 @@
 <translation id="2762000892062317888">μόλις τώρα</translation>
 <translation id="2770465223704140727">Κατάργηση από τη λίστα</translation>
 <translation id="278029852808208386">Δεν βρέθηκαν συσκευές Bluetooth. <ph name="BEGIN_LINK" />Νέα αναζήτηση<ph name="END_LINK" />.</translation>
+<translation id="2836148919159985482">Πατήστε το κουμπί επιστροφής για έξοδο από την πλήρη οθόνη.</translation>
 <translation id="2842985007712546952">Γονικός φάκελος</translation>
 <translation id="2870560284913253234">Ιστότοπος</translation>
 <translation id="2888126860611144412">Σχετικά με το Chrome</translation>
@@ -313,10 +313,12 @@
 <translation id="5233638681132016545">Νέα καρτέλα</translation>
 <translation id="5271967389191913893">Η συσκευή δεν μπορεί να ανοίξει το περιεχόμενο προς λήψη.</translation>
 <translation id="5275558766013849309">Οι καρτέλες θα συνυπάρχουν με τις πρόσφατες εφαρμογές.</translation>
+<translation id="528192093759286357">Σύρετε από το επάνω τμήμα και αγγίξτε το κουμπί επιστροφής για έξοδο από την πλήρη οθόνη.</translation>
 <translation id="5284584623296338184">Οι αλλαγές σε σελιδοδείκτες, ιστορικό, κωδικούς πρόσβασης και άλλες ρυθμίσεις δεν θα συγχρονίζονται πλέον με το Λογαριασμό σας Google. Ωστόσο, τα υπάρχοντα δεδομένα σας θα παραμείνουν αποθηκευμένα στο λογαριασμό σας Google.</translation>
 <translation id="5301954838959518834">Εντάξει, το κατάλαβα</translation>
 <translation id="5302048478445481009">Γλώσσα</translation>
 <translation id="5304593522240415983">Αυτό το πεδίο δεν μπορεί να είναι κενό</translation>
+<translation id="5308380583665731573">Σύνδεση</translation>
 <translation id="5308933389783727448">Αναζήτηση αποθηκευμένων σελίδων</translation>
 <translation id="5313967007315987356">Προσθήκη ιστότοπου</translation>
 <translation id="5317780077021120954">Αποθήκευση</translation>
@@ -342,6 +344,7 @@
 <translation id="5556459405103347317">Επαναφόρτωση</translation>
 <translation id="5565871407246142825">Πιστωτικές κάρτες</translation>
 <translation id="5578795271662203820">Αναζήτηση <ph name="SEARCH_ENGINE" /> για την εικόνα</translation>
+<translation id="5579997910517802656">Δεν βρέθηκαν συσκευές.</translation>
 <translation id="5595485650161345191">Επεξεργασία διεύθυνσης</translation>
 <translation id="5596627076506792578">Περισσότερες επιλογές</translation>
 <translation id="5626134646977739690">Όνομα:</translation>
@@ -636,6 +639,7 @@
 <translation id="917685106653909562">Υπάρχουν κοντινές σελίδες Φυσικού δικτύου</translation>
 <translation id="9187199695613236444">Προβολή για κινητά</translation>
 <translation id="9192643434065497760">Ενεργοποιήστε το Bluetooth στις <ph name="BEGIN_LINK" />ρυθμίσεις συσκευής<ph name="END_LINK" /> για να επιτρέψετε τη σύζευξη.</translation>
+<translation id="9198708126133947749">Αντικατάσταση των δεδομένων αυτής της συσκευής με τα δεδομένα του λογαριασμού <ph name="TO_ACCOUNT" />. Μπορείτε να ανακτήσετε τα υπάρχοντα δεδομένα σας επιστρέφοντας στο λογαριασμό <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">Α</translation>
 <translation id="932327136139879170">Αρχική σελίδα</translation>
 <translation id="938850635132480979">Σφάλμα: <ph name="ERROR_CODE" /></translation>
