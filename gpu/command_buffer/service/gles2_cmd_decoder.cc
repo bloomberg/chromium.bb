@@ -13151,7 +13151,7 @@ error::Error GLES2DecoderImpl::HandleWaitSyncTokenCHROMIUM(
 
   gpu::CommandBufferNamespace namespace_id =
       static_cast<gpu::CommandBufferNamespace>(c.namespace_id);
-  if ((namespace_id < static_cast<int32_t>(kMinNamespaceId)) &&
+  if ((namespace_id < static_cast<int32_t>(kMinNamespaceId)) ||
        (namespace_id >= static_cast<int32_t>(kMaxNamespaceId))) {
     namespace_id = gpu::CommandBufferNamespace::INVALID;
   }
