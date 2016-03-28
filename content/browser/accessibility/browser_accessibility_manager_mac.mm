@@ -4,19 +4,19 @@
 
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
 
-#include <stddef.h>
-
 #import "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/common/accessibility_messages.h"
 
-
 namespace {
 
-// Declare accessibility constants and enums only present in WebKit.
+// Declare undocumented accessibility constants and enums only present in
+// WebKit.
 
 enum AXTextStateChangeType {
   AXTextStateChangeTypeUnknown,
@@ -46,6 +46,17 @@ enum AXTextSelectionGranularity {
   AXTextSelectionGranularityAll
 };
 
+enum AXTextEditType {
+  AXTextEditTypeUnknown,
+  AXTextEditTypeDelete,
+  AXTextEditTypeInsert,
+  AXTextEditTypeTyping,
+  AXTextEditTypeDictation,
+  AXTextEditTypeCut,
+  AXTextEditTypePaste,
+  AXTextEditTypeAttributesChange
+};
+
 NSString* const NSAccessibilityAutocorrectionOccurredNotification =
     @"AXAutocorrectionOccurred";
 NSString* const NSAccessibilityLayoutCompleteNotification =
@@ -59,7 +70,8 @@ NSString* const NSAccessibilityLiveRegionChangedNotification =
 NSString* const NSAccessibilityMenuItemSelectedNotification =
     @"AXMenuItemSelected";
 
-// Attributes used for NSAccessibilitySelectedTextChangedNotification.
+// Attributes used for NSAccessibilitySelectedTextChangedNotification and
+// NSAccessibilityValueChangedNotification.
 NSString* const NSAccessibilityTextStateChangeTypeKey =
     @"AXTextStateChangeType";
 NSString* const NSAccessibilityTextStateSyncKey = @"AXTextStateSync";
@@ -72,6 +84,11 @@ NSString* const NSAccessibilityTextSelectionChangedFocus =
 NSString* const NSAccessibilitySelectedTextMarkerRangeAttribute =
     @"AXSelectedTextMarkerRange";
 NSString* const NSAccessibilityTextChangeElement = @"AXTextChangeElement";
+NSString* const NSAccessibilityTextEditType = @"AXTextEditType";
+NSString* const NSAccessibilityTextChangeValue = @"AXTextChangeValue";
+NSString* const NSAccessibilityTextChangeValueLength =
+    @"AXTextChangeValueLength";
+NSString* const NSAccessibilityTextChangeValues = @"AXTextChangeValues";
 
 }  // namespace
 
@@ -95,6 +112,8 @@ BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
       parent_view_(parent_view) {
   Initialize(initial_tree);
 }
+
+BrowserAccessibilityManagerMac::~BrowserAccessibilityManagerMac() {}
 
 // static
 ui::AXTreeUpdate
@@ -186,7 +205,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       // WebKit fires a notification both on the focused object and the root.
       BrowserAccessibility* focus = GetFocus();
       if (!focus)
-        break;
+        break;  // Just fire a notification on the root.
       NSAccessibilityPostNotification(ToBrowserAccessibilityCocoa(focus),
                                       mac_notification);
 
@@ -211,8 +230,32 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       break;
     }
     case ui::AX_EVENT_CHECKED_STATE_CHANGED:
+      mac_notification = NSAccessibilityValueChangedNotification;
+      break;
     case ui::AX_EVENT_VALUE_CHANGED:
       mac_notification = NSAccessibilityValueChangedNotification;
+      if (base::mac::IsOSElCapitanOrLater() && text_edits_.size()) {
+        // It seems that we don't need to distinguish between deleted and
+        // inserted text for now.
+        base::string16 deleted_text;
+        base::string16 inserted_text;
+        int32_t id = node->GetId();
+        const auto iterator = text_edits_.find(id);
+        if (iterator != text_edits_.end())
+          inserted_text = iterator->second;
+        NSDictionary* user_info = GetUserInfoForValueChangedNotification(
+            native_node, deleted_text, inserted_text);
+
+        BrowserAccessibility* root = GetRoot();
+        if (!root)
+          return;
+
+        NSAccessibilityPostNotificationWithUserInfo(
+            native_node, mac_notification, user_info);
+        NSAccessibilityPostNotificationWithUserInfo(
+            ToBrowserAccessibilityCocoa(root), mac_notification, user_info);
+        return;
+      }
       break;
     // TODO(nektar): Need to add an event for live region created.
     case ui::AX_EVENT_LIVE_REGION_CHANGED:
@@ -259,6 +302,63 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
   NSAccessibilityPostNotification(native_node, mac_notification);
 }
 
+void BrowserAccessibilityManagerMac::OnAccessibilityEvents(
+    const std::vector<AXEventNotificationDetails>& details) {
+  text_edits_.clear();
+  // Call the base method last as it might delete the tree if it receives an
+  // invalid message.
+  BrowserAccessibilityManager::OnAccessibilityEvents(details);
+}
+
+void BrowserAccessibilityManagerMac::OnNodeDataWillChange(
+    ui::AXTree* tree,
+    const ui::AXNodeData& old_node_data,
+    const ui::AXNodeData& new_node_data) {
+  BrowserAccessibilityManager::OnNodeDataWillChange(tree, old_node_data,
+                                                    new_node_data);
+
+  // Starting from OS X 10.11, if the user has edited some text we need to
+  // dispatch the actual text that changed on the value changed notification.
+  // We run this code on all OS X versions to get the highest test coverage.
+  base::string16 old_text, new_text;
+  ui::AXRole role = new_node_data.role;
+  if (role == ui::AX_ROLE_COMBO_BOX || role == ui::AX_ROLE_SEARCH_BOX ||
+      role == ui::AX_ROLE_TEXT_FIELD) {
+    old_text = old_node_data.GetString16Attribute(ui::AX_ATTR_VALUE);
+    new_text = new_node_data.GetString16Attribute(ui::AX_ATTR_VALUE);
+  } else if (new_node_data.state & (1 << ui::AX_STATE_EDITABLE)) {
+    old_text = old_node_data.GetString16Attribute(ui::AX_ATTR_NAME);
+    new_text = new_node_data.GetString16Attribute(ui::AX_ATTR_NAME);
+  }
+
+  if ((old_text.empty() && new_text.empty()) ||
+      old_text.length() == new_text.length()) {
+    return;
+  }
+
+  if (old_text.length() < new_text.length()) {
+    // Insertion.
+    size_t i = 0;
+    while (i < old_text.length() && i < new_text.length() &&
+           old_text[i] == new_text[i]) {
+      ++i;
+    }
+    size_t length = (new_text.length() - i) - (old_text.length() - i);
+    base::string16 inserted_text = new_text.substr(i, length);
+    text_edits_[new_node_data.id] = inserted_text;
+  } else {
+    // Deletion.
+    size_t i = 0;
+    while (i < old_text.length() && i < new_text.length() &&
+           old_text[i] == new_text[i]) {
+      ++i;
+    }
+    size_t length = (old_text.length() - i) - (new_text.length() - i);
+    base::string16 deleted_text = old_text.substr(i, length);
+    text_edits_[new_node_data.id] = deleted_text;
+  }
+}
+
 void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
     ui::AXTree* tree,
     bool root_changed,
@@ -296,30 +396,25 @@ void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
   }
 }
 
-// Returns an autoreleased object.
 NSDictionary* BrowserAccessibilityManagerMac::
     GetUserInfoForSelectedTextChangedNotification() {
   NSMutableDictionary* user_info = [[[NSMutableDictionary alloc] init]
       autorelease];
-  [user_info setObject:[NSNumber numberWithBool:YES]
-                forKey:NSAccessibilityTextStateSyncKey];
-  [user_info setObject:[NSNumber numberWithInt:AXTextStateChangeTypeUnknown]
+  [user_info setObject:@YES forKey:NSAccessibilityTextStateSyncKey];
+  [user_info setObject:@(AXTextStateChangeTypeUnknown)
                 forKey:NSAccessibilityTextStateChangeTypeKey];
-  [user_info
-      setObject:[NSNumber numberWithInt:AXTextSelectionDirectionUnknown]
-         forKey:NSAccessibilityTextSelectionDirection];
-  [user_info
-      setObject:[NSNumber numberWithInt:AXTextSelectionGranularityUnknown]
-         forKey:NSAccessibilityTextSelectionGranularity];
-  [user_info setObject:[NSNumber numberWithBool:YES]
-                forKey:NSAccessibilityTextSelectionChangedFocus];
+  [user_info setObject:@(AXTextSelectionDirectionUnknown)
+                forKey:NSAccessibilityTextSelectionDirection];
+  [user_info setObject:@(AXTextSelectionGranularityUnknown)
+                forKey:NSAccessibilityTextSelectionGranularity];
+  [user_info setObject:@YES forKey:NSAccessibilityTextSelectionChangedFocus];
 
   int32_t focus_id = GetTreeData().sel_focus_object_id;
   BrowserAccessibility* focus_object = GetFromID(focus_id);
   if (focus_object) {
     focus_object = focus_object->GetClosestPlatformObject();
     auto native_focus_object = ToBrowserAccessibilityCocoa(focus_object);
-    if (native_focus_object) {
+    if (native_focus_object && [native_focus_object instanceActive]) {
       [user_info setObject:[native_focus_object selectedTextMarkerRange]
                     forKey:NSAccessibilitySelectedTextMarkerRangeAttribute];
       [user_info setObject:native_focus_object
@@ -328,6 +423,38 @@ NSDictionary* BrowserAccessibilityManagerMac::
   }
 
   return user_info;
+}
+
+NSDictionary*
+BrowserAccessibilityManagerMac::GetUserInfoForValueChangedNotification(
+    const BrowserAccessibilityCocoa* native_node,
+    const base::string16& deleted_text,
+    const base::string16& inserted_text) const {
+  DCHECK(native_node);
+  if (deleted_text.empty() && inserted_text.empty())
+    return nil;
+
+  NSMutableArray* changes = [[[NSMutableArray alloc] init] autorelease];
+  if (!deleted_text.empty()) {
+    [changes addObject:@{
+      NSAccessibilityTextEditType : @(AXTextEditTypeUnknown),
+      NSAccessibilityTextChangeValueLength : @(deleted_text.length()),
+      NSAccessibilityTextChangeValue : base::SysUTF16ToNSString(deleted_text)
+    }];
+  }
+  if (!inserted_text.empty()) {
+    [changes addObject:@{
+      NSAccessibilityTextEditType : @(AXTextEditTypeUnknown),
+      NSAccessibilityTextChangeValueLength : @(inserted_text.length()),
+      NSAccessibilityTextChangeValue : base::SysUTF16ToNSString(inserted_text)
+    }];
+  }
+
+  return @{
+    NSAccessibilityTextStateChangeTypeKey : @(AXTextStateChangeTypeEdit),
+    NSAccessibilityTextChangeValues : changes,
+    NSAccessibilityTextChangeElement : native_node
+  };
 }
 
 }  // namespace content

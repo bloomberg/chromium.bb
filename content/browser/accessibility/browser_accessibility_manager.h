@@ -231,7 +231,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   void ActivateFindInPageResult(int request_id, int match_index);
 
   // Called when the renderer process has notified us of about tree changes.
-  void OnAccessibilityEvents(
+  virtual void OnAccessibilityEvents(
       const std::vector<AXEventNotificationDetails>& details);
 
   // Called when the renderer process updates the location of accessibility
