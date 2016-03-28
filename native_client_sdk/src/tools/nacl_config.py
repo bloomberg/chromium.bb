@@ -22,7 +22,7 @@ if sys.version_info < (2, 7, 0):
 
 
 VALID_ARCHES = ('arm', 'x86_32', 'x86_64', 'i686')
-VALID_PNACL_ARCHES = (None, 'pnacl')
+VALID_PNACL_ARCHES = (None, 'pnacl', 'le32')
 ARCH_NAME = {
   'arm': 'arm',
   'x86_32': 'i686',
@@ -104,7 +104,7 @@ def CheckValidToolchainArch(toolchain, arch, arch_required=False):
            'Expected no arch for host toolchain %r. Got %r.' % (
                toolchain, arch))
   elif toolchain == 'pnacl':
-    Expect(arch is None or arch == 'pnacl',
+    Expect(arch is None or arch in ['pnacl', 'le32'],
            'Expected no arch for toolchain %r. Got %r.' % (toolchain, arch))
   elif arch_required:
     Expect(arch is not None,
