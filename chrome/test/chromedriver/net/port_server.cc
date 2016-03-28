@@ -17,6 +17,7 @@
 #include "base/sync_socket.h"
 #include "build/build_config.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/base/sys_addrinfo.h"
 #include "net/log/net_log.h"
@@ -162,11 +163,11 @@ uint16_t PortManager::FindAvailablePort() const {
     if (taken_.count(try_port_uint16))
       continue;
 
-    char parts[] = {127, 0, 0, 1};
-    net::IPAddressNumber address(parts, parts + arraysize(parts));
     net::NetLog::Source source;
     net::TCPServerSocket sock(NULL, source);
-    if (sock.Listen(net::IPEndPoint(address, try_port_uint16), 1) == net::OK)
+    if (sock.Listen(
+            net::IPEndPoint(net::IPAddress::IPv4Localhost(), try_port_uint16),
+            1) == net::OK)
       return try_port_uint16;
   }
   return 0;

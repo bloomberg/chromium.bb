@@ -14,6 +14,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/socket/tcp_client_socket.h"
 
@@ -23,7 +24,6 @@ const int kBufferSize = 16 * 1024;
 const char kOkayResponse[] = "OKAY";
 const char kHostTransportCommand[] = "host:transport:%s";
 const char kLocalAbstractCommand[] = "localabstract:%s";
-const char kLocalhost[] = "127.0.0.1";
 
 typedef base::Callback<void(int, const std::string&)> CommandCallback;
 typedef base::Callback<void(int, net::StreamSocket*)> SocketCallback;
@@ -323,15 +323,12 @@ void AdbClientSocket::TransportQuery(int port,
 #if defined(DEBUG_DEVTOOLS)
   if (serial.empty()) {
     // Use plain socket for remote debugging on Desktop (debugging purposes).
-    net::IPAddressNumber ip_number;
-    net::ParseIPLiteralToNumber(kLocalhost, &ip_number);
-
     int tcp_port = 0;
     if (!base::StringToInt(socket_name, &tcp_port))
       tcp_port = 9222;
 
-    net::AddressList address_list =
-        net::AddressList::CreateFromIPAddress(ip_number, tcp_port);
+    net::AddressList address_list = net::AddressList::CreateFromIPAddress(
+        net::IPAddress::IPv4Localhost(), tcp_port);
     net::TCPClientSocket* socket = new net::TCPClientSocket(
         address_list, NULL, net::NetLog::Source());
     socket->Connect(base::Bind(&UseTransportQueryForDesktop, callback, socket));
@@ -361,22 +358,14 @@ void AdbClientSocket::HttpQuery(int port,
       callback);
 }
 
-AdbClientSocket::AdbClientSocket(int port)
-    : host_(kLocalhost), port_(port) {
-}
+AdbClientSocket::AdbClientSocket(int port) : port_(port) {}
 
 AdbClientSocket::~AdbClientSocket() {
 }
 
 void AdbClientSocket::Connect(const net::CompletionCallback& callback) {
-  net::IPAddressNumber ip_number;
-  if (!net::ParseIPLiteralToNumber(host_, &ip_number)) {
-    callback.Run(net::ERR_FAILED);
-    return;
-  }
-
-  net::AddressList address_list =
-      net::AddressList::CreateFromIPAddress(ip_number, port_);
+  net::AddressList address_list = net::AddressList::CreateFromIPAddress(
+      net::IPAddress::IPv4Localhost(), port_);
   socket_.reset(new net::TCPClientSocket(address_list, NULL,
                                          net::NetLog::Source()));
   int result = socket_->Connect(callback);

@@ -73,7 +73,6 @@ class AdbClientSocket {
                       int bytes_left,
                       int result);
 
-  std::string host_;
   int port_;
 
   DISALLOW_COPY_AND_ASSIGN(AdbClientSocket);

@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "net/base/address_list.h"
 #include "net/base/io_buffer.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/sys_addrinfo.h"
@@ -33,7 +34,7 @@
 
 namespace {
 
-bool ResolveHost(const std::string& host, net::IPAddressNumber* address) {
+bool ResolveHost(const std::string& host, net::IPAddress* address) {
   struct addrinfo hints;
   memset(&hints, 0, sizeof(hints));
   hints.ai_family = AF_UNSPEC;
@@ -50,7 +51,7 @@ bool ResolveHost(const std::string& host, net::IPAddressNumber* address) {
         freeaddrinfo(result);
         return false;
       }
-      *address = end_point.address().bytes();
+      *address = end_point.address();
     }
   }
   freeaddrinfo(result);
@@ -74,8 +75,8 @@ void WebSocket::Connect(const net::CompletionCallback& callback) {
   CHECK(thread_checker_.CalledOnValidThread());
   CHECK_EQ(INITIALIZED, state_);
 
-  net::IPAddressNumber address;
-  if (!net::ParseIPLiteralToNumber(url_.HostNoBrackets(), &address)) {
+  net::IPAddress address;
+  if (!address.AssignFromIPLiteral(url_.HostNoBrackets())) {
     if (!ResolveHost(url_.HostNoBrackets(), &address)) {
       callback.Run(net::ERR_ADDRESS_UNREACHABLE);
       return;
