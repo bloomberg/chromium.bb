@@ -369,18 +369,12 @@ void HTMLSelectElement::parseAttribute(const QualifiedName& name, const AtomicSt
             if (Attribute* sizeAttribute = ensureUniqueElementData().attributes().find(sizeAttr))
                 sizeAttribute->setValue(attrSize);
         }
-        size = std::max(size, 0u);
-
-        // Ensure that we've determined selectedness of the items at least once
-        // prior to changing the size.
-        if (oldSize != size)
-            updateListItemSelectedStates();
-
-        m_size = size;
+        m_size = std::max(size, 0u);
         setNeedsValidityCheck();
-        if (m_size != oldSize && inActiveDocument()) {
-            lazyReattachIfAttached();
-            setRecalcListItems();
+        if (m_size != oldSize) {
+            if (inActiveDocument())
+                lazyReattachIfAttached();
+            resetToDefaultSelection();
         }
     } else if (name == multipleAttr) {
         parseMultipleAttribute(value);
@@ -416,21 +410,12 @@ LayoutObject* HTMLSelectElement::createLayoutObject(const ComputedStyle&)
 
 PassRefPtrWillBeRawPtr<HTMLCollection> HTMLSelectElement::selectedOptions()
 {
-    updateListItemSelectedStates();
     return ensureCachedCollection<HTMLCollection>(SelectedOptions);
 }
 
 PassRefPtrWillBeRawPtr<HTMLOptionsCollection> HTMLSelectElement::options()
 {
     return ensureCachedCollection<HTMLOptionsCollection>(SelectOptions);
-}
-
-void HTMLSelectElement::updateListItemSelectedStates()
-{
-    if (!m_shouldRecalcListItems)
-        return;
-    recalcListItems();
-    setNeedsValidityCheck();
 }
 
 void HTMLSelectElement::childrenChanged(const ChildrenChange& change)
@@ -790,7 +775,7 @@ const HTMLSelectElement::ListItems& HTMLSelectElement::listItems() const
     } else {
 #if ENABLE(ASSERT)
         WillBeHeapVector<RawPtrWillBeMember<HTMLElement>> items = m_listItems;
-        recalcListItems(false);
+        recalcListItems();
         ASSERT(items == m_listItems);
 #endif
     }
@@ -823,15 +808,13 @@ void HTMLSelectElement::setRecalcListItems()
     }
 }
 
-void HTMLSelectElement::recalcListItems(bool updateSelectedStates) const
+void HTMLSelectElement::recalcListItems() const
 {
     TRACE_EVENT0("blink", "HTMLSelectElement::recalcListItems");
     m_listItems.clear();
 
     m_shouldRecalcListItems = false;
 
-    HTMLOptionElement* foundSelected = nullptr;
-    HTMLOptionElement* firstOption = nullptr;
     for (Element* currentElement = ElementTraversal::firstWithin(*this); currentElement && m_listItems.size() < maxListItems; ) {
         if (!currentElement->isHTMLElement()) {
             currentElement = ElementTraversal::nextSkippingChildren(*currentElement, this);
@@ -854,23 +837,8 @@ void HTMLSelectElement::recalcListItems(bool updateSelectedStates) const
             }
         }
 
-        if (isHTMLOptionElement(current)) {
+        if (isHTMLOptionElement(current))
             m_listItems.append(&current);
-
-            if (updateSelectedStates && !m_multiple) {
-                HTMLOptionElement& option = toHTMLOptionElement(current);
-                if (!firstOption)
-                    firstOption = &option;
-                if (option.selected()) {
-                    if (foundSelected)
-                        foundSelected->setSelectedState(false);
-                    foundSelected = &option;
-                } else if (m_size <= 1 && !foundSelected && !option.isDisabledFormControl()) {
-                    foundSelected = &option;
-                    foundSelected->setSelectedState(true);
-                }
-            }
-        }
 
         if (isHTMLHRElement(current))
             m_listItems.append(&current);
@@ -883,9 +851,46 @@ void HTMLSelectElement::recalcListItems(bool updateSelectedStates) const
         // from the <select>'s subtree at this point.
         currentElement = ElementTraversal::nextSkippingChildren(*currentElement, this);
     }
+}
 
-    if (!foundSelected && m_size <= 1 && firstOption && !firstOption->selected())
-        firstOption->setSelectedState(true);
+void HTMLSelectElement::resetToDefaultSelection()
+{
+    // https://html.spec.whatwg.org/multipage/forms.html#ask-for-a-reset
+    if (multiple())
+        return;
+    HTMLOptionElement* firstEnabledOption = nullptr;
+    int firstEnabledOptionIndex = -1;
+    HTMLOptionElement* lastSelectedOption = nullptr;
+    bool didChange = false;
+    int optionIndex = 0;
+    // We can't use HTMLSelectElement::options here because this function is
+    // called in Node::insertedInto and Node::removedFrom before invalidating
+    // node collections.
+    for (auto& item : listItems()) {
+        if (!isHTMLOptionElement(item))
+            continue;
+        HTMLOptionElement* option = toHTMLOptionElement(item);
+        if (option->selected()) {
+            if (lastSelectedOption) {
+                lastSelectedOption->setSelectedState(false);
+                didChange = true;
+            }
+            lastSelectedOption = option;
+        }
+        if (!firstEnabledOption && !option->isDisabledFormControl()) {
+            firstEnabledOption = option;
+            firstEnabledOptionIndex = optionIndex;
+        }
+        ++optionIndex;
+    }
+    if (!lastSelectedOption && m_size <= 1 && firstEnabledOption && !firstEnabledOption->selected()) {
+        selectOption(firstEnabledOption, firstEnabledOptionIndex, 0);
+        lastSelectedOption = firstEnabledOption;
+        didChange = true;
+    }
+    if (didChange)
+        setNeedsValidityCheck();
+    m_lastOnChangeOption = lastSelectedOption;
 }
 
 HTMLOptionElement* HTMLSelectElement::selectedOption() const
@@ -980,13 +985,20 @@ void HTMLSelectElement::optionInserted(HTMLOptionElement& option, bool optionIsS
 {
     ASSERT(option.ownerSelectElement() == this);
     setRecalcListItems();
-    if (optionIsSelected)
+    if (optionIsSelected) {
         selectOption(&option);
+    } else {
+        // No need to reset if we already have a selected option.
+        if (!m_lastOnChangeOption)
+            resetToDefaultSelection();
+    }
 }
 
 void HTMLSelectElement::optionRemoved(const HTMLOptionElement& option)
 {
     setRecalcListItems();
+    if (option.selected() || !m_lastOnChangeOption)
+        resetToDefaultSelection();
     if (m_lastOnChangeOption == &option)
         m_lastOnChangeOption.clear();
     if (m_optionToScrollTo == &option)
@@ -1242,33 +1254,14 @@ void HTMLSelectElement::appendToFormData(FormData& formData)
 
 void HTMLSelectElement::resetImpl()
 {
-    HTMLOptionElement* firstOption = nullptr;
-    HTMLOptionElement* selectedOption = nullptr;
-
     for (auto& item : listItems()) {
         if (!isHTMLOptionElement(item))
             continue;
         HTMLOptionElement* option = toHTMLOptionElement(item);
-        if (option->fastHasAttribute(selectedAttr)) {
-            if (selectedOption && !m_multiple)
-                selectedOption->setSelectedState(false);
-            option->setSelectedState(true);
-            selectedOption = option;
-        } else {
-            option->setSelectedState(false);
-        }
+        option->setSelectedState(option->fastHasAttribute(selectedAttr));
         option->setDirty(false);
-
-        if (!firstOption && !option->isDisabledFormControl())
-            firstOption = option;
     }
-
-    if (!selectedOption && firstOption && !m_multiple && m_size <= 1) {
-        firstOption->setSelectedState(true);
-        selectedOption = firstOption;
-    }
-
-    m_lastOnChangeOption = selectedOption;
+    resetToDefaultSelection();
     setOptionsChangedOnLayoutObject();
     setNeedsValidityCheck();
 }
@@ -1794,7 +1787,6 @@ unsigned HTMLSelectElement::length() const
 void HTMLSelectElement::finishParsingChildren()
 {
     HTMLFormControlElementWithState::finishParsingChildren();
-    updateListItemSelectedStates();
     if (usesMenuList())
         return;
     scrollToOption(selectedOption());
@@ -1838,16 +1830,6 @@ DEFINE_TRACE(HTMLSelectElement)
     visitor->trace(m_optionToScrollTo);
     visitor->trace(m_popup);
     HTMLFormControlElementWithState::trace(visitor);
-}
-
-void HTMLSelectElement::willRecalcStyle(StyleRecalcChange change)
-{
-    // recalcListItems will update the selected state of the <option> elements
-    // in this <select> so we need to do it before we recalc their style so they
-    // match the right selectors (ex. :checked).
-    // TODO(esprehn): Find a way to avoid needing a willRecalcStyle callback.
-    if (m_shouldRecalcListItems)
-        recalcListItems();
 }
 
 void HTMLSelectElement::didAddUserAgentShadowRoot(ShadowRoot& root)

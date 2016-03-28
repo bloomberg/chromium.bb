@@ -298,7 +298,7 @@ crbug.com/524859 transforms/2d/hindi-rotated.html [ NeedsManualRebaseline ]
 
 crbug.com/569139 fast/js/string-replace-2.html [ NeedsManualRebaseline ]
 crbug.com/569139 fast/js/regexp-caching.html [ NeedsManualRebaseline ]
-
+crbug.com/335876 fast/forms/select/basic-selects.html [ NeedsRebaseline ]
 crbug.com/597221 fast/dom/Window/window-postmessage-clone-deep-array.html [ NeedsManualRebaseline ]
 crbug.com/597221 imported/web-platform-tests/html/semantics/text-level-semantics/the-time-element/001.html [ NeedsManualRebaseline ]
 

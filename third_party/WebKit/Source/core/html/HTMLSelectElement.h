@@ -91,7 +91,6 @@ public:
 
     void setRecalcListItems();
     void invalidateSelectedItems();
-    void updateListItemSelectedStates();
 
     using ListItems = WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>;
     const ListItems& listItems() const;
@@ -163,8 +162,6 @@ protected:
     HTMLSelectElement(Document&, HTMLFormElement*);
 
 private:
-    void willRecalcStyle(StyleRecalcChange) override;
-
     const AtomicString& formControlType() const override;
 
     bool shouldShowFocusRingOnMouseFocus() const override;
@@ -195,8 +192,8 @@ private:
 
     void dispatchInputAndChangeEventForMenuList();
 
-    void recalcListItems(bool updateSelectedStates = true) const;
-
+    void recalcListItems() const;
+    void resetToDefaultSelection();
     void typeAheadFind(KeyboardEvent*);
     void saveLastSelection();
     // Returns the first selected OPTION, or nullptr.
