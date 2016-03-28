@@ -27,4 +27,4 @@ binding.registerCustomHook(function(bindingsAPI) {
 
 });
 
-exports.ChromeWebView = binding.generate();
+exports.$set('ChromeWebView', binding.generate());

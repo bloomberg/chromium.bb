@@ -6,6 +6,6 @@ var binding = require('binding')
                   .Binding.create('platformKeysInternal')
                   .generate();
 
-exports.selectClientCertificates = binding.selectClientCertificates;
-exports.sign = binding.sign;
-exports.getPublicKey = binding.getPublicKey;
+exports.$set('selectClientCertificates', binding.selectClientCertificates);
+exports.$set('sign', binding.sign);
+exports.$set('getPublicKey', binding.getPublicKey);

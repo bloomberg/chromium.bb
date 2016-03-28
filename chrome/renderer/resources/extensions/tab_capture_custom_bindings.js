@@ -60,4 +60,4 @@ binding.registerCustomHook(function(bindingsAPI, extensionId) {
   apiFunctions.setCustomCallback('captureOffscreenTab', proxyToGetUserMedia);
 });
 
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());

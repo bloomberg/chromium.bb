@@ -347,4 +347,4 @@ eventBindings.registerArgumentMassager(
       dispatch([onSuccessCallback, onErrorCallback]);
     });
 
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());

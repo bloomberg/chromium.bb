@@ -6,8 +6,8 @@
 
 var GetAvailability = requireNative('v8_context').GetAvailability;
 if (!GetAvailability('app').is_available) {
-  exports.binding = {};
-  exports.onInstallStateResponse = function(){};
+  exports.$set('binding', {});
+  exports.$set('onInstallStateResponse', function(){});
   return;
 }
 
@@ -70,5 +70,5 @@ app.installState = function getInstallState(callback) {
 if (extensionId)
   app.installState = wrapForLogging(app.installState);
 
-exports.binding = app;
-exports.onInstallStateResponse = onInstallStateResponse;
+exports.$set('binding', app);
+exports.$set('onInstallStateResponse', onInstallStateResponse);

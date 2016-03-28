@@ -78,4 +78,4 @@ handleEvent('onCertificatesRequested',
 handleEvent('onSignDigestRequested',
             certificateProviderInternal.reportSignature);
 
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());

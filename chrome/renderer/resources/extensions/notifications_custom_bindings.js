@@ -144,4 +144,4 @@ var notificationsCustomHook = function(bindingsAPI, extensionId) {
 
 binding.registerCustomHook(notificationsCustomHook);
 
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());

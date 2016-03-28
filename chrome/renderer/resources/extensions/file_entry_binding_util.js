@@ -118,4 +118,4 @@ function getFileBindingsForApi(apiName) {
           entryIdManager: entryIdManager};
 }
 
-exports.getFileBindingsForApi = getFileBindingsForApi;
+exports.$set('getFileBindingsForApi', getFileBindingsForApi);

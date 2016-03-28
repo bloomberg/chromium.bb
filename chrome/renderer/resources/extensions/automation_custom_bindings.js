@@ -324,11 +324,13 @@ automationInternal.onAccessibilityTreeDestroyed.addListener(function(id) {
   DestroyAccessibilityTree(id);
 });
 
-exports.binding = automation.generate();
-
+var binding = automation.generate();
 // Add additional accessibility bindings not specified in the automation IDL.
 // Accessibility and automation share some APIs (see
 // ui/accessibility/ax_enums.idl).
 forEach(schema, function(k, v) {
-  exports.binding[k] = v;
+  binding[k] = v;
 });
+
+exports.$set('binding', binding);
+

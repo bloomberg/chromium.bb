@@ -85,7 +85,7 @@ var chromeWebstore = {
   onDownloadProgress: installer.onDownloadProgress
 };
 
-exports.binding = chromeWebstore;
+exports.$set('binding', chromeWebstore);
 
 // Called by webstore_bindings.cc.
 exports.onInstallResponse =

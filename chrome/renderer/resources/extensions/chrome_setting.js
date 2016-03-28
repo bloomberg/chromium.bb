@@ -39,4 +39,4 @@ function ChromeSetting(prefKey, valueSchema) {
   this.onChange = new Event('types.ChromeSetting.' + prefKey + '.onChange');
 };
 
-exports.ChromeSetting = ChromeSetting;
+exports.$set('ChromeSetting', ChromeSetting);

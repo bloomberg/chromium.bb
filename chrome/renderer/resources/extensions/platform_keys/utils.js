@@ -13,4 +13,4 @@ function intersect(a, b) {
   return result;
 };
 
-exports.intersect = intersect;
+exports.$set('intersect', intersect);

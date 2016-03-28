@@ -63,4 +63,4 @@ eventBindings.registerArgumentMassager(
     throw e;
   }
 });
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());

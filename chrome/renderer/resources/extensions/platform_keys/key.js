@@ -69,7 +69,7 @@ function getSpki(key) {
   return keyImpl.spki;
 }
 
-exports.Key = Key;
-exports.KeyType = KeyType;
-exports.KeyUsage = KeyUsage;
-exports.getSpki = getSpki;
+exports.$set('Key', Key);
+exports.$set('KeyType', KeyType);
+exports.$set('KeyUsage', KeyUsage);
+exports.$set('getSpki', getSpki);

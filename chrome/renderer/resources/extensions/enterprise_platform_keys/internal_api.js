@@ -6,6 +6,6 @@ var binding = require('binding')
                   .Binding.create('enterprise.platformKeysInternal')
                   .generate();
 
-exports.getTokens = binding.getTokens;
-exports.generateKey = binding.generateKey;
-exports.sign = binding.sign;
+exports.$set('getTokens', binding.getTokens);
+exports.$set('generateKey', binding.generateKey);
+exports.$set('sign', binding.sign);

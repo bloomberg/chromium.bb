@@ -38,7 +38,9 @@ var requireNative = function(library) {
   }[library];
 }
 
-var exports = {};
+var exports = {
+  $set: function(k, v) { this.k = v; }
+};
 
 var $Array = {
   push: function (ary, val) {

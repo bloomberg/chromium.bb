@@ -22,5 +22,5 @@ binding.registerCustomHook(function(bindingsAPI) {
 
 });
 
-exports.bindFileEntryCallback = bindFileEntryCallback;
-exports.binding = binding.generate();
+exports.$set('bindFileEntryCallback', bindFileEntryCallback);
+exports.$set('binding', binding.generate());

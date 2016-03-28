@@ -41,5 +41,5 @@ function ChromeDirectSetting(prefKey, valueSchema) {
                             '.onChange');
 };
 
-exports.ChromeDirectSetting = ChromeDirectSetting;
+exports.$set('ChromeDirectSetting', ChromeDirectSetting);
 

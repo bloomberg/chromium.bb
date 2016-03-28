@@ -19,4 +19,4 @@ eventBindings.registerArgumentMassager('ttsEngine.onSpeak',
   dispatch([text, options, sendTtsEvent]);
 });
 
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());

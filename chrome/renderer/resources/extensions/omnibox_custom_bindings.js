@@ -121,4 +121,4 @@ eventBindings.registerArgumentMassager('omnibox.onInputChanged',
   dispatch([text, suggestCallback]);
 });
 
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());

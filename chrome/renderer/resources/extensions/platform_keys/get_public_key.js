@@ -64,4 +64,4 @@ function getPublicKey(cert, importParams, callback) {
       });
 }
 
-exports.getPublicKey = getPublicKey;
+exports.$set('getPublicKey', getPublicKey);

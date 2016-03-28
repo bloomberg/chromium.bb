@@ -21,4 +21,4 @@ binding.registerCustomHook(function(binding, id, contextType) {
   });
 });
 
-exports.binding = binding.generate();
+exports.$set('binding', binding.generate());

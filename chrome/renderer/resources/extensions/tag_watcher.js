@@ -52,4 +52,4 @@ function addTagWatcher(tagName, cb) {
   }, useCapture);
 }
 
-exports.addTagWatcher = addTagWatcher;
+exports.$set('addTagWatcher', addTagWatcher);

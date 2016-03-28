@@ -48,4 +48,4 @@ function ContentSetting(contentType, settingSchema) {
   };
 }
 
-exports.ContentSetting = ContentSetting;
+exports.$set('ContentSetting', ContentSetting);

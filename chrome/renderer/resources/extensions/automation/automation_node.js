@@ -990,5 +990,5 @@ AutomationRootNode.destroy = function(treeID) {
   AutomationRootNodeImpl.destroy(treeID);
 }
 
-exports.AutomationNode = AutomationNode;
-exports.AutomationRootNode = AutomationRootNode;
+exports.$set('AutomationNode', AutomationNode);
+exports.$set('AutomationRootNode', AutomationRootNode);
