@@ -384,7 +384,6 @@ component("skia") {
     sources -= [
       "//third_party/skia/src/ports/SkOSFile_posix.cpp",
       "//third_party/skia/src/ports/SkTLS_pthread.cpp",
-      "//third_party/skia/src/ports/SkTime_Unix.cpp",
     ]
   } else {
     sources -= [

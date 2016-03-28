@@ -26,7 +26,6 @@
     '<(skia_src_path)/ports/SkOSFile_stdio.cpp',
     '<(skia_src_path)/ports/SkOSFile_win.cpp',
     '<(skia_src_path)/ports/SkScalerContext_win_dw.cpp',
-    '<(skia_src_path)/ports/SkTime_Unix.cpp',
     '<(skia_src_path)/ports/SkTLS_pthread.cpp',
     '<(skia_src_path)/ports/SkTLS_win.cpp',
     '<(skia_src_path)/ports/SkTypeface_win_dw.cpp',
