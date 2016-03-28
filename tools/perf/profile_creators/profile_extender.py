@@ -38,6 +38,10 @@ class ProfileExtender(object):
     # This member is initialized during SetUpBrowser().
     self._browser = None
 
+    # We only need to close network controller if we opened it before.
+    # If it was already open, we should not close it.
+    self._should_close_network_controller = False
+
   def Run(self):
     """Creates or extends the profile."""
     raise NotImplementedError()
@@ -109,7 +113,8 @@ class ProfileExtender(object):
     super class implementation.
     """
     if self._browser:
-      self._browser.platform.network_controller.Close()
+      if self._should_close_network_controller:
+        self._browser.platform.network_controller.Close()
       self._browser.Close()
       self._browser = None
 
@@ -135,8 +140,10 @@ class ProfileExtender(object):
       wpr_mode = wpr_modes.WPR_REPLAY
 
     network_controller = possible_browser.platform.network_controller
-    network_controller.Open(wpr_mode, finder_options.browser_options.netsim,
-                            finder_options.browser_options.extra_wpr_args)
+    if not network_controller.is_open:
+      self._should_close_network_controller = True
+      network_controller.Open(wpr_mode, finder_options.browser_options.netsim,
+                              finder_options.browser_options.extra_wpr_args)
     network_controller.StartReplay(
         wpr_archive_path, make_javascript_deterministic=True)
 
