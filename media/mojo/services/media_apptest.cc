@@ -31,7 +31,9 @@ using testing::StrictMock;
 namespace media {
 namespace {
 
+#if defined(ENABLE_MOJO_CDM)
 const char kInvalidKeySystem[] = "invalid.key.system";
+#endif
 const char kSecurityOrigin[] = "http://foo.com";
 
 class MockRendererClient : public interfaces::RendererClient {
@@ -64,8 +66,6 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
         base::Bind(&MediaAppTest::ConnectionClosed, base::Unretained(this)));
 
     connection_->GetInterface(&service_factory_);
-    service_factory_->CreateCdm(mojo::GetProxy(&cdm_));
-    service_factory_->CreateRenderer(mojo::GetProxy(&renderer_));
 
     run_loop_.reset(new base::RunLoop());
   }
@@ -82,6 +82,8 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
   void InitializeCdm(const std::string& key_system,
                      bool expected_result,
                      int cdm_id) {
+    service_factory_->CreateCdm(mojo::GetProxy(&cdm_));
+
     EXPECT_CALL(*this, OnCdmInitializedInternal(expected_result, cdm_id))
         .Times(Exactly(1))
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
@@ -94,6 +96,8 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
 
   void InitializeRenderer(const VideoDecoderConfig& video_config,
                           bool expected_result) {
+    service_factory_->CreateRenderer(mojo::GetProxy(&renderer_));
+
     video_demuxer_stream_.set_video_decoder_config(video_config);
 
     interfaces::DemuxerStreamPtr video_stream;
@@ -133,6 +137,7 @@ class MediaAppTest : public mojo::test::ApplicationTestBase {
 // Note: base::RunLoop::RunUntilIdle() does not work well in these tests because
 // even when the loop is idle, we may still have pending events in the pipe.
 
+#if defined(ENABLE_MOJO_CDM)
 TEST_F(MediaAppTest, InitializeCdm_Success) {
   InitializeCdm(kClearKey, true, 1);
   run_loop_->Run();
@@ -142,7 +147,9 @@ TEST_F(MediaAppTest, InitializeCdm_InvalidKeySystem) {
   InitializeCdm(kInvalidKeySystem, false, 0);
   run_loop_->Run();
 }
+#endif  // defined(ENABLE_MOJO_CDM)
 
+#if defined(ENABLE_MOJO_RENDERER)
 // Sometimes fails on Linux. http://crbug.com/594977
 #if defined(OS_LINUX)
 #define MAYBE_InitializeRenderer_Success DISABLED_InitializeRenderer_Success
@@ -159,6 +166,7 @@ TEST_F(MediaAppTest, InitializeRenderer_InvalidConfig) {
   InitializeRenderer(TestVideoConfig::Invalid(), false);
   run_loop_->Run();
 }
+#endif  // defined(ENABLE_MOJO_RENDERER)
 
 TEST_F(MediaAppTest, Lifetime) {
   // Disconnecting CDM and Renderer services doesn't terminate the app.

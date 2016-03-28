@@ -47,19 +47,24 @@ class ServiceFactoryImpl : public interfaces::ServiceFactory {
       mojo::InterfaceRequest<interfaces::ContentDecryptionModule> cdm) final;
 
  private:
+#if defined(ENABLE_MOJO_RENDERER)
   RendererFactory* GetRendererFactory();
+
+  scoped_ptr<RendererFactory> renderer_factory_;
+#endif  // defined(ENABLE_MOJO_RENDERER)
+
+#if defined(ENABLE_MOJO_CDM)
   CdmFactory* GetCdmFactory();
 
-  MojoCdmServiceContext cdm_service_context_;
+  scoped_ptr<CdmFactory> cdm_factory_;
+#endif  // defined(ENABLE_MOJO_CDM)
 
+  MojoCdmServiceContext cdm_service_context_;
   mojo::StrongBinding<interfaces::ServiceFactory> binding_;
   mojo::shell::mojom::InterfaceProvider* interfaces_;
   scoped_refptr<MediaLog> media_log_;
   scoped_ptr<mojo::MessageLoopRef> parent_app_refcount_;
   MojoMediaClient* mojo_media_client_;
-
-  scoped_ptr<RendererFactory> renderer_factory_;
-  scoped_ptr<CdmFactory> cdm_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceFactoryImpl);
 };
