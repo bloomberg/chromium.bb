@@ -708,6 +708,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   // Toggle the visibility of the fullscreen toolbar. Verify that the toolbar
   // is hidden and the preference is correctly updated.
   [[controller() presentationModeController] setToolbarFraction:0.0];
+  [[controller() presentationModeController] setMenuBarRevealProgress:0.0];
   chrome::ExecuteCommand(browser(), IDC_TOGGLE_FULLSCREEN_TOOLBAR);
   EXPECT_FALSE(prefs->GetBoolean(prefs::kShowFullscreenToolbar));
   VerifyFullscreenToolbarVisibility(fullscreen_mac::OMNIBOX_TABS_HIDDEN);
@@ -716,6 +717,7 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
   // hidden.
   ToggleFullscreenAndWaitForNotification();
   ToggleFullscreenAndWaitForNotification();
+  [[controller() presentationModeController] setMenuBarRevealProgress:0.0];
   VerifyFullscreenToolbarVisibility(fullscreen_mac::OMNIBOX_TABS_HIDDEN);
 
   chrome::ExecuteCommand(browser(), IDC_TOGGLE_FULLSCREEN_TOOLBAR);
