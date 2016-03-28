@@ -86,9 +86,8 @@ class CONTENT_EXPORT CacheStorage {
                   const CacheStorageCache::ResponseCallback& callback);
 
   // Calls match on all of the caches in parallel, calling |callback| with the
-  // first response found. Note that if multiple caches have the same
-  // request/response then it is not defined which cache's response will be
-  // returned. If no response is found then |callback| is called with
+  // response from the first cache (in order of cache creation) to have the
+  // entry. If no response is found then |callback| is called with
   // CACHE_STORAGE_ERROR_NOT_FOUND.
   void MatchAllCaches(scoped_ptr<ServiceWorkerFetchRequest> request,
                       const CacheStorageCache::ResponseCallback& callback);
@@ -108,10 +107,10 @@ class CONTENT_EXPORT CacheStorage {
 
  private:
   friend class TestCacheStorage;
-
+  class CacheLoader;
   class MemoryLoader;
   class SimpleCacheLoader;
-  class CacheLoader;
+  struct CacheMatchResponse;
 
   typedef std::map<std::string, base::WeakPtr<CacheStorageCache>> CacheMap;
 
@@ -178,14 +177,16 @@ class CONTENT_EXPORT CacheStorage {
   // The MatchAllCaches callbacks are below.
   void MatchAllCachesImpl(scoped_ptr<ServiceWorkerFetchRequest> request,
                           const CacheStorageCache::ResponseCallback& callback);
-  void MatchAllCachesDidMatch(scoped_refptr<CacheStorageCache> cache,
-                              const base::Closure& barrier_closure,
-                              CacheStorageCache::ResponseCallback* callback,
-                              CacheStorageError error,
-                              scoped_ptr<ServiceWorkerResponse> response,
-                              scoped_ptr<storage::BlobDataHandle> handle);
+  void MatchAllCachesDidMatch(
+      scoped_refptr<CacheStorageCache> cache,
+      CacheMatchResponse* out_match_response,
+      const base::Closure& barrier_closure,
+      CacheStorageError error,
+      scoped_ptr<ServiceWorkerResponse> service_worker_response,
+      scoped_ptr<storage::BlobDataHandle> handle);
   void MatchAllCachesDidMatchAll(
-      scoped_ptr<CacheStorageCache::ResponseCallback> callback);
+      scoped_ptr<std::vector<CacheMatchResponse>> match_responses,
+      const CacheStorageCache::ResponseCallback& callback);
 
   void GetSizeThenCloseAllCachesImpl(const SizeCallback& callback);
 

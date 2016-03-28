@@ -64,6 +64,15 @@ void SizeRetrievedFromAllCaches(scoped_ptr<int64_t> accumulator,
 
 const char CacheStorage::kIndexFileName[] = "index.txt";
 
+struct CacheStorage::CacheMatchResponse {
+  CacheMatchResponse() = default;
+  ~CacheMatchResponse() = default;
+
+  CacheStorageError error;
+  scoped_ptr<ServiceWorkerResponse> service_worker_response;
+  scoped_ptr<storage::BlobDataHandle> blob_data_handle;
+};
+
 // Handles the loading and clean up of CacheStorageCache objects.
 class CacheStorage::CacheLoader {
  public:
@@ -828,51 +837,55 @@ void CacheStorage::MatchCacheDidMatch(
 void CacheStorage::MatchAllCachesImpl(
     scoped_ptr<ServiceWorkerFetchRequest> request,
     const CacheStorageCache::ResponseCallback& callback) {
-  scoped_ptr<CacheStorageCache::ResponseCallback> callback_copy(
-      new CacheStorageCache::ResponseCallback(callback));
+  std::vector<CacheMatchResponse>* match_responses =
+      new std::vector<CacheMatchResponse>(ordered_cache_names_.size());
 
-  CacheStorageCache::ResponseCallback* callback_ptr = callback_copy.get();
-  base::Closure barrier_closure =
-      base::BarrierClosure(ordered_cache_names_.size(),
-                           base::Bind(&CacheStorage::MatchAllCachesDidMatchAll,
-                                      weak_factory_.GetWeakPtr(),
-                                      base::Passed(std::move(callback_copy))));
+  base::Closure barrier_closure = base::BarrierClosure(
+      ordered_cache_names_.size(),
+      base::Bind(&CacheStorage::MatchAllCachesDidMatchAll,
+                 weak_factory_.GetWeakPtr(),
+                 base::Passed(make_scoped_ptr(match_responses)), callback));
 
-  for (const std::string& cache_name : ordered_cache_names_) {
-    scoped_refptr<CacheStorageCache> cache = GetLoadedCache(cache_name);
+  for (size_t i = 0, max = ordered_cache_names_.size(); i < max; ++i) {
+    scoped_refptr<CacheStorageCache> cache =
+        GetLoadedCache(ordered_cache_names_[i]);
     DCHECK(cache.get());
 
     cache->Match(make_scoped_ptr(new ServiceWorkerFetchRequest(*request)),
                  base::Bind(&CacheStorage::MatchAllCachesDidMatch,
-                            weak_factory_.GetWeakPtr(), cache, barrier_closure,
-                            callback_ptr));
+                            weak_factory_.GetWeakPtr(), cache,
+                            &match_responses->at(i), barrier_closure));
   }
 }
 
 void CacheStorage::MatchAllCachesDidMatch(
     scoped_refptr<CacheStorageCache> cache,
+    CacheMatchResponse* out_match_response,
     const base::Closure& barrier_closure,
-    CacheStorageCache::ResponseCallback* callback,
     CacheStorageError error,
-    scoped_ptr<ServiceWorkerResponse> response,
+    scoped_ptr<ServiceWorkerResponse> service_worker_response,
     scoped_ptr<storage::BlobDataHandle> handle) {
-  if (callback->is_null() || error == CACHE_STORAGE_ERROR_NOT_FOUND) {
-    barrier_closure.Run();
-    return;
-  }
-  callback->Run(error, std::move(response), std::move(handle));
-  callback->Reset();  // Only call the callback once.
-
+  out_match_response->error = error;
+  out_match_response->service_worker_response =
+      std::move(service_worker_response);
+  out_match_response->blob_data_handle = std::move(handle);
   barrier_closure.Run();
 }
 
 void CacheStorage::MatchAllCachesDidMatchAll(
-    scoped_ptr<CacheStorageCache::ResponseCallback> callback) {
-  if (!callback->is_null()) {
-    callback->Run(CACHE_STORAGE_ERROR_NOT_FOUND,
-                  scoped_ptr<ServiceWorkerResponse>(),
-                  scoped_ptr<storage::BlobDataHandle>());
+    scoped_ptr<std::vector<CacheMatchResponse>> match_responses,
+    const CacheStorageCache::ResponseCallback& callback) {
+  for (CacheMatchResponse& match_response : *match_responses) {
+    if (match_response.error == CACHE_STORAGE_ERROR_NOT_FOUND)
+      continue;
+    callback.Run(match_response.error,
+                 std::move(match_response.service_worker_response),
+                 std::move(match_response.blob_data_handle));
+    return;
   }
+  callback.Run(CACHE_STORAGE_ERROR_NOT_FOUND,
+               scoped_ptr<ServiceWorkerResponse>(),
+               scoped_ptr<storage::BlobDataHandle>());
 }
 
 scoped_refptr<CacheStorageCache> CacheStorage::GetLoadedCache(

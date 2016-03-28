@@ -227,6 +227,12 @@ class CacheStorageManagerTest : public testing::Test {
   }
 
   bool CachePut(CacheStorageCache* cache, const GURL& url) {
+    return CachePutWithStatusCode(cache, url, 200);
+  }
+
+  bool CachePutWithStatusCode(CacheStorageCache* cache,
+                              const GURL& url,
+                              int status_code) {
     ServiceWorkerFetchRequest request;
     request.url = url;
 
@@ -237,7 +243,7 @@ class CacheStorageManagerTest : public testing::Test {
     scoped_ptr<storage::BlobDataHandle> blob_handle =
         blob_storage_context_->AddFinishedBlob(blob_data.get());
     ServiceWorkerResponse response(
-        url, 200, "OK", blink::WebServiceWorkerResponseTypeDefault,
+        url, status_code, "OK", blink::WebServiceWorkerResponseTypeDefault,
         ServiceWorkerHeaderMap(), blob_handle->uuid(), url.spec().size(),
         GURL(), blink::WebServiceWorkerResponseErrorUnknown, base::Time());
 
@@ -520,11 +526,17 @@ TEST_F(CacheStorageManagerTest, StorageReuseCacheName) {
 
 TEST_P(CacheStorageManagerTestP, StorageMatchAllEntryExistsTwice) {
   EXPECT_TRUE(Open(origin1_, "foo"));
-  EXPECT_TRUE(CachePut(callback_cache_.get(), GURL("http://example.com/foo")));
+  EXPECT_TRUE(CachePutWithStatusCode(callback_cache_.get(),
+                                     GURL("http://example.com/foo"), 200));
   EXPECT_TRUE(Open(origin1_, "bar"));
-  EXPECT_TRUE(CachePut(callback_cache_.get(), GURL("http://example.com/foo")));
+  EXPECT_TRUE(CachePutWithStatusCode(callback_cache_.get(),
+                                     GURL("http://example.com/foo"), 201));
 
   EXPECT_TRUE(StorageMatchAll(origin1_, GURL("http://example.com/foo")));
+
+  // The caches need to be searched in order of creation, so verify that the
+  // response came from the first cache.
+  EXPECT_EQ(200, callback_cache_response_->status_code);
 }
 
 TEST_P(CacheStorageManagerTestP, StorageMatchInOneOfMany) {

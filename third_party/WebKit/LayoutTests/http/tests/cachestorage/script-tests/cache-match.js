@@ -29,6 +29,23 @@ prepopulated_cache_test(simple_entries, function(cache, entries) {
   }, 'Cache.match with Request');
 
 prepopulated_cache_test(simple_entries, function(cache, entries) {
+    var alt_response = new Response('', {status: 201});
+
+    return self.caches.open('second_matching_cache')
+      .then(function(cache) {
+          return cache.put(entries.a.request, alt_response.clone());
+        })
+      .then(function() {
+          return cache.match(entries.a.request)
+        })
+      .then(function(result) {
+          assert_response_equals(
+            result, entries.a.response,
+            'Cache.match should match the first cache.');
+        });
+  }, 'Cache.match with multiple cache hits');
+
+prepopulated_cache_test(simple_entries, function(cache, entries) {
     return cache.match(new Request(entries.a.request.url))
       .then(function(result) {
           assert_response_equals(result, entries.a.response,

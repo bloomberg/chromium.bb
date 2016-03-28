@@ -2,6 +2,7 @@ This is a testharness.js-based test.
 PASS Cache.match with no matching entries 
 PASS Cache.match with URL 
 PASS Cache.match with Request 
+PASS Cache.match with multiple cache hits 
 PASS Cache.match with new Request 
 PASS Cache.match with ignoreSearch option (request with no search parameters) 
 PASS Cache.match with ignoreSearch option (request with search parameter) 
