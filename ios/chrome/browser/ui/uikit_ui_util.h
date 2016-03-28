@@ -219,6 +219,10 @@ void ApplyVisualConstraintsWithMetricsAndOptions(
     NSLayoutFormatOptions options,
     UIView* unused_parentView);
 
+// Adds a constraint that |view1| and |view2| are center-aligned horizontally
+// and vertically.
+void AddSameCenterConstraints(UIView* view1, UIView* view2);
+
 // Adds a constraint that |view1| and |view2| are center-aligned horizontally.
 // |view1| and |view2| must be in the same view hierarchy.
 void AddSameCenterXConstraint(UIView* view1, UIView* view2);

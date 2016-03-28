@@ -539,6 +539,11 @@ void ApplyVisualConstraintsWithMetricsAndOptions(
                                               metrics, options);
 }
 
+void AddSameCenterConstraints(UIView* view1, UIView* view2) {
+  AddSameCenterXConstraint(view1, view2);
+  AddSameCenterYConstraint(view1, view2);
+}
+
 void AddSameCenterXConstraint(UIView* view1, UIView* view2) {
   [view1.centerXAnchor constraintEqualToAnchor:view2.centerXAnchor].active =
       YES;
