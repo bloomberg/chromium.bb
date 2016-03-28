@@ -32,6 +32,7 @@ enum class OptInCancelReason {
 
 void UpdateOptInActionUMA(OptInActionType type);
 void UpdateOptInCancelUMA(OptInCancelReason reason);
+void UpdateEnabledStateUMA(bool enabled);
 
 }  // namespace arc
 

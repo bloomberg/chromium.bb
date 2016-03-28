@@ -862,6 +862,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Arc OptIn cancelation reason.</summary>
 </histogram>
 
+<histogram name="Arc.State" enum="BooleanEnabled">
+  <owner>elijahtaylor@google.com</owner>
+  <owner>mitsuji@google.com</owner>
+  <summary>Whether Arc enabled or not.</summary>
+</histogram>
+
 <histogram name="ArcRuntime.LowMemoryKiller.FreedSize" units="KB">
   <obsolete>
     Renamed to Arc.LowMemoryKiller.FreedSize on 2016/03/24.

@@ -18,4 +18,8 @@ void UpdateOptInCancelUMA(OptInCancelReason reason) {
                             static_cast<int>(OptInCancelReason::SIZE));
 }
 
+void UpdateEnabledStateUMA(bool enabled) {
+  UMA_HISTOGRAM_BOOLEAN("Arc.State", enabled);
+}
+
 }  // namespace arc

@@ -227,6 +227,7 @@ void ArcAuthService::OnPrimaryUserProfilePrepared(Profile* profile) {
     if (profile_->GetPrefs()->GetBoolean(prefs::kArcEnabled)) {
       OnOptInPreferenceChanged();
     } else {
+      UpdateEnabledStateUMA(false);
       if (!disable_ui_for_testing && profile_->IsNewProfile()) {
         PrefServiceSyncableFromProfile(profile_)->AddObserver(this);
         OnIsSyncingChanged();
@@ -342,8 +343,12 @@ void ArcAuthService::OnOptInPreferenceChanged() {
         // Ready to start Arc.
         StartArc();
       }
+
+      UpdateEnabledStateUMA(true);
     }
   } else {
+    if (state_ != State::STOPPED)
+      UpdateEnabledStateUMA(false);
     ShutdownBridgeAndCloseUI();
   }
 }
