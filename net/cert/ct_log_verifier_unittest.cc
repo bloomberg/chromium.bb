@@ -483,11 +483,16 @@ std::vector<std::string> ReferenceSnapshotConsistency(std::string* inputs,
   return proof;
 }
 
-// "brute-force" test generating a tree of 256 entries, generating
-// a consistency proof for each snapshot of each sub-tree up to that
-// size and making sure it verifies.
+// Times out on Win7 test bot.  http://crbug.com/598406
+#if defined(OS_WIN)
+#define MAYBE_VerifiesValidConsistencyProofsFromReferenceGenerator \
+  DISABLED_VerifiesValidConsistencyProofsFromReferenceGenerator
+#else
+#define MAYBE_VerifiesValidConsistencyProofsFromReferenceGenerator \
+  VerifiesValidConsistencyProofsFromReferenceGenerator
+#endif
 TEST_F(CTLogVerifierTest,
-       VerifiesValidConsistencyProofsFromReferenceGenerator) {
+       MAYBE_VerifiesValidConsistencyProofsFromReferenceGenerator) {
   std::vector<std::string> data;
   for (int i = 0; i < 256; ++i)
     data.push_back(std::string(1, i));
