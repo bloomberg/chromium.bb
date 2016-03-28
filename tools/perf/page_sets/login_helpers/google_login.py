@@ -17,6 +17,11 @@ def LoginGoogleAccount(action_runner, credential,
         (type string).
     credentials_path: The string that specifies the path to credential file.
 
+  NOTE: it's recommended to use 'googletest' credential from
+  page_sets/data/credentials.json credential since it is a Google test account
+  and will not trigger anti-bot verification. Other google credentials are kept
+  until all telemetry pages are updated to use the 'googletest' credential.
+
   Raises:
     exceptions.Error: See ExecuteJavaScript()
     for a detailed list of possible exceptions.
