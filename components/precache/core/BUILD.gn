@@ -20,6 +20,7 @@ config("precache_config") {
 
 source_set("core") {
   sources = [
+    "fetcher_pool.h",
     "precache_database.cc",
     "precache_database.h",
     "precache_fetcher.cc",
@@ -55,6 +56,7 @@ proto_library("proto") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "fetcher_pool_unittest.cc",
     "precache_database_unittest.cc",
     "precache_fetcher_unittest.cc",
     "precache_url_table_unittest.cc",
