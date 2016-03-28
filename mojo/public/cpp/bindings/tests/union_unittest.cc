@@ -469,6 +469,53 @@ TEST(UnionTest, PodUnionInArraySerializationWithNull) {
   EXPECT_TRUE(array2[1].is_null());
 }
 
+TEST(UnionTest, ObjectUnionInArraySerialization) {
+  Array<ObjectUnionPtr> array(2);
+  array[0] = ObjectUnion::New();
+  array[1] = ObjectUnion::New();
+
+  array[0]->set_f_string("hello");
+  array[1]->set_f_string("world");
+  EXPECT_EQ(2U, array.size());
+
+  size_t size = GetSerializedSize_(array, nullptr);
+  EXPECT_EQ(72U, size);
+
+  mojo::internal::FixedBufferForTesting buf(size);
+
+  mojo::internal::Array_Data<internal::ObjectUnion_Data>* data;
+  mojo::internal::ArrayValidateParams validate_params(0, false, nullptr);
+  SerializeArray_(std::move(array), &buf, &data, &validate_params, nullptr);
+
+  std::vector<Handle> handles;
+  data->EncodePointersAndHandles(&handles);
+  EXPECT_TRUE(handles.empty());
+
+  std::vector<char> new_buf;
+  new_buf.resize(size);
+
+  void* raw_buf = buf.Leak();
+  memcpy(new_buf.data(), raw_buf, size);
+  free(raw_buf);
+
+  data =
+      reinterpret_cast<mojo::internal::Array_Data<internal::ObjectUnion_Data>*>(
+          new_buf.data());
+  mojo::internal::BoundsChecker bounds_checker(data,
+                                               static_cast<uint32_t>(size), 0);
+  ASSERT_TRUE(mojo::internal::Array_Data<internal::ObjectUnion_Data>::Validate(
+      data, &bounds_checker, &validate_params));
+
+  data->DecodePointersAndHandles(&handles);
+  Array<ObjectUnionPtr> array2;
+  Deserialize_(data, &array2, nullptr);
+
+  EXPECT_EQ(2U, array2.size());
+
+  EXPECT_EQ(String("hello"), array2[0]->get_f_string());
+  EXPECT_EQ(String("world"), array2[1]->get_f_string());
+}
+
 // TODO(azani): Move back in struct_unittest.cc when possible.
 // Struct tests
 TEST(UnionTest, Clone_Union) {
