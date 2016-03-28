@@ -193,6 +193,7 @@ tricky-paladin
   veyron_brain-release
   veyron_danger-release
   veyron_mickey-release
+  veyron_tiger-release
 [veyron-d-release-group]
   veyron_minnie-cheets-release
   veyron_romy-release

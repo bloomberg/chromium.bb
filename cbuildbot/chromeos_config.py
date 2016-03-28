@@ -421,6 +421,7 @@ _arm_internal_release_boards = frozenset([
     'veyron_romy',
     'veyron_shark',
     'veyron_speedy',
+    'veyron_tiger',
     'whirlwind',
 ])
 
@@ -656,6 +657,7 @@ _waterfall_config_map = {
         'oak-release-group',
         'storm-release-group',
         'strago-c-release-group',
+        'veyron-c-release-group',
 
         # Experimental Canaries
         'amd64-generic-goofy-release',
@@ -2813,7 +2815,7 @@ def GetConfig():
       'veyron', 'veyron_pinky', (
           'veyron_jerry',
           'veyron_mighty',
-          'veyron_speedy'
+          'veyron_speedy',
       ),
   )
 
@@ -2829,7 +2831,9 @@ def GetConfig():
       'veyron-c', 'veyron_brain', (
           'veyron_danger',
           'veyron_mickey',
+          'veyron_tiger',
       ),
+      important=False,
   )
 
   _AddGroupConfig(
