@@ -392,6 +392,10 @@ void RenderWidgetHostViewBase::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+bool RenderWidgetHostViewBase::IsChildFrameForTesting() const {
+  return false;
+}
+
 cc::SurfaceId RenderWidgetHostViewBase::SurfaceIdForTesting() const {
   return cc::SurfaceId();
 }

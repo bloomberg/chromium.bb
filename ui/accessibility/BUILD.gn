@@ -141,6 +141,7 @@ test("accessibility_unittests") {
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",
+    "//skia",
     "//testing/gtest",
     "//ui/base",
     "//ui/gfx",

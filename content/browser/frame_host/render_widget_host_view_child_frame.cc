@@ -571,6 +571,10 @@ void RenderWidgetHostViewChildFrame::ClearCompositorSurfaceIfNecessary() {
   surface_id_ = cc::SurfaceId();
 }
 
+bool RenderWidgetHostViewChildFrame::IsChildFrameForTesting() const {
+  return true;
+}
+
 cc::SurfaceId RenderWidgetHostViewChildFrame::SurfaceIdForTesting() const {
   return surface_id_;
 };

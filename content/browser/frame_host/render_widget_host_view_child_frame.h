@@ -176,6 +176,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void SurfaceDrawn(uint32_t output_surface_id, cc::SurfaceDrawStatus drawn);
 
   // Exposed for tests.
+  bool IsChildFrameForTesting() const override;
   cc::SurfaceId SurfaceIdForTesting() const override;
   CrossProcessFrameConnector* FrameConnectorForTesting() const {
     return frame_connector_;

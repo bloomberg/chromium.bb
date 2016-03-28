@@ -80,6 +80,7 @@
 #include "modules/accessibility/AXSpinButton.h"
 #include "modules/accessibility/AXTable.h"
 #include "platform/fonts/FontTraits.h"
+#include "platform/geometry/TransformState.h"
 #include "platform/text/PlatformLocale.h"
 #include "platform/text/TextDirection.h"
 #include "wtf/StdLibExtras.h"
@@ -216,6 +217,23 @@ LayoutRect AXLayoutObject::elementRect() const
     }
 
     return m_cachedElementRect;
+}
+
+SkMatrix44 AXLayoutObject::transformFromLocalParentFrame() const
+{
+    if (!m_layoutObject)
+        return SkMatrix44();
+    LayoutView* layoutView = documentFrameView()->layoutView();
+
+    FrameView* parentFrameView = documentFrameView()->parentFrameView();
+    if (!parentFrameView)
+        return SkMatrix44();
+    LayoutView* parentLayoutView = parentFrameView->layoutView();
+
+    TransformationMatrix accumulatedTransform = layoutView->localToAncestorTransform(parentLayoutView, TraverseDocumentBoundaries);
+    IntPoint scrollPosition = documentFrameView()->scrollPosition();
+    accumulatedTransform.translate(scrollPosition.x(), scrollPosition.y());
+    return TransformationMatrix::toSkMatrix44(accumulatedTransform);
 }
 
 LayoutBoxModelObject* AXLayoutObject::getLayoutBoxModelObject() const

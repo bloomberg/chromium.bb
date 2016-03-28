@@ -385,6 +385,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   void RemoveObserver(RenderWidgetHostViewBaseObserver* observer);
 
   // Exposed for testing.
+  virtual bool IsChildFrameForTesting() const;
   virtual cc::SurfaceId SurfaceIdForTesting() const;
 
  protected:

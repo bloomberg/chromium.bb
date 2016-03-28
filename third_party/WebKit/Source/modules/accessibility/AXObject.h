@@ -39,6 +39,8 @@
 #include "wtf/Forward.h"
 #include "wtf/Vector.h"
 
+class SkMatrix44;
+
 namespace blink {
 
 class AXObject;
@@ -792,6 +794,9 @@ public:
     void setElementRect(LayoutRect r) { m_explicitElementRect = r; }
     virtual void markCachedElementRectDirty() const;
     virtual IntPoint clickPoint();
+
+    // Transformation relative to the parent frame, if local (otherwise returns identity).
+    virtual SkMatrix44 transformFromLocalParentFrame() const;
 
     // Hit testing.
     // Called on the root AX object to return the deepest available element.

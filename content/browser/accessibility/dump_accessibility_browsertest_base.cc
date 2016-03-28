@@ -15,12 +15,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
@@ -261,6 +263,21 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     std::string url = node->current_url().spec();
     if (url != url::kAboutBlankURL)
       all_frame_urls.push_back(url);
+
+    // We won't get the correct coordinate transformations for
+    // out-of-process iframes until each frame's surface is ready.
+    RenderFrameHostImpl* current_frame_host = node->current_frame_host();
+    if (!current_frame_host)
+      continue;
+    RenderWidgetHostImpl* rwh = current_frame_host->GetRenderWidgetHost();
+    if (!rwh)
+      continue;
+    RenderWidgetHostViewBase* rwhv = rwh->GetView();
+    if (rwhv && rwhv->IsChildFrameForTesting()) {
+      SurfaceHitTestReadyNotifier notifier(
+          static_cast<RenderWidgetHostViewChildFrame*>(rwhv));
+      notifier.WaitForSurfaceReady();
+    }
   }
 
   // Wait for the accessibility tree to fully load for all frames,

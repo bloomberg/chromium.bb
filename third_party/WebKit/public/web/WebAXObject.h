@@ -42,6 +42,8 @@
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
+class SkMatrix44;
+
 namespace blink {
 
 class AXObject;
@@ -281,6 +283,9 @@ public:
     BLINK_EXPORT WebPoint minimumScrollOffset() const;
     BLINK_EXPORT WebPoint maximumScrollOffset() const;
     BLINK_EXPORT void setScrollOffset(const WebPoint&) const;
+
+    // Transformation relative to the parent frame, if local (otherwise returns identity).
+    BLINK_EXPORT SkMatrix44 transformFromLocalParentFrame() const;
 
     // Make this object visible by scrolling as many nested scrollable views as needed.
     BLINK_EXPORT void scrollToMakeVisible() const;

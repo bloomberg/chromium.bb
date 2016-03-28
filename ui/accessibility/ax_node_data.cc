@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/gfx/transform.h"
 
 using base::DoubleToString;
 using base::IntToString;
@@ -69,7 +70,6 @@ AXNodeData::AXNodeData(const AXNodeData& other) {
   id = other.id;
   role = other.role;
   state = other.state;
-  location = other.location;
   string_attributes = other.string_attributes;
   int_attributes = other.int_attributes;
   float_attributes = other.float_attributes;
@@ -77,13 +77,15 @@ AXNodeData::AXNodeData(const AXNodeData& other) {
   intlist_attributes = other.intlist_attributes;
   html_attributes = other.html_attributes;
   child_ids = other.child_ids;
+  location = other.location;
+  if (other.transform)
+    transform.reset(new gfx::Transform(*other.transform));
 }
 
 AXNodeData& AXNodeData::operator=(AXNodeData other) {
   id = other.id;
   role = other.role;
   state = other.state;
-  location = other.location;
   string_attributes = other.string_attributes;
   int_attributes = other.int_attributes;
   float_attributes = other.float_attributes;
@@ -91,6 +93,9 @@ AXNodeData& AXNodeData::operator=(AXNodeData other) {
   intlist_attributes = other.intlist_attributes;
   html_attributes = other.html_attributes;
   child_ids = other.child_ids;
+  location = other.location;
+  if (other.transform)
+    transform.reset(new gfx::Transform(*other.transform));
   return *this;
 }
 
@@ -337,6 +342,9 @@ std::string AXNodeData::ToString() const {
                    IntToString(location.y()) + ")-(" +
                    IntToString(location.width()) + ", " +
                    IntToString(location.height()) + ")";
+
+  if (transform && !transform->IsIdentity())
+    result += " transform=" + transform->ToString();
 
   for (size_t i = 0; i < int_attributes.size(); ++i) {
     std::string value = IntToString(int_attributes[i].second);

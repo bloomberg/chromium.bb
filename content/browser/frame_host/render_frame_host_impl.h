@@ -188,6 +188,9 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   gfx::Rect AccessibilityGetViewBounds() const override;
   gfx::Point AccessibilityOriginInScreen(
       const gfx::Rect& bounds) const override;
+  gfx::Rect AccessibilityTransformToRootCoordSpace(
+      const gfx::Rect& bounds) override;
+  SiteInstance* AccessibilityGetSiteInstance() override;
   void AccessibilityHitTest(const gfx::Point& point) override;
   void AccessibilitySetAccessibilityFocus(int acc_obj_id) override;
   void AccessibilityFatalError() override;

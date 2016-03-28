@@ -30,6 +30,7 @@
 
 #include "public/web/WebAXObject.h"
 
+#include "SkMatrix44.h"
 #include "core/HTMLNames.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Document.h"
@@ -1504,6 +1505,14 @@ void WebAXObject::scrollToGlobalPoint(const WebPoint& point) const
 {
     if (!isDetached())
         m_private->scrollToGlobalPoint(point);
+}
+
+SkMatrix44 WebAXObject::transformFromLocalParentFrame() const
+{
+    if (isDetached())
+        return SkMatrix44();
+
+    return m_private->transformFromLocalParentFrame();
 }
 
 WebAXObject::WebAXObject(AXObject* object)

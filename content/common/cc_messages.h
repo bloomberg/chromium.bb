@@ -76,16 +76,6 @@ struct ParamTraits<skia::RefPtr<SkImageFilter> > {
 };
 
 template <>
-struct ParamTraits<gfx::Transform> {
-  typedef gfx::Transform param_type;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
 struct CONTENT_EXPORT ParamTraits<cc::RenderPass> {
   typedef cc::RenderPass param_type;
   static void Write(base::Pickle* m, const param_type& p);

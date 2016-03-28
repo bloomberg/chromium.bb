@@ -57,6 +57,7 @@ public:
     LayoutObject* getLayoutObject() const final { return m_layoutObject; }
     LayoutRect elementRect() const override;
     LayoutBoxModelObject* getLayoutBoxModelObject() const;
+    SkMatrix44 transformFromLocalParentFrame() const override;
     bool shouldNotifyActiveDescendant() const;
     ScrollableArea* getScrollableAreaIfScrollable() const final;
     AccessibilityRole determineAccessibilityRole() override;

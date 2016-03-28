@@ -88,6 +88,9 @@ class TestBrowserAccessibilityDelegate
       const gfx::Rect& bounds) const override {
     return gfx::Point();
   }
+  gfx::Rect AccessibilityTransformToRootCoordSpace(
+      const gfx::Rect& bounds) override { return gfx::Rect(); }
+  SiteInstance* AccessibilityGetSiteInstance() override { return nullptr; }
   void AccessibilityHitTest(const gfx::Point& point) override {}
   void AccessibilitySetAccessibilityFocus(int acc_obj_id) override {}
   void AccessibilityFatalError() override { got_fatal_error_ = true; }

@@ -1082,6 +1082,11 @@ IntPoint AXObject::clickPoint()
     return roundedIntPoint(LayoutPoint(rect.x() + rect.width() / 2, rect.y() + rect.height() / 2));
 }
 
+SkMatrix44 AXObject::transformFromLocalParentFrame() const
+{
+    return SkMatrix44();
+}
+
 IntRect AXObject::boundingBoxForQuads(LayoutObject* obj, const Vector<FloatQuad>& quads)
 {
     ASSERT(obj);

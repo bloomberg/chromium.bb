@@ -875,6 +875,31 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-presentational.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityIframeTransform) {
+  RunHtmlTest(FILE_PATH_LITERAL("iframe-transform.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityIframeTransformCrossProcess) {
+  RunHtmlTest(FILE_PATH_LITERAL("iframe-transform-cross-process.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityIframeTransformNested) {
+  RunHtmlTest(FILE_PATH_LITERAL("iframe-transform-nested.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityIframeTransformNestedCrossProcess) {
+  RunHtmlTest(FILE_PATH_LITERAL("iframe-transform-nested-cross-process.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityIframeTransformScrolled) {
+  RunHtmlTest(FILE_PATH_LITERAL("iframe-transform-scrolled.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityImg) {
   RunHtmlTest(FILE_PATH_LITERAL("img.html"));
 }

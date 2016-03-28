@@ -16,6 +16,7 @@
 #include "content/common/accessibility_messages.h"
 #include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace content {
 
@@ -1012,39 +1013,49 @@ void BrowserAccessibility::FixEmptyBounds(gfx::Rect* bounds) const
 
 gfx::Rect BrowserAccessibility::ElementBoundsToLocalBounds(gfx::Rect bounds)
     const {
-  // Walk up the parent chain. Every time we encounter a Web Area, offset
-  // based on the scroll bars and then offset based on the origin of that
-  // nested web area.
-  BrowserAccessibility* parent = GetParent();
-  bool need_to_offset_web_area =
-      (GetRole() == ui::AX_ROLE_WEB_AREA ||
-       GetRole() == ui::AX_ROLE_ROOT_WEB_AREA);
-  while (parent) {
-    if (need_to_offset_web_area &&
-        parent->GetLocation().width() > 0 &&
-        parent->GetLocation().height() > 0) {
-      bounds.Offset(parent->GetLocation().x(), parent->GetLocation().y());
-      need_to_offset_web_area = false;
-    }
-
-    // On some platforms, we don't want to take the root scroll offsets
-    // into account.
-    if (parent->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA &&
-        !manager()->UseRootScrollOffsetsWhenComputingBounds()) {
-      break;
-    }
-
-    if (parent->GetRole() == ui::AX_ROLE_WEB_AREA ||
-        parent->GetRole() == ui::AX_ROLE_ROOT_WEB_AREA) {
+  BrowserAccessibilityManager* manager = this->manager();
+  BrowserAccessibility* root = manager->GetRoot();
+  while (manager && root) {
+    // Apply scroll offsets.
+    if (root != this && (root->GetParent() ||
+                         manager->UseRootScrollOffsetsWhenComputingBounds())) {
       int sx = 0;
       int sy = 0;
-      if (parent->GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
-          parent->GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
+      if (root->GetIntAttribute(ui::AX_ATTR_SCROLL_X, &sx) &&
+          root->GetIntAttribute(ui::AX_ATTR_SCROLL_Y, &sy)) {
         bounds.Offset(-sx, -sy);
       }
-      need_to_offset_web_area = true;
     }
-    parent = parent->GetParent();
+
+    // If the parent accessibility tree is in a different site instance,
+    // ask the delegate to transform our coordinates into the root
+    // coordinate space and then we're done.
+    if (manager->delegate() &&
+        root->GetParent() &&
+        root->GetParent()->manager()->delegate()) {
+      BrowserAccessibilityManager* parent_manager =
+          root->GetParent()->manager();
+      if (manager->delegate()->AccessibilityGetSiteInstance() !=
+          parent_manager->delegate()->AccessibilityGetSiteInstance()) {
+        return manager->delegate()->AccessibilityTransformToRootCoordSpace(
+            bounds);
+      }
+    }
+
+    // Otherwise, apply the transform from this frame into the coordinate
+    // space of its parent frame.
+    if (root->GetData().transform) {
+      gfx::RectF boundsf(bounds);
+      root->GetData().transform->TransformRect(&boundsf);
+      bounds = gfx::Rect(boundsf.x(), boundsf.y(),
+                         boundsf.width(), boundsf.height());
+    }
+
+    if (!root->GetParent())
+      break;
+
+    manager = root->GetParent()->manager();
+    root = manager->GetRoot();
   }
 
   return bounds;

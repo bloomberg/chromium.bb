@@ -15,6 +15,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/range/range.h"
+#include "ui/gfx/transform.h"
 
 #if defined(OS_MACOSX)
 #include "ipc/mach_port_mac.h"
@@ -361,6 +362,47 @@ void ParamTraits<gfx::ScrollOffset>::Log(const param_type& p, std::string* l) {
   l->append(", ");
   LogParam(p.y(), l);
   l->append(")");
+}
+
+void ParamTraits<gfx::Transform>::Write(base::Pickle* m, const param_type& p) {
+#ifdef SK_MSCALAR_IS_FLOAT
+  float column_major_data[16];
+  p.matrix().asColMajorf(column_major_data);
+#else
+  double column_major_data[16];
+  p.matrix().asColMajord(column_major_data);
+#endif
+  // We do this in a single write for performance reasons.
+  m->WriteBytes(&column_major_data, sizeof(SkMScalar) * 16);
+}
+
+bool ParamTraits<gfx::Transform>::Read(const base::Pickle* m,
+                                       base::PickleIterator* iter,
+                                       param_type* r) {
+  const char* column_major_data;
+  if (!iter->ReadBytes(&column_major_data, sizeof(SkMScalar) * 16))
+    return false;
+  r->matrix().setColMajor(
+      reinterpret_cast<const SkMScalar*>(column_major_data));
+  return true;
+}
+
+void ParamTraits<gfx::Transform>::Log(
+    const param_type& p, std::string* l) {
+#ifdef SK_MSCALAR_IS_FLOAT
+  float row_major_data[16];
+  p.matrix().asRowMajorf(row_major_data);
+#else
+  double row_major_data[16];
+  p.matrix().asRowMajord(row_major_data);
+#endif
+  l->append("(");
+  for (int i = 0; i < 16; ++i) {
+    if (i > 0)
+      l->append(", ");
+    LogParam(row_major_data[i], l);
+  }
+  l->append(") ");
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
