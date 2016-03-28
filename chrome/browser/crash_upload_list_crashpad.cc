@@ -47,7 +47,8 @@ CrashUploadListCrashpad::CrashUploadListCrashpad(
 
 CrashUploadListCrashpad::~CrashUploadListCrashpad() {}
 
-void CrashUploadListCrashpad::LoadUploadList() {
+void CrashUploadListCrashpad::LoadUploadList(
+    std::vector<UploadList::UploadInfo>* uploads) {
   std::vector<crash_reporter::UploadedReport> uploaded_reports;
 #if defined(OS_WIN)
   // On Windows, we only link crash client into chrome.exe (not the dlls), and
@@ -59,10 +60,9 @@ void CrashUploadListCrashpad::LoadUploadList() {
   crash_reporter::GetUploadedReports(&uploaded_reports);
 #endif
 
-  ClearUploads();
   for (const crash_reporter::UploadedReport& uploaded_report :
        uploaded_reports) {
-    AppendUploadInfo(
+    uploads->push_back(
         UploadInfo(uploaded_report.remote_id,
                    base::Time::FromTimeT(uploaded_report.creation_time),
                    uploaded_report.local_id, base::Time()));

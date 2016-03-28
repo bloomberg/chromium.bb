@@ -25,7 +25,7 @@ class CrashUploadListCrashpad : public CrashUploadList {
   ~CrashUploadListCrashpad() override;
 
   // Called on a blocking pool thread.
-  void LoadUploadList() override;
+  void LoadUploadList(std::vector<UploadInfo>* uploads) override;
 
   DISALLOW_COPY_AND_ASSIGN(CrashUploadListCrashpad);
 };

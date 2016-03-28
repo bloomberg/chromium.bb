@@ -5,11 +5,12 @@
 #ifndef COMPONENTS_UPLOAD_LIST_UPLOAD_LIST_H_
 #define COMPONENTS_UPLOAD_LIST_UPLOAD_LIST_H_
 
+#include <stddef.h>
+
 #include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
@@ -75,45 +76,37 @@ class UploadList : public base::RefCountedThreadSafe<UploadList> {
   // Populates |uploads| with the |max_count| most recent uploads,
   // in reverse chronological order.
   // Must be called only after OnUploadListAvailable has been called.
-  void GetUploads(unsigned int max_count, std::vector<UploadInfo>* uploads);
+  void GetUploads(size_t max_count, std::vector<UploadInfo>* uploads);
 
  protected:
   virtual ~UploadList();
 
-  // Reads the upload log and stores the entries in |uploads_|.
-  virtual void LoadUploadList();
-
-  // Adds |info| to |uploads_|.
-  void AppendUploadInfo(const UploadInfo& info);
-
-  // Clear |uploads_|.
-  void ClearUploads();
+  // Reads the upload log and stores the entries in |uploads|.
+  virtual void LoadUploadList(std::vector<UploadInfo>* uploads);
 
  private:
   friend class base::RefCountedThreadSafe<UploadList>;
-  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseUploadTimeUploadId);
-  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseUploadTimeUploadIdLocalId);
-  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseUploadTimeUploadIdCaptureTime);
-  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseLocalIdCaptureTime);
-  FRIEND_TEST_ALL_PREFIXES(UploadListTest,
-                           ParseUploadTimeUploadIdLocalIdCaptureTime);
-  FRIEND_TEST_ALL_PREFIXES(UploadListTest, ParseMultipleEntries);
 
   // Manages the background thread work for LoadUploadListAsynchronously().
-  void LoadUploadListAndInformDelegateOfCompletion(
+  void PerformLoadAndNotifyDelegate(
       const scoped_refptr<base::SequencedTaskRunner>& task_runner);
 
-  // Calls the delegate's callback method, if there is a delegate.
-  void InformDelegateOfCompletion();
+  // Calls the delegate's callback method, if there is a delegate. Stores
+  // the newly loaded |uploads| into |uploads_| on the delegate's task runner.
+  void SetUploadsAndNotifyDelegate(std::vector<UploadInfo> uploads);
 
   // Parses upload log lines, converting them to UploadInfo entries.
-  void ParseLogEntries(const std::vector<std::string>& log_entries);
+  void ParseLogEntries(const std::vector<std::string>& log_entries,
+                       std::vector<UploadInfo>* uploads);
 
+  // |thread_checker_| ensures that |uploads_| is only set from the task runner
+  // that created the UploadList.
+  base::ThreadChecker thread_checker_;
   std::vector<UploadInfo> uploads_;
   Delegate* delegate_;
+
   const base::FilePath upload_log_path_;
 
-  base::ThreadChecker thread_checker_;
   scoped_refptr<base::SequencedWorkerPool> worker_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(UploadList);

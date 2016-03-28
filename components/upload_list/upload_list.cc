@@ -4,10 +4,9 @@
 
 #include "components/upload_list/upload_list.h"
 
-#include <stddef.h>
-
 #include <algorithm>
 #include <iterator>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -45,7 +44,7 @@ void UploadList::LoadUploadListAsynchronously() {
   DCHECK(thread_checker_.CalledOnValidThread());
   worker_pool_->PostTask(
       FROM_HERE,
-      base::Bind(&UploadList::LoadUploadListAndInformDelegateOfCompletion,
+      base::Bind(&UploadList::PerformLoadAndNotifyDelegate,
                  this, base::ThreadTaskRunnerHandle::Get()));
 }
 
@@ -54,36 +53,30 @@ void UploadList::ClearDelegate() {
   delegate_ = NULL;
 }
 
-void UploadList::LoadUploadListAndInformDelegateOfCompletion(
+void UploadList::PerformLoadAndNotifyDelegate(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
-  LoadUploadList();
+  std::vector<UploadInfo> uploads;
+  LoadUploadList(&uploads);
   task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&UploadList::InformDelegateOfCompletion, this));
+      base::Bind(&UploadList::SetUploadsAndNotifyDelegate, this,
+                 std::move(uploads)));
 }
 
-void UploadList::LoadUploadList() {
+void UploadList::LoadUploadList(std::vector<UploadInfo>* uploads) {
   if (base::PathExists(upload_log_path_)) {
     std::string contents;
     base::ReadFileToString(upload_log_path_, &contents);
     std::vector<std::string> log_entries = base::SplitString(
         contents, base::kWhitespaceASCII, base::KEEP_WHITESPACE,
         base::SPLIT_WANT_NONEMPTY);
-    ClearUploads();
-    ParseLogEntries(log_entries);
+    ParseLogEntries(log_entries, uploads);
   }
 }
 
-void UploadList::AppendUploadInfo(const UploadInfo& info) {
-  uploads_.push_back(info);
-}
-
-void UploadList::ClearUploads() {
-  uploads_.clear();
-}
-
 void UploadList::ParseLogEntries(
-    const std::vector<std::string>& log_entries) {
+    const std::vector<std::string>& log_entries,
+    std::vector<UploadInfo>* uploads) {
   std::vector<std::string>::const_reverse_iterator i;
   for (i = log_entries.rbegin(); i != log_entries.rend(); ++i) {
     std::vector<std::string> components = base::SplitString(
@@ -111,20 +104,21 @@ void UploadList::ParseLogEntries(
       info.capture_time = base::Time::FromDoubleT(seconds_since_epoch);
     }
 
-    uploads_.push_back(info);
+    uploads->push_back(info);
   }
 }
 
-void UploadList::InformDelegateOfCompletion() {
+void UploadList::SetUploadsAndNotifyDelegate(std::vector<UploadInfo> uploads) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  uploads_ = std::move(uploads);
   if (delegate_)
     delegate_->OnUploadListAvailable();
 }
 
-void UploadList::GetUploads(unsigned int max_count,
+void UploadList::GetUploads(size_t max_count,
                             std::vector<UploadInfo>* uploads) {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::copy(uploads_.begin(),
-            uploads_.begin() + std::min<size_t>(uploads_.size(), max_count),
+            uploads_.begin() + std::min(uploads_.size(), max_count),
             std::back_inserter(*uploads));
 }
