@@ -208,6 +208,12 @@ inline int16_t ConvertSample<float, int16_t>(float sample) {
                            : sample * std::numeric_limits<int16_t>::max()));
 }
 
+void AudioBuffer::AdjustSampleRate(int sample_rate) {
+  DCHECK(!end_of_stream_);
+  sample_rate_ = sample_rate;
+  duration_ = CalculateDuration(adjusted_frame_count_, sample_rate_);
+}
+
 void AudioBuffer::ReadFrames(int frames_to_copy,
                              int source_frame_offset,
                              int dest_frame_offset,

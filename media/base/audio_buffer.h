@@ -78,6 +78,12 @@ class MEDIA_EXPORT AudioBuffer
   // is disallowed.
   static scoped_refptr<AudioBuffer> CreateEOSBuffer();
 
+  // Update sample rate and computed duration.
+  // TODO(chcunningham): Remove this upon patching FFmpeg's AAC decoder to
+  // provide the correct sample rate at the boundary of an implicit config
+  // change.
+  void AdjustSampleRate(int sample_rate);
+
   // Copy frames into |dest|. |frames_to_copy| is the number of frames to copy.
   // |source_frame_offset| specifies how many frames in the buffer to skip
   // first. |dest_frame_offset| is the frame offset in |dest|. The frames are
@@ -168,7 +174,7 @@ class MEDIA_EXPORT AudioBuffer
   const SampleFormat sample_format_;
   const ChannelLayout channel_layout_;
   const int channel_count_;
-  const int sample_rate_;
+  int sample_rate_;
   int adjusted_frame_count_;
   int trim_start_;
   const bool end_of_stream_;

@@ -684,7 +684,15 @@ class PipelineIntegrationTestHost : public testing::Test,
 
 class PipelineIntegrationTest : public PipelineIntegrationTestHost {
  public:
-  void StartPipelineWithMediaSource(MockMediaSource* source) {
+  PipelineStatus StartPipelineWithMediaSource(MockMediaSource* source) {
+    return StartPipelineWithMediaSource(source, kNormal);
+  }
+
+  PipelineStatus StartPipelineWithMediaSource(MockMediaSource* source,
+                                              uint8_t test_type) {
+    hashing_enabled_ = test_type & kHashed;
+    clockless_playback_ = test_type & kClockless;
+
     EXPECT_CALL(*source, InitSegmentReceived(_)).Times(AtLeast(1));
     EXPECT_CALL(*this, OnMetadata(_))
         .Times(AtMost(1))
@@ -714,17 +722,7 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
                    base::Unretained(this)));
     message_loop_.Run();
     EXPECT_EQ(PIPELINE_OK, pipeline_status_);
-  }
-
-  void StartHashedPipelineWithMediaSource(MockMediaSource* source) {
-    hashing_enabled_ = true;
-    StartPipelineWithMediaSource(source);
-  }
-
-  void StartHashedClocklessPipelineWithMediaSource(MockMediaSource* source) {
-    hashing_enabled_ = true;
-    clockless_playback_ = true;
-    StartPipelineWithMediaSource(source);
+    return pipeline_status_;
   }
 
   void StartPipelineWithEncryptedMedia(MockMediaSource* source,
@@ -803,6 +801,97 @@ class PipelineIntegrationTest : public PipelineIntegrationTestHost {
     return true;
   }
 };
+
+struct PlaybackTestData {
+  const std::string filename;
+  const uint32_t start_time_ms;
+  const uint32_t duration_ms;
+};
+
+struct MSEPlaybackTestData {
+  const std::string filename;
+  const std::string mimetype;
+  const size_t append_bytes;
+  const uint32_t duration_ms;
+};
+
+// Tells gtest how to print our PlaybackTestData structure.
+std::ostream& operator<<(std::ostream& os, const PlaybackTestData& data) {
+  return os << data.filename;
+}
+
+std::ostream& operator<<(std::ostream& os, const MSEPlaybackTestData& data) {
+  return os << data.filename;
+}
+
+class BasicPlaybackTest : public PipelineIntegrationTest,
+                          public testing::WithParamInterface<PlaybackTestData> {
+};
+
+class BasicMSEPlaybackTest
+    : public ::testing::WithParamInterface<MSEPlaybackTestData>,
+      public PipelineIntegrationTest {};
+
+TEST_P(BasicPlaybackTest, PlayToEnd) {
+  PlaybackTestData data = GetParam();
+
+  ASSERT_EQ(PIPELINE_OK, Start(data.filename, kClockless));
+  EXPECT_EQ(data.start_time_ms, demuxer_->GetStartTime().InMilliseconds());
+  EXPECT_EQ(data.duration_ms, pipeline_->GetMediaDuration().InMilliseconds());
+
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
+TEST_P(BasicMSEPlaybackTest, PlayToEnd) {
+  MSEPlaybackTestData data = GetParam();
+
+  MockMediaSource source(data.filename, data.mimetype, data.append_bytes);
+  // TODO -- ADD uint8_t test_type to StartWithMSE and pass clockless flags
+  ASSERT_EQ(PIPELINE_OK, StartPipelineWithMediaSource(&source, kClockless));
+  source.EndOfStream();
+
+  EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
+  EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
+  EXPECT_EQ(data.duration_ms,
+            pipeline_->GetBufferedTimeRanges().end(0).InMilliseconds());
+
+  Play();
+
+  ASSERT_TRUE(WaitUntilOnEnded());
+
+  EXPECT_TRUE(demuxer_->GetTimelineOffset().is_null());
+  source.Shutdown();
+  Stop();
+}
+
+#if defined(USE_PROPRIETARY_CODECS)
+
+const PlaybackTestData kADTSTests[] = {
+    {"bear-audio-main-aac.aac", 0, 2724},
+    {"bear-audio-lc-aac.aac", 0, 2858},
+    {"bear-audio-implicit-he-aac-v1.aac", 0, 2812},
+    {"bear-audio-implicit-he-aac-v2.aac", 0, 3047},
+};
+
+// TODO(chcunningham): Migrate other basic playback tests to TEST_P.
+INSTANTIATE_TEST_CASE_P(PropritaryCodecs,
+                        BasicPlaybackTest,
+                        testing::ValuesIn(kADTSTests));
+
+const MSEPlaybackTestData kMediaSourceADTSTests[] = {
+    {"bear-audio-main-aac.aac", kADTS, kAppendWholeFile, 2773},
+    {"bear-audio-lc-aac.aac", kADTS, kAppendWholeFile, 2794},
+    {"bear-audio-implicit-he-aac-v1.aac", kADTS, kAppendWholeFile, 2858},
+    {"bear-audio-implicit-he-aac-v2.aac", kADTS, kAppendWholeFile, 2901},
+};
+
+// TODO(chcunningham): Migrate other basic MSE playback tests to TEST_P.
+INSTANTIATE_TEST_CASE_P(PropritaryCodecs,
+                        BasicMSEPlaybackTest,
+                        testing::ValuesIn(kMediaSourceADTSTests));
+
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
 TEST_F(PipelineIntegrationTest, BasicPlayback) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
@@ -884,7 +973,7 @@ TEST_F(PipelineIntegrationTest,
        MAYBE_CLOCKLESS(BasicPlaybackOpusWebmTrimmingHashed_MediaSource)) {
   MockMediaSource source("opus-trimming-test.webm", kOpusAudioOnlyWebM,
                          kAppendWholeFile);
-  StartHashedClocklessPipelineWithMediaSource(&source);
+  StartPipelineWithMediaSource(&source, kClockless | kHashed);
   source.EndOfStream();
 
   Play();
@@ -1054,7 +1143,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_MediaSource_Opus_WebM) {
 TEST_F(PipelineIntegrationTest, DISABLED_MediaSource_Opus_Seeking_WebM) {
   MockMediaSource source("bear-opus-end-trimming.webm", kOpusAudioOnlyWebM,
                          kAppendWholeFile);
-  StartHashedPipelineWithMediaSource(&source);
+  StartPipelineWithMediaSource(&source, kHashed);
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());
   EXPECT_EQ(0, pipeline_->GetBufferedTimeRanges().start(0).InMilliseconds());
@@ -1269,7 +1358,7 @@ TEST_F(PipelineIntegrationTest, MediaSource_ADTS) {
 
 TEST_F(PipelineIntegrationTest, MediaSource_ADTS_TimestampOffset) {
   MockMediaSource source("sfx.adts", kADTS, kAppendWholeFile);
-  StartHashedPipelineWithMediaSource(&source);
+  StartPipelineWithMediaSource(&source, kHashed);
   EXPECT_EQ(325, source.last_timestamp_offset().InMilliseconds());
 
   // Trim off multiple frames off the beginning of the segment which will cause
@@ -1384,7 +1473,7 @@ INSTANTIATE_TEST_CASE_P(
 
 TEST_F(PipelineIntegrationTest, MediaSource_MP3) {
   MockMediaSource source("sfx.mp3", kMP3, kAppendWholeFile);
-  StartHashedPipelineWithMediaSource(&source);
+  StartPipelineWithMediaSource(&source, kHashed);
   source.EndOfStream();
 
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());

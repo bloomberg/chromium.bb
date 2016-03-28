@@ -232,6 +232,10 @@ class MEDIA_EXPORT AudioRendererImpl
   // HandleSplicerBuffer_Locked() call.
   int64_t last_audio_memory_usage_;
 
+  // Sample rate of the last decoded audio buffer. Allows for detection of
+  // sample rate changes due to implicit AAC configuration change.
+  int last_decoded_sample_rate_;
+
   // After Initialize() has completed, all variables below must be accessed
   // under |lock_|. ------------------------------------------------------------
   base::Lock lock_;

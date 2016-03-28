@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/default_tick_clock.h"
@@ -23,6 +24,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_log.h"
+#include "media/base/media_switches.h"
 #include "media/base/timestamp_constants.h"
 #include "media/filters/audio_clock.h"
 #include "media/filters/decrypting_demuxer_stream.h"
@@ -44,6 +46,7 @@ AudioRendererImpl::AudioRendererImpl(
       media_log_(media_log),
       tick_clock_(new base::DefaultTickClock()),
       last_audio_memory_usage_(0),
+      last_decoded_sample_rate_(0),
       playback_rate_(0.0),
       state_(kUninitialized),
       buffering_state_(BUFFERING_HAVE_NOTHING),
@@ -369,15 +372,56 @@ void AudioRendererImpl::Initialize(
     }
 #endif
 
-    audio_parameters_.Reset(
-        hw_params.format(),
-        // Always use the source's channel layout to avoid premature downmixing
-        // (http://crbug.com/379288), platform specific issues around channel
-        // layouts (http://crbug.com/266674), and unnecessary upmixing overhead.
-        stream->audio_decoder_config().channel_layout(), sample_rate,
-        hw_params.bits_per_sample(),
-        AudioHardwareConfig::GetHighLatencyBufferSize(sample_rate,
-                                                      preferred_buffer_size));
+    int stream_channel_count = ChannelLayoutToChannelCount(
+        stream->audio_decoder_config().channel_layout());
+
+    bool try_supported_channel_layouts = false;
+#if defined(OS_WIN)
+    try_supported_channel_layouts =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kTrySupportedChannelLayouts);
+#endif
+
+    // We don't know how to up-mix for DISCRETE layouts (fancy multichannel
+    // hardware with non-standard speaker arrangement). Instead, pretend the
+    // hardware layout is stereo and let the OS take care of further up-mixing
+    // to the discrete layout (http://crbug.com/266674). Additionally, pretend
+    // hardware is stereo whenever kTrySupportedChannelLayouts is set. This flag
+    // is for savvy users who want stereo content to output in all surround
+    // speakers. Using the actual layout (likely 5.1 or higher) will mean our
+    // mixer will attempt to up-mix stereo source streams to just the left/right
+    // speaker of the 5.1 setup, nulling out the other channels
+    // (http://crbug.com/177872).
+    ChannelLayout hw_channel_layout =
+        hw_params.channel_layout() == CHANNEL_LAYOUT_DISCRETE ||
+                try_supported_channel_layouts
+            ? CHANNEL_LAYOUT_STEREO
+            : hw_params.channel_layout();
+    int hw_channel_count = ChannelLayoutToChannelCount(hw_channel_layout);
+
+    // The layout we pass to |audio_parameters_| will be used for the lifetime
+    // of this audio renderer, regardless of changes to hardware and/or stream
+    // properties. Below we choose the max of stream layout vs. hardware layout
+    // to leave room for changes to the hardware and/or stream (i.e. avoid
+    // premature down-mixing - http://crbug.com/379288).
+    // If stream_channels < hw_channels:
+    //   Taking max means we up-mix to hardware layout. If stream later changes
+    //   to have more channels, we aren't locked into down-mixing to the
+    //   initial stream layout.
+    // If stream_channels > hw_channels:
+    //   We choose to output stream's layout, meaning mixing is a no-op for the
+    //   renderer. Browser-side will down-mix to the hardware config. If the
+    //   hardware later changes to equal stream channels, browser-side will stop
+    //   down-mixing and use the data from all stream channels.
+    ChannelLayout renderer_channel_layout =
+        hw_channel_count > stream_channel_count
+            ? hw_channel_layout
+            : stream->audio_decoder_config().channel_layout();
+
+    audio_parameters_.Reset(hw_params.format(), renderer_channel_layout,
+                            sample_rate, hw_params.bits_per_sample(),
+                            AudioHardwareConfig::GetHighLatencyBufferSize(
+                                sample_rate, preferred_buffer_size));
   }
 
   audio_clock_.reset(
@@ -472,6 +516,16 @@ void AudioRendererImpl::DecodedAudioReady(
   }
 
   if (expecting_config_changes_) {
+    if (last_decoded_sample_rate_ &&
+        buffer->sample_rate() != last_decoded_sample_rate_) {
+      DVLOG(1) << __FUNCTION__ << " Updating audio sample_rate."
+               << " ts:" << buffer->timestamp().InMicroseconds()
+               << " old:" << last_decoded_sample_rate_
+               << " new:" << buffer->sample_rate();
+      OnConfigChange();
+    }
+    last_decoded_sample_rate_ = buffer->sample_rate();
+
     DCHECK(buffer_converter_);
     buffer_converter_->AddInput(buffer);
     while (buffer_converter_->HasNextBuffer()) {

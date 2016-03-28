@@ -78,6 +78,12 @@ static int GetAudioBuffer(struct AVCodecContext* s, AVFrame* frame, int flags) {
     return AVERROR(EINVAL);
   }
 
+  if (s->sample_rate != frame->sample_rate) {
+    DLOG(ERROR) << "AVCodecContext and AVFrame disagree on sample rate."
+                << s->sample_rate << " vs " << frame->sample_rate;
+    return AVERROR(EINVAL);
+  }
+
   // Determine how big the buffer should be and allocate it. FFmpeg may adjust
   // how big each channel data is in order to meet the alignment policy, so
   // we need to take this into consideration.
@@ -287,29 +293,48 @@ bool FFmpegAudioDecoder::FFmpegDecode(
     packet.data += result;
 
     scoped_refptr<AudioBuffer> output;
-    const int channels = DetermineChannels(av_frame_.get());
+
+    bool config_changed = false;
     if (frame_decoded) {
+      const int channels = DetermineChannels(av_frame_.get());
+      ChannelLayout channel_layout = ChannelLayoutToChromeChannelLayout(
+          codec_context_->channel_layout, codec_context_->channels);
+
       if (av_frame_->sample_rate != config_.samples_per_second() ||
+          channel_layout != config_.channel_layout() ||
           channels != ChannelLayoutToChannelCount(config_.channel_layout()) ||
           av_frame_->format != av_sample_format_) {
-        DLOG(ERROR) << "Unsupported midstream configuration change!"
-                    << " Sample Rate: " << av_frame_->sample_rate << " vs "
-                    << config_.samples_per_second()
-                    << ", Channels: " << channels << " vs "
-                    << ChannelLayoutToChannelCount(config_.channel_layout())
-                    << ", Sample Format: " << av_frame_->format << " vs "
-                    << av_sample_format_;
-
+        // Only allow midstream configuration changes for AAC. Sample format is
+        // not expected to change between AAC profiles.
         if (config_.codec() == kCodecAAC &&
-            av_frame_->sample_rate == 2 * config_.samples_per_second()) {
+            av_frame_->format == av_sample_format_) {
           MEDIA_LOG(DEBUG, media_log_)
-              << "Implicit HE-AAC signalling is being"
-              << " used. Please use mp4a.40.5 instead of"
-              << " mp4a.40.2 in the mimetype.";
+              << " Detected AAC midstream configuration change"
+              << " PTS:" << buffer->timestamp().InMicroseconds()
+              << " Sample Rate: " << av_frame_->sample_rate << " vs "
+              << config_.samples_per_second()
+              << ", ChannelLayout: " << channel_layout << " vs "
+              << config_.channel_layout() << ", Channels: " << channels
+              << " vs "
+              << ChannelLayoutToChannelCount(config_.channel_layout());
+          config_.Initialize(config_.codec(), config_.sample_format(),
+                             channel_layout, av_frame_->sample_rate,
+                             config_.extra_data(), config_.encryption_scheme(),
+                             config_.seek_preroll(), config_.codec_delay());
+          config_changed = true;
+          ResetTimestampState();
+        } else {
+          MEDIA_LOG(ERROR, media_log_)
+              << "Unsupported midstream configuration change!"
+              << " Sample Rate: " << av_frame_->sample_rate << " vs "
+              << config_.samples_per_second() << ", Channels: " << channels
+              << " vs " << ChannelLayoutToChannelCount(config_.channel_layout())
+              << ", Sample Format: " << av_frame_->format << " vs "
+              << av_sample_format_;
+          // This is an unrecoverable error, so bail out.
+          av_frame_unref(av_frame_.get());
+          return false;
         }
-        // This is an unrecoverable error, so bail out.
-        av_frame_unref(av_frame_.get());
-        return false;
       }
 
       // Get the AudioBuffer that the data was decoded into. Adjust the number
@@ -331,6 +356,14 @@ bool FFmpegAudioDecoder::FFmpegDecode(
     if (IsEndOfStream(result, decoded_frames, buffer)) {
       DCHECK_EQ(packet.size, 0);
     } else if (discard_helper_->ProcessBuffers(buffer, output)) {
+      if (config_changed &&
+          output->sample_rate() != config_.samples_per_second()) {
+        // At the boundary of the config change, FFmpeg's AAC decoder gives the
+        // previous sample rate when calling our GetAudioBuffer. Set the correct
+        // sample rate before sending the buffer along.
+        // TODO(chcunningham): Fix FFmpeg and upstream it.
+        output->AdjustSampleRate(config_.samples_per_second());
+      }
       *has_produced_frame = true;
       output_cb_.Run(output);
     }
