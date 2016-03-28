@@ -463,12 +463,6 @@ void SystemTrayDelegateChromeOS::ShowNetworkSettingsForGuid(
 }
 
 void SystemTrayDelegateChromeOS::ShowDisplaySettings() {
-  // TODO(michaelpg): Allow display settings to be shown when they are updated
-  // to work for 3+ displays. See issue 467195.
-  if (ash::Shell::GetInstance()->display_manager()->num_connected_displays() >
-      2) {
-    return;
-  }
   content::RecordAction(base::UserMetricsAction("ShowDisplayOptions"));
   ShowSettingsSubPageForActiveUser(kDisplaySettingsSubPageName);
 }
