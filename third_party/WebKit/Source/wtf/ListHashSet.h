@@ -187,7 +187,7 @@ private:
     void prependNode(Node*);
     void insertNodeBefore(Node* beforeNode, Node* newNode);
     void deleteAllNodes();
-    Allocator* allocator() const { return m_allocatorProvider.get(); }
+    Allocator* getAllocator() const { return m_allocatorProvider.get(); }
     void createAllocatorIfNeeded() { m_allocatorProvider.createAllocatorIfNeeded(); }
     void deallocate(Node* node) const { m_allocatorProvider.deallocate(node); }
 
@@ -468,7 +468,7 @@ public:
     operator const_iterator() const { return m_iterator; }
 
 private:
-    Node* node() { return m_iterator.node(); }
+    Node* getNode() { return m_iterator.node(); }
 
     const_iterator m_iterator;
 
@@ -833,7 +833,7 @@ typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCa
     // because it lets it take lvalues by reference, but for our purposes it's
     // inconvenient, since it constrains us to be const, whereas the allocator
     // actually changes when it does allocations.
-    auto result = m_impl.template add<BaseTranslator>(std::forward<IncomingValueType>(value), *this->allocator());
+    auto result = m_impl.template add<BaseTranslator>(std::forward<IncomingValueType>(value), *this->getAllocator());
     if (result.isNewEntry)
         appendNode(*result.storedValue);
     return AddResult(*result.storedValue, result.isNewEntry);
@@ -851,7 +851,7 @@ template <typename IncomingValueType>
 typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::appendOrMoveToLast(IncomingValueType&& value)
 {
     createAllocatorIfNeeded();
-    auto result = m_impl.template add<BaseTranslator>(std::forward<IncomingValueType>(value), *this->allocator());
+    auto result = m_impl.template add<BaseTranslator>(std::forward<IncomingValueType>(value), *this->getAllocator());
     Node* node = *result.storedValue;
     if (!result.isNewEntry)
         unlink(node);
@@ -864,7 +864,7 @@ template <typename IncomingValueType>
 typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::prependOrMoveToFirst(IncomingValueType&& value)
 {
     createAllocatorIfNeeded();
-    auto result = m_impl.template add<BaseTranslator>(std::forward<IncomingValueType>(value), *this->allocator());
+    auto result = m_impl.template add<BaseTranslator>(std::forward<IncomingValueType>(value), *this->getAllocator());
     Node* node = *result.storedValue;
     if (!result.isNewEntry)
         unlink(node);
@@ -877,9 +877,9 @@ template <typename IncomingValueType>
 typename ListHashSet<T, inlineCapacity, U, V>::AddResult ListHashSet<T, inlineCapacity, U, V>::insertBefore(iterator it, IncomingValueType&& newValue)
 {
     createAllocatorIfNeeded();
-    auto result = m_impl.template add<BaseTranslator>(std::forward<IncomingValueType>(newValue), *this->allocator());
+    auto result = m_impl.template add<BaseTranslator>(std::forward<IncomingValueType>(newValue), *this->getAllocator());
     if (result.isNewEntry)
-        insertNodeBefore(it.node(), *result.storedValue);
+        insertNodeBefore(it.getNode(), *result.storedValue);
     return AddResult(*result.storedValue, result.isNewEntry);
 }
 
@@ -896,8 +896,8 @@ inline void ListHashSet<T, inlineCapacity, U, V>::remove(iterator it)
 {
     if (it == end())
         return;
-    m_impl.remove(it.node());
-    unlinkAndDelete(it.node());
+    m_impl.remove(it.getNode());
+    unlinkAndDelete(it.getNode());
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
@@ -915,9 +915,9 @@ typename ListHashSet<T, inlineCapacity, U, V>::ValuePassOutType ListHashSet<T, i
     if (it == end())
         return ValueTraits::emptyValue();
 
-    m_impl.remove(it.node());
-    ValuePassOutType result = ValueTraits::passOut(it.node()->m_value);
-    unlinkAndDelete(it.node());
+    m_impl.remove(it.getNode());
+    ValuePassOutType result = ValueTraits::passOut(it.getNode()->m_value);
+    unlinkAndDelete(it.getNode());
 
     return result;
 }
@@ -963,7 +963,7 @@ template <typename T, size_t inlineCapacity, typename U, typename V>
 void ListHashSet<T, inlineCapacity, U, V>::unlinkAndDelete(Node* node)
 {
     unlink(node);
-    node->destroy(this->allocator());
+    node->destroy(this->getAllocator());
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
@@ -1020,7 +1020,7 @@ void ListHashSet<T, inlineCapacity, U, V>::deleteAllNodes()
         return;
 
     for (Node* node = m_head, *next = m_head->next(); node; node = next, next = node ? node->next() : 0)
-        node->destroy(this->allocator());
+        node->destroy(this->getAllocator());
 }
 
 template <typename T, size_t inlineCapacity, typename U, typename V>

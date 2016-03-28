@@ -268,7 +268,7 @@ public:
     template <typename IncomingValueType>
     AddResult insertBefore(ValuePeekInType beforeValue, IncomingValueType&& newValue);
     template <typename IncomingValueType>
-    AddResult insertBefore(iterator it, IncomingValueType&& newValue) { return m_impl.template add<NodeHashFunctions>(std::forward<IncomingValueType>(newValue), it.node()); }
+    AddResult insertBefore(iterator it, IncomingValueType&& newValue) { return m_impl.template add<NodeHashFunctions>(std::forward<IncomingValueType>(newValue), it.getNode()); }
 
     void remove(ValuePeekInType);
     void remove(iterator);
@@ -369,7 +369,7 @@ private:
 
     typedef LinkedHashSetConstIterator<LinkedHashSetType> const_iterator;
 
-    Node* node() { return const_cast<Node*>(m_iterator.node()); }
+    Node* getNode() { return const_cast<Node*>(m_iterator.node()); }
 
 protected:
     LinkedHashSetIterator(const Node* position, LinkedHashSetType* m_container)
@@ -713,7 +713,7 @@ inline void LinkedHashSet<T, U, V, W>::remove(iterator it)
 {
     if (it == end())
         return;
-    m_impl.remove(it.node());
+    m_impl.remove(it.getNode());
 }
 
 template<typename T, typename U, typename V, typename W>
