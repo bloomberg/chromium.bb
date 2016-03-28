@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/mac/io_surface.h"
 #include "ui/gfx/transform.h"
 
 @class AVSampleBufferDisplayLayer;
@@ -166,7 +167,10 @@ class CONTENT_EXPORT CALayerTree {
                     ContentLayer* old_layer,
                     float scale_factor);
 
-    const base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
+    // Ensure that the IOSurface be marked as in-use as soon as it is received.
+    // When they are committed to the window server, that will also increment
+    // their use count.
+    const gfx::ScopedInUseIOSurface io_surface;
     gfx::RectF contents_rect;
     gfx::Rect rect;
     unsigned background_color = 0;

@@ -24,6 +24,19 @@ struct IOSurfaceMachPortTraits {
   GFX_EXPORT static void Release(mach_port_t);
 };
 
+struct ScopedInUseIOSurfaceTraits {
+  static IOSurfaceRef InvalidValue() { return nullptr; }
+  static IOSurfaceRef Retain(IOSurfaceRef io_surface) {
+    CFRetain(io_surface);
+    IOSurfaceIncrementUseCount(io_surface);
+    return io_surface;
+  }
+  static void Release(IOSurfaceRef io_surface) {
+    IOSurfaceDecrementUseCount(io_surface);
+    CFRelease(io_surface);
+  }
+};
+
 }  // namespace internal
 
 using IOSurfaceId = GenericSharedMemoryId;
@@ -37,6 +50,11 @@ GFX_EXPORT IOSurfaceRef CreateIOSurface(const Size& size, BufferFormat format);
 // decremented.
 using ScopedRefCountedIOSurfaceMachPort =
     base::ScopedTypeRef<mach_port_t, internal::IOSurfaceMachPortTraits>;
+
+// A scoper for holding a reference to an IOSurface and also incrementing its
+// in-use counter while the scoper exists.
+using ScopedInUseIOSurface =
+    base::ScopedTypeRef<IOSurfaceRef, internal::ScopedInUseIOSurfaceTraits>;
 
 }  // namespace gfx
 

@@ -67,6 +67,20 @@ class ScopedTypeRef {
       object_ = Traits::Retain(object_);
   }
 
+  // Without this, passing a ScopedTypeRef<A,TraitsX> to construct a
+  // ScopedTypeRef<A,TraitsY> would automatically cast down to an A, and then
+  // ASSUME ownership of A, when a retain is what was needed.
+  template<typename OtherTraits>
+  ScopedTypeRef(const ScopedTypeRef<T, OtherTraits>& that_with_other_traits)
+      : object_(that_with_other_traits.get()) {
+    if (object_)
+      object_ = Traits::Retain(object_);
+  }
+
+  ScopedTypeRef(ScopedTypeRef<T, Traits>&& that) : object_(that.object_) {
+    that.object_ = Traits::InvalidValue();
+  }
+
   ~ScopedTypeRef() {
     if (object_)
       Traits::Release(object_);

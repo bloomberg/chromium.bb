@@ -250,13 +250,6 @@ CALayerTree::ContentLayer::ContentLayer(
       ca_edge_aa_mask |= kCALayerBottomEdge;
   }
 
-  // Ensure that the IOSurface be in use as soon as it is added to a
-  // ContentLayer, so that, by the time that the call to SwapBuffers completes,
-  // all IOSurfaces that can be used as CALayer contents in the future will be
-  // marked as InUse.
-  if (io_surface)
-    IOSurfaceIncrementUseCount(io_surface);
-
   // Only allow 4:2:0 frames which fill the layer's contents to be promoted to
   // AV layers.
   if (IOSurfaceGetPixelFormat(io_surface) ==
@@ -273,24 +266,15 @@ CALayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
       background_color(layer.background_color),
       ca_edge_aa_mask(layer.ca_edge_aa_mask),
       opacity(layer.opacity),
-      ca_layer(layer.ca_layer),
-      av_layer(layer.av_layer),
+      ca_layer(std::move(layer.ca_layer)),
+      av_layer(std::move(layer.av_layer)),
       use_av_layer(layer.use_av_layer) {
   DCHECK(!layer.ca_layer);
-  layer.ca_layer.reset();
-  layer.av_layer.reset();
-  // See remarks in the non-move constructor.
-  if (io_surface)
-    IOSurfaceIncrementUseCount(io_surface);
+  DCHECK(!layer.av_layer);
 }
 
 CALayerTree::ContentLayer::~ContentLayer() {
   [ca_layer removeFromSuperlayer];
-  // By the time the destructor is called, the IOSurface will have been passed
-  // to the WindowServer, and will remain InUse by the WindowServer as long as
-  // is needed to avoid recycling bugs.
-  if (io_surface)
-    IOSurfaceDecrementUseCount(io_surface);
 }
 
 bool CALayerTree::RootLayer::AddContentLayer(
