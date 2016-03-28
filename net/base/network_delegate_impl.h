@@ -182,13 +182,11 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
       const GURL& url,
       const GURL& first_party_for_cookies) const override;
 
-  // Returns true if the embedder has enabled the "first-party" cookie
-  // experiment, and false otherwise.
-  //
-  // TODO(mkwst): Remove this once we decide whether or not we wish to ship
-  // first-party cookies and cookie prefixes. https://crbug.com/459154,
-  // https://crbug.com/541511
+  // Returns true if the embedder has enabled experimental cookie features.
   bool OnAreExperimentalCookieFeaturesEnabled() const override;
+
+  // TODO(jww): Remove this once we ship strict secure cookies:
+  // https://crbug.com/546820
   bool OnAreStrictSecureCookiesEnabled() const override;
 
   // Called when the |referrer_url| for requesting |target_url| during handling

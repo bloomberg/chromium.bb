@@ -98,12 +98,10 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
   bool CanEnablePrivacyMode(const GURL& url,
                             const GURL& first_party_for_cookies) const;
 
-  // TODO(mkwst): Remove this once we decide whether or not we wish to ship
-  // first-party cookies and setting secure cookies require
-  // secure scheme. https://crbug.com/459154, https://crbug.com/541511,
-  // https://crbug.com/546820
   bool AreExperimentalCookieFeaturesEnabled() const;
-  // TODO(jww): Remove this once we ship strict secure cookies.
+
+  // TODO(jww): Remove this once we ship strict secure cookies:
+  // https://crbug.com/546820
   bool AreStrictSecureCookiesEnabled() const;
 
   bool CancelURLRequestWithPolicyViolatingReferrerHeader(
@@ -268,17 +266,13 @@ class NET_EXPORT NetworkDelegate : public base::NonThreadSafe {
 
   // Returns true if the embedder has enabled the experimental features, and
   // false otherwise.
-  //
-  // TODO(mkwst): Remove this once we decide whether or not we wish to ship
-  // first-party cookies, cookie prefixes, and setting secure cookies require
-  // secure scheme. https://crbug.com/459154, https://crbug.com/541511,
-  // https://crbug.com/546820
   virtual bool OnAreExperimentalCookieFeaturesEnabled() const = 0;
 
   // Returns true if the embedder has enabled experimental features or
   // specifically strict secure cookies, and false otherwise.
   //
-  // TODO(jww): Remove this once we ship strict secure cookies.
+  // TODO(jww): Remove this once we ship strict secure cookies:
+  // https://crbug.com/546820.
   virtual bool OnAreStrictSecureCookiesEnabled() const = 0;
 
   // Called when the |referrer_url| for requesting |target_url| during handling

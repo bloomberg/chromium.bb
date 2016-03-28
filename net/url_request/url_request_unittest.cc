@@ -2650,12 +2650,11 @@ TEST_F(URLRequestTest, DoNotSaveCookies_ViaPolicy_Async) {
   }
 }
 
-TEST_F(URLRequestTest, SameSiteCookiesEnabled) {
+TEST_F(URLRequestTest, SameSiteCookies) {
   LocalHttpTestServer test_server;
   ASSERT_TRUE(test_server.Start());
 
   TestNetworkDelegate network_delegate;
-  network_delegate.set_experimental_cookie_features_enabled(true);
   default_context_.set_network_delegate(&network_delegate);
 
   const std::string kHost = "example.test";
@@ -2762,70 +2761,6 @@ TEST_F(URLRequestTest, SameSiteCookiesEnabled) {
     EXPECT_EQ(std::string::npos,
               d.data_received().find("StrictSameSiteCookie=1"));
     EXPECT_EQ(std::string::npos, d.data_received().find("LaxSameSiteCookie=1"));
-    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
-    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-  }
-}
-
-TEST_F(URLRequestTest, SameSiteCookiesDisabled) {
-  LocalHttpTestServer test_server;
-  ASSERT_TRUE(test_server.Start());
-
-  // Set up a 'SameSite' cookie (on '127.0.0.1', as that's where
-  // LocalHttpTestServer points).
-  {
-    TestNetworkDelegate network_delegate;
-    network_delegate.set_experimental_cookie_features_enabled(false);
-    default_context_.set_network_delegate(&network_delegate);
-
-    TestDelegate d;
-    scoped_ptr<URLRequest> req(default_context_.CreateRequest(
-        test_server.GetURL("/set-cookie?StrictSameSiteCookie=1;SameSite=Strict&"
-                           "LaxSameSiteCookie=1;SameSite=Lax"),
-        DEFAULT_PRIORITY, &d));
-    req->Start();
-    base::RunLoop().Run();
-    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
-    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-    EXPECT_EQ(2, network_delegate.set_cookie_count());
-  }
-
-  // Verify that the cookie is sent for same-site requests.
-  {
-    TestNetworkDelegate network_delegate;
-    network_delegate.set_experimental_cookie_features_enabled(false);
-    default_context_.set_network_delegate(&network_delegate);
-    TestDelegate d;
-    scoped_ptr<URLRequest> req(default_context_.CreateRequest(
-        test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d));
-    req->set_first_party_for_cookies(test_server.GetURL("/"));
-    req->Start();
-    base::RunLoop().Run();
-
-    EXPECT_TRUE(d.data_received().find("StrictSameSiteCookie=1") !=
-                std::string::npos);
-    EXPECT_TRUE(d.data_received().find("LaxSameSiteCookie=1") !=
-                std::string::npos);
-    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
-    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
-  }
-
-  // Verify that the cookie is also sent for cross-site requests.
-  {
-    TestNetworkDelegate network_delegate;
-    network_delegate.set_experimental_cookie_features_enabled(false);
-    default_context_.set_network_delegate(&network_delegate);
-    TestDelegate d;
-    scoped_ptr<URLRequest> req(default_context_.CreateRequest(
-        test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d));
-    req->set_first_party_for_cookies(GURL("http://cross-site.test/"));
-    req->Start();
-    base::RunLoop().Run();
-
-    EXPECT_NE(d.data_received().find("StrictSameSiteCookie=1"),
-              std::string::npos);
-    EXPECT_TRUE(d.data_received().find("LaxSameSiteCookie=1") !=
-                std::string::npos);
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
   }

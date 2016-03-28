@@ -745,16 +745,9 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
     url::Origin requested_origin(request_->url());
     url::Origin site_for_cookies(request_->first_party_for_cookies());
 
-    if (!network_delegate() ||
-        !network_delegate()->AreExperimentalCookieFeaturesEnabled()) {
-      // TODO(mkwst): If same-site cookies aren't enabled, then tag the request
-      // as including both strict and lax same-site cookies. Drop this check
-      // once the feature is no longer behind a flag: https://crbug.com/459154.
-      options.set_same_site_cookie_mode(
-          CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
-    } else if (registry_controlled_domains::SameDomainOrHost(
-                   requested_origin, site_for_cookies,
-                   registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    if (registry_controlled_domains::SameDomainOrHost(
+            requested_origin, site_for_cookies,
+            registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
       if (registry_controlled_domains::SameDomainOrHost(
               requested_origin, request_->initiator(),
               registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
