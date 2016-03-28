@@ -163,14 +163,10 @@ WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
 
 #endif
 
-/* ASSERT_WITH_SECURITY_IMPLICATION / RELEASE_ASSERT_WITH_SECURITY_IMPLICATION
-
-   Use in places where failure of the assertion indicates a possible security
-   vulnerability. Classes of these vulnerabilities include bad casts, out of
-   bounds accesses, use-after-frees, etc. Please be sure to file bugs for these
-   failures using the security template:
-      http://code.google.com/p/chromium/issues/entry?template=Security%20Bug
-*/
+// ASSERT_WITH_SECURITY_IMPLICATION / RELEASE_ASSERT_WITH_SECURITY_IMPLICATION
+// They are deprecated.  ASSERT_WITH_SECURITY_IMPLICATION should be replaced
+// with SECURITY_DCHECK, and RELEASE_ASSERT_WITH_SECURITY_IMPLICATION should be
+// replaced with RELEASE_ASSERT.
 #ifdef ADDRESS_SANITIZER
 
 #define ASSERT_WITH_SECURITY_IMPLICATION(assertion) \
@@ -194,6 +190,18 @@ WTF_EXPORT void WTFPrintBacktrace(void** stack, int size);
 #define ENABLE_SECURITY_ASSERT 1
 #else
 #define ENABLE_SECURITY_ASSERT 0
+#endif
+
+// SECURITY_DCHECK
+// Use in places where failure of the assertion indicates a possible security
+// vulnerability. Classes of these vulnerabilities include bad casts, out of
+// bounds accesses, use-after-frees, etc. Please be sure to file bugs for these
+// failures using the security template:
+//    http://code.google.com/p/chromium/issues/entry?template=Security%20Bug
+#if ENABLE_SECURITY_ASSERT
+#define SECURITY_DCHECK(condition) LOG_IF(FATAL, !(condition)) << "Security check failed: " #condition ". "
+#else
+#define SECURITY_DCHECK(condition) ((void)0)
 #endif
 
 // WTF_LOG
