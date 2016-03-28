@@ -12,7 +12,7 @@
 
 #include "av1/encoder/cost.h"
 
-/* round(-log2(i/256.) * (1 << VP9_PROB_COST_SHIFT))
+/* round(-log2(i/256.) * (1 << AV1_PROB_COST_SHIFT))
    Begins and ends with a bogus entry to satisfy use of prob=0 in the firstpass.
    https://code.google.com/p/webm/issues/detail?id=1089 */
 const uint16_t av1_prob_cost[257] = {

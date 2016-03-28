@@ -61,9 +61,7 @@
 
 #define RAW_FRAME_HDR_SZ sizeof(uint32_t)
 
-#define AOM_FOURCC 0x30385056
-#define VP9_FOURCC 0x30395056
-#define AV1_FOURCC 0x303a5056
+#define AV1_FOURCC 0x31305641
 
 enum VideoFileType {
   FILE_TYPE_RAW,

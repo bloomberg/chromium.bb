@@ -48,8 +48,6 @@ void write_webm_file_header(struct EbmlGlobal *glob,
   video_track->SetStereoMode(stereo_fmt);
   const char *codec_id;
   switch (fourcc) {
-    case AOM_FOURCC: codec_id = "V_AOM"; break;
-    case VP9_FOURCC: codec_id = "V_VP9"; break;
     case AV1_FOURCC: codec_id = "V_AV1"; break;
     default: codec_id = "V_AV1"; break;
   }

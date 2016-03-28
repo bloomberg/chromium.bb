@@ -48,7 +48,7 @@ simple_encoder_vp8() {
 }
 
 # TODO(tomfinegan): Add a frame limit param to simple_encoder and enable this
-# test. VP9 is just too slow right now: This test takes 4m30s+ on a fast
+# test. AV1 is just too slow right now: This test takes 4m30s+ on a fast
 # machine.
 DISABLED_simple_encoder_vp9() {
   if [ "$(vp9_encode_available)" = "yes" ]; then

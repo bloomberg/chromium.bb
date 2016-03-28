@@ -1,49 +1,49 @@
 2015-11-09 v1.5.0 "Javan Whistling Duck"
-  This release improves upon the VP9 encoder and speeds up the encoding and
+  This release improves upon the AV1 encoder and speeds up the encoding and
   decoding processes.
 
   - Upgrading:
     This release is ABI incompatible with 1.4.0. It drops deprecated AOM
-    controls and adds a variety of VP9 controls for testing.
+    controls and adds a variety of AV1 controls for testing.
 
-    The aomenc utility now prefers VP9 by default.
+    The aomenc utility now prefers AV1 by default.
 
   - Enhancements:
-    Faster VP9 encoding and decoding
-    Smaller library size by combining functions used by AOM and VP9
+    Faster AV1 encoding and decoding
+    Smaller library size by combining functions used by AOM and AV1
 
   - Bug Fixes:
     A variety of fuzzing issues
 
 2015-04-03 v1.4.0 "Indian Runner Duck"
-  This release includes significant improvements to the VP9 codec.
+  This release includes significant improvements to the AV1 codec.
 
   - Upgrading:
     This release is ABI incompatible with 1.3.0. It drops the compatibility
     layer, requiring AOM_IMG_FMT_* instead of IMG_FMT_*, and adds several codec
-    controls for VP9.
+    controls for AV1.
 
   - Enhancements:
-    Faster VP9 encoding and decoding
-    Multithreaded VP9 decoding (tile and frame-based)
-    Multithreaded VP9 encoding - on by default
-    YUV 4:2:2 and 4:4:4 support in VP9
-    10 and 12bit support in VP9
+    Faster AV1 encoding and decoding
+    Multithreaded AV1 decoding (tile and frame-based)
+    Multithreaded AV1 encoding - on by default
+    YUV 4:2:2 and 4:4:4 support in AV1
+    10 and 12bit support in AV1
     64bit ARM support by replacing ARM assembly with intrinsics
 
   - Bug Fixes:
-    Fixes a VP9 bitstream issue in Profile 1. This only affected non-YUV 4:2:0
+    Fixes a AV1 bitstream issue in Profile 1. This only affected non-YUV 4:2:0
     files.
 
   - Known Issues:
     Frame Parallel decoding fails for segmented and non-420 files.
 
 2013-11-15 v1.3.0 "Forest"
-  This release introduces the VP9 codec in a backward-compatible way.
+  This release introduces the AV1 codec in a backward-compatible way.
   All existing users of AOM can continue to use the library without
-  modification. However, some AOM options do not map to VP9 in the same manner.
+  modification. However, some AOM options do not map to AV1 in the same manner.
 
-  The VP9 encoder in this release is not feature complete. Users interested in
+  The AV1 encoder in this release is not feature complete. Users interested in
   the encoder are advised to use the git master branch and discuss issues on
   libaom mailing lists.
 
@@ -78,7 +78,7 @@
       Add encoding option --static-thresh
 
   - Speed:
-      Miscellaneous speed optimizations for AOM and VP9.
+      Miscellaneous speed optimizations for AOM and AV1.
 
   - Quality:
       In general, quality is consistent with the Eider release.

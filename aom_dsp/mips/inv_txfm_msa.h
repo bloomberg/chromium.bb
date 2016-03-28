@@ -16,7 +16,7 @@
 #include "aom_dsp/mips/txfm_macros_msa.h"
 #include "aom_dsp/txfm_common.h"
 
-#define VP9_ADST8(in0, in1, in2, in3, in4, in5, in6, in7, out0, out1, out2,  \
+#define AV1_ADST8(in0, in1, in2, in3, in4, in5, in6, in7, out0, out1, out2,  \
                   out3, out4, out5, out6, out7)                              \
   {                                                                          \
     v8i16 cnst0_m, cnst1_m, cnst2_m, cnst3_m, cnst4_m;                       \
@@ -182,7 +182,7 @@
     PCKEV_H2_SH(int2_m, int2_m, int3_m, int3_m, out2, out3);           \
   }
 
-#define VP9_SET_CONST_PAIR(mask_h, idx1_h, idx2_h)    \
+#define AV1_SET_CONST_PAIR(mask_h, idx1_h, idx2_h)    \
   ({                                                  \
     v8i16 c0_m, c1_m;                                 \
                                                       \
@@ -193,7 +193,7 @@
   })
 
 /* multiply and add macro */
-#define VP9_MADD(inp0, inp1, inp2, inp3, cst0, cst1, cst2, cst3, out0, out1,  \
+#define AV1_MADD(inp0, inp1, inp2, inp3, cst0, cst1, cst2, cst3, out0, out1,  \
                  out2, out3)                                                  \
   {                                                                           \
     v8i16 madd_s0_m, madd_s1_m, madd_s2_m, madd_s3_m;                         \
@@ -221,13 +221,13 @@
     v8i16 mask_m = { cospi_28_64, cospi_4_64,  cospi_20_64,  cospi_12_64,     \
                      cospi_16_64, -cospi_4_64, -cospi_20_64, -cospi_16_64 };  \
                                                                               \
-    k0_m = VP9_SET_CONST_PAIR(mask_m, 0, 5);                                  \
-    k1_m = VP9_SET_CONST_PAIR(mask_m, 1, 0);                                  \
-    k2_m = VP9_SET_CONST_PAIR(mask_m, 6, 3);                                  \
-    k3_m = VP9_SET_CONST_PAIR(mask_m, 3, 2);                                  \
-    VP9_MADD(in1, in7, in3, in5, k0_m, k1_m, k2_m, k3_m, in1, in7, in3, in5); \
+    k0_m = AV1_SET_CONST_PAIR(mask_m, 0, 5);                                  \
+    k1_m = AV1_SET_CONST_PAIR(mask_m, 1, 0);                                  \
+    k2_m = AV1_SET_CONST_PAIR(mask_m, 6, 3);                                  \
+    k3_m = AV1_SET_CONST_PAIR(mask_m, 3, 2);                                  \
+    AV1_MADD(in1, in7, in3, in5, k0_m, k1_m, k2_m, k3_m, in1, in7, in3, in5); \
     SUB2(in1, in3, in7, in5, res0_m, res1_m);                                 \
-    k0_m = VP9_SET_CONST_PAIR(mask_m, 4, 7);                                  \
+    k0_m = AV1_SET_CONST_PAIR(mask_m, 4, 7);                                  \
     k1_m = __msa_splati_h(mask_m, 4);                                         \
                                                                               \
     ILVRL_H2_SH(res0_m, res1_m, res2_m, res3_m);                              \
@@ -239,13 +239,13 @@
     tp7_m = in7 + in5;                                                        \
     k2_m = AOM_SET_COSPI_PAIR(cospi_24_64, -cospi_8_64);                      \
     k3_m = AOM_SET_COSPI_PAIR(cospi_8_64, cospi_24_64);                       \
-    VP9_MADD(in0, in4, in2, in6, k1_m, k0_m, k2_m, k3_m, in0, in4, in2, in6); \
+    AV1_MADD(in0, in4, in2, in6, k1_m, k0_m, k2_m, k3_m, in0, in4, in2, in6); \
     BUTTERFLY_4(in0, in4, in2, in6, tp0_m, tp1_m, tp2_m, tp3_m);              \
     BUTTERFLY_8(tp0_m, tp1_m, tp2_m, tp3_m, tp4_m, tp5_m, tp6_m, tp7_m, out0, \
                 out1, out2, out3, out4, out5, out6, out7);                    \
   }
 
-#define VP9_IADST8x8_1D(in0, in1, in2, in3, in4, in5, in6, in7, out0, out1,   \
+#define AV1_IADST8x8_1D(in0, in1, in2, in3, in4, in5, in6, in7, out0, out1,   \
                         out2, out3, out4, out5, out6, out7)                   \
   {                                                                           \
     v4i32 r0_m, r1_m, r2_m, r3_m, r4_m, r5_m, r6_m, r7_m;                     \
@@ -259,13 +259,13 @@
       -cospi_24_64, cospi_8_64, cospi_16_64, -cospi_16_64, 0, 0, 0, 0         \
     };                                                                        \
                                                                               \
-    k0_m = VP9_SET_CONST_PAIR(mask1_m, 0, 1);                                 \
-    k1_m = VP9_SET_CONST_PAIR(mask1_m, 1, 2);                                 \
+    k0_m = AV1_SET_CONST_PAIR(mask1_m, 0, 1);                                 \
+    k1_m = AV1_SET_CONST_PAIR(mask1_m, 1, 2);                                 \
     ILVRL_H2_SH(in1, in0, in_s1, in_s0);                                      \
     DOTP_SH4_SW(in_s1, in_s0, in_s1, in_s0, k0_m, k0_m, k1_m, k1_m, r0_m,     \
                 r1_m, r2_m, r3_m);                                            \
-    k0_m = VP9_SET_CONST_PAIR(mask1_m, 6, 7);                                 \
-    k1_m = VP9_SET_CONST_PAIR(mask2_m, 0, 1);                                 \
+    k0_m = AV1_SET_CONST_PAIR(mask1_m, 6, 7);                                 \
+    k1_m = AV1_SET_CONST_PAIR(mask2_m, 0, 1);                                 \
     ILVRL_H2_SH(in5, in4, in_s1, in_s0);                                      \
     DOTP_SH4_SW(in_s1, in_s0, in_s1, in_s0, k0_m, k0_m, k1_m, k1_m, r4_m,     \
                 r5_m, r6_m, r7_m);                                            \
@@ -277,13 +277,13 @@
          m3_m);                                                               \
     SRARI_W4_SW(m0_m, m1_m, m2_m, m3_m, DCT_CONST_BITS);                      \
     PCKEV_H2_SW(m1_m, m0_m, m3_m, m2_m, t0_m, t1_m);                          \
-    k0_m = VP9_SET_CONST_PAIR(mask1_m, 3, 4);                                 \
-    k1_m = VP9_SET_CONST_PAIR(mask1_m, 4, 5);                                 \
+    k0_m = AV1_SET_CONST_PAIR(mask1_m, 3, 4);                                 \
+    k1_m = AV1_SET_CONST_PAIR(mask1_m, 4, 5);                                 \
     ILVRL_H2_SH(in3, in2, in_s1, in_s0);                                      \
     DOTP_SH4_SW(in_s1, in_s0, in_s1, in_s0, k0_m, k0_m, k1_m, k1_m, r0_m,     \
                 r1_m, r2_m, r3_m);                                            \
-    k0_m = VP9_SET_CONST_PAIR(mask2_m, 2, 3);                                 \
-    k1_m = VP9_SET_CONST_PAIR(mask2_m, 3, 4);                                 \
+    k0_m = AV1_SET_CONST_PAIR(mask2_m, 2, 3);                                 \
+    k1_m = AV1_SET_CONST_PAIR(mask2_m, 3, 4);                                 \
     ILVRL_H2_SH(in7, in6, in_s1, in_s0);                                      \
     DOTP_SH4_SW(in_s1, in_s0, in_s1, in_s0, k0_m, k0_m, k1_m, k1_m, r4_m,     \
                 r5_m, r6_m, r7_m);                                            \
@@ -297,12 +297,12 @@
     PCKEV_H2_SW(m1_m, m0_m, m3_m, m2_m, r2_m, r3_m);                          \
     ILVRL_H2_SW(r3_m, r2_m, m2_m, m3_m);                                      \
     BUTTERFLY_4(res0_m, res1_m, res3_m, res2_m, out0, in7, in4, in3);         \
-    k0_m = VP9_SET_CONST_PAIR(mask2_m, 5, 6);                                 \
-    k1_m = VP9_SET_CONST_PAIR(mask2_m, 6, 7);                                 \
+    k0_m = AV1_SET_CONST_PAIR(mask2_m, 5, 6);                                 \
+    k1_m = AV1_SET_CONST_PAIR(mask2_m, 6, 7);                                 \
     ILVRL_H2_SH(t1_m, t0_m, in_s1, in_s0);                                    \
     DOTP_SH4_SW(in_s1, in_s0, in_s1, in_s0, k0_m, k0_m, k1_m, k1_m, r0_m,     \
                 r1_m, r2_m, r3_m);                                            \
-    k1_m = VP9_SET_CONST_PAIR(mask3_m, 0, 1);                                 \
+    k1_m = AV1_SET_CONST_PAIR(mask3_m, 0, 1);                                 \
     DOTP_SH4_SW(m2_m, m3_m, m2_m, m3_m, k0_m, k0_m, k1_m, k1_m, r4_m, r5_m,   \
                 r6_m, r7_m);                                                  \
     ADD4(r0_m, r6_m, r1_m, r7_m, r2_m, r4_m, r3_m, r5_m, m0_m, m1_m, m2_m,    \
@@ -313,8 +313,8 @@
          m3_m);                                                               \
     SRARI_W4_SW(m0_m, m1_m, m2_m, m3_m, DCT_CONST_BITS);                      \
     PCKEV_H2_SH(m1_m, m0_m, m3_m, m2_m, in2, in5);                            \
-    k0_m = VP9_SET_CONST_PAIR(mask3_m, 2, 2);                                 \
-    k1_m = VP9_SET_CONST_PAIR(mask3_m, 2, 3);                                 \
+    k0_m = AV1_SET_CONST_PAIR(mask3_m, 2, 2);                                 \
+    k1_m = AV1_SET_CONST_PAIR(mask3_m, 2, 3);                                 \
     ILVRL_H2_SH(in4, in3, in_s1, in_s0);                                      \
     DOTP_SH4_SW(in_s1, in_s0, in_s1, in_s0, k0_m, k0_m, k1_m, k1_m, m0_m,     \
                 m1_m, m2_m, m3_m);                                            \

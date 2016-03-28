@@ -51,8 +51,8 @@ void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
 }
 
 #define RDTRUNC(RM, DM, R, D)                        \
-  (((1 << (VP9_PROB_COST_SHIFT - 1)) + (R) * (RM)) & \
-   ((1 << VP9_PROB_COST_SHIFT) - 1))
+  (((1 << (AV1_PROB_COST_SHIFT - 1)) + (R) * (RM)) & \
+   ((1 << AV1_PROB_COST_SHIFT) - 1))
 
 typedef struct av1_token_state {
   int rate;

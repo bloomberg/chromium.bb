@@ -255,14 +255,14 @@ TEST_P(DatarateTestLarge, ChangingDropFrameThresh) {
   }
 }
 
-class DatarateTestVP9Large
+class DatarateTestAV1Large
     : public ::libaom_test::EncoderTest,
       public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int> {
  public:
-  DatarateTestVP9Large() : EncoderTest(GET_PARAM(0)) {}
+  DatarateTestAV1Large() : EncoderTest(GET_PARAM(0)) {}
 
  protected:
-  virtual ~DatarateTestVP9Large() {}
+  virtual ~DatarateTestAV1Large() {}
 
   virtual void SetUp() {
     InitializeConfig();
@@ -364,18 +364,18 @@ class DatarateTestVP9Large
       }
     }
 
-    encoder->Control(VP9E_SET_NOISE_SENSITIVITY, denoiser_on_);
+    encoder->Control(AV1E_SET_NOISE_SENSITIVITY, denoiser_on_);
 
     if (cfg_.ts_number_layers > 1) {
       if (video->frame() == 0) {
-        encoder->Control(VP9E_SET_SVC, 1);
+        encoder->Control(AV1E_SET_SVC, 1);
       }
       aom_svc_layer_id_t layer_id;
       layer_id.spatial_layer_id = 0;
       frame_flags_ = SetFrameFlags(video->frame(), cfg_.ts_number_layers);
       layer_id.temporal_layer_id =
           SetLayerId(video->frame(), cfg_.ts_number_layers);
-      encoder->Control(VP9E_SET_SVC_LAYER_ID, &layer_id);
+      encoder->Control(AV1E_SET_SVC_LAYER_ID, &layer_id);
     }
     const aom_rational_t tb = video->timebase();
     timebase_ = static_cast<double>(tb.num) / tb.den;
@@ -448,7 +448,7 @@ class DatarateTestVP9Large
 };
 
 // Check basic rate targeting,
-TEST_P(DatarateTestVP9Large, BasicRateTargeting) {
+TEST_P(DatarateTestAV1Large, BasicRateTargeting) {
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
@@ -472,7 +472,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting) {
 }
 
 // Check basic rate targeting,
-TEST_P(DatarateTestVP9Large, BasicRateTargeting444) {
+TEST_P(DatarateTestAV1Large, BasicRateTargeting444) {
   ::libaom_test::Y4mVideoSource video("rush_hour_444.y4m", 0, 140);
 
   cfg_.g_profile = 1;
@@ -504,7 +504,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting444) {
 // as the drop frame threshold is increased, and (2) that the total number of
 // frame drops does not decrease as we increase frame drop threshold.
 // Use a lower qp-max to force some frame drops.
-TEST_P(DatarateTestVP9Large, ChangingDropFrameThresh) {
+TEST_P(DatarateTestAV1Large, ChangingDropFrameThresh) {
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
@@ -546,7 +546,7 @@ TEST_P(DatarateTestVP9Large, ChangingDropFrameThresh) {
 
 // Check basic rate targeting for 2 temporal layers.
 #if 0  // AV1 does not support multiple layers yet
-TEST_P(DatarateTestVP9Large, BasicRateTargeting2TemporalLayers) {
+TEST_P(DatarateTestAV1Large, BasicRateTargeting2TemporalLayers) {
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
@@ -562,7 +562,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting2TemporalLayers) {
   cfg_.ts_rate_decimator[0] = 2;
   cfg_.ts_rate_decimator[1] = 1;
 
-  cfg_.temporal_layering_mode = VP9E_TEMPORAL_LAYERING_MODE_BYPASS;
+  cfg_.temporal_layering_mode = AV1E_TEMPORAL_LAYERING_MODE_BYPASS;
 
   if (deadline_ == AOM_DL_REALTIME)
     cfg_.g_error_resilient = 1;
@@ -588,7 +588,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting2TemporalLayers) {
 }
 
 // Check basic rate targeting for 3 temporal layers.
-TEST_P(DatarateTestVP9Large, BasicRateTargeting3TemporalLayers) {
+TEST_P(DatarateTestAV1Large, BasicRateTargeting3TemporalLayers) {
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
@@ -605,7 +605,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting3TemporalLayers) {
   cfg_.ts_rate_decimator[1] = 2;
   cfg_.ts_rate_decimator[2] = 1;
 
-  cfg_.temporal_layering_mode = VP9E_TEMPORAL_LAYERING_MODE_BYPASS;
+  cfg_.temporal_layering_mode = AV1E_TEMPORAL_LAYERING_MODE_BYPASS;
 
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 200);
@@ -635,7 +635,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting3TemporalLayers) {
 // Check basic rate targeting for 3 temporal layers, with frame dropping.
 // Only for one (low) bitrate with lower max_quantizer, and somewhat higher
 // frame drop threshold, to force frame dropping.
-TEST_P(DatarateTestVP9Large, BasicRateTargeting3TemporalLayersFrameDropping) {
+TEST_P(DatarateTestAV1Large, BasicRateTargeting3TemporalLayersFrameDropping) {
   cfg_.rc_buf_initial_sz = 500;
   cfg_.rc_buf_optimal_sz = 500;
   cfg_.rc_buf_sz = 1000;
@@ -653,7 +653,7 @@ TEST_P(DatarateTestVP9Large, BasicRateTargeting3TemporalLayersFrameDropping) {
   cfg_.ts_rate_decimator[1] = 2;
   cfg_.ts_rate_decimator[2] = 1;
 
-  cfg_.temporal_layering_mode = VP9E_TEMPORAL_LAYERING_MODE_BYPASS;
+  cfg_.temporal_layering_mode = AV1E_TEMPORAL_LAYERING_MODE_BYPASS;
 
   ::libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                        30, 1, 0, 200);
@@ -716,12 +716,12 @@ class DatarateOnePassCbrSvc
       svc_params_.scaling_factor_den[0] = 288;
       svc_params_.scaling_factor_num[1] = 288;
       svc_params_.scaling_factor_den[1] = 288;
-      encoder->Control(VP9E_SET_SVC, 1);
-      encoder->Control(VP9E_SET_SVC_PARAMETERS, &svc_params_);
+      encoder->Control(AV1E_SET_SVC, 1);
+      encoder->Control(AV1E_SET_SVC_PARAMETERS, &svc_params_);
       encoder->Control(AOME_SET_CPUUSED, speed_setting_);
-      encoder->Control(VP9E_SET_TILE_COLUMNS, 0);
+      encoder->Control(AV1E_SET_TILE_COLUMNS, 0);
       encoder->Control(AOME_SET_MAX_INTRA_BITRATE_PCT, 300);
-      encoder->Control(VP9E_SET_TILE_COLUMNS, (cfg_.g_threads >> 1));
+      encoder->Control(AV1E_SET_TILE_COLUMNS, (cfg_.g_threads >> 1));
     }
     const aom_rational_t tb = video->timebase();
     timebase_ = static_cast<double>(tb.num) / tb.den;
@@ -894,7 +894,7 @@ TEST_P(DatarateOnePassCbrSvc, OnePassCbrSvc4threads) {
   EXPECT_EQ(GetMismatchFrames(), (unsigned int)0);
 }
 
-AV1_INSTANTIATE_TEST_CASE(DatarateTestVP9Large,
+AV1_INSTANTIATE_TEST_CASE(DatarateTestAV1Large,
                            ::testing::Values(::libaom_test::kOnePassGood,
                                              ::libaom_test::kRealTime),
                            ::testing::Range(2, 7));

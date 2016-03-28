@@ -28,10 +28,10 @@ using libaom_test::ACMRandom;
 
 const int count_test_block = 100000;
 
-// Base class for VP9 intra prediction tests.
-class VP9IntraPredBase {
+// Base class for AV1 intra prediction tests.
+class AV1IntraPredBase {
  public:
-  virtual ~VP9IntraPredBase() { libaom_test::ClearSystemState(); }
+  virtual ~AV1IntraPredBase() { libaom_test::ClearSystemState(); }
 
  protected:
   virtual void Predict(PREDICTION_MODE mode) = 0;
@@ -93,7 +93,7 @@ typedef void (*intra_pred_fn_t)(uint16_t *dst, ptrdiff_t stride,
                                 int bps);
 typedef std::tr1::tuple<intra_pred_fn_t, intra_pred_fn_t, int, int>
     intra_pred_params_t;
-class VP9IntraPredTest : public VP9IntraPredBase,
+class AV1IntraPredTest : public AV1IntraPredBase,
                          public ::testing::TestWithParam<intra_pred_params_t> {
   virtual void SetUp() {
     pred_fn_ = GET_PARAM(0);
@@ -116,7 +116,7 @@ class VP9IntraPredTest : public VP9IntraPredBase,
   int bit_depth_;
 };
 
-TEST_P(VP9IntraPredTest, IntraPredTests) {
+TEST_P(AV1IntraPredTest, IntraPredTests) {
   // max block size is 32
   DECLARE_ALIGNED(16, uint16_t, left_col[2 * 32]);
   DECLARE_ALIGNED(16, uint16_t, above_data[2 * 32 + 32]);
@@ -131,7 +131,7 @@ using std::tr1::make_tuple;
 #if CONFIG_AOM_HIGHBITDEPTH
 #if CONFIG_USE_X86INC
 INSTANTIATE_TEST_CASE_P(
-    SSE2_TO_C_8, VP9IntraPredTest,
+    SSE2_TO_C_8, AV1IntraPredTest,
     ::testing::Values(make_tuple(&aom_highbd_dc_predictor_32x32_sse2,
                                  &aom_highbd_dc_predictor_32x32_c, 32, 8),
                       make_tuple(&aom_highbd_tm_predictor_16x16_sse2,
@@ -158,7 +158,7 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_highbd_tm_predictor_8x8_c, 8, 8)));
 
 INSTANTIATE_TEST_CASE_P(
-    SSE2_TO_C_10, VP9IntraPredTest,
+    SSE2_TO_C_10, AV1IntraPredTest,
     ::testing::Values(make_tuple(&aom_highbd_dc_predictor_32x32_sse2,
                                  &aom_highbd_dc_predictor_32x32_c, 32, 10),
                       make_tuple(&aom_highbd_tm_predictor_16x16_sse2,
@@ -185,7 +185,7 @@ INSTANTIATE_TEST_CASE_P(
                                  &aom_highbd_tm_predictor_8x8_c, 8, 10)));
 
 INSTANTIATE_TEST_CASE_P(
-    SSE2_TO_C_12, VP9IntraPredTest,
+    SSE2_TO_C_12, AV1IntraPredTest,
     ::testing::Values(make_tuple(&aom_highbd_dc_predictor_32x32_sse2,
                                  &aom_highbd_dc_predictor_32x32_c, 32, 12),
                       make_tuple(&aom_highbd_tm_predictor_16x16_sse2,

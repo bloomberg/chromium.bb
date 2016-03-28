@@ -16,9 +16,9 @@
 . $(dirname $0)/tools_common.sh
 
 # Environment check: Make sure input is available:
-#   $AOM_IVF_FILE and $VP9_IVF_FILE are required.
+#   $AOM_IVF_FILE and $AV1_IVF_FILE are required.
 simple_decoder_verify_environment() {
-  if [ ! -e "${AOM_IVF_FILE}" ] || [ ! -e "${VP9_IVF_FILE}" ]; then
+  if [ ! -e "${AOM_IVF_FILE}" ] || [ ! -e "${AV1_IVF_FILE}" ]; then
     echo "Libaom test data must exist in LIBAOM_TEST_DATA_PATH."
     return 1
   fi
@@ -51,7 +51,7 @@ simple_decoder_vp8() {
 
 simple_decoder_vp9() {
   if [ "$(vp9_decode_available)" = "yes" ]; then
-    simple_decoder "${VP9_IVF_FILE}" vp9 || return 1
+    simple_decoder "${AV1_IVF_FILE}" vp9 || return 1
   fi
 }
 

@@ -28,7 +28,7 @@ extern "C" {
 #define RD_EPB_SHIFT 6
 
 #define RDCOST(RM, DM, R, D) \
-  (ROUND_POWER_OF_TWO(((int64_t)R) * (RM), VP9_PROB_COST_SHIFT) + (D << DM))
+  (ROUND_POWER_OF_TWO(((int64_t)R) * (RM), AV1_PROB_COST_SHIFT) + (D << DM))
 #define QIDX_SKIP_THRESH 115
 
 #define MV_COST_WEIGHT 108

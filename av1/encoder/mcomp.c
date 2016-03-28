@@ -84,7 +84,7 @@ static int mv_err_cost(const MV *mv, const MV *ref, const int *mvjcost,
     // accuracy in either bit cost or error cost will cause it to overflow.
     return ROUND_POWER_OF_TWO(
         (unsigned)mv_cost(&diff, mvjcost, mvcost) * error_per_bit,
-        RDDIV_BITS + VP9_PROB_COST_SHIFT - RD_EPB_SHIFT +
+        RDDIV_BITS + AV1_PROB_COST_SHIFT - RD_EPB_SHIFT +
             PIXEL_TRANSFORM_ERROR_SCALE);
   }
   return 0;
@@ -95,7 +95,7 @@ static int mvsad_err_cost(const MACROBLOCK *x, const MV *mv, const MV *ref,
   const MV diff = { mv->row - ref->row, mv->col - ref->col };
   return ROUND_POWER_OF_TWO(
       (unsigned)mv_cost(&diff, x->nmvjointsadcost, x->nmvsadcost) * sad_per_bit,
-      VP9_PROB_COST_SHIFT);
+      AV1_PROB_COST_SHIFT);
 }
 
 void av1_init_dsmotion_compensation(search_site_config *cfg, int stride) {

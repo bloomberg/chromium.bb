@@ -22,7 +22,7 @@ extern "C" {
 extern const uint16_t av1_prob_cost[257];
 
 // The factor to scale from cost in bits to cost in av1_prob_cost units.
-#define VP9_PROB_COST_SHIFT 9
+#define AV1_PROB_COST_SHIFT 9
 
 #define av1_cost_zero(prob) (av1_prob_cost[prob])
 

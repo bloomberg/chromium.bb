@@ -8,7 +8,7 @@
 ##  in the file PATENTS.  All contributing project authors may
 ##  be found in the AUTHORS file in the root of the source tree.
 ##
-##  This file tests the libaom vp9_spatial_svc_encoder example. To add new
+##  This file tests the libaom av1_spatial_svc_encoder example. To add new
 ##  tests to to this file, do the following:
 ##    1. Write a shell function (this is your test).
 ##    2. Add the function to vp9_spatial_svc_tests (on a new line).
@@ -16,17 +16,17 @@
 . $(dirname $0)/tools_common.sh
 
 # Environment check: $YUV_RAW_INPUT is required.
-vp9_spatial_svc_encoder_verify_environment() {
+av1_spatial_svc_encoder_verify_environment() {
   if [ ! -e "${YUV_RAW_INPUT}" ]; then
     echo "Libaom test data must exist in LIBAOM_TEST_DATA_PATH."
     return 1
   fi
 }
 
-# Runs vp9_spatial_svc_encoder. $1 is the test name.
-vp9_spatial_svc_encoder() {
+# Runs av1_spatial_svc_encoder. $1 is the test name.
+av1_spatial_svc_encoder() {
   local readonly \
-    encoder="${LIBAOM_BIN_PATH}/vp9_spatial_svc_encoder${AOM_TEST_EXE_SUFFIX}"
+    encoder="${LIBAOM_BIN_PATH}/av1_spatial_svc_encoder${AOM_TEST_EXE_SUFFIX}"
   local readonly test_name="$1"
   local readonly \
     output_file="${AOM_TEST_OUTPUT_DIR}/vp9_ssvc_encoder${test_name}.ivf"
@@ -54,7 +54,7 @@ vp9_spatial_svc() {
   if [ "$(vp9_encode_available)" = "yes" ]; then
     local readonly test_name="vp9_spatial_svc"
     for layers in $(seq 1 ${vp9_ssvc_test_layers}); do
-      vp9_spatial_svc_encoder "${test_name}" -sl ${layers}
+      av1_spatial_svc_encoder "${test_name}" -sl ${layers}
     done
   fi
 }
@@ -67,6 +67,6 @@ readonly vp9_spatial_svc_tests="DISABLED_vp9_spatial_svc_mode_i
 
 if [ "$(aom_config_option_enabled CONFIG_SPATIAL_SVC)" = "yes" ]; then
   run_tests \
-    vp9_spatial_svc_encoder_verify_environment \
+    av1_spatial_svc_encoder_verify_environment \
     "${vp9_spatial_svc_tests}"
 fi

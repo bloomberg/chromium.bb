@@ -216,7 +216,7 @@ int main(int argc, char **argv) {
   while (aom_img_read(&raw, infile)) {
     ++frame_count;
 
-    if (frame_count == 22 && encoder->fourcc == AOM_FOURCC) {
+    if (frame_count == 22 && encoder->fourcc == AV1_FOURCC) {
       set_roi_map(&cfg, &codec);
     } else if (frame_count == 33) {
       set_active_map(&cfg, &codec);

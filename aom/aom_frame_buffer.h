@@ -29,7 +29,7 @@ extern "C" {
  */
 #define AOM_MAXIMUM_WORK_BUFFERS 8
 
-/*!\brief The maximum number of reference buffers that a VP9 encoder may use.
+/*!\brief The maximum number of reference buffers that a AV1 encoder may use.
  */
 #define AOM_MAXIMUM_REF_BUFFERS 8
 

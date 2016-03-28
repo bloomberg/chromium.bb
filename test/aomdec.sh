@@ -16,9 +16,9 @@
 
 # Environment check: Make sure input is available.
 aomdec_verify_environment() {
-  if [ ! -e "${AOM_IVF_FILE}" ] || [ ! -e "${VP9_WEBM_FILE}" ] || \
-    [ ! -e "${VP9_FPM_WEBM_FILE}" ] || \
-    [ ! -e "${VP9_LT_50_FRAMES_WEBM_FILE}" ] ; then
+  if [ ! -e "${AOM_IVF_FILE}" ] || [ ! -e "${AV1_WEBM_FILE}" ] || \
+    [ ! -e "${AV1_FPM_WEBM_FILE}" ] || \
+    [ ! -e "${AV1_LT_50_FRAMES_WEBM_FILE}" ] ; then
     elog "Libaom test data must exist in LIBAOM_TEST_DATA_PATH."
     return 1
   fi
@@ -76,7 +76,7 @@ aomdec_vp8_ivf_pipe_input() {
 aomdec_vp9_webm() {
   if [ "$(aomdec_can_decode_vp9)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
-    aomdec "${VP9_WEBM_FILE}" --summary --noblit
+    aomdec "${AV1_WEBM_FILE}" --summary --noblit
   fi
 }
 
@@ -84,7 +84,7 @@ aomdec_vp9_webm_frame_parallel() {
   if [ "$(aomdec_can_decode_vp9)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
     for threads in 2 3 4 5 6 7 8; do
-      aomdec "${VP9_FPM_WEBM_FILE}" --summary --noblit --threads=$threads \
+      aomdec "${AV1_FPM_WEBM_FILE}" --summary --noblit --threads=$threads \
         --frame-parallel
     done
   fi
@@ -98,7 +98,7 @@ aomdec_vp9_webm_less_than_50_frames() {
     local readonly decoder="$(aom_tool_path aomdec)"
     local readonly expected=10
     local readonly num_frames=$(${AOM_TEST_PREFIX} "${decoder}" \
-      "${VP9_LT_50_FRAMES_WEBM_FILE}" --summary --noblit 2>&1 \
+      "${AV1_LT_50_FRAMES_WEBM_FILE}" --summary --noblit 2>&1 \
       | awk '/^[0-9]+ decoded frames/ { print $1 }')
     if [ "$num_frames" -ne "$expected" ]; then
       elog "Output frames ($num_frames) != expected ($expected)"

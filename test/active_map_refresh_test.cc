@@ -75,7 +75,7 @@ class ActiveMapRefreshTest
         static_cast<libaom_test::Y4mVideoSource *>(video);
     if (video->frame() == 1) {
       encoder->Control(AOME_SET_CPUUSED, cpu_used_);
-      encoder->Control(VP9E_SET_AQ_MODE, kAqModeCyclicRefresh);
+      encoder->Control(AV1E_SET_AQ_MODE, kAqModeCyclicRefresh);
     } else if (video->frame() >= 2 && video->img()) {
       aom_image_t *current = video->img();
       aom_image_t *previous = y4m_holder_->img();

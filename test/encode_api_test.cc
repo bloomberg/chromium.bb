@@ -20,12 +20,6 @@ namespace {
 
 TEST(EncodeAPI, InvalidParams) {
   static const aom_codec_iface_t *kCodecs[] = {
-#if CONFIG_AOM_ENCODER
-    &aom_codec_vp8_cx_algo,
-#endif
-#if CONFIG_VP9_ENCODER
-    &aom_codec_vp9_cx_algo,
-#endif
 #if CONFIG_AV1_ENCODER
     &aom_codec_av1_cx_algo,
 #endif

@@ -1026,18 +1026,18 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AOM_SET_DBG_COLOR_MB_MODES, ctrl_set_dbg_options },
   { AOM_SET_DBG_COLOR_B_MODES, ctrl_set_dbg_options },
   { AOM_SET_DBG_DISPLAY_MV, ctrl_set_dbg_options },
-  { VP9_INVERT_TILE_DECODE_ORDER, ctrl_set_invert_tile_order },
+  { AV1_INVERT_TILE_DECODE_ORDER, ctrl_set_invert_tile_order },
   { AOMD_SET_DECRYPTOR, ctrl_set_decryptor },
-  { VP9_SET_BYTE_ALIGNMENT, ctrl_set_byte_alignment },
-  { VP9_SET_SKIP_LOOP_FILTER, ctrl_set_skip_loop_filter },
+  { AV1_SET_BYTE_ALIGNMENT, ctrl_set_byte_alignment },
+  { AV1_SET_SKIP_LOOP_FILTER, ctrl_set_skip_loop_filter },
 
   // Getters
   { AOMD_GET_LAST_REF_UPDATES, ctrl_get_last_ref_updates },
   { AOMD_GET_FRAME_CORRUPTED, ctrl_get_frame_corrupted },
-  { VP9_GET_REFERENCE, ctrl_get_reference },
-  { VP9D_GET_DISPLAY_SIZE, ctrl_get_render_size },
-  { VP9D_GET_BIT_DEPTH, ctrl_get_bit_depth },
-  { VP9D_GET_FRAME_SIZE, ctrl_get_frame_size },
+  { AV1_GET_REFERENCE, ctrl_get_reference },
+  { AV1D_GET_DISPLAY_SIZE, ctrl_get_render_size },
+  { AV1D_GET_BIT_DEPTH, ctrl_get_bit_depth },
+  { AV1D_GET_FRAME_SIZE, ctrl_get_frame_size },
 
   { -1, NULL },
 };

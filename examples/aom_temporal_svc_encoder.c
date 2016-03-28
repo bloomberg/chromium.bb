@@ -630,7 +630,7 @@ int main(int argc, char **argv) {
   // Disable automatic keyframe placement.
   cfg.kf_min_dist = cfg.kf_max_dist = 3000;
 
-  cfg.temporal_layering_mode = VP9E_TEMPORAL_LAYERING_MODE_BYPASS;
+  cfg.temporal_layering_mode = AV1E_TEMPORAL_LAYERING_MODE_BYPASS;
 
   set_temporal_layer_pattern(layering_mode, &cfg, layer_flags,
                              &flag_periodicity);
@@ -683,13 +683,13 @@ int main(int argc, char **argv) {
   } else if (strncmp(encoder->name, "vp9", 3) == 0) {
     aom_svc_extra_cfg_t svc_params;
     aom_codec_control(&codec, AOME_SET_CPUUSED, speed);
-    aom_codec_control(&codec, VP9E_SET_AQ_MODE, 3);
-    aom_codec_control(&codec, VP9E_SET_FRAME_PERIODIC_BOOST, 0);
-    aom_codec_control(&codec, VP9E_SET_NOISE_SENSITIVITY, 0);
+    aom_codec_control(&codec, AV1E_SET_AQ_MODE, 3);
+    aom_codec_control(&codec, AV1E_SET_FRAME_PERIODIC_BOOST, 0);
+    aom_codec_control(&codec, AV1E_SET_NOISE_SENSITIVITY, 0);
     aom_codec_control(&codec, AOME_SET_STATIC_THRESHOLD, 1);
-    aom_codec_control(&codec, VP9E_SET_TUNE_CONTENT, 0);
-    aom_codec_control(&codec, VP9E_SET_TILE_COLUMNS, (cfg.g_threads >> 1));
-    if (aom_codec_control(&codec, VP9E_SET_SVC, layering_mode > 0 ? 1 : 0))
+    aom_codec_control(&codec, AV1E_SET_TUNE_CONTENT, 0);
+    aom_codec_control(&codec, AV1E_SET_TILE_COLUMNS, (cfg.g_threads >> 1));
+    if (aom_codec_control(&codec, AV1E_SET_SVC, layering_mode > 0 ? 1 : 0))
       die_codec(&codec, "Failed to set SVC");
     for (i = 0; i < cfg.ts_number_layers; ++i) {
       svc_params.max_quantizers[i] = cfg.rc_max_quantizer;
@@ -697,7 +697,7 @@ int main(int argc, char **argv) {
     }
     svc_params.scaling_factor_num[0] = cfg.g_h;
     svc_params.scaling_factor_den[0] = cfg.g_h;
-    aom_codec_control(&codec, VP9E_SET_SVC_PARAMETERS, &svc_params);
+    aom_codec_control(&codec, AV1E_SET_SVC_PARAMETERS, &svc_params);
   }
   if (strncmp(encoder->name, "vp8", 3) == 0) {
     aom_codec_control(&codec, AOME_SET_SCREEN_CONTENT_MODE, 0);
@@ -724,7 +724,7 @@ int main(int argc, char **argv) {
     layer_id.temporal_layer_id =
         cfg.ts_layer_id[frame_cnt % cfg.ts_periodicity];
     if (strncmp(encoder->name, "vp9", 3) == 0) {
-      aom_codec_control(&codec, VP9E_SET_SVC_LAYER_ID, &layer_id);
+      aom_codec_control(&codec, AV1E_SET_SVC_LAYER_ID, &layer_id);
     } else if (strncmp(encoder->name, "vp8", 3) == 0) {
       aom_codec_control(&codec, AOME_SET_TEMPORAL_LAYER_ID,
                         layer_id.temporal_layer_id);

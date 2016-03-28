@@ -25,7 +25,7 @@ namespace {
 using libaom_test::CodecFactory;
 using libaom_test::Decoder;
 using libaom_test::DxDataIterator;
-using libaom_test::VP9CodecFactory;
+using libaom_test::AV1CodecFactory;
 
 class SvcTest : public ::testing::Test {
  protected:
@@ -59,7 +59,7 @@ class SvcTest : public ::testing::Test {
     codec_enc_.kf_max_dist = 100;
 
     aom_codec_dec_cfg_t dec_cfg = aom_codec_dec_cfg_t();
-    VP9CodecFactory codec_factory;
+    AV1CodecFactory codec_factory;
     decoder_ = codec_factory.CreateDecoder(dec_cfg, 0);
 
     tile_columns_ = 0;
@@ -76,8 +76,8 @@ class SvcTest : public ::testing::Test {
         aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
     EXPECT_EQ(AOM_CODEC_OK, res);
     aom_codec_control(&codec_, AOME_SET_CPUUSED, 4);  // Make the test faster
-    aom_codec_control(&codec_, VP9E_SET_TILE_COLUMNS, tile_columns_);
-    aom_codec_control(&codec_, VP9E_SET_TILE_ROWS, tile_rows_);
+    aom_codec_control(&codec_, AV1E_SET_TILE_COLUMNS, tile_columns_);
+    aom_codec_control(&codec_, AV1E_SET_TILE_ROWS, tile_rows_);
     codec_initialized_ = true;
   }
 

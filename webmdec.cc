@@ -99,11 +99,7 @@ int file_is_webm(struct WebmInputContext *webm_ctx,
     return 0;
   }
 
-  if (!strncmp(video_track->GetCodecId(), "V_AOM", 5)) {
-    aom_ctx->fourcc = AOM_FOURCC;
-  } else if (!strncmp(video_track->GetCodecId(), "V_VP9", 5)) {
-    aom_ctx->fourcc = VP9_FOURCC;
-  } else if (!strncmp(video_track->GetCodecId(), "V_AV1", 6)) {
+  if (!strncmp(video_track->GetCodecId(), "V_AV1", 5)) {
     aom_ctx->fourcc = AV1_FOURCC;
   } else {
     rewind_and_reset(webm_ctx, aom_ctx);

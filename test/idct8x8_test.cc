@@ -61,7 +61,7 @@ void reference_dct_2d(int16_t input[64], double output[64]) {
   for (int i = 0; i < 64; ++i) output[i] *= 2;
 }
 
-TEST(VP9Idct8x8Test, AccuracyCheck) {
+TEST(AV1Idct8x8Test, AccuracyCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   const int count_test_block = 10000;
   for (int i = 0; i < count_test_block; ++i) {

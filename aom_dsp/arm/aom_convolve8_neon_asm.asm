@@ -14,8 +14,8 @@
     ; w%4 == 0
     ; h%4 == 0
     ; taps == 8
-    ; VP9_FILTER_WEIGHT == 128
-    ; VP9_FILTER_SHIFT == 7
+    ; AV1_FILTER_WEIGHT == 128
+    ; AV1_FILTER_SHIFT == 7
 
     EXPORT  |aom_convolve8_horiz_neon|
     EXPORT  |aom_convolve8_vert_neon|

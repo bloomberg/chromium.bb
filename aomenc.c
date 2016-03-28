@@ -452,20 +452,20 @@ static const arg_def_t *av1_args[] = {
 static const int av1_arg_ctrl_map[] = {
   AOME_SET_CPUUSED,                 AOME_SET_ENABLEAUTOALTREF,
   AOME_SET_SHARPNESS,               AOME_SET_STATIC_THRESHOLD,
-  VP9E_SET_TILE_COLUMNS,            VP9E_SET_TILE_ROWS,
+  AV1E_SET_TILE_COLUMNS,            AV1E_SET_TILE_ROWS,
   AOME_SET_ARNR_MAXFRAMES,          AOME_SET_ARNR_STRENGTH,
   AOME_SET_ARNR_TYPE,               AOME_SET_TUNING,
   AOME_SET_CQ_LEVEL,                AOME_SET_MAX_INTRA_BITRATE_PCT,
-  VP9E_SET_MAX_INTER_BITRATE_PCT,   VP9E_SET_GF_CBR_BOOST_PCT,
-  VP9E_SET_LOSSLESS,
+  AV1E_SET_MAX_INTER_BITRATE_PCT,   AV1E_SET_GF_CBR_BOOST_PCT,
+  AV1E_SET_LOSSLESS,
 #if CONFIG_AOM_QM
-  VP9E_SET_ENABLE_QM,               VP9E_SET_QM_MIN,
-  VP9E_SET_QM_MAX,
+  AV1E_SET_ENABLE_QM,               AV1E_SET_QM_MIN,
+  AV1E_SET_QM_MAX,
 #endif
-  VP9E_SET_FRAME_PARALLEL_DECODING, VP9E_SET_AQ_MODE,
-  VP9E_SET_FRAME_PERIODIC_BOOST,    VP9E_SET_NOISE_SENSITIVITY,
-  VP9E_SET_TUNE_CONTENT,            VP9E_SET_COLOR_SPACE,
-  VP9E_SET_MIN_GF_INTERVAL,         VP9E_SET_MAX_GF_INTERVAL,
+  AV1E_SET_FRAME_PARALLEL_DECODING, AV1E_SET_AQ_MODE,
+  AV1E_SET_FRAME_PERIODIC_BOOST,    AV1E_SET_NOISE_SENSITIVITY,
+  AV1E_SET_TUNE_CONTENT,            AV1E_SET_COLOR_SPACE,
+  AV1E_SET_MIN_GF_INTERVAL,         AV1E_SET_MAX_GF_INTERVAL,
   0
 };
 /* clang-format on */
@@ -899,7 +899,7 @@ static void parse_global_config(struct VpxEncoderConfig *global, char **argv) {
   /* Validate global config */
   if (global->passes == 0) {
 #if CONFIG_AV1_ENCODER
-    // Make default VP9 passes = 2 until there is a better quality 1-pass
+    // Make default AV1 passes = 2 until there is a better quality 1-pass
     // encoder
     if (global->codec != NULL && global->codec->name != NULL)
       global->passes = (strcmp(global->codec->name, "vp9") == 0 &&
@@ -1040,7 +1040,7 @@ static int parse_stream_params(struct VpxEncoderConfig *global,
   if (0) {
 #if CONFIG_AV1_ENCODER
   } else if (strcmp(global->codec->name, "av1") == 0) {
-    // TODO(jingning): Reuse VP9 specific encoder configuration parameters.
+    // TODO(jingning): Reuse AV1 specific encoder configuration parameters.
     // Consider to expand this set for AV1 encoder control.
     ctrl_args = av1_args;
     ctrl_args_map = av1_arg_ctrl_map;
@@ -1717,9 +1717,9 @@ static void test_decode(struct stream_state *stream,
 
   ref_enc.idx = 0;
   ref_dec.idx = 0;
-  aom_codec_control(&stream->encoder, VP9_GET_REFERENCE, &ref_enc);
+  aom_codec_control(&stream->encoder, AV1_GET_REFERENCE, &ref_enc);
   enc_img = ref_enc.img;
-  aom_codec_control(&stream->decoder, VP9_GET_REFERENCE, &ref_dec);
+  aom_codec_control(&stream->decoder, AV1_GET_REFERENCE, &ref_dec);
   dec_img = ref_dec.img;
 #if CONFIG_AOM_HIGHBITDEPTH
   if ((enc_img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) !=
@@ -1857,7 +1857,7 @@ int main(int argc, const char **argv_) {
   if (!input.filename) usage_exit();
 
   /* Decide if other chroma subsamplings than 4:2:0 are supported */
-  if (global.codec->fourcc == VP9_FOURCC || global.codec->fourcc == AV1_FOURCC)
+  if (global.codec->fourcc == AV1_FOURCC)
     input.only_i420 = 0;
 
   for (pass = global.pass ? global.pass - 1 : 0; pass < global.passes; pass++) {
@@ -2118,7 +2118,7 @@ int main(int argc, const char **argv_) {
     }
 
     if (global.show_psnr) {
-      if (global.codec->fourcc == VP9_FOURCC) {
+      if (global.codec->fourcc == AV1_FOURCC) {
         FOREACH_STREAM(
             show_psnr(stream, (1 << stream->config.cfg.g_input_bit_depth) - 1));
       } else {

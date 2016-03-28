@@ -33,7 +33,7 @@ class TileIndependenceTest : public ::libaom_test::EncoderTest,
     cfg.threads = 1;
     fw_dec_ = codec_->CreateDecoder(cfg, 0);
     inv_dec_ = codec_->CreateDecoder(cfg, 0);
-    inv_dec_->Control(VP9_INVERT_TILE_DECODE_ORDER, 1);
+    inv_dec_->Control(AV1_INVERT_TILE_DECODE_ORDER, 1);
   }
 
   virtual ~TileIndependenceTest() {
@@ -49,7 +49,7 @@ class TileIndependenceTest : public ::libaom_test::EncoderTest,
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   libaom_test::Encoder *encoder) {
     if (video->frame() == 1) {
-      encoder->Control(VP9E_SET_TILE_COLUMNS, n_tiles_);
+      encoder->Control(AV1E_SET_TILE_COLUMNS, n_tiles_);
     }
   }
 

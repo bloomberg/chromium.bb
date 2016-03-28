@@ -552,7 +552,7 @@ static aom_codec_err_t ctrl_set_enable_auto_alt_ref(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_set_noise_sensitivity(aom_codec_alg_priv_t *ctx,
                                                   va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.noise_sensitivity = CAST(VP9E_SET_NOISE_SENSITIVITY, args);
+  extra_cfg.noise_sensitivity = CAST(AV1E_SET_NOISE_SENSITIVITY, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -573,14 +573,14 @@ static aom_codec_err_t ctrl_set_static_thresh(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_set_tile_columns(aom_codec_alg_priv_t *ctx,
                                              va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.tile_columns = CAST(VP9E_SET_TILE_COLUMNS, args);
+  extra_cfg.tile_columns = CAST(AV1E_SET_TILE_COLUMNS, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_tile_rows(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.tile_rows = CAST(VP9E_SET_TILE_ROWS, args);
+  extra_cfg.tile_rows = CAST(AV1E_SET_TILE_ROWS, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -638,14 +638,14 @@ static aom_codec_err_t ctrl_set_rc_max_inter_bitrate_pct(
 static aom_codec_err_t ctrl_set_rc_gf_cbr_boost_pct(aom_codec_alg_priv_t *ctx,
                                                     va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.gf_cbr_boost_pct = CAST(VP9E_SET_GF_CBR_BOOST_PCT, args);
+  extra_cfg.gf_cbr_boost_pct = CAST(AV1E_SET_GF_CBR_BOOST_PCT, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_lossless(aom_codec_alg_priv_t *ctx,
                                          va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.lossless = CAST(VP9E_SET_LOSSLESS, args);
+  extra_cfg.lossless = CAST(AV1E_SET_LOSSLESS, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -653,21 +653,21 @@ static aom_codec_err_t ctrl_set_lossless(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_set_enable_qm(aom_codec_alg_priv_t *ctx,
                                          va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.enable_qm = CAST(VP9E_SET_ENABLE_QM, args);
+  extra_cfg.enable_qm = CAST(AV1E_SET_ENABLE_QM, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_qm_min(aom_codec_alg_priv_t *ctx,
                                        va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.qm_min = CAST(VP9E_SET_QM_MIN, args);
+  extra_cfg.qm_min = CAST(AV1E_SET_QM_MIN, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_qm_max(aom_codec_alg_priv_t *ctx,
                                        va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.qm_max = CAST(VP9E_SET_QM_MAX, args);
+  extra_cfg.qm_max = CAST(AV1E_SET_QM_MAX, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 #endif
@@ -676,35 +676,35 @@ static aom_codec_err_t ctrl_set_frame_parallel_decoding_mode(
     aom_codec_alg_priv_t *ctx, va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.frame_parallel_decoding_mode =
-      CAST(VP9E_SET_FRAME_PARALLEL_DECODING, args);
+      CAST(AV1E_SET_FRAME_PARALLEL_DECODING, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_aq_mode(aom_codec_alg_priv_t *ctx,
                                         va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.aq_mode = CAST(VP9E_SET_AQ_MODE, args);
+  extra_cfg.aq_mode = CAST(AV1E_SET_AQ_MODE, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_min_gf_interval(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.min_gf_interval = CAST(VP9E_SET_MIN_GF_INTERVAL, args);
+  extra_cfg.min_gf_interval = CAST(AV1E_SET_MIN_GF_INTERVAL, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_max_gf_interval(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.max_gf_interval = CAST(VP9E_SET_MAX_GF_INTERVAL, args);
+  extra_cfg.max_gf_interval = CAST(AV1E_SET_MAX_GF_INTERVAL, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_frame_periodic_boost(aom_codec_alg_priv_t *ctx,
                                                      va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.frame_periodic_boost = CAST(VP9E_SET_FRAME_PERIODIC_BOOST, args);
+  extra_cfg.frame_periodic_boost = CAST(AV1E_SET_FRAME_PERIODIC_BOOST, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1217,21 +1217,21 @@ static aom_codec_err_t ctrl_register_cx_callback(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_set_tune_content(aom_codec_alg_priv_t *ctx,
                                              va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.content = CAST(VP9E_SET_TUNE_CONTENT, args);
+  extra_cfg.content = CAST(AV1E_SET_TUNE_CONTENT, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_color_space(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.color_space = CAST(VP9E_SET_COLOR_SPACE, args);
+  extra_cfg.color_space = CAST(AV1E_SET_COLOR_SPACE, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
 static aom_codec_err_t ctrl_set_color_range(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.color_range = CAST(VP9E_SET_COLOR_RANGE, args);
+  extra_cfg.color_range = CAST(AV1E_SET_COLOR_RANGE, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1257,39 +1257,39 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AOME_SET_ENABLEAUTOALTREF, ctrl_set_enable_auto_alt_ref },
   { AOME_SET_SHARPNESS, ctrl_set_sharpness },
   { AOME_SET_STATIC_THRESHOLD, ctrl_set_static_thresh },
-  { VP9E_SET_TILE_COLUMNS, ctrl_set_tile_columns },
-  { VP9E_SET_TILE_ROWS, ctrl_set_tile_rows },
+  { AV1E_SET_TILE_COLUMNS, ctrl_set_tile_columns },
+  { AV1E_SET_TILE_ROWS, ctrl_set_tile_rows },
   { AOME_SET_ARNR_MAXFRAMES, ctrl_set_arnr_max_frames },
   { AOME_SET_ARNR_STRENGTH, ctrl_set_arnr_strength },
   { AOME_SET_ARNR_TYPE, ctrl_set_arnr_type },
   { AOME_SET_TUNING, ctrl_set_tuning },
   { AOME_SET_CQ_LEVEL, ctrl_set_cq_level },
   { AOME_SET_MAX_INTRA_BITRATE_PCT, ctrl_set_rc_max_intra_bitrate_pct },
-  { VP9E_SET_MAX_INTER_BITRATE_PCT, ctrl_set_rc_max_inter_bitrate_pct },
-  { VP9E_SET_GF_CBR_BOOST_PCT, ctrl_set_rc_gf_cbr_boost_pct },
-  { VP9E_SET_LOSSLESS, ctrl_set_lossless },
+  { AV1E_SET_MAX_INTER_BITRATE_PCT, ctrl_set_rc_max_inter_bitrate_pct },
+  { AV1E_SET_GF_CBR_BOOST_PCT, ctrl_set_rc_gf_cbr_boost_pct },
+  { AV1E_SET_LOSSLESS, ctrl_set_lossless },
 #if CONFIG_AOM_QM
-  { VP9E_SET_ENABLE_QM, ctrl_set_enable_qm },
-  { VP9E_SET_QM_MIN, ctrl_set_qm_min },
-  { VP9E_SET_QM_MAX, ctrl_set_qm_max },
+  { AV1E_SET_ENABLE_QM, ctrl_set_enable_qm },
+  { AV1E_SET_QM_MIN, ctrl_set_qm_min },
+  { AV1E_SET_QM_MAX, ctrl_set_qm_max },
 #endif
-  { VP9E_SET_FRAME_PARALLEL_DECODING, ctrl_set_frame_parallel_decoding_mode },
-  { VP9E_SET_AQ_MODE, ctrl_set_aq_mode },
-  { VP9E_SET_FRAME_PERIODIC_BOOST, ctrl_set_frame_periodic_boost },
-  { VP9E_REGISTER_CX_CALLBACK, ctrl_register_cx_callback },
-  { VP9E_SET_TUNE_CONTENT, ctrl_set_tune_content },
-  { VP9E_SET_COLOR_SPACE, ctrl_set_color_space },
-  { VP9E_SET_COLOR_RANGE, ctrl_set_color_range },
-  { VP9E_SET_NOISE_SENSITIVITY, ctrl_set_noise_sensitivity },
-  { VP9E_SET_MIN_GF_INTERVAL, ctrl_set_min_gf_interval },
-  { VP9E_SET_MAX_GF_INTERVAL, ctrl_set_max_gf_interval },
-  { VP9E_SET_RENDER_SIZE, ctrl_set_render_size },
+  { AV1E_SET_FRAME_PARALLEL_DECODING, ctrl_set_frame_parallel_decoding_mode },
+  { AV1E_SET_AQ_MODE, ctrl_set_aq_mode },
+  { AV1E_SET_FRAME_PERIODIC_BOOST, ctrl_set_frame_periodic_boost },
+  { AV1E_REGISTER_CX_CALLBACK, ctrl_register_cx_callback },
+  { AV1E_SET_TUNE_CONTENT, ctrl_set_tune_content },
+  { AV1E_SET_COLOR_SPACE, ctrl_set_color_space },
+  { AV1E_SET_COLOR_RANGE, ctrl_set_color_range },
+  { AV1E_SET_NOISE_SENSITIVITY, ctrl_set_noise_sensitivity },
+  { AV1E_SET_MIN_GF_INTERVAL, ctrl_set_min_gf_interval },
+  { AV1E_SET_MAX_GF_INTERVAL, ctrl_set_max_gf_interval },
+  { AV1E_SET_RENDER_SIZE, ctrl_set_render_size },
 
   // Getters
   { AOME_GET_LAST_QUANTIZER, ctrl_get_quantizer },
   { AOME_GET_LAST_QUANTIZER_64, ctrl_get_quantizer64 },
-  { VP9_GET_REFERENCE, ctrl_get_reference },
-  { VP9E_GET_ACTIVEMAP, ctrl_get_active_map },
+  { AV1_GET_REFERENCE, ctrl_get_reference },
+  { AV1E_GET_ACTIVEMAP, ctrl_get_active_map },
 
   { -1, NULL },
 };

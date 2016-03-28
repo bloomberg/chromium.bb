@@ -42,7 +42,7 @@ class LosslessTest
       // Only call Control if quantizer > 0 to verify that using quantizer
       // alone will activate lossless
       if (cfg_.rc_max_quantizer > 0 || cfg_.rc_min_quantizer > 0) {
-        encoder->Control(VP9E_SET_LOSSLESS, 1);
+        encoder->Control(AV1E_SET_LOSSLESS, 1);
       }
     }
   }

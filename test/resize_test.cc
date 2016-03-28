@@ -286,7 +286,7 @@ class ResizeRealtimeTest
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   libaom_test::Encoder *encoder) {
     if (video->frame() == 0) {
-      encoder->Control(VP9E_SET_AQ_MODE, 3);
+      encoder->Control(AV1E_SET_AQ_MODE, 3);
       encoder->Control(AOME_SET_CPUUSED, set_cpu_used_);
     }
 

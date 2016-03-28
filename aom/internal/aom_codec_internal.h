@@ -240,7 +240,7 @@ typedef aom_image_t *(*aom_codec_get_frame_fn_t)(aom_codec_alg_priv_t *ctx,
  *     using external frame buffers.
  *
  * \note
- * When decoding VP9, the application may be required to pass in at least
+ * When decoding AV1, the application may be required to pass in at least
  * #AOM_MAXIMUM_WORK_BUFFERS external frame
  * buffers.
  */

@@ -48,7 +48,7 @@ twopass_encoder_vp8() {
 }
 
 # TODO(tomfinegan): Add a frame limit param to twopass_encoder and enable this
-# test. VP9 is just too slow right now: This test takes 31m16s+ on a fast
+# test. AV1 is just too slow right now: This test takes 31m16s+ on a fast
 # machine.
 DISABLED_twopass_encoder_vp9() {
   if [ "$(vp9_encode_available)" = "yes" ]; then

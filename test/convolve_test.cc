@@ -68,8 +68,8 @@ struct ConvolveFunctions {
 typedef std::tr1::tuple<int, int, const ConvolveFunctions *> ConvolveParam;
 
 // Reference 8-tap subpixel filter, slightly modified to fit into this test.
-#define VP9_FILTER_WEIGHT 128
-#define VP9_FILTER_SHIFT 7
+#define AV1_FILTER_WEIGHT 128
+#define AV1_FILTER_SHIFT 7
 uint8_t clip_pixel(int x) { return x < 0 ? 0 : x > 255 ? 255 : x; }
 
 void filter_block2d_8_c(const uint8_t *src_ptr, const unsigned int src_stride,
@@ -106,10 +106,10 @@ void filter_block2d_8_c(const uint8_t *src_ptr, const unsigned int src_stride,
                        (src_ptr[2] * HFilter[2]) + (src_ptr[3] * HFilter[3]) +
                        (src_ptr[4] * HFilter[4]) + (src_ptr[5] * HFilter[5]) +
                        (src_ptr[6] * HFilter[6]) + (src_ptr[7] * HFilter[7]) +
-                       (VP9_FILTER_WEIGHT >> 1);  // Rounding
+                       (AV1_FILTER_WEIGHT >> 1);  // Rounding
 
       // Normalize back to 0-255...
-      *output_ptr = clip_pixel(temp >> VP9_FILTER_SHIFT);
+      *output_ptr = clip_pixel(temp >> AV1_FILTER_SHIFT);
       ++src_ptr;
       output_ptr += intermediate_height;
     }
@@ -127,10 +127,10 @@ void filter_block2d_8_c(const uint8_t *src_ptr, const unsigned int src_stride,
                        (src_ptr[2] * VFilter[2]) + (src_ptr[3] * VFilter[3]) +
                        (src_ptr[4] * VFilter[4]) + (src_ptr[5] * VFilter[5]) +
                        (src_ptr[6] * VFilter[6]) + (src_ptr[7] * VFilter[7]) +
-                       (VP9_FILTER_WEIGHT >> 1);  // Rounding
+                       (AV1_FILTER_WEIGHT >> 1);  // Rounding
 
       // Normalize back to 0-255...
-      *dst_ptr++ = clip_pixel(temp >> VP9_FILTER_SHIFT);
+      *dst_ptr++ = clip_pixel(temp >> AV1_FILTER_SHIFT);
       src_ptr += intermediate_height;
     }
     src_ptr += intermediate_next_stride;
@@ -203,10 +203,10 @@ void highbd_filter_block2d_8_c(const uint16_t *src_ptr,
                          (src_ptr[2] * HFilter[2]) + (src_ptr[3] * HFilter[3]) +
                          (src_ptr[4] * HFilter[4]) + (src_ptr[5] * HFilter[5]) +
                          (src_ptr[6] * HFilter[6]) + (src_ptr[7] * HFilter[7]) +
-                         (VP9_FILTER_WEIGHT >> 1);  // Rounding
+                         (AV1_FILTER_WEIGHT >> 1);  // Rounding
 
         // Normalize back to 0-255...
-        *output_ptr = clip_pixel_highbd(temp >> VP9_FILTER_SHIFT, bd);
+        *output_ptr = clip_pixel_highbd(temp >> AV1_FILTER_SHIFT, bd);
         ++src_ptr;
         output_ptr += intermediate_height;
       }
@@ -227,10 +227,10 @@ void highbd_filter_block2d_8_c(const uint16_t *src_ptr,
                          (src_ptr[2] * VFilter[2]) + (src_ptr[3] * VFilter[3]) +
                          (src_ptr[4] * VFilter[4]) + (src_ptr[5] * VFilter[5]) +
                          (src_ptr[6] * VFilter[6]) + (src_ptr[7] * VFilter[7]) +
-                         (VP9_FILTER_WEIGHT >> 1);  // Rounding
+                         (AV1_FILTER_WEIGHT >> 1);  // Rounding
 
         // Normalize back to 0-255...
-        *dst_ptr++ = clip_pixel_highbd(temp >> VP9_FILTER_SHIFT, bd);
+        *dst_ptr++ = clip_pixel_highbd(temp >> AV1_FILTER_SHIFT, bd);
         src_ptr += intermediate_height;
       }
       src_ptr += intermediate_next_stride;

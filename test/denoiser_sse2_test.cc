@@ -29,9 +29,9 @@ using libaom_test::ACMRandom;
 namespace {
 
 const int kNumPixels = 64 * 64;
-class VP9DenoiserTest : public ::testing::TestWithParam<BLOCK_SIZE> {
+class AV1DenoiserTest : public ::testing::TestWithParam<BLOCK_SIZE> {
  public:
-  virtual ~VP9DenoiserTest() {}
+  virtual ~AV1DenoiserTest() {}
 
   virtual void SetUp() { bs_ = GetParam(); }
 
@@ -41,7 +41,7 @@ class VP9DenoiserTest : public ::testing::TestWithParam<BLOCK_SIZE> {
   BLOCK_SIZE bs_;
 };
 
-TEST_P(VP9DenoiserTest, BitexactCheck) {
+TEST_P(AV1DenoiserTest, BitexactCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   const int count_test_block = 4000;
 
@@ -90,7 +90,7 @@ TEST_P(VP9DenoiserTest, BitexactCheck) {
 }
 
 // Test for all block size.
-INSTANTIATE_TEST_CASE_P(SSE2, VP9DenoiserTest,
+INSTANTIATE_TEST_CASE_P(SSE2, AV1DenoiserTest,
                         ::testing::Values(BLOCK_4X4, BLOCK_4X8, BLOCK_8X4,
                                           BLOCK_8X8, BLOCK_8X16, BLOCK_16X8,
                                           BLOCK_16X16, BLOCK_16X32, BLOCK_32X16,

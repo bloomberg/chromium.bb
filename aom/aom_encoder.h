@@ -702,7 +702,7 @@ typedef struct aom_codec_enc_cfg {
   /*!\brief Temporal layering mode indicating which temporal layering scheme to
    * use.
    *
-   * The value (refer to VP9E_TEMPORAL_LAYERING_MODE) specifies the
+   * The value (refer to AV1E_TEMPORAL_LAYERING_MODE) specifies the
    * temporal layering mode to use.
    *
    */
@@ -798,7 +798,7 @@ aom_codec_err_t aom_codec_enc_init_multi_ver(
  *
  * \param[in]    iface     Pointer to the algorithm interface to use.
  * \param[out]   cfg       Configuration buffer to populate.
- * \param[in]    reserved  Must set to 0 for AOM and VP9.
+ * \param[in]    reserved  Must set to 0 for AOM and AV1.
  *
  * \retval #AOM_CODEC_OK
  *     The configuration was populated.

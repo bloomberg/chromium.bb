@@ -386,7 +386,7 @@ void av1_model_rd_from_var_lapndz(unsigned int var, unsigned int n_log2,
         (((uint64_t)qstep * qstep << (n_log2 + 10)) + (var >> 1)) / var;
     const int xsq_q10 = (int)AOMMIN(xsq_q10_64, MAX_XSQ_Q10);
     model_rd_norm(xsq_q10, &r_q10, &d_q10);
-    *rate = ROUND_POWER_OF_TWO(r_q10 << n_log2, 10 - VP9_PROB_COST_SHIFT);
+    *rate = ROUND_POWER_OF_TWO(r_q10 << n_log2, 10 - AV1_PROB_COST_SHIFT);
     *dist = (var * (int64_t)d_q10 + 512) >> 10;
   }
 }

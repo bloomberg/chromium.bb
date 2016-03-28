@@ -26,14 +26,14 @@ typedef void (*SubtractFunc)(int rows, int cols, int16_t *diff_ptr,
 
 namespace vp9 {
 
-class VP9SubtractBlockTest : public ::testing::TestWithParam<SubtractFunc> {
+class AV1SubtractBlockTest : public ::testing::TestWithParam<SubtractFunc> {
  public:
   virtual void TearDown() { libaom_test::ClearSystemState(); }
 };
 
 using libaom_test::ACMRandom;
 
-TEST_P(VP9SubtractBlockTest, SimpleSubtract) {
+TEST_P(AV1SubtractBlockTest, SimpleSubtract) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
 
   // FIXME(rbultje) split in its own file
@@ -85,19 +85,19 @@ TEST_P(VP9SubtractBlockTest, SimpleSubtract) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(C, VP9SubtractBlockTest,
+INSTANTIATE_TEST_CASE_P(C, AV1SubtractBlockTest,
                         ::testing::Values(aom_subtract_block_c));
 
 #if HAVE_SSE2 && CONFIG_USE_X86INC
-INSTANTIATE_TEST_CASE_P(SSE2, VP9SubtractBlockTest,
+INSTANTIATE_TEST_CASE_P(SSE2, AV1SubtractBlockTest,
                         ::testing::Values(aom_subtract_block_sse2));
 #endif
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(NEON, VP9SubtractBlockTest,
+INSTANTIATE_TEST_CASE_P(NEON, AV1SubtractBlockTest,
                         ::testing::Values(aom_subtract_block_neon));
 #endif
 #if HAVE_MSA
-INSTANTIATE_TEST_CASE_P(MSA, VP9SubtractBlockTest,
+INSTANTIATE_TEST_CASE_P(MSA, AV1SubtractBlockTest,
                         ::testing::Values(aom_subtract_block_msa));
 #endif
 

@@ -777,7 +777,7 @@ static int main_loop(int argc, const char **argv_) {
           int render_height = aom_input_ctx.height;
           if (!render_width || !render_height) {
             int render_size[2];
-            if (aom_codec_control(&decoder, VP9D_GET_DISPLAY_SIZE,
+            if (aom_codec_control(&decoder, AV1D_GET_DISPLAY_SIZE,
                                   render_size)) {
               // As last resort use size of first frame as display size.
               render_width = img->d_w;

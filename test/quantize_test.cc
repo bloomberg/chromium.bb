@@ -42,9 +42,9 @@ typedef void (*QuantizeFunc)(const tran_low_t *coeff, intptr_t count,
 typedef std::tr1::tuple<QuantizeFunc, QuantizeFunc, aom_bit_depth_t>
     QuantizeParam;
 
-class VP9QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
+class AV1QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
  public:
-  virtual ~VP9QuantizeTest() {}
+  virtual ~AV1QuantizeTest() {}
   virtual void SetUp() {
     quantize_op_ = GET_PARAM(0);
     ref_quantize_op_ = GET_PARAM(1);
@@ -61,9 +61,9 @@ class VP9QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
   QuantizeFunc ref_quantize_op_;
 };
 
-class VP9Quantize32Test : public ::testing::TestWithParam<QuantizeParam> {
+class AV1Quantize32Test : public ::testing::TestWithParam<QuantizeParam> {
  public:
-  virtual ~VP9Quantize32Test() {}
+  virtual ~AV1Quantize32Test() {}
   virtual void SetUp() {
     quantize_op_ = GET_PARAM(0);
     ref_quantize_op_ = GET_PARAM(1);
@@ -80,7 +80,7 @@ class VP9Quantize32Test : public ::testing::TestWithParam<QuantizeParam> {
   QuantizeFunc ref_quantize_op_;
 };
 
-TEST_P(VP9QuantizeTest, OperationCheck) {
+TEST_P(AV1QuantizeTest, OperationCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   DECLARE_ALIGNED(16, tran_low_t, coeff_ptr[256]);
   DECLARE_ALIGNED(16, int16_t, zbin_ptr[2]);
@@ -138,7 +138,7 @@ TEST_P(VP9QuantizeTest, OperationCheck) {
       << "First failed at test case " << first_failure;
 }
 
-TEST_P(VP9Quantize32Test, OperationCheck) {
+TEST_P(AV1Quantize32Test, OperationCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   DECLARE_ALIGNED(16, tran_low_t, coeff_ptr[1024]);
   DECLARE_ALIGNED(16, int16_t, zbin_ptr[2]);
@@ -196,7 +196,7 @@ TEST_P(VP9Quantize32Test, OperationCheck) {
       << "First failed at test case " << first_failure;
 }
 
-TEST_P(VP9QuantizeTest, EOBCheck) {
+TEST_P(AV1QuantizeTest, EOBCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   DECLARE_ALIGNED(16, tran_low_t, coeff_ptr[256]);
   DECLARE_ALIGNED(16, int16_t, zbin_ptr[2]);
@@ -259,7 +259,7 @@ TEST_P(VP9QuantizeTest, EOBCheck) {
       << "First failed at test case " << first_failure;
 }
 
-TEST_P(VP9Quantize32Test, EOBCheck) {
+TEST_P(AV1Quantize32Test, EOBCheck) {
   ACMRandom rnd(ACMRandom::DeterministicSeed());
   DECLARE_ALIGNED(16, tran_low_t, coeff_ptr[1024]);
   DECLARE_ALIGNED(16, int16_t, zbin_ptr[2]);
@@ -325,7 +325,7 @@ using std::tr1::make_tuple;
 
 #if HAVE_SSE2
 INSTANTIATE_TEST_CASE_P(
-    SSE2, VP9QuantizeTest,
+    SSE2, AV1QuantizeTest,
     ::testing::Values(make_tuple(&aom_highbd_quantize_b_sse2,
                                  &aom_highbd_quantize_b_c, AOM_BITS_8),
                       make_tuple(&aom_highbd_quantize_b_sse2,
@@ -333,7 +333,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(&aom_highbd_quantize_b_sse2,
                                  &aom_highbd_quantize_b_c, AOM_BITS_12)));
 INSTANTIATE_TEST_CASE_P(
-    SSE2, VP9Quantize32Test,
+    SSE2, AV1Quantize32Test,
     ::testing::Values(make_tuple(&aom_highbd_quantize_b_32x32_sse2,
                                  &aom_highbd_quantize_b_32x32_c, AOM_BITS_8),
                       make_tuple(&aom_highbd_quantize_b_32x32_sse2,

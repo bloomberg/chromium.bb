@@ -11,7 +11,7 @@
 
 /**
  * @file
- * VP9 SVC encoding support via libaom
+ * AV1 SVC encoding support via libaom
  */
 
 #include <assert.h>
@@ -492,8 +492,8 @@ aom_codec_err_t aom_svc_init(SvcContext *svc_ctx, aom_codec_ctx_t *codec_ctx,
     return res;
   }
   if (svc_ctx->spatial_layers > 1 || svc_ctx->temporal_layers > 1) {
-    aom_codec_control(codec_ctx, VP9E_SET_SVC, 1);
-    aom_codec_control(codec_ctx, VP9E_SET_SVC_PARAMETERS, &si->svc_params);
+    aom_codec_control(codec_ctx, AV1E_SET_SVC, 1);
+    aom_codec_control(codec_ctx, AV1E_SET_SVC_PARAMETERS, &si->svc_params);
   }
   return AOM_CODEC_OK;
 }

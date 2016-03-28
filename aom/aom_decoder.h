@@ -322,7 +322,7 @@ aom_codec_err_t aom_codec_register_put_slice_cb(aom_codec_ctx_t *ctx,
  * will result in an error code being returned, usually AOM_CODEC_ERROR.
  *
  * \note
- * Currently this only works with VP9.
+ * Currently this only works with AV1.
  * @{
  */
 
@@ -348,7 +348,7 @@ aom_codec_err_t aom_codec_register_put_slice_cb(aom_codec_ctx_t *ctx,
  *     using external frame buffers.
  *
  * \note
- * When decoding VP9, the application may be required to pass in at least
+ * When decoding AV1, the application may be required to pass in at least
  * #AOM_MAXIMUM_WORK_BUFFERS external frame
  * buffers.
  */

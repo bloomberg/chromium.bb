@@ -37,7 +37,7 @@ void Encoder::InitEncoder(VideoSource *video) {
     if (CodecInterface() == &aom_codec_av1_cx_algo) {
       // Default to 1 tile column for AV1.
       const int log2_tile_columns = 0;
-      res = aom_codec_control_(&encoder_, VP9E_SET_TILE_COLUMNS,
+      res = aom_codec_control_(&encoder_, AV1E_SET_TILE_COLUMNS,
                                log2_tile_columns);
       ASSERT_EQ(AOM_CODEC_OK, res) << EncoderError();
     }

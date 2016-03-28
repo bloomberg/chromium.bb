@@ -13,12 +13,12 @@
 
 namespace {
 
-class VP9FrameSizeTestsLarge : public ::libaom_test::EncoderTest,
+class AV1FrameSizeTestsLarge : public ::libaom_test::EncoderTest,
                                public ::testing::Test {
  protected:
-  VP9FrameSizeTestsLarge()
+  AV1FrameSizeTestsLarge()
       : EncoderTest(&::libaom_test::kAV1), expected_res_(AOM_CODEC_OK) {}
-  virtual ~VP9FrameSizeTestsLarge() {}
+  virtual ~AV1FrameSizeTestsLarge() {}
 
   virtual void SetUp() {
     InitializeConfig();
@@ -46,7 +46,7 @@ class VP9FrameSizeTestsLarge : public ::libaom_test::EncoderTest,
   int expected_res_;
 };
 
-TEST_F(VP9FrameSizeTestsLarge, TestInvalidSizes) {
+TEST_F(AV1FrameSizeTestsLarge, TestInvalidSizes) {
   ::libaom_test::RandomVideoSource video;
 
 #if CONFIG_SIZE_LIMIT
@@ -57,7 +57,7 @@ TEST_F(VP9FrameSizeTestsLarge, TestInvalidSizes) {
 #endif
 }
 
-TEST_F(VP9FrameSizeTestsLarge, ValidSizes) {
+TEST_F(AV1FrameSizeTestsLarge, ValidSizes) {
   ::libaom_test::RandomVideoSource video;
 
 #if CONFIG_SIZE_LIMIT
@@ -84,7 +84,7 @@ TEST_F(VP9FrameSizeTestsLarge, ValidSizes) {
 #endif
 }
 
-TEST_F(VP9FrameSizeTestsLarge, OneByOneVideo) {
+TEST_F(AV1FrameSizeTestsLarge, OneByOneVideo) {
   ::libaom_test::RandomVideoSource video;
 
   video.SetSize(1, 1);

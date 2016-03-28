@@ -35,7 +35,7 @@ struct EncodePerfTestVideo {
   int frames;
 };
 
-const EncodePerfTestVideo kVP9EncodePerfTestVectors[] = {
+const EncodePerfTestVideo kAV1EncodePerfTestVectors[] = {
   EncodePerfTestVideo("desktop_640_360_30.yuv", 640, 360, 200, 2484),
   EncodePerfTestVideo("kirland_640_480_30.yuv", 640, 480, 200, 300),
   EncodePerfTestVideo("macmarcomoving_640_480_30.yuv", 640, 480, 200, 987),
@@ -53,15 +53,15 @@ const int kEncodePerfTestThreads[] = { 1, 2, 4 };
 
 #define NELEMENTS(x) (sizeof((x)) / sizeof((x)[0]))
 
-class VP9EncodePerfTest
+class AV1EncodePerfTest
     : public ::libaom_test::EncoderTest,
       public ::libaom_test::CodecTestWithParam<libaom_test::TestMode> {
  protected:
-  VP9EncodePerfTest()
+  AV1EncodePerfTest()
       : EncoderTest(GET_PARAM(0)), min_psnr_(kMaxPsnr), nframes_(0),
         encoding_mode_(GET_PARAM(1)), speed_(0), threads_(1) {}
 
-  virtual ~VP9EncodePerfTest() {}
+  virtual ~AV1EncodePerfTest() {}
 
   virtual void SetUp() {
     InitializeConfig();
@@ -87,8 +87,8 @@ class VP9EncodePerfTest
     if (video->frame() == 0) {
       const int log2_tile_columns = 3;
       encoder->Control(AOME_SET_CPUUSED, speed_);
-      encoder->Control(VP9E_SET_TILE_COLUMNS, log2_tile_columns);
-      encoder->Control(VP9E_SET_FRAME_PARALLEL_DECODING, 1);
+      encoder->Control(AV1E_SET_TILE_COLUMNS, log2_tile_columns);
+      encoder->Control(AV1E_SET_FRAME_PARALLEL_DECODING, 1);
       encoder->Control(AOME_SET_ENABLEAUTOALTREF, 0);
     }
   }
@@ -121,14 +121,14 @@ class VP9EncodePerfTest
   unsigned int threads_;
 };
 
-TEST_P(VP9EncodePerfTest, PerfTest) {
-  for (size_t i = 0; i < NELEMENTS(kVP9EncodePerfTestVectors); ++i) {
+TEST_P(AV1EncodePerfTest, PerfTest) {
+  for (size_t i = 0; i < NELEMENTS(kAV1EncodePerfTestVectors); ++i) {
     for (size_t j = 0; j < NELEMENTS(kEncodePerfTestSpeeds); ++j) {
       for (size_t k = 0; k < NELEMENTS(kEncodePerfTestThreads); ++k) {
-        if (kVP9EncodePerfTestVectors[i].width < 512 &&
+        if (kAV1EncodePerfTestVectors[i].width < 512 &&
             kEncodePerfTestThreads[k] > 1)
           continue;
-        else if (kVP9EncodePerfTestVectors[i].width < 1024 &&
+        else if (kAV1EncodePerfTestVectors[i].width < 1024 &&
                  kEncodePerfTestThreads[k] > 2)
           continue;
 
@@ -137,16 +137,16 @@ TEST_P(VP9EncodePerfTest, PerfTest) {
 
         const aom_rational timebase = { 33333333, 1000000000 };
         cfg_.g_timebase = timebase;
-        cfg_.rc_target_bitrate = kVP9EncodePerfTestVectors[i].bitrate;
+        cfg_.rc_target_bitrate = kAV1EncodePerfTestVectors[i].bitrate;
 
         init_flags_ = AOM_CODEC_USE_PSNR;
 
-        const unsigned frames = kVP9EncodePerfTestVectors[i].frames;
-        const char *video_name = kVP9EncodePerfTestVectors[i].name;
+        const unsigned frames = kAV1EncodePerfTestVectors[i].frames;
+        const char *video_name = kAV1EncodePerfTestVectors[i].name;
         libaom_test::I420VideoSource video(
-            video_name, kVP9EncodePerfTestVectors[i].width,
-            kVP9EncodePerfTestVectors[i].height, timebase.den, timebase.num, 0,
-            kVP9EncodePerfTestVectors[i].frames);
+            video_name, kAV1EncodePerfTestVectors[i].width,
+            kAV1EncodePerfTestVectors[i].height, timebase.den, timebase.num, 0,
+            kAV1EncodePerfTestVectors[i].frames);
         set_speed(kEncodePerfTestSpeeds[j]);
 
         aom_usec_timer t;
@@ -182,6 +182,6 @@ TEST_P(VP9EncodePerfTest, PerfTest) {
   }
 }
 
-AV1_INSTANTIATE_TEST_CASE(VP9EncodePerfTest,
+AV1_INSTANTIATE_TEST_CASE(AV1EncodePerfTest,
                            ::testing::Values(::libaom_test::kRealTime));
 }  // namespace

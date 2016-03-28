@@ -28,7 +28,7 @@ struct EncodePerfTestVideo {
   int frames;
 };
 
-const EncodePerfTestVideo kVP9EncodePerfTestVectors[] = {
+const EncodePerfTestVideo kAV1EncodePerfTestVectors[] = {
   { "niklas_1280_720_30.y4m", 1280, 720, 600, 10 },
 };
 
@@ -44,7 +44,7 @@ struct EncodeParameters {
   // TODO(JBB): quantizers / bitrate
 };
 
-const EncodeParameters kVP9EncodeParameterSet[] = {
+const EncodeParameters kAV1EncodeParameterSet[] = {
   { 0, 0, 0, 1, 0, AOM_CR_STUDIO_RANGE, AOM_CS_BT_601 },
   { 0, 0, 0, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_709 },
   { 0, 0, 1, 0, 0, AOM_CR_FULL_RANGE, AOM_CS_BT_2020 },
@@ -75,20 +75,20 @@ class VpxEncoderParmsGetToDecoder
   virtual void PreEncodeFrameHook(::libaom_test::VideoSource *video,
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 1) {
-      encoder->Control(VP9E_SET_COLOR_SPACE, encode_parms.cs);
-      encoder->Control(VP9E_SET_COLOR_RANGE, encode_parms.color_range);
-      encoder->Control(VP9E_SET_LOSSLESS, encode_parms.lossless);
-      encoder->Control(VP9E_SET_FRAME_PARALLEL_DECODING,
+      encoder->Control(AV1E_SET_COLOR_SPACE, encode_parms.cs);
+      encoder->Control(AV1E_SET_COLOR_RANGE, encode_parms.color_range);
+      encoder->Control(AV1E_SET_LOSSLESS, encode_parms.lossless);
+      encoder->Control(AV1E_SET_FRAME_PARALLEL_DECODING,
                        encode_parms.frame_parallel);
-      encoder->Control(VP9E_SET_TILE_ROWS, encode_parms.tile_rows);
-      encoder->Control(VP9E_SET_TILE_COLUMNS, encode_parms.tile_cols);
+      encoder->Control(AV1E_SET_TILE_ROWS, encode_parms.tile_rows);
+      encoder->Control(AV1E_SET_TILE_COLUMNS, encode_parms.tile_cols);
       encoder->Control(AOME_SET_CPUUSED, kCpuUsed);
       encoder->Control(AOME_SET_ENABLEAUTOALTREF, 1);
       encoder->Control(AOME_SET_ARNR_MAXFRAMES, 7);
       encoder->Control(AOME_SET_ARNR_STRENGTH, 5);
       encoder->Control(AOME_SET_ARNR_TYPE, 3);
       if (encode_parms.render_size[0] > 0 && encode_parms.render_size[1] > 0)
-        encoder->Control(VP9E_SET_RENDER_SIZE, encode_parms.render_size);
+        encoder->Control(AV1E_SET_RENDER_SIZE, encode_parms.render_size);
     }
   }
 
@@ -144,6 +144,6 @@ TEST_P(VpxEncoderParmsGetToDecoder, BitstreamParms) {
 }
 
 AV1_INSTANTIATE_TEST_CASE(VpxEncoderParmsGetToDecoder,
-                           ::testing::ValuesIn(kVP9EncodeParameterSet),
-                           ::testing::ValuesIn(kVP9EncodePerfTestVectors));
+                           ::testing::ValuesIn(kAV1EncodeParameterSet),
+                           ::testing::ValuesIn(kAV1EncodePerfTestVectors));
 }  // namespace

@@ -55,7 +55,7 @@ static void encode_superblock(AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 //  purposes of activity masking.
 // Eventually this should be replaced by custom no-reference routines,
 //  which will be faster.
-static const uint8_t VP9_VAR_OFFS[64] = {
+static const uint8_t AV1_VAR_OFFS[64] = {
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
@@ -64,7 +64,7 @@ static const uint8_t VP9_VAR_OFFS[64] = {
 };
 
 #if CONFIG_AOM_HIGHBITDEPTH
-static const uint16_t VP9_HIGH_VAR_OFFS_8[64] = {
+static const uint16_t AV1_HIGH_VAR_OFFS_8[64] = {
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128,
@@ -72,7 +72,7 @@ static const uint16_t VP9_HIGH_VAR_OFFS_8[64] = {
   128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128
 };
 
-static const uint16_t VP9_HIGH_VAR_OFFS_10[64] = {
+static const uint16_t AV1_HIGH_VAR_OFFS_10[64] = {
   128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4,
   128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4,
   128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4,
@@ -83,7 +83,7 @@ static const uint16_t VP9_HIGH_VAR_OFFS_10[64] = {
   128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4, 128 * 4
 };
 
-static const uint16_t VP9_HIGH_VAR_OFFS_12[64] = {
+static const uint16_t AV1_HIGH_VAR_OFFS_12[64] = {
   128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16,
   128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16,
   128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16, 128 * 16,
@@ -102,7 +102,7 @@ unsigned int av1_get_sby_perpixel_variance(AV1_COMP *cpi,
                                             BLOCK_SIZE bs) {
   unsigned int sse;
   const unsigned int var =
-      cpi->fn_ptr[bs].vf(ref->buf, ref->stride, VP9_VAR_OFFS, 0, &sse);
+      cpi->fn_ptr[bs].vf(ref->buf, ref->stride, AV1_VAR_OFFS, 0, &sse);
   return ROUND_POWER_OF_TWO(var, num_pels_log2_lookup[bs]);
 }
 
@@ -115,18 +115,18 @@ unsigned int av1_high_get_sby_perpixel_variance(AV1_COMP *cpi,
     case 10:
       var =
           cpi->fn_ptr[bs].vf(ref->buf, ref->stride,
-                             CONVERT_TO_BYTEPTR(VP9_HIGH_VAR_OFFS_10), 0, &sse);
+                             CONVERT_TO_BYTEPTR(AV1_HIGH_VAR_OFFS_10), 0, &sse);
       break;
     case 12:
       var =
           cpi->fn_ptr[bs].vf(ref->buf, ref->stride,
-                             CONVERT_TO_BYTEPTR(VP9_HIGH_VAR_OFFS_12), 0, &sse);
+                             CONVERT_TO_BYTEPTR(AV1_HIGH_VAR_OFFS_12), 0, &sse);
       break;
     case 8:
     default:
       var =
           cpi->fn_ptr[bs].vf(ref->buf, ref->stride,
-                             CONVERT_TO_BYTEPTR(VP9_HIGH_VAR_OFFS_8), 0, &sse);
+                             CONVERT_TO_BYTEPTR(AV1_HIGH_VAR_OFFS_8), 0, &sse);
       break;
   }
   return ROUND_POWER_OF_TWO(var, num_pels_log2_lookup[bs]);
@@ -729,15 +729,15 @@ static int choose_partitioning(AV1_COMP *cpi, const TileInfo *const tile,
       }
     }
   } else {
-    d = VP9_VAR_OFFS;
+    d = AV1_VAR_OFFS;
     dp = 0;
 #if CONFIG_AOM_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       switch (xd->bd) {
-        case 10: d = CONVERT_TO_BYTEPTR(VP9_HIGH_VAR_OFFS_10); break;
-        case 12: d = CONVERT_TO_BYTEPTR(VP9_HIGH_VAR_OFFS_12); break;
+        case 10: d = CONVERT_TO_BYTEPTR(AV1_HIGH_VAR_OFFS_10); break;
+        case 12: d = CONVERT_TO_BYTEPTR(AV1_HIGH_VAR_OFFS_12); break;
         case 8:
-        default: d = CONVERT_TO_BYTEPTR(VP9_HIGH_VAR_OFFS_8); break;
+        default: d = CONVERT_TO_BYTEPTR(AV1_HIGH_VAR_OFFS_8); break;
       }
     }
 #endif  // CONFIG_AOM_HIGHBITDEPTH

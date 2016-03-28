@@ -37,7 +37,7 @@ const char kNewEncodeOutputFile[] = "new_encode.ivf";
  */
 typedef std::tr1::tuple<const char *, unsigned> DecodePerfParam;
 
-const DecodePerfParam kVP9DecodePerfVectors[] = {
+const DecodePerfParam kAV1DecodePerfVectors[] = {
   make_tuple("vp90-2-bbb_426x240_tile_1x1_180kbps.webm", 1),
   make_tuple("vp90-2-bbb_640x360_tile_1x2_337kbps.webm", 2),
   make_tuple("vp90-2-bbb_854x480_tile_1x2_651kbps.webm", 2),
@@ -81,7 +81,7 @@ TEST_P(DecodePerfTest, PerfTest) {
 
   aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
   cfg.threads = threads;
-  libaom_test::VP9Decoder decoder(cfg, 0);
+  libaom_test::AV1Decoder decoder(cfg, 0);
 
   aom_usec_timer t;
   aom_usec_timer_start(&t);
@@ -106,18 +106,18 @@ TEST_P(DecodePerfTest, PerfTest) {
   printf("}\n");
 }
 
-INSTANTIATE_TEST_CASE_P(VP9, DecodePerfTest,
-                        ::testing::ValuesIn(kVP9DecodePerfVectors));
+INSTANTIATE_TEST_CASE_P(AV1, DecodePerfTest,
+                        ::testing::ValuesIn(kAV1DecodePerfVectors));
 
-class VP9NewEncodeDecodePerfTest
+class AV1NewEncodeDecodePerfTest
     : public ::libaom_test::EncoderTest,
       public ::libaom_test::CodecTestWithParam<libaom_test::TestMode> {
  protected:
-  VP9NewEncodeDecodePerfTest()
+  AV1NewEncodeDecodePerfTest()
       : EncoderTest(GET_PARAM(0)), encoding_mode_(GET_PARAM(1)), speed_(0),
         outfile_(0), out_frames_(0) {}
 
-  virtual ~VP9NewEncodeDecodePerfTest() {}
+  virtual ~AV1NewEncodeDecodePerfTest() {}
 
   virtual void SetUp() {
     InitializeConfig();
@@ -140,8 +140,8 @@ class VP9NewEncodeDecodePerfTest
                                   ::libaom_test::Encoder *encoder) {
     if (video->frame() == 1) {
       encoder->Control(AOME_SET_CPUUSED, speed_);
-      encoder->Control(VP9E_SET_FRAME_PARALLEL_DECODING, 1);
-      encoder->Control(VP9E_SET_TILE_COLUMNS, 2);
+      encoder->Control(AV1E_SET_FRAME_PARALLEL_DECODING, 1);
+      encoder->Control(AV1E_SET_TILE_COLUMNS, 2);
     }
   }
 
@@ -155,7 +155,7 @@ class VP9NewEncodeDecodePerfTest
   virtual void EndPassHook() {
     if (outfile_ != NULL) {
       if (!fseek(outfile_, 0, SEEK_SET))
-        ivf_write_file_header(outfile_, &cfg_, VP9_FOURCC, out_frames_);
+        ivf_write_file_header(outfile_, &cfg_, AV1_FOURCC, out_frames_);
       fclose(outfile_);
       outfile_ = NULL;
     }
@@ -166,7 +166,7 @@ class VP9NewEncodeDecodePerfTest
 
     // Write initial file header if first frame.
     if (pkt->data.frame.pts == 0)
-      ivf_write_file_header(outfile_, &cfg_, VP9_FOURCC, out_frames_);
+      ivf_write_file_header(outfile_, &cfg_, AV1_FOURCC, out_frames_);
 
     // Write frame header and data.
     ivf_write_frame_header(outfile_, out_frames_, pkt->data.frame.sz);
@@ -197,26 +197,26 @@ struct EncodePerfTestVideo {
   int frames;
 };
 
-const EncodePerfTestVideo kVP9EncodePerfTestVectors[] = {
+const EncodePerfTestVideo kAV1EncodePerfTestVectors[] = {
   EncodePerfTestVideo("niklas_1280_720_30.yuv", 1280, 720, 600, 470),
 };
 
-TEST_P(VP9NewEncodeDecodePerfTest, PerfTest) {
+TEST_P(AV1NewEncodeDecodePerfTest, PerfTest) {
   SetUp();
 
   // TODO(JBB): Make this work by going through the set of given files.
   const int i = 0;
   const aom_rational timebase = { 33333333, 1000000000 };
   cfg_.g_timebase = timebase;
-  cfg_.rc_target_bitrate = kVP9EncodePerfTestVectors[i].bitrate;
+  cfg_.rc_target_bitrate = kAV1EncodePerfTestVectors[i].bitrate;
 
   init_flags_ = AOM_CODEC_USE_PSNR;
 
-  const char *video_name = kVP9EncodePerfTestVectors[i].name;
+  const char *video_name = kAV1EncodePerfTestVectors[i].name;
   libaom_test::I420VideoSource video(
-      video_name, kVP9EncodePerfTestVectors[i].width,
-      kVP9EncodePerfTestVectors[i].height, timebase.den, timebase.num, 0,
-      kVP9EncodePerfTestVectors[i].frames);
+      video_name, kAV1EncodePerfTestVectors[i].width,
+      kAV1EncodePerfTestVectors[i].height, timebase.den, timebase.num, 0,
+      kAV1EncodePerfTestVectors[i].frames);
   set_speed(2);
 
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
@@ -228,7 +228,7 @@ TEST_P(VP9NewEncodeDecodePerfTest, PerfTest) {
 
   aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
   cfg.threads = threads;
-  libaom_test::VP9Decoder decoder(cfg, 0);
+  libaom_test::AV1Decoder decoder(cfg, 0);
 
   aom_usec_timer t;
   aom_usec_timer_start(&t);
@@ -255,6 +255,6 @@ TEST_P(VP9NewEncodeDecodePerfTest, PerfTest) {
   printf("}\n");
 }
 
-AV1_INSTANTIATE_TEST_CASE(VP9NewEncodeDecodePerfTest,
+AV1_INSTANTIATE_TEST_CASE(AV1NewEncodeDecodePerfTest,
                            ::testing::Values(::libaom_test::kTwoPassGood));
 }  // namespace
