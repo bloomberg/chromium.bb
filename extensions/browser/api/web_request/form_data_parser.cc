@@ -520,8 +520,10 @@ bool FormDataParserMultipart::GetNextNameValue(Result* result) {
   }
 
   std::string unescaped_name = net::UnescapeURLComponent(
-      name.as_string(), net::UnescapeRule::URL_SPECIAL_CHARS |
-                            net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS);
+      name.as_string(),
+      net::UnescapeRule::PATH_SEPARATORS |
+          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
+          net::UnescapeRule::SPOOFING_AND_CONTROL_CHARS);
   result->set_name(unescaped_name);
   result->set_value(value);
 

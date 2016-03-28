@@ -124,10 +124,9 @@ const std::string& QueryIterator::GetUnescapedValue() {
   DCHECK(!at_end_);
   if (value_.is_nonempty() && unescaped_value_.empty()) {
     unescaped_value_ = UnescapeURLComponent(
-        GetValue(),
-        UnescapeRule::SPACES |
-        UnescapeRule::URL_SPECIAL_CHARS |
-        UnescapeRule::REPLACE_PLUS_WITH_SPACE);
+        GetValue(), UnescapeRule::SPACES | UnescapeRule::PATH_SEPARATORS |
+                        UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
+                        UnescapeRule::REPLACE_PLUS_WITH_SPACE);
   }
   return unescaped_value_;
 }
@@ -395,7 +394,8 @@ void GetIdentityFromURL(const GURL& url,
                         base::string16* username,
                         base::string16* password) {
   UnescapeRule::Type flags =
-      UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS;
+      UnescapeRule::SPACES | UnescapeRule::PATH_SEPARATORS |
+      UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS;
   *username = UnescapeAndDecodeUTF8URLComponent(url.username(), flags);
   *password = UnescapeAndDecodeUTF8URLComponent(url.password(), flags);
 }

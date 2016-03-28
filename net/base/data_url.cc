@@ -99,9 +99,10 @@ bool DataURL::Parse(const GURL& url, std::string* mime_type,
   // of the data, and should be stripped. Otherwise, the escaped whitespace
   // could be part of the payload, so don't strip it.
   if (base64_encoded) {
-    temp_data = UnescapeURLComponent(temp_data,
-        UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS |
-        UnescapeRule::SPOOFING_AND_CONTROL_CHARS);
+    temp_data = UnescapeURLComponent(
+        temp_data, UnescapeRule::SPACES | UnescapeRule::PATH_SEPARATORS |
+                       UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
+                       UnescapeRule::SPOOFING_AND_CONTROL_CHARS);
   }
 
   // Strip whitespace.
@@ -113,9 +114,10 @@ bool DataURL::Parse(const GURL& url, std::string* mime_type,
   }
 
   if (!base64_encoded) {
-    temp_data = UnescapeURLComponent(temp_data,
-        UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS |
-        UnescapeRule::SPOOFING_AND_CONTROL_CHARS);
+    temp_data = UnescapeURLComponent(
+        temp_data, UnescapeRule::SPACES | UnescapeRule::PATH_SEPARATORS |
+                       UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
+                       UnescapeRule::SPOOFING_AND_CONTROL_CHARS);
   }
 
   if (base64_encoded) {

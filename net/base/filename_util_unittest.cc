@@ -828,6 +828,9 @@ TEST(FilenameUtilTest, GenerateFileName) {
     {// A normal avi should get .avi and not .avi.avi
      __LINE__, "https://blah.google.com/misc/2.avi", "", "", "",
      "video/x-msvideo", L"download", L"2.avi"},
+    {// Shouldn't unescape slashes.
+     __LINE__, "http://www.example.com/foo%2f..%2fbar.jpg", "", "", "",
+     "text/plain", L"download", L"foo%2f..%2fbar.jpg"},
     {// Extension generation
      __LINE__, "http://www.example.com/my-cat", "filename=my-cat", "", "",
      "image/jpeg", L"download", L"my-cat"},

@@ -34,7 +34,8 @@ namespace test_server {
 namespace {
 
 const UnescapeRule::Type kUnescapeAll =
-    UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS |
+    UnescapeRule::SPACES | UnescapeRule::PATH_SEPARATORS |
+    UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS |
     UnescapeRule::SPOOFING_AND_CONTROL_CHARS |
     UnescapeRule::REPLACE_PLUS_WITH_SPACE;
 

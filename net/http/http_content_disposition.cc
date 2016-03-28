@@ -323,7 +323,8 @@ bool DecodeExtValue(const std::string& param_value, std::string* decoded) {
   }
 
   std::string unescaped = UnescapeURLComponent(
-      value, UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS);
+      value, UnescapeRule::SPACES |
+                 UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
 
   return ConvertToUtf8AndNormalize(unescaped, charset.c_str(), decoded);
 }
