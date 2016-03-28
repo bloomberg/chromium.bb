@@ -135,7 +135,6 @@ public class OfflinePageUtils {
             Log.i(TAG, "Refreshing to the online version of an offline page, since we are online");
             LoadUrlParams params =
                     new LoadUrlParams(tab.getOfflinePageOriginalUrl(), PageTransition.RELOAD);
-            params.setShouldReplaceCurrentEntry(true);
             tab.loadUrl(params);
         }
     }
@@ -284,7 +283,6 @@ public class OfflinePageUtils {
 
                 LoadUrlParams params = new LoadUrlParams(
                         foundTab.getOfflinePageOriginalUrl(), PageTransition.RELOAD);
-                params.setShouldReplaceCurrentEntry(true);
                 foundTab.loadUrl(params);
             }
 
