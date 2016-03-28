@@ -1375,6 +1375,3 @@ crbug.com/592185 fast/repaint/fixed-right-in-page-scale.html [ Failure Pass ]
 crbug.com/592409 inspector-protocol/debugger/stepping-with-blackboxed-ranges.html [ NeedsManualRebaseline ]
 
 crbug.com/594595 [ Linux ] http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker-allowed.html [ Timeout Pass ]
-
-crbug.com/493212 [ Linux ] fast/block/float/4145535Crash.html [ NeedsRebaseline ]
-crbug.com/493212 [ Linux ] fast/replaced/replaced-breaking.html [ NeedsRebaseline ]
