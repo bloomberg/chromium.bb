@@ -9,6 +9,7 @@
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/SubsequenceDisplayItem.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/transforms/AffineTransform.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +48,7 @@ static PassRefPtr<SkPicture> createRectPicture(const IntRect& bounds)
     SkCanvas* canvas = recorder.beginRecording(bounds.width(), bounds.height());
     canvas->drawRect(SkRect::MakeXYWH(bounds.x(), bounds.y(), bounds.width(), bounds.height()),
         SkPaint());
-    return adoptRef(recorder.endRecordingAsPicture());
+    return fromSkSp(recorder.finishRecordingAsPicture());
 }
 
 TEST_F(DisplayItemListTest, AppendVisualRect_Simple)

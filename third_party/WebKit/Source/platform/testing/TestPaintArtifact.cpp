@@ -9,6 +9,7 @@
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 #include "platform/graphics/paint/PaintArtifact.h"
+#include "platform/graphics/skia/SkiaUtils.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -35,7 +36,7 @@ PassRefPtr<SkPicture> TestPaintArtifact::DummyRectClient::makePicture() const
     SkPaint paint;
     paint.setColor(m_color.rgb());
     canvas->drawRect(m_rect, paint);
-    return adoptRef(recorder.endRecordingAsPicture());
+    return fromSkSp(recorder.finishRecordingAsPicture());
 }
 
 TestPaintArtifact::TestPaintArtifact()

@@ -199,10 +199,9 @@ sk_sp<SkShader> createPatternShader(const SkImage* image, const SkMatrix& shader
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(tileRect);
     canvas->drawImage(image, 0, 0, &paint);
-    sk_sp<SkPicture> picture(recorder.endRecordingAsPicture());
 
-    return SkShader::MakePictureShader(
-        std::move(picture), SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &shaderMatrix, nullptr);
+    return SkShader::MakePictureShader(recorder.finishRecordingAsPicture(),
+        SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &shaderMatrix, nullptr);
 }
 
 } // anonymous namespace

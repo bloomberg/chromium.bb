@@ -40,7 +40,7 @@ namespace {
 class Picture {
  public:
   gfx::Rect layer_rect;
-  skia::RefPtr<SkPicture> picture;
+  sk_sp<SkPicture> picture;
 };
 
 bool DecodeBitmap(const void* buffer, size_t size, SkBitmap* bm) {
@@ -70,13 +70,14 @@ scoped_ptr<Picture> CreatePictureFromEncodedString(const std::string& encoded) {
   base::Base64Decode(encoded, &decoded);
   SkMemoryStream stream(decoded.data(), decoded.size());
 
-  SkPicture* skpicture = SkPicture::CreateFromStream(&stream, &DecodeBitmap);
+  sk_sp<SkPicture> skpicture =
+      SkPicture::MakeFromStream(&stream, &DecodeBitmap);
   if (!skpicture)
     return nullptr;
 
   scoped_ptr<Picture> picture(new Picture);
   picture->layer_rect = gfx::SkIRectToRect(skpicture->cullRect().roundOut());
-  picture->picture = skia::AdoptRef(skpicture);
+  picture->picture = std::move(skpicture);
   return picture;
 }
 

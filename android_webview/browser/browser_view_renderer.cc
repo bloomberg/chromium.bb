@@ -329,7 +329,7 @@ skia::RefPtr<SkPicture> BrowserViewRenderer::CapturePicture(int width,
   if (width <= 0 || height <= 0) {
     SkPictureRecorder emptyRecorder;
     emptyRecorder.beginRecording(0, 0);
-    return skia::AdoptRef(emptyRecorder.endRecording());
+    return skia::AdoptRef(emptyRecorder.finishRecordingAsPicture());
   }
 
   SkPictureRecorder recorder;
@@ -344,7 +344,7 @@ skia::RefPtr<SkPicture> BrowserViewRenderer::CapturePicture(int width,
     compositor_->DidChangeRootLayerScrollOffset(
         gfx::ScrollOffset(scroll_offset_dip_));
   }
-  return skia::AdoptRef(recorder.endRecording());
+  return skia::AdoptRef(recorder.finishRecordingAsPicture());
 }
 
 void BrowserViewRenderer::EnableOnNewPicture(bool enabled) {

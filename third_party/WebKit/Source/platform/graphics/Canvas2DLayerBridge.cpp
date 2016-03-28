@@ -663,7 +663,7 @@ bool Canvas2DLayerBridge::writePixels(const SkImageInfo& origInfo, const void* p
 void Canvas2DLayerBridge::skipQueuedDrawCommands()
 {
     if (m_haveRecordedDrawCommands) {
-        adoptRef(m_recorder->endRecording());
+        m_recorder->finishRecordingAsPicture();
         startRecording();
         m_haveRecordedDrawCommands = false;
     }
@@ -681,8 +681,7 @@ void Canvas2DLayerBridge::flushRecordingOnly()
 
     if (m_haveRecordedDrawCommands && getOrCreateSurface()) {
         TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushRecordingOnly");
-        RefPtr<SkPicture> picture = adoptRef(m_recorder->endRecording());
-        picture->playback(getOrCreateSurface()->getCanvas());
+        m_recorder->finishRecordingAsPicture()->playback(getOrCreateSurface()->getCanvas());
         if (m_isDeferralEnabled)
             startRecording();
         m_haveRecordedDrawCommands = false;

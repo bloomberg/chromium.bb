@@ -307,10 +307,9 @@ PassRefPtr<SkImage> SVGImage::imageForCurrentFrameForContainer(const KURL& url, 
     SkPictureRecorder recorder;
     SkCanvas* canvas = recorder.beginRecording(width(), height());
     drawForContainer(canvas, SkPaint(), containerSize, 1, rect(), rect(), url);
-    RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
 
-    return adoptRef(
-        SkImage::NewFromPicture(picture.get(), SkISize::Make(width(), height()), nullptr, nullptr));
+    return fromSkSp(SkImage::MakeFromPicture(recorder.finishRecordingAsPicture(),
+        SkISize::Make(width(), height()), nullptr, nullptr));
 }
 
 static bool drawNeedsLayer(const SkPaint& paint)

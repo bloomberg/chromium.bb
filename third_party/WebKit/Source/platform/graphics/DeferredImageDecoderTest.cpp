@@ -161,10 +161,10 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPicture)
     SkPictureRecorder recorder;
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawImage(image.get(), 0, 0);
-    RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
+    sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
     EXPECT_EQ(0, m_decodeRequestCount);
 
-    m_surface->getCanvas()->drawPicture(picture.get());
+    m_surface->getCanvas()->drawPicture(picture);
     EXPECT_EQ(0, m_decodeRequestCount);
 
     SkBitmap canvasBitmap;
@@ -185,8 +185,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
     SkPictureRecorder recorder;
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawImage(image.get(), 0, 0);
-    RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
-    m_surface->getCanvas()->drawPicture(picture.get());
+    m_surface->getCanvas()->drawPicture(recorder.finishRecordingAsPicture());
 
     // Fully received the file and draw the SkPicture again.
     m_lazyDecoder->setData(*m_data, true);
@@ -194,8 +193,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoSkPictureProgressive)
     ASSERT_TRUE(image);
     tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawImage(image.get(), 0, 0);
-    picture = adoptRef(recorder.endRecording());
-    m_surface->getCanvas()->drawPicture(picture.get());
+    m_surface->getCanvas()->drawPicture(recorder.finishRecordingAsPicture());
 
     SkBitmap canvasBitmap;
     canvasBitmap.allocN32Pixels(100, 100);
@@ -220,7 +218,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread)
     SkPictureRecorder recorder;
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawImage(image.get(), 0, 0);
-    RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
+    sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
     EXPECT_EQ(0, m_decodeRequestCount);
 
     // Create a thread to rasterize SkPicture.
@@ -318,9 +316,9 @@ TEST_F(DeferredImageDecoderTest, decodedSize)
     SkPictureRecorder recorder;
     SkCanvas* tempCanvas = recorder.beginRecording(100, 100, 0, 0);
     tempCanvas->drawImage(image.get(), 0, 0);
-    RefPtr<SkPicture> picture = adoptRef(recorder.endRecording());
+    sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
     EXPECT_EQ(0, m_decodeRequestCount);
-    m_surface->getCanvas()->drawPicture(picture.get());
+    m_surface->getCanvas()->drawPicture(picture);
     EXPECT_EQ(1, m_decodeRequestCount);
 }
 

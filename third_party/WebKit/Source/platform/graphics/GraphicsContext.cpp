@@ -308,7 +308,7 @@ PassRefPtr<SkPicture> GraphicsContext::endRecording()
     if (contextDisabled())
         return nullptr;
 
-    RefPtr<SkPicture> picture = adoptRef(m_pictureRecorder.endRecordingAsPicture());
+    RefPtr<SkPicture> picture = fromSkSp(m_pictureRecorder.finishRecordingAsPicture());
     m_canvas = nullptr;
     ASSERT(picture);
     return picture.release();

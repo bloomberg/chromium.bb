@@ -87,8 +87,7 @@ void RecordingImageBufferSurface::fallBackToRasterCanvas(FallbackReason reason)
     }
 
     if (m_currentFrame) {
-        RefPtr<SkPicture> currentPicture = adoptRef(m_currentFrame->endRecording());
-        currentPicture->playback(m_fallbackSurface->canvas());
+        m_currentFrame->finishRecordingAsPicture()->playback(m_fallbackSurface->canvas());
         m_currentFrame.clear();
     }
 
@@ -229,7 +228,7 @@ void RecordingImageBufferSurface::willOverwriteCanvas()
     m_previousFramePixelCount = 0;
     if (m_didRecordDrawCommandsInCurrentFrame) {
         // Discard previous draw commands
-        adoptRef(m_currentFrame->endRecording());
+        m_currentFrame->finishRecordingAsPicture();
         initializeCurrentFrame();
     }
 }
@@ -252,7 +251,7 @@ bool RecordingImageBufferSurface::finalizeFrameInternal(FallbackReason* fallback
     if (!m_imageBuffer->isDirty()) {
         if (!m_previousFrame) {
             // Create an initial blank frame
-            m_previousFrame = adoptRef(m_currentFrame->endRecording());
+            m_previousFrame = fromSkSp(m_currentFrame->finishRecordingAsPicture());
             initializeCurrentFrame();
         }
         return m_currentFrame;
@@ -268,7 +267,7 @@ bool RecordingImageBufferSurface::finalizeFrameInternal(FallbackReason* fallback
         return false;
     }
 
-    m_previousFrame = adoptRef(m_currentFrame->endRecording());
+    m_previousFrame = fromSkSp(m_currentFrame->finishRecordingAsPicture());
     m_previousFrameHasExpensiveOp = m_currentFrameHasExpensiveOp;
     m_previousFramePixelCount = m_currentFramePixelCount;
     initializeCurrentFrame();
