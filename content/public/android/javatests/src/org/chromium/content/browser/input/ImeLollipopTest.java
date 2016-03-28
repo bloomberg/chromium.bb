@@ -88,6 +88,11 @@ public class ImeLollipopTest extends ImeTest {
             @Override
             public boolean isSatisfied() {
                 CursorAnchorInfo info = mInputMethodManagerWrapper.getLastCursorAnchorInfo();
+                if (info != null && info.getComposingText() == null) {
+                    updateFailureReason("info.getCompositingText() returned null");
+                    return false;
+                }
+
                 String actual = (info == null ? "" : info.getComposingText().toString());
                 updateFailureReason("Expected: {" + expected + "}, Actual: {" + actual + "}");
                 return expected.equals(actual);
