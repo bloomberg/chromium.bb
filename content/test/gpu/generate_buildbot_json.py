@@ -223,6 +223,28 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'win',
     },
+    'Win7 Release (New Intel)': {
+      'swarming_dimensions': {
+        'gpu': '8086:0412',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'win',
+    },
+    'Win7 Debug (New Intel)': {
+      'swarming_dimensions': {
+        'gpu': '8086:0412',
+        'os': 'Windows-2008ServerR2-SP1'
+      },
+      'build_config': 'Debug',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'win',
+    },
     'Win7 x64 Release (NVIDIA)': {
       'swarming_dimensions': {
         'gpu': '10de:104a',
@@ -370,6 +392,28 @@ FYI_WATERFALL = {
       },
       'build_config': 'Debug',
       'swarming': True,
+      'os_type': 'linux',
+    },
+    'Linux Release (New Intel)': {
+      'swarming_dimensions': {
+        'gpu': '8086:0412',
+        'os': 'Linux'
+      },
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'linux',
+    },
+    'Linux Debug (New Intel)': {
+      'swarming_dimensions': {
+        'gpu': '8086:0412',
+        'os': 'Linux'
+      },
+      'build_config': 'Debug',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
       'os_type': 'linux',
     },
 
