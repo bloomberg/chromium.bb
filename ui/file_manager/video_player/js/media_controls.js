@@ -57,6 +57,17 @@ function MediaControls(containerElement, onMediaError) {
   this.soundButton_ = null;
 
   /**
+   * @type {HTMLElement}
+   * @private
+   */
+  this.subtitlesButton_ = null;
+
+  /**
+   * @private {TextTrack}
+   */
+  this.subtitlesTrack_ = null;
+
+  /**
    * @type {boolean}
    * @private
    */
@@ -518,6 +529,66 @@ MediaControls.prototype.onVolumeDrag_ = function() {
   }
 };
 
+/**
+ * Initializes subtitles button.
+ */
+MediaControls.prototype.initSubtitlesButton = function() {
+  this.subtitlesTrack_ = null;
+  this.subtitlesButton_ =
+      this.createButton('subtitles', this.onSubtitlesButtonClicked_.bind(this));
+  this.subtitlesButton_.setAttribute('aria-label',
+      str('VIDEO_PLAYER_SUBTITLES_BUTTON_LABEL'));
+};
+
+/**
+ * @param {Event} event Mouse click event.
+ * @private
+ */
+MediaControls.prototype.onSubtitlesButtonClicked_ = function(event) {
+  if (!this.subtitlesTrack_) {
+    return;
+  }
+  this.toggleSubtitlesMode_(this.subtitlesTrack_.mode === 'hidden');
+};
+
+/**
+ * @param {boolean} on Whether enabled or not.
+ * @private
+ */
+MediaControls.prototype.toggleSubtitlesMode_ = function(on) {
+  if (!this.subtitlesTrack_) {
+    return;
+  }
+  if (on) {
+    this.subtitlesTrack_.mode = 'showing';
+    this.subtitlesButton_.setAttribute('showing', '');
+  } else {
+    this.subtitlesTrack_.mode = 'hidden';
+    this.subtitlesButton_.removeAttribute('showing');
+  }
+};
+
+/**
+ * @param {TextTrack} track Subtitles track
+ * @private
+ */
+MediaControls.prototype.attachTextTrack_ = function(track) {
+  this.subtitlesTrack_ = track;
+  if (this.subtitlesTrack_) {
+    this.toggleSubtitlesMode_(true);
+    this.subtitlesButton_.removeAttribute('unavailable');
+  } else {
+    this.subtitlesButton_.setAttribute('unavailable', '');
+  }
+};
+
+/**
+ * @private
+ */
+MediaControls.prototype.detachTextTrack_ = function() {
+  this.subtitlesTrack_ = null;
+};
+
 /*
  * Media event handlers.
  */
@@ -548,6 +619,11 @@ MediaControls.prototype.attachMedia = function(mediaElement) {
     /* Copy the user selected volume to the new media element. */
     this.savedVolume_ = this.media_.volume = this.volume_.ratio;
   }
+  if (this.media_.textTracks.length > 0) {
+    this.attachTextTrack_(this.media_.textTracks[0]);
+  } else {
+    this.attachTextTrack_(null);
+  }
 };
 
 /**
@@ -564,6 +640,7 @@ MediaControls.prototype.detachMedia = function() {
   this.media_.removeEventListener('error', this.onMediaError_);
 
   this.media_ = null;
+  this.detachTextTrack_();
 };
 
 /**
@@ -743,6 +820,7 @@ function VideoControls(
   this.initPlayButton();
   this.initTimeControls();
   this.initVolumeControls();
+  this.initSubtitlesButton();
 
   // Create the cast button.
   // We need to use <button> since cr.ui.MenuButton.decorate modifies prototype

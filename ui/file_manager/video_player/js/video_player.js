@@ -366,7 +366,6 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
 
               this.currentSession_ = session;
               this.videoElement_ = new CastVideoElement(media, session);
-              this.controls.attachMedia(this.videoElement_);
             }.bind(this));
           }.bind(this));
     } else {
@@ -377,7 +376,6 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
       getRequiredElement('video-container').appendChild(this.videoElement_);
 
       var videoUrl = video.toURL();
-      this.controls.attachMedia(this.videoElement_);
       var source = document.createElement('source');
       source.src = videoUrl;
       this.videoElement_.appendChild(source);
@@ -424,6 +422,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
             chrome.power.releaseKeepAwake();
             this.updateInactivityWatcherState_();
           }.wrap(this));
+          this.controls.attachMedia(this.videoElement_);
           // TODO(ryoh):
           // If you modify the video element that is already inserted,
           // you have to call load() method.
