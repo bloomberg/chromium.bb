@@ -199,6 +199,18 @@ public class UrlContainer extends ViewGroup {
     }
 
     /**
+     * Return whether the trailing text animations should be run.
+     *
+     * If there is no actual trailing text or the width of the leading URL bar view did not allow
+     * for any space to be allocated to the trailing text view (i.e. width == 0), then jump to the
+     * end of the animation to avoid the unnecessary draw churn.
+     */
+    private boolean shouldRunTrailingTextAnimations() {
+        return mTrailingTextView.getMeasuredWidth() > 0
+                && !TextUtils.isEmpty(mTrailingTextView.getText());
+    }
+
+    /**
      * Updates the visibility of the trailing text view.
      * @param visible Whether the trailing text view should be visible.
      */
@@ -253,6 +265,7 @@ public class UrlContainer extends ViewGroup {
                 }
             });
             set.start();
+            if (!shouldRunTrailingTextAnimations()) set.end();
             mTrailingTextAnimator = set;
 
             postDelayed(mTriggerHideRunnable, MAX_TRAILING_TEXT_SHOW_DURATION_MS);
@@ -292,6 +305,7 @@ public class UrlContainer extends ViewGroup {
             }
         });
         set.start();
+        if (!shouldRunTrailingTextAnimations()) set.end();
         mTrailingTextAnimator = set;
     }
 
