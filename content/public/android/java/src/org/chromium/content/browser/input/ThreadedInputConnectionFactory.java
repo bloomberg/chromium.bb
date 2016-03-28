@@ -122,7 +122,9 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
                     public void run() {
                         // Step 3-2. Run the check on view's handler (mostly UI) thread.
                         // This prevents other views from taking focus in the middle of detection.
-                        view.getHandler().post(new Runnable() {
+                        final Handler viewHandler = view.getHandler();
+                        if (viewHandler == null) return;
+                        viewHandler.post(new Runnable() {
                             @Override
                             public void run() {
                                 assertRegisterProxyViewOnUiThread(view);
