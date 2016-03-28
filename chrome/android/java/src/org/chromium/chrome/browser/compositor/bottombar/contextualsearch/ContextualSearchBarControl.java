@@ -94,7 +94,6 @@ public class ContextualSearchBarControl
         cancelSearchTermResolutionAnimation();
         mSearchTermControl.setSearchTerm(searchTerm);
         resetSearchBarTermOpacity();
-        animateSearchTermResolution();
     }
 
     /**

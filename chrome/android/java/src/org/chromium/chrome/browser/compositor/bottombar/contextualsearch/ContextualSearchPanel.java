@@ -471,6 +471,7 @@ public class ContextualSearchPanel extends OverlayPanel
     public void onSearchTermResolved(String searchTerm) {
         mPanelMetrics.onSearchTermResolved();
         getSearchBarControl().setSearchTerm(searchTerm);
+        getSearchBarControl().animateSearchTermResolution();
     }
 
     /**
