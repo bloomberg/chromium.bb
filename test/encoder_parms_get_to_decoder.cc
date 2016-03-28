@@ -95,9 +95,9 @@ class VpxEncoderParmsGetToDecoder
   virtual bool HandleDecodeResult(const aom_codec_err_t res_dec,
                                   const libaom_test::VideoSource &video,
                                   libaom_test::Decoder *decoder) {
-    aom_codec_ctx_t *const vp9_decoder = decoder->GetDecoder();
+    aom_codec_ctx_t *const av1_decoder = decoder->GetDecoder();
     aom_codec_alg_priv_t *const priv =
-        reinterpret_cast<aom_codec_alg_priv_t *>(vp9_decoder->priv);
+        reinterpret_cast<aom_codec_alg_priv_t *>(av1_decoder->priv);
     FrameWorkerData *const worker_data =
         reinterpret_cast<FrameWorkerData *>(priv->frame_workers[0].data1);
     AV1_COMMON *const common = &worker_data->pbi->common;

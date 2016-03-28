@@ -287,7 +287,7 @@ TEST_P(Loop8Test6Param, ValueCheck) {
   int err_count_total = 0;
   int first_failure = -1;
 
-  // NOTE: The code in vp9_loopfilter.c:update_sharpness computes mblim as a
+  // NOTE: The code in av1_loopfilter.c:update_sharpness computes mblim as a
   // function of sharpness_lvl and the loopfilter lvl as:
   // block_inside_limit = lvl >> ((sharpness_lvl > 0) + (sharpness_lvl > 4));
   // ...

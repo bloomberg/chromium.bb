@@ -326,7 +326,7 @@ struct ExternalFrameBufferList {
 // Application private data passed into the set function. |min_size| is the
 // minimum size in bytes needed to decode the next frame. |fb| pointer to the
 // frame buffer.
-static int get_vp9_frame_buffer(void *cb_priv, size_t min_size,
+static int get_av1_frame_buffer(void *cb_priv, size_t min_size,
                                 aom_codec_frame_buffer_t *fb) {
   int i;
   struct ExternalFrameBufferList *const ext_fb_list =
@@ -360,7 +360,7 @@ static int get_vp9_frame_buffer(void *cb_priv, size_t min_size,
 // Callback used by libaom when there are no references to the frame buffer.
 // |cb_priv| user private data passed into the set function. |fb| pointer
 // to the frame buffer.
-static int release_vp9_frame_buffer(void *cb_priv,
+static int release_av1_frame_buffer(void *cb_priv,
                                     aom_codec_frame_buffer_t *fb) {
   struct ExternalFrameBuffer *const ext_fb =
       (struct ExternalFrameBuffer *)fb->priv;
@@ -688,8 +688,8 @@ static int main_loop(int argc, const char **argv_) {
     ext_fb_list.num_external_frame_buffers = num_external_frame_buffers;
     ext_fb_list.ext_fb = (struct ExternalFrameBuffer *)calloc(
         num_external_frame_buffers, sizeof(*ext_fb_list.ext_fb));
-    if (aom_codec_set_frame_buffer_functions(&decoder, get_vp9_frame_buffer,
-                                             release_vp9_frame_buffer,
+    if (aom_codec_set_frame_buffer_functions(&decoder, get_av1_frame_buffer,
+                                             release_av1_frame_buffer,
                                              &ext_fb_list)) {
       fprintf(stderr, "Failed to configure external frame buffers: %s\n",
               aom_codec_error(&decoder));

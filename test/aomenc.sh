@@ -23,7 +23,7 @@ aomenc_verify_environment() {
     elog "The file ${YUV_RAW_INPUT##*/} must exist in LIBAOM_TEST_DATA_PATH."
     return 1
   fi
-  if [ "$(aomenc_can_encode_vp9)" = "yes" ]; then
+  if [ "$(aomenc_can_encode_av1)" = "yes" ]; then
     if [ ! -e "${Y4M_NOSQ_PAR_INPUT}" ]; then
       elog "The file ${Y4M_NOSQ_PAR_INPUT##*/} must exist in"
       elog "LIBAOM_TEST_DATA_PATH."
@@ -42,8 +42,8 @@ aomenc_can_encode_aom() {
   fi
 }
 
-aomenc_can_encode_vp9() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
+aomenc_can_encode_av1() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
     echo yes
   fi
 }
@@ -215,11 +215,11 @@ aomenc_aom_ivf_piped_input() {
   fi
 }
 
-aomenc_vp9_ivf() {
-  if [ "$(aomenc_can_encode_vp9)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp9.ivf"
+aomenc_av1_ivf() {
+  if [ "$(aomenc_can_encode_av1)" = "yes" ]; then
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1.ivf"
     aomenc $(yuv_input_hantro_collage) \
-      --codec=vp9 \
+      --codec=av1 \
       --limit="${TEST_FRAMES}" \
       --ivf \
       --output="${output}"
@@ -231,12 +231,12 @@ aomenc_vp9_ivf() {
   fi
 }
 
-aomenc_vp9_webm() {
-  if [ "$(aomenc_can_encode_vp9)" = "yes" ] && \
+aomenc_av1_webm() {
+  if [ "$(aomenc_can_encode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp9.webm"
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1.webm"
     aomenc $(yuv_input_hantro_collage) \
-      --codec=vp9 \
+      --codec=av1 \
       --limit="${TEST_FRAMES}" \
       --output="${output}"
 
@@ -247,12 +247,12 @@ aomenc_vp9_webm() {
   fi
 }
 
-aomenc_vp9_webm_rt() {
-  if [ "$(aomenc_can_encode_vp9)" = "yes" ] && \
+aomenc_av1_webm_rt() {
+  if [ "$(aomenc_can_encode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp9_rt.webm"
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1_rt.webm"
     aomenc $(yuv_input_hantro_collage) \
-      $(aomenc_rt_params vp9) \
+      $(aomenc_rt_params av1) \
       --output="${output}"
 
     if [ ! -e "${output}" ]; then
@@ -262,10 +262,10 @@ aomenc_vp9_webm_rt() {
   fi
 }
 
-aomenc_vp9_webm_rt_multithread_tiled() {
-  if [ "$(aomenc_can_encode_vp9)" = "yes" ] && \
+aomenc_av1_webm_rt_multithread_tiled() {
+  if [ "$(aomenc_can_encode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp9_rt_multithread_tiled.webm"
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1_rt_multithread_tiled.webm"
     local readonly tilethread_min=2
     local readonly tilethread_max=4
     local readonly num_threads="$(seq ${tilethread_min} ${tilethread_max})"
@@ -274,7 +274,7 @@ aomenc_vp9_webm_rt_multithread_tiled() {
     for threads in ${num_threads}; do
       for tile_cols in ${num_tile_cols}; do
         aomenc $(y4m_input_720p) \
-          $(aomenc_rt_params vp9) \
+          $(aomenc_rt_params av1) \
           --threads=${threads} \
           --tile-columns=${tile_cols} \
           --output="${output}"
@@ -290,10 +290,10 @@ aomenc_vp9_webm_rt_multithread_tiled() {
   fi
 }
 
-aomenc_vp9_webm_rt_multithread_tiled_frameparallel() {
-  if [ "$(aomenc_can_encode_vp9)" = "yes" ] && \
+aomenc_av1_webm_rt_multithread_tiled_frameparallel() {
+  if [ "$(aomenc_can_encode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp9_rt_mt_t_fp.webm"
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1_rt_mt_t_fp.webm"
     local readonly tilethread_min=2
     local readonly tilethread_max=4
     local readonly num_threads="$(seq ${tilethread_min} ${tilethread_max})"
@@ -302,7 +302,7 @@ aomenc_vp9_webm_rt_multithread_tiled_frameparallel() {
     for threads in ${num_threads}; do
       for tile_cols in ${num_tile_cols}; do
         aomenc $(y4m_input_720p) \
-          $(aomenc_rt_params vp9) \
+          $(aomenc_rt_params av1) \
           --threads=${threads} \
           --tile-columns=${tile_cols} \
           --frame-parallel=1 \
@@ -319,12 +319,12 @@ aomenc_vp9_webm_rt_multithread_tiled_frameparallel() {
   fi
 }
 
-aomenc_vp9_webm_2pass() {
-  if [ "$(aomenc_can_encode_vp9)" = "yes" ] && \
+aomenc_av1_webm_2pass() {
+  if [ "$(aomenc_can_encode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp9.webm"
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1.webm"
     aomenc $(yuv_input_hantro_collage) \
-      --codec=vp9 \
+      --codec=av1 \
       --limit="${TEST_FRAMES}" \
       --output="${output}" \
       --passes=2
@@ -336,11 +336,11 @@ aomenc_vp9_webm_2pass() {
   fi
 }
 
-aomenc_vp9_ivf_lossless() {
-  if [ "$(aomenc_can_encode_vp9)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp9_lossless.ivf"
+aomenc_av1_ivf_lossless() {
+  if [ "$(aomenc_can_encode_av1)" = "yes" ]; then
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1_lossless.ivf"
     aomenc $(yuv_input_hantro_collage) \
-      --codec=vp9 \
+      --codec=av1 \
       --limit="${TEST_FRAMES}" \
       --ivf \
       --output="${output}" \
@@ -353,11 +353,11 @@ aomenc_vp9_ivf_lossless() {
   fi
 }
 
-aomenc_vp9_ivf_minq0_maxq0() {
-  if [ "$(aomenc_can_encode_vp9)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp9_lossless_minq0_maxq0.ivf"
+aomenc_av1_ivf_minq0_maxq0() {
+  if [ "$(aomenc_can_encode_av1)" = "yes" ]; then
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1_lossless_minq0_maxq0.ivf"
     aomenc $(yuv_input_hantro_collage) \
-      --codec=vp9 \
+      --codec=av1 \
       --limit="${TEST_FRAMES}" \
       --ivf \
       --output="${output}" \
@@ -371,14 +371,14 @@ aomenc_vp9_ivf_minq0_maxq0() {
   fi
 }
 
-aomenc_vp9_webm_lag10_frames20() {
-  if [ "$(aomenc_can_encode_vp9)" = "yes" ] && \
+aomenc_av1_webm_lag10_frames20() {
+  if [ "$(aomenc_can_encode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
     local readonly lag_total_frames=20
     local readonly lag_frames=10
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp9_lag10_frames20.webm"
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1_lag10_frames20.webm"
     aomenc $(yuv_input_hantro_collage) \
-      --codec=vp9 \
+      --codec=av1 \
       --limit="${lag_total_frames}" \
       --lag-in-frames="${lag_frames}" \
       --output="${output}" \
@@ -393,12 +393,12 @@ aomenc_vp9_webm_lag10_frames20() {
 }
 
 # TODO(fgalligan): Test that DisplayWidth is different than video width.
-aomenc_vp9_webm_non_square_par() {
-  if [ "$(aomenc_can_encode_vp9)" = "yes" ] && \
+aomenc_av1_webm_non_square_par() {
+  if [ "$(aomenc_can_encode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp9_non_square_par.webm"
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/av1_non_square_par.webm"
     aomenc $(y4m_input_non_square_par) \
-      --codec=vp9 \
+      --codec=av1 \
       --limit="${TEST_FRAMES}" \
       --output="${output}"
 
@@ -415,15 +415,15 @@ aomenc_tests="aomenc_aom_ivf
               aomenc_aom_webm_2pass
               aomenc_aom_webm_lag10_frames20
               aomenc_aom_ivf_piped_input
-              aomenc_vp9_ivf
-              aomenc_vp9_webm
-              aomenc_vp9_webm_rt
-              aomenc_vp9_webm_rt_multithread_tiled
-              aomenc_vp9_webm_rt_multithread_tiled_frameparallel
-              aomenc_vp9_webm_2pass
-              aomenc_vp9_ivf_lossless
-              aomenc_vp9_ivf_minq0_maxq0
-              aomenc_vp9_webm_lag10_frames20
-              aomenc_vp9_webm_non_square_par"
+              aomenc_av1_ivf
+              aomenc_av1_webm
+              aomenc_av1_webm_rt
+              aomenc_av1_webm_rt_multithread_tiled
+              aomenc_av1_webm_rt_multithread_tiled_frameparallel
+              aomenc_av1_webm_2pass
+              aomenc_av1_ivf_lossless
+              aomenc_av1_ivf_minq0_maxq0
+              aomenc_av1_webm_lag10_frames20
+              aomenc_av1_webm_non_square_par"
 
 run_tests aomenc_verify_environment "${aomenc_tests}"

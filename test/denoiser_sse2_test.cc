@@ -72,11 +72,11 @@ TEST_P(AV1DenoiserTest, BitexactCheck) {
       mc_avg_block[j] = (temp < 0) ? 0 : ((temp > 255) ? 255 : temp);
     }
 
-    ASM_REGISTER_STATE_CHECK(vp9_denoiser_filter_c(sig_block, 64, mc_avg_block,
+    ASM_REGISTER_STATE_CHECK(av1_denoiser_filter_c(sig_block, 64, mc_avg_block,
                                                    64, avg_block_c, 64, 0, bs_,
                                                    motion_magnitude_random));
 
-    ASM_REGISTER_STATE_CHECK(vp9_denoiser_filter_sse2(
+    ASM_REGISTER_STATE_CHECK(av1_denoiser_filter_sse2(
         sig_block, 64, mc_avg_block, 64, avg_block_sse2, 64, 0, bs_,
         motion_magnitude_random));
 

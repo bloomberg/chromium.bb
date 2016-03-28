@@ -358,7 +358,7 @@ static const arg_def_t max_intra_rate_pct =
     ARG_DEF(NULL, "max-intra-rate", 1, "Max I-frame bitrate (pct)");
 
 #if CONFIG_AV1_ENCODER
-static const arg_def_t cpu_used_vp9 =
+static const arg_def_t cpu_used_av1 =
     ARG_DEF(NULL, "cpu-used", 1, "CPU Used (-8..8)");
 static const arg_def_t tile_cols =
     ARG_DEF(NULL, "tile-columns", 1, "Number of tile columns to use, log2");
@@ -437,7 +437,7 @@ static const arg_def_t tune_content = ARG_DEF_ENUM(
 #if CONFIG_AV1_ENCODER
 /* clang-format off */
 static const arg_def_t *av1_args[] = {
-  &cpu_used_vp9,            &auto_altref,      &sharpness,
+  &cpu_used_av1,            &auto_altref,      &sharpness,
   &static_thresh,           &tile_cols,        &tile_rows,
   &arnr_maxframes,          &arnr_strength,    &arnr_type,
   &tune_ssim,               &cq_level,         &max_intra_rate_pct,
@@ -902,7 +902,7 @@ static void parse_global_config(struct VpxEncoderConfig *global, char **argv) {
     // Make default AV1 passes = 2 until there is a better quality 1-pass
     // encoder
     if (global->codec != NULL && global->codec->name != NULL)
-      global->passes = (strcmp(global->codec->name, "vp9") == 0 &&
+      global->passes = (strcmp(global->codec->name, "av1") == 0 &&
                         global->deadline != AOM_DL_REALTIME)
                            ? 2
                            : 1;
@@ -1160,7 +1160,7 @@ static int parse_stream_params(struct VpxEncoderConfig *global,
       config->cfg.kf_mode = AOM_KF_DISABLED;
 #if CONFIG_AOM_HIGHBITDEPTH
     } else if (arg_match(&arg, &test16bitinternalarg, argi)) {
-      if (strcmp(global->codec->name, "vp9") == 0 ||
+      if (strcmp(global->codec->name, "av1") == 0 ||
           strcmp(global->codec->name, "av1") == 0) {
         test_16bit_internal = 1;
       }
@@ -1193,7 +1193,7 @@ static int parse_stream_params(struct VpxEncoderConfig *global,
     }
   }
 #if CONFIG_AOM_HIGHBITDEPTH
-  if (strcmp(global->codec->name, "vp9") == 0 ||
+  if (strcmp(global->codec->name, "av1") == 0 ||
       strcmp(global->codec->name, "av1") == 0) {
     config->use_16bit_internal =
         test_16bit_internal | (config->cfg.g_profile > 1);
@@ -1711,7 +1711,7 @@ static void test_decode(struct stream_state *stream,
                         enum TestDecodeFatality fatal,
                         const VpxInterface *codec) {
   aom_image_t enc_img, dec_img;
-  struct vp9_ref_frame ref_enc, ref_dec;
+  struct av1_ref_frame ref_enc, ref_dec;
 
   if (stream->mismatch_seen) return;
 
@@ -1965,7 +1965,7 @@ int main(int argc, const char **argv_) {
     FOREACH_STREAM(initialize_encoder(stream, &global));
 
 #if CONFIG_AOM_HIGHBITDEPTH
-    if (strcmp(global.codec->name, "vp9") == 0 ||
+    if (strcmp(global.codec->name, "av1") == 0 ||
         strcmp(global.codec->name, "av1") == 0) {
       // Check to see if at least one stream uses 16 bit internal.
       // Currently assume that the bit_depths for all streams using

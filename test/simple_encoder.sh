@@ -50,13 +50,13 @@ simple_encoder_aom() {
 # TODO(tomfinegan): Add a frame limit param to simple_encoder and enable this
 # test. AV1 is just too slow right now: This test takes 4m30s+ on a fast
 # machine.
-DISABLED_simple_encoder_vp9() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    simple_encoder vp9 || return 1
+DISABLED_simple_encoder_av1() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    simple_encoder av1 || return 1
   fi
 }
 
 simple_encoder_tests="simple_encoder_aom
-                      DISABLED_simple_encoder_vp9"
+                      DISABLED_simple_encoder_av1"
 
 run_tests simple_encoder_verify_environment "${simple_encoder_tests}"

@@ -55,8 +55,8 @@ aomdec_can_decode_aom() {
   fi
 }
 
-aomdec_can_decode_vp9() {
-  if [ "$(vp9_decode_available)" = "yes" ]; then
+aomdec_can_decode_av1() {
+  if [ "$(av1_decode_available)" = "yes" ]; then
     echo yes
   fi
 }
@@ -73,15 +73,15 @@ aomdec_aom_ivf_pipe_input() {
   fi
 }
 
-aomdec_vp9_webm() {
-  if [ "$(aomdec_can_decode_vp9)" = "yes" ] && \
+aomdec_av1_webm() {
+  if [ "$(aomdec_can_decode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
     aomdec "${AV1_WEBM_FILE}" --summary --noblit
   fi
 }
 
-aomdec_vp9_webm_frame_parallel() {
-  if [ "$(aomdec_can_decode_vp9)" = "yes" ] && \
+aomdec_av1_webm_frame_parallel() {
+  if [ "$(aomdec_can_decode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
     for threads in 2 3 4 5 6 7 8; do
       aomdec "${AV1_FPM_WEBM_FILE}" --summary --noblit --threads=$threads \
@@ -90,10 +90,10 @@ aomdec_vp9_webm_frame_parallel() {
   fi
 }
 
-aomdec_vp9_webm_less_than_50_frames() {
+aomdec_av1_webm_less_than_50_frames() {
   # ensure that reaching eof in webm_guess_framerate doesn't result in invalid
   # frames in actual webm_read_frame calls.
-  if [ "$(aomdec_can_decode_vp9)" = "yes" ] && \
+  if [ "$(aomdec_can_decode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
     local readonly decoder="$(aom_tool_path aomdec)"
     local readonly expected=10
@@ -109,8 +109,8 @@ aomdec_vp9_webm_less_than_50_frames() {
 
 aomdec_tests="aomdec_aom_ivf
               aomdec_aom_ivf_pipe_input
-              aomdec_vp9_webm
-              aomdec_vp9_webm_frame_parallel
-              aomdec_vp9_webm_less_than_50_frames"
+              aomdec_av1_webm
+              aomdec_av1_webm_frame_parallel
+              aomdec_av1_webm_less_than_50_frames"
 
 run_tests aomdec_verify_environment "${aomdec_tests}"

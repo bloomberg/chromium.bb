@@ -115,12 +115,12 @@ typedef struct aom_ref_frame {
 
 /*!\brief AV1 specific reference frame data struct
  *
- * Define the data struct to access vp9 reference frames.
+ * Define the data struct to access av1 reference frames.
  */
-typedef struct vp9_ref_frame {
+typedef struct av1_ref_frame {
   int idx;         /**< frame index to get (input) */
   aom_image_t img; /**< img structure to populate (output) */
-} vp9_ref_frame_t;
+} av1_ref_frame_t;
 
 /*!\cond */
 /*!\brief aom decoder control function parameter type
@@ -141,7 +141,7 @@ AOM_CTRL_USE_TYPE(AOM_SET_DBG_COLOR_B_MODES, int)
 #define AOM_CTRL_AOM_SET_DBG_COLOR_B_MODES
 AOM_CTRL_USE_TYPE(AOM_SET_DBG_DISPLAY_MV, int)
 #define AOM_CTRL_AOM_SET_DBG_DISPLAY_MV
-AOM_CTRL_USE_TYPE(AV1_GET_REFERENCE, vp9_ref_frame_t *)
+AOM_CTRL_USE_TYPE(AV1_GET_REFERENCE, av1_ref_frame_t *)
 #define AOM_CTRL_AV1_GET_REFERENCE
 
 /*!\endcond */

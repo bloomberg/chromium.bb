@@ -63,17 +63,17 @@ decode_with_drops_aom() {
 # and once in pattern mode.
 # Note: This test assumes that $AV1_IVF_FILE has exactly 20 frames, and could
 # break if the file is modified.
-decode_with_drops_vp9() {
-  if [ "$(vp9_decode_available)" = "yes" ]; then
+decode_with_drops_av1() {
+  if [ "$(av1_decode_available)" = "yes" ]; then
     # Test sequence mode: Drop frames 2-28.
-    decode_with_drops "${AV1_IVF_FILE}" "vp9" "2-19"
+    decode_with_drops "${AV1_IVF_FILE}" "av1" "2-19"
 
     # Test pattern mode: Drop 3 of every 4 frames.
-    decode_with_drops "${AV1_IVF_FILE}" "vp9" "3/4"
+    decode_with_drops "${AV1_IVF_FILE}" "av1" "3/4"
   fi
 }
 
 decode_with_drops_tests="decode_with_drops_aom
-                         decode_with_drops_vp9"
+                         decode_with_drops_av1"
 
 run_tests decode_with_drops_verify_environment "${decode_with_drops_tests}"

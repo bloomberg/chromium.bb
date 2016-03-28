@@ -709,7 +709,7 @@ typedef struct aom_codec_enc_cfg {
   int temporal_layering_mode;
 } aom_codec_enc_cfg_t; /**< alias for struct aom_codec_enc_cfg */
 
-/*!\brief  vp9 svc extra configure parameters
+/*!\brief  av1 svc extra configure parameters
  *
  * This defines max/min quantizers and scale factors for each layer
  *

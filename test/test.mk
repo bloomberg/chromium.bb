@@ -61,14 +61,14 @@ endif
 
 LIBAOM_TEST_SRCS-$(CONFIG_DECODERS)    += decode_api_test.cc
 
-# Currently we only support decoder perf tests for vp9. Also they read from WebM
+# Currently we only support decoder perf tests for av1. Also they read from WebM
 # files, so WebM IO is required.
 ifeq ($(CONFIG_DECODE_PERF_TESTS)$(CONFIG_AV1_DECODER)$(CONFIG_WEBM_IO), \
       yesyesyes)
 LIBAOM_TEST_SRCS-yes                   += decode_perf_test.cc
 endif
 
-# encode perf tests are vp9 only
+# encode perf tests are av1 only
 ifeq ($(CONFIG_ENCODE_PERF_TESTS)$(CONFIG_AV1_ENCODER), yesyes)
 LIBAOM_TEST_SRCS-yes += encode_perf_test.cc
 endif

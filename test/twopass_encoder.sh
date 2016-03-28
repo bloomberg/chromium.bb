@@ -50,13 +50,13 @@ twopass_encoder_aom() {
 # TODO(tomfinegan): Add a frame limit param to twopass_encoder and enable this
 # test. AV1 is just too slow right now: This test takes 31m16s+ on a fast
 # machine.
-DISABLED_twopass_encoder_vp9() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    twopass_encoder vp9 || return 1
+DISABLED_twopass_encoder_av1() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    twopass_encoder av1 || return 1
   fi
 }
 
 twopass_encoder_tests="twopass_encoder_aom
-                       DISABLED_twopass_encoder_vp9"
+                       DISABLED_twopass_encoder_av1"
 
 run_tests twopass_encoder_verify_environment "${twopass_encoder_tests}"

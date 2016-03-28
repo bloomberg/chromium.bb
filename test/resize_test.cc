@@ -44,7 +44,7 @@ static void write_ivf_file_header(const aom_codec_enc_cfg_t *const cfg,
   header[3] = 'F';
   mem_put_le16(header + 4, 0);                    /* version */
   mem_put_le16(header + 6, 32);                   /* headersize */
-  mem_put_le32(header + 8, 0x30395056);           /* fourcc (vp9) */
+  mem_put_le32(header + 8, 0x30395056);           /* fourcc (av1) */
   mem_put_le16(header + 12, cfg->g_w);            /* width */
   mem_put_le16(header + 14, cfg->g_h);            /* height */
   mem_put_le32(header + 16, cfg->g_timebase.den); /* rate */
@@ -171,7 +171,7 @@ class ResizeInternalTest : public ResizeTest {
 
   virtual void BeginPassHook(unsigned int /*pass*/) {
 #if WRITE_COMPRESSED_STREAM
-    outfile_ = fopen("vp90-2-05-resize.ivf", "wb");
+    outfile_ = fopen("av10-2-05-resize.ivf", "wb");
 #endif
   }
 
@@ -445,7 +445,7 @@ class ResizeCspTest : public ResizeTest {
 
   virtual void BeginPassHook(unsigned int /*pass*/) {
 #if WRITE_COMPRESSED_STREAM
-    outfile_ = fopen("vp91-2-05-cspchape.ivf", "wb");
+    outfile_ = fopen("av11-2-05-cspchape.ivf", "wb");
 #endif
   }
 

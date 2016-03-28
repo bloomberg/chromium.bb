@@ -68,7 +68,7 @@ files_exist() {
   done
 }
 
-# Run aom_temporal_svc_encoder in all supported modes for aom and vp9.
+# Run aom_temporal_svc_encoder in all supported modes for aom and av1.
 
 aom_tsvc_encoder_aom_mode_0() {
   if [ "$(aom_encode_available)" = "yes" ]; then
@@ -166,97 +166,97 @@ aom_tsvc_encoder_aom_mode_11() {
   fi
 }
 
-aom_tsvc_encoder_vp9_mode_0() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    aom_tsvc_encoder vp9 "${FUNCNAME}" 0 200 || return 1
+aom_tsvc_encoder_av1_mode_0() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    aom_tsvc_encoder av1 "${FUNCNAME}" 0 200 || return 1
     # Mode 0 produces 1 stream
     files_exist "${FUNCNAME}" 1 || return 1
   fi
 }
 
-aom_tsvc_encoder_vp9_mode_1() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    aom_tsvc_encoder vp9 "${FUNCNAME}" 1 200 400 || return 1
+aom_tsvc_encoder_av1_mode_1() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    aom_tsvc_encoder av1 "${FUNCNAME}" 1 200 400 || return 1
     # Mode 1 produces 2 streams
     files_exist "${FUNCNAME}" 2 || return 1
   fi
 }
 
-aom_tsvc_encoder_vp9_mode_2() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    aom_tsvc_encoder vp9 "${FUNCNAME}" 2 200 400 || return 1
+aom_tsvc_encoder_av1_mode_2() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    aom_tsvc_encoder av1 "${FUNCNAME}" 2 200 400 || return 1
     # Mode 2 produces 2 streams
     files_exist "${FUNCNAME}" 2 || return 1
   fi
 }
 
-aom_tsvc_encoder_vp9_mode_3() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    aom_tsvc_encoder vp9 "${FUNCNAME}" 3 200 400 600 || return 1
+aom_tsvc_encoder_av1_mode_3() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    aom_tsvc_encoder av1 "${FUNCNAME}" 3 200 400 600 || return 1
     # Mode 3 produces 3 streams
     files_exist "${FUNCNAME}" 3 || return 1
   fi
 }
 
-aom_tsvc_encoder_vp9_mode_4() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    aom_tsvc_encoder vp9 "${FUNCNAME}" 4 200 400 600 || return 1
+aom_tsvc_encoder_av1_mode_4() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    aom_tsvc_encoder av1 "${FUNCNAME}" 4 200 400 600 || return 1
     # Mode 4 produces 3 streams
     files_exist "${FUNCNAME}" 3 || return 1
   fi
 }
 
-aom_tsvc_encoder_vp9_mode_5() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    aom_tsvc_encoder vp9 "${FUNCNAME}" 5 200 400 600 || return 1
+aom_tsvc_encoder_av1_mode_5() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    aom_tsvc_encoder av1 "${FUNCNAME}" 5 200 400 600 || return 1
     # Mode 5 produces 3 streams
     files_exist "${FUNCNAME}" 3 || return 1
   fi
 }
 
-aom_tsvc_encoder_vp9_mode_6() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    aom_tsvc_encoder vp9 "${FUNCNAME}" 6 200 400 600 || return 1
+aom_tsvc_encoder_av1_mode_6() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    aom_tsvc_encoder av1 "${FUNCNAME}" 6 200 400 600 || return 1
     # Mode 6 produces 3 streams
     files_exist "${FUNCNAME}" 3 || return 1
   fi
 }
 
-aom_tsvc_encoder_vp9_mode_7() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    aom_tsvc_encoder vp9 "${FUNCNAME}" 7 200 400 600 800 1000 || return 1
+aom_tsvc_encoder_av1_mode_7() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    aom_tsvc_encoder av1 "${FUNCNAME}" 7 200 400 600 800 1000 || return 1
     # Mode 7 produces 5 streams
     files_exist "${FUNCNAME}" 5 || return 1
   fi
 }
 
-aom_tsvc_encoder_vp9_mode_8() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    aom_tsvc_encoder vp9 "${FUNCNAME}" 8 200 400 || return 1
+aom_tsvc_encoder_av1_mode_8() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    aom_tsvc_encoder av1 "${FUNCNAME}" 8 200 400 || return 1
     # Mode 8 produces 2 streams
     files_exist "${FUNCNAME}" 2 || return 1
   fi
 }
 
-aom_tsvc_encoder_vp9_mode_9() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    aom_tsvc_encoder vp9 "${FUNCNAME}" 9 200 400 600 || return 1
+aom_tsvc_encoder_av1_mode_9() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    aom_tsvc_encoder av1 "${FUNCNAME}" 9 200 400 600 || return 1
     # Mode 9 produces 3 streams
     files_exist "${FUNCNAME}" 3 || return 1
   fi
 }
 
-aom_tsvc_encoder_vp9_mode_10() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    aom_tsvc_encoder vp9 "${FUNCNAME}" 10 200 400 600 || return 1
+aom_tsvc_encoder_av1_mode_10() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    aom_tsvc_encoder av1 "${FUNCNAME}" 10 200 400 600 || return 1
     # Mode 10 produces 3 streams
     files_exist "${FUNCNAME}" 3 || return 1
   fi
 }
 
-aom_tsvc_encoder_vp9_mode_11() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    aom_tsvc_encoder vp9 "${FUNCNAME}" 11 200 400 600 || return 1
+aom_tsvc_encoder_av1_mode_11() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    aom_tsvc_encoder av1 "${FUNCNAME}" 11 200 400 600 || return 1
     # Mode 11 produces 3 streams
     files_exist "${FUNCNAME}" 3 || return 1
   fi
@@ -274,17 +274,17 @@ aom_tsvc_encoder_tests="aom_tsvc_encoder_aom_mode_0
                         aom_tsvc_encoder_aom_mode_9
                         aom_tsvc_encoder_aom_mode_10
                         aom_tsvc_encoder_aom_mode_11
-                        aom_tsvc_encoder_vp9_mode_0
-                        aom_tsvc_encoder_vp9_mode_1
-                        aom_tsvc_encoder_vp9_mode_2
-                        aom_tsvc_encoder_vp9_mode_3
-                        aom_tsvc_encoder_vp9_mode_4
-                        aom_tsvc_encoder_vp9_mode_5
-                        aom_tsvc_encoder_vp9_mode_6
-                        aom_tsvc_encoder_vp9_mode_7
-                        aom_tsvc_encoder_vp9_mode_8
-                        aom_tsvc_encoder_vp9_mode_9
-                        aom_tsvc_encoder_vp9_mode_10
-                        aom_tsvc_encoder_vp9_mode_11"
+                        aom_tsvc_encoder_av1_mode_0
+                        aom_tsvc_encoder_av1_mode_1
+                        aom_tsvc_encoder_av1_mode_2
+                        aom_tsvc_encoder_av1_mode_3
+                        aom_tsvc_encoder_av1_mode_4
+                        aom_tsvc_encoder_av1_mode_5
+                        aom_tsvc_encoder_av1_mode_6
+                        aom_tsvc_encoder_av1_mode_7
+                        aom_tsvc_encoder_av1_mode_8
+                        aom_tsvc_encoder_av1_mode_9
+                        aom_tsvc_encoder_av1_mode_10
+                        aom_tsvc_encoder_av1_mode_11"
 
 run_tests aom_tsvc_encoder_verify_environment "${aom_tsvc_encoder_tests}"

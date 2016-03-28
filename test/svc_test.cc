@@ -46,7 +46,7 @@ class SvcTest : public ::testing::Test {
     svc_.log_level = SVC_LOG_DEBUG;
     svc_.log_print = 0;
 
-    codec_iface_ = aom_codec_vp9_cx();
+    codec_iface_ = aom_codec_av1_cx();
     const aom_codec_err_t res =
         aom_codec_enc_config_default(codec_iface_, &codec_enc_, 0);
     EXPECT_EQ(AOM_CODEC_OK, res);
@@ -73,7 +73,7 @@ class SvcTest : public ::testing::Test {
 
   void InitializeEncoder() {
     const aom_codec_err_t res =
-        aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
+        aom_svc_init(&svc_, &codec_, aom_codec_av1_cx(), &codec_enc_);
     EXPECT_EQ(AOM_CODEC_OK, res);
     aom_codec_control(&codec_, AOME_SET_CPUUSED, 4);  // Make the test faster
     aom_codec_control(&codec_, AV1E_SET_TILE_COLUMNS, tile_columns_);
@@ -242,7 +242,7 @@ class SvcTest : public ::testing::Test {
       ASSERT_TRUE(inputs[i].buf != NULL);
       ASSERT_GT(inputs[i].sz, 0U);
 
-      aom_codec_err_t res = vp9_parse_superframe_index(
+      aom_codec_err_t res = av1_parse_superframe_index(
           static_cast<const uint8_t *>(inputs[i].buf), inputs[i].sz,
           frame_sizes, &frame_count, NULL, NULL);
       ASSERT_EQ(AOM_CODEC_OK, res);
@@ -346,7 +346,7 @@ TEST_F(SvcTest, InvalidOptions) {
 
   res = aom_svc_set_options(&svc_, "not-an-option=1");
   EXPECT_EQ(AOM_CODEC_OK, res);
-  res = aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
+  res = aom_svc_init(&svc_, &codec_, aom_codec_av1_cx(), &codec_enc_);
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, res);
 }
 
@@ -370,17 +370,17 @@ TEST_F(SvcTest, SetScaleFactorsOption) {
   aom_codec_err_t res =
       aom_svc_set_options(&svc_, "scale-factors=not-scale-factors");
   EXPECT_EQ(AOM_CODEC_OK, res);
-  res = aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
+  res = aom_svc_init(&svc_, &codec_, aom_codec_av1_cx(), &codec_enc_);
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, res);
 
   res = aom_svc_set_options(&svc_, "scale-factors=1/3, 3*3");
   EXPECT_EQ(AOM_CODEC_OK, res);
-  res = aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
+  res = aom_svc_init(&svc_, &codec_, aom_codec_av1_cx(), &codec_enc_);
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, res);
 
   res = aom_svc_set_options(&svc_, "scale-factors=1/3");
   EXPECT_EQ(AOM_CODEC_OK, res);
-  res = aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
+  res = aom_svc_init(&svc_, &codec_, aom_codec_av1_cx(), &codec_enc_);
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, res);
 
   res = aom_svc_set_options(&svc_, "scale-factors=1/3,2/3");
@@ -392,27 +392,27 @@ TEST_F(SvcTest, SetQuantizersOption) {
   svc_.spatial_layers = 2;
   aom_codec_err_t res = aom_svc_set_options(&svc_, "max-quantizers=nothing");
   EXPECT_EQ(AOM_CODEC_OK, res);
-  res = aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
+  res = aom_svc_init(&svc_, &codec_, aom_codec_av1_cx(), &codec_enc_);
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, res);
 
   res = aom_svc_set_options(&svc_, "min-quantizers=nothing");
   EXPECT_EQ(AOM_CODEC_OK, res);
-  res = aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
+  res = aom_svc_init(&svc_, &codec_, aom_codec_av1_cx(), &codec_enc_);
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, res);
 
   res = aom_svc_set_options(&svc_, "max-quantizers=40");
   EXPECT_EQ(AOM_CODEC_OK, res);
-  res = aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
+  res = aom_svc_init(&svc_, &codec_, aom_codec_av1_cx(), &codec_enc_);
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, res);
 
   res = aom_svc_set_options(&svc_, "min-quantizers=40");
   EXPECT_EQ(AOM_CODEC_OK, res);
-  res = aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
+  res = aom_svc_init(&svc_, &codec_, aom_codec_av1_cx(), &codec_enc_);
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, res);
 
   res = aom_svc_set_options(&svc_, "max-quantizers=30,30 min-quantizers=40,40");
   EXPECT_EQ(AOM_CODEC_OK, res);
-  res = aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
+  res = aom_svc_init(&svc_, &codec_, aom_codec_av1_cx(), &codec_enc_);
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, res);
 
   res = aom_svc_set_options(&svc_, "max-quantizers=40,40 min-quantizers=30,30");
@@ -423,12 +423,12 @@ TEST_F(SvcTest, SetAutoAltRefOption) {
   svc_.spatial_layers = 5;
   aom_codec_err_t res = aom_svc_set_options(&svc_, "auto-alt-refs=none");
   EXPECT_EQ(AOM_CODEC_OK, res);
-  res = aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
+  res = aom_svc_init(&svc_, &codec_, aom_codec_av1_cx(), &codec_enc_);
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, res);
 
   res = aom_svc_set_options(&svc_, "auto-alt-refs=1,1,1,1,0");
   EXPECT_EQ(AOM_CODEC_OK, res);
-  res = aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
+  res = aom_svc_init(&svc_, &codec_, aom_codec_av1_cx(), &codec_enc_);
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, res);
 
   aom_svc_set_options(&svc_, "auto-alt-refs=0,1,1,1,0");
@@ -565,7 +565,7 @@ TEST_F(SvcTest, SetMultipleFrameContextsOption) {
   svc_.spatial_layers = 5;
   aom_codec_err_t res = aom_svc_set_options(&svc_, "multi-frame-contexts=1");
   EXPECT_EQ(AOM_CODEC_OK, res);
-  res = aom_svc_init(&svc_, &codec_, aom_codec_vp9_cx(), &codec_enc_);
+  res = aom_svc_init(&svc_, &codec_, aom_codec_av1_cx(), &codec_enc_);
   EXPECT_EQ(AOM_CODEC_INVALID_PARAM, res);
 
   svc_.spatial_layers = 2;

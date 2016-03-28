@@ -1120,7 +1120,7 @@ static aom_codec_err_t ctrl_copy_reference(aom_codec_alg_priv_t *ctx,
 
 static aom_codec_err_t ctrl_get_reference(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
-  vp9_ref_frame_t *const frame = va_arg(args, vp9_ref_frame_t *);
+  av1_ref_frame_t *const frame = va_arg(args, av1_ref_frame_t *);
 
   if (frame != NULL) {
     YV12_BUFFER_CONFIG *fb = get_ref_frame(&ctx->cpi->common, frame->idx);

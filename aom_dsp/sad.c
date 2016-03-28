@@ -33,7 +33,7 @@ static INLINE unsigned int sad(const uint8_t *a, int a_stride, const uint8_t *b,
 }
 
 // TODO(johannkoenig): this moved to aom_dsp, should be able to clean this up.
-/* Remove dependency on vp9 variance function by duplicating vp9_comp_avg_pred.
+/* Remove dependency on av1 variance function by duplicating av1_comp_avg_pred.
  * The function averages every corresponding element of the buffers and stores
  * the value in a third buffer, comp_pred.
  * pred and comp_pred are assumed to have stride = width

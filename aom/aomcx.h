@@ -590,7 +590,7 @@ typedef enum aom_scaling_mode_1d {
  * Supported codecs: AV1 (in SVC mode)
  *
  */
-typedef enum vp9e_temporal_layering_mode {
+typedef enum av1e_temporal_layering_mode {
   /*!\brief No temporal layering.
    * Used when only spatial layering is used.
    */
@@ -683,7 +683,7 @@ typedef enum {
  */
 typedef enum { AOM_TUNE_PSNR, AOM_TUNE_SSIM } aom_tune_metric;
 
-/*!\brief  vp9 svc layer parameters
+/*!\brief  av1 svc layer parameters
  *
  * This defines the spatial and temporal layer id numbers for svc encoding.
  * This is used with the #AV1E_SET_SVC_LAYER_ID control to set the spatial and
@@ -695,7 +695,7 @@ typedef struct aom_svc_layer_id {
   int temporal_layer_id; /**< Temporal layer id number. */
 } aom_svc_layer_id_t;
 
-/*!\brief  vp9 svc frame flag parameters.
+/*!\brief  av1 svc frame flag parameters.
  *
  * This defines the frame flags and buffer indices for each spatial layer for
  * svc encoding.

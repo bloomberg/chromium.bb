@@ -3146,7 +3146,7 @@ void FDCT32x32_2D(const int16_t *input, tran_low_t *output_org, int stride) {
             tr2_6 = _mm_sub_epi16(tr2_6, tr2_6_0);
             tr2_7 = _mm_sub_epi16(tr2_7, tr2_7_0);
             //           ... and here.
-            //           PS: also change code in vp9/encoder/vp9_dct.c
+            //           PS: also change code in av1/encoder/av1_dct.c
             tr2_0 = _mm_add_epi16(tr2_0, kOne);
             tr2_1 = _mm_add_epi16(tr2_1, kOne);
             tr2_2 = _mm_add_epi16(tr2_2, kOne);

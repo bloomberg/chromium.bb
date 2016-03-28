@@ -24,7 +24,7 @@ typedef void (*SubtractFunc)(int rows, int cols, int16_t *diff_ptr,
                              ptrdiff_t src_stride, const uint8_t *pred_ptr,
                              ptrdiff_t pred_stride);
 
-namespace vp9 {
+namespace av1 {
 
 class AV1SubtractBlockTest : public ::testing::TestWithParam<SubtractFunc> {
  public:
@@ -101,4 +101,4 @@ INSTANTIATE_TEST_CASE_P(MSA, AV1SubtractBlockTest,
                         ::testing::Values(aom_subtract_block_msa));
 #endif
 
-}  // namespace vp9
+}  // namespace av1

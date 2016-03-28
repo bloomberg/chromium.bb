@@ -49,13 +49,13 @@ simple_decoder_aom() {
   fi
 }
 
-simple_decoder_vp9() {
-  if [ "$(vp9_decode_available)" = "yes" ]; then
-    simple_decoder "${AV1_IVF_FILE}" vp9 || return 1
+simple_decoder_av1() {
+  if [ "$(av1_decode_available)" = "yes" ]; then
+    simple_decoder "${AV1_IVF_FILE}" av1 || return 1
   fi
 }
 
 simple_decoder_tests="simple_decoder_aom
-                      simple_decoder_vp9"
+                      simple_decoder_av1"
 
 run_tests simple_decoder_verify_environment "${simple_decoder_tests}"
