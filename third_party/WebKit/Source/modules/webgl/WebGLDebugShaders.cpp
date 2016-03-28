@@ -26,6 +26,7 @@
 #include "modules/webgl/WebGLDebugShaders.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "modules/webgl/GLStringQuery.h"
 #include "modules/webgl/WebGLRenderingContextBase.h"
 #include "modules/webgl/WebGLShader.h"
 
@@ -57,7 +58,8 @@ String WebGLDebugShaders::getTranslatedShaderSource(WebGLShader* shader)
         return String();
     if (!scoped.context()->validateWebGLObject("getTranslatedShaderSource", shader))
         return "";
-    return scoped.context()->ensureNotNull(scoped.context()->webContext()->getTranslatedShaderSourceANGLE(shader->object()));
+    GLStringQuery query(scoped.context()->contextGL());
+    return query.Run<GLStringQuery::TranslatedShaderSourceANGLE>(shader->object());
 }
 
 bool WebGLDebugShaders::supported(WebGLRenderingContextBase* context)

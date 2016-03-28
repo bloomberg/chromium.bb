@@ -37,20 +37,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   //----------------------------------------------------------------------
   // WebGraphicsContext3D methods
 
-  bool getActiveAttrib(blink::WebGLId program,
-                       blink::WGC3Duint index,
-                       ActiveInfo&) override;
-  bool getActiveUniform(blink::WebGLId program,
-                        blink::WGC3Duint index,
-                        ActiveInfo&) override;
-
-  blink::WebString getProgramInfoLog(blink::WebGLId program) override;
-  blink::WebString getShaderInfoLog(blink::WebGLId shader) override;
-  blink::WebString getShaderSource(blink::WebGLId shader) override;
-
-  blink::WebString getTranslatedShaderSourceANGLE(
-      blink::WebGLId shader) override;
-
   void setContextLostCallback(
       WebGraphicsContext3D::WebGraphicsContextLostCallback* callback);
 

@@ -74,13 +74,6 @@ typedef WGC3Duint WebGLId;
 // the OpenGL ES 2.0 API.
 class WebGraphicsContext3D : public WebNonCopyable {
 public:
-    // Return value from getActiveUniform and getActiveAttrib.
-    struct ActiveInfo {
-        WebString name;
-        WGC3Denum type;
-        WGC3Dint size;
-    };
-
     // Context creation attributes.
     struct Attributes {
         bool alpha = true;
@@ -136,18 +129,7 @@ public:
     // This destructor needs to be public so that using classes can destroy instances if initialization fails.
     virtual ~WebGraphicsContext3D() { }
 
-    // The entry points below map directly to the OpenGL ES 2.0 API.
-    // See: http://www.khronos.org/registry/gles/
-    // and: http://www.khronos.org/opengles/sdk/docs/man/
-    virtual bool getActiveAttrib(WebGLId program, WGC3Duint index, ActiveInfo&) = 0;
-    virtual bool getActiveUniform(WebGLId program, WGC3Duint index, ActiveInfo&) = 0;
-    virtual WebString getProgramInfoLog(WebGLId program) = 0;
-    virtual WebString getShaderInfoLog(WebGLId shader) = 0;
-    virtual WebString getShaderSource(WebGLId shader) = 0;
-
     virtual void setErrorMessageCallback(WebGraphicsErrorMessageCallback* callback) { }
-
-    virtual WebString getTranslatedShaderSourceANGLE(WebGLId shader) = 0;
 
     // Prefer getting a GLES2Interface off WebGraphicsContext3DProvider if possible, and avoid using WebGraphicsContext3D at all.
     virtual gpu::gles2::GLES2Interface* getGLES2Interface() = 0;

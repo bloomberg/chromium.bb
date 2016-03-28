@@ -53,6 +53,7 @@
 #include "modules/webgl/EXTFragDepth.h"
 #include "modules/webgl/EXTShaderTextureLOD.h"
 #include "modules/webgl/EXTTextureFilterAnisotropic.h"
+#include "modules/webgl/GLStringQuery.h"
 #include "modules/webgl/OESElementIndexUint.h"
 #include "modules/webgl/OESStandardDerivatives.h"
 #include "modules/webgl/OESTextureFloat.h"
@@ -2276,7 +2277,6 @@ WebGLActiveInfo* WebGLRenderingContextBase::getActiveAttrib(WebGLProgram* progra
 {
     if (isContextLost() || !validateWebGLObject("getActiveAttrib", program))
         return nullptr;
-    WebGraphicsContext3D::ActiveInfo info;
     GLuint programId = objectNonZero(program);
     GLint maxNameLength = -1;
     contextGL()->GetProgramiv(programId, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxNameLength);
@@ -2286,9 +2286,15 @@ WebGLActiveInfo* WebGLRenderingContextBase::getActiveAttrib(WebGLProgram* progra
         synthesizeGLError(GL_INVALID_VALUE, "getActiveAttrib", "no active attributes exist");
         return nullptr;
     }
-    if (!webContext()->getActiveAttrib(objectOrZero(program), index, info))
+    LChar* namePtr;
+    RefPtr<StringImpl> nameImpl = StringImpl::createUninitialized(maxNameLength, namePtr);
+    GLsizei length = 0;
+    GLint size = -1;
+    GLenum type = 0;
+    contextGL()->GetActiveAttrib(programId, index, maxNameLength, &length, &size, &type, reinterpret_cast<GLchar*>(namePtr));
+    if (size < 0)
         return nullptr;
-    return WebGLActiveInfo::create(info.name, info.type, info.size);
+    return WebGLActiveInfo::create(nameImpl->substring(0, length), type, size);
 }
 
 WebGLActiveInfo* WebGLRenderingContextBase::getActiveUniform(WebGLProgram* program, GLuint index)
@@ -2304,10 +2310,15 @@ WebGLActiveInfo* WebGLRenderingContextBase::getActiveUniform(WebGLProgram* progr
         synthesizeGLError(GL_INVALID_VALUE, "getActiveUniform", "no active uniforms exist");
         return nullptr;
     }
-    WebGraphicsContext3D::ActiveInfo info;
-    if (!webContext()->getActiveUniform(programId, index, info))
+    LChar* namePtr;
+    RefPtr<StringImpl> nameImpl = StringImpl::createUninitialized(maxNameLength, namePtr);
+    GLsizei length = 0;
+    GLint size = -1;
+    GLenum type = 0;
+    contextGL()->GetActiveUniform(programId, index, maxNameLength, &length, &size, &type, reinterpret_cast<GLchar*>(namePtr));
+    if (size < 0)
         return nullptr;
-    return WebGLActiveInfo::create(info.name, info.type, info.size);
+    return WebGLActiveInfo::create(nameImpl->substring(0, length), type, size);
 }
 
 Nullable<HeapVector<Member<WebGLShader>>> WebGLRenderingContextBase::getAttachedShaders(WebGLProgram* program)
@@ -2838,7 +2849,8 @@ String WebGLRenderingContextBase::getProgramInfoLog(WebGLProgram* program)
 {
     if (isContextLost() || !validateWebGLObject("getProgramInfoLog", program))
         return String();
-    return ensureNotNull(webContext()->getProgramInfoLog(objectOrZero(program)));
+    GLStringQuery query(contextGL());
+    return query.Run<GLStringQuery::ProgramInfoLog>(objectNonZero(program));
 }
 
 ScriptValue WebGLRenderingContextBase::getRenderbufferParameter(ScriptState* scriptState, GLenum target, GLenum pname)
@@ -2905,7 +2917,8 @@ String WebGLRenderingContextBase::getShaderInfoLog(WebGLShader* shader)
 {
     if (isContextLost() || !validateWebGLObject("getShaderInfoLog", shader))
         return String();
-    return ensureNotNull(webContext()->getShaderInfoLog(objectOrZero(shader)));
+    GLStringQuery query(contextGL());
+    return query.Run<GLStringQuery::ShaderInfoLog>(objectNonZero(shader));
 }
 
 WebGLShaderPrecisionFormat* WebGLRenderingContextBase::getShaderPrecisionFormat(GLenum shaderType, GLenum precisionType)
@@ -3007,23 +3020,38 @@ ScriptValue WebGLRenderingContextBase::getUniform(ScriptState* scriptState, WebG
     }
     GLint location = uniformLocation->location();
 
+    GLuint programId = objectNonZero(program);
+    GLint maxNameLength = -1;
+    contextGL()->GetProgramiv(programId, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxNameLength);
+    if (maxNameLength < 0)
+        return ScriptValue::createNull(scriptState);
+    if (maxNameLength == 0) {
+        synthesizeGLError(GL_INVALID_VALUE, "getUniform", "no active uniforms exist");
+        return ScriptValue::createNull(scriptState);
+    }
+
     // FIXME: make this more efficient using WebGLUniformLocation and caching types in it
     GLint activeUniforms = 0;
-    contextGL()->GetProgramiv(objectOrZero(program), GL_ACTIVE_UNIFORMS, &activeUniforms);
+    contextGL()->GetProgramiv(programId, GL_ACTIVE_UNIFORMS, &activeUniforms);
     for (GLint i = 0; i < activeUniforms; i++) {
-        WebGraphicsContext3D::ActiveInfo info;
-        if (!webContext()->getActiveUniform(objectOrZero(program), i, info))
+        LChar* namePtr;
+        RefPtr<StringImpl> nameImpl = StringImpl::createUninitialized(maxNameLength, namePtr);
+        GLsizei length = 0;
+        GLint size = -1;
+        GLenum type = 0;
+        contextGL()->GetActiveUniform(programId, i, maxNameLength, &length, &size, &type, reinterpret_cast<GLchar*>(namePtr));
+        if (size < 0)
             return ScriptValue::createNull(scriptState);
-        String name = info.name;
+        String name(nameImpl->substring(0, length));
         StringBuilder nameBuilder;
         // Strip "[0]" from the name if it's an array.
-        if (info.size > 1 && name.endsWith("[0]"))
-            info.name = name.left(name.length() - 3);
+        if (size > 1 && name.endsWith("[0]"))
+            name = name.left(name.length() - 3);
         // If it's an array, we need to iterate through each element, appending "[index]" to the name.
-        for (GLint index = 0; index < info.size; ++index) {
+        for (GLint index = 0; index < size; ++index) {
             nameBuilder.clear();
-            nameBuilder.append(info.name);
-            if (info.size > 1 && index >= 1) {
+            nameBuilder.append(name);
+            if (size > 1 && index >= 1) {
                 nameBuilder.append('[');
                 nameBuilder.appendNumber(index);
                 nameBuilder.append(']');
@@ -3034,7 +3062,7 @@ ScriptValue WebGLRenderingContextBase::getUniform(ScriptState* scriptState, WebG
                 // Found it. Use the type in the ActiveInfo to determine the return type.
                 GLenum baseType;
                 unsigned length;
-                switch (info.type) {
+                switch (type) {
                 case GL_BOOL:
                     baseType = GL_BOOL;
                     length = 1;
@@ -3107,7 +3135,7 @@ ScriptValue WebGLRenderingContextBase::getUniform(ScriptState* scriptState, WebG
                         return ScriptValue::createNull(scriptState);
                     }
                     // handle GLenums for WebGL 2.0 or higher
-                    switch (info.type) {
+                    switch (type) {
                     case GL_UNSIGNED_INT:
                         baseType = GL_UNSIGNED_INT;
                         length = 1;

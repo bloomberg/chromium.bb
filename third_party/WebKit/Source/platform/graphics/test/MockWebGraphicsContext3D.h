@@ -35,31 +35,8 @@ namespace blink {
 // All operations are no-ops (returning 0 if necessary).
 class MockWebGraphicsContext3D : public WebGraphicsContext3D {
 public:
-    MockWebGraphicsContext3D()
-        : m_nextTextureId(1)
-        , m_contextLost(false)
-    {
-    }
-
-    virtual void blitFramebufferCHROMIUM(WGC3Dint srcX0, WGC3Dint srcY0, WGC3Dint srcX1, WGC3Dint srcY1, WGC3Dint dstX0, WGC3Dint dstY0, WGC3Dint dstX1, WGC3Dint dstY1, WGC3Dbitfield mask, WGC3Denum filter) { }
-
-    virtual bool getActiveAttrib(WebGLId program, WGC3Duint index, ActiveInfo&) { return false; }
-    virtual bool getActiveUniform(WebGLId program, WGC3Duint index, ActiveInfo&) { return false; }
-    virtual Attributes getContextAttributes() { return m_attrs; }
-    virtual WebString getProgramInfoLog(WebGLId program) { return WebString(); }
-    virtual WebString getShaderInfoLog(WebGLId shader) { return WebString(); }
-    virtual WebString getShaderSource(WebGLId shader) { return WebString(); }
-
-    virtual WebString getTranslatedShaderSourceANGLE(WebGLId) { return WebString(); }
-
     // Don't use this, make a MockGLES2Interface instead.
     virtual gpu::gles2::GLES2Interface* getGLES2Interface() { return nullptr; }
-
-    void fakeContextLost() { m_contextLost = true; }
-protected:
-    unsigned m_nextTextureId;
-    bool m_contextLost;
-    Attributes m_attrs;
 };
 
 } // namespace blink
