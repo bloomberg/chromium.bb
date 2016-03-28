@@ -648,14 +648,12 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
                                   unsigned char alpha,
                                   SkXfermode::Mode mode) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  scoped_ptr<blink::WebGraphicsContext3DProvider> provider =
-    scoped_ptr<blink::WebGraphicsContext3DProvider>(blink::Platform::current(
-      )->createSharedOffscreenGraphicsContext3DProvider());
+  scoped_ptr<blink::WebGraphicsContext3DProvider> provider(
+      blink::Platform::current()
+          ->createSharedOffscreenGraphicsContext3DProvider());
   if (!provider)
     return;
-  blink::WebGraphicsContext3D* context3D = provider->context3d();
-  if (!context3D)
-    return;
+  gpu::gles2::GLES2Interface* gl = provider->contextGL();
 
   // Copy video texture into a RGBA texture based bitmap first as video texture
   // on Android is GL_TEXTURE_EXTERNAL_OES which is not supported by Skia yet.
@@ -673,8 +671,8 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
   unsigned textureId = skia::GrBackendObjectToGrGLTextureInfo(
                            (bitmap_.getTexture())->getTextureHandle())
                            ->fID;
-  if (!copyVideoTextureToPlatformTexture(context3D, textureId,
-      GL_RGBA, GL_UNSIGNED_BYTE, true, false)) {
+  if (!copyVideoTextureToPlatformTexture(gl, textureId, GL_RGBA,
+                                         GL_UNSIGNED_BYTE, true, false)) {
     return;
   }
 
@@ -697,14 +695,12 @@ void WebMediaPlayerAndroid::paint(blink::WebCanvas* canvas,
 }
 
 bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
-    blink::WebGraphicsContext3D* web_graphics_context,
+    gpu::gles2::GLES2Interface* gl,
     unsigned int texture,
     unsigned int internal_format,
     unsigned int type,
     bool premultiply_alpha,
     bool flip_y) {
-  // TODO(danakj): Pass a GLES2Interface to this method instead.
-  gpu::gles2::GLES2Interface* gl = web_graphics_context->getGLES2Interface();
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // Don't allow clients to copy an encrypted video frame.
   if (needs_external_surface_)

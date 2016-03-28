@@ -49,7 +49,7 @@ WebGLShader::~WebGLShader()
     detachAndDeleteObject();
 }
 
-void WebGLShader::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
+void WebGLShader::deleteObjectImpl(gpu::gles2::GLES2Interface* gl)
 {
     gl->DeleteShader(m_object);
     m_object = 0;

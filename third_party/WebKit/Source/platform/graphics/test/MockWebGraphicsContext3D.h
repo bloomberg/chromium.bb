@@ -34,9 +34,6 @@ namespace blink {
 // WebGraphicsContext3D base class for use in WebKit unit tests.
 // All operations are no-ops (returning 0 if necessary).
 class MockWebGraphicsContext3D : public WebGraphicsContext3D {
-public:
-    // Don't use this, make a MockGLES2Interface instead.
-    virtual gpu::gles2::GLES2Interface* getGLES2Interface() { return nullptr; }
 };
 
 } // namespace blink

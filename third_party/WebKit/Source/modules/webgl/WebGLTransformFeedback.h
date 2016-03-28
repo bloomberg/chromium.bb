@@ -38,7 +38,7 @@ public:
 protected:
     explicit WebGLTransformFeedback(WebGL2RenderingContextBase*);
 
-    void deleteObjectImpl(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*) override;
+    void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
 private:
     bool isTransformFeedback() const override { return true; }

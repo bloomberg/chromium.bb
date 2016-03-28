@@ -59,16 +59,16 @@ WebGLProgram::~WebGLProgram()
     detachAndDeleteObject();
 }
 
-void WebGLProgram::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
+void WebGLProgram::deleteObjectImpl(gpu::gles2::GLES2Interface* gl)
 {
     gl->DeleteProgram(m_object);
     m_object = 0;
     if (m_vertexShader) {
-        m_vertexShader->onDetached(context3d, gl);
+        m_vertexShader->onDetached(gl);
         m_vertexShader = nullptr;
     }
     if (m_fragmentShader) {
-        m_fragmentShader->onDetached(context3d, gl);
+        m_fragmentShader->onDetached(gl);
         m_fragmentShader = nullptr;
     }
 }

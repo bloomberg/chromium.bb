@@ -223,11 +223,6 @@ public:
         return m_contextGL->currentImageId();
     }
 
-    gpu::gles2::GLES2Interface* getGLES2Interface() override
-    {
-        return m_contextGL;
-    }
-
 private:
     GLES2InterfaceForTests* m_contextGL;
 };
@@ -685,8 +680,6 @@ public:
     WebGLId stencilAttachment() const { return m_contextGL->stencilAttachment(); }
     WebGLId depthAttachment() const { return m_contextGL->depthAttachment(); }
     WebGLId depthStencilAttachment() const { return m_contextGL->depthStencilAttachment(); }
-
-    gpu::gles2::GLES2Interface* getGLES2Interface() override { return m_contextGL; }
 
 private:
     DepthStencilTrackingGLES2Interface* m_contextGL;

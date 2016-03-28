@@ -72,7 +72,7 @@ void OESVertexArrayObject::deleteVertexArrayOES(ScriptState* scriptState, WebGLV
     if (!arrayObject->isDefaultObject() && arrayObject == scoped.context()->m_boundVertexArrayObject)
         scoped.context()->setBoundVertexArrayObject(scriptState, nullptr);
 
-    arrayObject->deleteObject(scoped.context()->webContext(), scoped.context()->contextGL());
+    arrayObject->deleteObject(scoped.context()->contextGL());
 }
 
 GLboolean OESVertexArrayObject::isVertexArrayOES(WebGLVertexArrayObjectOES* arrayObject)

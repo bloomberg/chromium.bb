@@ -61,7 +61,7 @@ protected:
         return m_context;
     }
 
-    WebGraphicsContext3D* getAWebGraphicsContext3D() const final;
+    gpu::gles2::GLES2Interface* getAGLInterface() const final;
 
 private:
     RawPtrWillBeMember<WebGLRenderingContextBase> m_context;

@@ -66,7 +66,7 @@ protected:
         return m_contextGroup;
     }
 
-    WebGraphicsContext3D* getAWebGraphicsContext3D() const final;
+    gpu::gles2::GLES2Interface* getAGLInterface() const final;
 
 private:
     WebGLContextGroup* m_contextGroup;

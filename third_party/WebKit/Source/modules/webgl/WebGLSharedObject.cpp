@@ -46,15 +46,15 @@ void WebGLSharedObject::detachContextGroup()
 {
     detach();
     if (m_contextGroup) {
-        deleteObject(nullptr, nullptr);
+        deleteObject(nullptr);
         m_contextGroup->removeObject(this);
         m_contextGroup = nullptr;
     }
 }
 
-WebGraphicsContext3D* WebGLSharedObject::getAWebGraphicsContext3D() const
+gpu::gles2::GLES2Interface* WebGLSharedObject::getAGLInterface() const
 {
-    return m_contextGroup ? m_contextGroup->getAWebGraphicsContext3D() : nullptr;
+    return m_contextGroup ? m_contextGroup->getAGLInterface() : nullptr;
 }
 
 } // namespace blink

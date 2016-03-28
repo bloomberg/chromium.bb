@@ -1919,7 +1919,7 @@ bool WebGLRenderingContextBase::deleteObject(WebGLObject* object)
     if (object->hasObject()) {
         // We need to pass in context here because we want
         // things in this context unbound.
-        object->deleteObject(webContext(), contextGL());
+        object->deleteObject(contextGL());
     }
     return true;
 }
@@ -2042,7 +2042,7 @@ void WebGLRenderingContextBase::detachShader(ScriptState* scriptState, WebGLProg
         return;
     }
     contextGL()->DetachShader(objectOrZero(program), objectOrZero(shader));
-    shader->onDetached(webContext(), contextGL());
+    shader->onDetached(contextGL());
     preserveObjectWrapper(scriptState, program, "shader", shader->type(), nullptr);
 }
 
@@ -4212,7 +4212,7 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
     // Otherwise, it will fall back to the normal SW path.
     if (GL_TEXTURE_2D == target) {
         if (Extensions3DUtil::canUseCopyTextureCHROMIUM(target, internalformat, type, level)
-            && video->copyVideoTextureToPlatformTexture(webContext(), texture->object(), internalformat, type, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
+            && video->copyVideoTextureToPlatformTexture(contextGL(), texture->object(), internalformat, type, m_unpackPremultiplyAlpha, m_unpackFlipY)) {
             return;
         }
 
@@ -4834,7 +4834,7 @@ void WebGLRenderingContextBase::useProgram(ScriptState* scriptState, WebGLProgra
 
     if (m_currentProgram != program) {
         if (m_currentProgram)
-            m_currentProgram->onDetached(webContext(), contextGL());
+            m_currentProgram->onDetached(contextGL());
         m_currentProgram = program;
         contextGL()->UseProgram(objectOrZero(program));
         if (program)

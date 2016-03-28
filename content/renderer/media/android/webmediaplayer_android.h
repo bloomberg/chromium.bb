@@ -31,7 +31,6 @@
 #include "media/base/time_delta_interpolator.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_params.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebSetSinkIdCallbacks.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -57,6 +56,9 @@ class WebLayerImpl;
 }
 
 namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
 struct MailboxHolder;
 }
 
@@ -136,13 +138,12 @@ class WebMediaPlayerAndroid
              unsigned char alpha,
              SkXfermode::Mode mode) override;
 
-  bool copyVideoTextureToPlatformTexture(
-      blink::WebGraphicsContext3D* web_graphics_context,
-      unsigned int texture,
-      unsigned int internal_format,
-      unsigned int type,
-      bool premultiply_alpha,
-      bool flip_y) override;
+  bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface* gl,
+                                         unsigned int texture,
+                                         unsigned int internal_format,
+                                         unsigned int type,
+                                         bool premultiply_alpha,
+                                         bool flip_y) override;
 
   // True if the loaded media has a playable video/audio track.
   bool hasVideo() const override;

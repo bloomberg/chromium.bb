@@ -83,10 +83,6 @@ void WebGraphicsContext3DImpl::setContextLostCallback(
   context_lost_callback_ = cb;
 }
 
-::gpu::gles2::GLES2Interface* WebGraphicsContext3DImpl::getGLES2Interface() {
-  return gl_;
-}
-
 ::gpu::gles2::GLES2ImplementationErrorMessageCallback*
     WebGraphicsContext3DImpl::getErrorMessageCallback() {
   if (!client_error_message_callback_) {

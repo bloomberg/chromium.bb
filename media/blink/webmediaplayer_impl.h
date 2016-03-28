@@ -44,7 +44,6 @@
 #endif
 
 namespace blink {
-class WebGraphicsContext3D;
 class WebLocalFrame;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
@@ -57,6 +56,12 @@ class TaskRunner;
 
 namespace cc_blink {
 class WebLayerImpl;
+}
+
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
 }
 
 namespace media {
@@ -150,13 +155,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   size_t audioDecodedByteCount() const override;
   size_t videoDecodedByteCount() const override;
 
-  bool copyVideoTextureToPlatformTexture(
-      blink::WebGraphicsContext3D* web_graphics_context,
-      unsigned int texture,
-      unsigned int internal_format,
-      unsigned int type,
-      bool premultiply_alpha,
-      bool flip_y) override;
+  bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface* gl,
+                                         unsigned int texture,
+                                         unsigned int internal_format,
+                                         unsigned int type,
+                                         bool premultiply_alpha,
+                                         bool flip_y) override;
 
   blink::WebAudioSourceProvider* getAudioSourceProvider() override;
 

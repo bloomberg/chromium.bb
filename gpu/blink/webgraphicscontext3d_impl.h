@@ -43,9 +43,6 @@ class GPU_BLINK_EXPORT WebGraphicsContext3DImpl
   void setErrorMessageCallback(
       WebGraphicsContext3D::WebGraphicsErrorMessageCallback* callback) override;
 
-  // WebGraphicsContext3D implementation.
-  ::gpu::gles2::GLES2Interface* getGLES2Interface() override;
-
   ::gpu::gles2::GLES2Interface* GetGLInterface() {
     return gl_;
   }

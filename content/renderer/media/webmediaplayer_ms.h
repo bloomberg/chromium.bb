@@ -22,7 +22,6 @@
 
 namespace blink {
 class WebFrame;
-class WebGraphicsContext3D;
 class WebMediaPlayerClient;
 class WebSecurityOrigin;
 class WebString;
@@ -35,6 +34,12 @@ class VideoFrame;
 
 namespace cc_blink {
 class WebLayerImpl;
+}
+
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
 }
 
 namespace content {
@@ -142,13 +147,12 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void OnPause() override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
 
-  bool copyVideoTextureToPlatformTexture(
-      blink::WebGraphicsContext3D* web_graphics_context,
-      unsigned int texture,
-      unsigned int internal_format,
-      unsigned int type,
-      bool premultiply_alpha,
-      bool flip_y) override;
+  bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface* gl,
+                                         unsigned int texture,
+                                         unsigned int internal_format,
+                                         unsigned int type,
+                                         bool premultiply_alpha,
+                                         bool flip_y) override;
 
  private:
   friend class WebMediaPlayerMSTest;

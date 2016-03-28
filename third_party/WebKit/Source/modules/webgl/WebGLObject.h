@@ -68,10 +68,10 @@ public:
     // deleteObject may not always delete the OpenGL resource.  For programs and
     // shaders, deletion is delayed until they are no longer attached.
     // FIXME: revisit this when resource sharing between contexts are implemented.
-    void deleteObject(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*);
+    void deleteObject(gpu::gles2::GLES2Interface*);
 
     void onAttached() { ++m_attachmentCount; }
-    void onDetached(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*);
+    void onDetached(gpu::gles2::GLES2Interface*);
 
     // This indicates whether the client side issue a delete call already, not
     // whether the OpenGL resource is deleted.
@@ -89,14 +89,14 @@ protected:
 
     // deleteObjectImpl should be only called once to delete the OpenGL resource.
     // After calling deleteObjectImpl, hasObject() should return false.
-    virtual void deleteObjectImpl(blink::WebGraphicsContext3D*, gpu::gles2::GLES2Interface*) = 0;
+    virtual void deleteObjectImpl(gpu::gles2::GLES2Interface*) = 0;
 
     virtual bool hasGroupOrContext() const = 0;
 
     void detach();
     void detachAndDeleteObject();
 
-    virtual WebGraphicsContext3D* getAWebGraphicsContext3D() const = 0;
+    virtual gpu::gles2::GLES2Interface* getAGLInterface() const = 0;
 
 private:
     unsigned m_attachmentCount;

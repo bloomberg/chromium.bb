@@ -29,7 +29,7 @@ CHROMIUMValuebuffer::CHROMIUMValuebuffer(WebGLRenderingContextBase* ctx)
     setObject(buffer);
 }
 
-void CHROMIUMValuebuffer::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
+void CHROMIUMValuebuffer::deleteObjectImpl(gpu::gles2::GLES2Interface* gl)
 {
     gl->DeleteValuebuffersCHROMIUM(1, &m_object);
     m_object = 0;

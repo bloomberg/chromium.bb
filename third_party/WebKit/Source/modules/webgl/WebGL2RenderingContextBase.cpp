@@ -2692,7 +2692,7 @@ void WebGL2RenderingContextBase::deleteVertexArray(ScriptState* scriptState, Web
     if (!vertexArray->isDefaultObject() && vertexArray == m_boundVertexArrayObject)
         setBoundVertexArrayObject(scriptState, nullptr);
 
-    vertexArray->deleteObject(webContext(), contextGL());
+    vertexArray->deleteObject(contextGL());
 }
 
 GLboolean WebGL2RenderingContextBase::isVertexArray(WebGLVertexArrayObject* vertexArray)

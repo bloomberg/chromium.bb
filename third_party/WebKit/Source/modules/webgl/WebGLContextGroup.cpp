@@ -44,10 +44,10 @@ WebGLContextGroup::~WebGLContextGroup()
     detachAndRemoveAllObjects();
 }
 
-WebGraphicsContext3D* WebGLContextGroup::getAWebGraphicsContext3D()
+gpu::gles2::GLES2Interface* WebGLContextGroup::getAGLInterface()
 {
     ASSERT(!m_contexts.isEmpty());
-    return (*m_contexts.begin())->webContext();
+    return (*m_contexts.begin())->contextGL();
 }
 
 void WebGLContextGroup::addContext(WebGLRenderingContextBase* context)

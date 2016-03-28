@@ -32,7 +32,7 @@ WebGLTransformFeedback::WebGLTransformFeedback(WebGL2RenderingContextBase* ctx)
     setObject(tf);
 }
 
-void WebGLTransformFeedback::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
+void WebGLTransformFeedback::deleteObjectImpl(gpu::gles2::GLES2Interface* gl)
 {
     gl->DeleteTransformFeedbacks(1, &m_object);
     m_object = 0;

@@ -35,8 +35,13 @@
 
 class SkPaint;
 
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}
+
 namespace blink {
-class WebGraphicsContext3D;
 class ExceptionState;
 class GraphicsContext;
 class ImageBitmapOptions;
@@ -71,7 +76,7 @@ public:
     void paintCurrentFrame(SkCanvas*, const IntRect&, const SkPaint*) const;
 
     // Used by WebGL to do GPU-GPU textures copy if possible.
-    bool copyVideoTextureToPlatformTexture(WebGraphicsContext3D*, Platform3DObject texture, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY);
+    bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface*, Platform3DObject texture, GLenum internalFormat, GLenum type, bool premultiplyAlpha, bool flipY);
 
     bool shouldDisplayPosterImage() const { return getDisplayMode() == Poster; }
 

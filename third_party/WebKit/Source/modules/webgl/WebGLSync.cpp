@@ -22,7 +22,7 @@ WebGLSync::WebGLSync(WebGL2RenderingContextBase* ctx, GLsync object, GLenum obje
 {
 }
 
-void WebGLSync::deleteObjectImpl(WebGraphicsContext3D* context3d, gpu::gles2::GLES2Interface* gl)
+void WebGLSync::deleteObjectImpl(gpu::gles2::GLES2Interface* gl)
 {
     gl->DeleteSync(m_object);
     m_object = 0;

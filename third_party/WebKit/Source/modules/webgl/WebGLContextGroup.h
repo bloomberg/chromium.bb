@@ -53,7 +53,7 @@ public:
     void addObject(WebGLSharedObject*);
     void removeObject(WebGLSharedObject*);
 
-    WebGraphicsContext3D* getAWebGraphicsContext3D();
+    gpu::gles2::GLES2Interface* getAGLInterface();
 
     void loseContextGroup(WebGLRenderingContextBase::LostContextMode, WebGLRenderingContextBase::AutoRecoveryMethod);
 

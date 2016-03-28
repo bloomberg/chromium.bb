@@ -130,9 +130,6 @@ public:
     virtual ~WebGraphicsContext3D() { }
 
     virtual void setErrorMessageCallback(WebGraphicsErrorMessageCallback* callback) { }
-
-    // Prefer getting a GLES2Interface off WebGraphicsContext3DProvider if possible, and avoid using WebGraphicsContext3D at all.
-    virtual gpu::gles2::GLES2Interface* getGLES2Interface() = 0;
 };
 
 } // namespace blink

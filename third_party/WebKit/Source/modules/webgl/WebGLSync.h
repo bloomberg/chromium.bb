@@ -6,7 +6,6 @@
 #define WebGLSync_h
 
 #include "modules/webgl/WebGLSharedObject.h"
-#include "public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 namespace blink {
@@ -24,7 +23,7 @@ protected:
     WebGLSync(WebGL2RenderingContextBase*, GLsync, GLenum objectType);
 
     bool hasObject() const override { return m_object != nullptr; }
-    void deleteObjectImpl(WebGraphicsContext3D*, gpu::gles2::GLES2Interface*) override;
+    void deleteObjectImpl(gpu::gles2::GLES2Interface*) override;
 
     GLenum objectType() const { return m_objectType; }
 
