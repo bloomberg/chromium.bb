@@ -497,14 +497,25 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
 
   # Explicitly list the component DLLs setup.exe depends on (this list may
   # contain wildcards). These will be copied to |installer_dir| in the archive.
-  setup_component_dll_globs = [ 'base.dll',
+  # The use of source sets in gn builds means that references to some extra
+  # DLLs get pulled in to setup.exe (base_i18n.dll, ipc.dll, etc.). Unpacking
+  # these to |installer_dir| is simpler and more robust than switching setup.exe
+  # to use libraries instead of source sets.
+  setup_component_dll_globs = [ 'api-ms-win-*.dll',
+                                'base.dll',
                                 'boringssl.dll',
                                 'crcrypto.dll',
                                 'icui18n.dll',
                                 'icuuc.dll',
                                 'msvc*.dll',
-                                'api-ms-win-*.dll',
-                                'vcruntime*.dll' ]
+                                'vcruntime*.dll',
+                                # DLLs needed due to source sets.
+                                'base_i18n.dll',
+                                'ipc.dll',
+                                'net.dll',
+                                'prefs.dll',
+                                'protobuf_lite.dll',
+                                'url_lib.dll' ]
   for setup_component_dll_glob in setup_component_dll_globs:
     setup_component_dlls = glob.glob(os.path.join(build_dir,
                                                   setup_component_dll_glob))
