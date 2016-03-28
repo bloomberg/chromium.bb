@@ -1119,14 +1119,16 @@
 
     'gn_release_libfuzzer_asan': [
       'gn', 'release', 'libfuzzer', 'asan', 'proprietary_codecs', 'pdf_xfa',
+      'disable_nacl',
     ],
 
     'gn_release_libfuzzer_msan': [
       'gn', 'release', 'libfuzzer', 'msan', 'proprietary_codecs', 'pdf_xfa',
+      'disable_nacl',
     ],
     'gn_release_libfuzzer_ubsan': [
       'gn', 'release', 'libfuzzer', 'ubsan_security', 'proprietary_codecs', 
-      'pdf_xfa',
+      'pdf_xfa', 'disable_nacl',
     ],
 
     'gn_release_drmemory_drfuzz_x86': [
