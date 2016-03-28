@@ -3269,30 +3269,6 @@ class URLRequestTestHTTP : public URLRequestTest {
     delete[] uploadBytes;
   }
 
-  void AddChunksToUpload(URLRequest* r) {
-    r->AppendChunkToUpload("a", 1, false);
-    r->AppendChunkToUpload("bcd", 3, false);
-    r->AppendChunkToUpload("this is a longer chunk than before.", 35, false);
-    r->AppendChunkToUpload("\r\n\r\n", 4, false);
-    r->AppendChunkToUpload("0", 1, false);
-    r->AppendChunkToUpload("2323", 4, true);
-  }
-
-  void VerifyReceivedDataMatchesChunks(URLRequest* r, TestDelegate* d) {
-    // This should match the chunks sent by AddChunksToUpload().
-    const std::string expected_data =
-        "abcdthis is a longer chunk than before.\r\n\r\n02323";
-
-    ASSERT_EQ(1, d->response_started_count())
-        << "request failed: " << r->status().status()
-        << ", os error: " << r->status().error();
-
-    EXPECT_FALSE(d->received_data_before_response());
-
-    EXPECT_EQ(expected_data.size(), static_cast<size_t>(d->bytes_received()));
-    EXPECT_EQ(expected_data, d->data_received());
-  }
-
   bool DoManyCookiesRequest(int num_cookies) {
     TestDelegate d;
     scoped_ptr<URLRequest> r(default_context_.CreateRequest(
@@ -5651,6 +5627,38 @@ TEST_F(URLRequestTestHTTP, PostUnreadableFileTest) {
   }
 }
 
+namespace {
+
+// Adds a standard set of data to an upload for chunked upload integration
+// tests.
+void AddDataToUpload(ChunkedUploadDataStream::Writer* writer) {
+  writer->AppendData("a", 1, false);
+  writer->AppendData("bcd", 3, false);
+  writer->AppendData("this is a longer chunk than before.", 35, false);
+  writer->AppendData("\r\n\r\n", 4, false);
+  writer->AppendData("0", 1, false);
+  writer->AppendData("2323", 4, true);
+}
+
+// Checks that the upload data added in AddChunksToUpload() was echoed back from
+// the server.
+void VerifyReceivedDataMatchesChunks(URLRequest* r, TestDelegate* d) {
+  // This should match the chunks sent by AddChunksToUpload().
+  const std::string expected_data =
+      "abcdthis is a longer chunk than before.\r\n\r\n02323";
+
+  ASSERT_EQ(1, d->response_started_count())
+      << "request failed: " << r->status().status()
+      << ", os error: " << r->status().error();
+
+  EXPECT_FALSE(d->received_data_before_response());
+
+  EXPECT_EQ(expected_data.size(), static_cast<size_t>(d->bytes_received()));
+  EXPECT_EQ(expected_data, d->data_received());
+}
+
+}  // namespace
+
 TEST_F(URLRequestTestHTTP, TestPostChunkedDataBeforeStart) {
   ASSERT_TRUE(http_test_server()->Start());
 
@@ -5658,9 +5666,13 @@ TEST_F(URLRequestTestHTTP, TestPostChunkedDataBeforeStart) {
   {
     scoped_ptr<URLRequest> r(default_context_.CreateRequest(
         http_test_server()->GetURL("/echo"), DEFAULT_PRIORITY, &d));
-    r->EnableChunkedUpload();
+    scoped_ptr<ChunkedUploadDataStream> upload_data_stream(
+        new ChunkedUploadDataStream(0));
+    scoped_ptr<ChunkedUploadDataStream::Writer> writer =
+        upload_data_stream->CreateWriter();
+    r->set_upload(std::move(upload_data_stream));
     r->set_method("POST");
-    AddChunksToUpload(r.get());
+    AddDataToUpload(writer.get());
     r->Start();
     EXPECT_TRUE(r->is_pending());
 
@@ -5677,11 +5689,15 @@ TEST_F(URLRequestTestHTTP, TestPostChunkedDataJustAfterStart) {
   {
     scoped_ptr<URLRequest> r(default_context_.CreateRequest(
         http_test_server()->GetURL("/echo"), DEFAULT_PRIORITY, &d));
-    r->EnableChunkedUpload();
+    scoped_ptr<ChunkedUploadDataStream> upload_data_stream(
+        new ChunkedUploadDataStream(0));
+    scoped_ptr<ChunkedUploadDataStream::Writer> writer =
+        upload_data_stream->CreateWriter();
+    r->set_upload(make_scoped_ptr(upload_data_stream.release()));
     r->set_method("POST");
     r->Start();
     EXPECT_TRUE(r->is_pending());
-    AddChunksToUpload(r.get());
+    AddDataToUpload(writer.get());
     base::RunLoop().Run();
 
     VerifyReceivedDataMatchesChunks(r.get(), &d);
@@ -5695,13 +5711,17 @@ TEST_F(URLRequestTestHTTP, TestPostChunkedDataAfterStart) {
   {
     scoped_ptr<URLRequest> r(default_context_.CreateRequest(
         http_test_server()->GetURL("/echo"), DEFAULT_PRIORITY, &d));
-    r->EnableChunkedUpload();
+    scoped_ptr<ChunkedUploadDataStream> upload_data_stream(
+        new ChunkedUploadDataStream(0));
+    scoped_ptr<ChunkedUploadDataStream::Writer> writer =
+        upload_data_stream->CreateWriter();
+    r->set_upload(std::move(upload_data_stream));
     r->set_method("POST");
     r->Start();
     EXPECT_TRUE(r->is_pending());
 
     base::RunLoop().RunUntilIdle();
-    AddChunksToUpload(r.get());
+    AddDataToUpload(writer.get());
     base::RunLoop().Run();
 
     VerifyReceivedDataMatchesChunks(r.get(), &d);

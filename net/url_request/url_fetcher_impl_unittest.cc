@@ -24,7 +24,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/test_timeouts.h"
 #include "base/thread_task_runner_handle.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
@@ -775,6 +777,67 @@ TEST_F(URLFetcherTest, PostWithUploadStreamFactoryAndRetries) {
   EXPECT_EQ(2u, num_upload_streams_created());
 }
 
+// Tests simple chunked POST case.
+TEST_F(URLFetcherTest, PostChunked) {
+  scoped_refptr<FetcherTestURLRequestContextGetter> context_getter(
+      CreateCrossThreadContextGetter());
+
+  WaitingURLFetcherDelegate delegate;
+  delegate.CreateFetcher(test_server_->GetURL("/echo"), URLFetcher::POST,
+                         CreateCrossThreadContextGetter());
+
+  delegate.fetcher()->SetChunkedUpload("text/plain");
+
+  // This posts a task to start the fetcher.
+  delegate.fetcher()->Start();
+
+  delegate.fetcher()->AppendChunkToUpload(kCreateUploadStreamBody, false);
+  delegate.fetcher()->AppendChunkToUpload(kCreateUploadStreamBody, true);
+
+  delegate.WaitForComplete();
+
+  EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
+  std::string data;
+  ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
+  EXPECT_EQ(std::string(kCreateUploadStreamBody) +
+                std::string(kCreateUploadStreamBody),
+            data);
+}
+
+// Tests that data can be appended to a request after it fails. This is needed
+// because the consumer may try to append data to a request after it failed, but
+// before the consumer learns that it failed.
+TEST_F(URLFetcherTest, PostAppendChunkAfterError) {
+  scoped_refptr<FetcherTestURLRequestContextGetter> context_getter(
+      CreateCrossThreadContextGetter());
+
+  WaitingURLFetcherDelegate delegate;
+  // Request that will fail almost immediately after being started, due to using
+  // a reserved port.
+  delegate.CreateFetcher(GURL("http://127.0.0.1:7"), URLFetcher::POST,
+                         context_getter);
+
+  delegate.fetcher()->SetChunkedUpload("text/plain");
+
+  // This posts a task to start the fetcher.
+  delegate.fetcher()->Start();
+
+  // Give the request a chance to fail, and inform the fetcher of the failure,
+  // while blocking the current thread so the error doesn't reach the delegate.
+  base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+
+  // Try to append data.
+  delegate.fetcher()->AppendChunkToUpload("kCreateUploadStreamBody", false);
+  delegate.fetcher()->AppendChunkToUpload("kCreateUploadStreamBody", true);
+
+  delegate.WaitForComplete();
+
+  // Make sure the request failed, as expected.
+  EXPECT_FALSE(delegate.fetcher()->GetStatus().is_success());
+  EXPECT_EQ(ERR_UNSAFE_PORT, delegate.fetcher()->GetStatus().error());
+}
+
 // Checks that upload progress increases over time, never exceeds what's already
 // been sent, and adds a chunk whenever all previously appended chunks have
 // been uploaded.
@@ -1041,6 +1104,38 @@ TEST_F(URLFetcherTest, ThrottleOnRepeatedFetches) {
   // 20 requests were sent. Due to throttling, they should have collectively
   // taken over 1 second.
   EXPECT_GE(Time::Now() - start_time, base::TimeDelta::FromSeconds(1));
+}
+
+// If throttling kicks in for a chunked upload, there should be no crash.
+TEST_F(URLFetcherTest, ThrottleChunkedUpload) {
+  GURL url(test_server_->GetURL("/echo"));
+
+  scoped_refptr<FetcherTestURLRequestContextGetter> context_getter(
+      CreateSameThreadContextGetter());
+
+  // Registers an entry for test url. It only allows 3 requests to be sent
+  // in 200 milliseconds.
+  context_getter->AddThrottlerEntry(
+      url, std::string() /* url_id */, 200 /* sliding_window_period_ms */,
+      3 /* max_send_threshold */, 1 /* initial_backoff_ms */,
+      2.0 /* multiply_factor */, 0.0 /* jitter_factor */,
+      256 /* maximum_backoff_ms */,
+      false /* reserve_sending_time_for_next_request*/);
+
+  for (int i = 0; i < 20; ++i) {
+    WaitingURLFetcherDelegate delegate;
+    delegate.CreateFetcher(url, URLFetcher::POST, context_getter);
+    delegate.fetcher()->SetChunkedUpload("text/plain");
+    delegate.fetcher()->Start();
+    delegate.fetcher()->AppendChunkToUpload(kCreateUploadStreamBody, true);
+    delegate.WaitForComplete();
+
+    EXPECT_TRUE(delegate.fetcher()->GetStatus().is_success());
+    EXPECT_EQ(200, delegate.fetcher()->GetResponseCode());
+    std::string data;
+    ASSERT_TRUE(delegate.fetcher()->GetResponseAsString(&data));
+    EXPECT_EQ(kCreateUploadStreamBody, data);
+  }
 }
 
 TEST_F(URLFetcherTest, ThrottleOn5xxRetries) {

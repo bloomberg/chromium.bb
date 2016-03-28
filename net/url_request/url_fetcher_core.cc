@@ -205,6 +205,7 @@ void URLFetcherCore::AppendChunkToUpload(const std::string& content,
                                          bool is_last_chunk) {
   DCHECK(delegate_task_runner_.get());
   DCHECK(network_task_runner_.get());
+  DCHECK(is_chunked_upload_);
   network_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&URLFetcherCore::CompleteAddingUploadDataChunk, this, content,
@@ -516,6 +517,14 @@ URLFetcherCore::~URLFetcherCore() {
 void URLFetcherCore::StartOnIOThread() {
   DCHECK(network_task_runner_->BelongsToCurrentThread());
 
+  // Create ChunkedUploadDataStream, if needed, so the consumer can start
+  // appending data.  Have to do it here because StartURLRequest() may be called
+  // asynchonously.
+  if (is_chunked_upload_) {
+    chunked_stream_.reset(new ChunkedUploadDataStream(0));
+    chunked_stream_writer_ = chunked_stream_->CreateWriter();
+  }
+
   if (!response_writer_)
     response_writer_.reset(new URLFetcherStringWriter);
 
@@ -550,8 +559,11 @@ void URLFetcherCore::StartURLRequest() {
   request_->set_stack_trace(stack_trace_);
   int flags = request_->load_flags() | load_flags_;
 
-  if (is_chunked_upload_)
-    request_->EnableChunkedUpload();
+  // TODO(mmenke): This should really be with the other code to set the upload
+  // body, below.
+  if (chunked_stream_)
+    request_->set_upload(std::move(chunked_stream_));
+
   request_->SetLoadFlags(flags);
   request_->SetReferrer(referrer_);
   request_->set_referrer_policy(referrer_policy_);
@@ -835,17 +847,10 @@ base::TimeTicks URLFetcherCore::GetBackoffReleaseTime() {
 
 void URLFetcherCore::CompleteAddingUploadDataChunk(
     const std::string& content, bool is_last_chunk) {
-  if (was_cancelled_) {
-    // Since CompleteAddingUploadDataChunk() is posted as a *delayed* task, it
-    // may run after the URLFetcher was already stopped.
-    return;
-  }
   DCHECK(is_chunked_upload_);
-  DCHECK(request_.get());
   DCHECK(!content.empty());
-  request_->AppendChunkToUpload(content.data(),
-                                static_cast<int>(content.length()),
-                                is_last_chunk);
+  chunked_stream_writer_->AppendData(
+      content.data(), static_cast<int>(content.length()), is_last_chunk);
 }
 
 int URLFetcherCore::WriteBuffer(scoped_refptr<DrainableIOBuffer> data) {

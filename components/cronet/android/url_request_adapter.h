@@ -13,13 +13,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/base/chunked_upload_data_stream.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_request.h"
 
 namespace net {
-class IOBufferWithSize;
 class HttpResponseHeaders;
+class IOBufferWithSize;
 class UploadDataStream;
 struct RedirectInfo;
 }  // namespace net
@@ -156,6 +157,7 @@ class URLRequestAdapter : public net::URLRequest::Delegate {
   net::HttpRequestHeaders headers_;
   scoped_ptr<net::URLRequest> url_request_;
   scoped_ptr<net::UploadDataStream> upload_data_stream_;
+  scoped_ptr<net::ChunkedUploadDataStream::Writer> chunked_upload_writer_;
   scoped_refptr<net::IOBufferWithSize> read_buffer_;
   int total_bytes_read_;
   int error_code_;

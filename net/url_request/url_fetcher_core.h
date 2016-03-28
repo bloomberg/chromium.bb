@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
+#include "net/base/chunked_upload_data_stream.h"
 #include "net/base/host_port_pair.h"
 #include "net/http/http_request_headers.h"
 #include "net/url_request/url_fetcher.h"
@@ -272,6 +273,14 @@ class URLFetcherCore : public base::RefCountedThreadSafe<URLFetcherCore>,
   std::string referrer_;             // HTTP Referer header value and policy
   URLRequest::ReferrerPolicy referrer_policy_;
   bool is_chunked_upload_;           // True if using chunked transfer encoding
+
+  // Used to write to |chunked_stream|, even after ownership has been passed to
+  // the URLRequest. Continues to be valid even after the request deletes its
+  // upload data.
+  scoped_ptr<ChunkedUploadDataStream::Writer> chunked_stream_writer_;
+
+  // Temporary storage of ChunkedUploadDataStream, before request is created.
+  scoped_ptr<ChunkedUploadDataStream> chunked_stream_;
 
   // Used to determine how long to wait before making a request or doing a
   // retry.

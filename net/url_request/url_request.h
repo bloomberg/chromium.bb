@@ -46,7 +46,6 @@ class StackTrace;
 
 namespace net {
 
-class ChunkedUploadDataStream;
 class CookieOptions;
 class HostPortPair;
 class IOBuffer;
@@ -330,23 +329,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // before creating its delegate.  |delegate| must be non-NULL and the request
   // must not yet have a Delegate set.
   void set_delegate(Delegate* delegate);
-
-  // Indicates that the request body should be sent using chunked transfer
-  // encoding. This method may only be called before Start() is called.
-  void EnableChunkedUpload();
-
-  // Appends the given bytes to the request's upload data to be sent
-  // immediately via chunked transfer encoding. When all data has been added,
-  // set |is_last_chunk| to true to indicate the end of upload data.  All chunks
-  // but the last must have |bytes_len| > 0.
-  //
-  // This method may be called only after calling EnableChunkedUpload().
-  //
-  // Despite the name of this method, over-the-wire chunk boundaries will most
-  // likely not match the "chunks" appended with this function.
-  void AppendChunkToUpload(const char* bytes,
-                           int bytes_len,
-                           bool is_last_chunk);
 
   // Sets the upload data.
   void set_upload(scoped_ptr<UploadDataStream> upload);
@@ -783,9 +765,6 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   scoped_ptr<URLRequestJob> job_;
   scoped_ptr<UploadDataStream> upload_data_stream_;
-  // TODO(mmenke):  Make whether or not an upload is chunked transparent to the
-  // URLRequest.
-  ChunkedUploadDataStream* upload_chunked_data_stream_;
 
   std::vector<GURL> url_chain_;
   GURL first_party_for_cookies_;

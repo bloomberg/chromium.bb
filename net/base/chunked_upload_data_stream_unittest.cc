@@ -305,4 +305,26 @@ TEST(ChunkedUploadDataStreamTest, RewindWhileReading) {
   EXPECT_FALSE(callback.have_result());
 }
 
+// Check the behavior of ChunkedUploadDataStream::Writer.
+TEST(ChunkedUploadDataStreamTest, ChunkedUploadDataStreamWriter) {
+  scoped_ptr<ChunkedUploadDataStream> stream(new ChunkedUploadDataStream(0));
+  scoped_ptr<ChunkedUploadDataStream::Writer> writer(stream->CreateWriter());
+
+  // Write before Init.
+  ASSERT_TRUE(writer->AppendData(kTestData, 1, false));
+  ASSERT_EQ(OK, stream->Init(TestCompletionCallback().callback()));
+
+  // Write after Init.
+  ASSERT_TRUE(writer->AppendData(kTestData + 1, kTestDataSize - 1, false));
+
+  TestCompletionCallback callback;
+  std::string data = ReadSync(stream.get(), kTestBufferSize);
+  EXPECT_EQ(kTestData, data);
+
+  // Writing data should gracefully fail if the stream is deleted while still
+  // appending data to it.
+  stream.reset();
+  EXPECT_FALSE(writer->AppendData(kTestData, kTestDataSize, true));
+}
+
 }  // namespace net

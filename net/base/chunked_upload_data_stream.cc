@@ -10,15 +10,35 @@
 
 namespace net {
 
+ChunkedUploadDataStream::Writer::~Writer() {}
+
+bool ChunkedUploadDataStream::Writer::AppendData(const char* data,
+                                                 int data_len,
+                                                 bool is_done) {
+  if (!upload_data_stream_)
+    return false;
+  upload_data_stream_->AppendData(data, data_len, is_done);
+  return true;
+}
+
+ChunkedUploadDataStream::Writer::Writer(
+    base::WeakPtr<ChunkedUploadDataStream> upload_data_stream)
+    : upload_data_stream_(upload_data_stream) {}
+
 ChunkedUploadDataStream::ChunkedUploadDataStream(int64_t identifier)
     : UploadDataStream(true, identifier),
       read_index_(0),
       read_offset_(0),
       all_data_appended_(false),
-      read_buffer_len_(0) {
-}
+      read_buffer_len_(0),
+      weak_factory_(this) {}
 
 ChunkedUploadDataStream::~ChunkedUploadDataStream() {
+}
+
+scoped_ptr<ChunkedUploadDataStream::Writer>
+ChunkedUploadDataStream::CreateWriter() {
+  return make_scoped_ptr(new Writer(weak_factory_.GetWeakPtr()));
 }
 
 void ChunkedUploadDataStream::AppendData(

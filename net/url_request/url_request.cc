@@ -21,7 +21,6 @@
 #include "base/synchronization/lock.h"
 #include "base/values.h"
 #include "net/base/auth.h"
-#include "net/base/chunked_upload_data_stream.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
@@ -189,22 +188,6 @@ URLRequest::~URLRequest() {
   if (status_.status() == URLRequestStatus::FAILED)
     net_error = status_.error();
   net_log_.EndEventWithNetErrorCode(NetLog::TYPE_REQUEST_ALIVE, net_error);
-}
-
-void URLRequest::EnableChunkedUpload() {
-  DCHECK(!upload_data_stream_ || upload_data_stream_->is_chunked());
-  if (!upload_data_stream_) {
-    upload_chunked_data_stream_ = new ChunkedUploadDataStream(0);
-    upload_data_stream_.reset(upload_chunked_data_stream_);
-  }
-}
-
-void URLRequest::AppendChunkToUpload(const char* bytes,
-                                     int bytes_len,
-                                     bool is_last_chunk) {
-  DCHECK(upload_data_stream_);
-  DCHECK(upload_data_stream_->is_chunked());
-  upload_chunked_data_stream_->AppendData(bytes, bytes_len, is_last_chunk);
 }
 
 void URLRequest::set_upload(scoped_ptr<UploadDataStream> upload) {
