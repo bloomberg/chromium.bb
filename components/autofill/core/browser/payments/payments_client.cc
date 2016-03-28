@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/autofill_data_model.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_request.h"
@@ -112,56 +113,59 @@ scoped_ptr<base::DictionaryValue> BuildRiskDictionary(
   return risk_data;
 }
 
+void SetStringIfNotEmpty(const AutofillDataModel& profile,
+                         const ServerFieldType& type,
+                         const std::string& app_locale,
+                         const std::string& path,
+                         base::DictionaryValue* dictionary) {
+  const base::string16 value = profile.GetInfo(AutofillType(type), app_locale);
+  if (!value.empty())
+    dictionary->SetString(path, value);
+}
+
+void AppendStringIfNotEmpty(const AutofillProfile& profile,
+                            const ServerFieldType& type,
+                            const std::string& app_locale,
+                            base::ListValue* list) {
+  const base::string16 value = profile.GetInfo(AutofillType(type), app_locale);
+  if (!value.empty())
+    list->AppendString(value);
+}
+
 scoped_ptr<base::DictionaryValue> BuildAddressDictionary(
     const AutofillProfile& profile,
     const std::string& app_locale) {
-  scoped_ptr<base::DictionaryValue> address(new base::DictionaryValue());
-
   scoped_ptr<base::DictionaryValue> postal_address(new base::DictionaryValue());
-  postal_address->SetString(
-      "recipient_name", profile.GetInfo(AutofillType(NAME_FULL), app_locale));
+
+  SetStringIfNotEmpty(profile, NAME_FULL, app_locale, "recipient_name",
+                      postal_address.get());
 
   scoped_ptr<base::ListValue> address_lines(new base::ListValue());
-  const base::string16 address_line1 =
-      profile.GetInfo(AutofillType(ADDRESS_HOME_LINE1), app_locale);
-  if (!address_line1.empty())
-    address_lines->AppendString(address_line1);
-  const base::string16 address_line2 =
-      profile.GetInfo(AutofillType(ADDRESS_HOME_LINE2), app_locale);
-  if (!address_line2.empty())
-    address_lines->AppendString(address_line2);
-  const base::string16 address_line3 =
-      profile.GetInfo(AutofillType(ADDRESS_HOME_LINE3), app_locale);
-  if (!address_line3.empty())
-    address_lines->AppendString(address_line3);
+  AppendStringIfNotEmpty(profile, ADDRESS_HOME_LINE1, app_locale,
+                         address_lines.get());
+  AppendStringIfNotEmpty(profile, ADDRESS_HOME_LINE2, app_locale,
+                         address_lines.get());
+  AppendStringIfNotEmpty(profile, ADDRESS_HOME_LINE3, app_locale,
+                         address_lines.get());
   if (!address_lines->empty())
     postal_address->Set("address_line", std::move(address_lines));
 
-  const base::string16 city =
-      profile.GetInfo(AutofillType(ADDRESS_HOME_CITY), app_locale);
-  if (!city.empty())
-    postal_address->SetString("locality_name", city);
-
-  const base::string16 state =
-      profile.GetInfo(AutofillType(ADDRESS_HOME_STATE), app_locale);
-  if (!state.empty())
-    postal_address->SetString("administrative_area_name", state);
-
-  postal_address->SetString(
-      "postal_code_number",
-      profile.GetInfo(AutofillType(ADDRESS_HOME_ZIP), app_locale));
+  SetStringIfNotEmpty(profile, ADDRESS_HOME_CITY, app_locale, "locality_name",
+                      postal_address.get());
+  SetStringIfNotEmpty(profile, ADDRESS_HOME_STATE, app_locale,
+                      "administrative_area_name", postal_address.get());
+  SetStringIfNotEmpty(profile, ADDRESS_HOME_ZIP, app_locale,
+                      "postal_code_number", postal_address.get());
 
   // Use GetRawInfo to get a country code instead of the country name:
   const base::string16 country_code = profile.GetRawInfo(ADDRESS_HOME_COUNTRY);
   if (!country_code.empty())
     postal_address->SetString("country_name_code", country_code);
 
+  scoped_ptr<base::DictionaryValue> address(new base::DictionaryValue());
   address->Set("postal_address", std::move(postal_address));
-
-  const base::string16 phone_number =
-      profile.GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), app_locale);
-  if (!phone_number.empty())
-    address->SetString("phone_number", phone_number);
+  SetStringIfNotEmpty(profile, PHONE_HOME_WHOLE_NUMBER, app_locale,
+                      "phone_number", address.get());
 
   return address;
 }
@@ -294,10 +298,8 @@ class UploadCardRequest : public PaymentsRequest {
     context->SetString("language_code", app_locale);
     request_dict.Set("context", std::move(context));
 
-    request_dict.SetString(
-        "cardholder_name",
-        request_details_.card.GetInfo(AutofillType(CREDIT_CARD_NAME_FULL),
-                                      app_locale));
+    SetStringIfNotEmpty(request_details_.card, CREDIT_CARD_NAME_FULL,
+                        app_locale, "cardholder_name", &request_dict);
 
     scoped_ptr<base::ListValue> addresses(new base::ListValue());
     for (const AutofillProfile& profile : request_details_.profiles) {
@@ -308,16 +310,16 @@ class UploadCardRequest : public PaymentsRequest {
     request_dict.SetString("context_token", request_details_.context_token);
 
     int value = 0;
-    base::string16 exp_month = request_details_.card.GetInfo(
+    const base::string16 exp_month = request_details_.card.GetInfo(
         AutofillType(CREDIT_CARD_EXP_MONTH), app_locale);
-    base::string16 exp_year = request_details_.card.GetInfo(
+    const base::string16 exp_year = request_details_.card.GetInfo(
         AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale);
     if (base::StringToInt(exp_month, &value))
       request_dict.SetInteger("expiration_month", value);
     if (base::StringToInt(exp_year, &value))
       request_dict.SetInteger("expiration_year", value);
 
-    base::string16 pan = request_details_.card.GetInfo(
+    const base::string16 pan = request_details_.card.GetInfo(
         AutofillType(CREDIT_CARD_NUMBER), app_locale);
     std::string json_request;
     base::JSONWriter::Write(request_dict, &json_request);
