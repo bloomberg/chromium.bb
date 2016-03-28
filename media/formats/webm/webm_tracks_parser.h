@@ -88,6 +88,9 @@ class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
   }
 
  private:
+  void Reset();
+  void ResetTrackEntry();
+
   // WebMParserClient implementation.
   WebMParserClient* OnListStart(int id) override;
   bool OnListEnd(int id) override;
@@ -96,6 +99,7 @@ class MEDIA_EXPORT WebMTracksParser : public WebMParserClient {
   bool OnBinary(int id, const uint8_t* data, int size) override;
   bool OnString(int id, const std::string& str) override;
 
+  bool reset_on_next_parse_;
   int64_t track_type_;
   int64_t track_num_;
   std::string track_name_;

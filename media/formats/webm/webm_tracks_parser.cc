@@ -47,29 +47,18 @@ static base::TimeDelta PrecisionCappedDefaultDuration(
 
 WebMTracksParser::WebMTracksParser(const scoped_refptr<MediaLog>& media_log,
                                    bool ignore_text_tracks)
-    : track_type_(-1),
-      track_num_(-1),
-      seek_preroll_(-1),
-      codec_delay_(-1),
-      default_duration_(-1),
-      audio_track_num_(-1),
-      audio_default_duration_(-1),
-      video_track_num_(-1),
-      video_default_duration_(-1),
-      ignore_text_tracks_(ignore_text_tracks),
+    : ignore_text_tracks_(ignore_text_tracks),
       media_log_(media_log),
       audio_client_(media_log),
       video_client_(media_log) {
+  Reset();
 }
 
 WebMTracksParser::~WebMTracksParser() {}
 
-int WebMTracksParser::Parse(const uint8_t* buf, int size) {
-  track_type_ =-1;
-  track_num_ = -1;
-  default_duration_ = -1;
-  track_name_.clear();
-  track_language_.clear();
+void WebMTracksParser::Reset() {
+  ResetTrackEntry();
+  reset_on_next_parse_ = false;
   audio_track_num_ = -1;
   audio_default_duration_ = -1;
   audio_decoder_config_ = AudioDecoderConfig();
@@ -79,6 +68,27 @@ int WebMTracksParser::Parse(const uint8_t* buf, int size) {
   text_tracks_.clear();
   ignored_tracks_.clear();
   media_tracks_.reset(new MediaTracks());
+}
+
+void WebMTracksParser::ResetTrackEntry() {
+  track_type_ = -1;
+  track_num_ = -1;
+  track_name_.clear();
+  track_language_.clear();
+  codec_id_ = "";
+  codec_private_.clear();
+  seek_preroll_ = -1;
+  codec_delay_ = -1;
+  default_duration_ = -1;
+  audio_client_.Reset();
+  video_client_.Reset();
+}
+
+int WebMTracksParser::Parse(const uint8_t* buf, int size) {
+  if (reset_on_next_parse_)
+    Reset();
+
+  reset_on_next_parse_ = true;
 
   WebMListParser parser(kWebMIdTracks, this);
   int result = parser.Parse(buf, size);
@@ -111,15 +121,7 @@ WebMParserClient* WebMTracksParser::OnListStart(int id) {
   }
 
   if (id == kWebMIdTrackEntry) {
-    track_type_ = -1;
-    track_num_ = -1;
-    default_duration_ = -1;
-    track_name_.clear();
-    track_language_.clear();
-    codec_id_ = "";
-    codec_private_.clear();
-    audio_client_.Reset();
-    video_client_.Reset();
+    ResetTrackEntry();
     return this;
   }
 
