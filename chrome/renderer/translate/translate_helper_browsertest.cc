@@ -323,11 +323,8 @@ TEST_F(TranslateHelperBrowserTest, MultipleDifferentTranslations) {
 // Tests that we send the right translate language message for a page and that
 // we respect the "no translate" meta-tag.
 TEST_F(ChromeRenderViewTest, TranslatablePage) {
-  // Suppress the normal delay that occurs when the page is loaded before which
-  // the renderer sends the page contents to the browser.
-  SendContentStateImmediately();
-
   LoadHTML("<html><body>A random page with random content.</body></html>");
+
   const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
@@ -339,6 +336,7 @@ TEST_F(ChromeRenderViewTest, TranslatablePage) {
   // Now the page specifies the META tag to prevent translation.
   LoadHTML("<html><head><meta name=\"google\" value=\"notranslate\"></head>"
            "<body>A random page with random content.</body></html>");
+
   message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
@@ -349,6 +347,7 @@ TEST_F(ChromeRenderViewTest, TranslatablePage) {
   // Try the alternate version of the META tag (content instead of value).
   LoadHTML("<html><head><meta name=\"google\" content=\"notranslate\"></head>"
            "<body>A random page with random content.</body></html>");
+
   message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
@@ -359,12 +358,9 @@ TEST_F(ChromeRenderViewTest, TranslatablePage) {
 // Tests that the language meta tag takes precedence over the CLD when reporting
 // the page's language.
 TEST_F(ChromeRenderViewTest, LanguageMetaTag) {
-  // Suppress the normal delay that occurs when the page is loaded before which
-  // the renderer sends the page contents to the browser.
-  SendContentStateImmediately();
-
   LoadHTML("<html><head><meta http-equiv=\"content-language\" content=\"es\">"
            "</head><body>A random page with random content.</body></html>");
+
   const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
       ChromeFrameHostMsg_TranslateLanguageDetermined::ID);
   ASSERT_NE(static_cast<IPC::Message*>(NULL), message);
@@ -387,10 +383,6 @@ TEST_F(ChromeRenderViewTest, LanguageMetaTag) {
 // Tests that the language meta tag works even with non-all-lower-case.
 // http://code.google.com/p/chromium/issues/detail?id=145689
 TEST_F(ChromeRenderViewTest, LanguageMetaTagCase) {
-  // Suppress the normal delay that occurs when the page is loaded before which
-  // the renderer sends the page contents to the browser.
-  SendContentStateImmediately();
-
   LoadHTML("<html><head><meta http-equiv=\"Content-Language\" content=\"es\">"
            "</head><body>A random page with random content.</body></html>");
   const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
@@ -416,10 +408,6 @@ TEST_F(ChromeRenderViewTest, LanguageMetaTagCase) {
 // instead of underscores and proper capitalization.
 // http://code.google.com/p/chromium/issues/detail?id=159487
 TEST_F(ChromeRenderViewTest, LanguageCommonMistakesAreCorrected) {
-  // Suppress the normal delay that occurs when the page is loaded before which
-  // the renderer sends the page contents to the browser.
-  SendContentStateImmediately();
-
   LoadHTML("<html><head><meta http-equiv='Content-Language' content='EN_us'>"
            "</head><body>A random page with random content.</body></html>");
   const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(
@@ -442,7 +430,6 @@ TEST_F(ChromeRenderViewTest, LanguageCommonMistakesAreCorrected) {
 
 // Tests that a back navigation gets a translate language message.
 TEST_F(ChromeRenderViewTest, BackToTranslatablePage) {
-  SendContentStateImmediately();
   LoadHTML("<html><head><meta http-equiv=\"content-language\" content=\"zh\">"
            "</head><body>This page is in Chinese.</body></html>");
   const IPC::Message* message = render_thread_->sink().GetUniqueMessageMatching(

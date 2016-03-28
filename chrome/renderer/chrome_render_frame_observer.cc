@@ -304,13 +304,6 @@ void ChromeRenderFrameObserver::DidFinishLoad() {
         routing_id(), frame->document().url(), osdd_url,
         search_provider::AUTODETECTED_PROVIDER));
   }
-
-  // TODO(dglazkov): This is only necessary for ChromeRenderViewTests,
-  // since they don't actually pump frames. These tests will need
-  // to be rewritten eventually (there is no ChromeRenderView anymore).
-  if (render_frame()->GetRenderView()->GetContentStateImmediately()) {
-    CapturePageText(PRELIMINARY_CAPTURE);
-  }
 }
 
 void ChromeRenderFrameObserver::DidStartProvisionalLoad() {

@@ -533,11 +533,7 @@ TEST_F(RenderViewImplTest, SaveImageFromDataURL) {
 
 // Test that we get form state change notifications when input fields change.
 TEST_F(RenderViewImplTest, OnNavStateChanged) {
-  // Don't want any delay for form state sync changes. This will still post a
-  // message so updates will get coalesced, but as soon as we spin the message
-  // loop, it will generate an update.
   view()->set_send_content_state_immediately(true);
-
   LoadHTML("<input type=\"text\" id=\"elt_text\"></input>");
 
   // We should NOT have gotten a form state change notification yet.
@@ -552,6 +548,7 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
   ExecuteJavaScriptForTests(
       "document.getElementById('elt_text').value = 'foo';");
   ProcessPendingMessages();
+
   if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
         FrameHostMsg_UpdateState::ID));
@@ -1035,7 +1032,6 @@ TEST_F(RenderViewImplTest,  DISABLED_LastCommittedUpdateState) {
 // changes.
 TEST_F(RenderViewImplTest, OnImeTypeChanged) {
   // Load an HTML page consisting of two input fields.
-  view()->set_send_content_state_immediately(true);
   LoadHTML("<html>"
            "<head>"
            "</head>"
@@ -1228,7 +1224,6 @@ TEST_F(RenderViewImplTest, ImeComposition) {
         // Load an HTML page consisting of a content-editable <div> element,
         // and move the input focus to the <div> element, where we can use
         // IMEs.
-        view()->set_send_content_state_immediately(true);
         LoadHTML("<html>"
                 "<head>"
                 "</head>"
@@ -1296,7 +1291,6 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   // This test changes the text direction of the <textarea> element, and
   // writes the values of its 'dir' attribute and its 'direction' property to
   // verify that the text direction is changed.
-  view()->set_send_content_state_immediately(true);
   LoadHTML("<html>"
            "<head>"
            "</head>"
@@ -1702,7 +1696,6 @@ TEST_F(RenderViewImplTest, GetSSLStatusOfFrame) {
 }
 
 TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
-  view()->set_send_content_state_immediately(true);
   LoadHTML("<textarea id=\"test\"></textarea>");
 
   view()->SetHandlingInputEventForTesting(true);

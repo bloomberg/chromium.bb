@@ -249,6 +249,7 @@ void RenderViewTest::LoadHTML(const char* html) {
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();
+  view_->GetWebView()->updateAllLifecyclePhases();
 }
 
 void RenderViewTest::LoadHTMLWithUrlOverride(const char* html,
@@ -262,6 +263,7 @@ void RenderViewTest::LoadHTMLWithUrlOverride(const char* html,
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(view_->GetMainRenderFrame()).Wait();
+  view_->GetWebView()->updateAllLifecyclePhases();
 }
 
 PageState RenderViewTest::GetCurrentPageState() {
@@ -582,6 +584,7 @@ void RenderViewTest::Reload(const GURL& url) {
   frame->Navigate(common_params, StartNavigationParams(),
                   RequestNavigationParams());
   FrameLoadWaiter(frame).Wait();
+  view_->GetWebView()->updateAllLifecyclePhases();
 }
 
 uint32_t RenderViewTest::GetNavigationIPCType() {
@@ -670,11 +673,6 @@ void RenderViewTest::DidNavigateWithinPage(blink::WebLocalFrame* frame,
                         : blink::WebHistoryInertCommit);
 }
 
-void RenderViewTest::SendContentStateImmediately() {
-  RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
-  impl->set_send_content_state_immediately(true);
-}
-
 blink::WebWidget* RenderViewTest::GetWebWidget() {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   return impl->webwidget();
@@ -726,6 +724,7 @@ void RenderViewTest::GoToOffset(int offset,
   // The load actually happens asynchronously, so we pump messages to process
   // the pending continuation.
   FrameLoadWaiter(frame).Wait();
+  view_->GetWebView()->updateAllLifecyclePhases();
 }
 
 }  // namespace content

@@ -168,7 +168,6 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   bool OnMessageReceived(const IPC::Message& msg);
   void DidNavigateWithinPage(blink::WebLocalFrame* frame,
                              bool is_new_navigation);
-  void SendContentStateImmediately();
   blink::WebWidget* GetWebWidget();
 
   // Allows a subclass to override the various content client implementations.
