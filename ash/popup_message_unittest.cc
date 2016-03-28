@@ -11,13 +11,13 @@
 
 namespace ash {
 
-typedef test::AshTestBase PopupMessageTest;
+using PopupMessageTest = test::AshTestBase;
 
 // Verifies the layout of the popup, especially it does not crop the caption and
 // message text. See http://crbug.com/468494.
 TEST_F(PopupMessageTest, Layout) {
-  views::Widget* widget =
-      views::Widget::CreateWindowWithBounds(nullptr, gfx::Rect(0, 0, 100, 100));
+  views::Widget* widget = views::Widget::CreateWindowWithContextAndBounds(
+      nullptr, CurrentContext(), gfx::Rect(0, 0, 100, 100));
   PopupMessage message(base::ASCIIToUTF16("caption text"),
                        base::ASCIIToUTF16(
                            "Message text, which will be usually longer than "

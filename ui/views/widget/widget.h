@@ -282,20 +282,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   Widget();
   ~Widget() override;
 
-  // Creates a toplevel window with no context. These methods should only be
-  // used in cases where there is no contextual information because we're
-  // creating a toplevel window connected to no other event.
-  //
-  // If you have any parenting or context information, or can pass that
-  // information, prefer the WithParent or WithContext versions of these
-  // methods.
-  //
-  // The returned Widget is owned by its NativeWidget; see Widget class comment
-  // for details.
-  static Widget* CreateWindow(WidgetDelegate* delegate);
-  static Widget* CreateWindowWithBounds(WidgetDelegate* delegate,
-                                        const gfx::Rect& bounds);
-
   // Creates a decorated window Widget with the specified properties. The
   // returned Widget is owned by its NativeWidget; see Widget class comment for
   // details.

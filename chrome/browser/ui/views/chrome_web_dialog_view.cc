@@ -14,15 +14,11 @@ namespace chrome {
 gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 content::BrowserContext* context,
                                 ui::WebDialogDelegate* delegate) {
-  views::Widget* widget = NULL;
   views::WebDialogView* view =
       new views::WebDialogView(context, delegate, new ChromeWebContentsHandler);
-  if (parent) {
-    widget = views::Widget::CreateWindowWithParent(view, parent);
-  } else {
-    // We shouldn't be called with a NULL parent, but sometimes are.
-    widget = views::Widget::CreateWindow(view);
-  }
+  // NOTE: The |parent| may be null, which will result in the default window
+  // placement on Aura.
+  views::Widget* widget = views::Widget::CreateWindowWithParent(view, parent);
 
   // Observer is needed for ChromeVox extension to send messages between content
   // and background scripts.

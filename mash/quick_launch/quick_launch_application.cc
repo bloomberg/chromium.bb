@@ -97,8 +97,8 @@ void QuickLaunchApplication::Initialize(mojo::Connector* connector,
   aura_init_.reset(new views::AuraInit(connector, "views_mus_resources.pak"));
   views::WindowManagerConnection::Create(connector);
 
-  views::Widget* window = views::Widget::CreateWindowWithBounds(
-      new QuickLaunchUI(connector), gfx::Rect(10, 640, 0, 0));
+  views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
+      new QuickLaunchUI(connector), nullptr, gfx::Rect(10, 640, 0, 0));
   window->Show();
 }
 

@@ -287,8 +287,8 @@ void TaskViewer::Initialize(mojo::Connector* connector,
 
   TaskViewerContents* task_viewer = new TaskViewerContents(
       std::move(request), std::move(catalog));
-  views::Widget* window = views::Widget::CreateWindowWithBounds(
-      task_viewer, gfx::Rect(10, 10, 500, 500));
+  views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
+      task_viewer, nullptr, gfx::Rect(10, 10, 500, 500));
   window->Show();
 }
 
