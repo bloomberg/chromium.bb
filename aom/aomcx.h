@@ -842,3 +842,4 @@ AOM_CTRL_USE_TYPE(AV1E_SET_RENDER_SIZE, int *)
 #endif
 
 #endif  // AOM_AOMCX_H_
+

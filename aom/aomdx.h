@@ -163,3 +163,4 @@ AOM_CTRL_USE_TYPE(AV1_INVERT_TILE_DECODE_ORDER, int)
 #endif
 
 #endif  // AOM_AOMDX_H_
+

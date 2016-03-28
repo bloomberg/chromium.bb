@@ -55,3 +55,4 @@ aomcx_set_ref_aom() {
 aomcx_set_ref_tests="aomcx_set_ref_aom"
 
 run_tests aomcx_set_ref_verify_environment "${aomcx_set_ref_tests}"
+

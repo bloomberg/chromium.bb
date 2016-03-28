@@ -73,3 +73,4 @@ aom_multi_resolution_encoder_three_formats() {
 
 aom_mre_tests="aom_multi_resolution_encoder_three_formats"
 run_tests aom_multi_resolution_encoder_verify_environment "${aom_mre_tests}"
+
