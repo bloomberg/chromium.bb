@@ -29,7 +29,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
-#include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/browser.h"
@@ -50,6 +50,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/views/widget/widget.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/test/test_session_state_delegate.h"
@@ -68,6 +69,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/exo/shell_surface.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
@@ -657,6 +659,22 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     arc_test_.app_instance()->RefreshAppList();
     arc_test_.app_instance()->SendRefreshAppList(std::vector<arc::AppInfo>());
   }
+
+  // Creates app window and set optional Arc application id.
+  views::Widget* CreateAppWindow(std::string* window_app_id) {
+    views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+    params.bounds = gfx::Rect(5, 5, 20, 20);
+    views::Widget* widget = new views::Widget();
+    widget->Init(params);
+    widget->Show();
+    widget->Activate();
+    if (window_app_id) {
+      exo::ShellSurface::SetApplicationId(widget->GetNativeWindow(),
+                                          window_app_id);
+    }
+    return widget;
+  }
+
 #endif  // defined(OS_CHROMEOS)
 
   // Needed for extension service & friends to work.
@@ -1443,6 +1461,66 @@ TEST_F(ChromeLauncherControllerTest, ArcAppPin) {
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
   InstallArcApps();
   EXPECT_EQ("AppList, Chrome, App1, App2", GetPinnedAppStatus());
+}
+
+TEST_F(ChromeLauncherControllerTest, ArcAppShelf) {
+  InitLauncherController();
+
+  const arc::AppInfo& app_info = arc_test_.fake_apps()[0];
+  const std::string arc_app_id = ArcAppTest::GetAppId(app_info);
+
+  InstallArcApps();
+
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(arc_app_id));
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+
+  arc_test_.app_instance()->SetTaskInfo(100, app_info.package_name,
+                                        app_info.activity);
+
+  std::string win_app_id = "org.chromium.arc.100";
+  views::Widget* arc_app_window = CreateAppWindow(&win_app_id);
+
+  // Item is not created until bridge returns task information.
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  EXPECT_EQ(2, model_->item_count());
+
+  arc_test_.app_instance()->WaitForIncomingMethodCall();
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  ASSERT_EQ(3, model_->item_count());
+  // Activation notification does not properly works in unit_tests.
+  EXPECT_TRUE(model_->items().back().status == ash::STATUS_RUNNING ||
+              model_->items().back().status == ash::STATUS_ACTIVE);
+
+  // Destroying window removes shelf item.
+  arc_app_window->CloseNow();
+  EXPECT_EQ(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  EXPECT_EQ(2, model_->item_count());
+
+  // Test with pinned app.
+  launcher_controller_->PinAppWithID(arc_app_id);
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  ASSERT_EQ(3, model_->item_count());
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->items().back().status);
+
+  // Run Arc task and status should change.
+  arc_app_window = CreateAppWindow(&win_app_id);
+  arc_test_.app_instance()->WaitForIncomingMethodCall();
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  ASSERT_EQ(3, model_->item_count());
+  EXPECT_TRUE(model_->items().back().status == ash::STATUS_RUNNING ||
+              model_->items().back().status == ash::STATUS_ACTIVE);
+
+  // Close Arc task and status should change back to ash::STATUS_CLOSED.
+  arc_app_window->CloseNow();
+  EXPECT_NE(0, launcher_controller_->GetShelfIDForAppID(arc_app_id));
+  ASSERT_EQ(3, model_->item_count());
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->items().back().status);
 }
 
 // Check that with multi profile V1 apps are properly added / removed from the
@@ -2624,10 +2702,8 @@ TEST_F(ChromeLauncherControllerTest, AppPanels) {
 
   // Test adding an app panel
   AppWindowLauncherItemController* app_panel_controller =
-      new AppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP_PANEL,
-          "id",
-          app_id,
+      new ExtensionAppWindowLauncherItemController(
+          LauncherItemController::TYPE_APP_PANEL, "id", app_id,
           launcher_controller_.get());
   ash::ShelfID shelf_id1 = launcher_controller_->CreateAppLauncherItem(
       app_panel_controller, app_id, ash::STATUS_RUNNING);
@@ -2650,10 +2726,8 @@ TEST_F(ChromeLauncherControllerTest, AppPanels) {
   // Add a second app panel and verify that it get the same index as the first
   // one had, being added to the left of the existing panel.
   AppWindowLauncherItemController* app_panel_controller2 =
-      new AppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP_PANEL,
-          "id",
-          app_id,
+      new ExtensionAppWindowLauncherItemController(
+          LauncherItemController::TYPE_APP_PANEL, "id", app_id,
           launcher_controller_.get());
 
   ash::ShelfID shelf_id2 = launcher_controller_->CreateAppLauncherItem(
@@ -2871,7 +2945,7 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
                     scoped_ptr<AppIconLoader>(app_icon_loader2));
 
   AppWindowLauncherItemController* app_panel_controller3 =
-      new AppWindowLauncherItemController(
+      new ExtensionAppWindowLauncherItemController(
           LauncherItemController::TYPE_APP_PANEL, "id", app_id3,
           launcher_controller_.get());
   const ash::ShelfID shelfId3 = launcher_controller_->CreateAppLauncherItem(
@@ -2882,7 +2956,7 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
   EXPECT_EQ(0, app_icon_loader2->clear_count());
 
   AppWindowLauncherItemController* app_panel_controller2 =
-      new AppWindowLauncherItemController(
+      new ExtensionAppWindowLauncherItemController(
           LauncherItemController::TYPE_APP_PANEL, "id", app_id2,
           launcher_controller_.get());
   const ash::ShelfID shelfId2 = launcher_controller_->CreateAppLauncherItem(
@@ -2894,7 +2968,7 @@ TEST_F(ChromeLauncherControllerTest, MultipleAppIconLoaders) {
 
   // Test adding an app panel
   AppWindowLauncherItemController* app_panel_controller1 =
-      new AppWindowLauncherItemController(
+      new ExtensionAppWindowLauncherItemController(
           LauncherItemController::TYPE_APP_PANEL, "id", app_id1,
           launcher_controller_.get());
 

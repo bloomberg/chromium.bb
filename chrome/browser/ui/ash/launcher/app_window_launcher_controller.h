@@ -5,13 +5,9 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_LAUNCHER_CONTROLLER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_APP_WINDOW_LAUNCHER_CONTROLLER_H_
 
-#include <list>
-#include <map>
 #include <string>
 
 #include "base/macros.h"
-#include "extensions/browser/app_window/app_window_registry.h"
-#include "ui/aura/window_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace aura {
@@ -23,23 +19,13 @@ class ActivationClient;
 }
 }
 
-namespace extensions {
-class AppWindow;
-}
-
+class AppWindowLauncherItemController;
 class ChromeLauncherController;
 class Profile;
-class AppWindowLauncherItemController;
 
-// AppWindowLauncherController observes the app window registry and the
-// aura window manager. It handles adding and removing launcher items from
-// ChromeLauncherController.
 class AppWindowLauncherController
-    : public extensions::AppWindowRegistry::Observer,
-      public aura::WindowObserver,
-      public aura::client::ActivationChangeObserver {
+    : public aura::client::ActivationChangeObserver {
  public:
-  explicit AppWindowLauncherController(ChromeLauncherController* owner);
   ~AppWindowLauncherController() override;
 
   // Called by ChromeLauncherController when the active user changed and the
@@ -48,16 +34,7 @@ class AppWindowLauncherController
 
   // An additional user identified by |Profile|, got added to the existing
   // session.
-  virtual void AdditionalUserAddedToSession(Profile* profile);
-
-  // Overridden from AppWindowRegistry::Observer:
-  void OnAppWindowIconChanged(extensions::AppWindow* app_window) override;
-  void OnAppWindowShown(extensions::AppWindow* app_window,
-                        bool was_hidden) override;
-  void OnAppWindowHidden(extensions::AppWindow* app_window) override;
-
-  // Overriden from aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override;
+  virtual void AdditionalUserAddedToSession(Profile* profile) {}
 
   // Overriden from client::ActivationChangeObserver:
   void OnWindowActivated(
@@ -66,34 +43,17 @@ class AppWindowLauncherController
       aura::Window* lost_active) override;
 
  protected:
-  // Registers a app window with the shelf and this object.
-  void RegisterApp(extensions::AppWindow* app_window);
+  explicit AppWindowLauncherController(ChromeLauncherController* owner);
 
-  // Unregisters a app window with the shelf and this object.
-  void UnregisterApp(aura::Window* window);
+  ChromeLauncherController* owner() { return owner_; }
 
-  // Check if a given window is known to the launcher controller.
-  bool IsRegisteredApp(aura::Window* window);
+  virtual AppWindowLauncherItemController* ControllerForWindow(
+      aura::Window* window) = 0;
 
  private:
-  typedef std::map<std::string, AppWindowLauncherItemController*>
-      AppControllerMap;
-  typedef std::map<aura::Window*, std::string> WindowToAppShelfIdMap;
-
-  AppWindowLauncherItemController* ControllerForWindow(aura::Window* window);
-
+  // Unowned pointers.
   ChromeLauncherController* owner_;
-  // A set of unowned AppWindowRegistry pointers for loaded users.
-  // Note that this will only be used with multiple users in the side by side
-  // mode.
-  std::set<extensions::AppWindowRegistry*> registry_;
-  aura::client::ActivationClient* activation_client_;
-
-  // Map of app launcher id to controller.
-  AppControllerMap app_controller_map_;
-
-  // Allows us to get from an aura::Window to the app shelf id.
-  WindowToAppShelfIdMap window_to_app_shelf_id_map_;
+  aura::client::ActivationClient* activation_client_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AppWindowLauncherController);
 };

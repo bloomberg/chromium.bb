@@ -389,7 +389,7 @@ class ChromeLauncherController
 
   // Access to the AppWindowLauncherController for tests.
   AppWindowLauncherController* app_window_controller_for_test() {
-    return app_window_controller_.get();
+    return app_window_controllers_[0].get();
   }
 
   bool CanPin(const std::string& app_id);
@@ -558,7 +558,7 @@ class ChromeLauncherController
   WebContentsToAppIDMap web_contents_to_app_id_;
 
   // Used to track app windows.
-  scoped_ptr<AppWindowLauncherController> app_window_controller_;
+  std::vector<scoped_ptr<AppWindowLauncherController>> app_window_controllers_;
 
   // Used to get app info for tabs.
   scoped_ptr<AppTabHelper> app_tab_helper_;

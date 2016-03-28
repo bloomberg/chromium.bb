@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ARC_TEST_FAKE_APP_INSTANCE_H_
 #define COMPONENTS_ARC_TEST_FAKE_APP_INSTANCE_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -77,12 +78,17 @@ class FakeAppInstance : public AppInstance {
       ScreenRectPtr dimension,
       const CanHandleResolutionCallback& callback) override;
   void UninstallPackage(const mojo::String& package_name) override;
+  void GetTaskInfo(int32_t task_id,
+                   const GetTaskInfoCallback& callback) override;
 
   // Methods to reply messages.
   void SendRefreshAppList(const std::vector<AppInfo>& apps);
   bool GenerateAndSendIcon(const AppInfo& app,
                            ScaleFactor scale_factor,
                            std::string* png_data_as_string);
+  void SetTaskInfo(int32_t task_id,
+                   const std::string& package_name,
+                   const std::string& activity);
 
   int refresh_app_list_count() const { return refresh_app_list_count_; }
 
@@ -106,6 +112,7 @@ class FakeAppInstance : public AppInstance {
   void WaitForOnAppInstanceReady();
 
  private:
+  using TaskIdToInfo = std::map<int32_t, scoped_ptr<Request>>;
   // Mojo endpoints.
   mojo::Binding<AppInstance> binding_;
   AppHost* app_host_;
@@ -115,6 +122,10 @@ class FakeAppInstance : public AppInstance {
   ScopedVector<Request> launch_requests_;
   // Keeps information about icon load requests.
   ScopedVector<IconRequest> icon_requests_;
+  // Keeps information for running tasks.
+  TaskIdToInfo task_id_to_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeAppInstance);
 };
 
 }  // namespace arc

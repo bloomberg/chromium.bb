@@ -15,7 +15,7 @@
 
 MultiProfileAppWindowLauncherController::
     MultiProfileAppWindowLauncherController(ChromeLauncherController* owner)
-    : AppWindowLauncherController(owner) {}
+    : ExtensionAppWindowLauncherController(owner) {}
 
 MultiProfileAppWindowLauncherController::
     ~MultiProfileAppWindowLauncherController() {

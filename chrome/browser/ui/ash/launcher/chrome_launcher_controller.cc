@@ -103,6 +103,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_arc_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
@@ -460,6 +461,7 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
         new ChromeLauncherControllerUserSwitchObserver(this));
   }
 
+  scoped_ptr<AppWindowLauncherController> extension_app_window_controller;
   // Create our v1/v2 application / browser monitors which will inform the
   // launcher of status changes.
   if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
@@ -467,19 +469,28 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
     // If running in separated destkop mode, we create the multi profile version
     // of status monitor.
     browser_status_monitor_.reset(new MultiProfileBrowserStatusMonitor(this));
-    app_window_controller_.reset(
+    extension_app_window_controller.reset(
         new MultiProfileAppWindowLauncherController(this));
   } else {
     // Create our v1/v2 application / browser monitors which will inform the
     // launcher of status changes.
     browser_status_monitor_.reset(new BrowserStatusMonitor(this));
-    app_window_controller_.reset(new AppWindowLauncherController(this));
+    extension_app_window_controller.reset(
+        new ExtensionAppWindowLauncherController(this));
   }
+  app_window_controllers_.push_back(std::move(extension_app_window_controller));
+
+  scoped_ptr<AppWindowLauncherController> arc_app_window_controller;
+  arc_app_window_controller.reset(new ArcAppWindowLauncherController(this));
+  app_window_controllers_.push_back(std::move(arc_app_window_controller));
 #else
   // Create our v1/v2 application / browser monitors which will inform the
   // launcher of status changes.
   browser_status_monitor_.reset(new BrowserStatusMonitor(this));
-  app_window_controller_.reset(new AppWindowLauncherController(this));
+  scoped_ptr<AppWindowLauncherController> extension_app_window_controller;
+  extension_app_window_controller.reset(
+      new ExtensionAppWindowLauncherController(this));
+  app_window_controllers_.push_back(std::move(extension_app_window_controller));
 #endif
 
   // Right now ash::Shell isn't created for tests.
@@ -503,8 +514,8 @@ ChromeLauncherController::~ChromeLauncherController() {
   // Reset the BrowserStatusMonitor as it has a weak pointer to this.
   browser_status_monitor_.reset();
 
-  // Reset the app window controller here since it has a weak pointer to this.
-  app_window_controller_.reset();
+  // Reset the app window controllers here since it has a weak pointer to this.
+  app_window_controllers_.clear();
 
   for (auto iter : shelves_)
     iter->shelf_layout_manager()->RemoveObserver(this);
@@ -1203,7 +1214,8 @@ void ChromeLauncherController::ActiveUserChanged(
   // Update the V1 applications.
   browser_status_monitor_->ActiveUserChanged(user_email);
   // Switch the running applications to the new user.
-  app_window_controller_->ActiveUserChanged(user_email);
+  for (auto& controller : app_window_controllers_)
+    controller->ActiveUserChanged(user_email);
   // Update the user specific shell properties from the new user profile.
   UpdateAppLaunchersFromPref();
   SetShelfAlignmentFromPrefs();
@@ -1224,7 +1236,8 @@ void ChromeLauncherController::ActiveUserChanged(
 
 void ChromeLauncherController::AdditionalUserAddedToSession(Profile* profile) {
   // Switch the running applications to the new user.
-  app_window_controller_->AdditionalUserAddedToSession(profile);
+  for (auto& controller : app_window_controllers_)
+    controller->AdditionalUserAddedToSession(profile);
 }
 
 void ChromeLauncherController::OnAppInstalled(

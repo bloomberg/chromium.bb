@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 3
+// Next MinVersion: 4
 
 module arc;
 
@@ -93,4 +93,8 @@ interface AppInstance {
   // Sends a request to ARC to uninstall the given package.  Error (if ever
   // happens) is ignored, and uninstall option should appear in the UI.
   [MinVersion=2] UninstallPackage(string package_name);
+
+  // Requests information about task.
+  [MinVersion=3] GetTaskInfo(int32 task_id) => (string package_name,
+                                                string activity);
 };

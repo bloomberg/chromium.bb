@@ -107,6 +107,12 @@ bool FakeAppInstance::GenerateAndSendIcon(const AppInfo& app,
   return true;
 }
 
+void FakeAppInstance::SetTaskInfo(int32_t task_id,
+                                  const std::string& package_name,
+                                  const std::string& activity) {
+  task_id_to_info_[task_id].reset(new Request(package_name, activity));
+}
+
 void FakeAppInstance::WaitForIncomingMethodCall() {
   binding_.WaitForIncomingMethodCall();
 }
@@ -134,6 +140,15 @@ void FakeAppInstance::CanHandleResolution(const mojo::String& package_name,
 }
 
 void FakeAppInstance::UninstallPackage(const mojo::String& package_name) {
+}
+
+void FakeAppInstance::GetTaskInfo(int32_t task_id,
+                                  const GetTaskInfoCallback& callback) {
+  TaskIdToInfo::const_iterator it = task_id_to_info_.find(task_id);
+  if (it != task_id_to_info_.end())
+    callback.Run(it->second->package_name(), it->second->activity());
+  else
+    callback.Run(mojo::String(), mojo::String());
 }
 
 }  // namespace arc
