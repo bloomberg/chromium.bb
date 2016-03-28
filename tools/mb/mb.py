@@ -735,40 +735,38 @@ class MetaBuildWrapper(object):
         target_name = self.GNTargetName(target)
         label = gn_isolate_map[target_name]['label']
         runtime_deps_targets = [
-            target_name,
-            'obj/%s.stamp' % label.replace(':', '/')]
+            target_name + '.runtime_deps',
+            'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
       elif gn_isolate_map[target]['type'] == 'gpu_browser_test':
-        runtime_deps_targets = ['browser_tests']
+        if self.platform == 'win32':
+          runtime_deps_targets = ['browser_tests.exe.runtime_deps']
+        else:
+          runtime_deps_targets = ['browser_tests.runtime_deps']
       elif (gn_isolate_map[target]['type'] == 'script' or
             gn_isolate_map[target].get('label_type') == 'group'):
         # For script targets, the build target is usually a group,
         # for which gn generates the runtime_deps next to the stamp file
         # for the label, which lives under the obj/ directory.
         label = gn_isolate_map[target]['label']
-        runtime_deps_targets = ['obj/%s.stamp' % label.replace(':', '/')]
+        runtime_deps_targets = [
+            'obj/%s.stamp.runtime_deps' % label.replace(':', '/')]
+      elif self.platform == 'win32':
+        runtime_deps_targets = [target + '.exe.runtime_deps']
       else:
-        runtime_deps_targets = [target]
+        runtime_deps_targets = [target + '.runtime_deps']
 
-      if self.platform == 'win32':
-        deps_paths = [
-            self.ToAbsPath(build_dir, r + '.exe.runtime_deps')
-            for r in runtime_deps_targets]
-      else:
-        deps_paths = [
-            self.ToAbsPath(build_dir, r + '.runtime_deps')
-            for r in runtime_deps_targets]
-
-      for d in deps_paths:
-        if self.Exists(d):
-          deps_path = d
+      for r in runtime_deps_targets:
+        runtime_deps_path = self.ToAbsPath(build_dir, r)
+        if self.Exists(runtime_deps_path):
           break
       else:
-        raise MBErr('did not generate any of %s' % ', '.join(deps_paths))
+        raise MBErr('did not generate any of %s' %
+                    ', '.join(runtime_deps_targets))
 
       command, extra_files = self.GetIsolateCommand(target, vals,
                                                     gn_isolate_map)
 
-      runtime_deps = self.ReadFile(deps_path).splitlines()
+      runtime_deps = self.ReadFile(runtime_deps_path).splitlines()
 
       self.WriteIsolateFiles(build_dir, command, target, runtime_deps,
                              extra_files)
