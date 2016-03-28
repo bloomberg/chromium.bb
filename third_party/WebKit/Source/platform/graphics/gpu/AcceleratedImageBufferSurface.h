@@ -51,8 +51,8 @@ public:
     Platform3DObject getBackingTextureHandleForOverwrite() override;
 
 private:
-    OwnPtr<SkSurface> m_surface;
     OwnPtr<WebGraphicsContext3DProvider> m_contextProvider;
+    OwnPtr<SkSurface> m_surface; // Uses m_contextProvider.
 };
 
 
