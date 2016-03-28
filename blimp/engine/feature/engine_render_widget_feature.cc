@@ -18,10 +18,18 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 
 namespace blimp {
+namespace engine {
 
-EngineRenderWidgetFeature::EngineRenderWidgetFeature() {}
+EngineRenderWidgetFeature::EngineRenderWidgetFeature(SettingsManager* settings)
+    : settings_manager_(settings) {
+  DCHECK(settings_manager_);
+  settings_manager_->AddObserver(this);
+}
 
-EngineRenderWidgetFeature::~EngineRenderWidgetFeature() {}
+EngineRenderWidgetFeature::~EngineRenderWidgetFeature() {
+  DCHECK(settings_manager_);
+  settings_manager_->RemoveObserver(this);
+}
 
 void EngineRenderWidgetFeature::set_render_widget_message_sender(
     scoped_ptr<BlimpMessageProcessor> message_processor) {
@@ -232,6 +240,22 @@ void EngineRenderWidgetFeature::ProcessMessage(
   callback.Run(net::OK);
 }
 
+void EngineRenderWidgetFeature::OnWebPreferencesChanged() {
+  for (TabMap::iterator tab_it = tabs_.begin(); tab_it != tabs_.end();
+       tab_it++) {
+    RenderWidgetMaps render_widget_maps = tab_it->second;
+    RenderWidgetToIdMap render_widget_to_id = render_widget_maps.first;
+    for (RenderWidgetToIdMap::iterator it = render_widget_to_id.begin();
+         it != render_widget_to_id.end(); it++) {
+      content::RenderWidgetHost* render_widget_host = it->first;
+      content::RenderViewHost* render_view_host =
+          content::RenderViewHost::From(render_widget_host);
+      if (render_view_host)
+        render_view_host->OnWebkitPreferencesChanged();
+    }
+  }
+}
+
 void EngineRenderWidgetFeature::SetTextFromIME(ui::TextInputClient* client,
                                                std::string text) {
   if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
@@ -342,4 +366,5 @@ content::RenderWidgetHost* EngineRenderWidgetFeature::GetRenderWidgetHost(
   return widget_id_it->second;
 }
 
+}  // namespace engine
 }  // namespace blimp

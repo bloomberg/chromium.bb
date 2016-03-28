@@ -14,6 +14,7 @@
 #include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "blimp/engine/app/settings_manager.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/input_message_converter.h"
 #include "ui/base/ime/text_input_client.h"
@@ -27,6 +28,7 @@ class RenderWidgetHost;
 }
 
 namespace blimp {
+namespace engine {
 
 // Handles all incoming and outgoing protobuf message types tied to a specific
 // RenderWidget. This includes BlimpMessage::INPUT, BlimpMessage::COMPOSITOR,
@@ -34,7 +36,8 @@ namespace blimp {
 // notified of incoming messages. This class automatically handles dropping
 // stale BlimpMessage::RENDER_WIDGET messages from the client after a
 // RenderWidgetMessage::INITIALIZE message is sent.
-class EngineRenderWidgetFeature : public BlimpMessageProcessor {
+class EngineRenderWidgetFeature : public BlimpMessageProcessor,
+                                  public SettingsManager::Observer {
  public:
   // A delegate to be notified of specific RenderWidget related incoming events.
   class RenderWidgetMessageDelegate {
@@ -52,7 +55,7 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor {
         const std::vector<uint8_t>& message) = 0;
   };
 
-  EngineRenderWidgetFeature();
+  explicit EngineRenderWidgetFeature(SettingsManager* settings);
   ~EngineRenderWidgetFeature() override;
 
   void set_render_widget_message_sender(
@@ -108,6 +111,9 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor {
   // BlimpMessageProcessor implementation.
   void ProcessMessage(scoped_ptr<BlimpMessage> message,
                       const net::CompletionCallback& callback) override;
+
+  // Settings::Observer implementation.
+  void OnWebPreferencesChanged() override;
 
  private:
   typedef base::SmallMap<std::map<int, RenderWidgetMessageDelegate*> >
@@ -166,6 +172,8 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor {
 
   InputMessageConverter input_message_converter_;
 
+  SettingsManager* settings_manager_;
+
   // Outgoing message processors for RENDER_WIDGET, COMPOSITOR and INPUT types.
   scoped_ptr<BlimpMessageProcessor> render_widget_message_sender_;
   scoped_ptr<BlimpMessageProcessor> compositor_message_sender_;
@@ -175,6 +183,7 @@ class EngineRenderWidgetFeature : public BlimpMessageProcessor {
   DISALLOW_COPY_AND_ASSIGN(EngineRenderWidgetFeature);
 };
 
+}  // namespace engine
 }  // namespace blimp
 
 #endif  // BLIMP_ENGINE_FEATURE_ENGINE_RENDER_WIDGET_FEATURE_H_

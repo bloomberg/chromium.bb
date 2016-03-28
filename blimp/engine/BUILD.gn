@@ -62,6 +62,10 @@ source_set("app") {
     "app/blimp_permission_manager.h",
     "app/blimp_url_request_context_getter.cc",
     "app/blimp_url_request_context_getter.h",
+    "app/engine_settings.cc",
+    "app/engine_settings.h",
+    "app/settings_manager.cc",
+    "app/settings_manager.h",
     "app/switches.cc",
     "app/switches.h",
   ]
@@ -126,6 +130,8 @@ source_set("feature") {
   sources = [
     "feature/engine_render_widget_feature.cc",
     "feature/engine_render_widget_feature.h",
+    "feature/engine_settings_feature.cc",
+    "feature/engine_settings_feature.h",
   ]
 
   deps = [
@@ -160,6 +166,7 @@ source_set("app_unit_tests") {
 
   sources = [
     "app/blimp_engine_config_unittest.cc",
+    "app/settings_manager_unittest.cc",
     "app/ui/blimp_screen_unittest.cc",
   ]
 
@@ -179,6 +186,7 @@ source_set("feature_unit_tests") {
 
   sources = [
     "feature/engine_render_widget_feature_unittest.cc",
+    "feature/engine_settings_feature_unittest.cc",
   ]
 
   deps = [

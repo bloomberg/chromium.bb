@@ -24,6 +24,7 @@ namespace engine {
 class BlimpBrowserContext;
 class BlimpEngineConfig;
 class BlimpEngineSession;
+class SettingsManager;
 
 class BlimpBrowserMainParts : public content::BrowserMainParts {
  public:
@@ -36,10 +37,12 @@ class BlimpBrowserMainParts : public content::BrowserMainParts {
   void PostMainMessageLoopRun() override;
 
   BlimpBrowserContext* GetBrowserContext();
+  SettingsManager* GetSettingsManager();
 
  private:
   scoped_ptr<BlimpEngineConfig> engine_config_;
   scoped_ptr<net::NetLog> net_log_;
+  scoped_ptr<SettingsManager> settings_manager_;
   scoped_ptr<BlimpEngineSession> engine_session_;
 
   DISALLOW_COPY_AND_ASSIGN(BlimpBrowserMainParts);

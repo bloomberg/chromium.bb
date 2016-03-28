@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/engine/feature/engine_render_widget_feature.h"
+#include "blimp/engine/feature/engine_settings_feature.h"
 #include "blimp/net/blimp_message_processor.h"
 #include "blimp/net/connection_error_observer.h"
 #include "content/public/browser/invalidate_type.h"
@@ -55,6 +56,7 @@ class BlimpConnection;
 class BlimpMessage;
 class BlimpMessageThreadPipe;
 class ThreadPipeManager;
+class SettingsManager;
 
 namespace engine {
 
@@ -74,7 +76,8 @@ class BlimpEngineSession
  public:
   BlimpEngineSession(scoped_ptr<BlimpBrowserContext> browser_context,
                      net::NetLog* net_log,
-                     BlimpEngineConfig* config);
+                     BlimpEngineConfig* config,
+                     SettingsManager* settings_manager);
   ~BlimpEngineSession() override;
 
   // Starts the network stack on the IO thread, and sets default placeholder
@@ -184,6 +187,12 @@ class BlimpEngineSession
 
   // Only one web_contents is supported for blimp 0.5
   scoped_ptr<content::WebContents> web_contents_;
+
+  // Manages all global settings for the engine session.
+  SettingsManager* settings_manager_;
+
+  // Handles all incoming messages for type SETTINGS.
+  EngineSettingsFeature settings_feature_;
 
   // Handles all incoming and outgoing messages related to RenderWidget,
   // including INPUT, COMPOSITOR and RENDER_WIDGET messages.

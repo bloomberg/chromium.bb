@@ -26,6 +26,8 @@ class BlimpContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) override;
+  void OverrideWebkitPrefs(content::RenderViewHost* render_view_host,
+                           content::WebPreferences* prefs) override;
 
   BlimpBrowserContext* GetBrowserContext();
 

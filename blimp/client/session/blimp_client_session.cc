@@ -15,6 +15,7 @@
 #include "blimp/client/feature/ime_feature.h"
 #include "blimp/client/feature/navigation_feature.h"
 #include "blimp/client/feature/render_widget_feature.h"
+#include "blimp/client/feature/settings_feature.h"
 #include "blimp/client/feature/tab_control_feature.h"
 #include "blimp/net/blimp_connection.h"
 #include "blimp/net/blimp_message_processor.h"
@@ -152,6 +153,7 @@ BlimpClientSession::BlimpClientSession()
       navigation_feature_(new NavigationFeature),
       ime_feature_(new ImeFeature),
       render_widget_feature_(new RenderWidgetFeature),
+      settings_feature_(new SettingsFeature),
       weak_factory_(this) {
   net_components_.reset(new ClientNetworkComponents(
       make_scoped_ptr(new CrossThreadNetworkEventObserver(
@@ -219,6 +221,13 @@ void BlimpClientSession::RegisterFeatures() {
   render_widget_feature_->set_outgoing_compositor_message_processor(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::COMPOSITOR,
                                             render_widget_feature_.get()));
+  settings_feature_->set_outgoing_message_processor(
+      thread_pipe_manager_->RegisterFeature(BlimpMessage::SETTINGS,
+                                            settings_feature_.get()));
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDownloadWholeDocument))
+    settings_feature_->SetRecordWholeDocument(true);
 
   // Client will not send send any RenderWidget messages, so don't save the
   // outgoing BlimpMessageProcessor in the RenderWidgetFeature.

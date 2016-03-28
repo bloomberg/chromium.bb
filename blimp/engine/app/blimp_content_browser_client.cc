@@ -4,6 +4,7 @@
 
 #include "blimp/engine/app/blimp_content_browser_client.h"
 #include "blimp/engine/app/blimp_browser_main_parts.h"
+#include "blimp/engine/app/settings_manager.h"
 #include "blimp/engine/common/blimp_browser_context.h"
 
 namespace blimp {
@@ -29,6 +30,19 @@ net::URLRequestContextGetter* BlimpContentBrowserClient::CreateRequestContext(
   return blimp_context->CreateRequestContext(protocol_handlers,
                                              std::move(request_interceptors))
       .get();
+}
+
+void BlimpContentBrowserClient::OverrideWebkitPrefs(
+    content::RenderViewHost* render_view_host,
+    content::WebPreferences* prefs) {
+  if (!blimp_browser_main_parts_)
+    return;
+
+  if (!blimp_browser_main_parts_->GetSettingsManager())
+    return;
+
+  blimp_browser_main_parts_->GetSettingsManager()->UpdateWebkitPreferences(
+      prefs);
 }
 
 BlimpBrowserContext* BlimpContentBrowserClient::GetBrowserContext() {

@@ -16,10 +16,12 @@ namespace blimp {
 
 class BlimpMessage;
 class CompositorMessage;
+class EngineSettingsMessage;
 class ImeMessage;
 class InputMessage;
 class NavigationMessage;
 class RenderWidgetMessage;
+class SettingsMessage;
 class SizeMessage;
 class StartConnectionMessage;
 class TabControlMessage;
@@ -60,6 +62,9 @@ BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
 
 BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
     SizeMessage** size_message);
+
+BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateBlimpMessage(
+    EngineSettingsMessage** engine_settings);
 
 BLIMP_COMMON_EXPORT scoped_ptr<BlimpMessage> CreateStartConnectionMessage(
     const std::string& client_token,

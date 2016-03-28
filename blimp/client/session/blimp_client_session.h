@@ -34,6 +34,7 @@ class ClientNetworkComponents;
 class NavigationFeature;
 class ImeFeature;
 class RenderWidgetFeature;
+class SettingsFeature;
 class TabControlFeature;
 
 class NetworkEventObserver {
@@ -93,6 +94,7 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession : public NetworkEventObserver {
   scoped_ptr<NavigationFeature> navigation_feature_;
   scoped_ptr<ImeFeature> ime_feature_;
   scoped_ptr<RenderWidgetFeature> render_widget_feature_;
+  scoped_ptr<SettingsFeature> settings_feature_;
 
   // The AssignmentSource is used when the user of BlimpClientSession calls
   // Connect() to get a valid assignment and later connect to the engine.

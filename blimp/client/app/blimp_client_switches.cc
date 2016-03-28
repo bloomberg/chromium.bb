@@ -15,5 +15,7 @@ const char kEnginePort[] = "engine-port";
 
 const char kEngineTransport[] = "engine-transport";
 
+const char kDownloadWholeDocument[] = "download-whole-document";
+
 }  // namespace switches
 }  // namespace blimp

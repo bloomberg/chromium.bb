@@ -8,6 +8,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/engine/app/blimp_engine_config.h"
+#include "blimp/engine/app/settings_manager.h"
 #include "blimp/engine/common/blimp_browser_context.h"
 #include "blimp/engine/session/blimp_engine_session.h"
 #include "blimp/net/blimp_connection.h"
@@ -38,10 +39,12 @@ void BlimpBrowserMainParts::PreEarlyInitialization() {
 
 void BlimpBrowserMainParts::PreMainMessageLoopRun() {
   net_log_.reset(new net::NetLog());
+  settings_manager_.reset(new SettingsManager);
   scoped_ptr<BlimpBrowserContext> browser_context(
       new BlimpBrowserContext(false, net_log_.get()));
-  engine_session_.reset(new BlimpEngineSession(
-      std::move(browser_context), net_log_.get(), engine_config_.get()));
+  engine_session_.reset(
+      new BlimpEngineSession(std::move(browser_context), net_log_.get(),
+                             engine_config_.get(), settings_manager_.get()));
   engine_session_->Initialize();
 }
 
@@ -51,6 +54,10 @@ void BlimpBrowserMainParts::PostMainMessageLoopRun() {
 
 BlimpBrowserContext* BlimpBrowserMainParts::GetBrowserContext() {
   return engine_session_->browser_context();
+}
+
+SettingsManager* BlimpBrowserMainParts::GetSettingsManager() {
+  return settings_manager_.get();
 }
 
 }  // namespace engine

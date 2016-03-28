@@ -116,6 +116,8 @@ source_set("feature") {
     "feature/navigation_feature.h",
     "feature/render_widget_feature.cc",
     "feature/render_widget_feature.h",
+    "feature/settings_feature.cc",
+    "feature/settings_feature.h",
     "feature/tab_control_feature.cc",
     "feature/tab_control_feature.h",
   ]

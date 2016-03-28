@@ -26,6 +26,7 @@ using testing::InSequence;
 using testing::Sequence;
 
 namespace blimp {
+namespace engine {
 
 namespace {
 
@@ -227,7 +228,7 @@ void SendCompositorMessage(BlimpMessageProcessor* processor,
 
 class EngineRenderWidgetFeatureTest : public testing::Test {
  public:
-  EngineRenderWidgetFeatureTest() {}
+  EngineRenderWidgetFeatureTest() : feature_(&settings_) {}
 
   void SetUp() override {
     render_widget_message_sender_ = new MockBlimpMessageProcessor;
@@ -251,6 +252,7 @@ class EngineRenderWidgetFeatureTest : public testing::Test {
   MockHostRenderWidgetMessageDelegate delegate1_;
   MockHostRenderWidgetMessageDelegate delegate2_;
   MockTextInputClient text_input_client_;
+  SettingsManager settings_;
   EngineRenderWidgetFeature feature_;
 };
 
@@ -372,5 +374,5 @@ TEST_F(EngineRenderWidgetFeatureTest, RepliesHaveCorrectRenderWidgetId) {
   feature_.SendCompositorMessage(1, &render_widget_host1_, payload);
 }
 
-
+}  // namespace engine
 }  // namespace blimp

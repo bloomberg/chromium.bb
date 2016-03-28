@@ -10,6 +10,7 @@
 #include "blimp/common/proto/compositor.pb.h"
 #include "blimp/common/proto/input.pb.h"
 #include "blimp/common/proto/render_widget.pb.h"
+#include "blimp/common/proto/settings.pb.h"
 #include "blimp/common/proto/tab_control.pb.h"
 
 namespace blimp {
@@ -80,6 +81,15 @@ scoped_ptr<BlimpMessage> CreateBlimpMessage(SizeMessage** size_message) {
   scoped_ptr<BlimpMessage> output = CreateBlimpMessage(&control_message);
   control_message->set_type(TabControlMessage::SIZE);
   *size_message = control_message->mutable_size();
+  return output;
+}
+
+scoped_ptr<BlimpMessage> CreateBlimpMessage(
+    EngineSettingsMessage** engine_settings) {
+  DCHECK(engine_settings);
+  scoped_ptr<BlimpMessage> output(new BlimpMessage);
+  output->set_type(BlimpMessage::SETTINGS);
+  *engine_settings = output->mutable_settings()->mutable_engine_settings();
   return output;
 }
 

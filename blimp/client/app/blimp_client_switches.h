@@ -30,6 +30,9 @@ extern const char kEnginePort[];
 // Must be used in conjunction with --engine-ip and --engine-port.
 extern const char kEngineTransport[];
 
+// Enables downloading the complete page from the engine.
+extern const char kDownloadWholeDocument[];
+
 }  // namespace switches
 }  // namespace blimp
 

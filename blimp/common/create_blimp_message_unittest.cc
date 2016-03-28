@@ -68,6 +68,14 @@ TEST(CreateBlimpMessageTest, SizeMessage) {
   EXPECT_EQ(details, message->mutable_tab_control()->mutable_size());
 }
 
+TEST(CreateBlimpMessageTest, EngineSettingsMessage) {
+  EngineSettingsMessage* details;
+  scoped_ptr<BlimpMessage> message = CreateBlimpMessage(&details);
+  EXPECT_NE(nullptr, details);
+  EXPECT_NE(nullptr, message);
+  EXPECT_EQ(details, message->mutable_settings()->mutable_engine_settings());
+}
+
 TEST(CreateBlimpMessageTest, StartConnectionMessage) {
   const char* client_token = "token";
   const int protocol_version = 1;

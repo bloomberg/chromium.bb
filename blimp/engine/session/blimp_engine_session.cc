@@ -11,6 +11,7 @@
 #include "blimp/common/create_blimp_message.h"
 #include "blimp/common/proto/tab_control.pb.h"
 #include "blimp/engine/app/blimp_engine_config.h"
+#include "blimp/engine/app/settings_manager.h"
 #include "blimp/engine/app/ui/blimp_layout_manager.h"
 #include "blimp/engine/app/ui/blimp_screen.h"
 #include "blimp/engine/app/ui/blimp_window_tree_host.h"
@@ -178,15 +179,19 @@ EngineNetworkComponents::GetBrowserConnectionHandler() {
 BlimpEngineSession::BlimpEngineSession(
     scoped_ptr<BlimpBrowserContext> browser_context,
     net::NetLog* net_log,
-    BlimpEngineConfig* engine_config)
-    : last_page_load_completed_value_(false),
-      browser_context_(std::move(browser_context)),
+    BlimpEngineConfig* engine_config,
+    SettingsManager* settings_manager)
+    : browser_context_(std::move(browser_context)),
       engine_config_(engine_config),
       screen_(new BlimpScreen),
+      settings_manager_(settings_manager),
+      settings_feature_(settings_manager_),
+      render_widget_feature_(settings_manager_),
       net_components_(
           new EngineNetworkComponents(net_log,
                                       QuitCurrentMessageLoopClosure())) {
   DCHECK(engine_config_);
+  DCHECK(settings_manager_);
   screen_->UpdateDisplayScaleAndSize(kDefaultScaleFactor,
                                      gfx::Size(kDefaultDisplayWidth,
                                                kDefaultDisplayHeight));
@@ -265,6 +270,11 @@ void BlimpEngineSession::RegisterFeatures() {
   render_widget_feature_.set_ime_message_sender(
       thread_pipe_manager_->RegisterFeature(BlimpMessage::IME,
                                             &render_widget_feature_));
+
+  // The Settings feature does not need an outgoing message processor, since we
+  // don't send any messages to the client right now.
+  thread_pipe_manager_->RegisterFeature(BlimpMessage::SETTINGS,
+                                        &settings_feature_);
 }
 
 bool BlimpEngineSession::CreateWebContents(const int target_tab_id) {
