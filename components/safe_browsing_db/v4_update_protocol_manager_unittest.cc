@@ -123,8 +123,15 @@ void ValidateGetUpdatesResults(
 }
 
 // TODO(vakh): Add many more tests.
-
-TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingNetwork) {
+#if defined(OS_ANDROID)
+// Flakes on Android: https://crbug.com/598412
+#define MAYBE_TestGetUpdatesErrorHandlingNetwork \
+        DISABLED_TestGetUpdatesErrorHandlingNetwork
+#else
+#define MAYBE_TestGetUpdatesErrorHandlingNetwork \
+        TestGetUpdatesErrorHandlingNetwork
+#endif
+TEST_F(V4UpdateProtocolManagerTest, MAYBE_TestGetUpdatesErrorHandlingNetwork) {
   net::TestURLFetcherFactory factory;
   scoped_ptr<V4UpdateProtocolManager> pm(CreateProtocolManager());
 
@@ -146,7 +153,16 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingNetwork) {
   EXPECT_EQ(1ul, pm->update_back_off_mult_);
 }
 
-TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingResponseCode) {
+#if defined(OS_ANDROID)
+// Flakes on Android: https://crbug.com/598412
+#define MAYBE_TestGetUpdatesErrorHandlingResponseCode \
+        DISABLED_TestGetUpdatesErrorHandlingResponseCode
+#else
+#define MAYBE_TestGetUpdatesErrorHandlingResponseCode \
+        TestGetUpdatesErrorHandlingResponseCode
+#endif
+TEST_F(V4UpdateProtocolManagerTest, \
+       MAYBE_TestGetUpdatesErrorHandlingResponseCode) {
   net::TestURLFetcherFactory factory;
   scoped_ptr<V4UpdateProtocolManager> pm(CreateProtocolManager());
 
@@ -170,7 +186,16 @@ TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesErrorHandlingResponseCode) {
   EXPECT_EQ(1ul, pm->update_back_off_mult_);
 }
 
-TEST_F(V4UpdateProtocolManagerTest, TestGetUpdatesNoError) {
+
+#if defined(OS_ANDROID)
+// Flakes on Android: https://crbug.com/598412
+#define MAYBE_TestGetUpdatesNoError \
+        DISABLED_TestGetUpdatesNoError
+#else
+#define MAYBE_TestGetUpdatesNoError \
+        TestGetUpdatesNoError
+#endif
+TEST_F(V4UpdateProtocolManagerTest, MAYBE_TestGetUpdatesNoError) {
   net::TestURLFetcherFactory factory;
   scoped_ptr<V4UpdateProtocolManager> pm(CreateProtocolManager());
 
