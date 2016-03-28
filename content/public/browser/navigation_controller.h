@@ -42,8 +42,11 @@ class WebContents;
 // exactly one NavigationController.
 class NavigationController {
  public:
+  // Note: NO_RELOAD is used in general, but behaviors depend on context.
+  // If it is used for tab restore, or history navigation, it loads preferring
+  // cache (which may be stale).
   enum ReloadType {
-    NO_RELOAD,                   // Load all from cache as much as possible.
+    NO_RELOAD,                   // Normal load, restore, or history navigation.
     RELOAD,                      // Normal (cache-validating) reload.
     RELOAD_IGNORING_CACHE,       // Reload bypassing the cache (shift-reload).
     RELOAD_ORIGINAL_REQUEST_URL, // Reload using the original request URL.
