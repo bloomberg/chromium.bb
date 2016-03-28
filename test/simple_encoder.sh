@@ -41,9 +41,9 @@ simple_encoder() {
   [ -e "${output_file}" ] || return 1
 }
 
-simple_encoder_vp8() {
-  if [ "$(vp8_encode_available)" = "yes" ]; then
-    simple_encoder vp8 || return 1
+simple_encoder_aom() {
+  if [ "$(aom_encode_available)" = "yes" ]; then
+    simple_encoder aom || return 1
   fi
 }
 
@@ -56,7 +56,7 @@ DISABLED_simple_encoder_vp9() {
   fi
 }
 
-simple_encoder_tests="simple_encoder_vp8
+simple_encoder_tests="simple_encoder_aom
                       DISABLED_simple_encoder_vp9"
 
 run_tests simple_encoder_verify_environment "${simple_encoder_tests}"

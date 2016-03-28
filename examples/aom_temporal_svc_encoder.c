@@ -507,13 +507,13 @@ int main(int argc, char **argv) {
   if (argc < min_args) {
 #if CONFIG_AOM_HIGHBITDEPTH
     die(
-        "Usage: %s <infile> <outfile> <codec_type(vp8/vp9)> <width> <height> "
+        "Usage: %s <infile> <outfile> <codec_type(aom/vp9)> <width> <height> "
         "<rate_num> <rate_den> <speed> <frame_drop_threshold> <mode> "
         "<Rate_0> ... <Rate_nlayers-1> <bit-depth> \n",
         argv[0]);
 #else
     die(
-        "Usage: %s <infile> <outfile> <codec_type(vp8/vp9)> <width> <height> "
+        "Usage: %s <infile> <outfile> <codec_type(aom/vp9)> <width> <height> "
         "<rate_num> <rate_den> <speed> <frame_drop_threshold> <mode> "
         "<Rate_0> ... <Rate_nlayers-1> \n",
         argv[0]);
@@ -598,7 +598,7 @@ int main(int argc, char **argv) {
   for (i = min_args_base;
        (int)i < min_args_base + mode_to_num_layers[layering_mode]; ++i) {
     rc.layer_target_bitrate[i - 11] = strtol(argv[i], NULL, 0);
-    if (strncmp(encoder->name, "vp8", 3) == 0)
+    if (strncmp(encoder->name, "aom", 3) == 0)
       cfg.ts_target_bitrate[i - 11] = rc.layer_target_bitrate[i - 11];
     else if (strncmp(encoder->name, "vp9", 3) == 0)
       cfg.layer_target_bitrate[i - 11] = rc.layer_target_bitrate[i - 11];
@@ -676,7 +676,7 @@ int main(int argc, char **argv) {
 #endif  // CONFIG_AOM_HIGHBITDEPTH
     die_codec(&codec, "Failed to initialize encoder");
 
-  if (strncmp(encoder->name, "vp8", 3) == 0) {
+  if (strncmp(encoder->name, "aom", 3) == 0) {
     aom_codec_control(&codec, AOME_SET_CPUUSED, -speed);
     aom_codec_control(&codec, AOME_SET_NOISE_SENSITIVITY, kDenoiserOff);
     aom_codec_control(&codec, AOME_SET_STATIC_THRESHOLD, 1);
@@ -699,7 +699,7 @@ int main(int argc, char **argv) {
     svc_params.scaling_factor_den[0] = cfg.g_h;
     aom_codec_control(&codec, AV1E_SET_SVC_PARAMETERS, &svc_params);
   }
-  if (strncmp(encoder->name, "vp8", 3) == 0) {
+  if (strncmp(encoder->name, "aom", 3) == 0) {
     aom_codec_control(&codec, AOME_SET_SCREEN_CONTENT_MODE, 0);
   }
   aom_codec_control(&codec, AOME_SET_TOKEN_PARTITIONS, 1);
@@ -725,7 +725,7 @@ int main(int argc, char **argv) {
         cfg.ts_layer_id[frame_cnt % cfg.ts_periodicity];
     if (strncmp(encoder->name, "vp9", 3) == 0) {
       aom_codec_control(&codec, AV1E_SET_SVC_LAYER_ID, &layer_id);
-    } else if (strncmp(encoder->name, "vp8", 3) == 0) {
+    } else if (strncmp(encoder->name, "aom", 3) == 0) {
       aom_codec_control(&codec, AOME_SET_TEMPORAL_LAYER_ID,
                         layer_id.temporal_layer_id);
     }

@@ -30,7 +30,7 @@ typedef unsigned int (*aom_sad_avg_fn_t)(const uint8_t *a_ptr, int a_stride,
                                          const uint8_t *b_ptr, int b_stride,
                                          const uint8_t *second_pred);
 
-typedef void (*vp8_copy32xn_fn_t)(const uint8_t *a, int a_stride, uint8_t *b,
+typedef void (*aom_copy32xn_fn_t)(const uint8_t *a, int a_stride, uint8_t *b,
                                   int b_stride, int n);
 
 typedef void (*aom_sad_multi_fn_t)(const uint8_t *a, int a_stride,

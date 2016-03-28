@@ -14,7 +14,7 @@
 
     AREA ||.text||, CODE, READONLY, ALIGN=2
 
-; Currently aom only works on iterations 8 at a time. The vp8 loop filter
+; Currently aom only works on iterations 8 at a time. The aom loop filter
 ; works on 16 iterations at a time.
 ; TODO(fgalligan): See about removing the count code as this function is only
 ; called with a count of 1.
@@ -77,7 +77,7 @@ end_aom_lf_h_edge
     pop         {pc}
     ENDP        ; |aom_lpf_horizontal_4_neon|
 
-; Currently aom only works on iterations 8 at a time. The vp8 loop filter
+; Currently aom only works on iterations 8 at a time. The aom loop filter
 ; works on 16 iterations at a time.
 ; TODO(fgalligan): See about removing the count code as this function is only
 ; called with a count of 1.

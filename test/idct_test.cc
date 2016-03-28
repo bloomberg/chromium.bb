@@ -9,7 +9,7 @@
  */
 
 #include "./aom_config.h"
-#include "./vp8_rtcd.h"
+#include "./aom_rtcd.h"
 
 #include "third_party/googletest/src/include/gtest/gtest.h"
 
@@ -109,13 +109,13 @@ TEST_P(IDCTTest, TestWithData) {
       EXPECT_EQ(0, output[i]) << "i==" << i;
 }
 
-INSTANTIATE_TEST_CASE_P(C, IDCTTest, ::testing::Values(vp8_short_idct4x4llm_c));
+INSTANTIATE_TEST_CASE_P(C, IDCTTest, ::testing::Values(aom_short_idct4x4llm_c));
 #if HAVE_MMX
 INSTANTIATE_TEST_CASE_P(MMX, IDCTTest,
-                        ::testing::Values(vp8_short_idct4x4llm_mmx));
+                        ::testing::Values(aom_short_idct4x4llm_mmx));
 #endif
 #if HAVE_MSA
 INSTANTIATE_TEST_CASE_P(MSA, IDCTTest,
-                        ::testing::Values(vp8_short_idct4x4llm_msa));
+                        ::testing::Values(aom_short_idct4x4llm_msa));
 #endif
 }

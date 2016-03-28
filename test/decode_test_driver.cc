@@ -47,8 +47,8 @@ bool Decoder::IsAOM() const {
 void DecoderTest::HandlePeekResult(Decoder *const decoder,
                                    CompressedVideoSource *video,
                                    const aom_codec_err_t res_peek) {
-  const bool is_vp8 = decoder->IsAOM();
-  if (is_vp8) {
+  const bool is_aom = decoder->IsAOM();
+  if (is_aom) {
     /* Vp8's implementation of PeekStream returns an error if the frame you
      * pass it is not a keyframe, so we only expect AOM_CODEC_OK on the first
      * frame, which must be a keyframe. */

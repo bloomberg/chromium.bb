@@ -383,7 +383,7 @@ if [ "$(is_windows_target)" = "yes" ]; then
 fi
 
 # Variables shared by tests.
-AOM_IVF_FILE="${LIBAOM_TEST_DATA_PATH}/vp80-00-comprehensive-001.ivf"
+AOM_IVF_FILE="${LIBAOM_TEST_DATA_PATH}/aom0-00-comprehensive-001.ivf"
 AV1_IVF_FILE="${LIBAOM_TEST_DATA_PATH}/vp90-2-09-subpixel-00.ivf"
 
 AV1_WEBM_FILE="${LIBAOM_TEST_DATA_PATH}/vp90-2-00-quantizer-00.webm"

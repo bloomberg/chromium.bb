@@ -107,7 +107,7 @@ struct aom_codec_alg_priv {
 #endif
   aom_image_t preview_img;
   aom_enc_frame_flags_t next_frame_flags;
-  vp8_postproc_cfg_t preview_ppcfg;
+  aom_postproc_cfg_t preview_ppcfg;
   aom_codec_pkt_list_decl(256) pkt_list;
   unsigned int fixed_kf_cntr;
   aom_codec_priv_output_cx_pkt_cb_pair_t output_cx_pkt_cb;

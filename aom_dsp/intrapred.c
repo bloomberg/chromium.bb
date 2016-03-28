@@ -347,13 +347,13 @@ void aom_d63_predictor_4x4_c(uint8_t *dst, ptrdiff_t stride,
   DST(1, 0) = DST(0, 2) = AVG2(B, C);
   DST(2, 0) = DST(1, 2) = AVG2(C, D);
   DST(3, 0) = DST(2, 2) = AVG2(D, E);
-  DST(3, 2) = AVG2(E, F);  // differs from vp8
+  DST(3, 2) = AVG2(E, F);  // differs from aom
 
   DST(0, 1) = AVG3(A, B, C);
   DST(1, 1) = DST(0, 3) = AVG3(B, C, D);
   DST(2, 1) = DST(1, 3) = AVG3(C, D, E);
   DST(3, 1) = DST(2, 3) = AVG3(D, E, F);
-  DST(3, 3) = AVG3(E, F, G);  // differs from vp8
+  DST(3, 3) = AVG3(E, F, G);  // differs from aom
 }
 
 void aom_d63f_predictor_4x4_c(uint8_t *dst, ptrdiff_t stride,
@@ -398,7 +398,7 @@ void aom_d45_predictor_4x4_c(uint8_t *dst, ptrdiff_t stride,
   DST(3, 0) = DST(2, 1) = DST(1, 2) = DST(0, 3) = AVG3(D, E, F);
   DST(3, 1) = DST(2, 2) = DST(1, 3) = AVG3(E, F, G);
   DST(3, 2) = DST(2, 3) = AVG3(F, G, H);
-  DST(3, 3) = H;  // differs from vp8
+  DST(3, 3) = H;  // differs from aom
 }
 
 void aom_d45e_predictor_4x4_c(uint8_t *dst, ptrdiff_t stride,

@@ -36,8 +36,8 @@ aomenc_verify_environment() {
   fi
 }
 
-aomenc_can_encode_vp8() {
-  if [ "$(vp8_encode_available)" = "yes" ]; then
+aomenc_can_encode_aom() {
+  if [ "$(aom_encode_available)" = "yes" ]; then
     echo yes
   fi
 }
@@ -65,9 +65,9 @@ y4m_input_720p() {
 }
 
 # Echo default aomenc real time encoding params. $1 is the codec, which defaults
-# to vp8 if unspecified.
+# to aom if unspecified.
 aomenc_rt_params() {
-  local readonly codec="${1:-vp8}"
+  local readonly codec="${1:-aom}"
   echo "--codec=${codec}
     --buf-initial-sz=500
     --buf-optimal-sz=600
@@ -115,11 +115,11 @@ aomenc() {
     "$@" ${devnull}
 }
 
-aomenc_vp8_ivf() {
-  if [ "$(aomenc_can_encode_vp8)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp8.ivf"
+aomenc_aom_ivf() {
+  if [ "$(aomenc_can_encode_aom)" = "yes" ]; then
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/aom.ivf"
     aomenc $(yuv_input_hantro_collage) \
-      --codec=vp8 \
+      --codec=aom \
       --limit="${TEST_FRAMES}" \
       --ivf \
       --output="${output}"
@@ -131,12 +131,12 @@ aomenc_vp8_ivf() {
   fi
 }
 
-aomenc_vp8_webm() {
-  if [ "$(aomenc_can_encode_vp8)" = "yes" ] && \
+aomenc_aom_webm() {
+  if [ "$(aomenc_can_encode_aom)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp8.webm"
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/aom.webm"
     aomenc $(yuv_input_hantro_collage) \
-      --codec=vp8 \
+      --codec=aom \
       --limit="${TEST_FRAMES}" \
       --output="${output}"
 
@@ -147,12 +147,12 @@ aomenc_vp8_webm() {
   fi
 }
 
-aomenc_vp8_webm_rt() {
-  if [ "$(aomenc_can_encode_vp8)" = "yes" ] && \
+aomenc_aom_webm_rt() {
+  if [ "$(aomenc_can_encode_aom)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp8_rt.webm"
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/aom_rt.webm"
     aomenc $(yuv_input_hantro_collage) \
-      $(aomenc_rt_params vp8) \
+      $(aomenc_rt_params aom) \
       --output="${output}"
     if [ ! -e "${output}" ]; then
       elog "Output file does not exist."
@@ -161,12 +161,12 @@ aomenc_vp8_webm_rt() {
   fi
 }
 
-aomenc_vp8_webm_2pass() {
-  if [ "$(aomenc_can_encode_vp8)" = "yes" ] && \
+aomenc_aom_webm_2pass() {
+  if [ "$(aomenc_can_encode_aom)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp8.webm"
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/aom.webm"
     aomenc $(yuv_input_hantro_collage) \
-      --codec=vp8 \
+      --codec=aom \
       --limit="${TEST_FRAMES}" \
       --output="${output}" \
       --passes=2
@@ -178,14 +178,14 @@ aomenc_vp8_webm_2pass() {
   fi
 }
 
-aomenc_vp8_webm_lag10_frames20() {
-  if [ "$(aomenc_can_encode_vp8)" = "yes" ] && \
+aomenc_aom_webm_lag10_frames20() {
+  if [ "$(aomenc_can_encode_aom)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
     local readonly lag_total_frames=20
     local readonly lag_frames=10
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp8_lag10_frames20.webm"
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/aom_lag10_frames20.webm"
     aomenc $(yuv_input_hantro_collage) \
-      --codec=vp8 \
+      --codec=aom \
       --limit="${lag_total_frames}" \
       --lag-in-frames="${lag_frames}" \
       --output="${output}" \
@@ -199,11 +199,11 @@ aomenc_vp8_webm_lag10_frames20() {
   fi
 }
 
-aomenc_vp8_ivf_piped_input() {
-  if [ "$(aomenc_can_encode_vp8)" = "yes" ]; then
-    local readonly output="${AOM_TEST_OUTPUT_DIR}/vp8_piped_input.ivf"
+aomenc_aom_ivf_piped_input() {
+  if [ "$(aomenc_can_encode_aom)" = "yes" ]; then
+    local readonly output="${AOM_TEST_OUTPUT_DIR}/aom_piped_input.ivf"
     aomenc_pipe $(yuv_input_hantro_collage) \
-      --codec=vp8 \
+      --codec=aom \
       --limit="${TEST_FRAMES}" \
       --ivf \
       --output="${output}"
@@ -409,12 +409,12 @@ aomenc_vp9_webm_non_square_par() {
   fi
 }
 
-aomenc_tests="aomenc_vp8_ivf
-              aomenc_vp8_webm
-              aomenc_vp8_webm_rt
-              aomenc_vp8_webm_2pass
-              aomenc_vp8_webm_lag10_frames20
-              aomenc_vp8_ivf_piped_input
+aomenc_tests="aomenc_aom_ivf
+              aomenc_aom_webm
+              aomenc_aom_webm_rt
+              aomenc_aom_webm_2pass
+              aomenc_aom_webm_lag10_frames20
+              aomenc_aom_ivf_piped_input
               aomenc_vp9_ivf
               aomenc_vp9_webm
               aomenc_vp9_webm_rt

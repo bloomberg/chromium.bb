@@ -49,8 +49,8 @@ aomdec() {
   eval "${AOM_TEST_PREFIX}" "${decoder}" "$input" "$@" ${devnull}
 }
 
-aomdec_can_decode_vp8() {
-  if [ "$(vp8_decode_available)" = "yes" ]; then
+aomdec_can_decode_aom() {
+  if [ "$(aom_decode_available)" = "yes" ]; then
     echo yes
   fi
 }
@@ -61,14 +61,14 @@ aomdec_can_decode_vp9() {
   fi
 }
 
-aomdec_vp8_ivf() {
-  if [ "$(aomdec_can_decode_vp8)" = "yes" ]; then
+aomdec_aom_ivf() {
+  if [ "$(aomdec_can_decode_aom)" = "yes" ]; then
     aomdec "${AOM_IVF_FILE}" --summary --noblit
   fi
 }
 
-aomdec_vp8_ivf_pipe_input() {
-  if [ "$(aomdec_can_decode_vp8)" = "yes" ]; then
+aomdec_aom_ivf_pipe_input() {
+  if [ "$(aomdec_can_decode_aom)" = "yes" ]; then
     aomdec_pipe "${AOM_IVF_FILE}" --summary --noblit
   fi
 }
@@ -107,8 +107,8 @@ aomdec_vp9_webm_less_than_50_frames() {
   fi
 }
 
-aomdec_tests="aomdec_vp8_ivf
-              aomdec_vp8_ivf_pipe_input
+aomdec_tests="aomdec_aom_ivf
+              aomdec_aom_ivf_pipe_input
               aomdec_vp9_webm
               aomdec_vp9_webm_frame_parallel
               aomdec_vp9_webm_less_than_50_frames"

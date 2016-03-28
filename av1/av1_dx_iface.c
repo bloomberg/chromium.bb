@@ -46,7 +46,7 @@ struct aom_codec_alg_priv {
   aom_codec_dec_cfg_t cfg;
   av1_stream_info_t si;
   int postproc_cfg_set;
-  vp8_postproc_cfg_t postproc_cfg;
+  aom_postproc_cfg_t postproc_cfg;
   aom_decrypt_cb decrypt_cb;
   void *decrypt_state;
   aom_image_t img;
@@ -293,7 +293,7 @@ static void init_buffer_callbacks(aom_codec_alg_priv_t *ctx) {
   }
 }
 
-static void set_default_ppflags(vp8_postproc_cfg_t *cfg) {
+static void set_default_ppflags(aom_postproc_cfg_t *cfg) {
   cfg->post_proc_flag = AOM_DEBLOCK | AOM_DEMACROBLOCK;
   cfg->deblocking_level = 4;
   cfg->noise_level = 0;

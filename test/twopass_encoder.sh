@@ -41,9 +41,9 @@ twopass_encoder() {
   [ -e "${output_file}" ] || return 1
 }
 
-twopass_encoder_vp8() {
-  if [ "$(vp8_encode_available)" = "yes" ]; then
-    twopass_encoder vp8 || return 1
+twopass_encoder_aom() {
+  if [ "$(aom_encode_available)" = "yes" ]; then
+    twopass_encoder aom || return 1
   fi
 }
 
@@ -56,7 +56,7 @@ DISABLED_twopass_encoder_vp9() {
   fi
 }
 
-twopass_encoder_tests="twopass_encoder_vp8
+twopass_encoder_tests="twopass_encoder_aom
                        DISABLED_twopass_encoder_vp9"
 
 run_tests twopass_encoder_verify_environment "${twopass_encoder_tests}"

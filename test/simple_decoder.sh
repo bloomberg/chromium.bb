@@ -43,9 +43,9 @@ simple_decoder() {
   [ -e "${output_file}" ] || return 1
 }
 
-simple_decoder_vp8() {
-  if [ "$(vp8_decode_available)" = "yes" ]; then
-    simple_decoder "${AOM_IVF_FILE}" vp8 || return 1
+simple_decoder_aom() {
+  if [ "$(aom_decode_available)" = "yes" ]; then
+    simple_decoder "${AOM_IVF_FILE}" aom || return 1
   fi
 }
 
@@ -55,7 +55,7 @@ simple_decoder_vp9() {
   fi
 }
 
-simple_decoder_tests="simple_decoder_vp8
+simple_decoder_tests="simple_decoder_aom
                       simple_decoder_vp9"
 
 run_tests simple_decoder_verify_environment "${simple_decoder_tests}"

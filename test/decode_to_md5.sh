@@ -49,12 +49,12 @@ decode_to_md5() {
   [ "${actual_md5}" = "${expected_md5}" ] || return 1
 }
 
-decode_to_md5_vp8() {
+decode_to_md5_aom() {
   # expected MD5 sum for the last frame.
   local expected_md5="56794d911b02190212bca92f88ad60c6"
 
-  if [ "$(vp8_decode_available)" = "yes" ]; then
-    decode_to_md5 "${AOM_IVF_FILE}" "vp8" "${expected_md5}"
+  if [ "$(aom_decode_available)" = "yes" ]; then
+    decode_to_md5 "${AOM_IVF_FILE}" "aom" "${expected_md5}"
   fi
 }
 
@@ -67,7 +67,7 @@ decode_to_md5_vp9() {
   fi
 }
 
-decode_to_md5_tests="decode_to_md5_vp8
+decode_to_md5_tests="decode_to_md5_aom
                      decode_to_md5_vp9"
 
 run_tests decode_to_md5_verify_environment "${decode_to_md5_tests}"

@@ -12,11 +12,11 @@
 
   This distribution of the WebM Codec SDK includes the following support:
 
-  \if vp8_encoder
-  - \ref vp8_encoder
+  \if aom_encoder
+  - \ref aom_encoder
   \endif
-  \if vp8_decoder
-  - \ref vp8_decoder
+  \if aom_decoder
+  - \ref aom_decoder
   \endif
 
 

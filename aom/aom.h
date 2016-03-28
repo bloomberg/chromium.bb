@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-/*!\defgroup vp8 AOM
+/*!\defgroup aom AOM
  * \ingroup codecs
  * AOM is aom's newest video compression algorithm that uses motion
  * compensated prediction, Discrete Cosine Transform (DCT) coding of the
@@ -42,7 +42,7 @@ extern "C" {
  *
  * The set of macros define the control functions of AOM interface
  */
-enum vp8_com_control_id {
+enum aom_com_control_id {
   AOM_SET_REFERENCE =
       1, /**< pass in an external frame into decoder to be used as reference
             frame */
@@ -67,7 +67,7 @@ enum vp8_com_control_id {
  *
  * The set of macros define AOM decoder post processing flags
  */
-enum vp8_postproc_level {
+enum aom_postproc_level {
   AOM_NOFILTERING = 0,
   AOM_DEBLOCK = 1 << 0,
   AOM_DEMACROBLOCK = 1 << 1,
@@ -87,12 +87,12 @@ enum vp8_postproc_level {
  * to AOM_DEBLOCK and deblocking_level to 1.
  */
 
-typedef struct vp8_postproc_cfg {
+typedef struct aom_postproc_cfg {
   int post_proc_flag;   /**< the types of post processing to be done, should be
-                           combination of "vp8_postproc_level" */
+                           combination of "aom_postproc_level" */
   int deblocking_level; /**< the strength of deblocking, valid range [0, 16] */
   int noise_level; /**< the strength of additive noise, valid range [0, 16] */
-} vp8_postproc_cfg_t;
+} aom_postproc_cfg_t;
 
 /*!\brief reference frame type
  *
@@ -106,7 +106,7 @@ typedef enum aom_ref_frame_type {
 
 /*!\brief reference frame data struct
  *
- * Define the data struct to access vp8 reference frames.
+ * Define the data struct to access aom reference frames.
  */
 typedef struct aom_ref_frame {
   aom_ref_frame_type_t frame_type; /**< which reference frame */
@@ -123,7 +123,7 @@ typedef struct vp9_ref_frame {
 } vp9_ref_frame_t;
 
 /*!\cond */
-/*!\brief vp8 decoder control function parameter type
+/*!\brief aom decoder control function parameter type
  *
  * defines the data type for each of AOM decoder control function requires
  */
@@ -131,7 +131,7 @@ AOM_CTRL_USE_TYPE(AOM_SET_REFERENCE, aom_ref_frame_t *)
 #define AOM_CTRL_AOM_SET_REFERENCE
 AOM_CTRL_USE_TYPE(AOM_COPY_REFERENCE, aom_ref_frame_t *)
 #define AOM_CTRL_AOM_COPY_REFERENCE
-AOM_CTRL_USE_TYPE(AOM_SET_POSTPROC, vp8_postproc_cfg_t *)
+AOM_CTRL_USE_TYPE(AOM_SET_POSTPROC, aom_postproc_cfg_t *)
 #define AOM_CTRL_AOM_SET_POSTPROC
 AOM_CTRL_USE_TYPE(AOM_SET_DBG_COLOR_REF_FRAME, int)
 #define AOM_CTRL_AOM_SET_DBG_COLOR_REF_FRAME
@@ -145,7 +145,7 @@ AOM_CTRL_USE_TYPE(AV1_GET_REFERENCE, vp9_ref_frame_t *)
 #define AOM_CTRL_AV1_GET_REFERENCE
 
 /*!\endcond */
-/*! @} - end defgroup vp8 */
+/*! @} - end defgroup aom */
 
 #ifdef __cplusplus
 }  // extern "C"

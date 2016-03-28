@@ -11,8 +11,8 @@
 #ifndef AOM_AOMCX_H_
 #define AOM_AOMCX_H_
 
-/*!\defgroup vp8_encoder WebM AOM/AV1 Encoder
- * \ingroup vp8
+/*!\defgroup aom_encoder WebM AOM/AV1 Encoder
+ * \ingroup aom
  *
  * @{
  */
@@ -114,7 +114,7 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  *
  * \sa #aom_codec_control
  */
-enum vp8e_enc_control_id {
+enum aome_enc_control_id {
   /*!\brief Codec control function to pass an ROI map to encoder.
    *
    * Supported in codecs: AOM, AV1
@@ -667,7 +667,7 @@ typedef enum {
   AOM_TWO_TOKENPARTITION = 1,
   AOM_FOUR_TOKENPARTITION = 2,
   AOM_EIGHT_TOKENPARTITION = 3
-} vp8e_token_partitions;
+} aome_token_partitions;
 
 /*!brief AV1 encoder content type */
 typedef enum {
@@ -748,7 +748,7 @@ AOM_CTRL_USE_TYPE(AOME_SET_SHARPNESS, unsigned int)
 #define AOM_CTRL_AOME_SET_SHARPNESS
 AOM_CTRL_USE_TYPE(AOME_SET_STATIC_THRESHOLD, unsigned int)
 #define AOM_CTRL_AOME_SET_STATIC_THRESHOLD
-AOM_CTRL_USE_TYPE(AOME_SET_TOKEN_PARTITIONS, int) /* vp8e_token_partitions */
+AOM_CTRL_USE_TYPE(AOME_SET_TOKEN_PARTITIONS, int) /* aome_token_partitions */
 #define AOM_CTRL_AOME_SET_TOKEN_PARTITIONS
 
 AOM_CTRL_USE_TYPE(AOME_SET_ARNR_MAXFRAMES, unsigned int)
@@ -836,7 +836,7 @@ AOM_CTRL_USE_TYPE(AV1E_SET_RENDER_SIZE, int *)
 #define AOM_CTRL_AV1E_SET_RENDER_SIZE
 
 /*!\endcond */
-/*! @} - end defgroup vp8_encoder */
+/*! @} - end defgroup aom_encoder */
 #ifdef __cplusplus
 }  // extern "C"
 #endif

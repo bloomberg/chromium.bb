@@ -29,7 +29,7 @@
 // -----------------
 // For decoders, you only have to include `aom_decoder.h` and then any
 // header files for the specific codecs you use. In this case, we're using
-// vp8.
+// aom.
 //
 // Initializing The Codec
 // ----------------------

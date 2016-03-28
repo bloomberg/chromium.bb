@@ -35,8 +35,8 @@
 /examples/simple_decoder
 /examples/simple_encoder
 /examples/twopass_encoder
-/examples/vp8_multi_resolution_encoder
-/examples/vp8cx_set_ref
+/examples/aom_multi_resolution_encoder
+/examples/aomcx_set_ref
 /examples/vp9_lossless_encoder
 /examples/vp9_spatial_scalable_encoder
 /examples/aom_temporal_scalable_patterns
@@ -50,7 +50,7 @@
 /samples.dox
 /test_intra_pred_speed
 /test_libaom
-/vp8_api1_migration.dox
+/aom_api1_migration.dox
 /vp[89x]_rtcd.h
 /aom.pc
 /aom_config.c

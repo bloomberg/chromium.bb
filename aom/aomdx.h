@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-/*!\defgroup vp8_decoder WebM AOM/AV1 Decoder
- * \ingroup vp8
+/*!\defgroup aom_decoder WebM AOM/AV1 Decoder
+ * \ingroup aom
  *
  * @{
  */
@@ -37,7 +37,7 @@ extern aom_codec_iface_t aom_codec_av1_dx_algo;
 extern aom_codec_iface_t *aom_codec_av1_dx(void);
 /*!@} - end algorithm interface member group*/
 
-/*!\enum vp8_dec_control_id
+/*!\enum aom_dec_control_id
  * \brief AOM decoder control functions
  *
  * This set of macros define the control functions available for the AOM
@@ -45,7 +45,7 @@ extern aom_codec_iface_t *aom_codec_av1_dx(void);
  *
  * \sa #aom_codec_control
  */
-enum vp8_dec_control_id {
+enum aom_dec_control_id {
   /** control function to get info on which reference frames were updated
    *  by the last decode
    */
@@ -126,7 +126,7 @@ typedef struct aom_decrypt_init {
 
 /*!\brief A deprecated alias for aom_decrypt_init.
  */
-typedef aom_decrypt_init vp8_decrypt_init;
+typedef aom_decrypt_init aom_decrypt_init;
 
 /*!\cond */
 /*!\brief AOM decoder control function parameter type
@@ -156,7 +156,7 @@ AOM_CTRL_USE_TYPE(AV1_INVERT_TILE_DECODE_ORDER, int)
 #define AOM_CTRL_AV1_INVERT_TILE_DECODE_ORDER
 
 /*!\endcond */
-/*! @} - end defgroup vp8_decoder */
+/*! @} - end defgroup aom_decoder */
 
 #ifdef __cplusplus
 }  // extern "C"

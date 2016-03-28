@@ -29,7 +29,7 @@
 // -----------------
 // For encoders, you only have to include `aom_encoder.h` and then any
 // header files for the specific codecs you use. In this case, we're using
-// vp8.
+// aom.
 //
 // Getting The Default Configuration
 // ---------------------------------

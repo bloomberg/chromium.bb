@@ -304,7 +304,7 @@
           aomenc: add rate histogram display
           Set AOM_FRAME_IS_DROPPABLE
           update configure for ios sdk 4.3
-          Avoid text relocations in ARM vp8 decoder
+          Avoid text relocations in ARM aom decoder
           Generate a aom.pc file for pkg-config.
           New ways of passing encoded data between encoder and decoder.
 
@@ -333,7 +333,7 @@
           disable trellis optimization for first pass
           Write SSSE3 sub-pixel filter function
           Improve SSE2 half-pixel filter funtions
-          Add vp8_sub_pixel_variance16x8_ssse3 function
+          Add aom_sub_pixel_variance16x8_ssse3 function
           Reduce unnecessary distortion computation
           Use diamond search to replace full search
           Preload reference area in sub-pixel motion search (real-time mode)
@@ -399,7 +399,7 @@
         FDCT optimizations.
         x86 sse2 temporal filter
         SSSE3 version of fast quantizer
-        vp8_rd_pick_best_mbsegmentation code restructure
+        aom_rd_pick_best_mbsegmentation code restructure
         Adjusted breakout RD for SPLITMV
         Changed segmentation check order
         Improved rd_pick_intra4x4block
@@ -408,7 +408,7 @@
         ARMv6 optimized half pixel variance calculations
         Full search SAD function optimization in SSE4.1
         Improve MV prediction accuracy to achieve performance gain
-        Improve MV prediction in vp8_pick_inter_mode() for speed>3
+        Improve MV prediction in aom_pick_inter_mode() for speed>3
 
   - Quality:
       Best quality mode improved PSNR 6.3%, and SSIM 6.1%. This release
@@ -439,7 +439,7 @@
       Fix ARM encoder crash with multiple token partitions
       Fixed bug first cluster timecode of webm file is wrong.
       Fixed various encoder bugs with odd-sized images
-      vp8e_get_preview fixed when spatial resampling enabled
+      aome_get_preview fixed when spatial resampling enabled
       quantizer: fix assertion in fast quantizer path
       Allocate source buffers to be multiples of 16
       Fix for manual Golden frame frequency
@@ -517,13 +517,13 @@
       Improve handling of invalid frames
       Fix valgrind errors in the NEON loop filters.
       Fix loopfilter delta zero transitions
-      Fix valgrind errors in vp8_sixtap_predict8x4_armv6().
+      Fix valgrind errors in aom_sixtap_predict8x4_armv6().
       Build fixes for darwin-icc
 
   - Speed:
       20-40% (average 28%) improvement in libaom decoder speed,
       including:
-        Rewrite vp8_short_walsh4x4_sse2()
+        Rewrite aom_short_walsh4x4_sse2()
         Optimizations on the loopfilters.
         Miscellaneous improvements for Atom
         Add 4-tap version of 2nd-pass ARMv6 MC filter.
@@ -539,8 +539,8 @@
       Encoder speed improvements (percentage gain not measured):
         Skip unnecessary search of identical frames
         Add SSE2 subtract functions
-        Improve bounds checking in vp8_diamond_search_sadx4()
-        Added vp8_fast_quantize_b_sse2
+        Improve bounds checking in aom_diamond_search_sadx4()
+        Added aom_fast_quantize_b_sse2
 
   - Quality:
       Over 7% overall PSNR improvement (6.3% SSIM) in "best" quality
