@@ -12,7 +12,6 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.ViewConfiguration;
-import android.widget.Scroller;
 
 /**
  * This class is responsible for handling Touch input from the user.  Touch events which manipulate
@@ -35,11 +34,13 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
     private ScaleGestureDetector mZoomer;
     private TapGestureDetector mTapDetector;
 
-    /** Used to calculate the physics for flinging the viewport across the desktop image. */
-    private Scroller mFlingScroller;
-
     /** Used to disambiguate a 2-finger gesture as a swipe or a pinch. */
     private SwipePinchDetector mSwipePinchDetector;
+
+    // Used for processing cursor & scroller fling animations.
+    // May consider using a List of AnimationJob if we have more than two animation jobs in
+    // the future.
+    private FlingAnimationJob mCursorAnimationJob,  mScrollAnimationJob;
 
     /**
      * Used for tracking swipe gestures. Only the Y-direction is needed for responding to swipe-up
@@ -78,6 +79,12 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
     private boolean mSuppressFling = false;
 
     /**
+     * Set to true when 2-finger fling (scroll gesture with final velocity) is detected to trigger
+     * a scrolling animation.
+     */
+    private boolean mScrollFling = false;
+
+    /**
      * Set to true when 3-finger swipe gesture is complete, so that further movement doesn't
      * trigger more swipe actions.
      */
@@ -88,6 +95,41 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
      * is performing a drag operation.
      */
     private boolean mIsDragging = false;
+
+    /**
+     * This class implements fling animation for cursor
+     */
+    private class CursorAnimationJob extends FlingAnimationJob {
+        public CursorAnimationJob(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void processAction(float deltaX, float deltaY) {
+            float[] delta = {deltaX, deltaY};
+            synchronized (mRenderData) {
+                Matrix canvasToImage = new Matrix();
+                mRenderData.transform.invert(canvasToImage);
+                canvasToImage.mapVectors(delta);
+            }
+
+            moveViewportWithOffset(-deltaX, -deltaY);
+        }
+    }
+
+    /**
+     * This class implements fling animation for scrolling
+     */
+    private class ScrollAnimationJob extends FlingAnimationJob {
+        public ScrollAnimationJob(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void processAction(float deltaX, float deltaY) {
+            mInputStrategy.onScroll(-deltaX, -deltaY);
+        }
+    }
 
     /**
      * This class provides a NULL implementation which will be used until a real input
@@ -157,7 +199,6 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
 
         mZoomer = new ScaleGestureDetector(context, listener);
         mTapDetector = new TapGestureDetector(context, listener);
-        mFlingScroller = new Scroller(context);
         mSwipePinchDetector = new SwipePinchDetector(context);
 
         // The threshold needs to be bigger than the ScaledTouchSlop used by the gesture-detectors,
@@ -169,6 +210,9 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         mEdgeSlopInPx = ViewConfiguration.get(context).getScaledEdgeSlop();
 
         mInputStrategy = new NullInputStrategy();
+
+        mCursorAnimationJob = new CursorAnimationJob(context);
+        mScrollAnimationJob = new ScrollAnimationJob(context);
     }
 
     @Override
@@ -233,31 +277,20 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
 
     @Override
     public void processAnimation() {
-        int previousX = mFlingScroller.getCurrX();
-        int previousY = mFlingScroller.getCurrY();
-        if (!mFlingScroller.computeScrollOffset()) {
-            mViewer.setAnimationEnabled(false);
-            return;
-        }
-        int deltaX = mFlingScroller.getCurrX() - previousX;
-        int deltaY = mFlingScroller.getCurrY() - previousY;
-        float[] delta = {deltaX, deltaY};
-        synchronized (mRenderData) {
-            Matrix canvasToImage = new Matrix();
-            mRenderData.transform.invert(canvasToImage);
-            canvasToImage.mapVectors(delta);
-        }
+        boolean active = mCursorAnimationJob.processAnimation();
+        active |= mScrollAnimationJob.processAnimation();
 
-        moveViewportWithOffset(-delta[0], -delta[1]);
+        if (!active) {
+            mViewer.setAnimationEnabled(false);
+        }
     }
 
     @Override
     public void setInputStrategy(InputStrategyInterface inputStrategy) {
-        // Since the rules for flinging the cursor differ between input modes, we want to stop
-        // running the current fling animation when the mode changes to prevent a wonky experience.
-        if (!mFlingScroller.isFinished()) {
-            mFlingScroller.abortAnimation();
-        }
+        // Since the rules for flinging differ between input modes, we want to stop running the
+        // current fling animation when the mode changes to prevent a wonky experience.
+        mCursorAnimationJob.abortAnimation();
+        mScrollAnimationJob.abortAnimation();
         mInputStrategy = inputStrategy;
     }
 
@@ -399,6 +432,7 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
 
                 // Prevent the cursor being moved or flung by the gesture.
                 mSuppressCursorMovement = true;
+                mScrollFling = true;
                 return true;
             }
 
@@ -422,26 +456,25 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
          */
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            // If cursor movement is suppressed, fling also needs to be suppressed, as the
-            // gesture-detector will still generate onFling() notifications based on movement of
-            // the fingers, which would result in unwanted cursor movement.
-            if (mSuppressCursorMovement || mSuppressFling) {
+            if (mSuppressFling) {
                 return false;
             }
 
-            // The fling physics calculation is based on screen coordinates, so that it will
-            // behave consistently at different zoom levels (and will work nicely at high zoom
-            // levels, since |mFlingScroller| outputs integer coordinates). However, the desktop
-            // will usually be panned as the cursor is moved across the desktop, which means the
-            // transformation mapping from screen to desktop coordinates will change. To deal with
-            // this, the cursor movement is computed from relative coordinate changes from
-            // |mFlingScroller|. This means the fling can be started at (0, 0) with no bounding
-            // constraints - the cursor is already constrained by the desktop size.
-            mFlingScroller.fling(0, 0, (int) velocityX, (int) velocityY, Integer.MIN_VALUE,
-                    Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            // Initialize the scroller's current offset coordinates, since they are used for
-            // calculating the delta values.
-            mFlingScroller.computeScrollOffset();
+            if (mScrollFling) {
+                mScrollAnimationJob.startAnimation(velocityX, velocityY);
+                mViewer.setAnimationEnabled(true);
+                mScrollFling = false;
+                return true;
+            }
+
+            if (mSuppressCursorMovement) {
+                return false;
+            }
+
+            // If cursor movement is suppressed, fling also needs to be suppressed, as the
+            // gesture-detector will still generate onFling() notifications based on movement of
+            // the fingers, which would result in unwanted cursor movement.
+            mCursorAnimationJob.startAnimation(velocityX, velocityY);
             mViewer.setAnimationEnabled(true);
             return true;
         }
