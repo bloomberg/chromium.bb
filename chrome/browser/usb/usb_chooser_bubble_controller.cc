@@ -132,6 +132,11 @@ void UsbChooserBubbleController::OnDeviceRemoved(
   }
 }
 
+void UsbChooserBubbleController::set_bubble_reference(
+    BubbleReference bubble_reference) {
+  bubble_reference_ = bubble_reference;
+}
+
 // Get a list of devices that can be shown in the chooser bubble UI for
 // user to grant permsssion.
 void UsbChooserBubbleController::GotUsbDeviceList(
@@ -146,9 +151,4 @@ void UsbChooserBubbleController::GotUsbDeviceList(
   }
   if (observer())
     observer()->OnOptionsInitialized();
-}
-
-void UsbChooserBubbleController::set_bubble_reference(
-    BubbleReference bubble_reference) {
-  bubble_reference_ = bubble_reference;
 }

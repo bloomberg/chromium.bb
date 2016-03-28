@@ -49,12 +49,12 @@ class UsbChooserBubbleController : public ChooserBubbleController,
   void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override;
   void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override;
 
-  void GotUsbDeviceList(
-      const std::vector<scoped_refptr<device::UsbDevice>>& devices);
-
   void set_bubble_reference(BubbleReference bubble_reference);
 
  private:
+  void GotUsbDeviceList(
+      const std::vector<scoped_refptr<device::UsbDevice>>& devices);
+
   content::RenderFrameHost* const render_frame_host_;
   device::usb::ChooserService::GetPermissionCallback callback_;
   ScopedObserver<device::UsbService, device::UsbService::Observer>
