@@ -13,7 +13,7 @@
         "binhost_bucket": null,
         "binhost_key": null,
         "binhost_test": false,
-        "board_replace": false,
+        "board_replace": true,
         "boards": null,
         "branch": false,
         "branch_util_test": false,
@@ -7066,7 +7066,6 @@
     "falco-full-compile-paladin": {
         "_template": "paladin",
         "active_waterfall": "chromeos",
-        "board_replace": true,
         "boards": [
             "falco"
         ],
@@ -12646,7 +12645,6 @@
     "nyan-full-compile-paladin": {
         "_template": "paladin",
         "active_waterfall": "chromeos",
-        "board_replace": true,
         "boards": [
             "nyan"
         ],
