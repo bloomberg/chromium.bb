@@ -26,7 +26,14 @@ class ProcessesApiTest : public ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(ProcessesApiTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ProcessesApiTest, Processes) {
+
+// This test is flaky on Win7 Tests (dbg)(1). https://crbug.com/598445
+#if defined(OS_WIN)
+#define MAYBE_Processes DISABLED_Processes
+#else
+#define MAYBE_Processes Processes
+#endif
+IN_PROC_BROWSER_TEST_F(ProcessesApiTest, MAYBE_Processes) {
   ASSERT_TRUE(RunExtensionTest("processes/api")) << message_;
 }
 
