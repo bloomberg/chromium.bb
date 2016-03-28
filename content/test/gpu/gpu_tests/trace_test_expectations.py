@@ -11,12 +11,7 @@ class TraceTestExpectations(GpuTestExpectations):
     # Sample Usage:
     # self.Fail('TraceTest.Canvas2DRedBox',
     #     ['mac', 'amd', ('nvidia', 0x1234)], bug=123)
-
-    # Skip some stories as a temporary debugging measure.
-    # https://crbug.com/595754.
-    self.Skip('trace_test.IOSurface2DCanvas', ['mac', 'amd'], bug=595754)
-    self.Skip('trace_test.IOSurface2DCanvasWebGL', ['mac'], bug=595754)
-    self.Skip('trace_test.2DCanvasWebGL', bug=595754)
+    pass
 
 
 class DeviceTraceTestExpectations(GpuTestExpectations):

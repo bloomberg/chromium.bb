@@ -24,13 +24,18 @@ test_harness_script = r"""
   domAutomationController.send = function(msg) {
     // Issue a read pixel to synchronize the gpu process to ensure
     // the asynchronous category enabling is finished.
-    var canvas = document.createElement("canvas")
-    canvas.width = 1;
-    canvas.height = 1;
-    var gl = canvas.getContext("webgl");
-    gl.clear(gl.COLOR_BUFFER_BIT);
-    var id = new Uint8Array(4);
-    gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, id);
+    var temp_canvas = document.createElement("canvas")
+    temp_canvas.width = 1;
+    temp_canvas.height = 1;
+    var temp_gl = temp_canvas.getContext("experimental-webgl") ||
+                  temp_canvas.getContext("webgl");
+    if (temp_gl) {
+      temp_gl.clear(temp_gl.COLOR_BUFFER_BIT);
+      var id = new Uint8Array(4);
+      temp_gl.readPixels(0, 0, 1, 1, temp_gl.RGBA, temp_gl.UNSIGNED_BYTE, id);
+    } else {
+      console.log('Failed to get WebGL context.');
+    }
 
     domAutomationController._finished = true;
   }

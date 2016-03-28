@@ -23,12 +23,6 @@ var gl;
 
 function main()
 {
-  draw();
-  waitForFinish();
-}
-
-function draw()
-{
   var canvas = document.getElementById("c");
   canvas.style.width = canvas.style.height = "150px";
   var c2d = canvas.getContext("2d");
@@ -38,10 +32,21 @@ function draw()
 
   var webglCanvas = document.getElementById("c2");
   gl = initGL(webglCanvas);
-  if (!setup(gl)) {
+  if (!gl) {
+    console.log('Failed to initialize GL from canvas: ' + webglCanvas);
     domAutomationController.setAutomationId(1);
     domAutomationController.send("FAILURE");
+    return;
   }
+
+  if (!setup(gl)) {
+    console.log('Failed to set up GL: ' + gl);
+    domAutomationController.setAutomationId(1);
+    domAutomationController.send("FAILURE");
+    return;
+  }
+
+  waitForFinish();
 }
 
 function waitForFinish()
