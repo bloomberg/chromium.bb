@@ -187,3 +187,8 @@ class ServiceWorkerMicroBenchmarkPerfTest(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'service_worker.service_worker_micro_benchmark'
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
+      return (possible_browser.browser_type == 'reference' and
+              possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')

@@ -51,6 +51,11 @@ class V8KeyMobileSites(perf_benchmark.PerfBenchmark):
   def Name(cls):
     return 'v8.key_mobile_sites_smooth'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
+      return (possible_browser.browser_type == 'reference' and
+              possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
+
 
 class V8DetachedContextAgeInGC(perf_benchmark.PerfBenchmark):
   """Measures the number of GCs needed to collect a detached context.
@@ -201,6 +206,11 @@ class V8MobileInfiniteScroll(_InfiniteScrollBenchmark):
   @classmethod
   def Name(cls):
     return 'v8.mobile_infinite_scroll'
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
+      return (possible_browser.browser_type == 'reference' and
+              possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
 
 
 class V8Adword(perf_benchmark.PerfBenchmark):

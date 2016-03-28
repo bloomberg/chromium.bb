@@ -48,6 +48,11 @@ class SmoothnessTop25(_Smoothness):
   def Name(cls):
     return 'smoothness.top_25_smooth'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
+      return (possible_browser.browser_type == 'reference' and
+              possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
+
 
 class SmoothnessToughFiltersCases(_Smoothness):
   """Measures frame rate and a variety of other statistics.
@@ -128,6 +133,10 @@ class SmoothnessKeyMobileSites(_Smoothness):
   def Name(cls):
     return 'smoothness.key_mobile_sites_smooth'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
+      return (possible_browser.browser_type == 'reference' and
+              possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
 
 @benchmark.Disabled('android')  # crbug.com/589580
 @benchmark.Disabled('android-reference')  # crbug.com/588786
@@ -181,6 +190,11 @@ class SmoothnessGpuRasterizationTop25(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.gpu_rasterization.top_25_smooth'
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
+      return (possible_browser.browser_type == 'reference' and
+              possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
 
 
 # crbug.com/589580 (This test should only be enabled on Android after fix.)
@@ -244,6 +258,11 @@ class SmoothnessSyncScrollKeyMobileSites(_Smoothness):
   @classmethod
   def Name(cls):
     return 'smoothness.sync_scroll.key_mobile_sites_smooth'
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
+      return (possible_browser.browser_type == 'reference' and
+              possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
 
 
 @benchmark.Enabled('android')

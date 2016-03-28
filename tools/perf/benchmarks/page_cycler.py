@@ -118,6 +118,11 @@ class PageCyclerIntlKoThVi(_PageCycler):
   def Name(cls):
     return 'page_cycler.intl_ko_th_vi'
 
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
+      return (possible_browser.browser_type == 'reference' and
+              possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
+
 
 class PageCyclerMorejs(_PageCycler):
   """Page load for a variety of pages that were JavaScript heavy in 2009."""

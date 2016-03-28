@@ -58,7 +58,10 @@ class PowerToughAdCases(perf_benchmark.PerfBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    return cls.IsSvelte(possible_browser) # http://crbug.com/593973
+     # http://crbug.com/563968, http://crbug.com/593973
+    return (cls.IsSvelte(possible_browser) or
+      (possible_browser.browser_type ==  'reference' and
+       possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'))
 
 
 @benchmark.Enabled('android')
@@ -93,7 +96,10 @@ class PowerGpuRasterizationTypical10Mobile(perf_benchmark.PerfBenchmark):
 
   @classmethod
   def ShouldDisable(cls, possible_browser):
-    return cls.IsSvelte(possible_browser)  # http://crbug.com/563968
+     # http://crbug.com/563968, http://crbug.com/593973
+    return (cls.IsSvelte(possible_browser) or
+      (possible_browser.browser_type ==  'reference' and
+       possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X'))
 
 
 @benchmark.Enabled('mac')

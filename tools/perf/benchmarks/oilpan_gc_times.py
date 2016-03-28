@@ -59,3 +59,8 @@ class OilpanGCTimesSyncScrollKeyMobileSites(perf_benchmark.PerfBenchmark):
   @classmethod
   def Name(cls):
     return 'oilpan_gc_times.sync_scroll.key_mobile_sites_smooth'
+
+  @classmethod
+  def ShouldDisable(cls, possible_browser):  # http://crbug.com/597656
+      return (possible_browser.browser_type == 'reference' and
+              possible_browser.platform.GetDeviceTypeName() == 'Nexus 5X')
