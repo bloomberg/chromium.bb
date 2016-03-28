@@ -60,7 +60,7 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder, &net_log, nullptr);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(make_scoped_ptr(
       new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));
@@ -137,7 +137,7 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationOptions) {
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
-  config.ConfigureURLRequestContextBuilder(&builder, &net_log);
+  config.ConfigureURLRequestContextBuilder(&builder, &net_log, nullptr);
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(make_scoped_ptr(
       new net::ProxyConfigServiceFixed(net::ProxyConfig::CreateDirect())));

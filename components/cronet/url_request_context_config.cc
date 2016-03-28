@@ -8,7 +8,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
@@ -18,6 +18,7 @@
 #include "net/http/http_server_properties.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context_builder.h"
 
 namespace cronet {
@@ -52,10 +53,13 @@ const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
 // Name of boolean to enable AsyncDNS experiment.
 const char kAsyncDnsEnable[] = "enable";
 
+const char kSSLKeyLogFile[] = "ssl_key_log_file";
+
 void ParseAndSetExperimentalOptions(
     const std::string& experimental_options,
     net::URLRequestContextBuilder* context_builder,
-    net::NetLog* net_log) {
+    net::NetLog* net_log,
+    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
   if (experimental_options.empty())
     return;
 
@@ -194,6 +198,20 @@ void ParseAndSetExperimentalOptions(
       }
     }
   }
+
+  std::string ssl_key_log_file_string;
+  if (dict->GetString(kSSLKeyLogFile, &ssl_key_log_file_string)) {
+    DCHECK(file_task_runner);
+    base::FilePath ssl_key_log_file(ssl_key_log_file_string);
+    if (!ssl_key_log_file.empty() && file_task_runner) {
+      // SetSSLKeyLogFile is only safe to call before any SSLClientSockets are
+      // created. This should not be used if there are multiple CronetEngine.
+      // TODO(xunjieli): Expose this as a stable API after crbug.com/458365 is
+      // resolved.
+      net::SSLClientSocket::SetSSLKeyLogFile(ssl_key_log_file,
+                                             file_task_runner);
+    }
+  }
 }
 
 }  // namespace
@@ -251,7 +269,8 @@ URLRequestContextConfig::~URLRequestContextConfig() {}
 
 void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
     net::URLRequestContextBuilder* context_builder,
-    net::NetLog* net_log) {
+    net::NetLog* net_log,
+    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
   std::string config_cache;
   if (http_cache != DISABLED) {
     net::URLRequestContextBuilder::HttpCacheParams cache_params;
@@ -273,8 +292,8 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   if (enable_quic)
     context_builder->set_quic_user_agent_id(quic_user_agent_id);
 
-  ParseAndSetExperimentalOptions(experimental_options, context_builder,
-                                 net_log);
+  ParseAndSetExperimentalOptions(experimental_options, context_builder, net_log,
+                                 file_task_runner);
 
   if (mock_cert_verifier)
     context_builder->SetCertVerifier(std::move(mock_cert_verifier));
