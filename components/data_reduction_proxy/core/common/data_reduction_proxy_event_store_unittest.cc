@@ -259,6 +259,8 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventFullURL) {
   sanitized_event->SetString("bypass_seconds", "40");
   bypass_params->SetString("url", "http://www.foo.com/bar?baz=1234");
   sanitized_event->SetString("url", "http://www.foo.com/bar");
+  bypass_params->SetString("method", "GET");
+  sanitized_event->SetString("method", "GET");
 
   bypass_event->Set("params", std::move(bypass_params));
   std::string sanitized_output;
@@ -289,6 +291,8 @@ TEST_F(DataReductionProxyEventStoreTest, TestFeedbackLastBypassEventHostOnly) {
   sanitized_event->SetString("bypass_seconds", "40");
   bypass_params->SetString("url", "http://www.foo.com/bar?baz=1234");
   sanitized_event->SetString("url", "www.foo.com");
+  bypass_params->SetString("method", "GET");
+  sanitized_event->SetString("method", "GET");
 
   bypass_event->Set("params", std::move(bypass_params));
   std::string sanitized_output;

@@ -274,6 +274,9 @@ std::string DataReductionProxyEventStore::SanitizedLastBypassEvent() const {
     }
   }
 
+  if (params_dict->GetString("method", &str_value))
+    last_bypass->SetString("method", str_value);
+
   if (params_dict->GetString("url", &str_value)) {
     GURL url(str_value);
     if (truncate_url_to_host) {
