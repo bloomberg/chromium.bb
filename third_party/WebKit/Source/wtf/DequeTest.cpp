@@ -29,6 +29,7 @@
 #include "wtf/HashSet.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
+#include <memory>
 
 namespace WTF {
 
@@ -360,6 +361,38 @@ TEST(DequeTest, SwapWithoutInlineCapacity)
     EXPECT_EQ(2, dequeB.first().get());
 
     dequeB.swap(dequeA);
+}
+
+TEST(DequeTest, UniquePtr)
+{
+    using Pointer = std::unique_ptr<int>;
+    Deque<Pointer> deque;
+    deque.append(Pointer(new int(1)));
+    deque.append(Pointer(new int(2)));
+    deque.prepend(Pointer(new int(-1)));
+    deque.prepend(Pointer(new int(-2)));
+    ASSERT_EQ(4u, deque.size());
+    EXPECT_EQ(-2, *deque[0]);
+    EXPECT_EQ(-1, *deque[1]);
+    EXPECT_EQ(1, *deque[2]);
+    EXPECT_EQ(2, *deque[3]);
+
+    Pointer first(deque.takeFirst());
+    EXPECT_EQ(-2, *first);
+    Pointer last(deque.takeLast());
+    EXPECT_EQ(2, *last);
+
+    EXPECT_EQ(2u, deque.size());
+    deque.removeFirst();
+    deque.removeLast();
+    EXPECT_EQ(0u, deque.size());
+
+    deque.append(Pointer(new int(42)));
+    deque[0] = Pointer(new int(24));
+    ASSERT_EQ(1u, deque.size());
+    EXPECT_EQ(24, *deque[0]);
+
+    deque.clear();
 }
 
 } // anonymous namespace

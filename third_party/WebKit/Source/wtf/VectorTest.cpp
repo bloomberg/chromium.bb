@@ -30,6 +30,7 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/WTFString.h"
+#include <memory>
 
 namespace WTF {
 
@@ -483,6 +484,33 @@ static_assert(!IsTriviallyCopyAssignable<MojoMoveOnlyType>::value, "MojoMoveOnly
 
 static_assert(!VectorTraits<MojoMoveOnlyType>::canMoveWithMemcpy, "MojoMoveOnlyType can't be moved with memcpy.");
 static_assert(!VectorTraits<MojoMoveOnlyType>::canCopyWithMemcpy, "MojoMoveOnlyType can't be copied with memcpy.");
+
+TEST(VectorTest, UniquePtr)
+{
+    using Pointer = std::unique_ptr<int>;
+    Vector<Pointer> vector;
+    vector.append(Pointer(new int(1)));
+    vector.reserveCapacity(2);
+    vector.uncheckedAppend(Pointer(new int(2)));
+    vector.insert(2, Pointer(new int(3)));
+    vector.prepend(Pointer(new int(0)));
+
+    ASSERT_EQ(4u, vector.size());
+    EXPECT_EQ(0, *vector[0]);
+    EXPECT_EQ(1, *vector[1]);
+    EXPECT_EQ(2, *vector[2]);
+    EXPECT_EQ(3, *vector[3]);
+
+    vector.shrink(3);
+    EXPECT_EQ(3u, vector.size());
+    vector.grow(4);
+    ASSERT_EQ(4u, vector.size());
+    EXPECT_TRUE(!vector[3]);
+    vector.remove(3);
+    vector[0] = Pointer(new int(-1));
+    ASSERT_EQ(3u, vector.size());
+    EXPECT_EQ(-1, *vector[0]);
+}
 
 } // anonymous namespace
 
