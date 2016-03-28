@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/win/display_info.h"
+#include "ui/gfx/win/display_info.h"
 
 #include "base/hash.h"
 #include "base/strings/utf_string_conversions.h"
@@ -33,7 +33,7 @@ gfx::Display::Rotation GetRotationForDevice(const wchar_t* device_name) {
 
 }  // namespace
 
-namespace display {
+namespace gfx {
 namespace win {
 
 DisplayInfo::DisplayInfo(const MONITORINFOEX& monitor_info,
@@ -57,4 +57,4 @@ int64_t DisplayInfo::DeviceIdFromDeviceName(const wchar_t* device_name) {
 }
 
 }  // namespace win
-}  // namespace display
+}  // namespace gfx

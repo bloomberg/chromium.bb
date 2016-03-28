@@ -102,8 +102,8 @@
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
 #include "content/common/plugin_constants_win.h"
 #include "ui/base/win/hidden_window.h"
-#include "ui/display/win/screen_win.h"
 #include "ui/gfx/gdi_util.h"
+#include "ui/gfx/screen_win.h"
 #include "ui/gfx/win/dpi.h"
 #endif
 
@@ -2410,8 +2410,8 @@ void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
     if (hwnd_at_point == legacy_render_widget_host_HWND_->hwnd())
       hwnd_at_point = legacy_render_widget_host_HWND_->GetParent();
 
-    display::win::ScreenWin* screen_win =
-        static_cast<display::win::ScreenWin*>(screen);
+    gfx::ScreenWin* screen_win = static_cast<gfx::ScreenWin*>(screen);
+    DCHECK(screen_win);
     window_at_screen_point = screen_win->GetNativeWindowFromHWND(
         hwnd_at_point);
   }

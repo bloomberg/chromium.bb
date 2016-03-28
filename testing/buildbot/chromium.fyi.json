@@ -645,9 +645,6 @@
         "test": "crypto_unittests"
       },
       {
-        "test": "display_unittests"
-      },
-      {
         "test": "extensions_unittests"
       },
       {
@@ -1638,12 +1635,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "display_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "extensions_browsertests"
       },
       {
@@ -1822,12 +1813,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "crypto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "display_unittests"
       },
       {
         "swarming": {
@@ -2120,12 +2105,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "crypto_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "display_unittests"
       },
       {
         "swarming": {

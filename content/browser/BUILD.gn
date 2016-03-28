@@ -107,7 +107,6 @@ source_set("browser") {
     "//ui/accessibility:ax_gen",
     "//ui/base",
     "//ui/base/ime",
-    "//ui/display",
     "//ui/events",
     "//ui/events:gesture_detection",
     "//ui/events/blink",

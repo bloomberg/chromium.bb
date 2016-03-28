@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_WIN_SCREEN_WIN_DISPLAY_H_
-#define UI_DISPLAY_WIN_SCREEN_WIN_DISPLAY_H_
+#ifndef UI_GFX_WIN_SCREEN_WIN_DISPLAY_H_
+#define UI_GFX_WIN_SCREEN_WIN_DISPLAY_H_
 
 #include <windows.h>
 
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace display {
+namespace gfx {
 namespace win {
 
 class DisplayInfo;
@@ -31,6 +31,6 @@ class ScreenWinDisplay final {
 };
 
 }  // namespace win
-}  // namespace display
+}  // namespace gfx
 
-#endif  // UI_DISPLAY_WIN_SCREEN_WIN_DISPLAY_H_
+#endif  // UI_GFX_WIN_SCREEN_WIN_DISPLAY_H_

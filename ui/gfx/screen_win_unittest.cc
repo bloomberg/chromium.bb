@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/display/win/screen_win.h"
+#include "ui/gfx/screen_win.h"
 
 #include <windows.h>
 #include <inttypes.h>
@@ -16,16 +16,15 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/win/display_info.h"
-#include "ui/display/win/screen_win_display.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/test/display_util.h"
+#include "ui/gfx/win/display_info.h"
 #include "ui/gfx/win/dpi.h"
+#include "ui/gfx/win/screen_win_display.h"
 
-namespace display {
-namespace win {
+namespace gfx {
 
 namespace {
 
@@ -43,9 +42,9 @@ MONITORINFOEX CreateMonitorInfo(gfx::Rect monitor,
   return monitor_info;
 }
 
-class TestScreenWin : public ScreenWin {
+class TestScreenWin : public gfx::ScreenWin {
  public:
-  TestScreenWin(const std::vector<DisplayInfo>& display_infos,
+  TestScreenWin(const std::vector<gfx::win::DisplayInfo>& display_infos,
                 const std::vector<MONITORINFOEX>& monitor_infos,
                 const std::unordered_map<HWND, gfx::Rect>& hwnd_map)
       : monitor_infos_(monitor_infos),
@@ -56,17 +55,17 @@ class TestScreenWin : public ScreenWin {
   ~TestScreenWin() override = default;
 
  protected:
-  // display::win::ScreenWin:
-  HWND GetHWNDFromNativeView(gfx::NativeView window) const override {
+  // gfx::ScreenWin:
+  HWND GetHWNDFromNativeView(NativeView window) const override {
     // NativeView is only used as an identifier in this tests, so interchange
     // NativeView with an HWND for convenience.
     return reinterpret_cast<HWND>(window);
   }
 
-  gfx::NativeWindow GetNativeWindowFromHWND(HWND hwnd) const override {
+  NativeWindow GetNativeWindowFromHWND(HWND hwnd) const override {
     // NativeWindow is only used as an identifier in this tests, so interchange
     // an HWND for a NativeWindow for convenience.
-    return reinterpret_cast<gfx::NativeWindow>(hwnd);
+    return reinterpret_cast<NativeWindow>(hwnd);
   }
 
  private:
@@ -128,9 +127,11 @@ class TestScreenWin : public ScreenWin {
   DISALLOW_COPY_AND_ASSIGN(TestScreenWin);
 };
 
-gfx::Screen* GetScreen() {
+Screen* GetScreen() {
   return gfx::Screen::GetScreen();
 }
+
+}  // namespace
 
 // Allows tests to specify the screen and associated state.
 class TestScreenWinInitializer {
@@ -159,9 +160,9 @@ class TestScreenWinManager : public TestScreenWinInitializer {
                                                    pixel_work,
                                                    device_name);
     monitor_infos_.push_back(monitor_info);
-    display_infos_.push_back(DisplayInfo(monitor_info,
-                                         device_scale_factor,
-                                         gfx::Display::ROTATE_0));
+    display_infos_.push_back(gfx::win::DisplayInfo(monitor_info,
+                                                   device_scale_factor,
+                                                   gfx::Display::ROTATE_0));
   }
 
   HWND CreateFakeHwnd(const gfx::Rect& bounds) override {
@@ -186,7 +187,7 @@ class TestScreenWinManager : public TestScreenWinInitializer {
   HWND hwndLast_ = nullptr;
   scoped_ptr<ScreenWin> screen_win_;
   std::vector<MONITORINFOEX> monitor_infos_;
-  std::vector<DisplayInfo> display_infos_;
+  std::vector<gfx::win::DisplayInfo> display_infos_;
   std::unordered_map<HWND, gfx::Rect> hwnd_map_;
 
   DISALLOW_COPY_AND_ASSIGN(TestScreenWinManager);
@@ -212,7 +213,7 @@ class ScreenWinTest : public testing::Test {
 
   virtual void SetUpScreen(TestScreenWinInitializer* initializer) = 0;
 
-  gfx::NativeWindow GetNativeWindowFromHWND(HWND hwnd) const {
+  NativeWindow GetNativeWindowFromHWND(HWND hwnd) const {
     ScreenWin* screen_win = screen_win_initializer_->GetScreenWin();
     return screen_win->GetNativeWindowFromHWND(hwnd);;
   }
@@ -778,7 +779,4 @@ TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, GetPrimaryDisplay) {
   EXPECT_EQ(gfx::Point(0, 0), primary.bounds().origin());
 }
 
-}  // namespace
-
-}  // namespace win
-}  // namespace display
+}  // namespace gfx

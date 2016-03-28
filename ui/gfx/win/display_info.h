@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_DISPLAY_WIN_DISPLAY_INFO_H_
-#define UI_DISPLAY_WIN_DISPLAY_INFO_H_
+#ifndef UI_GFX_WIN_DISPLAY_INFO_H_
+#define UI_GFX_WIN_DISPLAY_INFO_H_
 
 #include <windows.h>
 #include <stdint.h>
 
-#include "ui/display/display_export.h"
 #include "ui/gfx/display.h"
+#include "ui/gfx/gfx_export.h"
 
-namespace display {
+namespace gfx {
 namespace win {
 
-// Gathers the parameters necessary to create a display::win::ScreenWinDisplay.
-class DISPLAY_EXPORT DisplayInfo final {
+// Gathers the parameters necessary to create a gfx::win::ScreenWinDisplay.
+class GFX_EXPORT DisplayInfo final {
  public:
   DisplayInfo(const MONITORINFOEX& monitor_info, float device_scale_factor);
   DisplayInfo(const MONITORINFOEX& monitor_info,
@@ -39,6 +39,6 @@ class DISPLAY_EXPORT DisplayInfo final {
 };
 
 }  // namespace win
-}  // namespace display
+}  // namespace gfx
 
-#endif  // UI_DISPLAY_WIN_DISPLAY_INFO_H_
+#endif  // UI_GFX_WIN_DISPLAY_INFO_H_
