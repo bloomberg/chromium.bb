@@ -102,7 +102,6 @@ class CC_EXPORT LayerImpl {
   // Tree structure.
   LayerImpl* parent() { return parent_; }
   const LayerImpl* parent() const { return parent_; }
-  const LayerImplList& children() const { return children_; }
   LayerImplList& children() { return children_; }
   LayerImpl* child_at(size_t index) const { return children_[index]; }
   void AddChild(scoped_ptr<LayerImpl> child);

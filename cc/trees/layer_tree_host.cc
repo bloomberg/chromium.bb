@@ -378,8 +378,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
   needs_full_tree_sync_ = false;
 
   if (hud_layer_.get()) {
-    LayerImpl* hud_impl = LayerTreeHostCommon::FindLayerInSubtree(
-        sync_tree->root_layer(), hud_layer_->id());
+    LayerImpl* hud_impl = sync_tree->LayerById(hud_layer_->id());
     sync_tree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(hud_impl));
   } else {
     sync_tree->set_hud_layer(NULL);
@@ -969,8 +968,7 @@ void LayerTreeHost::ApplyScrollAndScale(ScrollAndScaleSet* info) {
 
   if (root_layer_.get()) {
     for (size_t i = 0; i < info->scrolls.size(); ++i) {
-      Layer* layer = LayerTreeHostCommon::FindLayerInSubtree(
-          root_layer_.get(), info->scrolls[i].layer_id);
+      Layer* layer = LayerById(info->scrolls[i].layer_id);
       if (!layer)
         continue;
       if (layer == outer_viewport_scroll_layer_.get()) {

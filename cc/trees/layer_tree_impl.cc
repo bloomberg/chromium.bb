@@ -427,8 +427,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
 
   if (hud_layer())
     target_tree->set_hud_layer(static_cast<HeadsUpDisplayLayerImpl*>(
-        LayerTreeHostCommon::FindLayerInSubtree(target_tree->root_layer(),
-                                                hud_layer()->id())));
+        target_tree->LayerById(hud_layer()->id())));
   else
     target_tree->set_hud_layer(NULL);
 

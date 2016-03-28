@@ -5082,7 +5082,7 @@ TEST_F(LayerTreeHostCommonTest,
       child->render_surface()->replica_screen_space_transform());
 }
 
-TEST_F(LayerTreeHostCommonTest, SubtreeSearch) {
+TEST_F(LayerTreeHostCommonTest, LayerSearch) {
   scoped_refptr<Layer> root = Layer::Create();
   scoped_refptr<Layer> child = Layer::Create();
   scoped_refptr<Layer> grand_child = Layer::Create();
@@ -5097,21 +5097,12 @@ TEST_F(LayerTreeHostCommonTest, SubtreeSearch) {
   host()->SetRootLayer(root);
 
   int nonexistent_id = -1;
-  EXPECT_EQ(root.get(),
-            LayerTreeHostCommon::FindLayerInSubtree(root.get(), root->id()));
-  EXPECT_EQ(child.get(),
-            LayerTreeHostCommon::FindLayerInSubtree(root.get(), child->id()));
-  EXPECT_EQ(
-      grand_child.get(),
-      LayerTreeHostCommon::FindLayerInSubtree(root.get(), grand_child->id()));
-  EXPECT_EQ(
-      mask_layer.get(),
-      LayerTreeHostCommon::FindLayerInSubtree(root.get(), mask_layer->id()));
-  EXPECT_EQ(
-      replica_layer.get(),
-      LayerTreeHostCommon::FindLayerInSubtree(root.get(), replica_layer->id()));
-  EXPECT_EQ(
-      0, LayerTreeHostCommon::FindLayerInSubtree(root.get(), nonexistent_id));
+  EXPECT_EQ(root.get(), host()->LayerById(root->id()));
+  EXPECT_EQ(child.get(), host()->LayerById(child->id()));
+  EXPECT_EQ(grand_child.get(), host()->LayerById(grand_child->id()));
+  EXPECT_EQ(mask_layer.get(), host()->LayerById(mask_layer->id()));
+  EXPECT_EQ(replica_layer.get(), host()->LayerById(replica_layer->id()));
+  EXPECT_FALSE(host()->LayerById(nonexistent_id));
 }
 
 TEST_F(LayerTreeHostCommonTest, TransparentChildRenderSurfaceCreation) {
