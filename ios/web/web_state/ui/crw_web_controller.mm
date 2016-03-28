@@ -95,12 +95,23 @@ using web::WebState;
 using web::WebStateImpl;
 
 namespace web {
-
 NSString* const kContainerViewID = @"Container View";
 const char* kWindowNameSeparator = "#";
 NSString* const kUserIsInteractingKey = @"userIsInteracting";
 NSString* const kOriginURLKey = @"originURL";
 NSString* const kLogJavaScript = @"LogJavascript";
+
+struct NewWindowInfo {
+  GURL url;
+  base::scoped_nsobject<NSString> window_name;
+  web::ReferrerPolicy referrer_policy;
+  bool user_is_interacting;
+  NewWindowInfo(GURL url,
+                NSString* window_name,
+                web::ReferrerPolicy referrer_policy,
+                bool user_is_interacting);
+  ~NewWindowInfo();
+};
 
 NewWindowInfo::NewWindowInfo(GURL target_url,
                              NSString* target_window_name,
@@ -417,6 +428,9 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                          targetFrame:(const web::FrameInfo*)targetFrame;
 // Called when a page updates its history stack using pushState or replaceState.
 - (void)didUpdateHistoryStateWithPageURL:(const GURL&)url;
+
+// Tries to open a popup with the given new window information.
+- (void)openPopupWithInfo:(const web::NewWindowInfo&)windowInfo;
 
 // Handlers for JavaScript messages. |message| contains a JavaScript command and
 // data relevant to the message, and |context| contains contextual information
@@ -937,6 +951,19 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   return scrollView.contentOffset.y == -scrollView.contentInset.top;
 }
 
+- (BOOL)keyboardDisplayRequiresUserAction {
+  // TODO(stuartmorgan): Find out whether YES or NO is correct. See if we can
+  // get rid of this (it looks like it may only be fallback code for
+  // autocomplete that's necessarily used). If not, file a Radar since WKWebView
+  // doesn't appear to have this property.
+  NOTIMPLEMENTED();
+  return NO;
+}
+
+- (void)setKeyboardDisplayRequiresUserAction:(BOOL)requiresUserAction {
+  NOTIMPLEMENTED();
+}
+
 - (void)setShouldSuppressDialogs:(BOOL)shouldSuppressDialogs {
   _shouldSuppressDialogs = shouldSuppressDialogs;
   if (self.webView) {
@@ -984,8 +1011,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   const GURL url([self currentURLWithTrustLevel:&trustLevel]);
 
   // Check whether the spoofing warning needs to be displayed.
-  if (trustLevel == web::URLVerificationTrustLevel::kNone &&
-      ![self ignoreURLVerificationFailures]) {
+  if (trustLevel == web::URLVerificationTrustLevel::kNone) {
     dispatch_async(dispatch_get_main_queue(), ^{
       if (!_isHalted) {
         DCHECK_EQ(url, [self currentNavigationURL]);
@@ -1057,8 +1083,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)injectWindowID {
   if (![_windowIDJSManager hasBeenInjected]) {
-    // If the window ID wasn't present, this is a new page.
-    [self setPageChangeProbability:web::PAGE_CHANGE_PROBABILITY_LOW];
     // Default value for shouldSuppressDialogs is NO, so updating them only
     // when necessary is a good optimization.
     if (_shouldSuppressDialogsOnWindowIDInjection) {
@@ -1214,7 +1238,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   DCHECK(_loadPhase == web::PAGE_LOADED);
 
   _loadPhase = web::LOAD_REQUESTED;
-  [self resetLoadState];
   _lastRegisteredRequestURL = requestURL;
 
   if (!(transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK)) {
@@ -1700,7 +1723,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   const GURL currentURL([self currentURL]);
 
-  [self resetLoadState];
   _loadPhase = web::PAGE_LOADED;
 
   [self optOutScrollsToTopForSubviews];
@@ -1734,7 +1756,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       net::RequestTracker::CACHE_NORMAL);
 
   [self restoreStateFromHistory];
-  [self loadCompletedForURL:currentURL];
   _webStateImpl->OnPageLoaded(currentURL, loadSuccess);
   _webStateImpl->SetIsLoading(false);
   // Inform the embedder the load completed.
@@ -1901,39 +1922,44 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)evaluateJavaScript:(NSString*)script
        stringResultHandler:(web::JavaScriptCompletion)handler {
-  // Subclasses must implement this method.
-  NOTREACHED();
+  NSString* safeScript = [self scriptByAddingWindowIDCheckForScript:script];
+  web::EvaluateJavaScript(self.webView, safeScript, handler);
 }
 
-- (BOOL)scriptHasBeenInjectedForClass:(Class)jsInjectionManagerClass
+- (BOOL)scriptHasBeenInjectedForClass:(Class)JSInjectionManagerClass
                        presenceBeacon:(NSString*)beacon {
-  // Subclasses must implement this method.
-  NOTREACHED();
-  return NO;
+  return [self.injectedScriptManagers containsObject:JSInjectionManagerClass];
 }
 
 - (void)injectScript:(NSString*)script forClass:(Class)JSInjectionManagerClass {
-  // Make sure that CRWJSEarlyScriptManager has been injected.
-  BOOL ealyScriptInjected =
-      [self scriptHasBeenInjectedForClass:[CRWJSEarlyScriptManager class]
-                           presenceBeacon:[_earlyScriptManager presenceBeacon]];
-  if (!ealyScriptInjected &&
-      JSInjectionManagerClass != [CRWJSEarlyScriptManager class]) {
-    [_earlyScriptManager inject];
+  // Skip evaluation if there's no content (e.g., if what's being injected is
+  // an umbrella manager).
+  if ([script length]) {
+    // Make sure that CRWJSEarlyScriptManager has been injected.
+    BOOL ealyScriptInjected = [self
+        scriptHasBeenInjectedForClass:[CRWJSEarlyScriptManager class]
+                       presenceBeacon:[_earlyScriptManager presenceBeacon]];
+    if (!ealyScriptInjected &&
+        JSInjectionManagerClass != [CRWJSEarlyScriptManager class]) {
+      [_earlyScriptManager inject];
+    }
+    // Every injection except windowID requires windowID check.
+    if (JSInjectionManagerClass != [CRWJSWindowIdManager class])
+      script = [self scriptByAddingWindowIDCheckForScript:script];
+    web::EvaluateJavaScript(self.webView, script, nil);
   }
+  [self.injectedScriptManagers addObject:JSInjectionManagerClass];
 }
 
 - (web::WebViewType)webViewType {
-  // Subclasses must implement this method.
-  NOTREACHED();
-  return web::UI_WEB_VIEW_TYPE;
+  return web::WK_WEB_VIEW_TYPE;
 }
 
 #pragma mark -
 
 - (void)evaluateUserJavaScript:(NSString*)script {
-  // Subclasses must implement this method.
-  NOTREACHED();
+  [self setUserInteractionRegistered:YES];
+  web::EvaluateJavaScript(self.webView, script, nil);
 }
 
 - (void)didFinishNavigation {
@@ -3652,14 +3678,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
-- (void)loadHTML:(NSString*)html forURL:(const GURL&)url {
+- (void)loadHTML:(NSString*)HTML forURL:(const GURL&)URL {
   // Remove the transient content view.
   [self clearTransientContentView];
 
   DLOG_IF(WARNING, !self.webView)
       << "self.webView null while trying to load HTML";
   _loadPhase = web::LOAD_REQUESTED;
-  [self loadWebHTMLString:html forURL:url];
+  [self.webView loadHTMLString:HTML baseURL:net::NSURLWithGURL(URL)];
 }
 
 - (void)loadHTML:(NSString*)HTML forAppSpecificURL:(const GURL&)URL {

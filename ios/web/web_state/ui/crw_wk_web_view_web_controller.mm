@@ -4,7 +4,6 @@
 
 #import "ios/web/web_state/ui/crw_wk_web_view_web_controller.h"
 
-#import <WebKit/WebKit.h>
 #include <stddef.h>
 
 #include <utility>
@@ -258,9 +257,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 // controller's BrowserState.
 - (web::WKWebViewConfigurationProvider&)webViewConfigurationProvider;
 
-// Creates a web view with given |config|. No-op if web view is already created.
-- (void)ensureWebViewCreatedWithConfiguration:(WKWebViewConfiguration*)config;
-
 // Returns a new autoreleased web view created with given configuration.
 - (WKWebView*)createWebViewWithConfiguration:(WKWebViewConfiguration*)config;
 
@@ -426,32 +422,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   return self;
 }
 
-- (BOOL)keyboardDisplayRequiresUserAction {
-  // TODO(stuartmorgan): Find out whether YES or NO is correct; see comment
-  // in protected header.
-  NOTIMPLEMENTED();
-  return NO;
-}
-
-- (void)setKeyboardDisplayRequiresUserAction:(BOOL)requiresUserAction {
-  NOTIMPLEMENTED();
-}
-
-- (void)evaluateJavaScript:(NSString*)script
-       stringResultHandler:(web::JavaScriptCompletion)handler {
-  NSString* safeScript = [self scriptByAddingWindowIDCheckForScript:script];
-  web::EvaluateJavaScript(_wkWebView, safeScript, handler);
-}
-
-- (web::WebViewType)webViewType {
-  return web::WK_WEB_VIEW_TYPE;
-}
-
-- (void)evaluateUserJavaScript:(NSString*)script {
-  [self setUserInteractionRegistered:YES];
-  web::EvaluateJavaScript(_wkWebView, script, nil);
-}
-
 - (void)terminateNetworkActivity {
   web::CertStore::GetInstance()->RemoveCertsForGroup(self.certGroupID);
   [super terminateNetworkActivity];
@@ -477,16 +447,16 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 #pragma mark - Protected property implementations
 
-- (UIView*)webView {
+- (WKWebView*)webView {
   return _wkWebView.get();
+}
+
+- (NSMutableSet*)injectedScriptManagers {
+  return _injectedScriptManagers;
 }
 
 - (UIScrollView*)webScrollView {
   return [_wkWebView scrollView];
-}
-
-- (BOOL)ignoreURLVerificationFailures {
-  return NO;
 }
 
 - (NSString*)title {
@@ -550,28 +520,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 
 - (void)loadRequest:(NSMutableURLRequest*)request {
   _latestWKNavigation.reset([[_wkWebView loadRequest:request] retain]);
-}
-
-- (void)loadWebHTMLString:(NSString*)html forURL:(const GURL&)URL {
-  [_wkWebView loadHTMLString:html baseURL:net::NSURLWithGURL(URL)];
-}
-
-- (BOOL)scriptHasBeenInjectedForClass:(Class)jsInjectionManagerClass
-                       presenceBeacon:(NSString*)beacon {
-  return [_injectedScriptManagers containsObject:jsInjectionManagerClass];
-}
-
-- (void)injectScript:(NSString*)script forClass:(Class)JSInjectionManagerClass {
-  // Skip evaluation if there's no content (e.g., if what's being injected is
-  // an umbrella manager).
-  if ([script length]) {
-    [super injectScript:script forClass:JSInjectionManagerClass];
-    // Every injection except windowID requires windowID check.
-    if (JSInjectionManagerClass != [CRWJSWindowIdManager class])
-      script = [self scriptByAddingWindowIDCheckForScript:script];
-    web::EvaluateJavaScript(_wkWebView, script, nil);
-  }
-  [_injectedScriptManagers addObject:JSInjectionManagerClass];
 }
 
 - (void)willLoadCurrentURLInWebView {
@@ -677,18 +625,10 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
   return [super URLForHistoryNavigationFromItem:fromItem toItem:toItem];
 }
 
-- (void)setPageChangeProbability:(web::PageChangeProbability)probability {
-  // Nothing to do; no polling timer.
-}
-
 - (void)abortWebLoad {
   [_wkWebView stopLoading];
   [_pendingNavigationInfo setCancelled:YES];
   _certVerificationErrors->Clear();
-}
-
-- (void)resetLoadState {
-  // Nothing to do.
 }
 
 - (void)applyWebViewScrollZoomScaleFromZoomState:
@@ -714,10 +654,6 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     [self loadCancelled];
     [[self sessionController] discardNonCommittedEntries];
   }
-}
-
-- (void)loadCompletedForURL:(const GURL&)loadedURL {
-  // Nothing to do.
 }
 
 // Override |handleLoadError| to check for PassKit case.
@@ -1997,7 +1933,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     }
   }
 
-  id child = [self createChildWebController];
+  CRWWebController* child = [self createChildWebController];
   // WKWebView requires WKUIDelegate to return a child view created with
   // exactly the same |configuration| object (exception is raised if config is
   // different). |configuration| param and config returned by
