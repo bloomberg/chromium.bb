@@ -183,11 +183,11 @@ void InputMethodBase::CommitText(const std::string& text) {
 void InputMethodBase::UpdateCompositionText(const CompositionText& composition_,
                                             uint32_t cursor_pos,
                                             bool visible) {
-  if (IsTextInputTypeNone() || composition_.text.empty())
+  if (IsTextInputTypeNone())
     return;
 
   if (!SendFakeProcessKeyEvent(true)) {
-    if (visible)
+    if (visible && !composition_.text.empty())
       GetTextInputClient()->SetCompositionText(composition_);
     else
       GetTextInputClient()->ClearCompositionText();
