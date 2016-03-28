@@ -64,11 +64,14 @@ class TestTranslatorPruned(unittest.TestCase):
   unpruned_symbols = {}
 
   @classmethod
-  def get_symbol_info(cls, nm_tool, bin_name):
+  def get_symbol_info(cls, nm_tool, cxxfilt_tool, bin_name):
     results = {}
-    nm_cmd = [nm_tool, '--size-sort', '--demangle', bin_name]
+    nm_cmd = [nm_tool, '--size-sort', bin_name]
     print 'Getting symbols and sizes by running:\n' + ' '.join(nm_cmd)
-    for line in iter(subprocess.check_output(nm_cmd).splitlines()):
+    nm = subprocess.Popen(nm_cmd, stdout=subprocess.PIPE)
+    output = subprocess.check_output(cxxfilt_tool, stdin=nm.stdout)
+    nm.wait()
+    for line in iter(output.splitlines()):
       (hex_size, t, sym_name) = line.split(' ', 2)
       # Only track defined and non-BSS symbols.
       if t != 'U' and t.upper() != 'B':
@@ -90,15 +93,20 @@ class TestTranslatorPruned(unittest.TestCase):
   @classmethod
   def setUpClass(cls):
     nm_tool = sys.argv[1]
-    host_binaries = glob.glob(sys.argv[2])
-    target_binary = sys.argv[3]
+    cxxfilt_tool = sys.argv[2]
+    host_binaries = glob.glob(sys.argv[3])
+    target_binary = sys.argv[4]
     print 'Getting symbol info from %s (host) and %s (target)' % (
-        sys.argv[2], sys.argv[3])
-    assert host_binaries, ('Did not glob any binaries from: ' % sys.argv[2])
-    for b in host_binaries:
+        sys.argv[3], sys.argv[4])
+    assert host_binaries, ('Did not glob any binaries from: ' % sys.argv[3])
+    for binary in host_binaries:
       cls.unpruned_symbols = merge_symbols(cls.unpruned_symbols,
-                                           cls.get_symbol_info(nm_tool, b))
-    cls.pruned_symbols = cls.get_symbol_info(nm_tool, target_binary)
+                                           cls.get_symbol_info(nm_tool,
+                                                               cxxfilt_tool,
+                                                               binary))
+    cls.pruned_symbols = cls.get_symbol_info(nm_tool,
+                                             cxxfilt_tool,
+                                             target_binary)
     # Do an early check that these aren't stripped binaries.
     assert cls.unpruned_symbols, 'No symbols from host?'
     assert cls.pruned_symbols, 'No symbols from target?'
@@ -170,8 +178,8 @@ class TestTranslatorPruned(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  if len(sys.argv) != 4:
-    print 'Usage: %s <nm_tool> <unpruned_host_binary> <pruned_target_binary>'
+  if len(sys.argv) != 5:
+    print 'Usage: %s <nm_tool> <cxxfilt_tool> <unpruned_host_binary> <pruned_target_binary>'
     sys.exit(1)
   suite = unittest.TestLoader().loadTestsFromTestCase(TestTranslatorPruned)
   result = unittest.TextTestRunner(verbosity=2).run(suite)

@@ -96,20 +96,18 @@ readonly LLVM_INSTALL_DIR="${INSTALL_HOST}"
 readonly BINUTILS_INSTALL_DIR="${INSTALL_HOST}"
 
 # Location of the PNaCl tools defined for configure invocations.
-readonly PNACL_CC="${INSTALL_BIN}/pnacl-clang"
-readonly PNACL_CXX="${INSTALL_BIN}/pnacl-clang++"
-readonly PNACL_LD="${INSTALL_BIN}/pnacl-ld"
-readonly PNACL_PP="${INSTALL_BIN}/pnacl-clang -E"
-readonly PNACL_AR="${INSTALL_BIN}/pnacl-ar"
-readonly PNACL_RANLIB="${INSTALL_BIN}/pnacl-ranlib"
-readonly PNACL_AS="${INSTALL_BIN}/pnacl-as"
-readonly PNACL_DIS="${INSTALL_BIN}/pnacl-dis"
-readonly PNACL_FINALIZE="${INSTALL_BIN}/pnacl-finalize"
-readonly PNACL_NM="${INSTALL_BIN}/pnacl-nm"
+readonly PNACL_CC="${INSTALL_BIN}/le32-nacl-clang"
+readonly PNACL_CXX="${INSTALL_BIN}/le32-nacl-clang++"
+readonly PNACL_LD="${INSTALL_BIN}/le32-nacl-ld"
+readonly PNACL_PP="${INSTALL_BIN}/le32-nacl-clang -E"
+readonly PNACL_AR="${INSTALL_BIN}/le32-nacl-ar"
+readonly PNACL_RANLIB="${INSTALL_BIN}/le32-nacl-ranlib"
+readonly PNACL_AS="${INSTALL_BIN}/le32-nacl-as"
+readonly PNACL_NM="${INSTALL_BIN}/le32-nacl-nm"
 readonly PNACL_TRANSLATE="${INSTALL_BIN}/pnacl-translate"
-readonly PNACL_READELF="${INSTALL_BIN}/pnacl-readelf"
 readonly PNACL_SIZE="${BINUTILS_INSTALL_DIR}/bin/${REAL_CROSS_TARGET}-size"
-readonly PNACL_STRIP="${INSTALL_BIN}/pnacl-strip"
+readonly PNACL_STRIP="${INSTALL_BIN}/${REAL_CROSS_TARGET}-strip"
+readonly PNACL_CXXFILT="${BINUTILS_INSTALL_DIR}/bin/${REAL_CROSS_TARGET}-c++filt"
 readonly ILLEGAL_TOOL="${INSTALL_BIN}"/pnacl-illegal
 
 # Tools for building the LLVM BuildTools in the translator build
@@ -243,10 +241,8 @@ llvm-sb-setup() {
   # not in the SDK. libsrpc should have already been built in the
   # translator_compiler step in toolchain_build.
   # This is always statically linked.
-  # The LLVM sandboxed build uses the normally-disallowed external
-  # function __nacl_get_arch().  Allow that for now.
   local flags="-static -I$(GetAbsolutePath ${NACL_ROOT}/..) \
-    --pnacl-disable-abi-check -gline-tables-only "
+    -gline-tables-only "
 
   LLVM_SB_CONFIGURE_ENV=(
     AR="${PNACL_AR}" \
@@ -379,8 +375,11 @@ llvm-sb-make() {
   local tools_to_build="pnacl-llc subzero"
   local export_dyn_env="llvm_cv_link_use_export_dynamic=no"
   local isjit=0
+  # The LLVM sandboxed build uses the normally-disallowed external
+  # function __nacl_get_arch().  Allow that for now.
   RunWithLog ${LLVM_SB_LOG_PREFIX}.make \
       env -i PATH="/usr/bin:/bin:${HOST_CLANG_PATH}" \
+      LDFLAGS="-Wl,-plugin-opt=no-finalize -Wl,-plugin-opt=no-abi-verify" \
       LD_LIBRARY_PATH="${HOST_LIBCXX}/lib" \
       ONLY_TOOLS="${tools_to_build}" \
       PNACL_BROWSER_TRANSLATOR=1 \
@@ -470,7 +469,7 @@ translate-sb-tool() {
       local nexe="${toolname}.${tarch}.nexe"
       local llvm_host_glob="${LLVM_INSTALL_DIR}/lib/libLLVM*so"
       python "${PNACL_ROOT}/prune_test.py" "${PNACL_NM}" \
-        "${llvm_host_glob}" "${nexe}"
+        "${PNACL_CXXFILT}" "${llvm_host_glob}" "${nexe}"
     done
   fi
 
@@ -570,7 +569,7 @@ binutils-gold-sb-configure() {
   # function __nacl_get_arch().  Allow that for now.
   #
   local flags="-static -I$(GetAbsolutePath ${NACL_ROOT}/..) \
-    -fno-exceptions -O3 --pnacl-disable-abi-check -gline-tables-only "
+    -fno-exceptions -O3 -gline-tables-only"
   local configure_env=(
     AR="${PNACL_AR}" \
     AS="${PNACL_AS}" \
@@ -636,6 +635,7 @@ binutils-gold-sb-configure() {
     "${configure_env[@]}" \
     CXXFLAGS="" \
     CFLAGS="" \
+    LDFLAGS="-Wl,-plugin-opt=no-finalize -Wl,-plugin-opt=no-abi-verify" \
     ac_cv_search_zlibVersion=no \
     ac_cv_header_sys_mman_h=no \
     ac_cv_func_mmap=no \
