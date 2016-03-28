@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/win/screen_win_display.h"
+#include "ui/display/win/screen_win_display.h"
 
-#include "ui/gfx/win/display_info.h"
+#include "ui/display/win/display_info.h"
 #include "ui/gfx/win/dpi.h"
+
+namespace display {
+namespace win {
 
 namespace {
 
-gfx::Display CreateDisplayFromDisplayInfo(
-    const gfx::win::DisplayInfo& display_info) {
+gfx::Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info) {
   gfx::Display display(display_info.id());
   gfx::Rect dip_screen_bounds(
       gfx::win::ScreenToDIPRect(display_info.screen_rect()));
@@ -25,9 +27,6 @@ gfx::Display CreateDisplayFromDisplayInfo(
 
 } // namespace
 
-namespace gfx {
-namespace win {
-
 ScreenWinDisplay::ScreenWinDisplay() = default;
 
 ScreenWinDisplay::ScreenWinDisplay(const DisplayInfo& display_info)
@@ -35,4 +34,4 @@ ScreenWinDisplay::ScreenWinDisplay(const DisplayInfo& display_info)
       pixel_bounds_(display_info.screen_rect()) {}
 
 }  // namespace win
-}  // namespace gfx
+}  // namespace display

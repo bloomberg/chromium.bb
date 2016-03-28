@@ -6,18 +6,18 @@
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_SCREEN_WIN_H_
 
 #include "base/macros.h"
-#include "ui/gfx/screen_win.h"
+#include "ui/display/win/screen_win.h"
 #include "ui/views/views_export.h"
 
 namespace views {
 
-class VIEWS_EXPORT DesktopScreenWin : public gfx::ScreenWin {
+class VIEWS_EXPORT DesktopScreenWin : public display::win::ScreenWin {
 public:
   DesktopScreenWin();
   ~DesktopScreenWin() override;
 
  private:
-  // Overridden from gfx::ScreenWin:
+  // Overridden from display::win::ScreenWin:
   gfx::Display GetDisplayMatching(const gfx::Rect& match_rect) const override;
   HWND GetHWNDFromNativeView(gfx::NativeView window) const override;
   gfx::NativeWindow GetNativeWindowFromHWND(HWND hwnd) const override;

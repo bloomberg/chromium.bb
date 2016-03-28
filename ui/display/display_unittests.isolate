@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 {
   'conditions': [
-    ['OS=="linux"', {
+    ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'command': [
           '../../testing/test_env.py',

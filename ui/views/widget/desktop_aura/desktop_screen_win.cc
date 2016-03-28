@@ -24,7 +24,7 @@ DesktopScreenWin::~DesktopScreenWin() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopScreenWin, gfx::ScreenWin implementation:
+// DesktopScreenWin, display::win::ScreenWin implementation:
 
 gfx::Display DesktopScreenWin::GetDisplayMatching(
     const gfx::Rect& match_rect) const {

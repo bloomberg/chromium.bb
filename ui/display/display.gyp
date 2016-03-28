@@ -76,6 +76,12 @@
         'display_export.h',
         'display_switches.cc',
         'display_switches.h',
+        'win/display_info.cc',
+        'win/display_info.h',
+        'win/screen_win.cc',
+        'win/screen_win.h',
+        'win/screen_win_display.cc',
+        'win/screen_win_display.h',
       ],
       'conditions': [
         ['use_x11 == 1', {
@@ -196,6 +202,7 @@
         '../../testing/gtest.gyp:gtest',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../ui/gfx/gfx.gyp:gfx_test_support',
+        'display',
         'display_util',
       ],
       'include_dirs': [
@@ -211,6 +218,7 @@
         'chromeos/x11/native_display_event_dispatcher_x11_unittest.cc',
         'util/display_util_unittest.cc',
         'util/edid_parser_unittest.cc',
+        'win/screen_win_unittest.cc',
       ],
       'conditions': [
         ['chromeos == 1', {
