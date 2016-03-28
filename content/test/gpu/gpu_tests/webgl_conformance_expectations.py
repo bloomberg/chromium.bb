@@ -288,6 +288,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
     self.Fail('conformance/textures/image_bitmap_from_image_data/*',
         ['android', ('qualcomm', 'Adreno (TM) 420')], bug=585108)
+    self.Fail('conformance/textures/image_bitmap_from_image_bitmap/*',
+        ['android', ('qualcomm', 'Adreno (TM) 420')], bug=598262)
     self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
         'video-rgb-rgb-unsigned_byte.html',
         ['android', 'android-content-shell',
