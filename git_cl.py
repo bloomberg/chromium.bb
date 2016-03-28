@@ -5,7 +5,7 @@
 
 # Copyright (C) 2008 Evan Martin <martine@danga.com>
 
-"""A git-command for integrating reviews on Rietveld."""
+"""A git-command for integrating reviews on Rietveld and Gerrit."""
 
 from distutils.version import LooseVersion
 from multiprocessing.pool import ThreadPool
@@ -47,6 +47,7 @@ import commit_queue
 import dart_format
 import fix_encoding
 import gclient_utils
+import gerrit_util
 import git_cache
 import git_common
 import git_footers
@@ -156,7 +157,7 @@ def ask_for_data(prompt):
 
 
 def git_set_branch_value(key, value):
-  branch = Changelist().GetBranch()
+  branch = GetCurrentBranch()
   if not branch:
     return
 
@@ -168,7 +169,7 @@ def git_set_branch_value(key, value):
 
 
 def git_get_branch_default(key, default):
-  branch = Changelist().GetBranch()
+  branch = GetCurrentBranch()
   if branch:
     git_key = 'branch.%s.%s' % (branch, key)
     (_, stdout) = RunGitWithCode(['config', '--int', '--get', git_key])
@@ -813,23 +814,61 @@ class Settings(object):
 
 def ShortBranchName(branch):
   """Convert a name like 'refs/heads/foo' to just 'foo'."""
-  return branch.replace('refs/heads/', '')
+  return branch.replace('refs/heads/', '', 1)
+
+
+def GetCurrentBranchRef():
+  """Returns branch ref (e.g., refs/heads/master) or None."""
+  return RunGit(['symbolic-ref', 'HEAD'],
+                stderr=subprocess2.VOID, error_ok=True).strip() or None
+
+
+def GetCurrentBranch():
+  """Returns current branch or None.
+
+  For refs/heads/* branches, returns just last part. For others, full ref.
+  """
+  branchref = GetCurrentBranchRef()
+  if branchref:
+    return ShortBranchName(branchref)
+  return None
 
 
 class Changelist(object):
-  def __init__(self, branchref=None, issue=None, auth_config=None):
+  """Changelist works with one changelist in local branch.
+
+  Supports two codereview backends: Rietveld or Gerrit, selected at object
+  creation.
+
+  Not safe for concurrent multi-{thread,process} use.
+  """
+
+  def __init__(self, branchref=None, issue=None, codereview=None, **kwargs):
+    """Create a new ChangeList instance.
+
+    If issue is given, the codereview must be given too.
+
+    If `codereview` is given, it must be 'rietveld' or 'gerrit'.
+    Otherwise, it's decided based on current configuration of the local branch,
+    with default being 'rietveld' for backwards compatibility.
+    See _load_codereview_impl for more details.
+
+    **kwargs will be passed directly to codereview implementation.
+    """
     # Poke settings so we get the "configure your server" message if necessary.
     global settings
     if not settings:
       # Happens when git_cl.py is used as a utility library.
       settings = Settings()
-    settings.GetDefaultServerUrl()
+
+    if issue:
+      assert codereview, 'codereview must be known, if issue is known'
+
     self.branchref = branchref
     if self.branchref:
       self.branch = ShortBranchName(self.branchref)
     else:
       self.branch = None
-    self.rietveld_server = None
     self.upstream_branch = None
     self.lookedup_issue = False
     self.issue = issue or None
@@ -839,14 +878,39 @@ class Changelist(object):
     self.patchset = None
     self.cc = None
     self.watchers = ()
-    self._auth_config = auth_config
-    self._props = None
     self._remote = None
-    self._rpc_server = None
 
-  @property
-  def auth_config(self):
-    return self._auth_config
+    self._codereview_impl = None
+    self._load_codereview_impl(codereview, **kwargs)
+
+  def _load_codereview_impl(self, codereview=None, **kwargs):
+    if codereview:
+      codereview = codereview.lower()
+      if codereview == 'gerrit':
+        self._codereview_impl = _GerritChangelistImpl(self, **kwargs)
+      elif codereview == 'rietveld':
+        self._codereview_impl = _RietveldChangelistImpl(self, **kwargs)
+      else:
+        assert codereview in ('rietveld', 'gerrit')
+      return
+
+    # Automatic selection based on issue number set for a current branch.
+    # Rietveld takes precedence over Gerrit.
+    assert not self.issue
+    # Whether we find issue or not, we are doing the lookup.
+    self.lookedup_issue = True
+    for cls in [_RietveldChangelistImpl, _GerritChangelistImpl]:
+      setting = cls.IssueSetting(self.GetBranch())
+      issue = RunGit(['config', setting], error_ok=True).strip()
+      if issue:
+        self._codereview_impl = cls(self, **kwargs)
+        self.issue = int(issue)
+        return
+
+    # No issue is set for this branch, so decide based on repo-wide settings.
+    return self._load_codereview_impl(
+        codereview='gerrit' if settings.GetIsGerrit() else 'rietveld')
+
 
   def GetCCList(self):
     """Return the users cc'd on this CL.
@@ -874,8 +938,7 @@ class Changelist(object):
   def GetBranch(self):
     """Returns the short branch name, e.g. 'master'."""
     if not self.branch:
-      branchref = RunGit(['symbolic-ref', 'HEAD'],
-                         stderr=subprocess2.VOID, error_ok=True).strip()
+      branchref = GetCurrentBranchRef()
       if not branchref:
         return None
       self.branchref = branchref
@@ -919,11 +982,12 @@ class Changelist(object):
             remote = 'origin'
             upstream_branch = 'refs/heads/trunk'
           else:
-            DieWithError("""Unable to determine default branch to diff against.
-Either pass complete "git diff"-style arguments, like
-  git cl upload origin/master
-or verify this branch is set up to track another (via the --track argument to
-"git checkout -b ...").""")
+            DieWithError(
+               'Unable to determine default branch to diff against.\n'
+               'Either pass complete "git diff"-style arguments, like\n'
+               '  git cl upload origin/master\n'
+               'or verify this branch is set up to track another \n'
+               '(via the --track argument to "git checkout -b ...").')
 
     return remote, upstream_branch
 
@@ -1065,65 +1129,24 @@ or verify this branch is set up to track another (via the --track argument to
   def GetIssue(self):
     """Returns the issue number as a int or None if not set."""
     if self.issue is None and not self.lookedup_issue:
-      issue = RunGit(['config', self._IssueSetting()], error_ok=True).strip()
+      issue = RunGit(['config',
+                      self._codereview_impl.IssueSetting(self.GetBranch())],
+                     error_ok=True).strip()
       self.issue = int(issue) or None if issue else None
       self.lookedup_issue = True
     return self.issue
 
-  def GetRietveldServer(self):
-    if not self.rietveld_server:
-      # If we're on a branch then get the server potentially associated
-      # with that branch.
-      if self.GetIssue():
-        rietveld_server_config = self._RietveldServer()
-        if rietveld_server_config:
-          self.rietveld_server = gclient_utils.UpgradeToHttps(RunGit(
-              ['config', rietveld_server_config], error_ok=True).strip())
-      if not self.rietveld_server:
-        self.rietveld_server = settings.GetDefaultServerUrl()
-    return self.rietveld_server
-
-  def GetGerritServer(self):
-    # We don't support multiple Gerrit servers, and assume it to be same as
-    # origin, except with a '-review' suffix for first subdomain.
-    parts = urlparse.urlparse(self.GetRemoteUrl()).netloc.split('.')
-    parts[0] = parts[0] + '-review'
-    return 'https://%s' % '.'.join(parts)
-
   def GetIssueURL(self):
     """Get the URL for a particular issue."""
-    if not self.GetIssue():
+    issue = self.GetIssue()
+    if not issue:
       return None
-    if settings.GetIsGerrit():
-      return '%s/%s' % (self.GetGerritServer(), self.GetIssue())
-    return '%s/%s' % (self.GetRietveldServer(), self.GetIssue())
+    return '%s/%s' % (self._codereview_impl.GetCodereviewServer(), issue)
 
   def GetDescription(self, pretty=False):
     if not self.has_description:
       if self.GetIssue():
-        issue = self.GetIssue()
-        try:
-          self.description = self.RpcServer().get_description(issue).strip()
-        except urllib2.HTTPError as e:
-          if e.code == 404:
-            DieWithError(
-                ('\nWhile fetching the description for issue %d, received a '
-                 '404 (not found)\n'
-                 'error. It is likely that you deleted this '
-                 'issue on the server. If this is the\n'
-                 'case, please run\n\n'
-                 '    git cl issue 0\n\n'
-                 'to clear the association with the deleted issue. Then run '
-                 'this command again.') % issue)
-          else:
-            DieWithError(
-                '\nFailed to fetch issue description. HTTP error %d' % e.code)
-        except urllib2.URLError as e:
-          print >> sys.stderr, (
-              'Warning: Failed to retrieve CL description due to network '
-              'failure.')
-          self.description = ''
-
+        self.description = self._codereview_impl.FetchDescription()
       self.has_description = True
     if pretty:
       wrapper = textwrap.TextWrapper()
@@ -1134,7 +1157,7 @@ or verify this branch is set up to track another (via the --track argument to
   def GetPatchset(self):
     """Returns the patchset number as a int or None if not set."""
     if self.patchset is None and not self.lookedup_patchset:
-      patchset = RunGit(['config', self._PatchsetSetting()],
+      patchset = RunGit(['config', self._codereview_impl.PatchsetSetting()],
                         error_ok=True).strip()
       self.patchset = int(patchset) or None if patchset else None
       self.lookedup_patchset = True
@@ -1142,47 +1165,29 @@ or verify this branch is set up to track another (via the --track argument to
 
   def SetPatchset(self, patchset):
     """Set this branch's patchset.  If patchset=0, clears the patchset."""
+    patchset_setting = self._codereview_impl.PatchsetSetting()
     if patchset:
-      RunGit(['config', self._PatchsetSetting(), str(patchset)])
+      RunGit(['config', patchset_setting, str(patchset)])
       self.patchset = patchset
     else:
-      RunGit(['config', '--unset', self._PatchsetSetting()],
+      RunGit(['config', '--unset', patchset_setting],
              stderr=subprocess2.PIPE, error_ok=True)
       self.patchset = None
 
-  def GetMostRecentPatchset(self):
-    return self.GetIssueProperties()['patchsets'][-1]
-
-  def GetPatchSetDiff(self, issue, patchset):
-    return self.RpcServer().get(
-        '/download/issue%s_%s.diff' % (issue, patchset))
-
-  def GetIssueProperties(self):
-    if self._props is None:
-      issue = self.GetIssue()
-      if not issue:
-        self._props = {}
-      else:
-        self._props = self.RpcServer().get_issue_properties(issue, True)
-    return self._props
-
-  def GetApprovingReviewers(self):
-    return get_approving_reviewers(self.GetIssueProperties())
-
-  def AddComment(self, message):
-    return self.RpcServer().add_comment(self.GetIssue(), message)
-
   def SetIssue(self, issue=None):
     """Set this branch's issue.  If issue isn't given, clears the issue."""
+    issue_setting = self._codereview_impl.IssueSetting(self.GetBranch())
+    codereview_setting = self._codereview_impl.GetCodereviewServerSetting()
     if issue:
       self.issue = issue
-      RunGit(['config', self._IssueSetting(), str(issue)])
-      if not settings.GetIsGerrit() and self.rietveld_server:
-        RunGit(['config', self._RietveldServer(), self.rietveld_server])
+      RunGit(['config', issue_setting, str(issue)])
+      codereview_server = self._codereview_impl.GetCodereviewServer()
+      if codereview_server:
+        RunGit(['config', codereview_setting, codereview_server])
     else:
       current_issue = self.GetIssue()
       if current_issue:
-        RunGit(['config', '--unset', self._IssueSetting()])
+        RunGit(['config', '--unset', issue_setting])
       self.issue = None
       self.SetPatchset(None)
 
@@ -1232,6 +1237,186 @@ or verify this branch is set up to track another (via the --track argument to
         author,
         upstream=upstream_branch)
 
+  def UpdateDescription(self, description):
+    self.description = description
+    return self._codereview_impl.UpdateDescriptionRemote(description)
+
+  def RunHook(self, committing, may_prompt, verbose, change):
+    """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
+    try:
+      return presubmit_support.DoPresubmitChecks(change, committing,
+          verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
+          default_presubmit=None, may_prompt=may_prompt,
+          rietveld_obj=self._codereview_impl.GetRieveldObjForPresubmit())
+    except presubmit_support.PresubmitFailure, e:
+      DieWithError(
+          ('%s\nMaybe your depot_tools is out of date?\n'
+           'If all fails, contact maruel@') % e)
+
+  # Forward methods to codereview specific implementation.
+
+  def CloseIssue(self):
+    return self._codereview_impl.CloseIssue()
+
+  def GetStatus(self):
+    return self._codereview_impl.GetStatus()
+
+  def GetCodereviewServer(self):
+    return self._codereview_impl.GetCodereviewServer()
+
+  def GetApprovingReviewers(self):
+    return self._codereview_impl.GetApprovingReviewers()
+
+  def GetMostRecentPatchset(self):
+    return self._codereview_impl.GetMostRecentPatchset()
+
+  def __getattr__(self, attr):
+    # This is because lots of untested code accesses Rietveld-specific stuff
+    # directly, and it's hard to fix for sure. So, just let it work, and fix
+    # on a cases by case basis.
+    return getattr(self._codereview_impl, attr)
+
+
+class _ChangelistCodereviewBase(object):
+  """Abstract base class encapsulating codereview specifics of a changelist."""
+  def __init__(self, changelist):
+    self._changelist = changelist  # instance of Changelist
+
+  def __getattr__(self, attr):
+    # Forward methods to changelist.
+    # TODO(tandrii): maybe clean up _GerritChangelistImpl and
+    # _RietveldChangelistImpl to avoid this hack?
+    return getattr(self._changelist, attr)
+
+  def GetStatus(self):
+    """Apply a rough heuristic to give a simple summary of an issue's review
+    or CQ status, assuming adherence to a common workflow.
+
+    Returns None if no issue for this branch, or specific string keywords.
+    """
+    raise NotImplementedError()
+
+  def GetCodereviewServer(self):
+    """Returns server URL without end slash, like "https://codereview.com"."""
+    raise NotImplementedError()
+
+  def FetchDescription(self):
+    """Fetches and returns description from the codereview server."""
+    raise NotImplementedError()
+
+  def GetCodereviewServerSetting(self):
+    """Returns git config setting for the codereview server."""
+    raise NotImplementedError()
+
+  @staticmethod
+  def IssueSetting(branch):
+    """Returns name of git config setting which stores issue number for a given
+    branch."""
+    raise NotImplementedError()
+
+  def PatchsetSetting(self):
+    """Returns name of git config setting which stores issue number."""
+    raise NotImplementedError()
+
+  def GetRieveldObjForPresubmit(self):
+    # This is an unfortunate Rietveld-embeddedness in presubmit.
+    # For non-Rietveld codereviews, this probably should return a dummy object.
+    raise NotImplementedError()
+
+  def UpdateDescriptionRemote(self, description):
+    """Update the description on codereview site."""
+    raise NotImplementedError()
+
+  def CloseIssue(self):
+    """Closes the issue."""
+    raise NotImplementedError()
+
+  def GetApprovingReviewers(self):
+    """Returns a list of reviewers approving the change.
+
+    Note: not necessarily committers.
+    """
+    raise NotImplementedError()
+
+  def GetMostRecentPatchset(self):
+    """Returns the most recent patchset number from the codereview site."""
+    raise NotImplementedError()
+
+
+class _RietveldChangelistImpl(_ChangelistCodereviewBase):
+  def __init__(self, changelist, auth_config=None, rietveld_server=None):
+    super(_RietveldChangelistImpl, self).__init__(changelist)
+    assert settings, 'must be initialized in _ChangelistCodereviewBase'
+    settings.GetDefaultServerUrl()
+
+    self._rietveld_server = rietveld_server
+    self._auth_config = auth_config
+    self._props = None
+    self._rpc_server = None
+
+  def GetAuthConfig(self):
+    return self._auth_config
+
+  def GetCodereviewServer(self):
+    if not self._rietveld_server:
+      # If we're on a branch then get the server potentially associated
+      # with that branch.
+      if self.GetIssue():
+        rietveld_server_setting = self.GetCodereviewServerSetting()
+        if rietveld_server_setting:
+          self._rietveld_server = gclient_utils.UpgradeToHttps(RunGit(
+              ['config', rietveld_server_setting], error_ok=True).strip())
+      if not self._rietveld_server:
+        self._rietveld_server = settings.GetDefaultServerUrl()
+    return self._rietveld_server
+
+  def FetchDescription(self):
+    issue = self.GetIssue()
+    assert issue
+    try:
+      return self.RpcServer().get_description(issue).strip()
+    except urllib2.HTTPError as e:
+      if e.code == 404:
+        DieWithError(
+            ('\nWhile fetching the description for issue %d, received a '
+             '404 (not found)\n'
+             'error. It is likely that you deleted this '
+             'issue on the server. If this is the\n'
+             'case, please run\n\n'
+             '    git cl issue 0\n\n'
+             'to clear the association with the deleted issue. Then run '
+             'this command again.') % issue)
+      else:
+        DieWithError(
+            '\nFailed to fetch issue description. HTTP error %d' % e.code)
+    except urllib2.URLError as e:
+      print >> sys.stderr, (
+          'Warning: Failed to retrieve CL description due to network '
+          'failure.')
+      return ''
+
+  def GetMostRecentPatchset(self):
+    return self.GetIssueProperties()['patchsets'][-1]
+
+  def GetPatchSetDiff(self, issue, patchset):
+    return self.RpcServer().get(
+        '/download/issue%s_%s.diff' % (issue, patchset))
+
+  def GetIssueProperties(self):
+    if self._props is None:
+      issue = self.GetIssue()
+      if not issue:
+        self._props = {}
+      else:
+        self._props = self.RpcServer().get_issue_properties(issue, True)
+    return self._props
+
+  def GetApprovingReviewers(self):
+    return get_approving_reviewers(self.GetIssueProperties())
+
+  def AddComment(self, message):
+    return self.RpcServer().add_comment(self.GetIssue(), message)
+
   def GetStatus(self):
     """Apply a rough heuristic to give a simple summary of an issue's review
     or CQ status, assuming adherence to a common workflow.
@@ -1279,26 +1464,11 @@ or verify this branch is set up to track another (via the --track argument to
       return 'reply'
     return 'waiting'
 
-  def RunHook(self, committing, may_prompt, verbose, change):
-    """Calls sys.exit() if the hook fails; returns a HookResults otherwise."""
-
-    try:
-      return presubmit_support.DoPresubmitChecks(change, committing,
-          verbose=verbose, output_stream=sys.stdout, input_stream=sys.stdin,
-          default_presubmit=None, may_prompt=may_prompt,
-          rietveld_obj=self.RpcServer())
-    except presubmit_support.PresubmitFailure, e:
-      DieWithError(
-          ('%s\nMaybe your depot_tools is out of date?\n'
-           'If all fails, contact maruel@') % e)
-
-  def UpdateDescription(self, description):
-    self.description = description
+  def UpdateDescriptionRemote(self, description):
     return self.RpcServer().update_description(
         self.GetIssue(), self.description)
 
   def CloseIssue(self):
-    """Updates the description and closes the issue."""
     return self.RpcServer().close_issue(self.GetIssue())
 
   def SetFlag(self, flag, value):
@@ -1322,24 +1492,115 @@ or verify this branch is set up to track another (via the --track argument to
     """
     if not self._rpc_server:
       self._rpc_server = rietveld.CachingRietveld(
-          self.GetRietveldServer(),
+          self.GetCodereviewServer(),
           self._auth_config or auth.make_auth_config())
     return self._rpc_server
 
-  def _IssueSetting(self):
-    """Return the git setting that stores this change's issue."""
-    return 'branch.%s.rietveldissue' % self.GetBranch()
+  @staticmethod
+  def IssueSetting(branch):
+    return 'branch.%s.rietveldissue' % branch
 
-  def _PatchsetSetting(self):
+  def PatchsetSetting(self):
     """Return the git setting that stores this change's most recent patchset."""
     return 'branch.%s.rietveldpatchset' % self.GetBranch()
 
-  def _RietveldServer(self):
+  def GetCodereviewServerSetting(self):
     """Returns the git setting that stores this change's rietveld server."""
     branch = self.GetBranch()
     if branch:
       return 'branch.%s.rietveldserver' % branch
     return None
+
+  def GetRieveldObjForPresubmit(self):
+    return self.RpcServer()
+
+
+class _GerritChangelistImpl(_ChangelistCodereviewBase):
+  def __init__(self, changelist, auth_config=None):
+    # auth_config is Rietveld thing, kept here to preserve interface only.
+    super(_GerritChangelistImpl, self).__init__(changelist)
+    self._change_id = None
+    self._gerrit_server = None  # e.g. https://chromium-review.googlesource.com
+    self._gerrit_host = None   # e.g. chromium-review.googlesource.com
+
+  def _GetGerritHost(self):
+    # Lazy load of configs.
+    self.GetCodereviewServer()
+    return self._gerrit_host
+
+  def GetCodereviewServer(self):
+    if not self._gerrit_server:
+      # If we're on a branch then get the server potentially associated
+      # with that branch.
+      if self.GetIssue():
+        gerrit_server_setting = self.GetCodereviewServerSetting()
+        if gerrit_server_setting:
+          self._gerrit_server = RunGit(['config', gerrit_server_setting],
+                                       error_ok=True).strip()
+          if self._gerrit_server:
+            self._gerrit_host = urlparse.urlparse(self._gerrit_server).netloc
+      if not self._gerrit_server:
+        # We assume repo to be hosted on Gerrit, and hence Gerrit server
+        # has "-review" suffix for lowest level subdomain.
+        parts = urlparse.urlparse(self.GetRemoteUrl()).netloc.split('.')
+        parts[0] = parts[0] + '-review'
+        self._gerrit_host = '.'.join(parts)
+        self._gerrit_server = 'https://%s' % self._gerrit_host
+    return self._gerrit_server
+
+  @staticmethod
+  def IssueSetting(branch):
+    return 'branch.%s.gerritissue' % branch
+
+  def PatchsetSetting(self):
+    """Return the git setting that stores this change's most recent patchset."""
+    return 'branch.%s.gerritpatchset' % self.GetBranch()
+
+  def GetCodereviewServerSetting(self):
+    """Returns the git setting that stores this change's Gerrit server."""
+    branch = self.GetBranch()
+    if branch:
+      return 'branch.%s.gerritserver' % branch
+    return None
+
+  def GetRieveldObjForPresubmit(self):
+    class ThisIsNotRietveldIssue(object):
+      def __nonzero__(self):
+        # This is a hack to make presubmit_support think that rietveld is not
+        # defined, yet still ensure that calls directly result in a decent
+        # exception message below.
+        return False
+
+      def __getattr__(self, attr):
+        print(
+            'You aren\'t using Rietveld at the moment, but Gerrit.\n'
+            'Using Rietveld in your PRESUBMIT scripts won\'t work.\n'
+            'Please, either change your PRESUBIT to not use rietveld_obj.%s,\n'
+            'or use Rietveld for codereview.\n'
+            'See also http://crbug.com/579160.' % attr)
+        raise NotImplementedError()
+    return ThisIsNotRietveldIssue()
+
+  def GetStatus(self):
+    # TODO(tandrii)
+    raise NotImplementedError()
+
+  def GetMostRecentPatchset(self):
+    data = gerrit_util.GetChangeDetail(self._GetGerritHost(), self.GetIssue(),
+                                       ['CURRENT_REVISION'])
+    return data['revisions'][data['current_revision']]['_number']
+
+  def FetchDescription(self):
+    data = gerrit_util.GetChangeDetail(self._GetGerritHost(), self.GetIssue(),
+                                       ['COMMIT_FOOTERS', 'CURRENT_REVISION'])
+    return data['revisions'][data['current_revision']]['commit_with_footers']
+
+  def UpdateDescriptionRemote(self, description):
+    # TODO(tandrii)
+    raise NotImplementedError()
+
+  def CloseIssue(self):
+    gerrit_util.AbandonChange(self._GetGerritHost(), self.GetIssue(), msg='')
 
 
 class ChangeDescription(object):
@@ -1886,6 +2147,7 @@ def CMDstatus(parser, args):
   changes = (
       Changelist(branchref=b, auth_config=auth_config)
       for b in branches.splitlines())
+  # TODO(tandrii): refactor to use CLs list instead of branches list.
   branches = [c.GetBranch() for c in changes]
   alignment = max(5, max(len(b) for b in branches))
   print 'Branches associated with reviews:'
@@ -2001,7 +2263,7 @@ def CMDcomments(parser, args):
     except ValueError:
       DieWithError('A review issue id is expected to be a number')
 
-  cl = Changelist(issue=issue, auth_config=auth_config)
+  cl = Changelist(issue=issue, codereview='rietveld', auth_config=auth_config)
 
   if options.comment:
     cl.AddComment(options.comment)
@@ -2376,8 +2638,10 @@ def GetTargetRef(remote, remote_branch, target_branch, pending_prefix):
 def RietveldUpload(options, args, cl, change):
   """upload the patch to rietveld."""
   upload_args = ['--assume_yes']  # Don't ask about untracked files.
-  upload_args.extend(['--server', cl.GetRietveldServer()])
-  upload_args.extend(auth.auth_config_to_command_options(cl.auth_config))
+  upload_args.extend(['--server', cl.GetCodereviewServer()])
+  # TODO(tandrii): refactor this ugliness into _RietveldChangelistImpl.
+  upload_args.extend(auth.auth_config_to_command_options(
+      cl._codereview_impl.GetAuthConfig()))
   if options.emulate_svn_auto_props:
     upload_args.append('--emulate_svn_auto_props')
 
@@ -2620,9 +2884,9 @@ def CMDupload(parser, args):
   # during the actual upload.
   if not settings.GetIsGerrit() and auth_config.use_oauth2:
     authenticator = auth.get_authenticator_for_host(
-        cl.GetRietveldServer(), auth_config)
+        cl.GetCodereviewServer(), auth_config)
     if not authenticator.has_cached_credentials():
-      raise auth.LoginRequiredError(cl.GetRietveldServer())
+      raise auth.LoginRequiredError(cl.GetCodereviewServer())
 
   # Apply watchlists on upload.
   change = cl.GetChange(base_branch, None)
@@ -3216,12 +3480,13 @@ def PatchIssue(issue_arg, reject, nocommit, directory, auth_config):
   # consequences of the caller not checking this could be dire.
   assert(not git_common.is_dirty_git_tree('apply'))
 
+  # TODO(tandrii): implement for Gerrit.
   if type(issue_arg) is int or issue_arg.isdigit():
     # Input is an issue id.  Figure out the URL.
     issue = int(issue_arg)
-    cl = Changelist(issue=issue, auth_config=auth_config)
+    cl = Changelist(issue=issue, codereview='rietveld', auth_config=auth_config)
     patchset = cl.GetMostRecentPatchset()
-    patch_data = cl.GetPatchSetDiff(issue, patchset)
+    patch_data = cl._codereview_impl.GetPatchSetDiff(issue, patchset)
   else:
     # Assume it's a URL to the patch. Default to https.
     issue_url = gclient_utils.UpgradeToHttps(issue_arg)
@@ -3230,8 +3495,8 @@ def PatchIssue(issue_arg, reject, nocommit, directory, auth_config):
       DieWithError('Must pass an issue ID or full URL for '
           '\'Download raw patch set\'')
     issue = int(match.group(2))
-    cl = Changelist(issue=issue, auth_config=auth_config)
-    cl.rietveld_server = match.group(1)
+    cl = Changelist(issue=issue, codereview='rietveld',
+                    rietvled_server=match.group(1), auth_config=auth_config)
     patchset = int(match.group(3))
     patch_data = urllib2.urlopen(issue_arg).read()
 
@@ -3275,7 +3540,8 @@ def PatchIssue(issue_arg, reject, nocommit, directory, auth_config):
                              'patch from issue %(i)s at patchset '
                              '%(p)s (http://crrev.com/%(i)s#ps%(p)s)'
                              % {'i': issue, 'p': patchset})])
-    cl = Changelist(auth_config=auth_config)
+    cl = Changelist(codereview='rietveld', auth_config=auth_config,
+                    rietveld_server=cl.GetCodereviewServer())
     cl.SetIssue(issue)
     cl.SetPatchset(patchset)
     print "Committed patch locally."
