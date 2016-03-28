@@ -367,8 +367,9 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
      */
     private static class ShowKeyboardResultReceiver extends ResultReceiver {
 
-        // Unfortunately, ResultReceiver used in showSoftInput() will be leaked. We minimize
-        // the leak by weak referencing CVC and therefore WebView object.
+        // Unfortunately, the memory life cycle of ResultReceiver object, once passed in
+        // showSoftInput(), is in the control of Android's input method framework and IME app,
+        // so we use a weakref to avoid tying CVC's lifetime to that of ResultReceiver object.
         private final WeakReference<ContentViewCore> mContentViewCore;
 
         public ShowKeyboardResultReceiver(ContentViewCore contentViewCore, Handler handler) {
