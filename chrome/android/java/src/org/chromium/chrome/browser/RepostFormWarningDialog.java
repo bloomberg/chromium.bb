@@ -92,6 +92,12 @@ public class RepostFormWarningDialog extends DialogFragment {
     }
 
     @Override
+    public void dismiss() {
+        if (getFragmentManager() == null) return;
+        super.dismiss();
+    }
+
+    @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
         setCurrentDialogForTesting(null);
