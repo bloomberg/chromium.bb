@@ -49,6 +49,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/inspector/MainThreadDebugger.h"
 #include "core/inspector/ScriptArguments.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -388,6 +389,8 @@ void V8Initializer::initializeMainThread()
     ASSERT(ThreadState::mainThreadState());
     ThreadState::mainThreadState()->addInterruptor(adoptPtr(new V8IsolateInterruptor(isolate)));
     ThreadState::mainThreadState()->registerTraceDOMWrappers(isolate, V8GCController::traceDOMWrappers);
+
+    V8PerIsolateData::from(isolate)->setThreadDebugger(adoptPtr(new MainThreadDebugger(isolate)));
 }
 
 void V8Initializer::shutdownMainThread()

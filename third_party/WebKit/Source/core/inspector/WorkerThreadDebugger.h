@@ -43,8 +43,11 @@ public:
     explicit WorkerThreadDebugger(WorkerThread*, v8::Isolate*);
     ~WorkerThreadDebugger() override;
 
-    static void setContextDebugData(v8::Local<v8::Context>);
-    static int contextGroupId();
+    static WorkerThreadDebugger* from(v8::Isolate*);
+
+    int contextGroupId();
+    void contextCreated(v8::Local<v8::Context>);
+    void contextWillBeDestroyed(v8::Local<v8::Context>);
 
     // V8DebuggerClient implementation.
     void runMessageLoopOnPause(int contextGroupId) override;

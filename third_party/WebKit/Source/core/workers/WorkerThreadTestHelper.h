@@ -71,7 +71,7 @@ public:
     typedef WorkerGlobalScope Base;
 
     FakeWorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
-        : WorkerGlobalScope(url, userAgent, thread, monotonicallyIncreasingTime(), starterOriginPrivilegeData, workerClients, true /* withInspector */)
+        : WorkerGlobalScope(url, userAgent, thread, monotonicallyIncreasingTime(), starterOriginPrivilegeData, workerClients)
         , m_thread(thread)
     {
     }

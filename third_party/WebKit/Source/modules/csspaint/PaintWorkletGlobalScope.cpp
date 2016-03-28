@@ -14,7 +14,7 @@ PassRefPtrWillBeRawPtr<PaintWorkletGlobalScope> PaintWorkletGlobalScope::create(
 {
     RefPtrWillBeRawPtr<PaintWorkletGlobalScope> paintWorkletGlobalScope = adoptRefWillBeNoop(new PaintWorkletGlobalScope(frame, url, userAgent, securityOrigin, isolate));
     paintWorkletGlobalScope->scriptController()->initializeContextIfNeeded();
-    MainThreadDebugger::contextCreated(paintWorkletGlobalScope->scriptController()->getScriptState(), paintWorkletGlobalScope->frame(), paintWorkletGlobalScope->getSecurityOrigin());
+    MainThreadDebugger::instance()->contextCreated(paintWorkletGlobalScope->scriptController()->getScriptState(), paintWorkletGlobalScope->frame(), paintWorkletGlobalScope->getSecurityOrigin());
     return paintWorkletGlobalScope.release();
 }
 

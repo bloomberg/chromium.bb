@@ -59,7 +59,7 @@ PassRefPtrWillBeRawPtr<SharedWorkerGlobalScope> SharedWorkerGlobalScope::create(
 }
 
 SharedWorkerGlobalScope::SharedWorkerGlobalScope(const String& name, const KURL& url, const String& userAgent, SharedWorkerThread* thread, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
-    : WorkerGlobalScope(url, userAgent, thread, monotonicallyIncreasingTime(), starterOriginPrivilegeData, workerClients, true /* withInspector */)
+    : WorkerGlobalScope(url, userAgent, thread, monotonicallyIncreasingTime(), starterOriginPrivilegeData, workerClients)
     , m_name(name)
 {
 }

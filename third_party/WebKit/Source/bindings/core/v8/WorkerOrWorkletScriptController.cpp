@@ -131,8 +131,22 @@ void WorkerOrWorkletScriptController::dispose()
 
     m_world->dispose();
 
-    if (isContextInitialized())
-        m_scriptState->disposePerContextData();
+    disposeContextIfNeeded();
+}
+
+void WorkerOrWorkletScriptController::disposeContextIfNeeded()
+{
+    if (!isContextInitialized())
+        return;
+
+    if (m_globalScope->isWorkerGlobalScope()) {
+        WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(m_isolate);
+        if (debugger) {
+            ScriptState::Scope scope(m_scriptState.get());
+            debugger->contextWillBeDestroyed(m_scriptState->context());
+        }
+    }
+    m_scriptState->disposePerContextData();
 }
 
 bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
@@ -153,7 +167,9 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
     // Name new context for debugging. For main thread worklet global scopes
     // this is done once the context is initialized.
     if (m_globalScope->isWorkerGlobalScope()) {
-        WorkerThreadDebugger::setContextDebugData(context);
+        WorkerThreadDebugger* debugger = WorkerThreadDebugger::from(m_isolate);
+        if (debugger)
+            debugger->contextCreated(context);
     }
 
     // Create a new JS object and use it as the prototype for the shadow global object.
@@ -165,7 +181,7 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
 
     v8::Local<v8::Object> jsGlobalScope;
     if (!V8ObjectConstructor::newInstance(m_isolate, globalScopeConstructor).ToLocal(&jsGlobalScope)) {
-        m_scriptState->disposePerContextData();
+        disposeContextIfNeeded();
         return false;
     }
 

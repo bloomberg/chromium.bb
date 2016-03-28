@@ -35,7 +35,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
-#include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorAnimationAgent.h"
 #include "core/inspector/InspectorApplicationCacheAgent.h"
@@ -113,9 +112,7 @@ public:
             return;
         OwnPtr<ClientMessageLoopAdapter> instance = adoptPtr(new ClientMessageLoopAdapter(adoptPtr(client->createClientMessageLoop())));
         s_instance = instance.get();
-        v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-        V8PerIsolateData* data = V8PerIsolateData::from(isolate);
-        data->setThreadDebugger(MainThreadDebugger::create(instance.release(), isolate));
+        MainThreadDebugger::instance()->setClientMessageLoop(instance.release());
     }
 
     static void webViewImplClosed(WebViewImpl* view)
@@ -326,10 +323,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 {
     ASSERT(isMainThread());
     ASSERT(m_webLocalFrameImpl->frame());
-
-    long processId = Platform::current()->getUniqueIdForProcess();
-    ASSERT(processId > 0);
-    IdentifiersFactory::setProcessId(processId);
 
     ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();

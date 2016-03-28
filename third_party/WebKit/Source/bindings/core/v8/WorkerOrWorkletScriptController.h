@@ -100,6 +100,7 @@ private:
 
     // Evaluate a script file in the current execution environment.
     ScriptValue evaluate(const CompressibleString& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler*, V8CacheOptions);
+    void disposeContextIfNeeded();
 
     RawPtrWillBeMember<WorkerOrWorkletGlobalScope> m_globalScope;
 

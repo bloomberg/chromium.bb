@@ -33,6 +33,7 @@
 #include "bindings/core/v8/V8Initializer.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTaskRunner.h"
+#include "core/inspector/WorkerThreadDebugger.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerReportingProxy.h"
@@ -412,6 +413,7 @@ v8::Isolate* WorkerThread::initializeIsolate()
     ThreadState::current()->registerTraceDOMWrappers(isolate, V8GCController::traceDOMWrappers);
     if (RuntimeEnabledFeatures::v8IdleTasksEnabled())
         V8PerIsolateData::enableIdleTasks(isolate, adoptPtr(new V8IdleTaskRunner(m_webScheduler)));
+    V8PerIsolateData::from(isolate)->setThreadDebugger(adoptPtr(new WorkerThreadDebugger(this, isolate)));
     return isolate;
 }
 

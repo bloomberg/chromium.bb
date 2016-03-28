@@ -71,13 +71,13 @@
 
 namespace blink {
 
-WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilageData, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients, bool withInspector)
+WorkerGlobalScope::WorkerGlobalScope(const KURL& url, const String& userAgent, WorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilageData, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
     : m_url(url)
     , m_userAgent(userAgent)
     , m_v8CacheOptions(V8CacheOptionsDefault)
     , m_scriptController(WorkerOrWorkletScriptController::create(this, thread->isolate()))
     , m_thread(thread)
-    , m_workerInspectorController(withInspector ? adoptRefWillBeNoop(new WorkerInspectorController(this)) : nullptr)
+    , m_workerInspectorController(WorkerInspectorController::create(this))
     , m_closing(false)
     , m_eventQueue(WorkerEventQueue::create(this))
     , m_workerClients(workerClients)

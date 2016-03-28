@@ -155,7 +155,7 @@ DebuggerScript.getScripts = function(contextGroupId)
             if (!script.context_data)
                 continue;
             // Context data is a string in the following format:
-            // <id>,<contextId>,("page"|"injected"|"worker")
+            // <contextGroupId>,<contextId>,("default"|"nondefault")
             if (script.context_data.indexOf(contextDataPrefix) !== 0)
                 continue;
         }
@@ -214,7 +214,7 @@ DebuggerScript._formatScript = function(script)
         endLine: endLine,
         endColumn: endColumn,
         executionContextId: executionContextId(),
-        isContentScript: !!script.context_data && script.context_data.endsWith(",injected"),
+        isContentScript: !!script.context_data && script.context_data.endsWith(",nondefault"),
         isInternalScript: script.is_debugger_script
     };
 }

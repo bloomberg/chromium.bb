@@ -35,13 +35,9 @@ public:
     static PassOwnPtr<V8Debugger> create(v8::Isolate*, V8DebuggerClient*);
     virtual ~V8Debugger() { }
 
-    // Each v8::Context is a part of a group. The group id is used to find approapriate
-    // V8DebuggerAgent to notify about events in the context.
-    // |contextGroupId| must be non-0.
-    static void setContextDebugData(v8::Local<v8::Context>, const String16& type, int contextGroupId);
+    // TODO(dgozman): make this non-static?
     static int contextId(v8::Local<v8::Context>);
 
-    // Context should have been already marked with |setContextDebugData| call.
     virtual void contextCreated(const V8ContextInfo&) = 0;
     virtual void contextDestroyed(v8::Local<v8::Context>) = 0;
     virtual void resetContextGroup(int contextGroupId) = 0;

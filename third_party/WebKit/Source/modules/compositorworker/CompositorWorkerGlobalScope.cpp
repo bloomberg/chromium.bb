@@ -23,7 +23,7 @@ PassRefPtrWillBeRawPtr<CompositorWorkerGlobalScope> CompositorWorkerGlobalScope:
 }
 
 CompositorWorkerGlobalScope::CompositorWorkerGlobalScope(const KURL& url, const String& userAgent, CompositorWorkerThread* thread, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData> starterOriginPrivilegeData, PassOwnPtrWillBeRawPtr<WorkerClients> workerClients)
-    : WorkerGlobalScope(url, userAgent, thread, timeOrigin, starterOriginPrivilegeData, workerClients, false /* withInspector */)
+    : WorkerGlobalScope(url, userAgent, thread, timeOrigin, starterOriginPrivilegeData, workerClients)
     , m_callbackCollection(this)
 {
 }

@@ -14,8 +14,9 @@ namespace blink {
 
 class V8ContextInfo {
 public:
-    V8ContextInfo(v8::Local<v8::Context> context, bool isDefault, const String16& origin, const String16& humanReadableName, const String16& frameId)
+    V8ContextInfo(v8::Local<v8::Context> context, int contextGroupId, bool isDefault, const String16& origin, const String16& humanReadableName, const String16& frameId)
         : context(context)
+        , contextGroupId(contextGroupId)
         , isDefault(isDefault)
         , origin(origin)
         , humanReadableName(humanReadableName)
@@ -24,6 +25,10 @@ public:
     }
 
     v8::Local<v8::Context> context;
+    // Each v8::Context is a part of a group. The group id is used to find appropriate
+    // V8DebuggerAgent to notify about events in the context.
+    // |contextGroupId| must be non-0.
+    int contextGroupId;
     bool isDefault;
     const String16 origin;
     const String16 humanReadableName;

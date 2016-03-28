@@ -39,6 +39,15 @@ namespace blink {
 
 static const int workerContextGroupId = 1;
 
+WorkerThreadDebugger* WorkerThreadDebugger::from(v8::Isolate* isolate)
+{
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    if (!data->threadDebugger())
+        return nullptr;
+    ASSERT(data->threadDebugger()->isWorker());
+    return static_cast<WorkerThreadDebugger*>(data->threadDebugger());
+}
+
 WorkerThreadDebugger::WorkerThreadDebugger(WorkerThread* workerThread, v8::Isolate* isolate)
     : ThreadDebugger(isolate)
     , m_workerThread(workerThread)
@@ -49,9 +58,14 @@ WorkerThreadDebugger::~WorkerThreadDebugger()
 {
 }
 
-void WorkerThreadDebugger::setContextDebugData(v8::Local<v8::Context> context)
+void WorkerThreadDebugger::contextCreated(v8::Local<v8::Context> context)
 {
-    V8Debugger::setContextDebugData(context, "worker", workerContextGroupId);
+    debugger()->contextCreated(V8ContextInfo(context, workerContextGroupId, true, m_workerThread->workerGlobalScope()->url().getString(), "", ""));
+}
+
+void WorkerThreadDebugger::contextWillBeDestroyed(v8::Local<v8::Context> context)
+{
+    debugger()->contextDestroyed(context);
 }
 
 int WorkerThreadDebugger::contextGroupId()
@@ -79,7 +93,7 @@ void WorkerThreadDebugger::contextsToReport(int contextGroupId, V8ContextInfoVec
 {
     ASSERT(contextGroupId == workerContextGroupId);
     ScriptState* scriptState = m_workerThread->workerGlobalScope()->scriptController()->getScriptState();
-    contexts.append(V8ContextInfo(scriptState->context(), true, m_workerThread->workerGlobalScope()->url().getString(), "", ""));
+    contexts.append(V8ContextInfo(scriptState->context(), workerContextGroupId, true, m_workerThread->workerGlobalScope()->url().getString(), "", ""));
 }
 
 } // namespace blink

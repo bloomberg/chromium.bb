@@ -45,6 +45,7 @@
 #include "core/workers/MainThreadWorkletGlobalScope.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/v8_inspector/public/V8Debugger.h"
+#include "public/platform/Platform.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -59,20 +60,26 @@ int frameId(LocalFrame* frame)
     return WeakIdentifierMap<LocalFrame>::identifier(frame);
 }
 
+Mutex& creationMutex()
+{
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, (new Mutex));
+    return mutex;
+}
+
 }
 
 // TODO(Oilpan): avoid keeping a raw reference separate from the
 // owner one; does not enable heap-movable objects.
 MainThreadDebugger* MainThreadDebugger::s_instance = nullptr;
 
-MainThreadDebugger::MainThreadDebugger(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
+MainThreadDebugger::MainThreadDebugger(v8::Isolate* isolate)
     : ThreadDebugger(isolate)
-    , m_clientMessageLoop(clientMessageLoop)
     , m_taskRunner(adoptPtr(new InspectorTaskRunner()))
 {
     MutexLocker locker(creationMutex());
     ASSERT(!s_instance);
     s_instance = this;
+    IdentifiersFactory::setProcessId(Platform::current()->getUniqueIdForProcess());
 }
 
 MainThreadDebugger::~MainThreadDebugger()
@@ -82,10 +89,11 @@ MainThreadDebugger::~MainThreadDebugger()
     s_instance = nullptr;
 }
 
-Mutex& MainThreadDebugger::creationMutex()
+void MainThreadDebugger::setClientMessageLoop(PassOwnPtr<ClientMessageLoop> clientMessageLoop)
 {
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, (new Mutex));
-    return mutex;
+    ASSERT(!m_clientMessageLoop);
+    ASSERT(clientMessageLoop);
+    m_clientMessageLoop = clientMessageLoop;
 }
 
 void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* frame, SecurityOrigin* origin)
@@ -93,20 +101,15 @@ void MainThreadDebugger::contextCreated(ScriptState* scriptState, LocalFrame* fr
     ASSERT(isMainThread());
     v8::HandleScope handles(scriptState->isolate());
     DOMWrapperWorld& world = scriptState->world();
-    V8Debugger::setContextDebugData(scriptState->context(), world.isMainWorld() ? "page" : "injected", contextGroupId(frame));
-    if (s_instance) {
-        if (frame->localFrameRoot() == frame && world.isMainWorld())
-            s_instance->debugger()->resetContextGroup(contextGroupId(frame));
-        s_instance->debugger()->contextCreated(V8ContextInfo(scriptState->context(), world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame)));
-    }
+    if (frame->localFrameRoot() == frame && world.isMainWorld())
+        debugger()->resetContextGroup(contextGroupId(frame));
+    debugger()->contextCreated(V8ContextInfo(scriptState->context(), contextGroupId(frame), world.isMainWorld(), origin ? origin->toRawString() : "", world.isIsolatedWorld() ? world.isolatedWorldHumanReadableName() : "", IdentifiersFactory::frameId(frame)));
 }
 
 void MainThreadDebugger::contextWillBeDestroyed(ScriptState* scriptState)
 {
-    if (s_instance) {
-        v8::HandleScope handles(scriptState->isolate());
-        s_instance->debugger()->contextDestroyed(scriptState->context());
-    }
+    v8::HandleScope handles(scriptState->isolate());
+    debugger()->contextDestroyed(scriptState->context());
 }
 
 int MainThreadDebugger::contextGroupId(LocalFrame* frame)
@@ -118,7 +121,9 @@ int MainThreadDebugger::contextGroupId(LocalFrame* frame)
 MainThreadDebugger* MainThreadDebugger::instance()
 {
     ASSERT(isMainThread());
-    return s_instance;
+    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    return static_cast<MainThreadDebugger*>(data->threadDebugger());
 }
 
 void MainThreadDebugger::interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunner::Task> task)
@@ -141,12 +146,14 @@ void MainThreadDebugger::runMessageLoopOnPause(int contextGroupId)
     if (UserGestureToken* token = UserGestureIndicator::currentToken())
         token->setPauseInDebugger();
     // Wait for continue or step command.
-    m_clientMessageLoop->run(pausedFrame);
+    if (m_clientMessageLoop)
+        m_clientMessageLoop->run(pausedFrame);
 }
 
 void MainThreadDebugger::quitMessageLoopOnPause()
 {
-    m_clientMessageLoop->quitNow();
+    if (m_clientMessageLoop)
+        m_clientMessageLoop->quitNow();
 }
 
 void MainThreadDebugger::muteWarningsAndDeprecations()
@@ -199,7 +206,7 @@ void MainThreadDebugger::contextsToReport(int contextGroupId, V8ContextInfoVecto
         // If initializeMainWorld returns true, then is registered by didCreateScriptContext
         if (!frame->script().initializeMainWorld()) {
             ScriptState* scriptState = ScriptState::forMainWorld(frame);
-            contexts.append(V8ContextInfo(scriptState->context(), true, "", "", frameId));
+            contexts.append(V8ContextInfo(scriptState->context(), contextGroupId, true, "", "", frameId));
         }
         frame->script().collectIsolatedContexts(isolatedContexts);
         if (isolatedContexts.isEmpty())
@@ -207,7 +214,7 @@ void MainThreadDebugger::contextsToReport(int contextGroupId, V8ContextInfoVecto
         for (const auto& pair : isolatedContexts) {
             String originString = pair.second ? pair.second->toRawString() : "";
             ScriptState* scriptState = pair.first;
-            contexts.append(V8ContextInfo(scriptState->context(), false, originString, scriptState->world().isolatedWorldHumanReadableName(), frameId));
+            contexts.append(V8ContextInfo(scriptState->context(), contextGroupId, false, originString, scriptState->world().isolatedWorldHumanReadableName(), frameId));
         }
         isolatedContexts.clear();
     }

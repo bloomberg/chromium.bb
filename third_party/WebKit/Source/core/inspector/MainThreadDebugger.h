@@ -38,10 +38,6 @@
 #include "platform/heap/Handle.h"
 #include <v8.h>
 
-namespace WTF {
-class Mutex;
-}
-
 namespace blink {
 
 class LocalFrame;
@@ -59,26 +55,20 @@ public:
         virtual void quitNow() = 0;
     };
 
-    static PassOwnPtr<MainThreadDebugger> create(PassOwnPtr<ClientMessageLoop> clientMessageLoop, v8::Isolate* isolate)
-    {
-        return adoptPtr(new MainThreadDebugger(std::move(clientMessageLoop), isolate));
-    }
-
+    explicit MainThreadDebugger(v8::Isolate*);
     ~MainThreadDebugger() override;
-
-    static void contextCreated(ScriptState*, LocalFrame*, SecurityOrigin*);
-    static void contextWillBeDestroyed(ScriptState*);
-    static int contextGroupId(LocalFrame*);
 
     static MainThreadDebugger* instance();
     static void interruptMainThreadAndRun(PassOwnPtr<InspectorTaskRunner::Task>);
-    InspectorTaskRunner* taskRunner() const { return m_taskRunner.get(); }
 
+    InspectorTaskRunner* taskRunner() const { return m_taskRunner.get(); }
     bool isWorker() override { return false; }
+    void setClientMessageLoop(PassOwnPtr<ClientMessageLoop>);
+    int contextGroupId(LocalFrame*);
+    void contextCreated(ScriptState*, LocalFrame*, SecurityOrigin*);
+    void contextWillBeDestroyed(ScriptState*);
 
 private:
-    MainThreadDebugger(PassOwnPtr<ClientMessageLoop>, v8::Isolate*);
-
     // V8DebuggerClient implementation.
     void runMessageLoopOnPause(int contextGroupId) override;
     void quitMessageLoopOnPause() override;
@@ -86,8 +76,6 @@ private:
     void unmuteWarningsAndDeprecations() override;
     bool callingContextCanAccessContext(v8::Local<v8::Context> calling, v8::Local<v8::Context> target) override;
     void contextsToReport(int contextGroupId, V8ContextInfoVector&) override;
-
-    static WTF::Mutex& creationMutex();
 
     OwnPtr<ClientMessageLoop> m_clientMessageLoop;
     OwnPtr<InspectorTaskRunner> m_taskRunner;

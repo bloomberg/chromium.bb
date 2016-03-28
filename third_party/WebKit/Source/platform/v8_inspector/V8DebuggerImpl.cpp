@@ -105,15 +105,6 @@ bool V8DebuggerImpl::enabled() const
     return !m_debuggerScript.IsEmpty();
 }
 
-void V8Debugger::setContextDebugData(v8::Local<v8::Context> context, const String16& type, int contextGroupId)
-{
-    int contextId = atomicIncrement(&s_lastContextId);
-    String16 debugData = String16::number(contextGroupId) + "," + String16::number(contextId) + "," + type;
-    v8::HandleScope scope(context->GetIsolate());
-    v8::Context::Scope contextScope(context);
-    context->SetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex), toV8String(context->GetIsolate(), debugData));
-}
-
 int V8Debugger::contextId(v8::Local<v8::Context> context)
 {
     v8::Local<v8::Value> data = context->GetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex));
@@ -786,6 +777,14 @@ PassOwnPtr<V8StackTrace> V8DebuggerImpl::createStackTrace(v8::Local<v8::StackTra
 
 void V8DebuggerImpl::contextCreated(const V8ContextInfo& info)
 {
+    ASSERT(info.context->GetIsolate() == m_isolate);
+    // TODO(dgozman): make s_lastContextId non-static.
+    int contextId = atomicIncrement(&s_lastContextId);
+    String16 debugData = String16::number(info.contextGroupId) + "," + String16::number(contextId) + "," + (info.isDefault ? "default" : "nondefault");
+    v8::HandleScope scope(m_isolate);
+    v8::Context::Scope contextScope(info.context);
+    info.context->SetEmbedderData(static_cast<int>(v8::Context::kDebugIdIndex), toV8String(m_isolate, debugData));
+
     V8RuntimeAgentImpl* agent = getRuntimeAgentForContext(info.context);
     if (agent)
         agent->reportExecutionContextCreated(info);

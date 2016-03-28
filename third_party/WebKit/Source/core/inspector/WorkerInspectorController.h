@@ -44,6 +44,7 @@
 namespace blink {
 
 class InstrumentingAgents;
+class V8Debugger;
 class WorkerDebuggerAgent;
 class WorkerGlobalScope;
 class WorkerRuntimeAgent;
@@ -58,7 +59,7 @@ class WorkerInspectorController final : public RefCountedWillBeGarbageCollectedF
     WTF_MAKE_NONCOPYABLE(WorkerInspectorController);
     USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerInspectorController);
 public:
-    explicit WorkerInspectorController(WorkerGlobalScope*);
+    static PassRefPtrWillBeRawPtr<WorkerInspectorController> create(WorkerGlobalScope*);
     ~WorkerInspectorController();
     DECLARE_TRACE();
 
@@ -68,6 +69,7 @@ public:
     void dispose();
 
 private:
+    WorkerInspectorController(WorkerGlobalScope*, V8Debugger*, int contextGroupId);
     friend InstrumentingAgents* instrumentationForWorkerGlobalScope(WorkerGlobalScope*);
 
     // InspectorRuntimeAgent::Client implementation.

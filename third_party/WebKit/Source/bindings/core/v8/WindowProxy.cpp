@@ -110,7 +110,7 @@ void WindowProxy::disposeContext(GlobalDetachmentBehavior behavior)
         LocalFrame* frame = toLocalFrame(m_frame);
         // The embedder could run arbitrary code in response to the willReleaseScriptContext callback, so all disposing should happen after it returns.
         frame->loader().client()->willReleaseScriptContext(context, m_world->worldId());
-        MainThreadDebugger::contextWillBeDestroyed(m_scriptState.get());
+        MainThreadDebugger::instance()->contextWillBeDestroyed(m_scriptState.get());
     }
 
     m_document.clear();
@@ -269,7 +269,7 @@ bool WindowProxy::initialize()
     }
     if (m_frame->isLocalFrame()) {
         LocalFrame* frame = toLocalFrame(m_frame);
-        MainThreadDebugger::contextCreated(m_scriptState.get(), frame, origin);
+        MainThreadDebugger::instance()->contextCreated(m_scriptState.get(), frame, origin);
         frame->loader().client()->didCreateScriptContext(context, m_world->extensionGroup(), m_world->worldId());
     }
     return true;
