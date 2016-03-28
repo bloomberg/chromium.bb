@@ -133,33 +133,38 @@ views::Link* InfoBarView::CreateLink(const base::string16& text,
 views::LabelButton* InfoBarView::CreateTextButton(
     views::ButtonListener* listener,
     const base::string16& text) {
-  views::LabelButton* button = nullptr;
-  if (ui::MaterialDesignController::IsModeMaterial()) {
-    button = views::MdTextButton::CreateStandardButton(listener, text);
-  } else {
-    button = new views::LabelButton(listener, text);
+  DCHECK(!ui::MaterialDesignController::IsModeMaterial());
+  views::LabelButton* button = new views::LabelButton(listener, text);
+  scoped_ptr<views::LabelButtonAssetBorder> button_border(
+      new views::LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON));
+  const int kNormalImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_NORMAL);
+  button_border->SetPainter(
+      false, views::Button::STATE_NORMAL,
+      views::Painter::CreateImageGridPainter(kNormalImageSet));
+  const int kHoveredImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_HOVER);
+  button_border->SetPainter(
+      false, views::Button::STATE_HOVERED,
+      views::Painter::CreateImageGridPainter(kHoveredImageSet));
+  const int kPressedImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_PRESSED);
+  button_border->SetPainter(
+      false, views::Button::STATE_PRESSED,
+      views::Painter::CreateImageGridPainter(kPressedImageSet));
+  button->SetBorder(std::move(button_border));
+  button->set_animate_on_state_change(false);
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
+  button->SetFocusable(true);
+  button->SetTextColor(views::Button::STATE_NORMAL, GetInfobarTextColor());
+  button->SetTextColor(views::Button::STATE_HOVERED, GetInfobarTextColor());
+  return button;
+}
 
-    scoped_ptr<views::LabelButtonAssetBorder> button_border(
-        new views::LabelButtonAssetBorder(views::Button::STYLE_TEXTBUTTON));
-    const int kNormalImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_NORMAL);
-    button_border->SetPainter(
-        false, views::Button::STATE_NORMAL,
-        views::Painter::CreateImageGridPainter(kNormalImageSet));
-    const int kHoveredImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_HOVER);
-    button_border->SetPainter(
-        false, views::Button::STATE_HOVERED,
-        views::Painter::CreateImageGridPainter(kHoveredImageSet));
-    const int kPressedImageSet[] = IMAGE_GRID(IDR_INFOBARBUTTON_PRESSED);
-    button_border->SetPainter(
-        false, views::Button::STATE_PRESSED,
-        views::Painter::CreateImageGridPainter(kPressedImageSet));
-    button->SetBorder(std::move(button_border));
-    button->set_animate_on_state_change(false);
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    button->SetFontList(rb.GetFontList(ui::ResourceBundle::MediumFont));
-    button->SetFocusable(true);
-  }
-
+views::MdTextButton* InfoBarView::CreateMdTextButton(
+    views::ButtonListener* listener,
+    const base::string16& text) {
+  DCHECK(ui::MaterialDesignController::IsModeMaterial());
+  views::MdTextButton* button =
+      views::MdTextButton::CreateMdButton(listener, text);
   button->SetTextColor(views::Button::STATE_NORMAL, GetInfobarTextColor());
   button->SetTextColor(views::Button::STATE_HOVERED, GetInfobarTextColor());
   return button;

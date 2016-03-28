@@ -13,6 +13,7 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 
@@ -70,8 +71,20 @@ void ConfirmInfoBar::ViewHierarchyChanged(
     AddViewToContentArea(label_);
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_OK) {
-      ok_button_ = CreateTextButton(
-          this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
+      if (ui::MaterialDesignController::IsModeMaterial()) {
+        views::MdTextButton* button = CreateMdTextButton(
+            this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
+        // If this is the only button, weak call to action. Otherwise, strong
+        // call to action.
+        button->SetCallToAction(
+            delegate->GetButtons() == ConfirmInfoBarDelegate::BUTTON_OK
+                ? views::MdTextButton::WEAK_CALL_TO_ACTION
+                : views::MdTextButton::STRONG_CALL_TO_ACTION);
+        ok_button_ = button;
+      } else {
+        ok_button_ = CreateTextButton(
+            this, delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK));
+      }
       if (delegate->OKButtonTriggersUACPrompt()) {
         elevation_icon_setter_.reset(new ElevationIconSetter(
             ok_button_,
@@ -82,9 +95,22 @@ void ConfirmInfoBar::ViewHierarchyChanged(
     }
 
     if (delegate->GetButtons() & ConfirmInfoBarDelegate::BUTTON_CANCEL) {
-      cancel_button_ = CreateTextButton(
-          this,
-          delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+      if (ui::MaterialDesignController::IsModeMaterial()) {
+        views::MdTextButton* button = CreateMdTextButton(
+            this,
+            delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+        // If this is the only button, weak call to action. Otherwise, no call
+        // to action.
+        button->SetCallToAction(
+            delegate->GetButtons() == ConfirmInfoBarDelegate::BUTTON_CANCEL
+                ? views::MdTextButton::WEAK_CALL_TO_ACTION
+                : views::MdTextButton::NO_CALL_TO_ACTION);
+        cancel_button_ = button;
+      } else {
+        cancel_button_ = CreateTextButton(
+            this,
+            delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_CANCEL));
+      }
       AddViewToContentArea(cancel_button_);
       cancel_button_->SizeToPreferredSize();
     }
