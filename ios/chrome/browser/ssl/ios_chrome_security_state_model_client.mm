@@ -9,7 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "ios/web/public/cert_store.h"
 #include "ios/web/public/navigation_item.h"
-#include "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/origin_util.h"
 #include "ios/web/public/security_style.h"
 #include "ios/web/public/ssl_status.h"

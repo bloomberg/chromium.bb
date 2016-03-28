@@ -11,6 +11,7 @@
 
 #include "base/ios/block_types.h"
 #include "ios/web/public/favicon_url.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #include "ios/web/public/web_state/web_state.h"
@@ -29,7 +30,6 @@ class X509Certificate;
 namespace web {
 class BlockedPopupInfo;
 struct Referrer;
-struct WebLoadParams;
 }
 
 // Callback for -presentSSLError:forSSLStatus:onUrl:recoverable:callback:
@@ -144,8 +144,10 @@ typedef void (^SSLErrorCallback)(BOOL);
 // |webWillInitiateLoadWithParams|, the |params| argument is non-const so that
 // the delegate can make changes if necessary.
 // TODO(rohitrao): This is not a great API.  Clean it up.
-- (void)webWillInitiateLoadWithParams:(web::WebLoadParams&)params;
-- (void)webDidUpdateSessionForLoadWithParams:(const web::WebLoadParams&)params
+- (void)webWillInitiateLoadWithParams:
+    (web::NavigationManager::WebLoadParams&)params;
+- (void)webDidUpdateSessionForLoadWithParams:
+            (const web::NavigationManager::WebLoadParams&)params
                         wasInitialNavigation:(BOOL)initialNavigation;
 // Called from finishHistoryNavigationFromEntry.
 - (void)webWillFinishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry;

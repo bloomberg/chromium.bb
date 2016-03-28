@@ -23,7 +23,7 @@
 #include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/web/public/navigation_item.h"
-#include "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_thread.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"

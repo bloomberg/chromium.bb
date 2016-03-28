@@ -58,6 +58,8 @@
 #include "net/ssl/ssl_info.h"
 #include "url/url_constants.h"
 
+using web::NavigationManager;
+
 namespace {
 
 // Represents cert verification error, which happened inside
@@ -1735,7 +1737,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
     // navigation rather than restarting the load.
     if (web::GetWebClient()->IsAppSpecificURL(webViewURL)) {
       [self abortWebLoad];
-      web::WebLoadParams params(webViewURL);
+      NavigationManager::WebLoadParams params(webViewURL);
       [self loadWithParams:params];
       return;
     } else {

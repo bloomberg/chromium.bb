@@ -5,50 +5,13 @@
 #ifndef IOS_WEB_NAVIGATION_WEB_LOAD_PARAMS_H_
 #define IOS_WEB_NAVIGATION_WEB_LOAD_PARAMS_H_
 
-#import <Foundation/Foundation.h>
-
-#import "base/mac/scoped_nsobject.h"
-#include "ios/web/public/referrer.h"
-#include "ui/base/page_transition_types.h"
-#include "url/gurl.h"
+#import "ios/web/public/navigation_manager.h"
 
 namespace web {
 
-// Parameters for URL loading. Most parameters are optional, and can be left at
-// the default values set by the constructor.
-// TODO(crbug.com/597990): Move this into NavigationManager to parallel
-// NavigationController's LoadURLParams (which this is modeled after).
-struct WebLoadParams {
- public:
-  // The URL to load. Must be set.
-  GURL url;
-
-  // The referrer for the load. May be empty.
-  Referrer referrer;
-
-  // The transition type for the load. Defaults to PAGE_TRANSITION_LINK.
-  ui::PageTransition transition_type;
-
-  // True for renderer-initiated navigations. This is
-  // important for tracking whether to display pending URLs.
-  bool is_renderer_initiated;
-
-  // Any extra HTTP headers to add to the load.
-  base::scoped_nsobject<NSDictionary> extra_headers;
-
-  // Any post data to send with the load. When setting this, you should
-  // generally set a Content-Type header as well.
-  base::scoped_nsobject<NSData> post_data;
-
-  // Create a new WebLoadParams with the given URL and defaults for all other
-  // parameters.
-  explicit WebLoadParams(const GURL& url);
-  ~WebLoadParams();
-
-  // Allow copying WebLoadParams.
-  WebLoadParams(const WebLoadParams& other);
-  WebLoadParams& operator=(const WebLoadParams& other);
-};
+// TODO(crbug.com/597990) Remove this alias once all clients are switched to
+// use web::NavigationManager::WebLoadParams.
+using WebLoadParams = web::NavigationManager::WebLoadParams;
 
 }  // namespace web
 

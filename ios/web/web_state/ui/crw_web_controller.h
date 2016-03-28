@@ -9,6 +9,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #import "ios/web/net/crw_request_tracker_delegate.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/crw_web_user_interface_delegate.h"
 #import "ios/web/public/web_state/js/crw_js_injection_evaluator.h"
 #import "ios/web/public/web_state/ui/crw_web_delegate.h"
@@ -172,7 +173,7 @@ class WebStateImpl;
 
 // Start loading the URL specified in |originalParams|, with the specified
 // settings.  Always resets the openedByScript property to NO.
-- (void)loadWithParams:(const web::WebLoadParams&)originalParams;
+- (void)loadWithParams:(const web::NavigationManager::WebLoadParams&)params;
 
 // Loads the URL indicated by current session state.
 - (void)loadCurrentURL;

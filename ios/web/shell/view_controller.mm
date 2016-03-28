@@ -16,7 +16,6 @@
 #import "ios/net/crn_http_protocol_handler.h"
 #import "ios/net/empty_nsurlcache.h"
 #import "ios/web/navigation/crw_session_controller.h"
-#include "ios/web/navigation/web_load_params.h"
 #import "ios/web/net/crw_url_verifying_protocol_handler.h"
 #include "ios/web/net/request_tracker_factory_impl.h"
 #import "ios/web/net/web_http_protocol_handler_delegate.h"
@@ -31,6 +30,8 @@
 NSString* const kWebShellBackButtonAccessibilityLabel = @"Back";
 NSString* const kWebShellForwardButtonAccessibilityLabel = @"Forward";
 NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
+
+using web::NavigationManager;
 
 @interface ViewController ()<CRWWebUserInterfaceDelegate> {
   web::BrowserState* _browserState;
@@ -123,7 +124,7 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
   [view setFrame:[_containerView bounds]];
   [_containerView addSubview:view];
 
-  web::WebLoadParams params(GURL("https://dev.chromium.org/"));
+  NavigationManager::WebLoadParams params(GURL("https://dev.chromium.org/"));
   params.transition_type = ui::PAGE_TRANSITION_TYPED;
   [_webController loadWithParams:params];
 }
@@ -165,25 +166,25 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
 }
 
 - (void)back {
-  web::NavigationManager* navManager = self.webState->GetNavigationManager();
+  NavigationManager* navManager = self.webState->GetNavigationManager();
   if (navManager->CanGoBack()) {
     navManager->GoBack();
   }
 }
 
 - (void)forward {
-  web::NavigationManager* navManager = self.webState->GetNavigationManager();
+  NavigationManager* navManager = self.webState->GetNavigationManager();
   if (navManager->CanGoForward()) {
     navManager->GoForward();
   }
 }
 
 - (BOOL)textFieldShouldReturn:(UITextField*)field {
-  GURL url = GURL(base::SysNSStringToUTF8([field text]));
+  GURL URL = GURL(base::SysNSStringToUTF8([field text]));
 
   // Do not try to load invalid URLs.
-  if (url.is_valid()) {
-    web::WebLoadParams params(url);
+  if (URL.is_valid()) {
+    NavigationManager::WebLoadParams params(URL);
     params.transition_type = ui::PAGE_TRANSITION_TYPED;
     [_webController loadWithParams:params];
   }
@@ -337,9 +338,11 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
 }
 - (void)webWillReload {
 }
-- (void)webWillInitiateLoadWithParams:(web::WebLoadParams&)params {
+- (void)webWillInitiateLoadWithParams:
+    (NavigationManager::WebLoadParams&)params {
 }
-- (void)webDidUpdateSessionForLoadWithParams:(const web::WebLoadParams&)params
+- (void)webDidUpdateSessionForLoadWithParams:
+            (const NavigationManager::WebLoadParams&)params
                         wasInitialNavigation:(BOOL)initialNavigation {
 }
 - (void)webWillFinishHistoryNavigationFromEntry:(CRWSessionEntry*)fromEntry {

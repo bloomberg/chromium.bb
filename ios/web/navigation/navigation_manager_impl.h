@@ -12,7 +12,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
-#include "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 

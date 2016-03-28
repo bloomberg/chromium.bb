@@ -10,7 +10,7 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "ios/web/public/navigation_item.h"
-#include "ios/web/public/navigation_manager.h"
+#import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
 

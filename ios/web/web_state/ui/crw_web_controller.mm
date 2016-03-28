@@ -90,6 +90,7 @@
 #include "url/url_constants.h"
 
 using base::UserMetricsAction;
+using web::NavigationManager;
 using web::NavigationManagerImpl;
 using web::WebState;
 using web::WebStateImpl;
@@ -1406,9 +1407,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self loadNativeViewWithSuccess:YES];
 }
 
-- (void)loadWithParams:(const web::WebLoadParams&)originalParams {
+- (void)loadWithParams:(const NavigationManager::WebLoadParams&)originalParams {
   // Make a copy of |params|, as some of the delegate methods may modify it.
-  web::WebLoadParams params(originalParams);
+  NavigationManager::WebLoadParams params(originalParams);
 
   // Initiating a navigation from the UI, record the current page state before
   // the new page loads. Don't record for back/forward, as the current entry
@@ -1595,7 +1596,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     if (transientItem) {
       // If there's a transient item, a reload is considered a new navigation to
       // the transient item's URL (as on other platforms).
-      web::WebLoadParams reloadParams(transientItem->GetURL());
+      NavigationManager::WebLoadParams reloadParams(transientItem->GetURL());
       reloadParams.transition_type = ui::PAGE_TRANSITION_RELOAD;
       reloadParams.extra_headers.reset(
           [transientItem->GetHttpRequestHeaders() copy]);
@@ -1779,7 +1780,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     ui::PageTransition transition = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_RELOAD | ui::PAGE_TRANSITION_FORWARD_BACK);
 
-    web::WebLoadParams params(endURL);
+    NavigationManager::WebLoadParams params(endURL);
     if (currentItem) {
       params.referrer = currentItem->GetReferrer();
     }

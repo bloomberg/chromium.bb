@@ -38,6 +38,34 @@ bool AreURLsInPageNavigation(const GURL& existing_url, const GURL& new_url) {
 
 namespace web {
 
+NavigationManager::WebLoadParams::WebLoadParams(const GURL& url)
+    : url(url),
+      transition_type(ui::PAGE_TRANSITION_LINK),
+      is_renderer_initiated(false),
+      post_data(nil) {}
+
+NavigationManager::WebLoadParams::~WebLoadParams() {}
+
+NavigationManager::WebLoadParams::WebLoadParams(const WebLoadParams& other)
+    : url(other.url),
+      referrer(other.referrer),
+      transition_type(other.transition_type),
+      is_renderer_initiated(other.is_renderer_initiated),
+      extra_headers([other.extra_headers copy]),
+      post_data([other.post_data copy]) {}
+
+NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
+    const WebLoadParams& other) {
+  url = other.url;
+  referrer = other.referrer;
+  is_renderer_initiated = other.is_renderer_initiated;
+  transition_type = other.transition_type;
+  extra_headers.reset([other.extra_headers copy]);
+  post_data.reset([other.post_data copy]);
+
+  return *this;
+}
+
 NavigationManagerImpl::NavigationManagerImpl(
     NavigationManagerDelegate* delegate,
     BrowserState* browser_state)
