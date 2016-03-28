@@ -333,8 +333,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
      */
     showLoadingUI_: function(show) {
       $('gaia-loading').hidden = !show;
-      this.getSigninFrame_().hidden = show;
       this.classList.toggle('loading', show);
+      // Only set hidden for offline-gaia and not set it on the 'sign-frame'
+      // webview element. Setting it on webview not only hides but also affects
+      // its loading events.
+      if (this.isOffline)
+        this.getSigninFrame_().hidden = show;
       $('signin-frame').classList.remove('show');
       this.updateControlsState();
     },
