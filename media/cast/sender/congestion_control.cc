@@ -82,7 +82,11 @@ class AdaptiveCongestionControl : public CongestionControl {
   const double max_frame_rate_;
   std::deque<FrameStats> frame_stats_;
   uint32_t last_frame_stats_;
-  uint32_t last_acked_frame_;
+  // This is the latest known frame that all previous frames (having smaller
+  // |frame_id|) and this frame were acked by receiver.
+  uint32_t last_checkpoint_frame_;
+  // This is the first time that |last_checkpoint_frame_| is marked.
+  base::TimeTicks last_checkpoint_time_;
   uint32_t last_enqueued_frame_;
   base::TimeDelta rtt_;
   size_t history_size_;
@@ -155,7 +159,7 @@ AdaptiveCongestionControl::AdaptiveCongestionControl(base::TickClock* clock,
       min_bitrate_configured_(min_bitrate_configured),
       max_frame_rate_(max_frame_rate),
       last_frame_stats_(static_cast<uint32_t>(-1)),
-      last_acked_frame_(static_cast<uint32_t>(-1)),
+      last_checkpoint_frame_(static_cast<uint32_t>(-1)),
       last_enqueued_frame_(static_cast<uint32_t>(-1)),
       history_size_(kHistorySize),
       acked_bits_in_history_(0) {
@@ -166,6 +170,8 @@ AdaptiveCongestionControl::AdaptiveCongestionControl(base::TickClock* clock,
   frame_stats_[0].ack_time = now;
   frame_stats_[0].enqueue_time = now;
   frame_stats_[1].ack_time = now;
+  frame_stats_[1].enqueue_time = now;
+  last_checkpoint_time_ = now;
   DCHECK(!frame_stats_[0].ack_time.is_null());
 }
 
@@ -198,8 +204,9 @@ base::TimeDelta AdaptiveCongestionControl::DeadTime(const FrameStats& a,
 
 double AdaptiveCongestionControl::CalculateSafeBitrate() {
   double transmit_time =
-      (GetFrameStats(last_acked_frame_)->ack_time -
-       frame_stats_.front().enqueue_time - dead_time_in_history_).InSecondsF();
+      (GetFrameStats(last_checkpoint_frame_)->ack_time -
+       frame_stats_.front().enqueue_time - dead_time_in_history_)
+          .InSecondsF();
 
   if (acked_bits_in_history_ == 0 || transmit_time <= 0.0) {
     return min_bitrate_configured_;
@@ -239,24 +246,25 @@ void AdaptiveCongestionControl::PruneFrameStats() {
 
 void AdaptiveCongestionControl::AckFrame(uint32_t frame_id,
                                          base::TimeTicks when) {
-  FrameStats* frame_stats = GetFrameStats(last_acked_frame_);
-  while (IsNewerFrameId(frame_id, last_acked_frame_)) {
+  FrameStats* frame_stats = GetFrameStats(last_checkpoint_frame_);
+  while (IsNewerFrameId(frame_id, last_checkpoint_frame_)) {
     FrameStats* last_frame_stats = frame_stats;
-    frame_stats = GetFrameStats(last_acked_frame_ + 1);
+    frame_stats = GetFrameStats(last_checkpoint_frame_ + 1);
     if (frame_stats->enqueue_time.is_null()) {
       // Can't ack a frame that hasn't been sent yet.
       return;
     }
-    last_acked_frame_++;
+    last_checkpoint_frame_++;
     if (when < frame_stats->enqueue_time)
       when = frame_stats->enqueue_time;
-
-    // We overwrite the ack time for those frames that were already acked in
-    // previous extended ACK messages. This is conservative but safe to estimate
-    // the available bitrate. This might need be re-visited later.
-    frame_stats->ack_time = when;
+    // Don't overwrite the ack time for those frames that were already acked in
+    // previous extended ACKs.
+    if (frame_stats->ack_time.is_null())
+      frame_stats->ack_time = when;
+    DCHECK_GE(when, frame_stats->ack_time);
     acked_bits_in_history_ += frame_stats->frame_size_in_bits;
     dead_time_in_history_ += DeadTime(*last_frame_stats, *frame_stats);
+    last_checkpoint_time_ = when;
   }
 }
 
@@ -264,7 +272,7 @@ void AdaptiveCongestionControl::AckLaterFrames(
     std::vector<uint32_t> received_frames,
     base::TimeTicks when) {
   for (uint32_t frame_id : received_frames) {
-    if (IsNewerFrameId(frame_id, last_acked_frame_)) {
+    if (IsNewerFrameId(frame_id, last_checkpoint_frame_)) {
       FrameStats* frame_stats = GetFrameStats(frame_id);
       if (frame_stats->enqueue_time.is_null()) {
         // Can't ack a frame that hasn't been sent yet.
@@ -272,10 +280,10 @@ void AdaptiveCongestionControl::AckLaterFrames(
       }
       if (when < frame_stats->enqueue_time)
         when = frame_stats->enqueue_time;
-      // This |ack_time| is only used to indicate that the frame has been
-      // received by the RTP receiver. And will be overriten later when it is
-      // normally acked in |AckFrame()|.
-      frame_stats->ack_time = when;
+      // Don't overwrite the ack time for those frames that were acked before.
+      if (frame_stats->ack_time.is_null())
+        frame_stats->ack_time = when;
+      DCHECK_GE(when, frame_stats->ack_time);
     }
   }
 }
@@ -301,8 +309,10 @@ base::TimeTicks AdaptiveCongestionControl::EstimatedSendingTime(
   // frame after the last ACK'ed frame.  It is possible for multiple frames to
   // be in-flight; and therefore it is common for the |estimated_sending_time|
   // for those frames to be before |now|.
-  base::TimeTicks estimated_sending_time;
-  for (uint32_t f = last_acked_frame_; IsNewerFrameId(frame_id, f); ++f) {
+  // The initial estimate is based on the last ACKed frame and the RTT.
+  base::TimeTicks estimated_sending_time = last_checkpoint_time_ - rtt_;
+  for (uint32_t f = last_checkpoint_frame_ + 1; IsNewerFrameId(frame_id, f);
+       ++f) {
     FrameStats* const stats = GetFrameStats(f);
 
     // |estimated_ack_time| is the local time when the sender receives the ACK,
@@ -311,15 +321,8 @@ base::TimeTicks AdaptiveCongestionControl::EstimatedSendingTime(
 
     // Do not update the estimate if this frame's packets will never again enter
     // the packet send queue; unless there is no estimate yet.
-    if (!estimated_ack_time.is_null() && !estimated_sending_time.is_null())
+    if (!estimated_ack_time.is_null())
       continue;
-
-    // The initial estimate is based on the last ACKed frame and the RTT.
-    if (!estimated_ack_time.is_null()) {
-      DCHECK_EQ(f, last_acked_frame_);
-      estimated_sending_time = estimated_ack_time - rtt_;
-      continue;
-    }
 
     // Model: The |estimated_sending_time| is the time at which the first byte
     // of the encoded frame is transmitted.  Then, assume the transmission of
