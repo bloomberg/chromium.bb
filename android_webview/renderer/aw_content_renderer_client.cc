@@ -228,6 +228,29 @@ void AwContentRendererClient::AddKeySystems(
   AwAddKeySystems(key_systems);
 }
 
+bool AwContentRendererClient::ShouldUseMediaPlayerForURL(const GURL& url) {
+  // Android WebView needs to support codecs that Chrome does not, for these
+  // cases we must force the usage of Android MediaPlayer instead of Chrome's
+  // internal player.
+  //
+  // Note: Despite these extensions being forwarded for playback to MediaPlayer,
+  // HTMLMediaElement.canPlayType() will return empty for these containers.
+  // TODO(boliu): If this is important, extend media::MimeUtil for WebView.
+  //
+  // Format list mirrors:
+  // http://developer.android.com/guide/appendix/media-formats.html
+  static const char* kMediaPlayerExtensions[] = {
+      ".3gp",  ".ts",    ".flac", ".mid", ".xmf",
+      ".mxmf", ".rtttl", ".rtx",  ".ota", ".imy"};
+  for (const auto& extension : kMediaPlayerExtensions) {
+    if (base::EndsWith(url.path(), extension,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 bool AwContentRendererClient::ShouldOverridePageVisibilityState(
     const content::RenderFrame* render_frame,
     blink::WebPageVisibilityState* override_state) {

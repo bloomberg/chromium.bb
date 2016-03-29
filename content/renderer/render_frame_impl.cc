@@ -2443,8 +2443,10 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       initial_cdm, media_surface_manager_, media_session);
 
 #if defined(OS_ANDROID)
-  if (!UseWebMediaPlayerImpl(url))
+  if (GetContentClient()->renderer()->ShouldUseMediaPlayerForURL(url) ||
+      !UseWebMediaPlayerImpl(url)) {
     return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
+  }
 #endif  // defined(OS_ANDROID)
 
 #if defined(ENABLE_MOJO_RENDERER)

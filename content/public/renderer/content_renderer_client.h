@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
@@ -199,7 +200,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // Returns true if a popup window should be allowed.
   virtual bool AllowPopup();
 
-#ifdef OS_ANDROID
+#if defined(OS_ANDROID)
   // TODO(sgurun) This callback is deprecated and will be removed as soon
   // as android webview completes implementation of a resource throttle based
   // shouldoverrideurl implementation. See crbug.com/325351
@@ -214,6 +215,10 @@ class CONTENT_EXPORT ContentRendererClient {
                                 blink::WebNavigationType type,
                                 blink::WebNavigationPolicy default_policy,
                                 bool is_redirect);
+
+  // Indicates if the Android MediaPlayer should be used instead of Chrome's
+  // built in media player for the given |url|. Defaults to false.
+  virtual bool ShouldUseMediaPlayerForURL(const GURL& url);
 #endif
 
   // Returns true if we should fork a new process for the given navigation.
