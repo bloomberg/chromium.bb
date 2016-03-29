@@ -295,7 +295,7 @@ aom.pc: config.mk libs.mk
 	$(qexec)echo 'includedir=$${prefix}/include' >> $@
 	$(qexec)echo '' >> $@
 	$(qexec)echo 'Name: aom' >> $@
-	$(qexec)echo 'Description: WebM Project VPx codec implementation' >> $@
+	$(qexec)echo 'Description: WebM Project AVx codec implementation' >> $@
 	$(qexec)echo 'Version: $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)' >> $@
 	$(qexec)echo 'Requires:' >> $@
 	$(qexec)echo 'Conflicts:' >> $@

@@ -49,15 +49,15 @@ typedef struct FrameWorkerData {
   int frame_decoded;        // Finished decoding current frame.
 } FrameWorkerData;
 
-void av1_frameworker_lock_stats(VPxWorker *const worker);
-void av1_frameworker_unlock_stats(VPxWorker *const worker);
-void av1_frameworker_signal_stats(VPxWorker *const worker);
+void av1_frameworker_lock_stats(AVxWorker *const worker);
+void av1_frameworker_unlock_stats(AVxWorker *const worker);
+void av1_frameworker_signal_stats(AVxWorker *const worker);
 
 // Wait until ref_buf has been decoded to row in real pixel unit.
 // Note: worker may already finish decoding ref_buf and release it in order to
 // start decoding next frame. So need to check whether worker is still decoding
 // ref_buf.
-void av1_frameworker_wait(VPxWorker *const worker, RefCntBuffer *const ref_buf,
+void av1_frameworker_wait(AVxWorker *const worker, RefCntBuffer *const ref_buf,
                            int row);
 
 // FrameWorker broadcasts its decoding progress so other workers that are
@@ -65,8 +65,8 @@ void av1_frameworker_wait(VPxWorker *const worker, RefCntBuffer *const ref_buf,
 void av1_frameworker_broadcast(RefCntBuffer *const buf, int row);
 
 // Copy necessary decoding context from src worker to dst worker.
-void av1_frameworker_copy_context(VPxWorker *const dst_worker,
-                                   VPxWorker *const src_worker);
+void av1_frameworker_copy_context(AVxWorker *const dst_worker,
+                                   AVxWorker *const src_worker);
 
 #ifdef __cplusplus
 }  // extern "C"

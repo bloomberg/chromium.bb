@@ -18,7 +18,7 @@
 // #define DEBUG_THREAD
 
 // TODO(hkuang): Clean up all the #ifdef in this file.
-void av1_frameworker_lock_stats(VPxWorker *const worker) {
+void av1_frameworker_lock_stats(AVxWorker *const worker) {
 #if CONFIG_MULTITHREAD
   FrameWorkerData *const worker_data = worker->data1;
   pthread_mutex_lock(&worker_data->stats_mutex);
@@ -27,7 +27,7 @@ void av1_frameworker_lock_stats(VPxWorker *const worker) {
 #endif
 }
 
-void av1_frameworker_unlock_stats(VPxWorker *const worker) {
+void av1_frameworker_unlock_stats(AVxWorker *const worker) {
 #if CONFIG_MULTITHREAD
   FrameWorkerData *const worker_data = worker->data1;
   pthread_mutex_unlock(&worker_data->stats_mutex);
@@ -36,7 +36,7 @@ void av1_frameworker_unlock_stats(VPxWorker *const worker) {
 #endif
 }
 
-void av1_frameworker_signal_stats(VPxWorker *const worker) {
+void av1_frameworker_signal_stats(AVxWorker *const worker) {
 #if CONFIG_MULTITHREAD
   FrameWorkerData *const worker_data = worker->data1;
 
@@ -60,7 +60,7 @@ void av1_frameworker_signal_stats(VPxWorker *const worker) {
 #endif
 
 // TODO(hkuang): Remove worker parameter as it is only used in debug code.
-void av1_frameworker_wait(VPxWorker *const worker, RefCntBuffer *const ref_buf,
+void av1_frameworker_wait(AVxWorker *const worker, RefCntBuffer *const ref_buf,
                            int row) {
 #if CONFIG_MULTITHREAD
   if (!ref_buf) return;
@@ -74,7 +74,7 @@ void av1_frameworker_wait(VPxWorker *const worker, RefCntBuffer *const ref_buf,
   {
     // Find the worker thread that owns the reference frame. If the reference
     // frame has been fully decoded, it may not have owner.
-    VPxWorker *const ref_worker = ref_buf->frame_worker_owner;
+    AVxWorker *const ref_worker = ref_buf->frame_worker_owner;
     FrameWorkerData *const ref_worker_data =
         (FrameWorkerData *)ref_worker->data1;
     const AV1Decoder *const pbi = ref_worker_data->pbi;
@@ -114,7 +114,7 @@ void av1_frameworker_wait(VPxWorker *const worker, RefCntBuffer *const ref_buf,
 
 void av1_frameworker_broadcast(RefCntBuffer *const buf, int row) {
 #if CONFIG_MULTITHREAD
-  VPxWorker *worker = buf->frame_worker_owner;
+  AVxWorker *worker = buf->frame_worker_owner;
 
 #ifdef DEBUG_THREAD
   {
@@ -134,8 +134,8 @@ void av1_frameworker_broadcast(RefCntBuffer *const buf, int row) {
 #endif  // CONFIG_MULTITHREAD
 }
 
-void av1_frameworker_copy_context(VPxWorker *const dst_worker,
-                                   VPxWorker *const src_worker) {
+void av1_frameworker_copy_context(AVxWorker *const dst_worker,
+                                   AVxWorker *const src_worker) {
 #if CONFIG_MULTITHREAD
   FrameWorkerData *const src_worker_data = (FrameWorkerData *)src_worker->data1;
   FrameWorkerData *const dst_worker_data = (FrameWorkerData *)dst_worker->data1;

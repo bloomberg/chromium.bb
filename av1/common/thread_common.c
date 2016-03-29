@@ -153,9 +153,9 @@ static int loop_filter_row_worker(AV1LfSync *const lf_sync,
 static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                                 struct macroblockd_plane planes[MAX_MB_PLANE],
                                 int start, int stop, int y_only,
-                                VPxWorker *workers, int nworkers,
+                                AVxWorker *workers, int nworkers,
                                 AV1LfSync *lf_sync) {
-  const VPxWorkerInterface *const winterface = aom_get_worker_interface();
+  const AVxWorkerInterface *const winterface = aom_get_worker_interface();
   // Number of superblock rows and cols
   const int sb_rows = mi_cols_aligned_to_sb(cm->mi_rows) >> MI_BLOCK_SIZE_LOG2;
   // Decoder may allocate more threads than number of tiles based on user's
@@ -182,10 +182,10 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   // because of contention. If the multithreading code changes in the future
   // then the number of workers used by the loopfilter should be revisited.
   for (i = 0; i < num_workers; ++i) {
-    VPxWorker *const worker = &workers[i];
+    AVxWorker *const worker = &workers[i];
     LFWorkerData *const lf_data = &lf_sync->lfdata[i];
 
-    worker->hook = (VPxWorkerHook)loop_filter_row_worker;
+    worker->hook = (AVxWorkerHook)loop_filter_row_worker;
     worker->data1 = lf_sync;
     worker->data2 = lf_data;
 
@@ -212,7 +212,7 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                                struct macroblockd_plane planes[MAX_MB_PLANE],
                                int frame_filter_level, int y_only,
-                               int partial_frame, VPxWorker *workers,
+                               int partial_frame, AVxWorker *workers,
                                int num_workers, AV1LfSync *lf_sync) {
   int start_mi_row, end_mi_row, mi_rows_to_filter;
 

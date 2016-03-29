@@ -20,11 +20,11 @@
 #include "test/y4m_video_source.h"
 
 namespace {
-class VPxEncoderThreadTest
+class AVxEncoderThreadTest
     : public ::libaom_test::EncoderTest,
       public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode, int> {
  protected:
-  VPxEncoderThreadTest()
+  AVxEncoderThreadTest()
       : EncoderTest(GET_PARAM(0)), encoder_initialized_(false), tiles_(2),
         encoding_mode_(GET_PARAM(1)), set_cpu_used_(GET_PARAM(2)) {
     init_flags_ = AOM_CODEC_USE_PSNR;
@@ -35,7 +35,7 @@ class VPxEncoderThreadTest
 
     md5_.clear();
   }
-  virtual ~VPxEncoderThreadTest() { delete decoder_; }
+  virtual ~AVxEncoderThreadTest() { delete decoder_; }
 
   virtual void SetUp() {
     InitializeConfig();
@@ -102,7 +102,7 @@ class VPxEncoderThreadTest
   std::vector<std::string> md5_;
 };
 
-TEST_P(VPxEncoderThreadTest, EncoderResultTest) {
+TEST_P(AVxEncoderThreadTest, EncoderResultTest) {
   std::vector<std::string> single_thr_md5, multi_thr_md5;
 
   ::libaom_test::Y4mVideoSource video("niklas_1280_720_30.y4m", 15, 20);
@@ -126,7 +126,7 @@ TEST_P(VPxEncoderThreadTest, EncoderResultTest) {
   ASSERT_EQ(single_thr_md5, multi_thr_md5);
 }
 
-AV1_INSTANTIATE_TEST_CASE(VPxEncoderThreadTest,
+AV1_INSTANTIATE_TEST_CASE(AVxEncoderThreadTest,
                            ::testing::Values(::libaom_test::kTwoPassGood,
                                              ::libaom_test::kOnePassGood),
                            ::testing::Range(1, 3));

@@ -9,7 +9,7 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-//  This is an example demonstrating how to implement a multi-layer VPx
+//  This is an example demonstrating how to implement a multi-layer AVx
 //  encoding scheme based on temporal scalability for video applications
 //  that benefit from a scalable bitstream.
 

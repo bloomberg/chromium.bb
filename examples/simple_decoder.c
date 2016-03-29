@@ -37,7 +37,7 @@
 // Determining the codec interface to use is handled by AvxVideoReader and the
 // functions prefixed with aom_video_reader_. Discussion of those functions is
 // beyond the scope of this example, but the main gist is to open the input file
-// and parse just enough of it to determine if it's a VPx file and which VPx
+// and parse just enough of it to determine if it's a AVx file and which AVx
 // codec is contained within the file.
 // Note the NULL pointer passed to aom_codec_dec_init(). We do that in this
 // example because we want the algorithm to determine the stream configuration

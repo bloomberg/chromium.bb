@@ -59,7 +59,7 @@ struct aom_codec_alg_priv {
 
   // Frame parallel related.
   int frame_parallel_decode;  // frame-based threading.
-  VPxWorker *frame_workers;
+  AVxWorker *frame_workers;
   int num_frame_workers;
   int next_submit_worker_id;
   int last_submit_worker_id;
@@ -114,7 +114,7 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
   if (ctx->frame_workers != NULL) {
     int i;
     for (i = 0; i < ctx->num_frame_workers; ++i) {
-      VPxWorker *const worker = &ctx->frame_workers[i];
+      AVxWorker *const worker = &ctx->frame_workers[i];
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       aom_get_worker_interface()->end(worker);
@@ -267,7 +267,7 @@ static void init_buffer_callbacks(aom_codec_alg_priv_t *ctx) {
   int i;
 
   for (i = 0; i < ctx->num_frame_workers; ++i) {
-    VPxWorker *const worker = &ctx->frame_workers[i];
+    AVxWorker *const worker = &ctx->frame_workers[i];
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     AV1_COMMON *const cm = &frame_worker_data->pbi->common;
     BufferPool *const pool = cm->buffer_pool;
@@ -313,7 +313,7 @@ static int frame_worker_hook(void *arg1, void *arg2) {
     // the compressed data.
     if (frame_worker_data->result != 0 ||
         frame_worker_data->data + frame_worker_data->data_size - 1 > data) {
-      VPxWorker *const worker = frame_worker_data->pbi->frame_worker_owner;
+      AVxWorker *const worker = frame_worker_data->pbi->frame_worker_owner;
       BufferPool *const pool = frame_worker_data->pbi->common.buffer_pool;
       // Signal all the other threads that are waiting for this frame.
       av1_frameworker_lock_stats(worker);
@@ -336,7 +336,7 @@ static int frame_worker_hook(void *arg1, void *arg2) {
 
 static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
   int i;
-  const VPxWorkerInterface *const winterface = aom_get_worker_interface();
+  const AVxWorkerInterface *const winterface = aom_get_worker_interface();
 
   ctx->last_show_frame = -1;
   ctx->next_submit_worker_id = 0;
@@ -363,7 +363,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
   }
 #endif
 
-  ctx->frame_workers = (VPxWorker *)aom_malloc(ctx->num_frame_workers *
+  ctx->frame_workers = (AVxWorker *)aom_malloc(ctx->num_frame_workers *
                                                sizeof(*ctx->frame_workers));
   if (ctx->frame_workers == NULL) {
     set_error_detail(ctx, "Failed to allocate frame_workers");
@@ -371,7 +371,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
   }
 
   for (i = 0; i < ctx->num_frame_workers; ++i) {
-    VPxWorker *const worker = &ctx->frame_workers[i];
+    AVxWorker *const worker = &ctx->frame_workers[i];
     FrameWorkerData *frame_worker_data = NULL;
     winterface->init(worker);
     worker->data1 = aom_memalign(32, sizeof(FrameWorkerData));
@@ -410,7 +410,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
     frame_worker_data->pbi->inv_tile_order = ctx->invert_tile_order;
     frame_worker_data->pbi->common.frame_parallel_decode =
         ctx->frame_parallel_decode;
-    worker->hook = (VPxWorkerHook)frame_worker_hook;
+    worker->hook = (AVxWorkerHook)frame_worker_hook;
     if (!winterface->reset(worker)) {
       set_error_detail(ctx, "Frame Worker thread creation failed");
       return AOM_CODEC_MEM_ERROR;
@@ -438,7 +438,7 @@ static INLINE void check_resync(aom_codec_alg_priv_t *const ctx,
 static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
                                   const uint8_t **data, unsigned int data_sz,
                                   void *user_priv, int64_t deadline) {
-  const VPxWorkerInterface *const winterface = aom_get_worker_interface();
+  const AVxWorkerInterface *const winterface = aom_get_worker_interface();
   (void)deadline;
 
   // Determine the stream parameters. Note that we rely on peek_si to
@@ -455,7 +455,7 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
   }
 
   if (!ctx->frame_parallel_decode) {
-    VPxWorker *const worker = ctx->frame_workers;
+    AVxWorker *const worker = ctx->frame_workers;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     frame_worker_data->data = *data;
     frame_worker_data->data_size = data_sz;
@@ -478,7 +478,7 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
 
     check_resync(ctx, frame_worker_data->pbi);
   } else {
-    VPxWorker *const worker = &ctx->frame_workers[ctx->next_submit_worker_id];
+    AVxWorker *const worker = &ctx->frame_workers[ctx->next_submit_worker_id];
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     // Copy context from last worker thread to next worker thread.
     if (ctx->next_submit_worker_id != ctx->last_submit_worker_id)
@@ -525,8 +525,8 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
 
 static void wait_worker_and_cache_frame(aom_codec_alg_priv_t *ctx) {
   YV12_BUFFER_CONFIG sd;
-  const VPxWorkerInterface *const winterface = aom_get_worker_interface();
-  VPxWorker *const worker = &ctx->frame_workers[ctx->next_output_worker_id];
+  const AVxWorkerInterface *const winterface = aom_get_worker_interface();
+  AVxWorker *const worker = &ctx->frame_workers[ctx->next_output_worker_id];
   FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
   ctx->next_output_worker_id =
       (ctx->next_output_worker_id + 1) % ctx->num_frame_workers;
@@ -707,8 +707,8 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
   if (*iter == NULL && ctx->frame_workers != NULL) {
     do {
       YV12_BUFFER_CONFIG sd;
-      const VPxWorkerInterface *const winterface = aom_get_worker_interface();
-      VPxWorker *const worker = &ctx->frame_workers[ctx->next_output_worker_id];
+      const AVxWorkerInterface *const winterface = aom_get_worker_interface();
+      AVxWorker *const worker = &ctx->frame_workers[ctx->next_output_worker_id];
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       ctx->next_output_worker_id =
@@ -774,7 +774,7 @@ static aom_codec_err_t ctrl_set_reference(aom_codec_alg_priv_t *ctx,
   if (data) {
     aom_ref_frame_t *const frame = (aom_ref_frame_t *)data;
     YV12_BUFFER_CONFIG sd;
-    VPxWorker *const worker = ctx->frame_workers;
+    AVxWorker *const worker = ctx->frame_workers;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     image2yuvconfig(&frame->img, &sd);
     return av1_set_reference_dec(&frame_worker_data->pbi->common,
@@ -797,7 +797,7 @@ static aom_codec_err_t ctrl_copy_reference(aom_codec_alg_priv_t *ctx,
   if (data) {
     aom_ref_frame_t *frame = (aom_ref_frame_t *)data;
     YV12_BUFFER_CONFIG sd;
-    VPxWorker *const worker = ctx->frame_workers;
+    AVxWorker *const worker = ctx->frame_workers;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     image2yuvconfig(&frame->img, &sd);
     return av1_copy_reference_dec(frame_worker_data->pbi,
@@ -819,7 +819,7 @@ static aom_codec_err_t ctrl_get_reference(aom_codec_alg_priv_t *ctx,
 
   if (data) {
     YV12_BUFFER_CONFIG *fb;
-    VPxWorker *const worker = ctx->frame_workers;
+    AVxWorker *const worker = ctx->frame_workers;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     fb = get_ref_frame(&frame_worker_data->pbi->common, data->idx);
     if (fb == NULL) return AOM_CODEC_ERROR;
@@ -856,7 +856,7 @@ static aom_codec_err_t ctrl_get_last_ref_updates(aom_codec_alg_priv_t *ctx,
 
   if (update_info) {
     if (ctx->frame_workers) {
-      VPxWorker *const worker = ctx->frame_workers;
+      AVxWorker *const worker = ctx->frame_workers;
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       *update_info = frame_worker_data->pbi->refresh_frame_flags;
@@ -875,7 +875,7 @@ static aom_codec_err_t ctrl_get_frame_corrupted(aom_codec_alg_priv_t *ctx,
 
   if (corrupted) {
     if (ctx->frame_workers) {
-      VPxWorker *const worker = ctx->frame_workers;
+      AVxWorker *const worker = ctx->frame_workers;
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       RefCntBuffer *const frame_bufs =
@@ -905,7 +905,7 @@ static aom_codec_err_t ctrl_get_frame_size(aom_codec_alg_priv_t *ctx,
 
   if (frame_size) {
     if (ctx->frame_workers) {
-      VPxWorker *const worker = ctx->frame_workers;
+      AVxWorker *const worker = ctx->frame_workers;
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       const AV1_COMMON *const cm = &frame_worker_data->pbi->common;
@@ -932,7 +932,7 @@ static aom_codec_err_t ctrl_get_render_size(aom_codec_alg_priv_t *ctx,
 
   if (render_size) {
     if (ctx->frame_workers) {
-      VPxWorker *const worker = ctx->frame_workers;
+      AVxWorker *const worker = ctx->frame_workers;
       FrameWorkerData *const frame_worker_data =
           (FrameWorkerData *)worker->data1;
       const AV1_COMMON *const cm = &frame_worker_data->pbi->common;
@@ -950,7 +950,7 @@ static aom_codec_err_t ctrl_get_render_size(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_get_bit_depth(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   unsigned int *const bit_depth = va_arg(args, unsigned int *);
-  VPxWorker *const worker = &ctx->frame_workers[ctx->next_output_worker_id];
+  AVxWorker *const worker = &ctx->frame_workers[ctx->next_output_worker_id];
 
   if (bit_depth) {
     if (worker) {
@@ -996,7 +996,7 @@ static aom_codec_err_t ctrl_set_byte_alignment(aom_codec_alg_priv_t *ctx,
 
   ctx->byte_alignment = byte_alignment;
   if (ctx->frame_workers) {
-    VPxWorker *const worker = ctx->frame_workers;
+    AVxWorker *const worker = ctx->frame_workers;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     frame_worker_data->pbi->common.byte_alignment = byte_alignment;
   }
@@ -1008,7 +1008,7 @@ static aom_codec_err_t ctrl_set_skip_loop_filter(aom_codec_alg_priv_t *ctx,
   ctx->skip_loop_filter = va_arg(args, int);
 
   if (ctx->frame_workers) {
-    VPxWorker *const worker = ctx->frame_workers;
+    AVxWorker *const worker = ctx->frame_workers;
     FrameWorkerData *const frame_worker_data = (FrameWorkerData *)worker->data1;
     frame_worker_data->pbi->common.skip_loop_filter = ctx->skip_loop_filter;
   }

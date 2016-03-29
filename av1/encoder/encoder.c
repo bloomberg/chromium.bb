@@ -1724,7 +1724,7 @@ void av1_remove_compressor(AV1_COMP *cpi) {
   }
 
   for (t = 0; t < cpi->num_workers; ++t) {
-    VPxWorker *const worker = &cpi->workers[t];
+    AVxWorker *const worker = &cpi->workers[t];
     EncWorkerData *const thread_data = &cpi->tile_thr_data[t];
 
     // Deallocate allocated threads.

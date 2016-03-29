@@ -406,7 +406,7 @@ typedef struct aom_codec_enc_cfg {
    * trade-off is often acceptable, but for many applications is not. It can
    * be disabled in these cases.
    *
-   * Note that not all codecs support this feature. All aom VPx codecs do.
+   * Note that not all codecs support this feature. All aom AVx codecs do.
    * For other codecs, consult the documentation for that algorithm.
    *
    * This threshold is described as a percentage of the target data buffer.
@@ -842,11 +842,11 @@ aom_codec_err_t aom_codec_enc_config_set(aom_codec_ctx_t *ctx,
 aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
 
 #define AOM_DL_REALTIME (1)
-/**< deadline parameter analogous to VPx REALTIME mode. */
+/**< deadline parameter analogous to AVx REALTIME mode. */
 #define AOM_DL_GOOD_QUALITY (1000000)
-/**< deadline parameter analogous to VPx GOOD QUALITY mode. */
+/**< deadline parameter analogous to AVx GOOD QUALITY mode. */
 #define AOM_DL_BEST_QUALITY (0)
-/**< deadline parameter analogous to VPx BEST QUALITY mode. */
+/**< deadline parameter analogous to AVx BEST QUALITY mode. */
 /*!\brief Encode a frame
  *
  * Encodes a video frame at the given "presentation time." The presentation
@@ -858,7 +858,7 @@ aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
  * implicit that limiting the available time to encode will degrade the
  * output quality. The encoder can be given an unlimited time to produce the
  * best possible frame by specifying a deadline of '0'. This deadline
- * supercedes the VPx notion of "best quality, good quality, realtime".
+ * supercedes the AVx notion of "best quality, good quality, realtime".
  * Applications that wish to map these former settings to the new deadline
  * based system can use the symbols #AOM_DL_REALTIME, #AOM_DL_GOOD_QUALITY,
  * and #AOM_DL_BEST_QUALITY.

@@ -482,7 +482,7 @@ typedef struct AV1_COMP {
 
   // Multi-threading
   int num_workers;
-  VPxWorker *workers;
+  AVxWorker *workers;
   struct EncWorkerData *tile_thr_data;
   AV1LfSync lf_row_sync;
 } AV1_COMP;

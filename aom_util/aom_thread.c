@@ -22,7 +22,7 @@
 
 #if CONFIG_MULTITHREAD
 
-struct VPxWorkerImpl {
+struct AVxWorkerImpl {
   pthread_mutex_t mutex_;
   pthread_cond_t condition_;
   pthread_t thread_;
@@ -30,10 +30,10 @@ struct VPxWorkerImpl {
 
 //------------------------------------------------------------------------------
 
-static void execute(VPxWorker *const worker);  // Forward declaration.
+static void execute(AVxWorker *const worker);  // Forward declaration.
 
 static THREADFN thread_loop(void *ptr) {
-  VPxWorker *const worker = (VPxWorker *)ptr;
+  AVxWorker *const worker = (AVxWorker *)ptr;
   int done = 0;
   while (!done) {
     pthread_mutex_lock(&worker->impl_->mutex_);
@@ -54,7 +54,7 @@ static THREADFN thread_loop(void *ptr) {
 }
 
 // main thread state control
-static void change_state(VPxWorker *const worker, VPxWorkerStatus new_status) {
+static void change_state(AVxWorker *const worker, AVxWorkerStatus new_status) {
   // No-op when attempting to change state on a thread that didn't come up.
   // Checking status_ without acquiring the lock first would result in a data
   // race.
@@ -79,12 +79,12 @@ static void change_state(VPxWorker *const worker, VPxWorkerStatus new_status) {
 
 //------------------------------------------------------------------------------
 
-static void init(VPxWorker *const worker) {
+static void init(AVxWorker *const worker) {
   memset(worker, 0, sizeof(*worker));
   worker->status_ = NOT_OK;
 }
 
-static int sync(VPxWorker *const worker) {
+static int sync(AVxWorker *const worker) {
 #if CONFIG_MULTITHREAD
   change_state(worker, OK);
 #endif
@@ -92,12 +92,12 @@ static int sync(VPxWorker *const worker) {
   return !worker->had_error;
 }
 
-static int reset(VPxWorker *const worker) {
+static int reset(AVxWorker *const worker) {
   int ok = 1;
   worker->had_error = 0;
   if (worker->status_ < OK) {
 #if CONFIG_MULTITHREAD
-    worker->impl_ = (VPxWorkerImpl *)aom_calloc(1, sizeof(*worker->impl_));
+    worker->impl_ = (AVxWorkerImpl *)aom_calloc(1, sizeof(*worker->impl_));
     if (worker->impl_ == NULL) {
       return 0;
     }
@@ -130,13 +130,13 @@ static int reset(VPxWorker *const worker) {
   return ok;
 }
 
-static void execute(VPxWorker *const worker) {
+static void execute(AVxWorker *const worker) {
   if (worker->hook != NULL) {
     worker->had_error |= !worker->hook(worker->data1, worker->data2);
   }
 }
 
-static void launch(VPxWorker *const worker) {
+static void launch(AVxWorker *const worker) {
 #if CONFIG_MULTITHREAD
   change_state(worker, WORK);
 #else
@@ -144,7 +144,7 @@ static void launch(VPxWorker *const worker) {
 #endif
 }
 
-static void end(VPxWorker *const worker) {
+static void end(AVxWorker *const worker) {
 #if CONFIG_MULTITHREAD
   if (worker->impl_ != NULL) {
     change_state(worker, NOT_OK);
@@ -163,10 +163,10 @@ static void end(VPxWorker *const worker) {
 
 //------------------------------------------------------------------------------
 
-static VPxWorkerInterface g_worker_interface = { init,   reset,   sync,
+static AVxWorkerInterface g_worker_interface = { init,   reset,   sync,
                                                  launch, execute, end };
 
-int aom_set_worker_interface(const VPxWorkerInterface *const winterface) {
+int aom_set_worker_interface(const AVxWorkerInterface *const winterface) {
   if (winterface == NULL || winterface->init == NULL ||
       winterface->reset == NULL || winterface->sync == NULL ||
       winterface->launch == NULL || winterface->execute == NULL ||
@@ -177,7 +177,7 @@ int aom_set_worker_interface(const VPxWorkerInterface *const winterface) {
   return 1;
 }
 
-const VPxWorkerInterface *aom_get_worker_interface(void) {
+const AVxWorkerInterface *aom_get_worker_interface(void) {
   return &g_worker_interface;
 }
 

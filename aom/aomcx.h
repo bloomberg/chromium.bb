@@ -107,9 +107,9 @@ extern aom_codec_iface_t *aom_codec_av1_cx(void);
  */
 #define AOM_EFLAG_NO_UPD_ENTROPY (1 << 20)
 
-/*!\brief VPx encoder control functions
+/*!\brief AVx encoder control functions
  *
- * This set of macros define the control functions available for VPx
+ * This set of macros define the control functions available for AVx
  * encoder interface.
  *
  * \sa #aom_codec_control

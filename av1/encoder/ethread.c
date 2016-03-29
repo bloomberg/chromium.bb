@@ -60,7 +60,7 @@ static int enc_worker_hook(EncWorkerData *const thread_data, void *unused) {
 void av1_encode_tiles_mt(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const int tile_cols = 1 << cm->log2_tile_cols;
-  const VPxWorkerInterface *const winterface = aom_get_worker_interface();
+  const AVxWorkerInterface *const winterface = aom_get_worker_interface();
   const int num_workers = AOMMIN(cpi->oxcf.max_threads, tile_cols);
   int i;
 
@@ -77,7 +77,7 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
                     aom_calloc(allocated_workers, sizeof(*cpi->tile_thr_data)));
 
     for (i = 0; i < allocated_workers; i++) {
-      VPxWorker *const worker = &cpi->workers[i];
+      AVxWorker *const worker = &cpi->workers[i];
       EncWorkerData *thread_data = &cpi->tile_thr_data[i];
 
       ++cpi->num_workers;
@@ -115,10 +115,10 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
   }
 
   for (i = 0; i < num_workers; i++) {
-    VPxWorker *const worker = &cpi->workers[i];
+    AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *thread_data;
 
-    worker->hook = (VPxWorkerHook)enc_worker_hook;
+    worker->hook = (AVxWorkerHook)enc_worker_hook;
     worker->data1 = &cpi->tile_thr_data[i];
     worker->data2 = NULL;
     thread_data = (EncWorkerData *)worker->data1;
@@ -136,7 +136,7 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
 
   // Encode a frame
   for (i = 0; i < num_workers; i++) {
-    VPxWorker *const worker = &cpi->workers[i];
+    AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *const thread_data = (EncWorkerData *)worker->data1;
 
     // Set the starting tile for each thread.
@@ -150,12 +150,12 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
 
   // Encoding ends.
   for (i = 0; i < num_workers; i++) {
-    VPxWorker *const worker = &cpi->workers[i];
+    AVxWorker *const worker = &cpi->workers[i];
     winterface->sync(worker);
   }
 
   for (i = 0; i < num_workers; i++) {
-    VPxWorker *const worker = &cpi->workers[i];
+    AVxWorker *const worker = &cpi->workers[i];
     EncWorkerData *const thread_data = (EncWorkerData *)worker->data1;
 
     // Accumulate counters.

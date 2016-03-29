@@ -130,7 +130,7 @@ void av1_decoder_remove(AV1Decoder *pbi) {
   aom_free(pbi->lf_worker.data1);
   aom_free(pbi->tile_data);
   for (i = 0; i < pbi->num_tile_workers; ++i) {
-    VPxWorker *const worker = &pbi->tile_workers[i];
+    AVxWorker *const worker = &pbi->tile_workers[i];
     aom_get_worker_interface()->end(worker);
   }
   aom_free(pbi->tile_worker_data);
@@ -306,7 +306,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
 
   pbi->hold_ref_buf = 0;
   if (cm->frame_parallel_decode) {
-    VPxWorker *const worker = pbi->frame_worker_owner;
+    AVxWorker *const worker = pbi->frame_worker_owner;
     av1_frameworker_lock_stats(worker);
     frame_bufs[cm->new_fb_idx].frame_worker_owner = worker;
     // Reset decoding progress.
@@ -319,7 +319,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   }
 
   if (setjmp(cm->error.jmp)) {
-    const VPxWorkerInterface *const winterface = aom_get_worker_interface();
+    const AVxWorkerInterface *const winterface = aom_get_worker_interface();
     int i;
 
     cm->error.setjmp = 0;
@@ -381,7 +381,7 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   if (cm->frame_parallel_decode) {
     // Need to lock the mutex here as another thread may
     // be accessing this buffer.
-    VPxWorker *const worker = pbi->frame_worker_owner;
+    AVxWorker *const worker = pbi->frame_worker_owner;
     FrameWorkerData *const frame_worker_data = worker->data1;
     av1_frameworker_lock_stats(worker);
 
