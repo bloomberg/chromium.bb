@@ -19,6 +19,7 @@
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/base/socket_stream.h"
 #include "google_apis/gcm/protocol/mcs.pb.h"
+#include "net/base/ip_address.h"
 #include "net/socket/socket_test_util.h"
 #include "net/socket/stream_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -189,9 +190,8 @@ class GCMConnectionHandlerImplTest : public testing::Test {
 
 GCMConnectionHandlerImplTest::GCMConnectionHandlerImplTest()
   : last_error_(0) {
-  net::IPAddressNumber ip_number;
-  net::ParseIPLiteralToNumber("127.0.0.1", &ip_number);
-  address_list_ = net::AddressList::CreateFromIPAddress(ip_number, kMCSPort);
+  address_list_ = net::AddressList::CreateFromIPAddress(
+      net::IPAddress::IPv4Localhost(), kMCSPort);
 }
 
 GCMConnectionHandlerImplTest::~GCMConnectionHandlerImplTest() {
