@@ -155,11 +155,8 @@ void RasterWorkerPool::Start(int num_threads) {
 #endif
 
   scoped_ptr<base::SimpleThread> thread(new RasterWorkerPoolThread(
-      base::StringPrintf("CompositorTileWorker%u",
-                         static_cast<unsigned>(threads_.size() + 1))
-          .c_str(),
-      thread_options, this, background_categories,
-      &has_ready_to_run_background_tasks_cv_));
+      "CompositorTileWorkerBackground", thread_options, this,
+      background_categories, &has_ready_to_run_background_tasks_cv_));
   thread->Start();
   threads_.push_back(std::move(thread));
 }
