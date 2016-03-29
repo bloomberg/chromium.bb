@@ -184,6 +184,7 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   void OnGATTConnectionCreated(
       int thread_id,
       int request_id,
+      int frame_routing_id,
       const std::string& device_id,
       base::TimeTicks start_time,
       scoped_ptr<device::BluetoothGattConnection> connection);

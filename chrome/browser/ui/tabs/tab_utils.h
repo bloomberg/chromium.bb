@@ -32,6 +32,7 @@ enum TabMediaState {
   TAB_MEDIA_STATE_CAPTURING,  // Tab contents being captured.
   TAB_MEDIA_STATE_AUDIO_PLAYING,  // Audible audio is playing from the tab.
   TAB_MEDIA_STATE_AUDIO_MUTING,  // Tab audio is being muted.
+  TAB_MEDIA_STATE_BLUETOOTH_CONNECTED, // Tab is connected to a BT Device.
 };
 
 enum TabMutedReason {

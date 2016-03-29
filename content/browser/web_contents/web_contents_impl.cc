@@ -358,6 +358,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       accessibility_mode_(
           BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode()),
       audio_stream_monitor_(this),
+      bluetooth_device_connected_(false),
       virtual_keyboard_requested_(false),
       page_scale_factor_is_one_(true),
       loading_weak_factory_(this),
@@ -1121,6 +1122,16 @@ void WebContentsImpl::SetAudioMuted(bool mute) {
                     DidUpdateAudioMutingState(mute));
 
   // Notification for UI updates in response to the changed muting state.
+  NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+}
+
+bool WebContentsImpl::IsBluetoothDeviceConnected() const {
+  return bluetooth_device_connected_;
+}
+
+void WebContentsImpl::SetBluetoothDeviceConnected(bool connected) {
+  bluetooth_device_connected_ = connected;
+  // Notification for UI updates in response to the connected device.
   NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 }
 

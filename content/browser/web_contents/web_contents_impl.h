@@ -277,6 +277,8 @@ class CONTENT_EXPORT WebContentsImpl
   int GetCapturerCount() const override;
   bool IsAudioMuted() const override;
   void SetAudioMuted(bool mute) override;
+  bool IsBluetoothDeviceConnected() const override;
+  void SetBluetoothDeviceConnected(bool connected) override;
   bool IsCrashed() const override;
   void SetIsCrashed(base::TerminationStatus status, int error_code) override;
   base::TerminationStatus GetCrashedStatus() const override;
@@ -1305,6 +1307,8 @@ class CONTENT_EXPORT WebContentsImpl
 
   // Created on-demand to mute all audio output from this WebContents.
   scoped_ptr<WebContentsAudioMuter> audio_muter_;
+
+  bool bluetooth_device_connected_;
 
   bool virtual_keyboard_requested_;
 

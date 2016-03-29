@@ -159,6 +159,9 @@ TabMediaState GetTabMediaStateForContents(content::WebContents* contents) {
       return TAB_MEDIA_STATE_RECORDING;
   }
 
+  if (contents->IsBluetoothDeviceConnected())
+    return TAB_MEDIA_STATE_BLUETOOTH_CONNECTED;
+
   if (contents->IsAudioMuted())
     return TAB_MEDIA_STATE_AUDIO_MUTING;
   if (contents->WasRecentlyAudible())
@@ -180,6 +183,8 @@ gfx::Image GetTabMediaIndicatorImage(TabMediaState media_state,
       return rb->GetNativeImageNamed(IDR_TAB_RECORDING_INDICATOR);
     case TAB_MEDIA_STATE_CAPTURING:
       return rb->GetNativeImageNamed(IDR_TAB_CAPTURE_INDICATOR);
+    case TAB_MEDIA_STATE_BLUETOOTH_CONNECTED:
+      return rb->GetNativeImageNamed(IDR_TAB_BLUETOOTH_INDICATOR);
     case TAB_MEDIA_STATE_NONE:
       break;
   }
@@ -197,6 +202,9 @@ gfx::Image GetTabMediaIndicatorImage(TabMediaState media_state,
       break;
     case TAB_MEDIA_STATE_CAPTURING:
       icon_id = gfx::VectorIconId::TAB_MEDIA_CAPTURING;
+      break;
+    case TAB_MEDIA_STATE_BLUETOOTH_CONNECTED:
+      icon_id = gfx::VectorIconId::TAB_BLUETOOTH_CONNECTED;
       break;
     case TAB_MEDIA_STATE_NONE:
       break;
@@ -218,6 +226,7 @@ gfx::Image GetTabMediaIndicatorAffordanceImage(TabMediaState media_state,
     case TAB_MEDIA_STATE_NONE:
     case TAB_MEDIA_STATE_RECORDING:
     case TAB_MEDIA_STATE_CAPTURING:
+    case TAB_MEDIA_STATE_BLUETOOTH_CONNECTED:
       return GetTabMediaIndicatorImage(media_state, button_color);
   }
   NOTREACHED();
@@ -271,6 +280,10 @@ base::string16 AssembleTabTooltipText(const base::string16& title,
       result.append(
           l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_MEDIA_STATE_CAPTURING));
       break;
+    case TAB_MEDIA_STATE_BLUETOOTH_CONNECTED:
+      result.append(
+          l10n_util::GetStringUTF16(IDS_TOOLTIP_TAB_BLUETOOTH_CONNECTED));
+      break;
     case TAB_MEDIA_STATE_NONE:
       NOTREACHED();
       break;
@@ -291,6 +304,7 @@ bool CanToggleAudioMute(content::WebContents* contents) {
       return true;
     case TAB_MEDIA_STATE_RECORDING:
     case TAB_MEDIA_STATE_CAPTURING:
+    case TAB_MEDIA_STATE_BLUETOOTH_CONNECTED:
       return false;
   }
   NOTREACHED();

@@ -696,8 +696,8 @@ void BluetoothDispatcherHost::OnGATTServerConnect(
 
   query_result.device->CreateGattConnection(
       base::Bind(&BluetoothDispatcherHost::OnGATTConnectionCreated,
-                 weak_ptr_on_ui_thread_, thread_id, request_id, device_id,
-                 start_time),
+                 weak_ptr_on_ui_thread_, thread_id, request_id,
+                 frame_routing_id, device_id, start_time),
       base::Bind(&BluetoothDispatcherHost::OnCreateGATTConnectionError,
                  weak_ptr_on_ui_thread_, thread_id, request_id, device_id,
                  start_time));
@@ -720,6 +720,14 @@ void BluetoothDispatcherHost::OnGATTServerDisconnect(
     bad_message::ReceivedBadMessage(
         this, bad_message::BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN);
     return;
+  }
+
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host);
+  if (web_contents) {
+    web_contents->SetBluetoothDeviceConnected(false);
   }
 
   // The last BluetoothGattConnection for a device closes the connection when
@@ -1440,6 +1448,7 @@ void BluetoothDispatcherHost::FinishClosingChooser(
 void BluetoothDispatcherHost::OnGATTConnectionCreated(
     int thread_id,
     int request_id,
+    int frame_routing_id,
     const std::string& device_id,
     base::TimeTicks start_time,
     scoped_ptr<device::BluetoothGattConnection> connection) {
@@ -1447,6 +1456,13 @@ void BluetoothDispatcherHost::OnGATTConnectionCreated(
   device_id_to_connection_map_[device_id] = std::move(connection);
   RecordConnectGATTTimeSuccess(base::TimeTicks::Now() - start_time);
   RecordConnectGATTOutcome(UMAConnectGATTOutcome::SUCCESS);
+  RenderFrameHostImpl* render_frame_host =
+      RenderFrameHostImpl::FromID(render_process_id_, frame_routing_id);
+  WebContents* web_contents =
+      WebContents::FromRenderFrameHost(render_frame_host);
+  if (web_contents) {
+    web_contents->SetBluetoothDeviceConnected(true);
+  }
   Send(new BluetoothMsg_GATTServerConnectSuccess(thread_id, request_id));
 }
 
