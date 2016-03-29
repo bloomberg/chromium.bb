@@ -801,6 +801,11 @@ public class ContextualSearchPanel extends OverlayPanel
     private boolean mIsAnimatingPromoAcceptance;
 
     /**
+     * The Y position of the Search Promo.
+     */
+    private float mSearchPromoY;
+
+    /**
      * Creates the Search Promo View.
      */
     protected void createPromoView() {
@@ -861,9 +866,9 @@ public class ContextualSearchPanel extends OverlayPanel
      */
     private void showPromoViewAtYPosition(float y) {
         if (mPromoView == null
-                || mIsSearchPromoViewVisible
                 || mIsAnimatingMandatoryPromoAcceptance
-                || !isPromoVisible()) return;
+                || !isPromoVisible()
+                || (mIsSearchPromoViewVisible && mSearchPromoY == y)) return;
 
         float offsetX = getOffsetX() / mPxToDp;
         if (LocalizationUtils.isLayoutRtl()) {
@@ -879,6 +884,7 @@ public class ContextualSearchPanel extends OverlayPanel
         mPromoView.requestLayout();
 
         mIsSearchPromoViewVisible = true;
+        mSearchPromoY = y;
     }
 
     /**
