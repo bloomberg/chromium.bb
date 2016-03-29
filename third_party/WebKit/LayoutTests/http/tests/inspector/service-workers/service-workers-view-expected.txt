@@ -9,7 +9,6 @@ Scope: /inspector/service-workers/resources/scope1/
 State
 activated
 Worker
-
 running
 inspect
 Script URL
@@ -31,7 +30,6 @@ Scope: /inspector/service-workers/resources/scope1/
 State
 activated
 Worker
-
 running
 inspect
 Script URL
@@ -48,7 +46,6 @@ Scope: /inspector/service-workers/resources/scope2/
 State
 activated
 Worker
-
 running
 inspect
 Script URL
@@ -70,7 +67,6 @@ Scope: /inspector/service-workers/resources/scope1/ - deleted
 State
 redundant
 Worker
-
 running
 inspect
 Script URL
@@ -87,7 +83,6 @@ Scope: /inspector/service-workers/resources/scope2/
 State
 activated
 Worker
-
 running
 inspect
 Script URL
