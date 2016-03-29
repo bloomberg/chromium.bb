@@ -209,5 +209,31 @@ TEST_F(MenuRunnerTest, NonLatinMnemonic) {
   EXPECT_EQ(MenuRunner::NORMAL_EXIT, delegate->on_menu_closed_run_result());
 }
 
+// Tests that attempting to nest a menu within a drag-and-drop menu does not
+// cause a crash. Instead the drag and drop action should be canceled, and the
+// new menu should be openned.
+TEST_F(MenuRunnerTest, NestingDuringDrag) {
+  InitMenuRunner(MenuRunner::FOR_DROP);
+  MenuRunner* runner = menu_runner();
+  MenuRunner::RunResult result = runner->RunMenuAt(
+      owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
+  EXPECT_EQ(MenuRunner::NORMAL_EXIT, result);
+  EXPECT_TRUE(runner->IsRunning());
+
+  scoped_ptr<TestMenuDelegate> nested_delegate(new TestMenuDelegate);
+  MenuItemView* nested_menu = new MenuItemView(nested_delegate.get());
+  scoped_ptr<MenuRunner> nested_runner(
+      new MenuRunner(nested_menu, MenuRunner::IS_NESTED | MenuRunner::ASYNC));
+  result = nested_runner->RunMenuAt(owner(), nullptr, gfx::Rect(),
+                                    MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_NONE);
+  EXPECT_EQ(MenuRunner::NORMAL_EXIT, result);
+  EXPECT_TRUE(nested_runner->IsRunning());
+  EXPECT_FALSE(runner->IsRunning());
+  TestMenuDelegate* delegate = menu_delegate();
+  EXPECT_EQ(1, delegate->on_menu_closed_called());
+  EXPECT_NE(nullptr, delegate->on_menu_closed_menu());
+  EXPECT_EQ(MenuRunner::NORMAL_EXIT, delegate->on_menu_closed_run_result());
+}
+
 }  // namespace test
 }  // namespace views

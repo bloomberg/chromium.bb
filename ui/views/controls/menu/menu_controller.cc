@@ -1204,7 +1204,9 @@ void MenuController::StartDrag(SubmenuView* source,
 }
 
 void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
-  DCHECK(blocking_run_);
+  // Do not process while performing drag-and-drop
+  if (!blocking_run_)
+    return;
 
   switch (key_code) {
     case ui::VKEY_UP:
@@ -2273,6 +2275,9 @@ void MenuController::AcceptOrSelect(MenuItemView* parent,
 }
 
 void MenuController::SelectByChar(base::char16 character) {
+  // Do not process while performing drag-and-drop
+  if (!blocking_run_)
+    return;
   if (!character)
     return;
 

@@ -88,8 +88,12 @@ MenuRunner::RunResult MenuRunnerImpl::RunMenuAt(Widget* parent,
       if (!controller->IsBlockingRun()) {
         controller->CancelAll();
         controller = NULL;
+      } else {
+        // Only nest the delegate when not cancelling drag-and-drop. When
+        // cancelling this will become the root delegate of the new
+        // MenuController
+        controller->AddNestedDelegate(this);
       }
-      controller->AddNestedDelegate(this);
     } else {
       // There's some other menu open and we're not nested. Cancel the menu.
       controller->CancelAll();
