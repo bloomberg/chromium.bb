@@ -1094,6 +1094,7 @@ public:
         ScriptPassesCSPDynamic = 1275,
         ScriptPassesCSPNonce = 1276,
         CSPWithUnsafeDynamic = 1277,
+        ScrollAnchored = 1278,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

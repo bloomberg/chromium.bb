@@ -5,9 +5,11 @@
 #include "core/layout/ScrollAnchor.h"
 
 #include "core/frame/FrameView.h"
+#include "core/frame/UseCounter.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/paint/PaintLayerScrollableArea.h"
+#include "platform/Histogram.h"
 
 namespace blink {
 
@@ -173,6 +175,11 @@ void ScrollAnchor::restore()
         m_scroller->setScrollPosition(
             m_scroller->scrollPositionDouble() + DoubleSize(adjustment),
             AnchoringScroll);
+        // Update UMA metric.
+        DEFINE_STATIC_LOCAL(EnumerationHistogram, adjustedOffsetHistogram,
+            ("Layout.ScrollAnchor.AdjustedScrollOffset", 2));
+        adjustedOffsetHistogram.count(1);
+        UseCounter::count(scrollerLayoutBox(m_scroller)->document(), UseCounter::ScrollAnchored);
     }
 }
 

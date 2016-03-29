@@ -7,6 +7,7 @@
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/paint/PaintLayerScrollableArea.h"
+#include "platform/testing/HistogramTester.h"
 
 namespace blink {
 
@@ -81,6 +82,31 @@ TEST_F(ScrollAnchorTest, Basic)
     // ScrollableArea::userScroll should clear the anchor.
     viewport->userScroll(ScrollByPrecisePixel, FloatSize(0, 100));
     EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
+}
+
+TEST_F(ScrollAnchorTest, UMAMetricUpdated)
+{
+    HistogramTester histogramTester;
+    setBodyInnerHTML(
+        "<style> body { height: 1000px } div { height: 100px } </style>"
+        "<div id='block1'>abc</div>"
+        "<div id='block2'>def</div>");
+
+    ScrollableArea* viewport = layoutViewport();
+
+    // Scroll position not adjusted, metric not updated.
+    scrollLayoutViewport(DoubleSize(0, 150));
+    histogramTester.expectTotalCount(
+        "Layout.ScrollAnchor.AdjustedScrollOffset", 0);
+
+    // Height changed, verify metric updated once.
+    setHeight(document().getElementById("block1"), 200);
+    histogramTester.expectUniqueSample(
+        "Layout.ScrollAnchor.AdjustedScrollOffset", 1, 1);
+
+    EXPECT_EQ(250, viewport->scrollPosition().y());
+    EXPECT_EQ(document().getElementById("block2")->layoutObject(),
+        scrollAnchor(viewport).anchorObject());
 }
 
 TEST_F(ScrollAnchorTest, AnchorWithLayerInScrollingDiv)

@@ -18484,6 +18484,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Layout.ScrollAnchor.AdjustedScrollOffset" enum="BooleanHit">
+  <owner>skobes@chromium.org</owner>
+  <summary>
+    Records the number of times ScrollAnchor adjusts the scroll offset.
+  </summary>
+</histogram>
+
 <histogram name="LevelDB.Open" enum="LevelDBStatus">
   <owner>cmumford@chromium.org</owner>
   <summary>The result of an open attempt of a leveldb.</summary>
@@ -69049,6 +69056,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1275" label="ScriptPassesCSPDynamic"/>
   <int value="1276" label="ScriptPassesCSPNonce"/>
   <int value="1277" label="CSPWithUnsafeDynamic"/>
+  <int value="1278" label="ScrollAnchored"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">
