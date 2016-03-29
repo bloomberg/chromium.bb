@@ -26,9 +26,6 @@ class GpuChannelHost;
 
 class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
  public:
-  static PP_Resource Create(PP_Instance instance,
-                            PP_Resource share_context,
-                            const int32_t* attrib_list);
   static PP_Resource CreateRaw(PP_Instance instance,
                                PP_Resource share_context,
                                const int32_t* attrib_list,
@@ -78,7 +75,6 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
  private:
   explicit PPB_Graphics3D_Impl(PP_Instance instance);
 
-  bool Init(PPB_Graphics3D_API* share_context, const int32_t* attrib_list);
   bool InitRaw(PPB_Graphics3D_API* share_context,
                const int32_t* attrib_list,
                gpu::Capabilities* capabilities,

@@ -115,7 +115,7 @@ PP_Resource ResourceCreationImpl::CreateFlashMessageLoop(PP_Instance instance) {
 PP_Resource ResourceCreationImpl::CreateGraphics3D(PP_Instance instance,
                                                    PP_Resource share_context,
                                                    const int32_t* attrib_list) {
-  return PPB_Graphics3D_Impl::Create(instance, share_context, attrib_list);
+  return 0;  // Not supported in-process.
 }
 
 PP_Resource ResourceCreationImpl::CreateGraphics3DRaw(

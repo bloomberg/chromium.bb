@@ -20,7 +20,6 @@
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
 #include "ppapi/c/ppp_graphics_3d.h"
 #include "ppapi/thunk/enter.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -39,13 +38,6 @@ using blink::WebString;
 
 namespace content {
 
-namespace {
-
-const int32_t kCommandBufferSize = 1024 * 1024;
-const int32_t kTransferBufferSize = 1024 * 1024;
-
-}  // namespace
-
 PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
     : PPB_Graphics3D_Shared(instance),
       bound_to_instance_(false),
@@ -54,24 +46,6 @@ PPB_Graphics3D_Impl::PPB_Graphics3D_Impl(PP_Instance instance)
       weak_ptr_factory_(this) {}
 
 PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {}
-
-// static
-PP_Resource PPB_Graphics3D_Impl::Create(PP_Instance instance,
-                                        PP_Resource share_context,
-                                        const int32_t* attrib_list) {
-  PPB_Graphics3D_API* share_api = NULL;
-  if (share_context) {
-    EnterResourceNoLock<PPB_Graphics3D_API> enter(share_context, true);
-    if (enter.failed())
-      return 0;
-    share_api = enter.object();
-  }
-  scoped_refptr<PPB_Graphics3D_Impl> graphics_3d(
-      new PPB_Graphics3D_Impl(instance));
-  if (!graphics_3d->Init(share_api, attrib_list))
-    return 0;
-  return graphics_3d->GetReference();
-}
 
 // static
 PP_Resource PPB_Graphics3D_Impl::CreateRaw(
@@ -167,19 +141,6 @@ int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token) {
   if (sync_token.HasData())
     sync_token_ = sync_token;
 
-  // We do not have a GLES2 implementation when using an OOP proxy.
-  // The plugin-side proxy is responsible for adding the SwapBuffers command
-  // to the command buffer in that case.
-  if (gpu::gles2::GLES2Interface* gl = gles2_interface()) {
-    // A valid sync token would indicate a swap buffer already happened somehow.
-    DCHECK(!sync_token.HasData());
-
-    gl->SwapBuffers();
-    const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
-    gl->OrderingBarrierCHROMIUM();
-    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token_.GetData());
-  }
-
   if (bound_to_instance_) {
     // If we are bound to the instance, we need to ask the compositor
     // to commit our backing texture so that the graphics appears on the page.
@@ -199,20 +160,6 @@ int32_t PPB_Graphics3D_Impl::DoSwapBuffers(const gpu::SyncToken& sync_token) {
   }
 
   return PP_OK_COMPLETIONPENDING;
-}
-
-bool PPB_Graphics3D_Impl::Init(PPB_Graphics3D_API* share_context,
-                               const int32_t* attrib_list) {
-  if (!InitRaw(share_context, attrib_list, NULL, NULL, NULL))
-    return false;
-
-  gpu::gles2::GLES2Implementation* share_gles2 = NULL;
-  if (share_context) {
-    share_gles2 =
-        static_cast<PPB_Graphics3D_Shared*>(share_context)->gles2_impl();
-  }
-
-  return CreateGLES2Impl(kCommandBufferSize, kTransferBufferSize, share_gles2);
 }
 
 bool PPB_Graphics3D_Impl::InitRaw(PPB_Graphics3D_API* share_context,
