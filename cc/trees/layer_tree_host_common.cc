@@ -475,9 +475,6 @@ static void UpdateMetaInformationSequenceNumber(Layer* root_layer) {
   root_layer->layer_tree_host()->IncrementMetaInformationSequenceNumber();
 }
 
-static void UpdateMetaInformationSequenceNumber(LayerImpl* root_layer) {
-}
-
 // Recursively walks the layer tree(if needed) to compute any information
 // that is needed before doing the main recursion.
 static void PreCalculateMetaInformationInternal(
@@ -524,7 +521,7 @@ static void PreCalculateMetaInformationInternal(
     layer->layer_tree_host()->SetNeedsMetaInfoRecomputation(false);
 }
 
-static void PreCalculateMetaInformationInternal(
+static void PreCalculateMetaInformationInternalForTesting(
     LayerImpl* layer,
     PreCalculateMetaInformationRecursiveData* recursive_data) {
   if (layer->clip_parent())
@@ -540,7 +537,7 @@ static void PreCalculateMetaInformationInternal(
     LayerImpl* child_layer = layer->child_at(i);
 
     PreCalculateMetaInformationRecursiveData data_for_child;
-    PreCalculateMetaInformationInternal(child_layer, &data_for_child);
+    PreCalculateMetaInformationInternalForTesting(child_layer, &data_for_child);
     recursive_data->Merge(data_for_child);
   }
 
@@ -577,7 +574,7 @@ void LayerTreeHostCommon::PreCalculateMetaInformation(Layer* root_layer) {
 void LayerTreeHostCommon::PreCalculateMetaInformationForTesting(
     LayerImpl* root_layer) {
   PreCalculateMetaInformationRecursiveData recursive_data;
-  PreCalculateMetaInformationInternal(root_layer, &recursive_data);
+  PreCalculateMetaInformationInternalForTesting(root_layer, &recursive_data);
 }
 
 void LayerTreeHostCommon::PreCalculateMetaInformationForTesting(
@@ -940,9 +937,6 @@ void CalculateDrawPropertiesInternal(
     PropertyTreeOption property_tree_option) {
   inputs->render_surface_layer_list->clear();
 
-  UpdateMetaInformationSequenceNumber(inputs->root_layer);
-  PreCalculateMetaInformationRecursiveData recursive_data;
-  PreCalculateMetaInformationInternal(inputs->root_layer, &recursive_data);
   const bool should_measure_property_tree_performance =
       property_tree_option == BUILD_PROPERTY_TREES_IF_NEEDED;
 
@@ -1104,6 +1098,9 @@ void LayerTreeHostCommon::CalculateDrawProperties(
 
 void LayerTreeHostCommon::CalculateDrawProperties(
     CalcDrawPropsImplInputsForTesting* inputs) {
+  PreCalculateMetaInformationRecursiveData recursive_data;
+  PreCalculateMetaInformationInternalForTesting(inputs->root_layer,
+                                                &recursive_data);
   CalculateDrawPropertiesInternal(inputs, BUILD_PROPERTY_TREES_IF_NEEDED);
 }
 
