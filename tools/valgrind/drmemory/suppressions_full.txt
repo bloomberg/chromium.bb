@@ -2224,3 +2224,13 @@ name=bug_595149
 system call NtCreateIoCompletion
 KERNELBASE.dll!CreateIoCompletionPort
 base.dll!base::MessagePumpForIO::MessagePumpForIO
+
+HANDLE LEAK
+name=bug_598364
+system call NtGdiCreateDIBSection
+GDI32.dll!CreateDIBSection
+skia.dll!`anonymous namespace'::CreateHBitmap
+skia.dll!skia::BitmapPlatformDevice::Create
+...
+webcore_shared.dll!blink::ScriptController::createPluginWrapper
+webcore_shared.dll!blink::HTMLPlugInElement::pluginWrapper
