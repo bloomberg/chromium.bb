@@ -50,11 +50,14 @@ class CONTENT_EXPORT BackgroundSyncContextImpl : public BackgroundSyncContext {
  protected:
   ~BackgroundSyncContextImpl() override;
 
+  void set_background_sync_manager_for_testing(
+      scoped_ptr<BackgroundSyncManager> manager);
+
  private:
   friend class BackgroundSyncServiceImplTest;
 
-  void CreateBackgroundSyncManager(
-      const scoped_refptr<ServiceWorkerContextWrapper>& context);
+  virtual void CreateBackgroundSyncManager(
+      scoped_refptr<ServiceWorkerContextWrapper> context);
 
   void CreateServiceOnIOThread(
       mojo::InterfaceRequest<mojom::BackgroundSyncService> request);

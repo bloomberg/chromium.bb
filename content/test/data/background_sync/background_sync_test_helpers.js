@@ -140,15 +140,9 @@ function registerFromLocalFrame(frame_url) {
       return frame_registration.sync.register('foo');
     })
     .then(function() {
-      sendResultToTest('error - iframe registered sync');
-    }, function(e) {
-      if (e.name != 'AbortError' || e.message !== 'Registration failed - not ' +
-          'called from a main frame.') {
-        sendErrorToTest(e);
-        return;
-      }
-      sendResultToTest('ok - iframe failed to register sync');
-    });
+      sendResultToTest('ok - iframe registered sync');
+    })
+    .catch(sendErrorToTest);
 }
 
 function receiveMessage() {
@@ -159,7 +153,7 @@ function receiveMessage() {
   });
 }
 
-function registerFromCrossOriginServiceWorker(cross_frame_url) {
+function registerFromCrossOriginFrame(cross_frame_url) {
   return createFrame(cross_frame_url)
     .then(function(frame) {
       return receiveMessage();
@@ -170,7 +164,7 @@ function registerFromCrossOriginServiceWorker(cross_frame_url) {
         sendResultToTest('failed - ' + message);
         return;
       }
-      sendResultToTest('ok - worker failed to register sync');
+      sendResultToTest('ok - frame failed to register sync');
     });
 }
 

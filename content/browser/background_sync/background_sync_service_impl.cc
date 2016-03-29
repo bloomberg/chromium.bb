@@ -94,18 +94,17 @@ void BackgroundSyncServiceImpl::OnConnectionError() {
 void BackgroundSyncServiceImpl::Register(
     content::mojom::SyncRegistrationPtr options,
     int64_t sw_registration_id,
-    bool requested_from_service_worker,
     const RegisterCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  BackgroundSyncRegistrationOptions mgr_options =
+  BackgroundSyncRegistrationOptions manager_options =
       ToBackgroundSyncRegistrationOptions(options);
 
   BackgroundSyncManager* background_sync_manager =
       background_sync_context_->background_sync_manager();
   DCHECK(background_sync_manager);
   background_sync_manager->Register(
-      sw_registration_id, mgr_options, requested_from_service_worker,
+      sw_registration_id, manager_options,
       base::Bind(&BackgroundSyncServiceImpl::OnRegisterResult,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }

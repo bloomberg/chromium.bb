@@ -30,6 +30,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/mock_background_sync_controller.h"
+#include "content/test/test_background_sync_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -92,146 +93,6 @@ void DispatchSyncDelayedCallback(
 }
 
 }  // namespace
-
-// A BackgroundSyncManager that can simulate delaying and corrupting the backend
-// storage and service worker onsync events.
-class TestBackgroundSyncManager : public BackgroundSyncManager {
- public:
-  using DispatchSyncCallback =
-      base::Callback<void(const scoped_refptr<ServiceWorkerVersion>&,
-                          const ServiceWorkerVersion::StatusCallback&)>;
-
-  explicit TestBackgroundSyncManager(
-      const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context)
-      : BackgroundSyncManager(service_worker_context) {
-  }
-
-  void DoInit() { Init(); }
-
-  void StoreDataInBackendContinue(
-      int64_t sw_registration_id,
-      const GURL& origin,
-      const std::string& key,
-      const std::string& data,
-      const ServiceWorkerStorage::StatusCallback& callback) {
-    BackgroundSyncManager::StoreDataInBackend(sw_registration_id, origin, key,
-                                              data, callback);
-  }
-
-  void GetDataFromBackendContinue(
-      const std::string& key,
-      const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&
-          callback) {
-    BackgroundSyncManager::GetDataFromBackend(key, callback);
-  }
-
-  void Continue() {
-    ASSERT_FALSE(continuation_.is_null());
-    continuation_.Run();
-    continuation_.Reset();
-  }
-
-  void ClearDelayedTask() { delayed_task_.Reset(); }
-
-  void set_corrupt_backend(bool corrupt_backend) {
-    corrupt_backend_ = corrupt_backend;
-  }
-  void set_delay_backend(bool delay_backend) { delay_backend_ = delay_backend; }
-  void set_dispatch_sync_callback(const DispatchSyncCallback& callback) {
-    dispatch_sync_callback_ = callback;
-  }
-
-  base::Closure delayed_task() const { return delayed_task_; }
-  base::TimeDelta delayed_task_delta() const { return delayed_task_delta_; }
-
-  mojom::BackgroundSyncEventLastChance last_chance() const {
-    return last_chance_;
-  }
-
-  void set_has_main_frame_provider_host(bool value) {
-    has_main_frame_provider_host_ = value;
-  }
-
-  const BackgroundSyncParameters* background_sync_parameters() const {
-    return parameters_.get();
-  }
-
- protected:
-  void StoreDataInBackend(
-      int64_t sw_registration_id,
-      const GURL& origin,
-      const std::string& key,
-      const std::string& data,
-      const ServiceWorkerStorage::StatusCallback& callback) override {
-    EXPECT_TRUE(continuation_.is_null());
-    if (corrupt_backend_) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_FAILED));
-      return;
-    }
-    continuation_ =
-        base::Bind(&TestBackgroundSyncManager::StoreDataInBackendContinue,
-                   base::Unretained(this), sw_registration_id, origin, key,
-                   data, callback);
-    if (delay_backend_)
-      return;
-
-    Continue();
-  }
-
-  void GetDataFromBackend(
-      const std::string& key,
-      const ServiceWorkerStorage::GetUserDataForAllRegistrationsCallback&
-          callback) override {
-    EXPECT_TRUE(continuation_.is_null());
-    if (corrupt_backend_) {
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::Bind(callback, std::vector<std::pair<int64_t, std::string>>(),
-                     SERVICE_WORKER_ERROR_FAILED));
-      return;
-    }
-    continuation_ =
-        base::Bind(&TestBackgroundSyncManager::GetDataFromBackendContinue,
-                   base::Unretained(this), key, callback);
-    if (delay_backend_)
-      return;
-
-    Continue();
-  }
-
-  void DispatchSyncEvent(
-      const std::string& tag,
-      const scoped_refptr<ServiceWorkerVersion>& active_version,
-      mojom::BackgroundSyncEventLastChance last_chance,
-      const ServiceWorkerVersion::StatusCallback& callback) override {
-    ASSERT_FALSE(dispatch_sync_callback_.is_null());
-    last_chance_ = last_chance;
-    dispatch_sync_callback_.Run(active_version, callback);
-  }
-
-  void ScheduleDelayedTask(const base::Closure& callback,
-                           base::TimeDelta delay) override {
-    delayed_task_ = callback;
-    delayed_task_delta_ = delay;
-  }
-
-  void HasMainFrameProviderHost(const GURL& origin,
-                                const BoolCallback& callback) override {
-    callback.Run(has_main_frame_provider_host_);
-  }
-
- private:
-  bool corrupt_backend_ = false;
-  bool delay_backend_ = false;
-  bool has_main_frame_provider_host_ = true;
-  mojom::BackgroundSyncEventLastChance last_chance_ =
-      mojom::BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE;
-  base::Closure continuation_;
-  DispatchSyncCallback dispatch_sync_callback_;
-  base::Closure delayed_task_;
-  base::TimeDelta delayed_task_delta_;
-};
 
 class BackgroundSyncManagerTest : public testing::Test {
  public:
@@ -395,20 +256,7 @@ class BackgroundSyncManagerTest : public testing::Test {
       const BackgroundSyncRegistrationOptions& options) {
     bool was_called = false;
     background_sync_manager_->Register(
-        sw_registration_id, options, true /* requested_from_service_worker */,
-        base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
-                   base::Unretained(this), &was_called));
-    base::RunLoop().RunUntilIdle();
-    EXPECT_TRUE(was_called);
-    return callback_status_ == BACKGROUND_SYNC_STATUS_OK;
-  }
-
-  bool RegisterFromDocumentWithServiceWorkerId(
-      int64_t sw_registration_id,
-      const BackgroundSyncRegistrationOptions& options) {
-    bool was_called = false;
-    background_sync_manager_->Register(
-        sw_registration_id, options, false /* requested_from_service_worker */,
+        sw_registration_id, options,
         base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                    base::Unretained(this), &was_called));
     base::RunLoop().RunUntilIdle();
@@ -566,7 +414,7 @@ TEST_F(BackgroundSyncManagerTest, Register) {
   EXPECT_TRUE(Register(sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest, RegistractionIntact) {
+TEST_F(BackgroundSyncManagerTest, RegistrationIntact) {
   EXPECT_TRUE(Register(sync_options_1_));
   EXPECT_STREQ(sync_options_1_.tag.c_str(),
                callback_registration_->options()->tag.c_str());
@@ -740,7 +588,6 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   bool get_registrations_called = false;
   test_background_sync_manager_->Register(
       sw_registration_id_1_, sync_options_1_,
-      true /* requested_from_service_worker */,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &register_called));
   test_background_sync_manager_->GetRegistrations(
@@ -753,13 +600,13 @@ TEST_F(BackgroundSyncManagerTest, SequentialOperations) {
   EXPECT_FALSE(register_called);
   EXPECT_FALSE(get_registrations_called);
 
-  test_background_sync_manager_->Continue();
+  test_background_sync_manager_->ResumeBackendOperation();
   base::RunLoop().RunUntilIdle();
   // Register should be blocked while storing to the backend.
   EXPECT_FALSE(register_called);
   EXPECT_FALSE(get_registrations_called);
 
-  test_background_sync_manager_->Continue();
+  test_background_sync_manager_->ResumeBackendOperation();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(register_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_OK, callback_status_);
@@ -781,7 +628,6 @@ TEST_F(BackgroundSyncManagerTest,
   bool callback_called = false;
   test_background_sync_manager_->Register(
       sw_registration_id_1_, sync_options_2_,
-      true /* requested_from_service_worker */,
       base::Bind(&BackgroundSyncManagerTest::StatusAndRegistrationCallback,
                  base::Unretained(this), &callback_called));
 
@@ -789,7 +635,7 @@ TEST_F(BackgroundSyncManagerTest,
   EXPECT_FALSE(callback_called);
   UnregisterServiceWorker(sw_registration_id_1_);
 
-  test_background_sync_manager_->Continue();
+  test_background_sync_manager_->ResumeBackendOperation();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback_called);
   EXPECT_EQ(BACKGROUND_SYNC_STATUS_STORAGE_ERROR, callback_status_);
@@ -1120,20 +966,12 @@ TEST_F(BackgroundSyncManagerTest, KillManagerMidSync) {
   EXPECT_EQ(2, sync_events_called_);
 }
 
-TEST_F(BackgroundSyncManagerTest, RegisterFromServiceWorkerWithoutMainFrame) {
+TEST_F(BackgroundSyncManagerTest, RegisterWithoutMainFrame) {
   test_background_sync_manager_->set_has_main_frame_provider_host(false);
   EXPECT_FALSE(Register(sync_options_1_));
 }
 
-TEST_F(BackgroundSyncManagerTest,
-       RegisterFromDocumentWithoutMainFrameProviderHost) {
-  test_background_sync_manager_->set_has_main_frame_provider_host(false);
-  EXPECT_TRUE(RegisterFromDocumentWithServiceWorkerId(sw_registration_id_1_,
-                                                      sync_options_1_));
-}
-
-TEST_F(BackgroundSyncManagerTest,
-       RegisterExistingFromServiceWorkerWithoutMainFrame) {
+TEST_F(BackgroundSyncManagerTest, RegisterExistingWithoutMainFrame) {
   EXPECT_TRUE(Register(sync_options_1_));
   test_background_sync_manager_->set_has_main_frame_provider_host(false);
   EXPECT_FALSE(Register(sync_options_1_));

@@ -12,7 +12,7 @@ function receiveMessage() {
   });
 }
 
-navigator.serviceWorker.register('register_sync_sw.js')
+navigator.serviceWorker.register('register_sync_from_sw_service_worker.js')
   .then(function() {
     return receiveMessage();
   })

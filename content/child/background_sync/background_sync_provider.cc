@@ -86,7 +86,6 @@ BackgroundSyncProvider::GetOrCreateThreadSpecificInstance(
 void BackgroundSyncProvider::registerBackgroundSync(
     const blink::WebSyncRegistration* options,
     blink::WebServiceWorkerRegistration* service_worker_registration,
-    bool requested_from_service_worker,
     blink::WebSyncRegistrationCallbacks* callbacks) {
   DCHECK(options);
   DCHECK(service_worker_registration);
@@ -100,7 +99,7 @@ void BackgroundSyncProvider::registerBackgroundSync(
   // will wipe its callbacks) before 'this' is deleted.
   GetBackgroundSyncServicePtr()->Register(
       mojo::ConvertTo<mojom::SyncRegistrationPtr>(*(optionsPtr.get())),
-      service_worker_registration_id, requested_from_service_worker,
+      service_worker_registration_id,
       base::Bind(&BackgroundSyncProvider::RegisterCallback,
                  base::Unretained(this),
                  base::Passed(std::move(callbacksPtr))));

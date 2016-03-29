@@ -34,7 +34,6 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   // mojom::BackgroundSyncService methods:
   void Register(content::mojom::SyncRegistrationPtr options,
                 int64_t sw_registration_id,
-                bool requested_from_service_worker,
                 const RegisterCallback& callback) override;
   void GetRegistrations(int64_t sw_registration_id,
                         const GetRegistrationsCallback& callback) override;

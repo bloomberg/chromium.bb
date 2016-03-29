@@ -25,7 +25,7 @@ public:
 
     // Takes ownership of the WebSyncRegistrationCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.
-    virtual void registerBackgroundSync(const WebSyncRegistration*, WebServiceWorkerRegistration*, bool, WebSyncRegistrationCallbacks*) = 0;
+    virtual void registerBackgroundSync(const WebSyncRegistration*, WebServiceWorkerRegistration*, WebSyncRegistrationCallbacks*) = 0;
 
     // Takes ownership of the WebSyncGetRegistrationsCallbacks.
     // Does not take ownership of the WebServiceWorkerRegistration.

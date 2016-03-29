@@ -41,7 +41,10 @@ namespace {
 
 const char kDefaultTestURL[] = "/background_sync/test.html";
 const char kEmptyURL[] = "/background_sync/empty.html";
-const char kRegisterSyncURL[] = "/background_sync/register_sync.html";
+const char kRegisterSyncFromIFrameURL[] =
+    "/background_sync/register_sync_from_iframe.html";
+const char kRegisterSyncFromSWURL[] =
+    "/background_sync/register_sync_from_sw.html";
 
 const char kSuccessfulOperationPrefix[] = "ok - ";
 
@@ -190,6 +193,8 @@ class BackgroundSyncBrowserTest : public ContentBrowserTest {
   bool RegisterServiceWorker();
   bool Register(const std::string& tag);
   bool RegisterFromServiceWorker(const std::string& tag);
+  bool RegisterFromCrossOriginFrame(const std::string& frame_url,
+                                    std::string* script_result);
   bool HasTag(const std::string& tag);
   bool HasTagFromServiceWorker(const std::string& tag);
   bool MatchTags(const std::string& script_result,
@@ -300,6 +305,20 @@ bool BackgroundSyncBrowserTest::RegisterFromServiceWorker(
   EXPECT_TRUE(RunScript(BuildScriptString("registerFromServiceWorker", tag),
                         &script_result));
   return script_result == BuildExpectedResult(tag, "register sent to SW");
+}
+
+bool BackgroundSyncBrowserTest::RegisterFromCrossOriginFrame(
+    const std::string& frame_url,
+    std::string* script_result) {
+  // Start a second https server to use as a second origin.
+  net::EmbeddedTestServer alt_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  alt_server.ServeFilesFromSourceDirectory("content/test/data");
+  EXPECT_TRUE(alt_server.Start());
+
+  GURL url = alt_server.GetURL(frame_url);
+  return RunScript(
+      BuildScriptString("registerFromCrossOriginFrame", url.spec()),
+      script_result);
 }
 
 bool BackgroundSyncBrowserTest::HasTag(const std::string& tag) {
@@ -639,28 +658,30 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, DISABLED_VerifyRetry) {
   EXPECT_TRUE(RegistrationPending("delay"));
 }
 
-IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, RegisterFromNonMainFrame) {
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
+                       RegisterFromIFrameWithMainFrameHost) {
   std::string script_result;
   GURL url = https_server()->GetURL(kEmptyURL);
   EXPECT_TRUE(RunScript(BuildScriptString("registerFromLocalFrame", url.spec()),
                         &script_result));
-  EXPECT_EQ(BuildExpectedResult("iframe", "failed to register sync"),
+  EXPECT_EQ(BuildExpectedResult("iframe", "registered sync"), script_result);
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
+                       RegisterFromIFrameWithoutMainFrameHost) {
+  std::string script_result;
+  EXPECT_TRUE(
+      RegisterFromCrossOriginFrame(kRegisterSyncFromIFrameURL, &script_result));
+  EXPECT_EQ(BuildExpectedResult("frame", "failed to register sync"),
             script_result);
 }
 
 IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
                        RegisterFromServiceWorkerWithoutMainFrameHost) {
-  // Start a second https server to use as a second origin.
-  net::EmbeddedTestServer alt_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  alt_server.ServeFilesFromSourceDirectory("content/test/data");
-  ASSERT_TRUE(alt_server.Start());
-
   std::string script_result;
-  GURL url = alt_server.GetURL(kRegisterSyncURL);
-  EXPECT_TRUE(RunScript(
-      BuildScriptString("registerFromCrossOriginServiceWorker", url.spec()),
-      &script_result));
-  EXPECT_EQ(BuildExpectedResult("worker", "failed to register sync"),
+  EXPECT_TRUE(
+      RegisterFromCrossOriginFrame(kRegisterSyncFromSWURL, &script_result));
+  EXPECT_EQ(BuildExpectedResult("frame", "failed to register sync"),
             script_result);
 }
 

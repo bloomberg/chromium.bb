@@ -20,6 +20,7 @@
 #include "content/public/test/background_sync_test_util.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/test/test_background_sync_context_impl.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -127,7 +128,9 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   }
 
   void CreateBackgroundSyncContext() {
-    background_sync_context_ = new BackgroundSyncContextImpl();
+    // Registering for background sync includes a check for having a same-origin
+    // main frame. Use a test context that allows control over that check.
+    background_sync_context_ = new TestBackgroundSyncContextImpl();
     background_sync_context_->Init(embedded_worker_helper_->context_wrapper());
 
     // Tests do not expect the sync event to fire immediately after
@@ -178,9 +181,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   void Register(
       mojom::SyncRegistrationPtr sync,
       const mojom::BackgroundSyncService::RegisterCallback& callback) {
-    service_impl_->Register(std::move(sync), sw_registration_id_,
-                            false /* requested_from_service_worker */,
-                            callback);
+    service_impl_->Register(std::move(sync), sw_registration_id_, callback);
     base::RunLoop().RunUntilIdle();
   }
 

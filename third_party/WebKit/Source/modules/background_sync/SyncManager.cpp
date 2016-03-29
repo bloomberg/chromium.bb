@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/background_sync/SyncCallbacks.h"
@@ -44,14 +43,6 @@ ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, ExecutionC
     if (!m_registration->active())
         return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Registration failed - no active Service Worker"));
 
-    if (scriptState->getExecutionContext()->isDocument()) {
-        Document* document = toDocument(scriptState->getExecutionContext());
-        if (!document->domWindow() || !document->frame())
-            return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(InvalidStateError, "Document is detached from window."));
-        if (!document->frame()->isMainFrame())
-            return ScriptPromise::rejectWithDOMException(scriptState, DOMException::create(AbortError, "Registration failed - not called from a main frame."));
-    }
-
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
 
@@ -60,7 +51,7 @@ ScriptPromise SyncManager::registerFunction(ScriptState* scriptState, ExecutionC
         tag,
         WebSyncRegistration::NetworkStateOnline /* networkState */
     );
-    backgroundSyncProvider()->registerBackgroundSync(webSyncRegistration, m_registration->webRegistration(), context->isServiceWorkerGlobalScope(), new SyncRegistrationCallbacks(resolver, m_registration));
+    backgroundSyncProvider()->registerBackgroundSync(webSyncRegistration, m_registration->webRegistration(), new SyncRegistrationCallbacks(resolver, m_registration));
 
     return promise;
 }

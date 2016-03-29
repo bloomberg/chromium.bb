@@ -153,7 +153,6 @@ BackgroundSyncManager::~BackgroundSyncManager() {
 void BackgroundSyncManager::Register(
     int64_t sw_registration_id,
     const BackgroundSyncRegistrationOptions& options,
-    bool requested_from_service_worker,
     const StatusAndRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -164,16 +163,8 @@ void BackgroundSyncManager::Register(
     return;
   }
 
-  if (requested_from_service_worker) {
-    op_scheduler_.ScheduleOperation(
-        base::Bind(&BackgroundSyncManager::RegisterCheckIfHasMainFrame,
-                   weak_ptr_factory_.GetWeakPtr(), sw_registration_id, options,
-                   MakeStatusAndRegistrationCompletion(callback)));
-    return;
-  }
-
   op_scheduler_.ScheduleOperation(
-      base::Bind(&BackgroundSyncManager::RegisterImpl,
+      base::Bind(&BackgroundSyncManager::RegisterCheckIfHasMainFrame,
                  weak_ptr_factory_.GetWeakPtr(), sw_registration_id, options,
                  MakeStatusAndRegistrationCompletion(callback)));
 }

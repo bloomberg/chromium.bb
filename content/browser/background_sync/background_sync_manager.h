@@ -69,7 +69,6 @@ class CONTENT_EXPORT BackgroundSyncManager
   // supplied.
   void Register(int64_t sw_registration_id,
                 const BackgroundSyncRegistrationOptions& options,
-                bool requested_from_service_worker,
                 const StatusAndRegistrationCallback& callback);
 
   // Finds the background sync registrations associated with
