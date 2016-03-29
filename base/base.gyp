@@ -553,6 +553,7 @@
         'task_scheduler/scheduler_lock_unittest.cc',
         'task_scheduler/sequence_sort_key_unittest.cc',
         'task_scheduler/sequence_unittest.cc',
+        'task_scheduler/task_tracker_unittest.cc',
         'task_scheduler/test_utils.h',
         'template_util_unittest.cc',
         'test/histogram_tester_unittest.cc',

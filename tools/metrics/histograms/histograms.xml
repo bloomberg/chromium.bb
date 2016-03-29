@@ -53434,6 +53434,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </details>
 </histogram>
 
+<histogram name="TaskScheduler.BlockShutdownTasksPostedDuringShutdown"
+    units="tasks">
+  <owner>fdoray@chromium.org</owner>
+  <summary>
+    Number of BLOCK_SHUTDOWN tasks that were posted to a base::TaskScheduler
+    after its Shutdown() method was called but before it returned.
+  </summary>
+</histogram>
+
 <histogram name="ThreadWatcher.ResponseTime" units="ms">
   <owner>rtenneti@chromium.org</owner>
   <summary>

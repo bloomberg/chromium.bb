@@ -126,8 +126,14 @@ enum class ExecutionMode {
   SINGLE_THREADED,
 };
 
-// Pretty Printer for Google Test.
-void BASE_EXPORT PrintTo(const TaskPriority& task_priority, std::ostream* os);
+// Stream operators so TaskPriority and TaskShutdownBehavior can be used in
+// DCHECK statements.
+BASE_EXPORT std::ostream& operator<<(std::ostream& os,
+                                     const TaskPriority& shutdown_behavior);
+
+BASE_EXPORT std::ostream& operator<<(
+    std::ostream& os,
+    const TaskShutdownBehavior& shutdown_behavior);
 
 }  // namespace base
 

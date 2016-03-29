@@ -34,18 +34,35 @@ TaskTraits& TaskTraits::WithShutdownBehavior(
   return *this;
 }
 
-void PrintTo(const TaskPriority& task_priority, std::ostream* os) {
+std::ostream& operator<<(std::ostream& os, const TaskPriority& task_priority) {
   switch (task_priority) {
     case TaskPriority::BACKGROUND:
-      *os << "BACKGROUND";
+      os << "BACKGROUND";
       break;
     case TaskPriority::USER_VISIBLE:
-      *os << "USER_VISIBLE";
+      os << "USER_VISIBLE";
       break;
     case TaskPriority::USER_BLOCKING:
-      *os << "USER_BLOCKING";
+      os << "USER_BLOCKING";
       break;
   }
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const TaskShutdownBehavior& shutdown_behavior) {
+  switch (shutdown_behavior) {
+    case TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN:
+      os << "CONTINUE_ON_SHUTDOWN";
+      break;
+    case TaskShutdownBehavior::SKIP_ON_SHUTDOWN:
+      os << "SKIP_ON_SHUTDOWN";
+      break;
+    case TaskShutdownBehavior::BLOCK_SHUTDOWN:
+      os << "BLOCK_SHUTDOWN";
+      break;
+  }
+  return os;
 }
 
 }  // namespace base

@@ -648,6 +648,8 @@
           'task_scheduler/sequence_sort_key.h',
           'task_scheduler/task.cc',
           'task_scheduler/task.h',
+          'task_scheduler/task_tracker.cc',
+          'task_scheduler/task_tracker.h',
           'task_scheduler/task_traits.cc',
           'task_scheduler/task_traits.h',
           'template_util.h',
