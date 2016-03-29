@@ -322,9 +322,9 @@ bool NotificationsApiFunction::CreateNotification(
 
     for (size_t i = 0; i < number_of_buttons; i++) {
       message_center::ButtonInfo info(
-          base::UTF8ToUTF16((*options->buttons)[i]->title));
+          base::UTF8ToUTF16((*options->buttons)[i].title));
       extensions::api::notifications::NotificationBitmap* icon_bitmap_ptr =
-          (*options->buttons)[i]->icon_bitmap.get();
+          (*options->buttons)[i].icon_bitmap.get();
       if (icon_bitmap_ptr) {
         NotificationConversionHelper::NotificationBitmapToGfxImage(
             image_scale, bitmap_sizes.button_icon_size, *icon_bitmap_ptr,
@@ -373,12 +373,10 @@ bool NotificationsApiFunction::CreateNotification(
 
   if (has_list_items) {
     using api::notifications::NotificationItem;
-    std::vector<linked_ptr<NotificationItem> >::iterator i;
-    for (i = options->items->begin(); i != options->items->end(); ++i) {
-      message_center::NotificationItem item(
-          base::UTF8ToUTF16(i->get()->title),
-          base::UTF8ToUTF16(i->get()->message));
-      optional_fields.items.push_back(item);
+    for (const NotificationItem& api_item : *options->items) {
+      optional_fields.items.push_back(message_center::NotificationItem(
+          base::UTF8ToUTF16(api_item.title),
+          base::UTF8ToUTF16(api_item.message)));
     }
   }
 
@@ -464,9 +462,9 @@ bool NotificationsApiFunction::UpdateNotification(
     std::vector<message_center::ButtonInfo> buttons;
     for (size_t i = 0; i < number_of_buttons; i++) {
       message_center::ButtonInfo button(
-          base::UTF8ToUTF16((*options->buttons)[i]->title));
+          base::UTF8ToUTF16((*options->buttons)[i].title));
       extensions::api::notifications::NotificationBitmap* icon_bitmap_ptr =
-          (*options->buttons)[i]->icon_bitmap.get();
+          (*options->buttons)[i].icon_bitmap.get();
       if (icon_bitmap_ptr) {
         NotificationConversionHelper::NotificationBitmapToGfxImage(
             image_scale, bitmap_sizes.button_icon_size, *icon_bitmap_ptr,
@@ -521,12 +519,10 @@ bool NotificationsApiFunction::UpdateNotification(
 
     std::vector<message_center::NotificationItem> items;
     using api::notifications::NotificationItem;
-    std::vector<linked_ptr<NotificationItem> >::iterator i;
-    for (i = options->items->begin(); i != options->items->end(); ++i) {
-      message_center::NotificationItem item(
-          base::UTF8ToUTF16(i->get()->title),
-          base::UTF8ToUTF16(i->get()->message));
-      items.push_back(item);
+    for (const NotificationItem& api_item : *options->items) {
+      items.push_back(message_center::NotificationItem(
+          base::UTF8ToUTF16(api_item.title),
+          base::UTF8ToUTF16(api_item.message)));
     }
     notification->set_items(items);
   }

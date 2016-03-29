@@ -61,24 +61,20 @@ void NotificationConversionHelper::NotificationToNotificationOptions(
         new std::string(base::UTF16ToUTF8(rich_data->context_message)));
 
   if (!rich_data->buttons.empty()) {
-    scoped_ptr<std::vector<
-        linked_ptr<extensions::api::notifications::NotificationButton> > >
-        button_list(new std::vector<
-            linked_ptr<extensions::api::notifications::NotificationButton> >);
-    for (size_t i = 0; i < rich_data->buttons.size(); i++) {
-      linked_ptr<extensions::api::notifications::NotificationButton> button(
-          new extensions::api::notifications::NotificationButton);
-      button->title = base::UTF16ToUTF8(rich_data->buttons[i].title);
+    options->buttons.reset(
+        new std::vector<extensions::api::notifications::NotificationButton>());
+    for (const message_center::ButtonInfo& button_info : rich_data->buttons) {
+      extensions::api::notifications::NotificationButton button;
+      button.title = base::UTF16ToUTF8(button_info.title);
 
-      if (!rich_data->buttons[i].icon.IsEmpty()) {
+      if (!button_info.icon.IsEmpty()) {
         scoped_ptr<extensions::api::notifications::NotificationBitmap> icon(
             new extensions::api::notifications::NotificationBitmap());
-        GfxImageToNotificationBitmap(&rich_data->buttons[i].icon, icon.get());
-        button->icon_bitmap = std::move(icon);
+        GfxImageToNotificationBitmap(&button_info.icon, icon.get());
+        button.icon_bitmap = std::move(icon);
       }
-      button_list->push_back(button);
+      options->buttons->push_back(std::move(button));
     }
-    options->buttons = std::move(button_list);
   }
 
   // Only image type notifications should have images.
@@ -99,18 +95,14 @@ void NotificationConversionHelper::NotificationToNotificationOptions(
 
   // Only list type notifications should have lists.
   if (type == "list" && !rich_data->items.empty()) {
-    scoped_ptr<std::vector<
-        linked_ptr<extensions::api::notifications::NotificationItem> > >
-        list(new std::vector<
-            linked_ptr<extensions::api::notifications::NotificationItem> >);
-    for (size_t j = 0; j < rich_data->items.size(); j++) {
-      linked_ptr<extensions::api::notifications::NotificationItem> item(
-          new extensions::api::notifications::NotificationItem);
-      item->title = base::UTF16ToUTF8(rich_data->items[j].title);
-      item->message = base::UTF16ToUTF8(rich_data->items[j].message);
-      list->push_back(item);
+    options->items.reset(
+        new std::vector<extensions::api::notifications::NotificationItem>());
+    for (const message_center::NotificationItem& item : rich_data->items) {
+      extensions::api::notifications::NotificationItem api_item;
+      api_item.title = base::UTF16ToUTF8(item.title);
+      api_item.message = base::UTF16ToUTF8(item.message);
+      options->items->push_back(std::move(api_item));
     }
-    options->items = std::move(list);
   } else if (type != "list" && !rich_data->items.empty()) {
     DVLOG(1) << "Only list type notifications should have lists.";
   }

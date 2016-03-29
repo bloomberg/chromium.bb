@@ -297,7 +297,7 @@ NotificationProviderGetAllNotifiersFunction::
 
 ExtensionFunction::ResponseAction
 NotificationProviderGetAllNotifiersFunction::Run() {
-  std::vector<linked_ptr<api::notification_provider::Notifier> > notifiers;
+  std::vector<api::notification_provider::Notifier> notifiers;
 
   return RespondNow(ArgumentList(
       api::notification_provider::GetAllNotifiers::Results::Create(notifiers)));

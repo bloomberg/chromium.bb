@@ -4,7 +4,7 @@
 
 // The <code>chrome.launcherPage</code> API provides launcher pages in the
 // Chrome Launcher with the capabilities and events they need.
-namespace launcherPage {
+[use_movable_types=true] namespace launcherPage {
   callback PushSubpageCallback = void();
   callback ShowCallback = void();
   callback HideCallback = void();

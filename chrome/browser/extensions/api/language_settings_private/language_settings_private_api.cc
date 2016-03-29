@@ -175,10 +175,9 @@ LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction::Run() {
       LanguageSettingsPrivateDelegateFactory::GetForBrowserContext(
           browser_context());
 
-  scoped_ptr<base::ListValue> return_list(new base::ListValue());
-  for (const auto& status : delegate->GetHunspellDictionaryStatuses())
-    return_list->Append(status->ToValue());
-  return RespondNow(OneArgument(return_list.release()));
+  return RespondNow(OneArgument(
+      language_settings_private::GetSpellcheckDictionaryStatuses::Results::
+          Create(delegate->GetHunspellDictionaryStatuses())));
 }
 
 LanguageSettingsPrivateGetSpellcheckWordsFunction::
@@ -298,8 +297,7 @@ LanguageSettingsPrivateGetTranslateTargetLanguageFunction::Run() {
 // descriptors. Used for languageSettingsPrivate.getInputMethodLists().
 void PopulateInputMethodListFromDescriptors(
     const InputMethodDescriptors& descriptors,
-    std::vector<linked_ptr<language_settings_private::InputMethod>>*
-        input_methods) {
+    std::vector<language_settings_private::InputMethod>* input_methods) {
   InputMethodManager* manager = InputMethodManager::Get();
   InputMethodUtil* util = manager->GetInputMethodUtil();
   scoped_refptr<InputMethodManager::State> ime_state =
@@ -314,17 +312,16 @@ void PopulateInputMethodListFromDescriptors(
       active_ids_list.begin(), active_ids_list.end());
 
   for (const auto& descriptor : descriptors) {
-    linked_ptr<language_settings_private::InputMethod> input_method(
-        new language_settings_private::InputMethod());
-    input_method->id = descriptor.id();
-    input_method->display_name = util->GetLocalizedDisplayName(descriptor);
-    input_method->language_codes = descriptor.language_codes();
-    bool enabled = active_ids.find(input_method->id) != active_ids.end();
+    language_settings_private::InputMethod input_method;
+    input_method.id = descriptor.id();
+    input_method.display_name = util->GetLocalizedDisplayName(descriptor);
+    input_method.language_codes = descriptor.language_codes();
+    bool enabled = active_ids.find(input_method.id) != active_ids.end();
     if (enabled)
-      input_method->enabled.reset(new bool(true));
+      input_method.enabled.reset(new bool(true));
     if (descriptor.options_page_url().is_valid())
-      input_method->has_options_page.reset(new bool(true));
-    input_methods->push_back(input_method);
+      input_method.has_options_page.reset(new bool(true));
+    input_methods->push_back(std::move(input_method));
   }
 }
 #endif

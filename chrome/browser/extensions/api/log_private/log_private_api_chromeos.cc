@@ -13,7 +13,6 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -78,10 +77,9 @@ scoped_ptr<LogParser> CreateLogParser(const std::string& log_type) {
   return  scoped_ptr<LogParser>();
 }
 
-void CollectLogInfo(
-    FilterHandler* filter_handler,
-    system_logs::SystemLogsResponse* logs,
-    std::vector<linked_ptr<api::log_private::LogEntry> >* output) {
+void CollectLogInfo(FilterHandler* filter_handler,
+                    system_logs::SystemLogsResponse* logs,
+                    std::vector<api::log_private::LogEntry>* output) {
   for (system_logs::SystemLogsResponse::const_iterator
       request_it = logs->begin(); request_it != logs->end(); ++request_it) {
     if (!filter_handler->IsValidSource(request_it->first)) {
@@ -424,13 +422,10 @@ bool LogPrivateGetHistoricalFunction::RunAsync() {
 
 void LogPrivateGetHistoricalFunction::OnSystemLogsLoaded(
     scoped_ptr<system_logs::SystemLogsResponse> sys_info) {
-  std::vector<linked_ptr<api::log_private::LogEntry> > data;
-
-  CollectLogInfo(filter_handler_.get(), sys_info.get(), &data);
 
   // Prepare result
   api::log_private::Result result;
-  result.data = data;
+  CollectLogInfo(filter_handler_.get(), sys_info.get(), &result.data);
   api::log_private::Filter::Populate(
       *((filter_handler_->GetFilter())->ToValue()), &result.filter);
   SetResult(result.ToValue().release());

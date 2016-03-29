@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -33,10 +32,8 @@ SyslogParser::~SyslogParser() {}
 
 SyslogParser::Error SyslogParser::ParseEntry(
     const std::string& input,
-    std::vector<linked_ptr<api::log_private::LogEntry> >* output,
+    std::vector<api::log_private::LogEntry>* output,
     FilterHandler* filter_handler) const {
-  linked_ptr<api::log_private::LogEntry> entry(new api::log_private::LogEntry);
-
   base::StringTokenizer tokenizer(input, " ");
   if (!tokenizer.GetNext()) {
     LOG(ERROR)
@@ -44,7 +41,8 @@ SyslogParser::Error SyslogParser::ParseEntry(
     return TOKENIZE_ERROR;
   }
   std::string time = tokenizer.token();
-  if (ParseTime(time, &(entry->timestamp)) != SyslogParser::SUCCESS) {
+  api::log_private::LogEntry entry;
+  if (ParseTime(time, &(entry.timestamp)) != SyslogParser::SUCCESS) {
     return SyslogParser::PARSE_ERROR;
   }
   if (!tokenizer.GetNext()) {
@@ -52,12 +50,12 @@ SyslogParser::Error SyslogParser::ParseEntry(
         << "Error when parsing data. Expect: At least 2 tokens. Actual: 1";
     return TOKENIZE_ERROR;
   }
-  ParseProcess(tokenizer.token(), entry.get());
-  ParseLevel(input, entry.get());
-  entry->full_entry = input;
+  ParseProcess(tokenizer.token(), &entry);
+  ParseLevel(input, &entry);
+  entry.full_entry = input;
 
-  if (filter_handler->IsValidLogEntry(*(entry.get()))) {
-    output->push_back(entry);
+  if (filter_handler->IsValidLogEntry(entry)) {
+    output->push_back(std::move(entry));
   }
 
   return SyslogParser::SUCCESS;

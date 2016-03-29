@@ -6,7 +6,8 @@
 // to it.
 [platforms=("chromeos"),
  implemented_in="chrome/browser/chromeos/extensions/launcher_search_provider.h",
- nodoc]
+ nodoc,
+ use_movable_types=true]
 namespace launcherSearchProvider {
   dictionary SearchResult {
     DOMString itemId;

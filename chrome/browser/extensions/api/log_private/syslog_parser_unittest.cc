@@ -32,7 +32,7 @@ class ExtensionSyslogParserTest : public testing::Test {
 };
 
 TEST_F(ExtensionSyslogParserTest, ParseLog) {
-  std::vector<linked_ptr<api::log_private::LogEntry> > output;
+  std::vector<api::log_private::LogEntry> output;
   api::log_private::Filter filter;
   FilterHandler filter_handler(filter);
   SyslogParser p;
@@ -40,29 +40,29 @@ TEST_F(ExtensionSyslogParserTest, ParseLog) {
   // Test kernel log
   p.Parse(kKernelLogEntry, &output, &filter_handler);
   ASSERT_EQ(1u, output.size());
-  EXPECT_EQ("unknown", output[0]->level);
-  EXPECT_EQ("kernel", output[0]->process);
-  EXPECT_EQ("unknown", output[0]->process_id);
-  EXPECT_EQ(kKernelLogEntry, output[0]->full_entry);
-  EXPECT_DOUBLE_EQ(1408395898606.132, output[0]->timestamp);
+  EXPECT_EQ("unknown", output[0].level);
+  EXPECT_EQ("kernel", output[0].process);
+  EXPECT_EQ("unknown", output[0].process_id);
+  EXPECT_EQ(kKernelLogEntry, output[0].full_entry);
+  EXPECT_DOUBLE_EQ(1408395898606.132, output[0].timestamp);
 
   // Test shill log
   p.Parse(kShillLogEntry, &output, &filter_handler);
   ASSERT_EQ(2u, output.size());
-  EXPECT_EQ("info", output[1]->level);
-  EXPECT_EQ("shill", output[1]->process);
-  EXPECT_EQ("1018", output[1]->process_id);
-  EXPECT_EQ(kShillLogEntry, output[1]->full_entry);
-  EXPECT_DOUBLE_EQ(1408126824575.058, output[1]->timestamp);
+  EXPECT_EQ("info", output[1].level);
+  EXPECT_EQ("shill", output[1].process);
+  EXPECT_EQ("1018", output[1].process_id);
+  EXPECT_EQ(kShillLogEntry, output[1].full_entry);
+  EXPECT_DOUBLE_EQ(1408126824575.058, output[1].timestamp);
 
   // Test WpaSupplicant log
   p.Parse(kWpaSupplicantLogEntry, &output, &filter_handler);
   ASSERT_EQ(3u, output.size());
-  EXPECT_EQ("unknown", output[2]->level);
-  EXPECT_EQ("wpa_supplicant", output[2]->process);
-  EXPECT_EQ("818", output[2]->process_id);
-  EXPECT_EQ(kWpaSupplicantLogEntry, output[2]->full_entry);
-  EXPECT_DOUBLE_EQ(1408131366137.021, output[2]->timestamp);
+  EXPECT_EQ("unknown", output[2].level);
+  EXPECT_EQ("wpa_supplicant", output[2].process);
+  EXPECT_EQ("818", output[2].process_id);
+  EXPECT_EQ(kWpaSupplicantLogEntry, output[2].full_entry);
+  EXPECT_DOUBLE_EQ(1408131366137.021, output[2].timestamp);
 }
 
 }  // namespace extensions

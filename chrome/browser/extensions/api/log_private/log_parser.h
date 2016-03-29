@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/log_private/filter_handler.h"
 #include "chrome/common/extensions/api/log_private.h"
 
@@ -28,18 +27,16 @@ class LogParser {
 
   virtual ~LogParser();
   // Parses log text into multiple LogEntry objects.
-  void Parse(
-      const std::string& input,
-      std::vector<linked_ptr<api::log_private::LogEntry> >* output,
-      FilterHandler* filter_handler) const;
+  void Parse(const std::string& input,
+             std::vector<api::log_private::LogEntry>* output,
+             FilterHandler* filter_handler) const;
 
  protected:
-  explicit LogParser();
+  LogParser();
   // Parses a single line of log text into one LogEntry object.
-  virtual Error ParseEntry(
-      const std::string& input,
-      std::vector<linked_ptr<api::log_private::LogEntry> >* output,
-      FilterHandler* filter_handler) const = 0;
+  virtual Error ParseEntry(const std::string& input,
+                           std::vector<api::log_private::LogEntry>* output,
+                           FilterHandler* filter_handler) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LogParser);

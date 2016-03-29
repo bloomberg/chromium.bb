@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "chrome/browser/extensions/api/log_private/log_parser.h"
 #include "chrome/common/extensions/api/log_private.h"
 
@@ -24,7 +23,7 @@ class SyslogParser : public LogParser {
  protected:
   // Parses one line log text into a LogEntry object.
   Error ParseEntry(const std::string& input,
-                   std::vector<linked_ptr<api::log_private::LogEntry>>* output,
+                   std::vector<api::log_private::LogEntry>* output,
                    FilterHandler* filter_handler) const override;
 
  private:

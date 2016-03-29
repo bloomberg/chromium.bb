@@ -57,8 +57,8 @@ class Service : public KeyedService,
       const extensions::Extension* extension,
       scoped_ptr<ErrorReporter> error_reporter,
       const int query_id,
-      const std::vector<linked_ptr<
-          extensions::api::launcher_search_provider::SearchResult>>& results);
+      const std::vector<
+          extensions::api::launcher_search_provider::SearchResult>& results);
 
   // Returns true if there is a running query.
   bool IsQueryRunning() const;

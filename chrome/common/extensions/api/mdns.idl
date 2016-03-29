@@ -5,7 +5,7 @@
 // Use the <code>chrome.mdns</code> API to discover services over mDNS.
 // This comprises a subset of the features of the NSD spec:
 // http://www.w3.org/TR/discovery-api/
-namespace mdns {
+[use_movable_types=true] namespace mdns {
 
   // Represents a mDNS/DNS-SD service.
   dictionary MDnsService {

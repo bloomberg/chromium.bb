@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/memory/linked_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread.h"
@@ -74,18 +73,17 @@ void ParseAudioVideoMetadata(
   for (media::AudioVideoMetadataExtractor::StreamInfoVector::const_iterator it =
            extractor.stream_infos().begin();
        it != extractor.stream_infos().end(); ++it) {
-    linked_ptr<MediaGalleries::StreamInfo> stream_info(
-        new MediaGalleries::StreamInfo);
-    stream_info->type = it->type;
+    MediaGalleries::StreamInfo stream_info;
+    stream_info.type = it->type;
 
     for (std::map<std::string, std::string>::const_iterator tag_it =
              it->tags.begin();
          tag_it != it->tags.end(); ++tag_it) {
-      stream_info->tags.additional_properties.SetString(tag_it->first,
-                                                        tag_it->second);
+      stream_info.tags.additional_properties.SetString(tag_it->first,
+                                                       tag_it->second);
     }
 
-    metadata->raw_tags.push_back(stream_info);
+    metadata->raw_tags.push_back(std::move(stream_info));
   }
 
   if (get_attached_images) {

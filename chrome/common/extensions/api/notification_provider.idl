@@ -6,7 +6,7 @@
 // notifications that would otherwise go into the Chrome Notification Center,
 // get notifiers' information, and inform notifiers about users' actions on the
 // notifications.
-namespace notificationProvider {
+[use_movable_types=true] namespace notificationProvider {
 
   // TODO(liyanhou): Use notifications.PermissionLevel everywhere and delete
   // this type. See http://crbug.com/398266.

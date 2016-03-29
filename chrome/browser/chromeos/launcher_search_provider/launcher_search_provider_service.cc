@@ -108,8 +108,8 @@ void Service::SetSearchResults(
     const extensions::Extension* extension,
     scoped_ptr<ErrorReporter> error_reporter,
     const int query_id,
-    const std::vector<linked_ptr<
-        extensions::api::launcher_search_provider::SearchResult>>& results) {
+    const std::vector<extensions::api::launcher_search_provider::SearchResult>&
+        results) {
   // If query is not running or query_id is different from current query id,
   // discard the results.
   if (!is_query_running_ || query_id != query_id_)
@@ -125,15 +125,15 @@ void Service::SetSearchResults(
   ScopedVector<app_list::LauncherSearchResult> search_results;
   for (const auto& result : results) {
     const int relevance =
-        std::min(kMaxSearchResultScore, std::max(result->relevance, 0));
+        std::min(kMaxSearchResultScore, std::max(result.relevance, 0));
     const GURL icon_url =
-        result->icon_url ? GURL(*result->icon_url.get()) : GURL();
+        result.icon_url ? GURL(*result.icon_url.get()) : GURL();
 
     app_list::LauncherSearchResult* search_result =
-        new app_list::LauncherSearchResult(result->item_id, icon_url, relevance,
+        new app_list::LauncherSearchResult(result.item_id, icon_url, relevance,
                                            profile_, extension,
                                            error_reporter->Duplicate());
-    search_result->set_title(base::UTF8ToUTF16(result->title));
+    search_result->set_title(base::UTF8ToUTF16(result.title));
     search_results.push_back(search_result);
   }
   provider_->SetSearchResults(extension->id(), std::move(search_results));

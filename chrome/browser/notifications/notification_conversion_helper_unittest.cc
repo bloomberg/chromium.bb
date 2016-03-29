@@ -89,8 +89,8 @@ TEST_F(NotificationConversionHelperTest, NotificationToNotificationOptions) {
   EXPECT_EQ(*(options1->context_message), "I am a context message.");
   EXPECT_FALSE(*(options1->is_clickable));
   EXPECT_EQ(*(options1->event_time), 12345678.9);
-  EXPECT_EQ(options1->buttons->at(0)->title, "Button 1");
-  EXPECT_EQ(options1->buttons->at(1)->title, "Button 2");
+  EXPECT_EQ(options1->buttons->at(0).title, "Button 1");
+  EXPECT_EQ(options1->buttons->at(1).title, "Button 2");
 
   EXPECT_EQ(options1->icon_bitmap->width, 1);
   EXPECT_EQ(options1->icon_bitmap->height, 1);
@@ -114,8 +114,8 @@ TEST_F(NotificationConversionHelperTest, NotificationToNotificationOptions) {
   NotificationConversionHelper::NotificationToNotificationOptions(
       *(notification3), options3.get());
   EXPECT_EQ(options3->type, extensions::api::notifications::TEMPLATE_TYPE_LIST);
-  EXPECT_EQ(options3->items->at(0)->title, "Item 1 Title");
-  EXPECT_EQ(options3->items->at(0)->message, "Item 1 Message");
-  EXPECT_EQ(options3->items->at(1)->title, "Item 2 Title");
-  EXPECT_EQ(options3->items->at(1)->message, "Item 2 Message");
+  EXPECT_EQ(options3->items->at(0).title, "Item 1 Title");
+  EXPECT_EQ(options3->items->at(0).message, "Item 1 Message");
+  EXPECT_EQ(options3->items->at(1).title, "Item 2 Title");
+  EXPECT_EQ(options3->items->at(1).message, "Item 2 Message");
 }

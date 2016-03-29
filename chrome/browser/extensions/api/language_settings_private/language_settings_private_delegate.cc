@@ -70,21 +70,20 @@ LanguageSettingsPrivateDelegate* LanguageSettingsPrivateDelegate::Create(
   return new LanguageSettingsPrivateDelegate(context);
 }
 
-ScopedVector<language_settings_private::SpellcheckDictionaryStatus>
+std::vector<language_settings_private::SpellcheckDictionaryStatus>
 LanguageSettingsPrivateDelegate::GetHunspellDictionaryStatuses() {
-  ScopedVector<language_settings_private::SpellcheckDictionaryStatus> statuses;
+  std::vector<language_settings_private::SpellcheckDictionaryStatus> statuses;
   for (const auto& dictionary : GetHunspellDictionaries()) {
     if (!dictionary)
       continue;
-    scoped_ptr<language_settings_private::SpellcheckDictionaryStatus> status(
-        new language_settings_private::SpellcheckDictionaryStatus());
-    status->language_code = dictionary->GetLanguage();
-    status->is_ready = dictionary->IsReady();
-    if (!status->is_ready) {
+    language_settings_private::SpellcheckDictionaryStatus status;
+    status.language_code = dictionary->GetLanguage();
+    status.is_ready = dictionary->IsReady();
+    if (!status.is_ready) {
       if (dictionary->IsDownloadInProgress())
-        status->is_downloading.reset(new bool(true));
+        status.is_downloading.reset(new bool(true));
       if (dictionary->IsDownloadFailure())
-        status->download_failed.reset(new bool(true));
+        status.download_failed.reset(new bool(true));
     }
     statuses.push_back(std::move(status));
   }
@@ -235,18 +234,12 @@ void LanguageSettingsPrivateDelegate::OnSpellcheckDictionariesChanged() {
 }
 
 void LanguageSettingsPrivateDelegate::BroadcastDictionariesChangedEvent() {
-  std::vector<linked_ptr<language_settings_private::SpellcheckDictionaryStatus>>
-      broadcast_statuses;
-  ScopedVector<language_settings_private::SpellcheckDictionaryStatus> statuses =
+  std::vector<language_settings_private::SpellcheckDictionaryStatus> statuses =
       GetHunspellDictionaryStatuses();
-
-  for (language_settings_private::SpellcheckDictionaryStatus* status : statuses)
-    broadcast_statuses.push_back(make_linked_ptr(status));
-  statuses.weak_clear();
 
   scoped_ptr<base::ListValue> args(
       language_settings_private::OnSpellcheckDictionariesChanged::Create(
-          broadcast_statuses));
+          statuses));
   scoped_ptr<extensions::Event> extension_event(new extensions::Event(
       events::LANGUAGE_SETTINGS_PRIVATE_ON_SPELLCHECK_DICTIONARIES_CHANGED,
       language_settings_private::OnSpellcheckDictionariesChanged::kEventName,

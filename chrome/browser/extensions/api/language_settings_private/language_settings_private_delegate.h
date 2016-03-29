@@ -5,8 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_LANGUAGE_SETTINGS_PRIVATE_LANGUAGE_SETTINGS_PRIVATE_DELEGATE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_LANGUAGE_SETTINGS_PRIVATE_LANGUAGE_SETTINGS_PRIVATE_DELEGATE_H_
 
+#include <vector>
+
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_hunspell_dictionary.h"
@@ -37,8 +38,8 @@ class LanguageSettingsPrivateDelegate
   ~LanguageSettingsPrivateDelegate() override;
 
   // Returns the languages and statuses of the enabled spellcheck dictionaries.
-  ScopedVector<api::language_settings_private::SpellcheckDictionaryStatus>
-      GetHunspellDictionaryStatuses();
+  std::vector<api::language_settings_private::SpellcheckDictionaryStatus>
+  GetHunspellDictionaryStatuses();
 
  protected:
   explicit LanguageSettingsPrivateDelegate(content::BrowserContext* context);

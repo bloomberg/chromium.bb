@@ -6,7 +6,8 @@
   {
     "namespace": "mediaPlayerPrivate",
     "compiler_options": {
-      "implemented_in": "chrome/browser/chromeos/extensions/media_player_api.h"
+      "implemented_in": "chrome/browser/chromeos/extensions/media_player_api.h",
+      "use_movable_types": true
     },
     "description": "none",
     "events": [

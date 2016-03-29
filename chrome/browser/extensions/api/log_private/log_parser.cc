@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "base/memory/linked_ptr.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/extensions/api/log_private/log_private_api.h"
 #include "chrome/common/extensions/api/log_private.h"
@@ -26,10 +25,9 @@ LogParser::LogParser() {
 LogParser::~LogParser() {
 }
 
-void LogParser::Parse(
-    const string& input,
-    std::vector<linked_ptr<api::log_private::LogEntry> >* output,
-    FilterHandler* filter_handler) const {
+void LogParser::Parse(const string& input,
+                      std::vector<api::log_private::LogEntry>* output,
+                      FilterHandler* filter_handler) const {
   // Assume there is no newline in the log entry
   std::vector<string> entries = base::SplitString(
       input, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
