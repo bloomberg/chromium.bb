@@ -21,6 +21,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.common.Referrer;
 
 import java.util.ArrayList;
@@ -34,9 +35,9 @@ import java.util.concurrent.TimeUnit;
 @SuppressFBWarnings("CHROMIUM_SYNCHRONIZED_METHOD")
 class ClientManager {
     // Values for the "CustomTabs.PredictionStatus" UMA histogram. Append-only.
-    private static final int NO_PREDICTION = 0;
-    private static final int GOOD_PREDICTION = 1;
-    private static final int BAD_PREDICTION = 2;
+    @VisibleForTesting static final int NO_PREDICTION = 0;
+    @VisibleForTesting static final int GOOD_PREDICTION = 1;
+    @VisibleForTesting static final int BAD_PREDICTION = 2;
     private static final int PREDICTION_STATUS_COUNT = 3;
     // Values for the "CustomTabs.CalledWarmup" UMA histogram. Append-only.
     @VisibleForTesting static final int NO_SESSION_NO_WARMUP = 0;
@@ -188,33 +189,40 @@ class ClientManager {
         return result;
     }
 
+    @VisibleForTesting
+    synchronized int getPredictionOutcome(IBinder session, String url) {
+        SessionParams params = mSessionParams.get(session);
+        if (params == null) return NO_PREDICTION;
+
+        String predictedUrl = params.getPredictedUrl();
+        if (predictedUrl == null) return NO_PREDICTION;
+
+        boolean urlsMatch = TextUtils.equals(predictedUrl, url)
+                || (params.mIgnoreFragments
+                        && UrlUtilities.urlsMatchIgnoringFragments(predictedUrl, url));
+        return urlsMatch ? GOOD_PREDICTION : BAD_PREDICTION;
+    }
+
     /**
      * Registers that a client has launched a URL inside a Custom Tab.
      */
     public synchronized void registerLaunch(IBinder session, String url) {
-        int outcome = NO_PREDICTION;
-        long elapsedTimeMs = -1;
-        SessionParams params = mSessionParams.get(session);
-        if (params != null) {
-            String predictedUrl = params.getPredictedUrl();
-            outcome = predictedUrl == null ? NO_PREDICTION : predictedUrl.equals(url)
-                            ? GOOD_PREDICTION
-                            : BAD_PREDICTION;
-            long now = SystemClock.elapsedRealtime();
-            elapsedTimeMs = now - params.getLastMayLaunchUrlTimestamp();
-            params.setPredictionMetrics(null, 0);
-            if (outcome == GOOD_PREDICTION) {
-                RequestThrottler.getForUid(mContext, params.uid).registerSuccess(url);
-            }
-        }
+        int outcome = getPredictionOutcome(session, url);
         RecordHistogram.recordEnumeratedHistogram(
                 "CustomTabs.PredictionStatus", outcome, PREDICTION_STATUS_COUNT);
+
+        SessionParams params = mSessionParams.get(session);
         if (outcome == GOOD_PREDICTION) {
+            long elapsedTimeMs = SystemClock.elapsedRealtime()
+                    - params.getLastMayLaunchUrlTimestamp();
+            RequestThrottler.getForUid(mContext, params.uid).registerSuccess(
+                    params.mPredictedUrl);
             RecordHistogram.recordCustomTimesHistogram("CustomTabs.PredictionToLaunch",
                     elapsedTimeMs, 1, TimeUnit.MINUTES.toMillis(3), TimeUnit.MILLISECONDS, 100);
         }
         RecordHistogram.recordEnumeratedHistogram(
                 "CustomTabs.WarmupStateOnLaunch", getWarmupState(session), SESSION_WARMUP_COUNT);
+        if (params != null) params.setPredictionMetrics(null, 0);
     }
 
     /**

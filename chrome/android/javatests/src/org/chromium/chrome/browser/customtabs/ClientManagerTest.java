@@ -11,6 +11,9 @@ import android.support.customtabs.ICustomTabsCallback;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
+
 /** Tests for ClientManager. */
 public class ClientManagerTest extends InstrumentationTestCase {
     private static final String URL = "https://www.android.com";
@@ -23,6 +26,9 @@ public class ClientManagerTest extends InstrumentationTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        // UrlUtilities used in ClientManager#getPredictionOutcome() needs the native library.
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized(context);
+        RequestThrottler.purgeAllEntriesForTesting(context);
         mClientManager = new ClientManager(context);
     }
 
@@ -80,5 +86,40 @@ public class ClientManagerTest extends InstrumentationTestCase {
         IBinder session = callback.asBinder();
         mClientManager.newSession(callback, mUid, null);
         assertEquals(ClientManager.SESSION_WARMUP, mClientManager.getWarmupState(session));
+    }
+
+    @SmallTest
+    public void testPredictionOutcomeSuccess() {
+        assertTrue(mClientManager.newSession(mCallback, mUid, null));
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL));
+        assertEquals(
+                ClientManager.GOOD_PREDICTION, mClientManager.getPredictionOutcome(mSession, URL));
+    }
+
+    @SmallTest
+    public void testPredictionOutcomeNoPrediction() {
+        assertTrue(mClientManager.newSession(mCallback, mUid, null));
+        mClientManager.recordUidHasCalledWarmup(mUid);
+        assertEquals(
+                ClientManager.NO_PREDICTION, mClientManager.getPredictionOutcome(mSession, URL));
+    }
+
+    @SmallTest
+    public void testPredictionOutcomeBadPrediction() {
+        assertTrue(mClientManager.newSession(mCallback, mUid, null));
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL));
+        assertEquals(
+                ClientManager.BAD_PREDICTION,
+                mClientManager.getPredictionOutcome(mSession, URL + "#fragment"));
+    }
+
+    @SmallTest
+    public void testPredictionOutcomeIgnoreFragment() {
+        assertTrue(mClientManager.newSession(mCallback, mUid, null));
+        assertTrue(mClientManager.updateStatsAndReturnWhetherAllowed(mSession, mUid, URL));
+        mClientManager.setIgnoreFragmentsForSession(mSession, true);
+        assertEquals(
+                ClientManager.GOOD_PREDICTION,
+                mClientManager.getPredictionOutcome(mSession, URL + "#fragment"));
     }
 }
