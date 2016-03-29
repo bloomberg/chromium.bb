@@ -159,6 +159,7 @@ fuzzer_test("gfx_png_image_fuzzer") {
     "//base",
     "//ui/gfx",
   ]
+  dict = "dicts/png.dict"
 }
 
 fuzzer_test("zlib_uncompress_fuzzer") {
