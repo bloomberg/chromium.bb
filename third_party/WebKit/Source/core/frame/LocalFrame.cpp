@@ -285,7 +285,7 @@ void LocalFrame::navigate(Document& originDocument, const KURL& url, bool replac
     if (isMainFrame() && !m_loader.stateMachine()->committedFirstRealDocumentLoad()) {
         FrameLoadRequest request(&originDocument, url);
         request.resourceRequest().setHasUserGesture(userGestureStatus == UserGestureStatus::Active);
-        m_loader.load(request);
+        navigate(request);
     } else {
         m_navigationScheduler->scheduleLocationChange(&originDocument, url.getString(), replaceCurrentItem);
     }
