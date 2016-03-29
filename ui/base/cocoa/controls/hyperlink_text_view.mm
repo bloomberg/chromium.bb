@@ -162,7 +162,7 @@ const float kTextBaselineShift = -1.0;
     NSUnderlineStyleAttributeName : @(YES),
     NSCursorAttributeName : [NSCursor pointingHandCursor],
     NSLinkAttributeName : url,
-    NSUnderlineStyleAttributeName : @(NSSingleUnderlineStyle)
+    NSUnderlineStyleAttributeName : @(NSUnderlineStyleSingle)
   };
 
   [[self textStorage] addAttributes:attributes range:range];

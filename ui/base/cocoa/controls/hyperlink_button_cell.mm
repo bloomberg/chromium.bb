@@ -91,7 +91,7 @@ using hyperlink_button_cell::UnderlineBehavior;
 
 // Creates the NSDictionary of attributes for the attributed string.
 - (NSDictionary*)linkAttributes {
-  NSUInteger underlineMask = NSNoUnderlineStyle;
+  NSUInteger underlineMask = NSUnderlineStyleNone;
   if (underlineBehavior_ == UnderlineBehavior::ALWAYS ||
       (mouseIsInside_ && [self isEnabled] &&
        underlineBehavior_ == UnderlineBehavior::ON_HOVER)) {

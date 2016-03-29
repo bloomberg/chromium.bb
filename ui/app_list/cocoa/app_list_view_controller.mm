@@ -288,7 +288,7 @@ void AppListModelObserverBridge::OnShutdown() {
           initWithString:base::SysUTF16ToNSString(messagePost)
               attributes:defaultAttributes]);
 
-  // NSNoUnderlineStyle is broken.
+  // NSUnderlineStyleNone is broken.
   base::scoped_nsobject<NSAttributedString> learnMoreString(
       [[NSAttributedString alloc]
           initWithString:base::SysUTF16ToNSString(learnMore)
@@ -298,7 +298,7 @@ void AppListModelObserverBridge::OnShutdown() {
                 NSLinkAttributeName : linkURL,
                 NSBaselineOffsetAttributeName : baselineOffset,
                 NSUnderlineStyleAttributeName :
-                    [NSNumber numberWithInt:NSNoUnderlineStyle]
+                    [NSNumber numberWithInt:NSUnderlineStyleNone]
               }]);
   base::scoped_nsobject<NSAttributedString> shortcutStringText(
       [[NSAttributedString alloc]

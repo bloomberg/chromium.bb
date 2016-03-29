@@ -40,11 +40,12 @@ class HyperlinkTextViewTest : public ui::CocoaTest {
           [[NSMutableDictionary dictionaryWithDictionary:
               GetDefaultTextAttributes()] retain]);
       [linkAttributes_ addEntriesFromDictionary:@{
-          NSForegroundColorAttributeName : [NSColor blueColor],
-          NSUnderlineStyleAttributeName : @(YES),
-          NSCursorAttributeName : [NSCursor pointingHandCursor],
-          NSUnderlineStyleAttributeName : @(NSSingleUnderlineStyle),
-          NSLinkAttributeName : @""}];
+        NSForegroundColorAttributeName : [NSColor blueColor],
+        NSUnderlineStyleAttributeName : @(YES),
+        NSCursorAttributeName : [NSCursor pointingHandCursor],
+        NSUnderlineStyleAttributeName : @(NSUnderlineStyleSingle),
+        NSLinkAttributeName : @""
+      }];
     }
     return [NSMutableDictionary dictionaryWithDictionary:linkAttributes_];
   }
