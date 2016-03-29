@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
@@ -47,6 +48,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
+namespace em = enterprise_management;
 
 namespace chromeos {
 
@@ -58,6 +60,39 @@ const char kAuthIframeParentName[] = "signin-frame";
 const char kRestrictiveProxyURL[] = "https://www.google.com/generate_204";
 
 const char kEndpointGen[] = "1.0";
+
+// The possible modes that the Gaia signin screen can be in.
+enum GaiaScreenMode {
+  // Default Gaia authentication will be used.
+  GAIA_SCREEN_MODE_DEFAULT = 0,
+
+  // Gaia offline mode will be used.
+  GAIA_SCREEN_MODE_OFFLINE = 1,
+
+  // An interstitial page will be used before SAML redirection.
+  GAIA_SCREEN_MODE_SAML_INTERSTITIAL = 2,
+};
+
+GaiaScreenMode GetGaiaScreenMode(bool use_offline) {
+  if (use_offline)
+    return GAIA_SCREEN_MODE_OFFLINE;
+
+  int authentication_behavior = 0;
+  CrosSettings::Get()->GetInteger(kLoginAuthenticationBehavior,
+                                  &authentication_behavior);
+  if (authentication_behavior ==
+      em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL) {
+    return GAIA_SCREEN_MODE_SAML_INTERSTITIAL;
+  }
+
+  return GAIA_SCREEN_MODE_DEFAULT;
+}
+
+std::string GetEnterpriseDomain() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return connector->GetEnterpriseDomain();
+}
 
 std::string GetChromeType() {
   switch (chromeos::GetDeviceType()) {
@@ -187,7 +222,6 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
   base::DictionaryValue params;
 
   params.SetBoolean("forceReload", context.force_reload);
-  params.SetBoolean("useOffline", context.use_offline);
   params.SetString("gaiaId", context.gaia_id);
   params.SetBoolean("readOnlyEmail", true);
   params.SetString("email", context.email);
@@ -195,27 +229,15 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
 
   UpdateAuthParams(&params, IsRestrictiveProxy());
 
-  if (!context.use_offline) {
+  GaiaScreenMode screen_mode = GetGaiaScreenMode(context.use_offline);
+  params.SetInteger("screenMode", screen_mode);
+  if (screen_mode != GAIA_SCREEN_MODE_OFFLINE) {
     const std::string app_locale = g_browser_process->GetApplicationLocale();
     if (!app_locale.empty())
       params.SetString("hl", app_locale);
-  } else {
-    policy::BrowserPolicyConnectorChromeOS* connector =
-        g_browser_process->platform_part()->browser_policy_connector_chromeos();
-    std::string enterprise_domain(connector->GetEnterpriseDomain());
-    if (!enterprise_domain.empty()) {
-      params.SetString(
-          "enterpriseInfoMessage",
-          l10n_util::GetStringFUTF16(IDS_OFFLINE_LOGIN_DEVICE_MANAGED_BY_NOTICE,
-                                     base::UTF8ToUTF16(enterprise_domain)));
-    }
   }
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  std::string enterprise_domain(connector->GetEnterpriseDomain());
+  std::string enterprise_domain(GetEnterpriseDomain());
   if (!enterprise_domain.empty())
     params.SetString("enterpriseDomain", enterprise_domain);
 
@@ -241,6 +263,7 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
     params.SetBoolean("useEafe", true);
     // Easy login overrides.
     std::string eafe_url = "https://easylogin.corp.google.com/";
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     if (command_line->HasSwitch(switches::kEafeUrl))
       eafe_url = command_line->GetSwitchValueASCII(switches::kEafeUrl);
     std::string eafe_path = "planters/cbaudioChrome";
@@ -249,8 +272,6 @@ void GaiaScreenHandler::LoadGaiaWithVersion(
 
     params.SetString("gaiaUrl", eafe_url);
     params.SetString("gaiaPath", eafe_path);
-    params.SetString("clientId",
-                     GaiaUrls::GetInstance()->oauth2_chrome_client_id());
   }
 
   frame_state_ = FRAME_STATE_LOADING;
@@ -303,7 +324,7 @@ void GaiaScreenHandler::DeclareLocalizedValues(
   builder->Add("fatalErrorTryAgainButton",
                IDS_LOGIN_FATAL_ERROR_TRY_AGAIN_BUTTON);
 
-  builder->AddF("offlineLoginWelcome", IDS_OFFLINE_LOGIN_WELCOME,
+  builder->AddF("loginWelcomeMessage", IDS_LOGIN_WELCOME_MESSAGE,
                 ash::GetChromeOSDeviceTypeResourceId());
   builder->Add("offlineLoginEmail", IDS_OFFLINE_LOGIN_EMAIL);
   builder->Add("offlineLoginPassword", IDS_OFFLINE_LOGIN_PASSWORD);
@@ -316,6 +337,15 @@ void GaiaScreenHandler::DeclareLocalizedValues(
   builder->Add("offlineLoginForgotPasswordDlg",
                IDS_OFFLINE_LOGIN_FORGOT_PASSWORD_DIALOG_TEXT);
   builder->Add("offlineLoginCloseBtn", IDS_OFFLINE_LOGIN_CLOSE_BUTTON_TEXT);
+  builder->AddF("enterpriseInfoMessage",
+                IDS_LOGIN_DEVICE_MANAGED_BY_NOTICE,
+                base::UTF8ToUTF16(GetEnterpriseDomain()));
+  builder->Add("samlInterstitialMessage",
+                IDS_LOGIN_SAML_INTERSTITIAL_MESSAGE);
+  builder->Add("samlInterstitialChangeAccountLink",
+               IDS_LOGIN_SAML_INTERSTITIAL_CHANGE_ACCOUNT_LINK_TEXT);
+  builder->Add("samlInterstitialNextBtn",
+               IDS_LOGIN_SAML_INTERSTITIAL_NEXT_BUTTON_TEXT);
 }
 
 void GaiaScreenHandler::Initialize() {

@@ -20,7 +20,10 @@ Polymer((function() {
         value: false
       },
 
-      enterpriseInfo: String,
+      showEnterpriseMessage: {
+        type: Boolean,
+        value: false
+      },
 
       emailDomain: String
     },

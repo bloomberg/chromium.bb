@@ -31,6 +31,7 @@ cr.define('cr.login', function() {
   var GAPS_COOKIE = 'GAPS';
   var SERVICE_ID = 'chromeoslogin';
   var EMBEDDED_SETUP_CHROMEOS_ENDPOINT = 'embedded/setup/chromeos';
+  var SAML_REDIRECTION_PATH = 'samlredirect';
 
   /**
    * The source URL parameter for the constrained signin flow.
@@ -138,6 +139,7 @@ cr.define('cr.login', function() {
     this.gapsCookie_ = null;
     this.gapsCookieSent_ = false;
     this.newGapsCookie_ = null;
+    this.readyFired_ = false;
 
     this.useEafe_ = false;
     this.clientId_ = null;
@@ -189,7 +191,7 @@ cr.define('cr.login', function() {
    * Reinitializes authentication parameters so that a failed login attempt
    * would not result in an infinite loop.
    */
-  Authenticator.prototype.clearCredentials_ = function() {
+  Authenticator.prototype.resetStates_ = function() {
     this.email_ = null;
     this.gaiaId_ = null;
     this.password_ = null;
@@ -197,6 +199,7 @@ cr.define('cr.login', function() {
     this.gapsCookie_ = null;
     this.gapsCookieSent_ = false;
     this.newGapsCookie_ = null;
+    this.readyFired_ = false;
     this.chooseWhatToSync_ = false;
     this.skipForNow_ = false;
     this.sessionIndex_ = null;
@@ -212,7 +215,7 @@ cr.define('cr.login', function() {
    */
   Authenticator.prototype.load = function(authMode, data) {
     this.authMode = authMode;
-    this.clearCredentials_();
+    this.resetStates_();
     // gaiaUrl parameter is used for testing. Once defined, it is never changed.
     this.idpOrigin_ = data.gaiaUrl || IDP_ORIGIN;
     this.continueUrl_ = data.continueUrl || CONTINUE_URL;
@@ -259,11 +262,23 @@ cr.define('cr.login', function() {
    * Reloads the authenticator component.
    */
   Authenticator.prototype.reload = function() {
-    this.clearCredentials_();
+    this.resetStates_();
     this.webview_.src = this.reloadUrl_;
   };
 
   Authenticator.prototype.constructInitialFrameUrl_ = function(data) {
+    if (data.doSamlRedirect) {
+      var url = this.idpOrigin_ + SAML_REDIRECTION_PATH;
+      url = appendParam(url, 'domain', data.enterpriseDomain);
+      url = appendParam(url, 'continue', data.gaiaUrl +
+          'o/oauth2/programmatic_auth?hl=' + data.hl +
+          '&scope=https%3A%2F%2Fwww.google.com%2Faccounts%2FOAuthLogin&' +
+          'client_id=' + encodeURIComponent(data.clientId) +
+          '&access_type=offline');
+
+      return url;
+    }
+
     var path = data.gaiaPath;
     if (!path && this.isNewGaiaFlow)
       path = EMBEDDED_SETUP_CHROMEOS_ENDPOINT;
@@ -308,6 +323,18 @@ cr.define('cr.login', function() {
     if (data.emailDomain)
       url = appendParam(url, 'emaildomain', data.emailDomain);
     return url;
+  };
+
+  /**
+   * Dispatches the 'ready' event if it hasn't been dispatched already for the
+   * current content.
+   * @private
+   */
+  Authenticator.prototype.fireReadyEvent_ = function() {
+    if (!this.readyFired_) {
+      this.dispatchEvent(new Event('ready'));
+      this.readyFired_ = true;
+    }
   };
 
   /**
@@ -659,7 +686,7 @@ cr.define('cr.login', function() {
             gapsCookie: this.newGapsCookie_ || this.gapsCookie_ || '',
           }
         }));
-    this.clearCredentials_();
+    this.resetStates_();
   };
 
   /**
@@ -684,6 +711,8 @@ cr.define('cr.login', function() {
 
     this.authDomain = this.samlHandler_.authDomain;
     this.authFlow = AuthFlow.SAML;
+
+    this.fireReadyEvent_();
   };
 
   /**
@@ -724,7 +753,7 @@ cr.define('cr.login', function() {
 
       this.webview_.contentWindow.postMessage(msg, currentUrl);
 
-      this.dispatchEvent(new Event('ready'));
+      this.fireReadyEvent_();
       // Focus webview after dispatching event when webview is already visible.
       this.webview_.focus();
     }

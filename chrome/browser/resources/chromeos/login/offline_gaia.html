@@ -22,7 +22,7 @@
     <offline-gaia></offline-gaia>
 
   Attributes:
-    'enterpriseInfo' - Information about device management.
+    'showEnterpriseMessage' - If the "manged by" message should be shown.
     'emailDomain' - autocomplete domain for the email input.
 
   Events:
@@ -52,9 +52,9 @@
       <neon-animatable id="emailSection" class="fit">
         <gaia-card class="fit">
           <div class="header flex vertical layout end-justified start">
-            <h1 class="welcome-message" i18n-content="offlineLoginWelcome"></h1>
-            <p class="enterprise-info"  hidden$="[[!enterpriseInfo]]">
-              <span>[[enterpriseInfo]]</span>
+            <h1 class="welcome-message" i18n-content="loginWelcomeMessage"></h1>
+            <p class="enterprise-info"  hidden$="[[!showEnterpriseMessage]]"
+               i18n-content="enterpriseInfoMessage">
             </p>
           </div>
           <div class="footer flex vertical layout justified">

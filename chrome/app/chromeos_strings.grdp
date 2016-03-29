@@ -1646,6 +1646,9 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_ACCOUNT_SETUP_CANCEL_DIALOG_YES" desc="Text to show on button to accept cancelation.">
     Yes
   </message>
+  <message name="IDS_LOGIN_DEVICE_MANAGED_BY_NOTICE" desc="Text for notifications showing that this is managed device.">
+    Managed by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>
+  </message>
   <message name="IDS_LOGIN_FATAL_ERROR_NO_ACCOUNT_DETAILS" desc="Message to show when the authentication could not be completed because the user's account details could not be retrieved.">
     Sign-in failed because your account details could not be retrieved. Please contact your administrator or try again.
   </message>
@@ -1661,11 +1664,19 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_FATAL_ERROR_TRY_AGAIN_BUTTON" desc="Label for a button which starts sign-in from the beginning after fatal error.">
     Try again
   </message>
-  <message name="IDS_OFFLINE_LOGIN_WELCOME" desc="Message shown during the GAIA flow in the beginning of the offline login.">
-    Sign in to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+  <message name="IDS_LOGIN_SAML_INTERSTITIAL_MESSAGE" desc="Message to show on the SAML interstitial page to tell the user to continue signing in using his enterprise account.">
+    This device is managed by <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>.
+    <ph name="LINE_BREAK">&lt;br/&gt;</ph>
+    Please click "Next" to continue signing in to your <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> account.
   </message>
-  <message name="IDS_OFFLINE_LOGIN_DEVICE_MANAGED_BY_NOTICE" desc="Text for notifications showing that this is managed device.">
-    Managed by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>
+  <message name="IDS_LOGIN_SAML_INTERSTITIAL_CHANGE_ACCOUNT_LINK_TEXT" desc="Text of the link that allows the user to change the login account.">
+    Sign in with a different account
+  </message>
+  <message name="IDS_LOGIN_SAML_INTERSTITIAL_NEXT_BUTTON_TEXT" desc="Text shown on the Next button.">
+    Next
+  </message>
+  <message name="IDS_LOGIN_WELCOME_MESSAGE" desc="Message shown at the header of the login screens.">
+    Sign in to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_OFFLINE_LOGIN_EMAIL" desc="Email field text on the offline login screen. Note: should be the same as the one used on the Gaia sign-in page.">
     Enter your email

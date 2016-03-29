@@ -18,5 +18,6 @@
 <include src="notification_card.js">
 <include src="offline_gaia.js">
 <include src="saml_confirm_password.js">
+<include src="saml_interstitial.js">
 <include src="throbber_notice.js">
 <include src="navigation_bar.js">

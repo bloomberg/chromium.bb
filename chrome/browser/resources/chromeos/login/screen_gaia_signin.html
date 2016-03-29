@@ -6,9 +6,11 @@
     <div id="gaia-signin-form-container">
       <webview id="signin-frame" name="signin-frame" hidden></webview>
       <offline-gaia id="offline-gaia" class="fit" hidden></offline-gaia>
+      <saml-interstitial id="saml-interstitial" class="fit" hidden>
+      </saml-interstitial>
     </div>
   </div>
-  <div id="gaia-loading" class="step-loading">
+  <div id="gaia-loading" class="step-loading" hidden>
     <throbber-notice i18n-values="text:gaiaLoading"></throbber-notice>
   </div>
   <notification-card id="gaia-whitelist-error" type="fail"
