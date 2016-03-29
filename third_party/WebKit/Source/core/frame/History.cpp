@@ -163,6 +163,10 @@ void History::go(ExecutionContext* context, int delta)
     if (!NavigationDisablerForBeforeUnload::isNavigationAllowed())
         return;
 
+    // We intentionally call reload() for the current frame if delta is zero.
+    // Otherwise, navigation happens on the root frame.
+    // This behavior is designed in the following spec.
+    // https://html.spec.whatwg.org/multipage/browsers.html#dom-history-go
     if (delta)
         m_frame->loader().client()->navigateBackForward(delta);
     else
