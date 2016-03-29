@@ -71,7 +71,7 @@ bool AppBannerManagerAndroid::HandleNonWebApp(const std::string& platform,
 
   std::string id_from_app_url = ExtractQueryValueForName(url, kIdName);
   if (id_from_app_url.size() && id != id_from_app_url) {
-    banners::OutputDeveloperDebugMessage(
+    banners::OutputDeveloperNotShownMessage(
         web_contents(), banners::kIgnoredIdsDoNotMatch, is_debug_mode);
     return false;
   }
@@ -103,14 +103,14 @@ bool AppBannerManagerAndroid::CheckPlatformAndId(const std::string& platform,
                                                  const std::string& id,
                                                  bool is_debug_mode) {
   if (platform != kPlayPlatform) {
-    banners::OutputDeveloperDebugMessage(
-        web_contents(), platform + banners::kIgnoredNotSupportedOnAndroid,
+    banners::OutputDeveloperNotShownMessage(
+        web_contents(), banners::kIgnoredNotSupportedOnAndroid, platform,
         is_debug_mode);
     return false;
   }
   if (id.empty()) {
-    banners::OutputDeveloperDebugMessage(web_contents(), banners::kIgnoredNoId,
-                                         is_debug_mode);
+    banners::OutputDeveloperNotShownMessage(
+        web_contents(), banners::kIgnoredNoId, is_debug_mode);
     return false;
   }
   return true;

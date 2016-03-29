@@ -14,34 +14,38 @@ class WebContents;
 namespace banners {
 
 // Error message strings used to notify developers via the console.
-extern const char kRendererRequestCancel[];
-extern const char kManifestEmpty[];
-extern const char kNoManifest[];
-extern const char kNoIconMatchingRequirements[];
-extern const char kCannotDownloadIcon[];
-extern const char kNoMatchingServiceWorker[];
-extern const char kNoIconAvailable[];
-extern const char kUserNavigatedBeforeBannerShown[];
-extern const char kStartURLNotValid[];
-extern const char kManifestMissingNameOrShortName[];
-extern const char kManifestMissingSuitableIcon[];
-extern const char kNotLoadedInMainFrame[];
-extern const char kNotServedFromSecureOrigin[];
-extern const char kIgnoredNotSupportedOnAndroid[];
-extern const char kIgnoredNoId[];
-extern const char kIgnoredIdsDoNotMatch[];
+
+enum OutputDeveloperMessageCode {
+  kRendererRequestCancel,
+  kManifestEmpty,
+  kNoManifest,
+  kNoIconMatchingRequirements,
+  kCannotDownloadIcon,
+  kNoMatchingServiceWorker,
+  kNoIconAvailable,
+  kUserNavigatedBeforeBannerShown,
+  kStartURLNotValid,
+  kManifestMissingNameOrShortName,
+  kManifestMissingSuitableIcon,
+  kNotLoadedInMainFrame,
+  kNotServedFromSecureOrigin,
+  kIgnoredNotSupportedOnAndroid,
+  kIgnoredNoId,
+  kIgnoredIdsDoNotMatch,
+};
 
 // Logs a message to the main console if a banner could not be shown
 // and the engagement checks have been bypassed.
 void OutputDeveloperNotShownMessage(content::WebContents* web_contents,
-                                    const std::string& message,
+                                    OutputDeveloperMessageCode code,
                                     bool is_debug_mode);
 
-// Logs a debugging message to the main console if the engagement checks have
-// been bypassed.
-void OutputDeveloperDebugMessage(content::WebContents* web_contents,
-                                 const std::string& message,
-                                 bool is_debug_mode);
+// Logs a message to the main console if a banner could not be shown
+// and the engagement checks have been bypassed.
+void OutputDeveloperNotShownMessage(content::WebContents* web_contents,
+                                    OutputDeveloperMessageCode code,
+                                    const std::string& param,
+                                    bool is_debug_mode);
 
 }  // namespace banners
 

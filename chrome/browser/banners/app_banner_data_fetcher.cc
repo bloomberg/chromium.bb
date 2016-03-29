@@ -353,9 +353,9 @@ void AppBannerDataFetcher::OnHasServiceWorker(
   if (icon_url.is_empty()) {
     OutputDeveloperNotShownMessage(
         web_contents,
+        kNoIconMatchingRequirements,
         base::IntToString(ManifestIconSelector::ConvertIconSizeFromDpToPx(
-            minimum_icon_size_in_dp_)) +
-            kNoIconMatchingRequirements,
+            minimum_icon_size_in_dp_)),
         is_debug_mode_);
     Cancel();
   } else if (!FetchAppIcon(web_contents, icon_url)) {
