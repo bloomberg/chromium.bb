@@ -10,6 +10,7 @@ import os
 import optparse
 
 from kasko.process import ImportSelenium
+from kasko.json_logging_handler import JSONLoggingHandler
 
 
 _LOGGER = logging.getLogger(os.path.basename(__file__))
@@ -46,6 +47,9 @@ def GenerateOptionParser():
       help='Specifies the directory where the python installation of webdriver '
            '(selenium) can be found. Specify an empty string to use the system '
            'installation. Defaults to $SRC/third_party/webdriver/pylib')
+  option_parser.add_option('--log-to-json', type='string',
+      help='The path to the JSON file that should be used for the logging. '
+           'Defaults to logging directly to the console.')
 
   return option_parser
 
@@ -75,6 +79,9 @@ def ParseCommandLine(option_parser=None):
 
   # Configure logging.
   logging.basicConfig(level=options.log_level)
+
+  if options.log_to_json:
+    logging.getLogger().addHandler(JSONLoggingHandler(options.log_to_json))
 
   _LOGGER.debug('Using chrome path: %s', options.chrome)
   _LOGGER.debug('Using chromedriver path: %s', options.chromedriver)
