@@ -284,6 +284,20 @@ void CredentialManager::SendCredential(
                 }];
 }
 
+void CredentialManager::SendPasswordForm(int request_id,
+                                         const autofill::PasswordForm* form) {
+  password_manager::CredentialInfo info;
+  if (form) {
+    password_manager::CredentialType type_to_return =
+        form->federation_origin.unique()
+            ? password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD
+            : password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED;
+    info = password_manager::CredentialInfo(*form, type_to_return);
+    // TODO(vasilii): update |skip_zero_click| in the store (crbug.com/594110).
+  }
+  SendCredential(request_id, info);
+}
+
 password_manager::PasswordManagerClient* CredentialManager::client() const {
   return client_;
 }

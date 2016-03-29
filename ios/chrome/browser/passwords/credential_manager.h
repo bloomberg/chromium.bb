@@ -60,6 +60,7 @@ class CredentialManager
   void SendCredential(
       int id,
       const password_manager::CredentialInfo& credential) override;
+  void SendPasswordForm(int id, const autofill::PasswordForm* form) override;
   password_manager::PasswordManagerClient* client() const override;
   autofill::PasswordForm GetSynthesizedFormForOrigin() const override;
 
