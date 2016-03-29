@@ -19,31 +19,31 @@
 // simplicity. The main goal the API is to be simple and easy to use in example
 // code and in aomenc/aomdec later. All low-level details like memory
 // buffer management are hidden from API users.
-struct VpxVideoReaderStruct;
-typedef struct VpxVideoReaderStruct VpxVideoReader;
+struct AvxVideoReaderStruct;
+typedef struct AvxVideoReaderStruct AvxVideoReader;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 // Opens the input file for reading and inspects it to determine file type.
-// Returns an opaque VpxVideoReader* upon success, or NULL upon failure.
+// Returns an opaque AvxVideoReader* upon success, or NULL upon failure.
 // Right now only IVF format is supported.
-VpxVideoReader *aom_video_reader_open(const char *filename);
+AvxVideoReader *aom_video_reader_open(const char *filename);
 
-// Frees all resources associated with VpxVideoReader* returned from
+// Frees all resources associated with AvxVideoReader* returned from
 // aom_video_reader_open() call.
-void aom_video_reader_close(VpxVideoReader *reader);
+void aom_video_reader_close(AvxVideoReader *reader);
 
 // Reads frame from the file and stores it in internal buffer.
-int aom_video_reader_read_frame(VpxVideoReader *reader);
+int aom_video_reader_read_frame(AvxVideoReader *reader);
 
 // Returns the pointer to memory buffer with frame data read by last call to
 // aom_video_reader_read_frame().
-const uint8_t *aom_video_reader_get_frame(VpxVideoReader *reader, size_t *size);
+const uint8_t *aom_video_reader_get_frame(AvxVideoReader *reader, size_t *size);
 
-// Fills VpxVideoInfo with information from opened video file.
-const VpxVideoInfo *aom_video_reader_get_info(VpxVideoReader *reader);
+// Fills AvxVideoInfo with information from opened video file.
+const AvxVideoInfo *aom_video_reader_get_info(AvxVideoReader *reader);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -463,7 +463,7 @@ static void set_temporal_layer_pattern(int layering_mode,
 }
 
 int main(int argc, char **argv) {
-  VpxVideoWriter *outfile[AOM_TS_MAX_LAYERS] = { NULL };
+  AvxVideoWriter *outfile[AOM_TS_MAX_LAYERS] = { NULL };
   aom_codec_ctx_t codec;
   aom_codec_enc_cfg_t cfg;
   int frame_cnt = 0;
@@ -486,7 +486,7 @@ int main(int argc, char **argv) {
 #else
   aom_svc_layer_id_t layer_id = { 0 };
 #endif
-  const VpxInterface *encoder = NULL;
+  const AvxInterface *encoder = NULL;
   FILE *infile = NULL;
   struct RateControlMetrics rc;
   int64_t cx_time = 0;
@@ -650,7 +650,7 @@ int main(int argc, char **argv) {
   // Open an output file for each stream.
   for (i = 0; i < cfg.ts_number_layers; ++i) {
     char file_name[PATH_MAX];
-    VpxVideoInfo info;
+    AvxVideoInfo info;
     info.codec_fourcc = encoder->fourcc;
     info.frame_width = cfg.g_w;
     info.frame_height = cfg.g_h;

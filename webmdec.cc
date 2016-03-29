@@ -54,7 +54,7 @@ void get_first_cluster(struct WebmInputContext *const webm_ctx) {
 }
 
 void rewind_and_reset(struct WebmInputContext *const webm_ctx,
-                      struct VpxInputContext *const aom_ctx) {
+                      struct AvxInputContext *const aom_ctx) {
   rewind(aom_ctx->file);
   reset(webm_ctx);
 }
@@ -62,7 +62,7 @@ void rewind_and_reset(struct WebmInputContext *const webm_ctx,
 }  // namespace
 
 int file_is_webm(struct WebmInputContext *webm_ctx,
-                 struct VpxInputContext *aom_ctx) {
+                 struct AvxInputContext *aom_ctx) {
   mkvparser::MkvReader *const reader = new mkvparser::MkvReader(aom_ctx->file);
   webm_ctx->reader = reader;
   webm_ctx->reached_eos = 0;
@@ -196,7 +196,7 @@ int webm_read_frame(struct WebmInputContext *webm_ctx, uint8_t **buffer,
 }
 
 int webm_guess_framerate(struct WebmInputContext *webm_ctx,
-                         struct VpxInputContext *aom_ctx) {
+                         struct AvxInputContext *aom_ctx) {
   uint32_t i = 0;
   uint8_t *buffer = NULL;
   size_t bytes_in_buffer = 0;

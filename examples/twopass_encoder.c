@@ -94,7 +94,7 @@ static int get_frame_stats(aom_codec_ctx_t *ctx, const aom_image_t *img,
 static int encode_frame(aom_codec_ctx_t *ctx, const aom_image_t *img,
                         aom_codec_pts_t pts, unsigned int duration,
                         aom_enc_frame_flags_t flags, unsigned int deadline,
-                        VpxVideoWriter *writer) {
+                        AvxVideoWriter *writer) {
   int got_pkts = 0;
   aom_codec_iter_t iter = NULL;
   const aom_codec_cx_pkt_t *pkt = NULL;
@@ -120,7 +120,7 @@ static int encode_frame(aom_codec_ctx_t *ctx, const aom_image_t *img,
 }
 
 static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
-                             const VpxInterface *encoder,
+                             const AvxInterface *encoder,
                              const aom_codec_enc_cfg_t *cfg) {
   aom_codec_ctx_t codec;
   int frame_count = 0;
@@ -148,12 +148,12 @@ static aom_fixed_buf_t pass0(aom_image_t *raw, FILE *infile,
 }
 
 static void pass1(aom_image_t *raw, FILE *infile, const char *outfile_name,
-                  const VpxInterface *encoder, const aom_codec_enc_cfg_t *cfg) {
-  VpxVideoInfo info = { encoder->fourcc,
+                  const AvxInterface *encoder, const aom_codec_enc_cfg_t *cfg) {
+  AvxVideoInfo info = { encoder->fourcc,
                         cfg->g_w,
                         cfg->g_h,
                         { cfg->g_timebase.num, cfg->g_timebase.den } };
-  VpxVideoWriter *writer = NULL;
+  AvxVideoWriter *writer = NULL;
   aom_codec_ctx_t codec;
   int frame_count = 0;
 
@@ -191,7 +191,7 @@ int main(int argc, char **argv) {
   aom_codec_err_t res;
   aom_fixed_buf_t stats;
 
-  const VpxInterface *encoder = NULL;
+  const AvxInterface *encoder = NULL;
   const int fps = 30;       // TODO(dkovalev) add command line argument
   const int bitrate = 200;  // kbit/s TODO(dkovalev) add command line argument
   const char *const codec_arg = argv[1];

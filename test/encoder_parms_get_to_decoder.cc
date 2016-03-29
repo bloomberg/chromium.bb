@@ -54,15 +54,15 @@ const EncodeParameters kAV1EncodeParameterSet[] = {
   // TODO(JBB): Test profiles (requires more work).
 };
 
-class VpxEncoderParmsGetToDecoder
+class AvxEncoderParmsGetToDecoder
     : public ::libaom_test::EncoderTest,
       public ::libaom_test::CodecTestWith2Params<EncodeParameters,
                                                  EncodePerfTestVideo> {
  protected:
-  VpxEncoderParmsGetToDecoder()
+  AvxEncoderParmsGetToDecoder()
       : EncoderTest(GET_PARAM(0)), encode_parms(GET_PARAM(1)) {}
 
-  virtual ~VpxEncoderParmsGetToDecoder() {}
+  virtual ~AvxEncoderParmsGetToDecoder() {}
 
   virtual void SetUp() {
     InitializeConfig();
@@ -134,7 +134,7 @@ class VpxEncoderParmsGetToDecoder
   EncodeParameters encode_parms;
 };
 
-TEST_P(VpxEncoderParmsGetToDecoder, BitstreamParms) {
+TEST_P(AvxEncoderParmsGetToDecoder, BitstreamParms) {
   init_flags_ = AOM_CODEC_USE_PSNR;
 
   libaom_test::VideoSource *const video =
@@ -145,7 +145,7 @@ TEST_P(VpxEncoderParmsGetToDecoder, BitstreamParms) {
   delete video;
 }
 
-AV1_INSTANTIATE_TEST_CASE(VpxEncoderParmsGetToDecoder,
+AV1_INSTANTIATE_TEST_CASE(AvxEncoderParmsGetToDecoder,
                            ::testing::ValuesIn(kAV1EncodeParameterSet),
                            ::testing::ValuesIn(kAV1EncodePerfTestVectors));
 }  // namespace

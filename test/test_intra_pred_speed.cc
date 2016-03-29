@@ -28,7 +28,7 @@
 
 namespace {
 
-typedef void (*VpxPredFunc)(uint8_t *dst, ptrdiff_t y_stride,
+typedef void (*AvxPredFunc)(uint8_t *dst, ptrdiff_t y_stride,
                             const uint8_t *above, const uint8_t *left);
 
 const int kNumAv1IntraPredFuncs = 13;
@@ -38,7 +38,7 @@ const char *kAv1IntraPredNames[kNumAv1IntraPredFuncs] = {
   "D207_PRED", "D63_PRED",     "TM_PRED"
 };
 
-void TestIntraPred(const char name[], VpxPredFunc const *pred_funcs,
+void TestIntraPred(const char name[], AvxPredFunc const *pred_funcs,
                    const char *const pred_func_names[], int num_funcs,
                    const char *const signatures[], int block_size,
                    int num_pixels_per_test) {
@@ -81,7 +81,7 @@ void TestIntraPred(const char name[], VpxPredFunc const *pred_funcs,
   }
 }
 
-void TestIntraPred4(VpxPredFunc const *pred_funcs) {
+void TestIntraPred4(AvxPredFunc const *pred_funcs) {
   static const int kNumAv1IntraFuncs = 13;
   static const char *const kSignatures[kNumAv1IntraFuncs] = {
     "4334156168b34ab599d9b5b30f522fe9", "bc4649d5ba47c7ff178d92e475960fb0",
@@ -96,7 +96,7 @@ void TestIntraPred4(VpxPredFunc const *pred_funcs) {
                 kSignatures, 4, 4 * 4 * kNumAv1IntraFuncs);
 }
 
-void TestIntraPred8(VpxPredFunc const *pred_funcs) {
+void TestIntraPred8(AvxPredFunc const *pred_funcs) {
   static const int kNumAv1IntraFuncs = 13;
   static const char *const kSignatures[kNumAv1IntraFuncs] = {
     "7694ddeeefed887faf9d339d18850928", "7d726b1213591b99f736be6dec65065b",
@@ -111,7 +111,7 @@ void TestIntraPred8(VpxPredFunc const *pred_funcs) {
                 kSignatures, 8, 8 * 8 * kNumAv1IntraFuncs);
 }
 
-void TestIntraPred16(VpxPredFunc const *pred_funcs) {
+void TestIntraPred16(AvxPredFunc const *pred_funcs) {
   static const int kNumAv1IntraFuncs = 13;
   static const char *const kSignatures[kNumAv1IntraFuncs] = {
     "b40dbb555d5d16a043dc361e6694fe53", "fb08118cee3b6405d64c1fd68be878c6",
@@ -126,7 +126,7 @@ void TestIntraPred16(VpxPredFunc const *pred_funcs) {
                 kSignatures, 16, 16 * 16 * kNumAv1IntraFuncs);
 }
 
-void TestIntraPred32(VpxPredFunc const *pred_funcs) {
+void TestIntraPred32(AvxPredFunc const *pred_funcs) {
   static const int kNumAv1IntraFuncs = 13;
   static const char *const kSignatures[kNumAv1IntraFuncs] = {
     "558541656d84f9ae7896db655826febe", "b3587a1f9a01495fa38c8cd3c8e2a1bf",
@@ -148,7 +148,7 @@ void TestIntraPred32(VpxPredFunc const *pred_funcs) {
 #define INTRA_PRED_TEST(arch, test_func, dc, dc_left, dc_top, dc_128, v, h,   \
                         d45, d135, d117, d153, d207, d63, tm)                 \
   TEST(arch, test_func) {                                                     \
-    static const VpxPredFunc aom_intra_pred[] = {                             \
+    static const AvxPredFunc aom_intra_pred[] = {                             \
       dc, dc_left, dc_top, dc_128, v, h, d45, d135, d117, d153, d207, d63, tm \
     };                                                                        \
     test_func(aom_intra_pred);                                                \

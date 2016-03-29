@@ -43,8 +43,8 @@
 
 static const char *exec_name;
 
-struct VpxDecInputContext {
-  struct VpxInputContext *aom_input_ctx;
+struct AvxDecInputContext {
+  struct AvxInputContext *aom_input_ctx;
   struct WebmInputContext *webm_ctx;
 };
 
@@ -160,7 +160,7 @@ void usage_exit(void) {
   fprintf(stderr, "\nIncluded decoders:\n\n");
 
   for (i = 0; i < get_aom_decoder_count(); ++i) {
-    const VpxInterface *const decoder = get_aom_decoder_by_index(i);
+    const AvxInterface *const decoder = get_aom_decoder_by_index(i);
     fprintf(stderr, "    %-6s - %s\n", decoder->name,
             aom_codec_iface_name(decoder->codec_interface()));
   }
@@ -213,7 +213,7 @@ static int raw_read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
   return 0;
 }
 
-static int read_frame(struct VpxDecInputContext *input, uint8_t **buf,
+static int read_frame(struct AvxDecInputContext *input, uint8_t **buf,
                       size_t *bytes_in_buffer, size_t *buffer_size) {
   switch (input->aom_input_ctx->file_type) {
 #if CONFIG_WEBM_IO
@@ -273,7 +273,7 @@ static void write_image_file(const aom_image_t *img, const int planes[3],
   }
 }
 
-static int file_is_raw(struct VpxInputContext *input) {
+static int file_is_raw(struct AvxInputContext *input) {
   uint8_t buf[32];
   int is_raw = 0;
   aom_codec_stream_info_t si;
@@ -285,7 +285,7 @@ static int file_is_raw(struct VpxInputContext *input) {
 
     if (mem_get_le32(buf) < 256 * 1024 * 1024) {
       for (i = 0; i < get_aom_decoder_count(); ++i) {
-        const VpxInterface *const decoder = get_aom_decoder_by_index(i);
+        const AvxInterface *const decoder = get_aom_decoder_by_index(i);
         if (!aom_codec_peek_stream_info(decoder->codec_interface(), buf + 4,
                                         32 - 4, &si)) {
           is_raw = 1;
@@ -476,8 +476,8 @@ static int main_loop(int argc, const char **argv_) {
   int arg_skip = 0;
   int ec_enabled = 0;
   int keep_going = 0;
-  const VpxInterface *interface = NULL;
-  const VpxInterface *fourcc_interface = NULL;
+  const AvxInterface *interface = NULL;
+  const AvxInterface *fourcc_interface = NULL;
   uint64_t dx_time = 0;
   struct arg arg;
   char **argv, **argi, **argj;
@@ -508,8 +508,8 @@ static int main_loop(int argc, const char **argv_) {
   MD5Context md5_ctx;
   unsigned char md5_digest[16];
 
-  struct VpxDecInputContext input = { NULL, NULL };
-  struct VpxInputContext aom_input_ctx;
+  struct AvxDecInputContext input = { NULL, NULL };
+  struct AvxInputContext aom_input_ctx;
 #if CONFIG_WEBM_IO
   struct WebmInputContext webm_ctx;
   memset(&(webm_ctx), 0, sizeof(webm_ctx));

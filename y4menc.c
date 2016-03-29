@@ -13,7 +13,7 @@
 #include "./y4menc.h"
 
 int y4m_write_file_header(char *buf, size_t len, int width, int height,
-                          const struct VpxRational *framerate,
+                          const struct AvxRational *framerate,
                           aom_img_fmt_t fmt, unsigned int bit_depth) {
   const char *color;
   switch (bit_depth) {

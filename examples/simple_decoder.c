@@ -34,7 +34,7 @@
 // Initializing The Codec
 // ----------------------
 // The libaom decoder is initialized by the call to aom_codec_dec_init().
-// Determining the codec interface to use is handled by VpxVideoReader and the
+// Determining the codec interface to use is handled by AvxVideoReader and the
 // functions prefixed with aom_video_reader_. Discussion of those functions is
 // beyond the scope of this example, but the main gist is to open the input file
 // and parse just enough of it to determine if it's a VPx file and which VPx
@@ -97,9 +97,9 @@ int main(int argc, char **argv) {
   int frame_cnt = 0;
   FILE *outfile = NULL;
   aom_codec_ctx_t codec;
-  VpxVideoReader *reader = NULL;
-  const VpxInterface *decoder = NULL;
-  const VpxVideoInfo *info = NULL;
+  AvxVideoReader *reader = NULL;
+  const AvxInterface *decoder = NULL;
+  const AvxVideoInfo *info = NULL;
 
   exec_name = argv[0];
 

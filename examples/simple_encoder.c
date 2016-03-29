@@ -117,7 +117,7 @@ void usage_exit(void) {
 }
 
 static int encode_frame(aom_codec_ctx_t *codec, aom_image_t *img,
-                        int frame_index, int flags, VpxVideoWriter *writer) {
+                        int frame_index, int flags, AvxVideoWriter *writer) {
   int got_pkts = 0;
   aom_codec_iter_t iter = NULL;
   const aom_codec_cx_pkt_t *pkt = NULL;
@@ -150,9 +150,9 @@ int main(int argc, char **argv) {
   int frame_count = 0;
   aom_image_t raw;
   aom_codec_err_t res;
-  VpxVideoInfo info = { 0 };
-  VpxVideoWriter *writer = NULL;
-  const VpxInterface *encoder = NULL;
+  AvxVideoInfo info = { 0 };
+  AvxVideoWriter *writer = NULL;
+  const AvxInterface *encoder = NULL;
   const int fps = 30;       // TODO(dkovalev) add command line argument
   const int bitrate = 200;  // kbit/s TODO(dkovalev) add command line argument
   int keyframe_interval = 0;

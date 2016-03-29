@@ -708,41 +708,41 @@ void SubpelVarianceTest<SubpixAvgVarMxNFunc>::RefTest() {
   }
 }
 
-typedef MseTest<Get4x4SseFunc> VpxSseTest;
-typedef MseTest<VarianceMxNFunc> VpxMseTest;
-typedef VarianceTest<VarianceMxNFunc> VpxVarianceTest;
-typedef SubpelVarianceTest<SubpixVarMxNFunc> VpxSubpelVarianceTest;
-typedef SubpelVarianceTest<SubpixAvgVarMxNFunc> VpxSubpelAvgVarianceTest;
+typedef MseTest<Get4x4SseFunc> AvxSseTest;
+typedef MseTest<VarianceMxNFunc> AvxMseTest;
+typedef VarianceTest<VarianceMxNFunc> AvxVarianceTest;
+typedef SubpelVarianceTest<SubpixVarMxNFunc> AvxSubpelVarianceTest;
+typedef SubpelVarianceTest<SubpixAvgVarMxNFunc> AvxSubpelAvgVarianceTest;
 
-TEST_P(VpxSseTest, Ref_sse) { RefTest_sse(); }
-TEST_P(VpxSseTest, Max_sse) { MaxTest_sse(); }
-TEST_P(VpxMseTest, Ref_mse) { RefTest_mse(); }
-TEST_P(VpxMseTest, Max_mse) { MaxTest_mse(); }
-TEST_P(VpxVarianceTest, Zero) { ZeroTest(); }
-TEST_P(VpxVarianceTest, Ref) { RefTest(); }
-TEST_P(VpxVarianceTest, RefStride) { RefStrideTest(); }
-TEST_P(VpxVarianceTest, OneQuarter) { OneQuarterTest(); }
+TEST_P(AvxSseTest, Ref_sse) { RefTest_sse(); }
+TEST_P(AvxSseTest, Max_sse) { MaxTest_sse(); }
+TEST_P(AvxMseTest, Ref_mse) { RefTest_mse(); }
+TEST_P(AvxMseTest, Max_mse) { MaxTest_mse(); }
+TEST_P(AvxVarianceTest, Zero) { ZeroTest(); }
+TEST_P(AvxVarianceTest, Ref) { RefTest(); }
+TEST_P(AvxVarianceTest, RefStride) { RefStrideTest(); }
+TEST_P(AvxVarianceTest, OneQuarter) { OneQuarterTest(); }
 TEST_P(SumOfSquaresTest, Const) { ConstTest(); }
 TEST_P(SumOfSquaresTest, Ref) { RefTest(); }
-TEST_P(VpxSubpelVarianceTest, Ref) { RefTest(); }
-TEST_P(VpxSubpelVarianceTest, ExtremeRef) { ExtremeRefTest(); }
-TEST_P(VpxSubpelAvgVarianceTest, Ref) { RefTest(); }
+TEST_P(AvxSubpelVarianceTest, Ref) { RefTest(); }
+TEST_P(AvxSubpelVarianceTest, ExtremeRef) { ExtremeRefTest(); }
+TEST_P(AvxSubpelAvgVarianceTest, Ref) { RefTest(); }
 
 INSTANTIATE_TEST_CASE_P(C, SumOfSquaresTest,
                         ::testing::Values(aom_get_mb_ss_c));
 
-INSTANTIATE_TEST_CASE_P(C, VpxSseTest,
+INSTANTIATE_TEST_CASE_P(C, AvxSseTest,
                         ::testing::Values(make_tuple(2, 2,
                                                      &aom_get4x4sse_cs_c)));
 
-INSTANTIATE_TEST_CASE_P(C, VpxMseTest,
+INSTANTIATE_TEST_CASE_P(C, AvxMseTest,
                         ::testing::Values(make_tuple(4, 4, &aom_mse16x16_c),
                                           make_tuple(4, 3, &aom_mse16x8_c),
                                           make_tuple(3, 4, &aom_mse8x16_c),
                                           make_tuple(3, 3, &aom_mse8x8_c)));
 
 INSTANTIATE_TEST_CASE_P(
-    C, VpxVarianceTest,
+    C, AvxVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_variance64x64_c, 0),
                       make_tuple(6, 5, &aom_variance64x32_c, 0),
                       make_tuple(5, 6, &aom_variance32x64_c, 0),
@@ -758,7 +758,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(2, 2, &aom_variance4x4_c, 0)));
 
 INSTANTIATE_TEST_CASE_P(
-    C, VpxSubpelVarianceTest,
+    C, AvxSubpelVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_sub_pixel_variance64x64_c, 0),
                       make_tuple(6, 5, &aom_sub_pixel_variance64x32_c, 0),
                       make_tuple(5, 6, &aom_sub_pixel_variance32x64_c, 0),
@@ -774,7 +774,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(2, 2, &aom_sub_pixel_variance4x4_c, 0)));
 
 INSTANTIATE_TEST_CASE_P(
-    C, VpxSubpelAvgVarianceTest,
+    C, AvxSubpelAvgVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_sub_pixel_avg_variance64x64_c, 0),
                       make_tuple(6, 5, &aom_sub_pixel_avg_variance64x32_c, 0),
                       make_tuple(5, 6, &aom_sub_pixel_avg_variance32x64_c, 0),
@@ -790,24 +790,24 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(2, 2, &aom_sub_pixel_avg_variance4x4_c, 0)));
 
 #if CONFIG_AOM_HIGHBITDEPTH
-typedef MseTest<VarianceMxNFunc> VpxHBDMseTest;
-typedef VarianceTest<VarianceMxNFunc> VpxHBDVarianceTest;
-typedef SubpelVarianceTest<SubpixVarMxNFunc> VpxHBDSubpelVarianceTest;
-typedef SubpelVarianceTest<SubpixAvgVarMxNFunc> VpxHBDSubpelAvgVarianceTest;
+typedef MseTest<VarianceMxNFunc> AvxHBDMseTest;
+typedef VarianceTest<VarianceMxNFunc> AvxHBDVarianceTest;
+typedef SubpelVarianceTest<SubpixVarMxNFunc> AvxHBDSubpelVarianceTest;
+typedef SubpelVarianceTest<SubpixAvgVarMxNFunc> AvxHBDSubpelAvgVarianceTest;
 
-TEST_P(VpxHBDMseTest, Ref_mse) { RefTest_mse(); }
-TEST_P(VpxHBDMseTest, Max_mse) { MaxTest_mse(); }
-TEST_P(VpxHBDVarianceTest, Zero) { ZeroTest(); }
-TEST_P(VpxHBDVarianceTest, Ref) { RefTest(); }
-TEST_P(VpxHBDVarianceTest, RefStride) { RefStrideTest(); }
-TEST_P(VpxHBDVarianceTest, OneQuarter) { OneQuarterTest(); }
-TEST_P(VpxHBDSubpelVarianceTest, Ref) { RefTest(); }
-TEST_P(VpxHBDSubpelVarianceTest, ExtremeRef) { ExtremeRefTest(); }
-TEST_P(VpxHBDSubpelAvgVarianceTest, Ref) { RefTest(); }
+TEST_P(AvxHBDMseTest, Ref_mse) { RefTest_mse(); }
+TEST_P(AvxHBDMseTest, Max_mse) { MaxTest_mse(); }
+TEST_P(AvxHBDVarianceTest, Zero) { ZeroTest(); }
+TEST_P(AvxHBDVarianceTest, Ref) { RefTest(); }
+TEST_P(AvxHBDVarianceTest, RefStride) { RefStrideTest(); }
+TEST_P(AvxHBDVarianceTest, OneQuarter) { OneQuarterTest(); }
+TEST_P(AvxHBDSubpelVarianceTest, Ref) { RefTest(); }
+TEST_P(AvxHBDSubpelVarianceTest, ExtremeRef) { ExtremeRefTest(); }
+TEST_P(AvxHBDSubpelAvgVarianceTest, Ref) { RefTest(); }
 
 /* TODO(debargha): This test does not support the highbd version
 INSTANTIATE_TEST_CASE_P(
-    C, VpxHBDMseTest,
+    C, AvxHBDMseTest,
     ::testing::Values(make_tuple(4, 4, &aom_highbd_12_mse16x16_c),
                       make_tuple(4, 4, &aom_highbd_12_mse16x8_c),
                       make_tuple(4, 4, &aom_highbd_12_mse8x16_c),
@@ -823,7 +823,7 @@ INSTANTIATE_TEST_CASE_P(
 */
 
 INSTANTIATE_TEST_CASE_P(
-    C, VpxHBDVarianceTest,
+    C, AvxHBDVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_highbd_12_variance64x64_c, 12),
                       make_tuple(6, 5, &aom_highbd_12_variance64x32_c, 12),
                       make_tuple(5, 6, &aom_highbd_12_variance32x64_c, 12),
@@ -865,7 +865,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(2, 2, &aom_highbd_8_variance4x4_c, 8)));
 
 INSTANTIATE_TEST_CASE_P(
-    C, VpxHBDSubpelVarianceTest,
+    C, AvxHBDSubpelVarianceTest,
     ::testing::Values(
         make_tuple(6, 6, &aom_highbd_8_sub_pixel_variance64x64_c, 8),
         make_tuple(6, 5, &aom_highbd_8_sub_pixel_variance64x32_c, 8),
@@ -908,7 +908,7 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(2, 2, &aom_highbd_12_sub_pixel_variance4x4_c, 12)));
 
 INSTANTIATE_TEST_CASE_P(
-    C, VpxHBDSubpelAvgVarianceTest,
+    C, AvxHBDSubpelAvgVarianceTest,
     ::testing::Values(
         make_tuple(6, 6, &aom_highbd_8_sub_pixel_avg_variance64x64_c, 8),
         make_tuple(6, 5, &aom_highbd_8_sub_pixel_avg_variance64x32_c, 8),
@@ -952,14 +952,14 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #if HAVE_MMX
-INSTANTIATE_TEST_CASE_P(MMX, VpxMseTest,
+INSTANTIATE_TEST_CASE_P(MMX, AvxMseTest,
                         ::testing::Values(make_tuple(4, 4, &aom_mse16x16_mmx)));
 
 INSTANTIATE_TEST_CASE_P(MMX, SumOfSquaresTest,
                         ::testing::Values(aom_get_mb_ss_mmx));
 
 INSTANTIATE_TEST_CASE_P(
-    MMX, VpxVarianceTest,
+    MMX, AvxVarianceTest,
     ::testing::Values(make_tuple(4, 4, &aom_variance16x16_mmx, 0),
                       make_tuple(4, 3, &aom_variance16x8_mmx, 0),
                       make_tuple(3, 4, &aom_variance8x16_mmx, 0),
@@ -967,7 +967,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(2, 2, &aom_variance4x4_mmx, 0)));
 
 INSTANTIATE_TEST_CASE_P(
-    MMX, VpxSubpelVarianceTest,
+    MMX, AvxSubpelVarianceTest,
     ::testing::Values(make_tuple(4, 4, &aom_sub_pixel_variance16x16_mmx, 0),
                       make_tuple(4, 3, &aom_sub_pixel_variance16x8_mmx, 0),
                       make_tuple(3, 4, &aom_sub_pixel_variance8x16_mmx, 0),
@@ -979,14 +979,14 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(SSE2, SumOfSquaresTest,
                         ::testing::Values(aom_get_mb_ss_sse2));
 
-INSTANTIATE_TEST_CASE_P(SSE2, VpxMseTest,
+INSTANTIATE_TEST_CASE_P(SSE2, AvxMseTest,
                         ::testing::Values(make_tuple(4, 4, &aom_mse16x16_sse2),
                                           make_tuple(4, 3, &aom_mse16x8_sse2),
                                           make_tuple(3, 4, &aom_mse8x16_sse2),
                                           make_tuple(3, 3, &aom_mse8x8_sse2)));
 
 INSTANTIATE_TEST_CASE_P(
-    SSE2, VpxVarianceTest,
+    SSE2, AvxVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_variance64x64_sse2, 0),
                       make_tuple(6, 5, &aom_variance64x32_sse2, 0),
                       make_tuple(5, 6, &aom_variance32x64_sse2, 0),
@@ -1003,7 +1003,7 @@ INSTANTIATE_TEST_CASE_P(
 
 #if CONFIG_USE_X86INC
 INSTANTIATE_TEST_CASE_P(
-    SSE2, VpxSubpelVarianceTest,
+    SSE2, AvxSubpelVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_sub_pixel_variance64x64_sse2, 0),
                       make_tuple(6, 5, &aom_sub_pixel_variance64x32_sse2, 0),
                       make_tuple(5, 6, &aom_sub_pixel_variance32x64_sse2, 0),
@@ -1019,7 +1019,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(2, 2, &aom_sub_pixel_variance4x4_sse, 0)));
 
 INSTANTIATE_TEST_CASE_P(
-    SSE2, VpxSubpelAvgVarianceTest,
+    SSE2, AvxSubpelAvgVarianceTest,
     ::testing::Values(
         make_tuple(6, 6, &aom_sub_pixel_avg_variance64x64_sse2, 0),
         make_tuple(6, 5, &aom_sub_pixel_avg_variance64x32_sse2, 0),
@@ -1039,7 +1039,7 @@ INSTANTIATE_TEST_CASE_P(
 #if CONFIG_AOM_HIGHBITDEPTH
 /* TODO(debargha): This test does not support the highbd version
 INSTANTIATE_TEST_CASE_P(
-    SSE2, VpxHBDMseTest,
+    SSE2, AvxHBDMseTest,
     ::testing::Values(make_tuple(4, 4, &aom_highbd_12_mse16x16_sse2),
                       make_tuple(4, 3, &aom_highbd_12_mse16x8_sse2),
                       make_tuple(3, 4, &aom_highbd_12_mse8x16_sse2),
@@ -1055,7 +1055,7 @@ INSTANTIATE_TEST_CASE_P(
 */
 
 INSTANTIATE_TEST_CASE_P(
-    SSE2, VpxHBDVarianceTest,
+    SSE2, AvxHBDVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_highbd_12_variance64x64_sse2, 12),
                       make_tuple(6, 5, &aom_highbd_12_variance64x32_sse2, 12),
                       make_tuple(5, 6, &aom_highbd_12_variance32x64_sse2, 12),
@@ -1089,7 +1089,7 @@ INSTANTIATE_TEST_CASE_P(
 
 #if CONFIG_USE_X86INC
 INSTANTIATE_TEST_CASE_P(
-    SSE2, VpxHBDSubpelVarianceTest,
+    SSE2, AvxHBDSubpelVarianceTest,
     ::testing::Values(
         make_tuple(6, 6, &aom_highbd_12_sub_pixel_variance64x64_sse2, 12),
         make_tuple(6, 5, &aom_highbd_12_sub_pixel_variance64x32_sse2, 12),
@@ -1126,7 +1126,7 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(3, 2, &aom_highbd_8_sub_pixel_variance8x4_sse2, 8)));
 
 INSTANTIATE_TEST_CASE_P(
-    SSE2, VpxHBDSubpelAvgVarianceTest,
+    SSE2, AvxHBDSubpelAvgVarianceTest,
     ::testing::Values(
         make_tuple(6, 6, &aom_highbd_12_sub_pixel_avg_variance64x64_sse2, 12),
         make_tuple(6, 5, &aom_highbd_12_sub_pixel_avg_variance64x32_sse2, 12),
@@ -1168,7 +1168,7 @@ INSTANTIATE_TEST_CASE_P(
 #if HAVE_SSSE3
 #if CONFIG_USE_X86INC
 INSTANTIATE_TEST_CASE_P(
-    SSSE3, VpxSubpelVarianceTest,
+    SSSE3, AvxSubpelVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_sub_pixel_variance64x64_ssse3, 0),
                       make_tuple(6, 5, &aom_sub_pixel_variance64x32_ssse3, 0),
                       make_tuple(5, 6, &aom_sub_pixel_variance32x64_ssse3, 0),
@@ -1184,7 +1184,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(2, 2, &aom_sub_pixel_variance4x4_ssse3, 0)));
 
 INSTANTIATE_TEST_CASE_P(
-    SSSE3, VpxSubpelAvgVarianceTest,
+    SSSE3, AvxSubpelAvgVarianceTest,
     ::testing::Values(
         make_tuple(6, 6, &aom_sub_pixel_avg_variance64x64_ssse3, 0),
         make_tuple(6, 5, &aom_sub_pixel_avg_variance64x32_ssse3, 0),
@@ -1203,12 +1203,12 @@ INSTANTIATE_TEST_CASE_P(
 #endif  // HAVE_SSSE3
 
 #if HAVE_AVX2
-INSTANTIATE_TEST_CASE_P(AVX2, VpxMseTest,
+INSTANTIATE_TEST_CASE_P(AVX2, AvxMseTest,
                         ::testing::Values(make_tuple(4, 4,
                                                      &aom_mse16x16_avx2)));
 
 INSTANTIATE_TEST_CASE_P(
-    AVX2, VpxVarianceTest,
+    AVX2, AvxVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_variance64x64_avx2, 0),
                       make_tuple(6, 5, &aom_variance64x32_avx2, 0),
                       make_tuple(5, 5, &aom_variance32x32_avx2, 0),
@@ -1216,44 +1216,44 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(4, 4, &aom_variance16x16_avx2, 0)));
 
 INSTANTIATE_TEST_CASE_P(
-    AVX2, VpxSubpelVarianceTest,
+    AVX2, AvxSubpelVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_sub_pixel_variance64x64_avx2, 0),
                       make_tuple(5, 5, &aom_sub_pixel_variance32x32_avx2, 0)));
 
 INSTANTIATE_TEST_CASE_P(
-    AVX2, VpxSubpelAvgVarianceTest,
+    AVX2, AvxSubpelAvgVarianceTest,
     ::testing::Values(
         make_tuple(6, 6, &aom_sub_pixel_avg_variance64x64_avx2, 0),
         make_tuple(5, 5, &aom_sub_pixel_avg_variance32x32_avx2, 0)));
 #endif  // HAVE_AVX2
 
 #if HAVE_MEDIA
-INSTANTIATE_TEST_CASE_P(MEDIA, VpxMseTest,
+INSTANTIATE_TEST_CASE_P(MEDIA, AvxMseTest,
                         ::testing::Values(make_tuple(4, 4,
                                                      &aom_mse16x16_media)));
 
 INSTANTIATE_TEST_CASE_P(
-    MEDIA, VpxVarianceTest,
+    MEDIA, AvxVarianceTest,
     ::testing::Values(make_tuple(4, 4, &aom_variance16x16_media, 0),
                       make_tuple(3, 3, &aom_variance8x8_media, 0)));
 
 INSTANTIATE_TEST_CASE_P(
-    MEDIA, VpxSubpelVarianceTest,
+    MEDIA, AvxSubpelVarianceTest,
     ::testing::Values(make_tuple(4, 4, &aom_sub_pixel_variance16x16_media, 0),
                       make_tuple(3, 3, &aom_sub_pixel_variance8x8_media, 0)));
 #endif  // HAVE_MEDIA
 
 #if HAVE_NEON
-INSTANTIATE_TEST_CASE_P(NEON, VpxSseTest,
+INSTANTIATE_TEST_CASE_P(NEON, AvxSseTest,
                         ::testing::Values(make_tuple(2, 2,
                                                      &aom_get4x4sse_cs_neon)));
 
-INSTANTIATE_TEST_CASE_P(NEON, VpxMseTest,
+INSTANTIATE_TEST_CASE_P(NEON, AvxMseTest,
                         ::testing::Values(make_tuple(4, 4,
                                                      &aom_mse16x16_neon)));
 
 INSTANTIATE_TEST_CASE_P(
-    NEON, VpxVarianceTest,
+    NEON, AvxVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_variance64x64_neon, 0),
                       make_tuple(6, 5, &aom_variance64x32_neon, 0),
                       make_tuple(5, 6, &aom_variance32x64_neon, 0),
@@ -1264,7 +1264,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(3, 3, &aom_variance8x8_neon, 0)));
 
 INSTANTIATE_TEST_CASE_P(
-    NEON, VpxSubpelVarianceTest,
+    NEON, AvxSubpelVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_sub_pixel_variance64x64_neon, 0),
                       make_tuple(5, 5, &aom_sub_pixel_variance32x32_neon, 0),
                       make_tuple(4, 4, &aom_sub_pixel_variance16x16_neon, 0),
@@ -1275,18 +1275,18 @@ INSTANTIATE_TEST_CASE_P(
 INSTANTIATE_TEST_CASE_P(MSA, SumOfSquaresTest,
                         ::testing::Values(aom_get_mb_ss_msa));
 
-INSTANTIATE_TEST_CASE_P(MSA, VpxSseTest,
+INSTANTIATE_TEST_CASE_P(MSA, AvxSseTest,
                         ::testing::Values(make_tuple(2, 2,
                                                      &aom_get4x4sse_cs_msa)));
 
-INSTANTIATE_TEST_CASE_P(MSA, VpxMseTest,
+INSTANTIATE_TEST_CASE_P(MSA, AvxMseTest,
                         ::testing::Values(make_tuple(4, 4, &aom_mse16x16_msa),
                                           make_tuple(4, 3, &aom_mse16x8_msa),
                                           make_tuple(3, 4, &aom_mse8x16_msa),
                                           make_tuple(3, 3, &aom_mse8x8_msa)));
 
 INSTANTIATE_TEST_CASE_P(
-    MSA, VpxVarianceTest,
+    MSA, AvxVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_variance64x64_msa, 0),
                       make_tuple(6, 5, &aom_variance64x32_msa, 0),
                       make_tuple(5, 6, &aom_variance32x64_msa, 0),
@@ -1302,7 +1302,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(2, 2, &aom_variance4x4_msa, 0)));
 
 INSTANTIATE_TEST_CASE_P(
-    MSA, VpxSubpelVarianceTest,
+    MSA, AvxSubpelVarianceTest,
     ::testing::Values(make_tuple(2, 2, &aom_sub_pixel_variance4x4_msa, 0),
                       make_tuple(2, 3, &aom_sub_pixel_variance4x8_msa, 0),
                       make_tuple(3, 2, &aom_sub_pixel_variance8x4_msa, 0),
@@ -1318,7 +1318,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_tuple(6, 6, &aom_sub_pixel_variance64x64_msa, 0)));
 
 INSTANTIATE_TEST_CASE_P(
-    MSA, VpxSubpelAvgVarianceTest,
+    MSA, AvxSubpelAvgVarianceTest,
     ::testing::Values(make_tuple(6, 6, &aom_sub_pixel_avg_variance64x64_msa, 0),
                       make_tuple(6, 5, &aom_sub_pixel_avg_variance64x32_msa, 0),
                       make_tuple(5, 6, &aom_sub_pixel_avg_variance32x64_msa, 0),

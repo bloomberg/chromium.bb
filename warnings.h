@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 struct aom_codec_enc_cfg;
-struct VpxEncoderConfig;
+struct AvxEncoderConfig;
 
 /*
  * Checks config for improperly used settings. Warns user upon encountering
@@ -24,7 +24,7 @@ struct VpxEncoderConfig;
  * when warnings are issued.
  */
 void check_encoder_config(int disable_prompt,
-                          const struct VpxEncoderConfig *global_config,
+                          const struct AvxEncoderConfig *global_config,
                           const struct aom_codec_enc_cfg *stream_config);
 
 #ifdef __cplusplus

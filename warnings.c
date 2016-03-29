@@ -84,7 +84,7 @@ static void check_lag_in_frames_realtime_deadline(
 }
 
 void check_encoder_config(int disable_prompt,
-                          const struct VpxEncoderConfig *global_config,
+                          const struct AvxEncoderConfig *global_config,
                           const struct aom_codec_enc_cfg *stream_config) {
   int num_warnings = 0;
   struct WarningListNode *warning = NULL;

@@ -75,7 +75,7 @@ void die_codec(aom_codec_ctx_t *ctx, const char *s) {
   exit(EXIT_FAILURE);
 }
 
-int read_yuv_frame(struct VpxInputContext *input_ctx, aom_image_t *yuv_frame) {
+int read_yuv_frame(struct AvxInputContext *input_ctx, aom_image_t *yuv_frame) {
   FILE *f = input_ctx->file;
   struct FileTypeDetectionBuffer *detect = &input_ctx->detect;
   int plane = 0;
@@ -130,7 +130,7 @@ int read_yuv_frame(struct VpxInputContext *input_ctx, aom_image_t *yuv_frame) {
 
 #if CONFIG_ENCODERS
 
-static const VpxInterface aom_encoders[] = {
+static const AvxInterface aom_encoders[] = {
 #if CONFIG_AV1_ENCODER
   { "av1", AV1_FOURCC, &aom_codec_av1_cx },
 #endif
@@ -140,13 +140,13 @@ int get_aom_encoder_count(void) {
   return sizeof(aom_encoders) / sizeof(aom_encoders[0]);
 }
 
-const VpxInterface *get_aom_encoder_by_index(int i) { return &aom_encoders[i]; }
+const AvxInterface *get_aom_encoder_by_index(int i) { return &aom_encoders[i]; }
 
-const VpxInterface *get_aom_encoder_by_name(const char *name) {
+const AvxInterface *get_aom_encoder_by_name(const char *name) {
   int i;
 
   for (i = 0; i < get_aom_encoder_count(); ++i) {
-    const VpxInterface *encoder = get_aom_encoder_by_index(i);
+    const AvxInterface *encoder = get_aom_encoder_by_index(i);
     if (strcmp(encoder->name, name) == 0) return encoder;
   }
 
@@ -157,7 +157,7 @@ const VpxInterface *get_aom_encoder_by_name(const char *name) {
 
 #if CONFIG_DECODERS
 
-static const VpxInterface aom_decoders[] = {
+static const AvxInterface aom_decoders[] = {
 #if CONFIG_AV1_DECODER
   { "av1", AV1_FOURCC, &aom_codec_av1_dx },
 #endif
@@ -167,24 +167,24 @@ int get_aom_decoder_count(void) {
   return sizeof(aom_decoders) / sizeof(aom_decoders[0]);
 }
 
-const VpxInterface *get_aom_decoder_by_index(int i) { return &aom_decoders[i]; }
+const AvxInterface *get_aom_decoder_by_index(int i) { return &aom_decoders[i]; }
 
-const VpxInterface *get_aom_decoder_by_name(const char *name) {
+const AvxInterface *get_aom_decoder_by_name(const char *name) {
   int i;
 
   for (i = 0; i < get_aom_decoder_count(); ++i) {
-    const VpxInterface *const decoder = get_aom_decoder_by_index(i);
+    const AvxInterface *const decoder = get_aom_decoder_by_index(i);
     if (strcmp(decoder->name, name) == 0) return decoder;
   }
 
   return NULL;
 }
 
-const VpxInterface *get_aom_decoder_by_fourcc(uint32_t fourcc) {
+const AvxInterface *get_aom_decoder_by_fourcc(uint32_t fourcc) {
   int i;
 
   for (i = 0; i < get_aom_decoder_count(); ++i) {
-    const VpxInterface *const decoder = get_aom_decoder_by_index(i);
+    const AvxInterface *const decoder = get_aom_decoder_by_index(i);
     if (decoder->fourcc == fourcc) return decoder;
   }
 

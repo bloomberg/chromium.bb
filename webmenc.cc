@@ -26,7 +26,7 @@ void write_webm_file_header(struct EbmlGlobal *glob,
                             const aom_codec_enc_cfg_t *cfg,
                             const struct aom_rational *fps,
                             stereo_format_t stereo_fmt, unsigned int fourcc,
-                            const struct VpxRational *par) {
+                            const struct AvxRational *par) {
   mkvmuxer::MkvWriter *const writer = new mkvmuxer::MkvWriter(glob->stream);
   mkvmuxer::Segment *const segment = new mkvmuxer::Segment();
   segment->Init(writer);

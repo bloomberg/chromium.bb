@@ -31,11 +31,11 @@ typedef enum {
   YV12,  // 4:2:0 with uv flipped, only 8-bit depth
 } ColorInputType;
 
-struct VpxInterface;
+struct AvxInterface;
 
 /* Configuration elements common to all streams. */
-struct VpxEncoderConfig {
-  const struct VpxInterface *codec;
+struct AvxEncoderConfig {
+  const struct AvxInterface *codec;
   int passes;
   int pass;
   int usage;

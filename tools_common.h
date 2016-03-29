@@ -76,12 +76,12 @@ struct FileTypeDetectionBuffer {
   size_t position;
 };
 
-struct VpxRational {
+struct AvxRational {
   int numerator;
   int denominator;
 };
 
-struct VpxInputContext {
+struct AvxInputContext {
   const char *filename;
   FILE *file;
   int64_t length;
@@ -89,12 +89,12 @@ struct VpxInputContext {
   enum VideoFileType file_type;
   uint32_t width;
   uint32_t height;
-  struct VpxRational pixel_aspect_ratio;
+  struct AvxRational pixel_aspect_ratio;
   aom_img_fmt_t fmt;
   aom_bit_depth_t bit_depth;
   int only_i420;
   uint32_t fourcc;
-  struct VpxRational framerate;
+  struct AvxRational framerate;
 #if CONFIG_ENCODERS
   y4m_input y4m;
 #endif
@@ -124,22 +124,22 @@ void usage_exit(void) AOM_NO_RETURN;
 
 #undef AOM_NO_RETURN
 
-int read_yuv_frame(struct VpxInputContext *input_ctx, aom_image_t *yuv_frame);
+int read_yuv_frame(struct AvxInputContext *input_ctx, aom_image_t *yuv_frame);
 
-typedef struct VpxInterface {
+typedef struct AvxInterface {
   const char *const name;
   const uint32_t fourcc;
   aom_codec_iface_t *(*const codec_interface)();
-} VpxInterface;
+} AvxInterface;
 
 int get_aom_encoder_count(void);
-const VpxInterface *get_aom_encoder_by_index(int i);
-const VpxInterface *get_aom_encoder_by_name(const char *name);
+const AvxInterface *get_aom_encoder_by_index(int i);
+const AvxInterface *get_aom_encoder_by_name(const char *name);
 
 int get_aom_decoder_count(void);
-const VpxInterface *get_aom_decoder_by_index(int i);
-const VpxInterface *get_aom_decoder_by_name(const char *name);
-const VpxInterface *get_aom_decoder_by_fourcc(uint32_t fourcc);
+const AvxInterface *get_aom_decoder_by_index(int i);
+const AvxInterface *get_aom_decoder_by_name(const char *name);
+const AvxInterface *get_aom_decoder_by_fourcc(uint32_t fourcc);
 
 // TODO(dkovalev): move this function to aom_image.{c, h}, so it will be part
 // of aom_image_t support

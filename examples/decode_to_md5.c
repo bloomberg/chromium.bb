@@ -80,9 +80,9 @@ int main(int argc, char **argv) {
   int frame_cnt = 0;
   FILE *outfile = NULL;
   aom_codec_ctx_t codec;
-  VpxVideoReader *reader = NULL;
-  const VpxVideoInfo *info = NULL;
-  const VpxInterface *decoder = NULL;
+  AvxVideoReader *reader = NULL;
+  const AvxVideoInfo *info = NULL;
+  const AvxInterface *decoder = NULL;
 
   exec_name = argv[0];
 

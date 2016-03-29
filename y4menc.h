@@ -23,7 +23,7 @@ extern "C" {
 #define Y4M_BUFFER_SIZE 128
 
 int y4m_write_file_header(char *buf, size_t len, int width, int height,
-                          const struct VpxRational *framerate,
+                          const struct AvxRational *framerate,
                           aom_img_fmt_t fmt, unsigned int bit_depth);
 int y4m_write_frame_header(char *buf, size_t len);
 

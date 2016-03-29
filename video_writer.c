@@ -15,13 +15,13 @@
 #include "./video_writer.h"
 #include "aom/aom_encoder.h"
 
-struct VpxVideoWriterStruct {
-  VpxVideoInfo info;
+struct AvxVideoWriterStruct {
+  AvxVideoInfo info;
   FILE *file;
   int frame_count;
 };
 
-static void write_header(FILE *file, const VpxVideoInfo *info,
+static void write_header(FILE *file, const AvxVideoInfo *info,
                          int frame_count) {
   struct aom_codec_enc_cfg cfg;
   cfg.g_w = info->frame_width;
@@ -32,11 +32,11 @@ static void write_header(FILE *file, const VpxVideoInfo *info,
   ivf_write_file_header(file, &cfg, info->codec_fourcc, frame_count);
 }
 
-VpxVideoWriter *aom_video_writer_open(const char *filename,
-                                      VpxContainer container,
-                                      const VpxVideoInfo *info) {
+AvxVideoWriter *aom_video_writer_open(const char *filename,
+                                      AvxContainer container,
+                                      const AvxVideoInfo *info) {
   if (container == kContainerIVF) {
-    VpxVideoWriter *writer = NULL;
+    AvxVideoWriter *writer = NULL;
     FILE *const file = fopen(filename, "wb");
     if (!file) return NULL;
 
@@ -55,7 +55,7 @@ VpxVideoWriter *aom_video_writer_open(const char *filename,
   return NULL;
 }
 
-void aom_video_writer_close(VpxVideoWriter *writer) {
+void aom_video_writer_close(AvxVideoWriter *writer) {
   if (writer) {
     // Rewriting frame header with real frame count
     rewind(writer->file);
@@ -66,7 +66,7 @@ void aom_video_writer_close(VpxVideoWriter *writer) {
   }
 }
 
-int aom_video_writer_write_frame(VpxVideoWriter *writer, const uint8_t *buffer,
+int aom_video_writer_write_frame(AvxVideoWriter *writer, const uint8_t *buffer,
                                  size_t size, int64_t pts) {
   ivf_write_frame_header(writer->file, pts, size);
   if (fwrite(buffer, 1, size, writer->file) != size) return 0;

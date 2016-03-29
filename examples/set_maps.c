@@ -124,7 +124,7 @@ static void unset_active_map(const aom_codec_enc_cfg_t *cfg,
 }
 
 static int encode_frame(aom_codec_ctx_t *codec, aom_image_t *img,
-                        int frame_index, VpxVideoWriter *writer) {
+                        int frame_index, AvxVideoWriter *writer) {
   int got_pkts = 0;
   aom_codec_iter_t iter = NULL;
   const aom_codec_cx_pkt_t *pkt = NULL;
@@ -158,9 +158,9 @@ int main(int argc, char **argv) {
   int frame_count = 0;
   aom_image_t raw;
   aom_codec_err_t res;
-  VpxVideoInfo info;
-  VpxVideoWriter *writer = NULL;
-  const VpxInterface *encoder = NULL;
+  AvxVideoInfo info;
+  AvxVideoWriter *writer = NULL;
+  const AvxInterface *encoder = NULL;
   const int fps = 2;  // TODO(dkovalev) add command line argument
   const double bits_per_pixel_per_frame = 0.067;
 

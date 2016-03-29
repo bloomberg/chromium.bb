@@ -38,7 +38,7 @@ static void fix_framerate(int *num, int *den) {
   }
 }
 
-int file_is_ivf(struct VpxInputContext *input_ctx) {
+int file_is_ivf(struct AvxInputContext *input_ctx) {
   char raw_hdr[32];
   int is_ivf = 0;
 

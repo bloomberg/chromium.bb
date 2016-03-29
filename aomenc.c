@@ -96,7 +96,7 @@ static void warn_or_exit_on_error(aom_codec_ctx_t *ctx, int fatal,
   va_end(ap);
 }
 
-static int read_frame(struct VpxInputContext *input_ctx, aom_image_t *img) {
+static int read_frame(struct AvxInputContext *input_ctx, aom_image_t *img) {
   FILE *f = input_ctx->file;
   y4m_input *y4m = &input_ctx->y4m;
   int shortread = 0;
@@ -501,7 +501,7 @@ void usage_exit(void) {
   fprintf(stderr, "\nIncluded encoders:\n\n");
 
   for (i = 0; i < num_encoder; ++i) {
-    const VpxInterface *const encoder = get_aom_encoder_by_index(i);
+    const AvxInterface *const encoder = get_aom_encoder_by_index(i);
     const char *defstr = (i == (num_encoder - 1)) ? "(default)" : "";
     fprintf(stderr, "    %-6s - %s %s\n", encoder->name,
             aom_codec_iface_name(encoder->codec_interface()), defstr);
@@ -804,7 +804,7 @@ static void validate_positive_rational(const char *msg,
   if (!rat->den) die("Error: %s has zero denominator\n", msg);
 }
 
-static void parse_global_config(struct VpxEncoderConfig *global, char **argv) {
+static void parse_global_config(struct AvxEncoderConfig *global, char **argv) {
   char **argi, **argj;
   struct arg arg;
   const int num_encoder = get_aom_encoder_count();
@@ -917,7 +917,7 @@ static void parse_global_config(struct VpxEncoderConfig *global, char **argv) {
   }
 }
 
-static void open_input_file(struct VpxInputContext *input) {
+static void open_input_file(struct AvxInputContext *input) {
   /* Parse certain options from the input file, if possible */
   input->file = strcmp(input->filename, "-") ? fopen(input->filename, "rb")
                                              : set_binary_mode(stdin);
@@ -963,12 +963,12 @@ static void open_input_file(struct VpxInputContext *input) {
   }
 }
 
-static void close_input_file(struct VpxInputContext *input) {
+static void close_input_file(struct AvxInputContext *input) {
   fclose(input->file);
   if (input->file_type == FILE_TYPE_Y4M) y4m_input_close(&input->y4m);
 }
 
-static struct stream_state *new_stream(struct VpxEncoderConfig *global,
+static struct stream_state *new_stream(struct AvxEncoderConfig *global,
                                        struct stream_state *prev) {
   struct stream_state *stream;
 
@@ -1024,7 +1024,7 @@ static struct stream_state *new_stream(struct VpxEncoderConfig *global,
   return stream;
 }
 
-static int parse_stream_params(struct VpxEncoderConfig *global,
+static int parse_stream_params(struct AvxEncoderConfig *global,
                                struct stream_state *stream, char **argv) {
   char **argi, **argj;
   struct arg arg;
@@ -1211,7 +1211,7 @@ static int parse_stream_params(struct VpxEncoderConfig *global,
   } while (0)
 
 static void validate_stream_config(const struct stream_state *stream,
-                                   const struct VpxEncoderConfig *global) {
+                                   const struct AvxEncoderConfig *global) {
   const struct stream_state *streami;
   (void)global;
 
@@ -1280,7 +1280,7 @@ static void set_stream_dimensions(struct stream_state *stream, unsigned int w,
 }
 
 static void set_default_kf_interval(struct stream_state *stream,
-                                    struct VpxEncoderConfig *global) {
+                                    struct AvxEncoderConfig *global) {
   /* Use a max keyframe interval of 5 seconds, if none was
    * specified on the command line.
    */
@@ -1315,8 +1315,8 @@ static const char *image_format_to_string(aom_img_fmt_t f) {
 }
 
 static void show_stream_config(struct stream_state *stream,
-                               struct VpxEncoderConfig *global,
-                               struct VpxInputContext *input) {
+                               struct AvxEncoderConfig *global,
+                               struct AvxInputContext *input) {
 #define SHOW(field) \
   fprintf(stderr, "    %-28s = %d\n", #field, stream->config.cfg.field)
 
@@ -1368,8 +1368,8 @@ static void show_stream_config(struct stream_state *stream,
 }
 
 static void open_output_file(struct stream_state *stream,
-                             struct VpxEncoderConfig *global,
-                             const struct VpxRational *pixel_aspect_ratio) {
+                             struct AvxEncoderConfig *global,
+                             const struct AvxRational *pixel_aspect_ratio) {
   const char *fn = stream->config.out_fn;
   const struct aom_codec_enc_cfg *const cfg = &stream->config.cfg;
 
@@ -1418,7 +1418,7 @@ static void close_output_file(struct stream_state *stream,
 }
 
 static void setup_pass(struct stream_state *stream,
-                       struct VpxEncoderConfig *global, int pass) {
+                       struct AvxEncoderConfig *global, int pass) {
   if (stream->config.stats_fn) {
     if (!stats_open_file(&stream->stats, stream->config.stats_fn, pass))
       fatal("Failed to open statistics store");
@@ -1455,7 +1455,7 @@ static void setup_pass(struct stream_state *stream,
 }
 
 static void initialize_encoder(struct stream_state *stream,
-                               struct VpxEncoderConfig *global) {
+                               struct AvxEncoderConfig *global) {
   int i;
   int flags = 0;
 
@@ -1485,14 +1485,14 @@ static void initialize_encoder(struct stream_state *stream,
 
 #if CONFIG_DECODERS
   if (global->test_decode != TEST_DECODE_OFF) {
-    const VpxInterface *decoder = get_aom_decoder_by_name(global->codec->name);
+    const AvxInterface *decoder = get_aom_decoder_by_name(global->codec->name);
     aom_codec_dec_init(&stream->decoder, decoder->codec_interface(), NULL, 0);
   }
 #endif
 }
 
 static void encode_frame(struct stream_state *stream,
-                         struct VpxEncoderConfig *global, struct aom_image *img,
+                         struct AvxEncoderConfig *global, struct aom_image *img,
                          unsigned int frames_in) {
   aom_codec_pts_t frame_start, next_frame_start;
   struct aom_codec_enc_cfg *cfg = &stream->config.cfg;
@@ -1591,7 +1591,7 @@ static void update_quantizer_histogram(struct stream_state *stream) {
 }
 
 static void get_cx_data(struct stream_state *stream,
-                        struct VpxEncoderConfig *global, int *got_data) {
+                        struct AvxEncoderConfig *global, int *got_data) {
   const aom_codec_cx_pkt_t *pkt;
   const struct aom_codec_enc_cfg *cfg = &stream->config.cfg;
   aom_codec_iter_t iter = NULL;
@@ -1709,7 +1709,7 @@ static float usec_to_fps(uint64_t usec, unsigned int frames) {
 
 static void test_decode(struct stream_state *stream,
                         enum TestDecodeFatality fatal,
-                        const VpxInterface *codec) {
+                        const AvxInterface *codec) {
   aom_image_t enc_img, dec_img;
   struct av1_ref_frame ref_enc, ref_dec;
 
@@ -1795,8 +1795,8 @@ int main(int argc, const char **argv_) {
 #endif
   int frame_avail, got_data;
 
-  struct VpxInputContext input;
-  struct VpxEncoderConfig global;
+  struct AvxInputContext input;
+  struct AvxEncoderConfig global;
   struct stream_state *streams = NULL;
   char **argv, **argi;
   uint64_t cx_time = 0;

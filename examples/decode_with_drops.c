@@ -75,9 +75,9 @@ int main(int argc, char **argv) {
   int frame_cnt = 0;
   FILE *outfile = NULL;
   aom_codec_ctx_t codec;
-  const VpxInterface *decoder = NULL;
-  VpxVideoReader *reader = NULL;
-  const VpxVideoInfo *info = NULL;
+  const AvxInterface *decoder = NULL;
+  AvxVideoReader *reader = NULL;
+  const AvxVideoInfo *info = NULL;
   int n = 0;
   int m = 0;
   int is_range = 0;

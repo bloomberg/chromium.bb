@@ -43,7 +43,7 @@ void write_webm_file_header(struct EbmlGlobal *glob,
                             const aom_codec_enc_cfg_t *cfg,
                             const struct aom_rational *fps,
                             stereo_format_t stereo_fmt, unsigned int fourcc,
-                            const struct VpxRational *par);
+                            const struct AvxRational *par);
 
 void write_webm_block(struct EbmlGlobal *glob, const aom_codec_enc_cfg_t *cfg,
                       const aom_codec_cx_pkt_t *pkt);
