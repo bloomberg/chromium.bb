@@ -167,6 +167,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['linux', 'nvidia'], bug=544989) # Too flaky to retry
     self.Flaky('conformance/extensions/oes-element-index-uint.html',
                ['linux', 'nvidia'], bug=524144)
+    self.Flaky('conformance/textures/image/' +
+               'tex-image-and-sub-image-2d-with-image-' +
+               'rgb-rgb-unsigned-byte.html',
+               ['linux', 'nvidia'], bug=596622)
     # AMD
     self.Flaky('conformance/more/functions/uniformi.html',
                ['linux', 'amd'], bug=550989)
