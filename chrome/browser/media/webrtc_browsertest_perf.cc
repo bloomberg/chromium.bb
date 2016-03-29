@@ -22,13 +22,13 @@ static std::string Statistic(const std::string& statistic,
                             statistic.c_str());
 }
 
-static bool MaybePrintResultsForAudioReceive(
+static void MaybePrintResultsForAudioReceive(
     const std::string& ssrc, const base::DictionaryValue& pc_dict,
     const std::string& modifier) {
   std::string value;
   if (!pc_dict.GetString(Statistic("audioOutputLevel", ssrc), &value)) {
     // Not an audio receive stream.
-    return false;
+    return;
   }
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("bytesReceived", ssrc), &value));
@@ -53,17 +53,15 @@ static bool MaybePrintResultsForAudioReceive(
   perf_test::PrintResult(
       "audio_rates", modifier, "goog_secondary_decoded_rate", value, "%",
       false);
-
-  return true;
 }
 
-static bool MaybePrintResultsForAudioSend(
+static void MaybePrintResultsForAudioSend(
     const std::string& ssrc, const base::DictionaryValue& pc_dict,
     const std::string& modifier) {
   std::string value;
   if (!pc_dict.GetString(Statistic("audioInputLevel", ssrc), &value)) {
     // Not an audio send stream.
-    return false;
+    return;
   }
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("bytesSent", ssrc), &value));
@@ -75,16 +73,15 @@ static bool MaybePrintResultsForAudioSend(
   EXPECT_TRUE(pc_dict.GetString(Statistic("googRtt", ssrc), &value));
   perf_test::PrintResult(
       "audio_tx", modifier, "goog_rtt", value, "ms", false);
-  return true;
 }
 
-static bool MaybePrintResultsForVideoSend(
+static void MaybePrintResultsForVideoSend(
     const std::string& ssrc, const base::DictionaryValue& pc_dict,
     const std::string& modifier) {
   std::string value;
   if (!pc_dict.GetString(Statistic("googFrameRateSent", ssrc), &value)) {
     // Not a video send stream.
-    return false;
+    return;
   }
 
   // Graph these by unit: the dashboard expects all stats in one graph to have
@@ -125,16 +122,15 @@ static bool MaybePrintResultsForVideoSend(
       Statistic("googEncodeUsagePercent", ssrc), &value));
   perf_test::PrintResult("video_cpu_usage", modifier,
                          "goog_encode_usage_percent", value, "%", false);
-  return true;
 }
 
-static bool MaybePrintResultsForVideoReceive(
+static void MaybePrintResultsForVideoReceive(
     const std::string& ssrc, const base::DictionaryValue& pc_dict,
     const std::string& modifier) {
   std::string value;
   if (!pc_dict.GetString(Statistic("googFrameRateReceived", ssrc), &value)) {
     // Not a video receive stream.
-    return false;
+    return;
   }
 
   perf_test::PrintResult(
@@ -179,8 +175,6 @@ static bool MaybePrintResultsForVideoReceive(
   EXPECT_TRUE(pc_dict.GetString(Statistic("googRenderDelayMs", ssrc), &value));
   perf_test::PrintResult(
       "video_rx", modifier, "goog_render_delay_ms", value, "ms", false);
-
-  return true;
 }
 
 static std::string ExtractSsrcIdentifier(const std::string& key) {
@@ -240,6 +234,13 @@ void PrintBweForVideoMetrics(const base::DictionaryValue& pc_dict,
 void PrintMetricsForAllStreams(const base::DictionaryValue& pc_dict,
                                const std::string& modifier,
                                const std::string& video_codec) {
+  PrintMetricsForSendStreams(pc_dict, modifier, video_codec);
+  PrintMetricsForRecvStreams(pc_dict, modifier, video_codec);
+}
+
+void PrintMetricsForSendStreams(const base::DictionaryValue& pc_dict,
+                                const std::string& modifier,
+                                const std::string& video_codec) {
   std::string video_modifier =
       video_codec.empty() ? modifier : modifier + "_" + video_codec;
   const base::DictionaryValue* stats_dict;
@@ -249,17 +250,27 @@ void PrintMetricsForAllStreams(const base::DictionaryValue& pc_dict,
   std::set<std::string>::const_iterator ssrc_iterator =
       ssrc_identifiers.begin();
   for (; ssrc_iterator != ssrc_identifiers.end(); ++ssrc_iterator) {
-    // Figure out which stream type this ssrc represents and print all the
-    // interesting metrics for it.
     const std::string& ssrc = *ssrc_iterator;
-    bool did_recognize_stream_type =
-        MaybePrintResultsForAudioReceive(ssrc, pc_dict, modifier) ||
-        MaybePrintResultsForAudioSend(ssrc, pc_dict, modifier) ||
-        MaybePrintResultsForVideoReceive(ssrc, pc_dict, video_modifier) ||
-        MaybePrintResultsForVideoSend(ssrc, pc_dict, video_modifier);
-    ASSERT_TRUE(did_recognize_stream_type) << "Failed to figure out which "
-                                              "kind of stream SSRC " << ssrc
-                                           << " is. ";
+    MaybePrintResultsForAudioSend(ssrc, pc_dict, modifier);
+    MaybePrintResultsForVideoSend(ssrc, pc_dict, video_modifier);
+  }
+}
+
+void PrintMetricsForRecvStreams(const base::DictionaryValue& pc_dict,
+                                const std::string& modifier,
+                                const std::string& video_codec) {
+  std::string video_modifier =
+      video_codec.empty() ? modifier : modifier + "_" + video_codec;
+  const base::DictionaryValue* stats_dict;
+  ASSERT_TRUE(pc_dict.GetDictionary("stats", &stats_dict));
+  std::set<std::string> ssrc_identifiers = FindAllSsrcIdentifiers(*stats_dict);
+
+  std::set<std::string>::const_iterator ssrc_iterator =
+      ssrc_identifiers.begin();
+  for (; ssrc_iterator != ssrc_identifiers.end(); ++ssrc_iterator) {
+    const std::string& ssrc = *ssrc_iterator;
+    MaybePrintResultsForAudioReceive(ssrc, pc_dict, modifier);
+    MaybePrintResultsForVideoReceive(ssrc, pc_dict, video_modifier);
   }
 }
 

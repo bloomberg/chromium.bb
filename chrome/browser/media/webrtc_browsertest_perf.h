@@ -32,6 +32,12 @@ void PrintBweForVideoMetrics(const base::DictionaryValue& pc_dict,
 void PrintMetricsForAllStreams(const base::DictionaryValue& pc_dict,
                                const std::string& modifier,
                                const std::string& video_codec);
+void PrintMetricsForSendStreams(const base::DictionaryValue& pc_dict,
+                                const std::string& modifier,
+                                const std::string& video_codec);
+void PrintMetricsForRecvStreams(const base::DictionaryValue& pc_dict,
+                                const std::string& modifier,
+                                const std::string& video_codec);
 
 }  // namespace test
 

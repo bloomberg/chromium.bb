@@ -183,13 +183,13 @@ class WebRtcPerfBrowserTest : public WebRtcTestBase {
         GetDataOnPeerConnection(all_data.get(), 0);
     ASSERT_TRUE(first_pc_dict != NULL);
     test::PrintBweForVideoMetrics(*first_pc_dict, "_sendonly", video_codec);
-    test::PrintMetricsForAllStreams(*first_pc_dict, "_sendonly", video_codec);
+    test::PrintMetricsForSendStreams(*first_pc_dict, "_sendonly", video_codec);
 
     const base::DictionaryValue* second_pc_dict =
         GetDataOnPeerConnection(all_data.get(), 1);
     ASSERT_TRUE(second_pc_dict != NULL);
     test::PrintBweForVideoMetrics(*second_pc_dict, "_recvonly", video_codec);
-    test::PrintMetricsForAllStreams(*second_pc_dict, "_recvonly", video_codec);
+    test::PrintMetricsForRecvStreams(*second_pc_dict, "_recvonly", video_codec);
 
     HangUp(left_tab);
     HangUp(right_tab);
