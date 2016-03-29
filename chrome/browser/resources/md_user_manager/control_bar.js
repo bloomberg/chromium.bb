@@ -5,6 +5,8 @@
 /**
  * @fileoverview 'control-bar' is the horizontal bar at the bottom of the user
  * manager screen.
+ *
+ * @element control-bar
  */
  Polymer({
   is: 'control-bar',

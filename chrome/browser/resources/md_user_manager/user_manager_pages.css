@@ -5,8 +5,3 @@
 neon-animated-pages {
   height: 100%;
 }
-
-neon-animated-pages > div {
-  display: flex;
-  justify-content: center;
-}

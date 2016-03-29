@@ -86,8 +86,6 @@ void SigninCreateProfileHandler::GetLocalizedValues(
       l10n_util::GetStringFUTF16(
           IDS_LEGACY_SUPERVISED_USER_LEARN_MORE_TEXT,
           base::ASCIIToUTF16(
-              chrome::kLegacySupervisedUserManagementURL),
-          base::ASCIIToUTF16(
               chrome::kLegacySupervisedUserManagementDisplayURL)));
 }
 

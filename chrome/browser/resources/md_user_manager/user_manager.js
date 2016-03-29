@@ -57,8 +57,7 @@ cr.define('cr.ui', function() {
     // make sense when displayed as a widget.
     document.addEventListener('contextmenu', function(e) {e.preventDefault();});
 
-    if (window.location.hash == '#tutorial')
-      document.querySelector('user-manager-tutorial').startTutorial();
+    // TODO(mahmadi): start the tutorial if the location hash is #tutorial.
   };
 
   /**

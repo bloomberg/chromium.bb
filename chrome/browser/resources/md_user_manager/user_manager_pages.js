@@ -5,6 +5,8 @@
 /**
  * @fileoverview 'user-manager-pages' is the element that controls paging in the
  * user manager screen.
+ *
+ * @element user-manager-pages
  */
 Polymer({
   is: 'user-manager-pages',

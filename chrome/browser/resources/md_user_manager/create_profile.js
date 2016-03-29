@@ -5,14 +5,13 @@
 /**
  * @fileoverview 'create-profile' is a page that contains controls for creating
  * a (optionally supervised) profile, including choosing a name, and an avatar.
+ *
+ * @element create-profile
  */
 Polymer({
   is: 'create-profile',
 
-  behaviors: [
-    I18nBehavior,
-    WebUIListenerBehavior
-  ],
+  behaviors: [WebUIListenerBehavior],
 
   properties: {
     /**
@@ -166,7 +165,7 @@ Polymer({
    * @private
    */
   onLearnMoreTap_: function(event) {
-    this.fire('change-page', {page: 'supervised-learn-more-page'});
+    // TODO(mahmadi): fire the event to show the 'learn-more-page'
   },
 
   /**

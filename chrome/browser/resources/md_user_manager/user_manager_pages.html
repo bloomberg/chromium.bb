@@ -1,9 +1,8 @@
 <link rel="import" href="chrome://md-user-manager/create_profile.html">
-<link rel="import" href="chrome://md-user-manager/supervised_user_learn_more.html">
-<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-from-left-animation.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/slide-right-animation.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animated-pages.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
 
 <dom-module id="user-manager-pages">
   <link rel="import" type="css"
@@ -22,13 +21,6 @@
           <content></content>
         </template>
       </div>
-      <div id="supervised-learn-more-page">
-        <template is="dom-if"
-            if="[[isPageVisible_(selectedPage_, 'supervised-learn-more-page')]]">
-          <supervised-user-learn-more></supervised-user-learn-more>
-        </template>
-      </div>
-      <content></content>
     </neon-animated-pages>
   </template>
   <script src="chrome://md-user-manager/user_manager_pages.js"></script>
