@@ -82,14 +82,14 @@ ProxyImpl::ProxyImpl(ChannelImpl* channel_impl,
   BeginFrameSource* frame_source = external_begin_frame_source_.get();
   if (!scheduler_settings.throttle_frame_production) {
     // Unthrottled source takes precedence over external sources.
-    unthrottled_begin_frame_source_ = BackToBackBeginFrameSource::Create(
-        task_runner_provider_->ImplThreadTaskRunner());
+    unthrottled_begin_frame_source_.reset(new BackToBackBeginFrameSource(
+        task_runner_provider_->ImplThreadTaskRunner()));
     frame_source = unthrottled_begin_frame_source_.get();
   }
   if (!frame_source) {
-    synthetic_begin_frame_source_ = SyntheticBeginFrameSource::Create(
+    synthetic_begin_frame_source_.reset(new SyntheticBeginFrameSource(
         task_runner_provider_->ImplThreadTaskRunner(),
-        BeginFrameArgs::DefaultInterval());
+        BeginFrameArgs::DefaultInterval()));
     frame_source = synthetic_begin_frame_source_.get();
   }
   scheduler_ =

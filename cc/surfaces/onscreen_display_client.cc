@@ -39,12 +39,12 @@ bool OnscreenDisplayClient::Initialize() {
 
   BeginFrameSource* frame_source;
   if (disable_display_vsync_) {
-    unthrottled_frame_source_ =
-        BackToBackBeginFrameSource::Create(task_runner_.get());
+    unthrottled_frame_source_.reset(
+        new BackToBackBeginFrameSource(task_runner_.get()));
     frame_source = unthrottled_frame_source_.get();
   } else {
-    synthetic_frame_source_ = SyntheticBeginFrameSource::Create(
-        task_runner_.get(), BeginFrameArgs::DefaultInterval());
+    synthetic_frame_source_.reset(new SyntheticBeginFrameSource(
+        task_runner_.get(), BeginFrameArgs::DefaultInterval()));
     frame_source = synthetic_frame_source_.get();
   }
 

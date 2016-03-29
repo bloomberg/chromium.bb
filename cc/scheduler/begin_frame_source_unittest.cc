@@ -207,18 +207,11 @@ TEST(BeginFrameSourceBaseTest, DetectAsValueIntoLoop) {
 // BackToBackBeginFrameSource testing -----------------------------------------
 class TestBackToBackBeginFrameSource : public BackToBackBeginFrameSource {
  public:
-  static scoped_ptr<TestBackToBackBeginFrameSource> Create(
-      base::SimpleTestTickClock* now_src,
-      base::SingleThreadTaskRunner* task_runner) {
-    return make_scoped_ptr(
-        new TestBackToBackBeginFrameSource(now_src, task_runner));
-  }
-
- protected:
   TestBackToBackBeginFrameSource(base::SimpleTestTickClock* now_src,
                                  base::SingleThreadTaskRunner* task_runner)
       : BackToBackBeginFrameSource(task_runner), now_src_(now_src) {}
 
+ protected:
   base::TimeTicks Now() override { return now_src_->NowTicks(); }
 
   // Not owned.
@@ -240,8 +233,8 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
     task_runner_ =
         make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_.get(), false));
-    source_ = TestBackToBackBeginFrameSource::Create(now_src_.get(),
-                                                     task_runner_.get());
+    source_.reset(
+        new TestBackToBackBeginFrameSource(now_src_.get(), task_runner_.get()));
     obs_ = make_scoped_ptr(new ::testing::StrictMock<MockBeginFrameObserver>());
   }
 
@@ -419,9 +412,9 @@ class SyntheticBeginFrameSourceTest : public ::testing::Test {
     now_src_->Advance(base::TimeDelta::FromMicroseconds(1000));
     task_runner_ =
         make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_.get(), false));
-    source_ = TestSyntheticBeginFrameSource::Create(
+    source_.reset(new TestSyntheticBeginFrameSource(
         now_src_.get(), task_runner_.get(),
-        base::TimeDelta::FromMicroseconds(10000));
+        base::TimeDelta::FromMicroseconds(10000)));
     obs_ = make_scoped_ptr(new MockBeginFrameObserver());
   }
 

@@ -178,7 +178,7 @@ class CC_EXPORT BeginFrameSourceBase : public BeginFrameSource {
 // remaining frames reaches zero.
 class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceBase {
  public:
-  static scoped_ptr<BackToBackBeginFrameSource> Create(
+  explicit BackToBackBeginFrameSource(
       base::SingleThreadTaskRunner* task_runner);
   ~BackToBackBeginFrameSource() override;
 
@@ -193,8 +193,6 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceBase {
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
  protected:
-  explicit BackToBackBeginFrameSource(
-      base::SingleThreadTaskRunner* task_runner);
   virtual base::TimeTicks Now();  // Now overridable for testing
 
   base::SingleThreadTaskRunner* task_runner_;
@@ -214,9 +212,10 @@ class CC_EXPORT BackToBackBeginFrameSource : public BeginFrameSourceBase {
 class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceBase,
                                             public DelayBasedTimeSourceClient {
  public:
-  static scoped_ptr<SyntheticBeginFrameSource> Create(
-      base::SingleThreadTaskRunner* task_runner,
-      base::TimeDelta initial_vsync_interval);
+  explicit SyntheticBeginFrameSource(base::SingleThreadTaskRunner* task_runner,
+                                     base::TimeDelta initial_vsync_interval);
+  explicit SyntheticBeginFrameSource(
+      scoped_ptr<DelayBasedTimeSource> time_source);
   ~SyntheticBeginFrameSource() override;
 
   void OnUpdateVSyncParameters(base::TimeTicks new_vsync_timebase,
@@ -233,9 +232,6 @@ class CC_EXPORT SyntheticBeginFrameSource : public BeginFrameSourceBase,
   void OnTimerTick() override;
 
  protected:
-  explicit SyntheticBeginFrameSource(
-      scoped_ptr<DelayBasedTimeSource> time_source);
-
   BeginFrameArgs CreateBeginFrameArgs(base::TimeTicks frame_time,
                                       BeginFrameArgs::BeginFrameArgsType type);
 

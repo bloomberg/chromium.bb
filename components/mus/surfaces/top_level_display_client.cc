@@ -47,8 +47,8 @@ TopLevelDisplayClient::TopLevelDisplayClient(
   int max_frames_pending = output_surface->capabilities().max_frames_pending;
   DCHECK_GT(max_frames_pending, 0);
 
-  synthetic_frame_source_ = cc::SyntheticBeginFrameSource::Create(
-      task_runner_.get(), cc::BeginFrameArgs::DefaultInterval());
+  synthetic_frame_source_.reset(new cc::SyntheticBeginFrameSource(
+      task_runner_.get(), cc::BeginFrameArgs::DefaultInterval()));
 
   scheduler_.reset(
       new cc::DisplayScheduler(display_.get(), synthetic_frame_source_.get(),

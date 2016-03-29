@@ -127,16 +127,9 @@ void BeginFrameSourceBase::AsValueInto(
 }
 
 // BackToBackBeginFrameSource --------------------------------------------
-scoped_ptr<BackToBackBeginFrameSource> BackToBackBeginFrameSource::Create(
-    base::SingleThreadTaskRunner* task_runner) {
-  return make_scoped_ptr(new BackToBackBeginFrameSource(task_runner));
-}
-
 BackToBackBeginFrameSource::BackToBackBeginFrameSource(
     base::SingleThreadTaskRunner* task_runner)
-    : BeginFrameSourceBase(),
-      task_runner_(task_runner),
-      weak_factory_(this) {
+    : BeginFrameSourceBase(), task_runner_(task_runner), weak_factory_(this) {
   DCHECK(task_runner);
 }
 
@@ -195,17 +188,17 @@ void BackToBackBeginFrameSource::AsValueInto(
 }
 
 // SyntheticBeginFrameSource ---------------------------------------------
-scoped_ptr<SyntheticBeginFrameSource> SyntheticBeginFrameSource::Create(
+SyntheticBeginFrameSource::SyntheticBeginFrameSource(
     base::SingleThreadTaskRunner* task_runner,
-    base::TimeDelta initial_vsync_interval) {
-  scoped_ptr<DelayBasedTimeSource> time_source =
-      DelayBasedTimeSource::Create(initial_vsync_interval, task_runner);
-  return make_scoped_ptr(new SyntheticBeginFrameSource(std::move(time_source)));
+    base::TimeDelta initial_vsync_interval)
+    : time_source_(
+          DelayBasedTimeSource::Create(initial_vsync_interval, task_runner)) {
+  time_source_->SetClient(this);
 }
 
 SyntheticBeginFrameSource::SyntheticBeginFrameSource(
     scoped_ptr<DelayBasedTimeSource> time_source)
-    : BeginFrameSourceBase(), time_source_(std::move(time_source)) {
+    : time_source_(std::move(time_source)) {
   time_source_->SetClient(this);
 }
 

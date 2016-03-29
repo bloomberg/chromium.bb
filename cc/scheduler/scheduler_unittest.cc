@@ -257,12 +257,12 @@ class SchedulerTest : public testing::Test {
  protected:
   TestScheduler* CreateScheduler() {
     BeginFrameSource* frame_source;
-    unthrottled_frame_source_ = TestBackToBackBeginFrameSource::Create(
-        now_src_.get(), task_runner_.get());
+    unthrottled_frame_source_.reset(
+        new TestBackToBackBeginFrameSource(now_src_.get(), task_runner_.get()));
     fake_external_begin_frame_source_.reset(
         new FakeExternalBeginFrameSource(client_.get()));
-    synthetic_frame_source_ = TestSyntheticBeginFrameSource::Create(
-        now_src_.get(), task_runner_.get(), BeginFrameArgs::DefaultInterval());
+    synthetic_frame_source_.reset(new TestSyntheticBeginFrameSource(
+        now_src_.get(), task_runner_.get(), BeginFrameArgs::DefaultInterval()));
     if (!scheduler_settings_.throttle_frame_production) {
       frame_source = unthrottled_frame_source_.get();
     } else if (scheduler_settings_.use_external_begin_frame_source) {

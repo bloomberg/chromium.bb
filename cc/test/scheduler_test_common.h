@@ -118,19 +118,11 @@ class FakeBeginFrameSource : public BeginFrameSourceBase {
 
 class TestBackToBackBeginFrameSource : public BackToBackBeginFrameSource {
  public:
-  ~TestBackToBackBeginFrameSource() override;
-
-  static scoped_ptr<TestBackToBackBeginFrameSource> Create(
-      base::SimpleTestTickClock* now_src,
-      base::SingleThreadTaskRunner* task_runner) {
-    return make_scoped_ptr(
-        new TestBackToBackBeginFrameSource(now_src, task_runner));
-  }
-
- protected:
   TestBackToBackBeginFrameSource(base::SimpleTestTickClock* now_src,
                                  base::SingleThreadTaskRunner* task_runner);
+  ~TestBackToBackBeginFrameSource() override;
 
+ protected:
   base::TimeTicks Now() override;
   // Not owned.
   base::SimpleTestTickClock* now_src_;
@@ -141,22 +133,10 @@ class TestBackToBackBeginFrameSource : public BackToBackBeginFrameSource {
 
 class TestSyntheticBeginFrameSource : public SyntheticBeginFrameSource {
  public:
+  explicit TestSyntheticBeginFrameSource(base::SimpleTestTickClock* now_src,
+                                         OrderedSimpleTaskRunner* task_runner,
+                                         base::TimeDelta initial_interval);
   ~TestSyntheticBeginFrameSource() override;
-
-  static scoped_ptr<TestSyntheticBeginFrameSource> Create(
-      base::SimpleTestTickClock* now_src,
-      OrderedSimpleTaskRunner* task_runner,
-      base::TimeDelta initial_interval) {
-    scoped_ptr<TestDelayBasedTimeSource> time_source =
-        TestDelayBasedTimeSource::Create(now_src, initial_interval,
-                                         task_runner);
-    return make_scoped_ptr(
-        new TestSyntheticBeginFrameSource(std::move(time_source)));
-  }
-
- protected:
-  explicit TestSyntheticBeginFrameSource(
-      scoped_ptr<DelayBasedTimeSource> time_source);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestSyntheticBeginFrameSource);

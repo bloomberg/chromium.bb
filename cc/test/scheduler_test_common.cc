@@ -61,8 +61,13 @@ base::TimeTicks TestBackToBackBeginFrameSource::Now() {
 }
 
 TestSyntheticBeginFrameSource::TestSyntheticBeginFrameSource(
-    scoped_ptr<DelayBasedTimeSource> time_source)
-    : SyntheticBeginFrameSource(std::move(time_source)) {}
+    base::SimpleTestTickClock* now_src,
+    OrderedSimpleTaskRunner* task_runner,
+    base::TimeDelta initial_interval)
+    : SyntheticBeginFrameSource(
+          TestDelayBasedTimeSource::Create(now_src,
+                                           initial_interval,
+                                           task_runner)) {}
 
 TestSyntheticBeginFrameSource::~TestSyntheticBeginFrameSource() {
 }
