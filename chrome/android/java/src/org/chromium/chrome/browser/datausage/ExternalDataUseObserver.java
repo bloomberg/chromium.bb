@@ -112,9 +112,10 @@ public class ExternalDataUseObserver {
     }
 
     /**
-    * Fetches matching rules and returns them via {@link #fetchMatchingRulesDone}. While the
-    * fetch is underway, it is illegal to make calls to this method.
-    */
+     * Fetches matching rules and returns them via {@link #fetchMatchingRulesDone}. subsequent
+     * calls to this method While the fetch is underway, may cause the {@link
+     * #fetchMatchingRulesDone} callback to be missed for the subsequent call.
+     */
     @CalledByNative
     protected void fetchMatchingRules() {
         fetchMatchingRulesDone(null, null, null);

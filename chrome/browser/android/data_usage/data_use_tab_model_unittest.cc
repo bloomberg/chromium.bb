@@ -920,6 +920,42 @@ TEST_F(DataUseTabModelTest, MatchingRuleClearedOnControlAppUninstall) {
   EXPECT_FALSE(data_use_tab_model_->data_use_matcher_->HasValidRules());
 }
 
+// Tests that UI navigation events are buffered until matching rules are fetched
+// and then processed to start data use tracking.
+TEST_F(DataUseTabModelTest, ProcessBufferedNavigationEventsAfterRuleFetch) {
+  MockTabDataUseObserver mock_observer;
+  std::vector<std::string> app_package_names, domain_regexes, labels;
+
+  app_package_names.push_back(kPackageFoo);
+  domain_regexes.push_back(kURLFoo);
+  labels.push_back(kTestLabel1);
+  data_use_tab_model_->AddObserver(&mock_observer);
+
+  // Navigation event should get buffered, and tracking should not start.
+  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1)).Times(0);
+  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1)).Times(0);
+  data_use_tab_model_->OnNavigationEvent(
+      kTabID1, DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, GURL(kURLFoo),
+      std::string());
+  EXPECT_EQ(1U, data_use_tab_model_->data_use_ui_navigations_->size());
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  // Once matching rules are fetched, data use tracking should start.
+  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1)).Times(1);
+  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1)).Times(0);
+  RegisterURLRegexes(app_package_names, domain_regexes, labels);
+  EXPECT_FALSE(data_use_tab_model_->data_use_ui_navigations_.get());
+  testing::Mock::VerifyAndClearExpectations(&mock_observer);
+
+  // Data use tracking should end.
+  EXPECT_CALL(mock_observer, NotifyTrackingStarting(kTabID1)).Times(0);
+  EXPECT_CALL(mock_observer, NotifyTrackingEnding(kTabID1)).Times(1);
+  data_use_tab_model_->OnNavigationEvent(kTabID1,
+                                         DataUseTabModel::TRANSITION_BOOKMARK,
+                                         GURL(std::string()), std::string());
+  EXPECT_FALSE(data_use_tab_model_->data_use_ui_navigations_.get());
+}
+
 }  // namespace android
 
 }  // namespace chrome

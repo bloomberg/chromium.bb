@@ -40,6 +40,10 @@ const uint32_t kDefaultOpenTabExpirationDurationSeconds =
 const uint32_t kDefaultMatchingRuleExpirationDurationSeconds =
     60 * 60 * 24;  // 24 hours.
 
+// Default maximum limit imposed for the initial UI navigation event buffer.
+// Once this limit is reached, the buffer will be cleared.
+const uint32_t kDefaultMaxNavigationEventsBuffered = 100;
+
 const char kUMAExpiredInactiveTabEntryRemovalDurationHistogram[] =
     "DataUsage.TabModel.ExpiredInactiveTabEntryRemovalDuration";
 const char kUMAExpiredActiveTabEntryRemovalDurationHistogram[] =
@@ -133,6 +137,7 @@ DataUseTabModel::DataUseTabModel()
       closed_tab_expiration_duration_(GetClosedTabExpirationDuration()),
       open_tab_expiration_duration_(GetOpenTabExpirationDuration()),
       is_control_app_installed_(false),
+      data_use_ui_navigations_(new std::vector<DataUseUINavigationEvent>()),
       weak_factory_(this) {
   // Detach from current thread since rest of DataUseTabModel lives on the UI
   // thread and the current thread may not be UI thread..
@@ -166,6 +171,19 @@ void DataUseTabModel::OnNavigationEvent(SessionID::id_type tab_id,
                                         const std::string& package) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsValidTabID(tab_id));
+
+  if (data_use_ui_navigations_) {
+    // Buffer the navigation event for later processing.
+    data_use_ui_navigations_->push_back(
+        DataUseUINavigationEvent(tab_id, transition, url, package));
+
+    if (data_use_ui_navigations_->size() >=
+        kDefaultMaxNavigationEventsBuffered) {
+      ProcessBufferedNavigationEvents();
+    }
+    return;
+  }
+
   std::string current_label, new_label;
   bool is_package_match;
 
@@ -258,6 +276,7 @@ void DataUseTabModel::RegisterURLRegexes(
     return;
   data_use_matcher_->RegisterURLRegexes(app_package_name, domain_path_regex,
                                         label);
+  ProcessBufferedNavigationEvents();
 }
 
 void DataUseTabModel::OnControlAppInstallStateChange(
@@ -269,8 +288,9 @@ void DataUseTabModel::OnControlAppInstallStateChange(
   is_control_app_installed_ = is_control_app_installed;
   std::vector<std::string> empty;
   if (!is_control_app_installed_) {
-    // Clear rules.
+    // Clear rules, and process the buffered UI navigation events.
     data_use_matcher_->RegisterURLRegexes(empty, empty, empty);
+    ProcessBufferedNavigationEvents();
   } else {
     // Fetch the matching rules when the app is installed.
     data_use_matcher_->FetchMatchingRules();
@@ -456,6 +476,19 @@ void DataUseTabModel::CompactTabEntries() {
             oldest_tab_entry_iterator->second.GetLatestStartOrEndTime(),
         base::TimeDelta::FromMinutes(1), base::TimeDelta::FromHours(1), 50);
     active_tabs_.erase(oldest_tab_entry_iterator);
+  }
+}
+
+void DataUseTabModel::ProcessBufferedNavigationEvents() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!data_use_ui_navigations_)
+    return;
+  // Move the ownership of vector managed by |data_use_ui_navigations_| and
+  // release it, so that navigation events will be processed immediately.
+  const auto tmp_data_use_ui_navigations_ = std::move(data_use_ui_navigations_);
+  for (const auto& ui_event : *tmp_data_use_ui_navigations_.get()) {
+    OnNavigationEvent(ui_event.tab_id, ui_event.transition_type, ui_event.url,
+                      ui_event.package);
   }
 }
 
