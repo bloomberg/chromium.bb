@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
+#include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 
 namespace views {
@@ -29,6 +30,7 @@ class ShelfViewTest;
 
 // ShelfTooltipManager manages the tooltip bubble that appears for shelf items.
 class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
+                                       public aura::WindowObserver,
                                        public ShelfLayoutManagerObserver {
  public:
   explicit ShelfTooltipManager(ShelfView* shelf_view);
@@ -57,6 +59,9 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
   // ui::EventHandler overrides:
   void OnEvent(ui::Event* event) override;
 
+  // aura::WindowObserver overrides:
+  void OnWindowDestroying(aura::Window* window) override;
+
   // ShelfLayoutManagerObserver overrides:
   void WillDeleteShelf() override;
   void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
@@ -71,6 +76,7 @@ class ASH_EXPORT ShelfTooltipManager : public ui::EventHandler,
   base::OneShotTimer timer_;
 
   ShelfView* shelf_view_;
+  aura::Window* root_window_;
   ShelfLayoutManager* shelf_layout_manager_;
   views::BubbleDelegateView* bubble_;
 
