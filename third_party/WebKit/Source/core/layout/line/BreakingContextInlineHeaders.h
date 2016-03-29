@@ -612,8 +612,10 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         UChar c = m_current.current();
         m_currentCharacterIsSpace = c == spaceCharacter || c == tabulationCharacter || (!m_preservesNewline && (c == newlineCharacter));
 
-        if (!m_collapseWhiteSpace || !m_currentCharacterIsSpace)
+        if (!m_collapseWhiteSpace || !m_currentCharacterIsSpace) {
             m_lineInfo.setEmpty(false, m_block, &m_width);
+            m_width.setTrailingWhitespaceWidth(0);
+        }
 
         if (c == softHyphenCharacter && m_autoWrap && !hyphenWidth) {
             hyphenWidth = layoutText.hyphenWidth(font, textDirectionFromUnicode(m_resolver.position().direction()));
