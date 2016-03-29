@@ -48,11 +48,6 @@
             'mock_apple_keychain.h',
           ],
         }],
-        [ 'OS == "android"', {
-          'dependencies': [
-            '../build/android/ndk.gyp:cpu_features',
-          ],
-        }],
         [ 'os_bsd==1', {
           'link_settings': {
             'libraries': [

@@ -295,12 +295,6 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
   CHECK(worker_thread_);
 
   // Init SSL, which will be needed by PeerConnection.
-  //
-  // TODO(davidben): BoringSSL must be initialized by Chromium code. If the
-  // initialization requirement is removed or when different libraries are
-  // allowed to call CRYPTO_library_init concurrently, remove this line and
-  // initialize within WebRTC. See https://crbug.com/542879.
-  crypto::EnsureOpenSSLInit();
   if (!rtc::InitializeSSL()) {
     LOG(ERROR) << "Failed on InitializeSSL.";
     NOTREACHED();

@@ -130,6 +130,8 @@
       'src/crypto/cipher/tls_cbc.c',
       'src/crypto/cmac/cmac.c',
       'src/crypto/conf/conf.c',
+      'src/crypto/cpu-aarch64-linux.c',
+      'src/crypto/cpu-arm-linux.c',
       'src/crypto/cpu-arm.c',
       'src/crypto/cpu-intel.c',
       'src/crypto/crypto.c',
@@ -329,7 +331,6 @@
       'linux-arm/crypto/sha/sha1-armv4-large.S',
       'linux-arm/crypto/sha/sha256-armv4.S',
       'linux-arm/crypto/sha/sha512-armv4.S',
-      'src/crypto/cpu-arm-asm.S',
       'src/crypto/curve25519/asm/x25519-asm-arm.S',
     ],
     'boringssl_linux_x86_sources': [

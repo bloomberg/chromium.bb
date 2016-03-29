@@ -6,6 +6,7 @@
 
 #include <dlfcn.h>
 #include <fcntl.h>
+#include <openssl/crypto.h>
 #include <openssl/rand.h>
 #include <pthread.h>
 #include <signal.h>
@@ -334,6 +335,12 @@ static void ZygotePreSandboxInit() {
   // TimeZone::createDefault is called once here, the timezone ID is
   // cached and there's no more need to access the file system.
   scoped_ptr<icu::TimeZone> zone(icu::TimeZone::createDefault());
+
+#if defined(ARCH_CPU_ARM_FAMILY)
+  // On ARM, BoringSSL requires access to /proc/cpuinfo to determine processor
+  // features. Query this before entering the sandbox.
+  CRYPTO_library_init();
+#endif
 
   // Pass BoringSSL a copy of the /dev/urandom file descriptor so RAND_bytes
   // will work inside the sandbox.
