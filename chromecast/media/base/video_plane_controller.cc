@@ -142,10 +142,10 @@ class VideoPlaneController::RateLimitedSetVideoPlaneGeometry
 VideoPlaneController::VideoPlaneController(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner)
     : is_paused_(false),
-      have_output_res_(false),
-      have_graphics_res_(false),
-      output_res_(0, 0),
-      graphics_res_(0, 0),
+      have_screen_res_(false),
+      have_graphics_plane_res_(false),
+      screen_res_(0, 0),
+      graphics_plane_res_(0, 0),
       have_video_plane_geometry_(false),
       video_plane_display_rect_(0, 0),
       video_plane_transform_(VideoPlane::TRANSFORM_NONE),
@@ -155,10 +155,6 @@ VideoPlaneController::VideoPlaneController(
 
 VideoPlaneController::~VideoPlaneController() {}
 
-// TODO(esum): SetGeometry, SetDeviceResolution, and SetGraphicsPlaneResolution
-// follow the same pattern (copy/paste). Currently it's not worth modularizing
-// since there are only 3 fields. If more fields are needed in the future,
-// consider making a generic method to implement this pattern.
 void VideoPlaneController::SetGeometry(const RectF& display_rect,
                                        VideoPlane::Transform transform) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -182,19 +178,19 @@ void VideoPlaneController::SetGeometry(const RectF& display_rect,
   MaybeRunSetGeometry();
 }
 
-void VideoPlaneController::SetDeviceResolution(const Size& resolution) {
+void VideoPlaneController::SetScreenResolution(const Size& resolution) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(ResolutionSizeValid(resolution));
-  if (have_output_res_ && SizeEqual(resolution, output_res_)) {
-    VLOG(2) << "No change found in output resolution.";
+  if (have_screen_res_ && SizeEqual(resolution, screen_res_)) {
+    VLOG(2) << "No change found in screen resolution.";
     return;
   }
 
-  VLOG(1) << "New output resolution " << resolution.width << "x"
+  VLOG(1) << "New screen resolution " << resolution.width << "x"
           << resolution.height;
 
-  have_output_res_ = true;
-  output_res_ = resolution;
+  have_screen_res_ = true;
+  screen_res_ = resolution;
 
   MaybeRunSetGeometry();
 }
@@ -202,18 +198,22 @@ void VideoPlaneController::SetDeviceResolution(const Size& resolution) {
 void VideoPlaneController::SetGraphicsPlaneResolution(const Size& resolution) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(ResolutionSizeValid(resolution));
-  if (have_graphics_res_ && SizeEqual(resolution, graphics_res_)) {
-    VLOG(2) << "No change found in graphics resolution.";
+  if (have_graphics_plane_res_ && SizeEqual(resolution, graphics_plane_res_)) {
+    VLOG(2) << "No change found in graphics plane resolution.";
     return;
   }
 
-  VLOG(1) << "New graphics resolution " << resolution.width << "x"
+  VLOG(1) << "New graphics plane resolution " << resolution.width << "x"
           << resolution.height;
 
-  have_graphics_res_ = true;
-  graphics_res_ = resolution;
+  have_graphics_plane_res_ = true;
+  graphics_plane_res_ = resolution;
 
-  MaybeRunSetGeometry();
+  // Any cached video plane geometry parameters are no longer valid since they
+  // were relative to the PREVIOUS graphics plane resolution. Thus, the cached
+  // parameters are cleared, and it's the caller's responsibility to call
+  // SetGeometry() with arguments relative to the NEW graphics plane if needed.
+  ClearVideoPlaneGeometry();
 }
 
 void VideoPlaneController::Pause() {
@@ -226,7 +226,7 @@ void VideoPlaneController::Resume() {
   DCHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "Resuming controller. VideoPlane SetGeometry calls are active.";
   is_paused_ = false;
-  MaybeRunSetGeometry();
+  ClearVideoPlaneGeometry();
 }
 
 bool VideoPlaneController::is_paused() const {
@@ -235,7 +235,6 @@ bool VideoPlaneController::is_paused() const {
 }
 
 void VideoPlaneController::MaybeRunSetGeometry() {
-  DCHECK(thread_checker_.CalledOnValidThread());
   if (is_paused_) {
     VLOG(2) << "All VideoPlane SetGeometry calls are paused. Ignoring request.";
     return;
@@ -246,13 +245,15 @@ void VideoPlaneController::MaybeRunSetGeometry() {
     return;
   }
 
-  DCHECK(graphics_res_.width != 0 && graphics_res_.height != 0);
+  DCHECK(graphics_plane_res_.width != 0 && graphics_plane_res_.height != 0);
 
   RectF scaled_rect = video_plane_display_rect_;
-  if (graphics_res_.width != output_res_.width ||
-      graphics_res_.height != output_res_.height) {
-    float sx = static_cast<float>(output_res_.width) / graphics_res_.width;
-    float sy = static_cast<float>(output_res_.height) / graphics_res_.height;
+  if (graphics_plane_res_.width != screen_res_.width ||
+      graphics_plane_res_.height != screen_res_.height) {
+    float sx =
+        static_cast<float>(screen_res_.width) / graphics_plane_res_.width;
+    float sy =
+        static_cast<float>(screen_res_.height) / graphics_plane_res_.height;
     scaled_rect.x *= sx;
     scaled_rect.y *= sy;
     scaled_rect.width *= sx;
@@ -266,8 +267,14 @@ void VideoPlaneController::MaybeRunSetGeometry() {
 }
 
 bool VideoPlaneController::HaveDataForSetGeometry() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return have_output_res_ && have_graphics_res_ && have_video_plane_geometry_;
+  return have_screen_res_ && have_graphics_plane_res_ &&
+         have_video_plane_geometry_;
+}
+
+void VideoPlaneController::ClearVideoPlaneGeometry() {
+  have_video_plane_geometry_ = false;
+  video_plane_display_rect_ = RectF(0, 0);
+  video_plane_transform_ = VideoPlane::TRANSFORM_NONE;
 }
 
 }  // namespace media
