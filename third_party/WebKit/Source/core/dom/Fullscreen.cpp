@@ -456,7 +456,6 @@ void Fullscreen::didEnterFullScreenForElement(Element* element)
         LayoutFullScreen::wrapLayoutObject(layoutObject, layoutObject ? layoutObject->parent() : 0, document());
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(true);
-
     document()->styleEngine().ensureFullscreenUAStyle();
     m_fullScreenElement->pseudoStateChanged(CSSSelector::PseudoFullScreen);
 
@@ -486,6 +485,7 @@ void Fullscreen::didExitFullScreenForElement(Element*)
     if (m_fullScreenLayoutObject)
         LayoutFullScreenItem(m_fullScreenLayoutObject).unwrapLayoutObject();
 
+    document()->styleEngine().ensureFullscreenUAStyle();
     m_fullScreenElement->pseudoStateChanged(CSSSelector::PseudoFullScreen);
     m_fullScreenElement = nullptr;
 

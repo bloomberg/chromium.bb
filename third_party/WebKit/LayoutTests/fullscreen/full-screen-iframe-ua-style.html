@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<script src="full-screen-test.js"></script>
+<script>
+    function runTest() {
+        document.offsetWidth;
+        frame.contentDocument.offsetWidth;
+        var videoEnteredFullScreen = function() {
+            test("getComputedStyle(ancestor).position == 'static'");
+            endTest();
+        };
+        waitForEvent(frame.contentDocument, "webkitfullscreenchange", videoEnteredFullScreen);
+
+        test("getComputedStyle(ancestor).position == 'relative'");
+
+        runWithKeyDown(function(){
+            frame.contentDocument.querySelector("video").webkitRequestFullScreen();
+        });
+    }
+</script>
+<div id="ancestor" style="position:relative">
+    <iframe allowfullscreen id="frame" src="data:text/html,<video></video>" onload="runTest()"></iframe>
+</div>

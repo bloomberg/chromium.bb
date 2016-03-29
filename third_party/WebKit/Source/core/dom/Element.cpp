@@ -3028,6 +3028,7 @@ void Element::setFloatingPointAttribute(const QualifiedName& attributeName, doub
 void Element::setContainsFullScreenElement(bool flag)
 {
     setElementFlag(ContainsFullScreenElement, flag);
+    document().styleEngine().ensureFullscreenUAStyle();
     pseudoStateChanged(CSSSelector::PseudoFullScreenAncestor);
 }
 
