@@ -10,8 +10,10 @@
 
 #include <limits>
 
+#include "base/allocator/allocator_check.h"
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
+#include "base/memory/aligned_memory.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -139,6 +141,10 @@ TEST(ProcessMemoryTest, MacTerminateOnHeapCorruption) {
 
 #endif  // defined(OS_MACOSX)
 
+TEST(MemoryTest, AllocatorShimWorking) {
+  ASSERT_TRUE(base::allocator::IsAllocatorInitialized());
+}
+
 // Android doesn't implement set_new_handler, so we can't use the
 // OutOfMemoryTest cases. OpenBSD does not support these tests either.
 // Don't test these on ASan/TSan/MSan configurations: only test the real
@@ -219,6 +225,23 @@ TEST_F(OutOfMemoryDeathTest, Calloc) {
     }, kOomRegex);
 }
 
+TEST_F(OutOfMemoryDeathTest, AlignedAlloc) {
+  ASSERT_DEATH({
+      SetUpInDeathAssert();
+      value_ = base::AlignedAlloc(test_size_, 8);
+    }, kOomRegex);
+}
+
+// POSIX does not define an aligned realloc function.
+#if defined(OS_WIN)
+TEST_F(OutOfMemoryDeathTest, AlignedRealloc) {
+  ASSERT_DEATH({
+      SetUpInDeathAssert();
+      value_ = _aligned_realloc(NULL, test_size_, 8);
+    }, kOomRegex);
+}
+#endif  // defined(OS_WIN)
+
 // OS X has no 2Gb allocation limit.
 // See https://crbug.com/169327.
 #if !defined(OS_MACOSX)
@@ -256,6 +279,23 @@ TEST_F(OutOfMemoryDeathTest, SecurityCalloc) {
       value_ = calloc(1024, insecure_test_size_ / 1024L);
     }, kOomRegex);
 }
+
+TEST_F(OutOfMemoryDeathTest, SecurityAlignedAlloc) {
+  ASSERT_DEATH({
+      SetUpInDeathAssert();
+      value_ = base::AlignedAlloc(insecure_test_size_, 8);
+    }, kOomRegex);
+}
+
+// POSIX does not define an aligned realloc function.
+#if defined(OS_WIN)
+TEST_F(OutOfMemoryDeathTest, SecurityAlignedRealloc) {
+  ASSERT_DEATH({
+      SetUpInDeathAssert();
+      value_ = _aligned_realloc(NULL, insecure_test_size_, 8);
+    }, kOomRegex);
+}
+#endif  // defined(OS_WIN)
 #endif  // !defined(OS_MACOSX)
 
 #if defined(OS_LINUX)
