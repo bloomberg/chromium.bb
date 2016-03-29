@@ -477,9 +477,15 @@ def main(args):
   input_paths.extend(options.dependencies_res_zips)
   input_paths.extend(p for p in options.extra_r_text_files if os.path.exists(p))
 
-  for d in options.resource_dirs:
-    for root, _, filenames in os.walk(d):
-      input_paths.extend(os.path.join(root, f) for f in filenames)
+  resource_names = []
+  for resource_dir in options.resource_dirs:
+    for resource_file in build_utils.FindInDirectory(resource_dir, '*'):
+      input_paths.append(resource_file)
+      resource_names.append(os.path.relpath(resource_file, resource_dir))
+
+  # Resource filenames matter to the output, so add them to strings as well.
+  # This matters if a file is renamed but not changed (http://crbug.com/597126).
+  input_strings.extend(sorted(resource_names))
 
   build_utils.CallAndWriteDepfileIfStale(
       lambda: _OnStaleMd5(options),
