@@ -7,8 +7,16 @@
 #include "media/blink/multibuffer.h"
 
 #include "base/bind.h"
+#include "base/location.h"
 
 namespace media {
+
+// Prune 80 blocks per 30 seconds.
+// This means a full cache will go away in ~5 minutes.
+enum {
+  kBlockPruneInterval = 30,
+  kBlocksPrunedPerInterval = 80,
+};
 
 // Returns the block ID closest to (but less or equal than) |pos| from |index|.
 template <class T>
@@ -42,7 +50,12 @@ static MultiBuffer::BlockId ClosestNextEntry(
 //
 // MultiBuffer::GlobalLRU
 //
-MultiBuffer::GlobalLRU::GlobalLRU() : max_size_(0), data_size_(0) {}
+MultiBuffer::GlobalLRU::GlobalLRU(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    : max_size_(0),
+      data_size_(0),
+      background_pruning_pending_(false),
+      task_runner_(task_runner) {}
 
 MultiBuffer::GlobalLRU::~GlobalLRU() {
   // By the time we're freed, all blocks should have been removed,
@@ -56,12 +69,14 @@ void MultiBuffer::GlobalLRU::Use(MultiBuffer* multibuffer,
                                  MultiBufferBlockId block_id) {
   GlobalBlockId id(multibuffer, block_id);
   lru_.Use(id);
+  SchedulePrune();
 }
 
 void MultiBuffer::GlobalLRU::Insert(MultiBuffer* multibuffer,
                                     MultiBufferBlockId block_id) {
   GlobalBlockId id(multibuffer, block_id);
   lru_.Insert(id);
+  SchedulePrune();
 }
 
 void MultiBuffer::GlobalLRU::Remove(MultiBuffer* multibuffer,
@@ -79,11 +94,32 @@ bool MultiBuffer::GlobalLRU::Contains(MultiBuffer* multibuffer,
 void MultiBuffer::GlobalLRU::IncrementDataSize(int64_t blocks) {
   data_size_ += blocks;
   DCHECK_GE(data_size_, 0);
+  SchedulePrune();
 }
 
 void MultiBuffer::GlobalLRU::IncrementMaxSize(int64_t blocks) {
   max_size_ += blocks;
   DCHECK_GE(max_size_, 0);
+  SchedulePrune();
+}
+
+bool MultiBuffer::GlobalLRU::Pruneable() const {
+  return data_size_ > max_size_ && !lru_.Empty();
+}
+
+void MultiBuffer::GlobalLRU::SchedulePrune() {
+  if (Pruneable() && !background_pruning_pending_) {
+    task_runner_->PostDelayedTask(
+        FROM_HERE, base::Bind(&MultiBuffer::GlobalLRU::PruneTask, this),
+        base::TimeDelta::FromSeconds(kBlockPruneInterval));
+    background_pruning_pending_ = true;
+  }
+}
+
+void MultiBuffer::GlobalLRU::PruneTask() {
+  background_pruning_pending_ = false;
+  Prune(kBlocksPrunedPerInterval);
+  SchedulePrune();
 }
 
 void MultiBuffer::GlobalLRU::Prune(int64_t max_to_free) {

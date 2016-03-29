@@ -7,11 +7,11 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "media/base/fake_single_thread_task_runner.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/rtcp/rtcp_utility.h"
 #include "media/cast/net/rtcp/test_rtcp_packet_builder.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -27,9 +27,7 @@ class RtcpParserTest : public ::testing::Test {
  protected:
   RtcpParserTest()
       : testing_clock_(new base::SimpleTestTickClock()),
-        task_runner_(new test::FakeSingleThreadTaskRunner(
-            testing_clock_.get())) {
-  }
+        task_runner_(new FakeSingleThreadTaskRunner(testing_clock_.get())) {}
 
   bool HasAnything(const RtcpParser& parser) {
     return parser.has_sender_report() ||
@@ -137,7 +135,7 @@ class RtcpParserTest : public ::testing::Test {
   }
 
   scoped_ptr<base::SimpleTestTickClock> testing_clock_;
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+  scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RtcpParserTest);

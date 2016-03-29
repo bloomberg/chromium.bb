@@ -25,8 +25,6 @@
       'sources': [
         'test/fake_receiver_time_offset_estimator.cc',
         'test/fake_receiver_time_offset_estimator.h',
-        'test/fake_single_thread_task_runner.cc',
-        'test/fake_single_thread_task_runner.h',
         'test/loopback_transport.cc',
         'test/loopback_transport.h',
         'test/skewed_single_thread_task_runner.cc',

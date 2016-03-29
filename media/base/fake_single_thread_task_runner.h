@@ -13,8 +13,6 @@
 #include "base/test/simple_test_tick_clock.h"
 
 namespace media {
-namespace cast {
-namespace test {
 
 class FakeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
  public:
@@ -58,8 +56,6 @@ class FakeSingleThreadTaskRunner : public base::SingleThreadTaskRunner {
   DISALLOW_COPY_AND_ASSIGN(FakeSingleThreadTaskRunner);
 };
 
-}  // namespace test
-}  // namespace cast
 }  // namespace media
 
 #endif  // MEDIA_CAST_TEST_FAKE_TASK_RUNNER_H_

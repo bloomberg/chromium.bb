@@ -42,6 +42,7 @@
 #include "base/threading/thread.h"
 #include "base/time/tick_clock.h"
 #include "media/base/audio_bus.h"
+#include "media/base/fake_single_thread_task_runner.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
@@ -52,7 +53,6 @@
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/cast_transport_sender.h"
 #include "media/cast/net/cast_transport_sender_impl.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/loopback_transport.h"
 #include "media/cast/test/skewed_single_thread_task_runner.h"
 #include "media/cast/test/skewed_tick_clock.h"
@@ -209,7 +209,7 @@ class RunOneBenchmark {
  public:
   RunOneBenchmark()
       : start_time_(),
-        task_runner_(new test::FakeSingleThreadTaskRunner(&testing_clock_)),
+        task_runner_(new FakeSingleThreadTaskRunner(&testing_clock_)),
         testing_clock_sender_(new test::SkewedTickClock(&testing_clock_)),
         task_runner_sender_(
             new test::SkewedSingleThreadTaskRunner(task_runner_)),
@@ -418,7 +418,7 @@ class RunOneBenchmark {
 
   // These run in "test time"
   base::SimpleTestTickClock testing_clock_;
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+  scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
 
   // These run on the sender timeline.
   test::SkewedTickClock* testing_clock_sender_;

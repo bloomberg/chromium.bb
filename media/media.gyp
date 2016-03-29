@@ -1548,6 +1548,8 @@
         'base/fake_media_resources.h',
         'base/fake_output_device.cc',
         'base/fake_output_device.h',
+        'base/fake_single_thread_task_runner.cc',
+        'base/fake_single_thread_task_runner.h',
         'base/fake_text_track_stream.cc',
         'base/fake_text_track_stream.h',
         'base/gmock_callback_support.h',

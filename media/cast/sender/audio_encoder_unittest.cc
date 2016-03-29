@@ -14,12 +14,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "media/base/audio_bus.h"
+#include "media/base/fake_single_thread_task_runner.h"
 #include "media/base/media.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/common/rtp_time.h"
 #include "media/cast/sender/audio_encoder.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -110,7 +110,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
   }
 
   void SetUp() final {
-    task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
+    task_runner_ = new FakeSingleThreadTaskRunner(testing_clock_);
     cast_environment_ =
         new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
                             task_runner_, task_runner_, task_runner_);
@@ -171,7 +171,7 @@ class AudioEncoderTest : public ::testing::TestWithParam<TestScenario> {
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+  scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
   scoped_ptr<TestEncodedAudioFrameReceiver> receiver_;
   scoped_ptr<AudioEncoder> audio_encoder_;

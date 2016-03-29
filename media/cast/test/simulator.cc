@@ -56,6 +56,7 @@
 #include "base/time/tick_clock.h"
 #include "base/values.h"
 #include "media/base/audio_bus.h"
+#include "media/base/fake_single_thread_task_runner.h"
 #include "media/base/media.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
@@ -73,7 +74,6 @@
 #include "media/cast/net/cast_transport_sender.h"
 #include "media/cast/net/cast_transport_sender_impl.h"
 #include "media/cast/test/fake_media_source.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/loopback_transport.h"
 #include "media/cast/test/proto/network_simulation_model.pb.h"
 #include "media/cast/test/skewed_tick_clock.h"
@@ -331,8 +331,8 @@ void RunSimulation(const base::FilePath& source_path,
   testing_clock.Advance(base::TimeDelta::FromSeconds(1));
 
   // Task runner.
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner =
-      new test::FakeSingleThreadTaskRunner(&testing_clock);
+  scoped_refptr<FakeSingleThreadTaskRunner> task_runner =
+      new FakeSingleThreadTaskRunner(&testing_clock);
   base::ThreadTaskRunnerHandle task_runner_handle(task_runner);
 
   // CastEnvironments.

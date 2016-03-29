@@ -14,13 +14,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "media/base/fake_single_thread_task_runner.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/net/cast_transport_sender_impl.h"
 #include "media/cast/net/mock_cast_transport_sender.h"
 #include "media/cast/net/rtcp/rtcp_utility.h"
 #include "media/cast/net/rtcp/test_rtcp_packet_builder.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/default_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -73,7 +73,7 @@ class FrameReceiverTest : public ::testing::Test {
     testing_clock_ = new base::SimpleTestTickClock();
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
     start_time_ = testing_clock_->NowTicks();
-    task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
+    task_runner_ = new FakeSingleThreadTaskRunner(testing_clock_);
 
     cast_environment_ =
         new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
@@ -139,7 +139,7 @@ class FrameReceiverTest : public ::testing::Test {
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   base::TimeTicks start_time_;
   MockCastTransportSender mock_transport_;
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+  scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   FakeFrameClient frame_client_;
 

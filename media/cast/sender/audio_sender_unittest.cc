@@ -13,13 +13,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"
+#include "media/base/fake_single_thread_task_runner.h"
 #include "media/base/media.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_sender_impl.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/audio_utility.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -95,7 +95,7 @@ class AudioSenderTest : public ::testing::Test {
     InitializeMediaLibrary();
     testing_clock_ = new base::SimpleTestTickClock();
     testing_clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
-    task_runner_ = new test::FakeSingleThreadTaskRunner(testing_clock_);
+    task_runner_ = new FakeSingleThreadTaskRunner(testing_clock_);
     cast_environment_ =
         new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
                             task_runner_, task_runner_, task_runner_);
@@ -126,7 +126,7 @@ class AudioSenderTest : public ::testing::Test {
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
   TestPacketSender* transport_;               // Owned by CastTransportSender.
   scoped_ptr<CastTransportSenderImpl> transport_sender_;
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+  scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<AudioSender> audio_sender_;
   scoped_refptr<CastEnvironment> cast_environment_;
   AudioSenderConfig audio_config_;

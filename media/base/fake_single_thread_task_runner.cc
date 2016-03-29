@@ -2,20 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/test/fake_single_thread_task_runner.h"
+#include "media/base/fake_single_thread_task_runner.h"
 
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/time/tick_clock.h"
 
 namespace media {
-namespace cast {
-namespace test {
 
 FakeSingleThreadTaskRunner::FakeSingleThreadTaskRunner(
     base::SimpleTestTickClock* clock)
-    : clock_(clock),
-      fail_on_next_task_(false) {}
+    : clock_(clock), fail_on_next_task_(false) {}
 
 FakeSingleThreadTaskRunner::~FakeSingleThreadTaskRunner() {}
 
@@ -113,6 +110,4 @@ bool FakeSingleThreadTaskRunner::PostNonNestableDelayedTask(
   return false;
 }
 
-}  // namespace test
-}  // namespace cast
 }  // namespace media

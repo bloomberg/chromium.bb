@@ -12,9 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "media/base/fake_single_thread_task_runner.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/logging/logging_defines.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -31,7 +31,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
  protected:
   ReceiverRtcpEventSubscriberTest()
       : testing_clock_(new base::SimpleTestTickClock()),
-        task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
+        task_runner_(new FakeSingleThreadTaskRunner(testing_clock_)),
         cast_environment_(
             new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
                                 task_runner_,
@@ -131,7 +131,7 @@ class ReceiverRtcpEventSubscriberTest : public ::testing::Test {
   }
 
   base::SimpleTestTickClock* testing_clock_;  // Owned by CastEnvironment.
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+  scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   scoped_ptr<ReceiverRtcpEventSubscriber> event_subscriber_;
 };

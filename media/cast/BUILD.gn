@@ -243,8 +243,6 @@ static_library("test_support") {
   sources = [
     "test/fake_receiver_time_offset_estimator.cc",
     "test/fake_receiver_time_offset_estimator.h",
-    "test/fake_single_thread_task_runner.cc",
-    "test/fake_single_thread_task_runner.h",
     "test/loopback_transport.cc",
     "test/loopback_transport.h",
     "test/skewed_single_thread_task_runner.cc",
@@ -278,6 +276,7 @@ static_library("test_support") {
     ":receiver",
     "//base/test:test_support",
     "//media:test_support",
+    "//media/base:test_support",
     "//testing/gtest",
     "//third_party/libyuv",
     "//third_party/mt19937ar",

@@ -14,9 +14,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"
+#include "media/base/fake_single_thread_task_runner.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/rtcp/rtcp_defines.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -81,7 +81,7 @@ class CastTransportSenderImplTest : public ::testing::Test {
   CastTransportSenderImplTest() : num_times_logging_callback_called_(0) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
-    task_runner_ = new test::FakeSingleThreadTaskRunner(&testing_clock_);
+    task_runner_ = new FakeSingleThreadTaskRunner(&testing_clock_);
   }
 
   ~CastTransportSenderImplTest() override {}
@@ -109,7 +109,7 @@ class CastTransportSenderImplTest : public ::testing::Test {
   }
 
   base::SimpleTestTickClock testing_clock_;
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+  scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   scoped_ptr<CastTransportSenderImpl> transport_sender_;
   FakePacketSender* transport_;  // Owned by CastTransportSender.
   int num_times_logging_callback_called_;

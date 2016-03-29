@@ -10,8 +10,8 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "media/base/fake_single_thread_task_runner.h"
 #include "media/cast/sender/congestion_control.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -27,7 +27,7 @@ static const double kTargetEmptyBufferFraction = 0.9;
 class CongestionControlTest : public ::testing::Test {
  protected:
   CongestionControlTest()
-      : task_runner_(new test::FakeSingleThreadTaskRunner(&testing_clock_)) {
+      : task_runner_(new FakeSingleThreadTaskRunner(&testing_clock_)) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
     congestion_control_.reset(NewAdaptiveCongestionControl(
@@ -64,7 +64,7 @@ class CongestionControlTest : public ::testing::Test {
 
   base::SimpleTestTickClock testing_clock_;
   scoped_ptr<CongestionControl> congestion_control_;
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+  scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   uint32_t frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CongestionControlTest);

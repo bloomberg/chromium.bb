@@ -358,6 +358,8 @@ source_set("test_support") {
     "fake_media_resources.h",
     "fake_output_device.cc",
     "fake_output_device.h",
+    "fake_single_thread_task_runner.cc",
+    "fake_single_thread_task_runner.h",
     "fake_text_track_stream.cc",
     "fake_text_track_stream.h",
     "gmock_callback_support.h",

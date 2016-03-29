@@ -14,10 +14,10 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
+#include "media/base/fake_single_thread_task_runner.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/test/fake_receiver_time_offset_estimator.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -31,7 +31,7 @@ class StatsEventSubscriberTest : public ::testing::Test {
  protected:
   StatsEventSubscriberTest()
       : sender_clock_(new base::SimpleTestTickClock()),
-        task_runner_(new test::FakeSingleThreadTaskRunner(sender_clock_)),
+        task_runner_(new FakeSingleThreadTaskRunner(sender_clock_)),
         cast_environment_(
             new CastEnvironment(scoped_ptr<base::TickClock>(sender_clock_),
                                 task_runner_,
@@ -63,7 +63,7 @@ class StatsEventSubscriberTest : public ::testing::Test {
 
   base::SimpleTestTickClock* sender_clock_;  // Owned by CastEnvironment.
   base::SimpleTestTickClock receiver_clock_;
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+  scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<CastEnvironment> cast_environment_;
   test::FakeReceiverTimeOffsetEstimator fake_offset_estimator_;
   scoped_ptr<StatsEventSubscriber> subscriber_;

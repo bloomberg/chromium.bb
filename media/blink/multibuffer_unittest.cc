@@ -12,6 +12,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/message_loop/message_loop.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "media/base/fake_single_thread_task_runner.h"
 #include "media/base/test_random.h"
 #include "media/blink/multibuffer.h"
 #include "media/blink/multibuffer_reader.h"
@@ -220,8 +222,16 @@ class MultiBufferTest : public testing::Test {
  public:
   MultiBufferTest()
       : rnd_(42),
-        lru_(new MultiBuffer::GlobalLRU()),
+        task_runner_(new FakeSingleThreadTaskRunner(&clock_)),
+        lru_(new MultiBuffer::GlobalLRU(task_runner_)),
         multibuffer_(kBlockSizeShift, lru_, &rnd_) {}
+
+  void TearDown() override {
+    // Make sure we have nothing left to prune.
+    lru_->Prune(1000000);
+    // Run the outstanding callback to make sure everything is freed.
+    task_runner_->Sleep(base::TimeDelta::FromSeconds(30));
+  }
 
   void Advance() {
     CHECK(writers.size());
@@ -239,8 +249,12 @@ class MultiBufferTest : public testing::Test {
 
  protected:
   TestRandom rnd_;
+  base::SimpleTestTickClock clock_;
+  scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   scoped_refptr<MultiBuffer::GlobalLRU> lru_;
   TestMultiBuffer multibuffer_;
+
+  // TODO(hubbe): Make MultiBufferReader take a task_runner_
   base::MessageLoop message_loop_;
 };
 
@@ -387,6 +401,50 @@ TEST_F(MultiBufferTest, LRUTest) {
   EXPECT_EQ(current_size, lru_->Size());
   lru_->Prune(1000);
   EXPECT_EQ(0, lru_->Size());
+}
+
+TEST_F(MultiBufferTest, LRUTestExpirationTest) {
+  int64_t max_size = 17;
+  int64_t current_size = 0;
+  lru_->IncrementMaxSize(max_size);
+
+  multibuffer_.SetMaxWriters(1);
+  size_t pos = 0;
+  size_t end = 10000;
+  multibuffer_.SetFileSize(10000);
+  MultiBufferReader reader(&multibuffer_, pos, end,
+                           base::Callback<void(int64_t, int64_t)>());
+  reader.SetPreload(10000, 10000);
+  // Note, no pinning, all data should end up in LRU.
+  EXPECT_EQ(current_size, lru_->Size());
+  current_size += max_size;
+  while (AdvanceAll()) {
+  }
+  EXPECT_EQ(current_size, lru_->Size());
+  EXPECT_FALSE(lru_->Pruneable());
+
+  // Make 3 packets pruneable.
+  lru_->IncrementMaxSize(-3);
+  max_size -= 3;
+
+  // There should be no change after 29 seconds.
+  task_runner_->Sleep(base::TimeDelta::FromSeconds(29));
+  EXPECT_EQ(current_size, lru_->Size());
+  EXPECT_TRUE(lru_->Pruneable());
+
+  // After 30 seconds, pruning should have happened.
+  task_runner_->Sleep(base::TimeDelta::FromSeconds(30));
+  current_size -= 3;
+  EXPECT_EQ(current_size, lru_->Size());
+  EXPECT_FALSE(lru_->Pruneable());
+
+  // Make the rest of the packets pruneable.
+  lru_->IncrementMaxSize(-max_size);
+
+  // After another 30 seconds, everything should be pruned.
+  task_runner_->Sleep(base::TimeDelta::FromSeconds(30));
+  EXPECT_EQ(0, lru_->Size());
+  EXPECT_FALSE(lru_->Pruneable());
 }
 
 class ReadHelper {

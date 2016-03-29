@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "media/base/fake_single_thread_task_runner.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/constants.h"
@@ -21,7 +22,6 @@
 #include "media/cast/sender/fake_video_encode_accelerator_factory.h"
 #include "media/cast/sender/video_frame_factory.h"
 #include "media/cast/sender/video_sender.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "media/video/fake_video_encode_accelerator.h"
@@ -148,7 +148,7 @@ class VideoSenderTest : public ::testing::Test {
  protected:
   VideoSenderTest()
       : testing_clock_(new base::SimpleTestTickClock()),
-        task_runner_(new test::FakeSingleThreadTaskRunner(testing_clock_)),
+        task_runner_(new FakeSingleThreadTaskRunner(testing_clock_)),
         cast_environment_(
             new CastEnvironment(scoped_ptr<base::TickClock>(testing_clock_),
                                 task_runner_,
@@ -234,7 +234,7 @@ class VideoSenderTest : public ::testing::Test {
   }
 
   base::SimpleTestTickClock* const testing_clock_;  // Owned by CastEnvironment.
-  const scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   const scoped_refptr<CastEnvironment> cast_environment_;
   OperationalStatus operational_status_;
   FakeVideoEncodeAcceleratorFactory vea_factory_;

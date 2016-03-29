@@ -456,6 +456,7 @@ class MultibufferDataSourceTest : public testing::Test {
   WebView* view_;
   WebLocalFrame* frame_;
   MultibufferDataSource::Preload preload_;
+  base::MessageLoop message_loop_;
   linked_ptr<TestUrlIndex> url_index_;
 
   scoped_ptr<MockMultibufferDataSource> data_source_;
@@ -463,7 +464,6 @@ class MultibufferDataSourceTest : public testing::Test {
   scoped_ptr<TestResponseGenerator> response_generator_;
 
   StrictMock<MockBufferedDataSourceHost> host_;
-  base::MessageLoop message_loop_;
 
   // Used for calling MultibufferDataSource::Read().
   uint8_t buffer_[kDataSize * 2];

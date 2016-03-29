@@ -10,10 +10,10 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "media/base/fake_single_thread_task_runner.h"
 #include "media/cast/net/pacing/paced_sender.h"
 #include "media/cast/net/rtp/packet_storage.h"
 #include "media/cast/net/rtp/rtp_parser.h"
-#include "media/cast/test/fake_single_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace media {
@@ -112,7 +112,7 @@ class TestRtpPacketTransport : public PacketSender {
 class RtpPacketizerTest : public ::testing::Test {
  protected:
   RtpPacketizerTest()
-      : task_runner_(new test::FakeSingleThreadTaskRunner(&testing_clock_)) {
+      : task_runner_(new FakeSingleThreadTaskRunner(&testing_clock_)) {
     config_.sequence_number = kSeqNum;
     config_.ssrc = kSsrc;
     config_.payload_type = kPayload;
@@ -140,7 +140,7 @@ class RtpPacketizerTest : public ::testing::Test {
   }
 
   base::SimpleTestTickClock testing_clock_;
-  scoped_refptr<test::FakeSingleThreadTaskRunner> task_runner_;
+  scoped_refptr<FakeSingleThreadTaskRunner> task_runner_;
   EncodedFrame video_frame_;
   PacketStorage packet_storage_;
   RtpPacketizerConfig config_;

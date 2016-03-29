@@ -168,7 +168,8 @@ UrlIndex::UrlIndex(blink::WebFrame* frame) : UrlIndex(frame, kBlockSizeShift) {}
 
 UrlIndex::UrlIndex(blink::WebFrame* frame, int block_shift)
     : frame_(frame),
-      lru_(new MultiBuffer::GlobalLRU()),
+      lru_(new MultiBuffer::GlobalLRU(
+          base::MessageLoop::current()->task_runner())),
       block_shift_(block_shift),
       weak_factory_(this) {}
 
