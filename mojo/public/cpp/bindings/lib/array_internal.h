@@ -173,12 +173,7 @@ struct ArraySerializationHelper<T, false, false> {
     DCHECK(!validate_params->element_validate_params)
         << "Primitive type should not have array validate params";
 
-    for (uint32_t i = 0; i < header->num_elements; ++i) {
-      if (!ValidateCaller<ElementType>::Run(elements[i]))
-        return false;
-    }
-
-    return true;
+    return ValidateCaller<ElementType>::Run(header, elements);
   }
 
  private:
@@ -187,13 +182,19 @@ struct ArraySerializationHelper<T, false, false> {
 
   template <typename U>
   struct ValidateCaller<U, false> {
-    static bool Run(const ElementType& element) { return true; }
+    static bool Run(const ArrayHeader* header, const ElementType* elements) {
+      return true;
+    }
   };
 
   template <typename U>
   struct ValidateCaller<U, true> {
-    static bool Run(const ElementType& element) {
-      return ValidateEnum(element);
+    static bool Run(const ArrayHeader* header, const ElementType* elements) {
+      for (uint32_t i = 0; i < header->num_elements; ++i) {
+        if (!ValidateEnum(elements[i]))
+          return false;
+      }
+      return true;
     }
   };
 };
