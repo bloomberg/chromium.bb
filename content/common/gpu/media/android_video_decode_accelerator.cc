@@ -536,12 +536,6 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   pending_bitstream_buffers_.pop();
   TRACE_COUNTER1("media", "AVDA::PendingBitstreamBufferCount",
                  pending_bitstream_buffers_.size());
-
-  if (status != media::MEDIA_CODEC_OK) {
-    POST_ERROR(PLATFORM_FAILURE, "Failed to QueueInputBuffer: " << status);
-    return false;
-  }
-
   // We should call NotifyEndOfBitstreamBuffer(), when no more decoded output
   // will be returned from the bitstream buffer. However, MediaCodec API is
   // not enough to guarantee it.
@@ -554,6 +548,11 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
       base::Bind(&AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
                  weak_this_factory_.GetWeakPtr(), bitstream_buffer.id()));
   bitstreams_notified_in_advance_.push_back(bitstream_buffer.id());
+
+  if (status != media::MEDIA_CODEC_OK) {
+    POST_ERROR(PLATFORM_FAILURE, "Failed to QueueInputBuffer: " << status);
+    return false;
+  }
 
   return true;
 }
