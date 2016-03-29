@@ -44,7 +44,6 @@
 #include "core/html/parser/HTMLStackItem.h"
 #include "core/html/parser/HTMLToken.h"
 #include "core/html/parser/HTMLTokenizer.h"
-#include "platform/NotImplemented.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/text/CharacterNames.h"
 

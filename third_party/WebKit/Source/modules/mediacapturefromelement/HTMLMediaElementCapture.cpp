@@ -10,7 +10,6 @@
 #include "modules/encryptedmedia/MediaKeys.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
-#include "platform/NotImplemented.h"
 #include "platform/mediastream/MediaStreamCenter.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMediaStream.h"
@@ -40,7 +39,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(HTMLMediaElement& element, E
 
     // TODO(mcasas): Only <video> tags are supported at the moment.
     if (element.isHTMLAudioElement()) {
-        notImplemented();
+        NOTIMPLEMENTED();
         return nullptr;
     }
 

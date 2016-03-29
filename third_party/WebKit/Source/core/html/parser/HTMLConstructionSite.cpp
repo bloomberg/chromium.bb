@@ -48,7 +48,6 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/svg/SVGScriptElement.h"
-#include "platform/NotImplemented.h"
 #include "platform/text/TextBreakIterator.h"
 #include <limits>
 
