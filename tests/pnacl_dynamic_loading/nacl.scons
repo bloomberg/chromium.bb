@@ -84,10 +84,19 @@ env.AddNodeToTestSuite(
 
 
 # Use of the ConvertToPSO pass requires this toolchain version.
-if env['TOOLCHAIN_FEATURE_VERSION'] < 23:
+if env['TOOLCHAIN_FEATURE_VERSION'] < 24:
   Return()
 
-test_pll = MakeAndTranslatePll('test_pll', 'test_pll.c')
+# TODO(smklein): These LLVM passes should be automatically applied by the
+# drivers. Once support for dependencies has been plumbed through the drivers,
+# use the "-l" linker flags and don't explicitly declare any LLVM passes.
+test_pll = MakeAndTranslatePso(
+    'test_pll', [env.ComponentObject('test_pll.c')],
+    llvm_passes='-nacl-global-cleanup -expand-varargs '
+    '-rewrite-pnacl-library-calls -rewrite-llvm-intrinsic-calls '
+    '-convert-to-pso -convert-to-pso-deps=libfoo.so,libbar.so '
+    '-pnacl-abi-simplify-postopt')
+
 test_pll_tls = MakeAndTranslatePll('test_pll_tls', 'test_pll_tls.c')
 
 pll_symbols_test = env.ComponentProgram(

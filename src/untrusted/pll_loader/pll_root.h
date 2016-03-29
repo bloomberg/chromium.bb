@@ -47,6 +47,12 @@ struct PLLRoot {
   size_t tls_template_total_size;  // Size of initialized data + BSS.
   size_t tls_template_alignment;
   PLLTLSBlockGetter *tls_block_getter;
+
+  // Dependencies list (akin to DT_NEEDED in ELF).
+  size_t dependencies_count;
+  // Null-separated list of library sonames.
+  // For example, "libfoo.so\0libbar.so\0" would have dependencies_count = 2.
+  const char *dependencies_list;
 };
 
 #endif

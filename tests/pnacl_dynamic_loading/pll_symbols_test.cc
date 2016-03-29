@@ -171,6 +171,12 @@ const PLLRoot *LoadTranslatedPLL(const char *test_dso_file) {
 void TestCoreFunctionality(const char *test_dso_file) {
   const PLLRoot *pll_root = LoadTranslatedPLL(test_dso_file);
 
+  // Test dependencies.
+  ASSERT_EQ(pll_root->dependencies_count, 2);
+  ASSERT_EQ(strcmp(pll_root->dependencies_list, "libfoo.so"), 0);
+  ASSERT_EQ(strcmp(pll_root->dependencies_list + strlen("libfoo.so") + 1,
+                   "libbar.so"), 0);
+
   // Test exports.
 
   DumpExportedSymbols(pll_root);
