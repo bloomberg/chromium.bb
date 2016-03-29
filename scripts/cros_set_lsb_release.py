@@ -47,6 +47,7 @@ LSB_KEY_GOOGLE_RELEASE = 'GOOGLE_RELEASE'
 LSB_KEY_APPID_RELEASE = 'CHROMEOS_RELEASE_APPID'
 LSB_KEY_APPID_BOARD = 'CHROMEOS_BOARD_APPID'
 LSB_KEY_APPID_CANARY = 'CHROMEOS_CANARY_APPID'
+LSB_KEY_ARC_VERSION = 'CHROMEOS_ARC_VERSION'
 
 CANARY_APP_ID = "{90F229CE-83E2-4FAF-8479-E368A34938B1}"
 
@@ -80,6 +81,8 @@ def _ParseArguments(argv):
                       help='The Chrome milestone.')
   parser.add_argument('--patch_number', default='0',
                       help='The patch number for the given branch.')
+  parser.add_argument('--arc_version', default=None,
+                      help='The ARC version.')
 
   opts = parser.parse_args(argv)
 
@@ -120,6 +123,11 @@ def main(argv):
         LSB_KEY_APPID_RELEASE: opts.app_id,
         LSB_KEY_APPID_BOARD: opts.app_id,
         LSB_KEY_APPID_CANARY: CANARY_APP_ID,
+    })
+
+  if opts.arc_version is not None:
+    fields.update({
+        LSB_KEY_ARC_VERSION: opts.arc_version,
     })
 
   if opts.official:
