@@ -1583,17 +1583,64 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     return ThisIsNotRietveldIssue()
 
   def GetStatus(self):
-    # TODO(tandrii)
-    raise NotImplementedError()
+    """Apply a rough heuristic to give a simple summary of an issue's review
+    or CQ status, assuming adherence to a common workflow.
+
+    Returns None if no issue for this branch, or one of the following keywords:
+      * 'error'    - error from review tool (including deleted issues)
+      * 'unsent'   - no reviewers added
+      * 'waiting'  - waiting for review
+      * 'reply'    - waiting for owner to reply to review
+      * 'not lgtm' - Code-Review -2 from at least one approved reviewer
+      * 'lgtm'     - Code-Review +2 from at least one approved reviewer
+      * 'commit'   - in the commit queue
+      * 'closed'   - abandoned
+    """
+    if not self.GetIssue():
+      return None
+
+    try:
+      data = self._GetChangeDetail(['DETAILED_LABELS', 'CURRENT_REVISION'])
+    except httplib.HTTPException:
+      return 'error'
+
+    if data['status'] == 'ABANDONED':
+      return 'closed'
+
+    cq_label = data['labels'].get('Commit-Queue', {})
+    if cq_label:
+      # Vote value is a stringified integer, which we expect from 0 to 2.
+      vote_value = cq_label.get('value', '0')
+      vote_text = cq_label.get('values', {}).get(vote_value, '')
+      if vote_text.lower() == 'commit':
+        return 'commit'
+
+    lgtm_label = data['labels'].get('Code-Review', {})
+    if lgtm_label:
+      if 'rejected' in lgtm_label:
+        return 'not lgtm'
+      if 'approved' in lgtm_label:
+        return 'lgtm'
+
+    if not data.get('reviewers', {}).get('REVIEWER', []):
+      return 'unsent'
+
+    messages = data.get('messages', [])
+    if messages:
+      owner = data['owner'].get('_account_id')
+      last_message_author = messages[-1].get('author', {}).get('_account_id')
+      if owner != last_message_author:
+        # Some reply from non-owner.
+        return 'reply'
+
+    return 'waiting'
 
   def GetMostRecentPatchset(self):
-    data = gerrit_util.GetChangeDetail(self._GetGerritHost(), self.GetIssue(),
-                                       ['CURRENT_REVISION'])
+    data = self._GetChangeDetail(['CURRENT_REVISION'])
     return data['revisions'][data['current_revision']]['_number']
 
   def FetchDescription(self):
-    data = gerrit_util.GetChangeDetail(self._GetGerritHost(), self.GetIssue(),
-                                       ['COMMIT_FOOTERS', 'CURRENT_REVISION'])
+    data = self._GetChangeDetail(['COMMIT_FOOTERS', 'CURRENT_REVISION'])
     return data['revisions'][data['current_revision']]['commit_with_footers']
 
   def UpdateDescriptionRemote(self, description):
@@ -1602,6 +1649,11 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
   def CloseIssue(self):
     gerrit_util.AbandonChange(self._GetGerritHost(), self.GetIssue(), msg='')
+
+
+  def _GetChangeDetail(self, options):
+    return gerrit_util.GetChangeDetail(self._GetGerritHost(), self.GetIssue(),
+                                       options)
 
 
 class ChangeDescription(object):
