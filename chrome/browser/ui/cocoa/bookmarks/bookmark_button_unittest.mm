@@ -151,6 +151,11 @@ TEST_F(BookmarkButtonTest, DragToTrash) {
                                            GURL("http://www.google.com"));
   [cell setBookmarkNode:node];
 
+  // Several calls to -draggingSession: coming up have nil arguments. Starting
+  // with XCode7, that's not an option any more. Hotfixing for now.
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+
   // Verify that if canDragBookmarkButtonToTrash is NO then the button can't
   // be dragged to the trash.
   delegate.get()->canDragToTrash_ = NO;
@@ -188,6 +193,7 @@ TEST_F(BookmarkButtonTest, DragToTrash) {
              endedAtPoint:NSZeroPoint
                 operation:NSDragOperationDelete];
   EXPECT_EQ(1, delegate.get()->didDragToTrashCount_);
+#pragma clang diagnostic pop
 }
 
 }
