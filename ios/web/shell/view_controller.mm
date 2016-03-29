@@ -22,6 +22,7 @@
 #include "ios/web/public/referrer.h"
 #import "ios/web/public/web_controller_factory.h"
 #include "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/shell/shell_browser_state.h"
 #include "ios/web/web_state/ui/crw_web_controller.h"
 #include "ios/web/web_state/web_state_impl.h"
@@ -33,11 +34,12 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
 
 using web::NavigationManager;
 
-@interface ViewController ()<CRWWebUserInterfaceDelegate> {
+@interface ViewController ()<CRWWebStateObserver, CRWWebUserInterfaceDelegate> {
   web::BrowserState* _browserState;
   base::scoped_nsobject<CRWWebController> _webController;
   scoped_ptr<web::RequestTrackerFactoryImpl> _requestTrackerFactory;
   scoped_ptr<web::WebHTTPProtocolHandlerDelegate> _httpProtocolDelegate;
+  scoped_ptr<web::WebStateObserverBridge> _webStateObserver;
 
   base::mac::ObjCPropertyReleaser _propertyReleaser_ViewController;
 }
@@ -119,6 +121,8 @@ using web::NavigationManager;
   [_webController setDelegate:self];
   [_webController setUIDelegate:self];
   [_webController setWebUsageEnabled:YES];
+
+  _webStateObserver.reset(new web::WebStateObserverBridge(self.webState, self));
 
   UIView* view = self.webState->GetView();
   [view setFrame:[_containerView bounds]];
@@ -259,22 +263,36 @@ using web::NavigationManager;
 }
 
 // -----------------------------------------------------------------------
+// WebStateObserver implementation.
+
+- (void)didStartProvisionalNavigationForURL:(const GURL&)URL {
+  [self updateToolbar];
+}
+
+- (void)didCommitNavigationWithDetails:
+    (const web::LoadCommittedDetails&)details {
+  [self updateToolbar];
+}
+
+- (void)webStateDidLoadPage:(web::WebState*)webState {
+  DCHECK_EQ(self.webState, webState);
+  [self updateToolbar];
+}
+
+// -----------------------------------------------------------------------
 // WebDelegate implementation.
 
 - (void)webWillAddPendingURL:(const GURL&)url
                   transition:(ui::PageTransition)transition {
 }
 - (void)webDidAddPendingURL {
-  [self updateToolbar];
 }
 - (void)webCancelStartLoadingRequest {
 }
 - (void)webDidStartLoadingURL:(const GURL&)currentUrl
           shouldUpdateHistory:(BOOL)updateHistory {
-  [self updateToolbar];
 }
 - (void)webDidFinishWithURL:(const GURL&)url loadSuccess:(BOOL)loadSuccess {
-  [self updateToolbar];
 }
 
 - (CRWWebController*)webPageOrderedOpen:(const GURL&)url
