@@ -1238,7 +1238,7 @@ qcms_profile* qcms_profile_create_rgb_with_table(
  * Invalid values of tempK will return
  * (x,y,Y) = (-1.0, -1.0, -1.0)
  * similar to argyll: icx_DTEMP2XYZ() */
-static qcms_CIE_xyY white_point_from_temp(int temp_K)
+qcms_CIE_xyY white_point_from_temp(int temp_K)
 {
 	qcms_CIE_xyY white_point;
 	double x, y;
@@ -1291,25 +1291,78 @@ qcms_profile* qcms_profile_sRGB(void)
 	qcms_profile *profile;
 	uint16_t *table;
 
-	qcms_CIE_xyYTRIPLE Rec709Primaries = {
-		{0.6400, 0.3300, 1.0},
-		{0.3000, 0.6000, 1.0},
-		{0.1500, 0.0600, 1.0}
+	// Standard Illuminant D65 in XYZ coordinates, which is the standard
+	// sRGB IEC61966-2.1 / Rec.709 profile reference media white point.
+	struct XYZNumber D65 = {
+		0xf351, 0x10000, 0x116cc // ( 0.950455, 1.000000, 1.089050 )
 	};
-	qcms_CIE_xyY D65;
 
-	D65 = white_point_from_temp(6504);
+	// sRGB IEC61966-2.1 / Rec.709 color profile primaries, chromatically
+	// adapted (via Bradford procedures) to D50 white point.
+	// For details, refer to crbug/580917
+#if 0
+	// lindbloom: ASTM E308-01 D50 White point.
+	s15Fixed16Number primaries[3][3] = {
+		{ 0x06fa3, 0x06294, 0x024a1 }, // ( 0.436081, 0.385071, 0.143082 )
+		{ 0x038f6, 0x0b785, 0x00f85 }, // ( 0.222504, 0.716873, 0.060623 )
+		{ 0x00391, 0x018dc, 0x0b6d4 }, // ( 0.013931, 0.097107, 0.714172 )
+	};
+#else
+	// ninedegreesbelow: ICC D50 White point.
+	s15Fixed16Number primaries[3][3] = {
+		{ 0x06fa0, 0x06296, 0x024a0 }, // ( 0.436035, 0.385101, 0.143066 )
+		{ 0x038f2, 0x0b789, 0x00f85 }, // ( 0.222443, 0.716934, 0.060623 )
+		{ 0x0038f, 0x018da, 0x0b6c4 }, // ( 0.013901, 0.097076, 0.713928 )
+	};
+#endif
 
 	table = build_sRGB_gamma_table(1024);
 
 	if (!table)
 		return NO_MEM_PROFILE;
 
-	profile = qcms_profile_create_rgb_with_table(D65, Rec709Primaries, table, 1024);
-	if (profile)
-		strcpy(profile->description, "sRGB IEC61966-2.1");
+	profile = qcms_profile_create();
+
+	if (!profile) {
+		free(table);
+		return NO_MEM_PROFILE;
+	}
+
+	profile->redTRC = curve_from_table(table, 1024);
+	profile->blueTRC = curve_from_table(table, 1024);
+	profile->greenTRC = curve_from_table(table, 1024);
+
+	if (!profile->redTRC || !profile->blueTRC || !profile->greenTRC) {
+		qcms_profile_release(profile);
+		free(table);
+		return NO_MEM_PROFILE;
+	}
+
+	profile->redColorant.X = primaries[0][0];
+	profile->redColorant.Y = primaries[1][0];
+	profile->redColorant.Z = primaries[2][0];
+
+	profile->greenColorant.X = primaries[0][1];
+	profile->greenColorant.Y = primaries[1][1];
+	profile->greenColorant.Z = primaries[2][1];
+
+	profile->blueColorant.X = primaries[0][2];
+	profile->blueColorant.Y = primaries[1][2];
+	profile->blueColorant.Z = primaries[2][2];
+
+	profile->mediaWhitePoint.X = D65.X;
+	profile->mediaWhitePoint.Y = D65.Y;
+	profile->mediaWhitePoint.Z = D65.Z;
+
+	profile->class = DISPLAY_DEVICE_PROFILE;
+	profile->rendering_intent = QCMS_INTENT_PERCEPTUAL;
+	profile->color_space = RGB_SIGNATURE;
+	profile->pcs = XYZ_SIGNATURE;
+
+	strcpy(profile->description, "sRGB IEC61966-2.1");
 
 	free(table);
+
 	return profile;
 }
 
