@@ -37,13 +37,13 @@ LayoutSVGBlock::LayoutSVGBlock(SVGElement* element)
 
 bool LayoutSVGBlock::allowsOverflowClip() const
 {
-    // LayoutSVGlock, used by Layout(SVGText|ForeignObject), is not allowed to have overflow clip.
+    // LayoutSVGBlock, used by Layout(SVGText|ForeignObject), is not allowed to have overflow clip.
     // LayoutBlock assumes a layer to be present when the overflow clip functionality is requested. Both
     // Layout(SVGText|ForeignObject) return 'NoPaintLayer' on 'layerTypeRequired'. Fine for LayoutSVGText.
     //
     // If we want to support overflow rules for <foreignObject> we can choose between two solutions:
     // a) make LayoutSVGForeignObject require layers and SVG layer aware
-    // b) reactor overflow logic out of Layer (as suggested by dhyatt), which is a large task
+    // b) refactor overflow logic out of Layer (as suggested by dhyatt), which is a large task
     //
     // Until this is resolved, disable overflow support. Opera/FF don't support it as well at the moment (Feb 2010).
     //
