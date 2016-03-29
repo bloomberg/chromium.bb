@@ -17,7 +17,7 @@ class ProcessResourceUsage;
 namespace content {
 class RenderProcessHost;
 class WebContents;
-} // namespace content
+}  // namespace content
 
 namespace task_management {
 

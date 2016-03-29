@@ -240,14 +240,14 @@ IN_PROC_BROWSER_TEST_F(TabContentsTagTest, PostExistingTaskProviding) {
   MockWebContentsTaskManager task_manager;
   EXPECT_TRUE(task_manager.tasks().empty());
   task_manager.StartObserving();
-  EXPECT_EQ(1U, task_manager.tasks().size());
+  ASSERT_EQ(1U, task_manager.tasks().size());
 
-  const Task* first_tab_task = task_manager.tasks()[0];
+  const Task* first_tab_task = task_manager.tasks().front();
   EXPECT_EQ(Task::RENDERER, first_tab_task->GetType());
   EXPECT_EQ(GetAboutBlankExpectedTitle(), first_tab_task->title());
 
   // Add the test pages in order and test the provided tasks.
-  for (auto& test_page_data : kTestPages) {
+  for (const auto& test_page_data : kTestPages) {
     AddNewTestTabAt(0, test_page_data.page_file);
 
     const Task* task = task_manager.tasks().back();
@@ -263,7 +263,7 @@ IN_PROC_BROWSER_TEST_F(TabContentsTagTest, PostExistingTaskProviding) {
   EXPECT_EQ(kTestPagesLength, task_manager.tasks().size());
   const base::string16 closed_tab_title =
       GetTestPageExpectedTitle(kTestPages[kTestPagesLength - 1]);
-  for (auto& task : task_manager.tasks())
+  for (const auto& task : task_manager.tasks())
     EXPECT_NE(closed_tab_title, task->title());
 }
 
@@ -279,6 +279,7 @@ IN_PROC_BROWSER_TEST_F(TabContentsTagTest, NavigateToPageNoFavicon) {
   // Navigate to a page with a favicon.
   GURL favicon_page_url = GetUrlOfFile("/favicon/page_with_favicon.html");
   ui_test_utils::NavigateToURL(browser(), favicon_page_url);
+  ASSERT_GE(1U, task_manager.tasks().size());
   Task* task = task_manager.tasks().back();
   ASSERT_EQ(GetDefaultTitleForUrl(favicon_page_url), task->title());
 

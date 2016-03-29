@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundContentsTagTest, TasksProvidedWhileObserving) {
   auto extension = LoadBackgroundExtension();
   ASSERT_NE(nullptr, extension);
   EXPECT_EQ(2U, tags_manager()->tracked_tags().size());
-  EXPECT_EQ(2U, task_manager.tasks().size());
+  ASSERT_EQ(2U, task_manager.tasks().size());
 
   // Now check the newly provided task.
   const Task* task = task_manager.tasks().back();
@@ -111,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundContentsTagTest, PreExistingTasksAreProvided) {
   task_manager.StartObserving();
 
   // Pre-existing task will be provided to us.
-  EXPECT_EQ(2U, task_manager.tasks().size());
+  ASSERT_EQ(2U, task_manager.tasks().size());
 
   // Now check the provided task.
   const Task* task = task_manager.tasks().back();

@@ -6,7 +6,6 @@
 
 namespace task_management {
 
-// task_management::WebContentsTag:
 DevToolsTask* DevToolsTag::CreateTask() const {
   return new DevToolsTask(web_contents());
 }

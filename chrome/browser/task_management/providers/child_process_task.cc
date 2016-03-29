@@ -86,9 +86,9 @@ base::string16 GetLocalizedTitle(const base::string16& title,
         // profile or the profile path from the child process host if any.
         auto loaded_profiles = profile_manager->GetLoadedProfiles();
         for (auto* profile : loaded_profiles) {
-          auto& enabled_extensions =
+          const extensions::ExtensionSet& enabled_extensions =
               extensions::ExtensionRegistry::Get(profile)->enabled_extensions();
-          auto extension =
+          const extensions::Extension* extension =
               enabled_extensions.GetExtensionOrAppByURL(GURL(result_title));
           if (extension) {
             result_title = base::UTF8ToUTF16(extension->name());

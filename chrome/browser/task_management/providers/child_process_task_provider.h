@@ -63,7 +63,7 @@ class ChildProcessTaskProvider
   void DeleteTask(base::ProcessHandle handle);
 
   // A map to track ChildProcessTask's by their handles.
-  typedef std::map<base::ProcessHandle, ChildProcessTask*> HandleToTaskMap;
+  using HandleToTaskMap = std::map<base::ProcessHandle, ChildProcessTask*>;
   HandleToTaskMap tasks_by_handle_;
 
   // A map to track ChildProcessTask's by their PIDs.
@@ -78,7 +78,7 @@ class ChildProcessTaskProvider
   // TODO(afakhry): Fix this either by keeping the handle open via
   // |base::Process|, or amending the |BrowserChildProcessObserver| interface to
   // supply the PID.
-  typedef std::map<base::ProcessId, ChildProcessTask*> PidToTaskMap;
+  using PidToTaskMap = std::map<base::ProcessId, ChildProcessTask*>;
   PidToTaskMap tasks_by_pid_;
 
   // Always keep this the last member of this class to make sure it's the

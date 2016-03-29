@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   task_management::MockWebContentsTaskManager task_manager;
   EXPECT_TRUE(task_manager.tasks().empty());
   task_manager.StartObserving();
-  EXPECT_EQ(3U, task_manager.tasks().size());
+  ASSERT_EQ(3U, task_manager.tasks().size());
   const task_management::Task* pre_existing_task = task_manager.tasks().back();
   EXPECT_EQ(task_management::Task::RENDERER, pre_existing_task->GetType());
   const base::string16 pre_existing_title = pre_existing_task->title();
@@ -383,7 +383,7 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewDialogControllerBrowserTest,
   // validated that a corresponding task is reported.
   PrintPreview();
   EXPECT_EQ(3U, GetTrackedTags().size());
-  EXPECT_EQ(3U, task_manager.tasks().size());
+  ASSERT_EQ(3U, task_manager.tasks().size());
   const task_management::Task* task = task_manager.tasks().back();
   EXPECT_EQ(task_management::Task::RENDERER, task->GetType());
   const base::string16 title = task->title();

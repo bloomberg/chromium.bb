@@ -50,16 +50,13 @@ class ChildProcessTaskTest
     : public testing::Test,
       public TaskProviderObserver {
  public:
-  ChildProcessTaskTest()
-      : provided_tasks_(),
-        thread_bundle_() {
-  }
+  ChildProcessTaskTest() {}
 
   ~ChildProcessTaskTest() override {}
 
   // task_management::TaskProviderObserver:
   void TaskAdded(Task* task) override {
-    CHECK(task);
+    DCHECK(task);
     if (provided_tasks_.find(task->process_handle()) != provided_tasks_.end())
       FAIL() << "ChildProcessTaskProvider must never provide duplicate tasks";
 
@@ -67,7 +64,7 @@ class ChildProcessTaskTest
   }
 
   void TaskRemoved(Task* task) override {
-    CHECK(task);
+    DCHECK(task);
     provided_tasks_.erase(task->process_handle());
   }
 
@@ -166,7 +163,7 @@ TEST_F(ChildProcessTaskTest, ProcessTypeToTaskType) {
   content::RunAllPendingInMessageLoop();
   ASSERT_TRUE(provided_tasks_.empty());
 
-  for (auto& types_pair : process_task_types_pairs) {
+  for (const auto& types_pair : process_task_types_pairs) {
     // Add the task.
     ChildProcessData data(types_pair.process_type_);
     data.handle = base::GetCurrentProcessHandle();

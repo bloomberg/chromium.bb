@@ -25,15 +25,11 @@ namespace task_management {
 
 namespace {
 
-inline scoped_refptr<base::SequencedTaskRunner> GetBlockingPoolRunner() {
+scoped_refptr<base::SequencedTaskRunner> GetBlockingPoolRunner() {
   base::SequencedWorkerPool* blocking_pool =
       content::BrowserThread::GetBlockingPool();
-  base::SequencedWorkerPool::SequenceToken token =
-      blocking_pool->GetSequenceToken();
-
-  DCHECK(token.IsValid());
-
-  return blocking_pool->GetSequencedTaskRunner(token);
+  return blocking_pool->GetSequencedTaskRunner(
+      blocking_pool->GetSequenceToken());
 }
 
 base::LazyInstance<TaskManagerImpl> lazy_task_manager_instance =
@@ -246,8 +242,9 @@ const TaskIdList& TaskManagerImpl::GetTaskIdsList() const {
 
     // Ensure browser process group of task IDs are at the beginning of the
     // list.
-    const TaskGroup* browser_group =
-        task_groups_by_proc_id_.at(base::GetCurrentProcId());
+    auto it = task_groups_by_proc_id_.find(base::GetCurrentProcId());
+    DCHECK(it != task_groups_by_proc_id_.end());
+    const TaskGroup* browser_group = it->second;
     browser_group->AppendSortedTaskIds(&sorted_task_ids_);
 
     for (const auto& groups_pair : task_groups_by_proc_id_) {
@@ -314,7 +311,7 @@ void TaskManagerImpl::TaskRemoved(Task* task) {
 
   NotifyObserversOnTaskToBeRemoved(task_id);
 
-  TaskGroup* task_group = task_groups_by_proc_id_.at(proc_id);
+  TaskGroup* task_group = task_groups_by_proc_id_[proc_id];
   task_group->RemoveTask(task);
 
   task_groups_by_task_id_.erase(task_id);
@@ -408,7 +405,7 @@ void TaskManagerImpl::StopUpdating() {
 bool TaskManagerImpl::UpdateTasksWithBytesRead(const BytesReadParam& param) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  for (auto& task_provider : task_providers_) {
+  for (const auto& task_provider : task_providers_) {
     Task* task = task_provider->GetTaskOfUrlRequest(param.origin_pid,
                                                     param.child_id,
                                                     param.route_id);
@@ -423,9 +420,9 @@ bool TaskManagerImpl::UpdateTasksWithBytesRead(const BytesReadParam& param) {
 }
 
 TaskGroup* TaskManagerImpl::GetTaskGroupByTaskId(TaskId task_id) const {
-  DCHECK(ContainsKey(task_groups_by_task_id_, task_id));
-
-  return task_groups_by_task_id_.at(task_id);
+  auto it = task_groups_by_task_id_.find(task_id);
+  DCHECK(it != task_groups_by_task_id_.end());
+  return it->second;
 }
 
 Task* TaskManagerImpl::GetTaskByTaskId(TaskId task_id) const {
@@ -435,13 +432,13 @@ Task* TaskManagerImpl::GetTaskByTaskId(TaskId task_id) const {
 void TaskManagerImpl::OnTaskGroupBackgroundCalculationsDone() {
   // TODO(afakhry): There should be a better way for doing this!
   bool are_all_processes_data_ready = true;
-  for (auto& groups_itr : task_groups_by_proc_id_) {
+  for (const auto& groups_itr : task_groups_by_proc_id_) {
     are_all_processes_data_ready &=
         groups_itr.second->AreBackgroundCalculationsDone();
   }
   if (are_all_processes_data_ready) {
     NotifyObserversOnRefreshWithBackgroundCalculations(GetTaskIdsList());
-    for (auto& groups_itr : task_groups_by_proc_id_)
+    for (const auto& groups_itr : task_groups_by_proc_id_)
       groups_itr.second->ClearCurrentBackgroundCalculationsFlags();
   }
 }

@@ -6,8 +6,7 @@
 
 namespace task_management {
 
-BrowserProcessTaskProvider::BrowserProcessTaskProvider()
-    : browser_process_task_() {
+BrowserProcessTaskProvider::BrowserProcessTaskProvider() {
 }
 
 BrowserProcessTaskProvider::~BrowserProcessTaskProvider() {

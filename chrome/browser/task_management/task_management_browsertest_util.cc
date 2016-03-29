@@ -13,9 +13,7 @@
 
 namespace task_management {
 
-MockWebContentsTaskManager::MockWebContentsTaskManager()
-    : tasks_(),
-      provider_() {
+MockWebContentsTaskManager::MockWebContentsTaskManager() {
 }
 
 MockWebContentsTaskManager::~MockWebContentsTaskManager() {

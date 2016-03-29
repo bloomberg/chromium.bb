@@ -12,7 +12,7 @@ namespace task_management {
 
 namespace {
 
-inline base::string16 PrefixTitle(const base::string16& title) {
+base::string16 PrefixTitle(const base::string16& title) {
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_PRINT_PREFIX, title);
 }
 

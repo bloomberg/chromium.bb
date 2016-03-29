@@ -59,8 +59,7 @@ void TaskManagerIoThreadHelper::OnRawBytesRead(const net::URLRequest& request,
     g_io_thread_helper->OnNetworkBytesRead(request, bytes_read);
 }
 
-TaskManagerIoThreadHelper::TaskManagerIoThreadHelper()
-    : bytes_read_buffer_() {
+TaskManagerIoThreadHelper::TaskManagerIoThreadHelper() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 }
 

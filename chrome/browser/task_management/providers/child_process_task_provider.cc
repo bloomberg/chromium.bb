@@ -44,9 +44,7 @@ scoped_ptr<std::vector<ChildProcessData>> CollectChildProcessData() {
 }  // namespace
 
 ChildProcessTaskProvider::ChildProcessTaskProvider()
-    : tasks_by_handle_(),
-      tasks_by_pid_(),
-      weak_ptr_factory_(this) {
+    : weak_ptr_factory_(this) {
 }
 
 ChildProcessTaskProvider::~ChildProcessTaskProvider() {
@@ -114,7 +112,7 @@ void ChildProcessTaskProvider::ChildProcessDataCollected(
     scoped_ptr<const std::vector<content::ChildProcessData>> child_processes) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  for (auto& process_data : *child_processes)
+  for (const auto& process_data : *child_processes)
     CreateTask(process_data);
 
   // Now start observing.

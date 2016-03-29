@@ -109,7 +109,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTagsTest,
   // Reload the extension, the task manager should show it again.
   ReloadExtension(extension->id());
   EXPECT_EQ(2U, tracked_tags().size());
-  EXPECT_EQ(2U, task_manager.tasks().size());
+  ASSERT_EQ(2U, task_manager.tasks().size());
   EXPECT_EQ(Task::EXTENSION, task_manager.tasks().back()->GetType());
 }
 

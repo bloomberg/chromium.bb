@@ -49,7 +49,7 @@ BrowserProcessTask::BrowserProcessTask()
        allocated_v8_memory_(-1),
        used_v8_memory_(-1),
        used_sqlite_memory_(-1),
-       reports_v8_stats_(ReportsV8Stats()){
+       reports_v8_stats_(ReportsV8Stats()) {
 }
 
 BrowserProcessTask::~BrowserProcessTask() {

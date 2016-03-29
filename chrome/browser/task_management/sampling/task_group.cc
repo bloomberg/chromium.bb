@@ -27,11 +27,6 @@ const int kBackgroundRefreshTypesMask =
 #endif  // defined(OS_LINUX)
     REFRESH_TYPE_PRIORITY;
 
-inline bool IsResourceRefreshEnabled(RefreshType refresh_type,
-                                     int refresh_flags) {
-  return (refresh_flags & refresh_type) != 0;
-}
-
 #if defined(OS_WIN)
 // Gets the GDI and USER Handles on Windows at one shot.
 void GetWindowsHandles(base::ProcessHandle handle,
@@ -76,7 +71,6 @@ TaskGroup::TaskGroup(
       expected_on_bg_done_flags_(kBackgroundRefreshTypesMask),
       current_on_bg_done_flags_(0),
       cpu_usage_(0.0),
-      memory_usage_(),
       gpu_memory_(-1),
       per_process_network_usage_(-1),
 #if defined(OS_WIN)
@@ -143,7 +137,8 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
   // First refresh the enabled non-expensive resources usages on the UI thread.
   // 1- Refresh all the tasks as well as the total network usage (if enabled).
   const bool network_usage_refresh_enabled =
-      IsResourceRefreshEnabled(REFRESH_TYPE_NETWORK_USAGE, refresh_flags);
+      TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_NETWORK_USAGE,
+                                                    refresh_flags);
   per_process_network_usage_ = network_usage_refresh_enabled ? 0 : -1;
   for (auto& task_pair : tasks_) {
     Task* task = task_pair.second;
@@ -154,18 +149,23 @@ void TaskGroup::Refresh(const gpu::VideoMemoryUsageStats& gpu_memory_stats,
   }
 
   // 2- Refresh GPU memory (if enabled).
-  if (IsResourceRefreshEnabled(REFRESH_TYPE_GPU_MEMORY, refresh_flags))
+  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_GPU_MEMORY,
+                                                    refresh_flags)) {
     RefreshGpuMemory(gpu_memory_stats);
+  }
 
   // 3- Refresh Windows handles (if enabled).
 #if defined(OS_WIN)
-  if (IsResourceRefreshEnabled(REFRESH_TYPE_HANDLES, refresh_flags))
+  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_HANDLES,
+                                                    refresh_flags)) {
     RefreshWindowsHandles();
+  }
 #endif  // defined(OS_WIN)
 
   // 4- Refresh the NACL debug stub port (if enabled).
 #if !defined(DISABLE_NACL)
-  if (IsResourceRefreshEnabled(REFRESH_TYPE_NACL, refresh_flags) &&
+  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_NACL,
+                                                    refresh_flags) &&
       !tasks_.empty()) {
     RefreshNaClDebugStubPort(tasks_.begin()->second->GetChildProcessUniqueID());
   }
@@ -190,9 +190,9 @@ void TaskGroup::AppendSortedTaskIds(TaskIdList* out_list) const {
 }
 
 Task* TaskGroup::GetTaskById(TaskId task_id) const {
-  DCHECK(ContainsKey(tasks_, task_id));
-
-  return tasks_.at(task_id);
+  auto it = tasks_.find(task_id);
+  DCHECK(it != tasks_.end());
+  return it->second;
 }
 
 void TaskGroup::ClearCurrentBackgroundCalculationsFlags() {
@@ -231,7 +231,7 @@ void TaskGroup::RefreshNaClDebugStubPort(int child_process_unique_id) {
   nacl::NaClBrowser* nacl_browser = nacl::NaClBrowser::GetInstance();
   nacl_debug_stub_port_ =
       nacl_browser->GetProcessGdbDebugStubPort(child_process_unique_id);
-#endif // !defined(DISABLE_NACL)
+#endif  // !defined(DISABLE_NACL)
 }
 
 void TaskGroup::OnCpuRefreshDone(double cpu_usage) {

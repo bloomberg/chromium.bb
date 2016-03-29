@@ -48,7 +48,7 @@ base::string16 GetRendererProfileName(
   return Task::GetProfileNameFromProfile(profile);
 }
 
-inline bool IsRendererResourceSamplingDisabled(int64_t flags) {
+bool IsRendererResourceSamplingDisabled(int64_t flags) {
   return (flags & (REFRESH_TYPE_V8_MEMORY | REFRESH_TYPE_WEBCACHE_STATS)) == 0;
 }
 
@@ -73,7 +73,7 @@ RendererTask::RendererTask(const base::string16& title,
       render_process_id_(render_process_host_->GetID()),
       v8_memory_allocated_(0),
       v8_memory_used_(0),
-      webcache_stats_(),
+      webcache_stats_(blink::WebCache::ResourceTypeStats()),
       profile_name_(GetRendererProfileName(render_process_host_)),
       termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       termination_error_code_(0) {

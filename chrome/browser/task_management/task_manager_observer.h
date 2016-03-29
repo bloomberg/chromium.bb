@@ -17,8 +17,8 @@ namespace task_management {
 
 class TaskManagerInterface;
 
-typedef int64_t TaskId;
-typedef std::vector<TaskId> TaskIdList;
+using TaskId = int64_t;
+using TaskIdList = std::vector<TaskId>;
 
 // Defines a list of types of resources that an observer needs to be refreshed
 // on every task manager refresh cycle.
@@ -49,6 +49,9 @@ enum RefreshType {
 // Defines the interface for observers of the task manager.
 class TaskManagerObserver {
  public:
+  static bool IsResourceRefreshEnabled(RefreshType refresh_type,
+                                       int refresh_flags);
+
   // Constructs a TaskManagerObserver given the minimum |refresh_time| that it
   // it requires the task manager to be refreshing the values at, along with the
   // |resources_flags| that it needs to be calculated on each refresh cycle of

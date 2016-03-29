@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsTagTest, DevToolsTaskIsProvided) {
 
   OpenDevToolsWindow(true);
   EXPECT_EQ(2U, tags_manager()->tracked_tags().size());
-  EXPECT_EQ(2U, task_manager.tasks().size());
+  ASSERT_EQ(2U, task_manager.tasks().size());
 
   const Task* task = task_manager.tasks().back();
   EXPECT_EQ(Task::RENDERER, task->GetType());

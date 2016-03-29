@@ -8,6 +8,12 @@
 
 namespace task_management {
 
+// static
+bool TaskManagerObserver::IsResourceRefreshEnabled(RefreshType refresh_type,
+                                                   int refresh_flags) {
+  return (refresh_flags & refresh_type) != 0;
+}
+
 TaskManagerObserver::TaskManagerObserver(base::TimeDelta refresh_time,
                                          int64_t resources_flags)
     : observed_task_manager_(nullptr),

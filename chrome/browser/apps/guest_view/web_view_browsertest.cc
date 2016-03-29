@@ -3101,7 +3101,7 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, TaskManagementPostExistingWebViews) {
   task_manager.StartObserving();
 
   // Only the "about:blank" tab shows at the moment.
-  EXPECT_EQ(1U, task_manager.tasks().size());
+  ASSERT_EQ(1U, task_manager.tasks().size());
   const task_management::Task* about_blank_task = task_manager.tasks().back();
   EXPECT_EQ(task_management::Task::RENDERER, about_blank_task->GetType());
   EXPECT_EQ(base::UTF8ToUTF16("Tab: about:blank"), about_blank_task->title());

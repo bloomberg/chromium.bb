@@ -18,7 +18,6 @@ DevToolsTask::DevToolsTask(content::WebContents* web_contents)
 DevToolsTask::~DevToolsTask() {
 }
 
-// task_management::RendererTask:
 void DevToolsTask::UpdateTitle() {
   // In the case of a devtools tab, we just ignore this event.
 }

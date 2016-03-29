@@ -26,11 +26,6 @@ base::ProcessMetrics* CreateProcessMetrics(base::ProcessHandle handle) {
 #endif
 }
 
-inline bool IsResourceRefreshEnabled(RefreshType refresh_type,
-                                     int refresh_flags) {
-  return (refresh_flags & refresh_type) != 0;
-}
-
 }  // namespace
 
 TaskGroupSampler::TaskGroupSampler(
@@ -65,7 +60,8 @@ TaskGroupSampler::TaskGroupSampler(
 void TaskGroupSampler::Refresh(int64_t refresh_flags) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (IsResourceRefreshEnabled(REFRESH_TYPE_CPU, refresh_flags)) {
+  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_CPU,
+                                                    refresh_flags)) {
     base::PostTaskAndReplyWithResult(
         blocking_pool_runner_.get(),
         FROM_HERE,
@@ -73,7 +69,8 @@ void TaskGroupSampler::Refresh(int64_t refresh_flags) {
         on_cpu_refresh_callback_);
   }
 
-  if (IsResourceRefreshEnabled(REFRESH_TYPE_MEMORY, refresh_flags)) {
+  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_MEMORY,
+                                                    refresh_flags)) {
     base::PostTaskAndReplyWithResult(
         blocking_pool_runner_.get(),
         FROM_HERE,
@@ -82,7 +79,8 @@ void TaskGroupSampler::Refresh(int64_t refresh_flags) {
   }
 
 #if defined(OS_MACOSX) || defined(OS_LINUX)
-  if (IsResourceRefreshEnabled(REFRESH_TYPE_IDLE_WAKEUPS, refresh_flags)) {
+  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_IDLE_WAKEUPS,
+                                                    refresh_flags)) {
     base::PostTaskAndReplyWithResult(
         blocking_pool_runner_.get(),
         FROM_HERE,
@@ -92,7 +90,8 @@ void TaskGroupSampler::Refresh(int64_t refresh_flags) {
 #endif  // defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if defined(OS_LINUX)
-  if (IsResourceRefreshEnabled(REFRESH_TYPE_FD_COUNT, refresh_flags)) {
+  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_FD_COUNT,
+                                                    refresh_flags)) {
     base::PostTaskAndReplyWithResult(
         blocking_pool_runner_.get(),
         FROM_HERE,
@@ -101,7 +100,8 @@ void TaskGroupSampler::Refresh(int64_t refresh_flags) {
   }
 #endif  // defined(OS_LINUX)
 
-  if (IsResourceRefreshEnabled(REFRESH_TYPE_PRIORITY, refresh_flags)) {
+  if (TaskManagerObserver::IsResourceRefreshEnabled(REFRESH_TYPE_PRIORITY,
+                                                    refresh_flags)) {
     base::PostTaskAndReplyWithResult(
         blocking_pool_runner_.get(),
         FROM_HERE,

@@ -16,7 +16,6 @@ TestTaskManager::TestTaskManager()
 TestTaskManager::~TestTaskManager() {
 }
 
-// task_management::TaskManagerInterface:
 void TestTaskManager::ActivateTask(TaskId task_id) {
 }
 
