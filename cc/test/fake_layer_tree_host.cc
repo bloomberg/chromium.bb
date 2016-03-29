@@ -4,6 +4,7 @@
 
 #include "cc/test/fake_layer_tree_host.h"
 
+#include "cc/animation/animation_host.h"
 #include "cc/layers/layer.h"
 #include "cc/test/fake_image_serialization_processor.h"
 #include "cc/test/test_task_graph_runner.h"
@@ -85,6 +86,7 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreateLayerImplTree() {
   active_tree()->SetPropertyTrees(*property_trees());
   TreeSynchronizer::PushLayerProperties(root_layer()->layer_tree_host(),
                                         active_tree());
+  animation_host()->PushPropertiesTo(host_impl_.animation_host());
 
   active_tree()->UpdatePropertyTreeScrollOffset(property_trees());
 
@@ -106,6 +108,8 @@ LayerImpl* FakeLayerTreeHost::CommitAndCreatePendingTree() {
   pending_tree()->SetPropertyTrees(*property_trees());
   TreeSynchronizer::PushLayerProperties(root_layer()->layer_tree_host(),
                                         pending_tree());
+  animation_host()->PushPropertiesTo(host_impl_.animation_host());
+
   pending_tree()->UpdatePropertyTreeScrollOffset(property_trees());
   return pending_tree()->root_layer();
 }

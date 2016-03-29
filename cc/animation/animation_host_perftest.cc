@@ -20,8 +20,6 @@
 
 namespace cc {
 
-static const int kNumberOfAnimationPlayers = 1000;
-
 class AnimationHostPerfTest : public testing::Test {
  public:
   AnimationHostPerfTest() : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
@@ -33,68 +31,111 @@ class AnimationHostPerfTest : public testing::Test {
         FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_, settings);
     layer_tree_host_->InitializeSingleThreaded(
         &fake_client_, base::ThreadTaskRunnerHandle::Get(), nullptr);
+
+    root_layer_ = Layer::Create();
+    layer_tree_host_->SetRootLayer(root_layer_);
+
+    root_layer_impl_ = layer_tree_host_->CommitAndCreateLayerImplTree();
   }
 
   void TearDown() override {
+    root_layer_ = nullptr;
+    root_layer_impl_ = nullptr;
+
     layer_tree_host_->SetRootLayer(nullptr);
     layer_tree_host_ = nullptr;
   }
 
-  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
-  LapTimer timer_;
+  AnimationHost* host() const { return layer_tree_host_->animation_host(); }
+  AnimationHost* host_impl() const {
+    return layer_tree_host_->host_impl()->animation_host();
+  }
 
+  void CreatePlayers(const int num_players) {
+    scoped_refptr<AnimationTimeline> timeline =
+        AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
+    host()->AddAnimationTimeline(timeline);
+
+    const int first_player_id = AnimationIdProvider::NextPlayerId();
+    int last_player_id = first_player_id;
+
+    for (int i = 0; i < num_players; ++i) {
+      scoped_refptr<Layer> layer = Layer::Create();
+      root_layer_->AddChild(layer);
+
+      scoped_refptr<AnimationPlayer> player =
+          AnimationPlayer::Create(last_player_id);
+      last_player_id = AnimationIdProvider::NextPlayerId();
+
+      timeline->AttachPlayer(player);
+      player->AttachLayer(layer->id());
+      EXPECT_TRUE(player->element_animations());
+    }
+
+    // Create impl players.
+    layer_tree_host_->CommitAndCreateLayerImplTree();
+
+    // Check impl instances created.
+    scoped_refptr<AnimationTimeline> timeline_impl =
+        host_impl()->GetTimelineById(timeline->id());
+    EXPECT_TRUE(timeline_impl);
+    for (int i = first_player_id; i < last_player_id; ++i)
+      EXPECT_TRUE(timeline_impl->GetPlayerById(i));
+  }
+
+  void CreateTimelines(const int num_timelines) {
+    const int first_timeline_id = AnimationIdProvider::NextTimelineId();
+    int last_timeline_id = first_timeline_id;
+
+    for (int i = 0; i < num_timelines; ++i) {
+      scoped_refptr<AnimationTimeline> timeline =
+          AnimationTimeline::Create(last_timeline_id);
+      last_timeline_id = AnimationIdProvider::NextTimelineId();
+      host()->AddAnimationTimeline(timeline);
+    }
+
+    // Create impl timelines.
+    layer_tree_host_->CommitAndCreateLayerImplTree();
+
+    // Check impl instances created.
+    for (int i = first_timeline_id; i < last_timeline_id; ++i)
+      EXPECT_TRUE(host_impl()->GetTimelineById(i));
+  }
+
+  void DoTest() {
+    timer_.Reset();
+    do {
+      host()->PushPropertiesTo(host_impl());
+      timer_.NextLap();
+    } while (!timer_.HasTimeLimitExpired());
+
+    perf_test::PrintResult("push_properties_to", "", "", timer_.LapsPerSecond(),
+                           "runs/s", true);
+  }
+
+ protected:
+  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
+  scoped_refptr<Layer> root_layer_;
+  LayerImpl* root_layer_impl_;
+
+  LapTimer timer_;
   TestTaskGraphRunner task_graph_runner_;
   FakeLayerTreeHostClient fake_client_;
 };
 
-TEST_F(AnimationHostPerfTest, PushPropertiesTo) {
-  AnimationHost* host = layer_tree_host_->animation_host();
-  AnimationHost* host_impl = layer_tree_host_->host_impl()->animation_host();
+TEST_F(AnimationHostPerfTest, Push1000PlayersPropertiesTo) {
+  CreatePlayers(1000);
+  DoTest();
+}
 
-  scoped_refptr<Layer> root_layer = Layer::Create();
-  layer_tree_host_->SetRootLayer(root_layer);
+TEST_F(AnimationHostPerfTest, Push10TimelinesPropertiesTo) {
+  CreateTimelines(10);
+  DoTest();
+}
 
-  scoped_ptr<LayerImpl> root_layer_impl = LayerImpl::Create(
-      layer_tree_host_->host_impl()->active_tree(), root_layer->id());
-
-  scoped_refptr<AnimationTimeline> timeline =
-      AnimationTimeline::Create(AnimationIdProvider::NextTimelineId());
-  host->AddAnimationTimeline(timeline);
-
-  scoped_refptr<AnimationTimeline> timeline_impl =
-      timeline->CreateImplInstance();
-  host_impl->AddAnimationTimeline(timeline_impl);
-
-  for (int i = 0; i < kNumberOfAnimationPlayers; ++i) {
-    scoped_refptr<Layer> layer = Layer::Create();
-    root_layer->AddChild(layer);
-
-    const int layer_id = layer->id();
-
-    scoped_ptr<LayerImpl> layer_impl = LayerImpl::Create(
-        layer_tree_host_->host_impl()->active_tree(), layer_id);
-    root_layer_impl->AddChild(std::move(layer_impl));
-
-    scoped_refptr<AnimationPlayer> player =
-        AnimationPlayer::Create(AnimationIdProvider::NextPlayerId());
-    timeline->AttachPlayer(player);
-    player->AttachLayer(layer_id);
-    EXPECT_TRUE(player->element_animations());
-
-    scoped_refptr<AnimationPlayer> impl_player = player->CreateImplInstance();
-    timeline_impl->AttachPlayer(impl_player);
-    impl_player->AttachLayer(layer_id);
-    EXPECT_TRUE(impl_player->element_animations());
-  }
-
-  timer_.Reset();
-  do {
-    host->PushPropertiesTo(host_impl);
-    timer_.NextLap();
-  } while (!timer_.HasTimeLimitExpired());
-
-  perf_test::PrintResult("push_properties_to", "", "", timer_.LapsPerSecond(),
-                         "runs/s", true);
+TEST_F(AnimationHostPerfTest, Push1000TimelinesPropertiesTo) {
+  CreateTimelines(1000);
+  DoTest();
 }
 
 }  // namespace cc
