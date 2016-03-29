@@ -536,8 +536,6 @@ MediaControls.prototype.initSubtitlesButton = function() {
   this.subtitlesTrack_ = null;
   this.subtitlesButton_ =
       this.createButton('subtitles', this.onSubtitlesButtonClicked_.bind(this));
-  this.subtitlesButton_.setAttribute('aria-label',
-      str('VIDEO_PLAYER_SUBTITLES_BUTTON_LABEL'));
 };
 
 /**
@@ -562,9 +560,13 @@ MediaControls.prototype.toggleSubtitlesMode_ = function(on) {
   if (on) {
     this.subtitlesTrack_.mode = 'showing';
     this.subtitlesButton_.setAttribute('showing', '');
+    this.subtitlesButton_.setAttribute('aria-label',
+        str('VIDEO_PLAYER_DISABLE_SUBTITLES_BUTTON_LABEL'));
   } else {
     this.subtitlesTrack_.mode = 'hidden';
     this.subtitlesButton_.removeAttribute('showing');
+    this.subtitlesButton_.setAttribute('aria-label',
+        str('VIDEO_PLAYER_ENABLE_SUBTITLES_BUTTON_LABEL'));
   }
 };
 
