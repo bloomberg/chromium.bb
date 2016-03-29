@@ -86,6 +86,18 @@ public class OfflinePageBridge {
     }
 
     /**
+     * Callback that delivers information about multiple offline page entries.
+     *
+     * The returned List will be empty (but non-null) if no items are found.
+     */
+    public interface MultipleOfflinePageItemCallback { void onResult(List<OfflinePageItem> items); }
+
+    /**
+     * Callback used when determining whether we have any offline pages.
+     */
+    public interface HasPagesCallback { void onResult(boolean items); }
+
+    /**
      * Base observer class listeners to be notified of changes to the offline page model.
      */
     public abstract static class OfflinePageModelObserver {
@@ -107,14 +119,6 @@ public class OfflinePageBridge {
          * @param clientId The client supplied ID of the deleted offline page.
          */
         public void offlinePageDeleted(long offlineId, ClientId clientId) {}
-    }
-
-    private static long getTotalSize(List<OfflinePageItem> offlinePages) {
-        long totalSize = 0;
-        for (OfflinePageItem offlinePage : offlinePages) {
-            totalSize += offlinePage.getFileSize();
-        }
-        return totalSize;
     }
 
     private static void recordFreeSpaceHistograms(
@@ -161,6 +165,7 @@ public class OfflinePageBridge {
      * Creates an offline page bridge for a given profile.
      * Accessible by the package for testability.
      */
+    @VisibleForTesting
     OfflinePageBridge(long nativeOfflinePageBridge) {
         mNativeOfflinePageBridge = nativeOfflinePageBridge;
     }
@@ -225,7 +230,37 @@ public class OfflinePageBridge {
     }
 
     /**
+     * Gets all available offline pages, returning results via the provided callback.
+     * TODO(http://crbug.com/589526): Rename to just OfflinePageBridge#getAllPages and remove the
+     * synchronous method.
+     *
+     * @param callback The callback to run when the operation completes.
+     */
+    @VisibleForTesting
+    public void getAllPagesAsync(final MultipleOfflinePageItemCallback callback) {
+        runWhenLoaded(new Runnable() {
+            @Override
+            public void run() {
+                callback.onResult(getAllPages());
+            }
+        });
+    }
+
+    /** Returns via callback whether we have any offline pages at all. */
+    @VisibleForTesting
+    public void hasPages(final HasPagesCallback callback) {
+        // TODO(dewittj): Make this something faster than a full scan.
+        getAllPagesAsync(new MultipleOfflinePageItemCallback() {
+            @Override
+            public void onResult(List<OfflinePageItem> allPages) {
+                callback.onResult(!allPages.isEmpty());
+            }
+        });
+    }
+
+    /**
      * @return Gets all available offline pages. Requires that the model is already loaded.
+     * This function is deprecated. Use OfflinePageBridge#getAllPagesAsync.
      */
     public List<OfflinePageItem> getAllPages() {
         assert mIsNativeOfflinePageModelLoaded;
@@ -234,10 +269,8 @@ public class OfflinePageBridge {
         return result;
     }
 
-    /**
-     * @return A list of all offline ids that match a particular
-     * (namespace, client_id)
-     */
+    /** @return A list of all offline ids that match a particular (namespace, client_id) pair. */
+    @VisibleForTesting
     Set<Long> getOfflineIdsForClientId(ClientId clientId) {
         assert mIsNativeOfflinePageModelLoaded;
         long[] offlineIds = nativeGetOfflineIdsForClientId(
@@ -250,39 +283,131 @@ public class OfflinePageBridge {
     }
 
     /**
-     * Gets an offline page associated with a provided bookmark ID.
+     * Gets the offline pages associated with a provided client ID.
+     * TODO(http://crbug.com/589526): Rename to just OfflinePageBridge#getPagesByClientId and
+     * remove the synchronous method OfflinePageBridge#getPageByClientId.
+     *
+     * @param clientId Client's ID associated with an offline page.
+     * @return A {@link OfflinePageItem} matching the bookmark Id or <code>null</code> if none
+     * exist.
+     */
+    @VisibleForTesting
+    public void getPagesByClientIdAsync(
+            final ClientId clientId, final MultipleOfflinePageItemCallback callback) {
+        runWhenLoaded(new Runnable() {
+            @Override
+            public void run() {
+                callback.onResult(getPagesByClientId(clientId));
+            }
+        });
+    }
+
+    /**
+     * Gets an offline page associated with a provided client ID.
+     * This method is deprecated.  Use OfflinePageBridge#getPagesByClientIdAsync.
      *
      * @param clientId Client's ID associated with an offline page.
      * @return A {@link OfflinePageItem} matching the bookmark Id or <code>null</code> if none
      * exist.
      */
     public OfflinePageItem getPageByClientId(ClientId clientId) {
-        Set<Long> ids = getOfflineIdsForClientId(clientId);
-        if (ids.size() == 0) {
+        List<OfflinePageItem> result = getPagesByClientId(clientId);
+        if (result.isEmpty()) {
             return null;
         }
+
         // TODO: a better job of choosing which page (e.g. timestamp?)
-        long offlineId = ids.iterator().next();
-        return nativeGetPageByOfflineId(mNativeOfflinePageBridge, offlineId);
+        return result.get(0);
+    }
+
+    private List<OfflinePageItem> getPagesByClientId(ClientId clientId) {
+        Set<Long> ids = getOfflineIdsForClientId(clientId);
+        List<OfflinePageItem> result = new ArrayList<>();
+        for (long offlineId : ids) {
+            // TODO(dewittj): Restructure the native API to avoid this loop with a native call.
+            OfflinePageItem item = nativeGetPageByOfflineId(mNativeOfflinePageBridge, offlineId);
+            if (item != null) {
+                result.add(item);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Gets the offline pages associated with a provided online URL.  The callback is called when
+     * the results are available.
+     *
+     * @param onlineURL URL of the page.
+     * @param callback Called with the results.
+     */
+    @VisibleForTesting
+    public void getPagesByOnlineUrl(
+            final String onlineUrl, final MultipleOfflinePageItemCallback callback) {
+        runWhenLoaded(new Runnable() {
+            @Override
+            public void run() {
+                List<OfflinePageItem> result = new ArrayList<>();
+
+                // TODO(http://crbug.com/589526) This native API returns only one item, but in the
+                // future will return a list.
+                OfflinePageItem item =
+                        nativeGetPageByOnlineURL(mNativeOfflinePageBridge, onlineUrl);
+                if (item != null) {
+                    result.add(item);
+                }
+
+                callback.onResult(result);
+            }
+        });
     }
 
     /**
      * Gets an offline page associated with a provided online URL.
+     * This method is deprecated. Use OfflinePageBridge#getPagesByOnlineUrl.
      *
      * @param onlineURL URL of the page.
      * @return An {@link OfflinePageItem} matching the URL or <code>null</code> if none exist.
      */
-    public OfflinePageItem getPageByOnlineURL(String onlineURL) {
-        return nativeGetPageByOnlineURL(mNativeOfflinePageBridge, onlineURL);
+    public OfflinePageItem getPageByOnlineUrl(String onlineUrl) {
+        return nativeGetPageByOnlineURL(mNativeOfflinePageBridge, onlineUrl);
+    }
+
+    /**
+     * Gets the offline pages associated with the provided offline URL.
+     *
+     * @param string URL pointing to the offline copy of the web page.
+     * @return An {@link OfflinePageItem} matching the offline URL or
+     * <code>null</code> if not found.
+     * found.
+     */
+    @VisibleForTesting
+    public void getPagesByOfflineUrl(
+            final String offlineUrl, final MultipleOfflinePageItemCallback callback) {
+        runWhenLoaded(new Runnable() {
+            @Override
+            public void run() {
+                List<OfflinePageItem> result = new ArrayList<>();
+
+                // TODO(http://crbug.com/589526) This native API returns only one item, but in the
+                // future will return a list.
+                OfflinePageItem item =
+                        nativeGetPageByOfflineUrl(mNativeOfflinePageBridge, offlineUrl);
+                if (item != null) {
+                    result.add(item);
+                }
+
+                callback.onResult(result);
+            }
+        });
     }
 
     /**
      * Gets an offline page associated with a provided offline URL.
+     * This method is deprecated. Use OfflinePageBridge#getPagesByOnlineUrl.
      *
      * @param string URL pointing to the offline copy of the web page.
-     * @return An {@link OfflinePageItem} matching the offline URL or <code>null
-     </code> if not
-     * found.
+     * @return An {@link OfflinePageItem} matching the offline URL or
+     * <code>null</code> if not found.
      */
     public OfflinePageItem getPageByOfflineUrl(String offlineUrl) {
         return nativeGetPageByOfflineUrl(mNativeOfflinePageBridge, offlineUrl);
@@ -375,7 +500,7 @@ public class OfflinePageBridge {
         deletePages(idList, callback);
     }
 
-    protected void deletePages(List<Long> offlineIds, DeletePageCallback callback) {
+    void deletePages(List<Long> offlineIds, DeletePageCallback callback) {
         long[] ids = new long[offlineIds.size()];
         for (int i = 0; i < offlineIds.size(); i++) {
             ids[i] = offlineIds.get(i);
@@ -422,7 +547,8 @@ public class OfflinePageBridge {
      */
     public String getLaunchUrlFromOnlineUrl(String onlineUrl) {
         if (!isEnabled()) return onlineUrl;
-        return getLaunchUrlAndMarkAccessed(getPageByOnlineURL(onlineUrl), onlineUrl);
+        return getLaunchUrlAndMarkAccessed(
+                nativeGetPageByOnlineURL(mNativeOfflinePageBridge, onlineUrl), onlineUrl);
     }
 
     /**
@@ -452,12 +578,17 @@ public class OfflinePageBridge {
 
     /**
      * Gets the offline URL of an offline page of that is saved for the online URL.
+     * This method is deprecated. Use OfflinePageBridge#getPagesByOnlineUrl.
+     *
      * @param onlineUrl Online URL, which might have offline copy.
      * @return URL pointing to the offline copy or <code>null</code> if none exists.
      */
     public String getOfflineUrlForOnlineUrl(String onlineUrl) {
         assert mIsNativeOfflinePageModelLoaded;
-        return nativeGetOfflineUrlForOnlineUrl(mNativeOfflinePageBridge, onlineUrl);
+        OfflinePageItem item = getPageByOnlineUrl(onlineUrl);
+        if (item == null) return null;
+
+        return item.getOfflineUrl();
     }
 
     private DeletePageCallback wrapCallbackWithHistogramReporting(
@@ -473,12 +604,28 @@ public class OfflinePageBridge {
         };
     }
 
-    protected ClientId getClientIdForOfflineId(long offlineId) {
+    @VisibleForTesting
+    ClientId getClientIdForOfflineId(long offlineId) {
         OfflinePageItem item = nativeGetPageByOfflineId(mNativeOfflinePageBridge, offlineId);
         if (item != null) {
             return item.getClientId();
         }
         return null;
+    }
+
+    private void runWhenLoaded(final Runnable runnable) {
+        if (isOfflinePageModelLoaded()) {
+            ThreadUtils.postOnUiThread(runnable);
+            return;
+        }
+
+        addObserver(new OfflinePageModelObserver() {
+            @Override
+            public void offlinePageModelLoaded() {
+                removeObserver(this);
+                runnable.run();
+            }
+        });
     }
 
     @CalledByNative
@@ -506,10 +653,13 @@ public class OfflinePageBridge {
 
         mIsNativeOfflinePageModelLoaded = false;
         mNativeOfflinePageBridge = 0;
+
+        // TODO(dewittj): Add a model destroyed method to the observer interface.
+        mObservers.clear();
     }
 
     @CalledByNative
-    protected void offlinePageDeleted(long offlineId, ClientId clientId) {
+    void offlinePageDeleted(long offlineId, ClientId clientId) {
         for (OfflinePageModelObserver observer : mObservers) {
             observer.offlinePageDeleted(offlineId, clientId);
         }
@@ -542,10 +692,13 @@ public class OfflinePageBridge {
 
     private native void nativeGetAllPages(
             long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
-    protected native long[] nativeGetOfflineIdsForClientId(
+
+    @VisibleForTesting
+    native long[] nativeGetOfflineIdsForClientId(
             long nativeOfflinePageBridge, String clientNamespace, String clientId);
-    protected native OfflinePageItem nativeGetPageByOfflineId(
-            long nativeOfflinePageBridge, long offlineId);
+
+    @VisibleForTesting
+    native OfflinePageItem nativeGetPageByOfflineId(long nativeOfflinePageBridge, long offlineId);
     private native OfflinePageItem nativeGetPageByOnlineURL(
             long nativeOfflinePageBridge, String onlineURL);
     private native OfflinePageItem nativeGetPageByOfflineUrl(
