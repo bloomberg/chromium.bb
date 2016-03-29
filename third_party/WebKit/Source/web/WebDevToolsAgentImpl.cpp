@@ -282,14 +282,14 @@ PassOwnPtrWillBeRawPtr<WebDevToolsAgentImpl> WebDevToolsAgentImpl::create(WebLoc
     // TODO(dgozman): we should actually pass the view instead of frame, but during
     // remote->local transition we cannot access mainFrameImpl() yet, so we have to store the
     // frame which will become the main frame later.
-    agent->registerAgent(InspectorRenderingAgent::create(frame, agent->m_overlay.get()));
-    agent->registerAgent(InspectorEmulationAgent::create(frame, agent));
+    agent->m_agents.append(InspectorRenderingAgent::create(frame, agent->m_overlay.get()));
+    agent->m_agents.append(InspectorEmulationAgent::create(frame, agent));
     // TODO(dgozman): migrate each of the following agents to frame once module is ready.
-    agent->registerAgent(InspectorDatabaseAgent::create(view->page()));
-    agent->registerAgent(DeviceOrientationInspectorAgent::create(view->page()));
-    agent->registerAgent(InspectorAccessibilityAgent::create(view->page()));
-    agent->registerAgent(InspectorDOMStorageAgent::create(view->page()));
-    agent->registerAgent(InspectorCacheStorageAgent::create());
+    agent->m_agents.append(InspectorDatabaseAgent::create(view->page()));
+    agent->m_agents.append(DeviceOrientationInspectorAgent::create(view->page()));
+    agent->m_agents.append(InspectorAccessibilityAgent::create(view->page()));
+    agent->m_agents.append(InspectorDOMStorageAgent::create(view->page()));
+    agent->m_agents.append(InspectorCacheStorageAgent::create());
     agent->layerTreeViewChanged(view->layerTreeView());
     return adoptPtrWillBeNoop(agent);
 }
@@ -308,53 +308,19 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_resourceContentLoader(InspectorResourceContentLoader::create(m_webLocalFrameImpl->frame()))
     , m_overlay(overlay)
     , m_inspectedFrames(InspectedFrames::create(m_webLocalFrameImpl->frame()))
-    , m_inspectorAgent(nullptr)
     , m_domAgent(nullptr)
     , m_pageAgent(nullptr)
     , m_resourceAgent(nullptr)
     , m_layerTreeAgent(nullptr)
     , m_tracingAgent(nullptr)
-    , m_pageRuntimeAgent(nullptr)
-    , m_pageConsoleAgent(nullptr)
     , m_agents(m_instrumentingAgents.get())
     , m_deferredAgentsInitialized(false)
     , m_sessionId(0)
     , m_stateMuted(false)
+    , m_layerTreeId(0)
 {
     ASSERT(isMainThread());
     ASSERT(m_webLocalFrameImpl->frame());
-
-    ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
-    MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
-
-    OwnPtrWillBeRawPtr<InspectorInspectorAgent> inspectorAgentPtr(InspectorInspectorAgent::create());
-    m_inspectorAgent = inspectorAgentPtr.get();
-    m_agents.append(inspectorAgentPtr.release());
-
-    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgentPtr(PageRuntimeAgent::create(this, mainThreadDebugger->debugger(), m_inspectedFrames.get(), mainThreadDebugger->contextGroupId(m_inspectedFrames->root())));
-    m_pageRuntimeAgent = pageRuntimeAgentPtr.get();
-    m_agents.append(pageRuntimeAgentPtr.release());
-
-    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
-    OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgentPtr(InspectorDOMAgent::create(isolate, m_inspectedFrames.get(), m_pageRuntimeAgent->v8Agent(), m_overlay.get()));
-    m_domAgent = domAgentPtr.get();
-    m_agents.append(domAgentPtr.release());
-
-    OwnPtrWillBeRawPtr<InspectorLayerTreeAgent> layerTreeAgentPtr(InspectorLayerTreeAgent::create(m_inspectedFrames.get()));
-    m_layerTreeAgent = layerTreeAgentPtr.get();
-    m_agents.append(layerTreeAgentPtr.release());
-
-    OwnPtrWillBeRawPtr<PageConsoleAgent> pageConsoleAgentPtr = PageConsoleAgent::create(m_pageRuntimeAgent->v8Agent(), m_domAgent, m_inspectedFrames.get());
-    m_pageConsoleAgent = pageConsoleAgentPtr.get();
-
-    OwnPtrWillBeRawPtr<InspectorWorkerAgent> workerAgentPtr = InspectorWorkerAgent::create(m_inspectedFrames.get(), pageConsoleAgentPtr.get());
-
-    OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgentPtr = InspectorTracingAgent::create(this, workerAgentPtr.get(), m_inspectedFrames.get());
-    m_tracingAgent = tracingAgentPtr.get();
-    m_agents.append(tracingAgentPtr.release());
-
-    m_agents.append(workerAgentPtr.release());
-    m_agents.append(pageConsoleAgentPtr.release());
 }
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl()
@@ -393,14 +359,11 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
     visitor->trace(m_resourceContentLoader);
     visitor->trace(m_overlay);
     visitor->trace(m_inspectedFrames);
-    visitor->trace(m_inspectorAgent);
     visitor->trace(m_domAgent);
     visitor->trace(m_pageAgent);
     visitor->trace(m_resourceAgent);
     visitor->trace(m_layerTreeAgent);
     visitor->trace(m_tracingAgent);
-    visitor->trace(m_pageRuntimeAgent);
-    visitor->trace(m_pageConsoleAgent);
     visitor->trace(m_agents);
 }
 
@@ -421,48 +384,75 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
         return;
     m_deferredAgentsInitialized = true;
 
-    OwnPtrWillBeRawPtr<InspectorResourceAgent> resourceAgentPtr(InspectorResourceAgent::create(m_inspectedFrames.get()));
-    m_resourceAgent = resourceAgentPtr.get();
-    m_agents.append(resourceAgentPtr.release());
+    ClientMessageLoopAdapter::ensureMainThreadDebuggerCreated(m_client);
+    MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
+    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
 
-    OwnPtrWillBeRawPtr<InspectorCSSAgent> cssAgentPtr(InspectorCSSAgent::create(m_domAgent, m_inspectedFrames.get(), m_resourceAgent, m_resourceContentLoader.get()));
-    InspectorCSSAgent* cssAgent = cssAgentPtr.get();
-    m_agents.append(cssAgentPtr.release());
+    OwnPtrWillBeRawPtr<InspectorInspectorAgent> inspectorAgent = InspectorInspectorAgent::create();
+    InspectorInspectorAgent* inspectorAgentPtr = inspectorAgent.get();
+    m_agents.append(inspectorAgent.release());
 
-    m_agents.append(InspectorAnimationAgent::create(m_inspectedFrames.get(), m_domAgent, cssAgent, m_pageRuntimeAgent->v8Agent()));
+    OwnPtrWillBeRawPtr<PageRuntimeAgent> pageRuntimeAgent = PageRuntimeAgent::create(this, mainThreadDebugger->debugger(), m_inspectedFrames.get(), mainThreadDebugger->contextGroupId(m_inspectedFrames->root()));
+    V8RuntimeAgent* runtimeAgent = pageRuntimeAgent->v8Agent();
+    m_agents.append(pageRuntimeAgent.release());
+
+    OwnPtrWillBeRawPtr<InspectorDOMAgent> domAgent = InspectorDOMAgent::create(isolate, m_inspectedFrames.get(), runtimeAgent, m_overlay.get());
+    m_domAgent = domAgent.get();
+    m_agents.append(domAgent.release());
+
+    OwnPtrWillBeRawPtr<InspectorLayerTreeAgent> layerTreeAgent = InspectorLayerTreeAgent::create(m_inspectedFrames.get());
+    m_layerTreeAgent = layerTreeAgent.get();
+    m_agents.append(layerTreeAgent.release());
+
+    OwnPtrWillBeRawPtr<InspectorResourceAgent> resourceAgent = InspectorResourceAgent::create(m_inspectedFrames.get());
+    m_resourceAgent = resourceAgent.get();
+    m_agents.append(resourceAgent.release());
+
+    OwnPtrWillBeRawPtr<InspectorCSSAgent> cssAgent = InspectorCSSAgent::create(m_domAgent, m_inspectedFrames.get(), m_resourceAgent, m_resourceContentLoader.get());
+    InspectorCSSAgent* cssAgentPtr = cssAgent.get();
+    m_agents.append(cssAgent.release());
+
+    m_agents.append(InspectorAnimationAgent::create(m_inspectedFrames.get(), m_domAgent, cssAgentPtr, runtimeAgent));
 
     m_agents.append(InspectorMemoryAgent::create());
 
     m_agents.append(InspectorApplicationCacheAgent::create(m_inspectedFrames.get()));
+
     m_agents.append(InspectorIndexedDBAgent::create(m_inspectedFrames.get()));
 
-    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgentPtr(PageDebuggerAgent::create(m_inspectedFrames.get(), m_pageRuntimeAgent->v8Agent()));
-    InspectorDebuggerAgent* debuggerAgent = debuggerAgentPtr.get();
-    m_agents.append(debuggerAgentPtr.release());
+    OwnPtrWillBeRawPtr<InspectorDebuggerAgent> debuggerAgent = PageDebuggerAgent::create(m_inspectedFrames.get(), runtimeAgent);
+    InspectorDebuggerAgent* debuggerAgentPtr = debuggerAgent.get();
+    m_agents.append(debuggerAgent.release());
 
-    v8::Isolate* isolate = V8PerIsolateData::mainThreadIsolate();
+    OwnPtrWillBeRawPtr<PageConsoleAgent> pageConsoleAgent = PageConsoleAgent::create(runtimeAgent, debuggerAgentPtr->v8Agent(), m_domAgent, m_inspectedFrames.get());
+    PageConsoleAgent* pageConsoleAgentPtr = pageConsoleAgent.get();
+    m_agents.append(pageConsoleAgent.release());
 
-    m_agents.append(InspectorDOMDebuggerAgent::create(isolate, m_domAgent, m_pageRuntimeAgent->v8Agent(), debuggerAgent->v8Agent()));
+    OwnPtrWillBeRawPtr<InspectorWorkerAgent> workerAgent = InspectorWorkerAgent::create(m_inspectedFrames.get(), pageConsoleAgentPtr);
+    InspectorWorkerAgent* workerAgentPtr = workerAgent.get();
+    m_agents.append(workerAgent.release());
+
+    OwnPtrWillBeRawPtr<InspectorTracingAgent> tracingAgent = InspectorTracingAgent::create(this, workerAgentPtr, m_inspectedFrames.get());
+    m_tracingAgent = tracingAgent.get();
+    m_agents.append(tracingAgent.release());
+
+    m_agents.append(InspectorDOMDebuggerAgent::create(isolate, m_domAgent, runtimeAgent, debuggerAgentPtr->v8Agent()));
+
     m_agents.append(InspectorInputAgent::create(m_inspectedFrames.get()));
+
     m_agents.append(InspectorProfilerAgent::create(MainThreadDebugger::instance()->debugger(), m_overlay.get()));
-    m_agents.append(InspectorHeapProfilerAgent::create(isolate, m_pageRuntimeAgent->v8Agent()));
 
-    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgentPtr(InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), debuggerAgent));
-    m_pageAgent = pageAgentPtr.get();
-    m_agents.append(pageAgentPtr.release());
+    m_agents.append(InspectorHeapProfilerAgent::create(isolate, runtimeAgent));
 
-    m_pageConsoleAgent->setDebuggerAgent(debuggerAgent->v8Agent());
+    OwnPtrWillBeRawPtr<InspectorPageAgent> pageAgent = InspectorPageAgent::create(m_inspectedFrames.get(), this, m_resourceContentLoader.get(), debuggerAgentPtr);
+    m_pageAgent = pageAgent.get();
+    m_agents.append(pageAgent.release());
 
-    m_pageRuntimeAgent->v8Agent()->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, m_pageConsoleAgent.get()));
-    m_pageRuntimeAgent->v8Agent()->setInspectObjectCallback(bind<PassOwnPtr<protocol::Runtime::RemoteObject>, PassOwnPtr<protocol::DictionaryValue>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()));
-
+    runtimeAgent->setClearConsoleCallback(bind<>(&InspectorConsoleAgent::clearAllMessages, pageConsoleAgentPtr));
+    runtimeAgent->setInspectObjectCallback(bind<PassOwnPtr<protocol::Runtime::RemoteObject>, PassOwnPtr<protocol::DictionaryValue>>(&InspectorInspectorAgent::inspect, inspectorAgentPtr));
+    m_tracingAgent->setLayerTreeId(m_layerTreeId);
     if (m_overlay)
-        m_overlay->init(cssAgent, debuggerAgent, m_domAgent.get());
-}
-
-void WebDevToolsAgentImpl::registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent> agent)
-{
-    m_agents.append(agent);
+        m_overlay->init(cssAgentPtr, debuggerAgentPtr, m_domAgent);
 }
 
 void WebDevToolsAgentImpl::attach(const WebString& hostId, int sessionId)
@@ -544,17 +534,21 @@ bool WebDevToolsAgentImpl::screencastEnabled()
 
 void WebDevToolsAgentImpl::willAddPageOverlay(const GraphicsLayer* layer)
 {
-    m_layerTreeAgent->willAddPageOverlay(layer);
+    if (m_layerTreeAgent)
+        m_layerTreeAgent->willAddPageOverlay(layer);
 }
 
 void WebDevToolsAgentImpl::didRemovePageOverlay(const GraphicsLayer* layer)
 {
-    m_layerTreeAgent->didRemovePageOverlay(layer);
+    if (m_layerTreeAgent)
+        m_layerTreeAgent->didRemovePageOverlay(layer);
 }
 
 void WebDevToolsAgentImpl::layerTreeViewChanged(WebLayerTreeView* layerTreeView)
 {
-    m_tracingAgent->setLayerTreeId(layerTreeView ? layerTreeView->layerTreeId() : 0);
+    m_layerTreeId = layerTreeView ? layerTreeView->layerTreeId() : 0;
+    if (m_tracingAgent)
+        m_tracingAgent->setLayerTreeId(m_layerTreeId);
 }
 
 void WebDevToolsAgentImpl::enableTracing(const String& categoryFilter)
@@ -591,6 +585,8 @@ void WebDevToolsAgentImpl::dispatchMessageFromFrontend(int sessionId, const Stri
 
 void WebDevToolsAgentImpl::inspectElementAt(const WebPoint& pointInRootFrame)
 {
+    if (!m_domAgent)
+        return;
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
     HitTestRequest request(hitType);
     WebMouseEvent dummyEvent;

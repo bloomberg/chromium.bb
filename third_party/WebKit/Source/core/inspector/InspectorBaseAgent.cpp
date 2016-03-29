@@ -123,8 +123,8 @@ void InspectorAgentRegistry::registerInDispatcher(protocol::Dispatcher* dispatch
 
 void InspectorAgentRegistry::discardAgents()
 {
-    for (size_t i = 0; i < m_agents.size(); i++)
-        m_agents[i]->discardAgent();
+    for (size_t i = m_agents.size(); i > 0; i--)
+        m_agents[i - 1]->discardAgent();
 }
 
 void InspectorAgentRegistry::flushPendingProtocolNotifications()

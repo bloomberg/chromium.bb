@@ -48,7 +48,6 @@ public:
     }
     ~PageRuntimeAgent() override;
     DECLARE_VIRTUAL_TRACE();
-    void init() override;
     void enable(ErrorString*) override;
     void disable(ErrorString*) override;
 

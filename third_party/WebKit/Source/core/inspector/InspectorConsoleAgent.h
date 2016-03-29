@@ -40,10 +40,8 @@ class V8RuntimeAgent;
 class CORE_EXPORT InspectorConsoleAgent : public InspectorBaseAgent<InspectorConsoleAgent, protocol::Frontend::Console>, public protocol::Backend::Console {
     WTF_MAKE_NONCOPYABLE(InspectorConsoleAgent);
 public:
-    explicit InspectorConsoleAgent(V8RuntimeAgent*);
+    InspectorConsoleAgent(V8RuntimeAgent*, V8DebuggerAgent*);
     ~InspectorConsoleAgent() override;
-
-    void setDebuggerAgent(V8DebuggerAgent* debuggerAgent) { m_debuggerAgent = debuggerAgent; }
 
     void enable(ErrorString*) override;
     bool enabled() { return m_enabled; }

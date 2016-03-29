@@ -61,11 +61,6 @@ DEFINE_TRACE(PageRuntimeAgent)
     InspectorRuntimeAgent::trace(visitor);
 }
 
-void PageRuntimeAgent::init()
-{
-    InspectorRuntimeAgent::init();
-}
-
 void PageRuntimeAgent::enable(ErrorString* errorString)
 {
     if (m_enabled)

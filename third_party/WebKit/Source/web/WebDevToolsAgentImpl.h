@@ -48,13 +48,10 @@ namespace blink {
 
 class GraphicsLayer;
 class InspectedFrames;
-class InspectorInspectorAgent;
 class InspectorOverlay;
 class InspectorResourceContentLoader;
 class LocalFrame;
 class Page;
-class PageConsoleAgent;
-class PageRuntimeAgent;
 class PlatformGestureEvent;
 class PlatformKeyboardEvent;
 class PlatformMouseEvent;
@@ -91,7 +88,6 @@ public:
     InspectorOverlay* overlay() const { return m_overlay.get(); }
     void flushPendingProtocolNotifications();
     void dispatchMessageFromFrontend(int sessionId, const String& message);
-    void registerAgent(PassOwnPtrWillBeRawPtr<InspectorAgent>);
     static void webViewImplClosed(WebViewImpl*);
     static void webFrameWidgetImplClosed(WebFrameWidgetImpl*);
 
@@ -156,14 +152,11 @@ private:
     OwnPtrWillBeMember<InspectorOverlay> m_overlay;
     OwnPtrWillBeMember<InspectedFrames> m_inspectedFrames;
 
-    RawPtrWillBeMember<InspectorInspectorAgent> m_inspectorAgent;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InspectorPageAgent> m_pageAgent;
     RawPtrWillBeMember<InspectorResourceAgent> m_resourceAgent;
     RawPtrWillBeMember<InspectorLayerTreeAgent> m_layerTreeAgent;
     RawPtrWillBeMember<InspectorTracingAgent> m_tracingAgent;
-    RawPtrWillBeMember<PageRuntimeAgent> m_pageRuntimeAgent;
-    RawPtrWillBeMember<PageConsoleAgent> m_pageConsoleAgent;
 
     OwnPtr<protocol::Dispatcher> m_inspectorBackendDispatcher;
     OwnPtr<protocol::Frontend> m_inspectorFrontend;
@@ -175,6 +168,7 @@ private:
     int m_sessionId;
     String m_stateCookie;
     bool m_stateMuted;
+    int m_layerTreeId;
 };
 
 } // namespace blink
