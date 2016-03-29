@@ -33954,6 +33954,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.AbortTiming.Close" units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
+    This metric is still experimental and not yet ready to be relied upon.
     Measures the time from navigation start to the time the page load was
     aborted by the user closing the tab or browser.
   </summary>
@@ -33962,6 +33963,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.AbortTiming.ForwardBackNavigation" units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
+    This metric is still experimental and not yet ready to be relied upon.
     Measures the time from navigation start to the time the page load was
     aborted by a forward or back navigation.
   </summary>
@@ -33970,6 +33972,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.AbortTiming.NewNavigation" units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
+    This metric is still experimental and not yet ready to be relied upon.
     Measures the time from navigation start to the time the page load was
     aborted by a new navigation.
   </summary>
@@ -33978,6 +33981,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.AbortTiming.Other" units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
+    This metric is still experimental and not yet ready to be relied upon.
     Measures the time from navigation start to the time the page load was
     aborted. The abort cause is unknown.
   </summary>
@@ -33986,6 +33990,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.AbortTiming.Reload" units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
+    This metric is still experimental and not yet ready to be relied upon.
     Measures the time from navigation start to the time the page load was
     aborted by a reload.
   </summary>
@@ -33994,6 +33999,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.AbortTiming.Stop" units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
+    This metric is still experimental and not yet ready to be relied upon.
     Measures the time from navigation start to the time the page load was
     aborted by the user pressing stop.
   </summary>
@@ -34002,6 +34008,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="PageLoad.AbortTiming.UnknownNavigation" units="ms">
   <owner>csharrison@chromium.org</owner>
   <summary>
+    This metric is still experimental and not yet ready to be relied upon.
     Measures the time from navigation start to the time the page load was
     aborted by a navigation with unknown transition type.
   </summary>
