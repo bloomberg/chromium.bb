@@ -250,6 +250,9 @@ TEST(SdkMediaCodecBridgeTest, InvalidOpusHeader) {
 
   scoped_ptr<media::AudioCodecBridge> media_codec;
   media_codec.reset(AudioCodecBridge::Create(kCodecOpus));
+  if (!media_codec)
+    return;
+
   uint8_t dummy_extra_data[] = {0, 0};
 
   // Extra Data is NULL.

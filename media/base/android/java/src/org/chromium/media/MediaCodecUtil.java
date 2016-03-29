@@ -220,6 +220,12 @@ class MediaCodecUtil {
                     return false;
                 }
             }
+        } else if (mime.equals("video/x-vnd.on2.vp9")
+                && Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
+            return false;
+        } else if (mime.equals("audio/opus")
+                && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            return false;
         }
         // *************************************************************
         // *** DO NOT ADD ANY NEW CODECS WITHOUT UPDATING MIME_UTIL. ***

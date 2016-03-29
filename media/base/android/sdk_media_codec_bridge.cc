@@ -345,7 +345,14 @@ AudioCodecBridge* AudioCodecBridge::Create(const AudioCodec& codec) {
     return nullptr;
 
   const std::string mime = AudioCodecToAndroidMimeType(codec);
-  return mime.empty() ? nullptr : new AudioCodecBridge(mime);
+  if (mime.empty())
+    return nullptr;
+
+  scoped_ptr<AudioCodecBridge> bridge(new AudioCodecBridge(mime));
+  if (!bridge->media_codec())
+    return nullptr;
+
+  return bridge.release();
 }
 
 // static
@@ -393,9 +400,7 @@ bool AudioCodecBridge::ConfigureAndStart(const AudioCodec& codec,
            << " seek_preroll_ns:" << seek_preroll_ns
            << " extra data size:" << extra_data_size
            << " play audio:" << play_audio << " media_crypto:" << media_crypto;
-
-  if (!media_codec())
-    return false;
+  DCHECK(media_codec());
 
   std::string codec_string = AudioCodecToAndroidMimeType(codec);
   if (codec_string.empty())
