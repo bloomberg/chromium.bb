@@ -32,7 +32,10 @@
 
 #include "core/dom/Element.h"
 #include "core/events/KeyboardEvent.h"
+#include "core/frame/EventHandlerRegistry.h"
+#include "core/frame/FrameHost.h"
 #include "core/layout/LayoutObject.h"
+#include "core/page/Page.h"
 #include "platform/PlatformEvent.h"
 #include "platform/PlatformKeyboardEvent.h"
 #include "platform/graphics/GraphicsContext.h"
@@ -628,6 +631,27 @@ TEST_F(WebPluginContainerTest, CompositedPluginSPv2)
     ASSERT_EQ(DisplayItem::ForeignLayerPlugin, displayItems[0].getType());
     const auto& foreignLayerDisplayItem = static_cast<const ForeignLayerDisplayItem&>(displayItems[0]);
     EXPECT_EQ(plugin->getWebLayer()->ccLayer(), foreignLayerDisplayItem.layer());
+}
+
+TEST_F(WebPluginContainerTest, NeedsWheelEvents)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(
+        WebString::fromUTF8(m_baseURL.c_str()),
+        WebString::fromUTF8("plugin_container.html"));
+    TestPluginWebFrameClient pluginWebFrameClient; // Must outlive webViewHelper
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webView = webViewHelper.initializeAndLoad(m_baseURL + "plugin_container.html", true, &pluginWebFrameClient);
+    ASSERT(webView);
+    webView->settings()->setPluginsEnabled(true);
+    webView->resize(WebSize(300, 300));
+    webView->updateAllLifecyclePhases();
+    runPendingTasks();
+
+    WebElement pluginContainerOneElement = webView->mainFrame()->document().getElementById(WebString::fromUTF8("translated-plugin"));
+    pluginContainerOneElement.pluginContainer()->setWantsWheelEvents(true);
+
+    runPendingTasks();
+    EXPECT_TRUE(webView->page()->frameHost().eventHandlerRegistry().hasEventHandlers(EventHandlerRegistry::WheelEventBlocking));
 }
 
 } // namespace blink

@@ -548,8 +548,8 @@ void WebPluginContainerImpl::requestTouchEventType(TouchEventRequestType request
     if (m_touchEventRequestType == requestType || !m_element)
         return;
 
-    if (m_element->document().frameHost()) {
-        EventHandlerRegistry& registry = m_element->document().frameHost()->eventHandlerRegistry();
+    if (FrameHost* frameHost = m_element->document().frameHost()) {
+        EventHandlerRegistry& registry = frameHost->eventHandlerRegistry();
         if (requestType != TouchEventRequestTypeNone && m_touchEventRequestType == TouchEventRequestTypeNone)
             registry.didAddEventHandler(*m_element, EventHandlerRegistry::TouchEventBlocking);
         else if (requestType == TouchEventRequestTypeNone && m_touchEventRequestType != TouchEventRequestTypeNone)
@@ -562,6 +562,14 @@ void WebPluginContainerImpl::setWantsWheelEvents(bool wantsWheelEvents)
 {
     if (m_wantsWheelEvents == wantsWheelEvents)
         return;
+    if (FrameHost* frameHost = m_element->document().frameHost()) {
+        EventHandlerRegistry& registry = frameHost->eventHandlerRegistry();
+        if (wantsWheelEvents)
+            registry.didAddEventHandler(*m_element, EventHandlerRegistry::WheelEventBlocking);
+        else
+            registry.didRemoveEventHandler(*m_element, EventHandlerRegistry::WheelEventBlocking);
+    }
+
     m_wantsWheelEvents = wantsWheelEvents;
     if (Page* page = m_element->document().page()) {
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator()) {
@@ -720,6 +728,7 @@ void WebPluginContainerImpl::dispose()
     m_isDisposed = true;
 
     requestTouchEventType(TouchEventRequestTypeNone);
+    setWantsWheelEvents(false);
 
     if (m_webPlugin) {
         RELEASE_ASSERT(!m_webPlugin->container() || m_webPlugin->container() == this);
