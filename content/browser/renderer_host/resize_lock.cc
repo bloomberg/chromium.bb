@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/resize_lock.h"
+#include "content/browser/renderer_host/resize_lock.h"
 
 namespace content {
 
 ResizeLock::ResizeLock(const gfx::Size new_size, bool defer_compositor_lock)
-    : new_size_(new_size),
-      defer_compositor_lock_(defer_compositor_lock) {
+    : new_size_(new_size), defer_compositor_lock_(defer_compositor_lock) {
   if (!defer_compositor_lock_)
     LockCompositor();
 }

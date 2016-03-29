@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/browser_compositor_view_mac.h"
+#include "content/browser/renderer_host/browser_compositor_view_mac.h"
 
 #include <stdint.h>
 
@@ -32,7 +32,7 @@ uint32_t g_placeholder_count = 0;
 
 // A spare BrowserCompositorMac kept around for recycling.
 base::LazyInstance<scoped_ptr<BrowserCompositorMac>>
-  g_recyclable_browser_compositor;
+    g_recyclable_browser_compositor;
 
 }  // namespace
 

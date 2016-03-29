@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_DELEGATED_FRAME_HOST_H_
-#define CONTENT_BROWSER_COMPOSITOR_DELEGATED_FRAME_HOST_H_
+#ifndef CONTENT_BROWSER_RENDERER_HOST_DELEGATED_FRAME_HOST_H_
+#define CONTENT_BROWSER_RENDERER_HOST_DELEGATED_FRAME_HOST_H_
 
 #include <stdint.h>
 
@@ -304,7 +304,7 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // Subscriber that listens to frame presentation events.
   scoped_ptr<RenderWidgetHostViewFrameSubscriber> frame_subscriber_;
-  std::vector<scoped_refptr<OwnedMailbox> > idle_frame_subscriber_textures_;
+  std::vector<scoped_refptr<OwnedMailbox>> idle_frame_subscriber_textures_;
 
   // Callback used to pass the output request to the layer or to a function
   // specified by a test.
@@ -312,8 +312,7 @@ class CONTENT_EXPORT DelegatedFrameHost
       request_copy_of_output_callback_for_testing_;
 
   // YUV readback pipeline.
-  scoped_ptr<content::ReadbackYUVInterface>
-      yuv_readback_pipeline_;
+  scoped_ptr<content::ReadbackYUVInterface> yuv_readback_pipeline_;
 
   scoped_ptr<DelegatedFrameEvictor> delegated_frame_evictor_;
 
@@ -322,4 +321,4 @@ class CONTENT_EXPORT DelegatedFrameHost
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_DELEGATED_FRAME_HOST_H_
+#endif  // CONTENT_BROWSER_RENDERER_HOST_DELEGATED_FRAME_HOST_H_

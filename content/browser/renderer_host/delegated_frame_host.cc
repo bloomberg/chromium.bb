@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/delegated_frame_host.h"
+#include "content/browser/renderer_host/delegated_frame_host.h"
 
 #include <algorithm>
 #include <string>
@@ -22,9 +22,9 @@
 #include "cc/surfaces/surface_hittest.h"
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/compositor/gl_helper.h"
-#include "content/browser/compositor/resize_lock.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/resize_lock.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/video_frame.h"
@@ -84,8 +84,7 @@ DelegatedFrameHost::DelegatedFrameHost(DelegatedFrameHostClient* client)
 void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
   delegated_frame_evictor_->SetVisible(true);
 
-  if (surface_id_.is_null() &&
-      !released_front_lock_.get()) {
+  if (surface_id_.is_null() && !released_front_lock_.get()) {
     if (compositor_)
       released_front_lock_ = compositor_->GetCompositorLock();
   }
@@ -172,12 +171,9 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceToVideoFrame(
 
   scoped_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateRequest(base::Bind(
-          &DelegatedFrameHost::
-               CopyFromCompositingSurfaceHasResultForVideo,
+          &DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo,
           AsWeakPtr(),  // For caching the ReadbackYUVInterface on this class.
-          nullptr,
-          target,
-          callback));
+          nullptr, target, callback));
   request->set_area(src_subrect);
   RequestCopyOfOutput(std::move(request));
 }
@@ -244,8 +240,7 @@ bool DelegatedFrameHost::ShouldSkipFrame(gfx::Size size_in_dip) const {
   // to replace it. Otherwise may cause hangs when the renderer is waiting for
   // the completion of latency infos (such as when taking a Snapshot.)
   if (can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
-      can_lock_compositor_ == NO_PENDING_COMMIT ||
-      !resize_lock_.get())
+      can_lock_compositor_ == NO_PENDING_COMMIT || !resize_lock_.get())
     return false;
 
   return size_in_dip != resize_lock_->expected_size();
@@ -332,8 +327,8 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
 
   scoped_refptr<media::VideoFrame> frame;
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
-  if (!frame_subscriber()->ShouldCaptureFrame(damage_rect, present_time,
-                                              &frame, &callback))
+  if (!frame_subscriber()->ShouldCaptureFrame(damage_rect, present_time, &frame,
+                                              &callback))
     return;
 
   // Get a texture to re-use; else, create a new one.
@@ -349,9 +344,7 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   scoped_ptr<cc::CopyOutputRequest> request =
       cc::CopyOutputRequest::CreateRequest(base::Bind(
           &DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo,
-          AsWeakPtr(),
-          subscriber_texture,
-          frame,
+          AsWeakPtr(), subscriber_texture, frame,
           base::Bind(callback, present_time)));
   // Setting the source in this copy request asks that the layer abort any prior
   // uncommitted copy requests made on behalf of the same frame subscriber.
@@ -452,8 +445,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceManager* manager = factory->GetSurfaceManager();
     if (!surface_factory_) {
-      surface_factory_ =
-          make_scoped_ptr(new cc::SurfaceFactory(manager, this));
+      surface_factory_ = make_scoped_ptr(new cc::SurfaceFactory(manager, this));
     }
     if (surface_id_.is_null() || frame_size != current_surface_size_ ||
         frame_size_in_dip != current_frame_size_in_dip_) {
@@ -463,8 +455,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
       surface_factory_->Create(surface_id_);
       // manager must outlive compositors using it.
       client_->DelegatedFrameHostGetLayer()->SetShowSurface(
-          surface_id_,
-          base::Bind(&SatisfyCallback, base::Unretained(manager)),
+          surface_id_, base::Bind(&SatisfyCallback, base::Unretained(manager)),
           base::Bind(&RequireCallback, base::Unretained(manager)), frame_size,
           frame_device_scale_factor, frame_size_in_dip);
       current_surface_size_ = frame_size;
@@ -482,8 +473,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(
 
     cc::SurfaceFactory::DrawCallback ack_callback;
     if (compositor_ && !skip_frame) {
-      ack_callback = base::Bind(&DelegatedFrameHost::SurfaceDrawn,
-                                AsWeakPtr(), output_surface_id);
+      ack_callback = base::Bind(&DelegatedFrameHost::SurfaceDrawn, AsWeakPtr(),
+                                output_surface_id);
     }
     surface_factory_->SubmitCompositorFrame(surface_id_, std::move(frame),
                                             ack_callback);
@@ -544,8 +535,7 @@ void DelegatedFrameHost::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   if (resources.empty())
     return;
-  std::copy(resources.begin(),
-            resources.end(),
+  std::copy(resources.begin(), resources.end(),
             std::back_inserter(surface_returned_resources_));
   if (!pending_delegated_ack_count_)
     SendReturnedDelegatedResources(last_output_surface_id_);
@@ -623,9 +613,8 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
     scoped_ptr<cc::CopyOutputResult> result) {
   base::ScopedClosureRunner scoped_callback_runner(
       base::Bind(callback, gfx::Rect(), false));
-  base::ScopedClosureRunner scoped_return_subscriber_texture(
-      base::Bind(&ReturnSubscriberTexture, dfh, subscriber_texture,
-      gpu::SyncToken()));
+  base::ScopedClosureRunner scoped_return_subscriber_texture(base::Bind(
+      &ReturnSubscriberTexture, dfh, subscriber_texture, gpu::SyncToken()));
 
   if (!dfh)
     return;
@@ -642,10 +631,9 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
   // pixels.
   gfx::Rect region_in_frame = media::ComputeLetterboxRegion(
       video_frame->visible_rect(), result->size());
-  region_in_frame = gfx::Rect(region_in_frame.x() & ~1,
-                              region_in_frame.y() & ~1,
-                              region_in_frame.width() & ~1,
-                              region_in_frame.height() & ~1);
+  region_in_frame =
+      gfx::Rect(region_in_frame.x() & ~1, region_in_frame.y() & ~1,
+                region_in_frame.width() & ~1, region_in_frame.height() & ~1);
   if (region_in_frame.IsEmpty())
     return;
 
@@ -713,13 +701,9 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
     else if (switch_value == "best")
       quality = GLHelper::SCALER_QUALITY_BEST;
 
-    dfh->yuv_readback_pipeline_.reset(
-        gl_helper->CreateReadbackPipelineYUV(quality,
-                                             result_rect.size(),
-                                             result_rect,
-                                             region_in_frame.size(),
-                                             true,
-                                             true));
+    dfh->yuv_readback_pipeline_.reset(gl_helper->CreateReadbackPipelineYUV(
+        quality, result_rect.size(), result_rect, region_in_frame.size(), true,
+        true));
     yuv_readback_pipeline = dfh->yuv_readback_pipeline_.get();
   }
 
@@ -730,18 +714,15 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
       &DelegatedFrameHost::CopyFromCompositingSurfaceFinishedForVideo,
       dfh->AsWeakPtr(), base::Bind(callback, region_in_frame),
       subscriber_texture, base::Passed(&release_callback));
-  yuv_readback_pipeline->ReadbackYUV(texture_mailbox.mailbox(),
-                                     texture_mailbox.sync_token(),
-                                     video_frame.get(),
-                                     region_in_frame.origin(),
-                                     finished_callback);
+  yuv_readback_pipeline->ReadbackYUV(
+      texture_mailbox.mailbox(), texture_mailbox.sync_token(),
+      video_frame.get(), region_in_frame.origin(), finished_callback);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, ui::CompositorObserver implementation:
 
-void DelegatedFrameHost::OnCompositingDidCommit(
-    ui::Compositor* compositor) {
+void DelegatedFrameHost::OnCompositingDidCommit(ui::Compositor* compositor) {
   if (can_lock_compositor_ == NO_PENDING_COMMIT) {
     can_lock_compositor_ = YES_CAN_LOCK;
     if (resize_lock_.get() && resize_lock_->GrabDeferredLock())
@@ -758,17 +739,14 @@ void DelegatedFrameHost::OnCompositingDidCommit(
   }
 }
 
-void DelegatedFrameHost::OnCompositingStarted(
-    ui::Compositor* compositor, base::TimeTicks start_time) {
+void DelegatedFrameHost::OnCompositingStarted(ui::Compositor* compositor,
+                                              base::TimeTicks start_time) {
   last_draw_ended_ = start_time;
 }
 
-void DelegatedFrameHost::OnCompositingEnded(
-    ui::Compositor* compositor) {
-}
+void DelegatedFrameHost::OnCompositingEnded(ui::Compositor* compositor) {}
 
-void DelegatedFrameHost::OnCompositingAborted(ui::Compositor* compositor) {
-}
+void DelegatedFrameHost::OnCompositingAborted(ui::Compositor* compositor) {}
 
 void DelegatedFrameHost::OnCompositingLockStateChanged(
     ui::Compositor* compositor) {
@@ -785,9 +763,8 @@ void DelegatedFrameHost::OnCompositingShuttingDown(ui::Compositor* compositor) {
   DCHECK(!compositor_);
 }
 
-void DelegatedFrameHost::OnUpdateVSyncParameters(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
+void DelegatedFrameHost::OnUpdateVSyncParameters(base::TimeTicks timebase,
+                                                 base::TimeDelta interval) {
   SetVSyncParameters(timebase, interval);
   if (client_->DelegatedFrameHostIsVisible())
     client_->DelegatedFrameHostUpdateVSyncParameters(timebase, interval);
@@ -889,7 +866,7 @@ void DelegatedFrameHost::UnlockResources() {
 // DelegatedFrameHost, ui::LayerOwnerDelegate implementation:
 
 void DelegatedFrameHost::OnLayerRecreated(ui::Layer* old_layer,
-                                                ui::Layer* new_layer) {
+                                          ui::Layer* new_layer) {
   // The new_layer is the one that will be used by our Window, so that's the one
   // that should keep our frame. old_layer will be returned to the
   // RecreateLayer caller, and should have a copy.
