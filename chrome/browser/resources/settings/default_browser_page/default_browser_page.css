@@ -3,5 +3,5 @@
  * found in the LICENSE file. */
 
 .error-icon {
-  color: red;
+  color: var(--settings-error-color);
 }

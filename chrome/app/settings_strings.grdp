@@ -246,6 +246,9 @@
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_USAGE_SSL_CLIENT" desc="The description of a certificate that is verified for use as an SSL client">
       SSL Client Certificate
     </message>
+    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_UNTRUSTED" desc="This text is displayed next to untrusted certificates in a red box.">
+      Untrusted
+    </message>
 
     <!-- Certificate Manager Page, edit certificate authority trust dialog-->
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_TITLE" desc="Title of the certificate manager edit trust dialog">

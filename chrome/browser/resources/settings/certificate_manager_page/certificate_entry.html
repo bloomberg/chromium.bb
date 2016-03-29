@@ -11,23 +11,20 @@
 
 <dom-module id="settings-certificate-entry">
   <template>
-    <style include="settings-shared">
-      iron-collapse {
-        margin: 0 20px;
-      }
-    </style>
-
+    <style include="settings-shared"></style>
     <div class="settings-box">
       <div class="start">[[model.id]]</div>
       <cr-expand-button expanded="{{expanded_}}"></cr-expand-button>
     </div>
     <iron-collapse opened="[[expanded_]]" no-animation>
       <template is="dom-if" if="[[expanded_]]">
-        <template is="dom-repeat" items="[[model.subnodes]]">
-          <settings-certificate-subentry model="[[item]]"
-              certificate-type="[[certificateType]]">
-          </settings-certificate-subentry>
-        </template>
+        <div class="list-frame">
+          <template is="dom-repeat" items="[[model.subnodes]]">
+            <settings-certificate-subentry model="[[item]]"
+                certificate-type="[[certificateType]]">
+            </settings-certificate-subentry>
+          </template>
+        </div>
       </template>
     <iron-collapse>
   </template>

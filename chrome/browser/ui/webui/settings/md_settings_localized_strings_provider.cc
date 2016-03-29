@@ -215,6 +215,8 @@ void AddCertificateManagerStrings(content::WebUIDataSource* html_source) {
       {"certificateManagerExport", IDS_SETTINGS_CERTIFICATE_MANAGER_EXPORT},
       {"certificateManagerDelete", IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE},
       {"certificateManagerDone", IDS_SETTINGS_CERTIFICATE_MANAGER_DONE},
+      {"certificateManagerUntrusted",
+       IDS_SETTINGS_CERTIFICATE_MANAGER_UNTRUSTED},
        // CA trust edit dialog.
       {"certificateManagerCaTrustEditDialogTitle",
        IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_TITLE},

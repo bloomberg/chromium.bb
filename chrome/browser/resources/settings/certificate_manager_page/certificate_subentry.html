@@ -17,22 +17,25 @@
         box-shadow: 0 2px 6px grey;
       }
 
-      .container {
-        display: flex;
-        line-height: 30px;
-      }
-
       .name {
         flex: auto;
-        margin: auto;
+      }
+
+      .untrusted {
+        color: var(--settings-error-color);
+        font-weight: 500;
+        text-transform: uppercase;
+        -webkit-margin-end: 16px;
       }
 
       paper-item:hover {
-        background-color: var(--google-grey-300);
+        background-color: var(--settings-hover-color);
       }
     </style>
-    <div class="container">
-      <paper-icon-button icon="image:brightness-1"></paper-icon-button>
+    <div class="list-item underbar">
+      <div class="untrusted" hidden$="[[!model.untrusted]]">
+        $i18n{certificateManagerUntrusted}
+      </div>
       <div class="name">[[model.name]]</div>
       <paper-icon-button id="dots" icon="more-vert" toggles
           active="{{menuOpened}}"></paper-icon-button>
