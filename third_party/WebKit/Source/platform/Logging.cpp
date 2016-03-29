@@ -32,7 +32,6 @@
 namespace blink {
 
 WTFLogChannel LogFileAPI =            { WTFLogChannelOff };
-WTFLogChannel LogFonts =              { WTFLogChannelOff };
 WTFLogChannel LogMedia =              { WTFLogChannelOff };
 WTFLogChannel LogNetwork =            { WTFLogChannelOff };
 WTFLogChannel LogPlugins =            { WTFLogChannelOff };
@@ -73,9 +72,6 @@ WTFLogChannel* getChannelFromName(const String& channelName)
 
     if (equalIgnoringCase(channelName, String("Timers")))
         return &LogTimers;
-
-    if (equalIgnoringCase(channelName, String("Fonts")))
-        return &LogFonts;
 
     return 0;
 }

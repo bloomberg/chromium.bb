@@ -49,13 +49,6 @@ struct SegmenterExpectedRun {
 
 class RunSegmenterTest : public testing::Test {
 protected:
-#if !LOG_DISABLED
-    static void SetUpTestCase()
-    {
-        LogFonts = { WTFLogChannelOn };
-    }
-#endif
-
     void CheckRuns(const Vector<SegmenterTestRun>& runs, FontOrientation orientation, FontVariant variant)
     {
         String text(emptyString16Bit());

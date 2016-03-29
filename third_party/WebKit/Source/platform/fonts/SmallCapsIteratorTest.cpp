@@ -28,13 +28,6 @@ struct ExpectedRun {
 
 class SmallCapsIteratorTest : public testing::Test {
 protected:
-#if !LOG_DISABLED
-    static void SetUpTestCase()
-    {
-        LogFonts = { WTFLogChannelOn };
-    }
-#endif
-
     void CheckRuns(const Vector<TestRun>& runs)
     {
         String text(emptyString16Bit());
@@ -59,7 +52,6 @@ protected:
             ASSERT_EQ(expect[runCount].smallCapsBehavior, smallCapsBehavior);
             ++runCount;
         }
-        WTF_LOG(Fonts, "Expected %zu runs, got %lu ", expect.size(), runCount);
         ASSERT_EQ(expect.size(), runCount);
     }
 };
