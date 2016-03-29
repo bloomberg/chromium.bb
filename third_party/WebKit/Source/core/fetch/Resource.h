@@ -149,7 +149,7 @@ public:
     size_t size() const { return encodedSize() + decodedSize() + overheadSize(); }
     size_t encodedSize() const { return m_encodedSize; }
     size_t decodedSize() const { return m_decodedSize; }
-    size_t overheadSize() const;
+    size_t overheadSize() const { return m_overheadSize; }
 
     bool isLoaded() const { return m_status > Pending; }
 
@@ -330,6 +330,8 @@ private:
     void revalidationSucceeded(const ResourceResponse&);
     void revalidationFailed();
 
+    size_t calculateOverheadSize() const;
+
     bool unlock();
 
     void setCachedMetadata(unsigned dataTypeID, const char*, size_t, CachedMetadataHandler::CacheType);
@@ -353,6 +355,13 @@ private:
 
     size_t m_encodedSize;
     size_t m_decodedSize;
+
+    // Resource::calculateOverheadSize() is affected by changes in
+    // |m_resourceRequest.url()|, but |m_overheadSize| is not updated after
+    // initial |m_resourceRequest| is given, to reduce MemoryCache manipulation
+    // and thus potential bugs. crbug.com/594644
+    const size_t m_overheadSize;
+
     unsigned m_preloadCount;
 
     String m_cacheIdentifier;

@@ -156,6 +156,7 @@ Resource::Resource(const ResourceRequest& request, Type type, const ResourceLoad
     , m_identifier(0)
     , m_encodedSize(0)
     , m_decodedSize(0)
+    , m_overheadSize(calculateOverheadSize())
     , m_preloadCount(0)
     , m_cacheIdentifier(MemoryCache::defaultCacheIdentifier())
     , m_preloadResult(PreloadNotReferenced)
@@ -898,7 +899,7 @@ bool Resource::lock()
     return true;
 }
 
-size_t Resource::overheadSize() const
+size_t Resource::calculateOverheadSize() const
 {
     static const int kAverageClientsHashMapSize = 384;
     return sizeof(Resource) + m_response.memoryUsage() + kAverageClientsHashMapSize + m_resourceRequest.url().getString().length() * 2;
