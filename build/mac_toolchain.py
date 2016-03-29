@@ -10,8 +10,9 @@ xcode-select is already set and points to an external folder
 |TOOLCHAIN_REVISION|-|TOOLCHAIN_SUB_REVISION| below, GYP_DEFINE
 mac_toolchain_revision can be used instead.
 
-This script will only run on machines if /usr/bin/xcodebuild has been added to
-the sudoers list so the license can be accepted.
+This script will only run on machines if /usr/bin/xcodebuild and
+/usr/bin/xcode-select has been added to the sudoers list so the license can be
+accepted.
 
 Otherwise, user input would be required to complete the script.  Perhaps future
 versions can be modified to allow for user input on developer machines.
@@ -93,10 +94,13 @@ def CanAccessToolchainBucket():
 
 def AcceptLicense(directory):
   """Use xcodebuild to accept new toolchain license.  This only
-  works if xcodebuild is in sudoers."""
-  xcodebuild = os.path.join(TOOLCHAIN_BUILD_DIR,
-                            'Contents/Developer/usr/bin/xcodebuild')
-  subprocess.check_call(['sudo', xcodebuild, '-license', 'accept'])
+  works if xcodebuild and xcode-select are in sudoers."""
+  xcodebuild_dir = os.path.join(TOOLCHAIN_BUILD_DIR, 'Contents/Developer')
+  old_path = subprocess.Popen(['/usr/bin/xcode-select', '-p'],
+                               stdout=subprocess.PIPE).communicate()[0].strip()
+  subprocess.check_call(['sudo', '/usr/bin/xcode-select', '-s', xcodebuild_dir])
+  subprocess.check_call(['sudo', '/usr/bin/xcodebuild', '-license', 'accept'])
+  subprocess.check_call(['sudo', '/usr/bin/xcode-select', '-s', old_path])
 
 
 def UseLocalMacSDK():
