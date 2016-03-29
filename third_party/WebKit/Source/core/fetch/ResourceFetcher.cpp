@@ -487,43 +487,21 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::requestResource(FetchRequest& 
             resource->didChangePriority(priority, 0);
     }
 
-    if (resourceNeedsLoad(resource.get(), request, policy)) {
-        if (!context().shouldLoadNewResource(factory.type())) {
-            if (memoryCache()->contains(resource.get()))
-                memoryCache()->remove(resource.get());
-            return nullptr;
-        }
-
-        resource->load(this);
-
-        // For asynchronous loads that immediately fail, it's sufficient to return a
-        // null Resource, as it indicates that something prevented the load from starting.
-        // If there's a network error, that failure will happen asynchronously. However, if
-        // a sync load receives a network error, it will have already happened by this point.
-        // In that case, the requester should have access to the relevant ResourceError, so
-        // we need to return a non-null Resource.
-        if (resource->errorOccurred()) {
-            if (memoryCache()->contains(resource.get()))
-                memoryCache()->remove(resource.get());
-            return request.options().synchronousPolicy == RequestSynchronously ? resource : nullptr;
-        }
-    }
-
-    // FIXME: Temporarily leave main resource caching disabled for chromium,
-    // see https://bugs.webkit.org/show_bug.cgi?id=107962. Before caching main
-    // resources, we should be sure to understand the implications for memory
-    // use.
-    // Remove main resource from cache to prevent reuse.
-    if (factory.type() == Resource::MainResource) {
-        ASSERT(policy != Use || isStaticData);
-        ASSERT(policy != Revalidate);
-        memoryCache()->remove(resource.get());
-    }
-
-    requestLoadStarted(resource.get(), request, policy == Use ? ResourceLoadingFromCache : ResourceLoadingFromNetwork, isStaticData);
-
     ASSERT(resource->url() == url.getString());
+    requestLoadStarted(resource.get(), request, policy == Use ? ResourceLoadingFromCache : ResourceLoadingFromNetwork, isStaticData);
     m_documentResources.set(resource->url(), resource->asWeakPtr());
+
+    if (!resourceNeedsLoad(resource.get(), request, policy))
+        return resource;
+
+    if (!context().shouldLoadNewResource(factory.type())) {
+        if (memoryCache()->contains(resource.get()))
+            memoryCache()->remove(resource.get());
+        return nullptr;
+    }
+
+    resource->load(this);
+    ASSERT(!resource->errorOccurred() || request.options().synchronousPolicy == RequestSynchronously);
     return resource;
 }
 
@@ -603,7 +581,9 @@ PassRefPtrWillBeRawPtr<Resource> ResourceFetcher::createResourceForLoading(Fetch
     resource->setLinkPreload(request.isLinkPreload());
     resource->setCacheIdentifier(cacheIdentifier);
 
-    memoryCache()->add(resource.get());
+    // Don't add main resource to cache to prevent reuse.
+    if (factory.type() != Resource::MainResource)
+        memoryCache()->add(resource.get());
     return resource;
 }
 
