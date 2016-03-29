@@ -90,21 +90,20 @@ bool RemovableStorageProvider::PopulateDeviceList(
       continue;
     }
 
-    linked_ptr<api::image_writer_private::RemovableStorageDevice> device_item(
-        new api::image_writer_private::RemovableStorageDevice());
-    device_item->vendor =
+    api::image_writer_private::RemovableStorageDevice device_item;
+    device_item.vendor =
         device::UdevDeviceGetSysattrValue(parent_device, "vendor");
-    device_item->model =
+    device_item.model =
         device::UdevDeviceGetSysattrValue(parent_device, "model");
     // TODO (smaskell): Don't expose raw device path
-    device_item->storage_unit_id =
+    device_item.storage_unit_id =
         device::udev_device_get_devnode(cur_device.get());
-    device_item->capacity = get_int_attr(device::udev_device_get_sysattr_value(
-                                cur_device.get(), "size")) *
-                            get_device_blk_size(device_item->storage_unit_id);
-    device_item->removable = removable;
+    device_item.capacity = get_int_attr(device::udev_device_get_sysattr_value(
+                               cur_device.get(), "size")) *
+                           get_device_blk_size(device_item.storage_unit_id);
+    device_item.removable = removable;
 
-    device_list->data.push_back(device_item);
+    device_list->data.push_back(std::move(device_item));
   }
 
   return true;

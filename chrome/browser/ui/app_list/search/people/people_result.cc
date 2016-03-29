@@ -156,9 +156,9 @@ void PeopleResult::OpenChat() {
   request.from = signin_manager->GetAuthenticatedAccountInfo().email;
 
   // to: list of users with whom to start this hangout is with.
-  linked_ptr<User> target(new User());
-  target->id = person_->owner_id;
-  request.to.push_back(target);
+  User target;
+  target.id = person_->owner_id;
+  request.to.push_back(std::move(target));
 
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::HANGOUTS_PRIVATE_ON_HANGOUT_REQUESTED,

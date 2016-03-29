@@ -462,20 +462,17 @@ bool InputImeSetCandidatesFunction::RunSync() {
       parent_params->parameters;
 
   std::vector<InputMethodEngine::Candidate> candidates_out;
-  const std::vector<linked_ptr<
-      SetCandidates::Params::Parameters::CandidatesType> >& candidates_in =
-          params.candidates;
-  for (size_t i = 0; i < candidates_in.size(); ++i) {
+  for (const auto& candidate_in : params.candidates) {
     candidates_out.push_back(InputMethodEngine::Candidate());
-    candidates_out.back().value = candidates_in[i]->candidate;
-    candidates_out.back().id = candidates_in[i]->id;
-    if (candidates_in[i]->label)
-      candidates_out.back().label = *candidates_in[i]->label;
-    if (candidates_in[i]->annotation)
-      candidates_out.back().annotation = *candidates_in[i]->annotation;
-    if (candidates_in[i]->usage) {
-      candidates_out.back().usage.title = candidates_in[i]->usage->title;
-      candidates_out.back().usage.body = candidates_in[i]->usage->body;
+    candidates_out.back().value = candidate_in.candidate;
+    candidates_out.back().id = candidate_in.id;
+    if (candidate_in.label)
+      candidates_out.back().label = *candidate_in.label;
+    if (candidate_in.annotation)
+      candidates_out.back().annotation = *candidate_in.annotation;
+    if (candidate_in.usage) {
+      candidates_out.back().usage.title = candidate_in.usage->title;
+      candidates_out.back().usage.body = candidate_in.usage->body;
     }
   }
 
@@ -519,12 +516,10 @@ bool InputImeSetMenuItemsFunction::RunSync() {
     return false;
   }
 
-  const std::vector<linked_ptr<input_ime::MenuItem> >& items = params.items;
   std::vector<chromeos::input_method::InputMethodManager::MenuItem> items_out;
-
-  for (size_t i = 0; i < items.size(); ++i) {
+  for (const input_ime::MenuItem& item_in : params.items) {
     items_out.push_back(chromeos::input_method::InputMethodManager::MenuItem());
-    SetMenuItemToMenu(*items[i], &items_out.back());
+    SetMenuItemToMenu(item_in, &items_out.back());
   }
 
   if (!engine->SetMenuItems(items_out))
@@ -548,12 +543,10 @@ bool InputImeUpdateMenuItemsFunction::RunSync() {
     return false;
   }
 
-  const std::vector<linked_ptr<input_ime::MenuItem> >& items = params.items;
   std::vector<chromeos::input_method::InputMethodManager::MenuItem> items_out;
-
-  for (size_t i = 0; i < items.size(); ++i) {
+  for (const input_ime::MenuItem& item_in : params.items) {
     items_out.push_back(chromeos::input_method::InputMethodManager::MenuItem());
-    SetMenuItemToMenu(*items[i], &items_out.back());
+    SetMenuItemToMenu(item_in, &items_out.back());
   }
 
   if (!engine->UpdateMenuItems(items_out))

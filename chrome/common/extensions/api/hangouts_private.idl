@@ -8,7 +8,7 @@
 // replacing this with a scheme based solution which might be implemented
 // using registerProtocolHandler, but we are still finishing that design.
 // See crbug.com/306672
-namespace hangoutsPrivate {
+[use_movable_types=true] namespace hangoutsPrivate {
 
   enum HangoutType {chat, video, audio};
 

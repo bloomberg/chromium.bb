@@ -283,18 +283,15 @@ ExtensionFunction::ResponseAction InputImeSetCompositionFunction::Run() {
         parent_params->parameters;
     std::vector<InputMethodEngineBase::SegmentInfo> segments;
     if (params.segments) {
-      const std::vector<
-          linked_ptr<SetComposition::Params::Parameters::SegmentsType>>&
-          segments_args = *params.segments;
-      for (const auto& segments_arg : segments_args) {
-        EXTENSION_FUNCTION_VALIDATE(segments_arg->style !=
+      for (const auto& segments_arg : *params.segments) {
+        EXTENSION_FUNCTION_VALIDATE(segments_arg.style !=
                                     input_ime::UNDERLINE_STYLE_NONE);
         InputMethodEngineBase::SegmentInfo segment_info;
-        segment_info.start = segments_arg->start;
-        segment_info.end = segments_arg->end;
-        if (segments_arg->style == input_ime::UNDERLINE_STYLE_UNDERLINE) {
+        segment_info.start = segments_arg.start;
+        segment_info.end = segments_arg.end;
+        if (segments_arg.style == input_ime::UNDERLINE_STYLE_UNDERLINE) {
           segment_info.style = InputMethodEngineBase::SEGMENT_STYLE_UNDERLINE;
-        } else if (segments_arg->style ==
+        } else if (segments_arg.style ==
                    input_ime::UNDERLINE_STYLE_DOUBLEUNDERLINE) {
           segment_info.style =
               InputMethodEngineBase::SEGMENT_STYLE_DOUBLE_UNDERLINE;
@@ -346,21 +343,19 @@ ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
       SendKeyEvents::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(parent_params);
   const SendKeyEvents::Params::Parameters& params = parent_params->parameters;
-  const std::vector<linked_ptr<input_ime::KeyboardEvent>>& key_data =
-      params.key_data;
   std::vector<InputMethodEngineBase::KeyboardEvent> key_data_out;
 
-  for (const auto& key_event : key_data) {
-    InputMethodEngineBase::KeyboardEvent event;
-    event.type = input_ime::ToString(key_event->type);
-    event.key = key_event->key;
-    event.code = key_event->code;
-    event.key_code = key_event->key_code.get() ? *(key_event->key_code) : 0;
-    event.alt_key = key_event->alt_key ? *(key_event->alt_key) : false;
-    event.ctrl_key = key_event->ctrl_key ? *(key_event->ctrl_key) : false;
-    event.shift_key = key_event->shift_key ? *(key_event->shift_key) : false;
-    event.caps_lock = key_event->caps_lock ? *(key_event->caps_lock) : false;
-    key_data_out.push_back(event);
+  for (const auto& key_event : params.key_data) {
+    key_data_out.push_back(InputMethodEngineBase::KeyboardEvent());
+    InputMethodEngineBase::KeyboardEvent& event = key_data_out.back();
+    event.type = input_ime::ToString(key_event.type);
+    event.key = key_event.key;
+    event.code = key_event.code;
+    event.key_code = key_event.key_code.get() ? *(key_event.key_code) : 0;
+    event.alt_key = key_event.alt_key ? *(key_event.alt_key) : false;
+    event.ctrl_key = key_event.ctrl_key ? *(key_event.ctrl_key) : false;
+    event.shift_key = key_event.shift_key ? *(key_event.shift_key) : false;
+    event.caps_lock = key_event.caps_lock ? *(key_event.caps_lock) : false;
   }
   if (!engine->SendKeyEvents(params.context_id, key_data_out))
     return RespondNow(Error(kErrorSetKeyEventsFail));

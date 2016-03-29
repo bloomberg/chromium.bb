@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // identityPrivate.
-namespace identityPrivate {
+[use_movable_types=true] namespace identityPrivate {
 
   interface Events {
     // Fired when a web flow dialog should be displayed.

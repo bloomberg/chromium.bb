@@ -12,8 +12,8 @@ namespace extensions {
 
 // TODO(haven): Clean up this class to remove refcounting.  http://crbug/370590
 
-typedef RefCountedVector<linked_ptr
-  <api::image_writer_private::RemovableStorageDevice> > StorageDeviceList;
+typedef RefCountedVector<api::image_writer_private::RemovableStorageDevice>
+    StorageDeviceList;
 
 // Abstraction for platform specific implementations of listing removable
 // storage devices

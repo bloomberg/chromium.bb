@@ -12,7 +12,6 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "chrome/browser/ui/input_method/input_method_engine.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/input_ime.h"
@@ -53,14 +52,14 @@ class ImeObserverNonChromeOS : public ui::ImeObserver {
         !HasListener(OnCompositionBoundsChanged::kEventName))
       return;
 
-    std::vector<linked_ptr<input_ime::Bounds>> bounds_list;
+    std::vector<input_ime::Bounds> bounds_list;
     for (const auto& bound : bounds) {
-      linked_ptr<input_ime::Bounds> bounds_value(new input_ime::Bounds());
-      bounds_value->left = bound.x();
-      bounds_value->top = bound.y();
-      bounds_value->width = bound.width();
-      bounds_value->height = bound.height();
-      bounds_list.push_back(bounds_value);
+      input_ime::Bounds bounds_value;
+      bounds_value.left = bound.x();
+      bounds_value.top = bound.y();
+      bounds_value.width = bound.width();
+      bounds_value.height = bound.height();
+      bounds_list.push_back(std::move(bounds_value));
     }
 
     scoped_ptr<base::ListValue> args(

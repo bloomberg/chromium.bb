@@ -71,30 +71,28 @@ void ExtensionImeMenuEventRouter::ImeMenuItemsChanged(
   if (!router->HasEventListener(OnImeMenuItemsChanged::kEventName))
     return;
 
-  std::vector<linked_ptr<input_method_private::MenuItem>> menu_items;
-  for (auto item : items) {
-    linked_ptr<input_method_private::MenuItem> menu_item(
-        new input_method_private::MenuItem());
-    menu_item->id = item.id;
-    menu_item->label.reset(new std::string(item.label));
+  std::vector<input_method_private::MenuItem> menu_items;
+  for (const auto& item : items) {
+    input_method_private::MenuItem menu_item;
+    menu_item.id = item.id;
+    menu_item.label.reset(new std::string(item.label));
     switch (item.style) {
       case input_method::InputMethodManager::MENU_ITEM_STYLE_CHECK:
-        menu_item->style = input_method_private::ParseMenuItemStyle("check");
+        menu_item.style = input_method_private::ParseMenuItemStyle("check");
         break;
       case input_method::InputMethodManager::MENU_ITEM_STYLE_RADIO:
-        menu_item->style = input_method_private::ParseMenuItemStyle("radio");
+        menu_item.style = input_method_private::ParseMenuItemStyle("radio");
         break;
       case input_method::InputMethodManager::MENU_ITEM_STYLE_SEPARATOR:
-        menu_item->style =
-            input_method_private::ParseMenuItemStyle("separator");
+        menu_item.style = input_method_private::ParseMenuItemStyle("separator");
         break;
       default:
-        menu_item->style = input_method_private::ParseMenuItemStyle("");
+        menu_item.style = input_method_private::ParseMenuItemStyle("");
     }
-    menu_item->visible.reset(new bool(item.visible));
-    menu_item->checked.reset(new bool(item.checked));
-    menu_item->enabled.reset(new bool(item.enabled));
-    menu_items.push_back(menu_item);
+    menu_item.visible.reset(new bool(item.visible));
+    menu_item.checked.reset(new bool(item.checked));
+    menu_item.enabled.reset(new bool(item.enabled));
+    menu_items.push_back(std::move(menu_item));
   }
 
   scoped_ptr<base::ListValue> args =

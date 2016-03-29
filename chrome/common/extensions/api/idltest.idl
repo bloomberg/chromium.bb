@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // An API to test IDL schema specifications.
-namespace idltest {
+[use_movable_types=true] namespace idltest {
 
   callback LongArrayCallback = void(long[] array);
   callback ArrayBufferCallback = void(ArrayBuffer buffer);

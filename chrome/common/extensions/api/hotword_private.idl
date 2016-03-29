@@ -10,7 +10,7 @@
 //
 // For an FYI, visit http://goo.gl/AyHbkH
 
-namespace hotwordPrivate {
+[use_movable_types=true] namespace hotwordPrivate {
 
   dictionary StatusDetails {
     // Whether the hotword preference has been set.

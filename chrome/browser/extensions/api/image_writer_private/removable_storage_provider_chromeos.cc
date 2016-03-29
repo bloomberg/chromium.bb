@@ -29,23 +29,22 @@ bool RemovableStorageProvider::PopulateDeviceList(
     if (disk.is_parent() && !disk.on_boot_device() && disk.has_media() &&
         (disk.device_type() == chromeos::DEVICE_TYPE_USB ||
          disk.device_type() == chromeos::DEVICE_TYPE_SD)) {
-      linked_ptr<api::image_writer_private::RemovableStorageDevice> device(
-          new api::image_writer_private::RemovableStorageDevice());
-      device->storage_unit_id = disk.device_path();
-      device->capacity = disk.total_size_in_bytes();
-      device->removable = disk.on_removable_device();
-      device->vendor = disk.vendor_name();
-      device->model = disk.product_name();
+      api::image_writer_private::RemovableStorageDevice device;
+      device.storage_unit_id = disk.device_path();
+      device.capacity = disk.total_size_in_bytes();
+      device.removable = disk.on_removable_device();
+      device.vendor = disk.vendor_name();
+      device.model = disk.product_name();
 
-      if (device->model.empty() && device->vendor.empty()) {
+      if (device.model.empty() && device.vendor.empty()) {
         if (disk.device_type() == chromeos::DEVICE_TYPE_USB) {
-          device->model = kUnknownUSBDiskModel;
+          device.model = kUnknownUSBDiskModel;
         } else {
-          device->model = kUnknownSDDiskModel;
+          device.model = kUnknownSDDiskModel;
         }
       }
 
-      device_list->data.push_back(device);
+      device_list->data.push_back(std::move(device));
     }
   }
 

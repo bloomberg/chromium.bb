@@ -7,7 +7,7 @@
 //
 // See the design doc for a detailed description of this API.
 // https://goo.gl/KzMEFq
-namespace imageWriterPrivate {
+[use_movable_types=true] namespace imageWriterPrivate {
   // The different stages of a write call.
   //
   // <dl>

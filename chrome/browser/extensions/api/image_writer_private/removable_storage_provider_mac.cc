@@ -91,14 +91,13 @@ bool RemovableStorageProvider::PopulateDeviceList(
         characteristics, CFSTR(kIOPropertyProductNameKey));
     std::string model = base::SysCFStringRefToUTF8(cf_model);
 
-    linked_ptr<api::image_writer_private::RemovableStorageDevice> device(
-        new api::image_writer_private::RemovableStorageDevice());
-    device->storage_unit_id = bsd_name;
-    device->capacity = size_in_bytes;
-    device->vendor = vendor;
-    device->model = model;
-    device->removable = removable;
-    device_list->data.push_back(device);
+    api::image_writer_private::RemovableStorageDevice device;
+    device.storage_unit_id = bsd_name;
+    device.capacity = size_in_bytes;
+    device.vendor = vendor;
+    device.model = model;
+    device.removable = removable;
+    device_list->data.push_back(std::move(device));
   }
 
   return true;

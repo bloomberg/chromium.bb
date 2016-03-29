@@ -148,24 +148,23 @@ bool AddDeviceInfo(HANDLE interface_enumerator,
   std::string drive_id = "\\\\.\\PhysicalDrive";
   drive_id.append(base::Uint64ToString(device_number.DeviceNumber));
 
-  linked_ptr<api::image_writer_private::RemovableStorageDevice> device(
-    new api::image_writer_private::RemovableStorageDevice());
-  device->capacity = disk_capacity;
-  device->storage_unit_id = drive_id;
-  device->removable = device_descriptor->RemovableMedia == TRUE;
+  api::image_writer_private::RemovableStorageDevice device;
+  device.capacity = disk_capacity;
+  device.storage_unit_id = drive_id;
+  device.removable = device_descriptor->RemovableMedia == TRUE;
 
   if (device_descriptor->VendorIdOffset &&
       output_buf[device_descriptor->VendorIdOffset]) {
-    device->vendor.assign(output_buf.get() + device_descriptor->VendorIdOffset);
+    device.vendor.assign(output_buf.get() + device_descriptor->VendorIdOffset);
   }
 
   std::string product_id;
   if (device_descriptor->ProductIdOffset &&
       output_buf[device_descriptor->ProductIdOffset]) {
-    device->model.assign(output_buf.get() + device_descriptor->ProductIdOffset);
+    device.model.assign(output_buf.get() + device_descriptor->ProductIdOffset);
   }
 
-  device_list->data.push_back(device);
+  device_list->data.push_back(std::move(device));
 
   return true;
 }

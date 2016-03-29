@@ -87,13 +87,9 @@ class RemovableStorageProviderChromeOsUnitTest : public testing::Test {
   // Checks if the DeviceList has a specific entry.
   RemovableStorageDevice* FindDevice(StorageDeviceList* list,
                                      const std::string& file_path) {
-    for (std::vector<linked_ptr<RemovableStorageDevice> >::const_iterator iter =
-             list->data.begin();
-         iter != list->data.end();
-         ++iter) {
-      if ((*iter)->storage_unit_id == file_path) {
-        return (*iter).get();
-      }
+    for (RemovableStorageDevice& device : list->data) {
+      if (device.storage_unit_id == file_path)
+        return &device;
     }
     return NULL;
   }

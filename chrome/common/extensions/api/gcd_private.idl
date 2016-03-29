@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.gcdPrivate</code> API to discover GCD APIs and register
 // them.
-namespace gcdPrivate {
+[use_movable_types=true] namespace gcdPrivate {
 
   enum Status {
     // Success.
