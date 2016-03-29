@@ -1522,21 +1522,24 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
         || (endLine < firstExplicitLine)
         || (endLine > lastExplicitLine);
 
-    LayoutUnit start = startIsAuto ? LayoutUnit() : isForColumns ?  m_columnPositions[startLine] : m_rowPositions[startLine];
-    LayoutUnit end = endIsAuto ? isForColumns ? logicalWidth() : logicalHeight() : isForColumns ?  m_columnPositions[endLine] : m_rowPositions[endLine];
-
-    breadth = end - start;
-
-    if (startIsAuto)
-        breadth -= isForColumns ? borderStart() : borderBefore();
-    else
-        start -= isForColumns ? borderStart() : borderBefore();
-
-    if (endIsAuto) {
-        breadth -= isForColumns ? borderEnd() : borderAfter();
-        breadth -= scrollbarLogicalWidth();
+    // We're normalizing the positions to avoid issues with RTL (as they're stored in the same order than LTR but adding an offset).
+    LayoutUnit start;
+    if (!startIsAuto) {
+        if (isForColumns)
+            start = m_columnPositions[startLine] - m_columnPositions[0] + paddingStart();
+        else
+            start = m_rowPositions[startLine] - m_rowPositions[0] + paddingBefore();
     }
 
+    LayoutUnit end = isForColumns ? clientLogicalWidth() : clientLogicalHeight();
+    if (!endIsAuto) {
+        if (isForColumns)
+            end = m_columnPositions[endLine] - m_columnPositions[0] + paddingStart();
+        else
+            end = m_rowPositions[endLine] - m_rowPositions[0] + paddingBefore();
+    }
+
+    breadth = end - start;
     offset = start;
 
     if (child.parent() == this && !startIsAuto) {
