@@ -647,6 +647,8 @@ void BluetoothDispatcherHost::OnRequestDevice(
     const std::vector<BluetoothUUID>& optional_services) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::REQUEST_DEVICE);
+  RecordRequestDeviceArguments(filters, optional_services);
+
   if (!adapter_.get()) {
     if (BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
       BluetoothAdapterFactory::GetAdapter(base::Bind(
@@ -1149,8 +1151,6 @@ void BluetoothDispatcherHost::OnRequestDeviceImpl(
     const std::vector<BluetoothScanFilter>& filters,
     const std::vector<BluetoothUUID>& optional_services) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  RecordWebBluetoothFunctionCall(UMAWebBluetoothFunction::REQUEST_DEVICE);
-  RecordRequestDeviceArguments(filters, optional_services);
 
   VLOG(1) << "requestDevice called with the following filters: ";
   for (const BluetoothScanFilter& filter : filters) {
