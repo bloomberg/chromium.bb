@@ -443,7 +443,8 @@ EffectNodeData::EffectNodeData()
       effect_changed(false),
       num_copy_requests_in_subtree(0),
       transform_id(0),
-      clip_id(0) {}
+      clip_id(0),
+      target_id(0) {}
 
 EffectNodeData::EffectNodeData(const EffectNodeData& other) = default;
 
@@ -457,7 +458,8 @@ bool EffectNodeData::operator==(const EffectNodeData& other) const {
          has_animated_opacity == other.has_animated_opacity &&
          effect_changed == other.effect_changed &&
          num_copy_requests_in_subtree == other.num_copy_requests_in_subtree &&
-         transform_id == other.transform_id && clip_id == other.clip_id;
+         transform_id == other.transform_id && clip_id == other.clip_id &&
+         target_id == other.target_id;
 }
 
 void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
@@ -474,6 +476,7 @@ void EffectNodeData::ToProtobuf(proto::TreeNode* proto) const {
   data->set_num_copy_requests_in_subtree(num_copy_requests_in_subtree);
   data->set_transform_id(transform_id);
   data->set_clip_id(clip_id);
+  data->set_target_id(target_id);
 }
 
 void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
@@ -491,6 +494,7 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
   num_copy_requests_in_subtree = data.num_copy_requests_in_subtree();
   transform_id = data.transform_id();
   clip_id = data.clip_id();
+  target_id = data.target_id();
 }
 
 ScrollNodeData::ScrollNodeData()

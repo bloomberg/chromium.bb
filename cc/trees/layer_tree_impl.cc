@@ -860,15 +860,7 @@ bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
          it != end; ++it) {
       occlusion_tracker.EnterLayer(it);
 
-      // There are very few render targets so this should be cheap to do for
-      // each layer instead of something more complicated.
-      bool inside_replica = false;
-      LayerImpl* layer = it->render_target();
-      while (layer && !inside_replica) {
-        if (layer->render_target()->has_replica())
-          inside_replica = true;
-        layer = layer->render_target()->parent();
-      }
+      bool inside_replica = it->render_target()->InsideReplica();
 
       // Don't use occlusion if a layer will appear in a replica, since the
       // tile raster code does not know how to look for the replica and would

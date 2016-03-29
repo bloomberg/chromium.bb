@@ -83,7 +83,7 @@ message ClipNodeData {
 }
 
 // Proto for struct EffectNodeData.
-// NEXT ID: 12
+// NEXT ID: 13
 message EffectNodeData {
   optional float opacity = 1;
   optional float screen_space_opacity = 2;
@@ -96,6 +96,7 @@ message EffectNodeData {
   optional int64 num_copy_requests_in_subtree = 8;
   optional int64 transform_id = 9;
   optional int64 clip_id = 10;
+  optional int64 target_id = 12;
 }
 
 // Proto for struct ScrollNodeData

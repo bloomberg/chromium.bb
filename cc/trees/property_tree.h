@@ -271,6 +271,8 @@ struct CC_EXPORT EffectNodeData {
   int num_copy_requests_in_subtree;
   int transform_id;
   int clip_id;
+  // For a node that creates a render surface, target_id is its own id.
+  int target_id;
 
   bool operator==(const EffectNodeData& other) const;
 

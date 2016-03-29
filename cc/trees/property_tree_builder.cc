@@ -633,6 +633,10 @@ bool AddEffectNodeIfNeeded(
     node.data.transform_id = kRootPropertyTreeNodeId;
     node.data.clip_id = kRootPropertyTreeNodeId;
   }
+  node.data.target_id =
+      should_create_render_surface
+          ? data_from_ancestor.effect_tree->next_available_id()
+          : data_for_children->render_target;
   data_for_children->effect_tree_parent =
       data_for_children->effect_tree->Insert(node, parent_id);
   layer->SetEffectTreeIndex(data_for_children->effect_tree_parent);

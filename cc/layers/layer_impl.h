@@ -581,6 +581,8 @@ class CC_EXPORT LayerImpl {
 
   bool IsHidden() const;
 
+  bool InsideReplica() const;
+
   float GetIdealContentsScale() const;
 
   bool was_ever_ready_since_last_transform_animation() const {

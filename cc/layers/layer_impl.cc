@@ -1573,6 +1573,25 @@ bool LayerImpl::IsHidden() const {
   return node->data.screen_space_opacity == 0.f;
 }
 
+bool LayerImpl::InsideReplica() const {
+  // There are very few render targets so this should be cheap to do for each
+  // layer instead of something more complicated.
+  EffectTree& effect_tree = layer_tree_impl_->property_trees()->effect_tree;
+  EffectNode* node = effect_tree.Node(effect_tree_index_);
+
+  while (node) {
+    EffectNode* target_node = effect_tree.Node(node->data.target_id);
+    LayerImpl* target_layer =
+        layer_tree_impl()->LayerById(target_node->owner_id);
+    DCHECK(target_layer);
+    if (target_layer->has_replica())
+      return true;
+    node = effect_tree.parent(target_node);
+  }
+
+  return false;
+}
+
 float LayerImpl::GetIdealContentsScale() const {
   float page_scale = IsAffectedByPageScale()
                          ? layer_tree_impl()->current_page_scale_factor()
