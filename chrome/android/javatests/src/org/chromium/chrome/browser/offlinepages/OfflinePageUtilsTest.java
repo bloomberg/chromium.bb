@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageMod
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content.browser.test.util.Criteria;
@@ -92,14 +93,14 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
      * Mock implementation of the SnackbarController.
      */
     static class MockSnackbarController implements SnackbarController {
-        private int mButtonType;
+        private int mTabId;
         private boolean mDismissed;
         private static final long SNACKBAR_TIMEOUT = 7 * 1000;
         private static final long POLLING_INTERVAL = 100;
 
         public MockSnackbarController() {
             super();
-            mButtonType = OfflinePageUtils.RELOAD_BUTTON;
+            mTabId = Tab.INVALID_TAB_ID;
             mDismissed = false;
         }
 
@@ -121,19 +122,19 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         @Override
         public void onAction(Object actionData) {
             Log.d(TAG, "onAction for snackbar");
-            mButtonType = (int) actionData;
+            mTabId = (int) actionData;
         }
 
         @Override
         public void onDismissNoAction(Object actionData) {
             Log.d(TAG, "onDismissNoAction for snackbar");
             if (actionData == null) return;
-            mButtonType = (int) actionData;
+            mTabId = (int) actionData;
             mDismissed = true;
         }
 
-        public int getLastButtonType() {
-            return mButtonType;
+        public int getLastTabId() {
+            return mTabId;
         }
 
         public boolean getDismissed() {
@@ -167,15 +168,17 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         loadUrl(offlinePageUrl);
         Log.d(TAG, "Calling showOfflineSnackbarIfNecessary from test");
 
+        int tabId = getActivity().getActivityTab().getId();
+
         // Act.  This needs to be called from the UI thread.
         Log.d(TAG, "before connecting NCN online state " + NetworkChangeNotifier.isOnline());
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 Log.d(TAG, "Showing offline snackbar from UI thread");
-                OfflinePageUtils.showOfflineSnackbarIfNecessary(getActivity().getBaseContext(),
-                        getActivity().getSnackbarManager(), getActivity().getActivityTab(),
-                        mockSnackbarController);
+                OfflinePageTabObserver.init(getActivity().getBaseContext(),
+                        getActivity().getSnackbarManager(), mockSnackbarController);
+                OfflinePageUtils.showOfflineSnackbarIfNecessary(getActivity().getActivityTab());
 
                 // Pretend that we went online, this should cause the snackbar to show.
                 // This call will set the isConnected call to return true.
@@ -190,9 +193,9 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         mockSnackbarController.waitForSnackbarControllerToFinish();
 
         // Assert snackbar was shown.
-        Log.d(TAG, "last button = " + mockSnackbarController.getLastButtonType());
+        Log.d(TAG, "last tab id = " + mockSnackbarController.getLastTabId());
         Log.d(TAG, "dismissed = " + mockSnackbarController.getDismissed());
-        assertEquals(OfflinePageUtils.RELOAD_BUTTON, mockSnackbarController.getLastButtonType());
+        assertEquals(tabId, mockSnackbarController.getLastTabId());
         assertTrue(mockSnackbarController.getDismissed());
     }
 

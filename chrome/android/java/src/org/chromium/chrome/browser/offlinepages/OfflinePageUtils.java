@@ -27,8 +27,6 @@ import org.chromium.ui.base.PageTransition;
  */
 public class OfflinePageUtils {
     private static final String TAG = "OfflinePageUtils";
-    /** Snackbar button types */
-    public static final int RELOAD_BUTTON = 0;
 
     private static final int SNACKBAR_DURATION = 6 * 1000; // 6 second
 
@@ -162,10 +160,16 @@ public class OfflinePageUtils {
      * @param tab The current tab.
      */
     public static void showOfflineSnackbarIfNecessary(ChromeActivity activity, Tab tab) {
-        SnackbarController snackbarController =
-                createSnackbarController(activity.getTabModelSelector(), tab.getId());
-        showOfflineSnackbarIfNecessary(
-                activity.getBaseContext(), activity.getSnackbarManager(), tab, snackbarController);
+        if (!OfflinePageBridge.isEnabled()) return;
+
+        if (OfflinePageTabObserver.getInstance() == null) {
+            SnackbarController snackbarController =
+                    createReloadSnackbarController(activity.getTabModelSelector());
+            OfflinePageTabObserver.init(
+                    activity.getBaseContext(), activity.getSnackbarManager(), snackbarController);
+        }
+
+        showOfflineSnackbarIfNecessary(tab);
     }
 
     /**
@@ -176,34 +180,10 @@ public class OfflinePageUtils {
      * @param tab The current tab.
      * @param snackbarController The snackbar controller to control snackbar behavior.
      */
-    static void showOfflineSnackbarIfNecessary(Context context, SnackbarManager snackbarManager,
-            Tab tab, SnackbarController snackbarController) {
-        Log.d(TAG, "showOfflineSnackbarIfNecessary, controller is " + snackbarController);
-        if (tab == null || tab.isFrozen()) return;
-
-        if (!OfflinePageBridge.isEnabled()) return;
-
-        // We only show a snackbar if we are seeing an offline page.
-        if (!tab.isOfflinePage()) return;
-
-        final boolean connected = isConnected();
-
-        Log.d(TAG, "showOfflineSnackbarIfNecessary called, tabId " + tab.getId() + ", hidden "
-                        + tab.isHidden() + ", connected " + connected + ", controller "
-                        + snackbarController);
-
-        // If the tab is no longer hidden, and we have a connection while showing an offline
-        // page, offer to reload it now.
-        if (!tab.isHidden() && connected) {
-            Log.d(TAG, "Offering to reload page, controller " + snackbarController);
-            showReloadSnackbar(context, snackbarManager, snackbarController);
-            return;
-        }
-
-        // Set up the tab observer to watch for the tab being unhidden or connectivity.
-        OfflinePageTabObserver.addObserverForTab(
-                context, snackbarManager, tab, connected, snackbarController);
-        return;
+    static void showOfflineSnackbarIfNecessary(Tab tab) {
+        // Set up the tab observer to watch for the tab being shown (not hidden) and a valid
+        // connection. When both conditions are met a snackbar is shown.
+        OfflinePageTabObserver.addObserverForTab(tab);
     }
 
     /**
@@ -212,13 +192,15 @@ public class OfflinePageUtils {
      * @param snackbarController Class to show the snackbar.
      */
     public static void showReloadSnackbar(Context context, SnackbarManager snackbarManager,
-            final SnackbarController snackbarController) {
+            final SnackbarController snackbarController, int tabId) {
+        if (tabId == Tab.INVALID_TAB_ID) return;
+
         Log.d(TAG, "showReloadSnackbar called with controller " + snackbarController);
         final int snackbarTextId = getStringId(R.string.offline_pages_viewing_offline_page);
         Snackbar snackbar = Snackbar.make(context.getString(snackbarTextId), snackbarController,
                                             Snackbar.TYPE_ACTION)
                                     .setSingleLine(false)
-                                    .setAction(context.getString(R.string.reload), RELOAD_BUTTON);
+                                    .setAction(context.getString(R.string.reload), tabId);
         snackbar.setDuration(SNACKBAR_DURATION);
         snackbarManager.showSnackbar(snackbar);
     }
@@ -267,16 +249,16 @@ public class OfflinePageUtils {
     /**
      * Gets a snackbar controller that we can use to show our snackbar.
      * @param tabModelSelector used to retrieve a tab by ID
-     * @param tabId an ID of a tab that shows the snackbar
      */
-    private static SnackbarController createSnackbarController(
-            final TabModelSelector tabModelSelector, final int tabId) {
+    private static SnackbarController createReloadSnackbarController(
+            final TabModelSelector tabModelSelector) {
         Log.d(TAG, "building snackbar controller");
 
         return new SnackbarController() {
             @Override
             public void onAction(Object actionData) {
-                assert RELOAD_BUTTON == (int) actionData;
+                assert actionData != null;
+                int tabId = (int) actionData;
                 RecordUserAction.record("OfflinePages.ReloadButtonClicked");
                 Tab foundTab = tabModelSelector.getTabById(tabId);
                 if (foundTab == null) return;

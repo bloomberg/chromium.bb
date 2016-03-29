@@ -504,7 +504,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ntp/snippets/SnippetsManager.java",
   "java/src/org/chromium/chrome/browser/offlinepages/ClientId.java",
   "java/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridge.java",
-  "java/src/org/chromium/chrome/browser/offlinepages/OfflinePageConnectivityListener.java",
   "java/src/org/chromium/chrome/browser/offlinepages/OfflinePageFreeUpSpaceCallback.java",
   "java/src/org/chromium/chrome/browser/offlinepages/OfflinePageFreeUpSpaceDialog.java",
   "java/src/org/chromium/chrome/browser/offlinepages/OfflinePageItem.java",
