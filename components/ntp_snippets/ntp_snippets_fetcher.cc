@@ -33,7 +33,7 @@ const char kAuthorizationRequestHeaderFormat[] = "Bearer %s";
 
 const char kRequestParameterFormat[] =
     "{"
-    "  \"response_detail_level\": \"FULL_DEBUG\","
+    "  \"response_detail_level\": \"STANDARD\","
     "  \"advanced_options\": {"
     "    \"local_scoring_params\": {"
     "      \"content_params\": {"
@@ -48,7 +48,7 @@ const char kRequestParameterFormat[] =
     "}";
 
 const char kHostRestrictFormat[] =
-    "      ,\"content_restricts\": {"
+    "      ,\"content_selectors\": {"
     "        \"type\": \"HOST_RESTRICT\","
     "        \"value\": \"%s\""
     "      }";
