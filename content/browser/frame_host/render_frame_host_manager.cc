@@ -545,15 +545,14 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
     if (render_frame_host_->pending_web_ui())
       CommitPendingWebUI();
 
-    // Decide on canceling the ongoing cross-process navigation.
-    if (IsBrowserSideNavigationEnabled()) {
-      CleanUpNavigation();
-    } else {
-      if (was_caused_by_user_gesture) {
-        // A navigation in the original page has taken place.  Cancel the
-        // pending one. Only do it for user gesture originated navigations to
-        // prevent page doing any shenanigans to prevent user from navigating.
-        // See https://code.google.com/p/chromium/issues/detail?id=75195
+    // A navigation in the original page has taken place.  Cancel the pending
+    // one. Only do it for user gesture originated navigations to prevent page
+    // doing any shenanigans to prevent user from navigating.  See
+    // https://code.google.com/p/chromium/issues/detail?id=75195
+    if (was_caused_by_user_gesture) {
+      if (IsBrowserSideNavigationEnabled()) {
+        CleanUpNavigation();
+      } else {
         CancelPending();
       }
     }
