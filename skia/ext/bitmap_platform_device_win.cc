@@ -200,7 +200,6 @@ BitmapPlatformDevice::BitmapPlatformDevice(
       config_dirty_(true),  // Want to load the config next time.
       transform_(SkMatrix::I()) {
   // The data object is already ref'ed for us by create().
-  SkDEBUGCODE(begin_paint_count_ = 0);
   if (hbitmap) {
     SetPlatformDevice(this, this);
     // Initialize the clip region to the entire bitmap.
@@ -214,19 +213,12 @@ BitmapPlatformDevice::BitmapPlatformDevice(
 }
 
 BitmapPlatformDevice::~BitmapPlatformDevice() {
-  SkASSERT(begin_paint_count_ == 0);
   if (hdc_)
     ReleaseBitmapDC();
 }
 
 HDC BitmapPlatformDevice::BeginPlatformPaint() {
-  SkDEBUGCODE(begin_paint_count_++);
   return GetBitmapDC();
-}
-
-void BitmapPlatformDevice::EndPlatformPaint() {
-  SkASSERT(begin_paint_count_--);
-  PlatformDevice::EndPlatformPaint();
 }
 
 void BitmapPlatformDevice::setMatrixClip(const SkMatrix& transform,
@@ -285,7 +277,6 @@ void BitmapPlatformDevice::DrawToHDC(HDC dc, int x, int y,
   }
   LoadTransformToDC(source_dc, transform_);
 
-  EndPlatformPaint();
   if (created_dc)
     ReleaseBitmapDC();
 }

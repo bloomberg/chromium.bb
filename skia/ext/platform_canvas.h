@@ -145,27 +145,16 @@ SK_API bool GetWritablePixels(SkCanvas* canvas, SkPixmap* pixmap);
 // return NULL PlatformSurface.
 SK_API bool SupportsPlatformPaint(const SkCanvas* canvas);
 
-// These calls should surround calls to platform drawing routines, the
-// surface returned here can be used with the native platform routines.
-//
-// Call EndPlatformPaint when you are done and want to use skia operations
-// after calling the platform-specific BeginPlatformPaint; this will
-// synchronize the bitmap to OS if necessary.
-SK_API PlatformSurface BeginPlatformPaint(SkCanvas* canvas);
-SK_API void EndPlatformPaint(SkCanvas* canvas);
-
-// Helper class for pairing calls to BeginPlatformPaint and EndPlatformPaint.
-// Upon construction invokes BeginPlatformPaint, and upon destruction invokes
-// EndPlatformPaint.
+// This object guards calls to platform drawing routines. The surface
+// returned from GetPlatformSurface() can be used with the native platform
+// routines.
 class SK_API ScopedPlatformPaint {
  public:
-  explicit ScopedPlatformPaint(SkCanvas* canvas) : canvas_(canvas) {
-    platform_surface_ = BeginPlatformPaint(canvas);
-  }
-  ~ScopedPlatformPaint() { EndPlatformPaint(canvas_); }
+  explicit ScopedPlatformPaint(SkCanvas* canvas);
 
   // Returns the PlatformSurface to use for native platform drawing calls.
   PlatformSurface GetPlatformSurface() { return platform_surface_; }
+
  private:
   SkCanvas* canvas_;
   PlatformSurface platform_surface_;

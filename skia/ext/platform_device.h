@@ -23,6 +23,7 @@ class SkRegion;
 namespace skia {
 
 class PlatformDevice;
+class ScopedPlatformPaint;
 
 // The following routines provide accessor points for the functionality
 // exported by the various PlatformDevice ports.  
@@ -61,14 +62,6 @@ class SK_API PlatformDevice {
   virtual CGContextRef GetBitmapContext() = 0;
 #endif
 
-  // The DC that corresponds to the bitmap, used for GDI operations drawing
-  // into the bitmap. This is possibly heavyweight, so it should be existant
-  // only during one pass of rendering.
-  virtual PlatformSurface BeginPlatformPaint();
-
-  // Finish a previous call to beginPlatformPaint.
-  virtual void EndPlatformPaint();
-
 #if defined(OS_WIN)
   // Loads a SkPath into the GDI context. The path can there after be used for
   // clipping or as a stroke. Returns false if the path failed to be loaded.
@@ -87,6 +80,7 @@ class SK_API PlatformDevice {
 #endif
 
  protected:
+
 #if defined(OS_WIN)
   // Arrays must be inside structures.
   struct CubicPoints {
@@ -102,6 +96,14 @@ class SK_API PlatformDevice {
   // Transforms SkPath's paths into a series of cubic path.
   static bool SkPathToCubicPaths(CubicPaths* paths, const SkPath& skpath);
 #endif
+
+ private:
+  // The DC that corresponds to the bitmap, used for GDI operations drawing
+  // into the bitmap. This is possibly heavyweight, so it should be existant
+  // only during one pass of rendering.
+  virtual PlatformSurface BeginPlatformPaint();
+
+  friend class ScopedPlatformPaint;
 };
 
 }  // namespace skia

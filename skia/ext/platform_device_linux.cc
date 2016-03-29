@@ -10,8 +10,4 @@ PlatformSurface PlatformDevice::BeginPlatformPaint() {
   return NULL;
 }
 
-void PlatformDevice::EndPlatformPaint() {
-  // We don't need to do anything on Linux here.
-}
-
 }  // namespace skia

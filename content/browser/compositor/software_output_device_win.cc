@@ -180,10 +180,10 @@ void SoftwareOutputDeviceWin::EndPaint() {
     style |= WS_EX_LAYERED;
     SetWindowLong(hwnd_, GWL_EXSTYLE, style);
 
-    HDC dib_dc = skia::BeginPlatformPaint(contents_.get());
+    skia::ScopedPlatformPaint spp(contents_.get());
+    HDC dib_dc = spp.GetPlatformSurface();
     ::UpdateLayeredWindow(hwnd_, NULL, &position, &size, dib_dc, &zero,
                           RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
-    skia::EndPlatformPaint(contents_.get());
   } else {
     HDC hdc = ::GetDC(hwnd_);
     RECT src_rect = rect.ToRECT();

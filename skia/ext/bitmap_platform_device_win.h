@@ -12,6 +12,8 @@
 
 namespace skia {
 
+class ScopedPlatformPaint;
+
 // A device is basically a wrapper around SkBitmap that provides a surface for
 // SkCanvas to draw into. Our device provides a surface Windows can also write
 // to. BitmapPlatformDevice creates a bitmap using CreateDIBSection() in a
@@ -38,14 +40,8 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
 
   ~BitmapPlatformDevice() override;
 
-  // PlatformDevice overrides
-  // Retrieves the bitmap DC, which is the memory DC for our bitmap data. The
-  // bitmap DC is lazy created.
-  PlatformSurface BeginPlatformPaint() override;
-  void EndPlatformPaint() override;
-
-  // Loads the given transform and clipping region into the HDC. This is
-  // overridden from SkBaseDevice.
+  // Loads (lazily) the given transform and clipping region into the HDC. This
+  // is overridden from SkBaseDevice, where it is deprecated.
   void setMatrixClip(const SkMatrix& transform,
                      const SkRegion& region,
                      const SkClipStack&) override;
@@ -61,6 +57,11 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
   SkBaseDevice* onCreateDevice(const CreateInfo&, const SkPaint*) override;
 
  private:
+  // PlatformDevice override
+  // Retrieves the bitmap DC, which is the memory DC for our bitmap data. The
+  // bitmap DC may be lazily created.
+  PlatformSurface BeginPlatformPaint() override;
+
   // Private constructor.
   BitmapPlatformDevice(HBITMAP hbitmap, const SkBitmap& bitmap);
 
@@ -103,11 +104,8 @@ class SK_API BitmapPlatformDevice : public SkBitmapDevice, public PlatformDevice
   // when |hbitmap_| is NULL (will be a NOP).
   void LoadConfig();
 
-#ifdef SK_DEBUG
-  int begin_paint_count_;
-#endif
-
   DISALLOW_COPY_AND_ASSIGN(BitmapPlatformDevice);
+  friend class ScopedPlatformPaint;
 };
 
 }  // namespace skia

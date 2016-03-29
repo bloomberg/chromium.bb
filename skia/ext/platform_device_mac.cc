@@ -10,8 +10,4 @@ CGContextRef PlatformDevice::BeginPlatformPaint() {
   return GetBitmapContext();
 }
 
-void PlatformDevice::EndPlatformPaint() {
-  // Flushing will be done in onAccessBitmap.
-}
-
 }  // namespace skia

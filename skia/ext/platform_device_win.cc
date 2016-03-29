@@ -15,11 +15,6 @@ PlatformSurface PlatformDevice::BeginPlatformPaint() {
   return 0;
 }
 
-void PlatformDevice::EndPlatformPaint() {
-  // We don't clear the DC here since it will be likely to be used again.
-  // Flushing will be done in onAccessBitmap.
-}
-
 // static
 bool PlatformDevice::LoadPathToDC(HDC context, const SkPath& path) {
   switch (path.getFillType()) {

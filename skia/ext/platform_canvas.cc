@@ -65,20 +65,6 @@ bool SupportsPlatformPaint(const SkCanvas* canvas) {
   return GetPlatformDevice(GetTopDevice(*canvas)) != nullptr;
 }
 
-PlatformSurface BeginPlatformPaint(SkCanvas* canvas) {
-  PlatformDevice* platform_device = GetPlatformDevice(GetTopDevice(*canvas));
-  if (platform_device)
-    return platform_device->BeginPlatformPaint();
-
-  return 0;
-}
-
-void EndPlatformPaint(SkCanvas* canvas) {
-  PlatformDevice* platform_device = GetPlatformDevice(GetTopDevice(*canvas));
-  if (platform_device)
-    platform_device->EndPlatformPaint();
-}
-
 size_t PlatformCanvasStrideForWidth(unsigned width) {
   return 4 * width;
 }
@@ -116,5 +102,12 @@ CGContextRef GetBitmapContext(const SkCanvas& canvas) {
 
 #endif
 
+ScopedPlatformPaint::ScopedPlatformPaint(SkCanvas* canvas) :
+    canvas_(canvas),
+    platform_surface_(nullptr) {
+  PlatformDevice* platform_device = GetPlatformDevice(GetTopDevice(*canvas));
+  if (platform_device)
+    platform_surface_ = platform_device->BeginPlatformPaint();
+}
 
 }  // namespace skia
