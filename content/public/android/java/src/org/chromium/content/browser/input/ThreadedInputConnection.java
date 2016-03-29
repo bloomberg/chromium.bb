@@ -272,12 +272,23 @@ public class ThreadedInputConnection implements ChromiumBaseInputConnection {
     @Override
     public boolean setComposingText(final CharSequence text, final int newCursorPosition) {
         if (DEBUG_LOGS) Log.w(TAG, "setComposingText [%s] [%d]", text, newCursorPosition);
+        return updateComposingText(text, newCursorPosition, false);
+    }
+
+    /**
+     * Sends composing update to the InputMethodManager.
+     */
+    @VisibleForTesting
+    public boolean updateComposingText(
+            final CharSequence text, final int newCursorPosition, final boolean isPendingAccent) {
+        final int accentToSend =
+                isPendingAccent ? (mPendingAccent | KeyCharacterMap.COMBINING_ACCENT) : 0;
         assertOnImeThread();
         cancelCombiningAccent();
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mImeAdapter.sendCompositionToNative(text, newCursorPosition, false);
+                mImeAdapter.sendCompositionToNative(text, newCursorPosition, false, accentToSend);
             }
         });
         notifyUserAction();
@@ -295,7 +306,7 @@ public class ThreadedInputConnection implements ChromiumBaseInputConnection {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mImeAdapter.sendCompositionToNative(text, newCursorPosition, text.length() > 0);
+                mImeAdapter.sendCompositionToNative(text, newCursorPosition, text.length() > 0, 0);
             }
         });
         notifyUserAction();
@@ -436,8 +447,8 @@ public class ThreadedInputConnection implements ChromiumBaseInputConnection {
             int pendingAccent = unicodeChar & KeyCharacterMap.COMBINING_ACCENT_MASK;
             StringBuilder builder = new StringBuilder();
             builder.appendCodePoint(pendingAccent);
-            setComposingText(builder.toString(), 1);
-            mPendingAccent = pendingAccent;
+            updateComposingText(builder.toString(), 1, true);
+            setCombiningAccent(pendingAccent);
             return true;
         } else if (mPendingAccent != 0 && unicodeChar != 0) {
             int combined = KeyEvent.getDeadChar(mPendingAccent, unicodeChar);
@@ -452,6 +463,11 @@ public class ThreadedInputConnection implements ChromiumBaseInputConnection {
             finishComposingText();
         }
         return false;
+    }
+
+    @VisibleForTesting
+    public void setCombiningAccent(int pendingAccent) {
+        mPendingAccent = pendingAccent;
     }
 
     private void cancelCombiningAccent() {

@@ -506,7 +506,8 @@ public class ImeAdapter {
                 flags));
     }
 
-    boolean sendCompositionToNative(CharSequence text, int newCursorPosition, boolean isCommit) {
+    boolean sendCompositionToNative(
+            CharSequence text, int newCursorPosition, boolean isCommit, int unicodeFromKeyEvent) {
         if (mNativeImeAdapterAndroid == 0) return false;
 
         // One WebView app detects Enter in JS by looking at KeyDown (http://crbug/577967).
@@ -519,7 +520,7 @@ public class ImeAdapter {
         mViewEmbedder.onImeEvent();
         long timestampMs = SystemClock.uptimeMillis();
         nativeSendSyntheticKeyEvent(mNativeImeAdapterAndroid, WebInputEventType.RawKeyDown,
-                timestampMs, COMPOSITION_KEY_CODE, 0, 0);
+                timestampMs, COMPOSITION_KEY_CODE, 0, unicodeFromKeyEvent);
 
         if (isCommit) {
             nativeCommitText(mNativeImeAdapterAndroid, text.toString());
@@ -528,8 +529,8 @@ public class ImeAdapter {
                     mNativeImeAdapterAndroid, text, text.toString(), newCursorPosition);
         }
 
-        nativeSendSyntheticKeyEvent(mNativeImeAdapterAndroid, WebInputEventType.KeyUp,
-                timestampMs, COMPOSITION_KEY_CODE, 0, 0);
+        nativeSendSyntheticKeyEvent(mNativeImeAdapterAndroid, WebInputEventType.KeyUp, timestampMs,
+                COMPOSITION_KEY_CODE, 0, unicodeFromKeyEvent);
         return true;
     }
 

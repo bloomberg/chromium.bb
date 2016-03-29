@@ -14,6 +14,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 import android.os.Handler;
+import android.view.KeyCharacterMap;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -53,7 +54,7 @@ public class ThreadedInputConnectionTest {
     public void testComposeGetTextFinishGetText() {
         // IME app calls setComposingText().
         mConnection.setComposingText("hello", 1);
-        mInOrder.verify(mImeAdapter).sendCompositionToNative("hello", 1, false);
+        mInOrder.verify(mImeAdapter).sendCompositionToNative("hello", 1, false, 0);
 
         // Renderer updates states asynchronously.
         mConnection.updateStateOnUiThread("hello", 5, 5, 0, 5, true, true);
@@ -87,6 +88,17 @@ public class ThreadedInputConnectionTest {
 
     @Test
     @Feature({"TextInput"})
+    public void testPressingDeadKey() {
+        // On default keyboard "Alt+i" produces a dead key '\u0302'.
+        mConnection.setCombiningAccent(0x0302);
+        mConnection.updateComposingText("\u0302", 1, true);
+        mInOrder.verify(mImeAdapter)
+                .sendCompositionToNative(
+                        "\u0302", 1, false, 0x0302 | KeyCharacterMap.COMBINING_ACCENT);
+    }
+
+    @Test
+    @Feature({"TextInput"})
     public void testRenderChangeUpdatesSelection() {
         // User moves the cursor.
         mConnection.updateStateOnUiThread("hello", 4, 4, -1, -1, true, true);
@@ -101,7 +113,7 @@ public class ThreadedInputConnectionTest {
         assertTrue(mConnection.beginBatchEdit());
         // Type hello real fast.
         mConnection.commitText("hello", 1);
-        mInOrder.verify(mImeAdapter).sendCompositionToNative("hello", 1, true);
+        mInOrder.verify(mImeAdapter).sendCompositionToNative("hello", 1, true, 0);
 
         // Renderer updates states asynchronously.
         mConnection.updateStateOnUiThread("hello", 5, 5, -1, -1, true, true);
