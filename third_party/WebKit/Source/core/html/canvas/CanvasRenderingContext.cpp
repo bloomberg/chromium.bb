@@ -46,7 +46,7 @@ CanvasRenderingContext::ContextType CanvasRenderingContext::contextTypeFromId(co
         return ContextWebgl;
     if (id == "webgl2")
         return ContextWebgl2;
-    if (id == "imagebitmap" && RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled()) {
+    if (id == "bitmaprenderer" && RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled()) {
         return ContextImageBitmap;
     }
     return ContextTypeCount;
