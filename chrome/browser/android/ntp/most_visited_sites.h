@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_MOST_VISITED_SITES_H_
-#define CHROME_BROWSER_ANDROID_MOST_VISITED_SITES_H_
+#ifndef CHROME_BROWSER_ANDROID_NTP_MOST_VISITED_SITES_H_
+#define CHROME_BROWSER_ANDROID_NTP_MOST_VISITED_SITES_H_
 
 #include <jni.h>
 #include <stddef.h>
@@ -243,4 +243,4 @@ class MostVisitedSites : public history::TopSitesObserver,
   DISALLOW_COPY_AND_ASSIGN(MostVisitedSites);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_MOST_VISITED_SITES_H_
+#endif  // CHROME_BROWSER_ANDROID_NTP_MOST_VISITED_SITES_H_

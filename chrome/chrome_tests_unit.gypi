@@ -26,8 +26,8 @@
       # TODO(newt): move this to test_support_unit?
       'browser/android/mock_location_settings.cc',
       'browser/android/mock_location_settings.h',
-      'browser/android/most_visited_sites_unittest.cc',
       'browser/android/net/external_estimate_provider_android_unittest.cc',
+      'browser/android/ntp/most_visited_sites_unittest.cc',
       'browser/android/preferences/pref_service_bridge_unittest.cc',
       'browser/android/shortcut_info_unittest.cc',
       'browser/android/thumbnail/scoped_ptr_expiring_cache_unittest.cc',
