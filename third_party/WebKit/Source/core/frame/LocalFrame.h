@@ -62,6 +62,7 @@ class InputMethodController;
 class IntPoint;
 class IntSize;
 class InstrumentingAgents;
+class LayoutViewItem;
 class LocalDOMWindow;
 class NavigationScheduler;
 class Node;
@@ -112,6 +113,7 @@ public:
     Element* pagePopupOwner() const { return m_pagePopupOwner.get(); }
 
     LayoutView* contentLayoutObject() const; // Root of the layout tree for the document contained in this frame.
+    LayoutViewItem contentLayoutItem() const;
 
     Editor& editor() const;
     EventHandler& eventHandler() const;

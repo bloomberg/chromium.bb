@@ -2895,7 +2895,7 @@ void FrameView::setTracksPaintInvalidations(bool trackPaintInvalidations)
     for (Frame* frame = m_frame->tree().top(); frame; frame = frame->tree().traverseNext()) {
         if (!frame->isLocalFrame())
             continue;
-        if (LayoutViewItem layoutView = LayoutViewItem(toLocalFrame(frame)->contentLayoutObject()))
+        if (LayoutViewItem layoutView = toLocalFrame(frame)->contentLayoutItem())
             layoutView.compositor()->setTracksPaintInvalidations(trackPaintInvalidations);
     }
 

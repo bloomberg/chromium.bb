@@ -395,9 +395,9 @@ void VisualViewport::registerLayersWithTreeView(WebLayerTreeView* layerTreeView)
     if (!mainFrame())
         return;
 
-    ASSERT(frameHost().page().deprecatedLocalMainFrame()->contentLayoutObject());
+    ASSERT(!frameHost().page().deprecatedLocalMainFrame()->contentLayoutItem().isNull());
 
-    PaintLayerCompositor* compositor = frameHost().page().deprecatedLocalMainFrame()->contentLayoutObject()->compositor();
+    PaintLayerCompositor* compositor = frameHost().page().deprecatedLocalMainFrame()->contentLayoutItem().compositor();
     // Get the outer viewport scroll layer.
     WebLayer* scrollLayer = compositor->scrollLayer() ? compositor->scrollLayer()->platformLayer() : 0;
 

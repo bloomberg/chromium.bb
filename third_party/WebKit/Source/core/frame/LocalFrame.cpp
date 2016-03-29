@@ -54,6 +54,7 @@
 #include "core/inspector/InstrumentingAgents.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -449,6 +450,11 @@ void LocalFrame::setPagePopupOwner(Element& owner)
 LayoutView* LocalFrame::contentLayoutObject() const
 {
     return document() ? document()->layoutView() : nullptr;
+}
+
+LayoutViewItem LocalFrame::contentLayoutItem() const
+{
+    return LayoutViewItem(contentLayoutObject());
 }
 
 void LocalFrame::didChangeVisibilityState()
