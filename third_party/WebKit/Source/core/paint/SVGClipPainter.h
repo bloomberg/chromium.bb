@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class AffineTransform;
 class GraphicsContext;
 class LayoutObject;
 class LayoutSVGResourceClipper;
@@ -33,7 +34,8 @@ public:
     void finishEffect(const LayoutObject&, GraphicsContext&, ClipperState&);
 
 private:
-    void drawClipMaskContent(GraphicsContext&, const LayoutObject&, const FloatRect& targetBoundingBox, const FloatRect& targetPaintInvalidationRect);
+    // Return false if there is a problem drawing the mask.
+    bool drawClipAsMask(GraphicsContext&, const LayoutObject&, const FloatRect& targetBoundingBox, const FloatRect& targetPaintInvalidationRect, const AffineTransform&);
 
     LayoutSVGResourceClipper& m_clip;
 };
