@@ -86,11 +86,6 @@
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
 #endif
 
-// For fine-grained suppression on flaky tests.
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 using extensions::ContextMenuMatcher;
 using extensions::ExtensionsAPIClient;
 using extensions::MenuItem;
@@ -934,12 +929,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, AddRemoveWebView_AddRemoveWebView) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewSizeTest, AutoSize) {
-#if defined(OS_WIN)
-  // Flaky on XP bot http://crbug.com/299507
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
-    return;
-#endif
-
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/autosize"))
       << message_;
 }
@@ -1182,12 +1171,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestAddContentScriptWithCode) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestExecuteScriptFail) {
-#if defined(OS_WIN)
-  // Flaky on XP bot http://crbug.com/266185
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
-    return;
-#endif
-
   TestHelper("testExecuteScriptFail", "web_view/shim", NEEDS_TEST_SERVER);
 }
 
@@ -1312,12 +1295,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestWebRequestAPIGoogleProperty) {
 
 IN_PROC_BROWSER_TEST_P(WebViewTest,
                        Shim_TestWebRequestListenerSurvivesReparenting) {
-#if defined(OS_WIN)
-  // Flaky on XP bot http://crbug.com/309451.
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
-    return;
-#endif
-
   TestHelper("testWebRequestListenerSurvivesReparenting",
              "web_view/shim",
              NEEDS_TEST_SERVER);
@@ -1455,12 +1432,6 @@ IN_PROC_BROWSER_TEST_P(WebViewSizeTest, Shim_TestResizeWebviewResizesContent) {
 // This test makes sure the browser process does not crash if app is closed
 // while an interstitial page is being shown in guest.
 IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialTeardown) {
-#if defined(OS_WIN)
-  // Flaky on XP bot http://crbug.com/297014
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
-    return;
-#endif
-
   InterstitialTeardownTestHelper();
 
   // Now close the app while interstitial page being shown in guest.
@@ -1471,12 +1442,6 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialTeardown) {
 // This test makes sure the browser process does not crash if browser is shut
 // down while an interstitial page is being shown in guest.
 IN_PROC_BROWSER_TEST_P(WebViewTest, InterstitialTeardownOnBrowserShutdown) {
-#if defined(OS_WIN)
-  // http://crbug.com/297014
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
-    return;
-#endif
-
   InterstitialTeardownTestHelper();
 
   // Now close the app while interstitial page being shown in guest.
@@ -2226,12 +2191,6 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 IN_PROC_BROWSER_TEST_P(WebViewTest, ClearData) {
-#if defined(OS_WIN)
-  // Flaky on XP bot http://crbug.com/282674
-  if (base::win::GetVersion() <= base::win::VERSION_XP)
-    return;
-#endif
-
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTestWithArg(
       "platform_apps/web_view/common", "cleardata"))
