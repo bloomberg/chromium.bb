@@ -141,7 +141,7 @@ void EXTDisjointTimerQuery::queryCounterEXT(WebGLTimerQueryEXT* query, GLenum ta
         return;
     }
 
-    scoped.context()->contextGL()->QueryCounterEXT(query->object(), target);
+    // Timestamps are disabled in WebGL due to lack of driver support on multiple platforms, so we don't actually perform a GL call
     query->setTarget(target);
     query->resetCachedResult();
 }

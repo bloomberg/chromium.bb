@@ -5483,8 +5483,21 @@ void GLES2Implementation::GetQueryivEXT(
                  << GLES2Util::GetStringQueryParameter(pname) << ", "
                  << static_cast<const void*>(params) << ")");
   if (pname == GL_QUERY_COUNTER_BITS_EXT) {
-    // We convert all queries to CPU time so we support 64 bits.
-    *params = 64;
+    switch (target) {
+      case GL_TIMESTAMP_EXT:
+        // Overall reliable driver support for timestamps is limited, so we
+        // disable the timestamp portion of this extension to encourage use of
+        // the better supported time elapsed queries.
+        *params = 0;
+        break;
+      case GL_TIME_ELAPSED_EXT:
+        // We convert all queries to CPU time so we support 64 bits.
+        *params = 64;
+        break;
+      default:
+        SetGLErrorInvalidEnum("glGetQueryivEXT", target, "target");
+        break;
+    }
     return;
   } else if (pname != GL_CURRENT_QUERY_EXT) {
     SetGLErrorInvalidEnum("glGetQueryivEXT", pname, "pname");

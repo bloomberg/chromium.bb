@@ -2783,7 +2783,7 @@ ScriptValue WebGLRenderingContextBase::getParameter(ScriptState* scriptState, GL
         return ScriptValue::createNull(scriptState);
     case GL_TIMESTAMP_EXT:
         if (extensionEnabled(EXTDisjointTimerQueryName))
-            return getInt64Parameter(scriptState, GL_TIMESTAMP_EXT);
+            return WebGLAny(scriptState, 0);
         synthesizeGLError(GL_INVALID_ENUM, "getParameter", "invalid parameter name, EXT_disjoint_timer_query not enabled");
         return ScriptValue::createNull(scriptState);
     case GL_GPU_DISJOINT_EXT:
