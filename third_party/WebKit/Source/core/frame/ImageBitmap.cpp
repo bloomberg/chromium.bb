@@ -166,12 +166,14 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
 ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
 {
     bool flipY;
-    parseOptions(options, flipY);
+    bool premultiplyAlpha;
+    parseOptions(options, flipY, premultiplyAlpha);
 
-    m_image = cropImage(image->cachedImage()->getImage(), cropRect, flipY, m_isPremultiplied);
+    m_image = cropImage(image->cachedImage()->getImage(), cropRect, flipY, premultiplyAlpha);
     if (!m_image)
         return;
     m_image->setOriginClean(!image->wouldTaintOrigin(document->getSecurityOrigin()));
+    m_image->setPremultiplied(premultiplyAlpha);
 }
 
 ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
@@ -190,44 +192,49 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Docum
     video->paintCurrentFrame(buffer->canvas(), IntRect(dstPoint, srcRect.size()), nullptr);
 
     bool flipY;
-    parseOptions(options, flipY);
+    bool premultiplyAlpha;
+    parseOptions(options, flipY, premultiplyAlpha);
 
-    if (flipY || !m_isPremultiplied) {
+    if (flipY || !premultiplyAlpha) {
         RefPtr<SkImage> skiaImage = buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown);
         if (flipY)
             skiaImage = flipSkImageVertically(skiaImage.get(), PremultiplyAlpha);
-        if (!m_isPremultiplied)
+        if (!premultiplyAlpha)
             skiaImage = premulSkImageToUnPremul(skiaImage.get());
         m_image = StaticBitmapImage::create(skiaImage.release());
     } else {
         m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration, SnapshotReasonUnknown));
     }
     m_image->setOriginClean(!video->wouldTaintOrigin(document->getSecurityOrigin()));
+    m_image->setPremultiplied(premultiplyAlpha);
 }
 
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     ASSERT(canvas->isPaintable());
     bool flipY;
-    parseOptions(options, flipY);
+    bool premultiplyAlpha;
+    parseOptions(options, flipY, premultiplyAlpha);
 
     // canvas is always premultiplied, so set the last parameter to true and convert to un-premul later
     m_image = cropImage(canvas->copiedImage(BackBuffer, PreferAcceleration).get(), cropRect, flipY, true);
     if (!m_image)
         return;
-    if (!m_isPremultiplied)
+    if (!premultiplyAlpha)
         m_image = StaticBitmapImage::create(premulSkImageToUnPremul(m_image->imageForCurrentFrame().get()));
     m_image->setOriginClean(canvas->originClean());
+    m_image->setPremultiplied(premultiplyAlpha);
 }
 
 ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     bool flipY;
-    parseOptions(options, flipY);
+    bool premultiplyAlpha;
+    parseOptions(options, flipY, premultiplyAlpha);
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), data->size()));
 
     // treat non-premultiplyAlpha as a special case
-    if (!m_isPremultiplied) {
+    if (!premultiplyAlpha) {
         unsigned char* srcAddr = data->data()->data();
         int srcHeight = data->size().height();
         int dstHeight = cropRect.height();
@@ -272,6 +279,7 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
             }
             m_image = StaticBitmapImage::create(newSkImageFromRaster(info, copiedDataBuffer.release(), dstPixelBytesPerRow));
         }
+        m_image->setPremultiplied(premultiplyAlpha);
         return;
     }
 
@@ -299,21 +307,25 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBi
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     bool flipY;
-    parseOptions(options, flipY);
-    m_image = cropImage(bitmap->bitmapImage(), cropRect, flipY, m_isPremultiplied, bitmap->isPremultiplied() ? DontPremultiplyAlpha : PremultiplyAlpha);
+    bool premultiplyAlpha;
+    parseOptions(options, flipY, premultiplyAlpha);
+    m_image = cropImage(bitmap->bitmapImage(), cropRect, flipY, premultiplyAlpha, bitmap->isPremultiplied() ? DontPremultiplyAlpha : PremultiplyAlpha);
     if (!m_image)
         return;
     m_image->setOriginClean(bitmap->originClean());
+    m_image->setPremultiplied(premultiplyAlpha);
 }
 
 ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     bool flipY;
-    parseOptions(options, flipY);
-    m_image = cropImage(image.get(), cropRect, flipY, m_isPremultiplied, PremultiplyAlpha);
+    bool premultiplyAlpha;
+    parseOptions(options, flipY, premultiplyAlpha);
+    m_image = cropImage(image.get(), cropRect, flipY, premultiplyAlpha, PremultiplyAlpha);
     if (!m_image)
         return;
     m_image->setOriginClean(image->originClean());
+    m_image->setPremultiplied(premultiplyAlpha);
 }
 
 ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image)
@@ -421,7 +433,7 @@ ScriptPromise ImageBitmap::createImageBitmap(ScriptState* scriptState, EventTarg
     return ImageBitmapSource::fulfillImageBitmap(scriptState, create(this, IntRect(sx, sy, sw, sh), options));
 }
 
-void ImageBitmap::parseOptions(const ImageBitmapOptions& options, bool& flipY)
+void ImageBitmap::parseOptions(const ImageBitmapOptions& options, bool& flipY, bool& premultiplyAlpha)
 {
     if (options.imageOrientation() == imageOrientationFlipY) {
         flipY = true;
@@ -430,8 +442,9 @@ void ImageBitmap::parseOptions(const ImageBitmapOptions& options, bool& flipY)
         ASSERT(options.imageOrientation() == imageBitmapOptionNone);
     }
     if (options.premultiplyAlpha() == imageBitmapOptionNone) {
-        m_isPremultiplied = false;
+        premultiplyAlpha = false;
     } else {
+        premultiplyAlpha = true;
         ASSERT(options.premultiplyAlpha() == "default" || options.premultiplyAlpha() == "premultiply");
     }
 }

@@ -25,11 +25,16 @@ public:
 
     bool originClean() const { return m_isOriginClean; }
     void setOriginClean(bool flag) { m_isOriginClean = flag; }
+    bool isPremultiplied() const { return m_isPremultiplied; }
+    void setPremultiplied(bool flag) { m_isPremultiplied = flag; }
 protected:
     StaticBitmapImage(PassRefPtr<SkImage>);
 
     RefPtr<SkImage> m_image;
     bool m_isOriginClean = true;
+    // The premultiply info is stored here because the SkImage API
+    // doesn't expose this info.
+    bool m_isPremultiplied = true;
 };
 
 } // namespace blink
