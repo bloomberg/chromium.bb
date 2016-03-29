@@ -5563,88 +5563,83 @@
         ],
         'conditions': [
           ['buildtype=="Official"', {
-              # In official builds, targets can self-select an optimization
-              # level by defining a variable named 'optimize', and setting it
-              # to one of
-              # - "size", optimizes for minimal code size - the default.
-              # - "speed", optimizes for speed over code size.
-              # - "max", whole program optimization and link-time code
-              #   generation. This is very expensive and should be used
-              #   sparingly.
-              'variables': {
-                'optimize%': 'size',
-              },
-              'msvs_settings': {
-                'VCLinkerTool': {
-                  # Set /LTCG for the official builds.
-                  'LinkTimeCodeGeneration': '1',
-                  'AdditionalOptions': [
-                    # Set the number of LTCG code-gen threads to eight.
-                    # The default is four. This gives a 5-10% link speedup.
-                    '/cgthreads:8',
-                  ],
-                },
-              },
-              'target_conditions': [
-                ['optimize=="size"', {
-                    'msvs_settings': {
-                      'VCCLCompilerTool': {
-                        # 1, optimizeMinSpace, Minimize Size (/O1)
-                        'Optimization': '1',
-                        # 2, favorSize - Favor small code (/Os)
-                        'FavorSizeOrSpeed': '2',
-                      },
-                    },
-                  },
-                ],
-                # This config is used to avoid a problem in ffmpeg, see
-                # http://crbug.com/264459.
-                ['optimize=="size_no_ltcg"', {
-                    'msvs_settings': {
-                      'VCCLCompilerTool': {
-                        # 1, optimizeMinSpace, Minimize Size (/O1)
-                        'Optimization': '1',
-                        # 2, favorSize - Favor small code (/Os)
-                        'FavorSizeOrSpeed': '2',
-                      },
-                    },
-                  },
-                ],
-                ['optimize=="speed"', {
-                    'msvs_settings': {
-                      'VCCLCompilerTool': {
-                        # 2, optimizeMaxSpeed, Maximize Speed (/O2)
-                        'Optimization': '2',
-                        # 1, favorSpeed - Favor fast code (/Ot)
-                        'FavorSizeOrSpeed': '1',
-                      },
-                    },
-                  },
-                ],
-                ['optimize=="max"', {
-                    # Disable Warning 4702 ("Unreachable code") for the WPO/PGO
-                    # builds. Probably anything that this would catch that
-                    # wouldn't be caught in a normal build isn't going to
-                    # actually be a bug, so the incremental value of C4702 for
-                    # PGO builds is likely very small.
-                    'msvs_disabled_warnings': [
-                      4702
-                    ],
-                    'msvs_settings': {
-                      'VCCLCompilerTool': {
-                        # 2, optimizeMaxSpeed, Maximize Speed (/O2)
-                        'Optimization': '2',
-                        # 1, favorSpeed - Favor fast code (/Ot)
-                        'FavorSizeOrSpeed': '1',
-                        # This implies link time code generation.
-                        'WholeProgramOptimization': 'true',
-                      },
-                    },
-                  },
-                ],
-              ],
+            # In official builds, targets can self-select an optimization
+            # level by defining a variable named 'optimize', and setting it
+            # to one of
+            # - "size", optimizes for minimal code size - the default.
+            # - "speed", optimizes for speed over code size.
+            # - "max", whole program optimization and link-time code
+            #   generation. This is very expensive and should be used
+            #   sparingly.
+            'variables': {
+              'optimize%': 'size',
             },
-          ],
+            'msvs_settings': {
+              'VCLinkerTool': {
+                # Set /LTCG for the official builds.
+                'LinkTimeCodeGeneration': '1',
+                'AdditionalOptions': [
+                  # Set the number of LTCG code-gen threads to eight.
+                  # The default is four. This gives a 5-10% link speedup.
+                  '/cgthreads:8',
+                ],
+              },
+            },
+            'target_conditions': [
+              ['optimize=="size"', {
+                'msvs_settings': {
+                  'VCCLCompilerTool': {
+                    # 1, optimizeMinSpace, Minimize Size (/O1)
+                    'Optimization': '1',
+                    # 2, favorSize - Favor small code (/Os)
+                    'FavorSizeOrSpeed': '2',
+                  },
+                },
+              }],
+              # This config is used to avoid a problem in ffmpeg, see
+              # http://crbug.com/264459.
+              ['optimize=="size_no_ltcg"', {
+                'msvs_settings': {
+                  'VCCLCompilerTool': {
+                    # 1, optimizeMinSpace, Minimize Size (/O1)
+                    'Optimization': '1',
+                    # 2, favorSize - Favor small code (/Os)
+                    'FavorSizeOrSpeed': '2',
+                  },
+                },
+              }],
+              ['optimize=="speed"', {
+                'msvs_settings': {
+                  'VCCLCompilerTool': {
+                    # 2, optimizeMaxSpeed, Maximize Speed (/O2)
+                    'Optimization': '2',
+                    # 1, favorSpeed - Favor fast code (/Ot)
+                    'FavorSizeOrSpeed': '1',
+                  },
+                },
+              }],
+              ['optimize=="max"', {
+                # Disable Warning 4702 ("Unreachable code") for the WPO/PGO
+                # builds. Probably anything that this would catch that
+                # wouldn't be caught in a normal build isn't going to
+                # actually be a bug, so the incremental value of C4702 for
+                # PGO builds is likely very small.
+                'msvs_disabled_warnings': [
+                  4702
+                ],
+                'msvs_settings': {
+                  'VCCLCompilerTool': {
+                    # 2, optimizeMaxSpeed, Maximize Speed (/O2)
+                    'Optimization': '2',
+                    # 1, favorSpeed - Favor fast code (/Ot)
+                    'FavorSizeOrSpeed': '1',
+                    # This implies link time code generation.
+                    'WholeProgramOptimization': 'true',
+                  },
+                },
+              }],
+            ],
+          }],
           ['msvs_xtree_patched!=1', {
             # If xtree hasn't been patched, then we disable C4702. Otherwise,
             # it's enabled. This will generally only be true for system-level
