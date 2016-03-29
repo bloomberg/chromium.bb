@@ -168,14 +168,14 @@ ppapi::proxy::SerializedHandle PnaclTranslateThread::GetHandleForSubprocess(
 
   DCHECK(file->IsValid());
 #if defined(OS_WIN)
+  HANDLE raw_handle = INVALID_HANDLE_VALUE;
   if (!content::BrokerDuplicateHandle(
-          file->GetPlatformFile(),
-          peer_pid,
-          &file_for_transit,
+          file->GetPlatformFile(), peer_pid, &raw_handle,
           0,  // desired_access is 0 since we're using DUPLICATE_SAME_ACCESS.
           DUPLICATE_SAME_ACCESS)) {
     return ppapi::proxy::SerializedHandle();
   }
+  file_for_transit = IPC::PlatformFileForTransit(raw_handle, peer_pid);
 #else
   file_for_transit = base::FileDescriptor(dup(file->GetPlatformFile()), true);
 #endif

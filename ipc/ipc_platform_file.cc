@@ -16,18 +16,18 @@ PlatformFileForTransit GetFileHandleForProcess(base::PlatformFile handle,
                                                bool close_source_handle) {
   IPC::PlatformFileForTransit out_handle;
 #if defined(OS_WIN)
+  HANDLE raw_handle = INVALID_HANDLE_VALUE;
   DWORD options = DUPLICATE_SAME_ACCESS;
   if (close_source_handle)
     options |= DUPLICATE_CLOSE_SOURCE;
   if (handle == INVALID_HANDLE_VALUE ||
-      !::DuplicateHandle(::GetCurrentProcess(),
-                         handle,
-                         process,
-                         &out_handle,
-                         0,
-                         FALSE,
-                         options)) {
+      !::DuplicateHandle(::GetCurrentProcess(), handle, process, &raw_handle, 0,
+                         FALSE, options)) {
     out_handle = IPC::InvalidPlatformFileForTransit();
+  } else {
+    out_handle =
+        IPC::PlatformFileForTransit(raw_handle, base::GetProcId(process));
+    out_handle.SetOwnershipPassesToIPC(true);
   }
 #elif defined(OS_POSIX)
   // If asked to close the source, we can simply re-use the source fd instead of

@@ -221,27 +221,13 @@ bool DesktopSessionProxy::AttachToDesktop(
   desktop_process_ = std::move(desktop_process);
 
 #if defined(OS_WIN)
-  // On Windows: |desktop_process| is a valid handle, but |desktop_pipe| needs
-  // to be duplicated from the desktop process.
-  HANDLE temp_handle;
-  if (!DuplicateHandle(desktop_process_.Handle(), desktop_pipe,
-                       GetCurrentProcess(), &temp_handle, 0,
-                       FALSE, DUPLICATE_SAME_ACCESS)) {
-    PLOG(ERROR) << "Failed to duplicate the desktop-to-network pipe handle";
-
-    desktop_process_.Close();
-    return false;
-  }
-  base::win::ScopedHandle pipe(temp_handle);
-
+  base::win::ScopedHandle pipe(desktop_pipe.GetHandle());
   IPC::ChannelHandle desktop_channel_handle(pipe.Get());
-
 #elif defined(OS_POSIX)
   // On posix: |desktop_pipe| is a valid file descriptor.
   DCHECK(desktop_pipe.auto_close);
 
   IPC::ChannelHandle desktop_channel_handle(std::string(), desktop_pipe);
-
 #else
 #error Unsupported platform.
 #endif

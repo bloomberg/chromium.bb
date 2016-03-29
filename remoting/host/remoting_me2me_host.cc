@@ -990,7 +990,7 @@ void HostProcess::InitializePairingRegistry(
     IPC::PlatformFileForTransit unprivileged_key) {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
   // |privileged_key| can be nullptr but not |unprivileged_key|.
-  DCHECK(unprivileged_key);
+  DCHECK(unprivileged_key.IsValid());
   // |pairing_registry_| should only be initialized once.
   DCHECK(!pairing_registry_);
 

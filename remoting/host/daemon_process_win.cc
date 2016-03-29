@@ -293,7 +293,7 @@ bool DaemonProcessWin::InitializePairingRegistry() {
       network_process_.Get(), pairing_registry_privileged_key_);
   IPC::PlatformFileForTransit unprivileged_key = GetRegistryKeyForTransit(
       network_process_.Get(), pairing_registry_unprivileged_key_);
-  if (!(privileged_key && unprivileged_key))
+  if (!(privileged_key.IsValid() && unprivileged_key.IsValid()))
     return false;
 
   // Initialize the pairing registry in the network process. This has to be done

@@ -255,30 +255,8 @@ void NaClHostMessageFilter::LaunchNaClContinuationOnIOThread(
       launch_params.nexe_token_hi   // hi
   };
 
-  base::PlatformFile nexe_file;
-#if defined(OS_WIN)
-  // Duplicate the nexe file handle from the renderer process into the browser
-  // process.
-  if (!::DuplicateHandle(PeerHandle(),
-                         launch_params.nexe_file,
-                         base::GetCurrentProcessHandle(),
-                         &nexe_file,
-                         0,  // Unused, given DUPLICATE_SAME_ACCESS.
-                         FALSE,
-                         DUPLICATE_CLOSE_SOURCE | DUPLICATE_SAME_ACCESS)) {
-    NaClHostMsg_LaunchNaCl::WriteReplyParams(
-        reply_msg,
-        NaClLaunchResult(),
-        std::string("Failed to duplicate nexe file handle"));
-    Send(reply_msg);
-    return;
-  }
-#elif defined(OS_POSIX)
-  nexe_file =
+  base::PlatformFile nexe_file =
       IPC::PlatformFileForTransitToPlatformFile(launch_params.nexe_file);
-#else
-#error Unsupported platform.
-#endif
 
   NaClProcessHost* host = new NaClProcessHost(
       GURL(launch_params.manifest_url),

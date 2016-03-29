@@ -22,6 +22,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -471,10 +472,8 @@ void PPBNaClPrivate::LaunchSelLdr(
   if (nexe_file_info->handle != PP_kInvalidFileHandle)
     nexe_for_transit = base::FileDescriptor(nexe_file_info->handle, true);
 #elif defined(OS_WIN)
-  // Duplicate the handle on the browser side instead of the renderer.
-  // This is because BrokerGetFileForProcess isn't part of content/public, and
-  // it's simpler to do the duplication in the browser anyway.
-  nexe_for_transit = nexe_file_info->handle;
+  nexe_for_transit = IPC::PlatformFileForTransit(nexe_file_info->handle,
+                                                 base::GetCurrentProcId());
 #else
 # error Unsupported target platform.
 #endif

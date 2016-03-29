@@ -89,14 +89,15 @@ void ManifestServiceChannel::DidOpenResource(IPC::Message* reply,
   if (file.IsValid()) {
     IPC::PlatformFileForTransit file_for_transit;
 #if defined(OS_WIN)
+    HANDLE raw_handle = INVALID_HANDLE_VALUE;
     bool ok = content::BrokerDuplicateHandle(
-        file.TakePlatformFile(),
-        peer_pid_,
-        &file_for_transit,
+        file.TakePlatformFile(), peer_pid_, &raw_handle,
         0,  // desired_access is 0 since we're using DUPLICATE_SAME_ACCESS.
         DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
-    if (ok)
+    if (ok) {
+      file_for_transit = IPC::PlatformFileForTransit(raw_handle, peer_pid_);
       handle.set_file_handle(file_for_transit, PP_FILEOPENFLAG_READ, 0);
+    }
 #else
     file_for_transit = base::FileDescriptor(std::move(file));
     handle.set_file_handle(file_for_transit, PP_FILEOPENFLAG_READ, 0);

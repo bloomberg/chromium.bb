@@ -570,11 +570,11 @@ bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
         case ppapi::proxy::SerializedHandle::SOCKET: {
           nacl_desc.reset(new NaClDescWrapper(NaClDescSyncSocketMake(
 #if defined(OS_WIN)
-              iter->descriptor()
+              iter->descriptor().GetHandle()
 #else
               iter->descriptor().fd
 #endif
-          )));
+              )));
           break;
         }
         case ppapi::proxy::SerializedHandle::FILE: {
@@ -582,7 +582,7 @@ bool NaClIPCAdapter::RewriteMessage(const IPC::Message& msg, uint32_t type) {
           // required, wrap it in a NaClDescQuota.
           NaClDesc* desc = NaClDescIoMakeFromHandle(
 #if defined(OS_WIN)
-              iter->descriptor(),
+              iter->descriptor().GetHandle(),
 #else
               iter->descriptor().fd,
 #endif
@@ -659,10 +659,10 @@ void NaClIPCAdapter::SaveOpenResourceMessage(
     CHECK(IPC::ReadParam(&orig_msg, &iter, &sh));
     scoped_ptr<IPC::Message> new_msg = CreateOpenResourceReply(orig_msg, sh);
 
-    scoped_ptr<NaClDescWrapper> desc_wrapper(new NaClDescWrapper(
-        NaClDescIoMakeFromHandle(
+    scoped_ptr<NaClDescWrapper> desc_wrapper(
+        new NaClDescWrapper(NaClDescIoMakeFromHandle(
 #if defined(OS_WIN)
-            sh.descriptor(),
+            sh.descriptor().GetHandle(),
 #else
             sh.descriptor().fd,
 #endif

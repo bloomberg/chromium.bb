@@ -780,7 +780,7 @@ void ParamTraits<base::SharedMemoryHandle>::Write(base::Pickle* m,
 
     // If the caller intended to pass ownership to the IPC stack, release a
     // reference.
-    if (p.OwnershipPassesToIPC())
+    if (p.OwnershipPassesToIPC() && p.BelongsToCurrentProcess())
       p.Close();
   } else {
     m->WriteInt(HandleToLong(p.GetHandle()));

@@ -22,8 +22,11 @@ IPC::PlatformFileForTransit BrokerGetFileHandleForProcess(
   DWORD options = DUPLICATE_SAME_ACCESS;
   if (should_close_source)
     options |= DUPLICATE_CLOSE_SOURCE;
-  if (!content::BrokerDuplicateHandle(handle, target_process_id, &out_handle,
-                                      0, options)) {
+  HANDLE raw_handle = INVALID_HANDLE_VALUE;
+  if (content::BrokerDuplicateHandle(handle, target_process_id, &raw_handle, 0,
+                                     options)) {
+    out_handle = IPC::PlatformFileForTransit(raw_handle, target_process_id);
+  } else {
     out_handle = IPC::InvalidPlatformFileForTransit();
   }
 #elif defined(OS_POSIX)

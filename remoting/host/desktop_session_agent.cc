@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
+#include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
@@ -401,7 +402,8 @@ bool DesktopSessionAgent::Start(const base::WeakPtr<Delegate>& delegate,
                                           &network_channel_);
   base::PlatformFile raw_desktop_pipe = desktop_pipe_.GetPlatformFile();
 #if defined(OS_WIN)
-  *desktop_pipe_out = IPC::PlatformFileForTransit(raw_desktop_pipe);
+  *desktop_pipe_out =
+      IPC::PlatformFileForTransit(raw_desktop_pipe, base::GetCurrentProcId());
 #elif defined(OS_POSIX)
   *desktop_pipe_out = IPC::PlatformFileForTransit(raw_desktop_pipe, false);
 #else
