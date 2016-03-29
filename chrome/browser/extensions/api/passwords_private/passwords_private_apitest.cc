@@ -9,7 +9,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
-#include "base/observer_list_threadsafe.h"
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
@@ -29,17 +29,16 @@ static const size_t kNumMocks = 3;
 static const int kNumCharactersInPassword = 10;
 static const char kPlaintextPassword[] = "plaintext";
 
-linked_ptr<api::passwords_private::PasswordUiEntry> CreateEntry(size_t num) {
-  api::passwords_private::PasswordUiEntry* entry =
-      new api::passwords_private::PasswordUiEntry();
+api::passwords_private::PasswordUiEntry CreateEntry(size_t num) {
+  api::passwords_private::PasswordUiEntry entry;
   std::stringstream ss;
   ss << "http://test" << num << ".com";
-  entry->login_pair.origin_url = ss.str();
+  entry.login_pair.origin_url = ss.str();
   ss.clear();
   ss << "testName" << num;
-  entry->login_pair.username = ss.str();
-  entry->num_characters_in_password = kNumCharactersInPassword;
-  return make_linked_ptr(entry);
+  entry.login_pair.username = ss.str();
+  entry.num_characters_in_password = kNumCharactersInPassword;
+  return entry;
 }
 
 std::string CreateException(size_t num) {
@@ -54,7 +53,7 @@ std::string CreateException(size_t num) {
 // or RemovePasswordException() is called.
 class TestDelegate : public PasswordsPrivateDelegate {
  public:
-  TestDelegate() : observers_(new base::ObserverListThreadSafe<Observer>()) {
+  TestDelegate() {
     // Create mock data.
     for (size_t i = 0; i < kNumMocks; i++) {
       current_entries_.push_back(CreateEntry(i));
@@ -64,13 +63,13 @@ class TestDelegate : public PasswordsPrivateDelegate {
   ~TestDelegate() override {}
 
   void AddObserver(Observer* observer) override {
-    observers_->AddObserver(observer);
+    observers_.AddObserver(observer);
     SendSavedPasswordsList();
     SendPasswordExceptionsList();
   }
 
   void RemoveObserver(Observer* observer) override {
-    observers_->RemoveObserver(observer);
+    observers_.RemoveObserver(observer);
   }
 
   void RemoveSavedPassword(
@@ -99,38 +98,30 @@ class TestDelegate : public PasswordsPrivateDelegate {
                            content::WebContents* web_contents) override {
     // Return a mocked password value.
     std::string plaintext_password(kPlaintextPassword);
-    observers_->Notify(
-        FROM_HERE,
-        &Observer::OnPlaintextPasswordFetched,
-        origin_url,
-        username,
-        plaintext_password);
+    FOR_EACH_OBSERVER(
+        Observer, observers_,
+        OnPlaintextPasswordFetched(origin_url, username, plaintext_password));
   }
 
  private:
   void SendSavedPasswordsList() {
-    observers_->Notify(
-        FROM_HERE,
-        &Observer::OnSavedPasswordsListChanged,
-        current_entries_);
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnSavedPasswordsListChanged(current_entries_));
   }
 
   void SendPasswordExceptionsList() {
-    observers_->Notify(
-        FROM_HERE,
-        &Observer::OnPasswordExceptionsListChanged,
-        current_exceptions_);
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnPasswordExceptionsListChanged(current_exceptions_));
   }
 
   // The current list of entries/exceptions. Cached here so that when new
   // observers are added, this delegate can send the current lists without
   // having to request them from |password_manager_presenter_| again.
-  std::vector<linked_ptr<api::passwords_private::PasswordUiEntry>>
-      current_entries_;
+  std::vector<api::passwords_private::PasswordUiEntry> current_entries_;
   std::vector<std::string> current_exceptions_;
 
   // The observers.
-  scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
+  base::ObserverList<Observer> observers_;
 };
 
 class PasswordsPrivateApiTest : public ExtensionApiTest {

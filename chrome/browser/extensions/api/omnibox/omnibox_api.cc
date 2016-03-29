@@ -320,20 +320,16 @@ ACMatchClassifications StyleTypesToACMatchClassifications(
     base::string16 description = base::UTF8ToUTF16(suggestion.description);
     std::vector<int> styles(description.length(), 0);
 
-    for (std::vector<linked_ptr<omnibox::SuggestResult::DescriptionStylesType> >
-         ::iterator i = suggestion.description_styles->begin();
-         i != suggestion.description_styles->end(); ++i) {
-      omnibox::SuggestResult::DescriptionStylesType* style = i->get();
-
-      int length = description.length();
-      if (style->length)
-        length = *style->length;
-
-      size_t offset = style->offset >= 0 ? style->offset :
-          std::max(0, static_cast<int>(description.length()) + style->offset);
+    for (const omnibox::SuggestResult::DescriptionStylesType& style :
+         *suggestion.description_styles) {
+      int length = style.length ? *style.length : description.length();
+      size_t offset = style.offset >= 0
+                          ? style.offset
+                          : std::max(0, static_cast<int>(description.length()) +
+                                            style.offset);
 
       int type_class;
-      switch (style->type) {
+      switch (style.type) {
         case omnibox::DESCRIPTION_STYLE_TYPE_URL:
           type_class = AutocompleteMatch::ACMatchClassification::URL;
           break;

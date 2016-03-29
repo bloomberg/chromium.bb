@@ -176,7 +176,7 @@ void KeywordExtensionsDelegateImpl::Observe(
       // AutocompleteProvider::kMaxMatches.
       for (size_t i = 0; i < suggestions.suggest_results.size(); ++i) {
         const omnibox_api::SuggestResult& suggestion =
-            *suggestions.suggest_results[i];
+            suggestions.suggest_results[i];
         // We want to order these suggestions in descending order, so start with
         // the relevance of the first result (added synchronously in Start()),
         // and subtract 1 for each subsequent suggestion from the extension.

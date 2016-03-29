@@ -248,7 +248,7 @@ void PlatformKeysInternalSelectClientCertificatesFunction::
     return;
   }
   DCHECK(matches);
-  std::vector<linked_ptr<api_pk::Match>> result_matches;
+  std::vector<api_pk::Match> result_matches;
   for (const scoped_refptr<net::X509Certificate>& match : *matches) {
     PublicKeyInfo key_info;
     key_info.public_key_spki_der =
@@ -263,16 +263,16 @@ void PlatformKeysInternalSelectClientCertificatesFunction::
       continue;
     }
 
-    linked_ptr<api_pk::Match> result_match(new api_pk::Match);
+    api_pk::Match result_match;
     std::string der_encoded_cert;
     net::X509Certificate::GetDEREncoded(match->os_cert_handle(),
                                         &der_encoded_cert);
-    result_match->certificate.assign(der_encoded_cert.begin(),
-                                     der_encoded_cert.end());
+    result_match.certificate.assign(der_encoded_cert.begin(),
+                                    der_encoded_cert.end());
 
     BuildWebCryptoRSAAlgorithmDictionary(
-        key_info, &result_match->key_algorithm.additional_properties);
-    result_matches.push_back(result_match);
+        key_info, &result_match.key_algorithm.additional_properties);
+    result_matches.push_back(std::move(result_match));
   }
   Respond(ArgumentList(
       api_pki::SelectClientCertificates::Results::Create(result_matches)));

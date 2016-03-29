@@ -6,6 +6,7 @@
   {
     "namespace": "omnibox",
     "description": "The omnibox API allows you to register a keyword with Google Chrome's address bar, which is also known as the omnibox.",
+    "compiler_options": {"use_movable_types": true},
     "types": [
       {
         "id": "DescriptionStyleType",

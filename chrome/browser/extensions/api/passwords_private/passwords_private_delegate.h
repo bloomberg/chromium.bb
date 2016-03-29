@@ -44,8 +44,8 @@ class PasswordsPrivateDelegate : public KeyedService {
   // PasswordsPrivateDelegate::AddObserver().
   class Observer {
    public:
-    virtual void OnSavedPasswordsListChanged(const std::vector<linked_ptr<
-        api::passwords_private::PasswordUiEntry>>& entries) {}
+    virtual void OnSavedPasswordsListChanged(
+        const std::vector<api::passwords_private::PasswordUiEntry>& entries) {}
     virtual void OnPasswordExceptionsListChanged(
         const std::vector<std::string>& exceptions) {}
     virtual void OnPlaintextPasswordFetched(

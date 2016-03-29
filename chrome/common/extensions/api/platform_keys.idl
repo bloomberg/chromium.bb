@@ -7,7 +7,7 @@
 // extension can use such a certficate in its custom authentication protocol.
 // E.g. this allows usage of platform managed certificates in third party VPNs
 // (see $(ref:vpnProvider chrome.vpnProvider)).
-namespace platformKeys {
+[use_movable_types=true] namespace platformKeys {
   [noinline_doc] dictionary Match {
      // The DER encoding of a X.509 certificate.
      ArrayBuffer certificate;

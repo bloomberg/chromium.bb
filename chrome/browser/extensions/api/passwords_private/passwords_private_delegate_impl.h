@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/observer_list_threadsafe.h"
+#include "base/observer_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/ui/passwords/password_manager_presenter.h"
@@ -96,8 +96,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // The current list of entries/exceptions. Cached here so that when new
   // observers are added, this delegate can send the current lists without
   // having to request them from |password_manager_presenter_| again.
-  std::vector<linked_ptr<api::passwords_private::PasswordUiEntry>>
-      current_entries_;
+  std::vector<api::passwords_private::PasswordUiEntry> current_entries_;
   std::vector<std::string> current_exceptions_;
 
   // Whether SetPasswordList and SetPasswordExceptionList have been called, and
@@ -120,7 +119,7 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   content::WebContents* web_contents_;
 
   // The observers.
-  scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;
+  base::ObserverList<Observer> observers_;
 
   // Map from origin URL and username to the index of |password_list_| at which
   // the corresponding entry resides.

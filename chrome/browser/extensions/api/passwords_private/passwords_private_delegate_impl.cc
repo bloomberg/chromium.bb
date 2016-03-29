@@ -34,8 +34,7 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
       set_password_exception_list_called_(false),
       is_initialized_(false),
       languages_(profile->GetPrefs()->GetString(prefs::kAcceptLanguages)),
-      web_contents_(nullptr),
-      observers_(new base::ObserverListThreadSafe<Observer>()) {
+      web_contents_(nullptr) {
   password_manager_presenter_->Initialize();
   password_manager_presenter_->UpdatePasswordLists();
 }
@@ -43,7 +42,7 @@ PasswordsPrivateDelegateImpl::PasswordsPrivateDelegateImpl(Profile* profile)
 PasswordsPrivateDelegateImpl::~PasswordsPrivateDelegateImpl() {}
 
 void PasswordsPrivateDelegateImpl::AddObserver(Observer* observer) {
-  observers_->AddObserver(observer);
+  observers_.AddObserver(observer);
 
   // Send the current cached lists to the new observer.
   ExecuteFunction(base::Bind(
@@ -55,7 +54,7 @@ void PasswordsPrivateDelegateImpl::AddObserver(Observer* observer) {
 }
 
 void PasswordsPrivateDelegateImpl::RemoveObserver(Observer* observer) {
-  observers_->RemoveObserver(observer);
+  observers_.RemoveObserver(observer);
 }
 
 void PasswordsPrivateDelegateImpl::RemoveSavedPassword(
@@ -140,12 +139,10 @@ void PasswordsPrivateDelegateImpl::ShowPassword(
     const std::string& origin_url,
     const std::string& username,
     const base::string16& password_value) {
-  observers_->Notify(
-      FROM_HERE,
-      &Observer::OnPlaintextPasswordFetched,
-      origin_url,
-      username,
-      base::UTF16ToUTF8(password_value));
+  FOR_EACH_OBSERVER(
+      Observer, observers_,
+      OnPlaintextPasswordFetched(origin_url, username,
+                                 base::UTF16ToUTF8(password_value)));
 }
 
 void PasswordsPrivateDelegateImpl::SetPasswordList(
@@ -164,20 +161,19 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
   // Now, create a list of PasswordUiEntry objects to send to observers.
   current_entries_.clear();
   for (const auto& form : password_list) {
-    linked_ptr<api::passwords_private::PasswordUiEntry> entry(
-        new api::passwords_private::PasswordUiEntry);
-    entry->login_pair.origin_url =
+    api::passwords_private::PasswordUiEntry entry;
+    entry.login_pair.origin_url =
         password_manager::GetHumanReadableOrigin(*form, languages_);
-    entry->login_pair.username = base::UTF16ToUTF8(form->username_value);
-    entry->num_characters_in_password = form->password_value.length();
+    entry.login_pair.username = base::UTF16ToUTF8(form->username_value);
+    entry.num_characters_in_password = form->password_value.length();
 
     if (!form->federation_origin.unique()) {
-      entry->federation_text.reset(new std::string(l10n_util::GetStringFUTF8(
+      entry.federation_text.reset(new std::string(l10n_util::GetStringFUTF8(
           IDS_PASSWORDS_VIA_FEDERATION,
           base::UTF8ToUTF16(form->federation_origin.host()))));
     }
 
-    current_entries_.push_back(entry);
+    current_entries_.push_back(std::move(entry));
   }
 
   SendSavedPasswordsList();
@@ -187,8 +183,8 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
 }
 
 void PasswordsPrivateDelegateImpl::SendSavedPasswordsList() {
-  observers_->Notify(
-      FROM_HERE, &Observer::OnSavedPasswordsListChanged, current_entries_);
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnSavedPasswordsListChanged(current_entries_));
 }
 
 void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
@@ -217,10 +213,9 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
 }
 
 void PasswordsPrivateDelegateImpl::SendPasswordExceptionsList() {
-  observers_->Notify(
-      FROM_HERE,
-      &Observer::OnPasswordExceptionsListChanged,
-      current_exceptions_);
+  FOR_EACH_OBSERVER(
+      Observer, observers_,
+      Observer::OnPasswordExceptionsListChanged(current_exceptions_));
 }
 
 #if !defined(OS_ANDROID)

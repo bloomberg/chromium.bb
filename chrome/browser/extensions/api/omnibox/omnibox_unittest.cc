@@ -79,9 +79,9 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
   scoped_ptr<SendSuggestions::Params> params(
       SendSuggestions::Params::Create(*list));
   EXPECT_TRUE(params);
-  EXPECT_TRUE(params->suggest_results[0].get());
+  ASSERT_FALSE(params->suggest_results.empty());
   CompareClassification(styles_expected, StyleTypesToACMatchClassifications(
-      *params->suggest_results[0]));
+                                             params->suggest_results[0]));
 
   // Same input, but swap the order. Ensure it still works.
   scoped_ptr<base::ListValue> swap_list =
@@ -111,9 +111,10 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
   scoped_ptr<SendSuggestions::Params> swapped_params(
       SendSuggestions::Params::Create(*swap_list));
   EXPECT_TRUE(swapped_params);
-  EXPECT_TRUE(swapped_params->suggest_results[0].get());
-  CompareClassification(styles_expected, StyleTypesToACMatchClassifications(
-      *swapped_params->suggest_results[0]));
+  ASSERT_FALSE(swapped_params->suggest_results.empty());
+  CompareClassification(
+      styles_expected,
+      StyleTypesToACMatchClassifications(swapped_params->suggest_results[0]));
 }
 
 //   0123456789
@@ -174,9 +175,9 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
   scoped_ptr<SendSuggestions::Params> params(
       SendSuggestions::Params::Create(*list));
   EXPECT_TRUE(params);
-  EXPECT_TRUE(params->suggest_results[0].get());
+  ASSERT_FALSE(params->suggest_results.empty());
   CompareClassification(styles_expected, StyleTypesToACMatchClassifications(
-      *params->suggest_results[0]));
+                                             params->suggest_results[0]));
 
   // Try moving the "dim/match" style pair at offset 9. Output should be the
   // same.
@@ -222,9 +223,9 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
   scoped_ptr<SendSuggestions::Params> moved_params(
       SendSuggestions::Params::Create(*moved_list));
   EXPECT_TRUE(moved_params);
-  EXPECT_TRUE(moved_params->suggest_results[0].get());
+  ASSERT_FALSE(moved_params->suggest_results.empty());
   CompareClassification(styles_expected, StyleTypesToACMatchClassifications(
-      *moved_params->suggest_results[0]));
+                                             moved_params->suggest_results[0]));
 }
 
 //   0123456789
@@ -281,9 +282,9 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine2) {
   scoped_ptr<SendSuggestions::Params> params(
       SendSuggestions::Params::Create(*list));
   EXPECT_TRUE(params);
-  EXPECT_TRUE(params->suggest_results[0].get());
+  ASSERT_FALSE(params->suggest_results.empty());
   CompareClassification(styles_expected, StyleTypesToACMatchClassifications(
-      *params->suggest_results[0]));
+                                             params->suggest_results[0]));
 }
 
 //   0123456789
