@@ -469,9 +469,8 @@ void RTCVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
     return;
 
   LOG(ERROR) << "VDA Error:" << error;
-  UMA_HISTOGRAM_ENUMERATION("Media.RTCVideoDecoderError",
-                            error,
-                            media::VideoDecodeAccelerator::LARGEST_ERROR_ENUM);
+  UMA_HISTOGRAM_ENUMERATION("Media.RTCVideoDecoderError", error,
+                            media::VideoDecodeAccelerator::ERROR_MAX + 1);
   DestroyVDA();
 
   base::AutoLock auto_lock(lock_);

@@ -20291,6 +20291,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.GpuVideoDecoderError" enum="VideoDecodeAcceleratorError">
+  <owner>sandersd@chromium.org</owner>
+  <summary>Counts of video decode errors reported to GpuVideoDecoder.</summary>
+</histogram>
+
 <histogram name="Media.GpuVideoDecoderInitializeStatus" enum="PipelineStatus">
   <owner>posciak@chromium.org</owner>
   <summary>Results of attempts to GpuVideoDecoder::Initialize().</summary>
@@ -20561,7 +20566,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Media.PepperVideoDecoderError" enum="PepperVideoDecodeError">
+<histogram name="Media.PepperVideoDecoderError"
+    enum="VideoDecodeAcceleratorError">
   <owner>ihf@chromium.org</owner>
   <owner>posciak@chromium.org</owner>
   <summary>Counts of video decode errors reported to plugin.</summary>
@@ -20616,7 +20622,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Media.RTCVideoDecoderError" enum="PepperVideoDecodeError">
+<histogram name="Media.RTCVideoDecoderError" enum="VideoDecodeAcceleratorError">
   <owner>posciak@chromium.org</owner>
   <summary>Counts of video decode errors reported to RTCVideoDecoder.</summary>
 </histogram>
@@ -77744,21 +77750,6 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="2126196629" label="PPB_UDPSocket_Private;0.4"/>
 </enum>
 
-<enum name="PepperVideoDecodeError" type="int">
-  <int value="1" label="Illegal state">
-    An operation was attempted during an incompatible decoder state.
-  </int>
-  <int value="2" label="Invalid argument">
-    Invalid argument was passed to an API method.
-  </int>
-  <int value="3" label="Unreadable input">Encoded input is unreadable.</int>
-  <int value="4" label="Platform failure">
-    A failure occurred at the browser layer or lower. Examples of such failures
-    include GPU hardware failures, GPU driver failures, GPU library failures,
-    browser programming errors, and so on.
-  </int>
-</enum>
-
 <enum name="PermissionAction" type="int">
   <int value="0" label="GRANTED"/>
   <int value="1" label="DENIED"/>
@@ -84367,6 +84358,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="10" label="H.264 MultiviewHigh"/>
   <int value="11" label="VP8"/>
   <int value="12" label="VP9"/>
+</enum>
+
+<enum name="VideoDecodeAcceleratorError" type="int">
+  <int value="1" label="Illegal state">
+    An operation was attempted during an incompatible decoder state.
+  </int>
+  <int value="2" label="Invalid argument">
+    Invalid argument was passed to an API method.
+  </int>
+  <int value="3" label="Unreadable input">Encoded input is unreadable.</int>
+  <int value="4" label="Platform failure">
+    A failure occurred at the browser layer or lower. Examples of such failures
+    include GPU hardware failures, GPU driver failures, GPU library failures,
+    browser programming errors, and so on.
+  </int>
 </enum>
 
 <enum name="VideoFormat" type="int">

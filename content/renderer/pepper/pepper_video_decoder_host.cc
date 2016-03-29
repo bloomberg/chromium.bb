@@ -430,7 +430,6 @@ void PepperVideoDecoderHost::NotifyError(
     case media::VideoDecodeAccelerator::ILLEGAL_STATE:
     case media::VideoDecodeAccelerator::INVALID_ARGUMENT:
     case media::VideoDecodeAccelerator::PLATFORM_FAILURE:
-    case media::VideoDecodeAccelerator::LARGEST_ERROR_ENUM:
       pp_error = PP_ERROR_RESOURCE_FAILED;
       break;
     // No default case, to catch unhandled enum values.

@@ -89,7 +89,7 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     // failures, GPU library failures, browser programming errors, and so on.
     PLATFORM_FAILURE,
     // Largest used enum. This should be adjusted when new errors are added.
-    LARGEST_ERROR_ENUM,
+    ERROR_MAX = PLATFORM_FAILURE,
   };
 
   // Config structure contains parameters required for the VDA initialization.

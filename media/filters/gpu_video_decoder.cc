@@ -704,6 +704,9 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
   }
 
   DLOG(ERROR) << "VDA Error: " << error;
+  UMA_HISTOGRAM_ENUMERATION("Media.GpuVideoDecoderError", error,
+                            media::VideoDecodeAccelerator::ERROR_MAX + 1);
+
   DestroyVDA();
 }
 

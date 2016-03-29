@@ -280,9 +280,8 @@ void PPB_VideoDecoder_Impl::NotifyError(
 
   PP_VideoDecodeError_Dev pp_error = MediaToPPError(error);
   GetPPP()->NotifyError(pp_instance(), pp_resource(), pp_error);
-  UMA_HISTOGRAM_ENUMERATION("Media.PepperVideoDecoderError",
-                            error,
-                            media::VideoDecodeAccelerator::LARGEST_ERROR_ENUM);
+  UMA_HISTOGRAM_ENUMERATION("Media.PepperVideoDecoderError", error,
+                            media::VideoDecodeAccelerator::ERROR_MAX + 1);
 }
 
 void PPB_VideoDecoder_Impl::NotifyResetDone() {
