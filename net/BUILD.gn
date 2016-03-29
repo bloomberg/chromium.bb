@@ -1897,6 +1897,18 @@ fuzzer_test("net_dns_record_fuzzer") {
   ]
 }
 
+fuzzer_test("net_http_stream_parser_fuzzer") {
+  sources = [
+    "http/http_stream_parser_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    ":test_support",
+    "//base",
+    "//net",
+  ]
+}
+
 fuzzer_test("net_ftp_ctrl_response_fuzzer") {
   sources = [
     "ftp/ftp_ctrl_response_fuzzer.cc",
