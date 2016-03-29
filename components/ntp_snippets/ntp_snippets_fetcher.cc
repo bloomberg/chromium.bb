@@ -121,6 +121,11 @@ void NTPSnippetsFetcher::OnGetTokenSuccess(
   url_fetcher_->SetUploadData("application/json",
                               base::StringPrintf(kRequestParameterFormat,
                                                  host_restricts.c_str()));
+
+  // Fetchers are sometimes cancelled because a network change was detected.
+  url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
+  // Try to make fetching the files bit more robust even with poor connection.
+  url_fetcher_->SetMaxRetriesOn5xx(3);
   url_fetcher_->Start();
 }
 
