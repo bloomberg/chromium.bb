@@ -173,7 +173,7 @@ scoped_refptr<cc::Layer> createClipLayer(const ClipPaintPropertyNode* node)
     // other kinds of intermediate layers, such as those that apply effects.
     // TODO(jbroman): This assumes that the transform space of this node's
     // parent is an ancestor of this node's transform space. That's not
-    // necessarily true, and this should be fixed.
+    // necessarily true, and this should be fixed. crbug.com/597156
     gfx::Transform transform = transformToTransformSpace(localTransformSpace(node), localTransformSpace(node->parent()));
     gfx::Vector2dF offset = clipRect.OffsetFromOrigin();
     transform.Translate(offset.x(), offset.y());
@@ -271,6 +271,8 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
     ClipLayerManager clipLayerManager(m_rootLayer.get());
     for (const PaintChunk& paintChunk : paintArtifact.paintChunks()) {
         cc::Layer* parent = clipLayerManager.switchToNewClipLayer(paintChunk.properties.clip.get());
+        // TODO(jbroman): Same as above. This assumes the transform space of the current clip is
+        // an ancestor of the chunk. It is not necessarily true. crbug.com/597156
         gfx::Transform transform = transformToTransformSpace(paintChunk.properties.transform.get(), localTransformSpace(paintChunk.properties.clip.get()));
         scoped_refptr<cc::Layer> layer = layerForPaintChunk(paintArtifact, paintChunk, transform);
         layer->SetNeedsDisplay();

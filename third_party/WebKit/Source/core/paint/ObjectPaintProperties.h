@@ -31,13 +31,15 @@ public:
         PassRefPtr<TransformPaintPropertyNode> paintOffsetTranslation,
         PassRefPtr<TransformPaintPropertyNode> transform,
         PassRefPtr<EffectPaintPropertyNode> effect,
+        PassRefPtr<ClipPaintPropertyNode> cssClip,
+        PassRefPtr<ClipPaintPropertyNode> cssClipFixedPosition,
         PassRefPtr<ClipPaintPropertyNode> overflowClip,
         PassRefPtr<TransformPaintPropertyNode> perspective,
         PassRefPtr<TransformPaintPropertyNode> scrollTranslation,
         PassRefPtr<TransformPaintPropertyNode> scrollbarPaintOffset,
         PassOwnPtr<LocalBorderBoxProperties> localBorderBoxProperties)
     {
-        return adoptPtr(new ObjectPaintProperties(paintOffsetTranslation, transform, effect, overflowClip, perspective, scrollTranslation, scrollbarPaintOffset, localBorderBoxProperties));
+        return adoptPtr(new ObjectPaintProperties(paintOffsetTranslation, transform, effect, cssClip, cssClipFixedPosition, overflowClip, perspective, scrollTranslation, scrollbarPaintOffset, localBorderBoxProperties));
     }
 
     // The hierarchy of transform subtree created by a LayoutObject.
@@ -59,6 +61,8 @@ public:
 
     EffectPaintPropertyNode* effect() const { return m_effect.get(); }
 
+    ClipPaintPropertyNode* cssClip() const { return m_cssClip.get(); }
+    ClipPaintPropertyNode* cssClipFixedPosition() const { return m_cssClipFixedPosition.get(); }
     ClipPaintPropertyNode* overflowClip() const { return m_overflowClip.get(); }
 
     // This is a complete set of property nodes that should be used as a starting point to paint
@@ -81,6 +85,8 @@ private:
         PassRefPtr<TransformPaintPropertyNode> paintOffsetTranslation,
         PassRefPtr<TransformPaintPropertyNode> transform,
         PassRefPtr<EffectPaintPropertyNode> effect,
+        PassRefPtr<ClipPaintPropertyNode> cssClip,
+        PassRefPtr<ClipPaintPropertyNode> cssClipFixedPosition,
         PassRefPtr<ClipPaintPropertyNode> overflowClip,
         PassRefPtr<TransformPaintPropertyNode> perspective,
         PassRefPtr<TransformPaintPropertyNode> scrollTranslation,
@@ -89,6 +95,8 @@ private:
         : m_paintOffsetTranslation(paintOffsetTranslation)
         , m_transform(transform)
         , m_effect(effect)
+        , m_cssClip(cssClip)
+        , m_cssClipFixedPosition(cssClipFixedPosition)
         , m_overflowClip(overflowClip)
         , m_perspective(perspective)
         , m_scrollTranslation(scrollTranslation)
@@ -98,6 +106,8 @@ private:
     RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;
     RefPtr<TransformPaintPropertyNode> m_transform;
     RefPtr<EffectPaintPropertyNode> m_effect;
+    RefPtr<ClipPaintPropertyNode> m_cssClip;
+    RefPtr<ClipPaintPropertyNode> m_cssClipFixedPosition;
     RefPtr<ClipPaintPropertyNode> m_overflowClip;
     RefPtr<TransformPaintPropertyNode> m_perspective;
     RefPtr<TransformPaintPropertyNode> m_scrollTranslation;

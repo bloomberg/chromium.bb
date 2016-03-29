@@ -214,6 +214,26 @@ static PassRefPtr<EffectPaintPropertyNode> createEffectIfNeeded(const LayoutObje
     return newEffectNode.release();
 }
 
+static PassRefPtr<ClipPaintPropertyNode> createCSSClipIfNeeded(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
+{
+    if (!object.hasClip())
+        return nullptr;
+    ASSERT(object.canContainAbsolutePositionObjects());
+
+    // Create clip node for descendants that are not fixed position.
+    // We don't have to setup context.clipForAbsolutePosition here because this object must be
+    // a container for absolute position descendants, and will copy from in-flow context later
+    // at updateOutOfFlowContext() step.
+    LayoutRect clipRect = toLayoutBox(object).clipRect(context.paintOffset);
+    RefPtr<ClipPaintPropertyNode> newClipNodeForCSSClip = ClipPaintPropertyNode::create(
+        context.currentTransform,
+        FloatRoundedRect(FloatRect(clipRect)),
+        context.currentClip);
+    context.currentClip = newClipNodeForCSSClip.get();
+
+    return newClipNodeForCSSClip.release();
+}
+
 // TODO(trchen): Remove this once we bake the paint offset into frameRect.
 static PassRefPtr<TransformPaintPropertyNode> createScrollbarPaintOffsetIfNeeded(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
 {
@@ -309,7 +329,7 @@ static PassRefPtr<TransformPaintPropertyNode> createScrollTranslationIfNeeded(co
     return newTransformNodeForScrollTranslation.release();
 }
 
-static void updateOutOfFlowContext(const LayoutObject& object, PaintPropertyTreeBuilderContext& context)
+static void updateOutOfFlowContext(const LayoutObject& object, PaintPropertyTreeBuilderContext& context, ClipPaintPropertyNode* newClipNodeForCSSClip, RefPtr<ClipPaintPropertyNode>& newClipNodeForCSSClipFixedPosition)
 {
     // At the html->svg boundary (see: createPaintOffsetTranslationIfNeeded) the currentTransform is
     // up-to-date for all children of the svg root element. Additionally, inside SVG, all positioning
@@ -328,6 +348,25 @@ static void updateOutOfFlowContext(const LayoutObject& object, PaintPropertyTree
         context.transformForFixedPosition = context.currentTransform;
         context.paintOffsetForFixedPosition = context.paintOffset;
         context.clipForFixedPosition = context.currentClip;
+    } else if (newClipNodeForCSSClip) {
+        // CSS clip applies to all descendants, even if this object is not a containing block
+        // ancestor of the descendant. It is okay for absolute-position descendants because
+        // having CSS clip implies being absolute position container. However for fixed-position
+        // descendants we need to insert the clip here if we are not a containing block ancestor
+        // of them.
+
+        // Before we actually create anything, check whether in-flow context and fixed-position
+        // context has exactly the same clip. Reuse if possible.
+        if (context.clipForFixedPosition == newClipNodeForCSSClip->parent()) {
+            context.clipForFixedPosition = newClipNodeForCSSClip;
+            return;
+        }
+
+        newClipNodeForCSSClipFixedPosition = ClipPaintPropertyNode::create(
+            const_cast<TransformPaintPropertyNode*>(newClipNodeForCSSClip->localTransformSpace()),
+            newClipNodeForCSSClip->clipRect(),
+            context.clipForFixedPosition);
+        context.clipForFixedPosition = newClipNodeForCSSClipFixedPosition.get();
     }
 }
 
@@ -354,6 +393,7 @@ void PaintPropertyTreeBuilder::walk(LayoutObject& object, const PaintPropertyTre
     RefPtr<TransformPaintPropertyNode> newTransformNodeForPaintOffsetTranslation = createPaintOffsetTranslationIfNeeded(object, localContext);
     RefPtr<TransformPaintPropertyNode> newTransformNodeForTransform = createTransformIfNeeded(object, localContext);
     RefPtr<EffectPaintPropertyNode> newEffectNode = createEffectIfNeeded(object, localContext);
+    RefPtr<ClipPaintPropertyNode> newClipNodeForCSSClip = createCSSClipIfNeeded(object, localContext);
     OwnPtr<ObjectPaintProperties::LocalBorderBoxProperties> newRecordedContext = recordTreeContextIfNeeded(object, localContext);
     RefPtr<TransformPaintPropertyNode> newTransformNodeForScrollbarPaintOffset = createScrollbarPaintOffsetIfNeeded(object, localContext);
     RefPtr<ClipPaintPropertyNode> newClipNodeForOverflowClip = createOverflowClipIfNeeded(object, localContext);
@@ -361,13 +401,16 @@ void PaintPropertyTreeBuilder::walk(LayoutObject& object, const PaintPropertyTre
     // http://www.w3.org/TR/css3-transforms/#transform-style-property
     RefPtr<TransformPaintPropertyNode> newTransformNodeForPerspective = createPerspectiveIfNeeded(object, localContext);
     RefPtr<TransformPaintPropertyNode> newTransformNodeForScrollTranslation = createScrollTranslationIfNeeded(object, localContext);
-    updateOutOfFlowContext(object, localContext);
+    RefPtr<ClipPaintPropertyNode> newClipNodeForCSSClipFixedPosition;
+    updateOutOfFlowContext(object, localContext, newClipNodeForCSSClip.get(), newClipNodeForCSSClipFixedPosition);
 
-    if (newTransformNodeForPaintOffsetTranslation || newTransformNodeForTransform || newEffectNode || newClipNodeForOverflowClip || newTransformNodeForPerspective || newTransformNodeForScrollTranslation || newTransformNodeForScrollbarPaintOffset || newRecordedContext) {
+    if (newTransformNodeForPaintOffsetTranslation || newTransformNodeForTransform || newEffectNode || newClipNodeForCSSClip || newClipNodeForCSSClipFixedPosition || newClipNodeForOverflowClip || newTransformNodeForPerspective || newTransformNodeForScrollTranslation || newTransformNodeForScrollbarPaintOffset || newRecordedContext) {
         OwnPtr<ObjectPaintProperties> updatedPaintProperties = ObjectPaintProperties::create(
             newTransformNodeForPaintOffsetTranslation.release(),
             newTransformNodeForTransform.release(),
             newEffectNode.release(),
+            newClipNodeForCSSClip.release(),
+            newClipNodeForCSSClipFixedPosition.release(),
             newClipNodeForOverflowClip.release(),
             newTransformNodeForPerspective.release(),
             newTransformNodeForScrollTranslation.release(),

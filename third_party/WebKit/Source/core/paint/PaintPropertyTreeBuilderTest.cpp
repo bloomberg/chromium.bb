@@ -719,4 +719,105 @@ TEST_F(PaintPropertyTreeBuilderTest, TableCellLayoutLocation)
     EXPECT_EQ(frameView->scrollTranslation(), targetProperties->localBorderBoxProperties()->transform);
 }
 
+TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendant)
+{
+    // This test verifies that clip tree hierarchy being generated correctly for the hard case
+    // such that a fixed position element getting clipped by an absolute position CSS clip.
+    setBodyInnerHTML(
+        "<style>"
+        "  #clip {"
+        "    position: absolute;"
+        "    left: 123px;"
+        "    top: 456px;"
+        "    clip: rect(10px, 80px, 70px, 40px);"
+        "    width: 100px;"
+        "    height: 100px;"
+        "  }"
+        "  #fixed {"
+        "    position: fixed;"
+        "    left: 654px;"
+        "    top: 321px;"
+        "  }"
+        "</style>"
+        "<div id='clip'><div id='fixed'></div></div>"
+    );
+    LayoutRect localClipRect(40, 10, 40, 60);
+    LayoutRect absoluteClipRect = localClipRect;
+    absoluteClipRect.move(123, 456);
+
+    FrameView* frameView = document().view();
+
+    LayoutObject& clip = *document().getElementById("clip")->layoutObject();
+    ObjectPaintProperties* clipProperties = clip.objectPaintProperties();
+    EXPECT_EQ(frameView->contentClip(), clipProperties->cssClip()->parent());
+    EXPECT_EQ(frameView->scrollTranslation(), clipProperties->cssClip()->localTransformSpace());
+    EXPECT_EQ(FloatRoundedRect(FloatRect(absoluteClipRect)), clipProperties->cssClip()->clipRect());
+
+    LayoutObject& fixed = *document().getElementById("fixed")->layoutObject();
+    ObjectPaintProperties* fixedProperties = fixed.objectPaintProperties();
+    EXPECT_EQ(clipProperties->cssClip(), fixedProperties->localBorderBoxProperties()->clip);
+    EXPECT_EQ(frameView->preTranslation(), fixedProperties->localBorderBoxProperties()->transform->parent());
+    EXPECT_EQ(TransformationMatrix().translate(654, 321), fixedProperties->localBorderBoxProperties()->transform->matrix());
+    EXPECT_EQ(LayoutPoint(), fixedProperties->localBorderBoxProperties()->paintOffset);
+}
+
+TEST_F(PaintPropertyTreeBuilderTest, CSSClipFixedPositionDescendantNonShared)
+{
+    // This test is similar to CSSClipFixedPositionDescendant above, except that
+    // now we have a parent overflow clip that should be escaped by the fixed descendant.
+    setBodyInnerHTML(
+        "<style>"
+        "  body {"
+        "    margin: 0;"
+        "  }"
+        "  #overflow {"
+        "    position: relative;"
+        "    width: 50px;"
+        "    height: 50px;"
+        "    overflow: scroll;"
+        "  }"
+        "  #clip {"
+        "    position: absolute;"
+        "    left: 123px;"
+        "    top: 456px;"
+        "    clip: rect(10px, 80px, 70px, 40px);"
+        "    width: 100px;"
+        "    height: 100px;"
+        "  }"
+        "  #fixed {"
+        "    position: fixed;"
+        "    left: 654px;"
+        "    top: 321px;"
+        "  }"
+        "</style>"
+        "<div id='overflow'><div id='clip'><div id='fixed'></div></div></div>"
+    );
+    LayoutRect localClipRect(40, 10, 40, 60);
+    LayoutRect absoluteClipRect = localClipRect;
+    absoluteClipRect.move(123, 456);
+
+    FrameView* frameView = document().view();
+
+    LayoutObject& overflow = *document().getElementById("overflow")->layoutObject();
+    ObjectPaintProperties* overflowProperties = overflow.objectPaintProperties();
+    EXPECT_EQ(frameView->contentClip(), overflowProperties->overflowClip()->parent());
+    EXPECT_EQ(frameView->scrollTranslation(), overflowProperties->scrollTranslation()->parent());
+
+    LayoutObject& clip = *document().getElementById("clip")->layoutObject();
+    ObjectPaintProperties* clipProperties = clip.objectPaintProperties();
+    EXPECT_EQ(overflowProperties->overflowClip(), clipProperties->cssClip()->parent());
+    EXPECT_EQ(overflowProperties->scrollTranslation(), clipProperties->cssClip()->localTransformSpace());
+    EXPECT_EQ(FloatRoundedRect(FloatRect(absoluteClipRect)), clipProperties->cssClip()->clipRect());
+    EXPECT_EQ(frameView->contentClip(), clipProperties->cssClipFixedPosition()->parent());
+    EXPECT_EQ(overflowProperties->scrollTranslation(), clipProperties->cssClipFixedPosition()->localTransformSpace());
+    EXPECT_EQ(FloatRoundedRect(FloatRect(absoluteClipRect)), clipProperties->cssClipFixedPosition()->clipRect());
+
+    LayoutObject& fixed = *document().getElementById("fixed")->layoutObject();
+    ObjectPaintProperties* fixedProperties = fixed.objectPaintProperties();
+    EXPECT_EQ(clipProperties->cssClipFixedPosition(), fixedProperties->localBorderBoxProperties()->clip);
+    EXPECT_EQ(frameView->preTranslation(), fixedProperties->localBorderBoxProperties()->transform->parent());
+    EXPECT_EQ(TransformationMatrix().translate(654, 321), fixedProperties->localBorderBoxProperties()->transform->matrix());
+    EXPECT_EQ(LayoutPoint(), fixedProperties->localBorderBoxProperties()->paintOffset);
+}
+
 } // namespace blink

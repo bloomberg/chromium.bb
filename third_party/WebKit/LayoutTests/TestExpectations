@@ -446,9 +446,13 @@ crbug.com/596780 virtual/spv2/compositing/framesets/composited-frame-alignment.h
 crbug.com/596780 virtual/spv2/compositing/geometry/outline-change.html [ Pass ]
 crbug.com/596780 virtual/spv2/compositing/squashing/incorrect-clip-after-remove-compositing.html [ Pass ]
 
-crbug.com/563667 virtual/spv2/fast/overflow/007.html [ Failure ]
+crbug.com/537409 virtual/spv2/fast/clip [ Pass ]
 crbug.com/537409 virtual/spv2/fast/overflow [ Pass ]
+# PaintArtifactCompositor doesn't implement effects yet.
+crbug.com/563667 virtual/spv2/fast/overflow/007.html [ Failure ]
 # Sub-pixel differences in layout tests for SPv2
+crbug.com/589265 virtual/spv2/fast/clip/nestedTransparencyClip.html [ Failure ]
+crbug.com/589265 virtual/spv2/fast/clip/outline-overflowClip.html [ Failure ]
 crbug.com/589265 virtual/spv2/fast/block/float/002.html [ Failure ]
 crbug.com/589265 virtual/spv2/fast/overflow/001.html [ Failure ]
 crbug.com/589265 virtual/spv2/fast/overflow/003.xml [ Failure ]
@@ -482,6 +486,15 @@ crbug.com/593525 virtual/spv2/fast/overflow/table-overflow-float.html [ Failure 
 # [SPv2] PaintLayerPainter should adjust cull rect between transform spaces.
 crbug.com/593596 virtual/spv2/fast/overflow/overflow-update-transform.html [ Failure ]
 crbug.com/593596 virtual/spv2/fast/overflow/scroll-nested-positioned-layer-in-overflow.html [ Failure ]
+# [SPv2] Handle transform space reversion in PaintArtifactCompositor
+crbug.com/597156 virtual/spv2/fast/clip/010.html [ Crash ]
+# [SPv2] Implement border radius rasterizing / drawing
+crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-clip.html [ Failure ]
+crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-combinations.html [ Failure ]
+crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-composited-parent.html [ Failure ]
+crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-composited.html [ Failure ]
+crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-fixed-position.html [ Failure ]
+crbug.com/597158 virtual/spv2/fast/clip/overflow-border-radius-transformed.html [ Failure ]
 
 crbug.com/537409 virtual/spv2/svg/as-image/svg-image-with-data-uri.html [ Pass ]
 crbug.com/587236 virtual/spv2/compositing/backface-visibility/backface-visibility-3d.html [ Pass ]
