@@ -280,10 +280,7 @@ class ShelfWindowTargeter : public wm::EasyResizeWindowTargeter,
   }
 
   // ash::ShelfLayoutManagerObserver:
-  void WillDeleteShelf() override {
-    shelf_->RemoveObserver(this);
-    shelf_ = NULL;
-  }
+  void WillDeleteShelf() override { shelf_ = NULL; }
 
   void WillChangeVisibilityState(ash::ShelfVisibilityState new_state) override {
     gfx::Insets mouse_insets;
