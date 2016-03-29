@@ -56,15 +56,6 @@ IPC_MESSAGE_CONTROL1(WorkerProcessMsg_CreateWorker,
 // WorkerProcessHost messages
 // These are messages sent from the worker process to the browser process.
 
-// Sent by the worker process to check whether access to web databases is
-// allowed.
-IPC_SYNC_MESSAGE_CONTROL4_1(WorkerProcessHostMsg_AllowDatabase,
-                            int /* worker_route_id */,
-                            GURL /* origin url */,
-                            base::string16 /* database name */,
-                            base::string16 /* database display name */,
-                            bool /* result */)
-
 // Sent by the worker process to check whether access to file system is allowed.
 IPC_SYNC_MESSAGE_CONTROL2_1(WorkerProcessHostMsg_RequestFileSystemAccessSync,
                             int /* worker_route_id */,

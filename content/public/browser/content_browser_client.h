@@ -375,17 +375,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the IO thread.
   virtual bool AllowSaveLocalState(ResourceContext* context);
 
-  // Allow the embedder to control if access to web database by a shared worker
-  // is allowed. |render_frame| is a vector of pairs of
-  // RenderProcessID/RenderFrameID of RenderFrame that are using this worker.
-  // This is called on the IO thread.
-  virtual bool AllowWorkerDatabase(
-      const GURL& url,
-      const base::string16& name,
-      const base::string16& display_name,
-      ResourceContext* context,
-      const std::vector<std::pair<int, int> >& render_frames);
-
   // Allow the embedder to control if access to file system by a shared worker
   // is allowed.
   // This is called on the IO thread.

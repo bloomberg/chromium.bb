@@ -73,7 +73,6 @@ bool SharedWorkerMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnWorkerScriptLoadFailed)
     IPC_MESSAGE_HANDLER(WorkerHostMsg_WorkerConnected,
                         OnWorkerConnected)
-    IPC_MESSAGE_HANDLER(WorkerProcessHostMsg_AllowDatabase, OnAllowDatabase)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(
         WorkerProcessHostMsg_RequestFileSystemAccessSync,
         OnRequestFileSystemAccess)
@@ -141,20 +140,6 @@ void SharedWorkerMessageFilter::OnWorkerConnected(int message_port_id,
       message_port_id,
       worker_route_id,
       this);
-}
-
-void SharedWorkerMessageFilter::OnAllowDatabase(
-    int worker_route_id,
-    const GURL& url,
-    const base::string16& name,
-    const base::string16& display_name,
-    bool* result) {
-  SharedWorkerServiceImpl::GetInstance()->AllowDatabase(worker_route_id,
-                                                        url,
-                                                        name,
-                                                        display_name,
-                                                        result,
-                                                        this);
 }
 
 void SharedWorkerMessageFilter::OnRequestFileSystemAccess(

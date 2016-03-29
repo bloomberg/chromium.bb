@@ -74,12 +74,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                       int render_process_id,
                       int render_frame_id,
                       const net::CookieOptions& options) override;
-  bool AllowWorkerDatabase(
-      const GURL& url,
-      const base::string16& name,
-      const base::string16& display_name,
-      content::ResourceContext* context,
-      const std::vector<std::pair<int, int>>& render_frames) override;
   void AllowWorkerFileSystem(
       const GURL& url,
       content::ResourceContext* context,

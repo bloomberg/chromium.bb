@@ -188,15 +188,6 @@ bool ContentBrowserClient::AllowSaveLocalState(ResourceContext* context) {
   return true;
 }
 
-bool ContentBrowserClient::AllowWorkerDatabase(
-    const GURL& url,
-    const base::string16& name,
-    const base::string16& display_name,
-    ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_frames) {
-  return true;
-}
-
 void ContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     ResourceContext* context,

@@ -182,20 +182,6 @@ void SharedWorkerHost::WorkerConnected(int message_port_id) {
   }
 }
 
-void SharedWorkerHost::AllowDatabase(const GURL& url,
-                                     const base::string16& name,
-                                     const base::string16& display_name,
-                                     bool* result) {
-  if (!instance_)
-    return;
-  *result = GetContentClient()->browser()->AllowWorkerDatabase(
-      url,
-      name,
-      display_name,
-      instance_->resource_context(),
-      GetRenderFrameIDsForWorker());
-}
-
 void SharedWorkerHost::AllowFileSystem(const GURL& url,
                                        scoped_ptr<IPC::Message> reply_msg) {
   if (!instance_)

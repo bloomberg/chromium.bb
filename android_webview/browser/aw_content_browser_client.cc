@@ -365,16 +365,6 @@ bool AwContentBrowserClient::AllowSetCookie(const GURL& url,
                                                              options);
 }
 
-bool AwContentBrowserClient::AllowWorkerDatabase(
-    const GURL& url,
-    const base::string16& name,
-    const base::string16& display_name,
-    content::ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_frames) {
-  // Android WebView does not yet support web workers.
-  return false;
-}
-
 void AwContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     content::ResourceContext* context,
