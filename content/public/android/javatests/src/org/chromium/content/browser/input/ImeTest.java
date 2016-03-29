@@ -990,9 +990,6 @@ public class ImeTest extends ContentShellTestBase {
             }
         });
 
-        DOMUtils.clickNode(this, mContentViewCore, "input_text");
-        assertWaitForKeyboardStatus(true);
-        DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         setComposingText("h", 1);
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
