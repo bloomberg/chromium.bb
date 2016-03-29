@@ -3959,7 +3959,7 @@ void FrameView::collectFrameTimingRequests(GraphicsLayerFrameTimingRequests& gra
         return;
     Frame* frame = m_frame.get();
     LocalFrame* localFrame = toLocalFrame(frame);
-    LayoutRect viewRect = localFrame->contentLayoutObject()->viewRect();
+    LayoutRect viewRect = localFrame->contentLayoutItem().viewRect();
     const LayoutBoxModelObject& paintInvalidationContainer = localFrame->contentLayoutObject()->containerForPaintInvalidation();
     // If the frame is being throttled, its compositing state may not be up to date.
     if (!paintInvalidationContainer.enclosingLayer()->isAllowedToQueryCompositingState())

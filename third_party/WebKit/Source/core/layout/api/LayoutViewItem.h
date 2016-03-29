@@ -50,6 +50,11 @@ public:
         return toView()->documentRect();
     }
 
+    LayoutRect viewRect() const
+    {
+        return toView()->viewRect();
+    }
+
     IntSize layoutSize(IncludeScrollbarsInRect scrollbars = ExcludeScrollbars) const
     {
         return toView()->layoutSize(scrollbars);
