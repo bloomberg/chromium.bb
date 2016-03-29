@@ -3247,6 +3247,9 @@
           'VCCLCompilerTool': {
             'AdditionalOptions': [
               '/bigobj',
+              # Tell the compiler to crash on failures. This is undocumented
+              # and unsupported but very handy.
+              '/d2FastFail',
             ],
           },
           'VCLinkerTool': {
