@@ -70,18 +70,16 @@ bool ColourValuePresent(long long value) {
 
 int main(int argc, char* argv[]) {
   if (argc == 1) {
-    printf("\t\t\tMkv Parser Sample Application\n");
-    printf("\t\t\tUsage: \n");
-    printf("\t\t\t  ./sample [input file] \n");
-    printf("\t\t\t  ./sample sample.mkv \n");
-    return -1;
+    printf("Mkv Parser Sample Application\n");
+    printf("  Usage: %s <input file> \n", argv[0]);
+    return EXIT_FAILURE;
   }
 
   mkvparser::MkvReader reader;
 
   if (reader.Open(argv[1])) {
     printf("\n Filename is invalid or error while opening.\n");
-    return -1;
+    return EXIT_FAILURE;
   }
 
   int maj, min, build, rev;
@@ -96,7 +94,7 @@ int main(int argc, char* argv[]) {
   long long ret = ebmlHeader.Parse(&reader, pos);
   if (ret < 0) {
     printf("\n EBMLHeader::Parse() failed.");
-    return -1;
+    return EXIT_FAILURE;
   }
 
   printf("\t\t\t    EBML Header\n");
@@ -112,7 +110,7 @@ int main(int argc, char* argv[]) {
   ret = seg_t::CreateInstance(&reader, pos, pSegment_);
   if (ret) {
     printf("\n Segment::CreateInstance() failed.");
-    return -1;
+    return EXIT_FAILURE;
   }
 
   const std::auto_ptr<seg_t> pSegment(pSegment_);
@@ -120,13 +118,13 @@ int main(int argc, char* argv[]) {
   ret = pSegment->Load();
   if (ret < 0) {
     printf("\n Segment::Load() failed.");
-    return -1;
+    return EXIT_FAILURE;
   }
 
   const mkvparser::SegmentInfo* const pSegmentInfo = pSegment->GetInfo();
   if (pSegmentInfo == NULL) {
     printf("\n Segment::GetInfo() failed.");
-    return -1;
+    return EXIT_FAILURE;
   }
 
   const long long timeCodeScale = pSegmentInfo->GetTimeCodeScale();
@@ -329,7 +327,7 @@ int main(int argc, char* argv[]) {
 
   if (clusterCount == 0) {
     printf("\t\tSegment has no clusters.\n");
-    return -1;
+    return EXIT_FAILURE;
   }
 
   const mkvparser::Cluster* pCluster = pSegment->GetFirst();
@@ -349,7 +347,7 @@ int main(int argc, char* argv[]) {
     {
       printf("\t\tError parsing first block of cluster\n");
       fflush(stdout);
-      return -1;
+      return EXIT_FAILURE;
     }
 
     while ((pBlockEntry != NULL) && !pBlockEntry->EOS()) {
@@ -383,7 +381,7 @@ int main(int argc, char* argv[]) {
       if (status < 0) {
         printf("\t\t\tError parsing next block of cluster\n");
         fflush(stdout);
-        return -1;
+        return EXIT_FAILURE;
       }
     }
 
@@ -437,5 +435,5 @@ int main(int argc, char* argv[]) {
   }
 
   fflush(stdout);
-  return 0;
+  return EXIT_SUCCESS;
 }
