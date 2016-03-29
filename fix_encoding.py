@@ -51,7 +51,7 @@ def fix_default_encoding():
     except locale.Error:
       continue
     try:
-      lang = locale.getlocale(aref)[0]
+      lang, _ = locale.getdefaultlocale()
     except (TypeError, ValueError):
       continue
     if lang:
