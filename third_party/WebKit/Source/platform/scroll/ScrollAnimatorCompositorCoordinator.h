@@ -81,6 +81,7 @@ protected:
     friend class Internals;
     FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, MainThreadStates);
     FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, AnimatedScrollTakeover);
+    FRIEND_TEST_ALL_PREFIXES(ScrollAnimatorTest, CancellingAnimationResetsState);
 
     enum class RunState {
         // No animation.
