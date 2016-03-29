@@ -284,6 +284,8 @@ protected:
     DisplayMode getDisplayMode() const { return m_displayMode; }
     virtual void setDisplayMode(DisplayMode mode) { m_displayMode = mode; }
 
+    void recordAutoplayMetric(AutoplayMetrics);
+
 private:
     void resetMediaPlayerAndMediaSource();
 
@@ -390,14 +392,6 @@ private:
     // This does not change the buffering strategy.
     void pauseInternal();
 
-    // If we are about to enter a paused state, call this to record
-    // autoplay metrics.  If we were already in a stopped state, then
-    // this does nothing.
-    void recordMetricsIfPausing();
-    // Could stopping at this point be considered a bailout of playback?
-    // (as in, "The user really didn't want to play this").
-    bool isBailout() const;
-    void autoplayMediaEncountered();
     void allowVideoRendering();
 
     void updateVolume();
@@ -429,8 +423,6 @@ private:
 
     void setAllowHiddenVolumeControls(bool);
 
-    void recordAutoplayMetric(AutoplayMetrics);
-
     WebMediaPlayer::CORSMode corsMode() const;
 
     // Returns the "direction of playback" value as specified in the HTML5 spec.
@@ -450,8 +442,11 @@ private:
     // Return true if and only if we require a user gesture before letting
     // the media play.
     bool isUserGestureRequiredForPlay() const;
+
+    // If the user gesture is required, then this will remove it.  Note that
+    // one should not generally call this method directly; use the one on
+    // m_helper and give it a reason.
     void removeUserGestureRequirement();
-    void setInitialPlayWithoutUserGestures(bool);
 
     void setNetworkState(NetworkState);
 
@@ -565,8 +560,6 @@ private:
     bool m_remoteRoutesAvailable : 1;
     bool m_playingRemotely : 1;
     bool m_isFinalizing : 1;
-    bool m_initialPlayWithoutUserGesture : 1;
-    bool m_autoplayMediaCounted : 1;
     // Whether this element is in overlay fullscreen mode.
     bool m_inOverlayFullscreenVideo : 1;
 
@@ -636,12 +629,15 @@ private:
 
     AudioSourceProviderImpl m_audioSourceProvider;
 
+    class AutoplayHelperClientImpl;
+
     friend class Internals;
     friend class TrackDisplayUpdateScope;
     friend class AutoplayExperimentHelper;
     friend class MediaControlsTest;
 
-    AutoplayExperimentHelper m_autoplayHelper;
+    OwnPtrWillBeMember<AutoplayExperimentHelper::Client> m_autoplayHelperClient;
+    OwnPtrWillBeMember<AutoplayExperimentHelper> m_autoplayHelper;
 
     WebRemotePlaybackClient* m_remotePlaybackClient;
 

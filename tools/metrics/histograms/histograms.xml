@@ -74716,6 +74716,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="11" label="Any playback started."/>
   <int value="12" label="Any playback paused."/>
   <int value="13" label="Any playback bailed out."/>
+  <int value="14" label="Any playback completed."/>
+  <int value="15" label="Any audio element encountered."/>
+  <int value="16" label="Any video element encountered."/>
+  <int value="17" label="Autoplayed media complete."/>
+  <int value="18" label="Gestureless playback started due to load()."/>
+  <int value="19" label="Gesture requirement overridden for media stream."/>
+  <int value="20" label="Gesture requirement overridden, unknown reason."/>
+  <int value="21" label="Gesture requirement overridden by play method."/>
 </enum>
 
 <enum name="MediaGalleriesUsageType" type="int">

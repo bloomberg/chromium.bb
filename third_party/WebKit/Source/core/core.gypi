@@ -3996,6 +3996,7 @@
             'frame/csp/CSPSourceListTest.cpp',
             'frame/csp/CSPSourceTest.cpp',
             'frame/csp/ContentSecurityPolicyTest.cpp',
+            'html/AutoplayExperimentTest.cpp',
             'html/FormDataTest.cpp',
             'html/HTMLDimensionTest.cpp',
             'html/HTMLFormControlElementTest.cpp',

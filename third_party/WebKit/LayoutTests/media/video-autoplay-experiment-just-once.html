@@ -6,9 +6,33 @@
 
 function runTest()
 {
+    var canPlayThroughCount = 0;
+    var videoShouldPlay;
+    var videoShouldNotPlay;
+
+    testRunner.waitUntilDone();
+
+    function canPlayThrough()
+    {
+        canPlayThroughCount++;
+        if (canPlayThroughCount == 2) {
+            // Pause() will clear the autoplaying flag, which should also prevent the
+            // gesture override experiment from autoplaying.
+            videoShouldNotPlay.pause();
+
+            // Mute them both, and see if only one starts.
+            videoShouldPlay.muted = true;
+            videoShouldNotPlay.muted = true;
+            logResult(didPlaybackStart(videoShouldPlay), "First video should play");
+            logResult(!didPlaybackStart(videoShouldNotPlay), "Second video should not play");
+            testRunner.notifyDone();
+        }
+    }
+
     function prepareVideo(parent)
     {
         var video = document.createElement("video");
+        video.oncanplaythrough = canPlayThrough;
         video.src = findMediaFile("video", "content/test");
         video.autoplay = true;
         parent.appendChild(video);
@@ -28,19 +52,8 @@ function runTest()
     internals.settings.setMediaPlaybackRequiresUserGesture(true);
     internals.settings.setAutoplayExperimentMode("enabled-forvideo-ifmuted");
 
-    var videoShouldPlay = prepareVideo(parent);
-    var videoShouldNotPlay = prepareVideo(parent);
-
-    // Pause() will clear the autoplaying flag, which should also prevent the
-    // gesture override experiment from autoplaying.
-    videoShouldNotPlay.pause();
-
-    // Mute them both, and see if only one starts.
-    videoShouldPlay.muted = true;
-    videoShouldNotPlay.muted = true;
-    logResult(didPlaybackStart(videoShouldPlay), "First video should play");
-    logResult(!didPlaybackStart(videoShouldNotPlay), "Second video should not play");
-    testRunner.notifyDone();
+    videoShouldPlay = prepareVideo(parent);
+    videoShouldNotPlay = prepareVideo(parent);
 }
 
 </script>

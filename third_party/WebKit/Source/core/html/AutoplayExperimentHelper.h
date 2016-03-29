@@ -13,6 +13,8 @@ namespace blink {
 class Document;
 class HTMLMediaElement;
 class EventListener;
+class LayoutObject;
+class AutoplayExperimentTest;
 
 // These values are used for a histogram. Do not reorder.
 enum AutoplayMetrics {
@@ -62,24 +64,102 @@ enum AutoplayMetrics {
     AnyPlaybackPaused = 12,
     // Some playback, whether user initiated or not, bailed out early.
     AnyPlaybackBailout = 13,
+    // Some playback, whether user initiated or not, played to completion.
+    AnyPlaybackComplete = 14,
+
+    // Number of audio elements detected that reach the resource fetch algorithm.
+    AnyAudioElement = 15,
+    // Numer of video elements detected that reach the resource fetch algorithm.
+    AnyVideoElement = 16,
+
+    // User gesture was bypassed, and playback started, and media played to
+    // completion without a user-initiated pause.
+    AutoplayComplete = 17,
+
+    // Autoplay started after the gesture requirement was removed by a
+    // user gesture load().
+    GesturelessPlaybackEnabledByLoad = 18,
+
+    // Gestureless playback started after the gesture requirement was removed
+    // because src is media stream.
+    GesturelessPlaybackEnabledByStream = 19,
+
+    // Gestureless playback was started, but was never overridden.  This
+    // includes the case in which no gesture was ever required.
+    GesturelessPlaybackNotOverridden = 20,
+
+    // Gestureless playback was enabled by a user gesture play() call.
+    GesturelessPlaybackEnabledByPlayMethod = 21,
 
     // This enum value must be last.
     NumberOfAutoplayMetrics,
 };
 
-class AutoplayExperimentHelper final {
-    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+class CORE_EXPORT AutoplayExperimentHelper final :
+    public NoBaseWillBeGarbageCollectedFinalized<AutoplayExperimentHelper> {
+    friend class AutoplayExperimentTest;
+
 public:
-    explicit AutoplayExperimentHelper(HTMLMediaElement&);
+    // For easier testing, collect all the things we care about here.
+    class Client : public NoBaseWillBeGarbageCollectedFinalized<Client> {
+    public:
+        virtual ~Client() {}
+
+        // HTMLMediaElement
+        virtual double currentTime() const = 0;
+        virtual double duration() const = 0;
+        virtual bool ended() const = 0;
+        virtual bool muted() const = 0;
+        virtual void setMuted(bool) = 0;
+        virtual void playInternal() = 0;
+        virtual bool isUserGestureRequiredForPlay() const = 0;
+        virtual void removeUserGestureRequirement() = 0;
+        virtual void recordAutoplayMetric(AutoplayMetrics) = 0;
+        virtual bool shouldAutoplay() = 0;
+        virtual bool isHTMLVideoElement() const = 0;
+        virtual bool isHTMLAudioElement() const = 0;
+
+        // Document
+        virtual bool isLegacyViewportType() = 0;
+        virtual PageVisibilityState pageVisibilityState() const = 0;
+        virtual String autoplayExperimentMode() const = 0;
+
+        // LayoutObject
+        virtual void setRequestPositionUpdates(bool) = 0;
+        virtual IntRect absoluteBoundingBoxRect() const = 0;
+
+        DEFINE_INLINE_VIRTUAL_TRACE() { }
+    };
+
+    static PassOwnPtrWillBeRawPtr<AutoplayExperimentHelper> create(Client* client)
+    {
+        return adoptPtrWillBeNoop(new AutoplayExperimentHelper(client));
+    }
+
     ~AutoplayExperimentHelper();
 
     void becameReadyToPlay();
     void playMethodCalled();
     void pauseMethodCalled();
+    void loadMethodCalled();
     void mutedChanged();
     void positionChanged(const IntRect&);
     void updatePositionNotificationRegistration();
+    void recordSandboxFailure();
+    void loadingStarted();
+    void playbackStarted();
+    void playbackStopped();
+    void initialPlayWithUserGesture();
 
+    // Clean up.  For Oilpan, this means "early in HTMLMediaElement's dispose".
+    // For non-Oilpan, just delete the object.
+    void dispose();
+
+    // Remove the user gesture requirement, and record why.  If there is no
+    // gesture requirement, then this does nothing.
+    void removeUserGestureRequirement(AutoplayMetrics);
+
+    // Set the position to the current view's position, and
     void triggerAutoplayViewportCheckForTesting();
 
     enum Mode {
@@ -104,12 +184,11 @@ public:
         PlayMuted     = 1 << 6,
     };
 
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_element);
-    }
+    DEFINE_INLINE_TRACE() { visitor->trace(m_client); }
 
 private:
+    explicit AutoplayExperimentHelper(Client*);
+
     // Register to receive position updates, if we haven't already.  If we
     // have, then this does nothing.
     void registerForPositionUpdatesIfNeeded();
@@ -137,7 +216,16 @@ private:
     // Configure internal state to record that the autoplay experiment is
     // going to start playback.  This doesn't actually start playback, since
     // there are several different cases.
-    void prepareToPlay(AutoplayMetrics);
+    void prepareToAutoplay(AutoplayMetrics);
+
+    // Record that an attempt to play without a user gesture has happened.
+    // This does not assume whether or not the play attempt will succeed.
+    // This method takes no action after it is called once.
+    void autoplayMediaEncountered();
+
+    // If we are about to enter a paused state, call this to record
+    // autoplay metrics.
+    void recordMetricsBeforePause();
 
     // Process a timer for checking visibility.
     void viewportTimerFired(Timer<AutoplayExperimentHelper>*);
@@ -145,7 +233,9 @@ private:
     // Return our media element's document.
     Document& document() const;
 
-    HTMLMediaElement& element() const;
+    Client& client() const;
+
+    bool isUserGestureRequiredForPlay() const;
 
     inline bool enabled(Mode mode) const
     {
@@ -154,7 +244,13 @@ private:
 
     Mode fromString(const String& mode);
 
-    RawPtrWillBeMember<HTMLMediaElement> m_element;
+    void recordAutoplayMetric(AutoplayMetrics);
+
+    // Could stopping at this point be considered a bailout of playback?
+    // (as in, "The user really didn't want to play this").
+    bool isBailout() const;
+
+    RawPtrWillBeMember<Client> m_client;
 
     Mode m_mode;
 
@@ -168,6 +264,24 @@ private:
     // According to our last position update, are we in the viewport?
     bool m_wasInViewport : 1;
 
+    // Have we counted this autoplay media in the metrics yet?  This is set when
+    // a media element tries to autoplay, and we record that via the
+    // AutoplayMediaFound metric.
+    bool m_autoplayMediaEncountered : 1;
+
+    // Have we recorded a metric about the cause of the initial playback of
+    // this media yet?
+    bool m_playbackStartedMetricRecorded : 1;
+
+    // Is the current playback the result of autoplay?  If so, then this flag
+    // records that the pause / stop should be counted in the autoplay metrics.
+    bool m_waitingForAutoplayPlaybackEnd : 1;
+
+    // Did we record that this media element exists in the metrics yet?  This is
+    // independent of whether it autoplays; we just want to know how many
+    // elements exist for the Any{Audio|Video}Element metrics.
+    bool m_recordedElement : 1;
+
     // According to our last position update, where was our element?
     IntRect m_lastLocation;
     IntRect m_lastVisibleRect;
@@ -176,6 +290,9 @@ private:
     double m_lastLocationUpdateTime;
 
     Timer<AutoplayExperimentHelper> m_viewportTimer;
+
+    // Reason that autoplay would be allowed to proceed without a user gesture.
+    AutoplayMetrics m_autoplayDeferredMetric;
 };
 
 inline AutoplayExperimentHelper::Mode& operator|=(AutoplayExperimentHelper::Mode& a,
@@ -184,7 +301,6 @@ inline AutoplayExperimentHelper::Mode& operator|=(AutoplayExperimentHelper::Mode
     a = static_cast<AutoplayExperimentHelper::Mode>(static_cast<int>(a) | static_cast<int>(b));
     return a;
 }
-
 
 } // namespace blink
 
