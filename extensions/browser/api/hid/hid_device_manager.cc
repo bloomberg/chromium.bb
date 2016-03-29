@@ -45,15 +45,15 @@ void PopulateHidDeviceInfo(hid::HidDeviceInfo* output,
       continue;
     }
 
-    hid::HidCollectionInfo* api_collection = new hid::HidCollectionInfo();
-    api_collection->usage_page = collection.usage.usage_page;
-    api_collection->usage = collection.usage.usage;
+    hid::HidCollectionInfo api_collection;
+    api_collection.usage_page = collection.usage.usage_page;
+    api_collection.usage = collection.usage.usage;
 
-    api_collection->report_ids.resize(collection.report_ids.size());
+    api_collection.report_ids.resize(collection.report_ids.size());
     std::copy(collection.report_ids.begin(), collection.report_ids.end(),
-              api_collection->report_ids.begin());
+              api_collection.report_ids.begin());
 
-    output->collections.push_back(make_linked_ptr(api_collection));
+    output->collections.push_back(std::move(api_collection));
   }
 
   const std::vector<uint8_t>& report_descriptor = input->report_descriptor();

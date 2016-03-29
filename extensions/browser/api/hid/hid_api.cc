@@ -63,19 +63,19 @@ base::Value* PopulateHidConnection(int connection_id,
   return connection_value.ToValue().release();
 }
 
-void ConvertHidDeviceFilter(linked_ptr<hid::DeviceFilter> input,
+void ConvertHidDeviceFilter(const hid::DeviceFilter& input,
                             HidDeviceFilter* output) {
-  if (input->vendor_id) {
-    output->SetVendorId(*input->vendor_id);
+  if (input.vendor_id) {
+    output->SetVendorId(*input.vendor_id);
   }
-  if (input->product_id) {
-    output->SetProductId(*input->product_id);
+  if (input.product_id) {
+    output->SetProductId(*input.product_id);
   }
-  if (input->usage_page) {
-    output->SetUsagePage(*input->usage_page);
+  if (input.usage_page) {
+    output->SetUsagePage(*input.usage_page);
   }
-  if (input->usage) {
-    output->SetUsage(*input->usage);
+  if (input.usage) {
+    output->SetUsage(*input.usage);
   }
 }
 

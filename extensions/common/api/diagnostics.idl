@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.diagnostics</code> API to query various properties of
 // the environment that may be useful for diagnostics.
-namespace diagnostics {
+[use_movable_types=true] namespace diagnostics {
   dictionary SendPacketOptions {
     // Target IP address.
     DOMString ip;

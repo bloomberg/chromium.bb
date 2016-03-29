@@ -17,15 +17,15 @@ using api::display_source::AUTHENTICATION_METHOD_PBC;
 
 namespace {
 
-DisplaySourceSinkInfoPtr CreateSinkInfoPtr(int id,
-                                           const std::string& name,
-                                           SinkState state) {
-  DisplaySourceSinkInfoPtr ptr(new SinkInfo());
-  ptr->id = id;
-  ptr->name = name;
-  ptr->state = state;
+DisplaySourceSinkInfo CreateSinkInfoPtr(int id,
+                                        const std::string& name,
+                                        SinkState state) {
+  DisplaySourceSinkInfo info;
+  info.id = id;
+  info.name = name;
+  info.state = state;
 
-  return ptr;
+  return info;
 }
 
 }  // namespace
@@ -33,7 +33,9 @@ DisplaySourceSinkInfoPtr CreateSinkInfoPtr(int id,
 class MockDisplaySourceConnectionDelegate
     : public DisplaySourceConnectionDelegate {
  public:
-  DisplaySourceSinkInfoList last_found_sinks() const override { return sinks_; }
+  const DisplaySourceSinkInfoList& last_found_sinks() const override {
+    return sinks_;
+  }
   const Connection* connection() const override { return nullptr; }
   void GetAvailableSinks(const SinkInfoListCallback& sinks_callback,
                          const StringCallback& failure_callback) override {
@@ -62,8 +64,8 @@ class MockDisplaySourceConnectionDelegate
   void StopWatchingAvailableSinks() override {}
 
  private:
-  void AddSink(DisplaySourceSinkInfoPtr sink) {
-    sinks_.push_back(sink);
+  void AddSink(DisplaySourceSinkInfo sink) {
+    sinks_.push_back(std::move(sink));
     FOR_EACH_OBSERVER(DisplaySourceConnectionDelegate::Observer, observers_,
                       OnSinksUpdated(sinks_));
   }

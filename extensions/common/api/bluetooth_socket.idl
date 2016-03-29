@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.bluetoothSocket</code> API to send and receive data
 // to Bluetooth devices using RFCOMM and L2CAP connections.
-namespace bluetoothSocket {
+[use_movable_types=true] namespace bluetoothSocket {
   // The socket properties specified in the $ref:create or $ref:update
   // function. Each property is optional. If a property value is not specified,
   // a default value is used when calling $ref:create, or the existing value is

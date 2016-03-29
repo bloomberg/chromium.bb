@@ -12,8 +12,8 @@
 
 namespace extensions {
 
-using DisplaySourceSinkInfoPtr = linked_ptr<api::display_source::SinkInfo>;
-using DisplaySourceSinkInfoList = std::vector<DisplaySourceSinkInfoPtr>;
+using DisplaySourceSinkInfo = api::display_source::SinkInfo;
+using DisplaySourceSinkInfoList = std::vector<DisplaySourceSinkInfo>;
 using DisplaySourceAuthInfo = api::display_source::AuthenticationInfo;
 using DisplaySourceErrorType = api::display_source::ErrorType;
 // The DisplaySourceConnectionDelegate interface should be implemented
@@ -30,9 +30,8 @@ class DisplaySourceConnectionDelegate : public KeyedService {
 
   class Connection {
    public:
-    // Returns a pointer to the connected sink object. The result is
-    // guaranteed not to be NULL.
-    virtual DisplaySourceSinkInfoPtr GetConnectedSink() const = 0;
+    // Returns the connected sink object.
+    virtual DisplaySourceSinkInfo GetConnectedSink() const = 0;
 
     // Returns the local address of the source.
     virtual std::string GetLocalAddress() const = 0;
@@ -87,7 +86,7 @@ class DisplaySourceConnectionDelegate : public KeyedService {
   // is not watching the sinks (via 'StartWatchingSinks'
   // method). The list is refreshed after 'GetAvailableSinks'
   // call.
-  virtual DisplaySourceSinkInfoList last_found_sinks() const = 0;
+  virtual const DisplaySourceSinkInfoList& last_found_sinks() const = 0;
 
   // Returns the Connection object representing the current
   // connection to the sink or NULL if there is no current connection.

@@ -4,13 +4,13 @@
 
 // The <code>chrome.displaySource</code> API creates a Display
 // session using WebMediaStreamTrack as sources.
-namespace displaySource {
+[use_movable_types=true] namespace displaySource {
   enum ErrorType {
     // The connection with sink cannot be established or has dropped
     // unexpectedly.
     connection_error,
 
-    // The capabilities of this Display Source and the connected  
+    // The capabilities of this Display Source and the connected
     // sink do not fit (e.g. the sink cannot play the media content of
     // the formats given by the source).
     capabilities_negotiation_error,
@@ -82,7 +82,7 @@ namespace displaySource {
   // <code>chrome.runtime.lastError</code> set to error
   // message if the call has failed.
   [inline_doc] callback CallCompleteCallback = void ();
- 
+
   interface Functions {
     // Queries the list of the currently available Display sinks.
     //

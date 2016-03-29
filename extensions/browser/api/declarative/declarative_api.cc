@@ -171,10 +171,20 @@ bool EventsEventAddRulesFunction::RunAsyncOnCorrectThread() {
   scoped_ptr<AddRules::Params> params(AddRules::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  error_ = rules_registry_->AddRules(extension_id(), params->rules);
+  // TODO(devlin): Remove the dependency on linked_ptr here.
+  std::vector<linked_ptr<api::events::Rule>> linked_rules;
+  for (api::events::Rule& rule : params->rules) {
+    linked_rules.push_back(
+        make_linked_ptr(new api::events::Rule(std::move(rule))));
+  }
+  error_ = rules_registry_->AddRules(extension_id(), linked_rules);
 
-  if (error_.empty())
-    results_ = AddRules::Results::Create(params->rules);
+  if (error_.empty()) {
+    scoped_ptr<base::ListValue> rules_value(new base::ListValue());
+    for (const auto& rule : linked_rules)
+      rules_value->Append(rule->ToValue());
+    SetResult(std::move(rules_value));
+  }
 
   return error_.empty();
 }
@@ -205,7 +215,10 @@ bool EventsEventGetRulesFunction::RunAsyncOnCorrectThread() {
     rules_registry_->GetAllRules(extension_id(), &rules);
   }
 
-  results_ = GetRules::Results::Create(rules);
+  scoped_ptr<base::ListValue> rules_value(new base::ListValue());
+  for (const auto& rule : rules)
+    rules_value->Append(rule->ToValue());
+  SetResult(std::move(rules_value));
 
   return true;
 }

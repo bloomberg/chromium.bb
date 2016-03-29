@@ -4,7 +4,7 @@
 
 // API for communicating with a Google Cast device over an authenticated
 // channel.
-namespace cast.channel {
+[use_movable_types=true] namespace cast.channel {
   // The state of the channel.
   enum ReadyState {
     // The channel is connecting.

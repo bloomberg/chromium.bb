@@ -6,7 +6,8 @@
 // adapter state and handle device pairing.
 // NOTE: This IDL is dependent on bluetooth.idl.
 
-[implemented_in = "extensions/browser/api/bluetooth/bluetooth_private_api.h"]
+[implemented_in = "extensions/browser/api/bluetooth/bluetooth_private_api.h",
+ use_movable_types=true]
 
 namespace bluetoothPrivate {
   // Events that can occur during pairing. The method used for pairing varies
