@@ -71,17 +71,10 @@ static RenderFrameDevToolsAgentHost* FindAgentHost(
   return NULL;
 }
 
-// Returns RenderFrameDevToolsAgentHost attached to any of RenderFrameHost
-// instances associated with |web_contents|
 static RenderFrameDevToolsAgentHost* FindAgentHost(WebContents* web_contents) {
-  if (g_instances == NULL)
-    return NULL;
-  for (Instances::iterator it = g_instances.Get().begin();
-       it != g_instances.Get().end(); ++it) {
-    if ((*it)->GetWebContents() == web_contents)
-      return *it;
-  }
-  return NULL;
+  if (!web_contents->GetMainFrame())
+    return nullptr;
+  return FindAgentHost(web_contents->GetMainFrame());
 }
 
 bool ShouldCreateDevToolsFor(RenderFrameHost* rfh) {
@@ -265,16 +258,11 @@ DevToolsAgentHost::GetOrCreateFor(RenderFrameHost* frame_host) {
 // static
 scoped_refptr<DevToolsAgentHost>
 DevToolsAgentHost::GetOrCreateFor(WebContents* web_contents) {
-  RenderFrameDevToolsAgentHost* result = FindAgentHost(web_contents);
-  if (!result) {
-    // TODO(dgozman): this check should not be necessary. See
-    // http://crbug.com/489664.
-    if (!web_contents->GetMainFrame())
-      return nullptr;
-    result = new RenderFrameDevToolsAgentHost(
-        static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame()));
-  }
-  return result;
+  // TODO(dgozman): this check should not be necessary. See
+  // http://crbug.com/489664.
+  if (!web_contents->GetMainFrame())
+    return nullptr;
+  return DevToolsAgentHost::GetOrCreateFor(web_contents->GetMainFrame());
 }
 
 // static

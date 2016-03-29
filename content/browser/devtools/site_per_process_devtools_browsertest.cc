@@ -168,4 +168,36 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
   EXPECT_NE(page_agent.get(), child_frame_agent.get());
 }
 
+IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
+    AgentHostForPageEqualsOneForMainFrame) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(shell()->web_contents())->
+          GetFrameTree()->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  // Load cross-site page into iframe.
+  GURL::Replacements replace_host;
+  GURL cross_site_url(embedded_test_server()->GetURL("/title2.html"));
+  replace_host.SetHostStr("foo.com");
+  cross_site_url = cross_site_url.ReplaceComponents(replace_host);
+  NavigateFrameToURL(child, cross_site_url);
+
+  // First ask for child frame, then for main frame.
+  scoped_refptr<DevToolsAgentHost> child_frame_agent =
+      DevToolsAgentHost::GetOrCreateFor(child->current_frame_host());
+  scoped_refptr<DevToolsAgentHost> main_frame_agent =
+      DevToolsAgentHost::GetOrCreateFor(root->current_frame_host());
+  EXPECT_NE(main_frame_agent.get(), child_frame_agent.get());
+
+  // Agent for web contents should be the the main frame's one.
+  scoped_refptr<DevToolsAgentHost> page_agent =
+      DevToolsAgentHost::GetOrCreateFor(shell()->web_contents());
+  EXPECT_EQ(page_agent.get(), main_frame_agent.get());
+}
+
 }  // namespace content
