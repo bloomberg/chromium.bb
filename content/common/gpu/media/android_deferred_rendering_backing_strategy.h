@@ -44,9 +44,10 @@ class CONTENT_EXPORT AndroidDeferredRenderingBackingStrategy
                const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
   scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture() const override;
   uint32_t GetTextureTarget() const override;
+  gfx::Size GetPictureBufferSize() const override;
   void UseCodecBufferForPictureBuffer(int32_t codec_buffer_index,
                                       const media::PictureBuffer&) override;
-  void AssignOnePictureBuffer(const media::PictureBuffer&) override;
+  void AssignOnePictureBuffer(const media::PictureBuffer&, bool) override;
   void ReuseOnePictureBuffer(const media::PictureBuffer&) override;
   void DismissOnePictureBuffer(const media::PictureBuffer&) override;
   void CodecChanged(

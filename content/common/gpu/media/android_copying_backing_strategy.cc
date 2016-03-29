@@ -75,6 +75,10 @@ uint32_t AndroidCopyingBackingStrategy::GetTextureTarget() const {
   return GL_TEXTURE_2D;
 }
 
+gfx::Size AndroidCopyingBackingStrategy::GetPictureBufferSize() const {
+  return state_provider_->GetSize();
+}
+
 void AndroidCopyingBackingStrategy::UseCodecBufferForPictureBuffer(
     int32_t codec_buf_index,
     const media::PictureBuffer& picture_buffer) {

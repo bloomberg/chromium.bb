@@ -787,7 +787,8 @@ void AndroidVideoDecodeAccelerator::DecodeBuffer(
 }
 
 void AndroidVideoDecodeAccelerator::RequestPictureBuffers() {
-  client_->ProvidePictureBuffers(kNumPictureBuffers, size_,
+  client_->ProvidePictureBuffers(kNumPictureBuffers,
+                                 strategy_->GetPictureBufferSize(),
                                  strategy_->GetTextureTarget());
 }
 
@@ -802,8 +803,12 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
     return;
   }
 
+  const bool have_context = make_context_current_.Run();
+  LOG_IF(WARNING, !have_context)
+      << "Failed to make GL context current for Assign, continuing.";
+
   for (size_t i = 0; i < buffers.size(); ++i) {
-    if (buffers[i].size() != size_) {
+    if (buffers[i].size() != strategy_->GetPictureBufferSize()) {
       POST_ERROR(INVALID_ARGUMENT,
                  "Invalid picture buffer size assigned. Wanted "
                      << size_.ToString() << ", but got "
@@ -818,7 +823,7 @@ void AndroidVideoDecodeAccelerator::AssignPictureBuffers(
     // about "zombies" for why we maintain this set in the first place.
     dismissed_picture_ids_.erase(id);
 
-    strategy_->AssignOnePictureBuffer(buffers[i]);
+    strategy_->AssignOnePictureBuffer(buffers[i], have_context);
   }
   TRACE_COUNTER1("media", "AVDA::FreePictureIds", free_picture_ids_.size());
   DoIOTask(true);

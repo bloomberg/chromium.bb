@@ -100,7 +100,23 @@ AndroidDeferredRenderingBackingStrategy::GetSurfaceTexture() const {
 }
 
 uint32_t AndroidDeferredRenderingBackingStrategy::GetTextureTarget() const {
-  return GL_TEXTURE_EXTERNAL_OES;
+  // If we're using a surface texture, then we need an external texture target
+  // to sample from it.  If not, then we'll use 2D transparent textures to draw
+  // a transparent hole through which to see the SurfaceView.  This is normally
+  // needed only for the devtools inspector, since the overlay mechanism handles
+  // it otherwise.
+  return surface_texture_ ? GL_TEXTURE_EXTERNAL_OES : GL_TEXTURE_2D;
+}
+
+gfx::Size AndroidDeferredRenderingBackingStrategy::GetPictureBufferSize()
+    const {
+  // For SurfaceView, request a 1x1 2D texture to reduce memory during
+  // initialization.  For SurfaceTexture, allocate a picture buffer that is the
+  // actual frame size.  Note that it will be an external texture anyway, so it
+  // doesn't allocate an image of that size.  However, it's still important to
+  // get the coded size right, so that VideoLayerImpl doesn't try to scale the
+  // texture when building the quad for it.
+  return surface_texture_ ? state_provider_->GetSize() : gfx::Size(1, 1);
 }
 
 AVDACodecImage* AndroidDeferredRenderingBackingStrategy::GetImageForPicture(
@@ -178,13 +194,29 @@ void AndroidDeferredRenderingBackingStrategy::UseCodecBufferForPictureBuffer(
 }
 
 void AndroidDeferredRenderingBackingStrategy::AssignOnePictureBuffer(
-    const media::PictureBuffer& picture_buffer) {
+    const media::PictureBuffer& picture_buffer,
+    bool have_context) {
   // Attach a GLImage to each texture that will use the surface texture.
   // We use a refptr here in case SetImageForPicture fails.
   scoped_refptr<gpu::gles2::GLStreamTextureImage> gl_image =
       new AVDACodecImage(shared_state_, media_codec_,
                          state_provider_->GetGlDecoder(), surface_texture_);
   SetImageForPicture(picture_buffer, gl_image);
+
+  if (!surface_texture_ && have_context) {
+    // To make devtools work, we're using a 2D texture.  Make it transparent,
+    // so that it draws a hole for the SV to show through.  This is only
+    // because devtools draws and reads back, which skips overlay processing.
+    // It's unclear why devtools renders twice -- once normally, and once
+    // including a readback layer.  The result is that the device screen
+    // flashes as we alternately draw the overlay hole and this texture,
+    // unless we make the texture transparent.
+    static const uint8_t rgba[] = {0, 0, 0, 0};
+    const gfx::Size size(1, 1);
+    glBindTexture(GL_TEXTURE_2D, picture_buffer.texture_id());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, rgba);
+  }
 }
 
 void AndroidDeferredRenderingBackingStrategy::ReleaseCodecBufferForPicture(

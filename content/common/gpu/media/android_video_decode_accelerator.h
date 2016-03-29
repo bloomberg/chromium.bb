@@ -67,6 +67,9 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
     // Return the GL texture target that the PictureBuffer textures use.
     virtual uint32_t GetTextureTarget() const = 0;
 
+    // Return the size to use when requesting picture buffers.
+    virtual gfx::Size GetPictureBufferSize() const = 0;
+
     // Make the provided PictureBuffer draw the image that is represented by
     // the decoded output buffer at codec_buffer_index.
     virtual void UseCodecBufferForPictureBuffer(
@@ -75,7 +78,8 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
     // Notify strategy that a picture buffer has been assigned.
     virtual void AssignOnePictureBuffer(
-        const media::PictureBuffer& picture_buffer) {}
+        const media::PictureBuffer& picture_buffer,
+        bool have_context) {}
 
     // Notify strategy that a picture buffer has been reused.
     virtual void ReuseOnePictureBuffer(

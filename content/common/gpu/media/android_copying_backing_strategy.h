@@ -37,6 +37,7 @@ class CONTENT_EXPORT AndroidCopyingBackingStrategy
                const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
   scoped_refptr<gfx::SurfaceTexture> GetSurfaceTexture() const override;
   uint32_t GetTextureTarget() const override;
+  gfx::Size GetPictureBufferSize() const override;
   void UseCodecBufferForPictureBuffer(int32_t codec_buffer_index,
                                       const media::PictureBuffer&) override;
   void CodecChanged(
