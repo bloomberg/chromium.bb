@@ -904,9 +904,10 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
   }
 
   void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
-    if (num_draws_ < 2)
+    if (num_draws_ < 2) {
       PostSetNeedsRedrawRectToMainThread(invalid_rect_);
-    num_draws_++;
+      num_draws_++;
+    }
   }
 
   void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
@@ -951,9 +952,7 @@ class LayerTreeHostTestGpuRasterDeviceSizeChanged : public LayerTreeHostTest {
 
 // As there's no pending tree in single-threaded case, this test should run
 // only for multi-threaded case.
-// Multi-thread case is flaky too. Disabling pending resolution on
-// crbug.com/598491
-// MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterDeviceSizeChanged);
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterDeviceSizeChanged);
 
 class LayerTreeHostTestNoExtraCommitFromInvalidate : public LayerTreeHostTest {
  public:
