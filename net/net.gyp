@@ -787,18 +787,6 @@
       ],
     },
     {
-      'target_name': 'cachetool',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        'net',
-        'net_test_support',
-      ],
-      'sources': [
-        'tools/cachetool/cachetool.cc',
-      ],
-    },
-    {
       'target_name': 'dump_cache',
       'type': 'executable',
       'dependencies': [
@@ -1702,6 +1690,18 @@
     ['OS == "linux"', {
       'targets': [
         {
+          'target_name': 'cachetool',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+            'net_test_support',
+          ],
+          'sources': [
+            'tools/cachetool/cachetool.cc',
+          ],
+        },
+        {
           'target_name': 'content_decoder_tool',
           'type': 'executable',
           'dependencies': [
@@ -1710,8 +1710,8 @@
             'net',
           ],
           'sources': [
-            'tools/content_decoder_tool/content_decoder_tool.cc',
             'filter/mock_filter_context.cc',
+            'tools/content_decoder_tool/content_decoder_tool.cc',
           ],
         }
       ],

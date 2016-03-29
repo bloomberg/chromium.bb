@@ -1088,6 +1088,33 @@ if (!is_ios && !is_android) {
 }
 
 if (is_linux) {
+  executable("cachetool") {
+    testonly = true
+    sources = [
+      "tools/cachetool/cachetool.cc",
+    ]
+    deps = [
+      ":net",
+      ":test_support",
+      "//base",
+    ]
+  }
+
+  executable("content_decoder_tool") {
+    testonly = true
+    sources = [
+      "filter/mock_filter_context.cc",
+      "filter/mock_filter_context.h",
+      "tools/content_decoder_tool/content_decoder_tool.cc",
+    ]
+    deps = [
+      ":net",
+      ":test_support",
+      "//base",
+      "//url",
+    ]
+  }
+
   static_library("epoll_server") {
     sources = [
       "tools/epoll_server/epoll_server.cc",

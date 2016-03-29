@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache.h"
@@ -132,25 +131,13 @@ int main(int argc, char* argv[]) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
-#if defined(OS_WIN)
-  std::vector<std::string> args;
-  base::CommandLine::StringVector wide_args = command_line.GetArgs();
-  for (const auto& arg : wide_args) {
-    args.push_back(base::WideToUTF8(arg));
-  }
-#else
   base::CommandLine::StringVector args = command_line.GetArgs();
-#endif
   if (args.size() < 3U) {
     PrintHelp();
     return 1;
   }
 
-#if defined(OS_WIN)
-  base::FilePath cache_path(wide_args[0]);
-#else
   base::FilePath cache_path(args[0]);
-#endif
   std::string cache_backend_type(args[1]);
   std::string subcommand(args[2]);
 
