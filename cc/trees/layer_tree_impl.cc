@@ -765,29 +765,30 @@ void LayerTreeImpl::ClearViewportLayers() {
 }
 
 #if DCHECK_IS_ON()
-int SanityCheckCopyRequestCounts(LayerImpl* layer) {
-  int count = layer->HasCopyRequest() ? 1 : 0;
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    count += SanityCheckCopyRequestCounts(layer->child_at(i));
+void SanityCheckCopyRequestCounts(LayerTreeImpl* layer_tree_impl) {
+  EffectTree& effect_tree = layer_tree_impl->property_trees()->effect_tree;
+  const int effect_tree_size = static_cast<int>(effect_tree.size());
+  std::vector<int> copy_requests_count_in_effect_tree(effect_tree_size);
+  for (auto* layer : *layer_tree_impl) {
+    if (layer->HasCopyRequest()) {
+      copy_requests_count_in_effect_tree[layer->effect_tree_index()]++;
+    }
   }
-  if (layer->layer_tree_impl()
-          ->property_trees()
-          ->effect_tree.Node(layer->effect_tree_index())
-          ->owner_id == layer->id()) {
-    DCHECK_EQ(count, layer->num_copy_requests_in_target_subtree())
-        << ", id: " << layer->id();
-  } else {
-    DCHECK_LE(count, layer->num_copy_requests_in_target_subtree())
-        << ", id: " << layer->id();
+  for (int i = effect_tree_size - 1; i >= 0; i--) {
+    EffectNode* node = effect_tree.Node(i);
+    DCHECK_EQ(node->data.num_copy_requests_in_subtree,
+              copy_requests_count_in_effect_tree[i]);
+    if (node->parent_id >= 0)
+      copy_requests_count_in_effect_tree[node->parent_id] +=
+          copy_requests_count_in_effect_tree[i];
   }
-  return count;
 }
 #endif
 
 bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
 #if DCHECK_IS_ON()
   if (root_layer())
-    SanityCheckCopyRequestCounts(root_layer());
+    SanityCheckCopyRequestCounts(root_layer()->layer_tree_impl());
 #endif
 
   if (!needs_update_draw_properties_)
