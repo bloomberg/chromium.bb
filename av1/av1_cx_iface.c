@@ -1364,7 +1364,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
 #define VERSION_STRING
 #endif
 CODEC_INTERFACE(aom_codec_av1_cx) = {
-  "WebM Project AV1 Encoder" VERSION_STRING,
+  "AOMedia Project AV1 Encoder" VERSION_STRING,
   AOM_CODEC_INTERNAL_ABI_VERSION,
 #if CONFIG_AOM_HIGHBITDEPTH
   AOM_CODEC_CAP_HIGHBITDEPTH |

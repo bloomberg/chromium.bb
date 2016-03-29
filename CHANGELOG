@@ -1,3 +1,6 @@
+2016-04-07 v0.1.0 "AOMedia Codec 1"
+  This release is the first Alliance for Open Media codec.
+
 2015-11-09 v1.5.0 "Javan Whistling Duck"
   This release improves upon the AV1 encoder and speeds up the encoding and
   decoding processes.
