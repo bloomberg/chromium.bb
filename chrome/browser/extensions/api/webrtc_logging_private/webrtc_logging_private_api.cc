@@ -161,8 +161,8 @@ bool WebrtcLoggingPrivateSetMetaDataFunction::RunAsync() {
     return false;
 
   scoped_ptr<MetaDataMap> meta_data(new MetaDataMap());
-  for (const linked_ptr<MetaDataEntry>& entry : params->meta_data)
-    (*meta_data.get())[entry->key] = entry->value;
+  for (const MetaDataEntry& entry : params->meta_data)
+    (*meta_data.get())[entry.key] = entry.value;
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
       &WebRtcLoggingHandlerHost::SetMetaData, webrtc_logging_handler_host,

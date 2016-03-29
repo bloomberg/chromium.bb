@@ -162,16 +162,12 @@ bool AlarmsGetAllFunction::RunAsync() {
 }
 
 void AlarmsGetAllFunction::Callback(const AlarmList* alarms) {
+  scoped_ptr<base::ListValue> alarms_value(new base::ListValue());
   if (alarms) {
-    std::vector<linked_ptr<alarms::Alarm>> create_arg;
-    create_arg.reserve(alarms->size());
-    for (size_t i = 0, size = alarms->size(); i < size; ++i) {
-      create_arg.push_back((*alarms)[i].js_alarm);
-    }
-    results_ = alarms::GetAll::Results::Create(create_arg);
-  } else {
-    SetResult(new base::ListValue());
+    for (const Alarm& alarm : *alarms)
+      alarms_value->Append(alarm.js_alarm->ToValue());
   }
+  SetResult(std::move(alarms_value));
   SendResponse(true);
 }
 

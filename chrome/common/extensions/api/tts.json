@@ -6,6 +6,7 @@
   {
     "namespace": "tts",
     "description": "Use the <code>chrome.tts</code> API to play synthesized text-to-speech (TTS). See also the related <a href='http://developer.chrome.com/extensions/ttsEngine'>ttsEngine</a> API, which allows an extension to implement a speech engine.",
+    "compiler_options": {"use_movable_types": true},
     "types": [
       {
         "id": "TtsEvent",

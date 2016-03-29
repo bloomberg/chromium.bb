@@ -520,21 +520,20 @@ bool WebNavigationGetAllFramesFunction::RunSync() {
   const FrameNavigationState& navigation_state =
       observer->frame_navigation_state();
 
-  std::vector<linked_ptr<GetAllFrames::Results::DetailsType> > result_list;
+  std::vector<GetAllFrames::Results::DetailsType> result_list;
   for (FrameNavigationState::const_iterator it = navigation_state.begin();
        it != navigation_state.end(); ++it) {
     GURL frame_url = navigation_state.GetUrl(*it);
     if (!navigation_state.IsValidUrl(frame_url))
       continue;
-    linked_ptr<GetAllFrames::Results::DetailsType> frame(
-        new GetAllFrames::Results::DetailsType());
-    frame->url = frame_url.spec();
-    frame->frame_id = ExtensionApiFrameIdMap::GetFrameId(*it);
-    frame->parent_frame_id =
+    GetAllFrames::Results::DetailsType frame;
+    frame.url = frame_url.spec();
+    frame.frame_id = ExtensionApiFrameIdMap::GetFrameId(*it);
+    frame.parent_frame_id =
         ExtensionApiFrameIdMap::GetFrameId((*it)->GetParent());
-    frame->process_id = (*it)->GetProcess()->GetID();
-    frame->error_occurred = navigation_state.GetErrorOccurredInFrame(*it);
-    result_list.push_back(frame);
+    frame.process_id = (*it)->GetProcess()->GetID();
+    frame.error_occurred = navigation_state.GetErrorOccurredInFrame(*it);
+    result_list.push_back(std::move(frame));
   }
   results_ = GetAllFrames::Results::Create(result_list);
   return true;

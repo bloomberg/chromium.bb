@@ -41,18 +41,13 @@ class AudioAPI : public BrowserContextKeyedAPI, public AudioService::Observer {
   AudioService* service_;
 };
 
-class AudioGetInfoFunction : public AsyncExtensionFunction {
+class AudioGetInfoFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("audio.getInfo", AUDIO_GETINFO);
 
  protected:
   ~AudioGetInfoFunction() override {}
-  bool RunAsync() override;
-
- private:
-  void OnGetInfoCompleted(const OutputInfo& output_info,
-                          const InputInfo& input_info,
-                          bool success);
+  bool RunSync() override;
 };
 
 class AudioSetActiveDevicesFunction : public SyncExtensionFunction {

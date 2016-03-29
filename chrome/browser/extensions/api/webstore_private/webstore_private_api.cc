@@ -519,18 +519,19 @@ void WebstorePrivateInstallBundleFunction::OnFetchComplete(
   for (const auto& entry : params_->contents) {
     // Skip already-installed items.
     bool is_installed =
-        extensions::ExtensionRegistry::Get(browser_context())->GetExtensionById(
-            entry->id, extensions::ExtensionRegistry::EVERYTHING) != nullptr;
+        extensions::ExtensionRegistry::Get(browser_context())
+            ->GetExtensionById(
+                entry.id, extensions::ExtensionRegistry::EVERYTHING) != nullptr;
     if (is_installed ||
-        InstallTracker::Get(browser_context())->GetActiveInstall(entry->id)) {
+        InstallTracker::Get(browser_context())->GetActiveInstall(entry.id)) {
       continue;
     }
     BundleInstaller::Item item;
-    item.id = entry->id;
-    item.manifest = entry->manifest;
-    item.localized_name = entry->localized_name;
-    if (entry->icon_url)
-      item.icon_url = source_url().Resolve(*entry->icon_url);
+    item.id = entry.id;
+    item.manifest = entry.manifest;
+    item.localized_name = entry.localized_name;
+    if (entry.icon_url)
+      item.icon_url = source_url().Resolve(*entry.icon_url);
     items.push_back(item);
   }
   if (items.empty()) {

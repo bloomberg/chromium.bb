@@ -6,7 +6,8 @@
   {
     "namespace": "terminalPrivate",
     "compiler_options": {
-      "implemented_in": "chrome/browser/extensions/api/terminal/terminal_private_api.h"
+      "implemented_in": "chrome/browser/extensions/api/terminal/terminal_private_api.h",
+      "use_movable_types": true
     },
     "description": "none",
     "types": [

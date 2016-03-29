@@ -10,15 +10,14 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "extensions/common/api/audio.h"
 
 namespace extensions {
 
-using OutputInfo = std::vector<linked_ptr<api::audio::OutputDeviceInfo>>;
-using InputInfo = std::vector<linked_ptr<api::audio::InputDeviceInfo>>;
+using OutputInfo = std::vector<api::audio::OutputDeviceInfo>;
+using InputInfo = std::vector<api::audio::InputDeviceInfo>;
 using DeviceIdList = std::vector<std::string>;
-using DeviceInfoList = std::vector<linked_ptr<api::audio::AudioDeviceInfo>>;
+using DeviceInfoList = std::vector<api::audio::AudioDeviceInfo>;
 
 class AudioService {
  public:
@@ -41,10 +40,6 @@ class AudioService {
     virtual ~Observer() {}
   };
 
-  // Callback type for completing to get audio device information.
-  typedef base::Callback<void(const OutputInfo&, const InputInfo&, bool)>
-      GetInfoCallback;
-
   // Creates a platform-specific AudioService instance.
   static AudioService* CreateInstance();
 
@@ -55,8 +50,10 @@ class AudioService {
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // Start to query audio device information. Should be called on UI thread.
-  // The |callback| will be invoked once the query is completed.
-  virtual void StartGetInfo(const GetInfoCallback& callback) = 0;
+  // Populates |output_info_out| and |input_info_out| with the results.
+  // Returns true on success.
+  virtual bool GetInfo(OutputInfo* output_info_out,
+                       InputInfo* input_info_out) = 0;
 
   // Sets the active devices to the devices specified by |device_list|.
   // It can pass in the "complete" active device list of either input

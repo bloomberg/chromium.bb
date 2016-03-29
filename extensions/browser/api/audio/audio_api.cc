@@ -80,23 +80,19 @@ void AudioAPI::OnDevicesChanged(const DeviceInfoList& devices) {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool AudioGetInfoFunction::RunAsync() {
+bool AudioGetInfoFunction::RunSync() {
   AudioService* service =
       AudioAPI::GetFactoryInstance()->Get(browser_context())->GetService();
   DCHECK(service);
-  service->StartGetInfo(base::Bind(&AudioGetInfoFunction::OnGetInfoCompleted,
-                                   this));
-  return true;
-}
-
-void AudioGetInfoFunction::OnGetInfoCompleted(const OutputInfo& output_info,
-                                              const InputInfo& input_info,
-                                              bool success) {
-  if (success)
-    results_ = audio::GetInfo::Results::Create(output_info, input_info);
-  else
+  OutputInfo output_info;
+  InputInfo input_info;
+  if (!service->GetInfo(&output_info, &input_info)) {
     SetError("Error occurred when querying audio device information.");
-  SendResponse(success);
+    return false;
+  }
+
+  results_ = audio::GetInfo::Results::Create(output_info, input_info);
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -5,7 +5,7 @@
 // The <code>chrome.audio</code> API is provided to allow users to
 // get information about and control the audio devices attached to the
 // system. This API is currently only implemented for ChromeOS.
-namespace audio {
+[use_movable_types=true] namespace audio {
 
   dictionary OutputDeviceInfo {
     // The unique identifier of the audio output device.

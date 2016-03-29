@@ -34,7 +34,7 @@ class AudioServiceImpl : public AudioService,
   void RemoveObserver(AudioService::Observer* observer) override;
 
   // Start to query audio device information.
-  void StartGetInfo(const GetInfoCallback& callback) override;
+  bool GetInfo(OutputInfo* output_info_out, InputInfo* input_info_out) override;
   void SetActiveDevices(const DeviceIdList& device_list) override;
   bool SetDeviceProperties(const std::string& device_id,
                            bool muted,
@@ -95,47 +95,41 @@ void AudioServiceImpl::RemoveObserver(AudioService::Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void AudioServiceImpl::StartGetInfo(const GetInfoCallback& callback) {
+bool AudioServiceImpl::GetInfo(OutputInfo* output_info_out,
+                               InputInfo* input_info_out) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(cras_audio_handler_);
-  DCHECK(!callback.is_null());
+  DCHECK(output_info_out);
+  DCHECK(input_info_out);
 
-  if (callback.is_null())
-    return;
-
-  OutputInfo output_info;
-  InputInfo input_info;
-  if (!cras_audio_handler_) {
-    callback.Run(output_info, input_info, false);
-    return;
-  }
+  if (!cras_audio_handler_)
+    return false;
 
   chromeos::AudioDeviceList devices;
   cras_audio_handler_->GetAudioDevices(&devices);
   for (size_t i = 0; i < devices.size(); ++i) {
     if (!devices[i].is_input) {
-      linked_ptr<OutputDeviceInfo> info(new OutputDeviceInfo());
-      info->id = base::Uint64ToString(devices[i].id);
-      info->name = devices[i].device_name + ": " + devices[i].display_name;
-      info->is_active = devices[i].active;
-      info->volume =
+      OutputDeviceInfo info;
+      info.id = base::Uint64ToString(devices[i].id);
+      info.name = devices[i].device_name + ": " + devices[i].display_name;
+      info.is_active = devices[i].active;
+      info.volume =
           cras_audio_handler_->GetOutputVolumePercentForDevice(devices[i].id);
-      info->is_muted =
+      info.is_muted =
           cras_audio_handler_->IsOutputMutedForDevice(devices[i].id);
-      output_info.push_back(info);
+      output_info_out->push_back(std::move(info));
     } else {
-      linked_ptr<InputDeviceInfo> info(new InputDeviceInfo());
-      info->id = base::Uint64ToString(devices[i].id);
-      info->name = devices[i].device_name + ": " + devices[i].display_name;
-      info->is_active = devices[i].active;
-      info->gain =
+      InputDeviceInfo info;
+      info.id = base::Uint64ToString(devices[i].id);
+      info.name = devices[i].device_name + ": " + devices[i].display_name;
+      info.is_active = devices[i].active;
+      info.gain =
           cras_audio_handler_->GetInputGainPercentForDevice(devices[i].id);
-      info->is_muted =
-          cras_audio_handler_->IsInputMutedForDevice(devices[i].id);
-      input_info.push_back(info);
+      info.is_muted = cras_audio_handler_->IsInputMutedForDevice(devices[i].id);
+      input_info_out->push_back(std::move(info));
     }
   }
-  callback.Run(output_info, input_info, true);
+  return true;
 }
 
 void AudioServiceImpl::SetActiveDevices(const DeviceIdList& device_list) {
@@ -257,26 +251,26 @@ void AudioServiceImpl::NotifyDevicesChanged() {
   chromeos::AudioDeviceList devices;
   cras_audio_handler_->GetAudioDevices(&devices);
   for (size_t i = 0; i < devices.size(); ++i) {
-    linked_ptr<AudioDeviceInfo> info(new AudioDeviceInfo());
-    info->id = base::Uint64ToString(devices[i].id);
-    info->is_input = devices[i].is_input;
-    info->device_type = chromeos::AudioDevice::GetTypeString(devices[i].type);
-    info->display_name = devices[i].display_name;
-    info->device_name = devices[i].device_name;
-    info->is_active = devices[i].active;
-    info->is_muted =
+    AudioDeviceInfo info;
+    info.id = base::Uint64ToString(devices[i].id);
+    info.is_input = devices[i].is_input;
+    info.device_type = chromeos::AudioDevice::GetTypeString(devices[i].type);
+    info.display_name = devices[i].display_name;
+    info.device_name = devices[i].device_name;
+    info.is_active = devices[i].active;
+    info.is_muted =
         devices[i].is_input
             ? cras_audio_handler_->IsInputMutedForDevice(devices[i].id)
             : cras_audio_handler_->IsOutputMutedForDevice(devices[i].id);
-    info->level =
+    info.level =
         devices[i].is_input
             ? cras_audio_handler_->GetOutputVolumePercentForDevice(
                   devices[i].id)
             : cras_audio_handler_->GetInputGainPercentForDevice(devices[i].id);
-    info->stable_device_id.reset(
+    info.stable_device_id.reset(
         new std::string(base::Uint64ToString(devices[i].stable_device_id)));
 
-    devices_info_list.push_back(info);
+    devices_info_list.push_back(std::move(info));
   }
 
   FOR_EACH_OBSERVER(AudioService::Observer, observer_list_,

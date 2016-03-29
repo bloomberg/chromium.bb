@@ -225,15 +225,13 @@ void WebrtcAudioPrivateGetSinksFunction::OnOutputDeviceNames(
     scoped_ptr<AudioDeviceNames> raw_ids) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  std::vector<linked_ptr<wap::SinkInfo> > results;
-  for (AudioDeviceNames::const_iterator it = raw_ids->begin();
-       it != raw_ids->end();
-       ++it) {
-    linked_ptr<wap::SinkInfo> info(new wap::SinkInfo);
-    info->sink_id = CalculateHMACImpl(it->unique_id);
-    info->sink_label = it->device_name;
+  std::vector<wap::SinkInfo> results;
+  for (const media::AudioDeviceName& name : *raw_ids) {
+    wap::SinkInfo info;
+    info.sink_id = CalculateHMACImpl(name.unique_id);
+    info.sink_label = name.device_name;
     // TODO(joi): Add other parameters.
-    results.push_back(info);
+    results.push_back(std::move(info));
   }
 
   // It's safe to directly set the results here (from a thread other

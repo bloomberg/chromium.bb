@@ -6,6 +6,7 @@
   {
     "namespace": "webstore",
     "description": "Use the <code>chrome.webstore</code> API to initiate app and extension installations \"inline\" from your site.",
+    "compiler_options": {"use_movable_types": true},
     "types": [
       {
         "id": "InstallStage",

@@ -334,15 +334,11 @@ bool AppCurrentWindowInternalSetShapeFunction::RunWithWindow(
   // |rects| should be an empty list.
   scoped_ptr<SkRegion> region(new SkRegion);
   if (shape.rects) {
-    for (std::vector<linked_ptr<RegionRect> >::const_iterator i =
-             shape.rects->begin();
-         i != shape.rects->end();
-         ++i) {
-      const RegionRect& inputRect = **i;
-      int32_t x = inputRect.left;
-      int32_t y = inputRect.top;
-      int32_t width = inputRect.width;
-      int32_t height = inputRect.height;
+    for (const RegionRect& input_rect : *shape.rects) {
+      int32_t x = input_rect.left;
+      int32_t y = input_rect.top;
+      int32_t width = input_rect.width;
+      int32_t height = input_rect.height;
 
       SkIRect rect = SkIRect::MakeXYWH(x, y, width, height);
       region->op(rect, SkRegion::kUnion_Op);

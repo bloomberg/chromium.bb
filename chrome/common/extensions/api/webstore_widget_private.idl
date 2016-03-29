@@ -4,7 +4,7 @@
 
 // webstoreWidgetPrivate API.
 // This is a private API used by the Chrome Webstore widget app on Chrome OS.
-[platforms=("chromeos")]
+[platforms=("chromeos"), use_movable_types=true]
 namespace webstoreWidgetPrivate {
 // The type of apps that should be shown in the Webstore widget.
 enum Type {
