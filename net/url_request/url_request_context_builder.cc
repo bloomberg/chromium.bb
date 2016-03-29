@@ -191,7 +191,8 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
       quic_close_sessions_on_ip_change(false),
       quic_migrate_sessions_on_network_change(false),
-      quic_migrate_sessions_early(false) {}
+      quic_migrate_sessions_early(false),
+      quic_disable_bidirectional_streams(false) {}
 
 URLRequestContextBuilder::HttpNetworkSessionParams::~HttpNetworkSessionParams()
 {}
