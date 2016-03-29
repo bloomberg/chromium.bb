@@ -120,8 +120,8 @@ class Connector : public MessageReceiver {
     return message_pipe_.get();
   }
 
-  // Allows |message_pipe_| be watched while others perform sync handle watching
-  // on the same thread. Please see comments of
+  // Allows |message_pipe_| to be watched while others perform sync handle
+  // watching on the same thread. Please see comments of
   // SyncHandleWatcher::AllowWokenUpBySyncWatchOnSameThread().
   void AllowWokenUpBySyncWatchOnSameThread();
 

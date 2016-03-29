@@ -26,6 +26,7 @@ class AssociatedGroup;
 namespace internal {
 
 class MultiplexRouter;
+class InterfaceEndpointController;
 
 // InterfaceEndpointClient handles message sending and receiving of an interface
 // endpoint, either the implementation side or the client side.
@@ -36,7 +37,8 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   // object.
   InterfaceEndpointClient(ScopedInterfaceEndpointHandle handle,
                           MessageReceiverWithResponderStatus* receiver,
-                          scoped_ptr<MessageFilter> payload_validator);
+                          scoped_ptr<MessageFilter> payload_validator,
+                          bool expect_sync_requests);
   ~InterfaceEndpointClient() override;
 
   // Sets the error handler to receive notifications when an error is
@@ -55,7 +57,7 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   // Returns true if this endpoint has any pending callbacks.
   bool has_pending_responders() const {
     DCHECK(thread_checker_.CalledOnValidThread());
-    return !responders_.empty();
+    return !async_responders_.empty() || !sync_responses_.empty();
   }
 
   MultiplexRouter* router() const { return handle_.router(); }
@@ -82,7 +84,25 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
   void NotifyError();
 
  private:
-  using ResponderMap = std::map<uint64_t, MessageReceiver*>;
+  // Maps from the id of a response to the MessageReceiver that handles the
+  // response.
+  using AsyncResponderMap = std::map<uint64_t, scoped_ptr<MessageReceiver>>;
+
+  struct SyncResponseInfo {
+   public:
+    explicit SyncResponseInfo(bool* in_response_received);
+    ~SyncResponseInfo();
+
+    scoped_ptr<Message> response;
+
+    // Points to a stack-allocated variable.
+    bool* response_received;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(SyncResponseInfo);
+  };
+
+  using SyncResponseMap = std::map<uint64_t, scoped_ptr<SyncResponseInfo>>;
 
   // Used as the sink for |payload_validator_| and forwards messages to
   // HandleValidatedMessage().
@@ -104,14 +124,15 @@ class InterfaceEndpointClient : public MessageReceiverWithResponder {
 
   ScopedInterfaceEndpointHandle handle_;
   scoped_ptr<AssociatedGroup> associated_group_;
+  InterfaceEndpointController* controller_;
 
   MessageReceiverWithResponderStatus* const incoming_receiver_;
   scoped_ptr<MessageFilter> payload_validator_;
   HandleIncomingMessageThunk thunk_;
 
-  // Maps from the ID of a response to the MessageReceiver that handles the
-  // response.
-  ResponderMap responders_;
+  AsyncResponderMap async_responders_;
+  SyncResponseMap sync_responses_;
+
   uint64_t next_request_id_;
 
   Closure error_handler_;

@@ -21,6 +21,8 @@
 namespace mojo {
 namespace internal {
 
+// TODO(yzshen): Consider removing this class and use MultiplexRouter in all
+// cases. crbug.com/594244
 class Router : public MessageReceiverWithResponder {
  public:
   Router(ScopedMessagePipeHandle message_pipe,

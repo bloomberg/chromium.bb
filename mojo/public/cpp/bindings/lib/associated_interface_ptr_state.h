@@ -86,7 +86,7 @@ class AssociatedInterfacePtrState {
     version_ = info.version();
     endpoint_client_.reset(new InterfaceEndpointClient(
         AssociatedInterfacePtrInfoHelper::PassHandle(&info), nullptr,
-        make_scoped_ptr(new typename Interface::ResponseValidator_())));
+        make_scoped_ptr(new typename Interface::ResponseValidator_()), false));
     proxy_.reset(new Proxy(endpoint_client_.get()));
     proxy_->serialization_context()->router = endpoint_client_->router();
   }

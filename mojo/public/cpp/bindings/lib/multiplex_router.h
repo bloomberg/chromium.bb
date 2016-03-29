@@ -38,6 +38,7 @@ class AssociatedGroup;
 namespace internal {
 
 class InterfaceEndpointClient;
+class InterfaceEndpointController;
 
 // MultiplexRouter supports routing messages for multiple interfaces over a
 // single message pipe.
@@ -77,15 +78,17 @@ class MultiplexRouter
   // Closes an interface endpoint handle.
   void CloseEndpointHandle(InterfaceId id, bool is_local);
 
-  // Attaches an client to the specified endpoint to send and receive messages.
-  void AttachEndpointClient(const ScopedInterfaceEndpointHandle& handle,
-                            InterfaceEndpointClient* endpoint_client);
-  // Detaches the client attached to the specified endpoint. It should be called
+  // Attaches a client to the specified endpoint to send and receive messages.
+  // The returned object is still owned by the router. It must only be used on
+  // the same thread as this call, and only before the client is detached using
+  // DetachEndpointClient().
+  InterfaceEndpointController* AttachEndpointClient(
+      const ScopedInterfaceEndpointHandle& handle,
+      InterfaceEndpointClient* endpoint_client);
+
+  // Detaches the client attached to the specified endpoint. It must be called
   // on the same thread as the corresponding AttachEndpointClient() call.
   void DetachEndpointClient(const ScopedInterfaceEndpointHandle& handle);
-
-  bool SendMessage(const ScopedInterfaceEndpointHandle& handle,
-                   Message* message);
 
   // Raises an error on the underlying message pipe. It disconnects the pipe
   // and notifies all interfaces running on this pipe.
@@ -101,10 +104,7 @@ class MultiplexRouter
   // Please note that this method shouldn't be called unless it results from an
   // explicit request of the user of bindings (e.g., the user sets an
   // InterfacePtr to null or closes a Binding).
-  void CloseMessagePipe() {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    connector_.CloseMessagePipe();
-  }
+  void CloseMessagePipe();
 
   // Extracts the underlying message pipe.
   ScopedMessagePipeHandle PassMessagePipe() {
@@ -167,18 +167,39 @@ class MultiplexRouter
 
   void OnPipeConnectionError();
 
+  // Specifies whether we are allowed to directly call into
+  // InterfaceEndpointClient (given that we are already on the same thread as
+  // the client).
+  enum ClientCallBehavior {
+    // Don't call any InterfaceEndpointClient methods directly.
+    NO_DIRECT_CLIENT_CALLS,
+    // Only call InterfaceEndpointClient::HandleIncomingMessage directly to
+    // handle sync messages.
+    ALLOW_DIRECT_CLIENT_CALLS_FOR_SYNC_MESSAGES,
+    // Allow to call any InterfaceEndpointClient methods directly.
+    ALLOW_DIRECT_CLIENT_CALLS
+  };
+
   // Processes enqueued tasks (incoming messages and error notifications).
-  // If |force_async| is true, it guarantees not to call any
-  // InterfaceEndpointClient methods directly.
   //
   // Note: Because calling into InterfaceEndpointClient may lead to destruction
-  // of this object, if |force_async| is set to false, the caller needs to hold
-  // on to a ref outside of |lock_| before calling this method.
-  void ProcessTasks(bool force_async);
+  // of this object, if direct calls are allowed, the caller needs to hold on to
+  // a ref outside of |lock_| before calling this method.
+  void ProcessTasks(ClientCallBehavior client_call_behavior);
+
+  // Processes the first queued sync message for the endpoint corresponding to
+  // |id|; returns whether there are more sync messages for that endpoint in the
+  // queue.
+  //
+  // This method is only used by enpoints during sync watching. Therefore, not
+  // all sync messages are handled by it.
+  bool ProcessFirstSyncMessageForEndpoint(InterfaceId id);
 
   // Returns true to indicate that |task|/|message| has been processed.
-  bool ProcessNotifyErrorTask(Task* task, bool force_async);
-  bool ProcessIncomingMessage(Message* message, bool force_async);
+  bool ProcessNotifyErrorTask(Task* task,
+                              ClientCallBehavior client_call_behavior);
+  bool ProcessIncomingMessage(Message* message,
+                              ClientCallBehavior client_call_behavior);
 
   void MaybePostToProcessTasks(base::SingleThreadTaskRunner* task_runner);
   void LockAndCallProcessTasks();
@@ -200,7 +221,6 @@ class MultiplexRouter
 
   MessageHeaderValidator header_validator_;
   Connector connector_;
-  bool encountered_error_;
 
   base::ThreadChecker thread_checker_;
 
@@ -213,8 +233,12 @@ class MultiplexRouter
   uint32_t next_interface_id_value_;
 
   std::deque<scoped_ptr<Task>> tasks_;
+  // It refers to tasks in |tasks_| and doesn't own any of them.
+  std::map<InterfaceId, std::deque<Task*>> sync_message_tasks_;
 
   bool posted_to_process_tasks_;
+
+  bool encountered_error_;
 
   bool testing_mode_;
 

@@ -162,13 +162,13 @@ bool Router::AcceptWithResponder(Message* message, MessageReceiver* responder) {
       request_id, make_scoped_ptr(new SyncResponseInfo(&response_received))));
 
   base::WeakPtr<Router> weak_self = weak_factory_.GetWeakPtr();
-  bool result = connector_.SyncWatch(&response_received);
+  connector_.SyncWatch(&response_received);
   // Make sure that this instance hasn't been destroyed.
   if (weak_self) {
     DCHECK(ContainsKey(sync_responses_, request_id));
     auto iter = sync_responses_.find(request_id);
     DCHECK_EQ(&response_received, iter->second->response_received);
-    if (result && response_received) {
+    if (response_received) {
       scoped_ptr<Message> response = std::move(iter->second->response);
       ignore_result(sync_responder->Accept(response.get()));
     }

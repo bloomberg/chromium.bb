@@ -149,7 +149,8 @@ class BindingState<Interface, true> {
 
     endpoint_client_.reset(new internal::InterfaceEndpointClient(
         router_->CreateLocalEndpointHandle(internal::kMasterInterfaceId),
-        &stub_, make_scoped_ptr(new typename Interface::RequestValidator_())));
+        &stub_, make_scoped_ptr(new typename Interface::RequestValidator_()),
+        Interface::HasSyncMethods_));
 
     endpoint_client_->set_connection_error_handler(
         [this]() { connection_error_handler_.Run(); });

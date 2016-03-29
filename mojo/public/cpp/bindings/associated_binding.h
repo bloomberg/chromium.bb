@@ -80,7 +80,8 @@ class AssociatedBinding {
 
     endpoint_client_.reset(new internal::InterfaceEndpointClient(
         std::move(handle), &stub_,
-        make_scoped_ptr(new typename Interface::RequestValidator_())));
+        make_scoped_ptr(new typename Interface::RequestValidator_()),
+        Interface::HasSyncMethods_));
     endpoint_client_->set_connection_error_handler(
         [this]() { connection_error_handler_.Run(); });
 

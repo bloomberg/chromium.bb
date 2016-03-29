@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "mojo/message_pump/message_pump_mojo.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/interfaces/bindings/tests/test_sync_methods.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,6 +34,16 @@ class TestSyncCommonImpl {
     async_echo_handler_ = handler;
   }
 
+  using SendInterfaceHandler = Callback<void(TestSyncAssociatedPtrInfo)>;
+  void set_send_interface_handler(const SendInterfaceHandler& handler) {
+    send_interface_handler_ = handler;
+  }
+
+  using SendRequestHandler = Callback<void(TestSyncAssociatedRequest)>;
+  void set_send_request_handler(const SendRequestHandler& handler) {
+    send_request_handler_ = handler;
+  }
+
   void PingImpl(const Callback<void()>& callback) {
     if (ping_handler_.is_null()) {
       callback.Run();
@@ -54,11 +65,19 @@ class TestSyncCommonImpl {
     }
     async_echo_handler_.Run(value, callback);
   }
+  void SendInterfaceImpl(TestSyncAssociatedPtrInfo ptr) {
+    send_interface_handler_.Run(std::move(ptr));
+  }
+  void SendRequestImpl(TestSyncAssociatedRequest request) {
+    send_request_handler_.Run(std::move(request));
+  }
 
  private:
   PingHandler ping_handler_;
   EchoHandler echo_handler_;
   AsyncEchoHandler async_echo_handler_;
+  SendInterfaceHandler send_interface_handler_;
+  SendRequestHandler send_request_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncCommonImpl);
 };
@@ -85,12 +104,67 @@ class TestSyncImpl : public TestSync, public TestSyncCommonImpl {
   DISALLOW_COPY_AND_ASSIGN(TestSyncImpl);
 };
 
+class TestSyncMasterImpl : public TestSyncMaster, public TestSyncCommonImpl {
+ public:
+  explicit TestSyncMasterImpl(TestSyncMasterRequest request)
+      : binding_(this, std::move(request)) {}
+
+  // TestSyncMaster implementation:
+  void Ping(const PingCallback& callback) override { PingImpl(callback); }
+  void Echo(int32_t value, const EchoCallback& callback) override {
+    EchoImpl(value, callback);
+  }
+  void AsyncEcho(int32_t value, const AsyncEchoCallback& callback) override {
+    AsyncEchoImpl(value, callback);
+  }
+  void SendInterface(TestSyncAssociatedPtrInfo ptr) override {
+    SendInterfaceImpl(std::move(ptr));
+  }
+  void SendRequest(TestSyncAssociatedRequest request) override {
+    SendRequestImpl(std::move(request));
+  }
+
+  Binding<TestSyncMaster>* binding() { return &binding_; }
+
+ private:
+  Binding<TestSyncMaster> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSyncMasterImpl);
+};
+
+class TestSyncAssociatedImpl : public TestSync, public TestSyncCommonImpl {
+ public:
+  explicit TestSyncAssociatedImpl(TestSyncAssociatedRequest request)
+      : binding_(this, std::move(request)) {}
+
+  // TestSync implementation:
+  void Ping(const PingCallback& callback) override { PingImpl(callback); }
+  void Echo(int32_t value, const EchoCallback& callback) override {
+    EchoImpl(value, callback);
+  }
+  void AsyncEcho(int32_t value, const AsyncEchoCallback& callback) override {
+    AsyncEchoImpl(value, callback);
+  }
+
+  AssociatedBinding<TestSync>* binding() { return &binding_; }
+
+ private:
+  AssociatedBinding<TestSync> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSyncAssociatedImpl);
+};
+
 template <typename Interface>
 struct ImplTraits;
 
 template <>
 struct ImplTraits<TestSync> {
   using Type = TestSyncImpl;
+};
+
+template <>
+struct ImplTraits<TestSyncMaster> {
+  using Type = TestSyncMasterImpl;
 };
 
 template <typename Interface>
@@ -139,17 +213,78 @@ class TestSyncServiceThread {
   DISALLOW_COPY_AND_ASSIGN(TestSyncServiceThread);
 };
 
-template <typename T>
-class SyncMethodCommonTest : public testing::Test {
+class SyncMethodTest : public testing::Test {
  public:
-  SyncMethodCommonTest() : loop_(common::MessagePumpMojo::Create()) {}
-  ~SyncMethodCommonTest() override { loop_.RunUntilIdle(); }
+  SyncMethodTest() : loop_(common::MessagePumpMojo::Create()) {}
+  ~SyncMethodTest() override { loop_.RunUntilIdle(); }
 
- private:
+ protected:
   base::MessageLoop loop_;
 };
 
-using InterfaceTypes = testing::Types<TestSync>;
+template <typename T>
+class SyncMethodCommonTest : public SyncMethodTest {
+ public:
+  SyncMethodCommonTest() {}
+  ~SyncMethodCommonTest() override {}
+};
+
+class SyncMethodAssociatedTest : public SyncMethodTest {
+ public:
+  SyncMethodAssociatedTest() {}
+  ~SyncMethodAssociatedTest() override {}
+
+ protected:
+  void SetUp() override {
+    master_impl_.reset(new TestSyncMasterImpl(GetProxy(&master_ptr_)));
+
+    master_ptr_.associated_group()->CreateAssociatedInterface(
+        AssociatedGroup::WILL_PASS_REQUEST, &asso_ptr_info_, &asso_request_);
+    master_ptr_.associated_group()->CreateAssociatedInterface(
+        AssociatedGroup::WILL_PASS_PTR, &opposite_asso_ptr_info_,
+        &opposite_asso_request_);
+
+    master_impl_->set_send_interface_handler(
+        [this](TestSyncAssociatedPtrInfo ptr) {
+          opposite_asso_ptr_info_ = std::move(ptr);
+        });
+    base::RunLoop run_loop;
+    master_impl_->set_send_request_handler(
+        [this, &run_loop](TestSyncAssociatedRequest request) {
+          asso_request_ = std::move(request);
+          run_loop.Quit();
+        });
+
+    master_ptr_->SendInterface(std::move(opposite_asso_ptr_info_));
+    master_ptr_->SendRequest(std::move(asso_request_));
+    run_loop.Run();
+  }
+
+  void TearDown() override {
+    asso_ptr_info_ = TestSyncAssociatedPtrInfo();
+    asso_request_ = TestSyncAssociatedRequest();
+    opposite_asso_ptr_info_ = TestSyncAssociatedPtrInfo();
+    opposite_asso_request_ = TestSyncAssociatedRequest();
+
+    master_ptr_ = nullptr;
+    master_impl_.reset();
+  }
+
+  InterfacePtr<TestSyncMaster> master_ptr_;
+  scoped_ptr<TestSyncMasterImpl> master_impl_;
+
+  // An associated interface whose binding lives at the |master_impl_| side.
+  TestSyncAssociatedPtrInfo asso_ptr_info_;
+  TestSyncAssociatedRequest asso_request_;
+
+  // An associated interface whose binding lives at the |master_ptr_| side.
+  TestSyncAssociatedPtrInfo opposite_asso_ptr_info_;
+  TestSyncAssociatedRequest opposite_asso_request_;
+};
+
+// TestSync and TestSyncMaster exercise Router and MultiplexRouter,
+// respectively.
+using InterfaceTypes = testing::Types<TestSync, TestSyncMaster>;
 TYPED_TEST_CASE(SyncMethodCommonTest, InterfaceTypes);
 
 TYPED_TEST(SyncMethodCommonTest, CallSyncMethodAsynchronously) {
@@ -496,6 +631,57 @@ TYPED_TEST(SyncMethodCommonTest, InvalidMessageDuringSyncCall) {
   run_loop.Run();
   ASSERT_TRUE(connection_error_dispatched);
 }
+
+TEST_F(SyncMethodAssociatedTest, ReenteredBySyncMethodAssoBindingOfSameRouter) {
+  // Test that an interface pointer waiting for a sync call response can be
+  // reentered by an associated binding serving sync methods on the same thread.
+  // The associated binding belongs to the same MultiplexRouter as the waiting
+  // interface pointer.
+
+  TestSyncAssociatedImpl opposite_asso_impl(std::move(opposite_asso_request_));
+  TestSyncAssociatedPtr opposite_asso_ptr;
+  opposite_asso_ptr.Bind(std::move(opposite_asso_ptr_info_));
+
+  master_impl_->set_echo_handler([&opposite_asso_ptr](
+      int32_t value, const TestSyncMaster::EchoCallback& callback) {
+    int32_t result_value = -1;
+
+    ASSERT_TRUE(opposite_asso_ptr->Echo(123, &result_value));
+    EXPECT_EQ(123, result_value);
+    callback.Run(value);
+  });
+
+  int32_t result_value = -1;
+  ASSERT_TRUE(master_ptr_->Echo(456, &result_value));
+  EXPECT_EQ(456, result_value);
+}
+
+TEST_F(SyncMethodAssociatedTest,
+       ReenteredBySyncMethodAssoBindingOfDifferentRouter) {
+  // Test that an interface pointer waiting for a sync call response can be
+  // reentered by an associated binding serving sync methods on the same thread.
+  // The associated binding belongs to a different MultiplexRouter as the
+  // waiting interface pointer.
+
+  TestSyncAssociatedImpl asso_impl(std::move(asso_request_));
+  TestSyncAssociatedPtr asso_ptr;
+  asso_ptr.Bind(std::move(asso_ptr_info_));
+
+  master_impl_->set_echo_handler(
+      [&asso_ptr](int32_t value, const TestSyncMaster::EchoCallback& callback) {
+        int32_t result_value = -1;
+
+        ASSERT_TRUE(asso_ptr->Echo(123, &result_value));
+        EXPECT_EQ(123, result_value);
+        callback.Run(value);
+      });
+
+  int32_t result_value = -1;
+  ASSERT_TRUE(master_ptr_->Echo(456, &result_value));
+  EXPECT_EQ(456, result_value);
+}
+
+// TODO(yzshen): Add more tests related to associated interfaces.
 
 }  // namespace
 }  // namespace test

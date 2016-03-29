@@ -159,6 +159,7 @@
         'public/cpp/bindings/lib/fixed_buffer.h',
         'public/cpp/bindings/lib/interface_endpoint_client.cc',
         'public/cpp/bindings/lib/interface_endpoint_client.h',
+        'public/cpp/bindings/lib/interface_endpoint_controller.h',
         'public/cpp/bindings/lib/interface_ptr_state.h',
         'public/cpp/bindings/lib/macros.h',
         'public/cpp/bindings/lib/map_data_internal.h',
