@@ -8,13 +8,13 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/BaseRenderingContext2D.h"
+#include "platform/graphics/ImageBuffer.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace blink {
 
 class CanvasImageSource;
 class Color;
-class ImageBuffer;
 
 class MODULES_EXPORT PaintRenderingContext2D : public BaseRenderingContext2D, public RefCountedWillBeGarbageCollectedFinalized<PaintRenderingContext2D>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();

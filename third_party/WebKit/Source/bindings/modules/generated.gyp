@@ -151,6 +151,8 @@
       'global_names_idl_files': [
         'CompositorWorkerGlobalScope',
         '<(blink_modules_output_dir)/CompositorWorkerGlobalScopeCoreConstructors.idl',
+        'PaintWorkletGlobalScope',
+        '<(blink_modules_output_dir)/PaintWorkletGlobalScopeCoreConstructors.idl',
         'ServiceWorkerGlobalScope',
         '<(blink_modules_output_dir)/ServiceWorkerGlobalScopeCoreConstructors.idl',
       ],
@@ -178,6 +180,8 @@
         '<(blink_modules_output_dir)/CompositorWorkerGlobalScopeModulesConstructors.idl',
         'DedicatedWorkerGlobalScope',
         '<(blink_modules_output_dir)/DedicatedWorkerGlobalScopeModulesConstructors.idl',
+        'PaintWorkletGlobalScope',
+        '<(blink_modules_output_dir)/PaintWorkletGlobalScopeModulesConstructors.idl',
         'ServiceWorkerGlobalScope',
         '<(blink_modules_output_dir)/ServiceWorkerGlobalScopeModulesConstructors.idl',
         'SharedWorkerGlobalScope',

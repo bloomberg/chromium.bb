@@ -10,6 +10,7 @@ bindings_modules_output_dir = "$bindings_output_dir/modules"
 
 modules_core_global_constructors_original_interfaces = [
   "CompositorWorkerGlobalScope",
+  "PaintWorkletGlobalScope",
   "ServiceWorkerGlobalScope",
 ]
 
@@ -17,6 +18,7 @@ modules_global_constructors_original_interfaces = [
   "Window",
   "CompositorWorkerGlobalScope",
   "DedicatedWorkerGlobalScope",
+  "PaintWorkletGlobalScope",
   "ServiceWorkerGlobalScope",
   "SharedWorkerGlobalScope",
 ]

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+    if (window.testRunner) {
+        testRunner.waitUntilDone();
+        testRunner.dumpAsText();
+    }
+
+    paintWorklet.import('resources/global-interface-listing-worklet.js').then(function() {
+        if (window.testRunner) {
+            testRunner.notifyDone();
+        }
+    });
+</script>
+</body>
+</html>
