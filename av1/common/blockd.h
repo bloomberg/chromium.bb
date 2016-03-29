@@ -185,6 +185,8 @@ typedef struct macroblockd {
   int mb_to_top_edge;
   int mb_to_bottom_edge;
 
+  uint8_t n8_w, n8_h;
+
   FRAME_CONTEXT *fc;
 
   /* pointers to reference frames */

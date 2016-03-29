@@ -459,6 +459,9 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
     xd->left_mi = NULL;
     xd->left_mbmi = NULL;
   }
+
+  xd->n8_h = bh;
+  xd->n8_w = bw;
 }
 
 static INLINE const aom_prob *get_y_mode_probs(const AV1_COMMON *cm,
