@@ -572,7 +572,13 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   friend class TestRenderFrameHost;
   friend class TestRenderViewHost;
 
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
+                           CreateRenderViewAfterProcessKillAndClosedProxy);
+  FRIEND_TEST_ALL_PREFIXES(RenderFrameHostManagerTest,
+                           RenderViewInitAfterNewProxyAndProcessKill);
   FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest, CrashSubframe);
+  FRIEND_TEST_ALL_PREFIXES(SitePerProcessBrowserTest,
+                           RenderViewHostPendingDeletionIsNotReused);
 
   // IPC Message handlers.
   void OnAddMessageToConsole(int32_t level,
@@ -729,6 +735,10 @@ class CONTENT_EXPORT RenderFrameHostImpl : public RenderFrameHost,
   // FrameTreeNode that is not a child of this node.
   FrameTreeNode* FindAndVerifyChild(int32_t child_frame_routing_id,
                                     bad_message::BadMessageReason reason);
+
+  // Allows tests to disable the swapout event timer to simulate bugs that
+  // happen before it fires (to avoid flakiness).
+  void ResetSwapOutTimerForTesting();
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each

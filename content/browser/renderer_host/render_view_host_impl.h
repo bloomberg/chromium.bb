@@ -188,16 +188,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   bool is_active() const { return is_active_; }
   void set_is_active(bool is_active) { is_active_ = is_active; }
 
-  // Tracks whether this RenderViewHost is pending deletion.  This is tracked
-  // separately from the main frame pending deletion state, because the
-  // RenderViewHost's main frame is cleared when the main frame's
-  // RenderFrameHost is marked for deletion.
-  //
-  // TODO(nasko,alexmos): This should not be necessary once swapped-out is
-  // removed.
-  bool is_pending_deletion() const { return is_pending_deletion_; }
-  void set_pending_deletion() { is_pending_deletion_ = true; }
-
   // Tracks whether this RenderViewHost is swapped out, according to its main
   // frame RenderFrameHost.
   void set_is_swapped_out(bool is_swapped_out) {
@@ -264,15 +254,15 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
                                           size_t end_offset);
 
   // Increases the refcounting on this RVH. This is done by the FrameTree on
-  // creation of a RenderFrameHost.
+  // creation of a RenderFrameHost or RenderFrameProxyHost.
   void increment_ref_count() { ++frames_ref_count_; }
 
   // Decreases the refcounting on this RVH. This is done by the FrameTree on
-  // destruction of a RenderFrameHost.
+  // destruction of a RenderFrameHost or RenderFrameProxyHost.
   void decrement_ref_count() { --frames_ref_count_; }
 
   // Returns the refcount on this RVH, that is the number of RenderFrameHosts
-  // currently using it.
+  // and RenderFrameProxyHosts currently using it.
   int ref_count() { return frames_ref_count_; }
 
   // NOTE: Do not add functions that just send an IPC message that are called in
@@ -392,9 +382,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // main frame is pending swap out, pending deletion, or swapped out, because
   // it is not visible to the user in any of these cases.
   bool is_active_;
-
-  // True if this RenderViewHost is pending deletion.
-  bool is_pending_deletion_;
 
   // Tracks whether the main frame RenderFrameHost is swapped out.  Unlike
   // is_active_, this is false when the frame is pending swap out or deletion.

@@ -48,6 +48,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/test_frame_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
@@ -2355,6 +2356,140 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   // is not fixed, this will result in process crash and failing test.
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("b.com", "/title3.html")));
+}
+
+// Ensure that we don't crash the renderer in CreateRenderView if a proxy goes
+// away between swapout and the next navigation.  See https://crbug.com/581912.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       CreateRenderViewAfterProcessKillAndClosedProxy) {
+  StartEmbeddedServer();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Give an initial page an unload handler that never completes.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
+                            "window.onunload=function(e){ while(1); };\n"));
+
+  // Open a popup in the same process.
+  Shell* new_shell =
+      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  FrameTreeNode* popup_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
+            new_shell->web_contents()->GetSiteInstance());
+
+  // Navigate the first tab to a different site, and only wait for commit, not
+  // load stop.
+  RenderFrameHostImpl* rfh_a = root->current_frame_host();
+  SiteInstanceImpl* site_instance_a = rfh_a->GetSiteInstance();
+  TestFrameNavigationObserver commit_observer(root);
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  commit_observer.WaitForCommit();
+  rfh_a->ResetSwapOutTimerForTesting();
+  EXPECT_NE(shell()->web_contents()->GetSiteInstance(),
+            new_shell->web_contents()->GetSiteInstance());
+  EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
+
+  // The previous RFH should still be pending deletion, as we wait for either
+  // the SwapOut ACK or a timeout.
+  ASSERT_TRUE(root->render_manager()->IsPendingDeletion(rfh_a));
+
+  // The corresponding RVH should not be pending deletion due to the proxy.
+  EXPECT_FALSE(root->render_manager()->IsViewPendingDeletion(
+                  rfh_a->render_view_host()));
+
+  // Kill the old process.
+  RenderProcessHost* process = rfh_a->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process->Shutdown(0, false);
+  crash_observer.Wait();
+  EXPECT_FALSE(popup_root->current_frame_host()->IsRenderFrameLive());
+  // |rfh_a| is now deleted, thanks to the bug fix.
+
+  // Close the popup so there is no proxy for a.com in the original tab.
+  new_shell->Close();
+  EXPECT_FALSE(
+      root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
+
+  // Go back in the main frame from b.com to a.com. In https://crbug.com/581912,
+  // the browser process would crash here because there was no main frame
+  // routing ID or proxy in RVHI::CreateRenderView.
+  {
+    TestNavigationObserver back_nav_load_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().GoBack();
+    back_nav_load_observer.Wait();
+  }
+}
+
+// Ensure that we don't crash in RenderViewImpl::Init if a proxy is created
+// after swapout and before navigation.  See https://crbug.com/544755.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       RenderViewInitAfterNewProxyAndProcessKill) {
+  StartEmbeddedServer();
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Give an initial page an unload handler that never completes.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
+                            "window.onunload=function(e){ while(1); };\n"));
+
+  // Navigate the tab to a different site, and only wait for commit, not load
+  // stop.
+  RenderFrameHostImpl* rfh_a = root->current_frame_host();
+  SiteInstanceImpl* site_instance_a = rfh_a->GetSiteInstance();
+  TestFrameNavigationObserver commit_observer(root);
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  commit_observer.WaitForCommit();
+  rfh_a->ResetSwapOutTimerForTesting();
+  EXPECT_NE(site_instance_a, shell()->web_contents()->GetSiteInstance());
+
+  // The previous RFH and RVH should still be pending deletion, as we wait for
+  // either the SwapOut ACK or a timeout.
+  ASSERT_TRUE(root->render_manager()->IsPendingDeletion(rfh_a));
+  EXPECT_TRUE(root->render_manager()->IsViewPendingDeletion(
+                  rfh_a->render_view_host()));
+
+  // Open a popup in the new B process.
+  Shell* new_shell =
+      OpenPopup(shell()->web_contents(), GURL(url::kAboutBlankURL), "foo");
+  EXPECT_EQ(shell()->web_contents()->GetSiteInstance(),
+            new_shell->web_contents()->GetSiteInstance());
+
+  // Navigate the popup to the original site, but don't wait for commit (which
+  // won't happen).  This creates a proxy in the original tab, alongside the
+  // RFH and RVH pending deletion.
+  new_shell->LoadURL(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  EXPECT_TRUE(root->render_manager()->GetRenderFrameProxyHost(site_instance_a));
+
+  // Kill the old process.
+  RenderProcessHost* process = rfh_a->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  process->Shutdown(0, false);
+  crash_observer.Wait();
+  // |rfh_a| is now deleted, thanks to the bug fix.
+
+  // Go back in the main frame from b.com to a.com.
+  {
+    TestNavigationObserver back_nav_load_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().GoBack();
+    back_nav_load_observer.Wait();
+  }
+
+  // In https://crbug.com/581912, the renderer process would crash here because
+  // there was a frame, view, and proxy (and is_swapped_out was true).
+  EXPECT_EQ(site_instance_a, root->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(root->current_frame_host()->IsRenderFrameLive());
+  EXPECT_TRUE(new_shell->web_contents()->GetMainFrame()->IsRenderFrameLive());
 }
 
 // Ensure that we use the same pending RenderFrameHost if a second navigation to

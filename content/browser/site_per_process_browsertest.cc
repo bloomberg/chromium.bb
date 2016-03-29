@@ -4115,6 +4115,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                             ->root();
   RenderFrameHostImpl* rfh = root->current_frame_host();
   RenderViewHostImpl* rvh = rfh->render_view_host();
+  int rvh_routing_id = rvh->GetRoutingID();
+  SiteInstanceImpl* site_instance = rfh->GetSiteInstance();
   RenderFrameDeletedObserver deleted_observer(rfh);
 
   // Install a BrowserMessageFilter to drop SwapOut ACK messages in A's
@@ -4129,12 +4131,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   TestFrameNavigationObserver commit_observer(root);
   shell()->LoadURL(b_url);
   commit_observer.WaitForCommit();
+  EXPECT_FALSE(deleted_observer.deleted());
+  rfh->ResetSwapOutTimerForTesting();
 
   // Since the SwapOut ACK for A->B is dropped, the first page's
   // RenderFrameHost and RenderViewHost should be pending deletion after the
   // last navigation.
   EXPECT_TRUE(root->render_manager()->IsPendingDeletion(rfh));
-  EXPECT_TRUE(rvh->is_pending_deletion());
+  EXPECT_TRUE(root->render_manager()->IsViewPendingDeletion(rvh));
 
   // Wait for process A to exit so we can reinitialize it cleanly for the next
   // navigation. This can be removed once https://crbug.com/535246 is fixed.
@@ -4151,16 +4155,48 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       IsBrowserSideNavigationEnabled()
           ? root->render_manager()->speculative_frame_host()->render_view_host()
           : root->render_manager()->pending_render_view_host();
-  EXPECT_EQ(rvh->GetSiteInstance(), pending_rvh->GetSiteInstance());
-  EXPECT_NE(rvh, pending_rvh);
+  EXPECT_EQ(site_instance, pending_rvh->GetSiteInstance());
+  EXPECT_NE(rvh_routing_id, pending_rvh->GetRoutingID());
 
-  // Simulate that the dropped SwapOut ACK message arrives now on the original
-  // RenderFrameHost, which should now get deleted.
-  rfh->OnSwappedOut();
+  // TODO(alexmos, creis): Once https://crbug.com/535246 is fixed and the
+  // process_exit_observer is not needed above, we'll need to simulate that the
+  // dropped SwapOut ACK message arrives now on the original RenderFrameHost,
+  // causing it to be deleted.
   EXPECT_TRUE(deleted_observer.deleted());
 
   // Make sure the last navigation finishes without crashing.
   navigation_observer.Wait();
+}
+
+// Test for https://crbug.com/591478, where navigating to a cross-site page with
+// a subframe on the old site could cause the old RenderViewHost (now pending
+// deletion) to be reused.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       DontReusePendingDeleteRenderViewHostForSubframe) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  RenderViewHostImpl* rvh_a = root->current_frame_host()->render_view_host();
+  int rvh_a_routing_id = rvh_a->GetRoutingID();
+
+  std::string script =
+      "window.onunload = function() { "
+      "  var start = Date.now();"
+      "  while (Date.now() - start < 1000);"
+      "}";
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), script));
+
+  GURL second_url(embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), second_url));
+
+  // We should have a different RVH for a.com.
+  RenderViewHostImpl* rvh_a2 =
+      root->child_at(0)->current_frame_host()->render_view_host();
+  EXPECT_NE(rvh_a_routing_id, rvh_a2->GetRoutingID());
 }
 
 // Check that when a cross-process frame acquires focus, the old focused frame

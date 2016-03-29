@@ -702,14 +702,6 @@ void RenderFrameHostManager::DiscardUnusedFrame(
 
 void RenderFrameHostManager::MoveToPendingDeleteHosts(
     scoped_ptr<RenderFrameHostImpl> render_frame_host) {
-  // If this is the main frame going away and there are no more references to
-  // its RenderViewHost, mark it for deletion as well so that we don't try to
-  // reuse it.
-  if (render_frame_host->frame_tree_node()->IsMainFrame() &&
-      render_frame_host->render_view_host()->ref_count() <= 1) {
-    render_frame_host->render_view_host()->set_pending_deletion();
-  }
-
   // |render_frame_host| will be deleted when its SwapOut ACK is received, or
   // when the timer times out, or when the RFHM itself is deleted (whichever
   // comes first).
@@ -720,6 +712,25 @@ bool RenderFrameHostManager::IsPendingDeletion(
     RenderFrameHostImpl* render_frame_host) {
   for (const auto& rfh : pending_delete_hosts_) {
     if (rfh.get() == render_frame_host)
+      return true;
+  }
+  return false;
+}
+
+bool RenderFrameHostManager::IsViewPendingDeletion(
+    RenderViewHostImpl* render_view_host) {
+  // Only safe to call this on the main frame.
+  CHECK(frame_tree_node_->IsMainFrame());
+
+  // The view is not pending deletion if more than one frame or proxy references
+  // it.
+  if (render_view_host->ref_count() > 1)
+    return false;
+
+  // If the only thing referencing it is a frame on the pending deletion list,
+  // then this view will go away when the frame goes away.
+  for (const auto& rfh : pending_delete_hosts_) {
+    if (rfh->GetRenderViewHost() == render_view_host)
       return true;
   }
   return false;

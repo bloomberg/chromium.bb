@@ -1347,6 +1347,12 @@ void RenderFrameHostImpl::OnRenderProcessGone(int status, int exit_code) {
     iter.second.Run(ui::AXTreeUpdate());
   ax_tree_snapshot_callbacks_.clear();
 
+  // If the process has died, we don't need to wait for the swap out ack from
+  // this RenderFrame if it is pending deletion.  Complete the swap out to
+  // destroy it.
+  if (frame_tree_node_->render_manager()->IsPendingDeletion(this))
+    OnSwappedOut();
+
   // Note: don't add any more code at this point in the function because
   // |this| may be deleted. Any additional cleanup should happen before
   // the last block of code here.
@@ -1374,6 +1380,10 @@ void RenderFrameHostImpl::OnSwappedOut() {
   bool deleted =
       frame_tree_node_->render_manager()->DeleteFromPendingList(this);
   CHECK(deleted);
+}
+
+void RenderFrameHostImpl::ResetSwapOutTimerForTesting() {
+  swapout_event_monitor_timeout_->Stop();
 }
 
 void RenderFrameHostImpl::OnContextMenu(const ContextMenuParams& params) {

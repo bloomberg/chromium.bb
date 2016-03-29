@@ -355,7 +355,7 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(
     // SiteInstance.  Note that if swapped-out is forbidden, the
     // RenderViewHost's main frame has already been cleared, so we cannot rely
     // on checking whether the main frame is pending deletion.
-    if (iter->second->is_pending_deletion()) {
+    if (root_->render_manager()->IsViewPendingDeletion(iter->second)) {
       render_view_host_pending_shutdown_map_.insert(
           std::make_pair(site_instance->GetId(), iter->second));
       render_view_host_map_.erase(iter);
@@ -375,9 +375,12 @@ RenderViewHostImpl* FrameTree::CreateRenderViewHost(
 RenderViewHostImpl* FrameTree::GetRenderViewHost(SiteInstance* site_instance) {
   RenderViewHostMap::iterator iter =
       render_view_host_map_.find(site_instance->GetId());
-  if (iter == render_view_host_map_.end())
-    return nullptr;
-  return iter->second;
+  // Don't return the RVH if it is pending deletion.
+  if (iter != render_view_host_map_.end() &&
+      !root_->render_manager()->IsViewPendingDeletion(iter->second)) {
+    return iter->second;
+  }
+  return nullptr;
 }
 
 void FrameTree::AddRenderViewHostRef(RenderViewHostImpl* render_view_host) {
