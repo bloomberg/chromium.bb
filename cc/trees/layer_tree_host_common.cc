@@ -615,11 +615,9 @@ static float TranslationFromActiveTreeLayerScreenSpaceTransform(
 }
 
 // A layer jitters if its screen space transform is same on two successive
-// commits, but has changed in between the commits. CalculateFrameJitter
-// computes the jitter in the entire frame.
-int LayerTreeHostCommon::CalculateFrameJitter(LayerImpl* layer) {
-  if (!layer)
-    return 0.f;
+// commits, but has changed in between the commits. CalculateLayerJitter
+// computes the jitter for the layer.
+int LayerTreeHostCommon::CalculateLayerJitter(LayerImpl* layer) {
   float jitter = 0.f;
   layer->performance_properties().translation_from_last_frame = 0.f;
   layer->performance_properties().last_commit_screen_space_transform =
@@ -647,15 +645,6 @@ int LayerTreeHostCommon::CalculateFrameJitter(LayerImpl* layer) {
         layer->performance_properties().num_fixed_point_hits = 0;
       }
     }
-  }
-  // Descendants of jittering layer will not contribute to unique jitter.
-  if (jitter > 0.f)
-    return jitter;
-
-  for (size_t i = 0; i < layer->children().size(); ++i) {
-    LayerImpl* child_layer =
-        LayerTreeHostCommon::get_layer_as_raw_ptr(layer->children(), i);
-    jitter += CalculateFrameJitter(child_layer);
   }
   return jitter;
 }
@@ -1080,7 +1069,26 @@ void LayerTreeHostCommon::CalculateDrawProperties(
       if (active_tree_root) {
         LayerImpl* last_scrolled_layer = layer_tree_impl->LayerById(
             active_tree_root->layer_tree_impl()->LastScrolledLayerId());
-        jitter = CalculateFrameJitter(last_scrolled_layer);
+        if (last_scrolled_layer) {
+          const int last_scrolled_scroll_node_id =
+              last_scrolled_layer->scroll_tree_index();
+          std::unordered_set<int> jitter_nodes;
+          for (auto* layer : *layer_tree_impl) {
+            // Layers that have the same scroll tree index jitter together. So,
+            // it is enough to calculate jitter on one of these layers. So,
+            // after we find a jittering layer, we need not consider other
+            // layers with the same scroll tree index.
+            int scroll_tree_index = layer->scroll_tree_index();
+            if (last_scrolled_scroll_node_id <= scroll_tree_index &&
+                jitter_nodes.find(scroll_tree_index) == jitter_nodes.end()) {
+              float layer_jitter = CalculateLayerJitter(layer);
+              if (layer_jitter > 0.f) {
+                jitter_nodes.insert(layer->scroll_tree_index());
+                jitter += layer_jitter;
+              }
+            }
+          }
+        }
       }
       TRACE_EVENT_ASYNC_BEGIN1(
           "cdp.perf", "jitter",

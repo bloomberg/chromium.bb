@@ -10374,8 +10374,7 @@ TEST_F(LayerTreeHostImplTest, JitterTest) {
 
     pending_tree->set_needs_update_draw_properties();
     pending_tree->UpdateDrawProperties(false);
-    float jitter =
-        LayerTreeHostCommon::CalculateFrameJitter(last_scrolled_layer);
+    float jitter = LayerTreeHostCommon::CalculateLayerJitter(content_layer);
     // There should not be any jitter measured till we hit the fixed point hits
     // threshold.
     float expected_jitter =
