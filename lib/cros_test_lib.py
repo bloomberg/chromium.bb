@@ -1202,6 +1202,7 @@ class GerritTestCase(MockTempDirTestCase):
 
   def setUp(self):
     """Sets up the gerrit instances in a class-specific temp dir."""
+    self.saved_params = {}
     old_home = os.environ['HOME']
     os.environ['HOME'] = self.tempdir
 
@@ -1233,7 +1234,6 @@ class GerritTestCase(MockTempDirTestCase):
       self.PatchObject(gob_util, 'GetCookies', GetCookies)
 
     # Make all chromite code point to the test server.
-    self.saved_params = {}
     self.patched_params = {
         'EXTERNAL_GOB_HOST': gi.git_host,
         'EXTERNAL_GERRIT_HOST': gi.gerrit_host,
