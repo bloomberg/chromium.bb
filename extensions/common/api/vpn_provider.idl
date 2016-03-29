@@ -63,7 +63,7 @@ namespace vpnProvider {
     // VPN configuration disconnected.
     disconnected,
     // An error occurred in VPN connection, for example a timeout. A description
-    // of the error is give as the <ahref="#property-onPlatformMessage-error">
+    // of the error is given as the <a href="#property-onPlatformMessage-error">
     // error argument to onPlatformMessage</a>.
     error,
     // The default physical network connection is down.
@@ -158,7 +158,9 @@ namespace vpnProvider {
     // Triggered when a message is received from the platform for a
     // VPN configuration owned by the extension.
     // |id|: ID of the configuration the message is intended for.
-    // |message|: The message received from the platform.
+    // |message|: The message received from the platform.  Note that new
+    // message types may be added in future Chrome versions to support new
+    // features.
     // |error|: Error message when there is an error.
     static void onPlatformMessage(DOMString id,
                                   PlatformMessage message,
