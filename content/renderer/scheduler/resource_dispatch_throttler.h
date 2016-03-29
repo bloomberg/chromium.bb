@@ -53,6 +53,7 @@ class CONTENT_EXPORT ResourceDispatchThrottler : public IPC::Sender {
 
   void Flush();
   void FlushAll();
+  void LogFlush();
   bool ForwardMessage(IPC::Message* msg);
 
   base::ThreadChecker thread_checker_;
@@ -63,7 +64,7 @@ class CONTENT_EXPORT ResourceDispatchThrottler : public IPC::Sender {
   const uint32_t max_requests_per_flush_;
 
   base::Timer flush_timer_;
-  base::TimeTicks last_sent_request_time_;
+  base::TimeTicks last_flush_time_;
   uint32_t sent_requests_since_last_flush_;
   std::deque<IPC::Message*> throttled_messages_;
 

@@ -66,13 +66,16 @@ bool ResourceDispatchThrottler::Send(IPC::Message* msg) {
   if (!IsResourceRequest(*msg))
     return ForwardMessage(msg);
 
-  if (!scheduler_->IsHighPriorityWorkAnticipated())
+  if (!scheduler_->IsHighPriorityWorkAnticipated()) {
+    // Treat an unthrottled request as a flush.
+    LogFlush();
     return ForwardMessage(msg);
+  }
 
-  if (Now() > (last_sent_request_time_ + flush_period_)) {
-    // If sufficient time has passed since the previous send, we can effectively
-    // mark the pipeline as flushed.
-    sent_requests_since_last_flush_ = 0;
+  if (Now() > (last_flush_time_ + flush_period_)) {
+    // If sufficient time has passed since the previous flush, we can
+    // effectively mark the pipeline as flushed.
+    LogFlush();
     return ForwardMessage(msg);
   }
 
@@ -99,7 +102,7 @@ void ResourceDispatchThrottler::Flush() {
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT1("loader", "ResourceDispatchThrottler::Flush",
                "total_throttled_messages", throttled_messages_.size());
-  sent_requests_since_last_flush_ = 0;
+  LogFlush();
 
   // If high-priority work is no longer anticipated, dispatch can be safely
   // accelerated. Avoid completely flushing in such case in the event that
@@ -121,6 +124,7 @@ void ResourceDispatchThrottler::Flush() {
 }
 
 void ResourceDispatchThrottler::FlushAll() {
+  LogFlush();
   if (throttled_messages_.empty())
     return;
 
@@ -135,11 +139,15 @@ void ResourceDispatchThrottler::FlushAll() {
   DCHECK(throttled_messages_.empty());
 }
 
+void ResourceDispatchThrottler::LogFlush() {
+  sent_requests_since_last_flush_ = 0;
+  last_flush_time_ = Now();
+}
+
 bool ResourceDispatchThrottler::ForwardMessage(IPC::Message* msg) {
-  if (IsResourceRequest(*msg)) {
-    last_sent_request_time_ = Now();
+  if (IsResourceRequest(*msg))
     ++sent_requests_since_last_flush_;
-  }
+
   return proxied_sender_->Send(msg);
 }
 
