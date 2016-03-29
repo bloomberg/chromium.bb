@@ -519,6 +519,9 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
   for setup_component_dll_glob in setup_component_dll_globs:
     setup_component_dlls = glob.glob(os.path.join(build_dir,
                                                   setup_component_dll_glob))
+    if len(setup_component_dlls) == 0:
+      raise Exception('Error: missing expected DLL for component build '
+                      'mini_installer: "%s"' % setup_component_dll_glob)
     for setup_component_dll in setup_component_dlls:
       g_archive_inputs.append(setup_component_dll)
       shutil.copy(setup_component_dll, installer_dir)
