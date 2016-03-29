@@ -56,8 +56,10 @@ void MemoryPressureListener::Notify(MemoryPressureLevel memory_pressure_level) {
 void MemoryPressureListener::NotifyMemoryPressure(
     MemoryPressureLevel memory_pressure_level) {
   DCHECK_NE(memory_pressure_level, MEMORY_PRESSURE_LEVEL_NONE);
-  TRACE_EVENT1("memory", "MemoryPressureListener::NotifyMemoryPressure",
-      "level", memory_pressure_level);
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("memory-infra"),
+                       "MemoryPressureListener::NotifyMemoryPressure",
+                       TRACE_EVENT_SCOPE_THREAD, "level",
+                       memory_pressure_level);
   if (AreNotificationsSuppressed())
     return;
   DoNotifyMemoryPressure(memory_pressure_level);
