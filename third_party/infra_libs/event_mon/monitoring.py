@@ -269,7 +269,8 @@ def get_build_event(event_type,
                     service_name=None,
                     goma_stats=None,
                     goma_error=None,
-                    goma_crash_report_id=None):
+                    goma_crash_report_id=None,
+                    patch_url=None):
   """Compute a ChromeInfraEvent filled with a BuildEvent.
 
   Arguments are identical to those in send_build_event(), please refer
@@ -331,6 +332,8 @@ def get_build_event(event_type,
     event.build_event.step_name = step_name
   if step_number is not None:
     event.build_event.step_number = step_number
+  if patch_url is not None:
+    event.build_event.patch_url = patch_url
 
   if event.build_event.step_name:
     if event_type != 'STEP':
@@ -423,7 +426,8 @@ def send_build_event(event_type,
                      event_timestamp=None,
                      goma_stats=None,
                      goma_error=None,
-                     goma_crash_report_id=None):
+                     goma_crash_report_id=None,
+                     patch_url=None):
   """Send a ChromeInfraEvent filled with a BuildEvent
 
   Args:
@@ -449,6 +453,7 @@ def send_build_event(event_type,
     goma_stats (goma_stats_pb2.GomaStats): statistics output by the Goma proxy.
     goma_error (string): goma error type defined as GomaErrorType.
     goma_crash_report_id (string): id of goma crash report.
+    patch_url (string): URL of the patch that triggered build
 
   Returns:
     success (bool): False if some error happened.
@@ -466,7 +471,8 @@ def send_build_event(event_type,
                          event_timestamp=event_timestamp,
                          goma_stats=goma_stats,
                          goma_error=goma_error,
-                         goma_crash_report_id=goma_crash_report_id).send()
+                         goma_crash_report_id=goma_crash_report_id,
+                         patch_url=patch_url).send()
 
 
 def send_events(events):

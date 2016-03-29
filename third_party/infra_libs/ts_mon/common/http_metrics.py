@@ -34,3 +34,24 @@ server_durations = metrics.CumulativeDistributionMetric('http/server_durations',
                 ' response (including parsing) in milliseconds.')
 server_response_status = metrics.CounterMetric('http/server_response_status',
     description='Number of responses sent by HTTP status code.')
+
+
+def update_http_server_metrics(endpoint_name, response_status_code, elapsed_ms,
+                               request_size=None, response_size=None,
+                               user_agent=None):
+  fields = {'status': response_status_code, 'name': endpoint_name,
+            'is_robot': False}
+  if user_agent is not None:
+    # We must not log user agents, but we can store whether or not the
+    # user agent string indicates that the requester was a Google bot.
+    fields['is_robot'] = (
+        'GoogleBot' in user_agent or
+        'GoogleSecurityScanner' in user_agent or
+        user_agent == 'B3M/prober')
+
+  server_durations.add(elapsed_ms, fields=fields)
+  server_response_status.increment(fields=fields)
+  if request_size is not None:
+    server_request_bytes.add(request_size, fields=fields)
+  if response_size is not None:
+    server_response_bytes.add(response_size, fields=fields)
