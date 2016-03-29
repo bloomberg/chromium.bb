@@ -43,6 +43,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/session_length_limiter.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
@@ -1170,13 +1171,9 @@ void ChromeUserManagerImpl::UpdateUserTimeZoneRefresher(Profile* profile) {
     g_browser_process->platform_part()->GetTimezoneResolver()->Stop();
     return;
   }
-
-  if (profile->GetPrefs()->GetBoolean(prefs::kResolveTimezoneByGeolocation) &&
-      !system::HasSystemTimezonePolicy()) {
-    g_browser_process->platform_part()->GetTimezoneResolver()->Start();
-  } else {
-    g_browser_process->platform_part()->GetTimezoneResolver()->Stop();
-  }
+  g_browser_process->platform_part()
+      ->GetTimezoneResolverManager()
+      ->UpdateTimezoneResolver();
 }
 
 void ChromeUserManagerImpl::SetUserAffiliation(

@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/common/pref_names.h"
+#include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "chromeos/timezone/timezone_request.h"
@@ -179,21 +179,10 @@ bool HasSystemTimezonePolicy() {
 }
 
 void ApplyTimeZone(const TimeZoneResponseData* timezone) {
-  if (HasSystemTimezonePolicy())
+  if (!g_browser_process->platform_part()
+           ->GetTimezoneResolverManager()
+           ->ShouldApplyResolvedTimezone()) {
     return;
-
-  const user_manager::User* primary_user =
-      user_manager::UserManager::Get()->GetPrimaryUser();
-  if (primary_user) {
-    if (!primary_user->is_profile_created())
-      return;
-
-    Profile* profile =
-        chromeos::ProfileHelper::Get()->GetProfileByUser(primary_user);
-    if (!profile->GetPrefs()->GetBoolean(
-            prefs::kResolveTimezoneByGeolocation)) {
-      return;
-    }
   }
 
   if (!timezone->timeZoneId.empty()) {

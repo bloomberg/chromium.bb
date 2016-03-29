@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/common/chrome_features.h"
@@ -640,15 +641,14 @@ void Preferences::ApplyPreferences(ApplyReason reason,
           prefs::kResolveDeviceTimezoneByGeolocation, value);
     }
     if (user_is_primary_) {
-      if (value) {
-        g_browser_process->platform_part()->GetTimezoneResolver()->Start();
-      } else {
-        g_browser_process->platform_part()->GetTimezoneResolver()->Stop();
-        if (reason == REASON_PREF_CHANGED) {
-          // Allow immediate timezone update on Stop + Start.
-          g_browser_process->local_state()->ClearPref(
-              TimeZoneResolver::kLastTimeZoneRefreshTime);
-        }
+      system::TimeZoneResolverManager* manager =
+          g_browser_process->platform_part()->GetTimezoneResolverManager();
+      manager->SetPrimaryUserPrefs(prefs_);
+      manager->UpdateTimezoneResolver();
+      if (!value && reason == REASON_PREF_CHANGED) {
+        // Allow immediate timezone update on Stop + Start.
+        g_browser_process->local_state()->ClearPref(
+            TimeZoneResolver::kLastTimeZoneRefreshTime);
       }
     }
   }

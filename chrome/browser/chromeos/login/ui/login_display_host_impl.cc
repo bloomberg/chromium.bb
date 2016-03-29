@@ -52,6 +52,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/chromeos/ui/focus_ring_controller.h"
 #include "chrome/browser/lifetime/keep_alive_types.h"
@@ -1129,29 +1130,6 @@ void LoginDisplayHostImpl::OnLoginPromptVisible() {
   TryToPlayStartupSound();
 }
 
-void LoginDisplayHostImpl::StartTimeZoneResolve() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kDisableTimeZoneTrackingOption)) {
-    return;
-  }
-
-  if (!g_browser_process->local_state()->GetBoolean(
-          prefs::kResolveDeviceTimezoneByGeolocation)) {
-    return;
-  }
-
-  if (system::HasSystemTimezonePolicy())
-    return;
-
-  // Do not start resolver if we are inside active user session.
-  // If user preferences permit, it will be started on preferences
-  // initialization.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginUser))
-    return;
-
-  g_browser_process->platform_part()->GetTimezoneResolver()->Start();
-}
-
 // static
 void LoginDisplayHostImpl::DisableRestrictiveProxyCheckForTest() {
   static_cast<chromeos::LoginDisplayHostImpl*>(default_host())
@@ -1232,7 +1210,9 @@ void ShowLoginWizard(const std::string& first_screen_name) {
         ServicesCustomizationDocument::GetInstance()
             ->EnsureCustomizationAppliedClosure());
 
-    display_host->StartTimeZoneResolve();
+    g_browser_process->platform_part()
+        ->GetTimezoneResolverManager()
+        ->UpdateTimezoneResolver();
   }
 
   bool show_login_screen =

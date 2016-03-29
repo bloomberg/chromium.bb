@@ -995,6 +995,8 @@
         'browser/chromeos/system/system_clock.h',
         'browser/chromeos/system/system_clock_observer.cc',
         'browser/chromeos/system/system_clock_observer.h',
+        'browser/chromeos/system/timezone_resolver_manager.cc',
+        'browser/chromeos/system/timezone_resolver_manager.h',
         'browser/chromeos/system/timezone_util.cc',
         'browser/chromeos/system/timezone_util.h',
         'browser/chromeos/system_logs/command_line_log_source.cc',

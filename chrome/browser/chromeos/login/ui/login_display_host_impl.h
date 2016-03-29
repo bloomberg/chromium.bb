@@ -103,8 +103,6 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
 
   views::Widget* login_window_for_test() { return login_window_; }
 
-  void StartTimeZoneResolve();
-
   // Disable GaiaScreenHandler restrictive proxy check.
   static void DisableRestrictiveProxyCheckForTest();
 

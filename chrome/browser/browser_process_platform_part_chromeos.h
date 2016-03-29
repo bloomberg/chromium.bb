@@ -27,6 +27,7 @@ class AutomaticRebootManager;
 class DeviceDisablingManager;
 class DeviceDisablingManagerDefaultDelegate;
 class SystemClock;
+class TimeZoneResolverManager;
 }
 }
 
@@ -94,6 +95,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
     return device_disabling_manager_.get();
   }
 
+  chromeos::system::TimeZoneResolverManager* GetTimezoneResolverManager();
+
   chromeos::TimeZoneResolver* GetTimezoneResolver();
 
   // Overridden from BrowserProcessPlatformPartBase:
@@ -122,6 +125,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase,
   scoped_ptr<chromeos::system::DeviceDisablingManager>
       device_disabling_manager_;
 
+  scoped_ptr<chromeos::system::TimeZoneResolverManager>
+      timezone_resolver_manager_;
   scoped_ptr<chromeos::TimeZoneResolver> timezone_resolver_;
 
   scoped_ptr<chromeos::system::SystemClock> system_clock_;
