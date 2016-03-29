@@ -105,8 +105,7 @@ void PartPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& p
     // Tell the widget to paint now. This is the only time the widget is allowed
     // to paint itself. That way it will composite properly with z-indexed layers.
     IntPoint widgetLocation = widget->frameRect().location();
-    IntPoint paintLocation(roundToInt(adjustedPaintOffset.x() + m_layoutPart.borderLeft() + m_layoutPart.paddingLeft()),
-        roundToInt(adjustedPaintOffset.y() + m_layoutPart.borderTop() + m_layoutPart.paddingTop()));
+    IntPoint paintLocation(roundedIntPoint(adjustedPaintOffset + m_layoutPart.contentBoxOffset()));
 
     IntSize widgetPaintOffset = paintLocation - widgetLocation;
     // When painting widgets into compositing layers, tx and ty are relative to the enclosing compositing layer,

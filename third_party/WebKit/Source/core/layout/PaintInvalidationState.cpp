@@ -153,6 +153,8 @@ PaintInvalidationState::PaintInvalidationState(const PaintInvalidationState& par
     if (currentObject.isLayoutView()) {
         ASSERT(&parentState.m_currentObject == toLayoutView(currentObject).frame()->ownerLayoutObject());
         m_paintOffset += toLayoutBox(parentState.m_currentObject).contentBoxOffset();
+        // a LayoutView paints with a defined size but a pixel-rounded offset.
+        m_paintOffset = LayoutSize(roundedIntSize(m_paintOffset));
         return;
     }
 

@@ -181,4 +181,26 @@ TEST_F(LayoutObjectTest, LayoutViewMapToVisibleRectInAncestorSpace)
     EXPECT_EQ(rect, LayoutRect(4, 13, 0, 37));
 }
 
+TEST_F(LayoutObjectTest, LayoutViewMapToVisibleRectInAncestorSpaceSubpixelRounding)
+{
+    document().setBaseURLOverride(KURL(ParsedURLString, "http://test.com"));
+    setBodyInnerHTML(
+        "<style>body { margin: 0; }</style>"
+        "<div id=frameContainer style='position: relative; left: 0.5px'>"
+        "  <iframe id=frame style='position: relative; left: 0.5px' src='http://test.com' width='200' height='200' frameBorder='0'></iframe>"
+        "</div>");
+
+    Document& frameDocument = setupChildIframe(
+        "frame", "<style>body { margin: 0; }</style><div id='target' style='position: relative; width: 100px; height: 100px; left: 0.5px'>");
+    frameDocument.updateLayout();
+
+    LayoutBlock* frameContainer = toLayoutBlock(getLayoutObjectByElementId("frameContainer"));
+    LayoutObject* target = frameDocument.getElementById("target")->layoutObject();
+    LayoutRect rect(0, 0, 100, 100);
+    EXPECT_TRUE(target->mapToVisibleRectInAncestorSpace(frameContainer, rect));
+    // When passing from the iframe to the parent frame, the rect of (0.5, 0, 100, 100) is expanded to (0, 0, 100, 100), and then offset by
+    // the 0.5 offset of frameContainer.
+    EXPECT_EQ(LayoutRect(LayoutPoint(DoublePoint(0.5, 0)), LayoutSize(101, 100)), rect);
+}
+
 } // namespace blink

@@ -527,6 +527,10 @@ bool LayoutView::mapToVisibleRectInAncestorSpace(const LayoutBoxModelObject* anc
             // Adjust for scroll offset of the view.
             rect.moveBy(-viewRectangle.location());
         }
+        // Frames are painted at rounded-int position. Since we cannot efficiently compute the subpixel offset
+        // of painting at this point in a a bottom-up walk, round to the enclosing int rect, which will enclose
+        // the actual visible rect.
+        rect = LayoutRect(enclosingIntRect(rect));
 
         // Adjust for frame border.
         rect.move(obj->contentBoxOffset());
