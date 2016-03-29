@@ -340,6 +340,8 @@ scoped_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_idle_connection_timeout_seconds);
   dict->SetBoolean("disable_preconnect_if_0rtt",
                    params_.quic_disable_preconnect_if_0rtt);
+  dict->SetBoolean("disable_quic_on_timeout_with_open_streams",
+                   params_.disable_quic_on_timeout_with_open_streams);
   dict->SetString("disabled_reason",
                   quic_stream_factory_.QuicDisabledReasonString());
   return std::move(dict);
