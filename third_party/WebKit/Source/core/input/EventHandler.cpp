@@ -978,6 +978,12 @@ WebInputEventResult EventHandler::handleMousePressEvent(const PlatformMouseEvent
 {
     TRACE_EVENT0("blink", "EventHandler::handleMousePressEvent");
 
+    // For 4th/5th button in the mouse since Chrome does not yet send
+    // button value to Blink but in some cases it does send the event.
+    // This check is needed to suppress such an event (crbug.com/574959)
+    if (mouseEvent.button() == NoButton)
+        return WebInputEventResult::HandledSuppressed;
+
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
     UserGestureIndicator gestureIndicator(DefinitelyProcessingUserGesture);
@@ -1299,6 +1305,12 @@ static ContainerNode* parentForClickEvent(const Node& node)
 WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEvent& mouseEvent)
 {
     TRACE_EVENT0("blink", "EventHandler::handleMouseReleaseEvent");
+
+    // For 4th/5th button in the mouse since Chrome does not yet send
+    // button value to Blink but in some cases it does send the event.
+    // This check is needed to suppress such an event (crbug.com/574959)
+    if (mouseEvent.button() == NoButton)
+        return WebInputEventResult::HandledSuppressed;
 
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
