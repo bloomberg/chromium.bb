@@ -11,7 +11,7 @@
 ## This file tests the libaom av1_spatial_svc_encoder example. To add new
 ## tests to to this file, do the following:
 ##   1. Write a shell function (this is your test).
-##   2. Add the function to vp9_spatial_svc_tests (on a new line).
+##   2. Add the function to av1_spatial_svc_tests (on a new line).
 ##
 . $(dirname $0)/tools_common.sh
 
@@ -29,7 +29,7 @@ av1_spatial_svc_encoder() {
     encoder="${LIBAOM_BIN_PATH}/av1_spatial_svc_encoder${AOM_TEST_EXE_SUFFIX}"
   local readonly test_name="$1"
   local readonly \
-    output_file="${AOM_TEST_OUTPUT_DIR}/vp9_ssvc_encoder${test_name}.ivf"
+    output_file="${AOM_TEST_OUTPUT_DIR}/av1_ssvc_encoder${test_name}.ivf"
   local readonly frames_to_encode=10
   local readonly max_kf=9999
 
@@ -47,26 +47,26 @@ av1_spatial_svc_encoder() {
   [ -e "${output_file}" ] || return 1
 }
 
-# Each test is run with layer count 1-$vp9_ssvc_test_layers.
-vp9_ssvc_test_layers=5
+# Each test is run with layer count 1-$av1_ssvc_test_layers.
+av1_ssvc_test_layers=5
 
-vp9_spatial_svc() {
-  if [ "$(vp9_encode_available)" = "yes" ]; then
-    local readonly test_name="vp9_spatial_svc"
-    for layers in $(seq 1 ${vp9_ssvc_test_layers}); do
+av1_spatial_svc() {
+  if [ "$(av1_encode_available)" = "yes" ]; then
+    local readonly test_name="av1_spatial_svc"
+    for layers in $(seq 1 ${av1_ssvc_test_layers}); do
       av1_spatial_svc_encoder "${test_name}" -sl ${layers}
     done
   fi
 }
 
-readonly vp9_spatial_svc_tests="DISABLED_vp9_spatial_svc_mode_i
-                                DISABLED_vp9_spatial_svc_mode_altip
-                                DISABLED_vp9_spatial_svc_mode_ip
-                                DISABLED_vp9_spatial_svc_mode_gf
-                                vp9_spatial_svc"
+readonly av1_spatial_svc_tests="DISABLED_av1_spatial_svc_mode_i
+                                DISABLED_av1_spatial_svc_mode_altip
+                                DISABLED_av1_spatial_svc_mode_ip
+                                DISABLED_av1_spatial_svc_mode_gf
+                                av1_spatial_svc"
 
 if [ "$(aom_config_option_enabled CONFIG_SPATIAL_SVC)" = "yes" ]; then
   run_tests \
     av1_spatial_svc_encoder_verify_environment \
-    "${vp9_spatial_svc_tests}"
+    "${av1_spatial_svc_tests}"
 fi
