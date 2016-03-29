@@ -235,6 +235,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, InvalidOrEmptyURL) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
   ASSERT_TRUE(tab_manager);
 
+  // Disable the protection of recent tabs.
+  tab_manager->minimum_protection_time_ = base::TimeDelta::FromMinutes(0);
+
   // Open two tabs. Wait for the foreground one to load but do not wait for the
   // background one.
   content::WindowedNotificationObserver load1(
@@ -287,49 +290,72 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectPDFPages) {
   EXPECT_FALSE(tab_manager->DiscardTab());
 }
 
-// Makes sure that recently used tabs are protected, depending on the value of
-// of |minimum_protection_time_|.
+// Makes sure that recently opened or used tabs are protected, depending on the
+// value of of |minimum_protection_time_|.
 // TODO(georgesak): Move this to a unit test instead (requires change to API).
 IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectRecentlyUsedTabs) {
-  const int protection_time = 5;
+  // TODO(georgesak): Retrieve this value from tab_manager.h once it becomes a
+  // constant (as of now, it gets set through variations).
+  const int kProtectionTime = 5;
   TabManager* tab_manager = g_browser_process->GetTabManager();
   ASSERT_TRUE(tab_manager);
 
   base::SimpleTestTickClock test_clock_;
   tab_manager->set_test_tick_clock(&test_clock_);
 
+  auto tsm = browser()->tab_strip_model();
+
   // Set the minimum time of protection.
   tab_manager->minimum_protection_time_ =
-      base::TimeDelta::FromMinutes(protection_time);
+      base::TimeDelta::FromMinutes(kProtectionTime);
 
   // Open 2 tabs, the second one being in the background.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUIAboutURL), NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-
-  // Set the last inactive time of the background tab.
-  auto tab = browser()->tab_strip_model()->GetWebContentsAt(1);
-  tab_manager->GetWebContentsData(tab)
-      ->SetLastInactiveTime(test_clock_.NowTicks());
+  EXPECT_EQ(2, tsm->count());
 
   // Advance the clock for less than the protection time.
-  test_clock_.Advance(base::TimeDelta::FromMinutes(protection_time / 2));
+  test_clock_.Advance(base::TimeDelta::FromMinutes(kProtectionTime / 2));
 
   // Should not be able to discard a tab.
   ASSERT_FALSE(tab_manager->DiscardTab());
 
   // Advance the clock for more than the protection time.
-  test_clock_.Advance(base::TimeDelta::FromMinutes(protection_time / 2 + 2));
+  test_clock_.Advance(base::TimeDelta::FromMinutes(kProtectionTime / 2 + 2));
 
   // Should be able to discard the background tab now.
   EXPECT_TRUE(tab_manager->DiscardTab());
+
+  // Activate the 2nd tab.
+  tsm->ActivateTabAt(1, true);
+  EXPECT_EQ(1, tsm->active_index());
+
+  // Advance the clock for less than the protection time.
+  test_clock_.Advance(base::TimeDelta::FromMinutes(kProtectionTime / 2));
+
+  // Should not be able to discard a tab.
+  ASSERT_FALSE(tab_manager->DiscardTab());
+
+  // Advance the clock for more than the protection time.
+  test_clock_.Advance(base::TimeDelta::FromMinutes(kProtectionTime / 2 + 2));
+
+  // Should be able to discard the background tab now.
+  EXPECT_TRUE(tab_manager->DiscardTab());
+
+  // This is necessary otherwise the test crashes in
+  // WebContentsData::WebContentsDestroyed.
+  tsm->CloseAllTabs();
 }
 
 // Makes sure that tabs using media devices are protected.
 IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectVideoTabs) {
   TabManager* tab_manager = g_browser_process->GetTabManager();
   ASSERT_TRUE(tab_manager);
+
+  // Disable the protection of recent tabs.
+  tab_manager->minimum_protection_time_ = base::TimeDelta::FromMinutes(0);
 
   // Open 2 tabs, the second one being in the background.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIAboutURL));

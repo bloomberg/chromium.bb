@@ -361,6 +361,19 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
     GetWebContentsData(old_contents)->SetLastInactiveTime(NowTicks());
 }
 
+void TabManager::TabInsertedAt(content::WebContents* contents,
+                               int index,
+                               bool foreground) {
+  // Only interested in background tabs, as foreground tabs get taken care of by
+  // ActiveTabChanged.
+  if (foreground)
+    return;
+
+  // A new background tab is similar to having a tab switch from being active to
+  // inactive.
+  GetWebContentsData(contents)->SetLastInactiveTime(NowTicks());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // TabManager, private:
 

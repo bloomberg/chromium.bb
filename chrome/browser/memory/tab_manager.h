@@ -117,9 +117,11 @@ class TabManager : public TabStripModelObserver {
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, Comparator);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DiscardedTabKeepsLastActiveTime);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DiscardWebContentsAt);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, InvalidOrEmptyURL);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsInternalPage);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OomPressureListener);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectRecentlyUsedTabs);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectVideoTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ReloadDiscardedTabContextMenu);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerBasics);
 
@@ -205,6 +207,9 @@ class TabManager : public TabStripModelObserver {
                         content::WebContents* new_contents,
                         int index,
                         int reason) override;
+  void TabInsertedAt(content::WebContents* contents,
+                     int index,
+                     bool foreground) override;
 
   // Returns true if the tab is currently playing audio or has played audio
   // recently, or if the tab is currently accessing the camera, microphone or
