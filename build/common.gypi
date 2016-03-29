@@ -1353,12 +1353,12 @@
     'android_lint%': 1,
 
     # Although base/allocator lets you select a heap library via an
-    # environment variable, the shim it uses sometimes gets in the way.
-    # To disable it entirely, and switch to normal msvcrt, do e.g.
+    # environment variable, the libcmt shim it uses sometimes gets in
+    # the way.  To disable it entirely, and switch to normal msvcrt, do e.g.
     #  'win_use_allocator_shim': 0,
     #  'win_release_RuntimeLibrary': 2
     # to ~/.gyp/include.gypi, gclient runhooks --force, and do a release build.
-    'win_use_allocator_shim%': 1, # 1 = shim allocator; 0 = msvcrt
+    'win_use_allocator_shim%': 1, # 1 = shim allocator via libcmt; 0 = msvcrt
 
     # Enables the unified allocator shim (experimental) which routes all the
     # alloc calls to base/. Right now is supported on Linux Desktop only.
@@ -2016,7 +2016,11 @@
           },{
             'winsdk_arch%': '<(target_arch)',
           }],
-          ['component=="shared_library"', {
+          ['component=="shared_library" or MSVS_VERSION == "2015"', {
+            # TODO(scottmg): The allocator shimming doesn't work on the 2015 CRT
+            # and we are hoping to be able to remove it if an additional feature
+            # lands in the 2015 CRT API. For now, don't shim and revisit once
+            # VS2015 is RTM: http://crbug.com/481611.
             'win_use_allocator_shim%': 0,
           }],
           ['component=="static_library"', {
@@ -2861,6 +2865,11 @@
       }],  # fieldtrial_testing_like_official_build==0 and branding!="Chrome"
       ['OS=="win"', {
         'defines': ['NO_TCMALLOC'],
+        'conditions': [
+          ['win_use_allocator_shim==1', {
+            'defines': ['ALLOCATOR_SHIM'],
+          }],
+        ],
       }],
       ['asan==1', {
         'defines': [
@@ -3528,10 +3537,8 @@
               'WTF_USE_DYNAMIC_ANNOTATIONS=1',
             ],
           }],
-          ['OS=="win" and win_use_allocator_shim==1', {
-            'defines': [
-              'ALLOCATOR_SHIM'
-            ],
+          ['OS=="win"', {
+            'defines': ['NO_TCMALLOC'],
           }],
           # _FORTIFY_SOURCE isn't really supported by Clang now, see
           # http://llvm.org/bugs/show_bug.cgi?id=16821.

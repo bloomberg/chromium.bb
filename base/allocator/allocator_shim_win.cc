@@ -2,29 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The allocator shim is only enabled in Release Static builds.
-// This #if is needed as gyp can't have different compile
-// targets between Debug and Release.
-// TODO(wfh): Remove this once gyp is dead.
-#if defined(ALLOCATOR_SHIM)
-
 #include <limits.h>
 #include <malloc.h>
 #include <new.h>
 #include <windows.h>
 #include <stddef.h>
 
-#include "allocator_shim_win.h"
-
 // This shim make it possible to perform additional checks on allocations
 // before passing them to the Heap functions.
 
-// Override heap functions to perform additional checks:
+// Heap functions are stripped from libcmt.lib using the prep_libc.py
+// for each object file stripped, we re-implement them here to allow us to
+// perform additional checks:
 // 1. Enforcing the maximum size that can be allocated to 2Gb.
-// 2. Calling new_handler if malloc fails
+// 2. Calling new_handler if malloc fails.
 
-// See definitions of original functions in ucrt\corecrt_malloc.h in SDK
-// include directory.
+extern "C" {
+// We set this to 1 because part of the CRT uses a check of _crtheap != 0
+// to test whether the CRT has been initialized.  Once we've ripped out
+// the allocators from libcmt, we need to provide this definition so that
+// the rest of the CRT is still usable.
+// heapinit.c
+void* _crtheap = reinterpret_cast<void*>(1);
+}
 
 namespace base {
 namespace allocator {
@@ -38,18 +38,33 @@ const size_t kWindowsPageSize = 4096;
 const size_t kMaxWindowsAllocation = INT_MAX - kWindowsPageSize;
 int new_mode = 0;
 
-inline HANDLE get_heap_handle() {
-  return reinterpret_cast<HANDLE>(_get_heap_handle());
+// VS2013 crt uses the process heap as its heap, so we do the same here.
+// See heapinit.c in VS CRT sources.
+bool win_heap_init() {
+  // Set the _crtheap global here.  THis allows us to offload most of the
+  // memory management to the CRT, except the functions we need to shim.
+  _crtheap = GetProcessHeap();
+  if (_crtheap == NULL)
+    return false;
+
+  ULONG enable_lfh = 2;
+  // NOTE: Setting LFH may fail.  Vista already has it enabled.
+  //       And under the debugger, it won't use LFH.  So we
+  //       ignore any errors.
+  HeapSetInformation(_crtheap, HeapCompatibilityInformation, &enable_lfh,
+                     sizeof(enable_lfh));
+
+  return true;
 }
 
 void* win_heap_malloc(size_t size) {
   if (size < kMaxWindowsAllocation)
-    return HeapAlloc(get_heap_handle(), 0, size);
-  return nullptr;
+    return HeapAlloc(_crtheap, 0, size);
+  return NULL;
 }
 
 void win_heap_free(void* size) {
-  HeapFree(get_heap_handle(), 0, size);
+  HeapFree(_crtheap, 0, size);
 }
 
 void* win_heap_realloc(void* ptr, size_t size) {
@@ -57,11 +72,15 @@ void* win_heap_realloc(void* ptr, size_t size) {
     return win_heap_malloc(size);
   if (!size) {
     win_heap_free(ptr);
-    return nullptr;
+    return NULL;
   }
   if (size < kMaxWindowsAllocation)
-    return HeapReAlloc(get_heap_handle(), 0, ptr, size);
-  return nullptr;
+    return HeapReAlloc(_crtheap, 0, ptr, size);
+  return NULL;
+}
+
+void win_heap_term() {
+  _crtheap = NULL;
 }
 
 // Call the new handler, if one has been set.
@@ -74,42 +93,79 @@ inline bool call_new_handler(bool nothrow, size_t size) {
     return false;
   // Since exceptions are disabled, we don't really know if new_handler
   // failed.  Assume it will abort if it fails.
-  return nh(size) ? true : false;
+  return nh(size);
 #else
 #error "Exceptions in allocator shim are not supported!"
 #endif  // defined(_HAS_EXCEPTIONS) && !_HAS_EXCEPTIONS
+  return false;
+}
+
+// Implement a C++ style allocation, which always calls the new_handler
+// on failure.
+inline void* generic_cpp_alloc(size_t size, bool nothrow) {
+  void* ptr;
+  for (;;) {
+    ptr = malloc(size);
+    if (ptr)
+      return ptr;
+    if (!call_new_handler(nothrow, size))
+      break;
+  }
+  return ptr;
 }
 
 }  // namespace
 
-extern "C" {
+// new.cpp
+void* operator new(size_t size) {
+  return generic_cpp_alloc(size, false);
+}
 
-// Symbol to allow weak linkage to win_heap_malloc from memory_win.cc.
-void* (*malloc_unchecked)(size_t) = &win_heap_malloc;
+// delete.cpp
+void operator delete(void* p) throw() {
+  free(p);
+}
+
+// new2.cpp
+void* operator new[](size_t size) {
+  return generic_cpp_alloc(size, false);
+}
+
+// delete2.cpp
+void operator delete[](void* p) throw() {
+  free(p);
+}
+
+// newopnt.cpp
+void* operator new(size_t size, const std::nothrow_t& nt) {
+  return generic_cpp_alloc(size, true);
+}
+
+// newaopnt.cpp
+void* operator new[](size_t size, const std::nothrow_t& nt) {
+  return generic_cpp_alloc(size, true);
+}
 
 // This function behaves similarly to MSVC's _set_new_mode.
 // If flag is 0 (default), calls to malloc will behave normally.
 // If flag is 1, calls to malloc will behave like calls to new,
 // and the std_new_handler will be invoked on failure.
 // Returns the previous mode.
-//
-// Replaces _set_new_mode in ucrt\heap\new_mode.cpp
-int _set_new_mode(int flag) {
-  // The MS CRT calls this function early on in startup, so this serves as a low
-  // overhead proof that the allocator shim is in place for this process.
-  base::allocator::g_is_win_shim_layer_initialized = true;
+// new_mode.cpp
+int _set_new_mode(int flag) throw() {
   int old_mode = new_mode;
   new_mode = flag;
   return old_mode;
 }
 
-// Replaces _query_new_mode in ucrt\heap\new_mode.cpp
+// new_mode.cpp
 int _query_new_mode() {
   return new_mode;
 }
 
-// Replaces malloc in ucrt\heap\malloc.cpp
-__declspec(restrict) void* malloc(size_t size) {
+extern "C" {
+// malloc.c
+void* malloc(size_t size) {
   void* ptr;
   for (;;) {
     ptr = win_heap_malloc(size);
@@ -122,14 +178,17 @@ __declspec(restrict) void* malloc(size_t size) {
   return ptr;
 }
 
-// Replaces free in ucrt\heap\free.cpp
+// Symbol to allow weak linkage to win_heap_malloc from memory_win.cc.
+void* (*malloc_unchecked)(size_t) = &win_heap_malloc;
+
+// free.c
 void free(void* p) {
   win_heap_free(p);
   return;
 }
 
-// Replaces realloc in ucrt\heap\realloc.cpp
-__declspec(restrict) void* realloc(void* ptr, size_t size) {
+// realloc.c
+void* realloc(void* ptr, size_t size) {
   // Webkit is brittle for allocators that return NULL for malloc(0).  The
   // realloc(0, 0) code path does not guarantee a non-NULL return, so be sure
   // to call malloc for this case.
@@ -151,20 +210,120 @@ __declspec(restrict) void* realloc(void* ptr, size_t size) {
   return new_ptr;
 }
 
-// Replaces calloc in ucrt\heap\calloc.cpp
-__declspec(restrict) void* calloc(size_t n, size_t elem_size) {
+// heapinit.c
+intptr_t _get_heap_handle() {
+  return reinterpret_cast<intptr_t>(_crtheap);
+}
+
+// heapinit.c
+int _heap_init() {
+  base::allocator::g_is_win_shim_layer_initialized = true;
+  return win_heap_init() ? 1 : 0;
+}
+
+// heapinit.c
+void _heap_term() {
+  win_heap_term();
+}
+
+// calloc.c
+void* calloc(size_t n, size_t elem_size) {
   // Overflow check.
   const size_t size = n * elem_size;
   if (elem_size != 0 && size / elem_size != n)
-    return nullptr;
+    return NULL;
 
   void* result = malloc(size);
-  if (result) {
+  if (result != NULL) {
     memset(result, 0, size);
   }
   return result;
 }
 
-}  // extern C
+// recalloc.c
+void* _recalloc(void* p, size_t n, size_t elem_size) {
+  if (!p)
+    return calloc(n, elem_size);
 
-#endif  // defined(ALLOCATOR_SHIM)
+  // This API is a bit odd.
+  // Note: recalloc only guarantees zeroed memory when p is NULL.
+  //   Generally, calls to malloc() have padding.  So a request
+  //   to malloc N bytes actually malloc's N+x bytes.  Later, if
+  //   that buffer is passed to recalloc, we don't know what N
+  //   was anymore.  We only know what N+x is.  As such, there is
+  //   no way to know what to zero out.
+  const size_t size = n * elem_size;
+  if (elem_size != 0 && size / elem_size != n)
+    return NULL;
+  return realloc(p, size);
+}
+
+// calloc_impl.c
+void* _calloc_impl(size_t n, size_t size) {
+  return calloc(n, size);
+}
+
+#ifndef NDEBUG
+#undef malloc
+#undef free
+#undef calloc
+
+static int error_handler(int reportType) {
+  switch (reportType) {
+    case 0:  // _CRT_WARN
+      __debugbreak();
+      return 0;
+
+    case 1:  // _CRT_ERROR
+      __debugbreak();
+      return 0;
+
+    case 2:  // _CRT_ASSERT
+      __debugbreak();
+      return 0;
+  }
+  char* p = NULL;
+  *p = '\0';
+  return 0;
+}
+
+int _CrtDbgReport(int reportType,
+                  const char*,
+                  int,
+                  const char*,
+                  const char*,
+                  ...) {
+  return error_handler(reportType);
+}
+
+int _CrtDbgReportW(int reportType,
+                   const wchar_t*,
+                   int,
+                   const wchar_t*,
+                   const wchar_t*,
+                   ...) {
+  return error_handler(reportType);
+}
+
+int _CrtSetReportMode(int, int) {
+  return 0;
+}
+
+void* _malloc_dbg(size_t size, int, const char*, int) {
+  return malloc(size);
+}
+
+void* _realloc_dbg(void* ptr, size_t size, int, const char*, int) {
+  return realloc(ptr, size);
+}
+
+void _free_dbg(void* ptr, int) {
+  free(ptr);
+}
+
+void* _calloc_dbg(size_t n, size_t size, int, const char*, int) {
+  return calloc(n, size);
+}
+#endif  // NDEBUG
+
+}  // extern C
