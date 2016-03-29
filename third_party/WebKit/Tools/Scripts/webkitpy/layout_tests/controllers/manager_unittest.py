@@ -56,10 +56,10 @@ class ManagerTest(unittest.TestCase):
             return manager
 
         manager = get_manager()
-        self.assertFalse(manager.needs_servers(['fast/html']))
+        self.assertFalse(manager._needs_servers(['fast/html']))
 
         manager = get_manager()
-        self.assertTrue(manager.needs_servers(['http/tests/misc']))
+        self.assertTrue(manager._needs_servers(['http/tests/misc']))
 
     def test_servers_started(self):
         def get_manager(port):

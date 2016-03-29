@@ -96,148 +96,6 @@ class Manager(object):
         self._finder = LayoutTestFinder(self._port, self._options)
         self._runner = LayoutTestRunner(self._options, self._port, self._printer, self._results_directory, self._test_is_slow)
 
-    def _collect_tests(self, args):
-        return self._finder.find_tests(args, test_list=self._options.test_list,
-                                       fastest_percentile=self._options.fastest)
-
-    def _is_http_test(self, test):
-        return (
-            test.startswith(self.HTTP_SUBDIR) or
-            self._is_websocket_test(test) or
-            self.VIRTUAL_HTTP_SUBDIR in test
-        )
-
-    def _is_inspector_test(self, test):
-        return self.INSPECTOR_SUBDIR in test
-
-    def _is_websocket_test(self, test):
-        if self._port.is_wpt_enabled() and self._port.is_wpt_test(test):
-            return False
-
-        return self.WEBSOCKET_SUBDIR in test
-
-    def _http_tests(self, test_names):
-        return set(test for test in test_names if self._is_http_test(test))
-
-    def _is_perf_test(self, test):
-        return self.PERF_SUBDIR == test or (self.PERF_SUBDIR + self._port.TEST_PATH_SEPARATOR) in test
-
-    def _prepare_lists(self, paths, test_names):
-        tests_to_skip = self._finder.skip_tests(paths, test_names, self._expectations, self._http_tests(test_names))
-        tests_to_run = [test for test in test_names if test not in tests_to_skip]
-
-        if not tests_to_run:
-            return tests_to_run, tests_to_skip
-
-        # Create a sorted list of test files so the subset chunk,
-        # if used, contains alphabetically consecutive tests.
-        if self._options.order == 'natural':
-            tests_to_run.sort(key=self._port.test_key)
-        elif self._options.order == 'random':
-            random.shuffle(tests_to_run)
-        elif self._options.order == 'random-seeded':
-            rnd = random.Random()
-            rnd.seed(4)  # http://xkcd.com/221/
-            rnd.shuffle(tests_to_run)
-
-        tests_to_run, tests_in_other_chunks = self._finder.split_into_chunks(tests_to_run)
-        self._expectations.add_extra_skipped_tests(tests_in_other_chunks)
-        tests_to_skip.update(tests_in_other_chunks)
-
-        return tests_to_run, tests_to_skip
-
-    def _test_input_for_file(self, test_file):
-        return TestInput(test_file,
-                         self._options.slow_time_out_ms if self._test_is_slow(test_file) else self._options.time_out_ms,
-                         self._test_requires_lock(test_file),
-                         should_add_missing_baselines=(self._options.new_test_results and not self._test_is_expected_missing(test_file)))
-
-    def _test_requires_lock(self, test_file):
-        """Return True if the test needs to be locked when running multiple
-        instances of this test runner.
-
-        Perf tests are locked because heavy load caused by running other
-        tests in parallel might cause some of them to time out.
-        """
-        return self._is_http_test(test_file) or self._is_perf_test(test_file)
-
-    def _test_is_expected_missing(self, test_file):
-        expectations = self._expectations.model().get_expectations(test_file)
-        return test_expectations.MISSING in expectations or test_expectations.NEEDS_REBASELINE in expectations or test_expectations.NEEDS_MANUAL_REBASELINE in expectations
-
-    def _test_is_slow(self, test_file):
-        return test_expectations.SLOW in self._expectations.model().get_expectations(test_file)
-
-    def needs_servers(self, test_names):
-        return any(self._test_requires_lock(test_name) for test_name in test_names)
-
-    def _rename_results_folder(self):
-        try:
-            timestamp = time.strftime(
-                "%Y-%m-%d-%H-%M-%S", time.localtime(self._filesystem.mtime(self._filesystem.join(self._results_directory, "results.html"))))
-        except (IOError, OSError), e:
-            # It might be possible that results.html was not generated in previous run, because the test
-            # run was interrupted even before testing started. In those cases, don't archive the folder.
-            # Simply override the current folder contents with new results.
-            import errno
-            if e.errno == errno.EEXIST or e.errno == errno.ENOENT:
-                self._printer.write_update("No results.html file found in previous run, skipping it.")
-            return None
-        archived_name = ''.join((self._filesystem.basename(self._results_directory), "_", timestamp))
-        archived_path = self._filesystem.join(self._filesystem.dirname(self._results_directory), archived_name)
-        self._filesystem.move(self._results_directory, archived_path)
-
-    def _delete_dirs(self, dir_list):
-        for dir in dir_list:
-            self._filesystem.rmtree(dir)
-
-    def _limit_archived_results_count(self):
-        results_directory_path = self._filesystem.dirname(self._results_directory)
-        file_list = self._filesystem.listdir(results_directory_path)
-        results_directories = []
-        for dir in file_list:
-            file_path = self._filesystem.join(results_directory_path, dir)
-            if self._filesystem.isdir(file_path) and self._results_directory in file_path:
-                results_directories.append(file_path)
-        results_directories.sort(key=lambda x: self._filesystem.mtime(x))
-        self._printer.write_update("Clobbering excess archived results in %s" % results_directory_path)
-        self._delete_dirs(results_directories[:-self.ARCHIVED_RESULTS_LIMIT])
-
-    def _set_up_run(self, test_names):
-        self._printer.write_update("Checking build ...")
-        if self._options.build:
-            exit_code = self._port.check_build(self.needs_servers(test_names), self._printer)
-            if exit_code:
-                _log.error("Build check failed")
-                return exit_code
-
-        # This must be started before we check the system dependencies,
-        # since the helper may do things to make the setup correct.
-        if self._options.pixel_tests:
-            self._printer.write_update("Starting pixel test helper ...")
-            self._port.start_helper()
-
-        # Check that the system dependencies (themes, fonts, ...) are correct.
-        if not self._options.nocheck_sys_deps:
-            self._printer.write_update("Checking system dependencies ...")
-            exit_code = self._port.check_sys_deps(self.needs_servers(test_names))
-            if exit_code:
-                self._port.stop_helper()
-                return exit_code
-
-        if self._options.clobber_old_results:
-            self._clobber_old_results()
-        elif self._filesystem.exists(self._results_directory):
-            self._limit_archived_results_count()
-            # Rename the existing results folder for archiving.
-            self._rename_results_folder()
-
-        # Create the output directory if it doesn't already exist.
-        self._port.host.filesystem.maybe_make_directory(self._results_directory)
-
-        self._port.setup_test_run()
-        return test_run_results.OK_EXIT_STATUS
-
     def run(self, args):
         """Run the tests and return a RunDetails object with the results."""
         start_time = time.time()
@@ -358,6 +216,148 @@ class Manager(object):
         return test_run_results.RunDetails(
             exit_code, summarized_full_results, summarized_failing_results,
             initial_results, all_retry_results, enabled_pixel_tests_in_retry)
+
+    def _collect_tests(self, args):
+        return self._finder.find_tests(args, test_list=self._options.test_list,
+                                       fastest_percentile=self._options.fastest)
+
+    def _is_http_test(self, test):
+        return (
+            test.startswith(self.HTTP_SUBDIR) or
+            self._is_websocket_test(test) or
+            self.VIRTUAL_HTTP_SUBDIR in test
+        )
+
+    def _is_inspector_test(self, test):
+        return self.INSPECTOR_SUBDIR in test
+
+    def _is_websocket_test(self, test):
+        if self._port.is_wpt_enabled() and self._port.is_wpt_test(test):
+            return False
+
+        return self.WEBSOCKET_SUBDIR in test
+
+    def _http_tests(self, test_names):
+        return set(test for test in test_names if self._is_http_test(test))
+
+    def _is_perf_test(self, test):
+        return self.PERF_SUBDIR == test or (self.PERF_SUBDIR + self._port.TEST_PATH_SEPARATOR) in test
+
+    def _prepare_lists(self, paths, test_names):
+        tests_to_skip = self._finder.skip_tests(paths, test_names, self._expectations, self._http_tests(test_names))
+        tests_to_run = [test for test in test_names if test not in tests_to_skip]
+
+        if not tests_to_run:
+            return tests_to_run, tests_to_skip
+
+        # Create a sorted list of test files so the subset chunk,
+        # if used, contains alphabetically consecutive tests.
+        if self._options.order == 'natural':
+            tests_to_run.sort(key=self._port.test_key)
+        elif self._options.order == 'random':
+            random.shuffle(tests_to_run)
+        elif self._options.order == 'random-seeded':
+            rnd = random.Random()
+            rnd.seed(4)  # http://xkcd.com/221/
+            rnd.shuffle(tests_to_run)
+
+        tests_to_run, tests_in_other_chunks = self._finder.split_into_chunks(tests_to_run)
+        self._expectations.add_extra_skipped_tests(tests_in_other_chunks)
+        tests_to_skip.update(tests_in_other_chunks)
+
+        return tests_to_run, tests_to_skip
+
+    def _test_input_for_file(self, test_file):
+        return TestInput(test_file,
+                         self._options.slow_time_out_ms if self._test_is_slow(test_file) else self._options.time_out_ms,
+                         self._test_requires_lock(test_file),
+                         should_add_missing_baselines=(self._options.new_test_results and not self._test_is_expected_missing(test_file)))
+
+    def _test_requires_lock(self, test_file):
+        """Return True if the test needs to be locked when running multiple
+        instances of this test runner.
+
+        Perf tests are locked because heavy load caused by running other
+        tests in parallel might cause some of them to time out.
+        """
+        return self._is_http_test(test_file) or self._is_perf_test(test_file)
+
+    def _test_is_expected_missing(self, test_file):
+        expectations = self._expectations.model().get_expectations(test_file)
+        return test_expectations.MISSING in expectations or test_expectations.NEEDS_REBASELINE in expectations or test_expectations.NEEDS_MANUAL_REBASELINE in expectations
+
+    def _test_is_slow(self, test_file):
+        return test_expectations.SLOW in self._expectations.model().get_expectations(test_file)
+
+    def _needs_servers(self, test_names):
+        return any(self._test_requires_lock(test_name) for test_name in test_names)
+
+    def _rename_results_folder(self):
+        try:
+            timestamp = time.strftime(
+                "%Y-%m-%d-%H-%M-%S", time.localtime(self._filesystem.mtime(self._filesystem.join(self._results_directory, "results.html"))))
+        except (IOError, OSError), e:
+            # It might be possible that results.html was not generated in previous run, because the test
+            # run was interrupted even before testing started. In those cases, don't archive the folder.
+            # Simply override the current folder contents with new results.
+            import errno
+            if e.errno == errno.EEXIST or e.errno == errno.ENOENT:
+                self._printer.write_update("No results.html file found in previous run, skipping it.")
+            return None
+        archived_name = ''.join((self._filesystem.basename(self._results_directory), "_", timestamp))
+        archived_path = self._filesystem.join(self._filesystem.dirname(self._results_directory), archived_name)
+        self._filesystem.move(self._results_directory, archived_path)
+
+    def _delete_dirs(self, dir_list):
+        for dir in dir_list:
+            self._filesystem.rmtree(dir)
+
+    def _limit_archived_results_count(self):
+        results_directory_path = self._filesystem.dirname(self._results_directory)
+        file_list = self._filesystem.listdir(results_directory_path)
+        results_directories = []
+        for dir in file_list:
+            file_path = self._filesystem.join(results_directory_path, dir)
+            if self._filesystem.isdir(file_path) and self._results_directory in file_path:
+                results_directories.append(file_path)
+        results_directories.sort(key=lambda x: self._filesystem.mtime(x))
+        self._printer.write_update("Clobbering excess archived results in %s" % results_directory_path)
+        self._delete_dirs(results_directories[:-self.ARCHIVED_RESULTS_LIMIT])
+
+    def _set_up_run(self, test_names):
+        self._printer.write_update("Checking build ...")
+        if self._options.build:
+            exit_code = self._port.check_build(self._needs_servers(test_names), self._printer)
+            if exit_code:
+                _log.error("Build check failed")
+                return exit_code
+
+        # This must be started before we check the system dependencies,
+        # since the helper may do things to make the setup correct.
+        if self._options.pixel_tests:
+            self._printer.write_update("Starting pixel test helper ...")
+            self._port.start_helper()
+
+        # Check that the system dependencies (themes, fonts, ...) are correct.
+        if not self._options.nocheck_sys_deps:
+            self._printer.write_update("Checking system dependencies ...")
+            exit_code = self._port.check_sys_deps(self._needs_servers(test_names))
+            if exit_code:
+                self._port.stop_helper()
+                return exit_code
+
+        if self._options.clobber_old_results:
+            self._clobber_old_results()
+        elif self._filesystem.exists(self._results_directory):
+            self._limit_archived_results_count()
+            # Rename the existing results folder for archiving.
+            self._rename_results_folder()
+
+        # Create the output directory if it doesn't already exist.
+        self._port.host.filesystem.maybe_make_directory(self._results_directory)
+
+        self._port.setup_test_run()
+        return test_run_results.OK_EXIT_STATUS
 
     def _run_tests(self, tests_to_run, tests_to_skip, repeat_each, iterations,
                    num_workers, retry_attempt=0):
