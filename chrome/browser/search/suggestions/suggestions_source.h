@@ -18,10 +18,6 @@
 class Profile;
 class SkBitmap;
 
-namespace base {
-class RefCountedMemory;
-}  // namespace base
-
 namespace suggestions {
 
 // SuggestionsSource renders a webpage to list SuggestionsService data.
@@ -46,19 +42,16 @@ class SuggestionsSource : public content::URLDataSource {
   // Container for the state of a request.
   struct RequestContext {
     RequestContext(
+        bool is_refresh_in,
         const suggestions::SuggestionsProfile& suggestions_profile_in,
         const content::URLDataSource::GotDataCallback& callback_in);
     ~RequestContext();
 
+    const bool is_refresh;
     const suggestions::SuggestionsProfile suggestions_profile;
     const content::URLDataSource::GotDataCallback callback;
     std::map<GURL, std::string> base64_encoded_pngs;
   };
-
-  // Callback for suggestions from SuggestionsService.
-  void OnSuggestionsAvailable(
-      const content::URLDataSource::GotDataCallback& callback,
-      const SuggestionsProfile& suggestions_profile);
 
   // Callback for responses from each Thumbnail request.
   void OnThumbnailAvailable(RequestContext* context, base::Closure barrier,
