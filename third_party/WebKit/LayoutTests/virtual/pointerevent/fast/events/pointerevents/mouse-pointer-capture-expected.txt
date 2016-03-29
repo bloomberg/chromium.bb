@@ -6,10 +6,10 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
  ======= Set pointer capture and release implicitly  =======
     **** Move to green box & mouse press & jiggle ***** 
 green received pointerover
-green received mouseover
 grey received pointerenter
-grey received mouseenter
 green received pointerenter
+green received mouseover
+grey received mouseenter
 green received mouseenter
 green received pointermove
 green received mousemove
@@ -21,10 +21,10 @@ green received pointermove
 green received mousemove
     **** Move to grey box & jiggle ***** 
 green received pointerout
-green received mouseout
 green received pointerleave
-green received mouseleave
 grey received pointerleave
+green received mouseout
+green received mouseleave
 grey received mouseleave
 green received pointermove
 green received mousemove
@@ -39,18 +39,18 @@ green received pointermove
 green received mousemove
     **** Move back to green & again to blue & mouse release ***** 
 green received pointerover
-green received mouseover
 grey received pointerenter
-grey received mouseenter
 green received pointerenter
+green received mouseover
+grey received mouseenter
 green received mouseenter
 green received pointermove
 green received mousemove
 green received pointerout
-green received mouseout
 green received pointerleave
-green received mouseleave
 grey received pointerleave
+green received mouseout
+green received mouseleave
 grey received mouseleave
 green received pointermove
 green received mousemove
@@ -59,24 +59,24 @@ green received mouseup
     **** Jiggle in blue box ***** 
 green received lostpointercapture
 blue received pointerover
-blue received mouseover
 blue received pointerenter
+blue received mouseover
 blue received mouseenter
 blue received pointermove
 blue received mousemove
     **** Move to (0,0) ***** 
 blue received pointerout
-blue received mouseout
 blue received pointerleave
+blue received mouseout
 blue received mouseleave
 
  ======= Set pointer capture and release implicitly outside of the page =======
     **** Move to green box & mouse press & jiggle ***** 
 green received pointerover
-green received mouseover
 grey received pointerenter
-grey received mouseenter
 green received pointerenter
+green received mouseover
+grey received mouseenter
 green received mouseenter
 green received pointermove
 green received mousemove
@@ -88,10 +88,10 @@ green received pointermove
 green received mousemove
     **** Move to grey box & jiggle ***** 
 green received pointerout
-green received mouseout
 green received pointerleave
-green received mouseleave
 grey received pointerleave
+green received mouseout
+green received mouseleave
 grey received mouseleave
 green received pointermove
 green received mousemove
@@ -105,24 +105,24 @@ green received pointermove
 green received mousemove
 green received lostpointercapture
 blue received pointerover
-blue received mouseover
 blue received pointerenter
+blue received mouseover
 blue received mouseenter
 blue received pointermove
 blue received mousemove
     **** Move to (0,0) ***** 
 blue received pointerout
-blue received mouseout
 blue received pointerleave
+blue received mouseout
 blue received mouseleave
 
  ======= Set pointer capture and release explicitly  =======
     **** Move to green box & mouse press & jiggle ***** 
 green received pointerover
-green received mouseover
 grey received pointerenter
-grey received mouseenter
 green received pointerenter
+green received mouseover
+grey received mouseenter
 green received mouseenter
 green received pointermove
 green received mousemove
@@ -134,10 +134,10 @@ green received pointermove
 green received mousemove
     **** Move to grey box & jiggle ***** 
 green received pointerout
-green received mouseout
 green received pointerleave
-green received mouseleave
 grey received pointerleave
+green received mouseout
+green received mouseleave
 grey received mouseleave
 green received pointermove
 green received mousemove
@@ -149,8 +149,8 @@ green received pointermove
 green received mousemove
 green received lostpointercapture
 blue received pointerover
-blue received mouseover
 blue received pointerenter
+blue received mouseover
 blue received mouseenter
 blue received pointermove
 blue received mousemove
@@ -158,26 +158,26 @@ blue received pointermove
 blue received mousemove
     **** Move back to green & again to blue & mouse release ***** 
 blue received pointerout
-blue received mouseout
 blue received pointerleave
-blue received mouseleave
 green received pointerover
-green received mouseover
 grey received pointerenter
-grey received mouseenter
 green received pointerenter
+blue received mouseout
+blue received mouseleave
+green received mouseover
+grey received mouseenter
 green received mouseenter
 green received pointermove
 green received mousemove
 green received pointerout
-green received mouseout
 green received pointerleave
-green received mouseleave
 grey received pointerleave
-grey received mouseleave
 blue received pointerover
-blue received mouseover
 blue received pointerenter
+green received mouseout
+green received mouseleave
+grey received mouseleave
+blue received mouseover
 blue received mouseenter
 blue received pointermove
 blue received mousemove
@@ -188,17 +188,17 @@ blue received pointermove
 blue received mousemove
     **** Move to (0,0) ***** 
 blue received pointerout
-blue received mouseout
 blue received pointerleave
+blue received mouseout
 blue received mouseleave
 
  ======= Set pointer capture and remove element  =======
     **** Move to green box & mouse press & jiggle ***** 
 green received pointerover
-green received mouseover
 grey received pointerenter
-grey received mouseenter
 green received pointerenter
+green received mouseover
+grey received mouseenter
 green received mouseenter
 green received pointermove
 green received mousemove
@@ -210,10 +210,10 @@ green received pointermove
 green received mousemove
     **** Move to grey box & jiggle ***** 
 green received pointerout
-green received mouseout
 green received pointerleave
-green received mouseleave
 grey received pointerleave
+green received mouseout
+green received mouseleave
 grey received mouseleave
 green received pointermove
 green received mousemove
@@ -225,8 +225,8 @@ green received pointermove
 green received mousemove
 document received lostpointercapture
 blue received pointerover
-blue received mouseover
 blue received pointerenter
+blue received mouseover
 blue received mouseenter
 blue received pointermove
 blue received mousemove
@@ -234,22 +234,22 @@ blue received pointermove
 blue received mousemove
     **** Move back to green & again to blue & mouse release ***** 
 blue received pointerout
-blue received mouseout
 blue received pointerleave
-blue received mouseleave
 grey received pointerover
-grey received mouseover
 grey received pointerenter
+blue received mouseout
+blue received mouseleave
+grey received mouseover
 grey received mouseenter
 grey received pointermove
 grey received mousemove
 grey received pointerout
-grey received mouseout
 grey received pointerleave
-grey received mouseleave
 blue received pointerover
-blue received mouseover
 blue received pointerenter
+grey received mouseout
+grey received mouseleave
+blue received mouseover
 blue received mouseenter
 blue received pointermove
 blue received mousemove
@@ -260,8 +260,8 @@ blue received pointermove
 blue received mousemove
     **** Move to (0,0) ***** 
 blue received pointerout
-blue received mouseout
 blue received pointerleave
+blue received mouseout
 blue received mouseleave
 PASS successfullyParsed is true
 

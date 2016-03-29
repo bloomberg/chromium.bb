@@ -29,7 +29,8 @@ public:
         PassRefPtrWillBeRawPtr<Node>, const AtomicString& type,
         int clickCount, const PlatformMouseEvent&,
         PassRefPtrWillBeRawPtr<Node> relatedTarget,
-        PassRefPtrWillBeRawPtr<AbstractView>);
+        PassRefPtrWillBeRawPtr<AbstractView>,
+        PassRefPtrWillBeRawPtr<Node> lastNodeUnderMouse);
 
     // Returns whether the event is consumed or not
     WebInputEventResult sendTouchPointerEvent(
@@ -41,18 +42,25 @@ public:
     void sendTouchCancelPointerEvent(PassRefPtrWillBeRawPtr<EventTarget>,
         const PlatformTouchPoint&);
 
-    // Sends node transition events (pointer|mouse)(out|leave|over|enter) to the corresponding targets
-    void sendNodeTransitionEvents(PassRefPtrWillBeRawPtr<Node> exitedNode,
+    // Sends node transition events mouseout/leave/over/enter to the
+    // corresponding targets. This function sends pointerout/leave/over/enter
+    // only when isFrameBoundaryTransition is true which indicates the
+    // transition is over the document boundary and not only the elements border
+    // inside the document. If isFrameBoundaryTransition is false,
+    // then the event is a compatibility event like those created by touch
+    // and in that case the corresponding pointer events will be handled by
+    // sendTouchPointerEvent for example and there is no need to send pointer
+    // transition events. Note that normal mouse events (e.g. mousemove/down/up)
+    // and their corresponding transition events will be handled altogether by
+    // sendMousePointerEvent function.
+    void sendMouseAndPossiblyPointerNodeTransitionEvents(
+        PassRefPtrWillBeRawPtr<Node> exitedNode,
         PassRefPtrWillBeRawPtr<Node> enteredNode,
         const PlatformMouseEvent&,
-        PassRefPtrWillBeRawPtr<AbstractView>);
+        PassRefPtrWillBeRawPtr<AbstractView>, bool isFrameBoundaryTransition);
 
     // Clear all the existing ids.
     void clear();
-
-    // May clear PREVENT MOUSE EVENT flag as per pointer event spec:
-    // https://w3c.github.io/pointerevents/#compatibility-mapping-with-mouse-events
-    void conditionallyEnableMouseEventForPointerTypeMouse(unsigned);
 
     void elementRemoved(EventTarget*);
     void setPointerCapture(int, EventTarget*);
@@ -86,12 +94,29 @@ private:
         const PlatformMouseEvent& = PlatformMouseEvent(),
         bool sendMouseEvent = false);
     void setNodeUnderPointer(PassRefPtrWillBeRawPtr<PointerEvent>,
-        PassRefPtrWillBeRawPtr<EventTarget>);
-    void processPendingPointerCapture(
+        PassRefPtrWillBeRawPtr<EventTarget>, bool sendEvent = true);
+
+    // Returns whether the pointer capture is changed. In this case this
+    // function will take care of transition events and setNodeUnderPointer
+    // should not send transition events.
+    bool processPendingPointerCapture(
         const PassRefPtrWillBeRawPtr<PointerEvent>,
         const PassRefPtrWillBeRawPtr<EventTarget>,
         const PlatformMouseEvent& = PlatformMouseEvent(),
         bool sendMouseEvent = false);
+
+    // Processes the capture state of a pointer, updates node under
+    // pointer, and sends corresponding transition events for pointer if
+    // setPointerPosition is true. It also sends corresponding transition events
+    // for mouse if sendMouseEvent is true.
+    void processCaptureAndPositionOfPointerEvent(
+        const PassRefPtrWillBeRawPtr<PointerEvent>,
+        const PassRefPtrWillBeRawPtr<EventTarget> hitTestTarget,
+        const PassRefPtrWillBeRawPtr<EventTarget> lastNodeUnderMouse = nullptr,
+        const PlatformMouseEvent& = PlatformMouseEvent(),
+        bool sendMouseEvent = false,
+        bool setPointerPosition = true);
+
     void removeTargetFromPointerCapturingMapping(
         PointerCapturingMap&, const EventTarget*);
     PassRefPtrWillBeRawPtr<EventTarget> getEffectiveTargetForPointerEvent(

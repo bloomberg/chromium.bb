@@ -1,16 +1,16 @@
-CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
-CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
-CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
-CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
-CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
-CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
-CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
-CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
-CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
-CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
-CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
-CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
-CONSOLE ERROR: line 63: Uncaught TypeError: Cannot read property 'type' of null
+CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
+CONSOLE ERROR: line 67: Uncaught TypeError: Cannot read property 'type' of undefined
 Verifies that pointer event parameters are correct when fired for mouse events.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -18,360 +18,360 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 --- move mouse into target ---
 Received mouseover
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerover. Threw exception TypeError: Cannot read property 'type' of null
+FAIL lastPointerEvents.length should be 2. Was 0.
+FAIL lastPointerEvents[0].type should be pointerover. Threw exception TypeError: Cannot read property 'type' of undefined
 Received mouseenter
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerenter. Threw exception TypeError: Cannot read property 'type' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerenter. Threw exception TypeError: Cannot read property 'type' of undefined
 Received mousemove
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointermove. Threw exception TypeError: Cannot read property 'type' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointermove. Threw exception TypeError: Cannot read property 'type' of undefined
 
 --- move within target ---
 Received mousemove
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointermove. Threw exception TypeError: Cannot read property 'type' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointermove. Threw exception TypeError: Cannot read property 'type' of undefined
 Received mousemove
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointermove. Threw exception TypeError: Cannot read property 'type' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointermove. Threw exception TypeError: Cannot read property 'type' of undefined
 
 --- click each button ---
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
 
 --- click with each modifier ---
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mousedown
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerdown. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 Received mouseup
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerup. Threw exception TypeError: Cannot read property 'type' of null
-FAIL lastPointerEvent.getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of null
-FAIL lastPointerEvent.getModifierState('Symbol'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerup. Threw exception TypeError: Cannot read property 'type' of undefined
+FAIL lastPointerEvents[0].getModifierState('Control'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Shift'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Meta'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Alt'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('AltGraph'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('OS'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Fn'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('CapsLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('ScrollLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('NumLock'); should be false. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
+FAIL lastPointerEvents[0].getModifierState('Symbol'); should be true. Threw exception TypeError: Cannot read property 'getModifierState' of undefined
 
 --- move mouse out of target ---
 Received mouseout
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerout. Threw exception TypeError: Cannot read property 'type' of null
+FAIL lastPointerEvents.length should be 2. Was 0.
+FAIL lastPointerEvents[0].type should be pointerout. Threw exception TypeError: Cannot read property 'type' of undefined
 Received mouseleave
-FAIL lastPointerEvent should be non-null. Was null
-FAIL lastPointerEvent.type should be pointerleave. Threw exception TypeError: Cannot read property 'type' of null
+FAIL lastPointerEvents.length should be 1. Was 0.
+FAIL lastPointerEvents[0].type should be pointerleave. Threw exception TypeError: Cannot read property 'type' of undefined
 FAIL successfullyParsed should be true. Was false.
 
 TEST COMPLETE

@@ -19,7 +19,7 @@ description("Verifies that pointer event parameters are correct when fired for m
 
 var testEventList = ["mouseenter", "mouseleave", "mouseover", "mouseout", "mouseup", "mousedown", "mousemove",
                    "pointerenter", "pointerleave", "pointerover", "pointerout", "pointerup", "pointerdown", "pointermove"];
-var lastPointerEvent = null;
+var lastPointerEvents = [];
 
 var checkKeyModifiers = false;
 
@@ -53,24 +53,28 @@ function init() {
       debug("Received " + event.type);
 
       if (event.type.startsWith("pointer"))
-        lastPointerEvent = event;
+        lastPointerEvents.push(event);
       else {
-        shouldBeNonNull("lastPointerEvent");
-        shouldBeEqualToString("lastPointerEvent.type", event.type.replace("mouse", "pointer"));
+        if (event.type == "mouseout" || event.type == "mouseover") {
+          shouldBeEqualToNumber("lastPointerEvents.length", 2);
+        } else {
+          shouldBeEqualToNumber("lastPointerEvents.length", 1);
+        }
+        shouldBeEqualToString("lastPointerEvents[0].type", event.type.replace("mouse", "pointer"));
 
         if (!checkKeyModifiers) {
 
-          if (lastPointerEvent.type=="pointerenter" || lastPointerEvent.type=="pointerleave") {
-            shouldBeFalse("lastPointerEvent.bubbles");
-            shouldBeFalse("lastPointerEvent.cancelable");
+          if (lastPointerEvents[0].type=="pointerenter" || lastPointerEvents[0].type=="pointerleave") {
+            shouldBeFalse("lastPointerEvents[0].bubbles");
+            shouldBeFalse("lastPointerEvents[0].cancelable");
           } else {
-            shouldBeTrue("lastPointerEvent.bubbles");
-            shouldBeTrue("lastPointerEvent.cancelable");
+            shouldBeTrue("lastPointerEvents[0].bubbles");
+            shouldBeTrue("lastPointerEvents[0].cancelable");
           }
 
-          shouldBeEqualToNumber("lastPointerEvent.pointerId", 1);
-          shouldBeEqualToString("lastPointerEvent.pointerType", "mouse");
-          shouldBeTrue("lastPointerEvent.isPrimary");
+          shouldBeEqualToNumber("lastPointerEvents[0].pointerId", 1);
+          shouldBeEqualToString("lastPointerEvents[0].pointerType", "mouse");
+          shouldBeTrue("lastPointerEvents[0].isPrimary");
 
           numericAttributes.forEach(function(attribute) {
             var expectedValue = eval("event." + attribute);
@@ -82,7 +86,7 @@ function init() {
               else
                 expectedValue = 0.5;
             }
-            shouldBeEqualToNumber("lastPointerEvent." + attribute, expectedValue);
+            shouldBeEqualToNumber("lastPointerEvents[0]." + attribute, expectedValue);
           });
 
         } else {
@@ -90,14 +94,14 @@ function init() {
           forEachModifier(function(attr, modifierName) {
             var getModifierStateStr = ".getModifierState('" + modifierName + "');"
             if (eval("event" + getModifierStateStr))
-              shouldBeTrue("lastPointerEvent" + getModifierStateStr);
+              shouldBeTrue("lastPointerEvents[0]" + getModifierStateStr);
             else
-              shouldBeFalse("lastPointerEvent" + getModifierStateStr);
+              shouldBeFalse("lastPointerEvents[0]" + getModifierStateStr);
           });
 
         }
 
-        lastPointerEvent = null;
+        lastPointerEvents.splice(0, 1);
       }
     });
 

@@ -310,7 +310,9 @@ private:
 
     void invalidateClick();
 
-    void updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
+    PassRefPtrWillBeRawPtr<Node> updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
+    void updateMouseEventTargetNodeAndSendEvents(Node*, const PlatformMouseEvent&, bool isFrameBoundaryTransition = false);
+
 
     MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&, const PlatformMouseEvent&);
 

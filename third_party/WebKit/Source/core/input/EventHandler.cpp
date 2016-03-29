@@ -1140,9 +1140,6 @@ WebInputEventResult EventHandler::handleMouseMoveEvent(const PlatformMouseEvent&
 {
     TRACE_EVENT0("blink", "EventHandler::handleMouseMoveEvent");
 
-    m_pointerEventManager.conditionallyEnableMouseEventForPointerTypeMouse(
-        event.getModifiers());
-
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
 
     HitTestResult hoveredNode = HitTestResult();
@@ -1169,9 +1166,6 @@ WebInputEventResult EventHandler::handleMouseMoveEvent(const PlatformMouseEvent&
 void EventHandler::handleMouseLeaveEvent(const PlatformMouseEvent& event)
 {
     TRACE_EVENT0("blink", "EventHandler::handleMouseLeaveEvent");
-
-    m_pointerEventManager.conditionallyEnableMouseEventForPointerTypeMouse(
-        event.getModifiers());
 
     RefPtrWillBeRawPtr<FrameView> protector(m_frame->view());
     handleMouseMoveOrLeaveEvent(event, 0, false, true);
@@ -1257,9 +1251,9 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(const PlatformMous
 
     if (newSubframe) {
         // Update over/out state before passing the event to the subframe.
-        updateMouseEventTargetNode(mev.innerNode(), mev.event());
+        updateMouseEventTargetNodeAndSendEvents(mev.innerNode(), mev.event(), true);
 
-        // Event dispatch in updateMouseEventTargetNode may have caused the subframe of the target
+        // Event dispatch in updateMouseEventTargetNodeAndSendEvents may have caused the subframe of the target
         // node to be detached from its FrameView, in which case the event should not be passed.
         if (newSubframe->view())
             eventResult = passMouseMoveEventToSubframe(mev, newSubframe.get(), hoveredNode);
@@ -1354,10 +1348,6 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
 
     WebInputEventResult eventResult = updatePointerTargetAndDispatchEvents(EventTypeNames::mouseup, mev.innerNode(), m_clickCount, mev.event());
 
-    // TODO(crbug/545647): This state should reset with pointercancel too.
-    m_pointerEventManager.conditionallyEnableMouseEventForPointerTypeMouse(
-        mouseEvent.getModifiers());
-
     bool contextMenuEvent = mouseEvent.button() == RightButton;
 #if OS(MACOSX)
     // FIXME: The Mac port achieves the same behavior by checking whether the context menu is currently open in WebPage::mouseEvent(). Consider merging the implementations.
@@ -1381,7 +1371,7 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(const PlatformMouseEve
         if (Node* clickTargetNode = mev.innerNode()->commonAncestor(
             *m_clickNode, parentForClickEvent)) {
 
-            // Dispatch mouseup directly w/o calling updateMouseEventTargetNode
+            // Dispatch mouseup directly w/o calling updateMouseEventTargetNodeAndSendEvents
             // because the mouseup dispatch above has already updated it
             // correctly. Moreover, clickTargetNode is different from
             // mev.innerNode at drag-release.
@@ -1596,7 +1586,8 @@ MouseEventWithHitTestResults EventHandler::prepareMouseEvent(const HitTestReques
     return m_frame->document()->prepareMouseEvent(request, contentPointFromRootFrame(m_frame, mev.position()), mev);
 }
 
-void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMouseEvent& mouseEvent)
+PassRefPtrWillBeRawPtr<Node> EventHandler::updateMouseEventTargetNode(Node* targetNode,
+    const PlatformMouseEvent& mouseEvent)
 {
     Node* result = targetNode;
 
@@ -1644,13 +1635,21 @@ void EventHandler::updateMouseEventTargetNode(Node* targetNode, const PlatformMo
         m_lastScrollbarUnderMouse = nullptr;
     }
 
-    m_pointerEventManager.sendNodeTransitionEvents(lastNodeUnderMouse,
-        m_nodeUnderMouse, mouseEvent, m_frame->document()->domWindow());
+    return lastNodeUnderMouse;
+}
+
+void EventHandler::updateMouseEventTargetNodeAndSendEvents(Node* targetNode,
+    const PlatformMouseEvent& mouseEvent, bool isFrameBoundaryTransition)
+{
+    RefPtrWillBeRawPtr<Node> lastNodeUnderMouse = updateMouseEventTargetNode(targetNode, mouseEvent);
+    m_pointerEventManager.sendMouseAndPossiblyPointerNodeTransitionEvents(
+        lastNodeUnderMouse, m_nodeUnderMouse, mouseEvent,
+        m_frame->document()->domWindow(), isFrameBoundaryTransition);
 }
 
 WebInputEventResult EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targetNode, int clickCount, const PlatformMouseEvent& mouseEvent)
 {
-    updateMouseEventTargetNode(targetNode, mouseEvent);
+    updateMouseEventTargetNodeAndSendEvents(targetNode, mouseEvent);
     if (!m_nodeUnderMouse)
         return WebInputEventResult::NotHandled;
 
@@ -1686,13 +1685,11 @@ WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(const Ato
         || mouseEventType == EventTypeNames::mousemove
         || mouseEventType == EventTypeNames::mouseup);
 
-    updateMouseEventTargetNode(targetNode, mouseEvent);
-    if (!m_nodeUnderMouse)
-        return WebInputEventResult::NotHandled;
+    RefPtrWillBeRawPtr<Node> lastNodeUnderMouse = updateMouseEventTargetNode(targetNode, mouseEvent);
 
     return m_pointerEventManager.sendMousePointerEvent(
         m_nodeUnderMouse, mouseEventType, clickCount, mouseEvent, nullptr,
-        m_frame->document()->domWindow());
+        m_frame->document()->domWindow(), lastNodeUnderMouse);
 }
 
 WebInputEventResult EventHandler::handleMouseFocus(const MouseEventWithHitTestResults& targetedEvent, InputDeviceCapabilities* sourceCapabilities)
@@ -2651,14 +2648,14 @@ void EventHandler::updateGestureTargetNodeForMouseEvent(const GestureEventWithHi
     size_t indexExitedFrameChain = exitedFrameChain.size();
     while (indexExitedFrameChain) {
         LocalFrame* leaveFrame = exitedFrameChain[--indexExitedFrameChain];
-        leaveFrame->eventHandler().updateMouseEventTargetNode(nullptr, fakeMouseMove);
+        leaveFrame->eventHandler().updateMouseEventTargetNodeAndSendEvents(nullptr, fakeMouseMove);
     }
 
     // update the mouseover/mouseenter event
     while (indexEnteredFrameChain) {
         Frame* parentFrame = enteredFrameChain[--indexEnteredFrameChain]->tree().parent();
         if (parentFrame && parentFrame->isLocalFrame())
-            toLocalFrame(parentFrame)->eventHandler().updateMouseEventTargetNode(toHTMLFrameOwnerElement(enteredFrameChain[indexEnteredFrameChain]->owner()), fakeMouseMove);
+            toLocalFrame(parentFrame)->eventHandler().updateMouseEventTargetNodeAndSendEvents(toHTMLFrameOwnerElement(enteredFrameChain[indexEnteredFrameChain]->owner()), fakeMouseMove);
     }
 }
 
