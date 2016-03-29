@@ -21,32 +21,35 @@ generate_resource_rewriter("glue_resource_rewriter") {
   package_name = "com.android.webview.chromium"
 }
 
-android_library("glue") {
-  # Change deps? please modify glue_library_deps variable.
-  deps = glue_library_deps
-  srcjar_deps = [ ":glue_resource_rewriter" ]
+if (!defined(use_webview_internal_framework) ||
+    !use_webview_internal_framework) {
+  android_library("glue") {
+    # Change deps? please modify glue_library_deps variable.
+    deps = glue_library_deps
+    srcjar_deps = [ ":glue_resource_rewriter" ]
 
-  alternative_android_sdk_ijar = webview_framework_ijar
-  alternative_android_sdk_ijar_dep = "//android_webview/glue:framework_ijar"
+    alternative_android_sdk_ijar = webview_framework_ijar
+    alternative_android_sdk_ijar_dep = "//android_webview/glue:framework_ijar"
 
-  java_files = [
-    "java/src/com/android/webview/chromium/ContentSettingsAdapter.java",
-    "java/src/com/android/webview/chromium/CookieManagerAdapter.java",
-    "java/src/com/android/webview/chromium/DrawGLFunctor.java",
-    "java/src/com/android/webview/chromium/GeolocationPermissionsAdapter.java",
-    "java/src/com/android/webview/chromium/GraphicsUtils.java",
-    "java/src/com/android/webview/chromium/LicenseActivity.java",
-    "java/src/com/android/webview/chromium/LicenseContentProvider.java",
-    "java/src/com/android/webview/chromium/ResourcesContextWrapperFactory.java",
-    "java/src/com/android/webview/chromium/WebBackForwardListChromium.java",
-    "java/src/com/android/webview/chromium/WebHistoryItemChromium.java",
-    "java/src/com/android/webview/chromium/WebIconDatabaseAdapter.java",
-    "java/src/com/android/webview/chromium/WebMessagePortAdapter.java",
-    "java/src/com/android/webview/chromium/WebStorageAdapter.java",
-    "java/src/com/android/webview/chromium/WebViewChromiumFactoryProvider.java",
-    "java/src/com/android/webview/chromium/WebViewChromium.java",
-    "java/src/com/android/webview/chromium/WebViewContentsClientAdapter.java",
-    "java/src/com/android/webview/chromium/WebViewDatabaseAdapter.java",
-    "java/src/com/android/webview/chromium/WebViewDelegateFactory.java",
-  ]
+    java_files = [
+      "java/src/com/android/webview/chromium/ContentSettingsAdapter.java",
+      "java/src/com/android/webview/chromium/CookieManagerAdapter.java",
+      "java/src/com/android/webview/chromium/DrawGLFunctor.java",
+      "java/src/com/android/webview/chromium/GeolocationPermissionsAdapter.java",
+      "java/src/com/android/webview/chromium/GraphicsUtils.java",
+      "java/src/com/android/webview/chromium/LicenseActivity.java",
+      "java/src/com/android/webview/chromium/LicenseContentProvider.java",
+      "java/src/com/android/webview/chromium/ResourcesContextWrapperFactory.java",
+      "java/src/com/android/webview/chromium/WebBackForwardListChromium.java",
+      "java/src/com/android/webview/chromium/WebHistoryItemChromium.java",
+      "java/src/com/android/webview/chromium/WebIconDatabaseAdapter.java",
+      "java/src/com/android/webview/chromium/WebMessagePortAdapter.java",
+      "java/src/com/android/webview/chromium/WebStorageAdapter.java",
+      "java/src/com/android/webview/chromium/WebViewChromiumFactoryProvider.java",
+      "java/src/com/android/webview/chromium/WebViewChromium.java",
+      "java/src/com/android/webview/chromium/WebViewContentsClientAdapter.java",
+      "java/src/com/android/webview/chromium/WebViewDatabaseAdapter.java",
+      "java/src/com/android/webview/chromium/WebViewDelegateFactory.java",
+    ]
+  }
 }
