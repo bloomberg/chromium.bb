@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
@@ -37,6 +38,7 @@
 #include "ui/ozone/platform/drm/host/drm_overlay_manager.h"
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
+#include "ui/ozone/platform/drm/mus_thread_proxy.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
@@ -76,8 +78,9 @@ class GlApiLoader {
 
 // Returns true if we should operate in Mus mode.
 bool RunningInsideMus() {
-  // TODO(rjkroege): Implement.
-  return false;
+  bool has_channel_handle = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      "mojo-platform-channel-handle");
+  return has_channel_handle;
 }
 
 class OzonePlatformGbm : public OzonePlatform {
@@ -110,10 +113,15 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<PlatformWindow> CreatePlatformWindow(
       PlatformWindowDelegate* delegate,
       const gfx::Rect& bounds) override {
+    GpuThreadAdapter* adapter = gpu_platform_support_host_.get();
+    if (RunningInsideMus()) {
+      DCHECK(drm_thread_) << "drm_thread_ should exist (and be running) here.";
+      adapter = mus_thread_proxy_.get();
+    }
+
     scoped_ptr<DrmWindowHost> platform_window(new DrmWindowHost(
-        delegate, bounds, gpu_platform_support_host_.get(),
-        event_factory_ozone_.get(), cursor_.get(), window_manager_.get(),
-        display_manager_.get(), overlay_manager_.get()));
+        delegate, bounds, adapter, event_factory_ozone_.get(), cursor_.get(),
+        window_manager_.get(), display_manager_.get(), overlay_manager_.get()));
     platform_window->Initialize();
     return std::move(platform_window);
   }
@@ -138,8 +146,9 @@ class OzonePlatformGbm : public OzonePlatform {
 
     GpuThreadAdapter* adapter;
     if (RunningInsideMus()) {
-      NOTIMPLEMENTED();
-      adapter = 0;
+      gl_api_loader_.reset(new GlApiLoader());
+      mus_thread_proxy_.reset(new MusThreadProxy());
+      adapter = mus_thread_proxy_.get();
     } else {
       gpu_platform_support_host_.reset(
           new DrmGpuPlatformSupportHost(cursor_.get()));
@@ -154,15 +163,16 @@ class OzonePlatformGbm : public OzonePlatform {
         new DrmOverlayManager(adapter, window_manager_.get()));
 
     if (RunningInsideMus()) {
-      NOTIMPLEMENTED();
+      mus_thread_proxy_->ProvideManagers(display_manager_.get(),
+                                         overlay_manager_.get());
     }
   }
 
   void InitializeGPU() override {
     InterThreadMessagingProxy* itmp;
     if (RunningInsideMus()) {
-      NOTIMPLEMENTED();
-      itmp = 0;
+      DCHECK(mus_thread_proxy_);
+      itmp = mus_thread_proxy_.get();
     } else {
       gl_api_loader_.reset(new GlApiLoader());
       scoped_refptr<DrmThreadMessageProxy> message_proxy(
@@ -178,7 +188,7 @@ class OzonePlatformGbm : public OzonePlatform {
 
     surface_factory_.reset(new GbmSurfaceFactory(drm_thread_.get()));
     if (RunningInsideMus()) {
-      NOTIMPLEMENTED();
+      mus_thread_proxy_->StartDrmThread();
     }
   }
 
@@ -198,6 +208,9 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_ptr<DrmGpuPlatformSupportHost> gpu_platform_support_host_;
   scoped_ptr<DrmDisplayHostManager> display_manager_;
   scoped_ptr<DrmOverlayManager> overlay_manager_;
+
+  // Bridges the DRM, GPU and main threads in mus.
+  scoped_ptr<MusThreadProxy> mus_thread_proxy_;
 
 #if defined(USE_XKBCOMMON)
   XkbEvdevCodes xkb_evdev_code_converter_;

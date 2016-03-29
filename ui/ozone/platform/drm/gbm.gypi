@@ -149,6 +149,8 @@
         'host/drm_window_host_manager.h',
         'host/gpu_thread_adapter.h',
         'host/gpu_thread_observer.h',
+        'mus_thread_proxy.cc',
+        'mus_thread_proxy.h',
         'ozone_platform_gbm.cc',
         'ozone_platform_gbm.h',
       ],
