@@ -292,6 +292,13 @@ Tag: v1.1.4
 Revision: 5dcf21d5f7c13bafa24122c73aac28bd86213191
 Tree link: https://github.com/PolymerElements/paper-item/tree/v1.1.4
 
+Name: paper-listbox
+Version: 1.1.2
+Repository: git://github.com/polymerelements/paper-listbox.git
+Tag: v1.1.2
+Revision: b0fde50f57db3e8e4926e9d046be9d3c159a2bff
+Tree link: https://github.com/polymerelements/paper-listbox/tree/v1.1.2
+
 Name: paper-material
 Version: 1.0.6
 Repository: git://github.com/PolymerElements/paper-material.git

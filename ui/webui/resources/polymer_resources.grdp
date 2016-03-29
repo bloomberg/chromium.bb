@@ -545,6 +545,12 @@
   <structure name="IDR_POLYMER_1_0_PAPER_ITEM_PAPER_ITEM_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-item/paper-item.html"
              type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_LISTBOX_PAPER_LISTBOX_EXTRACTED_JS"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-listbox/paper-listbox-extracted.js"
+             type="chrome_html" />
+  <structure name="IDR_POLYMER_1_0_PAPER_LISTBOX_PAPER_LISTBOX_HTML"
+             file="../../../third_party/polymer/v1_0/components-chromium/paper-listbox/paper-listbox.html"
+             type="chrome_html" />
   <structure name="IDR_POLYMER_1_0_PAPER_MATERIAL_PAPER_MATERIAL_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/paper-material/paper-material-extracted.js"
              type="chrome_html" />
