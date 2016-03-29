@@ -1,19 +1,20 @@
 <html>
-<a id='link' href="javascript:document.getElementById('plg').webkitRequestFullScreen()">go
+<a id='link' href="javascript:document.querySelector('embed').webkitRequestFullScreen()">go
 fullscreen</a>
 <p>
 There should only be one ALERT. If there were two, the plugin was reloaded
 during the transition to fullscreen.
 </p>
-<embed id="plg" type="application/x-webkit-test-netscape" src="data:application/x-webkit-test-netscape,alertwhenloaded"></iframe>
+<embed type="application/x-blink-test-plugin"></embed>
 
 <script>
 if (window.testRunner) {
-    testRunner.dumpAsText();
     testRunner.waitUntilDone();
+    testRunner.dumpAsText();
 
-    var plugin = document.getElementById('plg');
+    var plugin = document.querySelector('embed');
     plugin.addEventListener('webkitfullscreenchange', function () {
+        internals.updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks();
         testRunner.notifyDone();
     })
     document.addEventListener('keydown', function () {

@@ -591,7 +591,6 @@ crbug.com/517840 imported/web-platform-tests/webrtc/rtcpeerconnection/rtcpeercon
 # New W3C failures (dpranke@ to triage)
 
 # Linux Aura doesn't support NPAPI plugins (yet?)
-crbug.com/318978 [ Linux ] plugins/fullscreen-plugins-dont-reload.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/refcount-leaks.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/tabindex.html [ Skip ]
 crbug.com/318978 [ Linux ] plugins/webview-plugin-scroll.html [ Skip ]
