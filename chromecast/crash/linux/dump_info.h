@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_CRASH_LINUX_DUMP_INFO_H_
 #define CHROMECAST_CRASH_LINUX_DUMP_INFO_H_
 
+#include <ctime>
 #include <string>
 
 #include "base/macros.h"
