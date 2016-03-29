@@ -5,24 +5,34 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.MultipleOfflinePageItemCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -123,6 +133,13 @@ public class OfflinePageBridgeTest {
         verify(mBridge, times(1)).nativeGetPageByOfflineId(anyLong(), eq(TEST_OFFLINE_ID));
     }
 
+    @Test(expected = AssertionError.class)
+    @Feature({"OfflinePages"})
+    public void testGetPageByClientId_ModelNotLoaded() {
+        ClientId testClientId = new ClientId("TEST_NAMESPACE", "TEST_ID");
+        Set<Long> result = mBridge.getOfflineIdsForClientId(testClientId);
+    }
+
     /**
      * Tests OfflinePageBridge#OfflinePageDeleted() callback with two observers attached.
      */
@@ -143,10 +160,135 @@ public class OfflinePageBridgeTest {
         assertEquals(testClientId, observer2.lastDeletedClientId);
     }
 
-    @Test(expected = AssertionError.class)
+    /**
+     * Tests OfflinePageBridge#GetAllPagesAsync() callback when there are no pages and model is
+     * loaded.
+     */
+    @Test
     @Feature({"OfflinePages"})
-    public void testGetPageByClientId_ModelNotLoaded() {
-        ClientId testClientId = new ClientId("TEST_NAMESPACE", "TEST_ID");
-        Set<Long> result = mBridge.getOfflineIdsForClientId(testClientId);
+    public void testGetAllPagesAsync_listOfPagesEmpty() {
+        doNothing().when(mBridge).nativeGetAllPages(anyLong(), anyListOf(OfflinePageItem.class));
+
+        mBridge.offlinePageModelLoaded();
+
+        MultipleOfflinePageItemCallback callback = createMultipleItemCallback(0);
+
+        // Pausing main looper to defer the execution of callback.  This ensures that the callback
+        // is posted to the UI thread instead of being directly invoked.
+        Robolectric.pauseMainLooper();
+        mBridge.getAllPagesAsync(callback);
+        verify(callback, times(0)).onResult(anyListOf(OfflinePageItem.class));
+
+        // Un-pausing the looper to resume execution.
+        Robolectric.unPauseMainLooper();
+        verify(callback, times(1)).onResult(anyListOf(OfflinePageItem.class));
+    }
+
+    /**
+     * Tests OfflinePageBridge#GetAllPagesAsync() callback when there are pages and model is loaded.
+     */
+    @Test
+    @Feature({"OfflinePages"})
+    public void testGetAllPagesAsync_listOfPagesNonEmpty() {
+        final int itemCount = 2;
+        doAnswer(createMultipleItemAnswer(itemCount)).when(mBridge).nativeGetAllPages(
+                anyLong(), anyListOf(OfflinePageItem.class));
+
+        mBridge.offlinePageModelLoaded();
+        MultipleOfflinePageItemCallback callback = createMultipleItemCallback(itemCount);
+
+        // Pausing main looper to defer the execution of callback.  This ensures that the callback
+        // is posted to the UI thread instead of being directly invoked.
+        Robolectric.pauseMainLooper();
+        mBridge.getAllPagesAsync(callback);
+        verify(callback, times(0)).onResult(anyListOf(OfflinePageItem.class));
+
+        // Un-pausing the looper to resume execution.
+        Robolectric.unPauseMainLooper();
+        verify(callback, times(1)).onResult(anyListOf(OfflinePageItem.class));
+    }
+
+    /**
+     * Tests OfflinePageBridge#GetAllPagesAsync() callback when there are no pages and model is
+     * not loaded.
+     */
+    @Test
+    @Feature({"OfflinePages"})
+    public void testGetAllPagesAsync_listOfPagesEmpty_modelLoadedLater() {
+        doNothing().when(mBridge).nativeGetAllPages(anyLong(), anyListOf(OfflinePageItem.class));
+
+        MultipleOfflinePageItemCallback callback = createMultipleItemCallback(0);
+        mBridge.getAllPagesAsync(callback);
+
+        Robolectric.runUiThreadTasks();
+        verify(callback, times(0)).onResult(anyListOf(OfflinePageItem.class));
+
+        postOfflinePageModelLoadedEvent();
+
+        Robolectric.runUiThreadTasks();
+        verify(callback, times(1)).onResult(anyListOf(OfflinePageItem.class));
+    }
+
+    /**
+     * Tests OfflinePageBridge#GetAllPagesAsync() callback when there are pages and model is not
+     * loaded.
+     */
+    @Test
+    @Feature({"OfflinePages"})
+    public void testGetAllPagesAsync_listOfPagesNonEmpty_modelLoadedLater() {
+        final int itemCount = 2;
+        doAnswer(createMultipleItemAnswer(itemCount)).when(mBridge).nativeGetAllPages(
+                anyLong(), anyListOf(OfflinePageItem.class));
+
+        MultipleOfflinePageItemCallback callback = createMultipleItemCallback(itemCount);
+        mBridge.getAllPagesAsync(callback);
+
+        Robolectric.runUiThreadTasks();
+        verify(callback, times(0)).onResult(anyListOf(OfflinePageItem.class));
+
+        postOfflinePageModelLoadedEvent();
+
+        Robolectric.runUiThreadTasks();
+        verify(callback, times(1)).onResult(anyListOf(OfflinePageItem.class));
+    }
+
+    /** Performs a proper cast from Object to a List<OfflinePageItem>. */
+    private static List<OfflinePageItem> convertToListOfOfflinePages(Object o) {
+        @SuppressWarnings("unchecked")
+        List<OfflinePageItem> list = (List<OfflinePageItem>) o;
+        return list;
+    }
+
+    private void postOfflinePageModelLoadedEvent() {
+        ThreadUtils.postOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mBridge.offlinePageModelLoaded();
+            }
+        });
+    }
+
+    private MultipleOfflinePageItemCallback createMultipleItemCallback(final int itemCount) {
+        return spy(new MultipleOfflinePageItemCallback() {
+            @Override
+            public void onResult(List<OfflinePageItem> items) {
+                assertNotNull(items);
+                assertEquals(itemCount, items.size());
+            }
+        });
+    }
+
+    private Answer<Void> createMultipleItemAnswer(final int itemCount) {
+        return new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                List<OfflinePageItem> result =
+                        convertToListOfOfflinePages(invocation.getArguments()[1]);
+                for (int i = 0; i < itemCount; i++) {
+                    result.add(TEST_OFFLINE_PAGE_ITEM);
+                }
+                return null;
+            }
+        };
     }
 }

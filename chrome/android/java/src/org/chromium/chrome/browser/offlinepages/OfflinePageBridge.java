@@ -690,8 +690,8 @@ public class OfflinePageBridge {
     private static native boolean nativeCanSavePage(String url);
     private static native OfflinePageBridge nativeGetOfflinePageBridgeForProfile(Profile profile);
 
-    private native void nativeGetAllPages(
-            long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
+    @VisibleForTesting
+    native void nativeGetAllPages(long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages);
 
     @VisibleForTesting
     native long[] nativeGetOfflineIdsForClientId(
