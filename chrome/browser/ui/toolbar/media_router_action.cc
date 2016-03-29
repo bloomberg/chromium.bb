@@ -104,7 +104,7 @@ base::string16 MediaRouterAction::GetAccessibleName(
 
 base::string16 MediaRouterAction::GetTooltip(
     content::WebContents* web_contents) const {
-  return l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_TEXT);
+  return l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_ICON_TOOLTIP_TEXT);
 }
 
 bool MediaRouterAction::IsEnabled(

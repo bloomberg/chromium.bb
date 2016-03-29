@@ -5,8 +5,8 @@
   <message name="IDS_MEDIA_ROUTER_TITLE" desc="Title of a dialog offering possible actions for Media Router, which enables users to mirror individual tabs or desktop as well as cast content to a device.">
     Media Router
   </message>
-  <message name="IDS_MEDIA_ROUTER_SHARE_YOUR_SCREEN_TEXT" desc="Tooltip for the Media Router Action icon, which appears in the toolbar. The tooltip appears on mouseover of the icon.">
-   Share your screen
+  <message name="IDS_MEDIA_ROUTER_ICON_TOOLTIP_TEXT" desc="Tooltip for the Media Router Action icon, which appears in the toolbar. The tooltip appears on mouseover of the icon.">
+   Display on another screen
   </message>
   <message name="IDS_MEDIA_ROUTER_MENU_ITEM_TITLE" desc="Title of menu item for Media Router, which appears in the overflow menu and page contextual menus.">
     Cast...
