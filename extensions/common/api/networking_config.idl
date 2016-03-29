@@ -4,7 +4,7 @@
 
 // Use the <code>networking.config</code> API to authenticate to captive
 // portals.
-namespace networking.config {
+[use_movable_types=true] namespace networking.config {
   // Indicator for the type of network used in $(ref:NetworkInfo).
   enum NetworkType { WiFi };
 

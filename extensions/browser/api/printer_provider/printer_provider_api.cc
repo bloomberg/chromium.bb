@@ -667,8 +667,8 @@ void PrinterProviderAPIImpl::OnGetPrintersResult(
 
   // Update some printer description properties to better identify the extension
   // managing the printer.
-  for (size_t i = 0; i < result.size(); ++i) {
-    scoped_ptr<base::DictionaryValue> printer(result[i]->ToValue());
+  for (const api::printer_provider::PrinterInfo& p : result) {
+    scoped_ptr<base::DictionaryValue> printer(p.ToValue());
     UpdatePrinterWithExtensionInfo(printer.get(), extension);
     printer_list.Append(std::move(printer));
   }

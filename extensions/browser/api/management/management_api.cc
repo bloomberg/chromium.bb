@@ -53,8 +53,8 @@ namespace management = api::management;
 
 namespace {
 
-typedef std::vector<linked_ptr<management::ExtensionInfo>> ExtensionInfoList;
-typedef std::vector<linked_ptr<management::IconInfo>> IconInfoList;
+typedef std::vector<management::ExtensionInfo> ExtensionInfoList;
+typedef std::vector<management::IconInfo> IconInfoList;
 
 enum AutoConfirmForTest { DO_NOT_SKIP = 0, PROCEED, ABORT };
 
@@ -92,79 +92,78 @@ std::vector<management::LaunchType> GetAvailableLaunchTypes(
   return launch_type_list;
 }
 
-scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
+management::ExtensionInfo CreateExtensionInfo(
     const Extension& extension,
     content::BrowserContext* context) {
   ExtensionSystem* system = ExtensionSystem::Get(context);
   ExtensionRegistry* registry = ExtensionRegistry::Get(context);
   const ManagementAPIDelegate* delegate =
       ManagementAPI::GetFactoryInstance()->Get(context)->GetDelegate();
-  scoped_ptr<management::ExtensionInfo> info(new management::ExtensionInfo());
+  management::ExtensionInfo info;
 
-  info->id = extension.id();
-  info->name = extension.name();
-  info->short_name = extension.short_name();
-  info->enabled = registry->enabled_extensions().Contains(info->id);
-  info->offline_enabled = OfflineEnabledInfo::IsOfflineEnabled(&extension);
-  info->version = extension.VersionString();
+  info.id = extension.id();
+  info.name = extension.name();
+  info.short_name = extension.short_name();
+  info.enabled = registry->enabled_extensions().Contains(info.id);
+  info.offline_enabled = OfflineEnabledInfo::IsOfflineEnabled(&extension);
+  info.version = extension.VersionString();
   if (!extension.version_name().empty())
-    info->version_name.reset(new std::string(extension.version_name()));
-  info->description = extension.description();
-  info->options_url = OptionsPageInfo::GetOptionsPage(&extension).spec();
-  info->homepage_url.reset(
+    info.version_name.reset(new std::string(extension.version_name()));
+  info.description = extension.description();
+  info.options_url = OptionsPageInfo::GetOptionsPage(&extension).spec();
+  info.homepage_url.reset(
       new std::string(ManifestURL::GetHomepageURL(&extension).spec()));
-  info->may_disable =
+  info.may_disable =
       system->management_policy()->UserMayModifySettings(&extension, NULL);
-  info->is_app = extension.is_app();
-  if (info->is_app) {
+  info.is_app = extension.is_app();
+  if (info.is_app) {
     if (extension.is_legacy_packaged_app())
-      info->type = management::EXTENSION_TYPE_LEGACY_PACKAGED_APP;
+      info.type = management::EXTENSION_TYPE_LEGACY_PACKAGED_APP;
     else if (extension.is_hosted_app())
-      info->type = management::EXTENSION_TYPE_HOSTED_APP;
+      info.type = management::EXTENSION_TYPE_HOSTED_APP;
     else
-      info->type = management::EXTENSION_TYPE_PACKAGED_APP;
+      info.type = management::EXTENSION_TYPE_PACKAGED_APP;
   } else if (extension.is_theme()) {
-    info->type = management::EXTENSION_TYPE_THEME;
+    info.type = management::EXTENSION_TYPE_THEME;
   } else {
-    info->type = management::EXTENSION_TYPE_EXTENSION;
+    info.type = management::EXTENSION_TYPE_EXTENSION;
   }
 
-  if (info->enabled) {
-    info->disabled_reason = management::EXTENSION_DISABLED_REASON_NONE;
+  if (info.enabled) {
+    info.disabled_reason = management::EXTENSION_DISABLED_REASON_NONE;
   } else {
     ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
     if (prefs->DidExtensionEscalatePermissions(extension.id())) {
-      info->disabled_reason =
+      info.disabled_reason =
           management::EXTENSION_DISABLED_REASON_PERMISSIONS_INCREASE;
     } else {
-      info->disabled_reason =
-          management::EXTENSION_DISABLED_REASON_UNKNOWN;
+      info.disabled_reason = management::EXTENSION_DISABLED_REASON_UNKNOWN;
     }
   }
 
   if (!ManifestURL::GetUpdateURL(&extension).is_empty()) {
-    info->update_url.reset(
+    info.update_url.reset(
         new std::string(ManifestURL::GetUpdateURL(&extension).spec()));
   }
 
   if (extension.is_app()) {
-    info->app_launch_url.reset(
+    info.app_launch_url.reset(
         new std::string(delegate->GetFullLaunchURL(&extension).spec()));
   }
 
   const ExtensionIconSet::IconMap& icons =
       IconsInfo::GetIcons(&extension).map();
   if (!icons.empty()) {
-    info->icons.reset(new IconInfoList());
+    info.icons.reset(new IconInfoList());
     ExtensionIconSet::IconMap::const_iterator icon_iter;
     for (icon_iter = icons.begin(); icon_iter != icons.end(); ++icon_iter) {
-      management::IconInfo* icon_info = new management::IconInfo();
-      icon_info->size = icon_iter->first;
+      management::IconInfo icon_info;
+      icon_info.size = icon_iter->first;
       GURL url =
-          delegate->GetIconURL(&extension, icon_info->size,
+          delegate->GetIconURL(&extension, icon_info.size,
                                ExtensionIconSet::MATCH_EXACTLY, false, nullptr);
-      icon_info->url = url.spec();
-      info->icons->push_back(make_linked_ptr<management::IconInfo>(icon_info));
+      icon_info.url = url.spec();
+      info.icons->push_back(std::move(icon_info));
     }
   }
 
@@ -173,7 +172,7 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   if (!perms.empty()) {
     std::set<std::string>::const_iterator perms_iter;
     for (perms_iter = perms.begin(); perms_iter != perms.end(); ++perms_iter)
-      info->permissions.push_back(*perms_iter);
+      info.permissions.push_back(*perms_iter);
   }
 
   if (!extension.is_hosted_app()) {
@@ -183,38 +182,38 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
     if (!host_perms.is_empty()) {
       for (URLPatternSet::const_iterator iter = host_perms.begin();
            iter != host_perms.end(); ++iter) {
-        info->host_permissions.push_back(iter->GetAsString());
+        info.host_permissions.push_back(iter->GetAsString());
       }
     }
   }
 
   switch (extension.location()) {
     case Manifest::INTERNAL:
-      info->install_type = management::EXTENSION_INSTALL_TYPE_NORMAL;
+      info.install_type = management::EXTENSION_INSTALL_TYPE_NORMAL;
       break;
     case Manifest::UNPACKED:
     case Manifest::COMMAND_LINE:
-      info->install_type = management::EXTENSION_INSTALL_TYPE_DEVELOPMENT;
+      info.install_type = management::EXTENSION_INSTALL_TYPE_DEVELOPMENT;
       break;
     case Manifest::EXTERNAL_PREF:
     case Manifest::EXTERNAL_REGISTRY:
     case Manifest::EXTERNAL_PREF_DOWNLOAD:
-      info->install_type = management::EXTENSION_INSTALL_TYPE_SIDELOAD;
+      info.install_type = management::EXTENSION_INSTALL_TYPE_SIDELOAD;
       break;
     case Manifest::EXTERNAL_POLICY:
     case Manifest::EXTERNAL_POLICY_DOWNLOAD:
-      info->install_type = management::EXTENSION_INSTALL_TYPE_ADMIN;
+      info.install_type = management::EXTENSION_INSTALL_TYPE_ADMIN;
       break;
     case Manifest::NUM_LOCATIONS:
       NOTREACHED();
     case Manifest::INVALID_LOCATION:
     case Manifest::COMPONENT:
     case Manifest::EXTERNAL_COMPONENT:
-      info->install_type = management::EXTENSION_INSTALL_TYPE_OTHER;
+      info.install_type = management::EXTENSION_INSTALL_TYPE_OTHER;
       break;
   }
 
-  info->launch_type = management::LAUNCH_TYPE_NONE;
+  info.launch_type = management::LAUNCH_TYPE_NONE;
   if (extension.is_app()) {
     LaunchType launch_type;
     if (extension.is_platform_app()) {
@@ -226,23 +225,23 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
 
     switch (launch_type) {
       case LAUNCH_TYPE_PINNED:
-        info->launch_type = management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB;
+        info.launch_type = management::LAUNCH_TYPE_OPEN_AS_PINNED_TAB;
         break;
       case LAUNCH_TYPE_REGULAR:
-        info->launch_type = management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB;
+        info.launch_type = management::LAUNCH_TYPE_OPEN_AS_REGULAR_TAB;
         break;
       case LAUNCH_TYPE_FULLSCREEN:
-        info->launch_type = management::LAUNCH_TYPE_OPEN_FULL_SCREEN;
+        info.launch_type = management::LAUNCH_TYPE_OPEN_FULL_SCREEN;
         break;
       case LAUNCH_TYPE_WINDOW:
-        info->launch_type = management::LAUNCH_TYPE_OPEN_AS_WINDOW;
+        info.launch_type = management::LAUNCH_TYPE_OPEN_AS_WINDOW;
         break;
       case LAUNCH_TYPE_INVALID:
       case NUM_LAUNCH_TYPES:
         NOTREACHED();
     }
 
-    info->available_launch_types.reset(new std::vector<management::LaunchType>(
+    info.available_launch_types.reset(new std::vector<management::LaunchType>(
         GetAvailableLaunchTypes(extension, delegate)));
   }
 
@@ -259,8 +258,7 @@ void AddExtensionInfo(const ExtensionSet& extensions,
     if (extension.ShouldNotBeVisible())
       continue;  // Skip built-in extensions/apps.
 
-    extension_list->push_back(make_linked_ptr<management::ExtensionInfo>(
-        CreateExtensionInfo(extension, context).release()));
+    extension_list->push_back(CreateExtensionInfo(extension, context));
   }
 }
 
@@ -295,17 +293,15 @@ bool ManagementGetFunction::RunSync() {
     return false;
   }
 
-  scoped_ptr<management::ExtensionInfo> info =
-      CreateExtensionInfo(*extension, browser_context());
-  results_ = management::Get::Results::Create(*info);
+  results_ = management::Get::Results::Create(
+      CreateExtensionInfo(*extension, browser_context()));
 
   return true;
 }
 
 bool ManagementGetSelfFunction::RunSync() {
-  scoped_ptr<management::ExtensionInfo> info =
-      CreateExtensionInfo(*extension_, browser_context());
-  results_ = management::Get::Results::Create(*info);
+  results_ = management::Get::Results::Create(
+      CreateExtensionInfo(*extension_, browser_context()));
 
   return true;
 }
@@ -773,9 +769,8 @@ void ManagementGenerateAppForLinkFunction::FinishCreateBookmarkApp(
     const Extension* extension,
     const WebApplicationInfo& web_app_info) {
   if (extension) {
-    scoped_ptr<management::ExtensionInfo> info =
-        CreateExtensionInfo(*extension, browser_context());
-    results_ = management::GenerateAppForLink::Results::Create(*info);
+    results_ = management::GenerateAppForLink::Results::Create(
+        CreateExtensionInfo(*extension, browser_context()));
 
     SendResponse(true);
     Release();
@@ -871,9 +866,7 @@ void ManagementEventRouter::BroadcastEvent(
   if (event_name == management::OnUninstalled::kEventName) {
     args->Append(new base::StringValue(extension->id()));
   } else {
-    scoped_ptr<management::ExtensionInfo> info =
-        CreateExtensionInfo(*extension, browser_context_);
-    args->Append(info->ToValue().release());
+    args->Append(CreateExtensionInfo(*extension, browser_context_).ToValue());
   }
 
   EventRouter::Get(browser_context_)

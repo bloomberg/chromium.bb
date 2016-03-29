@@ -42,23 +42,22 @@ NetworkingConfigSetNetworkFilterFunction::Run() {
   // Remove previously registered networks.
   service->UnregisterExtension(extension_id());
 
-  for (linked_ptr<api::networking_config::NetworkInfo>& ni :
-       parameters_->networks) {
+  for (const api::networking_config::NetworkInfo& ni : parameters_->networks) {
     // |Type| field must be set to |WiFi|
-    if (ni->type != api::networking_config::NETWORK_TYPE_WIFI)
+    if (ni.type != api::networking_config::NETWORK_TYPE_WIFI)
       return RespondNow(Error(kUnsupportedNetworkType));
 
     // Either |ssid| or |hex_ssid| must be set.
-    if (!ni->ssid.get() && !ni->hex_ssid.get())
+    if (!ni.ssid.get() && !ni.hex_ssid.get())
       return RespondNow(Error(kMalformedFilterDescription));
 
     std::string hex_ssid;
-    if (ni->ssid.get()) {
-      auto ssid_field = ni->ssid.get();
+    if (ni.ssid.get()) {
+      auto ssid_field = ni.ssid.get();
       hex_ssid = base::HexEncode(ssid_field->c_str(), ssid_field->size());
     }
-    if (ni->hex_ssid.get())
-      hex_ssid = *ni->hex_ssid.get();
+    if (ni.hex_ssid.get())
+      hex_ssid = *ni.hex_ssid.get();
 
     if (!service->RegisterHexSsid(hex_ssid, extension_id()))
       return RespondNow(Error(kMalformedFilterDescriptionWithSSID, hex_ssid));

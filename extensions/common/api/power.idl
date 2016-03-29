@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.power</code> API to override the system's power
 // management features.
-namespace power {
+[use_movable_types=true] namespace power {
   [noinline_doc] enum Level {
     // Prevent the system from sleeping in response to user inactivity.
     system,

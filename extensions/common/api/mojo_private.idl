@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // The chrome.mojoPrivate API provides access to the mojo modules.
-namespace mojoPrivate {
+[use_movable_types=true] namespace mojoPrivate {
 
   // |modules| is an array of the values returned by |dependencies| factories.
   callback DefineCallback = void (any[] modules);

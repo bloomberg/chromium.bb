@@ -22,8 +22,7 @@ class Extension;
 // Interface for observing chrome.printerProviderInternal API function calls.
 class PrinterProviderInternalAPIObserver {
  public:
-  using PrinterInfoVector =
-      std::vector<linked_ptr<api::printer_provider::PrinterInfo>>;
+  using PrinterInfoVector = std::vector<api::printer_provider::PrinterInfo>;
 
   // Used by chrome.printerProviderInternal API to report
   // chrome.printerProvider.onGetPrintersRequested result returned by the
