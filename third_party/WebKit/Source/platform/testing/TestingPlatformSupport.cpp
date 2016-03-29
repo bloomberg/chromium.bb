@@ -30,10 +30,6 @@
 
 #include "platform/testing/TestingPlatformSupport.h"
 
-#if !OS(ANDROID)
-#include "device/battery/battery_monitor_impl.h"
-#endif
-
 namespace blink {
 
 TestingPlatformSupport::TestingPlatformSupport()
@@ -76,14 +72,6 @@ WebUnitTestSupport* TestingPlatformSupport::unitTestSupport()
 
 void TestingPlatformSupport::connectToRemoteService(const char* name, mojo::ScopedMessagePipeHandle handle)
 {
-#if !OS(ANDROID)
-    if (std::strcmp(name, device::BatteryMonitor::Name_) == 0) {
-        device::BatteryMonitorImpl::Create(
-            mojo::MakeRequest<device::BatteryMonitor>(std::move(handle)));
-        return;
-    }
-#endif
-
     ASSERT_NOT_REACHED();
 }
 

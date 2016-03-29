@@ -1,6 +1,7 @@
 include_rules = [
     "+bindings",
     "+core",
+    "+device/battery/battery_monitor.mojom.h",
     "+heap",
     "-modules",
     "+modules/EventTargetModules.h",

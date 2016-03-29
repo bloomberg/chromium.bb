@@ -6,37 +6,44 @@
 #define BatteryDispatcher_h
 
 #include "core/frame/PlatformEventDispatcher.h"
+#include "device/battery/battery_monitor.mojom.h"
 #include "modules/ModulesExport.h"
 #include "modules/battery/BatteryManager.h"
-#include "platform/battery/battery_dispatcher_proxy.h"
+#include "modules/battery/battery_status.h"
 #include "wtf/OwnPtr.h"
 
 namespace blink {
 
-class MODULES_EXPORT BatteryDispatcher final : public GarbageCollectedFinalized<BatteryDispatcher>, public PlatformEventDispatcher, public BatteryDispatcherProxy::Listener {
+class MODULES_EXPORT BatteryDispatcher final : public GarbageCollectedFinalized<BatteryDispatcher>, public PlatformEventDispatcher {
     USING_GARBAGE_COLLECTED_MIXIN(BatteryDispatcher);
+    WTF_MAKE_NONCOPYABLE(BatteryDispatcher);
 public:
     static BatteryDispatcher& instance();
-    ~BatteryDispatcher() override;
 
     const BatteryStatus* latestData() const
     {
         return m_hasLatestData ? &m_batteryStatus : nullptr;
     }
 
-    // Inherited from BatteryDispatcherProxy::Listener.
-    void OnUpdateBatteryStatus(const BatteryStatus&) override;
+    void updateBatteryStatusForTesting(const BatteryStatus& batteryStatus)
+    {
+        updateBatteryStatus(batteryStatus);
+    }
 
 private:
     BatteryDispatcher();
+
+    void queryNextStatus();
+    void onDidChange(device::BatteryStatusPtr);
+    void updateBatteryStatus(const BatteryStatus&);
 
     // Inherited from PlatformEventDispatcher.
     void startListening() override;
     void stopListening() override;
 
+    device::BatteryMonitorPtr m_monitor;
     BatteryStatus m_batteryStatus;
     bool m_hasLatestData;
-    OwnPtr<BatteryDispatcherProxy> m_batteryDispatcherProxy;
 };
 
 } // namespace blink

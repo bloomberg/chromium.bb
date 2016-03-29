@@ -46,6 +46,8 @@ component("modules") {
 
   deps = [
     ":make_modules_generated",
+    "//device/battery:mojo_bindings",
+    "//mojo/public/c/system:for_component",
     "//third_party/WebKit/Source/core",
     "//third_party/icu",
     "//third_party/sqlite",

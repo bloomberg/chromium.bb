@@ -339,8 +339,8 @@ component("platform") {
     "//v8",
   ]
   deps = [
-    "//device/battery:mojo_bindings",
     "//mojo/public/c/system:for_component",
+    "//mojo/public/cpp/bindings:callback",
     "//third_party/WebKit/Source/platform/heap",
     "//third_party/harfbuzz-ng",
     "//third_party/icu",
@@ -462,14 +462,9 @@ source_set("test_support") {
 
   deps = [
     "//base/test:test_support",
-    "//device/battery",
-    "//device/battery:mojo_bindings",
     "//mojo/edk/system",
     "//third_party/qcms",
   ]
-  if (is_android) {
-    deps -= [ "//device/battery" ]
-  }
 
   if (is_win) {
     cflags = [ "/wd4267" ]  # Truncation from size_t to int.

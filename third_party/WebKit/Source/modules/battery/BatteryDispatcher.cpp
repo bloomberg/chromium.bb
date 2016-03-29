@@ -4,6 +4,9 @@
 
 #include "modules/battery/BatteryDispatcher.h"
 
+#include "platform/threading/BindForMojo.h"
+#include "public/platform/Platform.h"
+#include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {
@@ -16,15 +19,31 @@ BatteryDispatcher& BatteryDispatcher::instance()
 
 BatteryDispatcher::BatteryDispatcher()
     : m_hasLatestData(false)
-    , m_batteryDispatcherProxy(adoptPtr(new BatteryDispatcherProxy(this)))
 {
 }
 
-BatteryDispatcher::~BatteryDispatcher()
+void BatteryDispatcher::queryNextStatus()
 {
+    m_monitor->QueryNextStatus(
+        sameThreadBindForMojo(&BatteryDispatcher::onDidChange, this));
 }
 
-void BatteryDispatcher::OnUpdateBatteryStatus(const BatteryStatus& batteryStatus)
+void BatteryDispatcher::onDidChange(device::BatteryStatusPtr batteryStatus)
+{
+    // m_monitor can be null during testing.
+    if (m_monitor)
+        queryNextStatus();
+
+    ASSERT(batteryStatus);
+
+    updateBatteryStatus(BatteryStatus(
+        batteryStatus->charging,
+        batteryStatus->charging_time,
+        batteryStatus->discharging_time,
+        batteryStatus->level));
+}
+
+void BatteryDispatcher::updateBatteryStatus(const BatteryStatus& batteryStatus)
 {
     m_batteryStatus = batteryStatus;
     m_hasLatestData = true;
@@ -33,12 +52,18 @@ void BatteryDispatcher::OnUpdateBatteryStatus(const BatteryStatus& batteryStatus
 
 void BatteryDispatcher::startListening()
 {
-    m_batteryDispatcherProxy->StartListening();
+    ASSERT(!m_monitor.is_bound());
+    Platform::current()->connectToRemoteService(mojo::GetProxy(&m_monitor));
+    // m_monitor can be null during testing.
+    if (m_monitor)
+        queryNextStatus();
 }
 
 void BatteryDispatcher::stopListening()
 {
-    m_batteryDispatcherProxy->StopListening();
+    // m_monitor can be null during testing.
+    if (m_monitor)
+        m_monitor.reset();
     m_hasLatestData = false;
 }
 

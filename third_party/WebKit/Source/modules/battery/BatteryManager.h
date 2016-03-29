@@ -12,7 +12,7 @@
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/PlatformEventController.h"
 #include "modules/EventTargetModules.h"
-#include "platform/battery/battery_status.h"
+#include "modules/battery/battery_status.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

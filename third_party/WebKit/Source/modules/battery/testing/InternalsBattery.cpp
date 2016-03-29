@@ -10,7 +10,7 @@ namespace blink {
 
 void InternalsBattery::updateBatteryStatus(Internals&, bool charging, double chargingTime, double dischargingTime, double level)
 {
-    BatteryDispatcher::instance().OnUpdateBatteryStatus(
+    BatteryDispatcher::instance().updateBatteryStatusForTesting(
         BatteryStatus(charging, chargingTime, dischargingTime, level));
 }
 

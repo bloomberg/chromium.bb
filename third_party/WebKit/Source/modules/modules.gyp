@@ -39,6 +39,9 @@
     # GN version: //third_party/WebKit/Source/modules:modules
     'target_name': 'modules',
     'dependencies': [
+      '<(DEPTH)/device/battery/battery.gyp:device_battery_mojo_bindings',
+      '<(DEPTH)/mojo/mojo_edk.gyp:mojo_system_impl',
+      '<(DEPTH)/mojo/mojo_public.gyp:mojo_cpp_bindings',
       '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
       '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
       '<(DEPTH)/third_party/sqlite/sqlite.gyp:sqlite',

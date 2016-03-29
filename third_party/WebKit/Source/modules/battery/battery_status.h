@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLINK_PLATFORM_BATTERY_BATTERY_STATUS_H_
-#define BLINK_PLATFORM_BATTERY_BATTERY_STATUS_H_
+#ifndef BLINK_MODULES_BATTERY_BATTERY_STATUS_H_
+#define BLINK_MODULES_BATTERY_BATTERY_STATUS_H_
 
-#include "platform/PlatformExport.h"
+#include "modules/ModulesExport.h"
 #include "wtf/Assertions.h"
 
 #include <cmath>
@@ -14,7 +14,7 @@
 namespace blink {
 
 // Simple struct to hold the battery status.  This class is copyable.
-class PLATFORM_EXPORT BatteryStatus final {
+class MODULES_EXPORT BatteryStatus final {
  public:
   BatteryStatus()
       : charging_(true),
@@ -57,4 +57,4 @@ class PLATFORM_EXPORT BatteryStatus final {
 
 }  // namespace blink
 
-#endif  // BLINK_PLATFORM_BATTERY_BATTERY_STATUS_H_
+#endif  // BLINK_MODULES_BATTERY_BATTERY_STATUS_H_
