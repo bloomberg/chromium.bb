@@ -31,6 +31,7 @@ class ChromeVoxPanel : public views::WidgetDelegate,
 
   void Close();
   void DidFirstVisuallyNonEmptyPaint();
+  void UpdatePanelHeight();
   void EnterFullscreen();
   void ExitFullscreen();
   void DisableSpokenFeedback();

@@ -109,9 +109,17 @@ void ChromeVoxPanel::Close() {
 
 void ChromeVoxPanel::DidFirstVisuallyNonEmptyPaint() {
   widget_->Show();
-  ash::Shelf::ForWindow(GetRootWindow())
-      ->shelf_layout_manager()
-      ->SetChromeVoxPanelHeight(kPanelHeight);
+  UpdatePanelHeight();
+}
+
+void ChromeVoxPanel::UpdatePanelHeight() {
+  ash::Shelf* shelf = ash::Shelf::ForWindow(GetRootWindow());
+  if (!shelf)
+    return;
+
+  ash::ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();
+  if (shelf_layout_manager)
+    shelf_layout_manager->SetChromeVoxPanelHeight(kPanelHeight);
 }
 
 void ChromeVoxPanel::EnterFullscreen() {

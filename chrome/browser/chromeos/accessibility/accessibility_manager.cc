@@ -1194,6 +1194,11 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   UpdateFocusHighlightFromPref();
   UpdateSelectToSpeakFromPref();
   UpdateSwitchAccessFromPref();
+
+  // Update the panel height in the shelf layout manager when the profile
+  // changes, since the shelf layout manager doesn't exist in the login profile.
+  if (chromevox_panel_)
+    chromevox_panel_->UpdatePanelHeight();
 }
 
 void AccessibilityManager::ActiveUserChanged(const AccountId& account_id) {
@@ -1426,9 +1431,14 @@ void AccessibilityManager::OnChromeVoxPanelClosing() {
   aura::Window* root_window = chromevox_panel_->GetRootWindow();
   chromevox_panel_widget_observer_.reset(nullptr);
   chromevox_panel_ = nullptr;
-  ash::Shelf::ForWindow(root_window)
-      ->shelf_layout_manager()
-      ->SetChromeVoxPanelHeight(0);
+
+  ash::Shelf* shelf = ash::Shelf::ForWindow(root_window);
+  if (!shelf)
+    return;
+
+  ash::ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();
+  if (shelf_layout_manager)
+    shelf_layout_manager->SetChromeVoxPanelHeight(0);
 }
 
 void AccessibilityManager::OnChromeVoxPanelDestroying() {
