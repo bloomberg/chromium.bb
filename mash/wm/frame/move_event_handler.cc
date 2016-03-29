@@ -58,6 +58,12 @@ void MoveEventHandler::ProcessLocatedEvent(ui::LocatedEvent* event) {
   const bool had_move_loop = move_loop_.get() != nullptr;
   DCHECK(event->IsMouseEvent() || event->IsTouchEvent());
 
+  // This event handler can receive mouse events like ET_MOUSE_CAPTURE_CHANGED
+  // that cannot be converted to PointerEvents. Ignore them because they aren't
+  // needed for move handling.
+  if (!ui::PointerEvent::CanConvertFrom(*event))
+    return;
+
   // TODO(moshayedi): no need for this once MoveEventHandler directly receives
   // pointer events.
   scoped_ptr<ui::PointerEvent> pointer_event;

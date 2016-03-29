@@ -721,6 +721,24 @@ void TouchEvent::FixRotationAngle() {
 ////////////////////////////////////////////////////////////////////////////////
 // PointerEvent
 
+bool PointerEvent::CanConvertFrom(const Event& event) {
+  switch (event.type()) {
+    case ET_MOUSE_PRESSED:
+    case ET_MOUSE_DRAGGED:
+    case ET_MOUSE_MOVED:
+    case ET_MOUSE_ENTERED:
+    case ET_MOUSE_EXITED:
+    case ET_MOUSE_RELEASED:
+    case ET_TOUCH_PRESSED:
+    case ET_TOUCH_MOVED:
+    case ET_TOUCH_RELEASED:
+    case ET_TOUCH_CANCELLED:
+      return true;
+    default:
+      return false;
+  }
+}
+
 PointerEvent::PointerEvent(const PointerEvent& pointer_event)
     : LocatedEvent(pointer_event),
       pointer_id_(pointer_event.pointer_id()),
@@ -730,6 +748,7 @@ PointerEvent::PointerEvent(const MouseEvent& mouse_event)
     : LocatedEvent(mouse_event),
       pointer_id_(kMousePointerId),
       details_(mouse_event.pointer_details()) {
+  DCHECK(CanConvertFrom(mouse_event));
   switch (mouse_event.type()) {
     case ET_MOUSE_PRESSED:
       SetType(ET_POINTER_DOWN);
@@ -761,6 +780,7 @@ PointerEvent::PointerEvent(const TouchEvent& touch_event)
     : LocatedEvent(touch_event),
       pointer_id_(touch_event.touch_id()),
       details_(touch_event.pointer_details()) {
+  DCHECK(CanConvertFrom(touch_event));
   switch (touch_event.type()) {
     case ET_TOUCH_PRESSED:
       SetType(ET_POINTER_DOWN);

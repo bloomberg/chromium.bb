@@ -725,6 +725,52 @@ TEST(EventTest, PointerDetailsCustomTouch) {
   EXPECT_EQ(touch_event.pointer_details(), touch_event_copy.pointer_details());
 }
 
+TEST(EventTest, PointerEventCanConvertFrom) {
+  const gfx::Point point;
+  const base::TimeDelta time;
+
+  // Common mouse events can be converted.
+  const EventType mouse_allowed[] = {
+      ET_MOUSE_PRESSED,
+      ET_MOUSE_DRAGGED,
+      ET_MOUSE_MOVED,
+      ET_MOUSE_ENTERED,
+      ET_MOUSE_EXITED,
+      ET_MOUSE_RELEASED
+  };
+  for (size_t i = 0; i < arraysize(mouse_allowed); i++) {
+    MouseEvent event(mouse_allowed[i], point, point, time, 0, 0);
+    EXPECT_TRUE(PointerEvent::CanConvertFrom(event));
+  }
+
+  // Common touch events can be converted.
+  const EventType touch_allowed[] = {
+      ET_TOUCH_PRESSED,
+      ET_TOUCH_MOVED,
+      ET_TOUCH_RELEASED,
+      ET_TOUCH_CANCELLED
+  };
+  for (size_t i = 0; i < arraysize(touch_allowed); i++) {
+    TouchEvent event(touch_allowed[i], point, 0, time);
+    EXPECT_TRUE(PointerEvent::CanConvertFrom(event));
+  }
+
+  // Capture changes cannot be converted.
+  EXPECT_FALSE(
+      PointerEvent::CanConvertFrom(
+          MouseEvent(ET_MOUSE_CAPTURE_CHANGED, point, point, time, 0, 0)));
+
+  // Wheel events cannot be converted.
+  EXPECT_FALSE(
+      PointerEvent::CanConvertFrom(
+          MouseWheelEvent(gfx::Vector2d(), point, point, time, 0, 0)));
+
+  // Non-mouse non-touch events cannot be converted.
+  EXPECT_FALSE(
+      PointerEvent::CanConvertFrom(
+          KeyEvent(ET_KEY_PRESSED, VKEY_SPACE, EF_NONE)));
+}
+
 TEST(EventTest, PointerEventType) {
   const ui::EventType kMouseTypeMap[][2] = {
       {ui::ET_MOUSE_PRESSED, ui::ET_POINTER_DOWN},

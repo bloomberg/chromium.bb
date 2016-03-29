@@ -737,6 +737,11 @@ class EVENTS_EXPORT PointerEvent : public LocatedEvent {
  public:
   static const int32_t kMousePointerId;
 
+  // Returns true if a PointerEvent can be constructed from the given mouse or
+  // touch event. For example, PointerEvent does not support ET_MOUSEWHEEL or
+  // ET_MOUSE_CAPTURE_CHANGED.
+  static bool CanConvertFrom(const Event& event);
+
   PointerEvent(const PointerEvent& pointer_event);
   explicit PointerEvent(const MouseEvent& mouse_event);
   explicit PointerEvent(const TouchEvent& touch_event);
