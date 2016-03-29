@@ -58,8 +58,8 @@ void DecoderTest::HandlePeekResult(Decoder *const decoder,
       ASSERT_EQ(AOM_CODEC_OK, res_peek) << "Peek return failed: "
                                         << aom_codec_err_to_string(res_peek);
   } else {
-    /* The Vp9 implementation of PeekStream returns an error only if the
-     * data passed to it isn't a valid Vp9 chunk. */
+    /* The Av1 implementation of PeekStream returns an error only if the
+     * data passed to it isn't a valid Av1 chunk. */
     ASSERT_EQ(AOM_CODEC_OK, res_peek) << "Peek return failed: "
                                       << aom_codec_err_to_string(res_peek);
   }

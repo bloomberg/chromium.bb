@@ -31,8 +31,8 @@ namespace {
 typedef void (*VpxPredFunc)(uint8_t *dst, ptrdiff_t y_stride,
                             const uint8_t *above, const uint8_t *left);
 
-const int kNumVp9IntraPredFuncs = 13;
-const char *kVp9IntraPredNames[kNumVp9IntraPredFuncs] = {
+const int kNumAv1IntraPredFuncs = 13;
+const char *kAv1IntraPredNames[kNumAv1IntraPredFuncs] = {
   "DC_PRED",   "DC_LEFT_PRED", "DC_TOP_PRED", "DC_128_PRED", "V_PRED",
   "H_PRED",    "D45_PRED",     "D135_PRED",   "D117_PRED",   "D153_PRED",
   "D207_PRED", "D63_PRED",     "TM_PRED"
@@ -82,8 +82,8 @@ void TestIntraPred(const char name[], VpxPredFunc const *pred_funcs,
 }
 
 void TestIntraPred4(VpxPredFunc const *pred_funcs) {
-  static const int kNumVp9IntraFuncs = 13;
-  static const char *const kSignatures[kNumVp9IntraFuncs] = {
+  static const int kNumAv1IntraFuncs = 13;
+  static const char *const kSignatures[kNumAv1IntraFuncs] = {
     "4334156168b34ab599d9b5b30f522fe9", "bc4649d5ba47c7ff178d92e475960fb0",
     "8d316e5933326dcac24e1064794b5d12", "a27270fed024eafd762c95de85f4da51",
     "c33dff000d4256c2b8f3bf9e9bab14d2", "44d8cddc2ad8f79b8ed3306051722b4f",
@@ -92,13 +92,13 @@ void TestIntraPred4(VpxPredFunc const *pred_funcs) {
     "c56d5e8c729e46825f46dd5d3b5d508a", "c0889e2039bcf7bcb5d2f33cdca69adc",
     "309a618577b27c648f9c5ee45252bc8f",
   };
-  TestIntraPred("Intra4", pred_funcs, kVp9IntraPredNames, kNumVp9IntraFuncs,
-                kSignatures, 4, 4 * 4 * kNumVp9IntraFuncs);
+  TestIntraPred("Intra4", pred_funcs, kAv1IntraPredNames, kNumAv1IntraFuncs,
+                kSignatures, 4, 4 * 4 * kNumAv1IntraFuncs);
 }
 
 void TestIntraPred8(VpxPredFunc const *pred_funcs) {
-  static const int kNumVp9IntraFuncs = 13;
-  static const char *const kSignatures[kNumVp9IntraFuncs] = {
+  static const int kNumAv1IntraFuncs = 13;
+  static const char *const kSignatures[kNumAv1IntraFuncs] = {
     "7694ddeeefed887faf9d339d18850928", "7d726b1213591b99f736be6dec65065b",
     "19c5711281357a485591aaf9c96c0a67", "ba6b66877a089e71cd938e3b8c40caac",
     "802440c93317e0f8ba93fab02ef74265", "9e09a47a15deb0b9d8372824f9805080",
@@ -107,13 +107,13 @@ void TestIntraPred8(VpxPredFunc const *pred_funcs) {
     "08323400005a297f16d7e57e7fe1eaac", "95f7bfc262329a5849eda66d8f7c68ce",
     "815b75c8e0d91cc1ae766dc5d3e445a3",
   };
-  TestIntraPred("Intra8", pred_funcs, kVp9IntraPredNames, kNumVp9IntraFuncs,
-                kSignatures, 8, 8 * 8 * kNumVp9IntraFuncs);
+  TestIntraPred("Intra8", pred_funcs, kAv1IntraPredNames, kNumAv1IntraFuncs,
+                kSignatures, 8, 8 * 8 * kNumAv1IntraFuncs);
 }
 
 void TestIntraPred16(VpxPredFunc const *pred_funcs) {
-  static const int kNumVp9IntraFuncs = 13;
-  static const char *const kSignatures[kNumVp9IntraFuncs] = {
+  static const int kNumAv1IntraFuncs = 13;
+  static const char *const kSignatures[kNumAv1IntraFuncs] = {
     "b40dbb555d5d16a043dc361e6694fe53", "fb08118cee3b6405d64c1fd68be878c6",
     "6c190f341475c837cc38c2e566b64875", "db5c34ccbe2c7f595d9b08b0dc2c698c",
     "a62cbfd153a1f0b9fed13e62b8408a7a", "143df5b4c89335e281103f610f5052e4",
@@ -122,13 +122,13 @@ void TestIntraPred16(VpxPredFunc const *pred_funcs) {
     "b9f69fa6532b372c545397dcb78ef311", "a8fe1c70432f09d0c20c67bdb6432c4d",
     "b8a41aa968ec108af447af4217cba91b",
   };
-  TestIntraPred("Intra16", pred_funcs, kVp9IntraPredNames, kNumVp9IntraFuncs,
-                kSignatures, 16, 16 * 16 * kNumVp9IntraFuncs);
+  TestIntraPred("Intra16", pred_funcs, kAv1IntraPredNames, kNumAv1IntraFuncs,
+                kSignatures, 16, 16 * 16 * kNumAv1IntraFuncs);
 }
 
 void TestIntraPred32(VpxPredFunc const *pred_funcs) {
-  static const int kNumVp9IntraFuncs = 13;
-  static const char *const kSignatures[kNumVp9IntraFuncs] = {
+  static const int kNumAv1IntraFuncs = 13;
+  static const char *const kSignatures[kNumAv1IntraFuncs] = {
     "558541656d84f9ae7896db655826febe", "b3587a1f9a01495fa38c8cd3c8e2a1bf",
     "4c6501e64f25aacc55a2a16c7e8f0255", "b3b01379ba08916ef6b1b35f7d9ad51c",
     "0f1eb38b6cbddb3d496199ef9f329071", "911c06efb9ed1c3b4c104b232b55812f",
@@ -137,8 +137,8 @@ void TestIntraPred32(VpxPredFunc const *pred_funcs) {
     "ed012a4a5da71f36c2393023184a0e59", "f162b51ed618d28b936974cff4391da5",
     "9e1370c6d42e08d357d9612c93a71cfc",
   };
-  TestIntraPred("Intra32", pred_funcs, kVp9IntraPredNames, kNumVp9IntraFuncs,
-                kSignatures, 32, 32 * 32 * kNumVp9IntraFuncs);
+  TestIntraPred("Intra32", pred_funcs, kAv1IntraPredNames, kNumAv1IntraFuncs,
+                kSignatures, 32, 32 * 32 * kNumAv1IntraFuncs);
 }
 
 }  // namespace
