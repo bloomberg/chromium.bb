@@ -290,9 +290,13 @@ class PersonalDataManager : public KeyedService,
   // Notifies observers that personal data has changed.
   void NotifyPersonalDataChanged();
 
-  // The first time this is called, logs an UMA metrics for the number of
+  // The first time this is called, logs an UMA metric for the number of
   // profiles the user has. On subsequent calls, does nothing.
   void LogProfileCount() const;
+
+  // The first time this is called, logs an UMA metric for the number of local
+  // credit cards the user has. On subsequent calls, does nothing.
+  void LogLocalCreditCardCount() const;
 
   // Returns the value of the AutofillEnabled pref.
   virtual bool IsAutofillEnabled() const;
@@ -408,6 +412,10 @@ class PersonalDataManager : public KeyedService,
 
   // Whether we have already logged the number of profiles this session.
   mutable bool has_logged_profile_count_;
+
+  // Whether we have already logged the number of local credit cards this
+  // session.
+  mutable bool has_logged_credit_card_count_;
 
   // An observer to listen for changes to prefs::kAutofillEnabled.
   scoped_ptr<BooleanPrefMember> enabled_pref_;

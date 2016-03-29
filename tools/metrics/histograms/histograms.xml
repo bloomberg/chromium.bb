@@ -2844,6 +2844,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Autofill.StoredLocalCreditCardCount">
+  <owner>mathp@chromium.org</owner>
+  <summary>
+    The number of local credit cards a user has stored, measured at Chrome
+    profile launch time.
+  </summary>
+</histogram>
+
 <histogram name="Autofill.StoredProfileCount">
   <owner>isherman@chromium.org</owner>
   <summary>

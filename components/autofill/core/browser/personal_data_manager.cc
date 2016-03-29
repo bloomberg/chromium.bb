@@ -212,7 +212,8 @@ PersonalDataManager::PersonalDataManager(const std::string& app_locale)
       pref_service_(NULL),
       account_tracker_(NULL),
       is_off_the_record_(false),
-      has_logged_profile_count_(false) {}
+      has_logged_profile_count_(false),
+      has_logged_credit_card_count_(false) {}
 
 void PersonalDataManager::Init(scoped_refptr<AutofillWebDataService> database,
                                PrefService* pref_service,
@@ -296,6 +297,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
       if (h == pending_creditcards_query_) {
         ReceiveLoadedDbValues(h, result, &pending_creditcards_query_,
                               &local_credit_cards_);
+        LogLocalCreditCardCount();
       } else {
         ReceiveLoadedDbValues(h, result, &pending_server_creditcards_query_,
                               &server_credit_cards_);
@@ -1184,6 +1186,13 @@ void PersonalDataManager::LogProfileCount() const {
   if (!has_logged_profile_count_) {
     AutofillMetrics::LogStoredProfileCount(web_profiles_.size());
     has_logged_profile_count_ = true;
+  }
+}
+
+void PersonalDataManager::LogLocalCreditCardCount() const {
+  if (!has_logged_credit_card_count_) {
+    AutofillMetrics::LogStoredLocalCreditCardCount(local_credit_cards_.size());
+    has_logged_credit_card_count_ = true;
   }
 }
 

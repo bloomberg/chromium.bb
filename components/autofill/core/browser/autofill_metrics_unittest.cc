@@ -1371,6 +1371,30 @@ TEST_F(AutofillMetricsTest, StoredProfileCount) {
   }
 }
 
+// Test that the local credit card count is logged correctly.
+TEST_F(AutofillMetricsTest, StoredLocalCreditCardCount) {
+  // The metric should be logged when the credit cards are first loaded.
+  {
+    base::HistogramTester histogram_tester;
+    personal_data_->RecreateCreditCards(
+        true /* include_local_credit_card */,
+        false /* include_masked_server_credit_card */,
+        false /* include_full_server_credit_card */);
+    histogram_tester.ExpectUniqueSample("Autofill.StoredLocalCreditCardCount",
+                                        1, 1);
+  }
+
+  // The metric should only be logged once.
+  {
+    base::HistogramTester histogram_tester;
+    personal_data_->RecreateCreditCards(
+        true /* include_local_credit_card */,
+        false /* include_masked_server_credit_card */,
+        false /* include_full_server_credit_card */);
+    histogram_tester.ExpectTotalCount("Autofill.StoredLocalCreditCardCount", 0);
+  }
+}
+
 // Test that we correctly log when Autofill is enabled.
 TEST_F(AutofillMetricsTest, AutofillIsEnabledAtStartup) {
   base::HistogramTester histogram_tester;
