@@ -2639,7 +2639,7 @@ def GetConfig():
       )
 
   def _AdjustLeaderFollowerReleaseConfigs(
-      leader_board,
+      leader_boards,
       follower_boards=None,
       variant_boards=None,
       **kwargs):
@@ -2653,9 +2653,12 @@ def GetConfig():
     followers since we expect them to be very similar.
 
     Args:
-      leader_board: Name of the leader board for the group.
-      follower_boards: List of board names for normal followers.
-      variant_boards: List of board names of variants which need even less done.
+      leader_boards: List/tuple of leader boards for the group, or name of a
+                     single leader board.
+      follower_boards: List of board names for normal followers (reduced GCE
+                       friendly testing).
+      variant_boards: List of board names of variants (chrome is binary
+                      identical to a leader/follower).
       kwargs: Any special build config settings needed for all builds in this
               group can be passed in as additional named arguments.
     """
@@ -2663,8 +2666,12 @@ def GetConfig():
       """Convert a board name into the name of it's release config."""
       return '%s-release' % board
 
+    # If leader_boards is a simple string, turn it into a single element tuple.
+    if isinstance(leader_boards, basestring):
+      leader_boards = (leader_boards,)
+
     # Compute all release configuration names.
-    leader_name = release_name(leader_board)
+    leaders = [release_name(b) for b in leader_boards or []]
     followers = [release_name(b) for b in follower_boards or []]
     variants = [release_name(b) for b in variant_boards or []]
 
@@ -2687,10 +2694,11 @@ def GetConfig():
     variant_config = follower_config.derive(chrome_sdk=False)
 
     # Adjust the leader board.
-    site_config[leader_name] = site_config[leader_name].derive(
-        leader_config,
-        **kwargs
-    )
+    for config_name in leaders:
+      site_config[config_name] = site_config[config_name].derive(
+          leader_config,
+          **kwargs
+      )
 
     # Adjust all follower/variant boards based on above options.
     for config_name in followers:
