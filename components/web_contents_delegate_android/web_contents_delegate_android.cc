@@ -429,9 +429,8 @@ void WebContentsDelegateAndroid::MoveValidationMessage(
   }
 }
 
-bool WebContentsDelegateAndroid::RequestAppBanner(
+void WebContentsDelegateAndroid::RequestAppBannerFromDevTools(
     content::WebContents* web_contents) {
-  return false;
 }
 
 // ----------------------------------------------------------------------------

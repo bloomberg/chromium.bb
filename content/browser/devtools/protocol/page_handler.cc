@@ -357,11 +357,11 @@ Response PageHandler::SetColorPickerEnabled(bool enabled) {
   return Response::OK();
 }
 
-Response PageHandler::RequestAppBanner(bool* result) {
+Response PageHandler::RequestAppBanner() {
   WebContentsImpl* web_contents = GetWebContents();
   if (!web_contents)
     return Response::InternalError("Could not connect to view");
-  *result = web_contents->GetDelegate()->RequestAppBanner(web_contents);
+  web_contents->GetDelegate()->RequestAppBannerFromDevTools(web_contents);
   return Response::OK();
 }
 

@@ -1445,6 +1445,11 @@ scoped_ptr<content::BluetoothChooser> Browser::RunBluetoothChooser(
   return std::move(bluetooth_chooser_desktop);
 }
 
+void Browser::RequestAppBannerFromDevTools(content::WebContents* web_contents) {
+  banners::AppBannerManagerDesktop::CreateForWebContents(web_contents);
+  RequestAppBanner(web_contents);
+}
+
 bool Browser::RequestAppBanner(content::WebContents* web_contents) {
   banners::AppBannerManagerDesktop* manager =
       banners::AppBannerManagerDesktop::FromWebContents(web_contents);
