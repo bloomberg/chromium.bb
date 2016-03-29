@@ -423,16 +423,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
             this.updateInactivityWatcherState_();
           }.wrap(this));
           this.controls.attachMedia(this.videoElement_);
-          // TODO(ryoh):
-          // If you modify the video element that is already inserted,
-          // you have to call load() method.
-          // https://dev.w3.org/html5/spec-author-view/video.html
-          // But we always create new video element (see above),
-          // we don't have to call load().
-          // If you call load() method here,
-          // you can't see subtitles.
-          // (It might be a bug: https://crbug.com/594537)
-          //this.videoElement_.load();
+          this.videoElement_.load();
           callback();
         }.bind(this))
         // In case of error.

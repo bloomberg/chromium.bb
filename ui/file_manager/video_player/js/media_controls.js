@@ -619,7 +619,7 @@ MediaControls.prototype.attachMedia = function(mediaElement) {
     /* Copy the user selected volume to the new media element. */
     this.savedVolume_ = this.media_.volume = this.volume_.ratio;
   }
-  if (this.media_.textTracks.length > 0) {
+  if (this.media_.textTracks && this.media_.textTracks.length > 0) {
     this.attachTextTrack_(this.media_.textTracks[0]);
   } else {
     this.attachTextTrack_(null);
