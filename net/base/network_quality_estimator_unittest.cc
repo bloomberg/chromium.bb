@@ -374,7 +374,7 @@ TEST(NetworkQualityEstimatorTest, PercentileDifferentTimestamps) {
   std::map<std::string, std::string> variation_params;
   TestNetworkQualityEstimator estimator(variation_params);
   base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeTicks very_old = base::TimeTicks::UnixEpoch();
+  base::TimeTicks very_old = now - base::TimeDelta::FromDays(365);
 
   // First 50 samples have very old timestamp.
   for (int i = 1; i <= 50; ++i) {
