@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
@@ -41,6 +42,12 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace safe_browsing {
+
+// Enables reporting of suspicious modules loaded in the process. If this
+// feature is disabled, incidents get pruned instead of reported.
+extern const base::Feature kIncidentReportingSuspiciousModuleReporting{
+    "IncidentReportingSuspiciousModuleReporting",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace {
 
@@ -972,6 +979,12 @@ void IncidentReportingService::ProcessIncidentsIfCollectionComplete() {
         LogIncidentDataType(NO_DOWNLOAD, *incident);
         // Drop the incident and mark for future pruning since no executable
         // download was found.
+        transaction.MarkAsReported(state.type, state.key, state.digest);
+      } else if (incident->GetType() == IncidentType::SUSPICIOUS_MODULE &&
+                 !base::FeatureList::IsEnabled(
+                     kIncidentReportingSuspiciousModuleReporting)) {
+        LogIncidentDataType(PRUNED, *incident);
+        // Drop the incident and mark for future pruning.
         transaction.MarkAsReported(state.type, state.key, state.digest);
       } else {
         LogIncidentDataType(ACCEPTED, *incident);

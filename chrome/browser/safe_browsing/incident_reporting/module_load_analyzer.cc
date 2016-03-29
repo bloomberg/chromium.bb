@@ -14,7 +14,7 @@
 namespace safe_browsing {
 
 #if defined(OS_WIN)
-// Enables analysis and reporting of suspicious modules loaded in the process.
+// Enables analysis of suspicious modules loaded in the process.
 extern const base::Feature kIncidentReportingModuleLoadAnalysis{
     "IncidentReportingModuleLoadAnalysis", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
