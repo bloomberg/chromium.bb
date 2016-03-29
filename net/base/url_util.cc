@@ -16,7 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/escape.h"
-#include "net/base/ip_address_number.h"
+#include "net/base/ip_address.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 #include "url/url_canon.h"
@@ -319,16 +319,15 @@ bool IsHostnameNonUnique(const std::string& hostname) {
   // If |hostname| is an IP address, check to see if it's in an IANA-reserved
   // range.
   if (host_info.IsIPAddress()) {
-    IPAddressNumber host_addr;
-    if (!ParseIPLiteralToNumber(hostname.substr(host_info.out_host.begin,
-                                                host_info.out_host.len),
-                                &host_addr)) {
+    IPAddress host_addr;
+    if (!host_addr.AssignFromIPLiteral(hostname.substr(
+            host_info.out_host.begin, host_info.out_host.len))) {
       return false;
     }
     switch (host_info.family) {
       case url::CanonHostInfo::IPV4:
       case url::CanonHostInfo::IPV6:
-        return IsIPAddressReserved(host_addr);
+        return host_addr.IsReserved();
       case url::CanonHostInfo::NEUTRAL:
       case url::CanonHostInfo::BROKEN:
         return false;
@@ -354,24 +353,17 @@ bool IsLocalhost(base::StringPiece host) {
   if (IsLocalHostname(host, nullptr))
     return true;
 
-  IPAddressNumber ip_number;
-  if (ParseIPLiteralToNumber(host, &ip_number)) {
-    size_t size = ip_number.size();
+  IPAddress ip_address;
+  if (ip_address.AssignFromIPLiteral(host)) {
+    size_t size = ip_address.size();
     switch (size) {
-      case kIPv4AddressSize: {
-        IPAddressNumber localhost_prefix;
-        localhost_prefix.push_back(127);
-        for (int i = 0; i < 3; ++i) {
-          localhost_prefix.push_back(0);
-        }
-        return IPNumberMatchesPrefix(ip_number, localhost_prefix, 8);
+      case IPAddress::kIPv4AddressSize: {
+        const uint8_t prefix[] = {127};
+        return IPAddressStartsWith(ip_address, prefix);
       }
 
-      case kIPv6AddressSize: {
-        struct in6_addr sin6_addr;
-        memcpy(&sin6_addr, &ip_number[0], kIPv6AddressSize);
-        return !!IN6_IS_ADDR_LOOPBACK(&sin6_addr);
-      }
+      case IPAddress::kIPv6AddressSize:
+        return ip_address == IPAddress::IPv6Localhost();
 
       default:
         NOTREACHED();

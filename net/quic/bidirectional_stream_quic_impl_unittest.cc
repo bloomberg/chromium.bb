@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/http/bidirectional_stream_request_info.h"
 #include "net/http/transport_security_state.h"
@@ -280,8 +281,7 @@ class BidirectionalStreamQuicImplTest
         stream_id_(kClientDataStreamId1),
         maker_(GetParam(), connection_id_, &clock_, kDefaultServerHostName),
         random_generator_(0) {
-    IPAddressNumber ip;
-    CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
+    IPAddress ip(192, 0, 2, 33);
     peer_addr_ = IPEndPoint(ip, 443);
     self_addr_ = IPEndPoint(ip, 8435);
     clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(20));

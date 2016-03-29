@@ -23,6 +23,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
+#include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
@@ -53,11 +54,11 @@ bool StringToIPEndPoint(const std::string& ip_address_and_port,
   if (port == -1)
     port = dns_protocol::kDefaultPort;
 
-  net::IPAddressNumber ip_number;
-  if (!net::ParseIPLiteralToNumber(ip, &ip_number))
+  net::IPAddress ip_address;
+  if (!ip_address.AssignFromIPLiteral(ip))
     return false;
 
-  *ip_end_point = net::IPEndPoint(ip_number, static_cast<uint16_t>(port));
+  *ip_end_point = net::IPEndPoint(ip_address, static_cast<uint16_t>(port));
   return true;
 }
 
@@ -328,7 +329,7 @@ bool GDig::ParseCommandLine(int argc, const char* argv[]) {
       parsed_command_line.GetSwitchValueASCII("nameserver");
     if (!StringToIPEndPoint(nameserver, &nameserver_)) {
       fprintf(stderr,
-              "Cannot parse the namerserver string into an IPEndPoint\n");
+              "Cannot parse the nameserver string into an IPEndPoint\n");
       return false;
     }
   }
