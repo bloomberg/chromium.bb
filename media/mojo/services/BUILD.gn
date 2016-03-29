@@ -70,7 +70,7 @@ source_set("proxy") {
     "mojo_video_decoder.h",
   ]
 
-  all_dependent_configs = [ ":mojo_media_config" ]
+  public_configs = [ ":mojo_media_config" ]
 
   deps = [
     "//base",
@@ -119,7 +119,7 @@ source_set("cdm_service") {
   # which is a bit hacky since we need to access CdmService directly
   # from C++ code (AVDA). In the future we'll make those decoders part of
   # MojoMediaApplication, then we won't need this.
-  all_dependent_configs = [ ":mojo_media_config" ]
+  public_configs = [ ":mojo_media_config" ]
 
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
@@ -172,7 +172,7 @@ source_set("application") {
     "service_factory_impl.h",
   ]
 
-  all_dependent_configs = [ ":mojo_media_config" ]
+  public_configs = [ ":mojo_media_config" ]
 
   deps = [
     ":audio_decoder_service",
@@ -190,7 +190,7 @@ source_set("application_factory") {
     "mojo_media_application_factory.h",
   ]
 
-  all_dependent_configs = [ ":mojo_media_config" ]
+  public_configs = [ ":mojo_media_config" ]
 
   deps = [
     ":application",
