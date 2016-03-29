@@ -310,11 +310,10 @@ class WizardController : public BaseScreenDelegate,
   // Returns false if timezone has already been resolved.
   bool SetOnTimeZoneResolvedForTesting(const base::Closure& callback);
 
-  // Returns true for pairing remora OOBE.
+  // Returns true if kHostPairingOobe perf has been set. If it's set, launch the
+  // pairing remora OOBE from the beginning no matter an eligible controller is
+  // detected or not.
   bool IsRemoraPairingOobe() const;
-
-  // Returns true for pairing slave OOBE.
-  bool IsSlavePairingOobe() const;
 
   // Starts listening for an incoming shark controller connection, if we are
   // running remora OOBE.
@@ -428,9 +427,6 @@ class WizardController : public BaseScreenDelegate,
   // Tests check result of timezone resolve.
   bool timezone_resolved_ = false;
   base::Closure on_timezone_resolved_for_testing_;
-
-  // True if shark device initiated connection to this device.
-  bool shark_controller_detected_ = false;
 
   // Listens for incoming connection from a shark controller if a regular (not
   // pairing) remora OOBE is active. If connection is established, wizard

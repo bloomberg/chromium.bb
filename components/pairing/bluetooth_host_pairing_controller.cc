@@ -100,13 +100,6 @@ BluetoothHostPairingController::BluetoothHostPairingController()
 
 BluetoothHostPairingController::~BluetoothHostPairingController() {
   Reset();
-  if (adapter_.get()) {
-    if (adapter_->IsDiscoverable()) {
-      adapter_->SetDiscoverable(false, base::Closure(), base::Closure());
-    }
-    adapter_->RemoveObserver(this);
-    adapter_ = NULL;
-  }
 }
 
 void BluetoothHostPairingController::ChangeStage(Stage new_stage) {
@@ -159,6 +152,19 @@ void BluetoothHostPairingController::Reset() {
     service_socket_->Close();
     service_socket_ = NULL;
   }
+
+  if (adapter_.get()) {
+    if (adapter_->IsDiscoverable()) {
+      adapter_->SetDiscoverable(false, base::Bind(&base::DoNothing),
+                                base::Bind(&base::DoNothing));
+    }
+    if (!was_powered_) {
+      adapter_->SetPowered(false, base::Bind(&base::DoNothing),
+                           base::Bind(&base::DoNothing));
+    }
+    adapter_->RemoveObserver(this);
+    adapter_ = NULL;
+  }
   ChangeStage(STAGE_NONE);
 }
 
@@ -194,6 +200,7 @@ void BluetoothHostPairingController::SetName() {
 void BluetoothHostPairingController::OnSetName() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (adapter_->IsPowered()) {
+    was_powered_ = true;
     OnSetPowered();
   } else {
     adapter_->SetPowered(

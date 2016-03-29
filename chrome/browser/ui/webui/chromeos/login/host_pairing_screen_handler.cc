@@ -24,11 +24,6 @@ const char kMethodContextChanged[] = "contextChanged";
 // all screens migrate to context-based communications.
 const char kCallbackContextReady[] = "contextReady";
 
-bool IsBootstrappingSlave() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kOobeBootstrappingSlave);
-}
-
 }  // namespace
 
 HostPairingScreenHandler::HostPairingScreenHandler()
@@ -65,19 +60,18 @@ void HostPairingScreenHandler::DeclareLocalizedValues(
   std::string prefix;
   base::RemoveChars(kJsScreenPath, ".", &prefix);
 
+  // TODO(xdai): Clean up all unrelated strings and rename others if necessary.
   builder->Add(prefix + "WelcomeTitle", IDS_PAIRING_HOST_WELCOME_TITLE);
   builder->Add(prefix + "WelcomeText", IDS_PAIRING_HOST_WELCOME_TEXT);
-  builder->Add(prefix + "ConfirmationTitle",
-               IDS_PAIRING_HOST_CONFIRMATION_TITLE);
+  builder->Add(prefix + "ConfirmationTitle", IDS_SLAVE_CONFIRMATION_TITLE);
   builder->Add(prefix + "UpdatingTitle", IDS_PAIRING_HOST_UPDATING_TITLE);
   builder->Add(prefix + "UpdatingText", IDS_PAIRING_HOST_UPDATING_TEXT);
-  builder->Add(prefix + "EnrollTitle", IDS_PAIRING_ENROLL_TITLE);
-  builder->Add(prefix + "EnrollingTitle",
-               IDS_PAIRING_ENROLLMENT_IN_PROGRESS);
+  builder->Add(prefix + "EnrollTitle", IDS_SLAVE_ENROLL_TITLE);
+  builder->Add(prefix + "EnrollingTitle", IDS_SLAVE_ENROLLMENT_IN_PROGRESS);
   builder->Add(prefix + "DoneTitle", IDS_PAIRING_HOST_DONE_TITLE);
   builder->Add(prefix + "DoneText", IDS_PAIRING_HOST_DONE_TEXT);
   builder->Add(prefix + "EnrollmentErrorTitle",
-               IDS_PAIRING_ENROLLMENT_ERROR_TITLE);
+               IDS_SLAVE_ENROLLMENT_ERROR_TITLE);
   builder->Add(prefix + "ErrorNeedsRestart",
                IDS_PAIRING_HOST_ERROR_NEED_RESTART_TEXT);
   builder->Add(prefix + "SetupBasicConfigTitle",
@@ -92,14 +86,6 @@ void HostPairingScreenHandler::DeclareLocalizedValues(
                IDS_PAIRING_HOST_ERROR_NEED_RESTART_TEXT);
   builder->Add(prefix + "ErrorNeedsRestart",
                IDS_PAIRING_HOST_ERROR_NEED_RESTART_TEXT);
-
-  if (IsBootstrappingSlave()) {
-    builder->Add(prefix + "ConfirmationTitle", IDS_SLAVE_CONFIRMATION_TITLE);
-    builder->Add(prefix + "EnrollTitle", IDS_SLAVE_ENROLL_TITLE);
-    builder->Add(prefix + "EnrollingTitle", IDS_SLAVE_ENROLLMENT_IN_PROGRESS);
-    builder->Add(prefix + "EnrollmentErrorTitle",
-                 IDS_SLAVE_ENROLLMENT_ERROR_TITLE);
-  }
 }
 
 void HostPairingScreenHandler::RegisterMessages() {

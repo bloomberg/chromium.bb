@@ -70,6 +70,7 @@ void ControllerPairingScreenHandler::DeclareLocalizedValues(
   std::string prefix;
   base::RemoveChars(kJsScreenPath, ".", &prefix);
 
+  // TODO(xdai): Remove unnecessary strings.
   builder->Add(prefix + "WelcomeTitle", IDS_PAIRING_CONTROLLER_WELCOME);
   builder->Add(prefix + "Searching", IDS_PAIRING_CONTROLLER_SEARCHING);
   builder->Add(prefix + "HelpBtn", IDS_PAIRING_NEED_HELP);
@@ -95,12 +96,12 @@ void ControllerPairingScreenHandler::DeclareLocalizedValues(
                IDS_PAIRING_CONTROLLER_CONNECTION_LOST_TEXT);
   builder->Add(prefix + "HostNetworkErrorTitle",
                IDS_PAIRING_CONTROLLER_HOST_NETWORK_ERROR_TITLE);
-  builder->Add(prefix + "EnrollTitle", IDS_PAIRING_ENROLL_TITLE);
+  builder->Add(prefix + "EnrollTitle", IDS_PAIRING_CONTROLLER_ENROLL_TITLE);
   builder->Add(prefix + "EnrollText1", IDS_PAIRING_CONTROLLER_ENROLL_TEXT_1);
   builder->Add(prefix + "EnrollText2", IDS_PAIRING_CONTROLLER_ENROLL_TEXT_2);
   builder->Add(prefix + "ContinueBtn", IDS_PAIRING_CONTROLLER_CONTINUE);
   builder->Add(prefix + "EnrollmentInProgress",
-               IDS_PAIRING_ENROLLMENT_IN_PROGRESS);
+               IDS_PAIRING_CONTROLLER_ENROLLMENT_IN_PROGRESS);
   builder->Add(prefix + "EnrollmentErrorTitle",
                IDS_PAIRING_ENROLLMENT_ERROR_TITLE);
   builder->Add(prefix + "EnrollmentErrorHostRestarts",

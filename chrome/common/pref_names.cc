@@ -1790,6 +1790,12 @@ const char kOobeComplete[] = "OobeComplete";
 // The name of the screen that has to be shown if OOBE has been interrupted.
 const char kOobeScreenPending[] = "OobeScreenPending";
 
+// A boolean pref to indicate if an eligible controller (either a Chrome OS
+// device, or an Android device) is detected during bootstrapping or
+// shark/remora setup process. A controller can help the device go through OOBE
+// and get enrolled into a domain automatically.
+const char kOobeControllerDetected[] = "OobeControllerDetected";
+
 // A boolean pref for whether the Goodies promotion webpage has been displayed,
 // or otherwise disqualified for auto-display, on this device.
 const char kCanShowOobeGoodiesPage[] = "CanShowOobeGoodiesPage";

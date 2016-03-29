@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/test/https_forwarder.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -322,6 +323,10 @@ class EnterprisePlatformKeysTest
 
   void TearDownOnMainThread() override {
     ExtensionApiTest::TearDownOnMainThread();
+
+    if (chromeos::LoginDisplayHost::default_host())
+      chromeos::LoginDisplayHost::default_host()->Finalize();
+    base::MessageLoop::current()->RunUntilIdle();
 
     if (GetParam().system_token_ == SYSTEM_TOKEN_EXISTS) {
       base::RunLoop loop;

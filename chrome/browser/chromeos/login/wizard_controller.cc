@@ -142,10 +142,17 @@ bool IsRemoraRequisition() {
       ->IsRemoraRequisition();
 }
 
-// Checks if the device is a "Slave" device in the bootstrapping process.
-bool IsBootstrappingSlave() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kOobeBootstrappingSlave);
+// Checks if a controller device ("Master") is detected during the bootstrapping
+// or shark/remora setup process.
+bool IsControllerDetected() {
+  return g_browser_process->local_state()->GetBoolean(
+      prefs::kOobeControllerDetected);
+}
+
+void SetControllerDetectedPref(bool value) {
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetBoolean(prefs::kOobeControllerDetected, value);
+  prefs->CommitPendingWrite();
 }
 
 // Checks if the device is a "Master" device in the bootstrapping process.
@@ -238,6 +245,10 @@ WizardController::WizardController(LoginDisplayHost* host, OobeUI* oobe_ui)
 }
 
 WizardController::~WizardController() {
+  if (shark_connection_listener_.get()) {
+    base::MessageLoop::current()->DeleteSoon(
+        FROM_HERE, shark_connection_listener_.release());
+  }
   if (default_controller_ == this) {
     default_controller_ = nullptr;
   } else {
@@ -285,11 +296,15 @@ void WizardController::Init(const std::string& first_screen_name) {
   const std::string screen_pref =
       GetLocalState()->GetString(prefs::kOobeScreenPending);
   if (is_out_of_box_ && !screen_pref.empty() && !IsRemoraPairingOobe() &&
-      !IsBootstrappingSlave() &&
+      !IsControllerDetected() &&
       (first_screen_name.empty() ||
        first_screen_name == WizardController::kTestNoScreenName)) {
     first_screen_name_ = screen_pref;
   }
+  // We need to reset the kOobeControllerDetected pref to allow the user to have
+  // the choice to setup the device manually. The pref will be set properly if
+  // an eligible controller is detected later.
+  SetControllerDetectedPref(false);
 
   AdvanceToScreen(first_screen_name_);
   if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
@@ -593,7 +608,7 @@ void WizardController::OnUpdateCompleted() {
                             ->IsSharkRequisition();
   if (is_shark || IsBootstrappingMaster()) {
     ShowControllerPairingScreen();
-  } else if (IsBootstrappingSlave() && shark_controller_detected_) {
+  } else if (IsControllerDetected()) {
     ShowHostPairingScreen();
   } else {
     ShowAutoEnrollmentCheckScreen();
@@ -932,7 +947,7 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
   } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       time_oobe_started_ = base::Time::Now();
-      if (IsRemoraPairingOobe() || IsSlavePairingOobe()) {
+      if (IsRemoraPairingOobe() || IsControllerDetected()) {
         ShowHostPairingScreen();
       } else if (CanShowHIDDetectionScreen()) {
         hid_screen_ = GetScreen(kHIDDetectionScreenName);
@@ -1309,22 +1324,14 @@ bool WizardController::SetOnTimeZoneResolvedForTesting(
 }
 
 bool WizardController::IsRemoraPairingOobe() const {
-  return IsRemoraRequisition() &&
-         (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kHostPairingOobe) ||
-          shark_controller_detected_);
-}
-
-bool WizardController::IsSlavePairingOobe() const {
-  return IsBootstrappingSlave() && shark_controller_detected_;
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kHostPairingOobe);
 }
 
 void WizardController::MaybeStartListeningForSharkConnection() {
-  if (!IsRemoraRequisition() && !IsBootstrappingSlave())
-    return;
-
   // We shouldn't be here if we are running pairing OOBE already.
-  DCHECK(!IsRemoraPairingOobe() && !IsSlavePairingOobe());
+  if (IsControllerDetected())
+    return;
 
   if (!shark_connection_listener_) {
     shark_connection_listener_.reset(
@@ -1340,7 +1347,7 @@ void WizardController::OnSharkConnected(
   remora_controller_ = std::move(remora_controller);
   base::MessageLoop::current()->DeleteSoon(
       FROM_HERE, shark_connection_listener_.release());
-  shark_controller_detected_ = true;
+  SetControllerDetectedPref(true);
   ShowHostPairingScreen();
 }
 

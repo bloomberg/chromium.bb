@@ -6007,7 +6007,7 @@ All users must sign out to continue.
   <message name="IDS_PAIRING_CONTROLLER_HOST_NETWORK_ERROR_TITLE" desc="Title of the controller page which says that the host device's network is not set up successfully.">
     Failed to set up your Chromebox's network
   </message>
-  <message name="IDS_PAIRING_ENROLL_TITLE" desc="Title of the enroll page of the 'Chromebox for meeting' setup process.">
+  <message name="IDS_PAIRING_CONTROLLER_ENROLL_TITLE" desc="Title of the enroll page of the 'Chromebox for meeting' setup process.">
     Enroll in your organization
   </message>
   <message name="IDS_PAIRING_CONTROLLER_ENROLL_TEXT_1" desc="First paragraph of text shown on the controller's enroll page of the 'Chromebox for meeting' setup process. Second paragraph is: 'This will only happen once, and your credentials will not be stored.'">
@@ -6019,7 +6019,7 @@ All users must sign out to continue.
   <message name="IDS_PAIRING_CONTROLLER_CONTINUE" desc="Text on buttons leading to the next step of the 'Chromebox for meeting' setup process.">
     Continue
   </message>
-  <message name="IDS_PAIRING_ENROLLMENT_IN_PROGRESS" desc="Message shown on enroll screens of the 'Chromebox for meeting' setup process.">
+  <message name="IDS_PAIRING_CONTROLLER_ENROLLMENT_IN_PROGRESS" desc="Message shown on enroll screens of the 'Chromebox for meeting' setup process.">
     Enrolling in <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="DOMAIN_NAME">$1<ex>example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph>...
   </message>
   <message name="IDS_PAIRING_ENROLLMENT_ERROR_TITLE" desc="Title of the page shown when enrollment attempt is failed during the 'Chromebox for meeting' setup process.">
@@ -6042,9 +6042,6 @@ All users must sign out to continue.
   </message>
   <message name="IDS_PAIRING_HOST_WELCOME_TEXT" desc="Text on the host's welcome page of the 'Chromebox for meeting' setup process.">
     Turn on your touch controller to set me up
-  </message>
-  <message name="IDS_PAIRING_HOST_CONFIRMATION_TITLE" desc="Title of the host's confirmation page of the 'Chromebox for meeting' setup process. 6-digit confirmation code is displayed below.">
-    Pair with a controller
   </message>
   <message name="IDS_PAIRING_HOST_UPDATING_TITLE" desc="Title of the host's update page of the 'Chromebox for meeting' setup process.">
     Updating Chromebox...

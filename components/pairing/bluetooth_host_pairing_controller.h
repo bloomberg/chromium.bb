@@ -109,6 +109,7 @@ class BluetoothHostPairingController
   UpdateStatus update_status_;
   EnrollmentStatus enrollment_status_;
   std::string permanent_id_;
+  bool was_powered_ = false;
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
   scoped_refptr<device::BluetoothSocket> service_socket_;

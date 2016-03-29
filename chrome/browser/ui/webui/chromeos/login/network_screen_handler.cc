@@ -207,21 +207,15 @@ void NetworkScreenHandler::GetAdditionalParameters(
   // So we need to disable activation of login layouts if we are already in
   // active user session.
   //
-  // 3) This is the bootstrapping process for the remora/"Slave" device. The
-  // locale & input of the remora/"Slave" device is set up by a shark/"Master"
-  // device. In this case we don't want EnableLoginLayout() to reset the input
-  // method to the hardware default method.
-  const bool is_remora = g_browser_process->platform_part()
-                             ->browser_policy_connector_chromeos()
-                             ->GetDeviceCloudPolicyManager()
-                             ->IsRemoraRequisition();
-
-  const bool is_slave = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kOobeBootstrappingSlave);
+  // 3) This is the bootstrapping process for a "Slave" device. The locale &
+  // input of the "Slave" device is set up by a "Master" device. In this case we
+  // don't want EnableLoginLayout() to reset the input method to the hardware
+  // default method.
+  const bool is_slave = g_browser_process->local_state()->GetBoolean(
+      prefs::kOobeControllerDetected);
 
   const bool enable_layouts =
-      !user_manager::UserManager::Get()->IsUserLoggedIn() && !is_slave &&
-      !is_remora;
+      !user_manager::UserManager::Get()->IsUserLoggedIn() && !is_slave;
 
   dict->Set("languageList", language_list.release());
   dict->Set(
