@@ -385,8 +385,7 @@ public:
     {
     }
 
-    // FIXME: Doesn't work if there is an inline buffer, due to crbug.com/360572
-    HeapDeque<T, 0>& operator=(const HeapDeque& other)
+    HeapDeque& operator=(const HeapDeque& other)
     {
         HeapDeque<T> copy(other);
         Deque<T, inlineCapacity, HeapAllocator>::swap(copy);

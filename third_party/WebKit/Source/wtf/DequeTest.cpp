@@ -42,9 +42,10 @@ TEST(DequeTest, Basic)
     EXPECT_EQ(0ul, intDeque.size());
 }
 
-void checkNumberSequence(Deque<int>& deque, int from, int to, bool increment)
+template <size_t inlineCapacity>
+void checkNumberSequence(Deque<int, inlineCapacity>& deque, int from, int to, bool increment)
 {
-    Deque<int>::iterator it = increment ? deque.begin() : deque.end();
+    auto it = increment ? deque.begin() : deque.end();
     size_t index = increment ? 0 : deque.size();
     int step = from < to ? 1 : -1;
     for (int i = from; i != to + step; i += step) {
@@ -65,9 +66,10 @@ void checkNumberSequence(Deque<int>& deque, int from, int to, bool increment)
     EXPECT_EQ(increment ? deque.size() : 0, index);
 }
 
-void checkNumberSequenceReverse(Deque<int>& deque, int from, int to, bool increment)
+template <size_t inlineCapacity>
+void checkNumberSequenceReverse(Deque<int, inlineCapacity>& deque, int from, int to, bool increment)
 {
-    Deque<int>::reverse_iterator it = increment ? deque.rbegin() : deque.rend();
+    auto it = increment ? deque.rbegin() : deque.rend();
     size_t index = increment ? 0 : deque.size();
     int step = from < to ? 1 : -1;
     for (int i = from; i != to + step; i += step) {
@@ -88,9 +90,10 @@ void checkNumberSequenceReverse(Deque<int>& deque, int from, int to, bool increm
     EXPECT_EQ(increment ? deque.size() : 0, index);
 }
 
-TEST(DequeTest, Reverse)
+template <size_t inlineCapacity>
+void reverseTest()
 {
-    Deque<int> intDeque;
+    Deque<int, inlineCapacity> intDeque;
     intDeque.append(10);
     intDeque.append(11);
     intDeque.append(12);
@@ -126,7 +129,7 @@ TEST(DequeTest, Reverse)
     checkNumberSequenceReverse(intDeque, 199, 191, true);
     checkNumberSequenceReverse(intDeque, 191, 199, false);
 
-    Deque<int> intDeque2;
+    Deque<int, inlineCapacity> intDeque2;
     swap(intDeque, intDeque2);
 
     checkNumberSequence(intDeque2, 191, 199, true);
@@ -149,6 +152,12 @@ TEST(DequeTest, Reverse)
     checkNumberSequenceReverse(intDeque2, 191, 199, false);
 }
 
+TEST(DequeTest, Reverse)
+{
+    reverseTest<0>();
+    reverseTest<2>();
+}
+
 class DestructCounter {
 public:
     explicit DestructCounter(int i, int* destructNumber)
@@ -164,9 +173,8 @@ private:
     int* m_destructNumber;
 };
 
-using OwnPtrDeque = Deque<OwnPtr<DestructCounter>>;
-
-TEST(DequeTest, OwnPtr)
+template <typename OwnPtrDeque>
+void ownPtrTest()
 {
     int destructNumber = 0;
     OwnPtrDeque deque;
@@ -181,7 +189,7 @@ TEST(DequeTest, OwnPtr)
     EXPECT_EQ(0, destructNumber);
 
     size_t index = 0;
-    for (OwnPtrDeque::iterator iter = deque.begin(); iter != deque.end(); ++iter) {
+    for (auto iter = deque.begin(); iter != deque.end(); ++iter) {
         OwnPtr<DestructCounter>& refCounter = *iter;
         EXPECT_EQ(index, static_cast<size_t>(refCounter->get()));
         EXPECT_EQ(index, static_cast<size_t>((*refCounter).get()));
@@ -189,7 +197,7 @@ TEST(DequeTest, OwnPtr)
     }
     EXPECT_EQ(0, destructNumber);
 
-    OwnPtrDeque::iterator it = deque.begin();
+    auto it = deque.begin();
     for (index = 0; index < deque.size(); ++index) {
         OwnPtr<DestructCounter>& refCounter = *it;
         EXPECT_EQ(index, static_cast<size_t>(refCounter->get()));
@@ -230,6 +238,12 @@ TEST(DequeTest, OwnPtr)
 
     copyDeque.clear();
     EXPECT_EQ(count, static_cast<size_t>(destructNumber));
+}
+
+TEST(DequeTest, OwnPtr)
+{
+    ownPtrTest<Deque<OwnPtr<DestructCounter>>>();
+    ownPtrTest<Deque<OwnPtr<DestructCounter>, 2>>();
 }
 
 class MoveOnly {
@@ -319,11 +333,12 @@ private:
     int m_i;
 };
 
-TEST(DequeTest, SwapWithoutInlineCapacity)
+template <size_t inlineCapacity>
+void swapWithOrWithoutInlineCapacity()
 {
-    Deque<WrappedInt> dequeA;
+    Deque<WrappedInt, inlineCapacity> dequeA;
     dequeA.append(WrappedInt(1));
-    Deque<WrappedInt> dequeB;
+    Deque<WrappedInt, inlineCapacity> dequeB;
     dequeB.append(WrappedInt(2));
 
     ASSERT_EQ(dequeA.size(), dequeB.size());
@@ -361,6 +376,162 @@ TEST(DequeTest, SwapWithoutInlineCapacity)
     EXPECT_EQ(2, dequeB.first().get());
 
     dequeB.swap(dequeA);
+}
+
+TEST(DequeTest, SwapWithOrWithoutInlineCapacity)
+{
+    swapWithOrWithoutInlineCapacity<0>();
+    swapWithOrWithoutInlineCapacity<2>();
+}
+
+class LivenessCounter {
+public:
+    void ref() { s_live++; }
+    void deref() { s_live--; }
+
+    static unsigned s_live;
+};
+
+unsigned LivenessCounter::s_live = 0;
+
+// Filter a few numbers out to improve the running speed of the tests. The
+// test has nested loops, and removing even numbers from 4 and up from the
+// loops makes it run 10 times faster.
+bool interestingNumber(int i)
+{
+    return i < 4 || (i & 1);
+}
+
+template<size_t inlineCapacity>
+void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity()
+{
+    LivenessCounter::s_live = 0;
+    LivenessCounter counter;
+    EXPECT_EQ(0u, LivenessCounter::s_live);
+
+    Deque<RefPtr<LivenessCounter>, inlineCapacity> deque;
+    Deque<RefPtr<LivenessCounter>, inlineCapacity> deque2;
+    deque.append(&counter);
+    deque2.append(&counter);
+    EXPECT_EQ(2u, LivenessCounter::s_live);
+
+    // Add various numbers of elements to deques, then remove various numbers
+    // of elements from the head. This creates in-use ranges in the backing
+    // that sometimes wrap around the end of the buffer, testing various ways
+    // in which the in-use ranges of the inline buffers can overlap when we
+    // call swap().
+    for (unsigned i = 0; i < 12; i++) {
+        if (!interestingNumber(i))
+            continue;
+        for (unsigned j = i; j < 12; j++) {
+            if (!interestingNumber(j))
+                continue;
+            deque.clear();
+            deque2.clear();
+            EXPECT_EQ(0u, LivenessCounter::s_live);
+            for (unsigned k = 0; k < j; k++)
+                deque.append(&counter);
+            EXPECT_EQ(j, LivenessCounter::s_live);
+            EXPECT_EQ(j, deque.size());
+            for (unsigned k = 0; k < i; k++)
+                deque.removeFirst();
+
+            EXPECT_EQ(j - i, LivenessCounter::s_live);
+            EXPECT_EQ(j - i, deque.size());
+            deque.swap(deque2);
+            EXPECT_EQ(j - i, LivenessCounter::s_live);
+            EXPECT_EQ(0u, deque.size());
+            EXPECT_EQ(j - i, deque2.size());
+            deque.swap(deque2);
+            EXPECT_EQ(j - i, LivenessCounter::s_live);
+
+            deque2.append(&counter);
+            deque2.append(&counter);
+            deque2.append(&counter);
+
+            for (unsigned k = 0; k < 12; k++) {
+                EXPECT_EQ(3 + j - i, LivenessCounter::s_live);
+                EXPECT_EQ(j - i, deque.size());
+                EXPECT_EQ(3u, deque2.size());
+                deque.swap(deque2);
+                EXPECT_EQ(3 + j - i, LivenessCounter::s_live);
+                EXPECT_EQ(j - i, deque2.size());
+                EXPECT_EQ(3u, deque.size());
+                deque.swap(deque2);
+                EXPECT_EQ(3 + j - i, LivenessCounter::s_live);
+                EXPECT_EQ(j - i, deque.size());
+                EXPECT_EQ(3u, deque2.size());
+
+                deque2.removeFirst();
+                deque2.append(&counter);
+            }
+        }
+    }
+
+}
+
+TEST(DequeTest, SwapWithConstructorsAndDestructors)
+{
+    testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<0>();
+    testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<4>();
+    testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<9>();
+}
+
+template<size_t inlineCapacity>
+void testValuesMovedAndSwappedWithInlineCapacity()
+{
+    Deque<unsigned, inlineCapacity> deque;
+    Deque<unsigned, inlineCapacity> deque2;
+
+    // Add various numbers of elements to deques, then remove various numbers
+    // of elements from the head. This creates in-use ranges in the backing
+    // that sometimes wrap around the end of the buffer, testing various ways
+    // in which the in-use ranges of the inline buffers can overlap when we
+    // call swap().
+    for (unsigned pad = 0; pad < 12; pad++) {
+        if (!interestingNumber(pad))
+            continue;
+        for (unsigned pad2 = 0; pad2 < 12; pad2++) {
+            if (!interestingNumber(pad2))
+                continue;
+            for (unsigned size = 0; size < 12; size++) {
+                if (!interestingNumber(size))
+                    continue;
+                for (unsigned size2 = 0; size2 < 12; size2++) {
+                    if (!interestingNumber(size2))
+                        continue;
+                    deque.clear();
+                    deque2.clear();
+                    for (unsigned i = 0; i < pad; i++)
+                        deque.append(103);
+                    for (unsigned i = 0; i < pad2; i++)
+                        deque2.append(888);
+                    for (unsigned i = 0; i < size; i++)
+                        deque.append(i);
+                    for (unsigned i = 0; i < size2; i++)
+                        deque2.append(i + 42);
+                    for (unsigned i = 0; i < pad; i++)
+                        EXPECT_EQ(103u, deque.takeFirst());
+                    for (unsigned i = 0; i < pad2; i++)
+                        EXPECT_EQ(888u, deque2.takeFirst());
+                    EXPECT_EQ(size, deque.size());
+                    EXPECT_EQ(size2, deque2.size());
+                    deque.swap(deque2);
+                    for (unsigned i = 0; i < size; i++)
+                        EXPECT_EQ(i, deque2.takeFirst());
+                    for (unsigned i = 0; i < size2; i++)
+                        EXPECT_EQ(i + 42, deque.takeFirst());
+                }
+            }
+        }
+    }
+}
+
+TEST(DequeTest, ValuesMovedAndSwappedWithInlineCapacity)
+{
+    testValuesMovedAndSwappedWithInlineCapacity<0>();
+    testValuesMovedAndSwappedWithInlineCapacity<4>();
+    testValuesMovedAndSwappedWithInlineCapacity<9>();
 }
 
 TEST(DequeTest, UniquePtr)

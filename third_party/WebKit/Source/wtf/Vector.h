@@ -364,6 +364,15 @@ public:
 #endif
     }
 
+    // |end| is exclusive, a la STL.
+    struct OffsetRange final {
+        OffsetRange() : begin(0), end(0) { }
+        explicit OffsetRange(size_t begin, size_t end) : begin(begin), end(end) { ASSERT(begin <= end); }
+        bool empty() const { return begin == end; }
+        size_t begin;
+        size_t end;
+    };
+
 protected:
     VectorBufferBase()
         : m_buffer(nullptr)
@@ -388,8 +397,11 @@ class VectorBuffer;
 template <typename T, typename Allocator>
 class VectorBuffer<T, 0, Allocator> : protected VectorBufferBase<T, false, Allocator> {
 private:
-    typedef VectorBufferBase<T, false, Allocator> Base;
+    using Base = VectorBufferBase<T, false, Allocator>;
+
 public:
+    using OffsetRange = typename Base::OffsetRange;
+
     VectorBuffer()
     {
     }
@@ -440,10 +452,12 @@ public:
         m_capacity = 0;
     }
 
-    void swapVectorBuffer(VectorBuffer<T, 0, Allocator>& other)
+    // See the other specialization for the meaning of |thisHole| and |otherHole|. They are irrelevant in this case.
+    void swapVectorBuffer(VectorBuffer<T, 0, Allocator>& other, OffsetRange thisHole, OffsetRange otherHole)
     {
         std::swap(m_buffer, other.m_buffer);
         std::swap(m_capacity, other.m_capacity);
+        std::swap(m_size, other.m_size);
     }
 
     using Base::allocateBuffer;
@@ -473,15 +487,18 @@ private:
 template <typename T, size_t inlineCapacity, typename Allocator>
 class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
     WTF_MAKE_NONCOPYABLE(VectorBuffer);
-    typedef VectorBufferBase<T, true, Allocator> Base;
+private:
+    using Base = VectorBufferBase<T, true, Allocator>;
 
 public:
+    using OffsetRange = typename Base::OffsetRange;
+
     VectorBuffer()
         : Base(inlineBuffer(), inlineCapacity)
     {
     }
 
-    VectorBuffer(size_t capacity)
+    explicit VectorBuffer(size_t capacity)
         : Base(inlineBuffer(), inlineCapacity)
     {
         if (capacity > inlineCapacity)
@@ -565,45 +582,156 @@ public:
         return Base::allocationSize(capacity);
     }
 
-    void swapVectorBuffer(VectorBuffer<T, inlineCapacity, Allocator>& other)
+    // Swap two vector buffers, both of which have the same non-zero inline capacity.
+    //
+    // If the data is in an out-of-line buffer, we can just pass the pointers across the two buffers.
+    // If the data is in an inline buffer, we need to either swap or move each element, depending on whether each
+    // slot is occupied or not.
+    //
+    // Further complication comes from the fact that VectorBuffer is also used as the backing store of a Deque.
+    // Deque allocates the objects like a ring buffer, so there may be a "hole" (unallocated region) in the middle
+    // of the buffer. This function assumes elements in a range [m_buffer, m_buffer + m_size) are all allocated
+    // except for elements within |thisHole|. The same applies for |other.m_buffer| and |otherHole|.
+    void swapVectorBuffer(VectorBuffer<T, inlineCapacity, Allocator>& other, OffsetRange thisHole, OffsetRange otherHole)
     {
-        typedef VectorTypeOperations<T> TypeOperations;
+        using TypeOperations = VectorTypeOperations<T>;
 
-        if (buffer() == inlineBuffer() && other.buffer() == other.inlineBuffer()) {
-            ASSERT(m_capacity == other.m_capacity);
-            if (m_size > other.m_size) {
-                ANNOTATE_CHANGE_SIZE(other.inlineBuffer(), inlineCapacity, other.m_size, m_size);
-                TypeOperations::swap(inlineBuffer(), inlineBuffer() + other.m_size, other.inlineBuffer());
-                TypeOperations::move(inlineBuffer() + other.m_size, inlineBuffer() + m_size, other.inlineBuffer() + other.m_size);
-                Base::clearUnusedSlots(inlineBuffer() + other.m_size, inlineBuffer() + m_size);
-                ANNOTATE_CHANGE_SIZE(inlineBuffer(), inlineCapacity, m_size, other.m_size);
-            } else {
-                ANNOTATE_CHANGE_SIZE(inlineBuffer(), inlineCapacity, m_size, other.m_size);
-                TypeOperations::swap(inlineBuffer(), inlineBuffer() + m_size, other.inlineBuffer());
-                TypeOperations::move(other.inlineBuffer() + m_size, other.inlineBuffer() + other.m_size, inlineBuffer() + m_size);
-                Base::clearUnusedSlots(other.inlineBuffer() + m_size, other.inlineBuffer() + other.m_size);
-                ANNOTATE_CHANGE_SIZE(other.inlineBuffer(), inlineCapacity, other.m_size, m_size);
-            }
-        } else if (buffer() == inlineBuffer()) {
-            ANNOTATE_DELETE_BUFFER(m_buffer, inlineCapacity, m_size);
-            m_buffer = other.m_buffer;
-            other.m_buffer = other.inlineBuffer();
-            ANNOTATE_NEW_BUFFER(other.m_buffer, inlineCapacity, m_size);
-            TypeOperations::move(inlineBuffer(), inlineBuffer() + m_size, other.inlineBuffer());
-            Base::clearUnusedSlots(inlineBuffer(), inlineBuffer() + m_size);
-            std::swap(m_capacity, other.m_capacity);
-        } else if (other.buffer() == other.inlineBuffer()) {
-            ANNOTATE_DELETE_BUFFER(other.m_buffer, inlineCapacity, other.m_size);
-            other.m_buffer = m_buffer;
-            m_buffer = inlineBuffer();
-            ANNOTATE_NEW_BUFFER(m_buffer, inlineCapacity, other.m_size);
-            TypeOperations::move(other.inlineBuffer(), other.inlineBuffer() + other.m_size, inlineBuffer());
-            Base::clearUnusedSlots(other.inlineBuffer(), other.inlineBuffer() + other.m_size);
-            std::swap(m_capacity, other.m_capacity);
-        } else {
+        if (buffer() != inlineBuffer() && other.buffer() != other.inlineBuffer()) {
+            // The easiest case: both buffers are non-inline. We just need to swap the pointers.
             std::swap(m_buffer, other.m_buffer);
             std::swap(m_capacity, other.m_capacity);
+            std::swap(m_size, other.m_size);
+            return;
         }
+
+        Allocator::enterGCForbiddenScope();
+
+        // Otherwise, we at least need to move some elements from one inline buffer to another.
+        //
+        // Terminology: "source" is a place from which elements are copied, and "destination" is a place to which
+        // elements are copied. thisSource or otherSource can be empty (represented by nullptr) when this range or
+        // other range is in an out-of-line buffer.
+        //
+        // We first record which range needs to get moved and where elements in such a range will go. Elements in
+        // an inline buffer will go to the other buffer's inline buffer. Elements in an out-of-line buffer won't move,
+        // because we can just swap pointers of out-of-line buffers.
+        T* thisSourceBegin = nullptr;
+        size_t thisSourceSize = 0;
+        T* thisDestinationBegin = nullptr;
+        if (buffer() == inlineBuffer()) {
+            thisSourceBegin = buffer();
+            thisSourceSize = m_size;
+            thisDestinationBegin = other.inlineBuffer();
+            if (!thisHole.empty()) { // Sanity check.
+                ASSERT(thisHole.begin < thisHole.end);
+                ASSERT(thisHole.end <= thisSourceSize);
+            }
+        } else {
+            // We don't need the hole information for an out-of-line buffer.
+            thisHole.begin = thisHole.end = 0;
+        }
+        T* otherSourceBegin = nullptr;
+        size_t otherSourceSize = 0;
+        T* otherDestinationBegin = nullptr;
+        if (other.buffer() == other.inlineBuffer()) {
+            otherSourceBegin = other.buffer();
+            otherSourceSize = other.m_size;
+            otherDestinationBegin = inlineBuffer();
+            if (!otherHole.empty()) {
+                ASSERT(otherHole.begin < otherHole.end);
+                ASSERT(otherHole.end <= otherSourceSize);
+            }
+        } else {
+            otherHole.begin = otherHole.end = 0;
+        }
+
+        // Next, we mutate members and do other bookkeeping. We do pointer swapping (for out-of-line buffers) here if
+        // we can. From now on, don't assume buffer() or capacity() maintains their original values.
+        std::swap(m_capacity, other.m_capacity);
+        if (thisSourceBegin && !otherSourceBegin) { // Our buffer is inline, theirs is not.
+            ASSERT(buffer() == inlineBuffer());
+            ASSERT(other.buffer() != other.inlineBuffer());
+            ANNOTATE_DELETE_BUFFER(m_buffer, inlineCapacity, m_size);
+            m_buffer = other.buffer();
+            other.m_buffer = other.inlineBuffer();
+            std::swap(m_size, other.m_size);
+            ANNOTATE_NEW_BUFFER(other.m_buffer, inlineCapacity, other.m_size);
+        } else if (!thisSourceBegin && otherSourceBegin) { // Their buffer is inline, ours is not.
+            ASSERT(buffer() != inlineBuffer());
+            ASSERT(other.buffer() == other.inlineBuffer());
+            ANNOTATE_DELETE_BUFFER(other.m_buffer, inlineCapacity, other.m_size);
+            other.m_buffer = buffer();
+            m_buffer = inlineBuffer();
+            std::swap(m_size, other.m_size);
+            ANNOTATE_NEW_BUFFER(m_buffer, inlineCapacity, m_size);
+        } else { // Both buffers are inline.
+            ASSERT(thisSourceBegin && otherSourceBegin);
+            ASSERT(buffer() == inlineBuffer());
+            ASSERT(other.buffer() == other.inlineBuffer());
+            ANNOTATE_CHANGE_SIZE(m_buffer, inlineCapacity, m_size, other.m_size);
+            ANNOTATE_CHANGE_SIZE(other.m_buffer, inlineCapacity, other.m_size, m_size);
+            std::swap(m_size, other.m_size);
+        }
+
+        // We are ready to move elements. We determine an action for each "section", which is a contiguous range such
+        // that all elements in the range are treated similarly.
+        size_t sectionBegin = 0;
+        while (sectionBegin < inlineCapacity) {
+            // To determine the end of this section, we list up all the boundaries where the "occupiedness" may change.
+            size_t sectionEnd = inlineCapacity;
+            if (thisSourceBegin && sectionBegin < thisSourceSize)
+                sectionEnd = std::min(sectionEnd, thisSourceSize);
+            if (!thisHole.empty() && sectionBegin < thisHole.begin)
+                sectionEnd = std::min(sectionEnd, thisHole.begin);
+            if (!thisHole.empty() && sectionBegin < thisHole.end)
+                sectionEnd = std::min(sectionEnd, thisHole.end);
+            if (otherSourceBegin && sectionBegin < otherSourceSize)
+                sectionEnd = std::min(sectionEnd, otherSourceSize);
+            if (!otherHole.empty() && sectionBegin < otherHole.begin)
+                sectionEnd = std::min(sectionEnd, otherHole.begin);
+            if (!otherHole.empty() && sectionBegin < otherHole.end)
+                sectionEnd = std::min(sectionEnd, otherHole.end);
+
+            ASSERT(sectionBegin < sectionEnd);
+
+            // Is the |sectionBegin|-th element of |thisSource| occupied?
+            bool thisOccupied = false;
+            if (thisSourceBegin && sectionBegin < thisSourceSize) {
+                // Yes, it's occupied, unless the position is in a hole.
+                if (thisHole.empty() || sectionBegin < thisHole.begin || sectionBegin >= thisHole.end)
+                    thisOccupied = true;
+            }
+            bool otherOccupied = false;
+            if (otherSourceBegin && sectionBegin < otherSourceSize) {
+                if (otherHole.empty() || sectionBegin < otherHole.begin || sectionBegin >= otherHole.end)
+                    otherOccupied = true;
+            }
+
+            if (thisOccupied && otherOccupied) {
+                // Both occupied; swap them. In this case, one's destination must be the other's source (i.e. both
+                // ranges are in inline buffers).
+                ASSERT(thisDestinationBegin == otherSourceBegin);
+                ASSERT(otherDestinationBegin == thisSourceBegin);
+                TypeOperations::swap(thisSourceBegin + sectionBegin, thisSourceBegin + sectionEnd,
+                    otherSourceBegin + sectionBegin);
+            } else if (thisOccupied) {
+                // Move from ours to theirs.
+                TypeOperations::move(thisSourceBegin + sectionBegin, thisSourceBegin + sectionEnd,
+                    thisDestinationBegin + sectionBegin);
+                Base::clearUnusedSlots(thisSourceBegin + sectionBegin, thisSourceBegin + sectionEnd);
+            } else if (otherOccupied) {
+                // Move from theirs to ours.
+                TypeOperations::move(otherSourceBegin + sectionBegin, otherSourceBegin + sectionEnd,
+                    otherDestinationBegin + sectionBegin);
+                Base::clearUnusedSlots(otherSourceBegin + sectionBegin, otherSourceBegin + sectionEnd);
+            } else {
+                // Both empty; nothing to do.
+            }
+
+            sectionBegin = sectionEnd;
+        }
+
+        Allocator::leaveGCForbiddenScope();
     }
 
     using Base::buffer;
@@ -633,8 +761,9 @@ private:
 template <typename T, size_t inlineCapacity = 0, typename Allocator = PartitionAllocator> // Heap-allocated vectors with no inlineCapacity never need a destructor.
 class Vector : private VectorBuffer<T, INLINE_CAPACITY, Allocator>, public ConditionalDestructor<Vector<T, INLINE_CAPACITY, Allocator>, (INLINE_CAPACITY == 0) && Allocator::isGarbageCollected> {
     WTF_USE_ALLOCATOR(Vector, Allocator);
-    typedef VectorBuffer<T, INLINE_CAPACITY, Allocator> Base;
-    typedef VectorTypeOperations<T> TypeOperations;
+    using Base = VectorBuffer<T, INLINE_CAPACITY, Allocator>;
+    using TypeOperations = VectorTypeOperations<T>;
+    using OffsetRange = typename Base::OffsetRange;
 
 public:
     typedef T ValueType;
@@ -797,8 +926,7 @@ public:
 
     void swap(Vector& other)
     {
-        Base::swapVectorBuffer(other);
-        std::swap(m_size, other.m_size);
+        Base::swapVectorBuffer(other, OffsetRange(), OffsetRange());
     }
 
     void reverse();

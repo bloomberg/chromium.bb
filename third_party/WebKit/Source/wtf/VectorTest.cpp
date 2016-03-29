@@ -485,6 +485,109 @@ static_assert(!IsTriviallyCopyAssignable<MojoMoveOnlyType>::value, "MojoMoveOnly
 static_assert(!VectorTraits<MojoMoveOnlyType>::canMoveWithMemcpy, "MojoMoveOnlyType can't be moved with memcpy.");
 static_assert(!VectorTraits<MojoMoveOnlyType>::canCopyWithMemcpy, "MojoMoveOnlyType can't be copied with memcpy.");
 
+class LivenessCounter {
+public:
+    void ref() { s_live++; }
+    void deref() { s_live--; }
+
+    static unsigned s_live;
+};
+
+unsigned LivenessCounter::s_live = 0;
+
+class VectorWithDifferingInlineCapacityTest : public ::testing::TestWithParam<size_t> { };
+
+template <size_t inlineCapacity>
+void testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity()
+{
+    LivenessCounter::s_live = 0;
+    LivenessCounter counter;
+    EXPECT_EQ(0u, LivenessCounter::s_live);
+
+    Vector<RefPtr<LivenessCounter>, inlineCapacity> vector;
+    Vector<RefPtr<LivenessCounter>, inlineCapacity> vector2;
+    vector.append(&counter);
+    vector2.append(&counter);
+    EXPECT_EQ(2u, LivenessCounter::s_live);
+
+    for (unsigned i = 0; i < 13; i++) {
+        for (unsigned j = 0; j < 13; j++) {
+            vector.clear();
+            vector2.clear();
+            EXPECT_EQ(0u, LivenessCounter::s_live);
+
+            for (unsigned k = 0; k < j; k++)
+                vector.append(&counter);
+            EXPECT_EQ(j, LivenessCounter::s_live);
+            EXPECT_EQ(j, vector.size());
+
+            for (unsigned k = 0; k < i; k++)
+                vector2.append(&counter);
+            EXPECT_EQ(i + j, LivenessCounter::s_live);
+            EXPECT_EQ(i, vector2.size());
+
+            vector.swap(vector2);
+            EXPECT_EQ(i + j, LivenessCounter::s_live);
+            EXPECT_EQ(i, vector.size());
+            EXPECT_EQ(j, vector2.size());
+
+            unsigned size = vector.size();
+            unsigned size2 = vector2.size();
+
+            for (unsigned k = 0; k < 5; k++) {
+                vector.swap(vector2);
+                std::swap(size, size2);
+                EXPECT_EQ(i + j, LivenessCounter::s_live);
+                EXPECT_EQ(size, vector.size());
+                EXPECT_EQ(size2, vector2.size());
+
+                vector2.append(&counter);
+                vector2.remove(0);
+            }
+        }
+    }
+
+}
+
+TEST(VectorTest, SwapWithConstructorsAndDestructors)
+{
+    testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<0>();
+    testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<2>();
+    testDestructorAndConstructorCallsWhenSwappingWithInlineCapacity<10>();
+}
+
+template <size_t inlineCapacity>
+void testValuesMovedAndSwappedWithInlineCapacity()
+{
+    Vector<unsigned, inlineCapacity> vector;
+    Vector<unsigned, inlineCapacity> vector2;
+
+    for (unsigned size = 0; size < 13; size++) {
+        for (unsigned size2 = 0; size2 < 13; size2++) {
+            vector.clear();
+            vector2.clear();
+            for (unsigned i = 0; i < size; i++)
+                vector.append(i);
+            for (unsigned i = 0; i < size2; i++)
+                vector2.append(i + 42);
+            EXPECT_EQ(size, vector.size());
+            EXPECT_EQ(size2, vector2.size());
+            vector.swap(vector2);
+            for (unsigned i = 0; i < size; i++)
+                EXPECT_EQ(i, vector2[i]);
+            for (unsigned i = 0; i < size2; i++)
+                EXPECT_EQ(i + 42, vector[i]);
+        }
+    }
+}
+
+TEST(VectorTest, ValuesMovedAndSwappedWithInlineCapacity)
+{
+    testValuesMovedAndSwappedWithInlineCapacity<0>();
+    testValuesMovedAndSwappedWithInlineCapacity<2>();
+    testValuesMovedAndSwappedWithInlineCapacity<10>();
+}
+
 TEST(VectorTest, UniquePtr)
 {
     using Pointer = std::unique_ptr<int>;

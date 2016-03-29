@@ -53,14 +53,12 @@ public:
 
     Deque();
     Deque(const Deque<T, inlineCapacity, Allocator>&);
-    // FIXME: Doesn't work if there is an inline buffer, due to crbug.com/360572
-    Deque<T, 0, Allocator>& operator=(const Deque&);
+    Deque& operator=(const Deque&);
 
     void finalize();
     void finalizeGarbageCollectedObject() { finalize(); }
 
-    // We hard wire the inlineCapacity to zero here, due to crbug.com/360572
-    void swap(Deque<T, 0, Allocator>&);
+    void swap(Deque<T, inlineCapacity, Allocator>&);
 
     size_t size() const { return m_start <= m_end ? m_end - m_start : m_end + m_buffer.capacity() - m_start; }
     bool isEmpty() const { return m_start == m_end; }
@@ -115,7 +113,22 @@ public:
 private:
     friend class DequeIteratorBase<T, inlineCapacity, Allocator>;
 
-    typedef VectorBuffer<T, INLINE_CAPACITY, Allocator> Buffer;
+    class Buffer : public VectorBuffer<T, INLINE_CAPACITY, Allocator> {
+        WTF_MAKE_NONCOPYABLE(Buffer);
+    private:
+        using Base = VectorBuffer<T, INLINE_CAPACITY, Allocator>;
+        using Base::m_size;
+
+    public:
+        Buffer() : Base() { }
+        explicit Buffer(size_t capacity) : Base(capacity) { }
+
+        void setSize(size_t size)
+        {
+            m_size = size;
+        }
+    };
+
     typedef VectorTypeOperations<T> TypeOperations;
     typedef DequeIteratorBase<T, inlineCapacity, Allocator> IteratorBase;
 
@@ -136,7 +149,7 @@ protected:
     DequeIteratorBase();
     DequeIteratorBase(const Deque<T, inlineCapacity, Allocator>*, size_t);
     DequeIteratorBase(const DequeIteratorBase&);
-    DequeIteratorBase<T, 0, Allocator>& operator=(const DequeIteratorBase<T, 0, Allocator>&);
+    DequeIteratorBase& operator=(const DequeIteratorBase<T, 0, Allocator>&);
     ~DequeIteratorBase();
 
     void assign(const DequeIteratorBase& other) { *this = other; }
@@ -247,7 +260,7 @@ inline Deque<T, inlineCapacity, Allocator>::Deque(const Deque<T, inlineCapacity,
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline Deque<T, 0, Allocator>& Deque<T, inlineCapacity, Allocator>::operator=(const Deque& other)
+inline Deque<T, inlineCapacity, Allocator>& Deque<T, inlineCapacity, Allocator>::operator=(const Deque& other)
 {
     Deque<T> copy(other);
     swap(copy);
@@ -283,13 +296,34 @@ inline void Deque<T, inlineCapacity, Allocator>::finalize()
     m_buffer.destruct();
 }
 
-// FIXME: Doesn't work if there is an inline buffer, due to crbug.com/360572
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline void Deque<T, inlineCapacity, Allocator>::swap(Deque<T, 0, Allocator>& other)
+inline void Deque<T, inlineCapacity, Allocator>::swap(Deque& other)
 {
+    typename Buffer::OffsetRange thisHole;
+    if (m_start <= m_end) {
+        m_buffer.setSize(m_end);
+        thisHole.begin = 0;
+        thisHole.end = m_start;
+    } else {
+        m_buffer.setSize(m_buffer.capacity());
+        thisHole.begin = m_end;
+        thisHole.end = m_start;
+    }
+    typename Buffer::OffsetRange otherHole;
+    if (other.m_start <= other.m_end) {
+        other.m_buffer.setSize(other.m_end);
+        otherHole.begin = 0;
+        otherHole.end = other.m_start;
+    } else {
+        other.m_buffer.setSize(other.m_buffer.capacity());
+        otherHole.begin = other.m_end;
+        otherHole.end = other.m_start;
+    }
+
+    m_buffer.swapVectorBuffer(other.m_buffer, thisHole, otherHole);
+
     std::swap(m_start, other.m_start);
     std::swap(m_end, other.m_end);
-    m_buffer.swapVectorBuffer(other.m_buffer);
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
@@ -481,7 +515,7 @@ inline DequeIteratorBase<T, inlineCapacity, Allocator>::DequeIteratorBase(const 
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline DequeIteratorBase<T, 0, Allocator>& DequeIteratorBase<T, inlineCapacity, Allocator>::operator=(const DequeIteratorBase<T, 0, Allocator>& other)
+inline DequeIteratorBase<T, inlineCapacity, Allocator>& DequeIteratorBase<T, inlineCapacity, Allocator>::operator=(const DequeIteratorBase<T, 0, Allocator>& other)
 {
     m_deque = other.m_deque;
     m_index = other.m_index;
