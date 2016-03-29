@@ -251,25 +251,25 @@
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_TITLE" desc="Title of the certificate manager edit trust dialog">
       Certificate authority
     </message>
-    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_DESCRIPTION" desc="Line displayed in certificate manager edit trust dialog before the checkboxes for setting certificate trust flags">
-      Edit trust settings:
+    <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_DESCRIPTION" desc="Line displayed in certificate manager edit trust dialog before the checkboxes for editing certificate trust flags">
+      Trust settings
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_EXPLANATION" desc="Description in dialog for editing Certification Authority trust flags">
       The certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" represents a Certification Authority.
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_SSL" desc="Description in Certification Authority trust dialog for the SSL trust checkbox.">
-      Trust this certificate for identifying websites.
+      Trust this certificate for identifying websites
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_EMAIL" desc="Description in Certification Authority trust dialog for the Email trust checkbox.">
-      Trust this certificate for identifying email users.
+      Trust this certificate for identifying email users
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_OBJ_SIGN" desc="Description in Certification Authority trust dialog for the Code Signing trust checkbox.">
-      Trust this certificate for identifying software makers.
+      Trust this certificate for identifying software makers
     </message>
 
     <!-- Certificate Manager Page, delete certificate confirmation dialog -->
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_USER_TITLE" desc="Title of a certificate manager dialog for confirming deletion of a user certificate">
-      Delete certificate "<ph name="CERTIFICATE_NAME">$1<ex>VeriSign Browser Certificate</ex></ph>"?
+      Delete "<ph name="CERTIFICATE_NAME">$1<ex>VeriSign Browser Certificate</ex></ph>"?
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_USER_DESCRIPTION" desc="Description of impact of deleting a user certificate">
       If you delete one of your own certificates, you can no longer use it to identify yourself.
@@ -292,19 +292,19 @@
 
     <!-- Certificate Manager Page, encrypt/decrypt password dialogs -->
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_ENCRYPT_PASSWORD_TITLE" desc="Description of password prompt in certificate manager for exporting a personal certificate">
-      Please enter a password to encrypt this certificate file
+      Please enter a password to encrypt this certificate
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DECRYPT_PASSWORD_TITLE" desc="Description of password prompt in certificate manager for restoring a personal certificate">
-      Please enter the password that was used to encrypt this certificate file
+      Enter your certificate password
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_ENCRYPT_PASSWORD_DESCRIPTION" desc="Text in password prompt of certificate manager for exporting a personal certificate, reminding user that if they forget the password they're screwed.">
-      The password you choose will be required to restore this file later. Please record it in a safe location.
+      The password you choose will be required to restore this certificate later. Please record it in a safe location.
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_PASSWORD" desc="The label of the password field in the certificate manager for restoring or exporting a personal certificate">
       Password
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CONFIRM_PASSWORD" desc="The label of the field in the certificate manager for re-entering the password when exporting a certificate">
-      Confirm Password
+      Confirm password
     </message>
 
     <!-- Certificate Manager Page, error dialog -->
