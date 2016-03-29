@@ -79,7 +79,8 @@ def _DeployApp(basedir):
   osutils.SafeUnlink(os.path.join(cidb_cred_path, 'server-ca.pem'))
   cros_build_lib.RunCommand(
       ['./ae_shell', 'cq_stats', '--',
-       'appcfg.py', '--oauth2', 'update', 'cq_stats'],
+       'appcfg.py', '--oauth2', '--noauth_local_webserver', 'update',
+       'cq_stats'],
       cwd=basedir)
 
 

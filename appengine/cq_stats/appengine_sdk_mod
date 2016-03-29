@@ -20,8 +20,7 @@ fi
 
 for sdk_patch in "${SDK_PATCHES[@]}"; do
   echo "Applying ${sdk_patch} to ${APPENGINE_SDK_DIR}"
-  if ! patch -d "${APPENGINE_SDK_DIR}" -p 1 < "${sdk_patch}"; then
-    error "Failed to apply patch ${sdk_patch}. Bailing."
-    exit ${E_GENERAL}
+  if ! patch -t -d "${APPENGINE_SDK_DIR}" -p 1 < "${sdk_patch}"; then
+    error "Failed to apply patch ${sdk_patch}. Trying to continue anyway."
   fi
 done

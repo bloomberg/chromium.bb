@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 APP_YAML="app.yaml"
-DEFAULT_SDK_MIRROR="https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.19.zip"
+DEFAULT_SDK_MIRROR="https://storage.googleapis.com/appengine-sdks/featured/google_appengine_1.9.35.zip"
 # Apps can further modify the appengine sdk by providing this shell script in
 # their top level directory. This is needed because the turnaround time to
 # submitting patches upstream to the SDK is rather large.

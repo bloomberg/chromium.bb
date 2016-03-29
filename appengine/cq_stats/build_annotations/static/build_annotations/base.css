@@ -56,7 +56,7 @@ td.build_list, td.annotations_list {
   padding-left: 10px;
   padding-right: 10px;
   text-align: left;
-  display: inherit;
+  display: float;
 }
 tr.build_item_pass {
   background-color: #B2DF99;
