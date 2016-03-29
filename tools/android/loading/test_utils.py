@@ -4,6 +4,7 @@
 
 """Common utilities used in unit tests, within this directory."""
 
+import dependency_graph
 import devtools_monitor
 import loading_model
 import loading_trace
@@ -164,6 +165,13 @@ class TestResourceGraph(loading_model.ResourceGraph):
   @classmethod
   def FromRequestList(cls, requests, page_events=None, trace_events=None):
     return cls(LoadingTraceFromEvents(requests, page_events, trace_events))
+
+
+class TestDependencyGraph(dependency_graph.RequestDependencyGraph):
+  """A dependency graph created from requests using a simple lens."""
+  def __init__(self, requests):
+    lens = SimpleLens(LoadingTraceFromEvents(requests))
+    super(TestDependencyGraph, self).__init__(requests, lens)
 
 
 class MockConnection(object):

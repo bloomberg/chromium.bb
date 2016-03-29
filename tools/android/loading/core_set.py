@@ -15,8 +15,9 @@ import multiprocessing
 import os
 import sys
 
-import loading_model
+import dependency_graph
 import loading_trace
+import request_dependencies_lens
 import resource_sack
 
 
@@ -34,8 +35,10 @@ def _PageCore(prefix, graph_set_names, output):
     _Progress('Processing %s' % name)
     for filename in glob.iglob('-'.join([prefix, name, '*.trace'])):
       _Progress('Reading %s' % filename)
-      graph = loading_model.ResourceGraph(
-          loading_trace.LoadingTrace.FromJsonFile(filename))
+      trace = loading_trace.LoadingTrace.FromJsonFile(filename)
+      graph = dependency_graph.RequestDependencyGraph(
+          trace.request_track.GetEvents(),
+          request_dependencies_lens.RequestDependencyLens(trace))
       sack.ConsumeGraph(graph)
       name_graphs.append(graph)
     graph_sets.append(name_graphs)
@@ -90,8 +93,10 @@ def _AllCores(prefix, graph_set_names, output, threshold):
     this_set = []
     for filename in glob.iglob('-'.join([prefix, name, '*.trace'])):
       _Progress('Reading %s' % filename)
-      graph = loading_model.ResourceGraph(
-          loading_trace.LoadingTrace.FromJsonDict(json.load(open(filename))))
+      trace = loading_trace.LoadingTrace.FromJsonFile(filename)
+      graph = dependency_graph.RequestDependencyGraph(
+          trace.request_track.GetEvents(),
+          request_dependencies_lens.RequestDependencyLens(trace))
       sack.ConsumeGraph(graph)
       big_sack.ConsumeGraph(graph)
       this_set.append(graph)

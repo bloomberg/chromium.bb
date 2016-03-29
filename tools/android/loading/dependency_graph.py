@@ -46,6 +46,11 @@ class RequestDependencyGraph(object):
     self._first_request_node = self._nodes_by_id[self._requests[0].request_id]
     self._deps_graph = graph.DirectedGraph(self._nodes_by_id.values(), edges)
 
+  @property
+  def graph(self):
+    """Return the Graph we're based on."""
+    return self._deps_graph
+
   def UpdateRequestsCost(self, request_id_to_cost):
     """Updates the cost of the nodes identified by their request ID.
 

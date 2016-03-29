@@ -6,7 +6,7 @@ import unittest
 
 import resource_sack
 from test_utils import (MakeRequest,
-                        TestResourceGraph)
+                        TestDependencyGraph)
 
 
 class ResourceSackTestCase(unittest.TestCase):
@@ -15,15 +15,15 @@ class ResourceSackTestCase(unittest.TestCase):
     requests = [MakeRequest(node_names[0], 'null')]
     for n in node_names[1:]:
       requests.append(MakeRequest(n, node_names[0]))
-    return TestResourceGraph.FromRequestList(requests)
+    return TestDependencyGraph(requests)
 
   def test_NodeMerge(self):
-    g1 = TestResourceGraph.FromRequestList([
+    g1 = TestDependencyGraph([
         MakeRequest(0, 'null'),
         MakeRequest(1, 0),
         MakeRequest(2, 0),
         MakeRequest(3, 1)])
-    g2 = TestResourceGraph.FromRequestList([
+    g2 = TestDependencyGraph([
         MakeRequest(0, 'null'),
         MakeRequest(1, 0),
         MakeRequest(2, 0),
@@ -39,10 +39,10 @@ class ResourceSackTestCase(unittest.TestCase):
         self.assertEqual(1, bag.num_nodes)
 
   def test_MultiParents(self):
-    g1 = TestResourceGraph.FromRequestList([
+    g1 = TestDependencyGraph([
         MakeRequest(0, 'null'),
         MakeRequest(2, 0)])
-    g2 = TestResourceGraph.FromRequestList([
+    g2 = TestDependencyGraph([
         MakeRequest(1, 'null'),
         MakeRequest(2, 1)])
     sack = resource_sack.GraphSack()
@@ -50,17 +50,21 @@ class ResourceSackTestCase(unittest.TestCase):
     sack.ConsumeGraph(g2)
     self.assertEqual(3, len(sack.bags))
     labels = {bag.label: bag for bag in sack.bags}
+    def Predecessors(label):
+      bag = labels['%s/' % label]
+      return [e.from_node
+              for e in bag._sack._graph.InEdges(bag)]
     self.assertEqual(
         set(['0/', '1/']),
-        set([bag.label for bag in labels['2/'].Predecessors()]))
-    self.assertFalse(labels['0/'].Predecessors())
-    self.assertFalse(labels['1/'].Predecessors())
+        set([bag.label for bag in Predecessors(2)]))
+    self.assertFalse(Predecessors(0))
+    self.assertFalse(Predecessors(1))
 
   def test_Shortname(self):
     root = MakeRequest(0, 'null')
     shortname = MakeRequest(1, 0)
     shortname.url = 'data:fake/content;' + 'lotsand' * 50 + 'lotsofdata'
-    g1 = TestResourceGraph.FromRequestList([root, shortname])
+    g1 = TestDependencyGraph([root, shortname])
     sack = resource_sack.GraphSack()
     sack.ConsumeGraph(g1)
     self.assertEqual(set(['0/', 'data:fake/content']),

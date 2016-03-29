@@ -43,15 +43,15 @@ class DirectedGraph(object):
     Note that the edges referencing a node not in the provided list are dropped.
 
     Args:
-      nodes: ([Node]) List of nodes.
-      edges: ([Edge]) List of Edges.
+      nodes: ([Node]) Sequence of Nodes.
+      edges: ([Edge]) Sequence of Edges.
     """
-    assert all(isinstance(node, Node) for node in nodes)
-    assert all(isinstance(edge, Edge) for edge in edges)
     self._nodes = set(nodes)
     self._edges = set(filter(
         lambda e: e.from_node in self._nodes and e.to_node in self._nodes,
         edges))
+    assert all(isinstance(node, Node) for node in self._nodes)
+    assert all(isinstance(edge, Edge) for edge in self._edges)
     self._in_edges = {n: [] for n in self._nodes}
     self._out_edges = {n: [] for n in self._nodes}
     for edge in self._edges:
