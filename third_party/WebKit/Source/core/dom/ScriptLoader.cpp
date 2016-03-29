@@ -300,9 +300,16 @@ bool ScriptLoader::fetchScript(const String& sourceUrl, FetchRequest::DeferOptio
 
         // Skip fetch-related CSP checks if the script element has a valid nonce, or if dynamically
         // injected script is whitelisted and this script is not parser-inserted.
-        bool scriptPassesCSP = elementDocument->contentSecurityPolicy()->allowScriptWithNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr)) || (!isParserInserted() && elementDocument->contentSecurityPolicy()->allowDynamic());
+        bool scriptPassesCSPDynamic = (!isParserInserted() && elementDocument->contentSecurityPolicy()->allowDynamic());
+        bool scriptPassesCSPNonce = elementDocument->contentSecurityPolicy()->allowScriptWithNonce(m_element->fastGetAttribute(HTMLNames::nonceAttr));
 
-        if (scriptPassesCSP)
+        if (scriptPassesCSPDynamic)
+            UseCounter::count(elementDocument->frame(), UseCounter::ScriptPassesCSPDynamic);
+
+        if (scriptPassesCSPNonce)
+            UseCounter::count(elementDocument->frame(), UseCounter::ScriptPassesCSPNonce);
+
+        if (scriptPassesCSPDynamic || scriptPassesCSPNonce)
             request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
         request.setDefer(defer);
 

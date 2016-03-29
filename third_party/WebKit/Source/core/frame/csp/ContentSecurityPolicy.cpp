@@ -192,6 +192,9 @@ void ContentSecurityPolicy::applyPolicySideEffectsToExecutionContext()
 
         for (const auto& policy : m_policies)
             UseCounter::count(*document, getUseCounterType(policy->headerType()));
+
+        if (allowDynamic())
+            UseCounter::count(*document, UseCounter::CSPWithUnsafeDynamic);
     }
 
     // We disable 'eval()' even in the case of report-only policies, and rely on the check in the

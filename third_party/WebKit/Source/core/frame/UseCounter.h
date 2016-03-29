@@ -1091,6 +1091,9 @@ public:
         V8Window_SpeechSynthesis_AttributeGetter = 1272,
         V8IDBFactory_WebkitGetDatabaseNames_Method = 1273,
         ImageDocument = 1274,
+        ScriptPassesCSPDynamic = 1275,
+        ScriptPassesCSPNonce = 1276,
+        CSPWithUnsafeDynamic = 1277,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
