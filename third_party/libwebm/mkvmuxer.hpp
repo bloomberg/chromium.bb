@@ -536,7 +536,6 @@ class Tracks {
   static const char kOpusCodecId[];
   static const char kVorbisCodecId[];
   static const char kAOMCodecId[];
-  static const char kVp9CodecId[];
   static const char kAV1CodecId[];
 
   Tracks();
