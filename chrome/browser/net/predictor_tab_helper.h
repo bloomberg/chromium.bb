@@ -11,6 +11,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
+namespace content {
+class NavigationHandle;
+}
+
 namespace chrome_browser_net {
 
 class PredictorTabHelper
@@ -19,7 +23,9 @@ class PredictorTabHelper
  public:
   ~PredictorTabHelper() override;
 
-  // content::WebContentsObserver implementation
+  // content::WebContentsObserver:
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::NavigationController::ReloadType reload_type) override;
@@ -27,6 +33,8 @@ class PredictorTabHelper
  private:
   explicit PredictorTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PredictorTabHelper>;
+
+  void PreconnectUrl(const GURL& url);
 
   DISALLOW_COPY_AND_ASSIGN(PredictorTabHelper);
 };
