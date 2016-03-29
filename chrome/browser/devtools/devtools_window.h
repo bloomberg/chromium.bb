@@ -206,6 +206,8 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   // by user.
   static void OnPageCloseCanceled(content::WebContents* contents);
 
+  content::WebContents* GetInspectedWebContents();
+
  private:
   friend class DevToolsWindowTesting;
   friend class DevToolsWindowCreationObserver;
@@ -319,7 +321,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
   void LoadCompleted();
   void UpdateBrowserToolbar();
   void UpdateBrowserWindow();
-  content::WebContents* GetInspectedWebContents();
 
   scoped_ptr<ObserverWithAccessor> inspected_contents_observer_;
 
