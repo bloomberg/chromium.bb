@@ -8,8 +8,8 @@
   },
   'conditions': [
     # The iOS frameworks being built for ios_web_shell_test require certs which
-    # bot do not currently have installed.  Ninja allows this, Xcode does not.
-    ['"<(GENERATOR)"=="ninja"', {
+    # bots do not currently have installed.  Ninja allows this, Xcode does not.
+    ['"<(GENERATOR)"=="ninja" or "<(GENERATOR_FLAVOR)"=="ninja"', {
       'targets': [
         {
           'variables': {
@@ -48,7 +48,7 @@
           },
         },
       ],
-    }, { # GENERATOR != ninja
+    }, { # GENERATOR == ninja or GENERATOR_FLAVOR == ninja
       'targets': [
         {
           # The iOS frameworks being built for ios_web_shell_test require certs
