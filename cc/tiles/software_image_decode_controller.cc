@@ -30,7 +30,7 @@ const size_t kMaxHighQualityImageSizeBytes = 64 * 1024 * 1024;
 
 // The number of entries to keep around in the cache. This limit can be breached
 // if more items are locked. That is, locked items ignore this limit.
-const size_t kMaxItemsInCache = 100;
+const size_t kMaxItemsInCache = 1000;
 
 class AutoRemoveKeyFromTaskMap {
  public:
