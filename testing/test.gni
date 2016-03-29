@@ -75,6 +75,7 @@ template("test") {
       if (defined(invoker.output_name)) {
         apk_name = invoker.output_name
         unittests_binary = "lib${apk_name}.so"
+        install_script_name = "install_${invoker.output_name}"
       }
       deps += [ ":$library_name" ]
     }
