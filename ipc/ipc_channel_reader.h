@@ -158,9 +158,6 @@ class IPC_EXPORT ChannelReader : public SupportsAttachmentBrokering,
   // If there was a dispatch error, informs |listener_|.
   void HandleDispatchError(const Message& message);
 
-  // Emits logging associated with a Message that is about to be dispatched.
-  void EmitLogBeforeDispatch(const Message& message);
-
   // Attachment broker messages should be dispatched out of band, since there
   // are no ordering restrictions on them, and they may be required to dispatch
   // the messages waiting in |queued_messages_|.

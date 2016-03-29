@@ -18,6 +18,30 @@
 namespace IPC {
 namespace internal {
 
+#ifdef IPC_MESSAGE_LOG_ENABLED
+
+namespace {
+std::string GetMessageText(const Message& message) {
+  std::string name;
+  Logging::GetInstance()->GetMessageText(
+      message.type(), &name, &message, nullptr);
+  return name;
+}
+}  // namespace
+
+#define EMIT_TRACE_EVENT(message)                                       \
+  TRACE_EVENT_WITH_FLOW1(                                               \
+      "ipc,toplevel", "ChannelReader::DispatchInputData",               \
+      (message).flags(), TRACE_EVENT_FLAG_FLOW_IN, "name",              \
+      GetMessageText(message));
+#else
+#define EMIT_TRACE_EVENT(message)                                              \
+  TRACE_EVENT_WITH_FLOW2("ipc,toplevel", "ChannelReader::DispatchInputData",   \
+                         (message).flags(), TRACE_EVENT_FLAG_FLOW_IN, "class", \
+                         IPC_MESSAGE_ID_CLASS((message).type()), "line",       \
+                         IPC_MESSAGE_ID_LINE((message).type()));
+#endif  // IPC_MESSAGE_LOG_ENABLED
+
 ChannelReader::ChannelReader(Listener* listener)
   : listener_(listener),
     max_input_buffer_size_(Channel::kMaximumReadBufferSize) {
@@ -74,7 +98,7 @@ void ChannelReader::CleanUp() {
 }
 
 void ChannelReader::DispatchMessage(Message* m) {
-  EmitLogBeforeDispatch(*m);
+  EMIT_TRACE_EVENT(*m);
   listener_->OnMessageReceived(*m);
   HandleDispatchError(*m);
 }
@@ -167,7 +191,7 @@ bool ChannelReader::HandleTranslatedMessage(
     const AttachmentIdVector& attachment_ids) {
   // Immediately handle internal messages.
   if (IsInternalMessage(*translated_message)) {
-    EmitLogBeforeDispatch(*translated_message);
+    EMIT_TRACE_EVENT(*translated_message);
     HandleInternalMessage(*translated_message);
     HandleDispatchError(*translated_message);
     return true;
@@ -180,7 +204,7 @@ bool ChannelReader::HandleTranslatedMessage(
     // Ideally, the log would have been emitted prior to dispatching the
     // message, but that would require this class to know more about the
     // internals of attachment brokering, which should be avoided.
-    EmitLogBeforeDispatch(*translated_message);
+    EMIT_TRACE_EVENT(*translated_message);
     HandleDispatchError(*translated_message);
     return true;
   }
@@ -221,21 +245,6 @@ bool ChannelReader::HandleExternalMessage(
 void ChannelReader::HandleDispatchError(const Message& message) {
   if (message.dispatch_error())
     listener_->OnBadMessageReceived(message);
-}
-
-void ChannelReader::EmitLogBeforeDispatch(const Message& message) {
-#ifdef IPC_MESSAGE_LOG_ENABLED
-  std::string name;
-  Logging::GetInstance()->GetMessageText(message.type(), &name, &message, NULL);
-  TRACE_EVENT_WITH_FLOW1("ipc,toplevel", "ChannelReader::DispatchInputData",
-                         message.flags(), TRACE_EVENT_FLAG_FLOW_IN, "name",
-                         name);
-#else
-  TRACE_EVENT_WITH_FLOW2("ipc,toplevel", "ChannelReader::DispatchInputData",
-                         message.flags(), TRACE_EVENT_FLAG_FLOW_IN, "class",
-                         IPC_MESSAGE_ID_CLASS(message.type()), "line",
-                         IPC_MESSAGE_ID_LINE(message.type()));
-#endif
 }
 
 bool ChannelReader::DispatchAttachmentBrokerMessage(const Message& message) {
