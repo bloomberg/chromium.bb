@@ -194,8 +194,6 @@
         '<(webrtc_base)/sslsocketfactory.h',
         '<(webrtc_base)/sslstreamadapter.cc',
         '<(webrtc_base)/sslstreamadapter.h',
-        '<(webrtc_base)/sslstreamadapterhelper.cc',
-        '<(webrtc_base)/sslstreamadapterhelper.h',
         '<(webrtc_base)/stream.cc',
         '<(webrtc_base)/stream.h',
         '<(webrtc_base)/stringencode.cc',
