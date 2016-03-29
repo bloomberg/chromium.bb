@@ -4,6 +4,7 @@
 
 #include "blimp/client/app/blimp_startup.h"
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -33,6 +34,13 @@ namespace blimp {
 namespace client {
 
 void InitializeLogging() {
+  // TODO(haibinlu): Remove this before release.
+  // Enables a few verbose log by default.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch("vmodule")) {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "vmodule", "blimp_message_pump=1, blimp_connection=1");
+  }
+
   logging::LoggingSettings settings;
 #if defined(OS_ANDROID)
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;

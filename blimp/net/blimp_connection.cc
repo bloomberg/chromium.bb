@@ -63,7 +63,7 @@ void BlimpMessageSender::ProcessMessage(
     scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
   DCHECK(error_observer_);
-  DVLOG(2) << "Sender::ProcessMessage " << *message;
+  VLOG(1) << "Sending " << *message;
 
   if (message->ByteSize() > static_cast<int>(kMaxPacketPayloadSizeBytes)) {
     DLOG(ERROR) << "Message rejected (too large): " << *message;

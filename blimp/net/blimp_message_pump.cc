@@ -56,7 +56,7 @@ void BlimpMessagePump::OnReadPacketComplete(int result) {
   if (result >= 0) {
     scoped_ptr<BlimpMessage> message(new BlimpMessage);
     if (message->ParseFromArray(buffer_->data(), result)) {
-      DVLOG(2) << "OnReadPacketComplete, result=" << *message;
+      VLOG(1) << "Received " << *message;
       processor_->ProcessMessage(
           std::move(message),
           base::Bind(&BlimpMessagePump::OnProcessMessageComplete,
