@@ -43,6 +43,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/imports/HTMLImportsController.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorResourceAgent.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -61,6 +62,7 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/Logging.h"
+#include "platform/TracedValue.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/network/ResourceTimingInfo.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -339,8 +341,21 @@ bool FrameFetchContext::shouldLoadNewResource(Resource::Type type) const
     return m_documentLoader == frame()->loader().documentLoader();
 }
 
-void FrameFetchContext::willStartLoadingResource(ResourceRequest& request)
+static PassOwnPtr<TracedValue> loadResourceTraceData(unsigned long identifier, const KURL& url, int priority)
 {
+    String requestId = IdentifiersFactory::requestId(identifier);
+
+    OwnPtr<TracedValue> value = TracedValue::create();
+    value->setString("requestId", requestId);
+    value->setString("url", url.getString());
+    value->setInteger("priority", priority);
+    return value.release();
+}
+
+void FrameFetchContext::willStartLoadingResource(Resource* resource, ResourceRequest& request)
+{
+    TRACE_EVENT_ASYNC_BEGIN1("blink.net", "Resource", resource, "data", loadResourceTraceData(resource->identifier(), resource->url(), resource->resourceRequest().priority()));
+
     if (m_documentLoader)
         m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);
 }

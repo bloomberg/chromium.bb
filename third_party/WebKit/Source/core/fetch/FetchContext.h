@@ -84,7 +84,7 @@ public:
     virtual void dispatchDidFail(unsigned long identifier, const ResourceError&, bool isInternalRequest);
 
     virtual bool shouldLoadNewResource(Resource::Type) const { return false; }
-    virtual void willStartLoadingResource(ResourceRequest&);
+    virtual void willStartLoadingResource(Resource*, ResourceRequest&);
     virtual void didLoadResource(Resource*);
 
     virtual void addResourceTiming(const ResourceTimingInfo&);

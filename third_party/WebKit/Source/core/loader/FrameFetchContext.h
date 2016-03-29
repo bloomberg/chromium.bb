@@ -81,7 +81,7 @@ public:
     void dispatchDidFail(unsigned long identifier, const ResourceError&, bool isInternalRequest) override;
 
     bool shouldLoadNewResource(Resource::Type) const override;
-    void willStartLoadingResource(ResourceRequest&) override;
+    void willStartLoadingResource(Resource*, ResourceRequest&) override;
     void didLoadResource(Resource*) override;
 
     void addResourceTiming(const ResourceTimingInfo&) override;

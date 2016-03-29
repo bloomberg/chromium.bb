@@ -979,9 +979,8 @@ void ResourceFetcher::willStartLoadingResource(Resource* resource, ResourceLoade
         m_nonBlockingLoaders->add(loader);
     }
 
-    context().willStartLoadingResource(request);
+    context().willStartLoadingResource(resource, request);
     storeResourceTimingInitiatorInformation(resource);
-    TRACE_EVENT_ASYNC_BEGIN2("blink.net", "Resource", resource, "url", resource->url().getString().ascii(), "priority", resource->resourceRequest().priority());
 
     context().dispatchWillSendRequest(resource->identifier(), request, ResourceResponse(), resource->options().initiatorInfo);
 }
