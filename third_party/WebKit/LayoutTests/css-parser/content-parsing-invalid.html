@@ -1,0 +1,21 @@
+<!doctype html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<style>
+#target::before {
+  content: normal normal;
+}
+#target::after {
+  content: normal normal;
+}
+</style>
+
+<div id="target"></div>
+
+<script>
+test(function(){
+  assert_equals(getComputedStyle(target, '::before').content, '');
+  assert_equals(getComputedStyle(target, '::after').content, '');
+}, "Test to ensure that invalid values of content on pseudo elements are dropped by the parser");
+</script>

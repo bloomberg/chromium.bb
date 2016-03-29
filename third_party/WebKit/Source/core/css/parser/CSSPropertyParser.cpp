@@ -2325,14 +2325,17 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeCounterContent(CSSParserTokenRang
     return CSSCounterValue::create(identifier.release(), listStyle.release(), separator.release());
 }
 
-static PassRefPtrWillBeRawPtr<CSSValueList> consumeContent(CSSParserTokenRange& range, CSSParserContext context)
+static PassRefPtrWillBeRawPtr<CSSValue> consumeContent(CSSParserTokenRange& range, CSSParserContext context)
 {
+    if (identMatches<CSSValueNormal>(range.peek().id()))
+        return consumeIdent(range);
+
     RefPtrWillBeRawPtr<CSSValueList> values = CSSValueList::createSpaceSeparated();
 
     do {
         RefPtrWillBeRawPtr<CSSValue> parsedValue = consumeImage(range, context);
         if (!parsedValue)
-            parsedValue = consumeIdent<CSSValueOpenQuote, CSSValueCloseQuote, CSSValueNoOpenQuote, CSSValueNoCloseQuote, CSSValueNormal>(range);
+            parsedValue = consumeIdent<CSSValueOpenQuote, CSSValueCloseQuote, CSSValueNoOpenQuote, CSSValueNoCloseQuote>(range);
         if (!parsedValue)
             parsedValue = consumeString(range);
         if (!parsedValue) {

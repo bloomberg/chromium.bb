@@ -657,6 +657,11 @@ void StyleBuilderFunctions::applyInheritCSSPropertyContent(StyleResolverState&)
 
 void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& state, CSSValue* value)
 {
+    if (value->isPrimitiveValue()) {
+        ASSERT(toCSSPrimitiveValue(*value).getValueID() == CSSValueNormal);
+        state.style()->clearContent();
+        return;
+    }
     // list of string, uri, counter, attr, i
 
     bool didSet = false;
@@ -725,7 +730,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyContent(StyleResolverState& sta
                 didSet = true;
                 break;
             default:
-                // normal and none do not have any effect.
+                // none does not have any effect.
                 { }
             }
         }
