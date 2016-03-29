@@ -202,8 +202,16 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("inner-html-change.html"));
 }
 
+#if defined(OS_MACOSX)
+// Mac failures: http://crbug.com/598527.
+#define MAYBE_AccessibilityEventsInputTypeTextValueChanged \
+    DISABLED_AccessibilityEventsInputTypeTextValueChanged
+#else
+#define MAYBE_AccessibilityEventsInputTypeTextValueChanged \
+    AccessibilityEventsInputTypeTextValueChanged
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsInputTypeTextValueChanged) {
+                       MAYBE_AccessibilityEventsInputTypeTextValueChanged) {
   RunEventTest(FILE_PATH_LITERAL("input-type-text-value-changed.html"));
 }
 
