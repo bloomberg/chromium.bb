@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_collision_warner.h"
 #include "sync/api/model_type_store.h"
 #include "sync/base/sync_export.h"
 
@@ -24,7 +24,7 @@ namespace syncer_v2 {
 // ModelTypeStoreBackend handles operations with leveldb. It is oblivious of the
 // fact that it is called from separate thread (with the exception of ctor),
 // meaning it shouldn't deal with callbacks and task_runners.
-class SYNC_EXPORT ModelTypeStoreBackend : public base::NonThreadSafe {
+class SYNC_EXPORT ModelTypeStoreBackend {
  public:
   ModelTypeStoreBackend();
   ~ModelTypeStoreBackend();
@@ -76,6 +76,9 @@ class SYNC_EXPORT ModelTypeStoreBackend : public base::NonThreadSafe {
   scoped_ptr<leveldb::Env> env_;
 
   scoped_ptr<leveldb::DB> db_;
+
+  // Macro wrapped mutex to guard against concurrent calls in debug builds.
+  DFAKE_MUTEX(push_pop_);
 
   DISALLOW_COPY_AND_ASSIGN(ModelTypeStoreBackend);
 };

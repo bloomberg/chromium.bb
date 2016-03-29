@@ -31,7 +31,7 @@ class SYNC_EXPORT ModelTypeService {
       DataCallback;
   typedef std::vector<std::string> ClientTagList;
   typedef base::Callback<scoped_ptr<ModelTypeChangeProcessor>(
-      syncer::ModelType,
+      syncer::ModelType type,
       ModelTypeService* service)>
       ChangeProcessorFactory;
 

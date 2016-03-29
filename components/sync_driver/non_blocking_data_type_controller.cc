@@ -71,9 +71,9 @@ void NonBlockingDataTypeController::LoadModels(
 }
 
 void NonBlockingDataTypeController::LoadModelsOnModelThread() {
-  base::WeakPtr<syncer_v2::ModelTypeService> model_type_service =
+  syncer_v2::ModelTypeService* model_type_service =
       sync_client_->GetModelTypeServiceForType(type());
-  if (!model_type_service.get()) {
+  if (!model_type_service) {
     LOG(WARNING) << "ModelTypeService destroyed before "
                     "ModelTypeController was started.";
     // TODO(gangwu): Add SyncError and then call start_callback with it. also

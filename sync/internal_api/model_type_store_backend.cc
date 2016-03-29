@@ -20,13 +20,9 @@
 namespace syncer_v2 {
 
 ModelTypeStoreBackend::ModelTypeStoreBackend() {
-  // ModelTypeStoreBackend is used on different thread from the one where it is
-  // created.
-  DetachFromThread();
 }
 
 ModelTypeStoreBackend::~ModelTypeStoreBackend() {
-  DCHECK(CalledOnValidThread());
 }
 
 scoped_ptr<leveldb::Env> ModelTypeStoreBackend::CreateInMemoryEnv() {
@@ -39,7 +35,7 @@ void ModelTypeStoreBackend::TakeEnvOwnership(scoped_ptr<leveldb::Env> env) {
 
 ModelTypeStore::Result ModelTypeStoreBackend::Init(const std::string& path,
                                                    leveldb::Env* env) {
-  DCHECK(CalledOnValidThread());
+  DFAKE_SCOPED_LOCK(push_pop_);
   leveldb::DB* db_raw = nullptr;
 
   leveldb::Options options;
@@ -62,7 +58,7 @@ ModelTypeStore::Result ModelTypeStoreBackend::ReadRecordsWithPrefix(
     const ModelTypeStore::IdList& id_list,
     ModelTypeStore::RecordList* record_list,
     ModelTypeStore::IdList* missing_id_list) {
-  DCHECK(CalledOnValidThread());
+  DFAKE_SCOPED_LOCK(push_pop_);
   DCHECK(db_);
   record_list->reserve(id_list.size());
   leveldb::ReadOptions read_options;
@@ -87,7 +83,7 @@ ModelTypeStore::Result ModelTypeStoreBackend::ReadRecordsWithPrefix(
 ModelTypeStore::Result ModelTypeStoreBackend::ReadAllRecordsWithPrefix(
     const std::string& prefix,
     ModelTypeStore::RecordList* record_list) {
-  DCHECK(CalledOnValidThread());
+  DFAKE_SCOPED_LOCK(push_pop_);
   DCHECK(db_);
   leveldb::ReadOptions read_options;
   read_options.verify_checksums = true;
@@ -108,7 +104,7 @@ ModelTypeStore::Result ModelTypeStoreBackend::ReadAllRecordsWithPrefix(
 
 ModelTypeStore::Result ModelTypeStoreBackend::WriteModifications(
     scoped_ptr<leveldb::WriteBatch> write_batch) {
-  DCHECK(CalledOnValidThread());
+  DFAKE_SCOPED_LOCK(push_pop_);
   DCHECK(db_);
   leveldb::Status status =
       db_->Write(leveldb::WriteOptions(), write_batch.get());

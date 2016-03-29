@@ -41,7 +41,8 @@ namespace sync_driver_v2 {
 class DeviceInfoService : public syncer_v2::ModelTypeService,
                           public sync_driver::DeviceInfoTracker {
  public:
-  typedef base::Callback<void(syncer_v2::ModelTypeStore::InitCallback callback)>
+  typedef base::Callback<void(
+      const syncer_v2::ModelTypeStore::InitCallback& callback)>
       StoreFactoryFunction;
 
   DeviceInfoService(

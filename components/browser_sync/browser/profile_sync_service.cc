@@ -44,6 +44,9 @@
 #include "components/sync_driver/change_processor.h"
 #include "components/sync_driver/data_type_controller.h"
 #include "components/sync_driver/device_info.h"
+#include "components/sync_driver/device_info_service.h"
+#include "components/sync_driver/device_info_sync_service.h"
+#include "components/sync_driver/device_info_tracker.h"
 #include "components/sync_driver/glue/chrome_report_unrecoverable_error.h"
 #include "components/sync_driver/glue/sync_backend_host.h"
 #include "components/sync_driver/glue/sync_backend_host_impl.h"
@@ -66,6 +69,7 @@
 #include "components/version_info/version_info_values.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "sync/api/model_type_store.h"
 #include "sync/api/sync_error.h"
 #include "sync/internal_api/public/base/stop_source.h"
 #include "sync/internal_api/public/configure_reason.h"
@@ -73,6 +77,7 @@
 #include "sync/internal_api/public/network_resources.h"
 #include "sync/internal_api/public/sessions/model_neutral_state.h"
 #include "sync/internal_api/public/sessions/type_debug_info_observer.h"
+#include "sync/internal_api/public/shared_model_type_processor.h"
 #include "sync/internal_api/public/shutdown_reason.h"
 #include "sync/internal_api/public/sync_encryption_handler.h"
 #include "sync/internal_api/public/util/experiments.h"
@@ -96,6 +101,7 @@ using sync_driver::DataTypeController;
 using sync_driver::DataTypeManager;
 using sync_driver::DataTypeStatusTable;
 using sync_driver::DeviceInfoSyncService;
+using sync_driver_v2::DeviceInfoService;
 using syncer::ModelType;
 using syncer::ModelTypeSet;
 using syncer::JsBackend;
@@ -106,6 +112,8 @@ using syncer::ModelSafeRoutingInfo;
 using syncer::SyncCredentials;
 using syncer::SyncProtocolError;
 using syncer::WeakHandle;
+using syncer_v2::ModelTypeStore;
+using syncer_v2::SharedModelTypeProcessor;
 
 typedef GoogleServiceAuthError AuthError;
 
@@ -142,6 +150,8 @@ const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
 
 static const base::FilePath::CharType kSyncDataFolderName[] =
     FILE_PATH_LITERAL("Sync Data");
+static const base::FilePath::CharType kLevelDBFolderName[] =
+    FILE_PATH_LITERAL("LevelDB");
 
 namespace {
 
@@ -217,6 +227,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       last_get_token_error_(GoogleServiceAuthError::AuthErrorNone()),
       network_resources_(new syncer::HttpBridgeNetworkResources),
       start_behavior_(init_params.start_behavior),
+      directory_path_(
+          base_directory_.Append(base::FilePath(kSyncDataFolderName))),
       catch_up_configure_in_progress_(false),
       passphrase_prompt_triggered_by_version_(false),
       weak_factory_(this),
@@ -268,8 +280,28 @@ void ProfileSyncService::Initialize() {
       base::Bind(&ProfileSyncService::TriggerRefresh,
                  weak_factory_.GetWeakPtr(),
                  syncer::ModelTypeSet(syncer::SESSIONS))));
-  device_info_sync_service_.reset(
-      new DeviceInfoSyncService(local_device_.get()));
+
+  if (channel_ == version_info::Channel::UNKNOWN &&
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSyncEnableUSSDeviceInfo)) {
+    scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
+        blocking_pool_->GetSequencedTaskRunnerWithShutdownBehavior(
+            blocking_pool_->GetSequenceToken(),
+            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+    // TODO(skym): Stop creating leveldb files when signed out.
+    // TODO(skym): Verify using AsUTF8Unsafe is okay here. Should work as long
+    // as the Local State file is guaranteed to be UTF-8.
+    device_info_service_.reset(new DeviceInfoService(
+        local_device_.get(),
+        base::Bind(&ModelTypeStore::CreateStore,
+                   directory_path_.Append(base::FilePath(kLevelDBFolderName))
+                       .AsUTF8Unsafe(),
+                   blocking_task_runner),
+        base::Bind(&SharedModelTypeProcessor::CreateAsChangeProcessor)));
+  } else {
+    device_info_sync_service_.reset(
+        new DeviceInfoSyncService(local_device_.get()));
+  }
 
   sync_driver::SyncApiComponentFactory::RegisterDataTypesMethod
       register_platform_types_callback =
@@ -427,7 +459,12 @@ browser_sync::FaviconCache* ProfileSyncService::GetFaviconCache() {
 
 sync_driver::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker()
     const {
-  return device_info_sync_service_.get();
+  // One of the two should always be non-null after initialization is done.
+  if (device_info_service_) {
+    return device_info_service_.get();
+  } else {
+    return device_info_sync_service_.get();
+  }
 }
 
 sync_driver::LocalDeviceInfoProvider*
@@ -575,12 +612,8 @@ void ProfileSyncService::OnDataTypeRequestsSyncStartup(
 }
 
 void ProfileSyncService::StartUpSlowBackendComponents() {
-  base::FilePath sync_folder = base::FilePath(kSyncDataFolderName);
-
   invalidation::InvalidationService* invalidator =
       sync_client_->GetInvalidationService();
-
-  directory_path_ = base_directory_.Append(sync_folder);
 
   backend_.reset(
       sync_client_->GetSyncApiComponentFactory()->CreateSyncBackendHost(
@@ -2340,6 +2373,10 @@ syncer::SyncableService* ProfileSyncService::GetSessionsSyncableService() {
 
 syncer::SyncableService* ProfileSyncService::GetDeviceInfoSyncableService() {
   return device_info_sync_service_.get();
+}
+
+syncer_v2::ModelTypeService* ProfileSyncService::GetDeviceInfoService() {
+  return device_info_service_.get();
 }
 
 sync_driver::SyncService::SyncTokenStatus

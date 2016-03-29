@@ -80,6 +80,14 @@ SharedModelTypeProcessor::SharedModelTypeProcessor(syncer::ModelType type,
 
 SharedModelTypeProcessor::~SharedModelTypeProcessor() {}
 
+// static
+scoped_ptr<ModelTypeChangeProcessor>
+SharedModelTypeProcessor::CreateAsChangeProcessor(syncer::ModelType type,
+                                                  ModelTypeService* service) {
+  return scoped_ptr<ModelTypeChangeProcessor>(
+      new SharedModelTypeProcessor(type, service));
+}
+
 void SharedModelTypeProcessor::OnSyncStarting(
     const StartCallback& start_callback) {
   DCHECK(CalledOnValidThread());

@@ -19,6 +19,7 @@
 #include "components/browser_sync/browser/profile_sync_service_mock.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_driver/device_info.h"
+#include "components/sync_driver/device_info_tracker.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
 #include "testing/gmock/include/gmock/gmock.h"

@@ -38,6 +38,11 @@ class SYNC_EXPORT SharedModelTypeProcessor : public ModelTypeProcessor,
   SharedModelTypeProcessor(syncer::ModelType type, ModelTypeService* service);
   ~SharedModelTypeProcessor() override;
 
+  // An easily bound function that constructs a SharedModelTypeProcessor.
+  static scoped_ptr<ModelTypeChangeProcessor> CreateAsChangeProcessor(
+      syncer::ModelType type,
+      ModelTypeService* service);
+
   // Disconnect this processor from the sync engine. Change metadata will
   // continue being processed and persisted, but no commits can be made until
   // the next time sync is connected.

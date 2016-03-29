@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/memory/weak_ptr.h"
 #include "sync/api/data_batch.h"
 #include "sync/api/entity_change.h"
 #include "sync/api/metadata_batch.h"
@@ -19,9 +18,7 @@ namespace syncer_v2 {
 
 // A non-functional implementation of ModelTypeService for
 // testing purposes.
-class FakeModelTypeService
-    : public ModelTypeService,
-      public base::SupportsWeakPtr<FakeModelTypeService> {
+class FakeModelTypeService : public ModelTypeService {
  public:
   FakeModelTypeService();
   ~FakeModelTypeService() override;

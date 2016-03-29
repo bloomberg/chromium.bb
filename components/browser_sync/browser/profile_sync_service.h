@@ -29,7 +29,6 @@
 #include "components/sync_driver/data_type_manager.h"
 #include "components/sync_driver/data_type_manager_observer.h"
 #include "components/sync_driver/data_type_status_table.h"
-#include "components/sync_driver/device_info_sync_service.h"
 #include "components/sync_driver/glue/sync_backend_host.h"
 #include "components/sync_driver/local_device_info_provider.h"
 #include "components/sync_driver/protocol_event_observer.h"
@@ -69,11 +68,16 @@ class SessionsSyncManager;
 namespace sync_driver {
 class DataTypeManager;
 class DeviceInfoSyncService;
+class DeviceInfoTracker;
 class LocalDeviceInfoProvider;
 class OpenTabsUIDelegate;
 class SyncApiComponentFactory;
 class SyncClient;
 }  // namespace sync_driver
+
+namespace sync_driver_v2 {
+class DeviceInfoService;
+}
 
 namespace syncer {
 class BaseTransaction;
@@ -339,6 +343,9 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   // Returns the SyncableService for syncer::DEVICE_INFO.
   virtual syncer::SyncableService* GetDeviceInfoSyncableService();
+
+  // Returns the ModelTypeService for syncer::DEVICE_INFO.
+  virtual syncer_v2::ModelTypeService* GetDeviceInfoService();
 
   // Returns synced devices tracker.
   virtual sync_driver::DeviceInfoTracker* GetDeviceInfoTracker() const;
@@ -941,9 +948,10 @@ class ProfileSyncService : public sync_driver::SyncService,
 
   scoped_ptr<sync_driver::LocalDeviceInfoProvider> local_device_;
 
-  // Locally owned SyncableService implementations.
+  // Locally owned SyncableService and ModelTypeService implementations.
   scoped_ptr<browser_sync::SessionsSyncManager> sessions_sync_manager_;
   scoped_ptr<sync_driver::DeviceInfoSyncService> device_info_sync_service_;
+  scoped_ptr<sync_driver_v2::DeviceInfoService> device_info_service_;
 
   scoped_ptr<syncer::NetworkResources> network_resources_;
 

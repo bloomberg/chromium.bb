@@ -97,11 +97,12 @@ class SyncClient {
   virtual base::WeakPtr<syncer::SyncableService> GetSyncableServiceForType(
       syncer::ModelType type) = 0;
 
-  // Returns a weak pointer to the model type service specified by |type|.
-  // Weak pointer may be unset if service is already destroyed.
+  // Returns a non-owning pointer to the service specified by |type|. Service
+  // lifetime is independent from sync thread therefore pointer should not be
+  // retained across tasks.
   // Note: Should only be called from the model type thread.
   // Note: should only be called by USS.
-  virtual base::WeakPtr<syncer_v2::ModelTypeService> GetModelTypeServiceForType(
+  virtual syncer_v2::ModelTypeService* GetModelTypeServiceForType(
       syncer::ModelType type) = 0;
 
   // Creates and returns a new ModelSafeWorker for the group, or null if one

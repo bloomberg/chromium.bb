@@ -174,9 +174,9 @@ class NonUIModelTypeControllerTest : public testing::Test,
     RunQueuedUIThreadTasks();
   }
 
-  base::WeakPtr<syncer_v2::ModelTypeService> GetModelTypeServiceForType(
+  syncer_v2::ModelTypeService* GetModelTypeServiceForType(
       syncer::ModelType type) override {
-    return service_->AsWeakPtr();
+    return service_.get();
   }
 
  protected:

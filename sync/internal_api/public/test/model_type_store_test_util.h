@@ -21,7 +21,7 @@ class ModelTypeStoreTestUtil {
   // Can be curried with an owned store object to allow passing an already
   // created store to a service constructor in a unit test.
   static void MoveStoreToCallback(scoped_ptr<ModelTypeStore> store,
-                                  ModelTypeStore::InitCallback callback);
+                                  const ModelTypeStore::InitCallback& callback);
 };
 
 }  // namespace syncer_v2

@@ -42,7 +42,7 @@ ModelTypeStoreTestUtil::CreateInMemoryStoreForTest() {
 // static
 void ModelTypeStoreTestUtil::MoveStoreToCallback(
     scoped_ptr<ModelTypeStore> store,
-    ModelTypeStore::InitCallback callback) {
+    const ModelTypeStore::InitCallback& callback) {
   ASSERT_TRUE(store);
   callback.Run(Result::SUCCESS, std::move(store));
 }
