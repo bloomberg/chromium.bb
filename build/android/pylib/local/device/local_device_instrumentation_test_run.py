@@ -54,7 +54,7 @@ class LocalDeviceInstrumentationTestRun(
     self._flag_changers = {}
 
   def TestPackage(self):
-    return None
+    return self._test_instance.suite
 
   def SetUp(self):
     def substitute_external_storage(d, external_storage):
