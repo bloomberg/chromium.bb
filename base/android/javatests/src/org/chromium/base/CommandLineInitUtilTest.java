@@ -29,6 +29,7 @@ public class CommandLineInitUtilTest extends InstrumentationTestCase {
         assertTrue("CommandLine not initialized after startup", CommandLine.isInitialized());
 
         final CommandLine commandLine = CommandLine.getInstance();
+        assertTrue(commandLine.hasSwitch("disable-fre"));
         assertTrue(commandLine.hasSwitch("enable-test-intents"));
     }
 }
