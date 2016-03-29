@@ -206,17 +206,16 @@ void AccountChooserDialogAndroid::ChooseCredential(
     password_manager::CredentialType type) {
   using namespace password_manager;
   if (type == CredentialType::CREDENTIAL_TYPE_EMPTY) {
-    passwords_data_.ChooseCredential(autofill::PasswordForm(), type);
+    passwords_data_.ChooseCredential(nullptr);
     return;
   }
-  DCHECK(type == CredentialType::CREDENTIAL_TYPE_PASSWORD ||
-         type == CredentialType::CREDENTIAL_TYPE_FEDERATED);
+  DCHECK_EQ(CredentialType::CREDENTIAL_TYPE_PASSWORD, type);
   const auto& credentials_forms =
       (type == CredentialType::CREDENTIAL_TYPE_PASSWORD)
           ? local_credentials_forms()
           : federated_credentials_forms();
   if (index < credentials_forms.size()) {
-    passwords_data_.ChooseCredential(*credentials_forms[index], type);
+    passwords_data_.ChooseCredential(credentials_forms[index]);
   }
 }
 

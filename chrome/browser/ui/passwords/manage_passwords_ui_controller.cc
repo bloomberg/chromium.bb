@@ -99,7 +99,7 @@ bool ManagePasswordsUIController::OnChooseCredentials(
     ScopedVector<autofill::PasswordForm> local_credentials,
     ScopedVector<autofill::PasswordForm> federated_credentials,
     const GURL& origin,
-    base::Callback<void(const password_manager::CredentialInfo&)> callback) {
+    const ManagePasswordsState::CredentialsCallback& callback) {
   DCHECK(!local_credentials.empty() || !federated_credentials.empty());
   PasswordDialogController::FormsVector locals =
       CopyFormVector(local_credentials);
@@ -295,8 +295,10 @@ void ManagePasswordsUIController::ChooseCredential(
     autofill::PasswordForm form,
     password_manager::CredentialType credential_type) {
   DCHECK(dialog_controller_);
+  DCHECK_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD,
+            credential_type);
   dialog_controller_.reset();
-  passwords_data_.ChooseCredential(form, credential_type);
+  passwords_data_.ChooseCredential(&form);
   passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
   UpdateBubbleAndIconVisibility();
 }

@@ -31,6 +31,8 @@ enum class CredentialType {
   CREDENTIAL_TYPE_LAST = CREDENTIAL_TYPE_FEDERATED
 };
 
+std::ostream& operator<<(std::ostream& out, CredentialType type);
+
 struct CredentialInfo {
   CredentialInfo();
   CredentialInfo(const autofill::PasswordForm& form, CredentialType form_type);

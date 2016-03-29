@@ -18,7 +18,6 @@
 #include "url/gurl.h"
 
 namespace password_manager {
-struct CredentialInfo;
 class PasswordFormManager;
 class PasswordManagerClient;
 }
@@ -29,7 +28,7 @@ class PasswordManagerClient;
 class ManagePasswordsState {
  public:
   using CredentialsCallback =
-      base::Callback<void(const password_manager::CredentialInfo&)>;
+      base::Callback<void(const autofill::PasswordForm*)>;
 
   ManagePasswordsState();
   ~ManagePasswordsState();
@@ -85,12 +84,10 @@ class ManagePasswordsState {
   void ProcessLoginsChanged(
       const password_manager::PasswordStoreChangeList& changes);
 
-  // Called when the user chooses a credential. Using data from |form| and
-  // |credential_type| it constructs the object which next is passed to the
+  // Called when the user chooses a credential. |form| is passed to the
   // credentials callback. Method should be called in the
   // CREDENTIAL_REQUEST_STATE state.
-  void ChooseCredential(const autofill::PasswordForm& form,
-                        password_manager::CredentialType credential_type);
+  void ChooseCredential(const autofill::PasswordForm* form);
 
   password_manager::ui::State state() const { return state_; }
   const GURL& origin() const { return origin_; }

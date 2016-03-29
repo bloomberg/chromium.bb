@@ -259,10 +259,10 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
     ScopedVector<autofill::PasswordForm> local_forms,
     ScopedVector<autofill::PasswordForm> federated_forms,
     const GURL& origin,
-    base::Callback<void(const password_manager::CredentialInfo&)> callback) {
+    const CredentialsCallback& callback) {
   // Set up an intercept callback if the prompt is zero-clickable (e.g. just one
   // form provided).
-  base::Callback<void(const password_manager::CredentialInfo&)> intercept =
+  CredentialsCallback intercept =
       local_forms.size() == 1u
           ? base::Bind(&ChromePasswordManagerClient::OnCredentialsChosen,
                        base::Unretained(this), callback)
@@ -284,13 +284,11 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
 }
 
 void ChromePasswordManagerClient::OnCredentialsChosen(
-    base::Callback<void(const password_manager::CredentialInfo&)> callback,
-    const password_manager::CredentialInfo& credential) {
-  callback.Run(credential);
-  if (credential.type !=
-      password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY) {
+    const CredentialsCallback& callback,
+    const autofill::PasswordForm* form) {
+  callback.Run(form);
+  if (form)
     PromptUserToEnableAutosigninIfNecessary();
-  }
 }
 
 void ChromePasswordManagerClient::ForceSavePassword() {

@@ -58,8 +58,7 @@ class ChromePasswordManagerClient
       ScopedVector<autofill::PasswordForm> local_forms,
       ScopedVector<autofill::PasswordForm> federated_forms,
       const GURL& origin,
-      base::Callback<void(const password_manager::CredentialInfo&)> callback)
-      override;
+      const CredentialsCallback& callback) override;
   void ForceSavePassword() override;
   void GeneratePassword() override;
   void NotifyUserAutoSignin(
@@ -155,10 +154,10 @@ class ChromePasswordManagerClient
   // for UMA stats.
   void GenerationAvailableForForm(const autofill::PasswordForm& form);
 
-  // Called as a response to PromptUserToChooseCredentials.
-  void OnCredentialsChosen(
-      base::Callback<void(const password_manager::CredentialInfo&)> callback,
-      const password_manager::CredentialInfo& credential);
+  // Called as a response to PromptUserToChooseCredentials. nullptr means that
+  // nothing was chosen.
+  void OnCredentialsChosen(const CredentialsCallback& callback,
+                           const autofill::PasswordForm* form);
 
   Profile* const profile_;
 

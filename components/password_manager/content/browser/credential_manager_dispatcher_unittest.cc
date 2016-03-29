@@ -65,7 +65,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                bool(const std::vector<autofill::PasswordForm*>& local_forms,
                     const std::vector<autofill::PasswordForm*>& federated_forms,
                     const GURL& origin,
-                    base::Callback<void(const CredentialInfo&)> callback));
+                    const CredentialsCallback& callback));
 
   explicit MockPasswordManagerClient(PasswordStore* store) : store_(store) {
     prefs_.registry()->RegisterBooleanPref(prefs::kCredentialsEnableAutosignin,
@@ -96,14 +96,13 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
       ScopedVector<autofill::PasswordForm> local_forms,
       ScopedVector<autofill::PasswordForm> federated_forms,
       const GURL& origin,
-      base::Callback<void(const CredentialInfo&)> callback) {
+      const CredentialsCallback& callback) {
     EXPECT_FALSE(local_forms.empty() && federated_forms.empty());
-    CredentialInfo info(
-        local_forms.empty() ? *federated_forms[0] : *local_forms[0],
-        local_forms.empty() ? CredentialType::CREDENTIAL_TYPE_FEDERATED
-                            : CredentialType::CREDENTIAL_TYPE_PASSWORD);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  base::Bind(callback, info));
+    const autofill::PasswordForm* form =
+        local_forms.empty() ? federated_forms[0] : local_forms[0];
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::Owned(new autofill::PasswordForm(*form))));
     PromptUserToChooseCredentialsPtr(local_forms.get(), federated_forms.get(),
                                      origin, callback);
     return true;
@@ -409,6 +408,39 @@ TEST_F(CredentialManagerDispatcherTest,
   // Verify that the update didn't toggle the skip_zero_click flag off.
   TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
   EXPECT_TRUE(passwords[form_.signon_realm][0].skip_zero_click);
+}
+
+TEST_F(CredentialManagerDispatcherTest,
+       CredentialManagerGetOverwriteZeroClick) {
+  // Set the global zero click flag on, and populate the PasswordStore with a
+  // form that's set to skip zero click and has a primary key that won't match
+  // credentials initially created via `store()`.
+  client_->set_zero_click_enabled(true);
+  form_.skip_zero_click = true;
+  form_.username_element = base::ASCIIToUTF16("username-element");
+  form_.password_element = base::ASCIIToUTF16("password-element");
+  form_.signon_realm = "this is a realm";
+  form_.origin = GURL("https://example.com/old_form.html");
+  store_->AddLogin(form_);
+  RunAllPendingTasks();
+
+  std::vector<GURL> federations;
+  EXPECT_CALL(*client_, PromptUserToChooseCredentialsPtr(_, _, _, _))
+      .Times(testing::Exactly(1));
+  EXPECT_CALL(*client_, NotifyUserAutoSigninPtr(_)).Times(testing::Exactly(0));
+
+  dispatcher()->OnRequestCredential(kRequestId, false, true, federations);
+
+  RunAllPendingTasks();
+
+  const uint32_t kMsgID = CredentialManagerMsg_SendCredential::ID;
+  const IPC::Message* message =
+      process()->sink().GetFirstMessageMatching(kMsgID);
+  EXPECT_TRUE(message);
+
+  // Verify that the update toggled the skip_zero_click flag.
+  TestPasswordStore::PasswordMap passwords = store_->stored_passwords();
+  EXPECT_FALSE(passwords[form_.signon_realm][0].skip_zero_click);
 }
 
 TEST_F(CredentialManagerDispatcherTest,

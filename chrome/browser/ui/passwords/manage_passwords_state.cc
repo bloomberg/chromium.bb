@@ -11,7 +11,6 @@
 #include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
-#include "components/password_manager/core/common/credential_manager_types.h"
 
 using password_manager::PasswordFormManager;
 using autofill::PasswordFormMap;
@@ -208,7 +207,7 @@ void ManagePasswordsState::TransitionToState(
   DCHECK_EQ(password_manager::ui::MANAGE_STATE, state);
   if (state_ == password_manager::ui::CREDENTIAL_REQUEST_STATE) {
     if (!credentials_callback_.is_null()) {
-      credentials_callback_.Run(password_manager::CredentialInfo());
+      credentials_callback_.Run(nullptr);
       credentials_callback_.Reset();
     }
     federated_credentials_forms_.clear();
@@ -237,41 +236,11 @@ void ManagePasswordsState::ProcessLoginsChanged(
 }
 
 void ManagePasswordsState::ChooseCredential(
-    const autofill::PasswordForm& form,
-    password_manager::CredentialType credential_type) {
+    const autofill::PasswordForm* form) {
   DCHECK_EQ(password_manager::ui::CREDENTIAL_REQUEST_STATE, state());
   DCHECK(!credentials_callback().is_null());
 
-  // Here, |credential_type| refers to whether the credential was originally
-  // passed into ::OnRequestCredentials as part of the |local_credentials| or
-  // |federated_credentials| lists (e.g. whether it is an existing credential
-  // saved for this origin, or whether we should synthesize a new
-  // FederatedCredential).
-  //
-  // If |credential_type| is federated, the credential MUST be returned as
-  // a FederatedCredential in order to prevent password information leaking
-  // cross-origin.
-  //
-  // If |credential_type| is local, the credential MIGHT be a PasswordCredential
-  // or it MIGHT be a FederatedCredential. We inspect the |federation_origin|
-  // field to determine which we should return.
-  //
-  // TODO(mkwst): Clean this up. It is confusing.
-  password_manager::CredentialType type_to_return;
-  if (credential_type ==
-          password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD &&
-      form.federation_origin.unique()) {
-    type_to_return = password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD;
-  } else if (credential_type ==
-             password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY) {
-    type_to_return = password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY;
-  } else {
-    type_to_return =
-        password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED;
-  }
-  password_manager::CredentialInfo info =
-      password_manager::CredentialInfo(form, type_to_return);
-  credentials_callback().Run(info);
+  credentials_callback().Run(form);
   set_credentials_callback(ManagePasswordsState::CredentialsCallback());
 }
 

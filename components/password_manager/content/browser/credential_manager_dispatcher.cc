@@ -225,23 +225,33 @@ void CredentialManagerDispatcher::SendCredential(int request_id,
   DCHECK(pending_request_);
   DCHECK_EQ(pending_request_->id(), request_id);
 
-  if (PasswordStore* store = GetPasswordStore()) {
-    if (info.type != CredentialType::CREDENTIAL_TYPE_EMPTY &&
-        IsZeroClickAllowed()) {
-      DCHECK(IsUpdatingCredentialAllowed());
-      scoped_ptr<autofill::PasswordForm> form(
-          CreatePasswordFormFromCredentialInfo(info,
-                                               pending_request_->origin()));
-      form->skip_zero_click = false;
-      store->UpdateLogin(*form);
-    }
-  }
-
   web_contents()->GetRenderViewHost()->Send(
       new CredentialManagerMsg_SendCredential(
           web_contents()->GetRenderViewHost()->GetRoutingID(),
           pending_request_->id(), info));
   pending_request_.reset();
+}
+
+void CredentialManagerDispatcher::SendPasswordForm(
+    int request_id,
+    const autofill::PasswordForm* form) {
+  CredentialInfo info;
+  if (form) {
+    password_manager::CredentialType type_to_return =
+        form->federation_origin.unique()
+            ? CredentialType::CREDENTIAL_TYPE_PASSWORD
+            : CredentialType::CREDENTIAL_TYPE_FEDERATED;
+    info = CredentialInfo(*form, type_to_return);
+    if (PasswordStore* store = GetPasswordStore()) {
+      if (form->skip_zero_click && IsZeroClickAllowed()) {
+        DCHECK(IsUpdatingCredentialAllowed());
+        autofill::PasswordForm update_form = *form;
+        update_form.skip_zero_click = false;
+        store->UpdateLogin(update_form);
+      }
+    }
+  }
+  SendCredential(request_id, info);
 }
 
 PasswordManagerClient* CredentialManagerDispatcher::client() const {

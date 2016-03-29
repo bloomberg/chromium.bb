@@ -9,6 +9,10 @@
 
 namespace password_manager {
 
+std::ostream& operator<<(std::ostream& out, CredentialType type) {
+  return out << static_cast<int>(type);
+}
+
 CredentialInfo::CredentialInfo() : type(CredentialType::CREDENTIAL_TYPE_EMPTY) {
 }
 

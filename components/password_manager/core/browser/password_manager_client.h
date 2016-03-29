@@ -22,7 +22,6 @@ class AutofillManager;
 
 namespace password_manager {
 
-struct CredentialInfo;
 class LogManager;
 class PasswordFormManager;
 class PasswordManager;
@@ -45,6 +44,9 @@ enum class CredentialSourceType {
 // environment.
 class PasswordManagerClient {
  public:
+  using CredentialsCallback =
+      base::Callback<void(const autofill::PasswordForm*)>;
+
   PasswordManagerClient() {}
   virtual ~PasswordManagerClient() {}
 
@@ -94,7 +96,7 @@ class PasswordManagerClient {
       ScopedVector<autofill::PasswordForm> local_forms,
       ScopedVector<autofill::PasswordForm> federated_forms,
       const GURL& origin,
-      base::Callback<void(const CredentialInfo&)> callback) = 0;
+      const CredentialsCallback& callback) = 0;
 
   // Informs the embedder that the user has manually requested to save the
   // password in the focused password field.

@@ -52,8 +52,7 @@ class ManagePasswordsUIController
       ScopedVector<autofill::PasswordForm> local_credentials,
       ScopedVector<autofill::PasswordForm> federated_credentials,
       const GURL& origin,
-      base::Callback<void(const password_manager::CredentialInfo&)> callback)
-      override;
+      const ManagePasswordsState::CredentialsCallback& callback) override;
   void OnAutoSignin(ScopedVector<autofill::PasswordForm> local_forms,
                     const GURL& origin) override;
   void OnPromptEnableAutoSignin() override;

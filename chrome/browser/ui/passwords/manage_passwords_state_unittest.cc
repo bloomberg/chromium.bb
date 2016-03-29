@@ -12,7 +12,6 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
-#include "components/password_manager/core/common/credential_manager_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -84,8 +83,7 @@ class ManagePasswordsStateTest : public testing::Test {
   // Pushes a blacklisted form and checks that it doesn't affect the state.
   void TestBlacklistedUpdates();
 
-  MOCK_METHOD1(CredentialCallback,
-               void(const password_manager::CredentialInfo&));
+  MOCK_METHOD1(CredentialCallback, void(const autofill::PasswordForm*));
 
  private:
   // Implements both CreateFormManager and CreateFormManagerWithFederation.
@@ -339,14 +337,8 @@ TEST_F(ManagePasswordsStateTest, OnRequestCredentials) {
   EXPECT_EQ(origin, passwords_data().origin());
   TestAllUpdates();
 
-  password_manager::CredentialInfo credential_info(
-      test_local_form(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
-  EXPECT_CALL(*this, CredentialCallback(_))
-      .WillOnce(testing::SaveArg<0>(&credential_info));
+  EXPECT_CALL(*this, CredentialCallback(nullptr));
   passwords_data().TransitionToState(password_manager::ui::MANAGE_STATE);
-  EXPECT_EQ(password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY,
-            credential_info.type);
   EXPECT_TRUE(passwords_data().credentials_callback().is_null());
   EXPECT_THAT(passwords_data().GetCurrentForms(),
               ElementsAre(Pointee(test_local_form())));
@@ -662,59 +654,31 @@ TEST_F(ManagePasswordsStateTest, ChooseCredentialLocal) {
                                         test_local_form().origin);
   passwords_data().set_credentials_callback(base::Bind(
       &ManagePasswordsStateTest::CredentialCallback, base::Unretained(this)));
-  password_manager::CredentialInfo credential_info(
-      test_local_form(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
-  EXPECT_CALL(*this, CredentialCallback(credential_info));
-  passwords_data().ChooseCredential(
-      test_local_form(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
-}
-
-TEST_F(ManagePasswordsStateTest, ChooseCredentialFederated) {
-  passwords_data().OnRequestCredentials(ScopedVector<autofill::PasswordForm>(),
-                                        ScopedVector<autofill::PasswordForm>(),
-                                        test_local_form().origin);
-  passwords_data().set_credentials_callback(base::Bind(
-      &ManagePasswordsStateTest::CredentialCallback, base::Unretained(this)));
-  password_manager::CredentialInfo credential_info(
-      test_federated_form(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED);
-  EXPECT_CALL(*this, CredentialCallback(credential_info));
-  passwords_data().ChooseCredential(
-      test_federated_form(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED);
+  EXPECT_CALL(*this, CredentialCallback(&test_local_form()));
+  passwords_data().ChooseCredential(&test_local_form());
 }
 
 TEST_F(ManagePasswordsStateTest, ChooseCredentialEmpty) {
   passwords_data().OnRequestCredentials(ScopedVector<autofill::PasswordForm>(),
                                         ScopedVector<autofill::PasswordForm>(),
                                         test_local_form().origin);
-  autofill::PasswordForm password_form(test_local_form());
   passwords_data().set_credentials_callback(base::Bind(
       &ManagePasswordsStateTest::CredentialCallback, base::Unretained(this)));
   password_manager::CredentialInfo credential_info(
       test_federated_form(),
       password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY);
-  EXPECT_CALL(*this, CredentialCallback(credential_info));
-  passwords_data().ChooseCredential(
-      test_federated_form(),
-      password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY);
+  EXPECT_CALL(*this, CredentialCallback(nullptr));
+  passwords_data().ChooseCredential(nullptr);
 }
 
 TEST_F(ManagePasswordsStateTest, ChooseCredentialLocalWithNonEmptyFederation) {
   passwords_data().OnRequestCredentials(ScopedVector<autofill::PasswordForm>(),
                                         ScopedVector<autofill::PasswordForm>(),
                                         test_local_form().origin);
-  autofill::PasswordForm form(test_federated_form());
-  form.federation_origin = url::Origin(GURL("https://federation.test/"));
   passwords_data().set_credentials_callback(base::Bind(
       &ManagePasswordsStateTest::CredentialCallback, base::Unretained(this)));
-  password_manager::CredentialInfo credential_info(
-      form, password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED);
-  EXPECT_CALL(*this, CredentialCallback(credential_info));
-  passwords_data().ChooseCredential(
-      form, password_manager::CredentialType::CREDENTIAL_TYPE_PASSWORD);
+  EXPECT_CALL(*this, CredentialCallback(&test_local_federated_form()));
+  passwords_data().ChooseCredential(&test_local_federated_form());
 }
 
 }  // namespace

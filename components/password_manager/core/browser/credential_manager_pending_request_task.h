@@ -42,6 +42,10 @@ class CredentialManagerPendingRequestTaskDelegate {
 
   // Sends a credential to JavaScript.
   virtual void SendCredential(int id, const CredentialInfo& credential) = 0;
+
+  // Updates |skip_zero_click| for |form| in the PasswordStore if required.
+  // Sends a credential to JavaScript.
+  virtual void SendPasswordForm(int id, const autofill::PasswordForm* form) = 0;
 };
 
 // Retrieves credentials from the PasswordStore.

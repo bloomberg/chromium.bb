@@ -68,6 +68,8 @@ class CredentialManagerDispatcher
   bool IsZeroClickAllowed() const override;
   GURL GetOrigin() const override;
   void SendCredential(int request_id, const CredentialInfo& info) override;
+  void SendPasswordForm(int request_id,
+                        const autofill::PasswordForm* form) override;
   PasswordManagerClient* client() const override;
   autofill::PasswordForm GetSynthesizedFormForOrigin() const override;
 

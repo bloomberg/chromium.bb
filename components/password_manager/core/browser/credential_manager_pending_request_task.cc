@@ -122,7 +122,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
       !delegate_->client()->PromptUserToChooseCredentials(
           std::move(local_results), std::move(federated_results), origin_,
           base::Bind(
-              &CredentialManagerPendingRequestTaskDelegate::SendCredential,
+              &CredentialManagerPendingRequestTaskDelegate::SendPasswordForm,
               base::Unretained(delegate_), id_))) {
     if (can_use_autosignin) {
       // The user had credentials, but either chose not to share them with the

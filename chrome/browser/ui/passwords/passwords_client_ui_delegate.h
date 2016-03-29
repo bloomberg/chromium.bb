@@ -17,7 +17,6 @@ class WebContents;
 }
 
 namespace password_manager {
-struct CredentialInfo;
 class PasswordFormManager;
 }
 
@@ -49,8 +48,7 @@ class PasswordsClientUIDelegate {
       ScopedVector<autofill::PasswordForm> local_credentials,
       ScopedVector<autofill::PasswordForm> federated_credentials,
       const GURL& origin,
-      base::Callback<void(const password_manager::CredentialInfo&)>
-          callback) = 0;
+      const base::Callback<void(const autofill::PasswordForm*)>& callback) = 0;
 
   // Called when user is auto signed in to the site. |local_forms[0]| contains
   // the credential returned to the site. |origin| is a URL of the site.
