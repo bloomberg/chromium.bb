@@ -100,6 +100,8 @@ ExtendableMessageEvent::ExtendableMessageEvent(const AtomicString& type, const E
 {
     if (initializer.hasOrigin())
         m_origin = initializer.origin();
+    if (initializer.hasLastEventId())
+        m_lastEventId = initializer.lastEventId();
     if (initializer.hasSource()) {
         if (initializer.source().isClient())
             m_sourceAsClient = initializer.source().getAsClient();
