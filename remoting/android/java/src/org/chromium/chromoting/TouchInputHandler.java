@@ -19,12 +19,6 @@ import android.view.ViewConfiguration;
  * are passed to the InputStrategyInterface implementation set by the DesktopView.
  */
 public class TouchInputHandler implements TouchInputHandlerInterface {
-    /**
-     * Minimum change to the scaling factor to be recognized as a zoom gesture. Setting lower
-     * values here will result in more frequent canvas redraws during zooming.
-     */
-    private static final double MIN_ZOOM_DELTA = 0.05;
-
     private final DesktopViewInterface mViewer;
     private final RenderData mRenderData;
     private final DesktopCanvas mDesktopCanvas;
@@ -483,10 +477,6 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
         @Override
         public boolean onScale(ScaleGestureDetector detector) {
             if (!mSwipePinchDetector.isPinching()) {
-                return false;
-            }
-
-            if (Math.abs(detector.getScaleFactor() - 1) < MIN_ZOOM_DELTA) {
                 return false;
             }
 
