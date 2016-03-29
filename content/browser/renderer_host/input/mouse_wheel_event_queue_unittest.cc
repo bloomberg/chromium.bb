@@ -74,6 +74,10 @@ base::TimeDelta DefaultScrollEndTimeoutDelay() {
   EXPECT_GESTURE_SCROLL_UPDATE_IMPL(event); \
   EXPECT_FALSE(event->data.scrollUpdate.inertial);
 
+#define EXPECT_GESTURE_SCROLL_UPDATE(event) \
+  EXPECT_GESTURE_SCROLL_UPDATE_IMPL(event); \
+  EXPECT_FALSE(event->data.scrollUpdate.inertial);
+
 #define EXPECT_INERTIAL_GESTURE_SCROLL_UPDATE(event) \
   EXPECT_GESTURE_SCROLL_UPDATE_IMPL(event);          \
   EXPECT_TRUE(event->data.scrollUpdate.inertial);
@@ -191,12 +195,25 @@ class MouseWheelEventQueueTest : public testing::Test,
                       float dX,
                       float dY,
                       int modifiers,
-                      bool high_precision) {
-    queue_->QueueEvent(MouseWheelEventWithLatencyInfo(
-        SyntheticWebMouseWheelEventBuilder::Build(
-            x, y, global_x, global_y, dX, dY, modifiers, high_precision)));
+                      bool high_precision,
+                      WebInputEvent::RailsMode rails_mode) {
+    WebMouseWheelEvent event = SyntheticWebMouseWheelEventBuilder::Build(
+        x, y, global_x, global_y, dX, dY, modifiers, high_precision);
+    event.railsMode = rails_mode;
+    queue_->QueueEvent(MouseWheelEventWithLatencyInfo(event));
   }
 
+  void SendMouseWheel(float x,
+                      float y,
+                      float global_x,
+                      float global_y,
+                      float dX,
+                      float dY,
+                      int modifiers,
+                      bool high_precision) {
+    SendMouseWheel(x, y, global_x, global_y, dX, dY, modifiers, high_precision,
+                   WebInputEvent::RailsModeFree);
+  }
   void SendMouseWheelWithPhase(
       float x,
       float y,
@@ -472,6 +489,56 @@ TEST_F(MouseWheelEventQueueTest, GestureSendingInterrupted) {
   EXPECT_EQ(2U, all_sent_events().size());
   EXPECT_GESTURE_SCROLL_BEGIN(sent_gesture_event(0));
   EXPECT_GESTURE_SCROLL_UPDATE(sent_gesture_event(1));
+  EXPECT_EQ(2U, GetAndResetSentEventCount());
+}
+
+TEST_F(MouseWheelEventQueueTest, GestureRailScrolling) {
+  SetUpForGestureTesting(true);
+  const WebGestureEvent::ScrollUnits scroll_units = WebGestureEvent::Pixels;
+
+  SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
+                 kWheelScrollGlobalY, 1, 1, 0, false,
+                 WebInputEvent::RailsModeHorizontal);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_TRUE(event_in_flight());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+
+  // Receive an ACK for the mouse wheel event.
+  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_FALSE(event_in_flight());
+  EXPECT_EQ(WebInputEvent::MouseWheel, acked_event().type);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(2U, all_sent_events().size());
+  EXPECT_GESTURE_SCROLL_BEGIN(sent_gesture_event(0));
+  EXPECT_GESTURE_SCROLL_UPDATE(sent_gesture_event(1));
+  EXPECT_EQ(1U, sent_gesture_event(1)->data.scrollUpdate.deltaX);
+  EXPECT_EQ(0U, sent_gesture_event(1)->data.scrollUpdate.deltaY);
+  EXPECT_EQ(2U, GetAndResetSentEventCount());
+
+  RunTasksAndWait(DefaultScrollEndTimeoutDelay() * 2);
+  EXPECT_EQ(1U, all_sent_events().size());
+  EXPECT_GESTURE_SCROLL_END(sent_gesture_event(0));
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+
+  SendMouseWheel(kWheelScrollX, kWheelScrollY, kWheelScrollGlobalX,
+                 kWheelScrollGlobalY, 1, 1, 0, false,
+                 WebInputEvent::RailsModeVertical);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_TRUE(event_in_flight());
+  EXPECT_EQ(1U, GetAndResetSentEventCount());
+
+  // Receive an ACK for the mouse wheel event.
+  SendMouseWheelEventAck(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, queued_event_count());
+  EXPECT_FALSE(event_in_flight());
+  EXPECT_EQ(WebInputEvent::MouseWheel, acked_event().type);
+  EXPECT_EQ(1U, GetAndResetAckedEventCount());
+  EXPECT_EQ(2U, all_sent_events().size());
+  EXPECT_GESTURE_SCROLL_BEGIN(sent_gesture_event(0));
+  EXPECT_GESTURE_SCROLL_UPDATE(sent_gesture_event(1));
+  EXPECT_EQ(0U, sent_gesture_event(1)->data.scrollUpdate.deltaX);
+  EXPECT_EQ(1U, sent_gesture_event(1)->data.scrollUpdate.deltaY);
   EXPECT_EQ(2U, GetAndResetSentEventCount());
 }
 

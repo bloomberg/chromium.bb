@@ -122,6 +122,13 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
           event_sent_for_gesture_ack_->event.hasPreciseScrollingDeltas
               ? blink::WebGestureEvent::PrecisePixels
               : blink::WebGestureEvent::Pixels;
+
+      if (event_sent_for_gesture_ack_->event.railsMode ==
+          WebInputEvent::RailsModeVertical)
+        scroll_update.event.data.scrollUpdate.deltaX = 0;
+      if (event_sent_for_gesture_ack_->event.railsMode ==
+          WebInputEvent::RailsModeHorizontal)
+        scroll_update.event.data.scrollUpdate.deltaY = 0;
     }
 
     bool current_phase_ended = false;
