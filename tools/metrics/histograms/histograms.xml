@@ -63396,6 +63396,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3" label="First screen capture call failed."/>
   <int value="4" label="First window capture call succeeded."/>
   <int value="5" label="First window capture call failed."/>
+  <int value="6" label="Tab video capturer created."/>
+  <int value="7" label="Tab audio capturer created."/>
+  <int value="8" label="System loopback audio capturer created."/>
 </enum>
 
 <enum name="DesktopSearchRedirectionInfobarCloseAction" type="int">

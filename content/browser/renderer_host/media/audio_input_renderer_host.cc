@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/browser/media/capture/web_contents_audio_input_stream.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/webrtc/webrtc_internals.h"
@@ -382,6 +383,7 @@ void AudioInputRendererHost::DoCreateStream(
     audio_params.set_format(media::AudioParameters::AUDIO_FAKE);
 
   // Check if we have the permission to open the device and which device to use.
+  MediaStreamType type = MEDIA_NO_SERVICE;
   std::string device_name;
   std::string device_id = media::AudioManagerBase::kDefaultDeviceId;
   if (audio_params.format() != media::AudioParameters::AUDIO_FAKE) {
@@ -394,7 +396,7 @@ void AudioInputRendererHost::DoCreateStream(
       MaybeUnregisterKeyboardMicStream(config);
       return;
     }
-
+    type = info->device.type;
     device_id = info->device.id;
     device_name = info->device.name;
     oss << ": device_name=" << device_name;
@@ -444,6 +446,9 @@ void AudioInputRendererHost::DoCreateStream(
             audio_mirroring_manager_),
         entry->writer.get(),
         user_input_monitor_);
+    // Only count for captures from desktop media picker dialog.
+    if (entry->controller.get() && type == MEDIA_DESKTOP_AUDIO_CAPTURE)
+      IncrementDesktopCaptureCounter(TAB_AUDIO_CAPTURER_CREATED);
   } else {
     // We call CreateLowLatency regardless of the value of
     // |audio_params.format|. Low latency can currently mean different things in
@@ -459,6 +464,13 @@ void AudioInputRendererHost::DoCreateStream(
         user_input_monitor_,
         config.automatic_gain_control);
     oss << ", AGC=" << config.automatic_gain_control;
+
+    // Only count for captures from desktop media picker dialog and system loop
+    // back audio.
+    if (entry->controller.get() && type == MEDIA_DESKTOP_AUDIO_CAPTURE &&
+        device_id == media::AudioManagerBase::kLoopbackInputDeviceId) {
+      IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);
+    }
   }
 
   if (!entry->controller.get()) {
